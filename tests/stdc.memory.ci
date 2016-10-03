@@ -1,0 +1,17 @@
+// test memory manager
+inline free(pointer data) = memmgr(data, 0);
+inline malloc(int size) = memmgr(null, size);
+pointer p1 = malloc(1024);
+pointer p2 = memmgr(null, 80);
+pointer p3 = memmgr(null, 160);
+pointer p4 = memmgr(null, 820);
+
+// clear and copy memory
+memset(p1, 0, 1024);
+memcpy(p1, p3, 160);
+
+// free memory
+free(p1);
+free(p2);
+free(p3);
+free(p4);

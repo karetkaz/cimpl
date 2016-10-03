@@ -1,0 +1,58 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="Inspector.css">
+<script type="application/javascript" src="Inspector.js"></script>
+<script type="application/javascript" src="Inspector.ui.js"></script>
+</head>
+<body style="overflow:auto">
+	<header id="tabs">
+		<label class="left open_file">
+			<input id="dropFileInput" type="file" style="display:none;" onchange="loadFile(this);">
+			<span id="file_name">Load File</span>
+		</label>
+		<span class="left" id="tabSymbols" onClick="setActiveTab(this, extSymbols, code, printSymbols);">Symbols</span>
+		<span class="left" id="tabProfile" onClick="setActiveTab(this, extProfile, tree, displayCallTree, chart, tree);">Profile</span>
+
+		<div class="ext left" id="extSymbols">
+			<label><input id="apiTyp" type="checkbox" checked onchange="setActiveTab(tabSymbols, extSymbols, code, printSymbols);"/> Typenames</label>
+			<label><input id="apiFun" type="checkbox" checked onchange="setActiveTab(tabSymbols, extSymbols, code, printSymbols);"/> Functions</label>
+			<label><input id="apiVar" type="checkbox" checked onchange="setActiveTab(tabSymbols, extSymbols, code, printSymbols);"/> Variables</label>
+			<label><input id="apiDef" type="checkbox" checked onchange="setActiveTab(tabSymbols, extSymbols, code, printSymbols);"/> Aliases</label>
+		</div>
+
+		<div class="ext left" id="extProfile">
+			<input type="button" onclick="tree.expandTree(false, true);" value="-"/>
+			<input type="button" onclick="tree.expandTree(true, true);" value="+"/>
+			<input type="button" onClick="setActiveTab(null, null, chart, displayCallTree, chart, tree);" value="Chart" />
+			<input type="button" onClick="setActiveTab(null, null, code, printSamples);" value="Samples" />
+		</div>
+
+		<input class="filter right" onchange="setActiveTab(null, null);" placeholder="Filter">
+	</header>
+	<div id="content">
+		<div class="fixed mesage"><h1 id="loading">Loading file ...</h1></div>
+		<div class="fixed mesage"><h1 id="loaded">File loaded.</h1></div>
+		<div class="fixed mesage"><h1 id="error">Error loading file.</h1></div>
+		<div class=""><table id="tree"></table></div>
+		<div class="fixed"><div id="chart"></div></div>
+		<div><pre id="code"></pre></div>
+	</div>
+	<span id="tooltip" onclick="void(this.classList.add('gone'));"></span>
+</body>
+<script type="application/javascript">
+with(document.body) {
+	ondragover = function() {
+		return false;
+	};
+	ondragend = function() {
+		return false;
+	};
+	ondrop = function(e) {
+		e.preventDefault();
+		dropFileInput.files = e.dataTransfer.files;
+		return true;
+	}
+}
+</script>
+</html>

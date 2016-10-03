@@ -1,0 +1,40 @@
+// packed type
+struct xrgb: 1 {
+	uint8 b;
+	uint8 g;
+	uint8 r;
+	uint8 x;
+}
+
+// union type
+struct color: 0 {
+	xrgb rgb;
+	int32 col;
+}
+
+/* TODO // record initialization
+xrgb black = {r = 0; g = 0; b = 0;};
+xrgb green = {r = 0; g = 255; b = 0;};
+xrgb white = {r = 255; g = 255; b = 255;};
+// */
+
+/* TODO // union initialization
+color cyan = {col = 0x00ffff};
+color blue = {rgb = {r = 0; g = 0; b = 255;}};
+// */
+
+// garbage collected
+struct type: object {
+	int intVariable;
+	type objReference;
+	int funReference(int x, int y);
+	/*TODO: int funDefinition(int x, int y) {
+		return 42;
+	}*/
+}
+
+/* TODO: object initialization
+type a1 = { intVariable = 1; funReference = null; };
+type a2 = { intVariable = 1; objReference = { intVariable = 1; }; };
+type a3 = { intVariable = 1; objReference = type { intVariable = 1; }; };
+// */
