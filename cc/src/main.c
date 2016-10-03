@@ -215,7 +215,7 @@ struct userContextRec {
 };
 
 // json output
-static const int JSON_PRETTY_PRINT = 1;
+static const int JSON_PRETTY_PRINT = 0;
 static const char *JSON_KEY_API = "symbols";
 static const char *JSON_KEY_RUN = "profile";
 
@@ -584,18 +584,19 @@ static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, v
 			size_t offs = vmOffset(ctx->rt, callee);
 			if (ss == 0) {
 				printFmt(out, esc, "\n%I%s\"%s\": {\n", indent, cc->hasOut ? ", " : "", JSON_KEY_RUN);
-				printFmt(out, esc, "%I\"\": \"%s\"\n", indent + 1,
-					"callTree array is constructed from a tick(timestamp) followed by a function offset, if the offset is negative it represents a return from a function instead of a call.");
-				printFmt(out, esc, "%I, \"%s\": %d\n", indent + 1, "ctFunIndex", 2);
-				printFmt(out, esc, "%I, \"%s\": %d\n", indent + 1, "ctTickIndex", 0);
-				printFmt(out, esc, "%I, \"%s\": %d\n", indent + 1, "ctHeapIndex", 1);
-				printFmt(out, esc, "%I, \"callTree\": [", indent + 1);
+				printFmt(out, esc, "%I\"%s\": [", indent + 1, "callTreeData");
+				printFmt(out, esc, "\"%s\", ", "ctTickIndex");
+				printFmt(out, esc, "\"%s\", ", "ctHeapIndex");
+				printFmt(out, esc, "\"%s\"", "ctFunIndex");
+				printFmt(out, esc, "]\n");
+
+				printFmt(out, esc, "%I, \"%s\": [", indent + 1, "callTree");
 			}
 			if (JSON_PRETTY_PRINT) {
 				printFmt(out, esc, "\n% I%d,%d,%d,", ss, ticks, ctx->usedMem, offs);
 			}
 			else {
-				printFmt(out, esc, "%d,%d,%d,", ss, ticks, ctx->usedMem, offs);
+				printFmt(out, esc, "%d,%d,%d,", ticks, ctx->usedMem, offs);
 			}
 		}
 	}
@@ -1295,7 +1296,7 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, int mode, int inde
 		case TOKEN_var: {
 			symn link = ast->ref.link;
 			// declaration
-			if (link != NULL /*&& link->tag == ast*/) {
+			if (link != NULL && link->tag == ast) {
 				if (link->init != NULL) {
 					printFmt(out, esc, " value=\"%?t\">\n", ast);
 					dumpAstXML(out, esc, link->init, mode, indent + 1, "init");
@@ -1996,7 +1997,7 @@ static int program(int argc, char *argv[]) {
 	return errors;
 }
 
-static void testCC_def_varInit(rtContext rt, int warn) {
+static void testCC_initLocalStatic(rtContext rt, int warn) {
 //	ccAddUnit(rt, warn, __FILE__, __LINE__, "inline myI32 = 9d;");
 //	ccAddUnit(rt, warn, __FILE__, __LINE__, "inline myI64 = 9D;");
 //	ccAddUnit(rt, warn, __FILE__, __LINE__, "inline myU32 = 9u;");
@@ -2014,6 +2015,78 @@ static void testCC_def_varInit(rtContext rt, int warn) {
 	ccAddUnit(rt, warn, __FILE__, __LINE__, "static myInt K = j;");
 	ccAddUnit(rt, warn, __FILE__, __LINE__, "myInt l = J;");
 	ccAddUnit(rt, warn, __FILE__, __LINE__, "static myInt L = J;");
+}
+static void testCC_initRefVarPtr(rtContext rt, int warn) {
+	ccAddUnit(rt, warn, __FILE__, __LINE__ + 1,
+		"struct complex {float64 re; float64 im; /*bool b;*/}\n"
+		"inline integer = int8;\n"
+		"\n"
+		"integer value = 33;\n"
+		"integer valueRef& = value;\n"
+		"pointer valuePtr = value;\n"
+		"variant valueVar = value;\n"
+		"\n"
+		"integer copyVal = value;\n"
+		"integer copyRef& = valueRef;\n"
+		"pointer copyPtr = valuePtr;\n"
+		"variant copyVar = valueVar;\n"
+		"integer fromRef = valueRef;\n"
+		"integer fromPtr& = valuePtr;\n"
+		"integer fromVar& = valueVar;\n"
+		"\n"
+		"integer nullRef& = null;\n"
+		"pointer nullPtr = null;\n"
+		"variant nullVar = null;\n"
+		"pointer typePtr = integer;\n"
+		"variant typeVar = integer;\n"
+		"\n"// Assing typenames to pointer
+		"pointer ptrVoid = void;\n"
+		"pointer ptrBool = bool;\n"
+		"pointer ptrChar = char;\n"
+		"pointer ptrInt8 = int8;\n"
+		"pointer ptrInt16 = int16;\n"
+		"pointer ptrInt32 = int32;\n"
+		"pointer ptrInt64 = int64;\n"
+		"pointer ptrUint8 = uint8;\n"
+		"pointer ptrUint16 = uint16;\n"
+		"pointer ptrUint32 = uint32;\n"
+		"pointer ptrUint64 = uint64;\n"
+		"pointer ptrFloat32 = float32;\n"
+		"pointer ptrFloat64 = float64;\n"
+		"pointer ptrTypename = typename;\n"
+		"pointer ptrFunction = function;\n"
+		"pointer ptrPointer = pointer;\n"
+		"pointer ptrVariant = variant;\n"
+		"pointer ptrObject = object;\n"
+		"\n"// Assing typenames to variant
+		"variant varVoid = void;\n"
+		"variant varBool = bool;\n"
+		"variant varChar = char;\n"
+		"variant varInt8 = int8;\n"
+		"variant varInt16 = int16;\n"
+		"variant varInt32 = int32;\n"
+		"variant varInt64 = int64;\n"
+		"variant varUint8 = uint8;\n"
+		"variant varUint16 = uint16;\n"
+		"variant varUint32 = uint32;\n"
+		"variant varUint64 = uint64;\n"
+		"variant varFloat32 = float32;\n"
+		"variant varFloat64 = float64;\n"
+		"variant varTypename = typename;\n"
+		"variant varFunction = function;\n"
+		"variant varPointer = pointer;\n"
+		"variant varVariant = variant;\n"
+		"variant varObject = object;\n"
+		// */
+	);
+
+//	ccAddUnit(rt, warn, __FILE__, __LINE__, "ref = value;\n");
+//	ccAddUnit(rt, warn, __FILE__, __LINE__, "value = valueRef;\n");
+//	ccAddUnit(rt, warn, __FILE__, __LINE__, "value = valueRef = 12;\n"); // TODO
+
+//	ccAddUnit(rt, warn, __FILE__, __LINE__, "integer slice[];\n");
+//	ccAddUnit(rt, warn, __FILE__, __LINE__, "integer array[3];\n");
+//	ccAddUnit(rt, warn, __FILE__, __LINE__, "integer pointer[*] = null;\n");
 }
 static void testCC_nfc_math(rtContext rt, int warn) {
 	ccAddUnit(rt, warn, __FILE__, __LINE__, "double halfPi = 3.14 / 2;");
@@ -2040,64 +2113,6 @@ static void testCC_def_types(rtContext rt, int warn) {
 	ccAddUnit(rt, warn, __FILE__, __LINE__, "struct type: object { int a; type b; }");
 //	ccAddUnit(rt, warn, __FILE__, __LINE__, "const type var = { b: null; a: 2; };");
 	ccAddUnit(rt, warn, __FILE__, __LINE__, "object o = null;");
-}
-static void testCC_indirect(rtContext rt, int warn) {
-	ccAddUnit(rt, warn, __FILE__, __LINE__ + 1,
-		"inline integer = int32;\n"
-		"struct complex {float64 re; float64 im; /*bool b;*/}\n"
-		"\n"
-		"static integer valInteger = 33;\n"
-		"static integer refInteger& = valInteger;\n"
-		"static complex valComplex;\n"// TODO = {re: 8; im: 3;}
-		"static complex refComplex& = valComplex;\n"
-		"\n"
-		"integer val_3 = valInteger;\n"
-		"integer val_4 = refInteger;\n"
-		"complex val_5 = valComplex;\n"
-		"complex val_6 = refComplex;\n"
-		"\n"
-		"pointer ptr_0 = null;\n"
-		"pointer ptr_1 = void;\n"
-		"pointer ptr_2 = integer;\n"
-		"pointer ptr_3 = valInteger;\n"
-		"pointer ptr_4 = refInteger;\n"
-		"pointer ptr_5 = valComplex;\n"
-		"pointer ptr_6 = refComplex;\n"
-		"\n"
-		"variant var_0 = null;\n"
-		"variant var_1 = void;\n"
-		"variant var_2 = integer;\n"
-		"variant var_3 = valInteger;\n"
-		"variant var_4 = refInteger;\n"
-		"variant var_5 = valComplex;\n"
-		"variant var_6 = refComplex;\n"
-		"\n"
-		"object obj_0 = null;\n"
-		"object obj_1 = void;\n"
-		"object obj_2 = integer;\n"
-		"object obj_3 = valInteger;\n"
-		"object obj_4 = refInteger;\n"
-		"object obj_5 = valComplex;\n"
-		"object obj_6 = refComplex;\n"
-		"\n"
-		"integer ref_0& = null;\n"
-		"integer ref_1& = ptr_0;\n"
-		"integer ref_2& = ptr_3;\n"
-		"integer ref_3& = ptr_5;\n"
-		"integer ref_4& = var_0;\n"
-		"integer ref_5& = var_3;\n"
-		"integer ref_6& = var_5;\n"
-	);
-
-//	ccAddUnit(rt, warn, __FILE__, __LINE__, "ref = value;\n");
-//	ccAddUnit(rt, warn, __FILE__, __LINE__, "value = ref;\n");
-//	ccAddUnit(rt, warn, __FILE__, __LINE__, "value = ref = 12;\n"); // TODO
-
-//	ccAddUnit(rt, warn, __FILE__, __LINE__, "valComplex.re = 29;\n"); // TODO
-
-//	ccAddUnit(rt, warn, __FILE__, __LINE__, "complex arrComplex[3];\n");
-//	ccAddUnit(rt, warn, __FILE__, __LINE__, "complex sliceComplex[];\n");
-//	ccAddUnit(rt, warn, __FILE__, __LINE__, "complex pointerComplex[*] = null;\n");
 }
 static void testCC_inline(rtContext rt, int warn) {
 	ccAddUnit(rt, warn, __FILE__, __LINE__, "inline min(int a, int b) = a < b ? a : b;");
@@ -2132,7 +2147,7 @@ static vmError nfcAdd42(nfcContext args) {
 }
 static void testCC_todo(rtContext rt, int warn) {
 	// TODO: wrong debug statement: ccAddUnit(rt, warn, __FILE__, __LINE__, "if (2 > 1) { 3 * 2; }");
-	// TODO: unsigned and cast: ccAddUnit(rt, warn, __FILE__, __LINE__, "int32 x = 0b1000; int32 y = int32(x, 3) >> 1;");
+	// TODO: unsigned and cast: ccAddUnit(rt, warn, __FILE__, __LINE__, "uint32 x = 0b1000; int32 y = int32(x, 3) >> 1;");
 
 	// valid expressions, but should fail type-checking
 //	ccAddUnit(rt, 32, __FILE__, __LINE__, "() + (1) + 2() + 3(4) + 5(6 + 7);");
@@ -2141,13 +2156,11 @@ static void testCC_todo(rtContext rt, int warn) {
 //	ccAddUnit(rt, 32, __FILE__, __LINE__, "3 *= 4 + 5;");				// 3 := 3 * (4 + 5)
 //	ccAddUnit(rt, 32, __FILE__, __LINE__, "3 += 4 * 5;");				// 3 := 3 + 4 * 5
 
-//	ccAddUnit(rt, warn, __FILE__, __LINE__, "pointer ptr = typename;");
-	ccAddUnit(rt, warn, __FILE__, __LINE__, "variant var = null;");
-	ccAddUnit(rt, warn, __FILE__, __LINE__, "raise(1, \"test\", var, 2);");
-
-
-	ccDefCall(rt, nfcAdd42, "int add42(int x0)");
-	ccAddUnit(rt, warn, __FILE__, __LINE__, "int z1 = add42(22);");
+//	ccAddUnit(rt, warn, __FILE__, __LINE__, "raise(1, \"test\", var, 2);");
+//
+//
+//	ccDefCall(rt, nfcAdd42, "int add42(int x0)");
+//	ccAddUnit(rt, warn, __FILE__, __LINE__, "int z1 = add42(22);");
 
 	// TODO: update returned value
 //	ccAddUnit(rt, warn, __FILE__, __LINE__, "inline add42Ext(int x1) = add42(x1);");
@@ -2227,22 +2240,24 @@ static int testCC() {
 		return -6;
 	}
 
-	testCC_def_varInit(rt, warn);
+	testCC_initRefVarPtr(rt, warn);
+	testCC_initLocalStatic(rt, warn);
 	testCC_def_types(rt, warn);
 	testCC_nfc_math(rt, warn);
 	testCC_nfc_memmgr(rt, warn);
-	testCC_indirect(rt, warn);
 	testCC_inline(rt, warn);
 	testCC_statement_if(rt, warn);
-//	testCC_todo(rt, warn);
+	//testCC_todo(rt, warn);
+
+//	ccAddUnit(rt, warn, "tests/test.Lang.inline.cc", 0, NULL);
 
 //	disable optimizations
-//	rt->foldConst = 0;
-//	rt->foldInstr = 0;
+	rt->foldConst = 0;
+	rt->foldInstr = 0;
 //	rt->fastAssign = 0;
 //	rt->genGlobals = 0;
 
-	printAst(stdout, NULL, rt->cc->root, prDbg, 0);
+//	printAst(stdout, NULL, rt->cc->root, prDbg, 0);
 //	dumpAstXML(stdout, NULL, rt->cc->root, -1, 0, "source");
 	if (!gencode(rt, 1)) {
 		error(rt, NULL, 0, "error generating instructions");

@@ -154,8 +154,8 @@ struct rtContextRec {
  */
 struct libcContextRec {
 	const rtContext rt;         // runtime context
-	const void * const extra;   // extra data for function (passed to execute or invoke)
 	const char * const proto;   // static data for function (passed on install)
+	const void *extra;          // extra data for function (passed to execute or invoke)
 	const stkptr args;          // arguments for function
 	const int argc;             // argument count
 };

@@ -21,7 +21,7 @@
 	3: print generated assembly for statements with errors
  	if not defined no extra messages and extra checks are performed.
 */
-#define DEBUGGING 0
+#define DEBUGGING 1
 
 // limit the count of printed elements(stacktrace, array elements)
 #define LOG_MAX_ITEMS 100

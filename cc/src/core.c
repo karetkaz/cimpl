@@ -357,10 +357,8 @@ static void install_type(ccContext cc, int mode) {
 	symn type_rec, type_fun, type_obj = NULL;
 
 	type_rec = install(cc, "typename", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 0, NULL, NULL);
-	cc->type_rec = type_rec;
-
-	// TODO: !cycle: typename is instance of typename
-	type_rec->type = type_rec;
+	// update required variables to be able to install other types.
+	cc->type_rec = type_rec->type = type_rec;  // TODO: !cycle: typename is instance of typename
 
 	type_vid = install(cc, "void", ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, type_rec, NULL);
 	type_bol = install(cc, "bool", ATTR_stat | ATTR_cnst | KIND_typ | CAST_bit, 1, type_rec, NULL);
@@ -387,7 +385,7 @@ static void install_type(ccContext cc, int mode) {
 	if (mode & install_obj) {
 		type_obj = install(cc,  "object", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * vm_size, type_rec, NULL);
 	}
-	type_fun = install(cc,"function", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 2 * vm_size, type_rec, NULL);
+	type_fun = install(cc, "function", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 2 * vm_size, type_rec, NULL);
 
 	type_vid->pfmt = NULL;
 	type_bol->pfmt = type_fmt_signed32;

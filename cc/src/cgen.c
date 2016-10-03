@@ -694,7 +694,7 @@ static inline ccKind genDeclaration(rtContext rt, symn variable) {
 		return CAST_vid;
 	}
 
-	debug("%-T", variable);
+//	debug("%?s:%?u: %-T", variable->file, variable->line, variable);
 	if (variable->init != NULL) {
 //		debug("%?s:%?u: initialize variable: %T := %t", variable->file, variable->line, variable, variable->init);
 		size_t initSize = stkOffs(rt, variable->size);
@@ -733,6 +733,7 @@ static inline ccKind genDeclaration(rtContext rt, symn variable) {
 	return varCast;
 }
 static inline ccKind genVariable(rtContext rt, symn variable, ccKind get) {
+	ccKind typCast = variable->type->kind & MASK_cast;
 	ccKind varCast = variable->kind & MASK_cast;
 
 	debug("%T", variable);
@@ -747,11 +748,16 @@ static inline ccKind genVariable(rtContext rt, symn variable, ccKind get) {
 		return genAst(rt, variable->init, get);
 	}
 
+	// typename is by reference
+	if (variable->type == rt->cc->type_rec) {
+		varCast = typCast = CAST_ref;
+	}
 	// array: push length of variable first.
 	if (get == CAST_arr && varCast != CAST_arr) {
 		if (!emitOffs(rt, variable->type->offs)) {
 			return TYPE_any;
 		}
+		// TODO: varCast = CAST_arr;
 	}
 
 	// variant: push type of variable first.
@@ -759,27 +765,48 @@ static inline ccKind genVariable(rtContext rt, symn variable, ccKind get) {
 		if (!genOffset(rt, variable->type)) {
 			return TYPE_any;
 		}
+		varCast = CAST_var;
+		typCast = CAST_ref;
 	}
 
 	if (!genOffset(rt, variable)) {
 		return TYPE_any;
 	}
 
-	// load reference indirection
-	if (varCast == CAST_ref) {
-		if (!emitInt(rt, opc_ldi, variable->size)) {
+	if (get == CAST_ref && variable == rt->cc->null_ref) {
+		// `int &a = null;`
+		return CAST_ref;
+	}
+
+	if (get == CAST_ref && variable->type == rt->cc->type_var) {
+		// convert a variant to a reference: `int &a = var;`
+		// TODO: un-box variant with type checking.
+		varCast = CAST_ref;
+		typCast = CAST_val;
+	}
+
+	if (get == CAST_ref && variable->type == rt->cc->type_ptr) {
+		// convert a pointer to a reference: `int &a = ptr;`
+		varCast = CAST_ref;
+		typCast = CAST_val;
+	}
+
+	// load reference indirection (variable is a reference to a value)
+	if (varCast == CAST_ref && typCast != CAST_ref) {
+		dieif(variable->size != vm_size, ERR_INTERNAL_ERROR);
+		if (!emitInt(rt, opc_ldi, vm_size)) {
 			return TYPE_any;
 		}
 	}
 
-	if (get == CAST_ref || get == CAST_arr || get == CAST_var) {
-		return get;
+	// load the value of the variable
+	if (get != CAST_ref && typCast != CAST_ref) {
+		if (!emitInt(rt, opc_ldi, variable->type->size)) {
+			return TYPE_any;
+		}
+		return typCast;
 	}
-
-	if (!emitInt(rt, opc_ldi, variable->type->size)) {
-		return TYPE_any;
-	}
-	return variable->type->kind & MASK_cast;
+	return get;
 }
 static inline ccKind genValue(rtContext rt, astn ast) {
 	ccKind cast = ast->type->kind & MASK_cast;
