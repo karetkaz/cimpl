@@ -97,6 +97,10 @@ static inline size_t emitStack(rtContext rt, vmOpcode opc, size_t arg) {
 
 		case opc_drop:
 		case opc_ldsp:
+			if (tmp.u8 > rt->vm.ss * vm_size) {
+				trace(ERR_INTERNAL_ERROR);
+				return 0;
+			}
 			break;
 
 		case opc_dup1:
@@ -106,17 +110,13 @@ static inline size_t emitStack(rtContext rt, vmOpcode opc, size_t arg) {
 		case opc_set2:
 		case opc_set4:
 			tmp.u8 /= vm_size;
+			if (tmp.u8 > vm_regs) {
+				trace(ERR_INTERNAL_ERROR);
+				return 0;
+			}
 			break;
 	}
 
-	if (tmp.u8 > vm_regs) {
-		trace(ERR_INTERNAL_ERROR);
-		return 0;
-	}
-	if (tmp.u8 > rt->vm.ss * vm_size) {
-		trace(ERR_INTERNAL_ERROR);
-		return 0;
-	}
 	return emitarg(rt, opc, tmp);
 }
 

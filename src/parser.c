@@ -773,6 +773,37 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		return NULL;
 	}
 
+	if ((tag = nextTok(cc, TOKEN_val))) {
+		astn next = NULL, head = NULL, tail = NULL;
+		skipTok(cc, STMT_end, 1);
+
+		next = cc->_tok;
+		if (tag->type == cc->type_str && !ccOpen(cc->rt, tag->ref.name, 1, NULL)) {
+			error(cc->rt, cc->file, cc->line, ERR_EXPECTED_BEFORE_TOK, "identifier", peekTok(cc, TOKEN_any));
+			return NULL;
+		}
+
+		while ((tag = nextTok(cc, TOKEN_any)) != NULL) {
+			if (tail != NULL) {
+				tail->next = tag;
+			}
+			else {
+				head = tag;
+			}
+			tail = tag;
+		}
+		if (tail != NULL) {
+			tail->next = next;
+		}
+		if (head != NULL) {
+			cc->_tok = head;
+		}
+		else {
+			cc->_tok = next;
+		}
+		return NULL;
+	}
+
 	if (!(tag = nextTok(cc, TOKEN_var))) {
 		error(cc->rt, cc->file, cc->line, ERR_EXPECTED_BEFORE_TOK, "identifier", peekTok(cc, TOKEN_any));
 		skipTok(cc, STMT_end, 1);
@@ -1152,7 +1183,9 @@ static astn statement(ccContext cc, ccKind attr) {
 	// type, enum and alias declaration
 	else if (peekTok(cc, INLINE_kwd) != NULL) { // alias
 		ast = declare_alias(cc, attr);
-		ast->type = cc->type_rec;
+		if (ast != NULL) {
+			ast->type = cc->type_rec;
+		}
 		//ast = expand2Statement(cc, ast, 0);
 	}
 	else if (peekTok(cc, RECORD_kwd) != NULL) { // struct
@@ -1223,7 +1256,6 @@ astn parse(ccContext cc, int warn) {
 	cc->warn = warn;
 	// pre read all tokens from source
 	if (cc->_tok == NULL) {
-		int tokens = 0;
 		astn head = NULL, tail = NULL;
 		while ((ast = nextTok(cc, TOKEN_any)) != NULL) {
 			if (tail != NULL) {
@@ -1232,7 +1264,6 @@ astn parse(ccContext cc, int warn) {
 			else {
 				head = ast;
 			}
-			tokens += 1;
 			tail = ast;
 		}
 		cc->_tok = head;

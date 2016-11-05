@@ -62,14 +62,14 @@ typedef enum {
 struct rtContextRec {
 	int32_t errors;         // error count
 	// disable code generation optimization
-	int32_t foldConst: 1;   // fold constant expressions (3 + 4 => 7)
-	int32_t foldInstr: 1;   // replace some instructions with a faster or shorter version (load 1, add => inc 1)
-	int32_t fastAssign: 1;  // remove dup and set instructions when modifying the last declared variable.
-	int32_t genGlobals: 1;  // generate global variables as static variables
+	unsigned foldConst: 1;  // fold constant expressions (3 + 4 => 7)
+	unsigned foldInstr: 1;  // replace some instructions with a faster or shorter version (load 1, add => inc 1)
+	unsigned fastAssign: 1; // remove dup and set instructions when modifying the last declared variable.
+	unsigned genGlobals: 1; // generate global variables as static variables
 
-	uint32_t logLevel: 3;   // runtime logging level (0-7)
-	int32_t logClose: 1;    // close log file
-	int32_t freeMem: 1;     // release memory
+	unsigned logLevel: 3;   // runtime logging level (0-7)
+	unsigned logClose: 1;   // close log file
+	unsigned freeMem: 1;    // release memory
 	FILE *logFile;          // log file
 
 	/**

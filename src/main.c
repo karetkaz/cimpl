@@ -6,7 +6,7 @@
 static const int wl = 15;           // default warning level
 static char mem[8 << 20];           // 8MB runtime memory
 const char *STDLIB = "stdlib.cvx";  // standard library
-const char *USAGE = "application [global options] [files with options]..."
+const char *USAGE = "cimpl [global options] [files with options]..."
 "\n"
 "\n<global options>:"
 "\n"
@@ -43,26 +43,22 @@ const char *USAGE = "application [global options] [files with options]..."
 "\n  -debug[*]             run with attached debugger, pausing on uncaught errors and break points"
 "\n    /s                  pause on startup"
 "\n    /a                  pause on caught errors"
-"\n    /l                  print cause of caught errors"
-"\n    /L                  print stack trace of caught errors"
-"\n                        profiler options ?"
-"\n    /g                  dump global variable values"
-"\n    /h                  dump allocated heap memory chunks"
-"\n    /p                  dump function statistics"
+"\n    /[l|L]              print cause of caught errors (/L includes stack trace)"
+"\n    /[g|G]              dump global variable values (/G includes function values)"
+"\n    /[h|H]              dump allocated heap memory chunks (/H includes static chunks)"
+"\n    /[p|P]              dump function statistics (/P includes statement statistics)"
 "\n"
 "\n  -profile[*]           run code with profiler: coverage, method tracing"
-"\n    /a                  dump all collected profile data"
-"\n    /g                  dump global variable values (/a: include functions)"
-"\n    /h                  dump allocated heap memory chunks"
-"\n    /p                  dump function statistics (/a: include statements)"
 "\n    /t                  dump call tree"
+"\n    /[g|G]              dump global variable values (/G includes function values)"
+"\n    /[h|H]              dump allocated heap memory chunks (/H includes static chunks)"
+"\n    /[p|P]              dump function statistics (/P includes statement statistics)"
 "\n"
 "\n<files with options>: filename followed by switches"
 "\n  <file>                if file extension is (.so|.dll) load as library else compile"
 "\n  -w[a|x|<int>]         set or disable warning level for current file"
 "\n  -b[*]<int>            break point on <int> line in current file"
-"\n    /l                  print only, do not pause"
-"\n    /L                  print stack trace, do not pause"
+"\n    /[l|L]              print only, do not pause (L includes stack trace)"
 "\n    /o                  one shot breakpoint, disable after first hit"
 "\n"
 "\nexamples:"
@@ -1107,7 +1103,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, void
 	}
 
 	// print error type
-	if (breakMode & (dbg_print | dbg_trace)) {
+	if (breakMode & dbg_print) {
 		size_t funOffs = offs;
 		if (fun != NULL) {
 			funOffs = offs - fun->offs;
@@ -1117,9 +1113,9 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, void
 			printFmt(out, esc, "%s:%u: ", dbg->file, dbg->line);
 		}
 		printFmt(out, esc, "%s in function: <%.T%?+d>\n", breakCause, fun, funOffs);
-		if (breakMode & dbg_trace) {
-			logTrace(ctx, out, 1, 0, 20);
-		}
+	}
+	if (breakMode & dbg_trace) {
+		logTrace(ctx, out, 1, 0, 20);
 	}
 
 	// pause execution in debugger
@@ -1128,7 +1124,8 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, void
 		char *arg = NULL;
 		printFmt(out, esc, ">dbg[%?c] %.A: ", cmd, caller);
 		if (fgets(buff, sizeof(buff), stdin) == NULL) {
-			printFmt(out, esc, "can not read from standard input, resuming\n");
+			printFmt(out, esc, "can not read from standard input, aborting\n");
+			return ctx->abort;
 		}
 		if ((arg = strchr(buff, '\n'))) {
 			*arg = 0;		// remove new line char
@@ -1342,16 +1339,12 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, int mode, int inde
 
 static int program(int argc, char *argv[]) {
 	struct {
-
-		int32_t logAppend: 1;
-
-		int32_t foldConst: 1;
-		int32_t foldInstr: 1;
-		int32_t fastAssign: 1;
-		int32_t genGlobals: 1;
-
-		int32_t stdLibs: 1;
-
+		unsigned logAppend: 1;
+		unsigned foldConst: 1;
+		unsigned foldInstr: 1;
+		unsigned fastAssign: 1;
+		unsigned genGlobals: 1;
+		unsigned stdLibs: 1;
 		ccInstall install;
 		size_t memory;
 	} settings = {
@@ -1446,7 +1439,7 @@ static int program(int argc, char *argv[]) {
 		else if (strBegins(arg, "-X")) {
 			char *arg2 = arg + 2;
 			while (*arg2 == '-' || *arg2 == '+') {
-				int on = *arg2 == '+';
+				unsigned on = *arg2 == '+';
 				if (strBegins(arg2 + 1, "fold")) {
 					settings.foldConst = on;
 					arg2 += 5;
@@ -1621,16 +1614,16 @@ static int program(int argc, char *argv[]) {
 					default:
 						arg2 += 1;
 						break;
-					case 's':
-						extra.dmpAsmStmt = 1;
-						arg2 += 2;
-						break;
 					case 'a':
 						extra.dmpAsmAddr = 1;
 						arg2 += 2;
 						break;
 					case 'n':
 						extra.dmpAsmName = 1;
+						arg2 += 2;
+						break;
+					case 's':
+						extra.dmpAsmStmt = 1;
 						arg2 += 2;
 						break;
 				}
@@ -1677,22 +1670,22 @@ static int program(int argc, char *argv[]) {
 				fatal("dump file not or double specified");
 				return -1;
 			}
-			dumpFile = fopen(argv[i], "w");
-			if (dumpFile == NULL) {
-				fatal("error opening dump file: %s", argv[i]);
-				return -1;
-			}
-			if (strEquals(arg, "-dump.scite")) {
-				dumpFun = dumpApiSciTE;
+			if (strEquals(arg, "-dump")) {
+				dumpFun = dumpApiText;
 			}
 			else if (strEquals(arg, "-dump.json")) {
 				dumpFun = dumpApiJSON;
 			}
-			else if (strEquals(arg, "-dump")) {
-				dumpFun = dumpApiText;
+			else if (strEquals(arg, "-dump.scite")) {
+				dumpFun = dumpApiSciTE;
 			}
 			else {
 				fatal("invalid argument '%s'", arg);
+				return -1;
+			}
+			dumpFile = fopen(argv[i], "w");
+			if (dumpFile == NULL) {
+				fatal("error opening dump file: %s", argv[i]);
 				return -1;
 			}
 		}
@@ -1732,26 +1725,32 @@ static int program(int argc, char *argv[]) {
 						extra.dbgOnCaught |= dbg_pause;
 						arg2 += 2;
 						break;
-					case 'l':
-						extra.dbgOnCaught |= dbg_print;
-						arg2 += 2;
-						break;
 					case 'L':
 						extra.dbgOnCaught |= dbg_trace;
+						extra.dbgOnError |= dbg_trace;
+					case 'l':
+						extra.dbgOnCaught |= dbg_print;
+						extra.dbgOnError |= dbg_print;
 						arg2 += 2;
 						break;
 
 					// dump stats
+					case 'P':
+						extra.dmpRunStat |= 2;
 					case 'p':
-						extra.dmpRunStat = 1;
+						extra.dmpRunStat |= 1;
 						arg2 += 2;
 						break;
+					case 'G':
+						extra.dmpVarStat |= 2;
 					case 'g':
-						extra.dmpVarStat = 1;
+						extra.dmpVarStat |= 1;
 						arg2 += 2;
 						break;
+					case 'H':
+						extra.dmpMemStat |= 2;
 					case 'h':
-						extra.dmpMemStat = 1;
+						extra.dmpMemStat |= 1;
 						arg2 += 2;
 						break;
 				}
@@ -1775,24 +1774,28 @@ static int program(int argc, char *argv[]) {
 						arg2 += 1;
 						break;
 
-					// dump stats
+					// dump call tree
 					case 't':
 						extra.dmpRunTime = 1;
 						arg2 += 2;
 						break;
-					case 'p':
+					// dump stats
 					case 'P':
-						extra.dmpRunStat = arg2[1] == 'p' ? 1 : 2;
+						extra.dmpRunStat |= 2;
+					case 'p':
+						extra.dmpRunStat |= 1;
 						arg2 += 2;
 						break;
-					case 'g':
 					case 'G':
-						extra.dmpVarStat = arg2[1] == 'g' ? 1 : 2;
+						extra.dmpVarStat |= 2;
+					case 'g':
+						extra.dmpVarStat |= 1;
 						arg2 += 2;
 						break;
-					case 'h':
 					case 'H':
-						extra.dmpMemStat = arg2[1] == 'h' ? 1 : 2;
+						extra.dmpMemStat |= 2;
+					case 'h':
+						extra.dmpMemStat |= 1;
 						arg2 += 2;
 						break;
 				}
@@ -1853,9 +1856,6 @@ static int program(int argc, char *argv[]) {
 			return -6;
 		}
 	}
-
-	// FIXME: add integer type for testing
-	ccAddUnit(rt, warn, __FILE__, __LINE__, "inline integer = uint64;");
 
 	// compile and import files / modules
 	for (warn = -1; i <= argc; ++i) {
