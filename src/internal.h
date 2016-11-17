@@ -18,13 +18,12 @@
 	0: show where errors were raised
 	1: trace errors to their root
 	2: include debug messages
-	3: print generated assembly for statements with errors
  	if not defined no extra messages and extra checks are performed.
 */
-#define DEBUGGING 0
+#define DEBUGGING 1
 
 // limit the count of printed elements(stacktrace, array elements)
-#define LOG_MAX_ITEMS 100
+#define LOG_MAX_ITEMS 25
 
 // enable parallel execution stuff
 #define VM_MAX_PROC 0
@@ -47,10 +46,10 @@ typedef struct list {
 
 // native function call
 typedef struct libc {
-	struct libc *next;	// next
 	vmError (*call)(nfcContext);
 	const char *proto;
 	symn sym;
+	size_t offs;
 	size_t in, out;		// stack parameters
 } *libc;
 
@@ -73,21 +72,22 @@ static inline void *getBuff(struct arrBuffer *buff, int idx) {
 
 /// Symbol node types and variables
 struct symNode {
-	char*	name;		// symbol name
-	char*	file;		// declared in file
+	char	*name;		// symbol name
+	char	*file;		// declared in file
 	int32_t line;		// declared on line
 	int32_t nest;		// declared on scope level
 	size_t	size;		// variable or function size
 	size_t	offs;		// address of variable or function
 
 	symn	next;		// next symbol: field / param / ... / (in scope table)
-	symn	type;		// base type of array/typename (void, int, float, struct, function, ...)
+	symn	type;		// base type of array / typename (void, int, float, struct, function, ...)
 	symn	owner;		// the type that declares the current symbol (DeclaringType)
 	symn	fields;		// all fields: static + non static
 	symn	params;		// function parameters, return value is the first parameter.
 
 	ccKind	kind;		// KIND_def / KIND_typ / KIND_var / KIND_fun + ATTR_xxx + CAST_xxx
 
+	// TODO: merge scope and global attributes
 	symn	scope;		// global variables and functions / while_compiling variables of the block in reverse order
 	symn	global;		// all static variables and functions
 	astn	init;		// VAR init / FUN body, this should be null after code generation?
@@ -128,6 +128,10 @@ struct astNode {
 			size_t stks;			// stack size
 			size_t offs;			// jump instruction offset
 		} go2;
+		struct {					// OPER_opc
+			vmOpcode code;			// instruction code
+			size_t args;			// instruction argument
+		} opc;
 		struct {					// STMT_beg: list
 			astn head;
 			astn tail;
@@ -160,10 +164,10 @@ struct dbgNode {
 /// Compiler context
 struct ccContextRec {
 	rtContext	rt;
-	libc	libc;		// native calls
 	astn	root;		// statements
 	symn	scope;		// scope variables and functions
 	symn	global;		// global variables and functions
+	list	native;		// list of native functions
 
 	// lists and tables
 	astn	jmps;		// list of break and continue statements to fix
@@ -219,19 +223,18 @@ struct ccContextRec {
 	astn	emit_tag;		// "emit"
 
 	symn	libc_dbg;		// debug function libcall: raise(int level, string message, variant inspect, int maxTrace);
-	size_t	libc_dbg_idx;	// debug function index
 };
 
 /// Debugger context
 struct dbgContextRec {
 	rtContext rt;
 	userContext extra;		// extra data for debugger and-or profiler
-	dbgn (*debug)(dbgContext ctx, vmError, size_t ss, void *sp, void *caller, void *callee);
+	dbgn (*debug)(dbgContext ctx, vmError, size_t ss, void *sp, size_t caller, size_t callee);
 
 	struct arrBuffer functions;
 	struct arrBuffer statements;
 	size_t freeMem, usedMem;
-	int checked;			// execution is inside an try catch
+	const int checked;			// execution is inside an try catch
 	dbgn abort;
 };
 
@@ -296,7 +299,6 @@ extern const char * const type_fmt_unsigned64;
 extern const char * const type_fmt_float32;
 extern const char * const type_fmt_float64;
 extern const char * const type_fmt_string;
-extern const char * const type_fmt_variant;
 extern const char * const type_fmt_typename;
 
 
@@ -317,7 +319,7 @@ astn fltNode(ccContext, float64_t v);
 /// Allocate a constant string node.
 astn strNode(ccContext, char *v);
 
-/// Allocate node whitch is a link to a reference
+/// Allocate node which is a link to a reference
 astn lnkNode(ccContext, symn ref);
 
 /// Allocate an operator tree node.
@@ -334,7 +336,7 @@ float64_t fltValue(astn ast);
  * @return Type of result: [TYPE_err, CAST_i64, CAST_f64, ...]
  */
 // TODO: to be deleted; use vm to evaluate constants.
-ccKind eval(astn res, astn ast);
+ccKind eval(ccContext cc, astn res, astn ast);
 
 /**
  * @brief Get the symbol(variable) linked to expression.
@@ -374,6 +376,18 @@ static inline astn chainArgs(astn args) {
 	}
 	return next;
 }
+
+static inline symn ccDefOpcode(ccContext cc, const char *name, symn type, vmOpcode code, int args) {
+	astn opc = newNode(cc, TOKEN_opc);
+	if (opc != NULL) {
+		opc->type = type;
+		opc->opc.code = code;
+		opc->opc.args = args;
+		return install(cc, name, ATTR_cnst | ATTR_stat | KIND_def, vm_size, type, opc);
+	}
+	return NULL;
+}
+
 
 //             *** Parsing section
 /**
@@ -455,6 +469,7 @@ enum Format {
 	nlAstElIf = 0x008000,   // don't keep `else if` constructs on the same line.
 
 	prName = 0,		// print operator or symbol name only.
+	prValue = prOneLine,
 	prShort = prSymQual | prSymArgs | prSymType | prOneLine ,	// %t, %T
 	prFull = prAttr | prSymQual | prSymArgs | prSymType | prSymInit,		// %+t, %-t, %+T, %-T
 	prDbg = prAttr | prAstType | prSymQual | prSymArgs | prSymType | prSymInit
@@ -475,6 +490,7 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent);
  * @param rt Runtime context (optional).
  */
 void printAsm(FILE *out, const char **esc, rtContext, void *ptr, int mode);
+void printOpc(FILE *out, const char **esc, vmOpcode opc, int64_t args);
 
 /**
  * @brief Print the value of a variable at runtime.
@@ -525,6 +541,12 @@ static inline size_t padded(size_t offs, unsigned align) {
 }
 
 
+static inline int isStatic(symn sym) {
+	return (sym->kind & ATTR_stat) != 0;
+}
+static inline int isConst(symn sym) {
+	return (sym->kind & ATTR_cnst) != 0;
+}
 static inline int isInline(symn sym) {
 	return (sym->kind & MASK_kind) == KIND_def;
 }
@@ -618,7 +640,7 @@ int importLib(rtContext rt, const char *path);
 
 // Code generator errors
 #define ERR_INVALID_JUMP "`%t` statement is invalid due to previous variable declaration within loop"
-#define ERR_INVALID_CAST "can not cast(%K->%K) generating: %t"
+#define ERR_CAST_EXPRESSION "can not emit expression: %t, invalid cast(%K -> %K)"
 #define ERR_EMIT_STATEMENT "can not emit statement: %t"
 #define ERR_EMIT_VARIABLE "can not emit variable: %t"
 #define ERR_EMIT_FUNCTION "can not emit function: %T"

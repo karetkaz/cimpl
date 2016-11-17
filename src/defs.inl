@@ -102,17 +102,20 @@ TOKEN_DEF(EMIT_kwd, 0x00, 0, "emit")
 //- TOKEN_DEF(STMT_cth, 0x00, 0, "catch")
 //- TOKEN_DEF(STMT_fin, 0x00, 0, "finally")
 
-//~ TOKEN_DEF(OPER_go2, 0x00, 0, "goto")
-//~ TOKEN_DEF(OPER_swc, 0x00, 0, "switch")
-//~ TOKEN_DEF(OPER_cse, 0x00, 0, "case")
-//? TOKEN_DEF(OPER_def, 0x00, 0, "default")
+//~ TOKEN_DEF(STMT_go2, 0x00, 0, "goto")
+//~ TOKEN_DEF(STMT_swc, 0x00, 0, "switch")
+//~ TOKEN_DEF(STMT_cse, 0x00, 0, "case")
+//? TOKEN_DEF(STMT_def, 0x00, 0, "default")
 
-//? TOKEN_DEF(OPER_wht, 0x00, 0, "while")           // while '(' <expr> ')' <stmt> => for (;<expr>;) <stmt>
-//? TOKEN_DEF(OPER_whf, 0x00, 0, "until")           // until '(' <expr> ')' <stmt> => for (;!<expr>;) <stmt>
-//? TOKEN_DEF(OPER_rep, 0x00, 0, "repeat")          // repeat <stmt> ((until | while) '(' <expr> ')' )?
+//? TOKEN_DEF(STMT_whl, 0x00, 0, "while")           // while '(' <expr> ')' <stmt> => for (;<expr>;) <stmt>
+//? TOKEN_DEF(STMT_unt, 0x00, 0, "until")           // until '(' <expr> ')' <stmt> => for (;!<expr>;) <stmt>
+//? TOKEN_DEF(STMT_rep, 0x00, 0, "repeat")          // repeat <stmt> ((until | while) '(' <expr> ')' )?
 
-//~ TOKEN_DEF(OPER_pow, 0x00, 2, "**")              // a ** b
-//~ TOKEN_DEF(ASGN_pow, 0x00, 2, "**=")             // a **= b
+//? TOKEN_DEF(OPER_pow, 0x00, 2, "**")              // a ** b
+//? TOKEN_DEF(ASGN_pow, 0x00, 2, "**=")             // a **= b
+
+//~ TOKEN_DEF(OPER_req, 0x00, 2, "===")             // a === b same reference
+//~ TOKEN_DEF(OPER_rne, 0x00, 2, "!==")             // a !== b not same reference
 
 #undef TOKEN_DEF
 #elif defined OPCODE_DEF
@@ -128,8 +131,8 @@ TOKEN_DEF(EMIT_kwd, 0x00, 0, "emit")
 //~ sys ========================================================================
 OPCODE_DEF(opc_nop,  0x00, 1, 0, 0, "nop")          // no operation;
 OPCODE_DEF(opc_nfc,  0x01, 4, 0, 0, "nfc")          // native function call
-OPCODE_DEF(opc_call, 0x02, 1, 0, 1, "call")         // push(IP); ip += arg.rel;         […, a, b, c  => […, a, b, c, IP;
-OPCODE_DEF(opc_jmpi, 0x03, 1, 1, 0, "ret")          // IP = popref();                          […, a, b, c  => […, a, b;
+OPCODE_DEF(opc_call, 0x02, 1, 0, 1, "call")         // ip = pop(); push(IP); IP = ip;       […, a, b, ip  => […, a, b, ret;
+OPCODE_DEF(opc_jmpi, 0x03, 1, 1, 0, "ret")          // IP = popref();                       […, a, b, c  => […, a, b;
 OPCODE_DEF(opc_jmp,  0x04, 4, 0, 0, "jmp")          // IP += arg.rel;                       […, a, b, c  => […, a, b, c;
 OPCODE_DEF(opc_jnz,  0x05, 4, 1, 0, "jnz")          // if (popi32() != 0) {IP += arg.rel;}      […, a, b, c => […, a, b;
 OPCODE_DEF(opc_jz,   0x06, 4, 1, 0, "jz")           // if (popi32() == 0) {IP += arg.rel;}      […, a, b, c => […, a, b;

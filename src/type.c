@@ -115,20 +115,14 @@ symn leave(ccContext cc, symn owner, ccKind mode, int align, size_t *outSize) {
 
 	// clear from symbol table
 	for (offs = 0; offs < TBL_SIZE; offs++) {
-		sym = cc->deft[offs];
-		while (sym && sym->nest > cc->nest) {
-			sym = sym->next;
+		for (sym = cc->deft[offs]; sym && sym->nest > cc->nest; sym = sym->next) {
 		}
 		cc->deft[offs] = sym;
 	}
 
 	// clear from scope stack
-	while (cc->scope && cc->scope->nest > cc->nest) {
-		sym = cc->scope;
-		cc->scope = sym->scope;
-
+	for (sym = cc->scope; sym && sym->nest > cc->nest; sym = sym->scope) {
 		sym->kind |= mode & MASK_attr;
-
 		sym->owner = owner;
 
 		// add to the list of scope symbols
@@ -136,7 +130,7 @@ symn leave(ccContext cc, symn owner, ccKind mode, int align, size_t *outSize) {
 		result = sym;
 
 		// add to the list of global symbols
-		if (sym->kind & ATTR_stat) {
+		if (isStatic(sym)) {
 			if (!cc->siff && sym->global == NULL) {
 				sym->global = cc->global;
 				cc->global = sym;
@@ -150,11 +144,12 @@ symn leave(ccContext cc, symn owner, ccKind mode, int align, size_t *outSize) {
 		}
 
 		// TODO: this logic should be not here
-		if (!(sym->kind & ATTR_stat) && sym->params && sym->init && sym->init->kind == STMT_beg) {
+		if (!isStatic(sym) && sym->params && sym->init && sym->init->kind == STMT_beg) {
 			warn(cc->rt, 1, sym->file, sym->line, WARN_FUNCTION_MARKED_STATIC, sym);
 			sym->kind |= ATTR_stat;
 		}
 	}
+	cc->scope = sym;
 
 	switch (mode & MASK_kind) {
 		default:
@@ -164,7 +159,7 @@ symn leave(ccContext cc, symn owner, ccKind mode, int align, size_t *outSize) {
 		case KIND_typ:
 			// update offsets
 			for (offs = 0, sym = result; sym != NULL; sym = sym->next) {
-				if (sym->kind & ATTR_stat) {
+				if (isStatic(sym)) {
 					continue;
 				}
 				sym->offs = offs;
@@ -175,7 +170,7 @@ symn leave(ccContext cc, symn owner, ccKind mode, int align, size_t *outSize) {
 		case KIND_fun:
 			// update offsets
 			for (offs = 0, sym = result; sym != NULL; sym = sym->next) {
-				if (sym->kind & ATTR_stat) {
+				if (isStatic(sym)) {
 					continue;
 				}
 				sym->offs = size - offs;
@@ -388,7 +383,7 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 
 		found += 1;
 		// if we are here then sym is found, but it has implicit cast in it
-		debug("%t%s is probably %T", ref, arguments ? "()" : "", sym);
+		debug("%?s:%?u: %t%s is probably %T", ref->file, ref->line, ref, arguments ? "()" : "", sym);
 	}
 
 	if (sym == NULL && best) {
@@ -481,6 +476,7 @@ static symn convert(ccContext cc, astn ast, symn type) {
 
 		case ASGN_set:		// '='
 
+		case TOKEN_opc:
 		case TOKEN_var:
 			ast->type = type;
 
@@ -521,15 +517,27 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			return NULL;
 
 		case OPER_fnc:
-			rType = typeCheck(cc, NULL, ast->op.rhso, raise);
+			ref = ast->op.lhso;
+			args = ast->op.rhso;
+
+			if (args != NULL) {
+				rType = NULL;
+				if (linkOf(ref) == cc->emit_opc) {
+					rType = cc->emit_opc;
+				}
+				if (!(rType = typeCheck(cc, rType, args, 0))) {
+					rType = typeCheck(cc, rType, args, raise);
+				}
+				convert(cc, args, rType);
+			}
+			else {
+				rType = cc->type_vid;
+			}
+
 			if (!rType) {
 				traceAst(ast);
 				return NULL;
 			}
-			convert(cc, ast->op.rhso, rType);
-
-			ref = ast->op.lhso;
-			args = ast->op.rhso;
 
 			// TODO: try to avoid hacks
 			if (ref != NULL) {
@@ -784,7 +792,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				return NULL;
 			}
 
-			if (sym->kind & ATTR_cnst) {
+			if (isConst(sym)) {
 				error(cc->rt, ast->file, ast->line, ERR_INVALID_CONST_ASSIGN, ast);
 			}
 			if (!canAssign(cc, lType, ast->op.rhso, 0)) {
@@ -865,7 +873,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	dieif(!val, ERR_INTERNAL_ERROR);
 
 	if (val->type == NULL) {
-		return TYPE_any;
+		return CAST_any;
 	}
 
 	varCast = castOf(var);
@@ -911,11 +919,6 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 			atag.type = typ;
 			atag.ref.link = var;
 
-			if (fun && fun->kind == EMIT_opc) {
-				// TODO: canAssign should not update
-				val->type = var;
-				return KIND_var;
-			}
 			if (fun && canAssign(cc, fun->type, &atag, 1)) {
 				arg2 = fun->params;
 				while (arg1 && arg2) {
@@ -934,11 +937,11 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 			}
 			else {
 				trace("%T ~ %T", typ, fun);
-				return TYPE_any;
+				return CAST_any;
 			}
 			if (arg1 || arg2) {
 				trace("%T ~ %T", arg1, arg2);
-				return TYPE_any;
+				return CAST_any;
 			}
 			// function is by ref
 			return KIND_var;
@@ -1001,7 +1004,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	}
 
 	trace("%T := %T(%t)", var, val->type, val);
-	return TYPE_any;
+	return CAST_any;
 }
 
 void addUsage(symn sym, astn tag) {
@@ -1026,7 +1029,6 @@ void addUsage(symn sym, astn tag) {
 	}
 }
 
-// TODO: remove function
 static inline ccKind castKind(symn typ) {
 	if (typ != NULL) {
 		switch (castOf(typ)) {
@@ -1049,7 +1051,7 @@ static inline ccKind castKind(symn typ) {
 				return KIND_var;
 		}
 	}
-	return TYPE_any;
+	return CAST_any;
 }
 // determine the resulting type of a OP b
 static symn promote(symn lht, symn rht) {

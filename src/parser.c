@@ -57,8 +57,15 @@ static inline symn addLength(ccContext cc, symn sym, astn init) {
 	 *  static array size kind: ATTR_const | ATTR_stat | KIND_def
 	 *     using static we get the warning accessing static member through instance.
 	 */
-	ccKind kind = ATTR_cnst | (init == NULL ? KIND_var : ATTR_stat | KIND_def);
+	ccKind kind;
 	symn newField, oldFields = sym->fields;
+
+	if (init != NULL) {
+		kind = ATTR_cnst | ATTR_stat | KIND_def;
+	}
+	else {
+		kind = ATTR_cnst | KIND_var;
+	}
 
 	enter(cc);
 	newField = install(cc, "length", kind | CAST_i32, vm_size, cc->type_i32, init);
@@ -83,18 +90,9 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn typ, symn prms) {
 		return 0;
 	}
 
-	switch (kind & MASK_cast) {
-		default:
-			break;
-
-		case CAST_ref:
-			size = vm_size;
-			break;
-
-		case CAST_arr:
-		case CAST_var:
-			size = 2 * vm_size;
-			break;
+	if ((kind & MASK_cast) == CAST_ref) {
+		// debug("referencing %t", tag);
+		size = vm_size;
 	}
 
 
@@ -634,7 +632,7 @@ static astn initializer(ccContext cc, symn var) {
  */
 static astn declaration(ccContext cc, ccKind attr, astn *args) {
 	symn def = NULL, type = NULL, prms = NULL;
-	ccKind cast = CAST_val;
+	ccKind cast = CAST_any;
 	astn tok, tag = NULL;
 
 	// read typename
@@ -684,11 +682,11 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 			enter(cc);
 			// TODO: skip reinstalling all parameters, try to adapt lookup
 			for (param = prms->next; param; param = param->next) {
-				install(cc, param->name, KIND_def, 0, param, NULL);
-				param->owner = def;
+				//TODO: install(cc, param->name, KIND_def, 0, param, NULL);
+				//TODO: param->owner = def;
 			}
 
-			def->init = statement(cc, TYPE_any);
+			def->init = statement(cc, (ccKind) 0);
 			backTok(cc, newNode(cc, STMT_end));
 			leave(cc, def, KIND_def, -1, NULL);
 
@@ -699,56 +697,50 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 	// parse array dimensions
 	while (skipTok(cc, LEFT_sqr, 0)) {		// int a[...][][]...
 		symn arr = newDefn(cc, KIND_typ);
-		int64_t length = -1;
 
 		if (!skipTok(cc, RIGHT_sqr, 0)) {
-			arr->init = nextTok(cc, OPER_mul);
-			if (arr->init == NULL) {
-				astn dim = expression(cc);
-				if (dim != NULL) {
-					dim->type = typeCheck(cc, NULL, dim, 1);
-				}
-				arr->init = dim;
-			}
-			else {
-				length = 0;
-			}
-			skipTok(cc, RIGHT_sqr, 1);
-		}
-
-		arr->type = type;
-		type = arr;
-
-		if (length != 0) {
-			// add array length property
-			addLength(cc, arr, arr->init);
-		}
-		if (arr->init != NULL) {
-			if (length != 0) {
+			astn len = nextTok(cc, OPER_mul);
+			if (len == NULL) {
 				struct astNode value;
-				if (eval(&value, arr->init)) {
+				int64_t length = -1;
+				len = expression(cc);
+				if (len != NULL) {
+					len->type = typeCheck(cc, NULL, len, 1);
+				}
+				if (eval(cc, &value, len)) {
 					length = intValue(&value);
 				}
 				if (length <= 0) {
-					error(cc->rt, arr->init->file, arr->init->line, ERR_INVALID_ARRAY_LENGTH, arr->init);
+					error(cc->rt, len->file, len->line, ERR_INVALID_ARRAY_LENGTH, len);
 				}
-				arr->kind = ATTR_stat | KIND_typ | CAST_arr;
-				arr->size = length * arr->type->size;
+				arr->size = length * type->size;
+				addLength(cc, arr, len);
+				cast = CAST_val;
 			}
 			else {
-				arr->kind = ATTR_stat | KIND_typ | CAST_arr;
 				arr->size = vm_size;
+				cast = CAST_ref;
 			}
+			skipTok(cc, RIGHT_sqr, 1);
 		}
 		else {
-			arr->kind = KIND_typ | CAST_arr;
 			arr->size = 2 * vm_size;
+			addLength(cc, arr, NULL);
+			cast = CAST_arr;
 		}
+
+		arr->kind = ATTR_stat | KIND_typ | CAST_arr;
+		arr->type = type;
+		type = arr;
+
 //		debug("%?s:%?u: array[size: %d]: %.t: %.T", arr->file, arr->line, arr->size, tag, arr);
 	}
 
-	if (cast == CAST_val) {
+	if (cast == CAST_any) {
 		cast = castOf(type);
+		if (cast == CAST_any) {
+			cast = CAST_val;
+		}
 	}
 
 	def = declare(cc, (attr & MASK_attr) | KIND_var | cast, tag, type, prms);
@@ -823,7 +815,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		type = typeCheck(cc, NULL, init, 1);
 		init->type = type;
 	}
-	params = leave(cc, NULL, KIND_def, 0, NULL);
+	params = leave(cc, NULL, KIND_fun, vm_size, NULL);
 	if (params != NULL) {
 		astn usage;
 		symn param;
@@ -836,12 +828,16 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 				}
 			}
 
+			debug("%?s:%?u: param `%T` used: %d times", param->file, param->line, param, usages);
+			/* FIXME: cache parameters if they are used several times in the expression.
+			 * to do the caching, the variable offset must be realigned with the stack.
 			if (usages > 1) {
 				inlineParams = 0;
 				break;
-			}
+			}*/
 		}
 		if (type != NULL) {
+			// update the result variable
 			params->type = type;
 			params->size = type->size;
 		}
@@ -849,7 +845,6 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 			warn(cc->rt, 4, tag->file, tag->line, WARN_INLINE_ALL_PARAMS, tag);
 			for (param = params; param != NULL; param = param->next) {
 				param->kind = (param->kind & ~MASK_kind) | KIND_def;
-				param->offs = param->size = 0;
 			}
 		}
 		type = cc->type_fun;
@@ -942,7 +937,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 		if (peekTok(cc, RIGHT_crl)) {
 			break;
 		}
-		if (declaration(cc, TYPE_any, NULL) == NULL) {
+		if (declaration(cc, (ccKind) 0, NULL) == NULL) {
 			error(cc->rt, cc->file, cc->line, ERR_INVALID_DECLARATION, peekTok(cc, TOKEN_any));
 			break;
 		}
@@ -1057,7 +1052,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 	// static if statement true branch does not enter a new scope to expose declarations.
 	if (attr & ATTR_stat) {
 		struct astNode value;
-		if (eval(&value, ast->stmt.test)) {
+		if (eval(cc, &value, ast->stmt.test)) {
 			if (bolValue(&value)) {
 				enterThen = 0;
 			}
@@ -1075,7 +1070,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 		enter(cc);
 	}
 
-	ast->stmt.stmt = statement(cc, TYPE_any);
+	ast->stmt.stmt = statement(cc, (ccKind) 0);
 
 	// parse else part if next token is 'else'
 	if (skipTok(cc, ELSE_kwd, 0)) {
@@ -1087,7 +1082,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 			enter(cc);
 			enterThen = 1;
 		}
-		ast->stmt.step = statement(cc, TYPE_any);
+		ast->stmt.step = statement(cc, (ccKind) 0);
 	}
 
 	if (enterThen) {
@@ -1149,18 +1144,20 @@ static astn statement(ccContext cc, ccKind attr) {
 	}
 	else if (peekTok(cc, STMT_if) != NULL) {    // if (...)
 		ast = statement_if(cc, attr);
-		ast->type = cc->type_vid;
-
-		if (attr & ATTR_stat && ast->kind == STMT_sif) {
-			attr &= ~ATTR_stat;
+		if (ast != NULL) {
+			ast->type = cc->type_vid;
+			if (attr & ATTR_stat && ast->kind == STMT_sif) {
+				attr &= ~ATTR_stat;
+			}
 		}
 	}
 	else if (peekTok(cc, STMT_for) != NULL) {   // for (...)
 		ast = statement_for(cc, attr);
-		ast->type = cc->type_vid;
-
-		if (attr & ATTR_paral && ast->kind == STMT_pfor) {
-			attr &= ~ATTR_paral;
+		if (ast != NULL) {
+			ast->type = cc->type_vid;
+			if (attr & ATTR_paral && ast->kind == STMT_pfor) {
+				attr &= ~ATTR_paral;
+			}
 		}
 	}
 	else if ((ast = nextTok(cc, STMT_brk))) {   // break;
@@ -1185,18 +1182,22 @@ static astn statement(ccContext cc, ccKind attr) {
 		ast = declare_alias(cc, attr);
 		if (ast != NULL) {
 			ast->type = cc->type_rec;
+			//ast = expand2Statement(cc, ast, 0);
 		}
-		//ast = expand2Statement(cc, ast, 0);
 	}
 	else if (peekTok(cc, RECORD_kwd) != NULL) { // struct
 		ast = declare_record(cc, attr);
-		ast->type = cc->type_rec;
-		//ast = expand2Statement(cc, ast, 0);
+		if (ast != NULL) {
+			ast->type = cc->type_rec;
+			//ast = expand2Statement(cc, ast, 0);
+		}
 	}
 	else if (peekTok(cc, ENUM_kwd) != NULL) {   // enum
 		ast = declare_enum(cc);
-		ast->type = cc->type_rec;
-		//ast = expand2Statement(cc, ast, 0);
+		if (ast != NULL) {
+			ast->type = cc->type_rec;
+			//ast = expand2Statement(cc, ast, 0);
+		}
 	}
 	else if ((ast = expression(cc))) {
 		symn type = typeCheck(cc, NULL, ast, 1);
@@ -1208,7 +1209,7 @@ static astn statement(ccContext cc, ccKind attr) {
 			backTok(cc, ast);
 			ast = declaration(cc, attr, NULL);
 			check = ast->ref.link->init;
-			attr = TYPE_any;
+			attr &= ~(ast->ref.link->kind & MASK_attr);
 		}
 		else {
 			check = ast;
@@ -1228,7 +1229,7 @@ static astn statement(ccContext cc, ccKind attr) {
 		ast->type = type;
 	}
 
-	// try to type check the statement
+	// type check
 	if (check != NULL) {
 		check->type = typeCheck(cc, NULL, check, 1);
 		if (check->type == NULL) {
@@ -1342,119 +1343,132 @@ int ccClose(ccContext cc) {
 	return cc->rt->errors;
 }
 
-symn ccDefCall(rtContext rt, vmError call(nfcContext), const char *proto) {
-	libc lc = rt->cc->libc;
-	size_t nfcPos = lc ? lc->sym->offs + 1 : 0;
+symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
+	rtContext rt = cc->rt;
+	size_t nfcPos = 0;
+	libc nfc = NULL;
+	list lst = NULL;
 
-	symn nfc, sym = NULL;
+	symn type = NULL, sym = NULL;
 	astn init, args = NULL;
-	int warn = rt->cc->warn;
-
-	dieif(call == NULL || !proto, ERR_INTERNAL_ERROR);
 
 	//~ from: int64 zxt(int64 val, int offs, int bits)
-	//~ make: inline zxt(int64 val, int offs, int bits) = int64(emit(libc(42), int64(val), int32(offs), int32(bits)));
-
+	//~ make: inline zxt(int64 val, int offs, int bits) = int64(emit(nfc(42), int64(val), int32(offs), int32(bits)));
+	if(call == NULL || proto == NULL) {
+		fatal(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
 	if (!ccOpen(rt, NULL, 0, (char*)proto)) {
 		trace(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
 
-	// enable all warnings
-	rt->cc->warn = 32;
-	init = declaration(rt->cc, TYPE_any, &args);
-	rt->cc->warn = warn;
+	init = declaration(cc, (ccKind) 0, &args);
 
-	if (init == NULL) {
+	if (ccClose(cc) != 0) {
 		error(rt, NULL, 0, ERR_INVALID_PROTO, proto);
 		return NULL;
 	}
-	dieif(ccClose(rt->cc) != 0, ERR_INTERNAL_ERROR);
-	dieif(init->kind != TOKEN_var, ERR_INTERNAL_ERROR);
-
+	if (init == NULL || init->kind != TOKEN_var) {
+		error(rt, NULL, 0, ERR_INVALID_PROTO, proto);
+		return NULL;
+	}
 	if ((sym = init->ref.link) == NULL) {
 		error(rt, NULL, 0, ERR_INVALID_PROTO, proto);
 		return NULL;
 	}
 
-	dieif(rt->_end - rt->_beg < (ptrdiff_t)sizeof(struct libc), ERR_MEMORY_OVERRUN);
+	// allocate nodes
+	rt->_end -= sizeof(struct list);
+	lst = (list) rt->_end;
 
-	rt->_end -= sizeof(struct libc);
-	lc = (struct libc*)rt->_end;
-	lc->next = rt->cc->libc;
-	rt->cc->libc = lc;
+	rt->_beg = paddptr(rt->_beg, rt_size);
+	nfc = (libc) rt->_beg;
+	rt->_beg += sizeof(struct libc);
 
-	nfc = newDefn(rt->cc, EMIT_opc);
-	nfc->name = "nfc";
-	nfc->offs = opc_nfc;
-	nfc->init = intNode(rt->cc, nfcPos);
-	nfc->type = sym->params ? sym->params->type : sym->type;
+	if(rt->_beg >= rt->_end) {
+		fatal(ERR_MEMORY_OVERRUN);
+		return NULL;
+	}
+
+	if (cc->native != NULL) {
+		libc last = (libc) cc->native->data;
+		nfcPos = last->offs + 1;
+	}
+	lst->data = (void*) nfc;
+	lst->next = cc->native;
+	cc->native = lst;
 
 	// replace the result argument with the native call instruction
 	if (args != NULL) {
+		// File.create(char *name)
 		astn arg = args;
 		while (arg->kind == OPER_com) {
 			arg = arg->op.lhso;
 		}
 
+		type = sym->params->type;
 		// arg must be the return argument
 		if (arg->kind == TOKEN_var && arg->ref.link == sym->params) {
-			arg->type = nfc->type;
-			arg->ref.name = NULL;
-			arg->ref.link = nfc;
-			arg->ref.hash = -1;
+			arg->kind = TOKEN_opc;
+			arg->type = type;
+			arg->opc.code = opc_nfc;
+			arg->opc.args = nfcPos;
 		}
 		else {
 			fatal(ERR_INTERNAL_ERROR);
+			return NULL;
 		}
 	}
 	else {
-		args = lnkNode(rt->cc, nfc);
+		// File.stdout
+		type = sym->type;
+		args = newNode(cc, TOKEN_opc);
+		args->type = type;
+		args->opc.code = opc_nfc;
+		args->opc.args = nfcPos;
 	}
 
-	init = newNode(rt->cc, OPER_fnc);
-	init->op.lhso = rt->cc->emit_tag;
-	init->type = nfc->type;
+	init = newNode(cc, OPER_fnc);
+	init->type = type;
+	init->op.lhso = cc->emit_tag;
 	init->op.rhso = args;
 
-	sym->kind = ATTR_cnst | ATTR_stat | KIND_def;
+	sym->kind = ATTR_stat | ATTR_cnst | KIND_def;
 	sym->init = init;
-	sym->offs = nfcPos;
 
-	lc->proto = proto;
-	lc->call = call;
-	lc->sym = sym;
+	// update the native call
+	nfc->proto = proto;
+	nfc->call = call;
+	nfc->sym = sym;
+	nfc->offs = nfcPos;
+	nfc->out = 0;
+	nfc->in = 0;
 
 	// the return argument
 	if (sym->params != NULL) {
-		lc->out = sym->params->size / vm_size;
+		symn param = sym->params;
 
 		// the first argument
-		if (sym->params->next) {
-			lc->in = sym->params->next->offs / vm_size;
-		} else {
-			lc->in = 0;
+		if (param->next) {
+			nfc->in = param->next->offs / vm_size;
 		}
 
-		// make all parameters symbolic by default
-		for (nfc = sym->params; nfc; nfc = nfc->next) {
-			nfc->kind = (nfc->kind & ~MASK_kind) | KIND_def;
-			nfc->offs = nfc->size = 0;
-			nfc->tag = NULL;
+		nfc->out = param->offs / vm_size - nfc->in;
+
+		// TODO: remove: make all parameters symbolic by default
+		for (param = sym->params; param != NULL; param = param->next) {
+			param->kind = (param->kind & ~MASK_kind) | KIND_def;
+			param->tag = NULL;
 		}
-	}
-	else {
-		lc->out = 0;
-		lc->in = 0;
 	}
 
 	return sym;
 }
 
-astn ccAddUnit(rtContext rt, int warn, char *file, int line, char *text) {
-	ccContext cc = ccOpen(rt, file, line, text);
-	if (cc == NULL) {
-		error(rt, NULL, 0, ERR_OPENING_FILE, file);
+astn ccAddUnit(ccContext cc, int warn, char *file, int line, char *text) {
+	if (!ccOpen(cc->rt, file, line, text)) {
+		error(cc->rt, NULL, 0, ERR_OPENING_FILE, file);
 		return 0;
 	}
 	astn unit = parse(cc, warn);
@@ -1464,10 +1478,10 @@ astn ccAddUnit(rtContext rt, int warn, char *file, int line, char *text) {
 	return unit;
 }
 
-int ccAddLib(rtContext rt, int warn, int init(rtContext), char *file) {
-	int unitCode = init(rt);
+int ccAddLib(ccContext cc, int warn, int init(ccContext), char *file) {
+	int unitCode = init(cc);
 	if (unitCode == 0 && file != NULL) {
-		return ccAddUnit(rt, warn, file, 1, NULL) != NULL;
+		return ccAddUnit(cc, warn, file, 1, NULL) != NULL;
 	}
 	return unitCode == 0;
 }

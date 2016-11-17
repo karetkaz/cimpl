@@ -1,0 +1,30 @@
+/* known errors:
+   Invalid instruction pointer
+   Invalid stack pointer
+   Invalid instruction
+   Stack Overflow
+   Division by Zero
+   External call aborted execution
+   Access violation reading memory
+   Access violation writing memory
+*/
+
+int32 i32Ref& = null;
+
+// Stack Overflow
+byte data[7 << 20];
+
+// Division by Zero
+int divByZero = 3 / 0;
+
+// External call aborted execution
+raise(-1, "abort", null, 256);
+
+// Access violation reading memory
+int i32Val = i32Ref;
+
+// Access violation writing memory
+i32Ref = 42;
+
+// Invalid instruction pointer
+emit(ret, load.z32);

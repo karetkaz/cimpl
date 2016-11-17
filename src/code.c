@@ -12,12 +12,13 @@ code emmiting, executing and formatting
 #include "internal.h"
 #include "vmCore.h"
 
-#ifdef __WATCOMC__
+#if defined __WATCOMC__
+
 #pragma disable_message(124);
+
 // needed for opcode f32_mod
-static inline double fmodf(float x, float y) {
-	return fmod(x, y);
-}
+static inline double fmodf(float x, float y) { return fmod(x, y); }
+
 #endif
 
 const struct opcodeRec opcode_tbl[256] = {
@@ -55,9 +56,9 @@ static inline int32_t bitsf(uint32_t x) {
 typedef uint8_t *memptr;
 
 // method tracing
-typedef struct {
-	memptr caller;      // Instruction pointer of caller
-	memptr callee;      // Instruction pointer of callee
+typedef struct trcptr {
+	size_t caller;      // Instruction pointer of caller
+	size_t callee;      // Instruction pointer of callee
 	clock_t func;       // time when the function was invoked
 	clock_t stmt;       // time when the statement execution started
 	stkptr sp;          // Stack pointer
@@ -259,7 +260,7 @@ int optimizeAssign(rtContext rt, size_t offsBegin, size_t offsEnd) {
 }
 
 size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
-	libc libcvec = rt->vm.nfc;
+	libc *libcvec = rt->vm.nfc;
 	vmInstruction ip = (vmInstruction)rt->_beg;
 
 	dieif((unsigned char*)ip + 16 >= rt->_end, ERR_MEMORY_OVERRUN);
@@ -1003,7 +1004,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 		rt->vm.sm = rt->vm.ss;
 	}
 
-//	trace("%A", ip);
+	debug("pc[%d]: sp(%d): %A", rt->vm.pc, rt->vm.ss, ip);
 	return rt->vm.pc;
 }
 int fixjump(rtContext rt, int src, int dst, int stc) {
@@ -1113,15 +1114,15 @@ static inline int ovf(vmProcessor pu) {
  * @param callee the called function adress, -1 on leave.
  * @param extra TO BE REMOVED
  */
-static inline vmError traceCall(rtContext rt, void *sp, void *caller, void *callee) {
-	dbgn (*debugger)(dbgContext, vmError, size_t, void*, void*, void*) = rt->dbg->debug;
+static inline vmError traceCall(rtContext rt, void *sp, size_t caller, size_t callee) {
+	dbgn (*debugger)(dbgContext, vmError, size_t, void*, size_t, size_t) = rt->dbg->debug;
 	clock_t now = clock();
 	vmProcessor pu = rt->vm.cell;
 	if (rt->dbg == NULL) {
 		return noError;
 	}
 	// trace statement
-	if (callee == NULL) {
+	if (callee == 0) {
 		fatal(ERR_INTERNAL_ERROR);
 	}
 	else if ((ptrdiff_t)callee < 0) {
@@ -1144,12 +1145,11 @@ static inline vmError traceCall(rtContext rt, void *sp, void *caller, void *call
 
 		tp = pu->tp;
 		clock_t ticks = now - tp->func;
-		size_t callerOffs = vmOffset(rt, tp->caller);
-		dbgn calleeFunc = mapDbgFunction(rt, vmOffset(rt, tp->callee));
-		dbgn callerFunc = mapDbgFunction(rt, callerOffs);
-		//dbgn callerStmt = mapDbgStatement(rt, callerOffs);
+		dbgn calleeFunc = mapDbgFunction(rt, tp->callee);
+		dbgn callerFunc = mapDbgFunction(rt, tp->caller);
+		//dbgn callerStmt = mapDbgStatement(rt, tp->caller);
 		if (calleeFunc != NULL) {
-			calleeFunc->exec += callee == (void *) -1;
+			calleeFunc->exec += callee == -1;
 			if (!recursive) {
 				calleeFunc->total += ticks;
 			}
@@ -1182,7 +1182,7 @@ static inline vmError traceCall(rtContext rt, void *sp, void *caller, void *call
 		tp->callee = callee;
 		tp->func = now;
 		tp->sp = sp;
-		dbgn calleeFunc = mapDbgFunction(rt, vmOffset(rt, tp->callee));
+		dbgn calleeFunc = mapDbgFunction(rt, tp->callee);
 		if (calleeFunc != NULL) {
 			calleeFunc->hits += 1;
 		}
@@ -1196,7 +1196,7 @@ static inline vmError traceCall(rtContext rt, void *sp, void *caller, void *call
 }
 
 /// Private dummy debug function.
-static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, void *caller, void *callee) {
+static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t caller, size_t callee) {
 	char *errorStr = NULL;
 	switch (err) {
 		case noError:
@@ -1238,15 +1238,14 @@ static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, void *
 	}
 
 	if (errorStr != NULL) {
-		size_t offs = vmOffset(ctx->rt, caller);
-		dbgn info = mapDbgStatement(ctx->rt, offs);
+		dbgn info = mapDbgStatement(ctx->rt, caller);
 		char *file = NULL;
 		int line = 0;
 		if (info != NULL) {
 			file = info->file;
 			line = info->line;
 		}
-		error(ctx->rt, file, line, ERR_EXEC_INSTRUCTION, errorStr, caller, offs);
+		error(ctx->rt, file, line, ERR_EXEC_INSTRUCTION, errorStr, getip(ctx->rt, caller), caller);
 		return ctx->abort;
 	}
 	(void) callee;
@@ -1265,10 +1264,10 @@ static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, void *
  * @return Error code of execution, 0 on success.
  */
 static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
-	const int cc = 1;
-	const libc libcvec = rt->vm.nfc;
+	const libc *libcvec = rt->vm.nfc;
 
 	vmError execError = noError;
+	const int cc = 1;						// cell count
 	const size_t ms = rt->_size;			// memory size
 	const size_t ro = rt->vm.ro;			// read only region
 	const memptr mp = (void*)rt->_mem;
@@ -1282,15 +1281,15 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 		const vmInstruction ipMin = (vmInstruction)(rt->_mem + rt->vm.ro);
 		const vmInstruction ipMax = (vmInstruction)(rt->_mem + rt->vm.px + px_size);
 
-		dbgn (*debugger)(dbgContext, vmError, size_t, void*, void*, void*) = rt->dbg->debug;
+		dbgn (*debugger)(dbgContext, vmError, size_t, void*, size_t, size_t) = rt->dbg->debug;
 
 		if (debugger == NULL) {
 			debugger = dbgDummy;
 		}
 		// invoked function(from external code) will return with a ret instruction, removing trace info
-		execError = traceCall(rt, pu->sp, NULL, getip(rt, fun->offs));
+		execError = traceCall(rt, pu->sp, 0, fun->offs);
 		if (execError != noError) {
-			debugger(rt->dbg, execError, 0, pu->sp, pu->ip, NULL);
+			debugger(rt->dbg, execError, 0, pu->sp, vmOffset(rt, pu->ip), 0);
 			return execError;
 		}
 
@@ -1303,15 +1302,15 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 			dbgn dbg;
 
 			if (ip >= ipMax || ip < ipMin) {
-				debugger(rt->dbg, invalidIP, st - sp, sp, ip, NULL);
+				debugger(rt->dbg, invalidIP, st - sp, sp, pc, 0);
 				return invalidIP;
 			}
 			if (sp > spMax || sp < spMin) {
-				debugger(rt->dbg, invalidSP, st - sp, sp, ip, NULL);
+				debugger(rt->dbg, invalidSP, st - sp, sp, pc, 0);
 				return invalidSP;
 			}
 
-			dbg = debugger(rt->dbg, noError, st - sp, sp, ip, NULL);
+			dbg = debugger(rt->dbg, noError, st - sp, sp, pc, 0);
 			if (dbg == rt->dbg->abort) {
 				// abort execution from debugger
 				return executionAborted;
@@ -1333,13 +1332,13 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 			switch (ip->opc) {
 				dbg_stop_vm:	// halt virtual machine
 					if (execError != noError) {
-						debugger(rt->dbg, execError, st - sp, sp, ip, NULL);
+						debugger(rt->dbg, execError, st - sp, sp, pc, 0);
 						while (pu->tp != oldTP) {
-							traceCall(rt, NULL, NULL, (void *) -2);
+							traceCall(rt, NULL, 0, (size_t) -2);
 						}
 					}
 					while (pu->tp != oldTP) {
-						traceCall(rt, NULL, NULL, (void *) -1);
+						traceCall(rt, NULL, 0, (size_t) -1);
 					}
 					return execError;
 
@@ -1360,7 +1359,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 					goto dbg_stop_vm;
 
 				dbg_error_div_flt:
-					debugger(rt->dbg, divisionByZero, st - sp, sp, ip, NULL);
+					debugger(rt->dbg, divisionByZero, st - sp, sp, pc, 0);
 					// continue execution on floating point division by zero.
 					break;
 
@@ -1375,12 +1374,12 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 				#define NEXT(__IP, __SP, __CHK) pu->sp -= (__SP); pu->ip += (__IP);
 				#define STOP(__ERR, __CHK, __ERC) do {if (__CHK) {goto dbg_##__ERR;}} while(0)
 				#define EXEC
-				#define TRACE(__SP, __CALLER, __CALLEE) do { if ((execError = traceCall(rt, __SP, __CALLER, __CALLEE)) != noError) goto dbg_stop_vm; } while(0)
+				#define TRACE(__IP) do { if ((execError = traceCall(rt, sp, pc, __IP)) != noError) goto dbg_stop_vm; } while(0)
 				#include "code.inl"
 			}
 			if (dbg != NULL) {
 				const trcptr tp2 = pu->tp - 1;
-				if ((memptr)ip != tp2->caller) {
+				if (pc != tp2->caller) {
 					size_t pc2 = vmOffset(rt, pu->ip);
 					if (pc2 < dbg->start || pc2 >= dbg->end) {
 						clock_t now = clock();
@@ -1409,7 +1408,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 			stop_vm:	// halt virtual machine
 				if (execError != noError) {
 					struct dbgContextRec dbg = { .rt = rt };
-					dbgDummy(&dbg, execError, st - sp, sp, ip, NULL);
+					dbgDummy(&dbg, execError, st - sp, sp, vmOffset(rt, ip), 0);
 				}
 				return execError;
 
@@ -1431,7 +1430,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 
 			error_div_flt: {
 					struct dbgContextRec dbg = { .rt = rt };
-					dbgDummy(&dbg, divisionByZero, st - sp, sp, ip, NULL);
+					dbgDummy(&dbg, divisionByZero, st - sp, sp, vmOffset(rt, ip), 0);
 				}
 				// continue execution on floating point division by zero.
 				break;
@@ -1446,7 +1445,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 
 			#define NEXT(__IP, __SP, __CHK) { pu->sp -= (__SP); pu->ip += (__IP); }
 			#define STOP(__ERR, __CHK, __ERC) do {if (__CHK) {goto __ERR;}} while(0)
-			#define TRACE(__SP, __CALLER, __CALLEE)
+			#define TRACE(__IP)
 			#define EXEC
 			#include "code.inl"
 		}
@@ -1465,10 +1464,10 @@ vmError invoke(rtContext rt, symn fun, void *res, void *args, const void *extra)
 	}
 
 	// invoked symbol must be a static function
-	if (fun->params == NULL || fun->offs == 0 || !(fun->kind & ATTR_stat)) {
+	if (fun->params == NULL || fun->offs == 0 || !isStatic(fun)) {
 		dieif(fun->params == NULL, ERR_INTERNAL_ERROR);
 		dieif(fun->offs == 0, ERR_INTERNAL_ERROR);
-		dieif(!(fun->kind & ATTR_stat), ERR_INTERNAL_ERROR);
+		dieif(!isStatic(fun), ERR_INTERNAL_ERROR);
 		return illegalInstruction;
 	}
 
@@ -1540,6 +1539,13 @@ vmError execute(rtContext rt, int argc, char *argv[], void *extra) {
 	return exec(rt, pu, rt->main, extra);
 }
 
+void printOpc(FILE *out, const char **esc, vmOpcode opc, int64_t args) {
+	struct vmInstruction instruction = {
+		.opc = opc, .arg.i8 = args
+	};
+	printAsm(out, esc, NULL, &instruction, 0);
+}
+
 void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, int mode) {
 	vmInstruction ip = (vmInstruction)ptr;
 	size_t i, len = (size_t) mode & prAsmCode;
@@ -1574,6 +1580,12 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, int mode) {
 		}
 		printFmt(out, esc, "% I: ", paddLen);
 	}
+
+	if (ip == NULL) {
+		printFmt(out, esc, "%s", "null");
+		return;
+	}
+
 	//~ write code bytes
 	if (len > 1 && len < opcode_tbl[ip->opc].size) {
 		for (i = 0; i < len - 2; i++) {
@@ -1733,19 +1745,12 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, int mode) {
 			printFmt(out, esc, "(%d)", offs);
 
 			if (rt != NULL) {
-				libc lc = NULL;
-				if (rt->vm.nfc) {
-					lc = &((libc)rt->vm.nfc)[offs];
+				sym = NULL;
+				if (rt->vm.nfc != NULL) {
+					sym = ((libc*)rt->vm.nfc)[offs]->sym;
 				}
-				else if (rt->cc != NULL) {
-					for (lc = rt->cc->libc; lc; lc = lc->next) {
-						if (lc->sym->offs == offs) {
-							break;
-						}
-					}
-				}
-				if (lc && lc->sym) {
-					printFmt(out, esc, " ;%T", lc->sym);
+				if (sym != NULL) {
+					printFmt(out, esc, " ;%T", sym);
 				}
 			}
 			break;
@@ -1760,9 +1765,10 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, int mode) {
 	}
 }
 
-void printVal(FILE *out, const char **esc, rtContext rt, symn var, stkval *ref, int mode, int indent) {
+void printVal(FILE *out, const char **esc, rtContext rt, symn var, stkval *val, int mode, int indent) {
 	ccKind typCast, varCast = castOf(var);
 	const char *fmt = var->pfmt;
+	memptr data = (memptr) val;
 	symn typ = var;
 
 	if (indent > 0) {
@@ -1772,22 +1778,14 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, stkval *ref, 
 		indent = -indent;
 	}
 
-	if (isVariable(var)) {
+	if (!isTypename(var)) {
 		typ = var->type;
-		fmt = var->pfmt != NULL ? var->pfmt : typ->pfmt;
-
-		if (ref != NULL && varCast == CAST_ref) {
-			// resolve indirect references
-			ref = getip(rt, ref->u4);
+		if (fmt == NULL) {
+			fmt = typ->pfmt;
 		}
-	}
-	else if (var->kind == KIND_def) {
-		fmt = NULL;
-		mode = 0;
-	}
-	else if ((void*)var == (void*)ref) {
-		typ = var->type;
-		fmt = NULL;
+		if (varCast == CAST_ref) {
+			data = getip(rt, (size_t) val->ref.data);
+		}
 	}
 
 	typCast = castOf(typ);
@@ -1806,31 +1804,21 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, stkval *ref, 
 	}
 
 	// null reference.
-	if (ref == NULL) {
+	if (data == NULL) {
 		printFmt(out, esc, "null");
 	}
 	// invalid offset.
-	else if (!isValidOffset(rt, ref)) {
+	else if (!isValidOffset(rt, data)) {
 		printFmt(out, esc, "BadRef@%06x", var->offs);
 	}
 	// builtin type.
 	else if (fmt != NULL) {
+		stkval *ref = (stkval *) data;
 		if (fmt == type_fmt_typename) {
 			printFmt(out, esc, fmt, ref);
 		}
 		else if (fmt == type_fmt_string) {
 			printFmt(out, esc, fmt, ref);
-		}
-		else if (fmt == type_fmt_variant) {
-			typ = getip(rt, (size_t) ref->var.type);
-			ref = getip(rt, (size_t) ref->var.value);
-			if (typ == NULL) {
-				printFmt(out, esc, "null");
-			}
-			else {
-				printFmt(out, esc, fmt, typ);
-				printVal(out, esc, rt, typ, ref, mode & ~(prSymQual | prSymType), indent);
-			}
 		}
 		else switch (typ->size) {
 			default:
@@ -1882,44 +1870,100 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, stkval *ref, 
 	else if (indent > LOG_MAX_ITEMS) {
 		printFmt(out, esc, "???");
 	}
-	else if (typ->fields != NULL) {
-		int n = 0;
-		symn fld;
-		printFmt(out, esc, "{");
-		for (fld = typ->fields; fld; fld = fld->next) {
-			if (fld->kind & ATTR_stat) {
-				// skip static fields
-				continue;
-			}
+	else if (typCast == CAST_var) {
+		memptr varData = getip(rt, (size_t) val->ref.data);
+		symn varType = getip(rt, (size_t) val->var.type);
 
-			if (!isVariable(fld)) {
-				// skip inlines, types and functions
-				continue;
-			}
-
-			if (n > 0) {
-				printFmt(out, esc, ",");
-			}
-
-			printFmt(out, esc, "\n");
-			printVal(out, esc, rt, fld, (void *) ((char *) ref + fld->offs), mode & ~prSymQual, indent + 1);
-			n += 1;
-		}
-		if (n > 0) {
-			printFmt(out, esc, "\n%I}", indent);
+		if (varType == NULL || varData == NULL) {
+			printFmt(out, esc, "null");
 		}
 		else {
-			printFmt(out, esc, "}");
+			printFmt(out, esc, "{%.T} ", varType);
+			printVal(out, esc, rt, varType, (stkval *) varData, mode & ~(prSymQual | prSymType), -indent);
+		}
+	}
+	else if (typCast == CAST_arr) {
+		memptr arrData = varCast == CAST_val ? val : getip(rt, (size_t) val->arr.data);
+
+		if (arrData == NULL) {
+			printFmt(out, esc, "null");
+		}
+		else {
+			symn len = typ->fields;
+			if (len == NULL) {
+				// pointer or string
+				if (typ->type->pfmt == type_fmt_character) {
+					printFmt(out, esc, "\"%s\"", arrData);
+				}
+				else {
+					printFmt(out, esc, "[*] {...}");
+				}
+			}
+			else {
+				size_t arrLength;
+				size_t idx, inc = typ->type->size;
+				// array or slice
+				if (isStatic(len)) {
+					arrLength = typ->size / inc;
+				}
+				else {
+					arrLength = val->arr.length;
+				}
+				printFmt(out, esc, "[%d] {", arrLength);
+				for (idx = 0; idx < arrLength; idx += 1) {
+					if (idx > 0) {
+						printFmt(out, esc, ", ");
+					}
+					if (idx >= LOG_MAX_ITEMS) {
+						printFmt(out, esc, "...");
+						break;
+					}
+					printVal(out, esc, rt, typ->type, (stkval *) (arrData + idx * inc), mode & ~(prSymQual | prSymType), -indent);
+				}
+				printFmt(out, esc, "}");
+			}
 		}
 	}
 	else {
-		// empty struct, typename, function, pointer, array
-		size_t offs = vmOffset(rt, ref);
+		// struct, typename, function, pointer, etc
+		size_t offs = vmOffset(rt, data);
 		symn sym = rtFindSym(rt, offs, 0);
 		if (sym != NULL) {
-			offs = offs - sym->offs;
+			offs -= sym->offs;
+			printFmt(out, esc, "<%?.T%?+d@%06x>", sym, offs, vmOffset(rt, data));
 		}
-		printFmt(out, esc, "<%?.T%?+d@%06x>", sym, offs, vmOffset(rt, ref));
+		else if (typ->fields != NULL) {
+			int fields = 0;
+			printFmt(out, esc, "{");
+			for (sym = typ->fields; sym; sym = sym->next) {
+				if (isStatic(sym)) {
+					// skip static fields
+					continue;
+				}
+
+				if (!isVariable(sym)) {
+					// skip inlines, types and functions
+					continue;
+				}
+
+				if (fields > 0) {
+					printFmt(out, esc, ",");
+				}
+
+				printFmt(out, esc, "\n");
+				printVal(out, esc, rt, sym, (void *) (data + sym->offs), mode & ~prSymQual, indent + 1);
+				fields += 1;
+			}
+			if (fields > 0) {
+				printFmt(out, esc, "\n%I}", indent);
+			}
+			else {
+				printFmt(out, esc, "}");
+			}
+		}
+		else {
+			printFmt(out, esc, "<{??}@%06x>", offs);
+		}
 	}
 
 	if (mode & prSymType) {
@@ -1927,7 +1971,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, stkval *ref, 
 	}
 }
 
-static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, void *sp, int ident) {
+static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, void *sp, int indent) {
 	symn sym;
 	int printFileLine = 0;
 
@@ -1937,24 +1981,24 @@ static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, v
 	if (file == NULL) {
 		file = "native.code";
 	}
-	printFmt(out, NULL, "%I%s:%u: %?T", ident, file, line, fun);
-	if (ident < 0) {
+	printFmt(out, NULL, "%I%s:%u: %?.T", indent, file, line, fun);
+	if (indent < 0) {
 		printFileLine = 1;
-		ident = -ident;
+		indent = -indent;
 	}
 
 	dieif(sp == NULL, ERR_INTERNAL_ERROR);
 	dieif(fun == NULL, ERR_INTERNAL_ERROR);
-	if (fun->params != NULL/* && fun->prms != rt->vars*/) {
+	if (fun->params != NULL) {
 		int firstArg = 1;
-		if (ident > 0) {
+		if (indent > 0) {
 			printFmt(out, NULL, "(");
 		}
 		else {
 			printFmt(out, NULL, "\n");
 		}
-		for (sym = fun->params; sym; sym = sym->next) {
-			char *offs = (char*)sp;
+		for (sym = fun->params->next; sym; sym = sym->next) {
+			size_t offs = fun->params->offs - sym->offs;
 
 			if (firstArg == 0) {
 				printFmt(out, NULL, ", ");
@@ -1965,27 +2009,21 @@ static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, v
 
 			if (printFileLine) {
 				if (sym->file != NULL && sym->line != 0) {
-					printFmt(out, NULL, "%I%s:%u: ", ident, sym->file, sym->line);
+					printFmt(out, NULL, "%I%s:%u: ", indent, sym->file, sym->line);
 				}
 				else {
-					printFmt(out, NULL, "%I", ident);
+					printFmt(out, NULL, "%I", indent);
 				}
 			}
-			dieif(sym->kind & ATTR_stat, ERR_INTERNAL_ERROR);
 
-			if (fun->kind == KIND_var) {
+			dieif(isStatic(sym), ERR_INTERNAL_ERROR);
+			if (isFunction(fun)) {
 				// at vm_size is the return value of the function.
-				offs += vm_size + fun->params->offs - sym->offs;
-				printVal(out, NULL, rt, sym, (void *) offs, 0, -ident);
+				offs += vm_size;
 			}
-			else {
-				// TODO: find the offsets of arguments for libcalls.
-				//offs += sym->offs;
-				//printVal(rt, out, sym, (void*)offs, -ident, 0);
-				printFmt(out, NULL, "%.T: %.T", sym, sym->type);
-			}
+			printVal(out, NULL, rt, sym, sp + offs, prValue, -indent);
 		}
-		if (ident > 0) {
+		if (indent > 0) {
 			printFmt(out, NULL, ")");
 		}
 		else {
@@ -1994,33 +2032,26 @@ static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, v
 	}
 }
 
-void logTrace(dbgContext dbg, FILE *out, int indent, int startLevel, int traceLevel) {
-	int i, hasOutput = 0;
-	size_t pos;
-	if (dbg == NULL) {
-		return;
-	}
-
+void traceCalls(dbgContext dbg, FILE *out, int indent, size_t skip, size_t maxCalls) {
 	rtContext rt = dbg->rt;
 	vmProcessor pu = rt->vm.cell;
-	trcptr tr = (trcptr)pu->bp;
+	trcptr trcBase = (trcptr)pu->bp;
+	size_t maxTrace = pu->tp - (trcptr)pu->bp;
+	size_t i, hasOutput = 0;
 
 	if (out == NULL) {
 		out = rt->logFile;
 	}
 
-	pos = pu->tp - tr - 1;
-	if (pos < 1) {
-		// TODO: check why we get 0
-		pos = 1;
+	if (maxCalls > maxTrace) {
+		maxCalls = maxTrace;
 	}
-	if (traceLevel > (int) pos) {
-		traceLevel = (int) pos;
-	}
-	for (i = startLevel; i < traceLevel; ++i) {
-		dbgn trInfo = mapDbgStatement(rt, vmOffset(rt, tr[pos - i].caller));
-		symn fun = rtFindSym(rt, vmOffset(rt, tr[pos - i - 1].callee), 1);
-		stkptr sp = tr[pos - i - 1].sp;
+
+	for (i = skip; i < maxCalls; ++i) {
+		trcptr trace = &trcBase[maxTrace - i - 1];
+		dbgn trInfo = mapDbgStatement(rt, trace->caller);
+		symn fun = rtFindSym(rt, trace->callee, 1);
+		stkptr sp = trace->sp;
 		char *file = NULL;
 		int line = 0;
 
@@ -2030,18 +2061,17 @@ void logTrace(dbgContext dbg, FILE *out, int indent, int startLevel, int traceLe
 			file = trInfo->file;
 			line = trInfo->line;
 		}
-
 		if (hasOutput > 0) {
 			printFmt(out, NULL, "\n");
 		}
 		traceArgs(rt, out, fun, file, line, sp, indent);
 		hasOutput += 1;
 	}
-	if (i < (int) pos) {
+	if (i < maxTrace) {
 		if (hasOutput > 0) {
 			printFmt(out, NULL, "\n");
 		}
-		printFmt(out, NULL, "%I... %d more", indent, pos - i);
+		printFmt(out, NULL, "%I... %d more", indent, maxTrace - i);
 		hasOutput += 1;
 	}
 
@@ -2055,7 +2085,7 @@ int vmSelfTest() {
 	int test = 0, skip = 0;
 	FILE *out = stdout;
 	struct vmInstruction ip[1];
-	struct libc libcvec[1];
+	struct libc *libcvec[1];
 
 	memset(ip, 0, sizeof(ip));
 	memset(libcvec, 0, sizeof(libcvec));

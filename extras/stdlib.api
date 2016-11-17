@@ -1,9 +1,9 @@
 typename
 typename.size
 typename.offset
-typename.file
-typename.line
-typename.name
+typename.file(type: typename): .cstr
+typename.line(type: typename): int32
+typename.name(type: typename): .cstr
 typename.base(type: typename): typename
 void
 bool
@@ -55,15 +55,16 @@ emit.nop
 emit.not
 emit.set
 emit.join
+emit.ret
 emit.call
 emit.p4x
 emit.p4x.dp3
 emit.p4x.dp4
 emit.p4x.dph
-emit.dupp
-emit.dupp.x1
-emit.dupp.x2
-emit.dupp.x4
+emit.dup
+emit.dup.x1
+emit.dup.x2
+emit.dup.x4
 emit.load
 emit.load.z32
 emit.load.z64
@@ -197,19 +198,18 @@ System.clock(): int32
 System.millis(): int64
 System.sleep(millis: int64): void
 File
-File.Open(path: char[*]): File
-File.Create(path: char[*]): File
-File.Append(path: char[*]): File
-File.Peek(file: File): int32
-File.Read(file: File): int32
-File.Read(file: File, buff: uint8[]): int32
-File.ReadLine(file: File, buff: uint8[]): int32
-File.Write(file: File, byte: uint8): int32
-File.Write(file: File, buff: uint8[]): int32
-File.Flush(file: File): void
-File.Close(file: File): void
-File.StdIn
-File.StdOut
-File.StdErr
-File.DbgOut
-integer
+File.open(path: char[*]): File
+File.create(path: char[*]): File
+File.append(path: char[*]): File
+File.peek(file: File): int32
+File.read(file: File): int32
+File.read(file: File, buff: uint8[]): int32
+File.readLine(file: File, buff: uint8[]): int32
+File.write(file: File, byte: uint8): int32
+File.write(file: File, buff: uint8[]): int32
+File.flush(file: File): void
+File.close(file: File): void
+File.in
+File.out
+File.err
+File.dbg

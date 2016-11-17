@@ -26,17 +26,16 @@ the core:
 const char *const type_fmt_signed32 = "%d";
 const char *const type_fmt_signed64 = "%D";
 const char *const type_fmt_unsigned32 = "%u";
-const char *const type_fmt_unsigned64 = "%u";
+const char *const type_fmt_unsigned64 = "%U";
 const char *const type_fmt_float32 = "%f";
 const char *const type_fmt_float64 = "%F";
 const char *const type_fmt_character = "'%c'";
 const char *const type_fmt_string = "\"%s\"";
-const char *const type_fmt_variant = "%T: ";
 const char *const type_fmt_typename = "%T";
 
-static const char *const type_get_file = "char file[*]";
-static const char *const type_get_line = "int line";
-static const char *const type_get_name = "char name[*]";
+static const char *const type_get_file = "pointer file(typename type)";
+static const char *const type_get_line = "int32 line(typename type)";
+static const char *const type_get_name = "pointer name(typename type)";
 static const char *const type_get_base = "typename base(typename type)";
 
 /// Allocate, resize or free memory; @see rtContext.api.rtAlloc
@@ -81,7 +80,7 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(rtContext, void *, 
 	// memory manager is not initialized, initialize it first
 	if (rt->vm.heap == NULL) {
 		memChunk heap = paddptr(rt->_beg, minAllocationSize);
-		memChunk last = paddptr(rt->_end - minAllocationSize, minAllocationSize);
+		memChunk last = paddptr(rt->_end - 2 * minAllocationSize, minAllocationSize);
 
 		heap->next = last;
 		heap->prev = NULL;
@@ -270,7 +269,6 @@ rtContext rtInit(void *mem, size_t size) {
 
 		*(void**)&rt->api.ccDefType = ccDefType;
 		*(void**)&rt->api.ccDefCall = ccDefCall;
-		*(void**)&rt->api.ccAddUnit = ccAddUnit;
 
 		*(void**)&rt->api.invoke = invoke;
 		*(void**)&rt->api.rtAlloc = rtAllocApi;
@@ -338,16 +336,6 @@ static vmError typenameGetField(nfcContext args) {
 	return executionAborted;
 }
 
-static inline symn ccDefMember(rtContext rt, vmError libc(nfcContext), const char * const proto) {
-	symn result = ccDefCall(rt, libc, proto);
-	if (result != NULL) {
-		result->kind &= ~ATTR_stat;
-		result->kind |= ATTR_memb;
-		rt->cc->libc->in += 1;
-	}
-	return result;
-}
-
 // install type system
 static void install_type(ccContext cc, int mode) {
 	symn type_vid, type_bol, type_chr;
@@ -381,7 +369,6 @@ static void install_type(ccContext cc, int mode) {
 	}
 	if (mode & install_var) {
 		type_var = install(cc, "variant", ATTR_stat | ATTR_cnst | KIND_typ | CAST_var, 2 * vm_size, type_rec, NULL);
-		type_var->pfmt = type_fmt_variant;
 	}
 	if (mode & install_obj) {
 		type_obj = install(cc,  "object", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * vm_size, type_rec, NULL);
@@ -427,9 +414,9 @@ static void install_type(ccContext cc, int mode) {
 	install(cc, "true", ATTR_stat | ATTR_cnst | KIND_def, 0, type_bol, intNode(cc, 1));   // 0 == 0
 	install(cc, "false", ATTR_stat | ATTR_cnst | KIND_def, 0, type_bol, intNode(cc, 0));  // 0 != 0
 
-	cc->type_str = install(cc, ".cstr", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, vm_size, type_chr, NULL);
+	cc->type_str = install(cc, ".cstr", ATTR_stat | ATTR_cnst | KIND_typ | CAST_arr, vm_size, type_chr, NULL);
 	if (cc->type_str != NULL) {
-		cc->type_str->init = intNode(cc, -1); // hack: strings are static sized arrays with a length of -1.
+		// arrays without length property are c-like pointers
 		cc->type_str->pfmt = type_fmt_string;
 	}
 }
@@ -438,7 +425,7 @@ static void install_type(ccContext cc, int mode) {
 static void install_emit(ccContext cc, int mode) {
 	rtContext rt = cc->rt;
 
-	cc->emit_opc = install(cc, "emit", EMIT_opc, 0, NULL, NULL);
+	cc->emit_opc = install(cc, "emit", ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, NULL, NULL);
 
 	if (cc->emit_opc && (mode & installEopc) == installEopc) {
 		symn opc, type_p4x;
@@ -452,199 +439,201 @@ static void install_emit(ccContext cc, int mode) {
 		symn type_f64 = cc->type_f64;
 
 		enter(cc);
-		install(cc, "nop", EMIT_opc, opc_nop, type_vid, NULL);
-		install(cc, "not", EMIT_opc, opc_not, type_bol, NULL);
-		install(cc, "set", EMIT_opc, opc_set1, type_vid, intNode(cc, 1));
-		install(cc, "join", EMIT_opc, opc_sync, type_vid, intNode(cc, 1));
-		install(cc, "call", EMIT_opc, opc_call, type_vid, NULL);
+		ccDefOpcode(cc, "nop",  type_vid, opc_nop, 0);
+		ccDefOpcode(cc, "not",  type_bol, opc_not, 0);
+		ccDefOpcode(cc, "set",  type_vid, opc_set1, 1);
+		ccDefOpcode(cc, "join", type_vid, opc_sync, 1);
+		ccDefOpcode(cc, "ret",  type_vid, opc_jmpi, 0);
+		ccDefOpcode(cc, "call", type_vid, opc_call, 0);
 
 		type_p4x = install(cc, "p4x", ATTR_stat | ATTR_cnst | KIND_typ | CAST_val, 16, cc->type_rec, NULL);
 
-		if ((opc = install(cc, "dupp", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
+		if ((opc = install(cc, "dup", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "x1", EMIT_opc, opc_dup1, type_i32, intNode(cc, 0));
-			install(cc, "x2", EMIT_opc, opc_dup2, type_i64, intNode(cc, 0));
-			install(cc, "x4", EMIT_opc, opc_dup4, type_p4x, intNode(cc, 0));
+			ccDefOpcode(cc, "x1", type_i32, opc_dup1, 0);
+			ccDefOpcode(cc, "x2", type_i64, opc_dup2, 0);
+			ccDefOpcode(cc, "x4", type_p4x, opc_dup4, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
-		if ((opc = install(cc, "load", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
+		if ((opc = install(cc, "load", ATTR_stat | ATTR_cnst | KIND_typ, 0, NULL, NULL)) != NULL) {
 			enter(cc);
 			// load zero
-			install(cc, "z32", EMIT_opc, opc_lzx1, type_i32, NULL);
-			install(cc, "z64", EMIT_opc, opc_lzx2, type_i64, NULL);
-			install(cc, "z128", EMIT_opc, opc_lzx4, type_p4x, NULL);
+			ccDefOpcode(cc, "z32",  type_i32, opc_lzx1, 0);
+			ccDefOpcode(cc, "z64",  type_i64, opc_lzx2, 0);
+			ccDefOpcode(cc, "z128", type_p4x, opc_lzx4, 0);
 
-			// load memory
-			install(cc, "i8",   EMIT_opc, opc_ldi1, type_i32, NULL);
-			install(cc, "i16",  EMIT_opc, opc_ldi2, type_i32, NULL);
-			install(cc, "i32",  EMIT_opc, opc_ldi4, type_i32, NULL);
-			install(cc, "i64",  EMIT_opc, opc_ldi8, type_i64, NULL);
-			install(cc, "i128", EMIT_opc, opc_ldiq, type_p4x, NULL);
+			// load memory indirect
+			ccDefOpcode(cc, "i8",   type_i32 , opc_ldi1, 0);
+			ccDefOpcode(cc, "i16",  type_i32 , opc_ldi2, 0);
+			ccDefOpcode(cc, "i32",  type_i32 , opc_ldi4, 0);
+			ccDefOpcode(cc, "i64",  type_i64 , opc_ldi8, 0);
+			ccDefOpcode(cc, "i128", type_p4x , opc_ldiq, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "store", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "i8",   EMIT_opc, opc_sti1, type_vid, NULL);
-			install(cc, "i16",  EMIT_opc, opc_sti2, type_vid, NULL);
-			install(cc, "i32",  EMIT_opc, opc_sti4, type_vid, NULL);
-			install(cc, "i64",  EMIT_opc, opc_sti8, type_vid, NULL);
-			install(cc, "i128", EMIT_opc, opc_stiq, type_vid, NULL);
+			// store memory indirect
+			ccDefOpcode(cc, "i8",   type_vid, opc_sti1, 0);
+			ccDefOpcode(cc, "i16",  type_vid, opc_sti2, 0);
+			ccDefOpcode(cc, "i32",  type_vid, opc_sti4, 0);
+			ccDefOpcode(cc, "i64",  type_vid, opc_sti8, 0);
+			ccDefOpcode(cc, "i128", type_vid, opc_stiq, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "cmt", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {   // complement
 			enter(cc);
-			install(cc, "u32", EMIT_opc, b32_cmt, type_u32, NULL);
-			install(cc, "u64", EMIT_opc, b64_cmt, type_u64, NULL);
+			ccDefOpcode(cc, "u32", type_u32, b32_cmt, 0);
+			ccDefOpcode(cc, "u64", type_u64, b64_cmt, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "and", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "u32", EMIT_opc, b32_and, type_u32, NULL);
-			install(cc, "u64", EMIT_opc, b64_and, type_u64, NULL);
+			ccDefOpcode(cc, "u32", type_u32, b32_and, 0);
+			ccDefOpcode(cc, "u64", type_u64, b64_and, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "or", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "u32", EMIT_opc, b32_ior, type_u32, NULL);
-			install(cc, "u64", EMIT_opc, b64_ior, type_u64, NULL);
+			ccDefOpcode(cc, "u32", type_u32, b32_ior, 0);
+			ccDefOpcode(cc, "u64", type_u64, b64_ior, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "xor", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "u32", EMIT_opc, b32_xor, type_u32, NULL);
-			install(cc, "u64", EMIT_opc, b64_xor, type_u64, NULL);
+			ccDefOpcode(cc, "u32", type_u32, b32_xor, 0);
+			ccDefOpcode(cc, "u64", type_u64, b64_xor, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "shl", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "u32", EMIT_opc, b32_shl, type_u32, NULL);
-			install(cc, "u64", EMIT_opc, b64_shl, type_u64, NULL);
+			ccDefOpcode(cc, "u32", type_u32, b32_shl, 0);
+			ccDefOpcode(cc, "u64", type_u64, b64_shl, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 
 		if ((opc = install(cc, "shr", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "i32", EMIT_opc, b32_sar, type_i32, NULL);
-			install(cc, "i64", EMIT_opc, b64_sar, type_i64, NULL);
-			install(cc, "u32", EMIT_opc, b32_shr, type_u32, NULL);
-			install(cc, "u64", EMIT_opc, b64_shr, type_u64, NULL);
+			ccDefOpcode(cc, "i32", type_i32, b32_sar, 0);
+			ccDefOpcode(cc, "i64", type_i64, b64_sar, 0);
+			ccDefOpcode(cc, "u32", type_u32, b32_shr, 0);
+			ccDefOpcode(cc, "u64", type_u64, b64_shr, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "neg", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "i32", EMIT_opc, i32_neg, type_i32, NULL);
-			install(cc, "i64", EMIT_opc, i64_neg, type_i64, NULL);
-			install(cc, "f32", EMIT_opc, f32_neg, type_f32, NULL);
-			install(cc, "f64", EMIT_opc, f64_neg, type_f64, NULL);
-			install(cc, "p4f", EMIT_opc, v4f_neg, type_p4x, NULL);
-			install(cc, "p2d", EMIT_opc, v2d_neg, type_p4x, NULL);
+			ccDefOpcode(cc, "i32", type_i32, i32_neg, 0);
+			ccDefOpcode(cc, "i64", type_i64, i64_neg, 0);
+			ccDefOpcode(cc, "f32", type_f32, f32_neg, 0);
+			ccDefOpcode(cc, "f64", type_f64, f64_neg, 0);
+			ccDefOpcode(cc, "p4f", type_p4x, v4f_neg, 0);
+			ccDefOpcode(cc, "p2d", type_p4x, v2d_neg, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "add", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "i32", EMIT_opc, i32_add, type_i32, NULL);
-			install(cc, "i64", EMIT_opc, i64_add, type_i64, NULL);
-			install(cc, "f32", EMIT_opc, f32_add, type_f32, NULL);
-			install(cc, "f64", EMIT_opc, f64_add, type_f64, NULL);
-			install(cc, "p4f", EMIT_opc, v4f_add, type_p4x, NULL);
-			install(cc, "p2d", EMIT_opc, v2d_add, type_p4x, NULL);
+			ccDefOpcode(cc, "i32", type_i32, i32_add, 0);
+			ccDefOpcode(cc, "i64", type_i64, i64_add, 0);
+			ccDefOpcode(cc, "f32", type_f32, f32_add, 0);
+			ccDefOpcode(cc, "f64", type_f64, f64_add, 0);
+			ccDefOpcode(cc, "p4f", type_p4x, v4f_add, 0);
+			ccDefOpcode(cc, "p2d", type_p4x, v2d_add, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "sub", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "i32", EMIT_opc, i32_sub, type_i32, NULL);
-			install(cc, "i64", EMIT_opc, i64_sub, type_i64, NULL);
-			install(cc, "f32", EMIT_opc, f32_sub, type_f32, NULL);
-			install(cc, "f64", EMIT_opc, f64_sub, type_f64, NULL);
-			install(cc, "p4f", EMIT_opc, v4f_sub, type_p4x, NULL);
-			install(cc, "p2d", EMIT_opc, v2d_sub, type_p4x, NULL);
+			ccDefOpcode(cc, "i32", type_i32, i32_sub, 0);
+			ccDefOpcode(cc, "i64", type_i64, i64_sub, 0);
+			ccDefOpcode(cc, "f32", type_f32, f32_sub, 0);
+			ccDefOpcode(cc, "f64", type_f64, f64_sub, 0);
+			ccDefOpcode(cc, "p4f", type_p4x, v4f_sub, 0);
+			ccDefOpcode(cc, "p2d", type_p4x, v2d_sub, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "mul", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "i32", EMIT_opc, i32_mul, type_i32, NULL);
-			install(cc, "i64", EMIT_opc, i64_mul, type_i64, NULL);
-			install(cc, "u32", EMIT_opc, u32_mul, type_u32, NULL);
-			install(cc, "u64", EMIT_opc, u64_mul, type_u32, NULL);
-			install(cc, "f32", EMIT_opc, f32_mul, type_f32, NULL);
-			install(cc, "f64", EMIT_opc, f64_mul, type_f64, NULL);
-			install(cc, "p4f", EMIT_opc, v4f_mul, type_p4x, NULL);
-			install(cc, "p2d", EMIT_opc, v2d_mul, type_p4x, NULL);
+			ccDefOpcode(cc, "i32", type_i32, i32_mul, 0);
+			ccDefOpcode(cc, "i64", type_i64, i64_mul, 0);
+			ccDefOpcode(cc, "u32", type_u32, u32_mul, 0);
+			ccDefOpcode(cc, "u64", type_u32, u64_mul, 0);
+			ccDefOpcode(cc, "f32", type_f32, f32_mul, 0);
+			ccDefOpcode(cc, "f64", type_f64, f64_mul, 0);
+			ccDefOpcode(cc, "p4f", type_p4x, v4f_mul, 0);
+			ccDefOpcode(cc, "p2d", type_p4x, v2d_mul, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "div", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "i32", EMIT_opc, i32_div, type_i32, NULL);
-			install(cc, "i64", EMIT_opc, i64_div, type_i64, NULL);
-			install(cc, "u32", EMIT_opc, u32_div, type_u32, NULL);
-			install(cc, "u64", EMIT_opc, u64_div, type_u32, NULL);
-			install(cc, "f32", EMIT_opc, f32_div, type_f32, NULL);
-			install(cc, "f64", EMIT_opc, f64_div, type_f64, NULL);
-			install(cc, "p4f", EMIT_opc, v4f_div, type_p4x, NULL);
-			install(cc, "p2d", EMIT_opc, v2d_div, type_p4x, NULL);
+			ccDefOpcode(cc, "i32", type_i32, i32_div, 0);
+			ccDefOpcode(cc, "i64", type_i64, i64_div, 0);
+			ccDefOpcode(cc, "u32", type_u32, u32_div, 0);
+			ccDefOpcode(cc, "u64", type_u32, u64_div, 0);
+			ccDefOpcode(cc, "f32", type_f32, f32_div, 0);
+			ccDefOpcode(cc, "f64", type_f64, f64_div, 0);
+			ccDefOpcode(cc, "p4f", type_p4x, v4f_div, 0);
+			ccDefOpcode(cc, "p2d", type_p4x, v2d_div, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "mod", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "i32", EMIT_opc, i32_mod, type_i32, NULL);
-			install(cc, "i64", EMIT_opc, i64_mod, type_i64, NULL);
-			install(cc, "u32", EMIT_opc, u32_mod, type_u32, NULL);
-			install(cc, "u64", EMIT_opc, u64_mod, type_u32, NULL);
-			install(cc, "f32", EMIT_opc, f32_mod, type_f32, NULL);
-			install(cc, "f64", EMIT_opc, f64_mod, type_f64, NULL);
+			ccDefOpcode(cc, "i32", type_i32, i32_mod, 0);
+			ccDefOpcode(cc, "i64", type_i64, i64_mod, 0);
+			ccDefOpcode(cc, "u32", type_u32, u32_mod, 0);
+			ccDefOpcode(cc, "u64", type_u32, u64_mod, 0);
+			ccDefOpcode(cc, "f32", type_f32, f32_mod, 0);
+			ccDefOpcode(cc, "f64", type_f64, f64_mod, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "ceq", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "i32", EMIT_opc, i32_ceq, type_bol, NULL);
-			install(cc, "i64", EMIT_opc, i64_ceq, type_bol, NULL);
-			install(cc, "f32", EMIT_opc, f32_ceq, type_bol, NULL);
-			install(cc, "f64", EMIT_opc, f64_ceq, type_bol, NULL);
-			install(cc, "p4f", EMIT_opc, v4f_ceq, type_bol, NULL);
-			install(cc, "p2d", EMIT_opc, v2d_ceq, type_bol, NULL);
+			ccDefOpcode(cc, "i32", type_bol, i32_ceq, 0);
+			ccDefOpcode(cc, "i64", type_bol, i64_ceq, 0);
+			ccDefOpcode(cc, "f32", type_bol, f32_ceq, 0);
+			ccDefOpcode(cc, "f64", type_bol, f64_ceq, 0);
+			ccDefOpcode(cc, "p4f", type_bol, v4f_ceq, 0);
+			ccDefOpcode(cc, "p2d", type_bol, v2d_ceq, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "clt", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "i32", EMIT_opc, i32_clt, type_bol, NULL);
-			install(cc, "i64", EMIT_opc, i64_clt, type_bol, NULL);
-			install(cc, "u32", EMIT_opc, u32_clt, type_bol, NULL);
-			install(cc, "u64", EMIT_opc, u64_clt, type_bol, NULL);
-			install(cc, "f32", EMIT_opc, f32_clt, type_bol, NULL);
-			install(cc, "f64", EMIT_opc, f64_clt, type_bol, NULL);
+			ccDefOpcode(cc, "i32", type_bol, i32_clt, 0);
+			ccDefOpcode(cc, "i64", type_bol, i64_clt, 0);
+			ccDefOpcode(cc, "u32", type_bol, u32_clt, 0);
+			ccDefOpcode(cc, "u64", type_bol, u64_clt, 0);
+			ccDefOpcode(cc, "f32", type_bol, f32_clt, 0);
+			ccDefOpcode(cc, "f64", type_bol, f64_clt, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "cgt", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "i32", EMIT_opc, i32_cgt, type_bol, NULL);
-			install(cc, "i64", EMIT_opc, i64_cgt, type_bol, NULL);
-			install(cc, "u32", EMIT_opc, u32_cgt, type_bol, NULL);
-			install(cc, "u64", EMIT_opc, u64_cgt, type_bol, NULL);
-			install(cc, "f32", EMIT_opc, f32_cgt, type_bol, NULL);
-			install(cc, "f64", EMIT_opc, f64_cgt, type_bol, NULL);
+			ccDefOpcode(cc, "i32", type_bol, i32_cgt, 0);
+			ccDefOpcode(cc, "i64", type_bol, i64_cgt, 0);
+			ccDefOpcode(cc, "u32", type_bol, u32_cgt, 0);
+			ccDefOpcode(cc, "u64", type_bol, u64_cgt, 0);
+			ccDefOpcode(cc, "f32", type_bol, f32_cgt, 0);
+			ccDefOpcode(cc, "f64", type_bol, f64_cgt, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "min", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "p4f", EMIT_opc, v4f_min, type_p4x, NULL);
-			install(cc, "p2d", EMIT_opc, v2d_min, type_p4x, NULL);
+			ccDefOpcode(cc, "p4f", type_p4x, v4f_min, 0);
+			ccDefOpcode(cc, "p2d", type_p4x, v2d_min, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = install(cc, "max", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
 			enter(cc);
-			install(cc, "p4f", EMIT_opc, v4f_max, type_p4x, NULL);
-			install(cc, "p2d", EMIT_opc, v2d_max, type_p4x, NULL);
+			ccDefOpcode(cc, "p4f", type_p4x, v4f_max, 0);
+			ccDefOpcode(cc, "p2d", type_p4x, v2d_max, 0);
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
 		}
 		if ((opc = type_p4x) != NULL) {
 			enter(cc);
-			install(cc, "dp3", EMIT_opc, v4f_dp3, type_f32, NULL);
-			install(cc, "dp4", EMIT_opc, v4f_dp4, type_f32, NULL);
-			install(cc, "dph", EMIT_opc, v4f_dph, type_f32, NULL);
+			ccDefOpcode(cc, "dp3", type_f32, v4f_dp3, 0);
+			ccDefOpcode(cc, "dp4", type_f32, v4f_dp4, 0);
+			ccDefOpcode(cc, "dph", type_f32, v4f_dph, 0);
 			if ((mode & installEswz) == installEswz) {
 				unsigned i;
-				struct { char *name; astn node; } swz[256];
-				for (i = 0; i < lengthOf(swz); i += 1) {
+				for (i = 0; i < 256; i += 1) {
+					char *name;
 					if (rt->_end - rt->_beg < 5) {
 						fatal(ERR_MEMORY_OVERRUN);
 						return;
@@ -654,11 +643,8 @@ static void install_emit(ccContext cc, int mode) {
 					rt->_beg[2] = (unsigned char) "xyzw"[(i >> 4) & 3];
 					rt->_beg[3] = (unsigned char) "xyzw"[(i >> 6) & 3];
 					rt->_beg[4] = 0;
-					swz[i].name = mapstr(cc, (char*)rt->_beg, -1, -1);
-					swz[i].node = intNode(cc, i);
-				}
-				for (i = 0; i < lengthOf(swz); i += 1) {
-					install(cc, swz[i].name, EMIT_opc, p4x_swz, type_p4x, swz[i].node);
+					name = mapstr(cc, (char*)rt->_beg, -1, -1);
+					ccDefOpcode(cc, name, type_p4x, p4x_swz, i);
 				}
 			}
 			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
@@ -682,38 +668,40 @@ static void install_emit(ccContext cc, int mode) {
 static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 	int error = 0;
 	ccContext cc = rt->cc;
+	symn field;
 
 	// !!! halt must be the first native call.
-	error = error || !ccDefCall(rt, onHalt ? onHalt : haltDummy, "void halt()");
+	error = error || !ccDefCall(cc, onHalt ? onHalt : haltDummy, "void halt()");
 
 	// 4 reflection
 	if (cc->type_rec != NULL && cc->type_var != NULL) {
-		symn arg = NULL;
 		enter(cc);
 
-		if ((arg = install(cc, "size", ATTR_cnst | KIND_var, vm_size, cc->type_i32, NULL))) {
-			arg->offs = offsetOf(symn, size);
+		if ((field = install(cc, "size", ATTR_cnst | KIND_var, vm_size, cc->type_i32, NULL))) {
+			field->offs = offsetOf(symn, size);
 		}
 		else {
 			error = 1;
 		}
 
-		if ((arg = install(cc, "offset", ATTR_cnst | KIND_var, vm_size, cc->type_i32, NULL))) {
-			arg->offs = offsetOf(symn, offs);
-			arg->pfmt = "@%06x";
+		if ((field = install(cc, "offset", ATTR_cnst | KIND_var, vm_size, cc->type_i32, NULL))) {
+			field->offs = offsetOf(symn, offs);
+			field->pfmt = "@%06x";
 		}
 		else {
 			error = 1;
 		}
 
-		// HACK: `operator(typename type).file = typename.file(type);`
-		error = error || !ccDefMember(rt, typenameGetField, type_get_file);
-		// HACK: `operator(typename type).line = typename.line(type);`
-		error = error || !ccDefMember(rt, typenameGetField, type_get_line);
-		// HACK: `operator(typename type).name = typename.name(type);`
-		error = error || !ccDefMember(rt, typenameGetField, type_get_name);
-
-		error = error || !ccDefCall(rt, typenameGetField, type_get_base);
+		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_file));
+		if (field != NULL) {// hack: change return type from pointer to string
+			field->params->type = cc->type_str;
+		}
+		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_line));
+		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_name));
+		if (field != NULL) {// hack: change return type from pointer to string
+			field->params->type = cc->type_str;
+		}
+		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_base));
 
 		/* TODO: more 4 reflection
 		error = error || !ccDefCall(rt, typenameReflect, "variant lookup(variant &obj, int options, string name, variant args...)");
@@ -776,59 +764,66 @@ ccContext ccInit(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)) {
 }
 
 /// Begin a namespace; @see rtContext.api.ccBegin
-symn ccBegin(rtContext rt, const char *name) {
+symn ccBegin(ccContext cc, const char *name) {
 	symn result = NULL;
-	if (rt->cc == NULL) {
+	if (cc == NULL) {
 		trace(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
 	if (name != NULL) {
-		result = install(rt->cc, name, ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, rt->cc->type_vid, NULL);
+		result = install(cc, name, ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, cc->type_vid, NULL);
 	}
-	enter(rt->cc);
+	enter(cc);
 	return result;
 }
 
 /// Close a namespace; @see rtContext.api.ccEnd
-symn ccEnd(rtContext rt, symn cls) {
-	if (rt->cc == NULL) {
+symn ccEnd(ccContext cc, symn cls) {
+	if (cc == NULL) {
 		trace(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
-	return leave(rt->cc, cls, ATTR_stat | KIND_typ, vm_size, NULL);
+	return leave(cc, cls, ATTR_stat | KIND_typ, vm_size, NULL);
 }
 
 /// Declare int constant; @see rtContext.api.ccDefInt
-symn ccDefInt(rtContext rt, const char *name, int64_t value) {
-	if (!rt || !rt->cc || !name) {
+symn ccDefInt(ccContext cc, const char *name, int64_t value) {
+	if (!cc || !name) {
+		trace(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
-	name = mapstr(rt->cc, name, -1, -1);
-	return install(rt->cc, name, KIND_def | CAST_i32, 0, rt->cc->type_i32, intNode(rt->cc, value));
+	name = mapstr(cc, name, -1, -1);
+	return install(cc, name, KIND_def | CAST_i32, 0, cc->type_i32, intNode(cc, value));
 }
 /// Declare float constant; @see rtContext.api.ccDefFlt
-symn ccDefFlt(rtContext rt, const char *name, double value) {
-	if (!rt || !rt->cc || !name) {
+symn ccDefFlt(ccContext cc, const char *name, double value) {
+	if (!cc || !name) {
+		trace(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
-	name = mapstr(rt->cc, name, -1, -1);
-	return install(rt->cc, name, KIND_def | CAST_f64, 0, rt->cc->type_f64, fltNode(rt->cc, value));
+	name = mapstr(cc, name, -1, -1);
+	return install(cc, name, KIND_def | CAST_f64, 0, cc->type_f64, fltNode(cc, value));
 }
 /// Declare string constant; @see rtContext.api.ccDefStr
-symn ccDefStr(rtContext rt, const char *name, char *value) {
-	if (!rt || !rt->cc || !name) {
+symn ccDefStr(ccContext cc, const char *name, char *value) {
+	if (!cc || !name) {
+		trace(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
-	name = mapstr(rt->cc, name, -1, -1);
+	name = mapstr(cc, name, -1, -1);
 	if (value != NULL) {
-		value = mapstr(rt->cc, value, -1, -1);
+		value = mapstr(cc, value, -1, -1);
 	}
-	return install(rt->cc, name, KIND_def | CAST_ref, 0, rt->cc->type_str, strNode(rt->cc, value));
+	return install(cc, name, KIND_def | CAST_ref, 0, cc->type_str, strNode(cc, value));
 }
 
 /// Install a type; @see rtContext.api.ccDefType
-symn ccDefType(rtContext rt, const char *name, unsigned size, int refType) {
-	return install(rt->cc, name, ATTR_stat | ATTR_cnst | KIND_typ | (refType ? CAST_ref : CAST_val), size, rt->cc->type_rec, NULL);
+symn ccDefType(ccContext cc, const char *name, unsigned size, int refType) {
+	if (!cc || !name) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	return install(cc, name, ATTR_stat | ATTR_cnst | KIND_typ | (refType ? CAST_ref : CAST_val), size, cc->type_rec, NULL);
 }
 
 /// Find symbol by name; @see header

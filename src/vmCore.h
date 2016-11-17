@@ -4,7 +4,7 @@
 #ifndef VM_CORE_H
 #define VM_CORE_H
 
-#include "cimpl.h"
+#include "cmpl.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,11 +52,10 @@ typedef union {		// on stack value type
 	uint64_t	u8;
 	float32_t	f4;
 	float64_t	f8;
-	//size_t		sz;
 	int32_t		rel:24;
 	struct {int32_t data; uint32_t length;} arr;	// slice
-	struct {int32_t value; int32_t type;} var;	// variant
-	struct {int32_t func; int32_t vars;} del;	// delegate
+	struct {int32_t data; int32_t type;} var;	// variant
+	struct {int32_t data; } ref;	// reference
 } stkval;
 
 /// Abstract Syntax Tree Node
@@ -228,7 +227,7 @@ int fixjump(rtContext, int src, int dst, int stc);
 /**
  * print stack trace
  */
-void logTrace(dbgContext rt, FILE *out, int indent, int startLevel, int traceLevel);
+void traceCalls(dbgContext dbg, FILE *out, int indent, size_t skip, size_t );
 
 /**
  * @brief Print formatted text to the output stream.

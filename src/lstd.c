@@ -235,27 +235,28 @@ static inline size_t argpos(size_t *argp, size_t size) {
 	return result;
 }
 
-#define debugFILE(msg, ...) //do { prerr("debug:File", msg, ##__VA_ARGS__); } while(0)
+#define debugFILE(msg, ...) //do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
 
-static const char *const proto_file_open = "File Open(char path[*])";
-static const char *const proto_file_create = "File Create(char path[*])";
-static const char *const proto_file_append = "File Append(char path[*])";
+static const char *const proto_file = "File";
+static const char *const proto_file_open = "File open(char path[*])";
+static const char *const proto_file_create = "File create(char path[*])";
+static const char *const proto_file_append = "File append(char path[*])";
 
-static const char *const proto_file_peek_byte = "int Peek(File file)";
-static const char *const proto_file_read_byte = "int Read(File file)";
-static const char *const proto_file_read_buff = "int Read(File file, uint8 buff[])";
-static const char *const proto_file_read_line = "int ReadLine(File file, uint8 buff[])";
+static const char *const proto_file_peek_byte = "int peek(File file)";
+static const char *const proto_file_read_byte = "int read(File file)";
+static const char *const proto_file_read_buff = "int read(File file, uint8 buff[])";
+static const char *const proto_file_read_line = "int readLine(File file, uint8 buff[])";
 
-static const char *const proto_file_write_byte = "int Write(File file, uint8 byte)";
-static const char *const proto_file_write_buff = "int Write(File file, uint8 buff[])";
+static const char *const proto_file_write_byte = "int write(File file, uint8 byte)";
+static const char *const proto_file_write_buff = "int write(File file, uint8 buff[])";
 
-static const char *const proto_file_flush = "void Flush(File file)";
-static const char *const proto_file_close = "void Close(File file)";
+static const char *const proto_file_flush = "void flush(File file)";
+static const char *const proto_file_close = "void close(File file)";
 
-static const char *const proto_file_get_stdin = "File StdIn";
-static const char *const proto_file_get_stdout = "File StdOut";
-static const char *const proto_file_get_stderr = "File StdErr";
-static const char *const proto_file_get_dbgout = "File DbgOut";
+static const char *const proto_file_get_stdin = "File in";
+static const char *const proto_file_get_stdout = "File out";
+static const char *const proto_file_get_stderr = "File err";
+static const char *const proto_file_get_dbgout = "File dbg";
 
 static vmError FILE_open(nfcContext args) {       // File Open(char filename[]);
 	size_t argc = 0;
@@ -272,8 +273,8 @@ static vmError FILE_open(nfcContext args) {       // File Open(char filename[]);
 	}
 	FILE *file = fopen(name, mode);
 	rethnd(args, file);
-	debugFILE("Name: %s, Mode: %s, File: %x", name, mode, file);
-	return file == NULL ? noError : libCallAbort;
+	debugFILE("Name: '%s', Mode: '%s', File: %x", name, mode, file);
+	return file != NULL ? noError : libCallAbort;
 }
 static vmError FILE_close(nfcContext args) {      // void close(File file);
 	FILE *file = arghnd(args, 0);
@@ -498,7 +499,7 @@ static vmError sysRaise(nfcContext args) {
 
 	// print stack trace skipping this function
 	if (rt->dbg != NULL && maxTrace > 0) {
-		logTrace(rt->dbg, NULL, 1, 0, maxTrace);
+		traceCalls(rt->dbg, NULL, 1, 0, maxTrace);
 	}
 
 	// abort the execution
@@ -522,9 +523,9 @@ static vmError sysTryExec(nfcContext args) {
 		#pragma pack(pop)
 		if (dbg != NULL) {
 			int oldValue = dbg->checked;
-			dbg->checked = 1;
+			*(int*)&dbg->checked = 1;
 			result = invoke(rt, action, NULL, &cbArg, args->extra);
-			dbg->checked = oldValue;
+			*(int*)&dbg->checked = oldValue;
 		}
 		else {
 			result = invoke(rt, action, NULL, &cbArg, NULL);
@@ -559,8 +560,7 @@ static vmError sysMemSet(nfcContext rt) {
 }
 //#}#endregion
 
-int ccLibStdc(rtContext rt) {
-	ccContext cc = rt->cc;
+int ccLibStdc(ccContext cc) {
 	symn nsp = NULL;		// namespace
 	int err = 0;
 	size_t i;
@@ -628,22 +628,27 @@ int ccLibStdc(rtContext rt) {
 	};
 
 	for (i = 0; i < lengthOf(constants); i += 1) {
-		if (!ccDefInt(rt, constants[i].name, constants[i].value)) {
+		if (!ccDefInt(cc, constants[i].name, constants[i].value)) {
 			err = 1;
 			break;
 		}
 	}
 
 	if (!err && cc->type_var != NULL) {		// debug, trace, assert, fatal, ...
-		cc->libc_dbg = ccDefCall(rt, sysRaise, "void raise(int level, char message[*], variant inspect, int maxTrace)");
-		cc->libc_dbg_idx = cc->libc_dbg->offs;
+		cc->libc_dbg = ccDefCall(cc, sysRaise, "void raise(int level, char message[*], variant inspect, int maxTrace)");
 		if (cc->libc_dbg == NULL) {
 			err = 2;
+		}
+		if (cc->native != NULL) {
+			libc lastNative = (libc) cc->native->data;
+			if (lastNative && lastNative->sym == cc->libc_dbg) {
+				lastNative->in += 2;
+			}
 		}
 		if (!err && cc->libc_dbg) {
 			enter(cc);
 			for (i = 0; i < lengthOf(logLevels); i += 1) {
-				if (!ccDefInt(rt, logLevels[i].name, logLevels[i].value)) {
+				if (!ccDefInt(cc, logLevels[i].name, logLevels[i].value)) {
 					err = 1;
 					break;
 				}
@@ -654,28 +659,28 @@ int ccLibStdc(rtContext rt) {
 	}
 
 	if (!err && cc->type_ptr != NULL) {		// tryExecute
-		if(!ccDefCall(rt, sysTryExec, "int tryExec(pointer args, void action(pointer args))")) {
+		if(!ccDefCall(cc, sysTryExec, "int tryExec(pointer args, void action(pointer args))")) {
 			err = 2;
 		}
 	}
 
 	if (!err && cc->type_ptr != NULL) {		// realloc, malloc, free, memset, memcpy
-		if(!ccDefCall(rt, sysMemMgr, "pointer memmgr(pointer ptr, int32 size)")) {
+		if(!ccDefCall(cc, sysMemMgr, "pointer memmgr(pointer ptr, int32 size)")) {
 			err = 3;
 		}
-		if(!ccDefCall(rt, sysMemSet, "pointer memset(pointer dest, int value, int32 size)")) {
+		if(!ccDefCall(cc, sysMemSet, "pointer memset(pointer dest, int value, int32 size)")) {
 			err = 3;
 		}
-		if(!ccDefCall(rt, sysMemCpy, "pointer memcpy(pointer dest, pointer src, int32 size)")) {
+		if(!ccDefCall(cc, sysMemCpy, "pointer memcpy(pointer dest, pointer src, int32 size)")) {
 			err = 3;
 		}
 	}
 
-	// System.Exit(int code), ...
+	// System.exit(int code), ...
 	if (!err && (nsp = install(cc, "System", ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, cc->type_vid, NULL))) {
 		enter(cc);
 		for (i = 0; i < lengthOf(misc); i += 1) {
-			if (!ccDefCall(rt, misc[i].fun, misc[i].def)) {
+			if (!ccDefCall(cc, misc[i].fun, misc[i].def)) {
 				err = 4;
 				break;
 			}
@@ -689,7 +694,7 @@ int ccLibStdc(rtContext rt) {
 	if (!err && cc->type_u32 != NULL) {
 		enter(cc);
 		for (i = 0; i < lengthOf(bit32); i += 1) {
-			if (!ccDefCall(rt, bit32[i].fun, bit32[i].def)) {
+			if (!ccDefCall(cc, bit32[i].fun, bit32[i].def)) {
 				err = 5;
 				break;
 			}
@@ -701,7 +706,7 @@ int ccLibStdc(rtContext rt) {
 	if (!err && cc->type_u64 != NULL) {
 		enter(cc);
 		for (i = 0; i < lengthOf(bit64); i += 1) {
-			if (!ccDefCall(rt, bit64[i].fun, bit64[i].def)) {
+			if (!ccDefCall(cc, bit64[i].fun, bit64[i].def)) {
 				err = 5;
 				break;
 			}
@@ -710,10 +715,10 @@ int ccLibStdc(rtContext rt) {
 		cc->type_u64->fields = leave(cc, cc->type_u64, ATTR_stat | KIND_typ, 0, NULL);
 	}
 	// add math functions to float32
-	if (!err && rt->cc->type_f32 != NULL) {
+	if (!err && cc->type_f32 != NULL) {
 		enter(cc);
 		for (i = 0; i < lengthOf(flt32); i += 1) {
-			if (!ccDefCall(rt, flt32[i].fun, flt32[i].def)) {
+			if (!ccDefCall(cc, flt32[i].fun, flt32[i].def)) {
 				err = 7;
 				break;
 			}
@@ -725,7 +730,7 @@ int ccLibStdc(rtContext rt) {
 	if (!err && cc->type_f64 != NULL) {
 		enter(cc);
 		for (i = 0; i < lengthOf(flt64); i += 1) {
-			if (!ccDefCall(rt, flt64[i].fun, flt64[i].def)) {
+			if (!ccDefCall(cc, flt64[i].fun, flt64[i].def)) {
 				err = 6;
 				break;
 			}
@@ -736,34 +741,34 @@ int ccLibStdc(rtContext rt) {
 	return err;
 }
 
-int ccLibFile(rtContext rt) {
-	symn file_nsp = ccDefType(rt, "File", sizeof(FILE*), 0);
-	int err = file_nsp == NULL;
+int ccLibFile(ccContext cc) {
+	symn type = ccDefType(cc, proto_file, sizeof(FILE*), 0);
+	int err = type == NULL;
 
-	if (file_nsp != NULL) {
-		enter(rt->cc);
+	if (type != NULL) {
+		enter(cc);
 
-		err = err || !ccDefCall(rt, FILE_open, proto_file_open);
-		err = err || !ccDefCall(rt, FILE_open, proto_file_create);
-		err = err || !ccDefCall(rt, FILE_open, proto_file_append);
+		err = err || !ccDefCall(cc, FILE_open, proto_file_open);
+		err = err || !ccDefCall(cc, FILE_open, proto_file_create);
+		err = err || !ccDefCall(cc, FILE_open, proto_file_append);
 
-		err = err || !ccDefCall(rt, FILE_peek, proto_file_peek_byte);
-		err = err || !ccDefCall(rt, FILE_getc, proto_file_read_byte);
-		err = err || !ccDefCall(rt, FILE_read, proto_file_read_buff);
-		err = err || !ccDefCall(rt, FILE_gets, proto_file_read_line);
+		err = err || !ccDefCall(cc, FILE_peek, proto_file_peek_byte);
+		err = err || !ccDefCall(cc, FILE_getc, proto_file_read_byte);
+		err = err || !ccDefCall(cc, FILE_read, proto_file_read_buff);
+		err = err || !ccDefCall(cc, FILE_gets, proto_file_read_line);
 
-		err = err || !ccDefCall(rt, FILE_putc, proto_file_write_byte);
-		err = err || !ccDefCall(rt, FILE_write, proto_file_write_buff);
+		err = err || !ccDefCall(cc, FILE_putc, proto_file_write_byte);
+		err = err || !ccDefCall(cc, FILE_write, proto_file_write_buff);
 
-		err = err || !ccDefCall(rt, FILE_flush, proto_file_flush);
-		err = err || !ccDefCall(rt, FILE_close, proto_file_close);
+		err = err || !ccDefCall(cc, FILE_flush, proto_file_flush);
+		err = err || !ccDefCall(cc, FILE_close, proto_file_close);
 
-		err = err || !ccDefCall(rt, FILE_stream, proto_file_get_stdin);
-		err = err || !ccDefCall(rt, FILE_stream, proto_file_get_stdout);
-		err = err || !ccDefCall(rt, FILE_stream, proto_file_get_stderr);
-		err = err || !ccDefCall(rt, FILE_stream, proto_file_get_dbgout);
+		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_stdin);
+		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_stdout);
+		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_stderr);
+		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_dbgout);
 
-		file_nsp->fields = leave(rt->cc, file_nsp, ATTR_stat | KIND_typ, 0, NULL);
+		type->fields = leave(cc, type, ATTR_stat | KIND_typ, 0, NULL);
 	}
 
 	return err;

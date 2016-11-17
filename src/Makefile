@@ -43,7 +43,7 @@ OBJS=\
 #~ OBJECTS=$(SOURCES:.cpp=.o)
 
 build:$(OBJDIR) $(OBJS)
-	cc $(ARH) -o $(BINDIR)/cimpl $(OBJS) $(LIBS)
+	cc $(ARH) -o $(BINDIR)/cmpl $(OBJS) $(LIBS)
 
 $(OBJDIR):
 	$(MKDIR) "$(OBJDIR)"

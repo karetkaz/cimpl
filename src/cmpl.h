@@ -114,24 +114,21 @@ struct rtContextRec {
 	 */
 	struct {
 		/// Begin a namespace; @see Core#ccBegin
-		symn (*const ccBegin)(rtContext, const char *name);
+		symn (*const ccBegin)(ccContext, const char *name);
 		/// Close a namespace; @see Core#ccEnd
-		void (*const ccEnd)(rtContext, symn cls);
+		void (*const ccEnd)(ccContext, symn cls);
 
 		/// Declare int constant; @see Core#ccDefInt
-		symn (*const ccDefInt)(rtContext, const char *name, int64_t value);
+		symn (*const ccDefInt)(ccContext, const char *name, int64_t value);
 		/// Declare float constant; @see Core#ccDefFlt
-		symn (*const ccDefFlt)(rtContext, const char *name, float64_t value);
+		symn (*const ccDefFlt)(ccContext, const char *name, float64_t value);
 		/// Declare string constant; @see Core#ccDefStr
-		symn (*const ccDefStr)(rtContext, const char *name, char *value);
+		symn (*const ccDefStr)(ccContext, const char *name, char *value);
 
 		/// Declare a typename; @see Core#ccDefType
-		symn (*const ccDefType)(rtContext, const char *name, unsigned size, int refType);
+		symn (*const ccDefType)(ccContext, const char *name, unsigned size, int refType);
 		/// Declare a native function; @see Core#ccDefCall
-		symn (*const ccDefCall)(rtContext, vmError libc(nfcContext), void *extra, const char *proto);
-
-		/// Compile file or text; @see Core#ccAddUnit
-		int (*const ccAddUnit)(rtContext, int warn, char *file, int line, char *code);
+		symn (*const ccDefCall)(ccContext, vmError libc(nfcContext), void *extra, const char *proto);
 
 		/// Lookup symbol by offset; @see Core#rtFindSym
 		symn (*const rtFindSym)(rtContext, void *ptr);
@@ -157,9 +154,9 @@ struct rtContextRec {
  */
 struct nfcContextRec {
 	const rtContext rt;         // runtime context
-	const char * const proto;   // static data for function (passed on install)
-	const void *extra;          // extra data for function (passed to execute or invoke)
-	const stkptr args;          // arguments for function
+	const char * const proto;   // static data (passed to install)
+	const void *extra;          // extra data (passed to invoke)
+	const stkptr args;          // arguments
 	const int argc;             // argument count
 };
 

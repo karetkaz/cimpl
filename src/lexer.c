@@ -366,7 +366,7 @@ static const struct {
 	{"const",    CONST_kwd},
 	{"continue", STMT_con},
 	{"else",     ELSE_kwd},
-	{"emit",     EMIT_kwd},
+	{"emit",     EMIT_kwd},  // used for direct lookup
 	{"enum",     ENUM_kwd},
 	{"for",      STMT_for},
 	{"if",       STMT_if},
@@ -1025,7 +1025,19 @@ static ccToken readTok(ccContext cc, astn tok) {
 				}
 			}
 			if (cmp == 0) {
-				tok->kind = keywords[hi].type;
+				switch (keywords[hi].type) {
+					default:
+						tok->kind = keywords[hi].type;
+						break;
+
+					case EMIT_kwd:
+						tok->kind = TOKEN_var;
+						tok->type = cc->emit_opc;
+						tok->ref.link = cc->emit_opc;
+						tok->ref.hash = rehash(beg, ptr - beg) % TBL_SIZE;
+						tok->ref.name = mapstr(cc, beg, ptr - beg, tok->ref.hash);
+						break;
+				}
 			}
 			else {
 				tok->kind = TOKEN_var;
@@ -1230,7 +1242,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 				else {
 					error(cc->rt, tok->file, tok->line, ERR_INVALID_SUFFIX, suffix);
 					tok->kind = TOKEN_any;
-					cast = TYPE_any;
+					cast = CAST_any;
 				}
 			}
 

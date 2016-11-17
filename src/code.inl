@@ -7,7 +7,7 @@
  * }
  * STOP(__ERR, __CHK, __ERC)
  * EXEC if execution is needed.
- * TRACE(__SP, __CALLER, __CALLEE) trace functions.
+ * TRACE(__CALLEE) trace functions.
  *
  *
  *
@@ -20,38 +20,40 @@
 //#{ 0x0?: SYS		// System
 case opc_nop:  NEXT(1, 0, 0) {
 } break;
-case opc_nfc:  NEXT(4, libcvec[ip->rel].out - libcvec[ip->rel].in, libcvec[ip->rel].in) {
+case opc_nfc:  NEXT(4, 0, 0) {
+	vmError nfcError;
+	libc nfc = libcvec[ip->rel];
+	NEXT(0, nfc->out - nfc->in, nfc->in);
 #ifdef EXEC
-	vmError libcError;
-	libc nfc = &libcvec[ip->rel];
 	struct nfcContextRec args = {
 		.rt = rt,
 		.extra = extra,
 		.proto = nfc->proto,
 		.args = sp,
-		.argc = libcvec[ip->rel].in,
+		.argc = nfc->in,
 	};
 
-	TRACE(sp, ip, nfc);
-	libcError = nfc->call(&args);
-	TRACE(sp, ip, (void*)-1);
+	TRACE(nfc->sym->offs);
+	nfcError = nfc->call(&args);
+	TRACE((size_t)-1);
 
-	STOP(error_libc, libcError != 0, libcError);
+	STOP(error_libc, nfcError != noError, nfcError);
 	STOP(stop_vm, ip->rel == 0, 0);			// Halt();
 #endif
 } break;
 case opc_call: NEXT(1, +1, 0) {
 #ifdef EXEC
 	size_t ret = pu->ip - mp;
-	pu->ip = mp + SP(0, u4);
-	SP(0, u4) = (uint32_t)ret;
-	TRACE(sp, ip, pu->ip);
+	size_t fun = SP(0, u4);
+	pu->ip = mp + fun;
+	SP(0, u4) = ret;
+	TRACE(fun);
 #endif
 } break;
 case opc_jmpi: NEXT(1, -1, 1) {
 #ifdef EXEC
 	pu->ip = mp + SP(0, u4);
-	TRACE(sp, ip, (void*)-1);
+	TRACE((size_t)-1);
 #endif
 } break;
 case opc_jmp:  NEXT(4, -0, 0) {

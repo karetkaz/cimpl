@@ -1,85 +1,12 @@
 #include <time.h>
 #include <stddef.h>
 #include "internal.h"
+#include "cmpl.h"
 
 // default values
 static const int wl = 15;           // default warning level
 static char mem[8 << 20];           // 8MB runtime memory
 const char *STDLIB = "stdlib.cvx";  // standard library
-const char *USAGE = "cimpl [global options] [files with options]..."
-"\n"
-"\n<global options>:"
-"\n"
-"\n  -std<file>            specify custom standard library file (empty file name disables std library compilation)."
-"\n"
-"\n  -mem<int>[kKmMgG]     override memory usage for compiler and runtime(heap)"
-"\n"
-"\n  -log[*] <file>        set logger for: compilation errors and warnings, runtime debug messages"
-"\n    /a                  append to the log file"
-"\n"
-"\n  -dump[?] <file>       set output for: dump(symbols, assembly, abstract syntax tree, coverage, call tree)"
-"\n    .scite              dump api for SciTE text editor"
-"\n    .json               dump api in javascript object notation format"
-"\n"
-"\n  -api[*]               dump symbols"
-"\n    /a                  include builtin symbols"
-"\n    /m                  dump main"
-"\n    /d                  dump details"
-"\n    /p                  dump params and fields"
-"\n    /u                  dump usages"
-"\n"
-"\n  -asm[*]               dump assembled code"
-"\n    /a                  use global address: (@0x003d8c)"
-"\n    /n                  prefer names over addresses: <main+80>"
-"\n    /s                  print source code statements"
-"\n"
-"\n  -ast[*]               dump syntax tree"
-"\n    /l                  do not expand statements (print on single line)"
-"\n    /b                  don't keep braces ('{') on the same line"
-"\n    /e                  don't keep `else if` constructs on the same line"
-"\n"
-"\n  -run                  run without: debug information, stacktrace, bounds checking, ..."
-"\n"
-"\n  -debug[*]             run with attached debugger, pausing on uncaught errors and break points"
-"\n    /s                  pause on startup"
-"\n    /a                  pause on caught errors"
-"\n    /[l|L]              print cause of caught errors (/L includes stack trace)"
-"\n    /[g|G]              dump global variable values (/G includes function values)"
-"\n    /[h|H]              dump allocated heap memory chunks (/H includes static chunks)"
-"\n    /[p|P]              dump function statistics (/P includes statement statistics)"
-"\n"
-"\n  -profile[*]           run code with profiler: coverage, method tracing"
-"\n    /t                  dump call tree"
-"\n    /[g|G]              dump global variable values (/G includes function values)"
-"\n    /[h|H]              dump allocated heap memory chunks (/H includes static chunks)"
-"\n    /[p|P]              dump function statistics (/P includes statement statistics)"
-"\n"
-"\n<files with options>: filename followed by switches"
-"\n  <file>                if file extension is (.so|.dll) load as library else compile"
-"\n  -w[a|x|<int>]         set or disable warning level for current file"
-"\n  -b[*]<int>            break point on <int> line in current file"
-"\n    /[l|L]              print only, do not pause (L includes stack trace)"
-"\n    /o                  one shot breakpoint, disable after first hit"
-"\n"
-"\nexamples:"
-"\n"
-"\n>app -dump.json api.json"
-"\n    dump builtin symbols to `api.json` file (types, functions, variables, aliases)"
-"\n"
-"\n>app -run test.tracing.ccc"
-"\n    compile and execute the file `test.tracing.ccc`"
-"\n"
-"\n>app -debug gl.so -w0 gl.ccc -w0 test.ccc -wx -b12 -b15 -b/t19"
-"\n    execute in debug mode"
-"\n    import `gl.so`"
-"\n        with no warnings"
-"\n    compile `gl.ccc`"
-"\n        with no warnings"
-"\n    compile `test.ccc`"
-"\n        treating all warnings as errors"
-"\n        break execution on lines 12 and 15"
-"\n        print message when line 19 is hit"
-"\n";
 
 static inline int strEquals(const char *str, const char *with) {
 	return strcmp(str, with) == 0;
@@ -174,6 +101,8 @@ enum {
 };
 struct userContextRec {
 	rtContext rt;
+	FILE *in;
+
 	FILE *out;
 	int indent;
 
@@ -213,8 +142,157 @@ struct userContextRec {
 	int dbgOnCaught;    // on caught exception: dbg_xxx
 };
 
+static void dumpAstXML(FILE *out, const char **esc, astn ast, int mode, int indent, const char *text) {
+	astn list;
+
+	if (ast == NULL) {
+		return;
+	}
+
+	printFmt(out, esc, "%I<%s token=\"%k\"", indent, text, ast->kind);
+
+	if ((mode & (prSymType|prAstType)) != 0) {
+		printFmt(out, esc, " type=\"%T\"", ast->type);
+		if (ast->type != NULL) {
+			printFmt(out, esc, " kind=\"%K\"", ast->type->kind);
+		}
+	}
+
+	if (ast->kind == STMT_beg && ast->file != NULL && ast->line > 0) {
+		printFmt(out, esc, " file=\"%s:%d\"", ast->file, ast->line);
+	}
+
+	switch (ast->kind) {
+		default:
+			fatal(ERR_INTERNAL_ERROR);
+			return;
+
+		//#{ STMT
+		case STMT_beg:
+			printFmt(out, esc, ">\n");
+			for (list = ast->stmt.stmt; list; list = list->next) {
+				dumpAstXML(out, esc, list, mode, indent + 1, "stmt");
+			}
+			printFmt(out, esc, "%I</%s>\n", indent, text);
+			break;
+
+		case STMT_end:
+			printFmt(out, esc, " stmt=\"%?t\">\n", ast);
+			dumpAstXML(out, esc, ast->stmt.stmt, mode, indent + 1, "expr");
+			printFmt(out, esc, "%I</%s>\n", indent, text);
+			break;
+
+		case STMT_if:
+		case STMT_sif:
+			printFmt(out, esc, " stmt=\"%?t\">\n", ast);
+			dumpAstXML(out, esc, ast->stmt.test, mode, indent + 1, "test");
+			dumpAstXML(out, esc, ast->stmt.stmt, mode, indent + 1, "then");
+			dumpAstXML(out, esc, ast->stmt.step, mode, indent + 1, "else");
+			printFmt(out, esc, "%I</%s>\n", indent, text);
+			break;
+
+		case STMT_for:
+			printFmt(out, esc, " stmt=\"%?t\">\n", ast);
+			dumpAstXML(out, esc, ast->stmt.init, mode, indent + 1, "init");
+			dumpAstXML(out, esc, ast->stmt.test, mode, indent + 1, "test");
+			dumpAstXML(out, esc, ast->stmt.step, mode, indent + 1, "step");
+			dumpAstXML(out, esc, ast->stmt.stmt, mode, indent + 1, "stmt");
+			printFmt(out, esc, "%I</%s>\n", indent, text);
+			break;
+
+		case STMT_con:
+		case STMT_brk:
+			printFmt(out, esc, " />\n");
+			break;
+
+		case STMT_ret:
+			printFmt(out, esc, " stmt=\"%?t\">\n", ast);
+			dumpAstXML(out, esc, ast->stmt.stmt, mode, indent + 1, "expr");
+			printFmt(out, esc, "%I</%s>\n", indent, text);
+			break;
+
+		//#}
+		//#{ OPER
+		case OPER_fnc:		// '()'
+			//printFmt(out, esc, ">\n");
+			printFmt(out, esc, " value=\"%?t\">\n", ast);
+			/*list = chainArgs(ast->op.rhso);
+			while (list != NULL) {
+				dumpAstXML(out, esc, list, mode, indent + 1, "push");
+				list = list->next;
+			}*/
+			dumpAstXML(out, esc, ast->op.rhso, mode, indent + 1, "push");
+			dumpAstXML(out, esc, ast->op.lhso, mode, indent + 1, "call");
+			printFmt(out, esc, "%I</%s>\n", indent, text);
+			break;
+
+		case OPER_dot:		// '.'
+		case OPER_idx:		// '[]'
+
+		case OPER_adr:		// '&'
+		case OPER_pls:		// '+'
+		case OPER_mns:		// '-'
+		case OPER_cmt:		// '~'
+		case OPER_not:		// '!'
+
+		case OPER_add:		// '+'
+		case OPER_sub:		// '-'
+		case OPER_mul:		// '*'
+		case OPER_div:		// '/'
+		case OPER_mod:		// '%'
+
+		case OPER_shl:		// '>>'
+		case OPER_shr:		// '<<'
+		case OPER_and:		// '&'
+		case OPER_ior:		// '|'
+		case OPER_xor:		// '^'
+
+		case OPER_ceq:		// '=='
+		case OPER_cne:		// '!='
+		case OPER_clt:		// '<'
+		case OPER_cle:		// '<='
+		case OPER_cgt:		// '>'
+		case OPER_cge:		// '>='
+
+		case OPER_all:		// '&&'
+		case OPER_any:		// '||'
+		case OPER_sel:		// '?:'
+
+		case OPER_com:		// ','
+
+		case ASGN_set:		// '='
+			printFmt(out, esc, " value=\"%?t\">\n", ast);
+			dumpAstXML(out, esc, ast->op.test, mode, indent + 1, "test");
+			dumpAstXML(out, esc, ast->op.lhso, mode, indent + 1, "lval");
+			dumpAstXML(out, esc, ast->op.rhso, mode, indent + 1, "rval");
+			printFmt(out, esc, "%I</%s>\n", indent, text);
+			break;
+
+		//#}
+		//#{ VAL
+		case TOKEN_var: {
+			symn link = ast->ref.link;
+			// declaration
+			if (link && link->init /*&& link->tag == ast*/) {
+				printFmt(out, esc, " value=\"%?t\">\n", ast);
+				dumpAstXML(out, esc, link->init, mode, indent + 1, "init");
+				printFmt(out, esc, "%I</%s>\n", indent, text);
+				break;
+			}
+		}
+
+		// fall trough
+		case TOKEN_opc:
+		case TOKEN_val:
+			printFmt(out, esc, " value=\"%?t\"/>\n", ast);
+			break;
+
+		//#}
+	}
+}
+
 // json output
-static const int JSON_PRETTY_PRINT = 0;
+static const int JSON_PRETTY_PRINT = 1;
 static const char *JSON_KEY_API = "symbols";
 static const char *JSON_KEY_RUN = "profile";
 
@@ -233,7 +311,6 @@ static void jsonDumpSym(FILE *out, const char **esc, symn ptr, const char *kind,
 	static const char *KEY_ARGS = "args";
 	static const char *KEY_CNST = "const";
 	static const char *KEY_STAT = "static";
-	static const char *KEY_MEMB = "member";
 	static const char *KEY_SIZE = "size";
 	static const char *KEY_OFFS = "offs";
 	static const char *VAL_TRUE = "true";
@@ -251,7 +328,7 @@ static void jsonDumpSym(FILE *out, const char **esc, symn ptr, const char *kind,
 	printFmt(out, esc, "%I, \"%s\": \"%K\"\n", indent, KEY_CAST, ptr->kind & MASK_cast);
 	printFmt(out, esc, "%I, \"%s\": \"%.T\"\n", indent, KEY_NAME, ptr);
 	if (ptr->owner != NULL) {
-		printFmt(out, esc, "%I, \"%s\": \"%?T\"\n", indent, KEY_OWNER, ptr->owner);
+		printFmt(out, esc, "%I, \"%s\": \"%T\"\n", indent, KEY_OWNER, ptr->owner);
 	}
 
 	if (ptr->type != NULL) {
@@ -277,9 +354,8 @@ static void jsonDumpSym(FILE *out, const char **esc, symn ptr, const char *kind,
 	}
 	printFmt(out, esc, "%I, \"%s\": %u\n", indent, KEY_SIZE, ptr->size);
 	printFmt(out, esc, "%I, \"%s\": %u\n", indent, KEY_OFFS, ptr->offs);
-	printFmt(out, esc, "%I, \"%s\": %s\n", indent, KEY_CNST, ptr->kind & ATTR_cnst ? VAL_TRUE : VAL_FALSE);
-	printFmt(out, esc, "%I, \"%s\": %s\n", indent, KEY_STAT, ptr->kind & ATTR_stat ? VAL_TRUE : VAL_FALSE);
-	printFmt(out, esc, "%I, \"%s\": %s\n", indent, KEY_MEMB, ptr->kind & ATTR_memb ? VAL_TRUE : VAL_FALSE);
+	printFmt(out, esc, "%I, \"%s\": %s\n", indent, KEY_STAT, isStatic(ptr) ? VAL_TRUE : VAL_FALSE);
+	printFmt(out, esc, "%I, \"%s\": %s\n", indent, KEY_CNST, isConst(ptr) ? VAL_TRUE : VAL_FALSE);
 	if (kind != NULL) {
 		printFmt(out, esc, FMT_END, indent - 1);
 	}
@@ -417,6 +493,7 @@ static void jsonDumpAst(FILE *out, const char **esc, astn ast, const char *kind,
 			break;
 		//#}
 		//#{ VALUE
+		case TOKEN_opc:
 		case TOKEN_val:
 		case TOKEN_var:
 			printFmt(out, esc, "%I, \"%s\": \"%t\"\n", indent + 1, KEY_VALUE, ast);
@@ -493,12 +570,102 @@ static void dumpApiJSON(userContext ctx, symn sym) {
 	}
 }
 
-static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, void *caller, void *callee) {
-	if (callee != NULL) {
+static void jsonPreProfile(dbgContext ctx) {
+    userContext cc = ctx->extra;
+    FILE *out = cc->out;
+    const int indent = cc->indent;
+    const char **esc = NULL;
+
+    printFmt(out, esc, "\n%I%s\"%s\": {\n", indent, cc->hasOut ? ", " : "", JSON_KEY_RUN);
+    printFmt(out, esc, "%I\"%s\": [", indent + 1, "callTreeData");
+    printFmt(out, esc, "\"%s\", ", "ctTickIndex");
+    printFmt(out, esc, "\"%s\", ", "ctHeapIndex");
+    printFmt(out, esc, "\"%s\"", "ctFunIndex");
+    printFmt(out, esc, "]\n");
+
+    printFmt(out, esc, "%I, \"%s\": [", indent + 1, "callTree");
+
+}
+static void jsonPostProfile(dbgContext ctx) {
+	userContext cc = ctx->extra;
+	FILE *out = cc->out;
+	const int indent = cc->indent;
+	const char **esc = NULL;
+
+	int i;
+	int covFunc = 0, nFunc = ctx->functions.cnt;
+	int covStmt = 0, nStmt = ctx->statements.cnt;
+	dbgn dbg = (dbgn) ctx->functions.ptr;
+
+	printFmt(out, esc, "]\n");
+
+	printFmt(out, esc, "%I, \"%s\": [{\n", indent + 1, "functions");
+	for (i = 0; i < nFunc; ++i, dbg++) {
+		symn sym = dbg->decl;
+		if (dbg->hits == 0) {
+			// skip functions not invoked
+			continue;
+		}
+		covFunc += 1;
+		if (sym == NULL) {
+			sym = rtFindSym(ctx->rt, dbg->start, 1);
+		}
+		if (covFunc > 1) {
+			printFmt(out, esc, "%I}, {\n", indent + 1);
+		}
+		jsonDumpSym(out, esc, sym, NULL, indent + 2);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "time", dbg->self);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "total", dbg->total);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "hits", dbg->hits);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "fails", dbg->exec - dbg->hits);
+		if (dbg->file != NULL && dbg->line > 0) {
+			printFmt(out, esc, "%I, \"%s\": \"%s\"\n", indent + 2, "file", dbg->file);
+			printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "line", dbg->line);
+		}
+	}
+	printFmt(out, esc, "%I}]\n", indent + 1);
+
+	printFmt(out, esc, "%I, \"%s\": [{\n", indent + 1, "statements");
+	dbg = (dbgn) ctx->statements.ptr;
+	for (i = 0; i < nStmt; ++i, dbg++) {
+		size_t symOffs = 0;
+		symn sym = dbg->decl;
+		if (dbg->hits == 0) {
+			continue;
+		}
+		covStmt += 1;
+		if (sym == NULL) {
+			sym = rtFindSym(ctx->rt, dbg->start, 1);
+		}
+		if (sym != NULL) {
+			symOffs = dbg->start - sym->offs;
+		}
+		if (covStmt > 1) {
+			printFmt(out, esc, "%I}, {\n", indent + 1);
+		}
+		printFmt(out, esc, "%I\"%s\": \"%?T+%d\"\n", indent + 2, "", sym, symOffs);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "offs", dbg->start);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "time", dbg->self);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "total", dbg->total);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "hits", dbg->hits);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "fails", dbg->exec - dbg->hits);
+		if (dbg->file != NULL && dbg->line > 0) {
+			printFmt(out, esc, "%I, \"%s\": \"%s\"\n", indent + 2, "file", dbg->file);
+			printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "line", dbg->line);
+		}
+	}
+	printFmt(out, esc, "%I}]\n", indent + 1);
+
+	printFmt(out, esc, "%I, \"%s\": %d\n", indent + 1, "ticksPerSec", CLOCKS_PER_SEC);
+	printFmt(out, esc, "%I, \"%s\": %d\n", indent + 1, "functionCount", ctx->functions.cnt);
+	printFmt(out, esc, "%I, \"%s\": %d\n", indent + 1, "statementCount", ctx->statements.cnt);
+	printFmt(out, esc, "%I}", indent);
+}
+static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, size_t callee) {
+	if (callee != 0) {
 		clock_t ticks = clock();
 		userContext cc = ctx->extra;
 		FILE *out = cc->out;
-		const int indent = cc->indent;
 		const char **esc = NULL;
 		if ((ptrdiff_t) callee < 0) {
 			if (JSON_PRETTY_PRINT) {
@@ -508,93 +675,18 @@ static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, v
 				printFmt(out, esc, "%d,%d,-1%s", ticks, ctx->usedMem, ss ? "," : "");
 			}
 			if (ss == 0) {
-				int i;
-				int covFunc = 0, nFunc = ctx->functions.cnt;
-				int covStmt = 0, nStmt = ctx->statements.cnt;
-				dbgn dbg = (dbgn) ctx->functions.ptr;
-
-				printFmt(out, esc, "]\n");
-
-				printFmt(out, esc, "%I, \"%s\": [{\n", indent + 1, "functions");
-				for (i = 0; i < nFunc; ++i, dbg++) {
-					symn sym = dbg->decl;
-					if (dbg->hits == 0) {
-						// skip functions not invoked
-						continue;
-					}
-					covFunc += 1;
-					if (sym == NULL) {
-						sym = rtFindSym(ctx->rt, dbg->start, 1);
-					}
-					if (covFunc > 1) {
-						printFmt(out, esc, "%I}, {\n", indent + 1);
-					}
-					jsonDumpSym(out, esc, sym, NULL, indent + 2);
-					printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "time", dbg->self);
-					printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "total", dbg->total);
-					printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "hits", dbg->hits);
-					printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "fails", dbg->exec - dbg->hits);
-					if (dbg->file != NULL && dbg->line > 0) {
-						printFmt(out, esc, "%I, \"%s\": \"%s\"\n", indent + 2, "file", dbg->file);
-						printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "line", dbg->line);
-					}
-				}
-				printFmt(out, esc, "%I}]\n", indent + 1);
-
-				printFmt(out, esc, "%I, \"%s\": [{\n", indent + 1, "statements");
-				dbg = (dbgn) ctx->statements.ptr;
-				for (i = 0; i < nStmt; ++i, dbg++) {
-					size_t symOffs = 0;
-					symn sym = dbg->decl;
-					if (dbg->hits == 0) {
-						continue;
-					}
-					covStmt += 1;
-					if (sym == NULL) {
-						sym = rtFindSym(ctx->rt, dbg->start, 1);
-					}
-					if (sym != NULL) {
-						symOffs = dbg->start - sym->offs;
-					}
-					if (covStmt > 1) {
-						printFmt(out, esc, "%I}, {\n", indent + 1);
-					}
-					printFmt(out, esc, "%I\"%s\": \"%?T+%d\"\n", indent + 2, "", sym, symOffs);
-					printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "offs", dbg->start);
-					printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "time", dbg->self);
-					printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "total", dbg->total);
-					printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "hits", dbg->hits);
-					printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "fails", dbg->exec - dbg->hits);
-					if (dbg->file != NULL && dbg->line > 0) {
-						printFmt(out, esc, "%I, \"%s\": \"%s\"\n", indent + 2, "file", dbg->file);
-						printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "line", dbg->line);
-					}
-				}
-				printFmt(out, esc, "%I}]\n", indent + 1);
-
-				printFmt(out, esc, "%I, \"%s\": %d\n", indent + 1, "ticksPerSec", CLOCKS_PER_SEC);
-				printFmt(out, esc, "%I, \"%s\": %d\n", indent + 1, "functionCount", ctx->functions.cnt);
-				printFmt(out, esc, "%I, \"%s\": %d\n", indent + 1, "statementCount", ctx->statements.cnt);
-				printFmt(out, esc, "%I}", indent);
+				jsonPostProfile(ctx);
 			}
 		}
 		else {
-			size_t offs = vmOffset(ctx->rt, callee);
 			if (ss == 0) {
-				printFmt(out, esc, "\n%I%s\"%s\": {\n", indent, cc->hasOut ? ", " : "", JSON_KEY_RUN);
-				printFmt(out, esc, "%I\"%s\": [", indent + 1, "callTreeData");
-				printFmt(out, esc, "\"%s\", ", "ctTickIndex");
-				printFmt(out, esc, "\"%s\", ", "ctHeapIndex");
-				printFmt(out, esc, "\"%s\"", "ctFunIndex");
-				printFmt(out, esc, "]\n");
-
-				printFmt(out, esc, "%I, \"%s\": [", indent + 1, "callTree");
+				jsonPreProfile(ctx);
 			}
 			if (JSON_PRETTY_PRINT) {
-				printFmt(out, esc, "\n% I%d,%d,%d,", ss, ticks, ctx->usedMem, offs);
+				printFmt(out, esc, "\n% I%d,%d,%d,", ss, ticks, ctx->usedMem, callee);
 			}
 			else {
-				printFmt(out, esc, "%d,%d,%d,", ticks, ctx->usedMem, offs);
+				printFmt(out, esc, "%d,%d,%d,", ticks, ctx->usedMem, callee);
 			}
 		}
 	}
@@ -605,8 +697,7 @@ static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, v
 }
 
 // text output
-static void conDumpAsm(FILE *out, const char **esc, void *ip, userContext ctx, int indent) {
-	size_t offs = vmOffset(ctx->rt, ip);
+static void conDumpAsm(FILE *out, const char **esc, size_t offs, userContext ctx, int indent) {
 	int mode = ctx->dmpAsmCode;
 
 	if (ctx->dmpAsmAddr) {
@@ -620,12 +711,17 @@ static void conDumpAsm(FILE *out, const char **esc, void *ip, userContext ctx, i
 	if (ctx->dmpAsmStmt && ctx->rt->cc != NULL) {
 		dbgn dbg = mapDbgStatement(ctx->rt, offs);
 		if (dbg != NULL && dbg->stmt != NULL && dbg->start == offs) {
-			printFmt(out, esc, "%I%?s:%?u: [%06x-%06x): %.*t\n", indent, dbg->file, dbg->line, dbg->start, dbg->end, mode, dbg->stmt);
+			if (ctx->dmpAsmAddr) {
+				printFmt(out, esc, "%I%?s:%?u: [%06x-%06x): %.*t\n", indent, dbg->file, dbg->line, dbg->start, dbg->end, mode, dbg->stmt);
+			}
+			else {
+				printFmt(out, esc, "%I%?s:%?u: (%d bytes): %.*t\n", indent, dbg->file, dbg->line, dbg->end - dbg->start, mode, dbg->stmt);
+			}
 		}
 	}
 
 	printFmt(out, esc, "%I", indent);
-	printAsm(out, esc, ctx->rt, ip, mode);
+	printAsm(out, esc, ctx->rt, getip(ctx->rt, offs), mode);
 	printFmt(out, esc, "\n");
 }
 static void conDumpMem(rtContext rt, void *ptr, size_t size, char *kind) {
@@ -730,23 +826,22 @@ static void conDumpProf(userContext usr) {
 		for (var = rt->main->fields; var; var = var->next) {
 			char *ofs = NULL;
 
-			// exclude types and aliases
-			switch (var->kind & MASK_kind) {
-				case KIND_def:
-				case KIND_typ:
-					continue;
-
-				default:
-					break;
+			if (isInline(var)) {
+				continue;
 			}
 
-			// exclude functions
-			if (var->params != NULL && !all)
+			if (isTypename(var)) {
 				continue;
+			}
+
+			if (isFunction(var) && !all) {
+				continue;
+			}
 
 			// exclude null
-			if (var->offs == 0)
+			if (var->offs == 0) {
 				continue;
+			}
 
 			if (var->file && var->line) {
 				printFmt(out, esc, "%s:%u: ", var->file, var->line);
@@ -755,11 +850,11 @@ static void conDumpProf(userContext usr) {
 				continue;
 			}
 
-			if (var->kind & ATTR_stat) {
+			if (isStatic(var)) {
 				// static variable.
 				ofs = (char *) rt->_mem + var->offs;
 			} else {
-				// argument or local variable.
+				// local variable (or argument).
 				ofs = (char *) rt->vm.cell - var->offs;
 			}
 
@@ -866,6 +961,7 @@ static void dumpApiText(userContext extra, symn sym) {
 		if (extra->dmpAstLine || sym->init->kind != STMT_beg) {
 			printFmt(out, esc, "\n");
 		}
+//		dumpAstXML(stdout, esc, sym->init, mode, -indent, "main");
 	}
 
 	// print function disassembled instructions
@@ -884,7 +980,7 @@ static void dumpApiText(userContext extra, symn sym) {
 			if (ip == NULL) {
 				break;
 			}
-			conDumpAsm(out, esc, ip, extra, indent + 1);
+			conDumpAsm(out, esc, pc, extra, indent + 1);
 			pc += opcode_tbl[*ip].size;
 			if (pc == ppc) {
 				break;
@@ -949,7 +1045,7 @@ static void dumpApiSciTE(userContext extra, symn sym) {
 }
 
 // console debugger and profiler
-static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, void *caller, void *callee) {
+static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, size_t callee) {
 	enum {
 		dbgAbort = 'q',		// stop debugging
 		dbgResume = 'r',	// break on next breakpoint or error
@@ -973,25 +1069,23 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, void
 
 	int breakMode = 0;
 	char *breakCause = NULL;
-	size_t offs = vmOffset(rt, caller);
-	symn fun = rtFindSym(rt, offs, 0);
-	dbgn dbg = mapDbgStatement(rt, offs);
+	symn fun = rtFindSym(rt, caller, 0);
+	dbgn dbg = mapDbgStatement(rt, caller);
 
 	// enter or leave
-	if (callee != NULL) {
+	if (callee != 0) {
 		// TODO: enter will break after executing call?
 		// TODO: leave will break after executing return?
-		if (usr->dbgCommand == dbgStepInto && callee > 0) {
+		if (usr->dbgCommand == dbgStepInto && (ptrdiff_t) callee > 0) {
 			usr->breakNext = (size_t) -1;
 		}
-		else if (usr->dbgCommand == dbgStepOut && callee < 0) {
+		else if (usr->dbgCommand == dbgStepOut && (ptrdiff_t) callee < 0) {
 			usr->breakNext = (size_t) -1;
 		}
 
 		if (usr->dmpRunTime) {
 			if ((ptrdiff_t) callee > 0) {
-				offs = vmOffset(rt, callee);
-				printFmt(out, esc, "[% 3.2F]>% I %d, %T\n", now, ss, ctx->usedMem, rtFindSym(rt, offs, 1));
+				printFmt(out, esc, "[% 3.2F]>% I %d, %T\n", now, ss, ctx->usedMem, rtFindSym(rt, callee, 1));
 			}
 			else {
 				printFmt(out, esc, "[% 3.2F]<% I %d\n", now, ss, ctx->usedMem);
@@ -1007,7 +1101,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, void
 				break;
 
 			case noError:
-				breakCause = "Breakpoint";
+				// breakCause = NULL; // Breakpoint?
 				break;
 
 			case invalidIP:
@@ -1031,7 +1125,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, void
 				break;
 
 			case libCallAbort:
-				breakCause = "External call abort";
+				breakCause = "External call aborted execution";
 				break;
 
 			case memReadError:
@@ -1053,12 +1147,12 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, void
 		breakMode = dbg_pause;
 		breakCause = "Break";
 	}
-	else if (usr->breakNext == offs) {
+	else if (usr->breakNext == caller) {
 		breakMode = dbg_pause;
 		breakCause = "Break";
 	}
 	else if (dbg != NULL) {
-		if (offs == dbg->start) {
+		if (caller == dbg->start) {
 			breakMode = dbg->bp;
 			if (breakMode & dbg_pause) {
 				breakCause = "Break point";
@@ -1079,7 +1173,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, void
 	// print executing instruction.
 	if (error == noError && usr->dmpRunCode) {
 		if (usr->dmpRunStack) {
-			const int MAX_ELEMENTS = 5;
+			const int MAX_ELEMENTS = 15;
 			size_t i = 0;
 			printFmt(out, esc, "\tstack(%d): [", ss);
 			if (ss > MAX_ELEMENTS) {
@@ -1090,7 +1184,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, void
 				if (i > 0) {
 					printFmt(out, esc, ",");
 				}
-				printFmt(out, esc, " 0x%08x", ((int32_t *) stack)[ss - i - 1]);
+				printFmt(out, esc, " %d", ((int32_t *) stack)[ss - i - 1]);
 			}
 			printFmt(out, esc, "\n");
 		}
@@ -1104,26 +1198,26 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, void
 
 	// print error type
 	if (breakMode & dbg_print) {
-		size_t funOffs = offs;
+		size_t funOffs = caller;
 		if (fun != NULL) {
-			funOffs = offs - fun->offs;
+			funOffs -= fun->offs;
 		}
 		// print current file position
 		if (dbg != NULL && dbg->file != NULL && dbg->line > 0) {
 			printFmt(out, esc, "%s:%u: ", dbg->file, dbg->line);
 		}
-		printFmt(out, esc, "%s in function: <%.T%?+d>\n", breakCause, fun, funOffs);
+		printFmt(out, esc, "%s at .%06x in function: <%?.T%?+d> executing instruction: %.A\n", breakCause, caller, fun, funOffs, getip(rt, caller));
 	}
 	if (breakMode & dbg_trace) {
-		logTrace(ctx, out, 1, 0, 20);
+		traceCalls(ctx, out, 1, 0, 20);
 	}
 
 	// pause execution in debugger
 	for ( ; breakMode & dbg_pause; ) {
 		int cmd = usr->dbgCommand;
 		char *arg = NULL;
-		printFmt(out, esc, ">dbg[%?c] %.A: ", cmd, caller);
-		if (fgets(buff, sizeof(buff), stdin) == NULL) {
+		printFmt(out, esc, ">dbg[%?c] %.A: ", cmd, getip(rt, caller));
+		if (usr->in == NULL || fgets(buff, sizeof(buff), usr->in) == NULL) {
 			printFmt(out, esc, "can not read from standard input, aborting\n");
 			return ctx->abort;
 		}
@@ -1150,18 +1244,18 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, void
 			case dbgStepInto:
 			case dbgStepOut:
 				usr->breakNext = 0;
-				return 0;
+				return dbg;
 
 			case dbgStepNext:
 				usr->breakNext = (size_t)-1;
-				return 0;
+				return dbg;
 
 			case dbgStepLine:
 				usr->breakNext = dbg ? dbg->end : 0;
-				return 0;
+				return dbg;
 
 			case dbgPrintStackTrace:
-				logTrace(ctx, out, 1, 0, 20);
+				traceCalls(ctx, out, 1, 0, 20);
 				break;
 
 			case dbgPrintInstruction:
@@ -1170,6 +1264,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, void
 
 			case dbgPrintStackValues:
 				if (*arg == 0) {
+					size_t offs;
 					// print top of stack
 					for (offs = 0; offs < ss; offs++) {
 						stkval *v = (stkval*)&((long*)stack)[offs];
@@ -1179,7 +1274,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, void
 				else {
 					symn sym = ccLookupSym(rt->cc, NULL, arg);
 					printFmt(out, esc, "arg:%T", sym);
-					if (sym && sym->kind == KIND_var && !(sym->kind & ATTR_stat)) {
+					if (sym && isVariable(sym) && !isStatic(sym)) {
 						printVal(out, esc, rt, sym, (stkval *) stack, prSymType, 0);
 					}
 				}
@@ -1187,154 +1282,6 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, void
 		}
 	}
 	return dbg;
-}
-
-static void dumpAstXML(FILE *out, const char **esc, astn ast, int mode, int indent, const char *text) {
-	astn list;
-
-	if (ast == NULL) {
-		return;
-	}
-
-	printFmt(out, esc, "%I<%s token=\"%k\"", indent, text, ast->kind);
-
-	if ((mode & (prSymType|prAstType)) != 0) {
-		printFmt(out, esc, " type=\"%T\"", ast->type);
-	}
-
-	if (ast->kind == STMT_beg && ast->file != NULL && ast->line > 0) {
-		printFmt(out, esc, " file=\"%s:%d\"", ast->file, ast->line);
-	}
-
-	switch (ast->kind) {
-		default:
-			fatal(ERR_INTERNAL_ERROR);
-			return;
-
-		//#{ STMT
-		case STMT_beg:
-			printFmt(out, esc, ">\n");
-			for (list = ast->stmt.stmt; list; list = list->next) {
-				dumpAstXML(out, esc, list, mode, indent + 1, "stmt");
-			}
-			printFmt(out, esc, "%I</%s>\n", indent, text);
-			break;
-
-		case STMT_end:
-			printFmt(out, esc, " stmt=\"%?t\">\n", ast);
-			dumpAstXML(out, esc, ast->stmt.stmt, mode, indent + 1, "expr");
-			printFmt(out, esc, "%I</%s>\n", indent, text);
-			break;
-
-		case STMT_if:
-		case STMT_sif:
-			printFmt(out, esc, " stmt=\"%?t\">\n", ast);
-			dumpAstXML(out, esc, ast->stmt.test, mode, indent + 1, "test");
-			dumpAstXML(out, esc, ast->stmt.stmt, mode, indent + 1, "then");
-			dumpAstXML(out, esc, ast->stmt.step, mode, indent + 1, "else");
-			printFmt(out, esc, "%I</%s>\n", indent, text);
-			break;
-
-		case STMT_for:
-			printFmt(out, esc, " stmt=\"%?t\">\n", ast);
-			dumpAstXML(out, esc, ast->stmt.init, mode, indent + 1, "init");
-			dumpAstXML(out, esc, ast->stmt.test, mode, indent + 1, "test");
-			dumpAstXML(out, esc, ast->stmt.step, mode, indent + 1, "step");
-			dumpAstXML(out, esc, ast->stmt.stmt, mode, indent + 1, "stmt");
-			printFmt(out, esc, "%I</%s>\n", indent, text);
-			break;
-
-		case STMT_con:
-		case STMT_brk:
-			printFmt(out, esc, " />\n");
-			break;
-
-		case STMT_ret:
-			printFmt(out, esc, " stmt=\"%?t\">\n", ast);
-			dumpAstXML(out, esc, ast->stmt.stmt, mode, indent + 1, "expr");
-			printFmt(out, esc, "%I</%s>\n", indent, text);
-			break;
-
-		//#}
-		//#{ OPER
-		case OPER_fnc:		// '()'
-			//printFmt(out, esc, ">\n");
-			printFmt(out, esc, " value=\"%?t\">\n", ast);
-			list = chainArgs(ast->op.rhso);
-			while (list != NULL) {
-				dumpAstXML(out, esc, list, mode, indent + 1, "push");
-				list = list->next;
-			}
-			dumpAstXML(out, esc, ast->op.lhso, mode, indent + 1, "call");
-			printFmt(out, esc, "%I</%s>\n", indent, text);
-			break;
-
-		case OPER_dot:		// '.'
-		case OPER_idx:		// '[]'
-
-		case OPER_adr:		// '&'
-		case OPER_pls:		// '+'
-		case OPER_mns:		// '-'
-		case OPER_cmt:		// '~'
-		case OPER_not:		// '!'
-
-		case OPER_add:		// '+'
-		case OPER_sub:		// '-'
-		case OPER_mul:		// '*'
-		case OPER_div:		// '/'
-		case OPER_mod:		// '%'
-
-		case OPER_shl:		// '>>'
-		case OPER_shr:		// '<<'
-		case OPER_and:		// '&'
-		case OPER_ior:		// '|'
-		case OPER_xor:		// '^'
-
-		case OPER_ceq:		// '=='
-		case OPER_cne:		// '!='
-		case OPER_clt:		// '<'
-		case OPER_cle:		// '<='
-		case OPER_cgt:		// '>'
-		case OPER_cge:		// '>='
-
-		case OPER_all:		// '&&'
-		case OPER_any:		// '||'
-		case OPER_sel:		// '?:'
-
-		case OPER_com:		// ','
-
-		case ASGN_set:		// '='
-			printFmt(out, esc, " value=\"%?t\">\n", ast);
-			dumpAstXML(out, esc, ast->op.test, mode, indent + 1, "test");
-			dumpAstXML(out, esc, ast->op.lhso, mode, indent + 1, "lval");
-			dumpAstXML(out, esc, ast->op.rhso, mode, indent + 1, "rval");
-			printFmt(out, esc, "%I</%s>\n", indent, text);
-			break;
-
-		//#}
-		//#{ VAL
-		case TOKEN_val:
-		case TOKEN_var: {
-			symn link = ast->ref.link;
-			// declaration
-			if (link != NULL && link->tag == ast) {
-				if (link->init != NULL) {
-					printFmt(out, esc, " value=\"%?t\">\n", ast);
-					dumpAstXML(out, esc, link->init, mode, indent + 1, "init");
-					printFmt(out, esc, "%I</%s>\n", indent, text);
-				}
-				else {
-					printFmt(out, esc, " value=\"%?t\"/>\n", ast);
-				}
-			}
-			// usage
-			else {
-				printFmt(out, esc, " oper=\"%?t\"/>\n", ast);
-			}
-			break;
-		}
-		//#}
-	}
 }
 
 static int program(int argc, char *argv[]) {
@@ -1350,6 +1297,7 @@ static int program(int argc, char *argv[]) {
 	} settings = {
 		.logAppend = 0,
 
+		// enable all optimizations by default
 		.foldConst = 1,
 		.foldInstr = 1,
 		.fastAssign = 1,
@@ -1393,6 +1341,7 @@ static int program(int argc, char *argv[]) {
 		.dmpRunCode = 0,
 		.dmpRunStack = 0,
 
+		.in = stdin,
 		.out = stdout,
 		.hasOut = 0,
 		.indent = 0,
@@ -1409,7 +1358,7 @@ static int program(int argc, char *argv[]) {
 	void (*dumpFun)(userContext, symn) = NULL;
 	enum {run, debug, profile, skipExecution} run_code = skipExecution;
 
-	int i, warn, errors = 0;
+	int i, warn;
 
 	// TODO: max 32 break points ?
 	char *bp_file[32];
@@ -1471,6 +1420,10 @@ static int program(int argc, char *argv[]) {
 				else if (strBegins(arg2 + 1, "obj")) {
 					settings.install = (settings.install & ~install_obj) | on * install_obj;
 					arg2 += 4;
+				}
+				else if (strBegins(arg2 + 1, "stdin")) {
+					extra.in = on ? stdin : NULL;
+					arg2 += 6;
 				}
 				else if (strBegins(arg2 + 1, "std")) {
 					settings.stdLibs = on;
@@ -1727,10 +1680,15 @@ static int program(int argc, char *argv[]) {
 						break;
 					case 'L':
 						extra.dbgOnCaught |= dbg_trace;
-						extra.dbgOnError |= dbg_trace;
 					case 'l':
 						extra.dbgOnCaught |= dbg_print;
-						extra.dbgOnError |= dbg_print;
+						arg2 += 2;
+						break;
+
+					case 'E':
+						extra.dmpRunStack |= 1;
+					case 'e':
+						extra.dmpRunCode |= 1;
 						arg2 += 2;
 						break;
 
@@ -1843,14 +1801,14 @@ static int program(int argc, char *argv[]) {
 
 	if (settings.stdLibs) {
 		// install standard library.
-		if (!ccAddLib(rt, wl, ccLibStdc, stdLib)) {
+		if (!ccAddLib(rt->cc, wl, ccLibStdc, stdLib)) {
 			error(rt, NULL, 0, "error registering standard library");
 			logfile(rt, NULL, 0);
 			return -6;
 		}
 
 		// install file operations.
-		if (!ccAddLib(rt, wl, ccLibFile, NULL)) {
+		if (!ccAddLib(rt->cc, wl, ccLibFile, NULL)) {
 			error(rt, NULL, 0, "error registering file library");
 			logfile(rt, NULL, 0);
 			return -6;
@@ -1869,8 +1827,8 @@ static int program(int argc, char *argv[]) {
 						error(rt, NULL, 0, "error(%d) importing library `%s`", resultCode, ccFile);
 					}
 				}
-				else if (!ccAddUnit(rt, warn == -1 ? wl : warn, ccFile, 1, NULL)) {
-					error(rt, NULL, 0, "error compiling source `%s`", arg);
+				else if (!ccAddUnit(rt->cc, warn == -1 ? wl : warn, ccFile, 1, NULL)) {
+					error(rt, NULL, 0, "error compiling source `%s`", ccFile);
 				}
 			}
 			ccFile = arg;
@@ -1940,15 +1898,13 @@ static int program(int argc, char *argv[]) {
 		}
 	}
 
-	errors = rt->errors;
-
 	extra.rt = rt;
 	if (dumpFile != NULL) {
 		extra.out = dumpFile;
 	}
 
 	// generate code only if there are no compilation errors
-	if (errors == 0) {
+	if (rt->errors == 0) {
 		if (!gencode(rt, run_code != run)) {
 			trace("error generating code");
 		}
@@ -1985,7 +1941,7 @@ static int program(int argc, char *argv[]) {
 	}
 
 	// run code if there are no compilation errors.
-	if (errors == 0 && run_code != skipExecution) {
+	if (rt->errors == 0 && run_code != skipExecution) {
 		if (rt->dbg != NULL) {
 			rt->dbg->extra = &extra;
 			// set debugger of profiler
@@ -2006,13 +1962,13 @@ static int program(int argc, char *argv[]) {
 				}
 			}
 		}
-		errors = execute(rt, 0, NULL, NULL);
+		rt->errors = execute(rt, 0, NULL, NULL);
 	}
 
 	if (dumpFun == dumpApiJSON) {
 		printFmt(extra.out, NULL, "\n}\n");
 	}
-	else {
+	else if (rt->errors == 0) {
 		conDumpProf(&extra);
 	}
 	if (dumpFile != NULL) {
@@ -2023,23 +1979,102 @@ static int program(int argc, char *argv[]) {
 	closeLibs();
 	rtClose(rt);
 
-	return errors;
+	return rt->errors != 0;
+}
+
+static int usage() {
+    const char *USAGE = "cmpl [global options] [files with options]..."
+            "\n"
+            "\n<global options>:"
+            "\n"
+            "\n  -std<file>            specify custom standard library file (empty file name disables std library compilation)."
+            "\n"
+            "\n  -mem<int>[kKmMgG]     override memory usage for compiler and runtime(heap)"
+            "\n"
+            "\n  -log[*] <file>        set logger for: compilation errors and warnings, runtime debug messages"
+            "\n    /a                  append to the log file"
+            "\n"
+            "\n  -dump[?] <file>       set output for: dump(symbols, assembly, abstract syntax tree, coverage, call tree)"
+            "\n    .scite              dump api for SciTE text editor"
+            "\n    .json               dump api in javascript object notation format"
+            "\n"
+            "\n  -api[*]               dump symbols"
+            "\n    /a                  include builtin symbols"
+            "\n    /m                  dump main"
+            "\n    /d                  dump details"
+            "\n    /p                  dump params and fields"
+            "\n    /u                  dump usages"
+            "\n"
+            "\n  -asm[*]               dump assembled code"
+            "\n    /a                  use global address: (@0x003d8c)"
+            "\n    /n                  prefer names over addresses: <main+80>"
+            "\n    /s                  print source code statements"
+            "\n"
+            "\n  -ast[*]               dump syntax tree"
+            "\n    /l                  do not expand statements (print on single line)"
+            "\n    /b                  don't keep braces ('{') on the same line"
+            "\n    /e                  don't keep `else if` constructs on the same line"
+            "\n"
+            "\n  -run                  run without: debug information, stacktrace, bounds checking, ..."
+            "\n"
+            "\n  -debug[*]             run with attached debugger, pausing on uncaught errors and break points"
+            "\n    /s                  pause on startup"
+            "\n    /a                  pause on caught errors"
+            "\n    /[e|E]              print executing instructions (/E includes stack values)"
+            "\n    /[l|L]              print caught errors (/L includes stack trace)"
+            "\n    /[g|G]              dump global variable values (/G includes function values)"
+            "\n    /[h|H]              dump allocated heap memory chunks (/H includes static chunks)"
+            "\n    /[p|P]              dump function statistics (/P includes statement statistics)"
+            "\n"
+            "\n  -profile[*]           run code with profiler: coverage, method tracing"
+            "\n    /t                  dump call tree"
+            "\n    /[g|G]              dump global variable values (/G includes function values)"
+            "\n    /[h|H]              dump allocated heap memory chunks (/H includes static chunks)"
+            "\n    /[p|P]              dump function statistics (/P includes statement statistics)"
+            "\n"
+            "\n<files with options>: filename followed by switches"
+            "\n  <file>                if file extension is (.so|.dll) load as library else compile"
+            "\n  -w[a|x|<int>]         set or disable warning level for current file"
+            "\n  -b[*]<int>            break point on <int> line in current file"
+            "\n    /[l|L]              print only, do not pause (/L includes stack trace)"
+            "\n    /o                  one shot breakpoint, disable after first hit"
+            "\n"
+            "\nexamples:"
+            "\n"
+            "\n>app -dump.json api.json"
+            "\n    dump builtin symbols to `api.json` file (types, functions, variables, aliases)"
+            "\n"
+            "\n>app -run test.tracing.ccc"
+            "\n    compile and execute the file `test.tracing.ccc`"
+            "\n"
+            "\n>app -debug gl.so -w0 gl.ccc -w0 test.ccc -wx -b12 -b15 -b/t19"
+            "\n    execute in debug mode"
+            "\n    import `gl.so`"
+            "\n        with no warnings"
+            "\n    compile `gl.ccc`"
+            "\n        with no warnings"
+            "\n    compile `test.ccc`"
+            "\n        treating all warnings as errors"
+            "\n        break execution on lines 12 and 15"
+            "\n        print message when line 19 is hit"
+            "\n";
+    fputs(USAGE, stdout);
+    return 0;
 }
 
 int main(int argc, char *argv[]) {
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
+
 	if (argc < 2) {
-		fputs(USAGE, stdout);
-		return 0;
+		return usage();
 	}
 	if (argc == 2) {
 		if (strcmp(argv[1], "-vmTest") == 0) {
 			return vmSelfTest();
 		}
 		if (strcmp(argv[1], "--help") == 0) {
-			fputs(USAGE, stdout);
-			return 0;
+			return usage();
 		}
 	}
 	return program(argc, argv);

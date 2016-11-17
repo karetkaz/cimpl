@@ -12,7 +12,7 @@ symn newDefn(ccContext cc, ccKind kind) {
 	rtContext rt = cc->rt;
 	symn def = NULL;
 
-	rt->_beg = paddptr(rt->_beg, 8);
+	rt->_beg = paddptr(rt->_beg, rt_size);
 	if(rt->_beg >= rt->_end) {
 		fatal(ERR_MEMORY_OVERRUN);
 		return NULL;
@@ -156,23 +156,18 @@ float64_t fltValue(astn ast) {
 	fatal(ERR_INVALID_CONST_EXPR, ast);
 	return 0;
 }
-ccKind eval(astn res, astn ast) {
+ccKind eval(ccContext cc, astn res, astn ast) {
 	ccKind cast;
 	symn type = NULL;
 	struct astNode lhs, rhs;
 
-	if (ast == NULL) {
+	if (ast == NULL || ast->type == NULL) {
 		fatal(ERR_INTERNAL_ERROR);
-		return TYPE_any;
-	}
-
-	if (ast->type == NULL) {
-		fatal(ERR_INTERNAL_ERROR);
-		return TYPE_any;
+		return CAST_any;
 	}
 
 	if (res == NULL) {
-		// result is not needed
+		// result may be null(not needed)
 		res = &rhs;
 	}
 
@@ -180,13 +175,7 @@ ccKind eval(astn res, astn ast) {
 	switch (castOf(type)) {
 		default:
 			fatal(ERR_INTERNAL_ERROR);
-			return TYPE_any;
-
-		case TYPE_any:
-			// this could be an alias to a constant
-			// TODO: cast to type->cast ?
-			cast = TYPE_any;
-			break;
+			return CAST_any;
 
 		case CAST_bit:
 			cast = CAST_bit;
@@ -209,38 +198,43 @@ ccKind eval(astn res, astn ast) {
 		case CAST_arr:
 		case CAST_var:
 		case CAST_vid:
-			return TYPE_any;
+			debug("not evaluable: %t", ast);
+			return CAST_any;
 	}
 
 	memset(res, 0, sizeof(struct astNode));
 	switch (ast->kind) {
 		default:
 			fatal(ERR_INTERNAL_ERROR);
-			return TYPE_any;
+			return CAST_any;
 
 		case OPER_com:
 		case STMT_beg:
-			return TYPE_any;
+		case TOKEN_opc:
+			return CAST_any;
 
 		case OPER_dot:
-			if (!isTypeExpr(ast->op.lhso))
-				return TYPE_any;
-			return eval(res, ast->op.rhso);
+			if (!isTypeExpr(ast->op.lhso)) {
+				return CAST_any;
+			}
+			return eval(cc, res, ast->op.rhso);
 
 		case OPER_fnc: {
 			astn func = ast->op.lhso;
 
 			// evaluate only type casts.
-			if (func && !isTypeExpr(func))
-				return TYPE_any;
+			if (func && !isTypeExpr(func)) {
+				return CAST_any;
+			}
+			if (!eval(cc, res, ast->op.rhso)) {
+				return CAST_any;
+			}
+			break;
+		}
 
-			if (!eval(res, ast->op.rhso))
-				return TYPE_any;
-
-		} break;
 		case OPER_adr:
 		case OPER_idx:
-			return TYPE_any;
+			return CAST_any;
 
 		case TOKEN_val:
 			*res = *ast;
@@ -248,35 +242,40 @@ ccKind eval(astn res, astn ast) {
 
 		case TOKEN_var: {
 			symn var = ast->ref.link;		// link
-			if (var && var->kind == KIND_def && var->init) {
+			if (isInline(var)) {
 				type = var->type;
-				if (!eval(res, var->init))
-					return TYPE_any;
+				if (!eval(cc, res, var->init))
+					return CAST_any;
 			}
 			else {
-				return TYPE_any;
+				return CAST_any;
 			}
-		} break;
+			break;
+		}
 
 		case OPER_pls:		// '+'
-			if (!eval(res, ast->op.rhso))
-				return TYPE_any;
+			if (!eval(cc, res, ast->op.rhso)) {
+				return CAST_any;
+			}
 			break;
 
 		case OPER_mns:		// '-'
-			if (!eval(res, ast->op.rhso))
-				return TYPE_any;
+			if (!eval(cc, res, ast->op.rhso)) {
+				return CAST_any;
+			}
 
 			dieif(res->kind != TOKEN_val, ERR_INTERNAL_ERROR);
 			switch (castOf(res->type)) {
 				default:
-					return TYPE_any;
+					return CAST_any;
+
 				case CAST_i32:
 				case CAST_i64:
 				case CAST_u32:
 				case CAST_u64:
 					res->cint = -res->cint;
 					break;
+
 				case CAST_f32:
 				case CAST_f64:
 					res->cflt = -res->cflt;
@@ -285,13 +284,14 @@ ccKind eval(astn res, astn ast) {
 			break;
 
 		case OPER_cmt:			// '~'
-			if (!eval(res, ast->op.rhso))
-				return TYPE_any;
+			if (!eval(cc, res, ast->op.rhso)) {
+				return CAST_any;
+			}
 
 			dieif(res->kind != TOKEN_val, ERR_INTERNAL_ERROR);
 			switch (castOf(res->type)) {
 				default:
-					return TYPE_any;
+					return CAST_any;
 				case CAST_i32:
 				case CAST_i64:
 				case CAST_u32:
@@ -302,23 +302,24 @@ ccKind eval(astn res, astn ast) {
 			break;
 
 		case OPER_not:			// '!'
-			if (!eval(res, ast->op.rhso))
-				return TYPE_any;
+			if (!eval(cc, res, ast->op.rhso)) {
+				return CAST_any;
+			}
 
 			dieif(res->kind != TOKEN_val, ERR_INTERNAL_ERROR);
 			switch (castOf(res->type)) {
 				default:
-					return TYPE_any;
-				/* TODO: no compiler context
+					return CAST_any;
+
 				case CAST_i64:
+					res->type = cc->type_bol;
 					res->cint = !res->cint;
-					res->type = cc->type_i64;
 					break;
+
 				case CAST_f64:
+					res->type = cc->type_bol;
 					res->cint = !res->cflt;
-					res->type = cc->type_i64;
 					break;
-				*/
 			}
 			break;
 
@@ -327,27 +328,31 @@ ccKind eval(astn res, astn ast) {
 		case OPER_mul:			// '*'
 		case OPER_div:			// '/'
 		case OPER_mod:			// '%'
-			if (!eval(&lhs, ast->op.lhso))
-				return TYPE_any;
+			if (!eval(cc, &lhs, ast->op.lhso)) {
+				return CAST_any;
+			}
 
-			if (!eval(&rhs, ast->op.rhso))
-				return TYPE_any;
+			if (!eval(cc, &rhs, ast->op.rhso)) {
+				return CAST_any;
+			}
 
 			dieif(lhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
 			dieif(rhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
 			dieif(lhs.type != rhs.type, ERR_INTERNAL_ERROR);
 
-			/*
-			switch (rhs.cast) {
+			switch (castOf(lhs.type)) {
 				default:
-					return TYPE_any;
+					return CAST_any;
 
+				case CAST_i32:
 				case CAST_i64:
-					res->cast = CAST_i64;
+				case CAST_u32:
+				case CAST_u64:
+					res->type = cc->type_i64;
 					switch (ast->kind) {
 						default:
 							fatal(ERR_INTERNAL_ERROR);
-							return TYPE_any;
+							return CAST_any;
 
 						case OPER_add:
 							res->cint = lhs.cint + rhs.cint;
@@ -381,12 +386,13 @@ ccKind eval(astn res, astn ast) {
 					}
 					break;
 
+				case CAST_f32:
 				case CAST_f64:
-					res->cast = CAST_f64;
+					res->type = cc->type_f64;
 					switch (ast->kind) {
 						default:
 							fatal(ERR_INTERNAL_ERROR);
-							return TYPE_any;
+							return CAST_any;
 
 						case OPER_add:
 							res->cflt = lhs.cflt + rhs.cflt;
@@ -404,13 +410,14 @@ ccKind eval(astn res, astn ast) {
 							res->cflt = lhs.cflt / rhs.cflt;
 							break;
 
+						/* FIXME add floating modulus
 						case OPER_mod:
 							res->cflt = fmod(lhs.cflt, rhs.cflt);
 							break;
+						*/
 					}
 					break;
 			}
-			*/
 			break;
 
 		case OPER_ceq:			// '=='
@@ -419,20 +426,27 @@ ccKind eval(astn res, astn ast) {
 		case OPER_cle:			// '<='
 		case OPER_cgt:			// '>'
 		case OPER_cge:			// '>='
-			if (!eval(&lhs, ast->op.lhso))
-				return TYPE_any;
+			if (!eval(cc, &lhs, ast->op.lhso)) {
+				return CAST_any;
+			}
 
-			if (!eval(&rhs, ast->op.rhso))
-				return TYPE_any;
+			if (!eval(cc, &rhs, ast->op.rhso)) {
+				return CAST_any;
+			}
 
 			dieif(lhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
 			dieif(rhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
-			// TODO: no context: dieif(ast->type != cc->type_bol, ERR_INTERNAL_ERROR);
 			dieif(lhs.type != rhs.type, ERR_INTERNAL_ERROR);
+			dieif(ast->type != cc->type_bol, ERR_INTERNAL_ERROR);
+
+			res->kind = TOKEN_val;
+			res->type = ast->type;
 
 			switch (castOf(rhs.type)) {
 				default:
-					return TYPE_any;
+					fatal(ERR_INTERNAL_ERROR);
+					res->kind = TOKEN_any;
+					return CAST_any;
 
 				case CAST_bit:
 				case CAST_i32:
@@ -442,35 +456,34 @@ ccKind eval(astn res, astn ast) {
 					switch (ast->kind) {
 						default:
 							fatal(ERR_INTERNAL_ERROR);
-							return TYPE_any;
+							res->kind = TOKEN_any;
+							return CAST_any;
 
 						case OPER_ceq:
-							res->kind = TOKEN_val;
 							res->cint = lhs.cint == rhs.cint;
 							break;
 
 						case OPER_cne:
-							res->kind = TOKEN_val;
 							res->cint = lhs.cint != rhs.cint;
 							break;
 
 						case OPER_clt:
-							res->kind = TOKEN_val;
+							// FIXME: signed or unsigned compare
 							res->cint = lhs.cint  < rhs.cint;
 							break;
 
 						case OPER_cle:
-							res->kind = TOKEN_val;
+							// FIXME: signed or unsigned compare
 							res->cint = lhs.cint <= rhs.cint;
 							break;
 
 						case OPER_cgt:
-							res->kind = TOKEN_val;
+							// FIXME: signed or unsigned compare
 							res->cint = lhs.cint  > rhs.cint;
 							break;
 
 						case OPER_cge:
-							res->kind = TOKEN_val;
+							// FIXME: signed or unsigned compare
 							res->cint = lhs.cint >= rhs.cint;
 							break;
 					}
@@ -481,35 +494,30 @@ ccKind eval(astn res, astn ast) {
 					switch (ast->kind) {
 						default:
 							fatal(ERR_INTERNAL_ERROR);
-							return TYPE_any;
+							res->kind = TOKEN_any;
+							return CAST_any;
 
 						case OPER_ceq:
-							res->kind = TOKEN_val;
 							res->cint = lhs.cflt == rhs.cflt;
 							break;
 
 						case OPER_cne:
-							res->kind = TOKEN_val;
 							res->cint = lhs.cflt != rhs.cflt;
 							break;
 
 						case OPER_clt:
-							res->kind = TOKEN_val;
 							res->cint = lhs.cflt < rhs.cflt;
 							break;
 
 						case OPER_cle:
-							res->kind = TOKEN_val;
 							res->cint = lhs.cflt <= rhs.cflt;
 							break;
 
 						case OPER_cgt:
-							res->kind = TOKEN_val;
 							res->cint = lhs.cflt > rhs.cflt;
 							break;
 
 						case OPER_cge:
-							res->kind = TOKEN_val;
 							res->cint = lhs.cflt >= rhs.cflt;
 							break;
 					}
@@ -522,33 +530,48 @@ ccKind eval(astn res, astn ast) {
 		case OPER_and:			// '&'
 		case OPER_ior:			// '|'
 		case OPER_xor:			// '^'
-			if (!eval(&lhs, ast->op.lhso))
-				return TYPE_any;
+			if (!eval(cc, &lhs, ast->op.lhso)) {
+				return CAST_any;
+			}
 
-			if (!eval(&rhs, ast->op.rhso))
-				return TYPE_any;
+			if (!eval(cc, &rhs, ast->op.rhso)) {
+				return CAST_any;
+			}
 
 			dieif(lhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
 			dieif(rhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
 			dieif(lhs.type != rhs.type, ERR_INTERNAL_ERROR);
+			dieif(ast->type != cc->type_i32
+				&& ast->type != cc->type_i64
+				&& ast->type != cc->type_u32
+				&& ast->type != cc->type_u64
+			, ERR_INTERNAL_ERROR);
 
-			/*
-			switch (rhs.cast) {
+			res->kind = TOKEN_val;
+			res->type = ast->type;
+			switch (castOf(lhs.type)) {
 				default:
-					return TYPE_any;
+					fatal(ERR_INTERNAL_ERROR);
+					res->kind = TOKEN_any;
+					return CAST_any;
 
+				case CAST_bit:
+				case CAST_i32:
 				case CAST_i64:
-					res->cast = CAST_i64;
+				case CAST_u32:
+				case CAST_u64:
 					switch (ast->kind) {
 						default:
 							fatal(ERR_INTERNAL_ERROR);
-							return TYPE_any;
+							res->kind = TOKEN_any;
+							return CAST_any;
 
 						case OPER_shr:
 							res->cint = lhs.cint >> rhs.cint;
 							break;
 
 						case OPER_shl:
+							// FIXME: signed or unsigned shift
 							res->cint = lhs.cint << rhs.cint;
 							break;
 
@@ -566,27 +589,32 @@ ccKind eval(astn res, astn ast) {
 					}
 					break;
 			}
-			*/
 			break;
 
 		case OPER_all:
 		case OPER_any:
-			if (!eval(&lhs, ast->op.lhso))
-				return TYPE_any;
+			if (!eval(cc, &lhs, ast->op.lhso)) {
+				return CAST_any;
+			}
 
-			if (!eval(&rhs, ast->op.rhso))
-				return TYPE_any;
+			if (!eval(cc, &rhs, ast->op.rhso)) {
+				return CAST_any;
+			}
 
 			dieif(lhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
 			dieif(rhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
-			// TODO: no context: dieif(ast->type != cc->type_bol, ERR_INTERNAL_ERROR);
-			dieif(lhs.type != rhs.type, ERR_INTERNAL_ERROR);
+			dieif(lhs.type != cc->type_bol, ERR_INTERNAL_ERROR);
+			dieif(rhs.type != cc->type_bol, ERR_INTERNAL_ERROR);
+			dieif(ast->type != cc->type_bol, ERR_INTERNAL_ERROR);
 
 			// TODO: try reconsidering these operators to behave like in lua or js
+			res->kind = TOKEN_val;
+			res->type = ast->type;
 			switch (ast->kind) {
 				default:
 					fatal(ERR_INTERNAL_ERROR);
-					return TYPE_any;
+					res->kind = TOKEN_any;
+					return CAST_any;
 
 				case OPER_any:
 					res->cint = lhs.cint || rhs.cint;
@@ -599,14 +627,15 @@ ccKind eval(astn res, astn ast) {
 			break;
 
 		case OPER_sel:
-			if (!eval(&lhs, ast->op.test))
-				return TYPE_any;
+			if (!eval(cc, &lhs, ast->op.test)) {
+				return CAST_any;
+			}
 
 			dieif(lhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
-			return eval(res, bolValue(&lhs) ? ast->op.lhso : ast->op.rhso);
+			return eval(cc, res, bolValue(&lhs) ? ast->op.lhso : ast->op.rhso);
 
 		case ASGN_set:
-			return TYPE_any;
+			return CAST_any;
 	}
 
 	if (res->type != NULL && cast != castOf(res->type)) {
@@ -614,7 +643,7 @@ ccKind eval(astn res, astn ast) {
 		switch (cast) {
 			default:
 				fatal(ERR_INTERNAL_ERROR);
-				return TYPE_any;
+				return CAST_any;
 
 			case CAST_bit:
 				res->cint = bolValue(res);
@@ -637,7 +666,7 @@ ccKind eval(astn res, astn ast) {
 		default:
 			fatal(ERR_INTERNAL_ERROR": %k", res);
 			res->type = NULL;
-			return TYPE_any;
+			return CAST_any;
 
 		case TOKEN_val:
 			res->type = type;

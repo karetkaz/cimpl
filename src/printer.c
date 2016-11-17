@@ -10,6 +10,7 @@
 *******************************************************************************/
 #include <stdarg.h>
 #include <string.h>
+#include <math.h>
 #include "internal.h"
 
 static inline int printChr(FILE *out, int chr) { return fputc(chr, out); }
@@ -84,12 +85,16 @@ static void printQualified(FILE *out, const char **esc, symn sym) {
 /// print array type
 static void printArray(FILE *out, const char **esc, symn sym, int mode) {
 	if (sym != NULL && isArrayType(sym)) {
+		symn length = sym->fields;
 		printArray(out, esc, sym->type, mode);
-		if (sym->init && sym->init->kind == OPER_mul) {
-			printFmt(out, esc, "[*]");
+		if (length != NULL && isStatic(length)) {
+			printFmt(out, esc, "[%d]", sym->size / sym->type->size);
+		}
+		else if (length != NULL) {
+			printFmt(out, esc, "[]");
 		}
 		else {
-			printFmt(out, esc, "[%?t]", sym->init);
+			printFmt(out, esc, "[*]");
 		}
 		return;
 	}
@@ -415,6 +420,11 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 			break;
 		//#}
 		//#{ TVAL
+		case TOKEN_opc: {
+			printOpc(out, esc, ast->opc.code, ast->opc.args);
+			break;
+		}
+
 		case TOKEN_val:
 			if (ast->type->pfmt == type_fmt_string) {
 				printStr(out, esc, "\'");
@@ -477,14 +487,11 @@ void printSym(FILE *out, const char **esc, symn sym, int mode, int indent) {
 	}
 
 	if (pr_attr) {
-		if ((sym->kind & ATTR_stat) != 0) {
+		if (isStatic(sym)) {
 			printStr(out, esc, "static ");
 		}
-		if ((sym->kind & ATTR_cnst) != 0) {
+		if (isConst(sym) != 0) {
 			printStr(out, esc, "const ");
-		}
-		if ((sym->kind & ATTR_memb) != 0) {
-			printStr(out, esc, "member ");
 		}
 	}
 
@@ -495,11 +502,6 @@ void printSym(FILE *out, const char **esc, symn sym, int mode, int indent) {
 		else {
 			printStr(out, esc, sym->name);
 		}
-	}
-
-	if (sym->kind == EMIT_opc && sym->init != NULL) {
-		printFmt(out, esc, "(%t)", sym->init);
-		return;
 	}
 
 	switch (sym->kind & MASK_kind) {
@@ -769,9 +771,6 @@ static void FPUTFMT(FILE *out, const char **esc, const char *msg, va_list ap) {
 					if (arg & ATTR_cnst) {
 						_const = "const ";
 					}
-					if (arg & ATTR_memb) {
-						_member = "member ";
-					}
 					if (_cast != NULL) {
 						snprintf(buff, sizeof(buff), "%s%s%s%s(%s)", _stat, _const, _member, _kind, _cast);
 					}
@@ -957,14 +956,14 @@ static void FPUTFMT(FILE *out, const char **esc, const char *msg, va_list ap) {
 
 					if ((len = msg - fmt - 1) < 1020) {
 						memcpy(buff, fmt, (size_t) len);
-						if (buff[1] == '?') {
+						if (buff[1] == '?' && len > 1) {
 							len -= 1;
-							memcpy(buff+1, buff+2, (size_t) len - 1);
+							memcpy(buff+1, buff+2, (size_t) len);
 						}
-						if (buff[1] == '-' || buff[1] == '+') {
+						if ((buff[1] == '-' || buff[1] == '+') && len > 1) {
 							len -= 1;
-							memcpy(buff+1, buff+2, (size_t) len - 1);
-							if (num >= 0) {
+							memcpy(buff+1, buff+2, (size_t) len);
+							if (signbit(num) == 0) {
 								fprintf(out, "+");
 							}
 						}
@@ -1099,7 +1098,7 @@ void dumpApi(rtContext rt, userContext ctx, void customPrinter(userContext, symn
 	if (rt->cc == NULL || rt->main == NULL) {
 		return;
 	}
-	dieif(rt->cc->scope != rt->main->fields, ERR_INTERNAL_ERROR);
+	dieif(rt->errors || rt->cc->scope != rt->main->fields, ERR_INTERNAL_ERROR);
 	for (*sp = rt->main->fields; sp >= bp;) {
 		if (!(sym = *sp)) {
 			--sp;
