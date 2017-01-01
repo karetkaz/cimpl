@@ -390,7 +390,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			default: // we have dst on the stack
 
 				// push dst
-				if (!emitInt(rt, opc_ldsp, vm_size)) {
+				if (!emitInt(rt, opc_ldsp, sizeof(vmOffs))) {
 					trace(ERR_INTERNAL_ERROR);
 					return 0;
 				}
@@ -1004,7 +1004,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 		rt->vm.sm = rt->vm.ss;
 	}
 
-	debug("pc[%d]: sp(%d): %A", rt->vm.pc, rt->vm.ss, ip);
+	dbgEmit("pc[%d]: sp(%d): %A", rt->vm.pc, rt->vm.ss, ip);
 	return rt->vm.pc;
 }
 int fixjump(rtContext rt, int src, int dst, int stc) {
@@ -1197,55 +1197,21 @@ static inline vmError traceCall(rtContext rt, void *sp, size_t caller, size_t ca
 
 /// Private dummy debug function.
 static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t caller, size_t callee) {
-	char *errorStr = NULL;
-	switch (err) {
-		case noError:
-			break;
-
-		case invalidIP:
-			errorStr = "Invalid instruction pointer";
-			break;
-
-		case invalidSP:
-			errorStr = "Invalid stack pointer";
-			break;
-
-		case illegalInstruction:
-			errorStr = "Illegal instruction";
-			break;
-
-		case stackOverflow:
-			errorStr = "Stack overflow";
-			break;
-
-		case divisionByZero:
-			errorStr = "Division by zero";
-			break;
-
-		case libCallAbort:
-		case executionAborted:
-			errorStr = "Native call aborted";
-			break;
-
-		case memReadError:
-		case memWriteError:
-			errorStr = "Invalid memory acces";
-			break;
-
-		default:
-			errorStr = "Unknown error";
-			break;
-	}
-
-	if (errorStr != NULL) {
-		dbgn info = mapDbgStatement(ctx->rt, caller);
+	if (err != noError) {
+		char *errMsg = vmErrorMessage(err);
+		symn fun = rtFindSym(ctx->rt, caller, 1);
+		dbgn dbg = mapDbgStatement(ctx->rt, caller);
+		size_t offs = caller;
 		char *file = NULL;
 		int line = 0;
-		if (info != NULL) {
-			file = info->file;
-			line = info->line;
+		if (fun != NULL) {
+			offs -= fun->offs;
 		}
-		error(ctx->rt, file, line, ERR_EXEC_INSTRUCTION, errorStr, getip(ctx->rt, caller), caller);
+		if (dbg != NULL) {
+			file = dbg->file;
+			line = dbg->line;
+		}
+		error(ctx->rt, file, line, ERR_EXEC_INSTRUCTION, errMsg, caller, fun, offs, getip(ctx->rt, caller));
 		return ctx->abort;
 	}
 	(void) callee;
@@ -1790,13 +1756,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, stkval *val, 
 
 	typCast = castOf(typ);
 	if (var != typ) {
-		int byref = 0;
-		if (varCast == CAST_ref) {
-			if (typCast != CAST_ref) {
-				byref = '&';
-			}
-		}
-		printFmt(out, esc, "%.*T%?c: ", mode & ~prSymType, var, byref);
+		printFmt(out, esc, "%.*T: ", mode & ~prSymType, var);
 	}
 
 	if (mode & prSymType) {
@@ -1981,7 +1941,7 @@ static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, v
 	if (file == NULL) {
 		file = "native.code";
 	}
-	printFmt(out, NULL, "%I%s:%u: %?.T", indent, file, line, fun);
+	printFmt(out, NULL, "%I%?s:%?u: %?.T", indent, file, line, fun);
 	if (indent < 0) {
 		printFileLine = 1;
 		indent = -indent;
@@ -2085,10 +2045,11 @@ int vmSelfTest() {
 	int test = 0, skip = 0;
 	FILE *out = stdout;
 	struct vmInstruction ip[1];
-	struct libc *libcvec[1];
+	struct libc nfc0;
+	struct libc *libcvec[1] = {&nfc0};
 
 	memset(ip, 0, sizeof(ip));
-	memset(libcvec, 0, sizeof(libcvec));
+	memset(&nfc0, 0, sizeof(nfc0));
 
 	for (i = 0; i < opc_last; i++) {
 		const struct opcodeRec *info = &opcode_tbl[i];

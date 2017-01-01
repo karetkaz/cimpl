@@ -27,9 +27,9 @@ typedef enum {
 	b32_bit_shr = 2 << 6,
 	b32_bit_sar = 3 << 6,
 
-	vm_size = sizeof(*(stkptr){NULL}),	// size of data element on stack
-	px_size = 4,// size in bytes of the exit instruction halt()
-	rt_size = 8,// sizeof(void*), // value used to padd pointers
+	vm_size = 4,	// size of one element on stack; must be 4: 32bits
+	px_size = 4,	// size in bytes of the exit instruction halt()
+	pad_size = 8,	// sizeof(void*), // value used to pad pointers
 	vm_regs = 255	// maximum registers for dup, set, pop, ...
 } vmOpcode;
 struct opcodeRec {
@@ -187,16 +187,6 @@ static inline void *getip(rtContext rt, size_t offset) {
 size_t vmOffset(rtContext, void *ptr);
 
 /**
- * @brief Optimize an assigment by removing extra copy of the value if it is on the top of the stack.
- * @param Runtime context.
- * @param offsBegin Begin of the byte code.
- * @param offsEnd End of the byte code.
- * @return non zero if the code was optimized.
- */
-// TODO: this function should be internal
-int optimizeAssign(rtContext, size_t offsBegin, size_t offsEnd);
-
-/**
  * @brief Emit an instruction.
  * @param Runtime context.
  * @param opc Opcode.
@@ -291,6 +281,9 @@ dbgn mapDbgStatement(rtContext rt, size_t position);
 dbgn addDbgStatement(rtContext rt, size_t start, size_t end, astn tag);
 dbgn mapDbgFunction(rtContext rt, size_t position);
 dbgn addDbgFunction(rtContext rt, symn fun);
+
+// translate error to message
+char* vmErrorMessage(vmError error);
 
 #ifdef __cplusplus
 }

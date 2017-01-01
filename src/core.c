@@ -38,6 +38,651 @@ static const char *const type_get_line = "int32 line(typename type)";
 static const char *const type_get_name = "pointer name(typename type)";
 static const char *const type_get_base = "typename base(typename type)";
 
+static void install_type(ccContext cc, ccInstall mode);
+static void install_emit(ccContext cc, ccInstall mode);
+static int install_base(rtContext rt, vmError onHalt(nfcContext));
+
+static void *rtAllocApi(rtContext rt, void *ptr, size_t size) {
+	return rtAlloc(rt, ptr, size, NULL);
+}
+
+static symn rtFindSymApi(rtContext rt, void *offs) {
+	size_t vmOffs = vmOffset(rt, offs);
+	symn sym = rtFindSym(rt, vmOffs, 0);
+	if (sym != NULL && sym->offs == vmOffs) {
+		return sym;
+	}
+	return NULL;
+}
+
+/// Initialize runtime context; @see header
+rtContext rtInit(void *mem, size_t size) {
+	rtContext rt = paddptr(mem, pad_size);
+
+	if (rt != mem) {
+		size_t diff = (char*)rt - (char*) mem;
+		size -= diff;
+	}
+
+	if (rt == NULL && size > sizeof(struct rtContextRec)) {
+		rt = malloc(size);
+	}
+
+	if (rt != NULL) {
+		memset(rt, 0, sizeof(struct rtContextRec));
+
+		*(void**)&rt->api.ccBegin = ccBegin;
+		*(void**)&rt->api.ccEnd = ccEnd;
+
+		*(void**)&rt->api.ccDefInt = ccDefInt;
+		*(void**)&rt->api.ccDefFlt = ccDefFlt;
+		*(void**)&rt->api.ccDefStr = ccDefStr;
+
+		*(void**)&rt->api.ccDefType = ccDefType;
+		*(void**)&rt->api.ccDefCall = ccDefCall;
+
+		*(void**)&rt->api.invoke = invoke;
+		*(void**)&rt->api.rtAlloc = rtAllocApi;
+		*(void**)&rt->api.rtFindSym = rtFindSymApi;
+
+		// default values
+		rt->logLevel = 7;
+		rt->foldConst = 1;
+		rt->foldInstr = 1;
+		rt->fastAssign = 1;
+		rt->genGlobals = 1;
+		rt->freeMem = mem == NULL;
+
+		*(size_t*)&rt->_size = size - sizeof(struct rtContextRec);
+		rt->_end = rt->_mem + rt->_size;
+		rt->_beg = rt->_mem;
+
+		logFILE(rt, stdout);
+	}
+	return rt;
+}
+
+/// Close runtime context; @see header
+void rtClose(rtContext rt) {
+	// close log file
+	logfile(rt, NULL, 0);
+
+	// release debugger memory
+	if (rt->dbg != NULL) {
+		freeBuff(&rt->dbg->functions);
+		freeBuff(&rt->dbg->statements);
+	}
+	// release memory
+	if (rt->freeMem) {
+		free(rt);
+	}
+}
+
+///// Compiler
+
+/// Initialize compiler context; @see header
+ccContext ccInit(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)) {
+	ccContext cc;
+
+	dieif(rt->cc != NULL, ERR_INTERNAL_ERROR);
+	dieif(rt->_beg != rt->_mem, ERR_INTERNAL_ERROR);
+	dieif(rt->_end != rt->_mem + rt->_size, ERR_INTERNAL_ERROR);
+
+	cc = (ccContext)(rt->_end - sizeof(struct ccContextRec));
+	rt->_end -= sizeof(struct ccContextRec);
+	rt->_beg += 1;	// HACK: make first symbol start not at null.
+
+	if (rt->_end < rt->_beg) {
+		fatal(ERR_MEMORY_OVERRUN);
+		return NULL;
+	}
+
+	memset(rt->_end, 0, sizeof(struct ccContextRec));
+
+	cc->rt = rt;
+	rt->cc = cc;
+
+	cc->scope = NULL;
+	cc->global = NULL;
+
+	cc->_chr = -1;
+
+	cc->fin._ptr = 0;
+	cc->fin._cnt = 0;
+	cc->fin._fin = -1;
+
+	install_type(cc, mode);
+	install_emit(cc, mode);
+	install_base(rt, onHalt);
+
+	cc->root = newNode(cc, STMT_beg);
+	cc->root->type = cc->type_vid;
+
+	return cc;
+}
+
+/// Begin a namespace; @see rtContext.api.ccBegin
+symn ccBegin(ccContext cc, const char *name) {
+	symn result = NULL;
+	if (cc == NULL) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	if (name != NULL) {
+		result = install(cc, name, ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, cc->type_vid, NULL);
+		if (result == NULL) {
+			return NULL;
+		}
+	}
+	enter(cc);
+	return result;
+}
+
+/// Close a namespace; @see rtContext.api.ccEnd
+symn ccEnd(ccContext cc, symn cls) {
+	if (cc == NULL) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	return leave(cc, cls, ATTR_stat | KIND_typ, 0, NULL);
+}
+
+/// Declare int constant; @see rtContext.api.ccDefInt
+symn ccDefInt(ccContext cc, const char *name, int64_t value) {
+	if (!cc || !name) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	name = mapstr(cc, name, -1, -1);
+	return install(cc, name, KIND_def | CAST_i32, 0, cc->type_i32, intNode(cc, value));
+}
+
+/// Declare float constant; @see rtContext.api.ccDefFlt
+symn ccDefFlt(ccContext cc, const char *name, double value) {
+	if (!cc || !name) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	name = mapstr(cc, name, -1, -1);
+	return install(cc, name, KIND_def | CAST_f64, 0, cc->type_f64, fltNode(cc, value));
+}
+
+/// Declare string constant; @see rtContext.api.ccDefStr
+symn ccDefStr(ccContext cc, const char *name, char *value) {
+	if (!cc || !name) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	name = mapstr(cc, name, -1, -1);
+	if (value != NULL) {
+		value = mapstr(cc, value, -1, -1);
+	}
+	return install(cc, name, KIND_def | CAST_ref, 0, cc->type_str, strNode(cc, value));
+}
+
+/// Install a type; @see rtContext.api.ccDefType
+symn ccDefType(ccContext cc, const char *name, unsigned size, int refType) {
+	if (!cc || !name) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	return install(cc, name, ATTR_stat | ATTR_cnst | KIND_typ | (refType ? CAST_ref : CAST_val), size, cc->type_rec, NULL);
+}
+
+/// Install an instruction
+static inline symn ccDefOpcode(ccContext cc, const char *name, symn type, vmOpcode code, int args) {
+	astn opc = newNode(cc, TOKEN_opc);
+	if (opc != NULL) {
+		opc->type = type;
+		opc->opc.code = code;
+		opc->opc.args = args;
+		return install(cc, name, ATTR_cnst | ATTR_stat | KIND_def, 0, type, opc);
+	}
+	return NULL;
+}
+
+/// Find symbol by name; @see header
+symn ccLookupSym(ccContext cc, symn in, char *name) {
+	struct astNode ast;
+	memset(&ast, 0, sizeof(struct astNode));
+	ast.kind = TOKEN_var;
+	ast.ref.name = name;
+	ast.ref.hash = rehash(name, -1) % TBL_SIZE;
+	return lookup(cc, in ? in->fields : cc->scope, &ast, NULL, 1);
+}
+
+/// Lookup symbol by offset; @see rtContext.api.rtFindSym
+symn rtFindSym(rtContext rt, size_t offs, int callsOnly) {
+	symn sym = rt->main;
+	dieif(offs > rt->_size, ERR_INVALID_OFFSET, offs);
+	if (offs > rt->vm.px + px_size) {
+		// local variable on stack ?
+		return NULL;
+	}
+	if (offs >= sym->offs && offs < sym->offs + sym->size) {
+		// is the main function ?
+		return sym;
+	}
+	for (sym = sym->fields; sym; sym = sym->global) {
+		if (callsOnly && sym->params == NULL) {
+			continue;
+		}
+		if (offs == sym->offs) {
+			return sym;
+		}
+		if (offs > sym->offs && offs < sym->offs + sym->size) {
+			return sym;
+		}
+	}
+	return NULL;
+}
+
+
+/// private dummy on exit native function.
+static vmError haltDummy(nfcContext args) {
+	(void)args;
+	return noError;
+}
+
+/// private native function for reflection.
+static vmError typenameGetField(nfcContext args) {
+	symn sym = rtFindSymApi(args->rt, argref(args, 0));
+	if (sym == NULL) {
+		return executionAborted;
+	}
+	if (args->proto == type_get_file) {
+		retref(args, vmOffset(args->rt, sym->file));
+		return noError;
+	}
+	if (args->proto == type_get_line) {
+		reti32(args, sym->line);
+		return noError;
+	}
+	if (args->proto == type_get_name) {
+		retref(args, vmOffset(args->rt, sym->name));
+		return noError;
+	}
+	if (args->proto == type_get_base) {
+		retref(args, vmOffset(args->rt, sym->type));
+		return noError;
+	}
+	return executionAborted;
+}
+
+/**
+ * @brief Install type system.
+ * @param cc Compiler context.
+ * @param mode what to install.
+ */
+static void install_type(ccContext cc, ccInstall mode) {
+	symn type_vid, type_bol, type_chr;
+	symn type_i08, type_i16, type_i32, type_i64;
+	symn type_u08, type_u16, type_u32, type_u64;
+	symn type_f32, type_f64;
+	symn type_ptr = NULL, type_var = NULL;
+	symn type_rec, type_fun, type_obj = NULL;
+
+	type_rec = install(cc, "typename", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 0, NULL, NULL);
+	// update required variables to be able to install other types.
+	cc->type_rec = type_rec->type = type_rec;  // TODO: !cycle: typename is instance of typename
+
+	type_vid = install(cc, "void", ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, type_rec, NULL);
+	type_bol = install(cc, "bool", ATTR_stat | ATTR_cnst | KIND_typ | CAST_bit, 1, type_rec, NULL);
+	type_chr = install(cc, "char", ATTR_stat | ATTR_cnst | KIND_typ | CAST_u32, 1, type_rec, NULL);
+	type_i08 = install(cc, "int8", ATTR_stat | ATTR_cnst | KIND_typ | CAST_i32, 1, type_rec, NULL);
+	type_i16 = install(cc, "int16", ATTR_stat | ATTR_cnst | KIND_typ | CAST_i32, 2, type_rec, NULL);
+	type_i32 = install(cc, "int32", ATTR_stat | ATTR_cnst | KIND_typ | CAST_i32, 4, type_rec, NULL);
+	type_i64 = install(cc, "int64", ATTR_stat | ATTR_cnst | KIND_typ | CAST_i64, 8, type_rec, NULL);
+	type_u08 = install(cc, "uint8", ATTR_stat | ATTR_cnst | KIND_typ | CAST_u32, 1, type_rec, NULL);
+	type_u16 = install(cc, "uint16", ATTR_stat | ATTR_cnst | KIND_typ | CAST_u32, 2, type_rec, NULL);
+	type_u32 = install(cc, "uint32", ATTR_stat | ATTR_cnst | KIND_typ | CAST_u32, 4, type_rec, NULL);
+	type_u64 = install(cc, "uint64", ATTR_stat | ATTR_cnst | KIND_typ | CAST_u64, 8, type_rec, NULL);
+	type_f32 = install(cc, "float32", ATTR_stat | ATTR_cnst | KIND_typ | CAST_f32, 4, type_rec, NULL);
+	type_f64 = install(cc, "float64", ATTR_stat | ATTR_cnst | KIND_typ | CAST_f64, 8, type_rec, NULL);
+
+	if (mode & install_ptr) {
+		type_ptr = install(cc, "pointer", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * sizeof(vmOffs), type_rec, NULL);
+	}
+	if (mode & install_var) {
+		type_var = install(cc, "variant", ATTR_stat | ATTR_cnst | KIND_typ | CAST_var, 2 * sizeof(vmOffs), type_rec, NULL);
+	}
+	type_fun = install(cc, "function", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 2 * sizeof(vmOffs), type_rec, NULL);
+	if (mode & install_obj) {
+		type_obj = install(cc,  "object", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * sizeof(vmOffs), type_rec, NULL);
+	}
+
+	type_vid->pfmt = NULL;
+	type_bol->pfmt = type_fmt_signed32;
+	type_chr->pfmt = type_fmt_character;
+	type_i08->pfmt = type_fmt_signed32;
+	type_i16->pfmt = type_fmt_signed32;
+	type_i32->pfmt = type_fmt_signed32;
+	type_i64->pfmt = type_fmt_signed64;
+	type_u08->pfmt = type_fmt_unsigned32;
+	type_u16->pfmt = type_fmt_unsigned32;
+	type_u32->pfmt = type_fmt_unsigned32;
+	type_u64->pfmt = type_fmt_unsigned64;
+	type_f32->pfmt = type_fmt_float32;
+	type_f64->pfmt = type_fmt_float64;
+	type_rec->pfmt = type_fmt_typename;
+
+	cc->type_vid = type_vid;
+	cc->type_bol = type_bol;
+	cc->type_chr = type_chr;
+	cc->type_i32 = type_i32;
+	cc->type_i64 = type_i64;
+	cc->type_u32 = type_u32;
+	cc->type_u64 = type_u64;
+	cc->type_f32 = type_f32;
+	cc->type_f64 = type_f64;
+	cc->type_ptr = type_ptr;
+	cc->type_fun = type_fun;
+	cc->type_var = type_var;
+	cc->type_obj = type_obj;
+	cc->type_int = sizeof(vmOffs) > vm_size ? type_u64 : type_u32;
+
+	if (type_ptr != NULL) {
+		cc->null_ref = install(cc, "null", ATTR_stat | ATTR_cnst | KIND_def, 0, type_ptr, intNode(cc, 0));
+	}
+	cc->true_ref = install(cc, "true", ATTR_stat | ATTR_cnst | KIND_def, 0, type_bol, intNode(cc, 1));    // 0 == 0
+	cc->false_ref = install(cc, "false", ATTR_stat | ATTR_cnst | KIND_def, 0, type_bol, intNode(cc, 0));  // 0 != 0
+
+	// aliases.
+	install(cc, "int", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, sizeof(vmOffs) > vm_size ? type_i64 : type_i32));
+	install(cc, "byte", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_u08));
+	install(cc, "float", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_f32));
+	install(cc, "double", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_f64));
+
+	cc->type_str = install(cc, ".cstr", ATTR_stat | ATTR_cnst | KIND_typ | CAST_arr, sizeof(vmOffs), type_chr, NULL);
+	if (cc->type_str != NULL) {
+		// arrays without length property are c-like pointers
+		cc->type_str->pfmt = type_fmt_string;
+	}
+}
+
+/**
+ * @brief Install emit intrinsic.
+ * @param cc Compiler context.
+ * @param mode what to install.
+ */
+static void install_emit(ccContext cc, ccInstall mode) {
+	rtContext rt = cc->rt;
+
+	cc->emit_opc = install(cc, "emit", ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, cc->type_fun, NULL);
+
+	if (cc->emit_opc != NULL && (mode & installEopc) == installEopc) {
+		symn opc, type_p4x;
+		symn type_vid = cc->type_vid;
+		symn type_bol = cc->type_bol;
+		symn type_u32 = cc->type_u32;
+		symn type_i32 = cc->type_i32;
+		symn type_i64 = cc->type_i64;
+		symn type_u64 = cc->type_u64;
+		symn type_f32 = cc->type_f32;
+		symn type_f64 = cc->type_f64;
+
+		enter(cc);
+		ccDefOpcode(cc, "nop",  type_vid, opc_nop, 0);
+		ccDefOpcode(cc, "not",  type_bol, opc_not, 0);
+		ccDefOpcode(cc, "set",  type_vid, opc_set1, 1);
+		ccDefOpcode(cc, "join", type_vid, opc_sync, 1);
+		ccDefOpcode(cc, "ret",  type_vid, opc_jmpi, 0);
+		ccDefOpcode(cc, "call", type_vid, opc_call, 0);
+
+		type_p4x = install(cc, "p4x", ATTR_stat | ATTR_cnst | KIND_typ | CAST_val, 16, cc->type_rec, NULL);
+
+		if ((opc = ccBegin(cc, "dup")) != NULL) {
+			ccDefOpcode(cc, "x1", type_i32, opc_dup1, 0);
+			ccDefOpcode(cc, "x2", type_i64, opc_dup2, 0);
+			ccDefOpcode(cc, "x4", type_p4x, opc_dup4, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "load")) != NULL) {
+			// load zero
+			ccDefOpcode(cc, "z32",  type_i32, opc_lzx1, 0);
+			ccDefOpcode(cc, "z64",  type_i64, opc_lzx2, 0);
+			ccDefOpcode(cc, "z128", type_p4x, opc_lzx4, 0);
+
+			// load memory indirect
+			ccDefOpcode(cc, "i8",   type_i32 , opc_ldi1, 0);
+			ccDefOpcode(cc, "i16",  type_i32 , opc_ldi2, 0);
+			ccDefOpcode(cc, "i32",  type_i32 , opc_ldi4, 0);
+			ccDefOpcode(cc, "i64",  type_i64 , opc_ldi8, 0);
+			ccDefOpcode(cc, "i128", type_p4x , opc_ldiq, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "store")) != NULL) {
+			// store memory indirect
+			ccDefOpcode(cc, "i8",   type_vid, opc_sti1, 0);
+			ccDefOpcode(cc, "i16",  type_vid, opc_sti2, 0);
+			ccDefOpcode(cc, "i32",  type_vid, opc_sti4, 0);
+			ccDefOpcode(cc, "i64",  type_vid, opc_sti8, 0);
+			ccDefOpcode(cc, "i128", type_vid, opc_stiq, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "cmt")) != NULL) {
+			ccDefOpcode(cc, "u32", type_u32, b32_cmt, 0);
+			ccDefOpcode(cc, "u64", type_u64, b64_cmt, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "and")) != NULL) {
+			ccDefOpcode(cc, "u32", type_u32, b32_and, 0);
+			ccDefOpcode(cc, "u64", type_u64, b64_and, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "or")) != NULL) {
+			ccDefOpcode(cc, "u32", type_u32, b32_ior, 0);
+			ccDefOpcode(cc, "u64", type_u64, b64_ior, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "xor")) != NULL) {
+			ccDefOpcode(cc, "u32", type_u32, b32_xor, 0);
+			ccDefOpcode(cc, "u64", type_u64, b64_xor, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "shl")) != NULL) {
+			ccDefOpcode(cc, "u32", type_u32, b32_shl, 0);
+			ccDefOpcode(cc, "u64", type_u64, b64_shl, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+
+		if ((opc = ccBegin(cc, "shr")) != NULL) {
+			ccDefOpcode(cc, "i32", type_i32, b32_sar, 0);
+			ccDefOpcode(cc, "i64", type_i64, b64_sar, 0);
+			ccDefOpcode(cc, "u32", type_u32, b32_shr, 0);
+			ccDefOpcode(cc, "u64", type_u64, b64_shr, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "neg")) != NULL) {
+			ccDefOpcode(cc, "i32", type_i32, i32_neg, 0);
+			ccDefOpcode(cc, "i64", type_i64, i64_neg, 0);
+			ccDefOpcode(cc, "f32", type_f32, f32_neg, 0);
+			ccDefOpcode(cc, "f64", type_f64, f64_neg, 0);
+			ccDefOpcode(cc, "p4f", type_p4x, v4f_neg, 0);
+			ccDefOpcode(cc, "p2d", type_p4x, v2d_neg, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "add")) != NULL) {
+			ccDefOpcode(cc, "i32", type_i32, i32_add, 0);
+			ccDefOpcode(cc, "i64", type_i64, i64_add, 0);
+			ccDefOpcode(cc, "f32", type_f32, f32_add, 0);
+			ccDefOpcode(cc, "f64", type_f64, f64_add, 0);
+			ccDefOpcode(cc, "p4f", type_p4x, v4f_add, 0);
+			ccDefOpcode(cc, "p2d", type_p4x, v2d_add, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "sub")) != NULL) {
+			ccDefOpcode(cc, "i32", type_i32, i32_sub, 0);
+			ccDefOpcode(cc, "i64", type_i64, i64_sub, 0);
+			ccDefOpcode(cc, "f32", type_f32, f32_sub, 0);
+			ccDefOpcode(cc, "f64", type_f64, f64_sub, 0);
+			ccDefOpcode(cc, "p4f", type_p4x, v4f_sub, 0);
+			ccDefOpcode(cc, "p2d", type_p4x, v2d_sub, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "mul")) != NULL) {
+			ccDefOpcode(cc, "i32", type_i32, i32_mul, 0);
+			ccDefOpcode(cc, "i64", type_i64, i64_mul, 0);
+			ccDefOpcode(cc, "u32", type_u32, u32_mul, 0);
+			ccDefOpcode(cc, "u64", type_u32, u64_mul, 0);
+			ccDefOpcode(cc, "f32", type_f32, f32_mul, 0);
+			ccDefOpcode(cc, "f64", type_f64, f64_mul, 0);
+			ccDefOpcode(cc, "p4f", type_p4x, v4f_mul, 0);
+			ccDefOpcode(cc, "p2d", type_p4x, v2d_mul, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "div")) != NULL) {
+			ccDefOpcode(cc, "i32", type_i32, i32_div, 0);
+			ccDefOpcode(cc, "i64", type_i64, i64_div, 0);
+			ccDefOpcode(cc, "u32", type_u32, u32_div, 0);
+			ccDefOpcode(cc, "u64", type_u32, u64_div, 0);
+			ccDefOpcode(cc, "f32", type_f32, f32_div, 0);
+			ccDefOpcode(cc, "f64", type_f64, f64_div, 0);
+			ccDefOpcode(cc, "p4f", type_p4x, v4f_div, 0);
+			ccDefOpcode(cc, "p2d", type_p4x, v2d_div, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "mod")) != NULL) {
+			ccDefOpcode(cc, "i32", type_i32, i32_mod, 0);
+			ccDefOpcode(cc, "i64", type_i64, i64_mod, 0);
+			ccDefOpcode(cc, "u32", type_u32, u32_mod, 0);
+			ccDefOpcode(cc, "u64", type_u32, u64_mod, 0);
+			ccDefOpcode(cc, "f32", type_f32, f32_mod, 0);
+			ccDefOpcode(cc, "f64", type_f64, f64_mod, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "ceq")) != NULL) {
+			ccDefOpcode(cc, "i32", type_bol, i32_ceq, 0);
+			ccDefOpcode(cc, "i64", type_bol, i64_ceq, 0);
+			ccDefOpcode(cc, "f32", type_bol, f32_ceq, 0);
+			ccDefOpcode(cc, "f64", type_bol, f64_ceq, 0);
+			ccDefOpcode(cc, "p4f", type_bol, v4f_ceq, 0);
+			ccDefOpcode(cc, "p2d", type_bol, v2d_ceq, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "clt")) != NULL) {
+			ccDefOpcode(cc, "i32", type_bol, i32_clt, 0);
+			ccDefOpcode(cc, "i64", type_bol, i64_clt, 0);
+			ccDefOpcode(cc, "u32", type_bol, u32_clt, 0);
+			ccDefOpcode(cc, "u64", type_bol, u64_clt, 0);
+			ccDefOpcode(cc, "f32", type_bol, f32_clt, 0);
+			ccDefOpcode(cc, "f64", type_bol, f64_clt, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "cgt")) != NULL) {
+			ccDefOpcode(cc, "i32", type_bol, i32_cgt, 0);
+			ccDefOpcode(cc, "i64", type_bol, i64_cgt, 0);
+			ccDefOpcode(cc, "u32", type_bol, u32_cgt, 0);
+			ccDefOpcode(cc, "u64", type_bol, u64_cgt, 0);
+			ccDefOpcode(cc, "f32", type_bol, f32_cgt, 0);
+			ccDefOpcode(cc, "f64", type_bol, f64_cgt, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "min")) != NULL) {
+			ccDefOpcode(cc, "p4f", type_p4x, v4f_min, 0);
+			ccDefOpcode(cc, "p2d", type_p4x, v2d_min, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = ccBegin(cc, "max")) != NULL) {
+			ccDefOpcode(cc, "p4f", type_p4x, v4f_max, 0);
+			ccDefOpcode(cc, "p2d", type_p4x, v2d_max, 0);
+			opc->fields = ccEnd(cc, opc);
+		}
+		if ((opc = type_p4x) != NULL) {
+			enter(cc);
+			ccDefOpcode(cc, "dp3", type_f32, v4f_dp3, 0);
+			ccDefOpcode(cc, "dp4", type_f32, v4f_dp4, 0);
+			ccDefOpcode(cc, "dph", type_f32, v4f_dph, 0);
+			if ((mode & installEswz) == installEswz) {
+				unsigned i;
+				for (i = 0; i < 256; i += 1) {
+					char *name;
+					if (rt->_end - rt->_beg < 5) {
+						fatal(ERR_MEMORY_OVERRUN);
+						return;
+					}
+					rt->_beg[0] = (unsigned char) "xyzw"[(i >> 0) & 3];
+					rt->_beg[1] = (unsigned char) "xyzw"[(i >> 2) & 3];
+					rt->_beg[2] = (unsigned char) "xyzw"[(i >> 4) & 3];
+					rt->_beg[3] = (unsigned char) "xyzw"[(i >> 6) & 3];
+					rt->_beg[4] = 0;
+					name = mapstr(cc, (char*)rt->_beg, -1, -1);
+					ccDefOpcode(cc, name, type_p4x, p4x_swz, i);
+				}
+			}
+			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
+		}
+		dieif(cc->emit_opc->fields, ERR_INTERNAL_ERROR);
+		cc->emit_opc->fields = leave(cc, cc->emit_opc, ATTR_stat | KIND_typ, 0, NULL);
+	}
+
+	// export emit to the compiler context
+	if (cc->emit_opc && !(cc->emit_tag = lnkNode(cc, cc->emit_opc))) {
+		error(rt, NULL, 0, ERR_INTERNAL_ERROR);
+	}
+}
+
+/**
+ * @brief Install base functions.
+ * @param rt Runtime context.
+ * @param onHalt the function to be invoked when execution stops.
+ * @returns 0 on success
+ */
+static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
+	int error = 0;
+	ccContext cc = rt->cc;
+	symn field;
+
+	// !!! halt must be the first native call.
+	error = error || !ccDefCall(cc, onHalt ? onHalt : haltDummy, "void halt()");
+
+	// 4 reflection
+	if (cc->type_rec != NULL && cc->type_var != NULL) {
+		enter(cc);
+
+		if ((field = install(cc, "size", ATTR_cnst | KIND_var, vm_size, cc->type_i32, NULL))) {
+			field->offs = offsetOf(symn, size);
+		}
+		else {
+			error = 1;
+		}
+
+		if ((field = install(cc, "offset", ATTR_cnst | KIND_var, vm_size, cc->type_i32, NULL))) {
+			field->offs = offsetOf(symn, offs);
+			field->pfmt = "@%06x";
+		}
+		else {
+			error = 1;
+		}
+
+		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_file));
+		if (field != NULL) {// hack: change return type from pointer to string
+			field->params->type = cc->type_str;
+		}
+		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_line));
+		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_name));
+		if (field != NULL) {// hack: change return type from pointer to string
+			field->params->type = cc->type_str;
+		}
+		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_base));
+
+		/* TODO: more 4 reflection
+		error = error || !ccDefCall(rt, typenameReflect, "variant lookup(variant &obj, int options, string name, variant args...)");
+		error = error || !ccDefCall(rt, typenameReflect, "variant invoke(variant &obj, int options, string name, variant args...)");
+		// setvalue and getvalue can be done with lookup and invoke
+		error = error || !ccDefCall(rt, typenameReflect, "variant setValue(typename field, variant value)");
+		error = error || !ccDefCall(rt, typenameReflect, "variant getValue(typename field)");
+
+		error = error || !ccDefCall(rt, typenameReflect, "bool canAssign(typename type, variant value, bool strict)");
+		error = error || !ccDefCall(rt, typenameReflect, "bool instanceOf(typename type, variant obj)");
+		//~ */
+
+		dieif(cc->type_rec->fields, ERR_INTERNAL_ERROR);
+		cc->type_rec->fields = leave(cc, cc->type_rec, KIND_typ, 0, NULL);
+	}
+	return error;
+}
+
 /// Allocate, resize or free memory; @see rtContext.api.rtAlloc
 void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(rtContext, void *, size_t, char *)) {
 	/* memory manager
@@ -169,7 +814,7 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(rtContext, void *, 
 			chunk = NULL;
 		}
 	}
-	// allocate.
+		// allocate.
 	else if (size > 0) {
 		memChunk prev = chunk = rt->vm.heap;
 
@@ -195,7 +840,7 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(rtContext, void *, 
 			chunk = next;
 		}
 	}
-	// Debug.
+		// Debug.
 	else {
 		chunk = NULL;
 		if (dbg != NULL) {
@@ -231,636 +876,6 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(rtContext, void *, 
 	return chunk ? chunk->data : NULL;
 }
 
-static void *rtAllocApi(rtContext rt, void *ptr, size_t size) {
-	return rtAlloc(rt, ptr, size, NULL);
-}
-
-static symn rtFindSymApi(rtContext rt, void *offs) {
-	size_t vmOffs = vmOffset(rt, offs);
-	symn sym = rtFindSym(rt, vmOffs, 0);
-	if (sym != NULL && sym->offs == vmOffs) {
-		return sym;
-	}
-	return NULL;
-}
-
-/// Initialize runtime context; @see header
-rtContext rtInit(void *mem, size_t size) {
-	rtContext rt = paddptr(mem, rt_size);
-
-	if (rt != mem) {
-		size_t diff = (char*)rt - (char*) mem;
-		size -= diff;
-	}
-
-	if (rt == NULL && size > sizeof(struct rtContextRec)) {
-		rt = malloc(size);
-	}
-
-	if (rt != NULL) {
-		memset(rt, 0, sizeof(struct rtContextRec));
-
-		*(void**)&rt->api.ccBegin = ccBegin;
-		*(void**)&rt->api.ccEnd = ccEnd;
-
-		*(void**)&rt->api.ccDefInt = ccDefInt;
-		*(void**)&rt->api.ccDefFlt = ccDefFlt;
-		*(void**)&rt->api.ccDefStr = ccDefStr;
-
-		*(void**)&rt->api.ccDefType = ccDefType;
-		*(void**)&rt->api.ccDefCall = ccDefCall;
-
-		*(void**)&rt->api.invoke = invoke;
-		*(void**)&rt->api.rtAlloc = rtAllocApi;
-		*(void**)&rt->api.rtFindSym = rtFindSymApi;
-
-		// default values
-		rt->logLevel = 7;
-		rt->foldConst = 1;
-		rt->foldInstr = 1;
-		rt->fastAssign = 1;
-		rt->genGlobals = 1;
-		rt->freeMem = mem == NULL;
-
-		*(size_t*)&rt->_size = size - sizeof(struct rtContextRec);
-		rt->_end = rt->_mem + rt->_size;
-		rt->_beg = rt->_mem;
-
-		logFILE(rt, stdout);
-	}
-	return rt;
-}
-
-void rtClose(rtContext rt) {
-	// close log file
-	logfile(rt, NULL, 0);
-
-	// release debugger memory
-	if (rt->dbg != NULL) {
-		freeBuff(&rt->dbg->functions);
-		freeBuff(&rt->dbg->statements);
-	}
-	// release memory
-	if (rt->freeMem) {
-		free(rt);
-	}
-}
-
-/// private dummy on exit function.
-static vmError haltDummy(nfcContext args) {
-	(void)args;
-	return noError;
-}
-
-static vmError typenameGetField(nfcContext args) {
-	symn sym = rtFindSymApi(args->rt, argref(args, 0));
-	if (sym == NULL) {
-		return executionAborted;
-	}
-	if (args->proto == type_get_file) {
-		retref(args, vmOffset(args->rt, sym->file));
-		return noError;
-	}
-	if (args->proto == type_get_line) {
-		reti32(args, sym->line);
-		return noError;
-	}
-	if (args->proto == type_get_name) {
-		retref(args, vmOffset(args->rt, sym->name));
-		return noError;
-	}
-	if (args->proto == type_get_base) {
-		retref(args, vmOffset(args->rt, sym->type));
-		return noError;
-	}
-	return executionAborted;
-}
-
-// install type system
-static void install_type(ccContext cc, int mode) {
-	symn type_vid, type_bol, type_chr;
-	symn type_i08, type_i16, type_i32, type_i64;
-	symn type_u08, type_u16, type_u32, type_u64;
-	symn type_f32, type_f64;
-	symn type_ptr = NULL, type_var = NULL;
-	symn type_rec, type_fun, type_obj = NULL;
-
-	type_rec = install(cc, "typename", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 0, NULL, NULL);
-	// update required variables to be able to install other types.
-	cc->type_rec = type_rec->type = type_rec;  // TODO: !cycle: typename is instance of typename
-
-	type_vid = install(cc, "void", ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, type_rec, NULL);
-	type_bol = install(cc, "bool", ATTR_stat | ATTR_cnst | KIND_typ | CAST_bit, 1, type_rec, NULL);
-	type_chr = install(cc, "char", ATTR_stat | ATTR_cnst | KIND_typ | CAST_u32, 1, type_rec, NULL);
-	type_i08 = install(cc, "int8", ATTR_stat | ATTR_cnst | KIND_typ | CAST_i32, 1, type_rec, NULL);
-	type_i16 = install(cc, "int16", ATTR_stat | ATTR_cnst | KIND_typ | CAST_i32, 2, type_rec, NULL);
-	type_i32 = install(cc, "int32", ATTR_stat | ATTR_cnst | KIND_typ | CAST_i32, 4, type_rec, NULL);
-	type_i64 = install(cc, "int64", ATTR_stat | ATTR_cnst | KIND_typ | CAST_i64, 8, type_rec, NULL);
-	type_u08 = install(cc, "uint8", ATTR_stat | ATTR_cnst | KIND_typ | CAST_u32, 1, type_rec, NULL);
-	type_u16 = install(cc, "uint16", ATTR_stat | ATTR_cnst | KIND_typ | CAST_u32, 2, type_rec, NULL);
-	type_u32 = install(cc, "uint32", ATTR_stat | ATTR_cnst | KIND_typ | CAST_u32, 4, type_rec, NULL);
-	type_u64 = install(cc, "uint64", ATTR_stat | ATTR_cnst | KIND_typ | CAST_u64, 8, type_rec, NULL);
-	type_f32 = install(cc, "float32", ATTR_stat | ATTR_cnst | KIND_typ | CAST_f32, 4, type_rec, NULL);
-	type_f64 = install(cc, "float64", ATTR_stat | ATTR_cnst | KIND_typ | CAST_f64, 8, type_rec, NULL);
-
-	if (mode & install_ptr) {
-		type_ptr = install(cc, "pointer", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * vm_size, type_rec, NULL);
-		cc->null_ref = install(cc, "null", ATTR_stat | ATTR_cnst | KIND_var | CAST_val, vm_size, type_ptr, NULL);
-	}
-	if (mode & install_var) {
-		type_var = install(cc, "variant", ATTR_stat | ATTR_cnst | KIND_typ | CAST_var, 2 * vm_size, type_rec, NULL);
-	}
-	if (mode & install_obj) {
-		type_obj = install(cc,  "object", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * vm_size, type_rec, NULL);
-	}
-	type_fun = install(cc, "function", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 2 * vm_size, type_rec, NULL);
-
-	type_vid->pfmt = NULL;
-	type_bol->pfmt = type_fmt_signed32;
-	type_chr->pfmt = type_fmt_character;
-	type_i08->pfmt = type_fmt_signed32;
-	type_i16->pfmt = type_fmt_signed32;
-	type_i32->pfmt = type_fmt_signed32;
-	type_i64->pfmt = type_fmt_signed64;
-	type_u08->pfmt = type_fmt_unsigned32;
-	type_u16->pfmt = type_fmt_unsigned32;
-	type_u32->pfmt = type_fmt_unsigned32;
-	type_u64->pfmt = type_fmt_unsigned64;
-	type_f32->pfmt = type_fmt_float32;
-	type_f64->pfmt = type_fmt_float64;
-	type_rec->pfmt = type_fmt_typename;
-
-	cc->type_vid = type_vid;
-	cc->type_bol = type_bol;
-	cc->type_chr = type_chr;
-	cc->type_i32 = type_i32;
-	cc->type_i64 = type_i64;
-	cc->type_u32 = type_u32;
-	cc->type_u64 = type_u64;
-	cc->type_f32 = type_f32;
-	cc->type_f64 = type_f64;
-	cc->type_ptr = type_ptr;
-	cc->type_fun = type_fun;
-	cc->type_var = type_var;
-	cc->type_obj = type_obj;
-
-	// aliases.
-	install(cc, "int", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_i32));
-	install(cc, "byte", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_i08));
-	install(cc, "long", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_i64));
-	install(cc, "float", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_f32));
-	install(cc, "double", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_f64));
-
-	install(cc, "true", ATTR_stat | ATTR_cnst | KIND_def, 0, type_bol, intNode(cc, 1));   // 0 == 0
-	install(cc, "false", ATTR_stat | ATTR_cnst | KIND_def, 0, type_bol, intNode(cc, 0));  // 0 != 0
-
-	cc->type_str = install(cc, ".cstr", ATTR_stat | ATTR_cnst | KIND_typ | CAST_arr, vm_size, type_chr, NULL);
-	if (cc->type_str != NULL) {
-		// arrays without length property are c-like pointers
-		cc->type_str->pfmt = type_fmt_string;
-	}
-}
-
-// install emit operator
-static void install_emit(ccContext cc, int mode) {
-	rtContext rt = cc->rt;
-
-	cc->emit_opc = install(cc, "emit", ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, NULL, NULL);
-
-	if (cc->emit_opc && (mode & installEopc) == installEopc) {
-		symn opc, type_p4x;
-		symn type_vid = cc->type_vid;
-		symn type_bol = cc->type_bol;
-		symn type_u32 = cc->type_u32;
-		symn type_i32 = cc->type_i32;
-		symn type_i64 = cc->type_i64;
-		symn type_u64 = cc->type_u64;
-		symn type_f32 = cc->type_f32;
-		symn type_f64 = cc->type_f64;
-
-		enter(cc);
-		ccDefOpcode(cc, "nop",  type_vid, opc_nop, 0);
-		ccDefOpcode(cc, "not",  type_bol, opc_not, 0);
-		ccDefOpcode(cc, "set",  type_vid, opc_set1, 1);
-		ccDefOpcode(cc, "join", type_vid, opc_sync, 1);
-		ccDefOpcode(cc, "ret",  type_vid, opc_jmpi, 0);
-		ccDefOpcode(cc, "call", type_vid, opc_call, 0);
-
-		type_p4x = install(cc, "p4x", ATTR_stat | ATTR_cnst | KIND_typ | CAST_val, 16, cc->type_rec, NULL);
-
-		if ((opc = install(cc, "dup", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "x1", type_i32, opc_dup1, 0);
-			ccDefOpcode(cc, "x2", type_i64, opc_dup2, 0);
-			ccDefOpcode(cc, "x4", type_p4x, opc_dup4, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "load", ATTR_stat | ATTR_cnst | KIND_typ, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			// load zero
-			ccDefOpcode(cc, "z32",  type_i32, opc_lzx1, 0);
-			ccDefOpcode(cc, "z64",  type_i64, opc_lzx2, 0);
-			ccDefOpcode(cc, "z128", type_p4x, opc_lzx4, 0);
-
-			// load memory indirect
-			ccDefOpcode(cc, "i8",   type_i32 , opc_ldi1, 0);
-			ccDefOpcode(cc, "i16",  type_i32 , opc_ldi2, 0);
-			ccDefOpcode(cc, "i32",  type_i32 , opc_ldi4, 0);
-			ccDefOpcode(cc, "i64",  type_i64 , opc_ldi8, 0);
-			ccDefOpcode(cc, "i128", type_p4x , opc_ldiq, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "store", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			// store memory indirect
-			ccDefOpcode(cc, "i8",   type_vid, opc_sti1, 0);
-			ccDefOpcode(cc, "i16",  type_vid, opc_sti2, 0);
-			ccDefOpcode(cc, "i32",  type_vid, opc_sti4, 0);
-			ccDefOpcode(cc, "i64",  type_vid, opc_sti8, 0);
-			ccDefOpcode(cc, "i128", type_vid, opc_stiq, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "cmt", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {   // complement
-			enter(cc);
-			ccDefOpcode(cc, "u32", type_u32, b32_cmt, 0);
-			ccDefOpcode(cc, "u64", type_u64, b64_cmt, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "and", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "u32", type_u32, b32_and, 0);
-			ccDefOpcode(cc, "u64", type_u64, b64_and, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "or", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "u32", type_u32, b32_ior, 0);
-			ccDefOpcode(cc, "u64", type_u64, b64_ior, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "xor", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "u32", type_u32, b32_xor, 0);
-			ccDefOpcode(cc, "u64", type_u64, b64_xor, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "shl", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "u32", type_u32, b32_shl, 0);
-			ccDefOpcode(cc, "u64", type_u64, b64_shl, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-
-		if ((opc = install(cc, "shr", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "i32", type_i32, b32_sar, 0);
-			ccDefOpcode(cc, "i64", type_i64, b64_sar, 0);
-			ccDefOpcode(cc, "u32", type_u32, b32_shr, 0);
-			ccDefOpcode(cc, "u64", type_u64, b64_shr, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "neg", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "i32", type_i32, i32_neg, 0);
-			ccDefOpcode(cc, "i64", type_i64, i64_neg, 0);
-			ccDefOpcode(cc, "f32", type_f32, f32_neg, 0);
-			ccDefOpcode(cc, "f64", type_f64, f64_neg, 0);
-			ccDefOpcode(cc, "p4f", type_p4x, v4f_neg, 0);
-			ccDefOpcode(cc, "p2d", type_p4x, v2d_neg, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "add", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "i32", type_i32, i32_add, 0);
-			ccDefOpcode(cc, "i64", type_i64, i64_add, 0);
-			ccDefOpcode(cc, "f32", type_f32, f32_add, 0);
-			ccDefOpcode(cc, "f64", type_f64, f64_add, 0);
-			ccDefOpcode(cc, "p4f", type_p4x, v4f_add, 0);
-			ccDefOpcode(cc, "p2d", type_p4x, v2d_add, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "sub", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "i32", type_i32, i32_sub, 0);
-			ccDefOpcode(cc, "i64", type_i64, i64_sub, 0);
-			ccDefOpcode(cc, "f32", type_f32, f32_sub, 0);
-			ccDefOpcode(cc, "f64", type_f64, f64_sub, 0);
-			ccDefOpcode(cc, "p4f", type_p4x, v4f_sub, 0);
-			ccDefOpcode(cc, "p2d", type_p4x, v2d_sub, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "mul", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "i32", type_i32, i32_mul, 0);
-			ccDefOpcode(cc, "i64", type_i64, i64_mul, 0);
-			ccDefOpcode(cc, "u32", type_u32, u32_mul, 0);
-			ccDefOpcode(cc, "u64", type_u32, u64_mul, 0);
-			ccDefOpcode(cc, "f32", type_f32, f32_mul, 0);
-			ccDefOpcode(cc, "f64", type_f64, f64_mul, 0);
-			ccDefOpcode(cc, "p4f", type_p4x, v4f_mul, 0);
-			ccDefOpcode(cc, "p2d", type_p4x, v2d_mul, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "div", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "i32", type_i32, i32_div, 0);
-			ccDefOpcode(cc, "i64", type_i64, i64_div, 0);
-			ccDefOpcode(cc, "u32", type_u32, u32_div, 0);
-			ccDefOpcode(cc, "u64", type_u32, u64_div, 0);
-			ccDefOpcode(cc, "f32", type_f32, f32_div, 0);
-			ccDefOpcode(cc, "f64", type_f64, f64_div, 0);
-			ccDefOpcode(cc, "p4f", type_p4x, v4f_div, 0);
-			ccDefOpcode(cc, "p2d", type_p4x, v2d_div, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "mod", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "i32", type_i32, i32_mod, 0);
-			ccDefOpcode(cc, "i64", type_i64, i64_mod, 0);
-			ccDefOpcode(cc, "u32", type_u32, u32_mod, 0);
-			ccDefOpcode(cc, "u64", type_u32, u64_mod, 0);
-			ccDefOpcode(cc, "f32", type_f32, f32_mod, 0);
-			ccDefOpcode(cc, "f64", type_f64, f64_mod, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "ceq", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "i32", type_bol, i32_ceq, 0);
-			ccDefOpcode(cc, "i64", type_bol, i64_ceq, 0);
-			ccDefOpcode(cc, "f32", type_bol, f32_ceq, 0);
-			ccDefOpcode(cc, "f64", type_bol, f64_ceq, 0);
-			ccDefOpcode(cc, "p4f", type_bol, v4f_ceq, 0);
-			ccDefOpcode(cc, "p2d", type_bol, v2d_ceq, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "clt", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "i32", type_bol, i32_clt, 0);
-			ccDefOpcode(cc, "i64", type_bol, i64_clt, 0);
-			ccDefOpcode(cc, "u32", type_bol, u32_clt, 0);
-			ccDefOpcode(cc, "u64", type_bol, u64_clt, 0);
-			ccDefOpcode(cc, "f32", type_bol, f32_clt, 0);
-			ccDefOpcode(cc, "f64", type_bol, f64_clt, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "cgt", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "i32", type_bol, i32_cgt, 0);
-			ccDefOpcode(cc, "i64", type_bol, i64_cgt, 0);
-			ccDefOpcode(cc, "u32", type_bol, u32_cgt, 0);
-			ccDefOpcode(cc, "u64", type_bol, u64_cgt, 0);
-			ccDefOpcode(cc, "f32", type_bol, f32_cgt, 0);
-			ccDefOpcode(cc, "f64", type_bol, f64_cgt, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "min", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "p4f", type_p4x, v4f_min, 0);
-			ccDefOpcode(cc, "p2d", type_p4x, v2d_min, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = install(cc, "max", ATTR_stat | ATTR_cnst | KIND_def, 0, NULL, NULL)) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "p4f", type_p4x, v4f_max, 0);
-			ccDefOpcode(cc, "p2d", type_p4x, v2d_max, 0);
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		if ((opc = type_p4x) != NULL) {
-			enter(cc);
-			ccDefOpcode(cc, "dp3", type_f32, v4f_dp3, 0);
-			ccDefOpcode(cc, "dp4", type_f32, v4f_dp4, 0);
-			ccDefOpcode(cc, "dph", type_f32, v4f_dph, 0);
-			if ((mode & installEswz) == installEswz) {
-				unsigned i;
-				for (i = 0; i < 256; i += 1) {
-					char *name;
-					if (rt->_end - rt->_beg < 5) {
-						fatal(ERR_MEMORY_OVERRUN);
-						return;
-					}
-					rt->_beg[0] = (unsigned char) "xyzw"[(i >> 0) & 3];
-					rt->_beg[1] = (unsigned char) "xyzw"[(i >> 2) & 3];
-					rt->_beg[2] = (unsigned char) "xyzw"[(i >> 4) & 3];
-					rt->_beg[3] = (unsigned char) "xyzw"[(i >> 6) & 3];
-					rt->_beg[4] = 0;
-					name = mapstr(cc, (char*)rt->_beg, -1, -1);
-					ccDefOpcode(cc, name, type_p4x, p4x_swz, i);
-				}
-			}
-			opc->fields = leave(cc, opc, ATTR_stat | KIND_typ, 0, NULL);
-		}
-		dieif(cc->emit_opc->fields, ERR_INTERNAL_ERROR);
-		cc->emit_opc->fields = leave(cc, cc->emit_opc, ATTR_stat | KIND_typ, 0, NULL);
-	}
-
-	// export emit to the compiler context
-	if (cc->emit_opc && !(cc->emit_tag = lnkNode(cc, cc->emit_opc))) {
-		error(rt, NULL, 0, ERR_INTERNAL_ERROR);
-	}
-}
-
-/**
- * @brief Instal type system.
- * @param runtime context.
- + @param level warning level.
- + @param file additional file extending module
- */
-static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
-	int error = 0;
-	ccContext cc = rt->cc;
-	symn field;
-
-	// !!! halt must be the first native call.
-	error = error || !ccDefCall(cc, onHalt ? onHalt : haltDummy, "void halt()");
-
-	// 4 reflection
-	if (cc->type_rec != NULL && cc->type_var != NULL) {
-		enter(cc);
-
-		if ((field = install(cc, "size", ATTR_cnst | KIND_var, vm_size, cc->type_i32, NULL))) {
-			field->offs = offsetOf(symn, size);
-		}
-		else {
-			error = 1;
-		}
-
-		if ((field = install(cc, "offset", ATTR_cnst | KIND_var, vm_size, cc->type_i32, NULL))) {
-			field->offs = offsetOf(symn, offs);
-			field->pfmt = "@%06x";
-		}
-		else {
-			error = 1;
-		}
-
-		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_file));
-		if (field != NULL) {// hack: change return type from pointer to string
-			field->params->type = cc->type_str;
-		}
-		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_line));
-		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_name));
-		if (field != NULL) {// hack: change return type from pointer to string
-			field->params->type = cc->type_str;
-		}
-		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_base));
-
-		/* TODO: more 4 reflection
-		error = error || !ccDefCall(rt, typenameReflect, "variant lookup(variant &obj, int options, string name, variant args...)");
-		error = error || !ccDefCall(rt, typenameReflect, "variant invoke(variant &obj, int options, string name, variant args...)");
-		// setvalue and getvalue can be done with lookup and invoke
-		error = error || !ccDefCall(rt, typenameReflect, "variant setValue(typename field, variant value)");
-		error = error || !ccDefCall(rt, typenameReflect, "variant getValue(typename field)");
-
-		error = error || !ccDefCall(rt, typenameReflect, "bool canAssign(typename type, variant value, bool strict)");
-		error = error || !ccDefCall(rt, typenameReflect, "bool instanceOf(typename type, variant obj)");
-		//~ */
-
-		dieif(cc->type_rec->fields, ERR_INTERNAL_ERROR);
-		cc->type_rec->fields = leave(cc, cc->type_rec, KIND_typ, 0, NULL);
-	}
-	return error;
-}
-
-///// Compiler
-
-/// Initialze compiler context; @see header
-ccContext ccInit(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)) {
-	ccContext cc;
-
-	dieif(rt->cc != NULL, ERR_INTERNAL_ERROR);
-	dieif(rt->_beg != rt->_mem, ERR_INTERNAL_ERROR);
-	dieif(rt->_end != rt->_mem + rt->_size, ERR_INTERNAL_ERROR);
-
-	cc = (ccContext)(rt->_end - sizeof(struct ccContextRec));
-	rt->_end -= sizeof(struct ccContextRec);
-	rt->_beg += 1;	// HACK: make first symbol start not at null.
-
-	if (rt->_end < rt->_beg) {
-		fatal(ERR_MEMORY_OVERRUN);
-		return NULL;
-	}
-
-	memset(rt->_end, 0, sizeof(struct ccContextRec));
-
-	cc->rt = rt;
-	rt->cc = cc;
-
-	cc->scope = NULL;
-	cc->global = NULL;
-
-	cc->_chr = -1;
-
-	cc->fin._ptr = 0;
-	cc->fin._cnt = 0;
-	cc->fin._fin = -1;
-
-	install_type(cc, mode);
-	install_emit(cc, mode);
-	install_base(rt, onHalt);
-
-	cc->root = newNode(cc, STMT_beg);
-	cc->root->type = cc->type_vid;
-
-	return cc;
-}
-
-/// Begin a namespace; @see rtContext.api.ccBegin
-symn ccBegin(ccContext cc, const char *name) {
-	symn result = NULL;
-	if (cc == NULL) {
-		trace(ERR_INTERNAL_ERROR);
-		return NULL;
-	}
-	if (name != NULL) {
-		result = install(cc, name, ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, cc->type_vid, NULL);
-	}
-	enter(cc);
-	return result;
-}
-
-/// Close a namespace; @see rtContext.api.ccEnd
-symn ccEnd(ccContext cc, symn cls) {
-	if (cc == NULL) {
-		trace(ERR_INTERNAL_ERROR);
-		return NULL;
-	}
-	return leave(cc, cls, ATTR_stat | KIND_typ, vm_size, NULL);
-}
-
-/// Declare int constant; @see rtContext.api.ccDefInt
-symn ccDefInt(ccContext cc, const char *name, int64_t value) {
-	if (!cc || !name) {
-		trace(ERR_INTERNAL_ERROR);
-		return NULL;
-	}
-	name = mapstr(cc, name, -1, -1);
-	return install(cc, name, KIND_def | CAST_i32, 0, cc->type_i32, intNode(cc, value));
-}
-/// Declare float constant; @see rtContext.api.ccDefFlt
-symn ccDefFlt(ccContext cc, const char *name, double value) {
-	if (!cc || !name) {
-		trace(ERR_INTERNAL_ERROR);
-		return NULL;
-	}
-	name = mapstr(cc, name, -1, -1);
-	return install(cc, name, KIND_def | CAST_f64, 0, cc->type_f64, fltNode(cc, value));
-}
-/// Declare string constant; @see rtContext.api.ccDefStr
-symn ccDefStr(ccContext cc, const char *name, char *value) {
-	if (!cc || !name) {
-		trace(ERR_INTERNAL_ERROR);
-		return NULL;
-	}
-	name = mapstr(cc, name, -1, -1);
-	if (value != NULL) {
-		value = mapstr(cc, value, -1, -1);
-	}
-	return install(cc, name, KIND_def | CAST_ref, 0, cc->type_str, strNode(cc, value));
-}
-
-/// Install a type; @see rtContext.api.ccDefType
-symn ccDefType(ccContext cc, const char *name, unsigned size, int refType) {
-	if (!cc || !name) {
-		trace(ERR_INTERNAL_ERROR);
-		return NULL;
-	}
-	return install(cc, name, ATTR_stat | ATTR_cnst | KIND_typ | (refType ? CAST_ref : CAST_val), size, cc->type_rec, NULL);
-}
-
-/// Find symbol by name; @see header
-symn ccLookupSym(ccContext cc, symn in, char *name) {
-	struct astNode ast;
-	memset(&ast, 0, sizeof(struct astNode));
-	ast.kind = TOKEN_var;
-	ast.ref.name = name;
-	ast.ref.hash = rehash(name, -1) % TBL_SIZE;
-	return lookup(cc, in ? in->fields : cc->scope, &ast, NULL, 1);
-}
-
-/// Lookup symbol by offset; @see rtContext.api.rtFindSym
-symn rtFindSym(rtContext rt, size_t offs, int callsOnly) {
-	symn sym = rt->main;
-	dieif(offs > rt->_size, ERR_INVALID_OFFSET, offs);
-	if (offs > rt->vm.px + px_size) {
-		// local variable on stack ?
-		return NULL;
-	}
-	if (offs >= sym->offs && offs < sym->offs + sym->size) {
-		// is the main function ?
-		return sym;
-	}
-	for (sym = sym->fields; sym; sym = sym->global) {
-		if (callsOnly && sym->params == NULL) {
-			continue;
-		}
-		if (offs == sym->offs) {
-			return sym;
-		}
-		if (offs > sym->offs && offs < sym->offs + sym->size) {
-			return sym;
-		}
-	}
-	return NULL;
-}
 
 ///// Debugger
 
@@ -1054,4 +1069,40 @@ dbgn addDbgFunction(rtContext rt, symn fun) {
 		}
 	}
 	return result;
+}
+
+char* vmErrorMessage(vmError error) {
+	switch (error) {
+		case noError:
+			return NULL;
+
+		case invalidIP:
+			return "Invalid instruction pointer";
+
+		case invalidSP:
+			return "Invalid stack pointer";
+
+		case illegalInstruction:
+			return "Invalid instruction";
+
+		case stackOverflow:
+			return "Stack Overflow";
+
+		case divisionByZero:
+			return "Division by Zero";
+
+		case libCallAbort:
+			return "External call aborted execution";
+
+		case memReadError:
+			return "Access violation reading memory";
+
+		case memWriteError:
+			return "Access violation writing memory";
+
+		case executionAborted:
+			break;
+	}
+
+	return "Unknown error";
 }

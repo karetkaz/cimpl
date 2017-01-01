@@ -25,7 +25,7 @@ Basic types
 
 	pointer
 	variant
-	typename        // compilers internal type reprezentation structure
+	typename        // compilers internal type representation structure
 	function        // base type of all functions.
 	object          // base class of all reference types.
 
@@ -351,11 +351,6 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 					break;
 				}
 
-				// if null is passed by ref it will be as a cast
-				if (args->kind == TOKEN_var && args->ref.link == cc->null_ref) {
-					hascast += 1;
-				}
-
 				else if (!canAssign(cc, params, args, 1)) {
 					hascast += 1;
 				}
@@ -366,7 +361,6 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 			}
 
 			if (sym->params != NULL && (args || params)) {
-				debug("%.T(%t, %T)", sym, args, params);
 				continue;
 			}
 		}
@@ -383,7 +377,7 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 
 		found += 1;
 		// if we are here then sym is found, but it has implicit cast in it
-		debug("%?s:%?u: %t%s is probably %T", ref->file, ref->line, ref, arguments ? "()" : "", sym);
+		debug("%?s:%?u: %t(%t) is probably %T", ref->file, ref->line, ref, arguments, sym);
 	}
 
 	if (sym == NULL && best) {
@@ -883,6 +877,8 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	if (lnk == cc->null_ref) {
 		if (typ != NULL) {
 			switch (castOf(typ)) {
+				default:
+					break;
 				case CAST_ref:
 					// assign null to a reference type
 					return CAST_ref;
@@ -894,8 +890,13 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 					return CAST_arr;
 			}
 		}
-		if (varCast == CAST_ref) {
-			return CAST_ref;
+		switch (varCast) {
+			default:
+				break;
+			case CAST_ref:
+			case CAST_var:
+			case CAST_arr:
+				return varCast;
 		}
 	}
 
@@ -1003,7 +1004,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 		return castOf(typ);
 	}
 
-	trace("%T := %T(%t)", var, val->type, val);
+	trace("%?s:%?u: %T := %T(%t)", val->file, val->line, var, val->type, val);
 	return CAST_any;
 }
 
@@ -1063,7 +1064,6 @@ static symn promote(symn lht, symn rht) {
 		else switch (castKind(rht)) {
 				default:
 					break;
-				case CAST_bit:
 				case CAST_i32:
 				case CAST_i64:
 				case CAST_u32:
@@ -1071,7 +1071,6 @@ static symn promote(symn lht, symn rht) {
 					switch (castKind(lht)) {
 						default:
 							break;
-						case CAST_bit:
 						case CAST_i32:
 						case CAST_i64:
 						case CAST_u32:
@@ -1095,7 +1094,6 @@ static symn promote(symn lht, symn rht) {
 				case CAST_f64: switch (castKind(lht)) {
 						default:
 							break;
-						case CAST_bit:
 						case CAST_i32:
 						case CAST_i64:
 						case CAST_u32:

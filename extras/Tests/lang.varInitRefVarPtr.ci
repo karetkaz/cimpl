@@ -1,4 +1,9 @@
-// Assign variable to reference, pointer and variant.
+// Assign value variable to reference, pointer and variant.
+
+static if (!integer) {
+inline integer = int32;
+}
+
 integer value = 33;
 integer valueRef& = value;
 pointer valuePtr = value;
@@ -18,7 +23,7 @@ variant nullVar = null;
 pointer typePtr = integer;
 variant typeVar = integer;
 
-// Assign typenames to pointer
+// Assign type names to pointer
 pointer ptrVoid = void;
 pointer ptrBool = bool;
 pointer ptrChar = char;
@@ -38,7 +43,7 @@ pointer ptrPointer = pointer;
 pointer ptrVariant = variant;
 pointer ptrObject = object;
 
-// Assign typenames to variant
+// Assign type names to variant
 variant varVoid = void;
 variant varBool = bool;
 variant varChar = char;
@@ -62,7 +67,7 @@ variant varObject = object;
 variant copyPtrFloat64 = ptrFloat64;
 
 // Assign variant to pointer: discards typename and copy reference
-pointer copyVarFloat64 = varFloat64;
+pointer copyVarFloat64 = varFloat64;  // FIXME: raise a warning
 
 /* TODO: not working yet
 valueRef = value;

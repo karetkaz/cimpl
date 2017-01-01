@@ -7,7 +7,7 @@
  *
 *******************************************************************************/
 #ifndef CC_INTERNAL_H
-#define CC_INTERNAL_H 2
+#define CC_INTERNAL_H
 
 #include "vmCore.h"
 #include "ccCore.h"
@@ -18,6 +18,8 @@
 	0: show where errors were raised
 	1: trace errors to their root
 	2: include debug messages
+	3: include debug messages from code generator
+	4: include debug messages from code emitter
  	if not defined no extra messages and extra checks are performed.
 */
 #define DEBUGGING 1
@@ -70,7 +72,7 @@ static inline void *getBuff(struct arrBuffer *buff, int idx) {
 	return buff->ptr + pos;
 }
 
-/// Symbol node types and variables
+/// Symbol node: types and variables
 struct symNode {
 	char	*name;		// symbol name
 	char	*file;		// declared in file
@@ -216,8 +218,11 @@ struct ccContextRec {
 	symn	type_fun;		// function
 	symn	type_obj;		// object
 	symn	type_str;		// string
+	symn	type_int;		// length / index
 
 	symn	null_ref;		// variable null
+	symn	true_ref;		// variable true
+	symn	false_ref;		// variable false
 
 	symn	emit_opc;		// emit intrinsic function, or whatever it is.
 	astn	emit_tag;		// "emit"
@@ -280,7 +285,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise);
  * @param rhs variable to be assigned to.
  * @param val value to be assigned.
  * @param strict Strict mode: casts are not enabled.
- * @return cast of the assignmet if it can be done.
+ * @return cast of the assignment if it can be done.
  */
 ccKind canAssign(ccContext, symn rhs, astn val, int strict);
 
@@ -377,17 +382,6 @@ static inline astn chainArgs(astn args) {
 	return next;
 }
 
-static inline symn ccDefOpcode(ccContext cc, const char *name, symn type, vmOpcode code, int args) {
-	astn opc = newNode(cc, TOKEN_opc);
-	if (opc != NULL) {
-		opc->type = type;
-		opc->opc.code = code;
-		opc->opc.args = args;
-		return install(cc, name, ATTR_cnst | ATTR_stat | KIND_def, vm_size, type, opc);
-	}
-	return NULL;
-}
-
 
 //             *** Parsing section
 /**
@@ -472,7 +466,7 @@ enum Format {
 	prValue = prOneLine,
 	prShort = prSymQual | prSymArgs | prSymType | prOneLine ,	// %t, %T
 	prFull = prAttr | prSymQual | prSymArgs | prSymType | prSymInit,		// %+t, %-t, %+T, %-T
-	prDbg = prAttr | prAstType | prSymQual | prSymArgs | prSymType | prSymInit
+	prDbg = prAttr | prAstType | prSymQual | prSymArgs | prSymType | prSymInit | prAsmAddr | prAsmName | 9
 };
 
 void printSym(FILE *out, const char **esc, symn sym, int mode, int indent);
@@ -512,9 +506,9 @@ void printErr(rtContext rt, int level, const char *file, int line, const char *m
  */
 void dumpApi(rtContext rt, userContext ctx, void action(userContext, symn));
 
-int vmSelfTest();
 
 //             *** General
+
 /** Calculate hash of string.
  * @brief calculate the hash of a string.
  * @param str string to be hashed.
@@ -540,6 +534,17 @@ static inline size_t padded(size_t offs, unsigned align) {
 	return (offs + (align - 1)) & ~(align - 1);
 }
 
+int vmSelfTest();
+
+/**
+ * @brief Optimize an assignment by removing extra copy of the value if it is on the top of the stack.
+ * @param Runtime context.
+ * @param offsBegin Begin of the byte code.
+ * @param offsEnd End of the byte code.
+ * @return non zero if the code was optimized.
+ */
+int optimizeAssign(rtContext, size_t offsBegin, size_t offsEnd);
+
 
 static inline int isStatic(symn sym) {
 	return (sym->kind & ATTR_stat) != 0;
@@ -557,29 +562,7 @@ static inline int isVariable(symn sym) {
 	return (sym->kind & MASK_kind) == KIND_var;
 }
 static inline int isTypename(symn sym) {
-	if (sym == NULL) {
-		return 0;
-	}
-
-	switch (sym->kind & MASK_kind) {
-		case KIND_var:
-		case KIND_fun:
-		default:
-			break;
-
-		case KIND_typ:
-			return 1;
-
-		case KIND_def:
-			// alias to typename
-			// dieif(sym->type != cc->type_rec);
-			if (sym->init != NULL && sym->init->kind == TOKEN_var) {
-				return isTypename(sym->init->ref.link);
-			}
-			break;
-	}
-
-	return 0;
+	return (sym->kind & MASK_kind) == KIND_typ;
 }
 static inline int isArrayType(symn sym) {
 	return (sym->kind & (MASK_kind | MASK_cast)) == (KIND_typ | CAST_arr);
@@ -592,8 +575,11 @@ static inline ccKind castOf(symn sym) {
 }
 
 //             *** Plugins
-void closeLibs();
 int importLib(rtContext rt, const char *path);
+void closeLibs();
+
+
+//             *** Error and warning messages
 
 #define ERR_INTERNAL_ERROR "Internal Error"
 #define ERR_MEMORY_OVERRUN "Memory Overrun"
@@ -618,7 +604,7 @@ int importLib(rtContext rt, const char *path);
 #define ERR_UNEXPECTED_TOKEN "unexpected token `%.t`"
 #define ERR_UNMATCHED_TOKEN "unexpected token `%?.t`, matching `%.k`"
 #define ERR_UNEXPECTED_QUAL "unexpected qualifier `%.t` declared more than once"
-#define ERR_UNEXPECTED_ATTR "unexpected attribute `%K`"
+#define ERR_UNEXPECTED_ATTR "unexpected attribute `%?K`"
 
 // Type checker errors
 #define ERR_INVALID_PROTO "invalid declaration: `%s`"
@@ -641,14 +627,14 @@ int importLib(rtContext rt, const char *path);
 // Code generator errors
 #define ERR_INVALID_JUMP "`%t` statement is invalid due to previous variable declaration within loop"
 #define ERR_CAST_EXPRESSION "can not emit expression: %t, invalid cast(%K -> %K)"
+#define ERR_EMIT_EXPRESSION "can not emit expression: %t"
 #define ERR_EMIT_STATEMENT "can not emit statement: %t"
-#define ERR_EMIT_VARIABLE "can not emit variable: %t"
 #define ERR_EMIT_FUNCTION "can not emit function: %T"
 
 #define ERR_INVALID_INSTRUCTION "invalid instruction: %.A @%06x"
 #define ERR_INVALID_OFFSET "invalid reference: %06x"
 
-#define ERR_EXEC_INSTRUCTION "%s executing instruction: %.A @%06x"
+#define ERR_EXEC_INSTRUCTION "%s at .%06x in function: <%?.T%?+d> executing instruction: %.A"
 
 #define WARN_EMPTY_STATEMENT "empty statement `;`."
 #define WARN_USE_BLOCK_STATEMENT "statement should be a block statement {%t}."
@@ -695,24 +681,40 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 #define warn(__ENV, __LEVEL, __FILE, __LINE, msg, ...) do { printErr(__ENV, __LEVEL, __FILE, __LINE, msg, ##__VA_ARGS__); } while(0)
 #define info(__ENV, __FILE, __LINE, msg, ...) do { printErr(__ENV, 0, __FILE, __LINE, msg, ##__VA_ARGS__); } while(0)
 
-#ifndef DEBUGGING	// disable compiler debugging
+#ifndef DEBUGGING	// disable debugging
 #define logif(__EXP, msg, ...) do {} while(0)
 #define debug(msg, ...) do {} while(0)
 #define trace(msg, ...) do {} while(0)
-#define traceAst(__AST) do {} while(0)
 #else
-#define logif(__EXP, msg, ...) do { if (__EXP) prerr("todo", msg, ##__VA_ARGS__); } while(0)
-#if DEBUGGING >= 2	// enable debug
-#define debug(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
-#else
-#define debug(msg, ...) do {} while(0)
-#endif
+
+#define logif(__EXP, msg, ...) do { if (__EXP) { prerr("todo("#__EXP")", msg, ##__VA_ARGS__); _break(); } } while(0)
+
 #if DEBUGGING >= 1	// enable trace
 #define trace(msg, ...) do { prerr("trace", msg, ##__VA_ARGS__); } while(0)
 #else
 #define trace(msg, ...) do {} while(0)
 #endif
-#define traceAst(__AST) do { trace("%t", __AST); } while(0)
+
+#if DEBUGGING >= 2	// enable debug
+#define debug(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
+#else
+#define debug(msg, ...) do {} while(0)
 #endif
+
+#if DEBUGGING >= 3	// enable debug
+#define dbgCgen(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
+#else
+#define dbgCgen(msg, ...) do {} while(0)
+#endif
+
+#if DEBUGGING >= 4	// enable debug
+#define dbgEmit(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
+#else
+#define dbgEmit(msg, ...) do {} while(0)
+#endif
+
+#endif
+
+#define traceAst(__AST) do { trace("%t", __AST); } while(0)
 
 #endif

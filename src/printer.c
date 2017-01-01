@@ -138,6 +138,7 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 			}
 			printStr(out, esc, "\n");
 		} break;
+		case STMT_pbeg:
 		case STMT_beg: {
 			astn list;
 			if (mode == prName) {
@@ -215,8 +216,9 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 			}
 			break;
 		}
-		case STMT_for:
-		case STMT_pfor: {
+		case STMT_pfor:
+		case STMT_sfor:
+		case STMT_for: {
 			printStr(out, esc, token_tbl[kind].name);
 			if (mode == prName) {
 				break;
@@ -686,7 +688,7 @@ static void FPUTFMT(FILE *out, const char **esc, const char *msg, va_list ap) {
 					ccKind arg = va_arg(ap, unsigned);
 					char *_stat = "";
 					char *_const = "";
-					char *_member = "";
+					char *_paral = "";
 					char *_kind = "";
 					char *_cast = NULL;
 
@@ -747,7 +749,7 @@ static void FPUTFMT(FILE *out, const char **esc, const char *msg, va_list ap) {
 								_kind = _cast;
 								_cast = NULL;
 							}
-							else {
+							else if (!nil) {
 								_kind = "inline";
 							}
 							break;
@@ -771,11 +773,14 @@ static void FPUTFMT(FILE *out, const char **esc, const char *msg, va_list ap) {
 					if (arg & ATTR_cnst) {
 						_const = "const ";
 					}
+					if (arg & ATTR_paral) {
+						_const = "parallel ";
+					}
 					if (_cast != NULL) {
-						snprintf(buff, sizeof(buff), "%s%s%s%s(%s)", _stat, _const, _member, _kind, _cast);
+						snprintf(buff, sizeof(buff), "%s%s%s%s(%s)", _stat, _const, _paral, _kind, _cast);
 					}
 					else {
-						snprintf(buff, sizeof(buff), "%s%s%s%s", _stat, _const, _member, _kind);
+						snprintf(buff, sizeof(buff), "%s%s%s%s", _stat, _const, _paral, _kind);
 					}
 					str = buff;
 					break;

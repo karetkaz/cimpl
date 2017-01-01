@@ -229,13 +229,104 @@ static int b32swap(nfcContext args) {
 //#}#endregion
 
 //#{#region file operations
-static inline size_t argpos(size_t *argp, size_t size) {
-	size_t result = *argp;
-	*argp += padded(size ? size : 1, vm_size);
+
+typedef struct {
+	void *data;
+	union {
+		symn type;
+		size_t length;
+	};
+} nfcValue;
+
+typedef struct {
+	const nfcContext ctx;
+	symn res;
+	symn arg;
+} nfcArg;
+
+static inline nfcArg nfcInitArg(nfcContext nfc) {
+	nfcArg result = {
+		.ctx = nfc,
+		.res = nfc->sym->params,
+		.arg = nfc->sym->params,
+	};
 	return result;
 }
+static inline size_t nfcNextArg(nfcArg *args) {
+	args->arg = args->arg->next;
+	return args->res->offs - args->res->size - args->arg->offs;
+}
 
-#define debugFILE(msg, ...) //do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
+static inline int32_t nfcNextI32(nfcArg *args) {
+	size_t offset = nfcNextArg(args);
+	dieif(castOf(args->arg) != CAST_i32, ERR_INTERNAL_ERROR"%T", args->arg);
+	return argi32(args->ctx, offset);
+}
+static inline int64_t nfcNextI64(nfcArg *args) {
+	size_t offset = nfcNextArg(args);
+	dieif(castOf(args->arg) != CAST_i64, ERR_INTERNAL_ERROR);
+	return argi64(args->ctx, offset);
+}
+static inline uint32_t nfcNextU32(nfcArg *args) {
+	size_t offset = nfcNextArg(args);
+	dieif(castOf(args->arg) != CAST_u32, ERR_INTERNAL_ERROR"%T", args->arg);
+	return (uint32_t) argi32(args->ctx, offset);
+}
+static inline uint64_t nfcNextU64(nfcArg *args) {
+	size_t offset = nfcNextArg(args);
+	dieif(castOf(args->arg) != CAST_u64, ERR_INTERNAL_ERROR);
+	return (uint64_t) argi64(args->ctx, offset);
+}
+static inline float32_t nfcNextF32(nfcArg *args) {
+	size_t offset = nfcNextArg(args);
+	dieif(castOf(args->arg) != CAST_f32, ERR_INTERNAL_ERROR);
+	return argf32(args->ctx, offset);
+}
+static inline float64_t nfcNextF64(nfcArg *args) {
+	size_t offset = nfcNextArg(args);
+	dieif(castOf(args->arg) != CAST_f64, ERR_INTERNAL_ERROR);
+	return argf64(args->ctx, offset);
+}
+static inline void* nfcNextRef(nfcArg *args) {
+	size_t offset = nfcNextArg(args);
+	dieif(castOf(args->arg) != CAST_ref, ERR_INTERNAL_ERROR);
+	return argref(args->ctx, offset);
+}
+static inline nfcValue nfcNextVar(nfcArg *args) {
+	nfcValue result;
+	size_t offset = nfcNextArg(args);
+	dieif(castOf(args->arg) != CAST_var, ERR_INTERNAL_ERROR);
+	result.data = argref(args->ctx, offset);
+	offset += sizeof(vmOffs);
+	switch (castOf(args->arg)) {
+		default:
+			fatal(ERR_INTERNAL_ERROR);
+			break;
+
+		case CAST_ref:
+			result.type = NULL;
+			break;
+
+		case CAST_var:
+			result.type = argref(args->ctx, offset);
+			break;
+
+		case CAST_arr:
+			// FIXME: length may be missing || static || 32 bit || 64 bit
+			result.length = (size_t) argi32(args->ctx, offset);
+			break;
+	}
+
+	return result;
+}
+static inline void* nfcNextHnd(nfcArg *args) {
+	size_t offset = nfcNextArg(args);
+	dieif(castOf(args->arg) != CAST_val, ERR_INTERNAL_ERROR);
+	dieif(args->arg->size != sizeof(void*), ERR_INTERNAL_ERROR);
+	return arghnd(args->ctx, offset);
+}
+
+#define debugFILE(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
 
 static const char *const proto_file = "File";
 static const char *const proto_file_open = "File open(char path[*])";
@@ -258,110 +349,107 @@ static const char *const proto_file_get_stdout = "File out";
 static const char *const proto_file_get_stderr = "File err";
 static const char *const proto_file_get_dbgout = "File dbg";
 
-static vmError FILE_open(nfcContext args) {       // File Open(char filename[]);
-	size_t argc = 0;
-	char *name = argref(args, argpos(&argc, vm_size));
+static vmError FILE_open(nfcContext ctx) {       // File open(char filename[]);
+	nfcArg args = nfcInitArg(ctx);
+	char *name = nfcNextRef(&args);
 	char *mode = NULL;
-	if (args->proto == proto_file_open) {
+	if (ctx->proto == proto_file_open) {
 		mode = "r";
 	}
-	else if (args->proto == proto_file_create) {
+	else if (ctx->proto == proto_file_create) {
 		mode = "w";
 	}
-	else if (args->proto == proto_file_append) {
+	else if (ctx->proto == proto_file_append) {
 		mode = "a";
 	}
 	FILE *file = fopen(name, mode);
-	rethnd(args, file);
+	rethnd(ctx, file);
 	debugFILE("Name: '%s', Mode: '%s', File: %x", name, mode, file);
 	return file != NULL ? noError : libCallAbort;
 }
-static vmError FILE_close(nfcContext args) {      // void close(File file);
-	FILE *file = arghnd(args, 0);
+static vmError FILE_close(nfcContext ctx) {      // void close(File file);
+	FILE *file = arghnd(ctx, 0);
 	debugFILE("File: %x", file);
 	fclose(file);
 	return noError;
 }
-static vmError FILE_stream(nfcContext args) {     // File std[in, out, err];
-	if (args->proto == proto_file_get_stdin) {
-		rethnd(args, stdin);
+static vmError FILE_stream(nfcContext ctx) {     // File std[in, out, err];
+	if (ctx->proto == proto_file_get_stdin) {
+		rethnd(ctx, stdin);
 		return noError;
 	}
-	if (args->proto == proto_file_get_stdout) {
-		rethnd(args, stdout);
+	if (ctx->proto == proto_file_get_stdout) {
+		rethnd(ctx, stdout);
 		return noError;
 	}
-	if (args->proto == proto_file_get_stderr) {
-		rethnd(args, stderr);
+	if (ctx->proto == proto_file_get_stderr) {
+		rethnd(ctx, stderr);
 		return noError;
 	}
-	if (args->proto == proto_file_get_dbgout) {
-		rethnd(args, args->rt->logFile);
+	if (ctx->proto == proto_file_get_dbgout) {
+		rethnd(ctx, ctx->rt->logFile);
 		return noError;
 	}
 
-	debugFILE("error opening stream: %x", args->proto);
+	debugFILE("error opening stream: %x", ctx->proto);
 	return executionAborted;
 }
 
-static vmError FILE_getc(nfcContext rt) {
-	FILE *file = arghnd(rt, 0);
-	reti32(rt, fgetc(file));
+static vmError FILE_getc(nfcContext ctx) {
+	FILE *file = arghnd(ctx, 0);
+	reti32(ctx, fgetc(file));
 	return noError;
 }
-static vmError FILE_peek(nfcContext rt) {
-	FILE *file = arghnd(rt, 0);
+static vmError FILE_peek(nfcContext ctx) {
+	FILE *file = arghnd(ctx, 0);
 	int chr = ungetc(getc(file), file);
-	reti32(rt, chr);
+	reti32(ctx, chr);
 	return noError;
 }
-static vmError FILE_read(nfcContext rt) {         // int read(File &f, uint8 buff[])
-	size_t argc = 0;
-	FILE *file = arghnd(rt, argpos(&argc, sizeof(FILE *)));
-	char *buff = argref(rt, argpos(&argc, vm_size));
-	int len = argi32(rt, argpos(&argc, vm_size));
-	reti32(rt, fread(buff, (size_t) len, 1, file));
+static vmError FILE_read(nfcContext ctx) {         // int read(File &f, uint8 buff[])
+	nfcArg args = nfcInitArg(ctx);
+	FILE *file = nfcNextHnd(&args);
+	nfcValue buff = nfcNextVar(&args);
+	reti32(ctx, fread(buff.data, buff.length, 1, file));
 	return noError;
 }
-static vmError FILE_gets(nfcContext args) {       // int fgets(File &f, uint8 buff[])
-	size_t argc = 0;
-	FILE *file = arghnd(args, argpos(&argc, sizeof(FILE *)));
-	char *buff = argref(args, argpos(&argc, vm_size));
-	int len = argi32(args, argpos(&argc, vm_size));
-	debugFILE("Buff: %08x[%d], File: %x", buff, len, file);
+static vmError FILE_gets(nfcContext ctx) {       // int fgets(File &f, uint8 buff[])
+	nfcArg args = nfcInitArg(ctx);
+	FILE *file = nfcNextHnd(&args);
+	nfcValue buff = nfcNextVar(&args);
+	debugFILE("Buff: %08x[%d], File: %x", buff.data, buff.length, file);
 	if (feof(file)) {
-		reti32(args, -1);
+		reti32(ctx, -1);
 	}
 	else {
 		long pos = ftell(file);
-		char *unused = fgets(buff, len, file);
-		reti32(args, ftell(file) - pos);
+		char *unused = fgets(buff.data, buff.length, file);
+		reti32(ctx, ftell(file) - pos);
 		(void)unused;
 	}
 	return noError;
 }
 
-static vmError FILE_putc(nfcContext args) {
-	size_t argc = 0;
-	FILE *file = arghnd(args, argpos(&argc, sizeof(FILE *)));
-	int data = argi32(args, argpos(&argc, vm_size));
+static vmError FILE_putc(nfcContext ctx) {
+	nfcArg args = nfcInitArg(ctx);
+	FILE *file = nfcNextHnd(&args);
+	int data = nfcNextI32(&args);
 	debugFILE("Data: %c, File: %x", data, file);
-	reti32(args, putc(data, file));
+	reti32(ctx, putc(data, file));
 	return noError;
 }
-static vmError FILE_write(nfcContext args) {      // int write(File &f, uint8 buff[])
-	size_t argc = 0;
-	FILE *file = arghnd(args, argpos(&argc, sizeof(FILE *)));
-	char *buff = argref(args, argpos(&argc, vm_size));
-	int len = argi32(args, argpos(&argc, vm_size));
-	debugFILE("Buff: %08x[%d], File: %x", buff, len, file);
-	len = fwrite(buff, (size_t) len, 1, file);
-	reti32(args, len);
+static vmError FILE_write(nfcContext ctx) {      // int write(File &f, uint8 buff[])
+	nfcArg args = nfcInitArg(ctx);
+	FILE *file = nfcNextHnd(&args);
+	nfcValue buff = nfcNextVar(&args);
+	debugFILE("Buff: %08x[%d], File: %x", buff.data, buff.length, file);
+	int len = fwrite(buff.data, buff.length, 1, file);
+	reti32(ctx, len);
 	return noError;
 }
 
-static vmError FILE_flush(nfcContext args) {
-	FILE *file = arghnd(args, 0);
+static vmError FILE_flush(nfcContext ctx) {
+	FILE *file = arghnd(ctx, 0);
 	debugFILE("File: %x", file);
 	fflush(file);
 	return noError;
@@ -452,18 +540,19 @@ enum {
 	raise_verbose = 4   // log and continue execution.
 };
 // void raise(int logLevel, string message, variant inspect, int logTrace);
-static vmError sysRaise(nfcContext args) {
-	rtContext rt = args->rt;
-	int logLevel = argi32(args, 0 * vm_size);
-	char *message = argref(args, 1 * vm_size);
-	void *varRef = argref(args, 2 * vm_size);
-	symn varType = argref(args, 3 * vm_size);
-	int maxTrace = argi32(args, 4 * vm_size);
-	char *file = argref(args, 5 * vm_size);
-	int line = argi32(args, 6 * vm_size);
+static vmError sysRaise(nfcContext ctx) {
+	rtContext rt = ctx->rt;
+	nfcArg arg = nfcInitArg(ctx);
+	int logLevel = nfcNextI32(&arg);
+	char *message = nfcNextRef(&arg);
+	nfcValue inspect = nfcNextVar(&arg);
+	int maxTrace = nfcNextI32(&arg);
+	// TODO: find a better way to get the hidden variables.
+	char *file = argref(ctx, arg.res->offs);
+	int line = argi32(ctx, arg.res->offs + sizeof(vmOffs));
 	int isOutput = 0;
 
-	// logging disabled or log level not reached.
+	// logging is disabled or log level not reached.
 	if (rt->logFile == NULL || logLevel > rt->logLevel) {
 		return noError;
 	}
@@ -484,11 +573,11 @@ static vmError sysRaise(nfcContext args) {
 	}
 
 	// print the value of the object (handy to inspect values).
-	if (varType != NULL && varRef != NULL) {
+	if (inspect.type != NULL && inspect.data != NULL) {
 		if (isOutput) {
 			printFmt(rt->logFile, NULL, ": ");
 		}
-		printVal(rt->logFile, NULL, rt, varType, varRef, prSymType, 0);
+		printVal(rt->logFile, NULL, rt, inspect.type, inspect.data, prSymType, 0);
 		isOutput = 1;
 	}
 
@@ -499,7 +588,7 @@ static vmError sysRaise(nfcContext args) {
 
 	// print stack trace skipping this function
 	if (rt->dbg != NULL && maxTrace > 0) {
-		traceCalls(rt->dbg, NULL, 1, 0, maxTrace);
+		traceCalls(rt->dbg, NULL, 1, 0, maxTrace - 1);
 	}
 
 	// abort the execution
@@ -535,27 +624,30 @@ static vmError sysTryExec(nfcContext args) {
 	return noError;
 }
 
-static vmError sysMemMgr(nfcContext rt) {
-	void *old = argref(rt, 0);
-	int size = argi32(rt, 4);
-	void *res = rtAlloc(rt->rt, old, (size_t) size, NULL);
-	retref(rt, vmOffset(rt->rt, res));
+static vmError sysMemMgr(nfcContext ctx) {
+	nfcArg arg = nfcInitArg(ctx);
+	void *old = nfcNextRef(&arg);
+	int size = nfcNextI32(&arg);
+	void *res = rtAlloc(ctx->rt, old, (size_t) size, NULL);
+	retref(ctx, vmOffset(ctx->rt, res));
 	return noError;
 }
-static vmError sysMemCpy(nfcContext rt) {
-	void *dest = argref(rt, 0 * vm_size);
-	void *src = argref(rt, 1 * vm_size);
-	int size = argi32(rt, 2 * vm_size);
+static vmError sysMemCpy(nfcContext ctx) {
+	nfcArg arg = nfcInitArg(ctx);
+	void *dest = nfcNextRef(&arg);
+	void *src = nfcNextRef(&arg);
+	int size = nfcNextI32(&arg);
 	void *res = memcpy(dest, src, (size_t) size);
-	retref(rt, vmOffset(rt->rt, res));
+	retref(ctx, vmOffset(ctx->rt, res));
 	return noError;
 }
-static vmError sysMemSet(nfcContext rt) {
-	void *dest = argref(rt, 0 * vm_size);
-	int value = argi32(rt, 1 * vm_size);
-	int size = argi32(rt, 2 * vm_size);
+static vmError sysMemSet(nfcContext ctx) {
+	nfcArg arg = nfcInitArg(ctx);
+	void *dest = nfcNextRef(&arg);
+	int value = nfcNextI32(&arg);
+	int size = nfcNextI32(&arg);
 	void *res = memset(dest, value, (size_t) size);
-	retref(rt, vmOffset(rt->rt, res));
+	retref(ctx, vmOffset(ctx->rt, res));
 	return noError;
 }
 //#}#endregion

@@ -1,4 +1,4 @@
-grammar Grammar;
+grammar Cmpl;
 
 // options {language=Java;}
 
@@ -34,8 +34,8 @@ expression
     | expression ('&=' | '|=' | '^=' | '<<=' | '>>=') expression                                  # AssignmentExpression
     | expression ('&&' | '||') expression                                                            # LogicalExpression
     | expression '?' expression ':' expression                                                   # ConditionalExpression
-    // TODO: deprecated
-    | 'emit' '(' ('struct' ',')? expressionList ')'                                            # EmitSomethingCastBySize
+    // TODO: deprecated: ('struct' ',')?
+    | 'emit' '(' ('struct' ',')? expressionList ')'                                                      # EmitIntrinsic
     ;
 
 declaration
@@ -63,7 +63,7 @@ propertyList: (property ';')+ | property (',' property)*;
 
 typename: Identifier ('.' Identifier)*;
 basetype: Identifier ('.' Identifier)*;
-property: (Literal | Identifier) '=' initializer;
+property: (Literal | Identifier) ':' initializer;
 function: typename identifier '(' parameterList? ')';
 variable: typename ('&' | '&&')? identifier ('[' ('*' | expressionList)? ']')*;
 parameter: qualifiers? (variable | function);

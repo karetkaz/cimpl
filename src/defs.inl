@@ -62,15 +62,17 @@ TOKEN_DEF(OPER_com, 0x01, 2, ",")                   // a, b
 
 //~ Statements =================================================================
 //! keep STMT_beg the first and STMT_end the last statement token
-TOKEN_DEF(STMT_beg, 0x00, 0, "{}")                  // stmt: list {...}
-TOKEN_DEF(STMT_if,  0x00, 0, "if")                  // stmt: if then else
-TOKEN_DEF(STMT_sif, 0x00, 0, "static if")           //
-TOKEN_DEF(STMT_for, 0x00, 0, "for")                 // stmt: for, while, repeat
-TOKEN_DEF(STMT_pfor,0x00, 0, "parallel for")        //
-TOKEN_DEF(STMT_con, 0x00, 0, "continue")            // stmt: continue
-TOKEN_DEF(STMT_brk, 0x00, 0, "break")               // stmt: break
-TOKEN_DEF(STMT_ret, 0x00, 0, "return")              // stmt: return
-TOKEN_DEF(STMT_end, 0x00, 0, ";")                   // stmt: expression
+TOKEN_DEF(STMT_beg, 0x00, 0, "{}")                  // block statement {...}
+TOKEN_DEF(STMT_pbeg,0x00, 0, "parallel {}")         // parralel block statement
+TOKEN_DEF(STMT_if,  0x00, 0, "if")                  // if then else
+TOKEN_DEF(STMT_sif, 0x00, 0, "static if")           // compile time if
+TOKEN_DEF(STMT_for, 0x00, 0, "for")                 // for, while, repeat
+TOKEN_DEF(STMT_pfor,0x00, 0, "parallel for")        // parralel loop statement
+TOKEN_DEF(STMT_sfor,0x00, 0, "static for")          // unroll loop compile time
+TOKEN_DEF(STMT_con, 0x00, 0, "continue")            // continue statement
+TOKEN_DEF(STMT_brk, 0x00, 0, "break")               // break statement
+TOKEN_DEF(STMT_ret, 0x00, 0, "return")              // return statement
+TOKEN_DEF(STMT_end, 0x00, 0, ";")                   // expression statement
 
 //~ temp =======================================================================
 TOKEN_DEF(LEFT_par,  0x00, 0, "(")                  // Left parenthesis

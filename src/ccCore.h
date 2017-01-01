@@ -146,11 +146,11 @@ symn ccDefType(ccContext cc, const char *name, unsigned size, int refType);
 	static vmError f64sin(nfcContext rt) {
 		float64_t x = argf64(rt, 0);	// get first argument
 		retf64(rt, sin(x));				// set the return value
-		return noError;					// no runtime error in call
+		return noError;					// do not abort execution
 	}
 	...
 	if (!rt->api.ccDefCall(rt, f64sin, "float64 sin(float64 x)")) {
-		// error reported, terminate the execution, retun error count.
+		// error was reported, terminate by returning error count.
 		return rt->errors;
 	}
  */
@@ -158,7 +158,7 @@ symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto);
 
 /**
  * @brief Compile the given file or text as a unit.
- * @param rt Runtime context.
+ * @param cc Compiler context.
  * @param warn Warning level.
  * @param file File name of input.
  * @param line First line of input.
@@ -169,7 +169,7 @@ astn ccAddUnit(ccContext cc, int warn, char *file, int line, char *text);
 
 /** Add a module / library
  * @brief Execute the libInit function then optionally compile the unit.
- * @param rt Runtime context.
+ * @param cc Compiler context.
  * @param warn warning level.
  * @param init function installing types and native functions.
  * @param unit extension file to be compiled with this library.

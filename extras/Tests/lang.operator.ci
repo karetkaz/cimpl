@@ -1,7 +1,54 @@
+// test unary and binary operators for builtin types.
 
 inline a = 96.3;
 inline b = 42.14;
 int32 shift = 2;
+
+bool boolA = true;
+bool boolB = !false;
+//bool boolPls = +boolB;  // TODO: raise the error before code generation at type check
+//bool boolNeg = -boolB;  // TODO: raise the error before code generation at type check
+//bool boolCmt = ~boolB;  // TODO: raise the error before code generation at type check
+//bool boolAdd = boolA + boolB;  // TODO: raise the error before code generation at type check
+//bool boolSub = boolA - boolB;  // TODO: raise the error before code generation at type check
+//bool boolMul = boolA * boolB;  // TODO: raise the error before code generation at type check
+//bool boolDiv = boolA / boolB;  // TODO: raise the error before code generation at type check
+//bool boolMod = boolA % boolB;  // TODO: raise the error before code generation at type check
+bool boolAnd = boolA & boolB;
+bool boolIor = boolA | boolB;
+bool boolXor = boolA ^ boolB;
+//bool boolShl = boolA << shift;
+//bool boolShr = boolA >> shift;
+bool boolNot = !boolB;
+bool boolCeq = boolA == boolB;
+bool boolCne = boolA != boolB;
+bool boolClt = boolA <  boolB;
+bool boolCle = boolA <= boolB;
+bool boolCgt = boolA >  boolB;
+bool boolCge = boolA >= boolB;
+
+char chrA = 'a';
+char chrB = 'b';
+char chrPls = +chrB;
+char chrNeg = -chrB;
+char chrCmt = ~chrB;
+char chrAdd = chrA + chrB;  // TODO: raise a warning ?
+char chrSub = chrA - chrB;
+char chrMul = chrA * chrB;
+char chrDiv = chrA / chrB;
+char chrMod = chrA % chrB;
+char chrAnd = chrA & chrB;
+char chrIor = chrA | chrB;
+char chrXor = chrA ^ chrB;
+char chrShl = chrA << shift;
+char chrShr = chrA >> shift;
+bool chrNot = !chrB;
+bool chrCeq = chrA == chrB;
+bool chrCne = chrA != chrB;
+bool chrClt = chrA <  chrB;
+bool chrCle = chrA <= chrB;
+bool chrCgt = chrA >  chrB;
+bool chrCge = chrA >= chrB;
 
 int8 i8A = a;
 int8 i8B = b;
@@ -191,11 +238,17 @@ float32 f32A = a;
 float32 f32B = b;
 float32 f32Pls = +f32B;
 float32 f32Neg = -f32B;
+//float32 f32Cmt = ~f32B;  // TODO: raise the error before code generation at type check
 float32 f32Add = f32A + f32B;
 float32 f32Sub = f32A - f32B;
 float32 f32Mul = f32A * f32B;
 float32 f32Div = f32A / f32B;
 float32 f32Mod = f32A % f32B;
+//float32 f32And = f32A & f32B;  // TODO: raise error just once
+//float32 f32Ior = f32A | f32B;
+//float32 f32Xor = f32A ^ f32B;
+//float32 f32Shl = f32A << shift;
+//float32 f32Shr = f32A >> shift;
 bool f32Not = !f32B;
 bool f32Ceq = f32A == f32B;
 bool f32Cne = f32A != f32B;
@@ -208,11 +261,17 @@ float64 f64A = a;
 float64 f64B = b;
 float64 f64Pls = +f64B;
 float64 f64Neg = -f64B;
+//float64 f64Cmt = ~f64B;  // TODO: raise error before code generation at type check
 float64 f64Add = f64A + f64B;
 float64 f64Sub = f64A - f64B;
 float64 f64Mul = f64A * f64B;
 float64 f64Div = f64A / f64B;
 float64 f64Mod = f64A % f64B;
+//float64 f64And = f64A & f64B;
+//float64 f64Ior = f64A | f64B;
+//float64 f64Xor = f64A ^ f64B;
+//float64 f64Shl = f64A << shift;
+//float64 f64Shr = f64A >> shift;
 bool f64Not = !f64B;
 bool f64Ceq = f64A == f64B;
 bool f64Cne = f64A != f64B;
@@ -221,3 +280,16 @@ bool f64Cle = f64A <= f64B;
 bool f64Cgt = f64A >  f64B;
 bool f64Cge = f64A >= f64B;
 
+/* TODO:
+mix builtin types:
+	char + uint64
+	...
+compare:
+	object +null
+	pointer +null
+	variant +null
+	typename +null
+	function +null
+
+arrays, slices, ...
+*/

@@ -1,4 +1,8 @@
-// requires `-X+glob` argument
+// requires `-X+glob` option to generate non static global variables
+
+static if (!integer) {
+inline integer = int32;
+}
 
 integer localNoInit;
 static integer globalNoInit;

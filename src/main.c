@@ -122,9 +122,11 @@ struct userContextRec {
 	unsigned dmpAsmCode:4;  // print code bytes (0-15)
 
 	unsigned dmpAst:1;      // dump syntax tree
+	unsigned dmpAstType:1;  // dump syntax tree collapsed on a single line
 	unsigned dmpAstLine:1;  // dump syntax tree collapsed on a single line
 	unsigned dmpAstBody:1;  // dump '{' on new line
 	unsigned dmpAstElIf:1;  // dump 'else if' on separate lines
+	unsigned dmpAstXML:1;   // dump ast in xml format to console
 
 	// execution statistics
 	unsigned dmpRunStat:2;  // dump execution statistics
@@ -956,12 +958,17 @@ static void dumpApiText(userContext extra, symn sym) {
 		if (extra->dmpAstLine) {
 			mode |= prOneLine;
 		}
+		if (extra->dmpAstType) {
+			mode |= prAstType;
+		}
 		printAst(out, esc, sym->init, mode, -indent);
 
 		if (extra->dmpAstLine || sym->init->kind != STMT_beg) {
 			printFmt(out, esc, "\n");
 		}
-//		dumpAstXML(stdout, esc, sym->init, mode, -indent, "main");
+		if (extra->dmpAstXML) {
+			dumpAstXML(out, esc, sym->init, mode, -indent, "main");
+		}
 	}
 
 	// print function disassembled instructions
@@ -1095,47 +1102,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 	}
 
 	if (error != noError) {
-		switch (error) {
-			default:
-				breakCause = "Unknown error";
-				break;
-
-			case noError:
-				// breakCause = NULL; // Breakpoint?
-				break;
-
-			case invalidIP:
-				breakCause = "Invalid instruction pointer";
-				break;
-
-			case invalidSP:
-				breakCause = "Invalid stack pointer";
-				break;
-
-			case illegalInstruction:
-				breakCause = "Invalid instruction";
-				break;
-
-			case stackOverflow:
-				breakCause = "Stack Overflow";
-				break;
-
-			case divisionByZero:
-				breakCause = "Division by Zero";
-				break;
-
-			case libCallAbort:
-				breakCause = "External call aborted execution";
-				break;
-
-			case memReadError:
-				breakCause = "Access violation reading memory";
-				break;
-
-			case memWriteError:
-				breakCause = "Access violation writing memory";
-				break;
-		}
+		breakCause = vmErrorMessage(error);
 		if (ctx->checked) {
 			breakMode = usr->dbgOnCaught;
 		}
@@ -1206,7 +1173,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 		if (dbg != NULL && dbg->file != NULL && dbg->line > 0) {
 			printFmt(out, esc, "%s:%u: ", dbg->file, dbg->line);
 		}
-		printFmt(out, esc, "%s at .%06x in function: <%?.T%?+d> executing instruction: %.A\n", breakCause, caller, fun, funOffs, getip(rt, caller));
+		printFmt(out, esc, ERR_EXEC_INSTRUCTION"\n", breakCause, caller, fun, funOffs, getip(rt, caller));
 	}
 	if (breakMode & dbg_trace) {
 		traceCalls(ctx, out, 1, 0, 20);
@@ -1597,6 +1564,14 @@ static int program(int argc, char *argv[]) {
 				switch (arg2[1]) {
 					default:
 						arg2 += 1;
+						break;
+					case 'x':
+						extra.dmpAstXML = 1;
+						arg2 += 2;
+						break;
+					case 't':
+						extra.dmpAstType = 1;
+						arg2 += 2;
 						break;
 					case 'l':
 						extra.dmpAstLine = 1;
@@ -2011,6 +1986,8 @@ static int usage() {
             "\n    /s                  print source code statements"
             "\n"
             "\n  -ast[*]               dump syntax tree"
+            "\n    /x                  dump syntax tree also in xml form"
+            "\n    /t                  dump sub-expression type information"
             "\n    /l                  do not expand statements (print on single line)"
             "\n    /b                  don't keep braces ('{') on the same line"
             "\n    /e                  don't keep `else if` constructs on the same line"

@@ -1,10 +1,10 @@
-function Inspector(json) {
+function Inspector(data) {
 	"use strict";
 
-	var data = json;
 	var samples = null;
+	var functions = Object.create(null);	// empty object without prototype.
 
-	function enter(calls, functions, id, tick) {
+	function enter(calls, id, tick) {
 		var call = {
 			hits: 1,
 			self: 0,
@@ -150,7 +150,7 @@ function Inspector(json) {
 			}
 		}
 
-		var i, calls = [{
+		var i, caller, callee, calls = [{
 			enter: +Infinity,
 			leave: -Infinity,
 			samples: {},
@@ -159,8 +159,6 @@ function Inspector(json) {
 			ticksPerSec: data.profile.ticksPerSec
 		}];
 
-		var caller, callee, functions = Object.create(null);	// empty object without prototype.
-
 		for (i = 0; i < data.profile.functions.length; ++i) {
 			var symbol = data.profile.functions[i];
 			functions[symbol.offs] = symbol;
@@ -168,17 +166,17 @@ function Inspector(json) {
 
 		for (i = 0; i < data.profile.callTree.length; i += recSize) {
 			var offs = data.profile.callTree[i + funIndex];
-			var time = tickIndex < 0 ? undefined : data.profile.callTree[i + tickIndex];
+			var tick = tickIndex < 0 ? undefined : data.profile.callTree[i + tickIndex];
 			var heap = heapIndex < 0 ? undefined : data.profile.callTree[i + heapIndex];
 
 			if (offs !== -1) {
-				callee = enter(calls, functions, offs, time);
+				callee = enter(calls, offs, tick);
 				calls.push(callee);
 			}
 			else {
 				callee = calls.pop();
 				caller = calls[calls.length - 1];
-				leave(calls, caller, callee, time, heap);
+				leave(calls, caller, callee, tick, heap);
 				Object.freeze(callee);
 			}
 		}
@@ -187,12 +185,8 @@ function Inspector(json) {
 			samples = calls.pop();
 			if (calls.length > 1) {
 				caller = calls[calls.length - 1];
-				leave(calls, caller, samples, 0);
+				leave(calls, caller, samples, undefined);
 			}
-			Object.freeze(samples);
-		}
-		if (calls.length === 1) {
-			samples = calls.pop();
 			Object.freeze(samples);
 		}
 	}
@@ -239,7 +233,7 @@ function Inspector(json) {
 		return result;
 	}
 
-	if (json != null) {
+	if (data != null) {
 		buildCallTree();
 	}
 

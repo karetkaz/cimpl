@@ -68,7 +68,7 @@ static inline symn addLength(ccContext cc, symn sym, astn init) {
 	}
 
 	enter(cc);
-	newField = install(cc, "length", kind | CAST_i32, vm_size, cc->type_i32, init);
+	newField = install(cc, "length", kind | castOf(cc->type_int), cc->type_int->size, cc->type_int, init);
 	sym->fields = leave(cc, sym, KIND_def, 0, NULL);
 	newField->next = oldFields;
 	return newField;
@@ -92,7 +92,7 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn typ, symn prms) {
 
 	if ((kind & MASK_cast) == CAST_ref) {
 		// debug("referencing %t", tag);
-		size = vm_size;
+		size = sizeof(vmOffs);
 	}
 
 
@@ -718,13 +718,13 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 				cast = CAST_val;
 			}
 			else {
-				arr->size = vm_size;
+				arr->size = sizeof(vmOffs);
 				cast = CAST_ref;
 			}
 			skipTok(cc, RIGHT_sqr, 1);
 		}
 		else {
-			arr->size = 2 * vm_size;
+			arr->size = 2 * sizeof(vmOffs);
 			addLength(cc, arr, NULL);
 			cast = CAST_arr;
 		}
@@ -771,7 +771,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 
 		next = cc->_tok;
 		if (tag->type == cc->type_str && !ccOpen(cc->rt, tag->ref.name, 1, NULL)) {
-			error(cc->rt, cc->file, cc->line, ERR_EXPECTED_BEFORE_TOK, "identifier", peekTok(cc, TOKEN_any));
+			error(cc->rt, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
 			return NULL;
 		}
 
@@ -828,7 +828,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 				}
 			}
 
-			debug("%?s:%?u: param `%T` used: %d times", param->file, param->line, param, usages);
+//			debug("%?s:%?u: param `%T` used: %d times", param->file, param->line, param, usages);
 			/* FIXME: cache parameters if they are used several times in the expression.
 			 * to do the caching, the variable offset must be realigned with the stack.
 			if (usages > 1) {
@@ -864,7 +864,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 	return tag;
 }
 
-/** Parse struct declaration.
+/** Parse record declaration.
  * @brief parse the declaration of a structure.
  * @param cc compiler context.
  * @param attr attributes: static or const.
@@ -1044,6 +1044,19 @@ static astn statement_if(ccContext cc, ccKind attr) {
 	skipTok(cc, LEFT_par, 1);
 	test = expression(cc);
 	if (test != NULL) {
+		// FIXME: remove special case: static if (!identifyer) {...}
+		if (attr & ATTR_stat && test->kind == OPER_not) {
+			astn idf = test->op.rhso;
+			if (idf != NULL && idf->kind == TOKEN_var) {
+				if (typeCheck(cc, NULL, idf, 0)) {
+					idf->ref.link = cc->true_ref;
+				}
+				else {
+					idf->ref.link = cc->false_ref;
+				}
+				idf->type = cc->type_bol;
+			}
+		}
 		test->type = typeCheck(cc, NULL, test, 1);
 		ast->stmt.test = test;
 	}
@@ -1059,7 +1072,6 @@ static astn statement_if(ccContext cc, ccKind attr) {
 			else {
 				enterElse = 0;
 			}
-			ast->kind = STMT_sif;
 		}
 		else {
 			error(cc->rt, ast->file, ast->line, ERR_INVALID_CONST_EXPR, ast->stmt.test);
@@ -1099,7 +1111,8 @@ static astn statement_if(ccContext cc, ccKind attr) {
  * @return parsed syntax tree.
  */
 static astn statement(ccContext cc, ccKind attr) {
-	int validStart = 1;
+	char *file;
+	int line, validStart = 1;
 	astn ast, check = NULL;
 
 	//~ skip to the first valid statement start
@@ -1127,6 +1140,8 @@ static astn statement(ccContext cc, ccKind attr) {
 		}
 	}
 
+	file = cc->file;
+	line = cc->line;
 	// scan the statement
 	if (skipTok(cc, STMT_end, 0)) {             // ;
 		warn(cc->rt, 2, cc->file, cc->line, WARN_EMPTY_STATEMENT);
@@ -1135,6 +1150,11 @@ static astn statement(ccContext cc, ccKind attr) {
 		ast->stmt.stmt = statement_list(cc);
 		skipTok(cc, RIGHT_crl, 1);
 		ast->type = cc->type_vid;
+
+		if (attr & ATTR_paral) {
+			ast->kind = STMT_pbeg;
+			attr &= ~ATTR_paral;
+		}
 
 		if (ast->stmt.stmt == NULL) {
 			// remove nodes such: {{;{;};{}{}}}
@@ -1146,7 +1166,8 @@ static astn statement(ccContext cc, ccKind attr) {
 		ast = statement_if(cc, attr);
 		if (ast != NULL) {
 			ast->type = cc->type_vid;
-			if (attr & ATTR_stat && ast->kind == STMT_sif) {
+			if (attr & ATTR_stat) {
+				ast->kind = STMT_sif;
 				attr &= ~ATTR_stat;
 			}
 		}
@@ -1155,7 +1176,12 @@ static astn statement(ccContext cc, ccKind attr) {
 		ast = statement_for(cc, attr);
 		if (ast != NULL) {
 			ast->type = cc->type_vid;
-			if (attr & ATTR_paral && ast->kind == STMT_pfor) {
+			if (attr & ATTR_stat) {
+				ast->kind = STMT_sfor;
+				attr &= ~ATTR_stat;
+			}
+			else if (attr & ATTR_paral) {
+				ast->kind = STMT_pfor;
 				attr &= ~ATTR_paral;
 			}
 		}
@@ -1208,6 +1234,7 @@ static astn statement(ccContext cc, ccKind attr) {
 		else if (isTypeExpr(ast)) {
 			backTok(cc, ast);
 			ast = declaration(cc, attr, NULL);
+			type = ast->type;
 			check = ast->ref.link->init;
 			attr &= ~(ast->ref.link->kind & MASK_attr);
 		}
@@ -1238,7 +1265,11 @@ static astn statement(ccContext cc, ccKind attr) {
 	}
 
 	if (attr != 0) {
-		error(cc->rt, __FILE__, __LINE__, ERR_UNEXPECTED_ATTR, attr);
+		if (ast != NULL) {
+			file = ast->file;
+			line = ast->line;
+		}
+		error(cc->rt, file, line, ERR_UNEXPECTED_ATTR, attr);
 	}
 
 	return ast;
@@ -1382,7 +1413,7 @@ symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 	rt->_end -= sizeof(struct list);
 	lst = (list) rt->_end;
 
-	rt->_beg = paddptr(rt->_beg, rt_size);
+	rt->_beg = paddptr(rt->_beg, pad_size);
 	nfc = (libc) rt->_beg;
 	rt->_beg += sizeof(struct libc);
 

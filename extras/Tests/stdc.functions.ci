@@ -1,0 +1,53 @@
+// test builtin native functions
+
+double pi64 = 3.14159265358979323846264338327950288419716939937510582097494459;
+double e64 = 2.71828182845904523536028747135266249775724709369995957496696763;
+
+float pi32 = pi64;
+float e32 = e64;
+
+/// pack 8 bit color components (0 .. 255) to R8G8B8 color format
+inline rgb888(int r, int g, int b) = r << 16 & 0xff0000 | g << 8 & 0xff00 | b & 0xff;
+/// pack 8 bit color components (0 .. 255) to R5G6B5 color format
+inline rgb565(int r, int g, int b) = r << 8 & 0xf800 | g << 3 & 0x07e0 | b >> 3 & 0x001f;
+
+int r_comp = 14 << 3;
+int g_comp = 63 << 2;
+int b_comp = 31 << 3;
+
+int32 r5g6b5 = rgb565(r_comp, g_comp, b_comp);
+int32 r8g8b8 = rgb888(r_comp, g_comp, b_comp);
+
+int32 zextR5 = uint32.zxt(r5g6b5, 11, 5);
+int32 zextG6 = uint32.zxt(r5g6b5, 5, 6);
+int32 zextB5 = uint32.zxt(r5g6b5, 0, 5);
+
+int32 sextR5 = uint32.sxt(r5g6b5, 11, 5);
+int32 sextG6 = uint32.sxt(r5g6b5, 5, 6);
+int32 sextB5 = uint32.sxt(r5g6b5, 0, 5);
+
+int32 zextR8 = uint32.zxt(r8g8b8, 16, 8);
+int32 zextG8 = uint32.zxt(r8g8b8, 8, 8);
+int32 zextB8 = uint32.zxt(r8g8b8, 0, 8);
+
+int32 sextR8 = uint32.sxt(r8g8b8, 16, 8);
+int32 sextG8 = uint32.sxt(r8g8b8, 8, 8);
+int32 sextB8 = uint32.sxt(r8g8b8, 0, 8);
+
+float64 sinF64 = float64.sin(pi64 / 2);
+float64 cosF64 = float64.cos(pi64 / 2);
+float64 tanF64 = float64.tan(pi64 / 4);
+float64 logF64 = float64.log(e64 * e64 * e64);
+float64 expF64 = float64.exp(1F);
+float64 powF64 = float64.pow(pi64 * pi64, .5F);
+float64 sqrtF64 = float64.sqrt(pi64 * pi64);
+float64 atanF64 = float64.atan2(pi64, 1F);
+
+float32 sinF32 = float32.sin(pi32 / 2);
+float32 cosF32 = float32.cos(pi32 / 2);
+float32 tanF32 = float32.tan(pi32 / 4);
+float32 logF32 = float32.log(e32 * e32 * e32);
+float32 expF32 = float32.exp(1f);
+float32 powF32 = float32.pow(pi32 * pi32, .5f);
+float32 sqrtF32 = float32.sqrt(pi32 * pi32);
+float32 atanF32 = float32.atan2(pi32, 1f);

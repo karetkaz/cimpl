@@ -1,0 +1,38 @@
+// test array initializations
+
+static if (!integer) {
+inline integer = int32;
+}
+
+// uninitialized arrays
+integer arrFixedNoInit[7];
+integer arrSliceNoInit[];  // FIXME: force slice to be initialized
+integer arrPtrNoInit[*];
+
+//integer arrFixedInitNull[7] = null;  // compilation error: invalid assignment
+integer arrSliceInitNull[] = null;
+integer arrPtrInitNull[*] = null;
+
+//integer arrFixedInitFixed[7] = arrFixedNoInit;  // FIXME: copy elements
+integer arrSliceInitFixed[] = arrFixedNoInit;
+integer arrPtrInitFixed[*] = arrFixedNoInit;
+
+//integer arrFixedInitSlice[7] = arrSliceInitFixed;  // compilation error: invalid assignment
+integer arrSliceInitSlice[] = arrSliceInitFixed;
+integer arrPtrInitSlice[*]  = arrSliceInitFixed;
+
+//integer arrFixedInitPtr[7] = arrPtrInitFixed;  // compilation error: invalid assignment
+//integer arrSliceInitPtr[] = arrPtrInitFixed;  // compilation error: invalid assignment
+integer arrPtrInitPtr[*] = arrPtrInitFixed;
+
+/* TODO: initialize with array literal
+integer arrFixedInitLiteral[7] = {1, 2, 3, 4};
+integer arrSliceInitLiteral[] = {1, 2, 3, 4};
+integer arrPtrInitLiteral[*] = {1, 2, 3, 4};
+// */
+
+// initialize character arrays with string literals
+//char arrFixedInitString[2] = "string";  // FIXME: compilation error: data does not fit
+//char arrFixedInitString[7] = "string";  // FIXME: copy characters
+char arrSliceInitString[] = "string";
+char arrPtrInitString[*] = "string";

@@ -27,6 +27,7 @@ case opc_nfc:  NEXT(4, 0, 0) {
 #ifdef EXEC
 	struct nfcContextRec args = {
 		.rt = rt,
+		.sym = nfc->sym,
 		.extra = extra,
 		.proto = nfc->proto,
 		.args = sp,

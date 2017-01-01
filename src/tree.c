@@ -12,7 +12,7 @@ symn newDefn(ccContext cc, ccKind kind) {
 	rtContext rt = cc->rt;
 	symn def = NULL;
 
-	rt->_beg = paddptr(rt->_beg, rt_size);
+	rt->_beg = paddptr(rt->_beg, pad_size);
 	if(rt->_beg >= rt->_end) {
 		fatal(ERR_MEMORY_OVERRUN);
 		return NULL;
@@ -311,11 +311,16 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 				default:
 					return CAST_any;
 
+				case CAST_bit:
+				case CAST_i32:
 				case CAST_i64:
+				case CAST_u32:
+				case CAST_u64:
 					res->type = cc->type_bol;
 					res->cint = !res->cint;
 					break;
 
+				case CAST_f32:
 				case CAST_f64:
 					res->type = cc->type_bol;
 					res->cint = !res->cflt;

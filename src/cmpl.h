@@ -2,8 +2,8 @@
  * Plugin sources should include only this header file.
  */
 
-#ifndef CC_API_H
-#define CC_API_H 2
+#ifndef CMPL_API_H
+#define CMPL_API_H 2
 
 #include <stdio.h> // FILE
 #include <string.h> // memcpy
@@ -30,6 +30,7 @@ typedef double float64_t;
 extern "C" {
 #endif
 
+typedef uint32_t vmOffs;						// offset
 typedef uint32_t *stkptr;						// stack
 typedef struct symNode *symn;					// symbol
 typedef struct rtContextRec *rtContext;			// runtimeContext
@@ -148,12 +149,11 @@ struct rtContextRec {
 };
 
 /**
- * @brief Native function invocation arguments.
- * @note Setting the return value may invalidate some of the arguments.
- * (The return value and the arguments begin at the same memory location.)
+ * @brief Native function invocation context.
  */
 struct nfcContextRec {
 	const rtContext rt;         // runtime context
+	const symn sym;             // the invoked function
 	const char * const proto;   // static data (passed to install)
 	const void *extra;          // extra data (passed to invoke)
 	const stkptr args;          // arguments
@@ -161,12 +161,13 @@ struct nfcContextRec {
 };
 
 /**
- * @brief Get the value of a libcall argument.
- * @param args Libcall arguments context.
+ * @brief Get the value of a native function argument.
+ * @param args Native function call arguments context.
  * @param result Optionally copy here the result.
  * @param offset Relative offset of argument.
  * @param size Size of the argument to copy to result.
  * @return Pointer where the result is located or copied.
+ * @note Getting an argument must be used with padded offset.
  */
 static inline void *argget(nfcContext args, void *result, size_t offset, size_t size) {
 	// if result is not null copy
@@ -179,14 +180,14 @@ static inline void *argget(nfcContext args, void *result, size_t offset, size_t 
 	return result;
 }
 
-// speed up of getting arguments of known types; TODO: fix padding?
+// speed up of getting arguments of known types
 #define argget(__ARGV, __OFFS, __TYPE) (*(__TYPE*)((char*)__ARGV->args + (__OFFS)))
 static inline int32_t argi32(nfcContext args, size_t offs) { return argget(args, offs, int32_t); }
 static inline int64_t argi64(nfcContext args, size_t offs) { return argget(args, offs, int64_t); }
 static inline float32_t argf32(nfcContext args, size_t offs) { return argget(args, offs, float32_t); }
 static inline float64_t argf64(nfcContext args, size_t offs) { return argget(args, offs, float64_t); }
 static inline void *arghnd(nfcContext args, size_t offs) { return argget(args, offs, void*); }
-static inline void *argref(nfcContext args, size_t offs) { int32_t p = argget(args, offs, int32_t); return p ? args->rt->_mem + p : NULL; }
+static inline void *argref(nfcContext args, size_t offs) { size_t p = argget(args, offs, vmOffs); return p ? args->rt->_mem + p : NULL; }
 #undef argget
 
 /**
@@ -195,7 +196,7 @@ static inline void *argref(nfcContext args, size_t offs) { int32_t p = argget(ar
  * @param result Pointer containing the result value.
  * @param size Size of the argument to copy to result.
  * @return Pointer where the result is located or copied.
- * @note May invalidate some of the arguments.
+ * @note Setting the return value may overwrite some arguments.
  */
 static inline void *retset(nfcContext args, void *result, size_t size) {
 	if (result != NULL) {
@@ -205,7 +206,6 @@ static inline void *retset(nfcContext args, void *result, size_t size) {
 }
 
 // speed up of setting result of known types.
-//#define retset(__ARGV, __TYPE, __VAL) (*(__TYPE*)(__ARGV)->args = (__TYPE)(__VAL))
 #define retset(__ARGV, __TYPE, __VAL) ((__TYPE*)(__ARGV->args + __ARGV->argc))[-1] = (__TYPE)(__VAL)
 static inline void reti32(nfcContext args, int32_t val) { retset(args, int32_t, val); }
 static inline void reti64(nfcContext args, int64_t val) { retset(args, int64_t, val); }
@@ -213,7 +213,7 @@ static inline void retu32(nfcContext args, uint32_t val) { retset(args, uint32_t
 static inline void retu64(nfcContext args, uint64_t val) { retset(args, uint64_t, val); }
 static inline void retf32(nfcContext args, float32_t val) { retset(args, float32_t, val); }
 static inline void retf64(nfcContext args, float64_t val) { retset(args, float64_t, val); }
-static inline void retref(nfcContext args, size_t val) { retset(args, int32_t, val); }
+static inline void retref(nfcContext args, size_t val) { retset(args, vmOffs, val); }
 static inline void rethnd(nfcContext args, void *val) { retset(args, char *, val); }
 #undef retset
 

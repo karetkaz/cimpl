@@ -1,6 +1,8 @@
-// test memory manager
+// test memory related functions
+
 inline free(pointer data) = memmgr(data, 0);
 inline malloc(int size) = memmgr(null, size);
+
 pointer p1 = malloc(1024);
 pointer p2 = memmgr(null, 80);
 pointer p3 = memmgr(null, 160);
@@ -15,3 +17,16 @@ free(p1);
 free(p2);
 free(p3);
 free(p4);
+
+// copy and clear memory
+int64 val1 = 42;
+int64 val2 = 96;
+
+raise(1, "val1", variant(&val1), 0);
+raise(1, "val2", variant(&val2), 0);
+
+memcpy(pointer(&val2), pointer(&val1), 8);
+memset(pointer(&val1), 0, 8);
+
+raise(1, "val1", variant(&val1), 0);
+raise(1, "val2", variant(&val2), 0);
