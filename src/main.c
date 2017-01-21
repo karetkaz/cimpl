@@ -1,11 +1,10 @@
 #include <time.h>
 #include <stddef.h>
 #include "internal.h"
-#include "cmpl.h"
 
 // default values
 static const int wl = 15;           // default warning level
-static char mem[8 << 20];           // 8MB runtime memory
+static char mem[512 << 10];         // 512 Kb memory compiler + runtime
 const char *STDLIB = "stdlib.cvx";  // standard library
 
 static inline int strEquals(const char *str, const char *with) {
@@ -106,42 +105,42 @@ struct userContextRec {
 	FILE *out;
 	int indent;
 
-	unsigned hasOut:1;
+	int hasOut;
 
-	unsigned dmpApi:1;      // dump symbols
-	unsigned dmpApiAll:1;   // include builtin symbols
-	unsigned dmpApiMain:1;  // include main initializer
-	unsigned dmpApiInfo:1;  // dump detailed info
-	unsigned dmpApiPrms:1;  // dump parameters and fields
-	unsigned dmpApiUsed:1;  // dump usages
+	int dmpApi;         // dump symbols
+	int dmpApiAll;      // include builtin symbols
+	int dmpApiMain;     // include main initializer
+	int dmpApiInfo;     // dump detailed info
+	int dmpApiPrms;     // dump parameters and fields
+	int dmpApiUsed;     // dump usages
 
-	unsigned dmpAsm:1;      // dump disassembled code
-	unsigned dmpAsmAddr:1;  // use global address: (@0x003d8c)
-	unsigned dmpAsmName:1;  // prefer names over addresses: <main+80>
-	unsigned dmpAsmStmt:1;  // print source code statements
-	unsigned dmpAsmCode:4;  // print code bytes (0-15)
+	int dmpAsm;         // dump disassembled code
+	int dmpAsmAddr;     // use global address: (@0x003d8c)
+	int dmpAsmName;     // prefer names over addresses: <main+80>
+	int dmpAsmStmt;     // print source code statements
+	int dmpAsmCode;     // print code bytes (0-15)
 
-	unsigned dmpAst:1;      // dump syntax tree
-	unsigned dmpAstType:1;  // dump syntax tree collapsed on a single line
-	unsigned dmpAstLine:1;  // dump syntax tree collapsed on a single line
-	unsigned dmpAstBody:1;  // dump '{' on new line
-	unsigned dmpAstElIf:1;  // dump 'else if' on separate lines
-	unsigned dmpAstXML:1;   // dump ast in xml format to console
+	int dmpAst;         // dump syntax tree
+	int dmpAstType;     // dump syntax tree collapsed on a single line
+	int dmpAstLine;     // dump syntax tree collapsed on a single line
+	int dmpAstBody;     // dump '{' on new line
+	int dmpAstElIf;     // dump 'else if' on separate lines
+	int dmpAstXML;      // dump ast in xml format to console
 
 	// execution statistics
-	unsigned dmpRunStat:2;  // dump execution statistics
-	unsigned dmpVarStat:2;  // dump global variables
-	unsigned dmpMemStat:2;  // dump runtime heap
+	int dmpRunStat;     // dump execution statistics
+	int dmpVarStat;     // dump global variables
+	int dmpMemStat;     // dump runtime heap
 
-	unsigned dmpRunTime:1;  // dump call tree
-	unsigned dmpRunCode:1;  // dump executing instructions
-	unsigned dmpRunStack:1; // dump the stack, dmpRunCode must be enabled
+	int dmpRunTime;     // dump call tree
+	int dmpRunCode;     // dump executing instructions
+	int dmpRunStack;    // dump the stack, dmpRunCode must be enabled
 
 	// debugging
-	size_t breakNext;   // break on executing instruction
 	int dbgCommand;     // last debugger command
 	int dbgOnError;     // on uncaught exception: dbg_xxx
 	int dbgOnCaught;    // on caught exception: dbg_xxx
+	size_t dbgNextBreak;// offset of the next break (used for step in, out, over, instruction)
 };
 
 static void dumpAstXML(FILE *out, const char **esc, astn ast, int mode, int indent, const char *text) {
@@ -514,18 +513,17 @@ static void jsonDumpAsm(FILE *out, const char **esc, symn sym, rtContext rt, int
 	static const char *KEY_INSN = "instruction";
 	static const char *KEY_OFFS = "offset";
 
+	size_t end = sym->offs + sym->size;
 	printFmt(out, esc, FMT_START, indent);
-
-	size_t pc, end = sym->offs + sym->size;
-	for (pc = sym->offs; pc < end; ) {
-		unsigned char *ip = getip(rt, pc);
+	for (size_t pc = sym->offs; pc < end; ) {
+		unsigned char *ip = vmPointer(rt, pc);
 		if (pc != sym->offs) {
 			printFmt(out, esc, FMT_NEXT, indent, indent);
 		}
 		printFmt(out, esc, "%I\"%s\": \"%.A\"\n", indent + 1, KEY_INSN, ip);
 		printFmt(out, esc, "%I, \"%s\": %u\n", indent + 1, KEY_OFFS, pc);
 		pc += opcode_tbl[*ip].size;
-		if (ip == getip(rt, pc)) {
+		if (ip == vmPointer(rt, pc)) {
 			break;
 		}
 	}
@@ -723,7 +721,7 @@ static void conDumpAsm(FILE *out, const char **esc, size_t offs, userContext ctx
 	}
 
 	printFmt(out, esc, "%I", indent);
-	printAsm(out, esc, ctx->rt, getip(ctx->rt, offs), mode);
+	printAsm(out, esc, ctx->rt, vmPointer(ctx->rt, offs), mode);
 	printFmt(out, esc, "\n");
 }
 static void conDumpMem(rtContext rt, void *ptr, size_t size, char *kind) {
@@ -780,7 +778,7 @@ static void conDumpProf(userContext usr) {
 				sym = rtFindSym(rt, fun->start, 1);
 			}
 			printFmt(out, esc,
-				"%?s:%?u:[.%06x, .%06x): <%?T> hits(%D/%D), time(%D%?+D / %.3F%?+.3F ms)\n", fun->file,
+				"%?s:%?u:[.%06x, .%06x): %?T, hits(%D/%D), time(%D%?+D / %.3F%?+.3F ms)\n", fun->file,
 				fun->line, fun->start, fun->end, sym, (int64_t) fun->hits, (int64_t) fun->exec,
 				(int64_t) fun->total, (int64_t) -(fun->total - fun->self),
 				fun->total / (double) CLOCKS_PER_SEC, -(fun->total - fun->self) / (double) CLOCKS_PER_SEC
@@ -806,7 +804,7 @@ static void conDumpProf(userContext usr) {
 			}
 			if (all) {
 				printFmt(out, esc,
-					"%?s:%?u:[.%06x, .%06x): <%?T+%d> hits(%D/%D), time(%D%?+D / %.3F%?+.3F ms)\n", fun->file,
+					"%?s:%?u:[.%06x, .%06x): <%?.T+%d> hits(%D/%D), time(%D%?+D / %.3F%?+.3F ms)\n", fun->file,
 					fun->line, fun->start, fun->end, sym, symOffs, (int64_t) fun->hits, (int64_t) fun->exec,
 					(int64_t) fun->total, (int64_t) -(fun->total - fun->self),
 					fun->total / (double) CLOCKS_PER_SEC, -(fun->total - fun->self) / (double) CLOCKS_PER_SEC
@@ -815,8 +813,39 @@ static void conDumpProf(userContext usr) {
 		}
 
 		printFmt(out, esc, "\n//-- coverage(functions: %.2f%%(%d/%d), statements: %.2f%%(%d/%d))\n",
-			covFunc * 100. / (nFunc ?: 1), covFunc, nFunc, covStmt * 100. / (nStmt ?: 1), covStmt, nStmt
+			covFunc * 100. / (nFunc ? nFunc : 1), covFunc, nFunc, covStmt * 100. / (nStmt ? nStmt : 1), covStmt, nStmt
 		);
+
+		if (all) {
+			printFmt(out, esc, "\n//-- functions not executed:\n");
+			fun = (dbgn) dbg->functions.ptr;
+			for (i = 0; i < nFunc; ++i, fun++) {
+				symn sym = fun->decl;
+				if (fun->hits != 0) {
+					continue;
+				}
+				if (sym == NULL) {
+					sym = rtFindSym(rt, fun->start, 1);
+				}
+				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): %?T\n", fun->file, fun->line, fun->start, fun->end, sym);
+			}
+			printFmt(out, esc, "\n//-- statements not executed:\n");
+			fun = (dbgn) rt->dbg->statements.ptr;
+			for (i = 0; i < nStmt; ++i, fun++) {
+				size_t symOffs = 0;
+				symn sym = fun->decl;
+				if (fun->hits != 0) {
+					continue;
+				}
+				if (sym == NULL) {
+					sym = rtFindSym(rt, fun->start, 1);
+				}
+				if (sym != NULL) {
+					symOffs = fun->start - sym->offs;
+				}
+				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): <%?.T+%d>\n", fun->file, fun->line, fun->start, fun->end, sym, symOffs);
+			}
+		}
 
 		printFmt(out, esc, "// */\n");
 	}
@@ -981,7 +1010,7 @@ static void dumpApiText(userContext extra, symn sym) {
 		}
 		printFmt(out, esc, "%I.instructions: [%d bytes @.%06x]\n", indent, sym->size, sym->offs);
 		for (pc = sym->offs; pc < end; ) {
-			unsigned char *ip = getip(extra->rt, pc);
+			unsigned char *ip = vmPointer(extra->rt, pc);
 			size_t ppc = pc;
 
 			if (ip == NULL) {
@@ -1084,10 +1113,10 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 		// TODO: enter will break after executing call?
 		// TODO: leave will break after executing return?
 		if (usr->dbgCommand == dbgStepInto && (ptrdiff_t) callee > 0) {
-			usr->breakNext = (size_t) -1;
+			usr->dbgNextBreak = (size_t) -1;
 		}
 		else if (usr->dbgCommand == dbgStepOut && (ptrdiff_t) callee < 0) {
-			usr->breakNext = (size_t) -1;
+			usr->dbgNextBreak = (size_t) -1;
 		}
 
 		if (usr->dmpRunTime) {
@@ -1110,11 +1139,11 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 			breakMode = usr->dbgOnError;
 		}
 	}
-	else if (usr->breakNext == (size_t) -1) {
+	else if (usr->dbgNextBreak == (size_t) -1) {
 		breakMode = dbg_pause;
 		breakCause = "Break";
 	}
-	else if (usr->breakNext == caller) {
+	else if (usr->dbgNextBreak == caller) {
 		breakMode = dbg_pause;
 		breakCause = "Break";
 	}
@@ -1140,12 +1169,11 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 	// print executing instruction.
 	if (error == noError && usr->dmpRunCode) {
 		if (usr->dmpRunStack) {
-			const int MAX_ELEMENTS = 15;
 			size_t i = 0;
 			printFmt(out, esc, "\tstack(%d): [", ss);
-			if (ss > MAX_ELEMENTS) {
+			if (ss > LOG_MAX_ITEMS) {
 				printFmt(out, esc, " …");
-				i = ss - MAX_ELEMENTS;
+				i = ss - LOG_MAX_ITEMS;
 			}
 			for (; i < ss; i++) {
 				if (i > 0) {
@@ -1173,7 +1201,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 		if (dbg != NULL && dbg->file != NULL && dbg->line > 0) {
 			printFmt(out, esc, "%s:%u: ", dbg->file, dbg->line);
 		}
-		printFmt(out, esc, ERR_EXEC_INSTRUCTION"\n", breakCause, caller, fun, funOffs, getip(rt, caller));
+		printFmt(out, esc, ERR_EXEC_INSTRUCTION"\n", breakCause, caller, fun, funOffs, vmPointer(rt, caller));
 	}
 	if (breakMode & dbg_trace) {
 		traceCalls(ctx, out, 1, 0, 20);
@@ -1183,7 +1211,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 	for ( ; breakMode & dbg_pause; ) {
 		int cmd = usr->dbgCommand;
 		char *arg = NULL;
-		printFmt(out, esc, ">dbg[%?c] %.A: ", cmd, getip(rt, caller));
+		printFmt(out, esc, ">dbg[%?c] %.A: ", cmd, vmPointer(rt, caller));
 		if (usr->in == NULL || fgets(buff, sizeof(buff), usr->in) == NULL) {
 			printFmt(out, esc, "can not read from standard input, aborting\n");
 			return ctx->abort;
@@ -1210,15 +1238,15 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 			case dbgResume:
 			case dbgStepInto:
 			case dbgStepOut:
-				usr->breakNext = 0;
+				usr->dbgNextBreak = 0;
 				return dbg;
 
 			case dbgStepNext:
-				usr->breakNext = (size_t)-1;
+				usr->dbgNextBreak = (size_t)-1;
 				return dbg;
 
 			case dbgStepLine:
-				usr->breakNext = dbg ? dbg->end : 0;
+				usr->dbgNextBreak = dbg ? dbg->end : 0;
 				return dbg;
 
 			case dbgPrintStackTrace:
@@ -1253,12 +1281,12 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 
 static int program(int argc, char *argv[]) {
 	struct {
-		unsigned logAppend: 1;
-		unsigned foldConst: 1;
-		unsigned foldInstr: 1;
-		unsigned fastAssign: 1;
-		unsigned genGlobals: 1;
-		unsigned stdLibs: 1;
+		int logAppend;
+		int foldConst;
+		int foldInstr;
+		int fastAssign;
+		int genGlobals;
+		int stdLibs;
 		ccInstall install;
 		size_t memory;
 	} settings = {
@@ -1277,10 +1305,10 @@ static int program(int argc, char *argv[]) {
 	};
 
 	struct userContextRec extra = {
-		.breakNext = 0,
 		.dbgCommand = 'r',	// last command: resume
 		.dbgOnError = dbg_pause | dbg_print,
 		.dbgOnCaught = 0,
+		.dbgNextBreak = 0,
 
 		.dmpApi = 0,
 		.dmpApiAll = 0,
@@ -1646,7 +1674,7 @@ static int program(int argc, char *argv[]) {
 
 					// break, print, trace ...
 					case 's':
-						extra.breakNext = (size_t)-1;
+						extra.dbgNextBreak = (size_t)-1;
 						arg2 += 2;
 						break;
 					case 'a':
@@ -1922,9 +1950,9 @@ static int program(int argc, char *argv[]) {
 			// set debugger of profiler
 			if (run_code == debug) {
 				rt->dbg->debug = &conDebug;
-				if (extra.breakNext != 0) {
+				if (extra.dbgNextBreak != 0) {
 					// break on first instruction
-					extra.breakNext = rt->vm.pc;
+					extra.dbgNextBreak = rt->vm.pc;
 				}
 			}
 			else if (run_code == profile) {

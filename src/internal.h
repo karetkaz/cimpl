@@ -218,7 +218,9 @@ struct ccContextRec {
 	symn	type_fun;		// function
 	symn	type_obj;		// object
 	symn	type_str;		// string
-	symn	type_int;		// length / index
+
+	symn	type_int;		// integer: 32/64 bit signed
+	symn	type_idx;		// length / index: 32/64 bit unsigned
 
 	symn	null_ref;		// variable null
 	symn	true_ref;		// variable true
@@ -526,13 +528,14 @@ unsigned rehash(const char *str, size_t size);
  */
 char *mapstr(ccContext cc, const char *str, size_t size/* = -1*/, unsigned hash/* = -1*/);
 
-static inline void *paddptr(void *offs, unsigned align) {
-	return (void*)(((ptrdiff_t)offs + (align - 1)) & ~(ptrdiff_t)(align - 1));
-}
-
-static inline size_t padded(size_t offs, unsigned align) {
+static inline size_t padOffset(size_t offs, unsigned align) {
 	return (offs + (align - 1)) & ~(align - 1);
 }
+
+static inline void *padPointer(void *offs, unsigned align) {
+	return (void *) padOffset((size_t) offs, align);
+}
+
 
 int vmSelfTest();
 
@@ -716,5 +719,22 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 #endif
 
 #define traceAst(__AST) do { trace("%t", __AST); } while(0)
+
+#if defined __WATCOMC__
+
+#pragma disable_message(136);	// Warning! W136: Comparison equivalent to 'unsigned == 0'
+
+#include <math.h>
+static inline float fmodf(float x, float y) { return (float) fmod(x, y); }
+static inline float sinf(float x) { return (float) sin((float) x); }
+static inline float cosf(float x) { return (float) cos((float) x); }
+static inline float tanf(float x) { return (float) tan((float) x); }
+static inline float logf(float x) { return (float) log((float) x); }
+static inline float expf(float x) { return (float) exp((float) x); }
+static inline float powf(float x, float y) { return (float) pow((float) x, (float) y); }
+static inline float sqrtf(float x) { return (float) sqrt((float) x); }
+static inline float atan2f(float x, float y) { return (float) atan2((float) x, (float) y); }
+
+#endif
 
 #endif

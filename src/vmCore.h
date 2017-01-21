@@ -53,9 +53,9 @@ typedef union {		// on stack value type
 	float32_t	f4;
 	float64_t	f8;
 	int32_t		rel:24;
-	struct {int32_t data; uint32_t length;} arr;	// slice
-	struct {int32_t data; int32_t type;} var;	// variant
-	struct {int32_t data; } ref;	// reference
+	struct {vmOffs data;} ref;	// reference
+	struct {vmOffs data; vmOffs type;} var;	// variant
+	struct {vmOffs data; vmOffs length;} arr;	// slice
 } stkval;
 
 /// Abstract Syntax Tree Node
@@ -170,8 +170,7 @@ symn rtFindSym(rtContext, size_t offs, int callsOnly);
 void *rtAlloc(rtContext, void *ptr, size_t size, void dbg(rtContext rt, void *mem, size_t size, char *kind));
 
 /// returns a pointer to an offset inside the vm.
-// TODO: to be removed.
-static inline void *getip(rtContext rt, size_t offset) {
+static inline void *vmPointer(rtContext rt, size_t offset) {
 	if (offset == 0) {
 		return NULL;
 	}
@@ -212,7 +211,7 @@ size_t emitInt(rtContext, vmOpcode opc, int64_t arg);
  * @param stc Fix also stack size.
  * @return
  */
-int fixjump(rtContext, int src, int dst, int stc);
+int fixjump(rtContext, size_t src, size_t dst, ssize_t stc);
 
 /**
  * print stack trace

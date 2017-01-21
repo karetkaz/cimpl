@@ -137,7 +137,7 @@ symn leave(ccContext cc, symn owner, ccKind mode, int align, size_t *outSize) {
 			}
 		}
 		else {
-			size += padded(sym->size, align);
+			size += padOffset(sym->size, align);
 			if (size < sym->size) {
 				size = sym->size;
 			}
@@ -163,7 +163,7 @@ symn leave(ccContext cc, symn owner, ccKind mode, int align, size_t *outSize) {
 					continue;
 				}
 				sym->offs = offs;
-				offs += padded(sym->size, align);
+				offs += padOffset(sym->size, align);
 			}
 			break;
 
@@ -174,7 +174,7 @@ symn leave(ccContext cc, symn owner, ccKind mode, int align, size_t *outSize) {
 					continue;
 				}
 				sym->offs = size - offs;
-				offs += padded(sym->size, align);
+				offs += padOffset(sym->size, align);
 			}
 			break;
 

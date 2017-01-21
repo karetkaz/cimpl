@@ -68,7 +68,7 @@ static inline symn addLength(ccContext cc, symn sym, astn init) {
 	}
 
 	enter(cc);
-	newField = install(cc, "length", kind | castOf(cc->type_int), cc->type_int->size, cc->type_int, init);
+	newField = install(cc, "length", kind | castOf(cc->type_idx), cc->type_idx->size, cc->type_idx, init);
 	sym->fields = leave(cc, sym, KIND_def, 0, NULL);
 	newField->next = oldFields;
 	return newField;
@@ -888,7 +888,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 			if (tok->kind == TOKEN_val) {
 				ccKind cast = castOf(tok->type);
 				if (cast == CAST_i32 || cast == CAST_i64) {
-					switch (tok->cint) {
+					switch ((int)tok->cint) {
 						default:
 							break;
 
@@ -1413,7 +1413,7 @@ symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 	rt->_end -= sizeof(struct list);
 	lst = (list) rt->_end;
 
-	rt->_beg = paddptr(rt->_beg, pad_size);
+	rt->_beg = padPointer(rt->_beg, pad_size);
 	nfc = (libc) rt->_beg;
 	rt->_beg += sizeof(struct libc);
 

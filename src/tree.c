@@ -12,7 +12,7 @@ symn newDefn(ccContext cc, ccKind kind) {
 	rtContext rt = cc->rt;
 	symn def = NULL;
 
-	rt->_beg = paddptr(rt->_beg, pad_size);
+	rt->_beg = padPointer(rt->_beg, pad_size);
 	if(rt->_beg >= rt->_end) {
 		fatal(ERR_MEMORY_OVERRUN);
 		return NULL;

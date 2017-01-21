@@ -12,15 +12,6 @@ code emmiting, executing and formatting
 #include "internal.h"
 #include "vmCore.h"
 
-#if defined __WATCOMC__
-
-#pragma disable_message(124);
-
-// needed for opcode f32_mod
-static inline double fmodf(float x, float y) { return fmod(x, y); }
-
-#endif
-
 const struct opcodeRec opcode_tbl[256] = {
 	#define OPCODE_DEF(Name, Code, Size, In, Out, Text) {Code, Size, In, Out, Text},
 	#include "defs.inl"
@@ -122,7 +113,7 @@ static inline int isValidOffset(rtContext rt, void *ptr) {
 
 // rollback the last emitted instruction.
 static inline void rollbackPc(rtContext rt) {
-	vmInstruction ip = getip(rt, rt->vm.pc);
+	vmInstruction ip = vmPointer(rt, rt->vm.pc);
 	if ((void*)ip != rt->_beg) {
 		const struct opcodeRec *info = &opcode_tbl[ip->opc];
 		rt->vm.ss -= info->stack_out - info->stack_in;
@@ -147,7 +138,7 @@ size_t vmOffset(rtContext rt, void *ptr) {
  * @note Aborts if opc is not valid.
  */
 static int checkOcp(rtContext rt, size_t offs, vmOpcode opc, stkval *arg) {
-	vmInstruction ip = getip(rt, offs);
+	vmInstruction ip = vmPointer(rt, offs);
 	if (opc >= opc_last) {
 		trace("invalid opc_x%x", opc);
 		return 0;
@@ -163,7 +154,7 @@ static int checkOcp(rtContext rt, size_t offs, vmOpcode opc, stkval *arg) {
 
 static int removeOpc(rtContext rt, size_t offs) {
 	if (offs >= rt->vm.ro && offs <= rt->vm.pc) {
-		vmInstruction ip = getip(rt, offs);
+		vmInstruction ip = vmPointer(rt, offs);
 		unsigned char *dst = (unsigned char *)ip;
 		size_t size = opcode_tbl[ip->opc].size;
 		memcpy(dst, dst + size, rt->_beg - dst);
@@ -177,7 +168,7 @@ static int removeOpc(rtContext rt, size_t offs) {
 static int decrementStackAccess(rtContext rt, size_t offsBegin, size_t offsEnd, int count) {
 	size_t offs;
 	for (offs = offsBegin; offs < offsEnd; ) {
-		vmInstruction ip = getip(rt, offs);
+		vmInstruction ip = vmPointer(rt, offs);
 		int size = opcode_tbl[ip->opc].size;
 		if (size <= 0) {
 			fatal(ERR_INTERNAL_ERROR": %.*A", offs, ip);
@@ -218,15 +209,15 @@ int optimizeAssign(rtContext rt, size_t offsBegin, size_t offsEnd) {
 		}
 
 		if (!removeOpc(rt, offsEnd)) {
-			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, getip(rt, offsEnd));
+			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 			return 0;
 		}
 		if (!removeOpc(rt, offsBegin)) {
-			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, getip(rt, offsEnd));
+			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 			return 0;
 		}
 		if (!decrementStackAccess(rt, offsBegin, offsEnd, 1)) {
-			fatal(ERR_INTERNAL_ERROR": %.*A", offsBegin, getip(rt, offsBegin));
+			fatal(ERR_INTERNAL_ERROR": %.*A", offsBegin, vmPointer(rt, offsBegin));
 			return 0;
 		}
 		return 1;
@@ -243,15 +234,15 @@ int optimizeAssign(rtContext rt, size_t offsBegin, size_t offsEnd) {
 			return 0;
 		}
 		if (!removeOpc(rt, offsEnd)) {
-			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, getip(rt, offsEnd));
+			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 			return 0;
 		}
 		if (!removeOpc(rt, offsBegin)) {
-			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, getip(rt, offsEnd));
+			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 			return 0;
 		}
 		if (!decrementStackAccess(rt, offsBegin, offsEnd, 2)) {
-			fatal(ERR_INTERNAL_ERROR": %.*A", offsBegin, getip(rt, offsBegin));
+			fatal(ERR_INTERNAL_ERROR": %.*A", offsBegin, vmPointer(rt, offsBegin));
 			return 0;
 		}
 		return 1;
@@ -294,7 +285,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 		case opc_sti4:
 		case opc_sti8:
 		case opc_stiq: {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_ldsp) {
 				if (rt->vm.su < arg.i4 / 4)
 					rt->vm.su = arg.i4 / 4;
@@ -309,7 +300,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 
 	// load / store
 	else if (opc == opc_ldi) {
-		ip = getip(rt, rt->vm.pc);
+		ip = vmPointer(rt, rt->vm.pc);
 		if (ip->opc == opc_ldsp) {
 			size_t vardist = (ip->rel + arg.i4) / 4;
 			if (rt->vm.su < vardist)
@@ -358,7 +349,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 		}
 	}
 	else if (opc == opc_sti) {
-		ip = getip(rt, rt->vm.pc);
+		ip = vmPointer(rt, rt->vm.pc);
 		if (ip->opc == opc_ldsp) {
 			size_t vardist = (ip->rel + arg.i4) / 4;
 			if (rt->vm.su < vardist)
@@ -460,7 +451,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == opc_ldi2) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i4 = ip->rel / vm_size;
 				opc = opc_dup1;
@@ -471,7 +462,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 		// */
 
 		else if (opc == opc_ldi4) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i4 = ip->rel / vm_size;
 				opc = opc_dup1;
@@ -486,7 +477,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == opc_sti4) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i4 = ip->rel / vm_size;
 				opc = opc_set1;
@@ -502,7 +493,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 		}
 
 		else if (opc == opc_ldi8) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i4 = ip->rel / vm_size;
 				opc = opc_dup2;
@@ -517,7 +508,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == opc_sti8) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i4 = ip->rel / vm_size;
 				opc = opc_set2;
@@ -533,7 +524,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 		}
 
 		else if (opc == opc_ldiq) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) <= vm_regs)) {
 				arg.i4 = ip->rel / vm_size;
 				opc = opc_dup4;
@@ -541,7 +532,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == opc_stiq) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) <= vm_regs)) {
 				arg.i4 = ip->rel / vm_size;
 				opc = opc_set4;
@@ -551,7 +542,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 
 		// shl, shr, sar, and with immediate value.
 		else if (opc == b32_shl) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.i4 = b32_bit_shl | (ip->arg.i4 & 0x3f);
 				opc = b32_bit;
@@ -559,7 +550,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == b32_shr) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.i4 = b32_bit_shr | (ip->arg.i4 & 0x3f);
 				opc = b32_bit;
@@ -567,7 +558,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == b32_sar) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.i4 = b32_bit_sar | (ip->arg.i4 & 0x3f);
 				opc = b32_bit;
@@ -575,7 +566,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == b32_and) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				if ((ip->arg.i4 & (ip->arg.i4 + 1)) == 0) {
 					arg.i4 = b32_bit_and | (bitsf(ip->arg.u4 + 1) & 0x3f);
@@ -587,7 +578,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 
 		//* TODO: eval Arithmetic using vm.
 		else if (opc == opc_not) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_not) {
 				rt->_beg = (memptr)ip;
 				ip->opc = opc_nop;
@@ -595,7 +586,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == i32_neg) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == i32_neg) {
 				rt->_beg = (memptr)ip;
 				ip->opc = opc_nop;
@@ -607,7 +598,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == i64_neg) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == i64_neg) {
 				rt->_beg = (memptr)ip;
 				ip->opc = opc_nop;
@@ -619,7 +610,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == f32_neg) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == f32_neg) {
 				rt->_beg = (memptr)ip;
 				ip->opc = opc_nop;
@@ -631,7 +622,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == f64_neg) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == f64_neg) {
 				rt->_beg = (memptr)ip;
 				ip->opc = opc_nop;
@@ -643,7 +634,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == i32_add) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.i8 = ip->arg.i4;
 				if (arg.rel == arg.i8) {
@@ -653,7 +644,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == i32_sub) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.i8 = -ip->arg.i4;
 				if (arg.rel == arg.i8) {
@@ -667,7 +658,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 				return rt->vm.pc;
 			}
 
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_inc) {
 				stkval tmp;
 				tmp.i8 = arg.i8 + ip->rel;
@@ -706,7 +697,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 
 		//* TODO: eval Conversions using vm.
 		else if (opc == u32_i64) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			//~ if (ip->opc == opc_ldz2) { ... }
 			if (ip->opc == opc_lc32) {
 				arg.i8 = ip->arg.u4;
@@ -715,7 +706,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == i32_bol) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.i8 = ip->arg.i4 != 0;
 				opc = opc_lc32;
@@ -723,7 +714,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == i32_f32) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.f4 = (float32_t) ip->arg.i4;
 				opc = opc_lf32;
@@ -732,7 +723,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == i32_i64) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.i8 = ip->arg.i4;
 				opc = opc_lc64;
@@ -740,7 +731,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == i32_f64) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.f8 = ip->arg.i4;
 				opc = opc_lf64;
@@ -749,7 +740,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == i64_i32) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc64) {
 				arg.i8 = ip->arg.i8;
 				opc = opc_lc32;
@@ -759,7 +750,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == i64_f32) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc64) {
 				arg.f4 = (float32_t) ip->arg.i8;
 				opc = opc_lf32;
@@ -768,7 +759,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == i64_bol) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc64) {
 				arg.i8 = ip->arg.i8 != 0;
 				opc = opc_lc32;
@@ -776,7 +767,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == i64_f64) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc64) {
 				arg.f8 = (float64_t) ip->arg.i8;
 				opc = opc_lf64;
@@ -785,7 +776,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == f32_i32) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf32) {
 				arg.i8 = (int64_t) ip->arg.f4;
 				opc = opc_lc32;
@@ -794,7 +785,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == f32_bol) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf32) {
 				arg.i8 = ip->arg.f4 != 0;
 				opc = opc_lc32;
@@ -802,7 +793,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == f32_i64) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf32) {
 				arg.i8 = (int64_t) ip->arg.f4;
 				opc = opc_lc64;
@@ -811,7 +802,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == f32_f64) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf32) {
 				arg.f8 = ip->arg.f4;
 				opc = opc_lf64;
@@ -820,7 +811,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == f64_i32) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf64) {
 				arg.i8 = (int64_t) ip->arg.f8;
 				opc = opc_lc32;
@@ -829,7 +820,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == f64_f32) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf64) {
 				arg.f4 = (float32_t) ip->arg.f8;
 				opc = opc_lf32;
@@ -838,7 +829,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == f64_i64) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf64) {
 				arg.i8 = (int64_t) ip->arg.f8;
 				opc = opc_lc64;
@@ -847,7 +838,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == f64_bol) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf64) {
 				arg.i8 = ip->arg.f8 != 0;
 				opc = opc_lc32;
@@ -869,7 +860,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == u32_div) {
-			ip = getip(s, s->vm.pc);
+			ip = vmPointer(s, s->vm.pc);
 			if (ip->opc == opc_lc32) {
 				int x = ip->arg.i4;
 				// if constant contains only one bit
@@ -882,7 +873,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 
 		// conditional jumps
 		else if (opc == opc_jnz) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_not) {
 				rt->_beg = (memptr)ip;
 				opc = opc_jz;
@@ -893,7 +884,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 			}
 		}
 		else if (opc == opc_jz) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_not) {
 				rt->_beg = (memptr)ip;
 				opc = opc_jnz;
@@ -909,7 +900,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 				return rt->_beg - rt->_mem;
 			}
 			/* TODO: merge stack allocations
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_spc) {
 				stkval tmp;
 				tmp.i8 = arg.i8 + ip->rel;
@@ -923,7 +914,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 
 		/* TODO: only if we have no jump here
 		else if (opc == opc_jmpi) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_jmpi) {
 				//~ rt->_beg = (memptr)ip;
 				return rt->vm.pc;
@@ -1007,10 +998,10 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 	dbgEmit("pc[%d]: sp(%d): %A", rt->vm.pc, rt->vm.ss, ip);
 	return rt->vm.pc;
 }
-int fixjump(rtContext rt, int src, int dst, int stc) {
+int fixjump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
 	dieif(stc > 0 && stc & 3, ERR_INTERNAL_ERROR);
-	if (src >= 0) {
-		vmInstruction ip = getip(rt, src);
+	if (src != 0) {
+		vmInstruction ip = vmPointer(rt, src);
 		if (src) switch (ip->opc) {
 			default:
 				fatal(ERR_INTERNAL_ERROR);
@@ -1028,11 +1019,11 @@ int fixjump(rtContext rt, int src, int dst, int stc) {
 			case opc_jmp:
 			case opc_jnz:
 			case opc_jz:
-				ip->rel = dst - src;
-				dieif(ip->rel != dst - src, ERR_INTERNAL_ERROR);
+				ip->rel = (int32_t) (dst - src);
+				dieif(ip->rel != (int32_t) (dst - src), ERR_INTERNAL_ERROR);
 				break;
 		}
-		if (stc >= 0) {
+		if (stc != -1) {
 			rt->vm.ss = stc / vm_size;
 		}
 		return 1;
@@ -1149,7 +1140,7 @@ static inline vmError traceCall(rtContext rt, void *sp, size_t caller, size_t ca
 		dbgn callerFunc = mapDbgFunction(rt, tp->caller);
 		//dbgn callerStmt = mapDbgStatement(rt, tp->caller);
 		if (calleeFunc != NULL) {
-			calleeFunc->exec += callee == -1;
+			calleeFunc->exec += callee == (size_t) -1;
 			if (!recursive) {
 				calleeFunc->total += ticks;
 			}
@@ -1211,7 +1202,7 @@ static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t
 			file = dbg->file;
 			line = dbg->line;
 		}
-		error(ctx->rt, file, line, ERR_EXEC_INSTRUCTION, errMsg, caller, fun, offs, getip(ctx->rt, caller));
+		error(ctx->rt, file, line, ERR_EXEC_INSTRUCTION, errMsg, caller, fun, offs, vmPointer(ctx->rt, caller));
 		return ctx->abort;
 	}
 	(void) callee;
@@ -1373,7 +1364,8 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 		switch (ip->opc) {
 			stop_vm:	// halt virtual machine
 				if (execError != noError) {
-					struct dbgContextRec dbg = { .rt = rt };
+					struct dbgContextRec dbg;
+					dbg.rt = rt;
 					dbgDummy(&dbg, execError, st - sp, sp, vmOffset(rt, ip), 0);
 				}
 				return execError;
@@ -1395,7 +1387,8 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 				goto stop_vm;
 
 			error_div_flt: {
-					struct dbgContextRec dbg = { .rt = rt };
+					struct dbgContextRec dbg;
+					dbg.rt = rt;
 					dbgDummy(&dbg, divisionByZero, st - sp, sp, vmOffset(rt, ip), 0);
 				}
 				// continue execution on floating point division by zero.
@@ -1420,7 +1413,6 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 }
 vmError invoke(rtContext rt, symn fun, void *res, void *args, const void *extra) {
 	const vmProcessor pu = rt->vm.cell;
-	void *ip, *sp, *tp;
 	vmError result;
 	size_t resSize;
 
@@ -1439,9 +1431,9 @@ vmError invoke(rtContext rt, symn fun, void *res, void *args, const void *extra)
 
 	// result is the last argument.
 	resSize = fun->params->size;
-	ip = pu->ip;
-	sp = pu->sp;
-	tp = pu->tp;
+	void *ip = pu->ip;
+	void *sp = pu->sp;
+	void *tp = pu->tp;
 
 	// make space for result and arguments// result is the first param
 	pu->sp -= fun->params->offs;
@@ -1453,10 +1445,10 @@ vmError invoke(rtContext rt, symn fun, void *res, void *args, const void *extra)
 	// return here: vm->px: program halt
 	*(pu->sp -= 1) = rt->vm.px;
 
-	pu->ip = getip(rt, fun->offs);
+	pu->ip = vmPointer(rt, fun->offs);
 	result = exec(rt, pu, fun, extra);
 	if (result == noError && res != NULL) {
-		memcpy(res, sp - resSize, resSize);
+		memcpy(res, (memptr) sp - resSize, resSize);
 	}
 
 	pu->ip = ip;
@@ -1502,13 +1494,15 @@ vmError execute(rtContext rt, int argc, char *argv[], void *extra) {
 		return stackOverflow;
 	}
 
+	(void)argc;
+	(void)argv;
 	return exec(rt, pu, rt->main, extra);
 }
 
 void printOpc(FILE *out, const char **esc, vmOpcode opc, int64_t args) {
-	struct vmInstruction instruction = {
-		.opc = opc, .arg.i8 = args
-	};
+	struct vmInstruction instruction;
+	instruction.opc = opc;
+	instruction.arg.i8 = args;
 	printAsm(out, esc, NULL, &instruction, 0);
 }
 
@@ -1534,9 +1528,9 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, int mode) {
 
 	if (mode & prAsmName && sym != NULL) {
 		size_t symOffs = offs - sym->offs;
+		int paddLen = 4 + !symOffs;
 		printFmt(out, esc, fmt_offs + 1, sym, symOffs);
 
-		int paddLen = 4 + !symOffs;
 		while (symOffs > 0) {
 			symOffs /= 10;
 			paddLen -= 1;
@@ -1691,7 +1685,7 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, int mode) {
 					printFmt(out, esc, " ;%?T%?+d", sym, offs - sym->offs);
 				}
 				else if (rt->cc != NULL) {
-					char *str = getip(rt, offs);
+					char *str = vmPointer(rt, offs);
 					for (i = 0; i < TBL_SIZE; i += 1) {
 						list lst;
 						for (lst = rt->cc->strt[i]; lst; lst = lst->next) {
@@ -1750,7 +1744,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, stkval *val, 
 			fmt = typ->pfmt;
 		}
 		if (varCast == CAST_ref) {
-			data = getip(rt, (size_t) val->ref.data);
+			data = vmPointer(rt, (size_t) val->ref.data);
 		}
 	}
 
@@ -1831,8 +1825,8 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, stkval *val, 
 		printFmt(out, esc, "???");
 	}
 	else if (typCast == CAST_var) {
-		memptr varData = getip(rt, (size_t) val->ref.data);
-		symn varType = getip(rt, (size_t) val->var.type);
+		memptr varData = vmPointer(rt, (size_t) val->ref.data);
+		symn varType = vmPointer(rt, (size_t) val->var.type);
 
 		if (varType == NULL || varData == NULL) {
 			printFmt(out, esc, "null");
@@ -1843,7 +1837,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, stkval *val, 
 		}
 	}
 	else if (typCast == CAST_arr) {
-		memptr arrData = varCast == CAST_val ? val : getip(rt, (size_t) val->arr.data);
+		memptr arrData = varCast == CAST_val ? val : vmPointer(rt, (size_t) val->arr.data);
 
 		if (arrData == NULL) {
 			printFmt(out, esc, "null");
@@ -1981,7 +1975,7 @@ static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, v
 				// at vm_size is the return value of the function.
 				offs += vm_size;
 			}
-			printVal(out, NULL, rt, sym, sp + offs, prValue, -indent);
+			printVal(out, NULL, rt, sym, (stkval*)((char*)sp + offs), prValue, -indent);
 		}
 		if (indent > 0) {
 			printFmt(out, NULL, ")");
@@ -2046,8 +2040,9 @@ int vmSelfTest() {
 	FILE *out = stdout;
 	struct vmInstruction ip[1];
 	struct libc nfc0;
-	struct libc *libcvec[1] = {&nfc0};
+	struct libc *libcvec[1];
 
+	libcvec[0] = &nfc0;
 	memset(ip, 0, sizeof(ip));
 	memset(&nfc0, 0, sizeof(nfc0));
 

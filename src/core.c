@@ -57,7 +57,7 @@ static symn rtFindSymApi(rtContext rt, void *offs) {
 
 /// Initialize runtime context; @see header
 rtContext rtInit(void *mem, size_t size) {
-	rtContext rt = paddptr(mem, pad_size);
+	rtContext rt = padPointer(mem, pad_size);
 
 	if (rt != mem) {
 		size_t diff = (char*)rt - (char*) mem;
@@ -230,7 +230,7 @@ symn ccDefType(ccContext cc, const char *name, unsigned size, int refType) {
 }
 
 /// Install an instruction
-static inline symn ccDefOpcode(ccContext cc, const char *name, symn type, vmOpcode code, int args) {
+static inline symn ccDefOpcode(ccContext cc, const char *name, symn type, vmOpcode code, size_t args) {
 	astn opc = newNode(cc, TOKEN_opc);
 	if (opc != NULL) {
 		opc->type = type;
@@ -286,8 +286,10 @@ static vmError haltDummy(nfcContext args) {
 
 /// private native function for reflection.
 static vmError typenameGetField(nfcContext args) {
-	symn sym = rtFindSymApi(args->rt, argref(args, 0));
-	if (sym == NULL) {
+	size_t symOffs = argref(args, 0);
+	symn sym = rtFindSym(args->rt, symOffs, 0);
+	if (sym == NULL || sym->offs != symOffs) {
+		// invalid symbol offset
 		return executionAborted;
 	}
 	if (args->proto == type_get_file) {
@@ -379,7 +381,14 @@ static void install_type(ccContext cc, ccInstall mode) {
 	cc->type_fun = type_fun;
 	cc->type_var = type_var;
 	cc->type_obj = type_obj;
-	cc->type_int = sizeof(vmOffs) > vm_size ? type_u64 : type_u32;
+	if (sizeof(vmOffs) > vm_size) {
+		cc->type_int = type_i64;
+		cc->type_idx = type_u64;
+	}
+	else {
+		cc->type_int = type_i32;
+		cc->type_idx = type_u32;
+	}
 
 	if (type_ptr != NULL) {
 		cc->null_ref = install(cc, "null", ATTR_stat | ATTR_cnst | KIND_def, 0, type_ptr, intNode(cc, 0));
@@ -388,7 +397,7 @@ static void install_type(ccContext cc, ccInstall mode) {
 	cc->false_ref = install(cc, "false", ATTR_stat | ATTR_cnst | KIND_def, 0, type_bol, intNode(cc, 0));  // 0 != 0
 
 	// aliases.
-	install(cc, "int", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, sizeof(vmOffs) > vm_size ? type_i64 : type_i32));
+	install(cc, "int", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, cc->type_int));
 	install(cc, "byte", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_u08));
 	install(cc, "float", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_f32));
 	install(cc, "double", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_f64));
@@ -594,8 +603,7 @@ static void install_emit(ccContext cc, ccInstall mode) {
 			ccDefOpcode(cc, "dp4", type_f32, v4f_dp4, 0);
 			ccDefOpcode(cc, "dph", type_f32, v4f_dph, 0);
 			if ((mode & installEswz) == installEswz) {
-				unsigned i;
-				for (i = 0; i < 256; i += 1) {
+				for (size_t i = 0; i < 256; i += 1) {
 					char *name;
 					if (rt->_end - rt->_beg < 5) {
 						fatal(ERR_MEMORY_OVERRUN);
@@ -655,6 +663,7 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 			error = 1;
 		}
 
+		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_base));
 		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_file));
 		if (field != NULL) {// hack: change return type from pointer to string
 			field->params->type = cc->type_str;
@@ -664,7 +673,6 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 		if (field != NULL) {// hack: change return type from pointer to string
 			field->params->type = cc->type_str;
 		}
-		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_base));
 
 		/* TODO: more 4 reflection
 		error = error || !ccDefCall(rt, typenameReflect, "variant lookup(variant &obj, int options, string name, variant args...)");
@@ -713,19 +721,17 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(rtContext, void *, 
 	typedef struct memChunk {
 		struct memChunk *prev;		// null for free chunks
 		struct memChunk *next;		// next chunk
-		char data[0];				// here begins the user data
-		//~ struct memChunk *free;		// TODO: next free chunk ordered by size
-		//~ struct memChunk *free_skip;	// TODO: next free which is 2x bigger than this
+		char data[];				// here begins the user data
 	} *memChunk;
 
 	const ptrdiff_t minAllocationSize = sizeof(struct memChunk);
-	size_t allocSize = padded(size + minAllocationSize, minAllocationSize);
+	size_t allocSize = padOffset(size + minAllocationSize, minAllocationSize);
 	memChunk chunk = (memChunk)((char*)ptr - offsetOf(memChunk, data));
 
 	// memory manager is not initialized, initialize it first
 	if (rt->vm.heap == NULL) {
-		memChunk heap = paddptr(rt->_beg, minAllocationSize);
-		memChunk last = paddptr(rt->_end - 2 * minAllocationSize, minAllocationSize);
+		memChunk heap = padPointer(rt->_beg, minAllocationSize);
+		memChunk last = padPointer(rt->_end - 2 * minAllocationSize, minAllocationSize);
 
 		heap->next = last;
 		heap->prev = NULL;

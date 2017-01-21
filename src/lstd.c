@@ -100,30 +100,30 @@ static vmError f32atan2(nfcContext args) {
 
 //#{#region bit operations
 static vmError b32sxt(nfcContext args) {
-	int32_t val = (uint32_t) argi32(args, 0);
-	int32_t ofs = (uint32_t) argi32(args, 4);
-	int32_t cnt = (uint32_t) argi32(args, 8);
+	int32_t val = argi32(args, 0);
+	int32_t ofs = argi32(args, 4);
+	int32_t cnt = argi32(args, 8);
 	reti32(args, (val << (32 - (ofs + cnt))) >> (32 - cnt));
 	return noError;
 }
 static vmError b32zxt(nfcContext args) {
 	uint32_t val = (uint32_t) argi32(args, 0);
-	int32_t ofs = (uint32_t) argi32(args, 4);
-	int32_t cnt = (uint32_t) argi32(args, 8);
+	int32_t ofs = argi32(args, 4);
+	int32_t cnt = argi32(args, 8);
 	retu32(args, (val << (32 - (ofs + cnt))) >> (32 - cnt));
 	return noError;
 }
 static vmError b64sxt(nfcContext args) {
-	int64_t val = (uint32_t) argi32(args, 0);
-	int32_t ofs = (uint32_t) argi32(args, 4);
-	int32_t cnt = (uint32_t) argi32(args, 8);
+	int64_t val = argi64(args, 0);
+	int32_t ofs = argi32(args, 8);
+	int32_t cnt = argi32(args, 12);
 	reti64(args, (val << (64 - (ofs + cnt))) >> (64 - cnt));
 	return noError;
 }
 static vmError b64zxt(nfcContext args) {
-	uint64_t val = (uint32_t) argi32(args, 0);
-	int32_t ofs = (uint32_t) argi32(args, 4);
-	int32_t cnt = (uint32_t) argi32(args, 8);
+	uint64_t val = (uint64_t) argi64(args, 0);
+	int32_t ofs = argi32(args, 8);
+	int32_t cnt = argi32(args, 12);
 	retu64(args, (val << (64 - (ofs + cnt))) >> (64 - cnt));
 	return noError;
 }
@@ -239,91 +239,69 @@ typedef struct {
 } nfcValue;
 
 typedef struct {
-	const nfcContext ctx;
-	symn res;
-	symn arg;
+	rtContext rt;
+	symn param;
+	char *args;
 } nfcArg;
 
 static inline nfcArg nfcInitArg(nfcContext nfc) {
-	nfcArg result = {
-		.ctx = nfc,
-		.res = nfc->sym->params,
-		.arg = nfc->sym->params,
-	};
+	nfcArg result;
+	result.rt = nfc->rt;
+	result.param = nfc->sym->params;
+	result.args = (char *) nfc->args;
+	result.args += result.param->offs - result.param->size;
 	return result;
 }
-static inline size_t nfcNextArg(nfcArg *args) {
-	args->arg = args->arg->next;
-	return args->res->offs - args->res->size - args->arg->offs;
+static inline stkval *nfcNextArg(nfcArg *args) {
+	args->param = args->param->next;
+	return (stkval *) (args->args - args->param->offs);
 }
-
+// read next int32 argument and return it
 static inline int32_t nfcNextI32(nfcArg *args) {
-	size_t offset = nfcNextArg(args);
-	dieif(castOf(args->arg) != CAST_i32, ERR_INTERNAL_ERROR"%T", args->arg);
-	return argi32(args->ctx, offset);
+	stkval *offset = nfcNextArg(args);
+	dieif(castOf(args->param) != CAST_i32, ERR_INTERNAL_ERROR);
+	return offset->i4;
 }
-static inline int64_t nfcNextI64(nfcArg *args) {
-	size_t offset = nfcNextArg(args);
-	dieif(castOf(args->arg) != CAST_i64, ERR_INTERNAL_ERROR);
-	return argi64(args->ctx, offset);
+// read next reference argument and return the offset
+static inline size_t nfcNextRef(nfcArg *args) {
+	stkval *offset = nfcNextArg(args);
+	dieif(castOf(args->param) != CAST_ref, ERR_INTERNAL_ERROR);
+	return offset->ref.data;
 }
-static inline uint32_t nfcNextU32(nfcArg *args) {
-	size_t offset = nfcNextArg(args);
-	dieif(castOf(args->arg) != CAST_u32, ERR_INTERNAL_ERROR"%T", args->arg);
-	return (uint32_t) argi32(args->ctx, offset);
-}
-static inline uint64_t nfcNextU64(nfcArg *args) {
-	size_t offset = nfcNextArg(args);
-	dieif(castOf(args->arg) != CAST_u64, ERR_INTERNAL_ERROR);
-	return (uint64_t) argi64(args->ctx, offset);
-}
-static inline float32_t nfcNextF32(nfcArg *args) {
-	size_t offset = nfcNextArg(args);
-	dieif(castOf(args->arg) != CAST_f32, ERR_INTERNAL_ERROR);
-	return argf32(args->ctx, offset);
-}
-static inline float64_t nfcNextF64(nfcArg *args) {
-	size_t offset = nfcNextArg(args);
-	dieif(castOf(args->arg) != CAST_f64, ERR_INTERNAL_ERROR);
-	return argf64(args->ctx, offset);
-}
-static inline void* nfcNextRef(nfcArg *args) {
-	size_t offset = nfcNextArg(args);
-	dieif(castOf(args->arg) != CAST_ref, ERR_INTERNAL_ERROR);
-	return argref(args->ctx, offset);
-}
-static inline nfcValue nfcNextVar(nfcArg *args) {
+// read next reference argument and convert it to pointer
+static inline nfcValue nfcNextPtr(nfcArg *args) {
 	nfcValue result;
-	size_t offset = nfcNextArg(args);
-	dieif(castOf(args->arg) != CAST_var, ERR_INTERNAL_ERROR);
-	result.data = argref(args->ctx, offset);
-	offset += sizeof(vmOffs);
-	switch (castOf(args->arg)) {
+	stkval *offset = nfcNextArg(args);
+	switch (castOf(args->param)) {
 		default:
 			fatal(ERR_INTERNAL_ERROR);
-			break;
-
-		case CAST_ref:
+			result.data = NULL;
 			result.type = NULL;
 			break;
 
-		case CAST_var:
-			result.type = argref(args->ctx, offset);
+		case CAST_ref:
+			result.data = vmPointer(args->rt, offset->ref.data);
+			result.type = NULL;
 			break;
 
 		case CAST_arr:
-			// FIXME: length may be missing || static || 32 bit || 64 bit
-			result.length = (size_t) argi32(args->ctx, offset);
+			result.data = vmPointer(args->rt, offset->arr.data);
+			result.length = offset->arr.length;  // FIXME: length may be missing || static
+			break;
+
+		case CAST_var:
+			result.data = vmPointer(args->rt, offset->var.data);
+			result.type = vmPointer(args->rt, offset->var.type);
 			break;
 	}
-
 	return result;
 }
+// read next external reference
 static inline void* nfcNextHnd(nfcArg *args) {
-	size_t offset = nfcNextArg(args);
-	dieif(castOf(args->arg) != CAST_val, ERR_INTERNAL_ERROR);
-	dieif(args->arg->size != sizeof(void*), ERR_INTERNAL_ERROR);
-	return arghnd(args->ctx, offset);
+	stkval *offset = nfcNextArg(args);
+	dieif(castOf(args->param) != CAST_val, ERR_INTERNAL_ERROR);
+	dieif(args->param->size != sizeof(void*), ERR_INTERNAL_ERROR);
+	return *(void **)offset;
 }
 
 #define debugFILE(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
@@ -351,7 +329,7 @@ static const char *const proto_file_get_dbgout = "File dbg";
 
 static vmError FILE_open(nfcContext ctx) {       // File open(char filename[]);
 	nfcArg args = nfcInitArg(ctx);
-	char *name = nfcNextRef(&args);
+	char *name = nfcNextPtr(&args).data;
 	char *mode = NULL;
 	if (ctx->proto == proto_file_open) {
 		mode = "r";
@@ -409,14 +387,14 @@ static vmError FILE_peek(nfcContext ctx) {
 static vmError FILE_read(nfcContext ctx) {         // int read(File &f, uint8 buff[])
 	nfcArg args = nfcInitArg(ctx);
 	FILE *file = nfcNextHnd(&args);
-	nfcValue buff = nfcNextVar(&args);
+	nfcValue buff = nfcNextPtr(&args);
 	reti32(ctx, fread(buff.data, buff.length, 1, file));
 	return noError;
 }
 static vmError FILE_gets(nfcContext ctx) {       // int fgets(File &f, uint8 buff[])
 	nfcArg args = nfcInitArg(ctx);
 	FILE *file = nfcNextHnd(&args);
-	nfcValue buff = nfcNextVar(&args);
+	nfcValue buff = nfcNextPtr(&args);
 	debugFILE("Buff: %08x[%d], File: %x", buff.data, buff.length, file);
 	if (feof(file)) {
 		reti32(ctx, -1);
@@ -441,7 +419,7 @@ static vmError FILE_putc(nfcContext ctx) {
 static vmError FILE_write(nfcContext ctx) {      // int write(File &f, uint8 buff[])
 	nfcArg args = nfcInitArg(ctx);
 	FILE *file = nfcNextHnd(&args);
-	nfcValue buff = nfcNextVar(&args);
+	nfcValue buff = nfcNextPtr(&args);
 	debugFILE("Buff: %08x[%d], File: %x", buff.data, buff.length, file);
 	int len = fwrite(buff.data, buff.length, 1, file);
 	reti32(ctx, len);
@@ -458,7 +436,7 @@ static vmError FILE_flush(nfcContext ctx) {
 
 //#{#region system functions (exit, rand, clock, debug)
 
-#if (defined __WATCOMC__) || (defined _MSC_VER) || (defined __WIN32)
+#if ((defined __WATCOMC__) || (defined _MSC_VER)) && (defined __WIN32)
 #include <Windows.h>
 static inline int64_t timeMillis() {
 	static const int64_t kTimeEpoc = 116444736000000000LL;
@@ -515,7 +493,7 @@ static vmError sysSRand(nfcContext args) {
 }
 
 static vmError sysTime(nfcContext args) {
-	reti32(args, (int) time(NULL));
+	reti32(args, time(NULL));
 	return noError;
 }
 static vmError sysClock(nfcContext args) {
@@ -523,7 +501,7 @@ static vmError sysClock(nfcContext args) {
 	return noError;
 }
 static vmError sysMillis(nfcContext args) {
-	reti64(args, timeMillis());
+	retu64(args, timeMillis());
 	return noError;
 }
 static vmError sysMSleep(nfcContext args) {
@@ -544,12 +522,12 @@ static vmError sysRaise(nfcContext ctx) {
 	rtContext rt = ctx->rt;
 	nfcArg arg = nfcInitArg(ctx);
 	int logLevel = nfcNextI32(&arg);
-	char *message = nfcNextRef(&arg);
-	nfcValue inspect = nfcNextVar(&arg);
+	char *message = nfcNextPtr(&arg).data;
+	nfcValue inspect = nfcNextPtr(&arg);
 	int maxTrace = nfcNextI32(&arg);
-	// TODO: find a better way to get the hidden variables.
-	char *file = argref(ctx, arg.res->offs);
-	int line = argi32(ctx, arg.res->offs + sizeof(vmOffs));
+	// TODO: find a better way to get these hidden variables.
+	char *file = vmPointer(rt, ((stkval*)arg.args)->arr.data);
+	int line = ((stkval*)arg.args)->arr.length;
 	int isOutput = 0;
 
 	// logging is disabled or log level not reached.
@@ -599,34 +577,37 @@ static vmError sysRaise(nfcContext ctx) {
 	return noError;
 }
 
-static vmError sysTryExec(nfcContext args) {
-	rtContext rt = args->rt;
+static vmError sysTryExec(nfcContext ctx) {
+	rtContext rt = ctx->rt;
 	dbgContext dbg = rt->dbg;
-	// TODO: prepare for non 32bit references
-	int argval = argi32(args, 0 * vm_size);
-	symn action = rtFindSym(rt, argi32(args, 0 * vm_size), 0);
-	if (action != NULL) {
+	nfcArg arg = nfcInitArg(ctx);
+	size_t args = nfcNextRef(&arg);
+	size_t actionOffs = nfcNextRef(&arg);
+	symn action = rtFindSym(rt, actionOffs, 0);
+
+	if (action != NULL && action->offs == actionOffs) {
 		int result;
 		#pragma pack(push, 4)
-		struct { int32_t ptr; } cbArg = { .ptr = argval };
+		struct { vmOffs ptr; } cbArg;
+		cbArg.ptr = (vmOffs) args;
 		#pragma pack(pop)
 		if (dbg != NULL) {
 			int oldValue = dbg->checked;
 			*(int*)&dbg->checked = 1;
-			result = invoke(rt, action, NULL, &cbArg, args->extra);
+			result = invoke(rt, action, NULL, &cbArg, ctx->extra);
 			*(int*)&dbg->checked = oldValue;
 		}
 		else {
 			result = invoke(rt, action, NULL, &cbArg, NULL);
 		}
-		reti32(args, result);
+		reti32(ctx, result);
 	}
 	return noError;
 }
 
 static vmError sysMemMgr(nfcContext ctx) {
 	nfcArg arg = nfcInitArg(ctx);
-	void *old = nfcNextRef(&arg);
+	void *old = nfcNextPtr(&arg).data;
 	int size = nfcNextI32(&arg);
 	void *res = rtAlloc(ctx->rt, old, (size_t) size, NULL);
 	retref(ctx, vmOffset(ctx->rt, res));
@@ -634,8 +615,8 @@ static vmError sysMemMgr(nfcContext ctx) {
 }
 static vmError sysMemCpy(nfcContext ctx) {
 	nfcArg arg = nfcInitArg(ctx);
-	void *dest = nfcNextRef(&arg);
-	void *src = nfcNextRef(&arg);
+	void *dest = nfcNextPtr(&arg).data;
+	void *src = nfcNextPtr(&arg).data;
 	int size = nfcNextI32(&arg);
 	void *res = memcpy(dest, src, (size_t) size);
 	retref(ctx, vmOffset(ctx->rt, res));
@@ -643,7 +624,7 @@ static vmError sysMemCpy(nfcContext ctx) {
 }
 static vmError sysMemSet(nfcContext ctx) {
 	nfcArg arg = nfcInitArg(ctx);
-	void *dest = nfcNextRef(&arg);
+	void *dest = nfcNextPtr(&arg).data;
 	int value = nfcNextI32(&arg);
 	int size = nfcNextI32(&arg);
 	void *res = memset(dest, value, (size_t) size);

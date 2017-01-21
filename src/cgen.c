@@ -14,9 +14,9 @@ description:
  * @param size size of variable.
  * @return the position of variable on stack.
  */
-static inline size_t stkOffs(rtContext rt, size_t size) {
+static inline size_t stkOffset(rtContext rt, size_t size) {
 	dieif(size > rt->_size, "Error(expected: %d, actual: %d)", rt->_size, size);
-	return padded(size, vm_size) + rt->vm.ss * vm_size;
+	return padOffset(size, vm_size) + rt->vm.ss * vm_size;
 }
 
 // utility function swap memory
@@ -33,44 +33,48 @@ static inline void memSwap(void *_a, void *_b, size_t size) {
 	}
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmany-braces-around-scalar-init"
-
 // emit constant values.
 static inline size_t emitI64(rtContext rt, int64_t value) {
-	stkval arg = { .i8 = value };
+	stkval arg;
+	arg.i8 = value;
 	return emitarg(rt, opc_lc64, arg);
 }
 static inline size_t emitF64(rtContext rt, float64_t value) {
-	stkval arg = { .f8 = value };
+	stkval arg;
+	arg.f8 = value;
 	return emitarg(rt, opc_lf64, arg);
 }
 static inline size_t emitRef(rtContext rt, void *value) {
-	stkval arg = { .i8 = vmOffset(rt, value) };
+	stkval arg;
+	arg.i8 = vmOffset(rt, value);
 	return emitarg(rt, opc_lref, arg);
 }
 
 // emit an offset: address or index (32 or 64 bit based on vm size)
 static inline size_t emitOffs(rtContext rt, size_t value) {
-	stkval arg = { .i8 = value };
+	stkval arg;
+	arg.i8 = value;
 	return emitarg(rt, sizeof(vmOffs) > vm_size ? opc_lc64 : opc_lc32, arg);
 }
 
 /// Emit an instruction with no argument.
 static inline size_t emitOpc(rtContext rt, vmOpcode opc) {
-	stkval arg = { .i8 = 0 };
+	stkval arg;
+	arg.i8 = 0;
 	return emitarg(rt, opc, arg);
 }
 
 /// Emit an instruction with integer argument.
 size_t emitInt(rtContext rt, vmOpcode opc, int64_t value) {
-	stkval arg = { .i8 = value };
+	stkval arg;
+	arg.i8 = value;
 	return emitarg(rt, opc, arg);
 }
 
 /// Emit an instruction indexing nth element on stack.
 static inline size_t emitStack(rtContext rt, vmOpcode opc, size_t arg) {
-	stkval tmp = { .u8 = rt->vm.ss * vm_size - arg };
+	stkval tmp;
+	tmp.u8 = rt->vm.ss * vm_size - arg;
 
 	switch (opc) {
 		default:
@@ -101,8 +105,6 @@ static inline size_t emitStack(rtContext rt, vmOpcode opc, size_t arg) {
 
 	return emitarg(rt, opc, tmp);
 }
-
-#pragma clang diagnostic pop
 
 /// Increment the variable of type int32 on top of stack.
 static inline size_t emitIncrement(rtContext rt, size_t value) {
@@ -611,7 +613,7 @@ static inline ccKind genLoop(ccContext cc, astn ast) {
 	}
 
 	lbreak = emitOpc(rt, markIP);
-	stbreak = stkOffs(rt, 0);
+	stbreak = stkOffset(rt, 0);
 
 	addDbgStatement(rt, lcont, lincr, ast->stmt.step);
 	addDbgStatement(rt, lincr, lbreak, ast->stmt.test);
@@ -757,32 +759,32 @@ static inline ccKind genBranch(ccContext cc, astn ast) {
 static inline ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 	const rtContext rt = cc->rt;
 	ccKind varCast = castOf(variable);
+	size_t localSize = stkOffset(rt, variable->size);
 
 	logif(varCast != get, "%?s:%?u: %T(%K->%K)", variable->file, variable->line, variable, varCast, get);
 	if (!isVariable(variable)) {
 		return CAST_vid;
 	}
 
-	size_t localSize = stkOffs(rt, variable->size);
 	if (variable->init != NULL) {
 		dbgCgen("%?s:%?u: %.T := %t", variable->file, variable->line, variable, variable->init);
 		if (varCast != genAst(cc, variable->init, varCast)) {
 			return CAST_any;
 		}
-		if (localSize != stkOffs(rt, 0)) {
+		if (localSize != stkOffset(rt, 0)) {
 			trace(ERR_INTERNAL_ERROR);
 			return CAST_any;
 		}
 	}
 	if (variable->offs == 0) {
 		if (variable->init == NULL) {
-			if (!emitInt(rt, opc_spc, padded(variable->size, vm_size))) {
+			if (!emitInt(rt, opc_spc, padOffset(variable->size, vm_size))) {
 				return CAST_any;
 			}
 		}
-		variable->offs = stkOffs(rt, 0);
+		variable->offs = stkOffset(rt, 0);
 		dbgCgen("%?s:%?u: %.T is local(@%06x)", variable->file, variable->line, variable, variable->offs);
-		if (localSize != stkOffs(rt, 0)) {
+		if (localSize != stkOffset(rt, 0)) {
 			trace(ERR_INTERNAL_ERROR);
 			return CAST_any;
 		}
@@ -922,7 +924,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 	astn args = ast->op.rhso;
 	const symn function = linkOf(ast->op.lhso);
 
-	const size_t stkret = stkOffs(rt, ast->type->size);
+	const size_t stkret = stkOffset(rt, ast->type->size);
 	ccKind result = castOf(ast->type);
 
 	dbgCgen("%?s:%?u: %t", ast->file, ast->line, ast);
@@ -1007,7 +1009,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		}
 
 		// drop cached arguments
-		if (stkret < stkOffs(rt, 0)) {
+		if (stkret < stkOffset(rt, 0)) {
 			// copy result value
 			if (function->params->size > 0) {
 				if (!emitStack(rt, opc_ldsp, stkret)) {
@@ -1227,7 +1229,7 @@ static inline ccKind genLogical(ccContext cc, astn ast) {
 		}
 	}
 	else {
-		size_t bppos = stkOffs(rt, 0);
+		size_t bppos = stkOffset(rt, 0);
 
 		if (!genAst(cc, ast->op.test, CAST_bit)) {
 			traceAst(ast);
@@ -1272,7 +1274,7 @@ static inline ccKind genLogical(ccContext cc, astn ast) {
 static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 	const rtContext rt = cc->rt;
 	const size_t ipBegin = emitOpc(rt, markIP);
-	const size_t spBegin = stkOffs(rt, 0);
+	const size_t spBegin = stkOffset(rt, 0);
 	ccKind got, op;
 
 	if (ast == NULL || ast->type == NULL) {
@@ -1334,7 +1336,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				traceAst(ast);
 				return CAST_any;
 			}
-			dieif(spBegin != stkOffs(rt, 0), ERR_INTERNAL_ERROR);
+			dieif(spBegin != stkOffset(rt, 0), ERR_INTERNAL_ERROR);
 			break;
 
 		case STMT_for:
@@ -1343,7 +1345,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				return CAST_any;
 			}
 			dieif(get != CAST_vid, ERR_INTERNAL_ERROR);
-			dieif(spBegin != stkOffs(rt, 0), ERR_INTERNAL_ERROR);
+			dieif(spBegin != stkOffset(rt, 0), ERR_INTERNAL_ERROR);
 			break;
 
 		case STMT_if:
@@ -1353,7 +1355,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				return CAST_any;
 			}
 			dieif(get != CAST_vid, ERR_INTERNAL_ERROR);
-			dieif(spBegin != stkOffs(rt, 0), ERR_INTERNAL_ERROR);
+			dieif(spBegin != stkOffset(rt, 0), ERR_INTERNAL_ERROR);
 			break;
 
 		case STMT_con:
@@ -1929,7 +1931,7 @@ int gencode(rtContext rt, int mode) {
 
 	// debug info
 	if (mode != 0) {
-		rt->dbg = (dbgContext)(rt->_beg = paddptr(rt->_beg, pad_size));
+		rt->dbg = (dbgContext)(rt->_beg = padPointer(rt->_beg, pad_size));
 		rt->_beg += sizeof(struct dbgContextRec);
 
 		dieif(rt->_beg >= rt->_end, ERR_MEMORY_OVERRUN);
@@ -1945,7 +1947,7 @@ int gencode(rtContext rt, int mode) {
 	if (cc->native != NULL) {
 		list lst = cc->native;
 		libc last = (libc) lst->data;
-		libc *calls = (libc*)(rt->_beg = paddptr(rt->_beg, pad_size));
+		libc *calls = (libc*)(rt->_beg = padPointer(rt->_beg, pad_size));
 
 		rt->_beg += (last->offs + 1) * sizeof(libc);
 		if(rt->_beg >= rt->_end) {
@@ -1960,7 +1962,7 @@ int gencode(rtContext rt, int mode) {
 
 			// relocate native call offsets to be debuggable and traceable.
 			nfc->sym->offs = vmOffset(rt, nfc);
-			nfc->sym->size = 0;
+			nfc->sym->size = sizeof(nfc);
 			addDbgFunction(rt, nfc->sym);
 		}
 	}
@@ -2063,7 +2065,7 @@ int gencode(rtContext rt, int mode) {
 					return 0;
 				}
 
-				rt->_beg = paddptr(rt->_beg, align);
+				rt->_beg = padPointer(rt->_beg, align);
 				var->offs = vmOffset(rt, rt->_beg);
 				rt->_beg += var->size;
 

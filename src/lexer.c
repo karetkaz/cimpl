@@ -70,16 +70,19 @@ Lexical elements
  */
 static size_t fillBuf(ccContext cc) {
 	if (cc->fin._fin >= 0) {
-		unsigned char *base = cc->fin._buf + cc->fin._cnt;
-		size_t l, size = sizeof(cc->fin._buf) - cc->fin._cnt;
 		memcpy(cc->fin._buf, cc->fin._ptr, cc->fin._cnt);
-		cc->fin._cnt += l = read(cc->fin._fin, base, size);
-		if (l == 0) {
+
+		void *base = cc->fin._buf + cc->fin._cnt;
+		size_t size = sizeof(cc->fin._buf) - cc->fin._cnt;
+		ssize_t l = read(cc->fin._fin, base, size);
+		if (l <= 0) {	// end of file or error
+			dieif(l < 0, ERR_INTERNAL_ERROR);
 			cc->fin._buf[cc->fin._cnt] = 0;
 			close(cc->fin._fin);
 			cc->fin._fin = -1;
 		}
 		cc->fin._ptr = (char*)cc->fin._buf;
+		cc->fin._cnt += l;
 	}
 	return cc->fin._cnt;
 }

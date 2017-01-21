@@ -152,12 +152,12 @@ struct rtContextRec {
  * @brief Native function invocation context.
  */
 struct nfcContextRec {
-	const rtContext rt;         // runtime context
-	const symn sym;             // the invoked function
-	const char * const proto;   // static data (passed to install)
-	const void *extra;          // extra data (passed to invoke)
-	const stkptr args;          // arguments
-	const int argc;             // argument count
+	rtContext rt;         // runtime context
+	symn sym;             // the invoked function
+	char *proto;          // static data (passed to install)
+	void *extra;          // extra data (passed to invoke)
+	stkptr args;          // arguments
+	int argc;             // argument count
 };
 
 /**
@@ -187,7 +187,7 @@ static inline int64_t argi64(nfcContext args, size_t offs) { return argget(args,
 static inline float32_t argf32(nfcContext args, size_t offs) { return argget(args, offs, float32_t); }
 static inline float64_t argf64(nfcContext args, size_t offs) { return argget(args, offs, float64_t); }
 static inline void *arghnd(nfcContext args, size_t offs) { return argget(args, offs, void*); }
-static inline void *argref(nfcContext args, size_t offs) { size_t p = argget(args, offs, vmOffs); return p ? args->rt->_mem + p : NULL; }
+static inline size_t argref(nfcContext args, size_t offs) { return argget(args, offs, vmOffs); }
 #undef argget
 
 /**

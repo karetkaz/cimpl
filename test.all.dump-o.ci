@@ -5,10 +5,10 @@ typename: typename {
 .owner: 
 .field size: int32 (size: 4 @0 -> const variable)
 .field offset: int32 (size: 4 @0 -> const variable)
-.field file: function (size: 0 @21928 -> static const inline)
-.field line: function (size: 0 @22392 -> static const inline)
-.field name: function (size: 0 @22856 -> static const inline)
-.field base: function (size: 0 @23320 -> static const inline)
+.field base: function (size: 8 @21928 -> static const inline)
+.field file: function (size: 8 @22392 -> static const inline)
+.field line: function (size: 8 @22856 -> static const inline)
+.field name: function (size: 8 @23320 -> static const inline)
 }
 typename.size: int32: int32 {
 .kind: const variable
@@ -22,39 +22,39 @@ typename.offset: int32: int32 {
 .size: 4
 .owner: typename
 }
-typename.file(type: typename): .cstr: function {
+typename.base(type: typename): typename: function {
 .kind: static const inline
 .offset: 0055a8
-.size: 0
+.size: 8
 .owner: typename
-.param .result: .cstr (@+8->inline)
+.param .result: typename (@+4->inline)
 .param type: typename (@+4->ref)
 .value: emit((nfc(1), type))
 }
-typename.line(type: typename): int32: function {
+typename.file(type: typename): .cstr: function {
 .kind: static const inline
 .offset: 005778
-.size: 0
-.owner: typename
-.param .result: int32 (@+8->inline)
-.param type: typename (@+4->ref)
-.value: emit((nfc(2), type))
-}
-typename.name(type: typename): .cstr: function {
-.kind: static const inline
-.offset: 005948
-.size: 0
+.size: 8
 .owner: typename
 .param .result: .cstr (@+8->inline)
 .param type: typename (@+4->ref)
+.value: emit((nfc(2), type))
+}
+typename.line(type: typename): int32: function {
+.kind: static const inline
+.offset: 005948
+.size: 8
+.owner: typename
+.param .result: int32 (@+8->inline)
+.param type: typename (@+4->ref)
 .value: emit((nfc(3), type))
 }
-typename.base(type: typename): typename: function {
+typename.name(type: typename): .cstr: function {
 .kind: static const inline
 .offset: 005b18
-.size: 0
+.size: 8
 .owner: typename
-.param .result: typename (@+4->inline)
+.param .result: .cstr (@+8->inline)
 .param type: typename (@+4->ref)
 .value: emit((nfc(4), type))
 }
@@ -117,13 +117,13 @@ uint32: typename {
 .offset: 0005b0
 .size: 4
 .owner: 
-.field zxt: function (size: 0 @32440 -> static const inline)
-.field sxt: function (size: 0 @33176 -> static const inline)
+.field zxt: function (size: 8 @32440 -> static const inline)
+.field sxt: function (size: 8 @33176 -> static const inline)
 }
 uint32.zxt(value: int32, offs: int32, count: int32): int32: function {
 .kind: static const inline
 .offset: 007eb8
-.size: 0
+.size: 8
 .owner: uint32
 .param .result: int32 (@+16->inline)
 .param value: int32 (@+12->i32)
@@ -134,7 +134,7 @@ uint32.zxt(value: int32, offs: int32, count: int32): int32: function {
 uint32.sxt(value: int32, offs: int32, count: int32): int32: function {
 .kind: static const inline
 .offset: 008198
-.size: 0
+.size: 8
 .owner: uint32
 .param .result: int32 (@+16->inline)
 .param value: int32 (@+12->i32)
@@ -147,13 +147,13 @@ uint64: typename {
 .offset: 000640
 .size: 8
 .owner: 
-.field zxt: function (size: 0 @33904 -> static const inline)
-.field sxt: function (size: 0 @34632 -> static const inline)
+.field zxt: function (size: 8 @33904 -> static const inline)
+.field sxt: function (size: 8 @34632 -> static const inline)
 }
 uint64.zxt(value: int64, offs: int32, count: int32): int64: function {
 .kind: static const inline
 .offset: 008470
-.size: 0
+.size: 8
 .owner: uint64
 .param .result: int64 (@+24->inline)
 .param value: int64 (@+16->i64)
@@ -164,7 +164,7 @@ uint64.zxt(value: int64, offs: int32, count: int32): int64: function {
 uint64.sxt(value: int64, offs: int32, count: int32): int64: function {
 .kind: static const inline
 .offset: 008748
-.size: 0
+.size: 8
 .owner: uint64
 .param .result: int64 (@+24->inline)
 .param value: int64 (@+16->i64)
@@ -177,19 +177,19 @@ float32: typename {
 .offset: 0006d0
 .size: 4
 .owner: 
-.field sin: function (size: 0 @35104 -> static const inline)
-.field cos: function (size: 0 @35568 -> static const inline)
-.field tan: function (size: 0 @36032 -> static const inline)
-.field log: function (size: 0 @36496 -> static const inline)
-.field exp: function (size: 0 @36960 -> static const inline)
-.field pow: function (size: 0 @37568 -> static const inline)
-.field sqrt: function (size: 0 @38032 -> static const inline)
-.field atan2: function (size: 0 @38632 -> static const inline)
+.field sin: function (size: 8 @35104 -> static const inline)
+.field cos: function (size: 8 @35568 -> static const inline)
+.field tan: function (size: 8 @36032 -> static const inline)
+.field log: function (size: 8 @36496 -> static const inline)
+.field exp: function (size: 8 @36960 -> static const inline)
+.field pow: function (size: 8 @37568 -> static const inline)
+.field sqrt: function (size: 8 @38032 -> static const inline)
+.field atan2: function (size: 8 @38632 -> static const inline)
 }
 float32.sin(x: float32): float32: function {
 .kind: static const inline
 .offset: 008920
-.size: 0
+.size: 8
 .owner: float32
 .param .result: float32 (@+8->inline)
 .param x: float32 (@+4->f32)
@@ -198,7 +198,7 @@ float32.sin(x: float32): float32: function {
 float32.cos(x: float32): float32: function {
 .kind: static const inline
 .offset: 008af0
-.size: 0
+.size: 8
 .owner: float32
 .param .result: float32 (@+8->inline)
 .param x: float32 (@+4->f32)
@@ -207,7 +207,7 @@ float32.cos(x: float32): float32: function {
 float32.tan(x: float32): float32: function {
 .kind: static const inline
 .offset: 008cc0
-.size: 0
+.size: 8
 .owner: float32
 .param .result: float32 (@+8->inline)
 .param x: float32 (@+4->f32)
@@ -216,7 +216,7 @@ float32.tan(x: float32): float32: function {
 float32.log(x: float32): float32: function {
 .kind: static const inline
 .offset: 008e90
-.size: 0
+.size: 8
 .owner: float32
 .param .result: float32 (@+8->inline)
 .param x: float32 (@+4->f32)
@@ -225,7 +225,7 @@ float32.log(x: float32): float32: function {
 float32.exp(x: float32): float32: function {
 .kind: static const inline
 .offset: 009060
-.size: 0
+.size: 8
 .owner: float32
 .param .result: float32 (@+8->inline)
 .param x: float32 (@+4->f32)
@@ -234,7 +234,7 @@ float32.exp(x: float32): float32: function {
 float32.pow(x: float32, y: float32): float32: function {
 .kind: static const inline
 .offset: 0092c0
-.size: 0
+.size: 8
 .owner: float32
 .param .result: float32 (@+12->inline)
 .param x: float32 (@+8->f32)
@@ -244,7 +244,7 @@ float32.pow(x: float32, y: float32): float32: function {
 float32.sqrt(x: float32): float32: function {
 .kind: static const inline
 .offset: 009490
-.size: 0
+.size: 8
 .owner: float32
 .param .result: float32 (@+8->inline)
 .param x: float32 (@+4->f32)
@@ -253,7 +253,7 @@ float32.sqrt(x: float32): float32: function {
 float32.atan2(x: float32, y: float32): float32: function {
 .kind: static const inline
 .offset: 0096e8
-.size: 0
+.size: 8
 .owner: float32
 .param .result: float32 (@+12->inline)
 .param x: float32 (@+8->f32)
@@ -265,19 +265,19 @@ float64: typename {
 .offset: 000760
 .size: 8
 .owner: 
-.field sin: function (size: 0 @39088 -> static const inline)
-.field cos: function (size: 0 @39544 -> static const inline)
-.field tan: function (size: 0 @40000 -> static const inline)
-.field log: function (size: 0 @40456 -> static const inline)
-.field exp: function (size: 0 @40912 -> static const inline)
-.field pow: function (size: 0 @41504 -> static const inline)
-.field sqrt: function (size: 0 @41960 -> static const inline)
-.field atan2: function (size: 0 @42552 -> static const inline)
+.field sin: function (size: 8 @39088 -> static const inline)
+.field cos: function (size: 8 @39544 -> static const inline)
+.field tan: function (size: 8 @40000 -> static const inline)
+.field log: function (size: 8 @40456 -> static const inline)
+.field exp: function (size: 8 @40912 -> static const inline)
+.field pow: function (size: 8 @41504 -> static const inline)
+.field sqrt: function (size: 8 @41960 -> static const inline)
+.field atan2: function (size: 8 @42552 -> static const inline)
 }
 float64.sin(x: float64): float64: function {
 .kind: static const inline
 .offset: 0098b0
-.size: 0
+.size: 8
 .owner: float64
 .param .result: float64 (@+16->inline)
 .param x: float64 (@+8->f64)
@@ -286,7 +286,7 @@ float64.sin(x: float64): float64: function {
 float64.cos(x: float64): float64: function {
 .kind: static const inline
 .offset: 009a78
-.size: 0
+.size: 8
 .owner: float64
 .param .result: float64 (@+16->inline)
 .param x: float64 (@+8->f64)
@@ -295,7 +295,7 @@ float64.cos(x: float64): float64: function {
 float64.tan(x: float64): float64: function {
 .kind: static const inline
 .offset: 009c40
-.size: 0
+.size: 8
 .owner: float64
 .param .result: float64 (@+16->inline)
 .param x: float64 (@+8->f64)
@@ -304,7 +304,7 @@ float64.tan(x: float64): float64: function {
 float64.log(x: float64): float64: function {
 .kind: static const inline
 .offset: 009e08
-.size: 0
+.size: 8
 .owner: float64
 .param .result: float64 (@+16->inline)
 .param x: float64 (@+8->f64)
@@ -313,7 +313,7 @@ float64.log(x: float64): float64: function {
 float64.exp(x: float64): float64: function {
 .kind: static const inline
 .offset: 009fd0
-.size: 0
+.size: 8
 .owner: float64
 .param .result: float64 (@+16->inline)
 .param x: float64 (@+8->f64)
@@ -322,7 +322,7 @@ float64.exp(x: float64): float64: function {
 float64.pow(x: float64, y: float64): float64: function {
 .kind: static const inline
 .offset: 00a220
-.size: 0
+.size: 8
 .owner: float64
 .param .result: float64 (@+24->inline)
 .param x: float64 (@+16->f64)
@@ -332,7 +332,7 @@ float64.pow(x: float64, y: float64): float64: function {
 float64.sqrt(x: float64): float64: function {
 .kind: static const inline
 .offset: 00a3e8
-.size: 0
+.size: 8
 .owner: float64
 .param .result: float64 (@+16->inline)
 .param x: float64 (@+8->f64)
@@ -341,7 +341,7 @@ float64.sqrt(x: float64): float64: function {
 float64.atan2(x: float64, y: float64): float64: function {
 .kind: static const inline
 .offset: 00a638
-.size: 0
+.size: 8
 .owner: float64
 .param .result: float64 (@+24->inline)
 .param x: float64 (@+16->f64)
@@ -1391,7 +1391,7 @@ emit.max.p2d: p4x: emit.p4x {
 halt(): void: function {
 .kind: static const inline
 .offset: 0052b0
-.size: 0
+.size: 8
 .owner: 
 .param .result: void (@+0->inline)
 .value: emit(nfc(0))
@@ -1413,7 +1413,7 @@ RAND_MAX: int32: int32 {
 raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void: function {
 .kind: static const inline
 .offset: 006060
-.size: 0
+.size: 8
 .owner: 
 .field abort: int32 (size: 0 @0 -> static i32)
 .field error: int32 (size: 0 @0 -> static i32)
@@ -1489,7 +1489,7 @@ raise.defTrace: int32: int32 {
 tryExec(args: pointer, action(args: pointer): void): int32: function {
 .kind: static const inline
 .offset: 006860
-.size: 0
+.size: 8
 .owner: 
 .param .result: int32 (@+12->inline)
 .param args: pointer (@+8->ref)
@@ -1499,7 +1499,7 @@ tryExec(args: pointer, action(args: pointer): void): int32: function {
 memmgr(ptr: pointer, size: int32): pointer: function {
 .kind: static const inline
 .offset: 006ac0
-.size: 0
+.size: 8
 .owner: 
 .param .result: pointer (@+12->inline)
 .param ptr: pointer (@+8->ref)
@@ -1509,7 +1509,7 @@ memmgr(ptr: pointer, size: int32): pointer: function {
 memset(dest: pointer, value: int32, size: int32): pointer: function {
 .kind: static const inline
 .offset: 006db0
-.size: 0
+.size: 8
 .owner: 
 .param .result: pointer (@+16->inline)
 .param dest: pointer (@+12->ref)
@@ -1520,7 +1520,7 @@ memset(dest: pointer, value: int32, size: int32): pointer: function {
 memcpy(dest: pointer, src: pointer, size: int32): pointer: function {
 .kind: static const inline
 .offset: 007098
-.size: 0
+.size: 8
 .owner: 
 .param .result: pointer (@+16->inline)
 .param dest: pointer (@+12->ref)
@@ -1533,18 +1533,18 @@ System: void {
 .offset: 0070c8
 .size: 0
 .owner: 
-.field exit: function (size: 0 @29440 -> static const inline)
-.field srand: function (size: 0 @29912 -> static const inline)
-.field rand: function (size: 0 @30240 -> static const inline)
-.field time: function (size: 0 @30568 -> static const inline)
-.field clock: function (size: 0 @30896 -> static const inline)
-.field millis: function (size: 0 @31224 -> static const inline)
-.field sleep: function (size: 0 @31688 -> static const inline)
+.field exit: function (size: 8 @29440 -> static const inline)
+.field srand: function (size: 8 @29912 -> static const inline)
+.field rand: function (size: 8 @30240 -> static const inline)
+.field time: function (size: 8 @30568 -> static const inline)
+.field clock: function (size: 8 @30896 -> static const inline)
+.field millis: function (size: 8 @31224 -> static const inline)
+.field sleep: function (size: 8 @31688 -> static const inline)
 }
 System.exit(code: int32): void: function {
 .kind: static const inline
 .offset: 007300
-.size: 0
+.size: 8
 .owner: System
 .param .result: void (@+4->inline)
 .param code: int32 (@+4->i32)
@@ -1553,7 +1553,7 @@ System.exit(code: int32): void: function {
 System.srand(seed: int32): void: function {
 .kind: static const inline
 .offset: 0074d8
-.size: 0
+.size: 8
 .owner: System
 .param .result: void (@+4->inline)
 .param seed: int32 (@+4->i32)
@@ -1562,7 +1562,7 @@ System.srand(seed: int32): void: function {
 System.rand(): int32: function {
 .kind: static const inline
 .offset: 007620
-.size: 0
+.size: 8
 .owner: System
 .param .result: int32 (@+4->inline)
 .value: emit(nfc(12))
@@ -1570,7 +1570,7 @@ System.rand(): int32: function {
 System.time(): int32: function {
 .kind: static const inline
 .offset: 007768
-.size: 0
+.size: 8
 .owner: System
 .param .result: int32 (@+4->inline)
 .value: emit(nfc(13))
@@ -1578,7 +1578,7 @@ System.time(): int32: function {
 System.clock(): int32: function {
 .kind: static const inline
 .offset: 0078b0
-.size: 0
+.size: 8
 .owner: System
 .param .result: int32 (@+4->inline)
 .value: emit(nfc(14))
@@ -1586,7 +1586,7 @@ System.clock(): int32: function {
 System.millis(): int64: function {
 .kind: static const inline
 .offset: 0079f8
-.size: 0
+.size: 8
 .owner: System
 .param .result: int64 (@+8->inline)
 .value: emit(nfc(15))
@@ -1594,7 +1594,7 @@ System.millis(): int64: function {
 System.sleep(millis: int64): void: function {
 .kind: static const inline
 .offset: 007bc8
-.size: 0
+.size: 8
 .owner: System
 .param .result: void (@+8->inline)
 .param millis: int64 (@+8->i64)
@@ -1605,26 +1605,26 @@ File: typename {
 .offset: 00a668
 .size: 8
 .owner: 
-.field open: function (size: 0 @43304 -> static const inline)
-.field create: function (size: 0 @43904 -> static const inline)
-.field append: function (size: 0 @44504 -> static const inline)
-.field peek: function (size: 0 @44968 -> static const inline)
-.field read: function (size: 0 @45432 -> static const inline)
-.field read: function (size: 0 @46312 -> static const inline)
-.field readLine: function (size: 0 @47192 -> static const inline)
-.field write: function (size: 0 @47792 -> static const inline)
-.field write: function (size: 0 @48656 -> static const inline)
-.field flush: function (size: 0 @49120 -> static const inline)
-.field close: function (size: 0 @49584 -> static const inline)
-.field in: File (size: 0 @49776 -> static const inline)
-.field out: File (size: 0 @49968 -> static const inline)
-.field err: File (size: 0 @50160 -> static const inline)
-.field dbg: File (size: 0 @50352 -> static const inline)
+.field open: function (size: 8 @43304 -> static const inline)
+.field create: function (size: 8 @43904 -> static const inline)
+.field append: function (size: 8 @44504 -> static const inline)
+.field peek: function (size: 8 @44968 -> static const inline)
+.field read: function (size: 8 @45432 -> static const inline)
+.field read: function (size: 8 @46312 -> static const inline)
+.field readLine: function (size: 8 @47192 -> static const inline)
+.field write: function (size: 8 @47792 -> static const inline)
+.field write: function (size: 8 @48656 -> static const inline)
+.field flush: function (size: 8 @49120 -> static const inline)
+.field close: function (size: 8 @49584 -> static const inline)
+.field in: File (size: 8 @49776 -> static const inline)
+.field out: File (size: 8 @49968 -> static const inline)
+.field err: File (size: 8 @50160 -> static const inline)
+.field dbg: File (size: 8 @50352 -> static const inline)
 }
 File.open(path: char[*]): File: function {
 .kind: static const inline
 .offset: 00a928
-.size: 0
+.size: 8
 .owner: File
 .param .result: File (@+12->inline)
 .param path: char[*] (@+4->ref)
@@ -1633,7 +1633,7 @@ File.open(path: char[*]): File: function {
 File.create(path: char[*]): File: function {
 .kind: static const inline
 .offset: 00ab80
-.size: 0
+.size: 8
 .owner: File
 .param .result: File (@+12->inline)
 .param path: char[*] (@+4->ref)
@@ -1642,7 +1642,7 @@ File.create(path: char[*]): File: function {
 File.append(path: char[*]): File: function {
 .kind: static const inline
 .offset: 00add8
-.size: 0
+.size: 8
 .owner: File
 .param .result: File (@+12->inline)
 .param path: char[*] (@+4->ref)
@@ -1651,7 +1651,7 @@ File.append(path: char[*]): File: function {
 File.peek(file: File): int32: function {
 .kind: static const inline
 .offset: 00afa8
-.size: 0
+.size: 8
 .owner: File
 .param .result: int32 (@+12->inline)
 .param file: File (@+8->val)
@@ -1660,7 +1660,7 @@ File.peek(file: File): int32: function {
 File.read(file: File): int32: function {
 .kind: static const inline
 .offset: 00b178
-.size: 0
+.size: 8
 .owner: File
 .param .result: int32 (@+12->inline)
 .param file: File (@+8->val)
@@ -1669,7 +1669,7 @@ File.read(file: File): int32: function {
 File.read(file: File, buff: uint8[]): int32: function {
 .kind: static const inline
 .offset: 00b4e8
-.size: 0
+.size: 8
 .owner: File
 .param .result: int32 (@+20->inline)
 .param file: File (@+16->val)
@@ -1679,7 +1679,7 @@ File.read(file: File, buff: uint8[]): int32: function {
 File.readLine(file: File, buff: uint8[]): int32: function {
 .kind: static const inline
 .offset: 00b858
-.size: 0
+.size: 8
 .owner: File
 .param .result: int32 (@+20->inline)
 .param file: File (@+16->val)
@@ -1689,7 +1689,7 @@ File.readLine(file: File, buff: uint8[]): int32: function {
 File.write(file: File, byte: uint8): int32: function {
 .kind: static const inline
 .offset: 00bab0
-.size: 0
+.size: 8
 .owner: File
 .param .result: int32 (@+16->inline)
 .param file: File (@+12->val)
@@ -1699,7 +1699,7 @@ File.write(file: File, byte: uint8): int32: function {
 File.write(file: File, buff: uint8[]): int32: function {
 .kind: static const inline
 .offset: 00be10
-.size: 0
+.size: 8
 .owner: File
 .param .result: int32 (@+20->inline)
 .param file: File (@+16->val)
@@ -1709,7 +1709,7 @@ File.write(file: File, buff: uint8[]): int32: function {
 File.flush(file: File): void: function {
 .kind: static const inline
 .offset: 00bfe0
-.size: 0
+.size: 8
 .owner: File
 .param .result: void (@+8->inline)
 .param file: File (@+8->val)
@@ -1718,7 +1718,7 @@ File.flush(file: File): void: function {
 File.close(file: File): void: function {
 .kind: static const inline
 .offset: 00c1b0
-.size: 0
+.size: 8
 .owner: File
 .param .result: void (@+8->inline)
 .param file: File (@+8->val)
@@ -1727,28 +1727,28 @@ File.close(file: File): void: function {
 File.in: File: File {
 .kind: static const inline
 .offset: 00c270
-.size: 0
+.size: 8
 .owner: File
 .value: emit(nfc(48))
 }
 File.out: File: File {
 .kind: static const inline
 .offset: 00c330
-.size: 0
+.size: 8
 .owner: File
 .value: emit(nfc(49))
 }
 File.err: File: File {
 .kind: static const inline
 .offset: 00c3f0
-.size: 0
+.size: 8
 .owner: File
 .value: emit(nfc(50))
 }
 File.dbg: File: File {
 .kind: static const inline
 .offset: 00c4b0
-.size: 0
+.size: 8
 .owner: File
 .value: emit(nfc(51))
 }
@@ -1784,14 +1784,14 @@ File.dbg: File: File {
 .field double: typename (size: 0 @0 -> static const inline)
 .field .cstr: char (size: 4 @3624 -> static const typename(arr))
 .field emit: function (size: 0 @3768 -> static const typename(void))
-.field halt: function (size: 0 @21168 -> static const inline)
+.field halt: function (size: 8 @21168 -> static const inline)
 .field CLOCKS_PER_SEC: int32 (size: 0 @0 -> i32)
 .field RAND_MAX: int32 (size: 0 @0 -> i32)
-.field raise: function (size: 0 @24672 -> static const inline)
-.field tryExec: function (size: 0 @26720 -> static const inline)
-.field memmgr: function (size: 0 @27328 -> static const inline)
-.field memset: function (size: 0 @28080 -> static const inline)
-.field memcpy: function (size: 0 @28824 -> static const inline)
+.field raise: function (size: 8 @24672 -> static const inline)
+.field tryExec: function (size: 8 @26720 -> static const inline)
+.field memmgr: function (size: 8 @27328 -> static const inline)
+.field memset: function (size: 8 @28080 -> static const inline)
+.field memcpy: function (size: 8 @28824 -> static const inline)
 .field System: void (size: 0 @28872 -> static const typename(void))
 .field File: typename (size: 8 @42600 -> static const typename(val))
 .field integer: typename (size: 0 @0 -> inline)
@@ -5174,7 +5174,7 @@ extras/Tests/stdc.memory.ci:23: val2: int64(42)
 /*-- Allocations:
 memory[meta] @000000; size: 116280(113.6 Kb)
 memory[code] @000000; size: 121405(118.6 Kb)
-memory[stack] @000000; size: 2097098(2.0 Mb)
-memory[heap] @01da3d; size: 6169841(5.9 Mb)
-memory[free] @01da58; size: 6169792(5.9 Mb)
+memory[stack] @000000; size: 131018(127.9 Kb)
+memory[heap] @01da3d; size: 271601(265.2 Kb)
+memory[free] @01da58; size: 271552(265.2 Kb)
 // */

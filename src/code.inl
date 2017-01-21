@@ -21,21 +21,19 @@
 case opc_nop:  NEXT(1, 0, 0) {
 } break;
 case opc_nfc:  NEXT(4, 0, 0) {
-	vmError nfcError;
 	libc nfc = libcvec[ip->rel];
 	NEXT(0, nfc->out - nfc->in, nfc->in);
 #ifdef EXEC
-	struct nfcContextRec args = {
-		.rt = rt,
-		.sym = nfc->sym,
-		.extra = extra,
-		.proto = nfc->proto,
-		.args = sp,
-		.argc = nfc->in,
-	};
+	struct nfcContextRec args;
+	args.rt = rt;
+	args.sym = nfc->sym;
+	args.extra = (void*) extra;
+	args.proto = (char*) nfc->proto;
+	args.args = sp;
+	args.argc = nfc->in;
 
 	TRACE(nfc->sym->offs);
-	nfcError = nfc->call(&args);
+	vmError nfcError = nfc->call(&args);
 	TRACE((size_t)-1);
 
 	STOP(error_libc, nfcError != noError, nfcError);
