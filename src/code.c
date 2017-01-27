@@ -3,7 +3,7 @@
  *   Date: 2011/06/23
  *   Description: bytecode related stuff
  *******************************************************************************
-code emmiting, executing and formatting
+ emit and execute instructions
 *******************************************************************************/
 #include <string.h>
 #include <math.h>
@@ -18,7 +18,7 @@ const struct opcodeRec opcode_tbl[256] = {
 };
 
 
-/// Bit scan forward. (get the index of the highest bit seted)
+/// Bit scan forward. (get the index of the highest bit set)
 static inline int32_t bitsf(uint32_t x) {
 	int result = 0;
 	if ((x & 0x0000ffff) == 0) {
@@ -132,7 +132,7 @@ size_t vmOffset(rtContext rt, void *ptr) {
 /**
  * @brief Check for an instruction at the given offset.
  * @param offs Offset of the opcode.
- * @param opc Opcode to check.
+ * @param opc Operation code to check.
  * @param arg Copy the argument of the opcode.
  * @return non zero if at the given location the opc was found.
  * @note Aborts if opc is not valid.
@@ -178,6 +178,7 @@ static int decrementStackAccess(rtContext rt, size_t offsBegin, size_t offsEnd, 
 		switch (ip->opc) {
 			default:
 				break;
+
 			case opc_set1:
 			case opc_set2:
 			case opc_set4:
@@ -186,6 +187,7 @@ static int decrementStackAccess(rtContext rt, size_t offsBegin, size_t offsEnd, 
 			case opc_dup4:
 				ip->idx -= count;
 				break;
+
 			case opc_ldsp:
 				ip->rel -= count * vm_size;
 				break;
@@ -251,7 +253,7 @@ int optimizeAssign(rtContext rt, size_t offsBegin, size_t offsEnd) {
 }
 
 size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
-	libc *libcvec = rt->vm.nfc;
+	libc *nativeCalls = rt->vm.nfc;
 	vmInstruction ip = (vmInstruction)rt->_beg;
 
 	dieif((unsigned char*)ip + 16 >= rt->_end, ERR_MEMORY_OVERRUN);
@@ -302,9 +304,9 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 	else if (opc == opc_ldi) {
 		ip = vmPointer(rt, rt->vm.pc);
 		if (ip->opc == opc_ldsp) {
-			size_t vardist = (ip->rel + arg.i4) / 4;
-			if (rt->vm.su < vardist)
-				rt->vm.su = vardist;
+			size_t varPos = (ip->rel + arg.i4) / 4;
+			if (rt->vm.su < varPos)
+				rt->vm.su = varPos;
 		}
 
 		dieif (arg.i4 != arg.i8, ERR_INTERNAL_ERROR);
@@ -330,19 +332,16 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 				break;
 
 			default: // we have src on the stack
-
 				// push dst
 				if (!emitInt(rt, opc_ldsp, 4 - arg.i4)) {
 					trace(ERR_INTERNAL_ERROR);
 					return 0;
 				}
-
 				// copy
 				if (!emitInt(rt, opc_move, -arg.i4)) {
 					trace(ERR_INTERNAL_ERROR);
 					return 0;
 				}
-
 				// create n bytes on stack
 				opc = opc_spc;
 				break;
@@ -351,9 +350,9 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 	else if (opc == opc_sti) {
 		ip = vmPointer(rt, rt->vm.pc);
 		if (ip->opc == opc_ldsp) {
-			size_t vardist = (ip->rel + arg.i4) / 4;
-			if (rt->vm.su < vardist)
-				rt->vm.su = vardist;
+			size_t varPos = (ip->rel + arg.i4) / 4;
+			if (rt->vm.su < varPos)
+				rt->vm.su = varPos;
 		}
 
 		dieif (arg.i4 != arg.i8, ERR_INTERNAL_ERROR);
@@ -379,19 +378,16 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 				break;
 
 			default: // we have dst on the stack
-
 				// push dst
 				if (!emitInt(rt, opc_ldsp, sizeof(vmOffs))) {
 					trace(ERR_INTERNAL_ERROR);
 					return 0;
 				}
-
 				// copy
 				if (!emitInt(rt, opc_move, arg.i4)) {
 					trace(ERR_INTERNAL_ERROR);
 					return 0;
 				}
-
 				if (ip->opc == opc_ldsp) {
 					//~ if we copy from the stack to the stack
 					//~ do not remove more elements than we copy
@@ -419,11 +415,11 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 	if (rt->foldInstr) {
 		if (!rt->foldInstr) {}
 
-		/* TODO: ldzs are not optimized, uncomment when vm does constant evaluations.
+		/* TODO: ldz is not optimized, uncomment when vm does constant evaluations.
 		else if (opc == opc_lc32) {
 			if (arg.i8 == 0) {
 				opc = opc_ldz1;
-				ip = getip(rt, rt->vm.pc);
+				ip = vmPointer(rt, rt->vm.pc);
 				if (ip->opc == opc_ldz1) {
 					opc = opc_ldz2;
 					rollbackPc(rt);
@@ -433,7 +429,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 		else if (opc == opc_lc64) {
 			if (arg.i8 == 0) {
 				opc = opc_ldz2;
-				ip = getip(rt, rt->vm.pc);
+				ip = vmPointer(rt, rt->vm.pc);
 				if (ip->opc == opc_ldz2) {
 					opc = opc_ldz4;
 					rollbackPc(rt);
@@ -442,7 +438,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 		}
 
 		/ *else if (opc == opc_ldi1) {
-			ip = getip(rt, rt->vm.pc);
+			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i4 = ip->rel / vm_size;
 				opc = opc_dup1;
@@ -694,6 +690,14 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 				}
 			}
 		}
+		else if (opc == opc_mad) {
+			if (arg.i8 == 0) {
+				return rt->vm.pc;
+			}
+			else if (arg.i8 == 1) {
+				opc = i32_add;
+			}
+		}
 
 		//* TODO: eval Conversions using vm.
 		else if (opc == u32_i64) {
@@ -849,7 +853,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 
 		/* mul, div, mod
 		else if (opc == u32_mod) {
-			ip = getip(s, s->vm.pc);
+			ip = vmPointer(s, s->vm.pc);
 			if (ip->opc == opc_lc32) {
 				int x = ip->arg.i4;
 				// if constant contains only one bit
@@ -935,6 +939,9 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 		dieif((ip->rel + rt->vm.pc) != arg.u8, ERR_INTERNAL_ERROR);
 	}
 	else switch (opc) {
+		default:
+			break;
+
 		case opc_spc:
 			if (arg.i8 > 0x7fffff) {
 				trace("local variable is too large: %D", arg.i8);
@@ -961,9 +968,6 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 		case opc_mad:
 			dieif(ip->rel != arg.i8, ERR_INTERNAL_ERROR);
 			break;
-
-		default:
-			break;
 	}
 
 	switch (opc) {
@@ -986,7 +990,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 
 	if (opc == opc_call) {
 		//~ call ends with a return,
-		//~ wich drops ip from the stack.
+		//~ which drops ip from the stack.
 		rt->vm.ss -= 1;
 	}
 
@@ -998,7 +1002,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, stkval arg) {
 	dbgEmit("pc[%d]: sp(%d): %A", rt->vm.pc, rt->vm.ss, ip);
 	return rt->vm.pc;
 }
-int fixjump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
+int fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
 	dieif(stc > 0 && stc & 3, ERR_INTERNAL_ERROR);
 	if (src != 0) {
 		vmInstruction ip = vmPointer(rt, src);
@@ -1035,7 +1039,7 @@ int fixjump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
 
 // TODO: to be removed.
 static inline void logProc(vmProcessor pu, int cp, char *msg) {
-	trace("%s: {pu:%d, ip:%x, bp:%x, sp:%x, stacksize:%d, parent:%d, childs:%d}", msg, cp, pu[cp].ip, pu[cp].bp, pu[cp].sp, pu[cp].ss, pu[cp].pp, pu[cp].cp);
+	trace("%s: {pu:%d, ip:%x, bp:%x, sp:%x, stack:%d, parent:%d, children:%d}", msg, cp, pu[cp].ip, pu[cp].bp, pu[cp].sp, pu[cp].ss, pu[cp].pp, pu[cp].cp);
 	(void)pu;
 	(void)cp;
 	(void)msg;
@@ -1102,7 +1106,7 @@ static inline int ovf(vmProcessor pu) {
  * @param rt runtime context
  * @param sp tack pointer (for tracing arguments
  * @param caller the address of the caller, NULL on start and end.
- * @param callee the called function adress, -1 on leave.
+ * @param callee the called function address, -1 on leave.
  * @param extra TO BE REMOVED
  */
 static inline vmError traceCall(rtContext rt, void *sp, size_t caller, size_t callee) {
@@ -1216,12 +1220,12 @@ static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t
  * @param rt Runtime context.
  * @param pu Cell to execute on.
  * @param fun Executing function.
- * @param extra Extra data for libcalls.
+ * @param extra Extra data for native calls.
  * @param dbg function which is executed after each instruction or on error.
  * @return Error code of execution, 0 on success.
  */
 static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
-	const libc *libcvec = rt->vm.nfc;
+	libc *nativeCalls = rt->vm.nfc;
 
 	vmError execError = noError;
 	const int cc = 1;						// cell count
@@ -1325,7 +1329,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 					goto dbg_stop_vm;
 
 				dbg_error_libc:
-					execError = libCallAbort;
+					execError = nativeCallError;
 					goto dbg_stop_vm;
 
 				#define NEXT(__IP, __SP, __CHK) pu->sp -= (__SP); pu->ip += (__IP);
@@ -1399,7 +1403,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 				goto stop_vm;
 
 			error_libc:
-				execError = libCallAbort;
+				execError = nativeCallError;
 				goto stop_vm;
 
 			#define NEXT(__IP, __SP, __CHK) { pu->sp -= (__SP); pu->ip += (__IP); }
@@ -1528,17 +1532,17 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, int mode) {
 
 	if (mode & prAsmName && sym != NULL) {
 		size_t symOffs = offs - sym->offs;
-		int paddLen = 4 + !symOffs;
+		int padLen = 4 + !symOffs;
 		printFmt(out, esc, fmt_offs + 1, sym, symOffs);
 
 		while (symOffs > 0) {
 			symOffs /= 10;
-			paddLen -= 1;
+			padLen -= 1;
 		}
-		if (paddLen < 0) {
-			paddLen = 0;
+		if (padLen < 0) {
+			padLen = 0;
 		}
-		printFmt(out, esc, "% I: ", paddLen);
+		printFmt(out, esc, "% I: ", padLen);
 	}
 
 	if (ip == NULL) {
@@ -1727,7 +1731,7 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, int mode) {
 
 void printVal(FILE *out, const char **esc, rtContext rt, symn var, stkval *val, int mode, int indent) {
 	ccKind typCast, varCast = castOf(var);
-	const char *fmt = var->pfmt;
+	const char *format = var->format;
 	memptr data = (memptr) val;
 	symn typ = var;
 
@@ -1740,8 +1744,8 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, stkval *val, 
 
 	if (!isTypename(var)) {
 		typ = var->type;
-		if (fmt == NULL) {
-			fmt = typ->pfmt;
+		if (format == NULL) {
+			format = typ->format;
 		}
 		if (varCast == CAST_ref) {
 			data = vmPointer(rt, (size_t) val->ref.data);
@@ -1766,57 +1770,57 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, stkval *val, 
 		printFmt(out, esc, "BadRef@%06x", var->offs);
 	}
 	// builtin type.
-	else if (fmt != NULL) {
+	else if (format != NULL) {
 		stkval *ref = (stkval *) data;
-		if (fmt == type_fmt_typename) {
-			printFmt(out, esc, fmt, ref);
+		if (format == type_fmt_typename) {
+			printFmt(out, esc, format, ref);
 		}
-		else if (fmt == type_fmt_string) {
-			printFmt(out, esc, fmt, ref);
+		else if (format == type_fmt_string) {
+			printFmt(out, esc, format, ref);
 		}
 		else switch (typ->size) {
 			default:
-				// there should be no formated(<=> builtin) type matching none of this size.
-				printFmt(out, esc, "%s @%06x, size: %d", fmt, vmOffset(rt, ref), var->size);
+				// there should be no formatted(<=> builtin) type matching none of this size.
+				printFmt(out, esc, "%s @%06x, size: %d", format, vmOffset(rt, ref), var->size);
 				break;
 
 			case 1:
 				if (typCast == CAST_u32) {
-					printFmt(out, esc, fmt, ref->u1);
+					printFmt(out, esc, format, ref->u1);
 				}
 				else {
-					printFmt(out, esc, fmt, ref->i1);
+					printFmt(out, esc, format, ref->i1);
 				}
 				break;
 
 			case 2:
 				if (typCast == CAST_u32) {
-					printFmt(out, esc, fmt, ref->u2);
+					printFmt(out, esc, format, ref->u2);
 				}
 				else {
-					printFmt(out, esc, fmt, ref->i2);
+					printFmt(out, esc, format, ref->i2);
 				}
 				break;
 
 			case 4:
 				if (typCast == CAST_f32) {
-					printFmt(out, esc, fmt, ref->f4);
+					printFmt(out, esc, format, ref->f4);
 				}
 				else if (typCast == CAST_u32) {
 					// force zero extend (may sign extend to int64 ?).
-					printFmt(out, esc, fmt, ref->u4);
+					printFmt(out, esc, format, ref->u4);
 				}
 				else {
-					printFmt(out, esc, fmt, ref->i4);
+					printFmt(out, esc, format, ref->i4);
 				}
 				break;
 
 			case 8:
 				if (typCast == CAST_f64) {
-					printFmt(out, esc, fmt, ref->f8);
+					printFmt(out, esc, format, ref->f8);
 				}
 				else {
-					printFmt(out, esc, fmt, ref->i8);
+					printFmt(out, esc, format, ref->i8);
 				}
 				break;
 		}
@@ -1846,7 +1850,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, stkval *val, 
 			symn len = typ->fields;
 			if (len == NULL) {
 				// pointer or string
-				if (typ->type->pfmt == type_fmt_character) {
+				if (typ->type->format == type_fmt_character) {
 					printFmt(out, esc, "\"%s\"", arrData);
 				}
 				else {
@@ -1896,7 +1900,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, stkval *val, 
 				}
 
 				if (!isVariable(sym)) {
-					// skip inlines, types and functions
+					// skip types, functions and aliases
 					continue;
 				}
 
@@ -2039,10 +2043,10 @@ int vmSelfTest() {
 	int test = 0, skip = 0;
 	FILE *out = stdout;
 	struct vmInstruction ip[1];
+	struct libc *nativeCalls[1];
 	struct libc nfc0;
-	struct libc *libcvec[1];
 
-	libcvec[0] = &nfc0;
+	nativeCalls[0] = &nfc0;
 	memset(ip, 0, sizeof(ip));
 	memset(&nfc0, 0, sizeof(nfc0));
 
@@ -2103,6 +2107,6 @@ int vmSelfTest() {
 			printFmt(out, NULL, "More than one NEXT: opcode 0x%02x: '%.A'\n", i, ip);
 		}
 	}
-	printFmt(out, NULL, "vmSelfTest finished with %d errors from %d tested and %d skiped instructions\n", err, test, skip);
+	printFmt(out, NULL, "vmSelfTest finished with %d errors from %d tested and %d skipped instructions\n", err, test, skip);
 	return err;
 }

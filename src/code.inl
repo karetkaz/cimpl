@@ -21,7 +21,7 @@
 case opc_nop:  NEXT(1, 0, 0) {
 } break;
 case opc_nfc:  NEXT(4, 0, 0) {
-	libc nfc = libcvec[ip->rel];
+	libc nfc = nativeCalls[ip->rel];
 	NEXT(0, nfc->out - nfc->in, nfc->in);
 #ifdef EXEC
 	struct nfcContextRec args;

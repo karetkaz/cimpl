@@ -76,14 +76,14 @@ static inline symn addLength(ccContext cc, symn sym, astn init) {
 
 /**
  * @brief Install a new symbol: alias, type, variable or function.
- * @param kind Kind of sybol: (KIND_def, KIND_var,KIND_typ, CAST_arr)
- * @param tag Parsed tree node representing the sybol.
- * @param typ Type of symbol.
+ * @param kind Kind of symbol: (KIND_def, KIND_var,KIND_typ, CAST_arr)
+ * @param tag Parsed tree node representing the symbol.
+ * @param type Type of symbol.
  * @return The symbol.
  */
-static symn declare(ccContext cc, ccKind kind, astn tag, symn typ, symn prms) {
+static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params) {
 	symn def, ptr;
-	size_t size = typ->size;
+	size_t size = type->size;
 
 	if (!tag || tag->kind != TOKEN_var) {
 		fatal(ERR_INTERNAL_ERROR": identifier expected, not: %t", tag);
@@ -96,16 +96,16 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn typ, symn prms) {
 	}
 
 
-	def = install(cc, tag->ref.name, kind, size, typ, NULL);
+	def = install(cc, tag->ref.name, kind, size, type, NULL);
 
 	if (def != NULL) {
 		struct astNode arg;
 		tag->ref.link = def;
-		tag->type = typ;
+		tag->type = type;
 
 		def->file = tag->file;
 		def->line = tag->line;
-		def->params = prms;
+		def->params = params;
 		def->use = tag;
 		def->tag = tag;
 
@@ -115,7 +115,7 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn typ, symn prms) {
 		arg.kind = TOKEN_var;
 		for (ptr = def->next; ptr; ptr = ptr->next) {
 			symn arg1 = ptr->params;
-			symn arg2 = prms;
+			symn arg2 = params;
 
 			if (ptr->name == NULL) {
 				continue;
@@ -161,33 +161,43 @@ static astn expandAssignment(ccContext cc, astn root) {
 	switch (root->kind) {
 		default:
 			break;
+
 		case ASGN_add:
 			tmp = newNode(cc, OPER_add);
 			break;
+
 		case ASGN_sub:
 			tmp = newNode(cc, OPER_sub);
 			break;
+
 		case ASGN_mul:
 			tmp = newNode(cc, OPER_mul);
 			break;
+
 		case ASGN_div:
 			tmp = newNode(cc, OPER_div);
 			break;
+
 		case ASGN_mod:
 			tmp = newNode(cc, OPER_mod);
 			break;
+
 		case ASGN_shl:
 			tmp = newNode(cc, OPER_shl);
 			break;
+
 		case ASGN_shr:
 			tmp = newNode(cc, OPER_shr);
 			break;
+
 		case ASGN_and:
 			tmp = newNode(cc, OPER_and);
 			break;
+
 		case ASGN_ior:
 			tmp = newNode(cc, OPER_ior);
 			break;
+
 		case ASGN_xor:
 			tmp = newNode(cc, OPER_xor);
 			break;
@@ -231,7 +241,6 @@ static ccKind qualifier(ccContext cc) {
 
 	while ((ast = peekTok(cc, TOKEN_any))) {
 		switch (ast->kind) {
-
 			default:
 				return result;
 
@@ -499,6 +508,7 @@ static astn expression(ccContext cc) {
 			default:
 				fatal(ERR_INTERNAL_ERROR);
 				return NULL;
+
 			case 3:
 				ast->op.test = stack[2];
 			case 2:
@@ -574,9 +584,11 @@ static astn initializer(ccContext cc, symn var) {
 		astn tag, ast, root = NULL;
 		while ((ast = peekTok(cc, TOKEN_any))) {
 			switch (ast->kind) {
+				default:
+					break;
+
 				case RIGHT_crl:
 					ast = NULL;
-				default:
 					break;
 			}
 			if (ast == NULL) {
@@ -631,7 +643,7 @@ static astn initializer(ccContext cc, symn var) {
  * @return parsed syntax tree.
  */
 static astn declaration(ccContext cc, ccKind attr, astn *args) {
-	symn def = NULL, type = NULL, prms = NULL;
+	symn def = NULL, type = NULL, params = NULL;
 	ccKind cast = CAST_any;
 	astn tok, tag = NULL;
 
@@ -667,7 +679,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		argRoot = parameters(cc, type);
 		skipTok(cc, RIGHT_par, 1);
 
-		prms = leave(cc, def, KIND_fun, vm_size, NULL);
+		params = leave(cc, def, KIND_fun, vm_size, NULL);
 		type = cc->type_fun;
 
 		if (args != NULL) {
@@ -677,11 +689,11 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		// parse function body
 		if (peekTok(cc, STMT_beg)) {
 			symn param;
-			def = declare(cc, ATTR_stat | ATTR_cnst | KIND_fun | cast, tag, type, prms);
+			def = declare(cc, ATTR_stat | ATTR_cnst | KIND_fun | cast, tag, type, params);
 
 			enter(cc);
 			// TODO: skip reinstalling all parameters, try to adapt lookup
-			for (param = prms->next; param; param = param->next) {
+			for (param = params->next; param; param = param->next) {
 				//TODO: install(cc, param->name, KIND_def, 0, param, NULL);
 				//TODO: param->owner = def;
 			}
@@ -696,7 +708,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 
 	// parse array dimensions
 	while (skipTok(cc, LEFT_sqr, 0)) {		// int a[...][][]...
-		symn arr = newDefn(cc, KIND_typ);
+		symn arr = newDef(cc, KIND_typ);
 
 		if (!skipTok(cc, RIGHT_sqr, 0)) {
 			astn len = nextTok(cc, OPER_mul);
@@ -743,7 +755,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		}
 	}
 
-	def = declare(cc, (attr & MASK_attr) | KIND_var | cast, tag, type, prms);
+	def = declare(cc, (attr & MASK_attr) | KIND_var | cast, tag, type, params);
 	if (skipTok(cc, ASGN_set, 0)) {
 		def->init = initializer(cc, def);
 	}
@@ -769,7 +781,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		astn next = NULL, head = NULL, tail = NULL;
 		skipTok(cc, STMT_end, 1);
 
-		next = cc->_tok;
+		next = cc->tokNext;
 		if (tag->type == cc->type_str && !ccOpen(cc->rt, tag->ref.name, 1, NULL)) {
 			error(cc->rt, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
 			return NULL;
@@ -788,10 +800,10 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 			tail->next = next;
 		}
 		if (head != NULL) {
-			cc->_tok = head;
+			cc->tokNext = head;
 		}
 		else {
-			cc->_tok = next;
+			cc->tokNext = next;
 		}
 		return NULL;
 	}
@@ -873,7 +885,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 static astn declare_record(ccContext cc, ccKind attr) {
 	symn type = NULL, base = NULL;
 	astn tok, tag = NULL;
-	int pack = vm_size;
+	int pack = pad_size;
 
 	if (!skipTok(cc, RECORD_kwd, 1)) {
 		traceAst(peekTok(cc, 0));
@@ -888,7 +900,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 			if (tok->kind == TOKEN_val) {
 				ccKind cast = castOf(tok->type);
 				if (cast == CAST_i32 || cast == CAST_i64) {
-					switch ((int)tok->cint) {
+					switch ((int)tok->cInt) {
 						default:
 							break;
 
@@ -899,7 +911,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 						case 8:
 						case 16:
 						case 32:
-							pack = (unsigned) tok->cint;
+							pack = (unsigned) tok->cInt;
 							break;
 					}
 				}
@@ -1044,7 +1056,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 	skipTok(cc, LEFT_par, 1);
 	test = expression(cc);
 	if (test != NULL) {
-		// FIXME: remove special case: static if (!identifyer) {...}
+		// FIXME: remove special case: static if (!identifier) {...}
 		if (attr & ATTR_stat && test->kind == OPER_not) {
 			astn idf = test->op.rhso;
 			if (idf != NULL && idf->kind == TOKEN_var) {
@@ -1166,6 +1178,27 @@ static astn statement(ccContext cc, ccKind attr) {
 		ast = statement_if(cc, attr);
 		if (ast != NULL) {
 			ast->type = cc->type_vid;
+			astn ifThen = ast->stmt.stmt;
+			// force static if to use compound statements
+			if (ifThen != NULL && ifThen->kind != STMT_beg) {
+				ast->stmt.stmt = expand2Statement(cc, ifThen, 1);
+				if (attr & ATTR_stat) {
+					error(cc->rt, ifThen->file, ifThen->line, WARN_USE_BLOCK_STATEMENT, ifThen);
+				}
+				else {
+					warn(cc->rt, 8, ifThen->file, ifThen->line, WARN_USE_BLOCK_STATEMENT, ifThen);
+				}
+			}
+			astn ifElse = ast->stmt.step;
+			if (ifElse != NULL && ifElse->kind != STMT_beg) {
+				ast->stmt.step = expand2Statement(cc, ifElse, 1);
+				if (attr & ATTR_stat) {
+					error(cc->rt, ifElse->file, ifElse->line, WARN_USE_BLOCK_STATEMENT, ifElse);
+				}
+				else {
+					warn(cc->rt, 8, ifElse->file, ifElse->line, WARN_USE_BLOCK_STATEMENT, ifElse);
+				}
+			}
 			if (attr & ATTR_stat) {
 				ast->kind = STMT_sif;
 				attr &= ~ATTR_stat;
@@ -1277,7 +1310,7 @@ static astn statement(ccContext cc, ccKind attr) {
 //#}
 
 /**
- * @brief parse the source setted by source.
+ * @brief parse the input source.
  * @param cc compiler context
  * @param warn warning level
  * @return abstract syntax tree
@@ -1287,7 +1320,7 @@ astn parse(ccContext cc, int warn) {
 
 	cc->warn = warn;
 	// pre read all tokens from source
-	if (cc->_tok == NULL) {
+	if (cc->tokNext == NULL) {
 		astn head = NULL, tail = NULL;
 		while ((ast = nextTok(cc, TOKEN_any)) != NULL) {
 			if (tail != NULL) {
@@ -1298,7 +1331,7 @@ astn parse(ccContext cc, int warn) {
 			}
 			tail = ast;
 		}
-		cc->_tok = head;
+		cc->tokNext = head;
 	}
 
 	if ((unit = statement_list(cc))) {

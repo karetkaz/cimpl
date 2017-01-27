@@ -20,9 +20,9 @@ static inline library_t findSym(library_t lib, const char *name) { return 0; }
 
 #include "internal.h"
 
-static const char *pluginLibInstall = "ccvmInit";
+static const char *pluginLibInstall = "cmplInit";
 
-static const char *pluginLibDestroy = "ccvmDone";
+static const char *pluginLibDestroy = "cmplDone";
 
 static struct pluginLib *pluginLibs = NULL;
 

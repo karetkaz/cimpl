@@ -51,7 +51,7 @@ typedef enum {
 	memWriteError,
 	divisionByZero,
 	illegalInstruction,
-	libCallAbort,
+	nativeCallError,
 	executionAborted		// execution aborted by debugger
 	//+ ArrayBoundsExceeded
 } vmError;
@@ -80,7 +80,7 @@ struct rtContextRec {
 
 	/**
 	 * @brief Compiler context.
-	 * @note After code generation is seted to null.
+	 * @note After code generation it is set to null.
 	 */
 	ccContext cc;
 

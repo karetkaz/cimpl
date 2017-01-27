@@ -31,11 +31,9 @@ Basic types
 
 #typedefs
 	@int: alias for int32 or int64
-	@long: alias for int64
 	@byte: alias for uint8
 	@float: alias for float32
 	@double: alias for float64
-	@var: variant
 
 #constants
 	@true := 0 == 0;
@@ -49,27 +47,24 @@ Derived data types:
 
 User defined types:
 	pointers arrays and slices:
-		pointers are unsized
+		pointers have unknown-size:
 			ex: int a[*];
 			are passed by reference,
-		arrays are fixed-size:
+		arrays have fixed-size:
 			ex: int a[2];
 			are passed by reference,
-		slices are Dinamic-size arrays:
+		slices have dynamic-size:
 			ex: int a[];
 			is a combination of pointer and length.
 			where type of data is known by the compiler, the length by runtime.
 
 	struct:
-		when declaring a struct there will be declared the folowing initializer:
+		when declaring a struct there will be declared the following initializer:
 			with all members, in case packing is default,
 				??? and fixed size arrays are not contained by the structure.
-			from pointer: static cast
-			from variant:
 		ex: for struct Complex {double re; double im};
 		will be defined:
 			define Complex(double re, double im) = emit(Complex, double(re), double(im));
-			define Complex(variant var) = emit(Complex&, ref(var.type == Complex ? &var.data : null));
 
 	function
 
@@ -107,17 +102,16 @@ void enter(ccContext cc) {
 }
 
 /// Leave current scope.
-symn leave(ccContext cc, symn owner, ccKind mode, int align, size_t *outSize) {
-	size_t offs, size = 0;
+symn leave(ccContext cc, symn owner, ccKind mode, size_t align, size_t *outSize) {
 	symn sym, result = NULL;
 
 	cc->nest -= 1;
 
 	// clear from symbol table
-	for (offs = 0; offs < TBL_SIZE; offs++) {
-		for (sym = cc->deft[offs]; sym && sym->nest > cc->nest; sym = sym->next) {
+	for (int i = 0; i < TBL_SIZE; i++) {
+		for (sym = cc->deft[i]; sym && sym->nest > cc->nest; sym = sym->next) {
 		}
-		cc->deft[offs] = sym;
+		cc->deft[i] = sym;
 	}
 
 	// clear from scope stack
@@ -136,12 +130,6 @@ symn leave(ccContext cc, symn owner, ccKind mode, int align, size_t *outSize) {
 				cc->global = sym;
 			}
 		}
-		else {
-			size += padOffset(sym->size, align);
-			if (size < sym->size) {
-				size = sym->size;
-			}
-		}
 
 		// TODO: this logic should be not here
 		if (!isStatic(sym) && sym->params && sym->init && sym->init->kind == STMT_beg) {
@@ -151,6 +139,8 @@ symn leave(ccContext cc, symn owner, ccKind mode, int align, size_t *outSize) {
 	}
 	cc->scope = sym;
 
+	// fix padding
+	size_t offs = 0, size = 0;
 	switch (mode & MASK_kind) {
 		default:
 			fatal(ERR_INTERNAL_ERROR);
@@ -158,23 +148,41 @@ symn leave(ccContext cc, symn owner, ccKind mode, int align, size_t *outSize) {
 
 		case KIND_typ:
 			// update offsets
-			for (offs = 0, sym = result; sym != NULL; sym = sym->next) {
+			for (sym = result; sym != NULL; sym = sym->next) {
+				if (isStatic(sym)) {
+					continue;
+				}
+				sym->offs = padOffset(offs, align < sym->size ? align : sym->size);
+				if (offs < sym->offs) {
+					warn(cc->rt, 6, sym->file, sym->line, "padding %T (%d -> %d): %d", sym, offs, sym->offs, sym->offs - offs);
+				}
+				offs = sym->offs + sym->size;
+				if (size < offs) {
+					size = offs;
+				}
+			}
+			size_t padded = padOffset(size, align);
+			if (align && size != padded) {
+				warn(cc->rt, 6, result->file, result->line, "padding %T (%d -> %d): %d", sym, size, padded, padded - size);
+				size = padded;
+			}
+			break;
+
+		case KIND_fun:
+			// update offsets
+			for (sym = result; sym != NULL; sym = sym->next) {
 				if (isStatic(sym)) {
 					continue;
 				}
 				sym->offs = offs;
 				offs += padOffset(sym->size, align);
 			}
-			break;
-
-		case KIND_fun:
-			// update offsets
-			for (offs = 0, sym = result; sym != NULL; sym = sym->next) {
+			// arguments are evaluated right to left
+			for (sym = result; sym != NULL; sym = sym->next) {
 				if (isStatic(sym)) {
 					continue;
 				}
-				sym->offs = size - offs;
-				offs += padOffset(sym->size, align);
+				sym->offs = offs - sym->offs;
 			}
 			break;
 
@@ -212,7 +220,7 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 		logif(kind != kind2, "symbol `%s` should be declared as static and constant", name);
 	}
 
-	if ((def = newDefn(cc, kind))) {
+	if ((def = newDef(cc, kind))) {
 		size_t length = strlen(name) + 1;
 		unsigned hash = rehash(name, length) % TBL_SIZE;
 		def->name = mapstr(cc, (char*)name, length, hash);
@@ -259,15 +267,15 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 }
 
 symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
-	symn asref = NULL;
+	symn asRef = NULL;
 	symn best = NULL;
 	int found = 0;
 
 	dieif(!ref || ref->kind != TOKEN_var, ERR_INTERNAL_ERROR);
 
 	for (; sym; sym = sym->next) {
-		symn params = sym->params;
-		int hascast = 0;
+		symn parameter = sym->params;
+		int hasCast = 0;
 
 		if (sym->name == NULL) {
 			// exclude anonymous symbols
@@ -280,11 +288,11 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 		}
 
 		// lookup function as reference (without arguments)
-		if (params != NULL && arguments == NULL) {
+		if (parameter != NULL && arguments == NULL) {
 			// keep the first match.
 			if (sym->kind == KIND_var) {
-				if (asref == NULL) {
-					asref = sym;
+				if (asRef == NULL) {
+					asRef = sym;
 				}
 				found += 1;
 			}
@@ -292,81 +300,34 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 		}
 
 		if (arguments != NULL) {
-			astn args = chainArgs(arguments);
+			astn argument = chainArgs(arguments);
 
-			if (params != NULL) {
-				// TODO: allow basic type casts: float32(1)
-				/*int isBasicCast = 0;
-
-				if (!args->next && sym2 != NULL && isType(sym2)) {
-					switch(sym2->cast) {
-						default:
-							break;
-						case KIND_typ:
-							// Complex x = Complex(Complex(3,4));
-							if (sym2 == args->type) {
-								isBasicCast = 1;
-							}
-								// variant(variable)
-							else if (sym2 == cc->type_var) {
-								isBasicCast = 1;
-							}
-							break;
-
-						case KIND_var:
-							// enable pointer(ref) and typename(ref)
-							if (sym2 == cc->type_ptr || sym2 == cc->type_rec) {
-								isBasicCast = 1;
-							}
-							break;
-
-						case CAST_vid:
-							// void(0);
-							if (sym2 == cc->type_vid) {
-								isBasicCast = 1;
-							}
-							break;
-						case CAST_bit:
-						case CAST_u32:
-						case CAST_i32:
-						case CAST_i64:
-						case CAST_f32:
-						case CAST_f64:
-							isBasicCast = 1;
-							break;
-					}
-				}
-
-				if (!isBasicCast) {
-					continue;
-				}*/
-
-				// first argument is next to result.
-				params = params->next;
+			if (parameter != NULL) {
+				// first argument starts next to result.
+				parameter = parameter->next;
 			}
 
-			while (params != NULL && args != NULL) {
+			while (parameter != NULL && argument != NULL) {
 
-				if (!canAssign(cc, params, args, 0)) {
+				if (!canAssign(cc, parameter, argument, 0)) {
 					break;
 				}
 
-				else if (!canAssign(cc, params, args, 1)) {
-					hascast += 1;
+				else if (!canAssign(cc, parameter, argument, 1)) {
+					hasCast += 1;
 				}
 
-				// TODO: hascast += argget->cast != 0;
-				params = params->next;
-				args = args->next;
+				parameter = parameter->next;
+				argument = argument->next;
 			}
 
-			if (sym->params != NULL && (args || params)) {
+			if (sym->params != NULL && (argument || parameter)) {
 				continue;
 			}
 		}
 
 		// perfect match
-		if (hascast == 0) {
+		if (hasCast == 0) {
 			break;
 		}
 
@@ -387,13 +348,13 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 		sym = best;
 	}
 
-	if (sym == NULL && asref) {
+	if (sym == NULL && asRef) {
 		if (found == 1 || cc->siff) {
-			debug("as ref `%T`(%?t)", asref, arguments);
-			sym = asref;
+			debug("as ref `%T`(%?t)", asRef, arguments);
+			sym = asRef;
 		}
 		else if (raise) {
-			error(cc->rt, ref->file, ref->line, ERR_MULTIPLE_OVERLOADS, found, asref);
+			error(cc->rt, ref->file, ref->line, ERR_MULTIPLE_OVERLOADS, found, asRef);
 		}
 	}
 
@@ -536,6 +497,10 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			// TODO: try to avoid hacks
 			if (ref != NULL) {
 				switch (ref->kind) {
+					default:
+						fatal(ERR_INTERNAL_ERROR);
+						return NULL;
+
 					case OPER_dot:    // Math.isNan ???
 						if (!(loc = typeCheck(cc, loc, ref->op.lhso, raise))) {
 							traceAst(ast);
@@ -547,10 +512,6 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 
 					case TOKEN_var:
 						break;
-
-					default:
-						fatal(ERR_INTERNAL_ERROR);
-						return NULL;
 				}
 			}
 			break;
@@ -575,8 +536,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				traceAst(ast);
 				return NULL;
 			}
-			// TODO: convert(cc, ast->op.lhso, lType);
-			// TODO: convert(cc, ast->op.rhso, rType);
+			convert(cc, ast->op.lhso, lType);
+			convert(cc, ast->op.rhso, rType);
 			// base type of array;
 			return lType->type;
 
@@ -843,6 +804,9 @@ symn getResultType(symn sym, astn args) {
 		// resulting type is the type of result parameter
 		return sym->params->type;
 	}
+	if (isInline(sym) && sym->init != NULL) {
+		return sym->init->type;
+	}
 	if (isTypename(sym)) {
 		// resulting type is the symbol itself
 		return sym;
@@ -879,12 +843,15 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 			switch (castOf(typ)) {
 				default:
 					break;
+
 				case CAST_ref:
 					// assign null to a reference type
 					return CAST_ref;
+
 				case CAST_arr:
 					// assign null to array
 					return CAST_arr;
+
 				case CAST_var:
 					// assign null to variant
 					return CAST_arr;
@@ -893,6 +860,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 		switch (varCast) {
 			default:
 				break;
+
 			case CAST_ref:
 			case CAST_var:
 			case CAST_arr:
@@ -914,20 +882,20 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 			symn fun = linkOf(val);
 			symn arg1 = var->params;
 			symn arg2 = NULL;
-			struct astNode atag;
+			struct astNode temp;
 
-			atag.kind = TOKEN_var;
-			atag.type = typ;
-			atag.ref.link = var;
+			temp.kind = TOKEN_var;
+			temp.type = typ;
+			temp.ref.link = var;
 
-			if (fun && canAssign(cc, fun->type, &atag, 1)) {
+			if (fun && canAssign(cc, fun->type, &temp, 1)) {
 				arg2 = fun->params;
 				while (arg1 && arg2) {
 
-					atag.type = arg2->type;
-					atag.ref.link = arg2;
+					temp.type = arg2->type;
+					temp.ref.link = arg2;
 
-					if (!canAssign(cc, arg1, &atag, 1)) {
+					if (!canAssign(cc, arg1, &temp, 1)) {
 						trace("%T ~ %T", arg1, arg2);
 						break;
 					}
@@ -964,7 +932,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	}
 	else if (typ->cast == ENUM_kwd) {
 		symn t;
-		for (t = typ->flds; t != NULL; t = t->next) {
+		for (t = typ->fields; t != NULL; t = t->next) {
 			if (t == lnk) {
 				return lnk->cast;
 			}
@@ -973,17 +941,17 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 
 	// Assign array
 	if (castOf(typ) == CAST_arr) {
-		struct astNode atag;
+		struct astNode temp;
 		symn vty = val->type;
 
-		memset(&atag, 0, sizeof(atag));
-		atag.kind = TOKEN_var;
-		atag.type = vty ? vty->type : NULL;
-		atag.ref.link = NULL;
-		atag.ref.name = ".generated token";
+		memset(&temp, 0, sizeof(temp));
+		temp.kind = TOKEN_var;
+		temp.type = vty ? vty->type : NULL;
+		temp.ref.link = NULL;
+		temp.ref.name = ".generated token";
 
 		//~ check if subtypes are assignable
-		if (canAssign(cc, typ->type, &atag, strict)) {
+		if (canAssign(cc, typ->type, &temp, strict)) {
 			// assign to dynamic array
 			if (typ->init == NULL) {
 				return CAST_arr;
@@ -1035,19 +1003,25 @@ static inline ccKind castKind(symn typ) {
 		switch (castOf(typ)) {
 			default:
 				break;
+
 			case CAST_vid:
 				return CAST_vid;
+
 			case CAST_bit:
 				return CAST_bit;
+
 			case CAST_u32:
 			case CAST_i32:
 				return CAST_i32;
+
 			case CAST_i64:
 			case CAST_u64:
 				return CAST_i64;
+
 			case CAST_f32:
 			case CAST_f64:
 				return CAST_f64;
+
 			case KIND_var:
 				return KIND_var;
 		}
@@ -1064,6 +1038,7 @@ static symn promote(symn lht, symn rht) {
 		else switch (castKind(rht)) {
 				default:
 					break;
+
 				case CAST_i32:
 				case CAST_i64:
 				case CAST_u32:
@@ -1071,6 +1046,7 @@ static symn promote(symn lht, symn rht) {
 					switch (castKind(lht)) {
 						default:
 							break;
+
 						case CAST_i32:
 						case CAST_i64:
 						case CAST_u32:
@@ -1089,11 +1065,15 @@ static symn promote(symn lht, symn rht) {
 							result = lht;
 							break;
 
-					} break;
+					}
+					break;
+
 				case CAST_f32:
-				case CAST_f64: switch (castKind(lht)) {
+				case CAST_f64:
+					switch (castKind(lht)) {
 						default:
 							break;
+
 						case CAST_i32:
 						case CAST_i64:
 						case CAST_u32:
@@ -1105,7 +1085,8 @@ static symn promote(symn lht, symn rht) {
 						case CAST_f64:
 							result = lht->size >= rht->size ? lht : rht;
 							break;
-					} break;
+					}
+					break;
 			}
 	}
 	else if (rht) {

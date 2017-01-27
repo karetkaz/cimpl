@@ -322,10 +322,10 @@ static const char *const proto_file_write_buff = "int write(File file, uint8 buf
 static const char *const proto_file_flush = "void flush(File file)";
 static const char *const proto_file_close = "void close(File file)";
 
-static const char *const proto_file_get_stdin = "File in";
-static const char *const proto_file_get_stdout = "File out";
-static const char *const proto_file_get_stderr = "File err";
-static const char *const proto_file_get_dbgout = "File dbg";
+static const char *const proto_file_get_stdIn = "File in";
+static const char *const proto_file_get_stdOut = "File out";
+static const char *const proto_file_get_stdErr = "File err";
+static const char *const proto_file_get_dbgOut = "File dbg";
 
 static vmError FILE_open(nfcContext ctx) {       // File open(char filename[]);
 	nfcArg args = nfcInitArg(ctx);
@@ -343,7 +343,7 @@ static vmError FILE_open(nfcContext ctx) {       // File open(char filename[]);
 	FILE *file = fopen(name, mode);
 	rethnd(ctx, file);
 	debugFILE("Name: '%s', Mode: '%s', File: %x", name, mode, file);
-	return file != NULL ? noError : libCallAbort;
+	return file != NULL ? noError : nativeCallError;
 }
 static vmError FILE_close(nfcContext ctx) {      // void close(File file);
 	FILE *file = arghnd(ctx, 0);
@@ -352,19 +352,19 @@ static vmError FILE_close(nfcContext ctx) {      // void close(File file);
 	return noError;
 }
 static vmError FILE_stream(nfcContext ctx) {     // File std[in, out, err];
-	if (ctx->proto == proto_file_get_stdin) {
+	if (ctx->proto == proto_file_get_stdIn) {
 		rethnd(ctx, stdin);
 		return noError;
 	}
-	if (ctx->proto == proto_file_get_stdout) {
+	if (ctx->proto == proto_file_get_stdOut) {
 		rethnd(ctx, stdout);
 		return noError;
 	}
-	if (ctx->proto == proto_file_get_stderr) {
+	if (ctx->proto == proto_file_get_stdErr) {
 		rethnd(ctx, stderr);
 		return noError;
 	}
-	if (ctx->proto == proto_file_get_dbgout) {
+	if (ctx->proto == proto_file_get_dbgOut) {
 		rethnd(ctx, ctx->rt->logFile);
 		return noError;
 	}
@@ -615,25 +615,25 @@ static vmError sysMemMgr(nfcContext ctx) {
 }
 static vmError sysMemCpy(nfcContext ctx) {
 	nfcArg arg = nfcInitArg(ctx);
-	void *dest = nfcNextPtr(&arg).data;
+	void *dst = nfcNextPtr(&arg).data;
 	void *src = nfcNextPtr(&arg).data;
 	int size = nfcNextI32(&arg);
-	void *res = memcpy(dest, src, (size_t) size);
+	void *res = memcpy(dst, src, (size_t) size);
 	retref(ctx, vmOffset(ctx->rt, res));
 	return noError;
 }
 static vmError sysMemSet(nfcContext ctx) {
 	nfcArg arg = nfcInitArg(ctx);
-	void *dest = nfcNextPtr(&arg).data;
+	void *dst = nfcNextPtr(&arg).data;
 	int value = nfcNextI32(&arg);
 	int size = nfcNextI32(&arg);
-	void *res = memset(dest, value, (size_t) size);
+	void *res = memset(dst, value, (size_t) size);
 	retref(ctx, vmOffset(ctx->rt, res));
 	return noError;
 }
 //#}#endregion
 
-int ccLibStdc(ccContext cc) {
+int ccLibStd(ccContext cc) {
 	symn nsp = NULL;		// namespace
 	int err = 0;
 	size_t i;
@@ -737,14 +737,14 @@ int ccLibStdc(ccContext cc) {
 		}
 	}
 
-	if (!err && cc->type_ptr != NULL) {		// realloc, malloc, free, memset, memcpy
+	if (!err && cc->type_ptr != NULL) {		// re-alloc, malloc, free, memset, memcpy
 		if(!ccDefCall(cc, sysMemMgr, "pointer memmgr(pointer ptr, int32 size)")) {
 			err = 3;
 		}
-		if(!ccDefCall(cc, sysMemSet, "pointer memset(pointer dest, int value, int32 size)")) {
+		if(!ccDefCall(cc, sysMemSet, "pointer memset(pointer dst, int value, int32 size)")) {
 			err = 3;
 		}
-		if(!ccDefCall(cc, sysMemCpy, "pointer memcpy(pointer dest, pointer src, int32 size)")) {
+		if(!ccDefCall(cc, sysMemCpy, "pointer memcpy(pointer dst, pointer src, int32 size)")) {
 			err = 3;
 		}
 	}
@@ -836,10 +836,10 @@ int ccLibFile(ccContext cc) {
 		err = err || !ccDefCall(cc, FILE_flush, proto_file_flush);
 		err = err || !ccDefCall(cc, FILE_close, proto_file_close);
 
-		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_stdin);
-		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_stdout);
-		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_stderr);
-		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_dbgout);
+		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_stdIn);
+		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_stdOut);
+		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_stdErr);
+		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_dbgOut);
 
 		type->fields = leave(cc, type, ATTR_stat | KIND_typ, 0, NULL);
 	}

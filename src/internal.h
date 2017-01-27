@@ -38,7 +38,7 @@
 
 // helper macros
 #define lengthOf(__ARRAY) (sizeof(__ARRAY) / sizeof(*(__ARRAY)))
-#define offsetOf(__TYPE, __FIELD) ((size_t) &((__TYPE)0)->__FIELD)
+#define offsetOf(__TYPE, __FIELD) ((size_t) &((__TYPE*)0)->__FIELD)
 
 // linked list
 typedef struct list {
@@ -95,7 +95,7 @@ struct symNode {
 	astn	init;		// VAR init / FUN body, this should be null after code generation?
 
 	astn	use, tag;		// TEMP: usage / declaration reference
-	const char*	pfmt;		// TEMP: print format
+	const char*	format;		// TEMP: print format
 };
 
 /// Abstract syntax tree node
@@ -106,8 +106,8 @@ struct astNode {
 	char*		file;				// file name of the token belongs to
 	int32_t		line;				// line position of token
 	union {							// token value
-		int64_t cint;				// constant integer value
-		float64_t cflt;				// constant floating point value
+		int64_t cInt;				// constant integer value
+		float64_t cFlt;				// constant floating point value
 		struct {					// STMT_xxx: statement
 			astn	stmt;			// statement / then block
 			astn	step;			// increment / else block
@@ -172,27 +172,26 @@ struct ccContextRec {
 	list	native;		// list of native functions
 
 	// lists and tables
-	astn	jmps;		// list of break and continue statements to fix
+	astn	jumps;		// list of break and continue statements to fix
 	list	strt[TBL_SIZE];		// string hash table
 	symn	deft[TBL_SIZE];		// symbol hash stack
 
 	int		nest;		// nest level: modified by (enter/leave)
 	int		warn;		// warning level
 	int		siff:1;		// TODO: remove: inside a static if false
-	int		_padd:30;	//
 
 	// Parser
 	char*	file;		// current file name
 	int		line;		// current line number
-	size_t	lpos;		// current line position
-	size_t	fpos;		// current file position
-	//~ current column = fpos - lpos
+	size_t	lPos;		// current line position
+	size_t	fPos;		// current file position
+	//~ current column = fPos - lPos
 
 	// Lexer
 	struct {
-		astn	tokp;			// list of reusable tokens
-		astn	_tok;			// one token look-ahead
-		int		_chr;			// one char look-ahead
+		astn	tokPool;		// list of recycled tokens
+		astn	tokNext;		// next token: look-ahead
+		int		chrNext;		// next character: look-ahead
 		struct {				// Input
 			int		nest;		// nesting level on open.
 			int		_fin;		// file handle
@@ -229,7 +228,7 @@ struct ccContextRec {
 	symn	emit_opc;		// emit intrinsic function, or whatever it is.
 	astn	emit_tag;		// "emit"
 
-	symn	libc_dbg;		// debug function libcall: raise(int level, string message, variant inspect, int maxTrace);
+	symn	libc_dbg;		// raise(int level, string message, variant inspect, int maxTrace);
 };
 
 /// Debugger context
@@ -251,12 +250,12 @@ struct dbgContextRec {
 void enter(ccContext cc);
 
 /// Leave current scope.
-symn leave(ccContext cc, symn dcl, ccKind mode, int align, size_t *size);
+symn leave(ccContext cc, symn dcl, ccKind mode, size_t align, size_t *size);
 
 /**
  * @brief Install a new symbol: alias, typename, variable or function.
  * @param name Symbol name.
- * @param kind Kind of sybol: (KIND_xxx + ATTR_xxx + CAST_xxx)
+ * @param kind Kind of symbol: (KIND_xxx + ATTR_xxx + CAST_xxx)
  * @param size Size of symbol
  * @param type Type of symbol (typename base type, variable type).
  * @param init Initializer, function body, alias link.
@@ -311,7 +310,7 @@ extern const char * const type_fmt_typename;
 
 //             *** Tree related functions
 /// Allocate a symbol node.
-symn newDefn(ccContext, ccKind kind);
+symn newDef(ccContext, ccKind kind);
 /// Allocate a tree node.
 astn newNode(ccContext, ccToken kind);
 /// Recycle node, so it may be reused.
@@ -363,7 +362,7 @@ symn linkOf(astn ast);
 int isTypeExpr(astn ast);
 
 /**
- * Chain the arguments trough astn.next link.
+ * Chain the arguments trough ast.next link.
  * @param args root node of arguments tree.
  */
 static inline astn chainArgs(astn args) {
@@ -494,7 +493,7 @@ void printOpc(FILE *out, const char **esc, vmOpcode opc, int64_t args);
  * @param out Output stream.
  * @param var Variable to be printed. (May be a typename also)
  * @param ref Base offset of variable.
- * @param level Identation level. (Used for members and arrays)
+ * @param level Indentation level. (Used for members and arrays)
  */
 void printVal(FILE *out, const char **esc, rtContext, symn var, stkval *ref, int mode, int indent);
 
@@ -523,17 +522,19 @@ unsigned rehash(const char *str, size_t size);
  * @param cc compiler context.
  * @param str the string to be mapped.
  * @param len the length of the string, -1 recalculates using strlen.
- * @param hash precalculated hashcode, -1 recalculates.
+ * @param hash pre-calculated hashcode, -1 recalculates.
  * @return the mapped string in the string table.
  */
 char *mapstr(ccContext cc, const char *str, size_t size/* = -1*/, unsigned hash/* = -1*/);
 
-static inline size_t padOffset(size_t offs, unsigned align) {
-	return (offs + (align - 1)) & ~(align - 1);
+static inline size_t padOffset(size_t offs, size_t align) {
+	size_t mask = align - 1;
+	return (offs + mask) & ~mask;
 }
 
-static inline void *padPointer(void *offs, unsigned align) {
-	return (void *) padOffset((size_t) offs, align);
+static inline void *padPointer(void *offs, size_t align) {
+	ptrdiff_t mask = align - 1;
+	return (void*)(((ptrdiff_t)offs + mask) & ~mask);
 }
 
 
@@ -657,7 +658,7 @@ void closeLibs();
 #define WARN_EXPONENT_OVERFLOW "exponent overflow"
 #define WARN_FUNCTION_MARKED_STATIC "marking function to be static: `%T`"
 #define WARN_BEST_OVERLOAD "using overload `%T` of %d declared symbols."
-#define WARN_INLINE_ALL_PARAMS "all parameters will be inlined for: %t"
+#define WARN_INLINE_ALL_PARAMS "all parameters will be inline for: %t"
 
 #define FATAL_UNIMPLEMENTED_OPERATOR "operator %.t (%T, %T): %t"
 
@@ -684,38 +685,42 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 #define warn(__ENV, __LEVEL, __FILE, __LINE, msg, ...) do { printErr(__ENV, __LEVEL, __FILE, __LINE, msg, ##__VA_ARGS__); } while(0)
 #define info(__ENV, __FILE, __LINE, msg, ...) do { printErr(__ENV, 0, __FILE, __LINE, msg, ##__VA_ARGS__); } while(0)
 
-#ifndef DEBUGGING	// disable debugging
-#define logif(__EXP, msg, ...) do {} while(0)
-#define debug(msg, ...) do {} while(0)
-#define trace(msg, ...) do {} while(0)
-#else
+#ifdef DEBUGGING	// enable compiler debugging
 
 #define logif(__EXP, msg, ...) do { if (__EXP) { prerr("todo("#__EXP")", msg, ##__VA_ARGS__); _break(); } } while(0)
 
 #if DEBUGGING >= 1	// enable trace
 #define trace(msg, ...) do { prerr("trace", msg, ##__VA_ARGS__); } while(0)
-#else
-#define trace(msg, ...) do {} while(0)
 #endif
 
 #if DEBUGGING >= 2	// enable debug
 #define debug(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
-#else
-#define debug(msg, ...) do {} while(0)
 #endif
 
 #if DEBUGGING >= 3	// enable debug
 #define dbgCgen(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
-#else
-#define dbgCgen(msg, ...) do {} while(0)
 #endif
 
 #if DEBUGGING >= 4	// enable debug
 #define dbgEmit(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
-#else
-#define dbgEmit(msg, ...) do {} while(0)
 #endif
 
+#endif
+
+#ifndef logif
+#define logif(__EXP, msg, ...) do {} while(0)
+#endif
+#ifndef trace
+#define trace(msg, ...) do {} while(0)
+#endif
+#ifndef debug
+#define debug(msg, ...) do {} while(0)
+#endif
+#ifndef dbgCgen
+#define dbgCgen(msg, ...) do {} while(0)
+#endif
+#ifndef dbgEmit
+#define dbgEmit(msg, ...) do {} while(0)
 #endif
 
 #define traceAst(__AST) do { trace("%t", __AST); } while(0)

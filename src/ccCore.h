@@ -80,7 +80,7 @@ typedef enum {
  * @brief Initialize compiler context.
  * @param runtime context.
  * @param mode specify what to install.
- * @param onHalt function to be executed when execution and external function invokation terminates.
+ * @param onHalt function to be executed when execution and external function invocation terminates.
  * @return compiler context.
  * @note installs: builtin types, builtin functions, emit intrinsic, ...
  */
@@ -90,7 +90,7 @@ ccContext ccInit(rtContext, ccInstall mode, vmError onHalt(nfcContext));
  * @brief Begin a namespace (static struct) or scope.
  * @param cc Compiler context.
  * @param name Name of the namespace.
- * @return Defined symbol, null on error (erorr is logged).
+ * @return Defined symbol, null on error (error is logged).
  */
 symn ccBegin(ccContext cc, const char *name);
 /**
@@ -137,7 +137,7 @@ symn ccDefStr(ccContext cc, const char *name, char *value);
  */
 symn ccDefType(ccContext cc, const char *name, unsigned size, int refType);
 /**
- * @brief Add a native function (libcall) to the runtime.
+ * @brief Add a native function to the runtime.
  * @param cc Compiler context.
  * @param call The native c function.
  * @param proto Prototype of the function.
@@ -187,7 +187,7 @@ int ccAddLib(ccContext cc, int warn, int init(ccContext), char *unit);
 symn ccLookupSym(ccContext cc, symn in, char *name);
 
 /// standard functions
-int ccLibStdc(ccContext);
+int ccLibStd(ccContext);
 /// file access
 int ccLibFile(ccContext);
 

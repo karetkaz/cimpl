@@ -93,9 +93,9 @@ static size_t fillBuf(ccContext cc) {
  * @return the next character or -1 on end, or error.
  */
 static int readChr(ccContext cc) {
-	int chr = cc->_chr;
+	int chr = cc->chrNext;
 	if (chr != -1) {
-		cc->_chr = -1;
+		cc->chrNext = -1;
 		return chr;
 	}
 
@@ -111,7 +111,7 @@ static int readChr(ccContext cc) {
 		if (chr == '\r' && cc->fin._ptr[1] == '\n') {
 			cc->fin._cnt -= 1;
 			cc->fin._ptr += 1;
-			cc->fpos += 1;
+			cc->fPos += 1;
 		}
 
 		// advance to next line
@@ -120,13 +120,13 @@ static int readChr(ccContext cc) {
 		}
 
 		// save where the next line begins.
-		cc->lpos = cc->fpos + 1;
+		cc->lPos = cc->fPos + 1;
 		chr = '\n';
 	}
 
 	cc->fin._cnt -= 1;
 	cc->fin._ptr += 1;
-	cc->fpos += 1;
+	cc->fPos += 1;
 	return chr;
 }
 
@@ -136,17 +136,17 @@ static int readChr(ccContext cc) {
  * @return the next character or -1 on end, or error.
  */
 static int peekChr(ccContext cc) {
-	if (cc->_chr == -1) {
-		cc->_chr = readChr(cc);
+	if (cc->chrNext == -1) {
+		cc->chrNext = readChr(cc);
 	}
-	return cc->_chr;
+	return cc->chrNext;
 }
 
 /** Skip the next character.
- * @brief read the next character from input stream if it maches param chr.
+ * @brief read the next character from input stream if it matches param chr.
  * @param cc compiler context.
- * @param chr filter: 0 matches everithing.
- * @return the character skiped.
+ * @param chr filter: 0 matches everything.
+ * @return the character skipped.
  */
 static int skipChr(ccContext cc, int chr) {
 	if (!chr || chr == peekChr(cc)) {
@@ -162,12 +162,12 @@ static int skipChr(ccContext cc, int chr) {
  * @return the character pushed back.
  */
 static int backChr(ccContext cc, int chr) {
-	if(cc->_chr != -1) {
+	if(cc->chrNext != -1) {
 		// can not put back more than one character
 		fatal(ERR_INTERNAL_ERROR);
 		return -1;
 	}
-	return cc->_chr = chr;
+	return cc->chrNext = chr;
 }
 
 /// @doc: header
@@ -180,8 +180,8 @@ int source(ccContext cc, int isFile, char *src) {
 	cc->fin._fin = -1;
 	cc->fin._ptr = 0;
 	cc->fin._cnt = 0;
-	cc->_chr = -1;
-	cc->_tok = NULL;
+	cc->chrNext = -1;
+	cc->tokNext = NULL;
 
 	cc->file = NULL;
 	cc->line = 0;
@@ -384,7 +384,7 @@ static const struct {
  * @brief read the next token from input.
  * @param cc compiler context.
  * @param tok out parameter to be filled with data.
- * @return the kind of token, TOKN_err (0) if error occurred.
+ * @return the kind of token, TOKEN_any (0) if error occurred.
  */
 static ccToken readTok(ccContext cc, astn tok) {
 	enum {
@@ -413,9 +413,9 @@ static ccToken readTok(ccContext cc, astn tok) {
 		/* 006 ack */	CNTRL,
 		/* 007 bel */	CNTRL,
 		/* 010 bs  */	CNTRL,
-		/* 011 ht  */	SCTRL,	// horz tab
+		/* 011 ht  */	SCTRL,	// horizontal tab
 		/* 012 nl  */	SCTRL,	// \n
-		/* 013 vt  */	SCTRL,	// Vert Tab,
+		/* 013 vt  */	SCTRL,	// vertical tab,
 		/* 014 ff  */	SCTRL,	// Form Feed,
 		/* 015 cr  */	SCTRL,	// \r
 		/* 016 so  */	CNTRL,
@@ -998,7 +998,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 
 				tok->kind = TOKEN_val;
 				tok->type = cc->type_chr;
-				tok->cint = val;
+				tok->cInt = val;
 			}
 		} break;
 		read_idf: {			// [a-zA-Z_][a-zA-Z0-9_]*
@@ -1063,7 +1063,6 @@ static ccToken readTok(ccContext cc, astn tok) {
 				chr = readChr(cc);
 
 				switch (chr) {
-
 					default:
 						radix = 8;
 						break;
@@ -1256,32 +1255,32 @@ static ccToken readTok(ccContext cc, astn tok) {
 				case CAST_i32:
 					tok->kind = TOKEN_val;
 					tok->type = cc->type_i32;
-					tok->cint = i64v;
+					tok->cInt = i64v;
 					break;
 				case CAST_i64:
 					tok->kind = TOKEN_val;
 					tok->type = cc->type_i64;
-					tok->cint = i64v;
+					tok->cInt = i64v;
 					break;
 				case CAST_u32:
 					tok->kind = TOKEN_val;
 					tok->type = cc->type_u32;
-					tok->cint = i64v;
+					tok->cInt = i64v;
 					break;
 				case CAST_u64:
 					tok->kind = TOKEN_val;
 					tok->type = cc->type_u64;
-					tok->cint = i64v;
+					tok->cInt = i64v;
 					break;
 				case CAST_f32:
 					tok->kind = TOKEN_val;
 					tok->type = cc->type_f32;
-					tok->cflt = f64v;
+					tok->cFlt = f64v;
 					break;
 				case CAST_f64:
 					tok->kind = TOKEN_val;
 					tok->type = cc->type_f64;
-					tok->cflt = f64v;
+					tok->cFlt = f64v;
 					break;
 			}
 		} break;
@@ -1298,8 +1297,8 @@ static ccToken readTok(ccContext cc, astn tok) {
 /// @doc: header
 astn backTok(ccContext cc, astn token) {
 	if (token != NULL) {
-		token->next = cc->_tok;
-		cc->_tok = token;
+		token->next = cc->tokNext;
+		cc->tokNext = token;
 	}
 	return token;
 }
@@ -1307,16 +1306,16 @@ astn backTok(ccContext cc, astn token) {
 /// @doc: header
 astn peekTok(ccContext cc, ccToken match) {
 	// read lookahead token
-	if (cc->_tok == NULL) {
-		cc->_tok = newNode(cc, TOKEN_any);
-		if (!readTok(cc, cc->_tok)) {
-			recycle(cc, cc->_tok);
-			cc->_tok = NULL;
+	if (cc->tokNext == NULL) {
+		cc->tokNext = newNode(cc, TOKEN_any);
+		if (!readTok(cc, cc->tokNext)) {
+			recycle(cc, cc->tokNext);
+			cc->tokNext = NULL;
 			return NULL;
 		}
 	}
-	if (match == TOKEN_any || match == cc->_tok->kind) {
-		return cc->_tok;
+	if (match == TOKEN_any || match == cc->tokNext->kind) {
+		return cc->tokNext;
 	}
 	return NULL;
 }
@@ -1325,7 +1324,7 @@ astn peekTok(ccContext cc, ccToken match) {
 astn nextTok(ccContext cc, ccToken match) {
 	astn token = peekTok(cc, match);
 	if (token != NULL) {
-		cc->_tok = token->next;
+		cc->tokNext = token->next;
 		token->next = NULL;
 		return token;
 	}
@@ -1343,7 +1342,7 @@ ccToken skipTok(ccContext cc, ccToken match, int raise) {
 	if (raise) {
 		char *file = cc->file;
 		int line = cc->line;
-		node = cc->_tok;
+		node = cc->tokNext;
 		if (node && node->file && node->line) {
 			file = node->file;
 			line = node->line;

@@ -102,12 +102,10 @@ static void printArray(FILE *out, const char **esc, symn sym, int mode) {
 }
 
 void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
-	static const int exprLevel = -15;
-	int nlBody = mode & nlAstBody;
-	int nlElif = mode & nlAstElIf;
-	int oneLine = mode & prOneLine;
-
-	ccToken kind;
+	static const int exprLevel = 0;
+	const int nlBody = mode & nlAstBody;
+	const int nlElIf = mode & nlAstElIf;
+	const int oneLine = mode & prOneLine;
 
 	if (ast == NULL) {
 		printStr(out, esc, NULL);
@@ -123,9 +121,14 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 		indent = -indent;
 	}
 
-	switch (kind = ast->kind) {
-		//#{ STMT
-		case STMT_end: {
+	ccToken kind = ast->kind;
+	switch (kind) {
+		default:
+			printStr(out, esc, token_tbl[kind].name);
+			break;
+
+		//#{ STATEMENTS
+		case STMT_end:
 			if (mode == prName) {
 				printStr(out, esc, token_tbl[kind].name);
 				break;
@@ -137,10 +140,10 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 				break;
 			}
 			printStr(out, esc, "\n");
-		} break;
+			break;
+
 		case STMT_pbeg:
-		case STMT_beg: {
-			astn list;
+		case STMT_beg:
 			if (mode == prName) {
 				printStr(out, esc, token_tbl[kind].name);
 				break;
@@ -152,23 +155,49 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 			}
 
 			printStr(out, esc, "{\n");
-			for (list = ast->stmt.stmt; list; list = list->next) {
-				printAst(out, esc, list, mode, indent + 1);
+			for (astn list = ast->stmt.stmt; list; list = list->next) {
+				int indent2 = indent + 1;
+				int exprStatement = 0;
 				if (list->kind < STMT_beg || list->kind > STMT_end) {
-					if (list->kind == TOKEN_var && list->ref.link && list->ref.link->tag == list) {
-						printStr(out, esc, ";\n");
+					switch (list->kind) {
+						default:
+							// not valid expression statement
+							exprStatement = -1;
+							indent2 = exprLevel;
+							printFmt(out, esc, "%I", indent + 1);
+							break;
+
+						case OPER_fnc:
+						case ASGN_set:
+							// valid expression statement
+							exprStatement = 1;
+							indent2 = exprLevel;
+							printFmt(out, esc, "%I", indent + 1);
+							break;
+
+						case TOKEN_var:
+							if (list->ref.link && list->ref.link->tag == list) {
+								// valid declaration statement
+								exprStatement = 1;
+							}
+							break;
+					}
+				}
+				printAst(out, esc, list, mode, indent2);
+				if (exprStatement != 0) {
+					if (exprStatement < 0) {
+						printFmt(out, esc, "; /* `%k` is not a valid statement */\n", list->kind);
 					}
 					else {
-						// TODO: remove when ok.
-						printFmt(out, esc, "; /* `%k` is not a staement */\n", list->kind);
+						printStr(out, esc, ";\n");
 					}
 				}
 			}
 			printFmt(out, esc, "%I%s", indent, "}\n");
-		} break;
+			break;
 
+		case STMT_sif:
 		case STMT_if:
-		case STMT_sif: {
 			printStr(out, esc, token_tbl[kind].name);
 			if (mode == prName) {
 				break;
@@ -201,7 +230,7 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 			// if else part
 			if (ast->stmt.step != NULL) {
 				kind = ast->stmt.step->kind;
-				if ((kind == STMT_if || kind == STMT_sif) && !nlElif) {
+				if ((kind == STMT_if || kind == STMT_sif) && !nlElIf) {
 					printFmt(out, esc, "%Ielse ", indent);
 					printAst(out, esc, ast->stmt.step, mode, -indent);
 				}
@@ -215,10 +244,10 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 				}
 			}
 			break;
-		}
+
 		case STMT_pfor:
 		case STMT_sfor:
-		case STMT_for: {
+		case STMT_for:
 			printStr(out, esc, token_tbl[kind].name);
 			if (mode == prName) {
 				break;
@@ -260,9 +289,9 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 				printStr(out, esc, " ;\n");
 			}
 			break;
-		}
+
 		case STMT_con:
-		case STMT_brk: {
+		case STMT_brk:
 			printStr(out, esc, token_tbl[kind].name);
 			if (mode == prName) {
 				break;
@@ -274,16 +303,14 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 			}
 			printStr(out, esc, "\n");
 			break;
-		}
-		case STMT_ret: {
+
+		case STMT_ret:
 			printStr(out, esc, token_tbl[kind].name);
 			if (mode == prName) {
 				break;
 			}
 			if (ast->stmt.stmt != NULL) {
 				printStr(out, esc, " ");
-				// `return 3;` should be modified to `return (result = 3);`
-				// FIXME: logif(ret->kind != ASGN_set && ret->kind != OPER_fnc, ERR_INTERNAL_ERROR);
 				printAst(out, esc, ast->stmt.stmt, mode, exprLevel);
 			}
 			printStr(out, esc, ";");
@@ -292,10 +319,10 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 			}
 			printStr(out, esc, "\n");
 			break;
-		}
+
 		//#}
-		//#{ OPER
-		case OPER_fnc: {	// '()'
+		//#{ OPERATORS
+		case OPER_fnc:		// '()'
 			if (mode == prName) {
 				printStr(out, esc, token_tbl[kind].name);
 				break;
@@ -310,9 +337,8 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 			}
 			printChr(out, ')');
 			break;
-		}
 
-		case OPER_idx: {	// '[]'
+		case OPER_idx:		// '[]'
 			if (mode == prName) {
 				printStr(out, esc, token_tbl[kind].name);
 				break;
@@ -327,18 +353,16 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 			}
 			printChr(out, ']');
 			break;
-		}
 
-		case OPER_dot: {	// '.'
+		case OPER_dot:		// '.'
 			if (mode == prName) {
 				printStr(out, esc, token_tbl[kind].name);
 				break;
 			}
-			printAst(out, esc, ast->op.lhso, mode, 0);
+			printAst(out, esc, ast->op.lhso, mode, exprLevel);
 			printChr(out, '.');
-			printAst(out, esc, ast->op.rhso, mode, 0);
+			printAst(out, esc, ast->op.rhso, mode, exprLevel);
 			break;
-		}
 
 		case OPER_adr:		// '&'
 		case OPER_pls:		// '+'
@@ -370,7 +394,7 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 
 		case OPER_com:		// ','
 
-		case ASGN_set: {	// '='
+		case ASGN_set:		// '='
 			if (mode == prName) {
 				printStr(out, esc, token_tbl[kind].name);
 				break;
@@ -407,40 +431,39 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 				printChr(out, ')');
 			}
 			break;
-		}
 
 		case OPER_sel:		// '?:'
 			if (mode == prName) {
 				printStr(out, esc, token_tbl[kind].name);
 				break;
 			}
-			printAst(out, esc, ast->op.test, mode, -OPER_sel);
+			precedence = token_tbl[kind].type & 0x0f;
+			printAst(out, esc, ast->op.test, mode, -precedence);
 			printStr(out, esc, " ? ");
-			printAst(out, esc, ast->op.lhso, mode, -OPER_sel);
+			printAst(out, esc, ast->op.lhso, mode, -precedence);
 			printStr(out, esc, " : ");
-			printAst(out, esc, ast->op.rhso, mode, -OPER_sel);
+			printAst(out, esc, ast->op.rhso, mode, -precedence);
 			break;
 		//#}
-		//#{ TVAL
-		case TOKEN_opc: {
+		//#{ VALUES
+		case TOKEN_opc:
 			printOpc(out, esc, ast->opc.code, ast->opc.args);
 			break;
-		}
 
 		case TOKEN_val:
-			if (ast->type->pfmt == type_fmt_string) {
+			if (ast->type->format == type_fmt_string) {
 				printStr(out, esc, "\'");
 				printStr(out, escapeStr(), ast->ref.name);
 				printStr(out, esc, "\'");
 			}
-			else if (ast->type->pfmt == type_fmt_float32) {
-				printFmt(out, esc, ast->type->pfmt, ast->cflt);
+			else if (ast->type->format == type_fmt_float32) {
+				printFmt(out, esc, ast->type->format, ast->cFlt);
 			}
-			else if (ast->type->pfmt == type_fmt_float64) {
-				printFmt(out, esc, ast->type->pfmt, ast->cflt);
+			else if (ast->type->format == type_fmt_float64) {
+				printFmt(out, esc, ast->type->format, ast->cFlt);
 			}
 			else {
-				printFmt(out, esc, ast->type->pfmt, ast->cint);
+				printFmt(out, esc, ast->type->format, ast->cInt);
 			}
 			break;
 
@@ -458,10 +481,6 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 			}
 			break;
 		//#}
-
-		default:
-			printStr(out, esc, token_tbl[kind].name);
-			break;
 	}
 }
 
@@ -470,7 +489,7 @@ void printSym(FILE *out, const char **esc, symn sym, int mode, int indent) {
 	int pr_attr = mode & prAttr;
 
 	int pr_qual = mode & prSymQual;
-	int pr_prms = mode & prSymArgs;
+	int pr_args = mode & prSymArgs;
 	int pr_result = 0;
 	int pr_type = mode & prSymType;
 	int pr_init = mode & prSymInit;
@@ -535,7 +554,7 @@ void printSym(FILE *out, const char **esc, symn sym, int mode, int indent) {
 		case KIND_fun:
 		case KIND_var: {
 			symn type = sym->type;
-			if (pr_prms && sym->params != NULL) {
+			if (pr_args && sym->params != NULL) {
 				symn arg = sym->params;
 				int first = 1;
 				if (!pr_result) {
@@ -571,7 +590,7 @@ void printSym(FILE *out, const char **esc, symn sym, int mode, int indent) {
 	}
 }
 
-static void FPUTFMT(FILE *out, const char **esc, const char *msg, va_list ap) {
+static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) {
 	char buff[1024], chr;
 
 	while ((chr = *msg++)) {
@@ -642,6 +661,7 @@ static void FPUTFMT(FILE *out, const char **esc, const char *msg, va_list ap) {
 								prc = prShort;
 							}
 							break;
+
 						case '-':
 							len = -len;
 							// fall
@@ -671,6 +691,7 @@ static void FPUTFMT(FILE *out, const char **esc, const char *msg, va_list ap) {
 								prc = prShort;
 							}
 							break;
+
 						case '-':
 							len = -len;
 							// fall
@@ -702,39 +723,51 @@ static void FPUTFMT(FILE *out, const char **esc, const char *msg, va_list ap) {
 					switch (arg & MASK_cast) {
 						default:
 							break;
+
 						case CAST_vid:
 							_cast = "void";
 							break;
+
 						case CAST_bit:
 							_cast = "bool";
 							break;
+
 						case CAST_i32:
 							_cast = "i32";
 							break;
+
 						case CAST_u32:
 							_cast = "u32";
 							break;
+
 						case CAST_i64:
 							_cast = "i64";
 							break;
+
 						case CAST_u64:
 							_cast = "u64";
 							break;
+
 						case CAST_f32:
 							_cast = "f32";
 							break;
+
 						case CAST_f64:
 							_cast = "f64";
 							break;
+
 						case CAST_val:
 							_cast = "val";
 							break;
+
 						case CAST_ref:
 							_cast = "ref";
 							break;
+
 						case CAST_arr:
 							_cast = "arr";
 							break;
+
 						case CAST_var:
 							_cast = "var";
 							break;
@@ -974,7 +1007,6 @@ static void FPUTFMT(FILE *out, const char **esc, const char *msg, va_list ap) {
 						}
 						buff[len++] = chr;
 						buff[len] = 0;
-						//~ TODO: replace fprintf
 						fprintf(out, buff, num);
 					}
 					continue;
@@ -1046,7 +1078,7 @@ int logfile(rtContext rt, char *file, int append) {
 void printFmt(FILE *out, const char **esc, const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
-	FPUTFMT(out, esc, fmt, ap);
+	print_fmt(out, esc, fmt, ap);
 	va_end(ap);
 }
 
@@ -1055,7 +1087,7 @@ void printErr(rtContext rt, int level, const char *file, int line, const char *m
 	FILE *logFile = rt ? rt->logFile : stdout;
 	const char **esc = NULL;
 
-	va_list argp;
+	va_list vaList;
 
 	if (level >= 0) {
 		if (warnLevel < 0) {
@@ -1088,11 +1120,11 @@ void printErr(rtContext rt, int level, const char *file, int line, const char *m
 		printStr(logFile, esc, "error: ");
 	}
 
-	va_start(argp, msg);
-	FPUTFMT(logFile, NULL, msg, argp);
+	va_start(vaList, msg);
+	print_fmt(logFile, NULL, msg, vaList);
 	printChr(logFile, '\n');
 	fflush(logFile);
-	va_end(argp);
+	va_end(vaList);
 }
 
 // dump

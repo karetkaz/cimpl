@@ -72,7 +72,7 @@ size_t emitInt(rtContext rt, vmOpcode opc, int64_t value) {
 }
 
 /// Emit an instruction indexing nth element on stack.
-static inline size_t emitStack(rtContext rt, vmOpcode opc, size_t arg) {
+static inline size_t emitStack(rtContext rt, vmOpcode opc, ssize_t arg) {
 	stkval tmp;
 	tmp.u8 = rt->vm.ss * vm_size - arg;
 
@@ -566,63 +566,57 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get);
 
 static inline ccKind genLoop(ccContext cc, astn ast) {
 	const rtContext rt = cc->rt;
-	astn jl = cc->jmps;
-	size_t lincr;
-	size_t jstep, lcont, lbody, lbreak;
-	size_t stbreak;
+	astn jl = cc->jumps;
 
 	if (ast->stmt.init && !genAst(cc, ast->stmt.init, CAST_vid)) {
 		traceAst(ast);
 		return CAST_any;
 	}
 
-	if (!(jstep = emitOpc(rt, opc_jmp))) {		// continue;
+	size_t jStep = emitOpc(rt, opc_jmp);
+	if (jStep <= 0) {		// continue;
 		traceAst(ast);
 		return CAST_any;
 	}
 
-	lbody = emitOpc(rt, markIP);
+	size_t lBody = emitOpc(rt, markIP);
 	if (ast->stmt.stmt && !genAst(cc, ast->stmt.stmt, CAST_vid)) {
 		traceAst(ast);
 		return CAST_any;
 	}
 
-	lcont = emitOpc(rt, markIP);
+	size_t lCont = emitOpc(rt, markIP);
 	if (ast->stmt.step && !genAst(cc, ast->stmt.step, CAST_vid)) {
 		traceAst(ast);
 		return CAST_any;
 	}
 
-	lincr = emitOpc(rt, markIP);
-	fixjump(rt, jstep, emitOpc(rt, markIP), -1);
+	size_t lInc = emitOpc(rt, markIP);
+	fixJump(rt, jStep, emitOpc(rt, markIP), -1);
 	if (ast->stmt.test) {
 		if (!genAst(cc, ast->stmt.test, CAST_bit)) {
 			traceAst(ast);
 			return CAST_any;
 		}
-		if (!emitInt(rt, opc_jnz, lbody)) {		// continue;
+		if (!emitInt(rt, opc_jnz, lBody)) {		// continue;
 			traceAst(ast);
 			return CAST_any;
 		}
 	}
 	else {
-		if (!emitInt(rt, opc_jmp, lbody)) {		// continue;
+		if (!emitInt(rt, opc_jmp, lBody)) {		// continue;
 			traceAst(ast);
 			return CAST_any;
 		}
 	}
 
-	lbreak = emitOpc(rt, markIP);
-	stbreak = stkOffset(rt, 0);
+	size_t lBreak = emitOpc(rt, markIP);
+	size_t stBreak = stkOffset(rt, 0);
+	while (cc->jumps != jl) {
+		astn jmp = cc->jumps;
+		cc->jumps = jmp->next;
 
-	addDbgStatement(rt, lcont, lincr, ast->stmt.step);
-	addDbgStatement(rt, lincr, lbreak, ast->stmt.test);
-
-	while (cc->jmps != jl) {
-		astn jmp = cc->jmps;
-		cc->jmps = jmp->next;
-
-		if (jmp->go2.stks != stbreak) {
+		if (jmp->go2.stks != stBreak) {
 			error(rt, jmp->file, jmp->line, ERR_INVALID_JUMP, jmp);
 			return CAST_any;
 		}
@@ -632,126 +626,115 @@ static inline ccKind genLoop(ccContext cc, astn ast) {
 				return CAST_any;
 
 			case STMT_brk:
-				fixjump(rt, jmp->go2.offs, lbreak, jmp->go2.stks);
+				fixJump(rt, jmp->go2.offs, lBreak, jmp->go2.stks);
 				break;
 
 			case STMT_con:
-				fixjump(rt, jmp->go2.offs, lcont, jmp->go2.stks);
+				fixJump(rt, jmp->go2.offs, lCont, jmp->go2.stks);
 				break;
 		}
 	}
+	addDbgStatement(rt, lCont, lInc, ast->stmt.step);
+	addDbgStatement(rt, lInc, lBreak, ast->stmt.test);
+
 	return CAST_vid;
 }
 static inline ccKind genBranch(ccContext cc, astn ast) {
 	const rtContext rt = cc->rt;
-	size_t jmpt = 0, jmpf = 0;
-	struct astNode tmp;
-	ccKind tt = eval(cc, &tmp, ast->stmt.test);
+	struct astNode testValue;
+	astn *genOnly = NULL;
+	if (eval(cc, &testValue, ast->stmt.test) != CAST_any) {
+		if (bolValue(&testValue)) {
+			// generate only then
+			genOnly = &ast->stmt.stmt;
+		}
+		else {
+			// generate only else
+			genOnly = &ast->stmt.step;
+		}
+	}
 
 	if (ast->kind == STMT_sif) {
-		if (tt == CAST_any) {
+		if (genOnly == NULL) {
 			error(rt, ast->file, ast->line, ERR_INVALID_CONST_EXPR, ast->stmt.test);
+			return CAST_any;
 		}
-		if (ast->stmt.step != NULL && ast->stmt.step->kind != STMT_beg) {
-			error(rt, ast->file, ast->line, ERR_EMIT_STATEMENT, ast);
+		if (*genOnly && !genAst(cc, *genOnly, CAST_any)) {	// leave the stack
+			traceAst(ast);
 			return CAST_any;
 		}
 	}
-
-	if (tt && ast->kind == STMT_sif) {	// static if
-		astn gen = bolValue(&tmp) ? ast->stmt.stmt : ast->stmt.step;
-		if (gen != NULL && !genAst(cc, gen, CAST_any)) {	// leave the stack
-			traceAst(gen);
+	else if (genOnly && rt->foldConst) {    // if (const) ...
+		astn notGen = genOnly != &ast->stmt.stmt ? ast->stmt.stmt : ast->stmt.step;
+		if (*genOnly && !genAst(cc, *genOnly, CAST_vid)) {    // clear the stack
+			traceAst(ast);
 			return CAST_any;
 		}
+		if (notGen != NULL) {
+			warn(cc->rt, 8, notGen->file, notGen->line, WARN_NO_CODE_GENERATED, notGen);
+		}
 	}
-	else {
-		// hack: `if (true) sin(pi/4);` leaves the result of sin on stack
-		// so, code will be generated as: if (true) { sin(pi/4); }
-		struct astNode block;
-
-		memset(&block, 0, sizeof(block));
-		block.type = cc->type_vid;
-		block.kind = STMT_beg;
-
-		if (tt != CAST_any && rt->foldConst) {	// if (const)
-			block.stmt.stmt = bolValue(&tmp) ? ast->stmt.stmt : ast->stmt.step;
-			if (block.stmt.stmt != NULL) {
-				if (!genAst(cc, &block, CAST_vid)) {
-					traceAst(ast);
-					return CAST_any;
-				}
-			}
-			else {
-				warn(rt, 2, ast->file, ast->line, WARN_NO_CODE_GENERATED, ast);
-			}
+	else if (ast->stmt.stmt && ast->stmt.step) {
+		if (!genAst(cc, ast->stmt.test, CAST_bit)) {
+			traceAst(ast);
+			return CAST_any;
 		}
-		else if (ast->stmt.stmt && ast->stmt.step) {
-			if (!genAst(cc, ast->stmt.test, CAST_bit)) {
-				traceAst(ast);
-				return CAST_any;
-			}
-			if (!(jmpt = emitOpc(rt, opc_jz))) {
-				traceAst(ast);
-				return CAST_any;
-			}
-
-			block.stmt.stmt = ast->stmt.stmt;
-			if (!genAst(cc, &block, CAST_vid)) {
-				traceAst(ast);
-				return CAST_any;
-			}
-			if (!(jmpf = emitOpc(rt, opc_jmp))) {
-				traceAst(ast);
-				return CAST_any;
-			}
-			fixjump(rt, jmpt, emitOpc(rt, markIP), -1);
-
-			block.stmt.stmt = ast->stmt.step;
-			if (!genAst(cc, &block, CAST_vid)) {
-				traceAst(ast);
-				return CAST_any;
-			}
-			fixjump(rt, jmpf, emitOpc(rt, markIP), -1);
+		size_t jTrue = emitOpc(rt, opc_jz);
+		if (jTrue <= 0) {
+			traceAst(ast);
+			return CAST_any;
 		}
-		else if (ast->stmt.stmt) {
-			if (!genAst(cc, ast->stmt.test, CAST_bit)) {
-				traceAst(ast);
-				return CAST_any;
-			}
-			//~ if false skip THEN block
-			//~ TODO: warn: never executed code
-			if (!(jmpt = emitOpc(rt, opc_jz))) {
-				traceAst(ast);
-				return CAST_any;
-			}
 
-			block.stmt.stmt = ast->stmt.stmt;
-			if (!genAst(cc, &block, CAST_vid)) {
-				traceAst(ast);
-				return CAST_any;
-			}
-			fixjump(rt, jmpt, emitOpc(rt, markIP), -1);
+		if (!genAst(cc, ast->stmt.stmt, CAST_vid)) {
+			traceAst(ast);
+			return CAST_any;
 		}
-		else if (ast->stmt.step) {
-			if (!genAst(cc, ast->stmt.test, CAST_bit)) {
-				traceAst(ast);
-				return CAST_any;
-			}
-			//~ if true skip ELSE block
-			//~ TODO: warn: never executed code
-			if (!(jmpt = emitOpc(rt, opc_jnz))) {
-				traceAst(ast);
-				return CAST_any;
-			}
+		size_t jFalse = emitOpc(rt, opc_jmp);
+		if (jFalse <= 0) {
+			traceAst(ast);
+			return CAST_any;
+		}
+		fixJump(rt, jTrue, emitOpc(rt, markIP), -1);
 
-			block.stmt.stmt = ast->stmt.step;
-			if (!genAst(cc, &block, CAST_vid)) {
-				traceAst(ast);
-				return CAST_any;
-			}
-			fixjump(rt, jmpt, emitOpc(rt, markIP), -1);
+		if (!genAst(cc, ast->stmt.step, CAST_vid)) {
+			traceAst(ast);
+			return CAST_any;
 		}
+		fixJump(rt, jFalse, emitOpc(rt, markIP), -1);
+	}
+	else if (ast->stmt.stmt) {
+		if (!genAst(cc, ast->stmt.test, CAST_bit)) {
+			traceAst(ast);
+			return CAST_any;
+		}
+		size_t jTrue = emitOpc(rt, opc_jz);
+		if (jTrue <= 0) {
+			traceAst(ast);
+			return CAST_any;
+		}
+
+		if (!genAst(cc, ast->stmt.stmt, CAST_vid)) {
+			traceAst(ast);
+			return CAST_any;
+		}
+		fixJump(rt, jTrue, emitOpc(rt, markIP), -1);
+	}
+	else if (ast->stmt.step) {
+		if (!genAst(cc, ast->stmt.test, CAST_bit)) {
+			traceAst(ast);
+			return CAST_any;
+		}
+		size_t jFalse = emitOpc(rt, opc_jnz);
+		if (jFalse <= 0) {
+			traceAst(ast);
+			return CAST_any;
+		}
+
+		if (!genAst(cc, ast->stmt.step, CAST_vid)) {
+			traceAst(ast);
+			return CAST_any;
+		}
+		fixJump(rt, jFalse, emitOpc(rt, markIP), -1);
 	}
 	return CAST_vid;
 }
@@ -818,6 +801,9 @@ static inline ccKind genVariable(ccContext cc, symn variable, ccKind get) {
 
 	if (variable == cc->null_ref) {
 		switch (get) {
+			default:
+				break;
+
 			case CAST_var:		// variant a = null;
 				// push type pointer
 				if (!genOffset(rt, type)) {
@@ -838,9 +824,6 @@ static inline ccKind genVariable(ccContext cc, symn variable, ccKind get) {
 					return CAST_any;
 				}
 				return get;
-
-			default:
-				break;
 		}
 	}
 
@@ -924,7 +907,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 	astn args = ast->op.rhso;
 	const symn function = linkOf(ast->op.lhso);
 
-	const size_t stkret = stkOffset(rt, ast->type->size);
+	const size_t localSize = stkOffset(rt, ast->type->size);
 	ccKind result = castOf(ast->type);
 
 	dbgCgen("%?s:%?u: %t", ast->file, ast->line, ast);
@@ -1009,10 +992,10 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		}
 
 		// drop cached arguments
-		if (stkret < stkOffset(rt, 0)) {
+		if (localSize < stkOffset(rt, 0)) {
 			// copy result value
 			if (function->params->size > 0) {
-				if (!emitStack(rt, opc_ldsp, stkret)) {
+				if (!emitStack(rt, opc_ldsp, localSize)) {
 					trace(ERR_INTERNAL_ERROR);
 					return CAST_any;
 				}
@@ -1023,7 +1006,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 			}
 
 			// drop cached arguments
-			if (!emitStack(rt, opc_drop, stkret)) {
+			if (!emitStack(rt, opc_drop, localSize)) {
 				fatal(ERR_INTERNAL_ERROR);
 				return CAST_any;
 			}
@@ -1096,7 +1079,6 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 static inline ccKind genIndex(ccContext cc, astn ast, ccKind get) {
 	const rtContext rt = cc->rt;
 	struct astNode tmp;
-	size_t esize;
 	ccKind r;
 
 	dbgCgen("%?s:%?u: %t", ast->file, ast->line, ast);
@@ -1111,9 +1093,9 @@ static inline ccKind genIndex(ccContext cc, astn ast, ccKind get) {
 		}
 	}
 
-	esize = ast->type->size;	// size of array element
+	size_t elementSize = ast->type->size;	// size of array element
 	if (rt->foldConst && eval(cc, &tmp, ast->op.rhso) == CAST_i64) {
-		size_t offs = esize * intValue(&tmp);
+		size_t offs = elementSize * intValue(&tmp);
 		if (!emitIncrement(rt, offs)) {
 			traceAst(ast);
 			return CAST_any;
@@ -1124,20 +1106,12 @@ static inline ccKind genIndex(ccContext cc, astn ast, ccKind get) {
 			traceAst(ast);
 			return CAST_any;
 		}
-		if (esize > 1) {
-			if (!emitInt(rt, opc_mad, esize)) {
-				traceAst(ast);
-				return CAST_any;
-			}
-		}
-		else if (esize == 1) {
-			if (!emitOpc(rt, i32_add)) {
-				traceAst(ast);
-				return CAST_any;
-			}
+		if (!emitInt(rt, opc_mad, elementSize)) {
+			traceAst(ast);
+			return CAST_any;
 		}
 		else {
-			fatal(ERR_INTERNAL_ERROR": invalid element size: %d", esize);
+			fatal(ERR_INTERNAL_ERROR": invalid element size: %d", elementSize);
 			return CAST_any;
 		}
 	}
@@ -1146,7 +1120,7 @@ static inline ccKind genIndex(ccContext cc, astn ast, ccKind get) {
 		return KIND_var;
 
 	// we need the value on that position (this can be a ref).
-	if (!emitInt(rt, opc_ldi, esize)) {
+	if (!emitInt(rt, opc_ldi, elementSize)) {
 		traceAst(ast);
 		return CAST_any;
 	}
@@ -1220,7 +1194,6 @@ static inline ccKind genMember(ccContext cc, astn ast, ccKind get) {
 static inline ccKind genLogical(ccContext cc, astn ast) {
 	const rtContext rt = cc->rt;
 	struct astNode tmp;
-	size_t jmpt, jmpf;
 
 	if (rt->foldConst && eval(cc, &tmp, ast->op.test) == CAST_bit) {
 		if (!genAst(cc, bolValue(&tmp) ? ast->op.lhso : ast->op.rhso, CAST_any)) {
@@ -1229,14 +1202,15 @@ static inline ccKind genLogical(ccContext cc, astn ast) {
 		}
 	}
 	else {
-		size_t bppos = stkOffset(rt, 0);
+		size_t spBegin = stkOffset(rt, 0);
 
 		if (!genAst(cc, ast->op.test, CAST_bit)) {
 			traceAst(ast);
 			return CAST_any;
 		}
 
-		if (!(jmpt = emitOpc(rt, opc_jz))) {
+		size_t jmpTrue = emitOpc(rt, opc_jz);
+		if (jmpTrue == 0) {
 			traceAst(ast);
 			return CAST_any;
 		}
@@ -1246,19 +1220,20 @@ static inline ccKind genLogical(ccContext cc, astn ast) {
 			return CAST_any;
 		}
 
-		if (!(jmpf = emitOpc(rt, opc_jmp))) {
+		size_t jmpFalse = emitOpc(rt, opc_jmp);
+		if (jmpFalse == 0) {
 			traceAst(ast);
 			return CAST_any;
 		}
 
-		fixjump(rt, jmpt, emitOpc(rt, markIP), bppos);
+		fixJump(rt, jmpTrue, emitOpc(rt, markIP), spBegin);
 
 		if (!genAst(cc, ast->op.rhso, CAST_any)) {
 			traceAst(ast);
 			return CAST_any;
 		}
 
-		fixjump(rt, jmpf, emitOpc(rt, markIP), -1);
+		fixJump(rt, jmpFalse, emitOpc(rt, markIP), -1);
 	}
 	return castOf(ast->type);
 }
@@ -1299,7 +1274,6 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 	dbgCgen("%?s:%?u: %T(%K): %t", ast->file, ast->line, ast->type, get, ast);
 	// generate instructions
 	switch (ast->kind) {
-
 		default:
 			fatal(ERR_INTERNAL_ERROR);
 			return CAST_any;
@@ -1370,14 +1344,19 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			ast->go2.stks = spBegin;
 			ast->go2.offs = offs;
 
-			ast->next = cc->jmps;
-			cc->jmps = ast;
+			ast->next = cc->jumps;
+			cc->jumps = ast;
 		} break;
 		case STMT_ret:
 			//~ TODO: declared reference variables should be freed.
-			if (ast->stmt.stmt && !genAst(cc, ast->stmt.stmt, CAST_vid)) {
-				traceAst(ast);
-				return CAST_any;
+			if (ast->stmt.stmt != NULL) {
+				// `return 3;` should be modified to `return (result := 3);`
+				dieif(ast->stmt.stmt->kind != ASGN_set, ERR_INTERNAL_ERROR);
+
+				if (!genAst(cc, ast->stmt.stmt, CAST_vid)) {
+					traceAst(ast);
+					return CAST_any;
+				}
 			}
 			dieif(get != CAST_vid, ERR_INTERNAL_ERROR": get: %K", get);
 			if (get == CAST_vid) {
@@ -1391,7 +1370,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				traceAst(ast);
 				return CAST_any;
 			}
-			fixjump(rt, 0, 0, spBegin);
+			fixJump(rt, 0, 0, spBegin);
 			break;
 
 		//#}
@@ -1479,6 +1458,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 						return CAST_any;
 					}
 					break;
+
 				case OPER_shl:
 				case OPER_shr:
 					dieif(ast->type != ast->op.lhso->type, ERR_INTERNAL_ERROR);
@@ -1506,9 +1486,11 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			switch (ast->kind) {
 				default:
 					break;
+
 				case OPER_all:
 					operator = OPER_and;// TODO: short circuit
 					break;
+
 				case OPER_any:
 					operator = OPER_ior;// TODO: short circuit
 					break;
@@ -1617,7 +1599,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				case CAST_u32:
 				case CAST_i64:
 				case CAST_u64:
-					if (!emitI64(rt, ast->cint)) {
+					if (!emitI64(rt, ast->cInt)) {
 						traceAst(ast);
 						return CAST_any;
 					}
@@ -1626,7 +1608,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 
 				case CAST_f32:
 				case CAST_f64:
-					if (!emitF64(rt, ast->cflt)) {
+					if (!emitF64(rt, ast->cFlt)) {
 						traceAst(ast);
 						return CAST_any;
 					}
@@ -1852,7 +1834,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 	return got;
 }
 
-int gencode(rtContext rt, int mode) {
+int gencode(rtContext rt, int debug) {
 	ccContext cc = rt->cc;
 	size_t lMeta;	// read only section emitted by the compiler
 	//TODO: size_t lCode;	// read only section: function bodies
@@ -1930,7 +1912,7 @@ int gencode(rtContext rt, int mode) {
 	lMeta = rt->_beg - rt->_mem;
 
 	// debug info
-	if (mode != 0) {
+	if (debug != 0) {
 		rt->dbg = (dbgContext)(rt->_beg = padPointer(rt->_beg, pad_size));
 		rt->_beg += sizeof(struct dbgContextRec);
 
@@ -2017,7 +1999,7 @@ int gencode(rtContext rt, int mode) {
 			if (isFunction(var)) {
 
 				rt->vm.sm = 0;
-				fixjump(rt, 0, 0, sizeof(vmOffs) + var->size);
+				fixJump(rt, 0, 0, sizeof(vmOffs) + var->size);
 				rt->vm.sm = rt->vm.ss;		// leave return address on stack
 
 				var->offs = emitOpc(rt, markIP);
@@ -2030,9 +2012,9 @@ int gencode(rtContext rt, int mode) {
 					error(rt, var->file, var->line, ERR_EMIT_FUNCTION, var);
 					continue;
 				}
-				while (cc->jmps) {
-					fatal(ERR_INTERNAL_ERROR": invalid jump: `%t`", cc->jmps);
-					cc->jmps = cc->jmps->next;
+				while (cc->jumps) {
+					fatal(ERR_INTERNAL_ERROR": invalid jump: `%t`", cc->jumps);
+					cc->jumps = cc->jumps->next;
 				}
 				var->size = emitOpc(rt, markIP) - var->offs;
 				var->kind |= ATTR_stat;
@@ -2113,9 +2095,9 @@ int gencode(rtContext rt, int mode) {
 			return 0;
 		}
 
-		while (cc->jmps) {
-			fatal(ERR_INTERNAL_ERROR": invalid jump: `%t`", cc->jmps);
-			cc->jmps = cc->jmps->next;
+		while (cc->jumps) {
+			fatal(ERR_INTERNAL_ERROR": invalid jump: `%t`", cc->jumps);
+			cc->jumps = cc->jumps->next;
 			return 0;
 		}
 	}
@@ -2132,14 +2114,14 @@ int gencode(rtContext rt, int mode) {
 	rt->main->offs = lMain;
 	rt->main->params = params;
 	rt->main->fields = cc->scope;
-	rt->main->pfmt = rt->main->name;
+	rt->main->format = rt->main->name;
 
 	rt->_end = rt->_mem + rt->_size;
 	if (rt->dbg != NULL) {
-		int i, j;
+		// TODO: remove bubble sort, replace with qsort
 		struct arrBuffer *codeMap = &rt->dbg->statements;
-		for (i = 0; i < codeMap->cnt; ++i) {
-			for (j = i; j < codeMap->cnt; ++j) {
+		for (int i = 0; i < codeMap->cnt; ++i) {
+			for (int j = i; j < codeMap->cnt; ++j) {
 				dbgn a = getBuff(codeMap, i);
 				dbgn b = getBuff(codeMap, j);
 				if (a->end > b->end) {

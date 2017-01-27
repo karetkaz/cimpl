@@ -168,7 +168,7 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, int mode, int inde
 			fatal(ERR_INTERNAL_ERROR);
 			return;
 
-		//#{ STMT
+		//#{ STATEMENTS
 		case STMT_beg:
 			printFmt(out, esc, ">\n");
 			for (list = ast->stmt.stmt; list; list = list->next) {
@@ -213,7 +213,7 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, int mode, int inde
 			break;
 
 		//#}
-		//#{ OPER
+		//#{ OPERATORS
 		case OPER_fnc:		// '()'
 			//printFmt(out, esc, ">\n");
 			printFmt(out, esc, " value=\"%?t\">\n", ast);
@@ -264,13 +264,13 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, int mode, int inde
 		case ASGN_set:		// '='
 			printFmt(out, esc, " value=\"%?t\">\n", ast);
 			dumpAstXML(out, esc, ast->op.test, mode, indent + 1, "test");
-			dumpAstXML(out, esc, ast->op.lhso, mode, indent + 1, "lval");
-			dumpAstXML(out, esc, ast->op.rhso, mode, indent + 1, "rval");
+			dumpAstXML(out, esc, ast->op.lhso, mode, indent + 1, "left");
+			dumpAstXML(out, esc, ast->op.rhso, mode, indent + 1, "right");
 			printFmt(out, esc, "%I</%s>\n", indent, text);
 			break;
 
 		//#}
-		//#{ VAL
+		//#{ VALUES
 		case TOKEN_var: {
 			symn link = ast->ref.link;
 			// declaration
@@ -374,8 +374,8 @@ static void jsonDumpAst(FILE *out, const char **esc, astn ast, const char *kind,
 	static const char *KEY_STEP = "step";
 	static const char *KEY_ELSE = "else";
 	static const char *KEY_ARGS = "args";
-	static const char *KEY_LHSO = "lval";
-	static const char *KEY_RHSO = "rval";
+	static const char *KEY_LHSO = "left";
+	static const char *KEY_RHSO = "right";
 	static const char *KEY_VALUE = "value";
 
 	if (ast == NULL) {
@@ -401,7 +401,8 @@ static void jsonDumpAst(FILE *out, const char **esc, astn ast, const char *kind,
 		default:
 			fatal(ERR_INTERNAL_ERROR);
 			return;
-		//#{ STATEMENT
+
+		//#{ STATEMENTS
 		case STMT_beg: {
 			astn list;
 			printFmt(out, esc, "%I, \"%s\": [{\n", indent + 1, KEY_STMT);
@@ -438,7 +439,7 @@ static void jsonDumpAst(FILE *out, const char **esc, astn ast, const char *kind,
 			jsonDumpAst(out, esc, ast->stmt.stmt, KEY_STMT, indent + 1);
 			break;
 		//#}
-		//#{ OPERATOR
+		//#{ OPERATORS
 		case OPER_fnc: {    // '()'
 			astn args = chainArgs(ast->op.rhso);
 			printFmt(out, esc, "%I, \"%s\": [{\n", indent + 1, KEY_ARGS);
@@ -493,7 +494,7 @@ static void jsonDumpAst(FILE *out, const char **esc, astn ast, const char *kind,
 			jsonDumpAst(out, esc, ast->op.rhso, KEY_RHSO, indent + 1);
 			break;
 		//#}
-		//#{ VALUE
+		//#{ VALUES
 		case TOKEN_opc:
 		case TOKEN_val:
 		case TOKEN_var:
@@ -510,7 +511,7 @@ static void jsonDumpAsm(FILE *out, const char **esc, symn sym, rtContext rt, int
 	static const char *FMT_START = "{\n";
 	static const char *FMT_NEXT = "%I}, {\n";
 	static const char *FMT_END = "%I}";
-	static const char *KEY_INSN = "instruction";
+	static const char *KEY_OPC = "instruction";
 	static const char *KEY_OFFS = "offset";
 
 	size_t end = sym->offs + sym->size;
@@ -520,7 +521,7 @@ static void jsonDumpAsm(FILE *out, const char **esc, symn sym, rtContext rt, int
 		if (pc != sym->offs) {
 			printFmt(out, esc, FMT_NEXT, indent, indent);
 		}
-		printFmt(out, esc, "%I\"%s\": \"%.A\"\n", indent + 1, KEY_INSN, ip);
+		printFmt(out, esc, "%I\"%s\": \"%.A\"\n", indent + 1, KEY_OPC, ip);
 		printFmt(out, esc, "%I, \"%s\": %u\n", indent + 1, KEY_OFFS, pc);
 		pc += opcode_tbl[*ip].size;
 		if (ip == vmPointer(rt, pc)) {
@@ -937,7 +938,8 @@ static void dumpApiText(userContext extra, symn sym) {
 	else if (extra->dmpApiAll && sym->file == NULL && sym->line == 0) {
 		// do not skip internal symbols
 	}
-	else {
+	else if (sym->file == NULL || sym->line == 0) {
+		// skip generated or builtin symbols
 		return;
 	}
 
@@ -1383,7 +1385,7 @@ static int program(int argc, char *argv[]) {
 		else if (strBegins(arg, "-X")) {
 			char *arg2 = arg + 2;
 			while (*arg2 == '-' || *arg2 == '+') {
-				unsigned on = *arg2 == '+';
+				int on = *arg2 == '+';
 				if (strBegins(arg2 + 1, "fold")) {
 					settings.foldConst = on;
 					arg2 += 5;
@@ -1804,7 +1806,7 @@ static int program(int argc, char *argv[]) {
 
 	if (settings.stdLibs) {
 		// install standard library.
-		if (!ccAddLib(rt->cc, wl, ccLibStdc, stdLib)) {
+		if (!ccAddLib(rt->cc, wl, ccLibStd, stdLib)) {
 			error(rt, NULL, 0, "error registering standard library");
 			logfile(rt, NULL, 0);
 			return -6;
@@ -2002,15 +2004,15 @@ static int usage() {
             "\n    .json               dump api in javascript object notation format"
             "\n"
             "\n  -api[*]               dump symbols"
-            "\n    /a                  include builtin symbols"
-            "\n    /m                  dump main"
-            "\n    /d                  dump details"
+            "\n    /a                  include all builtin symbols"
+            "\n    /m                  include main builtin symbol"
+            "\n    /d                  dump details of symbol"
             "\n    /p                  dump params and fields"
             "\n    /u                  dump usages"
             "\n"
-            "\n  -asm[*]               dump assembled code"
-            "\n    /a                  use global address: (@0x003d8c)"
-            "\n    /n                  prefer names over addresses: <main+80>"
+            "\n  -asm[*]               dump assembled code: jmp +80"
+            "\n    /a                  use global address: jmp @0x003d8c"
+            "\n    /n                  prefer names over addresses: jmp <main+80>"
             "\n    /s                  print source code statements"
             "\n"
             "\n  -ast[*]               dump syntax tree"

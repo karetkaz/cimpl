@@ -8,7 +8,7 @@ source code representation using abstract syntax tree
 #include <string.h>
 #include "internal.h"
 
-symn newDefn(ccContext cc, ccKind kind) {
+symn newDef(ccContext cc, ccKind kind) {
 	rtContext rt = cc->rt;
 	symn def = NULL;
 
@@ -29,9 +29,9 @@ symn newDefn(ccContext cc, ccKind kind) {
 astn newNode(ccContext cc, ccToken kind) {
 	rtContext rt = cc->rt;
 	astn ast = 0;
-	if (cc->tokp) {
-		ast = cc->tokp;
-		cc->tokp = ast->next;
+	if (cc->tokPool) {
+		ast = cc->tokPool;
+		cc->tokPool = ast->next;
 	}
 
 	// allocate memory from temporary storage.
@@ -49,8 +49,8 @@ astn newNode(ccContext cc, ccToken kind) {
 
 void recycle(ccContext cc, astn ast) {
 	if (!ast) return;
-	ast->next = cc->tokp;
-	cc->tokp = ast;
+	ast->next = cc->tokPool;
+	cc->tokPool = ast;
 }
 
 /// make a constant valued node
@@ -58,7 +58,7 @@ astn intNode(ccContext cc, int64_t v) {
 	astn ast = newNode(cc, TOKEN_val);
 	if (ast != NULL) {
 		ast->type = cc->type_i64;
-		ast->cint = v;
+		ast->cInt = v;
 	}
 	return ast;
 }
@@ -66,7 +66,7 @@ astn fltNode(ccContext cc, float64_t v) {
 	astn ast = newNode(cc, TOKEN_val);
 	if (ast != NULL) {
 		ast->type = cc->type_f64;
-		ast->cflt = v;
+		ast->cFlt = v;
 	}
 	return ast;
 }
@@ -102,17 +102,19 @@ astn opNode(ccContext cc, ccToken kind, astn lhs, astn rhs) {
 int bolValue(astn ast) {
 	if (ast != NULL && ast->type != NULL && ast->kind == TOKEN_val) {
 		switch (castOf(ast->type)) {
+			default:
+				break;
+
 			case CAST_bit:
 			case CAST_i32:
 			case CAST_i64:
 			case CAST_u32:
 			case CAST_u64:
-				return ast->cint != 0;
+				return ast->cInt != 0;
+
 			case CAST_f32:
 			case CAST_f64:
-				return ast->cflt != 0;
-			default:
-				break;
+				return ast->cFlt != 0;
 		}
 	}
 	fatal(ERR_INVALID_CONST_EXPR, ast);
@@ -121,17 +123,19 @@ int bolValue(astn ast) {
 int64_t intValue(astn ast) {
 	if (ast != NULL && ast->type != NULL && ast->kind == TOKEN_val) {
 		switch (castOf(ast->type)) {
+			default:
+				break;
+
 			case CAST_bit:
 			case CAST_i32:
 			case CAST_i64:
 			case CAST_u32:
 			case CAST_u64:
-				return (int64_t) ast->cint;
+				return (int64_t) ast->cInt;
+
 			case CAST_f32:
 			case CAST_f64:
-				return (int64_t) ast->cflt;
-			default:
-				break;
+				return (int64_t) ast->cFlt;
 		}
 	}
 	fatal(ERR_INVALID_CONST_EXPR, ast);
@@ -140,17 +144,19 @@ int64_t intValue(astn ast) {
 float64_t fltValue(astn ast) {
 	if (ast != NULL && ast->type != NULL && ast->kind == TOKEN_val) {
 		switch (castOf(ast->type)) {
+			default:
+				break;
+
 			case CAST_bit:
 			case CAST_i32:
 			case CAST_i64:
 			case CAST_u32:
 			case CAST_u64:
-				return (float64_t) ast->cint;
+				return (float64_t) ast->cInt;
+
 			case CAST_f32:
 			case CAST_f64:
-				return (float64_t) ast->cflt;
-			default:
-				break;
+				return (float64_t) ast->cFlt;
 		}
 	}
 	fatal(ERR_INVALID_CONST_EXPR, ast);
@@ -243,9 +249,10 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 		case TOKEN_var: {
 			symn var = ast->ref.link;		// link
 			if (isInline(var)) {
-				type = var->type;
-				if (!eval(cc, res, var->init))
+				if (!eval(cc, res, var->init)) {
 					return CAST_any;
+				}
+				type = res->type;
 			}
 			else {
 				return CAST_any;
@@ -273,12 +280,12 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 				case CAST_i64:
 				case CAST_u32:
 				case CAST_u64:
-					res->cint = -res->cint;
+					res->cInt = -res->cInt;
 					break;
 
 				case CAST_f32:
 				case CAST_f64:
-					res->cflt = -res->cflt;
+					res->cFlt = -res->cFlt;
 					break;
 			}
 			break;
@@ -292,11 +299,12 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 			switch (castOf(res->type)) {
 				default:
 					return CAST_any;
+
 				case CAST_i32:
 				case CAST_i64:
 				case CAST_u32:
 				case CAST_u64:
-					res->cint = ~res->cint;
+					res->cInt = ~res->cInt;
 					break;
 			}
 			break;
@@ -317,13 +325,13 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 				case CAST_u32:
 				case CAST_u64:
 					res->type = cc->type_bol;
-					res->cint = !res->cint;
+					res->cInt = !res->cInt;
 					break;
 
 				case CAST_f32:
 				case CAST_f64:
 					res->type = cc->type_bol;
-					res->cint = !res->cflt;
+					res->cInt = !res->cFlt;
 					break;
 			}
 			break;
@@ -360,33 +368,33 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 							return CAST_any;
 
 						case OPER_add:
-							res->cint = lhs.cint + rhs.cint;
+							res->cInt = lhs.cInt + rhs.cInt;
 							break;
 
 						case OPER_sub:
-							res->cint = lhs.cint - rhs.cint;
+							res->cInt = lhs.cInt - rhs.cInt;
 							break;
 
 						case OPER_mul:
-							res->cint = lhs.cint * rhs.cint;
+							res->cInt = lhs.cInt * rhs.cInt;
 							break;
 
 						case OPER_div:
-							if (rhs.cint == 0) {
+							if (rhs.cInt == 0) {
 								error(NULL, NULL, 0, "Division by zero: %t", ast);
-								res->cint = 0;
+								res->cInt = 0;
 								break;
 							}
-							res->cint = lhs.cint / rhs.cint;
+							res->cInt = lhs.cInt / rhs.cInt;
 							break;
 
 						case OPER_mod:
-							if (rhs.cint == 0) {
+							if (rhs.cInt == 0) {
 								error(NULL, NULL, 0, "Division by zero: %t", ast);
-								res->cint = 0;
+								res->cInt = 0;
 								break;
 							}
-							res->cint = lhs.cint % rhs.cint;
+							res->cInt = lhs.cInt % rhs.cInt;
 							break;
 					}
 					break;
@@ -400,24 +408,24 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 							return CAST_any;
 
 						case OPER_add:
-							res->cflt = lhs.cflt + rhs.cflt;
+							res->cFlt = lhs.cFlt + rhs.cFlt;
 							break;
 
 						case OPER_sub:
-							res->cflt = lhs.cflt - rhs.cflt;
+							res->cFlt = lhs.cFlt - rhs.cFlt;
 							break;
 
 						case OPER_mul:
-							res->cflt = lhs.cflt * rhs.cflt;
+							res->cFlt = lhs.cFlt * rhs.cFlt;
 							break;
 
 						case OPER_div:
-							res->cflt = lhs.cflt / rhs.cflt;
+							res->cFlt = lhs.cFlt / rhs.cFlt;
 							break;
 
 						/* FIXME add floating modulus
 						case OPER_mod:
-							res->cflt = fmod(lhs.cflt, rhs.cflt);
+							res->cFlt = fmod(lhs.cFlt, rhs.cFlt);
 							break;
 						*/
 					}
@@ -465,31 +473,31 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 							return CAST_any;
 
 						case OPER_ceq:
-							res->cint = lhs.cint == rhs.cint;
+							res->cInt = lhs.cInt == rhs.cInt;
 							break;
 
 						case OPER_cne:
-							res->cint = lhs.cint != rhs.cint;
+							res->cInt = lhs.cInt != rhs.cInt;
 							break;
 
 						case OPER_clt:
 							// FIXME: signed or unsigned compare
-							res->cint = lhs.cint  < rhs.cint;
+							res->cInt = lhs.cInt  < rhs.cInt;
 							break;
 
 						case OPER_cle:
 							// FIXME: signed or unsigned compare
-							res->cint = lhs.cint <= rhs.cint;
+							res->cInt = lhs.cInt <= rhs.cInt;
 							break;
 
 						case OPER_cgt:
 							// FIXME: signed or unsigned compare
-							res->cint = lhs.cint  > rhs.cint;
+							res->cInt = lhs.cInt  > rhs.cInt;
 							break;
 
 						case OPER_cge:
 							// FIXME: signed or unsigned compare
-							res->cint = lhs.cint >= rhs.cint;
+							res->cInt = lhs.cInt >= rhs.cInt;
 							break;
 					}
 					break;
@@ -503,27 +511,27 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 							return CAST_any;
 
 						case OPER_ceq:
-							res->cint = lhs.cflt == rhs.cflt;
+							res->cInt = lhs.cFlt == rhs.cFlt;
 							break;
 
 						case OPER_cne:
-							res->cint = lhs.cflt != rhs.cflt;
+							res->cInt = lhs.cFlt != rhs.cFlt;
 							break;
 
 						case OPER_clt:
-							res->cint = lhs.cflt < rhs.cflt;
+							res->cInt = lhs.cFlt < rhs.cFlt;
 							break;
 
 						case OPER_cle:
-							res->cint = lhs.cflt <= rhs.cflt;
+							res->cInt = lhs.cFlt <= rhs.cFlt;
 							break;
 
 						case OPER_cgt:
-							res->cint = lhs.cflt > rhs.cflt;
+							res->cInt = lhs.cFlt > rhs.cFlt;
 							break;
 
 						case OPER_cge:
-							res->cint = lhs.cflt >= rhs.cflt;
+							res->cInt = lhs.cFlt >= rhs.cFlt;
 							break;
 					}
 					break;
@@ -572,24 +580,24 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 							return CAST_any;
 
 						case OPER_shr:
-							res->cint = lhs.cint >> rhs.cint;
+							res->cInt = lhs.cInt >> rhs.cInt;
 							break;
 
 						case OPER_shl:
 							// FIXME: signed or unsigned shift
-							res->cint = lhs.cint << rhs.cint;
+							res->cInt = lhs.cInt << rhs.cInt;
 							break;
 
 						case OPER_and:
-							res->cint = lhs.cint & rhs.cint;
+							res->cInt = lhs.cInt & rhs.cInt;
 							break;
 
 						case OPER_xor:
-							res->cint = lhs.cint ^ rhs.cint;
+							res->cInt = lhs.cInt ^ rhs.cInt;
 							break;
 
 						case OPER_ior:
-							res->cint = lhs.cint | rhs.cint;
+							res->cInt = lhs.cInt | rhs.cInt;
 							break;
 					}
 					break;
@@ -622,11 +630,11 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 					return CAST_any;
 
 				case OPER_any:
-					res->cint = lhs.cint || rhs.cint;
+					res->cInt = lhs.cInt || rhs.cInt;
 					break;
 
 				case OPER_all:
-					res->cint = lhs.cint && rhs.cint;
+					res->cInt = lhs.cInt && rhs.cInt;
 					break;
 			}
 			break;
@@ -651,17 +659,17 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 				return CAST_any;
 
 			case CAST_bit:
-				res->cint = bolValue(res);
+				res->cInt = bolValue(res);
 				res->type = type;
 				break;
 
 			case CAST_i64:
-				res->cint = intValue(res);
+				res->cInt = intValue(res);
 				res->type = type;
 				break;
 
 			case CAST_f64:
-				res->cflt = fltValue(res);
+				res->cFlt = fltValue(res);
 				res->type = type;
 				break;
 		}
