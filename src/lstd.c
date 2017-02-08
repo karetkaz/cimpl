@@ -9,6 +9,7 @@ basic math, debug, and system functions
 #include <time.h>
 #include <stdlib.h>
 #include "internal.h"
+#include "cmpl.h"
 
 //#{#region math functions
 static vmError f64sin(nfcContext args) {
@@ -230,208 +231,6 @@ static int b32swap(nfcContext args) {
 
 //#{#region file operations
 
-typedef struct {
-	void *data;
-	union {
-		symn type;
-		size_t length;
-	};
-} nfcValue;
-
-typedef struct {
-	rtContext rt;
-	symn param;
-	char *args;
-} nfcArg;
-
-static inline nfcArg nfcInitArg(nfcContext nfc) {
-	nfcArg result;
-	result.rt = nfc->rt;
-	result.param = nfc->sym->params;
-	result.args = (char *) nfc->args;
-	result.args += result.param->offs - result.param->size;
-	return result;
-}
-static inline stkval *nfcNextArg(nfcArg *args) {
-	args->param = args->param->next;
-	return (stkval *) (args->args - args->param->offs);
-}
-// read next int32 argument and return it
-static inline int32_t nfcNextI32(nfcArg *args) {
-	stkval *offset = nfcNextArg(args);
-	dieif(castOf(args->param) != CAST_i32, ERR_INTERNAL_ERROR);
-	return offset->i4;
-}
-// read next reference argument and return the offset
-static inline size_t nfcNextRef(nfcArg *args) {
-	stkval *offset = nfcNextArg(args);
-	dieif(castOf(args->param) != CAST_ref, ERR_INTERNAL_ERROR);
-	return offset->ref.data;
-}
-// read next reference argument and convert it to pointer
-static inline nfcValue nfcNextPtr(nfcArg *args) {
-	nfcValue result;
-	stkval *offset = nfcNextArg(args);
-	switch (castOf(args->param)) {
-		default:
-			fatal(ERR_INTERNAL_ERROR);
-			result.data = NULL;
-			result.type = NULL;
-			break;
-
-		case CAST_ref:
-			result.data = vmPointer(args->rt, offset->ref.data);
-			result.type = NULL;
-			break;
-
-		case CAST_arr:
-			result.data = vmPointer(args->rt, offset->arr.data);
-			result.length = offset->arr.length;  // FIXME: length may be missing || static
-			break;
-
-		case CAST_var:
-			result.data = vmPointer(args->rt, offset->var.data);
-			result.type = vmPointer(args->rt, offset->var.type);
-			break;
-	}
-	return result;
-}
-// read next external reference
-static inline void* nfcNextHnd(nfcArg *args) {
-	stkval *offset = nfcNextArg(args);
-	dieif(castOf(args->param) != CAST_val, ERR_INTERNAL_ERROR);
-	dieif(args->param->size != sizeof(void*), ERR_INTERNAL_ERROR);
-	return *(void **)offset;
-}
-
-#define debugFILE(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
-
-static const char *const proto_file = "File";
-static const char *const proto_file_open = "File open(char path[*])";
-static const char *const proto_file_create = "File create(char path[*])";
-static const char *const proto_file_append = "File append(char path[*])";
-
-static const char *const proto_file_peek_byte = "int peek(File file)";
-static const char *const proto_file_read_byte = "int read(File file)";
-static const char *const proto_file_read_buff = "int read(File file, uint8 buff[])";
-static const char *const proto_file_read_line = "int readLine(File file, uint8 buff[])";
-
-static const char *const proto_file_write_byte = "int write(File file, uint8 byte)";
-static const char *const proto_file_write_buff = "int write(File file, uint8 buff[])";
-
-static const char *const proto_file_flush = "void flush(File file)";
-static const char *const proto_file_close = "void close(File file)";
-
-static const char *const proto_file_get_stdIn = "File in";
-static const char *const proto_file_get_stdOut = "File out";
-static const char *const proto_file_get_stdErr = "File err";
-static const char *const proto_file_get_dbgOut = "File dbg";
-
-static vmError FILE_open(nfcContext ctx) {       // File open(char filename[]);
-	nfcArg args = nfcInitArg(ctx);
-	char *name = nfcNextPtr(&args).data;
-	char *mode = NULL;
-	if (ctx->proto == proto_file_open) {
-		mode = "r";
-	}
-	else if (ctx->proto == proto_file_create) {
-		mode = "w";
-	}
-	else if (ctx->proto == proto_file_append) {
-		mode = "a";
-	}
-	FILE *file = fopen(name, mode);
-	rethnd(ctx, file);
-	debugFILE("Name: '%s', Mode: '%s', File: %x", name, mode, file);
-	return file != NULL ? noError : nativeCallError;
-}
-static vmError FILE_close(nfcContext ctx) {      // void close(File file);
-	FILE *file = arghnd(ctx, 0);
-	debugFILE("File: %x", file);
-	fclose(file);
-	return noError;
-}
-static vmError FILE_stream(nfcContext ctx) {     // File std[in, out, err];
-	if (ctx->proto == proto_file_get_stdIn) {
-		rethnd(ctx, stdin);
-		return noError;
-	}
-	if (ctx->proto == proto_file_get_stdOut) {
-		rethnd(ctx, stdout);
-		return noError;
-	}
-	if (ctx->proto == proto_file_get_stdErr) {
-		rethnd(ctx, stderr);
-		return noError;
-	}
-	if (ctx->proto == proto_file_get_dbgOut) {
-		rethnd(ctx, ctx->rt->logFile);
-		return noError;
-	}
-
-	debugFILE("error opening stream: %x", ctx->proto);
-	return executionAborted;
-}
-
-static vmError FILE_getc(nfcContext ctx) {
-	FILE *file = arghnd(ctx, 0);
-	reti32(ctx, fgetc(file));
-	return noError;
-}
-static vmError FILE_peek(nfcContext ctx) {
-	FILE *file = arghnd(ctx, 0);
-	int chr = ungetc(getc(file), file);
-	reti32(ctx, chr);
-	return noError;
-}
-static vmError FILE_read(nfcContext ctx) {         // int read(File &f, uint8 buff[])
-	nfcArg args = nfcInitArg(ctx);
-	FILE *file = nfcNextHnd(&args);
-	nfcValue buff = nfcNextPtr(&args);
-	reti32(ctx, fread(buff.data, buff.length, 1, file));
-	return noError;
-}
-static vmError FILE_gets(nfcContext ctx) {       // int fgets(File &f, uint8 buff[])
-	nfcArg args = nfcInitArg(ctx);
-	FILE *file = nfcNextHnd(&args);
-	nfcValue buff = nfcNextPtr(&args);
-	debugFILE("Buff: %08x[%d], File: %x", buff.data, buff.length, file);
-	if (feof(file)) {
-		reti32(ctx, -1);
-	}
-	else {
-		long pos = ftell(file);
-		char *unused = fgets(buff.data, buff.length, file);
-		reti32(ctx, ftell(file) - pos);
-		(void)unused;
-	}
-	return noError;
-}
-
-static vmError FILE_putc(nfcContext ctx) {
-	nfcArg args = nfcInitArg(ctx);
-	FILE *file = nfcNextHnd(&args);
-	int data = nfcNextI32(&args);
-	debugFILE("Data: %c, File: %x", data, file);
-	reti32(ctx, putc(data, file));
-	return noError;
-}
-static vmError FILE_write(nfcContext ctx) {      // int write(File &f, uint8 buff[])
-	nfcArg args = nfcInitArg(ctx);
-	FILE *file = nfcNextHnd(&args);
-	nfcValue buff = nfcNextPtr(&args);
-	debugFILE("Buff: %08x[%d], File: %x", buff.data, buff.length, file);
-	int len = fwrite(buff.data, buff.length, 1, file);
-	reti32(ctx, len);
-	return noError;
-}
-
-static vmError FILE_flush(nfcContext ctx) {
-	FILE *file = arghnd(ctx, 0);
-	debugFILE("File: %x", file);
-	fflush(file);
-	return noError;
-}
 //#}#endregion
 
 //#{#region system functions (exit, rand, clock, debug)
@@ -520,14 +319,15 @@ enum {
 // void raise(int logLevel, string message, variant inspect, int logTrace);
 static vmError sysRaise(nfcContext ctx) {
 	rtContext rt = ctx->rt;
-	nfcArg arg = nfcInitArg(ctx);
-	int logLevel = nfcNextI32(&arg);
-	char *message = nfcNextPtr(&arg).data;
-	nfcValue inspect = nfcNextPtr(&arg);
-	int maxTrace = nfcNextI32(&arg);
+	int logLevel = argi32(ctx, nfcNextArg(ctx));
+	char *message = nfcReadArg(ctx, nfcNextArg(ctx)).data;
+	rtValue inspect = nfcReadArg(ctx, nfcNextArg(ctx));
+	int maxTrace = argi32(ctx, nfcNextArg(ctx));
 	// TODO: find a better way to get these hidden variables.
-	char *file = vmPointer(rt, ((stkval*)arg.args)->arr.data);
-	int line = ((stkval*)arg.args)->arr.length;
+	size_t offs = ctx->sym->params->offs - ctx->sym->params->size;
+	vmValue *last = (vmValue *) ((char *) ctx->args + offs);
+	char *file = vmPointer(rt, last->arr.data);
+	int line = last->arr.length;
 	int isOutput = 0;
 
 	// logging is disabled or log level not reached.
@@ -537,7 +337,7 @@ static vmError sysRaise(nfcContext ctx) {
 
 	// print valid code position (where the function was invoked).
 	if (file != NULL && line > 0) {
-		printFmt(rt->logFile, NULL, "%s:%u", file, line);
+		printFmt(rt->logFile, NULL, "%?s:%?u", file, line);
 		isOutput = 1;
 	}
 
@@ -580,9 +380,8 @@ static vmError sysRaise(nfcContext ctx) {
 static vmError sysTryExec(nfcContext ctx) {
 	rtContext rt = ctx->rt;
 	dbgContext dbg = rt->dbg;
-	nfcArg arg = nfcInitArg(ctx);
-	size_t args = nfcNextRef(&arg);
-	size_t actionOffs = nfcNextRef(&arg);
+	size_t args = nfcPeekArg(ctx, nfcNextArg(ctx))->ref.data;
+	size_t actionOffs = nfcPeekArg(ctx, nfcNextArg(ctx))->ref.data;
 	symn action = rtFindSym(rt, actionOffs, 0);
 
 	if (action != NULL && action->offs == actionOffs) {
@@ -606,27 +405,24 @@ static vmError sysTryExec(nfcContext ctx) {
 }
 
 static vmError sysMemMgr(nfcContext ctx) {
-	nfcArg arg = nfcInitArg(ctx);
-	void *old = nfcNextPtr(&arg).data;
-	int size = nfcNextI32(&arg);
+	void *old = nfcReadArg(ctx, nfcNextArg(ctx)).data;
+	int size = nfcReadArg(ctx, nfcNextArg(ctx)).i32;
 	void *res = rtAlloc(ctx->rt, old, (size_t) size, NULL);
 	retref(ctx, vmOffset(ctx->rt, res));
 	return noError;
 }
 static vmError sysMemCpy(nfcContext ctx) {
-	nfcArg arg = nfcInitArg(ctx);
-	void *dst = nfcNextPtr(&arg).data;
-	void *src = nfcNextPtr(&arg).data;
-	int size = nfcNextI32(&arg);
+	void *dst = nfcReadArg(ctx, nfcNextArg(ctx)).data;
+	void *src = nfcReadArg(ctx, nfcNextArg(ctx)).data;
+	int size = nfcReadArg(ctx, nfcNextArg(ctx)).i32;
 	void *res = memcpy(dst, src, (size_t) size);
 	retref(ctx, vmOffset(ctx->rt, res));
 	return noError;
 }
 static vmError sysMemSet(nfcContext ctx) {
-	nfcArg arg = nfcInitArg(ctx);
-	void *dst = nfcNextPtr(&arg).data;
-	int value = nfcNextI32(&arg);
-	int size = nfcNextI32(&arg);
+	void *dst = nfcReadArg(ctx, nfcNextArg(ctx)).data;
+	int value = nfcReadArg(ctx, nfcNextArg(ctx)).i32;
+	int size = nfcReadArg(ctx, nfcNextArg(ctx)).i32;
 	void *res = memset(dst, value, (size_t) size);
 	retref(ctx, vmOffset(ctx->rt, res));
 	return noError;
@@ -811,38 +607,5 @@ int ccLibStd(ccContext cc) {
 		dieif(cc->type_f64->fields, ERR_INTERNAL_ERROR);
 		cc->type_f64->fields = leave(cc, cc->type_f64, ATTR_stat | KIND_typ, 0, NULL);
 	}
-	return err;
-}
-
-int ccLibFile(ccContext cc) {
-	symn type = ccDefType(cc, proto_file, sizeof(FILE*), 0);
-	int err = type == NULL;
-
-	if (type != NULL) {
-		enter(cc);
-
-		err = err || !ccDefCall(cc, FILE_open, proto_file_open);
-		err = err || !ccDefCall(cc, FILE_open, proto_file_create);
-		err = err || !ccDefCall(cc, FILE_open, proto_file_append);
-
-		err = err || !ccDefCall(cc, FILE_peek, proto_file_peek_byte);
-		err = err || !ccDefCall(cc, FILE_getc, proto_file_read_byte);
-		err = err || !ccDefCall(cc, FILE_read, proto_file_read_buff);
-		err = err || !ccDefCall(cc, FILE_gets, proto_file_read_line);
-
-		err = err || !ccDefCall(cc, FILE_putc, proto_file_write_byte);
-		err = err || !ccDefCall(cc, FILE_write, proto_file_write_buff);
-
-		err = err || !ccDefCall(cc, FILE_flush, proto_file_flush);
-		err = err || !ccDefCall(cc, FILE_close, proto_file_close);
-
-		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_stdIn);
-		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_stdOut);
-		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_stdErr);
-		err = err || !ccDefCall(cc, FILE_stream, proto_file_get_dbgOut);
-
-		type->fields = leave(cc, type, ATTR_stat | KIND_typ, 0, NULL);
-	}
-
 	return err;
 }

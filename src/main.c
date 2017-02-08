@@ -91,55 +91,95 @@ static char *parseInt(const char *str, int32_t *res, int radix) {
 	return (char*)str;
 }
 
-enum {
-	// break point flags
-	dbg_pause = 0x01,
-	dbg_print = 0x02,
-	dbg_trace = 0x04,
-	dbg_1shot = 0x08,
-};
+static const char **escapeCon() {
+	static const char *escape[256];
+	static char initialized = 0;
+	if (!initialized) {
+		memset(escape, 0, sizeof(escape));
+		escape['\n'] = "\\n";
+		escape['\r'] = "\\r";
+		escape['\t'] = "\\t";
+		initialized = 1;
+	}
+	return escape;
+}
+static const char **escapeJSON() {
+	static const char *escape[256];
+	static char initialized = 0;
+	if (!initialized) {
+		memset(escape, 0, sizeof(escape));
+		escape['\n'] = "\\n";
+		escape['\r'] = "\\r";
+		escape['\t'] = "\\t";
+		//~ escape['\''] = "\\'";
+		escape['\"'] = "\\\"";
+		initialized = 1;
+	}
+	return escape;
+}
+
+// Debug commands
+typedef enum {
+	dbgAbort = 'q',		// stop debugging
+	dbgResume = 'r',	// break on next breakpoint or error
+
+	dbgStepNext = 'a',	// break on next instruction
+	dbgStepLine = 'n',	// break on next statement
+	dbgStepInto = 'i',	// break on next function
+	dbgStepOut = 'o',	// break on next return
+
+	dbgPrintStackTrace = 't',	// print stack trace
+	dbgPrintStackValues = 's',	// print values on sack
+	dbgPrintInstruction = 'p',	// print current instruction
+} dbgMode;
+
+// Profile commands
+typedef enum {
+//	runSkip = -1,		// do not execute, compile only
+//	runRun,
+//	runDebug,
+//	runProfile,
+
+	trcMethods = 0x0010,     // dump call tree
+	trcOpcodes = 0x0020,     // TODO: remove: dump executing instructions
+	trcLocals  = 0x0040,     // TODO: remove: dump the stack, dmpOpcodes must be enabled
+
+	dmpProfile = 0x0100,     // dump execution times
+	dmpGlobals = 0x0200,     // dump global variables
+	dmpMemory  = 0x0400,     // dump memory statistics
+	dmpAllData = 0x0800
+
+} runMode;
+
 struct userContextRec {
 	rtContext rt;
-	FILE *in;
+	FILE *in;           // debugger input
 
-	FILE *out;
-	int indent;
+	FILE *out;          // dump file
+	int indent;         // dump indentation
+	const char **esc;   // escape characters
 
 	int hasOut;
 
-	int dmpApi;         // dump symbols
+	dmpMode dmpApi;     // dump symbols
+	dmpMode dmpAst;     // dump syntax tree
+	dmpMode dmpAsm;     // dump operation codes
+	//TODO: dmpDoc:     // dump documentation
+
 	int dmpApiAll;      // include builtin symbols
 	int dmpApiMain;     // include main initializer
 	int dmpApiInfo;     // dump detailed info
 	int dmpApiPrms;     // dump parameters and fields
 	int dmpApiUsed;     // dump usages
-
-	int dmpAsm;         // dump disassembled code
-	int dmpAsmAddr;     // use global address: (@0x003d8c)
-	int dmpAsmName;     // prefer names over addresses: <main+80>
+	int dmpAstXML;      // dump ast in xml format
 	int dmpAsmStmt;     // print source code statements
-	int dmpAsmCode;     // print code bytes (0-15)
 
-	int dmpAst;         // dump syntax tree
-	int dmpAstType;     // dump syntax tree collapsed on a single line
-	int dmpAstLine;     // dump syntax tree collapsed on a single line
-	int dmpAstBody;     // dump '{' on new line
-	int dmpAstElIf;     // dump 'else if' on separate lines
-	int dmpAstXML;      // dump ast in xml format to console
+	runMode exec;
 
-	// execution statistics
-	int dmpRunStat;     // dump execution statistics
-	int dmpVarStat;     // dump global variables
-	int dmpMemStat;     // dump runtime heap
-
-	int dmpRunTime;     // dump call tree
-	int dmpRunCode;     // dump executing instructions
-	int dmpRunStack;    // dump the stack, dmpRunCode must be enabled
-
-	// debugging
-	int dbgCommand;     // last debugger command
-	int dbgOnError;     // on uncaught exception: dbg_xxx
-	int dbgOnCaught;    // on caught exception: dbg_xxx
+	// debugger
+	dbgMode dbgCommand;     // last debugger command
+	brkMode dbgOnError;  // on uncaught exception
+	brkMode dbgOnCaught; // on caught exception
 	size_t dbgNextBreak;// offset of the next break (used for step in, out, over, instruction)
 };
 
@@ -533,21 +573,9 @@ static void jsonDumpAsm(FILE *out, const char **esc, symn sym, rtContext rt, int
 static void dumpApiJSON(userContext ctx, symn sym) {
 	FILE *out = ctx->out;
 	int indent = ctx->indent;
+	const char **esc = escapeJSON();
 
-	// lazy initialization of escape characters
-	static const char **esc = NULL;
-	if (esc == NULL) {
-		static const char *esc_json[256];
-		memset(esc_json, 0, sizeof(esc_json));
-		esc_json['\n'] = "\\n";
-		esc_json['\r'] = "\\r";
-		esc_json['\t'] = "\\t";
-		//~ esc_json['\''] = "\\'";
-		esc_json['\"'] = "\\\"";
-		esc = esc_json;
-	}
-
-	if (!ctx->dmpApi && !ctx->dmpAsm && !ctx->dmpAst) {
+	if (ctx->dmpApi == prSkip && ctx->dmpAsm == prSkip && ctx->dmpAst == prSkip) {
 		return;
 	}
 
@@ -559,7 +587,7 @@ static void dumpApiJSON(userContext ctx, symn sym) {
 	jsonDumpSym(out, esc, sym, NULL, indent + 1);
 
 	// export valid syntax tree if we still have compiler context
-	if (ctx->dmpAst && sym->init && ctx->rt->cc) {
+	if (ctx->dmpAst != prSkip && ctx->rt->cc && sym->init) {
 		jsonDumpAst(out, esc, sym->init, "ast", indent + 1);
 	}
 
@@ -572,26 +600,25 @@ static void dumpApiJSON(userContext ctx, symn sym) {
 }
 
 static void jsonPreProfile(dbgContext ctx) {
-    userContext cc = ctx->extra;
-    FILE *out = cc->out;
-    const int indent = cc->indent;
-    const char **esc = NULL;
+	userContext cc = ctx->extra;
+	FILE *out = cc->out;
+	const int indent = cc->indent;
+	const char **esc = cc->esc;
 
-    printFmt(out, esc, "\n%I%s\"%s\": {\n", indent, cc->hasOut ? ", " : "", JSON_KEY_RUN);
-    printFmt(out, esc, "%I\"%s\": [", indent + 1, "callTreeData");
-    printFmt(out, esc, "\"%s\", ", "ctTickIndex");
-    printFmt(out, esc, "\"%s\", ", "ctHeapIndex");
-    printFmt(out, esc, "\"%s\"", "ctFunIndex");
-    printFmt(out, esc, "]\n");
+	printFmt(out, esc, "\n%I%s\"%s\": {\n", indent, cc->hasOut ? ", " : "", JSON_KEY_RUN);
+	printFmt(out, esc, "%I\"%s\": [", indent + 1, "callTreeData");
+	printFmt(out, esc, "\"%s\", ", "ctTickIndex");
+	printFmt(out, esc, "\"%s\", ", "ctHeapIndex");
+	printFmt(out, esc, "\"%s\"", "ctFunIndex");
+	printFmt(out, esc, "]\n");
 
-    printFmt(out, esc, "%I, \"%s\": [", indent + 1, "callTree");
-
+	printFmt(out, esc, "%I, \"%s\": [", indent + 1, "callTree");
 }
 static void jsonPostProfile(dbgContext ctx) {
 	userContext cc = ctx->extra;
 	FILE *out = cc->out;
 	const int indent = cc->indent;
-	const char **esc = NULL;
+	const char **esc = cc->esc;
 
 	int i;
 	int covFunc = 0, nFunc = ctx->functions.cnt;
@@ -667,7 +694,7 @@ static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, s
 		clock_t ticks = clock();
 		userContext cc = ctx->extra;
 		FILE *out = cc->out;
-		const char **esc = NULL;
+		const char **esc = cc->esc;
 		if ((ptrdiff_t) callee < 0) {
 			if (JSON_PRETTY_PRINT) {
 				printFmt(out, esc, "\n% I%d,%d,-1%s", ss, ticks, ctx->usedMem, ss ? "," : "");
@@ -699,20 +726,12 @@ static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, s
 
 // text output
 static void conDumpAsm(FILE *out, const char **esc, size_t offs, userContext ctx, int indent) {
-	int mode = ctx->dmpAsmCode;
+	dmpMode mode = ctx->dmpAsm | prFull | prOneLine;
 
-	if (ctx->dmpAsmAddr) {
-		mode |= prAsmAddr;
-	}
-	if (ctx->dmpAsmName) {
-		mode |= prAsmName;
-	}
-	mode |= prFull | prOneLine;
-
-	if (ctx->dmpAsmStmt && ctx->rt->cc != NULL) {
+	if (mode & ctx->dmpAsmStmt && ctx->rt->cc != NULL) {
 		dbgn dbg = mapDbgStatement(ctx->rt, offs);
 		if (dbg != NULL && dbg->stmt != NULL && dbg->start == offs) {
-			if (ctx->dmpAsmAddr) {
+			if (mode & prAsmAddr) {
 				printFmt(out, esc, "%I%?s:%?u: [%06x-%06x): %.*t\n", indent, dbg->file, dbg->line, dbg->start, dbg->end, mode, dbg->stmt);
 			}
 			else {
@@ -727,7 +746,7 @@ static void conDumpAsm(FILE *out, const char **esc, size_t offs, userContext ctx
 }
 static void conDumpMem(rtContext rt, void *ptr, size_t size, char *kind) {
 	userContext ctx = rt->dbg->extra;
-	const char **esc = NULL;
+	const char **esc = ctx->esc;
 	FILE *out = ctx->out;
 
 	char *unit = "bytes";
@@ -752,24 +771,24 @@ static void conDumpMem(rtContext rt, void *ptr, size_t size, char *kind) {
 	printFmt(out, esc, "memory[%s] @%06x; size: %d(%?.1f %s)\n", kind, vmOffset(rt, ptr), size, value, unit);
 }
 static void conDumpProf(userContext usr) {
-	const char **esc = NULL;
+	const char **esc = usr->esc;
 	FILE *out = usr->out;
 	rtContext rt = usr->rt;
 	dbgContext dbg = rt->dbg;
+	int all = (usr->exec & dmpAllData) != 0;
 
 	if (dbg == NULL) {
 		return;
 	}
 
-	if (usr->dmpRunStat) {
-		int i, all = usr->dmpRunStat > 1;
+	if (usr->exec & dmpProfile) {
 		int covFunc = 0, nFunc = dbg->functions.cnt;
 		int covStmt = 0, nStmt = dbg->statements.cnt;
 		dbgn fun = (dbgn) dbg->functions.ptr;
 
 		printFmt(out, esc, "\n/*-- Profile:\n");
 
-		for (i = 0; i < nFunc; ++i, fun++) {
+		for (int i = 0; i < nFunc; ++i, fun++) {
 			symn sym = fun->decl;
 			if (fun->hits == 0) {
 				continue;
@@ -790,7 +809,7 @@ static void conDumpProf(userContext usr) {
 			printFmt(out, esc, "\n//-- statements:\n");
 		}
 		fun = (dbgn) rt->dbg->statements.ptr;
-		for (i = 0; i < nStmt; ++i, fun++) {
+		for (int i = 0; i < nStmt; ++i, fun++) {
 			size_t symOffs = 0;
 			symn sym = fun->decl;
 			if (fun->hits == 0) {
@@ -820,7 +839,7 @@ static void conDumpProf(userContext usr) {
 		if (all) {
 			printFmt(out, esc, "\n//-- functions not executed:\n");
 			fun = (dbgn) dbg->functions.ptr;
-			for (i = 0; i < nFunc; ++i, fun++) {
+			for (int i = 0; i < nFunc; ++i, fun++) {
 				symn sym = fun->decl;
 				if (fun->hits != 0) {
 					continue;
@@ -832,7 +851,7 @@ static void conDumpProf(userContext usr) {
 			}
 			printFmt(out, esc, "\n//-- statements not executed:\n");
 			fun = (dbgn) rt->dbg->statements.ptr;
-			for (i = 0; i < nStmt; ++i, fun++) {
+			for (int i = 0; i < nStmt; ++i, fun++) {
 				size_t symOffs = 0;
 				symn sym = fun->decl;
 				if (fun->hits != 0) {
@@ -847,15 +866,12 @@ static void conDumpProf(userContext usr) {
 				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): <%?.T+%d>\n", fun->file, fun->line, fun->start, fun->end, sym, symOffs);
 			}
 		}
-
 		printFmt(out, esc, "// */\n");
 	}
 
-	if (usr->dmpVarStat != 0) {
-		int all = usr->dmpVarStat > 1;
-		symn var;
+	if (usr->exec & dmpGlobals) {
 		printFmt(out, esc, "\n/*-- Globals:\n");
-		for (var = rt->main->fields; var; var = var->next) {
+		for (symn var = rt->main->fields; var; var = var->next) {
 			char *ofs = NULL;
 
 			if (isInline(var)) {
@@ -890,22 +906,19 @@ static void conDumpProf(userContext usr) {
 				ofs = (char *) rt->vm.cell - var->offs;
 			}
 
-			printVal(out, esc, rt, var, (stkval *) ofs, prSymQual | prSymType, 0);
+			printVal(out, esc, rt, var, (vmValue *) ofs, prSymQual | prSymType, 0);
 			printFmt(out, esc, "\n");
 		}
 		printFmt(out, esc, "// */\n");
 	}
 
-	if (usr->dmpMemStat != 0) {
-		int all = usr->dmpMemStat > 1;
+	if (usr->exec & dmpMemory) {
 		// show allocated memory chunks.
 		printFmt(out, esc, "\n/*-- Allocations:\n");
-		if (all) {
-			conDumpMem(rt, rt->_mem, rt->vm.ro, "meta");
-			conDumpMem(rt, rt->_mem, rt->vm.px + px_size, "code");
-			conDumpMem(rt, NULL, rt->vm.ss, "stack");
-			conDumpMem(rt, rt->_beg, rt->_end - rt->_beg, "heap");
-		}
+		conDumpMem(rt, rt->_mem, rt->vm.ro, "meta");
+		conDumpMem(rt, rt->_mem, rt->vm.px + px_size, "code");
+		conDumpMem(rt, NULL, rt->vm.ss, "stack");
+		conDumpMem(rt, rt->_beg, rt->_end - rt->_beg, "heap");
 		rtAlloc(rt, NULL, 0, conDumpMem);
 		printFmt(out, esc, "// */\n");
 	}
@@ -915,12 +928,12 @@ static void dumpApiText(userContext extra, symn sym) {
 	int dmpAsm = 0;
 	int dmpAst = 0;
 	int dumpExtraData = 0;
-	const char **esc = NULL;
+	const char **esc = extra->esc;
 	FILE *out = extra->out;
 	int indent = extra->indent;
 
-	if (extra->dmpAst && extra->rt->cc && sym->init != NULL) {
-		// dump valid syntax trees only
+	if (extra->dmpAst != prSkip && extra->rt->cc && sym->init != NULL) {
+		// dump valid syntax tree only
 		dmpAst = 1;
 	}
 
@@ -928,7 +941,7 @@ static void dumpApiText(userContext extra, symn sym) {
 		dmpAsm = 1;
 	}
 
-	if (!extra->dmpApi && !dmpAsm && !dmpAst) {
+	if (extra->dmpApi == prSkip && !dmpAsm && !dmpAst) {
 		// nothing to dump
 		return;
 	}
@@ -947,7 +960,7 @@ static void dumpApiText(userContext extra, symn sym) {
 	printFmt(out, esc, "%I%T: %T", extra->indent, sym, sym->type);
 
 	// print symbol info (kind, size, offset, ...)
-	if (extra->dmpApi && extra->dmpApiInfo) {
+	if (extra->dmpApi != prSkip && extra->dmpApiInfo) {
 		if (!dumpExtraData) {
 			printFmt(out, esc, " {\n");
 			dumpExtraData = 1;
@@ -959,7 +972,7 @@ static void dumpApiText(userContext extra, symn sym) {
 	}
 
 	// explain params of the function
-	if (extra->dmpApi && extra->dmpApiPrms) {
+	if (extra->dmpApi != prSkip && extra->dmpApiPrms) {
 		symn param;
 		if (!dumpExtraData) {
 			printFmt(out, esc, " {\n");
@@ -974,27 +987,15 @@ static void dumpApiText(userContext extra, symn sym) {
 	}
 
 	if (dmpAst) {
-		int mode = prFull;
+		dmpMode mode = extra->dmpAst;
 		if (!dumpExtraData) {
 			printFmt(out, esc, " {\n");
 			dumpExtraData = 1;
 		}
 		printFmt(out, esc, "%I.value: ", indent);
-		if (extra->dmpAstBody) {
-			mode |= nlAstBody;
-		}
-		if (extra->dmpAstElIf) {
-			mode |= nlAstElIf;
-		}
-		if (extra->dmpAstLine) {
-			mode |= prOneLine;
-		}
-		if (extra->dmpAstType) {
-			mode |= prAstType;
-		}
 		printAst(out, esc, sym->init, mode, -indent);
 
-		if (extra->dmpAstLine || sym->init->kind != STMT_beg) {
+		if ((mode & prOneLine) || sym->init->kind != STMT_beg) {
 			printFmt(out, esc, "\n");
 		}
 		if (extra->dmpAstXML) {
@@ -1027,7 +1028,7 @@ static void dumpApiText(userContext extra, symn sym) {
 	}
 
 	// print usages of symbol
-	if (extra->dmpApi && extra->dmpApiUsed) {
+	if (extra->dmpApi != prSkip && extra->dmpApiUsed) {
 		astn usage;
 		int extUsages = 0;
 		if (!dumpExtraData) {
@@ -1056,7 +1057,7 @@ static void dumpApiText(userContext extra, symn sym) {
 	printFmt(out, esc, "\n");
 }
 static void dumpApiSciTE(userContext extra, symn sym) {
-	const char **esc = NULL;
+	const char **esc = extra->esc;
 	FILE *out = extra->out;
 
 	if (sym->name == NULL) {
@@ -1084,20 +1085,6 @@ static void dumpApiSciTE(userContext extra, symn sym) {
 
 // console debugger and profiler
 static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, size_t callee) {
-	enum {
-		dbgAbort = 'q',		// stop debugging
-		dbgResume = 'r',	// break on next breakpoint or error
-
-		dbgStepNext = 'a',	// break on next instruction
-		dbgStepLine = 'n',	// break on next statement
-		dbgStepInto = 'i',	// break on next function
-		dbgStepOut = 'o',	// break on next return
-
-		dbgPrintStackTrace = 't',	// print stack trace
-		dbgPrintStackValues = 's',	// print values on sack
-		dbgPrintInstruction = 'p',	// print current instruction
-	};
-
 	char buff[1024];
 	rtContext rt = ctx->rt;
 	userContext usr = ctx->extra;
@@ -1105,7 +1092,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 	const char **esc = NULL;
 	FILE *out = stdout;
 
-	int breakMode = 0;
+	brkMode breakMode = brkSkip;
 	char *breakCause = NULL;
 	symn fun = rtFindSym(rt, caller, 0);
 	dbgn dbg = mapDbgStatement(rt, caller);
@@ -1121,7 +1108,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 			usr->dbgNextBreak = (size_t) -1;
 		}
 
-		if (usr->dmpRunTime) {
+		if (usr->exec & trcMethods) {
 			if ((ptrdiff_t) callee > 0) {
 				printFmt(out, esc, "[% 3.2F]>% I %d, %T\n", now, ss, ctx->usedMem, rtFindSym(rt, callee, 1));
 			}
@@ -1142,35 +1129,29 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 		}
 	}
 	else if (usr->dbgNextBreak == (size_t) -1) {
-		breakMode = dbg_pause;
+		breakMode = brkPause;
 		breakCause = "Break";
 	}
 	else if (usr->dbgNextBreak == caller) {
-		breakMode = dbg_pause;
+		breakMode = brkPause;
 		breakCause = "Break";
 	}
 	else if (dbg != NULL) {
 		if (caller == dbg->start) {
 			breakMode = dbg->bp;
-			if (breakMode & dbg_pause) {
+			if (breakMode & (brkPause | brkPrint | brkTrace)) {
 				breakCause = "Break point";
 			}
-			if (breakMode & dbg_print) {
-				breakCause = "Break point";
-			}
-			if (breakMode & dbg_trace) {
-				breakCause = "Trace point";
-			}
-			if (breakMode & dbg_1shot) {
+			if (breakMode & brkOnce) {
 				// remove breakpoint
-				dbg->bp = 0;
+				dbg->bp = brkSkip;
 			}
 		}
 	}
 
 	// print executing instruction.
-	if (error == noError && usr->dmpRunCode) {
-		if (usr->dmpRunStack) {
+	if (error == noError && (usr->exec & trcOpcodes)) {
+		if (usr->exec & trcLocals) {
 			size_t i = 0;
 			printFmt(out, esc, "\tstack(%d): [", ss);
 			if (ss > LOG_MAX_ITEMS) {
@@ -1185,16 +1166,16 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 			}
 			printFmt(out, esc, "\n");
 		}
-		if (usr->dmpRunTime) {
+		if (usr->exec & trcMethods) {
 			printFmt(out, esc, "[% 3.2F]\t", now);
 		}
-		if (usr->dmpRunCode) {
+		if (usr->exec & trcOpcodes) {
 			conDumpAsm(out, esc, caller, usr, 0);
 		}
 	}
 
 	// print error type
-	if (breakMode & dbg_print) {
+	if (breakMode & brkPrint) {
 		size_t funOffs = caller;
 		if (fun != NULL) {
 			funOffs -= fun->offs;
@@ -1205,13 +1186,13 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 		}
 		printFmt(out, esc, ERR_EXEC_INSTRUCTION"\n", breakCause, caller, fun, funOffs, vmPointer(rt, caller));
 	}
-	if (breakMode & dbg_trace) {
+	if (breakMode & brkTrace) {
 		traceCalls(ctx, out, 1, 0, 20);
 	}
 
 	// pause execution in debugger
-	for ( ; breakMode & dbg_pause; ) {
-		int cmd = usr->dbgCommand;
+	for ( ; breakMode & brkPause; ) {
+		dbgMode cmd = usr->dbgCommand;
 		char *arg = NULL;
 		printFmt(out, esc, ">dbg[%?c] %.A: ", cmd, vmPointer(rt, caller));
 		if (usr->in == NULL || fgets(buff, sizeof(buff), usr->in) == NULL) {
@@ -1224,7 +1205,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 
 		if (*buff != 0) {
 			// update last command
-			cmd = buff[0];
+			cmd = (dbgMode) buff[0];
 			arg = buff + 1;
 			usr->dbgCommand = cmd;
 		}
@@ -1264,15 +1245,15 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 					size_t offs;
 					// print top of stack
 					for (offs = 0; offs < ss; offs++) {
-						stkval *v = (stkval*)&((long*)stack)[offs];
-						printFmt(out, esc, "\tsp(%d): {0x%08x, i32(%d), f32(%f), i64(%D), f64(%F)}\n", offs, v->i4, v->i4, v->f4, v->i8, v->f8);
+						vmValue *v = (vmValue*)&((long*)stack)[offs];
+						printFmt(out, esc, "\tsp(%d): {0x%08x, i32(%d), f32(%f), i64(%D), f64(%F)}\n", offs, v->i32, v->i32, v->f32, v->i64, v->f64);
 					}
 				}
 				else {
 					symn sym = ccLookupSym(rt->cc, NULL, arg);
 					printFmt(out, esc, "arg:%T", sym);
 					if (sym && isVariable(sym) && !isStatic(sym)) {
-						printVal(out, esc, rt, sym, (stkval *) stack, prSymType, 0);
+						printVal(out, esc, rt, sym, (vmValue *) stack, prSymType, 0);
 					}
 				}
 				break;
@@ -1282,75 +1263,64 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 }
 
 static int program(int argc, char *argv[]) {
-	struct {
-		int logAppend;
-		int foldConst;
-		int foldInstr;
-		int fastAssign;
-		int genGlobals;
-		int stdLibs;
-		ccInstall install;
-		size_t memory;
-	} settings = {
-		.logAppend = 0,
-
-		// enable all optimizations by default
-		.foldConst = 1,
-		.foldInstr = 1,
-		.fastAssign = 1,
-		.genGlobals = 1,
-
-		.stdLibs = 1,
-
-		.install = install_def,
-		.memory = sizeof(mem)
-	};
-
 	struct userContextRec extra = {
-		.dbgCommand = 'r',	// last command: resume
-		.dbgOnError = dbg_pause | dbg_print,
-		.dbgOnCaught = 0,
+		.dbgCommand = dbgResume,	// last command: resume
+		.dbgOnError = brkPause | brkPrint,
+		.dbgOnCaught = brkSkip,
 		.dbgNextBreak = 0,
 
-		.dmpApi = 0,
+		.dmpApi = prSkip,
 		.dmpApiAll = 0,
 		.dmpApiMain = 0,
 		.dmpApiInfo = 0,
 		.dmpApiPrms = 0,
 		.dmpApiUsed = 0,
 
-		.dmpAsm = 0,
-		.dmpAsmAddr = 0,
-		.dmpAsmName = 0,
+		.dmpAsm = prSkip,
 		.dmpAsmStmt = 0,
-		.dmpAsmCode = 9,
 
-		.dmpAst = 0,
-		.dmpAstLine = 0,
-		.dmpAstBody = 0,
-		.dmpAstElIf = 0,
+		.dmpAst = prSkip,
+		.dmpAstXML = 0,
 
-		.dmpRunStat = 0,
-		.dmpVarStat = 0,
-		.dmpMemStat = 0,
-
-		.dmpRunTime = 0,
-		.dmpRunCode = 0,
-		.dmpRunStack = 0,
+		.exec = (runMode) 0,
 
 		.in = stdin,
 		.out = stdout,
+		.esc = NULL,
 		.hasOut = 0,
 		.indent = 0,
 
 		.rt = NULL
 	};
 
+	// TODO: merge settings into userContextRec
+	struct {
+		// optimizations
+		int foldConst;
+		int foldInstr;
+		int fastAssign;
+		int genGlobals;
+
+		size_t memory;
+	} settings = {
+		// use all optimizations by default
+		.foldConst = 1,
+		.foldInstr = 1,
+		.fastAssign = 1,
+		.genGlobals = 0,
+
+		.memory = sizeof(mem)
+	};
+
 	rtContext rt = NULL;
 
+	ccInstall install = install_def;
 	char *stdLib = (char*)STDLIB;	// standard library
 	char *ccFile = NULL;			// compiled filename
+
 	char *logFile = NULL;			// logger filename
+	int logAppend = 0;				// do not clear the log file
+
 	FILE *dumpFile = NULL;			// dump file
 	void (*dumpFun)(userContext, symn) = NULL;
 	enum {run, debug, profile, skipExecution} run_code = skipExecution;
@@ -1358,9 +1328,9 @@ static int program(int argc, char *argv[]) {
 	int i, warn;
 
 	// TODO: max 32 break points ?
+	brkMode bp_type[32];
 	char *bp_file[32];
 	int bp_line[32];
-	int bp_type[32];
 	int bp_size = 0;
 
 	// process global options
@@ -1403,19 +1373,19 @@ static int program(int argc, char *argv[]) {
 					arg2 += 5;
 				}
 				else if (strBegins(arg2 + 1, "emit")) {
-					settings.install = (settings.install & ~installEmit) | on * installEmit;
+					install = (install & ~installEmit) | on * installEmit;
 					arg2 += 5;
 				}
 				else if (strBegins(arg2 + 1, "ptr")) {
-					settings.install = (settings.install & ~install_ptr) | on * install_ptr;
+					install = (install & ~install_ptr) | on * install_ptr;
 					arg2 += 4;
 				}
 				else if (strBegins(arg2 + 1, "var")) {
-					settings.install = (settings.install & ~install_var) | on * install_var;
+					install = (install & ~install_var) | on * install_var;
 					arg2 += 4;
 				}
 				else if (strBegins(arg2 + 1, "obj")) {
-					settings.install = (settings.install & ~install_obj) | on * install_obj;
+					install = (install & ~install_obj) | on * install_obj;
 					arg2 += 4;
 				}
 				else if (strBegins(arg2 + 1, "stdin")) {
@@ -1423,7 +1393,7 @@ static int program(int argc, char *argv[]) {
 					arg2 += 6;
 				}
 				else if (strBegins(arg2 + 1, "std")) {
-					settings.stdLibs = on;
+					install = (install & ~installLibs) | on * installLibs;
 					arg2 += 4;
 				}
 				else {
@@ -1500,7 +1470,7 @@ static int program(int argc, char *argv[]) {
 						break;
 
 					case 'a':
-						settings.logAppend = 1;
+						logAppend = 1;
 						arg2 += 2;
 						break;
 				}
@@ -1514,11 +1484,11 @@ static int program(int argc, char *argv[]) {
 		// output api, ast, asm
 		else if (strncmp(arg, "-api", 4) == 0) {
 			char *arg2 = arg + 4;
-			if (extra.dmpApi != 0) {
+			if (extra.dmpApi != prSkip) {
 				fatal("argument specified multiple times: %s", arg);
 				return -1;
 			}
-			extra.dmpApi = 1;
+			extra.dmpApi = prName;
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
@@ -1553,23 +1523,22 @@ static int program(int argc, char *argv[]) {
 		}
 		else if (strncmp(arg, "-asm", 4) == 0) {
 			char *arg2 = arg + 4;
-			if (extra.dmpAsm) {
+			if (extra.dmpAsm != prSkip) {
 				fatal("argument specified multiple times: %s", arg);
 				return -1;
 			}
-			extra.dmpAsm = 1;
-			extra.dmpAsmCode = 9;
+			extra.dmpAsm = prAsmCode & 9;
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
 						arg2 += 1;
 						break;
 					case 'a':
-						extra.dmpAsmAddr = 1;
+						extra.dmpAsm |= prAsmAddr;
 						arg2 += 2;
 						break;
 					case 'n':
-						extra.dmpAsmName = 1;
+						extra.dmpAsm |= prAsmName;
 						arg2 += 2;
 						break;
 					case 's':
@@ -1585,11 +1554,11 @@ static int program(int argc, char *argv[]) {
 		}
 		else if (strncmp(arg, "-ast", 4) == 0) {
 			char *arg2 = arg + 4;
-			if (extra.dmpAst) {
+			if (extra.dmpAst != prSkip) {
 				fatal("argument specified multiple times: %s", arg);
 				return -1;
 			}
-			extra.dmpAst = 1;
+			extra.dmpAst = prFull;
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
@@ -1600,19 +1569,19 @@ static int program(int argc, char *argv[]) {
 						arg2 += 2;
 						break;
 					case 't':
-						extra.dmpAstType = 1;
+						extra.dmpAst |= prAstType;
 						arg2 += 2;
 						break;
 					case 'l':
-						extra.dmpAstLine = 1;
+						extra.dmpAst |= prOneLine;
 						arg2 += 2;
 						break;
 					case 'b':
-						extra.dmpAstBody = 1;
+						extra.dmpAst |= nlAstBody;
 						arg2 += 2;
 						break;
 					case 'e':
-						extra.dmpAstElIf = 1;
+						extra.dmpAst |= nlAstElIf;
 						arg2 += 2;
 						break;
 				}
@@ -1680,40 +1649,34 @@ static int program(int argc, char *argv[]) {
 						arg2 += 2;
 						break;
 					case 'a':
-						extra.dbgOnCaught |= dbg_pause;
+						extra.dbgOnCaught |= brkPause;
 						arg2 += 2;
 						break;
 					case 'L':
-						extra.dbgOnCaught |= dbg_trace;
+						extra.dbgOnCaught |= brkTrace;
 					case 'l':
-						extra.dbgOnCaught |= dbg_print;
+						extra.dbgOnCaught |= brkPrint;
 						arg2 += 2;
 						break;
 
 					case 'E':
-						extra.dmpRunStack |= 1;
+						extra.exec |= trcLocals;
 					case 'e':
-						extra.dmpRunCode |= 1;
+						extra.exec |= trcOpcodes;
 						arg2 += 2;
 						break;
 
 					// dump stats
-					case 'P':
-						extra.dmpRunStat |= 2;
 					case 'p':
-						extra.dmpRunStat |= 1;
+						extra.exec |= dmpProfile;
 						arg2 += 2;
 						break;
-					case 'G':
-						extra.dmpVarStat |= 2;
 					case 'g':
-						extra.dmpVarStat |= 1;
+						extra.exec |= dmpGlobals;
 						arg2 += 2;
 						break;
-					case 'H':
-						extra.dmpMemStat |= 2;
 					case 'h':
-						extra.dmpMemStat |= 1;
+						extra.exec |= dmpMemory;
 						arg2 += 2;
 						break;
 				}
@@ -1730,7 +1693,7 @@ static int program(int argc, char *argv[]) {
 				return -1;
 			}
 			run_code = profile;
-			extra.dmpRunStat = 1;
+			extra.exec |= dmpProfile;
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
@@ -1739,26 +1702,24 @@ static int program(int argc, char *argv[]) {
 
 					// dump call tree
 					case 't':
-						extra.dmpRunTime = 1;
+						extra.exec |= trcMethods;
 						arg2 += 2;
 						break;
 					// dump stats
-					case 'P':
-						extra.dmpRunStat |= 2;
 					case 'p':
-						extra.dmpRunStat |= 1;
+						extra.exec |= dmpProfile;
 						arg2 += 2;
 						break;
-					case 'G':
-						extra.dmpVarStat |= 2;
 					case 'g':
-						extra.dmpVarStat |= 1;
+						extra.exec |= dmpGlobals;
 						arg2 += 2;
 						break;
-					case 'H':
-						extra.dmpMemStat |= 2;
 					case 'h':
-						extra.dmpMemStat |= 1;
+						extra.exec |= dmpMemory;
+						arg2 += 2;
+						break;
+					case 'a':
+						extra.exec |= dmpAllData;
 						arg2 += 2;
 						break;
 				}
@@ -1786,35 +1747,28 @@ static int program(int argc, char *argv[]) {
 		return -1;
 	}
 	else {
-		rt->foldConst = settings.foldConst;
-		rt->foldInstr = settings.foldInstr;
-		rt->fastAssign = settings.fastAssign;
-		rt->genGlobals = settings.genGlobals;
+		rt->foldConst = settings.foldConst != 0;
+		rt->foldInstr = settings.foldInstr != 0;
+		rt->fastAssign = settings.fastAssign != 0;
+		rt->genGlobals = settings.genGlobals != 0;
 	}
 
 	// open log file (global option)
-	if (logFile && !logfile(rt, logFile, settings.logAppend)) {
+	if (logFile && !logfile(rt, logFile, logAppend)) {
 		info(rt, NULL, 0, ERR_OPENING_FILE, logFile);
 	}
 
 	// install base type system.
-	if (!ccInit(rt, settings.install, NULL)) {
+	if (!ccInit(rt, install, NULL)) {
 		error(rt, NULL, 0, "error registering base types");
 		logfile(rt, NULL, 0);
 		return -6;
 	}
 
-	if (settings.stdLibs) {
+	if (install & installLibs) {
 		// install standard library.
 		if (!ccAddLib(rt->cc, wl, ccLibStd, stdLib)) {
 			error(rt, NULL, 0, "error registering standard library");
-			logfile(rt, NULL, 0);
-			return -6;
-		}
-
-		// install file operations.
-		if (!ccAddLib(rt->cc, wl, ccLibFile, NULL)) {
-			error(rt, NULL, 0, "error registering file library");
 			logfile(rt, NULL, 0);
 			return -6;
 		}
@@ -1859,7 +1813,7 @@ static int program(int argc, char *argv[]) {
 			}
 			else if (arg[1] == 'b') {
 				int line = 0;
-				int type = dbg_pause;
+				brkMode type = brkPause;
 				char *arg2 = arg + 2;
 				if (bp_size > (int)lengthOf(bp_file)) {
 					info(rt, NULL, 0, "can not add more than %d breakpoints.", lengthOf(bp_file));
@@ -1871,19 +1825,19 @@ static int program(int argc, char *argv[]) {
 							break;
 
 						case 'p': // print only
-							type &= ~dbg_pause;
-							type |= dbg_print;
+							type &= ~brkPause;
+							type |= brkPrint;
 							arg2 += 2;
 							break;
 
 						case 't': // trace only
-							type &= ~dbg_pause;
-							type |= dbg_trace;
+							type &= ~brkPause;
+							type |= brkTrace;
 							arg2 += 2;
 							break;
 
 						case 'o': // remove after first hit
-							type |= dbg_1shot;
+							type |= brkOnce;
 							arg2 += 2;
 							break;
 					}
@@ -1892,9 +1846,9 @@ static int program(int argc, char *argv[]) {
 				if (*parseInt(arg2, &line, 10)) {
 					error(rt, NULL, 0, "invalid line number `%s`", arg + 2);
 				}
+				bp_type[bp_size] = type;
 				bp_file[bp_size] = ccFile;
 				bp_line[bp_size] = line;
-				bp_type[bp_size] = type;
 				bp_size += 1;
 			}
 			else {
@@ -1917,7 +1871,7 @@ static int program(int argc, char *argv[]) {
 		for (i = 0; i < bp_size; ++i) {
 			char *file = bp_file[i];
 			int line = bp_line[i];
-			int type = bp_type[i];
+			brkMode type = bp_type[i];
 			dbgn dbg = getDbgStatement(rt, file, line);
 			if (dbg != NULL) {
 				dbg->bp = type;
@@ -1929,13 +1883,13 @@ static int program(int argc, char *argv[]) {
 	}
 
 	if (dumpFun == NULL) {
-		if (extra.dmpApi != 0 || extra.dmpAsm != 0 || extra.dmpAst != 0) {
+		if (extra.dmpApi != prSkip || extra.dmpAsm != prSkip || extra.dmpAst != prSkip) {
 			dumpFun = dumpApiText;
 		}
 	}
 
 	if (dumpFun == dumpApiJSON) {
-		// TODO: use json escaping
+		// TODO: use json escaping: extra.esc = escapeJSON();
 		printFmt(extra.out, NULL, "{\n%I\"%s\": [{\n", extra.indent, JSON_KEY_API);
 		dumpApi(rt, &extra, dumpFun);
 		printFmt(extra.out, NULL, "%I}]", extra.indent);
@@ -1949,7 +1903,7 @@ static int program(int argc, char *argv[]) {
 	if (rt->errors == 0 && run_code != skipExecution) {
 		if (rt->dbg != NULL) {
 			rt->dbg->extra = &extra;
-			// set debugger of profiler
+			// set debugger or profiler
 			if (run_code == debug) {
 				rt->dbg->debug = &conDebug;
 				if (extra.dbgNextBreak != 0) {
@@ -1988,85 +1942,85 @@ static int program(int argc, char *argv[]) {
 }
 
 static int usage() {
-    const char *USAGE = "cmpl [global options] [files with options]..."
-            "\n"
-            "\n<global options>:"
-            "\n"
-            "\n  -std<file>            specify custom standard library file (empty file name disables std library compilation)."
-            "\n"
-            "\n  -mem<int>[kKmMgG]     override memory usage for compiler and runtime(heap)"
-            "\n"
-            "\n  -log[*] <file>        set logger for: compilation errors and warnings, runtime debug messages"
-            "\n    /a                  append to the log file"
-            "\n"
-            "\n  -dump[?] <file>       set output for: dump(symbols, assembly, abstract syntax tree, coverage, call tree)"
-            "\n    .scite              dump api for SciTE text editor"
-            "\n    .json               dump api in javascript object notation format"
-            "\n"
-            "\n  -api[*]               dump symbols"
-            "\n    /a                  include all builtin symbols"
-            "\n    /m                  include main builtin symbol"
-            "\n    /d                  dump details of symbol"
-            "\n    /p                  dump params and fields"
-            "\n    /u                  dump usages"
-            "\n"
-            "\n  -asm[*]               dump assembled code: jmp +80"
-            "\n    /a                  use global address: jmp @0x003d8c"
-            "\n    /n                  prefer names over addresses: jmp <main+80>"
-            "\n    /s                  print source code statements"
-            "\n"
-            "\n  -ast[*]               dump syntax tree"
-            "\n    /x                  dump syntax tree also in xml form"
-            "\n    /t                  dump sub-expression type information"
-            "\n    /l                  do not expand statements (print on single line)"
-            "\n    /b                  don't keep braces ('{') on the same line"
-            "\n    /e                  don't keep `else if` constructs on the same line"
-            "\n"
-            "\n  -run                  run without: debug information, stacktrace, bounds checking, ..."
-            "\n"
-            "\n  -debug[*]             run with attached debugger, pausing on uncaught errors and break points"
-            "\n    /s                  pause on startup"
-            "\n    /a                  pause on caught errors"
-            "\n    /[e|E]              print executing instructions (/E includes stack values)"
-            "\n    /[l|L]              print caught errors (/L includes stack trace)"
-            "\n    /[g|G]              dump global variable values (/G includes function values)"
-            "\n    /[h|H]              dump allocated heap memory chunks (/H includes static chunks)"
-            "\n    /[p|P]              dump function statistics (/P includes statement statistics)"
-            "\n"
-            "\n  -profile[*]           run code with profiler: coverage, method tracing"
-            "\n    /t                  dump call tree"
-            "\n    /[g|G]              dump global variable values (/G includes function values)"
-            "\n    /[h|H]              dump allocated heap memory chunks (/H includes static chunks)"
-            "\n    /[p|P]              dump function statistics (/P includes statement statistics)"
-            "\n"
-            "\n<files with options>: filename followed by switches"
-            "\n  <file>                if file extension is (.so|.dll) load as library else compile"
-            "\n  -w[a|x|<int>]         set or disable warning level for current file"
-            "\n  -b[*]<int>            break point on <int> line in current file"
-            "\n    /[l|L]              print only, do not pause (/L includes stack trace)"
-            "\n    /o                  one shot breakpoint, disable after first hit"
-            "\n"
-            "\nexamples:"
-            "\n"
-            "\n>app -dump.json api.json"
-            "\n    dump builtin symbols to `api.json` file (types, functions, variables, aliases)"
-            "\n"
-            "\n>app -run test.tracing.ccc"
-            "\n    compile and execute the file `test.tracing.ccc`"
-            "\n"
-            "\n>app -debug gl.so -w0 gl.ccc -w0 test.ccc -wx -b12 -b15 -b/t19"
-            "\n    execute in debug mode"
-            "\n    import `gl.so`"
-            "\n        with no warnings"
-            "\n    compile `gl.ccc`"
-            "\n        with no warnings"
-            "\n    compile `test.ccc`"
-            "\n        treating all warnings as errors"
-            "\n        break execution on lines 12 and 15"
-            "\n        print message when line 19 is hit"
-            "\n";
-    fputs(USAGE, stdout);
-    return 0;
+	const char *USAGE = "cmpl [global options] [files with options]..."
+		"\n"
+		"\n<global options>:"
+		"\n"
+		"\n  -std<file>            specify custom standard library file (empty file name disables std library compilation)."
+		"\n"
+		"\n  -mem<int>[kKmMgG]     override memory usage for compiler and runtime(heap)"
+		"\n"
+		"\n  -log[*] <file>        set logger for: compilation errors and warnings, runtime debug messages"
+		"\n    /a                  append to the log file"
+		"\n"
+		"\n  -dump[?] <file>       set output for: dump(symbols, assembly, abstract syntax tree, coverage, call tree)"
+		"\n    .scite              dump api for SciTE text editor"
+		"\n    .json               dump api in javascript object notation format"
+		"\n"
+		"\n  -api[*]               dump symbols"
+		"\n    /a                  include all builtin symbols"
+		"\n    /m                  include main builtin symbol"
+		"\n    /d                  dump details of symbol"
+		"\n    /p                  dump params and fields"
+		"\n    /u                  dump usages"
+		"\n"
+		"\n  -asm[*]               dump assembled code: jmp +80"
+		"\n    /a                  use global address: jmp @0x003d8c"
+		"\n    /n                  prefer names over addresses: jmp <main+80>"
+		"\n    /s                  print source code statements"
+		"\n"
+		"\n  -ast[*]               dump syntax tree"
+		"\n    /x                  dump syntax tree also in xml form"
+		"\n    /t                  dump sub-expression type information"
+		"\n    /l                  do not expand statements (print on single line)"
+		"\n    /b                  don't keep braces ('{') on the same line"
+		"\n    /e                  don't keep `else if` constructs on the same line"
+		"\n"
+		"\n  -run                  run without: debug information, stacktrace, bounds checking, ..."
+		"\n"
+		"\n  -debug[*]             run with attached debugger, pausing on uncaught errors and break points"
+		"\n    /s                  pause on startup"
+		"\n    /a                  pause on all(caught) errors"
+		"\n    /[l|L]              print caught errors (/L includes stack trace)"
+		"\n    /g                  dump global variable values"
+		"\n    /h                  dump allocated heap memory chunks"
+		"\n    /p                  dump function/coverage statistics"
+		"\n"
+		"\n  -profile[*]           run code with profiler: coverage, method tracing"
+		"\n    /t                  dump call tree"
+		"\n    /a                  include everything in the dump"
+		"\n    /g                  dump global variable values"
+		"\n    /h                  dump allocated heap memory chunks"
+		"\n    /p                  dump function/coverage statistics"
+		"\n"
+		"\n<files with options>: filename followed by switches"
+		"\n  <file>                if file extension is (.so|.dll) load as library else compile"
+		"\n  -w[a|x|<int>]         set or disable warning level for current file"
+		"\n  -b[*]<int>            break point on <int> line in current file"
+		"\n    /[l|L]              print only, do not pause (/L includes stack trace)"
+		"\n    /o                  one shot breakpoint, disable after first hit"
+		"\n"
+		"\nexamples:"
+		"\n"
+		"\n>app -dump.json api.json"
+		"\n    dump builtin symbols to `api.json` file (types, functions, variables, aliases)"
+		"\n"
+		"\n>app -run test.tracing.ccc"
+		"\n    compile and execute the file `test.tracing.ccc`"
+		"\n"
+		"\n>app -debug gl.so -w0 gl.ccc -w0 test.ccc -wx -b12 -b15 -b/t19"
+		"\n    execute in debug mode"
+		"\n    import `gl.so`"
+		"\n        with no warnings"
+		"\n    compile `gl.ccc`"
+		"\n        with no warnings"
+		"\n    compile `test.ccc`"
+		"\n        treating all warnings as errors"
+		"\n        break execution on lines 12 and 15"
+		"\n        print message when line 19 is hit"
+		"\n";
+	fputs(USAGE, stdout);
+	return 0;
 }
 
 int main(int argc, char *argv[]) {

@@ -1,0 +1,79 @@
+// How the rational class should be implemented
+
+struct Rational {
+	const int64 num;		// numerator
+	const int64 den = 1;	// denominator
+
+	enum: Complex {
+		zero: { num: 0 };
+		unit: { num: 1 };
+	}
+}
+
+// constructing and converting Rational number
+inline Rational(int64 num) = Complex { num: num };
+Rational Rational(int64 num, int64 den) {
+	int64 gcd = Math.gcd(num, den);
+	return {
+		num: num / gcd;
+		den: den / gcd;
+	};
+}
+
+inline float64(Rational a) = a.num / float64(a.den);
+inline int64(Rational a) = a.num / a.den;
+
+inline -(Rational a) = Rational(-a.num, a.den);
+
+// a/b + c/d  == (ad + bc)/bd
+inline +(Rational a, Rational b) = Rational(a.num * b.den + a.den * b.num, a.den * b.den);
+
+// a/b - c/d  == (ad - bc)/bd
+inline -(Rational a, Rational b) = Rational(a.num * b.den - a.den * b.num, a.den * b.den);
+
+// a/b * c/d  == (ac)/(bd)
+inline *(Rational a, Rational b) = Rational(a.num * b.num, a.den * b.den);
+
+// a/b / c/d  == (ad)/(bc)
+inline /(Rational a, Rational b) = Rational(a.num * b.den, a.den * b.num);
+
+// a/b % c/d  == (ad % bc)/bd
+inline %(Rational a, Rational b) = Rational((a.num * b.den) % (a.den * b.num), a.den * b.den);
+
+inline abs(Rational a) = Rational(Math.abs(a.num), Math.abs(a.den));
+inline invert(Rational a) = Rational { num: a.den, den: a.num };
+
+// LCD( a/b, c/d ) == (bd) / gcd(b,d)
+inline lcd(Rational a, Rational b) = (a.den * b.den) / Math.gcd(a.den, b.den);
+
+// a/b = c/d, iff ad = bc
+inline compare(Rational a, Rational b) = compare(a.num * b.den, b.num * a.den);
+inline ==(Rational a, Rational b) = compare(a, b) == 0;
+inline !=(Rational a, Rational b) = compare(a, b) != 0;
+inline <(Rational a, Rational b) = compare(a, b) < 0;
+inline >(Rational a, Rational b) = compare(a, b) > 0;
+inline <=(Rational a, Rational b) = compare(a, b) <= 0;
+inline >=(Rational a, Rational b) = compare(a, b) >= 0;
+
+Rational pow(Rational a, int64 exponent) {
+	if (exponent == 0) {
+		// 0 ^ 0 -> 1
+		// n ^ 0 -> 1
+		return Rational.unit;
+	}
+
+	if (exponent < 0) {
+		assert (a != Rational.zero, "cannot raise zero to a negative power", variant(a));
+
+		// n ^ (-e) -> (1/n) ^ e
+		a = invert(a);
+		exponent = -exponent;
+	}
+
+	Rational result = a;
+	for (Rational result = a; exponent > 1; exponent -= 1) {
+		result *= a;
+	}
+	return result;
+}
+

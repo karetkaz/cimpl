@@ -4,24 +4,32 @@ static if (!integer) {  // TODO: find a better way to check if a symbol is defin
 inline integer = int32;
 }
 
-integer value = 33;
+static integer value = 42;
 integer valueRef& = value;
 pointer valuePtr = value;
 variant valueVar = value;
 
-integer copyVal = value;
-integer copyRef& = valueRef;
-pointer copyPtr = valuePtr;
-variant copyVar = valueVar;
 integer fromRef = valueRef;
 integer fromPtr& = valuePtr;
-integer fromVar& = valueVar;
+integer fromVar& = valueVar;	// FixMe: type-check variant to reference conversions
 
 integer nullRef& = null;
 pointer nullPtr = null;
 variant nullVar = null;
+typename nullTyp = null;
+function nullFun = null;
+object nullObj = null;
+
 pointer typePtr = integer;
 variant typeVar = integer;
+typename typeTyp = integer;
+
+integer local = value;
+integer copyVal = local;
+integer copyRef& = valueRef;
+pointer copyPtr = valuePtr;
+variant copyVar = valueVar;
+typename copyTyp = typeTyp;
 
 // Assign type names to pointer
 pointer ptrVoid = void;

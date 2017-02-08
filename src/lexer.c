@@ -25,7 +25,6 @@ Lexical elements
 			for,
 			if,
 			inline,
-			operator,
 			parallel,
 			return,
 			static,
@@ -364,7 +363,6 @@ static const struct {
 	ccToken type;
 } keywords[] = {
 	// Warning: keep keywords sorted by name, binary search is used to match keywords
-	//~ {"operator", OPER_def},
 	{"break",    STMT_brk},
 	{"const",    CONST_kwd},
 	{"continue", STMT_con},

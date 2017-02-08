@@ -56,22 +56,53 @@ typedef enum {
 	//+ ArrayBoundsExceeded
 } vmError;
 
+typedef union {
+	int8_t i08;
+	int16_t i16;
+	int32_t i32;
+	int64_t i64;
+	uint8_t u08;
+	uint16_t u16;
+	uint32_t u32;
+	uint64_t u64;
+	float32_t f32;
+	float64_t f64;
+	int32_t i24:24;
+	struct { vmOffs data; } ref;	// reference
+	struct { vmOffs data; vmOffs type; } var;	// variant
+	struct { vmOffs data; vmOffs length; } arr;	// slice
+
+	// indirect reference
+} vmValue;
+
+typedef union {
+	int32_t i32;
+	int64_t i64;
+	struct {
+		void *data;
+		union {
+			symn type;
+			size_t length;
+		};
+	};
+} rtValue;
+
 
 /**
  * @brief Runtime context
  */
 struct rtContextRec {
-	int32_t errors;         // error count
-	// disable code generation optimization
-	unsigned foldConst: 1;  // fold constant expressions (3 + 4 => 7)
-	unsigned foldInstr: 1;  // replace some instructions with a faster or shorter version (load 1, add => inc 1)
-	unsigned fastAssign: 1; // remove dup and set instructions when modifying the last declared variable.
-	unsigned genGlobals: 1; // generate global variables as static variables
+	int foldConst: 1;  // fold constant expressions (3 + 4 => 7)
+	int foldInstr: 1;  // replace some instructions with a faster or shorter version (load 1, add => inc 1)
+	int fastAssign: 1; // remove dup and set instructions when modifying the last declared variable.
+	int genGlobals: 1; // generate global variables as static variables
 
 	unsigned logLevel: 3;   // runtime logging level (0-7)
-	unsigned logClose: 1;   // close log file
-	unsigned freeMem: 1;    // release memory
-	FILE *logFile;          // log file
+	int logClose: 1;   // close log file
+	int freeMem: 1;    // release memory
+
+	int32_t errors;    // error count
+	FILE *logFile;     // log file
 
 	/**
 	 * main initializer function
@@ -117,7 +148,7 @@ struct rtContextRec {
 		/// Begin a namespace; @see Core#ccBegin
 		symn (*const ccBegin)(ccContext, const char *name);
 		/// Close a namespace; @see Core#ccEnd
-		void (*const ccEnd)(ccContext, symn cls);
+		symn (*const ccEnd)(ccContext, symn cls);
 
 		/// Declare int constant; @see Core#ccDefInt
 		symn (*const ccDefInt)(ccContext, const char *name, int64_t value);
@@ -129,7 +160,7 @@ struct rtContextRec {
 		/// Declare a typename; @see Core#ccDefType
 		symn (*const ccDefType)(ccContext, const char *name, unsigned size, int refType);
 		/// Declare a native function; @see Core#ccDefCall
-		symn (*const ccDefCall)(ccContext, vmError libc(nfcContext), void *extra, const char *proto);
+		symn (*const ccDefCall)(ccContext, vmError libc(nfcContext), const char *proto);
 
 		/// Lookup symbol by offset; @see Core#rtFindSym
 		symn (*const rtFindSym)(rtContext, void *ptr);
@@ -139,6 +170,10 @@ struct rtContextRec {
 
 		/// Alloc, resize or free memory; @see Core#rtAlloc
 		void *(*const rtAlloc)(rtContext, void *ptr, size_t size);
+
+		size_t (*const nfcFirstArg)(nfcContext nfc);
+		size_t (*const nfcNextArg)(nfcContext nfc);
+		rtValue (*const nfcReadArg)(nfcContext nfc, size_t offs);
 	} api;
 
 	// memory related
@@ -154,6 +189,7 @@ struct rtContextRec {
 struct nfcContextRec {
 	rtContext rt;         // runtime context
 	symn sym;             // the invoked function
+	symn param;           // the current parameter
 	char *proto;          // static data (passed to install)
 	void *extra;          // extra data (passed to invoke)
 	stkptr args;          // arguments

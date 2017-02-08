@@ -1,10 +1,10 @@
 typename: typename {
 .kind: static const typename(ref)
 .offset: 000008
-.size: 0
+.size: 4
 .owner: 
-.field size: int32 (size: 4 @0 -> const variable)
-.field offset: int32 (size: 4 @0 -> const variable)
+.field size: int32 (size: 4 @24 -> const variable)
+.field offset: int32 (size: 4 @32 -> const variable)
 .field base: function (size: 8 @21928 -> static const inline)
 .field file: function (size: 8 @22392 -> static const inline)
 .field line: function (size: 8 @22856 -> static const inline)
@@ -12,13 +12,13 @@ typename: typename {
 }
 typename.size: int32: int32 {
 .kind: const variable
-.offset: 000000
+.offset: 000018
 .size: 4
 .owner: typename
 }
 typename.offset: int32: int32 {
 .kind: const variable
-.offset: 000000
+.offset: 000020
 .size: 4
 .owner: typename
 }
@@ -27,7 +27,7 @@ typename.base(type: typename): typename: function {
 .offset: 0055a8
 .size: 8
 .owner: typename
-.param .result: typename (@+4->inline)
+.param .result: typename (@+8->inline)
 .param type: typename (@+4->ref)
 .value: emit(nfc(1), type)
 }
@@ -1600,158 +1600,6 @@ System.sleep(millis: int64): void: function {
 .param millis: int64 (@+8->i64)
 .value: emit(nfc(16), millis)
 }
-File: typename {
-.kind: static const typename(val)
-.offset: 00a668
-.size: 8
-.owner: 
-.field open: function (size: 8 @43304 -> static const inline)
-.field create: function (size: 8 @43904 -> static const inline)
-.field append: function (size: 8 @44504 -> static const inline)
-.field peek: function (size: 8 @44968 -> static const inline)
-.field read: function (size: 8 @45432 -> static const inline)
-.field read: function (size: 8 @46312 -> static const inline)
-.field readLine: function (size: 8 @47192 -> static const inline)
-.field write: function (size: 8 @47792 -> static const inline)
-.field write: function (size: 8 @48656 -> static const inline)
-.field flush: function (size: 8 @49120 -> static const inline)
-.field close: function (size: 8 @49584 -> static const inline)
-.field in: File (size: 8 @49776 -> static const inline)
-.field out: File (size: 8 @49968 -> static const inline)
-.field err: File (size: 8 @50160 -> static const inline)
-.field dbg: File (size: 8 @50352 -> static const inline)
-}
-File.open(path: char[*]): File: function {
-.kind: static const inline
-.offset: 00a928
-.size: 8
-.owner: File
-.param .result: File (@+12->inline)
-.param path: char[*] (@+4->ref)
-.value: emit(nfc(37), path)
-}
-File.create(path: char[*]): File: function {
-.kind: static const inline
-.offset: 00ab80
-.size: 8
-.owner: File
-.param .result: File (@+12->inline)
-.param path: char[*] (@+4->ref)
-.value: emit(nfc(38), path)
-}
-File.append(path: char[*]): File: function {
-.kind: static const inline
-.offset: 00add8
-.size: 8
-.owner: File
-.param .result: File (@+12->inline)
-.param path: char[*] (@+4->ref)
-.value: emit(nfc(39), path)
-}
-File.peek(file: File): int32: function {
-.kind: static const inline
-.offset: 00afa8
-.size: 8
-.owner: File
-.param .result: int32 (@+12->inline)
-.param file: File (@+8->val)
-.value: emit(nfc(40), file)
-}
-File.read(file: File): int32: function {
-.kind: static const inline
-.offset: 00b178
-.size: 8
-.owner: File
-.param .result: int32 (@+12->inline)
-.param file: File (@+8->val)
-.value: emit(nfc(41), file)
-}
-File.read(file: File, buff: uint8[]): int32: function {
-.kind: static const inline
-.offset: 00b4e8
-.size: 8
-.owner: File
-.param .result: int32 (@+20->inline)
-.param file: File (@+16->val)
-.param buff: uint8[] (@+8->arr)
-.value: emit(nfc(42), file, buff)
-}
-File.readLine(file: File, buff: uint8[]): int32: function {
-.kind: static const inline
-.offset: 00b858
-.size: 8
-.owner: File
-.param .result: int32 (@+20->inline)
-.param file: File (@+16->val)
-.param buff: uint8[] (@+8->arr)
-.value: emit(nfc(43), file, buff)
-}
-File.write(file: File, byte: uint8): int32: function {
-.kind: static const inline
-.offset: 00bab0
-.size: 8
-.owner: File
-.param .result: int32 (@+16->inline)
-.param file: File (@+12->val)
-.param byte: uint8 (@+4->u32)
-.value: emit(nfc(44), file, byte)
-}
-File.write(file: File, buff: uint8[]): int32: function {
-.kind: static const inline
-.offset: 00be10
-.size: 8
-.owner: File
-.param .result: int32 (@+20->inline)
-.param file: File (@+16->val)
-.param buff: uint8[] (@+8->arr)
-.value: emit(nfc(45), file, buff)
-}
-File.flush(file: File): void: function {
-.kind: static const inline
-.offset: 00bfe0
-.size: 8
-.owner: File
-.param .result: void (@+8->inline)
-.param file: File (@+8->val)
-.value: emit(nfc(46), file)
-}
-File.close(file: File): void: function {
-.kind: static const inline
-.offset: 00c1b0
-.size: 8
-.owner: File
-.param .result: void (@+8->inline)
-.param file: File (@+8->val)
-.value: emit(nfc(47), file)
-}
-File.in: File: File {
-.kind: static const inline
-.offset: 00c270
-.size: 8
-.owner: File
-.value: emit(nfc(48))
-}
-File.out: File: File {
-.kind: static const inline
-.offset: 00c330
-.size: 8
-.owner: File
-.value: emit(nfc(49))
-}
-File.err: File: File {
-.kind: static const inline
-.offset: 00c3f0
-.size: 8
-.owner: File
-.value: emit(nfc(50))
-}
-File.dbg: File: File {
-.kind: static const inline
-.offset: 00c4b0
-.size: 8
-.owner: File
-.value: emit(nfc(51))
-}
 integer: typename: typename {
 .kind: inline
 .offset: 000000
@@ -1761,7 +1609,7 @@ integer: typename: typename {
 }
 xrgb: typename {
 .kind: static const typename(val)
-.offset: 00c6f8
+.offset: 00a880
 .size: 4
 .owner: 
 .field b: uint8 (size: 1 @0 -> variable(u32))
@@ -1795,7 +1643,7 @@ xrgb.x: uint8: uint8 {
 }
 color: typename {
 .kind: static const typename(val)
-.offset: 00c9a0
+.offset: 00ab28
 .size: 4
 .owner: 
 .field rgb: xrgb (size: 4 @0 -> variable(val))
@@ -1815,7 +1663,7 @@ color.col: int32: int32 {
 }
 type: object {
 .kind: static const typename(ref)
-.offset: 00cb38
+.offset: 00acc0
 .size: 12
 .owner: 
 .field intVariable: int32 (size: 4 @0 -> variable(i32))
@@ -3771,471 +3619,513 @@ arrSliceInitString: char[]: char[] {
 .offset: 000508
 .size: 8
 .owner: 
-.value: 'string'
+.value: "string"
 }
 arrPtrInitString: char[*]: char[*] {
 .kind: variable(ref)
 .offset: 00050c
 .size: 4
 .owner: 
-.value: 'string'
+.value: "string"
 }
 value: int64: int64 {
-.kind: variable(i64)
-.offset: 000514
+.kind: static variable(i64)
+.offset: 01aa80
 .size: 8
 .owner: 
-.value: 33
+.value: 42
 }
 valueRef: int64: int64 {
 .kind: variable(ref)
-.offset: 000518
+.offset: 000510
 .size: 4
 .owner: 
 .value: value
 }
 valuePtr: pointer: pointer {
 .kind: variable(ref)
-.offset: 00051c
+.offset: 000514
 .size: 4
 .owner: 
 .value: value
 }
 valueVar: variant: variant {
 .kind: variable(var)
-.offset: 000524
+.offset: 00051c
 .size: 8
 .owner: 
 .value: value
-}
-copyVal: int64: int64 {
-.kind: variable(i64)
-.offset: 00052c
-.size: 8
-.owner: 
-.value: value
-}
-copyRef: int64: int64 {
-.kind: variable(ref)
-.offset: 000530
-.size: 4
-.owner: 
-.value: valueRef
-}
-copyPtr: pointer: pointer {
-.kind: variable(ref)
-.offset: 000534
-.size: 4
-.owner: 
-.value: valuePtr
-}
-copyVar: variant: variant {
-.kind: variable(var)
-.offset: 00053c
-.size: 8
-.owner: 
-.value: valueVar
 }
 fromRef: int64: int64 {
 .kind: variable(i64)
-.offset: 000544
+.offset: 000524
 .size: 8
 .owner: 
 .value: valueRef
 }
 fromPtr: int64: int64 {
 .kind: variable(ref)
-.offset: 000548
+.offset: 000528
 .size: 4
 .owner: 
 .value: valuePtr
 }
 fromVar: int64: int64 {
 .kind: variable(ref)
-.offset: 00054c
+.offset: 00052c
 .size: 4
 .owner: 
 .value: valueVar
 }
 nullRef: int64: int64 {
 .kind: variable(ref)
-.offset: 000550
+.offset: 000530
 .size: 4
 .owner: 
 .value: null
 }
 nullPtr: pointer: pointer {
 .kind: variable(ref)
-.offset: 000554
+.offset: 000534
 .size: 4
 .owner: 
 .value: null
 }
 nullVar: variant: variant {
 .kind: variable(var)
-.offset: 00055c
+.offset: 00053c
 .size: 8
+.owner: 
+.value: null
+}
+nullTyp: typename: typename {
+.kind: variable(ref)
+.offset: 000540
+.size: 4
+.owner: 
+.value: null
+}
+nullFun: function: function {
+.kind: variable(ref)
+.offset: 000544
+.size: 4
+.owner: 
+.value: null
+}
+nullObj: object: object {
+.kind: variable(ref)
+.offset: 000548
+.size: 4
 .owner: 
 .value: null
 }
 typePtr: pointer: pointer {
 .kind: variable(ref)
-.offset: 000560
+.offset: 00054c
 .size: 4
 .owner: 
 .value: int64
 }
 typeVar: variant: variant {
 .kind: variable(var)
-.offset: 000568
+.offset: 000554
 .size: 8
 .owner: 
 .value: int64
 }
-ptrVoid: pointer: pointer {
+typeTyp: typename: typename {
+.kind: variable(ref)
+.offset: 000558
+.size: 4
+.owner: 
+.value: int64
+}
+local: int64: int64 {
+.kind: variable(i64)
+.offset: 000560
+.size: 8
+.owner: 
+.value: value
+}
+copyVal: int64: int64 {
+.kind: variable(i64)
+.offset: 000568
+.size: 8
+.owner: 
+.value: local
+}
+copyRef: int64: int64 {
 .kind: variable(ref)
 .offset: 00056c
+.size: 4
+.owner: 
+.value: valueRef
+}
+copyPtr: pointer: pointer {
+.kind: variable(ref)
+.offset: 000570
+.size: 4
+.owner: 
+.value: valuePtr
+}
+copyVar: variant: variant {
+.kind: variable(var)
+.offset: 000578
+.size: 8
+.owner: 
+.value: valueVar
+}
+copyTyp: typename: typename {
+.kind: variable(ref)
+.offset: 00057c
+.size: 4
+.owner: 
+.value: typeTyp
+}
+ptrVoid: pointer: pointer {
+.kind: variable(ref)
+.offset: 000580
 .size: 4
 .owner: 
 .value: void
 }
 ptrBool: pointer: pointer {
 .kind: variable(ref)
-.offset: 000570
+.offset: 000584
 .size: 4
 .owner: 
 .value: bool
 }
 ptrChar: pointer: pointer {
 .kind: variable(ref)
-.offset: 000574
+.offset: 000588
 .size: 4
 .owner: 
 .value: char
 }
 ptrInt8: pointer: pointer {
 .kind: variable(ref)
-.offset: 000578
+.offset: 00058c
 .size: 4
 .owner: 
 .value: int8
 }
 ptrInt16: pointer: pointer {
 .kind: variable(ref)
-.offset: 00057c
+.offset: 000590
 .size: 4
 .owner: 
 .value: int16
 }
 ptrInt32: pointer: pointer {
 .kind: variable(ref)
-.offset: 000580
+.offset: 000594
 .size: 4
 .owner: 
 .value: int32
 }
 ptrInt64: pointer: pointer {
 .kind: variable(ref)
-.offset: 000584
+.offset: 000598
 .size: 4
 .owner: 
 .value: int64
 }
 ptrUint8: pointer: pointer {
 .kind: variable(ref)
-.offset: 000588
+.offset: 00059c
 .size: 4
 .owner: 
 .value: uint8
 }
 ptrUint16: pointer: pointer {
 .kind: variable(ref)
-.offset: 00058c
+.offset: 0005a0
 .size: 4
 .owner: 
 .value: uint16
 }
 ptrUint32: pointer: pointer {
 .kind: variable(ref)
-.offset: 000590
+.offset: 0005a4
 .size: 4
 .owner: 
 .value: uint32
 }
 ptrUint64: pointer: pointer {
 .kind: variable(ref)
-.offset: 000594
+.offset: 0005a8
 .size: 4
 .owner: 
 .value: uint64
 }
 ptrFloat32: pointer: pointer {
 .kind: variable(ref)
-.offset: 000598
+.offset: 0005ac
 .size: 4
 .owner: 
 .value: float32
 }
 ptrFloat64: pointer: pointer {
 .kind: variable(ref)
-.offset: 00059c
+.offset: 0005b0
 .size: 4
 .owner: 
 .value: float64
 }
 ptrTypename: pointer: pointer {
 .kind: variable(ref)
-.offset: 0005a0
+.offset: 0005b4
 .size: 4
 .owner: 
 .value: typename
 }
 ptrFunction: pointer: pointer {
 .kind: variable(ref)
-.offset: 0005a4
+.offset: 0005b8
 .size: 4
 .owner: 
 .value: function
 }
 ptrPointer: pointer: pointer {
 .kind: variable(ref)
-.offset: 0005a8
+.offset: 0005bc
 .size: 4
 .owner: 
 .value: pointer
 }
 ptrVariant: pointer: pointer {
 .kind: variable(ref)
-.offset: 0005ac
+.offset: 0005c0
 .size: 4
 .owner: 
 .value: variant
 }
 ptrObject: pointer: pointer {
 .kind: variable(ref)
-.offset: 0005b0
+.offset: 0005c4
 .size: 4
 .owner: 
 .value: object
 }
 varVoid: variant: variant {
 .kind: variable(var)
-.offset: 0005b8
+.offset: 0005cc
 .size: 8
 .owner: 
 .value: void
 }
 varBool: variant: variant {
 .kind: variable(var)
-.offset: 0005c0
+.offset: 0005d4
 .size: 8
 .owner: 
 .value: bool
 }
 varChar: variant: variant {
 .kind: variable(var)
-.offset: 0005c8
+.offset: 0005dc
 .size: 8
 .owner: 
 .value: char
 }
 varInt8: variant: variant {
 .kind: variable(var)
-.offset: 0005d0
+.offset: 0005e4
 .size: 8
 .owner: 
 .value: int8
 }
 varInt16: variant: variant {
 .kind: variable(var)
-.offset: 0005d8
+.offset: 0005ec
 .size: 8
 .owner: 
 .value: int16
 }
 varInt32: variant: variant {
 .kind: variable(var)
-.offset: 0005e0
+.offset: 0005f4
 .size: 8
 .owner: 
 .value: int32
 }
 varInt64: variant: variant {
 .kind: variable(var)
-.offset: 0005e8
+.offset: 0005fc
 .size: 8
 .owner: 
 .value: int64
 }
 varUint8: variant: variant {
 .kind: variable(var)
-.offset: 0005f0
+.offset: 000604
 .size: 8
 .owner: 
 .value: uint8
 }
 varUint16: variant: variant {
 .kind: variable(var)
-.offset: 0005f8
+.offset: 00060c
 .size: 8
 .owner: 
 .value: uint16
 }
 varUint32: variant: variant {
 .kind: variable(var)
-.offset: 000600
+.offset: 000614
 .size: 8
 .owner: 
 .value: uint32
 }
 varUint64: variant: variant {
 .kind: variable(var)
-.offset: 000608
+.offset: 00061c
 .size: 8
 .owner: 
 .value: uint64
 }
 varFloat32: variant: variant {
 .kind: variable(var)
-.offset: 000610
+.offset: 000624
 .size: 8
 .owner: 
 .value: float32
 }
 varFloat64: variant: variant {
 .kind: variable(var)
-.offset: 000618
+.offset: 00062c
 .size: 8
 .owner: 
 .value: float64
 }
 varTypename: variant: variant {
 .kind: variable(var)
-.offset: 000620
+.offset: 000634
 .size: 8
 .owner: 
 .value: typename
 }
 varFunction: variant: variant {
 .kind: variable(var)
-.offset: 000628
+.offset: 00063c
 .size: 8
 .owner: 
 .value: function
 }
 varPointer: variant: variant {
 .kind: variable(var)
-.offset: 000630
+.offset: 000644
 .size: 8
 .owner: 
 .value: pointer
 }
 varVariant: variant: variant {
 .kind: variable(var)
-.offset: 000638
+.offset: 00064c
 .size: 8
 .owner: 
 .value: variant
 }
 varObject: variant: variant {
 .kind: variable(var)
-.offset: 000640
+.offset: 000654
 .size: 8
 .owner: 
 .value: object
 }
 copyPtrFloat64: variant: variant {
 .kind: variable(var)
-.offset: 000648
+.offset: 00065c
 .size: 8
 .owner: 
 .value: ptrFloat64
 }
 copyVarFloat64: pointer: pointer {
 .kind: variable(ref)
-.offset: 00064c
+.offset: 000660
 .size: 4
 .owner: 
 .value: varFloat64
 }
 localNoInit: int64: int64 {
 .kind: variable(i64)
-.offset: 000654
+.offset: 000668
 .size: 8
 .owner: 
 }
 globalNoInit: int64: int64 {
 .kind: static variable(i64)
-.offset: 01c610
+.offset: 01aa88
 .size: 8
 .owner: 
 }
 localInitValue: int64: int64 {
 .kind: variable(i64)
-.offset: 00065c
+.offset: 000670
 .size: 8
 .owner: 
 .value: 42
 }
 globalInitValue: int64: int64 {
 .kind: static variable(i64)
-.offset: 01c618
+.offset: 01aa90
 .size: 8
 .owner: 
 .value: 1024
 }
 localInitLocal: int64: int64 {
 .kind: variable(i64)
-.offset: 000664
+.offset: 000678
 .size: 8
 .owner: 
 .value: localInitValue
 }
 globalInitLocal: int64: int64 {
 .kind: static variable(i64)
-.offset: 01c620
+.offset: 01aa98
 .size: 8
 .owner: 
 .value: localInitValue
 }
 localInitGlobal: int64: int64 {
 .kind: variable(i64)
-.offset: 00066c
+.offset: 000680
 .size: 8
 .owner: 
 .value: globalInitValue
 }
 globalInitGlobal: int64: int64 {
 .kind: static variable(i64)
-.offset: 01c628
+.offset: 01aaa0
 .size: 8
 .owner: 
 .value: globalInitValue
 }
 pi64: float64: float64 {
 .kind: variable(f64)
-.offset: 000674
+.offset: 000688
 .size: 8
 .owner: 
 .value: 3.141593
 }
 e64: float64: float64 {
 .kind: variable(f64)
-.offset: 00067c
+.offset: 000690
 .size: 8
 .owner: 
 .value: 2.718282
 }
 pi32: float32: float32 {
 .kind: variable(f32)
-.offset: 000680
+.offset: 000694
 .size: 4
 .owner: 
 .value: pi64
 }
 e32: float32: float32 {
 .kind: variable(f32)
-.offset: 000684
+.offset: 000698
 .size: 4
 .owner: 
 .value: e64
@@ -4264,231 +4154,231 @@ rgb565(r: int32, g: int32, b: int32): int32: function {
 }
 r_comp: int32: int32 {
 .kind: variable(i32)
-.offset: 000688
+.offset: 00069c
 .size: 4
 .owner: 
 .value: 14 << 3
 }
 g_comp: int32: int32 {
 .kind: variable(i32)
-.offset: 00068c
+.offset: 0006a0
 .size: 4
 .owner: 
 .value: 63 << 2
 }
 b_comp: int32: int32 {
 .kind: variable(i32)
-.offset: 000690
+.offset: 0006a4
 .size: 4
 .owner: 
 .value: 31 << 3
 }
 r5g6b5: int32: int32 {
 .kind: variable(i32)
-.offset: 000694
+.offset: 0006a8
 .size: 4
 .owner: 
 .value: rgb565(r_comp, g_comp, b_comp)
 }
 r8g8b8: int32: int32 {
 .kind: variable(i32)
-.offset: 000698
+.offset: 0006ac
 .size: 4
 .owner: 
 .value: rgb888(r_comp, g_comp, b_comp)
 }
 zextR5: int32: int32 {
 .kind: variable(i32)
-.offset: 00069c
+.offset: 0006b0
 .size: 4
 .owner: 
 .value: uint32.zxt(r5g6b5, 11, 5)
 }
 zextG6: int32: int32 {
 .kind: variable(i32)
-.offset: 0006a0
+.offset: 0006b4
 .size: 4
 .owner: 
 .value: uint32.zxt(r5g6b5, 5, 6)
 }
 zextB5: int32: int32 {
 .kind: variable(i32)
-.offset: 0006a4
+.offset: 0006b8
 .size: 4
 .owner: 
 .value: uint32.zxt(r5g6b5, 0, 5)
 }
 sextR5: int32: int32 {
 .kind: variable(i32)
-.offset: 0006a8
+.offset: 0006bc
 .size: 4
 .owner: 
 .value: uint32.sxt(r5g6b5, 11, 5)
 }
 sextG6: int32: int32 {
 .kind: variable(i32)
-.offset: 0006ac
+.offset: 0006c0
 .size: 4
 .owner: 
 .value: uint32.sxt(r5g6b5, 5, 6)
 }
 sextB5: int32: int32 {
 .kind: variable(i32)
-.offset: 0006b0
+.offset: 0006c4
 .size: 4
 .owner: 
 .value: uint32.sxt(r5g6b5, 0, 5)
 }
 zextR8: int32: int32 {
 .kind: variable(i32)
-.offset: 0006b4
+.offset: 0006c8
 .size: 4
 .owner: 
 .value: uint32.zxt(r8g8b8, 16, 8)
 }
 zextG8: int32: int32 {
 .kind: variable(i32)
-.offset: 0006b8
+.offset: 0006cc
 .size: 4
 .owner: 
 .value: uint32.zxt(r8g8b8, 8, 8)
 }
 zextB8: int32: int32 {
 .kind: variable(i32)
-.offset: 0006bc
+.offset: 0006d0
 .size: 4
 .owner: 
 .value: uint32.zxt(r8g8b8, 0, 8)
 }
 sextR8: int32: int32 {
 .kind: variable(i32)
-.offset: 0006c0
+.offset: 0006d4
 .size: 4
 .owner: 
 .value: uint32.sxt(r8g8b8, 16, 8)
 }
 sextG8: int32: int32 {
 .kind: variable(i32)
-.offset: 0006c4
+.offset: 0006d8
 .size: 4
 .owner: 
 .value: uint32.sxt(r8g8b8, 8, 8)
 }
 sextB8: int32: int32 {
 .kind: variable(i32)
-.offset: 0006c8
+.offset: 0006dc
 .size: 4
 .owner: 
 .value: uint32.sxt(r8g8b8, 0, 8)
 }
 sinF64: float64: float64 {
 .kind: variable(f64)
-.offset: 0006d0
+.offset: 0006e4
 .size: 8
 .owner: 
 .value: float64.sin(pi64 / (2))
 }
 cosF64: float64: float64 {
 .kind: variable(f64)
-.offset: 0006d8
+.offset: 0006ec
 .size: 8
 .owner: 
 .value: float64.cos(pi64 / (2))
 }
 tanF64: float64: float64 {
 .kind: variable(f64)
-.offset: 0006e0
+.offset: 0006f4
 .size: 8
 .owner: 
 .value: float64.tan(pi64 / (4))
 }
 logF64: float64: float64 {
 .kind: variable(f64)
-.offset: 0006e8
+.offset: 0006fc
 .size: 8
 .owner: 
 .value: float64.log(e64 * e64 * e64)
 }
 expF64: float64: float64 {
 .kind: variable(f64)
-.offset: 0006f0
+.offset: 000704
 .size: 8
 .owner: 
 .value: float64.exp(1.000000)
 }
 powF64: float64: float64 {
 .kind: variable(f64)
-.offset: 0006f8
+.offset: 00070c
 .size: 8
 .owner: 
 .value: float64.pow(pi64 * pi64, 0.500000)
 }
 sqrtF64: float64: float64 {
 .kind: variable(f64)
-.offset: 000700
+.offset: 000714
 .size: 8
 .owner: 
 .value: float64.sqrt(pi64 * pi64)
 }
 atanF64: float64: float64 {
 .kind: variable(f64)
-.offset: 000708
+.offset: 00071c
 .size: 8
 .owner: 
 .value: float64.atan2(pi64, 1.000000)
 }
 sinF32: float32: float32 {
 .kind: variable(f32)
-.offset: 00070c
+.offset: 000720
 .size: 4
 .owner: 
 .value: float32.sin(pi32 / (2))
 }
 cosF32: float32: float32 {
 .kind: variable(f32)
-.offset: 000710
+.offset: 000724
 .size: 4
 .owner: 
 .value: float32.cos(pi32 / (2))
 }
 tanF32: float32: float32 {
 .kind: variable(f32)
-.offset: 000714
+.offset: 000728
 .size: 4
 .owner: 
 .value: float32.tan(pi32 / (4))
 }
 logF32: float32: float32 {
 .kind: variable(f32)
-.offset: 000718
+.offset: 00072c
 .size: 4
 .owner: 
 .value: float32.log(e32 * e32 * e32)
 }
 expF32: float32: float32 {
 .kind: variable(f32)
-.offset: 00071c
+.offset: 000730
 .size: 4
 .owner: 
 .value: float32.exp(1.000000)
 }
 powF32: float32: float32 {
 .kind: variable(f32)
-.offset: 000720
+.offset: 000734
 .size: 4
 .owner: 
 .value: float32.pow(pi32 * pi32, 0.500000)
 }
 sqrtF32: float32: float32 {
 .kind: variable(f32)
-.offset: 000724
+.offset: 000738
 .size: 4
 .owner: 
 .value: float32.sqrt(pi32 * pi32)
 }
 atanF32: float32: float32 {
 .kind: variable(f32)
-.offset: 000728
+.offset: 00073c
 .size: 4
 .owner: 
 .value: float32.atan2(pi32, 1.000000)
@@ -4513,52 +4403,52 @@ malloc(size: int32): pointer: function {
 }
 p1: pointer: pointer {
 .kind: variable(ref)
-.offset: 00072c
+.offset: 000740
 .size: 4
 .owner: 
 .value: malloc(1024)
 }
 p2: pointer: pointer {
 .kind: variable(ref)
-.offset: 000730
+.offset: 000744
 .size: 4
 .owner: 
 .value: memmgr(null, 80)
 }
 p3: pointer: pointer {
 .kind: variable(ref)
-.offset: 000734
+.offset: 000748
 .size: 4
 .owner: 
 .value: memmgr(null, 160)
 }
 p4: pointer: pointer {
 .kind: variable(ref)
-.offset: 000738
+.offset: 00074c
 .size: 4
 .owner: 
 .value: memmgr(null, 820)
 }
 val1: int64: int64 {
 .kind: variable(i64)
-.offset: 000740
+.offset: 000754
 .size: 8
 .owner: 
 .value: 42
 }
 val2: int64: int64 {
 .kind: variable(i64)
-.offset: 000748
+.offset: 00075c
 .size: 8
 .owner: 
 .value: 96
 }
 .main(): void: function {
 .kind: static function
-.offset: 01c630
-.size: 5069
+.offset: 01aaa8
+.size: 5109
 .owner: 
-.field typename: typename (size: 0 @8 -> static const typename(ref))
+.field typename: typename (size: 4 @8 -> static const typename(ref))
 .field void: typename (size: 0 @160 -> static const typename(void))
 .field bool: typename (size: 1 @304 -> static const typename(bool))
 .field char: typename (size: 1 @448 -> static const typename(u32))
@@ -4594,11 +4484,10 @@ val2: int64: int64 {
 .field memset: function (size: 8 @28080 -> static const inline)
 .field memcpy: function (size: 8 @28824 -> static const inline)
 .field System: void (size: 0 @28872 -> static const typename(void))
-.field File: typename (size: 8 @42600 -> static const typename(val))
 .field integer: typename (size: 0 @0 -> inline)
-.field xrgb: typename (size: 4 @50936 -> static const typename(val))
-.field color: typename (size: 4 @51616 -> static const typename(val))
-.field type: object (size: 12 @52024 -> static const typename(ref))
+.field xrgb: typename (size: 4 @43136 -> static const typename(val))
+.field color: typename (size: 4 @43816 -> static const typename(val))
+.field type: object (size: 12 @44224 -> static const typename(ref))
 .field zero: function (size: 0 @0 -> inline)
 .field first: function (size: 0 @0 -> inline)
 .field last: function (size: 0 @0 -> inline)
@@ -4873,116 +4762,122 @@ val2: int64: int64 {
 .field arrPtrInitPtr: int64[*] (size: 4 @1280 -> variable(ref))
 .field arrSliceInitString: char[] (size: 8 @1288 -> variable(arr))
 .field arrPtrInitString: char[*] (size: 4 @1292 -> variable(ref))
-.field value: int64 (size: 8 @1300 -> variable(i64))
-.field valueRef: int64 (size: 4 @1304 -> variable(ref))
-.field valuePtr: pointer (size: 4 @1308 -> variable(ref))
-.field valueVar: variant (size: 8 @1316 -> variable(var))
-.field copyVal: int64 (size: 8 @1324 -> variable(i64))
-.field copyRef: int64 (size: 4 @1328 -> variable(ref))
-.field copyPtr: pointer (size: 4 @1332 -> variable(ref))
-.field copyVar: variant (size: 8 @1340 -> variable(var))
-.field fromRef: int64 (size: 8 @1348 -> variable(i64))
-.field fromPtr: int64 (size: 4 @1352 -> variable(ref))
-.field fromVar: int64 (size: 4 @1356 -> variable(ref))
-.field nullRef: int64 (size: 4 @1360 -> variable(ref))
-.field nullPtr: pointer (size: 4 @1364 -> variable(ref))
-.field nullVar: variant (size: 8 @1372 -> variable(var))
-.field typePtr: pointer (size: 4 @1376 -> variable(ref))
-.field typeVar: variant (size: 8 @1384 -> variable(var))
-.field ptrVoid: pointer (size: 4 @1388 -> variable(ref))
-.field ptrBool: pointer (size: 4 @1392 -> variable(ref))
-.field ptrChar: pointer (size: 4 @1396 -> variable(ref))
-.field ptrInt8: pointer (size: 4 @1400 -> variable(ref))
-.field ptrInt16: pointer (size: 4 @1404 -> variable(ref))
-.field ptrInt32: pointer (size: 4 @1408 -> variable(ref))
-.field ptrInt64: pointer (size: 4 @1412 -> variable(ref))
-.field ptrUint8: pointer (size: 4 @1416 -> variable(ref))
-.field ptrUint16: pointer (size: 4 @1420 -> variable(ref))
-.field ptrUint32: pointer (size: 4 @1424 -> variable(ref))
-.field ptrUint64: pointer (size: 4 @1428 -> variable(ref))
-.field ptrFloat32: pointer (size: 4 @1432 -> variable(ref))
-.field ptrFloat64: pointer (size: 4 @1436 -> variable(ref))
-.field ptrTypename: pointer (size: 4 @1440 -> variable(ref))
-.field ptrFunction: pointer (size: 4 @1444 -> variable(ref))
-.field ptrPointer: pointer (size: 4 @1448 -> variable(ref))
-.field ptrVariant: pointer (size: 4 @1452 -> variable(ref))
-.field ptrObject: pointer (size: 4 @1456 -> variable(ref))
-.field varVoid: variant (size: 8 @1464 -> variable(var))
-.field varBool: variant (size: 8 @1472 -> variable(var))
-.field varChar: variant (size: 8 @1480 -> variable(var))
-.field varInt8: variant (size: 8 @1488 -> variable(var))
-.field varInt16: variant (size: 8 @1496 -> variable(var))
-.field varInt32: variant (size: 8 @1504 -> variable(var))
-.field varInt64: variant (size: 8 @1512 -> variable(var))
-.field varUint8: variant (size: 8 @1520 -> variable(var))
-.field varUint16: variant (size: 8 @1528 -> variable(var))
-.field varUint32: variant (size: 8 @1536 -> variable(var))
-.field varUint64: variant (size: 8 @1544 -> variable(var))
-.field varFloat32: variant (size: 8 @1552 -> variable(var))
-.field varFloat64: variant (size: 8 @1560 -> variable(var))
-.field varTypename: variant (size: 8 @1568 -> variable(var))
-.field varFunction: variant (size: 8 @1576 -> variable(var))
-.field varPointer: variant (size: 8 @1584 -> variable(var))
-.field varVariant: variant (size: 8 @1592 -> variable(var))
-.field varObject: variant (size: 8 @1600 -> variable(var))
-.field copyPtrFloat64: variant (size: 8 @1608 -> variable(var))
-.field copyVarFloat64: pointer (size: 4 @1612 -> variable(ref))
-.field localNoInit: int64 (size: 8 @1620 -> variable(i64))
-.field globalNoInit: int64 (size: 8 @116240 -> static variable(i64))
-.field localInitValue: int64 (size: 8 @1628 -> variable(i64))
-.field globalInitValue: int64 (size: 8 @116248 -> static variable(i64))
-.field localInitLocal: int64 (size: 8 @1636 -> variable(i64))
-.field globalInitLocal: int64 (size: 8 @116256 -> static variable(i64))
-.field localInitGlobal: int64 (size: 8 @1644 -> variable(i64))
-.field globalInitGlobal: int64 (size: 8 @116264 -> static variable(i64))
-.field pi64: float64 (size: 8 @1652 -> variable(f64))
-.field e64: float64 (size: 8 @1660 -> variable(f64))
-.field pi32: float32 (size: 4 @1664 -> variable(f32))
-.field e32: float32 (size: 4 @1668 -> variable(f32))
+.field value: int64 (size: 8 @109184 -> static variable(i64))
+.field valueRef: int64 (size: 4 @1296 -> variable(ref))
+.field valuePtr: pointer (size: 4 @1300 -> variable(ref))
+.field valueVar: variant (size: 8 @1308 -> variable(var))
+.field fromRef: int64 (size: 8 @1316 -> variable(i64))
+.field fromPtr: int64 (size: 4 @1320 -> variable(ref))
+.field fromVar: int64 (size: 4 @1324 -> variable(ref))
+.field nullRef: int64 (size: 4 @1328 -> variable(ref))
+.field nullPtr: pointer (size: 4 @1332 -> variable(ref))
+.field nullVar: variant (size: 8 @1340 -> variable(var))
+.field nullTyp: typename (size: 4 @1344 -> variable(ref))
+.field nullFun: function (size: 4 @1348 -> variable(ref))
+.field nullObj: object (size: 4 @1352 -> variable(ref))
+.field typePtr: pointer (size: 4 @1356 -> variable(ref))
+.field typeVar: variant (size: 8 @1364 -> variable(var))
+.field typeTyp: typename (size: 4 @1368 -> variable(ref))
+.field local: int64 (size: 8 @1376 -> variable(i64))
+.field copyVal: int64 (size: 8 @1384 -> variable(i64))
+.field copyRef: int64 (size: 4 @1388 -> variable(ref))
+.field copyPtr: pointer (size: 4 @1392 -> variable(ref))
+.field copyVar: variant (size: 8 @1400 -> variable(var))
+.field copyTyp: typename (size: 4 @1404 -> variable(ref))
+.field ptrVoid: pointer (size: 4 @1408 -> variable(ref))
+.field ptrBool: pointer (size: 4 @1412 -> variable(ref))
+.field ptrChar: pointer (size: 4 @1416 -> variable(ref))
+.field ptrInt8: pointer (size: 4 @1420 -> variable(ref))
+.field ptrInt16: pointer (size: 4 @1424 -> variable(ref))
+.field ptrInt32: pointer (size: 4 @1428 -> variable(ref))
+.field ptrInt64: pointer (size: 4 @1432 -> variable(ref))
+.field ptrUint8: pointer (size: 4 @1436 -> variable(ref))
+.field ptrUint16: pointer (size: 4 @1440 -> variable(ref))
+.field ptrUint32: pointer (size: 4 @1444 -> variable(ref))
+.field ptrUint64: pointer (size: 4 @1448 -> variable(ref))
+.field ptrFloat32: pointer (size: 4 @1452 -> variable(ref))
+.field ptrFloat64: pointer (size: 4 @1456 -> variable(ref))
+.field ptrTypename: pointer (size: 4 @1460 -> variable(ref))
+.field ptrFunction: pointer (size: 4 @1464 -> variable(ref))
+.field ptrPointer: pointer (size: 4 @1468 -> variable(ref))
+.field ptrVariant: pointer (size: 4 @1472 -> variable(ref))
+.field ptrObject: pointer (size: 4 @1476 -> variable(ref))
+.field varVoid: variant (size: 8 @1484 -> variable(var))
+.field varBool: variant (size: 8 @1492 -> variable(var))
+.field varChar: variant (size: 8 @1500 -> variable(var))
+.field varInt8: variant (size: 8 @1508 -> variable(var))
+.field varInt16: variant (size: 8 @1516 -> variable(var))
+.field varInt32: variant (size: 8 @1524 -> variable(var))
+.field varInt64: variant (size: 8 @1532 -> variable(var))
+.field varUint8: variant (size: 8 @1540 -> variable(var))
+.field varUint16: variant (size: 8 @1548 -> variable(var))
+.field varUint32: variant (size: 8 @1556 -> variable(var))
+.field varUint64: variant (size: 8 @1564 -> variable(var))
+.field varFloat32: variant (size: 8 @1572 -> variable(var))
+.field varFloat64: variant (size: 8 @1580 -> variable(var))
+.field varTypename: variant (size: 8 @1588 -> variable(var))
+.field varFunction: variant (size: 8 @1596 -> variable(var))
+.field varPointer: variant (size: 8 @1604 -> variable(var))
+.field varVariant: variant (size: 8 @1612 -> variable(var))
+.field varObject: variant (size: 8 @1620 -> variable(var))
+.field copyPtrFloat64: variant (size: 8 @1628 -> variable(var))
+.field copyVarFloat64: pointer (size: 4 @1632 -> variable(ref))
+.field localNoInit: int64 (size: 8 @1640 -> variable(i64))
+.field globalNoInit: int64 (size: 8 @109192 -> static variable(i64))
+.field localInitValue: int64 (size: 8 @1648 -> variable(i64))
+.field globalInitValue: int64 (size: 8 @109200 -> static variable(i64))
+.field localInitLocal: int64 (size: 8 @1656 -> variable(i64))
+.field globalInitLocal: int64 (size: 8 @109208 -> static variable(i64))
+.field localInitGlobal: int64 (size: 8 @1664 -> variable(i64))
+.field globalInitGlobal: int64 (size: 8 @109216 -> static variable(i64))
+.field pi64: float64 (size: 8 @1672 -> variable(f64))
+.field e64: float64 (size: 8 @1680 -> variable(f64))
+.field pi32: float32 (size: 4 @1684 -> variable(f32))
+.field e32: float32 (size: 4 @1688 -> variable(f32))
 .field rgb888: function (size: 0 @0 -> inline)
 .field rgb565: function (size: 0 @0 -> inline)
-.field r_comp: int32 (size: 4 @1672 -> variable(i32))
-.field g_comp: int32 (size: 4 @1676 -> variable(i32))
-.field b_comp: int32 (size: 4 @1680 -> variable(i32))
-.field r5g6b5: int32 (size: 4 @1684 -> variable(i32))
-.field r8g8b8: int32 (size: 4 @1688 -> variable(i32))
-.field zextR5: int32 (size: 4 @1692 -> variable(i32))
-.field zextG6: int32 (size: 4 @1696 -> variable(i32))
-.field zextB5: int32 (size: 4 @1700 -> variable(i32))
-.field sextR5: int32 (size: 4 @1704 -> variable(i32))
-.field sextG6: int32 (size: 4 @1708 -> variable(i32))
-.field sextB5: int32 (size: 4 @1712 -> variable(i32))
-.field zextR8: int32 (size: 4 @1716 -> variable(i32))
-.field zextG8: int32 (size: 4 @1720 -> variable(i32))
-.field zextB8: int32 (size: 4 @1724 -> variable(i32))
-.field sextR8: int32 (size: 4 @1728 -> variable(i32))
-.field sextG8: int32 (size: 4 @1732 -> variable(i32))
-.field sextB8: int32 (size: 4 @1736 -> variable(i32))
-.field sinF64: float64 (size: 8 @1744 -> variable(f64))
-.field cosF64: float64 (size: 8 @1752 -> variable(f64))
-.field tanF64: float64 (size: 8 @1760 -> variable(f64))
-.field logF64: float64 (size: 8 @1768 -> variable(f64))
-.field expF64: float64 (size: 8 @1776 -> variable(f64))
-.field powF64: float64 (size: 8 @1784 -> variable(f64))
-.field sqrtF64: float64 (size: 8 @1792 -> variable(f64))
-.field atanF64: float64 (size: 8 @1800 -> variable(f64))
-.field sinF32: float32 (size: 4 @1804 -> variable(f32))
-.field cosF32: float32 (size: 4 @1808 -> variable(f32))
-.field tanF32: float32 (size: 4 @1812 -> variable(f32))
-.field logF32: float32 (size: 4 @1816 -> variable(f32))
-.field expF32: float32 (size: 4 @1820 -> variable(f32))
-.field powF32: float32 (size: 4 @1824 -> variable(f32))
-.field sqrtF32: float32 (size: 4 @1828 -> variable(f32))
-.field atanF32: float32 (size: 4 @1832 -> variable(f32))
+.field r_comp: int32 (size: 4 @1692 -> variable(i32))
+.field g_comp: int32 (size: 4 @1696 -> variable(i32))
+.field b_comp: int32 (size: 4 @1700 -> variable(i32))
+.field r5g6b5: int32 (size: 4 @1704 -> variable(i32))
+.field r8g8b8: int32 (size: 4 @1708 -> variable(i32))
+.field zextR5: int32 (size: 4 @1712 -> variable(i32))
+.field zextG6: int32 (size: 4 @1716 -> variable(i32))
+.field zextB5: int32 (size: 4 @1720 -> variable(i32))
+.field sextR5: int32 (size: 4 @1724 -> variable(i32))
+.field sextG6: int32 (size: 4 @1728 -> variable(i32))
+.field sextB5: int32 (size: 4 @1732 -> variable(i32))
+.field zextR8: int32 (size: 4 @1736 -> variable(i32))
+.field zextG8: int32 (size: 4 @1740 -> variable(i32))
+.field zextB8: int32 (size: 4 @1744 -> variable(i32))
+.field sextR8: int32 (size: 4 @1748 -> variable(i32))
+.field sextG8: int32 (size: 4 @1752 -> variable(i32))
+.field sextB8: int32 (size: 4 @1756 -> variable(i32))
+.field sinF64: float64 (size: 8 @1764 -> variable(f64))
+.field cosF64: float64 (size: 8 @1772 -> variable(f64))
+.field tanF64: float64 (size: 8 @1780 -> variable(f64))
+.field logF64: float64 (size: 8 @1788 -> variable(f64))
+.field expF64: float64 (size: 8 @1796 -> variable(f64))
+.field powF64: float64 (size: 8 @1804 -> variable(f64))
+.field sqrtF64: float64 (size: 8 @1812 -> variable(f64))
+.field atanF64: float64 (size: 8 @1820 -> variable(f64))
+.field sinF32: float32 (size: 4 @1824 -> variable(f32))
+.field cosF32: float32 (size: 4 @1828 -> variable(f32))
+.field tanF32: float32 (size: 4 @1832 -> variable(f32))
+.field logF32: float32 (size: 4 @1836 -> variable(f32))
+.field expF32: float32 (size: 4 @1840 -> variable(f32))
+.field powF32: float32 (size: 4 @1844 -> variable(f32))
+.field sqrtF32: float32 (size: 4 @1848 -> variable(f32))
+.field atanF32: float32 (size: 4 @1852 -> variable(f32))
 .field free: function (size: 0 @0 -> inline)
 .field malloc: function (size: 0 @0 -> inline)
-.field p1: pointer (size: 4 @1836 -> variable(ref))
-.field p2: pointer (size: 4 @1840 -> variable(ref))
-.field p3: pointer (size: 4 @1844 -> variable(ref))
-.field p4: pointer (size: 4 @1848 -> variable(ref))
-.field val1: int64 (size: 8 @1856 -> variable(i64))
-.field val2: int64 (size: 8 @1864 -> variable(i64))
-.field .main: function (size: 5069 @116272 -> static function)
+.field p1: pointer (size: 4 @1856 -> variable(ref))
+.field p2: pointer (size: 4 @1860 -> variable(ref))
+.field p3: pointer (size: 4 @1864 -> variable(ref))
+.field p4: pointer (size: 4 @1868 -> variable(ref))
+.field val1: int64 (size: 8 @1876 -> variable(i64))
+.field val2: int64 (size: 8 @1884 -> variable(i64))
+.field .main: function (size: 5109 @109224 -> static function)
 .param .result: void (@+0->variable)
 .value: {
 	{
@@ -5264,42 +5159,42 @@ val2: int64: int64 {
 		f64Cgt: bool := f64A > f64B;
 		f64Cge: bool := f64A >= f64B;
 		static if (0 == 0) {
-			raise(1, '0 == 0', null, 1);
+			raise(1, "0 == 0", null, 1);
 		}
 		static if (0 != 0) {
-			raise(1, '0 != 0', null, 2);
+			raise(1, "0 != 0", null, 2);
 		}
 		static if (0 == 0) {
-			raise(1, '0 == 0', null, 3);
+			raise(1, "0 == 0", null, 3);
 		}
 		else {
-			raise(1, '0 != 0', null, 4);
+			raise(1, "0 != 0", null, 4);
 		}
 		static if (0 != 0) {
-			raise(1, '0 != 0', null, 5);
+			raise(1, "0 != 0", null, 5);
 		}
 		else {
-			raise(1, '0 == 0', null, 6);
+			raise(1, "0 == 0", null, 6);
 		}
 		{
 			t: int32 := 0;
 			if (t == 0) {
-				raise(1, 't == 0', variant(&t), 7);
+				raise(1, "t == 0", variant(&t), 7);
 			}
 			if (t != 0) {
-				raise(1, 't != 0', variant(&t), 8);
+				raise(1, "t != 0", variant(&t), 8);
 			}
 			if (t != 0) {
-				raise(1, 't != 0', variant(&t), 9);
+				raise(1, "t != 0", variant(&t), 9);
 			}
 			else {
-				raise(1, 't == 0', variant(&t), 10);
+				raise(1, "t == 0", variant(&t), 10);
 			}
 			if (t != 0) {
-				raise(1, 't != 0', variant(&t), 11);
+				raise(1, "t != 0", variant(&t), 11);
 			}
 			else {
-				raise(1, 't == 0', variant(&t), 12);
+				raise(1, "t == 0", variant(&t), 12);
 			}
 		}
 		static if (!true) {
@@ -5315,27 +5210,33 @@ val2: int64: int64 {
 		arrSliceInitSlice: int64[] := arrSliceInitFixed;
 		arrPtrInitSlice: int64[*] := arrSliceInitFixed;
 		arrPtrInitPtr: int64[*] := arrPtrInitFixed;
-		arrSliceInitString: char[] := 'string';
-		arrPtrInitString: char[*] := 'string';
+		arrSliceInitString: char[] := "string";
+		arrPtrInitString: char[*] := "string";
 		static if (!true) {
 			integer: typename := int32;
 		}
-		value: int64 := 33;
+		static value: int64 := 42;
 		valueRef: int64 := value;
 		valuePtr: pointer := value;
 		valueVar: variant := value;
-		copyVal: int64 := value;
-		copyRef: int64 := valueRef;
-		copyPtr: pointer := valuePtr;
-		copyVar: variant := valueVar;
 		fromRef: int64 := valueRef;
 		fromPtr: int64 := valuePtr;
 		fromVar: int64 := valueVar;
 		nullRef: int64 := null;
 		nullPtr: pointer := null;
 		nullVar: variant := null;
+		nullTyp: typename := null;
+		nullFun: function := null;
+		nullObj: object := null;
 		typePtr: pointer := int64;
 		typeVar: variant := int64;
+		typeTyp: typename := int64;
+		local: int64 := value;
+		copyVal: int64 := local;
+		copyRef: int64 := valueRef;
+		copyPtr: pointer := valuePtr;
+		copyVar: variant := valueVar;
+		copyTyp: typename := typeTyp;
 		ptrVoid: pointer := void;
 		ptrBool: pointer := bool;
 		ptrChar: pointer := char;
@@ -5438,15 +5339,15 @@ val2: int64: int64 {
 		free(p4);
 		val1: int64 := 42;
 		val2: int64 := 96;
-		raise(1, 'val1', variant(&val1), 0);
-		raise(1, 'val2', variant(&val2), 0);
+		raise(1, "val1", variant(&val1), 0);
+		raise(1, "val2", variant(&val2), 0);
 		memcpy(pointer(&val2), pointer(&val1), 8);
 		memset(pointer(&val1), 0, 8);
-		raise(1, 'val1', variant(&val1), 0);
-		raise(1, 'val2', variant(&val2), 0);
+		raise(1, "val1", variant(&val1), 0);
+		raise(1, "val2", variant(&val2), 0);
 	}
 }
-.instructions: [5069 bytes @.01c630]
+.instructions: [5109 bytes @.01aaa8]
 	extras/Tests/lang.inline.ci:17: (10 bytes): ma: int32 := 3
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
@@ -6827,38 +6728,38 @@ val2: int64: int64 {
 	23                         load.m64
 	88                         clt.f64
 	0a                         not.b32
-	extras/Tests/lang.statementIf.ci:4: (49 bytes): raise(1, '0 == 0', null, 1);
+	extras/Tests/lang.statementIf.ci:4: (49 bytes): raise(1, "0 == 0", null, 1);
 	1b 04 00 00 00             load.c32 4
-	1f 66 c5 00 00             load.ref .00c566 ;"extras/Tests/lang.statementIf.ci"
+	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	1f 00 00 00 00             load.ref .000000 ;null: pointer
-	1f 00 6c 01 00             load.ref .016c00 ;"0 == 0"
+	1f 88 4d 01 00             load.ref .014d88 ;"0 == 0"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
-	extras/Tests/lang.statementIf.ci:12: (49 bytes): raise(1, '0 == 0', null, 3);
+	extras/Tests/lang.statementIf.ci:12: (49 bytes): raise(1, "0 == 0", null, 3);
 	1b 0c 00 00 00             load.c32 12
-	1f 66 c5 00 00             load.ref .00c566 ;"extras/Tests/lang.statementIf.ci"
+	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	1f 00 00 00 00             load.ref .000000 ;null: pointer
-	1f 00 6c 01 00             load.ref .016c00 ;"0 == 0"
+	1f 88 4d 01 00             load.ref .014d88 ;"0 == 0"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
-	extras/Tests/lang.statementIf.ci:22: (49 bytes): raise(1, '0 == 0', null, 6);
+	extras/Tests/lang.statementIf.ci:22: (49 bytes): raise(1, "0 == 0", null, 6);
 	1b 16 00 00 00             load.c32 22
-	1f 66 c5 00 00             load.ref .00c566 ;"extras/Tests/lang.statementIf.ci"
+	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 06 00 00 00 00 00 00 00 load.c64 6
 	6a                         i64.2i32
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	1f 00 00 00 00             load.ref .000000 ;null: pointer
-	1f 00 6c 01 00             load.ref .016c00 ;"0 == 0"
+	1f 88 4d 01 00             load.ref .014d88 ;"0 == 0"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -6873,14 +6774,14 @@ val2: int64: int64 {
 	6a                         i64.2i32
 	57                         ceq.i32
 	06 38 00 00                jz +56
-	extras/Tests/lang.statementIf.ci:29: (48 bytes): raise(1, 't == 0', variant(&t), 7);
+	extras/Tests/lang.statementIf.ci:29: (48 bytes): raise(1, "t == 0", variant(&t), 7);
 	1b 1d 00 00 00             load.c32 29
-	1f 66 c5 00 00             load.ref .00c566 ;"extras/Tests/lang.statementIf.ci"
+	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 07 00 00 00 00 00 00 00 load.c64 7
 	6a                         i64.2i32
 	1f 70 03 00 00             load.ref .000370 ;int32
 	11 10 00 00                load.sp(+16)
-	1f 10 6c 01 00             load.ref .016c10 ;"t == 0"
+	1f 98 4d 01 00             load.ref .014d98 ;"t == 0"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -6893,14 +6794,14 @@ val2: int64: int64 {
 	57                         ceq.i32
 	0a                         not.b32
 	06 38 00 00                jz +56
-	extras/Tests/lang.statementIf.ci:33: (48 bytes): raise(1, 't != 0', variant(&t), 8);
+	extras/Tests/lang.statementIf.ci:33: (48 bytes): raise(1, "t != 0", variant(&t), 8);
 	1b 21 00 00 00             load.c32 33
-	1f 66 c5 00 00             load.ref .00c566 ;"extras/Tests/lang.statementIf.ci"
+	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 08 00 00 00 00 00 00 00 load.c64 8
 	6a                         i64.2i32
 	1f 70 03 00 00             load.ref .000370 ;int32
 	11 10 00 00                load.sp(+16)
-	1f 17 6c 01 00             load.ref .016c17 ;"t != 0"
+	1f 9f 4d 01 00             load.ref .014d9f ;"t != 0"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -6913,27 +6814,27 @@ val2: int64: int64 {
 	57                         ceq.i32
 	0a                         not.b32
 	06 3c 00 00                jz +60
-	extras/Tests/lang.statementIf.ci:37: (48 bytes): raise(1, 't != 0', variant(&t), 9);
+	extras/Tests/lang.statementIf.ci:37: (48 bytes): raise(1, "t != 0", variant(&t), 9);
 	1b 25 00 00 00             load.c32 37
-	1f 66 c5 00 00             load.ref .00c566 ;"extras/Tests/lang.statementIf.ci"
+	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 09 00 00 00 00 00 00 00 load.c64 9
 	6a                         i64.2i32
 	1f 70 03 00 00             load.ref .000370 ;int32
 	11 10 00 00                load.sp(+16)
-	1f 17 6c 01 00             load.ref .016c17 ;"t != 0"
+	1f 9f 4d 01 00             load.ref .014d9f ;"t != 0"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
 	04 38 00 00                jmp +56
-	extras/Tests/lang.statementIf.ci:40: (48 bytes): raise(1, 't == 0', variant(&t), 10);
+	extras/Tests/lang.statementIf.ci:40: (48 bytes): raise(1, "t == 0", variant(&t), 10);
 	1b 28 00 00 00             load.c32 40
-	1f 66 c5 00 00             load.ref .00c566 ;"extras/Tests/lang.statementIf.ci"
+	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 0a 00 00 00 00 00 00 00 load.c64 10
 	6a                         i64.2i32
 	1f 70 03 00 00             load.ref .000370 ;int32
 	11 10 00 00                load.sp(+16)
-	1f 10 6c 01 00             load.ref .016c10 ;"t == 0"
+	1f 98 4d 01 00             load.ref .014d98 ;"t == 0"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -6946,27 +6847,27 @@ val2: int64: int64 {
 	57                         ceq.i32
 	0a                         not.b32
 	06 3c 00 00                jz +60
-	extras/Tests/lang.statementIf.ci:44: (48 bytes): raise(1, 't != 0', variant(&t), 11);
+	extras/Tests/lang.statementIf.ci:44: (48 bytes): raise(1, "t != 0", variant(&t), 11);
 	1b 2c 00 00 00             load.c32 44
-	1f 66 c5 00 00             load.ref .00c566 ;"extras/Tests/lang.statementIf.ci"
+	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 0b 00 00 00 00 00 00 00 load.c64 11
 	6a                         i64.2i32
 	1f 70 03 00 00             load.ref .000370 ;int32
 	11 10 00 00                load.sp(+16)
-	1f 17 6c 01 00             load.ref .016c17 ;"t != 0"
+	1f 9f 4d 01 00             load.ref .014d9f ;"t != 0"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
 	04 38 00 00                jmp +56
-	extras/Tests/lang.statementIf.ci:47: (48 bytes): raise(1, 't == 0', variant(&t), 12);
+	extras/Tests/lang.statementIf.ci:47: (48 bytes): raise(1, "t == 0", variant(&t), 12);
 	1b 2f 00 00 00             load.c32 47
-	1f 66 c5 00 00             load.ref .00c566 ;"extras/Tests/lang.statementIf.ci"
+	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 0c 00 00 00 00 00 00 00 load.c64 12
 	6a                         i64.2i32
 	1f 70 03 00 00             load.ref .000370 ;int32
 	11 10 00 00                load.sp(+16)
-	1f 10 6c 01 00             load.ref .016c10 ;"t == 0"
+	1f 98 4d 01 00             load.ref .014d98 ;"t == 0"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -6996,149 +6897,165 @@ val2: int64: int64 {
 	extras/Tests/lang.varInitArray.ci:26: (5 bytes): arrPtrInitPtr: int64[*] := arrPtrInitFixed
 	11 0c 00 00                load.sp(+12)
 	22                         load.m32
-	extras/Tests/lang.varInitArray.ci:37: (10 bytes): arrSliceInitString: char[] := 'string'
+	extras/Tests/lang.varInitArray.ci:37: (10 bytes): arrSliceInitString: char[] := "string"
 	1b 06 00 00 00             load.c32 6
-	1f 58 6d 01 00             load.ref .016d58 ;"string"
-	extras/Tests/lang.varInitArray.ci:38: (5 bytes): arrPtrInitString: char[*] := 'string'
-	1f 58 6d 01 00             load.ref .016d58 ;"string"
-	extras/Tests/lang.varInitByRef.ci:7: (9 bytes): value: int64 := 33
-	1c 21 00 00 00 00 00 00 00 load.c64 33
-	extras/Tests/lang.varInitByRef.ci:8: (4 bytes): valueRef: int64 := value
-	11 00 00 00                load.sp(+0)
-	extras/Tests/lang.varInitByRef.ci:9: (4 bytes): valuePtr: pointer := value
-	11 04 00 00                load.sp(+4)
-	extras/Tests/lang.varInitByRef.ci:10: (9 bytes): valueVar: variant := value
+	1f e0 4e 01 00             load.ref .014ee0 ;"string"
+	extras/Tests/lang.varInitArray.ci:38: (5 bytes): arrPtrInitString: char[*] := "string"
+	1f e0 4e 01 00             load.ref .014ee0 ;"string"
+	extras/Tests/lang.varInitByRef.ci:7: (15 bytes): static value: int64 := 42
+	1c 2a 00 00 00 00 00 00 00 load.c64 42
+	1f 80 aa 01 00             load.ref .01aa80 ;value: int64
+	28                         store.m64
+	extras/Tests/lang.varInitByRef.ci:8: (5 bytes): valueRef: int64 := value
+	1f 80 aa 01 00             load.ref .01aa80 ;value: int64
+	extras/Tests/lang.varInitByRef.ci:9: (5 bytes): valuePtr: pointer := value
+	1f 80 aa 01 00             load.ref .01aa80 ;value: int64
+	extras/Tests/lang.varInitByRef.ci:10: (10 bytes): valueVar: variant := value
 	1f 00 04 00 00             load.ref .000400 ;int64
+	1f 80 aa 01 00             load.ref .01aa80 ;value: int64
+	extras/Tests/lang.varInitByRef.ci:12: (6 bytes): fromRef: int64 := valueRef
 	11 0c 00 00                load.sp(+12)
-	extras/Tests/lang.varInitByRef.ci:12: (5 bytes): copyVal: int64 := value
+	22                         load.m32
+	23                         load.m64
+	extras/Tests/lang.varInitByRef.ci:13: (5 bytes): fromPtr: int64 := valuePtr
 	11 10 00 00                load.sp(+16)
-	23                         load.m64
-	extras/Tests/lang.varInitByRef.ci:13: (5 bytes): copyRef: int64 := valueRef
-	11 14 00 00                load.sp(+20)
 	22                         load.m32
-	extras/Tests/lang.varInitByRef.ci:14: (5 bytes): copyPtr: pointer := valuePtr
-	11 14 00 00                load.sp(+20)
+	extras/Tests/lang.varInitByRef.ci:14: (5 bytes): fromVar: int64 := valueVar
+	11 0c 00 00                load.sp(+12)
 	22                         load.m32
-	extras/Tests/lang.varInitByRef.ci:15: (5 bytes): copyVar: variant := valueVar
-	11 10 00 00                load.sp(+16)
-	23                         load.m64
-	extras/Tests/lang.varInitByRef.ci:16: (6 bytes): fromRef: int64 := valueRef
-	11 24 00 00                load.sp(+36)
-	22                         load.m32
-	23                         load.m64
-	extras/Tests/lang.varInitByRef.ci:17: (5 bytes): fromPtr: int64 := valuePtr
-	11 28 00 00                load.sp(+40)
-	22                         load.m32
-	extras/Tests/lang.varInitByRef.ci:18: (5 bytes): fromVar: int64 := valueVar
-	11 24 00 00                load.sp(+36)
-	22                         load.m32
-	extras/Tests/lang.varInitByRef.ci:20: (5 bytes): nullRef: int64 := null
+	extras/Tests/lang.varInitByRef.ci:16: (5 bytes): nullRef: int64 := null
 	1f 00 00 00 00             load.ref .000000 ;null: pointer
-	extras/Tests/lang.varInitByRef.ci:21: (5 bytes): nullPtr: pointer := null
+	extras/Tests/lang.varInitByRef.ci:17: (5 bytes): nullPtr: pointer := null
 	1f 00 00 00 00             load.ref .000000 ;null: pointer
-	extras/Tests/lang.varInitByRef.ci:22: (10 bytes): nullVar: variant := null
+	extras/Tests/lang.varInitByRef.ci:18: (10 bytes): nullVar: variant := null
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
+	1f 00 00 00 00             load.ref .000000 ;null: pointer
+	extras/Tests/lang.varInitByRef.ci:19: (5 bytes): nullTyp: typename := null
+	1f 00 00 00 00             load.ref .000000 ;null: pointer
+	extras/Tests/lang.varInitByRef.ci:20: (5 bytes): nullFun: function := null
+	1f 00 00 00 00             load.ref .000000 ;null: pointer
+	extras/Tests/lang.varInitByRef.ci:21: (5 bytes): nullObj: object := null
 	1f 00 00 00 00             load.ref .000000 ;null: pointer
 	extras/Tests/lang.varInitByRef.ci:23: (5 bytes): typePtr: pointer := int64
 	1f 00 04 00 00             load.ref .000400 ;int64
 	extras/Tests/lang.varInitByRef.ci:24: (10 bytes): typeVar: variant := int64
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f 00 04 00 00             load.ref .000400 ;int64
-	extras/Tests/lang.varInitByRef.ci:27: (5 bytes): ptrVoid: pointer := void
-	1f a0 00 00 00             load.ref .0000a0 ;void
-	extras/Tests/lang.varInitByRef.ci:28: (5 bytes): ptrBool: pointer := bool
-	1f 30 01 00 00             load.ref .000130 ;bool
-	extras/Tests/lang.varInitByRef.ci:29: (5 bytes): ptrChar: pointer := char
-	1f c0 01 00 00             load.ref .0001c0 ;char
-	extras/Tests/lang.varInitByRef.ci:30: (5 bytes): ptrInt8: pointer := int8
-	1f 50 02 00 00             load.ref .000250 ;int8
-	extras/Tests/lang.varInitByRef.ci:31: (5 bytes): ptrInt16: pointer := int16
-	1f e0 02 00 00             load.ref .0002e0 ;int16
-	extras/Tests/lang.varInitByRef.ci:32: (5 bytes): ptrInt32: pointer := int32
-	1f 70 03 00 00             load.ref .000370 ;int32
-	extras/Tests/lang.varInitByRef.ci:33: (5 bytes): ptrInt64: pointer := int64
+	extras/Tests/lang.varInitByRef.ci:25: (5 bytes): typeTyp: typename := int64
 	1f 00 04 00 00             load.ref .000400 ;int64
-	extras/Tests/lang.varInitByRef.ci:34: (5 bytes): ptrUint8: pointer := uint8
+	extras/Tests/lang.varInitByRef.ci:27: (6 bytes): local: int64 := value
+	1f 80 aa 01 00             load.ref .01aa80 ;value: int64
+	23                         load.m64
+	extras/Tests/lang.varInitByRef.ci:28: (5 bytes): copyVal: int64 := local
+	11 00 00 00                load.sp(+0)
+	23                         load.m64
+	extras/Tests/lang.varInitByRef.ci:29: (5 bytes): copyRef: int64 := valueRef
+	11 58 00 00                load.sp(+88)
+	22                         load.m32
+	extras/Tests/lang.varInitByRef.ci:30: (5 bytes): copyPtr: pointer := valuePtr
+	11 58 00 00                load.sp(+88)
+	22                         load.m32
+	extras/Tests/lang.varInitByRef.ci:31: (5 bytes): copyVar: variant := valueVar
+	11 54 00 00                load.sp(+84)
+	23                         load.m64
+	extras/Tests/lang.varInitByRef.ci:32: (5 bytes): copyTyp: typename := typeTyp
+	11 20 00 00                load.sp(+32)
+	22                         load.m32
+	extras/Tests/lang.varInitByRef.ci:35: (5 bytes): ptrVoid: pointer := void
+	1f a0 00 00 00             load.ref .0000a0 ;void
+	extras/Tests/lang.varInitByRef.ci:36: (5 bytes): ptrBool: pointer := bool
+	1f 30 01 00 00             load.ref .000130 ;bool
+	extras/Tests/lang.varInitByRef.ci:37: (5 bytes): ptrChar: pointer := char
+	1f c0 01 00 00             load.ref .0001c0 ;char
+	extras/Tests/lang.varInitByRef.ci:38: (5 bytes): ptrInt8: pointer := int8
+	1f 50 02 00 00             load.ref .000250 ;int8
+	extras/Tests/lang.varInitByRef.ci:39: (5 bytes): ptrInt16: pointer := int16
+	1f e0 02 00 00             load.ref .0002e0 ;int16
+	extras/Tests/lang.varInitByRef.ci:40: (5 bytes): ptrInt32: pointer := int32
+	1f 70 03 00 00             load.ref .000370 ;int32
+	extras/Tests/lang.varInitByRef.ci:41: (5 bytes): ptrInt64: pointer := int64
+	1f 00 04 00 00             load.ref .000400 ;int64
+	extras/Tests/lang.varInitByRef.ci:42: (5 bytes): ptrUint8: pointer := uint8
 	1f 90 04 00 00             load.ref .000490 ;uint8
-	extras/Tests/lang.varInitByRef.ci:35: (5 bytes): ptrUint16: pointer := uint16
+	extras/Tests/lang.varInitByRef.ci:43: (5 bytes): ptrUint16: pointer := uint16
 	1f 20 05 00 00             load.ref .000520 ;uint16
-	extras/Tests/lang.varInitByRef.ci:36: (5 bytes): ptrUint32: pointer := uint32
+	extras/Tests/lang.varInitByRef.ci:44: (5 bytes): ptrUint32: pointer := uint32
 	1f b0 05 00 00             load.ref .0005b0 ;uint32
-	extras/Tests/lang.varInitByRef.ci:37: (5 bytes): ptrUint64: pointer := uint64
+	extras/Tests/lang.varInitByRef.ci:45: (5 bytes): ptrUint64: pointer := uint64
 	1f 40 06 00 00             load.ref .000640 ;uint64
-	extras/Tests/lang.varInitByRef.ci:38: (5 bytes): ptrFloat32: pointer := float32
+	extras/Tests/lang.varInitByRef.ci:46: (5 bytes): ptrFloat32: pointer := float32
 	1f d0 06 00 00             load.ref .0006d0 ;float32
-	extras/Tests/lang.varInitByRef.ci:39: (5 bytes): ptrFloat64: pointer := float64
+	extras/Tests/lang.varInitByRef.ci:47: (5 bytes): ptrFloat64: pointer := float64
 	1f 60 07 00 00             load.ref .000760 ;float64
-	extras/Tests/lang.varInitByRef.ci:40: (5 bytes): ptrTypename: pointer := typename
+	extras/Tests/lang.varInitByRef.ci:48: (5 bytes): ptrTypename: pointer := typename
 	1f 08 00 00 00             load.ref .000008 ;typename
-	extras/Tests/lang.varInitByRef.ci:41: (5 bytes): ptrFunction: pointer := function
+	extras/Tests/lang.varInitByRef.ci:49: (5 bytes): ptrFunction: pointer := function
 	1f 10 09 00 00             load.ref .000910 ;function
-	extras/Tests/lang.varInitByRef.ci:42: (5 bytes): ptrPointer: pointer := pointer
+	extras/Tests/lang.varInitByRef.ci:50: (5 bytes): ptrPointer: pointer := pointer
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
-	extras/Tests/lang.varInitByRef.ci:43: (5 bytes): ptrVariant: pointer := variant
+	extras/Tests/lang.varInitByRef.ci:51: (5 bytes): ptrVariant: pointer := variant
 	1f 80 08 00 00             load.ref .000880 ;variant
-	extras/Tests/lang.varInitByRef.ci:44: (5 bytes): ptrObject: pointer := object
+	extras/Tests/lang.varInitByRef.ci:52: (5 bytes): ptrObject: pointer := object
 	1f a8 09 00 00             load.ref .0009a8 ;object
-	extras/Tests/lang.varInitByRef.ci:47: (10 bytes): varVoid: variant := void
+	extras/Tests/lang.varInitByRef.ci:55: (10 bytes): varVoid: variant := void
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f a0 00 00 00             load.ref .0000a0 ;void
-	extras/Tests/lang.varInitByRef.ci:48: (10 bytes): varBool: variant := bool
+	extras/Tests/lang.varInitByRef.ci:56: (10 bytes): varBool: variant := bool
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f 30 01 00 00             load.ref .000130 ;bool
-	extras/Tests/lang.varInitByRef.ci:49: (10 bytes): varChar: variant := char
+	extras/Tests/lang.varInitByRef.ci:57: (10 bytes): varChar: variant := char
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f c0 01 00 00             load.ref .0001c0 ;char
-	extras/Tests/lang.varInitByRef.ci:50: (10 bytes): varInt8: variant := int8
+	extras/Tests/lang.varInitByRef.ci:58: (10 bytes): varInt8: variant := int8
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f 50 02 00 00             load.ref .000250 ;int8
-	extras/Tests/lang.varInitByRef.ci:51: (10 bytes): varInt16: variant := int16
+	extras/Tests/lang.varInitByRef.ci:59: (10 bytes): varInt16: variant := int16
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f e0 02 00 00             load.ref .0002e0 ;int16
-	extras/Tests/lang.varInitByRef.ci:52: (10 bytes): varInt32: variant := int32
+	extras/Tests/lang.varInitByRef.ci:60: (10 bytes): varInt32: variant := int32
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f 70 03 00 00             load.ref .000370 ;int32
-	extras/Tests/lang.varInitByRef.ci:53: (10 bytes): varInt64: variant := int64
+	extras/Tests/lang.varInitByRef.ci:61: (10 bytes): varInt64: variant := int64
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f 00 04 00 00             load.ref .000400 ;int64
-	extras/Tests/lang.varInitByRef.ci:54: (10 bytes): varUint8: variant := uint8
+	extras/Tests/lang.varInitByRef.ci:62: (10 bytes): varUint8: variant := uint8
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f 90 04 00 00             load.ref .000490 ;uint8
-	extras/Tests/lang.varInitByRef.ci:55: (10 bytes): varUint16: variant := uint16
+	extras/Tests/lang.varInitByRef.ci:63: (10 bytes): varUint16: variant := uint16
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f 20 05 00 00             load.ref .000520 ;uint16
-	extras/Tests/lang.varInitByRef.ci:56: (10 bytes): varUint32: variant := uint32
+	extras/Tests/lang.varInitByRef.ci:64: (10 bytes): varUint32: variant := uint32
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f b0 05 00 00             load.ref .0005b0 ;uint32
-	extras/Tests/lang.varInitByRef.ci:57: (10 bytes): varUint64: variant := uint64
+	extras/Tests/lang.varInitByRef.ci:65: (10 bytes): varUint64: variant := uint64
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f 40 06 00 00             load.ref .000640 ;uint64
-	extras/Tests/lang.varInitByRef.ci:58: (10 bytes): varFloat32: variant := float32
+	extras/Tests/lang.varInitByRef.ci:66: (10 bytes): varFloat32: variant := float32
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f d0 06 00 00             load.ref .0006d0 ;float32
-	extras/Tests/lang.varInitByRef.ci:59: (10 bytes): varFloat64: variant := float64
+	extras/Tests/lang.varInitByRef.ci:67: (10 bytes): varFloat64: variant := float64
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f 60 07 00 00             load.ref .000760 ;float64
-	extras/Tests/lang.varInitByRef.ci:60: (10 bytes): varTypename: variant := typename
+	extras/Tests/lang.varInitByRef.ci:68: (10 bytes): varTypename: variant := typename
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f 08 00 00 00             load.ref .000008 ;typename
-	extras/Tests/lang.varInitByRef.ci:61: (10 bytes): varFunction: variant := function
+	extras/Tests/lang.varInitByRef.ci:69: (10 bytes): varFunction: variant := function
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f 10 09 00 00             load.ref .000910 ;function
-	extras/Tests/lang.varInitByRef.ci:62: (10 bytes): varPointer: variant := pointer
+	extras/Tests/lang.varInitByRef.ci:70: (10 bytes): varPointer: variant := pointer
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
-	extras/Tests/lang.varInitByRef.ci:63: (10 bytes): varVariant: variant := variant
+	extras/Tests/lang.varInitByRef.ci:71: (10 bytes): varVariant: variant := variant
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f 80 08 00 00             load.ref .000880 ;variant
-	extras/Tests/lang.varInitByRef.ci:64: (10 bytes): varObject: variant := object
+	extras/Tests/lang.varInitByRef.ci:72: (10 bytes): varObject: variant := object
 	1f 08 00 00 00             load.ref .000008 ;typename
 	1f a8 09 00 00             load.ref .0009a8 ;object
-	extras/Tests/lang.varInitByRef.ci:67: (10 bytes): copyPtrFloat64: variant := ptrFloat64
+	extras/Tests/lang.varInitByRef.ci:75: (10 bytes): copyPtrFloat64: variant := ptrFloat64
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	11 a8 00 00                load.sp(+168)
 	22                         load.m32
-	extras/Tests/lang.varInitByRef.ci:70: (5 bytes): copyVarFloat64: pointer := varFloat64
+	extras/Tests/lang.varInitByRef.ci:78: (5 bytes): copyVarFloat64: pointer := varFloat64
 	11 30 00 00                load.sp(+48)
 	22                         load.m32
 	extras/Tests/lang.varInitStatic.ci:7: (4 bytes): localNoInit: int64
@@ -7147,7 +7064,7 @@ val2: int64: int64 {
 	1c 2a 00 00 00 00 00 00 00 load.c64 42
 	extras/Tests/lang.varInitStatic.ci:10: (15 bytes): static globalInitValue: int64 := 1024
 	1c 00 04 00 00 00 00 00 00 load.c64 1024
-	1f 18 c6 01 00             load.ref .01c618 ;globalInitValue: int64
+	1f 90 aa 01 00             load.ref .01aa90 ;globalInitValue: int64
 	28                         store.m64
 	extras/Tests/lang.varInitStatic.ci:11: (5 bytes): localInitLocal: int64 := localInitValue
 	11 00 00 00                load.sp(+0)
@@ -7155,15 +7072,15 @@ val2: int64: int64 {
 	extras/Tests/lang.varInitStatic.ci:12: (11 bytes): static globalInitLocal: int64 := localInitValue
 	11 08 00 00                load.sp(+8)
 	23                         load.m64
-	1f 20 c6 01 00             load.ref .01c620 ;globalInitLocal: int64
+	1f 98 aa 01 00             load.ref .01aa98 ;globalInitLocal: int64
 	28                         store.m64
 	extras/Tests/lang.varInitStatic.ci:13: (6 bytes): localInitGlobal: int64 := globalInitValue
-	1f 18 c6 01 00             load.ref .01c618 ;globalInitValue: int64
+	1f 90 aa 01 00             load.ref .01aa90 ;globalInitValue: int64
 	23                         load.m64
 	extras/Tests/lang.varInitStatic.ci:14: (12 bytes): static globalInitGlobal: int64 := globalInitValue
-	1f 18 c6 01 00             load.ref .01c618 ;globalInitValue: int64
+	1f 90 aa 01 00             load.ref .01aa90 ;globalInitValue: int64
 	23                         load.m64
-	1f 28 c6 01 00             load.ref .01c628 ;globalInitGlobal: int64
+	1f a0 aa 01 00             load.ref .01aaa0 ;globalInitGlobal: int64
 	28                         store.m64
 	extras/Tests/stdc.nfcNumber.ci:3: (9 bytes): pi64: float64 := 3.141593
 	1e 18 2d 44 54 fb 21 09 40 load.f64 3.141593
@@ -7530,25 +7447,25 @@ val2: int64: int64 {
 	1c 2a 00 00 00 00 00 00 00 load.c64 42
 	extras/Tests/stdc.nfcMemory.ci:23: (9 bytes): val2: int64 := 96
 	1c 60 00 00 00 00 00 00 00 load.c64 96
-	extras/Tests/stdc.nfcMemory.ci:25: (48 bytes): raise(1, 'val1', variant(&val1), 0);
+	extras/Tests/stdc.nfcMemory.ci:25: (48 bytes): raise(1, "val1", variant(&val1), 0);
 	1b 19 00 00 00             load.c32 25
-	1f 0d c6 00 00             load.ref .00c60d ;"extras/Tests/stdc.nfcMemory.ci"
+	1f 95 a7 00 00             load.ref .00a795 ;"extras/Tests/stdc.nfcMemory.ci"
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	1f 00 04 00 00             load.ref .000400 ;int64
 	11 18 00 00                load.sp(+24)
-	1f 85 bc 01 00             load.ref .01bc85 ;"val1"
+	1f 6d a1 01 00             load.ref .01a16d ;"val1"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/stdc.nfcMemory.ci:26: (48 bytes): raise(1, 'val2', variant(&val2), 0);
+	extras/Tests/stdc.nfcMemory.ci:26: (48 bytes): raise(1, "val2", variant(&val2), 0);
 	1b 1a 00 00 00             load.c32 26
-	1f 0d c6 00 00             load.ref .00c60d ;"extras/Tests/stdc.nfcMemory.ci"
+	1f 95 a7 00 00             load.ref .00a795 ;"extras/Tests/stdc.nfcMemory.ci"
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	1f 00 04 00 00             load.ref .000400 ;int64
 	11 10 00 00                load.sp(+16)
-	1f 8a bc 01 00             load.ref .01bc8a ;"val2"
+	1f 72 a1 01 00             load.ref .01a172 ;"val2"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -7567,25 +7484,25 @@ val2: int64: int64 {
 	11 10 00 00                load.sp(+16)
 	01 08 00 00                nfc(8) ;memset(dst: pointer, value: int32, size: int32): pointer
 	10 fc ff ff                inc.sp(-4)
-	extras/Tests/stdc.nfcMemory.ci:31: (48 bytes): raise(1, 'val1', variant(&val1), 0);
+	extras/Tests/stdc.nfcMemory.ci:31: (48 bytes): raise(1, "val1", variant(&val1), 0);
 	1b 1f 00 00 00             load.c32 31
-	1f 0d c6 00 00             load.ref .00c60d ;"extras/Tests/stdc.nfcMemory.ci"
+	1f 95 a7 00 00             load.ref .00a795 ;"extras/Tests/stdc.nfcMemory.ci"
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	1f 00 04 00 00             load.ref .000400 ;int64
 	11 18 00 00                load.sp(+24)
-	1f 85 bc 01 00             load.ref .01bc85 ;"val1"
+	1f 6d a1 01 00             load.ref .01a16d ;"val1"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/stdc.nfcMemory.ci:32: (48 bytes): raise(1, 'val2', variant(&val2), 0);
+	extras/Tests/stdc.nfcMemory.ci:32: (48 bytes): raise(1, "val2", variant(&val2), 0);
 	1b 20 00 00 00             load.c32 32
-	1f 0d c6 00 00             load.ref .00c60d ;"extras/Tests/stdc.nfcMemory.ci"
+	1f 95 a7 00 00             load.ref .00a795 ;"extras/Tests/stdc.nfcMemory.ci"
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	1f 00 04 00 00             load.ref .000400 ;int64
 	11 10 00 00                load.sp(+16)
-	1f 8a bc 01 00             load.ref .01bc8a ;"val2"
+	1f 72 a1 01 00             load.ref .01a172 ;"val2"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -7622,7 +7539,7 @@ extras/Tests/lang.useOperator.ci:33: chrNeg: char('�')
 extras/Tests/lang.useOperator.ci:34: chrCmt: char('�')
 extras/Tests/lang.useOperator.ci:35: chrAdd: char('�')
 extras/Tests/lang.useOperator.ci:36: chrSub: char('�')
-extras/Tests/lang.useOperator.ci:37: chrMul: char('"')
+extras/Tests/lang.useOperator.ci:37: chrMul: char('\"')
 extras/Tests/lang.useOperator.ci:38: chrDiv: char('')
 extras/Tests/lang.useOperator.ci:39: chrMod: char('a')
 extras/Tests/lang.useOperator.ci:40: chrAnd: char('`')
@@ -7848,7 +7765,7 @@ extras/Tests/lang.useOperator.ci:281: f64Cge: bool(1)
 extras/Tests/lang.statementIf.ci:26: t: int32(0)
 extras/Tests/lang.varInitArray.ci:8: arrFixedNoInit: int64[7]([7] {???})
 extras/Tests/lang.varInitArray.ci:9: arrSliceNoInit: int64[](null)
-extras/Tests/lang.varInitArray.ci:10: arrPtrNoInit: int64[*]([*] {...})
+extras/Tests/lang.varInitArray.ci:10: arrPtrNoInit: int64[*](???)
 extras/Tests/lang.varInitArray.ci:13: arrSliceInitNull: int64[](null)
 extras/Tests/lang.varInitArray.ci:14: arrPtrInitNull: int64[*](null)
 extras/Tests/lang.varInitArray.ci:17: arrSliceInitFixed: int64[]([7] {???})
@@ -7858,60 +7775,66 @@ extras/Tests/lang.varInitArray.ci:22: arrPtrInitSlice: int64[*]([*] {...})
 extras/Tests/lang.varInitArray.ci:26: arrPtrInitPtr: int64[*]([*] {...})
 extras/Tests/lang.varInitArray.ci:37: arrSliceInitString: char[]([6] {'s', 't', 'r', 'i', 'n', 'g'})
 extras/Tests/lang.varInitArray.ci:38: arrPtrInitString: char[*]("string")
-extras/Tests/lang.varInitByRef.ci:7: value: int64(33)
-extras/Tests/lang.varInitByRef.ci:8: valueRef: int64(33)
-extras/Tests/lang.varInitByRef.ci:9: valuePtr: pointer(<{??}@07f9e4>)
-extras/Tests/lang.varInitByRef.ci:10: valueVar: variant({int64} 33)
-extras/Tests/lang.varInitByRef.ci:12: copyVal: int64(33)
-extras/Tests/lang.varInitByRef.ci:13: copyRef: int64(33)
-extras/Tests/lang.varInitByRef.ci:14: copyPtr: pointer(<{??}@07f9e4>)
-extras/Tests/lang.varInitByRef.ci:15: copyVar: variant({int64} 33)
-extras/Tests/lang.varInitByRef.ci:16: fromRef: int64(33)
-extras/Tests/lang.varInitByRef.ci:17: fromPtr: int64(33)
-extras/Tests/lang.varInitByRef.ci:18: fromVar: int64(33)
-extras/Tests/lang.varInitByRef.ci:20: nullRef: int64(null)
-extras/Tests/lang.varInitByRef.ci:21: nullPtr: pointer(null)
-extras/Tests/lang.varInitByRef.ci:22: nullVar: variant(null)
+extras/Tests/lang.varInitByRef.ci:7: value: int64(42)
+extras/Tests/lang.varInitByRef.ci:8: valueRef: int64(42)
+extras/Tests/lang.varInitByRef.ci:9: valuePtr: pointer(<value@01aa80>)
+extras/Tests/lang.varInitByRef.ci:10: valueVar: variant({int64} 42)
+extras/Tests/lang.varInitByRef.ci:12: fromRef: int64(42)
+extras/Tests/lang.varInitByRef.ci:13: fromPtr: int64(42)
+extras/Tests/lang.varInitByRef.ci:14: fromVar: int64(42)
+extras/Tests/lang.varInitByRef.ci:16: nullRef: int64(null)
+extras/Tests/lang.varInitByRef.ci:17: nullPtr: pointer(null)
+extras/Tests/lang.varInitByRef.ci:18: nullVar: variant(null)
+extras/Tests/lang.varInitByRef.ci:19: nullTyp: typename(null)
+extras/Tests/lang.varInitByRef.ci:20: nullFun: function(null)
+extras/Tests/lang.varInitByRef.ci:21: nullObj: object(null)
 extras/Tests/lang.varInitByRef.ci:23: typePtr: pointer(<int64@000400>)
 extras/Tests/lang.varInitByRef.ci:24: typeVar: variant({typename} int64)
-extras/Tests/lang.varInitByRef.ci:27: ptrVoid: pointer(<void@0000a0>)
-extras/Tests/lang.varInitByRef.ci:28: ptrBool: pointer(<bool@000130>)
-extras/Tests/lang.varInitByRef.ci:29: ptrChar: pointer(<char@0001c0>)
-extras/Tests/lang.varInitByRef.ci:30: ptrInt8: pointer(<int8@000250>)
-extras/Tests/lang.varInitByRef.ci:31: ptrInt16: pointer(<int16@0002e0>)
-extras/Tests/lang.varInitByRef.ci:32: ptrInt32: pointer(<int32@000370>)
-extras/Tests/lang.varInitByRef.ci:33: ptrInt64: pointer(<int64@000400>)
-extras/Tests/lang.varInitByRef.ci:34: ptrUint8: pointer(<uint8@000490>)
-extras/Tests/lang.varInitByRef.ci:35: ptrUint16: pointer(<uint16@000520>)
-extras/Tests/lang.varInitByRef.ci:36: ptrUint32: pointer(<uint32@0005b0>)
-extras/Tests/lang.varInitByRef.ci:37: ptrUint64: pointer(<uint64@000640>)
-extras/Tests/lang.varInitByRef.ci:38: ptrFloat32: pointer(<float32@0006d0>)
-extras/Tests/lang.varInitByRef.ci:39: ptrFloat64: pointer(<float64@000760>)
-extras/Tests/lang.varInitByRef.ci:40: ptrTypename: pointer(<typename@000008>)
-extras/Tests/lang.varInitByRef.ci:41: ptrFunction: pointer(<function@000910>)
-extras/Tests/lang.varInitByRef.ci:42: ptrPointer: pointer(<pointer@0007f0>)
-extras/Tests/lang.varInitByRef.ci:43: ptrVariant: pointer(<variant@000880>)
-extras/Tests/lang.varInitByRef.ci:44: ptrObject: pointer(<object@0009a8>)
-extras/Tests/lang.varInitByRef.ci:47: varVoid: variant({typename} void)
-extras/Tests/lang.varInitByRef.ci:48: varBool: variant({typename} bool)
-extras/Tests/lang.varInitByRef.ci:49: varChar: variant({typename} char)
-extras/Tests/lang.varInitByRef.ci:50: varInt8: variant({typename} int8)
-extras/Tests/lang.varInitByRef.ci:51: varInt16: variant({typename} int16)
-extras/Tests/lang.varInitByRef.ci:52: varInt32: variant({typename} int32)
-extras/Tests/lang.varInitByRef.ci:53: varInt64: variant({typename} int64)
-extras/Tests/lang.varInitByRef.ci:54: varUint8: variant({typename} uint8)
-extras/Tests/lang.varInitByRef.ci:55: varUint16: variant({typename} uint16)
-extras/Tests/lang.varInitByRef.ci:56: varUint32: variant({typename} uint32)
-extras/Tests/lang.varInitByRef.ci:57: varUint64: variant({typename} uint64)
-extras/Tests/lang.varInitByRef.ci:58: varFloat32: variant({typename} float32)
-extras/Tests/lang.varInitByRef.ci:59: varFloat64: variant({typename} float64)
-extras/Tests/lang.varInitByRef.ci:60: varTypename: variant({typename} typename)
-extras/Tests/lang.varInitByRef.ci:61: varFunction: variant({typename} function)
-extras/Tests/lang.varInitByRef.ci:62: varPointer: variant({typename} pointer)
-extras/Tests/lang.varInitByRef.ci:63: varVariant: variant({typename} variant)
-extras/Tests/lang.varInitByRef.ci:64: varObject: variant({typename} object)
-extras/Tests/lang.varInitByRef.ci:67: copyPtrFloat64: variant({pointer} <float64@000760>)
-extras/Tests/lang.varInitByRef.ci:70: copyVarFloat64: pointer(<float64@000760>)
+extras/Tests/lang.varInitByRef.ci:25: typeTyp: typename(int64)
+extras/Tests/lang.varInitByRef.ci:27: local: int64(42)
+extras/Tests/lang.varInitByRef.ci:28: copyVal: int64(42)
+extras/Tests/lang.varInitByRef.ci:29: copyRef: int64(42)
+extras/Tests/lang.varInitByRef.ci:30: copyPtr: pointer(<value@01aa80>)
+extras/Tests/lang.varInitByRef.ci:31: copyVar: variant({int64} 42)
+extras/Tests/lang.varInitByRef.ci:32: copyTyp: typename(int64)
+extras/Tests/lang.varInitByRef.ci:35: ptrVoid: pointer(<void@0000a0>)
+extras/Tests/lang.varInitByRef.ci:36: ptrBool: pointer(<bool@000130>)
+extras/Tests/lang.varInitByRef.ci:37: ptrChar: pointer(<char@0001c0>)
+extras/Tests/lang.varInitByRef.ci:38: ptrInt8: pointer(<int8@000250>)
+extras/Tests/lang.varInitByRef.ci:39: ptrInt16: pointer(<int16@0002e0>)
+extras/Tests/lang.varInitByRef.ci:40: ptrInt32: pointer(<int32@000370>)
+extras/Tests/lang.varInitByRef.ci:41: ptrInt64: pointer(<int64@000400>)
+extras/Tests/lang.varInitByRef.ci:42: ptrUint8: pointer(<uint8@000490>)
+extras/Tests/lang.varInitByRef.ci:43: ptrUint16: pointer(<uint16@000520>)
+extras/Tests/lang.varInitByRef.ci:44: ptrUint32: pointer(<uint32@0005b0>)
+extras/Tests/lang.varInitByRef.ci:45: ptrUint64: pointer(<uint64@000640>)
+extras/Tests/lang.varInitByRef.ci:46: ptrFloat32: pointer(<float32@0006d0>)
+extras/Tests/lang.varInitByRef.ci:47: ptrFloat64: pointer(<float64@000760>)
+extras/Tests/lang.varInitByRef.ci:48: ptrTypename: pointer(<typename@000008>)
+extras/Tests/lang.varInitByRef.ci:49: ptrFunction: pointer(<function@000910>)
+extras/Tests/lang.varInitByRef.ci:50: ptrPointer: pointer(<pointer@0007f0>)
+extras/Tests/lang.varInitByRef.ci:51: ptrVariant: pointer(<variant@000880>)
+extras/Tests/lang.varInitByRef.ci:52: ptrObject: pointer(<object@0009a8>)
+extras/Tests/lang.varInitByRef.ci:55: varVoid: variant({typename} void)
+extras/Tests/lang.varInitByRef.ci:56: varBool: variant({typename} bool)
+extras/Tests/lang.varInitByRef.ci:57: varChar: variant({typename} char)
+extras/Tests/lang.varInitByRef.ci:58: varInt8: variant({typename} int8)
+extras/Tests/lang.varInitByRef.ci:59: varInt16: variant({typename} int16)
+extras/Tests/lang.varInitByRef.ci:60: varInt32: variant({typename} int32)
+extras/Tests/lang.varInitByRef.ci:61: varInt64: variant({typename} int64)
+extras/Tests/lang.varInitByRef.ci:62: varUint8: variant({typename} uint8)
+extras/Tests/lang.varInitByRef.ci:63: varUint16: variant({typename} uint16)
+extras/Tests/lang.varInitByRef.ci:64: varUint32: variant({typename} uint32)
+extras/Tests/lang.varInitByRef.ci:65: varUint64: variant({typename} uint64)
+extras/Tests/lang.varInitByRef.ci:66: varFloat32: variant({typename} float32)
+extras/Tests/lang.varInitByRef.ci:67: varFloat64: variant({typename} float64)
+extras/Tests/lang.varInitByRef.ci:68: varTypename: variant({typename} typename)
+extras/Tests/lang.varInitByRef.ci:69: varFunction: variant({typename} function)
+extras/Tests/lang.varInitByRef.ci:70: varPointer: variant({typename} pointer)
+extras/Tests/lang.varInitByRef.ci:71: varVariant: variant({typename} variant)
+extras/Tests/lang.varInitByRef.ci:72: varObject: variant({typename} object)
+extras/Tests/lang.varInitByRef.ci:75: copyPtrFloat64: variant({pointer} <float64@000760>)
+extras/Tests/lang.varInitByRef.ci:78: copyVarFloat64: pointer(<float64@000760>)
 extras/Tests/lang.varInitStatic.ci:7: localNoInit: int64(???)
 extras/Tests/lang.varInitStatic.ci:8: globalNoInit: int64(0)
 extras/Tests/lang.varInitStatic.ci:9: localInitValue: int64(42)
@@ -7963,13 +7886,12 @@ extras/Tests/stdc.nfcMemory.ci:8: p3: pointer(<{??}@???>)
 extras/Tests/stdc.nfcMemory.ci:9: p4: pointer(<{??}@???>)
 extras/Tests/stdc.nfcMemory.ci:22: val1: int64(0)
 extras/Tests/stdc.nfcMemory.ci:23: val2: int64(42)
-.main: function(.main)
 // */
 
 /*-- Allocations:
-memory[meta] @000000; size: 116240(113.5 Kb)
-memory[code] @000000; size: 121341(118.5 Kb)
-memory[stack] @000000; size: 131018(127.9 Kb)
-memory[heap] @01d9fd; size: 271665(265.3 Kb)
-memory[free] @01da18; size: 271616(265.2 Kb)
+memory[meta] @000000; size: 109184(106.6 Kb)
+memory[code] @000000; size: 114333(111.7 Kb)
+memory[stack] @000000; size: 131012(127.9 Kb)
+memory[heap] @01be9d; size: 278655(272.1 Kb)
+memory[free] @01beb0; size: 278608(272.1 Kb)
 // */

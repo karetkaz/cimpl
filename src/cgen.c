@@ -35,46 +35,46 @@ static inline void memSwap(void *_a, void *_b, size_t size) {
 
 // emit constant values.
 static inline size_t emitI64(rtContext rt, int64_t value) {
-	stkval arg;
-	arg.i8 = value;
+	vmValue arg;
+	arg.i64 = value;
 	return emitarg(rt, opc_lc64, arg);
 }
 static inline size_t emitF64(rtContext rt, float64_t value) {
-	stkval arg;
-	arg.f8 = value;
+	vmValue arg;
+	arg.f64 = value;
 	return emitarg(rt, opc_lf64, arg);
 }
 static inline size_t emitRef(rtContext rt, void *value) {
-	stkval arg;
-	arg.i8 = vmOffset(rt, value);
+	vmValue arg;
+	arg.i64 = vmOffset(rt, value);
 	return emitarg(rt, opc_lref, arg);
 }
 
 // emit an offset: address or index (32 or 64 bit based on vm size)
 static inline size_t emitOffs(rtContext rt, size_t value) {
-	stkval arg;
-	arg.i8 = value;
+	vmValue arg;
+	arg.i64 = value;
 	return emitarg(rt, sizeof(vmOffs) > vm_size ? opc_lc64 : opc_lc32, arg);
 }
 
 /// Emit an instruction with no argument.
 static inline size_t emitOpc(rtContext rt, vmOpcode opc) {
-	stkval arg;
-	arg.i8 = 0;
+	vmValue arg;
+	arg.i64 = 0;
 	return emitarg(rt, opc, arg);
 }
 
 /// Emit an instruction with integer argument.
 size_t emitInt(rtContext rt, vmOpcode opc, int64_t value) {
-	stkval arg;
-	arg.i8 = value;
+	vmValue arg;
+	arg.i64 = value;
 	return emitarg(rt, opc, arg);
 }
 
 /// Emit an instruction indexing nth element on stack.
 static inline size_t emitStack(rtContext rt, vmOpcode opc, ssize_t arg) {
-	stkval tmp;
-	tmp.u8 = rt->vm.ss * vm_size - arg;
+	vmValue tmp;
+	tmp.u64 = rt->vm.ss * vm_size - arg;
 
 	switch (opc) {
 		default:
@@ -83,7 +83,7 @@ static inline size_t emitStack(rtContext rt, vmOpcode opc, ssize_t arg) {
 
 		case opc_drop:
 		case opc_ldsp:
-			if (tmp.u8 > rt->vm.ss * vm_size) {
+			if (tmp.u64 > rt->vm.ss * vm_size) {
 				trace(ERR_INTERNAL_ERROR);
 				return 0;
 			}
@@ -95,8 +95,8 @@ static inline size_t emitStack(rtContext rt, vmOpcode opc, ssize_t arg) {
 		case opc_set1:
 		case opc_set2:
 		case opc_set4:
-			tmp.u8 /= vm_size;
-			if (tmp.u8 > vm_regs) {
+			tmp.u64 /= vm_size;
+			if (tmp.u64 > vm_regs) {
 				trace(ERR_INTERNAL_ERROR);
 				return 0;
 			}
@@ -827,14 +827,31 @@ static inline ccKind genVariable(ccContext cc, symn variable, ccKind get) {
 		}
 	}
 
-	if (isInline(variable)) {
-		return genAst(cc, variable->init, get);
+	switch (variable->kind & MASK_kind) {
+		default:
+			fatal(ERR_INTERNAL_ERROR);
+			return CAST_any;
+
+		case KIND_def:
+			// generate inline
+			return genAst(cc, variable->init, get);
+
+		case KIND_typ:
+		case KIND_fun:
+			// typename is by reference, ex: pointer b = int32;
+			varCast = typCast = CAST_ref;
+			break;
+
+		case KIND_var:
+			if (get == CAST_ref && castOf(type) == CAST_ref) {
+				// copy references and pointers
+				// ex: `int &a = ptr;`
+				varCast = CAST_ref;
+				typCast = CAST_val;
+			}
+			break;
 	}
 
-	// typename is by reference
-	if (type == cc->type_rec) {
-		varCast = typCast = CAST_ref;
-	}
 	// array: push length of variable first.
 	if (get == CAST_arr && typCast == CAST_arr && varCast != CAST_arr) {
 		symn length = type->fields;
@@ -867,12 +884,6 @@ static inline ccKind genVariable(ccContext cc, symn variable, ccKind get) {
 	// convert a variant to a reference: `int &a = var;`
 	if (get == CAST_ref && type == cc->type_var) {
 		// TODO: un-box variant with type checking.
-		varCast = CAST_ref;
-		typCast = CAST_val;
-	}
-
-	// convert a pointer to a reference: `int &a = ptr;`
-	if (get == CAST_ref && type == cc->type_ptr) {
 		varCast = CAST_ref;
 		typCast = CAST_val;
 	}
@@ -1163,11 +1174,12 @@ static inline ccKind genMember(ccContext cc, astn ast, ccKind get) {
 		return genAst(cc, ast->op.rhso, get);
 	}
 
-	if (!genAst(cc, ast->op.lhso, KIND_var)) {
+	if (!genAst(cc, ast->op.lhso, CAST_ref)) {
 		traceAst(ast);
 		return CAST_any;
 	}
 
+	// TODO: invoke genVariable() with member
 	if (!emitIncrement(rt, member->offs)) {
 		traceAst(ast);
 		return CAST_any;

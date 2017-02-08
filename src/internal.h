@@ -22,7 +22,7 @@
 	4: include debug messages from code emitter
  	if not defined no extra messages and extra checks are performed.
 */
-#define DEBUGGING 1
+#define DEBUGGING 0
 
 // limit the count of printed elements(stacktrace, array elements)
 #define LOG_MAX_ITEMS 25
@@ -103,9 +103,10 @@ struct astNode {
 	ccToken		kind;				// token kind: operator, statement, ...
 	symn		type;				// token type: return
 	astn		next;				// next token / next argument / next statement
-	char*		file;				// file name of the token belongs to
+	char		*file;				// file name of the token belongs to
 	int32_t		line;				// line position of token
 	union {							// token value
+		//char *cStr;				// constant string value (ref.name)
 		int64_t cInt;				// constant integer value
 		float64_t cFlt;				// constant floating point value
 		struct {					// STMT_xxx: statement
@@ -121,7 +122,7 @@ struct astNode {
 			int		prec;			// precedence level
 		} op;
 		struct {					// KIND_var: identifier
-			char*	name;			// name of identifier
+			char	*name;			// name of identifier
 			unsigned hash;			// hash code for 'name'
 			symn	link;			// symbol to variable
 			astn	used;			// next usage of variable
@@ -141,6 +142,15 @@ struct astNode {
 	};
 };
 
+typedef enum {
+	// what to do when a break point is hit
+	brkSkip  = 0x00,  // do nothing
+	brkPrint = 0x01,  // print when hit
+	brkTrace = 0x02,  // trace when hit
+	brkPause = 0x04,  // pause when hit
+	brkOnce  = 0x10,  // one shoot breakpoint (disabled after first hit)
+} brkMode;
+
 /// Debug info node
 struct dbgNode {
 	// the statement tree.
@@ -156,7 +166,7 @@ struct dbgNode {
 	int line;
 
 	// break execution?
-	int bp;
+	brkMode bp;
 
 	// execution information
 	int64_t total, self;  // time spent executing function / statement
@@ -205,8 +215,12 @@ struct ccContextRec {
 	symn	type_vid;		// void
 	symn	type_bol;		// boolean
 	symn	type_chr;		// character
+	symn	type_i08;		// 8bit signed integer
+	symn	type_i16;		// 16bit signed integer
 	symn	type_i32;		// 32bit signed integer
 	symn	type_i64;		// 64bit signed integer
+	symn	type_u08;		// 8bit unsigned integer
+	symn	type_u16;		// 16bit unsigned integer
 	symn	type_u32;		// 32bit unsigned integer
 	symn	type_u64;		// 64bit unsigned integer
 	symn	type_f32;		// 32bit floating point
@@ -306,6 +320,8 @@ extern const char * const type_fmt_float32;
 extern const char * const type_fmt_float64;
 extern const char * const type_fmt_string;
 extern const char * const type_fmt_typename;
+extern const char type_fmt_string_chr;
+extern const char type_fmt_character_chr;
 
 
 //             *** Tree related functions
@@ -446,7 +462,8 @@ ccToken skipTok(ccContext, ccToken match, int raise);
 astn backTok(ccContext, astn token);
 
 //             *** Print and dump
-enum Format {
+typedef enum {
+	prSkip = -1,
 	prAsmCode = 0x00000f,   // print code bytes (0-15)
 	prAsmAddr = 0x000010,   // print global address: (@0x003d8c)
 	prAsmName = 0x000040,   // use symbol names instead of addresses: <main+80>
@@ -468,11 +485,13 @@ enum Format {
 	prShort = prSymQual | prSymArgs | prSymType | prOneLine ,	// %t, %T
 	prFull = prAttr | prSymQual | prSymArgs | prSymType | prSymInit,		// %+t, %-t, %+T, %-T
 	prDbg = prAttr | prAstType | prSymQual | prSymArgs | prSymType | prSymInit | prAsmAddr | prAsmName | 9
-};
+} dmpMode;
 
-void printSym(FILE *out, const char **esc, symn sym, int mode, int indent);
+const char **escapeStr();
 
-void printAst(FILE *out, const char **esc, astn ast, int mode, int indent);
+void printSym(FILE *out, const char **esc, symn sym, dmpMode mode, int indent);
+
+void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent);
 
 /**
  * @brief Print an instruction to the output stream.
@@ -484,7 +503,7 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent);
  *    positive or zero value forces absolute offsets. (ex: jmp @0255d0)
  * @param rt Runtime context (optional).
  */
-void printAsm(FILE *out, const char **esc, rtContext, void *ptr, int mode);
+void printAsm(FILE *out, const char **esc, rtContext, void *ptr, dmpMode mode);
 void printOpc(FILE *out, const char **esc, vmOpcode opc, int64_t args);
 
 /**
@@ -495,7 +514,7 @@ void printOpc(FILE *out, const char **esc, vmOpcode opc, int64_t args);
  * @param ref Base offset of variable.
  * @param level Indentation level. (Used for members and arrays)
  */
-void printVal(FILE *out, const char **esc, rtContext, symn var, stkval *ref, int mode, int indent);
+void printVal(FILE *out, const char **esc, rtContext, symn var, vmValue *ref, dmpMode mode, int indent);
 
 /**
  * @brief Print and add compiler and runtime errors.
@@ -550,11 +569,11 @@ int vmSelfTest();
 int optimizeAssign(rtContext, size_t offsBegin, size_t offsEnd);
 
 
-static inline int isStatic(symn sym) {
-	return (sym->kind & ATTR_stat) != 0;
-}
 static inline int isConst(symn sym) {
 	return (sym->kind & ATTR_cnst) != 0;
+}
+static inline int isStatic(symn sym) {
+	return (sym->kind & ATTR_stat) != 0;
 }
 static inline int isInline(symn sym) {
 	return (sym->kind & MASK_kind) == KIND_def;
@@ -675,7 +694,7 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 	abort();
 #endif
 }
-#define prerr(__DBG, __MSG, ...) do { printFmt(stdout, NULL, "%s:%u: " __DBG ": %s: " __MSG "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); } while(0)
+#define prerr(__DBG, __MSG, ...) do { printFmt(stdout, NULL, "%?s:%?u: " __DBG ": %s: " __MSG "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); } while(0)
 
 #define fatal(msg, ...) do { prerr("todo", msg, ##__VA_ARGS__); _abort(); } while(0)
 #define dieif(__EXP, msg, ...) do { if (__EXP) { prerr("todo("#__EXP")", msg, ##__VA_ARGS__); _abort(); } } while(0)

@@ -15,7 +15,7 @@
 
 static inline int printChr(FILE *out, int chr) { return fputc(chr, out); }
 
-static const char **escapeStr() {
+const char **escapeStr() {
 	static const char *escape[256];
 	static char initialized = 0;
 	if (!initialized) {
@@ -83,7 +83,7 @@ static void printQualified(FILE *out, const char **esc, symn sym) {
 }
 
 /// print array type
-static void printArray(FILE *out, const char **esc, symn sym, int mode) {
+static void printArray(FILE *out, const char **esc, symn sym, dmpMode mode) {
 	if (sym != NULL && isArrayType(sym)) {
 		symn length = sym->fields;
 		printArray(out, esc, sym->type, mode);
@@ -101,7 +101,7 @@ static void printArray(FILE *out, const char **esc, symn sym, int mode) {
 	printSym(out, esc, sym, mode, 0);
 }
 
-void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
+void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 	static const int exprLevel = 0;
 	const int nlBody = mode & nlAstBody;
 	const int nlElIf = mode & nlAstElIf;
@@ -452,15 +452,20 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 
 		case TOKEN_val:
 			if (ast->type->format == type_fmt_string) {
-				printStr(out, esc, "\'");
-				printStr(out, escapeStr(), ast->ref.name);
-				printStr(out, esc, "\'");
+				printFmt(out, esc, "%c", type_fmt_string_chr);
+				printFmt(out, esc ? esc : escapeStr(), type_fmt_string, ast->ref.name);
+				printFmt(out, esc, "%c", type_fmt_string_chr);
+			}
+			else if (ast->type->format == type_fmt_character) {
+				printFmt(out, esc, "%c", type_fmt_character_chr);
+				printFmt(out, esc ? esc : escapeStr(), type_fmt_character, ast->cInt);
+				printFmt(out, esc, "%c", type_fmt_character_chr);
 			}
 			else if (ast->type->format == type_fmt_float32) {
-				printFmt(out, esc, ast->type->format, ast->cFlt);
+				printFmt(out, esc, type_fmt_float32, (float32_t) ast->cFlt);
 			}
 			else if (ast->type->format == type_fmt_float64) {
-				printFmt(out, esc, ast->type->format, ast->cFlt);
+				printFmt(out, esc, type_fmt_float64, (float64_t) ast->cFlt);
 			}
 			else {
 				printFmt(out, esc, ast->type->format, ast->cInt);
@@ -473,7 +478,7 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 					printSym(out, esc, ast->ref.link, mode & ~prSymQual, -indent);
 				}
 				else {
-					printSym(out, esc, ast->ref.link, 0, 0);
+					printSym(out, esc, ast->ref.link, prName, 0);
 				}
 			}
 			else {
@@ -484,7 +489,7 @@ void printAst(FILE *out, const char **esc, astn ast, int mode, int indent) {
 	}
 }
 
-void printSym(FILE *out, const char **esc, symn sym, int mode, int indent) {
+void printSym(FILE *out, const char **esc, symn sym, dmpMode mode, int indent) {
 	int oneLine = mode & prOneLine;
 	int pr_attr = mode & prAttr;
 
@@ -671,7 +676,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 							}
 							break;
 					}
-					printSym(out, esc, sym, prc, len);
+					printSym(out, esc, sym, (dmpMode) prc, len);
 					continue;
 				}
 
@@ -701,7 +706,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 							}
 							break;
 					}
-					printAst(out, esc, ast, prc, len);
+					printAst(out, esc, ast, (dmpMode) prc, len);
 					continue;
 				}
 
@@ -848,7 +853,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 						break;
 					}
 
-					printAsm(out, esc, NULL, opc, prc);
+					printAsm(out, esc, NULL, opc, (dmpMode) prc);
 					continue;
 				}
 
@@ -1110,7 +1115,7 @@ void printErr(rtContext rt, int level, const char *file, int line, const char *m
 	}
 
 	if (file != NULL && line > 0) {
-		printFmt(logFile, esc, "%s:%u: ", file, line);
+		printFmt(logFile, esc, "%?s:%?u: ", file, line);
 	}
 
 	if (level > 0) {

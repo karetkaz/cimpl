@@ -6,9 +6,7 @@
 
 Types are special kind of variables.
 
-
 Basic types
-
 	void
 	bool
 	char
@@ -38,7 +36,7 @@ Basic types
 #constants
 	@true := 0 == 0;
 	@false := 0 != 0;
-	@null: emit(pointer, i32(0));
+	@null: pointer(emit(struct, i32(0)));
 
 Derived data types:
 	slice: struct {const pointer array; const int length;}
@@ -58,14 +56,7 @@ User defined types:
 			is a combination of pointer and length.
 			where type of data is known by the compiler, the length by runtime.
 
-	struct:
-		when declaring a struct there will be declared the following initializer:
-			with all members, in case packing is default,
-				??? and fixed size arrays are not contained by the structure.
-		ex: for struct Complex {double re; double im};
-		will be defined:
-			define Complex(double re, double im) = emit(Complex, double(re), double(im));
-
+	record
 	function
 
 TODO's:
@@ -869,9 +860,14 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	}
 
 	// assigning a typename or pass by reference
-	if (lnk && (lnk->kind == KIND_typ || lnk->kind == CAST_arr)) {
-		if (var->type == cc->type_rec) {
-			return CAST_ref;
+	if (lnk != NULL && var->type == cc->type_rec) {
+		switch (lnk->kind & MASK_kind) {
+			default:
+				break;
+
+			case KIND_typ:
+			// case KIND_fun:
+				return CAST_ref;
 		}
 	}
 

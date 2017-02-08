@@ -1,0 +1,90 @@
+// How the complex class should be implemented
+
+struct Complex {
+	const float64 re;		// real
+	const float64 im = 0;	// imaginary
+
+	enum: Complex {
+		zero: { re: 0 };
+		unit: { re: 1 };
+	}
+}
+
+// constructing a complex number
+inline Complex(float64 re) = Complex { re: re };
+inline Complex(float64 re, float64 im) = Complex { re: re, im: im };
+
+inline -(Complex a) = Complex(-a.re, -a.im);
+
+inline +(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
+inline +(Complex a, float64 b) = Complex(a.re + b, a.im);
+inline +(float64 a, Complex b) = Complex(a + b.re, b.im);
+
+inline -(Complex a, Complex b) = Complex(a.re - b.re, a.im - b.im);
+inline -(Complex a, float64 b) = Complex(a.re - b, a.im);
+inline -(float64 a, Complex b) = Complex(a - b.re, b.im);
+
+inline *(Complex a, Complex b) = Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+inline *(Complex a, float64 b) = Complex(a.re * b, a.im * b);
+inline *(float64 a, Complex b) = Complex(a * b.re, a * b.im);
+
+Complex div(Complex a, Complex b) {
+	// Adapted from Numerical Recipes in C - The Art of Scientific Computing
+	// ISBN 0-521-43108-5
+
+	if (Math.abs(b.re) >= Math.abs(b.im)) {
+		float64 r = b.im / b.re;
+		float64 den = b.re + r * b.im;
+		float64 re = (a.re + r * a.im) / den;
+		float64 im = (a.im - r * a.re) / den;
+		return Complex(re, im);
+	}
+	float64 r = b.re / b.im;
+	float64 den = b.im + r * b.re;
+	float64 re = (a.re * r + a.im) / den;
+	float64 im = (a.im * r - a.re) / den;
+	return Complex(re, im);
+}
+
+inline /(Complex a, Complex b) = div(a, b);
+inline /(Complex a, float64 b) = div(a, Complex(b));
+inline /(float64 a, Complex b) = div(Complex(a), b);
+
+inline abs(Complex a) = Math.hypot(a.re, a.im);
+inline arg(Complex a) = float64.atan2(a.re, a.im);
+
+// reciprocal
+Complex invert(Complex a) {
+	float64 d = (a.re * a.re + a.im * a.im);
+	return Complex(+a.re / d, -a.im / d);
+}
+
+inline conj(Complex a) = Complex(a.re, -a.im);
+
+inline exp(Complex a) = float64.exp(a.re) * Complex(float64.cos(a.im), float64.sin(a.im));
+
+inline log(Complex a) = Complex(float64.log(abs(a)), arg(a));
+
+Complex pow(Complex a, Complex b) {
+	float64 r = Math.hypot(a.im, a.re);
+	float64 t = float64.atan2(a.im, a.re);
+	float64 u = b.re * t + b.im * float64.log(r);
+	float64 v = float64.pow(r, b.re) * float64.exp(-b.im * t);
+	return Complex(v * float64.cos(u), v * float64.sin(u));
+}
+
+inline pow(Complex a, float64 b) = pow(a, Complex(b));
+
+inline sin(Complex a) = Complex(float64.sin(a.re) * Math.cosh(a.im), float64.cos(a.re) * Math.sinh(a.im));
+inline cos(Complex a) = Complex(float64.cos(a.re) * Math.cosh(a.im),-float64.sin(a.re) * Math.sinh(a.im));
+inline tan(Complex a) = div(sin(a), cos(a));
+
+inline cot(Complex a) = cos(a) / sin(a);
+
+inline sinh(Complex a) = (exp(a) - exp(-a)) / 2;
+inline cosh(Complex a) = (exp(a) + exp(-a)) / 2;
+inline tanh(Complex a) = (exp(2 * a) - 1) / (exp(2 * a) + 1);
+
+inline coth(Complex a) = (exp(2 * a) + 1) / (exp(2 * a) - 1);
+inline sech(Complex a) = inv(cosh(a));
+inline csch(Complex a) = inv(sinh(a));

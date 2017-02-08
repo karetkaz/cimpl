@@ -41,23 +41,6 @@ struct opcodeRec {
 };
 extern const struct opcodeRec opcode_tbl[256];
 
-typedef union {		// on stack value type
-	int8_t		i1;
-	int16_t		i2;
-	int32_t		i4;
-	int64_t		i8;
-	uint8_t		u1;
-	uint16_t	u2;
-	uint32_t	u4;
-	uint64_t	u8;
-	float32_t	f4;
-	float64_t	f8;
-	int32_t		rel:24;
-	struct {vmOffs data;} ref;	// reference
-	struct {vmOffs data; vmOffs type;} var;	// variant
-	struct {vmOffs data; vmOffs length;} arr;	// slice
-} stkval;
-
 /// Abstract Syntax Tree Node
 typedef struct astNode *astn;
 /// Debug Node
@@ -169,6 +152,13 @@ symn rtFindSym(rtContext, size_t offs, int callsOnly);
  */
 void *rtAlloc(rtContext, void *ptr, size_t size, void dbg(rtContext rt, void *mem, size_t size, char *kind));
 
+size_t nfcNextArg(nfcContext nfc);
+
+size_t nfcFirstArg(nfcContext nfc);
+
+vmValue *nfcPeekArg(nfcContext nfc, size_t offs);
+rtValue nfcReadArg(nfcContext nfc, size_t offs);
+
 /// returns a pointer to an offset inside the vm.
 static inline void *vmPointer(rtContext rt, size_t offset) {
 	if (offset == 0) {
@@ -192,7 +182,7 @@ size_t vmOffset(rtContext, void *ptr);
  * @param arg Argument.
  * @return Program counter.
  */
-size_t emitarg(rtContext, vmOpcode opc, stkval arg);
+size_t emitarg(rtContext, vmOpcode opc, vmValue arg);
 
 /**
  * @brief Emit an instruction with int argument.

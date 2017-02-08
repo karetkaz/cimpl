@@ -60,20 +60,22 @@ struct tokenRec {
 extern const struct tokenRec token_tbl[256];
 
 typedef enum {
-	installBase = 0x0000,                       // basic type system only
+	installBase = 0x0000,                       // base type system only
 
 	install_ptr = 0x0001,                       // pointers with malloc(memory manager)
 	install_var = 0x0002,                       // variants with reflection(runtime type system)
 	install_obj = 0x0004,                       // objects with inheritance(counted references)
+
+	installLibs = 0x0008,                       // install standard native functions and extensions
 
 	installEmit = 0x0010 | installBase,         // emit intrinsic: emit(...)
 	installEopc = 0x0020 | installEmit,         // emit opcodes: emit.i32.add
 	installEswz = 0x0040 | installEopc,         // swizzle constants: emit.swz.(xxxx, ... xyzw, ... wwww)
 
 	// register defaults if ccInit not invoked explicitly.
-	install_min = install_ptr | install_var | install_obj,
-	install_def = install_ptr | install_var | install_obj | installEopc,
-	install_all = install_ptr | install_var | install_obj | installEswz,
+	install_min = install_ptr | install_var | install_obj | installLibs,
+	install_def = install_min | installEopc,
+	install_all = install_def | installEswz,
 } ccInstall;
 
 /**
@@ -188,8 +190,6 @@ symn ccLookupSym(ccContext cc, symn in, char *name);
 
 /// standard functions
 int ccLibStd(ccContext);
-/// file access
-int ccLibFile(ccContext);
 
 #ifdef __cplusplus
 }

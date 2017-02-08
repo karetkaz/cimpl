@@ -1,7 +1,6 @@
 grammar Cmpl;
 
-// options {language=Java;}
-
+// starting point for parsing a file
 unit: statementList EOF;
 
 statement
@@ -10,7 +9,7 @@ statement
     | qualifiers? 'if' '(' for_init ')' statement ('else' statement)?                                      # IfStatement
     | qualifiers? 'for' '(' for_init? ';' expression? ';' expression? ')' statement                       # ForStatement
     | qualifiers? 'for' '(' variable ':' expression ')' statement                                     # ForEachStatement
-    | 'return' expression? ';'                                                                         # ReturnStatement
+    | 'return' initializer? ';'                                                                        # ReturnStatement
     | 'break' ';'                                                                                       # BreakStatement
     | 'continue' ';'                                                                                 # ContinueStatement
     | expression ';'                                                                               # ExpressionStatement
@@ -21,48 +20,53 @@ expression
     : Literal                                                                                        # LiteralExpression
     | Identifier                                                                                  # IdentifierExpression
     | '(' expressionList? ')'                                                                  # ParenthesizedExpression
-    | '[' expressionList? ']'                                                                  # ParenthesizedExpression
     | expression '(' expressionList? ')'                                                        # FunctionCallExpression
-    | expression '.' Identifier                                                                 # MemberAccessExpression
+    | '[' expressionList? ']'                                                                  # ParenthesizedExpression
     | expression '[' expressionList? ']'                                                         # ArrayAccessExpression
-    | ('+' | '-' | '~' | '!' | '&') expression                                                         # UnaryExpression
-    | expression ('*' | '/' | '%' | '+' | '-') expression                                         # ArithmeticExpression
-    | expression ('&' | '|' | '^' | '<<' | '>>') expression                                          # BitwiseExpression
-    | expression ('<' | '<=' | '>' | '>=') expression                                             # RelationalExpression
-    | expression ('==' | '!=' | '===' | '!==') expression                                           # EqualityExpression
+    | expression '.' Identifier                                                                 # MemberAccessExpression
+    | unary expression                                                                                 # UnaryExpression
+    | expression arithmetic expression                                                            # ArithmeticExpression
+    | expression bitwise expression                                                                  # BitwiseExpression
+    | expression relational expression                                                            # RelationalExpression
+    | expression equality expression                                                                # EqualityExpression
     | expression ('='| '*=' | '/=' | '%=' | '+=' | '-=' ) expression                              # AssignmentExpression
     | expression ('&=' | '|=' | '^=' | '<<=' | '>>=') expression                                  # AssignmentExpression
     | expression ('&&' | '||') expression                                                            # LogicalExpression
     | expression '?' expression ':' expression                                                   # ConditionalExpression
-    // TODO: deprecated: ('struct' ',')?
-    | 'emit' '(' ('struct' ',')? expressionList ')'                                                      # EmitIntrinsic
     ;
 
 declaration
-    : qualifiers? 'enum' identifier? (':' basetype)? '{' propertyList? '}'                             # EnumDeclaration
-    | qualifiers? 'struct' identifier? (':' (Literal | basetype))? '{' declarationList '}'             # TypeDeclaration
-    | qualifiers? 'inline' identifier ('(' parameterList? ')')? '=' initializer ';'                  # InlineDeclaration
-    | qualifiers? variable ( '=' initializer)? ';'                                                 # VariableDeclaration
-    | qualifiers? function ( '=' initializer)? ';'                                                 # VariableDeclaration
-    | qualifiers? function '{' statementList '}'                                                   # FunctionDeclaration
-    // TODO: deprecated
-    | qualifiers? 'define' identifier ('(' parameterList? ')')? '=' initializer ';'                  # InlineDeclaration
+    : qualifiers? 'enum' identifier? (':' typename)? '{' propertyList '}'                              # EnumDeclaration
+    | qualifiers? 'struct' identifier? (':' (Literal | typename))? '{' declarationList '}'             # TypeDeclaration
+    | qualifiers? 'inline' identifier ('(' parameterList? ')')? '=' initializer ';'                   # PropertyOperator
+    | qualifiers? 'inline' '('')' ('(' parameterList? ')')? '=' initializer ';'                        # InvokerOperator
+    | qualifiers? 'inline' '['']' ('(' parameterList? ')')? '=' initializer ';'                        # IndexerOperator
+    | qualifiers? 'inline' unary ('(' parameterList? ')')? '=' initializer ';'                           # UnaryOperator
+    | qualifiers? 'inline' arithmetic ('(' parameterList? ')')? '=' initializer ';'                 # ArithmeticOperator
+    | qualifiers? 'inline' bitwise ('(' parameterList? ')')? '=' initializer ';'                       # BitwiseOperator
+    | qualifiers? 'inline' relational ('(' parameterList? ')')? '=' initializer ';'                 # RelationalOperator
+    | qualifiers? 'inline' equality ('(' parameterList? ')')? '=' initializer ';'                     # EqualityOperator
+    | qualifiers? (variable | function) ( '=' initializer)? ';'                                    # VariableDeclaration
+    | qualifiers? function '{' statementList '}'                                                # FunctionImplementation
     ;
 
 initializer
-    : expression                                                                                      # ValueInitializer
-    | typename? '{' expressionList? '}'                                                               # ArrayInitializer
-    | typename? '{' propertyList? '}'                                                                # ObjectInitializer
+    : typename? '{' propertyList '}'                                                                 # ObjectInitializer
+    | typename? '{' expressionList '}'                                                                # ArrayInitializer
+    | expression                                                                                      # ValueInitializer
+    // TODO: remove
+    | typename? '[' initializerList ']'                                                               # ArrayInitializer
     ;
 
 statementList: statement*;
+propertyList: (override | (property ';'))* | (property (',' property)*)?;
+initializerList: (initializer ';')* | (initializer (',' initializer)*)?;
 expressionList: expression (',' expression)*;
 declarationList: declaration*;
 parameterList: parameter (',' parameter)* '...'?;
-propertyList: (property ';')+ | property (',' property)*;
 
 typename: Identifier ('.' Identifier)*;
-basetype: Identifier ('.' Identifier)*;
+override: function '{' statementList '}';
 property: (Literal | Identifier) ':' initializer;
 function: typename identifier '(' parameterList? ')';
 variable: typename ('&' | '&&')? identifier ('[' ('*' | expressionList)? ']')*;
@@ -71,6 +75,11 @@ parameter: qualifiers? (variable | function);
 for_init: expression | (variable '=' initializer);
 
 qualifiers: ('const' | 'static' | 'parallel')+;
+unary: ('&' | '+' | '-' | '~' | '!');
+arithmetic: ('*' | '/' | '%' | '+' | '-');
+bitwise: ('&' | '|' | '^' | '<<' | '>>');
+relational: ('<' | '<=' | '>' | '>=');
+equality: ('==' | '!=');
 
 identifier: Identifier;
 Identifier: Letter (Letter | Number)*;
