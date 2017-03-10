@@ -557,7 +557,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 					chr = readChr(cc);
 				}
 				if (chr == -1) {
-					warn(cc->rt, 9, cc->file, line, ERR_EXPECTED_BEFORE_END, "newline");
+					warn(cc->rt, 9, cc->file, line, WARN_MO_NEW_LINE_AT_END);
 				}
 				else if (cc->line != line + 1) {
 					warn(cc->rt, 9, cc->file, line, WARN_COMMENT_MULTI_LINE, ptr);
@@ -575,7 +575,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 					if (prev_chr == '/' && chr == next) {
 						level += 1;
 						if (level > 1 && next == '*') {
-							warn(cc->rt, 9, cc->file, cc->line, WARN_COMMENT_IGNORE_NESTED);
+							warn(cc->rt, 9, cc->file, cc->line, WARN_IGNORING_NESTED_COMMENT);
 							level = 1;
 						}
 						chr = 0;	// disable reading as valid comment: /*/ and /+/
@@ -597,7 +597,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 		}
 
 		if (chr_map[chr & 0xff] == CNTRL) {
-			warn(cc->rt, 5, cc->file, cc->line, ERR_INVALID_CHARACTER, chr);
+			warn(cc->rt, 2, cc->file, cc->line, ERR_INVALID_CHARACTER, chr);
 			while (chr == 0) {
 				chr = readChr(cc);
 			}
@@ -911,7 +911,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 								}
 							}
 							if (oct & 0xffffff00) {
-								warn(cc->rt, 4, cc->file, cc->line, WARN_OCT_ESC_SEQ_OVERFLOW);
+								warn(cc->rt, 2, cc->file, cc->line, WARN_OCT_ESC_SEQ_OVERFLOW);
 							}
 							chr = oct & 0xff;
 							break;
@@ -984,10 +984,10 @@ static ccToken readTok(ccContext cc, astn tok) {
 					return tok->kind = TOKEN_any;
 				}
 				if (ptr > beg + vm_size + 1) {
-					warn(cc->rt, 1, cc->file, cc->line, WARN_CHR_CONST_TRUNCATED, ptr);
+					warn(cc->rt, 2, cc->file, cc->line, WARN_CHR_CONST_TRUNCATED, ptr);
 				}
 				else if (ptr > beg + cc->type_chr->size + 1) {
-					warn(cc->rt, 5, cc->file, cc->line, WARN_MULTI_CHAR_CONSTANT);
+					warn(cc->rt, 2, cc->file, cc->line, WARN_MULTI_CHAR_CONSTANT);
 				}
 
 				for (ptr = beg; *ptr; ++ptr) {
@@ -1120,7 +1120,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			}
 
 			if (ovf != 0) {
-				warn(cc->rt, 4, cc->file, cc->line, WARN_VALUE_OVERFLOW);
+				warn(cc->rt, 2, cc->file, cc->line, WARN_VALUE_OVERFLOW);
 			}
 
 			if ((int32_t)i64v == i64v) {
@@ -1188,7 +1188,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 						error(cc->rt, tok->file, tok->line, ERR_INVALID_EXPONENT);
 					}
 					else if (ovf) {
-						warn(cc->rt, 4, cc->file, cc->line, WARN_EXPONENT_OVERFLOW);
+						warn(cc->rt, 2, cc->file, cc->line, WARN_EXPONENT_OVERFLOW);
 					}
 
 					while (val) {		// pow(10, val);

@@ -643,28 +643,31 @@ static astn initializer(ccContext cc, symn var) {
  * @return parsed syntax tree.
  */
 static astn declaration(ccContext cc, ccKind attr, astn *args) {
-	symn def = NULL, type = NULL, params = NULL;
-	ccKind cast = CAST_any;
-	astn tok, tag = NULL;
-
 	// read typename
-	tok = expression(cc);
+	astn tok = expression(cc);
 	if (tok == NULL) {
 		error(cc->rt, tok->file, tok->line, ERR_INVALID_TYPE, tok);
 		return NULL;
 	}
 
-	type = typeCheck(cc, NULL, tok, 1);
+	// check if the expression is a typename
+	if (!typeCheck(cc, NULL, tok, 1)) {
+		error(cc->rt, tok->file, tok->line, ERR_INVALID_TYPE, tok);
+		return NULL;
+	}
+	symn type = linkOf(tok);
 	if (type == NULL) {
 		error(cc->rt, tok->file, tok->line, ERR_INVALID_TYPE, tok);
 		return NULL;
 	}
 
-	if ((tag = nextTok(cc, TOKEN_var)) == NULL) {
+	astn tag = nextTok(cc, TOKEN_var);
+	if (tag == NULL) {
 		error(cc->rt, cc->file, cc->line, ERR_EXPECTED_BEFORE_TOK, "identifier", peekTok(cc, TOKEN_any));
 		tag = tagNode(cc, ".variable");
 	}
 
+	ccKind cast = CAST_any;
 	// TODO: inOut: int &&a;
 	if (skipTok(cc, OPER_and, 0)) {
 		// inOut: int &&a;
@@ -673,6 +676,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 	}
 
 	// parse function parameters
+	symn def = NULL, params = NULL;
 	if (skipTok(cc, LEFT_par, 0)) {			// int a(...)
 		astn argRoot;
 		enter(cc);
@@ -688,12 +692,11 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 
 		// parse function body
 		if (peekTok(cc, STMT_beg)) {
-			symn param;
 			def = declare(cc, ATTR_stat | ATTR_cnst | KIND_fun | cast, tag, type, params);
 
 			enter(cc);
 			// TODO: skip reinstalling all parameters, try to adapt lookup
-			for (param = params->next; param; param = param->next) {
+			for (symn param = params->next; param; param = param->next) {
 				//TODO: install(cc, param->name, KIND_def, 0, param, NULL);
 				//TODO: param->owner = def;
 			}
@@ -854,7 +857,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 			params->size = type->size;
 		}
 		if (inlineParams) {
-			warn(cc->rt, 4, tag->file, tag->line, WARN_INLINE_ALL_PARAMS, tag);
+			warn(cc->rt, 6, tag->file, tag->line, WARN_INLINE_ALL_PARAMS, tag);
 			for (param = params; param != NULL; param = param->next) {
 				param->kind = (param->kind & ~MASK_kind) | KIND_def;
 			}
@@ -950,7 +953,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 			break;
 		}
 		if (declaration(cc, (ccKind) 0, NULL) == NULL) {
-			error(cc->rt, cc->file, cc->line, ERR_INVALID_DECLARATION, peekTok(cc, TOKEN_any));
+			error(cc->rt, cc->file, cc->line, ERR_DECLARATION_EXPECTED, peekTok(cc, TOKEN_any));
 			break;
 		}
 		if (!skipTok(cc, STMT_end, 1)) {	// ';'
@@ -1056,19 +1059,6 @@ static astn statement_if(ccContext cc, ccKind attr) {
 	skipTok(cc, LEFT_par, 1);
 	test = expression(cc);
 	if (test != NULL) {
-		// FIXME: remove special case: static if (!identifier) {...}
-		if (attr & ATTR_stat && test->kind == OPER_not) {
-			astn idf = test->op.rhso;
-			if (idf != NULL && idf->kind == TOKEN_var) {
-				if (typeCheck(cc, NULL, idf, 0)) {
-					idf->ref.link = cc->true_ref;
-				}
-				else {
-					idf->ref.link = cc->false_ref;
-				}
-				idf->type = cc->type_bol;
-			}
-		}
 		test->type = typeCheck(cc, NULL, test, 1);
 		ast->stmt.test = test;
 	}
@@ -1156,7 +1146,7 @@ static astn statement(ccContext cc, ccKind attr) {
 	line = cc->line;
 	// scan the statement
 	if (skipTok(cc, STMT_end, 0)) {             // ;
-		warn(cc->rt, 2, cc->file, cc->line, WARN_EMPTY_STATEMENT);
+		warn(cc->rt, 1, cc->file, cc->line, WARN_EMPTY_STATEMENT);
 	}
 	else if ((ast = nextTok(cc, STMT_beg))) {   // { ... }
 		ast->stmt.stmt = statement_list(cc);
@@ -1430,15 +1420,15 @@ symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 	init = declaration(cc, (ccKind) 0, &args);
 
 	if (ccClose(cc) != 0) {
-		error(rt, NULL, 0, ERR_INVALID_PROTO, proto);
+		error(rt, NULL, 0, ERR_INVALID_DECLARATION, proto);
 		return NULL;
 	}
 	if (init == NULL || init->kind != TOKEN_var) {
-		error(rt, NULL, 0, ERR_INVALID_PROTO, proto);
+		error(rt, NULL, 0, ERR_INVALID_DECLARATION, proto);
 		return NULL;
 	}
 	if ((sym = init->ref.link) == NULL) {
-		error(rt, NULL, 0, ERR_INVALID_PROTO, proto);
+		error(rt, NULL, 0, ERR_INVALID_DECLARATION, proto);
 		return NULL;
 	}
 

@@ -1,6 +1,6 @@
-// Assign value variable to reference, pointer and variant.
+// Assign value variable to reference, pointer, variant and typename.
 
-static if (!integer) {  // TODO: find a better way to check if a symbol is defined or not
+static if (!typename(integer)) {
 inline integer = int32;
 }
 
@@ -71,14 +71,38 @@ variant varPointer = pointer;
 variant varVariant = variant;
 variant varObject = object;
 
+// Assign type names to typename
+typename typVoid = void;
+typename typBool = bool;
+typename typChar = char;
+typename typInt8 = int8;
+typename typInt16 = int16;
+typename typInt32 = int32;
+typename typInt64 = int64;
+typename typUint8 = uint8;
+typename typUint16 = uint16;
+typename typUint32 = uint32;
+typename typUint64 = uint64;
+typename typFloat32 = float32;
+typename typFloat64 = float64;
+typename typTypename = typename;
+typename typFunction = function;
+typename typPointer = pointer;
+typename typVariant = variant;
+typename typObject = object;
+
+// get the type of value
+pointer valueOfPtr = pointer(&value);
+variant valueOfVar = variant(&value);
+typename valueOfTyp = typename(value);
+
+typename typeOfValue = typename(value);
+// typename assignValue = value;  // FIXME: this should be not possible
+// typename assignVariant = valueVar;  // FIXME: this should extract the type
+// typename typeOfVar = typename(valueVar);// FIXME: extract type from variant: integer, not variant
+
 // Assign pointer to variant: add pointer as type and copy the reference
 variant copyPtrFloat64 = ptrFloat64;
 
 // Assign variant to pointer: discards typename and copy reference
 pointer copyVarFloat64 = varFloat64;  // FIXME: raise a warning
-
-/* TODO: not working yet
-valueRef = value;
-value = valueRef;
-//value = valueRef = 12;
-// */

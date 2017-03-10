@@ -3,7 +3,7 @@
 #include "internal.h"
 
 // default values
-static const int wl = 15;           // default warning level
+static const int wl = 10;           // default warning level: show all
 static char mem[512 << 10];         // 512 Kb memory compiler + runtime
 const char *STDLIB = "stdlib.cvx";  // standard library
 
@@ -91,14 +91,16 @@ static char *parseInt(const char *str, int32_t *res, int radix) {
 	return (char*)str;
 }
 
-static const char **escapeCon() {
+static const char **escapeXML() {
 	static const char *escape[256];
 	static char initialized = 0;
 	if (!initialized) {
 		memset(escape, 0, sizeof(escape));
-		escape['\n'] = "\\n";
-		escape['\r'] = "\\r";
-		escape['\t'] = "\\t";
+		escape['\''] = "&apos;";
+		escape['"'] = "&quot;";
+		escape['&'] = "&amp;";
+		escape['<'] = "&lt;";
+		escape['>'] = "&gt;";
 		initialized = 1;
 	}
 	return escape;
@@ -171,7 +173,6 @@ struct userContextRec {
 	int dmpApiInfo;     // dump detailed info
 	int dmpApiPrms;     // dump parameters and fields
 	int dmpApiUsed;     // dump usages
-	int dmpAstXML;      // dump ast in xml format
 	int dmpAsmStmt;     // print source code statements
 
 	runMode exec;
@@ -183,7 +184,7 @@ struct userContextRec {
 	size_t dbgNextBreak;// offset of the next break (used for step in, out, over, instruction)
 };
 
-static void dumpAstXML(FILE *out, const char **esc, astn ast, int mode, int indent, const char *text) {
+static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int indent, const char *text) {
 	astn list;
 
 	if (ast == NULL) {
@@ -375,17 +376,14 @@ static void jsonDumpSym(FILE *out, const char **esc, symn ptr, const char *kind,
 	if (ptr->type != NULL) {
 		printFmt(out, esc, "%I, \"%s\": \"%T\"\n", indent, KEY_TYPE, ptr->type);
 	}
-	if (ptr->file != NULL) {
+	if (ptr->file != NULL && ptr->line != 0) {
 		printFmt(out, esc, "%I, \"%s\": \"%s\"\n", indent, KEY_FILE, ptr->file);
-	}
-	if (ptr->line != 0) {
 		printFmt(out, esc, "%I, \"%s\": %u\n", indent, KEY_LINE, ptr->line);
 	}
 
 	if (ptr->params != NULL) {
-		symn arg;
 		printFmt(out, NULL, "%I, \"%s\": [{\n", indent, KEY_ARGS);
-		for (arg = ptr->params; arg; arg = arg->next) {
+		for (symn arg = ptr->params; arg; arg = arg->next) {
 			if (arg != ptr->params) {
 				printFmt(out, NULL, FMT_NEXT, indent);
 			}
@@ -893,7 +891,8 @@ static void conDumpProf(userContext usr) {
 
 			if (var->file && var->line) {
 				printFmt(out, esc, "%s:%u: ", var->file, var->line);
-			} else if (!all) {
+			}
+			else if (!all) {
 				// exclude internals
 				continue;
 			}
@@ -901,7 +900,8 @@ static void conDumpProf(userContext usr) {
 			if (isStatic(var)) {
 				// static variable.
 				ofs = (char *) rt->_mem + var->offs;
-			} else {
+			}
+			else {
 				// local variable (or argument).
 				ofs = (char *) rt->vm.cell - var->offs;
 			}
@@ -966,7 +966,7 @@ static void dumpApiText(userContext extra, symn sym) {
 			dumpExtraData = 1;
 		}
 		printFmt(out, esc, "%I.kind: %K\n", indent, sym->kind);
-		printFmt(out, esc, "%I.offset: %06x\n", indent, sym->offs);
+		//TODO: uncomment: printFmt(out, esc, "%I.offset: %06x\n", indent, sym->offs);
 		printFmt(out, esc, "%I.size: %d\n", indent, sym->size);
 		printFmt(out, esc, "%I.owner: %?T\n", indent, sym->owner);
 	}
@@ -997,9 +997,6 @@ static void dumpApiText(userContext extra, symn sym) {
 
 		if ((mode & prOneLine) || sym->init->kind != STMT_beg) {
 			printFmt(out, esc, "\n");
-		}
-		if (extra->dmpAstXML) {
-			dumpAstXML(out, esc, sym->init, mode, -indent, "main");
 		}
 	}
 
@@ -1280,7 +1277,6 @@ static int program(int argc, char *argv[]) {
 		.dmpAsmStmt = 0,
 
 		.dmpAst = prSkip,
-		.dmpAstXML = 0,
 
 		.exec = (runMode) 0,
 
@@ -1322,8 +1318,9 @@ static int program(int argc, char *argv[]) {
 	int logAppend = 0;				// do not clear the log file
 
 	FILE *dumpFile = NULL;			// dump file
+	char *pathDumpXml = NULL;		// dump file path
 	void (*dumpFun)(userContext, symn) = NULL;
-	enum {run, debug, profile, skipExecution} run_code = skipExecution;
+	enum { run, debug, profile, compile } run_code = compile;
 
 	int i, warn;
 
@@ -1554,6 +1551,14 @@ static int program(int argc, char *argv[]) {
 		}
 		else if (strncmp(arg, "-ast", 4) == 0) {
 			char *arg2 = arg + 4;
+			if (strcmp(arg, "-ast.xml") == 0) {
+				if (++i >= argc || pathDumpXml) {
+					fatal("dump file not or double specified");
+					return -1;
+				}
+				pathDumpXml = argv[i];
+				continue;
+			}
 			if (extra.dmpAst != prSkip) {
 				fatal("argument specified multiple times: %s", arg);
 				return -1;
@@ -1563,10 +1568,6 @@ static int program(int argc, char *argv[]) {
 				switch (arg2[1]) {
 					default:
 						arg2 += 1;
-						break;
-					case 'x':
-						extra.dmpAstXML = 1;
-						arg2 += 2;
 						break;
 					case 't':
 						extra.dmpAst |= prAstType;
@@ -1620,7 +1621,7 @@ static int program(int argc, char *argv[]) {
 		// run, debug or profile
 		else if (strncmp(arg, "-run", 4) == 0) {		// execute code in release mode
 			char *arg2 = arg + 4;
-			if (run_code != skipExecution) {
+			if (run_code != compile) {
 				fatal("argument specified multiple times: %s", arg);
 				return -1;
 			}
@@ -1632,7 +1633,7 @@ static int program(int argc, char *argv[]) {
 		}
 		else if (strncmp(arg, "-debug", 6) == 0) {		// execute code in debug mode
 			char *arg2 = arg + 6;
-			if (run_code != skipExecution) {
+			if (run_code != compile) {
 				fatal("argument specified multiple times: %s", arg);
 				return -1;
 			}
@@ -1688,7 +1689,7 @@ static int program(int argc, char *argv[]) {
 		}
 		else if (strncmp(arg, "-profile", 8) == 0) {		// execute code in profile mode
 			char *arg2 = arg + 8;
-			if (run_code != skipExecution) {
+			if (run_code != compile) {
 				fatal("argument specified multiple times: %s", arg);
 				return -1;
 			}
@@ -1862,6 +1863,17 @@ static int program(int argc, char *argv[]) {
 		extra.out = dumpFile;
 	}
 
+	if (pathDumpXml != NULL) {
+		FILE *xmlFile = fopen(pathDumpXml, "w");
+		if (xmlFile != NULL) {
+			dumpAstXML(xmlFile, escapeXML(), rt->cc->root, prDbg, 0, "main");
+			fclose(xmlFile);
+		}
+		else {
+			fatal(ERR_OPENING_FILE, pathDumpXml);
+		}
+	}
+
 	// generate code only if there are no compilation errors
 	if (rt->errors == 0) {
 		if (!gencode(rt, run_code != run)) {
@@ -1900,7 +1912,7 @@ static int program(int argc, char *argv[]) {
 	}
 
 	// run code if there are no compilation errors.
-	if (rt->errors == 0 && run_code != skipExecution) {
+	if (rt->errors == 0 && run_code != compile) {
 		if (rt->dbg != NULL) {
 			rt->dbg->extra = &extra;
 			// set debugger or profiler
@@ -1970,7 +1982,6 @@ static int usage() {
 		"\n    /s                  print source code statements"
 		"\n"
 		"\n  -ast[*]               dump syntax tree"
-		"\n    /x                  dump syntax tree also in xml form"
 		"\n    /t                  dump sub-expression type information"
 		"\n    /l                  do not expand statements (print on single line)"
 		"\n    /b                  don't keep braces ('{') on the same line"

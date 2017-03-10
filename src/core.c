@@ -464,6 +464,9 @@ static void install_type(ccContext cc, ccInstall mode) {
 	}
 	cc->true_ref = install(cc, "true", ATTR_stat | ATTR_cnst | KIND_def, 0, type_bol, intNode(cc, 1));    // 0 == 0
 	cc->false_ref = install(cc, "false", ATTR_stat | ATTR_cnst | KIND_def, 0, type_bol, intNode(cc, 0));  // 0 != 0
+	cc->null_ref->init->type = type_ptr;
+	cc->true_ref->init->type = type_bol;
+	cc->false_ref->init->type = type_bol;
 
 	// aliases.
 	install(cc, "int", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, cc->type_int));
@@ -475,6 +478,12 @@ static void install_type(ccContext cc, ccInstall mode) {
 	if (cc->type_str != NULL) {
 		// arrays without length property are c-like pointers
 		cc->type_str->format = type_fmt_string;
+	}
+	if (cc->type_vid != NULL) {
+		cc->void_tag = lnkNode(cc, cc->type_vid);
+		if (cc->void_tag == NULL) {
+			error(cc->rt, NULL, 0, ERR_INTERNAL_ERROR);
+		}
 	}
 }
 
@@ -694,8 +703,11 @@ static void install_emit(ccContext cc, ccInstall mode) {
 	}
 
 	// export emit to the compiler context
-	if (cc->emit_opc && !(cc->emit_tag = lnkNode(cc, cc->emit_opc))) {
-		error(rt, NULL, 0, ERR_INTERNAL_ERROR);
+	if (cc->emit_opc != NULL) {
+		cc->emit_tag = lnkNode(cc, cc->emit_opc);
+		if (cc->emit_tag == NULL) {
+			error(rt, NULL, 0, ERR_INTERNAL_ERROR);
+		}
 	}
 }
 

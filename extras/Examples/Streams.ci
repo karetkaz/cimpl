@@ -5,6 +5,8 @@ struct Closeable: object {
 	void close(Closeable closeable);
 }
 
+inline void(Closeable instance) = Closeable.close(instance);
+
 // ByteReader ~= java:InputStream
 struct ByteReader: Closeable {
 
@@ -201,7 +203,7 @@ struct TextWriter: Closeable {  // java:Writer + PrintStream
 	const bool close;
 
 	// abstract method
-	int encode(ByteWriter this, char chars[]);
+	int encode(ByteWriter writer, char chars[]);
 
 	int write(TextWriter this, char chars[]) {
 		return this.encode(this.writer, chars);

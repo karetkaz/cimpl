@@ -1845,8 +1845,9 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 			printFmt(out, esc, "null");
 		}
 		else {
-			printFmt(out, esc, "{%.T} ", varType);
+			printFmt(out, esc, "{%.T: ", varType);
 			printVal(out, esc, rt, varType, (vmValue *) varData, mode & ~(prSymQual | prSymType), -indent);
+			printFmt(out, esc, "}");
 		}
 	}
 	else if (typCast == CAST_arr) {
@@ -1899,7 +1900,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 		symn sym = rtFindSym(rt, offs, 0);
 		if (sym != NULL) {
 			offs -= sym->offs;
-			printFmt(out, esc, "<%?.T%?+d@%06x>", sym, offs, vmOffset(rt, data));
+			printFmt(out, esc, "<%?.T%?+d @%06x>", sym, offs, vmOffset(rt, data));
 		}
 		else if (typ->fields != NULL) {
 			int fields = 0;

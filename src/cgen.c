@@ -33,6 +33,10 @@ static inline void memSwap(void *_a, void *_b, size_t size) {
 	}
 }
 
+static inline vmOpcode emit32or64(vmOpcode opc32, vmOpcode opc64) {
+	return sizeof(vmOffs) > vm_size ? opc64 : opc32;
+}
+
 // emit constant values.
 static inline size_t emitI64(rtContext rt, int64_t value) {
 	vmValue arg;
@@ -54,7 +58,7 @@ static inline size_t emitRef(rtContext rt, void *value) {
 static inline size_t emitOffs(rtContext rt, size_t value) {
 	vmValue arg;
 	arg.i64 = value;
-	return emitarg(rt, sizeof(vmOffs) > vm_size ? opc_lc64 : opc_lc32, arg);
+	return emitarg(rt, emit32or64(opc_lc32, opc_lc64), arg);
 }
 
 /// Emit an instruction with no argument.
@@ -137,6 +141,10 @@ static size_t emitOperator(rtContext rt, ccToken token, ccKind cast) {
 		case OPER_ceq:
 			switch (cast) {
 				default:
+					break;
+
+				case CAST_ref:
+					opc = emit32or64(i32_ceq, i64_ceq);
 					break;
 
 				case CAST_bit:
@@ -997,7 +1005,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		}
 
 		// generate inline expression
-		if (!genAst(cc, function->init, CAST_any)) {
+		if (!genAst(cc, function->init, result)) {
 			traceAst(function->init);
 			return CAST_any;
 		}
@@ -1024,37 +1032,38 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		}
 	}
 	else if (isTypename(function)) {
-		symn variable;
+		if (function == cc->type_var || function == cc->type_rec || function == cc->type_ptr) {
+			symn variable = linkOf(args);
+			if (variable == NULL) {
+				traceAst(ast);
+				return CAST_any;
+			}
+			if (function == cc->type_var || function == cc->type_rec) {
+				// TODO: if variable is typename, extract type
+				if (!genOffset(rt, variable->type)) {
+					return CAST_any;
+				}
+			}
+			if (function == cc->type_var || function == cc->type_ptr) {
+				if (!genVariable(cc, variable, CAST_ref)) {
+					return CAST_any;
+				}
+				// report warnings
+				if (args->kind != OPER_adr && castOf(variable->type) != CAST_ref) {
+					warn(rt, 3, args->file, args->line, WARN_PASS_ARG_BY_REF, args);
+				}
+			}
+			return castOf(function);
+		}
+
 		switch (result = castOf(function)) {
 			default:
 			case CAST_vid:
 			case CAST_val:
 			case CAST_arr:
+			case CAST_ref:
+			case CAST_var:
 				result = CAST_any;
-				break;
-
-			case CAST_ref: // pointer(&variable);
-			case CAST_var: // variant(&variable);
-				// enable only pointer and variant cast(exclude: typename, function, object, ...)
-				if (function != cc->type_ptr && function != cc->type_var) {
-					traceAst(ast);
-					return CAST_any;
-				}
-				variable = linkOf(args);
-				if (variable == NULL) {
-					traceAst(ast);
-					return CAST_any;
-				}
-
-				if (!genVariable(cc, variable, result)) {
-					traceAst(ast);
-					return CAST_any;
-				}
-
-				// report warnings
-				if (args->kind != OPER_adr && castOf(variable->type) != CAST_ref) {
-					warn(rt, 2, args->file, args->line, WARN_PASS_ARG_BY_REF, args);
-				}
 				break;
 
 			// cast to basic type
@@ -1163,7 +1172,7 @@ static inline ccKind genMember(ccContext cc, astn ast, ccKind get) {
 	}
 	if (isStatic(member)) {
 		if (!lhsStat && object->kind != CAST_arr) {
-			warn(rt, 5, ast->file, ast->line, WARN_STATIC_FIELD_ACCESS, member, object->type);
+			warn(rt, 1, ast->file, ast->line, WARN_STATIC_FIELD_ACCESS, member, object->type);
 		}
 		return genAst(cc, ast->op.rhso, get);
 	}
@@ -1607,6 +1616,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 					fatal(ERR_INTERNAL_ERROR);
 					return CAST_any;
 
+				case CAST_bit:
 				case CAST_i32:
 				case CAST_u32:
 				case CAST_i64:

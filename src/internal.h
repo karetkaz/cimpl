@@ -241,6 +241,7 @@ struct ccContextRec {
 
 	symn	emit_opc;		// emit intrinsic function, or whatever it is.
 	astn	emit_tag;		// "emit"
+	astn	void_tag;		// used to lookup function call with 0 argument
 
 	symn	libc_dbg;		// raise(int level, string message, variant inspect, int maxTrace);
 };
@@ -311,13 +312,13 @@ ccKind canAssign(ccContext, symn rhs, astn val, int strict);
  */
 void addUsage(symn sym, astn tag);
 
-extern const char * const type_fmt_character;
 extern const char * const type_fmt_signed32;
 extern const char * const type_fmt_signed64;
 extern const char * const type_fmt_unsigned32;
 extern const char * const type_fmt_unsigned64;
 extern const char * const type_fmt_float32;
 extern const char * const type_fmt_float64;
+extern const char * const type_fmt_character;
 extern const char * const type_fmt_string;
 extern const char * const type_fmt_typename;
 extern const char type_fmt_string_chr;
@@ -609,54 +610,53 @@ void closeLibs();
 #define ERR_OPENING_FILE "can not open file: %s"
 
 // Lexer errors
-#define ERR_INVALID_STATEMENT "unterminated block statement"
-#define ERR_INVALID_COMMENT "unterminated block comment"
-#define ERR_INVALID_CHARACTER "invalid character: '%c'"
-#define ERR_INVALID_HEX_SEQ "hex escape sequence invalid '%c'"
-#define ERR_INVALID_ESC_SEQ "invalid escape sequence '\\%c'"
-#define ERR_INVALID_LITERAL "unclosed '%c' literal"
 #define ERR_EMPTY_CHAR_CONSTANT "empty character constant"
+#define ERR_INVALID_CHARACTER "invalid character: '%c'"
+#define ERR_INVALID_COMMENT "unterminated block comment"
+#define ERR_INVALID_ESC_SEQ "invalid escape sequence '\\%c'"
 #define ERR_INVALID_EXPONENT "no exponent in numeric constant"
+#define ERR_INVALID_HEX_SEQ "hex escape sequence invalid '%c'"
+#define ERR_INVALID_LITERAL "unclosed '%c' literal"
+#define ERR_INVALID_STATEMENT "unterminated block statement"
 #define ERR_INVALID_SUFFIX "invalid suffix in numeric constant '%s'"
 
 // Parser errors
+#define ERR_EXPECTED_BEFORE_TOK "expected `%s` before token `%?.t`"
 #define ERR_EXPR_TOO_COMPLEX "expression too complex"
 #define ERR_SYNTAX_ERR_BEFORE "syntax error before token `%?.t`"
-#define ERR_EXPECTED_BEFORE_TOK "expected `%s` before token `%?.t`"
-#define ERR_EXPECTED_BEFORE_END "expected `%s` before end of input"
+#define ERR_UNEXPECTED_ATTR "unexpected attribute `%?K`"
+#define ERR_UNEXPECTED_QUAL "unexpected qualifier `%.t` declared more than once"
 #define ERR_UNEXPECTED_TOKEN "unexpected token `%.t`"
 #define ERR_UNMATCHED_TOKEN "unexpected token `%?.t`, matching `%.k`"
-#define ERR_UNEXPECTED_QUAL "unexpected qualifier `%.t` declared more than once"
-#define ERR_UNEXPECTED_ATTR "unexpected attribute `%?K`"
 
 // Type checker errors
-#define ERR_INVALID_PROTO "invalid declaration: `%s`"
-#define ERR_UNDEFINED_REFERENCE "undefined reference `%t`"
-#define ERR_REDEFINED_REFERENCE "redefinition of `%T`"
-#define ERR_UNINITIALIZED_CONSTANT "uninitialized constant `%T`"
-#define ERR_UNIMPLEMENTED_FUNCTION "unimplemented function `%T`"
+#define ERR_DECLARATION_COMPLEX "declaration too complex: `%T`"
+#define ERR_DECLARATION_EXPECTED "declaration expected, got: `%t`"
+#define ERR_INVALID_ARRAY_LENGTH "positive integer constant expected, got `%t`"
+#define ERR_INVALID_BASE_TYPE "invalid struct base type, got `%t`"
 #define ERR_INVALID_CONST_ASSIGN "assignment of constant variable `%t`"
 #define ERR_INVALID_CONST_EXPR "constant expression expected, got: `%t`"
-//#define ERR_INVALID_CONST_INIT "invalid constant initialization `%t`"
-
-#define ERR_TYPE_TOO_COMPLEX "declaration too complex: `%T`"
-#define ERR_INVALID_BASE_TYPE "invalid struct base type, got `%t`"
-#define ERR_INVALID_DECLARATION "declaration expected, got: `%t`"
-#define ERR_INVALID_ARRAY_LENGTH "positive integer constant expected, got `%t`"
+#define ERR_INVALID_DECLARATION "invalid declaration: `%s`"
+#define ERR_INVALID_EXPRESSION "invalid expression: `%t`"
 #define ERR_INVALID_FIELD_ACCESS "object reference is required to access the member `%T`"
 #define ERR_INVALID_TYPE "can not type check expression: %t"
+#define ERR_INVALID_OPERATOR "invalid operator: %.t(%T, %T)"
 #define ERR_MULTIPLE_OVERLOADS "there are %d overloads for `%T`"
+#define ERR_REDEFINED_REFERENCE "redefinition of `%T`"
+#define ERR_UNDEFINED_REFERENCE "undefined reference `%t`"
+#define ERR_UNIMPLEMENTED_FUNCTION "unimplemented function `%T`"
+#define ERR_UNINITIALIZED_CONSTANT "uninitialized constant `%T`"
 
-// Code generator errors
-#define ERR_INVALID_JUMP "`%t` statement is invalid due to previous variable declaration within loop"
+// Code generator errors: TODO: these are fatal internal errors
 #define ERR_CAST_EXPRESSION "can not emit expression: %t, invalid cast(%K -> %K)"
 #define ERR_EMIT_EXPRESSION "can not emit expression: %t"
-#define ERR_EMIT_STATEMENT "can not emit statement: %t"
 #define ERR_EMIT_FUNCTION "can not emit function: %T"
-
+#define ERR_EMIT_STATEMENT "can not emit statement: %t"
 #define ERR_INVALID_INSTRUCTION "invalid instruction: %.A @%06x"
+#define ERR_INVALID_JUMP "`%t` statement is invalid due to previous variable declaration within loop"
 #define ERR_INVALID_OFFSET "invalid reference: %06x"
 
+// Code execution errors
 #define ERR_EXEC_INSTRUCTION "%s at .%06x in function: <%?.T%?+d> executing instruction: %.A"
 
 #define WARN_EMPTY_STATEMENT "empty statement `;`."
@@ -667,19 +667,20 @@ void closeLibs();
 #define WARN_PASS_ARG_BY_REF "argument `%t` is not explicitly passed by reference"
 #define WARN_SHORT_CIRCUIT "operators `&&` and `||` does not short-circuit yet"
 #define WARN_NO_CODE_GENERATED "no code will be generated for statement: %t"
+#define WARN_PADDING_ALIGNMENT "padding %T with %d bytes: (%d -> %d)"
+#define WARN_ADDING_IMPLICIT_CAST "adding implicit cast %T(%t: %T)"
 #define WARN_STATIC_FIELD_ACCESS "accessing static member using instance variable `%T`/ %T"
 #define WARN_COMMENT_MULTI_LINE "multi-line comment: `%s`"
-#define WARN_COMMENT_IGNORE_NESTED "ignoring nested comment"
+#define WARN_IGNORING_NESTED_COMMENT "ignoring nested comment"
+#define WARN_MO_NEW_LINE_AT_END "expected `%s` before end of input"
 #define WARN_OCT_ESC_SEQ_OVERFLOW "octal escape sequence overflow"
 #define WARN_CHR_CONST_TRUNCATED "character constant truncated"
 #define WARN_MULTI_CHAR_CONSTANT "multi character constant"
 #define WARN_VALUE_OVERFLOW "value overflow"
 #define WARN_EXPONENT_OVERFLOW "exponent overflow"
 #define WARN_FUNCTION_MARKED_STATIC "marking function to be static: `%T`"
-#define WARN_BEST_OVERLOAD "using overload `%T` of %d declared symbols."
+#define WARN_USING_BEST_OVERLOAD "using overload `%T` of %d declared symbols."
 #define WARN_INLINE_ALL_PARAMS "all parameters will be inline for: %t"
-
-#define FATAL_UNIMPLEMENTED_OPERATOR "operator %.t (%T, %T): %t"
 
 //~ disable warning messages
 #ifdef _MSC_VER
@@ -742,7 +743,7 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 #define dbgEmit(msg, ...) do {} while(0)
 #endif
 
-#define traceAst(__AST) do { trace("%t", __AST); } while(0)
+#define traceAst(__AST) do { trace("%.*t", prDbg, __AST); } while(0)
 
 #if defined __WATCOMC__
 

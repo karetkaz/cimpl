@@ -127,6 +127,7 @@ int64_t intValue(astn ast) {
 				break;
 
 			case CAST_bit:
+			case CAST_ref:
 			case CAST_i32:
 			case CAST_i64:
 			case CAST_u32:
@@ -199,8 +200,11 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 			cast = CAST_f64;
 			break;
 
-		case CAST_val:
 		case CAST_ref:
+			cast = CAST_ref;
+			break;
+
+		case CAST_val:
 		case CAST_arr:
 		case CAST_var:
 		case CAST_vid:
@@ -227,15 +231,28 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 
 		case OPER_fnc: {
 			astn func = ast->op.lhso;
+			astn args = ast->op.rhso;
 
-			// evaluate only type casts.
+			// evaluate only: float(3) or (3 + 4).
 			if (func && !isTypeExpr(func)) {
 				return CAST_any;
 			}
-			if (!eval(cc, res, ast->op.rhso)) {
+			// cast must convert something to the given type.
+			if (args == NULL) {
 				return CAST_any;
 			}
-			break;
+
+			// typename(int64) => &int64
+			if (linkOf(func) == cc->type_rec) {
+				if (args && args->kind == TOKEN_var) {
+					symn id = args->ref.link;
+					res->kind = TOKEN_val;
+					res->type = cc->type_rec;
+					res->cInt = id ? id->offs : 0;
+					break;
+				}
+			}
+			return eval(cc, res, args);
 		}
 
 		case OPER_adr:
@@ -252,7 +269,10 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 				if (!eval(cc, res, var->init)) {
 					return CAST_any;
 				}
-				type = res->type;
+				cast = castOf(type);
+			}
+			else if (isTypename(var)) {
+				cast = castOf(type);
 			}
 			else {
 				return CAST_any;
@@ -324,6 +344,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 				case CAST_i64:
 				case CAST_u32:
 				case CAST_u64:
+				case CAST_ref:
 					res->type = cc->type_bol;
 					res->cInt = !res->cInt;
 					break;
@@ -466,6 +487,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 				case CAST_i64:
 				case CAST_u32:
 				case CAST_u64:
+				case CAST_ref:
 					switch (ast->kind) {
 						default:
 							fatal(ERR_INTERNAL_ERROR);
@@ -663,6 +685,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 				res->type = type;
 				break;
 
+			case CAST_ref:
 			case CAST_i64:
 				res->cInt = intValue(res);
 				res->type = type;
@@ -677,7 +700,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 
 	switch (res->kind) {
 		default:
-			fatal(ERR_INTERNAL_ERROR": %k", res);
+			fatal(ERR_INTERNAL_ERROR": %t", res);
 			res->type = NULL;
 			return CAST_any;
 

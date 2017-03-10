@@ -85,8 +85,6 @@ TODO's:
 
 static symn promote(symn lht, symn rht);
 
-symn getResultType(symn sym, astn args);
-
 /// Enter a new scope.
 void enter(ccContext cc) {
 	cc->nest += 1;
@@ -124,7 +122,7 @@ symn leave(ccContext cc, symn owner, ccKind mode, size_t align, size_t *outSize)
 
 		// TODO: this logic should be not here
 		if (!isStatic(sym) && sym->params && sym->init && sym->init->kind == STMT_beg) {
-			warn(cc->rt, 1, sym->file, sym->line, WARN_FUNCTION_MARKED_STATIC, sym);
+			warn(cc->rt, 3, sym->file, sym->line, WARN_FUNCTION_MARKED_STATIC, sym);
 			sym->kind |= ATTR_stat;
 		}
 	}
@@ -145,7 +143,7 @@ symn leave(ccContext cc, symn owner, ccKind mode, size_t align, size_t *outSize)
 				}
 				sym->offs = padOffset(offs, align < sym->size ? align : sym->size);
 				if (offs < sym->offs) {
-					warn(cc->rt, 6, sym->file, sym->line, "padding %T (%d -> %d): %d", sym, offs, sym->offs, sym->offs - offs);
+					warn(cc->rt, 6, sym->file, sym->line, WARN_PADDING_ALIGNMENT, sym, sym->offs - offs, offs, sym->offs);
 				}
 				offs = sym->offs + sym->size;
 				if (size < offs) {
@@ -154,7 +152,7 @@ symn leave(ccContext cc, symn owner, ccKind mode, size_t align, size_t *outSize)
 			}
 			size_t padded = padOffset(size, align);
 			if (align && size != padded) {
-				warn(cc->rt, 6, result->file, result->line, "padding %T (%d -> %d): %d", sym, size, padded, padded - size);
+				warn(cc->rt, 6, result->file, result->line, WARN_PADDING_ALIGNMENT, sym, padded - size, size, padded);
 				size = padded;
 			}
 			break;
@@ -192,7 +190,6 @@ symn leave(ccContext cc, symn owner, ccKind mode, size_t align, size_t *outSize)
 /// Install a symbol (typename, variable, function or alias)
 symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type, astn init) {
 	int isType = (kind & MASK_kind) == KIND_typ;
-	symn def;
 
 	if (cc == NULL || name == NULL) {
 		fatal(ERR_INTERNAL_ERROR);
@@ -211,7 +208,8 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 		logif(kind != kind2, "symbol `%s` should be declared as static and constant", name);
 	}
 
-	if ((def = newDef(cc, kind))) {
+	symn def = newDef(cc, kind);
+	if (def != NULL) {
 		size_t length = strlen(name) + 1;
 		unsigned hash = rehash(name, length) % TBL_SIZE;
 		def->name = mapstr(cc, (char*)name, length, hash);
@@ -227,7 +225,7 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 				symn obj = type;
 				while (obj != NULL) {
 					if ((maxChain -= 1) < 0) {
-						error(cc->rt, cc->file, cc->line, ERR_TYPE_TOO_COMPLEX, def);
+						error(cc->rt, cc->file, cc->line, ERR_DECLARATION_COMPLEX, def);
 						break;
 					}
 
@@ -244,7 +242,7 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 					obj = obj->type;
 				}
 				if (obj == NULL) {
-					error(cc->rt, cc->file, cc->line, ERR_TYPE_TOO_COMPLEX, def);
+					error(cc->rt, cc->file, cc->line, ERR_DECLARATION_COMPLEX, def);
 				}
 			}
 		}
@@ -258,7 +256,7 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 }
 
 symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
-	symn asRef = NULL;
+	symn byName = NULL;
 	symn best = NULL;
 	int found = 0;
 
@@ -278,20 +276,21 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 			continue;
 		}
 
-		// lookup function as reference (without arguments)
+		// lookup function by name (without arguments)
 		if (parameter != NULL && arguments == NULL) {
 			// keep the first match.
-			if (sym->kind == KIND_var) {
-				if (asRef == NULL) {
-					asRef = sym;
-				}
-				found += 1;
+			if (byName == NULL) {
+				byName = sym;
 			}
+			found += 1;
 			continue;
 		}
 
 		if (arguments != NULL) {
-			astn argument = chainArgs(arguments);
+			astn argument = NULL;
+			if (arguments != cc->void_tag) {
+				argument = chainArgs(arguments);
+			}
 
 			if (parameter != NULL) {
 				// first argument starts next to result.
@@ -334,18 +333,18 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 
 	if (sym == NULL && best) {
 		if (found > 1) {
-			warn(cc->rt, 2, ref->file, ref->line, WARN_BEST_OVERLOAD, best, found);
+			warn(cc->rt, 3, ref->file, ref->line, WARN_USING_BEST_OVERLOAD, best, found);
 		}
 		sym = best;
 	}
 
-	if (sym == NULL && asRef) {
+	if (sym == NULL && byName) {
 		if (found == 1 || cc->siff) {
-			debug("as ref `%T`(%?t)", asRef, arguments);
-			sym = asRef;
+			debug("as ref `%T`(%?t)", byName, arguments);
+			sym = byName;
 		}
 		else if (raise) {
-			error(cc->rt, ref->file, ref->line, ERR_MULTIPLE_OVERLOADS, found, asRef);
+			error(cc->rt, ref->file, ref->line, ERR_MULTIPLE_OVERLOADS, found, byName);
 		}
 	}
 
@@ -370,89 +369,104 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 
 /// change the type of a tree node.
 static symn convert(ccContext cc, astn ast, symn type) {
-	astn value;
-	if (ast->type == type) {
-		return type;
+	if (type == NULL) {
+		return NULL;
 	}
-
 	if (ast->type == NULL) {
 		ast->type = type;
 		return type;
 	}
-
-	switch (ast->kind) {
-		default:
-			fatal(ERR_INTERNAL_ERROR);
-			return NULL;
-
-		case OPER_fnc:		// '()'
-		case OPER_dot:		// '.'
-		case OPER_idx:		// '[]'
-
-		case OPER_adr:		// '&'
-		case OPER_pls:		// '+'
-		case OPER_mns:		// '-'
-		case OPER_cmt:		// '~'
-		case OPER_not:		// '!'
-
-		case OPER_add:		// '+'
-		case OPER_sub:		// '-'
-		case OPER_mul:		// '*'
-		case OPER_div:		// '/'
-		case OPER_mod:		// '%'
-
-		case OPER_shl:		// '>>'
-		case OPER_shr:		// '<<'
-		case OPER_and:		// '&'
-		case OPER_ior:		// '|'
-		case OPER_xor:		// '^'
-
-		case OPER_ceq:		// '=='
-		case OPER_cne:		// '!='
-		case OPER_clt:		// '<'
-		case OPER_cle:		// '<='
-		case OPER_cgt:		// '>'
-		case OPER_cge:		// '>='
-
-		case OPER_all:		// '&&'
-		case OPER_any:		// '||'
-		case OPER_sel:		// '?:'
-
-		case OPER_com:		// ','
-
-		case ASGN_set:		// '='
-
-		case TOKEN_opc:
-		case TOKEN_var:
-			ast->type = type;
-
-		case TOKEN_val:
-			// wrap the value into cast
-			value = newNode(cc, TOKEN_any);
-			*value = *ast;
-			ast->kind = OPER_fnc;
-			ast->op.rhso = value;
-			ast->op.lhso = NULL;
-			ast->op.test = NULL;
-			ast->type = type;
-			break;
+	if (ast->type == type) {
+		// no update required.
+		return type;
 	}
 
-	(void)cc;
+	warn(cc->rt, 6, ast->file, ast->line, WARN_ADDING_IMPLICIT_CAST, type, ast, ast->type);
+	astn value = newNode(cc, TOKEN_any);
+	*value = *ast;
+	ast->kind = OPER_fnc;
+	ast->op.rhso = value;
+	ast->op.lhso = NULL;
+	ast->op.test = NULL;
+	ast->type = type;
 	return type;
 }
 
+static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise) {
+	if (ref == NULL) {
+		return NULL;
+	}
+	symn sym;
+	if (loc != NULL) {
+		sym = loc->fields;
+	}
+	else {
+		sym = cc->deft[ref->ref.hash];
+	}
+
+	if ((sym = lookup(cc, sym, ref, args, 1)) != NULL) {
+		symn type;
+		if (isInline(sym) && sym->init != NULL) {
+			type = sym->init->type;
+			//fatal("%?s:%?u:Inline: %T => %T", ref->file, ref->line, sym, type);
+		}
+		else if (isInvokable(sym) && args != NULL) {
+			// resulting type is the type of result parameter
+			type = sym->params->type;
+		}
+		else {
+			// resulting type is the type of the variable
+			type = sym->type;
+		}
+
+		// check basic casts: int32(8);
+		if (type == cc->type_rec && args != NULL) {
+			// variant, typename, pointer
+			if (sym == cc->type_var || sym == cc->type_rec || sym == cc->type_ptr) {
+				type = sym;
+			}
+			else {
+				switch (castOf(sym)) {
+					default:
+						break;
+
+					case CAST_i32:
+					case CAST_i64:
+					case CAST_u32:
+					case CAST_u64:
+					case CAST_f32:
+					case CAST_f64:
+					case CAST_var:
+						type = sym;
+						break;
+				}
+			}
+		}
+
+		dieif(ref->kind != TOKEN_var, ERR_INTERNAL_ERROR);
+		ref->ref.link = sym;
+		ref->type = type;
+		addUsage(sym, ref);
+		return type;
+	}
+	else if (raise) {
+		error(cc->rt, ref->file, ref->line, ERR_UNDEFINED_REFERENCE, ref);
+	}
+	return NULL;
+}
+
 symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
-	astn ref = NULL, args = NULL;
-	astn dot = NULL;
-	symn lType, rType, type, sym = 0;
+	symn lType = NULL;
+	symn rType = NULL;
+	symn type = NULL;
+	symn sym = NULL;
 
 	if (ast == NULL) {
 		fatal(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
 
-	// do not check again
+	// do not type-check again
 	if (ast->type != NULL) {
 		return ast->type;
 	}
@@ -462,61 +476,97 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			fatal(ERR_INTERNAL_ERROR);
 			return NULL;
 
-		case OPER_fnc:
-			ref = ast->op.lhso;
-			args = ast->op.rhso;
+		case OPER_fnc: {
+			astn ref = ast->op.lhso;
+			astn args = ast->op.rhso;
 
-			if (args != NULL) {
-				rType = NULL;
-				if (linkOf(ref) == cc->emit_opc) {
-					rType = cc->emit_opc;
-				}
-				if (!(rType = typeCheck(cc, rType, args, 0))) {
-					rType = typeCheck(cc, rType, args, raise);
-				}
+			if (ref == NULL && args == NULL) {
+				// int a = ();
+				error(cc->rt, ast->file, ast->line, ERR_INVALID_EXPRESSION, ast);
+				return NULL;
+			}
+			if (ref == NULL) {
+				// int a = (3 + 6);
+				rType = typeCheck(cc, linkOf(ref), args, raise);
 				convert(cc, args, rType);
+				convert(cc, ast, rType);
+				ast->type = rType;
+				return rType;
 			}
-			else {
-				rType = cc->type_vid;
+			if (args == NULL) {
+				// int a = func();
+				args = cc->void_tag;
+			}
+			// int a = func(4, 2);
+
+			// try to lookup arguments in the current scope
+			rType = typeCheck(cc, loc, args, 0);
+
+			if (ref->kind == OPER_dot) {    // float32.sin(args)
+				if (!typeCheck(cc, loc, ref->op.lhso, raise)) {
+					traceAst(ast);
+					return NULL;
+				}
+				loc = linkOf(ref->op.lhso);
+				ref->type = cc->type_fun;
+				ref = ref->op.rhso;
 			}
 
-			if (!rType) {
+			if (rType == NULL) {
+				// if failed, try to lookup the function
+				lType = typeCheck(cc, loc, ref, 0);
+
+				// typename(identifier): returns null if identifier is not defined.
+				if (lType == cc->type_rec && linkOf(ref) == cc->type_rec) {
+					if (args->kind == TOKEN_var) {
+						char *name = cc->type_rec->name;
+						size_t len = strlen(name);
+						rType = cc->type_rec;
+						ast->kind = TOKEN_var;
+						ast->type = rType;
+						ast->ref.link = cc->null_ref;
+						ast->ref.hash = rehash(name, len + 1) % TBL_SIZE;
+						ast->ref.name = mapstr(cc, name, len + 1, ast->ref.hash);
+						ast->type = rType;
+						return rType;
+					}
+				}
+				// lookup arguments in the function's scope (emit, raise, ...)
+				rType = typeCheck(cc, linkOf(ref), args, raise);
+			}
+			if (rType == NULL) {
+				// FIXME: error: could not lookup arguments ...
 				traceAst(ast);
 				return NULL;
 			}
-
-			// TODO: try to avoid hacks
-			if (ref != NULL) {
-				switch (ref->kind) {
-					default:
-						fatal(ERR_INTERNAL_ERROR);
-						return NULL;
-
-					case OPER_dot:    // Math.isNan ???
-						if (!(loc = typeCheck(cc, loc, ref->op.lhso, raise))) {
-							traceAst(ast);
-							return NULL;
-						}
-						dot = ref;
-						ref = ref->op.rhso;
-						break;
-
-					case TOKEN_var:
-						break;
-				}
+			convert(cc, args, rType);
+			type = typeCheckRef(cc, loc, ref, args, raise);
+			if (type == NULL) {
+				traceAst(ast);
+				return NULL;
 			}
-			break;
+			ast->type = type;
+			return type;
+		}
 
 		case OPER_dot:
 			lType = typeCheck(cc, loc, ast->op.lhso, raise);
-			rType = typeCheck(cc, lType, ast->op.rhso, raise);
+			loc = linkOf(ast->op.lhso);
+			if (loc == NULL) {
+				traceAst(ast);
+				return NULL;
+			}
+			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 
 			if (!lType || !rType) {
-				traceAst(ast);
+				if (raise) {
+					traceAst(ast);
+				}
 				return NULL;
 			}
 			convert(cc, ast->op.lhso, lType);
 			convert(cc, ast->op.rhso, rType);
+			ast->type = rType;
 			return rType;
 
 		case OPER_idx:
@@ -527,32 +577,37 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				traceAst(ast);
 				return NULL;
 			}
-			convert(cc, ast->op.lhso, lType);
-			convert(cc, ast->op.rhso, rType);
 			// base type of array;
-			return lType->type;
+			type = lType->type;
+			ast->type = type;
+			return type;
 
 		case OPER_adr:		// '&'
 		case OPER_pls:		// '+'
 		case OPER_mns:		// '-'
 		case OPER_cmt:		// '~'
-		case OPER_not:		// '!'
 			rType = typeCheck(cc, loc, ast->op.rhso, raise);
+
 			if (!rType) {
 				traceAst(ast);
 				return NULL;
 			}
-
 			type = promote(NULL, rType);
-			if (type != NULL) {
-				convert(cc, ast->op.rhso, type);
-				if (ast->kind == OPER_not) {
-					type = cc->type_bol;
-				}
-				return type;
+			convert(cc, ast->op.rhso, type);
+			ast->type = type;
+			return type;
+
+		case OPER_not:		// '!'
+			rType = typeCheck(cc, loc, ast->op.rhso, raise);
+
+			if (!rType) {
+				traceAst(ast);
+				return NULL;
 			}
-			fatal(FATAL_UNIMPLEMENTED_OPERATOR, ast, NULL, rType, ast);
-			break;
+			type = cc->type_bol;
+			convert(cc, ast->op.rhso, type);
+			ast->type = type;
+			return type;
 
 		case OPER_add:		// '+'
 		case OPER_sub:		// '-'
@@ -561,88 +616,75 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 		case OPER_mod:		// '%'
 			lType = typeCheck(cc, loc, ast->op.lhso, raise);
 			rType = typeCheck(cc, loc, ast->op.rhso, raise);
+
 			if (!lType || !rType) {
 				traceAst(ast);
 				return NULL;
 			}
 			type = promote(lType, rType);
-			if (type != NULL) {
-				convert(cc, ast->op.lhso, type);
-				convert(cc, ast->op.rhso, type);
-				return type;
-			}
-			fatal(FATAL_UNIMPLEMENTED_OPERATOR, ast, lType, rType, ast);
-			break;
+			convert(cc, ast->op.lhso, type);
+			convert(cc, ast->op.rhso, type);
+			ast->type = type;
+			return type;
 
 		case OPER_shl:		// '>>'
 		case OPER_shr:		// '<<'
 			lType = typeCheck(cc, loc, ast->op.lhso, raise);
 			rType = typeCheck(cc, loc, ast->op.rhso, raise);
+
 			if (!lType || !rType) {
 				traceAst(ast);
 				return NULL;
 			}
-
 			type = promote(lType, rType);
-			if (type != NULL) {
-				convert(cc, ast->op.lhso, type);
-				convert(cc, ast->op.rhso, cc->type_i32);
+			convert(cc, ast->op.lhso, type);
+			convert(cc, ast->op.rhso, cc->type_i32);
 
-				switch (castOf(type)) {
-					default:
-						break;
+			switch (castOf(type)) {
+				default:
+					error(cc->rt, ast->file, ast->line, ERR_INVALID_OPERATOR, ast, lType, rType);
+					break;
 
-					case CAST_i32:
-					case CAST_i64:
+				case CAST_i32:
+				case CAST_i64:
 
-					case CAST_u32:
-					case CAST_u64:
-						return type;
-
-					case CAST_f32:
-					case CAST_f64:
-						error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
-						return NULL;
-				}
+				case CAST_u32:
+				case CAST_u64:
+					break;
 			}
-			fatal(FATAL_UNIMPLEMENTED_OPERATOR, ast, lType, rType, ast);
-			break;
+			ast->type = type;
+			return type;
+
 		case OPER_and:		// '&'
 		case OPER_ior:		// '|'
 		case OPER_xor:		// '^'
 			lType = typeCheck(cc, loc, ast->op.lhso, raise);
 			rType = typeCheck(cc, loc, ast->op.rhso, raise);
+
 			if (!lType || !rType) {
 				traceAst(ast);
 				return NULL;
 			}
-
 			type = promote(lType, rType);
-			if (type != NULL) {
-				convert(cc, ast->op.lhso, type);
-				convert(cc, ast->op.rhso, type);
+			convert(cc, ast->op.lhso, type);
+			convert(cc, ast->op.rhso, type);
 
-				switch (castOf(type)) {
-					default:
-						break;
+			switch (castOf(type)) {
+				default:
+					error(cc->rt, ast->file, ast->line, ERR_INVALID_OPERATOR, ast, lType, rType);
+					break;
 
-					case CAST_bit:
+				case CAST_bit:
 
-					case CAST_i32:
-					case CAST_i64:
+				case CAST_i32:
+				case CAST_i64:
 
-					case CAST_u32:
-					case CAST_u64:
-						return type;
-
-					case CAST_f32:
-					case CAST_f64:
-						error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
-						return NULL;
-				}
+				case CAST_u32:
+				case CAST_u64:
+					break;
 			}
-			fatal(FATAL_UNIMPLEMENTED_OPERATOR, ast, lType, rType, ast);
-			break;
+			ast->type = type;
+			return type;
 
 		case OPER_ceq:		// '=='
 		case OPER_cne:		// '!='
@@ -652,36 +694,17 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 		case OPER_cge:		// '>='
 			lType = typeCheck(cc, loc, ast->op.lhso, raise);
 			rType = typeCheck(cc, loc, ast->op.rhso, raise);
+
 			if (!lType || !rType) {
 				traceAst(ast);
 				return NULL;
 			}
-
 			type = promote(lType, rType);
-			if (ast->kind == OPER_ceq || ast->kind == OPER_cne) {
-				symn lLink = linkOf(ast->op.lhso);
-				symn rLink = linkOf(ast->op.rhso);
-
-				// compare with null: bool isNull = variable == null;
-				if (lLink == cc->null_ref || rLink == cc->null_ref) {
-					type = cc->type_ptr;
-				}
-				// compare with typename: bool isint32 = type == int32;
-				else if (rLink == rType && lType == cc->type_rec) {
-					type = cc->type_ptr;
-				}
-				else if (lLink == lType && rType == cc->type_rec) {
-					type = cc->type_ptr;
-				}
-			}
-			if (type != NULL) {
-				convert(cc, ast->op.lhso, type);
-				convert(cc, ast->op.rhso, type);
-				return cc->type_bol;
-			}
-
-			fatal(FATAL_UNIMPLEMENTED_OPERATOR, ast, lType, rType, ast);
-			break;
+			convert(cc, ast->op.lhso, type);
+			convert(cc, ast->op.rhso, type);
+			type = cc->type_bol;
+			ast->type = type;
+			return type;
 
 		case OPER_all:		// '&&'
 		case OPER_any:		// '||'
@@ -695,37 +718,38 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			type = cc->type_bol;
 			convert(cc, ast->op.lhso, type);
 			convert(cc, ast->op.rhso, type);
+			ast->type = type;
 			return type;
 
 		case OPER_sel:		// '?:'
 			lType = typeCheck(cc, loc, ast->op.lhso, raise);
 			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 			type = typeCheck(cc, loc, ast->op.test, raise);
+
 			if (!lType || !rType || !type) {
 				traceAst(ast);
 				return NULL;
 			}
-
 			type = promote(lType, rType);
-			if (type != NULL) {
-				convert(cc, ast->op.test, cc->type_bol);
-				convert(cc, ast->op.lhso, type);
-				convert(cc, ast->op.rhso, type);
-				return type;
-			}
-			fatal(FATAL_UNIMPLEMENTED_OPERATOR, ast, lType, rType, ast);
-			break;
+			convert(cc, ast->op.test, cc->type_bol);
+			convert(cc, ast->op.lhso, type);
+			convert(cc, ast->op.rhso, type);
+			ast->type = type;
+			return type;
 
 		case OPER_com:	// ','
 			lType = typeCheck(cc, loc, ast->op.lhso, raise);
 			rType = typeCheck(cc, loc, ast->op.rhso, raise);
+
 			if (!lType || !rType) {
 				traceAst(ast);
 				return NULL;
 			}
 			convert(cc, ast->op.lhso, lType);
 			convert(cc, ast->op.rhso, rType);
-			return cc->type_vid;
+			type = cc->type_vid;
+			ast->type = type;
+			return type;
 
 		// operator set
 		case ASGN_set:		// ':='
@@ -747,75 +771,28 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			}
 			convert(cc, ast->op.rhso, lType);
 			convert(cc, ast->op.lhso, lType);
+			ast->type = lType;
 			return lType;
 
-		// operator get
+		// variable
 		case TOKEN_var:
-			ref = ast;
-			if (ast->ref.link != NULL) {
-				rType = ast->ref.link->type;
-				return rType;
+			type = typeCheckRef(cc, loc, ast, NULL, raise);
+			if (type == NULL) {
+				traceAst(ast);
+				return NULL;
 			}
-			// do lookup
-			break;
+			ast->type = type;
+			return type;
 	}
 
-	if (ref != NULL) {
-		symn result = NULL;
-		if (loc != NULL) {
-			sym = loc->fields;
-		}
-		else {
-			sym = cc->deft[ref->ref.hash];
-		}
-
-		if ((sym = lookup(cc, sym, ref, args, 1)) != NULL) {
-			result = getResultType(sym, args);
-
-			dieif(ref->kind != TOKEN_var, ERR_INTERNAL_ERROR);
-			ref->ref.link = sym;
-			ref->type = result;
-
-			addUsage(sym, ref);
-
-			if (dot != NULL) {
-				dot->type = result;
-			}
-		}
-		else if (raise) {
-			error(cc->rt, ref->file, ref->line, ERR_UNDEFINED_REFERENCE, ref);
-		}
-		return result;
-	}
+	//error(cc->rt, ast->file, ast->line, ERR_INVALID_OPERATOR = "invalid operator %.t(%T, %T)", ast, lType, rType);
+	fatal(ERR_INTERNAL_ERROR": unimplemented: %.t (%T, %T): %t", ast, lType, rType, ast);
 	return NULL;
 }
 
-symn getResultType(symn sym, astn args) {
-	if (isInvokable(sym) && args != NULL) {
-		// resulting type is the type of result parameter
-		return sym->params->type;
-	}
-	if (isInline(sym) && sym->init != NULL) {
-		return sym->init->type;
-	}
-	if (isTypename(sym)) {
-		// resulting type is the symbol itself
-		return sym;
-	}
-	// resulting type is the type of the variable
-	return sym->type;
-
-	/*if (isVariable(sym)) {
-		return sym->type;
-	}
-	if (isInline(sym)) {
-		return sym->type;
-	}
-	return sym;*/
-}
-
 ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
-	symn typ, lnk = linkOf(val);
+	symn typ = var;
+	symn lnk = linkOf(val);
 	ccKind varCast;
 
 	dieif(!var, ERR_INTERNAL_ERROR);
@@ -826,7 +803,10 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	}
 
 	varCast = castOf(var);
-	typ = getResultType(var, NULL);
+	if (!isTypename(var)) {
+		// canAssign(int32, 3) should return true
+		typ = var->type;
+	}
 
 	// assign null or pass by reference
 	if (lnk == cc->null_ref) {
@@ -872,7 +852,6 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	}
 
 	if (typ != var) {
-
 		// assigning a function
 		if (var->params != NULL) {
 			symn fun = linkOf(val);

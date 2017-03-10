@@ -461,14 +461,32 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 				printFmt(out, esc ? esc : escapeStr(), type_fmt_character, ast->cInt);
 				printFmt(out, esc, "%c", type_fmt_character_chr);
 			}
+			else if (ast->type->format == type_fmt_signed32) {
+				printFmt(out, esc, type_fmt_signed32, (int32_t) ast->cInt);
+			}
+			else if (ast->type->format == type_fmt_signed64) {
+				printFmt(out, esc, type_fmt_signed64, (int64_t) ast->cInt);
+			}
+			else if (ast->type->format == type_fmt_unsigned32) {
+				printFmt(out, esc, type_fmt_unsigned32, (uint32_t) ast->cInt);
+			}
+			else if (ast->type->format == type_fmt_unsigned64) {
+				printFmt(out, esc, type_fmt_unsigned64, (uint64_t) ast->cInt);
+			}
 			else if (ast->type->format == type_fmt_float32) {
 				printFmt(out, esc, type_fmt_float32, (float32_t) ast->cFlt);
 			}
 			else if (ast->type->format == type_fmt_float64) {
 				printFmt(out, esc, type_fmt_float64, (float64_t) ast->cFlt);
 			}
-			else {
+			else if (ast->type->format == type_fmt_typename) {
+				printFmt(out, esc, type_fmt_typename, ast->type);
+			}
+			else if (ast->type->format != NULL) {
 				printFmt(out, esc, ast->type->format, ast->cInt);
+			}
+			else {
+				printFmt(out, esc, "{%.T @%D}", ast->type, ast->cInt);
 			}
 			break;
 
