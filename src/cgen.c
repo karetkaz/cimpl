@@ -1966,7 +1966,7 @@ int gencode(rtContext rt, int debug) {
 
 			// relocate native call offsets to be debuggable and traceable.
 			nfc->sym->offs = vmOffset(rt, nfc);
-			nfc->sym->size = sizeof(nfc);
+			nfc->sym->size = 0;
 			addDbgFunction(rt, nfc->sym);
 		}
 	}

@@ -1,49 +1,49 @@
 // test if statements are correctly generated
 
 static if (0 == 0) {
-	raise(1, "0 == 0", null, 1);
+	raise(debug, "0 == 0", null, 1);
 }
 
 static if (0 != 0) {
-	raise(1, "0 != 0", null, 2);
+	raise(debug, "0 != 0", null, 2);
 }
 
 static if (0 == 0) {
-	raise(1, "0 == 0", null, 3);
+	raise(debug, "0 == 0", null, 3);
 }
 else {
-	raise(1, "0 != 0", null, 4);
+	raise(debug, "0 != 0", null, 4);
 }
 
 static if (0 != 0) {
-	raise(1, "0 != 0", null, 5);
+	raise(debug, "0 != 0", null, 5);
 }
 else {
-	raise(1, "0 == 0", null, 6);
+	raise(debug, "0 == 0", null, 6);
 }
 
 {
 	int t = 0;
 
 	if (t == 0) {
-		raise(1, "t == 0", variant(&t), 7);
+		raise(debug, "t == 0", variant(&t), 7);
 	}
 
 	if (t != 0) {
-		raise(1, "t != 0", variant(&t), 8);
+		raise(debug, "t != 0", variant(&t), 8);
 	}
 
 	if (t != 0) {
-		raise(1, "t != 0", variant(&t), 9);
+		raise(debug, "t != 0", variant(&t), 9);
 	}
 	else {
-		raise(1, "t == 0", variant(&t), 10);
+		raise(debug, "t == 0", variant(&t), 10);
 	}
 
 	if (t != 0) {
-		raise(1, "t != 0", variant(&t), 11);
+		raise(debug, "t != 0", variant(&t), 11);
 	}
 	else {
-		raise(1, "t == 0", variant(&t), 12);
+		raise(debug, "t == 0", variant(&t), 12);
 	}
 }

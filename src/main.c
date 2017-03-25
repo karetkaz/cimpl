@@ -3,7 +3,7 @@
 #include "internal.h"
 
 // default values
-static const int wl = 10;           // default warning level: show all
+static const int wl = 5;            // default warning level: show all
 static char mem[512 << 10];         // 512 Kb memory compiler + runtime
 const char *STDLIB = "stdlib.cvx";  // standard library
 
@@ -137,11 +137,6 @@ typedef enum {
 
 // Profile commands
 typedef enum {
-//	runSkip = -1,		// do not execute, compile only
-//	runRun,
-//	runDebug,
-//	runProfile,
-
 	trcMethods = 0x0010,     // dump call tree
 	trcOpcodes = 0x0020,     // TODO: remove: dump executing instructions
 	trcLocals  = 0x0040,     // TODO: remove: dump the stack, dmpOpcodes must be enabled
@@ -571,7 +566,7 @@ static void jsonDumpAsm(FILE *out, const char **esc, symn sym, rtContext rt, int
 static void dumpApiJSON(userContext ctx, symn sym) {
 	FILE *out = ctx->out;
 	int indent = ctx->indent;
-	const char **esc = escapeJSON();
+	const char **esc = ctx->esc;
 
 	if (ctx->dmpApi == prSkip && ctx->dmpAsm == prSkip && ctx->dmpAst == prSkip) {
 		return;
@@ -597,20 +592,33 @@ static void dumpApiJSON(userContext ctx, symn sym) {
 	}
 }
 
-static void jsonPreProfile(dbgContext ctx) {
-	userContext cc = ctx->extra;
-	FILE *out = cc->out;
-	const int indent = cc->indent;
-	const char **esc = cc->esc;
-
-	printFmt(out, esc, "\n%I%s\"%s\": {\n", indent, cc->hasOut ? ", " : "", JSON_KEY_RUN);
-	printFmt(out, esc, "%I\"%s\": [", indent + 1, "callTreeData");
-	printFmt(out, esc, "\"%s\", ", "ctTickIndex");
-	printFmt(out, esc, "\"%s\", ", "ctHeapIndex");
-	printFmt(out, esc, "\"%s\"", "ctFunIndex");
-	printFmt(out, esc, "]\n");
-
-	printFmt(out, esc, "%I, \"%s\": [", indent + 1, "callTree");
+static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, size_t callee) {
+	if (callee != 0) {
+		clock_t ticks = clock();
+		userContext cc = ctx->extra;
+		FILE *out = cc->out;
+		const char **esc = cc->esc;
+		if ((ptrdiff_t) callee < 0) {
+			if (JSON_PRETTY_PRINT) {
+				printFmt(out, esc, "\n% I%d,%d,-1%s", ss, ticks, ctx->usedMem, ss ? "," : "");
+			}
+			else {
+				printFmt(out, esc, "%d,%d,-1%s", ticks, ctx->usedMem, ss ? "," : "");
+			}
+		}
+		else {
+			if (JSON_PRETTY_PRINT) {
+				printFmt(out, esc, "\n% I%d,%d,%d,", ss, ticks, ctx->usedMem, callee);
+			}
+			else {
+				printFmt(out, esc, "%d,%d,%d,", ticks, ctx->usedMem, callee);
+			}
+		}
+	}
+	(void)caller;
+	(void)error;
+	(void)stack;
+	return NULL;
 }
 static void jsonPostProfile(dbgContext ctx) {
 	userContext cc = ctx->extra;
@@ -687,43 +695,24 @@ static void jsonPostProfile(dbgContext ctx) {
 	printFmt(out, esc, "%I, \"%s\": %d\n", indent + 1, "statementCount", ctx->statements.cnt);
 	printFmt(out, esc, "%I}", indent);
 }
-static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, size_t callee) {
-	if (callee != 0) {
-		clock_t ticks = clock();
-		userContext cc = ctx->extra;
-		FILE *out = cc->out;
-		const char **esc = cc->esc;
-		if ((ptrdiff_t) callee < 0) {
-			if (JSON_PRETTY_PRINT) {
-				printFmt(out, esc, "\n% I%d,%d,-1%s", ss, ticks, ctx->usedMem, ss ? "," : "");
-			}
-			else {
-				printFmt(out, esc, "%d,%d,-1%s", ticks, ctx->usedMem, ss ? "," : "");
-			}
-			if (ss == 0) {
-				jsonPostProfile(ctx);
-			}
-		}
-		else {
-			if (ss == 0) {
-				jsonPreProfile(ctx);
-			}
-			if (JSON_PRETTY_PRINT) {
-				printFmt(out, esc, "\n% I%d,%d,%d,", ss, ticks, ctx->usedMem, callee);
-			}
-			else {
-				printFmt(out, esc, "%d,%d,%d,", ticks, ctx->usedMem, callee);
-			}
-		}
-	}
-	(void)caller;
-	(void)error;
-	(void)stack;
-	return NULL;
+static void jsonPreProfile(dbgContext ctx) {
+	userContext cc = ctx->extra;
+	FILE *out = cc->out;
+	const int indent = cc->indent;
+	const char **esc = cc->esc;
+
+	printFmt(out, esc, "\n%I%s\"%s\": {\n", indent, cc->hasOut ? ", " : "", JSON_KEY_RUN);
+	printFmt(out, esc, "%I\"%s\": [", indent + 1, "callTreeData");
+	printFmt(out, esc, "\"%s\", ", "ctTickIndex");
+	printFmt(out, esc, "\"%s\", ", "ctHeapIndex");
+	printFmt(out, esc, "\"%s\"", "ctFunIndex");
+	printFmt(out, esc, "]\n");
+
+	printFmt(out, esc, "%I, \"%s\": [", indent + 1, "callTree");
 }
 
 // text output
-static void conDumpAsm(FILE *out, const char **esc, size_t offs, userContext ctx, int indent) {
+static void textDumpAsm(FILE *out, const char **esc, size_t offs, userContext ctx, int indent) {
 	dmpMode mode = ctx->dmpAsm | prFull | prOneLine;
 
 	if (mode & ctx->dmpAsmStmt && ctx->rt->cc != NULL) {
@@ -742,7 +731,7 @@ static void conDumpAsm(FILE *out, const char **esc, size_t offs, userContext ctx
 	printAsm(out, esc, ctx->rt, vmPointer(ctx->rt, offs), mode);
 	printFmt(out, esc, "\n");
 }
-static void conDumpMem(rtContext rt, void *ptr, size_t size, char *kind) {
+static void textDumpMem(rtContext rt, void *ptr, size_t size, char *kind) {
 	userContext ctx = rt->dbg->extra;
 	const char **esc = ctx->esc;
 	FILE *out = ctx->out;
@@ -768,7 +757,7 @@ static void conDumpMem(rtContext rt, void *ptr, size_t size, char *kind) {
 
 	printFmt(out, esc, "memory[%s] @%06x; size: %d(%?.1f %s)\n", kind, vmOffset(rt, ptr), size, value, unit);
 }
-static void conDumpProf(userContext usr) {
+static void textPostProfile(userContext usr) {
 	const char **esc = usr->esc;
 	FILE *out = usr->out;
 	rtContext rt = usr->rt;
@@ -884,11 +873,6 @@ static void conDumpProf(userContext usr) {
 				continue;
 			}
 
-			// exclude null
-			if (var->offs == 0) {
-				continue;
-			}
-
 			if (var->file && var->line) {
 				printFmt(out, esc, "%s:%u: ", var->file, var->line);
 			}
@@ -897,7 +881,11 @@ static void conDumpProf(userContext usr) {
 				continue;
 			}
 
-			if (isStatic(var)) {
+			if (isInline(var) || isTypename(var)) {
+				// alias and type names.
+				ofs = NULL;
+			}
+			else if (isStatic(var)) {
 				// static variable.
 				ofs = (char *) rt->_mem + var->offs;
 			}
@@ -914,12 +902,12 @@ static void conDumpProf(userContext usr) {
 
 	if (usr->exec & dmpMemory) {
 		// show allocated memory chunks.
-		printFmt(out, esc, "\n/*-- Allocations:\n");
-		conDumpMem(rt, rt->_mem, rt->vm.ro, "meta");
-		conDumpMem(rt, rt->_mem, rt->vm.px + px_size, "code");
-		conDumpMem(rt, NULL, rt->vm.ss, "stack");
-		conDumpMem(rt, rt->_beg, rt->_end - rt->_beg, "heap");
-		rtAlloc(rt, NULL, 0, conDumpMem);
+		printFmt(out, esc, "\n/*-- Memory:\n");
+		textDumpMem(rt, rt->_mem, rt->vm.ro, "meta");
+		textDumpMem(rt, rt->_mem, rt->vm.px + px_size, "code");
+		textDumpMem(rt, NULL, rt->vm.ss, "stck");
+		textDumpMem(rt, rt->_beg, rt->_end - rt->_beg, "heap");
+		rtAlloc(rt, NULL, 0, textDumpMem);
 		printFmt(out, esc, "// */\n");
 	}
 }
@@ -1016,7 +1004,7 @@ static void dumpApiText(userContext extra, symn sym) {
 			if (ip == NULL) {
 				break;
 			}
-			conDumpAsm(out, esc, pc, extra, indent + 1);
+			textDumpAsm(out, esc, pc, extra, indent + 1);
 			pc += opcode_tbl[*ip].size;
 			if (pc == ppc) {
 				break;
@@ -1087,7 +1075,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 	userContext usr = ctx->extra;
 	double now = clock() * (1000. / CLOCKS_PER_SEC);
 	const char **esc = NULL;
-	FILE *out = stdout;
+	FILE *out = usr->out;
 
 	brkMode breakMode = brkSkip;
 	char *breakCause = NULL;
@@ -1167,7 +1155,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 			printFmt(out, esc, "[% 3.2F]\t", now);
 		}
 		if (usr->exec & trcOpcodes) {
-			conDumpAsm(out, esc, caller, usr, 0);
+			textDumpAsm(out, esc, caller, usr, 0);
 		}
 	}
 
@@ -1234,7 +1222,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 				break;
 
 			case dbgPrintInstruction:
-				conDumpAsm(out, esc, caller, usr, 0);
+				textDumpAsm(out, esc, caller, usr, 0);
 				break;
 
 			case dbgPrintStackValues:
@@ -1551,14 +1539,6 @@ static int program(int argc, char *argv[]) {
 		}
 		else if (strncmp(arg, "-ast", 4) == 0) {
 			char *arg2 = arg + 4;
-			if (strcmp(arg, "-ast.xml") == 0) {
-				if (++i >= argc || pathDumpXml) {
-					fatal("dump file not or double specified");
-					return -1;
-				}
-				pathDumpXml = argv[i];
-				continue;
-			}
 			if (extra.dmpAst != prSkip) {
 				fatal("argument specified multiple times: %s", arg);
 				return -1;
@@ -1594,12 +1574,16 @@ static int program(int argc, char *argv[]) {
 		}
 		// output format and filename
 		else if (strncmp(arg, "-dump", 5) == 0) {
-			if (++i >= argc || dumpFile) {
-				fatal("dump file not or double specified");
-				return -1;
-			}
 			if (strEquals(arg, "-dump")) {
 				dumpFun = dumpApiText;
+			}
+			else if (strcmp(arg, "-dump.ast.xml") == 0) {
+				if (++i >= argc || pathDumpXml) {
+					fatal("dump file not or double specified");
+					return -1;
+				}
+				pathDumpXml = argv[i];
+				continue;
 			}
 			else if (strEquals(arg, "-dump.json")) {
 				dumpFun = dumpApiJSON;
@@ -1609,6 +1593,10 @@ static int program(int argc, char *argv[]) {
 			}
 			else {
 				fatal("invalid argument '%s'", arg);
+				return -1;
+			}
+			if (++i >= argc || dumpFile) {
+				fatal("dump file not or double specified");
 				return -1;
 			}
 			dumpFile = fopen(argv[i], "w");
@@ -1898,23 +1886,30 @@ static int program(int argc, char *argv[]) {
 		if (extra.dmpApi != prSkip || extra.dmpAsm != prSkip || extra.dmpAst != prSkip) {
 			dumpFun = dumpApiText;
 		}
+		else if (run_code == profile) {
+			dumpFun = dumpApiText;
+		}
 	}
 
 	if (dumpFun == dumpApiJSON) {
-		// TODO: use json escaping: extra.esc = escapeJSON();
-		printFmt(extra.out, NULL, "{\n%I\"%s\": [{\n", extra.indent, JSON_KEY_API);
+		extra.esc = escapeJSON();
+		printFmt(extra.out, extra.esc, "{\n%I\"%s\": [{\n", extra.indent, JSON_KEY_API);
 		dumpApi(rt, &extra, dumpFun);
-		printFmt(extra.out, NULL, "%I}]", extra.indent);
+		printFmt(extra.out, extra.esc, "%I}]", extra.indent);
 		extra.hasOut = 1;
 	}
 	else if (dumpFun != NULL) {
+		extra.esc = NULL;
+		// printFmt(extra.out, extra.esc, "/*-- Symbols:\n");
 		dumpApi(rt, &extra, dumpFun);
+		// printFmt(extra.out, extra.esc, "// */\n");
 	}
 
 	// run code if there are no compilation errors.
 	if (rt->errors == 0 && run_code != compile) {
 		if (rt->dbg != NULL) {
 			rt->dbg->extra = &extra;
+
 			// set debugger or profiler
 			if (run_code == debug) {
 				rt->dbg->debug = &conDebug;
@@ -1932,16 +1927,31 @@ static int program(int argc, char *argv[]) {
 					rt->dbg->debug = &conDebug;
 				}
 			}
+
+			if (dumpFun == dumpApiJSON) {
+				jsonPreProfile(rt->dbg);
+			}
+			else if (dumpFun != NULL) {
+				printFmt(extra.out, extra.esc, "\n/*-- Execute:\n");
+			}
 		}
 		rt->errors = execute(rt, 0, NULL, NULL);
 	}
 
 	if (dumpFun == dumpApiJSON) {
+		if (rt->dbg != NULL) {
+			jsonPostProfile(rt->dbg);
+		}
 		printFmt(extra.out, NULL, "\n}\n");
 	}
-	else if (rt->errors == 0) {
-		conDumpProf(&extra);
+	else if (dumpFun != NULL) {
+		if (rt->dbg != NULL) {
+			printFmt(extra.out, extra.esc, "// */\n");
+		}
+		// dump globals, memory
+		textPostProfile(&extra);
 	}
+
 	if (dumpFile != NULL) {
 		fclose(dumpFile);
 	}

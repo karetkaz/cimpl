@@ -208,6 +208,18 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 		logif(kind != kind2, "symbol `%s` should be declared as static and constant", name);
 	}
 
+	if (size == 0 && (kind & MASK_kind) == KIND_var) {
+		switch (castOf(type)) {
+			default:
+				size = type->size;
+				break;
+
+			case CAST_ref:
+				size = sizeof(vmOffs);
+				break;
+		}
+	}
+
 	symn def = newDef(cc, kind);
 	if (def != NULL) {
 		size_t length = strlen(name) + 1;

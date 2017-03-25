@@ -484,7 +484,7 @@ typedef enum {
 	prName = 0,		// print operator or symbol name only.
 	prValue = prOneLine,
 	prShort = prSymQual | prSymArgs | prSymType | prOneLine ,	// %t, %T
-	prFull = prAttr | prSymQual | prSymArgs | prSymType | prSymInit,		// %+t, %-t, %+T, %-T
+	prFull = prAttr | prSymQual | prSymArgs | prSymType | prSymInit,		// %±t, %±T
 	prDbg = prAttr | prAstType | prSymQual | prSymArgs | prSymType | prSymInit | prAsmAddr | prAsmName | 9
 } dmpMode;
 

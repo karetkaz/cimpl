@@ -391,7 +391,8 @@ static void install_type(ccContext cc, ccInstall mode) {
 
 	type_rec = install(cc, "typename", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, sizeof(vmOffs), NULL, NULL);
 	// update required variables to be able to install other types.
-	cc->type_rec = type_rec->type = type_rec;  // TODO: !cycle: typename is instance of typename
+	cc->type_rec = type_rec->type = type_rec;   // TODO: !cycle: typename is instance of typename
+	type_rec->size = sizeof(struct symNode);    // expose the real size of the internal representation. 
 
 	type_vid = install(cc, "void", ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, type_rec, NULL);
 	type_bol = install(cc, "bool", ATTR_stat | ATTR_cnst | KIND_typ | CAST_bit, 1, type_rec, NULL);
@@ -1122,6 +1123,9 @@ dbgn mapDbgFunction(rtContext rt, size_t position) {
 		dbgn result = (dbgn)rt->dbg->functions.ptr;
 		int i, n = rt->dbg->functions.cnt;
 		for (i = 0; i < n; ++i) {
+			if (position == result->start) {
+				return result;
+			}
 			if (position >= result->start) {
 				if (position < result->end) {
 					return result;

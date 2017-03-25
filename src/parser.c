@@ -545,7 +545,7 @@ static astn parameters(ccContext cc, symn resType) {
 	astn tok = NULL;
 
 	if (resType != NULL) {
-		symn res = install(cc, ".result", KIND_var, resType->size, resType, resType->init);
+		symn res = install(cc, ".result", KIND_var, 0, resType, resType->init);
 		tok = lnkNode(cc, res);
 	}
 
