@@ -312,6 +312,38 @@ pointer: typename {
 .kind: static const typename(ref)
 .size: 4
 .owner: 
+.field alloc: function (size: 0 @27328 -> static const inline)
+.field fill: function (size: 0 @28080 -> static const inline)
+.field copy: function (size: 0 @28824 -> static const inline)
+}
+pointer.alloc(ptr: pointer, size: int32): pointer: function {
+.kind: static const inline
+.size: 0
+.owner: pointer
+.param .result: pointer (@+12->inline)
+.param ptr: pointer (@+8->ref)
+.param size: int32 (@+4->i32)
+.value: emit(nfc(7), ptr, size)
+}
+pointer.fill(dst: pointer, value: int32, size: int32): pointer: function {
+.kind: static const inline
+.size: 0
+.owner: pointer
+.param .result: pointer (@+16->inline)
+.param dst: pointer (@+12->ref)
+.param value: int32 (@+8->i32)
+.param size: int32 (@+4->i32)
+.value: emit(nfc(8), dst, value, size)
+}
+pointer.copy(dst: pointer, src: pointer, size: int32): pointer: function {
+.kind: static const inline
+.size: 0
+.owner: pointer
+.param .result: pointer (@+16->inline)
+.param dst: pointer (@+12->ref)
+.param src: pointer (@+8->ref)
+.param size: int32 (@+4->i32)
+.value: emit(nfc(9), dst, src, size)
 }
 variant: typename {
 .kind: static const typename(var)
@@ -1307,35 +1339,6 @@ tryExec(args: pointer, action(args: pointer): void): int32: function {
 .param args: pointer (@+8->ref)
 .param action: function (@+4->ref)
 .value: emit(nfc(6), args, action)
-}
-memmgr(ptr: pointer, size: int32): pointer: function {
-.kind: static const inline
-.size: 0
-.owner: 
-.param .result: pointer (@+12->inline)
-.param ptr: pointer (@+8->ref)
-.param size: int32 (@+4->i32)
-.value: emit(nfc(7), ptr, size)
-}
-memset(dst: pointer, value: int32, size: int32): pointer: function {
-.kind: static const inline
-.size: 0
-.owner: 
-.param .result: pointer (@+16->inline)
-.param dst: pointer (@+12->ref)
-.param value: int32 (@+8->i32)
-.param size: int32 (@+4->i32)
-.value: emit(nfc(8), dst, value, size)
-}
-memcpy(dst: pointer, src: pointer, size: int32): pointer: function {
-.kind: static const inline
-.size: 0
-.owner: 
-.param .result: pointer (@+16->inline)
-.param dst: pointer (@+12->ref)
-.param src: pointer (@+8->ref)
-.param size: int32 (@+4->i32)
-.value: emit(nfc(9), dst, src, size)
 }
 System: void {
 .kind: static const typename(void)
@@ -4174,7 +4177,7 @@ free(data: pointer): pointer: function {
 .owner: 
 .param .result: pointer (@+4->inline)
 .param data: pointer (@+4->ref)
-.value: memmgr(data, 0)
+.value: pointer.alloc(data, 0)
 }
 malloc(size: int32): pointer: function {
 .kind: inline
@@ -4182,7 +4185,7 @@ malloc(size: int32): pointer: function {
 .owner: 
 .param .result: pointer (@+4->inline)
 .param size: int32 (@+4->i32)
-.value: memmgr(null, size)
+.value: pointer.alloc(null, size)
 }
 p1: pointer: pointer {
 .kind: variable(ref)
@@ -4194,19 +4197,19 @@ p2: pointer: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
-.value: memmgr(null, 80)
+.value: malloc(80)
 }
 p3: pointer: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
-.value: memmgr(null, 160)
+.value: malloc(160)
 }
 p4: pointer: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
-.value: memmgr(null, 820)
+.value: malloc(820)
 }
 val1: int64: int64 {
 .kind: variable(i64)
@@ -4256,9 +4259,6 @@ val2: int64: int64 {
 .field RAND_MAX: int32 (size: 0 @0 -> i32)
 .field raise: function (size: 0 @24672 -> static const inline)
 .field tryExec: function (size: 0 @26720 -> static const inline)
-.field memmgr: function (size: 0 @27328 -> static const inline)
-.field memset: function (size: 0 @28080 -> static const inline)
-.field memcpy: function (size: 0 @28824 -> static const inline)
 .field System: void (size: 0 @28872 -> static const typename(void))
 .field integer: typename (size: 0 @0 -> inline)
 .field xrgb: typename (size: 4 @43232 -> static const typename(val))
@@ -5199,14 +5199,14 @@ val2: int64: int64 {
 		powF32: float32 := float32.pow(pi32 * pi32, 0.500000);
 		sqrtF32: float32 := float32.sqrt(pi32 * pi32);
 		atanF32: float32 := float32.atan2(pi32, 1.000000);
-		free(data: pointer): pointer := memmgr(data, 0);
-		malloc(size: int32): pointer := memmgr(null, size);
+		free(data: pointer): pointer := pointer.alloc(data, 0);
+		malloc(size: int32): pointer := pointer.alloc(null, size);
 		p1: pointer := malloc(1024);
-		p2: pointer := memmgr(null, 80);
-		p3: pointer := memmgr(null, 160);
-		p4: pointer := memmgr(null, 820);
-		memset(p1, 0, 1024);
-		memcpy(p1, p3, 160);
+		p2: pointer := malloc(80);
+		p3: pointer := malloc(160);
+		p4: pointer := malloc(820);
+		pointer.fill(p1, 0, 1024);
+		pointer.copy(p1, p3, 160);
 		free(p1);
 		free(p2);
 		free(p3);
@@ -5215,8 +5215,8 @@ val2: int64: int64 {
 		val2: int64 := 96;
 		raise(1, "val1", variant(&val1), 0);
 		raise(1, "val2", variant(&val2), 0);
-		memcpy(pointer(&val2), pointer(&val1), 8);
-		memset(pointer(&val1), 0, 8);
+		pointer.copy(pointer(&val2), pointer(&val1), 8);
+		pointer.fill(pointer(&val1), 0, 8);
 		raise(1, "val1", variant(&val1), 0);
 		raise(1, "val2", variant(&val2), 0);
 	}
@@ -7299,67 +7299,67 @@ val2: int64: int64 {
 	1c 00 04 00 00 00 00 00 00 load.c64 1024
 	6a                         i64.2i32
 	1f 00 00 00 00             load.ref .000000 ;null: pointer
-	01 07 00 00                nfc(7) ;memmgr(ptr: pointer, size: int32): pointer
-	extras/Tests/stdc.nfcMemory.ci:7: (19 bytes): p2: pointer := memmgr(null, 80)
+	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	extras/Tests/stdc.nfcMemory.ci:7: (19 bytes): p2: pointer := malloc(80)
 	1c 50 00 00 00 00 00 00 00 load.c64 80
 	6a                         i64.2i32
 	1f 00 00 00 00             load.ref .000000 ;null: pointer
-	01 07 00 00                nfc(7) ;memmgr(ptr: pointer, size: int32): pointer
-	extras/Tests/stdc.nfcMemory.ci:8: (19 bytes): p3: pointer := memmgr(null, 160)
+	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	extras/Tests/stdc.nfcMemory.ci:8: (19 bytes): p3: pointer := malloc(160)
 	1c a0 00 00 00 00 00 00 00 load.c64 160
 	6a                         i64.2i32
 	1f 00 00 00 00             load.ref .000000 ;null: pointer
-	01 07 00 00                nfc(7) ;memmgr(ptr: pointer, size: int32): pointer
-	extras/Tests/stdc.nfcMemory.ci:9: (19 bytes): p4: pointer := memmgr(null, 820)
+	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	extras/Tests/stdc.nfcMemory.ci:9: (19 bytes): p4: pointer := malloc(820)
 	1c 34 03 00 00 00 00 00 00 load.c64 820
 	6a                         i64.2i32
 	1f 00 00 00 00             load.ref .000000 ;null: pointer
-	01 07 00 00                nfc(7) ;memmgr(ptr: pointer, size: int32): pointer
-	extras/Tests/stdc.nfcMemory.ci:12: (33 bytes): memset(p1, 0, 1024);
+	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	extras/Tests/stdc.nfcMemory.ci:12: (33 bytes): pointer.fill(p1, 0, 1024);
 	1c 00 04 00 00 00 00 00 00 load.c64 1024
 	6a                         i64.2i32
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	11 14 00 00                load.sp(+20)
 	22                         load.m32
-	01 08 00 00                nfc(8) ;memset(dst: pointer, value: int32, size: int32): pointer
+	01 08 00 00                nfc(8) ;pointer.fill(dst: pointer, value: int32, size: int32): pointer
 	10 fc ff ff                inc.sp(-4)
-	extras/Tests/stdc.nfcMemory.ci:13: (28 bytes): memcpy(p1, p3, 160);
+	extras/Tests/stdc.nfcMemory.ci:13: (28 bytes): pointer.copy(p1, p3, 160);
 	1c a0 00 00 00 00 00 00 00 load.c64 160
 	6a                         i64.2i32
 	11 08 00 00                load.sp(+8)
 	22                         load.m32
 	11 14 00 00                load.sp(+20)
 	22                         load.m32
-	01 09 00 00                nfc(9) ;memcpy(dst: pointer, src: pointer, size: int32): pointer
+	01 09 00 00                nfc(9) ;pointer.copy(dst: pointer, src: pointer, size: int32): pointer
 	10 fc ff ff                inc.sp(-4)
 	extras/Tests/stdc.nfcMemory.ci:16: (23 bytes): free(p1);
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	11 10 00 00                load.sp(+16)
 	22                         load.m32
-	01 07 00 00                nfc(7) ;memmgr(ptr: pointer, size: int32): pointer
+	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	10 fc ff ff                inc.sp(-4)
 	extras/Tests/stdc.nfcMemory.ci:17: (23 bytes): free(p2);
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	11 0c 00 00                load.sp(+12)
 	22                         load.m32
-	01 07 00 00                nfc(7) ;memmgr(ptr: pointer, size: int32): pointer
+	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	10 fc ff ff                inc.sp(-4)
 	extras/Tests/stdc.nfcMemory.ci:18: (23 bytes): free(p3);
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	11 08 00 00                load.sp(+8)
 	22                         load.m32
-	01 07 00 00                nfc(7) ;memmgr(ptr: pointer, size: int32): pointer
+	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	10 fc ff ff                inc.sp(-4)
 	extras/Tests/stdc.nfcMemory.ci:19: (23 bytes): free(p4);
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	11 04 00 00                load.sp(+4)
 	22                         load.m32
-	01 07 00 00                nfc(7) ;memmgr(ptr: pointer, size: int32): pointer
+	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	10 fc ff ff                inc.sp(-4)
 	extras/Tests/stdc.nfcMemory.ci:22: (9 bytes): val1: int64 := 42
 	1c 2a 00 00 00 00 00 00 00 load.c64 42
@@ -7387,20 +7387,20 @@ val2: int64: int64 {
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/stdc.nfcMemory.ci:28: (26 bytes): memcpy(pointer(&val2), pointer(&val1), 8);
+	extras/Tests/stdc.nfcMemory.ci:28: (26 bytes): pointer.copy(pointer(&val2), pointer(&val1), 8);
 	1c 08 00 00 00 00 00 00 00 load.c64 8
 	6a                         i64.2i32
 	11 0c 00 00                load.sp(+12)
 	11 08 00 00                load.sp(+8)
-	01 09 00 00                nfc(9) ;memcpy(dst: pointer, src: pointer, size: int32): pointer
+	01 09 00 00                nfc(9) ;pointer.copy(dst: pointer, src: pointer, size: int32): pointer
 	10 fc ff ff                inc.sp(-4)
-	extras/Tests/stdc.nfcMemory.ci:29: (32 bytes): memset(pointer(&val1), 0, 8);
+	extras/Tests/stdc.nfcMemory.ci:29: (32 bytes): pointer.fill(pointer(&val1), 0, 8);
 	1c 08 00 00 00 00 00 00 00 load.c64 8
 	6a                         i64.2i32
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	11 10 00 00                load.sp(+16)
-	01 08 00 00                nfc(8) ;memset(dst: pointer, value: int32, size: int32): pointer
+	01 08 00 00                nfc(8) ;pointer.fill(dst: pointer, value: int32, size: int32): pointer
 	10 fc ff ff                inc.sp(-4)
 	extras/Tests/stdc.nfcMemory.ci:31: (48 bytes): raise(1, "val1", variant(&val1), 0);
 	1b 1f 00 00 00             load.c32 31

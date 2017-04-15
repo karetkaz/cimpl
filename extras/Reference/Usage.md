@@ -1,8 +1,8 @@
-# Execution
+# Command Line Reference
 
 ## Usage:
 
-To compile a file and execute it, the cmpl program can be invoked with the corresponding arguments.
+To compile and execute a script file, the cmpl program must be invoked with the corresponding arguments.
 
 >cmpl \[global.options\]... \[file \[file.options\]...\]...
 
@@ -11,22 +11,24 @@ To compile a file and execute it, the cmpl program can be invoked with the corre
 
 ### run
 
->cmpl -run test.lang.ci
+>cmpl -run test.ci
 
-When the application is started in run mode it executes the compiled code at full speed.
+When the application is started in **run** mode, the compiled code is executed at full speed.
 
 ### debug
 
->cmpl -debug test.lang.ci
+>cmpl -debug test.ci
 
-When the application is started in debug mode it executes the compiled code, and in case an error is raised, it will pause the execution inside the debugger.
+When the application is started in **debug** mode, the compiled code is executed with some additional checks.
+In case of an error, the debugger will pause the execution of the code at the fault location.
 
 
 ### profile
 
->cmpl -profile test.lang.ci
+>cmpl -profile test.ci
 
-When the application is started in profile mode it executes the compiled code, and collects the execution time of invoked functions. When the execution finishes, the collected data is dumped to the console.
+When the application is started in **profile** mode, the compiled code is executed and measured.
+When the execution finishes, the collected data is dumped to the to the console, or to the specified file.
 
 ### debug with breakpoints
 
@@ -46,7 +48,7 @@ When the application is started in profile mode it executes the compiled code, a
 
 	- `-wx` Treating warnings as errors.
 
-	- `-b12` Break execution when line 12 is hit.
+	- `-b12` Break execution each time when line 12 is hit.
 
 	- `-b/o15` Break execution when line 12 is first hit.
 
@@ -75,7 +77,7 @@ When the application is started in profile mode it executes the compiled code, a
 
 - compile source file `test.stdc.ci`
 
-In case JSON output is used, the generated file can be opened with the Inspector.html tool to vizualize the result.
+If JSON output format is used, the generated file can be opened with the Inspector.html tool to visualize the result.
 
 
 ## Global options
@@ -113,7 +115,7 @@ In case JSON output is used, the generated file can be opened with the Inspector
 
 - `-api[*]`
 
-	dump global symbols (typenames, variables and functions)
+	dump symbols (typenames, variables and functions)
 
 	additional arguments:
 

@@ -7,53 +7,54 @@ struct vec4f {
 	float32 w;
 }
 
-inline vec4f(float32 x, float32 y, float32 z, float32 w) = vec4f { x: x, y: y, z: z, w: w };
+inline vec4f(float32 x, float32 y, float32 z, float32 w) = { x: x, y: y, z: z, w: w };
 inline vec4f(float32 x, float32 y, float32 z) = vec4f(x, y, z, 0f);
+inline vec4f(vec4f v, float32 w) = vec4f(v.x, v.y, v.z, w);
 inline vec4f(float32 val) = vec4f(val, val, val, val);
 
 inline -(vec4f a) = vec4f(-a.x, -a.y, -a.z, -a.w);
 
 //~ inline +(vec4f a, vec4f b) = vec4f(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
-inline +(vec4f lhs, vec4f rhs) = emit(add.p4f, vec4f(rhs), vec4f(lhs));
+inline +(vec4f a, vec4f b) = emit(add.p4f, vec4f(a), vec4f(b));
 inline +(vec4f a, float32 b) = a + vec4f(b);
 inline +(float32 a, vec4f b) = vec4f(a) + b;
 
 //~ inline -(vec4f a, vec4f b) = vec4f(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
-inline -(vec4f lhs, vec4f rhs) = emit(sub.p4f, vec4f(rhs), vec4f(lhs));
+inline -(vec4f a, vec4f b) = emit(sub.p4f, vec4f(a), vec4f(b));
 inline -(vec4f a, float32 b) = a - vec4f(b);
 inline -(float32 a, vec4f b) = vec4f(a) - b;
 
 //~ inline *(vec4f a, vec4f b) = vec4f(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
-inline *(vec4f a, vec4f b) = emit(mul.p4f, vec4f(rhs), vec4f(lhs));
+inline *(vec4f a, vec4f b) = emit(mul.p4f, vec4f(a), vec4f(b));
 inline *(vec4f a, float32 b) = mul(a, vec4f(b));
 inline *(float32 a, vec4f b) = mul(vec4f(a), b);
 
 //~ inline /(vec4f a, vec4f b) = vec4f(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
-inline /(vec4f a, vec4f b) = emit(div.p4f, vec4f(rhs), vec4f(lhs));
+inline /(vec4f a, vec4f b) = emit(div.p4f, vec4f(a), vec4f(b));
 inline /(vec4f a, float32 b) = a / vec4f(b);
 inline /(float32 a, vec4f b) = vec4f(a) / b;
 
-inline min(vec4f x, vec4f y) = emit(min.p4f, vec4f(y), vec4f(x));
-inline max(vec4f x, vec4f y) = emit(max.p4f, vec4f(y), vec4f(x));
+inline min(vec4f a, vec4f b) = emit(min.p4f, vec4f(b), vec4f(a));
+inline max(vec4f a, vec4f b) = emit(max.p4f, vec4f(b), vec4f(a));
 
 inline mad(vec4f a, vec4f b, vec4f c) = emit(add.p4f, mul.p4f, vec4f(a), vec4f(b), vec4f(c));	// a * b + c
 
-//~ inline dp3(vec4f lhs, vec4f rhs) = rhs.x * lhs.x + rhs.y * lhs.y + rhs.z * lhs.z;
-inline dp3(vec4f lhs, vec4f rhs) = emit(p4x.dp3, vec4f(rhs), vec4f(lhs));
-//~ inline dph(vec4f lhs, vec4f rhs) = rhs.x * lhs.x + rhs.y * lhs.y + rhs.z * lhs.z + rhs.w;
-inline dph(vec4f lhs, vec4f rhs) = emit(p4x.dph, vec4f(rhs), vec4f(lhs));
-//~ inline dp4(vec4f lhs, vec4f rhs) = rhs.x * lhs.x + rhs.y * lhs.y + rhs.z * lhs.z + rhs.w * lhs.w;
-inline dp4(vec4f lhs, vec4f rhs) = emit(p4x.dp4, vec4f(rhs), vec4f(lhs));
+//~ inline dp3(vec4f a, vec4f b) = b.x * a.x + b.y * a.y + b.z * a.z;
+inline dp3(vec4f a, vec4f b) = emit(p4x.dp3, vec4f(b), vec4f(a));
+//~ inline dph(vec4f a, vec4f b) = b.x * a.x + b.y * a.y + b.z * a.z + b.w;
+inline dph(vec4f a, vec4f b) = emit(p4x.dph, vec4f(b), vec4f(a));
+//~ inline dp4(vec4f a, vec4f b) = b.x * a.x + b.y * a.y + b.z * a.z + b.w * a.w;
+inline dp4(vec4f a, vec4f b) = emit(p4x.dp4, vec4f(b), vec4f(a));
 
 inline cross(vec4f a, vec4f b) = vec4f(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
 
-inline lerp(float32 t, vec4f lhs, vec4f rhs) = vec4f(Math.lerp(t, lhs.x, rhs.x), Math.lerp(t, lhs.y, rhs.y), Math.lerp(t, lhs.z, rhs.z), Math.lerp(t, lhs.w, rhs.w));
+inline lerp(float32 t, vec4f a, vec4f b) = vec4f(Math.lerp(t, a.x, b.x), Math.lerp(t, a.y, b.y), Math.lerp(t, a.z, b.z), Math.lerp(t, a.w, b.w));
 
 inline len(vec4f v) = float64.sqrt(dp3(v, v));
 inline eval(vec4f v, float32 x) = float32((((v.w * x + v.z) * x + v.y) * x) + v.x);
 inline normalize(vec4f a) = a / len(a);
 
-inline float32(vec4f vec) = vec.w;
+// inline float32(vec4f vec) = vec.w;
 // inline bool(vec4f vec) = vec.x && vec.y && vec.z && vec.w;
 
 struct mat4f {
@@ -75,25 +76,25 @@ inline mat4f(
 	w: vec4f(m41, m42, m43, m44);
 };
 
-inline dp3(mat4f mat, vec4f vec) = vec4f(dp3(mat.x, vec), dp3(mat.y, vec), dp3(mat.z, vec), 1f);
-inline dph(mat4f mat, vec4f vec) = vec4f(dph(mat.x, vec), dph(mat.y, vec), dph(mat.z, vec), dph(mat.w, vec));
-inline dp4(mat4f mat, vec4f vec) = vec4f(dp4(mat.x, vec), dp4(mat.y, vec), dp4(mat.z, vec), dp4(mat.w, vec));
+inline dp3(const mat4f &mat, const vec4f &vec) = vec4f(dp3(mat.x, vec), dp3(mat.y, vec), dp3(mat.z, vec), 1f);
+inline dph(const mat4f &mat, const vec4f &vec) = vec4f(dph(mat.x, vec), dph(mat.y, vec), dph(mat.z, vec), dph(mat.w, vec));
+inline dp4(const mat4f &mat, const vec4f &vec) = vec4f(dp4(mat.x, vec), dp4(mat.y, vec), dp4(mat.z, vec), dp4(mat.w, vec));
 
 inline transposed(mat4f &mat) = mat4f(
-	rhs.x.x, rhs.y.x, rhs.z.x, rhs.w.x,
-	rhs.x.y, rhs.y.y, rhs.z.y, rhs.w.y,
-	rhs.x.z, rhs.y.z, rhs.z.z, rhs.w.z,
-	rhs.x.w, rhs.y.w, rhs.z.w, rhs.w.w
+	mat.x.x, mat.y.x, mat.z.x, mat.w.x,
+	mat.x.y, mat.y.y, mat.z.y, mat.w.y,
+	mat.x.z, mat.y.z, mat.z.z, mat.w.z,
+	mat.x.w, mat.y.w, mat.z.w, mat.w.w
 );
 
-mat4f mul(mat4f &lhs, mat4f &rhs) {
-	mat4f transposed = transposed(rhs);
+mat4f mul(mat4f &a, const mat4f &b) {
+	mat4f transposed = transposed(b);
 	return {
-		x: dp4(transposed, lhs.x);
-		y: dp4(transposed, lhs.y);
-		z: dp4(transposed, lhs.z);
-		w: dp4(transposed, lhs.w);
+		x: dp4(transposed, a.x);
+		y: dp4(transposed, a.y);
+		z: dp4(transposed, a.z);
+		w: dp4(transposed, a.w);
 	};
 }
 
-inline *(mat4f &lhs, mat4f &rhs) = mul(lhs, rhs);
+inline *(mat4f &a, mat4f &b) = mul(a, b);

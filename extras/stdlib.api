@@ -39,6 +39,9 @@ float64.pow(x: float64, y: float64): float64
 float64.sqrt(x: float64): float64
 float64.atan2(x: float64, y: float64): float64
 pointer
+pointer.alloc(ptr: pointer, size: int32): pointer
+pointer.fill(dst: pointer, value: int32, size: int32): pointer
+pointer.copy(dst: pointer, src: pointer, size: int32): pointer
 variant
 function
 object
@@ -185,9 +188,6 @@ raise.verbose
 raise.noTrace
 raise.defTrace
 tryExec(args: pointer, action(args: pointer): void): int32
-memmgr(ptr: pointer, size: int32): pointer
-memset(dst: pointer, value: int32, size: int32): pointer
-memcpy(dst: pointer, src: pointer, size: int32): pointer
 System
 System.exit(code: int32): void
 System.srand(seed: int32): void

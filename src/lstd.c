@@ -534,15 +534,18 @@ int ccLibStd(ccContext cc) {
 	}
 
 	if (!err && cc->type_ptr != NULL) {		// re-alloc, malloc, free, memset, memcpy
-		if(!ccDefCall(cc, sysMemMgr, "pointer memmgr(pointer ptr, int32 size)")) {
+		enter(cc);
+		if(!ccDefCall(cc, sysMemMgr, "pointer alloc(pointer ptr, int32 size)")) {
 			err = 3;
 		}
-		if(!ccDefCall(cc, sysMemSet, "pointer memset(pointer dst, int value, int32 size)")) {
+		if(!ccDefCall(cc, sysMemSet, "pointer fill(pointer dst, int value, int32 size)")) {
 			err = 3;
 		}
-		if(!ccDefCall(cc, sysMemCpy, "pointer memcpy(pointer dst, pointer src, int32 size)")) {
+		if(!ccDefCall(cc, sysMemCpy, "pointer copy(pointer dst, pointer src, int32 size)")) {
 			err = 3;
 		}
+		dieif(cc->type_ptr->fields, ERR_INTERNAL_ERROR);
+		cc->type_ptr->fields = leave(cc, cc->type_ptr, ATTR_stat | KIND_typ, 0, NULL);
 	}
 
 	// System.exit(int code), ...

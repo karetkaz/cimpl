@@ -6,10 +6,10 @@ implementation under refactoring.
 
 ## Reference
 
-[Language](extras/Reference/01. Language.md)
+[Language](extras/Reference/Language.md)
 
-[Library](extras/Reference/02. Library.md)
+[Library](extras/Reference/Library.md)
 
-[Execution](extras/Reference/03. Execution.md)
+[Usage](extras/Reference/Usage.md)
 
-## [Grammar](extras/Grammar/Cmpl.g4)
+## [Grammar](extras/Design/Cmpl.g4)

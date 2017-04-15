@@ -1,16 +1,16 @@
 // test memory related functions
 
-inline free(pointer data) = memmgr(data, 0);
-inline malloc(int size) = memmgr(null, size);
+inline free(pointer data) = pointer.alloc(data, 0);
+inline malloc(int size) = pointer.alloc(null, size);
 
 pointer p1 = malloc(1024);
-pointer p2 = memmgr(null, 80);
-pointer p3 = memmgr(null, 160);
-pointer p4 = memmgr(null, 820);
+pointer p2 = malloc(80);
+pointer p3 = malloc(160);
+pointer p4 = malloc(820);
 
 // clear and copy memory
-memset(p1, 0, 1024);
-memcpy(p1, p3, 160);
+pointer.fill(p1, 0, 1024);
+pointer.copy(p1, p3, 160);
 
 // free memory
 free(p1);
@@ -25,8 +25,8 @@ int64 val2 = 96;
 raise(1, "val1", variant(&val1), 0);
 raise(1, "val2", variant(&val2), 0);
 
-memcpy(pointer(&val2), pointer(&val1), 8);
-memset(pointer(&val1), 0, 8);
+pointer.copy(pointer(&val2), pointer(&val1), 8);
+pointer.fill(pointer(&val1), 0, 8);
 
 raise(1, "val1", variant(&val1), 0);
 raise(1, "val2", variant(&val2), 0);

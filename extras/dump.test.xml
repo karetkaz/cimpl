@@ -5627,44 +5627,50 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="free(data: pointer): pointer">
-			<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(data, 0)">
+			<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(data, 0)">
 				<push token="," type="void" kind="static const typename(void)" value="data, 0">
 					<left token=".variable" type="pointer" kind="static const typename(ref)" value="data"/>
 					<right token=".literal" type="int32" kind="static const typename(i32)" value="0"/>
 				</push>
-				<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-						<push token="," type="(null)" value="nfc(7), ptr, size">
-							<left token="," type="(null)" value="nfc(7), ptr">
-								<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-								<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
-							</left>
-							<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
-						</push>
-						<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
-					</init>
+				<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+					<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+						<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+							<push token="," type="(null)" value="nfc(7), ptr, size">
+								<left token="," type="(null)" value="nfc(7), ptr">
+									<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+									<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+								</left>
+								<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+							</push>
+							<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+						</init>
+					</right>
 				</call>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="malloc(size: int32): pointer">
-			<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(null, size)">
+			<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(null, size)">
 				<push token="," type="void" kind="static const typename(void)" value="null, size">
 					<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
 						<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
 					</left>
 					<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
 				</push>
-				<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-						<push token="," type="(null)" value="nfc(7), ptr, size">
-							<left token="," type="(null)" value="nfc(7), ptr">
-								<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-								<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
-							</left>
-							<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
-						</push>
-						<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
-					</init>
+				<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+					<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+						<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+							<push token="," type="(null)" value="nfc(7), ptr, size">
+								<left token="," type="(null)" value="nfc(7), ptr">
+									<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+									<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+								</left>
+								<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+							</push>
+							<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+						</init>
+					</right>
 				</call>
 			</init>
 		</stmt>
@@ -5672,121 +5678,151 @@
 			<init token="()" type="pointer" kind="static const typename(ref)" value="malloc(1024)">
 				<push token=".literal" type="int32" kind="static const typename(i32)" value="1024"/>
 				<call token=".variable" type="pointer" kind="static const typename(ref)" value="malloc">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(null, size)">
+					<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(null, size)">
 						<push token="," type="void" kind="static const typename(void)" value="null, size">
 							<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
 								<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
 							</left>
 							<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
 						</push>
-						<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-							<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-								<push token="," type="(null)" value="nfc(7), ptr, size">
-									<left token="," type="(null)" value="nfc(7), ptr">
-										<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-										<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
-									</left>
-									<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
-								</push>
-								<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
-							</init>
+						<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+							<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+								<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+									<push token="," type="(null)" value="nfc(7), ptr, size">
+										<left token="," type="(null)" value="nfc(7), ptr">
+											<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+											<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+										</left>
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+									</push>
+									<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+								</init>
+							</right>
 						</call>
 					</init>
 				</call>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="pointer" kind="static const typename(ref)" value="p2: pointer">
-			<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(null, 80)">
-				<push token="," type="void" kind="static const typename(void)" value="null, 80">
-					<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
-						<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
-					</left>
-					<right token=".literal" type="int32" kind="static const typename(i32)" value="80"/>
-				</push>
-				<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-						<push token="," type="(null)" value="nfc(7), ptr, size">
-							<left token="," type="(null)" value="nfc(7), ptr">
-								<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-								<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+			<init token="()" type="pointer" kind="static const typename(ref)" value="malloc(80)">
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="80"/>
+				<call token=".variable" type="pointer" kind="static const typename(ref)" value="malloc">
+					<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(null, size)">
+						<push token="," type="void" kind="static const typename(void)" value="null, size">
+							<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+								<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
 							</left>
 							<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
 						</push>
-						<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+						<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+							<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+								<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+									<push token="," type="(null)" value="nfc(7), ptr, size">
+										<left token="," type="(null)" value="nfc(7), ptr">
+											<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+											<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+										</left>
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+									</push>
+									<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+								</init>
+							</right>
+						</call>
 					</init>
 				</call>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="pointer" kind="static const typename(ref)" value="p3: pointer">
-			<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(null, 160)">
-				<push token="," type="void" kind="static const typename(void)" value="null, 160">
-					<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
-						<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
-					</left>
-					<right token=".literal" type="int32" kind="static const typename(i32)" value="160"/>
-				</push>
-				<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-						<push token="," type="(null)" value="nfc(7), ptr, size">
-							<left token="," type="(null)" value="nfc(7), ptr">
-								<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-								<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+			<init token="()" type="pointer" kind="static const typename(ref)" value="malloc(160)">
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="160"/>
+				<call token=".variable" type="pointer" kind="static const typename(ref)" value="malloc">
+					<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(null, size)">
+						<push token="," type="void" kind="static const typename(void)" value="null, size">
+							<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+								<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
 							</left>
 							<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
 						</push>
-						<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+						<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+							<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+								<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+									<push token="," type="(null)" value="nfc(7), ptr, size">
+										<left token="," type="(null)" value="nfc(7), ptr">
+											<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+											<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+										</left>
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+									</push>
+									<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+								</init>
+							</right>
+						</call>
 					</init>
 				</call>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="pointer" kind="static const typename(ref)" value="p4: pointer">
-			<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(null, 820)">
-				<push token="," type="void" kind="static const typename(void)" value="null, 820">
-					<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
-						<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
-					</left>
-					<right token=".literal" type="int32" kind="static const typename(i32)" value="820"/>
-				</push>
-				<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-						<push token="," type="(null)" value="nfc(7), ptr, size">
-							<left token="," type="(null)" value="nfc(7), ptr">
-								<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-								<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+			<init token="()" type="pointer" kind="static const typename(ref)" value="malloc(820)">
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="820"/>
+				<call token=".variable" type="pointer" kind="static const typename(ref)" value="malloc">
+					<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(null, size)">
+						<push token="," type="void" kind="static const typename(void)" value="null, size">
+							<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+								<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
 							</left>
 							<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
 						</push>
-						<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+						<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+							<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+								<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+									<push token="," type="(null)" value="nfc(7), ptr, size">
+										<left token="," type="(null)" value="nfc(7), ptr">
+											<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+											<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+										</left>
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+									</push>
+									<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+								</init>
+							</right>
+						</call>
 					</init>
 				</call>
 			</init>
 		</stmt>
-		<stmt token=";" type="void" kind="static const typename(void)" stmt="memset(p1, 0, 1024);">
-			<expr token="()" type="pointer" kind="static const typename(ref)" value="memset(p1, 0, 1024)">
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="pointer.fill(p1, 0, 1024);">
+			<expr token="()" type="pointer" kind="static const typename(ref)" value="pointer.fill(p1, 0, 1024)">
 				<push token="," type="void" kind="static const typename(void)" value="p1, 0, 1024">
 					<left token="," type="void" kind="static const typename(void)" value="p1, 0">
 						<left token=".variable" type="pointer" kind="static const typename(ref)" value="p1">
 							<init token="()" type="pointer" kind="static const typename(ref)" value="malloc(1024)">
 								<push token=".literal" type="int32" kind="static const typename(i32)" value="1024"/>
 								<call token=".variable" type="pointer" kind="static const typename(ref)" value="malloc">
-									<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(null, size)">
+									<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(null, size)">
 										<push token="," type="void" kind="static const typename(void)" value="null, size">
 											<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
 												<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
 											</left>
 											<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
 										</push>
-										<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-											<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-												<push token="," type="(null)" value="nfc(7), ptr, size">
-													<left token="," type="(null)" value="nfc(7), ptr">
-														<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-														<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
-													</left>
-													<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
-												</push>
-												<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
-											</init>
+										<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+											<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+											<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+												<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+													<push token="," type="(null)" value="nfc(7), ptr, size">
+														<left token="," type="(null)" value="nfc(7), ptr">
+															<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+															<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+														</left>
+														<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+													</push>
+													<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+												</init>
+											</right>
 										</call>
 									</init>
 								</call>
@@ -5796,72 +5832,86 @@
 					</left>
 					<right token=".literal" type="int32" kind="static const typename(i32)" value="1024"/>
 				</push>
-				<call token=".variable" type="pointer" kind="static const typename(ref)" value="memset">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(8), dst, value, size)">
-						<push token="," type="(null)" value="nfc(8), dst, value, size">
-							<left token="," type="(null)" value="nfc(8), dst, value">
-								<left token="," type="(null)" value="nfc(8), dst">
-									<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(8)"/>
-									<right token=".variable" type="pointer" kind="static const typename(ref)" value="dst"/>
+				<call token="." type="function" kind="static const typename(ref)" value="pointer.fill">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+					<right token=".variable" type="pointer" kind="static const typename(ref)" value="fill">
+						<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(8), dst, value, size)">
+							<push token="," type="(null)" value="nfc(8), dst, value, size">
+								<left token="," type="(null)" value="nfc(8), dst, value">
+									<left token="," type="(null)" value="nfc(8), dst">
+										<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(8)"/>
+										<right token=".variable" type="pointer" kind="static const typename(ref)" value="dst"/>
+									</left>
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="value"/>
 								</left>
-								<right token=".variable" type="int32" kind="static const typename(i32)" value="value"/>
-							</left>
-							<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
-						</push>
-						<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
-					</init>
+								<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+							</push>
+							<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+						</init>
+					</right>
 				</call>
 			</expr>
 		</stmt>
-		<stmt token=";" type="void" kind="static const typename(void)" stmt="memcpy(p1, p3, 160);">
-			<expr token="()" type="pointer" kind="static const typename(ref)" value="memcpy(p1, p3, 160)">
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="pointer.copy(p1, p3, 160);">
+			<expr token="()" type="pointer" kind="static const typename(ref)" value="pointer.copy(p1, p3, 160)">
 				<push token="," type="void" kind="static const typename(void)" value="p1, p3, 160">
 					<left token="," type="void" kind="static const typename(void)" value="p1, p3">
 						<left token=".variable" type="pointer" kind="static const typename(ref)" value="p1">
 							<init token="()" type="pointer" kind="static const typename(ref)" value="malloc(1024)">
 								<push token=".literal" type="int32" kind="static const typename(i32)" value="1024"/>
 								<call token=".variable" type="pointer" kind="static const typename(ref)" value="malloc">
-									<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(null, size)">
+									<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(null, size)">
 										<push token="," type="void" kind="static const typename(void)" value="null, size">
 											<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
 												<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
 											</left>
 											<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
 										</push>
-										<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-											<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-												<push token="," type="(null)" value="nfc(7), ptr, size">
-													<left token="," type="(null)" value="nfc(7), ptr">
-														<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-														<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
-													</left>
-													<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
-												</push>
-												<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
-											</init>
+										<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+											<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+											<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+												<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+													<push token="," type="(null)" value="nfc(7), ptr, size">
+														<left token="," type="(null)" value="nfc(7), ptr">
+															<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+															<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+														</left>
+														<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+													</push>
+													<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+												</init>
+											</right>
 										</call>
 									</init>
 								</call>
 							</init>
 						</left>
 						<right token=".variable" type="pointer" kind="static const typename(ref)" value="p3">
-							<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(null, 160)">
-								<push token="," type="void" kind="static const typename(void)" value="null, 160">
-									<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
-										<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
-									</left>
-									<right token=".literal" type="int32" kind="static const typename(i32)" value="160"/>
-								</push>
-								<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-									<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-										<push token="," type="(null)" value="nfc(7), ptr, size">
-											<left token="," type="(null)" value="nfc(7), ptr">
-												<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-												<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+							<init token="()" type="pointer" kind="static const typename(ref)" value="malloc(160)">
+								<push token=".literal" type="int32" kind="static const typename(i32)" value="160"/>
+								<call token=".variable" type="pointer" kind="static const typename(ref)" value="malloc">
+									<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(null, size)">
+										<push token="," type="void" kind="static const typename(void)" value="null, size">
+											<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+												<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
 											</left>
 											<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
 										</push>
-										<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+										<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+											<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+											<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+												<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+													<push token="," type="(null)" value="nfc(7), ptr, size">
+														<left token="," type="(null)" value="nfc(7), ptr">
+															<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+															<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+														</left>
+														<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+													</push>
+													<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+												</init>
+											</right>
+										</call>
 									</init>
 								</call>
 							</init>
@@ -5869,20 +5919,23 @@
 					</left>
 					<right token=".literal" type="int32" kind="static const typename(i32)" value="160"/>
 				</push>
-				<call token=".variable" type="pointer" kind="static const typename(ref)" value="memcpy">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(9), dst, src, size)">
-						<push token="," type="(null)" value="nfc(9), dst, src, size">
-							<left token="," type="(null)" value="nfc(9), dst, src">
-								<left token="," type="(null)" value="nfc(9), dst">
-									<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(9)"/>
-									<right token=".variable" type="pointer" kind="static const typename(ref)" value="dst"/>
+				<call token="." type="function" kind="static const typename(ref)" value="pointer.copy">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+					<right token=".variable" type="pointer" kind="static const typename(ref)" value="copy">
+						<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(9), dst, src, size)">
+							<push token="," type="(null)" value="nfc(9), dst, src, size">
+								<left token="," type="(null)" value="nfc(9), dst, src">
+									<left token="," type="(null)" value="nfc(9), dst">
+										<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(9)"/>
+										<right token=".variable" type="pointer" kind="static const typename(ref)" value="dst"/>
+									</left>
+									<right token=".variable" type="pointer" kind="static const typename(ref)" value="src"/>
 								</left>
-								<right token=".variable" type="pointer" kind="static const typename(ref)" value="src"/>
-							</left>
-							<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
-						</push>
-						<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
-					</init>
+								<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+							</push>
+							<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+						</init>
+					</right>
 				</call>
 			</expr>
 		</stmt>
@@ -5892,46 +5945,52 @@
 					<init token="()" type="pointer" kind="static const typename(ref)" value="malloc(1024)">
 						<push token=".literal" type="int32" kind="static const typename(i32)" value="1024"/>
 						<call token=".variable" type="pointer" kind="static const typename(ref)" value="malloc">
-							<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(null, size)">
+							<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(null, size)">
 								<push token="," type="void" kind="static const typename(void)" value="null, size">
 									<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
 										<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
 									</left>
 									<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
 								</push>
-								<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-									<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-										<push token="," type="(null)" value="nfc(7), ptr, size">
-											<left token="," type="(null)" value="nfc(7), ptr">
-												<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-												<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
-											</left>
-											<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
-										</push>
-										<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
-									</init>
+								<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+									<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+									<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+										<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+											<push token="," type="(null)" value="nfc(7), ptr, size">
+												<left token="," type="(null)" value="nfc(7), ptr">
+													<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+													<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+												</left>
+												<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+											</push>
+											<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+										</init>
+									</right>
 								</call>
 							</init>
 						</call>
 					</init>
 				</push>
 				<call token=".variable" type="pointer" kind="static const typename(ref)" value="free">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(data, 0)">
+					<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(data, 0)">
 						<push token="," type="void" kind="static const typename(void)" value="data, 0">
 							<left token=".variable" type="pointer" kind="static const typename(ref)" value="data"/>
 							<right token=".literal" type="int32" kind="static const typename(i32)" value="0"/>
 						</push>
-						<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-							<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-								<push token="," type="(null)" value="nfc(7), ptr, size">
-									<left token="," type="(null)" value="nfc(7), ptr">
-										<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-										<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
-									</left>
-									<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
-								</push>
-								<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
-							</init>
+						<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+							<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+								<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+									<push token="," type="(null)" value="nfc(7), ptr, size">
+										<left token="," type="(null)" value="nfc(7), ptr">
+											<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+											<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+										</left>
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+									</push>
+									<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+								</init>
+							</right>
 						</call>
 					</init>
 				</call>
@@ -5940,44 +5999,55 @@
 		<stmt token=";" type="void" kind="static const typename(void)" stmt="free(p2);">
 			<expr token="()" type="pointer" kind="static const typename(ref)" value="free(p2)">
 				<push token=".variable" type="pointer" kind="static const typename(ref)" value="p2">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(null, 80)">
-						<push token="," type="void" kind="static const typename(void)" value="null, 80">
-							<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
-								<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
-							</left>
-							<right token=".literal" type="int32" kind="static const typename(i32)" value="80"/>
-						</push>
-						<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-							<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-								<push token="," type="(null)" value="nfc(7), ptr, size">
-									<left token="," type="(null)" value="nfc(7), ptr">
-										<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-										<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+					<init token="()" type="pointer" kind="static const typename(ref)" value="malloc(80)">
+						<push token=".literal" type="int32" kind="static const typename(i32)" value="80"/>
+						<call token=".variable" type="pointer" kind="static const typename(ref)" value="malloc">
+							<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(null, size)">
+								<push token="," type="void" kind="static const typename(void)" value="null, size">
+									<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+										<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
 									</left>
 									<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
 								</push>
-								<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+								<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+									<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+									<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+										<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+											<push token="," type="(null)" value="nfc(7), ptr, size">
+												<left token="," type="(null)" value="nfc(7), ptr">
+													<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+													<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+												</left>
+												<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+											</push>
+											<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+										</init>
+									</right>
+								</call>
 							</init>
 						</call>
 					</init>
 				</push>
 				<call token=".variable" type="pointer" kind="static const typename(ref)" value="free">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(data, 0)">
+					<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(data, 0)">
 						<push token="," type="void" kind="static const typename(void)" value="data, 0">
 							<left token=".variable" type="pointer" kind="static const typename(ref)" value="data"/>
 							<right token=".literal" type="int32" kind="static const typename(i32)" value="0"/>
 						</push>
-						<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-							<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-								<push token="," type="(null)" value="nfc(7), ptr, size">
-									<left token="," type="(null)" value="nfc(7), ptr">
-										<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-										<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
-									</left>
-									<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
-								</push>
-								<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
-							</init>
+						<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+							<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+								<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+									<push token="," type="(null)" value="nfc(7), ptr, size">
+										<left token="," type="(null)" value="nfc(7), ptr">
+											<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+											<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+										</left>
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+									</push>
+									<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+								</init>
+							</right>
 						</call>
 					</init>
 				</call>
@@ -5986,44 +6056,55 @@
 		<stmt token=";" type="void" kind="static const typename(void)" stmt="free(p3);">
 			<expr token="()" type="pointer" kind="static const typename(ref)" value="free(p3)">
 				<push token=".variable" type="pointer" kind="static const typename(ref)" value="p3">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(null, 160)">
-						<push token="," type="void" kind="static const typename(void)" value="null, 160">
-							<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
-								<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
-							</left>
-							<right token=".literal" type="int32" kind="static const typename(i32)" value="160"/>
-						</push>
-						<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-							<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-								<push token="," type="(null)" value="nfc(7), ptr, size">
-									<left token="," type="(null)" value="nfc(7), ptr">
-										<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-										<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+					<init token="()" type="pointer" kind="static const typename(ref)" value="malloc(160)">
+						<push token=".literal" type="int32" kind="static const typename(i32)" value="160"/>
+						<call token=".variable" type="pointer" kind="static const typename(ref)" value="malloc">
+							<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(null, size)">
+								<push token="," type="void" kind="static const typename(void)" value="null, size">
+									<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+										<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
 									</left>
 									<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
 								</push>
-								<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+								<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+									<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+									<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+										<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+											<push token="," type="(null)" value="nfc(7), ptr, size">
+												<left token="," type="(null)" value="nfc(7), ptr">
+													<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+													<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+												</left>
+												<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+											</push>
+											<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+										</init>
+									</right>
+								</call>
 							</init>
 						</call>
 					</init>
 				</push>
 				<call token=".variable" type="pointer" kind="static const typename(ref)" value="free">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(data, 0)">
+					<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(data, 0)">
 						<push token="," type="void" kind="static const typename(void)" value="data, 0">
 							<left token=".variable" type="pointer" kind="static const typename(ref)" value="data"/>
 							<right token=".literal" type="int32" kind="static const typename(i32)" value="0"/>
 						</push>
-						<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-							<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-								<push token="," type="(null)" value="nfc(7), ptr, size">
-									<left token="," type="(null)" value="nfc(7), ptr">
-										<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-										<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
-									</left>
-									<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
-								</push>
-								<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
-							</init>
+						<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+							<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+								<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+									<push token="," type="(null)" value="nfc(7), ptr, size">
+										<left token="," type="(null)" value="nfc(7), ptr">
+											<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+											<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+										</left>
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+									</push>
+									<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+								</init>
+							</right>
 						</call>
 					</init>
 				</call>
@@ -6032,44 +6113,55 @@
 		<stmt token=";" type="void" kind="static const typename(void)" stmt="free(p4);">
 			<expr token="()" type="pointer" kind="static const typename(ref)" value="free(p4)">
 				<push token=".variable" type="pointer" kind="static const typename(ref)" value="p4">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(null, 820)">
-						<push token="," type="void" kind="static const typename(void)" value="null, 820">
-							<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
-								<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
-							</left>
-							<right token=".literal" type="int32" kind="static const typename(i32)" value="820"/>
-						</push>
-						<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-							<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-								<push token="," type="(null)" value="nfc(7), ptr, size">
-									<left token="," type="(null)" value="nfc(7), ptr">
-										<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-										<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+					<init token="()" type="pointer" kind="static const typename(ref)" value="malloc(820)">
+						<push token=".literal" type="int32" kind="static const typename(i32)" value="820"/>
+						<call token=".variable" type="pointer" kind="static const typename(ref)" value="malloc">
+							<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(null, size)">
+								<push token="," type="void" kind="static const typename(void)" value="null, size">
+									<left token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+										<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}"/>
 									</left>
 									<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
 								</push>
-								<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+								<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+									<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+									<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+										<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+											<push token="," type="(null)" value="nfc(7), ptr, size">
+												<left token="," type="(null)" value="nfc(7), ptr">
+													<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+													<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+												</left>
+												<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+											</push>
+											<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+										</init>
+									</right>
+								</call>
 							</init>
 						</call>
 					</init>
 				</push>
 				<call token=".variable" type="pointer" kind="static const typename(ref)" value="free">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="memmgr(data, 0)">
+					<init token="()" type="pointer" kind="static const typename(ref)" value="pointer.alloc(data, 0)">
 						<push token="," type="void" kind="static const typename(void)" value="data, 0">
 							<left token=".variable" type="pointer" kind="static const typename(ref)" value="data"/>
 							<right token=".literal" type="int32" kind="static const typename(i32)" value="0"/>
 						</push>
-						<call token=".variable" type="pointer" kind="static const typename(ref)" value="memmgr">
-							<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
-								<push token="," type="(null)" value="nfc(7), ptr, size">
-									<left token="," type="(null)" value="nfc(7), ptr">
-										<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
-										<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
-									</left>
-									<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
-								</push>
-								<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
-							</init>
+						<call token="." type="function" kind="static const typename(ref)" value="pointer.alloc">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+							<right token=".variable" type="pointer" kind="static const typename(ref)" value="alloc">
+								<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(7), ptr, size)">
+									<push token="," type="(null)" value="nfc(7), ptr, size">
+										<left token="," type="(null)" value="nfc(7), ptr">
+											<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)"/>
+											<right token=".variable" type="pointer" kind="static const typename(ref)" value="ptr"/>
+										</left>
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+									</push>
+									<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+								</init>
+							</right>
 						</call>
 					</init>
 				</call>
@@ -6159,8 +6251,8 @@
 				</call>
 			</expr>
 		</stmt>
-		<stmt token=";" type="void" kind="static const typename(void)" stmt="memcpy(pointer(&amp;val2), pointer(&amp;val1), 8);">
-			<expr token="()" type="pointer" kind="static const typename(ref)" value="memcpy(pointer(&amp;val2), pointer(&amp;val1), 8)">
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="pointer.copy(pointer(&amp;val2), pointer(&amp;val1), 8);">
+			<expr token="()" type="pointer" kind="static const typename(ref)" value="pointer.copy(pointer(&amp;val2), pointer(&amp;val1), 8)">
 				<push token="," type="void" kind="static const typename(void)" value="pointer(&amp;val2), pointer(&amp;val1), 8">
 					<left token="," type="void" kind="static const typename(void)" value="pointer(&amp;val2), pointer(&amp;val1)">
 						<left token="()" type="pointer" kind="static const typename(ref)" value="pointer(&amp;val2)">
@@ -6182,25 +6274,28 @@
 					</left>
 					<right token=".literal" type="int32" kind="static const typename(i32)" value="8"/>
 				</push>
-				<call token=".variable" type="pointer" kind="static const typename(ref)" value="memcpy">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(9), dst, src, size)">
-						<push token="," type="(null)" value="nfc(9), dst, src, size">
-							<left token="," type="(null)" value="nfc(9), dst, src">
-								<left token="," type="(null)" value="nfc(9), dst">
-									<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(9)"/>
-									<right token=".variable" type="pointer" kind="static const typename(ref)" value="dst"/>
+				<call token="." type="function" kind="static const typename(ref)" value="pointer.copy">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+					<right token=".variable" type="pointer" kind="static const typename(ref)" value="copy">
+						<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(9), dst, src, size)">
+							<push token="," type="(null)" value="nfc(9), dst, src, size">
+								<left token="," type="(null)" value="nfc(9), dst, src">
+									<left token="," type="(null)" value="nfc(9), dst">
+										<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(9)"/>
+										<right token=".variable" type="pointer" kind="static const typename(ref)" value="dst"/>
+									</left>
+									<right token=".variable" type="pointer" kind="static const typename(ref)" value="src"/>
 								</left>
-								<right token=".variable" type="pointer" kind="static const typename(ref)" value="src"/>
-							</left>
-							<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
-						</push>
-						<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
-					</init>
+								<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+							</push>
+							<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+						</init>
+					</right>
 				</call>
 			</expr>
 		</stmt>
-		<stmt token=";" type="void" kind="static const typename(void)" stmt="memset(pointer(&amp;val1), 0, 8);">
-			<expr token="()" type="pointer" kind="static const typename(ref)" value="memset(pointer(&amp;val1), 0, 8)">
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="pointer.fill(pointer(&amp;val1), 0, 8);">
+			<expr token="()" type="pointer" kind="static const typename(ref)" value="pointer.fill(pointer(&amp;val1), 0, 8)">
 				<push token="," type="void" kind="static const typename(void)" value="pointer(&amp;val1), 0, 8">
 					<left token="," type="void" kind="static const typename(void)" value="pointer(&amp;val1), 0">
 						<left token="()" type="pointer" kind="static const typename(ref)" value="pointer(&amp;val1)">
@@ -6215,20 +6310,23 @@
 					</left>
 					<right token=".literal" type="int32" kind="static const typename(i32)" value="8"/>
 				</push>
-				<call token=".variable" type="pointer" kind="static const typename(ref)" value="memset">
-					<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(8), dst, value, size)">
-						<push token="," type="(null)" value="nfc(8), dst, value, size">
-							<left token="," type="(null)" value="nfc(8), dst, value">
-								<left token="," type="(null)" value="nfc(8), dst">
-									<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(8)"/>
-									<right token=".variable" type="pointer" kind="static const typename(ref)" value="dst"/>
+				<call token="." type="function" kind="static const typename(ref)" value="pointer.fill">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="pointer"/>
+					<right token=".variable" type="pointer" kind="static const typename(ref)" value="fill">
+						<init token="()" type="pointer" kind="static const typename(ref)" value="emit(nfc(8), dst, value, size)">
+							<push token="," type="(null)" value="nfc(8), dst, value, size">
+								<left token="," type="(null)" value="nfc(8), dst, value">
+									<left token="," type="(null)" value="nfc(8), dst">
+										<left token="emit" type="pointer" kind="static const typename(ref)" value="nfc(8)"/>
+										<right token=".variable" type="pointer" kind="static const typename(ref)" value="dst"/>
+									</left>
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="value"/>
 								</left>
-								<right token=".variable" type="int32" kind="static const typename(i32)" value="value"/>
-							</left>
-							<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
-						</push>
-						<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
-					</init>
+								<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+							</push>
+							<call token=".variable" type="emit" kind="static const typename(void)" value="emit"/>
+						</init>
+					</right>
 				</call>
 			</expr>
 		</stmt>

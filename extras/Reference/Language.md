@@ -13,19 +13,21 @@
 
 - Types are themselves variables of type `typename`.
 	- Can be parameters of functions `int sizeof(typename type) { return type.size; }`.
-	- Reflection is part of the language (some internal compiler functions needs to be exposed).
-	- `variant` is a builtin dynamic type, a pair of type and data: (typename type, pointer data).
+	- Reflection is part of the language (some of the internal compiler functions exposed).
 
 
-- Arrays are more than just pointers.
+- Arrays are more than just typed pointers.
 	- Fixed-size arrays: `int fixed[30];` (size is known by the compiler)
 	- Dynamic-size arrays: `int dynamic[] = fixed;` (size is known at run-time)
-	- Unknown-size arrays: `int memcmp(byte a[*], byte b[*], int size);` (used mostly for native calls)
-	- Associative arrays: `double constants[string] = {"pi": 3.1415, ...};` (map)
+	- Unknown-size arrays: `int memcmp(byte a[*], byte b[*], int size);` (size is known by the developer)
+	- Associative arrays: `double constants[string] = {"pi": 3.1415, ...};`
 
 
-- Enumeration values are named constants of a given type (number, object, function, ...).
-
+- Enumeration values are named constants of a given base-type (number, object, function, ...).
+	- Enumeration variables can be assigned only with values from the enumeration.
+	- Enumeration values used in expressions are treated as values of the base-type.
+	- Enumeration values are allocated in the read only region, so they can not mutate.
+	- Enumeration type can be used also as an array (iterated and indexed with ordinal or name).
 
 - Expressions and types can be aliased with the `inline` keyword.
 	- aliasing a typename: `inline double = float64;`
@@ -36,9 +38,13 @@
 	- On 32 bit platform ...: `static if (int == int32) { ... }`
 
 
+- Functions
+	- If a function name is a type name, it is threated as a constructor, and should return an instance of that type.
+	- Extend any class with your own methods using [Uniform Function Call Syntax](https://en.wikipedia.org/wiki/Uniform_Function_Call_Syntax)
+
 - `new` and `this` are not part of the language.
 	- Create and initialize objects like in JavaScript `complex a = {re: 42, im: 2};`
-	- Simply use [Uniform Function Call Syntax](https://en.wikipedia.org/wiki/Uniform_Function_Call_Syntax) to write extension functions.
+	- `this` is not needed using Uniform Function Call Syntax.
 
 
 # Lexical structure
@@ -51,7 +57,7 @@
 ## Identifiers
 Identifiers are used for variable and type names.
 
-Identifiers may contain letters, digits and underscores: `[_a-zA-Z][_a-zA-Z0-9]*`
+Identifiers may contain letters, digits and underscores, but can not start with a digit: `[_a-zA-Z][_a-zA-Z0-9]*`
 
 ## Keywords
 Keywords are reserved words, which can not be used as identifiers.
@@ -95,11 +101,11 @@ Keywords are reserved words, which can not be used as identifiers.
 At the end of a decimal literal, the following suffixes are parsed:
 
 - `d`: results a int32 constant, ex: `inline i32Value = 3d;`
-- `D`: results a int64 constant, ex: `inline i64Three = 3D;`
-- `u`: results a uint32 constant, ex: `inline u32Three = 3u;`
-- `U`: results a uint64 constant, ex: `inline u64Three = 3U;`
-- `f`: results a float32 constant, ex: `inline f32Pi = 3.14f;`
-- `F`: results a float64 constant, ex: `inline f64Three = 3F;`
+- `D`: results a int64 constant, ex: `inline i64Value = 3D;`
+- `u`: results a uint32 constant, ex: `inline u32Value = 3u;`
+- `U`: results a uint64 constant, ex: `inline u64Value = 3U;`
+- `f`: results a float32 constant, ex: `inline f32Value = 3.14f;`
+- `F`: results a float64 constant, ex: `inline f64Value = 3F;`
 
 ## Character and string literals
 
@@ -212,10 +218,13 @@ Covers a range from 4.94065645841246544e-324 to 1.79769313486231570e+308
 
 ### pointer
 `pointer` is a data type whose value refers directly to (or "points to") another value.
+It contains static utility functions for low level memory operations (memset, memcpy, ...).
+
+Using it as a function with an identifier argument, it will return the address of the variable.
+This might be useful to compare if variable references point to the same value or object.
 
 ### variant
-`variant` is a dynamic type, which carries the type of the value,
-and a pointer to the value.
+`variant` is a dynamic type, which carries the type of the value, and a pointer to the value.
 
 it may be defined as:
 ```
@@ -229,15 +238,15 @@ struct variant {
 `typename` is the compilers internal symbol representation structure.
 It contains static utility functions for reflection.
 
-- if it is used as a function, typename will return the type of the identifier:
-	- if the argument is a type, it will return `typename`
-	- if the argument is a variable, it will return its type
-	- if the argument is a variant variable, it will extract the type
-	- if the argument is not defined, it will return null
+Using it as a function with an identifier argument, it will return the type of the variable:
+- if the identifier is not defined, it will return `null`
+- if the identifier is a variable, it will return its type
+- if the identifier is a type, it will return `typename`
+- if the identifier is a variant variable, it will extract the type
 
 **Example:**
 ```
-// int128 must be defined, and must be a type.
+// check if int128 is defined and is a type.
 bool hasInt128 = typename(int128) == typename;
 ```
 
@@ -250,16 +259,13 @@ inline integer = int32;
 
 ```
 
- 
-
 ### function
 `function` is the base type of all functions.
 
 ### object
-`object` is the base type for all garbage collected types.
-Every type inherited from object will be reference counted,
-and destroyed when there are no more references to it.
-- circular references may retain objects from destruction.
+`object` is the base type for all reference types allocated in the heap.
+
+Every type inherited from object will be reference counted, and destroyed when there are no more references to it.
 
 
 ## Aliases
@@ -302,7 +308,7 @@ int a[*];
 int a[2] = {42, 97};
 ```
 
-- Are assigned and passed to functions by reference.
+- Are passed to functions by reference.
 - Type of elements and length is known by the compiler.
 
 ### Slices (Dynamic-size arrays)
@@ -349,6 +355,11 @@ struct complex {
 }
 ```
 
+### Value types
+[TODO]
+
+### Reference types
+[TODO]
 
 ## Assignability
 An expression is required to be assignable to a variable or a typename in certain circumstances,
@@ -359,9 +370,9 @@ A value can be assigned to a variable if some conditions are met.
 ```
 complex val = complex(1, 3);
 
-pointer ptr = pointer(&val);
+pointer ptr = pointer(val);
 
-variant var = variant(&val);
+variant var = variant(val);
 
 // static cast: no typecheck if assignable or not
 complex &c2 = ptr;
@@ -379,21 +390,22 @@ Statements are the basic blocks of a program.
 
 ## Block Statement
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 qualifiers? '{' statementList '}'
 ```
 
 - parallel block statements can be used to execute a block of statements parallel.
 
-## Selection statements
-Currently only the if statement is available.
+## Selection statement
+The selection statement can be used to execute a section of code, only if a condition is met.
+
 [TODO: switch]
 
-### if statement
+### If statement
 Main purpose of the if statement is to handle exceptional cases in the control flow.
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 qualifiers? 'if' '(' for_init ')' statement ('else' statement)?
 ```
@@ -404,21 +416,20 @@ and the statements will be generated.
 - if the condition evaluates to false the block gets compiled in a new scope,
 but code will be not generated.
 
-## Iteration statements
-Currently only the for statement is available.
+## Repetition statement
+The repetition statement can be used to execute a section of code in a loop, while a condition is met.
+
 [TODO: while, do while, ...]
 
-### for statement
-The for statement has two forms:
-- a generic for like in c and c like languages
-- a foreach like form for iteration
+### For statement
+The for statement is like in c and c like languages.
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 qualifiers? 'for' '(' for_init? ';' expression? ';' expression? ')' statement
-qualifiers? 'for' '(' variable ':' expression ')' statement
 ```
 
+#### static for
 The static construct of the statement expands inline the statement of the loop.
 
 **Example:**
@@ -438,6 +449,7 @@ print(3);
 print(4);
 ```
 
+#### parallel for
 The parallel version of the for statement executes the statements of the loop on a worker,
 than waits each of them to finish (in case we have fever workers than jobs or a single worker,
 the job will be executed on the main worker).
@@ -445,7 +457,6 @@ the job will be executed on the main worker).
 **Example:**
 ```
 parallel for (int i = 0; i < 5; i += 1) {
-	...
 	print(i);
 }
 print(99);
@@ -454,7 +465,6 @@ print(99);
 **Example:**
 ```
 for (int i = 0; i < 5; i += 1) parallel {
-	...
 	print(i);
 }
 print(99);
@@ -463,6 +473,12 @@ print(99);
 These two examples may result different output. In the first example the last statement:
 `print(99);` will be executed last, while in the second example it is possible that
  this is not the last executed statement.
+
+### ForEach statement
+**[Syntax](../Design/Cmpl.g4):**
+```
+qualifiers? 'for' '(' variable ':' expression ')' statement
+```
 
 To use the foreach like form of the for statement, two functions are required to be defined:
 
@@ -499,12 +515,12 @@ for (int i : Range(10, 20)) {
 }
 ```
 
-## Jump statements
+## Control statements
 
 ### Break statement
 The break statement terminates the execution of the innermost enclosing loop.
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 'break' ';'
 ```
@@ -512,7 +528,7 @@ The break statement terminates the execution of the innermost enclosing loop.
 ### Continue statement
 The continue statement terminates the current and begins the next iteration of the innermost enclosing loop.
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 'continue' ';'
 ```
@@ -520,7 +536,7 @@ The continue statement terminates the current and begins the next iteration of t
 ### Return statement
 The return statement terminates the execution of the current function.
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 'return' initializer? ';'
 ```
@@ -536,7 +552,7 @@ Declaration statement declares a typename, function, variable or constant.
 ## Expression statement
 Expression statements is an expression terminated with ';'
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 expression ';'
 ```
@@ -559,7 +575,7 @@ They can be written as:
 - character
 - string
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 Literal
 ```
@@ -574,7 +590,7 @@ Literal
 ## Identifiers
 Used to reference typename, variable and function.
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 Identifier
 ```
@@ -587,7 +603,7 @@ Only prefix unary operators are supported.
 - `-`: unary minus. Change the sign of a number.
 - `+`: unary plus. ???
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 ('&' | '+' | '-' | '~' | '!') expression
 ```
@@ -595,7 +611,7 @@ Only prefix unary operators are supported.
 ## Binary expressions
 Binary expressions are composed from a binary operator and two operands.
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 '(' expressionList? ')'
 expression '(' expressionList? ')'
@@ -610,7 +626,7 @@ The type of the result for the builtin types is promoted from its operand types.
 - `+, -` Additive operators
 - `*, /, %` Multiplicative operators
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 expression ('*' | '/' | '%' | '+' | '-') expression
 ```
@@ -620,7 +636,7 @@ May be used on integer types only.
 - `&, |, ^` Bitwise operators
 - `<<, >>` Bit shift operators
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 expression ('&' | '|' | '^' | '<<' | '>>') expression
 ```
@@ -629,7 +645,7 @@ expression ('&' | '|' | '^' | '<<' | '>>') expression
 Are used to check if one of the operands is les or greater than the other.
 The type of the result is boolean.
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 expression ('<' | '<=' | '>' | '>=') expression
 ```
@@ -638,7 +654,7 @@ expression ('<' | '<=' | '>' | '>=') expression
 Are used to check if the left and right operands are equal or not.
 The type of the result is boolean.
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 expression ('==' | '!=') expression
 ```
@@ -649,7 +665,7 @@ expression ('==' | '!=') expression
 - `&&`: logical and operator returns true if **all** of its operands is true.
 
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 expression ('&&' | '||') expression
 ```
@@ -675,7 +691,7 @@ The evaluation of the values stops when the first expression is evaluated to fal
 Are used to calculate and store new values in the left operand, returning the right operand.
 The composed operators are expanded, this means that `a += 3 + b` is converted to `a = a + (3 + b)`.
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 expression ('='| '*=' | '/=' | '%=' | '+=' | '-=' ) expression
 expression ('&=' | '|=' | '^=' | '<<=' | '>>=') expression
@@ -687,7 +703,7 @@ The `?:` (conditional) operator is the only ternary operator, this means that it
 - true operand: evaluated and returned only if the first operand evaluates to true.
 - false operand: evaluated and returned only if the first operand evaluates to false.
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 expression '?' expression ':' expression
 ```
@@ -759,7 +775,7 @@ Every declaration (typename, function or variable) results in a variable declara
 ## Aliasing
 Aliasing is an analogue to c preprocessor define, except it is expanded on syntax tree level, and the arguments may be evaluated only once.
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 qualifiers? 'inline' identifier ('(' parameterList? ')')? '=' initializer ';'
 ```
@@ -790,7 +806,7 @@ inline min(int a, int b) = a < b ? a : b;
 ## Enumerations
 An enumeration declares a list of named constants all of a given type.
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 qualifiers? 'enum' identifier? (':' typename)? '{' propertyList '}'
 ```
@@ -891,7 +907,7 @@ it will be a member function reference, and it must be:
 it is declared as a static function.
 - if a function is declared static and not implemented it must be reimplemented, as forward functions.
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 qualifiers? 'struct' identifier? (':' (Literal | typename))? '{' declarationList '}'
 ```
@@ -907,7 +923,7 @@ struct Complex {
 - `re` and `im` are immutable member variables (can not be changed after initialized).
 - `re` is uninitialized, so when an instance is created, it must be specified its value.
 
-**[Example](../Examples/Streams.ci):**
+**[Example](../Design/Examples/Streams.ci):**
 ```
 struct TextReader: Closeable {
 	const ByteReader reader;
@@ -990,7 +1006,7 @@ Operators can be overloaded using the `inline` keyword.
 
 ### Type construction/conversion operator
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 qualifiers? 'inline' identifier ('(' parameterList? ')')? '=' initializer ';'
 ```
@@ -1018,7 +1034,7 @@ Fahrenheit boilF = Fahrenheit(boilC);          // => inline Fahrenheit(Celsius v
 
 ### Unary and binary operators
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 'inline' ('&' | '+' | '-' | '~' | '!') ('(' parameterList? ')')? '=' initializer ';'
 'inline' ('*' | '/' | '%') ('(' parameterList? ')')? '=' initializer ';'
@@ -1041,7 +1057,7 @@ Complex c = a + a;                      //  6 + 0 * i
 
 ### Property/Extension operators
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 qualifiers? 'inline' identifier ('(' parameterList? ')')? '=' initializer ';'
 qualifiers? 'inline' '('')' ('(' parameterList? ')')? '=' initializer ';'
@@ -1077,7 +1093,7 @@ float64 re2 = a(0);       // => inline ()(Complex c, int idx)
 	- for inline functions the current stack pointer is pushed to give access to local variables.
 	- for member functions the objects reference is pushed to give access to the _self_ variable.
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 qualifiers? function '{' statementList '}'
 ```
@@ -1145,7 +1161,7 @@ bool next(iterator &it[, element &&current]);
 
 ## Variables
 
-**[Syntax](../Grammar/Cmpl.g4):**
+**[Syntax](../Design/Cmpl.g4):**
 ```
 qualifiers? (variable | function) ( '=' initializer)? ';'
 ```
