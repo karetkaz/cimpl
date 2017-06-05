@@ -266,7 +266,6 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 		case OPER_dot:		// '.'
 		case OPER_idx:		// '[]'
 
-		case OPER_adr:		// '&'
 		case OPER_pls:		// '+'
 		case OPER_mns:		// '-'
 		case OPER_cmt:		// '~'
@@ -490,7 +489,6 @@ static void jsonDumpAst(FILE *out, const char **esc, astn ast, const char *kind,
 		case OPER_dot:		// '.'
 		case OPER_idx:		// '[]'
 
-		case OPER_adr:		// '&'
 		case OPER_pls:		// '+'
 		case OPER_mns:		// '-'
 		case OPER_cmt:		// '~'

@@ -3851,13 +3851,13 @@ valueOfPtr: pointer: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
-.value: pointer(&value)
+.value: pointer(value)
 }
 valueOfVar: variant: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
-.value: variant(&value)
+.value: variant(value)
 }
 valueOfTyp: typename: typename {
 .kind: variable(ref)
@@ -5031,22 +5031,22 @@ val2: int64: int64 {
 		{
 			t: int32 := 0;
 			if (t == 0) {
-				raise(debug, "t == 0", variant(&t), 7);
+				raise(debug, "t == 0", variant(t), 7);
 			}
 			if (t != 0) {
-				raise(debug, "t != 0", variant(&t), 8);
+				raise(debug, "t != 0", variant(t), 8);
 			}
 			if (t != 0) {
-				raise(debug, "t != 0", variant(&t), 9);
+				raise(debug, "t != 0", variant(t), 9);
 			}
 			else {
-				raise(debug, "t == 0", variant(&t), 10);
+				raise(debug, "t == 0", variant(t), 10);
 			}
 			if (t != 0) {
-				raise(debug, "t != 0", variant(&t), 11);
+				raise(debug, "t != 0", variant(t), 11);
 			}
 			else {
-				raise(debug, "t == 0", variant(&t), 12);
+				raise(debug, "t == 0", variant(t), 12);
 			}
 		}
 		static if (!(typename(int64))) {
@@ -5143,8 +5143,8 @@ val2: int64: int64 {
 		typPointer: typename := pointer;
 		typVariant: typename := variant;
 		typObject: typename := object;
-		valueOfPtr: pointer := pointer(&value);
-		valueOfVar: variant := variant(&value);
+		valueOfPtr: pointer := pointer(value);
+		valueOfVar: variant := variant(value);
 		valueOfTyp: typename := typename(value);
 		typeOfValue: typename := typename(value);
 		copyPtrFloat64: variant := ptrFloat64;
@@ -5213,12 +5213,12 @@ val2: int64: int64 {
 		free(p4);
 		val1: int64 := 42;
 		val2: int64 := 96;
-		raise(1, "val1", variant(&val1), 0);
-		raise(1, "val2", variant(&val2), 0);
-		pointer.copy(pointer(&val2), pointer(&val1), 8);
-		pointer.fill(pointer(&val1), 0, 8);
-		raise(1, "val1", variant(&val1), 0);
-		raise(1, "val2", variant(&val2), 0);
+		raise(1, "val1", variant(val1), 0);
+		raise(1, "val2", variant(val2), 0);
+		pointer.copy(pointer(val2), pointer(val1), 8);
+		pointer.fill(pointer(val1), 0, 8);
+		raise(1, "val1", variant(val1), 0);
+		raise(1, "val2", variant(val2), 0);
 	}
 }
 .instructions: [5224 bytes @.01cde8]
@@ -6648,7 +6648,7 @@ val2: int64: int64 {
 	6a                         i64.2i32
 	57                         ceq.i32
 	06 38 00 00                jz +56
-	extras/Tests/lang.statementIf.ci:29: (48 bytes): raise(debug, "t == 0", variant(&t), 7);
+	extras/Tests/lang.statementIf.ci:29: (48 bytes): raise(debug, "t == 0", variant(t), 7);
 	1b 1d 00 00 00             load.c32 29
 	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 07 00 00 00 00 00 00 00 load.c64 7
@@ -6668,7 +6668,7 @@ val2: int64: int64 {
 	57                         ceq.i32
 	0a                         not.b32
 	06 38 00 00                jz +56
-	extras/Tests/lang.statementIf.ci:33: (48 bytes): raise(debug, "t != 0", variant(&t), 8);
+	extras/Tests/lang.statementIf.ci:33: (48 bytes): raise(debug, "t != 0", variant(t), 8);
 	1b 21 00 00 00             load.c32 33
 	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 08 00 00 00 00 00 00 00 load.c64 8
@@ -6688,7 +6688,7 @@ val2: int64: int64 {
 	57                         ceq.i32
 	0a                         not.b32
 	06 3c 00 00                jz +60
-	extras/Tests/lang.statementIf.ci:37: (48 bytes): raise(debug, "t != 0", variant(&t), 9);
+	extras/Tests/lang.statementIf.ci:37: (48 bytes): raise(debug, "t != 0", variant(t), 9);
 	1b 25 00 00 00             load.c32 37
 	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 09 00 00 00 00 00 00 00 load.c64 9
@@ -6701,7 +6701,7 @@ val2: int64: int64 {
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
 	04 38 00 00                jmp +56
-	extras/Tests/lang.statementIf.ci:40: (48 bytes): raise(debug, "t == 0", variant(&t), 10);
+	extras/Tests/lang.statementIf.ci:40: (48 bytes): raise(debug, "t == 0", variant(t), 10);
 	1b 28 00 00 00             load.c32 40
 	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 0a 00 00 00 00 00 00 00 load.c64 10
@@ -6721,7 +6721,7 @@ val2: int64: int64 {
 	57                         ceq.i32
 	0a                         not.b32
 	06 3c 00 00                jz +60
-	extras/Tests/lang.statementIf.ci:44: (48 bytes): raise(debug, "t != 0", variant(&t), 11);
+	extras/Tests/lang.statementIf.ci:44: (48 bytes): raise(debug, "t != 0", variant(t), 11);
 	1b 2c 00 00 00             load.c32 44
 	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 0b 00 00 00 00 00 00 00 load.c64 11
@@ -6734,7 +6734,7 @@ val2: int64: int64 {
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
 	04 38 00 00                jmp +56
-	extras/Tests/lang.statementIf.ci:47: (48 bytes): raise(debug, "t == 0", variant(&t), 12);
+	extras/Tests/lang.statementIf.ci:47: (48 bytes): raise(debug, "t == 0", variant(t), 12);
 	1b 2f 00 00 00             load.c32 47
 	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 0c 00 00 00 00 00 00 00 load.c64 12
@@ -6961,9 +6961,9 @@ val2: int64: int64 {
 	1f 80 08 00 00             load.ref .000880 ;variant
 	extras/Tests/lang.varInitByRef.ci:92: (5 bytes): typObject: typename := object
 	1f a8 09 00 00             load.ref .0009a8 ;object
-	extras/Tests/lang.varInitByRef.ci:95: (5 bytes): valueOfPtr: pointer := pointer(&value)
+	extras/Tests/lang.varInitByRef.ci:95: (5 bytes): valueOfPtr: pointer := pointer(value)
 	1f c0 cd 01 00             load.ref .01cdc0 ;value: int64
-	extras/Tests/lang.varInitByRef.ci:96: (10 bytes): valueOfVar: variant := variant(&value)
+	extras/Tests/lang.varInitByRef.ci:96: (10 bytes): valueOfVar: variant := variant(value)
 	1f 00 04 00 00             load.ref .000400 ;int64
 	1f c0 cd 01 00             load.ref .01cdc0 ;value: int64
 	extras/Tests/lang.varInitByRef.ci:97: (5 bytes): valueOfTyp: typename := typename(value)
@@ -7365,7 +7365,7 @@ val2: int64: int64 {
 	1c 2a 00 00 00 00 00 00 00 load.c64 42
 	extras/Tests/stdc.nfcMemory.ci:23: (9 bytes): val2: int64 := 96
 	1c 60 00 00 00 00 00 00 00 load.c64 96
-	extras/Tests/stdc.nfcMemory.ci:25: (48 bytes): raise(1, "val1", variant(&val1), 0);
+	extras/Tests/stdc.nfcMemory.ci:25: (48 bytes): raise(1, "val1", variant(val1), 0);
 	1b 19 00 00 00             load.c32 25
 	1f 95 a7 00 00             load.ref .00a795 ;"extras/Tests/stdc.nfcMemory.ci"
 	1c 00 00 00 00 00 00 00 00 load.c64 0
@@ -7376,7 +7376,7 @@ val2: int64: int64 {
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/stdc.nfcMemory.ci:26: (48 bytes): raise(1, "val2", variant(&val2), 0);
+	extras/Tests/stdc.nfcMemory.ci:26: (48 bytes): raise(1, "val2", variant(val2), 0);
 	1b 1a 00 00 00             load.c32 26
 	1f 95 a7 00 00             load.ref .00a795 ;"extras/Tests/stdc.nfcMemory.ci"
 	1c 00 00 00 00 00 00 00 00 load.c64 0
@@ -7387,14 +7387,14 @@ val2: int64: int64 {
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/stdc.nfcMemory.ci:28: (26 bytes): pointer.copy(pointer(&val2), pointer(&val1), 8);
+	extras/Tests/stdc.nfcMemory.ci:28: (26 bytes): pointer.copy(pointer(val2), pointer(val1), 8);
 	1c 08 00 00 00 00 00 00 00 load.c64 8
 	6a                         i64.2i32
 	11 0c 00 00                load.sp(+12)
 	11 08 00 00                load.sp(+8)
 	01 09 00 00                nfc(9) ;pointer.copy(dst: pointer, src: pointer, size: int32): pointer
 	10 fc ff ff                inc.sp(-4)
-	extras/Tests/stdc.nfcMemory.ci:29: (32 bytes): pointer.fill(pointer(&val1), 0, 8);
+	extras/Tests/stdc.nfcMemory.ci:29: (32 bytes): pointer.fill(pointer(val1), 0, 8);
 	1c 08 00 00 00 00 00 00 00 load.c64 8
 	6a                         i64.2i32
 	1c 00 00 00 00 00 00 00 00 load.c64 0
@@ -7402,7 +7402,7 @@ val2: int64: int64 {
 	11 10 00 00                load.sp(+16)
 	01 08 00 00                nfc(8) ;pointer.fill(dst: pointer, value: int32, size: int32): pointer
 	10 fc ff ff                inc.sp(-4)
-	extras/Tests/stdc.nfcMemory.ci:31: (48 bytes): raise(1, "val1", variant(&val1), 0);
+	extras/Tests/stdc.nfcMemory.ci:31: (48 bytes): raise(1, "val1", variant(val1), 0);
 	1b 1f 00 00 00             load.c32 31
 	1f 95 a7 00 00             load.ref .00a795 ;"extras/Tests/stdc.nfcMemory.ci"
 	1c 00 00 00 00 00 00 00 00 load.c64 0
@@ -7413,7 +7413,7 @@ val2: int64: int64 {
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/stdc.nfcMemory.ci:32: (48 bytes): raise(1, "val2", variant(&val2), 0);
+	extras/Tests/stdc.nfcMemory.ci:32: (48 bytes): raise(1, "val2", variant(val2), 0);
 	1b 20 00 00 00             load.c32 32
 	1f 95 a7 00 00             load.ref .00a795 ;"extras/Tests/stdc.nfcMemory.ci"
 	1c 00 00 00 00 00 00 00 00 load.c64 0

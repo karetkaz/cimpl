@@ -255,7 +255,6 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 			return eval(cc, res, args);
 		}
 
-		case OPER_adr:
 		case OPER_idx:
 			return CAST_any;
 
@@ -733,11 +732,6 @@ symn linkOf(astn ast) {
 
 	if (ast->kind == OPER_dot) {
 		// int.size => size
-		return linkOf(ast->op.rhso);
-	}
-
-	if (ast->kind == OPER_adr) {
-		// &buff => buff
 		return linkOf(ast->op.rhso);
 	}
 

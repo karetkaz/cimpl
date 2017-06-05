@@ -594,7 +594,6 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			ast->type = type;
 			return type;
 
-		case OPER_adr:		// '&'
 		case OPER_pls:		// '+'
 		case OPER_mns:		// '-'
 		case OPER_cmt:		// '~'

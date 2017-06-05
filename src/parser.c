@@ -437,13 +437,6 @@ static astn expression(ccContext cc) {
 				unary = 1;
 				goto tok_operator;
 
-			case OPER_and:		// '&'
-				if (unary) {
-					ast->kind = OPER_adr;
-				}
-				unary = 1;
-				goto tok_operator;
-
 			case OPER_not:		// '!'
 			case OPER_cmt:		// '~'
 				if (!unary) {

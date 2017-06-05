@@ -22,11 +22,11 @@ free(p4);
 int64 val1 = 42;
 int64 val2 = 96;
 
-raise(1, "val1", variant(&val1), 0);
-raise(1, "val2", variant(&val2), 0);
+raise(1, "val1", variant(val1), 0);
+raise(1, "val2", variant(val2), 0);
 
-pointer.copy(pointer(&val2), pointer(&val1), 8);
-pointer.fill(pointer(&val1), 0, 8);
+pointer.copy(pointer(val2), pointer(val1), 8);
+pointer.fill(pointer(val1), 0, 8);
 
-raise(1, "val1", variant(&val1), 0);
-raise(1, "val2", variant(&val2), 0);
+raise(1, "val1", variant(val1), 0);
+raise(1, "val2", variant(val2), 0);

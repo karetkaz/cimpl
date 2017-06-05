@@ -123,10 +123,6 @@ static size_t emitOperator(rtContext rt, ccToken token, ccKind cast) {
 			// opc = opc_last;
 			break;
 
-		case OPER_adr:
-			opc = opc_nop;
-			break;
-
 		case OPER_not:
 			switch (cast) {
 				default:
@@ -1048,9 +1044,9 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 				if (!genVariable(cc, variable, CAST_ref)) {
 					return CAST_any;
 				}
-				// report warnings
-				if (args->kind != OPER_adr && castOf(variable->type) != CAST_ref) {
-					warn(rt, 3, args->file, args->line, WARN_PASS_ARG_BY_REF, args);
+				// TODO: warn[1]: value escapes local scope
+				if (!isStatic(variable) && castOf(variable->type) != CAST_ref) {
+					warn(rt, 6, args->file, args->line, WARN_PASS_ARG_BY_REF, args);
 				}
 			}
 			return castOf(function);
@@ -1426,7 +1422,6 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			break;
 
 		case OPER_not:		// '!'
-		case OPER_adr:		// '&'
 		case OPER_pls:		// '+'
 		case OPER_mns:		// '-'
 		case OPER_cmt:		// '~'

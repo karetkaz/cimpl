@@ -39,11 +39,11 @@ inline max(vec4f a, vec4f b) = emit(max.p4f, vec4f(b), vec4f(a));
 
 inline mad(vec4f a, vec4f b, vec4f c) = emit(add.p4f, mul.p4f, vec4f(a), vec4f(b), vec4f(c));	// a * b + c
 
-//~ inline dp3(vec4f a, vec4f b) = b.x * a.x + b.y * a.y + b.z * a.z;
+//~ inline dp3(vec4f a, vec4f b) = a.x * b.x + a.y * b.y + a.z * b.z;
 inline dp3(vec4f a, vec4f b) = emit(p4x.dp3, vec4f(b), vec4f(a));
-//~ inline dph(vec4f a, vec4f b) = b.x * a.x + b.y * a.y + b.z * a.z + b.w;
+//~ inline dph(vec4f a, vec4f b) = a.x * b.x + a.y * b.y + a.z * b.z + a.w;
 inline dph(vec4f a, vec4f b) = emit(p4x.dph, vec4f(b), vec4f(a));
-//~ inline dp4(vec4f a, vec4f b) = b.x * a.x + b.y * a.y + b.z * a.z + b.w * a.w;
+//~ inline dp4(vec4f a, vec4f b) = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
 inline dp4(vec4f a, vec4f b) = emit(p4x.dp4, vec4f(b), vec4f(a));
 
 inline cross(vec4f a, vec4f b) = vec4f(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
@@ -80,14 +80,14 @@ inline dp3(const mat4f &mat, const vec4f &vec) = vec4f(dp3(mat.x, vec), dp3(mat.
 inline dph(const mat4f &mat, const vec4f &vec) = vec4f(dph(mat.x, vec), dph(mat.y, vec), dph(mat.z, vec), dph(mat.w, vec));
 inline dp4(const mat4f &mat, const vec4f &vec) = vec4f(dp4(mat.x, vec), dp4(mat.y, vec), dp4(mat.z, vec), dp4(mat.w, vec));
 
-inline transposed(mat4f &mat) = mat4f(
+inline transposed(const mat4f &mat) = mat4f(
 	mat.x.x, mat.y.x, mat.z.x, mat.w.x,
 	mat.x.y, mat.y.y, mat.z.y, mat.w.y,
 	mat.x.z, mat.y.z, mat.z.z, mat.w.z,
 	mat.x.w, mat.y.w, mat.z.w, mat.w.w
 );
 
-mat4f mul(mat4f &a, const mat4f &b) {
+mat4f mul(const mat4f &a, const mat4f &b) {
 	mat4f transposed = transposed(b);
 	return {
 		x: dp4(transposed, a.x);
