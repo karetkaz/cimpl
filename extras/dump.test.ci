@@ -9,12 +9,12 @@ typename: typename {
 .field line: function (size: 0 @22856 -> static const inline)
 .field name: function (size: 0 @23320 -> static const inline)
 }
-typename.size: int32: int32 {
+typename.size: int32 {
 .kind: const variable
 .size: 4
 .owner: typename
 }
-typename.offset: int32: int32 {
+typename.offset: int32 {
 .kind: const variable
 .size: 4
 .owner: typename
@@ -360,43 +360,43 @@ object: typename {
 .size: 4
 .owner: 
 }
-null: pointer: pointer {
+null: pointer {
 .kind: static const inline
 .size: 0
 .owner: 
 .value: {pointer @0}
 }
-true: bool: bool {
+true: bool {
 .kind: static const inline
 .size: 0
 .owner: 
 .value: 1
 }
-false: bool: bool {
+false: bool {
 .kind: static const inline
 .size: 0
 .owner: 
 .value: 0
 }
-int: typename: typename {
+int: typename {
 .kind: static const inline
 .size: 0
 .owner: 
 .value: int32
 }
-byte: typename: typename {
+byte: typename {
 .kind: static const inline
 .size: 0
 .owner: 
 .value: uint8
 }
-float: typename: typename {
+float: typename {
 .kind: static const inline
 .size: 0
 .owner: 
 .value: float32
 }
-double: typename: typename {
+double: typename {
 .kind: static const inline
 .size: 0
 .owner: 
@@ -439,37 +439,37 @@ emit: function {
 .field min: void (size: 0 @19616 -> static const typename(void))
 .field max: void (size: 0 @20032 -> static const typename(void))
 }
-emit.nop: void: void {
+emit.nop: void {
 .kind: static const inline
 .size: 0
 .owner: emit
 .value: nop
 }
-emit.not: bool: bool {
+emit.not: bool {
 .kind: static const inline
 .size: 0
 .owner: emit
 .value: not.b32
 }
-emit.set: void: void {
+emit.set: void {
 .kind: static const inline
 .size: 0
 .owner: emit
 .value: set.x1 sp(1)
 }
-emit.join: void: void {
+emit.join: void {
 .kind: static const inline
 .size: 0
 .owner: emit
 .value: sync 1
 }
-emit.ret: void: void {
+emit.ret: void {
 .kind: static const inline
 .size: 0
 .owner: emit
 .value: ret
 }
-emit.call: void: void {
+emit.call: void {
 .kind: static const inline
 .size: 0
 .owner: emit
@@ -483,19 +483,19 @@ emit.p4x: typename {
 .field dp4: float32 (size: 0 @0 -> static const inline)
 .field dph: float32 (size: 0 @0 -> static const inline)
 }
-emit.p4x.dp3: float32: float32 {
+emit.p4x.dp3: float32 {
 .kind: static const inline
 .size: 0
 .owner: emit.p4x
 .value: dp3.v4f
 }
-emit.p4x.dp4: float32: float32 {
+emit.p4x.dp4: float32 {
 .kind: static const inline
 .size: 0
 .owner: emit.p4x
 .value: dp4.v4f
 }
-emit.p4x.dph: float32: float32 {
+emit.p4x.dph: float32 {
 .kind: static const inline
 .size: 0
 .owner: emit.p4x
@@ -509,19 +509,19 @@ emit.dup: void {
 .field x2: int64 (size: 0 @0 -> static const inline)
 .field x4: emit.p4x (size: 0 @0 -> static const inline)
 }
-emit.dup.x1: int32: int32 {
+emit.dup.x1: int32 {
 .kind: static const inline
 .size: 0
 .owner: emit.dup
 .value: dup.x1 sp(0)
 }
-emit.dup.x2: int64: int64 {
+emit.dup.x2: int64 {
 .kind: static const inline
 .size: 0
 .owner: emit.dup
 .value: dup.x2 sp(0)
 }
-emit.dup.x4: p4x: emit.p4x {
+emit.dup.x4: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.dup
@@ -540,49 +540,49 @@ emit.load: void {
 .field i64: int64 (size: 0 @0 -> static const inline)
 .field i128: emit.p4x (size: 0 @0 -> static const inline)
 }
-emit.load.z32: int32: int32 {
+emit.load.z32: int32 {
 .kind: static const inline
 .size: 0
 .owner: emit.load
 .value: load.z32
 }
-emit.load.z64: int64: int64 {
+emit.load.z64: int64 {
 .kind: static const inline
 .size: 0
 .owner: emit.load
 .value: load.z64
 }
-emit.load.z128: p4x: emit.p4x {
+emit.load.z128: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.load
 .value: load.z128
 }
-emit.load.i8: int32: int32 {
+emit.load.i8: int32 {
 .kind: static const inline
 .size: 0
 .owner: emit.load
 .value: load.m8
 }
-emit.load.i16: int32: int32 {
+emit.load.i16: int32 {
 .kind: static const inline
 .size: 0
 .owner: emit.load
 .value: load.m16
 }
-emit.load.i32: int32: int32 {
+emit.load.i32: int32 {
 .kind: static const inline
 .size: 0
 .owner: emit.load
 .value: load.m32
 }
-emit.load.i64: int64: int64 {
+emit.load.i64: int64 {
 .kind: static const inline
 .size: 0
 .owner: emit.load
 .value: load.m64
 }
-emit.load.i128: p4x: emit.p4x {
+emit.load.i128: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.load
@@ -598,31 +598,31 @@ emit.store: void {
 .field i64: void (size: 0 @0 -> static const inline)
 .field i128: void (size: 0 @0 -> static const inline)
 }
-emit.store.i8: void: void {
+emit.store.i8: void {
 .kind: static const inline
 .size: 0
 .owner: emit.store
 .value: store.m8
 }
-emit.store.i16: void: void {
+emit.store.i16: void {
 .kind: static const inline
 .size: 0
 .owner: emit.store
 .value: store.m16
 }
-emit.store.i32: void: void {
+emit.store.i32: void {
 .kind: static const inline
 .size: 0
 .owner: emit.store
 .value: store.m32
 }
-emit.store.i64: void: void {
+emit.store.i64: void {
 .kind: static const inline
 .size: 0
 .owner: emit.store
 .value: store.m64
 }
-emit.store.i128: void: void {
+emit.store.i128: void {
 .kind: static const inline
 .size: 0
 .owner: emit.store
@@ -635,13 +635,13 @@ emit.cmt: void {
 .field u32: uint32 (size: 0 @0 -> static const inline)
 .field u64: uint64 (size: 0 @0 -> static const inline)
 }
-emit.cmt.u32: uint32: uint32 {
+emit.cmt.u32: uint32 {
 .kind: static const inline
 .size: 0
 .owner: emit.cmt
 .value: cmt.b32
 }
-emit.cmt.u64: uint64: uint64 {
+emit.cmt.u64: uint64 {
 .kind: static const inline
 .size: 0
 .owner: emit.cmt
@@ -654,13 +654,13 @@ emit.and: void {
 .field u32: uint32 (size: 0 @0 -> static const inline)
 .field u64: uint64 (size: 0 @0 -> static const inline)
 }
-emit.and.u32: uint32: uint32 {
+emit.and.u32: uint32 {
 .kind: static const inline
 .size: 0
 .owner: emit.and
 .value: and.b32
 }
-emit.and.u64: uint64: uint64 {
+emit.and.u64: uint64 {
 .kind: static const inline
 .size: 0
 .owner: emit.and
@@ -673,13 +673,13 @@ emit.or: void {
 .field u32: uint32 (size: 0 @0 -> static const inline)
 .field u64: uint64 (size: 0 @0 -> static const inline)
 }
-emit.or.u32: uint32: uint32 {
+emit.or.u32: uint32 {
 .kind: static const inline
 .size: 0
 .owner: emit.or
 .value: or.b32
 }
-emit.or.u64: uint64: uint64 {
+emit.or.u64: uint64 {
 .kind: static const inline
 .size: 0
 .owner: emit.or
@@ -692,13 +692,13 @@ emit.xor: void {
 .field u32: uint32 (size: 0 @0 -> static const inline)
 .field u64: uint64 (size: 0 @0 -> static const inline)
 }
-emit.xor.u32: uint32: uint32 {
+emit.xor.u32: uint32 {
 .kind: static const inline
 .size: 0
 .owner: emit.xor
 .value: xor.b32
 }
-emit.xor.u64: uint64: uint64 {
+emit.xor.u64: uint64 {
 .kind: static const inline
 .size: 0
 .owner: emit.xor
@@ -711,13 +711,13 @@ emit.shl: void {
 .field u32: uint32 (size: 0 @0 -> static const inline)
 .field u64: uint64 (size: 0 @0 -> static const inline)
 }
-emit.shl.u32: uint32: uint32 {
+emit.shl.u32: uint32 {
 .kind: static const inline
 .size: 0
 .owner: emit.shl
 .value: shl.b32
 }
-emit.shl.u64: uint64: uint64 {
+emit.shl.u64: uint64 {
 .kind: static const inline
 .size: 0
 .owner: emit.shl
@@ -732,25 +732,25 @@ emit.shr: void {
 .field u32: uint32 (size: 0 @0 -> static const inline)
 .field u64: uint64 (size: 0 @0 -> static const inline)
 }
-emit.shr.i32: int32: int32 {
+emit.shr.i32: int32 {
 .kind: static const inline
 .size: 0
 .owner: emit.shr
 .value: sar.b32
 }
-emit.shr.i64: int64: int64 {
+emit.shr.i64: int64 {
 .kind: static const inline
 .size: 0
 .owner: emit.shr
 .value: sar.b64
 }
-emit.shr.u32: uint32: uint32 {
+emit.shr.u32: uint32 {
 .kind: static const inline
 .size: 0
 .owner: emit.shr
 .value: shr.b32
 }
-emit.shr.u64: uint64: uint64 {
+emit.shr.u64: uint64 {
 .kind: static const inline
 .size: 0
 .owner: emit.shr
@@ -767,37 +767,37 @@ emit.neg: void {
 .field p4f: emit.p4x (size: 0 @0 -> static const inline)
 .field p2d: emit.p4x (size: 0 @0 -> static const inline)
 }
-emit.neg.i32: int32: int32 {
+emit.neg.i32: int32 {
 .kind: static const inline
 .size: 0
 .owner: emit.neg
 .value: neg.i32
 }
-emit.neg.i64: int64: int64 {
+emit.neg.i64: int64 {
 .kind: static const inline
 .size: 0
 .owner: emit.neg
 .value: neg.i64
 }
-emit.neg.f32: float32: float32 {
+emit.neg.f32: float32 {
 .kind: static const inline
 .size: 0
 .owner: emit.neg
 .value: neg.f32
 }
-emit.neg.f64: float64: float64 {
+emit.neg.f64: float64 {
 .kind: static const inline
 .size: 0
 .owner: emit.neg
 .value: neg.f64
 }
-emit.neg.p4f: p4x: emit.p4x {
+emit.neg.p4f: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.neg
 .value: neg.v4f
 }
-emit.neg.p2d: p4x: emit.p4x {
+emit.neg.p2d: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.neg
@@ -814,37 +814,37 @@ emit.add: void {
 .field p4f: emit.p4x (size: 0 @0 -> static const inline)
 .field p2d: emit.p4x (size: 0 @0 -> static const inline)
 }
-emit.add.i32: int32: int32 {
+emit.add.i32: int32 {
 .kind: static const inline
 .size: 0
 .owner: emit.add
 .value: add.i32
 }
-emit.add.i64: int64: int64 {
+emit.add.i64: int64 {
 .kind: static const inline
 .size: 0
 .owner: emit.add
 .value: add.i64
 }
-emit.add.f32: float32: float32 {
+emit.add.f32: float32 {
 .kind: static const inline
 .size: 0
 .owner: emit.add
 .value: add.f32
 }
-emit.add.f64: float64: float64 {
+emit.add.f64: float64 {
 .kind: static const inline
 .size: 0
 .owner: emit.add
 .value: add.f64
 }
-emit.add.p4f: p4x: emit.p4x {
+emit.add.p4f: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.add
 .value: add.v4f
 }
-emit.add.p2d: p4x: emit.p4x {
+emit.add.p2d: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.add
@@ -861,37 +861,37 @@ emit.sub: void {
 .field p4f: emit.p4x (size: 0 @0 -> static const inline)
 .field p2d: emit.p4x (size: 0 @0 -> static const inline)
 }
-emit.sub.i32: int32: int32 {
+emit.sub.i32: int32 {
 .kind: static const inline
 .size: 0
 .owner: emit.sub
 .value: sub.i32
 }
-emit.sub.i64: int64: int64 {
+emit.sub.i64: int64 {
 .kind: static const inline
 .size: 0
 .owner: emit.sub
 .value: sub.i64
 }
-emit.sub.f32: float32: float32 {
+emit.sub.f32: float32 {
 .kind: static const inline
 .size: 0
 .owner: emit.sub
 .value: sub.f32
 }
-emit.sub.f64: float64: float64 {
+emit.sub.f64: float64 {
 .kind: static const inline
 .size: 0
 .owner: emit.sub
 .value: sub.f64
 }
-emit.sub.p4f: p4x: emit.p4x {
+emit.sub.p4f: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.sub
 .value: sub.v4f
 }
-emit.sub.p2d: p4x: emit.p4x {
+emit.sub.p2d: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.sub
@@ -910,49 +910,49 @@ emit.mul: void {
 .field p4f: emit.p4x (size: 0 @0 -> static const inline)
 .field p2d: emit.p4x (size: 0 @0 -> static const inline)
 }
-emit.mul.i32: int32: int32 {
+emit.mul.i32: int32 {
 .kind: static const inline
 .size: 0
 .owner: emit.mul
 .value: mul.i32
 }
-emit.mul.i64: int64: int64 {
+emit.mul.i64: int64 {
 .kind: static const inline
 .size: 0
 .owner: emit.mul
 .value: mul.i64
 }
-emit.mul.u32: uint32: uint32 {
+emit.mul.u32: uint32 {
 .kind: static const inline
 .size: 0
 .owner: emit.mul
 .value: mul.u32
 }
-emit.mul.u64: uint32: uint32 {
+emit.mul.u64: uint32 {
 .kind: static const inline
 .size: 0
 .owner: emit.mul
 .value: mul.u64
 }
-emit.mul.f32: float32: float32 {
+emit.mul.f32: float32 {
 .kind: static const inline
 .size: 0
 .owner: emit.mul
 .value: mul.f32
 }
-emit.mul.f64: float64: float64 {
+emit.mul.f64: float64 {
 .kind: static const inline
 .size: 0
 .owner: emit.mul
 .value: mul.f64
 }
-emit.mul.p4f: p4x: emit.p4x {
+emit.mul.p4f: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.mul
 .value: mul.v4f
 }
-emit.mul.p2d: p4x: emit.p4x {
+emit.mul.p2d: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.mul
@@ -971,49 +971,49 @@ emit.div: void {
 .field p4f: emit.p4x (size: 0 @0 -> static const inline)
 .field p2d: emit.p4x (size: 0 @0 -> static const inline)
 }
-emit.div.i32: int32: int32 {
+emit.div.i32: int32 {
 .kind: static const inline
 .size: 0
 .owner: emit.div
 .value: div.i32
 }
-emit.div.i64: int64: int64 {
+emit.div.i64: int64 {
 .kind: static const inline
 .size: 0
 .owner: emit.div
 .value: div.i64
 }
-emit.div.u32: uint32: uint32 {
+emit.div.u32: uint32 {
 .kind: static const inline
 .size: 0
 .owner: emit.div
 .value: div.u32
 }
-emit.div.u64: uint32: uint32 {
+emit.div.u64: uint32 {
 .kind: static const inline
 .size: 0
 .owner: emit.div
 .value: div.u64
 }
-emit.div.f32: float32: float32 {
+emit.div.f32: float32 {
 .kind: static const inline
 .size: 0
 .owner: emit.div
 .value: div.f32
 }
-emit.div.f64: float64: float64 {
+emit.div.f64: float64 {
 .kind: static const inline
 .size: 0
 .owner: emit.div
 .value: div.f64
 }
-emit.div.p4f: p4x: emit.p4x {
+emit.div.p4f: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.div
 .value: div.v4f
 }
-emit.div.p2d: p4x: emit.p4x {
+emit.div.p2d: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.div
@@ -1030,37 +1030,37 @@ emit.mod: void {
 .field f32: float32 (size: 0 @0 -> static const inline)
 .field f64: float64 (size: 0 @0 -> static const inline)
 }
-emit.mod.i32: int32: int32 {
+emit.mod.i32: int32 {
 .kind: static const inline
 .size: 0
 .owner: emit.mod
 .value: mod.i32
 }
-emit.mod.i64: int64: int64 {
+emit.mod.i64: int64 {
 .kind: static const inline
 .size: 0
 .owner: emit.mod
 .value: mod.i64
 }
-emit.mod.u32: uint32: uint32 {
+emit.mod.u32: uint32 {
 .kind: static const inline
 .size: 0
 .owner: emit.mod
 .value: mod.u32
 }
-emit.mod.u64: uint32: uint32 {
+emit.mod.u64: uint32 {
 .kind: static const inline
 .size: 0
 .owner: emit.mod
 .value: mod.u64
 }
-emit.mod.f32: float32: float32 {
+emit.mod.f32: float32 {
 .kind: static const inline
 .size: 0
 .owner: emit.mod
 .value: mod.f32
 }
-emit.mod.f64: float64: float64 {
+emit.mod.f64: float64 {
 .kind: static const inline
 .size: 0
 .owner: emit.mod
@@ -1077,37 +1077,37 @@ emit.ceq: void {
 .field p4f: bool (size: 0 @0 -> static const inline)
 .field p2d: bool (size: 0 @0 -> static const inline)
 }
-emit.ceq.i32: bool: bool {
+emit.ceq.i32: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.ceq
 .value: ceq.i32
 }
-emit.ceq.i64: bool: bool {
+emit.ceq.i64: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.ceq
 .value: ceq.i64
 }
-emit.ceq.f32: bool: bool {
+emit.ceq.f32: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.ceq
 .value: ceq.f32
 }
-emit.ceq.f64: bool: bool {
+emit.ceq.f64: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.ceq
 .value: ceq.f64
 }
-emit.ceq.p4f: bool: bool {
+emit.ceq.p4f: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.ceq
 .value: ceq.v4f
 }
-emit.ceq.p2d: bool: bool {
+emit.ceq.p2d: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.ceq
@@ -1124,37 +1124,37 @@ emit.clt: void {
 .field f32: bool (size: 0 @0 -> static const inline)
 .field f64: bool (size: 0 @0 -> static const inline)
 }
-emit.clt.i32: bool: bool {
+emit.clt.i32: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.clt
 .value: clt.i32
 }
-emit.clt.i64: bool: bool {
+emit.clt.i64: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.clt
 .value: clt.i64
 }
-emit.clt.u32: bool: bool {
+emit.clt.u32: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.clt
 .value: clt.u32
 }
-emit.clt.u64: bool: bool {
+emit.clt.u64: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.clt
 .value: clt.u64
 }
-emit.clt.f32: bool: bool {
+emit.clt.f32: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.clt
 .value: clt.f32
 }
-emit.clt.f64: bool: bool {
+emit.clt.f64: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.clt
@@ -1171,37 +1171,37 @@ emit.cgt: void {
 .field f32: bool (size: 0 @0 -> static const inline)
 .field f64: bool (size: 0 @0 -> static const inline)
 }
-emit.cgt.i32: bool: bool {
+emit.cgt.i32: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.cgt
 .value: cgt.i32
 }
-emit.cgt.i64: bool: bool {
+emit.cgt.i64: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.cgt
 .value: cgt.i64
 }
-emit.cgt.u32: bool: bool {
+emit.cgt.u32: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.cgt
 .value: cgt.u32
 }
-emit.cgt.u64: bool: bool {
+emit.cgt.u64: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.cgt
 .value: cgt.u64
 }
-emit.cgt.f32: bool: bool {
+emit.cgt.f32: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.cgt
 .value: cgt.f32
 }
-emit.cgt.f64: bool: bool {
+emit.cgt.f64: bool {
 .kind: static const inline
 .size: 0
 .owner: emit.cgt
@@ -1214,13 +1214,13 @@ emit.min: void {
 .field p4f: emit.p4x (size: 0 @0 -> static const inline)
 .field p2d: emit.p4x (size: 0 @0 -> static const inline)
 }
-emit.min.p4f: p4x: emit.p4x {
+emit.min.p4f: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.min
 .value: min.v4f
 }
-emit.min.p2d: p4x: emit.p4x {
+emit.min.p2d: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.min
@@ -1233,13 +1233,13 @@ emit.max: void {
 .field p4f: emit.p4x (size: 0 @0 -> static const inline)
 .field p2d: emit.p4x (size: 0 @0 -> static const inline)
 }
-emit.max.p4f: p4x: emit.p4x {
+emit.max.p4f: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.max
 .value: max.v4f
 }
-emit.max.p2d: p4x: emit.p4x {
+emit.max.p2d: emit.p4x {
 .kind: static const inline
 .size: 0
 .owner: emit.max
@@ -1252,13 +1252,13 @@ halt(): void: function {
 .param .result: void (@+0->inline)
 .value: emit(nfc(0))
 }
-CLOCKS_PER_SEC: int32: int32 {
+CLOCKS_PER_SEC: int32 {
 .kind: i32
 .size: 0
 .owner: 
 .value: 1000000
 }
-RAND_MAX: int32: int32 {
+RAND_MAX: int32 {
 .kind: i32
 .size: 0
 .owner: 
@@ -1283,49 +1283,49 @@ raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void: 
 .param maxTrace: int32 (@+4->i32)
 .value: emit(nfc(5), level, message, inspect, maxTrace)
 }
-raise.abort: int32: int32 {
+raise.abort: int32 {
 .kind: static i32
 .size: 0
 .owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 .value: -1
 }
-raise.error: int32: int32 {
+raise.error: int32 {
 .kind: static i32
 .size: 0
 .owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 .value: 0
 }
-raise.warn: int32: int32 {
+raise.warn: int32 {
 .kind: static i32
 .size: 0
 .owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 .value: 1
 }
-raise.info: int32: int32 {
+raise.info: int32 {
 .kind: static i32
 .size: 0
 .owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 .value: 2
 }
-raise.debug: int32: int32 {
+raise.debug: int32 {
 .kind: static i32
 .size: 0
 .owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 .value: 3
 }
-raise.verbose: int32: int32 {
+raise.verbose: int32 {
 .kind: static i32
 .size: 0
 .owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 .value: 4
 }
-raise.noTrace: int32: int32 {
+raise.noTrace: int32 {
 .kind: static i32
 .size: 0
 .owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 .value: 0
 }
-raise.defTrace: int32: int32 {
+raise.defTrace: int32 {
 .kind: static i32
 .size: 0
 .owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -1404,7 +1404,7 @@ System.sleep(millis: int64): void: function {
 .param millis: int64 (@+8->i64)
 .value: emit(nfc(16), millis)
 }
-integer: typename: typename {
+integer: typename {
 .kind: inline
 .size: 0
 .owner: 
@@ -1419,22 +1419,22 @@ xrgb: typename {
 .field r: uint8 (size: 1 @2 -> variable(u32))
 .field x: uint8 (size: 1 @3 -> variable(u32))
 }
-xrgb.b: uint8: uint8 {
+xrgb.b: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: xrgb
 }
-xrgb.g: uint8: uint8 {
+xrgb.g: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: xrgb
 }
-xrgb.r: uint8: uint8 {
+xrgb.r: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: xrgb
 }
-xrgb.x: uint8: uint8 {
+xrgb.x: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: xrgb
@@ -1446,12 +1446,12 @@ color: typename {
 .field rgb: xrgb (size: 4 @0 -> variable(val))
 .field col: int32 (size: 4 @0 -> variable(i32))
 }
-color.rgb: xrgb: xrgb {
+color.rgb: xrgb {
 .kind: variable(val)
 .size: 4
 .owner: color
 }
-color.col: int32: int32 {
+color.col: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: color
@@ -1464,12 +1464,12 @@ type: object {
 .field objReference: type (size: 4 @4 -> variable(ref))
 .field funReference: function (size: 4 @8 -> variable(ref))
 }
-type.intVariable: int32: int32 {
+type.intVariable: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: type
 }
-type.objReference: type: type {
+type.objReference: type {
 .kind: variable(ref)
 .size: 4
 .owner: type
@@ -1493,32 +1493,32 @@ record_pack0: typename {
 .field _2: uint8 (size: 1 @0 -> variable(u32))
 .field c: uint16 (size: 2 @0 -> variable(u32))
 }
-record_pack0._0: uint8: uint8 {
+record_pack0._0: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_pack0
 }
-record_pack0.a: uint64: uint64 {
+record_pack0.a: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: record_pack0
 }
-record_pack0._1: uint8: uint8 {
+record_pack0._1: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_pack0
 }
-record_pack0.b: uint32: uint32 {
+record_pack0.b: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: record_pack0
 }
-record_pack0._2: uint8: uint8 {
+record_pack0._2: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_pack0
 }
-record_pack0.c: uint16: uint16 {
+record_pack0.c: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: record_pack0
@@ -1534,32 +1534,32 @@ record_pack1: typename {
 .field _2: uint8 (size: 1 @14 -> variable(u32))
 .field c: uint16 (size: 2 @15 -> variable(u32))
 }
-record_pack1._0: uint8: uint8 {
+record_pack1._0: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_pack1
 }
-record_pack1.a: uint64: uint64 {
+record_pack1.a: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: record_pack1
 }
-record_pack1._1: uint8: uint8 {
+record_pack1._1: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_pack1
 }
-record_pack1.b: uint32: uint32 {
+record_pack1.b: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: record_pack1
 }
-record_pack1._2: uint8: uint8 {
+record_pack1._2: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_pack1
 }
-record_pack1.c: uint16: uint16 {
+record_pack1.c: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: record_pack1
@@ -1575,32 +1575,32 @@ record_pack2: typename {
 .field _2: uint8 (size: 1 @16 -> variable(u32))
 .field c: uint16 (size: 2 @18 -> variable(u32))
 }
-record_pack2._0: uint8: uint8 {
+record_pack2._0: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_pack2
 }
-record_pack2.a: uint64: uint64 {
+record_pack2.a: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: record_pack2
 }
-record_pack2._1: uint8: uint8 {
+record_pack2._1: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_pack2
 }
-record_pack2.b: uint32: uint32 {
+record_pack2.b: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: record_pack2
 }
-record_pack2._2: uint8: uint8 {
+record_pack2._2: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_pack2
 }
-record_pack2.c: uint16: uint16 {
+record_pack2.c: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: record_pack2
@@ -1616,32 +1616,32 @@ record_pack4: typename {
 .field _2: uint8 (size: 1 @20 -> variable(u32))
 .field c: uint16 (size: 2 @22 -> variable(u32))
 }
-record_pack4._0: uint8: uint8 {
+record_pack4._0: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_pack4
 }
-record_pack4.a: uint64: uint64 {
+record_pack4.a: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: record_pack4
 }
-record_pack4._1: uint8: uint8 {
+record_pack4._1: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_pack4
 }
-record_pack4.b: uint32: uint32 {
+record_pack4.b: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: record_pack4
 }
-record_pack4._2: uint8: uint8 {
+record_pack4._2: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_pack4
 }
-record_pack4.c: uint16: uint16 {
+record_pack4.c: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: record_pack4
@@ -1657,32 +1657,32 @@ record_pack8: typename {
 .field _2: uint8 (size: 1 @24 -> variable(u32))
 .field c: uint16 (size: 2 @26 -> variable(u32))
 }
-record_pack8._0: uint8: uint8 {
+record_pack8._0: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_pack8
 }
-record_pack8.a: uint64: uint64 {
+record_pack8.a: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: record_pack8
 }
-record_pack8._1: uint8: uint8 {
+record_pack8._1: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_pack8
 }
-record_pack8.b: uint32: uint32 {
+record_pack8.b: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: record_pack8
 }
-record_pack8._2: uint8: uint8 {
+record_pack8._2: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_pack8
 }
-record_pack8.c: uint16: uint16 {
+record_pack8.c: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: record_pack8
@@ -1698,32 +1698,32 @@ record_packDef: typename {
 .field _2: uint8 (size: 1 @24 -> variable(u32))
 .field c: uint16 (size: 2 @26 -> variable(u32))
 }
-record_packDef._0: uint8: uint8 {
+record_packDef._0: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_packDef
 }
-record_packDef.a: uint64: uint64 {
+record_packDef.a: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: record_packDef
 }
-record_packDef._1: uint8: uint8 {
+record_packDef._1: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_packDef
 }
-record_packDef.b: uint32: uint32 {
+record_packDef.b: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: record_packDef
 }
-record_packDef._2: uint8: uint8 {
+record_packDef._2: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: record_packDef
 }
-record_packDef.c: uint16: uint16 {
+record_packDef.c: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: record_packDef
@@ -1792,2162 +1792,2186 @@ min(a: int32, b: int32, c: int32): int32: function {
 .param c: int32 (@+4->i32)
 .value: min(min(a, b), c)
 }
-ma: int32: int32 {
+ma: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: 3
 }
-mb: int32: int32 {
+mb: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: 6
 }
-mc: int32: int32 {
+mc: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: 9
 }
-min2var: int32: int32 {
+min2var: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: min(ma, mb)
 }
-emitldz32: int32: int32 {
+emitldz32: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: emit(load.z32)
 }
-emitldz64: int64: int64 {
+emitldz64: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: emit(load.z64)
 }
-emitA: int32: int32 {
+emitA: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: 42
 }
-emitB: int32: int32 {
+emitB: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: 96
 }
-emitAddi32: int32: int32 {
+emitAddi32: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: emit(add.i32, int32(emitA), emitB)
 }
-a: typename: typename {
+a: typename {
 .kind: inline
 .size: 0
 .owner: 
 .value: 96.300000
 }
-b: typename: typename {
+b: typename {
 .kind: inline
 .size: 0
 .owner: 
 .value: 42.140000
 }
-shift: int32: int32 {
+shift: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: 2
 }
-boolA: bool: bool {
+boolA: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: true
 }
-boolB: bool: bool {
+boolB: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: !false
 }
-boolAnd: bool: bool {
+boolAnd: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: boolA & boolB
 }
-boolIor: bool: bool {
+boolIor: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: boolA | boolB
 }
-boolXor: bool: bool {
+boolXor: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: boolA ^ boolB
 }
-boolNot: bool: bool {
+boolNot: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: !boolB
 }
-boolCeq: bool: bool {
+boolCeq: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: boolA == boolB
 }
-boolCne: bool: bool {
+boolCne: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: boolA != boolB
 }
-boolClt: bool: bool {
+boolClt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: boolA < boolB
 }
-boolCle: bool: bool {
+boolCle: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: boolA <= boolB
 }
-boolCgt: bool: bool {
+boolCgt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: boolA > boolB
 }
-boolCge: bool: bool {
+boolCge: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: boolA >= boolB
 }
-chrA: char: char {
+chrA: char {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: 'a'
 }
-chrB: char: char {
+chrB: char {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: 'b'
 }
-chrPls: char: char {
+chrPls: char {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: +chrB
 }
-chrNeg: char: char {
+chrNeg: char {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: -chrB
 }
-chrCmt: char: char {
+chrCmt: char {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: ~chrB
 }
-chrAdd: char: char {
+chrAdd: char {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: chrA + chrB
 }
-chrSub: char: char {
+chrSub: char {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: chrA - chrB
 }
-chrMul: char: char {
+chrMul: char {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: chrA * chrB
 }
-chrDiv: char: char {
+chrDiv: char {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: chrA / chrB
 }
-chrMod: char: char {
+chrMod: char {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: chrA % chrB
 }
-chrAnd: char: char {
+chrAnd: char {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: chrA & chrB
 }
-chrIor: char: char {
+chrIor: char {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: chrA | chrB
 }
-chrXor: char: char {
+chrXor: char {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: chrA ^ chrB
 }
-chrShl: char: char {
+chrShl: char {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: (chrA) << shift
 }
-chrShr: char: char {
+chrShr: char {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: (chrA) >> shift
 }
-chrNot: bool: bool {
+chrNot: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: !(chrB)
 }
-chrCeq: bool: bool {
+chrCeq: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: chrA == chrB
 }
-chrCne: bool: bool {
+chrCne: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: chrA != chrB
 }
-chrClt: bool: bool {
+chrClt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: chrA < chrB
 }
-chrCle: bool: bool {
+chrCle: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: chrA <= chrB
 }
-chrCgt: bool: bool {
+chrCgt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: chrA > chrB
 }
-chrCge: bool: bool {
+chrCge: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: chrA >= chrB
 }
-i8A: int8: int8 {
+i8A: int8 {
 .kind: variable(i32)
 .size: 1
 .owner: 
 .value: a
 }
-i8B: int8: int8 {
+i8B: int8 {
 .kind: variable(i32)
 .size: 1
 .owner: 
 .value: b
 }
-i8Pls: int8: int8 {
+i8Pls: int8 {
 .kind: variable(i32)
 .size: 1
 .owner: 
 .value: +i8B
 }
-i8Neg: int8: int8 {
+i8Neg: int8 {
 .kind: variable(i32)
 .size: 1
 .owner: 
 .value: -i8B
 }
-i8Cmt: int8: int8 {
+i8Cmt: int8 {
 .kind: variable(i32)
 .size: 1
 .owner: 
 .value: ~i8B
 }
-i8Add: int8: int8 {
+i8Add: int8 {
 .kind: variable(i32)
 .size: 1
 .owner: 
 .value: i8A + i8B
 }
-i8Sub: int8: int8 {
+i8Sub: int8 {
 .kind: variable(i32)
 .size: 1
 .owner: 
 .value: i8A - i8B
 }
-i8Mul: int8: int8 {
+i8Mul: int8 {
 .kind: variable(i32)
 .size: 1
 .owner: 
 .value: i8A * i8B
 }
-i8Div: int8: int8 {
+i8Div: int8 {
 .kind: variable(i32)
 .size: 1
 .owner: 
 .value: i8A / i8B
 }
-i8Mod: int8: int8 {
+i8Mod: int8 {
 .kind: variable(i32)
 .size: 1
 .owner: 
 .value: i8A % i8B
 }
-i8And: int8: int8 {
+i8And: int8 {
 .kind: variable(i32)
 .size: 1
 .owner: 
 .value: i8A & i8B
 }
-i8Ior: int8: int8 {
+i8Ior: int8 {
 .kind: variable(i32)
 .size: 1
 .owner: 
 .value: i8A | i8B
 }
-i8Xor: int8: int8 {
+i8Xor: int8 {
 .kind: variable(i32)
 .size: 1
 .owner: 
 .value: i8A ^ i8B
 }
-i8Shl: int8: int8 {
+i8Shl: int8 {
 .kind: variable(i32)
 .size: 1
 .owner: 
 .value: (i8A) << shift
 }
-i8Shr: int8: int8 {
+i8Shr: int8 {
 .kind: variable(i32)
 .size: 1
 .owner: 
 .value: (i8A) >> shift
 }
-i8Not: bool: bool {
+i8Not: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: !(i8B)
 }
-i8Ceq: bool: bool {
+i8Ceq: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i8A == i8B
 }
-i8Cne: bool: bool {
+i8Cne: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i8A != i8B
 }
-i8Clt: bool: bool {
+i8Clt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i8A < i8B
 }
-i8Cle: bool: bool {
+i8Cle: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i8A <= i8B
 }
-i8Cgt: bool: bool {
+i8Cgt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i8A > i8B
 }
-i8Cge: bool: bool {
+i8Cge: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i8A >= i8B
 }
-u8A: uint8: uint8 {
+u8A: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: a
 }
-u8B: uint8: uint8 {
+u8B: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: b
 }
-u8Pls: uint8: uint8 {
+u8Pls: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: +u8B
 }
-u8Neg: uint8: uint8 {
+u8Neg: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: -u8B
 }
-u8Cmt: uint8: uint8 {
+u8Cmt: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: ~u8B
 }
-u8Add: uint8: uint8 {
+u8Add: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: u8A + u8B
 }
-u8Sub: uint8: uint8 {
+u8Sub: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: u8A - u8B
 }
-u8Mul: uint8: uint8 {
+u8Mul: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: u8A * u8B
 }
-u8Div: uint8: uint8 {
+u8Div: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: u8A / u8B
 }
-u8Mod: uint8: uint8 {
+u8Mod: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: u8A % u8B
 }
-u8And: uint8: uint8 {
+u8And: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: u8A & u8B
 }
-u8Ior: uint8: uint8 {
+u8Ior: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: u8A | u8B
 }
-u8Xor: uint8: uint8 {
+u8Xor: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: u8A ^ u8B
 }
-u8Shl: uint8: uint8 {
+u8Shl: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: (u8A) << shift
 }
-u8Shr: uint8: uint8 {
+u8Shr: uint8 {
 .kind: variable(u32)
 .size: 1
 .owner: 
 .value: (u8A) >> shift
 }
-u8Not: bool: bool {
+u8Not: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: !(u8B)
 }
-u8Ceq: bool: bool {
+u8Ceq: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u8A == u8B
 }
-u8Cne: bool: bool {
+u8Cne: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u8A != u8B
 }
-u8Clt: bool: bool {
+u8Clt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u8A < u8B
 }
-u8Cle: bool: bool {
+u8Cle: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u8A <= u8B
 }
-u8Cgt: bool: bool {
+u8Cgt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u8A > u8B
 }
-u8Cge: bool: bool {
+u8Cge: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u8A >= u8B
 }
-i16A: int16: int16 {
+i16A: int16 {
 .kind: variable(i32)
 .size: 2
 .owner: 
 .value: a
 }
-i16B: int16: int16 {
+i16B: int16 {
 .kind: variable(i32)
 .size: 2
 .owner: 
 .value: b
 }
-i16Pls: int16: int16 {
+i16Pls: int16 {
 .kind: variable(i32)
 .size: 2
 .owner: 
 .value: +i16B
 }
-i16Neg: int16: int16 {
+i16Neg: int16 {
 .kind: variable(i32)
 .size: 2
 .owner: 
 .value: -i16B
 }
-i16Cmt: int16: int16 {
+i16Cmt: int16 {
 .kind: variable(i32)
 .size: 2
 .owner: 
 .value: ~i16B
 }
-i16Add: int16: int16 {
+i16Add: int16 {
 .kind: variable(i32)
 .size: 2
 .owner: 
 .value: i16A + i16B
 }
-i16Sub: int16: int16 {
+i16Sub: int16 {
 .kind: variable(i32)
 .size: 2
 .owner: 
 .value: i16A - i16B
 }
-i16Mul: int16: int16 {
+i16Mul: int16 {
 .kind: variable(i32)
 .size: 2
 .owner: 
 .value: i16A * i16B
 }
-i16Div: int16: int16 {
+i16Div: int16 {
 .kind: variable(i32)
 .size: 2
 .owner: 
 .value: i16A / i16B
 }
-i16Mod: int16: int16 {
+i16Mod: int16 {
 .kind: variable(i32)
 .size: 2
 .owner: 
 .value: i16A % i16B
 }
-i16And: int16: int16 {
+i16And: int16 {
 .kind: variable(i32)
 .size: 2
 .owner: 
 .value: i16A & i16B
 }
-i16Ior: int16: int16 {
+i16Ior: int16 {
 .kind: variable(i32)
 .size: 2
 .owner: 
 .value: i16A | i16B
 }
-i16Xor: int16: int16 {
+i16Xor: int16 {
 .kind: variable(i32)
 .size: 2
 .owner: 
 .value: i16A ^ i16B
 }
-i16Shl: int16: int16 {
+i16Shl: int16 {
 .kind: variable(i32)
 .size: 2
 .owner: 
 .value: (i16A) << shift
 }
-i16Shr: int16: int16 {
+i16Shr: int16 {
 .kind: variable(i32)
 .size: 2
 .owner: 
 .value: (i16A) >> shift
 }
-i16Not: bool: bool {
+i16Not: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: !(i16B)
 }
-i16Ceq: bool: bool {
+i16Ceq: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i16A == i16B
 }
-i16Cne: bool: bool {
+i16Cne: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i16A != i16B
 }
-i16Clt: bool: bool {
+i16Clt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i16A < i16B
 }
-i16Cle: bool: bool {
+i16Cle: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i16A <= i16B
 }
-i16Cgt: bool: bool {
+i16Cgt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i16A > i16B
 }
-i16Cge: bool: bool {
+i16Cge: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i16A >= i16B
 }
-u16A: uint16: uint16 {
+u16A: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: 
 .value: a
 }
-u16B: uint16: uint16 {
+u16B: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: 
 .value: b
 }
-u16Pls: uint16: uint16 {
+u16Pls: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: 
 .value: +u16B
 }
-u16Neg: uint16: uint16 {
+u16Neg: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: 
 .value: -u16B
 }
-u16Cmt: uint16: uint16 {
+u16Cmt: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: 
 .value: ~u16B
 }
-u16Add: uint16: uint16 {
+u16Add: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: 
 .value: u16A + u16B
 }
-u16Sub: uint16: uint16 {
+u16Sub: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: 
 .value: u16A - u16B
 }
-u16Mul: uint16: uint16 {
+u16Mul: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: 
 .value: u16A * u16B
 }
-u16Div: uint16: uint16 {
+u16Div: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: 
 .value: u16A / u16B
 }
-u16Mod: uint16: uint16 {
+u16Mod: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: 
 .value: u16A % u16B
 }
-u16And: uint16: uint16 {
+u16And: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: 
 .value: u16A & u16B
 }
-u16Ior: uint16: uint16 {
+u16Ior: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: 
 .value: u16A | u16B
 }
-u16Xor: uint16: uint16 {
+u16Xor: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: 
 .value: u16A ^ u16B
 }
-u16Shl: uint16: uint16 {
+u16Shl: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: 
 .value: (u16A) << shift
 }
-u16Shr: uint16: uint16 {
+u16Shr: uint16 {
 .kind: variable(u32)
 .size: 2
 .owner: 
 .value: (u16A) >> shift
 }
-u16Not: bool: bool {
+u16Not: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: !(u16B)
 }
-u16Ceq: bool: bool {
+u16Ceq: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u16A == u16B
 }
-u16Cne: bool: bool {
+u16Cne: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u16A != u16B
 }
-u16Clt: bool: bool {
+u16Clt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u16A < u16B
 }
-u16Cle: bool: bool {
+u16Cle: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u16A <= u16B
 }
-u16Cgt: bool: bool {
+u16Cgt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u16A > u16B
 }
-u16Cge: bool: bool {
+u16Cge: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u16A >= u16B
 }
-i32A: int32: int32 {
+i32A: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: a
 }
-i32B: int32: int32 {
+i32B: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: b
 }
-i32Pls: int32: int32 {
+i32Pls: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: +i32B
 }
-i32Neg: int32: int32 {
+i32Neg: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: -i32B
 }
-i32Cmt: int32: int32 {
+i32Cmt: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: ~i32B
 }
-i32Add: int32: int32 {
+i32Add: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: i32A + i32B
 }
-i32Sub: int32: int32 {
+i32Sub: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: i32A - i32B
 }
-i32Mul: int32: int32 {
+i32Mul: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: i32A * i32B
 }
-i32Div: int32: int32 {
+i32Div: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: i32A / i32B
 }
-i32Mod: int32: int32 {
+i32Mod: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: i32A % i32B
 }
-i32And: int32: int32 {
+i32And: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: i32A & i32B
 }
-i32Ior: int32: int32 {
+i32Ior: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: i32A | i32B
 }
-i32Xor: int32: int32 {
+i32Xor: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: i32A ^ i32B
 }
-i32Shl: int32: int32 {
+i32Shl: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: i32A << shift
 }
-i32Shr: int32: int32 {
+i32Shr: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: i32A >> shift
 }
-i32Not: bool: bool {
+i32Not: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: !(i32B)
 }
-i32Ceq: bool: bool {
+i32Ceq: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i32A == i32B
 }
-i32Cne: bool: bool {
+i32Cne: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i32A != i32B
 }
-i32Clt: bool: bool {
+i32Clt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i32A < i32B
 }
-i32Cle: bool: bool {
+i32Cle: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i32A <= i32B
 }
-i32Cgt: bool: bool {
+i32Cgt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i32A > i32B
 }
-i32Cge: bool: bool {
+i32Cge: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i32A >= i32B
 }
-u32A: uint32: uint32 {
+u32A: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: 
 .value: a
 }
-u32B: uint32: uint32 {
+u32B: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: 
 .value: b
 }
-u32Pls: uint32: uint32 {
+u32Pls: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: 
 .value: +u32B
 }
-u32Neg: uint32: uint32 {
+u32Neg: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: 
 .value: -u32B
 }
-u32Cmt: uint32: uint32 {
+u32Cmt: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: 
 .value: ~u32B
 }
-u32Add: uint32: uint32 {
+u32Add: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: 
 .value: u32A + u32B
 }
-u32Sub: uint32: uint32 {
+u32Sub: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: 
 .value: u32A - u32B
 }
-u32Mul: uint32: uint32 {
+u32Mul: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: 
 .value: u32A * u32B
 }
-u32Div: uint32: uint32 {
+u32Div: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: 
 .value: u32A / u32B
 }
-u32Mod: uint32: uint32 {
+u32Mod: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: 
 .value: u32A % u32B
 }
-u32And: uint32: uint32 {
+u32And: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: 
 .value: u32A & u32B
 }
-u32Ior: uint32: uint32 {
+u32Ior: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: 
 .value: u32A | u32B
 }
-u32Xor: uint32: uint32 {
+u32Xor: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: 
 .value: u32A ^ u32B
 }
-u32Shl: uint32: uint32 {
+u32Shl: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: 
 .value: u32A << shift
 }
-u32Shr: uint32: uint32 {
+u32Shr: uint32 {
 .kind: variable(u32)
 .size: 4
 .owner: 
 .value: u32A >> shift
 }
-u32Not: bool: bool {
+u32Not: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: !(u32B)
 }
-u32Ceq: bool: bool {
+u32Ceq: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u32A == u32B
 }
-u32Cne: bool: bool {
+u32Cne: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u32A != u32B
 }
-u32Clt: bool: bool {
+u32Clt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u32A < u32B
 }
-u32Cle: bool: bool {
+u32Cle: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u32A <= u32B
 }
-u32Cgt: bool: bool {
+u32Cgt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u32A > u32B
 }
-u32Cge: bool: bool {
+u32Cge: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u32A >= u32B
 }
-i64A: int64: int64 {
+i64A: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: a
 }
-i64B: int64: int64 {
+i64B: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: b
 }
-i64Pls: int64: int64 {
+i64Pls: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: +i64B
 }
-i64Neg: int64: int64 {
+i64Neg: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: -i64B
 }
-i64Cmt: int64: int64 {
+i64Cmt: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: ~i64B
 }
-i64Add: int64: int64 {
+i64Add: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: i64A + i64B
 }
-i64Sub: int64: int64 {
+i64Sub: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: i64A - i64B
 }
-i64Mul: int64: int64 {
+i64Mul: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: i64A * i64B
 }
-i64Div: int64: int64 {
+i64Div: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: i64A / i64B
 }
-i64Mod: int64: int64 {
+i64Mod: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: i64A % i64B
 }
-i64And: int64: int64 {
+i64And: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: i64A & i64B
 }
-i64Ior: int64: int64 {
+i64Ior: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: i64A | i64B
 }
-i64Xor: int64: int64 {
+i64Xor: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: i64A ^ i64B
 }
-i64Shl: int64: int64 {
+i64Shl: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: i64A << shift
 }
-i64Shr: int64: int64 {
+i64Shr: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: i64A >> shift
 }
-i64Not: bool: bool {
+i64Not: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: !(i64B)
 }
-i64Ceq: bool: bool {
+i64Ceq: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i64A == i64B
 }
-i64Cne: bool: bool {
+i64Cne: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i64A != i64B
 }
-i64Clt: bool: bool {
+i64Clt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i64A < i64B
 }
-i64Cle: bool: bool {
+i64Cle: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i64A <= i64B
 }
-i64Cgt: bool: bool {
+i64Cgt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i64A > i64B
 }
-i64Cge: bool: bool {
+i64Cge: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: i64A >= i64B
 }
-u64A: uint64: uint64 {
+u64A: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: 
 .value: a
 }
-u64B: uint64: uint64 {
+u64B: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: 
 .value: b
 }
-u64Pls: uint64: uint64 {
+u64Pls: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: 
 .value: +u64B
 }
-u64Neg: uint64: uint64 {
+u64Neg: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: 
 .value: -u64B
 }
-u64Cmt: uint64: uint64 {
+u64Cmt: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: 
 .value: ~u64B
 }
-u64Add: uint64: uint64 {
+u64Add: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: 
 .value: u64A + u64B
 }
-u64Sub: uint64: uint64 {
+u64Sub: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: 
 .value: u64A - u64B
 }
-u64Mul: uint64: uint64 {
+u64Mul: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: 
 .value: u64A * u64B
 }
-u64Div: uint64: uint64 {
+u64Div: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: 
 .value: u64A / u64B
 }
-u64Mod: uint64: uint64 {
+u64Mod: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: 
 .value: u64A % u64B
 }
-u64And: uint64: uint64 {
+u64And: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: 
 .value: u64A & u64B
 }
-u64Ior: uint64: uint64 {
+u64Ior: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: 
 .value: u64A | u64B
 }
-u64Xor: uint64: uint64 {
+u64Xor: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: 
 .value: u64A ^ u64B
 }
-u64Shl: uint64: uint64 {
+u64Shl: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: 
 .value: u64A << shift
 }
-u64Shr: uint64: uint64 {
+u64Shr: uint64 {
 .kind: variable(u64)
 .size: 8
 .owner: 
 .value: u64A >> shift
 }
-u64Not: bool: bool {
+u64Not: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: !(u64B)
 }
-u64Ceq: bool: bool {
+u64Ceq: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u64A == u64B
 }
-u64Cne: bool: bool {
+u64Cne: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u64A != u64B
 }
-u64Clt: bool: bool {
+u64Clt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u64A < u64B
 }
-u64Cle: bool: bool {
+u64Cle: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u64A <= u64B
 }
-u64Cgt: bool: bool {
+u64Cgt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u64A > u64B
 }
-u64Cge: bool: bool {
+u64Cge: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: u64A >= u64B
 }
-f32A: float32: float32 {
+f32A: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: a
 }
-f32B: float32: float32 {
+f32B: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: b
 }
-f32Pls: float32: float32 {
+f32Pls: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: +f32B
 }
-f32Neg: float32: float32 {
+f32Neg: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: -f32B
 }
-f32Add: float32: float32 {
+f32Add: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: f32A + f32B
 }
-f32Sub: float32: float32 {
+f32Sub: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: f32A - f32B
 }
-f32Mul: float32: float32 {
+f32Mul: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: f32A * f32B
 }
-f32Div: float32: float32 {
+f32Div: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: f32A / f32B
 }
-f32Mod: float32: float32 {
+f32Mod: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: f32A % f32B
 }
-f32Not: bool: bool {
+f32Not: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: !(f32B)
 }
-f32Ceq: bool: bool {
+f32Ceq: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: f32A == f32B
 }
-f32Cne: bool: bool {
+f32Cne: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: f32A != f32B
 }
-f32Clt: bool: bool {
+f32Clt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: f32A < f32B
 }
-f32Cle: bool: bool {
+f32Cle: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: f32A <= f32B
 }
-f32Cgt: bool: bool {
+f32Cgt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: f32A > f32B
 }
-f32Cge: bool: bool {
+f32Cge: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: f32A >= f32B
 }
-f64A: float64: float64 {
+f64A: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: a
 }
-f64B: float64: float64 {
+f64B: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: b
 }
-f64Pls: float64: float64 {
+f64Pls: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: +f64B
 }
-f64Neg: float64: float64 {
+f64Neg: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: -f64B
 }
-f64Add: float64: float64 {
+f64Add: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: f64A + f64B
 }
-f64Sub: float64: float64 {
+f64Sub: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: f64A - f64B
 }
-f64Mul: float64: float64 {
+f64Mul: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: f64A * f64B
 }
-f64Div: float64: float64 {
+f64Div: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: f64A / f64B
 }
-f64Mod: float64: float64 {
+f64Mod: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: f64A % f64B
 }
-f64Not: bool: bool {
+f64Not: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: !(f64B)
 }
-f64Ceq: bool: bool {
+f64Ceq: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: f64A == f64B
 }
-f64Cne: bool: bool {
+f64Cne: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: f64A != f64B
 }
-f64Clt: bool: bool {
+f64Clt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: f64A < f64B
 }
-f64Cle: bool: bool {
+f64Cle: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: f64A <= f64B
 }
-f64Cgt: bool: bool {
+f64Cgt: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: f64A > f64B
 }
-f64Cge: bool: bool {
+f64Cge: bool {
 .kind: variable(bool)
 .size: 1
 .owner: 
 .value: f64A >= f64B
 }
-t: int32: int32 {
+ptrA: pointer {
+.kind: variable(ref)
+.size: 4
+.owner: 
+.value: null
+}
+ptrB: pointer {
+.kind: variable(ref)
+.size: 4
+.owner: 
+.value: pointer(shift)
+}
+ptrCeq: bool {
+.kind: variable(bool)
+.size: 1
+.owner: 
+.value: ptrA == ptrB
+}
+ptrCne: bool {
+.kind: variable(bool)
+.size: 1
+.owner: 
+.value: ptrA != ptrB
+}
+t: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: 0
 }
-arrFixedNoInit: int64[7]: int64[7] {
+arrFixedNoInit: int64[7] {
 .kind: variable(val)
 .size: 56
 .owner: 
 }
-arrSliceNoInit: int64[]: int64[] {
+arrSliceNoInit: int64[] {
 .kind: variable(arr)
 .size: 8
 .owner: 
 }
-arrPtrNoInit: int64[*]: int64[*] {
+arrPtrNoInit: int64[*] {
 .kind: variable(ref)
 .size: 4
 .owner: 
 }
-arrSliceInitNull: int64[]: int64[] {
+arrSliceInitNull: int64[] {
 .kind: variable(arr)
 .size: 8
 .owner: 
 .value: null
 }
-arrPtrInitNull: int64[*]: int64[*] {
+arrPtrInitNull: int64[*] {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: null
 }
-arrSliceInitFixed: int64[]: int64[] {
+arrSliceInitFixed: int64[] {
 .kind: variable(arr)
 .size: 8
 .owner: 
 .value: arrFixedNoInit
 }
-arrPtrInitFixed: int64[*]: int64[*] {
+arrPtrInitFixed: int64[*] {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: arrFixedNoInit
 }
-arrSliceInitSlice: int64[]: int64[] {
+arrSliceInitSlice: int64[] {
 .kind: variable(arr)
 .size: 8
 .owner: 
 .value: arrSliceInitFixed
 }
-arrPtrInitSlice: int64[*]: int64[*] {
+arrPtrInitSlice: int64[*] {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: arrSliceInitFixed
 }
-arrPtrInitPtr: int64[*]: int64[*] {
+arrPtrInitPtr: int64[*] {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: arrPtrInitFixed
 }
-arrSliceInitString: char[]: char[] {
+arrSliceInitString: char[] {
 .kind: variable(arr)
 .size: 8
 .owner: 
 .value: "string"
 }
-arrPtrInitString: char[*]: char[*] {
+arrPtrInitString: char[*] {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: "string"
 }
-value: int64: int64 {
+value: int64 {
 .kind: static variable(i64)
 .size: 8
 .owner: 
 .value: 42
 }
-valueRef: int64: int64 {
+valueRef: int64 {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: value
 }
-valuePtr: pointer: pointer {
+valuePtr: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: value
 }
-valueVar: variant: variant {
+valueVar: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: value
 }
-fromRef: int64: int64 {
+fromRef: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: valueRef
 }
-fromPtr: int64: int64 {
+fromPtr: int64 {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: valuePtr
 }
-fromVar: int64: int64 {
+fromVar: int64 {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: valueVar
 }
-nullRef: int64: int64 {
+nullRef: int64 {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: null
 }
-nullPtr: pointer: pointer {
+nullPtr: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: null
 }
-nullVar: variant: variant {
+nullVar: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: null
 }
-nullTyp: typename: typename {
+nullTyp: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: null
 }
-nullFun: function: function {
+nullFun: function {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: null
 }
-nullObj: object: object {
+nullObj: object {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: null
 }
-typePtr: pointer: pointer {
+typePtr: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: int64
 }
-typeVar: variant: variant {
+typeVar: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: int64
 }
-typeTyp: typename: typename {
+typeTyp: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: int64
 }
-local: int64: int64 {
+local: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: value
 }
-copyVal: int64: int64 {
+copyVal: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: local
 }
-copyRef: int64: int64 {
+copyRef: int64 {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: valueRef
 }
-copyPtr: pointer: pointer {
+copyPtr: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: valuePtr
 }
-copyVar: variant: variant {
+copyVar: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: valueVar
 }
-copyTyp: typename: typename {
+copyTyp: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: typeTyp
 }
-ptrVoid: pointer: pointer {
+ptrVoid: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: void
 }
-ptrBool: pointer: pointer {
+ptrBool: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: bool
 }
-ptrChar: pointer: pointer {
+ptrChar: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: char
 }
-ptrInt8: pointer: pointer {
+ptrInt8: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: int8
 }
-ptrInt16: pointer: pointer {
+ptrInt16: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: int16
 }
-ptrInt32: pointer: pointer {
+ptrInt32: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: int32
 }
-ptrInt64: pointer: pointer {
+ptrInt64: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: int64
 }
-ptrUint8: pointer: pointer {
+ptrUint8: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: uint8
 }
-ptrUint16: pointer: pointer {
+ptrUint16: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: uint16
 }
-ptrUint32: pointer: pointer {
+ptrUint32: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: uint32
 }
-ptrUint64: pointer: pointer {
+ptrUint64: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: uint64
 }
-ptrFloat32: pointer: pointer {
+ptrFloat32: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: float32
 }
-ptrFloat64: pointer: pointer {
+ptrFloat64: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: float64
 }
-ptrTypename: pointer: pointer {
+ptrTypename: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: typename
 }
-ptrFunction: pointer: pointer {
+ptrFunction: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: function
 }
-ptrPointer: pointer: pointer {
+ptrPointer: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: pointer
 }
-ptrVariant: pointer: pointer {
+ptrVariant: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: variant
 }
-ptrObject: pointer: pointer {
+ptrObject: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: object
 }
-varVoid: variant: variant {
+varVoid: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: void
 }
-varBool: variant: variant {
+varBool: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: bool
 }
-varChar: variant: variant {
+varChar: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: char
 }
-varInt8: variant: variant {
+varInt8: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: int8
 }
-varInt16: variant: variant {
+varInt16: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: int16
 }
-varInt32: variant: variant {
+varInt32: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: int32
 }
-varInt64: variant: variant {
+varInt64: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: int64
 }
-varUint8: variant: variant {
+varUint8: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: uint8
 }
-varUint16: variant: variant {
+varUint16: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: uint16
 }
-varUint32: variant: variant {
+varUint32: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: uint32
 }
-varUint64: variant: variant {
+varUint64: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: uint64
 }
-varFloat32: variant: variant {
+varFloat32: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: float32
 }
-varFloat64: variant: variant {
+varFloat64: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: float64
 }
-varTypename: variant: variant {
+varTypename: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: typename
 }
-varFunction: variant: variant {
+varFunction: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: function
 }
-varPointer: variant: variant {
+varPointer: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: pointer
 }
-varVariant: variant: variant {
+varVariant: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: variant
 }
-varObject: variant: variant {
+varObject: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: object
 }
-typVoid: typename: typename {
+typVoid: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: void
 }
-typBool: typename: typename {
+typBool: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: bool
 }
-typChar: typename: typename {
+typChar: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: char
 }
-typInt8: typename: typename {
+typInt8: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: int8
 }
-typInt16: typename: typename {
+typInt16: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: int16
 }
-typInt32: typename: typename {
+typInt32: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: int32
 }
-typInt64: typename: typename {
+typInt64: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: int64
 }
-typUint8: typename: typename {
+typUint8: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: uint8
 }
-typUint16: typename: typename {
+typUint16: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: uint16
 }
-typUint32: typename: typename {
+typUint32: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: uint32
 }
-typUint64: typename: typename {
+typUint64: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: uint64
 }
-typFloat32: typename: typename {
+typFloat32: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: float32
 }
-typFloat64: typename: typename {
+typFloat64: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: float64
 }
-typTypename: typename: typename {
+typTypename: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: typename
 }
-typFunction: typename: typename {
+typFunction: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: function
 }
-typPointer: typename: typename {
+typPointer: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: pointer
 }
-typVariant: typename: typename {
+typVariant: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: variant
 }
-typObject: typename: typename {
+typObject: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: object
 }
-valueOfPtr: pointer: pointer {
+valueOfPtr: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: pointer(value)
 }
-valueOfVar: variant: variant {
+valueOfVar: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: variant(value)
 }
-valueOfTyp: typename: typename {
+valueOfTyp: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: typename(value)
 }
-typeOfValue: typename: typename {
+typeOfValue: typename {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: typename(value)
 }
-copyPtrFloat64: variant: variant {
+copyPtrFloat64: variant {
 .kind: variable(var)
 .size: 8
 .owner: 
 .value: ptrFloat64
 }
-copyVarFloat64: pointer: pointer {
+copyVarFloat64: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: varFloat64
 }
-localNoInit: int64: int64 {
+localNoInit: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 }
-globalNoInit: int64: int64 {
+globalNoInit: int64 {
 .kind: static variable(i64)
 .size: 8
 .owner: 
 }
-localInitValue: int64: int64 {
+localInitValue: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: 42
 }
-globalInitValue: int64: int64 {
+globalInitValue: int64 {
 .kind: static variable(i64)
 .size: 8
 .owner: 
 .value: 1024
 }
-localInitLocal: int64: int64 {
+localInitLocal: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: localInitValue
 }
-globalInitLocal: int64: int64 {
+globalInitLocal: int64 {
 .kind: static variable(i64)
 .size: 8
 .owner: 
 .value: localInitValue
 }
-localInitGlobal: int64: int64 {
+localInitGlobal: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: globalInitValue
 }
-globalInitGlobal: int64: int64 {
+globalInitGlobal: int64 {
 .kind: static variable(i64)
 .size: 8
 .owner: 
 .value: globalInitValue
 }
-pi64: float64: float64 {
+pi64: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: 3.141593
 }
-e64: float64: float64 {
+e64: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: 2.718282
 }
-pi32: float32: float32 {
+pi32: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: pi64
 }
-e32: float32: float32 {
+e32: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
@@ -3973,199 +3997,199 @@ rgb565(r: int32, g: int32, b: int32): int32: function {
 .param b: int32 (@+4->i32)
 .value: r << 8 & 63488 | g << 3 & 2016 | b >> 3 & 31
 }
-r_comp: int32: int32 {
+r_comp: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: 14 << 3
 }
-g_comp: int32: int32 {
+g_comp: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: 63 << 2
 }
-b_comp: int32: int32 {
+b_comp: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: 31 << 3
 }
-r5g6b5: int32: int32 {
+r5g6b5: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: rgb565(r_comp, g_comp, b_comp)
 }
-r8g8b8: int32: int32 {
+r8g8b8: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: rgb888(r_comp, g_comp, b_comp)
 }
-zextR5: int32: int32 {
+zextR5: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: uint32.zxt(r5g6b5, 11, 5)
 }
-zextG6: int32: int32 {
+zextG6: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: uint32.zxt(r5g6b5, 5, 6)
 }
-zextB5: int32: int32 {
+zextB5: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: uint32.zxt(r5g6b5, 0, 5)
 }
-sextR5: int32: int32 {
+sextR5: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: uint32.sxt(r5g6b5, 11, 5)
 }
-sextG6: int32: int32 {
+sextG6: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: uint32.sxt(r5g6b5, 5, 6)
 }
-sextB5: int32: int32 {
+sextB5: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: uint32.sxt(r5g6b5, 0, 5)
 }
-zextR8: int32: int32 {
+zextR8: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: uint32.zxt(r8g8b8, 16, 8)
 }
-zextG8: int32: int32 {
+zextG8: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: uint32.zxt(r8g8b8, 8, 8)
 }
-zextB8: int32: int32 {
+zextB8: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: uint32.zxt(r8g8b8, 0, 8)
 }
-sextR8: int32: int32 {
+sextR8: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: uint32.sxt(r8g8b8, 16, 8)
 }
-sextG8: int32: int32 {
+sextG8: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: uint32.sxt(r8g8b8, 8, 8)
 }
-sextB8: int32: int32 {
+sextB8: int32 {
 .kind: variable(i32)
 .size: 4
 .owner: 
 .value: uint32.sxt(r8g8b8, 0, 8)
 }
-sinF64: float64: float64 {
+sinF64: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: float64.sin(pi64 / (2))
 }
-cosF64: float64: float64 {
+cosF64: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: float64.cos(pi64 / (2))
 }
-tanF64: float64: float64 {
+tanF64: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: float64.tan(pi64 / (4))
 }
-logF64: float64: float64 {
+logF64: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: float64.log(e64 * e64 * e64)
 }
-expF64: float64: float64 {
+expF64: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: float64.exp(1.000000)
 }
-powF64: float64: float64 {
+powF64: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: float64.pow(pi64 * pi64, 0.500000)
 }
-sqrtF64: float64: float64 {
+sqrtF64: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: float64.sqrt(pi64 * pi64)
 }
-atanF64: float64: float64 {
+atanF64: float64 {
 .kind: variable(f64)
 .size: 8
 .owner: 
 .value: float64.atan2(pi64, 1.000000)
 }
-sinF32: float32: float32 {
+sinF32: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: float32.sin(pi32 / (2))
 }
-cosF32: float32: float32 {
+cosF32: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: float32.cos(pi32 / (2))
 }
-tanF32: float32: float32 {
+tanF32: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: float32.tan(pi32 / (4))
 }
-logF32: float32: float32 {
+logF32: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: float32.log(e32 * e32 * e32)
 }
-expF32: float32: float32 {
+expF32: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: float32.exp(1.000000)
 }
-powF32: float32: float32 {
+powF32: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: float32.pow(pi32 * pi32, 0.500000)
 }
-sqrtF32: float32: float32 {
+sqrtF32: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
 .value: float32.sqrt(pi32 * pi32)
 }
-atanF32: float32: float32 {
+atanF32: float32 {
 .kind: variable(f32)
 .size: 4
 .owner: 
@@ -4187,37 +4211,37 @@ malloc(size: int32): pointer: function {
 .param size: int32 (@+4->i32)
 .value: pointer.alloc(null, size)
 }
-p1: pointer: pointer {
+p1: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: malloc(1024)
 }
-p2: pointer: pointer {
+p2: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: malloc(80)
 }
-p3: pointer: pointer {
+p3: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: malloc(160)
 }
-p4: pointer: pointer {
+p4: pointer {
 .kind: variable(ref)
 .size: 4
 .owner: 
 .value: malloc(820)
 }
-val1: int64: int64 {
+val1: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
 .value: 42
 }
-val2: int64: int64 {
+val2: int64 {
 .kind: variable(i64)
 .size: 8
 .owner: 
@@ -4225,7 +4249,7 @@ val2: int64: int64 {
 }
 .main(): void: function {
 .kind: static function
-.size: 5224
+.size: 5256
 .owner: 
 .field typename: typename (size: 136 @8 -> static const typename(ref))
 .field void: typename (size: 0 @160 -> static const typename(void))
@@ -4531,157 +4555,161 @@ val2: int64: int64 {
 .field f64Cle: bool (size: 1 @1160 -> variable(bool))
 .field f64Cgt: bool (size: 1 @1164 -> variable(bool))
 .field f64Cge: bool (size: 1 @1168 -> variable(bool))
-.field t: int32 (size: 4 @1172 -> variable(i32))
-.field arrFixedNoInit: int64[7] (size: 56 @1228 -> variable(val))
-.field arrSliceNoInit: int64[] (size: 8 @1236 -> variable(arr))
-.field arrPtrNoInit: int64[*] (size: 4 @1240 -> variable(ref))
-.field arrSliceInitNull: int64[] (size: 8 @1248 -> variable(arr))
-.field arrPtrInitNull: int64[*] (size: 4 @1252 -> variable(ref))
-.field arrSliceInitFixed: int64[] (size: 8 @1260 -> variable(arr))
-.field arrPtrInitFixed: int64[*] (size: 4 @1264 -> variable(ref))
-.field arrSliceInitSlice: int64[] (size: 8 @1272 -> variable(arr))
-.field arrPtrInitSlice: int64[*] (size: 4 @1276 -> variable(ref))
-.field arrPtrInitPtr: int64[*] (size: 4 @1280 -> variable(ref))
-.field arrSliceInitString: char[] (size: 8 @1288 -> variable(arr))
-.field arrPtrInitString: char[*] (size: 4 @1292 -> variable(ref))
-.field value: int64 (size: 8 @118208 -> static variable(i64))
-.field valueRef: int64 (size: 4 @1296 -> variable(ref))
-.field valuePtr: pointer (size: 4 @1300 -> variable(ref))
-.field valueVar: variant (size: 8 @1308 -> variable(var))
-.field fromRef: int64 (size: 8 @1316 -> variable(i64))
-.field fromPtr: int64 (size: 4 @1320 -> variable(ref))
-.field fromVar: int64 (size: 4 @1324 -> variable(ref))
-.field nullRef: int64 (size: 4 @1328 -> variable(ref))
-.field nullPtr: pointer (size: 4 @1332 -> variable(ref))
-.field nullVar: variant (size: 8 @1340 -> variable(var))
-.field nullTyp: typename (size: 4 @1344 -> variable(ref))
-.field nullFun: function (size: 4 @1348 -> variable(ref))
-.field nullObj: object (size: 4 @1352 -> variable(ref))
-.field typePtr: pointer (size: 4 @1356 -> variable(ref))
-.field typeVar: variant (size: 8 @1364 -> variable(var))
-.field typeTyp: typename (size: 4 @1368 -> variable(ref))
-.field local: int64 (size: 8 @1376 -> variable(i64))
-.field copyVal: int64 (size: 8 @1384 -> variable(i64))
-.field copyRef: int64 (size: 4 @1388 -> variable(ref))
-.field copyPtr: pointer (size: 4 @1392 -> variable(ref))
-.field copyVar: variant (size: 8 @1400 -> variable(var))
-.field copyTyp: typename (size: 4 @1404 -> variable(ref))
-.field ptrVoid: pointer (size: 4 @1408 -> variable(ref))
-.field ptrBool: pointer (size: 4 @1412 -> variable(ref))
-.field ptrChar: pointer (size: 4 @1416 -> variable(ref))
-.field ptrInt8: pointer (size: 4 @1420 -> variable(ref))
-.field ptrInt16: pointer (size: 4 @1424 -> variable(ref))
-.field ptrInt32: pointer (size: 4 @1428 -> variable(ref))
-.field ptrInt64: pointer (size: 4 @1432 -> variable(ref))
-.field ptrUint8: pointer (size: 4 @1436 -> variable(ref))
-.field ptrUint16: pointer (size: 4 @1440 -> variable(ref))
-.field ptrUint32: pointer (size: 4 @1444 -> variable(ref))
-.field ptrUint64: pointer (size: 4 @1448 -> variable(ref))
-.field ptrFloat32: pointer (size: 4 @1452 -> variable(ref))
-.field ptrFloat64: pointer (size: 4 @1456 -> variable(ref))
-.field ptrTypename: pointer (size: 4 @1460 -> variable(ref))
-.field ptrFunction: pointer (size: 4 @1464 -> variable(ref))
-.field ptrPointer: pointer (size: 4 @1468 -> variable(ref))
-.field ptrVariant: pointer (size: 4 @1472 -> variable(ref))
-.field ptrObject: pointer (size: 4 @1476 -> variable(ref))
-.field varVoid: variant (size: 8 @1484 -> variable(var))
-.field varBool: variant (size: 8 @1492 -> variable(var))
-.field varChar: variant (size: 8 @1500 -> variable(var))
-.field varInt8: variant (size: 8 @1508 -> variable(var))
-.field varInt16: variant (size: 8 @1516 -> variable(var))
-.field varInt32: variant (size: 8 @1524 -> variable(var))
-.field varInt64: variant (size: 8 @1532 -> variable(var))
-.field varUint8: variant (size: 8 @1540 -> variable(var))
-.field varUint16: variant (size: 8 @1548 -> variable(var))
-.field varUint32: variant (size: 8 @1556 -> variable(var))
-.field varUint64: variant (size: 8 @1564 -> variable(var))
-.field varFloat32: variant (size: 8 @1572 -> variable(var))
-.field varFloat64: variant (size: 8 @1580 -> variable(var))
-.field varTypename: variant (size: 8 @1588 -> variable(var))
-.field varFunction: variant (size: 8 @1596 -> variable(var))
-.field varPointer: variant (size: 8 @1604 -> variable(var))
-.field varVariant: variant (size: 8 @1612 -> variable(var))
-.field varObject: variant (size: 8 @1620 -> variable(var))
-.field typVoid: typename (size: 4 @1624 -> variable(ref))
-.field typBool: typename (size: 4 @1628 -> variable(ref))
-.field typChar: typename (size: 4 @1632 -> variable(ref))
-.field typInt8: typename (size: 4 @1636 -> variable(ref))
-.field typInt16: typename (size: 4 @1640 -> variable(ref))
-.field typInt32: typename (size: 4 @1644 -> variable(ref))
-.field typInt64: typename (size: 4 @1648 -> variable(ref))
-.field typUint8: typename (size: 4 @1652 -> variable(ref))
-.field typUint16: typename (size: 4 @1656 -> variable(ref))
-.field typUint32: typename (size: 4 @1660 -> variable(ref))
-.field typUint64: typename (size: 4 @1664 -> variable(ref))
-.field typFloat32: typename (size: 4 @1668 -> variable(ref))
-.field typFloat64: typename (size: 4 @1672 -> variable(ref))
-.field typTypename: typename (size: 4 @1676 -> variable(ref))
-.field typFunction: typename (size: 4 @1680 -> variable(ref))
-.field typPointer: typename (size: 4 @1684 -> variable(ref))
-.field typVariant: typename (size: 4 @1688 -> variable(ref))
-.field typObject: typename (size: 4 @1692 -> variable(ref))
-.field valueOfPtr: pointer (size: 4 @1696 -> variable(ref))
-.field valueOfVar: variant (size: 8 @1704 -> variable(var))
-.field valueOfTyp: typename (size: 4 @1708 -> variable(ref))
-.field typeOfValue: typename (size: 4 @1712 -> variable(ref))
-.field copyPtrFloat64: variant (size: 8 @1720 -> variable(var))
-.field copyVarFloat64: pointer (size: 4 @1724 -> variable(ref))
-.field localNoInit: int64 (size: 8 @1732 -> variable(i64))
-.field globalNoInit: int64 (size: 8 @118216 -> static variable(i64))
-.field localInitValue: int64 (size: 8 @1740 -> variable(i64))
-.field globalInitValue: int64 (size: 8 @118224 -> static variable(i64))
-.field localInitLocal: int64 (size: 8 @1748 -> variable(i64))
-.field globalInitLocal: int64 (size: 8 @118232 -> static variable(i64))
-.field localInitGlobal: int64 (size: 8 @1756 -> variable(i64))
-.field globalInitGlobal: int64 (size: 8 @118240 -> static variable(i64))
-.field pi64: float64 (size: 8 @1764 -> variable(f64))
-.field e64: float64 (size: 8 @1772 -> variable(f64))
-.field pi32: float32 (size: 4 @1776 -> variable(f32))
-.field e32: float32 (size: 4 @1780 -> variable(f32))
+.field ptrA: pointer (size: 4 @1172 -> variable(ref))
+.field ptrB: pointer (size: 4 @1176 -> variable(ref))
+.field ptrCeq: bool (size: 1 @1180 -> variable(bool))
+.field ptrCne: bool (size: 1 @1184 -> variable(bool))
+.field t: int32 (size: 4 @1188 -> variable(i32))
+.field arrFixedNoInit: int64[7] (size: 56 @1244 -> variable(val))
+.field arrSliceNoInit: int64[] (size: 8 @1252 -> variable(arr))
+.field arrPtrNoInit: int64[*] (size: 4 @1256 -> variable(ref))
+.field arrSliceInitNull: int64[] (size: 8 @1264 -> variable(arr))
+.field arrPtrInitNull: int64[*] (size: 4 @1268 -> variable(ref))
+.field arrSliceInitFixed: int64[] (size: 8 @1276 -> variable(arr))
+.field arrPtrInitFixed: int64[*] (size: 4 @1280 -> variable(ref))
+.field arrSliceInitSlice: int64[] (size: 8 @1288 -> variable(arr))
+.field arrPtrInitSlice: int64[*] (size: 4 @1292 -> variable(ref))
+.field arrPtrInitPtr: int64[*] (size: 4 @1296 -> variable(ref))
+.field arrSliceInitString: char[] (size: 8 @1304 -> variable(arr))
+.field arrPtrInitString: char[*] (size: 4 @1308 -> variable(ref))
+.field value: int64 (size: 8 @118776 -> static variable(i64))
+.field valueRef: int64 (size: 4 @1312 -> variable(ref))
+.field valuePtr: pointer (size: 4 @1316 -> variable(ref))
+.field valueVar: variant (size: 8 @1324 -> variable(var))
+.field fromRef: int64 (size: 8 @1332 -> variable(i64))
+.field fromPtr: int64 (size: 4 @1336 -> variable(ref))
+.field fromVar: int64 (size: 4 @1340 -> variable(ref))
+.field nullRef: int64 (size: 4 @1344 -> variable(ref))
+.field nullPtr: pointer (size: 4 @1348 -> variable(ref))
+.field nullVar: variant (size: 8 @1356 -> variable(var))
+.field nullTyp: typename (size: 4 @1360 -> variable(ref))
+.field nullFun: function (size: 4 @1364 -> variable(ref))
+.field nullObj: object (size: 4 @1368 -> variable(ref))
+.field typePtr: pointer (size: 4 @1372 -> variable(ref))
+.field typeVar: variant (size: 8 @1380 -> variable(var))
+.field typeTyp: typename (size: 4 @1384 -> variable(ref))
+.field local: int64 (size: 8 @1392 -> variable(i64))
+.field copyVal: int64 (size: 8 @1400 -> variable(i64))
+.field copyRef: int64 (size: 4 @1404 -> variable(ref))
+.field copyPtr: pointer (size: 4 @1408 -> variable(ref))
+.field copyVar: variant (size: 8 @1416 -> variable(var))
+.field copyTyp: typename (size: 4 @1420 -> variable(ref))
+.field ptrVoid: pointer (size: 4 @1424 -> variable(ref))
+.field ptrBool: pointer (size: 4 @1428 -> variable(ref))
+.field ptrChar: pointer (size: 4 @1432 -> variable(ref))
+.field ptrInt8: pointer (size: 4 @1436 -> variable(ref))
+.field ptrInt16: pointer (size: 4 @1440 -> variable(ref))
+.field ptrInt32: pointer (size: 4 @1444 -> variable(ref))
+.field ptrInt64: pointer (size: 4 @1448 -> variable(ref))
+.field ptrUint8: pointer (size: 4 @1452 -> variable(ref))
+.field ptrUint16: pointer (size: 4 @1456 -> variable(ref))
+.field ptrUint32: pointer (size: 4 @1460 -> variable(ref))
+.field ptrUint64: pointer (size: 4 @1464 -> variable(ref))
+.field ptrFloat32: pointer (size: 4 @1468 -> variable(ref))
+.field ptrFloat64: pointer (size: 4 @1472 -> variable(ref))
+.field ptrTypename: pointer (size: 4 @1476 -> variable(ref))
+.field ptrFunction: pointer (size: 4 @1480 -> variable(ref))
+.field ptrPointer: pointer (size: 4 @1484 -> variable(ref))
+.field ptrVariant: pointer (size: 4 @1488 -> variable(ref))
+.field ptrObject: pointer (size: 4 @1492 -> variable(ref))
+.field varVoid: variant (size: 8 @1500 -> variable(var))
+.field varBool: variant (size: 8 @1508 -> variable(var))
+.field varChar: variant (size: 8 @1516 -> variable(var))
+.field varInt8: variant (size: 8 @1524 -> variable(var))
+.field varInt16: variant (size: 8 @1532 -> variable(var))
+.field varInt32: variant (size: 8 @1540 -> variable(var))
+.field varInt64: variant (size: 8 @1548 -> variable(var))
+.field varUint8: variant (size: 8 @1556 -> variable(var))
+.field varUint16: variant (size: 8 @1564 -> variable(var))
+.field varUint32: variant (size: 8 @1572 -> variable(var))
+.field varUint64: variant (size: 8 @1580 -> variable(var))
+.field varFloat32: variant (size: 8 @1588 -> variable(var))
+.field varFloat64: variant (size: 8 @1596 -> variable(var))
+.field varTypename: variant (size: 8 @1604 -> variable(var))
+.field varFunction: variant (size: 8 @1612 -> variable(var))
+.field varPointer: variant (size: 8 @1620 -> variable(var))
+.field varVariant: variant (size: 8 @1628 -> variable(var))
+.field varObject: variant (size: 8 @1636 -> variable(var))
+.field typVoid: typename (size: 4 @1640 -> variable(ref))
+.field typBool: typename (size: 4 @1644 -> variable(ref))
+.field typChar: typename (size: 4 @1648 -> variable(ref))
+.field typInt8: typename (size: 4 @1652 -> variable(ref))
+.field typInt16: typename (size: 4 @1656 -> variable(ref))
+.field typInt32: typename (size: 4 @1660 -> variable(ref))
+.field typInt64: typename (size: 4 @1664 -> variable(ref))
+.field typUint8: typename (size: 4 @1668 -> variable(ref))
+.field typUint16: typename (size: 4 @1672 -> variable(ref))
+.field typUint32: typename (size: 4 @1676 -> variable(ref))
+.field typUint64: typename (size: 4 @1680 -> variable(ref))
+.field typFloat32: typename (size: 4 @1684 -> variable(ref))
+.field typFloat64: typename (size: 4 @1688 -> variable(ref))
+.field typTypename: typename (size: 4 @1692 -> variable(ref))
+.field typFunction: typename (size: 4 @1696 -> variable(ref))
+.field typPointer: typename (size: 4 @1700 -> variable(ref))
+.field typVariant: typename (size: 4 @1704 -> variable(ref))
+.field typObject: typename (size: 4 @1708 -> variable(ref))
+.field valueOfPtr: pointer (size: 4 @1712 -> variable(ref))
+.field valueOfVar: variant (size: 8 @1720 -> variable(var))
+.field valueOfTyp: typename (size: 4 @1724 -> variable(ref))
+.field typeOfValue: typename (size: 4 @1728 -> variable(ref))
+.field copyPtrFloat64: variant (size: 8 @1736 -> variable(var))
+.field copyVarFloat64: pointer (size: 4 @1740 -> variable(ref))
+.field localNoInit: int64 (size: 8 @1748 -> variable(i64))
+.field globalNoInit: int64 (size: 8 @118784 -> static variable(i64))
+.field localInitValue: int64 (size: 8 @1756 -> variable(i64))
+.field globalInitValue: int64 (size: 8 @118792 -> static variable(i64))
+.field localInitLocal: int64 (size: 8 @1764 -> variable(i64))
+.field globalInitLocal: int64 (size: 8 @118800 -> static variable(i64))
+.field localInitGlobal: int64 (size: 8 @1772 -> variable(i64))
+.field globalInitGlobal: int64 (size: 8 @118808 -> static variable(i64))
+.field pi64: float64 (size: 8 @1780 -> variable(f64))
+.field e64: float64 (size: 8 @1788 -> variable(f64))
+.field pi32: float32 (size: 4 @1792 -> variable(f32))
+.field e32: float32 (size: 4 @1796 -> variable(f32))
 .field rgb888: function (size: 0 @0 -> inline)
 .field rgb565: function (size: 0 @0 -> inline)
-.field r_comp: int32 (size: 4 @1784 -> variable(i32))
-.field g_comp: int32 (size: 4 @1788 -> variable(i32))
-.field b_comp: int32 (size: 4 @1792 -> variable(i32))
-.field r5g6b5: int32 (size: 4 @1796 -> variable(i32))
-.field r8g8b8: int32 (size: 4 @1800 -> variable(i32))
-.field zextR5: int32 (size: 4 @1804 -> variable(i32))
-.field zextG6: int32 (size: 4 @1808 -> variable(i32))
-.field zextB5: int32 (size: 4 @1812 -> variable(i32))
-.field sextR5: int32 (size: 4 @1816 -> variable(i32))
-.field sextG6: int32 (size: 4 @1820 -> variable(i32))
-.field sextB5: int32 (size: 4 @1824 -> variable(i32))
-.field zextR8: int32 (size: 4 @1828 -> variable(i32))
-.field zextG8: int32 (size: 4 @1832 -> variable(i32))
-.field zextB8: int32 (size: 4 @1836 -> variable(i32))
-.field sextR8: int32 (size: 4 @1840 -> variable(i32))
-.field sextG8: int32 (size: 4 @1844 -> variable(i32))
-.field sextB8: int32 (size: 4 @1848 -> variable(i32))
-.field sinF64: float64 (size: 8 @1856 -> variable(f64))
-.field cosF64: float64 (size: 8 @1864 -> variable(f64))
-.field tanF64: float64 (size: 8 @1872 -> variable(f64))
-.field logF64: float64 (size: 8 @1880 -> variable(f64))
-.field expF64: float64 (size: 8 @1888 -> variable(f64))
-.field powF64: float64 (size: 8 @1896 -> variable(f64))
-.field sqrtF64: float64 (size: 8 @1904 -> variable(f64))
-.field atanF64: float64 (size: 8 @1912 -> variable(f64))
-.field sinF32: float32 (size: 4 @1916 -> variable(f32))
-.field cosF32: float32 (size: 4 @1920 -> variable(f32))
-.field tanF32: float32 (size: 4 @1924 -> variable(f32))
-.field logF32: float32 (size: 4 @1928 -> variable(f32))
-.field expF32: float32 (size: 4 @1932 -> variable(f32))
-.field powF32: float32 (size: 4 @1936 -> variable(f32))
-.field sqrtF32: float32 (size: 4 @1940 -> variable(f32))
-.field atanF32: float32 (size: 4 @1944 -> variable(f32))
+.field r_comp: int32 (size: 4 @1800 -> variable(i32))
+.field g_comp: int32 (size: 4 @1804 -> variable(i32))
+.field b_comp: int32 (size: 4 @1808 -> variable(i32))
+.field r5g6b5: int32 (size: 4 @1812 -> variable(i32))
+.field r8g8b8: int32 (size: 4 @1816 -> variable(i32))
+.field zextR5: int32 (size: 4 @1820 -> variable(i32))
+.field zextG6: int32 (size: 4 @1824 -> variable(i32))
+.field zextB5: int32 (size: 4 @1828 -> variable(i32))
+.field sextR5: int32 (size: 4 @1832 -> variable(i32))
+.field sextG6: int32 (size: 4 @1836 -> variable(i32))
+.field sextB5: int32 (size: 4 @1840 -> variable(i32))
+.field zextR8: int32 (size: 4 @1844 -> variable(i32))
+.field zextG8: int32 (size: 4 @1848 -> variable(i32))
+.field zextB8: int32 (size: 4 @1852 -> variable(i32))
+.field sextR8: int32 (size: 4 @1856 -> variable(i32))
+.field sextG8: int32 (size: 4 @1860 -> variable(i32))
+.field sextB8: int32 (size: 4 @1864 -> variable(i32))
+.field sinF64: float64 (size: 8 @1872 -> variable(f64))
+.field cosF64: float64 (size: 8 @1880 -> variable(f64))
+.field tanF64: float64 (size: 8 @1888 -> variable(f64))
+.field logF64: float64 (size: 8 @1896 -> variable(f64))
+.field expF64: float64 (size: 8 @1904 -> variable(f64))
+.field powF64: float64 (size: 8 @1912 -> variable(f64))
+.field sqrtF64: float64 (size: 8 @1920 -> variable(f64))
+.field atanF64: float64 (size: 8 @1928 -> variable(f64))
+.field sinF32: float32 (size: 4 @1932 -> variable(f32))
+.field cosF32: float32 (size: 4 @1936 -> variable(f32))
+.field tanF32: float32 (size: 4 @1940 -> variable(f32))
+.field logF32: float32 (size: 4 @1944 -> variable(f32))
+.field expF32: float32 (size: 4 @1948 -> variable(f32))
+.field powF32: float32 (size: 4 @1952 -> variable(f32))
+.field sqrtF32: float32 (size: 4 @1956 -> variable(f32))
+.field atanF32: float32 (size: 4 @1960 -> variable(f32))
 .field free: function (size: 0 @0 -> inline)
 .field malloc: function (size: 0 @0 -> inline)
-.field p1: pointer (size: 4 @1948 -> variable(ref))
-.field p2: pointer (size: 4 @1952 -> variable(ref))
-.field p3: pointer (size: 4 @1956 -> variable(ref))
-.field p4: pointer (size: 4 @1960 -> variable(ref))
-.field val1: int64 (size: 8 @1968 -> variable(i64))
-.field val2: int64 (size: 8 @1976 -> variable(i64))
-.field .main: function (size: 5224 @118248 -> static function)
+.field p1: pointer (size: 4 @1964 -> variable(ref))
+.field p2: pointer (size: 4 @1968 -> variable(ref))
+.field p3: pointer (size: 4 @1972 -> variable(ref))
+.field p4: pointer (size: 4 @1976 -> variable(ref))
+.field val1: int64 (size: 8 @1984 -> variable(i64))
+.field val2: int64 (size: 8 @1992 -> variable(i64))
+.field .main: function (size: 5256 @118816 -> static function)
 .param .result: void (@+0->variable)
 .value: {
 	{
@@ -5010,6 +5038,10 @@ val2: int64: int64 {
 		f64Cle: bool := f64A <= f64B;
 		f64Cgt: bool := f64A > f64B;
 		f64Cge: bool := f64A >= f64B;
+		ptrA: pointer := null;
+		ptrB: pointer := pointer(shift);
+		ptrCeq: bool := ptrA == ptrB;
+		ptrCne: bool := ptrA != ptrB;
 		static if (0 == 0) {
 			raise(debug, "0 == 0", null, 1);
 		}
@@ -5049,7 +5081,7 @@ val2: int64: int64 {
 				raise(debug, "t == 0", variant(t), 12);
 			}
 		}
-		static if (!(typename(int64))) {
+		static if (typename(int64) == null) {
 			integer: typename := int32;
 		}
 		arrFixedNoInit: int64[7];
@@ -5064,7 +5096,7 @@ val2: int64: int64 {
 		arrPtrInitPtr: int64[*] := arrPtrInitFixed;
 		arrSliceInitString: char[] := "string";
 		arrPtrInitString: char[*] := "string";
-		static if (!(typename(int64))) {
+		static if (typename(int64) == null) {
 			integer: typename := int32;
 		}
 		static value: int64 := 42;
@@ -5149,7 +5181,7 @@ val2: int64: int64 {
 		typeOfValue: typename := typename(value);
 		copyPtrFloat64: variant := ptrFloat64;
 		copyVarFloat64: pointer := varFloat64;
-		static if (!(typename(int64))) {
+		static if (typename(int64) == null) {
 			integer: typename := int32;
 		}
 		localNoInit: int64;
@@ -5221,7 +5253,7 @@ val2: int64: int64 {
 		raise(1, "val2", variant(val2), 0);
 	}
 }
-.instructions: [5224 bytes @.01cde8]
+.instructions: [5256 bytes @.01d020]
 	extras/Tests/lang.inline.ci:17: (10 bytes): ma: int32 := 3
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
@@ -6602,14 +6634,31 @@ val2: int64: int64 {
 	23                         load.m64
 	88                         clt.f64
 	0a                         not.b32
+	extras/Tests/lang.useOperator.ci:283: (5 bytes): ptrA: pointer := null
+	1f 00 00 00 00             load.ref .000000 ;null
+	extras/Tests/lang.useOperator.ci:284: (4 bytes): ptrB: pointer := pointer(shift)
+	11 68 04 00                load.sp(+1128)
+	extras/Tests/lang.useOperator.ci:299: (11 bytes): ptrCeq: bool := ptrA == ptrB
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	57                         ceq.i32
+	extras/Tests/lang.useOperator.ci:300: (12 bytes): ptrCne: bool := ptrA != ptrB
+	11 08 00 00                load.sp(+8)
+	22                         load.m32
+	11 08 00 00                load.sp(+8)
+	22                         load.m32
+	57                         ceq.i32
+	0a                         not.b32
 	extras/Tests/lang.statementIf.ci:4: (49 bytes): raise(debug, "0 == 0", null, 1);
 	1b 04 00 00 00             load.c32 4
 	1f ee a6 00 00             load.ref .00a6ee ;"extras/Tests/lang.statementIf.ci"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
-	1f 00 00 00 00             load.ref .000000 ;null: pointer
-	1f 38 64 01 00             load.ref .016438 ;"0 == 0"
+	1f 00 00 00 00             load.ref .000000 ;null
+	1f 70 66 01 00             load.ref .016670 ;"0 == 0"
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -6620,8 +6669,8 @@ val2: int64: int64 {
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
-	1f 00 00 00 00             load.ref .000000 ;null: pointer
-	1f 38 64 01 00             load.ref .016438 ;"0 == 0"
+	1f 00 00 00 00             load.ref .000000 ;null
+	1f 70 66 01 00             load.ref .016670 ;"0 == 0"
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -6632,8 +6681,8 @@ val2: int64: int64 {
 	1c 06 00 00 00 00 00 00 00 load.c64 6
 	6a                         i64.2i32
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
-	1f 00 00 00 00             load.ref .000000 ;null: pointer
-	1f 38 64 01 00             load.ref .016438 ;"0 == 0"
+	1f 00 00 00 00             load.ref .000000 ;null
+	1f 70 66 01 00             load.ref .016670 ;"0 == 0"
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -6655,7 +6704,7 @@ val2: int64: int64 {
 	6a                         i64.2i32
 	1f 70 03 00 00             load.ref .000370 ;int32
 	11 10 00 00                load.sp(+16)
-	1f 48 64 01 00             load.ref .016448 ;"t == 0"
+	1f 80 66 01 00             load.ref .016680 ;"t == 0"
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -6675,7 +6724,7 @@ val2: int64: int64 {
 	6a                         i64.2i32
 	1f 70 03 00 00             load.ref .000370 ;int32
 	11 10 00 00                load.sp(+16)
-	1f 4f 64 01 00             load.ref .01644f ;"t != 0"
+	1f 87 66 01 00             load.ref .016687 ;"t != 0"
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -6695,7 +6744,7 @@ val2: int64: int64 {
 	6a                         i64.2i32
 	1f 70 03 00 00             load.ref .000370 ;int32
 	11 10 00 00                load.sp(+16)
-	1f 4f 64 01 00             load.ref .01644f ;"t != 0"
+	1f 87 66 01 00             load.ref .016687 ;"t != 0"
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -6708,7 +6757,7 @@ val2: int64: int64 {
 	6a                         i64.2i32
 	1f 70 03 00 00             load.ref .000370 ;int32
 	11 10 00 00                load.sp(+16)
-	1f 48 64 01 00             load.ref .016448 ;"t == 0"
+	1f 80 66 01 00             load.ref .016680 ;"t == 0"
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -6728,7 +6777,7 @@ val2: int64: int64 {
 	6a                         i64.2i32
 	1f 70 03 00 00             load.ref .000370 ;int32
 	11 10 00 00                load.sp(+16)
-	1f 4f 64 01 00             load.ref .01644f ;"t != 0"
+	1f 87 66 01 00             load.ref .016687 ;"t != 0"
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -6741,7 +6790,7 @@ val2: int64: int64 {
 	6a                         i64.2i32
 	1f 70 03 00 00             load.ref .000370 ;int32
 	11 10 00 00                load.sp(+16)
-	1f 48 64 01 00             load.ref .016448 ;"t == 0"
+	1f 80 66 01 00             load.ref .016680 ;"t == 0"
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -6754,9 +6803,9 @@ val2: int64: int64 {
 	10 04 00 00                inc.sp(+4)
 	extras/Tests/lang.varInitArray.ci:13: (10 bytes): arrSliceInitNull: int64[] := null
 	1b 00 00 00 00             load.c32 0
-	1f 00 00 00 00             load.ref .000000 ;null: pointer
+	1f 00 00 00 00             load.ref .000000 ;null
 	extras/Tests/lang.varInitArray.ci:14: (5 bytes): arrPtrInitNull: int64[*] := null
-	1f 00 00 00 00             load.ref .000000 ;null: pointer
+	1f 00 00 00 00             load.ref .000000 ;null
 	extras/Tests/lang.varInitArray.ci:17: (14 bytes): arrSliceInitFixed: int64[] := arrFixedNoInit
 	1c 07 00 00 00 00 00 00 00 load.c64 7
 	6a                         i64.2i32
@@ -6773,20 +6822,20 @@ val2: int64: int64 {
 	22                         load.m32
 	extras/Tests/lang.varInitArray.ci:37: (10 bytes): arrSliceInitString: char[] := "string"
 	1b 06 00 00 00             load.c32 6
-	1f 90 65 01 00             load.ref .016590 ;"string"
+	1f c8 67 01 00             load.ref .0167c8 ;"string"
 	extras/Tests/lang.varInitArray.ci:38: (5 bytes): arrPtrInitString: char[*] := "string"
-	1f 90 65 01 00             load.ref .016590 ;"string"
+	1f c8 67 01 00             load.ref .0167c8 ;"string"
 	extras/Tests/lang.varInitByRef.ci:7: (15 bytes): static value: int64 := 42
 	1c 2a 00 00 00 00 00 00 00 load.c64 42
-	1f c0 cd 01 00             load.ref .01cdc0 ;value: int64
+	1f f8 cf 01 00             load.ref .01cff8 ;value
 	28                         store.m64
 	extras/Tests/lang.varInitByRef.ci:8: (5 bytes): valueRef: int64 := value
-	1f c0 cd 01 00             load.ref .01cdc0 ;value: int64
+	1f f8 cf 01 00             load.ref .01cff8 ;value
 	extras/Tests/lang.varInitByRef.ci:9: (5 bytes): valuePtr: pointer := value
-	1f c0 cd 01 00             load.ref .01cdc0 ;value: int64
+	1f f8 cf 01 00             load.ref .01cff8 ;value
 	extras/Tests/lang.varInitByRef.ci:10: (10 bytes): valueVar: variant := value
 	1f 00 04 00 00             load.ref .000400 ;int64
-	1f c0 cd 01 00             load.ref .01cdc0 ;value: int64
+	1f f8 cf 01 00             load.ref .01cff8 ;value
 	extras/Tests/lang.varInitByRef.ci:12: (6 bytes): fromRef: int64 := valueRef
 	11 0c 00 00                load.sp(+12)
 	22                         load.m32
@@ -6798,18 +6847,18 @@ val2: int64: int64 {
 	11 0c 00 00                load.sp(+12)
 	22                         load.m32
 	extras/Tests/lang.varInitByRef.ci:16: (5 bytes): nullRef: int64 := null
-	1f 00 00 00 00             load.ref .000000 ;null: pointer
+	1f 00 00 00 00             load.ref .000000 ;null
 	extras/Tests/lang.varInitByRef.ci:17: (5 bytes): nullPtr: pointer := null
-	1f 00 00 00 00             load.ref .000000 ;null: pointer
+	1f 00 00 00 00             load.ref .000000 ;null
 	extras/Tests/lang.varInitByRef.ci:18: (10 bytes): nullVar: variant := null
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
-	1f 00 00 00 00             load.ref .000000 ;null: pointer
+	1f 00 00 00 00             load.ref .000000 ;null
 	extras/Tests/lang.varInitByRef.ci:19: (5 bytes): nullTyp: typename := null
-	1f 00 00 00 00             load.ref .000000 ;null: pointer
+	1f 00 00 00 00             load.ref .000000 ;null
 	extras/Tests/lang.varInitByRef.ci:20: (5 bytes): nullFun: function := null
-	1f 00 00 00 00             load.ref .000000 ;null: pointer
+	1f 00 00 00 00             load.ref .000000 ;null
 	extras/Tests/lang.varInitByRef.ci:21: (5 bytes): nullObj: object := null
-	1f 00 00 00 00             load.ref .000000 ;null: pointer
+	1f 00 00 00 00             load.ref .000000 ;null
 	extras/Tests/lang.varInitByRef.ci:23: (5 bytes): typePtr: pointer := int64
 	1f 00 04 00 00             load.ref .000400 ;int64
 	extras/Tests/lang.varInitByRef.ci:24: (10 bytes): typeVar: variant := int64
@@ -6818,7 +6867,7 @@ val2: int64: int64 {
 	extras/Tests/lang.varInitByRef.ci:25: (5 bytes): typeTyp: typename := int64
 	1f 00 04 00 00             load.ref .000400 ;int64
 	extras/Tests/lang.varInitByRef.ci:27: (6 bytes): local: int64 := value
-	1f c0 cd 01 00             load.ref .01cdc0 ;value: int64
+	1f f8 cf 01 00             load.ref .01cff8 ;value
 	23                         load.m64
 	extras/Tests/lang.varInitByRef.ci:28: (5 bytes): copyVal: int64 := local
 	11 00 00 00                load.sp(+0)
@@ -6962,10 +7011,10 @@ val2: int64: int64 {
 	extras/Tests/lang.varInitByRef.ci:92: (5 bytes): typObject: typename := object
 	1f a8 09 00 00             load.ref .0009a8 ;object
 	extras/Tests/lang.varInitByRef.ci:95: (5 bytes): valueOfPtr: pointer := pointer(value)
-	1f c0 cd 01 00             load.ref .01cdc0 ;value: int64
+	1f f8 cf 01 00             load.ref .01cff8 ;value
 	extras/Tests/lang.varInitByRef.ci:96: (10 bytes): valueOfVar: variant := variant(value)
 	1f 00 04 00 00             load.ref .000400 ;int64
-	1f c0 cd 01 00             load.ref .01cdc0 ;value: int64
+	1f f8 cf 01 00             load.ref .01cff8 ;value
 	extras/Tests/lang.varInitByRef.ci:97: (5 bytes): valueOfTyp: typename := typename(value)
 	1f 00 04 00 00             load.ref .000400 ;int64
 	extras/Tests/lang.varInitByRef.ci:99: (5 bytes): typeOfValue: typename := typename(value)
@@ -6983,7 +7032,7 @@ val2: int64: int64 {
 	1c 2a 00 00 00 00 00 00 00 load.c64 42
 	extras/Tests/lang.varInitStatic.ci:10: (15 bytes): static globalInitValue: int64 := 1024
 	1c 00 04 00 00 00 00 00 00 load.c64 1024
-	1f d0 cd 01 00             load.ref .01cdd0 ;globalInitValue: int64
+	1f 08 d0 01 00             load.ref .01d008 ;globalInitValue
 	28                         store.m64
 	extras/Tests/lang.varInitStatic.ci:11: (5 bytes): localInitLocal: int64 := localInitValue
 	11 00 00 00                load.sp(+0)
@@ -6991,15 +7040,15 @@ val2: int64: int64 {
 	extras/Tests/lang.varInitStatic.ci:12: (11 bytes): static globalInitLocal: int64 := localInitValue
 	11 08 00 00                load.sp(+8)
 	23                         load.m64
-	1f d8 cd 01 00             load.ref .01cdd8 ;globalInitLocal: int64
+	1f 10 d0 01 00             load.ref .01d010 ;globalInitLocal
 	28                         store.m64
 	extras/Tests/lang.varInitStatic.ci:13: (6 bytes): localInitGlobal: int64 := globalInitValue
-	1f d0 cd 01 00             load.ref .01cdd0 ;globalInitValue: int64
+	1f 08 d0 01 00             load.ref .01d008 ;globalInitValue
 	23                         load.m64
 	extras/Tests/lang.varInitStatic.ci:14: (12 bytes): static globalInitGlobal: int64 := globalInitValue
-	1f d0 cd 01 00             load.ref .01cdd0 ;globalInitValue: int64
+	1f 08 d0 01 00             load.ref .01d008 ;globalInitValue
 	23                         load.m64
-	1f e0 cd 01 00             load.ref .01cde0 ;globalInitGlobal: int64
+	1f 18 d0 01 00             load.ref .01d018 ;globalInitGlobal
 	28                         store.m64
 	extras/Tests/stdc.nfcNumber.ci:3: (9 bytes): pi64: float64 := 3.141593
 	1e 18 2d 44 54 fb 21 09 40 load.f64 3.141593
@@ -7298,22 +7347,22 @@ val2: int64: int64 {
 	extras/Tests/stdc.nfcMemory.ci:6: (19 bytes): p1: pointer := malloc(1024)
 	1c 00 04 00 00 00 00 00 00 load.c64 1024
 	6a                         i64.2i32
-	1f 00 00 00 00             load.ref .000000 ;null: pointer
+	1f 00 00 00 00             load.ref .000000 ;null
 	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	extras/Tests/stdc.nfcMemory.ci:7: (19 bytes): p2: pointer := malloc(80)
 	1c 50 00 00 00 00 00 00 00 load.c64 80
 	6a                         i64.2i32
-	1f 00 00 00 00             load.ref .000000 ;null: pointer
+	1f 00 00 00 00             load.ref .000000 ;null
 	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	extras/Tests/stdc.nfcMemory.ci:8: (19 bytes): p3: pointer := malloc(160)
 	1c a0 00 00 00 00 00 00 00 load.c64 160
 	6a                         i64.2i32
-	1f 00 00 00 00             load.ref .000000 ;null: pointer
+	1f 00 00 00 00             load.ref .000000 ;null
 	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	extras/Tests/stdc.nfcMemory.ci:9: (19 bytes): p4: pointer := malloc(820)
 	1c 34 03 00 00 00 00 00 00 load.c64 820
 	6a                         i64.2i32
-	1f 00 00 00 00             load.ref .000000 ;null: pointer
+	1f 00 00 00 00             load.ref .000000 ;null
 	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	extras/Tests/stdc.nfcMemory.ci:12: (33 bytes): pointer.fill(p1, 0, 1024);
 	1c 00 04 00 00 00 00 00 00 load.c64 1024
@@ -7372,7 +7421,7 @@ val2: int64: int64 {
 	6a                         i64.2i32
 	1f 00 04 00 00             load.ref .000400 ;int64
 	11 18 00 00                load.sp(+24)
-	1f ad c4 01 00             load.ref .01c4ad ;"val1"
+	1f e5 c6 01 00             load.ref .01c6e5 ;"val1"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -7383,7 +7432,7 @@ val2: int64: int64 {
 	6a                         i64.2i32
 	1f 00 04 00 00             load.ref .000400 ;int64
 	11 10 00 00                load.sp(+16)
-	1f b2 c4 01 00             load.ref .01c4b2 ;"val2"
+	1f ea c6 01 00             load.ref .01c6ea ;"val2"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -7409,7 +7458,7 @@ val2: int64: int64 {
 	6a                         i64.2i32
 	1f 00 04 00 00             load.ref .000400 ;int64
 	11 18 00 00                load.sp(+24)
-	1f ad c4 01 00             load.ref .01c4ad ;"val1"
+	1f e5 c6 01 00             load.ref .01c6e5 ;"val1"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -7420,7 +7469,7 @@ val2: int64: int64 {
 	6a                         i64.2i32
 	1f 00 04 00 00             load.ref .000400 ;int64
 	11 10 00 00                load.sp(+16)
-	1f b2 c4 01 00             load.ref .01c4b2 ;"val2"
+	1f ea c6 01 00             load.ref .01c6ea ;"val2"
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
@@ -7683,6 +7732,10 @@ extras/Tests/lang.useOperator.ci:278: f64Clt: bool(0)
 extras/Tests/lang.useOperator.ci:279: f64Cle: bool(0)
 extras/Tests/lang.useOperator.ci:280: f64Cgt: bool(1)
 extras/Tests/lang.useOperator.ci:281: f64Cge: bool(1)
+extras/Tests/lang.useOperator.ci:283: ptrA: pointer(null)
+extras/Tests/lang.useOperator.ci:284: ptrB: pointer({})
+extras/Tests/lang.useOperator.ci:299: ptrCeq: bool(0)
+extras/Tests/lang.useOperator.ci:300: ptrCne: bool(1)
 extras/Tests/lang.statementIf.ci:26: t: int32(0)
 extras/Tests/lang.varInitArray.ci:8: arrFixedNoInit: int64[7]([7] {???})
 extras/Tests/lang.varInitArray.ci:9: arrSliceNoInit: int64[](null)
@@ -7698,7 +7751,7 @@ extras/Tests/lang.varInitArray.ci:37: arrSliceInitString: char[]([6] {'s', 't', 
 extras/Tests/lang.varInitArray.ci:38: arrPtrInitString: char[*]("string")
 extras/Tests/lang.varInitByRef.ci:7: value: int64(42)
 extras/Tests/lang.varInitByRef.ci:8: valueRef: int64(42)
-extras/Tests/lang.varInitByRef.ci:9: valuePtr: pointer(<value @01cdc0>)
+extras/Tests/lang.varInitByRef.ci:9: valuePtr: pointer(<value @01cff8>)
 extras/Tests/lang.varInitByRef.ci:10: valueVar: variant({int64: 42})
 extras/Tests/lang.varInitByRef.ci:12: fromRef: int64(42)
 extras/Tests/lang.varInitByRef.ci:13: fromPtr: int64(42)
@@ -7715,7 +7768,7 @@ extras/Tests/lang.varInitByRef.ci:25: typeTyp: typename(int64)
 extras/Tests/lang.varInitByRef.ci:27: local: int64(42)
 extras/Tests/lang.varInitByRef.ci:28: copyVal: int64(42)
 extras/Tests/lang.varInitByRef.ci:29: copyRef: int64(42)
-extras/Tests/lang.varInitByRef.ci:30: copyPtr: pointer(<value @01cdc0>)
+extras/Tests/lang.varInitByRef.ci:30: copyPtr: pointer(<value @01cff8>)
 extras/Tests/lang.varInitByRef.ci:31: copyVar: variant({int64: 42})
 extras/Tests/lang.varInitByRef.ci:32: copyTyp: typename(int64)
 extras/Tests/lang.varInitByRef.ci:35: ptrVoid: pointer(<void @0000a0>)
@@ -7772,7 +7825,7 @@ extras/Tests/lang.varInitByRef.ci:89: typFunction: typename(function)
 extras/Tests/lang.varInitByRef.ci:90: typPointer: typename(pointer)
 extras/Tests/lang.varInitByRef.ci:91: typVariant: typename(variant)
 extras/Tests/lang.varInitByRef.ci:92: typObject: typename(object)
-extras/Tests/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @01cdc0>)
+extras/Tests/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @01cff8>)
 extras/Tests/lang.varInitByRef.ci:96: valueOfVar: variant({int64: 42})
 extras/Tests/lang.varInitByRef.ci:97: valueOfTyp: typename(int64)
 extras/Tests/lang.varInitByRef.ci:99: typeOfValue: typename(int64)
@@ -7832,9 +7885,9 @@ extras/Tests/stdc.nfcMemory.ci:23: val2: int64(42)
 // */
 
 /*-- Memory:
-memory[meta] @000000; size: 118208(115.4 Kb)
-memory[code] @000000; size: 123472(120.6 Kb)
+memory[meta] @000000; size: 118776(116.0 Kb)
+memory[code] @000000; size: 124072(121.2 Kb)
 memory[stck] @000000; size: 131012(127.9 Kb)
-memory[heap] @01e250; size: 269516(263.2 Kb)
-memory[free] @01e260; size: 269472(263.2 Kb)
+memory[heap] @01e4a8; size: 268916(262.6 Kb)
+memory[free] @01e4c0; size: 268864(262.6 Kb)
 // */

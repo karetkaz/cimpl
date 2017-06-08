@@ -766,6 +766,11 @@ static void textPostProfile(userContext usr) {
 		return;
 	}
 
+	if (dbg->extra != usr) {
+		fatal(ERR_INTERNAL_ERROR);
+		dbg->extra = usr;
+	}
+
 	if (usr->exec & dmpProfile) {
 		int covFunc = 0, nFunc = dbg->functions.cnt;
 		int covStmt = 0, nStmt = dbg->statements.cnt;

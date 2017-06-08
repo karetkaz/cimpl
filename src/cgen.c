@@ -1028,6 +1028,12 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		}
 	}
 	else if (isTypename(function)) {
+		// void("message") || void(0)
+		if (function == cc->type_vid && args != NULL && args->kind == TOKEN_val) {
+			warn(rt, 8, args->file, args->line, WARN_NO_CODE_GENERATED, ast);
+			return castOf(function);
+		}
+		// variant(data) || typename(data) || pointer(data)
 		if (function == cc->type_var || function == cc->type_rec || function == cc->type_ptr) {
 			symn variable = linkOf(args);
 			if (variable == NULL) {
@@ -1052,6 +1058,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 			return castOf(function);
 		}
 
+		// float64(3)
 		switch (result = castOf(function)) {
 			default:
 			case CAST_vid:
@@ -1602,10 +1609,6 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			break;
 
 		case TOKEN_val:
-			if (get == CAST_vid) { // void(0);
-				debug("no code is generated for: %t", ast);
-				return CAST_vid;
-			}
 			switch (got) {
 				default:
 					fatal(ERR_INTERNAL_ERROR);

@@ -152,7 +152,9 @@ symn leave(ccContext cc, symn owner, ccKind mode, size_t align, size_t *outSize)
 			}
 			size_t padded = padOffset(size, align);
 			if (align && size != padded) {
-				warn(cc->rt, 6, result->file, result->line, WARN_PADDING_ALIGNMENT, sym, padded - size, size, padded);
+				char *file = owner ? owner->file : NULL;
+				int line = owner ? owner->line : 0;
+				warn(cc->rt, 6, file, line, WARN_PADDING_ALIGNMENT, owner, padded - size, size, padded);
 				size = padded;
 			}
 			break;
@@ -651,17 +653,19 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			convert(cc, ast->op.lhso, type);
 			convert(cc, ast->op.rhso, cc->type_i32);
 
-			switch (castOf(type)) {
-				default:
-					error(cc->rt, ast->file, ast->line, ERR_INVALID_OPERATOR, ast, lType, rType);
-					break;
+			if (type != NULL) {
+				switch (castOf(type)) {
+					default:
+						error(cc->rt, ast->file, ast->line, ERR_INVALID_OPERATOR, ast, lType, rType);
+						break;
 
-				case CAST_i32:
-				case CAST_i64:
+					case CAST_i32:
+					case CAST_i64:
 
-				case CAST_u32:
-				case CAST_u64:
-					break;
+					case CAST_u32:
+					case CAST_u64:
+						break;
+				}
 			}
 			ast->type = type;
 			return type;
@@ -680,19 +684,21 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			convert(cc, ast->op.lhso, type);
 			convert(cc, ast->op.rhso, type);
 
-			switch (castOf(type)) {
-				default:
-					error(cc->rt, ast->file, ast->line, ERR_INVALID_OPERATOR, ast, lType, rType);
-					break;
+			if (type != NULL) {
+				switch (castOf(type)) {
+					default:
+						error(cc->rt, ast->file, ast->line, ERR_INVALID_OPERATOR, ast, lType, rType);
+						break;
 
-				case CAST_bit:
+					case CAST_bit:
 
-				case CAST_i32:
-				case CAST_i64:
+					case CAST_i32:
+					case CAST_i64:
 
-				case CAST_u32:
-				case CAST_u64:
-					break;
+					case CAST_u32:
+					case CAST_u64:
+						break;
+				}
 			}
 			ast->type = type;
 			return type;

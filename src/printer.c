@@ -582,6 +582,7 @@ void printSym(FILE *out, const char **esc, symn sym, dmpMode mode, int indent) {
 				if (!pr_result) {
 					type = arg->type;
 					arg = arg->next;
+					pr_type = 1;
 				}
 				printChr(out, '(');
 				for ( ; arg; arg = arg->next) {

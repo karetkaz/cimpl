@@ -483,7 +483,7 @@ typedef enum {
 
 	prName = 0,		// print operator or symbol name only.
 	prValue = prOneLine,
-	prShort = prSymQual | prSymArgs | prSymType | prOneLine ,	// %t, %T
+	prShort = prSymQual | prSymArgs | prOneLine ,	// %t, %T
 	prFull = prAttr | prSymQual | prSymArgs | prSymType | prSymInit,		// %±t, %±T
 	prDbg = prAttr | prAstType | prSymQual | prSymArgs | prSymType | prSymInit | prAsmAddr | prAsmName | 9
 } dmpMode;
@@ -640,7 +640,7 @@ void closeLibs();
 #define ERR_INVALID_EXPRESSION "invalid expression: `%t`"
 #define ERR_INVALID_FIELD_ACCESS "object reference is required to access the member `%T`"
 #define ERR_INVALID_TYPE "can not type check expression: %t"
-#define ERR_INVALID_OPERATOR "invalid operator: %.t(%T, %T)"
+#define ERR_INVALID_OPERATOR "invalid operator %.t(%T, %T)"
 #define ERR_MULTIPLE_OVERLOADS "there are %d overloads for `%T`"
 #define ERR_REDEFINED_REFERENCE "redefinition of `%T`"
 #define ERR_UNDEFINED_REFERENCE "undefined reference `%t`"
@@ -667,7 +667,7 @@ void closeLibs();
 #define WARN_PASS_ARG_BY_REF "argument `%t` is not explicitly passed by reference"
 #define WARN_SHORT_CIRCUIT "operators `&&` and `||` does not short-circuit yet"
 #define WARN_NO_CODE_GENERATED "no code will be generated for statement: %t"
-#define WARN_PADDING_ALIGNMENT "padding %T with %d bytes: (%d -> %d)"
+#define WARN_PADDING_ALIGNMENT "padding `%?T` with %d bytes: (%d -> %d)"
 #define WARN_ADDING_IMPLICIT_CAST "adding implicit cast %T(%t: %T)"
 #define WARN_STATIC_FIELD_ACCESS "accessing static member using instance variable `%T`/ %T"
 #define WARN_COMMENT_MULTI_LINE "multi-line comment: `%s`"

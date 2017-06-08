@@ -74,8 +74,8 @@ astn strNode(ccContext cc, char *v) {
 	astn ast = newNode(cc, TOKEN_val);
 	if (ast != NULL) {
 		ast->type = cc->type_str;
-		ast->ref.hash = -1;
 		ast->ref.name = v;
+		ast->ref.hash = -1;
 	}
 	return ast;
 }

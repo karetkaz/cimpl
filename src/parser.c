@@ -773,6 +773,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		return NULL;
 	}
 
+	// inline "file.ci"
 	if ((tag = nextTok(cc, TOKEN_val))) {
 		astn next = NULL, head = NULL, tail = NULL;
 		skipTok(cc, STMT_end, 1);
