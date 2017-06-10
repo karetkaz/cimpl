@@ -634,6 +634,7 @@ void closeLibs();
 #define ERR_DECLARATION_EXPECTED "declaration expected, got: `%t`"
 #define ERR_INVALID_ARRAY_LENGTH "positive integer constant expected, got `%t`"
 #define ERR_INVALID_BASE_TYPE "invalid struct base type, got `%t`"
+#define ERR_INVALID_PACK_SIZE "invalid struct pack size, got `%t`"
 #define ERR_INVALID_CONST_ASSIGN "assignment of constant variable `%t`"
 #define ERR_INVALID_CONST_EXPR "constant expression expected, got: `%t`"
 #define ERR_INVALID_DECLARATION "invalid declaration: `%s`"
@@ -701,7 +702,7 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 #define dieif(__EXP, msg, ...) do { if (__EXP) { prerr("todo("#__EXP")", msg, ##__VA_ARGS__); _abort(); } } while(0)
 
 // compilation errors
-#define error(__ENV, __FILE, __LINE, msg, ...) do { printErr(__ENV, -1, __FILE, __LINE, msg, ##__VA_ARGS__); trace(msg, ##__VA_ARGS__); _break(); } while(0)
+#define error(__ENV, __FILE, __LINE, msg, ...) do { printErr(__ENV, -1, __FILE, __LINE, msg, ##__VA_ARGS__); logif("ERROR", msg, ##__VA_ARGS__); _break(); } while(0)
 #define warn(__ENV, __LEVEL, __FILE, __LINE, msg, ...) do { printErr(__ENV, __LEVEL, __FILE, __LINE, msg, ##__VA_ARGS__); } while(0)
 #define info(__ENV, __FILE, __LINE, msg, ...) do { printErr(__ENV, 0, __FILE, __LINE, msg, ##__VA_ARGS__); } while(0)
 

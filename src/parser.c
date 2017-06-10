@@ -225,7 +225,8 @@ static astn expand2Statement(ccContext cc, astn node, int block) {
 }
 //#{~~~~~~~~~ Parser ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-static astn statement(ccContext, ccKind attr);
+static astn statement_list(ccContext cc);
+static astn statement(ccContext cc, ccKind attr);
 static astn declaration(ccContext cc, ccKind attr, astn *args);
 static astn expression(ccContext cc);
 
@@ -332,7 +333,7 @@ static astn expression(ccContext cc) {
 					if (l2r && (*stack)->op.prec <= ast->op.prec) {
 						break;
 					}
-					else if ((*stack)->op.prec < ast->op.prec) {
+					if ((*stack)->op.prec < ast->op.prec) {
 						break;
 					}
 					*postfix++ = *stack++;
@@ -880,47 +881,60 @@ static astn declare_alias(ccContext cc, ccKind attr) {
  * @return root of declaration.
  */
 static astn declare_record(ccContext cc, ccKind attr) {
-	symn type = NULL, base = NULL;
-	astn tok, tag = NULL;
-	int pack = pad_size;
 
 	if (!skipTok(cc, RECORD_kwd, 1)) {
 		traceAst(peekTok(cc, 0));
 		return NULL;
 	}
 
-	tag = nextTok(cc, TOKEN_var);
+	astn tag = nextTok(cc, TOKEN_var);
+	symn base = cc->type_rec;
+	int pack = pad_size;
 
 	if (skipTok(cc, PNCT_cln, 0)) {			// ':' base type or packing
-		pack = -1;
-		if ((tok = expression(cc)) != NULL) {
-			if (tok->kind == TOKEN_val) {
-				ccKind cast = castOf(tok->type);
-				if (cast == CAST_i32 || cast == CAST_i64) {
-					switch ((int)tok->cInt) {
-						default:
-							break;
+		astn tok = expression(cc);
+		if (tok != NULL) {
+			// type-check the base type or packing
+			if (!typeCheck(cc, NULL, tok, 0)) {
+				error(cc->rt, tok->file, tok->line, ERR_INVALID_BASE_TYPE, tok);
+				pack = vm_size;
+			}
+			else if (isTypeExpr(tok)) {		// ':' extended type
+				base = linkOf(tok);
+				pack = vm_size;
+			}
+			else if (tok->kind == TOKEN_val) {	// ':' packed type
+				switch (castOf(tok->type)) {
+					default:
+						error(cc->rt, tok->file, tok->line, ERR_INVALID_BASE_TYPE, tok);
+						pack = vm_size;
+						break;
 
-						case 0:
-						case 1:
-						case 2:
-						case 4:
-						case 8:
-						case 16:
-						case 32:
-							pack = (unsigned) tok->cInt;
-							break;
-					}
+					case CAST_i32:
+					case CAST_u32:
+					case CAST_i64:
+					case CAST_u64:
+						pack = tok->cInt;
+						break;
+				}
+				switch (pack) {
+					default:
+						error(cc->rt, tok->file, tok->line, ERR_INVALID_PACK_SIZE, tok);
+						pack = vm_size;
+						break;
+
+					case 0:
+					case 1:
+					case 2:
+					case 4:
+					case 8:
+					case 16:
+					case 32:
+						break;
 				}
 			}
-			else if (typeCheck(cc, NULL, tok, 1) != NULL) {
-				if (isTypeExpr(tok)) {
-					base = linkOf(tok);
-					pack = vm_size;
-				}
-			}
-			if (pack < 0) {
-				error(cc->rt, cc->file, cc->line, ERR_INVALID_BASE_TYPE, tok);
+			else {
+				error(cc->rt, tok->file, tok->line, ERR_INVALID_BASE_TYPE, tok);
 			}
 		}
 		else {
@@ -936,23 +950,23 @@ static astn declare_record(ccContext cc, ccKind attr) {
 		// TODO: disable anonymous structure declarations ?
 		tag = tagNode(cc, ".anonymous");
 	}
-	if (base == NULL) {
-		base = cc->type_rec;
-	}
 
-	type = declare(cc, ATTR_stat | ATTR_cnst | KIND_typ | CAST_val, tag, base, NULL);
+	symn type = declare(cc, ATTR_stat | ATTR_cnst | KIND_typ | CAST_val, tag, base, NULL);
 	enter(cc);
-	while (peekTok(cc, TOKEN_any)) {	// fields
-		if (peekTok(cc, RIGHT_crl)) {
-			break;
+	astn fields = statement_list(cc);
+	while (fields != NULL) {
+		// post check the list for declarations
+		switch (fields->kind) {
+			default:
+				// report errors in case there are statements inside a record declaration
+				error(cc->rt, fields->file, fields->line, ERR_DECLARATION_EXPECTED, fields);
+				break;
+
+			case TOKEN_var:	// declaration
+			case STMT_sif:	// static if
+				break;
 		}
-		if (declaration(cc, (ccKind) 0, NULL) == NULL) {
-			error(cc->rt, cc->file, cc->line, ERR_DECLARATION_EXPECTED, peekTok(cc, TOKEN_any));
-			break;
-		}
-		if (!skipTok(cc, STMT_end, 1)) {	// ';'
-			break;
-		}
+		fields = fields->next;
 	}
 	type->fields = leave(cc, type, attr | KIND_typ, pack, &type->size);
 
