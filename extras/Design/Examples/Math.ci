@@ -113,7 +113,7 @@ static struct Math {
 		}
 		return result;
 	}
-	// speedup by inline the expressions
+	// speedup with some inline expressions
 	inline eval(float64 x, float64 a0, float64 a1) = (a0 + x * a1);
 	inline eval(float64 x, float64 a0, float64 a1, float64 a2) = (a0 + x * eval(x, a1, a2));
 	inline eval(float64 x, float64 a0, float64 a1, float64 a2, float64 a3) = (a0 + x * eval(x, a1, a2, a3));
@@ -398,8 +398,8 @@ static struct Math {
 	inline rad2deg(float64 x) = float64(x * 180 / pi);
 }
 
-inline "math.Rational.ci"  // -> int64, fixme: add Rational -> BigInteger
-inline "math.Complex.ci"  // -> float64, fixme: add Complex -> BigDecimal
+inline "math.Rational.ci";  // -> int64, fixme: add Rational -> BigInteger
+inline "math.Complex.ci";  // -> float64, fixme: add Complex -> BigDecimal
 
 // inline "math.BigInteger.ci"	//
 // inline "math.BigDecimal.ci"	//

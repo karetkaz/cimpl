@@ -750,12 +750,19 @@ static inline ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 
 	logif(varCast != get, "%?s:%?u: %T(%K->%K)", variable->file, variable->line, variable, varCast, get);
 	if (!isVariable(variable)) {
+		// functon, struct or enum declaration.
 		return CAST_vid;
 	}
 
 	if (variable->init != NULL) {
-		dbgCgen("%?s:%?u: %.T := %t", variable->file, variable->line, variable, variable->init);
-		if (varCast != genAst(cc, variable->init, varCast)) {
+		astn init = variable->init;
+		dbgCgen("%?s:%?u: %.T := %t", variable->file, variable->line, variable, init);
+		if (varCast == CAST_val && (init->kind == OPER_com || init->kind == INIT_set)) {
+			// TODO: implement code generation for object literals
+			error(rt, variable->file, variable->line, ERR_EXPR_TOO_COMPLEX);
+			return CAST_any;
+		}
+		if (varCast != genAst(cc, init, varCast)) {
 			return CAST_any;
 		}
 		if (localSize != stkOffset(rt, 0)) {
@@ -763,7 +770,12 @@ static inline ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 			return CAST_any;
 		}
 	}
+	else {
+		// TODO: this should be an error, not a warning
+		warn(rt, 1, variable->file, variable->line, ERR_UNINITIALIZED_VARIABLE, variable);
+	}
 	if (variable->offs == 0) {
+		// local variable => on stack
 		if (variable->init == NULL) {
 			if (!emitInt(rt, opc_spc, padOffset(variable->size, vm_size))) {
 				return CAST_any;
@@ -901,7 +913,7 @@ static inline ccKind genVariable(ccContext cc, symn variable, ccKind get) {
 
 	// load reference indirection (variable is a reference to a value)
 	if (varCast == CAST_ref && typCast != CAST_ref) {
-		logif(variable->size != sizeof(vmOffs), ERR_INTERNAL_ERROR"(%T)", variable);
+		logif(variable->size != sizeof(vmOffs), "%?s:%?u: "ERR_INTERNAL_ERROR"(%T)", variable->file, variable->line, variable);
 		if (!emitInt(rt, opc_ldi, sizeof(vmOffs))) {
 			return CAST_any;
 		}
@@ -1343,7 +1355,6 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				return CAST_any;
 			}
 			dieif(get != CAST_vid, ERR_INTERNAL_ERROR);
-			dieif(spBegin != stkOffset(rt, 0), ERR_INTERNAL_ERROR);
 			break;
 
 		case STMT_if:
@@ -1358,9 +1369,9 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 
 		case STMT_con:
 		case STMT_brk: {
-			size_t offs;
 			dieif(get != CAST_vid, ERR_INTERNAL_ERROR": get: %K", get);
-			if (!(offs = emitOpc(rt, opc_jmp))) {
+			size_t offs = emitOpc(rt, opc_jmp);
+			if (offs == 0) {
 				traceAst(ast);
 				return CAST_any;
 			}
@@ -1370,7 +1381,8 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 
 			ast->next = cc->jumps;
 			cc->jumps = ast;
-		} break;
+			break;
+		}
 		case STMT_ret:
 			//~ TODO: declared reference variables should be freed.
 			if (ast->stmt.stmt != NULL) {
@@ -1546,7 +1558,8 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 					firstTimeShowOnly = 0;
 				}
 			}
-		} break;
+			break;
+		}
 		case OPER_sel:      // '?:'
 			if (!genLogical(cc, ast)) {
 				traceAst(ast);
@@ -1554,17 +1567,17 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			}
 			break;
 
+		case INIT_set:  	// '='
 		case ASGN_set: {	// '='
 			ccKind cast = castOf(ast->op.lhso->type);
-			size_t size = ast->op.lhso->type->size;
-			size_t codeEnd;
-
-			dieif(size == 0, ERR_INTERNAL_ERROR);
 
 			if (!genAst(cc, ast->op.rhso, cast)) {
 				traceAst(ast);
 				return CAST_any;
 			}
+
+			size_t size = ast->op.lhso->type->size;
+			dieif(size == 0, ERR_INTERNAL_ERROR);
 
 			if (get != CAST_vid) {
 				// in case a = b = sum(2, 700);
@@ -1579,7 +1592,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				}
 			}
 
-			codeEnd = emitOpc(rt, markIP);
+			size_t codeEnd = emitOpc(rt, markIP);
 			if (!genAst(cc, ast->op.lhso, CAST_ref)) {
 				traceAst(ast);
 				return CAST_any;
@@ -1598,7 +1611,8 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 					}
 				}
 			}
-		} break;
+			break;
+		}
 		//#}
 		//#{ VALUES
 		case TOKEN_opc:
@@ -1674,6 +1688,16 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			break;
 		}
 		//#}
+	}
+
+	if (ast->kind >= STMT_beg && ast->kind <= STMT_end) {
+		dieif(spBegin != stkOffset(rt, 0), "%s:%u: locals left on stack(get: %K): `%t`", ast->file, ast->line, get, ast);
+		if (get == CAST_vid && spBegin != stkOffset(rt, 0)) {
+			if (!emitStack(rt, opc_drop, spBegin)) {
+				traceAst(ast);
+				return CAST_any;
+			}
+		}
 	}
 
 	// generate cast

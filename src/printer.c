@@ -168,6 +168,7 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 							break;
 
 						case OPER_fnc:
+						case INIT_set:
 						case ASGN_set:
 							// valid expression statement
 							exprStatement = 1;
@@ -393,6 +394,7 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 
 		case OPER_com:		// ','
 
+		case INIT_set:		// '='
 		case ASGN_set:		// '='
 			if (mode == prName) {
 				printStr(out, esc, token_tbl[kind].name);
@@ -729,7 +731,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 				}
 
 				case 'K': {		// symbol kind
-					ccKind arg = va_arg(ap, unsigned);
+					ccKind arg = va_arg(ap, ccKind);
 					char *_stat = "";
 					char *_const = "";
 					char *_paral = "";
@@ -843,7 +845,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 				}
 
 				case 'k': {		// token kind
-					ccToken arg = va_arg(ap, unsigned);
+					ccToken arg = va_arg(ap, ccToken);
 
 					if (arg == 0 && nil) {
 						if (pad != 0) {
@@ -886,7 +888,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 				}
 
 				case 'b': {		// bin32
-					uint32_t num = va_arg(ap, int32_t);
+					uint32_t num = va_arg(ap, uint32_t);
 					if (num == 0 && nil) {
 						len = pad != 0;
 						str = "";
@@ -897,7 +899,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 				}
 
 				case 'B': {		// bin64
-					uint64_t num = va_arg(ap, int64_t);
+					uint64_t num = va_arg(ap, uint64_t);
 					if (num == 0 && nil) {
 						len = pad != 0;
 						str = "";
@@ -908,7 +910,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 				}
 
 				case 'o': {		// oct32
-					uint32_t num = va_arg(ap, int32_t);
+					uint32_t num = va_arg(ap, uint32_t);
 					if (num == 0 && nil) {
 						len = pad != 0;
 						str = "";
@@ -919,7 +921,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 				}
 
 				case 'O': {		// oct64
-					uint64_t num = va_arg(ap, int64_t);
+					uint64_t num = va_arg(ap, uint64_t);
 					if (num == 0 && nil) {
 						len = pad != 0;
 						str = "";
@@ -930,7 +932,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 				}
 
 				case 'x': {		// hex32
-					uint32_t num = va_arg(ap, int32_t);
+					uint32_t num = va_arg(ap, uint32_t);
 					if (num == 0 && nil) {
 						len = pad != 0;
 						str = "";
@@ -941,7 +943,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 				}
 
 				case 'X': {		// hex64
-					uint64_t num = va_arg(ap, int64_t);
+					uint64_t num = va_arg(ap, uint64_t);
 					if (num == 0 && nil) {
 						len = pad != 0;
 						str = "";
@@ -954,7 +956,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 				case 'u':		// uint32
 				case 'd': {		// dec32
 					int neg = 0;
-					uint32_t num = va_arg(ap, int32_t);
+					uint32_t num = va_arg(ap, uint32_t);
 
 					if (num == 0 && nil) {
 						len = pad != 0;
@@ -980,7 +982,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 				case 'U':		// uint64
 				case 'D': {		// dec64
 					int neg = 0;
-					uint64_t num = va_arg(ap, int64_t);
+					uint64_t num = va_arg(ap, uint64_t);
 
 					if (num == 0 && nil) {
 						len = pad != 0;

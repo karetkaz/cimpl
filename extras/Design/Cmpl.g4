@@ -5,6 +5,7 @@ unit: statementList EOF;
 
 statement
     : ';'                                                                                               # EmptyStatement
+    | 'inline' Literal ';'                                                                            # IncludeStatement
     | qualifiers? '{' statementList '}'                                                              # CompoundStatement
     | qualifiers? 'if' '(' for_init ')' statement ('else' statement)?                                      # IfStatement
     | qualifiers? 'for' '(' for_init? ';' expression? ';' expression? ')' statement                       # ForStatement
@@ -14,25 +15,6 @@ statement
     | 'continue' ';'                                                                                 # ContinueStatement
     | expression ';'                                                                               # ExpressionStatement
     | declaration                                                                                 # DeclarationStatement
-    ;
-
-expression
-    : Literal                                                                                        # LiteralExpression
-    | Identifier                                                                                  # IdentifierExpression
-    | '(' expressionList? ')'                                                                  # ParenthesizedExpression
-    | expression '(' expressionList? ')'                                                        # FunctionCallExpression
-    | '[' expressionList? ']'                                                                  # ParenthesizedExpression
-    | expression '[' expressionList? ']'                                                         # ArrayAccessExpression
-    | expression '.' Identifier                                                                 # MemberAccessExpression
-    | unary expression                                                                                 # UnaryExpression
-    | expression arithmetic expression                                                            # ArithmeticExpression
-    | expression bitwise expression                                                                  # BitwiseExpression
-    | expression relational expression                                                            # RelationalExpression
-    | expression equality expression                                                                # EqualityExpression
-    | expression ('='| '*=' | '/=' | '%=' | '+=' | '-=' ) expression                              # AssignmentExpression
-    | expression ('&=' | '|=' | '^=' | '<<=' | '>>=') expression                                  # AssignmentExpression
-    | expression ('&&' | '||') expression                                                            # LogicalExpression
-    | expression '?' expression ':' expression                                                   # ConditionalExpression
     ;
 
 declaration
@@ -48,6 +30,26 @@ declaration
     | qualifiers? 'inline' equality ('(' parameterList? ')')? '=' initializer ';'                     # EqualityOperator
     | qualifiers? (variable | function) ( '=' initializer)? ';'                                    # VariableDeclaration
     | qualifiers? function '{' statementList '}'                                                # FunctionImplementation
+    ;
+
+expression
+    : Literal                                                                                        # LiteralExpression
+    | Identifier                                                                                  # IdentifierExpression
+    | '(' expressionList? ')'                                                                  # ParenthesizedExpression
+    | expression '(' expressionList? ')'                                                        # FunctionCallExpression
+    | '[' expressionList? ']'                                                                  # ParenthesizedExpression
+    | expression '[' expressionList? ']'                                                         # ArrayAccessExpression
+    | expression '[' expression '..' expression ']'                                               # ArraySliceExpression
+    | expression '.' Identifier                                                                 # MemberAccessExpression
+    | unary expression                                                                                 # UnaryExpression
+    | expression arithmetic expression                                                            # ArithmeticExpression
+    | expression bitwise expression                                                                  # BitwiseExpression
+    | expression relational expression                                                            # RelationalExpression
+    | expression equality expression                                                                # EqualityExpression
+    | expression ('='| '*=' | '/=' | '%=' | '+=' | '-=' ) expression                              # AssignmentExpression
+    | expression ('&=' | '|=' | '^=' | '<<=' | '>>=') expression                                  # AssignmentExpression
+    | expression ('&&' | '||') expression                                                            # LogicalExpression
+    | expression '?' expression ':' expression                                                   # ConditionalExpression
     ;
 
 initializer

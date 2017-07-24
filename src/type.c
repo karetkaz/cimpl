@@ -59,26 +59,6 @@ User defined types:
 	record
 	function
 
-TODO's:
-	struct initialization:
-		struct Demo {
-			// normal member variable
-			int32 a;
-
-			// constant member variable, compiler error if not initialized when a new instance is created.
-			const int32 b;
-
-			// global variable hidden in this class.
-			static int32 c;
-
-			// constant global variable, compiler error if not initialized when declared.
-			static const int32 d = 0;
-		}
-		Demo a = {a: 12, b: 88};
-		Demo b = Demo(12, 88);
-	array initialization:
-		Demo a1[] = {Demo(1,2), Demo(2,3), ...};
-
 *******************************************************************************/
 
 #include "internal.h"
@@ -769,6 +749,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			return type;
 
 		// operator set
+		case INIT_set:		// ':='
 		case ASGN_set:		// ':='
 			lType = typeCheck(cc, loc, ast->op.lhso, raise);
 			rType = typeCheck(cc, NULL, ast->op.rhso, raise);
@@ -779,7 +760,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				return NULL;
 			}
 
-			if (isConst(sym)) {
+			if (isConst(sym) && ast->kind != INIT_set) {
 				error(cc->rt, ast->file, ast->line, ERR_INVALID_CONST_ASSIGN, ast);
 			}
 			if (!canAssign(cc, lType, ast->op.rhso, 0)) {

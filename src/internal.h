@@ -437,7 +437,7 @@ int ccClose(ccContext);
  * @param match: read next token only if matches.
  * @return next token, or null.
  */
-astn nextTok(ccContext, ccToken match);
+astn nextTok(ccContext, ccToken match, int raise);
 
 /** Peek the next token.
  * @brief read the next token from input.
@@ -608,6 +608,7 @@ void closeLibs();
 #define ERR_INTERNAL_ERROR "Internal Error"
 #define ERR_MEMORY_OVERRUN "Memory Overrun"
 #define ERR_OPENING_FILE "can not open file: %s"
+#define ERR_UNIMPLEMENTED_FEATURE "Unimplemented feature"
 
 // Lexer errors
 #define ERR_EMPTY_CHAR_CONSTANT "empty character constant"
@@ -628,6 +629,7 @@ void closeLibs();
 #define ERR_UNEXPECTED_QUAL "unexpected qualifier `%.t` declared more than once"
 #define ERR_UNEXPECTED_TOKEN "unexpected token `%.t`"
 #define ERR_UNMATCHED_TOKEN "unexpected token `%?.t`, matching `%.k`"
+#define ERR_UNMATCHED_SEPARATOR "unexpected separator `%?.t`, matching `%.k`"
 
 // Type checker errors
 #define ERR_DECLARATION_COMPLEX "declaration too complex: `%T`"
@@ -640,13 +642,15 @@ void closeLibs();
 #define ERR_INVALID_DECLARATION "invalid declaration: `%s`"
 #define ERR_INVALID_EXPRESSION "invalid expression: `%t`"
 #define ERR_INVALID_FIELD_ACCESS "object reference is required to access the member `%T`"
-#define ERR_INVALID_TYPE "can not type check expression: %t"
+#define ERR_INVALID_TYPE "can not type check expression: `%t`"
+#define ERR_INVALID_TYPE_NAME "typename expected(eg: `int32`), got: `%t`"
 #define ERR_INVALID_OPERATOR "invalid operator %.t(%T, %T)"
 #define ERR_MULTIPLE_OVERLOADS "there are %d overloads for `%T`"
 #define ERR_REDEFINED_REFERENCE "redefinition of `%T`"
 #define ERR_UNDEFINED_REFERENCE "undefined reference `%t`"
 #define ERR_UNIMPLEMENTED_FUNCTION "unimplemented function `%T`"
 #define ERR_UNINITIALIZED_CONSTANT "uninitialized constant `%T`"
+#define ERR_UNINITIALIZED_VARIABLE "uninitialized variable `%T`"
 
 // Code generator errors: TODO: these are fatal internal errors
 #define ERR_CAST_EXPRESSION "can not emit expression: %t, invalid cast(%K -> %K)"
@@ -665,7 +669,7 @@ void closeLibs();
 #define WARN_TRAILING_COMMA "skipping trailing comma before `%t`"
 #define WARN_EXPRESSION_STATEMENT "expression statement expected, got: `%t`"
 #define WARN_DISCARD_DATA "converting `%t` to %T is discarding one property"
-#define WARN_PASS_ARG_BY_REF "argument `%t` is not explicitly passed by reference"
+#define WARN_PASS_ARG_BY_REF "argument `%t` is implicitly passed by reference"
 #define WARN_SHORT_CIRCUIT "operators `&&` and `||` does not short-circuit yet"
 #define WARN_NO_CODE_GENERATED "no code will be generated for statement: %t"
 #define WARN_PADDING_ALIGNMENT "padding `%?T` with %d bytes: (%d -> %d)"
@@ -698,8 +702,8 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 }
 #define prerr(__DBG, __MSG, ...) do { printFmt(stdout, NULL, "%?s:%?u: " __DBG ": %s: " __MSG "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); } while(0)
 
-#define fatal(msg, ...) do { prerr("todo", msg, ##__VA_ARGS__); _abort(); } while(0)
-#define dieif(__EXP, msg, ...) do { if (__EXP) { prerr("todo("#__EXP")", msg, ##__VA_ARGS__); _abort(); } } while(0)
+#define fatal(msg, ...) do { prerr("err", msg, ##__VA_ARGS__); _abort(); } while(0)
+#define dieif(__EXP, msg, ...) do { if (__EXP) { prerr("err("#__EXP")", msg, ##__VA_ARGS__); _abort(); } } while(0)
 
 // compilation errors
 #define error(__ENV, __FILE, __LINE, msg, ...) do { printErr(__ENV, -1, __FILE, __LINE, msg, ##__VA_ARGS__); logif("ERROR", msg, ##__VA_ARGS__); _break(); } while(0)
@@ -708,10 +712,9 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 
 #ifdef DEBUGGING	// enable compiler debugging
 
-#define logif(__EXP, msg, ...) do { if (__EXP) { prerr("todo("#__EXP")", msg, ##__VA_ARGS__); _break(); } } while(0)
-
 #if DEBUGGING >= 1	// enable trace
 #define trace(msg, ...) do { prerr("trace", msg, ##__VA_ARGS__); } while(0)
+#define logif(__EXP, msg, ...) do { if (__EXP) { prerr("log("#__EXP")", msg, ##__VA_ARGS__); _break(); } } while(0)
 #endif
 
 #if DEBUGGING >= 2	// enable debug

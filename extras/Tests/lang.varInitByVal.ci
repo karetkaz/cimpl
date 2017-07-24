@@ -1,0 +1,68 @@
+// requires `-X+glob` option to generate non static global variables
+
+static if (typename(integer) == null) {
+inline integer = int32;
+}
+
+integer localNoInit;
+static integer globalNoInit;
+integer localInitValue = 42;
+static integer globalInitValue = 1024;
+integer localInitLocal = localInitValue;
+static integer globalInitLocal = localInitValue;
+integer localInitGlobal = globalInitValue;
+static integer globalInitGlobal = globalInitValue;
+
+static if (false) {
+// TODO: test member, local and global variable initializations
+struct RecTestInit {
+	// member variable
+	// compiler: WARN if not initialized when instantiated.
+	int32 a;
+
+	// member variable with default value
+	// compiler: use default value if not initialized when instantiated.
+	int32 b = 9;
+
+	// constant member variable:
+	// compiler: ERROR if not initialized when instantiated.
+	const int32 c;
+
+	// constant member variable with default value
+	// compiler: use default value if not initialized when instantiated.
+	const int32 d = 42;
+
+	// global variable(hidden in class).
+	// compiler: WARN if not initialized when declared.
+	static int32 A;
+
+	// constant global variable
+	// compiler: ERROR if not initialized when declared.
+	static const int32 B = 0;
+}
+
+/+void init() {
+	// local variable
+	// compiler: WARN if not initialized when declared.
+	int32 a;
+
+	// constant local variable
+	// compiler: ERROR if not initialized when declared.
+	const int32 c = 31;
+
+	// global variable
+	// compiler: WARN if not initialized when declared.
+	static int32 d = 7;
+
+	// constant global variable.
+	// compiler: ERROR if not initialized when declared.
+	static const int32 e = 4;
+}+/
+
+RecTestInit a = {
+	a: 1;
+	b: 2;
+	c: 3;
+	d: 4;
+};
+}// */

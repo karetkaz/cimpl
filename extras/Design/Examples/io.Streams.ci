@@ -2,7 +2,7 @@
 
 struct Closeable: object {
 	// abstract method
-	void close(Closeable closeable);
+	void close(Closeable this);
 }
 
 inline void(Closeable instance) = Closeable.close(instance);
@@ -45,6 +45,10 @@ struct ByteReader: Closeable {
 
 // ByteWriter ~= java:OutputStream
 struct ByteWriter: Closeable {
+	struct Writeable: object {
+		// abstract method
+		int write(Writeable this, ByteWriter writer);
+	}
 
 	// abstract method
 	int write(ByteWriter this, byte bytes[]);
@@ -55,6 +59,14 @@ struct ByteWriter: Closeable {
 	int write(ByteWriter this, byte oneByte) {
 		byte bytes[1] = { oneByte };
 		return this.write(bytes);
+	}
+
+	int write(ByteWriter this, int write(ByteWriter writer)) {
+		return value.write(this);
+	}
+
+	int write(ByteWriter this, Writeable value) {
+		return write(this, value.write);
 	}
 
 	// TODO: bool write(ByteWriter this, int8 value) { /*...*/ }
@@ -78,7 +90,127 @@ struct ByteWriter: Closeable {
 	*/
 }
 
-struct CopyReader: ByteReader {  // Tee
+// TextReader := Decoder & Parser
+struct TextReader: Closeable {  // java:Reader + Scanner?Parser?
+	const ByteReader reader;
+	const bool close;
+
+	// abstract method
+	int decode(char chars[], ByteReader reader);
+
+	int read(TextReader this, char chars[]) {
+		return this.decode(chars, this.reader);
+	}
+
+	int read(TextReader this) {
+		char chars[1];
+		result = this.read(chars);
+		if (result > 0) {
+			result = chars[0];
+		}
+		return result;
+	}
+
+	void close(TextReader this) {
+		if (this.close) {
+			this.reader.close();
+		}
+	}
+
+	// TODO: string readToken(TextReader this, regex matcher) { /*...*/ }
+	// TODO: string readWord(TextReader this) { return this.readToken(/\w+/); }
+	// TODO: string readLine(TextReader this) { return this.readToken(/^.*$/); }
+	// TODO: string readNumber(TextReader this, Locale locale) { /*...*/ }
+
+	/* TODO: subclasses
+		Latin1
+		Ascii
+		Utf7
+		Utf8
+	*/
+}
+
+// TextWriter := Encoder & Printer
+struct TextWriter: Closeable {  // java:Writer + PrintStream
+	struct Writeable: object {
+		// abstract method
+		int write(Writeable this, TextWriter writer);
+	}
+
+	const ByteWriter writer;
+	const bool close;
+
+	// abstract method
+	int encode(ByteWriter writer, char chars[]);
+
+	int write(TextWriter this, char chars[]) {
+		return this.encode(this.writer, chars);
+	}
+
+	int write(TextWriter this, char oneChar) {
+		char chars[1] = { oneChar };
+		return this.write(chars);
+	}
+
+	int write(TextWriter this, int write(TextWriter writer)) {
+		return write(this);
+	}
+
+	int write(TextWriter this, Writeable value) {
+		return write(this, value.write);
+	}
+
+	void flush(TextWriter this) {
+		this.writer.flush();
+	}
+
+	void close(TextWriter this) {
+		if (this.close) {
+			this.writer.close();
+		}
+	}
+
+	/**
+	 * Convert from one encoding to another.
+	 * @returns converted character count.
+	 *
+	 * example: convert utf-8 encoded file to ascii
+	 * TextWriter output = AsciiWriter("out.txt", false);
+	 * TextReader input = Utf8Reader("in.txt");
+	 * output.encode(input);
+	*/
+	int encode(TextWriter this, TextReader input) {
+		int count;
+		char buffer[1024];
+		for ( ; (count = input.read(buffer)) > 0; ) {
+			this.write(buffer[0 .. count]);
+			result += count;
+		}
+		return result;
+	}
+
+	// TODO: bool write(TextWriter this, Locale locale, bool value) { /*...*/ }
+	// TODO: bool write(TextWriter this, Locale locale, char value) { /*...*/ }
+	// TODO: bool write(TextWriter this, Locale locale, int32 value) { /*...*/ }
+	// TODO: bool write(TextWriter this, Locale locale, int64 value) { /*...*/ }
+	// TODO: bool write(TextWriter this, Locale locale, uint32 value) { /*...*/ }
+	// TODO: bool write(TextWriter this, Locale locale, uint64 value) { /*...*/ }
+	// TODO: bool write(TextWriter this, Locale locale, float32 value) { /*...*/ }
+	// TODO: bool write(TextWriter this, Locale locale, float64 value) { /*...*/ }
+	// TODO: bool write(TextWriter this, Locale locale, string value) { /*...*/ }
+	// TODO: bool write(TextWriter this, Locale locale, object value) { /*...*/ }
+	// TODO: bool write(TextWriter this, Locale locale, variant value) { /*...*/ }
+
+	/* TODO: subclasses
+		Latin1
+		Ascii
+		Utf7
+		Utf8
+	*/
+}
+
+// copy stream
+struct CopyReader: ByteReader {
 	const ByteReader source;
 	const ByteWriter clone;
 
@@ -102,6 +234,7 @@ struct CopyReader: ByteReader {  // Tee
 	};
 }
 
+// File streams
 struct FileReader: ByteReader {
 	const File file;
 	const bool close;
@@ -157,96 +290,10 @@ struct FileWriter: ByteWriter {
 	};
 }
 
-// TextReader := Decoder & Parser
-struct TextReader: Closeable {  // java:Reader + Scanner?Parser?
-	const ByteReader reader;
-	const bool close;
-
-	// abstract method
-	int decode(ByteReader reader, char chars[]);
-
-	int read(TextReader this, char chars[]) {
-		return this.decode(this.reader, chars);
-	}
-
-	int read(TextReader this) {
-		char chars[1];
-		result = this.read(chars);
-		if (result > 0) {
-			result = chars[0];
-		}
-		return result;
-	}
-
-	void close(Utf8Reader this) {
-		if (this.close) {
-			this.reader.close();
-		}
-	}
-
-	// TODO: string readToken(TextReader this, regex matcher) { /*...*/ }
-	// TODO: string readWord(TextReader this) { return this.readToken(/\w+/); }
-	// TODO: string readLine(TextReader this) { return this.readToken(/^.*$/); }
-	// TODO: string readNumber(TextReader this, Locale locale) { /*...*/ }
-
-	/* TODO: subclasses
-		Latin1
-		Ascii
-		Utf7
-		Utf8
-	*/
-}
-
-// TextWriter := Encoder & Printer
-struct TextWriter: Closeable {  // java:Writer + PrintStream
-	const ByteWriter writer;
-	const bool close;
-
-	// abstract method
-	int encode(ByteWriter writer, char chars[]);
-
-	int write(TextWriter this, char chars[]) {
-		return this.encode(this.writer, chars);
-	}
-
-	int write(ByteWriter this, char oneChar) {
-		char chars[1] = { oneChar };
-		return this.write(chars);
-	}
-
-	void flush(TextWriter this) {
-		this.writer.flush();
-	}
-
-	void close(Utf8Writer this) {
-		if (this.close) {
-			this.writer.close();
-		}
-	}
-
-	// TODO: bool print(TextWriter this, Locale locale, bool value) { /*...*/ }
-	// TODO: bool print(TextWriter this, Locale locale, char value) { /*...*/ }
-	// TODO: bool print(TextWriter this, Locale locale, int32 value) { /*...*/ }
-	// TODO: bool print(TextWriter this, Locale locale, int64 value) { /*...*/ }
-	// TODO: bool print(TextWriter this, Locale locale, uint32 value) { /*...*/ }
-	// TODO: bool print(TextWriter this, Locale locale, uint64 value) { /*...*/ }
-	// TODO: bool print(TextWriter this, Locale locale, float32 value) { /*...*/ }
-	// TODO: bool print(TextWriter this, Locale locale, float64 value) { /*...*/ }
-	// TODO: bool print(TextWriter this, Locale locale, string value) { /*...*/ }
-	// TODO: bool print(TextWriter this, Locale locale, object value) { /*...*/ }
-	// TODO: bool print(TextWriter this, Locale locale, variant value) { /*...*/ }
-
-	/* TODO: subclasses
-		Latin1
-		Ascii
-		Utf7
-		Utf8
-	*/
-}
-
+// Ascii 
 struct AsciiReader: TextReader {
 
-	int decode(ByteReader reader, char chars[]) {
+	int decode(char chars[], ByteReader reader) {
 		for (result = 0; result < chars.length; result += 1) {
 			int value = reader.read();
 			if (value < 0) {
@@ -296,9 +343,10 @@ struct AsciiWriter: TextWriter {
 	};
 }
 
+// Utf-8
 struct Utf8Reader: TextReader {
 
-	int decode(ByteReader reader, char chars[]) {
+	int decode(char chars[], ByteReader reader) {
 		for (result = 0; result < chars.length; result += 1) {
 			int value = reader.read();
 			if (value < 0) {

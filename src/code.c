@@ -286,13 +286,13 @@ size_t emitarg(rtContext rt, vmOpcode opc, vmValue arg) {
 		case opc_sti2:
 		case opc_sti4:
 		case opc_sti8:
-		case opc_stiq: {
+		case opc_stiq:
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_ldsp) {
 				if (rt->vm.su < arg.i32 / 4)
 					rt->vm.su = arg.i32 / 4;
 			}
-		} break;
+			break;
 	}
 	// */
 
@@ -1624,7 +1624,7 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 		case opc_jmp:
 		case opc_jnz:
 		case opc_jz:
-		case opc_task: {
+		case opc_task:
 			if (ip->opc == opc_task) {
 				printFmt(out, esc, " %d,", ip->dl);
 				i = ip->cl;
@@ -1642,7 +1642,6 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 				printFmt(out, esc, " %+d", i);
 			}
 			break;
-		}
 
 		case opc_sync:
 			printFmt(out, esc, " %d", ip->idx);
@@ -1668,7 +1667,8 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 			case b32_bit_sar:
 				printFmt(out, esc, "%s 0x%03x", "sar", ip->idx & 0x3f);
 				break;
-		} break;
+			}
+			break;
 
 		case opc_ld32:
 		case opc_st32:
@@ -1727,7 +1727,8 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 			char c3 = "xyzw"[ip->idx >> 4 & 3];
 			char c4 = "xyzw"[ip->idx >> 6 & 3];
 			printFmt(out, esc, " %c%c%c%c(%02x)", c1, c2, c3, c4, ip->idx);
-		} break;
+			break;
+		}
 	}
 }
 

@@ -45,6 +45,7 @@ TOKEN_DEF(OPER_all, 0x05, 2, "&&")                  // a && b
 TOKEN_DEF(OPER_any, 0x04, 2, "||")                  // a || b
 TOKEN_DEF(OPER_sel, 0x13, 3, "?:")                  // a ? b : c
 
+TOKEN_DEF(INIT_set, 0x12, 2, ":=")                  // a := b
 TOKEN_DEF(ASGN_set, 0x12, 2, ":=")                  // a := b
 TOKEN_DEF(ASGN_mul, 0x12, 2, "*=")                  // a *= b
 TOKEN_DEF(ASGN_div, 0x12, 2, "/=")                  // a /= b

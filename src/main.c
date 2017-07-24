@@ -296,6 +296,7 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 
 		case OPER_com:		// ','
 
+		case INIT_set:		// '='
 		case ASGN_set:		// '='
 			printFmt(out, esc, " value=\"%?t\">\n", ast);
 			dumpAstXML(out, esc, ast->op.test, mode, indent + 1, "test");
@@ -309,7 +310,7 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 		case TOKEN_var: {
 			symn link = ast->ref.link;
 			// declaration
-			if (link && link->init /*&& link->tag == ast*/) {
+			if (link && link->init && (mode & prSymInit)) {
 				printFmt(out, esc, " value=\"%?t\">\n", ast);
 				dumpAstXML(out, esc, link->init, mode, indent + 1, "init");
 				printFmt(out, esc, "%I</%s>\n", indent, text);
@@ -320,7 +321,7 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 		// fall trough
 		case TOKEN_opc:
 		case TOKEN_val:
-			printFmt(out, esc, " value=\"%?t\"/>\n", ast);
+			printFmt(out, esc, " value=\"%?t\" />\n", ast);
 			break;
 
 		//#}
@@ -519,6 +520,7 @@ static void jsonDumpAst(FILE *out, const char **esc, astn ast, const char *kind,
 
 		case OPER_com:		// ','
 
+		case INIT_set:		// '='
 		case ASGN_set:		// '='
 			jsonDumpAst(out, esc, ast->op.test, KEY_TEST, indent + 1);
 			jsonDumpAst(out, esc, ast->op.lhso, KEY_LHSO, indent + 1);
@@ -1182,9 +1184,9 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 	for ( ; breakMode & brkPause; ) {
 		dbgMode cmd = usr->dbgCommand;
 		char *arg = NULL;
-		printFmt(out, esc, ">dbg[%?c] %.A: ", cmd, vmPointer(rt, caller));
+		printFmt(stderr, esc, ">dbg[%?c] %.A: ", cmd, vmPointer(rt, caller));
 		if (usr->in == NULL || fgets(buff, sizeof(buff), usr->in) == NULL) {
-			printFmt(out, esc, "can not read from standard input, aborting\n");
+			printFmt(stdout, esc, "can not read from standard input, aborting\n");
 			return ctx->abort;
 		}
 		if ((arg = strchr(buff, '\n'))) {
@@ -1200,7 +1202,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 
 		switch (cmd) {
 			default:
-				printFmt(out, esc, "invalid command '%s'\n", buff);
+				printFmt(stdout, esc, "invalid command '%s'\n", buff);
 				break;
 
 			case dbgAbort:
@@ -1221,11 +1223,11 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 				return dbg;
 
 			case dbgPrintStackTrace:
-				traceCalls(ctx, out, 1, 0, 20);
+				traceCalls(ctx, stdout, 1, 0, 20);
 				break;
 
 			case dbgPrintInstruction:
-				textDumpAsm(out, esc, caller, usr, 0);
+				textDumpAsm(stdout, esc, caller, usr, 0);
 				break;
 
 			case dbgPrintStackValues:
@@ -1234,14 +1236,14 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 					// print top of stack
 					for (offs = 0; offs < ss; offs++) {
 						vmValue *v = (vmValue*)&((long*)stack)[offs];
-						printFmt(out, esc, "\tsp(%d): {0x%08x, i32(%d), f32(%f), i64(%D), f64(%F)}\n", offs, v->i32, v->i32, v->f32, v->i64, v->f64);
+						printFmt(stdout, esc, "\tsp(%d): {0x%08x, i32(%d), f32(%f), i64(%D), f64(%F)}\n", offs, v->i32, v->i32, v->f32, v->i64, v->f64);
 					}
 				}
 				else {
 					symn sym = ccLookupSym(rt->cc, NULL, arg);
-					printFmt(out, esc, "arg:%T", sym);
+					printFmt(stdout, esc, "arg:%T", sym);
 					if (sym && isVariable(sym) && !isStatic(sym)) {
-						printVal(out, esc, rt, sym, (vmValue *) stack, prSymType, 0);
+						printVal(stdout, esc, rt, sym, (vmValue *) stack, prSymType, 0);
 					}
 				}
 				break;

@@ -998,7 +998,8 @@ static ccToken readTok(ccContext cc, astn tok) {
 				tok->type = cc->type_chr;
 				tok->cInt = val;
 			}
-		} break;
+			break;
+		}
 		read_idf: {			// [a-zA-Z_][a-zA-Z0-9_]*
 			int lo = 0;
 			int hi = lengthOf(keywords);
@@ -1046,7 +1047,8 @@ static ccToken readTok(ccContext cc, astn tok) {
 				tok->ref.hash = rehash(beg, ptr - beg) % TBL_SIZE;
 				tok->ref.name = mapstr(cc, beg, ptr - beg, tok->ref.hash);
 			}
-		} break;
+			break;
+		}
 		read_num: {			// int | ([0-9]+'.'[0-9]* | '.'[0-9]+)([eE][+-]?[0-9]+)?
 			int ovf = 0;			// overflow
 			ccKind cast;
@@ -1281,7 +1283,8 @@ static ccToken readTok(ccContext cc, astn tok) {
 					tok->cFlt = f64v;
 					break;
 			}
-		} break;
+			break;
+		}
 	}
 
 	if (ptr >= end) {
@@ -1319,33 +1322,33 @@ astn peekTok(ccContext cc, ccToken match) {
 }
 
 /// @doc: header
-astn nextTok(ccContext cc, ccToken match) {
+astn nextTok(ccContext cc, ccToken match, int raise) {
 	astn token = peekTok(cc, match);
 	if (token != NULL) {
 		cc->tokNext = token->next;
 		token->next = NULL;
 		return token;
 	}
+	if (raise) {
+		char *file = cc->file;
+		int line = cc->line;
+		token = cc->tokNext;
+		if (token && token->file && token->line) {
+			file = token->file;
+			line = token->line;
+		}
+		error(cc->rt, file, line, ERR_UNMATCHED_TOKEN, token, match);
+	}
 	return NULL;
 }
 
 /// @doc: header
 ccToken skipTok(ccContext cc, ccToken match, int raise) {
-	astn node = nextTok(cc, match);
-	if (node != NULL) {
-		ccToken result = node->kind;
-		recycle(cc, node);
+	astn token = nextTok(cc, match, raise);
+	if (token != NULL) {
+		ccToken result = token->kind;
+		recycle(cc, token);
 		return result;
-	}
-	if (raise) {
-		char *file = cc->file;
-		int line = cc->line;
-		node = cc->tokNext;
-		if (node && node->file && node->line) {
-			file = node->file;
-			line = node->line;
-		}
-		error(cc->rt, file, line, ERR_UNMATCHED_TOKEN, node, match);
 	}
 	return TOKEN_any;
 }

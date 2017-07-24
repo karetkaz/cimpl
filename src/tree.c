@@ -469,7 +469,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 
 			dieif(lhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
 			dieif(rhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
-			dieif(lhs.type != rhs.type, ERR_INTERNAL_ERROR);
+			logif(lhs.type != rhs.type, "%?s:%?u: "ERR_INTERNAL_ERROR, ast->file, ast->line);
 			dieif(ast->type != cc->type_bol, ERR_INTERNAL_ERROR);
 
 			res->kind = TOKEN_val;
@@ -668,6 +668,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 			dieif(lhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
 			return eval(cc, res, bolValue(&lhs) ? ast->op.lhso : ast->op.rhso);
 
+		case INIT_set:
 		case ASGN_set:
 			return CAST_any;
 	}

@@ -228,7 +228,7 @@ static astn expand2Statement(ccContext cc, astn node, int block) {
 static astn statement_list(ccContext cc);
 static astn statement(ccContext cc, ccKind attr);
 static astn declaration(ccContext cc, ccKind attr, astn *args);
-static astn expression(ccContext cc);
+static astn expression(ccContext cc, int comma);
 
 /** Parse qualifiers.
  * @brief scan for qualifiers: const static parallel
@@ -281,7 +281,7 @@ static ccKind qualifier(ccContext cc) {
  * @param cc compiler context.
  * @return root of expression tree
  */
-static astn expression(ccContext cc) {
+static astn expression(ccContext cc, int comma) {
 	astn buff[CC_MAX_TOK], *const base = buff + CC_MAX_TOK;
 	astn *ptr, ast, prev = NULL;
 	astn *postfix = buff;			// postfix form of expression
@@ -293,7 +293,7 @@ static astn expression(ccContext cc) {
 	sym[level] = 0;
 
 	// parse expression using Shunting-yard algorithm
-	while ((ast = nextTok(cc, TOKEN_any))) {
+	while ((ast = nextTok(cc, TOKEN_any, 0))) {
 		int l2r, prec = level << 4;
 
 		// statement tokens are not allowed in expressions !!!!
@@ -445,6 +445,19 @@ static astn expression(ccContext cc) {
 				}
 				unary = 1;
 				goto tok_operator;
+
+			case OPER_com:		// ','
+				if (comma && level <= 0) {
+					backTok(cc, ast);
+					ast = NULL;
+					break;
+				}
+				if (unary) {
+					error(cc->rt, ast->file, ast->line, ERR_SYNTAX_ERR_BEFORE, ast);
+					*postfix++ = NULL;
+				}
+				unary = 1;
+				goto tok_operator;
 		}
 
 		if (postfix >= stack) {
@@ -478,7 +491,16 @@ static astn expression(ccContext cc) {
 					break;
 			}
 		}
-		error(cc->rt, cc->file, cc->line, ERR_EXPECTED_BEFORE_TOK, expected, peekTok(cc, TOKEN_any));
+		char *file = cc->file;
+		int line = cc->line;
+		if (ast == NULL) {
+			ast = peekTok(cc, TOKEN_any);
+		}
+		if (ast != NULL) {
+			file = ast->file;
+			line = ast->line;
+		}
+		error(cc->rt, file, line, ERR_EXPECTED_BEFORE_TOK, expected, peekTok(cc, TOKEN_any));
 		return NULL;
 	}
 
@@ -573,60 +595,92 @@ static astn parameters(ccContext cc, symn resType) {
  * @return the initializer expression.
  */
 static astn initializer(ccContext cc, symn var) {
-	if (skipTok(cc, STMT_beg, 0)) {
-		symn field;
-		astn tag, ast, root = NULL;
-		while ((ast = peekTok(cc, TOKEN_any))) {
-			switch (ast->kind) {
-				default:
-					break;
-
-				case RIGHT_crl:
-					ast = NULL;
-					break;
-			}
-			if (ast == NULL) {
-				break;
-			}
-
-			// TODO: what if var is array
-
-			// read property name
-			if ((tag = nextTok(cc, TOKEN_var)) == NULL) {
-				error(cc->rt, cc->file, cc->line, ERR_EXPECTED_BEFORE_TOK, "identifier", peekTok(cc, TOKEN_any));
-				return NULL;
-			}
-
-			// lookup tag field
-			if ((field = lookup(cc, var, tag, NULL, 1)) == NULL) {
-				//return NULL;
-			}
-
-			if (peekTok(cc, OPER_beg) || skipTok(cc, PNCT_cln, 0)) {
-				ast = initializer(cc, field);
-			}
-			else {
-				error(cc->rt, cc->file, cc->line, ERR_UNEXPECTED_TOKEN, peekTok(cc, TOKEN_any));
-				break;
-			}
-			skipTok(cc, STMT_end, 1);
-			if (ast == NULL) {
-				error(cc->rt, cc->file, cc->line, ERR_EXPECTED_BEFORE_TOK, "initializer", peekTok(cc, TOKEN_any));
-				return NULL;
-			}
-			ast = opNode(cc, ASGN_set, tag, ast);
-			ast->type = typeCheck(cc, var->type, ast, 1);
-			if (ast->type == NULL) {
-				break;
-			}
-			root = argNode(cc, root, ast);
+	astn ast = peekTok(cc, STMT_beg) ? NULL : expression(cc, 1);
+	symn type = var == NULL ? NULL : var->type;
+	if (ast != NULL) {
+		if (typeCheck(cc, NULL, ast, 0) && isTypeExpr(ast)) {
+			type = linkOf(ast);
 		}
-		skipTok(cc, RIGHT_crl, 1);
-		return root;
+		else {
+			type = NULL;
+		}
 	}
 
-	// initialize with expression
-	return expression(cc);
+	if (!skipTok(cc, STMT_beg, 0)) {	// '{'
+		// initializer is an expression
+		return ast;
+	}
+
+	astn root = NULL;
+	ccToken sep = STMT_end;
+	while ((ast = peekTok(cc, TOKEN_any))) {
+		switch (ast->kind) {
+			default:
+				break;
+
+			case RIGHT_crl:	// '}'
+				ast = NULL;
+				break;
+		}
+		if (ast == NULL) {
+			break;
+		}
+
+		// try to read: `<property> ':' <initializer>`
+		ast = nextTok(cc, TOKEN_var, 0);
+		if (ast != NULL && skipTok(cc, PNCT_cln, 0)) {
+			// FIXME: do not lookup or type check while parsing.
+			symn fieldRef = lookup(cc, type->fields, ast, NULL, 0);
+			if (fieldRef == NULL) {
+				error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
+				fieldRef = cc->type_int;
+			}
+			astn init = initializer(cc, fieldRef);
+			ast = opNode(cc, INIT_set, ast, init);
+		}
+		else {
+			if (ast != NULL) {
+				backTok(cc, ast);
+			}
+			ast = expression(cc, 1);
+		}
+
+		if (ast == NULL) {
+			root = NULL;
+			break;
+		}
+		// TODO: remove type checking
+		ast->type = typeCheck(cc, type, ast, 1);
+		if (ast->type == NULL) {
+			break;
+		}
+
+		// update root
+		root = argNode(cc, root, ast);
+
+		// allow ';' or ',' as delimiter
+		if (!skipTok(cc, sep, 0)) {
+			if (sep == STMT_end) {
+				if (root == ast && skipTok(cc, OPER_com, 0)) {
+					sep = OPER_com;
+				}
+				else {
+					astn next = peekTok(cc, 0);
+					if (root != ast && next != NULL) {
+						// todo mixed separators detected
+						warn(cc->rt, 1, next->file, next->line, ERR_UNMATCHED_SEPARATOR, next, STMT_end);
+					}
+					break;
+				}
+			}
+			else {
+				break;
+			}
+		}
+	}
+
+	skipTok(cc, RIGHT_crl, 1);
+	return root;
 }
 
 /** Parse variable or function declaration.
@@ -638,7 +692,7 @@ static astn initializer(ccContext cc, symn var) {
  */
 static astn declaration(ccContext cc, ccKind attr, astn *args) {
 	// read typename
-	astn tok = expression(cc);
+	astn tok = expression(cc, 0);
 	if (tok == NULL) {
 		error(cc->rt, tok->file, tok->line, ERR_INVALID_TYPE, tok);
 		return NULL;
@@ -655,9 +709,8 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		return NULL;
 	}
 
-	astn tag = nextTok(cc, TOKEN_var);
+	astn tag = nextTok(cc, TOKEN_var, 1);
 	if (tag == NULL) {
-		error(cc->rt, cc->file, cc->line, ERR_EXPECTED_BEFORE_TOK, "identifier", peekTok(cc, TOKEN_any));
 		tag = tagNode(cc, ".variable");
 	}
 
@@ -707,36 +760,38 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 	while (skipTok(cc, LEFT_sqr, 0)) {		// int a[...][][]...
 		symn arr = newDef(cc, KIND_typ);
 
-		if (!skipTok(cc, RIGHT_sqr, 0)) {
-			astn len = nextTok(cc, OPER_mul);
-			if (len == NULL) {
-				struct astNode value;
-				int64_t length = -1;
-				len = expression(cc);
-				if (len != NULL) {
-					len->type = typeCheck(cc, NULL, len, 1);
-				}
-				if (eval(cc, &value, len)) {
-					length = intValue(&value);
-				}
-				if (length <= 0) {
-					error(cc->rt, len->file, len->line, ERR_INVALID_ARRAY_LENGTH, len);
-				}
-				arr->size = length * type->size;
-				addLength(cc, arr, len);
-				cast = CAST_val;
-			}
-			else {
-				arr->size = sizeof(vmOffs);
-				cast = CAST_ref;
-			}
-			skipTok(cc, RIGHT_sqr, 1);
-		}
-		else {
-			arr->size = 2 * sizeof(vmOffs);
+		if (peekTok(cc, RIGHT_sqr) != NULL) {
+			// dynamic-size array: int a[]
 			addLength(cc, arr, NULL);
+			arr->size = 2 * sizeof(vmOffs);
 			cast = CAST_arr;
 		}
+		else if (skipTok(cc, OPER_mul, 0)) {
+			// unknown-size array: int a[*]
+			arr->size = sizeof(vmOffs);
+			cast = CAST_ref;
+		}
+		else {
+			// fixed-size array: int a[42]
+			// associative array: TODO: int a[string]
+			struct astNode value;
+			int64_t length = -1;
+			astn len = expression(cc, 0);
+			if (len != NULL) {
+				len->type = typeCheck(cc, NULL, len, 1);
+			}
+			if (eval(cc, &value, len)) {
+				length = intValue(&value);
+			}
+			if (length <= 0) {
+				error(cc->rt, len->file, len->line, ERR_INVALID_ARRAY_LENGTH, len);
+			}
+			addLength(cc, arr, len);
+			arr->size = length * type->size;
+			cast = CAST_val;
+		}
+		skipTok(cc, RIGHT_sqr, 1);
+
 
 		arr->kind = ATTR_stat | KIND_typ | CAST_arr;
 		arr->type = type;
@@ -775,7 +830,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 	}
 
 	// inline "file.ci"
-	if ((tag = nextTok(cc, TOKEN_val))) {
+	if ((tag = nextTok(cc, TOKEN_val, 0))) {
 		astn next = NULL, head = NULL, tail = NULL;
 		skipTok(cc, STMT_end, 1);
 
@@ -785,7 +840,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 			return NULL;
 		}
 
-		while ((tag = nextTok(cc, TOKEN_any)) != NULL) {
+		while ((tag = nextTok(cc, TOKEN_any, 0)) != NULL) {
 			if (tail != NULL) {
 				tail->next = tag;
 			}
@@ -806,8 +861,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		return NULL;
 	}
 
-	if (!(tag = nextTok(cc, TOKEN_var))) {
-		error(cc->rt, cc->file, cc->line, ERR_EXPECTED_BEFORE_TOK, "identifier", peekTok(cc, TOKEN_any));
+	if (!(tag = nextTok(cc, TOKEN_var, 1))) {
 		skipTok(cc, STMT_end, 1);
 		return NULL;
 	}
@@ -887,12 +941,16 @@ static astn declare_record(ccContext cc, ccKind attr) {
 		return NULL;
 	}
 
-	astn tag = nextTok(cc, TOKEN_var);
+	astn tag = nextTok(cc, TOKEN_var, 1);
+	if (tag == NULL) {
+		tag = tagNode(cc, ".anonymous");
+	}
+
 	symn base = cc->type_rec;
 	int pack = pad_size;
 
 	if (skipTok(cc, PNCT_cln, 0)) {			// ':' base type or packing
-		astn tok = expression(cc);
+		astn tok = expression(cc, 0);
 		if (tok != NULL) {
 			// type-check the base type or packing
 			if (!typeCheck(cc, NULL, tok, 0)) {
@@ -945,10 +1003,6 @@ static astn declare_record(ccContext cc, ccKind attr) {
 	if (!skipTok(cc, STMT_beg, 1)) {	// '{'
 		traceAst(peekTok(cc, 0));
 		return NULL;
-	}
-	if (tag == NULL) {
-		// TODO: disable anonymous structure declarations ?
-		tag = tagNode(cc, ".anonymous");
 	}
 
 	symn type = declare(cc, ATTR_stat | ATTR_cnst | KIND_typ | CAST_val, tag, base, NULL);
@@ -1034,20 +1088,55 @@ static astn statement_list(ccContext cc) {
 
 // TODO: implement
 static astn statement_for(ccContext cc, ccKind attr) {
-	astn ast = nextTok(cc, STMT_for);
+	astn ast = nextTok(cc, STMT_for, 1);
 	if (ast == NULL) {
+		traceAst(ast);
 		return NULL;
 	}
 
 	enter(cc);
 	skipTok(cc, LEFT_par, 1);
-	ast->stmt.init = expression(cc);
-	//
-	if (isTypeExpr(ast->stmt.init)) {
 
+	astn init = peekTok(cc, STMT_end) ? NULL : expression(cc, 0);
+	if (init != NULL) {
+		init->type = typeCheck(cc, NULL, init, 1);
+		if (isTypeExpr(init)) {
+			backTok(cc, init);
+			init = declaration(cc, attr, NULL);
+			if (init != NULL && init->ref.link->init != NULL) {
+				astn ast = init->ref.link->init;
+				ast->type = typeCheck(cc, NULL, ast, 1);
+			}
+		}
+		ast->stmt.init = init;
+	}
+
+	if (peekTok(cc, PNCT_cln)) {
+		// TODO: transform foreach to for.
+		// transform `for (iterator i: iterable) ...` to
+		// `for (iterator $it = iterator(iterable), iterator i = $it; $it.next(); i = $it) ...`
+		// transform `for (integer i: iterable) ...` to
+		// `for (iterator $it = iterator(iterable), integer i; next($it, &&i); ) ...`
+		fatal(ERR_UNIMPLEMENTED_FEATURE);
+	}
+
+	skipTok(cc, STMT_end, 1);
+	astn test = peekTok(cc, STMT_end) ? NULL : expression(cc, 0);
+	if (test != NULL) {
+		test->type = typeCheck(cc, NULL, test, 1);
+		ast->stmt.test = test;
+	}
+
+	skipTok(cc, STMT_end, 1);
+	astn step = peekTok(cc, RIGHT_par) ? NULL : expression(cc, 0);
+	if (step != NULL) {
+		step->type = typeCheck(cc, NULL, step, 1);
+		ast->stmt.step = step;
 	}
 
 	skipTok(cc, RIGHT_par, 1);
+
+	ast->stmt.stmt = statement(cc, (ccKind) 0);
 
 	leave(cc, NULL, KIND_def, 0, NULL);
 
@@ -1057,15 +1146,14 @@ static astn statement_for(ccContext cc, ccKind attr) {
 }
 
 static astn statement_if(ccContext cc, ccKind attr) {
-	int enterThen = 1, enterElse = 1;
-	astn test, ast = nextTok(cc, STMT_if);
+	astn ast = nextTok(cc, STMT_if, 1);
 	if (ast == NULL) {
 		traceAst(ast);
 		return NULL;
 	}
 
 	skipTok(cc, LEFT_par, 1);
-	test = expression(cc);
+	astn test = expression(cc, 0);
 	if (test != NULL) {
 		test->type = typeCheck(cc, NULL, test, 1);
 		ast->stmt.test = test;
@@ -1073,9 +1161,11 @@ static astn statement_if(ccContext cc, ccKind attr) {
 	skipTok(cc, RIGHT_par, 1);
 
 	// static if statement true branch does not enter a new scope to expose declarations.
+	int enterThen = 1;
+	int enterElse = 1;
 	if (attr & ATTR_stat) {
 		struct astNode value;
-		if (eval(cc, &value, ast->stmt.test)) {
+		if (eval(cc, &value, test)) {
 			if (bolValue(&value)) {
 				enterThen = 0;
 			}
@@ -1084,7 +1174,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 			}
 		}
 		else {
-			error(cc->rt, ast->file, ast->line, ERR_INVALID_CONST_EXPR, ast->stmt.test);
+			error(cc->rt, test->file, test->line, ERR_INVALID_CONST_EXPR, test);
 		}
 	}
 
@@ -1156,7 +1246,7 @@ static astn statement(ccContext cc, ccKind attr) {
 	if (skipTok(cc, STMT_end, 0)) {             // ;
 		warn(cc->rt, 1, cc->file, cc->line, WARN_EMPTY_STATEMENT);
 	}
-	else if ((ast = nextTok(cc, STMT_beg))) {   // { ... }
+	else if ((ast = nextTok(cc, STMT_beg, 0))) {   // { ... }
 		ast->stmt.stmt = statement_list(cc);
 		skipTok(cc, RIGHT_crl, 1);
 		ast->type = cc->type_vid;
@@ -1217,17 +1307,17 @@ static astn statement(ccContext cc, ccKind attr) {
 			}
 		}
 	}
-	else if ((ast = nextTok(cc, STMT_brk))) {   // break;
+	else if ((ast = nextTok(cc, STMT_brk, 0))) {   // break;
 		skipTok(cc, STMT_end, 1);
 		ast->type = cc->type_vid;
 	}
-	else if ((ast = nextTok(cc, STMT_con))) {   // continue;
+	else if ((ast = nextTok(cc, STMT_con, 0))) {   // continue;
 		skipTok(cc, STMT_end, 1);
 		ast->type = cc->type_vid;
 	}
-	else if ((ast = nextTok(cc, STMT_ret))) {   // return expression;
+	else if ((ast = nextTok(cc, STMT_ret, 0))) {   // return expression;
 		if (!skipTok(cc, STMT_end, 0)) {
-			ast->stmt.stmt = expression(cc);
+			ast->stmt.stmt = expression(cc, 0);
 			skipTok(cc, STMT_end, 1);
 			check = ast->stmt.stmt;
 		}
@@ -1256,7 +1346,7 @@ static astn statement(ccContext cc, ccKind attr) {
 			//ast = expand2Statement(cc, ast, 0);
 		}
 	}
-	else if ((ast = expression(cc))) {
+	else if ((ast = expression(cc, 0))) {
 		symn type = typeCheck(cc, NULL, ast, 1);
 		if (type == NULL) {
 			error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
@@ -1320,7 +1410,7 @@ astn parse(ccContext cc, int warn) {
 	// pre read all tokens from source
 	if (cc->tokNext == NULL) {
 		astn head = NULL, tail = NULL;
-		while ((ast = nextTok(cc, TOKEN_any)) != NULL) {
+		while ((ast = nextTok(cc, TOKEN_any, 0)) != NULL) {
 			if (tail != NULL) {
 				tail->next = ast;
 			}
@@ -1390,7 +1480,7 @@ int ccClose(ccContext cc) {
 	}
 
 	// check no token left to read
-	if ((ast = nextTok(cc, TOKEN_any))) {
+	if ((ast = nextTok(cc, TOKEN_any, 0))) {
 		error(cc->rt, ast->file, ast->line, ERR_UNEXPECTED_TOKEN, ast);
 	}
 	// check we are on the same nesting level
