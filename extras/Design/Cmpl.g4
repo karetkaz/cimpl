@@ -9,7 +9,7 @@ statement
     | qualifiers? '{' statementList '}'                                                              # CompoundStatement
     | qualifiers? 'if' '(' for_init ')' statement ('else' statement)?                                      # IfStatement
     | qualifiers? 'for' '(' for_init? ';' expression? ';' expression? ')' statement                       # ForStatement
-    | qualifiers? 'for' '(' variable ':' expression ')' statement                                     # ForEachStatement
+    | 'for' '(' variable ':' expression ')' statement                                                 # ForEachStatement
     | 'return' initializer? ';'                                                                        # ReturnStatement
     | 'break' ';'                                                                                       # BreakStatement
     | 'continue' ';'                                                                                 # ContinueStatement

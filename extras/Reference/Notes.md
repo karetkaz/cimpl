@@ -61,3 +61,24 @@ or the (this/self/first arg) object in case of instance methods.
 before the implementation, this way any function can be passed as delegate.
 This firs instruction should be `set.b32 0`, pop the closure parameter
 from the stack replacing it with the return address placed by call.
+
+## Object members
+
+```
+object.create(inline typename type): type
+object.assign(inline typename var, object value): object
+```
+
+## Aliasing
+- the right hand side can also use local variables if static is not used
+- static should force the right side not to use local variables
+- const should force the right side to be constant
+
+## Constant values
+- A compile time constant expression is an expression whose value can be determined at compile time
+(during verification), before any part of the program has been executed.
+
+- Expressions in certain contexts are required to be compile time constant expressions.
+	- the length of a fixed-size array: `int a[20];`
+	- the condition of a static if statement: `static if (true) {...}`
+

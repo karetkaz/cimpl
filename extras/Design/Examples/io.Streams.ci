@@ -3,6 +3,8 @@
 struct Closeable: object {
 	// abstract method
 	void close(Closeable this);
+
+	void false(Closeable this) {}
 }
 
 inline void(Closeable instance) = Closeable.close(instance);
@@ -62,7 +64,7 @@ struct ByteWriter: Closeable {
 	}
 
 	int write(ByteWriter this, int write(ByteWriter writer)) {
-		return value.write(this);
+		return write(this);
 	}
 
 	int write(ByteWriter this, Writeable value) {
@@ -93,7 +95,6 @@ struct ByteWriter: Closeable {
 // TextReader := Decoder & Parser
 struct TextReader: Closeable {  // java:Reader + Scanner?Parser?
 	const ByteReader reader;
-	const bool close;
 
 	// abstract method
 	int decode(char chars[], ByteReader reader);
@@ -112,9 +113,7 @@ struct TextReader: Closeable {  // java:Reader + Scanner?Parser?
 	}
 
 	void close(TextReader this) {
-		if (this.close) {
-			this.reader.close();
-		}
+		this.reader.close();
 	}
 
 	// TODO: string readToken(TextReader this, regex matcher) { /*...*/ }
@@ -138,7 +137,6 @@ struct TextWriter: Closeable {  // java:Writer + PrintStream
 	}
 
 	const ByteWriter writer;
-	const bool close;
 
 	// abstract method
 	int encode(ByteWriter writer, char chars[]);
@@ -165,9 +163,7 @@ struct TextWriter: Closeable {  // java:Writer + PrintStream
 	}
 
 	void close(TextWriter this) {
-		if (this.close) {
-			this.writer.close();
-		}
+		this.writer.close();
 	}
 
 	/**
@@ -237,16 +233,13 @@ struct CopyReader: ByteReader {
 // File streams
 struct FileReader: ByteReader {
 	const File file;
-	const bool close;
 
 	int read(FileReader this, byte bytes[]) {
 		return File.read(this.file, bytes);
 	}
 
 	void close(FileReader this) {
-		if (this.close) {
-			File.close(this.file);
-		}
+		File.close(this.file);
 	}
 
 	// initializer
@@ -257,12 +250,10 @@ struct FileReader: ByteReader {
 
 	inline FileReader(Path path) = {
 		file: File.open(path);
-		close: true;    // we did open it, we will close it.
 	};
 }
 struct FileWriter: ByteWriter {
 	const File file;
-	const bool close;
 
 	int write(FileWriter this, byte bytes[]) {
 		return File.write(this.file, bytes);
@@ -273,9 +264,7 @@ struct FileWriter: ByteWriter {
 	}
 
 	void close(FileWriter this) {
-		if (this.close) {
-			File.close(this.file);
-		}
+		File.close(this.file);
 	}
 
 	// initializer
@@ -286,7 +275,6 @@ struct FileWriter: ByteWriter {
 
 	inline FileWriter(Path path, bool append) = {
 		file: append ? File.append(path) : File.create(path);
-		close: true;    // we did open it, we will close it.
 	};
 }
 
@@ -308,12 +296,11 @@ struct AsciiReader: TextReader {
 	// initializer
 	inline AsciiReader(ByteReader reader) = {
 		reader: reader;
-		close: false;
+		close: false;   // we did not open it, we will not close it.
 	};
 
 	inline AsciiReader(Path path) = {
 		reader: FileReader(path);
-		close: true;
 	};
 }
 struct AsciiWriter: TextWriter {
@@ -334,12 +321,11 @@ struct AsciiWriter: TextWriter {
 	// initializer
 	inline AsciiWriter(ByteWriter writer) = {
 		writer: writer;
-		close: false;
+		close: false;   // we did not open it, we will not close it.
 	};
 
 	inline AsciiWriter(Path path, bool append) = {
 		writer: FileWriter(path, append);
-		close: true;
 	};
 }
 
@@ -380,12 +366,11 @@ struct Utf8Reader: TextReader {
 	// initializer
 	inline Utf8Reader(ByteReader reader) = {
 		reader: reader;
-		close: false;
+		close: false;   // we did not open it, we will not close it.
 	};
 
 	inline Utf8Reader(Path path) = {
 		reader: FileReader(path);
-		close: true;
 	};
 }
 struct Utf8Writer: TextWriter {
@@ -432,12 +417,11 @@ struct Utf8Writer: TextWriter {
 	// initializer
 	inline Utf8Writer(ByteWriter writer) = {
 		writer: writer;
-		close: false;
+		close: false;   // we did not open it, we will not close it.
 	};
 
 	inline Utf8Writer(Path path, bool append) = {
 		writer: FileWriter(path, append);
-		close: true;
 	};
 }
 

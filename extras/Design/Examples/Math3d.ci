@@ -50,7 +50,7 @@ inline cross(vec4f a, vec4f b) = vec4f(a.y * b.z - a.z * b.y, a.z * b.x - a.x * 
 
 inline lerp(float32 t, vec4f a, vec4f b) = vec4f(Math.lerp(t, a.x, b.x), Math.lerp(t, a.y, b.y), Math.lerp(t, a.z, b.z), Math.lerp(t, a.w, b.w));
 
-inline len(vec4f v) = float64.sqrt(dp3(v, v));
+inline len(vec4f v) = float32.sqrt(dp3(v, v));
 inline eval(vec4f v, float32 x) = float32((((v.w * x + v.z) * x + v.y) * x) + v.x);
 inline normalize(vec4f a) = a / len(a);
 
@@ -69,7 +69,7 @@ inline mat4f(
 	float32 m21, float32 m22, float32 m23, float32 m24,
 	float32 m31, float32 m32, float32 m33, float32 m34,
 	float32 m41, float32 m42, float32 m43, float32 m44
-) = mat4f {
+) = {
 	x: vec4f(m11, m12, m13, m14);
 	y: vec4f(m21, m22, m23, m24);
 	z: vec4f(m31, m32, m33, m34);

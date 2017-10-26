@@ -1,13 +1,13 @@
 # Introduction
+Designed to be simple and minimalist.  
+Syntax is similar to c/c++ influenced by:
+* [C/C++](https://en.wikipedia.org/wiki/C_(programming_language))
+* [JavaScript](https://en.wikipedia.org/wiki/JavaScript)
+* [D programming language](https://en.wikipedia.org/wiki/D_(programming_language))
+* [C# programming language](https://en.wikipedia.org/wiki/C_Sharp_(programming_language))
+* [Lua programming language](https://en.wikipedia.org/wiki/Lua_(programming_language))
 
 ## Features
-* Designed to be simple and minimalist.
-* Syntax is similar to c/c++ influenced by:
-	* [JavaScript](https://en.wikipedia.org/wiki/JavaScript)
-	* [D programming language](https://en.wikipedia.org/wiki/D_(programming_language))
-	* [C# programming language](https://en.wikipedia.org/wiki/C_Sharp_(programming_language))
-	* [Lua programming language](https://en.wikipedia.org/wiki/Lua_(programming_language))
-
 * Types are themselves variables of type `typename`.
 	* Can be parameters of functions `int sizeof(typename type) { return type.size; }`.
 	* Reflection is part of the language (some of the internal compiler functions exposed).
@@ -15,14 +15,14 @@
 * Arrays are more than just typed pointers.
 	* Fixed-size arrays: `int fixed[30];` (size is known by the compiler)
 	* Dynamic-size arrays: `int dynamic[] = fixed;` (size is known at run-time)
-	* Unknown-size arrays: `int memcmp(byte a[*], byte b[*], int size);` (size is known by developers)
+	* Unknown-size arrays: `int memcmp(byte a[*], byte b[*], int size);` (size is known by the developer)
 	* Associative arrays: `double constants[string] = {"pi": 3.1415, ...};`
 
-* Enumeration values are named constants of a given base-type (number, object, function, ...).
-	* Enumeration variables can be assigned only with values from the enumeration.
+* Enumerations are enumerations:
+	* Enumeration values are named constants of a given base-type (number, object, function, ...).
 	* Enumeration values used in expressions are treated as values of the base-type.
-	* Enumeration values are allocated in the read only region, so they can not mutate.
-	* Enumeration type can be used also as an array (iterated and indexed with ordinal or name).
+	* Enumeration type variables can be assigned only with values from the enumeration.
+	* Enumeration type can be iterated and indexed with ordinal or name.
 
 * Expressions and types can be aliased with the `inline` keyword.
 	* aliasing a type: `inline double = float64;`
@@ -30,7 +30,7 @@
 	* aliasing an expression: `inline min(int a, int b) = a < b ? a : b;`
 
 * Conditional compile-time code generation and declarations with `static if` statement.
-	* On 32 bit platform ...: `static if (int == int32) { ... }`
+	* On 32 bit platform only ...: `static if (int == int32) { ... }`
 
 * Functions
 	* Extend any class with custom methods using [Uniform Function Call Syntax](https://en.wikipedia.org/wiki/Uniform_Function_Call_Syntax)
@@ -40,6 +40,7 @@
 	* Create and initialize objects like in JavaScript `complex a = {re: 42, im: 2};`
 	* `this` is not needed using [Uniform Function Call Syntax](https://en.wikipedia.org/wiki/Uniform_Function_Call_Syntax).
 
+
 # Lexical structure
 
 ## Comments
@@ -48,9 +49,12 @@
 * nested comments: `/+ ... +/`
 
 ## Identifiers
-Identifiers are used for variable and type names.
+Identifiers are named references of types, variables and functions.
 
-Identifiers may contain letters, digits and underscores, but can not start with a digit: `[_a-zA-Z][_a-zA-Z0-9]*`
+**[Syntax](../Design/Cmpl.g4)**
+```
+Identifier: Letter (Letter | Number)*;
+```
 
 ## Keywords
 Keywords are reserved words, which can not be used as identifiers.
@@ -69,34 +73,36 @@ Keywords are reserved words, which can not be used as identifiers.
 * static
 * struct
 
-## Operators
-[TODO: documentation]
-
-* !, ~, -, +, &
-* (), [], .
-* +, -, *, /, %
-* &, |, ^, <<, >>
-* ==, !=
-* <, <=, >, >=
-* ||, &&, ?:
-* =, +=, -=, *=, /=, %=, &=, |=, ^=, <<=, >>=, >>>=
-* ,
-
 ## Literals
-[TODO: documentation]
+[Literals](https://en.wikipedia.org/wiki/Literal_(computer_programming)) are compile time constant values.
+
+**[Syntax](../Design/Cmpl.g4)**
+```antlrv4
+Literal
+    : '0'[bB][0-1]+
+    | '0'[oO]?[0-7]+
+    | '0'[xX][0-9a-fA-F]+
+    | Decimal Suffix?
+    | Decimal Exponent Suffix?
+    | '.' Number+ Exponent? Suffix?
+    | Decimal '.' Number* Exponent? Suffix?
+    | '\'' .*? '\''
+    | '"' .*? '"'
+    ;
+```
 
 ### Integer and floating-point literals
-[TODO: documentation]
+Integers can be represented in decimal, binary, octal, or hexadecimal format,
+while floating point literals can be specified only in decimal format.
 
-* binary literals: `'0'\[bB\]\[01\]+`
-* octal literals: `'0'\[oO\]?\[0-7\]+`
-* hexadecimal literals: `'0'\[xX\]\[0-9a-fA-F\]+`
-* decimal literals: `0 | \[1-9\]\[0-9\]*`
-* floating point literals: `(0 | \[1-9\]\[0-9\]*)? ('.'\[0-9\]*)? (\[eE\](\[+-\]?)\[0-9\]+)?`
+#### Decimal prefix
+The following prefixes may be used to specify the radix of a literal:
+* binary: `0b` or `0B`
+* octal: `0` or `0o` or `0O`
+* hexadecimal: `0x` or `0X`
 
-#### Decimal suffixes
-At the end of a decimal or floating point literal, the following suffixes are available:
-
+#### Decimal suffix
+The following suffixes are available to specify the type of a decimal:
 * `d`: results a int32 constant, ex: `inline i32Value = 3d;`
 * `D`: results a int64 constant, ex: `inline i64Value = 3D;`
 * `u`: results a uint32 constant, ex: `inline u32Value = 3u;`
@@ -106,9 +112,6 @@ At the end of a decimal or floating point literal, the following suffixes are av
 
 ### Character and string literals
 [TODO: documentation]
-
-- character literals: `'\[^'\n]*'`
-- string literals: `"[^"\n]*" | "\\n[^"]*"`
 
 #### Escape sequences
 Escape sequences are used to define certain special characters within string literals.
@@ -152,255 +155,588 @@ string html = "\
 ";
 ```
 
-# Statements
-Statements are the basic blocks of a program.
-
-## Block statement
-Block statement groups zero ore more statement as a single statement.
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-qualifiers? '{' statementList '}'
-```
-
-### Parallel block statement
-Parallel block statements can be used to execute a block of statements parallel.
-
-## Selection statement
-The selection statement can be used to execute a section of code, only if a condition is met.
-
-### If statement
-Main purpose of the if statement is to handle exceptional cases in the control flow.
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-qualifiers? 'if' '(' for_init ')' statement ('else' statement)?
-```
-
-#### Static if statement
-The static if construct can be used as a compile time check.
-- if the condition evaluates to true then the declarations contained by the block will be visible,
-and the statements will be generated.
-- if the condition evaluates to false the block gets compiled in a new scope,
-but code will be not generated.
-
-### Switch statement
-[TODO: implementation]
-
-## Repetition statement
-The repetition statement can be used to execute a section of code in a loop, while a condition is met.
-
-### For statement
-The for statement is like in c and c like languages.
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-qualifiers? 'for' '(' for_init? ';' expression? ';' expression? ')' statement
-```
-
-#### Static for statement
-The static construct of the statement expands inline the statement of the loop.
-
-**Example**
-```
-static for (int i = 0; i < 5; i += 1) {
-	print(i);
-}
-```
-
-generates exactly the same code like:
-
-```
-print(0);
-print(1);
-print(2);
-print(3);
-print(4);
-```
-
-#### Parallel for statement
-The parallel version of the for statement executes the statements of the loop on a worker,
-than waits each of them to finish (in case we have fever workers than jobs or a single worker,
-the job will be executed on the main worker).
-
-**Example**: parallel for statement
-```
-parallel for (int i = 0; i < 5; i += 1) {
-	print(i);
-}
-print(99);
-```
-
-**Example**: for statement with a parallel block statement
-```
-for (int i = 0; i < 5; i += 1) parallel {
-	print(i);
-}
-print(99);
-```
-
-These two examples may result different output. In the first example the last statement:
-`print(99);` will be executed last, while in the second example it is possible that
- this is not the last executed statement.
-
-### For-each statement
-The for-each statement enumerates the elements of an iterable.
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-qualifiers? 'for' '(' variable ':' expression ')' statement
-```
-
-To use the foreach like form of the for statement, two functions are required to be defined:
-* `iterator`: this function prepares the iterator from a type.
-	* the argument for this function is the object you want to iterate.
-	* it should return an iterable type(this will be the first argument of the next function).
-* `next`: this function advances to the next iterable element, it may be defined also in the iterator.
-	* the first argument is the object returned by the iterator function. This has to be passed by reference.
-	* the second argument is optional, in case we want to iterate with a value, and not the iterator object. This argument must be passed by reference or as inout.
-	* it must return a boolean value: true if there was a next element, false otherwise.
-
-**Example**
-```
-struct Range {
-	const int min;
-	const int max;
-}
-inline Range(int min, int max) = { min: min, max: max };
-
-struct RangeIterator {
-	int current;
-	const int end;
-
-	// RangeIterator is iterable
-	bool next(RangeIterator &this) {
-		if (this.current < this.end) {
-			this.current += 1;
-			return true;
-		}
-		return false;
-	}
-}
-
-// make the iterator for the Range type (make Range iterable)
-inline iterator(Range r) = RangeIterator {
-	current: r.min;
-	end: r.max;
-};
-
-// make RangeIterator iterable using an int
-bool next(RangeIterator &it, int &&value) {
-	value = it.current;
-	return RangeIterator.next(it);
-}
-
-// now we can iterate over a range
-
-for (int i : Range(10, 20)) {
-	println(i);
-}
-
-for (RangeIterator it : Range(10, 20)) {
-	println(it.current);
-}
-```
-
-### While statement
-[TODO: implementation]
-
-### Do-while statement
-[TODO: implementation]
-
-## Control statements
-
-### Break statement
-The break statement terminates the execution of the innermost enclosing loop.
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-'break' ';'
-```
-
-### Continue statement
-The continue statement terminates the current and begins the next iteration of the innermost enclosing loop.
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-'continue' ';'
-```
-
-### Return statement
-The return statement terminates the execution of the current function.
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-'return' initializer? ';'
-```
-
-- If an expression is given, before returning the expression is assigned to the result parameter of the function.
-- It is allowed to return an expression of type void, even if the function specifies a void return type.
-The expression will be evaluated, but nothing will be returned.
-
-
-## Declaration statement
+## Operators
 [TODO: documentation]
 
-Declaration statement declares a typename, function, variable or a constant.
+* !, ~, -, +, &
+* (), [], .
+* +, -, *, /, %
+* &, |, ^, <<, >>
+* ==, !=
+* <, <=, >, >=
+* ||, &&, ?:
+* =, +=, -=, *=, /=, %=, &=, |=, ^=, <<=, >>=, >>>=
+* ,
 
-## Expression statement
-Expression statements is an expression terminated with ';'
+
+# Expressions
+Expressions are responsible for computing values.
+
+**[Syntax](../Design/Cmpl.g4)**
+```antlrv4
+expression
+    : Literal                                                                                        # LiteralExpression
+    | Identifier                                                                                  # IdentifierExpression
+    | '(' expressionList? ')'                                                                  # ParenthesizedExpression
+    | expression '(' expressionList? ')'                                                        # FunctionCallExpression
+    | '[' expressionList? ']'                                                                  # ParenthesizedExpression
+    | expression '[' expressionList? ']'                                                         # ArrayAccessExpression
+    | expression '[' expression '..' expression ']'                                               # ArraySliceExpression
+    | expression '.' Identifier                                                                 # MemberAccessExpression
+    | unary expression                                                                                 # UnaryExpression
+    | expression arithmetic expression                                                            # ArithmeticExpression
+    | expression bitwise expression                                                                  # BitwiseExpression
+    | expression relational expression                                                            # RelationalExpression
+    | expression equality expression                                                                # EqualityExpression
+    | expression ('='| '*=' | '/=' | '%=' | '+=' | '-=' ) expression                              # AssignmentExpression
+    | expression ('&=' | '|=' | '^=' | '<<=' | '>>=') expression                                  # AssignmentExpression
+    | expression ('&&' | '||') expression                                                            # LogicalExpression
+    | expression '?' expression ':' expression                                                   # ConditionalExpression
+    ;
+```
+
+### Primary expression
+[TODO: documentation]
+
+## Unary expressions
+Unary expressions are composed from an unary operator and one operand.
+- `!`: logical not. Results true or false.
+- `~`: complement. Valid for integer types.
+- `-`: unary minus. Change the sign of a number.
+- `+`: unary plus. ???
 
 **[Syntax](../Design/Cmpl.g4)**
 ```
-expression ';'
+unary: ('&' | '+' | '-' | '~' | '!');
 ```
 
-Only some of the expressions can be used to form a statement:
-- assignment: `a = 2;`
-- invocation: `foo();`
+## Binary expressions
+Binary expressions are composed from a binary operator and two operands.
 
-Expression statements such as `a * 4;` are considered invalid.
+### Arithmetic expression
+Are used to return new values computed from the two operands.
+- `+, -` Additive operators
+- `*, /, %` Multiplicative operators
+
+**[Syntax](../Design/Cmpl.g4)**
+```
+arithmetic: ('*' | '/' | '%' | '+' | '-');
+```
+
+### Bitwise expression
+May be used on integer types only.
+- `&, |, ^` Bitwise operators
+- `<<, >>` Bit shift operators
+
+**[Syntax](../Design/Cmpl.g4)**
+```
+bitwise: ('&' | '|' | '^' | '<<' | '>>');
+```
+
+### Relational expressions
+Are used to compare two operands, if one is les or greater than the other.
+The result is a boolean value(true or false).
+
+**[Syntax](../Design/Cmpl.g4)**
+```
+relational: ('<' | '<=' | '>' | '>=');
+```
+
+### Equality expressions
+Are used to check if the left and right operands are equal or not.
+The result is a boolean value(true or false).
+
+**[Syntax](../Design/Cmpl.g4)**
+```
+equality: ('==' | '!=');
+```
+
+### Assignment expressions
+This operator assigns the value on the right to the operand on the lef side.
+
+**Example**
+```
+a = 5;
+a += 3 + b;
+```
+Composed operators are expanded, this means that `a += 3 + b` is converted to `a = a + (3 + b)`.
+
+### Logical expressions
+[TODO: implementation]
+
+- `||`: logical or operator returns true if **any** of its operands is true.
+- `&&`: logical and operator returns true if **all** of its operands are true.
+
+**Example**
+```
+bool variable = a() || b() || c() || d();
+```
+
+The value of `variable` will be true if any of the functions(a, b, c, d) is evaluated to true.
+The evaluation stops when the first expression is evaluated to true.
+
+
+**Example**
+```
+bool variable = a() && b() && c() && d();
+```
+
+The value of `variable` will be true if all of the functions(a, b, c, d) are evaluated to true.
+The evaluation stops when the first expression is evaluated to false.
+
+## Ternary expression
+The `?:` (conditional) operator is the only ternary operator with 3 operands:
+- test operand: based on its value the second or the third operand is returned.
+- true operand: evaluated and returned only if the first operand evaluates to true.
+- false operand: evaluated and returned only if the first operand evaluates to false.
+
+**Example**
+```
+int variable = a() ? b() : c();
+```
+
+First `a()` is evaluated, and if its value is:
+- true: `b()` is evaluated and returned
+- false: `c()` is evaluated and returned
+
+## Operator precedence table
+
+| Operator   | Title          | Example    | Description |
+|-----|-----------------------|------------|-------------|
+| 15: Primary ||| Associates left to right |
+| ( ) | Function call           | sqrt(x)    ||
+| [ ] | Array subscript         | values[10] ||
+|  .  | Member access           | child.name ||
+| 14: Unary ||| Associates right to left |
+|  +  | Unary plus              | +a         ||
+|  -  | Unary minus             | -a         ||
+|  ~  | Bitwise not             | ~077       ||
+|  !  | Logical not             | !ready     ||
+| 13: Multiplicative ||| Associates left to right |
+|  *  | Multiplication          | i * j||
+|  /  | Division                | i / j||
+|  %  | Modulus                 | i % j||
+| 12: Additive ||| Associates left to right |
+|  +  | Addition                | value + i||
+|  -  | Subtraction             | x - 10||
+| 11: Bit shift ||| Associates left to right |
+|  << | Left shift              | byte << 4||
+| \>> | Right shift             | i >> 2||
+| 10: Relational ||| Associates left to right |
+|  <  | Less than               | i < 10||
+|  <= | Less than or equal to   | i <= j||
+| \>  | Greater than            | i > 0||
+| \>= | Greater than or eq to   | count >= 90||
+| 9: Equality ||| Associates left to right |
+|  == | Equal to               | result == 0 ||
+|  != | Not equal to           | c != EOF ||
+| 8: Bitwise AND ||| Associates left to right |
+|  &  | Bitwise AND            | word & 077 ||
+| 7: Bitwise XOR ||| Associates left to right |
+|  ^  | Bitwise XOR            | word1 ^ word2 ||
+| 6: Bitwise OR ||| Associates left to right |
+| &#124; | Bitwise OR             | word &#124; bits ||
+| 5: Logical AND ||| Associates left to right |
+|  && | Logical AND            | j > 0 && j < 10 ||
+| 4: Logical OR ||| Associates left to right |
+|&#124;&#124;| Logical OR             | i > 80 &#124;&#124; ready ||
+| 3: Conditional ||| Associates right to left |
+|  ?: | Conditional operator   |a > b ? a : b ||
+| 2: Assignment ||| Associates right to left |
+| = /= %= += -= &= ^= &#124;= <<= >>= | Assignment operators | ||
+| 1: Collection ||| Associates left to right |
+|  ,  | Comma operator         | i = 10, j = 0||
+
 
 # Declarations
-Every declaration (typename, function or variable) results in a variable declaration and definition.
-
-## Aliasing
-Aliasing is an analogue to c preprocessor define, except it is expanded on syntax tree level,
-and the arguments may be evaluated only once.
+Declarations adds new types, functions or variables to the program.
 
 **[Syntax](../Design/Cmpl.g4)**
-```
-qualifiers? 'inline' identifier ('(' parameterList? ')')? '=' initializer ';'
+```antlrv4
+declaration
+    : qualifiers? 'enum' identifier? (':' typename)? '{' propertyList '}'                              # EnumDeclaration
+    | qualifiers? 'struct' identifier? (':' (Literal | typename))? '{' declarationList '}'             # TypeDeclaration
+    | qualifiers? 'inline' identifier ('(' parameterList? ')')? '=' initializer ';'                   # PropertyOperator
+    | qualifiers? 'inline' '('')' ('(' parameterList? ')')? '=' initializer ';'                        # InvokerOperator
+    | qualifiers? 'inline' '['']' ('(' parameterList? ')')? '=' initializer ';'                        # IndexerOperator
+    | qualifiers? 'inline' unary ('(' parameterList? ')')? '=' initializer ';'                           # UnaryOperator
+    | qualifiers? 'inline' arithmetic ('(' parameterList? ')')? '=' initializer ';'                 # ArithmeticOperator
+    | qualifiers? 'inline' bitwise ('(' parameterList? ')')? '=' initializer ';'                       # BitwiseOperator
+    | qualifiers? 'inline' relational ('(' parameterList? ')')? '=' initializer ';'                 # RelationalOperator
+    | qualifiers? 'inline' equality ('(' parameterList? ')')? '=' initializer ';'                     # EqualityOperator
+    | qualifiers? (variable | function) ( '=' initializer)? ';'                                    # VariableDeclaration
+    | qualifiers? function '{' statementList '}'                                                # FunctionImplementation
+    ;
 ```
 
-**Example**: type
+## Aliasing
+Aliasing is an analogue to c preprocessor define, except it is not preprocessed as text.
+When using an alias the referenced expression or typename is expanded inline.
+Arguments of inline expressions may be cached, and evaluated only once.
+
+**Example**: type aliasing
 ```
 inline double = float64;
+inline float = float32;
+inline byte = uint8;
 ```
 
 **Example**: constant
 ```
 inline pi = 3.14159265359;
+inline true = 0 == 0;
+inline false = 0 != 0;
 ```
 
 **Example**: macro
 ```
 inline min(int a, int b) = a < b ? a : b;
+inline max(float32 a, float32 b) = a > b ? a : b;
 ```
 
-- the right hand side can also use local variables if static is not used
-- static should force the right side not to use local variables
-- const should force the right side to be constant
+## Variables
+A [Variable](https://en.wikipedia.org/wiki/Variable_(computer_science)) is a symbolic name associated with a value, this value may be changed at runtime.
+
+### Constant variables
+Variables marked with the `const` attribute may be assigned only at initialization.
+
+### Static variables
+Variables marked with the `static` attribute will point to the same global memory.
+Initialization of all static variables are executed when the main function is executed.
+
+**Example**: call count
+```
+int countCalls() {
+	// global count variable
+	static int count = 0;
+
+	return count += 1;
+}
+```
+
+**Example**: instance count
+```
+struct instance {
+	// global count variable
+	static int count = 0;
+
+	// instance variable
+	const int instanceNr;
+}
+
+// construct the next instance
+inline instance() = {
+	instanceNr: instance.count += 1;
+};
+```
+
+### Initialization
+[TODO]
+
+**Example**: literal initialization
+```
+// literal initialization
+Complex x = {re: 1, im: 2};
+
+// literal initialization with type
+Model x = Sphere {x:0, y:0, z:0, radius: 20};
+```
+
+**Example**
+```
+// call the initializer function
+Complex x = Complex(1, 2);
+
+```
+
+**Example**: array initialization
+```
+// initialize all elements with the value 4
+int a[100] = {*: 4};
+
+// initialize the first 3 elements with the given values
+// the rest will be initalized with 64
+int a[100] = {1, 2, 3, *: 64};
+
+// initialize all elements with null, then override some of them
+string xmlEscape[255] = {
+	*: null;
+	'"': "&quot;";
+	'\'': "&apos;";
+	'<': "&lt;";
+	'>': "&gt;";
+	'&': "&amp;";
+};
+```
+
+#### Default type initializer
+Some of the builtin types have default type initializer (int, float, ...),
+and some must be initialized when a new instance is created (pointer, variant, typename, function).
+All enumerated types should have no default initializer, so they must be explicitly initialized.
+
+**Example**
+```
+int a;       // ok, a is initialized with default type initializer.
+typename b;  // error: variable `b` must be initialized.
+```
+
+#### Default field initializer
+All constant fields of a record must be initialized when creating an instance.
+
+**Example**
+```
+Complex x;                     // error: variable `x` must be initialized.
+Complex x = {};                // error: all fields of `x` must be initialized.
+Complex x = {re: 2};           // ok, `im` initialized with default field initializer.
+Complex x = {re: 2; im: -1;};  // ok, all fields are initialized.
+```
+
+## Arrays
+Array type is a collection of zero or more elements of the same type.
+
+### Arrays (Fixed-size arrays)
+[TODO: documentation]
+
+**Example**
+```
+int a[2] = {42, 97};
+```
+
+- Are passed to functions by reference.
+- Type of elements and length is known by the compiler.
+
+### Slices (Dynamic-size arrays)
+Slices are a pair of a pointer to the first element and an integer containing the length of the slice.
+
+**Example**
+```
+int a[] = {42, 97, 13};
+```
+
+- Are initialized, assigned and passed to functions by reference followed by the length.
+- Type of elements is known by the compiler.
+- The length is known at runtime.
+
+### Pointers (Unknown-size arrays)
+Pointers are arrays without length. This type is helpful to pass data to native functions.
+Use `pointer` for the special `void *` type from c, when the type of elements is unknown.
+
+**Example**
+```
+int a[*];
+```
+
+- Are initialized, assigned and passed to functions by reference.
+- Type of elements is known by the compiler.
+- The length may be known by the developer.
+
+### Maps (Associative arrays)
+[TODO: implementation]
+
+**Example**
+
+```
+double constants[string] = {
+	pi: Math.pi;
+	"e": Math.e;
+};
+
+assert(constants["pi"] == Math.pi);
+assert(constants["e"] == Math.e);
+assert(constants.e == Math.e);
+```
+
+Collection types(Array, Stack, Queue, Set, Bag, Map, …) are implemented in the run-time library.
+
+## Functions
+[TODO: implementation + documentation]
+
+- Functions that are not implemented, will be converted to function references.
+- Functions references must be initialized, or implemented (re-declared as implemented function).
+- Functions are assigned and passed to functions as delegates:
+	- for inline functions the current stack pointer is pushed to give access to local variables.
+	- for member functions the objects reference is pushed to give access to the _self_ variable.
+
+**Example**
+```
+float64 sum(float64 data...) {
+	double sum = 0;
+	foreach(data, inline void(float64 value) {
+		// sum is a closure variable.
+		sum += value;
+	})
+	return sum;
+}
+```
+
+### Forward declared functions
+Forward declared functions are functions that are used before they are implemented.
+Every forward declared function will be converted to a function reference (can decrease performance).
+
+**Example**
+```
+// forward declaration of function (no implementation).
+double forward();
+
+// invoke the function.
+double x = forward();
+
+// implementaton of forward declared function.
+double forward() {
+	return Math.pi;
+}
+```
+
+### Function references
+Function references can be initialized to point to a function.
+If a functions parameter is a function it is converted to a function reference.
+
+**Example**
+```
+// referencing the sin function
+double reference(double value) = Math.sin;
+
+// invoke the function.
+double x = reference();
+
+// compare is a function reference.
+void sort(int values[], int compare(int a, int b)) {
+	...
+}
+```
+
+### Functions with special names
+
+If a function name is a type name, by convention it is considered to be a constructor for that type,
+so it should return an instance of the type represented by its name.
+
+## Records
+[Records](https://en.wikipedia.org/wiki/Record_(computer_science)) are user specified compound types.
+
+Records may contain only instance or static members and methods:
+- if a member inside the record is declared static, it will become a global variable.
+- if a function is declared in the record which is not implemented,
+it will became a member function reference, and it must be:
+	- reimplemented in the current record (virtual).
+	- implemented in the inheritance chain (abstract).
+	- initialized when an instance of this record is created.
+- if a function is declared and implemented in a record, and does not override a member,
+it is declared as a static function.
+- if a function is declared static and not implemented it must be reimplemented, as forward functions.
+
+**[Example](../Design/Examples/math.Complex.ci)**
+```
+struct Complex {
+	const float64 re;       // real
+	const float64 im = 0;   // imaginary
+
+	...
+}
+```
+
+- `re` and `im` are immutable member variables (can not be changed after initialization).
+- `re` is an uninitialized constant, this means that when an instance is created, its value must be specified.
+
+**[Example](../Design/Examples/io.Streams.ci)**
+```
+struct TextReader: Closeable {  // java:Reader + Scanner?Parser?
+	const ByteReader reader;
+
+	// abstract method
+	int decode(char chars[], ByteReader reader);
+
+	int read(TextReader this, char chars[]) {
+		return this.decode(chars, this.reader);
+	}
+
+	int read(TextReader this) {
+		char chars[1];
+		result = this.read(chars);
+		if (result > 0) {
+			result = chars[0];
+		}
+		return result;
+	}
+
+	void close(TextReader this) {
+		this.reader.close();
+	}
+
+	// ...
+}
+```
+
+- field `reader` is immutable(`const`), so it must be initialized on instance creation.
+- `int decode(char chars[], ByteReader reader)` is unimplemented, it must be implemented in the inheritance chain.
+- `int read(TextReader this, char chars[])` is implemented and does not override any method so it will be static.
+- `int read(TextReader this)` is implemented and does not override any method so it will be static.
+- `void close(Utf8Reader this)` overrides the method from inherited class `Closeable`.
+
+The `int read(TextReader this)` method can be invoked in 2 forms:
+```
+// Utf8Reader implements decode method.
+TextReader reader = Utf8Reader(Path("file.txt"));
+
+// using Uniform Function Call Syntax
+int chr = reader.read();
+
+// or as a static function
+int chr = TextReader.read(reader);
+```
+Using `TextReader.read(reader)` method will ensure that the original method is invoked,
+while `reader.read()` method might call an extension method.
+
+### Static records
+Records which are declared `static` will have all members static (is sort of a namespaces).
+These types of records will have no size, and can not be instantiated.
+The best example of its usage is `static struct Math {...}` 
+
+### Constant records
+[TODO: implementation]
+
+Records which are declared `const` will have all its members as constants (immutable record).
+
+### Packed records
+A record can be packed with a small integer of a power of 2. [0, 1, 2, 4, 8, 16, 32].
+- When a struct is packed with 0, it becomes a c like union,
+meaning every member of it will start at the same memory location.
+- When a struct is packed with 1, the compiler will not generate any gap between the members,
+this may result in very expensive memory access to the members.
+
+**Example**
+```
+struct union32: 0 {
+	int32 i32;
+	float32 f32;
+}
+
+union32 fi32 = { i32: 3 };
+
+```
+
+### Extended records
+Extended records are usually allocated on the heap, and are automatically released,
+when there are no more references pointing to the object.
+The base type of every extended type is the builtin type `object`.
+
+**Example**
+```
+struct ComplexClass: object {
+	const double re;
+	const double im = 0;
+}
+
+ComplexClass c1 = { re: 8 };
+```
+
+The variable `c1`:
+- is allocated on heap [TODO: allocate on heap only variables that escape their scope].
+- is initialized with: `re: 8` and `im: 0`;
 
 ## Enumerations
 An enumeration declares a list of named constants all of a given type.
 
-**[Syntax](../Design/Cmpl.g4)**
-```
-qualifiers? 'enum' identifier? (':' typename)? '{' propertyList '}'
-```
-
-- It may also add a new type, the enumeration type, if the name is specified.
+- It may also add a new type, the enumeration type, if the enumeration name is specified.
 - The enumeration type is a reference type, and its instances may be assigned
 only with null or the values listed inside the enumeration.
 - The type of the enumerated values can be specified.
@@ -476,312 +812,10 @@ for (coord elem: coord) {
 }
 ```
 
-## Records
-[Records](https://en.wikipedia.org/wiki/Record_(computer_science)) are user specified compound types.
-
-Records may contain only instance or static members and methods:
-- if a member inside the record is declared static, it will become a global variable.
-- if a function is declared in the record which is not implemented,
-it will be a member function reference, and it must be:
-	- reimplemented in the current record (virtual).
-	- implemented in the inheritance chain (abstract).
-	- initialized when an instance of this record is created.
-- if a function is declared and implemented in a record, and does not override a member,
-it is declared as a static function.
-- if a function is declared static and not implemented it must be reimplemented, as forward functions.
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-qualifiers? 'struct' identifier? (':' (Literal | typename))? '{' declarationList '}'
-```
-
-**[Example](../Design/Examples/math.Complex.ci)**
-```
-struct Complex {
-	const float64 re;       // real
-	const float64 im = 0;   // imaginary
-
-	enum: Complex {
-		zero: { re: 0 };
-		unit: { re: 1 };
-	}
-}
-```
-
-- `re` and `im` are immutable member variables (can not be changed after initialization).
-- `re` is an uninitialized constant, this means that when an instance is created, its value must be specified.
-
-**[Example](../Design/Examples/io.Streams.ci)**
-```
-struct TextReader: Closeable {
-	const ByteReader reader;
-	const bool close;
-
-	// abstract method
-	int decode(char chars[], ByteReader reader);
-
-	int read(TextReader this, char chars[]) {
-		return this.decode(chars, this.reader);
-	}
-
-	int read(TextReader this) {
-		char chars[1];
-		result = this.read(chars);
-		if (result > 0) {
-			result = chars[0];
-		}
-		return result;
-	}
-
-	void close(TextReader this) {
-		if (this.close) {
-			this.reader.close();
-		}
-	}
-}
-```
-
-- field `reader` and `close` are immutable, so they must be initialized on instance creation.
-- `int decode(char chars[], ByteReader reader)` is unimplemented, it must be implemented in the inheritance chain.
-- `int read(TextReader this, char chars[])` is implemented and does not override any method so it will be static.
-- `int read(TextReader this)` is implemented and does not override any method so it will be static.
-- `void close(Utf8Reader this)` overrides the method from inherited class `Closeable`.
-
-The `read` method can be invoked in 2 forms:
-```
-// Utf8Reader implements decode method.
-TextReader reader = Utf8Reader(Path("file.txt"));
-
-// as static function
-int chr = TextReader.read(reader);
-
-// or simply using Uniform Function Call Syntax
-int chr = reader.read();
-```
-Using `TextReader.read(reader)` method will ensure that the original method is invoked,
-while `reader.read()` method might call an extension method.
-
-
-### Static records
-Records which are declared static will have all members static (is sort of a namespaces).
-These types of records will have no size, and can not be instantiated.
-The best example of its usage is `static struct Math {...}` 
-
-### Packed records
-A record can be packed with a small integer of a power of 2. [0, 1, 2, 4, 8, 16, 32].
-- When a struct is packed with 0, it becomes a c like union,
-meaning every member of it will start at the same memory location.
-- When a struct is packed with 1, the compiler will not generate any gap between the members,
-this may result in very expensive memory access to the members.
-
-### Extended records
-Extended records are always allocated in the heap, and are automatically released,
-except if they are members of an enumeration.
-At the end of every inheritance chain is the type `object`.
-
-**Example**
-```
-struct ComplexClass: object {
-	const double re;
-	const double im = 0;
-}
-
-ComplexClass c1 = { re: 8 };
-```
-
-The variable `c1`:
-- is allocated on heap [TODO: allocate on heap only variables that escape their scope].
-- is initialized with: `re: 8` and `im: 0`;
-
-## Functions
-[TODO: implementation + documentation]
-
-- Functions that are not implemented, will be converted to function references.
-- Functions references must be initialized, or implemented (re-declared as implemented function).
-- Functions are assigned and passed to functions as delegates:
-	- for inline functions the current stack pointer is pushed to give access to local variables.
-	- for member functions the objects reference is pushed to give access to the _self_ variable.
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-qualifiers? function '{' statementList '}'
-```
-
-**Example**
-```
-float64 sum(float64 data...) {
-	double sum = 0;
-	foreach(data, inline void(float64 value) {
-		// sum is a closure variable.
-		sum += value;
-	})
-	return sum;
-}
-```
-
-### Function references
-Function references can be initialized to point to a function.
-They can be used also as function parameters.
-
-**Example**
-```
-// referencing the sin function
-double reference(double value) = Math.sin;
-
-// invoke the function.
-double x = sin();
-
-// compare is a function reference.
-void sort(int values[], int compare(int a, int b)) {
-	...
-}
-```
-
-### Forward declared functions
-Forward declared functions are functions declared then used, and then implemented.
-if a function is forward declared, it will be converted to a function reference.
-
-**Example**
-```
-// forward declaration of function.
-double forward();
-
-// invoke the function.
-double x = forward();
-
-// implementaton of forward declared function.
-double forward() {
-	return Math.pi;
-}
-```
-
-### Functions with special names
-
-If a function name is a type name, by convention it is considered to be a constructor for that type,
-so it should return an instance of the type represented by the function name.
-
-- Another special function name is used for the foreach iterator to advance to the next element.
-The iterator function should take the form:
-```
-bool next(iterator &it[, element &&current]);
-```
-
-[TODO] rename `next` to `for`
-
-## Variables
-A variable is a named property which value may change at runtime.
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-qualifiers? (variable | function) ( '=' initializer)? ';'
-```
-
-### Constant variables
-Variables marked with the `const` attribute may be assigned only at initialization.
-
-### Static variables
-Variables marked with the `static` attribute will point to the same global memory.
-Initialization of all static variables are executed when the main function is executed.
-
-**Example**: call count
-```
-int countCalls() {
-	// global count variable
-	static int count = 0;
-
-	return count += 1;
-}
-```
-
-**Example**: instance count
-```
-struct instance {
-	// global count variable
-	static int count = 0;
-
-	// instance variable
-	const int instanceNr;
-}
-
-// construct the next instance
-inline instance() = {
-	instanceNr: instance.count += 1;
-};
-```
-
-### Variable initialization
-[TODO]
-
-### Record initialization
-[TODO]
-
-**Example**
-```
-// call the initializer function
-Complex x = Complex(1, 2);
-
-// TODO: literal initialization
-Complex x = {re: 1, im: 2};
-
-// TODO: literal initialization with type
-Model x = Sphere {x:0, y:0, z:0, radius: 20};
-```
-
-### Array initialization
-[TODO]
-
-**Example**
-```
-// initialize the first 3 elements with the given values
-// the rest will be initalized with 0 (default type initializer)
-int a[100] = {1, 2, 3};
-
-// initialize all elements with the value 4
-int a[100] = {*: 4};
-
-// initialize all elements with null
-// then override some of them
-string xmlEscape[255] = {
-	*: null,
-	'"': "&quot;",
-	'\'': "&apos;";
-	'<': "&lt;",
-	'>': "&gt;",
-	'&': "&amp;";
-};
-```
-
-### Default type initializer
-Some of the builtin types have default type initializer (int, float, ...),
-and some must be initialized when a new instance is created (pointer, variant, typename, function).
-All enumerated types should have no default initializer, so they must be explicitly initialized.
-
-**Example**
-```
-int a;       // ok, a is initialized with default type initializer.
-typename b;  // error: variable `b` must be initialized.
-```
-
-### Default field initializer
-All constant fields of a record must be initialized when creating an instance.
-
-**Example**
-```
-Complex x;                     // error: variable `x` must be initialized.
-Complex x = {};                // error: all fields of `x` must be initialized.
-Complex x = {re: 2};           // ok, `im` initialized with default field initializer.
-Complex x = {re: 2; im: -1;};  // ok, all fields are initialized.
-```
-
 ## Operator overloading
 Operators can be overloaded using the `inline` keyword.
 
 ### Type construction/conversion operator
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-qualifiers? 'inline' identifier ('(' parameterList? ')')? '=' initializer ';'
-```
 
 **Example**
 ```
@@ -806,17 +840,6 @@ Fahrenheit boilF = Fahrenheit(boilC);          // => inline Fahrenheit(Celsius v
 
 ### Unary and binary operators
 
-**[Syntax](../Design/Cmpl.g4)**
-```
-'inline' ('&' | '+' | '-' | '~' | '!') ('(' parameterList? ')')? '=' initializer ';'
-'inline' ('*' | '/' | '%') ('(' parameterList? ')')? '=' initializer ';'
-'inline' ('+' | '-') ('(' parameterList? ')')? '=' initializer ';'
-'inline' ('&' | '|' | '^') ('(' parameterList? ')')? '=' initializer ';'
-'inline' ('<<' | '>>') ('(' parameterList? ')')? '=' initializer ';'
-'inline' ('<' | '<=' | '>' | '>=') ('(' parameterList? ')')? '=' initializer ';'
-'inline' ('==' | '!=') ('(' parameterList? ')')? '=' initializer ';'
-```
-
 **Example**
 ```
 inline -(Complex a) = Complex(-a.re, -a.im);
@@ -828,13 +851,6 @@ Complex c = a + a;                      //  6 + 0 * i
 ```
 
 ### Property/Extension operators
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-qualifiers? 'inline' identifier ('(' parameterList? ')')? '=' initializer ';'
-qualifiers? 'inline' '('')' ('(' parameterList? ')')? '=' initializer ';'
-qualifiers? 'inline' '['']' ('(' parameterList? ')')? '=' initializer ';'
-```
 
 **Example**
 ```
@@ -856,212 +872,211 @@ float64 im = a["im"];     // => inline [](Complex c, string idx)
 float64 re2 = a(0);       // => inline ()(Complex c, int idx)
 ```
 
-# Expressions
-Expressions are responsible for computing values.
 
-## Literals
-Literals are compile time constant expressions.
-They can be written as:
-- binary decimal
-- octal decimal
-- hexadecimal
-- decimal
-- suffixed decimal
-- floating decimal
-- character
-- string
+# Statements
+Statements are the basic blocks of a program.
 
 **[Syntax](../Design/Cmpl.g4)**
-```
-Literal
-```
-
-- A compile time constant expression is an expression whose value can be determined at compile time
-(during verification), before any part of the program has been executed.
-
-- Expressions in certain contexts are required to be compile time constant expressions.
-	- the length of a fixed-size array: int a[20];
-	- the condition of a `static if` statement: static if (true) {...}
-
-## Identifiers
-Identifiers are named references to types, variables or functions.
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-Identifier
+```antlrv4
+statement
+    : ';'                                                                                               # EmptyStatement
+    | 'inline' Literal ';'                                                                            # IncludeStatement
+    | qualifiers? '{' statementList '}'                                                              # CompoundStatement
+    | qualifiers? 'if' '(' for_init ')' statement ('else' statement)?                                      # IfStatement
+    | qualifiers? 'for' '(' for_init? ';' expression? ';' expression? ')' statement                       # ForStatement
+    | 'for' '(' variable ':' expression ')' statement                                                 # ForEachStatement
+    | 'return' initializer? ';'                                                                        # ReturnStatement
+    | 'break' ';'                                                                                       # BreakStatement
+    | 'continue' ';'                                                                                 # ContinueStatement
+    | expression ';'                                                                               # ExpressionStatement
+    | declaration                                                                                 # DeclarationStatement
+    ;
 ```
 
-## Unary expressions
-Unary expressions are composed from an unary operator and one operand.
-Only prefix unary operators are supported.
-- `!`: logical not. Results true or false.
-- `~`: complement. Valid for integer types.
-- `-`: unary minus. Change the sign of a number.
-- `+`: unary plus. ???
+## Block statement
+Block statement groups zero ore more statement as a single statement.
 
-**[Syntax](../Design/Cmpl.g4)**
-```
-('&' | '+' | '-' | '~' | '!') expression
-```
+### Parallel block statement
+Parallel block statements can be used to execute a block of statements parallel.
 
-## Binary expressions
-Binary expressions are composed from a binary operator and two operands.
+## Selection statement
+The selection statement can be used to execute a section of code, only if a condition is met.
 
-**[Syntax](../Design/Cmpl.g4)**
+### If statement
+Main purpose of the if statement is to handle exceptional cases in the control flow.
+
+#### Static if statement
+The static if construct can be used as a compile time check.
+
+**Example**
 ```
-'(' expressionList? ')'
-expression '(' expressionList? ')'
-'[' expressionList? ']'
-expression '[' expressionList? ']'
-expression '.' Identifier
+// if double is not defined, define it as float64
+static if (typename(double) == null) {
+inline double = float64;
+}
 ```
 
-### Arithmetic expression
-Are used to return new values computed from the two operands.
-The type of the result for the builtin types is promoted from its operand types.
-- `+, -` Additive operators
-- `*, /, %` Multiplicative operators
+- if the condition evaluates to true:
+  - the declarations contained by the block will be exposed to the outer scope.
+  - the statements inside the scope will be generated.
 
-**[Syntax](../Design/Cmpl.g4)**
-```
-expression ('*' | '/' | '%' | '+' | '-') expression
-```
+- if the condition evaluates to false:
+  - the declarations contained by the block will be exposed to the inner scope only.
+  - the statements inside the scope will be type-checked.
+  - the statement will not generate code.
 
-### Bitwise expression
-May be used on integer types only.
-- `&, |, ^` Bitwise operators
-- `<<, >>` Bit shift operators
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-expression ('&' | '|' | '^' | '<<' | '>>') expression
-```
-
-### Relational expressions
-Are used to check if one of the operands is les or greater than the other.
-The result is a boolean value(true or false).
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-expression ('<' | '<=' | '>' | '>=') expression
-```
-
-### Equality expressions
-Are used to check if the left and right operands are equal or not.
-The result is a boolean value(true or false).
-
-**[Syntax](../Design/Cmpl.g4)**
-```
-expression ('==' | '!=') expression
-```
-
-### Logical expressions
+### Switch statement
 [TODO: implementation]
-- `||`: logical or operator returns true if **any** of its operands is true.
-- `&&`: logical and operator returns true if **all** of its operands is true.
 
+## Repetition statement
+The repetition statement can be used to execute a section of code in a loop, while a condition is met.
 
-**[Syntax](../Design/Cmpl.g4)**
-```
-expression ('&&' | '||') expression
-```
+### For statement
+The for statement is like in c and c like languages.
 
-**Example**
-```
-bool variable = a() || b() || c() || d();
-```
+#### Static for statement
+[TODO: implementation]
 
-The value of `variable` will be true if any of the functions(a, b, c, d) is evaluated to true.
-The evaluation stops when the first expression is evaluated to true.
-
+The static construct of the statement expands inline the statement of the loop.
 
 **Example**
 ```
-bool variable = a() && b() && c() && d();
+static for (int i = 0; i < 5; i += 1) {
+	print(i);
+}
 ```
 
-The value of `variable` will be true if all of the functions(a, b, c, d) are evaluated to true.
-The evaluation stops when the first expression is evaluated to false.
+generates exactly the same code like:
 
-### Assignment expressions
-This operator assigns the value on the right to the operand on the lef side.
-
-**[Syntax](../Design/Cmpl.g4)**
 ```
-expression ('='| '*=' | '/=' | '%=' | '+=' | '-=' ) expression
-expression ('&=' | '|=' | '^=' | '<<=' | '>>=') expression
+print(0);
+print(1);
+print(2);
+print(3);
+print(4);
 ```
 
-The composed operators are expanded, this means that `a += 3 + b` is converted to `a = a + (3 + b)`.
+#### Parallel for statement
+[TODO: implementation]
 
-## Ternary expression
-The `?:` (conditional) operator is the only ternary operator, this means that it has 3 operand:
-- test operand: based on its value the second or the third operand is returned.
-- true operand: evaluated and returned only if the first operand evaluates to true.
-- false operand: evaluated and returned only if the first operand evaluates to false.
+The parallel version of the for statement executes the statements of the loop on a worker,
+than waits each of them to finish (in case we have fever workers than jobs or a single worker,
+the job will be executed on the main worker).
 
-**[Syntax](../Design/Cmpl.g4)**
+**Example**: parallel for statement
 ```
-expression '?' expression ':' expression
+parallel for (int i = 0; i < 5; i += 1) {
+	print(i);
+}
+print(99);
 ```
+
+**Example**: for statement with a parallel block statement
+```
+for (int i = 0; i < 5; i += 1) parallel {
+	print(i);
+}
+print(99);
+```
+
+These two examples may result different output. In the first example the last statement:
+`print(99);` will be executed last, while in the second example it is possible that
+this is not the last executed statement.
+
+### For-each statement
+The for-each statement enumerates the elements of an iterable.
+
+To use the foreach like form of the for statement, two functions are required to be defined:
+* `iterator`: this function prepares the iterator from a type.
+	* the argument for this function is the object you want to iterate.
+	* it should return an iterable type(this will be the first argument of the next function).
+* `next`: this function advances to the next iterable element, it may be defined also in the iterator.
+	* the first argument is the object returned by the iterator function. This has to be passed by reference.
+	* the second argument is optional, in case we want to iterate with a value, and not the iterator object. This argument must be passed by reference or as inout.
+	* it must return a boolean value: true if there was a next element, false otherwise.
 
 **Example**
 ```
-int variable = (condition ? trueValue : falseValue);
+struct Range {
+	const int min;
+	const int max;
+}
+inline Range(int min, int max) = { min: min, max: max };
+
+struct RangeIterator {
+	int current;
+	const int end;
+
+	// RangeIterator is iterable
+	bool next(RangeIterator &this) {
+		if (this.current < this.end) {
+			this.current += 1;
+			return true;
+		}
+		return false;
+	}
+}
+
+// make the iterator for the Range type (make Range iterable)
+inline iterator(Range r) = RangeIterator {
+	current: r.min;
+	end: r.max;
+};
+
+// make RangeIterator iterable using an int
+bool next(RangeIterator &it, int &&value) {
+	value = it.current;
+	return RangeIterator.next(it);
+}
+
+// now we can iterate over any range
+for (int i : Range(10, 20)) {
+	println(i);
+}
+
+for (RangeIterator it : Range(10, 20)) {
+	println(it.current);
+}
 ```
 
-Evaluates the first argument(`condition`) and
-returns evaluating the second argument(`trueValue`) if the condition is true,
-or the third argument(`falseValue`) in case the condition is evaluated to false.
+### While statement
+[TODO: implementation]
 
-## Operator precedence table
+### Do-while statement
+[TODO: implementation]
 
-| Operator   | Title          | Example    | Description |
-|-----|-----------------------|------------|-------------|
-| 15: Primary ||| Associates left to right |
-| ( ) | Function call           | sqrt(x)    | function call, type cast, emit |
-| [ ] | Array subscript         | values[10] ||
-|  .  | Member access           | child.name ||
-| 14: Unary ||| Associates right to left |
-|  &  | Address of              | &x         ||
-|  +  | Unary plus              | +a         ||
-|  -  | Unary minus             | -a         ||
-|  ~  | Bitwise not             | ~077       ||
-|  !  | Logical not             | !ready     ||
-| 13: Multiplicative ||| Associates left to right |
-|  *  | Multiplication          | i * j||
-|  /  | Division                | i / j||
-|  %  | Modulus                 | i % j||
-| 12: Additive ||| Associates left to right |
-|  +  | Addition                | value + i||
-|  -  | Subtraction             | x - 10||
-| 11: Bit shift ||| Associates left to right |
-|  << | Left shift              | byte << 4||
-| \>> | Right shift             | i >> 2||
-| 10: Relational ||| Associates left to right |
-|  <  | Less than               | i < 10||
-|  <= | Less than or equal to   | i <= j||
-| \>  | Greater than            | i > 0||
-| \>= | Greater than or eq to   | count >= 90||
-| 9: Equality ||| Associates left to right |
-|  == | Equal to               | result == 0 ||
-|  != | Not equal to           | c != EOF ||
-| 8: Bitwise AND ||| Associates left to right |
-|  &  | Bitwise AND            | word & 077 ||
-| 7: Bitwise XOR ||| Associates left to right |
-|  ^  | Bitwise XOR            | word1 ^ word2 ||
-| 6: Bitwise OR ||| Associates left to right |
-| &#124; | Bitwise OR             | word &#124; bits ||
-| 5: Logical AND ||| Associates left to right |
-|  && | Logical AND            | j > 0 && j < 10 ||
-| 4: Logical OR ||| Associates left to right |
-|&#124;&#124;| Logical OR             | i > 80 &#124;&#124; ready ||
-| 3: Conditional ||| Associates right to left |
-|  ?: | Conditional operator   |a > b ? a : b ||
-| 2: Assignment ||| Associates right to left |
-| = /= %= += -= &= ^= &#124;= <<= >>= | Assignment operators | ||
-| 1: Collection ||| Associates left to right |
-|  ,  | Comma operator         | i = 10, j = 0||
+## Control statements
+
+### Break statement
+The break statement terminates the execution of the innermost enclosing loop.
+
+[TODO: example]
+
+### Continue statement
+The continue statement terminates the current and begins the next iteration of the innermost enclosing loop.
+
+[TODO: example]
+
+### Return statement
+The return statement terminates the execution of the current function.
+
+[TODO: example]
+- If an expression is given, before returning the expression is assigned to the result parameter of the function.
+- It is allowed to return an expression of type void (invocation of a function returning void),
+even if the function specifies a void return type. The expression will be evaluated, but nothing will be returned.
+
+## Declaration statement
+Declaration statement declares a typename, function, variable or a constant.
+
+## Expression statement
+Expression statements is an expression terminated with ';'
+
+Only some of the expressions can be used to form a statement:
+- assignment: `a = 2;`
+- invocation: `foo();`
+
+Expression statements such as `a * 4;` are considered invalid.
+
 
 # Type system
 Every declared type is also a static variable referencing its metadata,
@@ -1126,7 +1141,7 @@ Covers a range from 4.94065645841246544e-324 to 1.79769313486231570e+308
 
 ### pointer
 `pointer` is a data type whose value refers directly to (or "points to") another value.
-It contains static utility functions for low level memory operations (memset, memcpy, ...).
+It contains utility functions for low level memory operations (memset, memcpy, ...).
 
 Using it as a function with an identifier argument, it will return the address of the variable.
 This might be useful to compare if variable references point to the same value or object.
@@ -1136,9 +1151,9 @@ This might be useful to compare if variable references point to the same value o
 
 it may be defined as:
 ```
-struct variant {
-	const typename type;
-	const pointer value;
+const struct variant {
+	typename type;
+	pointer value;
 }
 ```
 
@@ -1148,8 +1163,8 @@ It contains static utility functions for reflection.
 
 Using it as a function with an identifier argument, it will return the type of the variable:
 - if the identifier is not defined, it will return `null`
-- if the identifier is a variable, it will return its type
 - if the identifier is a type, it will return `typename`
+- if the identifier is a variable, it will return its type
 - if the identifier is a variant variable, it will extract the type
 
 **Example**
@@ -1158,7 +1173,6 @@ Using it as a function with an identifier argument, it will return the type of t
 static if (typename(integer) == null) {
 inline integer = int32;
 }
-
 ```
 
 **Example**
@@ -1173,108 +1187,35 @@ bool hasInt128 = typename(int128) == typename;
 ### object
 [TODO: implementation]
 
-`object` is the base type for all reference types allocated in the heap.
+`object` is the base type for all heap allocated reference types.
 
-Every type inherited from object will be reference counted, and destroyed when there are no more references to it.
+Every type inherited from object will be reference counted,
+and destroyed when there are no more references pointing to it.
 
-## Array types
-Array type is a collection of zero or more elements of the same type.
-
-### Arrays (Fixed-size arrays)
-[TODO: documentation]
-
-**Example**
-```
-int a[2] = {42, 97};
-```
-
-- Are passed to functions by reference.
-- Type of elements and length is known by the compiler.
-
-### Slices (Dynamic-size arrays)
-Slices are a pair of a pointer to the first element and an integer containing the length of the slice.
-
-**Example**
-```
-int a[] = {42, 97, 13};
-```
-
-- Are initialized, assigned and passed to functions by reference followed by the length.
-- Type of elements is known by the compiler.
-- The length is known at runtime.
-
-### Pointers (Unknown-size arrays)
-Pointers are arrays without length. This type is helpful to pass data to native functions.
-Use `pointer` for the special `void *` type from c, when the type of elements is unknown.
-
-**Example**
-```
-int a[*];
-```
-
-- Are initialized, assigned and passed to functions by reference.
-- Type of elements is known by the compiler.
-- The length may be known by the developer.
-
-### Maps (Associative arrays)
-[TODO: implementation]
-
-**Example**
-
-```
-double constants[string] = {
-	pi: Math.pi;
-	"e": Math.e;
-};
-
-assert(constants["pi"] == Math.pi);
-assert(constants["e"] == Math.e);
-```
-
-Collection types(Array, Stack, Queue, Set, Bag, Map, …) are implemented in the run-time library.
-
-## Record types
-Record types are user defined compound types.
-
-**Example**
-```
-struct complex {
-	// real part
-	const double re;
-	// immaginary part
-	const double im = 0;
-}
-```
-
-### Value types
-[TODO: documentation]
-
-### Reference types
-[TODO: documentation]
-
-## Aliases
-Aliases are symbols referencing types or expressions.
-When using an alias the referenced expression is expanded inline.
-
-### Type aliasing
+## Builtin aliases
+Builtin type aliases:
 - `int`: alias for `int32` or `int64` depending on the word size of the vm
 - `byte`: alias for `uint8`
 - `float`: alias for `float32`
 - `double`: alias for `float64`
 
-### Expression aliasing
+Builtin constants:
 - `null`: pointer value, representing missing data.
 - `true`: boolean value, may be defined as: `inline true = 0 == 0;`.
 - `false`: boolean value, may be defined as: `inline false = 0 != 0;`.
 
-## Variables
+## Builtin functions
 [TODO: documentation]
 
-### Initialization
+- emit
+- raise
+- tryExec
+
+## Value types
 [TODO: documentation]
 
-### Assignment
+## Reference types
 [TODO: documentation]
 
-### Promotions
+## Type promotions
 [TODO: documentation]
