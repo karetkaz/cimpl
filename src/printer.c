@@ -1019,11 +1019,11 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 
 					if ((len = msg - fmt - 1) < 1020) {
 						memcpy(buff, fmt, (size_t) len);
-						if (buff[1] == '?' && len > 1) {
+						if (len > 1 && buff[1] == '?') {
 							len -= 1;
 							memcpy(buff+1, buff+2, (size_t) len);
 						}
-						if ((buff[1] == '-' || buff[1] == '+') && len > 1) {
+						if (len > 1 && (buff[1] == '-' || buff[1] == '+')) {
 							len -= 1;
 							memcpy(buff+1, buff+2, (size_t) len);
 							if (signbit(num) == 0) {

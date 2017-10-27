@@ -1691,7 +1691,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 	}
 
 	if (ast->kind >= STMT_beg && ast->kind <= STMT_end) {
-		dieif(spBegin != stkOffset(rt, 0), "%s:%u: locals left on stack(get: %K): `%t`", ast->file, ast->line, get, ast);
+		logif(spBegin != stkOffset(rt, 0), "%s:%u: locals left on stack(get: %K): `%t`", ast->file, ast->line, get, ast);
 		if (get == CAST_vid && spBegin != stkOffset(rt, 0)) {
 			if (!emitStack(rt, opc_drop, spBegin)) {
 				traceAst(ast);

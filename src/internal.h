@@ -22,7 +22,7 @@
 	4: include debug messages from code emitter
  	if not defined no extra messages and extra checks are performed.
 */
-#define DEBUGGING 0
+//#define DEBUGGING 0
 
 // limit the count of printed elements(stacktrace, array elements)
 #define LOG_MAX_ITEMS 25
@@ -297,6 +297,14 @@ symn lookup(ccContext, symn sym, astn ast, astn args, int raise);
 symn typeCheck(ccContext cc, symn loc, astn ast, int raise);
 
 /**
+ * @brief Type Check initialization of a variable.
+ * @param sym the variable to be checked.
+ * @param raise Report errors.
+ * @return Type of expression.
+ */
+symn initCheck(ccContext cc, symn sym, int raise);
+
+/**
  * @brief check if a value can be assigned to a symbol.
  * @param rhs variable to be assigned to.
  * @param val value to be assigned.
@@ -422,6 +430,12 @@ int source(ccContext, int isFile, char *src);
  */
 ccContext ccOpen(rtContext rt, char *file, int line, char *text);
 
+/** Parse the opened input source.
+ * @brief parse the input source.
+ * @param cc compiler context
+ * @param warn warning level
+ * @return abstract syntax tree
+ */
 astn parse(ccContext, int warn);
 
 /**
@@ -638,9 +652,9 @@ void closeLibs();
 #define ERR_INVALID_BASE_TYPE "invalid struct base type, got `%t`"
 #define ERR_INVALID_PACK_SIZE "invalid struct pack size, got `%t`"
 #define ERR_INVALID_CONST_ASSIGN "assignment of constant variable `%t`"
+#define ERR_INVALID_VALUE_ASSIGN "invalid assignment: `%T` := `%t`"
 #define ERR_INVALID_CONST_EXPR "constant expression expected, got: `%t`"
 #define ERR_INVALID_DECLARATION "invalid declaration: `%s`"
-#define ERR_INVALID_EXPRESSION "invalid expression: `%t`"
 #define ERR_INVALID_FIELD_ACCESS "object reference is required to access the member `%T`"
 #define ERR_INVALID_TYPE "can not type check expression: `%t`"
 #define ERR_INVALID_TYPE_NAME "typename expected(eg: `int32`), got: `%t`"
@@ -687,12 +701,6 @@ void closeLibs();
 #define WARN_USING_BEST_OVERLOAD "using overload `%T` of %d declared symbols."
 #define WARN_INLINE_ALL_PARAMS "all parameters will be inline for: %t"
 
-//~ disable warning messages
-#ifdef _MSC_VER
-// C4996: The POSIX ...
-#pragma warning(disable: 4996)
-#endif
-
 static inline void _break() {/* Add a breakpoint to break on compiler errors. */}
 static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 	_break();
@@ -707,14 +715,15 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 
 // compilation errors
 #define error(__ENV, __FILE, __LINE, msg, ...) do { printErr(__ENV, -1, __FILE, __LINE, msg, ##__VA_ARGS__); logif("ERROR", msg, ##__VA_ARGS__); _break(); } while(0)
-#define warn(__ENV, __LEVEL, __FILE, __LINE, msg, ...) do { printErr(__ENV, __LEVEL, __FILE, __LINE, msg, ##__VA_ARGS__); } while(0)
+#define warn(__ENV, __LEVEL, __FILE, __LINE, msg, ...) do { printErr(__ENV, __LEVEL, __FILE, __LINE, msg, ##__VA_ARGS__); logif("WARN", msg, ##__VA_ARGS__); } while(0)
 #define info(__ENV, __FILE, __LINE, msg, ...) do { printErr(__ENV, 0, __FILE, __LINE, msg, ##__VA_ARGS__); } while(0)
 
 #ifdef DEBUGGING	// enable compiler debugging
 
+#define logif(__EXP, msg, ...) do { if (__EXP) { prerr("log("#__EXP")", msg, ##__VA_ARGS__); _break(); } } while(0)
+
 #if DEBUGGING >= 1	// enable trace
 #define trace(msg, ...) do { prerr("trace", msg, ##__VA_ARGS__); } while(0)
-#define logif(__EXP, msg, ...) do { if (__EXP) { prerr("log("#__EXP")", msg, ##__VA_ARGS__); _break(); } } while(0)
 #endif
 
 #if DEBUGGING >= 2	// enable debug
@@ -749,8 +758,8 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 
 #define traceAst(__AST) do { trace("%.*t", prDbg, __AST); } while(0)
 
-#if defined __WATCOMC__
-
+// Compiler specific settings
+#ifdef __WATCOMC__
 #pragma disable_message(136);	// Warning! W136: Comparison equivalent to 'unsigned == 0'
 
 #include <math.h>
@@ -763,7 +772,12 @@ static inline float expf(float x) { return (float) exp((float) x); }
 static inline float powf(float x, float y) { return (float) pow((float) x, (float) y); }
 static inline float sqrtf(float x) { return (float) sqrt((float) x); }
 static inline float atan2f(float x, float y) { return (float) atan2((float) x, (float) y); }
+#endif
 
+#ifdef _MSC_VER
+// disable warning messages
+// C4996: The POSIX ...
+#pragma warning(disable: 4996)
 #endif
 
 #endif

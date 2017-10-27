@@ -228,7 +228,6 @@ static astn expand2Statement(ccContext cc, astn node, int block) {
 static astn statement_list(ccContext cc);
 static astn statement(ccContext cc, ccKind attr);
 static astn declaration(ccContext cc, ccKind attr, astn *args);
-static astn expression(ccContext cc, int comma);
 
 /** Parse qualifiers.
  * @brief scan for qualifiers: const static parallel
@@ -551,7 +550,99 @@ static astn expression(ccContext cc, int comma) {
 	return *stack;
 }
 
-/** Parse function parameters.
+/** Parse initializer value, object and array literals.
+ * @brief parse the initializer of a declaration.
+ * @param cc compiler context.
+ * @param var the declared variable symbol.
+ * @return the initializer expression.
+ */
+static astn initializer(ccContext cc) {
+	astn ast = peekTok(cc, STMT_beg) ? NULL : expression(cc, 1);
+	symn type = NULL;
+	if (ast != NULL) {
+		if (typeCheck(cc, NULL, ast, 0) && isTypeExpr(ast)) {
+			type = linkOf(ast);
+		}
+	}
+
+	if (!skipTok(cc, STMT_beg, 0)) {	// '{'
+		// initializer is an expression
+		return ast;
+	}
+
+	ccToken sep = STMT_end;
+	astn head = NULL, tail = NULL;
+	while ((ast = peekTok(cc, TOKEN_any)) != NULL) {
+		switch (ast->kind) {
+			default:
+				break;
+
+			case RIGHT_crl:	// '}'
+				ast = NULL;
+				break;
+		}
+		if (ast == NULL) {
+			break;
+		}
+
+		// try to read: `<property> ':' <initializer>`
+		ast = nextTok(cc, TOKEN_var, 0);
+		astn op = nextTok(cc, PNCT_cln, 0);
+		if (ast != NULL && op != NULL) {
+			astn init = initializer(cc);
+			op->kind = INIT_set;
+			op->op.lhso = ast;
+			op->op.rhso = init;
+			ast = op;
+		}
+		else {
+			if (ast != NULL) {
+				backTok(cc, ast);
+			}
+			ast = expression(cc, 1);
+		}
+
+		if (ast == NULL) {
+			// TODO: error
+			break;
+		}
+
+		if (tail != NULL) {
+			tail->next = ast;
+		}
+		else {
+			head = ast;
+		}
+		tail = ast;
+
+		// allow ';' or ',' as delimiter
+		if (!skipTok(cc, sep, 0)) {
+			if (sep == STMT_end) {
+				if (head == tail && skipTok(cc, OPER_com, 0)) {
+					sep = OPER_com;
+				}
+				else {
+					astn next = peekTok(cc, 0);
+					if (head != tail && next != NULL) {
+						warn(cc->rt, 1, next->file, next->line, ERR_UNMATCHED_SEPARATOR, next, STMT_end);
+					}
+					break;
+				}
+			}
+			else {
+				break;
+			}
+		}
+	}
+
+	skipTok(cc, RIGHT_crl, 1);
+	ast = newNode(cc, STMT_beg);
+	ast->stmt.stmt = head;
+	ast->type = type;
+	return ast;
+}
+
+/** Parse function parameter list.
  * @brief Parse the parameters of a function declaration.
  * @param cc compiler context.
  * @param mode
@@ -586,101 +677,6 @@ static astn parameters(ccContext cc, symn resType) {
 		}
 	}
 	return tok;
-}
-
-/** Parse initialization.
- * @brief parse the initializer of a declaration.
- * @param cc compiler context.
- * @param var the declared variable symbol.
- * @return the initializer expression.
- */
-static astn initializer(ccContext cc, symn var) {
-	astn ast = peekTok(cc, STMT_beg) ? NULL : expression(cc, 1);
-	symn type = var == NULL ? NULL : var->type;
-	if (ast != NULL) {
-		if (typeCheck(cc, NULL, ast, 0) && isTypeExpr(ast)) {
-			type = linkOf(ast);
-		}
-		else {
-			type = NULL;
-		}
-	}
-
-	if (!skipTok(cc, STMT_beg, 0)) {	// '{'
-		// initializer is an expression
-		return ast;
-	}
-
-	astn root = NULL;
-	ccToken sep = STMT_end;
-	while ((ast = peekTok(cc, TOKEN_any))) {
-		switch (ast->kind) {
-			default:
-				break;
-
-			case RIGHT_crl:	// '}'
-				ast = NULL;
-				break;
-		}
-		if (ast == NULL) {
-			break;
-		}
-
-		// try to read: `<property> ':' <initializer>`
-		ast = nextTok(cc, TOKEN_var, 0);
-		if (ast != NULL && skipTok(cc, PNCT_cln, 0)) {
-			// FIXME: do not lookup or type check while parsing.
-			symn fieldRef = lookup(cc, type->fields, ast, NULL, 0);
-			if (fieldRef == NULL) {
-				error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
-				fieldRef = cc->type_int;
-			}
-			astn init = initializer(cc, fieldRef);
-			ast = opNode(cc, INIT_set, ast, init);
-		}
-		else {
-			if (ast != NULL) {
-				backTok(cc, ast);
-			}
-			ast = expression(cc, 1);
-		}
-
-		if (ast == NULL) {
-			root = NULL;
-			break;
-		}
-		// TODO: remove type checking
-		ast->type = typeCheck(cc, type, ast, 1);
-		if (ast->type == NULL) {
-			break;
-		}
-
-		// update root
-		root = argNode(cc, root, ast);
-
-		// allow ';' or ',' as delimiter
-		if (!skipTok(cc, sep, 0)) {
-			if (sep == STMT_end) {
-				if (root == ast && skipTok(cc, OPER_com, 0)) {
-					sep = OPER_com;
-				}
-				else {
-					astn next = peekTok(cc, 0);
-					if (root != ast && next != NULL) {
-						// todo mixed separators detected
-						warn(cc->rt, 1, next->file, next->line, ERR_UNMATCHED_SEPARATOR, next, STMT_end);
-					}
-					break;
-				}
-			}
-			else {
-				break;
-			}
-		}
-	}
-
-	skipTok(cc, RIGHT_crl, 1);
-	return root;
 }
 
 /** Parse variable or function declaration.
@@ -809,7 +805,8 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 
 	def = declare(cc, (attr & MASK_attr) | KIND_var | cast, tag, type, params);
 	if (skipTok(cc, ASGN_set, 0)) {
-		def->init = initializer(cc, def);
+		def->init = initializer(cc);
+		initCheck(cc, def, 1);
 	}
 
 	return tag;
@@ -874,7 +871,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 	}
 
 	skipTok(cc, ASGN_set, 1);
-	init = initializer(cc, NULL);
+	init = initializer(cc);
 	if (init != NULL) {
 		type = typeCheck(cc, NULL, init, 1);
 		init->type = type;
@@ -1000,10 +997,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 		}
 	}
 
-	if (!skipTok(cc, STMT_beg, 1)) {	// '{'
-		traceAst(peekTok(cc, 0));
-		return NULL;
-	}
+	skipTok(cc, STMT_beg, 1);	// '{'
 
 	symn type = declare(cc, ATTR_stat | ATTR_cnst | KIND_typ | CAST_val, tag, base, NULL);
 	enter(cc);
@@ -1024,11 +1018,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 	}
 	type->fields = leave(cc, type, attr | KIND_typ, pack, &type->size);
 
-	if (!skipTok(cc, RIGHT_crl, 1)) {	// '}'
-		traceAst(peekTok(cc, 0));
-		return NULL;
-	}
-
+	skipTok(cc, RIGHT_crl, 1);	// '}'
 	return tag;
 }
 
@@ -1037,114 +1027,87 @@ static astn declare_record(ccContext cc, ccKind attr) {
  * @param cc compiler context.
  * @return root of declaration.
  */
-// TODO: implement
 static astn declare_enum(ccContext cc) {
-	//symn def = NULL, base = cc->type_i32;
-	// astn tok, tag = NULL;
-	skipTok(cc, ENUM_kwd, 1);
-	return NULL;
-}
 
-/** Parse all the statements in the current scope.
- * @brief parse statements.
- * @param cc compiler context.
- * @return the parsed statements chained by ->next, NULL if no statements parsed.
- */
-static astn statement_list(ccContext cc) {
-	astn ast, head = NULL, tail = NULL;
-
-	while ((ast = peekTok(cc, TOKEN_any)) != NULL) {
-		ccKind attr;
-
-		switch (ast->kind) {
-			default:
-				break;
-
-			//case TOKEN_any:	// error
-			//case RIGHT_par:
-			//case RIGHT_sqr:
-			case RIGHT_crl:		// '}'
-				ast = NULL;
-				break;
-		}
-		if (ast == NULL) {
-			break;
-		}
-
-		attr = qualifier(cc);
-		if ((ast = statement(cc, attr))) {
-			if (tail != NULL) {
-				tail->next = ast;
-			}
-			else {
-				head = ast;
-			}
-			tail = ast;
-		}
-	}
-
-	return head;
-}
-
-// TODO: implement
-static astn statement_for(ccContext cc, ccKind attr) {
-	astn ast = nextTok(cc, STMT_for, 1);
-	if (ast == NULL) {
-		traceAst(ast);
+	if (!skipTok(cc, ENUM_kwd, 1)) {
+		traceAst(peekTok(cc, 0));
 		return NULL;
 	}
 
-	enter(cc);
-	skipTok(cc, LEFT_par, 1);
+	astn tag = nextTok(cc, TOKEN_var, 0);
+	symn base = cc->type_int;
 
-	astn init = peekTok(cc, STMT_end) ? NULL : expression(cc, 0);
-	if (init != NULL) {
-		init->type = typeCheck(cc, NULL, init, 1);
-		if (isTypeExpr(init)) {
-			backTok(cc, init);
-			init = declaration(cc, attr, NULL);
-			if (init != NULL && init->ref.link->init != NULL) {
-				astn ast = init->ref.link->init;
-				ast->type = typeCheck(cc, NULL, ast, 1);
+	if (skipTok(cc, PNCT_cln, 0)) {			// ':' base type
+		astn tok = expression(cc, 0);
+		if (tok != NULL) {
+			base = NULL;
+			// type-check the base type
+			if (typeCheck(cc, NULL, tok, 0) && isTypeExpr(tok)) {
+				base = linkOf(tok);
+			}
+			else {
+				error(cc->rt, tok->file, tok->line, ERR_INVALID_BASE_TYPE, tok);
 			}
 		}
-		ast->stmt.init = init;
+		else {
+			error(cc->rt, cc->file, cc->line, ERR_INVALID_BASE_TYPE, peekTok(cc, TOKEN_any));
+		}
 	}
 
-	if (peekTok(cc, PNCT_cln)) {
-		// TODO: transform foreach to for.
-		// transform `for (iterator i: iterable) ...` to
-		// `for (iterator $it = iterator(iterable), iterator i = $it; $it.next(); i = $it) ...`
-		// transform `for (integer i: iterable) ...` to
-		// `for (iterator $it = iterator(iterable), integer i; next($it, &&i); ) ...`
-		fatal(ERR_UNIMPLEMENTED_FEATURE);
+	symn type = NULL;
+	if (tag != NULL) {
+		type = declare(cc, ATTR_stat | ATTR_cnst | KIND_typ | CAST_val, tag, base, NULL);
+		enter(cc);
 	}
 
-	skipTok(cc, STMT_end, 1);
-	astn test = peekTok(cc, STMT_end) ? NULL : expression(cc, 0);
-	if (test != NULL) {
-		test->type = typeCheck(cc, NULL, test, 1);
-		ast->stmt.test = test;
+	int64_t nextValue = 0;
+	astn ast = initializer(cc);
+	for (astn prop = ast->stmt.stmt; prop != NULL; prop = prop->next) {
+		astn id = prop->kind == INIT_set ? prop->op.lhso : prop;
+		symn member = declare(cc, ATTR_stat | ATTR_cnst | KIND_var | CAST_val, id, base, NULL);
+		astn value = NULL;
+		if (id == prop) {
+			value = intNode(cc, nextValue);
+		}
+		else {
+			struct astNode temp;
+			// TODO: type-check value
+			value = prop->op.rhso;
+
+			switch (eval(cc, &temp, value)) {
+				default:
+					error(cc->rt, id->file, id->line, ERR_INVALID_VALUE_ASSIGN, member, value);
+					break;
+
+				case CAST_i32:
+				case CAST_i64:
+				case CAST_u32:
+				case CAST_u64:
+					nextValue = intValue(&temp);
+					break;
+			}
+		}
+		nextValue += 1;
+		if (!canAssign(cc, member, value, 0)) {
+			error(cc->rt, id->file, id->line, ERR_INVALID_VALUE_ASSIGN, member, value);
+		}
+		member->init = value;
+		logif("ENUM", "%s:%u: enum.member: `%t` => %+T", prop->file, prop->line, prop, member);
 	}
 
-	skipTok(cc, STMT_end, 1);
-	astn step = peekTok(cc, RIGHT_par) ? NULL : expression(cc, 0);
-	if (step != NULL) {
-		step->type = typeCheck(cc, NULL, step, 1);
-		ast->stmt.step = step;
+	if (type != NULL) {
+		type->fields = leave(cc, type, KIND_typ, vm_size, &type->size);
 	}
 
-	skipTok(cc, RIGHT_par, 1);
-
-	ast->stmt.stmt = statement(cc, (ccKind) 0);
-
-	leave(cc, NULL, KIND_def, 0, NULL);
-
-	ast->type = cc->type_vid;
-	(void)attr;
-	return ast;
+	return tag;
 }
 
+/** Parse if statement.
+ * @brief parse: `if (condition) statement [else statement]`.
+ * @param cc compiler context.
+ * @param attr the qualifier of the statement (ie. static if)
+ * @return the parsed syntax tree.
+ */
 static astn statement_if(ccContext cc, ccKind attr) {
 	astn ast = nextTok(cc, STMT_if, 1);
 	if (ast == NULL) {
@@ -1204,10 +1167,115 @@ static astn statement_if(ccContext cc, ccKind attr) {
 	return ast;
 }
 
+/** Parse for statement.
+ * @brief parse: `for (init; test; step) statement`.
+ * @param cc compiler context.
+ * @param attr the qualifier of the statement (ie. parallel for)
+ * @return the parsed syntax tree.
+ */
+static astn statement_for(ccContext cc, ccKind attr) {
+	astn ast = nextTok(cc, STMT_for, 1);
+	if (ast == NULL) {
+		traceAst(ast);
+		return NULL;
+	}
+
+	enter(cc);
+	skipTok(cc, LEFT_par, 1);
+
+	astn init = peekTok(cc, STMT_end) ? NULL : expression(cc, 0);
+	if (init != NULL) {
+		init->type = typeCheck(cc, NULL, init, 1);
+		if (isTypeExpr(init)) {
+			backTok(cc, init);
+			init = declaration(cc, attr, NULL);
+			if (init != NULL && init->ref.link->init != NULL) {
+				astn ast = init->ref.link->init;
+				ast->type = typeCheck(cc, NULL, ast, 1);
+			}
+		}
+		ast->stmt.init = init;
+	}
+
+	if (peekTok(cc, PNCT_cln)) {
+		// TODO: transform foreach to for.
+		// transform `for (iterator i: iterable) ...` to
+		// `for (iterator $it = iterator(iterable), iterator i = $it; $it.next(); i = $it) ...`
+		// transform `for (integer i: iterable) ...` to
+		// `for (iterator $it = iterator(iterable), integer i; next($it, &&i); ) ...`
+		fatal(ERR_UNIMPLEMENTED_FEATURE);
+	}
+
+	skipTok(cc, STMT_end, 1);
+	astn test = peekTok(cc, STMT_end) ? NULL : expression(cc, 0);
+	if (test != NULL) {
+		test->type = typeCheck(cc, NULL, test, 1);
+		ast->stmt.test = test;
+	}
+
+	skipTok(cc, STMT_end, 1);
+	astn step = peekTok(cc, RIGHT_par) ? NULL : expression(cc, 0);
+	if (step != NULL) {
+		step->type = typeCheck(cc, NULL, step, 1);
+		ast->stmt.step = step;
+	}
+
+	skipTok(cc, RIGHT_par, 1);
+
+	ast->stmt.stmt = statement(cc, (ccKind) 0);
+
+	leave(cc, NULL, KIND_def, 0, NULL);
+
+	ast->type = cc->type_vid;
+	(void)attr;
+	return ast;
+}
+
+/** Parse all the statements in the current scope.
+ * @brief parse statements.
+ * @param cc compiler context.
+ * @return the parsed statements chained by ->next, NULL if no statements parsed.
+ */
+static astn statement_list(ccContext cc) {
+	astn ast, head = NULL, tail = NULL;
+
+	while ((ast = peekTok(cc, TOKEN_any)) != NULL) {
+		ccKind attr;
+
+		switch (ast->kind) {
+			default:
+				break;
+
+				//case TOKEN_any:	// error
+				//case RIGHT_par:
+				//case RIGHT_sqr:
+			case RIGHT_crl:		// '}'
+				ast = NULL;
+				break;
+		}
+		if (ast == NULL) {
+			break;
+		}
+
+		attr = qualifier(cc);
+		if ((ast = statement(cc, attr))) {
+			if (tail != NULL) {
+				tail->next = ast;
+			}
+			else {
+				head = ast;
+			}
+			tail = ast;
+		}
+	}
+
+	return head;
+}
+
 /** Parse statement.
  * @brief parse a statement.
  * @param cc compiler context.
- * @param mode
+ * @param attr the qualifier of the statement/declaration
  * @return parsed syntax tree.
  */
 static astn statement(ccContext cc, ccKind attr) {
@@ -1397,12 +1465,6 @@ static astn statement(ccContext cc, ccKind attr) {
 }
 //#}
 
-/**
- * @brief parse the input source.
- * @param cc compiler context
- * @param warn warning level
- * @return abstract syntax tree
- */
 astn parse(ccContext cc, int warn) {
 	astn ast, unit = NULL;
 

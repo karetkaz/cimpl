@@ -387,9 +387,11 @@ static symn convert(ccContext cc, astn ast, symn type) {
 }
 
 static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise) {
-	if (ref == NULL) {
+	if (ref == NULL || ref->kind != TOKEN_var) {
+		traceAst(ref);
 		return NULL;
 	}
+
 	symn sym;
 	if (loc != NULL) {
 		sym = loc->fields;
@@ -476,7 +478,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 
 			if (ref == NULL && args == NULL) {
 				// int a = ();
-				error(cc->rt, ast->file, ast->line, ERR_INVALID_EXPRESSION, ast);
+				traceAst(ast);
 				return NULL;
 			}
 			if (ref == NULL) {
@@ -550,6 +552,10 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				traceAst(ast);
 				return NULL;
 			}
+			if (isVariable(loc)) {
+				loc = loc->type;
+				dieif(loc != lType, ERR_INTERNAL_ERROR);
+			}
 			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 
 			if (!lType || !rType) {
@@ -564,8 +570,12 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			return rType;
 
 		case OPER_idx:
-			lType = typeCheck(cc, loc, ast->op.lhso, raise);
-			rType = typeCheck(cc, loc, ast->op.rhso, raise);
+			if (ast->op.lhso != NULL) {
+				lType = typeCheck(cc, loc, ast->op.lhso, raise);
+			}
+			if (ast->op.rhso != NULL) {
+				rType = typeCheck(cc, loc, ast->op.rhso, raise);
+			}
 
 			if (!lType || !rType) {
 				traceAst(ast);
@@ -788,8 +798,63 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 	return NULL;
 }
 
+symn initCheck(ccContext cc, symn var, int raise) {
+	symn type = isTypename(var) ? var : var->type;
+	astn ast = var->init;
+	if (ast == NULL) {
+		// uninitialized variable
+		if (raise) {
+			warn(cc->rt, 1, var->file, var->line, ERR_UNINITIALIZED_VARIABLE, var, NULL);
+		}
+		return type;
+	}
+
+	if (ast->kind != STMT_beg) {
+		// expression initialized variable
+		type = typeCheck(cc, NULL, ast, raise);
+		if (raise && !canAssign(cc, var, ast, 0)) {
+			warn(cc->rt, 1, ast->file, ast->line, ERR_INVALID_VALUE_ASSIGN, var, ast);
+		}
+	}
+	else if (isTypename(var)) {
+		type = cc->type_fun;
+		warn(cc->rt, 1, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, var, ast);
+	}
+	else if (isFunction(var)) {
+		type = cc->type_fun;
+		warn(cc->rt, 1, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, var, ast);
+	}
+	else {
+		// literal initialized variable
+		for (astn n = ast->stmt.stmt; n != NULL; n = n->next) {
+			astn id = NULL, val = n;
+			if (n->kind == INIT_set) {
+				id = n->op.lhso;
+				val = n->op.rhso;
+			}
+			if (id != NULL) {
+				symn fieldRef = lookup(cc, type->fields, id, NULL, 0);
+				if (raise && fieldRef == NULL) {
+					error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
+					fieldRef = cc->type_int;
+				}
+				initCheck(cc, fieldRef, raise);
+			}
+			else {
+				type = typeCheck(cc, NULL, val, raise);
+				if (raise && !canAssign(cc, type, val, 0)) {
+					warn(cc->rt, 1, val->file, val->line, ERR_INVALID_VALUE_ASSIGN, type, val);
+				}
+			}
+		}
+		// TODO: convert initializer literal to initializer statement list
+		fatal("%?s:%?u: "ERR_UNIMPLEMENTED_FEATURE": `%T` := `%+t`", var->file, var->line, var, ast);
+	}
+	return ast->type = type;
+}
+
 ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
-	symn typ = var;
+	symn typ = isTypename(var) ? var : var->type;
 	symn lnk = linkOf(val);
 	ccKind varCast;
 
@@ -801,10 +866,6 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	}
 
 	varCast = castOf(var);
-	if (!isTypename(var)) {
-		// canAssign(int32, 3) should return true
-		typ = var->type;
-	}
 
 	// assign null or pass by reference
 	if (lnk == cc->null_ref) {
@@ -847,6 +908,11 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 			// case KIND_fun:
 				return CAST_ref;
 		}
+	}
+
+	// assigning a variable to a pointer or variant
+	if (lnk != NULL && (typ == cc->type_ptr || typ == cc->type_var)) {
+		return castOf(typ);
 	}
 
 	if (typ != var) {

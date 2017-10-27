@@ -13,8 +13,7 @@ static integer globalInitLocal = localInitValue;
 integer localInitGlobal = globalInitValue;
 static integer globalInitGlobal = globalInitValue;
 
-static if (false) {
-// TODO: test member, local and global variable initializations
+/* TODO: member, local and global variable initializations
 struct RecTestInit {
 	// member variable
 	// compiler: WARN if not initialized when instantiated.
@@ -41,7 +40,7 @@ struct RecTestInit {
 	static const int32 B = 0;
 }
 
-/+void init() {
+void initLocals() {
 	// local variable
 	// compiler: WARN if not initialized when declared.
 	int32 a;
@@ -57,7 +56,7 @@ struct RecTestInit {
 	// constant global variable.
 	// compiler: ERROR if not initialized when declared.
 	static const int32 e = 4;
-}+/
+}
 
 RecTestInit a = {
 	a: 1;
@@ -65,4 +64,4 @@ RecTestInit a = {
 	c: 3;
 	d: 4;
 };
-}// */
+// */

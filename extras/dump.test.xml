@@ -3883,49 +3883,6 @@
 				<init token=".variable" type="int64[7]" kind="static typename(arr)" value="arrFixedNoInit" />
 			</init>
 		</stmt>
-		<stmt token="static if" type="void" kind="static const typename(void)" stmt="static if (false)">
-			<test token=".variable" type="bool" kind="static const typename(bool)" value="false">
-				<init token=".literal" type="bool" kind="static const typename(bool)" value="0" />
-			</test>
-			<then token="{}" type="void" kind="static const typename(void)" file="extras/Tests/lang.varInitArray.ci:28">
-				<stmt token=".variable" type="int64[7]" kind="static typename(arr)" value="arrFixedInitLiteral">
-					<init token="," type="void" kind="static const typename(void)" value="1, 2, 3, 4">
-						<left token="," type="void" kind="static const typename(void)" value="1, 2, 3">
-							<left token="," type="void" kind="static const typename(void)" value="1, 2">
-								<left token=".literal" type="int32" kind="static const typename(i32)" value="1" />
-								<right token=".literal" type="int32" kind="static const typename(i32)" value="2" />
-							</left>
-							<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
-						</left>
-						<right token=".literal" type="int32" kind="static const typename(i32)" value="4" />
-					</init>
-				</stmt>
-				<stmt token=".variable" type="int64[]" kind="static typename(arr)" value="arrSliceInitLiteral">
-					<init token="," type="void" kind="static const typename(void)" value="1, 2, 3, 4">
-						<left token="," type="void" kind="static const typename(void)" value="1, 2, 3">
-							<left token="," type="void" kind="static const typename(void)" value="1, 2">
-								<left token=".literal" type="int32" kind="static const typename(i32)" value="1" />
-								<right token=".literal" type="int32" kind="static const typename(i32)" value="2" />
-							</left>
-							<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
-						</left>
-						<right token=".literal" type="int32" kind="static const typename(i32)" value="4" />
-					</init>
-				</stmt>
-				<stmt token=".variable" type="int64[*]" kind="static typename(arr)" value="arrPtrInitLiteral">
-					<init token="," type="void" kind="static const typename(void)" value="1, 2, 3, 4">
-						<left token="," type="void" kind="static const typename(void)" value="1, 2, 3">
-							<left token="," type="void" kind="static const typename(void)" value="1, 2">
-								<left token=".literal" type="int32" kind="static const typename(i32)" value="1" />
-								<right token=".literal" type="int32" kind="static const typename(i32)" value="2" />
-							</left>
-							<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
-						</left>
-						<right token=".literal" type="int32" kind="static const typename(i32)" value="4" />
-					</init>
-				</stmt>
-			</then>
-		</stmt>
 		<stmt token=".variable" type="char[]" kind="static typename(arr)" value="arrSliceInitString">
 			<init token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;string&quot;" />
 		</stmt>
@@ -4311,42 +4268,6 @@
 			<init token=".variable" type="int64" kind="static const typename(i64)" value="globalInitValue">
 				<init token=".literal" type="int32" kind="static const typename(i32)" value="1024" />
 			</init>
-		</stmt>
-		<stmt token="static if" type="void" kind="static const typename(void)" stmt="static if (false)">
-			<test token=".variable" type="bool" kind="static const typename(bool)" value="false">
-				<init token=".literal" type="bool" kind="static const typename(bool)" value="0" />
-			</test>
-			<then token="{}" type="void" kind="static const typename(void)" file="extras/Tests/lang.varInitByVal.ci:16">
-				<stmt token=".variable" type="typename" kind="static const typename(ref)" value="RecTestInit" />
-				<stmt token=".variable" type="RecTestInit" kind="static const typename(val)" value="a">
-					<init token="," type="void" kind="static const typename(void)" value="a := 1, b := 2, c := 3, d := 4">
-						<left token="," type="void" kind="static const typename(void)" value="a := 1, b := 2, c := 3">
-							<left token="," type="void" kind="static const typename(void)" value="a := 1, b := 2">
-								<left token=":=" type="int32" kind="static const typename(i32)" value="a := 1">
-									<left token=".variable" type="int32" kind="static const typename(i32)" value="a" />
-									<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
-								</left>
-								<right token=":=" type="int32" kind="static const typename(i32)" value="b := 2">
-									<left token=".variable" type="int32" kind="static const typename(i32)" value="b">
-										<init token=".literal" type="int32" kind="static const typename(i32)" value="9" />
-									</left>
-									<right token=".literal" type="int32" kind="static const typename(i32)" value="2" />
-								</right>
-							</left>
-							<right token=":=" type="int32" kind="static const typename(i32)" value="c := 3">
-								<left token=".variable" type="int32" kind="static const typename(i32)" value="c" />
-								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
-							</right>
-						</left>
-						<right token=":=" type="int32" kind="static const typename(i32)" value="d := 4">
-							<left token=".variable" type="int32" kind="static const typename(i32)" value="d">
-								<init token=".literal" type="int32" kind="static const typename(i32)" value="42" />
-							</left>
-							<right token=".literal" type="int32" kind="static const typename(i32)" value="4" />
-						</right>
-					</init>
-				</stmt>
-			</then>
 		</stmt>
 		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="pi64">
 			<init token=".literal" type="float64" kind="static const typename(f64)" value="3.141593" />
