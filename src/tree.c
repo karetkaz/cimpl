@@ -242,13 +242,13 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 				return CAST_any;
 			}
 
-			// typename(int64) => &int64
+			// typename(int64) => typename
 			if (linkOf(func) == cc->type_rec) {
 				if (args && args->kind == TOKEN_var) {
 					symn id = args->ref.link;
 					res->kind = TOKEN_val;
 					res->type = cc->type_rec;
-					res->cInt = id ? id->offs : 0;
+					res->cInt = id && id->type ? id->type->offs : 0;
 					break;
 				}
 			}
@@ -272,6 +272,9 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 			}
 			else if (isTypename(var)) {
 				cast = castOf(type);
+				type = cc->type_rec;
+				res->kind = TOKEN_val;
+				res->cInt = var->offs;
 			}
 			else {
 				return CAST_any;

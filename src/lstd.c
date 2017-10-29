@@ -523,7 +523,7 @@ int ccLibStd(ccContext cc) {
 				}
 			}
 			dieif(cc->libc_dbg->fields, ERR_INTERNAL_ERROR);
-			cc->libc_dbg->fields = leave(cc, cc->libc_dbg, ATTR_stat | KIND_typ, 0, NULL);
+			cc->libc_dbg->fields = leave(cc, cc->libc_dbg, ATTR_stat | KIND_typ, 0, 0, NULL);
 		}
 	}
 
@@ -545,7 +545,7 @@ int ccLibStd(ccContext cc) {
 			err = 3;
 		}
 		dieif(cc->type_ptr->fields, ERR_INTERNAL_ERROR);
-		cc->type_ptr->fields = leave(cc, cc->type_ptr, ATTR_stat | KIND_typ, 0, NULL);
+		cc->type_ptr->fields = leave(cc, cc->type_ptr, ATTR_stat | KIND_typ, 0, 0, NULL);
 	}
 
 	// System.exit(int code), ...
@@ -559,7 +559,7 @@ int ccLibStd(ccContext cc) {
 		}
 		//~ install(cc, "Arguments", CAST_arr, 0, 0);	// string Args[];
 		//~ install(cc, "Environment", KIND_def, 0, 0);	// string Env[string];
-		nsp->fields = leave(cc, nsp, ATTR_stat | KIND_typ, 0, NULL);
+		nsp->fields = leave(cc, nsp, ATTR_stat | KIND_typ, 0, 0, NULL);
 	}
 
 	// Add extra operations to int32
@@ -572,7 +572,7 @@ int ccLibStd(ccContext cc) {
 			}
 		}
 		dieif(cc->type_u32->fields, ERR_INTERNAL_ERROR);
-		cc->type_u32->fields = leave(cc, cc->type_u32, ATTR_stat | KIND_typ, 0, NULL);
+		cc->type_u32->fields = leave(cc, cc->type_u32, ATTR_stat | KIND_typ, 0, 0, NULL);
 	}
 	// Add extra operations to int64
 	if (!err && cc->type_u64 != NULL) {
@@ -584,7 +584,7 @@ int ccLibStd(ccContext cc) {
 			}
 		}
 		dieif(cc->type_u64->fields, ERR_INTERNAL_ERROR);
-		cc->type_u64->fields = leave(cc, cc->type_u64, ATTR_stat | KIND_typ, 0, NULL);
+		cc->type_u64->fields = leave(cc, cc->type_u64, ATTR_stat | KIND_typ, 0, 0, NULL);
 	}
 	// add math functions to float32
 	if (!err && cc->type_f32 != NULL) {
@@ -596,7 +596,7 @@ int ccLibStd(ccContext cc) {
 			}
 		}
 		dieif(cc->type_f32->fields, ERR_INTERNAL_ERROR);
-		cc->type_f32->fields = leave(cc, cc->type_f32, ATTR_stat | KIND_typ, 0, NULL);
+		cc->type_f32->fields = leave(cc, cc->type_f32, ATTR_stat | KIND_typ, 0, 0, NULL);
 	}
 	// add math functions to float64
 	if (!err && cc->type_f64 != NULL) {
@@ -608,7 +608,7 @@ int ccLibStd(ccContext cc) {
 			}
 		}
 		dieif(cc->type_f64->fields, ERR_INTERNAL_ERROR);
-		cc->type_f64->fields = leave(cc, cc->type_f64, ATTR_stat | KIND_typ, 0, NULL);
+		cc->type_f64->fields = leave(cc, cc->type_f64, ATTR_stat | KIND_typ, 0, 0, NULL);
 	}
 	return err;
 }

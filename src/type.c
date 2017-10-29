@@ -71,7 +71,7 @@ void enter(ccContext cc) {
 }
 
 /// Leave current scope.
-symn leave(ccContext cc, symn owner, ccKind mode, size_t align, size_t *outSize) {
+symn leave(ccContext cc, symn owner, ccKind mode, size_t align, size_t baseSize, size_t *outSize) {
 	symn sym, result = NULL;
 
 	cc->nest -= 1;
@@ -109,7 +109,8 @@ symn leave(ccContext cc, symn owner, ccKind mode, size_t align, size_t *outSize)
 	cc->scope = sym;
 
 	// fix padding
-	size_t offs = 0, size = 0;
+	size_t offs = baseSize;
+	size_t size = baseSize;
 	switch (mode & MASK_kind) {
 		default:
 			fatal(ERR_INTERNAL_ERROR);

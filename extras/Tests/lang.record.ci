@@ -1,109 +1,35 @@
+// value type
+struct rgbF32 {
+	float32 r;  // red
+	float32 g;  // green
+	float32 b;  // blue
+}
+
 // packed type
-struct xrgb: 1 {
-	uint8 b;
-	uint8 g;
-	uint8 r;
-	uint8 x;
+struct rgbU8: 1 {
+	uint8 b;  // red
+	uint8 g;  // green
+	uint8 r;  // blue
 }
 
 // union type
 struct color: 0 {
-	xrgb rgb;
-	int32 col;
+	uint32 col;
+	rgbU8 rgb;
 }
 
-/* TODO // record initialization
-xrgb black = {r = 0; g = 0; b = 0;};
-xrgb green = {r = 0; g = 255; b = 0;};
-xrgb white = {r = 255; g = 255; b = 255;};
+// reference counted type
+struct Color: object {
+	rgbF32 value;
+}
+
+/* TODO: record initialization
+rgbU8 black = {r: 0, g: 0, b: 0};
+rgbU8 green = {r: 0, g: 255, b: 0};
+rgbU8 white = {r: 255, g: 255, b: 255};
 // */
 
-/* TODO // union initialization
-color cyan = {col = 0x00ffff};
-color blue = {rgb = {r = 0; g = 0; b = 255;}};
+/* TODO: union initialization
+color cyan = {col: 0x00ffff};
+color blue = {rgb: {r: 0, g: 0, b: 255}};
 // */
-
-// garbage collected
-struct type: object {
-	int intVariable;
-	type objReference;
-	int funReference(int x, int y);
-	/*TODO: int funDefinition(int x, int y) {
-		return 42;
-	}*/
-}
-
-/* TODO: object initialization
-type a1 = { intVariable = 1; funReference = null; };
-type a2 = { intVariable = 1; objReference = { intVariable = 1; }; };
-type a3 = { intVariable = 1; objReference = type { intVariable = 1; }; };
-// */
-
-// align 0 => union
-struct record_pack0: 0 {
-	uint8 _0;
-	uint64 a;
-	uint8 _1;
-	uint32 b;
-	uint8 _2;
-	uint16 c;
-}
-
-// align 1 => no padding
-struct record_pack1: 1 {
-	uint8 _0;
-	uint64 a;
-	uint8 _1;
-	uint32 b;
-	uint8 _2;
-	uint16 c;
-}
-
-// align 2 => padding is max 2
-struct record_pack2: 2 {
-	uint8 _0;
-	uint64 a;
-	uint8 _1;
-	uint32 b;
-	uint8 _2;
-	uint16 c;
-}
-
-// align 4 => padding is max 4
-struct record_pack4: 4 {
-	uint8 _0;
-	uint64 a;
-	uint8 _1;
-	uint32 b;
-	uint8 _2;
-	uint16 c;
-}
-
-// align 8 => padding is max 8
-struct record_pack8: 8 {
-	uint8 _0;
-	uint64 a;
-	uint8 _1;
-	uint32 b;
-	uint8 _2;
-	uint16 c;
-}
-
-// no alignment => padding is set by the compiler
-struct record_packDef {
-	uint8 _0;
-	uint64 a;
-	uint8 _1;
-	uint32 b;
-	uint8 _2;
-	uint16 c;
-}
-
-/*struct record_ext: int64 {	// FIXME: extended type must be an object
-	uint8 _0;
-	uint64 a;
-	uint8 _1;
-	uint32 b;
-	uint8 _2;
-	uint16 c;
-}*/

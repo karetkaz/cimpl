@@ -4,7 +4,7 @@
 
 // default values
 static const int wl = 5;            // default warning level: show all
-static char mem[512 << 10];         // 512 Kb memory compiler + runtime
+static char mem[640 << 10];         // 640 Kb memory compiler + runtime
 const char *STDLIB = "stdlib.cvx";  // standard library
 
 static inline int strEquals(const char *str, const char *with) {

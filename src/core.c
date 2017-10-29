@@ -245,7 +245,7 @@ symn ccEnd(ccContext cc, symn cls) {
 		trace(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
-	symn fields = leave(cc, cls, ATTR_stat | KIND_typ, 0, NULL);
+	symn fields = leave(cc, cls, ATTR_stat | KIND_typ, 0, 0, NULL);
 	if (cls != NULL) {
 		cls->fields = fields;
 	}
@@ -700,7 +700,7 @@ static void install_emit(ccContext cc, ccInstall mode) {
 			ccEnd(cc, opc);
 		}
 		dieif(cc->emit_opc->fields, ERR_INTERNAL_ERROR);
-		cc->emit_opc->fields = leave(cc, cc->emit_opc, ATTR_stat | KIND_typ, 0, NULL);
+		cc->emit_opc->fields = leave(cc, cc->emit_opc, ATTR_stat | KIND_typ, 0, 0, NULL);
 	}
 
 	// export emit to the compiler context
@@ -768,7 +768,7 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 		//~ */
 
 		dieif(cc->type_rec->fields, ERR_INTERNAL_ERROR);
-		cc->type_rec->fields = leave(cc, cc->type_rec, KIND_def, 0, NULL);
+		cc->type_rec->fields = leave(cc, cc->type_rec, KIND_def, 0, 0, NULL);
 	}
 	return error;
 }

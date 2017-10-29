@@ -39,3 +39,45 @@ char arrPtrInitString[*] = "string";
 
 //~ int arrSliceInitString[] = "string";  // FIXME: compilation error: invalid assignment
 //~ int arrPtrInitString[*] = "string";  // FIXME: compilation error: invalid assignment
+
+/*
+// initialize all elements with the value 4
+int a[100] = {*: 4}; /+ =>
+	int a[100];
+	for (int i = 0; i < a.length; ++i) {
+		a[i] = 4;
+	}
++/
+
+// initialize the first 3 elements with the given values
+// the rest will be initalized with 64
+int a[100] = {1, 2, 3, *: 64}; /+ =>
+	int a[100];
+	a[0] = 1;
+	a[1] = 2;
+	a[2] = 3;
+	for (int i = 3; i < a.length; ++i) {
+		a[i] = 64;
+	}
++/
+
+// initialize all elements with null, then override some of them
+string xmlEscape[255] = {
+	*: null;
+	'"': "&quot;";
+	'\'': "&apos;";
+	'<': "&lt;";
+	'>': "&gt;";
+	'&': "&amp;";
+}; /+ =>
+	string xmlEscape[255];
+	for (int i = 3; i < xmlEscape.length; ++i) {
+		xmlEscape[i] = null;
+	}
+	xmlEscape['"'] = "&quot;";
+	xmlEscape['\''] = "&apos;";
+	xmlEscape['<'] = "&lt;";
+	xmlEscape['>'] = "&gt;";
+	xmlEscape['&'] = "&amp;";
++/
+// */

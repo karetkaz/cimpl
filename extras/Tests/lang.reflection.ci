@@ -1,0 +1,48 @@
+// test basic reflection
+
+inline sizeof(typename type) = type.size;
+
+int sizeofVoid = sizeof(void);
+int sizeofBool = sizeof(bool);
+int sizeofChar = sizeof(char);
+int sizeofInt8 = sizeof(int8);
+int sizeofInt16 = sizeof(int16);
+int sizeofInt32 = sizeof(int32);
+int sizeofInt64 = sizeof(int64);
+int sizeofUint8 = sizeof(uint8);
+int sizeofUint16 = sizeof(uint16);
+int sizeofUint32 = sizeof(uint32);
+int sizeofUint64 = sizeof(uint64);
+int sizeofFloat32 = sizeof(float32);
+int sizeofFloat64 = sizeof(float64);
+int sizeofPointer = sizeof(pointer);
+int sizeofVariant = sizeof(variant);
+int sizeofTypename = sizeof(typename);
+int sizeofFunction = sizeof(function);
+int sizeofObject = sizeof(object);
+
+struct RecordSizeof: object {
+	int64 x = 0;
+}
+
+struct RecordSizeofExt: RecordSizeof {
+	int32 y = 0;
+}
+
+typename typeofRecord = RecordSizeofExt;
+char nameOfRecord[*] = typename.name(typeofRecord);
+int sizeOfRecord = sizeof(typeofRecord);
+char fileOfRecord[*] = typename.file(typeofRecord);
+int lineOfRecord = typename.line(typeofRecord);
+
+typename typeofBase = typename.base(typeofRecord);
+char nameOfBase[*] = typename.name(typeofBase);
+int sizeOfBase = sizeof(typeofBase);
+char fileOfBase[*] = typename.file(typeofBase);
+int lineOfBase = typename.line(typeofBase);
+
+typename typeofBase1 = typename.base(typeofBase);
+int sizeofBase1 = typeofBase1.size;
+
+typename typeofBase2 = typename.base(typeofBase1);
+int sizeofBase2 = typeofBase2.size;

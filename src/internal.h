@@ -265,7 +265,7 @@ struct dbgContextRec {
 void enter(ccContext cc);
 
 /// Leave current scope.
-symn leave(ccContext cc, symn dcl, ccKind mode, size_t align, size_t *size);
+symn leave(ccContext cc, symn dcl, ccKind mode, size_t align, size_t baseSize, size_t *size);
 
 /**
  * @brief Install a new symbol: alias, typename, variable or function.
@@ -649,6 +649,7 @@ void closeLibs();
 #define ERR_DECLARATION_COMPLEX "declaration too complex: `%T`"
 #define ERR_DECLARATION_EXPECTED "declaration expected, got: `%t`"
 #define ERR_INVALID_ARRAY_LENGTH "positive integer constant expected, got `%t`"
+#define ERR_INVALID_INHERITANCE "type must be inherited from object, got `%t`"
 #define ERR_INVALID_BASE_TYPE "invalid struct base type, got `%t`"
 #define ERR_INVALID_PACK_SIZE "invalid struct pack size, got `%t`"
 #define ERR_INVALID_CONST_ASSIGN "assignment of constant variable `%t`"

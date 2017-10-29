@@ -13,55 +13,102 @@ static integer globalInitLocal = localInitValue;
 integer localInitGlobal = globalInitValue;
 static integer globalInitGlobal = globalInitValue;
 
-/* TODO: member, local and global variable initializations
-struct RecTestInit {
+//* TODO: member, local and global variable initializations
+struct InitMember {
 	// member variable
 	// compiler: WARN if not initialized when instantiated.
-	int32 a;
+	int32 intMember;
 
 	// member variable with default value
 	// compiler: use default value if not initialized when instantiated.
-	int32 b = 9;
+	int32 intMemberDef = 9;
 
-	// constant member variable:
+	// constant member variable
 	// compiler: ERROR if not initialized when instantiated.
-	const int32 c;
+	// compiler: ERROR if assigned after initialization.
+	const int32 intConstMember;
 
 	// constant member variable with default value
 	// compiler: use default value if not initialized when instantiated.
-	const int32 d = 42;
+	// compiler: ERROR if assigned after initialization.
+	const int32 intConstMemberDef = 42;
 
-	// global variable(hidden in class).
+	// global variable(hidden in class)
 	// compiler: WARN if not initialized when declared.
-	static int32 A;
+	static int32 intGlobal = 0;
 
-	// constant global variable
+	// constant global variable(hidden in class)
 	// compiler: ERROR if not initialized when declared.
-	static const int32 B = 0;
+	// compiler: ERROR if assigned after initialized.
+	static const int32 intConstant = 0;
+
+	/* TODO: implement function parsing
+	// static method (can not be overridden)
+	int staticMethod(int x, int y) {
+		return x + y;
+	}
+
+	// static forward method
+	// compiler: ERROR if not implemented in the current record.
+	static int forwardMethod(int x, int y);
+
+	// virtual method (may be overridden when instantiated)
+	int virtualMethod(int x, int y) = staticMethod;
+
+	// abstract method (must be overridden when instantiated)
+	// compiler: ERROR if not initialized/overridden when instantiated.
+	int abstractMethod(int x, int y);
+
+	// forward method implementation
+	int forwardMethod(int x, int y) {
+		return x * y;
+	}
+
+	/+ FIXME: virtualMethod2 will point to ... when overridden / not overridden?
+	// virtual method (may be overridden when instantiated)
+	int virtualMethodA(int x, int y);
+
+	// virtual method (may be overridden when instantiated)
+	int virtualMethodB(int x, int y) = virtualMethodA;
+
+	// virtual method implementation.
+	int virtualMethodA(int x, int y) {
+		return x * y;
+	}
+	// +/ */
 }
 
-void initLocals() {
+/*void initLocals() {
 	// local variable
 	// compiler: WARN if not initialized when declared.
-	int32 a;
+	int32 local;
 
 	// constant local variable
 	// compiler: ERROR if not initialized when declared.
-	const int32 c = 31;
+	const int32 constant = 31;
 
 	// global variable
 	// compiler: WARN if not initialized when declared.
-	static int32 d = 7;
+	static int32 global = 7;
 
 	// constant global variable.
 	// compiler: ERROR if not initialized when declared.
-	static const int32 e = 4;
+	static const int32 globalConstant = 4;
 }
 
-RecTestInit a = {
-	a: 1;
-	b: 2;
-	c: 3;
-	d: 4;
+InitMember globalOrLocal = {
+	intMember: 42;
+	intConstMember: 42;
+	int abstractMethod(int x, int y) {
+		return x - y;
+	}
+};
+
+static InitMember global = {
+	intMember: 42;
+	intConstMember: 42;
+	int abstractMethod(int x, int y) {
+		return x - y;
+	}
 };
 // */

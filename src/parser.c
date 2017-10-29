@@ -69,7 +69,7 @@ static inline symn addLength(ccContext cc, symn sym, astn init) {
 
 	enter(cc);
 	newField = install(cc, "length", kind | castOf(cc->type_idx), cc->type_idx->size, cc->type_idx, init);
-	sym->fields = leave(cc, sym, KIND_def, 0, NULL);
+	sym->fields = leave(cc, sym, KIND_def, 0, 0, NULL);
 	newField->next = oldFields;
 	return newField;
 }
@@ -726,7 +726,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		argRoot = parameters(cc, type);
 		skipTok(cc, RIGHT_par, 1);
 
-		params = leave(cc, def, KIND_fun, vm_size, NULL);
+		params = leave(cc, def, KIND_fun, vm_size, 0, NULL);
 		type = cc->type_fun;
 
 		if (args != NULL) {
@@ -746,7 +746,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 
 			def->init = statement(cc, (ccKind) 0);
 			backTok(cc, newNode(cc, STMT_end));
-			leave(cc, def, KIND_def, -1, NULL);
+			leave(cc, def, KIND_def, -1, 0, NULL);
 
 			return tag;
 		}
@@ -876,7 +876,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		type = typeCheck(cc, NULL, init, 1);
 		init->type = type;
 	}
-	params = leave(cc, NULL, KIND_fun, vm_size, NULL);
+	params = leave(cc, NULL, KIND_fun, vm_size, 0, NULL);
 	if (params != NULL) {
 		astn usage;
 		symn param;
@@ -943,6 +943,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 		tag = tagNode(cc, ".anonymous");
 	}
 
+	size_t baseSize = 0;
 	symn base = cc->type_rec;
 	int pack = pad_size;
 
@@ -956,6 +957,16 @@ static astn declare_record(ccContext cc, ccKind attr) {
 			}
 			else if (isTypeExpr(tok)) {		// ':' extended type
 				base = linkOf(tok);
+				for (symn ptr = base; ptr; ptr = ptr->type) {
+					if (ptr == cc->type_rec) {
+						error(cc->rt, tok->file, tok->line, ERR_INVALID_INHERITANCE, tok);
+						break;
+					}
+					if (ptr == cc->type_obj) {
+						baseSize = base->size;
+						break;
+					}
+				}
 				pack = vm_size;
 			}
 			else if (tok->kind == TOKEN_val) {	// ':' packed type
@@ -1016,7 +1027,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 		}
 		fields = fields->next;
 	}
-	type->fields = leave(cc, type, attr | KIND_typ, pack, &type->size);
+	type->fields = leave(cc, type, attr | KIND_typ, pack, baseSize, &type->size);
 
 	skipTok(cc, RIGHT_crl, 1);	// '}'
 	return tag;
@@ -1096,7 +1107,7 @@ static astn declare_enum(ccContext cc) {
 	}
 
 	if (type != NULL) {
-		type->fields = leave(cc, type, KIND_typ, vm_size, &type->size);
+		type->fields = leave(cc, type, KIND_typ, vm_size, 0, &type->size);
 	}
 
 	return tag;
@@ -1150,7 +1161,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 	// parse else part if next token is 'else'
 	if (skipTok(cc, ELSE_kwd, 0)) {
 		if (enterThen) {
-			leave(cc, NULL, KIND_def, 0, NULL);
+			leave(cc, NULL, KIND_def, 0, 0, NULL);
 			enterThen = 0;
 		}
 		if (enterElse) {
@@ -1161,7 +1172,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 	}
 
 	if (enterThen) {
-		leave(cc, NULL, KIND_def, 0, NULL);
+		leave(cc, NULL, KIND_def, 0, 0, NULL);
 	}
 
 	return ast;
@@ -1224,7 +1235,7 @@ static astn statement_for(ccContext cc, ccKind attr) {
 
 	ast->stmt.stmt = statement(cc, (ccKind) 0);
 
-	leave(cc, NULL, KIND_def, 0, NULL);
+	leave(cc, NULL, KIND_def, 0, 0, NULL);
 
 	ast->type = cc->type_vid;
 	(void)attr;
@@ -1406,6 +1417,7 @@ static astn statement(ccContext cc, ccKind attr) {
 			ast->type = cc->type_rec;
 			//ast = expand2Statement(cc, ast, 0);
 		}
+		attr &= ~(ATTR_cnst | ATTR_stat);
 	}
 	else if (peekTok(cc, ENUM_kwd) != NULL) {   // enum
 		ast = declare_enum(cc);

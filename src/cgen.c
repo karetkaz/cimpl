@@ -1899,11 +1899,11 @@ int gencode(rtContext rt, int debug) {
 
 	enter(cc);
 	install(cc, ".result", KIND_var, 0, cc->type_vid, NULL);
-	params = leave(cc, rt->main, KIND_def, 0, NULL);
+	params = leave(cc, rt->main, KIND_def, 0, 0, NULL);
 
 	// leave the global scope.
 	rt->main = install(cc, ".main", ATTR_stat | KIND_fun, cc->type_fun->size, cc->type_fun, cc->root);
-	cc->scope = leave(cc, NULL, gStatic ? ATTR_stat | KIND_def : KIND_def, 0, NULL);
+	cc->scope = leave(cc, NULL, gStatic ? ATTR_stat | KIND_def : KIND_def, 0, 0, NULL);
 
 	dieif(cc->scope != cc->global, ERR_INTERNAL_ERROR);
 

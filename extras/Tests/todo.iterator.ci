@@ -1,0 +1,25 @@
+
+// forward member function: "abstract"
+struct Iterator: object {
+	// abstract iterator method
+	bool next(Iterator it);
+}
+
+struct RangeIterator: Iterator {
+	int value = -1;
+	const int max;
+
+	// implement abstract method
+	bool next(RangeIterator it) {
+		if (it.value < it.max) {
+			it.value += 1;
+			return true;
+		}
+		return false;
+	}
+}
+
+RangeIterator it = { max: 30 };
+for ( ; it.next(); ) {
+	print(it.value);
+}
