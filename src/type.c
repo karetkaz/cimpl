@@ -66,15 +66,26 @@ User defined types:
 static symn promote(symn lht, symn rht);
 
 /// Enter a new scope.
-void enter(ccContext cc) {
+void enter(ccContext cc, symn owner) {
 	cc->nest += 1;
+	if (owner != NULL) {
+		owner->owner = cc->owner;
+		cc->owner = owner;
+	}
 }
 
 /// Leave current scope.
-symn leave(ccContext cc, symn owner, ccKind mode, size_t align, size_t baseSize, size_t *outSize) {
+symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *outSize) {
 	symn sym, result = NULL;
 
+	symn owner = cc->owner;
+
 	cc->nest -= 1;
+	if (owner && owner->nest >= cc->nest) {
+		cc->owner = owner->owner;
+	} else {
+		owner = NULL;
+	}
 
 	// clear from symbol table
 	for (int i = 0; i < TBL_SIZE; i++) {
@@ -146,15 +157,8 @@ symn leave(ccContext cc, symn owner, ccKind mode, size_t align, size_t baseSize,
 				if (isStatic(sym)) {
 					continue;
 				}
-				sym->offs = offs;
-				offs += padOffset(sym->size, align);
-			}
-			// arguments are evaluated right to left
-			for (sym = result; sym != NULL; sym = sym->next) {
-				if (isStatic(sym)) {
-					continue;
-				}
-				sym->offs = offs - sym->offs;
+				sym->size = padOffset(sym->size, align);
+				sym->offs = offs += sym->size;
 			}
 			break;
 
@@ -293,15 +297,12 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 			}
 
 			while (parameter != NULL && argument != NULL) {
-
 				if (!canAssign(cc, parameter, argument, 0)) {
 					break;
 				}
-
-				else if (!canAssign(cc, parameter, argument, 1)) {
+				if (!canAssign(cc, parameter, argument, 1)) {
 					hasCast += 1;
 				}
-
 				parameter = parameter->next;
 				argument = argument->next;
 			}
@@ -785,7 +786,10 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 
 		// variable
 		case TOKEN_var:
-			type = typeCheckRef(cc, loc, ast, NULL, raise);
+			type = typeCheckRef(cc, loc, ast, NULL, 0);
+			if (type == NULL) {
+				type = typeCheckRef(cc, cc->owner, ast, NULL, raise);
+			}
 			if (type == NULL) {
 				traceAst(ast);
 				return NULL;

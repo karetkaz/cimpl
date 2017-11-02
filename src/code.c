@@ -1006,7 +1006,7 @@ int fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
 	dieif(stc > 0 && stc & 3, ERR_INTERNAL_ERROR);
 	if (src != 0) {
 		vmInstruction ip = vmPointer(rt, src);
-		if (src) switch (ip->opc) {
+		switch (ip->opc) {
 			default:
 				fatal(ERR_INTERNAL_ERROR);
 				return 0;
@@ -1027,14 +1027,11 @@ int fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
 				dieif(ip->rel != (int32_t) (dst - src), ERR_INTERNAL_ERROR);
 				break;
 		}
-		if (stc != -1) {
-			rt->vm.ss = stc / vm_size;
-		}
-		return 1;
 	}
-
-	fatal(ERR_INTERNAL_ERROR);
-	return 0;
+	if (stc != -1) {
+		rt->vm.ss = stc / vm_size;
+	}
+	return 1;
 }
 
 // TODO: to be removed.
@@ -1968,8 +1965,14 @@ static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, v
 		else {
 			printFmt(out, NULL, "\n");
 		}
+		size_t args = 0;
 		for (sym = fun->params->next; sym; sym = sym->next) {
-			size_t offs = fun->params->offs - sym->offs;
+			if (args < sym->offs) {
+				args = sym->offs;
+			}
+		}
+		for (sym = fun->params->next; sym; sym = sym->next) {
+			size_t offs = args - sym->offs;
 
 			if (firstArg == 0) {
 				printFmt(out, NULL, ", ");

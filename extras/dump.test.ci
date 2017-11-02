@@ -23,33 +23,33 @@ typename.base(type: typename): typename: function {
 .kind: static const inline
 .size: 0
 .owner: typename
-.param .result: typename (@+8->inline)
-.param type: typename (@+4->ref)
-.value: emit(nfc(1), type)
+.param .result: typename (size: 4 @4 -> inline)
+.param type: typename (size: 4 @4 -> variable(ref))
+.value: nfc(1)
 }
 typename.file(type: typename): .cstr: function {
 .kind: static const inline
 .size: 0
 .owner: typename
-.param .result: .cstr (@+8->inline)
-.param type: typename (@+4->ref)
-.value: emit(nfc(2), type)
+.param .result: .cstr (size: 4 @4 -> inline)
+.param type: typename (size: 4 @4 -> variable(ref))
+.value: nfc(2)
 }
 typename.line(type: typename): int32: function {
 .kind: static const inline
 .size: 0
 .owner: typename
-.param .result: int32 (@+8->inline)
-.param type: typename (@+4->ref)
-.value: emit(nfc(3), type)
+.param .result: int32 (size: 4 @4 -> inline)
+.param type: typename (size: 4 @4 -> variable(ref))
+.value: nfc(3)
 }
 typename.name(type: typename): .cstr: function {
 .kind: static const inline
 .size: 0
 .owner: typename
-.param .result: .cstr (@+8->inline)
-.param type: typename (@+4->ref)
-.value: emit(nfc(4), type)
+.param .result: .cstr (size: 4 @4 -> inline)
+.param type: typename (size: 4 @4 -> variable(ref))
+.value: nfc(4)
 }
 void: typename {
 .kind: static const typename(void)
@@ -60,41 +60,49 @@ bool: typename {
 .kind: static const typename(bool)
 .size: 1
 .owner: 
+.value: 0
 }
 char: typename {
 .kind: static const typename(u32)
 .size: 1
 .owner: 
+.value: 0
 }
 int8: typename {
 .kind: static const typename(i32)
 .size: 1
 .owner: 
+.value: 0
 }
 int16: typename {
 .kind: static const typename(i32)
 .size: 2
 .owner: 
+.value: 0
 }
 int32: typename {
 .kind: static const typename(i32)
 .size: 4
 .owner: 
+.value: 0
 }
 int64: typename {
 .kind: static const typename(i64)
 .size: 8
 .owner: 
+.value: 0
 }
 uint8: typename {
 .kind: static const typename(u32)
 .size: 1
 .owner: 
+.value: 0
 }
 uint16: typename {
 .kind: static const typename(u32)
 .size: 2
 .owner: 
+.value: 0
 }
 uint32: typename {
 .kind: static const typename(u32)
@@ -102,26 +110,27 @@ uint32: typename {
 .owner: 
 .field zxt: function (size: 0 @32440 -> static const inline)
 .field sxt: function (size: 0 @33176 -> static const inline)
+.value: 0
 }
 uint32.zxt(value: int32, offs: int32, count: int32): int32: function {
 .kind: static const inline
 .size: 0
 .owner: uint32
-.param .result: int32 (@+16->inline)
-.param value: int32 (@+12->i32)
-.param offs: int32 (@+8->i32)
-.param count: int32 (@+4->i32)
-.value: emit(nfc(17), value, offs, count)
+.param .result: int32 (size: 4 @4 -> inline)
+.param value: int32 (size: 4 @4 -> variable(i32))
+.param offs: int32 (size: 4 @8 -> variable(i32))
+.param count: int32 (size: 4 @12 -> variable(i32))
+.value: nfc(17)
 }
 uint32.sxt(value: int32, offs: int32, count: int32): int32: function {
 .kind: static const inline
 .size: 0
 .owner: uint32
-.param .result: int32 (@+16->inline)
-.param value: int32 (@+12->i32)
-.param offs: int32 (@+8->i32)
-.param count: int32 (@+4->i32)
-.value: emit(nfc(18), value, offs, count)
+.param .result: int32 (size: 4 @4 -> inline)
+.param value: int32 (size: 4 @4 -> variable(i32))
+.param offs: int32 (size: 4 @8 -> variable(i32))
+.param count: int32 (size: 4 @12 -> variable(i32))
+.value: nfc(18)
 }
 uint64: typename {
 .kind: static const typename(u64)
@@ -129,26 +138,27 @@ uint64: typename {
 .owner: 
 .field zxt: function (size: 0 @33904 -> static const inline)
 .field sxt: function (size: 0 @34632 -> static const inline)
+.value: 0
 }
 uint64.zxt(value: int64, offs: int32, count: int32): int64: function {
 .kind: static const inline
 .size: 0
 .owner: uint64
-.param .result: int64 (@+24->inline)
-.param value: int64 (@+16->i64)
-.param offs: int32 (@+8->i32)
-.param count: int32 (@+4->i32)
-.value: emit(nfc(19), value, offs, count)
+.param .result: int64 (size: 8 @8 -> inline)
+.param value: int64 (size: 8 @8 -> variable(i64))
+.param offs: int32 (size: 4 @12 -> variable(i32))
+.param count: int32 (size: 4 @16 -> variable(i32))
+.value: nfc(19)
 }
 uint64.sxt(value: int64, offs: int32, count: int32): int64: function {
 .kind: static const inline
 .size: 0
 .owner: uint64
-.param .result: int64 (@+24->inline)
-.param value: int64 (@+16->i64)
-.param offs: int32 (@+8->i32)
-.param count: int32 (@+4->i32)
-.value: emit(nfc(20), value, offs, count)
+.param .result: int64 (size: 8 @8 -> inline)
+.param value: int64 (size: 8 @8 -> variable(i64))
+.param offs: int32 (size: 4 @12 -> variable(i32))
+.param count: int32 (size: 4 @16 -> variable(i32))
+.value: nfc(20)
 }
 float32: typename {
 .kind: static const typename(f32)
@@ -162,72 +172,73 @@ float32: typename {
 .field pow: function (size: 0 @37568 -> static const inline)
 .field sqrt: function (size: 0 @38032 -> static const inline)
 .field atan2: function (size: 0 @38632 -> static const inline)
+.value: 0
 }
 float32.sin(x: float32): float32: function {
 .kind: static const inline
 .size: 0
 .owner: float32
-.param .result: float32 (@+8->inline)
-.param x: float32 (@+4->f32)
-.value: emit(nfc(21), x)
+.param .result: float32 (size: 4 @4 -> inline)
+.param x: float32 (size: 4 @4 -> variable(f32))
+.value: nfc(21)
 }
 float32.cos(x: float32): float32: function {
 .kind: static const inline
 .size: 0
 .owner: float32
-.param .result: float32 (@+8->inline)
-.param x: float32 (@+4->f32)
-.value: emit(nfc(22), x)
+.param .result: float32 (size: 4 @4 -> inline)
+.param x: float32 (size: 4 @4 -> variable(f32))
+.value: nfc(22)
 }
 float32.tan(x: float32): float32: function {
 .kind: static const inline
 .size: 0
 .owner: float32
-.param .result: float32 (@+8->inline)
-.param x: float32 (@+4->f32)
-.value: emit(nfc(23), x)
+.param .result: float32 (size: 4 @4 -> inline)
+.param x: float32 (size: 4 @4 -> variable(f32))
+.value: nfc(23)
 }
 float32.log(x: float32): float32: function {
 .kind: static const inline
 .size: 0
 .owner: float32
-.param .result: float32 (@+8->inline)
-.param x: float32 (@+4->f32)
-.value: emit(nfc(24), x)
+.param .result: float32 (size: 4 @4 -> inline)
+.param x: float32 (size: 4 @4 -> variable(f32))
+.value: nfc(24)
 }
 float32.exp(x: float32): float32: function {
 .kind: static const inline
 .size: 0
 .owner: float32
-.param .result: float32 (@+8->inline)
-.param x: float32 (@+4->f32)
-.value: emit(nfc(25), x)
+.param .result: float32 (size: 4 @4 -> inline)
+.param x: float32 (size: 4 @4 -> variable(f32))
+.value: nfc(25)
 }
 float32.pow(x: float32, y: float32): float32: function {
 .kind: static const inline
 .size: 0
 .owner: float32
-.param .result: float32 (@+12->inline)
-.param x: float32 (@+8->f32)
-.param y: float32 (@+4->f32)
-.value: emit(nfc(26), x, y)
+.param .result: float32 (size: 4 @4 -> inline)
+.param x: float32 (size: 4 @4 -> variable(f32))
+.param y: float32 (size: 4 @8 -> variable(f32))
+.value: nfc(26)
 }
 float32.sqrt(x: float32): float32: function {
 .kind: static const inline
 .size: 0
 .owner: float32
-.param .result: float32 (@+8->inline)
-.param x: float32 (@+4->f32)
-.value: emit(nfc(27), x)
+.param .result: float32 (size: 4 @4 -> inline)
+.param x: float32 (size: 4 @4 -> variable(f32))
+.value: nfc(27)
 }
 float32.atan2(x: float32, y: float32): float32: function {
 .kind: static const inline
 .size: 0
 .owner: float32
-.param .result: float32 (@+12->inline)
-.param x: float32 (@+8->f32)
-.param y: float32 (@+4->f32)
-.value: emit(nfc(28), x, y)
+.param .result: float32 (size: 4 @4 -> inline)
+.param x: float32 (size: 4 @4 -> variable(f32))
+.param y: float32 (size: 4 @8 -> variable(f32))
+.value: nfc(28)
 }
 float64: typename {
 .kind: static const typename(f64)
@@ -241,72 +252,73 @@ float64: typename {
 .field pow: function (size: 0 @41504 -> static const inline)
 .field sqrt: function (size: 0 @41960 -> static const inline)
 .field atan2: function (size: 0 @42552 -> static const inline)
+.value: 0
 }
 float64.sin(x: float64): float64: function {
 .kind: static const inline
 .size: 0
 .owner: float64
-.param .result: float64 (@+16->inline)
-.param x: float64 (@+8->f64)
-.value: emit(nfc(29), x)
+.param .result: float64 (size: 8 @8 -> inline)
+.param x: float64 (size: 8 @8 -> variable(f64))
+.value: nfc(29)
 }
 float64.cos(x: float64): float64: function {
 .kind: static const inline
 .size: 0
 .owner: float64
-.param .result: float64 (@+16->inline)
-.param x: float64 (@+8->f64)
-.value: emit(nfc(30), x)
+.param .result: float64 (size: 8 @8 -> inline)
+.param x: float64 (size: 8 @8 -> variable(f64))
+.value: nfc(30)
 }
 float64.tan(x: float64): float64: function {
 .kind: static const inline
 .size: 0
 .owner: float64
-.param .result: float64 (@+16->inline)
-.param x: float64 (@+8->f64)
-.value: emit(nfc(31), x)
+.param .result: float64 (size: 8 @8 -> inline)
+.param x: float64 (size: 8 @8 -> variable(f64))
+.value: nfc(31)
 }
 float64.log(x: float64): float64: function {
 .kind: static const inline
 .size: 0
 .owner: float64
-.param .result: float64 (@+16->inline)
-.param x: float64 (@+8->f64)
-.value: emit(nfc(32), x)
+.param .result: float64 (size: 8 @8 -> inline)
+.param x: float64 (size: 8 @8 -> variable(f64))
+.value: nfc(32)
 }
 float64.exp(x: float64): float64: function {
 .kind: static const inline
 .size: 0
 .owner: float64
-.param .result: float64 (@+16->inline)
-.param x: float64 (@+8->f64)
-.value: emit(nfc(33), x)
+.param .result: float64 (size: 8 @8 -> inline)
+.param x: float64 (size: 8 @8 -> variable(f64))
+.value: nfc(33)
 }
 float64.pow(x: float64, y: float64): float64: function {
 .kind: static const inline
 .size: 0
 .owner: float64
-.param .result: float64 (@+24->inline)
-.param x: float64 (@+16->f64)
-.param y: float64 (@+8->f64)
-.value: emit(nfc(34), x, y)
+.param .result: float64 (size: 8 @8 -> inline)
+.param x: float64 (size: 8 @8 -> variable(f64))
+.param y: float64 (size: 8 @16 -> variable(f64))
+.value: nfc(34)
 }
 float64.sqrt(x: float64): float64: function {
 .kind: static const inline
 .size: 0
 .owner: float64
-.param .result: float64 (@+16->inline)
-.param x: float64 (@+8->f64)
-.value: emit(nfc(35), x)
+.param .result: float64 (size: 8 @8 -> inline)
+.param x: float64 (size: 8 @8 -> variable(f64))
+.value: nfc(35)
 }
 float64.atan2(x: float64, y: float64): float64: function {
 .kind: static const inline
 .size: 0
 .owner: float64
-.param .result: float64 (@+24->inline)
-.param x: float64 (@+16->f64)
-.param y: float64 (@+8->f64)
-.value: emit(nfc(36), x, y)
+.param .result: float64 (size: 8 @8 -> inline)
+.param x: float64 (size: 8 @8 -> variable(f64))
+.param y: float64 (size: 8 @16 -> variable(f64))
+.value: nfc(36)
 }
 pointer: typename {
 .kind: static const typename(ref)
@@ -320,30 +332,30 @@ pointer.alloc(ptr: pointer, size: int32): pointer: function {
 .kind: static const inline
 .size: 0
 .owner: pointer
-.param .result: pointer (@+12->inline)
-.param ptr: pointer (@+8->ref)
-.param size: int32 (@+4->i32)
-.value: emit(nfc(7), ptr, size)
+.param .result: pointer (size: 4 @4 -> inline)
+.param ptr: pointer (size: 4 @4 -> variable(ref))
+.param size: int32 (size: 4 @8 -> variable(i32))
+.value: nfc(7)
 }
 pointer.fill(dst: pointer, value: int32, size: int32): pointer: function {
 .kind: static const inline
 .size: 0
 .owner: pointer
-.param .result: pointer (@+16->inline)
-.param dst: pointer (@+12->ref)
-.param value: int32 (@+8->i32)
-.param size: int32 (@+4->i32)
-.value: emit(nfc(8), dst, value, size)
+.param .result: pointer (size: 4 @4 -> inline)
+.param dst: pointer (size: 4 @4 -> variable(ref))
+.param value: int32 (size: 4 @8 -> variable(i32))
+.param size: int32 (size: 4 @12 -> variable(i32))
+.value: nfc(8)
 }
 pointer.copy(dst: pointer, src: pointer, size: int32): pointer: function {
 .kind: static const inline
 .size: 0
 .owner: pointer
-.param .result: pointer (@+16->inline)
-.param dst: pointer (@+12->ref)
-.param src: pointer (@+8->ref)
-.param size: int32 (@+4->i32)
-.value: emit(nfc(9), dst, src, size)
+.param .result: pointer (size: 4 @4 -> inline)
+.param dst: pointer (size: 4 @4 -> variable(ref))
+.param src: pointer (size: 4 @8 -> variable(ref))
+.param size: int32 (size: 4 @12 -> variable(i32))
+.value: nfc(9)
 }
 variant: typename {
 .kind: static const typename(var)
@@ -1249,8 +1261,8 @@ halt(): void: function {
 .kind: static const inline
 .size: 0
 .owner: 
-.param .result: void (@+0->inline)
-.value: emit(nfc(0))
+.param .result: void (size: 0 @0 -> inline)
+.value: nfc(0)
 }
 CLOCKS_PER_SEC: int32 {
 .kind: i32
@@ -1276,69 +1288,21 @@ raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void: 
 .field verbose: int32 (size: 0 @0 -> static i32)
 .field noTrace: int32 (size: 0 @0 -> static i32)
 .field defTrace: int32 (size: 0 @0 -> static i32)
-.param .result: void (@+20->inline)
-.param level: int32 (@+20->i32)
-.param message: char[*] (@+16->ref)
-.param inspect: variant (@+12->var)
-.param maxTrace: int32 (@+4->i32)
-.value: emit(nfc(5), level, message, inspect, maxTrace)
-}
-raise.abort: int32 {
-.kind: static i32
-.size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-.value: -1
-}
-raise.error: int32 {
-.kind: static i32
-.size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-.value: 0
-}
-raise.warn: int32 {
-.kind: static i32
-.size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-.value: 1
-}
-raise.info: int32 {
-.kind: static i32
-.size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-.value: 2
-}
-raise.debug: int32 {
-.kind: static i32
-.size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-.value: 3
-}
-raise.verbose: int32 {
-.kind: static i32
-.size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-.value: 4
-}
-raise.noTrace: int32 {
-.kind: static i32
-.size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-.value: 0
-}
-raise.defTrace: int32 {
-.kind: static i32
-.size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-.value: 128
+.param .result: void (size: 0 @0 -> inline)
+.param level: int32 (size: 4 @4 -> variable(i32))
+.param message: char[*] (size: 4 @8 -> variable(ref))
+.param inspect: variant (size: 8 @16 -> variable(var))
+.param maxTrace: int32 (size: 4 @20 -> variable(i32))
+.value: nfc(5)
 }
 tryExec(args: pointer, action(args: pointer): void): int32: function {
 .kind: static const inline
 .size: 0
 .owner: 
-.param .result: int32 (@+12->inline)
-.param args: pointer (@+8->ref)
-.param action: function (@+4->ref)
-.value: emit(nfc(6), args, action)
+.param .result: int32 (size: 4 @4 -> inline)
+.param args: pointer (size: 4 @4 -> variable(ref))
+.param action: function (size: 4 @8 -> variable(ref))
+.value: nfc(6)
 }
 System: void {
 .kind: static const typename(void)
@@ -1356,53 +1320,53 @@ System.exit(code: int32): void: function {
 .kind: static const inline
 .size: 0
 .owner: System
-.param .result: void (@+4->inline)
-.param code: int32 (@+4->i32)
-.value: emit(nfc(10), code)
+.param .result: void (size: 0 @0 -> inline)
+.param code: int32 (size: 4 @4 -> variable(i32))
+.value: nfc(10)
 }
 System.srand(seed: int32): void: function {
 .kind: static const inline
 .size: 0
 .owner: System
-.param .result: void (@+4->inline)
-.param seed: int32 (@+4->i32)
-.value: emit(nfc(11), seed)
+.param .result: void (size: 0 @0 -> inline)
+.param seed: int32 (size: 4 @4 -> variable(i32))
+.value: nfc(11)
 }
 System.rand(): int32: function {
 .kind: static const inline
 .size: 0
 .owner: System
-.param .result: int32 (@+4->inline)
-.value: emit(nfc(12))
+.param .result: int32 (size: 4 @4 -> inline)
+.value: nfc(12)
 }
 System.time(): int32: function {
 .kind: static const inline
 .size: 0
 .owner: System
-.param .result: int32 (@+4->inline)
-.value: emit(nfc(13))
+.param .result: int32 (size: 4 @4 -> inline)
+.value: nfc(13)
 }
 System.clock(): int32: function {
 .kind: static const inline
 .size: 0
 .owner: System
-.param .result: int32 (@+4->inline)
-.value: emit(nfc(14))
+.param .result: int32 (size: 4 @4 -> inline)
+.value: nfc(14)
 }
 System.millis(): int64: function {
 .kind: static const inline
 .size: 0
 .owner: System
-.param .result: int64 (@+8->inline)
-.value: emit(nfc(15))
+.param .result: int64 (size: 8 @8 -> inline)
+.value: nfc(15)
 }
 System.sleep(millis: int64): void: function {
 .kind: static const inline
 .size: 0
 .owner: System
-.param .result: void (@+8->inline)
-.param millis: int64 (@+8->i64)
-.value: emit(nfc(16), millis)
+.param .result: void (size: 0 @0 -> inline)
+.param millis: int64 (size: 8 @8 -> variable(i64))
+.value: nfc(16)
 }
 integer: typename {
 .kind: inline
@@ -1745,75 +1709,75 @@ zero(a: int32, b: int32): int32: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: int32 (@+8->inline)
-.param a: int32 (@+8->i32)
-.param b: int32 (@+4->i32)
+.param .result: int32 (size: 4 @0 -> i32)
+.param a: int32 (size: 4 @4 -> variable(i32))
+.param b: int32 (size: 4 @8 -> variable(i32))
 .value: 0
 }
 last(a: int32, b: int32): int32: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: int32 (@+8->inline)
-.param a: int32 (@+8->i32)
-.param b: int32 (@+4->i32)
+.param .result: int32 (size: 4 @0 -> i32)
+.param a: int32 (size: 4 @4 -> variable(i32))
+.param b: int32 (size: 4 @8 -> variable(i32))
 .value: b
 }
 sum(a: int32, b: int32): int32: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: int32 (@+8->inline)
-.param a: int32 (@+8->i32)
-.param b: int32 (@+4->i32)
+.param .result: int32 (size: 4 @0 -> i32)
+.param a: int32 (size: 4 @4 -> variable(i32))
+.param b: int32 (size: 4 @8 -> variable(i32))
 .value: a + b
 }
 any(a: int32, b: int32): int32: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: int32 (@+8->inline)
-.param a: int32 (@+8->i32)
-.param b: int32 (@+4->i32)
+.param .result: int32 (size: 4 @0 -> i32)
+.param a: int32 (size: 4 @4 -> variable(i32))
+.param b: int32 (size: 4 @8 -> variable(i32))
 .value: (a) ? a : b
 }
 min(a: int32, b: int32): int32: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: int32 (@+8->inline)
-.param a: int32 (@+8->i32)
-.param b: int32 (@+4->i32)
+.param .result: int32 (size: 4 @0 -> i32)
+.param a: int32 (size: 4 @4 -> variable(i32))
+.param b: int32 (size: 4 @8 -> variable(i32))
 .value: a < b ? a : b
 }
 sum(a: int32, b: int32, c: int32): int32: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: int32 (@+12->inline)
-.param a: int32 (@+12->i32)
-.param b: int32 (@+8->i32)
-.param c: int32 (@+4->i32)
+.param .result: int32 (size: 4 @0 -> i32)
+.param a: int32 (size: 4 @4 -> variable(i32))
+.param b: int32 (size: 4 @8 -> variable(i32))
+.param c: int32 (size: 4 @12 -> variable(i32))
 .value: sum(sum(a, b), c)
 }
 any(a: int32, b: int32, c: int32): int32: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: int32 (@+12->inline)
-.param a: int32 (@+12->i32)
-.param b: int32 (@+8->i32)
-.param c: int32 (@+4->i32)
+.param .result: int32 (size: 4 @0 -> i32)
+.param a: int32 (size: 4 @4 -> variable(i32))
+.param b: int32 (size: 4 @8 -> variable(i32))
+.param c: int32 (size: 4 @12 -> variable(i32))
 .value: any(any(a, b), c)
 }
 min(a: int32, b: int32, c: int32): int32: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: int32 (@+12->inline)
-.param a: int32 (@+12->i32)
-.param b: int32 (@+8->i32)
-.param c: int32 (@+4->i32)
+.param .result: int32 (size: 4 @0 -> i32)
+.param a: int32 (size: 4 @4 -> variable(i32))
+.param b: int32 (size: 4 @8 -> variable(i32))
+.param c: int32 (size: 4 @12 -> variable(i32))
 .value: min(min(a, b), c)
 }
 ma: int32 {
@@ -1916,32 +1880,32 @@ overload(): int32: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: int32 (@+0->inline)
+.param .result: int32 (size: 4 @0 -> i32)
 .value: 2
 }
 overload(a: int32): int32: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: int32 (@+4->inline)
-.param a: int32 (@+4->i32)
+.param .result: int32 (size: 4 @0 -> i32)
+.param a: int32 (size: 4 @4 -> variable(i32))
 .value: 3
 }
 overload(a: float32): int32: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: int32 (@+4->inline)
-.param a: float32 (@+4->f32)
+.param .result: int32 (size: 4 @0 -> i32)
+.param a: float32 (size: 4 @4 -> variable(f32))
 .value: 4
 }
 overload(a: int32, b: int32): int32: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: int32 (@+8->inline)
-.param a: int32 (@+8->i32)
-.param b: int32 (@+4->i32)
+.param .result: int32 (size: 4 @0 -> i32)
+.param a: int32 (size: 4 @4 -> variable(i32))
+.param b: int32 (size: 4 @8 -> variable(i32))
 .value: 5
 }
 overload1: float32 {
@@ -2008,8 +1972,8 @@ sizeof(type: typename): int32: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: int32 (@+4->inline)
-.param type: typename (@+4->ref)
+.param .result: int32 (size: 4 @0 -> i32)
+.param type: typename (size: 4 @4 -> variable(ref))
 .value: type.size
 }
 sizeofVoid: int32 {
@@ -2227,6 +2191,204 @@ sizeofBase2: int32 {
 .size: 4
 .owner: 
 .value: typeofBase2.size
+}
+empty(): void: function {
+.kind: static const function
+.size: 5
+.owner: 
+.param .result: void (size: 0 @0 -> variable(void))
+.value: {
+}
+.instructions: [5 bytes @.021100]
+	10 00 00 00                inc.sp(+0)
+	03                         ret
+}
+funAdd(x: int32, y: int32): int32: function {
+.kind: static const function
+.size: 30
+.owner: 
+.param .result: int32 (size: 4 @4 -> variable(i32))
+.param x: int32 (size: 4 @8 -> variable(i32))
+.param y: int32 (size: 4 @12 -> variable(i32))
+.value: {
+	return .result := (x + y);
+}
+.instructions: [30 bytes @.021105]
+	extras/Tests/lang.function.ci:6: (25 bytes): return .result := (x + y);
+	11 08 00 00                load.sp(+8)
+	22                         load.m32
+	11 08 00 00                load.sp(+8)
+	22                         load.m32
+	51                         add.i32
+	11 10 00 00                load.sp(+16)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	10 00 00 00                inc.sp(+0)
+	03                         ret
+	10 00 00 00                inc.sp(+0)
+	03                         ret
+}
+funAddResult: int32 {
+.kind: variable(i32)
+.size: 4
+.owner: 
+.value: funAdd(2, 7)
+}
+funAddRef(x: int32, y: int32): int32: function {
+.kind: variable(ref)
+.size: 4
+.owner: 
+.param .result: int32 (size: 4 @4 -> variable(i32))
+.param x: int32 (size: 4 @8 -> variable(i32))
+.param y: int32 (size: 4 @12 -> variable(i32))
+.value: funAdd
+}
+funAddRefResult: int32 {
+.kind: variable(i32)
+.size: 4
+.owner: 
+.value: funAddRef(2, 8)
+}
+funMul(x: int32, y: int32): int32: function {
+.kind: variable(ref)
+.size: 4
+.owner: 
+.param .result: int32 (size: 4 @4 -> variable(i32))
+.param x: int32 (size: 4 @8 -> variable(i32))
+.param y: int32 (size: 4 @12 -> variable(i32))
+.value: funMul
+}
+funMulResult: int32 {
+.kind: variable(i32)
+.size: 4
+.owner: 
+.value: funMul(2, 6)
+}
+funMulRef(x: int32, y: int32): int32: function {
+.kind: variable(ref)
+.size: 4
+.owner: 
+.param .result: int32 (size: 4 @4 -> variable(i32))
+.param x: int32 (size: 4 @8 -> variable(i32))
+.param y: int32 (size: 4 @12 -> variable(i32))
+.value: funMul
+}
+funMulRefResult: int32 {
+.kind: variable(i32)
+.size: 4
+.owner: 
+.value: funMulRef(2, 7)
+}
+funMul(x: int32, y: int32): int32: function {
+.kind: static const function
+.size: 30
+.owner: 
+.param .result: int32 (size: 4 @4 -> variable(i32))
+.param x: int32 (size: 4 @8 -> variable(i32))
+.param y: int32 (size: 4 @12 -> variable(i32))
+.value: {
+	return .result := (x * y);
+}
+.instructions: [30 bytes @.021123]
+	extras/Tests/lang.function.ci:32: (25 bytes): return .result := (x * y);
+	11 08 00 00                load.sp(+8)
+	22                         load.m32
+	11 08 00 00                load.sp(+8)
+	22                         load.m32
+	53                         mul.i32
+	11 10 00 00                load.sp(+16)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	10 00 00 00                inc.sp(+0)
+	03                         ret
+	10 00 00 00                inc.sp(+0)
+	03                         ret
+}
+fib(n: uint32): uint32: function {
+.kind: static const function
+.size: 190
+.owner: 
+.param .result: uint32 (size: 4 @4 -> variable(u32))
+.param n: uint32 (size: 4 @8 -> variable(u32))
+.value: {
+	if (n <= (1)) {
+		if (n <= (0)) {
+			return .result := (0);
+		}
+		return .result := (1);
+	}
+	return .result := (fib(n - (1)) + fib(n - (2)));
+}
+.instructions: [190 bytes @.021141]
+	extras/Tests/lang.function.ci:37: (98 bytes): if (n <= (1))
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	1c 01 00 00 00 00 00 00 00 load.c64 1
+	6a                         i64.2i32
+	39                         cgt.u32
+	0a                         not.b32
+	06 51 00 00                jz +81
+	extras/Tests/lang.function.ci:38: (49 bytes): if (n <= (0))
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
+	39                         cgt.u32
+	0a                         not.b32
+	06 20 00 00                jz +32
+	extras/Tests/lang.function.ci:39: (24 bytes): return .result := (0);
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
+	11 0c 00 00                load.sp(+12)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	10 00 00 00                inc.sp(+0)
+	03                         ret
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.function.ci:41: (24 bytes): return .result := (1);
+	1c 01 00 00 00 00 00 00 00 load.c64 1
+	6a                         i64.2i32
+	11 0c 00 00                load.sp(+12)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	10 00 00 00                inc.sp(+0)
+	03                         ret
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.function.ci:43: (87 bytes): return .result := (fib(n - (1)) + fib(n - (2)));
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
+	11 08 00 00                load.sp(+8)
+	22                         load.m32
+	1c 01 00 00 00 00 00 00 00 load.c64 1
+	6a                         i64.2i32
+	52                         sub.i32
+	1f 41 11 02 00             load.ref .021141 ;fib(n: uint32): uint32
+	02                         call
+	10 fc ff ff                inc.sp(-4)
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
+	11 0c 00 00                load.sp(+12)
+	22                         load.m32
+	1c 02 00 00 00 00 00 00 00 load.c64 2
+	6a                         i64.2i32
+	52                         sub.i32
+	1f 41 11 02 00             load.ref .021141 ;fib(n: uint32): uint32
+	02                         call
+	10 fc ff ff                inc.sp(-4)
+	51                         add.i32
+	11 0c 00 00                load.sp(+12)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	10 00 00 00                inc.sp(+0)
+	03                         ret
+	10 00 00 00                inc.sp(+0)
+	03                         ret
+}
+fibonacci_13: uint32 {
+.kind: variable(u32)
+.size: 4
+.owner: 
+.value: fib(13)
 }
 a: typename {
 .kind: inline
@@ -4337,8 +4499,8 @@ InitMember: typename {
 .field intMemberDef: int32 (size: 4 @4 -> variable(i32))
 .field intConstMember: int32 (size: 4 @8 -> const variable(i32))
 .field intConstMemberDef: int32 (size: 4 @12 -> const variable(i32))
-.field intGlobal: int32 (size: 4 @131232 -> static variable(i32))
-.field intConstant: int32 (size: 4 @131236 -> static const variable(i32))
+.field intGlobal: int32 (size: 4 @135720 -> static variable(i32))
+.field intConstant: int32 (size: 4 @135724 -> static const variable(i32))
 }
 InitMember.intMember: int32 {
 .kind: variable(i32)
@@ -4402,20 +4564,20 @@ rgb888(r: int32, g: int32, b: int32): int32: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: int32 (@+12->inline)
-.param r: int32 (@+12->i32)
-.param g: int32 (@+8->i32)
-.param b: int32 (@+4->i32)
+.param .result: int32 (size: 4 @0 -> i32)
+.param r: int32 (size: 4 @4 -> variable(i32))
+.param g: int32 (size: 4 @8 -> variable(i32))
+.param b: int32 (size: 4 @12 -> variable(i32))
 .value: r << 16 & 16711680 | g << 8 & 65280 | b & 255
 }
 rgb565(r: int32, g: int32, b: int32): int32: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: int32 (@+12->inline)
-.param r: int32 (@+12->i32)
-.param g: int32 (@+8->i32)
-.param b: int32 (@+4->i32)
+.param .result: int32 (size: 4 @0 -> i32)
+.param r: int32 (size: 4 @4 -> variable(i32))
+.param g: int32 (size: 4 @8 -> variable(i32))
+.param b: int32 (size: 4 @12 -> variable(i32))
 .value: r << 8 & 63488 | g << 3 & 2016 | b >> 3 & 31
 }
 r_comp: int32 {
@@ -4620,16 +4782,16 @@ malloc(size: int32): pointer: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: pointer (@+4->inline)
-.param size: int32 (@+4->i32)
+.param .result: pointer (size: 4 @0 -> ref)
+.param size: int32 (size: 4 @4 -> variable(i32))
 .value: pointer.alloc(null, size)
 }
 free(data: pointer): pointer: function {
 .kind: inline
 .size: 0
 .owner: 
-.param .result: pointer (@+4->inline)
-.param data: pointer (@+4->ref)
+.param .result: pointer (size: 4 @0 -> ref)
+.param data: pointer (size: 4 @4 -> variable(ref))
 .value: pointer.alloc(data, 0)
 }
 p1: pointer {
@@ -4670,7 +4832,7 @@ val2: int64 {
 }
 .main(): void: function {
 .kind: static function
-.size: 6224
+.size: 6974
 .owner: 
 .field typename: typename (size: 136 @8 -> static const typename(ref))
 .field void: typename (size: 0 @160 -> static const typename(void))
@@ -4708,16 +4870,16 @@ val2: int64 {
 .field integer: typename (size: 0 @0 -> inline)
 .field t: int32 (size: 4 @12 -> variable(i32))
 .field forIdx: int32 (size: 4 @16 -> variable(i32))
-.field rgbF32: typename (size: 16 @43768 -> static const typename(val))
-.field rgbU8: typename (size: 3 @44312 -> static const typename(val))
-.field color: typename (size: 4 @44856 -> static const typename(val))
-.field Color: object (size: 20 @45264 -> static const typename(ref))
-.field record_pack0: typename (size: 8 @45632 -> static const typename(val))
-.field record_pack1: typename (size: 17 @46584 -> static const typename(val))
-.field record_pack2: typename (size: 20 @47536 -> static const typename(val))
-.field record_pack4: typename (size: 24 @48488 -> static const typename(val))
-.field record_pack8: typename (size: 32 @49440 -> static const typename(val))
-.field record_packDef: typename (size: 32 @50392 -> static const typename(val))
+.field rgbF32: typename (size: 16 @43800 -> static const typename(val))
+.field rgbU8: typename (size: 3 @44344 -> static const typename(val))
+.field color: typename (size: 4 @44888 -> static const typename(val))
+.field Color: object (size: 20 @45296 -> static const typename(ref))
+.field record_pack0: typename (size: 8 @45664 -> static const typename(val))
+.field record_pack1: typename (size: 17 @46616 -> static const typename(val))
+.field record_pack2: typename (size: 20 @47568 -> static const typename(val))
+.field record_pack4: typename (size: 24 @48520 -> static const typename(val))
+.field record_pack8: typename (size: 32 @49472 -> static const typename(val))
+.field record_packDef: typename (size: 32 @50424 -> static const typename(val))
 .field zero: function (size: 0 @0 -> inline)
 .field last: function (size: 0 @0 -> inline)
 .field sum: function (size: 0 @0 -> inline)
@@ -4775,8 +4937,8 @@ val2: int64 {
 .field sizeofTypename: int32 (size: 4 @184 -> variable(i32))
 .field sizeofFunction: int32 (size: 4 @188 -> variable(i32))
 .field sizeofObject: int32 (size: 4 @192 -> variable(i32))
-.field RecordSizeof: object (size: 12 @64808 -> static const typename(ref))
-.field RecordSizeofExt: RecordSizeof (size: 16 @65080 -> static const typename(ref))
+.field RecordSizeof: object (size: 12 @64840 -> static const typename(ref))
+.field RecordSizeofExt: RecordSizeof (size: 16 @65112 -> static const typename(ref))
 .field typeofRecord: typename (size: 4 @196 -> variable(ref))
 .field nameOfRecord: char[*] (size: 4 @200 -> variable(ref))
 .field sizeOfRecord: int32 (size: 4 @204 -> variable(i32))
@@ -4791,407 +4953,419 @@ val2: int64 {
 .field sizeofBase1: int32 (size: 4 @240 -> variable(i32))
 .field typeofBase2: typename (size: 4 @244 -> variable(ref))
 .field sizeofBase2: int32 (size: 4 @248 -> variable(i32))
+.field empty: function (size: 5 @135424 -> static const function)
+.field funAdd: function (size: 30 @135429 -> static const function)
+.field funAddResult: int32 (size: 4 @252 -> variable(i32))
+.field funAddRef: function (size: 4 @256 -> variable(ref))
+.field funAddRefResult: int32 (size: 4 @260 -> variable(i32))
+.field funMul: function (size: 4 @264 -> variable(ref))
+.field funMulResult: int32 (size: 4 @268 -> variable(i32))
+.field funMulRef: function (size: 4 @272 -> variable(ref))
+.field funMulRefResult: int32 (size: 4 @276 -> variable(i32))
+.field funMul: function (size: 30 @135459 -> static const function)
+.field fib: function (size: 190 @135489 -> static const function)
+.field fibonacci_13: uint32 (size: 4 @280 -> variable(u32))
 .field a: typename (size: 0 @0 -> inline)
 .field b: typename (size: 0 @0 -> inline)
-.field shift: int32 (size: 4 @252 -> variable(i32))
-.field boolA: bool (size: 1 @256 -> variable(bool))
-.field boolB: bool (size: 1 @260 -> variable(bool))
-.field boolAnd: bool (size: 1 @264 -> variable(bool))
-.field boolIor: bool (size: 1 @268 -> variable(bool))
-.field boolXor: bool (size: 1 @272 -> variable(bool))
-.field boolNot: bool (size: 1 @276 -> variable(bool))
-.field boolCeq: bool (size: 1 @280 -> variable(bool))
-.field boolCne: bool (size: 1 @284 -> variable(bool))
-.field boolClt: bool (size: 1 @288 -> variable(bool))
-.field boolCle: bool (size: 1 @292 -> variable(bool))
-.field boolCgt: bool (size: 1 @296 -> variable(bool))
-.field boolCge: bool (size: 1 @300 -> variable(bool))
-.field chrA: char (size: 1 @304 -> variable(u32))
-.field chrB: char (size: 1 @308 -> variable(u32))
-.field chrPls: char (size: 1 @312 -> variable(u32))
-.field chrNeg: char (size: 1 @316 -> variable(u32))
-.field chrCmt: char (size: 1 @320 -> variable(u32))
-.field chrAdd: char (size: 1 @324 -> variable(u32))
-.field chrSub: char (size: 1 @328 -> variable(u32))
-.field chrMul: char (size: 1 @332 -> variable(u32))
-.field chrDiv: char (size: 1 @336 -> variable(u32))
-.field chrMod: char (size: 1 @340 -> variable(u32))
-.field chrAnd: char (size: 1 @344 -> variable(u32))
-.field chrIor: char (size: 1 @348 -> variable(u32))
-.field chrXor: char (size: 1 @352 -> variable(u32))
-.field chrShl: char (size: 1 @356 -> variable(u32))
-.field chrShr: char (size: 1 @360 -> variable(u32))
-.field chrNot: bool (size: 1 @364 -> variable(bool))
-.field chrCeq: bool (size: 1 @368 -> variable(bool))
-.field chrCne: bool (size: 1 @372 -> variable(bool))
-.field chrClt: bool (size: 1 @376 -> variable(bool))
-.field chrCle: bool (size: 1 @380 -> variable(bool))
-.field chrCgt: bool (size: 1 @384 -> variable(bool))
-.field chrCge: bool (size: 1 @388 -> variable(bool))
-.field i8A: int8 (size: 1 @392 -> variable(i32))
-.field i8B: int8 (size: 1 @396 -> variable(i32))
-.field i8Pls: int8 (size: 1 @400 -> variable(i32))
-.field i8Neg: int8 (size: 1 @404 -> variable(i32))
-.field i8Cmt: int8 (size: 1 @408 -> variable(i32))
-.field i8Add: int8 (size: 1 @412 -> variable(i32))
-.field i8Sub: int8 (size: 1 @416 -> variable(i32))
-.field i8Mul: int8 (size: 1 @420 -> variable(i32))
-.field i8Div: int8 (size: 1 @424 -> variable(i32))
-.field i8Mod: int8 (size: 1 @428 -> variable(i32))
-.field i8And: int8 (size: 1 @432 -> variable(i32))
-.field i8Ior: int8 (size: 1 @436 -> variable(i32))
-.field i8Xor: int8 (size: 1 @440 -> variable(i32))
-.field i8Shl: int8 (size: 1 @444 -> variable(i32))
-.field i8Shr: int8 (size: 1 @448 -> variable(i32))
-.field i8Not: bool (size: 1 @452 -> variable(bool))
-.field i8Ceq: bool (size: 1 @456 -> variable(bool))
-.field i8Cne: bool (size: 1 @460 -> variable(bool))
-.field i8Clt: bool (size: 1 @464 -> variable(bool))
-.field i8Cle: bool (size: 1 @468 -> variable(bool))
-.field i8Cgt: bool (size: 1 @472 -> variable(bool))
-.field i8Cge: bool (size: 1 @476 -> variable(bool))
-.field u8A: uint8 (size: 1 @480 -> variable(u32))
-.field u8B: uint8 (size: 1 @484 -> variable(u32))
-.field u8Pls: uint8 (size: 1 @488 -> variable(u32))
-.field u8Neg: uint8 (size: 1 @492 -> variable(u32))
-.field u8Cmt: uint8 (size: 1 @496 -> variable(u32))
-.field u8Add: uint8 (size: 1 @500 -> variable(u32))
-.field u8Sub: uint8 (size: 1 @504 -> variable(u32))
-.field u8Mul: uint8 (size: 1 @508 -> variable(u32))
-.field u8Div: uint8 (size: 1 @512 -> variable(u32))
-.field u8Mod: uint8 (size: 1 @516 -> variable(u32))
-.field u8And: uint8 (size: 1 @520 -> variable(u32))
-.field u8Ior: uint8 (size: 1 @524 -> variable(u32))
-.field u8Xor: uint8 (size: 1 @528 -> variable(u32))
-.field u8Shl: uint8 (size: 1 @532 -> variable(u32))
-.field u8Shr: uint8 (size: 1 @536 -> variable(u32))
-.field u8Not: bool (size: 1 @540 -> variable(bool))
-.field u8Ceq: bool (size: 1 @544 -> variable(bool))
-.field u8Cne: bool (size: 1 @548 -> variable(bool))
-.field u8Clt: bool (size: 1 @552 -> variable(bool))
-.field u8Cle: bool (size: 1 @556 -> variable(bool))
-.field u8Cgt: bool (size: 1 @560 -> variable(bool))
-.field u8Cge: bool (size: 1 @564 -> variable(bool))
-.field i16A: int16 (size: 2 @568 -> variable(i32))
-.field i16B: int16 (size: 2 @572 -> variable(i32))
-.field i16Pls: int16 (size: 2 @576 -> variable(i32))
-.field i16Neg: int16 (size: 2 @580 -> variable(i32))
-.field i16Cmt: int16 (size: 2 @584 -> variable(i32))
-.field i16Add: int16 (size: 2 @588 -> variable(i32))
-.field i16Sub: int16 (size: 2 @592 -> variable(i32))
-.field i16Mul: int16 (size: 2 @596 -> variable(i32))
-.field i16Div: int16 (size: 2 @600 -> variable(i32))
-.field i16Mod: int16 (size: 2 @604 -> variable(i32))
-.field i16And: int16 (size: 2 @608 -> variable(i32))
-.field i16Ior: int16 (size: 2 @612 -> variable(i32))
-.field i16Xor: int16 (size: 2 @616 -> variable(i32))
-.field i16Shl: int16 (size: 2 @620 -> variable(i32))
-.field i16Shr: int16 (size: 2 @624 -> variable(i32))
-.field i16Not: bool (size: 1 @628 -> variable(bool))
-.field i16Ceq: bool (size: 1 @632 -> variable(bool))
-.field i16Cne: bool (size: 1 @636 -> variable(bool))
-.field i16Clt: bool (size: 1 @640 -> variable(bool))
-.field i16Cle: bool (size: 1 @644 -> variable(bool))
-.field i16Cgt: bool (size: 1 @648 -> variable(bool))
-.field i16Cge: bool (size: 1 @652 -> variable(bool))
-.field u16A: uint16 (size: 2 @656 -> variable(u32))
-.field u16B: uint16 (size: 2 @660 -> variable(u32))
-.field u16Pls: uint16 (size: 2 @664 -> variable(u32))
-.field u16Neg: uint16 (size: 2 @668 -> variable(u32))
-.field u16Cmt: uint16 (size: 2 @672 -> variable(u32))
-.field u16Add: uint16 (size: 2 @676 -> variable(u32))
-.field u16Sub: uint16 (size: 2 @680 -> variable(u32))
-.field u16Mul: uint16 (size: 2 @684 -> variable(u32))
-.field u16Div: uint16 (size: 2 @688 -> variable(u32))
-.field u16Mod: uint16 (size: 2 @692 -> variable(u32))
-.field u16And: uint16 (size: 2 @696 -> variable(u32))
-.field u16Ior: uint16 (size: 2 @700 -> variable(u32))
-.field u16Xor: uint16 (size: 2 @704 -> variable(u32))
-.field u16Shl: uint16 (size: 2 @708 -> variable(u32))
-.field u16Shr: uint16 (size: 2 @712 -> variable(u32))
-.field u16Not: bool (size: 1 @716 -> variable(bool))
-.field u16Ceq: bool (size: 1 @720 -> variable(bool))
-.field u16Cne: bool (size: 1 @724 -> variable(bool))
-.field u16Clt: bool (size: 1 @728 -> variable(bool))
-.field u16Cle: bool (size: 1 @732 -> variable(bool))
-.field u16Cgt: bool (size: 1 @736 -> variable(bool))
-.field u16Cge: bool (size: 1 @740 -> variable(bool))
-.field i32A: int32 (size: 4 @744 -> variable(i32))
-.field i32B: int32 (size: 4 @748 -> variable(i32))
-.field i32Pls: int32 (size: 4 @752 -> variable(i32))
-.field i32Neg: int32 (size: 4 @756 -> variable(i32))
-.field i32Cmt: int32 (size: 4 @760 -> variable(i32))
-.field i32Add: int32 (size: 4 @764 -> variable(i32))
-.field i32Sub: int32 (size: 4 @768 -> variable(i32))
-.field i32Mul: int32 (size: 4 @772 -> variable(i32))
-.field i32Div: int32 (size: 4 @776 -> variable(i32))
-.field i32Mod: int32 (size: 4 @780 -> variable(i32))
-.field i32And: int32 (size: 4 @784 -> variable(i32))
-.field i32Ior: int32 (size: 4 @788 -> variable(i32))
-.field i32Xor: int32 (size: 4 @792 -> variable(i32))
-.field i32Shl: int32 (size: 4 @796 -> variable(i32))
-.field i32Shr: int32 (size: 4 @800 -> variable(i32))
-.field i32Not: bool (size: 1 @804 -> variable(bool))
-.field i32Ceq: bool (size: 1 @808 -> variable(bool))
-.field i32Cne: bool (size: 1 @812 -> variable(bool))
-.field i32Clt: bool (size: 1 @816 -> variable(bool))
-.field i32Cle: bool (size: 1 @820 -> variable(bool))
-.field i32Cgt: bool (size: 1 @824 -> variable(bool))
-.field i32Cge: bool (size: 1 @828 -> variable(bool))
-.field u32A: uint32 (size: 4 @832 -> variable(u32))
-.field u32B: uint32 (size: 4 @836 -> variable(u32))
-.field u32Pls: uint32 (size: 4 @840 -> variable(u32))
-.field u32Neg: uint32 (size: 4 @844 -> variable(u32))
-.field u32Cmt: uint32 (size: 4 @848 -> variable(u32))
-.field u32Add: uint32 (size: 4 @852 -> variable(u32))
-.field u32Sub: uint32 (size: 4 @856 -> variable(u32))
-.field u32Mul: uint32 (size: 4 @860 -> variable(u32))
-.field u32Div: uint32 (size: 4 @864 -> variable(u32))
-.field u32Mod: uint32 (size: 4 @868 -> variable(u32))
-.field u32And: uint32 (size: 4 @872 -> variable(u32))
-.field u32Ior: uint32 (size: 4 @876 -> variable(u32))
-.field u32Xor: uint32 (size: 4 @880 -> variable(u32))
-.field u32Shl: uint32 (size: 4 @884 -> variable(u32))
-.field u32Shr: uint32 (size: 4 @888 -> variable(u32))
-.field u32Not: bool (size: 1 @892 -> variable(bool))
-.field u32Ceq: bool (size: 1 @896 -> variable(bool))
-.field u32Cne: bool (size: 1 @900 -> variable(bool))
-.field u32Clt: bool (size: 1 @904 -> variable(bool))
-.field u32Cle: bool (size: 1 @908 -> variable(bool))
-.field u32Cgt: bool (size: 1 @912 -> variable(bool))
-.field u32Cge: bool (size: 1 @916 -> variable(bool))
-.field i64A: int64 (size: 8 @924 -> variable(i64))
-.field i64B: int64 (size: 8 @932 -> variable(i64))
-.field i64Pls: int64 (size: 8 @940 -> variable(i64))
-.field i64Neg: int64 (size: 8 @948 -> variable(i64))
-.field i64Cmt: int64 (size: 8 @956 -> variable(i64))
-.field i64Add: int64 (size: 8 @964 -> variable(i64))
-.field i64Sub: int64 (size: 8 @972 -> variable(i64))
-.field i64Mul: int64 (size: 8 @980 -> variable(i64))
-.field i64Div: int64 (size: 8 @988 -> variable(i64))
-.field i64Mod: int64 (size: 8 @996 -> variable(i64))
-.field i64And: int64 (size: 8 @1004 -> variable(i64))
-.field i64Ior: int64 (size: 8 @1012 -> variable(i64))
-.field i64Xor: int64 (size: 8 @1020 -> variable(i64))
-.field i64Shl: int64 (size: 8 @1028 -> variable(i64))
-.field i64Shr: int64 (size: 8 @1036 -> variable(i64))
-.field i64Not: bool (size: 1 @1040 -> variable(bool))
-.field i64Ceq: bool (size: 1 @1044 -> variable(bool))
-.field i64Cne: bool (size: 1 @1048 -> variable(bool))
-.field i64Clt: bool (size: 1 @1052 -> variable(bool))
-.field i64Cle: bool (size: 1 @1056 -> variable(bool))
-.field i64Cgt: bool (size: 1 @1060 -> variable(bool))
-.field i64Cge: bool (size: 1 @1064 -> variable(bool))
-.field u64A: uint64 (size: 8 @1072 -> variable(u64))
-.field u64B: uint64 (size: 8 @1080 -> variable(u64))
-.field u64Pls: uint64 (size: 8 @1088 -> variable(u64))
-.field u64Neg: uint64 (size: 8 @1096 -> variable(u64))
-.field u64Cmt: uint64 (size: 8 @1104 -> variable(u64))
-.field u64Add: uint64 (size: 8 @1112 -> variable(u64))
-.field u64Sub: uint64 (size: 8 @1120 -> variable(u64))
-.field u64Mul: uint64 (size: 8 @1128 -> variable(u64))
-.field u64Div: uint64 (size: 8 @1136 -> variable(u64))
-.field u64Mod: uint64 (size: 8 @1144 -> variable(u64))
-.field u64And: uint64 (size: 8 @1152 -> variable(u64))
-.field u64Ior: uint64 (size: 8 @1160 -> variable(u64))
-.field u64Xor: uint64 (size: 8 @1168 -> variable(u64))
-.field u64Shl: uint64 (size: 8 @1176 -> variable(u64))
-.field u64Shr: uint64 (size: 8 @1184 -> variable(u64))
-.field u64Not: bool (size: 1 @1188 -> variable(bool))
-.field u64Ceq: bool (size: 1 @1192 -> variable(bool))
-.field u64Cne: bool (size: 1 @1196 -> variable(bool))
-.field u64Clt: bool (size: 1 @1200 -> variable(bool))
-.field u64Cle: bool (size: 1 @1204 -> variable(bool))
-.field u64Cgt: bool (size: 1 @1208 -> variable(bool))
-.field u64Cge: bool (size: 1 @1212 -> variable(bool))
-.field f32A: float32 (size: 4 @1216 -> variable(f32))
-.field f32B: float32 (size: 4 @1220 -> variable(f32))
-.field f32Pls: float32 (size: 4 @1224 -> variable(f32))
-.field f32Neg: float32 (size: 4 @1228 -> variable(f32))
-.field f32Add: float32 (size: 4 @1232 -> variable(f32))
-.field f32Sub: float32 (size: 4 @1236 -> variable(f32))
-.field f32Mul: float32 (size: 4 @1240 -> variable(f32))
-.field f32Div: float32 (size: 4 @1244 -> variable(f32))
-.field f32Mod: float32 (size: 4 @1248 -> variable(f32))
-.field f32Not: bool (size: 1 @1252 -> variable(bool))
-.field f32Ceq: bool (size: 1 @1256 -> variable(bool))
-.field f32Cne: bool (size: 1 @1260 -> variable(bool))
-.field f32Clt: bool (size: 1 @1264 -> variable(bool))
-.field f32Cle: bool (size: 1 @1268 -> variable(bool))
-.field f32Cgt: bool (size: 1 @1272 -> variable(bool))
-.field f32Cge: bool (size: 1 @1276 -> variable(bool))
-.field f64A: float64 (size: 8 @1284 -> variable(f64))
-.field f64B: float64 (size: 8 @1292 -> variable(f64))
-.field f64Pls: float64 (size: 8 @1300 -> variable(f64))
-.field f64Neg: float64 (size: 8 @1308 -> variable(f64))
-.field f64Add: float64 (size: 8 @1316 -> variable(f64))
-.field f64Sub: float64 (size: 8 @1324 -> variable(f64))
-.field f64Mul: float64 (size: 8 @1332 -> variable(f64))
-.field f64Div: float64 (size: 8 @1340 -> variable(f64))
-.field f64Mod: float64 (size: 8 @1348 -> variable(f64))
-.field f64Not: bool (size: 1 @1352 -> variable(bool))
-.field f64Ceq: bool (size: 1 @1356 -> variable(bool))
-.field f64Cne: bool (size: 1 @1360 -> variable(bool))
-.field f64Clt: bool (size: 1 @1364 -> variable(bool))
-.field f64Cle: bool (size: 1 @1368 -> variable(bool))
-.field f64Cgt: bool (size: 1 @1372 -> variable(bool))
-.field f64Cge: bool (size: 1 @1376 -> variable(bool))
-.field ptrA: pointer (size: 4 @1380 -> variable(ref))
-.field ptrB: pointer (size: 4 @1384 -> variable(ref))
-.field ptrCeq: bool (size: 1 @1388 -> variable(bool))
-.field ptrCne: bool (size: 1 @1392 -> variable(bool))
-.field arrFixedNoInit: int64[7] (size: 56 @1448 -> variable(val))
-.field arrSliceNoInit: int64[] (size: 8 @1456 -> variable(arr))
-.field arrPtrNoInit: int64[*] (size: 4 @1460 -> variable(ref))
-.field arrSliceInitNull: int64[] (size: 8 @1468 -> variable(arr))
-.field arrPtrInitNull: int64[*] (size: 4 @1472 -> variable(ref))
-.field arrSliceInitFixed: int64[] (size: 8 @1480 -> variable(arr))
-.field arrPtrInitFixed: int64[*] (size: 4 @1484 -> variable(ref))
-.field arrSliceInitSlice: int64[] (size: 8 @1492 -> variable(arr))
-.field arrPtrInitSlice: int64[*] (size: 4 @1496 -> variable(ref))
-.field arrPtrInitPtr: int64[*] (size: 4 @1500 -> variable(ref))
-.field arrSliceInitString: char[] (size: 8 @1508 -> variable(arr))
-.field arrPtrInitString: char[*] (size: 4 @1512 -> variable(ref))
-.field value: int64 (size: 8 @131192 -> static variable(i64))
-.field valueRef: int64 (size: 4 @1516 -> variable(ref))
-.field valuePtr: pointer (size: 4 @1520 -> variable(ref))
-.field valueVar: variant (size: 8 @1528 -> variable(var))
-.field fromRef: int64 (size: 8 @1536 -> variable(i64))
-.field fromPtr: int64 (size: 4 @1540 -> variable(ref))
-.field fromVar: int64 (size: 4 @1544 -> variable(ref))
-.field nullRef: int64 (size: 4 @1548 -> variable(ref))
-.field nullPtr: pointer (size: 4 @1552 -> variable(ref))
-.field nullVar: variant (size: 8 @1560 -> variable(var))
-.field nullTyp: typename (size: 4 @1564 -> variable(ref))
-.field nullFun: function (size: 4 @1568 -> variable(ref))
-.field nullObj: object (size: 4 @1572 -> variable(ref))
-.field typePtr: pointer (size: 4 @1576 -> variable(ref))
-.field typeVar: variant (size: 8 @1584 -> variable(var))
-.field typeTyp: typename (size: 4 @1588 -> variable(ref))
-.field local: int64 (size: 8 @1596 -> variable(i64))
-.field copyVal: int64 (size: 8 @1604 -> variable(i64))
-.field copyRef: int64 (size: 4 @1608 -> variable(ref))
-.field copyPtr: pointer (size: 4 @1612 -> variable(ref))
-.field copyVar: variant (size: 8 @1620 -> variable(var))
-.field copyTyp: typename (size: 4 @1624 -> variable(ref))
-.field ptrVoid: pointer (size: 4 @1628 -> variable(ref))
-.field ptrBool: pointer (size: 4 @1632 -> variable(ref))
-.field ptrChar: pointer (size: 4 @1636 -> variable(ref))
-.field ptrInt8: pointer (size: 4 @1640 -> variable(ref))
-.field ptrInt16: pointer (size: 4 @1644 -> variable(ref))
-.field ptrInt32: pointer (size: 4 @1648 -> variable(ref))
-.field ptrInt64: pointer (size: 4 @1652 -> variable(ref))
-.field ptrUint8: pointer (size: 4 @1656 -> variable(ref))
-.field ptrUint16: pointer (size: 4 @1660 -> variable(ref))
-.field ptrUint32: pointer (size: 4 @1664 -> variable(ref))
-.field ptrUint64: pointer (size: 4 @1668 -> variable(ref))
-.field ptrFloat32: pointer (size: 4 @1672 -> variable(ref))
-.field ptrFloat64: pointer (size: 4 @1676 -> variable(ref))
-.field ptrTypename: pointer (size: 4 @1680 -> variable(ref))
-.field ptrFunction: pointer (size: 4 @1684 -> variable(ref))
-.field ptrPointer: pointer (size: 4 @1688 -> variable(ref))
-.field ptrVariant: pointer (size: 4 @1692 -> variable(ref))
-.field ptrObject: pointer (size: 4 @1696 -> variable(ref))
-.field varVoid: variant (size: 8 @1704 -> variable(var))
-.field varBool: variant (size: 8 @1712 -> variable(var))
-.field varChar: variant (size: 8 @1720 -> variable(var))
-.field varInt8: variant (size: 8 @1728 -> variable(var))
-.field varInt16: variant (size: 8 @1736 -> variable(var))
-.field varInt32: variant (size: 8 @1744 -> variable(var))
-.field varInt64: variant (size: 8 @1752 -> variable(var))
-.field varUint8: variant (size: 8 @1760 -> variable(var))
-.field varUint16: variant (size: 8 @1768 -> variable(var))
-.field varUint32: variant (size: 8 @1776 -> variable(var))
-.field varUint64: variant (size: 8 @1784 -> variable(var))
-.field varFloat32: variant (size: 8 @1792 -> variable(var))
-.field varFloat64: variant (size: 8 @1800 -> variable(var))
-.field varTypename: variant (size: 8 @1808 -> variable(var))
-.field varFunction: variant (size: 8 @1816 -> variable(var))
-.field varPointer: variant (size: 8 @1824 -> variable(var))
-.field varVariant: variant (size: 8 @1832 -> variable(var))
-.field varObject: variant (size: 8 @1840 -> variable(var))
-.field typVoid: typename (size: 4 @1844 -> variable(ref))
-.field typBool: typename (size: 4 @1848 -> variable(ref))
-.field typChar: typename (size: 4 @1852 -> variable(ref))
-.field typInt8: typename (size: 4 @1856 -> variable(ref))
-.field typInt16: typename (size: 4 @1860 -> variable(ref))
-.field typInt32: typename (size: 4 @1864 -> variable(ref))
-.field typInt64: typename (size: 4 @1868 -> variable(ref))
-.field typUint8: typename (size: 4 @1872 -> variable(ref))
-.field typUint16: typename (size: 4 @1876 -> variable(ref))
-.field typUint32: typename (size: 4 @1880 -> variable(ref))
-.field typUint64: typename (size: 4 @1884 -> variable(ref))
-.field typFloat32: typename (size: 4 @1888 -> variable(ref))
-.field typFloat64: typename (size: 4 @1892 -> variable(ref))
-.field typTypename: typename (size: 4 @1896 -> variable(ref))
-.field typFunction: typename (size: 4 @1900 -> variable(ref))
-.field typPointer: typename (size: 4 @1904 -> variable(ref))
-.field typVariant: typename (size: 4 @1908 -> variable(ref))
-.field typObject: typename (size: 4 @1912 -> variable(ref))
-.field valueOfPtr: pointer (size: 4 @1916 -> variable(ref))
-.field valueOfVar: variant (size: 8 @1924 -> variable(var))
-.field valueOfTyp: typename (size: 4 @1928 -> variable(ref))
-.field typeOfValue: typename (size: 4 @1932 -> variable(ref))
-.field copyPtrFloat64: variant (size: 8 @1940 -> variable(var))
-.field copyVarFloat64: pointer (size: 4 @1944 -> variable(ref))
-.field localNoInit: int64 (size: 8 @1952 -> variable(i64))
-.field globalNoInit: int64 (size: 8 @131200 -> static variable(i64))
-.field localInitValue: int64 (size: 8 @1960 -> variable(i64))
-.field globalInitValue: int64 (size: 8 @131208 -> static variable(i64))
-.field localInitLocal: int64 (size: 8 @1968 -> variable(i64))
-.field globalInitLocal: int64 (size: 8 @131216 -> static variable(i64))
-.field localInitGlobal: int64 (size: 8 @1976 -> variable(i64))
-.field globalInitGlobal: int64 (size: 8 @131224 -> static variable(i64))
-.field InitMember: typename (size: 16 @121240 -> static const typename(val))
-.field pi64: float64 (size: 8 @1984 -> variable(f64))
-.field e64: float64 (size: 8 @1992 -> variable(f64))
-.field pi32: float32 (size: 4 @1996 -> variable(f32))
-.field e32: float32 (size: 4 @2000 -> variable(f32))
+.field shift: int32 (size: 4 @284 -> variable(i32))
+.field boolA: bool (size: 1 @288 -> variable(bool))
+.field boolB: bool (size: 1 @292 -> variable(bool))
+.field boolAnd: bool (size: 1 @296 -> variable(bool))
+.field boolIor: bool (size: 1 @300 -> variable(bool))
+.field boolXor: bool (size: 1 @304 -> variable(bool))
+.field boolNot: bool (size: 1 @308 -> variable(bool))
+.field boolCeq: bool (size: 1 @312 -> variable(bool))
+.field boolCne: bool (size: 1 @316 -> variable(bool))
+.field boolClt: bool (size: 1 @320 -> variable(bool))
+.field boolCle: bool (size: 1 @324 -> variable(bool))
+.field boolCgt: bool (size: 1 @328 -> variable(bool))
+.field boolCge: bool (size: 1 @332 -> variable(bool))
+.field chrA: char (size: 1 @336 -> variable(u32))
+.field chrB: char (size: 1 @340 -> variable(u32))
+.field chrPls: char (size: 1 @344 -> variable(u32))
+.field chrNeg: char (size: 1 @348 -> variable(u32))
+.field chrCmt: char (size: 1 @352 -> variable(u32))
+.field chrAdd: char (size: 1 @356 -> variable(u32))
+.field chrSub: char (size: 1 @360 -> variable(u32))
+.field chrMul: char (size: 1 @364 -> variable(u32))
+.field chrDiv: char (size: 1 @368 -> variable(u32))
+.field chrMod: char (size: 1 @372 -> variable(u32))
+.field chrAnd: char (size: 1 @376 -> variable(u32))
+.field chrIor: char (size: 1 @380 -> variable(u32))
+.field chrXor: char (size: 1 @384 -> variable(u32))
+.field chrShl: char (size: 1 @388 -> variable(u32))
+.field chrShr: char (size: 1 @392 -> variable(u32))
+.field chrNot: bool (size: 1 @396 -> variable(bool))
+.field chrCeq: bool (size: 1 @400 -> variable(bool))
+.field chrCne: bool (size: 1 @404 -> variable(bool))
+.field chrClt: bool (size: 1 @408 -> variable(bool))
+.field chrCle: bool (size: 1 @412 -> variable(bool))
+.field chrCgt: bool (size: 1 @416 -> variable(bool))
+.field chrCge: bool (size: 1 @420 -> variable(bool))
+.field i8A: int8 (size: 1 @424 -> variable(i32))
+.field i8B: int8 (size: 1 @428 -> variable(i32))
+.field i8Pls: int8 (size: 1 @432 -> variable(i32))
+.field i8Neg: int8 (size: 1 @436 -> variable(i32))
+.field i8Cmt: int8 (size: 1 @440 -> variable(i32))
+.field i8Add: int8 (size: 1 @444 -> variable(i32))
+.field i8Sub: int8 (size: 1 @448 -> variable(i32))
+.field i8Mul: int8 (size: 1 @452 -> variable(i32))
+.field i8Div: int8 (size: 1 @456 -> variable(i32))
+.field i8Mod: int8 (size: 1 @460 -> variable(i32))
+.field i8And: int8 (size: 1 @464 -> variable(i32))
+.field i8Ior: int8 (size: 1 @468 -> variable(i32))
+.field i8Xor: int8 (size: 1 @472 -> variable(i32))
+.field i8Shl: int8 (size: 1 @476 -> variable(i32))
+.field i8Shr: int8 (size: 1 @480 -> variable(i32))
+.field i8Not: bool (size: 1 @484 -> variable(bool))
+.field i8Ceq: bool (size: 1 @488 -> variable(bool))
+.field i8Cne: bool (size: 1 @492 -> variable(bool))
+.field i8Clt: bool (size: 1 @496 -> variable(bool))
+.field i8Cle: bool (size: 1 @500 -> variable(bool))
+.field i8Cgt: bool (size: 1 @504 -> variable(bool))
+.field i8Cge: bool (size: 1 @508 -> variable(bool))
+.field u8A: uint8 (size: 1 @512 -> variable(u32))
+.field u8B: uint8 (size: 1 @516 -> variable(u32))
+.field u8Pls: uint8 (size: 1 @520 -> variable(u32))
+.field u8Neg: uint8 (size: 1 @524 -> variable(u32))
+.field u8Cmt: uint8 (size: 1 @528 -> variable(u32))
+.field u8Add: uint8 (size: 1 @532 -> variable(u32))
+.field u8Sub: uint8 (size: 1 @536 -> variable(u32))
+.field u8Mul: uint8 (size: 1 @540 -> variable(u32))
+.field u8Div: uint8 (size: 1 @544 -> variable(u32))
+.field u8Mod: uint8 (size: 1 @548 -> variable(u32))
+.field u8And: uint8 (size: 1 @552 -> variable(u32))
+.field u8Ior: uint8 (size: 1 @556 -> variable(u32))
+.field u8Xor: uint8 (size: 1 @560 -> variable(u32))
+.field u8Shl: uint8 (size: 1 @564 -> variable(u32))
+.field u8Shr: uint8 (size: 1 @568 -> variable(u32))
+.field u8Not: bool (size: 1 @572 -> variable(bool))
+.field u8Ceq: bool (size: 1 @576 -> variable(bool))
+.field u8Cne: bool (size: 1 @580 -> variable(bool))
+.field u8Clt: bool (size: 1 @584 -> variable(bool))
+.field u8Cle: bool (size: 1 @588 -> variable(bool))
+.field u8Cgt: bool (size: 1 @592 -> variable(bool))
+.field u8Cge: bool (size: 1 @596 -> variable(bool))
+.field i16A: int16 (size: 2 @600 -> variable(i32))
+.field i16B: int16 (size: 2 @604 -> variable(i32))
+.field i16Pls: int16 (size: 2 @608 -> variable(i32))
+.field i16Neg: int16 (size: 2 @612 -> variable(i32))
+.field i16Cmt: int16 (size: 2 @616 -> variable(i32))
+.field i16Add: int16 (size: 2 @620 -> variable(i32))
+.field i16Sub: int16 (size: 2 @624 -> variable(i32))
+.field i16Mul: int16 (size: 2 @628 -> variable(i32))
+.field i16Div: int16 (size: 2 @632 -> variable(i32))
+.field i16Mod: int16 (size: 2 @636 -> variable(i32))
+.field i16And: int16 (size: 2 @640 -> variable(i32))
+.field i16Ior: int16 (size: 2 @644 -> variable(i32))
+.field i16Xor: int16 (size: 2 @648 -> variable(i32))
+.field i16Shl: int16 (size: 2 @652 -> variable(i32))
+.field i16Shr: int16 (size: 2 @656 -> variable(i32))
+.field i16Not: bool (size: 1 @660 -> variable(bool))
+.field i16Ceq: bool (size: 1 @664 -> variable(bool))
+.field i16Cne: bool (size: 1 @668 -> variable(bool))
+.field i16Clt: bool (size: 1 @672 -> variable(bool))
+.field i16Cle: bool (size: 1 @676 -> variable(bool))
+.field i16Cgt: bool (size: 1 @680 -> variable(bool))
+.field i16Cge: bool (size: 1 @684 -> variable(bool))
+.field u16A: uint16 (size: 2 @688 -> variable(u32))
+.field u16B: uint16 (size: 2 @692 -> variable(u32))
+.field u16Pls: uint16 (size: 2 @696 -> variable(u32))
+.field u16Neg: uint16 (size: 2 @700 -> variable(u32))
+.field u16Cmt: uint16 (size: 2 @704 -> variable(u32))
+.field u16Add: uint16 (size: 2 @708 -> variable(u32))
+.field u16Sub: uint16 (size: 2 @712 -> variable(u32))
+.field u16Mul: uint16 (size: 2 @716 -> variable(u32))
+.field u16Div: uint16 (size: 2 @720 -> variable(u32))
+.field u16Mod: uint16 (size: 2 @724 -> variable(u32))
+.field u16And: uint16 (size: 2 @728 -> variable(u32))
+.field u16Ior: uint16 (size: 2 @732 -> variable(u32))
+.field u16Xor: uint16 (size: 2 @736 -> variable(u32))
+.field u16Shl: uint16 (size: 2 @740 -> variable(u32))
+.field u16Shr: uint16 (size: 2 @744 -> variable(u32))
+.field u16Not: bool (size: 1 @748 -> variable(bool))
+.field u16Ceq: bool (size: 1 @752 -> variable(bool))
+.field u16Cne: bool (size: 1 @756 -> variable(bool))
+.field u16Clt: bool (size: 1 @760 -> variable(bool))
+.field u16Cle: bool (size: 1 @764 -> variable(bool))
+.field u16Cgt: bool (size: 1 @768 -> variable(bool))
+.field u16Cge: bool (size: 1 @772 -> variable(bool))
+.field i32A: int32 (size: 4 @776 -> variable(i32))
+.field i32B: int32 (size: 4 @780 -> variable(i32))
+.field i32Pls: int32 (size: 4 @784 -> variable(i32))
+.field i32Neg: int32 (size: 4 @788 -> variable(i32))
+.field i32Cmt: int32 (size: 4 @792 -> variable(i32))
+.field i32Add: int32 (size: 4 @796 -> variable(i32))
+.field i32Sub: int32 (size: 4 @800 -> variable(i32))
+.field i32Mul: int32 (size: 4 @804 -> variable(i32))
+.field i32Div: int32 (size: 4 @808 -> variable(i32))
+.field i32Mod: int32 (size: 4 @812 -> variable(i32))
+.field i32And: int32 (size: 4 @816 -> variable(i32))
+.field i32Ior: int32 (size: 4 @820 -> variable(i32))
+.field i32Xor: int32 (size: 4 @824 -> variable(i32))
+.field i32Shl: int32 (size: 4 @828 -> variable(i32))
+.field i32Shr: int32 (size: 4 @832 -> variable(i32))
+.field i32Not: bool (size: 1 @836 -> variable(bool))
+.field i32Ceq: bool (size: 1 @840 -> variable(bool))
+.field i32Cne: bool (size: 1 @844 -> variable(bool))
+.field i32Clt: bool (size: 1 @848 -> variable(bool))
+.field i32Cle: bool (size: 1 @852 -> variable(bool))
+.field i32Cgt: bool (size: 1 @856 -> variable(bool))
+.field i32Cge: bool (size: 1 @860 -> variable(bool))
+.field u32A: uint32 (size: 4 @864 -> variable(u32))
+.field u32B: uint32 (size: 4 @868 -> variable(u32))
+.field u32Pls: uint32 (size: 4 @872 -> variable(u32))
+.field u32Neg: uint32 (size: 4 @876 -> variable(u32))
+.field u32Cmt: uint32 (size: 4 @880 -> variable(u32))
+.field u32Add: uint32 (size: 4 @884 -> variable(u32))
+.field u32Sub: uint32 (size: 4 @888 -> variable(u32))
+.field u32Mul: uint32 (size: 4 @892 -> variable(u32))
+.field u32Div: uint32 (size: 4 @896 -> variable(u32))
+.field u32Mod: uint32 (size: 4 @900 -> variable(u32))
+.field u32And: uint32 (size: 4 @904 -> variable(u32))
+.field u32Ior: uint32 (size: 4 @908 -> variable(u32))
+.field u32Xor: uint32 (size: 4 @912 -> variable(u32))
+.field u32Shl: uint32 (size: 4 @916 -> variable(u32))
+.field u32Shr: uint32 (size: 4 @920 -> variable(u32))
+.field u32Not: bool (size: 1 @924 -> variable(bool))
+.field u32Ceq: bool (size: 1 @928 -> variable(bool))
+.field u32Cne: bool (size: 1 @932 -> variable(bool))
+.field u32Clt: bool (size: 1 @936 -> variable(bool))
+.field u32Cle: bool (size: 1 @940 -> variable(bool))
+.field u32Cgt: bool (size: 1 @944 -> variable(bool))
+.field u32Cge: bool (size: 1 @948 -> variable(bool))
+.field i64A: int64 (size: 8 @956 -> variable(i64))
+.field i64B: int64 (size: 8 @964 -> variable(i64))
+.field i64Pls: int64 (size: 8 @972 -> variable(i64))
+.field i64Neg: int64 (size: 8 @980 -> variable(i64))
+.field i64Cmt: int64 (size: 8 @988 -> variable(i64))
+.field i64Add: int64 (size: 8 @996 -> variable(i64))
+.field i64Sub: int64 (size: 8 @1004 -> variable(i64))
+.field i64Mul: int64 (size: 8 @1012 -> variable(i64))
+.field i64Div: int64 (size: 8 @1020 -> variable(i64))
+.field i64Mod: int64 (size: 8 @1028 -> variable(i64))
+.field i64And: int64 (size: 8 @1036 -> variable(i64))
+.field i64Ior: int64 (size: 8 @1044 -> variable(i64))
+.field i64Xor: int64 (size: 8 @1052 -> variable(i64))
+.field i64Shl: int64 (size: 8 @1060 -> variable(i64))
+.field i64Shr: int64 (size: 8 @1068 -> variable(i64))
+.field i64Not: bool (size: 1 @1072 -> variable(bool))
+.field i64Ceq: bool (size: 1 @1076 -> variable(bool))
+.field i64Cne: bool (size: 1 @1080 -> variable(bool))
+.field i64Clt: bool (size: 1 @1084 -> variable(bool))
+.field i64Cle: bool (size: 1 @1088 -> variable(bool))
+.field i64Cgt: bool (size: 1 @1092 -> variable(bool))
+.field i64Cge: bool (size: 1 @1096 -> variable(bool))
+.field u64A: uint64 (size: 8 @1104 -> variable(u64))
+.field u64B: uint64 (size: 8 @1112 -> variable(u64))
+.field u64Pls: uint64 (size: 8 @1120 -> variable(u64))
+.field u64Neg: uint64 (size: 8 @1128 -> variable(u64))
+.field u64Cmt: uint64 (size: 8 @1136 -> variable(u64))
+.field u64Add: uint64 (size: 8 @1144 -> variable(u64))
+.field u64Sub: uint64 (size: 8 @1152 -> variable(u64))
+.field u64Mul: uint64 (size: 8 @1160 -> variable(u64))
+.field u64Div: uint64 (size: 8 @1168 -> variable(u64))
+.field u64Mod: uint64 (size: 8 @1176 -> variable(u64))
+.field u64And: uint64 (size: 8 @1184 -> variable(u64))
+.field u64Ior: uint64 (size: 8 @1192 -> variable(u64))
+.field u64Xor: uint64 (size: 8 @1200 -> variable(u64))
+.field u64Shl: uint64 (size: 8 @1208 -> variable(u64))
+.field u64Shr: uint64 (size: 8 @1216 -> variable(u64))
+.field u64Not: bool (size: 1 @1220 -> variable(bool))
+.field u64Ceq: bool (size: 1 @1224 -> variable(bool))
+.field u64Cne: bool (size: 1 @1228 -> variable(bool))
+.field u64Clt: bool (size: 1 @1232 -> variable(bool))
+.field u64Cle: bool (size: 1 @1236 -> variable(bool))
+.field u64Cgt: bool (size: 1 @1240 -> variable(bool))
+.field u64Cge: bool (size: 1 @1244 -> variable(bool))
+.field f32A: float32 (size: 4 @1248 -> variable(f32))
+.field f32B: float32 (size: 4 @1252 -> variable(f32))
+.field f32Pls: float32 (size: 4 @1256 -> variable(f32))
+.field f32Neg: float32 (size: 4 @1260 -> variable(f32))
+.field f32Add: float32 (size: 4 @1264 -> variable(f32))
+.field f32Sub: float32 (size: 4 @1268 -> variable(f32))
+.field f32Mul: float32 (size: 4 @1272 -> variable(f32))
+.field f32Div: float32 (size: 4 @1276 -> variable(f32))
+.field f32Mod: float32 (size: 4 @1280 -> variable(f32))
+.field f32Not: bool (size: 1 @1284 -> variable(bool))
+.field f32Ceq: bool (size: 1 @1288 -> variable(bool))
+.field f32Cne: bool (size: 1 @1292 -> variable(bool))
+.field f32Clt: bool (size: 1 @1296 -> variable(bool))
+.field f32Cle: bool (size: 1 @1300 -> variable(bool))
+.field f32Cgt: bool (size: 1 @1304 -> variable(bool))
+.field f32Cge: bool (size: 1 @1308 -> variable(bool))
+.field f64A: float64 (size: 8 @1316 -> variable(f64))
+.field f64B: float64 (size: 8 @1324 -> variable(f64))
+.field f64Pls: float64 (size: 8 @1332 -> variable(f64))
+.field f64Neg: float64 (size: 8 @1340 -> variable(f64))
+.field f64Add: float64 (size: 8 @1348 -> variable(f64))
+.field f64Sub: float64 (size: 8 @1356 -> variable(f64))
+.field f64Mul: float64 (size: 8 @1364 -> variable(f64))
+.field f64Div: float64 (size: 8 @1372 -> variable(f64))
+.field f64Mod: float64 (size: 8 @1380 -> variable(f64))
+.field f64Not: bool (size: 1 @1384 -> variable(bool))
+.field f64Ceq: bool (size: 1 @1388 -> variable(bool))
+.field f64Cne: bool (size: 1 @1392 -> variable(bool))
+.field f64Clt: bool (size: 1 @1396 -> variable(bool))
+.field f64Cle: bool (size: 1 @1400 -> variable(bool))
+.field f64Cgt: bool (size: 1 @1404 -> variable(bool))
+.field f64Cge: bool (size: 1 @1408 -> variable(bool))
+.field ptrA: pointer (size: 4 @1412 -> variable(ref))
+.field ptrB: pointer (size: 4 @1416 -> variable(ref))
+.field ptrCeq: bool (size: 1 @1420 -> variable(bool))
+.field ptrCne: bool (size: 1 @1424 -> variable(bool))
+.field arrFixedNoInit: int64[7] (size: 56 @1480 -> variable(val))
+.field arrSliceNoInit: int64[] (size: 8 @1488 -> variable(arr))
+.field arrPtrNoInit: int64[*] (size: 4 @1492 -> variable(ref))
+.field arrSliceInitNull: int64[] (size: 8 @1500 -> variable(arr))
+.field arrPtrInitNull: int64[*] (size: 4 @1504 -> variable(ref))
+.field arrSliceInitFixed: int64[] (size: 8 @1512 -> variable(arr))
+.field arrPtrInitFixed: int64[*] (size: 4 @1516 -> variable(ref))
+.field arrSliceInitSlice: int64[] (size: 8 @1524 -> variable(arr))
+.field arrPtrInitSlice: int64[*] (size: 4 @1528 -> variable(ref))
+.field arrPtrInitPtr: int64[*] (size: 4 @1532 -> variable(ref))
+.field arrSliceInitString: char[] (size: 8 @1540 -> variable(arr))
+.field arrPtrInitString: char[*] (size: 4 @1544 -> variable(ref))
+.field value: int64 (size: 8 @135680 -> static variable(i64))
+.field valueRef: int64 (size: 4 @1548 -> variable(ref))
+.field valuePtr: pointer (size: 4 @1552 -> variable(ref))
+.field valueVar: variant (size: 8 @1560 -> variable(var))
+.field fromRef: int64 (size: 8 @1568 -> variable(i64))
+.field fromPtr: int64 (size: 4 @1572 -> variable(ref))
+.field fromVar: int64 (size: 4 @1576 -> variable(ref))
+.field nullRef: int64 (size: 4 @1580 -> variable(ref))
+.field nullPtr: pointer (size: 4 @1584 -> variable(ref))
+.field nullVar: variant (size: 8 @1592 -> variable(var))
+.field nullTyp: typename (size: 4 @1596 -> variable(ref))
+.field nullFun: function (size: 4 @1600 -> variable(ref))
+.field nullObj: object (size: 4 @1604 -> variable(ref))
+.field typePtr: pointer (size: 4 @1608 -> variable(ref))
+.field typeVar: variant (size: 8 @1616 -> variable(var))
+.field typeTyp: typename (size: 4 @1620 -> variable(ref))
+.field local: int64 (size: 8 @1628 -> variable(i64))
+.field copyVal: int64 (size: 8 @1636 -> variable(i64))
+.field copyRef: int64 (size: 4 @1640 -> variable(ref))
+.field copyPtr: pointer (size: 4 @1644 -> variable(ref))
+.field copyVar: variant (size: 8 @1652 -> variable(var))
+.field copyTyp: typename (size: 4 @1656 -> variable(ref))
+.field ptrVoid: pointer (size: 4 @1660 -> variable(ref))
+.field ptrBool: pointer (size: 4 @1664 -> variable(ref))
+.field ptrChar: pointer (size: 4 @1668 -> variable(ref))
+.field ptrInt8: pointer (size: 4 @1672 -> variable(ref))
+.field ptrInt16: pointer (size: 4 @1676 -> variable(ref))
+.field ptrInt32: pointer (size: 4 @1680 -> variable(ref))
+.field ptrInt64: pointer (size: 4 @1684 -> variable(ref))
+.field ptrUint8: pointer (size: 4 @1688 -> variable(ref))
+.field ptrUint16: pointer (size: 4 @1692 -> variable(ref))
+.field ptrUint32: pointer (size: 4 @1696 -> variable(ref))
+.field ptrUint64: pointer (size: 4 @1700 -> variable(ref))
+.field ptrFloat32: pointer (size: 4 @1704 -> variable(ref))
+.field ptrFloat64: pointer (size: 4 @1708 -> variable(ref))
+.field ptrTypename: pointer (size: 4 @1712 -> variable(ref))
+.field ptrFunction: pointer (size: 4 @1716 -> variable(ref))
+.field ptrPointer: pointer (size: 4 @1720 -> variable(ref))
+.field ptrVariant: pointer (size: 4 @1724 -> variable(ref))
+.field ptrObject: pointer (size: 4 @1728 -> variable(ref))
+.field varVoid: variant (size: 8 @1736 -> variable(var))
+.field varBool: variant (size: 8 @1744 -> variable(var))
+.field varChar: variant (size: 8 @1752 -> variable(var))
+.field varInt8: variant (size: 8 @1760 -> variable(var))
+.field varInt16: variant (size: 8 @1768 -> variable(var))
+.field varInt32: variant (size: 8 @1776 -> variable(var))
+.field varInt64: variant (size: 8 @1784 -> variable(var))
+.field varUint8: variant (size: 8 @1792 -> variable(var))
+.field varUint16: variant (size: 8 @1800 -> variable(var))
+.field varUint32: variant (size: 8 @1808 -> variable(var))
+.field varUint64: variant (size: 8 @1816 -> variable(var))
+.field varFloat32: variant (size: 8 @1824 -> variable(var))
+.field varFloat64: variant (size: 8 @1832 -> variable(var))
+.field varTypename: variant (size: 8 @1840 -> variable(var))
+.field varFunction: variant (size: 8 @1848 -> variable(var))
+.field varPointer: variant (size: 8 @1856 -> variable(var))
+.field varVariant: variant (size: 8 @1864 -> variable(var))
+.field varObject: variant (size: 8 @1872 -> variable(var))
+.field typVoid: typename (size: 4 @1876 -> variable(ref))
+.field typBool: typename (size: 4 @1880 -> variable(ref))
+.field typChar: typename (size: 4 @1884 -> variable(ref))
+.field typInt8: typename (size: 4 @1888 -> variable(ref))
+.field typInt16: typename (size: 4 @1892 -> variable(ref))
+.field typInt32: typename (size: 4 @1896 -> variable(ref))
+.field typInt64: typename (size: 4 @1900 -> variable(ref))
+.field typUint8: typename (size: 4 @1904 -> variable(ref))
+.field typUint16: typename (size: 4 @1908 -> variable(ref))
+.field typUint32: typename (size: 4 @1912 -> variable(ref))
+.field typUint64: typename (size: 4 @1916 -> variable(ref))
+.field typFloat32: typename (size: 4 @1920 -> variable(ref))
+.field typFloat64: typename (size: 4 @1924 -> variable(ref))
+.field typTypename: typename (size: 4 @1928 -> variable(ref))
+.field typFunction: typename (size: 4 @1932 -> variable(ref))
+.field typPointer: typename (size: 4 @1936 -> variable(ref))
+.field typVariant: typename (size: 4 @1940 -> variable(ref))
+.field typObject: typename (size: 4 @1944 -> variable(ref))
+.field valueOfPtr: pointer (size: 4 @1948 -> variable(ref))
+.field valueOfVar: variant (size: 8 @1956 -> variable(var))
+.field valueOfTyp: typename (size: 4 @1960 -> variable(ref))
+.field typeOfValue: typename (size: 4 @1964 -> variable(ref))
+.field copyPtrFloat64: variant (size: 8 @1972 -> variable(var))
+.field copyVarFloat64: pointer (size: 4 @1976 -> variable(ref))
+.field localNoInit: int64 (size: 8 @1984 -> variable(i64))
+.field globalNoInit: int64 (size: 8 @135688 -> static variable(i64))
+.field localInitValue: int64 (size: 8 @1992 -> variable(i64))
+.field globalInitValue: int64 (size: 8 @135696 -> static variable(i64))
+.field localInitLocal: int64 (size: 8 @2000 -> variable(i64))
+.field globalInitLocal: int64 (size: 8 @135704 -> static variable(i64))
+.field localInitGlobal: int64 (size: 8 @2008 -> variable(i64))
+.field globalInitGlobal: int64 (size: 8 @135712 -> static variable(i64))
+.field InitMember: typename (size: 16 @125472 -> static const typename(val))
+.field pi64: float64 (size: 8 @2016 -> variable(f64))
+.field e64: float64 (size: 8 @2024 -> variable(f64))
+.field pi32: float32 (size: 4 @2028 -> variable(f32))
+.field e32: float32 (size: 4 @2032 -> variable(f32))
 .field rgb888: function (size: 0 @0 -> inline)
 .field rgb565: function (size: 0 @0 -> inline)
-.field r_comp: int32 (size: 4 @2004 -> variable(i32))
-.field g_comp: int32 (size: 4 @2008 -> variable(i32))
-.field b_comp: int32 (size: 4 @2012 -> variable(i32))
-.field r5g6b5: int32 (size: 4 @2016 -> variable(i32))
-.field r8g8b8: int32 (size: 4 @2020 -> variable(i32))
-.field zxtR5: int32 (size: 4 @2024 -> variable(i32))
-.field zxtG6: int32 (size: 4 @2028 -> variable(i32))
-.field zxtB5: int32 (size: 4 @2032 -> variable(i32))
-.field sxtR5: int32 (size: 4 @2036 -> variable(i32))
-.field sxtG6: int32 (size: 4 @2040 -> variable(i32))
-.field sxtB5: int32 (size: 4 @2044 -> variable(i32))
-.field zxtR8: int32 (size: 4 @2048 -> variable(i32))
-.field zxtG8: int32 (size: 4 @2052 -> variable(i32))
-.field zxtB8: int32 (size: 4 @2056 -> variable(i32))
-.field sxtR8: int32 (size: 4 @2060 -> variable(i32))
-.field sxtG8: int32 (size: 4 @2064 -> variable(i32))
-.field sxtB8: int32 (size: 4 @2068 -> variable(i32))
-.field sinF64: float64 (size: 8 @2076 -> variable(f64))
-.field cosF64: float64 (size: 8 @2084 -> variable(f64))
-.field tanF64: float64 (size: 8 @2092 -> variable(f64))
-.field logF64: float64 (size: 8 @2100 -> variable(f64))
-.field expF64: float64 (size: 8 @2108 -> variable(f64))
-.field powF64: float64 (size: 8 @2116 -> variable(f64))
-.field sqrtF64: float64 (size: 8 @2124 -> variable(f64))
-.field atanF64: float64 (size: 8 @2132 -> variable(f64))
-.field sinF32: float32 (size: 4 @2136 -> variable(f32))
-.field cosF32: float32 (size: 4 @2140 -> variable(f32))
-.field tanF32: float32 (size: 4 @2144 -> variable(f32))
-.field logF32: float32 (size: 4 @2148 -> variable(f32))
-.field expF32: float32 (size: 4 @2152 -> variable(f32))
-.field powF32: float32 (size: 4 @2156 -> variable(f32))
-.field sqrtF32: float32 (size: 4 @2160 -> variable(f32))
-.field atanF32: float32 (size: 4 @2164 -> variable(f32))
+.field r_comp: int32 (size: 4 @2036 -> variable(i32))
+.field g_comp: int32 (size: 4 @2040 -> variable(i32))
+.field b_comp: int32 (size: 4 @2044 -> variable(i32))
+.field r5g6b5: int32 (size: 4 @2048 -> variable(i32))
+.field r8g8b8: int32 (size: 4 @2052 -> variable(i32))
+.field zxtR5: int32 (size: 4 @2056 -> variable(i32))
+.field zxtG6: int32 (size: 4 @2060 -> variable(i32))
+.field zxtB5: int32 (size: 4 @2064 -> variable(i32))
+.field sxtR5: int32 (size: 4 @2068 -> variable(i32))
+.field sxtG6: int32 (size: 4 @2072 -> variable(i32))
+.field sxtB5: int32 (size: 4 @2076 -> variable(i32))
+.field zxtR8: int32 (size: 4 @2080 -> variable(i32))
+.field zxtG8: int32 (size: 4 @2084 -> variable(i32))
+.field zxtB8: int32 (size: 4 @2088 -> variable(i32))
+.field sxtR8: int32 (size: 4 @2092 -> variable(i32))
+.field sxtG8: int32 (size: 4 @2096 -> variable(i32))
+.field sxtB8: int32 (size: 4 @2100 -> variable(i32))
+.field sinF64: float64 (size: 8 @2108 -> variable(f64))
+.field cosF64: float64 (size: 8 @2116 -> variable(f64))
+.field tanF64: float64 (size: 8 @2124 -> variable(f64))
+.field logF64: float64 (size: 8 @2132 -> variable(f64))
+.field expF64: float64 (size: 8 @2140 -> variable(f64))
+.field powF64: float64 (size: 8 @2148 -> variable(f64))
+.field sqrtF64: float64 (size: 8 @2156 -> variable(f64))
+.field atanF64: float64 (size: 8 @2164 -> variable(f64))
+.field sinF32: float32 (size: 4 @2168 -> variable(f32))
+.field cosF32: float32 (size: 4 @2172 -> variable(f32))
+.field tanF32: float32 (size: 4 @2176 -> variable(f32))
+.field logF32: float32 (size: 4 @2180 -> variable(f32))
+.field expF32: float32 (size: 4 @2184 -> variable(f32))
+.field powF32: float32 (size: 4 @2188 -> variable(f32))
+.field sqrtF32: float32 (size: 4 @2192 -> variable(f32))
+.field atanF32: float32 (size: 4 @2196 -> variable(f32))
 .field malloc: function (size: 0 @0 -> inline)
 .field free: function (size: 0 @0 -> inline)
-.field p1: pointer (size: 4 @2168 -> variable(ref))
-.field p2: pointer (size: 4 @2172 -> variable(ref))
-.field p3: pointer (size: 4 @2176 -> variable(ref))
-.field p4: pointer (size: 4 @2180 -> variable(ref))
-.field val1: int64 (size: 8 @2188 -> variable(i64))
-.field val2: int64 (size: 8 @2196 -> variable(i64))
-.field .main: function (size: 6224 @131240 -> static function)
-.param .result: void (@+0->variable)
+.field p1: pointer (size: 4 @2200 -> variable(ref))
+.field p2: pointer (size: 4 @2204 -> variable(ref))
+.field p3: pointer (size: 4 @2208 -> variable(ref))
+.field p4: pointer (size: 4 @2212 -> variable(ref))
+.field val1: int64 (size: 8 @2220 -> variable(i64))
+.field val2: int64 (size: 8 @2228 -> variable(i64))
+.field .main: function (size: 6974 @135728 -> static function)
+.param .result: void (size: 0 @0 -> variable)
 .value: {
 	intGlobal	intConstant	{
 		integer: typename := int64;
@@ -5393,6 +5567,35 @@ val2: int64 {
 		sizeofBase1: int32 := typeofBase1.size;
 		typeofBase2: typename := typename.base(typeofBase1);
 		sizeofBase2: int32 := typeofBase2.size;
+		static const empty(): void := {
+		}
+;
+		static const funAdd(x: int32, y: int32): int32 := {
+			return .result := (x + y);
+		}
+;
+		funAddResult: int32 := funAdd(2, 7);
+		funAddRef(x: int32, y: int32): int32 := funAdd;
+		funAddRefResult: int32 := funAddRef(2, 8);
+		funMul(x: int32, y: int32): int32 := funMul;
+		funMulResult: int32 := funMul(2, 6);
+		funMulRef(x: int32, y: int32): int32 := funMul;
+		funMulRefResult: int32 := funMulRef(2, 7);
+		static const funMul(x: int32, y: int32): int32 := {
+			return .result := (x * y);
+		}
+;
+		static const fib(n: uint32): uint32 := {
+			if (n <= (1)) {
+				if (n <= (0)) {
+					return .result := (0);
+				}
+				return .result := (1);
+			}
+			return .result := (fib(n - (1)) + fib(n - (2)));
+		}
+;
+		fibonacci_13: uint32 := fib(13);
 		a: typename := 96.300000;
 		b: typename := 42.140000;
 		shift: int32 := 2;
@@ -5822,192 +6025,170 @@ val2: int64 {
 		raise(info, "val2", variant(val2), noTrace);
 	}
 }
-.instructions: [6224 bytes @.0200a8]
+.instructions: [6974 bytes @.021230]
 	extras/Tests/lang.varInitByVal.ci:38: (6 bytes): intGlobal
-	1f a0 00 02 00             load.ref .0200a0 ;InitMember.intGlobal
+	1f 28 12 02 00             load.ref .021228 ;InitMember.intGlobal
 	22                         load.m32
 	extras/Tests/lang.varInitByVal.ci:43: (6 bytes): intConstant
-	1f a4 00 02 00             load.ref .0200a4 ;InitMember.intConstant
+	1f 2c 12 02 00             load.ref .02122c ;InitMember.intConstant
 	22                         load.m32
-	extras/Tests/lang.statementIf.ci:4: (49 bytes): raise(debug, "0 == 0", null, 1);
-	1b 04 00 00 00             load.c32 4
-	1f 78 a6 00 00             load.ref .00a678 ;"extras/Tests/lang.statementIf.ci"
+	extras/Tests/lang.statementIf.ci:4: (39 bytes): raise(debug, "0 == 0", null, 1);
+	1c 03 00 00 00 00 00 00 00 load.c64 3
+	6a                         i64.2i32
+	1f e8 a8 00 00             load.ref .00a8e8 ;"0 == 0"
+	1f f0 07 00 00             load.ref .0007f0 ;pointer
+	1f 00 00 00 00             load.ref .000000 ;null
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
+	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.statementIf.ci:12: (39 bytes): raise(debug, "0 == 0", null, 3);
+	1c 03 00 00 00 00 00 00 00 load.c64 3
+	6a                         i64.2i32
+	1f e8 a8 00 00             load.ref .00a8e8 ;"0 == 0"
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	1f 00 00 00 00             load.ref .000000 ;null
-	1f c8 a8 00 00             load.ref .00a8c8 ;"0 == 0"
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
-	extras/Tests/lang.statementIf.ci:12: (49 bytes): raise(debug, "0 == 0", null, 3);
-	1b 0c 00 00 00             load.c32 12
-	1f 78 a6 00 00             load.ref .00a678 ;"extras/Tests/lang.statementIf.ci"
+	extras/Tests/lang.statementIf.ci:22: (39 bytes): raise(debug, "0 == 0", null, 6);
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
+	1f e8 a8 00 00             load.ref .00a8e8 ;"0 == 0"
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	1f 00 00 00 00             load.ref .000000 ;null
-	1f c8 a8 00 00             load.ref .00a8c8 ;"0 == 0"
-	1c 03 00 00 00 00 00 00 00 load.c64 3
-	6a                         i64.2i32
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	10 00 00 00                inc.sp(+0)
-	extras/Tests/lang.statementIf.ci:22: (49 bytes): raise(debug, "0 == 0", null, 6);
-	1b 16 00 00 00             load.c32 22
-	1f 78 a6 00 00             load.ref .00a678 ;"extras/Tests/lang.statementIf.ci"
 	1c 06 00 00 00 00 00 00 00 load.c64 6
-	6a                         i64.2i32
-	1f f0 07 00 00             load.ref .0007f0 ;pointer
-	1f 00 00 00 00             load.ref .000000 ;null
-	1f c8 a8 00 00             load.ref .00a8c8 ;"0 == 0"
-	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
 	extras/Tests/lang.statementIf.ci:26: (10 bytes): t: int32 := 0
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
-	extras/Tests/lang.statementIf.ci:28: (72 bytes): if (t == 0)
+	extras/Tests/lang.statementIf.ci:28: (62 bytes): if (t == 0)
 	11 00 00 00                load.sp(+0)
 	22                         load.m32
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	57                         ceq.i32
-	06 38 00 00                jz +56
-	extras/Tests/lang.statementIf.ci:29: (48 bytes): raise(debug, "t == 0", variant(t), 7);
-	1b 1d 00 00 00             load.c32 29
-	1f 78 a6 00 00             load.ref .00a678 ;"extras/Tests/lang.statementIf.ci"
+	06 2e 00 00                jz +46
+	extras/Tests/lang.statementIf.ci:29: (38 bytes): raise(debug, "t == 0", variant(t), 7);
+	1c 03 00 00 00 00 00 00 00 load.c64 3
+	6a                         i64.2i32
+	1f f8 a8 00 00             load.ref .00a8f8 ;"t == 0"
+	1f 70 03 00 00             load.ref .000370 ;int32
+	11 0c 00 00                load.sp(+12)
 	1c 07 00 00 00 00 00 00 00 load.c64 7
 	6a                         i64.2i32
-	1f 70 03 00 00             load.ref .000370 ;int32
-	11 10 00 00                load.sp(+16)
-	1f d8 a8 00 00             load.ref .00a8d8 ;"t == 0"
-	1c 03 00 00 00 00 00 00 00 load.c64 3
-	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
-	extras/Tests/lang.statementIf.ci:32: (73 bytes): if (t != 0)
+	extras/Tests/lang.statementIf.ci:32: (63 bytes): if (t != 0)
 	11 00 00 00                load.sp(+0)
 	22                         load.m32
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	57                         ceq.i32
 	0a                         not.b32
-	06 38 00 00                jz +56
-	extras/Tests/lang.statementIf.ci:33: (48 bytes): raise(debug, "t != 0", variant(t), 8);
-	1b 21 00 00 00             load.c32 33
-	1f 78 a6 00 00             load.ref .00a678 ;"extras/Tests/lang.statementIf.ci"
+	06 2e 00 00                jz +46
+	extras/Tests/lang.statementIf.ci:33: (38 bytes): raise(debug, "t != 0", variant(t), 8);
+	1c 03 00 00 00 00 00 00 00 load.c64 3
+	6a                         i64.2i32
+	1f ff a8 00 00             load.ref .00a8ff ;"t != 0"
+	1f 70 03 00 00             load.ref .000370 ;int32
+	11 0c 00 00                load.sp(+12)
 	1c 08 00 00 00 00 00 00 00 load.c64 8
 	6a                         i64.2i32
-	1f 70 03 00 00             load.ref .000370 ;int32
-	11 10 00 00                load.sp(+16)
-	1f df a8 00 00             load.ref .00a8df ;"t != 0"
-	1c 03 00 00 00 00 00 00 00 load.c64 3
-	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
-	extras/Tests/lang.statementIf.ci:36: (129 bytes): if (t != 0)
+	extras/Tests/lang.statementIf.ci:36: (109 bytes): if (t != 0)
 	11 00 00 00                load.sp(+0)
 	22                         load.m32
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	57                         ceq.i32
 	0a                         not.b32
-	06 3c 00 00                jz +60
-	extras/Tests/lang.statementIf.ci:37: (48 bytes): raise(debug, "t != 0", variant(t), 9);
-	1b 25 00 00 00             load.c32 37
-	1f 78 a6 00 00             load.ref .00a678 ;"extras/Tests/lang.statementIf.ci"
+	06 32 00 00                jz +50
+	extras/Tests/lang.statementIf.ci:37: (38 bytes): raise(debug, "t != 0", variant(t), 9);
+	1c 03 00 00 00 00 00 00 00 load.c64 3
+	6a                         i64.2i32
+	1f ff a8 00 00             load.ref .00a8ff ;"t != 0"
+	1f 70 03 00 00             load.ref .000370 ;int32
+	11 0c 00 00                load.sp(+12)
 	1c 09 00 00 00 00 00 00 00 load.c64 9
 	6a                         i64.2i32
-	1f 70 03 00 00             load.ref .000370 ;int32
-	11 10 00 00                load.sp(+16)
-	1f df a8 00 00             load.ref .00a8df ;"t != 0"
-	1c 03 00 00 00 00 00 00 00 load.c64 3
-	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
-	04 38 00 00                jmp +56
-	extras/Tests/lang.statementIf.ci:40: (48 bytes): raise(debug, "t == 0", variant(t), 10);
-	1b 28 00 00 00             load.c32 40
-	1f 78 a6 00 00             load.ref .00a678 ;"extras/Tests/lang.statementIf.ci"
+	04 2e 00 00                jmp +46
+	extras/Tests/lang.statementIf.ci:40: (38 bytes): raise(debug, "t == 0", variant(t), 10);
+	1c 03 00 00 00 00 00 00 00 load.c64 3
+	6a                         i64.2i32
+	1f f8 a8 00 00             load.ref .00a8f8 ;"t == 0"
+	1f 70 03 00 00             load.ref .000370 ;int32
+	11 0c 00 00                load.sp(+12)
 	1c 0a 00 00 00 00 00 00 00 load.c64 10
 	6a                         i64.2i32
-	1f 70 03 00 00             load.ref .000370 ;int32
-	11 10 00 00                load.sp(+16)
-	1f d8 a8 00 00             load.ref .00a8d8 ;"t == 0"
-	1c 03 00 00 00 00 00 00 00 load.c64 3
-	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
-	extras/Tests/lang.statementIf.ci:43: (129 bytes): if (t != 0)
+	extras/Tests/lang.statementIf.ci:43: (109 bytes): if (t != 0)
 	11 00 00 00                load.sp(+0)
 	22                         load.m32
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	57                         ceq.i32
 	0a                         not.b32
-	06 3c 00 00                jz +60
-	extras/Tests/lang.statementIf.ci:44: (48 bytes): raise(debug, "t != 0", variant(t), 11);
-	1b 2c 00 00 00             load.c32 44
-	1f 78 a6 00 00             load.ref .00a678 ;"extras/Tests/lang.statementIf.ci"
+	06 32 00 00                jz +50
+	extras/Tests/lang.statementIf.ci:44: (38 bytes): raise(debug, "t != 0", variant(t), 11);
+	1c 03 00 00 00 00 00 00 00 load.c64 3
+	6a                         i64.2i32
+	1f ff a8 00 00             load.ref .00a8ff ;"t != 0"
+	1f 70 03 00 00             load.ref .000370 ;int32
+	11 0c 00 00                load.sp(+12)
 	1c 0b 00 00 00 00 00 00 00 load.c64 11
 	6a                         i64.2i32
-	1f 70 03 00 00             load.ref .000370 ;int32
-	11 10 00 00                load.sp(+16)
-	1f df a8 00 00             load.ref .00a8df ;"t != 0"
-	1c 03 00 00 00 00 00 00 00 load.c64 3
-	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
-	04 38 00 00                jmp +56
-	extras/Tests/lang.statementIf.ci:47: (48 bytes): raise(debug, "t == 0", variant(t), 12);
-	1b 2f 00 00 00             load.c32 47
-	1f 78 a6 00 00             load.ref .00a678 ;"extras/Tests/lang.statementIf.ci"
+	04 2e 00 00                jmp +46
+	extras/Tests/lang.statementIf.ci:47: (38 bytes): raise(debug, "t == 0", variant(t), 12);
+	1c 03 00 00 00 00 00 00 00 load.c64 3
+	6a                         i64.2i32
+	1f f8 a8 00 00             load.ref .00a8f8 ;"t == 0"
+	1f 70 03 00 00             load.ref .000370 ;int32
+	11 0c 00 00                load.sp(+12)
 	1c 0c 00 00 00 00 00 00 00 load.c64 12
 	6a                         i64.2i32
-	1f 70 03 00 00             load.ref .000370 ;int32
-	11 10 00 00                load.sp(+16)
-	1f d8 a8 00 00             load.ref .00a8d8 ;"t == 0"
-	1c 03 00 00 00 00 00 00 00 load.c64 3
-	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
-	extras/Tests/lang.statementFor.ci:3: (65 bytes): for ( ; ; )
-	04 3d 00 00                jmp +61
-	extras/Tests/lang.statementFor.ci:4: (49 bytes): raise(debug, "for ( ; ; )", null, defTrace);
-	1b 04 00 00 00             load.c32 4
-	1f 99 a6 00 00             load.ref .00a699 ;"extras/Tests/lang.statementFor.ci"
-	1c 80 00 00 00 00 00 00 00 load.c64 128
+	extras/Tests/lang.statementFor.ci:3: (55 bytes): for ( ; ; )
+	04 33 00 00                jmp +51
+	extras/Tests/lang.statementFor.ci:4: (39 bytes): raise(debug, "for ( ; ; )", null, defTrace);
+	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
+	1f c0 a9 00 00             load.ref .00a9c0 ;"for ( ; ; )"
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	1f 00 00 00 00             load.ref .000000 ;null
-	1f a0 a9 00 00             load.ref .00a9a0 ;"for ( ; ; )"
-	1c 03 00 00 00 00 00 00 00 load.c64 3
+	1c 80 00 00 00 00 00 00 00 load.c64 128
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	extras/Tests/lang.statementFor.ci:5: (4 bytes): break;
 	04 0c 00 00                jmp +12
 	10 00 00 00                inc.sp(+0)
-	04 c7 ff ff                jmp -57
+	04 d1 ff ff                jmp -47
 	extras/Tests/lang.statementFor.ci:8: (4 bytes): forIdx: int32
 	10 04 00 00                inc.sp(+4)
-	extras/Tests/lang.statementFor.ci:9: (120 bytes): for (forIdx := 0; forIdx < 2; forIdx := forIdx + 1)
+	extras/Tests/lang.statementFor.ci:9: (110 bytes): for (forIdx := 0; forIdx < 2; forIdx := forIdx + 1)
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	11 04 00 00                load.sp(+4)
 	27                         store.m32
 	10 00 00 00                inc.sp(+0)
-	04 51 00 00                jmp +81
-	extras/Tests/lang.statementFor.ci:10: (48 bytes): raise(debug, "forIdx", variant(forIdx), defTrace);
-	1b 0a 00 00 00             load.c32 10
-	1f 99 a6 00 00             load.ref .00a699 ;"extras/Tests/lang.statementFor.ci"
-	1c 80 00 00 00 00 00 00 00 load.c64 128
-	6a                         i64.2i32
-	1f 70 03 00 00             load.ref .000370 ;int32
-	11 10 00 00                load.sp(+16)
-	1f ac a9 00 00             load.ref .00a9ac ;"forIdx"
+	04 47 00 00                jmp +71
+	extras/Tests/lang.statementFor.ci:10: (38 bytes): raise(debug, "forIdx", variant(forIdx), defTrace);
 	1c 03 00 00 00 00 00 00 00 load.c64 3
+	6a                         i64.2i32
+	1f cc a9 00 00             load.ref .00a9cc ;"forIdx"
+	1f 70 03 00 00             load.ref .000370 ;int32
+	11 0c 00 00                load.sp(+12)
+	1c 80 00 00 00 00 00 00 00 load.c64 128
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
@@ -6026,20 +6207,18 @@ val2: int64 {
 	1c 02 00 00 00 00 00 00 00 load.c64 2
 	6a                         i64.2i32
 	58                         clt.i32
-	05 a3 ff ff                jnz -93
-	extras/Tests/lang.statementFor.ci:13: (115 bytes): for (i: int32 := 0; i < 2; i := i + 1)
+	05 ad ff ff                jnz -83
+	extras/Tests/lang.statementFor.ci:13: (105 bytes): for (i: int32 := 0; i < 2; i := i + 1)
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
-	04 51 00 00                jmp +81
-	extras/Tests/lang.statementFor.ci:14: (48 bytes): raise(debug, "for.i", variant(i), defTrace);
-	1b 0e 00 00 00             load.c32 14
-	1f 99 a6 00 00             load.ref .00a699 ;"extras/Tests/lang.statementFor.ci"
-	1c 80 00 00 00 00 00 00 00 load.c64 128
-	6a                         i64.2i32
-	1f 70 03 00 00             load.ref .000370 ;int32
-	11 10 00 00                load.sp(+16)
-	1f b5 a9 00 00             load.ref .00a9b5 ;"for.i"
+	04 47 00 00                jmp +71
+	extras/Tests/lang.statementFor.ci:14: (38 bytes): raise(debug, "for.i", variant(i), defTrace);
 	1c 03 00 00 00 00 00 00 00 load.c64 3
+	6a                         i64.2i32
+	1f d5 a9 00 00             load.ref .00a9d5 ;"for.i"
+	1f 70 03 00 00             load.ref .000370 ;int32
+	11 0c 00 00                load.sp(+12)
+	1c 80 00 00 00 00 00 00 00 load.c64 128
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	10 00 00 00                inc.sp(+0)
@@ -6058,7 +6237,7 @@ val2: int64 {
 	1c 02 00 00 00 00 00 00 00 load.c64 2
 	6a                         i64.2i32
 	58                         clt.i32
-	05 a3 ff ff                jnz -93
+	05 ad ff ff                jnz -83
 	10 fc ff ff                inc.sp(-4)
 	extras/Tests/lang.inlineArgs.ci:13: (10 bytes): ma: int32 := 3
 	1c 03 00 00 00 00 00 00 00 load.c64 3
@@ -6069,28 +6248,69 @@ val2: int64 {
 	extras/Tests/lang.inlineArgs.ci:15: (10 bytes): mc: int32 := 9
 	1c 09 00 00 00 00 00 00 00 load.c64 9
 	6a                         i64.2i32
-	extras/Tests/lang.inlineArgs.ci:17: (10 bytes): zeroVal: int32 := zero(2, 3)
+	extras/Tests/lang.inlineArgs.ci:17: (39 bytes): zeroVal: int32 := zero(2, 3)
+	1c 02 00 00 00 00 00 00 00 load.c64 2
+	6a                         i64.2i32
+	1c 03 00 00 00 00 00 00 00 load.c64 3
+	6a                         i64.2i32
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
-	extras/Tests/lang.inlineArgs.ci:18: (10 bytes): zeroVar: int32 := zero(ma, mb)
+	11 08 00 00                load.sp(+8)
+	27                         store.m32
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/lang.inlineArgs.ci:18: (29 bytes): zeroVar: int32 := zero(ma, mb)
+	11 0c 00 00                load.sp(+12)
+	22                         load.m32
+	11 0c 00 00                load.sp(+12)
+	22                         load.m32
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
-	extras/Tests/lang.inlineArgs.ci:19: (10 bytes): zeroXpr: int32 := zero(ma + mb, mb + mc)
+	11 08 00 00                load.sp(+8)
+	27                         store.m32
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/lang.inlineArgs.ci:19: (41 bytes): zeroXpr: int32 := zero(ma + mb, mb + mc)
+	11 10 00 00                load.sp(+16)
+	22                         load.m32
+	11 10 00 00                load.sp(+16)
+	22                         load.m32
+	51                         add.i32
+	11 10 00 00                load.sp(+16)
+	22                         load.m32
+	11 10 00 00                load.sp(+16)
+	22                         load.m32
+	51                         add.i32
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
-	extras/Tests/lang.inlineArgs.ci:26: (21 bytes): sum2Val: int32 := sum(3, 12)
+	11 08 00 00                load.sp(+8)
+	27                         store.m32
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/lang.inlineArgs.ci:26: (40 bytes): sum2Val: int32 := sum(3, 12)
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
 	1c 0c 00 00 00 00 00 00 00 load.c64 12
 	6a                         i64.2i32
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
 	51                         add.i32
-	extras/Tests/lang.inlineArgs.ci:27: (11 bytes): sum2Var: int32 := sum(ma, mb)
+	11 08 00 00                load.sp(+8)
+	27                         store.m32
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/lang.inlineArgs.ci:27: (30 bytes): sum2Var: int32 := sum(ma, mb)
 	11 18 00 00                load.sp(+24)
 	22                         load.m32
 	11 18 00 00                load.sp(+24)
 	22                         load.m32
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
 	51                         add.i32
-	extras/Tests/lang.inlineArgs.ci:28: (23 bytes): sum2Xpr: int32 := sum(ma + mb, mb + mc)
+	11 08 00 00                load.sp(+8)
+	27                         store.m32
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/lang.inlineArgs.ci:28: (42 bytes): sum2Xpr: int32 := sum(ma + mb, mb + mc)
 	11 1c 00 00                load.sp(+28)
 	22                         load.m32
 	11 1c 00 00                load.sp(+28)
@@ -6101,94 +6321,134 @@ val2: int64 {
 	11 1c 00 00                load.sp(+28)
 	22                         load.m32
 	51                         add.i32
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
 	51                         add.i32
-	extras/Tests/lang.inlineArgs.ci:30: (39 bytes): any2Val: int32 := any(3, 12)
+	11 08 00 00                load.sp(+8)
+	27                         store.m32
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/lang.inlineArgs.ci:30: (53 bytes): any2Val: int32 := any(3, 12)
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
-	5a                         i32.2bool
-	06 12 00 00                jz +18
-	1c 03 00 00 00 00 00 00 00 load.c64 3
-	6a                         i64.2i32
-	04 0e 00 00                jmp +14
 	1c 0c 00 00 00 00 00 00 00 load.c64 12
 	6a                         i64.2i32
-	extras/Tests/lang.inlineArgs.ci:31: (24 bytes): any2Var: int32 := any(ma, mb)
-	11 24 00 00                load.sp(+36)
+	11 04 00 00                load.sp(+4)
 	22                         load.m32
 	5a                         i32.2bool
 	06 0d 00 00                jz +13
-	11 24 00 00                load.sp(+36)
+	11 04 00 00                load.sp(+4)
 	22                         load.m32
 	04 09 00 00                jmp +9
-	11 20 00 00                load.sp(+32)
+	11 00 00 00                load.sp(+0)
 	22                         load.m32
-	extras/Tests/lang.inlineArgs.ci:32: (42 bytes): any2Xpr: int32 := any(ma + mb, mb + mc)
-	11 28 00 00                load.sp(+40)
+	11 08 00 00                load.sp(+8)
+	27                         store.m32
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/lang.inlineArgs.ci:31: (43 bytes): any2Var: int32 := any(ma, mb)
+	11 24 00 00                load.sp(+36)
 	22                         load.m32
-	11 28 00 00                load.sp(+40)
+	11 24 00 00                load.sp(+36)
 	22                         load.m32
-	51                         add.i32
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
 	5a                         i32.2bool
-	06 13 00 00                jz +19
+	06 0d 00 00                jz +13
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	04 09 00 00                jmp +9
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
+	11 08 00 00                load.sp(+8)
+	27                         store.m32
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/lang.inlineArgs.ci:32: (55 bytes): any2Xpr: int32 := any(ma + mb, mb + mc)
 	11 28 00 00                load.sp(+40)
 	22                         load.m32
 	11 28 00 00                load.sp(+40)
 	22                         load.m32
 	51                         add.i32
-	04 0f 00 00                jmp +15
-	11 24 00 00                load.sp(+36)
+	11 28 00 00                load.sp(+40)
 	22                         load.m32
-	11 24 00 00                load.sp(+36)
+	11 28 00 00                load.sp(+40)
 	22                         load.m32
 	51                         add.i32
-	extras/Tests/lang.inlineArgs.ci:34: (49 bytes): min2Val: int32 := min(3, 12)
-	1c 03 00 00 00 00 00 00 00 load.c64 3
-	6a                         i64.2i32
-	1c 0c 00 00 00 00 00 00 00 load.c64 12
-	6a                         i64.2i32
-	58                         clt.i32
-	06 12 00 00                jz +18
-	1c 03 00 00 00 00 00 00 00 load.c64 3
-	6a                         i64.2i32
-	04 0e 00 00                jmp +14
-	1c 0c 00 00 00 00 00 00 00 load.c64 12
-	6a                         i64.2i32
-	extras/Tests/lang.inlineArgs.ci:35: (29 bytes): min2Var: int32 := min(ma, mb)
-	11 30 00 00                load.sp(+48)
+	11 04 00 00                load.sp(+4)
 	22                         load.m32
-	11 30 00 00                load.sp(+48)
+	5a                         i32.2bool
+	06 0d 00 00                jz +13
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	04 09 00 00                jmp +9
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
+	11 08 00 00                load.sp(+8)
+	27                         store.m32
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/lang.inlineArgs.ci:34: (58 bytes): min2Val: int32 := min(3, 12)
+	1c 03 00 00 00 00 00 00 00 load.c64 3
+	6a                         i64.2i32
+	1c 0c 00 00 00 00 00 00 00 load.c64 12
+	6a                         i64.2i32
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	11 04 00 00                load.sp(+4)
 	22                         load.m32
 	58                         clt.i32
 	06 0d 00 00                jz +13
-	11 30 00 00                load.sp(+48)
+	11 04 00 00                load.sp(+4)
 	22                         load.m32
 	04 09 00 00                jmp +9
-	11 2c 00 00                load.sp(+44)
+	11 00 00 00                load.sp(+0)
 	22                         load.m32
-	extras/Tests/lang.inlineArgs.ci:36: (53 bytes): min2Xpr: int32 := min(ma + mb, mb + mc)
-	11 34 00 00                load.sp(+52)
+	11 08 00 00                load.sp(+8)
+	27                         store.m32
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/lang.inlineArgs.ci:35: (48 bytes): min2Var: int32 := min(ma, mb)
+	11 30 00 00                load.sp(+48)
 	22                         load.m32
-	11 34 00 00                load.sp(+52)
+	11 30 00 00                load.sp(+48)
 	22                         load.m32
-	51                         add.i32
-	11 34 00 00                load.sp(+52)
+	11 04 00 00                load.sp(+4)
 	22                         load.m32
-	11 34 00 00                load.sp(+52)
+	11 04 00 00                load.sp(+4)
 	22                         load.m32
-	51                         add.i32
 	58                         clt.i32
-	06 13 00 00                jz +19
+	06 0d 00 00                jz +13
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	04 09 00 00                jmp +9
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
+	11 08 00 00                load.sp(+8)
+	27                         store.m32
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/lang.inlineArgs.ci:36: (60 bytes): min2Xpr: int32 := min(ma + mb, mb + mc)
 	11 34 00 00                load.sp(+52)
 	22                         load.m32
 	11 34 00 00                load.sp(+52)
 	22                         load.m32
 	51                         add.i32
-	04 0f 00 00                jmp +15
-	11 30 00 00                load.sp(+48)
+	11 34 00 00                load.sp(+52)
 	22                         load.m32
-	11 30 00 00                load.sp(+48)
+	11 34 00 00                load.sp(+52)
 	22                         load.m32
 	51                         add.i32
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	58                         clt.i32
+	06 0d 00 00                jz +13
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	04 09 00 00                jmp +9
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
+	11 08 00 00                load.sp(+8)
+	27                         store.m32
+	10 fc ff ff                inc.sp(-4)
 	extras/Tests/test.inlineOverload.ci:9: (10 bytes): overload1: float32 := overload
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6b                         i64.2f32
@@ -6196,17 +6456,29 @@ val2: int64 {
 	1c 02 00 00 00 00 00 00 00 load.c64 2
 	6a                         i64.2i32
 	5b                         i32.2f32
-	extras/Tests/test.inlineOverload.ci:11: (11 bytes): overload3: float32 := overload(0)
+	extras/Tests/test.inlineOverload.ci:11: (30 bytes): overload3: float32 := overload(0)
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
 	5b                         i32.2f32
 	extras/Tests/test.inlineOverload.ci:12: (11 bytes): overload4: float32 := overload(0.000000)
 	1c 01 00 00 00 00 00 00 00 load.c64 1
 	6a                         i64.2i32
 	5b                         i32.2f32
-	extras/Tests/test.inlineOverload.ci:13: (11 bytes): overload5: float32 := overload(0, 0)
+	extras/Tests/test.inlineOverload.ci:13: (40 bytes): overload5: float32 := overload(0, 0)
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
 	1c 05 00 00 00 00 00 00 00 load.c64 5
 	6a                         i64.2i32
+	11 08 00 00                load.sp(+8)
+	27                         store.m32
+	10 fc ff ff                inc.sp(-4)
 	5b                         i32.2f32
 	extras/Tests/lang.inlineEmit.ci:3: (1 bytes): emitldz32: int32 := emit(load.z32)
 	18                         load.z32
@@ -6224,89 +6496,184 @@ val2: int64 {
 	11 08 00 00                load.sp(+8)
 	22                         load.m32
 	51                         add.i32
-	extras/Tests/lang.reflection.ci:5: (10 bytes): sizeofVoid: int32 := sizeof(void)
+	extras/Tests/lang.reflection.ci:5: (24 bytes): sizeofVoid: int32 := sizeof(void)
 	1f a0 00 00 00             load.ref .0000a0 ;void
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:6: (10 bytes): sizeofBool: int32 := sizeof(bool)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:6: (24 bytes): sizeofBool: int32 := sizeof(bool)
 	1f 30 01 00 00             load.ref .000130 ;bool
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:7: (10 bytes): sizeofChar: int32 := sizeof(char)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:7: (24 bytes): sizeofChar: int32 := sizeof(char)
 	1f c0 01 00 00             load.ref .0001c0 ;char
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:8: (10 bytes): sizeofInt8: int32 := sizeof(int8)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:8: (24 bytes): sizeofInt8: int32 := sizeof(int8)
 	1f 50 02 00 00             load.ref .000250 ;int8
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:9: (10 bytes): sizeofInt16: int32 := sizeof(int16)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:9: (24 bytes): sizeofInt16: int32 := sizeof(int16)
 	1f e0 02 00 00             load.ref .0002e0 ;int16
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:10: (10 bytes): sizeofInt32: int32 := sizeof(int32)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:10: (24 bytes): sizeofInt32: int32 := sizeof(int32)
 	1f 70 03 00 00             load.ref .000370 ;int32
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:11: (10 bytes): sizeofInt64: int32 := sizeof(int64)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:11: (24 bytes): sizeofInt64: int32 := sizeof(int64)
 	1f 00 04 00 00             load.ref .000400 ;int64
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:12: (10 bytes): sizeofUint8: int32 := sizeof(uint8)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:12: (24 bytes): sizeofUint8: int32 := sizeof(uint8)
 	1f 90 04 00 00             load.ref .000490 ;uint8
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:13: (10 bytes): sizeofUint16: int32 := sizeof(uint16)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:13: (24 bytes): sizeofUint16: int32 := sizeof(uint16)
 	1f 20 05 00 00             load.ref .000520 ;uint16
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:14: (10 bytes): sizeofUint32: int32 := sizeof(uint32)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:14: (24 bytes): sizeofUint32: int32 := sizeof(uint32)
 	1f b0 05 00 00             load.ref .0005b0 ;uint32
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:15: (10 bytes): sizeofUint64: int32 := sizeof(uint64)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:15: (24 bytes): sizeofUint64: int32 := sizeof(uint64)
 	1f 40 06 00 00             load.ref .000640 ;uint64
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:16: (10 bytes): sizeofFloat32: int32 := sizeof(float32)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:16: (24 bytes): sizeofFloat32: int32 := sizeof(float32)
 	1f d0 06 00 00             load.ref .0006d0 ;float32
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:17: (10 bytes): sizeofFloat64: int32 := sizeof(float64)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:17: (24 bytes): sizeofFloat64: int32 := sizeof(float64)
 	1f 60 07 00 00             load.ref .000760 ;float64
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:18: (10 bytes): sizeofPointer: int32 := sizeof(pointer)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:18: (24 bytes): sizeofPointer: int32 := sizeof(pointer)
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:19: (10 bytes): sizeofVariant: int32 := sizeof(variant)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:19: (24 bytes): sizeofVariant: int32 := sizeof(variant)
 	1f 80 08 00 00             load.ref .000880 ;variant
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:20: (10 bytes): sizeofTypename: int32 := sizeof(typename)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:20: (24 bytes): sizeofTypename: int32 := sizeof(typename)
 	1f 08 00 00 00             load.ref .000008 ;typename
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:21: (10 bytes): sizeofFunction: int32 := sizeof(function)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:21: (24 bytes): sizeofFunction: int32 := sizeof(function)
 	1f 10 09 00 00             load.ref .000910 ;function
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.reflection.ci:22: (10 bytes): sizeofObject: int32 := sizeof(object)
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/lang.reflection.ci:22: (24 bytes): sizeofObject: int32 := sizeof(object)
 	1f a8 09 00 00             load.ref .0009a8 ;object
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
 	extras/Tests/lang.reflection.ci:32: (5 bytes): typeofRecord: typename := RecordSizeofExt
-	1f 38 fe 00 00             load.ref .00fe38 ;RecordSizeofExt
+	1f 58 fe 00 00             load.ref .00fe58 ;RecordSizeofExt
 	extras/Tests/lang.reflection.ci:33: (9 bytes): nameOfRecord: char[*] := typename.name(typeofRecord)
 	11 00 00 00                load.sp(+0)
 	22                         load.m32
 	01 04 00 00                nfc(4) ;typename.name(type: typename): .cstr
-	extras/Tests/lang.reflection.ci:34: (10 bytes): sizeOfRecord: int32 := sizeof(typeofRecord)
+	extras/Tests/lang.reflection.ci:34: (24 bytes): sizeOfRecord: int32 := sizeof(typeofRecord)
 	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	11 00 00 00                load.sp(+0)
 	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
 	extras/Tests/lang.reflection.ci:35: (9 bytes): fileOfRecord: char[*] := typename.file(typeofRecord)
 	11 08 00 00                load.sp(+8)
 	22                         load.m32
@@ -6323,11 +6690,16 @@ val2: int64 {
 	11 00 00 00                load.sp(+0)
 	22                         load.m32
 	01 04 00 00                nfc(4) ;typename.name(type: typename): .cstr
-	extras/Tests/lang.reflection.ci:40: (10 bytes): sizeOfBase: int32 := sizeof(typeofBase)
+	extras/Tests/lang.reflection.ci:40: (24 bytes): sizeOfBase: int32 := sizeof(typeofBase)
 	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	11 00 00 00                load.sp(+0)
 	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
 	extras/Tests/lang.reflection.ci:41: (9 bytes): fileOfBase: char[*] := typename.file(typeofBase)
 	11 08 00 00                load.sp(+8)
 	22                         load.m32
@@ -6354,6 +6726,64 @@ val2: int64 {
 	22                         load.m32
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
+	extras/Tests/lang.function.ci:10: (40 bytes): funAddResult: int32 := funAdd(2, 7)
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
+	1c 02 00 00 00 00 00 00 00 load.c64 2
+	6a                         i64.2i32
+	1c 07 00 00 00 00 00 00 00 load.c64 7
+	6a                         i64.2i32
+	1f 05 11 02 00             load.ref .021105 ;funAdd(x: int32, y: int32): int32
+	02                         call
+	10 f8 ff ff                inc.sp(-8)
+	extras/Tests/lang.function.ci:13: (5 bytes): funAddRef(x: int32, y: int32): int32 := funAdd
+	1f 05 11 02 00             load.ref .021105 ;funAdd(x: int32, y: int32): int32
+	extras/Tests/lang.function.ci:16: (40 bytes): funAddRefResult: int32 := funAddRef(2, 8)
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
+	1c 02 00 00 00 00 00 00 00 load.c64 2
+	6a                         i64.2i32
+	1c 08 00 00 00 00 00 00 00 load.c64 8
+	6a                         i64.2i32
+	11 0c 00 00                load.sp(+12)
+	22                         load.m32
+	02                         call
+	10 f8 ff ff                inc.sp(-8)
+	extras/Tests/lang.function.ci:19: (5 bytes): funMul(x: int32, y: int32): int32 := funMul
+	1f 23 11 02 00             load.ref .021123 ;funMul(x: int32, y: int32): int32
+	extras/Tests/lang.function.ci:22: (40 bytes): funMulResult: int32 := funMul(2, 6)
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
+	1c 02 00 00 00 00 00 00 00 load.c64 2
+	6a                         i64.2i32
+	1c 06 00 00 00 00 00 00 00 load.c64 6
+	6a                         i64.2i32
+	11 0c 00 00                load.sp(+12)
+	22                         load.m32
+	02                         call
+	10 f8 ff ff                inc.sp(-8)
+	extras/Tests/lang.function.ci:25: (5 bytes): funMulRef(x: int32, y: int32): int32 := funMul
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	extras/Tests/lang.function.ci:28: (40 bytes): funMulRefResult: int32 := funMulRef(2, 7)
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
+	1c 02 00 00 00 00 00 00 00 load.c64 2
+	6a                         i64.2i32
+	1c 07 00 00 00 00 00 00 00 load.c64 7
+	6a                         i64.2i32
+	11 0c 00 00                load.sp(+12)
+	22                         load.m32
+	02                         call
+	10 f8 ff ff                inc.sp(-8)
+	extras/Tests/lang.function.ci:46: (30 bytes): fibonacci_13: uint32 := fib(13)
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
+	1c 0d 00 00 00 00 00 00 00 load.c64 13
+	6a                         i64.2i32
+	1f 41 11 02 00             load.ref .021141 ;fib(n: uint32): uint32
+	02                         call
+	10 fc ff ff                inc.sp(-4)
 	extras/Tests/lang.useOperator.ci:5: (10 bytes): shift: int32 := 2
 	1c 02 00 00 00 00 00 00 00 load.c64 2
 	6a                         i64.2i32
@@ -7741,20 +8171,20 @@ val2: int64 {
 	22                         load.m32
 	extras/Tests/lang.varInitArray.ci:37: (10 bytes): arrSliceInitString: char[] := "string"
 	1b 06 00 00 00             load.c32 6
-	1f 40 94 01 00             load.ref .019440 ;"string"
+	1f c8 a4 01 00             load.ref .01a4c8 ;"string"
 	extras/Tests/lang.varInitArray.ci:38: (5 bytes): arrPtrInitString: char[*] := "string"
-	1f 40 94 01 00             load.ref .019440 ;"string"
+	1f c8 a4 01 00             load.ref .01a4c8 ;"string"
 	extras/Tests/lang.varInitByRef.ci:7: (15 bytes): static value: int64 := 42
 	1c 2a 00 00 00 00 00 00 00 load.c64 42
-	1f 78 00 02 00             load.ref .020078 ;value
+	1f 00 12 02 00             load.ref .021200 ;value
 	28                         store.m64
 	extras/Tests/lang.varInitByRef.ci:8: (5 bytes): valueRef: int64 := value
-	1f 78 00 02 00             load.ref .020078 ;value
+	1f 00 12 02 00             load.ref .021200 ;value
 	extras/Tests/lang.varInitByRef.ci:9: (5 bytes): valuePtr: pointer := value
-	1f 78 00 02 00             load.ref .020078 ;value
+	1f 00 12 02 00             load.ref .021200 ;value
 	extras/Tests/lang.varInitByRef.ci:10: (10 bytes): valueVar: variant := value
 	1f 00 04 00 00             load.ref .000400 ;int64
-	1f 78 00 02 00             load.ref .020078 ;value
+	1f 00 12 02 00             load.ref .021200 ;value
 	extras/Tests/lang.varInitByRef.ci:12: (6 bytes): fromRef: int64 := valueRef
 	11 0c 00 00                load.sp(+12)
 	22                         load.m32
@@ -7786,7 +8216,7 @@ val2: int64 {
 	extras/Tests/lang.varInitByRef.ci:25: (5 bytes): typeTyp: typename := int64
 	1f 00 04 00 00             load.ref .000400 ;int64
 	extras/Tests/lang.varInitByRef.ci:27: (6 bytes): local: int64 := value
-	1f 78 00 02 00             load.ref .020078 ;value
+	1f 00 12 02 00             load.ref .021200 ;value
 	23                         load.m64
 	extras/Tests/lang.varInitByRef.ci:28: (5 bytes): copyVal: int64 := local
 	11 00 00 00                load.sp(+0)
@@ -7930,10 +8360,10 @@ val2: int64 {
 	extras/Tests/lang.varInitByRef.ci:92: (5 bytes): typObject: typename := object
 	1f a8 09 00 00             load.ref .0009a8 ;object
 	extras/Tests/lang.varInitByRef.ci:95: (5 bytes): valueOfPtr: pointer := pointer(value)
-	1f 78 00 02 00             load.ref .020078 ;value
+	1f 00 12 02 00             load.ref .021200 ;value
 	extras/Tests/lang.varInitByRef.ci:96: (10 bytes): valueOfVar: variant := variant(value)
 	1f 00 04 00 00             load.ref .000400 ;int64
-	1f 78 00 02 00             load.ref .020078 ;value
+	1f 00 12 02 00             load.ref .021200 ;value
 	extras/Tests/lang.varInitByRef.ci:97: (5 bytes): valueOfTyp: typename := typename(value)
 	1f 00 04 00 00             load.ref .000400 ;int64
 	extras/Tests/lang.varInitByRef.ci:99: (5 bytes): typeOfValue: typename := typename(value)
@@ -7951,7 +8381,7 @@ val2: int64 {
 	1c 2a 00 00 00 00 00 00 00 load.c64 42
 	extras/Tests/lang.varInitByVal.ci:10: (15 bytes): static globalInitValue: int64 := 1024
 	1c 00 04 00 00 00 00 00 00 load.c64 1024
-	1f 88 00 02 00             load.ref .020088 ;globalInitValue
+	1f 10 12 02 00             load.ref .021210 ;globalInitValue
 	28                         store.m64
 	extras/Tests/lang.varInitByVal.ci:11: (5 bytes): localInitLocal: int64 := localInitValue
 	11 00 00 00                load.sp(+0)
@@ -7959,15 +8389,15 @@ val2: int64 {
 	extras/Tests/lang.varInitByVal.ci:12: (11 bytes): static globalInitLocal: int64 := localInitValue
 	11 08 00 00                load.sp(+8)
 	23                         load.m64
-	1f 90 00 02 00             load.ref .020090 ;globalInitLocal
+	1f 18 12 02 00             load.ref .021218 ;globalInitLocal
 	28                         store.m64
 	extras/Tests/lang.varInitByVal.ci:13: (6 bytes): localInitGlobal: int64 := globalInitValue
-	1f 88 00 02 00             load.ref .020088 ;globalInitValue
+	1f 10 12 02 00             load.ref .021210 ;globalInitValue
 	23                         load.m64
 	extras/Tests/lang.varInitByVal.ci:14: (12 bytes): static globalInitGlobal: int64 := globalInitValue
-	1f 88 00 02 00             load.ref .020088 ;globalInitValue
+	1f 10 12 02 00             load.ref .021210 ;globalInitValue
 	23                         load.m64
-	1f 98 00 02 00             load.ref .020098 ;globalInitGlobal
+	1f 20 12 02 00             load.ref .021220 ;globalInitGlobal
 	28                         store.m64
 	extras/Tests/stdc.nfcNumber.ci:3: (9 bytes): pi64: float64 := 3.141593
 	1e 18 2d 44 54 fb 21 09 40 load.f64 3.141593
@@ -7999,7 +8429,13 @@ val2: int64 {
 	1c 03 00 00 00 00 00 00 00 load.c64 3
 	6a                         i64.2i32
 	3a                         shl.b32
-	extras/Tests/stdc.nfcNumber.ci:18: (83 bytes): r5g6b5: int32 := rgb565(r_comp, g_comp, b_comp)
+	extras/Tests/stdc.nfcNumber.ci:18: (107 bytes): r5g6b5: int32 := rgb565(r_comp, g_comp, b_comp)
+	11 08 00 00                load.sp(+8)
+	22                         load.m32
+	11 08 00 00                load.sp(+8)
+	22                         load.m32
+	11 08 00 00                load.sp(+8)
+	22                         load.m32
 	11 08 00 00                load.sp(+8)
 	22                         load.m32
 	1c 08 00 00 00 00 00 00 00 load.c64 8
@@ -8026,8 +8462,17 @@ val2: int64 {
 	6a                         i64.2i32
 	31                         and.b32
 	32                         or.b32
-	extras/Tests/stdc.nfcNumber.ci:19: (72 bytes): r8g8b8: int32 := rgb888(r_comp, g_comp, b_comp)
 	11 0c 00 00                load.sp(+12)
+	27                         store.m32
+	10 f8 ff ff                inc.sp(-8)
+	extras/Tests/stdc.nfcNumber.ci:19: (96 bytes): r8g8b8: int32 := rgb888(r_comp, g_comp, b_comp)
+	11 0c 00 00                load.sp(+12)
+	22                         load.m32
+	11 0c 00 00                load.sp(+12)
+	22                         load.m32
+	11 0c 00 00                load.sp(+12)
+	22                         load.m32
+	11 08 00 00                load.sp(+8)
 	22                         load.m32
 	1c 10 00 00 00 00 00 00 00 load.c64 16
 	6a                         i64.2i32
@@ -8035,7 +8480,7 @@ val2: int64 {
 	1c 00 00 ff 00 00 00 00 00 load.c64 16711680
 	6a                         i64.2i32
 	31                         and.b32
-	11 0c 00 00                load.sp(+12)
+	11 08 00 00                load.sp(+8)
 	22                         load.m32
 	1c 08 00 00 00 00 00 00 00 load.c64 8
 	6a                         i64.2i32
@@ -8044,107 +8489,110 @@ val2: int64 {
 	6a                         i64.2i32
 	31                         and.b32
 	32                         or.b32
-	11 08 00 00                load.sp(+8)
+	11 04 00 00                load.sp(+4)
 	22                         load.m32
 	1c ff 00 00 00 00 00 00 00 load.c64 255
 	6a                         i64.2i32
 	31                         and.b32
 	32                         or.b32
+	11 0c 00 00                load.sp(+12)
+	27                         store.m32
+	10 f8 ff ff                inc.sp(-8)
 	extras/Tests/stdc.nfcNumber.ci:21: (29 bytes): zxtR5: int32 := uint32.zxt(r5g6b5, 11, 5)
-	1c 05 00 00 00 00 00 00 00 load.c64 5
-	6a                         i64.2i32
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
 	1c 0b 00 00 00 00 00 00 00 load.c64 11
 	6a                         i64.2i32
-	11 0c 00 00                load.sp(+12)
-	22                         load.m32
+	1c 05 00 00 00 00 00 00 00 load.c64 5
+	6a                         i64.2i32
 	01 11 00 00                nfc(17) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
 	extras/Tests/stdc.nfcNumber.ci:22: (29 bytes): zxtG6: int32 := uint32.zxt(r5g6b5, 5, 6)
-	1c 06 00 00 00 00 00 00 00 load.c64 6
-	6a                         i64.2i32
+	11 08 00 00                load.sp(+8)
+	22                         load.m32
 	1c 05 00 00 00 00 00 00 00 load.c64 5
 	6a                         i64.2i32
-	11 10 00 00                load.sp(+16)
-	22                         load.m32
+	1c 06 00 00 00 00 00 00 00 load.c64 6
+	6a                         i64.2i32
 	01 11 00 00                nfc(17) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
 	extras/Tests/stdc.nfcNumber.ci:23: (29 bytes): zxtB5: int32 := uint32.zxt(r5g6b5, 0, 5)
-	1c 05 00 00 00 00 00 00 00 load.c64 5
-	6a                         i64.2i32
+	11 0c 00 00                load.sp(+12)
+	22                         load.m32
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
-	11 14 00 00                load.sp(+20)
-	22                         load.m32
+	1c 05 00 00 00 00 00 00 00 load.c64 5
+	6a                         i64.2i32
 	01 11 00 00                nfc(17) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
 	extras/Tests/stdc.nfcNumber.ci:25: (29 bytes): sxtR5: int32 := uint32.sxt(r5g6b5, 11, 5)
-	1c 05 00 00 00 00 00 00 00 load.c64 5
-	6a                         i64.2i32
+	11 10 00 00                load.sp(+16)
+	22                         load.m32
 	1c 0b 00 00 00 00 00 00 00 load.c64 11
 	6a                         i64.2i32
-	11 18 00 00                load.sp(+24)
-	22                         load.m32
+	1c 05 00 00 00 00 00 00 00 load.c64 5
+	6a                         i64.2i32
 	01 12 00 00                nfc(18) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
 	extras/Tests/stdc.nfcNumber.ci:26: (29 bytes): sxtG6: int32 := uint32.sxt(r5g6b5, 5, 6)
+	11 14 00 00                load.sp(+20)
+	22                         load.m32
+	1c 05 00 00 00 00 00 00 00 load.c64 5
+	6a                         i64.2i32
 	1c 06 00 00 00 00 00 00 00 load.c64 6
 	6a                         i64.2i32
-	1c 05 00 00 00 00 00 00 00 load.c64 5
-	6a                         i64.2i32
-	11 1c 00 00                load.sp(+28)
-	22                         load.m32
 	01 12 00 00                nfc(18) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
 	extras/Tests/stdc.nfcNumber.ci:27: (29 bytes): sxtB5: int32 := uint32.sxt(r5g6b5, 0, 5)
+	11 18 00 00                load.sp(+24)
+	22                         load.m32
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
 	1c 05 00 00 00 00 00 00 00 load.c64 5
 	6a                         i64.2i32
-	1c 00 00 00 00 00 00 00 00 load.c64 0
-	6a                         i64.2i32
-	11 20 00 00                load.sp(+32)
-	22                         load.m32
 	01 12 00 00                nfc(18) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
 	extras/Tests/stdc.nfcNumber.ci:29: (29 bytes): zxtR8: int32 := uint32.zxt(r8g8b8, 16, 8)
-	1c 08 00 00 00 00 00 00 00 load.c64 8
-	6a                         i64.2i32
+	11 18 00 00                load.sp(+24)
+	22                         load.m32
 	1c 10 00 00 00 00 00 00 00 load.c64 16
 	6a                         i64.2i32
-	11 20 00 00                load.sp(+32)
-	22                         load.m32
+	1c 08 00 00 00 00 00 00 00 load.c64 8
+	6a                         i64.2i32
 	01 11 00 00                nfc(17) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
 	extras/Tests/stdc.nfcNumber.ci:30: (29 bytes): zxtG8: int32 := uint32.zxt(r8g8b8, 8, 8)
-	1c 08 00 00 00 00 00 00 00 load.c64 8
-	6a                         i64.2i32
-	1c 08 00 00 00 00 00 00 00 load.c64 8
-	6a                         i64.2i32
-	11 24 00 00                load.sp(+36)
+	11 1c 00 00                load.sp(+28)
 	22                         load.m32
+	1c 08 00 00 00 00 00 00 00 load.c64 8
+	6a                         i64.2i32
+	1c 08 00 00 00 00 00 00 00 load.c64 8
+	6a                         i64.2i32
 	01 11 00 00                nfc(17) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
 	extras/Tests/stdc.nfcNumber.ci:31: (29 bytes): zxtB8: int32 := uint32.zxt(r8g8b8, 0, 8)
-	1c 08 00 00 00 00 00 00 00 load.c64 8
-	6a                         i64.2i32
+	11 20 00 00                load.sp(+32)
+	22                         load.m32
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
-	11 28 00 00                load.sp(+40)
-	22                         load.m32
+	1c 08 00 00 00 00 00 00 00 load.c64 8
+	6a                         i64.2i32
 	01 11 00 00                nfc(17) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
 	extras/Tests/stdc.nfcNumber.ci:33: (29 bytes): sxtR8: int32 := uint32.sxt(r8g8b8, 16, 8)
-	1c 08 00 00 00 00 00 00 00 load.c64 8
-	6a                         i64.2i32
+	11 24 00 00                load.sp(+36)
+	22                         load.m32
 	1c 10 00 00 00 00 00 00 00 load.c64 16
 	6a                         i64.2i32
-	11 2c 00 00                load.sp(+44)
-	22                         load.m32
+	1c 08 00 00 00 00 00 00 00 load.c64 8
+	6a                         i64.2i32
 	01 12 00 00                nfc(18) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
 	extras/Tests/stdc.nfcNumber.ci:34: (29 bytes): sxtG8: int32 := uint32.sxt(r8g8b8, 8, 8)
-	1c 08 00 00 00 00 00 00 00 load.c64 8
-	6a                         i64.2i32
-	1c 08 00 00 00 00 00 00 00 load.c64 8
-	6a                         i64.2i32
-	11 30 00 00                load.sp(+48)
+	11 28 00 00                load.sp(+40)
 	22                         load.m32
+	1c 08 00 00 00 00 00 00 00 load.c64 8
+	6a                         i64.2i32
+	1c 08 00 00 00 00 00 00 00 load.c64 8
+	6a                         i64.2i32
 	01 12 00 00                nfc(18) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
 	extras/Tests/stdc.nfcNumber.ci:35: (29 bytes): sxtB8: int32 := uint32.sxt(r8g8b8, 0, 8)
-	1c 08 00 00 00 00 00 00 00 load.c64 8
-	6a                         i64.2i32
+	11 2c 00 00                load.sp(+44)
+	22                         load.m32
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
-	11 34 00 00                load.sp(+52)
-	22                         load.m32
+	1c 08 00 00 00 00 00 00 00 load.c64 8
+	6a                         i64.2i32
 	01 12 00 00                nfc(18) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
 	extras/Tests/stdc.nfcNumber.ci:37: (21 bytes): sinF64: float64 := float64.sin(pi64 / (2))
 	11 54 00 00                load.sp(+84)
@@ -8184,12 +8632,12 @@ val2: int64 {
 	1e 00 00 00 00 00 00 f0 3f load.f64 1.000000
 	01 21 00 00                nfc(33) ;float64.exp(x: float64): float64
 	extras/Tests/stdc.nfcNumber.ci:42: (24 bytes): powF64: float64 := float64.pow(pi64 * pi64, 0.500000)
-	1e 00 00 00 00 00 00 e0 3f load.f64 0.500000
+	11 7c 00 00                load.sp(+124)
+	23                         load.m64
 	11 84 00 00                load.sp(+132)
 	23                         load.m64
-	11 8c 00 00                load.sp(+140)
-	23                         load.m64
 	83                         mul.f64
+	1e 00 00 00 00 00 00 e0 3f load.f64 0.500000
 	01 22 00 00                nfc(34) ;float64.pow(x: float64, y: float64): float64
 	extras/Tests/stdc.nfcNumber.ci:43: (15 bytes): sqrtF64: float64 := float64.sqrt(pi64 * pi64)
 	11 84 00 00                load.sp(+132)
@@ -8199,9 +8647,9 @@ val2: int64 {
 	83                         mul.f64
 	01 23 00 00                nfc(35) ;float64.sqrt(x: float64): float64
 	extras/Tests/stdc.nfcNumber.ci:44: (18 bytes): atanF64: float64 := float64.atan2(pi64, 1.000000)
-	1e 00 00 00 00 00 00 f0 3f load.f64 1.000000
-	11 94 00 00                load.sp(+148)
+	11 8c 00 00                load.sp(+140)
 	23                         load.m64
+	1e 00 00 00 00 00 00 f0 3f load.f64 1.000000
 	01 24 00 00                nfc(36) ;float64.atan2(x: float64, y: float64): float64
 	extras/Tests/stdc.nfcNumber.ci:46: (21 bytes): sinF32: float32 := float32.sin(pi32 / (2))
 	11 88 00 00                load.sp(+136)
@@ -8242,13 +8690,13 @@ val2: int64 {
 	8b                         f64.2f32
 	01 19 00 00                nfc(25) ;float32.exp(x: float32): float32
 	extras/Tests/stdc.nfcNumber.ci:51: (25 bytes): powF32: float32 := float32.pow(pi32 * pi32, 0.500000)
-	1e 00 00 00 00 00 00 e0 3f load.f64 0.500000
-	8b                         f64.2f32
+	11 9c 00 00                load.sp(+156)
+	22                         load.m32
 	11 a0 00 00                load.sp(+160)
 	22                         load.m32
-	11 a4 00 00                load.sp(+164)
-	22                         load.m32
 	73                         mul.f32
+	1e 00 00 00 00 00 00 e0 3f load.f64 0.500000
+	8b                         f64.2f32
 	01 1a 00 00                nfc(26) ;float32.pow(x: float32, y: float32): float32
 	extras/Tests/stdc.nfcNumber.ci:52: (15 bytes): sqrtF32: float32 := float32.sqrt(pi32 * pi32)
 	11 a0 00 00                load.sp(+160)
@@ -8258,138 +8706,170 @@ val2: int64 {
 	73                         mul.f32
 	01 1b 00 00                nfc(27) ;float32.sqrt(x: float32): float32
 	extras/Tests/stdc.nfcNumber.ci:53: (19 bytes): atanF32: float32 := float32.atan2(pi32, 1.000000)
+	11 a4 00 00                load.sp(+164)
+	22                         load.m32
 	1e 00 00 00 00 00 00 f0 3f load.f64 1.000000
 	8b                         f64.2f32
-	11 a8 00 00                load.sp(+168)
-	22                         load.m32
 	01 1c 00 00                nfc(28) ;float32.atan2(x: float32, y: float32): float32
-	extras/Tests/stdc.nfcMemory.ci:6: (19 bytes): p1: pointer := malloc(1024)
+	extras/Tests/stdc.nfcMemory.ci:6: (33 bytes): p1: pointer := malloc(1024)
 	1c 00 04 00 00 00 00 00 00 load.c64 1024
 	6a                         i64.2i32
 	1f 00 00 00 00             load.ref .000000 ;null
-	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
-	extras/Tests/stdc.nfcMemory.ci:7: (19 bytes): p2: pointer := malloc(80)
-	1c 50 00 00 00 00 00 00 00 load.c64 80
-	6a                         i64.2i32
-	1f 00 00 00 00             load.ref .000000 ;null
-	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
-	extras/Tests/stdc.nfcMemory.ci:8: (19 bytes): p3: pointer := malloc(160)
-	1c a0 00 00 00 00 00 00 00 load.c64 160
-	6a                         i64.2i32
-	1f 00 00 00 00             load.ref .000000 ;null
-	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
-	extras/Tests/stdc.nfcMemory.ci:9: (19 bytes): p4: pointer := malloc(820)
-	1c 34 03 00 00 00 00 00 00 load.c64 820
-	6a                         i64.2i32
-	1f 00 00 00 00             load.ref .000000 ;null
-	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
-	extras/Tests/stdc.nfcMemory.ci:12: (33 bytes): pointer.fill(p1, 0, 1024);
-	1c 00 04 00 00 00 00 00 00 load.c64 1024
-	6a                         i64.2i32
-	1c 00 00 00 00 00 00 00 00 load.c64 0
-	6a                         i64.2i32
-	11 14 00 00                load.sp(+20)
-	22                         load.m32
-	01 08 00 00                nfc(8) ;pointer.fill(dst: pointer, value: int32, size: int32): pointer
-	10 fc ff ff                inc.sp(-4)
-	extras/Tests/stdc.nfcMemory.ci:13: (28 bytes): pointer.copy(p1, p3, 160);
-	1c a0 00 00 00 00 00 00 00 load.c64 160
-	6a                         i64.2i32
-	11 08 00 00                load.sp(+8)
-	22                         load.m32
-	11 14 00 00                load.sp(+20)
-	22                         load.m32
-	01 09 00 00                nfc(9) ;pointer.copy(dst: pointer, src: pointer, size: int32): pointer
-	10 fc ff ff                inc.sp(-4)
-	extras/Tests/stdc.nfcMemory.ci:16: (23 bytes): free(p1);
-	1c 00 00 00 00 00 00 00 00 load.c64 0
-	6a                         i64.2i32
-	11 10 00 00                load.sp(+16)
-	22                         load.m32
-	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
-	10 fc ff ff                inc.sp(-4)
-	extras/Tests/stdc.nfcMemory.ci:17: (23 bytes): free(p2);
-	1c 00 00 00 00 00 00 00 00 load.c64 0
-	6a                         i64.2i32
-	11 0c 00 00                load.sp(+12)
-	22                         load.m32
-	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
-	10 fc ff ff                inc.sp(-4)
-	extras/Tests/stdc.nfcMemory.ci:18: (23 bytes): free(p3);
-	1c 00 00 00 00 00 00 00 00 load.c64 0
-	6a                         i64.2i32
-	11 08 00 00                load.sp(+8)
-	22                         load.m32
-	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
-	10 fc ff ff                inc.sp(-4)
-	extras/Tests/stdc.nfcMemory.ci:19: (23 bytes): free(p4);
-	1c 00 00 00 00 00 00 00 00 load.c64 0
-	6a                         i64.2i32
 	11 04 00 00                load.sp(+4)
 	22                         load.m32
 	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/stdc.nfcMemory.ci:7: (33 bytes): p2: pointer := malloc(80)
+	1c 50 00 00 00 00 00 00 00 load.c64 80
+	6a                         i64.2i32
+	1f 00 00 00 00             load.ref .000000 ;null
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/stdc.nfcMemory.ci:8: (33 bytes): p3: pointer := malloc(160)
+	1c a0 00 00 00 00 00 00 00 load.c64 160
+	6a                         i64.2i32
+	1f 00 00 00 00             load.ref .000000 ;null
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/stdc.nfcMemory.ci:9: (33 bytes): p4: pointer := malloc(820)
+	1c 34 03 00 00 00 00 00 00 load.c64 820
+	6a                         i64.2i32
+	1f 00 00 00 00             load.ref .000000 ;null
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	extras/Tests/stdc.nfcMemory.ci:12: (33 bytes): pointer.fill(p1, 0, 1024);
+	11 0c 00 00                load.sp(+12)
+	22                         load.m32
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
+	1c 00 04 00 00 00 00 00 00 load.c64 1024
+	6a                         i64.2i32
+	01 08 00 00                nfc(8) ;pointer.fill(dst: pointer, value: int32, size: int32): pointer
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/stdc.nfcMemory.ci:13: (28 bytes): pointer.copy(p1, p3, 160);
+	11 0c 00 00                load.sp(+12)
+	22                         load.m32
+	11 08 00 00                load.sp(+8)
+	22                         load.m32
+	1c a0 00 00 00 00 00 00 00 load.c64 160
+	6a                         i64.2i32
+	01 09 00 00                nfc(9) ;pointer.copy(dst: pointer, src: pointer, size: int32): pointer
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/stdc.nfcMemory.ci:16: (37 bytes): free(p1);
+	11 0c 00 00                load.sp(+12)
+	22                         load.m32
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
+	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/stdc.nfcMemory.ci:17: (37 bytes): free(p2);
+	11 08 00 00                load.sp(+8)
+	22                         load.m32
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
+	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/stdc.nfcMemory.ci:18: (37 bytes): free(p3);
+	11 04 00 00                load.sp(+4)
+	22                         load.m32
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
+	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
+	10 fc ff ff                inc.sp(-4)
+	extras/Tests/stdc.nfcMemory.ci:19: (37 bytes): free(p4);
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
+	11 00 00 00                load.sp(+0)
+	22                         load.m32
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
+	01 07 00 00                nfc(7) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	11 04 00 00                load.sp(+4)
+	27                         store.m32
+	10 00 00 00                inc.sp(+0)
 	10 fc ff ff                inc.sp(-4)
 	extras/Tests/stdc.nfcMemory.ci:22: (9 bytes): val1: int64 := 42
 	1c 2a 00 00 00 00 00 00 00 load.c64 42
 	extras/Tests/stdc.nfcMemory.ci:23: (9 bytes): val2: int64 := 96
 	1c 60 00 00 00 00 00 00 00 load.c64 96
-	extras/Tests/stdc.nfcMemory.ci:25: (48 bytes): raise(info, "val1", variant(val1), noTrace);
-	1b 19 00 00 00             load.c32 25
-	1f 21 a8 00 00             load.ref .00a821 ;"extras/Tests/stdc.nfcMemory.ci"
-	1c 00 00 00 00 00 00 00 00 load.c64 0
-	6a                         i64.2i32
-	1f 00 04 00 00             load.ref .000400 ;int64
-	11 18 00 00                load.sp(+24)
-	1f 65 f7 01 00             load.ref .01f765 ;"val1"
+	extras/Tests/stdc.nfcMemory.ci:25: (38 bytes): raise(info, "val1", variant(val1), noTrace);
 	1c 02 00 00 00 00 00 00 00 load.c64 2
+	6a                         i64.2i32
+	1f ed 07 02 00             load.ref .0207ed ;"val1"
+	1f 00 04 00 00             load.ref .000400 ;int64
+	11 14 00 00                load.sp(+20)
+	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/stdc.nfcMemory.ci:26: (48 bytes): raise(info, "val2", variant(val2), noTrace);
-	1b 1a 00 00 00             load.c32 26
-	1f 21 a8 00 00             load.ref .00a821 ;"extras/Tests/stdc.nfcMemory.ci"
-	1c 00 00 00 00 00 00 00 00 load.c64 0
-	6a                         i64.2i32
-	1f 00 04 00 00             load.ref .000400 ;int64
-	11 10 00 00                load.sp(+16)
-	1f 6a f7 01 00             load.ref .01f76a ;"val2"
+	extras/Tests/stdc.nfcMemory.ci:26: (38 bytes): raise(info, "val2", variant(val2), noTrace);
 	1c 02 00 00 00 00 00 00 00 load.c64 2
+	6a                         i64.2i32
+	1f f2 07 02 00             load.ref .0207f2 ;"val2"
+	1f 00 04 00 00             load.ref .000400 ;int64
+	11 0c 00 00                load.sp(+12)
+	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	extras/Tests/stdc.nfcMemory.ci:28: (26 bytes): pointer.copy(pointer(val2), pointer(val1), 8);
+	11 00 00 00                load.sp(+0)
+	11 0c 00 00                load.sp(+12)
 	1c 08 00 00 00 00 00 00 00 load.c64 8
 	6a                         i64.2i32
-	11 0c 00 00                load.sp(+12)
-	11 08 00 00                load.sp(+8)
 	01 09 00 00                nfc(9) ;pointer.copy(dst: pointer, src: pointer, size: int32): pointer
 	10 fc ff ff                inc.sp(-4)
 	extras/Tests/stdc.nfcMemory.ci:29: (32 bytes): pointer.fill(pointer(val1), 0, 8);
+	11 08 00 00                load.sp(+8)
+	1c 00 00 00 00 00 00 00 00 load.c64 0
+	6a                         i64.2i32
 	1c 08 00 00 00 00 00 00 00 load.c64 8
 	6a                         i64.2i32
-	1c 00 00 00 00 00 00 00 00 load.c64 0
-	6a                         i64.2i32
-	11 10 00 00                load.sp(+16)
 	01 08 00 00                nfc(8) ;pointer.fill(dst: pointer, value: int32, size: int32): pointer
 	10 fc ff ff                inc.sp(-4)
-	extras/Tests/stdc.nfcMemory.ci:31: (48 bytes): raise(info, "val1", variant(val1), noTrace);
-	1b 1f 00 00 00             load.c32 31
-	1f 21 a8 00 00             load.ref .00a821 ;"extras/Tests/stdc.nfcMemory.ci"
-	1c 00 00 00 00 00 00 00 00 load.c64 0
-	6a                         i64.2i32
-	1f 00 04 00 00             load.ref .000400 ;int64
-	11 18 00 00                load.sp(+24)
-	1f 65 f7 01 00             load.ref .01f765 ;"val1"
+	extras/Tests/stdc.nfcMemory.ci:31: (38 bytes): raise(info, "val1", variant(val1), noTrace);
 	1c 02 00 00 00 00 00 00 00 load.c64 2
+	6a                         i64.2i32
+	1f ed 07 02 00             load.ref .0207ed ;"val1"
+	1f 00 04 00 00             load.ref .000400 ;int64
+	11 14 00 00                load.sp(+20)
+	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/stdc.nfcMemory.ci:32: (48 bytes): raise(info, "val2", variant(val2), noTrace);
-	1b 20 00 00 00             load.c32 32
-	1f 21 a8 00 00             load.ref .00a821 ;"extras/Tests/stdc.nfcMemory.ci"
-	1c 00 00 00 00 00 00 00 00 load.c64 0
-	6a                         i64.2i32
-	1f 00 04 00 00             load.ref .000400 ;int64
-	11 10 00 00                load.sp(+16)
-	1f 6a f7 01 00             load.ref .01f76a ;"val2"
+	extras/Tests/stdc.nfcMemory.ci:32: (38 bytes): raise(info, "val2", variant(val2), noTrace);
 	1c 02 00 00 00 00 00 00 00 load.c64 2
+	6a                         i64.2i32
+	1f f2 07 02 00             load.ref .0207f2 ;"val2"
+	1f 00 04 00 00             load.ref .000400 ;int64
+	11 0c 00 00                load.sp(+12)
+	1c 00 00 00 00 00 00 00 00 load.c64 0
 	6a                         i64.2i32
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	01 00 00 00                nfc(0) ;halt(): void
@@ -8458,6 +8938,14 @@ extras/Tests/lang.reflection.ci:44: typeofBase1: typename(object)
 extras/Tests/lang.reflection.ci:45: sizeofBase1: int32(4)
 extras/Tests/lang.reflection.ci:47: typeofBase2: typename(typename)
 extras/Tests/lang.reflection.ci:48: sizeofBase2: int32(136)
+extras/Tests/lang.function.ci:10: funAddResult: int32(9)
+extras/Tests/lang.function.ci:13: funAddRef: function(<funAdd @021105>)
+extras/Tests/lang.function.ci:16: funAddRefResult: int32(10)
+extras/Tests/lang.function.ci:19: funMul: function(<funMul @021123>)
+extras/Tests/lang.function.ci:22: funMulResult: int32(12)
+extras/Tests/lang.function.ci:25: funMulRef: function(<funMul @021123>)
+extras/Tests/lang.function.ci:28: funMulRefResult: int32(14)
+extras/Tests/lang.function.ci:46: fibonacci_13: uint32(233)
 extras/Tests/lang.useOperator.ci:5: shift: int32(2)
 extras/Tests/lang.useOperator.ci:7: boolA: bool(1)
 extras/Tests/lang.useOperator.ci:8: boolB: bool(1)
@@ -8719,7 +9207,7 @@ extras/Tests/lang.varInitArray.ci:37: arrSliceInitString: char[]([6] {'s', 't', 
 extras/Tests/lang.varInitArray.ci:38: arrPtrInitString: char[*]("string")
 extras/Tests/lang.varInitByRef.ci:7: value: int64(42)
 extras/Tests/lang.varInitByRef.ci:8: valueRef: int64(42)
-extras/Tests/lang.varInitByRef.ci:9: valuePtr: pointer(<value @020078>)
+extras/Tests/lang.varInitByRef.ci:9: valuePtr: pointer(<value @021200>)
 extras/Tests/lang.varInitByRef.ci:10: valueVar: variant({int64: 42})
 extras/Tests/lang.varInitByRef.ci:12: fromRef: int64(42)
 extras/Tests/lang.varInitByRef.ci:13: fromPtr: int64(42)
@@ -8736,7 +9224,7 @@ extras/Tests/lang.varInitByRef.ci:25: typeTyp: typename(int64)
 extras/Tests/lang.varInitByRef.ci:27: local: int64(42)
 extras/Tests/lang.varInitByRef.ci:28: copyVal: int64(42)
 extras/Tests/lang.varInitByRef.ci:29: copyRef: int64(42)
-extras/Tests/lang.varInitByRef.ci:30: copyPtr: pointer(<value @020078>)
+extras/Tests/lang.varInitByRef.ci:30: copyPtr: pointer(<value @021200>)
 extras/Tests/lang.varInitByRef.ci:31: copyVar: variant({int64: 42})
 extras/Tests/lang.varInitByRef.ci:32: copyTyp: typename(int64)
 extras/Tests/lang.varInitByRef.ci:35: ptrVoid: pointer(<void @0000a0>)
@@ -8793,7 +9281,7 @@ extras/Tests/lang.varInitByRef.ci:89: typFunction: typename(function)
 extras/Tests/lang.varInitByRef.ci:90: typPointer: typename(pointer)
 extras/Tests/lang.varInitByRef.ci:91: typVariant: typename(variant)
 extras/Tests/lang.varInitByRef.ci:92: typObject: typename(object)
-extras/Tests/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @020078>)
+extras/Tests/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @021200>)
 extras/Tests/lang.varInitByRef.ci:96: valueOfVar: variant({int64: 42})
 extras/Tests/lang.varInitByRef.ci:97: valueOfTyp: typename(int64)
 extras/Tests/lang.varInitByRef.ci:99: typeOfValue: typename(int64)
@@ -8853,9 +9341,9 @@ extras/Tests/stdc.nfcMemory.ci:23: val2: int64(42)
 // */
 
 /*-- Memory:
-memory[meta] @000000; size: 131192(128.1 Kb)
-memory[code] @000000; size: 137464(134.2 Kb)
-memory[stck] @000000; size: 163780(159.9 Kb)
-memory[heap] @0218f8; size: 353828(345.5 Kb)
-memory[free] @021910; size: 353776(345.5 Kb)
+memory[meta] @000000; size: 135424(132.2 Kb)
+memory[code] @000000; size: 142702(139.4 Kb)
+memory[stck] @000000; size: 163778(159.9 Kb)
+memory[heap] @022d6e; size: 348584(340.4 Kb)
+memory[free] @022d88; size: 348528(340.4 Kb)
 // */

@@ -38,8 +38,8 @@ static vmError f64exp(nfcContext args) {
 	return noError;
 }
 static vmError f64pow(nfcContext args) {
-	float64_t x = argf64(args, 0);
-	float64_t y = argf64(args, 8);
+	float64_t x = argf64(args, 8);
+	float64_t y = argf64(args, 0);
 	retf64(args, pow(x, y));
 	return noError;
 }
@@ -49,8 +49,8 @@ static vmError f64sqrt(nfcContext args) {
 	return noError;
 }
 static vmError f64atan2(nfcContext args) {
-	float64_t x = argf64(args, 0);
-	float64_t y = argf64(args, 8);
+	float64_t x = argf64(args, 8);
+	float64_t y = argf64(args, 0);
 	retf64(args, atan2(x, y));
 	return noError;
 }
@@ -81,8 +81,8 @@ static vmError f32exp(nfcContext args) {
 	return noError;
 }
 static vmError f32pow(nfcContext args) {
-	float32_t x = argf32(args, 0);
-	float32_t y = argf32(args, 4);
+	float32_t x = argf32(args, 4);
+	float32_t y = argf32(args, 0);
 	retf32(args, powf(x, y));
 	return noError;
 }
@@ -92,8 +92,8 @@ static vmError f32sqrt(nfcContext args) {
 	return noError;
 }
 static vmError f32atan2(nfcContext args) {
-	float32_t x = argf32(args, 0);
-	float32_t y = argf32(args, 4);
+	float32_t x = argf32(args, 4);
+	float32_t y = argf32(args, 0);
 	retf32(args, atan2f(x, y));
 	return noError;
 }
@@ -101,30 +101,30 @@ static vmError f32atan2(nfcContext args) {
 
 //#{#region bit operations
 static vmError b32sxt(nfcContext args) {
-	int32_t val = argi32(args, 0);
+	int32_t val = argi32(args, 8);
 	int32_t ofs = argi32(args, 4);
-	int32_t cnt = argi32(args, 8);
+	int32_t cnt = argi32(args, 0);
 	reti32(args, (val << (32 - (ofs + cnt))) >> (32 - cnt));
 	return noError;
 }
 static vmError b32zxt(nfcContext args) {
-	uint32_t val = (uint32_t) argi32(args, 0);
+	uint32_t val = (uint32_t) argi32(args, 8);
 	int32_t ofs = argi32(args, 4);
-	int32_t cnt = argi32(args, 8);
+	int32_t cnt = argi32(args, 0);
 	retu32(args, (val << (32 - (ofs + cnt))) >> (32 - cnt));
 	return noError;
 }
 static vmError b64sxt(nfcContext args) {
-	int64_t val = argi64(args, 0);
+	int64_t val = argi64(args, 12);
 	int32_t ofs = argi32(args, 8);
-	int32_t cnt = argi32(args, 12);
+	int32_t cnt = argi32(args, 0);
 	reti64(args, (val << (64 - (ofs + cnt))) >> (64 - cnt));
 	return noError;
 }
 static vmError b64zxt(nfcContext args) {
-	uint64_t val = (uint64_t) argi64(args, 0);
+	uint64_t val = (uint64_t) argi64(args, 12);
 	int32_t ofs = argi32(args, 8);
-	int32_t cnt = argi32(args, 12);
+	int32_t cnt = argi32(args, 0);
 	retu64(args, (val << (64 - (ofs + cnt))) >> (64 - cnt));
 	return noError;
 }
@@ -323,11 +323,8 @@ static vmError sysRaise(nfcContext ctx) {
 	char *message = nfcReadArg(ctx, nfcNextArg(ctx)).data;
 	rtValue inspect = nfcReadArg(ctx, nfcNextArg(ctx));
 	int maxTrace = argi32(ctx, nfcNextArg(ctx));
-	// TODO: find a better way to get these hidden variables.
-	size_t offs = ctx->sym->params->offs - ctx->sym->params->size;
-	vmValue *last = (vmValue *) ((char *) ctx->args + offs);
-	char *file = vmPointer(rt, last->arr.data);
-	int line = last->arr.length;
+	char *file = NULL; //FIXME: nfcReadArg(ctx, nfcNextArg(ctx)).data;
+	int line = 0; //FIXME: argi32(ctx, nfcNextArg(ctx));
 	int isOutput = 0;
 
 	// logging is disabled or log level not reached.
@@ -508,22 +505,14 @@ int ccLibStd(ccContext cc) {
 		if (cc->libc_dbg == NULL) {
 			err = 2;
 		}
-		if (cc->native != NULL) {
-			libc lastNative = (libc) cc->native->data;
-			if (lastNative && lastNative->sym == cc->libc_dbg) {
-				lastNative->in += 2;
-			}
-		}
-		if (!err && cc->libc_dbg) {
-			enter(cc);
+		if (!err && ccExtend(cc, cc->libc_dbg)) {
 			for (i = 0; i < lengthOf(logLevels); i += 1) {
 				if (!ccDefInt(cc, logLevels[i].name, logLevels[i].value)) {
 					err = 1;
 					break;
 				}
 			}
-			dieif(cc->libc_dbg->fields, ERR_INTERNAL_ERROR);
-			cc->libc_dbg->fields = leave(cc, cc->libc_dbg, ATTR_stat | KIND_typ, 0, 0, NULL);
+			ccEnd(cc, cc->libc_dbg);
 		}
 	}
 
@@ -533,24 +522,22 @@ int ccLibStd(ccContext cc) {
 		}
 	}
 
-	if (!err && cc->type_ptr != NULL) {		// re-alloc, malloc, free, memset, memcpy
-		enter(cc);
-		if(!ccDefCall(cc, sysMemMgr, "pointer alloc(pointer ptr, int32 size)")) {
+	// re-alloc, malloc, free, memset, memcpy
+	if (!err && ccExtend(cc, cc->type_ptr)) {
+		if (!ccDefCall(cc, sysMemMgr, "pointer alloc(pointer ptr, int32 size)")) {
 			err = 3;
 		}
-		if(!ccDefCall(cc, sysMemSet, "pointer fill(pointer dst, int value, int32 size)")) {
+		if (!ccDefCall(cc, sysMemSet, "pointer fill(pointer dst, int value, int32 size)")) {
 			err = 3;
 		}
-		if(!ccDefCall(cc, sysMemCpy, "pointer copy(pointer dst, pointer src, int32 size)")) {
+		if (!ccDefCall(cc, sysMemCpy, "pointer copy(pointer dst, pointer src, int32 size)")) {
 			err = 3;
 		}
-		dieif(cc->type_ptr->fields, ERR_INTERNAL_ERROR);
-		cc->type_ptr->fields = leave(cc, cc->type_ptr, ATTR_stat | KIND_typ, 0, 0, NULL);
+		ccEnd(cc, cc->type_ptr);
 	}
 
 	// System.exit(int code), ...
-	if (!err && (nsp = install(cc, "System", ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, cc->type_vid, NULL))) {
-		enter(cc);
+	if (!err && (nsp = ccBegin(cc, "System"))) {
 		for (i = 0; i < lengthOf(misc); i += 1) {
 			if (!ccDefCall(cc, misc[i].fun, misc[i].def)) {
 				err = 4;
@@ -559,56 +546,48 @@ int ccLibStd(ccContext cc) {
 		}
 		//~ install(cc, "Arguments", CAST_arr, 0, 0);	// string Args[];
 		//~ install(cc, "Environment", KIND_def, 0, 0);	// string Env[string];
-		nsp->fields = leave(cc, nsp, ATTR_stat | KIND_typ, 0, 0, NULL);
+		ccEnd(cc, nsp);
 	}
 
 	// Add extra operations to int32
-	if (!err && cc->type_u32 != NULL) {
-		enter(cc);
+	if (!err && ccExtend(cc, cc->type_u32)) {
 		for (i = 0; i < lengthOf(bit32); i += 1) {
 			if (!ccDefCall(cc, bit32[i].fun, bit32[i].def)) {
 				err = 5;
 				break;
 			}
 		}
-		dieif(cc->type_u32->fields, ERR_INTERNAL_ERROR);
-		cc->type_u32->fields = leave(cc, cc->type_u32, ATTR_stat | KIND_typ, 0, 0, NULL);
+		ccEnd(cc, cc->type_u32);
 	}
 	// Add extra operations to int64
-	if (!err && cc->type_u64 != NULL) {
-		enter(cc);
+	if (!err && ccExtend(cc, cc->type_u64)) {
 		for (i = 0; i < lengthOf(bit64); i += 1) {
 			if (!ccDefCall(cc, bit64[i].fun, bit64[i].def)) {
 				err = 5;
 				break;
 			}
 		}
-		dieif(cc->type_u64->fields, ERR_INTERNAL_ERROR);
-		cc->type_u64->fields = leave(cc, cc->type_u64, ATTR_stat | KIND_typ, 0, 0, NULL);
+		ccEnd(cc, cc->type_u64);
 	}
 	// add math functions to float32
-	if (!err && cc->type_f32 != NULL) {
-		enter(cc);
+	if (!err && ccExtend(cc, cc->type_f32)) {
 		for (i = 0; i < lengthOf(flt32); i += 1) {
 			if (!ccDefCall(cc, flt32[i].fun, flt32[i].def)) {
 				err = 7;
 				break;
 			}
 		}
-		dieif(cc->type_f32->fields, ERR_INTERNAL_ERROR);
-		cc->type_f32->fields = leave(cc, cc->type_f32, ATTR_stat | KIND_typ, 0, 0, NULL);
+		ccEnd(cc, cc->type_f32);
 	}
 	// add math functions to float64
-	if (!err && cc->type_f64 != NULL) {
-		enter(cc);
+	if (!err && ccExtend(cc, cc->type_f64)) {
 		for (i = 0; i < lengthOf(flt64); i += 1) {
 			if (!ccDefCall(cc, flt64[i].fun, flt64[i].def)) {
 				err = 6;
 				break;
 			}
 		}
-		dieif(cc->type_f64->fields, ERR_INTERNAL_ERROR);
-		cc->type_f64->fields = leave(cc, cc->type_f64, ATTR_stat | KIND_typ, 0, 0, NULL);
+		ccEnd(cc, cc->type_f64);
 	}
 	return err;
 }

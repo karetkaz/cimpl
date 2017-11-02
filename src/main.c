@@ -244,22 +244,18 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 
 		case STMT_ret:
 			printFmt(out, esc, " stmt=\"%?t\">\n", ast);
-			dumpAstXML(out, esc, ast->stmt.stmt, mode, indent + 1, "expr");
+			dumpAstXML(out, esc, ast->jmp.value, mode & ~prSymInit, indent + 1, "expr");
 			printFmt(out, esc, "%I</%s>\n", indent, text);
 			break;
 
 		//#}
 		//#{ OPERATORS
 		case OPER_fnc:		// '()'
-			//printFmt(out, esc, ">\n");
 			printFmt(out, esc, " value=\"%?t\">\n", ast);
-			/*list = chainArgs(ast->op.rhso);
-			while (list != NULL) {
+			for (list = chainArgs(ast->op.rhso); list != NULL; list = list->next) {
 				dumpAstXML(out, esc, list, mode, indent + 1, "push");
-				list = list->next;
-			}*/
-			dumpAstXML(out, esc, ast->op.rhso, mode, indent + 1, "push");
-			dumpAstXML(out, esc, ast->op.lhso, mode, indent + 1, "call");
+			}
+			dumpAstXML(out, esc, ast->op.lhso, mode & ~prSymInit, indent + 1, "call");
 			printFmt(out, esc, "%I</%s>\n", indent, text);
 			break;
 
@@ -329,106 +325,110 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 }
 
 // json output
-static const int JSON_PRETTY_PRINT = 1;
-static const char *JSON_KEY_API = "symbols";
-static const char *JSON_KEY_RUN = "profile";
+static char *const JSON_KEY_VERSION = "version";
+static char *const JSON_KEY_SYMBOLS = "symbols";
+static char *const JSON_KEY_PROFILE = "profile";
+
+static char *const JSON_OBJ_ARR_START = "%I, \"%s\": [{\n";
+static char *const JSON_OBJ_START = "%I, \"%s\": {\n";
+static char *const JSON_ARR_START = "%I, \"%s\": [\n";
+static char *const JSON_OBJ_NEXT = "%I}, {\n";
+static char *const JSON_OBJ_ARR_END = "%I}]\n";
+static char *const JSON_OBJ_END = "%I}\n";
+static char *const JSON_ARR_END = "%I]\n";
+
+static char *const JSON_KEY_FILE = "file";
+static char *const JSON_KEY_LINE = "line";
+static char *const JSON_KEY_NAME = "name";
+static char *const JSON_KEY_OFFS = "offs";
+static char *const JSON_KEY_SIZE = "size";
 
 static void jsonDumpSym(FILE *out, const char **esc, symn ptr, const char *kind, int indent) {
-	static const char *FMT_START = "%I, \"%s\": {\n";
-	static const char *FMT_NEXT = "%I}, {\n";
-	static const char *FMT_END = "%I}\n";
-	static const char *KEY_PROTO = "proto";
-	static const char *KEY_KIND = "kind";
-	static const char *KEY_CAST = "cast";
-	static const char *KEY_FILE = "file";
-	static const char *KEY_LINE = "line";
-	static const char *KEY_NAME = "name";
-	static const char *KEY_OWNER = "owner";
-	static const char *KEY_TYPE = "type";
-	static const char *KEY_ARGS = "args";
-	static const char *KEY_CNST = "const";
-	static const char *KEY_STAT = "static";
-	static const char *KEY_SIZE = "size";
-	static const char *KEY_OFFS = "offs";
-	static const char *VAL_TRUE = "true";
-	static const char *VAL_FALSE = "false";
+	static char *const JSON_KEY_PROTO = "";
+	static char *const JSON_KEY_KIND = "kind";
+	static char *const JSON_KEY_CAST = "cast";
+	static char *const JSON_KEY_OWNER = "owner";
+	static char *const JSON_KEY_TYPE = "type";
+	static char *const JSON_KEY_ARGS = "args";
+	static char *const JSON_KEY_CNST = "const";
+	static char *const JSON_KEY_STAT = "static";
+
+	static char *const JSON_VAL_TRUE = "true";
+	static char *const JSON_VAL_FALSE = "false";
 
 	if (ptr == NULL) {
 		return;
 	}
 	if (kind != NULL) {
-		printFmt(out, esc, FMT_START, indent - 1, kind, ptr);
+		printFmt(out, esc, JSON_OBJ_START, indent - 1, kind, ptr);
 	}
 
-	printFmt(out, esc, "%I\"%s\": \"%T\"\n", indent, KEY_PROTO, ptr);
-	printFmt(out, esc, "%I, \"%s\": \"%K\"\n", indent, KEY_KIND, ptr->kind & MASK_kind);
-	printFmt(out, esc, "%I, \"%s\": \"%K\"\n", indent, KEY_CAST, ptr->kind & MASK_cast);
-	printFmt(out, esc, "%I, \"%s\": \"%.T\"\n", indent, KEY_NAME, ptr);
+	printFmt(out, esc, "%I\"%s\": \"%T\"\n", indent, JSON_KEY_PROTO, ptr);
+	printFmt(out, esc, "%I, \"%s\": \"%K\"\n", indent, JSON_KEY_KIND, ptr->kind & MASK_kind);
+	printFmt(out, esc, "%I, \"%s\": \"%K\"\n", indent, JSON_KEY_CAST, ptr->kind & MASK_cast);
+	printFmt(out, esc, "%I, \"%s\": \"%.T\"\n", indent, JSON_KEY_NAME, ptr);
 	if (ptr->owner != NULL) {
-		printFmt(out, esc, "%I, \"%s\": \"%T\"\n", indent, KEY_OWNER, ptr->owner);
+		printFmt(out, esc, "%I, \"%s\": \"%T\"\n", indent, JSON_KEY_OWNER, ptr->owner);
 	}
-
 	if (ptr->type != NULL) {
-		printFmt(out, esc, "%I, \"%s\": \"%T\"\n", indent, KEY_TYPE, ptr->type);
+		printFmt(out, esc, "%I, \"%s\": \"%T\"\n", indent, JSON_KEY_TYPE, ptr->type);
 	}
 	if (ptr->file != NULL && ptr->line != 0) {
-		printFmt(out, esc, "%I, \"%s\": \"%s\"\n", indent, KEY_FILE, ptr->file);
-		printFmt(out, esc, "%I, \"%s\": %u\n", indent, KEY_LINE, ptr->line);
+		printFmt(out, esc, "%I, \"%s\": \"%s\"\n", indent, JSON_KEY_FILE, ptr->file);
+		printFmt(out, esc, "%I, \"%s\": %u\n", indent, JSON_KEY_LINE, ptr->line);
 	}
 
-	if (ptr->params != NULL) {
-		printFmt(out, NULL, "%I, \"%s\": [{\n", indent, KEY_ARGS);
+	if (isInvokable(ptr)) {
+		printFmt(out, NULL, JSON_OBJ_ARR_START, indent, JSON_KEY_ARGS);
 		for (symn arg = ptr->params; arg; arg = arg->next) {
 			if (arg != ptr->params) {
-				printFmt(out, NULL, FMT_NEXT, indent);
+				printFmt(out, NULL, JSON_OBJ_NEXT, indent);
 			}
 			jsonDumpSym(out, esc, arg, NULL, indent + 1);
 		}
-		printFmt(out, NULL, "%I}]\n", indent);
+		printFmt(out, NULL, JSON_OBJ_ARR_END, indent);
 	}
-	printFmt(out, esc, "%I, \"%s\": %u\n", indent, KEY_SIZE, ptr->size);
-	printFmt(out, esc, "%I, \"%s\": %u\n", indent, KEY_OFFS, ptr->offs);
-	printFmt(out, esc, "%I, \"%s\": %s\n", indent, KEY_STAT, isStatic(ptr) ? VAL_TRUE : VAL_FALSE);
-	printFmt(out, esc, "%I, \"%s\": %s\n", indent, KEY_CNST, isConst(ptr) ? VAL_TRUE : VAL_FALSE);
+	printFmt(out, esc, "%I, \"%s\": %u\n", indent, JSON_KEY_SIZE, ptr->size);
+	printFmt(out, esc, "%I, \"%s\": %u\n", indent, JSON_KEY_OFFS, ptr->offs);
+	printFmt(out, esc, "%I, \"%s\": %s\n", indent, JSON_KEY_STAT, isStatic(ptr) ? JSON_VAL_TRUE : JSON_VAL_FALSE);
+	printFmt(out, esc, "%I, \"%s\": %s\n", indent, JSON_KEY_CNST, isConst(ptr) ? JSON_VAL_TRUE : JSON_VAL_FALSE);
 	if (kind != NULL) {
-		printFmt(out, esc, FMT_END, indent - 1);
+		printFmt(out, esc, JSON_OBJ_END, indent - 1);
 	}
 }
 static void jsonDumpAst(FILE *out, const char **esc, astn ast, const char *kind, int indent) {
-	static const char *KEY_PROTO = "proto";
-	static const char *KEY_KIND = "kind";
-	static const char *KEY_FILE = "file";
-	static const char *KEY_LINE = "line";
-	static const char *KEY_TYPE = "type";
-	static const char *KEY_STMT = "stmt";
-	static const char *KEY_INIT = "init";
-	static const char *KEY_TEST = "test";
-	static const char *KEY_THEN = "then";
-	static const char *KEY_STEP = "step";
-	static const char *KEY_ELSE = "else";
-	static const char *KEY_ARGS = "args";
-	static const char *KEY_LHSO = "left";
-	static const char *KEY_RHSO = "right";
-	static const char *KEY_VALUE = "value";
+	static char *const JSON_KEY_PROTO = "";
+	static char *const JSON_KEY_KIND = "kind";
+	static char *const JSON_KEY_TYPE = "type";
+	static char *const JSON_KEY_STMT = "stmt";
+	static char *const JSON_KEY_INIT = "init";
+	static char *const JSON_KEY_TEST = "test";
+	static char *const JSON_KEY_THEN = "then";
+	static char *const JSON_KEY_STEP = "step";
+	static char *const JSON_KEY_ELSE = "else";
+	static char *const JSON_KEY_ARGS = "args";
+	static char *const JSON_KEY_LHSO = "left";
+	static char *const JSON_KEY_RHSO = "right";
+	static char *const JSON_KEY_VALUE = "value";
 
 	if (ast == NULL) {
 		return;
 	}
 	if (kind != NULL) {
-		printFmt(out, esc, "%I, \"%s\": {\n", indent, kind);
+		printFmt(out, esc, JSON_OBJ_START, indent, kind);
 	}
 
-	printFmt(out, esc, "%I\"%s\": \"%t\"\n", indent + 1, KEY_PROTO, ast);
+	printFmt(out, esc, "%I\"%s\": \"%t\"\n", indent + 1, JSON_KEY_PROTO, ast);
 
-	printFmt(out, esc, "%I, \"%s\": \"%K\"\n", indent + 1, KEY_KIND, ast->kind);
+	printFmt(out, esc, "%I, \"%s\": \"%k\"\n", indent + 1, JSON_KEY_KIND, ast->kind);
 	if (ast->type != NULL) {
-		printFmt(out, esc, "%I, \"%s\": \"%T\"\n", indent + 1, KEY_TYPE, ast->type);
+		printFmt(out, esc, "%I, \"%s\": \"%T\"\n", indent + 1, JSON_KEY_TYPE, ast->type);
 	}
 	if (ast->file != NULL) {
-		printFmt(out, esc, "%I, \"%s\": \"%s\"\n", indent + 1, KEY_FILE, ast->file);
+		printFmt(out, esc, "%I, \"%s\": \"%s\"\n", indent + 1, JSON_KEY_FILE, ast->file);
 	}
 	if (ast->line != 0) {
-		printFmt(out, esc, "%I, \"%s\": %u\n", indent + 1, KEY_LINE, ast->line);
+		printFmt(out, esc, "%I, \"%s\": %u\n", indent + 1, JSON_KEY_LINE, ast->line);
 	}
 	switch (ast->kind) {
 		default:
@@ -438,29 +438,29 @@ static void jsonDumpAst(FILE *out, const char **esc, astn ast, const char *kind,
 		//#{ STATEMENTS
 		case STMT_beg: {
 			astn list;
-			printFmt(out, esc, "%I, \"%s\": [{\n", indent + 1, KEY_STMT);
+			printFmt(out, esc, JSON_OBJ_ARR_START, indent + 1, JSON_KEY_STMT);
 			for (list = ast->stmt.stmt; list; list = list->next) {
 				if (list != ast->stmt.stmt) {
-					printFmt(out, esc, "%I}, {\n", indent + 1, list);
+					printFmt(out, esc, JSON_OBJ_NEXT, indent + 1, list);
 				}
 				jsonDumpAst(out, esc, list, NULL, indent + 1);
 			}
-			printFmt(out, esc, "%I}]\n", indent + 1);
+			printFmt(out, esc, JSON_OBJ_ARR_END, indent + 1);
 			break;
 		}
 
 		case STMT_if:
 		case STMT_sif:
-			jsonDumpAst(out, esc, ast->stmt.test, KEY_TEST, indent + 1);
-			jsonDumpAst(out, esc, ast->stmt.stmt, KEY_THEN, indent + 1);
-			jsonDumpAst(out, esc, ast->stmt.step, KEY_ELSE, indent + 1);
+			jsonDumpAst(out, esc, ast->stmt.test, JSON_KEY_TEST, indent + 1);
+			jsonDumpAst(out, esc, ast->stmt.stmt, JSON_KEY_THEN, indent + 1);
+			jsonDumpAst(out, esc, ast->stmt.step, JSON_KEY_ELSE, indent + 1);
 			break;
 
 		case STMT_for:
-			jsonDumpAst(out, esc, ast->stmt.init, KEY_INIT, indent + 1);
-			jsonDumpAst(out, esc, ast->stmt.test, KEY_TEST, indent + 1);
-			jsonDumpAst(out, esc, ast->stmt.step, KEY_STEP, indent + 1);
-			jsonDumpAst(out, esc, ast->stmt.stmt, KEY_STMT, indent + 1);
+			jsonDumpAst(out, esc, ast->stmt.init, JSON_KEY_INIT, indent + 1);
+			jsonDumpAst(out, esc, ast->stmt.test, JSON_KEY_TEST, indent + 1);
+			jsonDumpAst(out, esc, ast->stmt.step, JSON_KEY_STEP, indent + 1);
+			jsonDumpAst(out, esc, ast->stmt.stmt, JSON_KEY_STMT, indent + 1);
 			break;
 
 		case STMT_con:
@@ -469,21 +469,21 @@ static void jsonDumpAst(FILE *out, const char **esc, astn ast, const char *kind,
 
 		case STMT_end:
 		case STMT_ret:
-			jsonDumpAst(out, esc, ast->stmt.stmt, KEY_STMT, indent + 1);
+			jsonDumpAst(out, esc, ast->jmp.value, JSON_KEY_STMT, indent + 1);
 			break;
 		//#}
 		//#{ OPERATORS
 		case OPER_fnc: {    // '()'
 			astn args = chainArgs(ast->op.rhso);
-			printFmt(out, esc, "%I, \"%s\": [{\n", indent + 1, KEY_ARGS);
+			printFmt(out, esc, JSON_OBJ_ARR_START, indent + 1, JSON_KEY_ARGS);
 			while (args != NULL) {
 				if (args != ast->op.rhso) {
-					printFmt(out, esc, "%I}, {\n", indent + 1);
+					printFmt(out, esc, JSON_OBJ_NEXT, indent + 1);
 				}
 				jsonDumpAst(out, esc, args, NULL, indent + 1);
 				args = args->next;
 			}
-			printFmt(out, esc, "%I}]\n", indent + 1);
+			printFmt(out, esc, JSON_OBJ_ARR_END, indent + 1);
 			break;
 		}
 
@@ -522,48 +522,49 @@ static void jsonDumpAst(FILE *out, const char **esc, astn ast, const char *kind,
 
 		case INIT_set:		// '='
 		case ASGN_set:		// '='
-			jsonDumpAst(out, esc, ast->op.test, KEY_TEST, indent + 1);
-			jsonDumpAst(out, esc, ast->op.lhso, KEY_LHSO, indent + 1);
-			jsonDumpAst(out, esc, ast->op.rhso, KEY_RHSO, indent + 1);
+			jsonDumpAst(out, esc, ast->op.test, JSON_KEY_TEST, indent + 1);
+			jsonDumpAst(out, esc, ast->op.lhso, JSON_KEY_LHSO, indent + 1);
+			jsonDumpAst(out, esc, ast->op.rhso, JSON_KEY_RHSO, indent + 1);
 			break;
 		//#}
 		//#{ VALUES
 		case TOKEN_opc:
 		case TOKEN_val:
 		case TOKEN_var:
-			printFmt(out, esc, "%I, \"%s\": \"%t\"\n", indent + 1, KEY_VALUE, ast);
+			printFmt(out, esc, "%I, \"%s\": \"%t\"\n", indent + 1, JSON_KEY_VALUE, ast);
 			break;
 		//#}
 	}
 
 	if (kind != NULL) {
-		printFmt(out, esc, "%I}\n", indent);
+		printFmt(out, esc, JSON_OBJ_END, indent);
 	}
 }
 static void jsonDumpAsm(FILE *out, const char **esc, symn sym, rtContext rt, int indent) {
-	static const char *FMT_START = "{\n";
-	static const char *FMT_NEXT = "%I}, {\n";
-	static const char *FMT_END = "%I}";
-	static const char *KEY_OPC = "instruction";
-	static const char *KEY_OFFS = "offset";
+	static char *const JSON_KEY_OPC = "instruction";
+	static char *const JSON_KEY_CODE = "code";
 
 	size_t end = sym->offs + sym->size;
-	printFmt(out, esc, FMT_START, indent);
 	for (size_t pc = sym->offs; pc < end; ) {
 		unsigned char *ip = vmPointer(rt, pc);
 		if (pc != sym->offs) {
-			printFmt(out, esc, FMT_NEXT, indent, indent);
+			printFmt(out, esc, JSON_OBJ_NEXT, indent, indent);
 		}
-		printFmt(out, esc, "%I\"%s\": \"%.A\"\n", indent + 1, KEY_OPC, ip);
-		printFmt(out, esc, "%I, \"%s\": %u\n", indent + 1, KEY_OFFS, pc);
+		printFmt(out, esc, "%I\"%s\": \"%.A\"\n", indent + 1, JSON_KEY_OPC, ip);
+		printFmt(out, esc, "%I, \"%s\": \"%s\"\n", indent + 1, JSON_KEY_NAME, opcode_tbl[*ip].name);
+		printFmt(out, esc, "%I, \"%s\": \"0x%02x\"\n", indent + 1, JSON_KEY_CODE, opcode_tbl[*ip].code);
+		printFmt(out, esc, "%I, \"%s\": %u\n", indent + 1, JSON_KEY_OFFS, pc);
+		printFmt(out, esc, "%I, \"%s\": %u\n", indent + 1, JSON_KEY_SIZE, opcode_tbl[*ip].size);
 		pc += opcode_tbl[*ip].size;
 		if (ip == vmPointer(rt, pc)) {
 			break;
 		}
 	}
-	printFmt(out, esc, FMT_END, indent);
 }
 static void dumpApiJSON(userContext ctx, symn sym) {
+	static char *const JSON_KEY_ASM = "asm";
+	static char *const JSON_KEY_AST = "ast";
+
 	FILE *out = ctx->out;
 	int indent = ctx->indent;
 	const char **esc = ctx->esc;
@@ -574,21 +575,21 @@ static void dumpApiJSON(userContext ctx, symn sym) {
 
 	if (sym != ctx->rt->main->fields) {
 		// not the first symbol
-		printFmt(out, esc, "%I}, {\n", indent);
+		printFmt(out, esc, JSON_OBJ_NEXT, indent);
 	}
 
 	jsonDumpSym(out, esc, sym, NULL, indent + 1);
 
 	// export valid syntax tree if we still have compiler context
 	if (ctx->dmpAst != prSkip && ctx->rt->cc && sym->init) {
-		jsonDumpAst(out, esc, sym->init, "ast", indent + 1);
+		jsonDumpAst(out, esc, sym->init, JSON_KEY_AST, indent + 1);
 	}
 
 	// export assembly
 	if (ctx->dmpAsm && isFunction(sym)) {
-		printFmt(out, esc, "%I, \"%s\": [", indent + 1, "instructions");
+		printFmt(out, esc, JSON_OBJ_ARR_START, indent + 1, JSON_KEY_ASM);
 		jsonDumpAsm(out, esc, sym, ctx->rt, indent + 1);
-		printFmt(out, esc, "]\n", indent + 1);
+		printFmt(out, esc, JSON_OBJ_ARR_END, indent + 1);
 	}
 }
 
@@ -598,22 +599,14 @@ static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, s
 		userContext cc = ctx->extra;
 		FILE *out = cc->out;
 		const char **esc = cc->esc;
+		printFmt(out, esc, "% I", ss);
 		if ((ptrdiff_t) callee < 0) {
-			if (JSON_PRETTY_PRINT) {
-				printFmt(out, esc, "\n% I%d,%d,-1%s", ss, ticks, ctx->usedMem, ss ? "," : "");
-			}
-			else {
-				printFmt(out, esc, "%d,%d,-1%s", ticks, ctx->usedMem, ss ? "," : "");
-			}
+			printFmt(out, esc, "%d,%d,-1%s", ticks, ctx->usedMem, ss ? "," : "");
 		}
 		else {
-			if (JSON_PRETTY_PRINT) {
-				printFmt(out, esc, "\n% I%d,%d,%d,", ss, ticks, ctx->usedMem, callee);
-			}
-			else {
-				printFmt(out, esc, "%d,%d,%d,", ticks, ctx->usedMem, callee);
-			}
+			printFmt(out, esc, "%d,%d,%d,", ticks, ctx->usedMem, callee);
 		}
+		printFmt(out, esc, "\n");
 	}
 	(void)caller;
 	(void)error;
@@ -621,20 +614,26 @@ static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, s
 	return NULL;
 }
 static void jsonPostProfile(dbgContext ctx) {
+	static char *const JSON_KEY_FUNC = "functions";
+	static char *const JSON_KEY_STMT = "statements";
+	static char *const JSON_KEY_TIME = "time";
+	static char *const JSON_KEY_TOTAL = "total";
+	static char *const JSON_KEY_HITS = "hits";
+	static char *const JSON_KEY_FAILS = "fails";
+
 	userContext cc = ctx->extra;
 	FILE *out = cc->out;
 	const int indent = cc->indent;
 	const char **esc = cc->esc;
 
-	int i;
 	int covFunc = 0, nFunc = ctx->functions.cnt;
 	int covStmt = 0, nStmt = ctx->statements.cnt;
 	dbgn dbg = (dbgn) ctx->functions.ptr;
 
-	printFmt(out, esc, "]\n");
+	printFmt(out, esc, JSON_ARR_END, indent + 1);
 
-	printFmt(out, esc, "%I, \"%s\": [{\n", indent + 1, "functions");
-	for (i = 0; i < nFunc; ++i, dbg++) {
+	printFmt(out, esc, JSON_OBJ_ARR_START, indent + 1, JSON_KEY_FUNC);
+	for (int i = 0; i < nFunc; ++i, dbg++) {
 		symn sym = dbg->decl;
 		if (dbg->hits == 0) {
 			// skip functions not invoked
@@ -645,23 +644,19 @@ static void jsonPostProfile(dbgContext ctx) {
 			sym = rtFindSym(ctx->rt, dbg->start, 1);
 		}
 		if (covFunc > 1) {
-			printFmt(out, esc, "%I}, {\n", indent + 1);
+			printFmt(out, esc, JSON_OBJ_NEXT, indent + 1);
 		}
 		jsonDumpSym(out, esc, sym, NULL, indent + 2);
-		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "time", dbg->self);
-		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "total", dbg->total);
-		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "hits", dbg->hits);
-		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "fails", dbg->exec - dbg->hits);
-		if (dbg->file != NULL && dbg->line > 0) {
-			printFmt(out, esc, "%I, \"%s\": \"%s\"\n", indent + 2, "file", dbg->file);
-			printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "line", dbg->line);
-		}
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_TIME, dbg->self);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_TOTAL, dbg->total);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_HITS, dbg->hits);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_FAILS, dbg->exec - dbg->hits);
 	}
-	printFmt(out, esc, "%I}]\n", indent + 1);
+	printFmt(out, esc, JSON_OBJ_ARR_END, indent + 1);
 
-	printFmt(out, esc, "%I, \"%s\": [{\n", indent + 1, "statements");
+	printFmt(out, esc, JSON_OBJ_ARR_START, indent + 1, JSON_KEY_STMT);
 	dbg = (dbgn) ctx->statements.ptr;
-	for (i = 0; i < nStmt; ++i, dbg++) {
+	for (int i = 0; i < nStmt; ++i, dbg++) {
 		size_t symOffs = 0;
 		symn sym = dbg->decl;
 		if (dbg->hits == 0) {
@@ -675,25 +670,25 @@ static void jsonPostProfile(dbgContext ctx) {
 			symOffs = dbg->start - sym->offs;
 		}
 		if (covStmt > 1) {
-			printFmt(out, esc, "%I}, {\n", indent + 1);
+			printFmt(out, esc, JSON_OBJ_NEXT, indent + 1);
 		}
 		printFmt(out, esc, "%I\"%s\": \"%?T+%d\"\n", indent + 2, "", sym, symOffs);
-		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "offs", dbg->start);
-		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "time", dbg->self);
-		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "total", dbg->total);
-		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "hits", dbg->hits);
-		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "fails", dbg->exec - dbg->hits);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_OFFS, dbg->start);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_TIME, dbg->self);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_TOTAL, dbg->total);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_HITS, dbg->hits);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_FAILS, dbg->exec - dbg->hits);
 		if (dbg->file != NULL && dbg->line > 0) {
-			printFmt(out, esc, "%I, \"%s\": \"%s\"\n", indent + 2, "file", dbg->file);
-			printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, "line", dbg->line);
+			printFmt(out, esc, "%I, \"%s\": \"%s\"\n", indent + 2, JSON_KEY_FILE, dbg->file);
+			printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_LINE, dbg->line);
 		}
 	}
-	printFmt(out, esc, "%I}]\n", indent + 1);
+	printFmt(out, esc, JSON_OBJ_ARR_END, indent + 1);
 
 	printFmt(out, esc, "%I, \"%s\": %d\n", indent + 1, "ticksPerSec", CLOCKS_PER_SEC);
 	printFmt(out, esc, "%I, \"%s\": %d\n", indent + 1, "functionCount", ctx->functions.cnt);
 	printFmt(out, esc, "%I, \"%s\": %d\n", indent + 1, "statementCount", ctx->statements.cnt);
-	printFmt(out, esc, "%I}", indent);
+	printFmt(out, esc, JSON_OBJ_END, indent);
 }
 static void jsonPreProfile(dbgContext ctx) {
 	userContext cc = ctx->extra;
@@ -701,33 +696,39 @@ static void jsonPreProfile(dbgContext ctx) {
 	const int indent = cc->indent;
 	const char **esc = cc->esc;
 
-	printFmt(out, esc, "\n%I%s\"%s\": {\n", indent, cc->hasOut ? ", " : "", JSON_KEY_RUN);
+	// TODO: use JSON_*_START and JSON_*_END
+	printFmt(out, esc, "%I%s\"%s\": {\n", indent, cc->hasOut ? ", " : "", JSON_KEY_PROFILE);
 	printFmt(out, esc, "%I\"%s\": [", indent + 1, "callTreeData");
 	printFmt(out, esc, "\"%s\", ", "ctTickIndex");
 	printFmt(out, esc, "\"%s\", ", "ctHeapIndex");
 	printFmt(out, esc, "\"%s\"", "ctFunIndex");
 	printFmt(out, esc, "]\n");
 
-	printFmt(out, esc, "%I, \"%s\": [", indent + 1, "callTree");
+	printFmt(out, esc, JSON_ARR_START, indent + 1, "callTree");
 }
 
 // text output
 static void textDumpAsm(FILE *out, const char **esc, size_t offs, userContext ctx, int indent) {
 	dmpMode mode = ctx->dmpAsm | prFull | prOneLine;
 
-	if (mode & ctx->dmpAsmStmt && ctx->rt->cc != NULL) {
+	printFmt(out, esc, "%I", indent);
+
+	if (ctx->dmpAsmStmt) {
 		dbgn dbg = mapDbgStatement(ctx->rt, offs);
-		if (dbg != NULL && dbg->stmt != NULL && dbg->start == offs) {
-			if (mode & prAsmAddr) {
-				printFmt(out, esc, "%I%?s:%?u: [%06x-%06x): %.*t\n", indent, dbg->file, dbg->line, dbg->start, dbg->end, mode, dbg->stmt);
-			}
-			else {
-				printFmt(out, esc, "%I%?s:%?u: (%d bytes): %.*t\n", indent, dbg->file, dbg->line, dbg->end - dbg->start, mode, dbg->stmt);
+		if (dbg && dbg->file && dbg->line && dbg->start == offs) {
+			printFmt(out, esc, "%?s:%?u: ", dbg->file, dbg->line);
+			if (dbg->stmt != NULL && ctx->rt->cc != NULL) {
+				if (mode & prAsmAddr) {
+					printFmt(out, esc, "[%06x-%06x): %.*t", dbg->start, dbg->end, mode, dbg->stmt);
+				}
+				else {
+					printFmt(out, esc, "(%d bytes): %.*t", dbg->end - dbg->start, mode, dbg->stmt);
+				}
+				printFmt(out, esc, "\n%I", indent);
 			}
 		}
 	}
 
-	printFmt(out, esc, "%I", indent);
 	printAsm(out, esc, ctx->rt, vmPointer(ctx->rt, offs), mode);
 	printFmt(out, esc, "\n");
 }
@@ -757,6 +758,7 @@ static void textDumpMem(rtContext rt, void *ptr, size_t size, char *kind) {
 
 	printFmt(out, esc, "memory[%s] @%06x; size: %d(%?.1f %s)\n", kind, vmOffset(rt, ptr), size, value, unit);
 }
+
 static void textPostProfile(userContext usr) {
 	const char **esc = usr->esc;
 	FILE *out = usr->out;
@@ -769,7 +771,7 @@ static void textPostProfile(userContext usr) {
 	}
 
 	if (dbg->extra != usr) {
-		fatal(ERR_INTERNAL_ERROR);
+		logif("ERROR", ERR_INTERNAL_ERROR);
 		dbg->extra = usr;
 	}
 
@@ -971,11 +973,13 @@ static void dumpApiText(userContext extra, symn sym) {
 			printFmt(out, esc, " {\n");
 			dumpExtraData = 1;
 		}
-		for (param = sym->fields; param; param = param->next) {
-			printFmt(out, esc, "%I.field %.T: %?T (size: %d @%d -> %K)\n", indent, param, param->type, param->size, param->offs, param->kind);
+		if (sym->fields != sym->params) {
+			for (param = sym->fields; param; param = param->next) {
+				printFmt(out, esc, "%I.field %.T: %?T (size: %d @%d -> %K)\n", indent, param, param->type, param->size, param->offs, param->kind);
+			}
 		}
 		for (param = sym->params; param; param = param->next) {
-			printFmt(out, esc, "%I.param %.T: %?T (@%+d->%K)\n", indent, param, param->type, param->offs, param->kind);
+			printFmt(out, esc, "%I.param %.T: %?T (size: %d @%d -> %K)\n", indent, param, param->type, param->size, param->offs, param->kind);
 		}
 	}
 
@@ -1064,7 +1068,7 @@ static void dumpApiSciTE(userContext extra, symn sym) {
 			return;
 	}
 
-	if (sym->params != NULL) {
+	if (isInvokable(sym)) {
 		printSym(out, NULL, sym, prSymQual|prSymArgs|prSymType, 0);
 	}
 	else {
@@ -1184,7 +1188,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 	for ( ; breakMode & brkPause; ) {
 		dbgMode cmd = usr->dbgCommand;
 		char *arg = NULL;
-		printFmt(stderr, esc, ">dbg[%?c] %.A: ", cmd, vmPointer(rt, caller));
+		printFmt(stdout, esc, ">dbg[%?c] %.A: ", cmd, vmPointer(rt, caller));
 		if (usr->in == NULL || fgets(buff, sizeof(buff), usr->in) == NULL) {
 			printFmt(stdout, esc, "can not read from standard input, aborting\n");
 			return ctx->abort;
@@ -1894,20 +1898,27 @@ static int program(int argc, char *argv[]) {
 		else if (run_code == profile) {
 			dumpFun = dumpApiText;
 		}
+		else if (run_code == debug) {
+			dumpFun = dumpApiText;
+		}
 	}
 
-	if (dumpFun == dumpApiJSON) {
-		extra.esc = escapeJSON();
-		printFmt(extra.out, extra.esc, "{\n%I\"%s\": [{\n", extra.indent, JSON_KEY_API);
-		dumpApi(rt, &extra, dumpFun);
-		printFmt(extra.out, extra.esc, "%I}]", extra.indent);
-		extra.hasOut = 1;
-	}
-	else if (dumpFun != NULL) {
-		extra.esc = NULL;
-		// printFmt(extra.out, extra.esc, "/*-- Symbols:\n");
-		dumpApi(rt, &extra, dumpFun);
-		// printFmt(extra.out, extra.esc, "// */\n");
+	if (rt->errors == 0) {
+		if (dumpFun == dumpApiJSON) {
+			extra.esc = escapeJSON();
+			printFmt(extra.out, NULL, "{\n");
+			printFmt(extra.out, extra.esc, "%I\"%s\": \"%d\"\n", extra.indent, JSON_KEY_VERSION, CMPL_API_H);
+			printFmt(extra.out, extra.esc, JSON_OBJ_ARR_START, extra.indent, JSON_KEY_SYMBOLS);
+			dumpApi(rt, &extra, dumpFun);
+			printFmt(extra.out, extra.esc, JSON_OBJ_ARR_END, extra.indent);
+			extra.hasOut = 1;
+		}
+		else if (dumpFun != NULL) {
+			extra.esc = NULL;
+			// printFmt(extra.out, extra.esc, "/*-- Symbols:\n");
+			dumpApi(rt, &extra, dumpFun);
+			// printFmt(extra.out, extra.esc, "// */\n");
+		}
 	}
 
 	// run code if there are no compilation errors.
@@ -1943,18 +1954,20 @@ static int program(int argc, char *argv[]) {
 		rt->errors = execute(rt, 0, NULL, NULL);
 	}
 
-	if (dumpFun == dumpApiJSON) {
-		if (rt->dbg != NULL) {
-			jsonPostProfile(rt->dbg);
+	if (rt->errors == 0) {
+		if (dumpFun == dumpApiJSON) {
+			if (rt->dbg != NULL) {
+				jsonPostProfile(rt->dbg);
+			}
+			printFmt(extra.out, NULL, "}\n");
 		}
-		printFmt(extra.out, NULL, "\n}\n");
-	}
-	else if (dumpFun != NULL) {
-		if (rt->dbg != NULL) {
-			printFmt(extra.out, extra.esc, "// */\n");
+		else if (dumpFun != NULL) {
+			if (rt->dbg != NULL) {
+				printFmt(extra.out, extra.esc, "// */\n");
+			}
+			// dump globals, memory
+			textPostProfile(&extra);
 		}
-		// dump globals, memory
-		textPostProfile(&extra);
 	}
 
 	if (dumpFile != NULL) {

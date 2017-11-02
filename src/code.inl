@@ -43,7 +43,7 @@ case opc_nfc:  NEXT(4, 0, 0) {
 #endif
 	break;
 }
-case opc_call: NEXT(1, +1, 0) {
+case opc_call: NEXT(1, +0, 1) {
 #ifdef EXEC
 	size_t ret = pu->ip - mp;
 	size_t fun = SP(0, u32);

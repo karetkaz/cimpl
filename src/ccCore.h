@@ -96,6 +96,13 @@ ccContext ccInit(rtContext, ccInstall mode, vmError onHalt(nfcContext));
  */
 symn ccBegin(ccContext cc, const char *name);
 /**
+ * @brief Extend a namespace (static struct) with static members.
+ * @param cc Compiler context.
+ * @param symbol symbol to be extended.
+ * @return symbol.
+ */
+symn ccExtend(ccContext cc, symn symbol);
+/**
  * @brief Close the namespace.
  * @param cc Compiler context.
  * @param cls Namespace to be closed. (The returned by ccBegin.)

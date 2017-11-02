@@ -145,6 +145,8 @@ struct rtContextRec {
 	 * @brief External library API support.
 	 */
 	struct {
+		/// Extend a namespace; @see Core#ccExtend
+		symn (*const ccExtend)(ccContext, symn cls);
 		/// Begin a namespace; @see Core#ccBegin
 		symn (*const ccBegin)(ccContext, const char *name);
 		/// Close a namespace; @see Core#ccEnd

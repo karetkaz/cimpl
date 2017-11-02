@@ -1,5 +1,3 @@
-// TODO: function lookup and code generation
-// TODO: declare and call functions
 
 void empty() {}
 
@@ -9,27 +7,40 @@ int funAdd(int x, int y) {
 }
 
 // function invocation
-int funAddResult = funAdd(1, 2);
+int funAddResult = funAdd(2, 7);
 
 // initialized function reference
 int funAddRef(int x, int y) = funAdd;
 
 // function reference invocation
-int funAddRefResult = funAddRef(1, 2);
+int funAddRefResult = funAddRef(2, 8);
 
 // forward function reference (must be implemented somewhere)
 int funMul(int x, int y);
 
 // forward function invocation
-int funMulResult = funMul(1, 2);
+int funMulResult = funMul(2, 6);
 
 // initialized function reference
 int funMulRef(int x, int y) = funMul;
 
 // function invocation
-int funMulRefResult = funMulRef(1, 2);
+int funMulRefResult = funMulRef(2, 7);
 
 // forward function implementation
 int funMul(int x, int y) {
 	return x * y;
 }
+
+// recursion
+uint32 fib(uint32 n) {
+	if (n <= 1) {
+		if (n <= 0) {
+			return 0;
+		}
+		return 1;
+	}
+	return fib(n-1) + fib(n-2);
+}
+
+uint32 fibonacci_13 = fib(13);

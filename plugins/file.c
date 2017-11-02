@@ -141,8 +141,7 @@ int cmplInit(rtContext rt) {
 	symn type = rt->api.ccDefType(cc, proto_file, sizeof(FILE*), 0);
 	int err = type == NULL;
 
-	if (type != NULL) {
-		rt->api.ccBegin(cc, NULL);
+	if (rt->api.ccExtend(cc, type)) {
 
 		err = err || !rt->api.ccDefCall(cc, FILE_open, proto_file_open);
 		err = err || !rt->api.ccDefCall(cc, FILE_open, proto_file_create);

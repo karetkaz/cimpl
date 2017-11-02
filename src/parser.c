@@ -67,9 +67,9 @@ static inline symn addLength(ccContext cc, symn sym, astn init) {
 		kind = ATTR_cnst | KIND_var;
 	}
 
-	enter(cc);
+	enter(cc, NULL);
 	newField = install(cc, "length", kind | castOf(cc->type_idx), cc->type_idx->size, cc->type_idx, init);
-	sym->fields = leave(cc, sym, KIND_def, 0, 0, NULL);
+	sym->fields = leave(cc, KIND_def, 0, 0, NULL);
 	newField->next = oldFields;
 	return newField;
 }
@@ -116,6 +116,7 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 		for (ptr = def->next; ptr; ptr = ptr->next) {
 			symn arg1 = ptr->params;
 			symn arg2 = params;
+			int casts = 0;
 
 			if (ptr->name == NULL) {
 				continue;
@@ -126,13 +127,16 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 			}
 
 			while (arg1 && arg2) {
-				arg.ref.link = arg1;
-				arg.type = arg1->type;
-				if (!canAssign(cc, arg2, &arg, 1)) {
-					arg.ref.link = arg2;
-					arg.type = arg2->type;
-					if (!canAssign(cc, arg1, &arg, 1)) {
-						break;
+				if (arg1->type != arg2->type) {
+					casts += 1;
+					arg.ref.link = arg1;
+					arg.type = arg1->type;
+					if (!canAssign(cc, arg2, &arg, 1)) {
+						arg.ref.link = arg2;
+						arg.type = arg2->type;
+						if (!canAssign(cc, arg1, &arg, 1)) {
+							break;
+						}
 					}
 				}
 				arg1 = arg1->next;
@@ -140,6 +144,11 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 			}
 
 			if (arg1 == NULL && arg2 == NULL) {
+				if (ptr->params && ptr->init == NULL && casts == 0) {
+					debug("Overwriting forward function: %T", ptr);
+					ptr->init = lnkNode(cc, def);
+					ptr = NULL;
+				}
 				break;
 			}
 		}
@@ -648,12 +657,16 @@ static astn initializer(ccContext cc) {
  * @param mode
  * @return expression tree.
  */
-static astn parameters(ccContext cc, symn resType) {
+static astn parameters(ccContext cc, symn resType, astn fun) {
 	astn tok = NULL;
 
 	if (resType != NULL) {
-		symn res = install(cc, ".result", KIND_var, 0, resType, resType->init);
+		symn res = install(cc, ".result", KIND_var | castOf(resType), 0, resType, resType->init);
 		tok = lnkNode(cc, res);
+		if (fun != NULL) {
+			res->file = fun->file;
+			res->line = fun->line;
+		}
 	}
 
 	if (peekTok(cc, RIGHT_par) != NULL) {
@@ -722,11 +735,11 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 	symn def = NULL, params = NULL;
 	if (skipTok(cc, LEFT_par, 0)) {			// int a(...)
 		astn argRoot;
-		enter(cc);
-		argRoot = parameters(cc, type);
+		enter(cc, def);
+		argRoot = parameters(cc, type, tag);
 		skipTok(cc, RIGHT_par, 1);
 
-		params = leave(cc, def, KIND_fun, vm_size, 0, NULL);
+		params = leave(cc, KIND_fun, vm_size, 0, NULL);
 		type = cc->type_fun;
 
 		if (args != NULL) {
@@ -736,20 +749,25 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		// parse function body
 		if (peekTok(cc, STMT_beg)) {
 			def = declare(cc, ATTR_stat | ATTR_cnst | KIND_fun | cast, tag, type, params);
+			def->fields = params;
 
-			enter(cc);
-			// TODO: skip reinstalling all parameters, try to adapt lookup
+			enter(cc, def);
 			for (symn param = params->next; param; param = param->next) {
-				//TODO: install(cc, param->name, KIND_def, 0, param, NULL);
-				//TODO: param->owner = def;
+				param->owner = def;
 			}
 
 			def->init = statement(cc, (ccKind) 0);
+			if (def->init == NULL) {
+				def->init = newNode(cc, STMT_beg);
+				def->init->type = cc->type_vid;
+			}
 			backTok(cc, newNode(cc, STMT_end));
-			leave(cc, def, KIND_def, -1, 0, NULL);
-
+			leave(cc, KIND_def, -1, 0, NULL);
 			return tag;
 		}
+
+		// unimplemented functions are function references
+		cast = CAST_ref;
 	}
 
 	// parse array dimensions
@@ -863,10 +881,10 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		return NULL;
 	}
 
-	enter(cc);
+	enter(cc, NULL);
 
 	if (skipTok(cc, LEFT_par, 0)) {
-		parameters(cc, cc->type_vid);
+		parameters(cc, cc->type_vid, tag);
 		skipTok(cc, RIGHT_par, 1);
 	}
 
@@ -876,35 +894,35 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		type = typeCheck(cc, NULL, init, 1);
 		init->type = type;
 	}
-	params = leave(cc, NULL, KIND_fun, vm_size, 0, NULL);
+	params = leave(cc, KIND_fun, vm_size, 0, NULL);
 	if (params != NULL) {
-		astn usage;
-		symn param;
-		int inlineParams = 1;
-		for (param = params; param != NULL; param = param->next) {
-			int usages = 0;
-			for (usage = param->use; usage != NULL; usage = usage->ref.used) {
-				if (usage != param->tag) {
+		size_t offs = 0;
+		if (type != NULL) {
+			// update the result variable, make it inline
+			params->type = type;
+			params->size = type->size;
+			params->init = type->init;
+			params->kind = castOf(type) | KIND_def;// | KIND_var;
+		}
+		for (symn param = params; param != NULL; param = param->next) {
+			int usages = 2;  // FIXME: inline parameters only used once or none
+			for (astn use = param->use; use != NULL; use = use->ref.used) {
+				if (use != param->tag) {
 					usages += 1;
 				}
 			}
 
-//			debug("%?s:%?u: param `%T` used: %d times", param->file, param->line, param, usages);
-			/* FIXME: cache parameters if they are used several times in the expression.
-			 * to do the caching, the variable offset must be realigned with the stack.
-			if (usages > 1) {
-				inlineParams = 0;
-				break;
-			}*/
-		}
-		if (type != NULL) {
-			// update the result variable
-			params->type = type;
-			params->size = type->size;
-		}
-		if (inlineParams) {
-			warn(cc->rt, 6, tag->file, tag->line, WARN_INLINE_ALL_PARAMS, tag);
-			for (param = params; param != NULL; param = param->next) {
+			if (isInline(param)) {
+				// skip params if they are already marked inline
+			}
+			else if (usages > 1) {
+				// mark params used more than one as cached
+				offs += padOffset(param->size, vm_size);
+				param->offs = offs;
+			}
+			else {
+				// mark params to be inlined
+				fatal(ERR_UNIMPLEMENTED_FEATURE);
 				param->kind = (param->kind & ~MASK_kind) | KIND_def;
 			}
 		}
@@ -1011,7 +1029,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 	skipTok(cc, STMT_beg, 1);	// '{'
 
 	symn type = declare(cc, ATTR_stat | ATTR_cnst | KIND_typ | CAST_val, tag, base, NULL);
-	enter(cc);
+	enter(cc, type);
 	astn fields = statement_list(cc);
 	while (fields != NULL) {
 		// post check the list for declarations
@@ -1027,7 +1045,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 		}
 		fields = fields->next;
 	}
-	type->fields = leave(cc, type, attr | KIND_typ, pack, baseSize, &type->size);
+	type->fields = leave(cc, attr | KIND_typ, pack, baseSize, &type->size);
 
 	skipTok(cc, RIGHT_crl, 1);	// '}'
 	return tag;
@@ -1068,7 +1086,7 @@ static astn declare_enum(ccContext cc) {
 	symn type = NULL;
 	if (tag != NULL) {
 		type = declare(cc, ATTR_stat | ATTR_cnst | KIND_typ | CAST_val, tag, base, NULL);
-		enter(cc);
+		enter(cc, type);
 	}
 
 	int64_t nextValue = 0;
@@ -1107,7 +1125,7 @@ static astn declare_enum(ccContext cc) {
 	}
 
 	if (type != NULL) {
-		type->fields = leave(cc, type, KIND_typ, vm_size, 0, &type->size);
+		type->fields = leave(cc, KIND_typ, vm_size, 0, &type->size);
 	}
 
 	return tag;
@@ -1153,7 +1171,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 	}
 
 	if (enterThen) {
-		enter(cc);
+		enter(cc, NULL);
 	}
 
 	ast->stmt.stmt = statement(cc, (ccKind) 0);
@@ -1161,18 +1179,18 @@ static astn statement_if(ccContext cc, ccKind attr) {
 	// parse else part if next token is 'else'
 	if (skipTok(cc, ELSE_kwd, 0)) {
 		if (enterThen) {
-			leave(cc, NULL, KIND_def, 0, 0, NULL);
+			leave(cc, KIND_def, 0, 0, NULL);
 			enterThen = 0;
 		}
 		if (enterElse) {
-			enter(cc);
+			enter(cc, NULL);
 			enterThen = 1;
 		}
 		ast->stmt.step = statement(cc, (ccKind) 0);
 	}
 
 	if (enterThen) {
-		leave(cc, NULL, KIND_def, 0, 0, NULL);
+		leave(cc, KIND_def, 0, 0, NULL);
 	}
 
 	return ast;
@@ -1191,7 +1209,7 @@ static astn statement_for(ccContext cc, ccKind attr) {
 		return NULL;
 	}
 
-	enter(cc);
+	enter(cc, NULL);
 	skipTok(cc, LEFT_par, 1);
 
 	astn init = peekTok(cc, STMT_end) ? NULL : expression(cc, 0);
@@ -1235,7 +1253,7 @@ static astn statement_for(ccContext cc, ccKind attr) {
 
 	ast->stmt.stmt = statement(cc, (ccKind) 0);
 
-	leave(cc, NULL, KIND_def, 0, 0, NULL);
+	leave(cc, KIND_def, 0, 0, NULL);
 
 	ast->type = cc->type_vid;
 	(void)attr;
@@ -1395,12 +1413,23 @@ static astn statement(ccContext cc, ccKind attr) {
 		ast->type = cc->type_vid;
 	}
 	else if ((ast = nextTok(cc, STMT_ret, 0))) {   // return expression;
+		symn function = cc->owner;
 		if (!skipTok(cc, STMT_end, 0)) {
-			ast->stmt.stmt = expression(cc, 0);
+			astn res = expression(cc, 0);
+
+			if (res && function && isFunction(function)) {
+				dieif(strcmp(function->params->name, ".result") != 0, ERR_INTERNAL_ERROR);
+				ast->jmp.value = opNode(cc, ASGN_set, lnkNode(cc, function->params), res);
+			}
+			else {
+				// returning from a non function, or returning a statement?
+				error(cc->rt, ast->file, ast->line, ERR_UNEXPECTED_TOKEN, ast);
+			}
 			skipTok(cc, STMT_end, 1);
-			check = ast->stmt.stmt;
 		}
+		ast->jmp.func = function;
 		ast->type = cc->type_vid;
+		check = ast->jmp.value;
 	}
 
 	// type, enum and alias declaration
@@ -1575,11 +1604,11 @@ symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 	libc nfc = NULL;
 	list lst = NULL;
 
-	symn type = NULL, sym = NULL;
+	symn sym = NULL;
 	astn init, args = NULL;
 
 	//~ from: int64 zxt(int64 val, int offs, int bits)
-	//~ make: inline zxt(int64 val, int offs, int bits) = int64(emit(nfc(42), int64(val), int32(offs), int32(bits)));
+	//~ make: inline zxt(int64 val, int offs, int bits) = nfc(42);
 	if(call == NULL || proto == NULL) {
 		fatal(ERR_INTERNAL_ERROR);
 		return NULL;
@@ -1621,44 +1650,14 @@ symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 		libc last = (libc) cc->native->data;
 		nfcPos = last->offs + 1;
 	}
-	lst->data = (void*) nfc;
+	lst->data = (void *) nfc;
 	lst->next = cc->native;
 	cc->native = lst;
 
-	// replace the result argument with the native call instruction
-	if (args != NULL) {
-		// File.create(char *name)
-		astn arg = args;
-		while (arg->kind == OPER_com) {
-			arg = arg->op.lhso;
-		}
-
-		type = sym->params->type;
-		// arg must be the return argument
-		if (arg->kind == TOKEN_var && arg->ref.link == sym->params) {
-			arg->kind = TOKEN_opc;
-			arg->type = type;
-			arg->opc.code = opc_nfc;
-			arg->opc.args = nfcPos;
-		}
-		else {
-			fatal(ERR_INTERNAL_ERROR);
-			return NULL;
-		}
-	}
-	else {
-		// File.stdout
-		type = sym->type;
-		args = newNode(cc, TOKEN_opc);
-		args->type = type;
-		args->opc.code = opc_nfc;
-		args->opc.args = nfcPos;
-	}
-
-	init = newNode(cc, OPER_fnc);
-	init->type = type;
-	init->op.lhso = cc->emit_tag;
-	init->op.rhso = args;
+	init = newNode(cc, TOKEN_opc);
+	init->type = sym->params->type;
+	init->opc.code = opc_nfc;
+	init->opc.args = nfcPos;
 
 	sym->kind = ATTR_stat | ATTR_cnst | KIND_def;
 	sym->init = init;
@@ -1671,24 +1670,25 @@ symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 	nfc->out = 0;
 	nfc->in = 0;
 
-	// the return argument
-	if (sym->params != NULL) {
-		symn param = sym->params;
-
-		// the first argument
-		if (param->next) {
-			nfc->in = param->next->offs / vm_size;
-		}
-
-		nfc->out = param->offs / vm_size - nfc->in;
-
-		// TODO: remove: make all parameters symbolic by default
-		for (param = sym->params; param != NULL; param = param->next) {
-			param->kind = (param->kind & ~MASK_kind) | KIND_def;
+	if (isInvokable(sym)) {
+		sym->params->kind = (sym->params->kind & MASK_attr) | KIND_def;
+		for (symn param = sym->params->next; param != NULL; param = param->next) {
+			// TODO: param->kind = (param->kind & MASK_attr) | KIND_def;
 			param->tag = NULL;
+
+			// the result of a native functions is not pushed to the stack
+			param->offs -= sym->params->size;
+
+			// input is the highest parameter offset
+			if (nfc->in < param->offs) {
+				nfc->in = param->offs;
+			}
 		}
+		nfc->in /= vm_size;
+		nfc->out = sym->params->size / vm_size;
 	}
 
+	debug("nfc: %02X, in: %U, out: %U, func: %T", nfcPos, nfc->in, nfc->out, nfc->sym);
 	return sym;
 }
 

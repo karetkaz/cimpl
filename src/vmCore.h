@@ -153,8 +153,8 @@ symn rtFindSym(rtContext, size_t offs, int callsOnly);
 void *rtAlloc(rtContext, void *ptr, size_t size, void dbg(rtContext rt, void *mem, size_t size, char *kind));
 
 size_t nfcNextArg(nfcContext nfc);
-
 size_t nfcFirstArg(nfcContext nfc);
+size_t nfcNextNamedArg(nfcContext nfc, char *name);
 
 vmValue *nfcPeekArg(nfcContext nfc, size_t offs);
 rtValue nfcReadArg(nfcContext nfc, size_t offs);

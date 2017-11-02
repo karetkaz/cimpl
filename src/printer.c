@@ -310,9 +310,9 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 			if (mode == prName) {
 				break;
 			}
-			if (ast->stmt.stmt != NULL) {
+			if (ast->jmp.value != NULL) {
 				printStr(out, esc, " ");
-				printAst(out, esc, ast->stmt.stmt, mode, exprLevel);
+				printAst(out, esc, ast->jmp.value, mode, exprLevel);
 			}
 			printStr(out, esc, ";");
 			if (oneLine) {
@@ -1172,7 +1172,9 @@ void dumpApi(rtContext rt, userContext ctx, void customPrinter(userContext, symn
 			if (sym == rt->main) {
 				continue;
 			}
-			*++sp = sym->fields;
+			if (isTypename(sym)) {
+				*++sp = sym->fields;
+			}
 		}
 
 		if (customPrinter != NULL) {

@@ -106,7 +106,7 @@ struct astNode {
 	char		*file;				// file name of the token belongs to
 	int32_t		line;				// line position of token
 	union {							// token value
-		//char *cStr;				// constant string value (ref.name)
+		//char *cStr;				// constant string value (use: ref.name)
 		int64_t cInt;				// constant integer value
 		float64_t cFlt;				// constant floating point value
 		struct {					// STMT_xxx: statement
@@ -127,10 +127,12 @@ struct astNode {
 			symn	link;			// symbol to variable
 			astn	used;			// next usage of variable
 		} ref;
-		struct {					// STMT_brk, STMT_con
-			size_t stks;			// stack size
+		struct {					// STMT_ret, STMT_brk, STMT_con
+			symn func;				// return from function
+			astn value;				// return the value of expression
 			size_t offs;			// jump instruction offset
-		} go2;
+			size_t stks;			// stack size
+		} jmp;
 		struct {					// OPER_opc
 			vmOpcode code;			// instruction code
 			size_t args;			// instruction argument
@@ -177,6 +179,7 @@ struct dbgNode {
 struct ccContextRec {
 	rtContext	rt;
 	astn	root;		// statements
+	symn	owner;		// scope variables and functions
 	symn	scope;		// scope variables and functions
 	symn	global;		// global variables and functions
 	list	native;		// list of native functions
@@ -262,10 +265,10 @@ struct dbgContextRec {
 
 //             *** Type related functions
 /// Enter a new scope.
-void enter(ccContext cc);
+void enter(ccContext cc, symn owner);
 
 /// Leave current scope.
-symn leave(ccContext cc, symn dcl, ccKind mode, size_t align, size_t baseSize, size_t *size);
+symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *size);
 
 /**
  * @brief Install a new symbol: alias, typename, variable or function.
@@ -499,7 +502,7 @@ typedef enum {
 	prValue = prOneLine,
 	prShort = prSymQual | prSymArgs | prOneLine ,	// %t, %T
 	prFull = prAttr | prSymQual | prSymArgs | prSymType | prSymInit,		// %±t, %±T
-	prDbg = prAttr | prAstType | prSymQual | prSymArgs | prSymType | prSymInit | prAsmAddr | prAsmName | 9
+	prDbg = prAttr | prAstType | prSymQual | prSymArgs | prSymType | prSymInit | prAsmAddr | prAsmName | 9 | prOneLine
 } dmpMode;
 
 const char **escapeStr();
@@ -593,6 +596,9 @@ static inline int isStatic(symn sym) {
 static inline int isInline(symn sym) {
 	return (sym->kind & MASK_kind) == KIND_def;
 }
+static inline int isNative(symn sym) {
+	return sym->init && sym->init->kind == EMIT_kwd;
+}
 static inline int isFunction(symn sym) {
 	return (sym->kind & MASK_kind) == KIND_fun;
 }
@@ -658,7 +664,6 @@ void closeLibs();
 #define ERR_INVALID_DECLARATION "invalid declaration: `%s`"
 #define ERR_INVALID_FIELD_ACCESS "object reference is required to access the member `%T`"
 #define ERR_INVALID_TYPE "can not type check expression: `%t`"
-#define ERR_INVALID_TYPE_NAME "typename expected(eg: `int32`), got: `%t`"
 #define ERR_INVALID_OPERATOR "invalid operator %.t(%T, %T)"
 #define ERR_MULTIPLE_OVERLOADS "there are %d overloads for `%T`"
 #define ERR_REDEFINED_REFERENCE "redefinition of `%T`"
@@ -669,7 +674,6 @@ void closeLibs();
 
 // Code generator errors: TODO: these are fatal internal errors
 #define ERR_CAST_EXPRESSION "can not emit expression: %t, invalid cast(%K -> %K)"
-#define ERR_EMIT_EXPRESSION "can not emit expression: %t"
 #define ERR_EMIT_FUNCTION "can not emit function: %T"
 #define ERR_EMIT_STATEMENT "can not emit statement: %t"
 #define ERR_INVALID_INSTRUCTION "invalid instruction: %.A @%06x"
@@ -681,9 +685,7 @@ void closeLibs();
 
 #define WARN_EMPTY_STATEMENT "empty statement `;`."
 #define WARN_USE_BLOCK_STATEMENT "statement should be a block statement {%t}."
-#define WARN_TRAILING_COMMA "skipping trailing comma before `%t`"
 #define WARN_EXPRESSION_STATEMENT "expression statement expected, got: `%t`"
-#define WARN_DISCARD_DATA "converting `%t` to %T is discarding one property"
 #define WARN_PASS_ARG_BY_REF "argument `%t` is implicitly passed by reference"
 #define WARN_SHORT_CIRCUIT "operators `&&` and `||` does not short-circuit yet"
 #define WARN_NO_CODE_GENERATED "no code will be generated for statement: %t"
@@ -700,7 +702,6 @@ void closeLibs();
 #define WARN_EXPONENT_OVERFLOW "exponent overflow"
 #define WARN_FUNCTION_MARKED_STATIC "marking function to be static: `%T`"
 #define WARN_USING_BEST_OVERLOAD "using overload `%T` of %d declared symbols."
-#define WARN_INLINE_ALL_PARAMS "all parameters will be inline for: %t"
 
 static inline void _break() {/* Add a breakpoint to break on compiler errors. */}
 static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
@@ -716,7 +717,7 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 
 // compilation errors
 #define error(__ENV, __FILE, __LINE, msg, ...) do { printErr(__ENV, -1, __FILE, __LINE, msg, ##__VA_ARGS__); logif("ERROR", msg, ##__VA_ARGS__); _break(); } while(0)
-#define warn(__ENV, __LEVEL, __FILE, __LINE, msg, ...) do { printErr(__ENV, __LEVEL, __FILE, __LINE, msg, ##__VA_ARGS__); logif("WARN", msg, ##__VA_ARGS__); } while(0)
+#define warn(__ENV, __LEVEL, __FILE, __LINE, msg, ...) do { printErr(__ENV, __LEVEL, __FILE, __LINE, msg, ##__VA_ARGS__); } while(0)
 #define info(__ENV, __FILE, __LINE, msg, ...) do { printErr(__ENV, 0, __FILE, __LINE, msg, ##__VA_ARGS__); } while(0)
 
 #ifdef DEBUGGING	// enable compiler debugging
