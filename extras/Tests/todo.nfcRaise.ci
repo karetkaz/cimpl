@@ -2,9 +2,11 @@
 
 inline trace(char message[*], variant inspect) = raise(verbose, message, inspect, defTrace);
 inline trace(char message[*]) = raise(verbose, message, null, defTrace);
-inline trace(variant inspect) = raise(verbose, null, inspect, defTrace);
+//inline trace(variant inspect) = raise(verbose, null, inspect, defTrace);
+
 
 inline debug(char message[*], variant inspect) = raise(debug, message, inspect, noTrace);
+// FIXME: first the arguments are looked up, and debug is found to be the previous declaration
 inline debug(char message[*]) = raise(debug, message, null, noTrace);
 // FIXME: inline debug(variant inspect) = raise(debug, null, inspect, noTrace);
 

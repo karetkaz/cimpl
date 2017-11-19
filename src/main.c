@@ -708,27 +708,30 @@ static void jsonPreProfile(dbgContext ctx) {
 }
 
 // text output
+static void textDumpDBG(FILE *out, const char **esc, dbgn dbg, userContext ctx, int indent) {
+	dmpMode mode = ctx->dmpAsm;
+	printFmt(out, esc, "%I%?s:%?u", indent, dbg->file, dbg->line);
+	if (mode & prAsmAddr) {
+		printFmt(out, esc, ": [%06x-%06x)", dbg->start, dbg->end);
+	}
+	else {
+		printFmt(out, esc, ": (%d bytes)", dbg->end - dbg->start);
+	}
+	if (dbg->stmt != NULL && ctx->rt->cc != NULL) {
+		printFmt(out, esc, ": %.*t", mode | prFull | prOneLine, dbg->stmt);
+	}
+	printFmt(out, esc, "\n");
+}
+
 static void textDumpAsm(FILE *out, const char **esc, size_t offs, userContext ctx, int indent) {
-	dmpMode mode = ctx->dmpAsm | prFull | prOneLine;
-
-	printFmt(out, esc, "%I", indent);
-
-	if (ctx->dmpAsmStmt) {
+	dmpMode mode = ctx->dmpAsm;
+	if (ctx->dmpAsmStmt && ctx->rt->cc != NULL) {
 		dbgn dbg = mapDbgStatement(ctx->rt, offs);
-		if (dbg && dbg->file && dbg->line && dbg->start == offs) {
-			printFmt(out, esc, "%?s:%?u: ", dbg->file, dbg->line);
-			if (dbg->stmt != NULL && ctx->rt->cc != NULL) {
-				if (mode & prAsmAddr) {
-					printFmt(out, esc, "[%06x-%06x): %.*t", dbg->start, dbg->end, mode, dbg->stmt);
-				}
-				else {
-					printFmt(out, esc, "(%d bytes): %.*t", dbg->end - dbg->start, mode, dbg->stmt);
-				}
-				printFmt(out, esc, "\n%I", indent);
-			}
+		if (dbg != NULL && dbg->start == offs) {
+			textDumpDBG(out, esc, dbg, ctx, indent);
 		}
 	}
-
+	printFmt(out, esc, "%I", indent);
 	printAsm(out, esc, ctx->rt, vmPointer(ctx->rt, offs), mode);
 	printFmt(out, esc, "\n");
 }
@@ -1159,6 +1162,9 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 				printFmt(out, esc, " %d", ((int32_t *) stack)[ss - i - 1]);
 			}
 			printFmt(out, esc, "\n");
+		}
+		if (dbg != NULL && dbg->start == caller) {
+			textDumpDBG(out, esc, dbg, usr, 0);
 		}
 		if (usr->exec & trcMethods) {
 			printFmt(out, esc, "[% 3.2F]\t", now);

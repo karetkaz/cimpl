@@ -905,25 +905,21 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 			params->kind = castOf(type) | KIND_def;// | KIND_var;
 		}
 		for (symn param = params; param != NULL; param = param->next) {
-			int usages = 2;  // FIXME: inline parameters only used once or none
+			int usages = 0;
 			for (astn use = param->use; use != NULL; use = use->ref.used) {
 				if (use != param->tag) {
 					usages += 1;
 				}
 			}
 
-			if (isInline(param)) {
-				// skip params if they are already marked inline
+			if (isInline(param) || usages < 2) {
+				// mark parameter as inline if it was used once or none
+				param->kind = (param->kind & ~MASK_kind) | KIND_def;
 			}
-			else if (usages > 1) {
+			else {
 				// mark params used more than one as cached
 				offs += padOffset(param->size, vm_size);
 				param->offs = offs;
-			}
-			else {
-				// mark params to be inlined
-				fatal(ERR_UNIMPLEMENTED_FEATURE);
-				param->kind = (param->kind & ~MASK_kind) | KIND_def;
 			}
 		}
 		type = cc->type_fun;

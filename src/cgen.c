@@ -572,7 +572,7 @@ static inline size_t argsSize(const struct symNode *function) {
 		if (isInline(prm)) {
 			continue;
 		}
-		size_t offs = prm->offs;// + prm->size;
+		size_t offs = prm->offs;
 		if (result < offs) {
 			result = offs;
 		}
@@ -759,45 +759,59 @@ static inline ccKind genBranch(ccContext cc, astn ast) {
 
 static inline ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 	const rtContext rt = cc->rt;
+	astn varInit = variable->init;
 	ccKind varCast = castOf(variable);
 	size_t varOffset = stkOffset(rt, variable->size);
 
-	logif(varCast != get, "%?s:%?u: %T(%K->%K)", variable->file, variable->line, variable, varCast, get);
 	if (!isVariable(variable)) {
-		// functon, struct or enum declaration.
+		// function, struct or enum declaration.
 		return CAST_vid;
 	}
+	logif(varCast != get, "%?s:%?u: %T(%K->%K)", variable->file, variable->line, variable, varCast, get);
 
-	if (variable->init != NULL) {
-		astn init = variable->init;
-		dbgCgen("%?s:%?u: %.T := %t", variable->file, variable->line, variable, init);
-		if (varCast == CAST_val && (init->kind == OPER_com || init->kind == INIT_set)) {
+	if (varInit == NULL && variable->type->init != NULL) {
+		varInit = variable->type->init;
+		warn(cc->rt, 6, variable->file, variable->line, WARN_USING_DEFAULT_INITIALIZER, variable, varInit);
+	}
+
+	if (varInit != NULL) {
+		dbgCgen("%?s:%?u: %.T := %t", variable->file, variable->line, variable, varInit);
+		if (varCast == CAST_val && (varInit->kind == OPER_com || varInit->kind == INIT_set)) {
 			// TODO: implement code generation for object literals
 			error(rt, variable->file, variable->line, ERR_EXPR_TOO_COMPLEX);
 			return CAST_any;
 		}
-		if (varCast != genAst(cc, init, varCast)) {
-			traceAst(init);
+		if (varCast != genAst(cc, varInit, varCast)) {
+			traceAst(varInit);
 			return CAST_any;
 		}
 		if (varOffset != stkOffset(rt, 0)) {
-			traceAst(init);
+			traceAst(varInit);
 			return CAST_any;
 		}
+	}
+	else if (isConst(variable)) {
+		// uninitialized constant
+		error(rt, variable->file, variable->line, ERR_UNINITIALIZED_CONSTANT, variable);
+	}
+	else if (isInvokable(variable)) {
+		// unimplemented function
+		error(rt, variable->file, variable->line, ERR_UNIMPLEMENTED_FUNCTION, variable);
 	}
 	else {
 		// TODO: this should be an error, not a warning
 		warn(rt, 1, variable->file, variable->line, ERR_UNINITIALIZED_VARIABLE, variable);
 	}
+
 	if (variable->offs == 0) {
 		// local variable => on stack
-		if (variable->init == NULL) {
+		if (varInit == NULL) {
 			if (!emitInt(rt, opc_spc, padOffset(variable->size, vm_size))) {
 				return CAST_any;
 			}
 		}
 		variable->offs = stkOffset(rt, 0);
-		dbgCgen("%?s:%?u: %.T is local(@%06x)", variable->file, variable->line, variable, variable->offs);
+		debug("%?s:%?u: %.T is local(@%06x)", variable->file, variable->line, variable, variable->offs);
 		if (varOffset != variable->offs) {
 			trace(ERR_INTERNAL_ERROR);
 			return CAST_any;
@@ -805,7 +819,7 @@ static inline ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 	}
 	else if (!isInline(variable)) {
 		// global variable or function argument
-		if (variable->init != NULL) {
+		if (varInit != NULL) {
 			if (!genOffset(rt, variable)) {
 				return CAST_any;
 			}
@@ -814,10 +828,10 @@ static inline ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 			}
 		}
 		if (isStatic(variable)) {
-			dbgCgen("%?s:%?u: %.T is global(@%06x)", variable->file, variable->line, variable, variable->offs);
+			debug("%?s:%?u: %.T is global(@%06x)", variable->file, variable->line, variable, variable->offs);
 		}
 		else {
-			dbgCgen("%?s:%?u: %.T is param(@%06x)", variable->file, variable->line, variable, variable->offs);
+			debug("%?s:%?u: %.T is param(@%06x)", variable->file, variable->line, variable, variable->offs);
 		}
 	}
 	return varCast;
@@ -955,7 +969,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 
 	dbgCgen("%?s:%?u: %t", ast->file, ast->line, ast);
 	if (function == NULL) {
-		fatal(ERR_INTERNAL_ERROR);
+		traceAst(ast);
 		return CAST_any;
 	}
 
@@ -983,11 +997,12 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 
 	// generate arguments (push or cache)
 	if (isInvokable(function) && args != NULL) {
+		size_t offs = 0;
 		size_t preAlloc = 0;//argsSize(function);
 		symn prm = function->params;
 		astn arg = chainArgs(args);
 
-		logif(prm->size != ast->type->size, ERR_INTERNAL_ERROR);
+		logif(prm->size != ast->type->size, ERR_INTERNAL_ERROR": %T", function);
 
 		// alloc space for result and arguments
 		if (preAlloc > 0) {
@@ -1000,6 +1015,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 			// skip generating void or inline results
 		}
 		else if (prm->init != NULL) {
+			offs += padOffset(prm->size, vm_size);
 			// result has a default value
 			size_t resOffs = stkOffset(rt, prm->size);
 			if (!genAst(cc, prm->init, castOf(prm))) {
@@ -1025,7 +1041,6 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 			}
 		}
 		else {
-			logif("INIT", "result of `%T` is uninitialized", function);
 			warn(rt, 1, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
 			if (!emitInt(rt, opc_spc, prm->size)) {
 				traceAst(ast);
@@ -1033,33 +1048,46 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 			}
 		}
 
+		if (isInline(function)) {
+			prm->offs = locals + offs;
+		}
 		prm = prm->next;	// skip to the first parameter
 		while (prm != NULL && arg != NULL) {
-
-			// generate the argument value
-			size_t argOffs = stkOffset(rt, prm->size);
-			if (!genAst(cc, arg, castOf(prm))) {
-				traceAst(ast);
-				return CAST_any;
+			if (isInline(prm) || prm->size == 0) {
+				// skip generating void or inline parameter
+				prm->init = arg;
 			}
+			else {
+				offs += padOffset(prm->size, vm_size);
 
-			if (argOffs != stkOffset(rt, 0)) {
-				fatal(ERR_INTERNAL_ERROR": argument size does not math parameter size");
-				traceAst(ast);
-				return CAST_any;
-			}
-
-			if (argOffs - locals != prm->offs) {
-				if (!emitStack(rt, opc_ldsp, locals + prm->offs)) {
-					trace(ERR_INTERNAL_ERROR);
+				// generate the argument value
+				size_t argOffs = stkOffset(rt, prm->size);
+				if (!genAst(cc, arg, castOf(prm))) {
+					traceAst(ast);
 					return CAST_any;
 				}
-				if (!emitInt(rt, opc_sti, prm->size)) {
-					trace(ERR_INTERNAL_ERROR);
+
+				if (argOffs != stkOffset(rt, 0)) {
+					fatal(ERR_INTERNAL_ERROR": argument size does not math parameter size");
+					traceAst(ast);
 					return CAST_any;
+				}
+
+				if (argOffs - locals != prm->offs) {
+					if (!emitStack(rt, opc_ldsp, locals + prm->offs)) {
+						trace(ERR_INTERNAL_ERROR);
+						return CAST_any;
+					}
+					if (!emitInt(rt, opc_sti, prm->size)) {
+						trace(ERR_INTERNAL_ERROR);
+						return CAST_any;
+					}
 				}
 			}
 
+			if (isInline(function)) {
+				prm->offs = locals + offs;
+			}
 			prm = prm->next;
 			arg = arg->next;
 		}
@@ -1071,28 +1099,15 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 	}
 
 	if (isInline(function)) {
-		if (isNative(function)) {
-			/* if (function == cc->libc_dbg) {
-				// FIXME: add hidden arguments to raise: file, line
-				dieif(!emitInt(rt, opc_lc32, ast->line), "__FILE__");
-				dieif(!emitRef(rt, ast->file), "__LINE__");
-			}*/
-			// generate inline expression
-			if (!genAst(cc, function->init, result)) {
-				traceAst(function->init);
-				return CAST_any;
-			}
-		} else {
-			size_t spBegin = stkOffset(rt, 0);
-			fixJump(rt, 0, 0, spBegin - locals);
-
-			// generate inline expression
-			if (!genAst(cc, function->init, result)) {
-				traceAst(function->init);
-				return CAST_any;
-			}
-
-			fixJump(rt, 0, 0, spBegin + ast->type->size);
+		/* if (function == cc->libc_dbg) {
+			// FIXME: add hidden arguments to raise: file, line
+			dieif(!emitInt(rt, opc_lc32, ast->line), "__FILE__");
+			dieif(!emitRef(rt, ast->file), "__LINE__");
+		}*/
+		// generate inline expression
+		if (!genAst(cc, function->init, result)) {
+			traceAst(function->init);
+			return CAST_any;
 		}
 
 		// drop cached arguments
@@ -1114,6 +1129,16 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 				fatal(ERR_INTERNAL_ERROR);
 				return CAST_any;
 			}
+		}
+
+		size_t offs = 0;
+		// restore parameter offsets and reset init value
+		for (symn prm = function->params; prm != NULL; prm = prm->next) {
+			if (!isInline(prm)) {
+				offs += padOffset(prm->size, vm_size);
+			}
+			prm->init = NULL;
+			prm->offs = offs;
 		}
 	}
 	else if (isTypename(function)) {
@@ -1185,6 +1210,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		// drop arguments, except result.
 		if (!emitStack(rt, opc_drop, localSize)) {
 			fatal(ERR_INTERNAL_ERROR);
+			traceAst(ast);
 			return CAST_any;
 		}
 	}
@@ -2108,16 +2134,6 @@ int gencode(rtContext rt, int debug) {
 			}
 
 			dieif(var->offs != 0, "Error `%T` offs: %d", var, var->offs);	// already generated ?
-
-			// uninitialized constant
-			if (isConst(var) && var->init == NULL) {
-				error(cc->rt, var->file, var->line, ERR_UNINITIALIZED_CONSTANT, var);
-			}
-
-			// unimplemented function
-			if (isInvokable(var) && var->init == NULL) {
-				error(cc->rt, var->file, var->line, ERR_UNIMPLEMENTED_FUNCTION, var);
-			}
 
 			if (isFunction(var)) {
 

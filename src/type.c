@@ -349,6 +349,9 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 		if (!isInline(sym)) {
 			break;
 		}
+		if (isInvokable(sym)) {
+			break;
+		}
 		if (sym->init == NULL) {
 			sym = sym->type;
 		}
@@ -809,7 +812,7 @@ symn initCheck(ccContext cc, symn var, int raise) {
 	if (ast == NULL) {
 		// uninitialized variable
 		if (raise) {
-			warn(cc->rt, 1, var->file, var->line, ERR_UNINITIALIZED_VARIABLE, var, NULL);
+			warn(cc->rt, 1, var->file, var->line, ERR_UNINITIALIZED_VARIABLE, var);
 		}
 		return type;
 	}
@@ -818,16 +821,16 @@ symn initCheck(ccContext cc, symn var, int raise) {
 		// expression initialized variable
 		type = typeCheck(cc, NULL, ast, raise);
 		if (raise && !canAssign(cc, var, ast, 0)) {
-			warn(cc->rt, 1, ast->file, ast->line, ERR_INVALID_VALUE_ASSIGN, var, ast);
+			warn(cc->rt, 8, ast->file, ast->line, ERR_INVALID_VALUE_ASSIGN, var, ast);
 		}
 	}
 	else if (isTypename(var)) {
 		type = cc->type_fun;
-		warn(cc->rt, 1, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, var, ast);
+		warn(cc->rt, 1, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, var);
 	}
 	else if (isFunction(var)) {
 		type = cc->type_fun;
-		warn(cc->rt, 1, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, var, ast);
+		warn(cc->rt, 1, ast->file, ast->line, ERR_UNIMPLEMENTED_FUNCTION, var);
 	}
 	else {
 		// literal initialized variable

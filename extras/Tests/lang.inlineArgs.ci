@@ -1,7 +1,7 @@
 // test inline arguments
 
 inline zero(int a, int b) = 0;	// params not used at all
-inline last(int a, int b) = b;	// only one param used
+inline last(int a, int b) = (b);	// only one param used // FIXME: inline last(int a, int b) = b;
 inline sum(int a, int b) = a + b;	// both param used once
 inline any(int a, int b) = a ? a : b;	// one param used 2x, the other once
 inline min(int a, int b) = a < b ? a : b;	// both param used 2x
@@ -18,10 +18,9 @@ int zeroVal = zero(2, 3);
 int zeroVar = zero(ma, mb);
 int zeroXpr = zero(ma + mb, mb + mc);
 
-// FIXME: genAst: Internal Error
-//int lastVal = last(2, 3);
-//int lastVar = last(ma, mb);
-//int lastXpr = last(ma + mb, mb + mc);
+int lastVal = last(2, 3);
+int lastVar = last(ma, mb);
+int lastXpr = last(ma + mb, mb + mc);
 
 int sum2Val = sum(3, 12);
 int sum2Var = sum(ma, mb);
@@ -33,20 +32,20 @@ int any2Xpr = any(ma + mb, mb + mc);
 
 int min2Val = min(3, 12);
 int min2Var = min(ma, mb);
-int min2Xpr = min(ma + mb, mb + mc);  // FIXME: cache args by default
+int min2Xpr = min(ma + mb, mb + mc);
 
 // FIXME: genAst: Internal Error
 //int sum3Val = sum(3, 2, 6);
 //int sum3Var = sum(ma, mb, mc);
 //int sum3Xpr = sum(ma + mb, mb + mc, mc + ma);
 
-//int any3Val = any(3, 2, 6);
-//int any3Var = any(ma, mb, mc);
-//int any3Xpr = any(ma + mb, mb + mc, mc + ma);
+int any3Val = any(3, 2, 6);
+int any3Var = any(ma, mb, mc);
+int any3Xpr = any(ma + mb, mb + mc, mc + ma);
 
-//int min3Val = min(3, 2, 6);
-//int min3Var = min(ma, mb, mc);
-//int min3Xpr = min(ma + mb, mb + mc, mc + ma);
+int min3Val = min(3, 2, 6);
+int min3Var = min(ma, mb, mc);
+int min3Xpr = min(ma + mb, mb + mc, mc + ma);
 
 // TODO: force inline/cache arguments ?
 // inline min(inline int a, inline int b) = a < b ? a : b;

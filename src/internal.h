@@ -27,9 +27,6 @@
 // limit the count of printed elements(stacktrace, array elements)
 #define LOG_MAX_ITEMS 25
 
-// enable parallel execution stuff
-#define VM_MAX_PROC 0
-
 // maximum token count in expressions & nesting level
 #define CC_MAX_TOK 1024
 
@@ -702,6 +699,7 @@ void closeLibs();
 #define WARN_EXPONENT_OVERFLOW "exponent overflow"
 #define WARN_FUNCTION_MARKED_STATIC "marking function to be static: `%T`"
 #define WARN_USING_BEST_OVERLOAD "using overload `%T` of %d declared symbols."
+#define WARN_USING_DEFAULT_INITIALIZER "using default type initializer: %T := %t."
 
 static inline void _break() {/* Add a breakpoint to break on compiler errors. */}
 static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
@@ -716,7 +714,7 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 #define dieif(__EXP, msg, ...) do { if (__EXP) { prerr("err("#__EXP")", msg, ##__VA_ARGS__); _abort(); } } while(0)
 
 // compilation errors
-#define error(__ENV, __FILE, __LINE, msg, ...) do { printErr(__ENV, -1, __FILE, __LINE, msg, ##__VA_ARGS__); logif("ERROR", msg, ##__VA_ARGS__); _break(); } while(0)
+#define error(__ENV, __FILE, __LINE, msg, ...) do { logif("ERROR", msg, ##__VA_ARGS__); printErr(__ENV, -1, __FILE, __LINE, msg, ##__VA_ARGS__); _break(); } while(0)
 #define warn(__ENV, __LEVEL, __FILE, __LINE, msg, ...) do { printErr(__ENV, __LEVEL, __FILE, __LINE, msg, ##__VA_ARGS__); } while(0)
 #define info(__ENV, __FILE, __LINE, msg, ...) do { printErr(__ENV, 0, __FILE, __LINE, msg, ##__VA_ARGS__); } while(0)
 
@@ -743,7 +741,7 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 #endif
 
 #ifndef logif
-#define logif(__EXP, msg, ...) do {} while(0)
+#define logif(__EXP, msg, ...) do { (void)(__EXP); } while(0)
 #endif
 #ifndef trace
 #define trace(msg, ...) do {} while(0)
