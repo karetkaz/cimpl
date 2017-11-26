@@ -1,9 +1,8 @@
 /*******************************************************************************
- *   File: lexer.c
+ *   File: parser.c
  *   Date: 2011/06/23
  *   Desc: parser
  *******************************************************************************
-
 */
 #include <stddef.h>
 #include "internal.h"
@@ -76,7 +75,7 @@ static inline symn addLength(ccContext cc, symn sym, astn init) {
 
 /**
  * @brief Install a new symbol: alias, type, variable or function.
- * @param kind Kind of symbol: (KIND_def, KIND_var,KIND_typ, CAST_arr)
+ * @param kind Kind of symbol: (KIND_def, KIND_var, KIND_typ, CAST_arr)
  * @param tag Parsed tree node representing the symbol.
  * @param type Type of symbol.
  * @return The symbol.
@@ -85,17 +84,14 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 	symn def, ptr;
 	size_t size = type->size;
 
-	if (!tag || tag->kind != TOKEN_var) {
+	if (tag == NULL || tag->kind != TOKEN_var) {
 		fatal(ERR_INTERNAL_ERROR": identifier expected, not: %t", tag);
-		return 0;
+		return NULL;
 	}
 
 	if ((kind & MASK_cast) == CAST_ref) {
-		// debug("referencing %t", tag);
 		size = sizeof(vmOffs);
 	}
-
-
 	def = install(cc, tag->ref.name, kind, size, type, NULL);
 
 	if (def != NULL) {
@@ -749,13 +745,11 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		// parse function body
 		if (peekTok(cc, STMT_beg)) {
 			def = declare(cc, ATTR_stat | ATTR_cnst | KIND_fun | cast, tag, type, params);
+
+			// enable parameter lookup
 			def->fields = params;
 
 			enter(cc, def);
-			for (symn param = params->next; param; param = param->next) {
-				param->owner = def;
-			}
-
 			def->init = statement(cc, (ccKind) 0);
 			if (def->init == NULL) {
 				def->init = newNode(cc, STMT_beg);
@@ -763,6 +757,9 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 			}
 			backTok(cc, newNode(cc, STMT_end));
 			leave(cc, KIND_def, -1, 0, NULL);
+
+			// disable parameter lookup
+			def->fields = NULL;
 			return tag;
 		}
 
@@ -893,6 +890,10 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 	if (init != NULL) {
 		type = typeCheck(cc, NULL, init, 1);
 		init->type = type;
+		if (type == NULL) {
+			// raise the error if lookup failed
+			error(cc->rt, init->file, init->line, ERR_INVALID_TYPE, init);
+		}
 	}
 	params = leave(cc, KIND_fun, vm_size, 0, NULL);
 	if (params != NULL) {

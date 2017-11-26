@@ -142,6 +142,14 @@ If JSON output format is used, the generated file can be opened with the Inspect
 
 	- `/s` print source code statements
 
+	- `/m` include the `.main` initializer function
+
+	- `/d` include symbol details in the dump (size, offset, owner, etc)
+
+	- `/p` include function parameters and record fields
+
+	- `/u` include usages of the symbols
+
 
 - `-ast[*]`
 
@@ -157,10 +165,22 @@ If JSON output format is used, the generated file can be opened with the Inspect
 
 	- `/e` format.option: don't keep `else if` constructs on the same line
 
+	- `/m` include the `.main` initializer function
 
-- `-run`
+	- `/d` include symbol details in the dump (size, offset, owner, etc)
+
+	- `/p` include function parameters and record fields
+
+	- `/u` include usages of the symbols
+
+
+- `-run[*]`
 
 	run code with maximum speed: no(debug information, stacktrace, bounds checking, ...)
+
+	additional arguments:
+
+	- `/g` on exit dump value of global variables
 
 
 - `-debug[*]`
@@ -175,9 +195,9 @@ If JSON output format is used, the generated file can be opened with the Inspect
 
 	- `/l` or `/L` print the cause message of caught errors (/L includes stack trace)
 
-	- `/g` on exit dump global variable values
+	- `/g` on exit dump value of global variables
 
-	- `/h` on exit dump allocated heap memory chunks
+	- `/h` on exit dump memory related statistics
 
 	- `/p` on exit dump function statistics
 
@@ -192,9 +212,9 @@ If JSON output format is used, the generated file can be opened with the Inspect
 
 	- `/a` include all the information in the dump
 
-	- `/g` on exit dump global variable values
+	- `/g` on exit dump value of global variables
 
-	- `/h` on exit dump allocated heap memory chunks
+	- `/h` on exit dump memory related statistics
 
 	- `/p` on exit dump function statistics
 

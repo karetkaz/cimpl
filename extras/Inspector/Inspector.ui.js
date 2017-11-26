@@ -158,7 +158,7 @@ function displayCallTree(chartDiv, treeDiv, focusedNode) {
 		tree = {
 			enter: tree.enter,
 			leave: tree.leave,
-			calltree: [tree]
+			callTree: [tree]
 		}
 	}
 
@@ -166,29 +166,29 @@ function displayCallTree(chartDiv, treeDiv, focusedNode) {
 
 	function extendCallTree(obj, parent) {
 		var i, ct, result = Object.create(obj);
-		if (obj != null && obj.calltree != null) {
+		if (obj != null && obj.callTree != null) {
 			ct = [];
-			for (i = 0; i < obj.calltree.length; ++i) {
+			for (i = 0; i < obj.callTree.length; ++i) {
 				/* TODO: exclude very short calls
-				var node = obj.calltree[i];
+				var node = obj.callTree[i];
 				var time = node.total * 100;
 				time /= samples.leave - samples.enter;
 				if (time < 0.01) {
 					continue;
 				}
 				*/
-				ct.push(extendCallTree(obj.calltree[i], result));
+				ct.push(extendCallTree(obj.callTree[i], result));
 			}
-			Object.defineProperty(result, 'calltree', {value: ct});
+			Object.defineProperty(result, 'callTree', {value: ct});
 		}
 		Object.defineProperty(result, 'parent', {value: parent});
 		return result;
 	}
 
 	function walkCallTree(node, depth, action) {
-		if (node.calltree != null) {
-			for (var i = 0; i < node.calltree.length; ++i) {
-				var child = node.calltree[i];
+		if (node.callTree != null) {
+			for (var i = 0; i < node.callTree.length; ++i) {
+				var child = node.callTree[i];
 				action(child, depth, node);
 				walkCallTree(child, depth + 1, action);
 			}
@@ -221,7 +221,7 @@ function displayCallTree(chartDiv, treeDiv, focusedNode) {
 		treeDiv.appendChild(row);
 
 		treeDiv.expandTree = function(expand, all) {
-			tree.calltree[0].expandTree(expand, all);
+			tree.callTree[0].expandTree(expand, all);
 		};
 
 		walkCallTree(tree, 0, function(node, depth) {
@@ -314,8 +314,8 @@ function displayCallTree(chartDiv, treeDiv, focusedNode) {
 				node.htmlTreeRow = treeRow;		// add a reference to the table row
 
 				// check if the node has sub-calls
-				//expandable = node.calltree && node.calltree.length > 0;
-				expandable = node.calltree != null;
+				//expandable = node.callTree && node.callTree.length > 0;
+				expandable = node.callTree != null;
 
 				node.isExpanded = function() {
 					if (func.classList.contains("expanded")) {

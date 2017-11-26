@@ -40,6 +40,17 @@ char arrPtrInitString[*] = "string";
 //~ int arrSliceInitString[] = "string";  // FIXME: compilation error: invalid assignment
 //~ int arrPtrInitString[*] = "string";  // FIXME: compilation error: invalid assignment
 
+
+//arrFixedNoInit[0] = 23;
+//assert(arrFixedNoInit[0] == 23);
+
+assert(arrFixedNoInit.length == 7);
+assert(arrSliceNoInit.length == 0, "This one might fail");
+
+assert(arrSliceInitNull.length == 0);
+assert(arrSliceInitSlice.length == arrSliceInitFixed.length);
+
+
 /*
 // initialize all elements with the value 4
 int a[100] = {*: 4}; /+ =>

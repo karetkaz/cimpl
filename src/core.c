@@ -808,7 +808,7 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 }
 
 /// Allocate, resize or free memory; @see rtContext.api.rtAlloc
-void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(rtContext, void *, size_t, char *)) {
+void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(dbgContext, void *, size_t, char *)) {
 	/* memory manager
 	 * using one linked list containing both used and unused memory chunks.
 	 * The idea is when allocating a block of memory we always must to traverse the list of chunks.
@@ -936,7 +936,7 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(rtContext, void *, 
 			chunk = NULL;
 		}
 	}
-		// allocate.
+	// allocate.
 	else if (size > 0) {
 		memChunk prev = chunk = rt->vm.heap;
 
@@ -962,18 +962,9 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(rtContext, void *, 
 			chunk = next;
 		}
 	}
-		// Debug.
+	// Debug.
 	else {
 		chunk = NULL;
-		if (dbg != NULL) {
-			memChunk mem;
-			for (mem = rt->vm.heap; mem; mem = mem->next) {
-				if (mem->next) {
-					size_t chunkSize = (char*)mem->next - (char*)mem - sizeof(struct memChunk);
-					dbg(rt, mem->data, chunkSize, mem->prev != NULL ? "used" : "free");
-				}
-			}
-		}
 	}
 
 	if (rt->dbg != NULL) {
@@ -982,6 +973,9 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(rtContext, void *, 
 		for (mem = rt->vm.heap; mem; mem = mem->next) {
 			if (mem->next) {
 				size_t chunkSize = (char*)mem->next - (char*)mem - sizeof(struct memChunk);
+				if (dbg != NULL) {
+					dbg(rt->dbg, mem->data, chunkSize, mem->prev != NULL ? "used" : "free");
+				}
 				if (mem->prev != NULL) {
 					used += chunkSize;
 				}
@@ -993,7 +987,6 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(rtContext, void *, 
 		rt->dbg->freeMem = free;
 		rt->dbg->usedMem = used;
 	}
-
 
 	return chunk ? chunk->data : NULL;
 }

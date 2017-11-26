@@ -1172,9 +1172,7 @@ void dumpApi(rtContext rt, userContext ctx, void customPrinter(userContext, symn
 			if (sym == rt->main) {
 				continue;
 			}
-			if (isTypename(sym)) {
-				*++sp = sym->fields;
-			}
+			*++sp = sym->fields;
 		}
 
 		if (customPrinter != NULL) {

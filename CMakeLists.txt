@@ -27,6 +27,7 @@ set(CC_SOURCE_FILES
 
 add_executable(cmpl
 	${CC_SOURCE_FILES}
+	${CC_HEADER_FILES} 
 	src/main.c
 )
 

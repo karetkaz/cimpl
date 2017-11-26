@@ -82,14 +82,14 @@ case opc_jz:   NEXT(4, -1, 1) {
 }
 case opc_task: NEXT(4, -0, 0) {
 #ifdef EXEC
-	if (task(pu, cc, -1, ip->cl * vm_size))
+	if (vmFork(pu, cc, -1, ip->cl * vm_size))
 		pu->ip += ip->cl - 4;
 #endif
 	break;
 }
 case opc_sync: NEXT(2, -0, 0) {
 #ifdef EXEC
-	if (!sync(pu, -1, ip->idx)) {
+	if (!vmJoin(pu, -1, ip->idx)) {
 		NEXT(-2, -0, 0);
 	}
 #endif

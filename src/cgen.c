@@ -1142,11 +1142,6 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		}
 	}
 	else if (isTypename(function)) {
-		// void("message") || void(0)
-		if (function == cc->type_vid && args != NULL && args->kind == TOKEN_val) {
-			warn(rt, 8, args->file, args->line, WARN_NO_CODE_GENERATED, ast);
-			return castOf(function);
-		}
 		// variant(data) || typename(data) || pointer(data)
 		if (function == cc->type_var || function == cc->type_rec || function == cc->type_ptr) {
 			symn variable = linkOf(args);
@@ -1175,7 +1170,6 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		// float64(3)
 		switch (result = castOf(function)) {
 			default:
-			case CAST_vid:
 			case CAST_val:
 			case CAST_arr:
 			case CAST_ref:
@@ -1184,6 +1178,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 				break;
 
 			// cast to basic type
+			case CAST_vid:
 			case CAST_bit:
 			case CAST_i32:
 			case CAST_u32:
@@ -1291,7 +1286,7 @@ static inline ccKind genMember(ccContext cc, astn ast, ccKind get) {
 		return CAST_any;
 	}
 	if (isStatic(member)) {
-		if (!lhsStat && object->kind != CAST_arr) {
+		if (!lhsStat && isVariable(object) && castOf(object->type) != CAST_arr) {
 			warn(rt, 1, ast->file, ast->line, WARN_STATIC_FIELD_ACCESS, member, object->type);
 		}
 		return genAst(cc, ast->op.rhso, get);
@@ -1491,15 +1486,20 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 		case STMT_ret:
 			dieif(get != CAST_vid, ERR_INTERNAL_ERROR": get: %K", get);
 			if (ast->jmp.value != NULL) {
+				astn res = ast->jmp.value;
 				// `return 3;` must be modified to `return (result := 3);`
-				dieif(ast->jmp.value->kind != ASGN_set, ERR_INTERNAL_ERROR);
+				dieif(res->kind != ASGN_set, ERR_INTERNAL_ERROR);
 
-				if (!genAst(cc, ast->jmp.value, CAST_vid)) {
+				if (res->type == cc->type_vid && res->kind == ASGN_set) {
+					// do not generate assignment to void(ie: `void f1() { return f2(); }`)
+					res = res->op.rhso;
+				}
+				if (!genAst(cc, res, CAST_vid)) {
 					traceAst(ast);
 					return CAST_any;
 				}
 			}
-			//TODO: destroy local reference variables.
+			// TODO: destroy local reference variables.
 			if (!emitStack(rt, opc_drop, sizeof(vmOffs) + argsSize(ast->jmp.func))) {
 				trace(ERR_INTERNAL_ERROR);
 				return CAST_any;
@@ -1725,6 +1725,11 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			break;
 
 		case TOKEN_val:
+			if (get == CAST_vid) {
+				// void("message") || void(0)
+				warn(rt, 8, ast->file, ast->line, WARN_NO_CODE_GENERATED, ast);
+				return CAST_vid;
+			}
 			switch (got) {
 				default:
 					fatal(ERR_INTERNAL_ERROR);

@@ -150,7 +150,7 @@ symn rtFindSym(rtContext, size_t offs, int callsOnly);
  * 		size >  0 && ptr != null: re-alloc
  * @note Invocation to execute must precede this call.
  */
-void *rtAlloc(rtContext, void *ptr, size_t size, void dbg(rtContext rt, void *mem, size_t size, char *kind));
+void *rtAlloc(rtContext, void *ptr, size_t size, void dbg(dbgContext rt, void *mem, size_t size, char *kind));
 
 size_t nfcNextArg(nfcContext nfc);
 size_t nfcFirstArg(nfcContext nfc);

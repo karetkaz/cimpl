@@ -546,10 +546,10 @@ assert(constants["e"] == Math.e);
 assert(constants.e == Math.e);
 ```
 
-Collection types(Array, Stack, Queue, Set, Bag, Map, …) are implemented in the run-time library.
+Collection types(Array, Stack, Queue, Set, Bag, Map, …) are part of the run-time library.
 
 ## Functions
-[TODO: implementation + documentation]
+[TODO: documentation]
 
 - Functions that are not implemented, will be converted to function references.
 - Functions references must be initialized, or implemented (re-declared as implemented function).

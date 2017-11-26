@@ -408,49 +408,30 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 	if ((sym = lookup(cc, sym, ref, args, 1)) != NULL) {
 		symn type;
 		if (isInline(sym) && sym->init != NULL) {
+			// resulting type is the type of the inline expression
 			type = sym->init->type;
-			//fatal("%?s:%?u:Inline: %T => %T", ref->file, ref->line, sym, type);
 		}
 		else if (isInvokable(sym) && args != NULL) {
 			// resulting type is the type of result parameter
 			type = sym->params->type;
+		}
+		else if (isTypename(sym) && args != NULL) {
+			// resulting type is the type of the cast
+			type = sym;
 		}
 		else {
 			// resulting type is the type of the variable
 			type = sym->type;
 		}
 
-		// check basic casts: int32(8);
-		if (type == cc->type_rec && args != NULL) {
-			// variant, typename, pointer
-			if (sym == cc->type_var || sym == cc->type_rec || sym == cc->type_ptr) {
-				type = sym;
-			}
-			else {
-				switch (castOf(sym)) {
-					default:
-						break;
-
-					case CAST_i32:
-					case CAST_i64:
-					case CAST_u32:
-					case CAST_u64:
-					case CAST_f32:
-					case CAST_f64:
-					case CAST_var:
-						type = sym;
-						break;
-				}
-			}
-		}
-
 		dieif(ref->kind != TOKEN_var, ERR_INTERNAL_ERROR);
 		ref->ref.link = sym;
-		ref->type = type;
+		ref->type = sym->type;
 		addUsage(sym, ref);
 		return type;
 	}
-	else if (raise) {
+
+	if (raise) {
 		error(cc->rt, ref->file, ref->line, ERR_UNDEFINED_REFERENCE, ref);
 	}
 	return NULL;

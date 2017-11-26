@@ -1,30 +1,5 @@
-
-## Compilation memory management
-
-The memory is organized in 4 segments:
-
-- meta: read only
-	- identifiers and string constants (are emitted in the compilation phase).
-	- typename and variable metadata (are emitted in the compilation phase).
-	- [TODO] enumeration values.
-
-- code: read only
-	- functions body.
-
-- data: writeable
-	- static variables.
-
-- heap: writeable
-	- heap memory
-	- stack(s).
-
-[TODO] code and data are mixed together.
-[TODO] enums are generated int the mixed code + data section.
-
-In the compilation phase the lower part of the memory is filled with persistent data which remains available for code execution,
-while the upper part is filled with token structures and other temporary data, that will be overwritten on code execution.
-
-## Constant evaluation [TODO]
+## Constant evaluation
+[TODO: implementation]  
 
 Constant expression evaluation should be done by the vm.
 
@@ -37,6 +12,8 @@ An expression is constant:
 - no stack manipulation is performed?
 
 ## Code generation and execution
+[TODO: implementation] code and data are mixed together.  
+[TODO: implementation] enums are generated int the mixed code + data section.  
 
 Every compilation results in a `.main` hidden function, which contains the initialization of all static variables,
 and all the global statements (which are not part of function bodies).

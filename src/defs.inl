@@ -133,7 +133,7 @@ TOKEN_DEF(EMIT_kwd, 0x00, 0, "emit")
 //~ sys ========================================================================
 OPCODE_DEF(opc_nop,  0x00, 1, 0, 0, "nop")          // no operation;
 OPCODE_DEF(opc_nfc,  0x01, 4, 0, 0, "nfc")          // native function call
-OPCODE_DEF(opc_call, 0x02, 1, 0, 1, "call")         // ip = pop(); push(IP); IP = ip;       […, a, b, ip  => […, a, b, ret;
+OPCODE_DEF(opc_call, 0x02, 1, 1, 1, "call")         // ip = pop(); push(IP); IP = ip;       […, a, b, ip  => […, a, b, ret;
 OPCODE_DEF(opc_jmpi, 0x03, 1, 1, 0, "ret")          // IP = popref();                       […, a, b, c  => […, a, b;
 OPCODE_DEF(opc_jmp,  0x04, 4, 0, 0, "jmp")          // IP += arg.rel;                       […, a, b, c  => […, a, b, c;
 OPCODE_DEF(opc_jnz,  0x05, 4, 1, 0, "jnz")          // if (popi32() != 0) {IP += arg.rel;}      […, a, b, c => […, a, b;

@@ -13,7 +13,7 @@ function Inspector(data) {
 			leave: null,
 			memory: null,
 			caller: null,
-			calltree: null,
+			callTree: null,
 			func: functions[id] || {}
 		};
 
@@ -75,16 +75,16 @@ function Inspector(data) {
 
 		if (callee.self != null) {
 			callee.self = callee.total;
-			if (callee.calltree != null) {
-				for (j = 0; j < callee.calltree.length; ++j) {
-					callee.self -= callee.calltree[j].total;
+			if (callee.callTree != null) {
+				for (j = 0; j < callee.callTree.length; ++j) {
+					callee.self -= callee.callTree[j].total;
 				}
 			}
 		}
 		var samples = calls[0];
 		if (samples.excluded == null || samples.excluded.indexOf(callee.name) < 0) {
-			caller.calltree = (caller.calltree || []);
-			caller.calltree.push(callee);
+			caller.callTree = (caller.callTree || []);
+			caller.callTree.push(callee);
 		}
 
 		// update global execution time
@@ -154,7 +154,7 @@ function Inspector(data) {
 			enter: +Infinity,
 			leave: -Infinity,
 			samples: {},
-			calltree: null,
+			callTree: null,
 			//excluded: ['Halt', 'ToDays'],
 			ticksPerSec: data.profile.ticksPerSec
 		}];
@@ -164,11 +164,19 @@ function Inspector(data) {
 			functions[symbol.offs] = symbol;
 		}
 
+		var lastTick = 0;
 		for (i = 0; i < data.profile.callTree.length; i += recSize) {
 			var offs = data.profile.callTree[i + funIndex];
 			var tick = tickIndex < 0 ? undefined : data.profile.callTree[i + tickIndex];
 			var heap = heapIndex < 0 ? undefined : data.profile.callTree[i + heapIndex];
 
+			// if a function executes in zero time we are in trouble displaying, so correct it to 1 unit
+			// this happens with old compilers, with low resolution `clock()` function
+			if (tick <= lastTick) {
+				lastTick += 1;
+				tick = lastTick;
+			}
+			lastTick = tick;
 			if (offs !== -1) {
 				callee = enter(calls, offs, tick);
 				calls.push(callee);

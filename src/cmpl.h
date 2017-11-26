@@ -17,6 +17,8 @@ typedef unsigned char		uint8_t;
 typedef unsigned short		uint16_t;
 typedef unsigned long		uint32_t;
 typedef unsigned long long	uint64_t;
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
 #define inline __inline
 #else
 #include <stdint.h>

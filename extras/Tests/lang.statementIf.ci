@@ -1,57 +1,57 @@
 // test if statements are correctly generated
 
 static if (0 == 0) {
-	raise(debug, "0 == 0", null, 1);
+	raise(raise.debug, "0 == 0", null, 1);
 }
 
 static if (0 != 0) {
-	raise(debug, "0 != 0", null, 2);
+	raise(raise.debug, "0 != 0", null, 2);
 }
 
 static if (0 == 0) {
-	raise(debug, "0 == 0", null, 3);
+	raise(raise.debug, "0 == 0", null, 3);
 }
 else {
-	raise(debug, "0 != 0", null, 4);
+	raise(raise.debug, "0 != 0", null, 4);
 }
 
 static if (0 != 0) {
-	raise(debug, "0 != 0", null, 5);
+	raise(raise.debug, "0 != 0", null, 5);
 }
 else {
-	raise(debug, "0 == 0", null, 6);
+	raise(raise.debug, "0 == 0", null, 6);
 }
 
 {
 	int t = 0;
 
 	if (t == 0) {
-		raise(debug, "t == 0", t, 7);
+		raise(raise.debug, "t == 0", t, 7);
 	}
 
 	if (t != 0) {
-		raise(debug, "t != 0", t, 8);
+		raise(raise.debug, "t != 0", t, 8);
 	}
 
 	if (t != 0) {
-		raise(debug, "t != 0", t, 9);
+		raise(raise.debug, "t != 0", t, 9);
 	}
 	else {
-		raise(debug, "t == 0", t, 10);
+		raise(raise.debug, "t == 0", t, 10);
 	}
 
 	if (t != 0) {
-		raise(debug, "t != 0", t, 11);
+		raise(raise.debug, "t != 0", t, 11);
 	}
 	else {
-		raise(debug, "t == 0", t, 12);
+		raise(raise.debug, "t == 0", t, 12);
 	}
 }
 
 static if (typename(integer) == null) {
-raise(error, "integer is not declared", null, noTrace);
+abort("integer is not declared");
 }
 
 static if (typename(integer) != typename) {
-raise(error, "integer is not a type", null, noTrace);
+abort("integer is not a type");
 }

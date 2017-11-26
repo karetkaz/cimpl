@@ -1035,7 +1035,7 @@ int fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
 }
 
 // TODO: to be removed.
-static inline void logProc(vmProcessor pu, int cp, char *msg) {
+static inline void vmTrace(vmProcessor pu, int cp, char *msg) {
 	trace("%s: {pu:%d, ip:%x, bp:%x, sp:%x, stack:%d, parent:%d, children:%d}", msg, cp, pu[cp].ip, pu[cp].bp, pu[cp].sp, pu[cp].ss, pu[cp].pp, pu[cp].cp);
 	(void)pu;
 	(void)cp;
@@ -1043,7 +1043,7 @@ static inline void logProc(vmProcessor pu, int cp, char *msg) {
 }
 
 /// Try to start a new child cell for task.
-static inline int task(vmProcessor pu, int n, int master, int cl) {
+static inline int vmFork(vmProcessor pu, int n, int master, int cl) {
 	// find an empty processor
 	int slave = master + 1;
 	while (slave < n) {
@@ -1063,8 +1063,8 @@ static inline int task(vmProcessor pu, int n, int master, int cl) {
 		pu[slave].sp = (stkptr)pu[slave].bp + pu[slave].ss - cl;
 		memcpy(pu[slave].sp, pu[master].sp, cl * vm_size);
 
-		logProc(pu, master, "master");
-		logProc(pu, slave, "slave");
+		vmTrace(pu, master, "master");
+		vmTrace(pu, slave, "slave");
 
 		return slave;
 	}
@@ -1072,9 +1072,9 @@ static inline int task(vmProcessor pu, int n, int master, int cl) {
 }
 
 /// Wait for child cells to halt.
-static inline int sync(vmProcessor pu, int cp, int wait) {
+static inline int vmJoin(vmProcessor pu, int cp, int wait) {
 	int pp = pu[cp].pp;
-	logProc(pu, cp, "join");
+	vmTrace(pu, cp, "join");
 
 	// slave proc
 	if (pp != cp) {
@@ -1257,7 +1257,6 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 
 			const trcptr tp = pu->tp - 1;
 			const size_t pc = vmOffset(rt, ip);
-			dbgn dbg;
 
 			if (ip >= ipMax || ip < ipMin) {
 				debugger(rt->dbg, invalidIP, st - sp, sp, pc, 0);
@@ -1268,7 +1267,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 				return invalidSP;
 			}
 
-			dbg = debugger(rt->dbg, noError, st - sp, sp, pc, 0);
+			dbgn dbg = debugger(rt->dbg, noError, st - sp, sp, pc, 0);
 			if (dbg == rt->dbg->abort) {
 				// abort execution from debugger
 				return executionAborted;
@@ -1277,14 +1276,6 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 				if (pc == dbg->start) {
 					dbg->hits += 1;
 					tp->stmt = clock();
-					/* TODO: remove: print start executing statement
-					symn sym = rtFindSym(rt, dbg->start, 1);
-					size_t symOffs = 0;
-					if (sym != NULL) {
-						symOffs = dbg->start - sym->offs;
-					}
-					printFmt(stdout, NULL, "%?s:%?u:enter(%d) @%D <%?.T%+d> %.A\n", dbg->file, dbg->line, dbg->hits, (int64_t) tp->stmt, sym, symOffs, ip);
-					//~ */
 				}
 			}
 			switch (ip->opc) {
@@ -1343,14 +1334,6 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 						clock_t now = clock();
 						dbg->exec += 1;
 						dbg->total += now - tp->stmt;
-						/* TODO: remove: print end executing statement
-						symn sym = rtFindSym(rt, dbg->start, 1);
-						size_t symOffs = 0;
-						if (sym != NULL) {
-							symOffs = dbg->start - sym->offs;
-						}
-						printFmt(stdout, NULL, "%?s:%?u:leave(%d) @%D: %D <%?.T%+d> %.A\n", dbg->file, dbg->line, dbg->exec, (int64_t)now, (int64_t)(now - tp->stmt), sym, symOffs, ip);
-						// */
 					}
 				}
 			}
@@ -2054,53 +2037,67 @@ void traceCalls(dbgContext dbg, FILE *out, int indent, size_t skip, size_t maxCa
 	}
 }
 
-int vmSelfTest() {
-	int i, err = 0;
-	int test = 0, skip = 0;
-	FILE *out = stdout;
+int vmSelfTest(void cb(const char *, const struct opcodeRec *)) {
+	int errors = 0;
 	struct vmInstruction ip[1];
 	struct libc *nativeCalls[1];
-	struct libc nfc0;
+	struct libc nfc0[1];
 
-	nativeCalls[0] = &nfc0;
-	memset(ip, 0, sizeof(ip));
-	memset(&nfc0, 0, sizeof(nfc0));
+	nativeCalls[0] = nfc0;
+	memset(nfc0, 0, sizeof(nfc0));
 
-	for (i = 0; i < opc_last; i++) {
+	for (int i = 0; i < opc_last; i++) {
 		const struct opcodeRec *info = &opcode_tbl[i];
 		unsigned int IS, CHK, DIFF;
-		int NEXT = 0;
+		char *error = NULL;
 
 		if (info->name == NULL && info->size == 0 && info->stack_in == 0 && info->stack_out == 0) {
 			// skip unimplemented instruction.
-			skip += 1;
 			continue;
+		}
+
+		memset(ip, 0, sizeof(ip));
+		// take care of some special opcodes
+		switch (i) {
+			default:
+				break;
+
+			// set.sp(0) will pop no elements from the stack,
+			// actually it will do nothing, by setting itself to the same value ...
+			case opc_set1:
+				ip->idx = 1;
+				break;
+
+			case opc_set2:
+				ip->idx = 2;
+				break;
+
+			case opc_set4:
+				ip->idx = 4;
+				break;
 		}
 
 		switch (ip->opc = (uint8_t) i) {
 			error_opc:
-				printFmt(out, NULL, "Invalid instruction opc_x%02x: %s\n", i, info->name);
-				err += 1;
+				error = "Invalid instruction";
+				errors += 1;
 				break;
-
 			error_len:
-				printFmt(out, NULL, "invalid opcode size 0x%02x: '%.A': expected: %d, found: %d\n", i, ip, info->size, IS);
-				err += 1;
+				error = "Invalid instruction length";
+				errors += 1;
 				break;
 
 			error_chk:
-				printFmt(out, NULL, "stack check 0x%02x: '%.A': expected: %d, found: %d\n", i, ip, info->stack_in, CHK);
-				err += 1;
+				error = "Invalid stack arguments";
+				errors += 1;
 				break;
 
 			error_diff:
-				printFmt(out, NULL, "stack 0x%02x: '%.A': expected: %d, found: %d\n", i, ip,
-					info->stack_out - info->stack_in, DIFF);
-				err += 1;
+				error = "Invalid stack size";
+				errors += 1;
 				break;
 
 			#define NEXT(__IP, __SP, __CHK) {\
-				NEXT += 1;\
 				IS = __IP;\
 				CHK = __CHK;\
 				DIFF = __SP;\
@@ -2117,12 +2114,9 @@ int vmSelfTest() {
 			#define STOP(__ERR, __CHK, __ERR1) if (__CHK) goto __ERR
 			#include "code.inl"
 		}
-
-		test += 1;
-		if (NEXT > 1 && i != opc_spc) {
-			printFmt(out, NULL, "More than one NEXT: opcode 0x%02x: '%.A'\n", i, ip);
+		if (cb != NULL) {
+			cb(error, info);
 		}
 	}
-	printFmt(out, NULL, "vmSelfTest finished with %d errors from %d tested and %d skipped instructions\n", err, test, skip);
-	return err;
+	return errors;
 }

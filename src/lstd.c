@@ -235,7 +235,7 @@ static int b32swap(nfcContext args) {
 
 //#{#region system functions (exit, rand, clock, debug)
 
-#if ((defined __WATCOMC__) || (defined _MSC_VER)) && (defined __WIN32)
+#if ((defined __WATCOMC__ && defined __WIN32) || (defined _MSC_VER))
 #include <Windows.h>
 static inline int64_t timeMillis() {
 	static const int64_t kTimeEpoc = 116444736000000000LL;

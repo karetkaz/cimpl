@@ -1,17 +1,17 @@
 // test for statements are correctly generated
 
 for ( ; ; ) {
-	raise(debug, "for ( ; ; )", null, defTrace);
+	debug("for ( ; ; )");
 	break;
+}
+
+for (int i = 0; i < 2; i += 1) {
+	debug("for (int i = 0; i < 2; i += 1)", i);
 }
 
 int forIdx;
 for (forIdx = 0; forIdx < 2; forIdx += 1) {
-	raise(debug, "forIdx", forIdx, defTrace);
-}
-
-for (int i = 0; i < 2; i += 1) {
-	raise(debug, "for.i", i, defTrace);
+	debug("for (forIdx = 0; forIdx < 2; forIdx += 1)", forIdx);
 }
 
 /* TODO: Unimplemented feature

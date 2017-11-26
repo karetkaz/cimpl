@@ -82,7 +82,7 @@ astn strNode(ccContext cc, char *v) {
 astn lnkNode(ccContext cc, symn ref) {
 	astn result = newNode(cc, TOKEN_var);
 	if (result != NULL) {
-		result->type = ref->kind == KIND_var ? ref->type : ref;
+		result->type = isTypename(ref) ? ref : ref->type;
 		result->ref.name = ref->name;
 		result->ref.link = ref;
 		result->ref.hash = -1;

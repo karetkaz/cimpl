@@ -481,7 +481,8 @@ typedef enum {
 	prSkip = -1,
 	prAsmCode = 0x00000f,   // print code bytes (0-15)
 	prAsmAddr = 0x000010,   // print global address: (@0x003d8c)
-	prAsmName = 0x000040,   // use symbol names instead of addresses: <main+80>
+	prAsmName = 0x000020,   // use symbol names instead of addresses: <main+80>
+	//prAsmRefs = 0x000040,   // print memory reference as comments: load.ref .000000 ;null
 
 	prOneLine = 0x000080,   // force printing on a single line (skip: function body, typename fields, statement blocks, ...)
 
@@ -572,7 +573,12 @@ static inline void *padPointer(void *offs, size_t align) {
 }
 
 
-int vmSelfTest();
+/**
+ * @brief Test the virtual machine instruction set(compare implementation with definition `OPCODE_DEF`).
+ * @param cb callback executed for each instruction.
+ * @return number of errors found during the test.
+ */
+int vmSelfTest(void ok(const char *error, const struct opcodeRec *info));
 
 /**
  * @brief Optimize an assignment by removing extra copy of the value if it is on the top of the stack.
