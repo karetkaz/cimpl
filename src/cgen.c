@@ -791,15 +791,12 @@ static inline ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 		}
 	}
 	else if (isConst(variable)) {
-		// uninitialized constant
 		error(rt, variable->file, variable->line, ERR_UNINITIALIZED_CONSTANT, variable);
 	}
 	else if (isInvokable(variable)) {
-		// unimplemented function
 		error(rt, variable->file, variable->line, ERR_UNIMPLEMENTED_FUNCTION, variable);
 	}
 	else {
-		// TODO: this should be an error, not a warning
 		warn(rt, 1, variable->file, variable->line, ERR_UNINITIALIZED_VARIABLE, variable);
 	}
 
@@ -836,14 +833,13 @@ static inline ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 	}
 	return varCast;
 }
-static inline ccKind genVariable(ccContext cc, symn variable, ccKind get) {
+static inline ccKind genVariable(ccContext cc, symn variable, ccKind get, astn ast) {
 	const rtContext rt = cc->rt;
 	symn type = variable->type;
 	ccKind typCast = castOf(type);
 	ccKind varCast = castOf(variable);
 
 	dbgCgen("%?s:%?u: %T / (%K->%K)", variable->file, variable->line, variable, variable->kind, get);
-
 	if (variable == cc->null_ref) {
 		switch (get) {
 			default:
@@ -889,8 +885,7 @@ static inline ccKind genVariable(ccContext cc, symn variable, ccKind get) {
 
 		case KIND_var:
 			if (get == CAST_ref && castOf(type) == CAST_ref) {
-				// copy references and pointers
-				// ex: `int &a = ptr;`
+				// copy references and pointers (ex: `int &a = ptr;`)
 				varCast = CAST_ref;
 				typCast = CAST_val;
 			}
@@ -901,7 +896,7 @@ static inline ccKind genVariable(ccContext cc, symn variable, ccKind get) {
 	if (get == CAST_arr && typCast == CAST_arr && varCast != CAST_arr) {
 		symn length = type->fields;
 		if (length != NULL && isStatic(length)) {
-			if (!genVariable(cc, length, castOf(length))) {
+			if (!genVariable(cc, length, castOf(length), ast)) {
 				return CAST_any;
 			}
 			varCast = CAST_arr;
@@ -923,12 +918,10 @@ static inline ccKind genVariable(ccContext cc, symn variable, ccKind get) {
 		return CAST_any;
 	}
 
-	// TODO: raise a warning on data loss: ex: when assigning a variant to a pointer
-	// warn(rt, 2, variable->file, variable->line, WARN_DISCARD_DATA, variable->tag, type);
-
-	// convert a variant to a reference: `int &a = var;`
+	// convert a variant to a reference (ex: `int &a = var;`)
 	if (get == CAST_ref && type == cc->type_var) {
-		// TODO: un-box variant with type checking.
+		// TODO: add runtime assertion: `variant.type == int`.
+		warn(rt, 2, ast->file, ast->line, WARN_VARIANT_TO_REF, type, ast->type);
 		varCast = CAST_ref;
 		typCast = CAST_val;
 	}
@@ -959,9 +952,9 @@ static inline ccKind genVariable(ccContext cc, symn variable, ccKind get) {
 }
 
 static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
-	const rtContext rt = cc->rt;
+	rtContext rt = cc->rt;
 	astn args = ast->op.rhso;
-	const symn function = linkOf(ast->op.lhso);
+	symn function = linkOf(ast->op.lhso);
 
 	const size_t locals = stkOffset(rt, 0);
 	const size_t localSize = stkOffset(rt, ast->type->size);
@@ -975,22 +968,29 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 
 	// emit intrinsic
 	if (function == cc->emit_opc) {
+		astn arg = chainArgs(args);
 		dbgCgen("%?s:%?u: emit: %t", ast->file, ast->line, ast);
-		// TODO: args are emitted in reverse order
-		while (args != NULL) {
-			astn arg = args;
-			if (arg->kind == OPER_com) {
-				args = args->op.lhso;
-				arg = arg->op.rhso;
-			}
-			else {
-				args = NULL;
-			}
+		// Reverse Polish notation: int32 a = emit(int32(a), int32(b), i32.add);
+		while (arg != NULL) {
 			dbgCgen("%?s:%?u: emit.arg: %t", arg->file, arg->line, arg);
 			if (!genAst(cc, arg, CAST_any)) {
 				traceAst(arg);
 				return CAST_any;
 			}
+			// extra check to not underflow the stack
+			if (stkOffset(rt, 0) < locals) {
+				error(rt, ast->file, ast->line, ERR_EMIT_STATEMENT, ast);
+			}
+
+			// warn if values are passed without cast
+			if (!(arg->kind == OPER_fnc && isTypeExpr(arg->op.lhso))) {
+				// argument is not a cast, check if it is an instruction
+				symn lnk = linkOf(arg);
+				if (!(lnk != NULL && isEmit(lnk))) {
+					warn(rt, 1, ast->file, ast->line, WARN_PASS_ARG_NO_CAST, arg, arg->type);
+				}
+			}
+			arg = arg->next;
 		}
 		return get;
 	}
@@ -1051,7 +1051,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		if (isInline(function)) {
 			prm->offs = locals + offs;
 		}
-		prm = prm->next;	// skip to the first parameter
+		prm = prm->next;	// skip from result to the first parameter
 		while (prm != NULL && arg != NULL) {
 			if (isInline(prm) || prm->size == 0) {
 				// skip generating void or inline parameter
@@ -1142,9 +1142,16 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		}
 	}
 	else if (isTypename(function)) {
+		// casts may have a single argument
+		if (args == NULL || args->next != NULL) {
+			traceAst(ast);
+			return CAST_any;
+		}
+
 		// variant(data) || typename(data) || pointer(data)
 		if (function == cc->type_var || function == cc->type_rec || function == cc->type_ptr) {
 			symn variable = linkOf(args);
+			// accept an identifier as parameter
 			if (variable == NULL) {
 				traceAst(ast);
 				return CAST_any;
@@ -1156,7 +1163,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 				}
 			}
 			if (function == cc->type_var || function == cc->type_ptr) {
-				if (!genVariable(cc, variable, CAST_ref)) {
+				if (!genVariable(cc, variable, CAST_ref, ast)) {
 					return CAST_any;
 				}
 				// TODO: warn[1]: value escapes local scope
@@ -1194,7 +1201,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		}
 	}
 	else {
-		if (!genVariable(cc, function, CAST_ref)) {
+		if (!genVariable(cc, function, CAST_ref, ast)) {
 			traceAst(ast);
 			return CAST_any;
 		}
@@ -1787,7 +1794,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				get = got;
 			}
 			else {
-				if (!(got = genVariable(cc, var, get))) {
+				if (!(got = genVariable(cc, var, get, ast))) {
 					traceAst(ast);
 					return CAST_any;
 				}

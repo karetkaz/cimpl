@@ -740,25 +740,22 @@ static void textDumpMem(dbgContext dbg, void *ptr, size_t size, char *kind) {
 	FILE *out = ctx->out;
 
 	char *unit = "bytes";
-	float value = 0;
+	double value = size;
 
 	if (size > (1 << 30)) {
 		unit = "Gb";
-		value = size;
-		value /= (1 << 30);
+		value /= 1 << 30;
 	}
 	else if (size > (1 << 20)) {
 		unit = "Mb";
-		value = size;
-		value /= (1 << 20);
+		value /= 1 << 20;
 	}
 	else if (size > (1 << 10)) {
 		unit = "Kb";
-		value = size;
-		value /= (1 << 10);
+		value /= 1 << 10;
 	}
 
-	printFmt(out, esc, "memory[%s] @%06x; size: %d(%?.1f %s)\n", kind, vmOffset(ctx->rt, ptr), size, value, unit);
+	printFmt(out, esc, "memory[%s] @%06x; size: %d(%?.1F %s)\n", kind, vmOffset(ctx->rt, ptr), size, value, unit);
 }
 
 static void textPostProfile(userContext usr) {
@@ -1798,12 +1795,11 @@ static int program(int argc, char *argv[]) {
 		fatal("initializing runtime context");
 		return -1;
 	}
-	else {
-		rt->foldConst = settings.foldConst != 0;
-		rt->foldInstr = settings.foldInstr != 0;
-		rt->fastAssign = settings.fastAssign != 0;
-		rt->genGlobals = settings.genGlobals != 0;
-	}
+
+	rt->foldConst = settings.foldConst != 0;
+	rt->foldInstr = settings.foldInstr != 0;
+	rt->fastAssign = settings.fastAssign != 0;
+	rt->genGlobals = settings.genGlobals != 0;
 
 	// open log file (global option)
 	if (logFile && !logfile(rt, logFile, logAppend)) {
@@ -2113,11 +2109,11 @@ static void dumpVmOpc(const char *error, const struct opcodeRec *info) {
 	printFmt(stdout, NULL, "\n### Stack change\n");
 
 	printFmt(stdout, NULL, "Requires %d operand%?c: […", info->stack_in, info->stack_in == 1 ? 0 : 's');
-	for (int i = 0; i < info->stack_in; ++i) {
+	for (unsigned i = 0; i < info->stack_in; ++i) {
 		printFmt(stdout, NULL, ", %c", 'a' + i);
 	}
 	printFmt(stdout, NULL, "  \nReturns %d value%?c: […", info->stack_out, info->stack_in == 1 ? 0 : 's');
-	for (int i = 0; i < info->stack_out; ++i) {
+	for (unsigned i = 0; i < info->stack_out; ++i) {
 		printFmt(stdout, NULL, ", %c", 'a' + i);
 	}
 	printFmt(stdout, NULL, ", [TODO]  \n");

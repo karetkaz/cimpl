@@ -1,3 +1,4 @@
+// test if functions are correctly generated and executed
 
 void empty() {}
 
@@ -21,10 +22,10 @@ int funMul(int x, int y);
 // forward function invocation
 int funMulResult = funMul(2, 6);
 
-// initialized function reference
+// initialized forward function reference (copy address)
 int funMulRef(int x, int y) = funMul;
 
-// function invocation
+// forward function reference invocation
 int funMulRefResult = funMulRef(2, 7);
 
 // forward function implementation
@@ -32,7 +33,7 @@ int funMul(int x, int y) {
 	return x * y;
 }
 
-// recursion
+// recursive function implementation
 uint32 fib(uint32 n) {
 	if (n <= 1) {
 		if (n <= 0) {
@@ -43,4 +44,5 @@ uint32 fib(uint32 n) {
 	return fib(n-1) + fib(n-2);
 }
 
+// recursive function invocation
 uint32 fibonacci_13 = fib(13);

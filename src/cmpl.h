@@ -197,7 +197,7 @@ struct nfcContextRec {
 	char *proto;          // static data (passed to install)
 	void *extra;          // extra data (passed to invoke)
 	stkptr args;          // arguments
-	int argc;             // argument count
+	size_t argc;          // argument count
 };
 
 /**
@@ -221,7 +221,7 @@ static inline void *argget(nfcContext args, void *result, size_t offset, size_t 
 }
 
 // speed up of getting arguments of known types
-#define argget(__ARGV, __OFFS, __TYPE) (*(__TYPE*)((char*)__ARGV->args + (__OFFS)))
+#define argget(__ARGV, __OFFS, __TYPE) (*(__TYPE*)((char*)(__ARGV)->args + (__OFFS)))
 static inline int32_t argi32(nfcContext args, size_t offs) { return argget(args, offs, int32_t); }
 static inline int64_t argi64(nfcContext args, size_t offs) { return argget(args, offs, int64_t); }
 static inline float32_t argf32(nfcContext args, size_t offs) { return argget(args, offs, float32_t); }
@@ -246,7 +246,7 @@ static inline void *retset(nfcContext args, void *result, size_t size) {
 }
 
 // speed up of setting result of known types.
-#define retset(__ARGV, __TYPE, __VAL) ((__TYPE*)(__ARGV->args + __ARGV->argc))[-1] = (__TYPE)(__VAL)
+#define retset(__ARGV, __TYPE, __VAL) ((__TYPE*)((__ARGV)->args + (__ARGV)->argc))[-1] = (__TYPE)(__VAL)
 static inline void reti32(nfcContext args, int32_t val) { retset(args, int32_t, val); }
 static inline void reti64(nfcContext args, int64_t val) { retset(args, int64_t, val); }
 static inline void retu32(nfcContext args, uint32_t val) { retset(args, uint32_t, val); }

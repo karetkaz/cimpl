@@ -55,15 +55,15 @@ typedef struct libc {
 // A simple dynamic array
 struct arrBuffer {
 	char *ptr;		// data
-	int esz;		// element size
-	int cap;		// capacity
-	int cnt;		// length
+	size_t esz;		// element size
+	size_t cap;		// capacity
+	size_t cnt;		// length
 };
 
-int initBuff(struct arrBuffer *buff, int initCount, int elemSize);
+int initBuff(struct arrBuffer *buff, size_t initCount, size_t elemSize);
 void freeBuff(struct arrBuffer *buff);
-static inline void *getBuff(struct arrBuffer *buff, int idx) {
-	int pos = idx * buff->esz;
+static inline void *getBuff(struct arrBuffer *buff, size_t idx) {
+	size_t pos = idx * buff->esz;
 	if (pos >= buff->cap || !buff->ptr)
 		return NULL;
 	return buff->ptr + pos;
@@ -357,7 +357,7 @@ astn lnkNode(ccContext, symn ref);
 astn opNode(ccContext, ccToken kind, astn lhs, astn rhs);
 
 // return constant values of nodes
-int32_t bolValue(astn ast);
+int bolValue(astn ast);
 int64_t intValue(astn ast);
 float64_t fltValue(astn ast);
 /**
@@ -599,7 +599,7 @@ static inline int isStatic(symn sym) {
 static inline int isInline(symn sym) {
 	return (sym->kind & MASK_kind) == KIND_def;
 }
-static inline int isNative(symn sym) {
+static inline int isEmit(symn sym) {
 	return sym->init && sym->init->kind == EMIT_kwd;
 }
 static inline int isFunction(symn sym) {
@@ -689,7 +689,9 @@ void closeLibs();
 #define WARN_EMPTY_STATEMENT "empty statement `;`."
 #define WARN_USE_BLOCK_STATEMENT "statement should be a block statement {%t}."
 #define WARN_EXPRESSION_STATEMENT "expression statement expected, got: `%t`"
+#define WARN_VARIANT_TO_REF "converting `%T` to reference discards type information"
 #define WARN_PASS_ARG_BY_REF "argument `%t` is implicitly passed by reference"
+#define WARN_PASS_ARG_NO_CAST "argument `%t` is passed to emit without cast as `%T`"
 #define WARN_SHORT_CIRCUIT "operators `&&` and `||` does not short-circuit yet"
 #define WARN_NO_CODE_GENERATED "no code will be generated for statement: %t"
 #define WARN_PADDING_ALIGNMENT "padding `%?T` with %d bytes: (%d -> %d)"

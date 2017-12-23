@@ -81,7 +81,7 @@ vmValue *nfcPeekArg(nfcContext nfc, size_t offs) {
 	return (vmValue *) (((char *) nfc->args) + offs);
 }
 rtValue nfcReadArg(nfcContext nfc, size_t offs) {
-	rtValue result;
+	rtValue result = { .i64 = 0 };
 	vmValue *argValue = nfcPeekArg(nfc, offs);
 	switch (castOf(nfc->param)) {
 		default:
@@ -995,9 +995,9 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(dbgContext, void *,
 ///// Debugger
 
 // arrayBuffer
-static void *setBuff(struct arrBuffer *buff, int idx, void *data) {
+static void *setBuff(struct arrBuffer *buff, size_t idx, void *data) {
 	void *newPtr;
-	int pos = idx * buff->esz;
+	size_t pos = idx * buff->esz;
 
 	if (pos >= buff->cap) {
 		buff->cap <<= 1;
@@ -1023,10 +1023,10 @@ static void *setBuff(struct arrBuffer *buff, int idx, void *data) {
 
 	return buff->ptr ? buff->ptr + pos : NULL;
 }
-static void *insBuff(struct arrBuffer *buff, int idx, void *data) {
+static void *insBuff(struct arrBuffer *buff, size_t idx, void *data) {
 	void *newPtr;
-	int pos = idx * buff->esz;
-	int newCap = buff->cnt * buff->esz;
+	size_t pos = idx * buff->esz;
+	size_t newCap = buff->cnt * buff->esz;
 	if (newCap < pos) {
 		newCap = pos;
 	}
@@ -1047,7 +1047,7 @@ static void *insBuff(struct arrBuffer *buff, int idx, void *data) {
 	}
 
 	if (idx < buff->cnt) {
-		memmove(buff->ptr + pos + buff->esz, buff->ptr + pos, (size_t) (buff->esz * (buff->cnt - idx)));
+		memmove(buff->ptr + pos + buff->esz, buff->ptr + pos, buff->esz * (buff->cnt - idx));
 		idx = buff->cnt;
 	}
 
@@ -1061,7 +1061,7 @@ static void *insBuff(struct arrBuffer *buff, int idx, void *data) {
 
 	return buff->ptr ? buff->ptr + pos : NULL;
 }
-int initBuff(struct arrBuffer *buff, int initCount, int elemSize) {
+int initBuff(struct arrBuffer *buff, size_t initCount, size_t elemSize) {
 	buff->cnt = 0;
 	buff->ptr = 0;
 	buff->esz = elemSize;

@@ -20,7 +20,6 @@ const char **escapeStr() {
 	static char initialized = 0;
 	if (!initialized) {
 		memset(escape, 0, sizeof(escape));
-		//~ escape['a'] = "`$!>a<!$`";
 		escape['\n'] = "\\n";
 		escape['\r'] = "\\r";
 		escape['\t'] = "\\t";

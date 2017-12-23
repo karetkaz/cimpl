@@ -2092,10 +2092,20 @@ emitB: int32 {
 .size: 4
 .value: 96
 }
-emitAddi32: int32 {
+emitAddI32: int32 {
 .kind: variable(i32)
 .size: 4
-.value: emit(add.i32, int32(emitA), emitB)
+.value: emit(int32(emitA), int32(emitB), add.i32)
+}
+emitDivI32: int32 {
+.kind: variable(i32)
+.size: 4
+.value: emit(int32(10), int32(5), div.i32)
+}
+emitNfcF32: float32 {
+.kind: variable(f32)
+.size: 4
+.value: emit(float32(3.140000 / (2)), float32.sin)
 }
 sizeof(type: typename): int32: function {
 .kind: inline
@@ -2292,7 +2302,7 @@ empty(): void: function {
 .param .result: void (size: 0 @0 -> variable(void))
 .value: {
 }
-.instructions: [1 bytes @.023c08]
+.instructions: [1 bytes @.023d40]
 	03                         ret
 }
 funAdd(x: int32, y: int32): int32: function {
@@ -2304,8 +2314,8 @@ funAdd(x: int32, y: int32): int32: function {
 .value: {
 	return .result := x + y;
 }
-.instructions: [9 bytes @.023c09]
-	extras/Tests/lang.function.ci:6: (8 bytes): return .result := x + y;
+.instructions: [9 bytes @.023d41]
+	extras/Tests/lang.function.ci:7: (8 bytes): return .result := x + y;
 	12 02                      dup.x1 sp(2)
 	12 02                      dup.x1 sp(2)
 	51                         add.i32
@@ -2366,8 +2376,8 @@ funMul(x: int32, y: int32): int32: function {
 .value: {
 	return .result := x * y;
 }
-.instructions: [9 bytes @.023c12]
-	extras/Tests/lang.function.ci:32: (8 bytes): return .result := x * y;
+.instructions: [9 bytes @.023d4a]
+	extras/Tests/lang.function.ci:33: (8 bytes): return .result := x * y;
 	12 02                      dup.x1 sp(2)
 	12 02                      dup.x1 sp(2)
 	53                         mul.i32
@@ -2389,36 +2399,36 @@ fib(n: uint32): uint32: function {
 	}
 	return .result := fib(n - (1)) + fib(n - (2));
 }
-.instructions: [87 bytes @.023c1b]
-	extras/Tests/lang.function.ci:37: (40 bytes): if (n <= (1))
+.instructions: [87 bytes @.023d53]
+	extras/Tests/lang.function.ci:38: (40 bytes): if (n <= (1))
 	12 01                      dup.x1 sp(1)
 	1b 01 00 00 00             load.c32 1
 	39                         cgt.u32
 	05 20 00 00                jnz +32
-	extras/Tests/lang.function.ci:38: (20 bytes): if (n <= (0))
+	extras/Tests/lang.function.ci:39: (20 bytes): if (n <= (0))
 	12 01                      dup.x1 sp(1)
 	1b 00 00 00 00             load.c32 0
 	39                         cgt.u32
 	05 0c 00 00                jnz +12
-	extras/Tests/lang.function.ci:39: (8 bytes): return .result := (0);
+	extras/Tests/lang.function.ci:40: (8 bytes): return .result := (0);
 	1b 00 00 00 00             load.c32 0
 	15 03                      set.x1 sp(3)
 	03                         ret
-	extras/Tests/lang.function.ci:41: (8 bytes): return .result := (1);
+	extras/Tests/lang.function.ci:42: (8 bytes): return .result := (1);
 	1b 01 00 00 00             load.c32 1
 	15 03                      set.x1 sp(3)
 	03                         ret
-	extras/Tests/lang.function.ci:43: (46 bytes): return .result := fib(n - (1)) + fib(n - (2));
+	extras/Tests/lang.function.ci:44: (46 bytes): return .result := fib(n - (1)) + fib(n - (2));
 	1b 00 00 00 00             load.c32 0
 	12 02                      dup.x1 sp(2)
 	0b ff ff ff                inc.i32(-1)
-	1f 1b 3c 02 00             load.ref .023c1b ;fib(n: uint32): uint32
+	1f 53 3d 02 00             load.ref .023d53 ;fib(n: uint32): uint32
 	02                         call
 	10 fc ff ff                inc.sp(-4)
 	1b 00 00 00 00             load.c32 0
 	12 03                      dup.x1 sp(3)
 	0b fe ff ff                inc.i32(-2)
-	1f 1b 3c 02 00             load.ref .023c1b ;fib(n: uint32): uint32
+	1f 53 3d 02 00             load.ref .023d53 ;fib(n: uint32): uint32
 	02                         call
 	10 fc ff ff                inc.sp(-4)
 	51                         add.i32
@@ -4189,8 +4199,8 @@ InitMember: typename {
 .field intMemberDef: int32 (size: 4 @4 -> variable(i32))
 .field intConstMember: int32 (size: 4 @8 -> const variable(i32))
 .field intConstMemberDef: int32 (size: 4 @12 -> const variable(i32))
-.field intGlobal: int32 (size: 4 @146592 -> static variable(i32))
-.field intConstant: int32 (size: 4 @146596 -> static const variable(i32))
+.field intGlobal: int32 (size: 4 @146904 -> static variable(i32))
+.field intConstant: int32 (size: 4 @146908 -> static const variable(i32))
 }
 InitMember.intMember: int32 {
 .kind: variable(i32)
@@ -4475,7 +4485,7 @@ val2: int64 {
 }
 .main(): void: function {
 .kind: static function
-.size: 4751
+.size: 4786
 .field typename: typename (size: 136 @8 -> static const typename(ref))
 .field void: typename (size: 0 @160 -> static const typename(void))
 .field bool: typename (size: 1 @304 -> static const typename(bool))
@@ -4584,454 +4594,456 @@ val2: int64 {
 .field emitldz64: int64 (size: 8 @144 -> variable(i64))
 .field emitA: int32 (size: 4 @148 -> variable(i32))
 .field emitB: int32 (size: 4 @152 -> variable(i32))
-.field emitAddi32: int32 (size: 4 @156 -> variable(i32))
+.field emitAddI32: int32 (size: 4 @156 -> variable(i32))
+.field emitDivI32: int32 (size: 4 @160 -> variable(i32))
+.field emitNfcF32: float32 (size: 4 @164 -> variable(f32))
 .field sizeof: function (size: 0 @0 -> inline)
-.field sizeofVoid: int32 (size: 4 @160 -> variable(i32))
-.field sizeofBool: int32 (size: 4 @164 -> variable(i32))
-.field sizeofChar: int32 (size: 4 @168 -> variable(i32))
-.field sizeofInt8: int32 (size: 4 @172 -> variable(i32))
-.field sizeofInt16: int32 (size: 4 @176 -> variable(i32))
-.field sizeofInt32: int32 (size: 4 @180 -> variable(i32))
-.field sizeofInt64: int32 (size: 4 @184 -> variable(i32))
-.field sizeofUint8: int32 (size: 4 @188 -> variable(i32))
-.field sizeofUint16: int32 (size: 4 @192 -> variable(i32))
-.field sizeofUint32: int32 (size: 4 @196 -> variable(i32))
-.field sizeofUint64: int32 (size: 4 @200 -> variable(i32))
-.field sizeofFloat32: int32 (size: 4 @204 -> variable(i32))
-.field sizeofFloat64: int32 (size: 4 @208 -> variable(i32))
-.field sizeofPointer: int32 (size: 4 @212 -> variable(i32))
-.field sizeofVariant: int32 (size: 4 @216 -> variable(i32))
-.field sizeofTypename: int32 (size: 4 @220 -> variable(i32))
-.field sizeofFunction: int32 (size: 4 @224 -> variable(i32))
-.field sizeofObject: int32 (size: 4 @228 -> variable(i32))
-.field RecordSizeof: object (size: 12 @75824 -> static const typename(ref))
-.field RecordSizeofExt: RecordSizeof (size: 16 @76096 -> static const typename(ref))
-.field typeofRecord: typename (size: 4 @232 -> variable(ref))
-.field nameOfRecord: char[*] (size: 4 @236 -> variable(ref))
-.field sizeOfRecord: int32 (size: 4 @240 -> variable(i32))
-.field fileOfRecord: char[*] (size: 4 @244 -> variable(ref))
-.field lineOfRecord: int32 (size: 4 @248 -> variable(i32))
-.field typeofBase: typename (size: 4 @252 -> variable(ref))
-.field nameOfBase: char[*] (size: 4 @256 -> variable(ref))
-.field sizeOfBase: int32 (size: 4 @260 -> variable(i32))
-.field fileOfBase: char[*] (size: 4 @264 -> variable(ref))
-.field lineOfBase: int32 (size: 4 @268 -> variable(i32))
-.field typeofBase1: typename (size: 4 @272 -> variable(ref))
-.field sizeofBase1: int32 (size: 4 @276 -> variable(i32))
-.field typeofBase2: typename (size: 4 @280 -> variable(ref))
-.field sizeofBase2: int32 (size: 4 @284 -> variable(i32))
-.field empty: function (size: 1 @146440 -> static const function)
-.field funAdd: function (size: 9 @146441 -> static const function)
-.field funAddResult: int32 (size: 4 @288 -> variable(i32))
-.field funAddRef: function (size: 4 @292 -> variable(ref))
-.field funAddRefResult: int32 (size: 4 @296 -> variable(i32))
-.field funMul: function (size: 4 @300 -> variable(ref))
-.field funMulResult: int32 (size: 4 @304 -> variable(i32))
-.field funMulRef: function (size: 4 @308 -> variable(ref))
-.field funMulRefResult: int32 (size: 4 @312 -> variable(i32))
-.field funMul: function (size: 9 @146450 -> static const function)
-.field fib: function (size: 87 @146459 -> static const function)
-.field fibonacci_13: uint32 (size: 4 @316 -> variable(u32))
+.field sizeofVoid: int32 (size: 4 @168 -> variable(i32))
+.field sizeofBool: int32 (size: 4 @172 -> variable(i32))
+.field sizeofChar: int32 (size: 4 @176 -> variable(i32))
+.field sizeofInt8: int32 (size: 4 @180 -> variable(i32))
+.field sizeofInt16: int32 (size: 4 @184 -> variable(i32))
+.field sizeofInt32: int32 (size: 4 @188 -> variable(i32))
+.field sizeofInt64: int32 (size: 4 @192 -> variable(i32))
+.field sizeofUint8: int32 (size: 4 @196 -> variable(i32))
+.field sizeofUint16: int32 (size: 4 @200 -> variable(i32))
+.field sizeofUint32: int32 (size: 4 @204 -> variable(i32))
+.field sizeofUint64: int32 (size: 4 @208 -> variable(i32))
+.field sizeofFloat32: int32 (size: 4 @212 -> variable(i32))
+.field sizeofFloat64: int32 (size: 4 @216 -> variable(i32))
+.field sizeofPointer: int32 (size: 4 @220 -> variable(i32))
+.field sizeofVariant: int32 (size: 4 @224 -> variable(i32))
+.field sizeofTypename: int32 (size: 4 @228 -> variable(i32))
+.field sizeofFunction: int32 (size: 4 @232 -> variable(i32))
+.field sizeofObject: int32 (size: 4 @236 -> variable(i32))
+.field RecordSizeof: object (size: 12 @76120 -> static const typename(ref))
+.field RecordSizeofExt: RecordSizeof (size: 16 @76392 -> static const typename(ref))
+.field typeofRecord: typename (size: 4 @240 -> variable(ref))
+.field nameOfRecord: char[*] (size: 4 @244 -> variable(ref))
+.field sizeOfRecord: int32 (size: 4 @248 -> variable(i32))
+.field fileOfRecord: char[*] (size: 4 @252 -> variable(ref))
+.field lineOfRecord: int32 (size: 4 @256 -> variable(i32))
+.field typeofBase: typename (size: 4 @260 -> variable(ref))
+.field nameOfBase: char[*] (size: 4 @264 -> variable(ref))
+.field sizeOfBase: int32 (size: 4 @268 -> variable(i32))
+.field fileOfBase: char[*] (size: 4 @272 -> variable(ref))
+.field lineOfBase: int32 (size: 4 @276 -> variable(i32))
+.field typeofBase1: typename (size: 4 @280 -> variable(ref))
+.field sizeofBase1: int32 (size: 4 @284 -> variable(i32))
+.field typeofBase2: typename (size: 4 @288 -> variable(ref))
+.field sizeofBase2: int32 (size: 4 @292 -> variable(i32))
+.field empty: function (size: 1 @146752 -> static const function)
+.field funAdd: function (size: 9 @146753 -> static const function)
+.field funAddResult: int32 (size: 4 @296 -> variable(i32))
+.field funAddRef: function (size: 4 @300 -> variable(ref))
+.field funAddRefResult: int32 (size: 4 @304 -> variable(i32))
+.field funMul: function (size: 4 @308 -> variable(ref))
+.field funMulResult: int32 (size: 4 @312 -> variable(i32))
+.field funMulRef: function (size: 4 @316 -> variable(ref))
+.field funMulRefResult: int32 (size: 4 @320 -> variable(i32))
+.field funMul: function (size: 9 @146762 -> static const function)
+.field fib: function (size: 87 @146771 -> static const function)
+.field fibonacci_13: uint32 (size: 4 @324 -> variable(u32))
 .field a: typename (size: 0 @0 -> inline)
 .field b: typename (size: 0 @0 -> inline)
-.field shift: int32 (size: 4 @320 -> variable(i32))
-.field boolA: bool (size: 1 @324 -> variable(bool))
-.field boolB: bool (size: 1 @328 -> variable(bool))
-.field boolAnd: bool (size: 1 @332 -> variable(bool))
-.field boolIor: bool (size: 1 @336 -> variable(bool))
-.field boolXor: bool (size: 1 @340 -> variable(bool))
-.field boolNot: bool (size: 1 @344 -> variable(bool))
-.field boolCeq: bool (size: 1 @348 -> variable(bool))
-.field boolCne: bool (size: 1 @352 -> variable(bool))
-.field boolClt: bool (size: 1 @356 -> variable(bool))
-.field boolCle: bool (size: 1 @360 -> variable(bool))
-.field boolCgt: bool (size: 1 @364 -> variable(bool))
-.field boolCge: bool (size: 1 @368 -> variable(bool))
-.field chrA: char (size: 1 @372 -> variable(u32))
-.field chrB: char (size: 1 @376 -> variable(u32))
-.field chrPls: char (size: 1 @380 -> variable(u32))
-.field chrNeg: char (size: 1 @384 -> variable(u32))
-.field chrCmt: char (size: 1 @388 -> variable(u32))
-.field chrAdd: char (size: 1 @392 -> variable(u32))
-.field chrSub: char (size: 1 @396 -> variable(u32))
-.field chrMul: char (size: 1 @400 -> variable(u32))
-.field chrDiv: char (size: 1 @404 -> variable(u32))
-.field chrMod: char (size: 1 @408 -> variable(u32))
-.field chrAnd: char (size: 1 @412 -> variable(u32))
-.field chrIor: char (size: 1 @416 -> variable(u32))
-.field chrXor: char (size: 1 @420 -> variable(u32))
-.field chrShl: char (size: 1 @424 -> variable(u32))
-.field chrShr: char (size: 1 @428 -> variable(u32))
-.field chrNot: bool (size: 1 @432 -> variable(bool))
-.field chrCeq: bool (size: 1 @436 -> variable(bool))
-.field chrCne: bool (size: 1 @440 -> variable(bool))
-.field chrClt: bool (size: 1 @444 -> variable(bool))
-.field chrCle: bool (size: 1 @448 -> variable(bool))
-.field chrCgt: bool (size: 1 @452 -> variable(bool))
-.field chrCge: bool (size: 1 @456 -> variable(bool))
-.field i8A: int8 (size: 1 @460 -> variable(i32))
-.field i8B: int8 (size: 1 @464 -> variable(i32))
-.field i8Pls: int8 (size: 1 @468 -> variable(i32))
-.field i8Neg: int8 (size: 1 @472 -> variable(i32))
-.field i8Cmt: int8 (size: 1 @476 -> variable(i32))
-.field i8Add: int8 (size: 1 @480 -> variable(i32))
-.field i8Sub: int8 (size: 1 @484 -> variable(i32))
-.field i8Mul: int8 (size: 1 @488 -> variable(i32))
-.field i8Div: int8 (size: 1 @492 -> variable(i32))
-.field i8Mod: int8 (size: 1 @496 -> variable(i32))
-.field i8And: int8 (size: 1 @500 -> variable(i32))
-.field i8Ior: int8 (size: 1 @504 -> variable(i32))
-.field i8Xor: int8 (size: 1 @508 -> variable(i32))
-.field i8Shl: int8 (size: 1 @512 -> variable(i32))
-.field i8Shr: int8 (size: 1 @516 -> variable(i32))
-.field i8Not: bool (size: 1 @520 -> variable(bool))
-.field i8Ceq: bool (size: 1 @524 -> variable(bool))
-.field i8Cne: bool (size: 1 @528 -> variable(bool))
-.field i8Clt: bool (size: 1 @532 -> variable(bool))
-.field i8Cle: bool (size: 1 @536 -> variable(bool))
-.field i8Cgt: bool (size: 1 @540 -> variable(bool))
-.field i8Cge: bool (size: 1 @544 -> variable(bool))
-.field u8A: uint8 (size: 1 @548 -> variable(u32))
-.field u8B: uint8 (size: 1 @552 -> variable(u32))
-.field u8Pls: uint8 (size: 1 @556 -> variable(u32))
-.field u8Neg: uint8 (size: 1 @560 -> variable(u32))
-.field u8Cmt: uint8 (size: 1 @564 -> variable(u32))
-.field u8Add: uint8 (size: 1 @568 -> variable(u32))
-.field u8Sub: uint8 (size: 1 @572 -> variable(u32))
-.field u8Mul: uint8 (size: 1 @576 -> variable(u32))
-.field u8Div: uint8 (size: 1 @580 -> variable(u32))
-.field u8Mod: uint8 (size: 1 @584 -> variable(u32))
-.field u8And: uint8 (size: 1 @588 -> variable(u32))
-.field u8Ior: uint8 (size: 1 @592 -> variable(u32))
-.field u8Xor: uint8 (size: 1 @596 -> variable(u32))
-.field u8Shl: uint8 (size: 1 @600 -> variable(u32))
-.field u8Shr: uint8 (size: 1 @604 -> variable(u32))
-.field u8Not: bool (size: 1 @608 -> variable(bool))
-.field u8Ceq: bool (size: 1 @612 -> variable(bool))
-.field u8Cne: bool (size: 1 @616 -> variable(bool))
-.field u8Clt: bool (size: 1 @620 -> variable(bool))
-.field u8Cle: bool (size: 1 @624 -> variable(bool))
-.field u8Cgt: bool (size: 1 @628 -> variable(bool))
-.field u8Cge: bool (size: 1 @632 -> variable(bool))
-.field i16A: int16 (size: 2 @636 -> variable(i32))
-.field i16B: int16 (size: 2 @640 -> variable(i32))
-.field i16Pls: int16 (size: 2 @644 -> variable(i32))
-.field i16Neg: int16 (size: 2 @648 -> variable(i32))
-.field i16Cmt: int16 (size: 2 @652 -> variable(i32))
-.field i16Add: int16 (size: 2 @656 -> variable(i32))
-.field i16Sub: int16 (size: 2 @660 -> variable(i32))
-.field i16Mul: int16 (size: 2 @664 -> variable(i32))
-.field i16Div: int16 (size: 2 @668 -> variable(i32))
-.field i16Mod: int16 (size: 2 @672 -> variable(i32))
-.field i16And: int16 (size: 2 @676 -> variable(i32))
-.field i16Ior: int16 (size: 2 @680 -> variable(i32))
-.field i16Xor: int16 (size: 2 @684 -> variable(i32))
-.field i16Shl: int16 (size: 2 @688 -> variable(i32))
-.field i16Shr: int16 (size: 2 @692 -> variable(i32))
-.field i16Not: bool (size: 1 @696 -> variable(bool))
-.field i16Ceq: bool (size: 1 @700 -> variable(bool))
-.field i16Cne: bool (size: 1 @704 -> variable(bool))
-.field i16Clt: bool (size: 1 @708 -> variable(bool))
-.field i16Cle: bool (size: 1 @712 -> variable(bool))
-.field i16Cgt: bool (size: 1 @716 -> variable(bool))
-.field i16Cge: bool (size: 1 @720 -> variable(bool))
-.field u16A: uint16 (size: 2 @724 -> variable(u32))
-.field u16B: uint16 (size: 2 @728 -> variable(u32))
-.field u16Pls: uint16 (size: 2 @732 -> variable(u32))
-.field u16Neg: uint16 (size: 2 @736 -> variable(u32))
-.field u16Cmt: uint16 (size: 2 @740 -> variable(u32))
-.field u16Add: uint16 (size: 2 @744 -> variable(u32))
-.field u16Sub: uint16 (size: 2 @748 -> variable(u32))
-.field u16Mul: uint16 (size: 2 @752 -> variable(u32))
-.field u16Div: uint16 (size: 2 @756 -> variable(u32))
-.field u16Mod: uint16 (size: 2 @760 -> variable(u32))
-.field u16And: uint16 (size: 2 @764 -> variable(u32))
-.field u16Ior: uint16 (size: 2 @768 -> variable(u32))
-.field u16Xor: uint16 (size: 2 @772 -> variable(u32))
-.field u16Shl: uint16 (size: 2 @776 -> variable(u32))
-.field u16Shr: uint16 (size: 2 @780 -> variable(u32))
-.field u16Not: bool (size: 1 @784 -> variable(bool))
-.field u16Ceq: bool (size: 1 @788 -> variable(bool))
-.field u16Cne: bool (size: 1 @792 -> variable(bool))
-.field u16Clt: bool (size: 1 @796 -> variable(bool))
-.field u16Cle: bool (size: 1 @800 -> variable(bool))
-.field u16Cgt: bool (size: 1 @804 -> variable(bool))
-.field u16Cge: bool (size: 1 @808 -> variable(bool))
-.field i32A: int32 (size: 4 @812 -> variable(i32))
-.field i32B: int32 (size: 4 @816 -> variable(i32))
-.field i32Pls: int32 (size: 4 @820 -> variable(i32))
-.field i32Neg: int32 (size: 4 @824 -> variable(i32))
-.field i32Cmt: int32 (size: 4 @828 -> variable(i32))
-.field i32Add: int32 (size: 4 @832 -> variable(i32))
-.field i32Sub: int32 (size: 4 @836 -> variable(i32))
-.field i32Mul: int32 (size: 4 @840 -> variable(i32))
-.field i32Div: int32 (size: 4 @844 -> variable(i32))
-.field i32Mod: int32 (size: 4 @848 -> variable(i32))
-.field i32And: int32 (size: 4 @852 -> variable(i32))
-.field i32Ior: int32 (size: 4 @856 -> variable(i32))
-.field i32Xor: int32 (size: 4 @860 -> variable(i32))
-.field i32Shl: int32 (size: 4 @864 -> variable(i32))
-.field i32Shr: int32 (size: 4 @868 -> variable(i32))
-.field i32Not: bool (size: 1 @872 -> variable(bool))
-.field i32Ceq: bool (size: 1 @876 -> variable(bool))
-.field i32Cne: bool (size: 1 @880 -> variable(bool))
-.field i32Clt: bool (size: 1 @884 -> variable(bool))
-.field i32Cle: bool (size: 1 @888 -> variable(bool))
-.field i32Cgt: bool (size: 1 @892 -> variable(bool))
-.field i32Cge: bool (size: 1 @896 -> variable(bool))
-.field u32A: uint32 (size: 4 @900 -> variable(u32))
-.field u32B: uint32 (size: 4 @904 -> variable(u32))
-.field u32Pls: uint32 (size: 4 @908 -> variable(u32))
-.field u32Neg: uint32 (size: 4 @912 -> variable(u32))
-.field u32Cmt: uint32 (size: 4 @916 -> variable(u32))
-.field u32Add: uint32 (size: 4 @920 -> variable(u32))
-.field u32Sub: uint32 (size: 4 @924 -> variable(u32))
-.field u32Mul: uint32 (size: 4 @928 -> variable(u32))
-.field u32Div: uint32 (size: 4 @932 -> variable(u32))
-.field u32Mod: uint32 (size: 4 @936 -> variable(u32))
-.field u32And: uint32 (size: 4 @940 -> variable(u32))
-.field u32Ior: uint32 (size: 4 @944 -> variable(u32))
-.field u32Xor: uint32 (size: 4 @948 -> variable(u32))
-.field u32Shl: uint32 (size: 4 @952 -> variable(u32))
-.field u32Shr: uint32 (size: 4 @956 -> variable(u32))
-.field u32Not: bool (size: 1 @960 -> variable(bool))
-.field u32Ceq: bool (size: 1 @964 -> variable(bool))
-.field u32Cne: bool (size: 1 @968 -> variable(bool))
-.field u32Clt: bool (size: 1 @972 -> variable(bool))
-.field u32Cle: bool (size: 1 @976 -> variable(bool))
-.field u32Cgt: bool (size: 1 @980 -> variable(bool))
-.field u32Cge: bool (size: 1 @984 -> variable(bool))
-.field i64A: int64 (size: 8 @992 -> variable(i64))
-.field i64B: int64 (size: 8 @1000 -> variable(i64))
-.field i64Pls: int64 (size: 8 @1008 -> variable(i64))
-.field i64Neg: int64 (size: 8 @1016 -> variable(i64))
-.field i64Cmt: int64 (size: 8 @1024 -> variable(i64))
-.field i64Add: int64 (size: 8 @1032 -> variable(i64))
-.field i64Sub: int64 (size: 8 @1040 -> variable(i64))
-.field i64Mul: int64 (size: 8 @1048 -> variable(i64))
-.field i64Div: int64 (size: 8 @1056 -> variable(i64))
-.field i64Mod: int64 (size: 8 @1064 -> variable(i64))
-.field i64And: int64 (size: 8 @1072 -> variable(i64))
-.field i64Ior: int64 (size: 8 @1080 -> variable(i64))
-.field i64Xor: int64 (size: 8 @1088 -> variable(i64))
-.field i64Shl: int64 (size: 8 @1096 -> variable(i64))
-.field i64Shr: int64 (size: 8 @1104 -> variable(i64))
-.field i64Not: bool (size: 1 @1108 -> variable(bool))
-.field i64Ceq: bool (size: 1 @1112 -> variable(bool))
-.field i64Cne: bool (size: 1 @1116 -> variable(bool))
-.field i64Clt: bool (size: 1 @1120 -> variable(bool))
-.field i64Cle: bool (size: 1 @1124 -> variable(bool))
-.field i64Cgt: bool (size: 1 @1128 -> variable(bool))
-.field i64Cge: bool (size: 1 @1132 -> variable(bool))
-.field u64A: uint64 (size: 8 @1140 -> variable(u64))
-.field u64B: uint64 (size: 8 @1148 -> variable(u64))
-.field u64Pls: uint64 (size: 8 @1156 -> variable(u64))
-.field u64Neg: uint64 (size: 8 @1164 -> variable(u64))
-.field u64Cmt: uint64 (size: 8 @1172 -> variable(u64))
-.field u64Add: uint64 (size: 8 @1180 -> variable(u64))
-.field u64Sub: uint64 (size: 8 @1188 -> variable(u64))
-.field u64Mul: uint64 (size: 8 @1196 -> variable(u64))
-.field u64Div: uint64 (size: 8 @1204 -> variable(u64))
-.field u64Mod: uint64 (size: 8 @1212 -> variable(u64))
-.field u64And: uint64 (size: 8 @1220 -> variable(u64))
-.field u64Ior: uint64 (size: 8 @1228 -> variable(u64))
-.field u64Xor: uint64 (size: 8 @1236 -> variable(u64))
-.field u64Shl: uint64 (size: 8 @1244 -> variable(u64))
-.field u64Shr: uint64 (size: 8 @1252 -> variable(u64))
-.field u64Not: bool (size: 1 @1256 -> variable(bool))
-.field u64Ceq: bool (size: 1 @1260 -> variable(bool))
-.field u64Cne: bool (size: 1 @1264 -> variable(bool))
-.field u64Clt: bool (size: 1 @1268 -> variable(bool))
-.field u64Cle: bool (size: 1 @1272 -> variable(bool))
-.field u64Cgt: bool (size: 1 @1276 -> variable(bool))
-.field u64Cge: bool (size: 1 @1280 -> variable(bool))
-.field f32A: float32 (size: 4 @1284 -> variable(f32))
-.field f32B: float32 (size: 4 @1288 -> variable(f32))
-.field f32Pls: float32 (size: 4 @1292 -> variable(f32))
-.field f32Neg: float32 (size: 4 @1296 -> variable(f32))
-.field f32Add: float32 (size: 4 @1300 -> variable(f32))
-.field f32Sub: float32 (size: 4 @1304 -> variable(f32))
-.field f32Mul: float32 (size: 4 @1308 -> variable(f32))
-.field f32Div: float32 (size: 4 @1312 -> variable(f32))
-.field f32Mod: float32 (size: 4 @1316 -> variable(f32))
-.field f32Not: bool (size: 1 @1320 -> variable(bool))
-.field f32Ceq: bool (size: 1 @1324 -> variable(bool))
-.field f32Cne: bool (size: 1 @1328 -> variable(bool))
-.field f32Clt: bool (size: 1 @1332 -> variable(bool))
-.field f32Cle: bool (size: 1 @1336 -> variable(bool))
-.field f32Cgt: bool (size: 1 @1340 -> variable(bool))
-.field f32Cge: bool (size: 1 @1344 -> variable(bool))
-.field f64A: float64 (size: 8 @1352 -> variable(f64))
-.field f64B: float64 (size: 8 @1360 -> variable(f64))
-.field f64Pls: float64 (size: 8 @1368 -> variable(f64))
-.field f64Neg: float64 (size: 8 @1376 -> variable(f64))
-.field f64Add: float64 (size: 8 @1384 -> variable(f64))
-.field f64Sub: float64 (size: 8 @1392 -> variable(f64))
-.field f64Mul: float64 (size: 8 @1400 -> variable(f64))
-.field f64Div: float64 (size: 8 @1408 -> variable(f64))
-.field f64Mod: float64 (size: 8 @1416 -> variable(f64))
-.field f64Not: bool (size: 1 @1420 -> variable(bool))
-.field f64Ceq: bool (size: 1 @1424 -> variable(bool))
-.field f64Cne: bool (size: 1 @1428 -> variable(bool))
-.field f64Clt: bool (size: 1 @1432 -> variable(bool))
-.field f64Cle: bool (size: 1 @1436 -> variable(bool))
-.field f64Cgt: bool (size: 1 @1440 -> variable(bool))
-.field f64Cge: bool (size: 1 @1444 -> variable(bool))
-.field ptrA: pointer (size: 4 @1448 -> variable(ref))
-.field ptrB: pointer (size: 4 @1452 -> variable(ref))
-.field ptrCeq: bool (size: 1 @1456 -> variable(bool))
-.field ptrCne: bool (size: 1 @1460 -> variable(bool))
-.field arrFixedNoInit: int64[7] (size: 56 @1516 -> variable(val))
-.field arrSliceNoInit: int64[] (size: 8 @1524 -> variable(arr))
-.field arrPtrNoInit: int64[*] (size: 4 @1528 -> variable(ref))
-.field arrSliceInitNull: int64[] (size: 8 @1536 -> variable(arr))
-.field arrPtrInitNull: int64[*] (size: 4 @1540 -> variable(ref))
-.field arrSliceInitFixed: int64[] (size: 8 @1548 -> variable(arr))
-.field arrPtrInitFixed: int64[*] (size: 4 @1552 -> variable(ref))
-.field arrSliceInitSlice: int64[] (size: 8 @1560 -> variable(arr))
-.field arrPtrInitSlice: int64[*] (size: 4 @1564 -> variable(ref))
-.field arrPtrInitPtr: int64[*] (size: 4 @1568 -> variable(ref))
-.field arrSliceInitString: char[] (size: 8 @1576 -> variable(arr))
-.field arrPtrInitString: char[*] (size: 4 @1580 -> variable(ref))
-.field value: int64 (size: 8 @146552 -> static variable(i64))
-.field valueRef: int64 (size: 4 @1584 -> variable(ref))
-.field valuePtr: pointer (size: 4 @1588 -> variable(ref))
-.field valueVar: variant (size: 8 @1596 -> variable(var))
-.field fromRef: int64 (size: 8 @1604 -> variable(i64))
-.field fromPtr: int64 (size: 4 @1608 -> variable(ref))
-.field fromVar: int64 (size: 4 @1612 -> variable(ref))
-.field nullRef: int64 (size: 4 @1616 -> variable(ref))
-.field nullPtr: pointer (size: 4 @1620 -> variable(ref))
-.field nullVar: variant (size: 8 @1628 -> variable(var))
-.field nullTyp: typename (size: 4 @1632 -> variable(ref))
-.field nullFun: function (size: 4 @1636 -> variable(ref))
-.field nullObj: object (size: 4 @1640 -> variable(ref))
-.field typePtr: pointer (size: 4 @1644 -> variable(ref))
-.field typeVar: variant (size: 8 @1652 -> variable(var))
-.field typeTyp: typename (size: 4 @1656 -> variable(ref))
-.field local: int64 (size: 8 @1664 -> variable(i64))
-.field copyVal: int64 (size: 8 @1672 -> variable(i64))
-.field copyRef: int64 (size: 4 @1676 -> variable(ref))
-.field copyPtr: pointer (size: 4 @1680 -> variable(ref))
-.field copyVar: variant (size: 8 @1688 -> variable(var))
-.field copyTyp: typename (size: 4 @1692 -> variable(ref))
-.field ptrVoid: pointer (size: 4 @1696 -> variable(ref))
-.field ptrBool: pointer (size: 4 @1700 -> variable(ref))
-.field ptrChar: pointer (size: 4 @1704 -> variable(ref))
-.field ptrInt8: pointer (size: 4 @1708 -> variable(ref))
-.field ptrInt16: pointer (size: 4 @1712 -> variable(ref))
-.field ptrInt32: pointer (size: 4 @1716 -> variable(ref))
-.field ptrInt64: pointer (size: 4 @1720 -> variable(ref))
-.field ptrUint8: pointer (size: 4 @1724 -> variable(ref))
-.field ptrUint16: pointer (size: 4 @1728 -> variable(ref))
-.field ptrUint32: pointer (size: 4 @1732 -> variable(ref))
-.field ptrUint64: pointer (size: 4 @1736 -> variable(ref))
-.field ptrFloat32: pointer (size: 4 @1740 -> variable(ref))
-.field ptrFloat64: pointer (size: 4 @1744 -> variable(ref))
-.field ptrTypename: pointer (size: 4 @1748 -> variable(ref))
-.field ptrFunction: pointer (size: 4 @1752 -> variable(ref))
-.field ptrPointer: pointer (size: 4 @1756 -> variable(ref))
-.field ptrVariant: pointer (size: 4 @1760 -> variable(ref))
-.field ptrObject: pointer (size: 4 @1764 -> variable(ref))
-.field varVoid: variant (size: 8 @1772 -> variable(var))
-.field varBool: variant (size: 8 @1780 -> variable(var))
-.field varChar: variant (size: 8 @1788 -> variable(var))
-.field varInt8: variant (size: 8 @1796 -> variable(var))
-.field varInt16: variant (size: 8 @1804 -> variable(var))
-.field varInt32: variant (size: 8 @1812 -> variable(var))
-.field varInt64: variant (size: 8 @1820 -> variable(var))
-.field varUint8: variant (size: 8 @1828 -> variable(var))
-.field varUint16: variant (size: 8 @1836 -> variable(var))
-.field varUint32: variant (size: 8 @1844 -> variable(var))
-.field varUint64: variant (size: 8 @1852 -> variable(var))
-.field varFloat32: variant (size: 8 @1860 -> variable(var))
-.field varFloat64: variant (size: 8 @1868 -> variable(var))
-.field varTypename: variant (size: 8 @1876 -> variable(var))
-.field varFunction: variant (size: 8 @1884 -> variable(var))
-.field varPointer: variant (size: 8 @1892 -> variable(var))
-.field varVariant: variant (size: 8 @1900 -> variable(var))
-.field varObject: variant (size: 8 @1908 -> variable(var))
-.field typVoid: typename (size: 4 @1912 -> variable(ref))
-.field typBool: typename (size: 4 @1916 -> variable(ref))
-.field typChar: typename (size: 4 @1920 -> variable(ref))
-.field typInt8: typename (size: 4 @1924 -> variable(ref))
-.field typInt16: typename (size: 4 @1928 -> variable(ref))
-.field typInt32: typename (size: 4 @1932 -> variable(ref))
-.field typInt64: typename (size: 4 @1936 -> variable(ref))
-.field typUint8: typename (size: 4 @1940 -> variable(ref))
-.field typUint16: typename (size: 4 @1944 -> variable(ref))
-.field typUint32: typename (size: 4 @1948 -> variable(ref))
-.field typUint64: typename (size: 4 @1952 -> variable(ref))
-.field typFloat32: typename (size: 4 @1956 -> variable(ref))
-.field typFloat64: typename (size: 4 @1960 -> variable(ref))
-.field typTypename: typename (size: 4 @1964 -> variable(ref))
-.field typFunction: typename (size: 4 @1968 -> variable(ref))
-.field typPointer: typename (size: 4 @1972 -> variable(ref))
-.field typVariant: typename (size: 4 @1976 -> variable(ref))
-.field typObject: typename (size: 4 @1980 -> variable(ref))
-.field valueOfPtr: pointer (size: 4 @1984 -> variable(ref))
-.field valueOfVar: variant (size: 8 @1992 -> variable(var))
-.field valueOfTyp: typename (size: 4 @1996 -> variable(ref))
-.field typeOfValue: typename (size: 4 @2000 -> variable(ref))
-.field copyPtrFloat64: variant (size: 8 @2008 -> variable(var))
-.field copyVarFloat64: pointer (size: 4 @2012 -> variable(ref))
-.field localNoInit: int64 (size: 8 @2020 -> variable(i64))
-.field globalNoInit: int64 (size: 8 @146560 -> static variable(i64))
-.field localInitValue: int64 (size: 8 @2028 -> variable(i64))
-.field globalInitValue: int64 (size: 8 @146568 -> static variable(i64))
-.field localInitLocal: int64 (size: 8 @2036 -> variable(i64))
-.field globalInitLocal: int64 (size: 8 @146576 -> static variable(i64))
-.field localInitGlobal: int64 (size: 8 @2044 -> variable(i64))
-.field globalInitGlobal: int64 (size: 8 @146584 -> static variable(i64))
-.field InitMember: typename (size: 16 @136480 -> static const typename(val))
-.field pi64: float64 (size: 8 @2052 -> variable(f64))
-.field e64: float64 (size: 8 @2060 -> variable(f64))
-.field pi32: float32 (size: 4 @2064 -> variable(f32))
-.field e32: float32 (size: 4 @2068 -> variable(f32))
+.field shift: int32 (size: 4 @328 -> variable(i32))
+.field boolA: bool (size: 1 @332 -> variable(bool))
+.field boolB: bool (size: 1 @336 -> variable(bool))
+.field boolAnd: bool (size: 1 @340 -> variable(bool))
+.field boolIor: bool (size: 1 @344 -> variable(bool))
+.field boolXor: bool (size: 1 @348 -> variable(bool))
+.field boolNot: bool (size: 1 @352 -> variable(bool))
+.field boolCeq: bool (size: 1 @356 -> variable(bool))
+.field boolCne: bool (size: 1 @360 -> variable(bool))
+.field boolClt: bool (size: 1 @364 -> variable(bool))
+.field boolCle: bool (size: 1 @368 -> variable(bool))
+.field boolCgt: bool (size: 1 @372 -> variable(bool))
+.field boolCge: bool (size: 1 @376 -> variable(bool))
+.field chrA: char (size: 1 @380 -> variable(u32))
+.field chrB: char (size: 1 @384 -> variable(u32))
+.field chrPls: char (size: 1 @388 -> variable(u32))
+.field chrNeg: char (size: 1 @392 -> variable(u32))
+.field chrCmt: char (size: 1 @396 -> variable(u32))
+.field chrAdd: char (size: 1 @400 -> variable(u32))
+.field chrSub: char (size: 1 @404 -> variable(u32))
+.field chrMul: char (size: 1 @408 -> variable(u32))
+.field chrDiv: char (size: 1 @412 -> variable(u32))
+.field chrMod: char (size: 1 @416 -> variable(u32))
+.field chrAnd: char (size: 1 @420 -> variable(u32))
+.field chrIor: char (size: 1 @424 -> variable(u32))
+.field chrXor: char (size: 1 @428 -> variable(u32))
+.field chrShl: char (size: 1 @432 -> variable(u32))
+.field chrShr: char (size: 1 @436 -> variable(u32))
+.field chrNot: bool (size: 1 @440 -> variable(bool))
+.field chrCeq: bool (size: 1 @444 -> variable(bool))
+.field chrCne: bool (size: 1 @448 -> variable(bool))
+.field chrClt: bool (size: 1 @452 -> variable(bool))
+.field chrCle: bool (size: 1 @456 -> variable(bool))
+.field chrCgt: bool (size: 1 @460 -> variable(bool))
+.field chrCge: bool (size: 1 @464 -> variable(bool))
+.field i8A: int8 (size: 1 @468 -> variable(i32))
+.field i8B: int8 (size: 1 @472 -> variable(i32))
+.field i8Pls: int8 (size: 1 @476 -> variable(i32))
+.field i8Neg: int8 (size: 1 @480 -> variable(i32))
+.field i8Cmt: int8 (size: 1 @484 -> variable(i32))
+.field i8Add: int8 (size: 1 @488 -> variable(i32))
+.field i8Sub: int8 (size: 1 @492 -> variable(i32))
+.field i8Mul: int8 (size: 1 @496 -> variable(i32))
+.field i8Div: int8 (size: 1 @500 -> variable(i32))
+.field i8Mod: int8 (size: 1 @504 -> variable(i32))
+.field i8And: int8 (size: 1 @508 -> variable(i32))
+.field i8Ior: int8 (size: 1 @512 -> variable(i32))
+.field i8Xor: int8 (size: 1 @516 -> variable(i32))
+.field i8Shl: int8 (size: 1 @520 -> variable(i32))
+.field i8Shr: int8 (size: 1 @524 -> variable(i32))
+.field i8Not: bool (size: 1 @528 -> variable(bool))
+.field i8Ceq: bool (size: 1 @532 -> variable(bool))
+.field i8Cne: bool (size: 1 @536 -> variable(bool))
+.field i8Clt: bool (size: 1 @540 -> variable(bool))
+.field i8Cle: bool (size: 1 @544 -> variable(bool))
+.field i8Cgt: bool (size: 1 @548 -> variable(bool))
+.field i8Cge: bool (size: 1 @552 -> variable(bool))
+.field u8A: uint8 (size: 1 @556 -> variable(u32))
+.field u8B: uint8 (size: 1 @560 -> variable(u32))
+.field u8Pls: uint8 (size: 1 @564 -> variable(u32))
+.field u8Neg: uint8 (size: 1 @568 -> variable(u32))
+.field u8Cmt: uint8 (size: 1 @572 -> variable(u32))
+.field u8Add: uint8 (size: 1 @576 -> variable(u32))
+.field u8Sub: uint8 (size: 1 @580 -> variable(u32))
+.field u8Mul: uint8 (size: 1 @584 -> variable(u32))
+.field u8Div: uint8 (size: 1 @588 -> variable(u32))
+.field u8Mod: uint8 (size: 1 @592 -> variable(u32))
+.field u8And: uint8 (size: 1 @596 -> variable(u32))
+.field u8Ior: uint8 (size: 1 @600 -> variable(u32))
+.field u8Xor: uint8 (size: 1 @604 -> variable(u32))
+.field u8Shl: uint8 (size: 1 @608 -> variable(u32))
+.field u8Shr: uint8 (size: 1 @612 -> variable(u32))
+.field u8Not: bool (size: 1 @616 -> variable(bool))
+.field u8Ceq: bool (size: 1 @620 -> variable(bool))
+.field u8Cne: bool (size: 1 @624 -> variable(bool))
+.field u8Clt: bool (size: 1 @628 -> variable(bool))
+.field u8Cle: bool (size: 1 @632 -> variable(bool))
+.field u8Cgt: bool (size: 1 @636 -> variable(bool))
+.field u8Cge: bool (size: 1 @640 -> variable(bool))
+.field i16A: int16 (size: 2 @644 -> variable(i32))
+.field i16B: int16 (size: 2 @648 -> variable(i32))
+.field i16Pls: int16 (size: 2 @652 -> variable(i32))
+.field i16Neg: int16 (size: 2 @656 -> variable(i32))
+.field i16Cmt: int16 (size: 2 @660 -> variable(i32))
+.field i16Add: int16 (size: 2 @664 -> variable(i32))
+.field i16Sub: int16 (size: 2 @668 -> variable(i32))
+.field i16Mul: int16 (size: 2 @672 -> variable(i32))
+.field i16Div: int16 (size: 2 @676 -> variable(i32))
+.field i16Mod: int16 (size: 2 @680 -> variable(i32))
+.field i16And: int16 (size: 2 @684 -> variable(i32))
+.field i16Ior: int16 (size: 2 @688 -> variable(i32))
+.field i16Xor: int16 (size: 2 @692 -> variable(i32))
+.field i16Shl: int16 (size: 2 @696 -> variable(i32))
+.field i16Shr: int16 (size: 2 @700 -> variable(i32))
+.field i16Not: bool (size: 1 @704 -> variable(bool))
+.field i16Ceq: bool (size: 1 @708 -> variable(bool))
+.field i16Cne: bool (size: 1 @712 -> variable(bool))
+.field i16Clt: bool (size: 1 @716 -> variable(bool))
+.field i16Cle: bool (size: 1 @720 -> variable(bool))
+.field i16Cgt: bool (size: 1 @724 -> variable(bool))
+.field i16Cge: bool (size: 1 @728 -> variable(bool))
+.field u16A: uint16 (size: 2 @732 -> variable(u32))
+.field u16B: uint16 (size: 2 @736 -> variable(u32))
+.field u16Pls: uint16 (size: 2 @740 -> variable(u32))
+.field u16Neg: uint16 (size: 2 @744 -> variable(u32))
+.field u16Cmt: uint16 (size: 2 @748 -> variable(u32))
+.field u16Add: uint16 (size: 2 @752 -> variable(u32))
+.field u16Sub: uint16 (size: 2 @756 -> variable(u32))
+.field u16Mul: uint16 (size: 2 @760 -> variable(u32))
+.field u16Div: uint16 (size: 2 @764 -> variable(u32))
+.field u16Mod: uint16 (size: 2 @768 -> variable(u32))
+.field u16And: uint16 (size: 2 @772 -> variable(u32))
+.field u16Ior: uint16 (size: 2 @776 -> variable(u32))
+.field u16Xor: uint16 (size: 2 @780 -> variable(u32))
+.field u16Shl: uint16 (size: 2 @784 -> variable(u32))
+.field u16Shr: uint16 (size: 2 @788 -> variable(u32))
+.field u16Not: bool (size: 1 @792 -> variable(bool))
+.field u16Ceq: bool (size: 1 @796 -> variable(bool))
+.field u16Cne: bool (size: 1 @800 -> variable(bool))
+.field u16Clt: bool (size: 1 @804 -> variable(bool))
+.field u16Cle: bool (size: 1 @808 -> variable(bool))
+.field u16Cgt: bool (size: 1 @812 -> variable(bool))
+.field u16Cge: bool (size: 1 @816 -> variable(bool))
+.field i32A: int32 (size: 4 @820 -> variable(i32))
+.field i32B: int32 (size: 4 @824 -> variable(i32))
+.field i32Pls: int32 (size: 4 @828 -> variable(i32))
+.field i32Neg: int32 (size: 4 @832 -> variable(i32))
+.field i32Cmt: int32 (size: 4 @836 -> variable(i32))
+.field i32Add: int32 (size: 4 @840 -> variable(i32))
+.field i32Sub: int32 (size: 4 @844 -> variable(i32))
+.field i32Mul: int32 (size: 4 @848 -> variable(i32))
+.field i32Div: int32 (size: 4 @852 -> variable(i32))
+.field i32Mod: int32 (size: 4 @856 -> variable(i32))
+.field i32And: int32 (size: 4 @860 -> variable(i32))
+.field i32Ior: int32 (size: 4 @864 -> variable(i32))
+.field i32Xor: int32 (size: 4 @868 -> variable(i32))
+.field i32Shl: int32 (size: 4 @872 -> variable(i32))
+.field i32Shr: int32 (size: 4 @876 -> variable(i32))
+.field i32Not: bool (size: 1 @880 -> variable(bool))
+.field i32Ceq: bool (size: 1 @884 -> variable(bool))
+.field i32Cne: bool (size: 1 @888 -> variable(bool))
+.field i32Clt: bool (size: 1 @892 -> variable(bool))
+.field i32Cle: bool (size: 1 @896 -> variable(bool))
+.field i32Cgt: bool (size: 1 @900 -> variable(bool))
+.field i32Cge: bool (size: 1 @904 -> variable(bool))
+.field u32A: uint32 (size: 4 @908 -> variable(u32))
+.field u32B: uint32 (size: 4 @912 -> variable(u32))
+.field u32Pls: uint32 (size: 4 @916 -> variable(u32))
+.field u32Neg: uint32 (size: 4 @920 -> variable(u32))
+.field u32Cmt: uint32 (size: 4 @924 -> variable(u32))
+.field u32Add: uint32 (size: 4 @928 -> variable(u32))
+.field u32Sub: uint32 (size: 4 @932 -> variable(u32))
+.field u32Mul: uint32 (size: 4 @936 -> variable(u32))
+.field u32Div: uint32 (size: 4 @940 -> variable(u32))
+.field u32Mod: uint32 (size: 4 @944 -> variable(u32))
+.field u32And: uint32 (size: 4 @948 -> variable(u32))
+.field u32Ior: uint32 (size: 4 @952 -> variable(u32))
+.field u32Xor: uint32 (size: 4 @956 -> variable(u32))
+.field u32Shl: uint32 (size: 4 @960 -> variable(u32))
+.field u32Shr: uint32 (size: 4 @964 -> variable(u32))
+.field u32Not: bool (size: 1 @968 -> variable(bool))
+.field u32Ceq: bool (size: 1 @972 -> variable(bool))
+.field u32Cne: bool (size: 1 @976 -> variable(bool))
+.field u32Clt: bool (size: 1 @980 -> variable(bool))
+.field u32Cle: bool (size: 1 @984 -> variable(bool))
+.field u32Cgt: bool (size: 1 @988 -> variable(bool))
+.field u32Cge: bool (size: 1 @992 -> variable(bool))
+.field i64A: int64 (size: 8 @1000 -> variable(i64))
+.field i64B: int64 (size: 8 @1008 -> variable(i64))
+.field i64Pls: int64 (size: 8 @1016 -> variable(i64))
+.field i64Neg: int64 (size: 8 @1024 -> variable(i64))
+.field i64Cmt: int64 (size: 8 @1032 -> variable(i64))
+.field i64Add: int64 (size: 8 @1040 -> variable(i64))
+.field i64Sub: int64 (size: 8 @1048 -> variable(i64))
+.field i64Mul: int64 (size: 8 @1056 -> variable(i64))
+.field i64Div: int64 (size: 8 @1064 -> variable(i64))
+.field i64Mod: int64 (size: 8 @1072 -> variable(i64))
+.field i64And: int64 (size: 8 @1080 -> variable(i64))
+.field i64Ior: int64 (size: 8 @1088 -> variable(i64))
+.field i64Xor: int64 (size: 8 @1096 -> variable(i64))
+.field i64Shl: int64 (size: 8 @1104 -> variable(i64))
+.field i64Shr: int64 (size: 8 @1112 -> variable(i64))
+.field i64Not: bool (size: 1 @1116 -> variable(bool))
+.field i64Ceq: bool (size: 1 @1120 -> variable(bool))
+.field i64Cne: bool (size: 1 @1124 -> variable(bool))
+.field i64Clt: bool (size: 1 @1128 -> variable(bool))
+.field i64Cle: bool (size: 1 @1132 -> variable(bool))
+.field i64Cgt: bool (size: 1 @1136 -> variable(bool))
+.field i64Cge: bool (size: 1 @1140 -> variable(bool))
+.field u64A: uint64 (size: 8 @1148 -> variable(u64))
+.field u64B: uint64 (size: 8 @1156 -> variable(u64))
+.field u64Pls: uint64 (size: 8 @1164 -> variable(u64))
+.field u64Neg: uint64 (size: 8 @1172 -> variable(u64))
+.field u64Cmt: uint64 (size: 8 @1180 -> variable(u64))
+.field u64Add: uint64 (size: 8 @1188 -> variable(u64))
+.field u64Sub: uint64 (size: 8 @1196 -> variable(u64))
+.field u64Mul: uint64 (size: 8 @1204 -> variable(u64))
+.field u64Div: uint64 (size: 8 @1212 -> variable(u64))
+.field u64Mod: uint64 (size: 8 @1220 -> variable(u64))
+.field u64And: uint64 (size: 8 @1228 -> variable(u64))
+.field u64Ior: uint64 (size: 8 @1236 -> variable(u64))
+.field u64Xor: uint64 (size: 8 @1244 -> variable(u64))
+.field u64Shl: uint64 (size: 8 @1252 -> variable(u64))
+.field u64Shr: uint64 (size: 8 @1260 -> variable(u64))
+.field u64Not: bool (size: 1 @1264 -> variable(bool))
+.field u64Ceq: bool (size: 1 @1268 -> variable(bool))
+.field u64Cne: bool (size: 1 @1272 -> variable(bool))
+.field u64Clt: bool (size: 1 @1276 -> variable(bool))
+.field u64Cle: bool (size: 1 @1280 -> variable(bool))
+.field u64Cgt: bool (size: 1 @1284 -> variable(bool))
+.field u64Cge: bool (size: 1 @1288 -> variable(bool))
+.field f32A: float32 (size: 4 @1292 -> variable(f32))
+.field f32B: float32 (size: 4 @1296 -> variable(f32))
+.field f32Pls: float32 (size: 4 @1300 -> variable(f32))
+.field f32Neg: float32 (size: 4 @1304 -> variable(f32))
+.field f32Add: float32 (size: 4 @1308 -> variable(f32))
+.field f32Sub: float32 (size: 4 @1312 -> variable(f32))
+.field f32Mul: float32 (size: 4 @1316 -> variable(f32))
+.field f32Div: float32 (size: 4 @1320 -> variable(f32))
+.field f32Mod: float32 (size: 4 @1324 -> variable(f32))
+.field f32Not: bool (size: 1 @1328 -> variable(bool))
+.field f32Ceq: bool (size: 1 @1332 -> variable(bool))
+.field f32Cne: bool (size: 1 @1336 -> variable(bool))
+.field f32Clt: bool (size: 1 @1340 -> variable(bool))
+.field f32Cle: bool (size: 1 @1344 -> variable(bool))
+.field f32Cgt: bool (size: 1 @1348 -> variable(bool))
+.field f32Cge: bool (size: 1 @1352 -> variable(bool))
+.field f64A: float64 (size: 8 @1360 -> variable(f64))
+.field f64B: float64 (size: 8 @1368 -> variable(f64))
+.field f64Pls: float64 (size: 8 @1376 -> variable(f64))
+.field f64Neg: float64 (size: 8 @1384 -> variable(f64))
+.field f64Add: float64 (size: 8 @1392 -> variable(f64))
+.field f64Sub: float64 (size: 8 @1400 -> variable(f64))
+.field f64Mul: float64 (size: 8 @1408 -> variable(f64))
+.field f64Div: float64 (size: 8 @1416 -> variable(f64))
+.field f64Mod: float64 (size: 8 @1424 -> variable(f64))
+.field f64Not: bool (size: 1 @1428 -> variable(bool))
+.field f64Ceq: bool (size: 1 @1432 -> variable(bool))
+.field f64Cne: bool (size: 1 @1436 -> variable(bool))
+.field f64Clt: bool (size: 1 @1440 -> variable(bool))
+.field f64Cle: bool (size: 1 @1444 -> variable(bool))
+.field f64Cgt: bool (size: 1 @1448 -> variable(bool))
+.field f64Cge: bool (size: 1 @1452 -> variable(bool))
+.field ptrA: pointer (size: 4 @1456 -> variable(ref))
+.field ptrB: pointer (size: 4 @1460 -> variable(ref))
+.field ptrCeq: bool (size: 1 @1464 -> variable(bool))
+.field ptrCne: bool (size: 1 @1468 -> variable(bool))
+.field arrFixedNoInit: int64[7] (size: 56 @1524 -> variable(val))
+.field arrSliceNoInit: int64[] (size: 8 @1532 -> variable(arr))
+.field arrPtrNoInit: int64[*] (size: 4 @1536 -> variable(ref))
+.field arrSliceInitNull: int64[] (size: 8 @1544 -> variable(arr))
+.field arrPtrInitNull: int64[*] (size: 4 @1548 -> variable(ref))
+.field arrSliceInitFixed: int64[] (size: 8 @1556 -> variable(arr))
+.field arrPtrInitFixed: int64[*] (size: 4 @1560 -> variable(ref))
+.field arrSliceInitSlice: int64[] (size: 8 @1568 -> variable(arr))
+.field arrPtrInitSlice: int64[*] (size: 4 @1572 -> variable(ref))
+.field arrPtrInitPtr: int64[*] (size: 4 @1576 -> variable(ref))
+.field arrSliceInitString: char[] (size: 8 @1584 -> variable(arr))
+.field arrPtrInitString: char[*] (size: 4 @1588 -> variable(ref))
+.field value: int64 (size: 8 @146864 -> static variable(i64))
+.field valueRef: int64 (size: 4 @1592 -> variable(ref))
+.field valuePtr: pointer (size: 4 @1596 -> variable(ref))
+.field valueVar: variant (size: 8 @1604 -> variable(var))
+.field fromRef: int64 (size: 8 @1612 -> variable(i64))
+.field fromPtr: int64 (size: 4 @1616 -> variable(ref))
+.field fromVar: int64 (size: 4 @1620 -> variable(ref))
+.field nullRef: int64 (size: 4 @1624 -> variable(ref))
+.field nullPtr: pointer (size: 4 @1628 -> variable(ref))
+.field nullVar: variant (size: 8 @1636 -> variable(var))
+.field nullTyp: typename (size: 4 @1640 -> variable(ref))
+.field nullFun: function (size: 4 @1644 -> variable(ref))
+.field nullObj: object (size: 4 @1648 -> variable(ref))
+.field typePtr: pointer (size: 4 @1652 -> variable(ref))
+.field typeVar: variant (size: 8 @1660 -> variable(var))
+.field typeTyp: typename (size: 4 @1664 -> variable(ref))
+.field local: int64 (size: 8 @1672 -> variable(i64))
+.field copyVal: int64 (size: 8 @1680 -> variable(i64))
+.field copyRef: int64 (size: 4 @1684 -> variable(ref))
+.field copyPtr: pointer (size: 4 @1688 -> variable(ref))
+.field copyVar: variant (size: 8 @1696 -> variable(var))
+.field copyTyp: typename (size: 4 @1700 -> variable(ref))
+.field ptrVoid: pointer (size: 4 @1704 -> variable(ref))
+.field ptrBool: pointer (size: 4 @1708 -> variable(ref))
+.field ptrChar: pointer (size: 4 @1712 -> variable(ref))
+.field ptrInt8: pointer (size: 4 @1716 -> variable(ref))
+.field ptrInt16: pointer (size: 4 @1720 -> variable(ref))
+.field ptrInt32: pointer (size: 4 @1724 -> variable(ref))
+.field ptrInt64: pointer (size: 4 @1728 -> variable(ref))
+.field ptrUint8: pointer (size: 4 @1732 -> variable(ref))
+.field ptrUint16: pointer (size: 4 @1736 -> variable(ref))
+.field ptrUint32: pointer (size: 4 @1740 -> variable(ref))
+.field ptrUint64: pointer (size: 4 @1744 -> variable(ref))
+.field ptrFloat32: pointer (size: 4 @1748 -> variable(ref))
+.field ptrFloat64: pointer (size: 4 @1752 -> variable(ref))
+.field ptrTypename: pointer (size: 4 @1756 -> variable(ref))
+.field ptrFunction: pointer (size: 4 @1760 -> variable(ref))
+.field ptrPointer: pointer (size: 4 @1764 -> variable(ref))
+.field ptrVariant: pointer (size: 4 @1768 -> variable(ref))
+.field ptrObject: pointer (size: 4 @1772 -> variable(ref))
+.field varVoid: variant (size: 8 @1780 -> variable(var))
+.field varBool: variant (size: 8 @1788 -> variable(var))
+.field varChar: variant (size: 8 @1796 -> variable(var))
+.field varInt8: variant (size: 8 @1804 -> variable(var))
+.field varInt16: variant (size: 8 @1812 -> variable(var))
+.field varInt32: variant (size: 8 @1820 -> variable(var))
+.field varInt64: variant (size: 8 @1828 -> variable(var))
+.field varUint8: variant (size: 8 @1836 -> variable(var))
+.field varUint16: variant (size: 8 @1844 -> variable(var))
+.field varUint32: variant (size: 8 @1852 -> variable(var))
+.field varUint64: variant (size: 8 @1860 -> variable(var))
+.field varFloat32: variant (size: 8 @1868 -> variable(var))
+.field varFloat64: variant (size: 8 @1876 -> variable(var))
+.field varTypename: variant (size: 8 @1884 -> variable(var))
+.field varFunction: variant (size: 8 @1892 -> variable(var))
+.field varPointer: variant (size: 8 @1900 -> variable(var))
+.field varVariant: variant (size: 8 @1908 -> variable(var))
+.field varObject: variant (size: 8 @1916 -> variable(var))
+.field typVoid: typename (size: 4 @1920 -> variable(ref))
+.field typBool: typename (size: 4 @1924 -> variable(ref))
+.field typChar: typename (size: 4 @1928 -> variable(ref))
+.field typInt8: typename (size: 4 @1932 -> variable(ref))
+.field typInt16: typename (size: 4 @1936 -> variable(ref))
+.field typInt32: typename (size: 4 @1940 -> variable(ref))
+.field typInt64: typename (size: 4 @1944 -> variable(ref))
+.field typUint8: typename (size: 4 @1948 -> variable(ref))
+.field typUint16: typename (size: 4 @1952 -> variable(ref))
+.field typUint32: typename (size: 4 @1956 -> variable(ref))
+.field typUint64: typename (size: 4 @1960 -> variable(ref))
+.field typFloat32: typename (size: 4 @1964 -> variable(ref))
+.field typFloat64: typename (size: 4 @1968 -> variable(ref))
+.field typTypename: typename (size: 4 @1972 -> variable(ref))
+.field typFunction: typename (size: 4 @1976 -> variable(ref))
+.field typPointer: typename (size: 4 @1980 -> variable(ref))
+.field typVariant: typename (size: 4 @1984 -> variable(ref))
+.field typObject: typename (size: 4 @1988 -> variable(ref))
+.field valueOfPtr: pointer (size: 4 @1992 -> variable(ref))
+.field valueOfVar: variant (size: 8 @2000 -> variable(var))
+.field valueOfTyp: typename (size: 4 @2004 -> variable(ref))
+.field typeOfValue: typename (size: 4 @2008 -> variable(ref))
+.field copyPtrFloat64: variant (size: 8 @2016 -> variable(var))
+.field copyVarFloat64: pointer (size: 4 @2020 -> variable(ref))
+.field localNoInit: int64 (size: 8 @2028 -> variable(i64))
+.field globalNoInit: int64 (size: 8 @146872 -> static variable(i64))
+.field localInitValue: int64 (size: 8 @2036 -> variable(i64))
+.field globalInitValue: int64 (size: 8 @146880 -> static variable(i64))
+.field localInitLocal: int64 (size: 8 @2044 -> variable(i64))
+.field globalInitLocal: int64 (size: 8 @146888 -> static variable(i64))
+.field localInitGlobal: int64 (size: 8 @2052 -> variable(i64))
+.field globalInitGlobal: int64 (size: 8 @146896 -> static variable(i64))
+.field InitMember: typename (size: 16 @136776 -> static const typename(val))
+.field pi64: float64 (size: 8 @2060 -> variable(f64))
+.field e64: float64 (size: 8 @2068 -> variable(f64))
+.field pi32: float32 (size: 4 @2072 -> variable(f32))
+.field e32: float32 (size: 4 @2076 -> variable(f32))
 .field rgb888: function (size: 0 @0 -> inline)
 .field rgb565: function (size: 0 @0 -> inline)
-.field r_comp: int32 (size: 4 @2072 -> variable(i32))
-.field g_comp: int32 (size: 4 @2076 -> variable(i32))
-.field b_comp: int32 (size: 4 @2080 -> variable(i32))
-.field r5g6b5: int32 (size: 4 @2084 -> variable(i32))
-.field r8g8b8: int32 (size: 4 @2088 -> variable(i32))
-.field zxtR5: int32 (size: 4 @2092 -> variable(i32))
-.field zxtG6: int32 (size: 4 @2096 -> variable(i32))
-.field zxtB5: int32 (size: 4 @2100 -> variable(i32))
-.field sxtR5: int32 (size: 4 @2104 -> variable(i32))
-.field sxtG6: int32 (size: 4 @2108 -> variable(i32))
-.field sxtB5: int32 (size: 4 @2112 -> variable(i32))
-.field zxtR8: int32 (size: 4 @2116 -> variable(i32))
-.field zxtG8: int32 (size: 4 @2120 -> variable(i32))
-.field zxtB8: int32 (size: 4 @2124 -> variable(i32))
-.field sxtR8: int32 (size: 4 @2128 -> variable(i32))
-.field sxtG8: int32 (size: 4 @2132 -> variable(i32))
-.field sxtB8: int32 (size: 4 @2136 -> variable(i32))
-.field sinF64: float64 (size: 8 @2144 -> variable(f64))
-.field cosF64: float64 (size: 8 @2152 -> variable(f64))
-.field tanF64: float64 (size: 8 @2160 -> variable(f64))
-.field logF64: float64 (size: 8 @2168 -> variable(f64))
-.field expF64: float64 (size: 8 @2176 -> variable(f64))
-.field powF64: float64 (size: 8 @2184 -> variable(f64))
-.field sqrtF64: float64 (size: 8 @2192 -> variable(f64))
-.field atanF64: float64 (size: 8 @2200 -> variable(f64))
-.field sinF32: float32 (size: 4 @2204 -> variable(f32))
-.field cosF32: float32 (size: 4 @2208 -> variable(f32))
-.field tanF32: float32 (size: 4 @2212 -> variable(f32))
-.field logF32: float32 (size: 4 @2216 -> variable(f32))
-.field expF32: float32 (size: 4 @2220 -> variable(f32))
-.field powF32: float32 (size: 4 @2224 -> variable(f32))
-.field sqrtF32: float32 (size: 4 @2228 -> variable(f32))
-.field atanF32: float32 (size: 4 @2232 -> variable(f32))
+.field r_comp: int32 (size: 4 @2080 -> variable(i32))
+.field g_comp: int32 (size: 4 @2084 -> variable(i32))
+.field b_comp: int32 (size: 4 @2088 -> variable(i32))
+.field r5g6b5: int32 (size: 4 @2092 -> variable(i32))
+.field r8g8b8: int32 (size: 4 @2096 -> variable(i32))
+.field zxtR5: int32 (size: 4 @2100 -> variable(i32))
+.field zxtG6: int32 (size: 4 @2104 -> variable(i32))
+.field zxtB5: int32 (size: 4 @2108 -> variable(i32))
+.field sxtR5: int32 (size: 4 @2112 -> variable(i32))
+.field sxtG6: int32 (size: 4 @2116 -> variable(i32))
+.field sxtB5: int32 (size: 4 @2120 -> variable(i32))
+.field zxtR8: int32 (size: 4 @2124 -> variable(i32))
+.field zxtG8: int32 (size: 4 @2128 -> variable(i32))
+.field zxtB8: int32 (size: 4 @2132 -> variable(i32))
+.field sxtR8: int32 (size: 4 @2136 -> variable(i32))
+.field sxtG8: int32 (size: 4 @2140 -> variable(i32))
+.field sxtB8: int32 (size: 4 @2144 -> variable(i32))
+.field sinF64: float64 (size: 8 @2152 -> variable(f64))
+.field cosF64: float64 (size: 8 @2160 -> variable(f64))
+.field tanF64: float64 (size: 8 @2168 -> variable(f64))
+.field logF64: float64 (size: 8 @2176 -> variable(f64))
+.field expF64: float64 (size: 8 @2184 -> variable(f64))
+.field powF64: float64 (size: 8 @2192 -> variable(f64))
+.field sqrtF64: float64 (size: 8 @2200 -> variable(f64))
+.field atanF64: float64 (size: 8 @2208 -> variable(f64))
+.field sinF32: float32 (size: 4 @2212 -> variable(f32))
+.field cosF32: float32 (size: 4 @2216 -> variable(f32))
+.field tanF32: float32 (size: 4 @2220 -> variable(f32))
+.field logF32: float32 (size: 4 @2224 -> variable(f32))
+.field expF32: float32 (size: 4 @2228 -> variable(f32))
+.field powF32: float32 (size: 4 @2232 -> variable(f32))
+.field sqrtF32: float32 (size: 4 @2236 -> variable(f32))
+.field atanF32: float32 (size: 4 @2240 -> variable(f32))
 .field malloc: function (size: 0 @0 -> inline)
 .field free: function (size: 0 @0 -> inline)
-.field p1: pointer (size: 4 @2236 -> variable(ref))
-.field p2: pointer (size: 4 @2240 -> variable(ref))
-.field p3: pointer (size: 4 @2244 -> variable(ref))
-.field p4: pointer (size: 4 @2248 -> variable(ref))
-.field val1: int64 (size: 8 @2256 -> variable(i64))
-.field val2: int64 (size: 8 @2264 -> variable(i64))
-.field .main: function (size: 4751 @146600 -> static function)
+.field p1: pointer (size: 4 @2244 -> variable(ref))
+.field p2: pointer (size: 4 @2248 -> variable(ref))
+.field p3: pointer (size: 4 @2252 -> variable(ref))
+.field p4: pointer (size: 4 @2256 -> variable(ref))
+.field val1: int64 (size: 8 @2264 -> variable(i64))
+.field val2: int64 (size: 8 @2272 -> variable(i64))
+.field .main: function (size: 4786 @146912 -> static function)
 .param .result: void (size: 0 @0 -> variable)
 .value: {
 	intGlobal	intConstant	{
@@ -5096,10 +5108,10 @@ val2: int64 {
 			}
 		}
 		static if (typename(int64) == null) {
-			raise(raise.error, "integer is not declared", null, noTrace);
+			abort("integer is not declared");
 		}
 		static if (typename(int64) != typename) {
-			raise(raise.error, "integer is not a type", null, noTrace);
+			abort("integer is not a type");
 		}
 		for ( ; ; ) {
 			debug("for ( ; ; )");
@@ -5223,7 +5235,9 @@ val2: int64 {
 		emitldz64: int64 := emit(load.z64);
 		emitA: int32 := 42;
 		emitB: int32 := 96;
-		emitAddi32: int32 := emit(add.i32, int32(emitA), emitB);
+		emitAddI32: int32 := emit(int32(emitA), int32(emitB), add.i32);
+		emitDivI32: int32 := emit(int32(10), int32(5), div.i32);
+		emitNfcF32: float32 := emit(float32(3.140000 / (2)), float32.sin);
 		sizeof(type: typename): int32 := type.size;
 		sizeofVoid: int32 := sizeof(void);
 		sizeofBool: int32 := sizeof(bool);
@@ -5726,13 +5740,13 @@ val2: int64 {
 		assert(5 == 5, "5 != 5");
 	}
 }
-.instructions: [4751 bytes @.023ca8]
+.instructions: [4786 bytes @.023de0]
 	// FIXME: incorrect initializer code generated for: `static int32 intGlobal = 0;`
 	extras/Tests/lang.varInitByVal.ci:38: (4 bytes): intGlobal
-	2a a0 3c 02                load.m32 .023ca0 ;InitMember.intGlobal
+	2a d8 3d 02                load.m32 .023dd8 ;InitMember.intGlobal
 	// FIXME: incorrect initializer code generated for: `static const int32 intConstant = 0;`
 	extras/Tests/lang.varInitByVal.ci:43: (4 bytes): intConstant
-	2a a4 3c 02                load.m32 .023ca4 ;InitMember.intConstant
+	2a dc 3d 02                load.m32 .023ddc ;InitMember.intConstant
 	extras/Tests/lang.statementIf.ci:4: (29 bytes): raise(raise.debug, "0 == 0", null, 1);
 	1b 03 00 00 00             load.c32 3
 	1f 80 ce 00 00             load.ref .00ce80 ;"0 == 0"
@@ -6108,14 +6122,24 @@ val2: int64 {
 	18                         load.z32
 	extras/Tests/lang.inlineEmit.ci:4: (1 bytes): emitldz64: int64 := emit(load.z64)
 	19                         load.z64
-	extras/Tests/lang.inlineEmit.ci:7: (5 bytes): emitA: int32 := 42
+	extras/Tests/lang.inlineEmit.ci:6: (5 bytes): emitA: int32 := 42
 	1b 2a 00 00 00             load.c32 42
-	extras/Tests/lang.inlineEmit.ci:8: (5 bytes): emitB: int32 := 96
+	extras/Tests/lang.inlineEmit.ci:7: (5 bytes): emitB: int32 := 96
 	1b 60 00 00 00             load.c32 96
-	extras/Tests/lang.inlineEmit.ci:10: (5 bytes): emitAddi32: int32 := emit(add.i32, int32(emitA), emitB)
-	12 00                      dup.x1 sp(0)
-	12 02                      dup.x1 sp(2)
+	extras/Tests/lang.inlineEmit.ci:9: (5 bytes): emitAddI32: int32 := emit(int32(emitA), int32(emitB), add.i32)
+	12 01                      dup.x1 sp(1)
+	12 01                      dup.x1 sp(1)
 	51                         add.i32
+	extras/Tests/lang.inlineEmit.ci:10: (11 bytes): emitDivI32: int32 := emit(int32(10), int32(5), div.i32)
+	1b 0a 00 00 00             load.c32 10
+	1b 05 00 00 00             load.c32 5
+	54                         div.i32
+	extras/Tests/lang.inlineEmit.ci:11: (24 bytes): emitNfcF32: float32 := emit(float32(3.140000 / (2)), float32.sin)
+	1e 1f 85 eb 51 b8 1e 09 40 load.f64 3.140000
+	1e 00 00 00 00 00 00 00 40 load.f64 2.000000
+	84                         div.f64
+	8b                         f64.2f32
+	01 15 00 00                nfc(21) ;float32.sin(x: float32): float32
 	extras/Tests/lang.reflection.ci:5: (4 bytes): sizeofVoid: int32 := sizeof(void)
 	2a b8 00 00                load.m32 .0000b8
 	extras/Tests/lang.reflection.ci:6: (4 bytes): sizeofBool: int32 := sizeof(bool)
@@ -6153,7 +6177,7 @@ val2: int64 {
 	extras/Tests/lang.reflection.ci:22: (4 bytes): sizeofObject: int32 := sizeof(object)
 	2a c0 09 00                load.m32 .0009c0
 	extras/Tests/lang.reflection.ci:32: (5 bytes): typeofRecord: typename := RecordSizeofExt
-	1f 40 29 01 00             load.ref .012940 ;RecordSizeofExt
+	1f 68 2a 01 00             load.ref .012a68 ;RecordSizeofExt
 	extras/Tests/lang.reflection.ci:33: (6 bytes): nameOfRecord: char[*] := typename.name(typeofRecord)
 	12 00                      dup.x1 sp(0)
 	01 04 00 00                nfc(4) ;typename.name(type: typename): .cstr
@@ -6197,44 +6221,44 @@ val2: int64 {
 	12 00                      dup.x1 sp(0)
 	0b 18 00 00                inc.i32(+24)
 	22                         load.m32
-	extras/Tests/lang.function.ci:10: (25 bytes): funAddResult: int32 := funAdd(2, 7)
+	extras/Tests/lang.function.ci:11: (25 bytes): funAddResult: int32 := funAdd(2, 7)
 	1b 00 00 00 00             load.c32 0
 	1b 02 00 00 00             load.c32 2
 	1b 07 00 00 00             load.c32 7
-	1f 09 3c 02 00             load.ref .023c09 ;funAdd(x: int32, y: int32): int32
+	1f 41 3d 02 00             load.ref .023d41 ;funAdd(x: int32, y: int32): int32
 	02                         call
 	10 f8 ff ff                inc.sp(-8)
-	extras/Tests/lang.function.ci:13: (5 bytes): funAddRef(x: int32, y: int32): int32 := funAdd
-	1f 09 3c 02 00             load.ref .023c09 ;funAdd(x: int32, y: int32): int32
-	extras/Tests/lang.function.ci:16: (22 bytes): funAddRefResult: int32 := funAddRef(2, 8)
+	extras/Tests/lang.function.ci:14: (5 bytes): funAddRef(x: int32, y: int32): int32 := funAdd
+	1f 41 3d 02 00             load.ref .023d41 ;funAdd(x: int32, y: int32): int32
+	extras/Tests/lang.function.ci:17: (22 bytes): funAddRefResult: int32 := funAddRef(2, 8)
 	1b 00 00 00 00             load.c32 0
 	1b 02 00 00 00             load.c32 2
 	1b 08 00 00 00             load.c32 8
 	12 03                      dup.x1 sp(3)
 	02                         call
 	10 f8 ff ff                inc.sp(-8)
-	extras/Tests/lang.function.ci:19: (5 bytes): funMul(x: int32, y: int32): int32 := funMul
-	1f 12 3c 02 00             load.ref .023c12 ;funMul(x: int32, y: int32): int32
-	extras/Tests/lang.function.ci:22: (22 bytes): funMulResult: int32 := funMul(2, 6)
+	extras/Tests/lang.function.ci:20: (5 bytes): funMul(x: int32, y: int32): int32 := funMul
+	1f 4a 3d 02 00             load.ref .023d4a ;funMul(x: int32, y: int32): int32
+	extras/Tests/lang.function.ci:23: (22 bytes): funMulResult: int32 := funMul(2, 6)
 	1b 00 00 00 00             load.c32 0
 	1b 02 00 00 00             load.c32 2
 	1b 06 00 00 00             load.c32 6
 	12 03                      dup.x1 sp(3)
 	02                         call
 	10 f8 ff ff                inc.sp(-8)
-	extras/Tests/lang.function.ci:25: (2 bytes): funMulRef(x: int32, y: int32): int32 := funMul
+	extras/Tests/lang.function.ci:26: (2 bytes): funMulRef(x: int32, y: int32): int32 := funMul
 	12 01                      dup.x1 sp(1)
-	extras/Tests/lang.function.ci:28: (22 bytes): funMulRefResult: int32 := funMulRef(2, 7)
+	extras/Tests/lang.function.ci:29: (22 bytes): funMulRefResult: int32 := funMulRef(2, 7)
 	1b 00 00 00 00             load.c32 0
 	1b 02 00 00 00             load.c32 2
 	1b 07 00 00 00             load.c32 7
 	12 03                      dup.x1 sp(3)
 	02                         call
 	10 f8 ff ff                inc.sp(-8)
-	extras/Tests/lang.function.ci:46: (20 bytes): fibonacci_13: uint32 := fib(13)
+	extras/Tests/lang.function.ci:48: (20 bytes): fibonacci_13: uint32 := fib(13)
 	1b 00 00 00 00             load.c32 0
 	1b 0d 00 00 00             load.c32 13
-	1f 1b 3c 02 00             load.ref .023c1b ;fib(n: uint32): uint32
+	1f 53 3d 02 00             load.ref .023d53 ;fib(n: uint32): uint32
 	02                         call
 	10 fc ff ff                inc.sp(-4)
 	extras/Tests/lang.useOperator.ci:5: (5 bytes): shift: int32 := 2
@@ -7390,9 +7414,9 @@ val2: int64 {
 	12 03                      dup.x1 sp(3)
 	extras/Tests/lang.varInitArray.ci:37: (10 bytes): arrSliceInitString: char[] := "string"
 	1b 06 00 00 00             load.c32 6
-	1f b0 cf 01 00             load.ref .01cfb0 ;"string"
+	1f d8 d0 01 00             load.ref .01d0d8 ;"string"
 	extras/Tests/lang.varInitArray.ci:38: (5 bytes): arrPtrInitString: char[*] := "string"
-	1f b0 cf 01 00             load.ref .01cfb0 ;"string"
+	1f d8 d0 01 00             load.ref .01d0d8 ;"string"
 	extras/Tests/lang.varInitArray.ci:47: (48 bytes): assert(arrFixedNoInit.length == 7);
 	1b 07 00 00 00             load.c32 7
 	1b 07 00 00 00             load.c32 7
@@ -7412,7 +7436,7 @@ val2: int64 {
 	06 08 00 00                jz +8
 	04 21 00 00                jmp +33
 	1b ff ff ff ff             load.c32 -1
-	1f cf cf 01 00             load.ref .01cfcf ;"This one might fail"
+	1f f7 d0 01 00             load.ref .01d0f7 ;"This one might fail"
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	1f 00 00 00 00             load.ref .000000 ;null
 	1b 80 00 00 00             load.c32 128
@@ -7443,14 +7467,14 @@ val2: int64 {
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	extras/Tests/lang.varInitByRef.ci:7: (13 bytes): static value: int64 := 42
 	1c 2a 00 00 00 00 00 00 00 load.c64 42
-	2e 78 3c 02                store.m64 .023c78 ;value
+	2e b0 3d 02                store.m64 .023db0 ;value
 	extras/Tests/lang.varInitByRef.ci:8: (5 bytes): valueRef: int64 := value
-	1f 78 3c 02 00             load.ref .023c78 ;value
+	1f b0 3d 02 00             load.ref .023db0 ;value
 	extras/Tests/lang.varInitByRef.ci:9: (5 bytes): valuePtr: pointer := value
-	1f 78 3c 02 00             load.ref .023c78 ;value
+	1f b0 3d 02 00             load.ref .023db0 ;value
 	extras/Tests/lang.varInitByRef.ci:10: (10 bytes): valueVar: variant := value
 	1f 00 04 00 00             load.ref .000400 ;int64
-	1f 78 3c 02 00             load.ref .023c78 ;value
+	1f b0 3d 02 00             load.ref .023db0 ;value
 	extras/Tests/lang.varInitByRef.ci:12: (3 bytes): fromRef: int64 := valueRef
 	12 03                      dup.x1 sp(3)
 	23                         load.m64
@@ -7479,7 +7503,7 @@ val2: int64 {
 	extras/Tests/lang.varInitByRef.ci:25: (5 bytes): typeTyp: typename := int64
 	1f 00 04 00 00             load.ref .000400 ;int64
 	extras/Tests/lang.varInitByRef.ci:27: (4 bytes): local: int64 := value
-	2b 78 3c 02                load.m64 .023c78 ;value
+	2b b0 3d 02                load.m64 .023db0 ;value
 	extras/Tests/lang.varInitByRef.ci:28: (2 bytes): copyVal: int64 := local
 	13 00                      dup.x2 sp(0)
 	extras/Tests/lang.varInitByRef.ci:29: (2 bytes): copyRef: int64 := valueRef
@@ -7617,10 +7641,10 @@ val2: int64 {
 	extras/Tests/lang.varInitByRef.ci:92: (5 bytes): typObject: typename := object
 	1f a8 09 00 00             load.ref .0009a8 ;object
 	extras/Tests/lang.varInitByRef.ci:95: (5 bytes): valueOfPtr: pointer := pointer(value)
-	1f 78 3c 02 00             load.ref .023c78 ;value
+	1f b0 3d 02 00             load.ref .023db0 ;value
 	extras/Tests/lang.varInitByRef.ci:96: (10 bytes): valueOfVar: variant := variant(value)
 	1f 00 04 00 00             load.ref .000400 ;int64
-	1f 78 3c 02 00             load.ref .023c78 ;value
+	1f b0 3d 02 00             load.ref .023db0 ;value
 	extras/Tests/lang.varInitByRef.ci:97: (5 bytes): valueOfTyp: typename := typename(value)
 	1f 00 04 00 00             load.ref .000400 ;int64
 	extras/Tests/lang.varInitByRef.ci:99: (5 bytes): typeOfValue: typename := typename(value)
@@ -7634,22 +7658,22 @@ val2: int64 {
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	extras/Tests/lang.varInitByVal.ci:8: (13 bytes): static globalNoInit: int64
 	1c 00 00 00 00 00 00 00 00 load.c64 0
-	2e 80 3c 02                store.m64 .023c80 ;globalNoInit
+	2e b8 3d 02                store.m64 .023db8 ;globalNoInit
 	extras/Tests/lang.varInitByVal.ci:9: (9 bytes): localInitValue: int64 := 42
 	1c 2a 00 00 00 00 00 00 00 load.c64 42
 	extras/Tests/lang.varInitByVal.ci:10: (13 bytes): static globalInitValue: int64 := 1024
 	1c 00 04 00 00 00 00 00 00 load.c64 1024
-	2e 88 3c 02                store.m64 .023c88 ;globalInitValue
+	2e c0 3d 02                store.m64 .023dc0 ;globalInitValue
 	extras/Tests/lang.varInitByVal.ci:11: (2 bytes): localInitLocal: int64 := localInitValue
 	13 00                      dup.x2 sp(0)
 	extras/Tests/lang.varInitByVal.ci:12: (6 bytes): static globalInitLocal: int64 := localInitValue
 	13 02                      dup.x2 sp(2)
-	2e 90 3c 02                store.m64 .023c90 ;globalInitLocal
+	2e c8 3d 02                store.m64 .023dc8 ;globalInitLocal
 	extras/Tests/lang.varInitByVal.ci:13: (4 bytes): localInitGlobal: int64 := globalInitValue
-	2b 88 3c 02                load.m64 .023c88 ;globalInitValue
+	2b c0 3d 02                load.m64 .023dc0 ;globalInitValue
 	extras/Tests/lang.varInitByVal.ci:14: (8 bytes): static globalInitGlobal: int64 := globalInitValue
-	2b 88 3c 02                load.m64 .023c88 ;globalInitValue
-	2e 98 3c 02                store.m64 .023c98 ;globalInitGlobal
+	2b c0 3d 02                load.m64 .023dc0 ;globalInitValue
+	2e d0 3d 02                store.m64 .023dd0 ;globalInitGlobal
 	extras/Tests/stdc.nfcNumber.ci:3: (9 bytes): pi64: float64 := 3.141593
 	1e 18 2d 44 54 fb 21 09 40 load.f64 3.141593
 	extras/Tests/stdc.nfcNumber.ci:4: (9 bytes): e64: float64 := 2.718282
@@ -7890,14 +7914,14 @@ val2: int64 {
 	1c 60 00 00 00 00 00 00 00 load.c64 96
 	extras/Tests/stdc.nfcMemory.ci:25: (28 bytes): debug("val1", val1);
 	1b 03 00 00 00             load.c32 3
-	1f ed 32 02 00             load.ref .0232ed ;"val1"
+	1f 15 34 02 00             load.ref .023415 ;"val1"
 	1f 00 04 00 00             load.ref .000400 ;int64
 	11 14 00 00                load.sp(+20)
 	1b 00 00 00 00             load.c32 0
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	extras/Tests/stdc.nfcMemory.ci:26: (28 bytes): debug("val2", val2);
 	1b 03 00 00 00             load.c32 3
-	1f f2 32 02 00             load.ref .0232f2 ;"val2"
+	1f 1a 34 02 00             load.ref .02341a ;"val2"
 	1f 00 04 00 00             load.ref .000400 ;int64
 	11 0c 00 00                load.sp(+12)
 	1b 00 00 00 00             load.c32 0
@@ -7916,14 +7940,14 @@ val2: int64 {
 	10 fc ff ff                inc.sp(-4)
 	extras/Tests/stdc.nfcMemory.ci:31: (28 bytes): debug("val1", val1);
 	1b 03 00 00 00             load.c32 3
-	1f ed 32 02 00             load.ref .0232ed ;"val1"
+	1f 15 34 02 00             load.ref .023415 ;"val1"
 	1f 00 04 00 00             load.ref .000400 ;int64
 	11 14 00 00                load.sp(+20)
 	1b 00 00 00 00             load.c32 0
 	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	extras/Tests/stdc.nfcMemory.ci:32: (28 bytes): debug("val2", val2);
 	1b 03 00 00 00             load.c32 3
-	1f f2 32 02 00             load.ref .0232f2 ;"val2"
+	1f 1a 34 02 00             load.ref .02341a ;"val2"
 	1f 00 04 00 00             load.ref .000400 ;int64
 	11 0c 00 00                load.sp(+12)
 	1b 00 00 00 00             load.c32 0
@@ -7965,9 +7989,11 @@ extras/Tests/test.inlineOverload.ci:12: overload4: float32(FIXME: 4.000000)
 extras/Tests/test.inlineOverload.ci:13: overload5: float32(5.000000)
 extras/Tests/lang.inlineEmit.ci:3: emitldz32: int32(0)
 extras/Tests/lang.inlineEmit.ci:4: emitldz64: int64(0)
-extras/Tests/lang.inlineEmit.ci:7: emitA: int32(42)
-extras/Tests/lang.inlineEmit.ci:8: emitB: int32(96)
-extras/Tests/lang.inlineEmit.ci:10: emitAddi32: int32(138)
+extras/Tests/lang.inlineEmit.ci:6: emitA: int32(42)
+extras/Tests/lang.inlineEmit.ci:7: emitB: int32(96)
+extras/Tests/lang.inlineEmit.ci:9: emitAddI32: int32(138)
+extras/Tests/lang.inlineEmit.ci:10: emitDivI32: int32(2)
+extras/Tests/lang.inlineEmit.ci:11: emitNfcF32: float32(1.000000)
 extras/Tests/lang.reflection.ci:5: sizeofVoid: int32(0)
 extras/Tests/lang.reflection.ci:6: sizeofBool: int32(1)
 extras/Tests/lang.reflection.ci:7: sizeofChar: int32(1)
@@ -8000,14 +8026,14 @@ extras/Tests/lang.reflection.ci:44: typeofBase1: typename(object)
 extras/Tests/lang.reflection.ci:45: sizeofBase1: int32(4)
 extras/Tests/lang.reflection.ci:47: typeofBase2: typename(typename)
 extras/Tests/lang.reflection.ci:48: sizeofBase2: int32(136)
-extras/Tests/lang.function.ci:10: funAddResult: int32(9)
-extras/Tests/lang.function.ci:13: funAddRef: function(<funAdd @023c09>)
-extras/Tests/lang.function.ci:16: funAddRefResult: int32(10)
-extras/Tests/lang.function.ci:19: funMul: function(<funMul @023c12>)
-extras/Tests/lang.function.ci:22: funMulResult: int32(12)
-extras/Tests/lang.function.ci:25: funMulRef: function(<funMul @023c12>)
-extras/Tests/lang.function.ci:28: funMulRefResult: int32(14)
-extras/Tests/lang.function.ci:46: fibonacci_13: uint32(233)
+extras/Tests/lang.function.ci:11: funAddResult: int32(9)
+extras/Tests/lang.function.ci:14: funAddRef: function(<funAdd @023d41>)
+extras/Tests/lang.function.ci:17: funAddRefResult: int32(10)
+extras/Tests/lang.function.ci:20: funMul: function(<funMul @023d4a>)
+extras/Tests/lang.function.ci:23: funMulResult: int32(12)
+extras/Tests/lang.function.ci:26: funMulRef: function(<funMul @023d4a>)
+extras/Tests/lang.function.ci:29: funMulRefResult: int32(14)
+extras/Tests/lang.function.ci:48: fibonacci_13: uint32(233)
 extras/Tests/lang.useOperator.ci:5: shift: int32(2)
 extras/Tests/lang.useOperator.ci:7: boolA: bool(1)
 extras/Tests/lang.useOperator.ci:8: boolB: bool(1)
@@ -8269,7 +8295,7 @@ extras/Tests/lang.varInitArray.ci:37: arrSliceInitString: char[]([6] {'s', 't', 
 extras/Tests/lang.varInitArray.ci:38: arrPtrInitString: char[*]("string")
 extras/Tests/lang.varInitByRef.ci:7: value: int64(42)
 extras/Tests/lang.varInitByRef.ci:8: valueRef: int64(42)
-extras/Tests/lang.varInitByRef.ci:9: valuePtr: pointer(<value @023c78>)
+extras/Tests/lang.varInitByRef.ci:9: valuePtr: pointer(<value @023db0>)
 extras/Tests/lang.varInitByRef.ci:10: valueVar: variant({int64: 42})
 extras/Tests/lang.varInitByRef.ci:12: fromRef: int64(42)
 extras/Tests/lang.varInitByRef.ci:13: fromPtr: int64(42)
@@ -8286,7 +8312,7 @@ extras/Tests/lang.varInitByRef.ci:25: typeTyp: typename(int64)
 extras/Tests/lang.varInitByRef.ci:27: local: int64(42)
 extras/Tests/lang.varInitByRef.ci:28: copyVal: int64(42)
 extras/Tests/lang.varInitByRef.ci:29: copyRef: int64(42)
-extras/Tests/lang.varInitByRef.ci:30: copyPtr: pointer(<value @023c78>)
+extras/Tests/lang.varInitByRef.ci:30: copyPtr: pointer(<value @023db0>)
 extras/Tests/lang.varInitByRef.ci:31: copyVar: variant({int64: 42})
 extras/Tests/lang.varInitByRef.ci:32: copyTyp: typename(int64)
 extras/Tests/lang.varInitByRef.ci:35: ptrVoid: pointer(<void @0000a0>)
@@ -8343,7 +8369,7 @@ extras/Tests/lang.varInitByRef.ci:89: typFunction: typename(function)
 extras/Tests/lang.varInitByRef.ci:90: typPointer: typename(pointer)
 extras/Tests/lang.varInitByRef.ci:91: typVariant: typename(variant)
 extras/Tests/lang.varInitByRef.ci:92: typObject: typename(object)
-extras/Tests/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @023c78>)
+extras/Tests/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @023db0>)
 extras/Tests/lang.varInitByRef.ci:96: valueOfVar: variant({int64: 42})
 extras/Tests/lang.varInitByRef.ci:97: valueOfTyp: typename(int64)
 extras/Tests/lang.varInitByRef.ci:99: typeOfValue: typename(int64)
@@ -8403,9 +8429,9 @@ extras/Tests/stdc.nfcMemory.ci:23: val2: int64(42)
 // */
 
 /*-- Memory:
-memory[meta] @000000; size: 146440(143.0 Kb)
-memory[code] @000000; size: 151351(147.8 Kb)
+memory[meta] @000000; size: 146752(143.3 Kb)
+memory[code] @000000; size: 151698(148.1 Kb)
 memory[stck] @000000; size: 163778(159.9 Kb)
-memory[heap] @024f37; size: 339935(332.0 Kb)
-memory[free] @024f48; size: 339888(331.9 Kb)
+memory[heap] @025092; size: 339588(331.6 Kb)
+memory[free] @0250a8; size: 339536(331.6 Kb)
 // */

@@ -943,7 +943,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 			// function is by ref
 			return KIND_var;
 		}
-		else if (!strict) {
+		if (!strict) {
 			strict = varCast == CAST_ref;
 		}
 	}

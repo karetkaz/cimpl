@@ -39,9 +39,6 @@ OBJS=\
 	$(OBJDIR)/main.o\
 	$(OBJDIR)/plugin.o
 
-#~ SOURCES=a.c b.c
-#~ OBJECTS=$(SOURCES:.cpp=.o)
-
 build:$(OBJDIR) $(OBJS)
 	cc $(ARH) -o $(BINDIR)/cmpl $(OBJS) $(LIBS)
 

@@ -959,8 +959,8 @@ static astn declare_record(ccContext cc, ccKind attr) {
 	}
 
 	size_t baseSize = 0;
+	size_t pack = pad_size;
 	symn base = cc->type_rec;
-	int pack = pad_size;
 
 	if (skipTok(cc, PNCT_cln, 0)) {			// ':' base type or packing
 		astn tok = expression(cc, 0);
