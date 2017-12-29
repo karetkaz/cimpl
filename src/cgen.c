@@ -1001,6 +1001,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		size_t preAlloc = 0;//argsSize(function);
 		symn prm = function->params;
 		astn arg = chainArgs(args);
+		struct astNode argFileLine[2];
 
 		logif(prm->size != ast->type->size, ERR_INTERNAL_ERROR": %T", function);
 
@@ -1052,6 +1053,33 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 			prm->offs = locals + offs;
 		}
 		prm = prm->next;	// skip from result to the first parameter
+		if (function == cc->libc_dbg) {
+			char *file = ast->file;
+			int line = ast->line;
+
+			// use the location of the expression statement, not the expansion
+			if (cc->file != NULL && cc->file != file) {
+				if (cc->line > 0 && cc->line != line) {
+					file = cc->file;
+					line = cc->line;
+					dbgCgen("%?s:%?u: Using the location of the last expression statement", file, line);
+				}
+			}
+
+			// add 2 extra computed param to the raise function(file and line)
+			memset(argFileLine, 0, sizeof(argFileLine));
+			argFileLine[0].kind = TOKEN_val;
+			argFileLine[1].kind = TOKEN_val;
+			argFileLine[0].type = prm->type;
+			argFileLine[1].type = prm->next->type;
+			argFileLine[0].ref.name = file;
+			argFileLine[1].cInt = line;
+
+			// chain the new arguments
+			argFileLine[0].next = &argFileLine[1];
+			argFileLine[1].next = arg;
+			arg = argFileLine;
+		}
 		while (prm != NULL && arg != NULL) {
 			if (isInline(prm) || prm->size == 0) {
 				// skip generating void or inline parameter
@@ -1099,11 +1127,6 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 	}
 
 	if (isInline(function)) {
-		/* if (function == cc->libc_dbg) {
-			// FIXME: add hidden arguments to raise: file, line
-			dieif(!emitInt(rt, opc_lc32, ast->line), "__FILE__");
-			dieif(!emitRef(rt, ast->file), "__LINE__");
-		}*/
 		// generate inline expression
 		if (!genAst(cc, function->init, result)) {
 			traceAst(function->init);
@@ -1448,7 +1471,10 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			}
 			break;
 		}
-		case STMT_end:      // expr statement
+		case STMT_end:      // expression statement
+			// save the position for inline calls
+			cc->file = ast->file;
+			cc->line = ast->line;
 			if (!genAst(cc, ast->stmt.stmt, CAST_vid)) {
 				traceAst(ast);
 				return CAST_any;
@@ -2103,10 +2129,6 @@ int gencode(rtContext rt, int debug) {
 			nfc->sym->offs = vmOffset(rt, nfc);
 			nfc->sym->size = 0;
 			addDbgFunction(rt, nfc->sym);
-			if (nfc->sym == cc->libc_dbg) {
-				// FIXME: add file and line and parameters
-				// nfc->in += 2;
-			}
 		}
 	}
 

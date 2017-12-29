@@ -3,13 +3,14 @@ grammar Cmpl;
 // starting point for parsing a file
 unit: statementList EOF;
 
+statementList: statement*;
 statement
     : ';'                                                                                               # EmptyStatement
     | 'inline' Literal ';'                                                                            # IncludeStatement
     | qualifiers? '{' statementList '}'                                                              # CompoundStatement
-    | qualifiers? 'if' '(' for_init ')' statement ('else' statement)?                                      # IfStatement
-    | qualifiers? 'for' '(' for_init? ';' expression? ';' expression? ')' statement                       # ForStatement
-    | 'for' '(' variable ':' expression ')' statement                                                 # ForEachStatement
+    | qualifiers? 'if' '(' declExpr ')' statement ('else' statement)?                                      # IfStatement
+    | qualifiers? 'for' '(' declExpr? ';' expression? ';' expression? ')' statement                       # ForStatement
+    | 'for' '(' variable ':' expression ')' statement                                                    # EachStatement
     | 'return' initializer? ';'                                                                        # ReturnStatement
     | 'break' ';'                                                                                       # BreakStatement
     | 'continue' ';'                                                                                 # ContinueStatement
@@ -17,6 +18,7 @@ statement
     | declaration                                                                                 # DeclarationStatement
     ;
 
+declarationList: declaration*;
 declaration
     : qualifiers? 'enum' identifier? (':' typename)? '{' propertyList '}'                              # EnumDeclaration
     | qualifiers? 'struct' identifier? (':' (Literal | typename))? '{' declarationList '}'             # TypeDeclaration
@@ -29,9 +31,10 @@ declaration
     | qualifiers? 'inline' relational ('(' parameterList? ')')? '=' initializer ';'                 # RelationalOperator
     | qualifiers? 'inline' equality ('(' parameterList? ')')? '=' initializer ';'                     # EqualityOperator
     | qualifiers? (variable | function) ( '=' initializer)? ';'                                    # VariableDeclaration
-    | qualifiers? function '{' statementList '}'                                                # FunctionImplementation
+    | qualifiers? functionImpl                                                                     # FunctionDeclaration
     ;
 
+expressionList: expression (',' expression)*;
 expression
     : Literal                                                                                        # LiteralExpression
     | Identifier                                                                                  # IdentifierExpression
@@ -56,28 +59,21 @@ initializer
     : typename? '{' propertyList '}'                                                                 # ObjectInitializer
     | typename? '{' expressionList '}'                                                                # ArrayInitializer
     | expression                                                                                      # ValueInitializer
-    // TODO: remove
-    | typename? '[' initializerList ']'                                                               # ArrayInitializer
     ;
 
-statementList: statement*;
-propertyList: (override | (property ';'))* | (property (',' property)*)?;
-initializerList: (initializer ';')* | (initializer (',' initializer)*)?;
-expressionList: expression (',' expression)*;
-declarationList: declaration*;
+typename: Identifier ('.' Identifier)*;
+variable: typename ('&' | '&&')? identifier ('[' ('*' | expressionList)? ']')*;
+function: typename identifier '(' parameterList? ')';
+functionImpl: function '{' statementList '}';
+property: (Literal | Identifier) ':' initializer;
+propertyList: (functionImpl | (property ';'))* | (property (',' property)*)?;
+parameter: qualifiers? (variable | function);
 parameterList: parameter (',' parameter)* '...'?;
 
-typename: Identifier ('.' Identifier)*;
-override: function '{' statementList '}';
-property: (Literal | Identifier) ':' initializer;
-function: typename identifier '(' parameterList? ')';
-variable: typename ('&' | '&&')? identifier ('[' ('*' | expressionList)? ']')*;
-parameter: qualifiers? (variable | function);
-
-for_init: expression | (variable '=' initializer);
+declExpr: expression | (variable '=' initializer);
 
 qualifiers: ('const' | 'static' | 'parallel')+;
-unary: ('&' | '+' | '-' | '~' | '!');
+unary: ('+' | '-' | '~' | '!');
 arithmetic: ('*' | '/' | '%' | '+' | '-');
 bitwise: ('&' | '|' | '^' | '<<' | '>>');
 relational: ('<' | '<=' | '>' | '>=');

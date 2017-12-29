@@ -97,8 +97,8 @@ uint16: typename {
 uint32: typename {
 .kind: static const typename(u32)
 .size: 4
-.field zxt: function (size: 0 @32440 -> static const inline)
-.field sxt: function (size: 0 @33176 -> static const inline)
+.field zxt: function (size: 0 @32848 -> static const inline)
+.field sxt: function (size: 0 @33584 -> static const inline)
 .value: 0
 }
 uint32.zxt(value: int32, offs: int32, count: int32): int32: function {
@@ -124,8 +124,8 @@ uint32.sxt(value: int32, offs: int32, count: int32): int32: function {
 uint64: typename {
 .kind: static const typename(u64)
 .size: 8
-.field zxt: function (size: 0 @33904 -> static const inline)
-.field sxt: function (size: 0 @34632 -> static const inline)
+.field zxt: function (size: 0 @34312 -> static const inline)
+.field sxt: function (size: 0 @35040 -> static const inline)
 .value: 0
 }
 uint64.zxt(value: int64, offs: int32, count: int32): int64: function {
@@ -151,14 +151,14 @@ uint64.sxt(value: int64, offs: int32, count: int32): int64: function {
 float32: typename {
 .kind: static const typename(f32)
 .size: 4
-.field sin: function (size: 0 @35104 -> static const inline)
-.field cos: function (size: 0 @35568 -> static const inline)
-.field tan: function (size: 0 @36032 -> static const inline)
-.field log: function (size: 0 @36496 -> static const inline)
-.field exp: function (size: 0 @36960 -> static const inline)
-.field pow: function (size: 0 @37568 -> static const inline)
-.field sqrt: function (size: 0 @38032 -> static const inline)
-.field atan2: function (size: 0 @38632 -> static const inline)
+.field sin: function (size: 0 @35512 -> static const inline)
+.field cos: function (size: 0 @35976 -> static const inline)
+.field tan: function (size: 0 @36440 -> static const inline)
+.field log: function (size: 0 @36904 -> static const inline)
+.field exp: function (size: 0 @37368 -> static const inline)
+.field pow: function (size: 0 @37976 -> static const inline)
+.field sqrt: function (size: 0 @38440 -> static const inline)
+.field atan2: function (size: 0 @39040 -> static const inline)
 .value: 0
 }
 float32.sin(x: float32): float32: function {
@@ -230,14 +230,14 @@ float32.atan2(x: float32, y: float32): float32: function {
 float64: typename {
 .kind: static const typename(f64)
 .size: 8
-.field sin: function (size: 0 @39088 -> static const inline)
-.field cos: function (size: 0 @39544 -> static const inline)
-.field tan: function (size: 0 @40000 -> static const inline)
-.field log: function (size: 0 @40456 -> static const inline)
-.field exp: function (size: 0 @40912 -> static const inline)
-.field pow: function (size: 0 @41504 -> static const inline)
-.field sqrt: function (size: 0 @41960 -> static const inline)
-.field atan2: function (size: 0 @42552 -> static const inline)
+.field sin: function (size: 0 @39496 -> static const inline)
+.field cos: function (size: 0 @39952 -> static const inline)
+.field tan: function (size: 0 @40408 -> static const inline)
+.field log: function (size: 0 @40864 -> static const inline)
+.field exp: function (size: 0 @41320 -> static const inline)
+.field pow: function (size: 0 @41912 -> static const inline)
+.field sqrt: function (size: 0 @42368 -> static const inline)
+.field atan2: function (size: 0 @42960 -> static const inline)
 .value: 0
 }
 float64.sin(x: float64): float64: function {
@@ -309,9 +309,9 @@ float64.atan2(x: float64, y: float64): float64: function {
 pointer: typename {
 .kind: static const typename(ref)
 .size: 4
-.field alloc: function (size: 0 @27328 -> static const inline)
-.field fill: function (size: 0 @28080 -> static const inline)
-.field copy: function (size: 0 @28824 -> static const inline)
+.field alloc: function (size: 0 @27736 -> static const inline)
+.field fill: function (size: 0 @28488 -> static const inline)
+.field copy: function (size: 0 @29232 -> static const inline)
 }
 pointer.alloc(ptr: pointer, size: int32): pointer: function {
 .kind: static const inline
@@ -1246,7 +1246,7 @@ RAND_MAX: int32 {
 .size: 0
 .value: 2147483647
 }
-raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void: function {
+raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void: function {
 .kind: static const inline
 .size: 0
 .field abort: int32 (size: 0 @0 -> static i32)
@@ -1258,58 +1258,60 @@ raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void: 
 .field noTrace: int32 (size: 0 @0 -> static i32)
 .field defTrace: int32 (size: 0 @0 -> static i32)
 .param .result: void (size: 0 @0 -> inline)
-.param level: int32 (size: 4 @4 -> variable(i32))
-.param message: char[*] (size: 4 @8 -> variable(ref))
-.param inspect: variant (size: 8 @16 -> variable(var))
-.param maxTrace: int32 (size: 4 @20 -> variable(i32))
+.param file: char[*] (size: 4 @4 -> variable(ref))
+.param line: int32 (size: 4 @8 -> variable(i32))
+.param level: int32 (size: 4 @12 -> variable(i32))
+.param message: char[*] (size: 4 @16 -> variable(ref))
+.param inspect: variant (size: 8 @24 -> variable(var))
+.param maxTrace: int32 (size: 4 @28 -> variable(i32))
 .value: nfc(5)
 }
 raise.abort: int32 {
 .kind: static i32
 .size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 .value: -1
 }
 raise.error: int32 {
 .kind: static i32
 .size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 .value: 0
 }
 raise.warn: int32 {
 .kind: static i32
 .size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 .value: 1
 }
 raise.info: int32 {
 .kind: static i32
 .size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 .value: 2
 }
 raise.debug: int32 {
 .kind: static i32
 .size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 .value: 3
 }
 raise.verbose: int32 {
 .kind: static i32
 .size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 .value: 4
 }
 raise.noTrace: int32 {
 .kind: static i32
 .size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 .value: 0
 }
 raise.defTrace: int32 {
 .kind: static i32
 .size: 0
-.owner: raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 .value: 128
 }
 tryExec(args: pointer, action(args: pointer): void): int32: function {
@@ -1323,13 +1325,13 @@ tryExec(args: pointer, action(args: pointer): void): int32: function {
 System: void {
 .kind: static const typename(void)
 .size: 0
-.field exit: function (size: 0 @29440 -> static const inline)
-.field srand: function (size: 0 @29912 -> static const inline)
-.field rand: function (size: 0 @30240 -> static const inline)
-.field time: function (size: 0 @30568 -> static const inline)
-.field clock: function (size: 0 @30896 -> static const inline)
-.field millis: function (size: 0 @31224 -> static const inline)
-.field sleep: function (size: 0 @31688 -> static const inline)
+.field exit: function (size: 0 @29848 -> static const inline)
+.field srand: function (size: 0 @30320 -> static const inline)
+.field rand: function (size: 0 @30648 -> static const inline)
+.field time: function (size: 0 @30976 -> static const inline)
+.field clock: function (size: 0 @31304 -> static const inline)
+.field millis: function (size: 0 @31632 -> static const inline)
+.field sleep: function (size: 0 @32096 -> static const inline)
 }
 System.exit(code: int32): void: function {
 .kind: static const inline
@@ -2302,7 +2304,7 @@ empty(): void: function {
 .param .result: void (size: 0 @0 -> variable(void))
 .value: {
 }
-.instructions: [1 bytes @.023d40]
+.instructions: [1 bytes @.023ed8]
 	03                         ret
 }
 funAdd(x: int32, y: int32): int32: function {
@@ -2314,7 +2316,7 @@ funAdd(x: int32, y: int32): int32: function {
 .value: {
 	return .result := x + y;
 }
-.instructions: [9 bytes @.023d41]
+.instructions: [9 bytes @.023ed9]
 	extras/Tests/lang.function.ci:7: (8 bytes): return .result := x + y;
 	12 02                      dup.x1 sp(2)
 	12 02                      dup.x1 sp(2)
@@ -2376,7 +2378,7 @@ funMul(x: int32, y: int32): int32: function {
 .value: {
 	return .result := x * y;
 }
-.instructions: [9 bytes @.023d4a]
+.instructions: [9 bytes @.023ee2]
 	extras/Tests/lang.function.ci:33: (8 bytes): return .result := x * y;
 	12 02                      dup.x1 sp(2)
 	12 02                      dup.x1 sp(2)
@@ -2399,7 +2401,7 @@ fib(n: uint32): uint32: function {
 	}
 	return .result := fib(n - (1)) + fib(n - (2));
 }
-.instructions: [87 bytes @.023d53]
+.instructions: [87 bytes @.023eeb]
 	extras/Tests/lang.function.ci:38: (40 bytes): if (n <= (1))
 	12 01                      dup.x1 sp(1)
 	1b 01 00 00 00             load.c32 1
@@ -2422,13 +2424,13 @@ fib(n: uint32): uint32: function {
 	1b 00 00 00 00             load.c32 0
 	12 02                      dup.x1 sp(2)
 	0b ff ff ff                inc.i32(-1)
-	1f 53 3d 02 00             load.ref .023d53 ;fib(n: uint32): uint32
+	1f eb 3e 02 00             load.ref .023eeb ;fib(n: uint32): uint32
 	02                         call
 	10 fc ff ff                inc.sp(-4)
 	1b 00 00 00 00             load.c32 0
 	12 03                      dup.x1 sp(3)
 	0b fe ff ff                inc.i32(-2)
-	1f 53 3d 02 00             load.ref .023d53 ;fib(n: uint32): uint32
+	1f eb 3e 02 00             load.ref .023eeb ;fib(n: uint32): uint32
 	02                         call
 	10 fc ff ff                inc.sp(-4)
 	51                         add.i32
@@ -4199,8 +4201,8 @@ InitMember: typename {
 .field intMemberDef: int32 (size: 4 @4 -> variable(i32))
 .field intConstMember: int32 (size: 4 @8 -> const variable(i32))
 .field intConstMemberDef: int32 (size: 4 @12 -> const variable(i32))
-.field intGlobal: int32 (size: 4 @146904 -> static variable(i32))
-.field intConstant: int32 (size: 4 @146908 -> static const variable(i32))
+.field intGlobal: int32 (size: 4 @147312 -> static variable(i32))
+.field intConstant: int32 (size: 4 @147316 -> static const variable(i32))
 }
 InitMember.intMember: int32 {
 .kind: variable(i32)
@@ -4485,7 +4487,7 @@ val2: int64 {
 }
 .main(): void: function {
 .kind: static function
-.size: 4786
+.size: 4986
 .field typename: typename (size: 136 @8 -> static const typename(ref))
 .field void: typename (size: 0 @160 -> static const typename(void))
 .field bool: typename (size: 1 @304 -> static const typename(bool))
@@ -4516,9 +4518,9 @@ val2: int64 {
 .field halt: function (size: 0 @21168 -> static const inline)
 .field CLOCKS_PER_SEC: int32 (size: 0 @0 -> i32)
 .field RAND_MAX: int32 (size: 0 @0 -> i32)
-.field raise: function (size: 0 @24672 -> static const inline)
-.field tryExec: function (size: 0 @26720 -> static const inline)
-.field System: void (size: 0 @28872 -> static const typename(void))
+.field raise: function (size: 0 @25080 -> static const inline)
+.field tryExec: function (size: 0 @27128 -> static const inline)
+.field System: void (size: 0 @29280 -> static const typename(void))
 .field trace: function (size: 0 @0 -> inline)
 .field trace: function (size: 0 @0 -> inline)
 .field debug: function (size: 0 @0 -> inline)
@@ -4538,16 +4540,16 @@ val2: int64 {
 .field integer: typename (size: 0 @0 -> inline)
 .field t: int32 (size: 4 @12 -> variable(i32))
 .field forIdx: int32 (size: 4 @16 -> variable(i32))
-.field rgbF32: typename (size: 16 @53488 -> static const typename(val))
-.field rgbU8: typename (size: 3 @54032 -> static const typename(val))
-.field color: typename (size: 4 @54576 -> static const typename(val))
-.field Color: object (size: 20 @54984 -> static const typename(ref))
-.field record_pack0: typename (size: 8 @55352 -> static const typename(val))
-.field record_pack1: typename (size: 17 @56304 -> static const typename(val))
-.field record_pack2: typename (size: 20 @57256 -> static const typename(val))
-.field record_pack4: typename (size: 24 @58208 -> static const typename(val))
-.field record_pack8: typename (size: 32 @59160 -> static const typename(val))
-.field record_packDef: typename (size: 32 @60112 -> static const typename(val))
+.field rgbF32: typename (size: 16 @53896 -> static const typename(val))
+.field rgbU8: typename (size: 3 @54440 -> static const typename(val))
+.field color: typename (size: 4 @54984 -> static const typename(val))
+.field Color: object (size: 20 @55392 -> static const typename(ref))
+.field record_pack0: typename (size: 8 @55760 -> static const typename(val))
+.field record_pack1: typename (size: 17 @56712 -> static const typename(val))
+.field record_pack2: typename (size: 20 @57664 -> static const typename(val))
+.field record_pack4: typename (size: 24 @58616 -> static const typename(val))
+.field record_pack8: typename (size: 32 @59568 -> static const typename(val))
+.field record_packDef: typename (size: 32 @60520 -> static const typename(val))
 .field zero: function (size: 0 @0 -> inline)
 .field last: function (size: 0 @0 -> inline)
 .field sum: function (size: 0 @0 -> inline)
@@ -4616,8 +4618,8 @@ val2: int64 {
 .field sizeofTypename: int32 (size: 4 @228 -> variable(i32))
 .field sizeofFunction: int32 (size: 4 @232 -> variable(i32))
 .field sizeofObject: int32 (size: 4 @236 -> variable(i32))
-.field RecordSizeof: object (size: 12 @76120 -> static const typename(ref))
-.field RecordSizeofExt: RecordSizeof (size: 16 @76392 -> static const typename(ref))
+.field RecordSizeof: object (size: 12 @76528 -> static const typename(ref))
+.field RecordSizeofExt: RecordSizeof (size: 16 @76800 -> static const typename(ref))
 .field typeofRecord: typename (size: 4 @240 -> variable(ref))
 .field nameOfRecord: char[*] (size: 4 @244 -> variable(ref))
 .field sizeOfRecord: int32 (size: 4 @248 -> variable(i32))
@@ -4632,8 +4634,8 @@ val2: int64 {
 .field sizeofBase1: int32 (size: 4 @284 -> variable(i32))
 .field typeofBase2: typename (size: 4 @288 -> variable(ref))
 .field sizeofBase2: int32 (size: 4 @292 -> variable(i32))
-.field empty: function (size: 1 @146752 -> static const function)
-.field funAdd: function (size: 9 @146753 -> static const function)
+.field empty: function (size: 1 @147160 -> static const function)
+.field funAdd: function (size: 9 @147161 -> static const function)
 .field funAddResult: int32 (size: 4 @296 -> variable(i32))
 .field funAddRef: function (size: 4 @300 -> variable(ref))
 .field funAddRefResult: int32 (size: 4 @304 -> variable(i32))
@@ -4641,8 +4643,8 @@ val2: int64 {
 .field funMulResult: int32 (size: 4 @312 -> variable(i32))
 .field funMulRef: function (size: 4 @316 -> variable(ref))
 .field funMulRefResult: int32 (size: 4 @320 -> variable(i32))
-.field funMul: function (size: 9 @146762 -> static const function)
-.field fib: function (size: 87 @146771 -> static const function)
+.field funMul: function (size: 9 @147170 -> static const function)
+.field fib: function (size: 87 @147179 -> static const function)
 .field fibonacci_13: uint32 (size: 4 @324 -> variable(u32))
 .field a: typename (size: 0 @0 -> inline)
 .field b: typename (size: 0 @0 -> inline)
@@ -4905,7 +4907,7 @@ val2: int64 {
 .field arrPtrInitPtr: int64[*] (size: 4 @1576 -> variable(ref))
 .field arrSliceInitString: char[] (size: 8 @1584 -> variable(arr))
 .field arrPtrInitString: char[*] (size: 4 @1588 -> variable(ref))
-.field value: int64 (size: 8 @146864 -> static variable(i64))
+.field value: int64 (size: 8 @147272 -> static variable(i64))
 .field valueRef: int64 (size: 4 @1592 -> variable(ref))
 .field valuePtr: pointer (size: 4 @1596 -> variable(ref))
 .field valueVar: variant (size: 8 @1604 -> variable(var))
@@ -4988,14 +4990,14 @@ val2: int64 {
 .field copyPtrFloat64: variant (size: 8 @2016 -> variable(var))
 .field copyVarFloat64: pointer (size: 4 @2020 -> variable(ref))
 .field localNoInit: int64 (size: 8 @2028 -> variable(i64))
-.field globalNoInit: int64 (size: 8 @146872 -> static variable(i64))
+.field globalNoInit: int64 (size: 8 @147280 -> static variable(i64))
 .field localInitValue: int64 (size: 8 @2036 -> variable(i64))
-.field globalInitValue: int64 (size: 8 @146880 -> static variable(i64))
+.field globalInitValue: int64 (size: 8 @147288 -> static variable(i64))
 .field localInitLocal: int64 (size: 8 @2044 -> variable(i64))
-.field globalInitLocal: int64 (size: 8 @146888 -> static variable(i64))
+.field globalInitLocal: int64 (size: 8 @147296 -> static variable(i64))
 .field localInitGlobal: int64 (size: 8 @2052 -> variable(i64))
-.field globalInitGlobal: int64 (size: 8 @146896 -> static variable(i64))
-.field InitMember: typename (size: 16 @136776 -> static const typename(val))
+.field globalInitGlobal: int64 (size: 8 @147304 -> static variable(i64))
+.field InitMember: typename (size: 16 @137184 -> static const typename(val))
 .field pi64: float64 (size: 8 @2060 -> variable(f64))
 .field e64: float64 (size: 8 @2068 -> variable(f64))
 .field pi32: float32 (size: 4 @2072 -> variable(f32))
@@ -5043,7 +5045,7 @@ val2: int64 {
 .field p4: pointer (size: 4 @2256 -> variable(ref))
 .field val1: int64 (size: 8 @2264 -> variable(i64))
 .field val2: int64 (size: 8 @2272 -> variable(i64))
-.field .main: function (size: 4786 @146912 -> static function)
+.field .main: function (size: 4986 @147320 -> static function)
 .param .result: void (size: 0 @0 -> variable)
 .value: {
 	intGlobal	intConstant	{
@@ -5740,151 +5742,175 @@ val2: int64 {
 		assert(5 == 5, "5 != 5");
 	}
 }
-.instructions: [4786 bytes @.023de0]
-	// FIXME: incorrect initializer code generated for: `static int32 intGlobal = 0;`
+// FIXME: incorrect code generated for: `static int32 intGlobal = 0;`
+// FIXME: incorrect code generated for: `static const int32 intConstant = 0;`
+.instructions: [4986 bytes @.023f78]
 	extras/Tests/lang.varInitByVal.ci:38: (4 bytes): intGlobal
-	2a d8 3d 02                load.m32 .023dd8 ;InitMember.intGlobal
-	// FIXME: incorrect initializer code generated for: `static const int32 intConstant = 0;`
+	2a 70 3f 02                load.m32 .023f70 ;InitMember.intGlobal
 	extras/Tests/lang.varInitByVal.ci:43: (4 bytes): intConstant
-	2a dc 3d 02                load.m32 .023ddc ;InitMember.intConstant
-	extras/Tests/lang.statementIf.ci:4: (29 bytes): raise(raise.debug, "0 == 0", null, 1);
+	2a 74 3f 02                load.m32 .023f74 ;InitMember.intConstant
+	extras/Tests/lang.statementIf.ci:4: (39 bytes): raise(raise.debug, "0 == 0", null, 1);
+	1f 88 cd 00 00             load.ref .00cd88 ;"extras/Tests/lang.statementIf.ci"
+	1b 04 00 00 00             load.c32 4
 	1b 03 00 00 00             load.c32 3
-	1f 80 ce 00 00             load.ref .00ce80 ;"0 == 0"
+	1f 18 d0 00 00             load.ref .00d018 ;"0 == 0"
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	1f 00 00 00 00             load.ref .000000 ;null
 	1b 01 00 00 00             load.c32 1
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/lang.statementIf.ci:12: (29 bytes): raise(raise.debug, "0 == 0", null, 3);
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	extras/Tests/lang.statementIf.ci:12: (39 bytes): raise(raise.debug, "0 == 0", null, 3);
+	1f 88 cd 00 00             load.ref .00cd88 ;"extras/Tests/lang.statementIf.ci"
+	1b 0c 00 00 00             load.c32 12
 	1b 03 00 00 00             load.c32 3
-	1f 80 ce 00 00             load.ref .00ce80 ;"0 == 0"
+	1f 18 d0 00 00             load.ref .00d018 ;"0 == 0"
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	1f 00 00 00 00             load.ref .000000 ;null
 	1b 03 00 00 00             load.c32 3
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/lang.statementIf.ci:22: (29 bytes): raise(raise.debug, "0 == 0", null, 6);
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	extras/Tests/lang.statementIf.ci:22: (39 bytes): raise(raise.debug, "0 == 0", null, 6);
+	1f 88 cd 00 00             load.ref .00cd88 ;"extras/Tests/lang.statementIf.ci"
+	1b 16 00 00 00             load.c32 22
 	1b 03 00 00 00             load.c32 3
-	1f 80 ce 00 00             load.ref .00ce80 ;"0 == 0"
+	1f 18 d0 00 00             load.ref .00d018 ;"0 == 0"
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	1f 00 00 00 00             load.ref .000000 ;null
 	1b 06 00 00 00             load.c32 6
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	extras/Tests/lang.statementIf.ci:26: (5 bytes): t: int32 := 0
 	1b 00 00 00 00             load.c32 0
-	extras/Tests/lang.statementIf.ci:28: (40 bytes): if (t == 0)
+	extras/Tests/lang.statementIf.ci:28: (50 bytes): if (t == 0)
 	12 00                      dup.x1 sp(0)
 	1b 00 00 00 00             load.c32 0
 	57                         ceq.i32
-	06 20 00 00                jz +32
-	extras/Tests/lang.statementIf.ci:29: (28 bytes): raise(raise.debug, "t == 0", t, 7);
+	06 2a 00 00                jz +42
+	extras/Tests/lang.statementIf.ci:29: (38 bytes): raise(raise.debug, "t == 0", t, 7);
+	1f 88 cd 00 00             load.ref .00cd88 ;"extras/Tests/lang.statementIf.ci"
+	1b 1d 00 00 00             load.c32 29
 	1b 03 00 00 00             load.c32 3
-	1f 90 ce 00 00             load.ref .00ce90 ;"t == 0"
+	1f 28 d0 00 00             load.ref .00d028 ;"t == 0"
 	1f 70 03 00 00             load.ref .000370 ;int32
-	11 0c 00 00                load.sp(+12)
+	11 14 00 00                load.sp(+20)
 	1b 07 00 00 00             load.c32 7
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/lang.statementIf.ci:32: (40 bytes): if (t != 0)
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	extras/Tests/lang.statementIf.ci:32: (50 bytes): if (t != 0)
 	12 00                      dup.x1 sp(0)
 	1b 00 00 00 00             load.c32 0
 	57                         ceq.i32
-	05 20 00 00                jnz +32
-	extras/Tests/lang.statementIf.ci:33: (28 bytes): raise(raise.debug, "t != 0", t, 8);
+	05 2a 00 00                jnz +42
+	extras/Tests/lang.statementIf.ci:33: (38 bytes): raise(raise.debug, "t != 0", t, 8);
+	1f 88 cd 00 00             load.ref .00cd88 ;"extras/Tests/lang.statementIf.ci"
+	1b 21 00 00 00             load.c32 33
 	1b 03 00 00 00             load.c32 3
-	1f 97 ce 00 00             load.ref .00ce97 ;"t != 0"
+	1f 2f d0 00 00             load.ref .00d02f ;"t != 0"
 	1f 70 03 00 00             load.ref .000370 ;int32
-	11 0c 00 00                load.sp(+12)
+	11 14 00 00                load.sp(+20)
 	1b 08 00 00 00             load.c32 8
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/lang.statementIf.ci:36: (72 bytes): if (t != 0)
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	extras/Tests/lang.statementIf.ci:36: (92 bytes): if (t != 0)
 	12 00                      dup.x1 sp(0)
 	1b 00 00 00 00             load.c32 0
 	57                         ceq.i32
-	05 24 00 00                jnz +36
-	extras/Tests/lang.statementIf.ci:37: (28 bytes): raise(raise.debug, "t != 0", t, 9);
+	05 2e 00 00                jnz +46
+	extras/Tests/lang.statementIf.ci:37: (38 bytes): raise(raise.debug, "t != 0", t, 9);
+	1f 88 cd 00 00             load.ref .00cd88 ;"extras/Tests/lang.statementIf.ci"
+	1b 25 00 00 00             load.c32 37
 	1b 03 00 00 00             load.c32 3
-	1f 97 ce 00 00             load.ref .00ce97 ;"t != 0"
+	1f 2f d0 00 00             load.ref .00d02f ;"t != 0"
 	1f 70 03 00 00             load.ref .000370 ;int32
-	11 0c 00 00                load.sp(+12)
+	11 14 00 00                load.sp(+20)
 	1b 09 00 00 00             load.c32 9
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	04 20 00 00                jmp +32
-	extras/Tests/lang.statementIf.ci:40: (28 bytes): raise(raise.debug, "t == 0", t, 10);
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	04 2a 00 00                jmp +42
+	extras/Tests/lang.statementIf.ci:40: (38 bytes): raise(raise.debug, "t == 0", t, 10);
+	1f 88 cd 00 00             load.ref .00cd88 ;"extras/Tests/lang.statementIf.ci"
+	1b 28 00 00 00             load.c32 40
 	1b 03 00 00 00             load.c32 3
-	1f 90 ce 00 00             load.ref .00ce90 ;"t == 0"
+	1f 28 d0 00 00             load.ref .00d028 ;"t == 0"
 	1f 70 03 00 00             load.ref .000370 ;int32
-	11 0c 00 00                load.sp(+12)
+	11 14 00 00                load.sp(+20)
 	1b 0a 00 00 00             load.c32 10
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/lang.statementIf.ci:43: (72 bytes): if (t != 0)
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	extras/Tests/lang.statementIf.ci:43: (92 bytes): if (t != 0)
 	12 00                      dup.x1 sp(0)
 	1b 00 00 00 00             load.c32 0
 	57                         ceq.i32
-	05 24 00 00                jnz +36
-	extras/Tests/lang.statementIf.ci:44: (28 bytes): raise(raise.debug, "t != 0", t, 11);
+	05 2e 00 00                jnz +46
+	extras/Tests/lang.statementIf.ci:44: (38 bytes): raise(raise.debug, "t != 0", t, 11);
+	1f 88 cd 00 00             load.ref .00cd88 ;"extras/Tests/lang.statementIf.ci"
+	1b 2c 00 00 00             load.c32 44
 	1b 03 00 00 00             load.c32 3
-	1f 97 ce 00 00             load.ref .00ce97 ;"t != 0"
+	1f 2f d0 00 00             load.ref .00d02f ;"t != 0"
 	1f 70 03 00 00             load.ref .000370 ;int32
-	11 0c 00 00                load.sp(+12)
+	11 14 00 00                load.sp(+20)
 	1b 0b 00 00 00             load.c32 11
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	04 20 00 00                jmp +32
-	extras/Tests/lang.statementIf.ci:47: (28 bytes): raise(raise.debug, "t == 0", t, 12);
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	04 2a 00 00                jmp +42
+	extras/Tests/lang.statementIf.ci:47: (38 bytes): raise(raise.debug, "t == 0", t, 12);
+	1f 88 cd 00 00             load.ref .00cd88 ;"extras/Tests/lang.statementIf.ci"
+	1b 2f 00 00 00             load.c32 47
 	1b 03 00 00 00             load.c32 3
-	1f 90 ce 00 00             load.ref .00ce90 ;"t == 0"
+	1f 28 d0 00 00             load.ref .00d028 ;"t == 0"
 	1f 70 03 00 00             load.ref .000370 ;int32
-	11 0c 00 00                load.sp(+12)
+	11 14 00 00                load.sp(+20)
 	1b 0c 00 00 00             load.c32 12
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/lang.statementFor.ci:3: (41 bytes): for ( ; ; )
-	04 25 00 00                jmp +37
-	extras/Tests/lang.statementFor.ci:4: (29 bytes): debug("for ( ; ; )");
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	extras/Tests/lang.statementFor.ci:3: (51 bytes): for ( ; ; )
+	04 2f 00 00                jmp +47
+	extras/Tests/lang.statementFor.ci:4: (39 bytes): debug("for ( ; ; )");
+	1f a9 cd 00 00             load.ref .00cda9 ;"extras/Tests/lang.statementFor.ci"
+	1b 04 00 00 00             load.c32 4
 	1b 03 00 00 00             load.c32 3
-	1f 58 cf 00 00             load.ref .00cf58 ;"for ( ; ; )"
+	1f f0 d0 00 00             load.ref .00d0f0 ;"for ( ; ; )"
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	1f 00 00 00 00             load.ref .000000 ;null
 	1b 00 00 00 00             load.c32 0
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	extras/Tests/lang.statementFor.ci:5: (4 bytes): break;
 	04 08 00 00                jmp +8
 	:: (4 bytes)
-	04 df ff ff                jmp -33
-	extras/Tests/lang.statementFor.ci:8: (57 bytes): for (i: int32 := 0; i < 2; i := i + 1)
+	04 d5 ff ff                jmp -43
+	extras/Tests/lang.statementFor.ci:8: (67 bytes): for (i: int32 := 0; i < 2; i := i + 1)
 	1b 00 00 00 00             load.c32 0
-	04 24 00 00                jmp +36
-	extras/Tests/lang.statementFor.ci:9: (28 bytes): debug("for (int i = 0; i < 2; i += 1)", i);
+	04 2e 00 00                jmp +46
+	extras/Tests/lang.statementFor.ci:9: (38 bytes): debug("for (int i = 0; i < 2; i += 1)", i);
+	1f a9 cd 00 00             load.ref .00cda9 ;"extras/Tests/lang.statementFor.ci"
+	1b 09 00 00 00             load.c32 9
 	1b 03 00 00 00             load.c32 3
-	1f 66 cf 00 00             load.ref .00cf66 ;"for (int i = 0; i < 2; i += 1)"
+	1f fe d0 00 00             load.ref .00d0fe ;"for (int i = 0; i < 2; i += 1)"
 	1f 70 03 00 00             load.ref .000370 ;int32
-	11 0c 00 00                load.sp(+12)
+	11 14 00 00                load.sp(+20)
 	1b 00 00 00 00             load.c32 0
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	extras/Tests/lang.statementFor.ci:8: (4 bytes): i := i + 1
 	0b 01 00 00                inc.i32(+1)
 	extras/Tests/lang.statementFor.ci:8: (12 bytes): i < 2
 	12 00                      dup.x1 sp(0)
 	1b 02 00 00 00             load.c32 2
 	58                         clt.i32
-	05 d8 ff ff                jnz -40
+	05 ce ff ff                jnz -50
 	10 fc ff ff                inc.sp(-4)
 	extras/Tests/lang.statementFor.ci:12: (5 bytes): forIdx: int32
 	1b 00 00 00 00             load.c32 0
-	extras/Tests/lang.statementFor.ci:13: (55 bytes): for (forIdx := 0; forIdx < 2; forIdx := forIdx + 1)
+	extras/Tests/lang.statementFor.ci:13: (65 bytes): for (forIdx := 0; forIdx < 2; forIdx := forIdx + 1)
 	1b 00 00 00 00             load.c32 0
 	15 01                      set.x1 sp(1)
-	04 24 00 00                jmp +36
-	extras/Tests/lang.statementFor.ci:14: (28 bytes): debug("for (forIdx = 0; forIdx < 2; forIdx += 1)", forIdx);
+	04 2e 00 00                jmp +46
+	extras/Tests/lang.statementFor.ci:14: (38 bytes): debug("for (forIdx = 0; forIdx < 2; forIdx += 1)", forIdx);
+	1f a9 cd 00 00             load.ref .00cda9 ;"extras/Tests/lang.statementFor.ci"
+	1b 0e 00 00 00             load.c32 14
 	1b 03 00 00 00             load.c32 3
-	1f 8c cf 00 00             load.ref .00cf8c ;"for (forIdx = 0; forIdx < 2; forIdx += 1)"
+	1f 24 d1 00 00             load.ref .00d124 ;"for (forIdx = 0; forIdx < 2; forIdx += 1)"
 	1f 70 03 00 00             load.ref .000370 ;int32
-	11 0c 00 00                load.sp(+12)
+	11 14 00 00                load.sp(+20)
 	1b 00 00 00 00             load.c32 0
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	extras/Tests/lang.statementFor.ci:13: (4 bytes): forIdx := forIdx + 1
 	0b 01 00 00                inc.i32(+1)
 	extras/Tests/lang.statementFor.ci:13: (12 bytes): forIdx < 2
 	12 00                      dup.x1 sp(0)
 	1b 02 00 00 00             load.c32 2
 	58                         clt.i32
-	05 d8 ff ff                jnz -40
+	05 ce ff ff                jnz -50
 	extras/Tests/lang.inlineArgs.ci:13: (5 bytes): ma: int32 := 3
 	1b 03 00 00 00             load.c32 3
 	extras/Tests/lang.inlineArgs.ci:14: (5 bytes): mb: int32 := 6
@@ -6177,7 +6203,7 @@ val2: int64 {
 	extras/Tests/lang.reflection.ci:22: (4 bytes): sizeofObject: int32 := sizeof(object)
 	2a c0 09 00                load.m32 .0009c0
 	extras/Tests/lang.reflection.ci:32: (5 bytes): typeofRecord: typename := RecordSizeofExt
-	1f 68 2a 01 00             load.ref .012a68 ;RecordSizeofExt
+	1f 00 2c 01 00             load.ref .012c00 ;RecordSizeofExt
 	extras/Tests/lang.reflection.ci:33: (6 bytes): nameOfRecord: char[*] := typename.name(typeofRecord)
 	12 00                      dup.x1 sp(0)
 	01 04 00 00                nfc(4) ;typename.name(type: typename): .cstr
@@ -6225,11 +6251,11 @@ val2: int64 {
 	1b 00 00 00 00             load.c32 0
 	1b 02 00 00 00             load.c32 2
 	1b 07 00 00 00             load.c32 7
-	1f 41 3d 02 00             load.ref .023d41 ;funAdd(x: int32, y: int32): int32
+	1f d9 3e 02 00             load.ref .023ed9 ;funAdd(x: int32, y: int32): int32
 	02                         call
 	10 f8 ff ff                inc.sp(-8)
 	extras/Tests/lang.function.ci:14: (5 bytes): funAddRef(x: int32, y: int32): int32 := funAdd
-	1f 41 3d 02 00             load.ref .023d41 ;funAdd(x: int32, y: int32): int32
+	1f d9 3e 02 00             load.ref .023ed9 ;funAdd(x: int32, y: int32): int32
 	extras/Tests/lang.function.ci:17: (22 bytes): funAddRefResult: int32 := funAddRef(2, 8)
 	1b 00 00 00 00             load.c32 0
 	1b 02 00 00 00             load.c32 2
@@ -6238,7 +6264,7 @@ val2: int64 {
 	02                         call
 	10 f8 ff ff                inc.sp(-8)
 	extras/Tests/lang.function.ci:20: (5 bytes): funMul(x: int32, y: int32): int32 := funMul
-	1f 4a 3d 02 00             load.ref .023d4a ;funMul(x: int32, y: int32): int32
+	1f e2 3e 02 00             load.ref .023ee2 ;funMul(x: int32, y: int32): int32
 	extras/Tests/lang.function.ci:23: (22 bytes): funMulResult: int32 := funMul(2, 6)
 	1b 00 00 00 00             load.c32 0
 	1b 02 00 00 00             load.c32 2
@@ -6258,7 +6284,7 @@ val2: int64 {
 	extras/Tests/lang.function.ci:48: (20 bytes): fibonacci_13: uint32 := fib(13)
 	1b 00 00 00 00             load.c32 0
 	1b 0d 00 00 00             load.c32 13
-	1f 53 3d 02 00             load.ref .023d53 ;fib(n: uint32): uint32
+	1f eb 3e 02 00             load.ref .023eeb ;fib(n: uint32): uint32
 	02                         call
 	10 fc ff ff                inc.sp(-4)
 	extras/Tests/lang.useOperator.ci:5: (5 bytes): shift: int32 := 2
@@ -7414,67 +7440,75 @@ val2: int64 {
 	12 03                      dup.x1 sp(3)
 	extras/Tests/lang.varInitArray.ci:37: (10 bytes): arrSliceInitString: char[] := "string"
 	1b 06 00 00 00             load.c32 6
-	1f d8 d0 01 00             load.ref .01d0d8 ;"string"
+	1f 70 d2 01 00             load.ref .01d270 ;"string"
 	extras/Tests/lang.varInitArray.ci:38: (5 bytes): arrPtrInitString: char[*] := "string"
-	1f d8 d0 01 00             load.ref .01d0d8 ;"string"
-	extras/Tests/lang.varInitArray.ci:47: (48 bytes): assert(arrFixedNoInit.length == 7);
+	1f 70 d2 01 00             load.ref .01d270 ;"string"
+	extras/Tests/lang.varInitArray.ci:47: (58 bytes): assert(arrFixedNoInit.length == 7);
 	1b 07 00 00 00             load.c32 7
 	1b 07 00 00 00             load.c32 7
 	57                         ceq.i32
 	06 08 00 00                jz +8
-	04 21 00 00                jmp +33
+	04 2b 00 00                jmp +43
+	1f ca ce 00 00             load.ref .00ceca ;"extras/Tests/lang.varInitArray.ci"
+	1b 2f 00 00 00             load.c32 47
 	1b ff ff ff ff             load.c32 -1
-	1f 9c a6 00 00             load.ref .00a69c ;"assertion failed!"
+	1f 34 a8 00 00             load.ref .00a834 ;"assertion failed!"
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	1f 00 00 00 00             load.ref .000000 ;null
 	1b 80 00 00 00             load.c32 128
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/lang.varInitArray.ci:48: (45 bytes): assert(arrSliceNoInit.length == (0), "This one might fail");
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	extras/Tests/lang.varInitArray.ci:48: (55 bytes): assert(arrSliceNoInit.length == (0), "This one might fail");
 	12 0e                      dup.x1 sp(14)
 	1b 00 00 00 00             load.c32 0
 	57                         ceq.i32
 	06 08 00 00                jz +8
-	04 21 00 00                jmp +33
+	04 2b 00 00                jmp +43
+	1f ca ce 00 00             load.ref .00ceca ;"extras/Tests/lang.varInitArray.ci"
+	1b 30 00 00 00             load.c32 48
 	1b ff ff ff ff             load.c32 -1
-	1f f7 d0 01 00             load.ref .01d0f7 ;"This one might fail"
+	1f 8f d2 01 00             load.ref .01d28f ;"This one might fail"
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	1f 00 00 00 00             load.ref .000000 ;null
 	1b 80 00 00 00             load.c32 128
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/lang.varInitArray.ci:50: (45 bytes): assert(arrSliceInitNull.length == (0));
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	extras/Tests/lang.varInitArray.ci:50: (55 bytes): assert(arrSliceInitNull.length == (0));
 	12 0b                      dup.x1 sp(11)
 	1b 00 00 00 00             load.c32 0
 	57                         ceq.i32
 	06 08 00 00                jz +8
-	04 21 00 00                jmp +33
+	04 2b 00 00                jmp +43
+	1f ca ce 00 00             load.ref .00ceca ;"extras/Tests/lang.varInitArray.ci"
+	1b 32 00 00 00             load.c32 50
 	1b ff ff ff ff             load.c32 -1
-	1f 9c a6 00 00             load.ref .00a69c ;"assertion failed!"
+	1f 34 a8 00 00             load.ref .00a834 ;"assertion failed!"
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	1f 00 00 00 00             load.ref .000000 ;null
 	1b 80 00 00 00             load.c32 128
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/lang.varInitArray.ci:51: (42 bytes): assert(arrSliceInitSlice.length == arrSliceInitFixed.length);
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	extras/Tests/lang.varInitArray.ci:51: (52 bytes): assert(arrSliceInitSlice.length == arrSliceInitFixed.length);
 	12 05                      dup.x1 sp(5)
 	12 09                      dup.x1 sp(9)
 	57                         ceq.i32
 	06 08 00 00                jz +8
-	04 21 00 00                jmp +33
+	04 2b 00 00                jmp +43
+	1f ca ce 00 00             load.ref .00ceca ;"extras/Tests/lang.varInitArray.ci"
+	1b 33 00 00 00             load.c32 51
 	1b ff ff ff ff             load.c32 -1
-	1f 9c a6 00 00             load.ref .00a69c ;"assertion failed!"
+	1f 34 a8 00 00             load.ref .00a834 ;"assertion failed!"
 	1f f0 07 00 00             load.ref .0007f0 ;pointer
 	1f 00 00 00 00             load.ref .000000 ;null
 	1b 80 00 00 00             load.c32 128
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	extras/Tests/lang.varInitByRef.ci:7: (13 bytes): static value: int64 := 42
 	1c 2a 00 00 00 00 00 00 00 load.c64 42
-	2e b0 3d 02                store.m64 .023db0 ;value
+	2e 48 3f 02                store.m64 .023f48 ;value
 	extras/Tests/lang.varInitByRef.ci:8: (5 bytes): valueRef: int64 := value
-	1f b0 3d 02 00             load.ref .023db0 ;value
+	1f 48 3f 02 00             load.ref .023f48 ;value
 	extras/Tests/lang.varInitByRef.ci:9: (5 bytes): valuePtr: pointer := value
-	1f b0 3d 02 00             load.ref .023db0 ;value
+	1f 48 3f 02 00             load.ref .023f48 ;value
 	extras/Tests/lang.varInitByRef.ci:10: (10 bytes): valueVar: variant := value
 	1f 00 04 00 00             load.ref .000400 ;int64
-	1f b0 3d 02 00             load.ref .023db0 ;value
+	1f 48 3f 02 00             load.ref .023f48 ;value
 	extras/Tests/lang.varInitByRef.ci:12: (3 bytes): fromRef: int64 := valueRef
 	12 03                      dup.x1 sp(3)
 	23                         load.m64
@@ -7503,7 +7537,7 @@ val2: int64 {
 	extras/Tests/lang.varInitByRef.ci:25: (5 bytes): typeTyp: typename := int64
 	1f 00 04 00 00             load.ref .000400 ;int64
 	extras/Tests/lang.varInitByRef.ci:27: (4 bytes): local: int64 := value
-	2b b0 3d 02                load.m64 .023db0 ;value
+	2b 48 3f 02                load.m64 .023f48 ;value
 	extras/Tests/lang.varInitByRef.ci:28: (2 bytes): copyVal: int64 := local
 	13 00                      dup.x2 sp(0)
 	extras/Tests/lang.varInitByRef.ci:29: (2 bytes): copyRef: int64 := valueRef
@@ -7641,10 +7675,10 @@ val2: int64 {
 	extras/Tests/lang.varInitByRef.ci:92: (5 bytes): typObject: typename := object
 	1f a8 09 00 00             load.ref .0009a8 ;object
 	extras/Tests/lang.varInitByRef.ci:95: (5 bytes): valueOfPtr: pointer := pointer(value)
-	1f b0 3d 02 00             load.ref .023db0 ;value
+	1f 48 3f 02 00             load.ref .023f48 ;value
 	extras/Tests/lang.varInitByRef.ci:96: (10 bytes): valueOfVar: variant := variant(value)
 	1f 00 04 00 00             load.ref .000400 ;int64
-	1f b0 3d 02 00             load.ref .023db0 ;value
+	1f 48 3f 02 00             load.ref .023f48 ;value
 	extras/Tests/lang.varInitByRef.ci:97: (5 bytes): valueOfTyp: typename := typename(value)
 	1f 00 04 00 00             load.ref .000400 ;int64
 	extras/Tests/lang.varInitByRef.ci:99: (5 bytes): typeOfValue: typename := typename(value)
@@ -7658,22 +7692,22 @@ val2: int64 {
 	1c 00 00 00 00 00 00 00 00 load.c64 0
 	extras/Tests/lang.varInitByVal.ci:8: (13 bytes): static globalNoInit: int64
 	1c 00 00 00 00 00 00 00 00 load.c64 0
-	2e b8 3d 02                store.m64 .023db8 ;globalNoInit
+	2e 50 3f 02                store.m64 .023f50 ;globalNoInit
 	extras/Tests/lang.varInitByVal.ci:9: (9 bytes): localInitValue: int64 := 42
 	1c 2a 00 00 00 00 00 00 00 load.c64 42
 	extras/Tests/lang.varInitByVal.ci:10: (13 bytes): static globalInitValue: int64 := 1024
 	1c 00 04 00 00 00 00 00 00 load.c64 1024
-	2e c0 3d 02                store.m64 .023dc0 ;globalInitValue
+	2e 58 3f 02                store.m64 .023f58 ;globalInitValue
 	extras/Tests/lang.varInitByVal.ci:11: (2 bytes): localInitLocal: int64 := localInitValue
 	13 00                      dup.x2 sp(0)
 	extras/Tests/lang.varInitByVal.ci:12: (6 bytes): static globalInitLocal: int64 := localInitValue
 	13 02                      dup.x2 sp(2)
-	2e c8 3d 02                store.m64 .023dc8 ;globalInitLocal
+	2e 60 3f 02                store.m64 .023f60 ;globalInitLocal
 	extras/Tests/lang.varInitByVal.ci:13: (4 bytes): localInitGlobal: int64 := globalInitValue
-	2b c0 3d 02                load.m64 .023dc0 ;globalInitValue
+	2b 58 3f 02                load.m64 .023f58 ;globalInitValue
 	extras/Tests/lang.varInitByVal.ci:14: (8 bytes): static globalInitGlobal: int64 := globalInitValue
-	2b c0 3d 02                load.m64 .023dc0 ;globalInitValue
-	2e d0 3d 02                store.m64 .023dd0 ;globalInitGlobal
+	2b 58 3f 02                load.m64 .023f58 ;globalInitValue
+	2e 68 3f 02                store.m64 .023f68 ;globalInitGlobal
 	extras/Tests/stdc.nfcNumber.ci:3: (9 bytes): pi64: float64 := 3.141593
 	1e 18 2d 44 54 fb 21 09 40 load.f64 3.141593
 	extras/Tests/stdc.nfcNumber.ci:4: (9 bytes): e64: float64 := 2.718282
@@ -7912,20 +7946,24 @@ val2: int64 {
 	1c 2a 00 00 00 00 00 00 00 load.c64 42
 	extras/Tests/stdc.nfcMemory.ci:23: (9 bytes): val2: int64 := 96
 	1c 60 00 00 00 00 00 00 00 load.c64 96
-	extras/Tests/stdc.nfcMemory.ci:25: (28 bytes): debug("val1", val1);
+	extras/Tests/stdc.nfcMemory.ci:25: (38 bytes): debug("val1", val1);
+	1f 4f cf 00 00             load.ref .00cf4f ;"extras/Tests/stdc.nfcMemory.ci"
+	1b 19 00 00 00             load.c32 25
 	1b 03 00 00 00             load.c32 3
-	1f 15 34 02 00             load.ref .023415 ;"val1"
+	1f ad 35 02 00             load.ref .0235ad ;"val1"
+	1f 00 04 00 00             load.ref .000400 ;int64
+	11 1c 00 00                load.sp(+28)
+	1b 00 00 00 00             load.c32 0
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	extras/Tests/stdc.nfcMemory.ci:26: (38 bytes): debug("val2", val2);
+	1f 4f cf 00 00             load.ref .00cf4f ;"extras/Tests/stdc.nfcMemory.ci"
+	1b 1a 00 00 00             load.c32 26
+	1b 03 00 00 00             load.c32 3
+	1f b2 35 02 00             load.ref .0235b2 ;"val2"
 	1f 00 04 00 00             load.ref .000400 ;int64
 	11 14 00 00                load.sp(+20)
 	1b 00 00 00 00             load.c32 0
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/stdc.nfcMemory.ci:26: (28 bytes): debug("val2", val2);
-	1b 03 00 00 00             load.c32 3
-	1f 1a 34 02 00             load.ref .02341a ;"val2"
-	1f 00 04 00 00             load.ref .000400 ;int64
-	11 0c 00 00                load.sp(+12)
-	1b 00 00 00 00             load.c32 0
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	extras/Tests/stdc.nfcMemory.ci:28: (21 bytes): pointer.copy(pointer(val2), pointer(val1), 8);
 	11 00 00 00                load.sp(+0)
 	11 0c 00 00                load.sp(+12)
@@ -7938,20 +7976,24 @@ val2: int64 {
 	1b 08 00 00 00             load.c32 8
 	01 08 00 00                nfc(8) ;pointer.fill(dst: pointer, value: int32, size: int32): pointer
 	10 fc ff ff                inc.sp(-4)
-	extras/Tests/stdc.nfcMemory.ci:31: (28 bytes): debug("val1", val1);
+	extras/Tests/stdc.nfcMemory.ci:31: (38 bytes): debug("val1", val1);
+	1f 4f cf 00 00             load.ref .00cf4f ;"extras/Tests/stdc.nfcMemory.ci"
+	1b 1f 00 00 00             load.c32 31
 	1b 03 00 00 00             load.c32 3
-	1f 15 34 02 00             load.ref .023415 ;"val1"
+	1f ad 35 02 00             load.ref .0235ad ;"val1"
+	1f 00 04 00 00             load.ref .000400 ;int64
+	11 1c 00 00                load.sp(+28)
+	1b 00 00 00 00             load.c32 0
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	extras/Tests/stdc.nfcMemory.ci:32: (38 bytes): debug("val2", val2);
+	1f 4f cf 00 00             load.ref .00cf4f ;"extras/Tests/stdc.nfcMemory.ci"
+	1b 20 00 00 00             load.c32 32
+	1b 03 00 00 00             load.c32 3
+	1f b2 35 02 00             load.ref .0235b2 ;"val2"
 	1f 00 04 00 00             load.ref .000400 ;int64
 	11 14 00 00                load.sp(+20)
 	1b 00 00 00 00             load.c32 0
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/stdc.nfcMemory.ci:32: (28 bytes): debug("val2", val2);
-	1b 03 00 00 00             load.c32 3
-	1f 1a 34 02 00             load.ref .02341a ;"val2"
-	1f 00 04 00 00             load.ref .000400 ;int64
-	11 0c 00 00                load.sp(+12)
-	1b 00 00 00 00             load.c32 0
-	01 05 00 00                nfc(5) ;raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	01 05 00 00                nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	01 00 00 00                nfc(0) ;halt(): void
 }
 
@@ -8027,11 +8069,11 @@ extras/Tests/lang.reflection.ci:45: sizeofBase1: int32(4)
 extras/Tests/lang.reflection.ci:47: typeofBase2: typename(typename)
 extras/Tests/lang.reflection.ci:48: sizeofBase2: int32(136)
 extras/Tests/lang.function.ci:11: funAddResult: int32(9)
-extras/Tests/lang.function.ci:14: funAddRef: function(<funAdd @023d41>)
+extras/Tests/lang.function.ci:14: funAddRef: function(<funAdd @023ed9>)
 extras/Tests/lang.function.ci:17: funAddRefResult: int32(10)
-extras/Tests/lang.function.ci:20: funMul: function(<funMul @023d4a>)
+extras/Tests/lang.function.ci:20: funMul: function(<funMul @023ee2>)
 extras/Tests/lang.function.ci:23: funMulResult: int32(12)
-extras/Tests/lang.function.ci:26: funMulRef: function(<funMul @023d4a>)
+extras/Tests/lang.function.ci:26: funMulRef: function(<funMul @023ee2>)
 extras/Tests/lang.function.ci:29: funMulRefResult: int32(14)
 extras/Tests/lang.function.ci:48: fibonacci_13: uint32(233)
 extras/Tests/lang.useOperator.ci:5: shift: int32(2)
@@ -8295,7 +8337,7 @@ extras/Tests/lang.varInitArray.ci:37: arrSliceInitString: char[]([6] {'s', 't', 
 extras/Tests/lang.varInitArray.ci:38: arrPtrInitString: char[*]("string")
 extras/Tests/lang.varInitByRef.ci:7: value: int64(42)
 extras/Tests/lang.varInitByRef.ci:8: valueRef: int64(42)
-extras/Tests/lang.varInitByRef.ci:9: valuePtr: pointer(<value @023db0>)
+extras/Tests/lang.varInitByRef.ci:9: valuePtr: pointer(<value @023f48>)
 extras/Tests/lang.varInitByRef.ci:10: valueVar: variant({int64: 42})
 extras/Tests/lang.varInitByRef.ci:12: fromRef: int64(42)
 extras/Tests/lang.varInitByRef.ci:13: fromPtr: int64(42)
@@ -8312,7 +8354,7 @@ extras/Tests/lang.varInitByRef.ci:25: typeTyp: typename(int64)
 extras/Tests/lang.varInitByRef.ci:27: local: int64(42)
 extras/Tests/lang.varInitByRef.ci:28: copyVal: int64(42)
 extras/Tests/lang.varInitByRef.ci:29: copyRef: int64(42)
-extras/Tests/lang.varInitByRef.ci:30: copyPtr: pointer(<value @023db0>)
+extras/Tests/lang.varInitByRef.ci:30: copyPtr: pointer(<value @023f48>)
 extras/Tests/lang.varInitByRef.ci:31: copyVar: variant({int64: 42})
 extras/Tests/lang.varInitByRef.ci:32: copyTyp: typename(int64)
 extras/Tests/lang.varInitByRef.ci:35: ptrVoid: pointer(<void @0000a0>)
@@ -8369,7 +8411,7 @@ extras/Tests/lang.varInitByRef.ci:89: typFunction: typename(function)
 extras/Tests/lang.varInitByRef.ci:90: typPointer: typename(pointer)
 extras/Tests/lang.varInitByRef.ci:91: typVariant: typename(variant)
 extras/Tests/lang.varInitByRef.ci:92: typObject: typename(object)
-extras/Tests/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @023db0>)
+extras/Tests/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @023f48>)
 extras/Tests/lang.varInitByRef.ci:96: valueOfVar: variant({int64: 42})
 extras/Tests/lang.varInitByRef.ci:97: valueOfTyp: typename(int64)
 extras/Tests/lang.varInitByRef.ci:99: typeOfValue: typename(int64)
@@ -8429,9 +8471,9 @@ extras/Tests/stdc.nfcMemory.ci:23: val2: int64(42)
 // */
 
 /*-- Memory:
-memory[meta] @000000; size: 146752(143.3 Kb)
-memory[code] @000000; size: 151698(148.1 Kb)
+memory[meta] @000000; size: 147160(143.7 Kb)
+memory[code] @000000; size: 152306(148.7 Kb)
 memory[stck] @000000; size: 163778(159.9 Kb)
-memory[heap] @025092; size: 339588(331.6 Kb)
-memory[free] @0250a8; size: 339536(331.6 Kb)
+memory[heap] @0252f2; size: 338980(331.0 Kb)
+memory[free] @025308; size: 338928(331.0 Kb)
 // */

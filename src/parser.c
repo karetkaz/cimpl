@@ -1652,7 +1652,7 @@ symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 	cc->native = lst;
 
 	init = newNode(cc, TOKEN_opc);
-	init->type = sym->params->type;
+	init->type = sym->type;
 	init->opc.code = opc_nfc;
 	init->opc.args = nfcPos;
 
@@ -1668,6 +1668,7 @@ symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 	nfc->in = 0;
 
 	if (isInvokable(sym)) {
+		init->type = sym->params->type;
 		sym->params->kind = (sym->params->kind & MASK_attr) | KIND_def;
 		for (symn param = sym->params->next; param != NULL; param = param->next) {
 			// TODO: param->kind = (param->kind & MASK_attr) | KIND_def;
@@ -1683,6 +1684,9 @@ symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 		}
 		nfc->in /= vm_size;
 		nfc->out = sym->params->size / vm_size;
+	}
+	else {
+		nfc->out = sym->type->size / vm_size;
 	}
 
 	debug("nfc: %02X, in: %U, out: %U, func: %T", nfcPos, nfc->in, nfc->out, nfc->sym);

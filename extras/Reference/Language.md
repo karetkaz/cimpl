@@ -96,7 +96,7 @@ Integers can be represented in decimal, binary, octal, or hexadecimal format,
 while floating point literals can be specified only in decimal format.
 
 #### Decimal prefix
-The following prefixes may be used to specify the radix of a literal:
+The following prefixes may be used to specify the radix of an integer:
 * binary: `0b` or `0B`
 * octal: `0` or `0o` or `0O`
 * hexadecimal: `0x` or `0X`

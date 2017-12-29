@@ -319,12 +319,12 @@ enum {
 // void raise(int logLevel, string message, variant inspect, int logTrace);
 static vmError sysRaise(nfcContext ctx) {
 	rtContext rt = ctx->rt;
+	char *file = nfcReadArg(ctx, nfcNextArg(ctx)).data;
+	int line = argi32(ctx, nfcNextArg(ctx));
 	int logLevel = argi32(ctx, nfcNextArg(ctx));
 	char *message = nfcReadArg(ctx, nfcNextArg(ctx)).data;
 	rtValue inspect = nfcReadArg(ctx, nfcNextArg(ctx));
 	int maxTrace = argi32(ctx, nfcNextArg(ctx));
-	char *file = NULL; //FIXME: nfcReadArg(ctx, nfcNextArg(ctx)).data;
-	int line = 0; //FIXME: argi32(ctx, nfcNextArg(ctx));
 	int isOutput = 0;
 
 	// logging is disabled or log level not reached.
@@ -336,6 +336,9 @@ static vmError sysRaise(nfcContext ctx) {
 	if (file != NULL && line > 0) {
 		printFmt(rt->logFile, NULL, "%?s:%?u", file, line);
 		isOutput = 1;
+		if (logLevel >= raise_abort && logLevel <= raise_verbose) {
+			printFmt(rt->logFile, NULL, ":/%c", "fewidv"[logLevel - raise_abort]);
+		}
 	}
 
 	// print the message
@@ -363,7 +366,7 @@ static vmError sysRaise(nfcContext ctx) {
 
 	// print stack trace skipping this function
 	if (rt->dbg != NULL && maxTrace > 0) {
-		traceCalls(rt->dbg, NULL, 1, 0, maxTrace - 1);
+		traceCalls(rt->dbg, rt->logFile, 1, 0, maxTrace - 1);
 	}
 
 	// abort the execution
@@ -501,7 +504,7 @@ int ccLibStd(ccContext cc) {
 	}
 
 	if (!err && cc->type_var != NULL) {		// debug, trace, assert, fatal, ...
-		cc->libc_dbg = ccDefCall(cc, sysRaise, "void raise(int level, char message[*], variant inspect, int maxTrace)");
+		cc->libc_dbg = ccDefCall(cc, sysRaise, "void raise(char file[*], int line, int level, char message[*], variant inspect, int maxTrace)");
 		if (cc->libc_dbg == NULL) {
 			err = 2;
 		}

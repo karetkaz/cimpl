@@ -296,6 +296,11 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 				parameter = parameter->next;
 			}
 
+			if (sym == cc->libc_dbg) {
+				// debug has 2 hidden params: file and line.
+				parameter = parameter->next->next;
+			}
+
 			while (parameter != NULL && argument != NULL) {
 				if (!canAssign(cc, parameter, argument, 0)) {
 					break;

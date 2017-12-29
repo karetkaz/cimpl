@@ -27,7 +27,7 @@ static const char *const proto_file_close = "void close(File file)";
 static const char *const proto_file_get_stdIn = "File in";
 static const char *const proto_file_get_stdOut = "File out";
 static const char *const proto_file_get_stdErr = "File err";
-static const char *const proto_file_get_dbgOut = "File dbg";
+static const char *const proto_file_get_logOut = "File log";
 
 #define debugFILE(msg, ...) do { /*prerr("debug", msg, ##__VA_ARGS__);*/ } while(0)
 
@@ -71,7 +71,7 @@ static vmError FILE_stream(nfcContext ctx) {     // File std[in, out, err];
 		rethnd(ctx, stderr);
 		return noError;
 	}
-	if (ctx->proto == proto_file_get_dbgOut) {
+	if (ctx->proto == proto_file_get_logOut) {
 		rethnd(ctx, ctx->rt->logFile);
 		return noError;
 	}
@@ -161,7 +161,7 @@ int cmplInit(rtContext rt) {
 		err = err || !rt->api.ccDefCall(cc, FILE_stream, proto_file_get_stdIn);
 		err = err || !rt->api.ccDefCall(cc, FILE_stream, proto_file_get_stdOut);
 		err = err || !rt->api.ccDefCall(cc, FILE_stream, proto_file_get_stdErr);
-		err = err || !rt->api.ccDefCall(cc, FILE_stream, proto_file_get_dbgOut);
+		err = err || !rt->api.ccDefCall(cc, FILE_stream, proto_file_get_logOut);
 
 		rt->api.ccEnd(cc, type);
 	}
