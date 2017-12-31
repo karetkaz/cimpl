@@ -1,7 +1,5 @@
 // test basic reflection
 
-inline sizeof(typename type) = type.size;
-
 int sizeofVoid = sizeof(void);
 int sizeofBool = sizeof(bool);
 int sizeofChar = sizeof(char);
@@ -31,18 +29,22 @@ struct RecordSizeofExt: RecordSizeof {
 
 typename typeofRecord = RecordSizeofExt;
 char nameOfRecord[*] = typename.name(typeofRecord);
+int offsetOfRecord = typeofRecord.offset;
 int sizeOfRecord = sizeof(typeofRecord);
 char fileOfRecord[*] = typename.file(typeofRecord);
 int lineOfRecord = typename.line(typeofRecord);
 
 typename typeofBase = typename.base(typeofRecord);
 char nameOfBase[*] = typename.name(typeofBase);
+int offsetOfBase = typeofBase.offset;
 int sizeOfBase = sizeof(typeofBase);
 char fileOfBase[*] = typename.file(typeofBase);
 int lineOfBase = typename.line(typeofBase);
 
 typename typeofBase1 = typename.base(typeofBase);
-int sizeofBase1 = typeofBase1.size;
+int offsetOfBase1 = typeofBase1.offset;
+int sizeOfBase1 = typeofBase1.size;
 
 typename typeofBase2 = typename.base(typeofBase1);
-int sizeofBase2 = typeofBase2.size;
+int offsetOfBase2 = typeofBase2.offset;
+int sizeOfBase2 = typeofBase2.size;

@@ -161,6 +161,9 @@ function Inspector(data) {
 
 		for (i = 0; i < data.profile.functions.length; ++i) {
 			var symbol = data.profile.functions[i];
+			if (symbol.proto == null) {
+				symbol.proto = symbol[''];
+			}
 			functions[symbol.offs] = symbol;
 		}
 

@@ -269,7 +269,7 @@ function displayCallTree(chartDiv, treeDiv, focusedNode) {
 			}
 			title += '\nExecution Time: ' + toMs(node.enter - samples.enter) + ' - ' + toMs(node.leave - samples.enter);
 			title += '\nMemory Usage: ' + node.memory;
-			title += '\n' + funct[""];
+			title += '\n' + funct.proto;
 
 			// add to call chartDiv
 			if (depth < maxDepth && timeScale * node.total > .3) {
@@ -375,7 +375,7 @@ function displayCallTree(chartDiv, treeDiv, focusedNode) {
 					}
 				}
 
-				func.appendChild(document.createTextNode(funct[""]));
+				func.appendChild(document.createTextNode(funct.proto));
 				func.style.paddingLeft = depth + 'em';
 				treeRow.title = title;
 				treeRow.onmouseenter = function() {

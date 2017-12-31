@@ -1,9 +1,7 @@
-#include <time.h>
-#include <stddef.h>
 #include "internal.h"
+#include <time.h>
 
 // default values
-static const int wl = 5;            // default warning level: show all
 static char mem[640 << 10];         // 640 Kb memory compiler + runtime
 const char *STDLIB = "stdlib.ci";   // standard library
 
@@ -94,7 +92,7 @@ static const char **escapeXML() {
 	static const char *escape[256];
 	static char initialized = 0;
 	if (!initialized) {
-		memset(escape, 0, sizeof(escape));
+		memset((void*)escape, 0, sizeof(escape));
 		escape['\''] = "&apos;";
 		escape['"'] = "&quot;";
 		escape['&'] = "&amp;";
@@ -108,7 +106,7 @@ static const char **escapeJSON() {
 	static const char *escape[256];
 	static char initialized = 0;
 	if (!initialized) {
-		memset(escape, 0, sizeof(escape));
+		memset((void*)escape, 0, sizeof(escape));
 		escape['\n'] = "\\n";
 		escape['\r'] = "\\r";
 		escape['\t'] = "\\t";
@@ -137,8 +135,9 @@ typedef enum {
 // Profile commands
 typedef enum {
 	trcMethods = 0x0010,     // dump call tree
-	trcOpcodes = 0x0020,     // TODO: remove: dump executing instructions
-	trcLocals  = 0x0040,     // TODO: remove: dump the stack
+	trcOpcodes = 0x0020,     // dump executing instructions
+	trcLocals  = 0x0040,     // dump the content of the stack
+	trcTime    = 0x0080,     // dump timestamp
 
 	dmpProfile = 0x0100,     // dump execution times
 	dmpGlobals = 0x0200,     // dump global variables
@@ -168,13 +167,15 @@ struct userContextRec {
 	int dmpApiPrms;     // dump parameters and fields
 	int dmpApiUsed;     // dump usages
 	int dmpAsmStmt;     // print source code statements
+	int hideOffsets;    // remove offsets from dumps
+	char *compileSteps; // dump compilation steps
 
 	runMode exec;
 
 	// debugger
-	dbgMode dbgCommand;     // last debugger command
-	brkMode dbgOnError;  // on uncaught exception
-	brkMode dbgOnCaught; // on caught exception
+	dbgMode dbgCommand; // last debugger command
+	brkMode dbgOnError; // on uncaught exception
+	brkMode dbgOnCaught;// on caught exception
 	size_t dbgNextBreak;// offset of the next break (used for step in, out, over, instruction)
 };
 
@@ -585,7 +586,7 @@ static void dumpApiJSON(userContext ctx, symn sym) {
 	}
 
 	// export assembly
-	if (ctx->dmpAsm && isFunction(sym)) {
+	if (ctx->dmpAsm != prSkip && isFunction(sym)) {
 		printFmt(out, esc, JSON_OBJ_ARR_START, indent + 1, JSON_KEY_ASM);
 		jsonDumpAsm(out, esc, sym, ctx->rt, indent + 1);
 		printFmt(out, esc, JSON_OBJ_ARR_END, indent + 1);
@@ -599,7 +600,7 @@ static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, s
 		FILE *out = cc->out;
 		const char **esc = cc->esc;
 		printFmt(out, esc, "% I", ss);
-		if ((ptrdiff_t) callee < 0) {
+		if ((ssize_t) callee < 0) {
 			printFmt(out, esc, "%d,%d,-1%s", ticks, ctx->usedMem, ss ? "," : "");
 		}
 		else {
@@ -625,8 +626,8 @@ static void jsonPostProfile(dbgContext ctx) {
 	const int indent = cc->indent;
 	const char **esc = cc->esc;
 
-	int covFunc = 0, nFunc = ctx->functions.cnt;
-	int covStmt = 0, nStmt = ctx->statements.cnt;
+	size_t covFunc = 0, nFunc = ctx->functions.cnt;
+	size_t covStmt = 0, nStmt = ctx->statements.cnt;
 	dbgn dbg = (dbgn) ctx->functions.ptr;
 
 	printFmt(out, esc, JSON_ARR_END, indent + 1);
@@ -710,7 +711,7 @@ static void jsonPreProfile(dbgContext ctx) {
 static void textDumpDBG(FILE *out, const char **esc, dbgn dbg, userContext ctx, int indent) {
 	dmpMode mode = ctx->dmpAsm;
 	printFmt(out, esc, "%I%?s:%?u", indent, dbg->file, dbg->line);
-	if (mode & prAsmAddr) {
+	if (mode & prAsmAddr && !ctx->hideOffsets) {
 		printFmt(out, esc, ": [%06x-%06x)", dbg->start, dbg->end);
 	}
 	else {
@@ -724,6 +725,9 @@ static void textDumpDBG(FILE *out, const char **esc, dbgn dbg, userContext ctx, 
 
 static void textDumpAsm(FILE *out, const char **esc, size_t offs, userContext ctx, int indent) {
 	dmpMode mode = ctx->dmpAsm;
+	if (ctx->hideOffsets) {
+		mode = prNoOffs | (mode & ~prAsmCode);
+	}
 	if (ctx->dmpAsmStmt && ctx->rt->cc != NULL) {
 		dbgn dbg = mapDbgStatement(ctx->rt, offs);
 		if (dbg != NULL && dbg->start == offs) {
@@ -740,7 +744,7 @@ static void textDumpMem(dbgContext dbg, void *ptr, size_t size, char *kind) {
 	FILE *out = ctx->out;
 
 	char *unit = "bytes";
-	double value = size;
+	double value = (double)size;
 
 	if (size > (1 << 30)) {
 		unit = "Gb";
@@ -758,54 +762,98 @@ static void textDumpMem(dbgContext dbg, void *ptr, size_t size, char *kind) {
 	printFmt(out, esc, "memory[%s] @%06x; size: %d(%?.1F %s)\n", kind, vmOffset(ctx->rt, ptr), size, value, unit);
 }
 
+void printFields(rtContext rt, FILE *out, const char **esc, symn sym, int all) {
+	for (symn var = sym->fields; var; var = var->next) {
+		if (var == rt->main || isInline(var)) {
+			// alias and type names.
+			continue;
+		}
+		if (isTypename(var)) {
+			dieif(!isStatic(var), ERR_INTERNAL_ERROR);
+			printFields(rt, out, esc, var, all);
+			if (!all) {
+				continue;
+			}
+		}
+		if (isFunction(var)) {
+			dieif(!isStatic(var), ERR_INTERNAL_ERROR);
+			printFields(rt, out, esc, var, all);
+			if (!all) {
+				continue;
+			}
+		}
+		if (!isStatic(var)) {
+			// members and locals.
+			continue;
+		}
+
+		if (var->file != NULL && var->line > 0) {
+			printFmt(out, esc, "%s:%u: ", var->file, var->line);
+		}
+		else if (!all) {
+			// exclude internal symbols
+			continue;
+		}
+
+		char *ofs = (char *) rt->_mem + var->offs;
+		printVal(out, esc, rt, var, (vmValue *) ofs, prSymQual | prSymType, 0);
+		printFmt(out, esc, "\n");
+	}
+}
+void printGlobals(rtContext rt, FILE *out, const char **esc, int all) {
+	for (symn var = rt->main->fields; var; var = var->next) {
+		char *ofs = NULL;
+
+		if (var == rt->main || isInline(var)) {
+			continue;
+		}
+		if (isTypename(var)) {
+			dieif(!isStatic(var), ERR_INTERNAL_ERROR);
+			printFields(rt, out, esc, var, all);
+			if (!all) {
+				continue;
+			}
+		}
+		if (isFunction(var)) {
+			dieif(!isStatic(var), ERR_INTERNAL_ERROR);
+			printFields(rt, out, esc, var, all);
+			if (!all) {
+				continue;
+			}
+		}
+
+		if (var->file && var->line) {
+			printFmt(out, esc, "%s:%u: ", var->file, var->line);
+		}
+		else if (!all) {
+			// exclude internals
+			continue;
+		}
+
+		if (isStatic(var)) {
+			// static variable.
+			ofs = (char *) rt->_mem + var->offs;
+		}
+		else {
+			// local variable (or argument).
+			ofs = (char *) rt->vm.cell - var->offs;
+		}
+
+		printVal(out, esc, rt, var, (vmValue *) ofs, prSymQual | prSymType, 0);
+		printFmt(out, esc, "\n");
+	}
+}
+
 static void textPostProfile(userContext usr) {
 	int all = (usr->exec & dmpAllData) != 0;
 	const char **esc = usr->esc;
 	FILE *out = usr->out;
 	rtContext rt = usr->rt;
+	const char *prefix = usr->compileSteps ? usr->compileSteps : "\n---------- ";
 
 	if (usr->exec & dmpGlobals) {
-		printFmt(out, esc, "\n/*-- Globals:\n");
-		for (symn var = rt->main->fields; var; var = var->next) {
-			char *ofs = NULL;
-
-			if (isInline(var)) {
-				continue;
-			}
-
-			if (isTypename(var)) {
-				continue;
-			}
-
-			if (isFunction(var) && !all) {
-				continue;
-			}
-
-			if (var->file && var->line) {
-				printFmt(out, esc, "%s:%u: ", var->file, var->line);
-			}
-			else if (!all) {
-				// exclude internals
-				continue;
-			}
-
-			if (isInline(var) || isTypename(var)) {
-				// alias and type names.
-				ofs = NULL;
-			}
-			else if (isStatic(var)) {
-				// static variable.
-				ofs = (char *) rt->_mem + var->offs;
-			}
-			else {
-				// local variable (or argument).
-				ofs = (char *) rt->vm.cell - var->offs;
-			}
-
-			printVal(out, esc, rt, var, (vmValue *) ofs, prSymQual | prSymType, 0);
-			printFmt(out, esc, "\n");
-		}
-		printFmt(out, esc, "// */\n");
+		printFmt(out, esc, "%?sGlobals:\n", prefix);
+		printGlobals(rt, out, esc, all);
 	}
 
 	dbgContext dbg = rt->dbg;
@@ -824,12 +872,11 @@ static void textPostProfile(userContext usr) {
 
 	if (usr->exec & dmpProfile) {
 		const double CLOCKS_PER_MILLI = CLOCKS_PER_SEC / 1000.;
-		int covFunc = 0, nFunc = dbg->functions.cnt;
-		int covStmt = 0, nStmt = dbg->statements.cnt;
+		size_t covFunc = 0, nFunc = dbg->functions.cnt;
+		size_t covStmt = 0, nStmt = dbg->statements.cnt;
 		dbgn fun = (dbgn) dbg->functions.ptr;
 
-		printFmt(out, esc, "\n/*-- Profile:\n");
-
+		printFmt(out, esc, "%?sProfiled functions:\n", prefix);
 		for (int i = 0; i < nFunc; ++i, fun++) {
 			symn sym = fun->decl;
 			if (fun->hits == 0) {
@@ -848,7 +895,7 @@ static void textPostProfile(userContext usr) {
 		}
 
 		if (all) {
-			printFmt(out, esc, "\n//-- statements:\n");
+			printFmt(out, esc, "%?sProfiled statements:\n", prefix);
 		}
 		fun = (dbgn) rt->dbg->statements.ptr;
 		for (int i = 0; i < nStmt; ++i, fun++) {
@@ -874,12 +921,12 @@ static void textPostProfile(userContext usr) {
 			}
 		}
 
-		printFmt(out, esc, "\n//-- coverage(functions: %.2f%%(%d/%d), statements: %.2f%%(%d/%d))\n",
+		printFmt(out, esc, "%?sCoverage:\nfunctions: %.2f%% (%d/%d)\nstatements: %.2f%% (%d/%d)\n", prefix,
 			covFunc * 100. / (nFunc ? nFunc : 1), covFunc, nFunc, covStmt * 100. / (nStmt ? nStmt : 1), covStmt, nStmt
 		);
 
 		if (all) {
-			printFmt(out, esc, "\n//-- functions not executed:\n");
+			printFmt(out, esc, "%?sNon executed functions:\n", prefix);
 			fun = (dbgn) dbg->functions.ptr;
 			for (int i = 0; i < nFunc; ++i, fun++) {
 				symn sym = fun->decl;
@@ -891,7 +938,7 @@ static void textPostProfile(userContext usr) {
 				}
 				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): %?T\n", fun->file, fun->line, fun->start, fun->end, sym);
 			}
-			printFmt(out, esc, "\n//-- statements not executed:\n");
+			printFmt(out, esc, "%?sNon executed statements:\n", prefix);
 			fun = (dbgn) rt->dbg->statements.ptr;
 			for (int i = 0; i < nStmt; ++i, fun++) {
 				size_t symOffs = 0;
@@ -908,18 +955,19 @@ static void textPostProfile(userContext usr) {
 				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): <%?.T+%d>\n", fun->file, fun->line, fun->start, fun->end, sym, symOffs);
 			}
 		}
-		printFmt(out, esc, "// */\n");
 	}
 
 	if (usr->exec & dmpMemory) {
 		// show allocated memory chunks.
-		printFmt(out, esc, "\n/*-- Memory:\n");
+		printFmt(out, esc, "%?sMemory layout:\n", prefix);
+		//textDumpMem(dbg, rt->_mem, rt->_end - (unsigned char*)rt, "all");
+		//textDumpMem(dbg, rt->_mem, rt->_mem - (unsigned char*)rt, "context");
 		textDumpMem(dbg, rt->_mem, rt->vm.ro, "meta");
-		textDumpMem(dbg, rt->_mem, rt->vm.px + px_size, "code");
-		textDumpMem(dbg, NULL, rt->vm.ss, "stck");
+		textDumpMem(dbg, rt->_mem + rt->vm.pc, rt->vm.px + px_size - rt->vm.pc, "code");
 		textDumpMem(dbg, rt->_beg, rt->_end - rt->_beg, "heap");
+		textDumpMem(dbg, rt->_end - rt->vm.ss, rt->vm.ss, "stack");
+		printFmt(out, esc, "%?sMemory allocations:\n", prefix);
 		rtAlloc(rt, NULL, 0, textDumpMem);
-		printFmt(out, esc, "// */\n");
 	}
 }
 
@@ -965,8 +1013,19 @@ static void dumpApiText(userContext extra, symn sym) {
 			dumpExtraData = 1;
 		}
 		printFmt(out, esc, "%I.kind: %K\n", indent, sym->kind);
-		//TODO: uncomment: printFmt(out, esc, "%I.offset: %06x\n", indent, sym->offs);
+		printFmt(out, esc, "%I.base: `%T`\n", indent, sym->type);
 		printFmt(out, esc, "%I.size: %d\n", indent, sym->size);
+		if (!extra->hideOffsets) {
+			printFmt(out, esc, "%I.offset: %06x\n", indent, sym->offs);
+		}
+		printFmt(out, esc, "%I.name: '%s'\n", indent, sym->name);
+		if (sym->format != NULL) {
+			printFmt(out, esc, "%I.print: '%s'\n", indent, sym->format);
+		}
+		if (sym->file != NULL && sym->line > 0) {
+			printFmt(out, esc, "%I.file: '%s'\n", indent, sym->file);
+			printFmt(out, esc, "%I.line: %u\n", indent, sym->line);
+		}
 		if (sym->owner != NULL) {
 			printFmt(out, esc, "%I.owner: %?T\n", indent, sym->owner);
 		}
@@ -981,11 +1040,21 @@ static void dumpApiText(userContext extra, symn sym) {
 		}
 		if (extra->dmpApi != prSkip && sym->fields != sym->params) {
 			for (param = sym->fields; param; param = param->next) {
-				printFmt(out, esc, "%I.field %.T: %?T (size: %d @%d -> %K)\n", indent, param, param->type, param->size, param->offs, param->kind);
+				if (extra->hideOffsets) {
+					printFmt(out, esc, "%I.field %.T: %?T (size: %d -> %K)\n", indent, param, param->type, param->size, param->kind);
+				}
+				else {
+					printFmt(out, esc, "%I.field %.T: %?T (size: %d @%d -> %K)\n", indent, param, param->type, param->size, param->offs, param->kind);
+				}
 			}
 		}
 		for (param = sym->params; param; param = param->next) {
-			printFmt(out, esc, "%I.param %.T: %?T (size: %d @%d -> %K)\n", indent, param, param->type, param->size, param->offs, param->kind);
+			if (extra->hideOffsets) {
+				printFmt(out, esc, "%I.param %.T: %?T (size: %d -> %K)\n", indent, param, param->type, param->size, param->kind);
+			}
+			else {
+				printFmt(out, esc, "%I.param %.T: %?T (size: %d @%d -> %K)\n", indent, param, param->type, param->size, param->offs, param->kind);
+			}
 		}
 	}
 
@@ -1011,7 +1080,12 @@ static void dumpApiText(userContext extra, symn sym) {
 			printFmt(out, esc, " {\n");
 			dumpExtraData = 1;
 		}
-		printFmt(out, esc, "%I.instructions: [%d bytes @.%06x]\n", indent, sym->size, sym->offs);
+		if (extra->hideOffsets) {
+			printFmt(out, esc, "%I.instructions: [%d bytes]\n", indent, sym->size);
+		}
+		else {
+			printFmt(out, esc, "%I.instructions: [%d bytes @.%06x]\n", indent, sym->size, sym->offs);
+		}
 		for (pc = sym->offs; pc < end; ) {
 			unsigned char *ip = vmPointer(extra->rt, pc);
 			size_t ppc = pc;
@@ -1088,8 +1162,9 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 	char buff[1024];
 	rtContext rt = ctx->rt;
 	userContext usr = ctx->extra;
-	const char **esc = NULL;
+	const char **esc = usr->esc;
 	FILE *out = usr->out;
+	FILE *con = stderr;
 
 	brkMode breakMode = brkSkip;
 	char *breakCause = NULL;
@@ -1099,20 +1174,23 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 	if (callee != 0) {
 		// TODO: enter will break after executing call?
 		// TODO: leave will break after executing return?
-		if (usr->dbgCommand == dbgStepInto && (ptrdiff_t) callee > 0) {
+		if (usr->dbgCommand == dbgStepInto && (ssize_t) callee > 0) {
 			usr->dbgNextBreak = (size_t) -1;
 		}
-		else if (usr->dbgCommand == dbgStepOut && (ptrdiff_t) callee < 0) {
+		else if (usr->dbgCommand == dbgStepOut && (ssize_t) callee < 0) {
 			usr->dbgNextBreak = (size_t) -1;
 		}
 
 		if (usr->exec & trcMethods) {
-			double now = clock() * (1000. / CLOCKS_PER_SEC);
-			if ((ptrdiff_t) callee > 0) {
-				printFmt(out, esc, "[% 3.2F]>% I %d, %T\n", now, ss, ctx->usedMem, rtFindSym(rt, callee, 1));
+			if (usr->exec & trcTime) {
+				double now = clock() * (1000. / CLOCKS_PER_SEC);
+				printFmt(out, esc, "[% 3.2F]", now);
+			}
+			if ((ssize_t) callee > 0) {
+				printFmt(out, esc, ">% I %d, %T\n", ss, ctx->usedMem, rtFindSym(rt, callee, 1));
 			}
 			else {
-				printFmt(out, esc, "[% 3.2F]<% I %d\n", now, ss, ctx->usedMem);
+				printFmt(out, esc, "<% I %d\n", ss, ctx->usedMem);
 			}
 		}
 		return NULL;
@@ -1166,9 +1244,14 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 			printFmt(out, esc, "\n");
 		}
 		if (dbg != NULL && dbg->start == caller) {
+			// print the position of the current statement
 			textDumpDBG(out, esc, dbg, usr, 0);
 		}
 		if (usr->exec & trcOpcodes) {
+			if (usr->exec & trcTime) {
+				double now = clock() * (1000. / CLOCKS_PER_SEC);
+				printFmt(out, esc, "[% 3.2F]", now);
+			}
 			textDumpAsm(out, esc, caller, usr, 0);
 		}
 	}
@@ -1185,6 +1268,13 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 			printFmt(out, esc, "%s:%u: ", dbg->file, dbg->line);
 		}
 		printFmt(out, esc, ERR_EXEC_INSTRUCTION"\n", breakCause, caller, fun, funOffs, vmPointer(rt, caller));
+		if (out != stdout || out != stderr) {
+			// print the error message also to the console
+			if (dbg != NULL && dbg->file != NULL && dbg->line > 0) {
+				printFmt(con, esc, "%s:%u: ", dbg->file, dbg->line);
+			}
+			printFmt(con, esc, ERR_EXEC_INSTRUCTION"\n", breakCause, caller, fun, funOffs, vmPointer(rt, caller));
+		}
 	}
 	if (breakMode & brkTrace) {
 		traceCalls(ctx, out, 1, 0, 20);
@@ -1194,9 +1284,9 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 	for ( ; breakMode & brkPause; ) {
 		dbgMode cmd = usr->dbgCommand;
 		char *arg = NULL;
-		printFmt(stdout, esc, ">dbg[%?c] %.A: ", cmd, vmPointer(rt, caller));
+		printFmt(con, esc, ">dbg[%?c] %.A: ", cmd, vmPointer(rt, caller));
 		if (usr->in == NULL || fgets(buff, sizeof(buff), usr->in) == NULL) {
-			printFmt(stdout, esc, "can not read from standard input, aborting\n");
+			printFmt(con, esc, "can not read from standard input, aborting\n");
 			return ctx->abort;
 		}
 		if ((arg = strchr(buff, '\n'))) {
@@ -1212,7 +1302,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 
 		switch (cmd) {
 			default:
-				printFmt(stdout, esc, "invalid command '%s'\n", buff);
+				printFmt(con, esc, "invalid command '%s'\n", buff);
 				break;
 
 			case dbgAbort:
@@ -1233,11 +1323,11 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 				return dbg;
 
 			case dbgPrintStackTrace:
-				traceCalls(ctx, stdout, 1, 0, 20);
+				traceCalls(ctx, con, 1, 0, 20);
 				break;
 
 			case dbgPrintInstruction:
-				textDumpAsm(stdout, esc, caller, usr, 0);
+				textDumpAsm(con, esc, caller, usr, 0);
 				break;
 
 			case dbgPrintStackValues:
@@ -1246,14 +1336,14 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 					// print top of stack
 					for (offs = 0; offs < ss; offs++) {
 						vmValue *v = (vmValue*)&((long*)stack)[offs];
-						printFmt(stdout, esc, "\tsp(%d): {0x%08x, i32(%d), f32(%f), i64(%D), f64(%F)}\n", offs, v->i32, v->i32, v->f32, v->i64, v->f64);
+						printFmt(con, esc, "\tsp(%d): {0x%08x, i32(%d), f32(%f), i64(%D), f64(%F)}\n", offs, v->i32, v->i32, v->f32, v->i64, v->f64);
 					}
 				}
 				else {
 					symn sym = ccLookupSym(rt->cc, NULL, arg);
-					printFmt(stdout, esc, "arg:%T", sym);
+					printFmt(con, esc, "arg:%T", sym);
 					if (sym && isVariable(sym) && !isStatic(sym)) {
-						printVal(stdout, esc, rt, sym, (vmValue *) stack, prSymType, 0);
+						printVal(con, esc, rt, sym, (vmValue *) stack, prSymType, 0);
 					}
 				}
 				break;
@@ -1275,6 +1365,8 @@ static int program(int argc, char *argv[]) {
 		.dmpApiInfo = 0,
 		.dmpApiPrms = 0,
 		.dmpApiUsed = 0,
+		.hideOffsets = 0,
+		.compileSteps = NULL,
 
 		.dmpAsm = prSkip,
 		.dmpAsmStmt = 0,
@@ -1325,7 +1417,7 @@ static int program(int argc, char *argv[]) {
 	void (*dumpFun)(userContext, symn) = NULL;
 	enum { run, debug, profile, compile } run_code = compile;
 
-	int i, warn;
+	int i;
 
 	// TODO: max 32 break points ?
 	brkMode bp_type[32];
@@ -1477,6 +1569,8 @@ static int program(int argc, char *argv[]) {
 						extra.dmpApiAll = 1;
 						arg2 += 2;
 						break;
+
+					// include extras in dump
 					case 'm':
 						extra.dmpMain = 1;
 						arg2 += 2;
@@ -1524,6 +1618,8 @@ static int program(int argc, char *argv[]) {
 						extra.dmpAsmStmt = 1;
 						arg2 += 2;
 						break;
+
+					// include extras in dump
 					case 'm':
 						extra.dmpMain = 1;
 						arg2 += 2;
@@ -1563,6 +1659,8 @@ static int program(int argc, char *argv[]) {
 						extra.dmpAst |= prAstType;
 						arg2 += 2;
 						break;
+
+					// output format options
 					case 'l':
 						extra.dmpAst |= prOneLine;
 						arg2 += 2;
@@ -1575,6 +1673,8 @@ static int program(int argc, char *argv[]) {
 						extra.dmpAst |= nlAstElIf;
 						arg2 += 2;
 						break;
+
+					// include extras in dump
 					case 'm':
 						extra.dmpMain = 1;
 						arg2 += 2;
@@ -1696,14 +1796,11 @@ static int program(int argc, char *argv[]) {
 
 					// dump call tree
 					case 't':
-						extra.exec |= trcMethods;
+						extra.exec |= trcTime | trcMethods;
 						arg2 += 2;
 						break;
+
 					// dump stats
-					case 'p':
-						extra.exec |= dmpProfile;
-						arg2 += 2;
-						break;
 					case 'g':
 						extra.exec |= dmpGlobals;
 						arg2 += 2;
@@ -1769,6 +1866,14 @@ static int program(int argc, char *argv[]) {
 					install = (install & ~installLibs) | on * installLibs;
 					arg2 += 4;
 				}
+				else if (strBegins(arg2 + 1, "offsets")) {
+					extra.hideOffsets = !on;
+					arg2 += 8;
+				}
+				else if (strBegins(arg2 + 1, "steps")) {
+					extra.compileSteps = on ? "\n---------- " : NULL;
+					arg2 += 6;
+				}
 				else {
 					break;
 				}
@@ -1813,19 +1918,25 @@ static int program(int argc, char *argv[]) {
 		return -6;
 	}
 
+	extra.rt = rt;
+	if (dumpFile != NULL) {
+		extra.out = dumpFile;
+	}
+
 	if (install & installLibs) {
 		// install standard library.
-		if (!ccAddLib(rt->cc, wl, ccLibStd, stdLib)) {
+		if (extra.compileSteps != NULL) {printFmt(extra.out, extra.esc, "%sCompile: `%?s`\n", extra.compileSteps, stdLib);}
+		if (!ccAddLib(rt->cc, ccLibStd, stdLib)) {
 			error(rt, NULL, 0, "error registering standard library");
-			logfile(rt, NULL, 0);
-			return -6;
 		}
 	}
 
+	unsigned warnLevel = rt->warnLevel;
 	// compile and import files / modules
-	for (warn = -1; i <= argc; ++i) {
+	for (; i <= argc; ++i) {
 		char *arg = argv[i];
 		if (i == argc || *arg != '-') {
+			if (extra.compileSteps != NULL && ccFile != NULL) {printFmt(extra.out, extra.esc, "%sCompile: `%?s`\n", extra.compileSteps, ccFile);}
 			if (ccFile != NULL) {
 				char *ext = strrchr(ccFile, '.');
 				if (ext && (strEquals(ext, ".so") || strEquals(ext, ".dll"))) {
@@ -1834,30 +1945,26 @@ static int program(int argc, char *argv[]) {
 						error(rt, NULL, 0, "error(%d) importing library `%s`", resultCode, ccFile);
 					}
 				}
-				else if (!ccAddUnit(rt->cc, warn == -1 ? wl : warn, ccFile, 1, NULL)) {
+				else if (!ccAddUnit(rt->cc, ccFile, 1, NULL)) {
 					error(rt, NULL, 0, "error compiling source `%s`", ccFile);
 				}
 			}
 			ccFile = arg;
-			warn = -1;
+			rt->warnLevel = warnLevel;
 		}
 		else {
 			if (ccFile == NULL) {
 				error(rt, NULL, 0, "argument `%s` must be preceded by a file", arg);
 			}
 			if (arg[1] == 'w') {		// warning level for file
-				if (warn != -1) {
-					info(rt, NULL, 0, "argument overwrites previous value: %d", warn);
+				int level = 0;
+				if (strcmp(arg, "-wa") == 0) {
+					level = 15;
 				}
-				if (strcmp(arg, "-wx") == 0) {
-					warn = -2;
-				}
-				else if (strcmp(arg, "-wa") == 0) {
-					warn = 32;
-				}
-				else if (*parseInt(arg + 2, &warn, 10)) {
+				else if (*parseInt(arg + 2, &level, 10)) {
 					error(rt, NULL, 0, "invalid warning level '%s'", arg + 2);
 				}
+				rt->warnLevel = (unsigned) level;
 			}
 			else if (arg[1] == 'b') {
 				int line = 0;
@@ -1905,11 +2012,6 @@ static int program(int argc, char *argv[]) {
 		}
 	}
 
-	extra.rt = rt;
-	if (dumpFile != NULL) {
-		extra.out = dumpFile;
-	}
-
 	if (pathDumpXml != NULL) {
 		FILE *xmlFile = fopen(pathDumpXml, "w");
 		if (xmlFile != NULL) {
@@ -1923,6 +2025,7 @@ static int program(int argc, char *argv[]) {
 
 	// generate code only if there are no compilation errors
 	if (rt->errors == 0) {
+		if (extra.compileSteps != NULL) {printFmt(extra.out, extra.esc, "%sGenerate:\n", extra.compileSteps);}
 		if (!gencode(rt, run_code != run)) {
 			trace("error generating code");
 		}
@@ -1942,7 +2045,7 @@ static int program(int argc, char *argv[]) {
 	}
 
 	if (dumpFun == NULL) {
-		if (extra.dmpApi != prSkip || extra.dmpAsm != prSkip || extra.dmpAst != prSkip || extra.exec != 0) {
+		if (extra.dmpApi != prSkip || extra.dmpAsm != prSkip || extra.dmpAst != prSkip) {
 			dumpFun = dumpApiText;
 		}
 	}
@@ -1953,15 +2056,14 @@ static int program(int argc, char *argv[]) {
 			printFmt(extra.out, NULL, "{\n");
 			printFmt(extra.out, extra.esc, "%I\"%s\": \"%d\"\n", extra.indent, JSON_KEY_VERSION, CMPL_API_H);
 			printFmt(extra.out, extra.esc, JSON_OBJ_ARR_START, extra.indent, JSON_KEY_SYMBOLS);
-			dumpApi(rt, &extra, dumpFun);
+			dumpApi(rt, &extra, dumpApiJSON);
 			printFmt(extra.out, extra.esc, JSON_OBJ_ARR_END, extra.indent);
 			extra.hasOut = 1;
 		}
 		else if (dumpFun != NULL) {
 			extra.esc = NULL;
-			// printFmt(extra.out, extra.esc, "/*-- Symbols:\n");
+			if (extra.compileSteps != NULL) {printFmt(extra.out, extra.esc, "%sSymbols:\n", extra.compileSteps);}
 			dumpApi(rt, &extra, dumpFun);
-			// printFmt(extra.out, extra.esc, "// */\n");
 		}
 	}
 
@@ -1982,16 +2084,14 @@ static int program(int argc, char *argv[]) {
 				// set call tree dump method
 				if (dumpFun == dumpApiJSON) {
 					rt->dbg->debug = &jsonProfile;
+					jsonPreProfile(rt->dbg);
 				}
 				else {
 					rt->dbg->debug = &conDebug;
 				}
 			}
-
-			if (dumpFun == dumpApiJSON) {
-				jsonPreProfile(rt->dbg);
-			}
 		}
+		if (extra.compileSteps != NULL) {printFmt(extra.out, extra.esc, "%sExecute:\n", extra.compileSteps);}
 		rt->errors = execute(rt, 0, NULL, NULL);
 	}
 
@@ -2002,8 +2102,8 @@ static int program(int argc, char *argv[]) {
 			}
 			printFmt(extra.out, NULL, "}\n");
 		}
-		else if (dumpFun != NULL) {
-			// dump globals, memory
+		else if (run_code != compile) {
+			// dump results: global variables, memory allocations
 			textPostProfile(&extra);
 		}
 	}
@@ -2101,25 +2201,26 @@ static int usage() {
 }
 
 static void dumpVmOpc(const char *error, const struct opcodeRec *info) {
-	printFmt(stdout, NULL, "\n## Instruction %s\n", info->name);
-	printFmt(stdout, NULL, "Perform [TODO]\n");
-	printFmt(stdout, NULL, "\n### Description\n");
-	printFmt(stdout, NULL, "Instruction code: 0x%02x  \n", info->code);
-	printFmt(stdout, NULL, "Instruction length: %d byte%?c  \n", info->size, info->size == 1 ? 0 : 's');
-	printFmt(stdout, NULL, "\n### Stack change\n");
+	FILE *out = stdout;
+	printFmt(out, NULL, "\n## Instruction %s\n", info->name);
+	printFmt(out, NULL, "Perform [TODO]\n");
+	printFmt(out, NULL, "\n### Description\n");
+	printFmt(out, NULL, "Instruction code: 0x%02x  \n", info->code);
+	printFmt(out, NULL, "Instruction length: %d byte%?c  \n", info->size, info->size == 1 ? 0 : 's');
+	printFmt(out, NULL, "\n### Stack change\n");
 
-	printFmt(stdout, NULL, "Requires %d operand%?c: […", info->stack_in, info->stack_in == 1 ? 0 : 's');
+	printFmt(out, NULL, "Requires %d operand%?c: […", info->stack_in, info->stack_in == 1 ? 0 : 's');
 	for (unsigned i = 0; i < info->stack_in; ++i) {
-		printFmt(stdout, NULL, ", %c", 'a' + i);
+		printFmt(out, NULL, ", %c", 'a' + i);
 	}
-	printFmt(stdout, NULL, "  \nReturns %d value%?c: […", info->stack_out, info->stack_in == 1 ? 0 : 's');
+	printFmt(out, NULL, "  \nReturns %d value%?c: […", info->stack_out, info->stack_in == 1 ? 0 : 's');
 	for (unsigned i = 0; i < info->stack_out; ++i) {
-		printFmt(stdout, NULL, ", %c", 'a' + i);
+		printFmt(out, NULL, ", %c", 'a' + i);
 	}
-	printFmt(stdout, NULL, ", [TODO]  \n");
+	printFmt(out, NULL, ", [TODO]  \n");
 
 	if (error != NULL) {
-		printFmt(stdout, NULL, "\n### Note\n%s\n", error);
+		printFmt(out, NULL, "\n### Note\n%s\n", error);
 	}
 }
 

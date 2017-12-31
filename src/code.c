@@ -129,15 +129,7 @@ size_t vmOffset(rtContext rt, void *ptr) {
 	return (unsigned char*)ptr - rt->_mem;
 }
 
-/**
- * @brief Check for an instruction at the given offset.
- * @param offs Offset of the opcode.
- * @param opc Operation code to check.
- * @param arg Copy the argument of the opcode.
- * @return non zero if at the given location the opc was found.
- * @note Aborts if opc is not valid.
- */
-static int checkOcp(rtContext rt, size_t offs, vmOpcode opc, vmValue *arg) {
+int testOcp(rtContext rt, size_t offs, vmOpcode opc, vmValue *arg) {
 	vmInstruction ip = vmPointer(rt, offs);
 	if (opc >= opc_last) {
 		trace("invalid opc_x%x", opc);
@@ -198,12 +190,12 @@ static int decrementStackAccess(rtContext rt, size_t offsBegin, size_t offsEnd, 
 
 int optimizeAssign(rtContext rt, size_t offsBegin, size_t offsEnd) {
 	vmValue arg;
-	if (checkOcp(rt, offsBegin, opc_dup1, &arg)) {
+	if (testOcp(rt, offsBegin, opc_dup1, &arg)) {
 		// duplicate top of stack then set top of stack
 		if (arg.u08 != 0) {
 			return 0;
 		}
-		if (!checkOcp(rt, offsEnd, opc_set1, &arg)) {
+		if (!testOcp(rt, offsEnd, opc_set1, &arg)) {
 			return 0;
 		}
 		if (arg.u08 != 1) {
@@ -224,12 +216,12 @@ int optimizeAssign(rtContext rt, size_t offsBegin, size_t offsEnd) {
 		}
 		return 1;
 	}
-	if (checkOcp(rt, offsBegin, opc_dup2, &arg)) {
+	if (testOcp(rt, offsBegin, opc_dup2, &arg)) {
 		// duplicate top of stack then set top of stack
 		if (arg.u08 != 0) {
 			return 0;
 		}
-		if (!checkOcp(rt, offsEnd, opc_set2, &arg)) {
+		if (!testOcp(rt, offsEnd, opc_set2, &arg)) {
 			return 0;
 		}
 		if (arg.u08 != 2) {
@@ -252,7 +244,7 @@ int optimizeAssign(rtContext rt, size_t offsBegin, size_t offsEnd) {
 	return 0;
 }
 
-size_t emitarg(rtContext rt, vmOpcode opc, vmValue arg) {
+size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 	libc *nativeCalls = rt->vm.nfc;
 	vmInstruction ip = (vmInstruction)rt->_beg;
 
@@ -982,7 +974,7 @@ size_t emitarg(rtContext rt, vmOpcode opc, vmValue arg) {
 
 		#define STOP(__ERR, __CHK, __ERC) if (__CHK) goto __ERR
 		#define NEXT(__IP, __SP, __CHK)\
-			STOP(error_stc, (ptrdiff_t)rt->vm.ss < (ptrdiff_t)(__CHK), -1);\
+			STOP(error_stc, (ssize_t)rt->vm.ss < (ssize_t)(__CHK), -1);\
 			rt->vm.ss += (__SP);\
 			rt->_beg += (__IP);
 		#include "code.inl"
@@ -1117,7 +1109,7 @@ static inline vmError traceCall(rtContext rt, void *sp, size_t caller, size_t ca
 	if (callee == 0) {
 		fatal(ERR_INTERNAL_ERROR);
 	}
-	else if ((ptrdiff_t)callee < 0) {
+	else if ((ssize_t)callee < 0) {
 		// trace leave
 		trcptr tp = pu->tp;
 		int recursive = 0;
@@ -1469,7 +1461,7 @@ vmError execute(rtContext rt, int argc, char *argv[], void *extra) {
 	pu->sp = (stkptr)(rt->_end + rt->vm.ss);
 	pu->ip = rt->_mem + rt->vm.pc;
 
-	if ((ptrdiff_t)pu->sp & (vm_size - 1)) {
+	if ((ssize_t)pu->sp & (vm_size - 1)) {
 		fatal(ERR_INTERNAL_ERROR": invalid stack alignment");
 		return invalidSP;
 	}
@@ -1505,6 +1497,10 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 		}
 	}
 
+	if (mode & prNoOffs) {
+		fmt_addr = " .??????";
+		fmt_offs = " <%?.T+?>";
+	}
 	if (mode & prAsmAddr) {
 		printFmt(out, esc, fmt_addr + 1, offs);
 		printFmt(out, esc, ": ");
@@ -1512,7 +1508,7 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 
 	if (mode & prAsmName && sym != NULL) {
 		size_t symOffs = offs - sym->offs;
-		int padLen = 4 + !symOffs;
+		int trailLen = 1, padLen = 4 + !symOffs;
 		printFmt(out, esc, fmt_offs + 1, sym, symOffs);
 
 		while (symOffs > 0) {
@@ -1522,7 +1518,11 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 		if (padLen < 0) {
 			padLen = 0;
 		}
-		printFmt(out, esc, "% I: ", padLen);
+		if (mode & prNoOffs) {
+			padLen = 0;
+			trailLen = 4;
+		}
+		printFmt(out, esc, "% I:% I", padLen, trailLen);
 	}
 
 	if (ip == NULL) {

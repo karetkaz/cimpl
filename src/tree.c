@@ -243,7 +243,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 			}
 
 			// typename(int64) => typename
-			if (linkOf(func) == cc->type_rec) {
+			if (linkOf(func, 1) == cc->type_rec) {
 				if (args && args->kind == TOKEN_var) {
 					symn id = args->ref.link;
 					res->kind = TOKEN_val;
@@ -404,7 +404,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 
 						case OPER_div:
 							if (rhs.cInt == 0) {
-								error(NULL, NULL, 0, "Division by zero: %t", ast);
+								error(cc->rt, ast->file, ast->line, "Division by zero: %t", ast);
 								res->cInt = 0;
 								break;
 							}
@@ -413,7 +413,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 
 						case OPER_mod:
 							if (rhs.cInt == 0) {
-								error(NULL, NULL, 0, "Division by zero: %t", ast);
+								error(cc->rt, ast->file, ast->line, "Division by zero: %t", ast);
 								res->cInt = 0;
 								break;
 							}
@@ -472,7 +472,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 
 			dieif(lhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
 			dieif(rhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
-			logif(lhs.type != rhs.type, "%?s:%?u: "ERR_INTERNAL_ERROR, ast->file, ast->line);
+			logif(lhs.type != rhs.type, "%?s:%?u: "ERR_INTERNAL_ERROR, ast->file, ast->line);	// might happen: (typename(int) == null)
 			dieif(ast->type != cc->type_bol, ERR_INTERNAL_ERROR);
 
 			res->kind = TOKEN_val;
@@ -715,7 +715,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 	return cast;
 }
 
-symn linkOf(astn ast) {
+symn linkOf(astn ast, int follow) {
 	if (ast == NULL) {
 		return NULL;
 	}
@@ -723,7 +723,7 @@ symn linkOf(astn ast) {
 	if (ast->kind == OPER_fnc) {
 		if (ast->op.lhso == NULL) {
 			// (rand(9.7)) => rand
-			return linkOf(ast->op.rhso);
+			return linkOf(ast->op.rhso, follow);
 		}
 		// rand(9.7) => rand
 		//return linkOf(ast->op.lhso);
@@ -731,25 +731,27 @@ symn linkOf(astn ast) {
 
 	if (ast->kind == OPER_idx) {
 		// buff[200] => buff
-		return linkOf(ast->op.lhso);
+		return linkOf(ast->op.lhso, follow);
 	}
 
 	if (ast->kind == OPER_dot) {
 		// int.size => size
-		return linkOf(ast->op.rhso);
+		return linkOf(ast->op.rhso, follow);
 	}
 
 	if (ast->kind == TOKEN_var) {
 		// TODO: do we need to skip over aliases
 		symn lnk = ast->ref.link;
-		while (lnk != NULL) {
-			if (lnk->kind != KIND_def) {
-				break;
+		if (follow) {
+			while (lnk != NULL) {
+				if (lnk->kind != KIND_def) {
+					break;
+				}
+				if (lnk->init == NULL || lnk->init->kind != TOKEN_var) {
+					break;
+				}
+				lnk = linkOf(lnk->init, follow);
 			}
-			if (lnk->init == NULL || lnk->init->kind != TOKEN_var) {
-				break;
-			}
-			lnk = linkOf(lnk->init);
 		}
 		return lnk;
 	}

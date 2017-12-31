@@ -182,7 +182,17 @@ size_t vmOffset(rtContext, void *ptr);
  * @param arg Argument.
  * @return Program counter.
  */
-size_t emitarg(rtContext, vmOpcode opc, vmValue arg);
+size_t emitOpc(rtContext, vmOpcode opc, vmValue arg);
+
+/**
+ * @brief Test for an instruction at the given offset.
+ * @param Runtime context.
+ * @param offs Offset of the opcode.
+ * @param opc Operation code to check.
+ * @param arg Copy the argument of the opcode.
+ * @return non zero if at the given location the opc was found.
+ */
+int testOcp(rtContext rt, size_t offs, vmOpcode opc, vmValue *arg);
 
 /**
  * @brief Emit an instruction with int argument.

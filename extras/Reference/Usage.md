@@ -32,7 +32,7 @@ When the execution finishes, the collected data is dumped to the to the console,
 
 ### debug with breakpoints
 
->cmpl -debug gl.ext.so -w0 gl.ext.ci -w0 test.gl.ci -wx -b12 -b/o15 -b/o/L19
+>cmpl -debug gl.ext.so -w0 gl.ext.ci -w0 test.gl.ci -wa -b12 -b/o15 -b/o/L19
 
 - Start execution in debug mode `-debug`.
 
@@ -46,7 +46,7 @@ When the execution finishes, the collected data is dumped to the to the console,
 
 - Compile source `test.gl.ci`
 
-	- `-wx` Treating warnings as errors.
+	- `-wa` Show all warnings.
 
 	- `-b12` Break execution each time when line 12 is hit.
 
@@ -230,7 +230,7 @@ Every filename may have extra arguments, which must be given after this argument
 	If file extension is `.so` or `.dll` import it as an extension library, else compile it as source code.
 
 
-- `-w[a|x|<int>]`
+- `-w[a|<int>]`
 
 	Override warning level for current file.
 

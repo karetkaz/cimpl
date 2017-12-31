@@ -566,7 +566,7 @@ static astn initializer(ccContext cc) {
 	symn type = NULL;
 	if (ast != NULL) {
 		if (typeCheck(cc, NULL, ast, 0) && isTypeExpr(ast)) {
-			type = linkOf(ast);
+			type = linkOf(ast, 1);
 		}
 	}
 
@@ -708,7 +708,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		error(cc->rt, tok->file, tok->line, ERR_INVALID_TYPE, tok);
 		return NULL;
 	}
-	symn type = linkOf(tok);
+	symn type = linkOf(tok, 1);
 	if (type == NULL) {
 		error(cc->rt, tok->file, tok->line, ERR_INVALID_TYPE, tok);
 		return NULL;
@@ -971,7 +971,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 				pack = vm_size;
 			}
 			else if (isTypeExpr(tok)) {		// ':' extended type
-				base = linkOf(tok);
+				base = linkOf(tok, 1);
 				for (symn ptr = base; ptr; ptr = ptr->type) {
 					if (ptr == cc->type_rec) {
 						error(cc->rt, tok->file, tok->line, ERR_INVALID_INHERITANCE, tok);
@@ -1069,7 +1069,7 @@ static astn declare_enum(ccContext cc) {
 			base = NULL;
 			// type-check the base type
 			if (typeCheck(cc, NULL, tok, 0) && isTypeExpr(tok)) {
-				base = linkOf(tok);
+				base = linkOf(tok, 1);
 			}
 			else {
 				error(cc->rt, tok->file, tok->line, ERR_INVALID_BASE_TYPE, tok);
@@ -1503,10 +1503,9 @@ static astn statement(ccContext cc, ccKind attr) {
 }
 //#}
 
-astn parse(ccContext cc, int warn) {
+astn parse(ccContext cc) {
 	astn ast, unit = NULL;
 
-	cc->warn = warn;
 	// pre read all tokens from source
 	if (cc->tokNext == NULL) {
 		astn head = NULL, tail = NULL;
@@ -1693,22 +1692,22 @@ symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 	return sym;
 }
 
-astn ccAddUnit(ccContext cc, int warn, char *file, int line, char *text) {
+astn ccAddUnit(ccContext cc, char *file, int line, char *text) {
 	if (!ccOpen(cc->rt, file, line, text)) {
 		error(cc->rt, NULL, 0, ERR_OPENING_FILE, file);
 		return 0;
 	}
-	astn unit = parse(cc, warn);
+	astn unit = parse(cc);
 	if (ccClose(cc) != 0) {
 		return NULL;
 	}
 	return unit;
 }
 
-int ccAddLib(ccContext cc, int warn, int init(ccContext), char *file) {
+int ccAddLib(ccContext cc, int init(ccContext), char *file) {
 	int unitCode = init(cc);
 	if (unitCode == 0 && file != NULL) {
-		return ccAddUnit(cc, warn, file, 1, NULL) != NULL;
+		return ccAddUnit(cc, file, 1, NULL) != NULL;
 	}
 	return unitCode == 0;
 }

@@ -168,23 +168,21 @@ symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto);
 /**
  * @brief Compile the given file or text as a unit.
  * @param cc Compiler context.
- * @param warn Warning level.
  * @param file File name of input.
  * @param line First line of input.
  * @param text If not null, this will be compiled instead of the file.
  * @return Root node of the compilation unit.
  */
-astn ccAddUnit(ccContext cc, int warn, char *file, int line, char *text);
+astn ccAddUnit(ccContext cc, char *file, int line, char *text);
 
 /** Add a module / library
  * @brief Execute the libInit function then optionally compile the unit.
  * @param cc Compiler context.
- * @param warn warning level.
  * @param init function installing types and native functions.
  * @param unit extension file to be compiled with this library.
  * @return boolean value of success.
  */
-int ccAddLib(ccContext cc, int warn, int init(ccContext), char *unit);
+int ccAddLib(ccContext cc, int init(ccContext), char *unit);
 
 /**
  * @brief Find symbol by name.

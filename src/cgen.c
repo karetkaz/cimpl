@@ -8,6 +8,10 @@ description:
 #include <string.h>
 #include "internal.h"
 
+enum Settings {
+	preAllocateArgs = 0
+};
+
 /**
  * @brief get absolute position on stack, of relative offset
  * @param rt Runtime context.
@@ -41,38 +45,38 @@ static inline vmOpcode emit32or64(vmOpcode opc32, vmOpcode opc64) {
 static inline size_t emitI64(rtContext rt, int64_t value) {
 	vmValue arg;
 	arg.i64 = value;
-	return emitarg(rt, opc_lc64, arg);
+	return emitOpc(rt, opc_lc64, arg);
 }
 static inline size_t emitF64(rtContext rt, float64_t value) {
 	vmValue arg;
 	arg.f64 = value;
-	return emitarg(rt, opc_lf64, arg);
+	return emitOpc(rt, opc_lf64, arg);
 }
 static inline size_t emitRef(rtContext rt, void *value) {
 	vmValue arg;
 	arg.i64 = vmOffset(rt, value);
-	return emitarg(rt, opc_lref, arg);
+	return emitOpc(rt, opc_lref, arg);
 }
 
 // emit an offset: address or index (32 or 64 bit based on vm size)
 static inline size_t emitOffs(rtContext rt, size_t value) {
 	vmValue arg;
 	arg.i64 = value;
-	return emitarg(rt, emit32or64(opc_lc32, opc_lc64), arg);
+	return emitOpc(rt, emit32or64(opc_lc32, opc_lc64), arg);
 }
 
 /// Emit an instruction with no argument.
-static inline size_t emitOpc(rtContext rt, vmOpcode opc) {
+static inline size_t emit(rtContext rt, vmOpcode opc) {
 	vmValue arg;
 	arg.i64 = 0;
-	return emitarg(rt, opc, arg);
+	return emitOpc(rt, opc, arg);
 }
 
 /// Emit an instruction with integer argument.
 size_t emitInt(rtContext rt, vmOpcode opc, int64_t value) {
 	vmValue arg;
 	arg.i64 = value;
-	return emitarg(rt, opc, arg);
+	return emitOpc(rt, opc, arg);
 }
 
 /// Emit an instruction indexing nth element on stack.
@@ -107,7 +111,7 @@ static inline size_t emitStack(rtContext rt, vmOpcode opc, ssize_t arg) {
 			break;
 	}
 
-	return emitarg(rt, opc, tmp);
+	return emitOpc(rt, opc, tmp);
 }
 
 /// Increment the variable of type int32 on top of stack.
@@ -550,7 +554,7 @@ static size_t emitOperator(rtContext rt, ccToken token, ccKind cast) {
 			break;
 	}
 
-	return emitOpc(rt, opc);
+	return emit(rt, opc);
 }
 
 /**
@@ -591,26 +595,26 @@ static inline ccKind genLoop(ccContext cc, astn ast) {
 		return CAST_any;
 	}
 
-	size_t jStep = emitOpc(rt, opc_jmp);
+	size_t jStep = emit(rt, opc_jmp);
 	if (jStep <= 0) {		// continue;
 		traceAst(ast);
 		return CAST_any;
 	}
 
-	size_t lBody = emitOpc(rt, markIP);
+	size_t lBody = emit(rt, markIP);
 	if (ast->stmt.stmt && !genAst(cc, ast->stmt.stmt, CAST_vid)) {
 		traceAst(ast);
 		return CAST_any;
 	}
 
-	size_t lCont = emitOpc(rt, markIP);
+	size_t lCont = emit(rt, markIP);
 	if (ast->stmt.step && !genAst(cc, ast->stmt.step, CAST_vid)) {
 		traceAst(ast);
 		return CAST_any;
 	}
 
-	size_t lInc = emitOpc(rt, markIP);
-	fixJump(rt, jStep, emitOpc(rt, markIP), -1);
+	size_t lInc = emit(rt, markIP);
+	fixJump(rt, jStep, emit(rt, markIP), -1);
 	if (ast->stmt.test) {
 		if (!genAst(cc, ast->stmt.test, CAST_bit)) {
 			traceAst(ast);
@@ -628,7 +632,7 @@ static inline ccKind genLoop(ccContext cc, astn ast) {
 		}
 	}
 
-	size_t lBreak = emitOpc(rt, markIP);
+	size_t lBreak = emit(rt, markIP);
 	size_t stBreak = stkOffset(rt, 0);
 	while (cc->jumps != jl) {
 		astn jmp = cc->jumps;
@@ -697,7 +701,7 @@ static inline ccKind genBranch(ccContext cc, astn ast) {
 			traceAst(ast);
 			return CAST_any;
 		}
-		size_t jTrue = emitOpc(rt, opc_jz);
+		size_t jTrue = emit(rt, opc_jz);
 		if (jTrue <= 0) {
 			traceAst(ast);
 			return CAST_any;
@@ -707,25 +711,25 @@ static inline ccKind genBranch(ccContext cc, astn ast) {
 			traceAst(ast);
 			return CAST_any;
 		}
-		size_t jFalse = emitOpc(rt, opc_jmp);
+		size_t jFalse = emit(rt, opc_jmp);
 		if (jFalse <= 0) {
 			traceAst(ast);
 			return CAST_any;
 		}
-		fixJump(rt, jTrue, emitOpc(rt, markIP), -1);
+		fixJump(rt, jTrue, emit(rt, markIP), -1);
 
 		if (!genAst(cc, ast->stmt.step, CAST_vid)) {
 			traceAst(ast);
 			return CAST_any;
 		}
-		fixJump(rt, jFalse, emitOpc(rt, markIP), -1);
+		fixJump(rt, jFalse, emit(rt, markIP), -1);
 	}
 	else if (ast->stmt.stmt) {
 		if (!genAst(cc, ast->stmt.test, CAST_bit)) {
 			traceAst(ast);
 			return CAST_any;
 		}
-		size_t jTrue = emitOpc(rt, opc_jz);
+		size_t jTrue = emit(rt, opc_jz);
 		if (jTrue <= 0) {
 			traceAst(ast);
 			return CAST_any;
@@ -735,14 +739,14 @@ static inline ccKind genBranch(ccContext cc, astn ast) {
 			traceAst(ast);
 			return CAST_any;
 		}
-		fixJump(rt, jTrue, emitOpc(rt, markIP), -1);
+		fixJump(rt, jTrue, emit(rt, markIP), -1);
 	}
 	else if (ast->stmt.step) {
 		if (!genAst(cc, ast->stmt.test, CAST_bit)) {
 			traceAst(ast);
 			return CAST_any;
 		}
-		size_t jFalse = emitOpc(rt, opc_jnz);
+		size_t jFalse = emit(rt, opc_jnz);
 		if (jFalse <= 0) {
 			traceAst(ast);
 			return CAST_any;
@@ -752,13 +756,13 @@ static inline ccKind genBranch(ccContext cc, astn ast) {
 			traceAst(ast);
 			return CAST_any;
 		}
-		fixJump(rt, jFalse, emitOpc(rt, markIP), -1);
+		fixJump(rt, jFalse, emit(rt, markIP), -1);
 	}
 	return CAST_vid;
 }
 
 static inline ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
-	const rtContext rt = cc->rt;
+	rtContext rt = cc->rt;
 	astn varInit = variable->init;
 	ccKind varCast = castOf(variable);
 	size_t varOffset = stkOffset(rt, variable->size);
@@ -834,7 +838,7 @@ static inline ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 	return varCast;
 }
 static inline ccKind genVariable(ccContext cc, symn variable, ccKind get, astn ast) {
-	const rtContext rt = cc->rt;
+	rtContext rt = cc->rt;
 	symn type = variable->type;
 	ccKind typCast = castOf(type);
 	ccKind varCast = castOf(variable);
@@ -890,6 +894,10 @@ static inline ccKind genVariable(ccContext cc, symn variable, ccKind get, astn a
 				typCast = CAST_val;
 			}
 			break;
+	}
+
+	if (variable->offs == 0) {
+		error(rt, variable->file, variable->line, ERR_EMIT_VARIABLE, variable);
 	}
 
 	// array: push length of variable first.
@@ -953,12 +961,8 @@ static inline ccKind genVariable(ccContext cc, symn variable, ccKind get, astn a
 
 static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 	rtContext rt = cc->rt;
-	astn args = ast->op.rhso;
-	symn function = linkOf(ast->op.lhso);
-
-	const size_t locals = stkOffset(rt, 0);
-	const size_t localSize = stkOffset(rt, ast->type->size);
-	ccKind result = castOf(ast->type);
+	astn args = chainArgs(ast->op.rhso);
+	symn function = linkOf(ast->op.lhso, 0);
 
 	dbgCgen("%?s:%?u: %t", ast->file, ast->line, ast);
 	if (function == NULL) {
@@ -966,15 +970,18 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		return CAST_any;
 	}
 
+	ccKind result = castOf(ast->type);
+	const size_t locals = stkOffset(rt, 0);
+	const size_t localSize = stkOffset(rt, ast->type->size);
+
 	// emit intrinsic
 	if (function == cc->emit_opc) {
-		astn arg = chainArgs(args);
 		dbgCgen("%?s:%?u: emit: %t", ast->file, ast->line, ast);
 		// Reverse Polish notation: int32 a = emit(int32(a), int32(b), i32.add);
-		while (arg != NULL) {
-			dbgCgen("%?s:%?u: emit.arg: %t", arg->file, arg->line, arg);
-			if (!genAst(cc, arg, CAST_any)) {
-				traceAst(arg);
+		while (args != NULL) {
+			dbgCgen("%?s:%?u: emit.arg: %t", args->file, args->line, args);
+			if (!genAst(cc, args, CAST_any)) {
+				traceAst(args);
 				return CAST_any;
 			}
 			// extra check to not underflow the stack
@@ -983,14 +990,14 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 			}
 
 			// warn if values are passed without cast
-			if (!(arg->kind == OPER_fnc && isTypeExpr(arg->op.lhso))) {
+			if (!(args->kind == OPER_fnc && isTypeExpr(args->op.lhso))) {
 				// argument is not a cast, check if it is an instruction
-				symn lnk = linkOf(arg);
+				symn lnk = linkOf(args, 1);
 				if (!(lnk != NULL && isEmit(lnk))) {
-					warn(rt, 1, ast->file, ast->line, WARN_PASS_ARG_NO_CAST, arg, arg->type);
+					warn(rt, 1, ast->file, ast->line, WARN_PASS_ARG_NO_CAST, args, args->type);
 				}
 			}
-			arg = arg->next;
+			args = args->next;
 		}
 		return get;
 	}
@@ -998,22 +1005,20 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 	// generate arguments (push or cache)
 	if (isInvokable(function) && args != NULL) {
 		size_t offs = 0;
-		size_t preAlloc = 0;//argsSize(function);
 		symn prm = function->params;
-		astn arg = chainArgs(args);
 		struct astNode argFileLine[2];
 
 		logif(prm->size != ast->type->size, ERR_INTERNAL_ERROR": %T", function);
-
-		// alloc space for result and arguments
-		if (preAlloc > 0) {
-			if (!emitInt(rt, opc_spc, preAlloc)) {
+		if (preAllocateArgs) {
+			size_t preAlloc = argsSize(function);
+			// alloc space for result and arguments
+			if (preAlloc > 0 && !emitInt(rt, opc_spc, preAlloc)) {
 				traceAst(ast);
 				return CAST_any;
 			}
 		}
 		if (isInline(prm) || prm->size == 0) {
-			// skip generating void or inline results
+			// skip generating void or inline result
 		}
 		else if (prm->init != NULL) {
 			offs += padOffset(prm->size, vm_size);
@@ -1077,26 +1082,26 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 
 			// chain the new arguments
 			argFileLine[0].next = &argFileLine[1];
-			argFileLine[1].next = arg;
-			arg = argFileLine;
+			argFileLine[1].next = args;
+			args = argFileLine;
 		}
-		while (prm != NULL && arg != NULL) {
+		while (prm != NULL && args != NULL) {
 			if (isInline(prm) || prm->size == 0) {
 				// skip generating void or inline parameter
-				prm->init = arg;
+				prm->init = args;
 			}
 			else {
 				offs += padOffset(prm->size, vm_size);
 
 				// generate the argument value
 				size_t argOffs = stkOffset(rt, prm->size);
-				if (!genAst(cc, arg, castOf(prm))) {
+				if (!genAst(cc, args, castOf(prm))) {
 					traceAst(ast);
 					return CAST_any;
 				}
 
 				if (argOffs != stkOffset(rt, 0)) {
-					fatal(ERR_INTERNAL_ERROR": argument size does not math parameter size");
+					fatal(ERR_INTERNAL_ERROR": argument size does not match parameter size");
 					traceAst(ast);
 					return CAST_any;
 				}
@@ -1117,10 +1122,10 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 				prm->offs = locals + offs;
 			}
 			prm = prm->next;
-			arg = arg->next;
+			args = args->next;
 		}
 		// more or less args than params is a fatal error
-		if (prm != NULL || arg != NULL) {
+		if (prm != NULL || args != NULL) {
 			fatal(ERR_INTERNAL_ERROR);
 			return CAST_any;
 		}
@@ -1167,13 +1172,13 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 	else if (isTypename(function)) {
 		// casts may have a single argument
 		if (args == NULL || args->next != NULL) {
-			traceAst(ast);
+			error(rt, ast->file, ast->line, ERR_INVALID_CAST, ast);
 			return CAST_any;
 		}
 
 		// variant(data) || typename(data) || pointer(data)
 		if (function == cc->type_var || function == cc->type_rec || function == cc->type_ptr) {
-			symn variable = linkOf(args);
+			symn variable = linkOf(args, 1);
 			// accept an identifier as parameter
 			if (variable == NULL) {
 				traceAst(ast);
@@ -1191,7 +1196,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 				}
 				// TODO: warn[1]: value escapes local scope
 				if (!isStatic(variable) && castOf(variable->type) != CAST_ref) {
-					warn(rt, 6, args->file, args->line, WARN_PASS_ARG_BY_REF, args);
+					warn(rt, 6, args->file, args->line, WARN_LOCAL_MIGHT_ESCAPE, args);
 				}
 			}
 			return castOf(function);
@@ -1201,9 +1206,20 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		switch (result = castOf(function)) {
 			default:
 			case CAST_val:
+				// cast a variable to the same value-type,
+				// or cast the result of an emit to a value-type
+				if (args->type == function || args->type == cc->emit_opc) {
+					if (!genAst(cc, args, result)) {
+						traceAst(ast);
+						return CAST_any;
+					}
+					break;
+				}
+				// fall trough
 			case CAST_arr:
 			case CAST_ref:
 			case CAST_var:
+				traceAst(ast);
 				result = CAST_any;
 				break;
 
@@ -1228,7 +1244,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 			traceAst(ast);
 			return CAST_any;
 		}
-		if (!emitOpc(rt, opc_call)) {
+		if (!emit(rt, opc_call)) {
 			traceAst(ast);
 			return CAST_any;
 		}
@@ -1294,15 +1310,15 @@ static inline ccKind genIndex(ccContext cc, astn ast, ccKind get) {
 static inline ccKind genMember(ccContext cc, astn ast, ccKind get) {
 	const rtContext rt = cc->rt;
 	// TODO: this should work as indexing
-	symn object = linkOf(ast->op.lhso);
-	symn member = linkOf(ast->op.rhso);
+	symn object = linkOf(ast->op.lhso, 1);
+	symn member = linkOf(ast->op.rhso, 1);
 	int lhsStat = isTypeExpr(ast->op.lhso);
 
 	dbgCgen("%?s:%?u: %t", ast->file, ast->line, ast);
 	if (member == NULL && ast->op.rhso != NULL) {
 		astn call = ast->op.rhso;
 		if (call->kind == OPER_fnc) {
-			member = linkOf(call->op.lhso);
+			member = linkOf(call->op.lhso, 1);
 		}
 	}
 
@@ -1375,7 +1391,7 @@ static inline ccKind genLogical(ccContext cc, astn ast) {
 			return CAST_any;
 		}
 
-		size_t jmpTrue = emitOpc(rt, opc_jz);
+		size_t jmpTrue = emit(rt, opc_jz);
 		if (jmpTrue == 0) {
 			traceAst(ast);
 			return CAST_any;
@@ -1386,20 +1402,20 @@ static inline ccKind genLogical(ccContext cc, astn ast) {
 			return CAST_any;
 		}
 
-		size_t jmpFalse = emitOpc(rt, opc_jmp);
+		size_t jmpFalse = emit(rt, opc_jmp);
 		if (jmpFalse == 0) {
 			traceAst(ast);
 			return CAST_any;
 		}
 
-		fixJump(rt, jmpTrue, emitOpc(rt, markIP), spBegin);
+		fixJump(rt, jmpTrue, emit(rt, markIP), spBegin);
 
 		if (!genAst(cc, ast->op.rhso, CAST_any)) {
 			traceAst(ast);
 			return CAST_any;
 		}
 
-		fixJump(rt, jmpFalse, emitOpc(rt, markIP), -1);
+		fixJump(rt, jmpFalse, emit(rt, markIP), -1);
 	}
 	return castOf(ast->type);
 }
@@ -1414,7 +1430,7 @@ static inline ccKind genLogical(ccContext cc, astn ast) {
  */
 static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 	const rtContext rt = cc->rt;
-	const size_t ipBegin = emitOpc(rt, markIP);
+	const size_t ipBegin = emit(rt, markIP);
 	const size_t spBegin = stkOffset(rt, 0);
 	ccKind got, op;
 
@@ -1450,7 +1466,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			for (ptr = ast->stmt.stmt; ptr != NULL; ptr = ptr->next) {
 				int errors = rt->errors;
 				int nested = ptr->kind == STMT_beg;
-				size_t ipStart2 = emitOpc(rt, markIP);
+				size_t ipStart2 = emit(rt, markIP);
 //				trace("%?s:%?u: %t", ptr->file, ptr->line, ptr);
 				if (!genAst(cc, ptr, nested ? get : CAST_any)) {
 					if (errors == rt->errors) {
@@ -1459,7 +1475,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 					}
 					return CAST_any;
 				}
-				addDbgStatement(rt, ipStart2, emitOpc(rt, markIP), ptr);
+				addDbgStatement(rt, ipStart2, emit(rt, markIP), ptr);
 			}
 			if (get == CAST_vid) {
 				// clean the stack: remove local variables
@@ -1503,7 +1519,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 		case STMT_con:
 		case STMT_brk: {
 			dieif(get != CAST_vid, ERR_INTERNAL_ERROR": get: %K", get);
-			size_t offs = emitOpc(rt, opc_jmp);
+			size_t offs = emit(rt, opc_jmp);
 			if (offs == 0) {
 				traceAst(ast);
 				return CAST_any;
@@ -1537,7 +1553,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				trace(ERR_INTERNAL_ERROR);
 				return CAST_any;
 			}
-			if (!emitOpc(rt, opc_jmpi)) {
+			if (!emit(rt, opc_jmpi)) {
 				traceAst(ast);
 				return CAST_any;
 			}
@@ -1686,7 +1702,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			dieif(ast->op.rhso->type != cc->type_bol, ERR_INTERNAL_ERROR);
 			dieif(got != CAST_bit, ERR_INTERNAL_ERROR": (%t) -> %K", ast, got);
 			#endif
-			if (cc->warn > 0) {
+			if (cc->rt->warnLevel > 0) {
 				static int firstTimeShowOnly = 1;
 				if (firstTimeShowOnly) {
 					warn(rt, 1, ast->file, ast->line, WARN_SHORT_CIRCUIT, ast);
@@ -1727,7 +1743,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				}
 			}
 
-			size_t codeEnd = emitOpc(rt, markIP);
+			size_t codeEnd = emit(rt, markIP);
 			if (!genAst(cc, ast->op.lhso, CAST_ref)) {
 				traceAst(ast);
 				return CAST_any;
@@ -1831,8 +1847,9 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 	}
 
 	if (ast->kind >= STMT_beg && ast->kind <= STMT_end) {
-		logif(spBegin != stkOffset(rt, 0), "%s:%u: locals left on stack(get: %K): `%t`", ast->file, ast->line, get, ast);
-		if (get == CAST_vid && spBegin != stkOffset(rt, 0)) {
+		ssize_t locals = stkOffset(rt, 0) - spBegin;
+		logif(locals != 0, "%s:%u: locals left on stack(get: %K, size: %D): `%t`", ast->file, ast->line, get, locals, ast);
+		if (get == CAST_vid && locals != 0) {
 			if (!emitStack(rt, opc_drop, spBegin)) {
 				traceAst(ast);
 				return CAST_any;
@@ -1979,7 +1996,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				break;
 		}
 
-		if (cast != opc_nop && !emitOpc(rt, cast)) {
+		if (cast != opc_nop && !emit(rt, cast)) {
 			error(rt, ast->file, ast->line, ERR_CAST_EXPRESSION, ast, got, get);
 			return CAST_any;
 		}
@@ -2074,7 +2091,7 @@ int gencode(rtContext rt, int debug) {
 			}
 
 			//~ this must be generated before sym;
-			if (Ng != NULL /*&& Pg != NULL*/) {
+			if (Ng != NULL) {
 				debug("global `%T` must be generated before `%T`", Ng, ng);
 				Pg->global = Ng->global;	// remove
 				Ng->global = ng;
@@ -2147,26 +2164,20 @@ int gencode(rtContext rt, int debug) {
 		// generate static variables & functions
 		for (var = cc->global; var; var = var->global) {
 
-			// exclude non static variables
-			if (!isStatic(var)) {
+			if (var == rt->main || isInline(var)) {
+				// exclude main and inline symbols
 				continue;
 			}
-
-			// exclude aliases
-			if (isInline(var)) {
-				continue;
-			}
-
-			// exclude typename
 			if (isTypename(var)) {
+				// types are "generated" when they are declared
+				dieif(var->offs == 0, ERR_INTERNAL_ERROR);
+				dieif(!isStatic(var), ERR_INTERNAL_ERROR);
 				continue;
 			}
-
-			// exclude main
-			if (var == rt->main) {
+			if (!isStatic(var)) {
+				// exclude non static variables
 				continue;
 			}
-
 			dieif(var->offs != 0, "Error `%T` offs: %d", var, var->offs);	// already generated ?
 
 			if (isFunction(var)) {
@@ -2175,21 +2186,23 @@ int gencode(rtContext rt, int debug) {
 				fixJump(rt, 0, 0, sizeof(vmOffs) + argsSize(var));
 				rt->vm.sm = rt->vm.ss;		// leave return address on stack
 
-				var->offs = emitOpc(rt, markIP);
-
+				var->offs = emit(rt, markIP);
 				if (!genAst(cc, var->init, CAST_vid)) {
 					error(rt, var->file, var->line, ERR_EMIT_FUNCTION, var);
 					continue;
 				}
-				if (!emitOpc(rt, opc_jmpi)) {
-					error(rt, var->file, var->line, ERR_EMIT_FUNCTION, var);
-					continue;
+				size_t end = emit(rt, markIP);
+				if (end == var->offs || testOcp(rt, end, opc_jmpi, NULL)) {
+					if (!emit(rt, opc_jmpi)) {
+						error(rt, var->file, var->line, ERR_EMIT_FUNCTION, var);
+						continue;
+					}
 				}
 				while (cc->jumps) {
 					fatal(ERR_INTERNAL_ERROR": invalid jump: `%t`", cc->jumps);
 					cc->jumps = cc->jumps->next;
 				}
-				var->size = emitOpc(rt, markIP) - var->offs;
+				var->size = emit(rt, markIP) - var->offs;
 				var->kind |= ATTR_stat;
 
 				addDbgFunction(rt, var);
@@ -2197,7 +2210,6 @@ int gencode(rtContext rt, int debug) {
 			else {
 				unsigned align;
 				dieif(var->size <= 0, "Error `%T` size: %d", var, var->size);	// instance of void ?
-				dieif(var->offs != 0, "Error `%T` offs: %d", var, var->offs);	// already generated ?
 
 				// align the memory of the variable. speeding up the read and write of it.
 				if (var->size >= 16) {
@@ -2228,13 +2240,14 @@ int gencode(rtContext rt, int debug) {
 
 				// TODO: recheck double initialization fix(var->nest > 0)
 				if (var->init != NULL && var->nest > 0) {
-					astn init = newNode(cc, TOKEN_var);
+					dieif(var->tag == NULL, ERR_INTERNAL_ERROR);
+					astn init = newNode(cc, STMT_end);
 
 					//~ make initialization from initializer
 					init->type = var->type;
 					init->file = var->file;
 					init->line = var->line;
-					init->ref.link = var;
+					init->stmt.stmt = var->tag;
 
 					if (staticInitList->lst.head == NULL) {
 						staticInitList->lst.head = init;
@@ -2245,7 +2258,6 @@ int gencode(rtContext rt, int debug) {
 					staticInitList->lst.tail = init;
 				}
 			}
-//			debug("%?s:%?u: static variable @%06x: %T", var->file, var->line, var->offs, var);
 		}
 
 		// initialize static non global variables
@@ -2256,7 +2268,7 @@ int gencode(rtContext rt, int debug) {
 		}
 	}
 
-	lMain = emitOpc(rt, markIP);
+	lMain = emit(rt, markIP);
 	if (cc->root != NULL) {
 		rt->vm.sm = rt->vm.ss = 0;
 
@@ -2283,7 +2295,7 @@ int gencode(rtContext rt, int debug) {
 	rt->vm.ss = 0;
 
 	// build the main initializer function.
-	rt->main->size = emitOpc(rt, markIP) - lMain;
+	rt->main->size = emit(rt, markIP) - lMain;
 	rt->main->offs = lMain;
 	rt->main->params = params;
 	rt->main->fields = cc->scope;

@@ -99,6 +99,7 @@ struct rtContextRec {
 	int fastAssign: 1; // remove dup and set instructions when modifying the last declared variable.
 	int genGlobals: 1; // generate global variables as static variables
 
+	unsigned warnLevel: 4;   // compile logging level (0-15)
 	unsigned logLevel: 3;   // runtime logging level (0-7)
 	int logClose: 1;   // close log file
 	int freeMem: 1;    // release memory

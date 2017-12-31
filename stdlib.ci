@@ -2,8 +2,11 @@
 
 static if (typename(raise) == function) {
 
-inline trace(char message[*], variant inspect) = raise(raise.verbose, message, inspect, raise.defTrace);
-inline trace(char message[*]) = raise(raise.verbose, message, null, raise.defTrace);
+inline verbose(char message[*], variant inspect) = raise(raise.verbose, message, inspect, raise.noTrace);
+inline verbose(char message[*]) = raise(raise.verbose, message, null, raise.noTrace);
+
+inline trace(char message[*], variant inspect) = raise(raise.debug, message, inspect, raise.defTrace);
+inline trace(char message[*]) = raise(raise.debug, message, null, raise.defTrace);
 
 inline debug(char message[*], variant inspect) = raise(raise.debug, message, inspect, raise.noTrace);
 inline debug(char message[*]) = raise(raise.debug, message, null, raise.noTrace);
@@ -26,3 +29,5 @@ inline assert(bool condition, char message[*]) = void(condition ? void(0) : abor
 inline assert(bool condition) = void(condition ? void(0) : abort("assertion failed!"));
 
 }
+
+inline sizeof(typename type) = int(type.size);

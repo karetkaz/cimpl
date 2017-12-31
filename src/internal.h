@@ -22,7 +22,7 @@
 	4: include debug messages from code emitter
  	if not defined no extra messages and extra checks are performed.
 */
-//#define DEBUGGING 0
+//#define DEBUGGING 1
 
 // limit the count of printed elements(stacktrace, array elements)
 #define LOG_MAX_ITEMS 25
@@ -187,7 +187,6 @@ struct ccContextRec {
 	symn	deft[TBL_SIZE];		// symbol hash stack
 
 	int		nest;		// nest level: modified by (enter/leave)
-	int		warn;		// warning level
 	int		siff:1;		// TODO: remove: inside a static if false
 
 	// Parser
@@ -372,12 +371,13 @@ ccKind eval(ccContext cc, astn res, astn ast);
 /**
  * @brief Get the symbol(variable) linked to expression.
  * @param ast Abstract syntax tree to be checked.
+ * @param follow Follow symbol links.
  * @return null if not an identifier.
  * @note if input is a the symbol for variable a is returned.
  * @note if input is a.b the symbol for member b is returned.
  * @note if input is a(1, 2) the symbol for function a is returned.
  */
-symn linkOf(astn ast);
+symn linkOf(astn ast, int follow);
 
 /**
  * @brief Check if an expression is a type.
@@ -433,10 +433,9 @@ ccContext ccOpen(rtContext rt, char *file, int line, char *text);
 /** Parse the opened input source.
  * @brief parse the input source.
  * @param cc compiler context
- * @param warn warning level
  * @return abstract syntax tree
  */
-astn parse(ccContext, int warn);
+astn parse(ccContext);
 
 /**
  * @brief Close stream, ensuring it ends correctly.
@@ -495,6 +494,8 @@ typedef enum {
 	prAstType = 0x002000,   // print type cast of each subexpression
 	nlAstBody = 0x004000,   // print compound statements on new line (like in cs)
 	nlAstElIf = 0x008000,   // don't keep `else if` constructs on the same line.
+
+	prNoOffs = 0x800000,
 
 	prName = 0,		// print operator or symbol name only.
 	prValue = prOneLine,
@@ -568,8 +569,8 @@ static inline size_t padOffset(size_t offs, size_t align) {
 }
 
 static inline void *padPointer(void *offs, size_t align) {
-	ptrdiff_t mask = align - 1;
-	return (void*)(((ptrdiff_t)offs + mask) & ~mask);
+	ssize_t mask = align - 1;
+	return (void*)(((ssize_t)offs + mask) & ~mask);
 }
 
 
@@ -667,6 +668,7 @@ void closeLibs();
 #define ERR_INVALID_DECLARATION "invalid declaration: `%s`"
 #define ERR_INVALID_FIELD_ACCESS "object reference is required to access the member `%T`"
 #define ERR_INVALID_TYPE "can not type check expression: `%t`"
+#define ERR_INVALID_CAST "can not use cast to construct instance: `%t`"
 #define ERR_INVALID_OPERATOR "invalid operator %.t(%T, %T)"
 #define ERR_MULTIPLE_OVERLOADS "there are %d overloads for `%T`"
 #define ERR_REDEFINED_REFERENCE "redefinition of `%T`"
@@ -677,6 +679,7 @@ void closeLibs();
 
 // Code generator errors: TODO: these are fatal internal errors
 #define ERR_CAST_EXPRESSION "can not emit expression: %t, invalid cast(%K -> %K)"
+#define ERR_EMIT_VARIABLE "can not emit variable: %T"
 #define ERR_EMIT_FUNCTION "can not emit function: %T"
 #define ERR_EMIT_STATEMENT "can not emit statement: %t"
 #define ERR_INVALID_INSTRUCTION "invalid instruction: %.A @%06x"
@@ -690,7 +693,7 @@ void closeLibs();
 #define WARN_USE_BLOCK_STATEMENT "statement should be a block statement {%t}."
 #define WARN_EXPRESSION_STATEMENT "expression statement expected, got: `%t`"
 #define WARN_VARIANT_TO_REF "converting `%T` to reference discards type information"
-#define WARN_PASS_ARG_BY_REF "argument `%t` is implicitly passed by reference"
+#define WARN_LOCAL_MIGHT_ESCAPE "local variable `%t` can not be referenced outside of its scope"
 #define WARN_PASS_ARG_NO_CAST "argument `%t` is passed to emit without cast as `%T`"
 #define WARN_SHORT_CIRCUIT "operators `&&` and `||` does not short-circuit yet"
 #define WARN_NO_CODE_GENERATED "no code will be generated for statement: %t"

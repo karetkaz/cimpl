@@ -160,6 +160,7 @@ rtContext rtInit(void *mem, size_t size) {
 
 		// default values
 		rt->logLevel = 7;
+		rt->warnLevel = 5;
 		rt->foldConst = 1;
 		rt->foldInstr = 1;
 		rt->fastAssign = 1;
@@ -840,7 +841,7 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(dbgContext, void *,
 		char data[];				// here begins the user data
 	} *memChunk;
 
-	const ptrdiff_t minAllocationSize = sizeof(struct memChunk);
+	const ssize_t minAllocationSize = sizeof(struct memChunk);
 	size_t allocSize = padOffset(size + minAllocationSize, minAllocationSize);
 	memChunk chunk = (memChunk)((char*)ptr - offsetOf(struct memChunk, data));
 
@@ -947,7 +948,7 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(dbgContext, void *,
 			if (chunk->prev == NULL && next != NULL) {
 				size_t chunkSize = (char*)next - (char*)chunk - allocSize;
 				if (allocSize < chunkSize) {
-					ptrdiff_t diff = chunkSize - allocSize;
+					ssize_t diff = chunkSize - allocSize;
 					if (diff > minAllocationSize) {
 						memChunk free = (memChunk)((char*)chunk + allocSize);
 						chunk->next = free;
@@ -1094,8 +1095,8 @@ dbgn mapDbgStatement(rtContext rt, size_t position) {
 	if (rt->dbg != NULL) {
 		// TODO: use binary search to speed up mapping
 		dbgn result = (dbgn)rt->dbg->statements.ptr;
-		int n = rt->dbg->statements.cnt;
-		for (int i = 0; i < n; ++i) {
+		size_t n = rt->dbg->statements.cnt;
+		for (size_t i = 0; i < n; ++i) {
 			if (position >= result->start) {
 				if (position < result->end) {
 					return result;
@@ -1148,8 +1149,8 @@ dbgn addDbgStatement(rtContext rt, size_t start, size_t end, astn tag) {
 dbgn mapDbgFunction(rtContext rt, size_t position) {
 	if (rt->dbg != NULL) {
 		dbgn result = (dbgn)rt->dbg->functions.ptr;
-		int i, n = rt->dbg->functions.cnt;
-		for (i = 0; i < n; ++i) {
+		size_t n = rt->dbg->functions.cnt;
+		for (size_t i = 0; i < n; ++i) {
 			if (position == result->start) {
 				return result;
 			}

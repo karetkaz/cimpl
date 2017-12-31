@@ -474,7 +474,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			}
 			if (ref == NULL) {
 				// int a = (3 + 6);
-				rType = typeCheck(cc, linkOf(ref), args, raise);
+				rType = typeCheck(cc, linkOf(ref, 1), args, raise);
 				convert(cc, args, rType);
 				convert(cc, ast, rType);
 				ast->type = rType;
@@ -494,7 +494,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 					traceAst(ast);
 					return NULL;
 				}
-				loc = linkOf(ref->op.lhso);
+				loc = linkOf(ref->op.lhso, 1);
 				ref->type = cc->type_fun;
 				ref = ref->op.rhso;
 			}
@@ -504,7 +504,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				lType = typeCheck(cc, loc, ref, 0);
 
 				// typename(identifier): returns null if identifier is not defined.
-				if (lType == cc->type_rec && linkOf(ref) == cc->type_rec) {
+				if (lType == cc->type_rec && linkOf(ref, 1) == cc->type_rec) {
 					if (args->kind == TOKEN_var) {
 						char *name = cc->type_rec->name;
 						size_t len = strlen(name);
@@ -519,7 +519,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 					}
 				}
 				// lookup arguments in the function's scope (emit, raise, ...)
-				rType = typeCheck(cc, linkOf(ref), args, raise);
+				rType = typeCheck(cc, linkOf(ref, 1), args, raise);
 			}
 			if (rType == NULL) {
 				// FIXME: error: could not lookup arguments ...
@@ -538,7 +538,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 
 		case OPER_dot:
 			lType = typeCheck(cc, loc, ast->op.lhso, raise);
-			loc = linkOf(ast->op.lhso);
+			loc = linkOf(ast->op.lhso, 1);
 			if (loc == NULL) {
 				traceAst(ast);
 				return NULL;
@@ -754,7 +754,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 		case ASGN_set:		// ':='
 			lType = typeCheck(cc, loc, ast->op.lhso, raise);
 			rType = typeCheck(cc, NULL, ast->op.rhso, raise);
-			sym = linkOf(ast->op.lhso);
+			sym = linkOf(ast->op.lhso, 1);
 
 			if (!lType || !rType || !sym) {
 				traceAst(ast);
@@ -787,7 +787,6 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			return type;
 	}
 
-	//error(cc->rt, ast->file, ast->line, ERR_INVALID_OPERATOR = "invalid operator %.t(%T, %T)", ast, lType, rType);
 	fatal(ERR_INTERNAL_ERROR": unimplemented: %.t (%T, %T): %t", ast, lType, rType, ast);
 	return NULL;
 }
@@ -849,7 +848,7 @@ symn initCheck(ccContext cc, symn var, int raise) {
 
 ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	symn typ = isTypename(var) ? var : var->type;
-	symn lnk = linkOf(val);
+	symn lnk = linkOf(val, 1);
 	ccKind varCast;
 
 	dieif(!var, ERR_INTERNAL_ERROR);
@@ -912,7 +911,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	if (typ != var) {
 		// assigning a function
 		if (var->params != NULL) {
-			symn fun = linkOf(val);
+			symn fun = linkOf(val, 1);
 			symn arg1 = var->params;
 			symn arg2 = NULL;
 			struct astNode temp;
@@ -1005,7 +1004,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 		return castOf(typ);
 	}
 
-	trace("%?s:%?u: %T := %T(%t)", val->file, val->line, var, val->type, val);
+	debug("%?s:%?u: %T := %T(%t)", val->file, val->line, var, val->type, val);
 	return CAST_any;
 }
 

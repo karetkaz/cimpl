@@ -178,7 +178,7 @@ emit.max.p2d
 halt(): void
 CLOCKS_PER_SEC
 RAND_MAX
-raise(level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 raise.abort
 raise.error
 raise.warn
@@ -196,6 +196,8 @@ System.time(): int32
 System.clock(): int32
 System.millis(): int64
 System.sleep(millis: int64): void
+verbose(message: char[*], inspect: variant): void
+verbose(message: char[*]): void
 trace(message: char[*], inspect: variant): void
 trace(message: char[*]): void
 debug(message: char[*], inspect: variant): void
@@ -212,3 +214,4 @@ abort(): void
 assert(condition: bool, message: char[*], inspect: variant): void
 assert(condition: bool, message: char[*]): void
 assert(condition: bool): void
+sizeof(type: typename): int32

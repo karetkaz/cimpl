@@ -19,7 +19,7 @@ const char **escapeStr() {
 	static const char *escape[256];
 	static char initialized = 0;
 	if (!initialized) {
-		memset(escape, 0, sizeof(escape));
+		memset((void*)escape, 0, sizeof(escape));
 		escape['\n'] = "\\n";
 		escape['\r'] = "\\r";
 		escape['\t'] = "\\t";
@@ -1107,47 +1107,39 @@ void printFmt(FILE *out, const char **esc, const char *fmt, ...) {
 }
 
 void printErr(rtContext rt, int level, const char *file, int line, const char *msg, ...) {
-	int warnLevel = rt && rt->cc ? rt->cc->warn : 0;
-	FILE *logFile = rt ? rt->logFile : stdout;
+	FILE *out = rt->logFile;
 	const char **esc = NULL;
 
 	va_list vaList;
 
-	if (level >= 0) {
-		if (warnLevel < 0) {
-			level = warnLevel;
-		}
-		if (level > warnLevel) {
-			return;
-		}
+	if (level > (int)rt->warnLevel) {
+		return;
 	}
-	else if (rt != NULL) {
+	if (level < 0) {
 		rt->errors += 1;
 	}
-
-	if (logFile == NULL) {
+	if (out == NULL) {
 		return;
 	}
 
-	if (rt && rt->cc && file == NULL) {
-		file = rt->cc->file;
-	}
-
 	if (file != NULL && line > 0) {
-		printFmt(logFile, esc, "%?s:%?u: ", file, line);
+		printFmt(out, esc, "%?s:%?u: ", file, line);
 	}
 
-	if (level > 0) {
-		printFmt(logFile, esc, "warning[%d]: ", level);
+	if (level < 0) {
+		printStr(out, esc, "error: ");
 	}
-	else if (level) {
-		printStr(logFile, esc, "error: ");
+	else if (level > 0) {
+		printFmt(out, esc, "warn[%d]: ", level);
+	}
+	else {
+		//printStr(out, esc, "info: ");
 	}
 
 	va_start(vaList, msg);
-	print_fmt(logFile, NULL, msg, vaList);
-	printChr(logFile, '\n');
-	fflush(logFile);
+	print_fmt(out, NULL, msg, vaList);
+	printChr(out, '\n');
+	fflush(out);
 	va_end(vaList);
 }
 

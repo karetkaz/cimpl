@@ -1,7 +1,7 @@
 // test inline arguments
 
 inline zero(int a, int b) = 0;	// params not used at all
-inline last(int a, int b) = (b);	// only one param used // FIXME: inline last(int a, int b) = b;
+inline last(int a, int b) = b;	// only one param used
 inline sum(int a, int b) = a + b;	// both param used once
 inline any(int a, int b) = a ? a : b;	// one param used 2x, the other once
 inline min(int a, int b) = a < b ? a : b;	// both param used 2x
@@ -9,6 +9,9 @@ inline min(int a, int b) = a < b ? a : b;	// both param used 2x
 inline sum(int a, int b, int c) = sum(sum(a, b), c);
 inline any(int a, int b, int c) = any(any(a, b), c);
 inline min(int a, int b, int c) = min(min(a, b), c);
+//inline sum(int a, int b, int c) = sum(a, sum(b, c));
+//inline any(int a, int b, int c) = any(a, any(b, c));
+//inline min(int a, int b, int c) = min(a, min(b, c));
 
 int ma = 3;
 int mb = 6;
@@ -34,7 +37,7 @@ int min2Val = min(3, 12);
 int min2Var = min(ma, mb);
 int min2Xpr = min(ma + mb, mb + mc);
 
-// FIXME: genAst: Internal Error
+// FIXME: genAst: Internal Error (not able to inline recursively the parameters)
 //int sum3Val = sum(3, 2, 6);
 //int sum3Var = sum(ma, mb, mc);
 //int sum3Xpr = sum(ma + mb, mb + mc, mc + ma);

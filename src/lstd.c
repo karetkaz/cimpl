@@ -328,7 +328,7 @@ static vmError sysRaise(nfcContext ctx) {
 	int isOutput = 0;
 
 	// logging is disabled or log level not reached.
-	if (rt->logFile == NULL || logLevel > rt->logLevel) {
+	if (rt->logFile == NULL || logLevel > (int)rt->logLevel) {
 		return noError;
 	}
 

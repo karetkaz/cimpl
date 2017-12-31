@@ -37,7 +37,7 @@ while the upper part is filled with token structures and other
 temporary data, that will be overwritten on code execution.
 
 # Instruction set
-[TODO: documentation]  
+[TODO: documentation]
 
 ## Instruction nop
 Perform no operation.
