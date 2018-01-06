@@ -216,13 +216,11 @@ function Inspector(data) {
 			result += sym.name;
 			if (sym.args !== undefined) {
 				result += '(';
-				if (!(sym.args.length === 1 && sym.args[0].size == 0)) {
-					for (var i = 0; i < sym.args.length; i += 1) {
-						if (i > 0) {
-							result += ', ';
-						}
-						result += symToString(sym.args[i], false, true);
+				for (var i = 0; i < sym.args.length; i += 1) {
+					if (i > 0) {
+						result += ', ';
 					}
+					result += symToString(sym.args[i], false, true);
 				}
 				result += ')';
 			}

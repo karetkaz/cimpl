@@ -1223,6 +1223,11 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 	const memptr mp = (void*)rt->_mem;
 	const stkptr st = (void*)(pu->bp + pu->ss);
 
+	if (fun == NULL || fun->offs == 0) {
+		error(rt, NULL, 0, ERR_EXEC_FUNCTION, fun);
+		return invalidIP;
+	}
+
 	// run in debug or profile mode
 	if (rt->dbg != NULL) {
 		const void *oldTP = pu->tp;

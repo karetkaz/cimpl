@@ -433,7 +433,7 @@
 			</init>
 		</stmt>
 	</stmt>
-	<stmt token="{}" type="void" kind="static const typename(void)" file="test.ci:4">
+	<stmt token="{}" type="void" kind="static const typename(void)" file="test.ci:67">
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="integer">
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="int64">
 				<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
@@ -1926,30 +1926,10 @@
 						</right>
 					</test>
 					<then token="{}" type="void" kind="static const typename(void)" file="extras/Tests/lang.function.ci:40">
-						<stmt token="if" type="void" kind="static const typename(void)" stmt="if (n &lt;= (0))">
-							<test token="&lt;=" type="bool" kind="static const typename(bool)" value="n &lt;= (0)">
-								<left token=".variable" type="uint32" kind="static const typename(u32)" value="n" />
-								<right token="()" type="uint32" kind="static const typename(u32)" value="(0)">
-									<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-								</right>
-							</test>
-							<then token="{}" type="void" kind="static const typename(void)" file="extras/Tests/lang.function.ci:41">
-								<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := (0);">
-									<expr token=":=" type="uint32" kind="static const typename(u32)" value=".result := (0)">
-										<left token=".variable" type="uint32" kind="static const typename(u32)" value=".result" />
-										<right token="()" type="uint32" kind="static const typename(u32)" value="(0)">
-											<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-										</right>
-									</expr>
-								</stmt>
-							</then>
-						</stmt>
-						<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := (1);">
-							<expr token=":=" type="uint32" kind="static const typename(u32)" value=".result := (1)">
+						<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := n;">
+							<expr token=":=" type="uint32" kind="static const typename(u32)" value=".result := n">
 								<left token=".variable" type="uint32" kind="static const typename(u32)" value=".result" />
-								<right token="()" type="uint32" kind="static const typename(u32)" value="(1)">
-									<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
-								</right>
+								<right token=".variable" type="uint32" kind="static const typename(u32)" value="n" />
 							</expr>
 						</stmt>
 					</then>
@@ -5528,35 +5508,201 @@
 				</stmt>
 			</then>
 		</stmt>
-		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="localNoInit" />
-		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="globalNoInit" />
-		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="localInitValue">
-			<init token=".literal" type="int32" kind="static const typename(i32)" value="42" />
+		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+			<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
 		</stmt>
-		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="globalInitValue">
-			<init token=".literal" type="int32" kind="static const typename(i32)" value="1024" />
+		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="globalInitCounter1">
+			<init token=":=" type="int64" kind="static const typename(i64)" value="globalCounter := globalCounter + (1)">
+				<left token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
+				</left>
+				<right token="+" type="int64" kind="static const typename(i64)" value="globalCounter + (1)">
+					<left token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
+					</left>
+					<right token="()" type="int64" kind="static const typename(i64)" value="(1)">
+						<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+					</right>
+				</right>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="Record" />
+		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="globalInitCounter2">
+			<init token=":=" type="int64" kind="static const typename(i64)" value="globalCounter := globalCounter + (1)">
+				<left token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
+				</left>
+				<right token="+" type="int64" kind="static const typename(i64)" value="globalCounter + (1)">
+					<left token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
+					</left>
+					<right token="()" type="int64" kind="static const typename(i64)" value="(1)">
+						<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+					</right>
+				</right>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="initMethod(getRecord: bool): int64">
+			<init token="{}" type="void" kind="static const typename(void)" file="extras/Tests/lang.varInitByVal.ci:71">
+				<stmt token=".variable" type="function" kind="static const typename(ref)" value="initInner(getRecord: bool): int64">
+					<init token="{}" type="void" kind="static const typename(void)" file="extras/Tests/lang.varInitByVal.ci:73">
+						<stmt token=".variable" type="int32" kind="static const typename(i32)" value="global">
+							<init token=":=" type="int64" kind="static const typename(i64)" value="globalCounter := globalCounter + (1)">
+								<left token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+									<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
+								</left>
+								<right token="+" type="int64" kind="static const typename(i64)" value="globalCounter + (1)">
+									<left token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+										<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
+									</left>
+									<right token="()" type="int64" kind="static const typename(i64)" value="(1)">
+										<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+									</right>
+								</right>
+							</init>
+						</stmt>
+						<stmt token=".variable" type="typename" kind="static const typename(ref)" value="Record" />
+						<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := (getRecord ? Record.global : global);">
+							<expr token=":=" type="int64" kind="static const typename(i64)" value=".result := (getRecord ? Record.global : global)">
+								<left token=".variable" type="int64" kind="static const typename(i64)" value=".result" />
+								<right token="()" type="int64" kind="static const typename(i64)" value="(getRecord ? Record.global : global)">
+									<push token="?:" type="int32" kind="static const typename(i32)" value="getRecord ? Record.global : global">
+										<test token=".variable" type="bool" kind="static const typename(bool)" value="getRecord" />
+										<left token="." type="int32" kind="static const typename(i32)" value="Record.global">
+											<left token=".variable" type="typename" kind="static const typename(ref)" value="Record" />
+											<right token=".variable" type="int32" kind="static const typename(i32)" value="global" />
+										</left>
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="global" />
+									</push>
+								</right>
+							</expr>
+						</stmt>
+					</init>
+				</stmt>
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := initInner(getRecord);">
+					<expr token=":=" type="int64" kind="static const typename(i64)" value=".result := initInner(getRecord)">
+						<left token=".variable" type="int64" kind="static const typename(i64)" value=".result" />
+						<right token="()" type="int64" kind="static const typename(i64)" value="initInner(getRecord)">
+							<push token=".variable" type="bool" kind="static const typename(bool)" value="getRecord" />
+							<call token=".variable" type="function" kind="static const typename(ref)" value="initInner" />
+						</right>
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="localNoInit" />
+		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="localInitGlobal">
+			<init token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+				<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="localInitCounter">
+			<init token=":=" type="int64" kind="static const typename(i64)" value="globalCounter := globalCounter + (1)">
+				<left token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
+				</left>
+				<right token="+" type="int64" kind="static const typename(i64)" value="globalCounter + (1)">
+					<left token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
+					</left>
+					<right token="()" type="int64" kind="static const typename(i64)" value="(1)">
+						<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+					</right>
+				</right>
+			</init>
 		</stmt>
 		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="localInitLocal">
-			<init token=".variable" type="int64" kind="static const typename(i64)" value="localInitValue">
-				<init token=".literal" type="int32" kind="static const typename(i32)" value="42" />
+			<init token=".variable" type="int64" kind="static const typename(i64)" value="localInitCounter">
+				<init token=":=" type="int64" kind="static const typename(i64)" value="globalCounter := globalCounter + (1)">
+					<left token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
+					</left>
+					<right token="+" type="int64" kind="static const typename(i64)" value="globalCounter + (1)">
+						<left token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+							<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
+						</left>
+						<right token="()" type="int64" kind="static const typename(i64)" value="(1)">
+							<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+						</right>
+					</right>
+				</init>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="globalInitLocal">
-			<init token=".variable" type="int64" kind="static const typename(i64)" value="localInitValue">
-				<init token=".literal" type="int32" kind="static const typename(i32)" value="42" />
-			</init>
-		</stmt>
-		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="localInitGlobal">
-			<init token=".variable" type="int64" kind="static const typename(i64)" value="globalInitValue">
-				<init token=".literal" type="int32" kind="static const typename(i32)" value="1024" />
+		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="globalNoInit" />
+		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="globalInitCounter">
+			<init token=":=" type="int64" kind="static const typename(i64)" value="globalCounter := globalCounter + (1)">
+				<left token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
+				</left>
+				<right token="+" type="int64" kind="static const typename(i64)" value="globalCounter + (1)">
+					<left token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
+					</left>
+					<right token="()" type="int64" kind="static const typename(i64)" value="(1)">
+						<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+					</right>
+				</right>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="globalInitGlobal">
-			<init token=".variable" type="int64" kind="static const typename(i64)" value="globalInitValue">
-				<init token=".literal" type="int32" kind="static const typename(i32)" value="1024" />
+			<init token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+				<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
 			</init>
 		</stmt>
-		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="InitMember" />
+		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="localInitMethodGlobal">
+			<init token="()" type="int64" kind="static const typename(i64)" value="initMethod(false)">
+				<push token=".variable" type="bool" kind="static const typename(bool)" value="false">
+					<init token=".literal" type="bool" kind="static const typename(bool)" value="0" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="initMethod" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int64" kind="static const typename(i64)" value="localInitMethodRecordGlobal">
+			<init token="()" type="int64" kind="static const typename(i64)" value="initMethod(true)">
+				<push token=".variable" type="bool" kind="static const typename(bool)" value="true">
+					<init token=".literal" type="bool" kind="static const typename(bool)" value="1" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="initMethod" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="Record" kind="static const typename(val)" value="localObject" />
+		<stmt token=".variable" type="Record" kind="static const typename(val)" value="globalObject" />
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="localStaticCallStaticMethod">
+			<init token="()" type="int32" kind="static const typename(i32)" value="Record.staticMethod(2, 5)">
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="5" />
+				<call token="." type="function" kind="static const typename(ref)" value="Record.staticMethod">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Record" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="staticMethod" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="localStaticCallForwardMethod">
+			<init token="()" type="int32" kind="static const typename(i32)" value="Record.forwardMethod(2, 6)">
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="6" />
+				<call token="." type="function" kind="static const typename(ref)" value="Record.forwardMethod">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Record" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="forwardMethod" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="assert(globalCounter == (33 + 8));">
+			<expr token="()" type="void" kind="static const typename(void)" value="assert(globalCounter == (33 + 8))">
+				<push token="==" type="bool" kind="static const typename(bool)" value="globalCounter == (33 + 8)">
+					<left token=".variable" type="int64" kind="static const typename(i64)" value="globalCounter">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="33" />
+					</left>
+					<right token="()" type="int64" kind="static const typename(i64)" value="(33 + 8)">
+						<push token="+" type="int32" kind="static const typename(i32)" value="33 + 8">
+							<left token=".literal" type="int32" kind="static const typename(i32)" value="33" />
+							<right token=".literal" type="int32" kind="static const typename(i32)" value="8" />
+						</push>
+					</right>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="assert" />
+			</expr>
+		</stmt>
 		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="pi64">
 			<init token=".literal" type="float64" kind="static const typename(f64)" value="3.141593" />
 		</stmt>

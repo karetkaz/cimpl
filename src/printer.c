@@ -1149,9 +1149,15 @@ void dumpApi(rtContext rt, userContext ctx, void customPrinter(userContext, symn
 
 	// compilation errors or compiler was not initialized.
 	if (rt->cc == NULL || rt->main == NULL) {
+		dieif(rt->cc == NULL, ERR_INTERNAL_ERROR);
+		dieif(rt->main == NULL, ERR_INTERNAL_ERROR);
 		return;
 	}
-	dieif(rt->errors || rt->cc->scope != rt->main->fields, ERR_INTERNAL_ERROR);
+	if (rt->errors > 0 || rt->cc->scope != rt->main->fields) {
+		dieif(rt->errors > 0, ERR_INTERNAL_ERROR);
+		dieif(rt->cc->scope != rt->main->fields, ERR_INTERNAL_ERROR);
+		return;
+	}
 	for (*sp = rt->main->fields; sp >= bp;) {
 		if (!(sym = *sp)) {
 			--sp;

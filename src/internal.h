@@ -688,11 +688,12 @@ void closeLibs();
 
 // Code execution errors
 #define ERR_EXEC_INSTRUCTION "%s at .%06x in function: <%?.T%?+d> executing instruction: %.A"
+#define ERR_EXEC_FUNCTION "can not execute function: %T"
 
 #define WARN_EMPTY_STATEMENT "empty statement `;`."
 #define WARN_USE_BLOCK_STATEMENT "statement should be a block statement {%t}."
 #define WARN_EXPRESSION_STATEMENT "expression statement expected, got: `%t`"
-#define WARN_VARIANT_TO_REF "converting `%T` to reference discards type information"
+#define WARN_VARIANT_TO_REF "converting `%T` to reference or pointer discards type information"
 #define WARN_LOCAL_MIGHT_ESCAPE "local variable `%t` can not be referenced outside of its scope"
 #define WARN_PASS_ARG_NO_CAST "argument `%t` is passed to emit without cast as `%T`"
 #define WARN_SHORT_CIRCUIT "operators `&&` and `||` does not short-circuit yet"

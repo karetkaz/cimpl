@@ -134,10 +134,10 @@ struct rtContextRec {
 		void *cell;		// execution units
 		void *heap;		// heap memory
 
-		size_t pc;			// exec: entry point / cgen: prev program counter
-		size_t px;			// exec: exit point / cgen: program counter
+		size_t pc;			// exec: entry point / cgen: program counter
+		size_t px;			// exec: exit point / cgen: -
 
-		size_t ro;			// exec: read only memory / cgen: function parameters
+		size_t ro;			// exec: read only memory / cgen: -
 		size_t ss;			// exec: stack size / cgen: stack size
 
 		size_t sm;			// exec: - / cgen: minimum stack size

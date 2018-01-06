@@ -201,7 +201,11 @@ int testOcp(rtContext rt, size_t offs, vmOpcode opc, vmValue *arg);
  * @param arg Integer argument.
  * @return Program counter.
  */
-size_t emitInt(rtContext, vmOpcode opc, int64_t arg);
+static inline size_t emitInt(rtContext rt, vmOpcode opc, int64_t value) {
+	vmValue arg;
+	arg.i64 = value;
+	return emitOpc(rt, opc, arg);
+}
 
 /**
  * @brief Fix a jump instruction.

@@ -2030,7 +2030,7 @@ integer: typename {
 .size: 0
 .name: 'integer'
 .file: 'test.ci'
-.line: 4
+.line: 67
 .value: int64
 }
 t: int32 {
@@ -3548,7 +3548,7 @@ funMul(x: int32, y: int32): int32: function {
 fib(n: uint32): uint32: function {
 .kind: static const function
 .base: `function`
-.size: 86
+.size: 63
 .name: 'fib'
 .file: 'extras/Tests/lang.function.ci'
 .line: 39
@@ -3556,33 +3556,21 @@ fib(n: uint32): uint32: function {
 .param n: uint32 (size: 4 -> variable(u32))
 .value: {
 	if (n <= (1)) {
-		if (n <= (0)) {
-			return .result := (0);
-		}
-		return .result := (1);
+		return .result := n;
 	}
 	return .result := fib(n - (1)) + fib(n - (2));
 }
-.instructions: [86 bytes]
-	extras/Tests/lang.function.ci:40: (40 bytes): if (n <= (1))
+.instructions: [63 bytes]
+	extras/Tests/lang.function.ci:40: (17 bytes): if (n <= (1))
 	<fib+?>:    dup.x1 sp(1)
 	<fib+?>:    load.c32 1
 	<fib+?>:    cgt.u32
 	<fib+?>:    jnz <fib+?>
-	extras/Tests/lang.function.ci:41: (20 bytes): if (n <= (0))
+	extras/Tests/lang.function.ci:41: (5 bytes): return .result := n;
 	<fib+?>:    dup.x1 sp(1)
-	<fib+?>:    load.c32 0
-	<fib+?>:    cgt.u32
-	<fib+?>:    jnz <fib+?>
-	extras/Tests/lang.function.ci:42: (8 bytes): return .result := (0);
-	<fib+?>:    load.c32 0
 	<fib+?>:    set.x1 sp(3)
 	<fib+?>:    ret
-	extras/Tests/lang.function.ci:44: (8 bytes): return .result := (1);
-	<fib+?>:    load.c32 1
-	<fib+?>:    set.x1 sp(3)
-	<fib+?>:    ret
-	extras/Tests/lang.function.ci:46: (46 bytes): return .result := fib(n - (1)) + fib(n - (2));
+	extras/Tests/lang.function.ci:43: (46 bytes): return .result := fib(n - (1)) + fib(n - (2));
 	<fib+?>:    load.c32 0
 	<fib+?>:    dup.x1 sp(2)
 	<fib+?>:    inc.i32(-1)
@@ -3605,7 +3593,7 @@ fibonacci_13: uint32 {
 .size: 4
 .name: 'fibonacci_13'
 .file: 'extras/Tests/lang.function.ci'
-.line: 50
+.line: 47
 .value: fib(13)
 }
 a: typename {
@@ -6692,57 +6680,267 @@ copyVarFloat64: pointer {
 .line: 108
 .value: varFloat64
 }
+globalCounter: int64 {
+.kind: static variable(i64)
+.base: `int64`
+.size: 8
+.name: 'globalCounter'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 7
+.value: 33
+}
+globalInitCounter1: int64 {
+.kind: static variable(i64)
+.base: `int64`
+.size: 8
+.name: 'globalInitCounter1'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 9
+.value: globalCounter := globalCounter + (1)
+}
+Record: typename {
+.kind: static const typename(val)
+.base: `typename`
+.size: 32
+.name: 'Record'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 12
+.field member: int32 (size: 4 -> variable(i32))
+.field memberInit: int32 (size: 4 -> variable(i32))
+.field memberConstant: int32 (size: 4 -> const variable(i32))
+.field memberConstantInit: int32 (size: 4 -> const variable(i32))
+.field global: int32 (size: 4 -> static variable(i32))
+.field globalConstant: int32 (size: 4 -> static const variable(i32))
+.field staticMethod: function (size: 8 -> static const function)
+.field forwardMethod: function (size: 4 -> static variable(ref))
+.field virtualMethod: function (size: 4 -> variable(ref))
+.field virtualMethod: function (size: 8 -> static const function)
+.field abstractMethod: function (size: 4 -> variable(ref))
+.field methodReference: function (size: 4 -> variable(ref))
+.field forwardMethod: function (size: 8 -> static const function)
+}
+Record.member: int32 {
+.kind: variable(i32)
+.base: `int32`
+.size: 4
+.name: 'member'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 15
+.owner: Record
+}
+Record.memberInit: int32 {
+.kind: variable(i32)
+.base: `int32`
+.size: 4
+.name: 'memberInit'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 19
+.owner: Record
+.value: 42
+}
+Record.memberConstant: int32 {
+.kind: const variable(i32)
+.base: `int32`
+.size: 4
+.name: 'memberConstant'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 24
+.owner: Record
+}
+Record.memberConstantInit: int32 {
+.kind: const variable(i32)
+.base: `int32`
+.size: 4
+.name: 'memberConstantInit'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 29
+.owner: Record
+.value: 43
+}
+Record.global: int32 {
+.kind: static variable(i32)
+.base: `int32`
+.size: 4
+.name: 'global'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 33
+.owner: Record
+.value: globalCounter := globalCounter + (1)
+}
+Record.globalConstant: int32 {
+.kind: static const variable(i32)
+.base: `int32`
+.size: 4
+.name: 'globalConstant'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 38
+.owner: Record
+.value: globalCounter := globalCounter + (1)
+}
+Record.staticMethod(x: int32, y: int32): int32: function {
+.kind: static const function
+.base: `function`
+.size: 8
+.name: 'staticMethod'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 41
+.owner: Record
+.param .result: int32 (size: 4 -> variable(i32))
+.param x: int32 (size: 4 -> variable(i32))
+.param y: int32 (size: 4 -> variable(i32))
+.value: {
+	return .result := x + y;
+}
+.instructions: [8 bytes]
+	extras/Tests/lang.varInitByVal.ci:42: (8 bytes): return .result := x + y;
+	<staticMethod+?>:    dup.x1 sp(2)
+	<staticMethod+?>:    dup.x1 sp(2)
+	<staticMethod+?>:    add.i32
+	<staticMethod+?>:    set.x1 sp(4)
+	<staticMethod+?>:    ret
+}
+Record.forwardMethod(x: int32, y: int32): int32: function {
+.kind: static variable(ref)
+.base: `function`
+.size: 4
+.name: 'forwardMethod'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 46
+.owner: Record
+.param .result: int32 (size: 4 -> variable(i32))
+.param x: int32 (size: 4 -> variable(i32))
+.param y: int32 (size: 4 -> variable(i32))
+.value: forwardMethod
+}
+Record.virtualMethod(x: int32, y: int32): int32: function {
+.kind: variable(ref)
+.base: `function`
+.size: 4
+.name: 'virtualMethod'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 49
+.owner: Record
+.param .result: int32 (size: 4 -> variable(i32))
+.param x: int32 (size: 4 -> variable(i32))
+.param y: int32 (size: 4 -> variable(i32))
+.value: virtualMethod
+}
+Record.virtualMethod(x: int32, y: int32): int32: function {
+.kind: static const function
+.base: `function`
+.size: 8
+.name: 'virtualMethod'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 52
+.owner: Record
+.param .result: int32 (size: 4 -> variable(i32))
+.param x: int32 (size: 4 -> variable(i32))
+.param y: int32 (size: 4 -> variable(i32))
+.value: {
+	return .result := x * y;
+}
+.instructions: [8 bytes]
+	extras/Tests/lang.varInitByVal.ci:53: (8 bytes): return .result := x * y;
+	<virtualMethod+?>:    dup.x1 sp(2)
+	<virtualMethod+?>:    dup.x1 sp(2)
+	<virtualMethod+?>:    mul.i32
+	<virtualMethod+?>:    set.x1 sp(4)
+	<virtualMethod+?>:    ret
+}
+Record.abstractMethod(x: int32, y: int32): int32: function {
+.kind: variable(ref)
+.base: `function`
+.size: 4
+.name: 'abstractMethod'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 58
+.owner: Record
+.param .result: int32 (size: 4 -> variable(i32))
+.param x: int32 (size: 4 -> variable(i32))
+.param y: int32 (size: 4 -> variable(i32))
+}
+Record.methodReference(x: int32, y: int32): int32: function {
+.kind: variable(ref)
+.base: `function`
+.size: 4
+.name: 'methodReference'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 61
+.owner: Record
+.param .result: int32 (size: 4 -> variable(i32))
+.param x: int32 (size: 4 -> variable(i32))
+.param y: int32 (size: 4 -> variable(i32))
+.value: staticMethod
+}
+Record.forwardMethod(x: int32, y: int32): int32: function {
+.kind: static const function
+.base: `function`
+.size: 8
+.name: 'forwardMethod'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 64
+.owner: Record
+.param .result: int32 (size: 4 -> variable(i32))
+.param x: int32 (size: 4 -> variable(i32))
+.param y: int32 (size: 4 -> variable(i32))
+.value: {
+	return .result := x * y;
+}
+.instructions: [8 bytes]
+	extras/Tests/lang.varInitByVal.ci:65: (8 bytes): return .result := x * y;
+	<forwardMethod+?>:    dup.x1 sp(2)
+	<forwardMethod+?>:    dup.x1 sp(2)
+	<forwardMethod+?>:    mul.i32
+	<forwardMethod+?>:    set.x1 sp(4)
+	<forwardMethod+?>:    ret
+}
+globalInitCounter2: int64 {
+.kind: static variable(i64)
+.base: `int64`
+.size: 8
+.name: 'globalInitCounter2'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 69
+.value: globalCounter := globalCounter + (1)
+}
+initMethod(getRecord: bool): int64: function {
+.kind: static const function
+.base: `function`
+.size: 27
+.name: 'initMethod'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 71
+.param .result: int64 (size: 8 -> variable(i64))
+.param getRecord: bool (size: 4 -> variable(bool))
+.value: {
+	static const initInner(getRecord: bool): int64 := {
+		static global: int32 := globalCounter := globalCounter + (1);
+		static const Record: struct {
+			static global: int32 := (globalCounter := globalCounter + (1));
+		};
+		return .result := (getRecord ? Record.global : global);
+	}
+;
+	return .result := initInner(getRecord);
+}
+.instructions: [27 bytes]
+	extras/Tests/lang.varInitByVal.ci:86: (27 bytes): return .result := initInner(getRecord);
+	<initMethod+?>:    load.c64 0
+	<initMethod+?>:    load.sp(+12)
+	<initMethod+?>:    load.m8
+	<initMethod+?>:    load.ref .?????? ;initMethod.initInner(getRecord: bool): int64
+	<initMethod+?>:    call
+	<initMethod+?>:    inc.sp(-4)
+	<initMethod+?>:    set.x2 sp(4)
+	<initMethod+?>:    ret
+}
 localNoInit: int64 {
 .kind: variable(i64)
 .base: `int64`
 .size: 8
 .name: 'localNoInit'
 .file: 'extras/Tests/lang.varInitByVal.ci'
-.line: 7
-}
-globalNoInit: int64 {
-.kind: static variable(i64)
-.base: `int64`
-.size: 8
-.name: 'globalNoInit'
-.file: 'extras/Tests/lang.varInitByVal.ci'
-.line: 8
-}
-localInitValue: int64 {
-.kind: variable(i64)
-.base: `int64`
-.size: 8
-.name: 'localInitValue'
-.file: 'extras/Tests/lang.varInitByVal.ci'
-.line: 9
-.value: 42
-}
-globalInitValue: int64 {
-.kind: static variable(i64)
-.base: `int64`
-.size: 8
-.name: 'globalInitValue'
-.file: 'extras/Tests/lang.varInitByVal.ci'
-.line: 10
-.value: 1024
-}
-localInitLocal: int64 {
-.kind: variable(i64)
-.base: `int64`
-.size: 8
-.name: 'localInitLocal'
-.file: 'extras/Tests/lang.varInitByVal.ci'
-.line: 11
-.value: localInitValue
-}
-globalInitLocal: int64 {
-.kind: static variable(i64)
-.base: `int64`
-.size: 8
-.name: 'globalInitLocal'
-.file: 'extras/Tests/lang.varInitByVal.ci'
-.line: 12
-.value: localInitValue
+.line: 89
 }
 localInitGlobal: int64 {
 .kind: variable(i64)
@@ -6750,8 +6948,43 @@ localInitGlobal: int64 {
 .size: 8
 .name: 'localInitGlobal'
 .file: 'extras/Tests/lang.varInitByVal.ci'
-.line: 13
-.value: globalInitValue
+.line: 90
+.value: globalCounter
+}
+localInitCounter: int64 {
+.kind: variable(i64)
+.base: `int64`
+.size: 8
+.name: 'localInitCounter'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 91
+.value: globalCounter := globalCounter + (1)
+}
+localInitLocal: int64 {
+.kind: variable(i64)
+.base: `int64`
+.size: 8
+.name: 'localInitLocal'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 92
+.value: localInitCounter
+}
+globalNoInit: int64 {
+.kind: static variable(i64)
+.base: `int64`
+.size: 8
+.name: 'globalNoInit'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 94
+}
+globalInitCounter: int64 {
+.kind: static variable(i64)
+.base: `int64`
+.size: 8
+.name: 'globalInitCounter'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 95
+.value: globalCounter := globalCounter + (1)
 }
 globalInitGlobal: int64 {
 .kind: static variable(i64)
@@ -6759,80 +6992,60 @@ globalInitGlobal: int64 {
 .size: 8
 .name: 'globalInitGlobal'
 .file: 'extras/Tests/lang.varInitByVal.ci'
-.line: 14
-.value: globalInitValue
+.line: 96
+.value: globalCounter
 }
-InitMember: typename {
-.kind: static const typename(val)
-.base: `typename`
-.size: 16
-.name: 'InitMember'
+localInitMethodGlobal: int64 {
+.kind: variable(i64)
+.base: `int64`
+.size: 8
+.name: 'localInitMethodGlobal'
 .file: 'extras/Tests/lang.varInitByVal.ci'
-.line: 17
-.field intMember: int32 (size: 4 -> variable(i32))
-.field intMemberDef: int32 (size: 4 -> variable(i32))
-.field intConstMember: int32 (size: 4 -> const variable(i32))
-.field intConstMemberDef: int32 (size: 4 -> const variable(i32))
-.field intGlobal: int32 (size: 4 -> static variable(i32))
-.field intConstant: int32 (size: 4 -> static const variable(i32))
+.line: 99
+.value: initMethod(false)
 }
-InitMember.intMember: int32 {
+localInitMethodRecordGlobal: int64 {
+.kind: variable(i64)
+.base: `int64`
+.size: 8
+.name: 'localInitMethodRecordGlobal'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 100
+.value: initMethod(true)
+}
+localObject: Record {
+.kind: variable(val)
+.base: `Record`
+.size: 32
+.name: 'localObject'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 102
+}
+globalObject: Record {
+.kind: static variable(val)
+.base: `Record`
+.size: 32
+.name: 'globalObject'
+.file: 'extras/Tests/lang.varInitByVal.ci'
+.line: 103
+}
+localStaticCallStaticMethod: int32 {
 .kind: variable(i32)
 .base: `int32`
 .size: 4
-.name: 'intMember'
+.name: 'localStaticCallStaticMethod'
 .file: 'extras/Tests/lang.varInitByVal.ci'
-.line: 20
-.owner: InitMember
+.line: 105
+.value: Record.staticMethod(2, 5)
 }
-InitMember.intMemberDef: int32 {
+localStaticCallForwardMethod: int32 {
 .kind: variable(i32)
 .base: `int32`
 .size: 4
-.name: 'intMemberDef'
+.name: 'localStaticCallForwardMethod'
 .file: 'extras/Tests/lang.varInitByVal.ci'
-.line: 24
-.owner: InitMember
-.value: 42
-}
-InitMember.intConstMember: int32 {
-.kind: const variable(i32)
-.base: `int32`
-.size: 4
-.name: 'intConstMember'
-.file: 'extras/Tests/lang.varInitByVal.ci'
-.line: 29
-.owner: InitMember
-}
-InitMember.intConstMemberDef: int32 {
-.kind: const variable(i32)
-.base: `int32`
-.size: 4
-.name: 'intConstMemberDef'
-.file: 'extras/Tests/lang.varInitByVal.ci'
-.line: 34
-.owner: InitMember
-.value: 43
-}
-InitMember.intGlobal: int32 {
-.kind: static variable(i32)
-.base: `int32`
-.size: 4
-.name: 'intGlobal'
-.file: 'extras/Tests/lang.varInitByVal.ci'
-.line: 38
-.owner: InitMember
-.value: 44
-}
-InitMember.intConstant: int32 {
-.kind: static const variable(i32)
-.base: `int32`
-.size: 4
-.name: 'intConstant'
-.file: 'extras/Tests/lang.varInitByVal.ci'
-.line: 43
-.owner: InitMember
-.value: 45
+.line: 106
+.value: Record.forwardMethod(2, 6)
 }
 pi64: float64 {
 .kind: variable(f64)
@@ -7284,7 +7497,7 @@ val2: int64 {
 .main(): void: function {
 .kind: static function
 .base: `function`
-.size: 5024
+.size: 5355
 .name: '.main'
 .print: '.main'
 .field typename: typename (size: 136 -> static const typename(ref))
@@ -7449,7 +7662,7 @@ val2: int64 {
 .field funMulRef: function (size: 4 -> variable(ref))
 .field funMulRefResult: int32 (size: 4 -> variable(i32))
 .field funMul: function (size: 8 -> static const function)
-.field fib: function (size: 86 -> static const function)
+.field fib: function (size: 63 -> static const function)
 .field fibonacci_13: uint32 (size: 4 -> variable(u32))
 .field a: typename (size: 0 -> inline)
 .field b: typename (size: 0 -> inline)
@@ -7794,15 +8007,24 @@ val2: int64 {
 .field typeOfValue: typename (size: 4 -> variable(ref))
 .field copyPtrFloat64: variant (size: 8 -> variable(var))
 .field copyVarFloat64: pointer (size: 4 -> variable(ref))
+.field globalCounter: int64 (size: 8 -> static variable(i64))
+.field globalInitCounter1: int64 (size: 8 -> static variable(i64))
+.field Record: typename (size: 32 -> static const typename(val))
+.field globalInitCounter2: int64 (size: 8 -> static variable(i64))
+.field initMethod: function (size: 27 -> static const function)
 .field localNoInit: int64 (size: 8 -> variable(i64))
-.field globalNoInit: int64 (size: 8 -> static variable(i64))
-.field localInitValue: int64 (size: 8 -> variable(i64))
-.field globalInitValue: int64 (size: 8 -> static variable(i64))
-.field localInitLocal: int64 (size: 8 -> variable(i64))
-.field globalInitLocal: int64 (size: 8 -> static variable(i64))
 .field localInitGlobal: int64 (size: 8 -> variable(i64))
+.field localInitCounter: int64 (size: 8 -> variable(i64))
+.field localInitLocal: int64 (size: 8 -> variable(i64))
+.field globalNoInit: int64 (size: 8 -> static variable(i64))
+.field globalInitCounter: int64 (size: 8 -> static variable(i64))
 .field globalInitGlobal: int64 (size: 8 -> static variable(i64))
-.field InitMember: typename (size: 16 -> static const typename(val))
+.field localInitMethodGlobal: int64 (size: 8 -> variable(i64))
+.field localInitMethodRecordGlobal: int64 (size: 8 -> variable(i64))
+.field localObject: Record (size: 32 -> variable(val))
+.field globalObject: Record (size: 32 -> static variable(val))
+.field localStaticCallStaticMethod: int32 (size: 4 -> variable(i32))
+.field localStaticCallForwardMethod: int32 (size: 4 -> variable(i32))
 .field pi64: float64 (size: 8 -> variable(f64))
 .field e64: float64 (size: 8 -> variable(f64))
 .field pi32: float32 (size: 4 -> variable(f32))
@@ -7851,11 +8073,9 @@ val2: int64 {
 .field p4: pointer (size: 4 -> variable(ref))
 .field val1: int64 (size: 8 -> variable(i64))
 .field val2: int64 (size: 8 -> variable(i64))
-.field .main: function (size: 5024 -> static function)
+.field .main: function (size: 5355 -> static function)
 .param .result: void (size: 0 -> variable)
 .value: {
-	static intGlobal: int32 := 44;
-	static const intConstant: int32 := 45;
 	{
 		static if (typename(raise) == function) {
 			verbose(message: char[*], inspect: variant): void := raise(raise.verbose, message, inspect, raise.noTrace);
@@ -8113,10 +8333,7 @@ val2: int64 {
 ;
 		static const fib(n: uint32): uint32 := {
 			if (n <= (1)) {
-				if (n <= (0)) {
-					return .result := (0);
-				}
-				return .result := (1);
+				return .result := n;
 			}
 			return .result := fib(n - (1)) + fib(n - (2));
 		}
@@ -8478,22 +8695,59 @@ val2: int64 {
 		static if (typename(int64) == null) {
 			integer: typename := int32;
 		}
-		localNoInit: int64;
-		static globalNoInit: int64;
-		localInitValue: int64 := 42;
-		static globalInitValue: int64 := 1024;
-		localInitLocal: int64 := localInitValue;
-		static globalInitLocal: int64 := localInitValue;
-		localInitGlobal: int64 := globalInitValue;
-		static globalInitGlobal: int64 := globalInitValue;
-		static const InitMember: struct {
-			intMember: int32;
-			intMemberDef: int32 := 42;
-			const intConstMember: int32;
-			const intConstMemberDef: int32 := 43;
-			static intGlobal: int32 := 44;
-			static const intConstant: int32 := 45;
+		static globalCounter: int64 := 33;
+		static globalInitCounter1: int64 := globalCounter := globalCounter + (1);
+		static const Record: struct {
+			member: int32;
+			memberInit: int32 := 42;
+			const memberConstant: int32;
+			const memberConstantInit: int32 := 43;
+			static global: int32 := (globalCounter := globalCounter + (1));
+			static const globalConstant: int32 := (globalCounter := globalCounter + (1));
+			static const staticMethod(x: int32, y: int32): int32 := {
+				return .result := x + y;
+			}
+;
+			static forwardMethod(x: int32, y: int32): int32 := forwardMethod;
+			virtualMethod(x: int32, y: int32): int32 := virtualMethod;
+			static const virtualMethod(x: int32, y: int32): int32 := {
+				return .result := x * y;
+			}
+;
+			abstractMethod(x: int32, y: int32): int32;
+			methodReference(x: int32, y: int32): int32 := staticMethod;
+			static const forwardMethod(x: int32, y: int32): int32 := {
+				return .result := x * y;
+			}
+;
 		};
+		static globalInitCounter2: int64 := globalCounter := globalCounter + (1);
+		static const initMethod(getRecord: bool): int64 := {
+			static const initInner(getRecord: bool): int64 := {
+				static global: int32 := (globalCounter := globalCounter + (1));
+				static const Record: struct {
+					static global: int32 := (globalCounter := globalCounter + (1));
+				};
+				return .result := (getRecord ? Record.global : global);
+			}
+;
+			return .result := initInner(getRecord);
+		}
+;
+		localNoInit: int64;
+		localInitGlobal: int64 := globalCounter;
+		localInitCounter: int64 := globalCounter := globalCounter + (1);
+		localInitLocal: int64 := localInitCounter;
+		static globalNoInit: int64;
+		static globalInitCounter: int64 := globalCounter := globalCounter + (1);
+		static globalInitGlobal: int64 := globalCounter;
+		localInitMethodGlobal: int64 := initMethod(false);
+		localInitMethodRecordGlobal: int64 := initMethod(true);
+		localObject: Record;
+		static globalObject: Record;
+		localStaticCallStaticMethod: int32 := Record.staticMethod(2, 5);
+		localStaticCallForwardMethod: int32 := Record.forwardMethod(2, 6);
+		assert(globalCounter == (33 + 8));
 		pi64: float64 := 3.141593;
 		e64: float64 := 2.718282;
 		pi32: float32 := pi64;
@@ -8557,13 +8811,75 @@ val2: int64 {
 		assert(5 == 5, "5 != 5");
 	}
 }
-.instructions: [5024 bytes]
-	extras/Tests/lang.varInitByVal.ci:38: (9 bytes): static intGlobal: int32 := 44;
-	<.main+?>:    load.c32 44
-	<.main+?>:    store.m32 .?????? ;InitMember.intGlobal
-	extras/Tests/lang.varInitByVal.ci:43: (9 bytes): static const intConstant: int32 := 45;
-	<.main+?>:    load.c32 45
-	<.main+?>:    store.m32 .?????? ;InitMember.intConstant
+.instructions: [5355 bytes]
+	extras/Tests/lang.varInitByRef.ci:7: (13 bytes): static value: int64 := 42
+	<.main+?>:    load.c64 42
+	<.main+?>:    store.m64 .?????? ;value
+	extras/Tests/lang.varInitByVal.ci:7: (13 bytes): static globalCounter: int64 := 33
+	<.main+?>:    load.c64 33
+	<.main+?>:    store.m64 .?????? ;globalCounter
+	extras/Tests/lang.varInitByVal.ci:9: (24 bytes): static globalInitCounter1: int64 := globalCounter := globalCounter + (1)
+	<.main+?>:    load.m64 .?????? ;globalCounter
+	<.main+?>:    load.c64 1
+	<.main+?>:    add.i64
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    store.m64 .?????? ;globalCounter
+	<.main+?>:    store.m64 .?????? ;globalInitCounter1
+	extras/Tests/lang.varInitByVal.ci:33: (25 bytes): static global: int32 := globalCounter := globalCounter + (1)
+	<.main+?>:    load.m64 .?????? ;globalCounter
+	<.main+?>:    load.c64 1
+	<.main+?>:    add.i64
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    store.m64 .?????? ;globalCounter
+	<.main+?>:    i64.2i32
+	<.main+?>:    store.m32 .?????? ;Record.global
+	extras/Tests/lang.varInitByVal.ci:38: (25 bytes): static const globalConstant: int32 := globalCounter := globalCounter + (1)
+	<.main+?>:    load.m64 .?????? ;globalCounter
+	<.main+?>:    load.c64 1
+	<.main+?>:    add.i64
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    store.m64 .?????? ;globalCounter
+	<.main+?>:    i64.2i32
+	<.main+?>:    store.m32 .?????? ;Record.globalConstant
+	extras/Tests/lang.varInitByVal.ci:46: (9 bytes): static forwardMethod(x: int32, y: int32): int32 := forwardMethod
+	<.main+?>:    load.ref .?????? ;Record.forwardMethod(x: int32, y: int32): int32
+	<.main+?>:    store.m32 .?????? ;Record.forwardMethod(x: int32, y: int32): int32
+	extras/Tests/lang.varInitByVal.ci:69: (24 bytes): static globalInitCounter2: int64 := globalCounter := globalCounter + (1)
+	<.main+?>:    load.m64 .?????? ;globalCounter
+	<.main+?>:    load.c64 1
+	<.main+?>:    add.i64
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    store.m64 .?????? ;globalCounter
+	<.main+?>:    store.m64 .?????? ;globalInitCounter2
+	extras/Tests/lang.varInitByVal.ci:76: (25 bytes): static global: int32 := globalCounter := globalCounter + (1)
+	<.main+?>:    load.m64 .?????? ;globalCounter
+	<.main+?>:    load.c64 1
+	<.main+?>:    add.i64
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    store.m64 .?????? ;globalCounter
+	<.main+?>:    i64.2i32
+	<.main+?>:    store.m32 .?????? ;initMethod.initInner.global
+	extras/Tests/lang.varInitByVal.ci:81: (25 bytes): static global: int32 := globalCounter := globalCounter + (1)
+	<.main+?>:    load.m64 .?????? ;globalCounter
+	<.main+?>:    load.c64 1
+	<.main+?>:    add.i64
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    store.m64 .?????? ;globalCounter
+	<.main+?>:    i64.2i32
+	<.main+?>:    store.m32 .?????? ;initMethod.initInner.Record.global
+	extras/Tests/lang.varInitByVal.ci:94: (13 bytes): static globalNoInit: int64
+	<.main+?>:    load.c64 0
+	<.main+?>:    store.m64 .?????? ;globalNoInit
+	extras/Tests/lang.varInitByVal.ci:95: (24 bytes): static globalInitCounter: int64 := globalCounter := globalCounter + (1)
+	<.main+?>:    load.m64 .?????? ;globalCounter
+	<.main+?>:    load.c64 1
+	<.main+?>:    add.i64
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    store.m64 .?????? ;globalCounter
+	<.main+?>:    store.m64 .?????? ;globalInitCounter
+	extras/Tests/lang.varInitByVal.ci:96: (8 bytes): static globalInitGlobal: int64 := globalCounter
+	<.main+?>:    load.m64 .?????? ;globalCounter
+	<.main+?>:    store.m64 .?????? ;globalInitGlobal
 	extras/Tests/lang.statementIf.ci:4: (39 bytes): raise(raise.debug, "0 == 0", null, 1);
 	<.main+?>:    load.ref .?????? ;"extras/Tests/lang.statementIf.ci"
 	<.main+?>:    load.c32 4
@@ -9112,7 +9428,7 @@ val2: int64 {
 	<.main+?>:    dup.x1 sp(3)
 	<.main+?>:    call
 	<.main+?>:    inc.sp(-8)
-	extras/Tests/lang.function.ci:50: (20 bytes): fibonacci_13: uint32 := fib(13)
+	extras/Tests/lang.function.ci:47: (20 bytes): fibonacci_13: uint32 := fib(13)
 	<.main+?>:    load.c32 0
 	<.main+?>:    load.c32 13
 	<.main+?>:    load.ref .?????? ;fib(n: uint32): uint32
@@ -10330,9 +10646,6 @@ val2: int64 {
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    load.c32 128
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	extras/Tests/lang.varInitByRef.ci:7: (13 bytes): static value: int64 := 42
-	<.main+?>:    load.c64 42
-	<.main+?>:    store.m64 .?????? ;value
 	extras/Tests/lang.varInitByRef.ci:8: (5 bytes): valueRef: int64 := value
 	<.main+?>:    load.ref .?????? ;value
 	extras/Tests/lang.varInitByRef.ci:9: (5 bytes): valuePtr: pointer := value
@@ -10519,26 +10832,62 @@ val2: int64 {
 	<.main+?>:    dup.x1 sp(65)
 	extras/Tests/lang.varInitByRef.ci:108: (2 bytes): copyVarFloat64: pointer := varFloat64
 	<.main+?>:    dup.x1 sp(35)
-	extras/Tests/lang.varInitByVal.ci:7: (9 bytes): localNoInit: int64
+	extras/Tests/lang.varInitByVal.ci:89: (9 bytes): localNoInit: int64
 	<.main+?>:    load.c64 0
-	extras/Tests/lang.varInitByVal.ci:8: (13 bytes): static globalNoInit: int64
-	<.main+?>:    load.c64 0
-	<.main+?>:    store.m64 .?????? ;globalNoInit
-	extras/Tests/lang.varInitByVal.ci:9: (9 bytes): localInitValue: int64 := 42
-	<.main+?>:    load.c64 42
-	extras/Tests/lang.varInitByVal.ci:10: (13 bytes): static globalInitValue: int64 := 1024
-	<.main+?>:    load.c64 1024
-	<.main+?>:    store.m64 .?????? ;globalInitValue
-	extras/Tests/lang.varInitByVal.ci:11: (2 bytes): localInitLocal: int64 := localInitValue
+	extras/Tests/lang.varInitByVal.ci:90: (4 bytes): localInitGlobal: int64 := globalCounter
+	<.main+?>:    load.m64 .?????? ;globalCounter
+	extras/Tests/lang.varInitByVal.ci:91: (20 bytes): localInitCounter: int64 := globalCounter := globalCounter + (1)
+	<.main+?>:    load.m64 .?????? ;globalCounter
+	<.main+?>:    load.c64 1
+	<.main+?>:    add.i64
 	<.main+?>:    dup.x2 sp(0)
-	extras/Tests/lang.varInitByVal.ci:12: (6 bytes): static globalInitLocal: int64 := localInitValue
-	<.main+?>:    dup.x2 sp(2)
-	<.main+?>:    store.m64 .?????? ;globalInitLocal
-	extras/Tests/lang.varInitByVal.ci:13: (4 bytes): localInitGlobal: int64 := globalInitValue
-	<.main+?>:    load.m64 .?????? ;globalInitValue
-	extras/Tests/lang.varInitByVal.ci:14: (8 bytes): static globalInitGlobal: int64 := globalInitValue
-	<.main+?>:    load.m64 .?????? ;globalInitValue
-	<.main+?>:    store.m64 .?????? ;globalInitGlobal
+	<.main+?>:    store.m64 .?????? ;globalCounter
+	extras/Tests/lang.varInitByVal.ci:92: (2 bytes): localInitLocal: int64 := localInitCounter
+	<.main+?>:    dup.x2 sp(0)
+	extras/Tests/lang.varInitByVal.ci:99: (24 bytes): localInitMethodGlobal: int64 := initMethod(false)
+	<.main+?>:    load.c64 0
+	<.main+?>:    load.c32 0
+	<.main+?>:    load.ref .?????? ;initMethod(getRecord: bool): int64
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-4)
+	extras/Tests/lang.varInitByVal.ci:100: (24 bytes): localInitMethodRecordGlobal: int64 := initMethod(true)
+	<.main+?>:    load.c64 0
+	<.main+?>:    load.c32 1
+	<.main+?>:    load.ref .?????? ;initMethod(getRecord: bool): int64
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-4)
+	extras/Tests/lang.varInitByVal.ci:102: (4 bytes): localObject: Record
+	<.main+?>:    inc.sp(+32)
+	extras/Tests/lang.varInitByVal.ci:105: (25 bytes): localStaticCallStaticMethod: int32 := Record.staticMethod(2, 5)
+	<.main+?>:    load.c32 0
+	<.main+?>:    load.c32 2
+	<.main+?>:    load.c32 5
+	<.main+?>:    load.ref .?????? ;Record.staticMethod(x: int32, y: int32): int32
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-8)
+	extras/Tests/lang.varInitByVal.ci:106: (24 bytes): localStaticCallForwardMethod: int32 := Record.forwardMethod(2, 6)
+	<.main+?>:    load.c32 0
+	<.main+?>:    load.c32 2
+	<.main+?>:    load.c32 6
+	<.main+?>:    load.m32 .?????? ;Record.forwardMethod(x: int32, y: int32): int32
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-8)
+	extras/Tests/lang.varInitByVal.ci:122: (62 bytes): assert(globalCounter == (33 + 8));
+	<.main+?>:    load.m64 .?????? ;globalCounter
+	<.main+?>:    load.c32 33
+	<.main+?>:    inc.i32(+8)
+	<.main+?>:    i32.2i64
+	<.main+?>:    ceq.i64
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"extras/Tests/lang.varInitByVal.ci"
+	<.main+?>:    load.c32 122
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    load.c32 128
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
 	extras/Tests/stdc.nfcNumber.ci:3: (9 bytes): pi64: float64 := 3.141593
 	<.main+?>:    load.f64 3.141593
 	extras/Tests/stdc.nfcNumber.ci:4: (9 bytes): e64: float64 := 2.718282
@@ -10906,13 +11255,13 @@ extras/Tests/lang.reflection.ci:48: typeofBase2: typename(typename)
 extras/Tests/lang.reflection.ci:49: offsetOfBase2: int32(8)
 extras/Tests/lang.reflection.ci:50: sizeOfBase2: int32(136)
 extras/Tests/lang.function.ci:13: funAddResult: int32(9)
-extras/Tests/lang.function.ci:16: funAddRef: function(<funAdd @024821>)
+extras/Tests/lang.function.ci:16: funAddRef: function(<funAdd @026118>)
 extras/Tests/lang.function.ci:19: funAddRefResult: int32(10)
-extras/Tests/lang.function.ci:22: funMul: function(<funMul @024829>)
+extras/Tests/lang.function.ci:22: funMul: function(<funMul @026120>)
 extras/Tests/lang.function.ci:25: funMulResult: int32(12)
-extras/Tests/lang.function.ci:28: funMulRef: function(<funMul @024829>)
+extras/Tests/lang.function.ci:28: funMulRef: function(<funMul @026120>)
 extras/Tests/lang.function.ci:31: funMulRefResult: int32(14)
-extras/Tests/lang.function.ci:50: fibonacci_13: uint32(233)
+extras/Tests/lang.function.ci:47: fibonacci_13: uint32(233)
 extras/Tests/lang.useOperator.ci:5: shift: int32(2)
 extras/Tests/lang.useOperator.ci:7: boolA: bool(1)
 extras/Tests/lang.useOperator.ci:8: boolB: bool(1)
@@ -11174,7 +11523,7 @@ extras/Tests/lang.varInitArray.ci:37: arrSliceInitString: char[]([6] {'s', 't', 
 extras/Tests/lang.varInitArray.ci:38: arrPtrInitString: char[*]("string")
 extras/Tests/lang.varInitByRef.ci:7: value: int64(42)
 extras/Tests/lang.varInitByRef.ci:8: valueRef: int64(42)
-extras/Tests/lang.varInitByRef.ci:9: valuePtr: pointer(<value @024888>)
+extras/Tests/lang.varInitByRef.ci:9: valuePtr: pointer(<value @026168>)
 extras/Tests/lang.varInitByRef.ci:10: valueVar: variant({int64: 42})
 extras/Tests/lang.varInitByRef.ci:12: fromRef: int64(42)
 extras/Tests/lang.varInitByRef.ci:13: fromPtr: int64(42)
@@ -11191,7 +11540,7 @@ extras/Tests/lang.varInitByRef.ci:25: typeTyp: typename(int64)
 extras/Tests/lang.varInitByRef.ci:27: local: int64(42)
 extras/Tests/lang.varInitByRef.ci:28: copyVal: int64(42)
 extras/Tests/lang.varInitByRef.ci:29: copyRef: int64(42)
-extras/Tests/lang.varInitByRef.ci:30: copyPtr: pointer(<value @024888>)
+extras/Tests/lang.varInitByRef.ci:30: copyPtr: pointer(<value @026168>)
 extras/Tests/lang.varInitByRef.ci:31: copyVar: variant({int64: 42})
 extras/Tests/lang.varInitByRef.ci:32: copyTyp: typename(int64)
 extras/Tests/lang.varInitByRef.ci:35: ptrVoid: pointer(<void @0000a0>)
@@ -11248,22 +11597,39 @@ extras/Tests/lang.varInitByRef.ci:89: typFunction: typename(function)
 extras/Tests/lang.varInitByRef.ci:90: typPointer: typename(pointer)
 extras/Tests/lang.varInitByRef.ci:91: typVariant: typename(variant)
 extras/Tests/lang.varInitByRef.ci:92: typObject: typename(object)
-extras/Tests/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @024888>)
+extras/Tests/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @026168>)
 extras/Tests/lang.varInitByRef.ci:96: valueOfVar: variant({int64: 42})
 extras/Tests/lang.varInitByRef.ci:97: valueOfTyp: typename(int64)
 extras/Tests/lang.varInitByRef.ci:99: typeOfValue: typename(int64)
 extras/Tests/lang.varInitByRef.ci:105: copyPtrFloat64: variant({pointer: <float64 @000760>})
 extras/Tests/lang.varInitByRef.ci:108: copyVarFloat64: pointer(<float64 @000760>)
-extras/Tests/lang.varInitByVal.ci:7: localNoInit: int64(0)
-extras/Tests/lang.varInitByVal.ci:8: globalNoInit: int64(0)
-extras/Tests/lang.varInitByVal.ci:9: localInitValue: int64(42)
-extras/Tests/lang.varInitByVal.ci:10: globalInitValue: int64(1024)
-extras/Tests/lang.varInitByVal.ci:11: localInitLocal: int64(42)
-extras/Tests/lang.varInitByVal.ci:12: globalInitLocal: int64(42)
-extras/Tests/lang.varInitByVal.ci:13: localInitGlobal: int64(1024)
-extras/Tests/lang.varInitByVal.ci:14: globalInitGlobal: int64(1024)
-extras/Tests/lang.varInitByVal.ci:38: InitMember.intGlobal: int32(44)
-extras/Tests/lang.varInitByVal.ci:43: InitMember.intConstant: int32(45)
+extras/Tests/lang.varInitByVal.ci:7: globalCounter: int64(41)
+extras/Tests/lang.varInitByVal.ci:9: globalInitCounter1: int64(34)
+extras/Tests/lang.varInitByVal.ci:33: Record.global: int32(35)
+extras/Tests/lang.varInitByVal.ci:38: Record.globalConstant: int32(36)
+extras/Tests/lang.varInitByVal.ci:46: Record.forwardMethod: function(<forwardMethod @0261a8>)
+extras/Tests/lang.varInitByVal.ci:69: globalInitCounter2: int64(37)
+extras/Tests/lang.varInitByVal.ci:89: localNoInit: int64(0)
+extras/Tests/lang.varInitByVal.ci:90: localInitGlobal: int64(40)
+extras/Tests/lang.varInitByVal.ci:91: localInitCounter: int64(41)
+extras/Tests/lang.varInitByVal.ci:92: localInitLocal: int64(41)
+extras/Tests/lang.varInitByVal.ci:94: globalNoInit: int64(0)
+extras/Tests/lang.varInitByVal.ci:95: globalInitCounter: int64(40)
+extras/Tests/lang.varInitByVal.ci:96: globalInitGlobal: int64(40)
+extras/Tests/lang.varInitByVal.ci:99: localInitMethodGlobal: int64(38)
+extras/Tests/lang.varInitByVal.ci:100: localInitMethodRecordGlobal: int64(39)
+extras/Tests/lang.varInitByVal.ci:102: localObject: Record({
+	member: int32(39),
+	memberInit: int32(0),
+	memberConstant: int32(156156),
+	memberConstantInit: int32(1),
+	virtualMethod: function(<typename+31 @000027>),
+	abstractMethod: function(null),
+	methodReference: function(<.main+4369 @027351>)
+})
+extras/Tests/lang.varInitByVal.ci:103: globalObject: Record(<globalObject @026220>)
+extras/Tests/lang.varInitByVal.ci:105: localStaticCallStaticMethod: int32(7)
+extras/Tests/lang.varInitByVal.ci:106: localStaticCallForwardMethod: int32(12)
 extras/Tests/stdc.nfcNumber.ci:3: pi64: float64(3.141593)
 extras/Tests/stdc.nfcNumber.ci:4: e64: float64(2.718282)
 extras/Tests/stdc.nfcNumber.ci:6: pi32: float32(3.141593)
@@ -11309,10 +11675,10 @@ extras/Tests/stdc.nfcMemory.ci:23: val1: int64(0)
 extras/Tests/stdc.nfcMemory.ci:24: val2: int64(42)
 
 ---------- Memory layout:
-memory[meta] @000000; size: 149536(146.0 Kb)
-memory[code] @0248b8; size: 5024(4.9 Kb)
-memory[heap] @025c58; size: 336574(328.7 Kb)
+memory[meta] @000000; size: 155920(152.3 Kb)
+memory[code] @026240; size: 5355(5.2 Kb)
+memory[heap] @02772b; size: 329707(322.0 Kb)
 memory[stack] @04ff54; size: 163778(159.9 Kb)
 
 ---------- Memory allocations:
-memory[free] @025c68; size: 336528(328.6 Kb)
+memory[free] @027748; size: 329648(321.9 Kb)

@@ -72,13 +72,6 @@ static inline size_t emit(rtContext rt, vmOpcode opc) {
 	return emitOpc(rt, opc, arg);
 }
 
-/// Emit an instruction with integer argument.
-size_t emitInt(rtContext rt, vmOpcode opc, int64_t value) {
-	vmValue arg;
-	arg.i64 = value;
-	return emitOpc(rt, opc, arg);
-}
-
 /// Emit an instruction indexing nth element on stack.
 static inline size_t emitStack(rtContext rt, vmOpcode opc, ssize_t arg) {
 	vmValue tmp;
@@ -768,10 +761,11 @@ static inline ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 	size_t varOffset = stkOffset(rt, variable->size);
 
 	if (!isVariable(variable)) {
-		// function, struct or enum declaration.
+		// function, struct, alias or enum declaration.
+		fatal(ERR_INTERNAL_ERROR);
 		return CAST_vid;
 	}
-	logif(varCast != get, "%?s:%?u: %T(%K->%K)", variable->file, variable->line, variable, varCast, get);
+	logif(varCast != get && get != CAST_vid, "%?s:%?u: %T(%K->%K)", variable->file, variable->line, variable, varCast, get);
 
 	if (varInit == NULL && variable->type->init != NULL) {
 		varInit = variable->type->init;
@@ -843,7 +837,7 @@ static inline ccKind genVariable(ccContext cc, symn variable, ccKind get, astn a
 	ccKind typCast = castOf(type);
 	ccKind varCast = castOf(variable);
 
-	dbgCgen("%?s:%?u: %T / (%K->%K)", variable->file, variable->line, variable, variable->kind, get);
+	dbgCgen("%?s:%?u: %T / (%K->%K)", ast->file, ast->line, variable, variable->kind, get);
 	if (variable == cc->null_ref) {
 		switch (get) {
 			default:
@@ -897,7 +891,7 @@ static inline ccKind genVariable(ccContext cc, symn variable, ccKind get, astn a
 	}
 
 	if (variable->offs == 0) {
-		error(rt, variable->file, variable->line, ERR_EMIT_VARIABLE, variable);
+		error(rt, ast->file, ast->line, ERR_EMIT_VARIABLE, variable);
 	}
 
 	// array: push length of variable first.
@@ -1240,7 +1234,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		}
 	}
 	else {
-		if (!genVariable(cc, function, CAST_ref, ast)) {
+		if (!genAst(cc, ast->op.lhso, CAST_ref)) {
 			traceAst(ast);
 			return CAST_any;
 		}
@@ -1308,7 +1302,7 @@ static inline ccKind genIndex(ccContext cc, astn ast, ccKind get) {
 	return castOf(ast->type);
 }
 static inline ccKind genMember(ccContext cc, astn ast, ccKind get) {
-	const rtContext rt = cc->rt;
+	rtContext rt = cc->rt;
 	// TODO: this should work as indexing
 	symn object = linkOf(ast->op.lhso, 1);
 	symn member = linkOf(ast->op.rhso, 1);
@@ -1825,10 +1819,15 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			}
 			break;
 
-		case TOKEN_var: {                // var, func, type, enum, alias, inline
+		case TOKEN_var: {                // var, func, type, enum, alias
 			symn var = ast->ref.link;
 			if (var->tag == ast) {
-				if (!(got = genDeclaration(cc, var, get))) {
+				if (isTypename(var) || isFunction(var) || isInline(var) || isStatic(var)) {
+					dieif(!isInline(var) && !isStatic(var), ERR_INTERNAL_ERROR);
+					// types, functions, static variables
+					// static variables are generated 
+				}
+				else if (!(got = genDeclaration(cc, var, get))) {
 					traceAst(ast);
 					return CAST_any;
 				}
@@ -1848,7 +1847,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 
 	if (ast->kind >= STMT_beg && ast->kind <= STMT_end) {
 		ssize_t locals = stkOffset(rt, 0) - spBegin;
-		logif(locals != 0, "%s:%u: locals left on stack(get: %K, size: %D): `%t`", ast->file, ast->line, get, locals, ast);
+		logif(get == CAST_vid && locals != 0, "%s:%u: locals left on stack(get: %K, size: %D): `%t`", ast->file, ast->line, get, locals, ast);
 		if (get == CAST_vid && locals != 0) {
 			if (!emitStack(rt, opc_drop, spBegin)) {
 				traceAst(ast);
@@ -2037,10 +2036,9 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 
 int gencode(rtContext rt, int debug) {
 	ccContext cc = rt->cc;
-	size_t lMeta;	// read only section emitted by the compiler
+	//TODO: size_t lMeta;	// read only section: emitted by the compiler
 	//TODO: size_t lCode;	// read only section: function bodies
 	//TODO: size_t lData;	// writeable section: static variables
-	//TODO: size_t lHeap;	// heap and stacks
 	size_t lMain;
 
 	// make global variables static
@@ -2062,54 +2060,44 @@ int gencode(rtContext rt, int debug) {
 	cc->scope = leave(cc, gStatic ? ATTR_stat | KIND_def : KIND_def, 0, 0, NULL);
 
 	dieif(cc->scope != cc->global, ERR_INTERNAL_ERROR);
-
 	/* reorder the initialization of static variables and functions.
-	 * TODO: optimize code and rename variables.
-	 *
-	 *	ex: g must be generated before f
 	 *	int f() {
 	 *		static int g = 9;
 	 *		// ...
 	 *	}
+	 *	// variable `g` must be generated before function `f` is generated
 	 */
 	if (cc->global != NULL) {
-		symn ng, pg = NULL;
+		symn prevGlobal = NULL;
 
-		for (ng = cc->global; ng; ng = ng->global) {
-			symn Ng, Pg = NULL;
+		for (symn global = cc->global; global; global = global->global) {
+			symn prevInner = NULL;
 
-			if (!isFunction(ng)) {
-				// skip non functions
-				continue;
-			}
+			for (symn inner = global; inner != NULL; inner = inner->global) {
+				if (inner->owner == global && !isInline(inner)) {
+					// logif(">", "global `%T` must be generated before `%T`", inner, global);
+					if (prevGlobal == NULL || prevInner == NULL) {
+						// the first globals are the builtin types, so we should never get here
+						fatal("global `%T` cant be generated before `%T`", inner, global);
+						return 0;
+					}
 
-			for (Ng = ng; Ng != NULL; Ng = Ng->global) {
-				if (Ng->owner == ng) {
-					break;
+					// remove inner from list
+					prevInner->global = inner->global;
+
+					// place it before its owner
+					inner->global = prevGlobal->global;
+					prevGlobal->global = inner;
+
+					// continue with the next symbol
+					global = prevGlobal;
+					inner = prevInner;
 				}
-				Pg = Ng;
+				prevInner = inner;
 			}
-
-			//~ this must be generated before sym;
-			if (Ng != NULL) {
-				debug("global `%T` must be generated before `%T`", Ng, ng);
-				Pg->global = Ng->global;	// remove
-				Ng->global = ng;
-				if (pg) {
-					pg->global = Ng;
-				}
-				else {
-					cc->global = Ng;
-					break;
-				}
-				ng = pg;
-			}
-			pg = ng;
+			prevGlobal = global;
 		}
 	}
-
-	// set used memory by metadata (string constants and type information)
-	lMeta = rt->_beg - rt->_mem;
 
 	// debug info
 	if (debug != 0) {
@@ -2156,13 +2144,8 @@ int gencode(rtContext rt, int debug) {
 	// TODO: generate functions before variables
 	// static variables & functions
 	if (cc->global != NULL) {
-		symn var;
-
-		// we will append the list of declarations here.
-		astn staticInitList = newNode(cc, STMT_beg);
-
 		// generate static variables & functions
-		for (var = cc->global; var; var = var->global) {
+		for (symn var = cc->global; var; var = var->global) {
 
 			if (var == rt->main || isInline(var)) {
 				// exclude main and inline symbols
@@ -2180,8 +2163,10 @@ int gencode(rtContext rt, int debug) {
 			}
 			dieif(var->offs != 0, "Error `%T` offs: %d", var, var->offs);	// already generated ?
 
-			if (isFunction(var)) {
+			// align memory. Speed up read, write and execution.
+			rt->_beg = padPointer(rt->_beg, pad_size);
 
+			if (isFunction(var)) {
 				rt->vm.sm = 0;
 				fixJump(rt, 0, 0, sizeof(vmOffs) + argsSize(var));
 				rt->vm.sm = rt->vm.ss;		// leave return address on stack
@@ -2207,64 +2192,21 @@ int gencode(rtContext rt, int debug) {
 
 				addDbgFunction(rt, var);
 			}
-			else {
-				unsigned align;
+			else if (isVariable(var)) {
 				dieif(var->size <= 0, "Error `%T` size: %d", var, var->size);	// instance of void ?
 
-				// align the memory of the variable. speeding up the read and write of it.
-				if (var->size >= 16) {
-					align = 16;
-				}
-				else if (var->size >= 8) {
-					align = 8;
-				}
-				else if (var->size >= 4) {
-					align = 4;
-				}
-				else if (var->size >= 2) {
-					align = 2;
-				}
-				else if (var->size >= 1) {
-					align = 1;
-				}
-				else {
-					fatal(ERR_INTERNAL_ERROR);
-					return 0;
-				}
-
-				rt->_beg = padPointer(rt->_beg, align);
+				// allocate the memory for the global variable
 				var->offs = vmOffset(rt, rt->_beg);
 				rt->_beg += var->size;
 
-				dieif(rt->_beg >= rt->_end, ERR_MEMORY_OVERRUN);
-
-				// TODO: recheck double initialization fix(var->nest > 0)
-				if (var->init != NULL && var->nest > 0) {
-					dieif(var->tag == NULL, ERR_INTERNAL_ERROR);
-					astn init = newNode(cc, STMT_end);
-
-					//~ make initialization from initializer
-					init->type = var->type;
-					init->file = var->file;
-					init->line = var->line;
-					init->stmt.stmt = var->tag;
-
-					if (staticInitList->lst.head == NULL) {
-						staticInitList->lst.head = init;
-					}
-					else {
-						staticInitList->lst.tail->next = init;
-					}
-					staticInitList->lst.tail = init;
+				if (rt->_beg >= rt->_end) {
+					error(rt, var->file, var->line, ERR_DECLARATION_COMPLEX, var);
+					return 0;
 				}
 			}
-		}
-
-		// initialize static non global variables
-		if (staticInitList && staticInitList->lst.tail) {
-			dieif(cc->root == NULL || cc->root->kind != STMT_beg, ERR_INTERNAL_ERROR);
-			staticInitList->lst.tail->next = cc->root->lst.head;
-			cc->root->lst.head = staticInitList->lst.head;
+			else {
+				fatal(ERR_INTERNAL_ERROR);
+			}
 		}
 	}
 
@@ -2273,6 +2215,19 @@ int gencode(rtContext rt, int debug) {
 		rt->vm.sm = rt->vm.ss = 0;
 
 		dieif(cc->root->kind != STMT_beg, ERR_INTERNAL_ERROR);
+
+		// generate static variable initializations
+		for (symn var = cc->global; var; var = var->global) {
+			if (!isVariable(var)) {
+				continue;
+			}
+			size_t begin = emit(rt, markIP);
+			if (!genDeclaration(cc, var, CAST_vid)) {
+				traceAst(var->tag);
+				return 0;
+			}
+			addDbgStatement(rt, begin, emit(rt, markIP), var->tag);
+		}
 
 		// CAST_vid clears the stack
 		if (!genAst(cc, cc->root, gStatic ? CAST_vid : CAST_val)) {
@@ -2287,23 +2242,22 @@ int gencode(rtContext rt, int debug) {
 		}
 	}
 
-	// execute and invoke exit point: halt()
+	// program entry(main()) and exit(halt())
 	rt->vm.px = emitInt(rt, opc_nfc, 0);
-
-	// program entry point
 	rt->vm.pc = lMain;
 	rt->vm.ss = 0;
 
 	// build the main initializer function.
-	rt->main->size = emit(rt, markIP) - lMain;
 	rt->main->offs = lMain;
+	rt->main->size = emit(rt, markIP) - lMain;
 	rt->main->params = params;
 	rt->main->fields = cc->scope;
 	rt->main->format = rt->main->name;
+	addDbgFunction(rt, rt->main);
 
 	rt->_end = rt->_mem + rt->_size;
 	if (rt->dbg != NULL) {
-		// TODO: remove bubble sort, replace with qsort
+		// TODO: replace bubble sort with qsort
 		struct arrBuffer *codeMap = &rt->dbg->statements;
 		for (int i = 0; i < codeMap->cnt; ++i) {
 			for (int j = i; j < codeMap->cnt; ++j) {
@@ -2319,9 +2273,7 @@ int gencode(rtContext rt, int debug) {
 				}
 			}
 		}
-		addDbgFunction(rt, rt->main);
 	}
 
-	(void)lMeta;
 	return rt->errors == 0;
 }

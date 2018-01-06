@@ -4,111 +4,119 @@ static if (typename(integer) == null) {
 inline integer = int32;
 }
 
-integer localNoInit;
-static integer globalNoInit;
-integer localInitValue = 42;
-static integer globalInitValue = 1024;
-integer localInitLocal = localInitValue;
-static integer globalInitLocal = localInitValue;
-integer localInitGlobal = globalInitValue;
-static integer globalInitGlobal = globalInitValue;
+static integer globalCounter = 33;
+
+static integer globalInitCounter1 = globalCounter += 1;
 
 //* TODO: member, local and global variable initializations
-struct InitMember {
+struct Record {
 	// member variable
 	// compiler: WARN if not initialized when instantiated.
-	int32 intMember;
+	int32 member;
 
 	// member variable with default value
 	// compiler: use default value if not initialized when instantiated.
-	int32 intMemberDef = 42;
+	int32 memberInit = 42;
 
 	// constant member variable
 	// compiler: ERROR if not initialized when instantiated.
 	// compiler: ERROR if assigned after initialization.
-	const int32 intConstMember;
+	const int32 memberConstant;
 
 	// constant member variable with default value
 	// compiler: use default value if not initialized when instantiated.
 	// compiler: ERROR if assigned after initialization.
-	const int32 intConstMemberDef = 43;
+	const int32 memberConstantInit = 43;
 
 	// global variable(hidden in class)
 	// compiler: WARN if not initialized when declared.
-	static int32 intGlobal = 44;
+	static int32 global = globalCounter += 1;
 
 	// constant global variable(hidden in class)
 	// compiler: ERROR if not initialized when declared.
 	// compiler: ERROR if assigned after initialized.
-	static const int32 intConstant = 45;
+	static const int32 globalConstant = globalCounter += 1;
 
-	/* TODO: implement function parsing
 	// static method (can not be overridden)
 	int staticMethod(int x, int y) {
 		return x + y;
 	}
 
 	// static forward method
-	// compiler: ERROR if not implemented in the current record.
 	static int forwardMethod(int x, int y);
 
 	// virtual method (may be overridden when instantiated)
-	int virtualMethod(int x, int y) = staticMethod;
+	int virtualMethod(int x, int y);
+
+	// virtual method default implementation.
+	int virtualMethod(int x, int y) {
+		return x * y;
+	}
 
 	// abstract method (must be overridden when instantiated)
 	// compiler: ERROR if not initialized/overridden when instantiated.
 	int abstractMethod(int x, int y);
 
+	// virtual method (may be overridden when instantiated)
+	int methodReference(int x, int y) = staticMethod;
+
 	// forward method implementation
 	int forwardMethod(int x, int y) {
 		return x * y;
 	}
-
-	/+ FIXME: virtualMethod2 will point to ... when overridden / not overridden?
-	// virtual method (may be overridden when instantiated)
-	int virtualMethodA(int x, int y);
-
-	// virtual method (may be overridden when instantiated)
-	int virtualMethodB(int x, int y) = virtualMethodA;
-
-	// virtual method implementation.
-	int virtualMethodA(int x, int y) {
-		return x * y;
-	}
-	// +/ */
 }
 
-/*void initLocals() {
-	// local variable
-	// compiler: WARN if not initialized when declared.
-	int32 local;
+static integer globalInitCounter2 = globalCounter += 1;
 
-	// constant local variable
-	// compiler: ERROR if not initialized when declared.
-	const int32 constant = 31;
+integer initMethod(bool getRecord) {
+	// function `initInner` must be generated before `initMethod`
+	integer initInner(bool getRecord) {
+		// global variable
+		// compiler: WARN if not initialized when declared.
+		static int32 global = globalCounter += 1;
 
-	// global variable
-	// compiler: WARN if not initialized when declared.
-	static int32 global = 7;
+		static struct Record {
+			// global variable
+			// compiler: WARN if not initialized when declared.
+			static int32 global = globalCounter += 1;
+		}
 
-	// constant global variable.
-	// compiler: ERROR if not initialized when declared.
-	static const int32 globalConstant = 4;
+		return getRecord ? Record.global : global;
+	}
+	return initInner(getRecord);
 }
 
-InitMember globalOrLocal = {
-	intMember: 42;
-	intConstMember: 42;
-	int abstractMethod(int x, int y) {
-		return x - y;
-	}
-};
+integer localNoInit;
+integer localInitGlobal = globalCounter;
+integer localInitCounter = globalCounter += 1;
+integer localInitLocal = localInitCounter;
 
-static InitMember global = {
-	intMember: 42;
-	intConstMember: 42;
-	int abstractMethod(int x, int y) {
-		return x - y;
-	}
-};
-// */
+static integer globalNoInit;
+static integer globalInitCounter = globalCounter += 1;
+static integer globalInitGlobal = globalCounter;
+//static integer globalInitLocal = localInitCounter;     // compilation error: can not initialize static variable with local variable
+
+integer localInitMethodGlobal = initMethod(false);
+integer localInitMethodRecordGlobal = initMethod(true);
+
+Record localObject;                   // FIXME: object must be initialized
+static Record globalObject;           // FIXME: object must be initialized
+
+int localStaticCallStaticMethod = Record.staticMethod(2, 5);
+int localStaticCallForwardMethod = Record.forwardMethod(2, 6);
+//int localStaticCallVirtualMethod = Record.virtualMethod(2, 7);              // FIXME: this should work
+//int localStaticCallAbstractMethod = Record.abstractMethod(2, 8);            // compilation error: object reference required to access member
+//int localStaticCallMethodReference = Record.methodReference(2, 9);          // compilation error: object reference required to access member
+
+//int localLocalCallStaticMethod = localObject.staticMethod(2, 5);            // FIXME: this should work
+//int localLocalCallForwardMethod = localObject.forwardMethod(2, 6);          // FIXME: this should work
+//int localLocalCallVirtualMethod = localObject.virtualMethod(2, 7);          // FIXME: this should work
+//int localLocalCallAbstractMethod = localObject.abstractMethod(2, 8);        // FIXME: this should work
+//int localLocalCallMethodReference = localObject.methodReference(2, 9);      // FIXME: this should work
+//int localGlobalCallStaticMethod = globalObject.staticMethod(2, 5);          // FIXME: this should work
+//int localGlobalCallForwardMethod = globalObject.forwardMethod(2, 6);        // FIXME: this should work
+//int localGlobalCallVirtualMethod = globalObject.virtualMethod(2, 7);        // FIXME: this should work
+//int localGlobalCallAbstractMethod = globalObject.abstractMethod(2, 8);      // FIXME: this should work
+//int localGlobalCallMethodReference = globalObject.methodReference(2, 9);    // FIXME: this should work
+
+assert(globalCounter == 33 + 8);              // 10 increments
