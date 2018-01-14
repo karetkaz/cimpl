@@ -116,9 +116,10 @@ struct TextReader: Closeable {  // java:Reader + Scanner?Parser?
 		this.reader.close();
 	}
 
-	// TODO: string readToken(TextReader this, regex matcher) { /*...*/ }
-	// TODO: string readWord(TextReader this) { return this.readToken(/\w+/); }
-	// TODO: string readLine(TextReader this) { return this.readToken(/^.*$/); }
+	// TODO: string readNext(TextReader this, regex matcher) { /*...*/ }
+	// TODO: string readWord(TextReader this) { return this.readNext(/\w+/); }
+	// TODO: string readLine(TextReader this) { return this.readNext(/.*$/); }
+	// TODO: string readAll(TextReader this) { return this.readMatch(/.*/); }
 	// TODO: string readNumber(TextReader this, Locale locale) { /*...*/ }
 
 	/* TODO: subclasses
@@ -205,7 +206,7 @@ struct TextWriter: Closeable {  // java:Writer + PrintStream
 	*/
 }
 
-// copy stream
+// copy byte-stream
 struct CopyReader: ByteReader {
 	const ByteReader source;
 	const ByteWriter clone;
@@ -213,7 +214,7 @@ struct CopyReader: ByteReader {
 	int read(CopyReader this, byte bytes[]) {
 		result = this.source.read(bytes);
 		if (result > 0) {
-			this.clone.write(bytes[0, result]);
+			this.clone.write(bytes[0 ... result]);
 		}
 		return result;
 	}
@@ -230,7 +231,7 @@ struct CopyReader: ByteReader {
 	};
 }
 
-// File streams
+// File byte-streams
 struct FileReader: ByteReader {
 	const File file;
 
@@ -278,7 +279,7 @@ struct FileWriter: ByteWriter {
 	};
 }
 
-// Ascii 
+// Ascii
 struct AsciiReader: TextReader {
 
 	int decode(char chars[], ByteReader reader) {
@@ -324,6 +325,7 @@ struct AsciiWriter: TextWriter {
 		close: false;   // we did not open it, we will not close it.
 	};
 
+	// open the file appending or creating it
 	inline AsciiWriter(Path path, bool append) = {
 		writer: FileWriter(path, append);
 	};

@@ -3,14 +3,10 @@
  *   Date: 2011/06/23
  *   Desc: code generation
  *******************************************************************************
-description:
-*******************************************************************************/
-#include <string.h>
-#include "internal.h"
+ * convert ast to bytecode
+ */
 
-enum Settings {
-	preAllocateArgs = 0
-};
+#include "internal.h"
 
 /**
  * @brief get absolute position on stack, of relative offset
@@ -41,35 +37,11 @@ static inline vmOpcode emit32or64(vmOpcode opc32, vmOpcode opc64) {
 	return sizeof(vmOffs) > vm_size ? opc64 : opc32;
 }
 
-// emit constant values.
-static inline size_t emitI64(rtContext rt, int64_t value) {
-	vmValue arg;
-	arg.i64 = value;
-	return emitOpc(rt, opc_lc64, arg);
-}
-static inline size_t emitF64(rtContext rt, float64_t value) {
-	vmValue arg;
-	arg.f64 = value;
-	return emitOpc(rt, opc_lf64, arg);
-}
-static inline size_t emitRef(rtContext rt, void *value) {
-	vmValue arg;
-	arg.i64 = vmOffset(rt, value);
-	return emitOpc(rt, opc_lref, arg);
-}
-
 // emit an offset: address or index (32 or 64 bit based on vm size)
 static inline size_t emitOffs(rtContext rt, size_t value) {
 	vmValue arg;
 	arg.i64 = value;
 	return emitOpc(rt, emit32or64(opc_lc32, opc_lc64), arg);
-}
-
-/// Emit an instruction with no argument.
-static inline size_t emit(rtContext rt, vmOpcode opc) {
-	vmValue arg;
-	arg.i64 = 0;
-	return emitOpc(rt, opc, arg);
 }
 
 /// Emit an instruction indexing nth element on stack.
@@ -563,24 +535,19 @@ static inline size_t genOffset(rtContext rt, symn var) {
 	return emitInt(rt, opc_lref, var->offs);
 }
 
-static inline size_t argsSize(const struct symNode *function) {
-	size_t result = 0;
-	for (symn prm = function->params; prm; prm = prm->next) {
-		if (isInline(prm)) {
-			continue;
-		}
-		size_t offs = prm->offs;
-		if (result < offs) {
-			result = offs;
-		}
-	}
-	return result;
-}
-
+/**
+ * Generate bytecode from abstract syntax tree.
+ * 
+ * @param rt Runtime context.
+ * @param ast Abstract syntax tree.
+ * @param get Override node cast.
+ * @return Should be get || cast of ast node.
+ * TODO: simplify
+ */
 static ccKind genAst(ccContext cc, astn ast, ccKind get);
 
 static inline ccKind genLoop(ccContext cc, astn ast) {
-	const rtContext rt = cc->rt;
+	rtContext rt = cc->rt;
 	astn jl = cc->jumps;
 
 	if (ast->stmt.init && !genAst(cc, ast->stmt.init, CAST_vid)) {
@@ -655,7 +622,7 @@ static inline ccKind genLoop(ccContext cc, astn ast) {
 	return CAST_vid;
 }
 static inline ccKind genBranch(ccContext cc, astn ast) {
-	const rtContext rt = cc->rt;
+	rtContext rt = cc->rt;
 	struct astNode testValue;
 	astn *genOnly = NULL;
 	if (eval(cc, &testValue, ast->stmt.test) != CAST_any) {
@@ -987,7 +954,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 			if (!(args->kind == OPER_fnc && isTypeExpr(args->op.lhso))) {
 				// argument is not a cast, check if it is an instruction
 				symn lnk = linkOf(args, 1);
-				if (!(lnk != NULL && isEmit(lnk))) {
+				if (lnk == NULL || lnk->init == NULL || lnk->init->kind != EMIT_kwd) {
 					warn(rt, 1, ast->file, ast->line, WARN_PASS_ARG_NO_CAST, args, args->type);
 				}
 			}
@@ -1252,7 +1219,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 	return result;
 }
 static inline ccKind genIndex(ccContext cc, astn ast, ccKind get) {
-	const rtContext rt = cc->rt;
+	rtContext rt = cc->rt;
 	struct astNode tmp;
 	ccKind r;
 
@@ -1368,7 +1335,7 @@ static inline ccKind genMember(ccContext cc, astn ast, ccKind get) {
 }
 
 static inline ccKind genLogical(ccContext cc, astn ast) {
-	const rtContext rt = cc->rt;
+	rtContext rt = cc->rt;
 	struct astNode tmp;
 
 	if (rt->foldConst && eval(cc, &tmp, ast->op.test) == CAST_bit) {
@@ -1414,26 +1381,17 @@ static inline ccKind genLogical(ccContext cc, astn ast) {
 	return castOf(ast->type);
 }
 
-/**
- * @brief Generate bytecode from abstract syntax tree.
- * @param rt Runtime context.
- * @param ast Abstract syntax tree.
- * @param get Override node cast.
- * @return Should be get || cast of ast node.
- * TODO: simplify
- */
 static ccKind genAst(ccContext cc, astn ast, ccKind get) {
-	const rtContext rt = cc->rt;
+	rtContext rt = cc->rt;
 	const size_t ipBegin = emit(rt, markIP);
 	const size_t spBegin = stkOffset(rt, 0);
-	ccKind got, op;
 
 	if (ast == NULL || ast->type == NULL) {
 		fatal(ERR_INTERNAL_ERROR);
 		return CAST_any;
 	}
 
-	got = castOf(ast->type);
+	ccKind op, got = castOf(ast->type);
 
 	if (got == CAST_arr) {
 		symn len = ast->type->fields;
@@ -1617,7 +1575,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 		case OPER_mul:		// '*'
 		case OPER_div:		// '/'
 		case OPER_mod:		// '%'
-			if (!(op = genAst(cc, ast->op.lhso, CAST_any))) {
+			if (!(op = genAst(cc, ast->op.lhso, CAST_any))) {    // (int == int): bool
 				traceAst(ast);
 				return CAST_any;
 			}
@@ -1625,7 +1583,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				traceAst(ast);
 				return CAST_any;
 			}
-			if (!emitOperator(rt, ast->kind, op)) {	// uint % int => u32.mod
+			if (!emitOperator(rt, ast->kind, op)) {    // uint % int => u32.mod
 				traceAst(ast);
 				return CAST_any;
 			}
@@ -1805,7 +1763,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 						traceAst(ast);
 						return CAST_any;
 					}
-					if (!emitRef(rt, ast->ref.name)) {
+					if (!emitRef(rt, vmOffset(rt, ast->ref.name))) {
 						traceAst(ast);
 						return CAST_any;
 					}
@@ -2034,7 +1992,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 	return got;
 }
 
-int gencode(rtContext rt, int debug) {
+int ccGenCode(rtContext rt, int debug) {
 	ccContext cc = rt->cc;
 	//TODO: size_t lMeta;	// read only section: emitted by the compiler
 	//TODO: size_t lCode;	// read only section: function bodies
@@ -2113,33 +2071,7 @@ int gencode(rtContext rt, int debug) {
 		initBuff(&rt->dbg->statements, 128, sizeof(struct dbgNode));
 	}
 
-	// native calls
-	if (cc->native != NULL) {
-		list lst = cc->native;
-		libc last = (libc) lst->data;
-		libc *calls = (libc*)(rt->_beg = padPointer(rt->_beg, pad_size));
-
-		rt->_beg += (last->offs + 1) * sizeof(libc);
-		if(rt->_beg >= rt->_end) {
-			fatal(ERR_MEMORY_OVERRUN);
-			return 0;
-		}
-
-		rt->vm.nfc = calls;
-		for (; lst != NULL; lst = lst->next) {
-			libc nfc = (libc) lst->data;
-			calls[nfc->offs] = nfc;
-
-			// relocate native call offsets to be debuggable and traceable.
-			nfc->sym->offs = vmOffset(rt, nfc);
-			nfc->sym->size = 0;
-			addDbgFunction(rt, nfc->sym);
-		}
-	}
-
-	//~ read only memory ends here.
-	//~ strings, types, add(constants, functions, enums, ...)
-	rt->vm.ro = rt->_beg - rt->_mem;
+	vmInit(rt, NULL);
 
 	// TODO: generate functions before variables
 	// static variables & functions
@@ -2167,9 +2099,8 @@ int gencode(rtContext rt, int debug) {
 			rt->_beg = padPointer(rt->_beg, pad_size);
 
 			if (isFunction(var)) {
-				rt->vm.sm = 0;
+				// reset the stack size
 				fixJump(rt, 0, 0, sizeof(vmOffs) + argsSize(var));
-				rt->vm.sm = rt->vm.ss;		// leave return address on stack
 
 				var->offs = emit(rt, markIP);
 				if (!genAst(cc, var->init, CAST_vid)) {
@@ -2177,7 +2108,7 @@ int gencode(rtContext rt, int debug) {
 					continue;
 				}
 				size_t end = emit(rt, markIP);
-				if (end == var->offs || testOcp(rt, end, opc_jmpi, NULL)) {
+				if (end == var->offs || !testOcp(rt, rt->vm.pc, opc_jmpi, NULL)) {
 					if (!emit(rt, opc_jmpi)) {
 						error(rt, var->file, var->line, ERR_EMIT_FUNCTION, var);
 						continue;
@@ -2212,7 +2143,8 @@ int gencode(rtContext rt, int debug) {
 
 	lMain = emit(rt, markIP);
 	if (cc->root != NULL) {
-		rt->vm.sm = rt->vm.ss = 0;
+		// reset the stack size
+		fixJump(rt, 0, 0, 0);
 
 		dieif(cc->root->kind != STMT_beg, ERR_INTERNAL_ERROR);
 
@@ -2259,8 +2191,8 @@ int gencode(rtContext rt, int debug) {
 	if (rt->dbg != NULL) {
 		// TODO: replace bubble sort with qsort
 		struct arrBuffer *codeMap = &rt->dbg->statements;
-		for (int i = 0; i < codeMap->cnt; ++i) {
-			for (int j = i; j < codeMap->cnt; ++j) {
+		for (size_t i = 0; i < codeMap->cnt; ++i) {
+			for (size_t j = i; j < codeMap->cnt; ++j) {
 				dbgn a = getBuff(codeMap, i);
 				dbgn b = getBuff(codeMap, j);
 				if (a->end > b->end) {

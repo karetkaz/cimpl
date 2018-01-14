@@ -23,7 +23,6 @@ case opc_nop:  NEXT(1, 0, 0) {
 }
 case opc_nfc:  NEXT(4, 0, 0) {
 	libc nfc = nativeCalls[ip->rel];
-	NEXT(0, nfc->out - nfc->in, nfc->in);
 #ifdef EXEC
 	struct nfcContextRec args;
 	args.rt = rt;
@@ -41,6 +40,7 @@ case opc_nfc:  NEXT(4, 0, 0) {
 	STOP(error_libc, nfcError != noError, nfcError);
 	STOP(stop_vm, ip->rel == 0, 0);			// Halt();
 #endif
+	NEXT(0, nfc->out - nfc->in, nfc->in);
 	break;
 }
 case opc_call: NEXT(1, +0, 1) {

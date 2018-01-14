@@ -1,12 +1,13 @@
 /**
- * Plugin sources should include only this header file.
+ * Cmpl - A very "simple" C like language.
+ * Extension libraries should use only this header file.
  */
 
 #ifndef CMPL_API_H
 #define CMPL_API_H 2
 
-#include <stdio.h> // FILE
-#include <string.h> // memcpy
+#include <stdio.h>
+#include <string.h>
 
 #ifdef _MSC_VER
 typedef signed char			int8_t;
@@ -22,9 +23,8 @@ typedef SSIZE_T ssize_t;
 #define inline __inline
 #else
 #include <stdint.h>
-#include <stddef.h>
-
 #endif
+
 typedef float float32_t;
 typedef double float64_t;
 
@@ -32,17 +32,21 @@ typedef double float64_t;
 extern "C" {
 #endif
 
-typedef uint32_t vmOffs;						// offset
-typedef uint32_t *stkptr;						// stack
-typedef struct symNode *symn;					// symbol
-typedef struct rtContextRec *rtContext;			// runtimeContext
-typedef struct ccContextRec *ccContext; 		// compilerContext
-typedef struct dbgContextRec *dbgContext;		// debuggerContext
-typedef struct nfcContextRec *nfcContext;		// nativeCallContext
-typedef struct userContextRec *userContext;		// customUserContext
+typedef uint32_t vmOffs;                        // offset
+typedef uint32_t *stkptr;                       // stack
+typedef struct symNode *symn;                   // symbol
+typedef struct astNode *astn;                   // syntax tree
+typedef struct dbgNode *dbgn;                   // debug node
+typedef struct rtContextRec *rtContext;         // runtimeContext
+typedef struct ccContextRec *ccContext;         // compilerContext
+typedef struct dbgContextRec *dbgContext;       // debuggerContext
+typedef struct nfcContextRec *nfcContext;       // nativeCallContext
+typedef struct userContextRec *userContext;     // customUserContext
 
 /**
- * @brief Runtime error codes
+ * Runtime error codes.
+ * 
+ * one of these errors is returned by the bytecode execution.
  */
 typedef enum {
 	noError,
@@ -58,6 +62,10 @@ typedef enum {
 	//+ ArrayBoundsExceeded
 } vmError;
 
+/**
+ * Value inside the virtual machine
+ * @note pointers are transformed to offsets by subtracting the pointer to vm memory.
+ */
 typedef union {
 	int8_t i08;
 	int16_t i16;
@@ -70,18 +78,29 @@ typedef union {
 	float32_t f32;
 	float64_t f64;
 	int32_t i24:24;
-	struct { vmOffs data; } ref;	// reference
-	struct { vmOffs data; vmOffs type; } var;	// variant
-	struct { vmOffs data; vmOffs length; } arr;	// slice
-
-	// indirect reference
+	struct {
+		vmOffs ref;
+		union {
+			vmOffs type;
+			vmOffs length;
+		};
+	};
 } vmValue;
 
+/**
+ * Value translated from virtual machine to be used in runtime
+ * @note pointers are transformed to offsets by subtracting the pointer to vm memory.
+ */
 typedef union {
 	int32_t i32;
 	int64_t i64;
+	uint32_t u32;
+	uint64_t u64;
+	float32_t f32;
+	float64_t f64;
+	const char *str;
 	struct {
-		void *data;
+		void *ref;
 		union {
 			symn type;
 			size_t length;
@@ -91,35 +110,40 @@ typedef union {
 
 
 /**
- * @brief Runtime context
+ * Runtime context.
  */
 struct rtContextRec {
-	int foldConst: 1;  // fold constant expressions (3 + 4 => 7)
-	int foldInstr: 1;  // replace some instructions with a faster or shorter version (load 1, add => inc 1)
-	int fastAssign: 1; // remove dup and set instructions when modifying the last declared variable.
-	int genGlobals: 1; // generate global variables as static variables
+	int foldConst: 1;       // fold constant expressions (3 + 4 => 7)
+	int foldInstr: 1;       // replace some instructions with a faster or shorter version (load 1, add => inc 1)
+	int fastMemory: 1;      // fast memory access: use dup, set, load and store instructions instead of `load address` + `load indirect`.
+	int fastAssign: 1;      // remove dup and set instructions when modifying the last declared variable.
+	int genGlobals: 1;      // generate global variables as static variables
 
-	unsigned warnLevel: 4;   // compile logging level (0-15)
+	unsigned warnLevel: 4;  // compile logging level (0-15)
 	unsigned logLevel: 3;   // runtime logging level (0-7)
-	int logClose: 1;   // close log file
-	int freeMem: 1;    // release memory
+	int logClose: 1;        // close log file
+	int freeMem: 1;         // release memory
 
-	int32_t errors;    // error count
-	FILE *logFile;     // log file
+	int32_t errors;         // error count
+	FILE *logFile;          // log file
 
 	/**
-	 * main initializer function
+	 * Main initializer function.
+	 * 
+	 * This function initializes global variables.
 	 */
 	symn main;
 
 	/**
-	 * @brief Compiler context.
+	 * Compiler context.
+	 * 
 	 * @note After code generation it is set to null.
 	 */
 	ccContext cc;
 
 	/**
-	 * @brief Debug context.
+	 * Debugger context.
+	 * 
 	 * this holds:
 	 *  * profiler function
 	 *  * debugger function
@@ -137,59 +161,64 @@ struct rtContextRec {
 		size_t pc;			// exec: entry point / cgen: program counter
 		size_t px;			// exec: exit point / cgen: -
 
-		size_t ro;			// exec: read only memory / cgen: -
-		size_t ss;			// exec: stack size / cgen: stack size
-
-		size_t sm;			// exec: - / cgen: minimum stack size
-		size_t su;			// exec: - / cgen: stack access (parallel processing)
+		size_t ro;			// size of read only memory
+		size_t ss;			// size of stack
 	} vm;
 
 	/**
-	 * @brief External library API support.
+	 * Extension support api.
+	 * 
+	 * These functions can be used in extension libraries (dll or so)
 	 */
 	struct {
 		/// Extend a namespace; @see Core#ccExtend
-		symn (*const ccExtend)(ccContext, symn cls);
+		symn (*const ccExtend)(ccContext ctx, symn cls);
 		/// Begin a namespace; @see Core#ccBegin
-		symn (*const ccBegin)(ccContext, const char *name);
+		symn (*const ccBegin)(ccContext ctx, const char *name);
 		/// Close a namespace; @see Core#ccEnd
-		symn (*const ccEnd)(ccContext, symn cls);
+		symn (*const ccEnd)(ccContext ctx, symn cls);
 
 		/// Declare int constant; @see Core#ccDefInt
-		symn (*const ccDefInt)(ccContext, const char *name, int64_t value);
+		symn (*const ccDefInt)(ccContext ctx, const char *name, int64_t value);
 		/// Declare float constant; @see Core#ccDefFlt
-		symn (*const ccDefFlt)(ccContext, const char *name, float64_t value);
+		symn (*const ccDefFlt)(ccContext ctx, const char *name, float64_t value);
 		/// Declare string constant; @see Core#ccDefStr
-		symn (*const ccDefStr)(ccContext, const char *name, char *value);
+		symn (*const ccDefStr)(ccContext ctx, const char *name, char *value);
 
 		/// Declare a typename; @see Core#ccDefType
-		symn (*const ccDefType)(ccContext, const char *name, unsigned size, int refType);
+		symn (*const ccDefType)(ccContext ctx, const char *name, unsigned size, int refType);
 		/// Declare a native function; @see Core#ccDefCall
-		symn (*const ccDefCall)(ccContext, vmError libc(nfcContext), const char *proto);
+		symn (*const ccDefCall)(ccContext ctx, vmError libc(nfcContext), const char *proto);
 
-		/// Lookup symbol by offset; @see Core#rtFindSym
-		symn (*const rtFindSym)(rtContext, void *ptr);
+		/// Lookup function by offset; @see Core#rtFindSym
+		symn (*const rtFindSym)(rtContext ctx, size_t offset);
 
 		/// Invoke a function; @see Core#invoke
-		vmError (*const invoke)(rtContext, symn fun, void *res, void *args, void *extra);
+		vmError (*const invoke)(rtContext ctx, symn fun, void *res, void *args, void *extra);
 
 		/// Alloc, resize or free memory; @see Core#rtAlloc
-		void *(*const rtAlloc)(rtContext, void *ptr, size_t size);
+		void *(*const rtAlloc)(rtContext ctx, void *ptr, size_t size);
 
-		size_t (*const nfcFirstArg)(nfcContext nfc);
-		size_t (*const nfcNextArg)(nfcContext nfc);
-		rtValue (*const nfcReadArg)(nfcContext nfc, size_t offs);
+		/// Reset to the first argument inside a native function
+		size_t (*const nfcFirstArg)(nfcContext ctx);
+		/// Advance to the next argument inside a native function
+		size_t (*const nfcNextArg)(nfcContext ctx);
+
+		/// get the argument, transforming offsets to pointers
+		rtValue (*const nfcReadArg)(nfcContext ctx, size_t argOffs);
 	} api;
 
-	// memory related
-	const size_t _size;         // size of available memory
+	// memory management for the compiler and code generator
 	unsigned char *_beg;        // permanent memory (increments)
 	unsigned char *_end;        // temporary memory (decrements)
+
+	// memory available for the compiler and runtime
+	const size_t _size;         // size of available memory
 	unsigned char _mem[];       // this is where the memory begins.
 };
 
 /**
- * @brief Native function invocation context.
+ * Native function invocation context.
  */
 struct nfcContextRec {
 	rtContext rt;         // runtime context
@@ -202,17 +231,32 @@ struct nfcContextRec {
 };
 
 /**
- * @brief Get the value of a native function argument.
+ * Get the pointer to an internal offset inside the vm.
+ * 
+ * @param ctx Runtime context.
+ * @param offset global offset inside the vm.
+ * @return pointer to the memory.
+ */
+static inline void *vmPointer(rtContext ctx, size_t offset) {
+	if (offset == 0) {
+		return NULL;
+	}
+	return (void*)(ctx->_mem + offset);
+}
+
+/**
+ * Get the value of a native function argument.
+ * 
  * @param args Native function call arguments context.
- * @param result Optionally copy here the result.
  * @param offset Relative offset of argument.
+ * @param result Optionally copy here the result.
  * @param size Size of the argument to copy to result.
  * @return Pointer where the result is located or copied.
  * @note Getting an argument must be used with padded offset.
  */
-static inline void *argget(nfcContext args, void *result, size_t offset, size_t size) {
+static inline void *argget(nfcContext args, size_t offset, void *result, size_t size) {
 	// if result is not null copy
-	if (result != NULL) {
+	if (result != NULL && size > 0) {
 		memcpy(result, (char*)args->args + offset, size);
 	}
 	else {
@@ -225,6 +269,8 @@ static inline void *argget(nfcContext args, void *result, size_t offset, size_t 
 #define argget(__ARGV, __OFFS, __TYPE) (*(__TYPE*)((char*)(__ARGV)->args + (__OFFS)))
 static inline int32_t argi32(nfcContext args, size_t offs) { return argget(args, offs, int32_t); }
 static inline int64_t argi64(nfcContext args, size_t offs) { return argget(args, offs, int64_t); }
+static inline uint32_t argu32(nfcContext args, size_t offs) { return argget(args, offs, uint32_t); }
+static inline uint64_t argu64(nfcContext args, size_t offs) { return argget(args, offs, uint64_t); }
 static inline float32_t argf32(nfcContext args, size_t offs) { return argget(args, offs, float32_t); }
 static inline float64_t argf64(nfcContext args, size_t offs) { return argget(args, offs, float64_t); }
 static inline void *arghnd(nfcContext args, size_t offs) { return argget(args, offs, void*); }
@@ -232,7 +278,8 @@ static inline size_t argref(nfcContext args, size_t offs) { return argget(args, 
 #undef argget
 
 /**
- * @brief Set the return value of a wrapped native call.
+ * Set the return value of a wrapped native call.
+ * 
  * @param args arguments context.
  * @param result Pointer containing the result value.
  * @param size Size of the argument to copy to result.

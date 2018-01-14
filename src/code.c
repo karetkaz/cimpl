@@ -1,16 +1,14 @@
 /*******************************************************************************
  *   File: code.c
  *   Date: 2011/06/23
- *   Description: bytecode related stuff
+ *   Desc: bytecode
  *******************************************************************************
- emit and execute instructions
-*******************************************************************************/
-#include <string.h>
+ * generate and execute instructions
+ */
+
+#include "internal.h"
 #include <math.h>
 #include <time.h>
-#include <stddef.h>
-#include "internal.h"
-#include "cmpl.h"
 
 const struct opcodeRec opcode_tbl[256] = {
 	#define OPCODE_DEF(Name, Code, Size, In, Out, Text) {Code, Size, In, Out, Text},
@@ -135,7 +133,7 @@ int testOcp(rtContext rt, size_t offs, vmOpcode opc, vmValue *arg) {
 		trace("invalid opc_x%x", opc);
 		return 0;
 	}
-	if (ip->opc == opc) {
+	if (ip != NULL && ip->opc == opc) {
 		if (arg != NULL) {
 			*arg = ip->arg;
 		}
@@ -294,13 +292,6 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 
 	// load / store
 	else if (opc == opc_ldi) {
-		ip = vmPointer(rt, rt->vm.pc);
-		if (ip->opc == opc_ldsp) {
-			size_t varPos = (ip->rel + arg.i32) / 4;
-			if (rt->vm.su < varPos)
-				rt->vm.su = varPos;
-		}
-
 		dieif (arg.i32 != arg.i64, ERR_INTERNAL_ERROR);
 		switch (arg.i32) {
 			case 1:
@@ -340,13 +331,6 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 		}
 	}
 	else if (opc == opc_sti) {
-		ip = vmPointer(rt, rt->vm.pc);
-		if (ip->opc == opc_ldsp) {
-			size_t varPos = (ip->rel + arg.i32) / 4;
-			if (rt->vm.su < varPos)
-				rt->vm.su = varPos;
-		}
-
 		dieif (arg.i32 != arg.i64, ERR_INTERNAL_ERROR);
 		switch (arg.i32) {
 			case 1:
@@ -380,6 +364,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					trace(ERR_INTERNAL_ERROR);
 					return 0;
 				}
+				ip = vmPointer(rt, rt->vm.pc);
 				if (ip->opc == opc_ldsp) {
 					//~ if we copy from the stack to the stack
 					//~ do not remove more elements than we copy
@@ -404,54 +389,64 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 	}
 
 	// Optimize
-	if (rt->foldInstr) {
-		if (!rt->foldInstr) {}
+	switch (opc) {
+		default:
+			break;
 
-		/* TODO: ldz is not optimized, uncomment when vm does constant evaluations.
-		else if (opc == opc_lc32) {
+		case opc_lc32:
+			if (!rt->foldInstr) {
+				break;
+			}
 			if (arg.i64 == 0) {
-				opc = opc_ldz1;
+				opc = opc_lzx1;
 				ip = vmPointer(rt, rt->vm.pc);
-				if (ip->opc == opc_ldz1) {
-					opc = opc_ldz2;
+				if (ip->opc == opc_lzx1) {
+					opc = opc_lzx2;
 					rollbackPc(rt);
 				}
 			}
-		}
-		else if (opc == opc_lc64) {
+			break;
+
+		case opc_lc64:
+			if (!rt->foldInstr) {
+				break;
+			}
 			if (arg.i64 == 0) {
-				opc = opc_ldz2;
+				opc = opc_lzx2;
 				ip = vmPointer(rt, rt->vm.pc);
-				if (ip->opc == opc_ldz2) {
-					opc = opc_ldz4;
+				if (ip->opc == opc_lzx2) {
+					opc = opc_lzx4;
 					rollbackPc(rt);
 				}
 			}
-		}
+			break;
 
-		/ *else if (opc == opc_ldi1) {
+		case opc_ldi1:/* TODO: sign or zero extend
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_dup1;
 				rt->_beg = (memptr)ip;
 				rt->vm.ss -= 1;
-			}
-		}
-		else if (opc == opc_ldi2) {
+			}*/
+			break;
+
+		case opc_ldi2:/* TODO: sign or zero extend
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_dup1;
 				rt->_beg = (memptr)ip;
 				rt->vm.ss -= 1;
-			}
-		}
-		// */
+			}*/
+			break;
 
-		else if (opc == opc_ldi4) {
+		case opc_ldi4:
+			if (!rt->fastMemory) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
+			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_dup1;
 				rollbackPc(rt);
@@ -463,10 +458,14 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					rollbackPc(rt);
 				}
 			}
-		}
-		else if (opc == opc_sti4) {
+			break;
+
+		case opc_sti4:
+			if (!rt->fastMemory) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
+			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_set1;
 				rollbackPc(rt);
@@ -478,11 +477,14 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					rollbackPc(rt);
 				}
 			}
-		}
+			break;
 
-		else if (opc == opc_ldi8) {
+		case opc_ldi8:
+			if (!rt->fastMemory) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
+			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_dup2;
 				rollbackPc(rt);
@@ -494,10 +496,14 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					rollbackPc(rt);
 				}
 			}
-		}
-		else if (opc == opc_sti8) {
+			break;
+
+		case opc_sti8:
+			if (!rt->fastMemory) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
+			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_set2;
 				rollbackPc(rt);
@@ -509,119 +515,162 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					rollbackPc(rt);
 				}
 			}
-		}
+			break;
 
-		else if (opc == opc_ldiq) {
+		case opc_ldiq:
+			if (!rt->fastMemory) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) <= vm_regs)) {
+			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) <= vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_dup4;
 				rollbackPc(rt);
 			}
-		}
-		else if (opc == opc_stiq) {
+			break;
+
+		case opc_stiq:
+			if (!rt->fastMemory) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) <= vm_regs)) {
+			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) <= vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_set4;
 				rollbackPc(rt);
 			}
-		}
+			break;
 
 		// shl, shr, sar, and with immediate value.
-		else if (opc == b32_shl) {
+		case b32_shl:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.i32 = b32_bit_shl | (ip->arg.i32 & 0x3f);
 				opc = b32_bit;
 				rollbackPc(rt);
 			}
-		}
-		else if (opc == b32_shr) {
+			break;
+
+		case b32_shr:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.i32 = b32_bit_shr | (ip->arg.i32 & 0x3f);
 				opc = b32_bit;
 				rollbackPc(rt);
 			}
-		}
-		else if (opc == b32_sar) {
+			break;
+
+		case b32_sar:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.i32 = b32_bit_sar | (ip->arg.i32 & 0x3f);
 				opc = b32_bit;
 				rollbackPc(rt);
 			}
-		}
-		else if (opc == b32_and) {
-			ip = vmPointer(rt, rt->vm.pc);
-			if (ip->opc == opc_lc32) {
-				if ((ip->arg.i32 & (ip->arg.i32 + 1)) == 0) {
-					arg.i32 = b32_bit_and | (bitsf(ip->arg.u32 + 1) & 0x3f);
-					opc = b32_bit;
-					rollbackPc(rt);
-				}
+			break;
+
+		case b32_and:
+			if (!rt->foldInstr) {
+				break;
 			}
-		}
+			ip = vmPointer(rt, rt->vm.pc);
+			if (ip->opc == opc_lc32 && (ip->arg.i32 & (ip->arg.i32 + 1)) == 0) {
+				arg.i32 = b32_bit_and | (bitsf(ip->arg.u32 + 1) & 0x3f);
+				opc = b32_bit;
+				rollbackPc(rt);
+			}
+			break;
 
 		//* TODO: eval Arithmetic using vm.
-		else if (opc == opc_not) {
+		case opc_not:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_not) {
-				rt->_beg = (memptr)ip;
+				rt->_beg = (memptr) ip;
 				ip->opc = opc_nop;
 				return rt->vm.pc;
 			}
-		}
-		else if (opc == i32_neg) {
+			break;
+
+		case i32_neg:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == i32_neg) {
-				rt->_beg = (memptr)ip;
+				rt->_beg = (memptr) ip;
 				ip->opc = opc_nop;
 				return rt->vm.pc;
 			}
-			if (ip->opc == opc_lc32) {
+			if (ip->opc == opc_lc32 && rt->foldConst) {
 				ip->arg.i32 = -ip->arg.i32;
 				return rt->vm.pc;
 			}
-		}
-		else if (opc == i64_neg) {
+			break;
+
+		case i64_neg:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == i64_neg) {
-				rt->_beg = (memptr)ip;
+				rt->_beg = (memptr) ip;
 				ip->opc = opc_nop;
 				return rt->vm.pc;
 			}
-			if (ip->opc == opc_lc64) {
+			if (ip->opc == opc_lc64 && rt->foldConst) {
 				ip->arg.i64 = -ip->arg.i64;
 				return rt->vm.pc;
 			}
-		}
-		else if (opc == f32_neg) {
+			break;
+
+		case f32_neg:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == f32_neg) {
-				rt->_beg = (memptr)ip;
+				rt->_beg = (memptr) ip;
 				ip->opc = opc_nop;
 				return rt->vm.pc;
 			}
-			if (ip->opc == opc_lc32) {
+			if (ip->opc == opc_lc32 && rt->foldConst) {
 				ip->arg.f32 = -ip->arg.f32;
 				return rt->vm.pc;
 			}
-		}
-		else if (opc == f64_neg) {
+			break;
+
+		case f64_neg:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == f64_neg) {
-				rt->_beg = (memptr)ip;
+				rt->_beg = (memptr) ip;
 				ip->opc = opc_nop;
 				return rt->vm.pc;
 			}
-			if (ip->opc == opc_lc64) {
+			if (ip->opc == opc_lc64 && rt->foldConst) {
 				ip->arg.f64 = -ip->arg.f64;
 				return rt->vm.pc;
 			}
-		}
-		else if (opc == i32_add) {
+			break;
+
+		case i32_add:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.i64 = ip->arg.i32;
@@ -630,8 +679,12 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					rollbackPc(rt);
 				}
 			}
-		}
-		else if (opc == i32_sub) {
+			break;
+
+		case i32_sub:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.i64 = -ip->arg.i32;
@@ -640,12 +693,15 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					rollbackPc(rt);
 				}
 			}
-		}
-		else if (opc == opc_inc) {
-			if (arg.i64 == 0) {
+			break;
+
+		case opc_inc:
+			if (arg.i64 == 0 && rt->foldConst) {
 				return rt->vm.pc;
 			}
-
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_inc) {
 				vmValue tmp;
@@ -681,35 +737,50 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					return rt->vm.pc;
 				}
 			}
-		}
-		else if (opc == opc_mad) {
-			if (arg.i64 == 0) {
-				return rt->vm.pc;
+			break;
+
+		case opc_mad:
+			if (!rt->foldInstr) {
+				break;
 			}
-			else if (arg.i64 == 1) {
+			if (arg.i64 == 1) {
 				opc = i32_add;
 			}
-		}
+			break;
 
 		//* TODO: eval Conversions using vm.
-		else if (opc == u32_i64) {
+		case u32_i64:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
-			//~ if (ip->opc == opc_ldz2) { ... }
-			if (ip->opc == opc_lc32) {
+			if (ip->opc == opc_lzx1) {
+				opc = opc_lzx2;
+				rollbackPc(rt);
+			}
+			else if (ip->opc == opc_lc32) {
 				arg.i64 = ip->arg.u32;
 				opc = opc_lc64;
 				rollbackPc(rt);
 			}
-		}
-		else if (opc == i32_bol) {
+			break;
+
+		case i32_bol:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.i64 = ip->arg.i32 != 0;
 				opc = opc_lc32;
 				rollbackPc(rt);
 			}
-		}
-		else if (opc == i32_f32) {
+			break;
+
+		case i32_f32:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.f32 = (float32_t) ip->arg.i32;
@@ -717,16 +788,28 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				rollbackPc(rt);
 				logif(ip->arg.i32 != arg.f32, "inexact cast: %d => %f", ip->arg.i32, arg.f32);
 			}
-		}
-		else if (opc == i32_i64) {
+			break;
+
+		case i32_i64:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
-			if (ip->opc == opc_lc32) {
+			if (ip->opc == opc_lzx1) {
+				opc = opc_lzx2;
+				rollbackPc(rt);
+			}
+			else if (ip->opc == opc_lc32) {
 				arg.i64 = ip->arg.i32;
 				opc = opc_lc64;
 				rollbackPc(rt);
 			}
-		}
-		else if (opc == i32_f64) {
+			break;
+
+		case i32_f64:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc32) {
 				arg.f64 = ip->arg.i32;
@@ -734,18 +817,30 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				rollbackPc(rt);
 				logif(ip->arg.i32 != arg.f64, "inexact cast: %d => %F", ip->arg.i32, arg.f64);
 			}
-		}
-		else if (opc == i64_i32) {
+			break;
+
+		case i64_i32:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
-			if (ip->opc == opc_lc64) {
+			if (ip->opc == opc_lzx2) {
+				opc = opc_lzx1;
+				rollbackPc(rt);
+			}
+			else if (ip->opc == opc_lc64) {
 				arg.i64 = ip->arg.i64;
 				opc = opc_lc32;
 				rollbackPc(rt);
 				logif(ip->arg.i64 != arg.i32, "inexact cast: %D => %d", ip->arg.i64, arg.i32);
 				logif(ip->arg.i64 != arg.u32, "inexact cast: %D => %u", ip->arg.i64, arg.u32);
 			}
-		}
-		else if (opc == i64_f32) {
+			break;
+
+		case i64_f32:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc64) {
 				arg.f32 = (float32_t) ip->arg.i64;
@@ -753,16 +848,28 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				rollbackPc(rt);
 				logif(ip->arg.i64 != arg.f32, "inexact cast: %D => %f", ip->arg.i64, arg.f32);
 			}
-		}
-		else if (opc == i64_bol) {
+			break;
+
+		case i64_bol:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
+			if (ip->opc == opc_lzx2) {
+				opc = opc_lzx1;
+				rollbackPc(rt);
+			}
 			if (ip->opc == opc_lc64) {
 				arg.i64 = ip->arg.i64 != 0;
 				opc = opc_lc32;
 				rollbackPc(rt);
 			}
-		}
-		else if (opc == i64_f64) {
+			break;
+
+		case i64_f64:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lc64) {
 				arg.f64 = (float64_t) ip->arg.i64;
@@ -770,8 +877,12 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				rollbackPc(rt);
 				logif(ip->arg.i64 != arg.f64, "inexact cast: %D => %F", ip->arg.i64, arg.f64);
 			}
-		}
-		else if (opc == f32_i32) {
+			break;
+
+		case f32_i32:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf32) {
 				arg.i64 = (int64_t) ip->arg.f32;
@@ -779,16 +890,24 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				rollbackPc(rt);
 				logif(ip->arg.f32 != arg.i32, "inexact cast: %f => %d", ip->arg.f32, arg.i32);
 			}
-		}
-		else if (opc == f32_bol) {
+			break;
+
+		case f32_bol:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf32) {
 				arg.i64 = ip->arg.f32 != 0;
 				opc = opc_lc32;
 				rollbackPc(rt);
 			}
-		}
-		else if (opc == f32_i64) {
+			break;
+
+		case f32_i64:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf32) {
 				arg.i64 = (int64_t) ip->arg.f32;
@@ -796,8 +915,12 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				rollbackPc(rt);
 				logif(ip->arg.f32 != arg.i64, "inexact cast: %f => %D", ip->arg.f32, arg.i64);
 			}
-		}
-		else if (opc == f32_f64) {
+			break;
+
+		case f32_f64:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf32) {
 				arg.f64 = ip->arg.f32;
@@ -805,8 +928,12 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				rollbackPc(rt);
 				logif(ip->arg.f32 != arg.f64, "inexact cast: %f => %F", ip->arg.f32, arg.f64);
 			}
-		}
-		else if (opc == f64_i32) {
+			break;
+
+		case f64_i32:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf64) {
 				arg.i64 = (int64_t) ip->arg.f64;
@@ -814,8 +941,12 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				rollbackPc(rt);
 				logif(ip->arg.f64 != arg.i32, "inexact cast: %F => %d", ip->arg.f64, arg.i32);
 			}
-		}
-		else if (opc == f64_f32) {
+			break;
+
+		case f64_f32:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf64) {
 				arg.f32 = (float32_t) ip->arg.f64;
@@ -823,8 +954,12 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				rollbackPc(rt);
 				logif(ip->arg.f64 != arg.f32, "inexact cast: %F => %f", ip->arg.f64, arg.f32);
 			}
-		}
-		else if (opc == f64_i64) {
+			break;
+
+		case f64_i64:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf64) {
 				arg.i64 = (int64_t) ip->arg.f64;
@@ -832,19 +967,22 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				rollbackPc(rt);
 				logif(ip->arg.f64 != arg.i64, "inexact cast: %F => %D", ip->arg.f64, arg.i64);
 			}
-		}
-		else if (opc == f64_bol) {
+			break;
+
+		case f64_bol:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_lf64) {
 				arg.i64 = ip->arg.f64 != 0;
 				opc = opc_lc32;
 				rollbackPc(rt);
 			}
-		}
-		// */
+			break;
 
 		/* mul, div, mod
-		else if (opc == u32_mod) {
+		case u32_mod:
 			ip = vmPointer(s, s->vm.pc);
 			if (ip->opc == opc_lc32) {
 				int x = ip->arg.i32;
@@ -854,8 +992,9 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					opc = b32_and;
 				}
 			}
-		}
-		else if (opc == u32_div) {
+			break;
+
+		case u32_div:
 			ip = vmPointer(s, s->vm.pc);
 			if (ip->opc == opc_lc32) {
 				int x = ip->arg.i32;
@@ -865,33 +1004,41 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					opc = b32_shr;
 				}
 			}
-		}*/
+			break;
+		// */
 
 		// conditional jumps
-		else if (opc == opc_jnz) {
+		case opc_jnz:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_not) {
-				rt->_beg = (memptr)ip;
+				rt->_beg = (memptr) ip;
 				opc = opc_jz;
 			}
 			// i32 to boolean can be skipped
 			else if (ip->opc == i32_bol) {
-				rt->_beg = (memptr)ip;
+				rt->_beg = (memptr) ip;
 			}
-		}
-		else if (opc == opc_jz) {
+			break;
+
+		case opc_jz:
+			if (!rt->foldInstr) {
+				break;
+			}
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_not) {
-				rt->_beg = (memptr)ip;
+				rt->_beg = (memptr) ip;
 				opc = opc_jnz;
 			}
 			// i32 to boolean can be skipped
 			else if (ip->opc == i32_bol) {
-				rt->_beg = (memptr)ip;
+				rt->_beg = (memptr) ip;
 			}
-		}
+			break;
 
-		else if (opc == opc_spc) {
+		case opc_spc:
 			if (arg.i64 == 0) {
 				return rt->_beg - rt->_mem;
 			}
@@ -905,18 +1052,17 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					rt->vm.ss -= ip->rel / vm_size;
 					arg.i64 += ip->rel;
 				}
-			}// */
-		}
+			} */
+			break;
 
-		/* TODO: only if we have no jump here
-		else if (opc == opc_jmpi) {
+		case opc_jmpi:
+			/* TODO: only if we have no jump here
 			ip = vmPointer(rt, rt->vm.pc);
 			if (ip->opc == opc_jmpi) {
 				//~ rt->_beg = (memptr)ip;
 				return rt->vm.pc;
-			}
-		}*/
-
+			}*/
+			break;
 	}
 
 	ip = (vmInstruction)rt->_beg;
@@ -981,14 +1127,9 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 	}
 
 	if (opc == opc_call) {
-		//~ call ends with a return,
-		//~ which drops ip from the stack.
+		// each call ends with a return,
+		// which drops ip from the top of the stack.
 		rt->vm.ss -= 1;
-	}
-
-	// set max stack used.
-	if (rt->vm.sm < rt->vm.ss) {
-		rt->vm.sm = rt->vm.ss;
 	}
 
 	dbgEmit("pc[%d]: sp(%d): %A", rt->vm.pc, rt->vm.ss, ip);
@@ -1034,8 +1175,8 @@ static inline void vmTrace(vmProcessor pu, int cp, char *msg) {
 	(void)msg;
 }
 
-/// Try to start a new child cell for task.
-static inline int vmFork(vmProcessor pu, int n, int master, int cl) {
+/// Try to start a new worker for task.
+static inline int vmFork(vmProcessor pu, int n, unsigned master, unsigned cl) {
 	// find an empty processor
 	int slave = master + 1;
 	while (slave < n) {
@@ -1063,8 +1204,8 @@ static inline int vmFork(vmProcessor pu, int n, int master, int cl) {
 	return 0;
 }
 
-/// Wait for child cells to halt.
-static inline int vmJoin(vmProcessor pu, int cp, int wait) {
+/// Wait for worker to finish.
+static inline int vmJoin(vmProcessor pu, unsigned cp, int wait) {
 	int pp = pu[cp].pp;
 	vmTrace(pu, cp, "join");
 
@@ -1183,7 +1324,7 @@ static inline vmError traceCall(rtContext rt, void *sp, size_t caller, size_t ca
 static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t caller, size_t callee) {
 	if (err != noError) {
 		char *errMsg = vmErrorMessage(err);
-		symn fun = rtFindSym(ctx->rt, caller, 1);
+		symn fun = rtLookupSym(ctx->rt, caller, 1);
 		dbgn dbg = mapDbgStatement(ctx->rt, caller);
 		size_t offs = caller;
 		char *file = NULL;
@@ -1205,13 +1346,13 @@ static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t
 }
 
 /**
- * @brief Execute bytecode.
+ * Execute bytecode.
+ * 
  * @param rt Runtime context.
  * @param pu Cell to execute on.
  * @param fun Executing function.
  * @param extra Extra data for native calls.
- * @param dbg function which is executed after each instruction or on error.
- * @return Error code of execution, 0 on success.
+ * @return Error code of execution, noError on success.
  */
 static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 	libc *nativeCalls = rt->vm.nfc;
@@ -1394,8 +1535,6 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 }
 vmError invoke(rtContext rt, symn fun, void *res, void *args, const void *extra) {
 	const vmProcessor pu = rt->vm.cell;
-	vmError result;
-	size_t resSize;
 
 	if (pu == NULL) {
 		fatal(ERR_INTERNAL_ERROR": can not invoke %?T without execute", fun);
@@ -1411,23 +1550,24 @@ vmError invoke(rtContext rt, symn fun, void *res, void *args, const void *extra)
 	}
 
 	// result is the last argument.
-	resSize = fun->params->size;
+	size_t argSize = argsSize(fun);
+	size_t resSize = fun->params->size;
 	void *ip = pu->ip;
 	void *sp = pu->sp;
 	void *tp = pu->tp;
 
 	// make space for result and arguments// result is the first param
-	pu->sp -= fun->params->offs;
+	pu->sp -= argSize / vm_size;
 
 	if (args != NULL) {
-		memcpy(pu->sp, args, fun->params->offs - resSize);
+		memcpy((char *)pu->sp, args, argSize - resSize);
 	}
 
 	// return here: vm->px: program halt
 	*(pu->sp -= 1) = rt->vm.px;
 
 	pu->ip = vmPointer(rt, fun->offs);
-	result = exec(rt, pu, fun, extra);
+	vmError result = exec(rt, pu, fun, extra);
 	if (result == noError && res != NULL) {
 		memcpy(res, (memptr) sp - resSize, resSize);
 	}
@@ -1498,7 +1638,7 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 	if (rt != NULL) {
 		offs = vmOffset(rt, ptr);
 		if (mode & prAsmName) {
-			sym = rtFindSym(rt, offs, 0);
+			sym = rtLookupSym(rt, offs, 0);
 		}
 	}
 
@@ -1669,20 +1809,20 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 
 			printFmt(out, esc, fmt_addr, offs);
 			if (rt != NULL) {
-				sym = rtFindSym(rt, offs, 0);
+				sym = rtLookupSym(rt, offs, 0);
 				if (sym != NULL) {
 					printFmt(out, esc, " ;%?T%?+d", sym, offs - sym->offs);
 				}
 				else if (rt->cc != NULL) {
 					char *str = vmPointer(rt, offs);
-					for (i = 0; i < TBL_SIZE; i += 1) {
+					for (i = 0; i < hashTableSize; i += 1) {
 						list lst;
 						for (lst = rt->cc->strt[i]; lst; lst = lst->next) {
 							if (str == (char*)lst->data) {
 								printFmt(out, esc, " ;%c", type_fmt_string_chr);
 								printFmt(out, esc ? esc : escapeStr(), "%s", str);
 								printFmt(out, esc, "%c", type_fmt_string_chr);
-								i = TBL_SIZE;
+								i = hashTableSize;
 								break;
 							}
 						}
@@ -1718,7 +1858,7 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 }
 
 void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val, dmpMode mode, int indent) {
-	ccKind typCast, varCast = castOf(var);
+	ccKind varCast = castOf(var);
 	const char *format = var->format;
 	memptr data = (memptr) val;
 	symn typ = var;
@@ -1736,11 +1876,18 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 			format = typ->format;
 		}
 		if (varCast == CAST_ref) {
-			data = vmPointer(rt, (size_t) val->ref.data);
+			data = vmPointer(rt, (size_t) val->ref);
 		}
 	}
+	else if (val == vmPointer(rt, var->offs)) {
+		if (mode & prSymType) {
+			printFmt(out, esc, "%.*T: ", mode & ~prSymType, var);
+		}
+		typ = var = rt->main->fields;
+		format = type_fmt_typename;
+	}
 
-	typCast = castOf(typ);
+	ccKind typCast = castOf(typ);
 	if (var != typ) {
 		printFmt(out, esc, "%.*T: ", mode & ~prSymType, var);
 	}
@@ -1761,7 +1908,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 	else if (format != NULL) {
 		vmValue *ref = (vmValue *) data;
 		if (format == type_fmt_typename) {
-			printFmt(out, esc, format, ref);
+			printFmt(out, esc, type_fmt_typename, ref);
 		}
 		else if (format == type_fmt_string) {
 			printFmt(out, esc, "%c", type_fmt_string_chr);
@@ -1820,29 +1967,33 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 				break;
 		}
 	}
-	else if (indent > LOG_MAX_ITEMS) {
-		printFmt(out, esc, "???");
+	else if (indent > maxLogItems) {
+		printFmt(out, esc, "...");
 	}
 	else if (typCast == CAST_var) {
-		memptr varData = vmPointer(rt, (size_t) val->ref.data);
-		symn varType = vmPointer(rt, (size_t) val->var.type);
+		memptr varData = vmPointer(rt, (size_t) val->ref);
+		symn varType = vmPointer(rt, (size_t) val->type);
 
 		if (varType == NULL || varData == NULL) {
 			printFmt(out, esc, "null");
 		}
-		else {
+		else if (var != typ) {
 			printFmt(out, esc, "{%.T: ", varType);
 			printVal(out, esc, rt, varType, (vmValue *) varData, mode & ~(prSymQual | prSymType), -indent);
 			printFmt(out, esc, "}");
 		}
+		else {
+			size_t offs = vmOffset(rt, data);
+			printFmt(out, esc, "<{?} @%06x>", offs);
+		}
 	}
 	else if (typCast == CAST_arr) {
-		memptr arrData = varCast == CAST_val ? val : vmPointer(rt, (size_t) val->arr.data);
+		memptr arrData = varCast == CAST_val ? val : vmPointer(rt, (size_t) val->ref);
 
 		if (arrData == NULL) {
 			printFmt(out, esc, "null");
 		}
-		else {
+		else if (var != typ) {
 			symn len = typ->fields;
 			if (len == NULL) {
 				// interpret `char[*]` as string
@@ -1863,14 +2014,14 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 					arrLength = typ->size / inc;
 				}
 				else {
-					arrLength = val->arr.length;
+					arrLength = val->length;
 				}
 				printFmt(out, esc, "[%d] {", arrLength);
 				for (idx = 0; idx < arrLength; idx += 1) {
 					if (idx > 0) {
 						printFmt(out, esc, ", ");
 					}
-					if (idx >= LOG_MAX_ITEMS) {
+					if (idx >= maxLogItems) {
 						printFmt(out, esc, "...");
 						break;
 					}
@@ -1879,11 +2030,23 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 				printFmt(out, esc, "}");
 			}
 		}
+		else {
+			// interpret `char[]`, `char[*]` and `char[n]` as string
+			if (typ->type->format == type_fmt_character) {
+				printFmt(out, esc, "%c", type_fmt_string_chr);
+				printFmt(out, esc ? esc : escapeStr(), type_fmt_string, val);
+				printFmt(out, esc, "%c", type_fmt_string_chr);
+			}
+			else {
+				size_t offs = vmOffset(rt, data);
+				printFmt(out, esc, "<[?] @%06x>", offs);
+			}
+		}
 	}
 	else {
-		// struct, typename, function, pointer, etc
+		// typename, function, pointer, etc (without format option)
 		size_t offs = vmOffset(rt, data);
-		symn sym = rtFindSym(rt, offs, 0);
+		symn sym = rtLookupSym(rt, offs, 0);
 		if (sym != NULL) {
 			offs -= sym->offs;
 			printFmt(out, esc, "<%?.T%?+d @%06x>", sym, offs, vmOffset(rt, data));
@@ -1918,7 +2081,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 			}
 		}
 		else {
-			printFmt(out, esc, "<{??}@%06x>", offs);
+			printFmt(out, esc, "<(?) @%06x>", offs);
 		}
 	}
 
@@ -1994,7 +2157,7 @@ static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, v
 	}
 }
 
-void traceCalls(dbgContext dbg, FILE *out, int indent, size_t skip, size_t maxCalls) {
+void traceCalls(dbgContext dbg, FILE *out, int indent, size_t maxCalls) {
 	rtContext rt = dbg->rt;
 	vmProcessor pu = rt->vm.cell;
 	trcptr trcBase = (trcptr)pu->bp;
@@ -2009,10 +2172,10 @@ void traceCalls(dbgContext dbg, FILE *out, int indent, size_t skip, size_t maxCa
 		maxCalls = maxTrace;
 	}
 
-	for (i = skip; i < maxCalls; ++i) {
+	for (i = 0; i < maxCalls; ++i) {
 		trcptr trace = &trcBase[maxTrace - i - 1];
 		dbgn trInfo = mapDbgStatement(rt, trace->caller);
-		symn fun = rtFindSym(rt, trace->callee, 1);
+		symn fun = rtLookupSym(rt, trace->callee, 1);
 		stkptr sp = trace->sp;
 		char *file = NULL;
 		int line = 0;

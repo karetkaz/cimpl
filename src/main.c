@@ -1,3 +1,13 @@
+/*******************************************************************************
+ *   File: lstd.c
+ *   Date: 2011/06/23
+ *   Desc: command line executable
+ *******************************************************************************
+ * command line argument parsing
+ * console debugger
+ * json / text dump
+ */
+
 #include "internal.h"
 #include <time.h>
 
@@ -140,7 +150,6 @@ typedef enum {
 	trcTime    = 0x0080,     // dump timestamp
 
 	dmpProfile = 0x0100,     // dump execution times
-	dmpGlobals = 0x0200,     // dump global variables
 	dmpMemory  = 0x0400,     // dump memory statistics
 	dmpAllData = 0x0800
 
@@ -169,6 +178,8 @@ struct userContextRec {
 	int dmpAsmStmt;     // print source code statements
 	int hideOffsets;    // remove offsets from dumps
 	char *compileSteps; // dump compilation steps
+
+	int dmpGlobals;     // dump global variables after execution
 
 	runMode exec;
 
@@ -324,7 +335,7 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 	}
 }
 
-// json output
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ json output
 static char *const JSON_KEY_VERSION = "version";
 static char *const JSON_KEY_SYMBOLS = "symbols";
 static char *const JSON_KEY_PROFILE = "profile";
@@ -641,7 +652,7 @@ static void jsonPostProfile(dbgContext ctx) {
 		}
 		covFunc += 1;
 		if (sym == NULL) {
-			sym = rtFindSym(ctx->rt, dbg->start, 1);
+			sym = rtLookupSym(ctx->rt, dbg->start, 1);
 		}
 		if (covFunc > 1) {
 			printFmt(out, esc, JSON_OBJ_NEXT, indent + 1);
@@ -664,7 +675,7 @@ static void jsonPostProfile(dbgContext ctx) {
 		}
 		covStmt += 1;
 		if (sym == NULL) {
-			sym = rtFindSym(ctx->rt, dbg->start, 1);
+			sym = rtLookupSym(ctx->rt, dbg->start, 1);
 		}
 		if (sym != NULL) {
 			symOffs = dbg->start - sym->offs;
@@ -707,16 +718,15 @@ static void jsonPreProfile(dbgContext ctx) {
 	printFmt(out, esc, JSON_ARR_START, indent + 1, "callTree");
 }
 
-// text output
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ text output
 static void textDumpDBG(FILE *out, const char **esc, dbgn dbg, userContext ctx, int indent) {
 	dmpMode mode = ctx->dmpAsm;
 	printFmt(out, esc, "%I%?s:%?u", indent, dbg->file, dbg->line);
+	printFmt(out, esc, ": (%d bytes", dbg->end - dbg->start);
 	if (mode & prAsmAddr && !ctx->hideOffsets) {
-		printFmt(out, esc, ": [%06x-%06x)", dbg->start, dbg->end);
+		printFmt(out, esc, " @.%06x-.%06x", dbg->start, dbg->end);
 	}
-	else {
-		printFmt(out, esc, ": (%d bytes)", dbg->end - dbg->start);
-	}
+	printFmt(out, esc, ")");
 	if (dbg->stmt != NULL && ctx->rt->cc != NULL) {
 		printFmt(out, esc, ": %.*t", mode | prFull | prOneLine, dbg->stmt);
 	}
@@ -851,9 +861,9 @@ static void textPostProfile(userContext usr) {
 	rtContext rt = usr->rt;
 	const char *prefix = usr->compileSteps ? usr->compileSteps : "\n---------- ";
 
-	if (usr->exec & dmpGlobals) {
+	if (usr->dmpGlobals) {
 		printFmt(out, esc, "%?sGlobals:\n", prefix);
-		printGlobals(rt, out, esc, all);
+		printGlobals(rt, out, esc, usr->dmpGlobals > 1);
 	}
 
 	dbgContext dbg = rt->dbg;
@@ -876,7 +886,7 @@ static void textPostProfile(userContext usr) {
 		size_t covStmt = 0, nStmt = dbg->statements.cnt;
 		dbgn fun = (dbgn) dbg->functions.ptr;
 
-		printFmt(out, esc, "%?sProfiled functions:\n", prefix);
+		printFmt(out, esc, "%?sProfile: functions\n", prefix);
 		for (int i = 0; i < nFunc; ++i, fun++) {
 			symn sym = fun->decl;
 			if (fun->hits == 0) {
@@ -884,7 +894,7 @@ static void textPostProfile(userContext usr) {
 			}
 			covFunc += 1;
 			if (sym == NULL) {
-				sym = rtFindSym(rt, fun->start, 1);
+				sym = rtLookupSym(rt, fun->start, 1);
 			}
 			printFmt(out, esc,
 				"%?s:%?u:[.%06x, .%06x): %?T, hits(%D/%D), time(%D%?+D / %.3F%?+.3F ms)\n", fun->file,
@@ -895,7 +905,7 @@ static void textPostProfile(userContext usr) {
 		}
 
 		if (all) {
-			printFmt(out, esc, "%?sProfiled statements:\n", prefix);
+			printFmt(out, esc, "%?sProfile: statements\n", prefix);
 		}
 		fun = (dbgn) rt->dbg->statements.ptr;
 		for (int i = 0; i < nStmt; ++i, fun++) {
@@ -906,7 +916,7 @@ static void textPostProfile(userContext usr) {
 			}
 			covStmt += 1;
 			if (sym == NULL) {
-				sym = rtFindSym(rt, fun->start, 1);
+				sym = rtLookupSym(rt, fun->start, 1);
 			}
 			if (sym != NULL) {
 				symOffs = fun->start - sym->offs;
@@ -921,12 +931,12 @@ static void textPostProfile(userContext usr) {
 			}
 		}
 
-		printFmt(out, esc, "%?sCoverage:\nfunctions: %.2f%% (%d/%d)\nstatements: %.2f%% (%d/%d)\n", prefix,
+		printFmt(out, esc, "%?sProfile: coverage\nfunctions: %.2f%% (%d/%d)\nstatements: %.2f%% (%d/%d)\n", prefix,
 			covFunc * 100. / (nFunc ? nFunc : 1), covFunc, nFunc, covStmt * 100. / (nStmt ? nStmt : 1), covStmt, nStmt
 		);
 
 		if (all) {
-			printFmt(out, esc, "%?sNon executed functions:\n", prefix);
+			printFmt(out, esc, "%?sProfile: functions not executed\n", prefix);
 			fun = (dbgn) dbg->functions.ptr;
 			for (int i = 0; i < nFunc; ++i, fun++) {
 				symn sym = fun->decl;
@@ -934,11 +944,11 @@ static void textPostProfile(userContext usr) {
 					continue;
 				}
 				if (sym == NULL) {
-					sym = rtFindSym(rt, fun->start, 1);
+					sym = rtLookupSym(rt, fun->start, 1);
 				}
 				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): %?T\n", fun->file, fun->line, fun->start, fun->end, sym);
 			}
-			printFmt(out, esc, "%?sNon executed statements:\n", prefix);
+			printFmt(out, esc, "%?sProfile: statements not executed\n", prefix);
 			fun = (dbgn) rt->dbg->statements.ptr;
 			for (int i = 0; i < nStmt; ++i, fun++) {
 				size_t symOffs = 0;
@@ -947,7 +957,7 @@ static void textPostProfile(userContext usr) {
 					continue;
 				}
 				if (sym == NULL) {
-					sym = rtFindSym(rt, fun->start, 1);
+					sym = rtLookupSym(rt, fun->start, 1);
 				}
 				if (sym != NULL) {
 					symOffs = fun->start - sym->offs;
@@ -1074,19 +1084,19 @@ static void dumpApiText(userContext extra, symn sym) {
 
 	// print function disassembled instructions
 	if (dmpAsm != 0) {
-		size_t pc, end = sym->offs + sym->size;
+		size_t end = sym->offs + sym->size;
 
 		if (!dumpExtraData) {
 			printFmt(out, esc, " {\n");
 			dumpExtraData = 1;
 		}
-		if (extra->hideOffsets) {
-			printFmt(out, esc, "%I.instructions: [%d bytes]\n", indent, sym->size);
+		printFmt(out, esc, "%I.instructions: (%d bytes", indent, sym->size);
+		if (!extra->hideOffsets) {
+			printFmt(out, esc, " @.%06x-.%06x", sym->offs, sym->offs + sym->size);
 		}
-		else {
-			printFmt(out, esc, "%I.instructions: [%d bytes @.%06x]\n", indent, sym->size, sym->offs);
-		}
-		for (pc = sym->offs; pc < end; ) {
+		printFmt(out, esc, ")\n");
+
+		for (size_t pc = sym->offs; pc < end; ) {
 			unsigned char *ip = vmPointer(extra->rt, pc);
 			size_t ppc = pc;
 
@@ -1157,7 +1167,7 @@ static void dumpApiSciTE(userContext extra, symn sym) {
 	printFmt(out, esc, "\n");
 }
 
-// console debugger and profiler
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ console debugger and profiler
 static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, size_t callee) {
 	char buff[1024];
 	rtContext rt = ctx->rt;
@@ -1187,7 +1197,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 				printFmt(out, esc, "[% 3.2F]", now);
 			}
 			if ((ssize_t) callee > 0) {
-				printFmt(out, esc, ">% I %d, %T\n", ss, ctx->usedMem, rtFindSym(rt, callee, 1));
+				printFmt(out, esc, ">% I %d, %T\n", ss, ctx->usedMem, rtLookupSym(rt, callee, 1));
 			}
 			else {
 				printFmt(out, esc, "<% I %d\n", ss, ctx->usedMem);
@@ -1231,15 +1241,30 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 		if (usr->exec & trcLocals) {
 			size_t i = 0;
 			printFmt(out, esc, "\tstack(%d): [", ss);
-			if (ss > LOG_MAX_ITEMS) {
+			if (ss > maxLogItems) {
 				printFmt(out, esc, " …");
-				i = ss - LOG_MAX_ITEMS;
+				i = ss - maxLogItems;
 			}
 			for (; i < ss; i++) {
 				if (i > 0) {
 					printFmt(out, esc, ",");
 				}
-				printFmt(out, esc, " %d", ((int32_t *) stack)[ss - i - 1]);
+				symn sym = NULL;
+				int32_t val = ((int32_t *) stack)[ss - i - 1];
+				if (val > 0 && val <= rt->vm.px) {
+					sym = rtLookupSym(rt, val, 0);
+					if (sym && !isFunction(sym)) {
+						if (sym->offs != val) {
+							sym = NULL;
+						}
+					}
+				}
+				if (sym != NULL) {
+					size_t symOffs = val - sym->offs;
+					printFmt(out, esc, "<%?.T%?+d>", sym, symOffs);
+				} else {
+					printFmt(out, esc, " %d", val);
+				}
 			}
 			printFmt(out, esc, "\n");
 		}
@@ -1258,7 +1283,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 
 	// print error type
 	if (breakMode & brkPrint) {
-		symn fun = rtFindSym(rt, caller, 0); 
+		symn fun = rtLookupSym(rt, caller, 0); 
 		size_t funOffs = caller;
 		if (fun != NULL) {
 			funOffs -= fun->offs;
@@ -1277,7 +1302,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 		}
 	}
 	if (breakMode & brkTrace) {
-		traceCalls(ctx, out, 1, 0, 20);
+		traceCalls(ctx, out, 1, 20);
 	}
 
 	// pause execution in debugger
@@ -1323,7 +1348,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 				return dbg;
 
 			case dbgPrintStackTrace:
-				traceCalls(ctx, con, 1, 0, 20);
+				traceCalls(ctx, con, 1, 20);
 				break;
 
 			case dbgPrintInstruction:
@@ -1352,7 +1377,133 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 	return dbg;
 }
 
-static int program(int argc, char *argv[]) {
+static void dumpVmOpc(const char *error, const struct opcodeRec *info) {
+	FILE *out = stdout;
+	printFmt(out, NULL, "\n## Instruction %s\n", info->name);
+	printFmt(out, NULL, "Perform [TODO]\n");
+	printFmt(out, NULL, "\n### Description\n");
+	printFmt(out, NULL, "Instruction code: 0x%02x  \n", info->code);
+	printFmt(out, NULL, "Instruction length: %d byte%?c  \n", info->size, info->size == 1 ? 0 : 's');
+	printFmt(out, NULL, "\n### Stack change\n");
+
+	printFmt(out, NULL, "Requires %d operand%?c: […", info->stack_in, info->stack_in == 1 ? 0 : 's');
+	for (unsigned i = 0; i < info->stack_in; ++i) {
+		printFmt(out, NULL, ", %c", 'a' + i);
+	}
+	printFmt(out, NULL, "  \nReturns %d value%?c: […", info->stack_out, info->stack_in == 1 ? 0 : 's');
+	for (unsigned i = 0; i < info->stack_out; ++i) {
+		printFmt(out, NULL, ", %c", 'a' + i);
+	}
+	printFmt(out, NULL, ", [TODO]  \n");
+
+	if (error != NULL) {
+		printFmt(out, NULL, "\n### Note\n%s\n", error);
+	}
+}
+
+static void testVmOpc(const char *error, const struct opcodeRec *info) {
+	if (error == NULL) {
+		return;
+	}
+	printFmt(stdout, NULL, "%s: %s\n", error, info->name);
+}
+
+static int usage() {
+	const char *USAGE = "cmpl [global options] [files with options]..."
+		"\n"
+		"\n<global options>:"
+		"\n"
+		"\n  -std<file>            specify custom standard library file (empty file name disables std library compilation)."
+		"\n"
+		"\n  -mem<int>[kKmMgG]     override memory usage for compiler and runtime(heap)"
+		"\n"
+		"\n  -log[*] <file>        set logger for: compilation errors and warnings, runtime debug messages"
+		"\n    /a                  append to the log file"
+		"\n"
+		"\n  -dump[?] <file>       set output for: dump(symbols, assembly, abstract syntax tree, coverage, call tree)"
+		"\n    .scite              dump api for SciTE text editor"
+		"\n    .json               dump api in javascript object notation format"
+		"\n"
+		"\n  -api[*]               dump symbols"
+		"\n    /a                  include all builtin symbols"
+		"\n    /m                  include main builtin symbol"
+		"\n    /d                  dump details of symbol"
+		"\n    /p                  dump params and fields"
+		"\n    /u                  dump usages"
+		"\n"
+		"\n  -asm[*]               dump assembled code: jmp +80"
+		"\n    /a                  use global address: jmp @0x003d8c"
+		"\n    /n                  prefer names over addresses: jmp <main+80>"
+		"\n    /s                  print source code statements"
+		"\n"
+		"\n  -ast[*]               dump syntax tree"
+		"\n    /t                  dump sub-expression type information"
+		"\n    /l                  do not expand statements (print on single line)"
+		"\n    /b                  don't keep braces ('{') on the same line"
+		"\n    /e                  don't keep `else if` constructs on the same line"
+		"\n"
+		"\n  -run                  run without: debug information, stacktrace, bounds checking, ..."
+		"\n"
+		"\n  -debug[*]             run with attached debugger, pausing on uncaught errors and break points"
+		"\n    /s                  pause on startup"
+		"\n    /a                  pause on all(caught) errors"
+		"\n    /[l|L]              print caught errors (/L includes stack trace)"
+		"\n    /g                  dump global variable values"
+		"\n    /h                  dump allocated heap memory chunks"
+		"\n    /p                  dump function/coverage statistics"
+		"\n"
+		"\n  -profile[*]           run code with profiler: coverage, method tracing"
+		"\n    /t                  dump call tree"
+		"\n    /a                  include everything in the dump"
+		"\n    /g                  dump global variable values"
+		"\n    /h                  dump allocated heap memory chunks"
+		"\n    /p                  dump function/coverage statistics"
+		"\n"
+		"\n<files with options>: filename followed by switches"
+		"\n  <file>                if file extension is (.so|.dll) load as library else compile"
+		"\n  -w[a|x|<int>]         set or disable warning level for current file"
+		"\n  -b[*]<int>            break point on <int> line in current file"
+		"\n    /[l|L]              print only, do not pause (/L includes stack trace)"
+		"\n    /o                  one shot breakpoint, disable after first hit"
+		"\n"
+		"\nexamples:"
+		"\n"
+		"\n>app -dump.json api.json"
+		"\n    dump builtin symbols to `api.json` file (types, functions, variables, aliases)"
+		"\n"
+		"\n>app -run test.tracing.ccc"
+		"\n    compile and execute the file `test.tracing.ccc`"
+		"\n"
+		"\n>app -debug gl.so -w0 gl.ccc -w0 test.ccc -wx -b12 -b15 -b/t19"
+		"\n    execute in debug mode"
+		"\n    import `gl.so`"
+		"\n        with no warnings"
+		"\n    compile `gl.ccc`"
+		"\n        with no warnings"
+		"\n    compile `test.ccc`"
+		"\n        treating all warnings as errors"
+		"\n        break execution on lines 12 and 15"
+		"\n        print message when line 19 is hit"
+		"\n";
+	fputs(USAGE, stdout);
+	return 0;
+}
+
+int main(int argc, char *argv[]) {
+	setbuf(stdout, NULL);
+	setbuf(stderr, NULL);
+
+	if (argc < 2) {
+		return usage();
+	}
+	if (argc == 2) {
+		if (strcmp(argv[1], "--help") == 0) {
+			return usage();
+		}
+		if (strcmp(argv[1], "-vmTest") == 0) {
+			return vmSelfTest(testVmOpc);
+		}
+	}
 	struct userContextRec extra = {
 		.dbgCommand = dbgResume,	// last command: resume
 		.dbgOnError = brkPause | brkPrint,
@@ -1384,11 +1535,10 @@ static int program(int argc, char *argv[]) {
 		.rt = NULL
 	};
 
-	// TODO: merge settings into userContextRec
 	struct {
 		// optimizations
 		int foldConst;
-		int foldInstr;
+		int fastInstr;
 		int fastAssign;
 		int genGlobals;
 
@@ -1396,7 +1546,7 @@ static int program(int argc, char *argv[]) {
 	} settings = {
 		// use all optimizations by default
 		.foldConst = 1,
-		.foldInstr = 1,
+		.fastInstr = 1,
 		.fastAssign = 1,
 		.genGlobals = 0,
 
@@ -1409,7 +1559,7 @@ static int program(int argc, char *argv[]) {
 	char *stdLib = (char*)STDLIB;	// standard library
 	char *ccFile = NULL;			// compiled filename
 
-	char *logFile = NULL;			// logger filename
+	char *logFileName = NULL;		// logger filename
 	int logAppend = 0;				// do not clear the log file
 
 	FILE *dumpFile = NULL;			// dump file
@@ -1496,11 +1646,11 @@ static int program(int argc, char *argv[]) {
 		// logger filename
 		else if (strncmp(arg, "-log", 4) == 0) {
 			char *arg2 = arg + 4;
-			if (++i >= argc || logFile) {
+			if (++i >= argc || logFileName) {
 				fatal("log file not or double specified");
 				return -1;
 			}
-			logFile = argv[i];
+			logFileName = argv[i];
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
@@ -1713,8 +1863,12 @@ static int program(int argc, char *argv[]) {
 						arg2 += 1;
 						break;
 
+					case 'G':
+						extra.dmpGlobals = 2;
+						arg2 += 2;
+						break;
 					case 'g':
-						extra.exec |= dmpGlobals;
+						extra.dmpGlobals = 1;
 						arg2 += 2;
 						break;
 				}
@@ -1765,8 +1919,12 @@ static int program(int argc, char *argv[]) {
 						extra.exec |= dmpProfile;
 						arg2 += 2;
 						break;
+					case 'G':
+						extra.dmpGlobals = 2;
+						arg2 += 2;
+						break;
 					case 'g':
-						extra.exec |= dmpGlobals;
+						extra.dmpGlobals = 1;
 						arg2 += 2;
 						break;
 					case 'h':
@@ -1801,8 +1959,12 @@ static int program(int argc, char *argv[]) {
 						break;
 
 					// dump stats
+					case 'G':
+						extra.dmpGlobals = 2;
+						arg2 += 2;
+						break;
 					case 'g':
-						extra.exec |= dmpGlobals;
+						extra.dmpGlobals = 1;
 						arg2 += 2;
 						break;
 					case 'h':
@@ -1831,7 +1993,7 @@ static int program(int argc, char *argv[]) {
 					arg2 += 5;
 				}
 				else if (strBegins(arg2 + 1, "fast")) {
-					settings.foldInstr = on;
+					settings.fastInstr = on;
 					arg2 += 5;
 				}
 				else if (strBegins(arg2 + 1, "asgn")) {
@@ -1902,19 +2064,20 @@ static int program(int argc, char *argv[]) {
 	}
 
 	rt->foldConst = settings.foldConst != 0;
-	rt->foldInstr = settings.foldInstr != 0;
+	rt->foldInstr = settings.fastInstr != 0;
+	rt->fastMemory = settings.fastInstr != 0;
 	rt->fastAssign = settings.fastAssign != 0;
 	rt->genGlobals = settings.genGlobals != 0;
 
 	// open log file (global option)
-	if (logFile && !logfile(rt, logFile, logAppend)) {
-		info(rt, NULL, 0, ERR_OPENING_FILE, logFile);
+	if (logFileName && !logFile(rt, logFileName, logAppend)) {
+		info(rt, NULL, 0, ERR_OPENING_FILE, logFileName);
 	}
 
 	// install base type system.
 	if (!ccInit(rt, install, NULL)) {
 		error(rt, NULL, 0, "error registering base types");
-		logfile(rt, NULL, 0);
+		logFile(rt, NULL, 0);
 		return -6;
 	}
 
@@ -2025,8 +2188,8 @@ static int program(int argc, char *argv[]) {
 
 	// generate code only if there are no compilation errors
 	if (rt->errors == 0) {
-		if (extra.compileSteps != NULL) {printFmt(extra.out, extra.esc, "%sGenerate:\n", extra.compileSteps);}
-		if (!gencode(rt, run_code != run)) {
+		if (extra.compileSteps != NULL) {printFmt(extra.out, extra.esc, "%sGenerate: byte-code\n", extra.compileSteps);}
+		if (!ccGenCode(rt, run_code != run)) {
 			trace("error generating code");
 		}
 		// set breakpoints
@@ -2117,135 +2280,5 @@ static int program(int argc, char *argv[]) {
 	rtClose(rt);
 
 	return rt->errors != 0;
-}
-
-static int usage() {
-	const char *USAGE = "cmpl [global options] [files with options]..."
-		"\n"
-		"\n<global options>:"
-		"\n"
-		"\n  -std<file>            specify custom standard library file (empty file name disables std library compilation)."
-		"\n"
-		"\n  -mem<int>[kKmMgG]     override memory usage for compiler and runtime(heap)"
-		"\n"
-		"\n  -log[*] <file>        set logger for: compilation errors and warnings, runtime debug messages"
-		"\n    /a                  append to the log file"
-		"\n"
-		"\n  -dump[?] <file>       set output for: dump(symbols, assembly, abstract syntax tree, coverage, call tree)"
-		"\n    .scite              dump api for SciTE text editor"
-		"\n    .json               dump api in javascript object notation format"
-		"\n"
-		"\n  -api[*]               dump symbols"
-		"\n    /a                  include all builtin symbols"
-		"\n    /m                  include main builtin symbol"
-		"\n    /d                  dump details of symbol"
-		"\n    /p                  dump params and fields"
-		"\n    /u                  dump usages"
-		"\n"
-		"\n  -asm[*]               dump assembled code: jmp +80"
-		"\n    /a                  use global address: jmp @0x003d8c"
-		"\n    /n                  prefer names over addresses: jmp <main+80>"
-		"\n    /s                  print source code statements"
-		"\n"
-		"\n  -ast[*]               dump syntax tree"
-		"\n    /t                  dump sub-expression type information"
-		"\n    /l                  do not expand statements (print on single line)"
-		"\n    /b                  don't keep braces ('{') on the same line"
-		"\n    /e                  don't keep `else if` constructs on the same line"
-		"\n"
-		"\n  -run                  run without: debug information, stacktrace, bounds checking, ..."
-		"\n"
-		"\n  -debug[*]             run with attached debugger, pausing on uncaught errors and break points"
-		"\n    /s                  pause on startup"
-		"\n    /a                  pause on all(caught) errors"
-		"\n    /[l|L]              print caught errors (/L includes stack trace)"
-		"\n    /g                  dump global variable values"
-		"\n    /h                  dump allocated heap memory chunks"
-		"\n    /p                  dump function/coverage statistics"
-		"\n"
-		"\n  -profile[*]           run code with profiler: coverage, method tracing"
-		"\n    /t                  dump call tree"
-		"\n    /a                  include everything in the dump"
-		"\n    /g                  dump global variable values"
-		"\n    /h                  dump allocated heap memory chunks"
-		"\n    /p                  dump function/coverage statistics"
-		"\n"
-		"\n<files with options>: filename followed by switches"
-		"\n  <file>                if file extension is (.so|.dll) load as library else compile"
-		"\n  -w[a|x|<int>]         set or disable warning level for current file"
-		"\n  -b[*]<int>            break point on <int> line in current file"
-		"\n    /[l|L]              print only, do not pause (/L includes stack trace)"
-		"\n    /o                  one shot breakpoint, disable after first hit"
-		"\n"
-		"\nexamples:"
-		"\n"
-		"\n>app -dump.json api.json"
-		"\n    dump builtin symbols to `api.json` file (types, functions, variables, aliases)"
-		"\n"
-		"\n>app -run test.tracing.ccc"
-		"\n    compile and execute the file `test.tracing.ccc`"
-		"\n"
-		"\n>app -debug gl.so -w0 gl.ccc -w0 test.ccc -wx -b12 -b15 -b/t19"
-		"\n    execute in debug mode"
-		"\n    import `gl.so`"
-		"\n        with no warnings"
-		"\n    compile `gl.ccc`"
-		"\n        with no warnings"
-		"\n    compile `test.ccc`"
-		"\n        treating all warnings as errors"
-		"\n        break execution on lines 12 and 15"
-		"\n        print message when line 19 is hit"
-		"\n";
-	fputs(USAGE, stdout);
-	return 0;
-}
-
-static void dumpVmOpc(const char *error, const struct opcodeRec *info) {
-	FILE *out = stdout;
-	printFmt(out, NULL, "\n## Instruction %s\n", info->name);
-	printFmt(out, NULL, "Perform [TODO]\n");
-	printFmt(out, NULL, "\n### Description\n");
-	printFmt(out, NULL, "Instruction code: 0x%02x  \n", info->code);
-	printFmt(out, NULL, "Instruction length: %d byte%?c  \n", info->size, info->size == 1 ? 0 : 's');
-	printFmt(out, NULL, "\n### Stack change\n");
-
-	printFmt(out, NULL, "Requires %d operand%?c: […", info->stack_in, info->stack_in == 1 ? 0 : 's');
-	for (unsigned i = 0; i < info->stack_in; ++i) {
-		printFmt(out, NULL, ", %c", 'a' + i);
-	}
-	printFmt(out, NULL, "  \nReturns %d value%?c: […", info->stack_out, info->stack_in == 1 ? 0 : 's');
-	for (unsigned i = 0; i < info->stack_out; ++i) {
-		printFmt(out, NULL, ", %c", 'a' + i);
-	}
-	printFmt(out, NULL, ", [TODO]  \n");
-
-	if (error != NULL) {
-		printFmt(out, NULL, "\n### Note\n%s\n", error);
-	}
-}
-
-static void testVmOpc(const char *error, const struct opcodeRec *info) {
-	if (error == NULL) {
-		return;
-	}
-	printFmt(stdout, NULL, "%s: %s\n", error, info->name);
-}
-
-int main(int argc, char *argv[]) {
-	setbuf(stdout, NULL);
-	setbuf(stderr, NULL);
-
-	if (argc < 2) {
-		return usage();
-	}
-	if (argc == 2) {
-		if (strcmp(argv[1], "--help") == 0) {
-			return usage();
-		}
-		if (strcmp(argv[1], "-vmTest") == 0) {
-			return vmSelfTest(testVmOpc);
-		}
-	}
-	return program(argc, argv);
 	(void)dumpVmOpc;
 }

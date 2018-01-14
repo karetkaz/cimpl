@@ -1,6 +1,7 @@
 /**
- * compiler core functions.
+ * Compiler core functions.
  */
+
 #ifndef CC_CORE_H
 #define CC_CORE_H
 
@@ -75,80 +76,88 @@ typedef enum {
 	// register defaults if ccInit not invoked explicitly.
 	install_min = install_ptr | install_var | install_obj | installLibs,
 	install_def = install_min | installEopc,
-	install_all = install_def | installEswz,
 } ccInstall;
 
 /**
- * @brief Initialize compiler context.
- * @param runtime context.
+ * Initialize compiler context.
+ * 
+ * @param ctx Runtime context.
  * @param mode specify what to install.
  * @param onHalt function to be executed when execution and external function invocation terminates.
  * @return compiler context.
  * @note installs: builtin types, builtin functions, emit intrinsic, ...
  */
-ccContext ccInit(rtContext, ccInstall mode, vmError onHalt(nfcContext));
+ccContext ccInit(rtContext ctx, ccInstall mode, vmError onHalt(nfcContext));
 
 /**
- * @brief Begin a namespace (static struct) or scope.
- * @param cc Compiler context.
+ * Begin a namespace (static struct) or scope.
+ * 
+ * @param ctx Compiler context.
  * @param name Name of the namespace.
  * @return Defined symbol, null on error (error is logged).
  */
-symn ccBegin(ccContext cc, const char *name);
+symn ccBegin(ccContext ctx, const char *name);
 /**
- * @brief Extend a namespace (static struct) with static members.
- * @param cc Compiler context.
- * @param symbol symbol to be extended.
- * @return symbol.
+ * Extend a namespace (static struct) with static members.
+ * 
+ * @param ctx Compiler context.
+ * @param type Namespace to be extended.
+ * @return type if it can be extended.
  */
-symn ccExtend(ccContext cc, symn symbol);
+symn ccExtend(ccContext ctx, symn type);
 /**
- * @brief Close the namespace.
- * @param cc Compiler context.
- * @param cls Namespace to be closed. (The returned by ccBegin.)
+ * Close the namespace returned by ccBegin or ccExtend.
+ * 
+ * @param ctx Compiler context.
+ * @param cls Namespace to be closed.
  * @note Makes all declared variables static.
 */
-symn ccEnd(ccContext cc, symn cls);
+symn ccEnd(ccContext ctx, symn cls);
 
 /**
- * @brief Define an integer constant.
- * @param cc Compiler context.
+ * Define an integer constant.
+ * 
+ * @param ctx Compiler context.
  * @param name Name of the constant.
  * @param value Value of the constant.
  * @return Defined symbol, null on error.
  */
-symn ccDefInt(ccContext cc, const char *name, int64_t value);
+symn ccDefInt(ccContext ctx, const char *name, int64_t value);
 /**
- * @brief Define a floating point constant.
- * @param cc Compiler context.
+ * Define a floating point constant.
+ * 
+ * @param ctx Compiler context.
  * @param name Name of the constant.
  * @param value Value of the constant.
  * @return Defined symbol, null on error.
  */
-symn ccDefFlt(ccContext cc, const char *name, double value);
+symn ccDefFlt(ccContext ctx, const char *name, double value);
 /**
- * @brief Define a string constant.
- * @param cc Compiler context.
+ * Define a string constant.
+ * 
+ * @param ctx Compiler context.
  * @param name Name of the constant.
  * @param value Value of the constant.
  * @return Defined symbol, null on error.
  */
-symn ccDefStr(ccContext cc, const char *name, char *value);
+symn ccDefStr(ccContext ctx, const char *name, char *value);
 
 /**
- * @brief Add a type to the runtime.
- * @param cc Compiler context.
+ * Define a new type.
+ * 
+ * @param ctx Compiler context.
  * @param name Name of the type.
  * @param size Size of the type.
  * @param refType Value or Reference type.
  * @return Defined symbol, null on error.
- * @see: lstd.File;
+ * @see plugins/file.c
  */
-symn ccDefType(ccContext cc, const char *name, unsigned size, int refType);
+symn ccDefType(ccContext ctx, const char *name, unsigned size, int refType);
 /**
- * @brief Add a native function to the runtime.
- * @param cc Compiler context.
- * @param call The native c function.
+ * Define a native function.
+ * 
+ * @param ctx Compiler context.
+ * @param call The native c function wrapper.
  * @param proto Prototype of the function.
  * @return Defined symbol, null on error.
  * @usage
@@ -163,38 +172,50 @@ symn ccDefType(ccContext cc, const char *name, unsigned size, int refType);
 		return rt->errors;
 	}
  */
-symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto);
+symn ccDefCall(ccContext ctx, vmError call(nfcContext), const char *proto);
 
 /**
- * @brief Compile the given file or text as a unit.
- * @param cc Compiler context.
+ * Compile the given file or text as a unit.
+ * 
+ * @param ctx Compiler context.
  * @param file File name of input.
  * @param line First line of input.
  * @param text If not null, this will be compiled instead of the file.
  * @return Root node of the compilation unit.
  */
-astn ccAddUnit(ccContext cc, char *file, int line, char *text);
-
-/** Add a module / library
- * @brief Execute the libInit function then optionally compile the unit.
- * @param cc Compiler context.
- * @param init function installing types and native functions.
- * @param unit extension file to be compiled with this library.
- * @return boolean value of success.
- */
-int ccAddLib(ccContext cc, int init(ccContext), char *unit);
+astn ccAddUnit(ccContext ctx, char *file, int line, char *text);
 
 /**
- * @brief Find symbol by name.
- * @param cc Compiler context.
+ * Add a new module or library
+ * 
+ * @param ctx Compiler context.
+ * @param init function installing types and native functions.
+ * @param unit (optional) extension file to be compiled with this library.
+ * @return boolean value of success.
+ */
+int ccAddLib(ccContext ctx, int init(ccContext), char *unit);
+
+/**
+ * Generate bytecode from the compiled syntax tree.
+ * 
+ * @param ctx Runtime context.
+ * @param debug generate debug info
+ * @return boolean value of success.
+ */
+int ccGenCode(rtContext ctx, int debug);
+
+/**
+ * Lookup a symbol by name.
+ * 
+ * @param ctx Compiler context.
  * @param in search in the members of this symbol.
  * @param name name of the symbol to be found.
  * @return the first found symbol.
  */
-symn ccLookupSym(ccContext cc, symn in, char *name);
+symn ccLookupSym(ccContext ctx, symn in, char *name);
 
-/// standard functions
-int ccLibStd(ccContext);
+/// standard modules for `ccAddLib`
+int ccLibStd(ccContext ctx);
 
 #ifdef __cplusplus
 }

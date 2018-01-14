@@ -2,9 +2,9 @@
  *   File: file.c
  *   Date: 2017.02.17
  *   Desc: standard file library
-********************************************************************************
-gcc -shared -fPIC -Wall -g0 -Os -o file.so file.c -I ../src/
-*******************************************************************************/
+ *******************************************************************************
+gcc -shared -fPIC -Wall -g0 -Os -o out/libFile.so src/plugin/file.c -I src/
+ */
 
 #include "cmpl.h"
 
@@ -36,7 +36,7 @@ static inline rtValue nextArg(nfcContext ctx) {
 }
 
 static vmError FILE_open(nfcContext ctx) {       // File open(char filename[]);
-	char *name = nextArg(ctx).data;
+	char *name = nextArg(ctx).ref;
 	const char *mode = NULL;
 	if (ctx->proto == proto_file_open) {
 		mode = "r";
@@ -92,21 +92,21 @@ static vmError FILE_peek(nfcContext ctx) {
 	return noError;
 }
 static vmError FILE_read(nfcContext ctx) {         // int read(File &f, uint8 buff[])
-	FILE *file = (FILE *) nextArg(ctx).data;
+	FILE *file = (FILE *) nextArg(ctx).ref;
 	rtValue buff = nextArg(ctx);
-	reti32(ctx, fread(buff.data, buff.length, 1, file));
+	reti32(ctx, fread(buff.ref, buff.length, 1, file));
 	return noError;
 }
 static vmError FILE_gets(nfcContext ctx) {       // int fgets(File &f, uint8 buff[])
-	FILE *file = (FILE *) nextArg(ctx).data;
+	FILE *file = (FILE *) nextArg(ctx).ref;
 	rtValue buff = nextArg(ctx);
-	debugFILE("Buff: %08x[%d], File: %x", buff.data, buff.length, file);
+	debugFILE("Buff: %08x[%d], File: %x", buff.ref, buff.length, file);
 	if (feof(file)) {
 		reti32(ctx, -1);
 	}
 	else {
 		long pos = ftell(file);
-		char *unused = fgets((char *) buff.data, buff.length, file);
+		char *unused = fgets((char *) buff.ref, buff.length, file);
 		reti32(ctx, ftell(file) - pos);
 		(void)unused;
 	}
@@ -114,17 +114,17 @@ static vmError FILE_gets(nfcContext ctx) {       // int fgets(File &f, uint8 buf
 }
 
 static vmError FILE_putc(nfcContext ctx) {
-	FILE *file = (FILE *) nextArg(ctx).data;
+	FILE *file = (FILE *) nextArg(ctx).ref;
 	int data = nextArg(ctx).i32;
 	debugFILE("Data: %c, File: %x", data, file);
 	reti32(ctx, putc(data, file));
 	return noError;
 }
 static vmError FILE_write(nfcContext ctx) {      // int write(File &f, uint8 buff[])
-	FILE *file = (FILE *) nextArg(ctx).data;
+	FILE *file = (FILE *) nextArg(ctx).ref;
 	rtValue buff = nextArg(ctx);
-	debugFILE("Buff: %08x[%d], File: %x", buff.data, buff.length, file);
-	int len = fwrite(buff.data, buff.length, 1, file);
+	debugFILE("Buff: %08x[%d], File: %x", buff.ref, buff.length, file);
+	int len = fwrite(buff.ref, buff.length, 1, file);
 	reti32(ctx, len);
 	return noError;
 }

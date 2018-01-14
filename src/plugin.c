@@ -1,3 +1,12 @@
+/*******************************************************************************
+ *   File: plugin.c
+ *   Date: 2011/06/23
+ *   Desc: extensions
+ *******************************************************************************
+ * load a dynamic library as an extension
+ */
+
+#include "internal.h"
 
 #if (defined(WIN32) || defined(_WIN32))
 #include <windows.h>
@@ -17,8 +26,6 @@ static inline void closeLib(library_t lib) { (void)lib;}
 static inline library_t openLib(const char *path) { return 0; }
 static inline library_t findSym(library_t lib, const char *name) { return 0; }
 #endif
-
-#include "internal.h"
 
 static const char *pluginLibInstall = "cmplInit";
 

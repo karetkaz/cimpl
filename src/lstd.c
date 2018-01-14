@@ -3,15 +3,15 @@
  *   Date: 2011/06/23
  *   Desc: standard library
  *******************************************************************************
-basic math, debug, and system functions
-*******************************************************************************/
+ * basic math functions
+ * standard functions
+ */
+
+#include "internal.h"
 #include <math.h>
 #include <time.h>
-#include <stdlib.h>
-#include "internal.h"
-#include "cmpl.h"
 
-//#{#region math functions
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ math functions
 static vmError f64sin(nfcContext args) {
 	float64_t x = argf64(args, 0);
 	retf64(args, sin(x));
@@ -97,9 +97,8 @@ static vmError f32atan2(nfcContext args) {
 	retf32(args, atan2f(x, y));
 	return noError;
 }
-//#}#endregion
 
-//#{#region bit operations
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ bit operations
 static vmError b32sxt(nfcContext args) {
 	int32_t val = argi32(args, 8);
 	int32_t ofs = argi32(args, 4);
@@ -129,48 +128,6 @@ static vmError b64zxt(nfcContext args) {
 	return noError;
 }
 /* unused bit operations
-static vmError b64not(nfcContext args) {
-	int64_t x = argi64(args, 0);
-	reti64(args, ~x);
-	return noError;
-}
-static vmError b64and(nfcContext args) {
-	int64_t x = argi64(args, 0);
-	int64_t y = argi64(args, 8);
-	reti64(args, x & y);
-	return noError;
-}
-static vmError b64ior(nfcContext args) {
-	int64_t x = argi64(args, 0);
-	int64_t y = argi64(args, 8);
-	reti64(args, x | y);
-	return noError;
-}
-static vmError b64xor(nfcContext args) {
-	int64_t x = argi64(args, 0);
-	int64_t y = argi64(args, 8);
-	reti64(args, x ^ y);
-	return noError;
-}
-static vmError b64shl(nfcContext args) {
-	int64_t x = argi64(args, 0);
-	int32_t y = argi32(args, 8);
-	reti64(args, x << y);
-	return noError;
-}
-static vmError b64shr(nfcContext args) {
-	uint64_t x = (uint64_t) argi64(args, 0);
-	int32_t y = argi32(args, 8);
-	reti64(args, (int64_t) (x >> y));
-	return noError;
-}
-static vmError b64sar(nfcContext args) {
-	int64_t x = argi64(args, 0);
-	int32_t y = argi32(args, 8);
-	reti64(args, x >> y);
-	return noError;
-}
-
 static int b32cnt(nfcContext args) {
 	uint32_t x = (uint32_t) argi32(args, 0);
 	x -= ((x >> 1) & 0x55555555);
@@ -227,13 +184,8 @@ static int b32swap(nfcContext args) {
 	return 0;
 }
 // */
-//#}#endregion
 
-//#{#region file operations
-
-//#}#endregion
-
-//#{#region system functions (exit, rand, clock, debug)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ system functions (exit, rand, clock, debug)
 
 #if ((defined __WATCOMC__ && defined __WIN32) || (defined _MSC_VER))
 #include <Windows.h>
@@ -316,15 +268,21 @@ enum {
 	raise_debug = 3,    // log and continue execution.
 	raise_verbose = 4   // log and continue execution.
 };
-// void raise(int logLevel, string message, variant inspect, int logTrace);
+// void raise(char file[*], int line, int level, char message[*], variant inspect, int maxTrace);
 static vmError sysRaise(nfcContext ctx) {
 	rtContext rt = ctx->rt;
-	char *file = nfcReadArg(ctx, nfcNextArg(ctx)).data;
+	char *file = nfcReadArg(ctx, nfcNextArg(ctx)).ref;
+	nfcCheckArg(ctx, CAST_ref, "file");
 	int line = argi32(ctx, nfcNextArg(ctx));
+	nfcCheckArg(ctx, CAST_i32, "line");
 	int logLevel = argi32(ctx, nfcNextArg(ctx));
-	char *message = nfcReadArg(ctx, nfcNextArg(ctx)).data;
+	nfcCheckArg(ctx, CAST_i32, "level");
+	char *message = nfcReadArg(ctx, nfcNextArg(ctx)).ref;
+	nfcCheckArg(ctx, CAST_ref, "message");
 	rtValue inspect = nfcReadArg(ctx, nfcNextArg(ctx));
+	nfcCheckArg(ctx, CAST_var, "inspect");
 	int maxTrace = argi32(ctx, nfcNextArg(ctx));
+	nfcCheckArg(ctx, CAST_i32, "maxTrace");
 	int isOutput = 0;
 
 	// logging is disabled or log level not reached.
@@ -351,11 +309,11 @@ static vmError sysRaise(nfcContext ctx) {
 	}
 
 	// print the value of the object (handy to inspect values).
-	if (inspect.type != NULL && inspect.data != NULL) {
+	if (inspect.type != NULL && inspect.ref != NULL) {
 		if (isOutput) {
 			printFmt(rt->logFile, NULL, ": ");
 		}
-		printVal(rt->logFile, NULL, rt, inspect.type, inspect.data, prSymType, 0);
+		printVal(rt->logFile, NULL, rt, inspect.type, inspect.ref, prSymType, 0);
 		isOutput = 1;
 	}
 
@@ -366,7 +324,7 @@ static vmError sysRaise(nfcContext ctx) {
 
 	// print stack trace skipping this function
 	if (rt->dbg != NULL && maxTrace > 0) {
-		traceCalls(rt->dbg, rt->logFile, 1, 0, maxTrace - 1);
+		traceCalls(rt->dbg, rt->logFile, 1, maxTrace - 1);
 	}
 
 	// abort the execution
@@ -377,12 +335,13 @@ static vmError sysRaise(nfcContext ctx) {
 	return noError;
 }
 
+// int tryExec(pointer args, void action(pointer args));
 static vmError sysTryExec(nfcContext ctx) {
 	rtContext rt = ctx->rt;
 	dbgContext dbg = rt->dbg;
-	size_t args = nfcPeekArg(ctx, nfcNextArg(ctx))->ref.data;
-	size_t actionOffs = nfcPeekArg(ctx, nfcNextArg(ctx))->ref.data;
-	symn action = rtFindSym(rt, actionOffs, 0);
+	size_t args = argref(ctx, nfcNextArg(ctx));
+	size_t actionOffs = argref(ctx, nfcNextArg(ctx));
+	symn action = rtLookupSym(rt, actionOffs, 0);
 
 	if (action != NULL && action->offs == actionOffs) {
 		int result;
@@ -404,26 +363,29 @@ static vmError sysTryExec(nfcContext ctx) {
 	return noError;
 }
 
+// pointer alloc(pointer ptr, int32 size);
 static vmError sysMemMgr(nfcContext ctx) {
-	void *old = nfcReadArg(ctx, nfcNextArg(ctx)).data;
+	void *old = nfcReadArg(ctx, nfcNextArg(ctx)).ref;
 	int size = nfcReadArg(ctx, nfcNextArg(ctx)).i32;
 	void *res = rtAlloc(ctx->rt, old, (size_t) size, NULL);
 	retref(ctx, vmOffset(ctx->rt, res));
 	return noError;
 }
-static vmError sysMemCpy(nfcContext ctx) {
-	void *dst = nfcReadArg(ctx, nfcNextArg(ctx)).data;
-	void *src = nfcReadArg(ctx, nfcNextArg(ctx)).data;
-	int size = nfcReadArg(ctx, nfcNextArg(ctx)).i32;
-	void *res = memcpy(dst, src, (size_t) size);
-	retref(ctx, vmOffset(ctx->rt, res));
-	return noError;
-}
+// pointer fill(pointer dst, int value, int32 size)
 static vmError sysMemSet(nfcContext ctx) {
-	void *dst = nfcReadArg(ctx, nfcNextArg(ctx)).data;
+	void *dst = nfcReadArg(ctx, nfcNextArg(ctx)).ref;
 	int value = nfcReadArg(ctx, nfcNextArg(ctx)).i32;
 	int size = nfcReadArg(ctx, nfcNextArg(ctx)).i32;
 	void *res = memset(dst, value, (size_t) size);
+	retref(ctx, vmOffset(ctx->rt, res));
+	return noError;
+}
+// pointer copy(pointer dst, pointer src, int32 size);
+static vmError sysMemCpy(nfcContext ctx) {
+	void *dst = nfcReadArg(ctx, nfcNextArg(ctx)).ref;
+	void *src = nfcReadArg(ctx, nfcNextArg(ctx)).ref;
+	int size = nfcReadArg(ctx, nfcNextArg(ctx)).i32;
+	void *res = memcpy(dst, src, (size_t) size);
 	retref(ctx, vmOffset(ctx->rt, res));
 	return noError;
 }

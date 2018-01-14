@@ -3,29 +3,12 @@
  *   Date: 2011/06/23
  *   Desc: tree operations
  *******************************************************************************
-source code representation using abstract syntax tree
-*******************************************************************************/
-#include <string.h>
+ * create, modify and fold syntax tree
+ */
+
 #include "internal.h"
 
-symn newDef(ccContext cc, ccKind kind) {
-	rtContext rt = cc->rt;
-	symn def = NULL;
-
-	rt->_beg = padPointer(rt->_beg, pad_size);
-	if(rt->_beg >= rt->_end) {
-		fatal(ERR_MEMORY_OVERRUN);
-		return NULL;
-	}
-
-	def = (symn)rt->_beg;
-	rt->_beg += sizeof(struct symNode);
-	memset(def, 0, sizeof(struct symNode));
-	def->kind = kind;
-
-	return def;
-}
-
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ create and recycle node
 astn newNode(ccContext cc, ccToken kind) {
 	rtContext rt = cc->rt;
 	astn ast = 0;
@@ -53,32 +36,35 @@ void recycle(ccContext cc, astn ast) {
 	cc->tokPool = ast;
 }
 
-/// make a constant valued node
-astn intNode(ccContext cc, int64_t v) {
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ make a constant valued node
+astn intNode(ccContext cc, int64_t value) {
 	astn ast = newNode(cc, TOKEN_val);
 	if (ast != NULL) {
 		ast->type = cc->type_i64;
-		ast->cInt = v;
+		ast->cInt = value;
 	}
 	return ast;
 }
-astn fltNode(ccContext cc, float64_t v) {
+
+astn fltNode(ccContext cc, float64_t value) {
 	astn ast = newNode(cc, TOKEN_val);
 	if (ast != NULL) {
 		ast->type = cc->type_f64;
-		ast->cFlt = v;
+		ast->cFlt = value;
 	}
 	return ast;
 }
-astn strNode(ccContext cc, char *v) {
+
+astn strNode(ccContext cc, char *value) {
 	astn ast = newNode(cc, TOKEN_val);
 	if (ast != NULL) {
 		ast->type = cc->type_str;
-		ast->ref.name = v;
+		ast->ref.name = value;
 		ast->ref.hash = -1;
 	}
 	return ast;
 }
+
 astn lnkNode(ccContext cc, symn ref) {
 	astn result = newNode(cc, TOKEN_var);
 	if (result != NULL) {
@@ -89,6 +75,7 @@ astn lnkNode(ccContext cc, symn ref) {
 	}
 	return result;
 }
+
 astn opNode(ccContext cc, ccToken kind, astn lhs, astn rhs) {
 	astn result = newNode(cc, kind);
 	if (result != NULL) {
@@ -98,7 +85,7 @@ astn opNode(ccContext cc, ccToken kind, astn lhs, astn rhs) {
 	return result;
 }
 
-/// get value of constant node
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ get value of constant node
 int bolValue(astn ast) {
 	if (ast != NULL && ast->type != NULL && ast->kind == TOKEN_val) {
 		switch (castOf(ast->type)) {
@@ -120,6 +107,7 @@ int bolValue(astn ast) {
 	fatal(ERR_INVALID_CONST_EXPR, ast);
 	return 0;
 }
+
 int64_t intValue(astn ast) {
 	if (ast != NULL && ast->type != NULL && ast->kind == TOKEN_val) {
 		switch (castOf(ast->type)) {
@@ -142,6 +130,7 @@ int64_t intValue(astn ast) {
 	fatal(ERR_INVALID_CONST_EXPR, ast);
 	return 0;
 }
+
 float64_t fltValue(astn ast) {
 	if (ast != NULL && ast->type != NULL && ast->kind == TOKEN_val) {
 		switch (castOf(ast->type)) {
@@ -163,6 +152,9 @@ float64_t fltValue(astn ast) {
 	fatal(ERR_INVALID_CONST_EXPR, ast);
 	return 0;
 }
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ utility functions
+
 ccKind eval(ccContext cc, astn res, astn ast) {
 	ccKind cast;
 	symn type = NULL;
@@ -757,6 +749,28 @@ symn linkOf(astn ast, int follow) {
 	}
 
 	return NULL;
+}
+
+void addUsage(symn sym, astn tag) {
+	if (sym == NULL || tag == NULL) {
+		return;
+	}
+	if (tag->ref.used != NULL) {
+#ifdef DEBUGGING	// extra check: if this node is linked (.used) it must be in the list
+		astn usage;
+		for (usage = sym->use; usage; usage = usage->ref.used) {
+			if (usage == tag) {
+				break;
+			}
+		}
+		dieif(usage == NULL, ERR_INTERNAL_ERROR);
+#endif
+		return;
+	}
+	if (sym->use != tag) {
+		tag->ref.used = sym->use;
+		sym->use = tag;
+	}
 }
 
 int isTypeExpr(astn ast) {

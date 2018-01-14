@@ -1,0 +1,113 @@
+inline fpsCounter = !true;
+static float x0 = +0;
+static float y0 = +1;
+static float x1 = -1;
+static float y1 = -1;
+static float x2 = +1;
+static float y2 = -1;
+static int maxx = 500;
+static int maxy = 500;
+
+void mouse(int btn, int x, int y) {
+	// trace("mouse");
+	if (btn == 1) {
+		x0 = -(1. - x / (.5 * maxx));
+		y0 = 1. - y / (.5 * maxy);
+		glut.postRedisplay();
+	}
+	else if (btn == 2) {
+		x1 = -(1 - x / (.5 * maxx));
+		y1 = 1 - y / (.5 * maxy);
+		glut.postRedisplay();
+	}
+	else if (btn == 3) {
+		x2 = -(1 - x / (.5 * maxx));
+		y2 = 1 - y / (.5 * maxy);
+		glut.postRedisplay();
+	}
+}
+
+void keyboard(int key) {
+	trace("keyboard", key);
+	if (key == 27) {
+		glut.exit();
+	}
+	if (key == 'f') {
+		glut.fullScreen();
+	}
+	if (key == ' ') {
+		char value[65536];
+		// gl.Vendor
+		gl.getString(gl.Vendor, value);
+		trace("gl.Vendor", value);
+
+		// gl.Renderer
+		gl.getString(gl.Renderer, value);
+		trace("gl.Renderer", value);
+
+		// gl.Version
+		gl.getString(gl.Version, value);
+		trace("gl.Version", value);
+
+		// gl.ShLVersion
+		gl.getString(gl.ShLVersion, value);
+		trace("gl.ShLVersion", value);
+
+		// gl.Extensions
+		gl.getString(gl.Extensions, value);
+		trace("gl.Extensions", value);
+	}
+}
+
+void reshape(int x, int y) {
+	trace("reshape");
+	gl.viewport(0, 0, x, y);
+	glut.postRedisplay();
+	maxx = x;
+	maxy = y;
+}
+
+void display() {
+	//trace("display");
+
+	gl.clear(gl.ColorBuffer);
+
+	gl.begin(gl.Triangles);
+	gl.color(1, 0, 0, 1);
+	gl.vertex(x0, y0, 0, 1);
+
+	gl.color(0, 1, 0, 1);
+	gl.vertex(x1, y1, 0, 1);
+
+	gl.color(0, 0, 1, 1);
+	gl.vertex(x2, y2, 0, 1);
+
+	gl.end();
+	glut.swapBuffers();
+
+	static if (fpsCounter) {
+		static int clk = 0;
+		static int fps = 0;
+
+		fps += 1;
+		int now = System.time();
+		if (clk != now) {
+			debug("fps", fps);
+			clk = now;
+			fps = 0;
+		}
+		glut.postRedisplay();
+	}
+}
+
+glut.onMouse(mouse);
+glut.onMotion(mouse);
+glut.onKeyboard(keyboard);
+
+glut.onReshape(reshape);
+glut.onDisplay(display);
+
+glut.initDisplayMode(glut.Double|glut.Rgb);
+
+// this wont let wmExec to exit.
+glut.mainLoop(800, 600, "Cmpl - OpenGL");

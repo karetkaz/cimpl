@@ -3,69 +3,32 @@
  *   Date: 2011/06/23
  *   Desc: type system
  *******************************************************************************
-
-Types are special kind of variables.
-
-Basic types
-	void
-	bool
-	char
-	int8
-	int16
-	int32
-	int64
-	uint8
-	uint16
-	uint32
-	uint64
-	float32
-	float64
-
-	pointer
-	variant
-	typename        // compilers internal type representation structure
-	function        // base type of all functions.
-	object          // base class of all reference types.
-
-#typedefs
-	@int: alias for int32 or int64
-	@byte: alias for uint8
-	@float: alias for float32
-	@double: alias for float64
-
-#constants
-	@true := 0 == 0;
-	@false := 0 != 0;
-	@null: pointer(emit(struct, i32(0)));
-
-Derived data types:
-	slice: struct {const pointer array; const int length;}
-	variant: struct variant {const pointer value; const typename type;}
-	delegate: struct delegate {const pointer function; const pointer closure;}
-
-User defined types:
-	pointers arrays and slices:
-		pointers have unknown-size:
-			ex: int a[*];
-			are passed by reference,
-		arrays have fixed-size:
-			ex: int a[2];
-			are passed by reference,
-		slices have dynamic-size:
-			ex: int a[];
-			is a combination of pointer and length.
-			where type of data is known by the compiler, the length by runtime.
-
-	record
-	function
-
-*******************************************************************************/
+ * manage type declarations
+ * type-check the syntax tree
+ */
 
 #include "internal.h"
 
 static symn promote(symn lht, symn rht);
 
-/// Enter a new scope.
+symn newDef(ccContext cc, ccKind kind) {
+	rtContext rt = cc->rt;
+	symn def = NULL;
+
+	rt->_beg = padPointer(rt->_beg, pad_size);
+	if(rt->_beg >= rt->_end) {
+		fatal(ERR_MEMORY_OVERRUN);
+		return NULL;
+	}
+
+	def = (symn)rt->_beg;
+	rt->_beg += sizeof(struct symNode);
+	memset(def, 0, sizeof(struct symNode));
+	def->kind = kind;
+
+	return def;
+}
+
 void enter(ccContext cc, symn owner) {
 	cc->nest += 1;
 	if (owner != NULL) {
@@ -74,7 +37,6 @@ void enter(ccContext cc, symn owner) {
 	}
 }
 
-/// Leave current scope.
 symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *outSize) {
 	symn sym, result = NULL;
 
@@ -88,7 +50,7 @@ symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *out
 	}
 
 	// clear from symbol table
-	for (int i = 0; i < TBL_SIZE; i++) {
+	for (int i = 0; i < hashTableSize; i++) {
 		for (sym = cc->deft[i]; sym && sym->nest > cc->nest; sym = sym->next) {
 		}
 		cc->deft[i] = sym;
@@ -174,7 +136,6 @@ symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *out
 	return result;
 }
 
-/// Install a symbol (typename, variable, function or alias)
 symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type, astn init) {
 	int isType = (kind & MASK_kind) == KIND_typ;
 
@@ -210,7 +171,7 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 	symn def = newDef(cc, kind);
 	if (def != NULL) {
 		size_t length = strlen(name) + 1;
-		unsigned hash = rehash(name, length) % TBL_SIZE;
+		unsigned hash = rehash(name, length) % hashTableSize;
 		def->name = mapstr(cc, (char*)name, length, hash);
 		def->nest = cc->nest;
 		def->type = type;
@@ -371,7 +332,7 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 	return sym;
 }
 
-/// change the type of a tree node.
+/// change the type of a tree node (replace or implicit cast).
 static symn convert(ccContext cc, astn ast, symn type) {
 	if (type == NULL) {
 		return NULL;
@@ -437,7 +398,7 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 	}
 
 	if (raise) {
-		error(cc->rt, ref->file, ref->line, ERR_UNDEFINED_REFERENCE, ref);
+		error(cc->rt, ref->file, ref->line, ERR_UNDEFINED_DECLARATION, ref);
 	}
 	return NULL;
 }
@@ -512,7 +473,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 						ast->kind = TOKEN_var;
 						ast->type = rType;
 						ast->ref.link = cc->null_ref;
-						ast->ref.hash = rehash(name, len + 1) % TBL_SIZE;
+						ast->ref.hash = rehash(name, len + 1) % hashTableSize;
 						ast->ref.name = mapstr(cc, name, len + 1, ast->ref.hash);
 						ast->type = rType;
 						return rType;
@@ -1008,26 +969,22 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	return CAST_any;
 }
 
-void addUsage(symn sym, astn tag) {
-	if (sym == NULL || tag == NULL) {
-		return;
+size_t argsSize(symn function) {
+	size_t result = 0;
+	if (!isFunction(function)) {
+		fatal(ERR_INTERNAL_ERROR);
+		return 0;
 	}
-	if (tag->ref.used != NULL) {
-#ifdef DEBUGGING	// extra check: if this node is linked (.used) it must be in the list
-		astn usage;
-		for (usage = sym->use; usage; usage = usage->ref.used) {
-			if (usage == tag) {
-				break;
-			}
+	for (symn prm = function->params; prm; prm = prm->next) {
+		if (isInline(prm)) {
+			continue;
 		}
-		dieif(usage == NULL, ERR_INTERNAL_ERROR);
-#endif
-		return;
+		size_t offs = prm->offs;
+		if (result < offs) {
+			result = offs;
+		}
 	}
-	if (sym->use != tag) {
-		tag->ref.used = sym->use;
-		sym->use = tag;
-	}
+	return result;
 }
 
 static inline ccKind castKind(symn typ) {
@@ -1060,6 +1017,7 @@ static inline ccKind castKind(symn typ) {
 	}
 	return CAST_any;
 }
+
 // determine the resulting type of a OP b
 static symn promote(symn lht, symn rht) {
 	symn result = 0;

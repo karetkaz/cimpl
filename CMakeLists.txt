@@ -4,15 +4,16 @@ project(cmpl)
 set(ARCH "64")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m${ARCH}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/out>)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/out>)
 
-set(CC_HEADER_FILES
+set(CMPL_SRC_FILES
 	src/cmpl.h
 	src/vmCore.h
 	src/ccCore.h
+	src/parser.h
+	src/printer.h
 	src/internal.h
-)
-
-set(CC_SOURCE_FILES
 	src/cgen.c
 	src/code.c
 	src/core.c
@@ -25,10 +26,17 @@ set(CC_SOURCE_FILES
 	src/type.c
 )
 
-add_executable(cmpl
-	${CC_SOURCE_FILES}
-	${CC_HEADER_FILES} 
-	src/main.c
-)
-
+add_executable(cmpl ${CMPL_SRC_FILES} src/main.c)
 target_link_libraries(cmpl m dl)
+
+add_library(File SHARED src/plugin/file.c)
+target_include_directories(File PUBLIC ./src/)
+
+add_library(OpenGL SHARED src/plugin/openGL.c)
+target_include_directories(OpenGL PUBLIC ./src/)
+target_link_libraries(OpenGL GL GLU glut)
+
+# some simple "how to use" code.
+add_executable(cmplVmEmit ${CMPL_SRC_FILES} src/test/mainVmEmit.c)
+target_include_directories(cmplVmEmit PUBLIC ./src/)
+target_link_libraries(cmplVmEmit m dl)

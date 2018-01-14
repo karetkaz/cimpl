@@ -1,49 +1,41 @@
 /*******************************************************************************
- *   File: clog.c
+ *   File: printer.c
  *   Date: 2011/06/23
- *   Desc: logging & dumping
+ *   Desc: Print formatted text to the output stream.
  *******************************************************************************
- logging:
-	ast formatted printing.
-	sym formatted printing.
-	...
-*******************************************************************************/
-#include <stdarg.h>
-#include <string.h>
-#include <math.h>
-#include "internal.h"
+ * format options:
+ *    %T: symbol (inline, typename, function or variable)
+ *    %t: token (abstract syntax tree)
+ *    %K: symbol kind
+ *    %k: token kind
+ *    %A: instruction (asm)
+ *    %I: indent
+ *    %b: 32 bit bin value
+ *    %B: 64 bit bin value
+ *    %o: 32 bit oct value
+ *    %O: 64 bit oct value
+ *    %x: 32 bit hex value
+ *    %X: 64 bit hex value
+ *    %u: 32 bit unsigned value
+ *    %U: 64 bit unsigned value
+ *    %d: 32 bit signed value (decimal)
+ *    %D: 64 bit signed value (decimal)
+ *    %f: 32 bit floating point value
+ *    %F: 64 bit floating point value
+ *    %e: 32 bit floating point value (Scientific notation (mantissa/exponent))
+ *    %E: 64 bit floating point value (Scientific notation (mantissa/exponent))
+ *    %s: ansi string
+ *    %c: ansi character
+ */
 
+#include "internal.h"
+#include <stdarg.h>
+#include <math.h>
+
+/// print a character
 static inline int printChr(FILE *out, int chr) { return fputc(chr, out); }
 
-const char **escapeStr() {
-	static const char *escape[256];
-	static char initialized = 0;
-	if (!initialized) {
-		memset((void*)escape, 0, sizeof(escape));
-		escape['\n'] = "\\n";
-		escape['\r'] = "\\r";
-		escape['\t'] = "\\t";
-		escape['\''] = "\\'";
-		escape['\"'] = "\\\"";
-		initialized = 1;
-	}
-	return escape;
-}
-
-static char *format(char *dst, int max, int prc, int radix, uint64_t num) {
-	char *ptr = dst + max;
-	int p = 0, plc = ',';
-	*--ptr = 0;
-	do {
-		if (prc > 0 && ++p > prc) {
-			*--ptr = (char) plc;
-			p = 1;
-		}
-		*--ptr = "0123456789abcdef"[num % radix];
-	} while (num /= radix);
-	return ptr;
-}
-
+/// print a string
 static void printStr(FILE *out, const char **esc, char *str) {
 	if (str == NULL) {
 		str = "(null)";
@@ -98,6 +90,481 @@ static void printArray(FILE *out, const char **esc, symn sym, dmpMode mode) {
 		return;
 	}
 	printSym(out, esc, sym, mode, 0);
+}
+
+/// format an integer number
+static char *formatNum(char *dst, int max, int prc, int radix, uint64_t num) {
+	char *ptr = dst + max;
+	int p = 0, plc = ',';
+	*--ptr = 0;
+	do {
+		if (prc > 0 && ++p > prc) {
+			*--ptr = (char) plc;
+			p = 1;
+		}
+		*--ptr = "0123456789abcdef"[num % radix];
+	} while (num /= radix);
+	return ptr;
+}
+
+static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) {
+	char buff[1024], chr;
+
+	while ((chr = *msg++)) {
+		if (chr == '%') {
+			char nil = 0;    // [?]? skip on null || zero value (may print pad char once)
+			char sgn = 0;    // [+-]? sign flag / alignment.
+			char pad = 0;    // [0 ]? padding character.
+			int len = 0;     // [0-9]* length / mode
+			int prc = 0;     // (\.\*|[0-9]*)? precision / indent
+			int noPrc = 1;   // format string has no precision
+
+			const char *fmt = msg - 1;
+			char *str = NULL;
+
+			if (*msg == '?') {
+				nil = *msg++;
+			}
+			if (*msg == '+' || *msg == '-') {
+				sgn = *msg++;
+			}
+			if (*msg == '0' || *msg == ' ') {
+				pad = *msg++;
+			}
+
+			while (*msg >= '0' && *msg <= '9') {
+				len = (len * 10) + (*msg - '0');
+				msg++;
+			}
+
+			if (*msg == '.') {
+				msg++;
+				noPrc = 0;
+				if (*msg == '*') {
+					prc = va_arg(ap, int32_t);
+					msg++;
+				}
+				else {
+					prc = 0;
+					while (*msg >= '0' && *msg <= '9') {
+						prc = (prc * 10) + (*msg - '0');
+						msg++;
+					}
+				}
+			}
+
+			switch (chr = *msg++) {
+				case 0:
+					msg -= 1;
+					continue;
+
+				default:
+					printChr(out, chr);
+					continue;
+
+				case 'T': {		// type name
+					symn sym = va_arg(ap, symn);
+
+					if (sym == NULL && nil) {
+						if (pad != 0) {
+							printChr(out, pad);
+						}
+						continue;
+					}
+
+					switch (sgn) {
+						default:
+							if (noPrc) {
+								prc = prShort;
+							}
+							break;
+
+						case '-':
+							len = -len;
+							// fall
+						case '+':
+							if (noPrc) {
+								prc = prFull;
+							}
+							break;
+					}
+					printSym(out, esc, sym, (dmpMode) prc, len);
+					continue;
+				}
+
+				case 't': {		// tree node
+					astn ast = va_arg(ap, astn);
+
+					if (ast == NULL && nil) {
+						if (pad != 0) {
+							printChr(out, pad);
+						}
+						continue;
+					}
+
+					switch (sgn) {
+						default:
+							if (noPrc) {
+								prc = prShort;
+							}
+							break;
+
+						case '-':
+							len = -len;
+							// fall
+						case '+':
+							if (noPrc) {
+								prc = prFull;
+							}
+							break;
+					}
+					printAst(out, esc, ast, (dmpMode) prc, len);
+					continue;
+				}
+
+				case 'K': {		// symbol kind
+					ccKind arg = va_arg(ap, ccKind);
+					char *_stat = "";
+					char *_const = "";
+					char *_paral = "";
+					char *_kind = "";
+					char *_cast = NULL;
+
+					if (nil && arg == 0) {
+						if (pad != 0) {
+							printChr(out, pad);
+						}
+						continue;
+					}
+
+					switch (arg & MASK_cast) {
+						default:
+							break;
+
+						case CAST_vid:
+							_cast = "void";
+							break;
+
+						case CAST_bit:
+							_cast = "bool";
+							break;
+
+						case CAST_i32:
+							_cast = "i32";
+							break;
+
+						case CAST_u32:
+							_cast = "u32";
+							break;
+
+						case CAST_i64:
+							_cast = "i64";
+							break;
+
+						case CAST_u64:
+							_cast = "u64";
+							break;
+
+						case CAST_f32:
+							_cast = "f32";
+							break;
+
+						case CAST_f64:
+							_cast = "f64";
+							break;
+
+						case CAST_val:
+							_cast = "val";
+							break;
+
+						case CAST_ref:
+							_cast = "ref";
+							break;
+
+						case CAST_arr:
+							_cast = "arr";
+							break;
+
+						case CAST_var:
+							_cast = "var";
+							break;
+					}
+
+					switch (arg & MASK_kind) {
+						default:
+							break;
+
+						case KIND_def:
+							if (_cast != NULL) {
+								_kind = _cast;
+								_cast = NULL;
+							}
+							else if (!nil) {
+								_kind = "inline";
+							}
+							break;
+
+						case KIND_typ:
+							_kind = "typename";
+							break;
+
+						case KIND_fun:
+							_kind = "function";
+							break;
+
+						case KIND_var:
+							_kind = "variable";
+							break;
+					}
+
+					if (arg & ATTR_stat) {
+						_stat = "static ";
+					}
+					if (arg & ATTR_cnst) {
+						_const = "const ";
+					}
+					if (arg & ATTR_paral) {
+						_const = "parallel ";
+					}
+					if (_cast != NULL) {
+						snprintf(buff, sizeof(buff), "%s%s%s%s(%s)", _stat, _const, _paral, _kind, _cast);
+					}
+					else {
+						snprintf(buff, sizeof(buff), "%s%s%s%s", _stat, _const, _paral, _kind);
+					}
+					str = buff;
+					break;
+				}
+
+				case 'k': {		// token kind
+					ccToken arg = va_arg(ap, ccToken);
+
+					if (arg == 0 && nil) {
+						if (pad != 0) {
+							printChr(out, pad);
+						}
+						continue;
+					}
+
+					if (arg < tok_last) {
+						str = token_tbl[arg].name;
+					}
+					else {
+						snprintf(buff, sizeof(buff), "TOKEN_%02x", arg);
+						str = buff;
+					}
+					break;
+				}
+
+				case 'A': {		// instruction
+					void *opc = va_arg(ap, void*);
+
+					if (opc == NULL && nil) {
+						str = "";
+						len = 1;
+						break;
+					}
+
+					printAsm(out, esc, NULL, opc, (dmpMode) prc);
+					continue;
+				}
+
+				case 'I': {		// indent
+					unsigned arg = va_arg(ap, unsigned);
+					len = len ? len * arg : arg;
+					if (pad == 0) {
+						pad = '\t';
+					}
+					str = (char*)"";
+					break;
+				}
+
+				case 'b': {		// bin32
+					uint32_t num = va_arg(ap, uint32_t);
+					if (num == 0 && nil) {
+						len = pad != 0;
+						str = "";
+						break;
+					}
+					str = formatNum(buff, sizeof(buff), prc, 2, num);
+					break;
+				}
+
+				case 'B': {		// bin64
+					uint64_t num = va_arg(ap, uint64_t);
+					if (num == 0 && nil) {
+						len = pad != 0;
+						str = "";
+						break;
+					}
+					str = formatNum(buff, sizeof(buff), prc, 2, num);
+					break;
+				}
+
+				case 'o': {		// oct32
+					uint32_t num = va_arg(ap, uint32_t);
+					if (num == 0 && nil) {
+						len = pad != 0;
+						str = "";
+						break;
+					}
+					str = formatNum(buff, sizeof(buff), prc, 8, num);
+					break;
+				}
+
+				case 'O': {		// oct64
+					uint64_t num = va_arg(ap, uint64_t);
+					if (num == 0 && nil) {
+						len = pad != 0;
+						str = "";
+						break;
+					}
+					str = formatNum(buff, sizeof(buff), prc, 8, num);
+					break;
+				}
+
+				case 'x': {		// hex32
+					uint32_t num = va_arg(ap, uint32_t);
+					if (num == 0 && nil) {
+						len = pad != 0;
+						str = "";
+						break;
+					}
+					str = formatNum(buff, sizeof(buff), prc, 16, num);
+					break;
+				}
+
+				case 'X': {		// hex64
+					uint64_t num = va_arg(ap, uint64_t);
+					if (num == 0 && nil) {
+						len = pad != 0;
+						str = "";
+						break;
+					}
+					str = formatNum(buff, sizeof(buff), prc, 16, num);
+					break;
+				}
+
+				case 'u':		// uint32
+				case 'd': {		// dec32
+					int neg = 0;
+					uint32_t num = va_arg(ap, uint32_t);
+
+					if (num == 0 && nil) {
+						len = pad != 0;
+						str = "";
+						break;
+					}
+
+					if (chr == 'd' && (int32_t)num < 0) {
+						num = (uint32_t) 0 -num;
+						neg = -1;
+					}
+
+					str = formatNum(buff, sizeof(buff), prc, 10, num);
+					if (neg) {
+						*--str = '-';
+					}
+					else if (sgn == '+') {
+						*--str = '+';
+					}
+					break;
+				}
+
+				case 'U':		// uint64
+				case 'D': {		// dec64
+					int neg = 0;
+					uint64_t num = va_arg(ap, uint64_t);
+
+					if (num == 0 && nil) {
+						len = pad != 0;
+						str = "";
+						break;
+					}
+
+					if (chr == 'D' && (int64_t)num < 0) {
+						num = (uint64_t) 0 -num;
+						neg = -1;
+					}
+					str = formatNum(buff, sizeof(buff), prc, 10, num);
+					if (neg) {
+						*--str = '-';
+					}
+					else if (sgn == '+') {
+						*--str = '+';
+					}
+					break;
+				}
+
+				case 'E':		// float64
+				case 'F':		// float64
+					chr -= 'A' - 'a';
+					// no break
+				case 'e':		// float32
+				case 'f': {		// float32
+					float64_t num = va_arg(ap, float64_t);
+					if (num == 0 && nil) {
+						len = pad != 0;
+						str = "";
+						break;
+					}
+
+					if ((len = msg - fmt - 1) < 1020) {
+						memcpy(buff, fmt, (size_t) len);
+						if (len > 1 && buff[1] == '?') {
+							len -= 1;
+							memcpy(buff+1, buff+2, (size_t) len);
+						}
+						if (len > 1 && (buff[1] == '-' || buff[1] == '+')) {
+							len -= 1;
+							memcpy(buff+1, buff+2, (size_t) len);
+							if (signbit(num) == 0) {
+								fprintf(out, "+");
+							}
+						}
+						buff[len++] = chr;
+						buff[len] = 0;
+						fprintf(out, buff, num);
+					}
+					continue;
+				}
+
+				case 's':		// string
+					str = va_arg(ap, char*);
+					if (str == NULL && nil) {
+						len = pad != 0;
+						str = "";
+						break;
+					}
+					break;
+
+				case 'c':		// char
+					buff[0] = va_arg(ap, int);
+					buff[1] = 0;
+					str = buff;
+					break;
+			}
+
+			if (str != NULL) {
+				len -= strlen(str);
+
+				if (pad == 0) {
+					pad = ' ';
+				}
+
+				while (len > 0) {
+					printChr(out, pad);
+					len -= 1;
+				}
+
+				printStr(out, esc, str);
+			}
+		}
+		else {
+			printChr(out, chr);
+		}
+	}
+	fflush(out);
 }
 
 void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
@@ -451,7 +918,10 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 			break;
 
 		case TOKEN_val:
-			if (ast->type->format == type_fmt_string) {
+			if (ast->type->format == NULL) {
+				printFmt(out, esc, "{%.T @%D}", ast->type, ast->cInt);
+			}
+			else if (ast->type->format == type_fmt_string) {
 				printFmt(out, esc, "%c", type_fmt_string_chr);
 				printFmt(out, esc ? esc : escapeStr(), type_fmt_string, ast->ref.name);
 				printFmt(out, esc, "%c", type_fmt_string_chr);
@@ -482,11 +952,8 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 			else if (ast->type->format == type_fmt_typename) {
 				printFmt(out, esc, type_fmt_typename, ast->type);
 			}
-			else if (ast->type->format != NULL) {
-				printFmt(out, esc, ast->type->format, ast->cInt);
-			}
 			else {
-				printFmt(out, esc, "{%.T @%D}", ast->type, ast->cInt);
+				printFmt(out, esc, ast->type->format, ast->cInt);
 			}
 			break;
 
@@ -614,491 +1081,6 @@ void printSym(FILE *out, const char **esc, symn sym, dmpMode mode, int indent) {
 	}
 }
 
-static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) {
-	char buff[1024], chr;
-
-	while ((chr = *msg++)) {
-		if (chr == '%') {
-			char nil = 0;    // [?]? skip on null || zero value (may print pad char once)
-			char sgn = 0;    // [+-]? sign flag / alignment.
-			char pad = 0;    // [0 ]? padding character.
-			int len = 0;     // [0-9]* length / mode
-			int prc = 0;     // (\.\*|[0-9]*)? precision / indent
-			int noPrc = 1;   // format string has no precision
-
-			const char *fmt = msg - 1;
-			char *str = NULL;
-
-			if (*msg == '?') {
-				nil = *msg++;
-			}
-			if (*msg == '+' || *msg == '-') {
-				sgn = *msg++;
-			}
-			if (*msg == '0' || *msg == ' ') {
-				pad = *msg++;
-			}
-
-			while (*msg >= '0' && *msg <= '9') {
-				len = (len * 10) + (*msg - '0');
-				msg++;
-			}
-
-			if (*msg == '.') {
-				msg++;
-				noPrc = 0;
-				if (*msg == '*') {
-					prc = va_arg(ap, int32_t);
-					msg++;
-				}
-				else {
-					prc = 0;
-					while (*msg >= '0' && *msg <= '9') {
-						prc = (prc * 10) + (*msg - '0');
-						msg++;
-					}
-				}
-			}
-
-			switch (chr = *msg++) {
-				case 0:
-					msg -= 1;
-					continue;
-
-				default:
-					printChr(out, chr);
-					continue;
-
-				case 'T': {		// type name
-					symn sym = va_arg(ap, symn);
-
-					if (sym == NULL && nil) {
-						if (pad != 0) {
-							printChr(out, pad);
-						}
-						continue;
-					}
-
-					switch (sgn) {
-						default:
-							if (noPrc) {
-								prc = prShort;
-							}
-							break;
-
-						case '-':
-							len = -len;
-							// fall
-						case '+':
-							if (noPrc) {
-								prc = prFull;
-							}
-							break;
-					}
-					printSym(out, esc, sym, (dmpMode) prc, len);
-					continue;
-				}
-
-				case 't': {		// tree node
-					astn ast = va_arg(ap, astn);
-
-					if (ast == NULL && nil) {
-						if (pad != 0) {
-							printChr(out, pad);
-						}
-						continue;
-					}
-
-					switch (sgn) {
-						default:
-							if (noPrc) {
-								prc = prShort;
-							}
-							break;
-
-						case '-':
-							len = -len;
-							// fall
-						case '+':
-							if (noPrc) {
-								prc = prFull;
-							}
-							break;
-					}
-					printAst(out, esc, ast, (dmpMode) prc, len);
-					continue;
-				}
-
-				case 'K': {		// symbol kind
-					ccKind arg = va_arg(ap, ccKind);
-					char *_stat = "";
-					char *_const = "";
-					char *_paral = "";
-					char *_kind = "";
-					char *_cast = NULL;
-
-					if (nil && arg == 0) {
-						if (pad != 0) {
-							printChr(out, pad);
-						}
-						continue;
-					}
-
-					switch (arg & MASK_cast) {
-						default:
-							break;
-
-						case CAST_vid:
-							_cast = "void";
-							break;
-
-						case CAST_bit:
-							_cast = "bool";
-							break;
-
-						case CAST_i32:
-							_cast = "i32";
-							break;
-
-						case CAST_u32:
-							_cast = "u32";
-							break;
-
-						case CAST_i64:
-							_cast = "i64";
-							break;
-
-						case CAST_u64:
-							_cast = "u64";
-							break;
-
-						case CAST_f32:
-							_cast = "f32";
-							break;
-
-						case CAST_f64:
-							_cast = "f64";
-							break;
-
-						case CAST_val:
-							_cast = "val";
-							break;
-
-						case CAST_ref:
-							_cast = "ref";
-							break;
-
-						case CAST_arr:
-							_cast = "arr";
-							break;
-
-						case CAST_var:
-							_cast = "var";
-							break;
-					}
-
-					switch (arg & MASK_kind) {
-						default:
-							break;
-
-						case KIND_def:
-							if (_cast != NULL) {
-								_kind = _cast;
-								_cast = NULL;
-							}
-							else if (!nil) {
-								_kind = "inline";
-							}
-							break;
-
-						case KIND_typ:
-							_kind = "typename";
-							break;
-
-						case KIND_fun:
-							_kind = "function";
-							break;
-
-						case KIND_var:
-							_kind = "variable";
-							break;
-					}
-
-					if (arg & ATTR_stat) {
-						_stat = "static ";
-					}
-					if (arg & ATTR_cnst) {
-						_const = "const ";
-					}
-					if (arg & ATTR_paral) {
-						_const = "parallel ";
-					}
-					if (_cast != NULL) {
-						snprintf(buff, sizeof(buff), "%s%s%s%s(%s)", _stat, _const, _paral, _kind, _cast);
-					}
-					else {
-						snprintf(buff, sizeof(buff), "%s%s%s%s", _stat, _const, _paral, _kind);
-					}
-					str = buff;
-					break;
-				}
-
-				case 'k': {		// token kind
-					ccToken arg = va_arg(ap, ccToken);
-
-					if (arg == 0 && nil) {
-						if (pad != 0) {
-							printChr(out, pad);
-						}
-						continue;
-					}
-
-					if (arg < tok_last) {
-						str = token_tbl[arg].name;
-					}
-					else {
-						snprintf(buff, sizeof(buff), "TOKEN_%02x", arg);
-						str = buff;
-					}
-					break;
-				}
-
-				case 'A': {		// instruction
-					void *opc = va_arg(ap, void*);
-
-					if (opc == NULL && nil) {
-						str = "";
-						len = 1;
-						break;
-					}
-
-					printAsm(out, esc, NULL, opc, (dmpMode) prc);
-					continue;
-				}
-
-				case 'I': {		// indent
-					unsigned arg = va_arg(ap, unsigned);
-					len = len ? len * arg : arg;
-					if (pad == 0) {
-						pad = '\t';
-					}
-					str = (char*)"";
-					break;
-				}
-
-				case 'b': {		// bin32
-					uint32_t num = va_arg(ap, uint32_t);
-					if (num == 0 && nil) {
-						len = pad != 0;
-						str = "";
-						break;
-					}
-					str = format(buff, sizeof(buff), prc, 2, num);
-					break;
-				}
-
-				case 'B': {		// bin64
-					uint64_t num = va_arg(ap, uint64_t);
-					if (num == 0 && nil) {
-						len = pad != 0;
-						str = "";
-						break;
-					}
-					str = format(buff, sizeof(buff), prc, 2, num);
-					break;
-				}
-
-				case 'o': {		// oct32
-					uint32_t num = va_arg(ap, uint32_t);
-					if (num == 0 && nil) {
-						len = pad != 0;
-						str = "";
-						break;
-					}
-					str = format(buff, sizeof(buff), prc, 8, num);
-					break;
-				}
-
-				case 'O': {		// oct64
-					uint64_t num = va_arg(ap, uint64_t);
-					if (num == 0 && nil) {
-						len = pad != 0;
-						str = "";
-						break;
-					}
-					str = format(buff, sizeof(buff), prc, 8, num);
-					break;
-				}
-
-				case 'x': {		// hex32
-					uint32_t num = va_arg(ap, uint32_t);
-					if (num == 0 && nil) {
-						len = pad != 0;
-						str = "";
-						break;
-					}
-					str = format(buff, sizeof(buff), prc, 16, num);
-					break;
-				}
-
-				case 'X': {		// hex64
-					uint64_t num = va_arg(ap, uint64_t);
-					if (num == 0 && nil) {
-						len = pad != 0;
-						str = "";
-						break;
-					}
-					str = format(buff, sizeof(buff), prc, 16, num);
-					break;
-				}
-
-				case 'u':		// uint32
-				case 'd': {		// dec32
-					int neg = 0;
-					uint32_t num = va_arg(ap, uint32_t);
-
-					if (num == 0 && nil) {
-						len = pad != 0;
-						str = "";
-						break;
-					}
-
-					if (chr == 'd' && (int32_t)num < 0) {
-						num = (uint32_t) 0 -num;
-						neg = -1;
-					}
-
-					str = format(buff, sizeof(buff), prc, 10, num);
-					if (neg) {
-						*--str = '-';
-					}
-					else if (sgn == '+') {
-						*--str = '+';
-					}
-					break;
-				}
-
-				case 'U':		// uint64
-				case 'D': {		// dec64
-					int neg = 0;
-					uint64_t num = va_arg(ap, uint64_t);
-
-					if (num == 0 && nil) {
-						len = pad != 0;
-						str = "";
-						break;
-					}
-
-					if (chr == 'D' && (int64_t)num < 0) {
-						num = (uint64_t) 0 -num;
-						neg = -1;
-					}
-					str = format(buff, sizeof(buff), prc, 10, num);
-					if (neg) {
-						*--str = '-';
-					}
-					else if (sgn == '+') {
-						*--str = '+';
-					}
-					break;
-				}
-
-				case 'E':		// float64
-				case 'F':		// float64
-					chr -= 'A' - 'a';
-					// no break
-				case 'e':		// float32
-				case 'f': {		// float32
-					float64_t num = va_arg(ap, float64_t);
-					if (num == 0 && nil) {
-						len = pad != 0;
-						str = "";
-						break;
-					}
-
-					if ((len = msg - fmt - 1) < 1020) {
-						memcpy(buff, fmt, (size_t) len);
-						if (len > 1 && buff[1] == '?') {
-							len -= 1;
-							memcpy(buff+1, buff+2, (size_t) len);
-						}
-						if (len > 1 && (buff[1] == '-' || buff[1] == '+')) {
-							len -= 1;
-							memcpy(buff+1, buff+2, (size_t) len);
-							if (signbit(num) == 0) {
-								fprintf(out, "+");
-							}
-						}
-						buff[len++] = chr;
-						buff[len] = 0;
-						fprintf(out, buff, num);
-					}
-					continue;
-				}
-
-				case 's':		// string
-					str = va_arg(ap, char*);
-					if (str == NULL && nil) {
-						len = pad != 0;
-						str = "";
-						break;
-					}
-					break;
-
-				case 'c':		// char
-					buff[0] = va_arg(ap, int);
-					buff[1] = 0;
-					str = buff;
-					break;
-			}
-
-			if (str != NULL) {
-				len -= strlen(str);
-
-				if (pad == 0) {
-					pad = ' ';
-				}
-
-				while (len > 0) {
-					printChr(out, pad);
-					len -= 1;
-				}
-
-				printStr(out, esc, str);
-			}
-		}
-		else {
-			printChr(out, chr);
-		}
-	}
-	fflush(out);
-}
-
-void logFILE(rtContext rt, FILE *file) {
-	// close previous opened file
-	if (rt->logClose != 0) {
-		fclose(rt->logFile);
-		rt->logClose = 0;
-	}
-
-	rt->logFile = file;
-}
-
-int logfile(rtContext rt, char *file, int append) {
-
-	// close previous file and set stderr
-	logFILE(rt, stdout);
-
-	if (file != NULL) {
-		rt->logFile = fopen(file, append ? "ab" : "wb");
-		if (rt->logFile == NULL) {
-			return 0;
-		}
-		rt->logClose = 1;
-	}
-	return 1;
-}
-
 void printFmt(FILE *out, const char **esc, const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
@@ -1143,9 +1125,8 @@ void printErr(rtContext rt, int level, const char *file, int line, const char *m
 	va_end(vaList);
 }
 
-// dump
 void dumpApi(rtContext rt, userContext ctx, void customPrinter(userContext, symn)) {
-	symn sym, bp[CC_MAX_TOK], *sp = bp;
+	symn sym, bp[maxTokenCount], *sp = bp;
 
 	// compilation errors or compiler was not initialized.
 	if (rt->cc == NULL || rt->main == NULL) {
@@ -1184,4 +1165,43 @@ void dumpApi(rtContext rt, userContext ctx, void customPrinter(userContext, symn
 	if (customPrinter != NULL) {
 		customPrinter(ctx, rt->main);
 	}
+}
+
+void logFILE(rtContext rt, FILE *file) {
+	// close previous opened file
+	if (rt->logClose != 0) {
+		fclose(rt->logFile);
+		rt->logClose = 0;
+	}
+	rt->logFile = file;
+}
+
+int logFile(rtContext rt, char *file, int append) {
+
+	// close previous file and set stderr
+	logFILE(rt, stdout);
+
+	if (file != NULL) {
+		rt->logFile = fopen(file, append ? "ab" : "wb");
+		if (rt->logFile == NULL) {
+			return 0;
+		}
+		rt->logClose = 1;
+	}
+	return 1;
+}
+
+const char **escapeStr() {
+	static const char *escape[256];
+	static char initialized = 0;
+	if (!initialized) {
+		memset((void*)escape, 0, sizeof(escape));
+		escape['\n'] = "\\n";
+		escape['\r'] = "\\r";
+		escape['\t'] = "\\t";
+		escape['\''] = "\\'";
+		escape['\"'] = "\\\"";
+		initialized = 1;
+	}
+	return escape;
 }

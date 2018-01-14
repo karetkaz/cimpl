@@ -3,52 +3,11 @@
  *   Date: 2011/06/23
  *   Desc: input and lexer
  *******************************************************************************
+ * convert text to tokens
+ */
 
-Lexical elements
-
-	Comments:
-		line comments: //
-		block comments: / * ... * / and nestable /+ ... +/
-
-	Tokens:
-		Identifiers: variable or type names.
-
-			identifier = (letter)+
-
-		Keywords:
-			break,
-			const,
-			continue,
-			else,
-			emit,
-			enum,
-			for,
-			if,
-			inline,
-			parallel,
-			return,
-			static,
-			struct
-
-		Operators and Delimiters:
-			+ - * / % . ,
-			~ & | ^ >> <<
-			&& ||
-			! == != < <= > >=
-			= += -= *= /= %= &= |= ^= >>= <<=
-			( ) [ ] { } ? : ;
-
-		Integer and Floating-point literals:
-			bin_lit = '0'[bB][01]+
-			oct_lit = '0'[oO][0-7]+
-			hex_lit = '0'[xX][0-9a-fA-F]+
-			decimal_lit = [1-9][0-9]*
-			floating_lit = decimal_lit (('.'[0-9]*) | )([eE]([+-]?)[0-9]+)
-
-		Character and String literals:
-			char_lit = \'[^\'\n]*
-			string_lit = \"[^\"\n]*
-*/
+#include "internal.h"
+#include <fcntl.h>
 
 #if !(defined _MSC_VER)
 #include <unistd.h>
@@ -56,14 +15,29 @@ Lexical elements
 #include <io.h>
 #endif
 
-#include <string.h>
-#include <fcntl.h>
-#include "internal.h"
+static const struct {
+	char *name;
+	ccToken type;
+} keywords[] = {
+	// Warning: keep keywords sorted by name, binary search is used to match keywords
+	{"break",    STMT_brk},
+	{"const",    CONST_kwd},
+	{"continue", STMT_con},
+	{"else",     ELSE_kwd},
+	{"emit",     EMIT_kwd},  // used for direct lookup
+	{"enum",     ENUM_kwd},
+	{"for",      STMT_for},
+	{"if",       STMT_if},
+	{"inline",   INLINE_kwd},
+	{"parallel", PARAL_kwd},
+	{"return",   STMT_ret},
+	{"static",   STATIC_kwd},
+	{"struct",   RECORD_kwd}
+};
 
-//#{~~~~~~~~~ Input ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-/** Fill some characters from the file.
- * @brief fill the memory buffer from file.
+/**
+ * Fill some characters from the file.
+ * 
  * @param cc compiler context.
  * @return number of characters in buffer.
  */
@@ -86,8 +60,9 @@ static size_t fillBuf(ccContext cc) {
 	return cc->fin._cnt;
 }
 
-/** Read the next character.
- * @brief read the next character from input stream.
+/**
+ * Read the next character from input stream.
+
  * @param cc compiler context.
  * @return the next character or -1 on end, or error.
  */
@@ -129,8 +104,9 @@ static int readChr(ccContext cc) {
 	return chr;
 }
 
-/** Peek the next character.
- * @brief peek the next character from input stream.
+/**
+ * Peek the next character from input stream.
+ * 
  * @param cc compiler context.
  * @return the next character or -1 on end, or error.
  */
@@ -141,8 +117,9 @@ static int peekChr(ccContext cc) {
 	return cc->chrNext;
 }
 
-/** Skip the next character.
- * @brief read the next character from input stream if it matches param chr.
+/**
+ * Skip the next character if it matches `chr`.
+ * 
  * @param cc compiler context.
  * @param chr filter: 0 matches everything.
  * @return the character skipped.
@@ -154,11 +131,12 @@ static int skipChr(ccContext cc, int chr) {
 	return 0;
 }
 
-/** Push back a character.
- * @brief putback the character chr to be read next time.
+/**
+ * Push back a character to be read next time.
+ * 
  * @param cc compiler context.
  * @param chr the character to be pushed back.
- * @return the character pushed back.
+ * @return the character pushed back, -1 on fail.
  */
 static int backChr(ccContext cc, int chr) {
 	if(cc->chrNext != -1) {
@@ -169,8 +147,7 @@ static int backChr(ccContext cc, int chr) {
 	return cc->chrNext = chr;
 }
 
-/// @doc: header
-int source(ccContext cc, int isFile, char *src) {
+int srcFile(ccContext cc, char *file, int isFile) {
 	if (cc->fin._fin > 3) {
 		// close previous opened file
 		close(cc->fin._fin);
@@ -185,13 +162,10 @@ int source(ccContext cc, int isFile, char *src) {
 	cc->file = NULL;
 	cc->line = 0;
 
-	if (isFile && src != NULL) {
-		if ((cc->fin._fin = open(src, O_RDONLY)) <= 0) {
+	if (isFile && file != NULL) {
+		if ((cc->fin._fin = open(file, O_RDONLY)) <= 0) {
 			return -1;
 		}
-
-		cc->file = mapstr(cc, src, (size_t) -1, (unsigned) -1);
-		cc->line = 1;
 
 		if (fillBuf(cc) > 2) {
 			// skip first line if it begins with: #!
@@ -206,16 +180,13 @@ int source(ccContext cc, int isFile, char *src) {
 			}
 		}
 	}
-	else if (src != NULL) {
-		cc->fin._ptr = src;
-		cc->fin._cnt = strlen(src);
+	else if (file != NULL) {
+		cc->fin._ptr = file;
+		cc->fin._cnt = strlen(file);
 	}
 	return 0;
 }
 
-//#}
-
-/// @doc: header
 unsigned rehash(const char *str, size_t len) {
 	static unsigned const crc_tab[256] = {
 		0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA,
@@ -297,8 +268,7 @@ unsigned rehash(const char *str, size_t len) {
 	return hs ^ 0xffffffff;
 }
 
-/// @doc: header
-char *mapstr(ccContext cc, const char *str, size_t len/* = -1*/, unsigned hash/* = -1*/) {
+char *mapstr(ccContext cc, const char *str, size_t len, unsigned hash) {
 	rtContext rt = cc->rt;
 	list node, next, prev = 0;
 
@@ -311,9 +281,9 @@ char *mapstr(ccContext cc, const char *str, size_t len/* = -1*/, unsigned hash/*
 	}
 
 	if (hash == (unsigned)-1) {
-		hash = rehash(str, len) % TBL_SIZE;
+		hash = rehash(str, len) % hashTableSize;
 	}
-	else if (hash >= TBL_SIZE) {
+	else if (hash >= hashTableSize) {
 		fatal(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
@@ -358,30 +328,11 @@ char *mapstr(ccContext cc, const char *str, size_t len/* = -1*/, unsigned hash/*
 	return (char*)str;
 }
 
-static const struct {
-	char *name;
-	ccToken type;
-} keywords[] = {
-	// Warning: keep keywords sorted by name, binary search is used to match keywords
-	{"break",    STMT_brk},
-	{"const",    CONST_kwd},
-	{"continue", STMT_con},
-	{"else",     ELSE_kwd},
-	{"emit",     EMIT_kwd},  // used for direct lookup
-	{"enum",     ENUM_kwd},
-	{"for",      STMT_for},
-	{"if",       STMT_if},
-	{"inline",   INLINE_kwd},
-	{"parallel", PARAL_kwd},
-	{"return",   STMT_ret},
-	{"static",   STATIC_kwd},
-	{"struct",   RECORD_kwd}
-};
+/**
+ * Read the next token from input stream.
 
-/** Read the next token.
- * @brief read the next token from input.
  * @param cc compiler context.
- * @param tok out parameter to be filled with data.
+ * @param tok (out parameter) to be filled with data.
  * @return the kind of token, TOKEN_any (0) if error occurred.
  */
 static ccToken readTok(ccContext cc, astn tok) {
@@ -973,7 +924,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			if (start_char == '"') {
 				tok->kind = TOKEN_val;
 				tok->type = cc->type_str;
-				tok->ref.hash = rehash(beg, ptr - beg) % TBL_SIZE;
+				tok->ref.hash = rehash(beg, ptr - beg) % hashTableSize;
 				tok->ref.name = mapstr(cc, beg, ptr - beg, tok->ref.hash);
 			}
 			else {
@@ -1036,7 +987,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 						tok->kind = TOKEN_var;
 						tok->type = cc->emit_opc;
 						tok->ref.link = cc->emit_opc;
-						tok->ref.hash = rehash(beg, ptr - beg) % TBL_SIZE;
+						tok->ref.hash = rehash(beg, ptr - beg) % hashTableSize;
 						tok->ref.name = mapstr(cc, beg, ptr - beg, tok->ref.hash);
 						break;
 				}
@@ -1044,7 +995,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			else {
 				tok->kind = TOKEN_var;
 				tok->type = tok->ref.link = NULL;
-				tok->ref.hash = rehash(beg, ptr - beg) % TBL_SIZE;
+				tok->ref.hash = rehash(beg, ptr - beg) % hashTableSize;
 				tok->ref.name = mapstr(cc, beg, ptr - beg, tok->ref.hash);
 			}
 			break;

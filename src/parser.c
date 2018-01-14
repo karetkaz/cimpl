@@ -3,8 +3,9 @@
  *   Date: 2011/06/23
  *   Desc: parser
  *******************************************************************************
-*/
-#include <stddef.h>
+ * convert token stream to an abstract syntax tree.
+ */
+
 #include "internal.h"
 
 const struct tokenRec token_tbl[256] = {
@@ -12,8 +13,9 @@ const struct tokenRec token_tbl[256] = {
 	#include "defs.inl"
 };
 
-/** Construct reference node.
- * @brief construct a new node for variables.
+/**
+ * Construct reference node.
+ * 
  * @param cc compiler context.
  * @param name name of the node.
  * @return the new node.
@@ -28,15 +30,16 @@ static inline astn tagNode(ccContext cc, char *name) {
 			ast->line = cc->line;
 			ast->type = NULL;
 			ast->ref.link = NULL;
-			ast->ref.hash = rehash(name, len + 1) % TBL_SIZE;
+			ast->ref.hash = rehash(name, len + 1) % hashTableSize;
 			ast->ref.name = mapstr(cc, name, len + 1, ast->ref.hash);
 		}
 	}
 	return ast;
 }
 
-/** Construct arguments.
- * @brief construct a new node for function arguments
+/**
+ * Construct arguments.
+ * 
  * @param cc compiler context.
  * @param lhs arguments or first argument.
  * @param rhs next argument.
@@ -74,7 +77,8 @@ static inline symn addLength(ccContext cc, symn sym, astn init) {
 }
 
 /**
- * @brief Install a new symbol: alias, type, variable or function.
+ * Install a new symbol: alias, type, variable or function.
+ * 
  * @param kind Kind of symbol: (KIND_def, KIND_var, KIND_typ, CAST_arr)
  * @param tag Parsed tree node representing the symbol.
  * @param type Type of symbol.
@@ -149,10 +153,15 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 			}
 		}
 
-		if (ptr != NULL && (ptr->nest >= def->nest)) {
-			error(cc->rt, def->file, def->line, ERR_REDEFINED_REFERENCE, def);
-			if (ptr->file && ptr->line) {
-				info(cc->rt, ptr->file, ptr->line, "previously defined as `%T`", ptr);
+		if (ptr != NULL) {
+			if (ptr->nest >= def->nest) {
+				error(cc->rt, def->file, def->line, ERR_DECLARATION_REDEFINED, def);
+				if (ptr->file && ptr->line) {
+					info(cc->rt, ptr->file, ptr->line, "previously defined as `%T`", ptr);
+				}
+			}
+			else if (cc->siff) {
+				warn(cc->rt, 3, def->file, def->line, WARN_DECLARATION_REDEFINED, def);
 			}
 		}
 	}
@@ -160,7 +169,7 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 	return def;
 }
 
-/// expand compound assignment expressions like  `a += 1` into `a = a + 1`
+/// expand compound assignment expressions like `a += 1` into `a = a + 1`
 static astn expandAssignment(ccContext cc, astn root) {
 	astn tmp = NULL;
 	switch (root->kind) {
@@ -228,8 +237,74 @@ static astn expand2Statement(ccContext cc, astn node, int block) {
 	}
 	return result;
 }
-//#{~~~~~~~~~ Parser ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+/**
+ * Open a stream (file or text) for compilation.
+ * 
+ * @param rt runtime context.
+ * @param file file name of input.
+ * @param line first line of input.
+ * @param text if not null, this will be compiled instead of the file.
+ * @return compiler context or null on error.
+ * @note invokes ccInit if not initialized.
+ */
+static ccContext ccOpen(rtContext rt, char *file, int line, char *text) {
+	ccContext cc = rt->cc;
+
+	if (cc == NULL) {
+		// initialize only once.
+		cc = ccInit(rt, install_def, NULL);
+		if (cc == NULL) {
+			return NULL;
+		}
+	}
+
+	if (srcFile(cc, text ? text : file, text == NULL) != 0) {
+		return NULL;
+	}
+
+	if (file != NULL) {
+		file = mapstr(cc, file, -1, -1);
+	}
+
+	cc->fin.nest = cc->nest;
+	cc->file = file;
+	cc->line = line;
+	return cc;
+}
+
+/**
+ * Close stream, ensuring it ends correctly.
+ * 
+ * @param cc compiler context.
+ * @return number of errors.
+ */
+static int ccClose(ccContext cc) {
+	astn ast;
+
+	// not initialized
+	if (cc == NULL) {
+		return -1;
+	}
+
+	// check no token left to read
+	if ((ast = nextTok(cc, TOKEN_any, 0))) {
+		error(cc->rt, ast->file, ast->line, ERR_UNEXPECTED_TOKEN, ast);
+	}
+		// check we are on the same nesting level
+	else if (cc->fin.nest != cc->nest) {
+		error(cc->rt, cc->file, cc->line, ERR_INVALID_STATEMENT);
+	}
+
+	// close input
+	srcFile(cc, NULL, 0);
+
+	// return errors
+	return cc->rt->errors;
+}
+
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Parser
 static astn statement_list(ccContext cc);
 static astn statement(ccContext cc, ccKind attr);
 static astn declaration(ccContext cc, ccKind attr, astn *args);
@@ -286,11 +361,11 @@ static ccKind qualifier(ccContext cc) {
  * @return root of expression tree
  */
 static astn expression(ccContext cc, int comma) {
-	astn buff[CC_MAX_TOK], *const base = buff + CC_MAX_TOK;
+	astn buff[maxTokenCount], *const base = buff + maxTokenCount;
 	astn *ptr, ast, prev = NULL;
 	astn *postfix = buff;			// postfix form of expression
 	astn *stack = base;				// precedence stack
-	char sym[CC_MAX_TOK];			// symbol stack {, [, (, ?
+	char sym[maxTokenCount];		// symbol stack {, [, (, ?
 	int unary = 1;					// start in unary mode
 	int level = 0;					// precedence and top of symbol stack
 
@@ -627,7 +702,7 @@ static astn initializer(ccContext cc) {
 					sep = OPER_com;
 				}
 				else {
-					astn next = peekTok(cc, 0);
+					astn next = peekTok(cc, TOKEN_any);
 					if (head != tail && next != NULL) {
 						warn(cc->rt, 1, next->file, next->line, ERR_UNMATCHED_SEPARATOR, next, STMT_end);
 					}
@@ -805,6 +880,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 
 
 		arr->kind = ATTR_stat | KIND_typ | CAST_arr;
+		arr->offs = vmOffset(cc->rt, arr);
 		arr->type = type;
 		type = arr;
 
@@ -1298,8 +1374,9 @@ static astn statement_list(ccContext cc) {
 	return head;
 }
 
-/** Parse statement.
- * @brief parse a statement.
+/**
+ * Parse statement.
+ * 
  * @param cc compiler context.
  * @param attr the qualifier of the statement/declaration
  * @return parsed syntax tree.
@@ -1501,14 +1578,16 @@ static astn statement(ccContext cc, ccKind attr) {
 
 	return ast;
 }
-//#}
 
-astn parse(ccContext cc) {
-	astn ast, unit = NULL;
+astn ccAddUnit(ccContext cc, char *file, int line, char *text) {
+	if (!ccOpen(cc->rt, file, line, text)) {
+		error(cc->rt, NULL, 0, ERR_OPENING_FILE, file);
+		return 0;
+	}
 
 	// pre read all tokens from source
 	if (cc->tokNext == NULL) {
-		astn head = NULL, tail = NULL;
+		astn ast, head = NULL, tail = NULL;
 		while ((ast = nextTok(cc, TOKEN_any, 0)) != NULL) {
 			if (tail != NULL) {
 				tail->next = ast;
@@ -1521,7 +1600,8 @@ astn parse(ccContext cc) {
 		cc->tokNext = head;
 	}
 
-	if ((unit = statement_list(cc))) {
+	astn unit = statement_list(cc);
+	if (unit != NULL) {
 		unit = expand2Statement(cc, unit, 1);
 
 		// add parsed unit to module
@@ -1540,58 +1620,18 @@ astn parse(ccContext cc) {
 		unit = newNode(cc, STMT_beg);
 	}
 
+	if (ccClose(cc) != 0) {
+		return NULL;
+	}
 	return unit;
 }
 
-ccContext ccOpen(rtContext rt, char *file, int line, char *text) {
-	ccContext cc = rt->cc;
-
-	if (cc == NULL) {
-		// initialize only once.
-		cc = ccInit(rt, install_def, NULL);
-		if (cc == NULL) {
-			return NULL;
-		}
+int ccAddLib(ccContext cc, int init(ccContext), char *file) {
+	int unitCode = init(cc);
+	if (unitCode == 0 && file != NULL) {
+		return ccAddUnit(cc, file, 1, NULL) != NULL;
 	}
-
-	if (source(cc, text == NULL, text ? text : file) != 0) {
-		return NULL;
-	}
-
-	if (file != NULL) {
-		cc->file = mapstr(cc, file, -1, -1);
-	}
-	else {
-		cc->file = NULL;
-	}
-
-	cc->fin.nest = cc->nest;
-	cc->line = line;
-	return cc;
-}
-
-int ccClose(ccContext cc) {
-	astn ast;
-
-	// not initialized
-	if (cc == NULL) {
-		return -1;
-	}
-
-	// check no token left to read
-	if ((ast = nextTok(cc, TOKEN_any, 0))) {
-		error(cc->rt, ast->file, ast->line, ERR_UNEXPECTED_TOKEN, ast);
-	}
-	// check we are on the same nesting level
-	else if (cc->fin.nest != cc->nest) {
-		error(cc->rt, cc->file, cc->line, ERR_INVALID_STATEMENT);
-	}
-
-	// close input
-	source(cc, 0, NULL);
-
-	// return errors
-	return cc->rt->errors;
+	return unitCode == 0;
 }
 
 symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
@@ -1690,24 +1730,4 @@ symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 
 	debug("nfc: %02X, in: %U, out: %U, func: %T", nfcPos, nfc->in, nfc->out, nfc->sym);
 	return sym;
-}
-
-astn ccAddUnit(ccContext cc, char *file, int line, char *text) {
-	if (!ccOpen(cc->rt, file, line, text)) {
-		error(cc->rt, NULL, 0, ERR_OPENING_FILE, file);
-		return 0;
-	}
-	astn unit = parse(cc);
-	if (ccClose(cc) != 0) {
-		return NULL;
-	}
-	return unit;
-}
-
-int ccAddLib(ccContext cc, int init(ccContext), char *file) {
-	int unitCode = init(cc);
-	if (unitCode == 0 && file != NULL) {
-		return ccAddUnit(cc, file, 1, NULL) != NULL;
-	}
-	return unitCode == 0;
 }
