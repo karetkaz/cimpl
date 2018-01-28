@@ -31,7 +31,7 @@ case opc_nfc:  NEXT(4, 0, 0) {
 	args.extra = (void *) extra;
 	args.proto = (char *) nfc->proto;
 	args.args = sp;
-	args.argc = nfc->in;
+	args.argc = vm_size * nfc->in;
 
 	TRACE(nfc->sym->offs);
 	vmError nfcError = nfc->call(&args);

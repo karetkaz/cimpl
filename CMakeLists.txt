@@ -9,8 +9,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR
 
 set(CMPL_SRC_FILES
 	src/cmpl.h
-	src/vmCore.h
-	src/ccCore.h
+	src/cmplVm.h
+	src/cmplCc.h
 	src/parser.h
 	src/printer.h
 	src/internal.h

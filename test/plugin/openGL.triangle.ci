@@ -1,30 +1,33 @@
 inline fpsCounter = !true;
-static float x0 = +0;
-static float y0 = +1;
-static float x1 = -1;
-static float y1 = -1;
-static float x2 = +1;
-static float y2 = -1;
 static int maxx = 500;
 static int maxy = 500;
 
+struct vertex:1 {
+	float32 x;
+	float32 y;
+	int32 c;
+}
+
+inline vertex(float32 x, float32 y, int32 c) = vertex(emit(int32(c), float32(y), float32(x)));
+
+static vertex vertices[3];
+
+vertices[0] = vertex( 0, +1, 0xff0000);
+vertices[1] = vertex(-1, -1, 0x00ff00);
+vertices[2] = vertex(+1, -1, 0x0000ff);
+
 void mouse(int btn, int x, int y) {
 	// trace("mouse");
-	if (btn == 1) {
-		x0 = -(1. - x / (.5 * maxx));
-		y0 = 1. - y / (.5 * maxy);
-		glut.postRedisplay();
+	uint32 idx = btn - 1;
+	if (idx >= vertices.length) {
+		return;
 	}
-	else if (btn == 2) {
-		x1 = -(1 - x / (.5 * maxx));
-		y1 = 1 - y / (.5 * maxy);
-		glut.postRedisplay();
-	}
-	else if (btn == 3) {
-		x2 = -(1 - x / (.5 * maxx));
-		y2 = 1 - y / (.5 * maxy);
-		glut.postRedisplay();
-	}
+
+	vertex v& = vertices[idx];
+	v.x = -1.f + x / (.5f * maxx);
+	v.y = 1.f - y / (.5f * maxy);
+	glut.postRedisplay();
+	//trace("vertex", v);
 }
 
 void keyboard(int key) {
@@ -60,7 +63,7 @@ void keyboard(int key) {
 }
 
 void reshape(int x, int y) {
-	trace("reshape");
+	//trace("reshape");
 	gl.viewport(0, 0, x, y);
 	glut.postRedisplay();
 	maxx = x;
@@ -73,15 +76,14 @@ void display() {
 	gl.clear(gl.ColorBuffer);
 
 	gl.begin(gl.Triangles);
-	gl.color(1, 0, 0, 1);
-	gl.vertex(x0, y0, 0, 1);
-
-	gl.color(0, 1, 0, 1);
-	gl.vertex(x1, y1, 0, 1);
-
-	gl.color(0, 0, 1, 1);
-	gl.vertex(x2, y2, 0, 1);
-
+	for (int i = 0; i < vertices.length; i += 1) {
+		vertex v = vertices[i];
+		float r = float32(v.c >> 16 & 0xff) / 255f;
+		float g = float32(v.c >> 8 & 0xff) / 255f;
+		float b = float32(v.c >> 0 & 0xff) / 255f;
+		gl.color(r, g, b, 1);
+		gl.vertex(v.x, v.y, 0, 1);
+	}
 	gl.end();
 	glut.swapBuffers();
 

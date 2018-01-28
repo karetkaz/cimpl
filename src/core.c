@@ -51,17 +51,19 @@ static void install_emit(ccContext cc, ccInstall mode);
  */
 static int install_base(rtContext rt, vmError onHalt(nfcContext));
 
-/// private dummy on exit native function.
+/// Private dummy on exit native function.
 static vmError haltDummy(nfcContext args) {
 	(void)args;
 	return noError;
 }
 
+/// Private rtAlloc wrapper for the api
 static void *rtAllocApi(rtContext rt, void *ptr, size_t size) {
 	return rtAlloc(rt, ptr, size, NULL);
 }
 
-static symn rtFindSymApi(rtContext rt, size_t offset) {
+/// Private rtLookupSym wrapper for the api
+static symn rtLookupSymApi(rtContext rt, size_t offset) {
 	symn sym = rtLookupSym(rt, offset, 0);
 	if (sym != NULL && sym->offs == offset) {
 		return sym;
@@ -71,7 +73,7 @@ static symn rtFindSymApi(rtContext rt, size_t offset) {
 
 
 size_t nfcFirstArg(nfcContext nfc) {
-	nfc->param = (void*) -1;
+	nfc->param = (void *) -1;
 	return nfcNextArg(nfc);
 }
 
@@ -88,7 +90,7 @@ size_t nfcNextArg(nfcContext nfc) {
 	}
 
 	nfc->param = param = param->next;
-	return sizeof(vmOffs) * nfc->argc - param->offs;
+	return nfc->argc - param->offs;
 }
 
 /**
@@ -97,14 +99,14 @@ size_t nfcNextArg(nfcContext nfc) {
  * @param nfc the native call context.
  * @param offs relative offset of the argument.
  * @return pointer to the argument at the relative offset.
- * @note the values on the stack will contain offsets instead of pointers
+ * @note the values on the stack will contain offsets, not pointers
  */
 static inline vmValue *nfcPeekArg(nfcContext nfc, size_t argOffs) {
 	return (vmValue *) (((char *) nfc->args) + argOffs);
 }
 
 rtValue nfcReadArg(nfcContext nfc, size_t offs) {
-	vmValue *argValue = nfcPeekArg(nfc, offs);
+	vmValue *value = nfcPeekArg(nfc, offs);
 	rtValue result = { .i64 = 0 };
 	switch (castOf(nfc->param)) {
 		default:
@@ -115,33 +117,35 @@ rtValue nfcReadArg(nfcContext nfc, size_t offs) {
 		case CAST_i32:
 		case CAST_u32:
 		case CAST_f32:
-			result.i64 = argValue->i32;
+			result.i64 = value->i32;
 			break;
 
 		case CAST_i64:
 		case CAST_u64:
 		case CAST_f64:
-			result.i64 = argValue->i64;
+			result.i64 = value->i64;
 			break;
 
 		case CAST_ref:
-			result.ref = vmPointer(nfc->rt, argValue->ref);
+			result.ref = vmPointer(nfc->rt, value->ref);
 			break;
 
 		case CAST_arr:
-			result.ref = vmPointer(nfc->rt, argValue->ref);
-			result.length = argValue->length;  // FIXME: length may be missing || static
+			result.ref = vmPointer(nfc->rt, value->ref);
+			result.length = value->length;  // FIXME: length may be missing || static
 			break;
 
 		case CAST_var:
-			result.ref = vmPointer(nfc->rt, argValue->ref);
-			result.type = vmPointer(nfc->rt, argValue->type);
+			result.ref = vmPointer(nfc->rt, value->ref);
+			result.type = vmPointer(nfc->rt, value->type);
 			break;
 
 		case CAST_val:
-			// FIXME: here we should copy the size of the type.
-			dieif(nfc->param->size > 8, ERR_UNIMPLEMENTED_FEATURE);
-			result.i64 = argValue->i64;
+			if (nfc->param->size > sizeof(rtValue)) {
+				fatal(ERR_UNIMPLEMENTED_FEATURE);
+				return result;
+			}
+			result.i64 = value->i64;
 			break;
 	}
 	return result;
@@ -193,7 +197,7 @@ rtContext rtInit(void *mem, size_t size) {
 
 		*(void**)&rt->api.invoke = invoke;
 		*(void**)&rt->api.rtAlloc = rtAllocApi;
-		*(void**)&rt->api.rtFindSym = rtFindSymApi;
+		*(void**)&rt->api.rtFindSym = rtLookupSymApi;
 
 		*(void**)&rt->api.nfcFirstArg = nfcFirstArg;
 		*(void**)&rt->api.nfcNextArg = nfcNextArg;
@@ -202,6 +206,7 @@ rtContext rtInit(void *mem, size_t size) {
 		// default values
 		rt->logLevel = 7;
 		rt->warnLevel = 5;
+		rt->foldCasts = 1;
 		rt->foldConst = 1;
 		rt->foldInstr = 1;
 		rt->fastMemory = 1;
@@ -234,8 +239,22 @@ int rtClose(rtContext rt) {
 	return rt->errors;
 }
 
-rtContext vmInit(rtContext rt, vmError onHalt(nfcContext)) {
+rtContext vmInit(rtContext rt, int debug, vmError onHalt(nfcContext)) {
 	ccContext cc = rt->cc;
+
+	// debug info
+	if (debug != 0) {
+		rt->dbg = (dbgContext)(rt->_beg = padPointer(rt->_beg, pad_size));
+		rt->_beg += sizeof(struct dbgContextRec);
+
+		dieif(rt->_beg >= rt->_end, ERR_MEMORY_OVERRUN);
+		memset(rt->dbg, 0, sizeof(struct dbgContextRec));
+
+		rt->dbg->rt = rt;
+		rt->dbg->abort = (dbgn)-1;
+		initBuff(&rt->dbg->functions, 128, sizeof(struct dbgNode));
+		initBuff(&rt->dbg->statements, 128, sizeof(struct dbgNode));
+	}
 
 	// initialize native calls
 	if (cc != NULL && cc->native != NULL) {
@@ -1193,7 +1212,7 @@ dbgn addDbgFunction(rtContext rt, symn fun) {
 
 		if (result != NULL) {
 			memset(result, 0, rt->dbg->functions.esz);
-			result->decl = fun;
+			result->func = fun;
 			result->file = fun->file;
 			result->line = fun->line;
 			result->start = fun->offs;

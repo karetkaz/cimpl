@@ -564,7 +564,7 @@ float64 sum(float64 data...) {
 	foreach(data, inline void(float64 value) {
 		// sum is a closure variable.
 		sum += value;
-	})
+	});
 	return sum;
 }
 ```
@@ -1087,8 +1087,9 @@ The most fundamental types the virtual machine can work with, are exposed to the
 
 ### void
 The type void is an empty type with no values.
-No variables of this type can be instantiated. 
+No variables of this type can be instantiated.
 Mostly used when function does not return a value.
+It can also be used as a function to void(finalize) a variable.
 
 ### bool
 May take on the values true and false only.

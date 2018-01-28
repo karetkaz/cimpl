@@ -2,27 +2,27 @@
 
 static if (typename(raise) == function) {
 
-inline verbose(char message[*], variant inspect) = raise(raise.verbose, message, inspect, raise.noTrace);
-inline verbose(char message[*]) = raise(raise.verbose, message, null, raise.noTrace);
+inline verbose(char message[*], variant inspect) = raise(raise.noTrace, raise.verbose, message, inspect);
+inline verbose(char message[*]) = raise(raise.noTrace, raise.verbose, message, null);
 
-inline trace(char message[*], variant inspect) = raise(raise.debug, message, inspect, raise.defTrace);
-inline trace(char message[*]) = raise(raise.debug, message, null, raise.defTrace);
+inline trace(char message[*], variant inspect) = raise(raise.defTrace, raise.debug, message, inspect);
+inline trace(char message[*]) = raise(raise.defTrace, raise.debug, message, null);
 
-inline debug(char message[*], variant inspect) = raise(raise.debug, message, inspect, raise.noTrace);
-inline debug(char message[*]) = raise(raise.debug, message, null, raise.noTrace);
+inline debug(char message[*], variant inspect) = raise(raise.noTrace, raise.debug, message, inspect);
+inline debug(char message[*]) = raise(raise.noTrace, raise.debug, message, null);
 
-inline info(char message[*], variant inspect) = raise(raise.info, message, inspect, raise.noTrace);
-inline info(char message[*]) = raise(raise.info, message, null, raise.noTrace);
+inline info(char message[*], variant inspect) = raise(raise.noTrace, raise.info, message, inspect);
+inline info(char message[*]) = raise(raise.noTrace, raise.info, message, null);
 
-inline warn(char message[*], variant inspect) = raise(raise.warn, message, inspect, raise.noTrace);
-inline warn(char message[*]) = raise(raise.warn, message, null, raise.noTrace);
+inline warn(char message[*], variant inspect) = raise(raise.noTrace, raise.warn, message, inspect);
+inline warn(char message[*]) = raise(raise.noTrace, raise.warn, message, null);
 
-inline error(char message[*], variant inspect) = raise(raise.error, message, inspect, raise.defTrace);
-inline error(char message[*]) = raise(raise.error, message, null, raise.defTrace);
+inline error(char message[*], variant inspect) = raise(raise.defTrace, raise.error, message, inspect);
+inline error(char message[*]) = raise(raise.defTrace, raise.error, message, null);
 
-inline abort(char message[*], variant inspect) = raise(raise.abort, message, inspect, raise.defTrace);
-inline abort(char message[*]) = raise(raise.abort, message, null, raise.defTrace);
-inline abort() = raise(raise.abort, "execution aborted!", null, raise.defTrace);
+inline abort(char message[*], variant inspect) = raise(raise.defTrace, raise.abort, message, inspect);
+inline abort(char message[*]) = raise(raise.defTrace, raise.abort, message, null);
+inline abort() = raise(raise.defTrace, raise.abort, "execution aborted!", null);
 
 inline assert(bool condition, char message[*], variant inspect) = void(condition ? void(0) : abort(message, inspect));
 inline assert(bool condition, char message[*]) = void(condition ? void(0) : abort(message));

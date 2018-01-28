@@ -1,8 +1,8 @@
 
-#ifndef CMPL_TYPE_H
-#define CMPL_TYPE_H
+#ifndef CMPL_PARSER_H
+#define CMPL_PARSER_H
 
-#include "ccCore.h"
+#include "cmplCc.h"
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Types

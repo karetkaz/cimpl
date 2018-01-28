@@ -9,9 +9,10 @@
 #ifndef CC_INTERNAL_H
 #define CC_INTERNAL_H
 
-#include "vmCore.h"
-#include "ccCore.h"
+#include "cmplVm.h"
+#include "cmplCc.h"
 #include "parser.h"
+#include "cmplDbg.h"
 #include "printer.h"
 
 /* Debugging the compiler:
@@ -39,25 +40,6 @@ enum Settings {
 
 };
 
-// A simple dynamic array
-struct arrBuffer {
-	char *ptr;		// data
-	size_t esz;		// element size
-	size_t cap;		// capacity
-	size_t cnt;		// length
-};
-
-int initBuff(struct arrBuffer *buff, size_t initCount, size_t elemSize);
-void freeBuff(struct arrBuffer *buff);
-static inline void *getBuff(struct arrBuffer *buff, size_t idx) {
-	size_t pos = idx * buff->esz;
-	if (pos >= buff->cap || !buff->ptr) {
-		return NULL;
-	}
-	return buff->ptr + pos;
-}
-
-
 // linked list
 typedef struct list {
 	struct list *next;
@@ -77,48 +59,33 @@ typedef struct libc {
 #define lengthOf(__ARRAY) (sizeof(__ARRAY) / sizeof(*(__ARRAY)))
 #define offsetOf(__TYPE, __FIELD) ((size_t) &((__TYPE*)NULL)->__FIELD)
 
+/// Utility function to align offset
 static inline size_t padOffset(size_t offs, size_t align) {
 	size_t mask = align - 1;
 	return (offs + mask) & ~mask;
 }
 
+/// Utility function to align pointer
 static inline void *padPointer(void *offs, size_t align) {
 	ssize_t mask = align - 1;
 	return (void*)(((ssize_t)offs + mask) & ~mask);
 }
 
+/// Utility function to swap memory
+static inline void memSwap(void *_a, void *_b, size_t size) {
+	register char *a = _a;
+	register char *b = _b;
+	register char *end = a + size;
+	while (a < end) {
+		char c = *a;
+		*a = *b;
+		*b = c;
+		a += 1;
+		b += 1;
+	}
+}
+
 void nfcCheckArg(nfcContext nfc, ccKind cast, char *name);
-
-typedef enum {
-	// what to do when a break point is hit
-	brkSkip  = 0x00,  // do nothing
-	brkPrint = 0x01,  // print when hit
-	brkTrace = 0x02,  // trace when hit
-	brkPause = 0x04,  // pause when hit
-	brkOnce  = 0x10,  // one shoot breakpoint (disabled after first hit)
-} brkMode;
-
-/// Debug info node
-struct dbgNode {
-	// the statement tree.
-	astn stmt;
-	// the declared symbol.
-	symn decl;
-
-	// position in code
-	size_t start, end;
-
-	// position in file.
-	char *file;
-	int line;
-
-	// break execution?
-	brkMode bp;
-
-	// execution information
-	int64_t total, self;  // time spent executing function / statement
-	int64_t hits, exec;  // hit count and successful executions
-};
 
 /// Compiler context
 struct ccContextRec {
@@ -340,6 +307,7 @@ void closeLibs();
 
 // Code generator errors
 #define ERR_CAST_EXPRESSION "can not emit expression: %t, invalid cast(%K -> %K)"
+#define ERR_EMIT_LENGTH "can not emit length of array: %T"
 #define ERR_EMIT_VARIABLE "can not emit variable: %T"
 #define ERR_EMIT_FUNCTION "can not emit function: %T"
 #define ERR_EMIT_STATEMENT "can not emit statement: %t"

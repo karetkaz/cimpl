@@ -72,6 +72,7 @@ static inline symn addLength(ccContext cc, symn sym, astn init) {
 	enter(cc, NULL);
 	newField = install(cc, "length", kind | castOf(cc->type_idx), cc->type_idx->size, cc->type_idx, init);
 	sym->fields = leave(cc, KIND_def, 0, 0, NULL);
+	newField->offs = offsetOf(vmValue, length);
 	newField->next = oldFields;
 	return newField;
 }
@@ -749,13 +750,32 @@ static astn parameters(ccContext cc, symn resType, astn fun) {
 		ccKind attr = qualifier(cc);
 		astn arg = declaration(cc, attr, NULL);
 
-		if (arg != NULL) {
-			tok = argNode(cc, tok, arg);
-			if (attr & ATTR_cnst) {
-				arg->ref.link->kind |= ATTR_cnst;
+		if (arg == NULL) {
+			// probably parse error
+			break;
+		}
+
+		symn parameter = arg->ref.link;
+
+		// apply const qualifier
+		if (attr & ATTR_cnst) {
+			parameter->kind |= ATTR_cnst;
+			attr &= ~ATTR_cnst;
+		}
+
+		// fixed size arrays are passed by reference
+		if (castOf(parameter->type) == CAST_arr) {
+			if (castOf(parameter) == CAST_val) {
+				parameter->size = sizeof(vmOffs);
+				parameter->kind &= ~MASK_cast;
+				parameter->kind |= CAST_ref;
 			}
 		}
 
+		tok = argNode(cc, tok, arg);
+		if (attr != 0) {
+			error(cc->rt, arg->file, arg->line, ERR_UNEXPECTED_ATTR, attr);
+		}
 		if (!skipTok(cc, OPER_com, 0)) {
 			break;
 		}

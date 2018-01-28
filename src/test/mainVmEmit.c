@@ -1,5 +1,5 @@
 #include "cmpl.h"
-#include "vmCore.h"
+#include "cmplVm.h"
 #include "printer.h"
 
 static vmError onHalt(nfcContext args) {
@@ -9,12 +9,12 @@ static vmError onHalt(nfcContext args) {
 
 int main() {
 	// initialize
-	char mem[1024];         // 1 Kb memory
+	char mem[1 << 10];         // 1 Kb memory
 	rtContext rt = rtInit(mem, sizeof(mem));
-	vmInit(rt, onHalt);
+	vmInit(rt, 0, onHalt);
 
 	// override optimization flags
-	rt->foldInstr = 1;
+	//rt->foldCasts = 0;
 
 	// start emitting some instructions
 	size_t start = emit(rt, markIP);

@@ -43,6 +43,7 @@ static inline int32_t bitsf(uint32_t x) {
 
 // instead of void *
 typedef uint8_t *memptr;
+typedef uint32_t *stkptr;
 
 // method tracing
 typedef struct trcptr {
@@ -109,9 +110,18 @@ static inline int isValidOffset(rtContext rt, void *ptr) {
 	return 1;
 }
 
+static inline vmInstruction lastIp(rtContext rt) {
+	vmInstruction result = vmPointer(rt, rt->vm.pc);
+	if (result == NULL) {
+		result = (vmInstruction) rt->_beg;
+		result->opc = opc_nop;
+	}
+	return result;
+}
+
 // rollback the last emitted instruction.
 static inline void rollbackPc(rtContext rt) {
-	vmInstruction ip = vmPointer(rt, rt->vm.pc);
+	vmInstruction ip = lastIp(rt);
 	if ((void*)ip != rt->_beg) {
 		const struct opcodeRec *info = &opcode_tbl[ip->opc];
 		rt->vm.ss -= info->stack_out - info->stack_in;
@@ -277,7 +287,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 		case opc_sti4:
 		case opc_sti8:
 		case opc_stiq:
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_ldsp) {
 				if (rt->vm.su < arg.i32 / 4)
 					rt->vm.su = arg.i32 / 4;
@@ -364,7 +374,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					trace(ERR_INTERNAL_ERROR);
 					return 0;
 				}
-				ip = vmPointer(rt, rt->vm.pc);
+				ip = lastIp(rt);
 				if (ip->opc == opc_ldsp) {
 					//~ if we copy from the stack to the stack
 					//~ do not remove more elements than we copy
@@ -399,7 +409,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			}
 			if (arg.i64 == 0) {
 				opc = opc_lzx1;
-				ip = vmPointer(rt, rt->vm.pc);
+				ip = lastIp(rt);
 				if (ip->opc == opc_lzx1) {
 					opc = opc_lzx2;
 					rollbackPc(rt);
@@ -413,7 +423,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			}
 			if (arg.i64 == 0) {
 				opc = opc_lzx2;
-				ip = vmPointer(rt, rt->vm.pc);
+				ip = lastIp(rt);
 				if (ip->opc == opc_lzx2) {
 					opc = opc_lzx4;
 					rollbackPc(rt);
@@ -422,7 +432,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case opc_ldi1:/* TODO: sign or zero extend
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_dup1;
@@ -432,7 +442,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case opc_ldi2:/* TODO: sign or zero extend
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_dup1;
@@ -445,7 +455,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->fastMemory) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_dup1;
@@ -464,7 +474,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->fastMemory) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_set1;
@@ -483,7 +493,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->fastMemory) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_dup2;
@@ -502,7 +512,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->fastMemory) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_set2;
@@ -521,7 +531,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->fastMemory) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) <= vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_dup4;
@@ -533,7 +543,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->fastMemory) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) <= vm_regs)) {
 				arg.i32 = ip->rel / vm_size;
 				opc = opc_set4;
@@ -546,7 +556,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lc32) {
 				arg.i32 = b32_bit_shl | (ip->arg.i32 & 0x3f);
 				opc = b32_bit;
@@ -558,7 +568,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lc32) {
 				arg.i32 = b32_bit_shr | (ip->arg.i32 & 0x3f);
 				opc = b32_bit;
@@ -570,7 +580,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lc32) {
 				arg.i32 = b32_bit_sar | (ip->arg.i32 & 0x3f);
 				opc = b32_bit;
@@ -582,7 +592,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lc32 && (ip->arg.i32 & (ip->arg.i32 + 1)) == 0) {
 				arg.i32 = b32_bit_and | (bitsf(ip->arg.u32 + 1) & 0x3f);
 				opc = b32_bit;
@@ -595,7 +605,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_not) {
 				rt->_beg = (memptr) ip;
 				ip->opc = opc_nop;
@@ -607,7 +617,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == i32_neg) {
 				rt->_beg = (memptr) ip;
 				ip->opc = opc_nop;
@@ -623,7 +633,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == i64_neg) {
 				rt->_beg = (memptr) ip;
 				ip->opc = opc_nop;
@@ -639,13 +649,13 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == f32_neg) {
 				rt->_beg = (memptr) ip;
 				ip->opc = opc_nop;
 				return rt->vm.pc;
 			}
-			if (ip->opc == opc_lc32 && rt->foldConst) {
+			if (ip->opc == opc_lf32 && rt->foldConst) {
 				ip->arg.f32 = -ip->arg.f32;
 				return rt->vm.pc;
 			}
@@ -655,13 +665,13 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == f64_neg) {
 				rt->_beg = (memptr) ip;
 				ip->opc = opc_nop;
 				return rt->vm.pc;
 			}
-			if (ip->opc == opc_lc64 && rt->foldConst) {
+			if (ip->opc == opc_lf64 && rt->foldConst) {
 				ip->arg.f64 = -ip->arg.f64;
 				return rt->vm.pc;
 			}
@@ -671,7 +681,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lc32) {
 				arg.i64 = ip->arg.i32;
 				if (arg.i24 == arg.i64) {
@@ -685,7 +695,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lc32) {
 				arg.i64 = -ip->arg.i32;
 				if (arg.i24 == arg.i64) {
@@ -702,7 +712,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_inc) {
 				vmValue tmp;
 				tmp.i64 = arg.i64 + ip->rel;
@@ -750,10 +760,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 
 		//* TODO: eval Conversions using vm.
 		case u32_i64:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lzx1) {
 				opc = opc_lzx2;
 				rollbackPc(rt);
@@ -766,10 +776,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case i32_bol:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lc32) {
 				arg.i64 = ip->arg.i32 != 0;
 				opc = opc_lc32;
@@ -778,10 +788,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case i32_f32:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lc32) {
 				arg.f32 = (float32_t) ip->arg.i32;
 				opc = opc_lf32;
@@ -791,10 +801,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case i32_i64:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lzx1) {
 				opc = opc_lzx2;
 				rollbackPc(rt);
@@ -807,10 +817,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case i32_f64:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lc32) {
 				arg.f64 = ip->arg.i32;
 				opc = opc_lf64;
@@ -820,10 +830,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case i64_i32:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lzx2) {
 				opc = opc_lzx1;
 				rollbackPc(rt);
@@ -838,10 +848,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case i64_f32:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lc64) {
 				arg.f32 = (float32_t) ip->arg.i64;
 				opc = opc_lf32;
@@ -851,10 +861,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case i64_bol:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lzx2) {
 				opc = opc_lzx1;
 				rollbackPc(rt);
@@ -867,10 +877,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case i64_f64:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lc64) {
 				arg.f64 = (float64_t) ip->arg.i64;
 				opc = opc_lf64;
@@ -880,10 +890,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case f32_i32:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lf32) {
 				arg.i64 = (int64_t) ip->arg.f32;
 				opc = opc_lc32;
@@ -893,10 +903,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case f32_bol:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lf32) {
 				arg.i64 = ip->arg.f32 != 0;
 				opc = opc_lc32;
@@ -905,10 +915,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case f32_i64:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lf32) {
 				arg.i64 = (int64_t) ip->arg.f32;
 				opc = opc_lc64;
@@ -918,10 +928,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case f32_f64:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lf32) {
 				arg.f64 = ip->arg.f32;
 				opc = opc_lf64;
@@ -931,10 +941,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case f64_i32:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lf64) {
 				arg.i64 = (int64_t) ip->arg.f64;
 				opc = opc_lc32;
@@ -944,10 +954,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case f64_f32:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lf64) {
 				arg.f32 = (float32_t) ip->arg.f64;
 				opc = opc_lf32;
@@ -957,10 +967,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case f64_i64:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lf64) {
 				arg.i64 = (int64_t) ip->arg.f64;
 				opc = opc_lc64;
@@ -970,10 +980,10 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case f64_bol:
-			if (!rt->foldInstr) {
+			if (!rt->foldCasts) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_lf64) {
 				arg.i64 = ip->arg.f64 != 0;
 				opc = opc_lc32;
@@ -1012,7 +1022,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_not) {
 				rt->_beg = (memptr) ip;
 				opc = opc_jz;
@@ -1027,7 +1037,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_not) {
 				rt->_beg = (memptr) ip;
 				opc = opc_jnz;
@@ -1043,7 +1053,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				return rt->_beg - rt->_mem;
 			}
 			/* TODO: merge stack allocations
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_spc) {
 				stkval tmp;
 				tmp.i8 = arg.i64 + ip->rel;
@@ -1057,7 +1067,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 
 		case opc_jmpi:
 			/* TODO: only if we have no jump here
-			ip = vmPointer(rt, rt->vm.pc);
+			ip = lastIp(rt);
 			if (ip->opc == opc_jmpi) {
 				//~ rt->_beg = (memptr)ip;
 				return rt->vm.pc;
@@ -1857,6 +1867,24 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 	}
 }
 
+static void printRef(FILE *out, const char **esc, rtContext rt, void* data) {
+	if (!isValidOffset(rt, data)) {
+		// we should never get here, but ...
+		printFmt(out, esc, "BadRef@%06x", data);
+		return;
+	}
+
+	size_t offs = vmOffset(rt, data);
+	symn sym = rtLookupSym(rt, offs, 0);
+	if (sym != NULL) {
+		size_t rel = offs - sym->offs;
+		printFmt(out, esc, "<%?.T%?+d @%06x>", sym, rel, offs);
+	}
+	else {
+		printFmt(out, esc, "<@%06x>", offs);
+	}
+}
+
 void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val, dmpMode mode, int indent) {
 	ccKind varCast = castOf(var);
 	const char *format = var->format;
@@ -1983,14 +2011,27 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 			printFmt(out, esc, "}");
 		}
 		else {
-			size_t offs = vmOffset(rt, data);
-			printFmt(out, esc, "<{?} @%06x>", offs);
+			printRef(out, esc, rt, data);
 		}
 	}
 	else if (typCast == CAST_arr) {
-		memptr arrData = varCast == CAST_val ? val : vmPointer(rt, (size_t) val->ref);
+		if (varCast == CAST_arr || varCast == CAST_ref) {
+			// follow indirection
+			data = vmPointer(rt, (size_t) val->ref);
+		}
+		else if (varCast == CAST_val) {
+			// fixed size array
+			data = (memptr) val;
+		}
+		else {
+			printFmt(out, esc, "@BadArray");
+			if (mode & prSymType) {
+				printFmt(out, esc, ")");
+			}
+			return;
+		}
 
-		if (arrData == NULL) {
+		if (data == NULL) {
 			printFmt(out, esc, "null");
 		}
 		else if (var != typ) {
@@ -1999,11 +2040,11 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 				// interpret `char[*]` as string
 				if (typ->type->format == type_fmt_character) {
 					printFmt(out, esc, "%c", type_fmt_string_chr);
-					printFmt(out, esc ? esc : escapeStr(), type_fmt_string, arrData);
+					printFmt(out, esc ? esc : escapeStr(), type_fmt_string, data);
 					printFmt(out, esc, "%c", type_fmt_string_chr);
 				}
 				else {
-					printFmt(out, esc, "[*] {...}");
+					printRef(out, esc, rt, data);
 				}
 			}
 			else {
@@ -2025,7 +2066,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 						printFmt(out, esc, "...");
 						break;
 					}
-					printVal(out, esc, rt, typ->type, (vmValue *) (arrData + idx * inc), mode & ~(prSymQual | prSymType), -indent);
+					printVal(out, esc, rt, typ->type, (vmValue *) (data + idx * inc), mode & ~(prSymQual | prSymType), -indent);
 				}
 				printFmt(out, esc, "}");
 			}
@@ -2038,23 +2079,15 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 				printFmt(out, esc, "%c", type_fmt_string_chr);
 			}
 			else {
-				size_t offs = vmOffset(rt, data);
-				printFmt(out, esc, "<[?] @%06x>", offs);
+				printRef(out, esc, rt, data);
 			}
 		}
 	}
 	else {
 		// typename, function, pointer, etc (without format option)
-		size_t offs = vmOffset(rt, data);
-		symn sym = rtLookupSym(rt, offs, 0);
-		if (sym != NULL) {
-			offs -= sym->offs;
-			printFmt(out, esc, "<%?.T%?+d @%06x>", sym, offs, vmOffset(rt, data));
-		}
-		else if (typ->fields != NULL) {
-			int fields = 0;
-			printFmt(out, esc, "{");
-			for (sym = typ->fields; sym; sym = sym->next) {
+		int fields = 0;
+		if (typ->fields != NULL) {
+			for (symn sym = typ->fields; sym; sym = sym->next) {
 				if (isStatic(sym)) {
 					// skip static fields
 					continue;
@@ -2068,6 +2101,9 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 				if (fields > 0) {
 					printFmt(out, esc, ",");
 				}
+				else {
+					printFmt(out, esc, "{");
+				}
 
 				printFmt(out, esc, "\n");
 				printVal(out, esc, rt, sym, (void *) (data + sym->offs), mode & ~prSymQual, indent + 1);
@@ -2076,12 +2112,9 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 			if (fields > 0) {
 				printFmt(out, esc, "\n%I}", indent);
 			}
-			else {
-				printFmt(out, esc, "}");
-			}
 		}
-		else {
-			printFmt(out, esc, "<(?) @%06x>", offs);
+		if (fields == 0) {
+			printRef(out, esc, rt, data);
 		}
 	}
 

@@ -1,7 +1,14 @@
+/**
+ * Formatted printing:
+ * Symbol
+ * Syntax tree
+ * Instruction
+ */
+
 #ifndef CMPL_PRINTER_H
 #define CMPL_PRINTER_H
 
-#include "vmCore.h"
+#include "cmplVm.h"
 #include <stdlib.h>
 
 const char **escapeStr();
@@ -154,5 +161,15 @@ void printErr(rtContext rt, int level, const char *file, int line, const char *m
  * Dump all accessible symbols.
  */
 void dumpApi(rtContext rt, userContext ctx, void action(userContext, symn));
+
+/**
+ * Print the current stacktrace.
+ * 
+ * @param ctx Debugger context
+ * @param out The file to be used as output
+ * @param indent indentation
+ * @param maxCalls limit the size of the stacktrace 
+ */
+void traceCalls(dbgContext ctx, FILE *out, int indent, size_t maxCalls);
 
 #endif

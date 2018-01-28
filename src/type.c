@@ -11,6 +11,27 @@
 
 static symn promote(symn lht, symn rht);
 
+static symn aliasOf(symn sym) {
+	while (sym != NULL) {
+		if (!isInline(sym)) {
+			break;
+		}
+		if (isInvokable(sym)) {
+			break;
+		}
+		if (sym->init == NULL) {
+			sym = sym->type;
+		}
+		else if (sym->init->kind == TOKEN_var) {
+			sym = sym->init->ref.link;
+		}
+		else {
+			break;
+		}
+	}
+	return sym;
+}
+
 symn newDef(ccContext cc, ccKind kind) {
 	rtContext rt = cc->rt;
 	symn def = NULL;
@@ -273,9 +294,27 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 				argument = argument->next;
 			}
 
-			if (sym->params != NULL && (argument || parameter)) {
+			if (argument != NULL && parameter != NULL) {
+				// parameters and arguments can not be assigned
 				continue;
 			}
+			else if (parameter != NULL) {
+				// more parameter than arguments
+				continue;
+			}
+			else if (argument != NULL) {
+				// more arguments than parameters
+				if (isTypename(aliasOf(sym)) && argument == arguments) {
+					// type(cast)
+				}
+				else if (sym == cc->emit_opc) {
+					// emit(...)
+				}
+				else {
+					continue;
+				}
+			}
+			// else ok
 		}
 
 		// perfect match
@@ -310,26 +349,7 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
 		}
 	}
 
-	// skip over aliases
-	while (sym != NULL) {
-		if (!isInline(sym)) {
-			break;
-		}
-		if (isInvokable(sym)) {
-			break;
-		}
-		if (sym->init == NULL) {
-			sym = sym->type;
-		}
-		else if (sym->init->kind == TOKEN_var) {
-			sym = sym->init->ref.link;
-		}
-		else {
-			break;
-		}
-	}
-
-	return sym;
+	return aliasOf(sym);
 }
 
 /// change the type of a tree node (replace or implicit cast).

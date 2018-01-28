@@ -32,8 +32,7 @@ typedef double float64_t;
 extern "C" {
 #endif
 
-typedef uint32_t vmOffs;                        // offset
-typedef uint32_t *stkptr;                       // stack
+typedef uint32_t vmOffs;                        // offset TODO: 32/64 bit offsets support
 typedef struct symNode *symn;                   // symbol
 typedef struct astNode *astn;                   // syntax tree
 typedef struct dbgNode *dbgn;                   // debug node
@@ -58,7 +57,7 @@ typedef enum {
 	divisionByZero,
 	illegalInstruction,
 	nativeCallError,
-	executionAborted		// execution aborted by debugger
+	executionAborted        // execution aborted by debugger
 	//+ ArrayBoundsExceeded
 } vmError;
 
@@ -98,7 +97,6 @@ typedef union {
 	uint64_t u64;
 	float32_t f32;
 	float64_t f64;
-	const char *str;
 	struct {
 		void *ref;
 		union {
@@ -113,15 +111,16 @@ typedef union {
  * Runtime context.
  */
 struct rtContextRec {
-	int foldConst: 1;       // fold constant expressions (3 + 4 => 7)
-	int foldInstr: 1;       // replace some instructions with a faster or shorter version (load 1, add => inc 1)
-	int fastMemory: 1;      // fast memory access: use dup, set, load and store instructions instead of `load address` + `load indirect`.
-	int fastAssign: 1;      // remove dup and set instructions when modifying the last declared variable.
-	int genGlobals: 1;      // generate global variables as static variables
+	unsigned foldCasts: 1;  // fold constant expressions (3 + 4 => 7)
+	unsigned foldConst: 1;  // fold constant expressions (3 + 4 => 7)
+	unsigned foldInstr: 1;  // replace some instructions with a faster or shorter version (load 1, add => inc 1)
+	unsigned fastMemory: 1; // fast memory access: use dup, set, load and store instructions instead of `load address` + `load indirect`.
+	unsigned fastAssign: 1; // remove dup and set instructions when modifying the last declared variable.
+	unsigned genGlobals: 1; // generate global variables as static variables
 
 	unsigned warnLevel: 4;  // compile logging level (0-15)
 	unsigned logLevel: 3;   // runtime logging level (0-7)
-	int logClose: 1;        // close log file
+	int closeLog: 1;        // close log file
 	int freeMem: 1;         // release memory
 
 	int32_t errors;         // error count
@@ -144,7 +143,7 @@ struct rtContextRec {
 	/**
 	 * Debugger context.
 	 * 
-	 * this holds:
+	 * contains:
 	 *  * profiler function
 	 *  * debugger function
 	 *  * code line mapping
@@ -154,15 +153,15 @@ struct rtContextRec {
 
 	// virtual machine state
 	struct {
-		void *nfc;		// native call vector
-		void *cell;		// execution units
-		void *heap;		// heap memory
+		void *nfc;         // native call vector
+		void *cell;        // execution units
+		void *heap;        // heap memory
 
-		size_t pc;			// exec: entry point / cgen: program counter
-		size_t px;			// exec: exit point / cgen: -
+		size_t pc;         // exec: entry point / cgen: program counter
+		size_t px;         // exec: exit point / cgen: -
 
-		size_t ro;			// size of read only memory
-		size_t ss;			// size of stack
+		size_t ro;         // size of read only memory
+		size_t ss;         // size of stack
 	} vm;
 
 	/**
@@ -173,20 +172,25 @@ struct rtContextRec {
 	struct {
 		/// Extend a namespace; @see Core#ccExtend
 		symn (*const ccExtend)(ccContext ctx, symn cls);
+
 		/// Begin a namespace; @see Core#ccBegin
 		symn (*const ccBegin)(ccContext ctx, const char *name);
+
 		/// Close a namespace; @see Core#ccEnd
 		symn (*const ccEnd)(ccContext ctx, symn cls);
 
 		/// Declare int constant; @see Core#ccDefInt
 		symn (*const ccDefInt)(ccContext ctx, const char *name, int64_t value);
+
 		/// Declare float constant; @see Core#ccDefFlt
 		symn (*const ccDefFlt)(ccContext ctx, const char *name, float64_t value);
+
 		/// Declare string constant; @see Core#ccDefStr
 		symn (*const ccDefStr)(ccContext ctx, const char *name, char *value);
 
 		/// Declare a typename; @see Core#ccDefType
 		symn (*const ccDefType)(ccContext ctx, const char *name, unsigned size, int refType);
+
 		/// Declare a native function; @see Core#ccDefCall
 		symn (*const ccDefCall)(ccContext ctx, vmError libc(nfcContext), const char *proto);
 
@@ -201,10 +205,11 @@ struct rtContextRec {
 
 		/// Reset to the first argument inside a native function
 		size_t (*const nfcFirstArg)(nfcContext ctx);
+
 		/// Advance to the next argument inside a native function
 		size_t (*const nfcNextArg)(nfcContext ctx);
 
-		/// get the argument, transforming offsets to pointers
+		/// Read the argument, transforming offsets to pointers
 		rtValue (*const nfcReadArg)(nfcContext ctx, size_t argOffs);
 	} api;
 
@@ -226,8 +231,8 @@ struct nfcContextRec {
 	symn param;           // the current parameter
 	char *proto;          // static data (passed to install)
 	void *extra;          // extra data (passed to invoke)
-	stkptr args;          // arguments
-	size_t argc;          // argument count
+	void *args;           // arguments
+	size_t argc;          // argument count in bytes
 };
 
 /**
@@ -241,7 +246,7 @@ static inline void *vmPointer(rtContext ctx, size_t offset) {
 	if (offset == 0) {
 		return NULL;
 	}
-	return (void*)(ctx->_mem + offset);
+	return ctx->_mem + offset;
 }
 
 /**
@@ -257,10 +262,10 @@ static inline void *vmPointer(rtContext ctx, size_t offset) {
 static inline void *argget(nfcContext args, size_t offset, void *result, size_t size) {
 	// if result is not null copy
 	if (result != NULL && size > 0) {
-		memcpy(result, (char*)args->args + offset, size);
+		memcpy(result, (char *) args->args + offset, size);
 	}
 	else {
-		result = (void*)((char*)args->args + offset);
+		result = (void *) ((char *) args->args + offset);
 	}
 	return result;
 }
@@ -288,13 +293,13 @@ static inline size_t argref(nfcContext args, size_t offs) { return argget(args, 
  */
 static inline void *retset(nfcContext args, void *result, size_t size) {
 	if (result != NULL) {
-		memcpy(args->args + args->argc, result, size);
+		memcpy((char *) args->args + args->argc, result, size);
 	}
-	return args->args + args->argc;
+	return (char *) args->args + args->argc;
 }
 
 // speed up of setting result of known types.
-#define retset(__ARGV, __TYPE, __VAL) ((__TYPE*)((__ARGV)->args + (__ARGV)->argc))[-1] = (__TYPE)(__VAL)
+#define retset(__ARGV, __TYPE, __VAL) ((__TYPE*)((char *)(__ARGV)->args + (__ARGV)->argc))[-1] = (__TYPE)(__VAL)
 static inline void reti32(nfcContext args, int32_t val) { retset(args, int32_t, val); }
 static inline void reti64(nfcContext args, int64_t val) { retset(args, int64_t, val); }
 static inline void retu32(nfcContext args, uint32_t val) { retset(args, uint32_t, val); }

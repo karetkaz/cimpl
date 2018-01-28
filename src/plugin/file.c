@@ -29,8 +29,6 @@ static const char *const proto_file_get_stdOut = "File out";
 static const char *const proto_file_get_stdErr = "File err";
 static const char *const proto_file_get_logOut = "File log";
 
-#define debugFILE(msg, ...) do { /*prerr("debug", msg, ##__VA_ARGS__);*/ } while(0)
-
 static inline rtValue nextArg(nfcContext ctx) {
 	return ctx->rt->api.nfcReadArg(ctx, ctx->rt->api.nfcNextArg(ctx));
 }
@@ -49,12 +47,10 @@ static vmError FILE_open(nfcContext ctx) {       // File open(char filename[]);
 	}
 	FILE *file = fopen(name, mode);
 	rethnd(ctx, file);
-	debugFILE("Name: '%s', Mode: '%s', File: %x", name, mode, file);
 	return file != NULL ? noError : nativeCallError;
 }
 static vmError FILE_close(nfcContext ctx) {      // void close(File file);
 	FILE *file = (FILE *) arghnd(ctx, 0);
-	debugFILE("File: %x", file);
 	fclose(file);
 	return noError;
 }
@@ -76,7 +72,6 @@ static vmError FILE_stream(nfcContext ctx) {     // File std[in, out, err];
 		return noError;
 	}
 
-	debugFILE("error opening stream: %x", ctx->proto);
 	return executionAborted;
 }
 
@@ -100,7 +95,6 @@ static vmError FILE_read(nfcContext ctx) {         // int read(File &f, uint8 bu
 static vmError FILE_gets(nfcContext ctx) {       // int fgets(File &f, uint8 buff[])
 	FILE *file = (FILE *) nextArg(ctx).ref;
 	rtValue buff = nextArg(ctx);
-	debugFILE("Buff: %08x[%d], File: %x", buff.ref, buff.length, file);
 	if (feof(file)) {
 		reti32(ctx, -1);
 	}
@@ -116,14 +110,12 @@ static vmError FILE_gets(nfcContext ctx) {       // int fgets(File &f, uint8 buf
 static vmError FILE_putc(nfcContext ctx) {
 	FILE *file = (FILE *) nextArg(ctx).ref;
 	int data = nextArg(ctx).i32;
-	debugFILE("Data: %c, File: %x", data, file);
 	reti32(ctx, putc(data, file));
 	return noError;
 }
 static vmError FILE_write(nfcContext ctx) {      // int write(File &f, uint8 buff[])
 	FILE *file = (FILE *) nextArg(ctx).ref;
 	rtValue buff = nextArg(ctx);
-	debugFILE("Buff: %08x[%d], File: %x", buff.ref, buff.length, file);
 	int len = fwrite(buff.ref, buff.length, 1, file);
 	reti32(ctx, len);
 	return noError;
@@ -131,7 +123,6 @@ static vmError FILE_write(nfcContext ctx) {      // int write(File &f, uint8 buf
 
 static vmError FILE_flush(nfcContext ctx) {
 	FILE *file = (FILE *) arghnd(ctx, 0);
-	debugFILE("File: %x", file);
 	fflush(file);
 	return noError;
 }

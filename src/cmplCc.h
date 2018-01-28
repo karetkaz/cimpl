@@ -2,8 +2,8 @@
  * Compiler core functions.
  */
 
-#ifndef CC_CORE_H
-#define CC_CORE_H
+#ifndef CMPL_COMPILER_H
+#define CMPL_COMPILER_H
 
 #include "cmpl.h"
 
@@ -153,6 +153,7 @@ symn ccDefStr(ccContext ctx, const char *name, char *value);
  * @see plugins/file.c
  */
 symn ccDefType(ccContext ctx, const char *name, unsigned size, int refType);
+
 /**
  * Define a native function.
  * 

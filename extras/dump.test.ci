@@ -1622,7 +1622,7 @@ RAND_MAX: int32 {
 .name: 'RAND_MAX'
 .value: 2147483647
 }
-raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void: function {
+raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void: function {
 .kind: static const inline
 .base: `function`
 .size: 0
@@ -1638,10 +1638,10 @@ raise(file: char[*], line: int32, level: int32, message: char[*], inspect: varia
 .param .result: void (size: 0 -> inline)
 .param file: char[*] (size: 4 -> variable(ref))
 .param line: int32 (size: 4 -> variable(i32))
+.param trace: int32 (size: 4 -> variable(i32))
 .param level: int32 (size: 4 -> variable(i32))
 .param message: char[*] (size: 4 -> variable(ref))
 .param inspect: variant (size: 8 -> variable(var))
-.param maxTrace: int32 (size: 4 -> variable(i32))
 .value: nfc(5)
 }
 raise.abort: int32 {
@@ -1649,7 +1649,7 @@ raise.abort: int32 {
 .base: `int32`
 .size: 0
 .name: 'abort'
-.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 .value: -1
 }
 raise.error: int32 {
@@ -1657,7 +1657,7 @@ raise.error: int32 {
 .base: `int32`
 .size: 0
 .name: 'error'
-.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 .value: 0
 }
 raise.warn: int32 {
@@ -1665,7 +1665,7 @@ raise.warn: int32 {
 .base: `int32`
 .size: 0
 .name: 'warn'
-.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 .value: 1
 }
 raise.info: int32 {
@@ -1673,7 +1673,7 @@ raise.info: int32 {
 .base: `int32`
 .size: 0
 .name: 'info'
-.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 .value: 2
 }
 raise.debug: int32 {
@@ -1681,7 +1681,7 @@ raise.debug: int32 {
 .base: `int32`
 .size: 0
 .name: 'debug'
-.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 .value: 3
 }
 raise.verbose: int32 {
@@ -1689,7 +1689,7 @@ raise.verbose: int32 {
 .base: `int32`
 .size: 0
 .name: 'verbose'
-.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 .value: 4
 }
 raise.noTrace: int32 {
@@ -1697,7 +1697,7 @@ raise.noTrace: int32 {
 .base: `int32`
 .size: 0
 .name: 'noTrace'
-.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 .value: 0
 }
 raise.defTrace: int32 {
@@ -1705,7 +1705,7 @@ raise.defTrace: int32 {
 .base: `int32`
 .size: 0
 .name: 'defTrace'
-.owner: raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+.owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 .value: 128
 }
 tryExec(args: pointer, action(args: pointer): void): int32: function {
@@ -1807,7 +1807,7 @@ verbose(message: char[*], inspect: variant): void: function {
 .param .result: void (size: 0 -> void)
 .param message: char[*] (size: 4 -> ref)
 .param inspect: variant (size: 8 -> var)
-.value: raise(raise.verbose, message, inspect, raise.noTrace)
+.value: raise(raise.noTrace, raise.verbose, message, inspect)
 }
 verbose(message: char[*]): void: function {
 .kind: inline
@@ -1818,7 +1818,7 @@ verbose(message: char[*]): void: function {
 .line: 6
 .param .result: void (size: 0 -> void)
 .param message: char[*] (size: 4 -> ref)
-.value: raise(raise.verbose, message, null, raise.noTrace)
+.value: raise(raise.noTrace, raise.verbose, message, null)
 }
 trace(message: char[*], inspect: variant): void: function {
 .kind: inline
@@ -1830,7 +1830,7 @@ trace(message: char[*], inspect: variant): void: function {
 .param .result: void (size: 0 -> void)
 .param message: char[*] (size: 4 -> ref)
 .param inspect: variant (size: 8 -> var)
-.value: raise(raise.debug, message, inspect, raise.defTrace)
+.value: raise(raise.defTrace, raise.debug, message, inspect)
 }
 trace(message: char[*]): void: function {
 .kind: inline
@@ -1841,7 +1841,7 @@ trace(message: char[*]): void: function {
 .line: 9
 .param .result: void (size: 0 -> void)
 .param message: char[*] (size: 4 -> ref)
-.value: raise(raise.debug, message, null, raise.defTrace)
+.value: raise(raise.defTrace, raise.debug, message, null)
 }
 debug(message: char[*], inspect: variant): void: function {
 .kind: inline
@@ -1853,7 +1853,7 @@ debug(message: char[*], inspect: variant): void: function {
 .param .result: void (size: 0 -> void)
 .param message: char[*] (size: 4 -> ref)
 .param inspect: variant (size: 8 -> var)
-.value: raise(raise.debug, message, inspect, raise.noTrace)
+.value: raise(raise.noTrace, raise.debug, message, inspect)
 }
 debug(message: char[*]): void: function {
 .kind: inline
@@ -1864,7 +1864,7 @@ debug(message: char[*]): void: function {
 .line: 12
 .param .result: void (size: 0 -> void)
 .param message: char[*] (size: 4 -> ref)
-.value: raise(raise.debug, message, null, raise.noTrace)
+.value: raise(raise.noTrace, raise.debug, message, null)
 }
 info(message: char[*], inspect: variant): void: function {
 .kind: inline
@@ -1876,7 +1876,7 @@ info(message: char[*], inspect: variant): void: function {
 .param .result: void (size: 0 -> void)
 .param message: char[*] (size: 4 -> ref)
 .param inspect: variant (size: 8 -> var)
-.value: raise(raise.info, message, inspect, raise.noTrace)
+.value: raise(raise.noTrace, raise.info, message, inspect)
 }
 info(message: char[*]): void: function {
 .kind: inline
@@ -1887,7 +1887,7 @@ info(message: char[*]): void: function {
 .line: 15
 .param .result: void (size: 0 -> void)
 .param message: char[*] (size: 4 -> ref)
-.value: raise(raise.info, message, null, raise.noTrace)
+.value: raise(raise.noTrace, raise.info, message, null)
 }
 warn(message: char[*], inspect: variant): void: function {
 .kind: inline
@@ -1899,7 +1899,7 @@ warn(message: char[*], inspect: variant): void: function {
 .param .result: void (size: 0 -> void)
 .param message: char[*] (size: 4 -> ref)
 .param inspect: variant (size: 8 -> var)
-.value: raise(raise.warn, message, inspect, raise.noTrace)
+.value: raise(raise.noTrace, raise.warn, message, inspect)
 }
 warn(message: char[*]): void: function {
 .kind: inline
@@ -1910,7 +1910,7 @@ warn(message: char[*]): void: function {
 .line: 18
 .param .result: void (size: 0 -> void)
 .param message: char[*] (size: 4 -> ref)
-.value: raise(raise.warn, message, null, raise.noTrace)
+.value: raise(raise.noTrace, raise.warn, message, null)
 }
 error(message: char[*], inspect: variant): void: function {
 .kind: inline
@@ -1922,7 +1922,7 @@ error(message: char[*], inspect: variant): void: function {
 .param .result: void (size: 0 -> void)
 .param message: char[*] (size: 4 -> ref)
 .param inspect: variant (size: 8 -> var)
-.value: raise(raise.error, message, inspect, raise.defTrace)
+.value: raise(raise.defTrace, raise.error, message, inspect)
 }
 error(message: char[*]): void: function {
 .kind: inline
@@ -1933,7 +1933,7 @@ error(message: char[*]): void: function {
 .line: 21
 .param .result: void (size: 0 -> void)
 .param message: char[*] (size: 4 -> ref)
-.value: raise(raise.error, message, null, raise.defTrace)
+.value: raise(raise.defTrace, raise.error, message, null)
 }
 abort(message: char[*], inspect: variant): void: function {
 .kind: inline
@@ -1945,7 +1945,7 @@ abort(message: char[*], inspect: variant): void: function {
 .param .result: void (size: 0 -> void)
 .param message: char[*] (size: 4 -> ref)
 .param inspect: variant (size: 8 -> var)
-.value: raise(raise.abort, message, inspect, raise.defTrace)
+.value: raise(raise.defTrace, raise.abort, message, inspect)
 }
 abort(message: char[*]): void: function {
 .kind: inline
@@ -1956,7 +1956,7 @@ abort(message: char[*]): void: function {
 .line: 24
 .param .result: void (size: 0 -> void)
 .param message: char[*] (size: 4 -> ref)
-.value: raise(raise.abort, message, null, raise.defTrace)
+.value: raise(raise.defTrace, raise.abort, message, null)
 }
 abort(): void: function {
 .kind: inline
@@ -1966,7 +1966,7 @@ abort(): void: function {
 .file: 'stdlib.ci'
 .line: 25
 .param .result: void (size: 0 -> void)
-.value: raise(raise.abort, "execution aborted!", null, raise.defTrace)
+.value: raise(raise.defTrace, raise.abort, "execution aborted!", null)
 }
 assert(condition: bool, message: char[*], inspect: variant): void: function {
 .kind: inline
@@ -5911,11 +5911,11 @@ arrSliceNoInit: int64[] {
 .file: 'test/lang.varInitArray.ci'
 .line: 9
 }
-arrPtrNoInit: int64[*] {
+arrArrayNoInit: int64[*] {
 .kind: variable(ref)
 .base: `int64[*]`
 .size: 4
-.name: 'arrPtrNoInit'
+.name: 'arrArrayNoInit'
 .file: 'test/lang.varInitArray.ci'
 .line: 10
 }
@@ -5925,16 +5925,16 @@ arrSliceInitNull: int64[] {
 .size: 8
 .name: 'arrSliceInitNull'
 .file: 'test/lang.varInitArray.ci'
-.line: 13
+.line: 18
 .value: null
 }
-arrPtrInitNull: int64[*] {
+arrArrayInitNull: int64[*] {
 .kind: variable(ref)
 .base: `int64[*]`
 .size: 4
-.name: 'arrPtrInitNull'
+.name: 'arrArrayInitNull'
 .file: 'test/lang.varInitArray.ci'
-.line: 14
+.line: 19
 .value: null
 }
 arrSliceInitFixed: int64[] {
@@ -5943,16 +5943,16 @@ arrSliceInitFixed: int64[] {
 .size: 8
 .name: 'arrSliceInitFixed'
 .file: 'test/lang.varInitArray.ci'
-.line: 17
+.line: 22
 .value: arrFixedNoInit
 }
-arrPtrInitFixed: int64[*] {
+arrArrayInitFixed: int64[*] {
 .kind: variable(ref)
 .base: `int64[*]`
 .size: 4
-.name: 'arrPtrInitFixed'
+.name: 'arrArrayInitFixed'
 .file: 'test/lang.varInitArray.ci'
-.line: 18
+.line: 23
 .value: arrFixedNoInit
 }
 arrSliceInitSlice: int64[] {
@@ -5961,26 +5961,26 @@ arrSliceInitSlice: int64[] {
 .size: 8
 .name: 'arrSliceInitSlice'
 .file: 'test/lang.varInitArray.ci'
-.line: 21
-.value: arrSliceInitFixed
-}
-arrPtrInitSlice: int64[*] {
-.kind: variable(ref)
-.base: `int64[*]`
-.size: 4
-.name: 'arrPtrInitSlice'
-.file: 'test/lang.varInitArray.ci'
-.line: 22
-.value: arrSliceInitFixed
-}
-arrPtrInitPtr: int64[*] {
-.kind: variable(ref)
-.base: `int64[*]`
-.size: 4
-.name: 'arrPtrInitPtr'
-.file: 'test/lang.varInitArray.ci'
 .line: 26
-.value: arrPtrInitFixed
+.value: arrSliceInitFixed
+}
+arrArrayInitSlice: int64[*] {
+.kind: variable(ref)
+.base: `int64[*]`
+.size: 4
+.name: 'arrArrayInitSlice'
+.file: 'test/lang.varInitArray.ci'
+.line: 27
+.value: arrSliceInitFixed
+}
+arrArrayInitPtr: int64[*] {
+.kind: variable(ref)
+.base: `int64[*]`
+.size: 4
+.name: 'arrArrayInitPtr'
+.file: 'test/lang.varInitArray.ci'
+.line: 31
+.value: arrArrayInitFixed
 }
 arrSliceInitString: char[] {
 .kind: variable(arr)
@@ -5988,17 +5988,101 @@ arrSliceInitString: char[] {
 .size: 8
 .name: 'arrSliceInitString'
 .file: 'test/lang.varInitArray.ci'
-.line: 37
+.line: 42
 .value: "string"
 }
-arrPtrInitString: char[*] {
+arrArrayInitString: char[*] {
 .kind: variable(ref)
 .base: `char[*]`
 .size: 4
-.name: 'arrPtrInitString'
+.name: 'arrArrayInitString'
 .file: 'test/lang.varInitArray.ci'
-.line: 38
+.line: 43
 .value: "string"
+}
+lenSlice(values: int64[]): int32: function {
+.kind: static const function
+.base: `function`
+.size: 5
+.name: 'lenSlice'
+.file: 'test/lang.varInitArray.ci'
+.line: 53
+.param .result: int32 (size: 4 -> variable(i32))
+.param values: int64[] (size: 8 -> variable(arr))
+.value: {
+	return .result := (values.length);
+}
+.instructions: (5 bytes)
+	test/lang.varInitArray.ci:53: (5 bytes): return .result := (values.length);
+	<lenSlice+?>:    dup.x1 sp(2)
+	<lenSlice+?>:    set.x1 sp(4)
+	<lenSlice+?>:    ret
+}
+nthSlice(idx: int32, values: int64[]): int64: function {
+.kind: static const function
+.base: `function`
+.size: 12
+.name: 'nthSlice'
+.file: 'test/lang.varInitArray.ci'
+.line: 54
+.param .result: int64 (size: 8 -> variable(i64))
+.param idx: int32 (size: 4 -> variable(i32))
+.param values: int64[] (size: 8 -> variable(arr))
+.value: {
+	return .result := values[idx];
+}
+.instructions: (12 bytes)
+	test/lang.varInitArray.ci:54: (12 bytes): return .result := values[idx];
+	<nthSlice+?>:    dup.x1 sp(1)
+	<nthSlice+?>:    dup.x1 sp(4)
+	<nthSlice+?>:    mad.u32 8
+	<nthSlice+?>:    load.m64
+	<nthSlice+?>:    set.x2 sp(6)
+	<nthSlice+?>:    ret
+}
+nthArray(idx: int32, values: int64[*]): int64: function {
+.kind: static const function
+.base: `function`
+.size: 12
+.name: 'nthArray'
+.file: 'test/lang.varInitArray.ci'
+.line: 55
+.param .result: int64 (size: 8 -> variable(i64))
+.param idx: int32 (size: 4 -> variable(i32))
+.param values: int64[*] (size: 4 -> variable(ref))
+.value: {
+	return .result := values[idx];
+}
+.instructions: (12 bytes)
+	test/lang.varInitArray.ci:55: (12 bytes): return .result := values[idx];
+	<nthArray+?>:    dup.x1 sp(1)
+	<nthArray+?>:    dup.x1 sp(3)
+	<nthArray+?>:    mad.u32 8
+	<nthArray+?>:    load.m64
+	<nthArray+?>:    set.x2 sp(5)
+	<nthArray+?>:    ret
+}
+nthFixed(idx: int32, values: int64[7]): int64: function {
+.kind: static const function
+.base: `function`
+.size: 12
+.name: 'nthFixed'
+.file: 'test/lang.varInitArray.ci'
+.line: 56
+.param .result: int64 (size: 8 -> variable(i64))
+.param idx: int32 (size: 4 -> variable(i32))
+.param values: int64[7] (size: 4 -> variable(ref))
+.value: {
+	return .result := values[idx];
+}
+.instructions: (12 bytes)
+	test/lang.varInitArray.ci:56: (12 bytes): return .result := values[idx];
+	<nthFixed+?>:    dup.x1 sp(1)
+	<nthFixed+?>:    dup.x1 sp(3)
+	<nthFixed+?>:    mad.u32 8
+	<nthFixed+?>:    load.m64
+	<nthFixed+?>:    set.x2 sp(5)
+	<nthFixed+?>:    ret
 }
 value: int64 {
 .kind: static variable(i64)
@@ -7552,10 +7636,10 @@ val2: int64 {
 .line: 24
 .value: 96
 }
-.main(): void: function {
+.main: function {
 .kind: static function
 .base: `function`
-.size: 5203
+.size: 6491
 .name: '.main'
 .print: '.main'
 .field typename: typename (size: 136 -> static const typename(ref))
@@ -7980,16 +8064,20 @@ val2: int64 {
 .field ptrCne: bool (size: 1 -> variable(bool))
 .field arrFixedNoInit: int64[7] (size: 56 -> variable(val))
 .field arrSliceNoInit: int64[] (size: 8 -> variable(arr))
-.field arrPtrNoInit: int64[*] (size: 4 -> variable(ref))
+.field arrArrayNoInit: int64[*] (size: 4 -> variable(ref))
 .field arrSliceInitNull: int64[] (size: 8 -> variable(arr))
-.field arrPtrInitNull: int64[*] (size: 4 -> variable(ref))
+.field arrArrayInitNull: int64[*] (size: 4 -> variable(ref))
 .field arrSliceInitFixed: int64[] (size: 8 -> variable(arr))
-.field arrPtrInitFixed: int64[*] (size: 4 -> variable(ref))
+.field arrArrayInitFixed: int64[*] (size: 4 -> variable(ref))
 .field arrSliceInitSlice: int64[] (size: 8 -> variable(arr))
-.field arrPtrInitSlice: int64[*] (size: 4 -> variable(ref))
-.field arrPtrInitPtr: int64[*] (size: 4 -> variable(ref))
+.field arrArrayInitSlice: int64[*] (size: 4 -> variable(ref))
+.field arrArrayInitPtr: int64[*] (size: 4 -> variable(ref))
 .field arrSliceInitString: char[] (size: 8 -> variable(arr))
-.field arrPtrInitString: char[*] (size: 4 -> variable(ref))
+.field arrArrayInitString: char[*] (size: 4 -> variable(ref))
+.field lenSlice: function (size: 5 -> static const function)
+.field nthSlice: function (size: 12 -> static const function)
+.field nthArray: function (size: 12 -> static const function)
+.field nthFixed: function (size: 12 -> static const function)
 .field value: int64 (size: 8 -> static variable(i64))
 .field valueRef: int64 (size: 4 -> variable(ref))
 .field valuePtr: pointer (size: 4 -> variable(ref))
@@ -8138,26 +8226,25 @@ val2: int64 {
 .field p4: pointer (size: 4 -> variable(ref))
 .field val1: int64 (size: 8 -> variable(i64))
 .field val2: int64 (size: 8 -> variable(i64))
-.field .main: function (size: 5203 -> static function)
-.param .result: void (size: 0 -> variable)
+.field .main: function (size: 6491 -> static function)
 .value: {
 	{
 		static if (typename(raise) == function) {
-			verbose(message: char[*], inspect: variant): void := raise(raise.verbose, message, inspect, raise.noTrace);
-			verbose(message: char[*]): void := raise(raise.verbose, message, null, raise.noTrace);
-			trace(message: char[*], inspect: variant): void := raise(raise.debug, message, inspect, raise.defTrace);
-			trace(message: char[*]): void := raise(raise.debug, message, null, raise.defTrace);
-			debug(message: char[*], inspect: variant): void := raise(raise.debug, message, inspect, raise.noTrace);
-			debug(message: char[*]): void := raise(raise.debug, message, null, raise.noTrace);
-			info(message: char[*], inspect: variant): void := raise(raise.info, message, inspect, raise.noTrace);
-			info(message: char[*]): void := raise(raise.info, message, null, raise.noTrace);
-			warn(message: char[*], inspect: variant): void := raise(raise.warn, message, inspect, raise.noTrace);
-			warn(message: char[*]): void := raise(raise.warn, message, null, raise.noTrace);
-			error(message: char[*], inspect: variant): void := raise(raise.error, message, inspect, raise.defTrace);
-			error(message: char[*]): void := raise(raise.error, message, null, raise.defTrace);
-			abort(message: char[*], inspect: variant): void := raise(raise.abort, message, inspect, raise.defTrace);
-			abort(message: char[*]): void := raise(raise.abort, message, null, raise.defTrace);
-			abort(): void := raise(raise.abort, "execution aborted!", null, raise.defTrace);
+			verbose(message: char[*], inspect: variant): void := raise(raise.noTrace, raise.verbose, message, inspect);
+			verbose(message: char[*]): void := raise(raise.noTrace, raise.verbose, message, null);
+			trace(message: char[*], inspect: variant): void := raise(raise.defTrace, raise.debug, message, inspect);
+			trace(message: char[*]): void := raise(raise.defTrace, raise.debug, message, null);
+			debug(message: char[*], inspect: variant): void := raise(raise.noTrace, raise.debug, message, inspect);
+			debug(message: char[*]): void := raise(raise.noTrace, raise.debug, message, null);
+			info(message: char[*], inspect: variant): void := raise(raise.noTrace, raise.info, message, inspect);
+			info(message: char[*]): void := raise(raise.noTrace, raise.info, message, null);
+			warn(message: char[*], inspect: variant): void := raise(raise.noTrace, raise.warn, message, inspect);
+			warn(message: char[*]): void := raise(raise.noTrace, raise.warn, message, null);
+			error(message: char[*], inspect: variant): void := raise(raise.defTrace, raise.error, message, inspect);
+			error(message: char[*]): void := raise(raise.defTrace, raise.error, message, null);
+			abort(message: char[*], inspect: variant): void := raise(raise.defTrace, raise.abort, message, inspect);
+			abort(message: char[*]): void := raise(raise.defTrace, raise.abort, message, null);
+			abort(): void := raise(raise.defTrace, raise.abort, "execution aborted!", null);
 			assert(condition: bool, message: char[*], inspect: variant): void := void(condition ? void(0) : abort(message, inspect));
 			assert(condition: bool, message: char[*]): void := void(condition ? void(0) : abort(message));
 			assert(condition: bool): void := void(condition ? void(0) : abort("assertion failed!"));
@@ -8167,42 +8254,42 @@ val2: int64 {
 	{
 		integer: typename := int64;
 		static if (0 == 0) {
-			raise(raise.debug, "0 == 0", null, 1);
+			raise(1, raise.debug, "0 == 0", null);
 		}
 		static if (0 != 0) {
-			raise(raise.debug, "0 != 0", null, 2);
+			raise(2, raise.debug, "0 != 0", null);
 		}
 		static if (0 == 0) {
-			raise(raise.debug, "0 == 0", null, 3);
+			raise(3, raise.debug, "0 == 0", null);
 		}
 		else {
-			raise(raise.debug, "0 != 0", null, 4);
+			raise(4, raise.debug, "0 != 0", null);
 		}
 		static if (0 != 0) {
-			raise(raise.debug, "0 != 0", null, 5);
+			raise(5, raise.debug, "0 != 0", null);
 		}
 		else {
-			raise(raise.debug, "0 == 0", null, 6);
+			raise(6, raise.debug, "0 == 0", null);
 		}
 		{
 			t: int32 := 0;
 			if (t == 0) {
-				raise(raise.debug, "t == 0", t, 7);
+				raise(7, raise.debug, "t == 0", t);
 			}
 			if (t != 0) {
-				raise(raise.debug, "t != 0", t, 8);
+				raise(8, raise.debug, "t != 0", t);
 			}
 			if (t == 0) {
-				raise(raise.debug, "t == 0", t, 10);
+				raise(9, raise.debug, "t == 0", t);
 			}
 			else {
-				raise(raise.debug, "t != 0", t, 9);
+				raise(10, raise.debug, "t != 0", t);
 			}
 			if (t != 0) {
-				raise(raise.debug, "t != 0", t, 11);
+				raise(11, raise.debug, "t != 0", t);
 			}
 			else {
-				raise(raise.debug, "t == 0", t, 12);
+				raise(12, raise.debug, "t == 0", t);
 			}
 		}
 		static if (typename(int64) == null) {
@@ -8665,20 +8752,61 @@ val2: int64 {
 		}
 		arrFixedNoInit: int64[7];
 		arrSliceNoInit: int64[];
-		arrPtrNoInit: int64[*];
+		arrArrayNoInit: int64[*];
+		for (i: int32 := 0; i < arrFixedNoInit.length; i := i + 1) {
+			arrFixedNoInit[i] := (42 + i);
+		}
 		arrSliceInitNull: int64[] := null;
-		arrPtrInitNull: int64[*] := null;
+		arrArrayInitNull: int64[*] := null;
 		arrSliceInitFixed: int64[] := arrFixedNoInit;
-		arrPtrInitFixed: int64[*] := arrFixedNoInit;
+		arrArrayInitFixed: int64[*] := arrFixedNoInit;
 		arrSliceInitSlice: int64[] := arrSliceInitFixed;
-		arrPtrInitSlice: int64[*] := arrSliceInitFixed;
-		arrPtrInitPtr: int64[*] := arrPtrInitFixed;
+		arrArrayInitSlice: int64[*] := arrSliceInitFixed;
+		arrArrayInitPtr: int64[*] := arrArrayInitFixed;
 		arrSliceInitString: char[] := "string";
-		arrPtrInitString: char[*] := "string";
-		assert(arrFixedNoInit.length == 7);
-		assert(arrSliceNoInit.length == (0), "This one might fail");
+		arrArrayInitString: char[*] := "string";
+		assert(arrSliceNoInit.length == (0));
 		assert(arrSliceInitNull.length == (0));
-		assert(arrSliceInitSlice.length == arrSliceInitFixed.length);
+		assert(arrFixedNoInit[0] == (42));
+		static const lenSlice(values: int64[]): int32 := {
+			return .result := (values.length);
+		}
+;
+		static const nthSlice(idx: int32, values: int64[]): int64 := {
+			return .result := values[idx];
+		}
+;
+		static const nthArray(idx: int32, values: int64[*]): int64 := {
+			return .result := values[idx];
+		}
+;
+		static const nthFixed(idx: int32, values: int64[7]): int64 := {
+			return .result := values[idx];
+		}
+;
+		assert(arrFixedNoInit.length == 7);
+		assert(arrSliceInitFixed.length == (arrFixedNoInit.length));
+		assert(arrSliceInitSlice.length == (arrFixedNoInit.length));
+		assert(lenSlice(null) == 0);
+		assert(lenSlice(arrSliceInitNull) == 0);
+		assert(lenSlice(arrFixedNoInit) == arrFixedNoInit.length);
+		assert(lenSlice(arrSliceInitFixed) == arrFixedNoInit.length);
+		assert(lenSlice(arrSliceInitSlice) == arrFixedNoInit.length);
+		for (i: int32 := 0; i < arrFixedNoInit.length; i := i + 1) {
+			expected: int64 := 42 + i;
+			assert(expected == arrFixedNoInit[i]);
+			assert(expected == arrArrayInitFixed[i]);
+			assert(expected == arrSliceInitFixed[i]);
+			assert(expected == nthSlice(i, arrFixedNoInit));
+			assert(expected == nthSlice(i, arrSliceInitFixed));
+			assert(expected == nthArray(i, arrFixedNoInit));
+			assert(expected == nthArray(i, arrArrayInitFixed));
+			assert(expected == nthArray(i, arrSliceInitFixed));
+			assert(expected == nthFixed(i, arrFixedNoInit));
+			assert(expected == nthFixed(i, arrArrayInitFixed));
+			assert(expected == nthFixed(i, arrSliceInitFixed));
+			assert(expected == arrSliceInitSlice[i]);
+		}
 		static if (typename(int64) == null) {
 			integer: typename := int32;
 		}
@@ -8883,7 +9011,7 @@ val2: int64 {
 		assert(5 == 5, "5 != 5");
 	}
 }
-.instructions: (5203 bytes)
+.instructions: (6491 bytes)
 	test/lang.varInitByRef.ci:7: (13 bytes): static value: int64 := 42
 	<.main+?>:    load.c64 42
 	<.main+?>:    store.m64 .?????? ;value
@@ -8952,33 +9080,33 @@ val2: int64 {
 	test/lang.varInitByVal.ci:96: (8 bytes): static globalInitGlobal: int64 := globalCounter
 	<.main+?>:    load.m64 .?????? ;globalCounter
 	<.main+?>:    store.m64 .?????? ;globalInitGlobal
-	test/lang.statementIf.ci:4: (39 bytes): raise(raise.debug, "0 == 0", null, 1);
+	test/lang.statementIf.ci:4: (39 bytes): raise(1, raise.debug, "0 == 0", null);
 	<.main+?>:    load.ref .?????? ;"test/lang.statementIf.ci"
 	<.main+?>:    load.c32 4
+	<.main+?>:    load.c32 1
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"0 == 0"
 	<.main+?>:    load.ref .?????? ;pointer
 	<.main+?>:    load.ref .?????? ;null
-	<.main+?>:    load.c32 1
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	test/lang.statementIf.ci:12: (39 bytes): raise(raise.debug, "0 == 0", null, 3);
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.statementIf.ci:12: (39 bytes): raise(3, raise.debug, "0 == 0", null);
 	<.main+?>:    load.ref .?????? ;"test/lang.statementIf.ci"
 	<.main+?>:    load.c32 12
 	<.main+?>:    load.c32 3
+	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"0 == 0"
 	<.main+?>:    load.ref .?????? ;pointer
 	<.main+?>:    load.ref .?????? ;null
-	<.main+?>:    load.c32 3
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	test/lang.statementIf.ci:22: (39 bytes): raise(raise.debug, "0 == 0", null, 6);
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.statementIf.ci:22: (39 bytes): raise(6, raise.debug, "0 == 0", null);
 	<.main+?>:    load.ref .?????? ;"test/lang.statementIf.ci"
 	<.main+?>:    load.c32 22
+	<.main+?>:    load.c32 6
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"0 == 0"
 	<.main+?>:    load.ref .?????? ;pointer
 	<.main+?>:    load.ref .?????? ;null
-	<.main+?>:    load.c32 6
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 	test/lang.statementIf.ci:26: (1 bytes): t: int32 := 0
 	<.main+?>:    load.z32
 	test/lang.statementIf.ci:28: (46 bytes): if (t == 0)
@@ -8986,88 +9114,88 @@ val2: int64 {
 	<.main+?>:    load.z32
 	<.main+?>:    ceq.i32
 	<.main+?>:    jz <.main+?>
-	test/lang.statementIf.ci:29: (38 bytes): raise(raise.debug, "t == 0", t, 7);
+	test/lang.statementIf.ci:29: (38 bytes): raise(7, raise.debug, "t == 0", t);
 	<.main+?>:    load.ref .?????? ;"test/lang.statementIf.ci"
 	<.main+?>:    load.c32 29
+	<.main+?>:    load.c32 7
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"t == 0"
 	<.main+?>:    load.ref .?????? ;int32
-	<.main+?>:    load.sp(+20)
-	<.main+?>:    load.c32 7
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    load.sp(+24)
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 	test/lang.statementIf.ci:32: (46 bytes): if (t != 0)
 	<.main+?>:    dup.x1 sp(0)
 	<.main+?>:    load.z32
 	<.main+?>:    ceq.i32
 	<.main+?>:    jnz <.main+?>
-	test/lang.statementIf.ci:33: (38 bytes): raise(raise.debug, "t != 0", t, 8);
+	test/lang.statementIf.ci:33: (38 bytes): raise(8, raise.debug, "t != 0", t);
 	<.main+?>:    load.ref .?????? ;"test/lang.statementIf.ci"
 	<.main+?>:    load.c32 33
+	<.main+?>:    load.c32 8
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"t != 0"
 	<.main+?>:    load.ref .?????? ;int32
-	<.main+?>:    load.sp(+20)
-	<.main+?>:    load.c32 8
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    load.sp(+24)
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 	test/lang.statementIf.ci:36: (88 bytes): if (t == 0)
 	<.main+?>:    dup.x1 sp(0)
 	<.main+?>:    load.z32
 	<.main+?>:    ceq.i32
 	<.main+?>:    jz <.main+?>
-	test/lang.statementIf.ci:37: (38 bytes): raise(raise.debug, "t == 0", t, 10);
+	test/lang.statementIf.ci:37: (38 bytes): raise(9, raise.debug, "t == 0", t);
 	<.main+?>:    load.ref .?????? ;"test/lang.statementIf.ci"
 	<.main+?>:    load.c32 37
+	<.main+?>:    load.c32 9
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"t == 0"
 	<.main+?>:    load.ref .?????? ;int32
-	<.main+?>:    load.sp(+20)
-	<.main+?>:    load.c32 10
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    load.sp(+24)
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 	<.main+?>:    jmp <.main+?>
-	test/lang.statementIf.ci:40: (38 bytes): raise(raise.debug, "t != 0", t, 9);
+	test/lang.statementIf.ci:40: (38 bytes): raise(10, raise.debug, "t != 0", t);
 	<.main+?>:    load.ref .?????? ;"test/lang.statementIf.ci"
 	<.main+?>:    load.c32 40
+	<.main+?>:    load.c32 10
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"t != 0"
 	<.main+?>:    load.ref .?????? ;int32
-	<.main+?>:    load.sp(+20)
-	<.main+?>:    load.c32 9
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    load.sp(+24)
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 	test/lang.statementIf.ci:43: (88 bytes): if (t != 0)
 	<.main+?>:    dup.x1 sp(0)
 	<.main+?>:    load.z32
 	<.main+?>:    ceq.i32
 	<.main+?>:    jnz <.main+?>
-	test/lang.statementIf.ci:44: (38 bytes): raise(raise.debug, "t != 0", t, 11);
+	test/lang.statementIf.ci:44: (38 bytes): raise(11, raise.debug, "t != 0", t);
 	<.main+?>:    load.ref .?????? ;"test/lang.statementIf.ci"
 	<.main+?>:    load.c32 44
+	<.main+?>:    load.c32 11
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"t != 0"
 	<.main+?>:    load.ref .?????? ;int32
-	<.main+?>:    load.sp(+20)
-	<.main+?>:    load.c32 11
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    load.sp(+24)
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 	<.main+?>:    jmp <.main+?>
-	test/lang.statementIf.ci:47: (38 bytes): raise(raise.debug, "t == 0", t, 12);
+	test/lang.statementIf.ci:47: (38 bytes): raise(12, raise.debug, "t == 0", t);
 	<.main+?>:    load.ref .?????? ;"test/lang.statementIf.ci"
 	<.main+?>:    load.c32 47
+	<.main+?>:    load.c32 12
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"t == 0"
 	<.main+?>:    load.ref .?????? ;int32
-	<.main+?>:    load.sp(+20)
-	<.main+?>:    load.c32 12
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    load.sp(+24)
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 	test/lang.statementFor.ci:3: (47 bytes): for ( ; ; )
 	<.main+?>:    jmp <.main+?>
 	test/lang.statementFor.ci:4: (35 bytes): debug("for ( ; ; )");
 	<.main+?>:    load.ref .?????? ;"test/lang.statementFor.ci"
 	<.main+?>:    load.c32 4
+	<.main+?>:    load.z32
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"for ( ; ; )"
 	<.main+?>:    load.ref .?????? ;pointer
 	<.main+?>:    load.ref .?????? ;null
-	<.main+?>:    load.z32
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 	test/lang.statementFor.ci:5: (4 bytes): break;
 	<.main+?>:    jmp <.main+?>
 	:: (4 bytes)
@@ -9078,12 +9206,12 @@ val2: int64 {
 	test/lang.statementFor.ci:9: (34 bytes): debug("for (int i = 0; i < 2; i += 1)", i);
 	<.main+?>:    load.ref .?????? ;"test/lang.statementFor.ci"
 	<.main+?>:    load.c32 9
+	<.main+?>:    load.z32
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"for (int i = 0; i < 2; i += 1)"
 	<.main+?>:    load.ref .?????? ;int32
-	<.main+?>:    load.sp(+20)
-	<.main+?>:    load.z32
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    load.sp(+24)
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 	test/lang.statementFor.ci:8: (4 bytes): i := i + 1
 	<.main+?>:    inc.i32(+1)
 	test/lang.statementFor.ci:8: (12 bytes): i < 2
@@ -9101,12 +9229,12 @@ val2: int64 {
 	test/lang.statementFor.ci:14: (34 bytes): debug("for (forIdx = 0; forIdx < 2; forIdx += 1)", forIdx);
 	<.main+?>:    load.ref .?????? ;"test/lang.statementFor.ci"
 	<.main+?>:    load.c32 14
+	<.main+?>:    load.z32
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"for (forIdx = 0; forIdx < 2; forIdx += 1)"
 	<.main+?>:    load.ref .?????? ;int32
-	<.main+?>:    load.sp(+20)
-	<.main+?>:    load.z32
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    load.sp(+24)
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 	test/lang.statementFor.ci:13: (4 bytes): forIdx := forIdx + 1
 	<.main+?>:    inc.i32(+1)
 	test/lang.statementFor.ci:13: (12 bytes): forIdx < 2
@@ -9344,7 +9472,7 @@ val2: int64 {
 	test/test.inlineOverload.ci:11: (5 bytes): overload3: float32 := overload(0)
 	<.main+?>:    load.f32 3.000000
 	test/test.inlineOverload.ci:12: (5 bytes): overload4: float32 := overload(0.000000)
-	<.main+?>:    load.f32 1.000000
+	<.main+?>:    load.f32 4.000000
 	test/test.inlineOverload.ci:13: (5 bytes): overload5: float32 := overload(0, 0)
 	<.main+?>:    load.f32 5.000000
 	test/lang.inlineEmit.ci:3: (1 bytes): emitldz32: int32 := emit(load.z32)
@@ -9591,10 +9719,9 @@ val2: int64 {
 	<.main+?>:    load.c32 97
 	test/lang.useOperator.ci:31: (5 bytes): chrB: char := 'b'
 	<.main+?>:    load.c32 98
-	test/lang.useOperator.ci:32: (6 bytes): chrPls: char := +chrB
+	test/lang.useOperator.ci:32: (5 bytes): chrPls: char := +chrB
 	<.main+?>:    load.sp(+0)
 	<.main+?>:    load.m8
-	<.main+?>:    nop
 	test/lang.useOperator.ci:33: (6 bytes): chrNeg: char := -chrB
 	<.main+?>:    load.sp(+4)
 	<.main+?>:    load.m8
@@ -9709,10 +9836,9 @@ val2: int64 {
 	<.main+?>:    load.c32 96
 	test/lang.useOperator.ci:54: (5 bytes): i8B: int8 := b
 	<.main+?>:    load.c32 42
-	test/lang.useOperator.ci:55: (6 bytes): i8Pls: int8 := +i8B
+	test/lang.useOperator.ci:55: (5 bytes): i8Pls: int8 := +i8B
 	<.main+?>:    load.sp(+0)
 	<.main+?>:    load.m8
-	<.main+?>:    nop
 	test/lang.useOperator.ci:56: (6 bytes): i8Neg: int8 := -i8B
 	<.main+?>:    load.sp(+4)
 	<.main+?>:    load.m8
@@ -9827,10 +9953,9 @@ val2: int64 {
 	<.main+?>:    load.c32 96
 	test/lang.useOperator.ci:77: (5 bytes): u8B: uint8 := b
 	<.main+?>:    load.c32 42
-	test/lang.useOperator.ci:78: (6 bytes): u8Pls: uint8 := +u8B
+	test/lang.useOperator.ci:78: (5 bytes): u8Pls: uint8 := +u8B
 	<.main+?>:    load.sp(+0)
 	<.main+?>:    load.m8
-	<.main+?>:    nop
 	test/lang.useOperator.ci:79: (6 bytes): u8Neg: uint8 := -u8B
 	<.main+?>:    load.sp(+4)
 	<.main+?>:    load.m8
@@ -9945,10 +10070,9 @@ val2: int64 {
 	<.main+?>:    load.c32 96
 	test/lang.useOperator.ci:100: (5 bytes): i16B: int16 := b
 	<.main+?>:    load.c32 42
-	test/lang.useOperator.ci:101: (6 bytes): i16Pls: int16 := +i16B
+	test/lang.useOperator.ci:101: (5 bytes): i16Pls: int16 := +i16B
 	<.main+?>:    load.sp(+0)
 	<.main+?>:    load.m16
-	<.main+?>:    nop
 	test/lang.useOperator.ci:102: (6 bytes): i16Neg: int16 := -i16B
 	<.main+?>:    load.sp(+4)
 	<.main+?>:    load.m16
@@ -10063,10 +10187,9 @@ val2: int64 {
 	<.main+?>:    load.c32 96
 	test/lang.useOperator.ci:123: (5 bytes): u16B: uint16 := b
 	<.main+?>:    load.c32 42
-	test/lang.useOperator.ci:124: (6 bytes): u16Pls: uint16 := +u16B
+	test/lang.useOperator.ci:124: (5 bytes): u16Pls: uint16 := +u16B
 	<.main+?>:    load.sp(+0)
 	<.main+?>:    load.m16
-	<.main+?>:    nop
 	test/lang.useOperator.ci:125: (6 bytes): u16Neg: uint16 := -u16B
 	<.main+?>:    load.sp(+4)
 	<.main+?>:    load.m16
@@ -10181,9 +10304,8 @@ val2: int64 {
 	<.main+?>:    load.c32 96
 	test/lang.useOperator.ci:146: (5 bytes): i32B: int32 := b
 	<.main+?>:    load.c32 42
-	test/lang.useOperator.ci:147: (3 bytes): i32Pls: int32 := +i32B
+	test/lang.useOperator.ci:147: (2 bytes): i32Pls: int32 := +i32B
 	<.main+?>:    dup.x1 sp(0)
-	<.main+?>:    nop
 	test/lang.useOperator.ci:148: (3 bytes): i32Neg: int32 := -i32B
 	<.main+?>:    dup.x1 sp(1)
 	<.main+?>:    neg.i32
@@ -10265,9 +10387,8 @@ val2: int64 {
 	<.main+?>:    load.c32 96
 	test/lang.useOperator.ci:169: (5 bytes): u32B: uint32 := b
 	<.main+?>:    load.c32 42
-	test/lang.useOperator.ci:170: (3 bytes): u32Pls: uint32 := +u32B
+	test/lang.useOperator.ci:170: (2 bytes): u32Pls: uint32 := +u32B
 	<.main+?>:    dup.x1 sp(0)
-	<.main+?>:    nop
 	test/lang.useOperator.ci:171: (3 bytes): u32Neg: uint32 := -u32B
 	<.main+?>:    dup.x1 sp(1)
 	<.main+?>:    neg.i32
@@ -10349,9 +10470,8 @@ val2: int64 {
 	<.main+?>:    load.c64 96
 	test/lang.useOperator.ci:192: (9 bytes): i64B: int64 := b
 	<.main+?>:    load.c64 42
-	test/lang.useOperator.ci:193: (3 bytes): i64Pls: int64 := +i64B
+	test/lang.useOperator.ci:193: (2 bytes): i64Pls: int64 := +i64B
 	<.main+?>:    dup.x2 sp(0)
-	<.main+?>:    nop
 	test/lang.useOperator.ci:194: (3 bytes): i64Neg: int64 := -i64B
 	<.main+?>:    dup.x2 sp(2)
 	<.main+?>:    neg.i64
@@ -10433,9 +10553,8 @@ val2: int64 {
 	<.main+?>:    load.c64 96
 	test/lang.useOperator.ci:215: (9 bytes): u64B: uint64 := b
 	<.main+?>:    load.c64 42
-	test/lang.useOperator.ci:216: (3 bytes): u64Pls: uint64 := +u64B
+	test/lang.useOperator.ci:216: (2 bytes): u64Pls: uint64 := +u64B
 	<.main+?>:    dup.x2 sp(0)
-	<.main+?>:    nop
 	test/lang.useOperator.ci:217: (3 bytes): u64Neg: uint64 := -u64B
 	<.main+?>:    dup.x2 sp(2)
 	<.main+?>:    neg.i64
@@ -10517,9 +10636,8 @@ val2: int64 {
 	<.main+?>:    load.f32 96.300003
 	test/lang.useOperator.ci:238: (5 bytes): f32B: float32 := b
 	<.main+?>:    load.f32 42.139999
-	test/lang.useOperator.ci:239: (3 bytes): f32Pls: float32 := +f32B
+	test/lang.useOperator.ci:239: (2 bytes): f32Pls: float32 := +f32B
 	<.main+?>:    dup.x1 sp(0)
-	<.main+?>:    nop
 	test/lang.useOperator.ci:240: (3 bytes): f32Neg: float32 := -f32B
 	<.main+?>:    dup.x1 sp(1)
 	<.main+?>:    neg.f32
@@ -10578,9 +10696,8 @@ val2: int64 {
 	<.main+?>:    load.f64 96.300000
 	test/lang.useOperator.ci:261: (9 bytes): f64B: float64 := b
 	<.main+?>:    load.f64 42.140000
-	test/lang.useOperator.ci:262: (3 bytes): f64Pls: float64 := +f64B
+	test/lang.useOperator.ci:262: (2 bytes): f64Pls: float64 := +f64B
 	<.main+?>:    dup.x2 sp(0)
-	<.main+?>:    nop
 	test/lang.useOperator.ci:263: (3 bytes): f64Neg: float64 := -f64B
 	<.main+?>:    dup.x2 sp(2)
 	<.main+?>:    neg.f64
@@ -10652,85 +10769,462 @@ val2: int64 {
 	<.main+?>:    inc.sp(+56)
 	test/lang.varInitArray.ci:9: (4 bytes): arrSliceNoInit: int64[]
 	<.main+?>:    inc.sp(+8)
-	test/lang.varInitArray.ci:10: (4 bytes): arrPtrNoInit: int64[*]
+	test/lang.varInitArray.ci:10: (4 bytes): arrArrayNoInit: int64[*]
 	<.main+?>:    inc.sp(+4)
-	test/lang.varInitArray.ci:13: (6 bytes): arrSliceInitNull: int64[] := null
+	test/lang.varInitArray.ci:13: (45 bytes): for (i: int32 := 0; i < arrFixedNoInit.length; i := i + 1)
+	<.main+?>:    load.z32
+	<.main+?>:    jmp <.main+?>
+	test/lang.varInitArray.ci:14: (20 bytes): arrFixedNoInit[i] := (42 + i);
+	<.main+?>:    load.c32 42
+	<.main+?>:    dup.x1 sp(1)
+	<.main+?>:    add.i32
+	<.main+?>:    i32.2i64
+	<.main+?>:    load.sp(+24)
+	<.main+?>:    dup.x1 sp(3)
+	<.main+?>:    mad.u32 8
+	<.main+?>:    store.m64
+	test/lang.varInitArray.ci:13: (4 bytes): i := i + 1
+	<.main+?>:    inc.i32(+1)
+	test/lang.varInitArray.ci:13: (12 bytes): i < arrFixedNoInit.length
+	<.main+?>:    dup.x1 sp(0)
+	<.main+?>:    load.c32 7
+	<.main+?>:    clt.i32
+	<.main+?>:    jnz <.main+?>
+	<.main+?>:    inc.sp(-4)
+	test/lang.varInitArray.ci:18: (6 bytes): arrSliceInitNull: int64[] := null
 	<.main+?>:    load.z32
 	<.main+?>:    load.ref .?????? ;null
-	test/lang.varInitArray.ci:14: (5 bytes): arrPtrInitNull: int64[*] := null
+	test/lang.varInitArray.ci:19: (5 bytes): arrArrayInitNull: int64[*] := null
 	<.main+?>:    load.ref .?????? ;null
-	test/lang.varInitArray.ci:17: (9 bytes): arrSliceInitFixed: int64[] := arrFixedNoInit
+	test/lang.varInitArray.ci:22: (9 bytes): arrSliceInitFixed: int64[] := arrFixedNoInit
 	<.main+?>:    load.c32 7
 	<.main+?>:    load.sp(+28)
-	test/lang.varInitArray.ci:18: (4 bytes): arrPtrInitFixed: int64[*] := arrFixedNoInit
+	test/lang.varInitArray.ci:23: (4 bytes): arrArrayInitFixed: int64[*] := arrFixedNoInit
 	<.main+?>:    load.sp(+32)
-	test/lang.varInitArray.ci:21: (2 bytes): arrSliceInitSlice: int64[] := arrSliceInitFixed
+	test/lang.varInitArray.ci:26: (2 bytes): arrSliceInitSlice: int64[] := arrSliceInitFixed
 	<.main+?>:    dup.x2 sp(1)
-	test/lang.varInitArray.ci:22: (4 bytes): arrPtrInitSlice: int64[*] := arrSliceInitFixed
-	<.main+?>:    load.sp(+12)
-	test/lang.varInitArray.ci:26: (2 bytes): arrPtrInitPtr: int64[*] := arrPtrInitFixed
+	test/lang.varInitArray.ci:27: (2 bytes): arrArrayInitSlice: int64[*] := arrSliceInitFixed
 	<.main+?>:    dup.x1 sp(3)
-	test/lang.varInitArray.ci:37: (10 bytes): arrSliceInitString: char[] := "string"
+	test/lang.varInitArray.ci:31: (2 bytes): arrArrayInitPtr: int64[*] := arrArrayInitFixed
+	<.main+?>:    dup.x1 sp(3)
+	test/lang.varInitArray.ci:42: (10 bytes): arrSliceInitString: char[] := "string"
 	<.main+?>:    load.c32 6
 	<.main+?>:    load.ref .?????? ;"string"
-	test/lang.varInitArray.ci:38: (5 bytes): arrPtrInitString: char[*] := "string"
+	test/lang.varInitArray.ci:43: (5 bytes): arrArrayInitString: char[*] := "string"
 	<.main+?>:    load.ref .?????? ;"string"
-	test/lang.varInitArray.ci:47: (58 bytes): assert(arrFixedNoInit.length == 7);
-	<.main+?>:    load.c32 7
-	<.main+?>:    load.c32 7
-	<.main+?>:    ceq.i32
-	<.main+?>:    jz <.main+?>
-	<.main+?>:    jmp <.main+?>
-	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
-	<.main+?>:    load.c32 47
-	<.main+?>:    load.c32 -1
-	<.main+?>:    load.ref .?????? ;"assertion failed!"
-	<.main+?>:    load.ref .?????? ;pointer
-	<.main+?>:    load.ref .?????? ;null
-	<.main+?>:    load.c32 128
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	test/lang.varInitArray.ci:48: (51 bytes): assert(arrSliceNoInit.length == (0), "This one might fail");
-	<.main+?>:    dup.x1 sp(14)
+	test/lang.varInitArray.ci:48: (51 bytes): assert(arrSliceNoInit.length == (0));
+	<.main+?>:    dup.x1 sp(15)
 	<.main+?>:    load.z32
 	<.main+?>:    ceq.i32
 	<.main+?>:    jz <.main+?>
 	<.main+?>:    jmp <.main+?>
 	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
 	<.main+?>:    load.c32 48
+	<.main+?>:    load.c32 128
 	<.main+?>:    load.c32 -1
-	<.main+?>:    load.ref .?????? ;"This one might fail"
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
 	<.main+?>:    load.ref .?????? ;pointer
 	<.main+?>:    load.ref .?????? ;null
-	<.main+?>:    load.c32 128
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	test/lang.varInitArray.ci:50: (51 bytes): assert(arrSliceInitNull.length == (0));
-	<.main+?>:    dup.x1 sp(11)
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:49: (51 bytes): assert(arrSliceInitNull.length == (0));
+	<.main+?>:    dup.x1 sp(12)
 	<.main+?>:    load.z32
 	<.main+?>:    ceq.i32
 	<.main+?>:    jz <.main+?>
 	<.main+?>:    jmp <.main+?>
 	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
-	<.main+?>:    load.c32 50
+	<.main+?>:    load.c32 49
+	<.main+?>:    load.c32 128
 	<.main+?>:    load.c32 -1
 	<.main+?>:    load.ref .?????? ;"assertion failed!"
 	<.main+?>:    load.ref .?????? ;pointer
 	<.main+?>:    load.ref .?????? ;null
-	<.main+?>:    load.c32 128
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
-	test/lang.varInitArray.ci:51: (52 bytes): assert(arrSliceInitSlice.length == arrSliceInitFixed.length);
-	<.main+?>:    dup.x1 sp(5)
-	<.main+?>:    dup.x1 sp(9)
-	<.main+?>:    ceq.i32
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:51: (59 bytes): assert(arrFixedNoInit[0] == (42));
+	<.main+?>:    dup.x2 sp(16)
+	<.main+?>:    load.c64 42
+	<.main+?>:    ceq.i64
 	<.main+?>:    jz <.main+?>
 	<.main+?>:    jmp <.main+?>
 	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
 	<.main+?>:    load.c32 51
+	<.main+?>:    load.c32 128
 	<.main+?>:    load.c32 -1
 	<.main+?>:    load.ref .?????? ;"assertion failed!"
 	<.main+?>:    load.ref .?????? ;pointer
 	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:58: (58 bytes): assert(arrFixedNoInit.length == 7);
+	<.main+?>:    load.c32 7
+	<.main+?>:    load.c32 7
+	<.main+?>:    ceq.i32
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 58
 	<.main+?>:    load.c32 128
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:59: (55 bytes): assert(arrSliceInitFixed.length == (arrFixedNoInit.length));
+	<.main+?>:    dup.x1 sp(9)
+	<.main+?>:    load.c32 7
+	<.main+?>:    ceq.i32
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 59
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:60: (55 bytes): assert(arrSliceInitSlice.length == (arrFixedNoInit.length));
+	<.main+?>:    dup.x1 sp(6)
+	<.main+?>:    load.c32 7
+	<.main+?>:    ceq.i32
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 60
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:62: (65 bytes): assert(lenSlice(null) == 0);
+	<.main+?>:    load.z64
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    load.ref .?????? ;lenSlice(values: int64[]): int32
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-8)
+	<.main+?>:    load.z32
+	<.main+?>:    ceq.i32
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 62
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:63: (62 bytes): assert(lenSlice(arrSliceInitNull) == 0);
+	<.main+?>:    load.z32
+	<.main+?>:    dup.x2 sp(12)
+	<.main+?>:    load.ref .?????? ;lenSlice(values: int64[]): int32
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-8)
+	<.main+?>:    load.z32
+	<.main+?>:    ceq.i32
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 63
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:64: (73 bytes): assert(lenSlice(arrFixedNoInit) == arrFixedNoInit.length);
+	<.main+?>:    load.z32
+	<.main+?>:    load.c32 7
+	<.main+?>:    load.sp(+72)
+	<.main+?>:    load.ref .?????? ;lenSlice(values: int64[]): int32
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-8)
+	<.main+?>:    load.c32 7
+	<.main+?>:    ceq.i32
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 64
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:65: (66 bytes): assert(lenSlice(arrSliceInitFixed) == arrFixedNoInit.length);
+	<.main+?>:    load.z32
+	<.main+?>:    dup.x2 sp(9)
+	<.main+?>:    load.ref .?????? ;lenSlice(values: int64[]): int32
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-8)
+	<.main+?>:    load.c32 7
+	<.main+?>:    ceq.i32
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 65
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:66: (66 bytes): assert(lenSlice(arrSliceInitSlice) == arrFixedNoInit.length);
+	<.main+?>:    load.z32
+	<.main+?>:    dup.x2 sp(6)
+	<.main+?>:    load.ref .?????? ;lenSlice(values: int64[]): int32
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-8)
+	<.main+?>:    load.c32 7
+	<.main+?>:    ceq.i32
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 66
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:68: (807 bytes): for (i: int32 := 0; i < arrFixedNoInit.length; i := i + 1)
+	<.main+?>:    load.z32
+	<.main+?>:    jmp <.main+?>
+	test/lang.varInitArray.ci:69: (9 bytes): expected: int64 := 42 + i
+	<.main+?>:    load.c32 42
+	<.main+?>:    dup.x1 sp(1)
+	<.main+?>:    add.i32
+	<.main+?>:    i32.2i64
+	test/lang.varInitArray.ci:70: (61 bytes): assert(expected == arrFixedNoInit[i]);
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    load.sp(+84)
+	<.main+?>:    dup.x1 sp(5)
+	<.main+?>:    mad.u32 8
+	<.main+?>:    load.m64
+	<.main+?>:    ceq.i64
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 70
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:71: (59 bytes): assert(expected == arrArrayInitFixed[i]);
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    dup.x1 sp(12)
+	<.main+?>:    dup.x1 sp(5)
+	<.main+?>:    mad.u32 8
+	<.main+?>:    load.m64
+	<.main+?>:    ceq.i64
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 71
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:72: (59 bytes): assert(expected == arrSliceInitFixed[i]);
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    dup.x1 sp(13)
+	<.main+?>:    dup.x1 sp(5)
+	<.main+?>:    mad.u32 8
+	<.main+?>:    load.m64
+	<.main+?>:    ceq.i64
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 72
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:74: (72 bytes): assert(expected == nthSlice(i, arrFixedNoInit));
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    load.z64
+	<.main+?>:    dup.x1 sp(6)
+	<.main+?>:    load.c32 7
+	<.main+?>:    load.sp(+100)
+	<.main+?>:    load.ref .?????? ;nthSlice(idx: int32, values: int64[]): int64
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-12)
+	<.main+?>:    ceq.i64
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 74
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:76: (65 bytes): assert(expected == nthSlice(i, arrSliceInitFixed));
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    load.z64
+	<.main+?>:    dup.x1 sp(6)
+	<.main+?>:    dup.x2 sp(16)
+	<.main+?>:    load.ref .?????? ;nthSlice(idx: int32, values: int64[]): int64
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-12)
+	<.main+?>:    ceq.i64
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 76
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:78: (67 bytes): assert(expected == nthArray(i, arrFixedNoInit));
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    load.z64
+	<.main+?>:    dup.x1 sp(6)
+	<.main+?>:    load.sp(+96)
+	<.main+?>:    load.ref .?????? ;nthArray(idx: int32, values: int64[*]): int64
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-8)
+	<.main+?>:    ceq.i64
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 78
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:79: (65 bytes): assert(expected == nthArray(i, arrArrayInitFixed));
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    load.z64
+	<.main+?>:    dup.x1 sp(6)
+	<.main+?>:    dup.x1 sp(15)
+	<.main+?>:    load.ref .?????? ;nthArray(idx: int32, values: int64[*]): int64
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-8)
+	<.main+?>:    ceq.i64
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 79
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:80: (65 bytes): assert(expected == nthArray(i, arrSliceInitFixed));
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    load.z64
+	<.main+?>:    dup.x1 sp(6)
+	<.main+?>:    dup.x1 sp(16)
+	<.main+?>:    load.ref .?????? ;nthArray(idx: int32, values: int64[*]): int64
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-8)
+	<.main+?>:    ceq.i64
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 80
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:82: (67 bytes): assert(expected == nthFixed(i, arrFixedNoInit));
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    load.z64
+	<.main+?>:    dup.x1 sp(6)
+	<.main+?>:    load.sp(+96)
+	<.main+?>:    load.ref .?????? ;nthFixed(idx: int32, values: int64[7]): int64
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-8)
+	<.main+?>:    ceq.i64
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 82
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:83: (65 bytes): assert(expected == nthFixed(i, arrArrayInitFixed));
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    load.z64
+	<.main+?>:    dup.x1 sp(6)
+	<.main+?>:    dup.x1 sp(15)
+	<.main+?>:    load.ref .?????? ;nthFixed(idx: int32, values: int64[7]): int64
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-8)
+	<.main+?>:    ceq.i64
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 83
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:84: (65 bytes): assert(expected == nthFixed(i, arrSliceInitFixed));
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    load.z64
+	<.main+?>:    dup.x1 sp(6)
+	<.main+?>:    dup.x1 sp(16)
+	<.main+?>:    load.ref .?????? ;nthFixed(idx: int32, values: int64[7]): int64
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-8)
+	<.main+?>:    ceq.i64
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 84
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:86: (59 bytes): assert(expected == arrSliceInitSlice[i]);
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    dup.x1 sp(10)
+	<.main+?>:    dup.x1 sp(5)
+	<.main+?>:    mad.u32 8
+	<.main+?>:    load.m64
+	<.main+?>:    ceq.i64
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 86
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
+	<.main+?>:    inc.sp(-8)
+	test/lang.varInitArray.ci:68: (4 bytes): i := i + 1
+	<.main+?>:    inc.i32(+1)
+	test/lang.varInitArray.ci:68: (12 bytes): i < arrFixedNoInit.length
+	<.main+?>:    dup.x1 sp(0)
+	<.main+?>:    load.c32 7
+	<.main+?>:    clt.i32
+	<.main+?>:    jnz <.main+?>
+	<.main+?>:    inc.sp(-4)
 	test/lang.varInitByRef.ci:8: (5 bytes): valueRef: int64 := value
 	<.main+?>:    load.ref .?????? ;value
 	test/lang.varInitByRef.ci:9: (5 bytes): valuePtr: pointer := value
@@ -10967,12 +11461,12 @@ val2: int64 {
 	<.main+?>:    jmp <.main+?>
 	<.main+?>:    load.ref .?????? ;"test/lang.varInitByVal.ci"
 	<.main+?>:    load.c32 122
+	<.main+?>:    load.c32 128
 	<.main+?>:    load.c32 -1
 	<.main+?>:    load.ref .?????? ;"assertion failed!"
 	<.main+?>:    load.ref .?????? ;pointer
 	<.main+?>:    load.ref .?????? ;null
-	<.main+?>:    load.c32 128
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 	test/stdc.nfcNumber.ci:3: (9 bytes): pi64: float64 := 3.141593
 	<.main+?>:    load.f64 3.141593
 	test/stdc.nfcNumber.ci:4: (9 bytes): e64: float64 := 2.718282
@@ -11214,21 +11708,21 @@ val2: int64 {
 	test/stdc.nfcMemory.ci:26: (34 bytes): debug("val1", val1);
 	<.main+?>:    load.ref .?????? ;"test/stdc.nfcMemory.ci"
 	<.main+?>:    load.c32 26
+	<.main+?>:    load.z32
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"val1"
 	<.main+?>:    load.ref .?????? ;int64
-	<.main+?>:    load.sp(+28)
-	<.main+?>:    load.z32
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    load.sp(+32)
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 	test/stdc.nfcMemory.ci:27: (34 bytes): debug("val2", val2);
 	<.main+?>:    load.ref .?????? ;"test/stdc.nfcMemory.ci"
 	<.main+?>:    load.c32 27
+	<.main+?>:    load.z32
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"val2"
 	<.main+?>:    load.ref .?????? ;int64
-	<.main+?>:    load.sp(+20)
-	<.main+?>:    load.z32
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    load.sp(+24)
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 	test/stdc.nfcMemory.ci:29: (21 bytes): pointer.copy(pointer(val2), pointer(val1), 8);
 	<.main+?>:    load.sp(+0)
 	<.main+?>:    load.sp(+12)
@@ -11244,21 +11738,21 @@ val2: int64 {
 	test/stdc.nfcMemory.ci:32: (34 bytes): debug("val1", val1);
 	<.main+?>:    load.ref .?????? ;"test/stdc.nfcMemory.ci"
 	<.main+?>:    load.c32 32
+	<.main+?>:    load.z32
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"val1"
 	<.main+?>:    load.ref .?????? ;int64
-	<.main+?>:    load.sp(+28)
-	<.main+?>:    load.z32
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    load.sp(+32)
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 	test/stdc.nfcMemory.ci:33: (34 bytes): debug("val2", val2);
 	<.main+?>:    load.ref .?????? ;"test/stdc.nfcMemory.ci"
 	<.main+?>:    load.c32 33
+	<.main+?>:    load.z32
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"val2"
 	<.main+?>:    load.ref .?????? ;int64
-	<.main+?>:    load.sp(+20)
-	<.main+?>:    load.z32
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, message: char[*], inspect: variant, maxTrace: int32): void
+	<.main+?>:    load.sp(+24)
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 	<.main+?>:    nfc(0) ;halt(): void
 }
 
@@ -11346,7 +11840,7 @@ test/lang.inlineArgs.ci:51: min3Xpr: int32(9)
 test/test.inlineOverload.ci:9: overload1: float32(1.000000)
 test/test.inlineOverload.ci:10: overload2: float32(2.000000)
 test/test.inlineOverload.ci:11: overload3: float32(3.000000)
-test/test.inlineOverload.ci:12: overload4: float32(FIXME: 4.000000)
+test/test.inlineOverload.ci:12: overload4: float32(4.000000)
 test/test.inlineOverload.ci:13: overload5: float32(5.000000)
 test/lang.inlineEmit.ci:3: emitldz32: int32(0)
 test/lang.inlineEmit.ci:4: emitldz64: int64(0)
@@ -11382,13 +11876,13 @@ test/lang.reflection.ci:22: RecordSizeof: typename(<RecordSizeof>)
 test/lang.reflection.ci:26: RecordSizeofExt: typename(<RecordSizeofExt>)
 test/lang.reflection.ci:30: typeofRecord: typename(<RecordSizeofExt>)
 test/lang.reflection.ci:31: nameOfRecord: char[*]("RecordSizeofExt")
-test/lang.reflection.ci:32: offsetOfRecord: int32(79688)
+test/lang.reflection.ci:32: offsetOfRecord: int32(79672)
 test/lang.reflection.ci:33: sizeOfRecord: int32(16)
 test/lang.reflection.ci:34: fileOfRecord: char[*]("test/lang.reflection.ci")
 test/lang.reflection.ci:35: lineOfRecord: int32(26)
 test/lang.reflection.ci:37: typeofBase: typename(<RecordSizeof>)
 test/lang.reflection.ci:38: nameOfBase: char[*]("RecordSizeof")
-test/lang.reflection.ci:39: offsetOfBase: int32(79416)
+test/lang.reflection.ci:39: offsetOfBase: int32(79400)
 test/lang.reflection.ci:40: sizeOfBase: int32(12)
 test/lang.reflection.ci:41: fileOfBase: char[*]("test/lang.reflection.ci")
 test/lang.reflection.ci:42: lineOfBase: int32(22)
@@ -11398,17 +11892,17 @@ test/lang.reflection.ci:46: sizeOfBase1: int32(4)
 test/lang.reflection.ci:48: typeofBase2: typename(<typename>)
 test/lang.reflection.ci:49: offsetOfBase2: int32(8)
 test/lang.reflection.ci:50: sizeOfBase2: int32(136)
-test/lang.function.ci:5: empty: function(<empty @026748>)
-test/lang.function.ci:8: funAdd: function(<funAdd @026750>)
+test/lang.function.ci:5: empty: function(<empty @027428>)
+test/lang.function.ci:8: funAdd: function(<funAdd @027430>)
 test/lang.function.ci:13: funAddResult: int32(9)
-test/lang.function.ci:16: funAddRef: function(<funAdd @026750>)
+test/lang.function.ci:16: funAddRef: function(<funAdd @027430>)
 test/lang.function.ci:19: funAddRefResult: int32(10)
-test/lang.function.ci:22: funMul: function(<funMul @026758>)
+test/lang.function.ci:22: funMul: function(<funMul @027438>)
 test/lang.function.ci:25: funMulResult: int32(12)
-test/lang.function.ci:28: funMulRef: function(<funMul @026758>)
+test/lang.function.ci:28: funMulRef: function(<funMul @027438>)
 test/lang.function.ci:31: funMulRefResult: int32(14)
-test/lang.function.ci:34: funMul: function(<funMul @026758>)
-test/lang.function.ci:39: fib: function(<fib @026760>)
+test/lang.function.ci:34: funMul: function(<funMul @027438>)
+test/lang.function.ci:39: fib: function(<fib @027440>)
 test/lang.function.ci:47: fibonacci_13: uint32(233)
 test/lang.useOperator.ci:5: shift: int32(2)
 test/lang.useOperator.ci:7: boolA: bool(1)
@@ -11654,24 +12148,28 @@ test/lang.useOperator.ci:279: f64Cle: bool(0)
 test/lang.useOperator.ci:280: f64Cgt: bool(1)
 test/lang.useOperator.ci:281: f64Cge: bool(1)
 test/lang.useOperator.ci:283: ptrA: pointer(null)
-test/lang.useOperator.ci:284: ptrB: pointer({})
+test/lang.useOperator.ci:284: ptrB: pointer(<@0b3d78>)
 test/lang.useOperator.ci:299: ptrCeq: bool(0)
 test/lang.useOperator.ci:300: ptrCne: bool(1)
-test/lang.varInitArray.ci:8: arrFixedNoInit: int64[7]([7] {FIXME: random values})
+test/lang.varInitArray.ci:8: arrFixedNoInit: int64[7]([7] {42, 43, 44, 45, 46, 47, 48})
 test/lang.varInitArray.ci:9: arrSliceNoInit: int64[](null)
-test/lang.varInitArray.ci:10: arrPtrNoInit: int64[*](null)
-test/lang.varInitArray.ci:13: arrSliceInitNull: int64[](null)
-test/lang.varInitArray.ci:14: arrPtrInitNull: int64[*](null)
-test/lang.varInitArray.ci:17: arrSliceInitFixed: int64[]([7] {FIXME: random values})
-test/lang.varInitArray.ci:18: arrPtrInitFixed: int64[*]([*] {...})
-test/lang.varInitArray.ci:21: arrSliceInitSlice: int64[]([7] {FIXME: random values})
-test/lang.varInitArray.ci:22: arrPtrInitSlice: int64[*]([*] {...})
-test/lang.varInitArray.ci:26: arrPtrInitPtr: int64[*]([*] {...})
-test/lang.varInitArray.ci:37: arrSliceInitString: char[]([6] {'s', 't', 'r', 'i', 'n', 'g'})
-test/lang.varInitArray.ci:38: arrPtrInitString: char[*]("string")
+test/lang.varInitArray.ci:10: arrArrayNoInit: int64[*](null)
+test/lang.varInitArray.ci:18: arrSliceInitNull: int64[](null)
+test/lang.varInitArray.ci:19: arrArrayInitNull: int64[*](null)
+test/lang.varInitArray.ci:22: arrSliceInitFixed: int64[]([7] {42, 43, 44, 45, 46, 47, 48})
+test/lang.varInitArray.ci:23: arrArrayInitFixed: int64[*](<@0b38cc>)
+test/lang.varInitArray.ci:26: arrSliceInitSlice: int64[]([7] {42, 43, 44, 45, 46, 47, 48})
+test/lang.varInitArray.ci:27: arrArrayInitSlice: int64[*](<@0b38cc>)
+test/lang.varInitArray.ci:31: arrArrayInitPtr: int64[*](<@0b38cc>)
+test/lang.varInitArray.ci:42: arrSliceInitString: char[]([6] {'s', 't', 'r', 'i', 'n', 'g'})
+test/lang.varInitArray.ci:43: arrArrayInitString: char[*]("string")
+test/lang.varInitArray.ci:53: lenSlice: function(<lenSlice @027478>)
+test/lang.varInitArray.ci:54: nthSlice: function(<nthSlice @027480>)
+test/lang.varInitArray.ci:55: nthArray: function(<nthArray @027490>)
+test/lang.varInitArray.ci:56: nthFixed: function(<nthFixed @0274a0>)
 test/lang.varInitByRef.ci:7: value: int64(42)
 test/lang.varInitByRef.ci:8: valueRef: int64(42)
-test/lang.varInitByRef.ci:9: valuePtr: pointer(<value @026798>)
+test/lang.varInitByRef.ci:9: valuePtr: pointer(<value @0274b0>)
 test/lang.varInitByRef.ci:10: valueVar: variant({int64: 42})
 test/lang.varInitByRef.ci:12: fromRef: int64(42)
 test/lang.varInitByRef.ci:13: fromPtr: int64(42)
@@ -11688,7 +12186,7 @@ test/lang.varInitByRef.ci:25: typeTyp: typename(<int64>)
 test/lang.varInitByRef.ci:27: local: int64(42)
 test/lang.varInitByRef.ci:28: copyVal: int64(42)
 test/lang.varInitByRef.ci:29: copyRef: int64(42)
-test/lang.varInitByRef.ci:30: copyPtr: pointer(<value @026798>)
+test/lang.varInitByRef.ci:30: copyPtr: pointer(<value @0274b0>)
 test/lang.varInitByRef.ci:31: copyVar: variant({int64: 42})
 test/lang.varInitByRef.ci:32: copyTyp: typename(<int64>)
 test/lang.varInitByRef.ci:35: ptrVoid: pointer(<void @0000a0>)
@@ -11745,7 +12243,7 @@ test/lang.varInitByRef.ci:89: typFunction: typename(<function>)
 test/lang.varInitByRef.ci:90: typPointer: typename(<pointer>)
 test/lang.varInitByRef.ci:91: typVariant: typename(<variant>)
 test/lang.varInitByRef.ci:92: typObject: typename(<object>)
-test/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @026798>)
+test/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @0274b0>)
 test/lang.varInitByRef.ci:96: valueOfVar: variant({int64: 42})
 test/lang.varInitByRef.ci:97: valueOfTyp: typename(<int64>)
 test/lang.varInitByRef.ci:99: typeOfValue: typename(<int64>)
@@ -11755,13 +12253,13 @@ test/lang.varInitByVal.ci:7: globalCounter: int64(41)
 test/lang.varInitByVal.ci:9: globalInitCounter1: int64(34)
 test/lang.varInitByVal.ci:33: Record.global: int32(35)
 test/lang.varInitByVal.ci:38: Record.globalConstant: int32(36)
-test/lang.varInitByVal.ci:41: Record.staticMethod: function(<staticMethod @0267c0>)
-test/lang.varInitByVal.ci:46: Record.forwardMethod: function(<forwardMethod @0267d8>)
-test/lang.varInitByVal.ci:52: Record.virtualMethod: function(<virtualMethod @0267d0>)
-test/lang.varInitByVal.ci:64: Record.forwardMethod: function(<forwardMethod @0267d8>)
+test/lang.varInitByVal.ci:41: Record.staticMethod: function(<staticMethod @0274d8>)
+test/lang.varInitByVal.ci:46: Record.forwardMethod: function(<forwardMethod @0274f0>)
+test/lang.varInitByVal.ci:52: Record.virtualMethod: function(<virtualMethod @0274e8>)
+test/lang.varInitByVal.ci:64: Record.forwardMethod: function(<forwardMethod @0274f0>)
 test/lang.varInitByVal.ci:12: Record: typename(<Record>)
 test/lang.varInitByVal.ci:69: globalInitCounter2: int64(37)
-test/lang.varInitByVal.ci:71: initMethod: function(<initMethod @026818>)
+test/lang.varInitByVal.ci:71: initMethod: function(<initMethod @027530>)
 test/lang.varInitByVal.ci:89: localNoInit: int64(0)
 test/lang.varInitByVal.ci:90: localInitGlobal: int64(40)
 test/lang.varInitByVal.ci:91: localInitCounter: int64(41)
@@ -11774,13 +12272,21 @@ test/lang.varInitByVal.ci:100: localInitMethodRecordGlobal: int64(39)
 test/lang.varInitByVal.ci:102: localObject: Record({
 	member: int32(39),
 	memberInit: int32(0),
-	memberConstant: int32(157732),
+	memberConstant: int32(161084),
 	memberConstantInit: int32(1),
 	virtualMethod: function(<typename+31 @000027>),
 	abstractMethod: function(null),
-	methodReference: function(<.main+4281 @027921>)
+	methodReference: function(<.main+5569 @028b41>)
 })
-test/lang.varInitByVal.ci:103: globalObject: Record(<globalObject @026848>)
+test/lang.varInitByVal.ci:103: globalObject: Record({
+	member: int32(0),
+	memberInit: int32(0),
+	memberConstant: int32(0),
+	memberConstantInit: int32(0),
+	virtualMethod: function(null),
+	abstractMethod: function(null),
+	methodReference: function(null)
+})
 test/lang.varInitByVal.ci:105: localStaticCallStaticMethod: int32(7)
 test/lang.varInitByVal.ci:106: localStaticCallForwardMethod: int32(12)
 test/stdc.nfcNumber.ci:3: pi64: float64(3.141593)
@@ -11820,18 +12326,18 @@ test/stdc.nfcNumber.ci:50: expF32: float32(2.718282)
 test/stdc.nfcNumber.ci:51: powF32: float32(3.141593)
 test/stdc.nfcNumber.ci:52: sqrtF32: float32(3.141593)
 test/stdc.nfcNumber.ci:53: atanF32: float32(1.262627)
-test/stdc.nfcMemory.ci:7: p1: pointer({})
-test/stdc.nfcMemory.ci:8: p2: pointer({})
-test/stdc.nfcMemory.ci:9: p3: pointer({})
-test/stdc.nfcMemory.ci:10: p4: pointer({})
+test/stdc.nfcMemory.ci:7: p1: pointer(<@028ef8>)
+test/stdc.nfcMemory.ci:8: p2: pointer(<@029308>)
+test/stdc.nfcMemory.ci:9: p3: pointer(<@029368>)
+test/stdc.nfcMemory.ci:10: p4: pointer(<@029418>)
 test/stdc.nfcMemory.ci:23: val1: int64(0)
 test/stdc.nfcMemory.ci:24: val2: int64(42)
 
 ---------- Memory layout:
-memory[meta] @000000; size: 157512(153.8 Kb)
-memory[code] @026868; size: 5203(5.1 Kb)
-memory[heap] @027cbb; size: 328295(320.6 Kb)
-memory[stack] @04ff5c; size: 163782(159.9 Kb)
+memory[meta] @000000; size: 160808(157.0 Kb)
+memory[code] @027580; size: 6491(6.3 Kb)
+memory[heap] @028edb; size: 385095(376.1 Kb)
+memory[stack] @059f5c; size: 184262(179.9 Kb)
 
 ---------- Memory allocations:
-memory[free] @027cd8; size: 328240(320.5 Kb)
+memory[free] @028ef8; size: 385040(376.0 Kb)

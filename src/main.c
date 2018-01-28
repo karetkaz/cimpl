@@ -12,7 +12,7 @@
 #include <time.h>
 
 // default values
-static char mem[640 << 10];         // 640 Kb memory compiler + runtime
+static char mem[720 << 10];         // 720 Kb memory compiler + runtime
 const char *STDLIB = "stdlib.ci";   // standard library
 
 static inline int strEquals(const char *str, const char *with) {
@@ -645,7 +645,7 @@ static void jsonPostProfile(dbgContext ctx) {
 
 	printFmt(out, esc, JSON_OBJ_ARR_START, indent + 1, JSON_KEY_FUNC);
 	for (int i = 0; i < nFunc; ++i, dbg++) {
-		symn sym = dbg->decl;
+		symn sym = dbg->func;
 		if (dbg->hits == 0) {
 			// skip functions not invoked
 			continue;
@@ -669,7 +669,7 @@ static void jsonPostProfile(dbgContext ctx) {
 	dbg = (dbgn) ctx->statements.ptr;
 	for (int i = 0; i < nStmt; ++i, dbg++) {
 		size_t symOffs = 0;
-		symn sym = dbg->decl;
+		symn sym = dbg->func;
 		if (dbg->hits == 0) {
 			continue;
 		}
@@ -888,7 +888,7 @@ static void textPostProfile(userContext usr) {
 
 		printFmt(out, esc, "%?sProfile: functions\n", prefix);
 		for (int i = 0; i < nFunc; ++i, fun++) {
-			symn sym = fun->decl;
+			symn sym = fun->func;
 			if (fun->hits == 0) {
 				continue;
 			}
@@ -910,7 +910,7 @@ static void textPostProfile(userContext usr) {
 		fun = (dbgn) rt->dbg->statements.ptr;
 		for (int i = 0; i < nStmt; ++i, fun++) {
 			size_t symOffs = 0;
-			symn sym = fun->decl;
+			symn sym = fun->func;
 			if (fun->hits == 0) {
 				continue;
 			}
@@ -939,7 +939,7 @@ static void textPostProfile(userContext usr) {
 			printFmt(out, esc, "%?sProfile: functions not executed\n", prefix);
 			fun = (dbgn) dbg->functions.ptr;
 			for (int i = 0; i < nFunc; ++i, fun++) {
-				symn sym = fun->decl;
+				symn sym = fun->func;
 				if (fun->hits != 0) {
 					continue;
 				}
@@ -952,7 +952,7 @@ static void textPostProfile(userContext usr) {
 			fun = (dbgn) rt->dbg->statements.ptr;
 			for (int i = 0; i < nStmt; ++i, fun++) {
 				size_t symOffs = 0;
-				symn sym = fun->decl;
+				symn sym = fun->func;
 				if (fun->hits != 0) {
 					continue;
 				}
@@ -2063,6 +2063,7 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
+	rt->foldCasts = settings.foldConst != 0;
 	rt->foldConst = settings.foldConst != 0;
 	rt->foldInstr = settings.fastInstr != 0;
 	rt->fastMemory = settings.fastInstr != 0;

@@ -1169,9 +1169,9 @@ void dumpApi(rtContext rt, userContext ctx, void customPrinter(userContext, symn
 
 void logFILE(rtContext rt, FILE *file) {
 	// close previous opened file
-	if (rt->logClose != 0) {
+	if (rt->closeLog != 0) {
 		fclose(rt->logFile);
-		rt->logClose = 0;
+		rt->closeLog = 0;
 	}
 	rt->logFile = file;
 }
@@ -1186,7 +1186,7 @@ int logFile(rtContext rt, char *file, int append) {
 		if (rt->logFile == NULL) {
 			return 0;
 		}
-		rt->logClose = 1;
+		rt->closeLog = 1;
 	}
 	return 1;
 }
