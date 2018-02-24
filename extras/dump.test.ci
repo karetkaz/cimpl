@@ -461,7 +461,7 @@ variant: typename {
 function: typename {
 .kind: static const typename(ref)
 .base: `typename`
-.size: 8
+.size: 4
 .name: 'function'
 }
 object: typename {
@@ -1608,16 +1608,16 @@ halt(): void: function {
 .param .result: void (size: 0 -> inline)
 .value: nfc(0)
 }
-CLOCKS_PER_SEC: int32 {
-.kind: i32
-.base: `int32`
+CLOCKS_PER_SEC: int64 {
+.kind: i64
+.base: `int64`
 .size: 0
 .name: 'CLOCKS_PER_SEC'
 .value: 1000000
 }
-RAND_MAX: int32 {
-.kind: i32
-.base: `int32`
+RAND_MAX: int64 {
+.kind: i64
+.base: `int64`
 .size: 0
 .name: 'RAND_MAX'
 .value: 2147483647
@@ -1627,14 +1627,14 @@ raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], 
 .base: `function`
 .size: 0
 .name: 'raise'
-.field abort: int32 (size: 0 -> static i32)
-.field error: int32 (size: 0 -> static i32)
-.field warn: int32 (size: 0 -> static i32)
-.field info: int32 (size: 0 -> static i32)
-.field debug: int32 (size: 0 -> static i32)
-.field verbose: int32 (size: 0 -> static i32)
-.field noTrace: int32 (size: 0 -> static i32)
-.field defTrace: int32 (size: 0 -> static i32)
+.field abort: int64 (size: 0 -> static i64)
+.field error: int64 (size: 0 -> static i64)
+.field warn: int64 (size: 0 -> static i64)
+.field info: int64 (size: 0 -> static i64)
+.field debug: int64 (size: 0 -> static i64)
+.field verbose: int64 (size: 0 -> static i64)
+.field noTrace: int64 (size: 0 -> static i64)
+.field defTrace: int64 (size: 0 -> static i64)
 .param .result: void (size: 0 -> inline)
 .param file: char[*] (size: 4 -> variable(ref))
 .param line: int32 (size: 4 -> variable(i32))
@@ -1644,65 +1644,65 @@ raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], 
 .param inspect: variant (size: 8 -> variable(var))
 .value: nfc(5)
 }
-raise.abort: int32 {
-.kind: static i32
-.base: `int32`
+raise.abort: int64 {
+.kind: static i64
+.base: `int64`
 .size: 0
 .name: 'abort'
 .owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 .value: -1
 }
-raise.error: int32 {
-.kind: static i32
-.base: `int32`
+raise.error: int64 {
+.kind: static i64
+.base: `int64`
 .size: 0
 .name: 'error'
 .owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 .value: 0
 }
-raise.warn: int32 {
-.kind: static i32
-.base: `int32`
+raise.warn: int64 {
+.kind: static i64
+.base: `int64`
 .size: 0
 .name: 'warn'
 .owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 .value: 1
 }
-raise.info: int32 {
-.kind: static i32
-.base: `int32`
+raise.info: int64 {
+.kind: static i64
+.base: `int64`
 .size: 0
 .name: 'info'
 .owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 .value: 2
 }
-raise.debug: int32 {
-.kind: static i32
-.base: `int32`
+raise.debug: int64 {
+.kind: static i64
+.base: `int64`
 .size: 0
 .name: 'debug'
 .owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 .value: 3
 }
-raise.verbose: int32 {
-.kind: static i32
-.base: `int32`
+raise.verbose: int64 {
+.kind: static i64
+.base: `int64`
 .size: 0
 .name: 'verbose'
 .owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 .value: 4
 }
-raise.noTrace: int32 {
-.kind: static i32
-.base: `int32`
+raise.noTrace: int64 {
+.kind: static i64
+.base: `int64`
 .size: 0
 .name: 'noTrace'
 .owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
 .value: 0
 }
-raise.defTrace: int32 {
-.kind: static i32
-.base: `int32`
+raise.defTrace: int64 {
+.kind: static i64
+.base: `int64`
 .size: 0
 .name: 'defTrace'
 .owner: raise(file: char[*], line: int32, trace: int32, level: int32, message: char[*], inspect: variant): void
@@ -3112,7 +3112,7 @@ emitSlice: char[] {
 .name: 'emitSlice'
 .file: 'test/lang.inlineEmit.ci'
 .line: 23
-.value: emit(int32(3), "string")
+.value: emit(int32(3), pointer("string"))
 }
 sizeofVoid: int32 {
 .kind: variable(i32)
@@ -7658,7 +7658,7 @@ val2: int64 {
 .field float64: typename (size: 8 -> static const typename(f64))
 .field pointer: typename (size: 4 -> static const typename(ref))
 .field variant: typename (size: 8 -> static const typename(var))
-.field function: typename (size: 8 -> static const typename(ref))
+.field function: typename (size: 4 -> static const typename(ref))
 .field object: typename (size: 4 -> static const typename(ref))
 .field null: pointer (size: 0 -> static const inline)
 .field true: bool (size: 0 -> static const inline)
@@ -7670,8 +7670,8 @@ val2: int64 {
 .field .cstr: char (size: 4 -> static const typename(arr))
 .field emit: function (size: 0 -> static const typename(void))
 .field halt: function (size: 0 -> static const inline)
-.field CLOCKS_PER_SEC: int32 (size: 0 -> i32)
-.field RAND_MAX: int32 (size: 0 -> i32)
+.field CLOCKS_PER_SEC: int64 (size: 0 -> i64)
+.field RAND_MAX: int64 (size: 0 -> i64)
 .field raise: function (size: 0 -> static const inline)
 .field tryExec: function (size: 0 -> static const inline)
 .field System: void (size: 0 -> static const typename(void))
@@ -8429,7 +8429,7 @@ val2: int64 {
 		emitFloatAsInt2: int64 := floatAsInt32(500);
 		emitFloatAsInt3: int32 := floatAsInt64(500);
 		emitFloatAsInt4: int64 := floatAsInt64(500);
-		emitSlice: char[] := emit(int32(3), "string");
+		emitSlice: char[] := emit(int32(3), pointer("string"));
 		sizeofVoid: int32 := sizeof(void);
 		sizeofBool: int32 := sizeof(bool);
 		sizeofChar: int32 := sizeof(char);
@@ -9507,7 +9507,7 @@ val2: int64 {
 	<.main+?>:    i64.2i32
 	test/lang.inlineEmit.ci:20: (9 bytes): emitFloatAsInt4: int64 := floatAsInt64(500)
 	<.main+?>:    load.f64 500.000000
-	test/lang.inlineEmit.ci:23: (10 bytes): emitSlice: char[] := emit(int32(3), "string")
+	test/lang.inlineEmit.ci:23: (10 bytes): emitSlice: char[] := emit(int32(3), pointer("string"))
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.ref .?????? ;"string"
 	test/lang.reflection.ci:3: (4 bytes): sizeofVoid: int32 := sizeof(void)
@@ -11853,7 +11853,7 @@ test/lang.inlineEmit.ci:17: emitFloatAsInt1: int32(1140457472)
 test/lang.inlineEmit.ci:18: emitFloatAsInt2: int64(1140457472)
 test/lang.inlineEmit.ci:19: emitFloatAsInt3: int32(0)
 test/lang.inlineEmit.ci:20: emitFloatAsInt4: int64(4647503709213818880)
-test/lang.inlineEmit.ci:23: emitSlice: char[]([3] {'s', 't', 'r'})
+test/lang.inlineEmit.ci:23: emitSlice: char[]("string")
 test/lang.reflection.ci:3: sizeofVoid: int32(0)
 test/lang.reflection.ci:4: sizeofBool: int32(1)
 test/lang.reflection.ci:5: sizeofChar: int32(1)
@@ -11870,7 +11870,7 @@ test/lang.reflection.ci:15: sizeofFloat64: int32(8)
 test/lang.reflection.ci:16: sizeofPointer: int32(4)
 test/lang.reflection.ci:17: sizeofVariant: int32(8)
 test/lang.reflection.ci:18: sizeofTypename: int32(136)
-test/lang.reflection.ci:19: sizeofFunction: int32(8)
+test/lang.reflection.ci:19: sizeofFunction: int32(4)
 test/lang.reflection.ci:20: sizeofObject: int32(4)
 test/lang.reflection.ci:22: RecordSizeof: typename(<RecordSizeof>)
 test/lang.reflection.ci:26: RecordSizeofExt: typename(<RecordSizeofExt>)
@@ -11892,17 +11892,17 @@ test/lang.reflection.ci:46: sizeOfBase1: int32(4)
 test/lang.reflection.ci:48: typeofBase2: typename(<typename>)
 test/lang.reflection.ci:49: offsetOfBase2: int32(8)
 test/lang.reflection.ci:50: sizeOfBase2: int32(136)
-test/lang.function.ci:5: empty: function(<empty @027428>)
-test/lang.function.ci:8: funAdd: function(<funAdd @027430>)
+test/lang.function.ci:5: empty: function(<empty @027070>)
+test/lang.function.ci:8: funAdd: function(<funAdd @027078>)
 test/lang.function.ci:13: funAddResult: int32(9)
-test/lang.function.ci:16: funAddRef: function(<funAdd @027430>)
+test/lang.function.ci:16: funAddRef: function(<funAdd @027078>)
 test/lang.function.ci:19: funAddRefResult: int32(10)
-test/lang.function.ci:22: funMul: function(<funMul @027438>)
+test/lang.function.ci:22: funMul: function(<funMul @027080>)
 test/lang.function.ci:25: funMulResult: int32(12)
-test/lang.function.ci:28: funMulRef: function(<funMul @027438>)
+test/lang.function.ci:28: funMulRef: function(<funMul @027080>)
 test/lang.function.ci:31: funMulRefResult: int32(14)
-test/lang.function.ci:34: funMul: function(<funMul @027438>)
-test/lang.function.ci:39: fib: function(<fib @027440>)
+test/lang.function.ci:34: funMul: function(<funMul @027080>)
+test/lang.function.ci:39: fib: function(<fib @027088>)
 test/lang.function.ci:47: fibonacci_13: uint32(233)
 test/lang.useOperator.ci:5: shift: int32(2)
 test/lang.useOperator.ci:7: boolA: bool(1)
@@ -12151,25 +12151,25 @@ test/lang.useOperator.ci:283: ptrA: pointer(null)
 test/lang.useOperator.ci:284: ptrB: pointer(<@0b3d78>)
 test/lang.useOperator.ci:299: ptrCeq: bool(0)
 test/lang.useOperator.ci:300: ptrCne: bool(1)
-test/lang.varInitArray.ci:8: arrFixedNoInit: int64[7]([7] {42, 43, 44, 45, 46, 47, 48})
+test/lang.varInitArray.ci:8: arrFixedNoInit: int64[7](<@0b38cc>[7] {42, 43, 44, 45, 46, 47, 48})
 test/lang.varInitArray.ci:9: arrSliceNoInit: int64[](null)
 test/lang.varInitArray.ci:10: arrArrayNoInit: int64[*](null)
 test/lang.varInitArray.ci:18: arrSliceInitNull: int64[](null)
 test/lang.varInitArray.ci:19: arrArrayInitNull: int64[*](null)
-test/lang.varInitArray.ci:22: arrSliceInitFixed: int64[]([7] {42, 43, 44, 45, 46, 47, 48})
-test/lang.varInitArray.ci:23: arrArrayInitFixed: int64[*](<@0b38cc>)
-test/lang.varInitArray.ci:26: arrSliceInitSlice: int64[]([7] {42, 43, 44, 45, 46, 47, 48})
-test/lang.varInitArray.ci:27: arrArrayInitSlice: int64[*](<@0b38cc>)
-test/lang.varInitArray.ci:31: arrArrayInitPtr: int64[*](<@0b38cc>)
-test/lang.varInitArray.ci:42: arrSliceInitString: char[]([6] {'s', 't', 'r', 'i', 'n', 'g'})
+test/lang.varInitArray.ci:22: arrSliceInitFixed: int64[](<@0b38cc>[7] {42, 43, 44, 45, 46, 47, 48})
+test/lang.varInitArray.ci:23: arrArrayInitFixed: int64[*](<@0b38cc>[0] {})
+test/lang.varInitArray.ci:26: arrSliceInitSlice: int64[](<@0b38cc>[7] {42, 43, 44, 45, 46, 47, 48})
+test/lang.varInitArray.ci:27: arrArrayInitSlice: int64[*](<@0b38cc>[0] {})
+test/lang.varInitArray.ci:31: arrArrayInitPtr: int64[*](<@0b38cc>[0] {})
+test/lang.varInitArray.ci:42: arrSliceInitString: char[]("string")
 test/lang.varInitArray.ci:43: arrArrayInitString: char[*]("string")
-test/lang.varInitArray.ci:53: lenSlice: function(<lenSlice @027478>)
-test/lang.varInitArray.ci:54: nthSlice: function(<nthSlice @027480>)
-test/lang.varInitArray.ci:55: nthArray: function(<nthArray @027490>)
-test/lang.varInitArray.ci:56: nthFixed: function(<nthFixed @0274a0>)
+test/lang.varInitArray.ci:53: lenSlice: function(<lenSlice @0270c0>)
+test/lang.varInitArray.ci:54: nthSlice: function(<nthSlice @0270c8>)
+test/lang.varInitArray.ci:55: nthArray: function(<nthArray @0270d8>)
+test/lang.varInitArray.ci:56: nthFixed: function(<nthFixed @0270e8>)
 test/lang.varInitByRef.ci:7: value: int64(42)
 test/lang.varInitByRef.ci:8: valueRef: int64(42)
-test/lang.varInitByRef.ci:9: valuePtr: pointer(<value @0274b0>)
+test/lang.varInitByRef.ci:9: valuePtr: pointer(<value @0270f8>)
 test/lang.varInitByRef.ci:10: valueVar: variant({int64: 42})
 test/lang.varInitByRef.ci:12: fromRef: int64(42)
 test/lang.varInitByRef.ci:13: fromPtr: int64(42)
@@ -12186,7 +12186,7 @@ test/lang.varInitByRef.ci:25: typeTyp: typename(<int64>)
 test/lang.varInitByRef.ci:27: local: int64(42)
 test/lang.varInitByRef.ci:28: copyVal: int64(42)
 test/lang.varInitByRef.ci:29: copyRef: int64(42)
-test/lang.varInitByRef.ci:30: copyPtr: pointer(<value @0274b0>)
+test/lang.varInitByRef.ci:30: copyPtr: pointer(<value @0270f8>)
 test/lang.varInitByRef.ci:31: copyVar: variant({int64: 42})
 test/lang.varInitByRef.ci:32: copyTyp: typename(<int64>)
 test/lang.varInitByRef.ci:35: ptrVoid: pointer(<void @0000a0>)
@@ -12243,7 +12243,7 @@ test/lang.varInitByRef.ci:89: typFunction: typename(<function>)
 test/lang.varInitByRef.ci:90: typPointer: typename(<pointer>)
 test/lang.varInitByRef.ci:91: typVariant: typename(<variant>)
 test/lang.varInitByRef.ci:92: typObject: typename(<object>)
-test/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @0274b0>)
+test/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @0270f8>)
 test/lang.varInitByRef.ci:96: valueOfVar: variant({int64: 42})
 test/lang.varInitByRef.ci:97: valueOfTyp: typename(<int64>)
 test/lang.varInitByRef.ci:99: typeOfValue: typename(<int64>)
@@ -12253,13 +12253,13 @@ test/lang.varInitByVal.ci:7: globalCounter: int64(41)
 test/lang.varInitByVal.ci:9: globalInitCounter1: int64(34)
 test/lang.varInitByVal.ci:33: Record.global: int32(35)
 test/lang.varInitByVal.ci:38: Record.globalConstant: int32(36)
-test/lang.varInitByVal.ci:41: Record.staticMethod: function(<staticMethod @0274d8>)
-test/lang.varInitByVal.ci:46: Record.forwardMethod: function(<forwardMethod @0274f0>)
-test/lang.varInitByVal.ci:52: Record.virtualMethod: function(<virtualMethod @0274e8>)
-test/lang.varInitByVal.ci:64: Record.forwardMethod: function(<forwardMethod @0274f0>)
+test/lang.varInitByVal.ci:41: Record.staticMethod: function(<Record.staticMethod @027120>)
+test/lang.varInitByVal.ci:46: Record.forwardMethod: function(<Record.forwardMethod @027138>)
+test/lang.varInitByVal.ci:52: Record.virtualMethod: function(<Record.virtualMethod @027130>)
+test/lang.varInitByVal.ci:64: Record.forwardMethod: function(<Record.forwardMethod @027138>)
 test/lang.varInitByVal.ci:12: Record: typename(<Record>)
 test/lang.varInitByVal.ci:69: globalInitCounter2: int64(37)
-test/lang.varInitByVal.ci:71: initMethod: function(<initMethod @027530>)
+test/lang.varInitByVal.ci:71: initMethod: function(<initMethod @027178>)
 test/lang.varInitByVal.ci:89: localNoInit: int64(0)
 test/lang.varInitByVal.ci:90: localInitGlobal: int64(40)
 test/lang.varInitByVal.ci:91: localInitCounter: int64(41)
@@ -12269,16 +12269,16 @@ test/lang.varInitByVal.ci:95: globalInitCounter: int64(40)
 test/lang.varInitByVal.ci:96: globalInitGlobal: int64(40)
 test/lang.varInitByVal.ci:99: localInitMethodGlobal: int64(38)
 test/lang.varInitByVal.ci:100: localInitMethodRecordGlobal: int64(39)
-test/lang.varInitByVal.ci:102: localObject: Record({
+test/lang.varInitByVal.ci:102: localObject: Record(<@0b368c>{
 	member: int32(39),
 	memberInit: int32(0),
-	memberConstant: int32(161084),
+	memberConstant: int32(160132),
 	memberConstantInit: int32(1),
 	virtualMethod: function(<typename+31 @000027>),
 	abstractMethod: function(null),
-	methodReference: function(<.main+5569 @028b41>)
+	methodReference: function(<.main+5569 @028789>)
 })
-test/lang.varInitByVal.ci:103: globalObject: Record({
+test/lang.varInitByVal.ci:103: globalObject: Record(<globalObject @0271a8>{
 	member: int32(0),
 	memberInit: int32(0),
 	memberConstant: int32(0),
@@ -12326,18 +12326,18 @@ test/stdc.nfcNumber.ci:50: expF32: float32(2.718282)
 test/stdc.nfcNumber.ci:51: powF32: float32(3.141593)
 test/stdc.nfcNumber.ci:52: sqrtF32: float32(3.141593)
 test/stdc.nfcNumber.ci:53: atanF32: float32(1.262627)
-test/stdc.nfcMemory.ci:7: p1: pointer(<@028ef8>)
-test/stdc.nfcMemory.ci:8: p2: pointer(<@029308>)
-test/stdc.nfcMemory.ci:9: p3: pointer(<@029368>)
-test/stdc.nfcMemory.ci:10: p4: pointer(<@029418>)
+test/stdc.nfcMemory.ci:7: p1: pointer(<@028b38>)
+test/stdc.nfcMemory.ci:8: p2: pointer(<@028f48>)
+test/stdc.nfcMemory.ci:9: p3: pointer(<@028fa8>)
+test/stdc.nfcMemory.ci:10: p4: pointer(<@029058>)
 test/stdc.nfcMemory.ci:23: val1: int64(0)
 test/stdc.nfcMemory.ci:24: val2: int64(42)
 
 ---------- Memory layout:
-memory[meta] @000000; size: 160808(157.0 Kb)
-memory[code] @027580; size: 6491(6.3 Kb)
-memory[heap] @028edb; size: 385095(376.1 Kb)
+memory[meta] @000000; size: 159856(156.1 Kb)
+memory[code] @0271c8; size: 6491(6.3 Kb)
+memory[heap] @028b23; size: 386047(377.0 Kb)
 memory[stack] @059f5c; size: 184262(179.9 Kb)
 
 ---------- Memory allocations:
-memory[free] @028ef8; size: 385040(376.0 Kb)
+memory[free] @028b38; size: 386000(377.0 Kb)

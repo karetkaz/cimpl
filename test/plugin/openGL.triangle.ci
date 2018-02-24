@@ -23,11 +23,9 @@ void mouse(int btn, int x, int y) {
 		return;
 	}
 
-	vertex v& = vertices[idx];
-	v.x = -1.f + x / (.5f * maxx);
-	v.y = 1.f - y / (.5f * maxy);
+	vertices[idx].x = -1.f + x / (.5f * maxx);
+	vertices[idx].y = 1.f - y / (.5f * maxy);
 	glut.postRedisplay();
-	//trace("vertex", v);
 }
 
 void keyboard(int key) {
@@ -42,23 +40,23 @@ void keyboard(int key) {
 		char value[65536];
 		// gl.Vendor
 		gl.getString(gl.Vendor, value);
-		trace("gl.Vendor", value);
+		debug("gl.Vendor", value);
 
 		// gl.Renderer
 		gl.getString(gl.Renderer, value);
-		trace("gl.Renderer", value);
+		debug("gl.Renderer", value);
 
 		// gl.Version
 		gl.getString(gl.Version, value);
-		trace("gl.Version", value);
+		debug("gl.Version", value);
 
 		// gl.ShLVersion
 		gl.getString(gl.ShLVersion, value);
-		trace("gl.ShLVersion", value);
+		debug("gl.ShLVersion", value);
 
 		// gl.Extensions
 		gl.getString(gl.Extensions, value);
-		trace("gl.Extensions", value);
+		debug("gl.Extensions", value);
 	}
 }
 
@@ -77,12 +75,12 @@ void display() {
 
 	gl.begin(gl.Triangles);
 	for (int i = 0; i < vertices.length; i += 1) {
-		vertex v = vertices[i];
-		float r = float32(v.c >> 16 & 0xff) / 255f;
-		float g = float32(v.c >> 8 & 0xff) / 255f;
-		float b = float32(v.c >> 0 & 0xff) / 255f;
+		vertex vtx& = vertices[i];
+		float r = float32(vtx.c >> 16 & 0xff) / 255f;
+		float g = float32(vtx.c >> 8 & 0xff) / 255f;
+		float b = float32(vtx.c >> 0 & 0xff) / 255f;
 		gl.color(r, g, b, 1);
-		gl.vertex(v.x, v.y, 0, 1);
+		gl.vertex(vtx.x, vtx.y, 0, 1);
 	}
 	gl.end();
 	glut.swapBuffers();

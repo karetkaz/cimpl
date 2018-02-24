@@ -53,28 +53,20 @@ static inline astn argNode(ccContext cc, astn lhs, astn rhs) {
 }
 
 /// Add length property to arrays.
-static inline symn addLength(ccContext cc, symn sym, astn init) {
-	/*
-	 * dynamic array size kind: ATTR_const | KIND_var
-	 *  static array size kind: ATTR_const | ATTR_stat | KIND_def
-	 *     using static we get the warning accessing static member through instance.
-	 */
-	ccKind kind;
-	symn newField, oldFields = sym->fields;
+static inline void addLength(ccContext cc, symn sym, astn init) {
+	dieif(sym->fields != NULL, ERR_INTERNAL_ERROR);
 
-	if (init != NULL) {
-		kind = ATTR_cnst | ATTR_stat | KIND_def;
-	}
-	else {
-		kind = ATTR_cnst | KIND_var;
+	if (init == NULL) {
+		// add dynamic length field to slices
+		sym->fields = cc->length_ref;
+		return;
 	}
 
+	// add static length to array
 	enter(cc, NULL);
-	newField = install(cc, "length", kind | castOf(cc->type_idx), cc->type_idx->size, cc->type_idx, init);
+	ccKind kind = ATTR_cnst | ATTR_stat | KIND_def | castOf(cc->type_idx);
+	install(cc, "length", kind, cc->type_idx->size, cc->type_idx, init);
 	sym->fields = leave(cc, KIND_def, 0, 0, NULL);
-	newField->offs = offsetOf(vmValue, length);
-	newField->next = oldFields;
-	return newField;
 }
 
 /**
@@ -1320,7 +1312,6 @@ static astn statement_for(ccContext cc, ccKind attr) {
 	}
 
 	if (peekTok(cc, PNCT_cln)) {
-		// TODO: transform foreach to for.
 		// transform `for (iterator i: iterable) ...` to
 		// `for (iterator $it = iterator(iterable), iterator i = $it; $it.next(); i = $it) ...`
 		// transform `for (integer i: iterable) ...` to
@@ -1349,7 +1340,6 @@ static astn statement_for(ccContext cc, ccKind attr) {
 	leave(cc, KIND_def, 0, 0, NULL);
 
 	ast->type = cc->type_vid;
-	(void)attr;
 	return ast;
 }
 
@@ -1674,7 +1664,7 @@ symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 		return NULL;
 	}
 
-	init = declaration(cc, (ccKind) 0, &args);
+	init = declaration(cc, KIND_def, &args);
 
 	if (ccClose(cc) != 0) {
 		error(rt, NULL, 0, ERR_INVALID_DECLARATION, proto);

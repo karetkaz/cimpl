@@ -753,8 +753,21 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
+			if (arg.i64 == 0) {
+				opc = opc_inc;
+				rollbackPc(rt);
+			}
 			if (arg.i64 == 1) {
-				opc = i32_add;
+				ip = lastIp(rt);
+				if (ip->opc == opc_lc32) {
+					arg.i64 = ip->arg.i32;
+					if (arg.i24 == arg.i64) {
+						opc = opc_inc;
+						rollbackPc(rt);
+					}
+				} else {
+					opc = i32_add;
+				}
 			}
 			break;
 
@@ -1120,12 +1133,11 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 
 	switch (opc) {
 		error_opc:
-			error(rt, NULL, 0, ERR_INVALID_INSTRUCTION, ip, rt->vm.pc);
+			// invalid instruction
 			return 0;
 
 		error_stc:
 			// stack underflow
-			error(rt, NULL, 0, ERR_INVALID_INSTRUCTION, ip, rt->vm.pc);
 			return 0;
 
 		#define STOP(__ERR, __CHK, __ERC) if (__CHK) goto __ERR
@@ -1616,13 +1628,17 @@ vmError execute(rtContext rt, int argc, char *argv[], void *extra) {
 	pu->sp = (stkptr)(rt->_end + rt->vm.ss);
 	pu->ip = rt->_mem + rt->vm.pc;
 
-	if ((ssize_t)pu->sp & (vm_size - 1)) {
-		fatal(ERR_INTERNAL_ERROR": invalid stack alignment");
+	if (rt->_beg > rt->_end) {
+		fatal(ERR_INTERNAL_ERROR": memory overrun");
 		return invalidSP;
 	}
-	if ((stkptr)pu->bp > pu->sp) {
+	if (pu->bp > (memptr)pu->sp) {
 		fatal(ERR_INTERNAL_ERROR": invalid stack size");
 		return stackOverflow;
+	}
+	if (pu->sp != padPointer(pu->sp, vm_size)) {
+		fatal(ERR_INTERNAL_ERROR": invalid stack alignment");
+		return invalidSP;
 	}
 
 	(void)argc;
@@ -1878,7 +1894,7 @@ static void printRef(FILE *out, const char **esc, rtContext rt, void* data) {
 	symn sym = rtLookupSym(rt, offs, 0);
 	if (sym != NULL) {
 		size_t rel = offs - sym->offs;
-		printFmt(out, esc, "<%?.T%?+d @%06x>", sym, rel, offs);
+		printFmt(out, esc, "<%?.*T%?+d @%06x>", prSymQual, sym, rel, offs);
 	}
 	else {
 		printFmt(out, esc, "<@%06x>", offs);
@@ -2015,13 +2031,13 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 		}
 	}
 	else if (typCast == CAST_arr) {
-		if (varCast == CAST_arr || varCast == CAST_ref) {
+		if (typ == var || varCast == CAST_val) {
+			// fixed size array or direct reference
+			data = (memptr) val;
+		}
+		else if (varCast == CAST_arr || varCast == CAST_ref) {
 			// follow indirection
 			data = vmPointer(rt, (size_t) val->ref);
-		}
-		else if (varCast == CAST_val) {
-			// fixed size array
-			data = (memptr) val;
 		}
 		else {
 			printFmt(out, esc, "@BadArray");
@@ -2034,58 +2050,47 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 		if (data == NULL) {
 			printFmt(out, esc, "null");
 		}
-		else if (var != typ) {
-			symn len = typ->fields;
-			if (len == NULL) {
-				// interpret `char[*]` as string
-				if (typ->type->format == type_fmt_character) {
-					printFmt(out, esc, "%c", type_fmt_string_chr);
-					printFmt(out, esc ? esc : escapeStr(), type_fmt_string, data);
-					printFmt(out, esc, "%c", type_fmt_string_chr);
-				}
-				else {
-					printRef(out, esc, rt, data);
-				}
-			}
-			else {
-				size_t arrLength;
-				size_t idx, inc = typ->type->size;
-				// array or slice
-				if (isStatic(len)) {
-					arrLength = typ->size / inc;
-				}
-				else {
-					arrLength = val->length;
-				}
-				printFmt(out, esc, "[%d] {", arrLength);
-				for (idx = 0; idx < arrLength; idx += 1) {
-					if (idx > 0) {
-						printFmt(out, esc, ", ");
-					}
-					if (idx >= maxLogItems) {
-						printFmt(out, esc, "...");
-						break;
-					}
-					printVal(out, esc, rt, typ->type, (vmValue *) (data + idx * inc), mode & ~(prSymQual | prSymType), -indent);
-				}
-				printFmt(out, esc, "}");
-			}
+		else if (typ->type->format == type_fmt_character) {
+			// interpret `char[]`, `char[*]` and `char[n]` as string
+			printFmt(out, esc, "%c", type_fmt_string_chr);
+			printFmt(out, esc ? esc : escapeStr(), type_fmt_string, data);
+			printFmt(out, esc, "%c", type_fmt_string_chr);
 		}
 		else {
-			// interpret `char[]`, `char[*]` and `char[n]` as string
-			if (typ->type->format == type_fmt_character) {
-				printFmt(out, esc, "%c", type_fmt_string_chr);
-				printFmt(out, esc ? esc : escapeStr(), type_fmt_string, val);
-				printFmt(out, esc, "%c", type_fmt_string_chr);
+			size_t length;
+			size_t inc = typ->type->size;
+			symn lenField = typ->fields;
+			if (lenField == NULL) {
+				// pointer
+				length = 0;
+			}
+			else if (isStatic(lenField)) {
+				// fixed size array
+				length = typ->size / inc;
 			}
 			else {
-				printRef(out, esc, rt, data);
+				// dinamic size array
+				length = val->length;
 			}
+			printRef(out, esc, rt, data);
+			printFmt(out, esc, "[%d] {", length);
+			for (size_t idx = 0; idx < length; idx += 1) {
+				if (idx > 0) {
+					printFmt(out, esc, ", ");
+				}
+				if (idx >= maxLogItems) {
+					printFmt(out, esc, "...");
+					break;
+				}
+				printVal(out, esc, rt, typ->type, (vmValue *) (data + idx * inc), mode & ~(prSymQual | prSymType), -indent);
+			}
+			printFmt(out, esc, "}");
 		}
 	}
 	else {
 		// typename, function, pointer, etc (without format option)
 		int fields = 0;
+		printRef(out, esc, rt, data);
 		if (typ->fields != NULL) {
 			for (symn sym = typ->fields; sym; sym = sym->next) {
 				if (isStatic(sym)) {
@@ -2112,9 +2117,6 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 			if (fields > 0) {
 				printFmt(out, esc, "\n%I}", indent);
 			}
-		}
-		if (fields == 0) {
-			printRef(out, esc, rt, data);
 		}
 	}
 

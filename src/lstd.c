@@ -356,7 +356,7 @@ static vmError sysTryExec(nfcContext ctx) {
 			*(int*)&dbg->checked = oldValue;
 		}
 		else {
-			result = invoke(rt, action, NULL, &cbArg, NULL);
+			result = invoke(rt, action, NULL, &cbArg, ctx->extra);
 		}
 		reti32(ctx, result);
 	}

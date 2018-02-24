@@ -525,8 +525,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				return NULL;
 			}
 			if (isVariable(loc)) {
-				loc = loc->type;
-				dieif(loc != lType, ERR_INTERNAL_ERROR);
+				loc = lType;
 			}
 			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 

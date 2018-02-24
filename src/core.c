@@ -117,12 +117,14 @@ rtValue nfcReadArg(nfcContext nfc, size_t offs) {
 		case CAST_i32:
 		case CAST_u32:
 		case CAST_f32:
-			result.i64 = value->i32;
+			// copy 32 bits
+			result.i32 = value->i32;
 			break;
 
 		case CAST_i64:
 		case CAST_u64:
 		case CAST_f64:
+			// copy 64 bits
 			result.i64 = value->i64;
 			break;
 
@@ -141,7 +143,7 @@ rtValue nfcReadArg(nfcContext nfc, size_t offs) {
 			break;
 
 		case CAST_val:
-			if (nfc->param->size > sizeof(rtValue)) {
+			if (nfc->param->size > sizeof(result.i64)) {
 				fatal(ERR_UNIMPLEMENTED_FEATURE);
 				return result;
 			}
@@ -426,7 +428,7 @@ symn ccDefInt(ccContext cc, const char *name, int64_t value) {
 		return NULL;
 	}
 	name = mapstr(cc, name, -1, -1);
-	return install(cc, name, KIND_def | CAST_i32, 0, cc->type_i32, intNode(cc, value));
+	return install(cc, name, KIND_def | CAST_i64, 0, cc->type_i64, intNode(cc, value));
 }
 
 symn ccDefFlt(ccContext cc, const char *name, double value) {
@@ -563,7 +565,7 @@ static void install_type(ccContext cc, ccInstall mode) {
 	if (mode & install_var) {
 		type_var = install(cc, "variant", ATTR_stat | ATTR_cnst | KIND_typ | CAST_var, 2 * sizeof(vmOffs), type_rec, NULL);
 	}
-	symn type_fun = install(cc, "function", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 2 * sizeof(vmOffs), type_rec, NULL);
+	symn type_fun = install(cc, "function", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * sizeof(vmOffs), type_rec, NULL);
 	if (mode & install_obj) {
 		type_obj = install(cc,  "object", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * sizeof(vmOffs), type_rec, NULL);
 	}
@@ -619,7 +621,13 @@ static void install_type(ccContext cc, ccInstall mode) {
 	cc->false_ref = install(cc, "false", ATTR_stat | ATTR_cnst | KIND_def, 0, type_bol, intNode(cc, 0));  // 0 != 0
 	cc->false_ref->init->type = type_bol;
 
-	// aliases.
+	enter(cc, NULL);
+	cc->length_ref = install(cc, "length", ATTR_cnst | KIND_var, cc->type_idx->size, cc->type_idx, NULL);
+	leave(cc, KIND_typ, 0, 0, NULL);
+	cc->length_ref->offs = offsetOf(vmValue, length);
+	cc->length_ref->next = NULL;
+
+	// aliases
 	install(cc, "int", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, cc->type_int));
 	install(cc, "byte", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_u08));
 	install(cc, "float", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_f32));

@@ -22,7 +22,7 @@ struct symNode {
 	symn	fields;		// all fields: static + non static
 	symn	params;		// function parameters, return value is the first parameter.
 
-	ccKind	kind;		// KIND_def / KIND_typ / KIND_var / KIND_fun + ATTR_xxx + CAST_xxx
+	ccKind	kind;		// KIND_def / KIND_typ / KIND_fun / KIND_var + ATTR_xxx + CAST_xxx
 
 	// TODO: merge scope and global attributes
 	symn	scope;		// global variables and functions / while_compiling variables of the block in reverse order

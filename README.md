@@ -8,8 +8,12 @@ implementation under refactoring.
 
 [Language](extras/Reference/Language.md)
 
-[Library](extras/Reference/Library.md)
+[Execution](extras/Reference/Execution.md)
 
 [Usage](extras/Reference/Usage.md)
 
-## [Grammar](extras/Design/Cmpl.g4)
+[Grammar](extras/Design/Cmpl.g4)
+
+## Tools
+
+[Inspector](extras/Inspector/Inspector.html)

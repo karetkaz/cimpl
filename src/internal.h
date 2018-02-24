@@ -152,6 +152,7 @@ struct ccContextRec {
 	symn	null_ref;		// variable null
 	symn	true_ref;		// variable true
 	symn	false_ref;		// variable false
+	symn	length_ref;		// slice length attribute
 
 	symn	emit_opc;		// emit intrinsic function, or whatever it is.
 	astn	emit_tag;		// "emit"
@@ -372,11 +373,11 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 #define debug(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
 #endif
 
-#if DEBUGGING >= 3	// enable debug
+#if DEBUGGING >= 3	// enable debug cgen
 #define dbgCgen(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
 #endif
 
-#if DEBUGGING >= 4	// enable debug
+#if DEBUGGING >= 4	// enable debug emit
 #define dbgEmit(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
 #endif
 

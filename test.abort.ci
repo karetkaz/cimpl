@@ -9,22 +9,45 @@
    Access violation writing memory
 */
 
-int32 i32Ref& = null;
+void errStackOverflow(pointer ptr) {
+	//byte data[7 << 20];
+	errStackOverflow(ptr);
+}
 
-// Stack Overflow
-byte data[7 << 20];
+void errDivisionByZero(pointer args) {
+	int value = 3 / 0;
+}
 
-// Division by Zero
-int divByZero = 3 / 0;
+void errAbortExecution(pointer args) {
+	struct NotEquals {
+		char message[*];
+		int expected;
+		int returned;
+	}
+	NotEquals details;
+	details.message = "assertion failed";
+	details.expected = 97;
+	details.returned = 77;
+	raise(raise.noTrace, raise.abort, "fatal error", details);
+}
 
-// External call aborted execution
-raise(abort, "abort", null, defTrace);
+void errAccessViolationReadingMemory(pointer args) {
+	int32 i32Ref& = null;
+	int i32Val = i32Ref;
+}
 
-// Access violation reading memory
-int i32Val = i32Ref;
+void errAccessViolationWritingMemory(pointer args) {
+	int32 i32Ref& = null;
+	i32Ref = 42;
+}
 
-// Access violation writing memory
-i32Ref = 42;
+void errInvalidInstructionPointer(pointer args) {
+	emit(load.z32, ret);
+}
 
-// Invalid instruction pointer
-emit(ret, load.z32);
+int err0 = tryExec(null, errStackOverflow);
+int err1 = tryExec(null, errDivisionByZero);
+int err2 = tryExec(null, errAbortExecution);
+int err3 = tryExec(null, errAccessViolationReadingMemory);
+int err4 = tryExec(null, errAccessViolationWritingMemory);
+int err5 = tryExec(null, errInvalidInstructionPointer);

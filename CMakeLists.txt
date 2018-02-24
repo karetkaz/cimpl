@@ -37,6 +37,6 @@ target_include_directories(OpenGL PUBLIC ./src/)
 target_link_libraries(OpenGL GL GLU glut)
 
 # some simple "how to use" code.
-add_executable(cmplVmEmit ${CMPL_SRC_FILES} src/test/mainVmEmit.c)
+add_executable(cmplVmEmit ${CMPL_SRC_FILES} src/test/vmMulf32.c)
 target_include_directories(cmplVmEmit PUBLIC ./src/)
 target_link_libraries(cmplVmEmit m dl)

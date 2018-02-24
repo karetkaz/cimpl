@@ -1293,7 +1293,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 			printFmt(out, esc, "%s:%u: ", dbg->file, dbg->line);
 		}
 		printFmt(out, esc, ERR_EXEC_INSTRUCTION"\n", breakCause, caller, fun, funOffs, vmPointer(rt, caller));
-		if (out != stdout || out != stderr) {
+		if (out != stdout && out != stderr) {
 			// print the error message also to the console
 			if (dbg != NULL && dbg->file != NULL && dbg->line > 0) {
 				printFmt(con, esc, "%s:%u: ", dbg->file, dbg->line);
