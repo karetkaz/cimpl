@@ -11,3 +11,19 @@ float32 overload2 = overload();
 float32 overload3 = overload(0);
 float32 overload4 = overload(0.);
 float32 overload5 = overload(0, 0);
+
+struct Celsius { double degrees; }
+struct Fahrenheit { double degrees; }
+
+// initialization
+//TODO: inline Celsius(float64 value) = { degrees: value };
+//TODO: inline Fahrenheit(float64 value) = { degrees: value };
+inline Celsius(float64 value) = Celsius(emit(float64(value)));
+inline Fahrenheit(float64 value) = Fahrenheit(emit(float64(value)));
+
+// type conversions
+inline Celsius(Fahrenheit value) = Celsius((value.degrees - 32) / 1.8);
+inline Fahrenheit(Celsius value) = Fahrenheit(value.degrees * 1.8 + 32);
+
+Celsius boilC = Celsius(100.);                 // => inline Celsius(float64 value)
+Fahrenheit boilF = Fahrenheit(boilC);          // => inline Fahrenheit(Celsius value)

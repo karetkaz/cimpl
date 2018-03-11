@@ -385,42 +385,58 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 
 	symn sym;
 	if (loc != NULL) {
-		sym = loc->fields;
+		sym = lookup(cc, loc->fields, ref, args, 1);
 	}
 	else {
+		// first lookup in the current scope
 		sym = cc->deft[ref->ref.hash];
+		sym = lookup(cc, sym, ref, args, 1);
+
+		// lookup parameters, fields, etc.
+		for (loc = cc->owner; loc != NULL; loc = loc->owner) {
+			symn field = lookup(cc, loc->fields, ref, args, 1);
+			if (sym != NULL && sym->nest < loc->nest) {
+				// symbol found: scope is higher than this parameter
+				break;
+			}
+			if (field == NULL) {
+				// symbol was not found at this location
+				continue;
+			}
+			sym = field;
+		}
 	}
 
-	if ((sym = lookup(cc, sym, ref, args, 1)) != NULL) {
-		symn type;
-		if (isInline(sym) && sym->init != NULL) {
-			// resulting type is the type of the inline expression
-			type = sym->init->type;
+	if (sym == NULL) {
+		if (raise) {
+			error(cc->rt, ref->file, ref->line, ERR_UNDEFINED_DECLARATION, ref);
 		}
-		else if (isInvokable(sym) && args != NULL) {
-			// resulting type is the type of result parameter
-			type = sym->params->type;
-		}
-		else if (isTypename(sym) && args != NULL) {
-			// resulting type is the type of the cast
-			type = sym;
-		}
-		else {
-			// resulting type is the type of the variable
-			type = sym->type;
-		}
-
-		dieif(ref->kind != TOKEN_var, ERR_INTERNAL_ERROR);
-		ref->ref.link = sym;
-		ref->type = sym->type;
-		addUsage(sym, ref);
-		return type;
+		return NULL;
 	}
 
-	if (raise) {
-		error(cc->rt, ref->file, ref->line, ERR_UNDEFINED_DECLARATION, ref);
+	symn type;
+	if (isInline(sym) && sym->init != NULL) {
+		// resulting type is the type of the inline expression
+		type = sym->init->type;
 	}
-	return NULL;
+	else if (isInvokable(sym) && args != NULL) {
+		// resulting type is the type of result parameter
+		type = sym->params->type;
+	}
+	else if (isTypename(sym) && args != NULL) {
+		// resulting type is the type of the cast
+		type = sym;
+	}
+	else {
+		// resulting type is the type of the variable
+		type = sym->type;
+	}
+
+	dieif(ref->kind != TOKEN_var, ERR_INTERNAL_ERROR);
+	ref->ref.link = sym;
+	ref->type = sym->type;
+	addUsage(sym, ref);
+	return type;
 }
 
 symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
@@ -756,9 +772,6 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 		// variable
 		case TOKEN_var:
 			type = typeCheckRef(cc, loc, ast, NULL, 0);
-			if (type == NULL) {
-				type = typeCheckRef(cc, cc->owner, ast, NULL, raise);
-			}
 			if (type == NULL) {
 				traceAst(ast);
 				return NULL;

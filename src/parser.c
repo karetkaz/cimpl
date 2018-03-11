@@ -1574,7 +1574,7 @@ static astn statement(ccContext cc, ccKind attr) {
 	if (check != NULL) {
 		check->type = typeCheck(cc, NULL, check, 1);
 		if (check->type == NULL) {
-			error(cc->rt, check->file, check->line, ERR_INVALID_TYPE, check);
+			error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, check);
 		}
 	}
 

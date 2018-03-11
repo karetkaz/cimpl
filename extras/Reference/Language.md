@@ -433,6 +433,13 @@ inline instance() = {
 ### Initialization
 [TODO]
 
+**Example**: initializer function
+```
+// call the initializer function
+Complex x = Complex(1, 2);
+
+```
+
 **Example**: literal initialization
 ```
 // literal initialization
@@ -440,13 +447,6 @@ Complex x = {re: 1, im: 2};
 
 // literal initialization with type
 Model x = Sphere {x:0, y:0, z:0, radius: 20};
-```
-
-**Example**
-```
-// call the initializer function
-Complex x = Complex(1, 2);
-
 ```
 
 **Example**: array initialization
@@ -490,63 +490,6 @@ Complex x = {};                // error: all fields of `x` must be initialized.
 Complex x = {re: 2};           // ok, `im` initialized with default field initializer.
 Complex x = {re: 2; im: -1;};  // ok, all fields are initialized.
 ```
-
-## Arrays
-Array type is a collection of zero or more elements of the same type.
-
-### Arrays (Fixed-size arrays)
-[TODO: documentation]
-
-**Example**
-```
-int a[2] = {42, 97};
-```
-
-- Are passed to functions by reference.
-- Type of elements and length is known by the compiler.
-
-### Slices (Dynamic-size arrays)
-Slices are a pair of a pointer to the first element and an integer containing the length of the slice.
-
-**Example**
-```
-int a[] = {42, 97, 13};
-```
-
-- Are initialized, assigned and passed to functions by reference followed by the length.
-- Type of elements is known by the compiler.
-- The length is known at runtime.
-
-### Pointers (Unknown-size arrays)
-Pointers are arrays without length. This type is helpful to pass data to native functions.
-Use `pointer` for the special `void *` type from c, when the type of elements is unknown.
-
-**Example**
-```
-int a[*];
-```
-
-- Are initialized, assigned and passed to functions by reference.
-- Type of elements is known by the compiler.
-- The length may be known by the developer.
-
-### Maps (Associative arrays)
-[TODO: implementation]
-
-**Example**
-
-```
-double constants[string] = {
-	pi: Math.pi;
-	"e": Math.e;
-};
-
-assert(constants["pi"] == Math.pi);
-assert(constants["e"] == Math.e);
-assert(constants.e == Math.e);
-```
-
-Collection types(Array, Stack, Queue, Set, Bag, Map, …) are part of the run-time library.
 
 ## Functions
 [TODO: documentation]
@@ -609,6 +552,63 @@ void sort(int values[], int compare(int a, int b)) {
 
 If a function name is a type name, by convention it is considered to be a constructor for that type,
 so it should return an instance of the type represented by its name.
+
+## Arrays
+The array type is a collection of zero or more elements of the same type.
+
+### Arrays (Fixed-size arrays)
+[TODO: documentation]
+
+**Example**
+```
+int a[2] = {42, 97};
+```
+
+- Are passed to functions by reference.
+- Type of elements and length is known by the compiler.
+
+### Slices (Dynamic-size arrays)
+Slices are a pair of a pointer to the first element and an integer containing the length of the slice.
+
+**Example**
+```
+int a[] = {42, 97, 13};
+```
+
+- Are initialized, assigned and passed to functions by reference followed by the length.
+- Type of elements is known by the compiler.
+- The length is known at runtime.
+
+### Pointers (Unknown-size arrays)
+Pointers are arrays without length. This type is helpful to pass data to native functions.
+Use `pointer` for the special `void *` type from c, when the type of elements is unknown.
+
+**Example**
+```
+int a[*];
+```
+
+- Are initialized, assigned and passed to functions by reference.
+- Type of elements is known by the compiler.
+- The length may be known by the developer.
+
+### Maps (Associative arrays)
+[TODO: implementation]
+
+**Example**
+
+```
+double constants[string] = {
+	pi: Math.pi;
+	"e": Math.e;
+};
+
+assert(constants["pi"] == Math.pi);
+assert(constants["e"] == Math.e);
+assert(constants.e == Math.e);
+```
+
+Collection types(Array, Stack, Queue, Set, Bag, Map, …) are part of the run-time library.
 
 ## Records
 [Records](https://en.wikipedia.org/wiki/Record_(computer_science)) are user specified compound types.
@@ -684,7 +684,7 @@ int chr = reader.read();
 int chr = TextReader.read(reader);
 ```
 Using `TextReader.read(reader)` method will ensure that the original method is invoked,
-while `reader.read()` method might call an extension method.
+while `reader.read()` method might call an override or extension method.
 
 ### Static records
 Records which are declared `static` will have all members static (is sort of a namespaces).
@@ -828,11 +828,13 @@ complex a = complex(9);
 struct Celsius { double degrees; }
 struct Fahrenheit { double degrees; }
 
-// type conversions
+// initialization
 inline Celsius(float64 value) = { degrees: value };
 inline Fahrenheit(float64 value) = { degrees: value };
-inline Celsius(Fahrenheit value) = Celsius((value.degrees - 32) * (5. / 9.));
-inline Fahrenheit(Celsius value) = Fahrenheit((value.degrees + 32) * (9. / 5.));
+
+// type conversions
+inline Celsius(Fahrenheit value) = Celsius((value.degrees - 32) / 1.8);
+inline Fahrenheit(Celsius value) = Fahrenheit(value.degrees * 1.8 + 32);
 
 Celsius boilC = Celsius(100.);                 // => inline Celsius(float64 value)
 Fahrenheit boilF = Fahrenheit(boilC);          // => inline Fahrenheit(Celsius value)

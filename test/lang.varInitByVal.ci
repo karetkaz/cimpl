@@ -8,7 +8,6 @@ static integer globalCounter = 33;
 
 static integer globalInitCounter1 = globalCounter += 1;
 
-//* TODO: member, local and global variable initializations
 struct Record {
 	// member variable
 	// compiler: WARN if not initialized when instantiated.
@@ -38,7 +37,7 @@ struct Record {
 	static const int32 globalConstant = globalCounter += 1;
 
 	// static method (can not be overridden)
-	int staticMethod(int x, int y) {
+	static int staticMethod(int x, int y) {
 		return x + y;
 	}
 
@@ -99,8 +98,8 @@ static integer globalInitGlobal = globalCounter;
 integer localInitMethodGlobal = initMethod(false);
 integer localInitMethodRecordGlobal = initMethod(true);
 
-Record localObject;                   // FIXME: object must be initialized
-static Record globalObject;           // FIXME: object must be initialized
+Record localObject;                   // TODO: object must be initialized
+static Record globalObject;           // TODO: object must be initialized
 
 int localStaticCallStaticMethod = Record.staticMethod(2, 5);
 int localStaticCallForwardMethod = Record.forwardMethod(2, 6);
