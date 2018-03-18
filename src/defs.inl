@@ -167,16 +167,16 @@ OPCODE_DEF(opc_lf64, 0x1e, 9, 0, 2, "load.f64")     // temporary instruction rep
 OPCODE_DEF(opc_lref, 0x1f, 5, 0, 1, "load.ref")     // temporary instruction replaceable with load.c32
 
 //~ mem (indirect memory access) ===============================================
-OPCODE_DEF(opc_ldi1, 0x20, 1, 1, 1, "load.m8")      // copy(sp, sp(0), 1);               […, a, b, c => […, a, b, *(int8*)c;
-OPCODE_DEF(opc_ldi2, 0x21, 1, 1, 1, "load.m16")     // copy(sp, sp(0), 2);               […, a, b, c => […, a, b, *(int16*)c;
-OPCODE_DEF(opc_ldi4, 0x22, 1, 1, 1, "load.m32")     // copy(sp, sp(0), 4);               […, a, b, c => […, a, b, *(int32*)c;
-OPCODE_DEF(opc_ldi8, 0x23, 1, 1, 2, "load.m64")     // copy(sp, sp(0), 8);               […, a, b, c => […, a, b, *(int64*)c12;
-OPCODE_DEF(opc_ldiq, 0x24, 1, 1, 4, "load.m128")    // copy(sp, sp(0), 16);              […, a, b, c => […, a, b, *(p4x4*)c1234;
-OPCODE_DEF(opc_sti1, 0x25, 1, 2, 0, "store.m8")     // copy(sp(1), sp(0), 1);pop2;       […, a, b, c => […, a
-OPCODE_DEF(opc_sti2, 0x26, 1, 2, 0, "store.m16")    // copy(sp(1), sp(0), 2);pop2;       […, a, b, c => […
-OPCODE_DEF(opc_sti4, 0x27, 1, 2, 0, "store.m32")    // copy(sp(1), sp(0), 4);pop2;       […, a, b, c => […
-OPCODE_DEF(opc_sti8, 0x28, 1, 3, 0, "store.m64")    // copy(sp(1), sp(0), 8);pop3;       […, a, b, c => […
-OPCODE_DEF(opc_stiq, 0x29, 1, 5, 0, "store.m128")   // copy(sp(1), sp(0), 16);pop5;      […, a, b, c => […
+OPCODE_DEF(opc_ldi1, 0x20, 1, 1, 1, "load.i8")      // copy(sp, sp(0), 1);               […, a, b, c => […, a, b, *(int8*)c;
+OPCODE_DEF(opc_ldi2, 0x21, 1, 1, 1, "load.i16")     // copy(sp, sp(0), 2);               […, a, b, c => […, a, b, *(int16*)c;
+OPCODE_DEF(opc_ldi4, 0x22, 1, 1, 1, "load.i32")     // copy(sp, sp(0), 4);               […, a, b, c => […, a, b, *(int32*)c;
+OPCODE_DEF(opc_ldi8, 0x23, 1, 1, 2, "load.i64")     // copy(sp, sp(0), 8);               […, a, b, c => […, a, b, *(int64*)c12;
+OPCODE_DEF(opc_ldiq, 0x24, 1, 1, 4, "load.i128")    // copy(sp, sp(0), 16);              […, a, b, c => […, a, b, *(p4x4*)c1234;
+OPCODE_DEF(opc_sti1, 0x25, 1, 2, 0, "store.i8")     // copy(sp(1), sp(0), 1);pop2;       […, a, b, c => […, a
+OPCODE_DEF(opc_sti2, 0x26, 1, 2, 0, "store.i16")    // copy(sp(1), sp(0), 2);pop2;       […, a, b, c => […
+OPCODE_DEF(opc_sti4, 0x27, 1, 2, 0, "store.i32")    // copy(sp(1), sp(0), 4);pop2;       […, a, b, c => […
+OPCODE_DEF(opc_sti8, 0x28, 1, 3, 0, "store.i64")    // copy(sp(1), sp(0), 8);pop3;       […, a, b, c => […
+OPCODE_DEF(opc_stiq, 0x29, 1, 5, 0, "store.i128")   // copy(sp(1), sp(0), 16);pop5;      […, a, b, c => […
 OPCODE_DEF(opc_ld32, 0x2a, 4, 0, 1, "load.m32")     // copy(sp, ip.rel, 4);              […, a, b, c => […, a, b, c, *(int32*)ip.rel;
 OPCODE_DEF(opc_ld64, 0x2b, 4, 0, 2, "load.m64")     // copy(sp, ip.rel, 8);              […, a, b, c => […, a, b, c, *(int64*)ip.rel;
 OPCODE_DEF(opc___2c, 0x2c, 0, 0, 0, NULL)           //

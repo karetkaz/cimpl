@@ -254,6 +254,7 @@ rtContext vmInit(rtContext rt, int debug, vmError onHalt(nfcContext)) {
 
 		rt->dbg->rt = rt;
 		rt->dbg->abort = (dbgn)-1;
+		rt->dbg->tryExec = cc->libc_try;
 		initBuff(&rt->dbg->functions, 128, sizeof(struct dbgNode));
 		initBuff(&rt->dbg->statements, 128, sizeof(struct dbgNode));
 	}
@@ -513,7 +514,7 @@ static vmError typenameGetField(nfcContext args) {
 	symn sym = rtLookupSym(args->rt, symOffs, 0);
 	if (sym == NULL || sym->offs != symOffs) {
 		// invalid symbol offset
-		return executionAborted;
+		return nativeCallError;
 	}
 	if (args->proto == type_get_file) {
 		retref(args, vmOffset(args->rt, sym->file));
@@ -531,7 +532,7 @@ static vmError typenameGetField(nfcContext args) {
 		retref(args, vmOffset(args->rt, sym->type));
 		return noError;
 	}
-	return executionAborted;
+	return nativeCallError;
 }
 
 static void install_type(ccContext cc, ccInstall mode) {
@@ -546,7 +547,7 @@ static void install_type(ccContext cc, ccInstall mode) {
 
 	symn type_vid = install(cc, "void", ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, type_rec, NULL);
 	symn type_bol = install(cc, "bool", ATTR_stat | ATTR_cnst | KIND_typ | CAST_bit, 1, type_rec, init_val);
-	symn type_chr = install(cc, "char", ATTR_stat | ATTR_cnst | KIND_typ | CAST_u32, 1, type_rec, init_val);
+	symn type_chr = install(cc, "char", ATTR_stat | ATTR_cnst | KIND_typ | CAST_i32, 1, type_rec, init_val);
 	symn type_i08 = install(cc, "int8", ATTR_stat | ATTR_cnst | KIND_typ | CAST_i32, 1, type_rec, init_val);
 	symn type_i16 = install(cc, "int16", ATTR_stat | ATTR_cnst | KIND_typ | CAST_i32, 2, type_rec, init_val);
 	symn type_i32 = install(cc, "int32", ATTR_stat | ATTR_cnst | KIND_typ | CAST_i32, 4, type_rec, init_val);
@@ -588,12 +589,8 @@ static void install_type(ccContext cc, ccInstall mode) {
 	cc->type_vid = type_vid;
 	cc->type_bol = type_bol;
 	cc->type_chr = type_chr;
-	cc->type_i08 = type_i08;
-	cc->type_i16 = type_i16;
 	cc->type_i32 = type_i32;
 	cc->type_i64 = type_i64;
-	cc->type_u08 = type_u08;
-	cc->type_u16 = type_u16;
 	cc->type_u32 = type_u32;
 	cc->type_u64 = type_u64;
 	cc->type_f32 = type_f32;
@@ -850,14 +847,6 @@ static void install_emit(ccContext cc, ccInstall mode) {
 			ccEnd(cc, opc);
 		}
 		ccEnd(cc, cc->emit_opc);
-	}
-
-	// export emit to the compiler context
-	if (cc->emit_opc != NULL) {
-		cc->emit_tag = lnkNode(cc, cc->emit_opc);
-		if (cc->emit_tag == NULL) {
-			error(rt, NULL, 0, ERR_INTERNAL_ERROR);
-		}
 	}
 }
 
@@ -1305,11 +1294,11 @@ char* vmErrorMessage(vmError error) {
 		case noError:
 			return NULL;
 
-		case invalidIP:
-			return "Invalid instruction pointer";
+		case illegalState:
+			return "Invalid state";
 
-		case invalidSP:
-			return "Invalid stack pointer";
+		case illegalMemoryAccess:
+			return "Invalid memory access";
 
 		case illegalInstruction:
 			return "Invalid instruction";
@@ -1322,15 +1311,6 @@ char* vmErrorMessage(vmError error) {
 
 		case nativeCallError:
 			return "External call aborted execution";
-
-		case memReadError:
-			return "Access violation reading memory";
-
-		case memWriteError:
-			return "Access violation writing memory";
-
-		case executionAborted:
-			break;
 	}
 
 	return "Unknown error";

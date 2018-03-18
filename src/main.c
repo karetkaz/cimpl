@@ -1208,7 +1208,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 
 	if (error != noError) {
 		breakCause = vmErrorMessage(error);
-		if (ctx->checked) {
+		if (isChecked(ctx)) {
 			breakMode = usr->dbgOnCaught;
 		}
 		else {

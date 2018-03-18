@@ -268,17 +268,17 @@ enum {
 	raise_debug = 3,    // log and continue execution.
 	raise_verbose = 4   // log and continue execution.
 };
-// void raise(char file[*], int line, int level, char message[*], variant inspect, int maxTrace);
+// void raise(char file[*], int line, int level, int trace, char message[*], variant inspect);
 static vmError sysRaise(nfcContext ctx) {
 	rtContext rt = ctx->rt;
 	char *file = nfcReadArg(ctx, nfcNextArg(ctx)).ref;
 	nfcCheckArg(ctx, CAST_ref, "file");
 	int line = argi32(ctx, nfcNextArg(ctx));
 	nfcCheckArg(ctx, CAST_i32, "line");
-	int trace = argi32(ctx, nfcNextArg(ctx));
-	nfcCheckArg(ctx, CAST_i32, "trace");
 	int logLevel = argi32(ctx, nfcNextArg(ctx));
 	nfcCheckArg(ctx, CAST_i32, "level");
+	int trace = argi32(ctx, nfcNextArg(ctx));
+	nfcCheckArg(ctx, CAST_i32, "trace");
 	char *message = nfcReadArg(ctx, nfcNextArg(ctx)).ref;
 	nfcCheckArg(ctx, CAST_ref, "message");
 	rtValue inspect = nfcReadArg(ctx, nfcNextArg(ctx));
@@ -329,7 +329,7 @@ static vmError sysRaise(nfcContext ctx) {
 
 	// abort the execution
 	if (logLevel < 0) {
-		return executionAborted;
+		return nativeCallError;
 	}
 
 	return noError;
@@ -337,29 +337,23 @@ static vmError sysRaise(nfcContext ctx) {
 
 // int tryExec(pointer args, void action(pointer args));
 static vmError sysTryExec(nfcContext ctx) {
+	vmError result;
 	rtContext rt = ctx->rt;
-	dbgContext dbg = rt->dbg;
 	size_t args = argref(ctx, nfcNextArg(ctx));
 	size_t actionOffs = argref(ctx, nfcNextArg(ctx));
-	symn action = rtLookupSym(rt, actionOffs, 0);
+	symn action = rtLookupSym(rt, actionOffs, 1);
 
 	if (action != NULL && action->offs == actionOffs) {
-		int result;
 		#pragma pack(push, 4)
 		struct { vmOffs ptr; } cbArg;
 		cbArg.ptr = (vmOffs) args;
 		#pragma pack(pop)
-		if (dbg != NULL) {
-			int oldValue = dbg->checked;
-			*(int*)&dbg->checked = 1;
-			result = invoke(rt, action, NULL, &cbArg, ctx->extra);
-			*(int*)&dbg->checked = oldValue;
-		}
-		else {
-			result = invoke(rt, action, NULL, &cbArg, ctx->extra);
-		}
-		reti32(ctx, result);
+		result = invoke(rt, action, NULL, &cbArg, ctx->extra);
 	}
+	else {
+		result = illegalState;
+	}
+	reti32(ctx, result);
 	return noError;
 }
 
@@ -400,43 +394,43 @@ int ccLibStd(ccContext cc) {
 		vmError (*fun)(nfcContext);
 		char *def;
 	}
-	bit32[] = {			// 32 bit operations
-		{b32zxt, "int32 zxt(int32 value, int32 offs, int32 count)"},
-		{b32sxt, "int32 sxt(int32 value, int32 offs, int32 count)"},
+	bit32[] = {      // 32 bit operations
+		{b32zxt,    "int32 zxt(int32 value, int32 offs, int32 count)"},
+		{b32sxt,    "int32 sxt(int32 value, int32 offs, int32 count)"},
 	},
-	bit64[] = {			// 64 bit operations
-		{b64zxt, "int64 zxt(int64 value, int32 offs, int32 count)"},
-		{b64sxt, "int64 sxt(int64 value, int32 offs, int32 count)"},
+	bit64[] = {      // 64 bit operations
+		{b64zxt,    "int64 zxt(int64 value, int32 offs, int32 count)"},
+		{b64sxt,    "int64 sxt(int64 value, int32 offs, int32 count)"},
 	},
-	flt32[] = {		// sin, cos, sqrt, ...
-		{f32sin,   "float32 sin(float32 x)"},
-		{f32cos,   "float32 cos(float32 x)"},
-		{f32tan,   "float32 tan(float32 x)"},
-		{f32log,   "float32 log(float32 x)"},
-		{f32exp,   "float32 exp(float32 x)"},
-		{f32pow,   "float32 pow(float32 x, float32 y)"},
-		{f32sqrt,  "float32 sqrt(float32 x)"},
-		{f32atan2, "float32 atan2(float32 x, float32 y)"},
+	flt32[] = {      // sin, cos, sqrt, ...
+		{f32sin,    "float32 sin(float32 x)"},
+		{f32cos,    "float32 cos(float32 x)"},
+		{f32tan,    "float32 tan(float32 x)"},
+		{f32log,    "float32 log(float32 x)"},
+		{f32exp,    "float32 exp(float32 x)"},
+		{f32pow,    "float32 pow(float32 x, float32 y)"},
+		{f32sqrt,   "float32 sqrt(float32 x)"},
+		{f32atan2,  "float32 atan2(float32 x, float32 y)"},
 	},
-	flt64[] = {		// sin, cos, sqrt, ...
-		{f64sin,   "float64 sin(float64 x)"},
-		{f64cos,   "float64 cos(float64 x)"},
-		{f64tan,   "float64 tan(float64 x)"},
-		{f64log,   "float64 log(float64 x)"},
-		{f64exp,   "float64 exp(float64 x)"},
-		{f64pow,   "float64 pow(float64 x, float64 y)"},
-		{f64sqrt,  "float64 sqrt(float64 x)"},
-		{f64atan2, "float64 atan2(float64 x, float64 y)"},
+	flt64[] = {      // sin, cos, sqrt, ...
+		{f64sin,    "float64 sin(float64 x)"},
+		{f64cos,    "float64 cos(float64 x)"},
+		{f64tan,    "float64 tan(float64 x)"},
+		{f64log,    "float64 log(float64 x)"},
+		{f64exp,    "float64 exp(float64 x)"},
+		{f64pow,    "float64 pow(float64 x, float64 y)"},
+		{f64sqrt,   "float64 sqrt(float64 x)"},
+		{f64atan2,  "float64 atan2(float64 x, float64 y)"},
 	},
-	misc[] = {			// IO/MEM/EXIT
-		{sysExit,		"void exit(int code)"},
-		{sysSRand,		"void srand(int seed)"},
-		{sysRand,		"int32 rand()"},
+	misc[] = {       // IO/MEM/EXIT
+		{sysExit,   "void exit(int code)"},
+		{sysSRand,  "void srand(int seed)"},
+		{sysRand,   "int32 rand()"},
 
-		{sysTime,		"int32 time()"},
-		{sysClock,		"int32 clock()"},
-		{sysMillis,		"int64 millis()"},
-		{sysMSleep,		"void sleep(int64 millis)"},
+		{sysTime,   "int32 time()"},
+		{sysClock,  "int32 clock()"},
+		{sysMillis, "int64 millis()"},
+		{sysMSleep, "void sleep(int64 millis)"},
 	};
 	struct {
 		int64_t value;
@@ -466,7 +460,7 @@ int ccLibStd(ccContext cc) {
 	}
 
 	if (!err && cc->type_var != NULL) {		// debug, trace, assert, fatal, ...
-		cc->libc_dbg = ccDefCall(cc, sysRaise, "void raise(char file[*], int line, int trace, int level, char message[*], variant inspect)");
+		cc->libc_dbg = ccDefCall(cc, sysRaise, "void raise(char file[*], int line, int level, int trace, char message[*], variant inspect)");
 		if (cc->libc_dbg == NULL) {
 			err = 2;
 		}
@@ -482,7 +476,8 @@ int ccLibStd(ccContext cc) {
 	}
 
 	if (!err && cc->type_ptr != NULL) {		// tryExecute
-		if(!ccDefCall(cc, sysTryExec, "int tryExec(pointer args, void action(pointer args))")) {
+		cc->libc_try = ccDefCall(cc, sysTryExec, "int tryExec(pointer args, void action(pointer args))");
+		if (cc->libc_try == NULL) {
 			err = 2;
 		}
 	}

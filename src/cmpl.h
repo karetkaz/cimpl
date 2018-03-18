@@ -49,16 +49,13 @@ typedef struct userContextRec *userContext;     // customUserContext
  */
 typedef enum {
 	noError,
-	invalidIP,
-	invalidSP,
+	illegalState,
 	stackOverflow,
-	memReadError,
-	memWriteError,
 	divisionByZero,
 	illegalInstruction,
+	illegalMemoryAccess,
+	//+ illegalArrayAccess, => TODO: array index out of bounds
 	nativeCallError,
-	executionAborted        // execution aborted by debugger
-	//+ ArrayBoundsExceeded
 } vmError;
 
 /**

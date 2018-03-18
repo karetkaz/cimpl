@@ -1322,7 +1322,7 @@ There is no try catch to handle exceptions, but the `raise` function can be used
 
 #### The `raise` builtin function.
 
-`void raise(int level, string message, variant inspect, int trace);`
+`void raise(int level, int trace, string message, variant inspect);`
 
 The `raise` function can be used to abort the execution, to log a message with or without the current stacktrace.
 
@@ -1335,9 +1335,9 @@ Arguments:
 	- `raise.debug`
 	- `raise.verbose`
 
+- `trace`: prints the last n stack trace, available only in debug mode.
 - `message`: the message to be printed.
 - `inspect`: a variant to be inspected, useful in assertions.
-- `trace`: prints the last n stack trace, available only in debug mode.
 
 In case the raise function is invoked with `abort` the message is logged, and the execution of the application is aborted.
 Using other levels the the execution continues, and the message is logged only if the corresponding level is enabled.
@@ -1345,8 +1345,6 @@ In addition, the function logs the file name and line number where the function 
 
 
 #### The `tryExec` builtin function.
-
-`int tryExec(void action());`
 
 `int tryExec(pointer args, void action(pointer args));`
 
@@ -1357,16 +1355,13 @@ possible return values are defined by the implementation enumeration:
 ```
 enum {
 	noError,
-	invalidIP,
-	invalidSP,
+	illegalState,
 	stackOverflow,
-	memReadError,
-	memWriteError,
 	divisionByZero,
+	illegalMemoryAccess,
 	illegalInstruction,
-	nativeCallError,
-	executionAborted
-};
+	nativeCallError
+}
 ```
 [TODO] expose the enumeration to the compiler.
 

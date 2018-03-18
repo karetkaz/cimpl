@@ -1984,33 +1984,41 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 		got = get;
 	}
 
-	/* TODO: zero extend should be treated somewhere else
-	if (get == CAST_u32) {
+	if (zeroExtendUnsigned && get == CAST_u32) {
 
 		dbgCgen("%?s:%?u: zero extend[%K->%K / %T]: %t", ast->file, ast->line, got, get, ast->type, ast);
 		switch (ast->type->size) {
 			default:
 				trace(ERR_INTERNAL_ERROR": size: %d, cast [%K->%K]: %t", ast->type->size, got, get, ast);
-				return TYPE_any;
+				return CAST_any;
 
+			case 8:
 			case 4:
 				break;
 
 			case 2:
+				if (!testOcp(rt, rt->vm.pc, opc_ldi2, NULL)) {
+					// zero extend only if previous instruction is an indirect load?
+					break;
+				}
 				if (!emitInt(rt, b32_bit, b32_bit_and | 16)) {
 					traceAst(ast);
-					return TYPE_any;
+					return CAST_any;
 				}
 				break;
 
 			case 1:
+				if (!testOcp(rt, rt->vm.pc, opc_ldi1, NULL)) {
+					// zero extend only if previous instruction is an indirect load?
+					break;
+				}
 				if (!emitInt(rt, b32_bit, b32_bit_and | 8)) {
 					traceAst(ast);
-					return TYPE_any;
+					return CAST_any;
 				}
 				break;
 		}
-	}*/
+	}
 
 	return got;
 }

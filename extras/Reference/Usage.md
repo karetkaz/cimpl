@@ -180,7 +180,7 @@ If JSON output format is used, the generated file can be opened with the Inspect
 
 	additional arguments:
 
-	- `/g` on exit dump value of global variables
+	- `/g` or `/G` (globals) on exit dump value of global variables
 
 
 - `-debug[*]`
@@ -189,17 +189,17 @@ If JSON output format is used, the generated file can be opened with the Inspect
 
 	additional arguments:
 
-	- `/s` pause on startup
+	- `/s` (suspend) pause on startup
 
-	- `/a` pause on all(caught and uncaught) errors
+	- `/a` (all) pause on all(caught and uncaught) errors
 
-	- `/l` or `/L` print the cause message of caught errors (/L includes stack trace)
+	- `/l` or `/L` (log) print the cause message of caught errors (/L includes stack trace)
 
-	- `/g` on exit dump value of global variables
+	- `/g` or `/G` (globals) on exit dump value of global variables
 
-	- `/h` on exit dump memory related statistics
+	- `/h` (heap) on exit dump memory related statistics
 
-	- `/p` on exit dump function statistics
+	- `/p` (profile) on exit dump function statistics
 
 
 - `-profile[*]`
@@ -208,15 +208,13 @@ If JSON output format is used, the generated file can be opened with the Inspect
 
 	additional arguments:
 
-	- `/t` dump call tree
+	- `/t` (trace) dump call tree
 
-	- `/a` include all the information in the dump
+	- `/a` (all) include all the information in the dump
 
-	- `/g` on exit dump value of global variables
+	- `/g` or `/G` (globals) on exit dump value of global variables
 
-	- `/h` on exit dump memory related statistics
-
-	- `/p` on exit dump function statistics
+	- `/h` (heap) on exit dump memory related statistics
 
 
 ## Compile files

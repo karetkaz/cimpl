@@ -1140,9 +1140,9 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			// stack underflow
 			return 0;
 
-		#define STOP(__ERR, __CHK, __ERC) if (__CHK) goto __ERR
+		#define STOP(__ERR, __CHK) if (__CHK) goto __ERR
 		#define NEXT(__IP, __SP, __CHK)\
-			STOP(error_stc, (ssize_t)rt->vm.ss < (ssize_t)(__CHK), -1);\
+			STOP(error_stc, (ssize_t)rt->vm.ss < (ssize_t)(__CHK));\
 			rt->vm.ss += (__SP);\
 			rt->_beg += (__IP);
 		#include "code.inl"
@@ -1227,21 +1227,21 @@ static inline int vmFork(vmProcessor pu, int n, unsigned master, unsigned cl) {
 }
 
 /// Wait for worker to finish.
-static inline int vmJoin(vmProcessor pu, unsigned cp, int wait) {
-	int pp = pu[cp].pp;
-	vmTrace(pu, cp, "join");
+static inline int vmJoin(vmProcessor pu, unsigned slave, int wait) {
+	int master = pu[slave].pp;
+	vmTrace(pu, slave, "join");
 
 	// slave proc
-	if (pp != cp) {
-		if (pu[cp].cp == 0) {
-			pu[cp].ip = NULL;
-			pu[pp].cp -= 1;
+	if (master != slave) {
+		if (pu[slave].cp == 0) {
+			pu[slave].ip = NULL;
+			pu[master].cp -= 1;
 			return 1;
 		}
 		return 0;
 	}
 
-	if (pu[cp].cp > 0) {
+	if (pu[slave].cp > 0) {
 		return !wait;
 	}
 
@@ -1279,7 +1279,7 @@ static inline vmError traceCall(rtContext rt, void *sp, size_t caller, size_t ca
 
 		if (tp - (trcptr)pu->bp < 1) {
 			trace("stack underflow(tp: %d, sp: %d)", tp - (trcptr)pu->bp, pu->sp - (stkptr)pu->bp);
-			return illegalInstruction;
+			return illegalState;
 		}
 
 		pu->tp -= 1;
@@ -1388,7 +1388,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 
 	if (fun == NULL || fun->offs == 0) {
 		error(rt, NULL, 0, ERR_EXEC_FUNCTION, fun);
-		return invalidIP;
+		return illegalState;
 	}
 
 	// run in debug or profile mode
@@ -1419,18 +1419,18 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 			const size_t pc = vmOffset(rt, ip);
 
 			if (ip >= ipMax || ip < ipMin) {
-				debugger(rt->dbg, invalidIP, st - sp, sp, pc, 0);
-				return invalidIP;
+				debugger(rt->dbg, illegalState, st - sp, sp, pc, 0);
+				return illegalState;
 			}
 			if (sp > spMax || sp < spMin) {
-				debugger(rt->dbg, invalidSP, st - sp, sp, pc, 0);
-				return invalidSP;
+				debugger(rt->dbg, illegalState, st - sp, sp, pc, 0);
+				return illegalState;
 			}
 
 			dbgn dbg = debugger(rt->dbg, noError, st - sp, sp, pc, 0);
 			if (dbg == rt->dbg->abort) {
 				// abort execution from debugger
-				return executionAborted;
+				return nativeCallError;
 			}
 			if (dbg != NULL) {
 				if (pc == dbg->start) {
@@ -1459,12 +1459,8 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 					execError = stackOverflow;
 					goto dbg_stop_vm;
 
-				dbg_error_mem_read:
-					execError = memReadError;
-					goto dbg_stop_vm;
-
-				dbg_error_mem_write:
-					execError = memWriteError;
+				dbg_error_mem:
+					execError = illegalMemoryAccess;
 					goto dbg_stop_vm;
 
 				dbg_error_div_flt:
@@ -1481,7 +1477,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 					goto dbg_stop_vm;
 
 				#define NEXT(__IP, __SP, __CHK) pu->sp -= (__SP); pu->ip += (__IP);
-				#define STOP(__ERR, __CHK, __ERC) do {if (__CHK) {goto dbg_##__ERR;}} while(0)
+				#define STOP(__ERR, __CHK) do {if (__CHK) {goto dbg_##__ERR;}} while(0)
 				#define EXEC
 				#define TRACE(__IP) do { if ((execError = traceCall(rt, sp, pc, __IP)) != noError) goto dbg_stop_vm; } while(0)
 				#include "code.inl"
@@ -1507,7 +1503,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 		register const stkptr sp = pu->sp;
 		switch (ip->opc) {
 			stop_vm:	// halt virtual machine
-				if (execError != noError) {
+				if (execError != noError && fun == rt->main) {
 					struct dbgContextRec dbg;
 					dbg.rt = rt;
 					dbgDummy(&dbg, execError, st - sp, sp, vmOffset(rt, ip), 0);
@@ -1522,19 +1518,11 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 				execError = stackOverflow;
 				goto stop_vm;
 
-			error_mem_read:
-				execError = memReadError;
+			error_mem:
+				execError = illegalMemoryAccess;
 				goto stop_vm;
 
-			error_mem_write:
-				execError = memWriteError;
-				goto stop_vm;
-
-			error_div_flt: {
-					struct dbgContextRec dbg;
-					dbg.rt = rt;
-					dbgDummy(&dbg, divisionByZero, st - sp, sp, vmOffset(rt, ip), 0);
-				}
+			error_div_flt:
 				// continue execution on floating point division by zero.
 				break;
 
@@ -1547,7 +1535,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 				goto stop_vm;
 
 			#define NEXT(__IP, __SP, __CHK) { pu->sp -= (__SP); pu->ip += (__IP); }
-			#define STOP(__ERR, __CHK, __ERC) do {if (__CHK) {goto __ERR;}} while(0)
+			#define STOP(__ERR, __CHK) do {if (__CHK) {goto __ERR;}} while(0)
 			#define TRACE(__IP)
 			#define EXEC
 			#include "code.inl"
@@ -1555,12 +1543,13 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 	}
 	return execError;
 }
+
 vmError invoke(rtContext rt, symn fun, void *res, void *args, const void *extra) {
 	const vmProcessor pu = rt->vm.cell;
 
 	if (pu == NULL) {
 		fatal(ERR_INTERNAL_ERROR": can not invoke %?T without execute", fun);
-		return illegalInstruction;
+		return illegalState;
 	}
 
 	// invoked symbol must be a static function
@@ -1568,7 +1557,7 @@ vmError invoke(rtContext rt, symn fun, void *res, void *args, const void *extra)
 		dieif(fun->params == NULL, ERR_INTERNAL_ERROR);
 		dieif(fun->offs == 0, ERR_INTERNAL_ERROR);
 		dieif(!isStatic(fun), ERR_INTERNAL_ERROR);
-		return illegalInstruction;
+		return illegalState;
 	}
 
 	// result is the last argument.
@@ -1630,20 +1619,35 @@ vmError execute(rtContext rt, int argc, char *argv[], void *extra) {
 
 	if (rt->_beg > rt->_end) {
 		fatal(ERR_INTERNAL_ERROR": memory overrun");
-		return invalidSP;
+		return illegalState;
 	}
 	if (pu->bp > (memptr)pu->sp) {
 		fatal(ERR_INTERNAL_ERROR": invalid stack size");
-		return stackOverflow;
+		return illegalState;
 	}
 	if (pu->sp != padPointer(pu->sp, vm_size)) {
 		fatal(ERR_INTERNAL_ERROR": invalid stack alignment");
-		return invalidSP;
+		return illegalState;
 	}
 
 	(void)argc;
 	(void)argv;
 	return exec(rt, pu, rt->main, extra);
+}
+
+int isChecked(dbgContext ctx) {
+	rtContext rt = ctx->rt;
+	vmProcessor pu = rt->vm.cell;
+	trcptr trcBase = (trcptr)pu->bp;
+	size_t maxTrace = pu->tp - (trcptr)pu->bp;
+	for (int i = 0; i < maxTrace; ++i) {
+		trcptr trace = &trcBase[maxTrace - i - 1];
+		symn fun = rtLookupSym(rt, trace->callee, 1);
+		if (fun == ctx->tryExec) {
+			return 1;
+		}
+	}
+	return 0;
 }
 
 void printOpc(FILE *out, const char **esc, vmOpcode opc, int64_t args) {
@@ -2314,7 +2318,7 @@ int vmSelfTest(void cb(const char *, const struct opcodeRec *)) {
 					goto error_diff;\
 				}\
 			}
-			#define STOP(__ERR, __CHK, __ERR1) if (__CHK) goto __ERR
+			#define STOP(__ERR, __CHK) if (__CHK) goto __ERR
 			#include "code.inl"
 		}
 		if (cb != NULL) {

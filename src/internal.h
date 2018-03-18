@@ -38,6 +38,10 @@ enum Settings {
 	// faster execution if each argument is pushed when calculated
 	preAllocateArgs = 0,
 
+	// uint8 a = 130;   // a: uint8(130)
+	// uint32 b = a;    // b: uint32(4294967170)
+	// by default load.m8 will sign extend to 32 bits
+	zeroExtendUnsigned = 0
 };
 
 // linked list
@@ -129,12 +133,8 @@ struct ccContextRec {
 	symn	type_vid;		// void
 	symn	type_bol;		// boolean
 	symn	type_chr;		// character
-	symn	type_i08;		// 8bit signed integer
-	symn	type_i16;		// 16bit signed integer
 	symn	type_i32;		// 32bit signed integer
 	symn	type_i64;		// 64bit signed integer
-	symn	type_u08;		// 8bit unsigned integer
-	symn	type_u16;		// 16bit unsigned integer
 	symn	type_u32;		// 32bit unsigned integer
 	symn	type_u64;		// 64bit unsigned integer
 	symn	type_f32;		// 32bit floating point
@@ -155,10 +155,10 @@ struct ccContextRec {
 	symn	length_ref;		// slice length attribute
 
 	symn	emit_opc;		// emit intrinsic function, or whatever it is.
-	astn	emit_tag;		// "emit"
 	astn	void_tag;		// used to lookup function call with 0 argument
 
-	symn	libc_dbg;		// raise(int level, string message, variant inspect, int maxTrace);
+	symn	libc_dbg;		// raise(char file[*], int line, int level, int trace, char message[*], variant inspect);
+	symn	libc_try;		// tryExec(pointer args, void action(pointer args));
 };
 
 /// Debugger context
@@ -170,8 +170,8 @@ struct dbgContextRec {
 	struct arrBuffer functions;
 	struct arrBuffer statements;
 	size_t freeMem, usedMem;
-	const int checked;			// execution is inside an try catch
 	dbgn abort;
+	symn tryExec;	// the symbol of tryExec function
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

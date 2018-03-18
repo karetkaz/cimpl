@@ -55,6 +55,13 @@ struct dbgNode {
 };
 
 /**
+ * Check if the current stacktrace contains tryExec, if an error can terminate the execution of the vm.
+ * @param ctx debug context
+ * @return true or false
+ */
+int isChecked(dbgContext ctx);
+
+/**
  * Convert an error code to message (string).
  * 
  * @param error the error code
@@ -64,7 +71,7 @@ char* vmErrorMessage(vmError error);
 
 /**
  * Request debug information of function
- * @param ctx 
+ * @param ctx runtime context
  * @param position 
  * @return 
  */

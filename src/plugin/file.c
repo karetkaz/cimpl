@@ -72,7 +72,7 @@ static vmError FILE_stream(nfcContext ctx) {     // File std[in, out, err];
 		return noError;
 	}
 
-	return executionAborted;
+	return nativeCallError;
 }
 
 static vmError FILE_getc(nfcContext ctx) {
