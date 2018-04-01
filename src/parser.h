@@ -216,7 +216,7 @@ symn linkOf(astn ast, int follow);
  */
 int isTypeExpr(astn ast);
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Parser
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Lexer
 
 /**
  * Read the next token from input.

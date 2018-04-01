@@ -9,9 +9,6 @@ inline min(int a, int b) = a < b ? a : b;	// both param used 2x
 inline sum(int a, int b, int c) = sum(sum(a, b), c);
 inline any(int a, int b, int c) = any(any(a, b), c);
 inline min(int a, int b, int c) = min(min(a, b), c);
-//inline sum(int a, int b, int c) = sum(a, sum(b, c));
-//inline any(int a, int b, int c) = any(a, any(b, c));
-//inline min(int a, int b, int c) = min(a, min(b, c));
 
 int ma = 3;
 int mb = 6;
@@ -37,10 +34,9 @@ int min2Val = min(3, 12);
 int min2Var = min(ma, mb);
 int min2Xpr = min(ma + mb, mb + mc);
 
-// FIXME: genAst: Internal Error (not able to inline recursively the parameters)
-//int sum3Val = sum(3, 2, 6);
-//int sum3Var = sum(ma, mb, mc);
-//int sum3Xpr = sum(ma + mb, mb + mc, mc + ma);
+int sum3Val = sum(3, 2, 6);
+int sum3Var = sum(ma, mb, mc);
+int sum3Xpr = sum(ma + mb, mb + mc, mc + ma);
 
 int any3Val = any(3, 2, 6);
 int any3Var = any(ma, mb, mc);
@@ -49,6 +45,12 @@ int any3Xpr = any(ma + mb, mb + mc, mc + ma);
 int min3Val = min(3, 2, 6);
 int min3Var = min(ma, mb, mc);
 int min3Xpr = min(ma + mb, mb + mc, mc + ma);
+
+/* FIXME: incorrect local variable size with multiple inline arguments
+inline any(int a, int b, int c, int d) = any(a, any(b, any(c, d)));   // err
+//inline any(int a, int b, int c, int d) = any(any(any(a, b), c), d);   // ok
+int any4Val = any(3, 2, 6, 8);
+// */
 
 // TODO: force inline/cache arguments ?
 // inline min(inline int a, inline int b) = a < b ? a : b;

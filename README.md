@@ -16,4 +16,6 @@ implementation under refactoring.
 
 ## Tools
 
-[Inspector](extras/Inspector/Inspector.html)
+[Live Demo](https://karetkaz.github.io/cmpl/extras/Emscripten/index.html)
+
+[Inspector](https://karetkaz.github.io/cmpl/extras/Inspector/Inspector.html)

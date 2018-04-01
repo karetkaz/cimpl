@@ -1,0 +1,101 @@
+.built-with {
+	top: 0;
+	right: 0;
+	padding: .5em;
+	position: fixed;
+}
+
+/* Splitter: vertical/horizontal */
+.horizontal-split,
+.vertical-split,
+.oriented-split {
+	position: absolute;
+	top: 3em;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	overflow: hidden;
+}
+.horizontal-split > div {
+	width: 100%;
+	height: 50%;
+	overflow: hidden;
+	position: relative;
+}
+.vertical-split > div {
+	width: 50%;
+	height: 100%;
+	float: left;
+	overflow: hidden;
+	position: relative;
+}
+@media (orientation: portrait) {
+	.oriented-split > div {
+		width: 100%;
+		height: 50%;
+		overflow: hidden;
+		position: relative;
+	}
+}
+@media (orientation: landscape) {
+	.oriented-split > div {
+		width: 50%;
+		height: 100%;
+		float: left;
+		overflow: hidden;
+		position: relative;
+	}
+}
+
+div.header {
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2em;
+	overflow: hidden;
+	position: absolute;
+}
+div.header>* {
+	display: inline;
+	margin-left: 5px;
+}
+
+div.text-content {
+	top: 2em;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	position: absolute;
+}
+
+textarea {
+	display: block;
+	padding: 0;
+	border: 0;
+	margin: 0;
+
+	width: 100%;
+	min-width: 100%;
+	max-width: 100%;
+
+	height: 100%;
+	min-height: 100%;
+	max-height: 100%;
+
+	font-family: 'Lucida Console', Monaco, monospace;
+	outline: none;
+	overflow-x: auto;
+	overflow-y: scroll;
+	white-space: pre;
+}
+textarea#output {
+	color: white;
+	background-color: black;
+}
+.CodeMirror {
+	margin: 0;
+	padding: 0;
+	border: 1px solid #eee;
+	height: 100%;
+}
+

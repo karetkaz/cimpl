@@ -13,6 +13,7 @@ const struct tokenRec token_tbl[256] = {
 	#include "defs.inl"
 };
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Utils
 /**
  * Construct reference node.
  * 

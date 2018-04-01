@@ -525,7 +525,8 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 	ccKind result = castOf(ast->type);
 	const size_t locals = stkOffset(rt, 0);
 	const size_t localSize = stkOffset(rt, ast->type->size);
-
+	astn values[maxTokenCount];
+	size_t offsets[maxTokenCount];
 
 	// emit intrinsic
 	if (function == cc->emit_opc) {
@@ -546,13 +547,27 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 			if (!(args->kind == OPER_fnc && isTypeExpr(args->op.lhso))) {
 				// argument is not a cast, check if it is an instruction
 				symn lnk = linkOf(args, 1);
-				if (lnk == NULL || lnk->init == NULL || lnk->init->kind != EMIT_kwd) {
+				if (lnk == NULL || lnk->init == NULL || lnk->init->kind != TOKEN_opc) {
 					warn(rt, 1, ast->file, ast->line, WARN_PASS_ARG_NO_CAST, args, args->type);
 				}
 			}
 			args = args->next;
 		}
 		return get;
+	}
+
+	if (isInline(function)) {
+		int argc = 0;
+		// save parameter offsets and init value
+		for (symn prm = function->params; prm != NULL; prm = prm->next) {
+			if (argc >= maxTokenCount) {
+				traceAst(ast);
+				return CAST_any;
+			}
+			offsets[argc] = prm->offs;
+			values[argc] = prm->init;
+			argc += 1;
+		}
 	}
 
 	// generate arguments (push or cache)
@@ -691,6 +706,14 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 			return CAST_any;
 		}
 
+		int argc = 0;
+		// restore parameter offsets and reset init value
+		for (symn prm = function->params; prm != NULL; prm = prm->next) {
+			prm->offs = offsets[argc];
+			prm->init = values[argc];
+			argc += 1;
+		}
+
 		// drop cached arguments
 		if (localSize < stkOffset(rt, 0)) {
 			// copy result value
@@ -710,16 +733,6 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 				fatal(ERR_INTERNAL_ERROR);
 				return CAST_any;
 			}
-		}
-
-		size_t offs = 0;
-		// restore parameter offsets and reset init value
-		for (symn prm = function->params; prm != NULL; prm = prm->next) {
-			if (!isInline(prm)) {
-				offs += padOffset(prm->size, vm_size);
-			}
-			prm->init = NULL;
-			prm->offs = offs;
 		}
 	}
 	else if (isTypename(function)) {

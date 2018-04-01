@@ -1420,10 +1420,12 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 
 			if (ip >= ipMax || ip < ipMin) {
 				debugger(rt->dbg, illegalState, st - sp, sp, pc, 0);
+				fatal(ERR_INTERNAL_ERROR": invalid instruction pointer");
 				return illegalState;
 			}
 			if (sp > spMax || sp < spMin) {
 				debugger(rt->dbg, illegalState, st - sp, sp, pc, 0);
+				fatal(ERR_INTERNAL_ERROR": invalid stack pointer");
 				return illegalState;
 			}
 
@@ -1626,8 +1628,8 @@ vmError execute(rtContext rt, int argc, char *argv[], void *extra) {
 		return illegalState;
 	}
 	if (pu->sp != padPointer(pu->sp, vm_size)) {
-		fatal(ERR_INTERNAL_ERROR": invalid stack alignment");
-		return illegalState;
+		// FIXME: this makes the stack smaller
+		pu->sp = padPointer(pu->sp, vm_size);
 	}
 
 	(void)argc;

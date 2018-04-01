@@ -1,0 +1,33 @@
+// standard library extension
+
+static if (typename(raise) == function) {
+
+inline verbose(char message[*], variant inspect) = raise(raise.verbose, raise.noTrace, message, inspect);
+inline verbose(char message[*]) = raise(raise.verbose, raise.noTrace, message, null);
+
+inline trace(char message[*], variant inspect) = raise(raise.debug, raise.defTrace, message, inspect);
+inline trace(char message[*]) = raise(raise.debug, raise.defTrace, message, null);
+
+inline debug(char message[*], variant inspect) = raise(raise.debug, raise.noTrace, message, inspect);
+inline debug(char message[*]) = raise(raise.debug, raise.noTrace, message, null);
+
+inline info(char message[*], variant inspect) = raise(raise.info, raise.noTrace, message, inspect);
+inline info(char message[*]) = raise(raise.info, raise.noTrace, message, null);
+
+inline warn(char message[*], variant inspect) = raise(raise.warn, raise.noTrace, message, inspect);
+inline warn(char message[*]) = raise(raise.warn, raise.noTrace, message, null);
+
+inline error(char message[*], variant inspect) = raise(raise.error, raise.defTrace, message, inspect);
+inline error(char message[*]) = raise(raise.error, raise.defTrace, message, null);
+
+inline abort(char message[*], variant inspect) = raise(raise.abort, raise.defTrace, message, inspect);
+inline abort(char message[*]) = raise(raise.abort, raise.defTrace, message, null);
+inline abort() = raise(raise.abort, raise.defTrace, "execution aborted!", null);
+
+inline assert(bool condition, char message[*], variant inspect) = void(condition ? void(0) : abort(message, inspect));
+inline assert(bool condition, char message[*]) = void(condition ? void(0) : abort(message));
+inline assert(bool condition) = void(condition ? void(0) : abort("assertion failed!"));
+
+}
+
+inline sizeof(typename type) = int(type.size);

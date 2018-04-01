@@ -108,8 +108,8 @@ typedef union {
  * Runtime context.
  */
 struct rtContextRec {
-	unsigned foldCasts: 1;  // fold constant expressions (3 + 4 => 7)
 	unsigned foldConst: 1;  // fold constant expressions (3 + 4 => 7)
+	unsigned foldCasts: 1;  // fold fold cast expressions (float(int(3.2)) => 3.f)
 	unsigned foldInstr: 1;  // replace some instructions with a faster or shorter version (load 1, add => inc 1)
 	unsigned fastMemory: 1; // fast memory access: use dup, set, load and store instructions instead of `load address` + `load indirect`.
 	unsigned fastAssign: 1; // remove dup and set instructions when modifying the last declared variable.

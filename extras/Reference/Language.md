@@ -1,11 +1,11 @@
 # Introduction
 Designed to be simple and minimalist.  
 Syntax is similar to c/c++ influenced by:
-* [C/C++](https://en.wikipedia.org/wiki/C_(programming_language))
+* [C/C++](https://en.wikipedia.org/wiki/C_programming_language)
 * [JavaScript](https://en.wikipedia.org/wiki/JavaScript)
-* [D programming language](https://en.wikipedia.org/wiki/D_(programming_language))
-* [C# programming language](https://en.wikipedia.org/wiki/C_Sharp_(programming_language))
-* [Lua programming language](https://en.wikipedia.org/wiki/Lua_(programming_language))
+* [D programming language](https://en.wikipedia.org/wiki/D_programming_language)
+* [C# programming language](https://en.wikipedia.org/wiki/C_Sharp_programming_language)
+* [Lua programming language](https://en.wikipedia.org/wiki/Lua_programming_language)
 
 ## Features
 * Types are themselves variables of type `typename`.
@@ -40,6 +40,10 @@ Syntax is similar to c/c++ influenced by:
 	* Create and initialize objects like in JavaScript `complex a = {re: 42, im: 2};`
 	* `this` is not needed using [Uniform Function Call Syntax](https://en.wikipedia.org/wiki/Uniform_Function_Call_Syntax).
 
+* `public`, `private` access level modifiers are not part of the language.
+	* everything is accessible inside one file with no restriction.
+	* accessing a non doc commented variable, function field or method will raise a high level warning.
+	* deprecation and any other annotations should be specified in the documentation comment.
 
 # Lexical structure
 
@@ -1025,20 +1029,25 @@ inline iterator(Range r) = RangeIterator {
 	end: r.max;
 };
 
-// make RangeIterator iterable using an int
-bool next(RangeIterator &it, int &&value) {
-	value = it.current;
-	return RangeIterator.next(it);
+// now we can iterate over any range using the iterator
+for (RangeIterator it : Range(10, 20)) {
+	println(it.current);
 }
 
-// now we can iterate over any range
+// make RangeIterator iterable using an int
+bool next(RangeIterator &it, int &&value) {
+	if (RangeIterator.next(it)) {
+		value = it.current;
+		return true;
+	}
+	return false;
+}
+
+// now we can iterate over any range also with an int value
 for (int i : Range(10, 20)) {
 	println(i);
 }
 
-for (RangeIterator it : Range(10, 20)) {
-	println(it.current);
-}
 ```
 
 ### While statement

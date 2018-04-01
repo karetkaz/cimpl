@@ -1413,6 +1413,24 @@ static int usage() {
 		"\n"
 		"\n<global options>:"
 		"\n"
+		"\n  -run[*]               run at full speed, but without: debug information, stacktrace, bounds checking, ..."
+		"\n    /g /G               dump global variable values"
+		"\n"
+		"\n  -debug[*]             run with attached debugger, pausing on uncaught errors and break points"
+		"\n    /s                  pause on startup"
+		"\n    /a                  pause on all(caught) errors"
+		"\n    /l /L               print caught errors (/L includes stack trace)"
+		"\n    /g /G               dump global variable values"
+		"\n    /h                  dump allocated heap memory chunks"
+		"\n    /p                  dump function/coverage statistics"
+		"\n"
+		"\n  -profile[*]           run code with profiler: coverage, method tracing"
+		"\n    /t                  dump call tree"
+		"\n    /a                  include everything in the dump"
+		"\n    /g /G               dump global variable values"
+		"\n    /h                  dump allocated heap memory chunks"
+		"\n    /p                  dump function/coverage statistics"
+		"\n"
 		"\n  -std<file>            specify custom standard library file (empty file name disables std library compilation)."
 		"\n"
 		"\n  -mem<int>[kKmMgG]     override memory usage for compiler and runtime(heap)"
@@ -1442,23 +1460,6 @@ static int usage() {
 		"\n    /b                  don't keep braces ('{') on the same line"
 		"\n    /e                  don't keep `else if` constructs on the same line"
 		"\n"
-		"\n  -run                  run without: debug information, stacktrace, bounds checking, ..."
-		"\n"
-		"\n  -debug[*]             run with attached debugger, pausing on uncaught errors and break points"
-		"\n    /s                  pause on startup"
-		"\n    /a                  pause on all(caught) errors"
-		"\n    /[l|L]              print caught errors (/L includes stack trace)"
-		"\n    /g                  dump global variable values"
-		"\n    /h                  dump allocated heap memory chunks"
-		"\n    /p                  dump function/coverage statistics"
-		"\n"
-		"\n  -profile[*]           run code with profiler: coverage, method tracing"
-		"\n    /t                  dump call tree"
-		"\n    /a                  include everything in the dump"
-		"\n    /g                  dump global variable values"
-		"\n    /h                  dump allocated heap memory chunks"
-		"\n    /p                  dump function/coverage statistics"
-		"\n"
 		"\n<files with options>: filename followed by switches"
 		"\n  <file>                if file extension is (.so|.dll) load as library else compile"
 		"\n  -w[a|x|<int>]         set or disable warning level for current file"
@@ -1471,16 +1472,16 @@ static int usage() {
 		"\n>app -dump.json api.json"
 		"\n    dump builtin symbols to `api.json` file (types, functions, variables, aliases)"
 		"\n"
-		"\n>app -run test.tracing.ccc"
-		"\n    compile and execute the file `test.tracing.ccc`"
+		"\n>app -run test.tracing.ci"
+		"\n    compile and execute the file `test.tracing.ci`"
 		"\n"
-		"\n>app -debug gl.so -w0 gl.ccc -w0 test.ccc -wx -b12 -b15 -b/t19"
+		"\n>app -debug gl.so -w0 gl.ci -w0 test.ci -wx -b12 -b15 -b/t19"
 		"\n    execute in debug mode"
 		"\n    import `gl.so`"
 		"\n        with no warnings"
-		"\n    compile `gl.ccc`"
+		"\n    compile `gl.ci`"
 		"\n        with no warnings"
-		"\n    compile `test.ccc`"
+		"\n    compile `test.ci`"
 		"\n        treating all warnings as errors"
 		"\n        break execution on lines 12 and 15"
 		"\n        print message when line 19 is hit"
@@ -1579,8 +1580,147 @@ int main(int argc, char *argv[]) {
 	for (i = 1; i < argc; ++i) {
 		char *arg = argv[i];
 
+		// not an option
+		if (*arg != '-') {
+			break;
+		}
+
+		// run, debug or profile
+		else if (strncmp(arg, "-run", 4) == 0) {
+			char *arg2 = arg + 4;
+			if (run_code != compile) {
+				fatal("argument specified multiple times: %s", arg);
+				return -1;
+			}
+			run_code = run;
+			while (*arg2 == '/') {
+				switch (arg2[1]) {
+					default:
+						arg2 += 1;
+						break;
+
+					case 'G':
+						extra.dmpGlobals = 2;
+						arg2 += 2;
+						break;
+					case 'g':
+						extra.dmpGlobals = 1;
+						arg2 += 2;
+						break;
+				}
+			}
+			if (*arg2) {
+				fatal("invalid argument '%s'", arg);
+				return -1;
+			}
+		}
+		else if (strncmp(arg, "-debug", 6) == 0) {
+			char *arg2 = arg + 6;
+			if (run_code != compile) {
+				fatal("argument specified multiple times: %s", arg);
+				return -1;
+			}
+			run_code = debug;
+			while (*arg2 == '/') {
+				switch (arg2[1]) {
+					default:
+						arg2 += 1;
+						break;
+
+					// break, print, trace ...
+					case 's':
+						extra.dbgNextBreak = (size_t)-1;
+						arg2 += 2;
+						break;
+					case 'a':
+						extra.dbgOnCaught |= brkPause;
+						arg2 += 2;
+						break;
+					case 'L':
+						extra.dbgOnCaught |= brkTrace;
+					case 'l':
+						extra.dbgOnCaught |= brkPrint;
+						arg2 += 2;
+						break;
+
+					case 'E':
+						extra.exec |= trcLocals;
+					case 'e':
+						extra.exec |= trcOpcodes;
+						arg2 += 2;
+						break;
+
+					// dump stats
+					case 'p':
+						extra.exec |= dmpProfile;
+						arg2 += 2;
+						break;
+					case 'G':
+						extra.dmpGlobals = 2;
+						arg2 += 2;
+						break;
+					case 'g':
+						extra.dmpGlobals = 1;
+						arg2 += 2;
+						break;
+					case 'h':
+						extra.exec |= dmpMemory;
+						arg2 += 2;
+						break;
+				}
+			}
+			if (*arg2) {
+				fatal("invalid argument '%s'", arg);
+				return -1;
+			}
+		}
+		else if (strncmp(arg, "-profile", 8) == 0) {
+			char *arg2 = arg + 8;
+			if (run_code != compile) {
+				fatal("argument specified multiple times: %s", arg);
+				return -1;
+			}
+			run_code = profile;
+			extra.exec |= dmpProfile;
+			while (*arg2 == '/') {
+				switch (arg2[1]) {
+					default:
+						arg2 += 1;
+						break;
+
+					// dump call tree
+					case 't':
+						extra.exec |= trcTime | trcMethods;
+						arg2 += 2;
+						break;
+
+					// dump stats
+					case 'G':
+						extra.dmpGlobals = 2;
+						arg2 += 2;
+						break;
+					case 'g':
+						extra.dmpGlobals = 1;
+						arg2 += 2;
+						break;
+					case 'h':
+						extra.exec |= dmpMemory;
+						arg2 += 2;
+						break;
+					case 'a':
+						extra.exec |= dmpAllData;
+						arg2 += 2;
+						break;
+				}
+			}
+			if (*arg2) {
+				fatal("invalid argument '%s'", arg);
+				return -1;
+			}
+		}
+
 		// override stdlib file
-		if (strncmp(arg, "-std", 4) == 0) {
+		else if (strncmp(arg, "-std", 4) == 0) {
 			if (stdLib != (char*)STDLIB) {
 				fatal("argument specified multiple times: %s", arg);
 				return -1;
@@ -1669,13 +1809,12 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		// output api, ast, asm
-		// output format and filename
+		// dump output format and filename
 		else if (strncmp(arg, "-dump", 5) == 0) {
 			if (strEquals(arg, "-dump")) {
 				dumpFun = dumpApiText;
 			}
-			else if (strcmp(arg, "-dump.ast.xml") == 0) {
+			else if (strEquals(arg, "-dump.ast.xml")) {
 				if (++i >= argc || pathDumpXml) {
 					fatal("dump file not or double specified");
 					return -1;
@@ -1849,141 +1988,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		// run, debug or profile
-		else if (strncmp(arg, "-run", 4) == 0) {        // execute code in release mode
-			char *arg2 = arg + 4;
-			if (run_code != compile) {
-				fatal("argument specified multiple times: %s", arg);
-				return -1;
-			}
-			run_code = run;
-			while (*arg2 == '/') {
-				switch (arg2[1]) {
-					default:
-						arg2 += 1;
-						break;
-
-					case 'G':
-						extra.dmpGlobals = 2;
-						arg2 += 2;
-						break;
-					case 'g':
-						extra.dmpGlobals = 1;
-						arg2 += 2;
-						break;
-				}
-			}
-			if (*arg2) {
-				fatal("invalid argument '%s'", arg);
-				return -1;
-			}
-		}
-		else if (strncmp(arg, "-debug", 6) == 0) {      // execute code in debug mode
-			char *arg2 = arg + 6;
-			if (run_code != compile) {
-				fatal("argument specified multiple times: %s", arg);
-				return -1;
-			}
-			run_code = debug;
-			while (*arg2 == '/') {
-				switch (arg2[1]) {
-					default:
-						arg2 += 1;
-						break;
-
-					// break, print, trace ...
-					case 's':
-						extra.dbgNextBreak = (size_t)-1;
-						arg2 += 2;
-						break;
-					case 'a':
-						extra.dbgOnCaught |= brkPause;
-						arg2 += 2;
-						break;
-					case 'L':
-						extra.dbgOnCaught |= brkTrace;
-					case 'l':
-						extra.dbgOnCaught |= brkPrint;
-						arg2 += 2;
-						break;
-
-					case 'E':
-						extra.exec |= trcLocals;
-					case 'e':
-						extra.exec |= trcOpcodes;
-						arg2 += 2;
-						break;
-
-					// dump stats
-					case 'p':
-						extra.exec |= dmpProfile;
-						arg2 += 2;
-						break;
-					case 'G':
-						extra.dmpGlobals = 2;
-						arg2 += 2;
-						break;
-					case 'g':
-						extra.dmpGlobals = 1;
-						arg2 += 2;
-						break;
-					case 'h':
-						extra.exec |= dmpMemory;
-						arg2 += 2;
-						break;
-				}
-			}
-			if (*arg2) {
-				fatal("invalid argument '%s'", arg);
-				return -1;
-			}
-		}
-		else if (strncmp(arg, "-profile", 8) == 0) {    // execute code in profile mode
-			char *arg2 = arg + 8;
-			if (run_code != compile) {
-				fatal("argument specified multiple times: %s", arg);
-				return -1;
-			}
-			run_code = profile;
-			extra.exec |= dmpProfile;
-			while (*arg2 == '/') {
-				switch (arg2[1]) {
-					default:
-						arg2 += 1;
-						break;
-
-					// dump call tree
-					case 't':
-						extra.exec |= trcTime | trcMethods;
-						arg2 += 2;
-						break;
-
-					// dump stats
-					case 'G':
-						extra.dmpGlobals = 2;
-						arg2 += 2;
-						break;
-					case 'g':
-						extra.dmpGlobals = 1;
-						arg2 += 2;
-						break;
-					case 'h':
-						extra.exec |= dmpMemory;
-						arg2 += 2;
-						break;
-					case 'a':
-						extra.exec |= dmpAllData;
-						arg2 += 2;
-						break;
-				}
-			}
-			if (*arg2) {
-				fatal("invalid argument '%s'", arg);
-				return -1;
-			}
-		}
-
-		// enable or disable settings
+		// enable or disable hidden settings
 		else if (strBegins(arg, "-X")) {
 			char *arg2 = arg + 2;
 			while (*arg2 == '-' || *arg2 == '+') {

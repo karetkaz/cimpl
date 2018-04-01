@@ -1,0 +1,185 @@
+<html>
+<head>
+	<title>Cmpl live demo</title>
+
+	<!--Code mirror code-->
+	<link rel="stylesheet" href="lib/codemirror.css">
+	<script src="lib/codemirror.js"></script>
+	<script src="cmpl.lang.js"></script>
+
+	<!--libraries-->
+	<link rel="stylesheet" href="main.css">
+	<script type="text/javascript" src="lib/FileSaver.js"></script>
+	<script type="text/javascript" src="cmpl.js"></script>
+
+</head>
+<body>
+<h1>
+	<a href="https://github.com/karetkaz/cmpl">Cmpl</a> live demo 
+</h1>
+<em class="built-with">
+	built using:
+	<a href="https://codemirror.net/">CodeMirror</a>,
+	<a href="https://kripken.github.io/emscripten-site/">Emscripten</a>,
+	<a href="http://webassembly.org/">WebAssembly</a>
+</em>
+
+<div class="oriented-split">
+	<div>
+		<div class="header">
+			<h2>Input</h2>
+			<input type="button" value="Run" onclick="execute('-run');"/>
+			<input type="button" value="Debug" onclick="execute('-debug');"/>
+			<input type="button" value="Profile" onclick="execute('-profile');"/>
+			<input type="button" value="Compile" onclick="execute();"/>
+		</div>
+		<div class="text-content">
+		<textarea id="input" rows="20">
+void empty() {}
+
+// function with implementation
+int funAdd(int x, int y) {
+	return x + y;
+}
+
+// function invocation
+int funAddResult = funAdd(2, 7);
+
+// initialized function reference
+int funAddRef(int x, int y) = funAdd;
+
+// function reference invocation
+int funAddRefResult = funAddRef(2, 8);
+
+// forward function reference (must be implemented somewhere)
+int funMul(int x, int y);
+
+// forward function invocation
+int funMulResult = funMul(2, 6);
+
+// initialized forward function reference (copy address)
+int funMulRef(int x, int y) = funMul;
+
+// forward function reference invocation
+int funMulRefResult = funMulRef(2, 7);
+
+// forward function implementation
+int funMul(int x, int y) {
+	return x * y;
+}
+
+// recursive function implementation
+uint32 fib(uint32 n) {
+	if (n <= 1) {
+		return n;
+	}
+	return fib(n-1) + fib(n-2);
+}
+
+// recursive function invocation
+uint32 fibonacci_13 = fib(13);
+</textarea>
+		</div>
+	</div>
+	<div>
+		<div class="header">
+			<h2>Output</h2>
+			<input type="button" value="clear" onclick="output.value=''"/>
+			<input id="dumpApi" type="checkbox"/>Api
+			<input id="dumpAsm" type="checkbox"/>Asm
+			<input id="dumpAst" type="checkbox"/>Ast
+			<input id="dumpVal" type="checkbox" checked/>Globals
+			<a href="javascript:saveFSFile()">Download</a>
+		</div>
+		<div class="text-content">
+			<textarea id="output" rows="30" readonly spellcheck="false"></textarea>
+		</div>
+	</div>
+</div>
+</body>
+<script type="text/javascript">
+	var editor = CodeMirror.fromTextArea(document.getElementById("input"), {
+		mode: "text/x-cmpl",
+		lineNumbers: true,
+		matchBrackets: true,
+		tabSize: 4,
+		indentUnit: 4,
+		indentWithTabs: true
+	});
+	var terminal = terminalFromTextArea(document.getElementById("output"));
+	editor.setSize('100%', '100%');
+	Module.print = terminal.print;
+
+	function terminalFromTextArea(output) {
+		if (output == null) {
+			return {
+				print: console.log,
+				clear: function () {
+				}
+			}
+		}
+
+		return {
+			print: function(text) {
+				if (arguments.length > 1) {
+					text = Array.prototype.slice.call(arguments).join(' ');
+				}
+				// show and focus the message as soon as possible
+				setTimeout(function () {
+					output.value += text + "\n";
+					output.scrollTop = output.scrollHeight;
+				})
+			},
+			clear: function() {
+				output.value = '';
+			}
+		};
+	}
+	function saveFSFile(fileName) {
+		if (fileName == null) {
+			fileName = prompt('Download file:', 'stdlib.ci');
+			if (fileName == null) {
+				return;
+			}
+		}
+		var type = "application/octet-stream";
+		var data = FS.readFile(fileName);
+		saveAs(new Blob([data.buffer], {type: type}), fileName);
+	}
+	function execute(mode) {
+		var args = [
+			'-X-stdin',         // do not use standard input
+			'-mem3M'            // allocate 3Mb memory in heap
+		];
+
+		if (document.getElementById('dumpApi').checked) {
+			args.push('-api');
+		}
+		if (document.getElementById('dumpAsm').checked) {
+			args.push('-asm/a/n/s/m');
+		}
+		if (document.getElementById('dumpAst').checked) {
+			args.push('-ast');
+		}
+		if (document.getElementById('dumpVal').checked) {
+			if (mode != null) {
+				mode += '/g';
+			}
+		}
+		if (mode != null) {
+			// print globals on exit
+			args.push(mode);
+		}
+
+		terminal.clear();
+
+		// save the content of the editor to memory file
+		var inputFile = 'input';
+		FS.writeFile(inputFile, editor.getValue());
+
+		// compile the code
+		args.push(inputFile);
+		Module['callMain'](args);
+	}
+</script>
+</html>

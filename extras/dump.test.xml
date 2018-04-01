@@ -860,6 +860,57 @@
 				<call token=".variable" type="function" kind="static const typename(ref)" value="min" />
 			</init>
 		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="sum3Val">
+			<init token="()" type="int32" kind="static const typename(i32)" value="sum(3, 2, 6)">
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="6" />
+				<call token=".variable" type="function" kind="static const typename(ref)" value="sum" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="sum3Var">
+			<init token="()" type="int32" kind="static const typename(i32)" value="sum(ma, mb, mc)">
+				<push token=".variable" type="int32" kind="static const typename(i32)" value="ma">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+				</push>
+				<push token=".variable" type="int32" kind="static const typename(i32)" value="mb">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="6" />
+				</push>
+				<push token=".variable" type="int32" kind="static const typename(i32)" value="mc">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="9" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="sum" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="sum3Xpr">
+			<init token="()" type="int32" kind="static const typename(i32)" value="sum(ma + mb, mb + mc, mc + ma)">
+				<push token="+" type="int32" kind="static const typename(i32)" value="ma + mb">
+					<left token=".variable" type="int32" kind="static const typename(i32)" value="ma">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+					</left>
+					<right token=".variable" type="int32" kind="static const typename(i32)" value="mb">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="6" />
+					</right>
+				</push>
+				<push token="+" type="int32" kind="static const typename(i32)" value="mb + mc">
+					<left token=".variable" type="int32" kind="static const typename(i32)" value="mb">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="6" />
+					</left>
+					<right token=".variable" type="int32" kind="static const typename(i32)" value="mc">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="9" />
+					</right>
+				</push>
+				<push token="+" type="int32" kind="static const typename(i32)" value="mc + ma">
+					<left token=".variable" type="int32" kind="static const typename(i32)" value="mc">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="9" />
+					</left>
+					<right token=".variable" type="int32" kind="static const typename(i32)" value="ma">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+					</right>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="sum" />
+			</init>
+		</stmt>
 		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="any3Val">
 			<init token="()" type="int32" kind="static const typename(i32)" value="any(3, 2, 6)">
 				<push token=".literal" type="int32" kind="static const typename(i32)" value="3" />
@@ -4085,6 +4136,299 @@
 				<call token=".variable" type="function" kind="static const typename(ref)" value="assert" />
 			</expr>
 		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="noError(ptr: pointer): void">
+			<init token="{}" type="void" kind="static const typename(void)">
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="stackOverflow(ptr: pointer): void">
+			<init token="{}" type="void" kind="static const typename(void)" file="test/stdc.nfcTryExec.ci:13">
+				<stmt token=".variable" type="uint8[1024]" kind="static typename(arr)" value="data" />
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="stackOverflow(ptr);">
+					<expr token="()" type="void" kind="static const typename(void)" value="stackOverflow(ptr)">
+						<push token=".variable" type="pointer" kind="static const typename(ref)" value="ptr" />
+						<call token=".variable" type="function" kind="static const typename(ref)" value="stackOverflow" />
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="divisionByZero(args: pointer): void">
+			<init token="{}" type="void" kind="static const typename(void)" file="test/stdc.nfcTryExec.ci:18">
+				<stmt token=".variable" type="int32" kind="static const typename(i32)" value="value">
+					<init token="/" type="int32" kind="static const typename(i32)" value="3 / 0">
+						<left token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+					</init>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="abortExecution(args: pointer): void">
+			<init token="{}" type="void" kind="static const typename(void)" file="test/stdc.nfcTryExec.ci:22">
+				<stmt token=".variable" type="typename" kind="static const typename(ref)" value="NotEquals" />
+				<stmt token=".variable" type="abortExecution.NotEquals" kind="static const typename(val)" value="details" />
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="details.message := (&quot;assertion failed&quot;);">
+					<expr token=":=" type="char[*]" kind="static typename(arr)" value="details.message := (&quot;assertion failed&quot;)">
+						<left token="." type="char[*]" kind="static typename(arr)" value="details.message">
+							<left token=".variable" type="abortExecution.NotEquals" kind="static const typename(val)" value="details" />
+							<right token=".variable" type="char[*]" kind="static typename(arr)" value="message" />
+						</left>
+						<right token="()" type="char[*]" kind="static typename(arr)" value="(&quot;assertion failed&quot;)">
+							<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;assertion failed&quot;" />
+						</right>
+					</expr>
+				</stmt>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="details.expected := 97;">
+					<expr token=":=" type="int32" kind="static const typename(i32)" value="details.expected := 97">
+						<left token="." type="int32" kind="static const typename(i32)" value="details.expected">
+							<left token=".variable" type="abortExecution.NotEquals" kind="static const typename(val)" value="details" />
+							<right token=".variable" type="int32" kind="static const typename(i32)" value="expected" />
+						</left>
+						<right token=".literal" type="int32" kind="static const typename(i32)" value="97" />
+					</expr>
+				</stmt>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="details.returned := 77;">
+					<expr token=":=" type="int32" kind="static const typename(i32)" value="details.returned := 77">
+						<left token="." type="int32" kind="static const typename(i32)" value="details.returned">
+							<left token=".variable" type="abortExecution.NotEquals" kind="static const typename(val)" value="details" />
+							<right token=".variable" type="int32" kind="static const typename(i32)" value="returned" />
+						</left>
+						<right token=".literal" type="int32" kind="static const typename(i32)" value="77" />
+					</expr>
+				</stmt>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="raise(raise.abort, raise.noTrace, &quot;fatal error&quot;, details);">
+					<expr token="()" type="void" kind="static const typename(void)" value="raise(raise.abort, raise.noTrace, &quot;fatal error&quot;, details)">
+						<push token="." type="int64" kind="static const typename(i64)" value="raise.abort">
+							<left token=".variable" type="void" kind="static const typename(void)" value="raise">
+								<init token="emit" type="void" kind="static const typename(void)" value="nfc(5)" />
+							</left>
+							<right token=".variable" type="int64" kind="static const typename(i64)" value="abort">
+								<init token=".literal" type="int64" kind="static const typename(i64)" value="-1" />
+							</right>
+						</push>
+						<push token="." type="int64" kind="static const typename(i64)" value="raise.noTrace">
+							<left token=".variable" type="void" kind="static const typename(void)" value="raise">
+								<init token="emit" type="void" kind="static const typename(void)" value="nfc(5)" />
+							</left>
+							<right token=".variable" type="int64" kind="static const typename(i64)" value="noTrace">
+								<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
+							</right>
+						</push>
+						<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;fatal error&quot;" />
+						<push token=".variable" type="abortExecution.NotEquals" kind="static const typename(val)" value="details" />
+						<call token=".variable" type="function" kind="static const typename(ref)" value="raise" />
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="invalidMemoryAccess(args: pointer): void">
+			<init token="{}" type="void" kind="static const typename(void)" file="test/stdc.nfcTryExec.ci:35">
+				<stmt token=".variable" type="int32" kind="static const typename(i32)" value="i32Ref">
+					<init token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+						<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}" />
+					</init>
+				</stmt>
+				<stmt token=".variable" type="int32" kind="static const typename(i32)" value="i32Val">
+					<init token=".variable" type="int32" kind="static const typename(i32)" value="i32Ref">
+						<init token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+							<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}" />
+						</init>
+					</init>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="invalidInstruction(args: pointer): void">
+			<init token="{}" type="void" kind="static const typename(void)" file="test/stdc.nfcTryExec.ci:40">
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="emit(load.z32, ret);">
+					<expr token="()" type="emit" kind="static const typename(void)" value="emit(load.z32, ret)">
+						<push token="." type="int32" kind="static const typename(i32)" value="load.z32">
+							<left token=".variable" type="void" kind="static const typename(void)" value="load" />
+							<right token=".variable" type="int32" kind="static const typename(i32)" value="z32">
+								<init token="emit" type="int32" kind="static const typename(i32)" value="load.z32" />
+							</right>
+						</push>
+						<push token=".variable" type="void" kind="static const typename(void)" value="ret">
+							<init token="emit" type="void" kind="static const typename(void)" value="ret" />
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="emit" />
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="tryExecErr0">
+			<init token="()" type="int32" kind="static const typename(i32)" value="tryExec(null, noError)">
+				<push token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+					<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}" />
+				</push>
+				<push token=".variable" type="function" kind="static const typename(ref)" value="noError">
+					<init token="{}" type="void" kind="static const typename(void)">
+					</init>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="tryExec" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="tryExecErr1">
+			<init token="()" type="int32" kind="static const typename(i32)" value="tryExec(null, null)">
+				<push token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+					<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}" />
+				</push>
+				<push token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+					<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="tryExec" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="tryExecErr2">
+			<init token="()" type="int32" kind="static const typename(i32)" value="tryExec(null, stackOverflow)">
+				<push token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+					<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}" />
+				</push>
+				<push token=".variable" type="function" kind="static const typename(ref)" value="stackOverflow">
+					<init token="{}" type="void" kind="static const typename(void)" file="test/stdc.nfcTryExec.ci:13">
+						<stmt token=".variable" type="uint8[1024]" kind="static typename(arr)" value="data" />
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="stackOverflow(ptr);">
+							<expr token="()" type="void" kind="static const typename(void)" value="stackOverflow(ptr)">
+								<push token=".variable" type="pointer" kind="static const typename(ref)" value="ptr" />
+								<call token=".variable" type="function" kind="static const typename(ref)" value="stackOverflow" />
+							</expr>
+						</stmt>
+					</init>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="tryExec" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="tryExecErr3">
+			<init token="()" type="int32" kind="static const typename(i32)" value="tryExec(null, divisionByZero)">
+				<push token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+					<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}" />
+				</push>
+				<push token=".variable" type="function" kind="static const typename(ref)" value="divisionByZero">
+					<init token="{}" type="void" kind="static const typename(void)" file="test/stdc.nfcTryExec.ci:18">
+						<stmt token=".variable" type="int32" kind="static const typename(i32)" value="value">
+							<init token="/" type="int32" kind="static const typename(i32)" value="3 / 0">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</init>
+						</stmt>
+					</init>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="tryExec" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="tryExecErr4">
+			<init token="()" type="int32" kind="static const typename(i32)" value="tryExec(null, invalidInstruction)">
+				<push token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+					<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}" />
+				</push>
+				<push token=".variable" type="function" kind="static const typename(ref)" value="invalidInstruction">
+					<init token="{}" type="void" kind="static const typename(void)" file="test/stdc.nfcTryExec.ci:40">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="emit(load.z32, ret);">
+							<expr token="()" type="emit" kind="static const typename(void)" value="emit(load.z32, ret)">
+								<push token="." type="int32" kind="static const typename(i32)" value="load.z32">
+									<left token=".variable" type="void" kind="static const typename(void)" value="load" />
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="z32">
+										<init token="emit" type="int32" kind="static const typename(i32)" value="load.z32" />
+									</right>
+								</push>
+								<push token=".variable" type="void" kind="static const typename(void)" value="ret">
+									<init token="emit" type="void" kind="static const typename(void)" value="ret" />
+								</push>
+								<call token=".variable" type="function" kind="static const typename(ref)" value="emit" />
+							</expr>
+						</stmt>
+					</init>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="tryExec" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="tryExecErr5">
+			<init token="()" type="int32" kind="static const typename(i32)" value="tryExec(null, invalidMemoryAccess)">
+				<push token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+					<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}" />
+				</push>
+				<push token=".variable" type="function" kind="static const typename(ref)" value="invalidMemoryAccess">
+					<init token="{}" type="void" kind="static const typename(void)" file="test/stdc.nfcTryExec.ci:35">
+						<stmt token=".variable" type="int32" kind="static const typename(i32)" value="i32Ref">
+							<init token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+								<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}" />
+							</init>
+						</stmt>
+						<stmt token=".variable" type="int32" kind="static const typename(i32)" value="i32Val">
+							<init token=".variable" type="int32" kind="static const typename(i32)" value="i32Ref">
+								<init token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+									<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}" />
+								</init>
+							</init>
+						</stmt>
+					</init>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="tryExec" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="tryExecErr6">
+			<init token="()" type="int32" kind="static const typename(i32)" value="tryExec(null, abortExecution)">
+				<push token=".variable" type="pointer" kind="static const typename(ref)" value="null">
+					<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}" />
+				</push>
+				<push token=".variable" type="function" kind="static const typename(ref)" value="abortExecution">
+					<init token="{}" type="void" kind="static const typename(void)" file="test/stdc.nfcTryExec.ci:22">
+						<stmt token=".variable" type="typename" kind="static const typename(ref)" value="NotEquals" />
+						<stmt token=".variable" type="abortExecution.NotEquals" kind="static const typename(val)" value="details" />
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="details.message := (&quot;assertion failed&quot;);">
+							<expr token=":=" type="char[*]" kind="static typename(arr)" value="details.message := (&quot;assertion failed&quot;)">
+								<left token="." type="char[*]" kind="static typename(arr)" value="details.message">
+									<left token=".variable" type="abortExecution.NotEquals" kind="static const typename(val)" value="details" />
+									<right token=".variable" type="char[*]" kind="static typename(arr)" value="message" />
+								</left>
+								<right token="()" type="char[*]" kind="static typename(arr)" value="(&quot;assertion failed&quot;)">
+									<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;assertion failed&quot;" />
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="details.expected := 97;">
+							<expr token=":=" type="int32" kind="static const typename(i32)" value="details.expected := 97">
+								<left token="." type="int32" kind="static const typename(i32)" value="details.expected">
+									<left token=".variable" type="abortExecution.NotEquals" kind="static const typename(val)" value="details" />
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="expected" />
+								</left>
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="97" />
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="details.returned := 77;">
+							<expr token=":=" type="int32" kind="static const typename(i32)" value="details.returned := 77">
+								<left token="." type="int32" kind="static const typename(i32)" value="details.returned">
+									<left token=".variable" type="abortExecution.NotEquals" kind="static const typename(val)" value="details" />
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="returned" />
+								</left>
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="77" />
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="raise(raise.abort, raise.noTrace, &quot;fatal error&quot;, details);">
+							<expr token="()" type="void" kind="static const typename(void)" value="raise(raise.abort, raise.noTrace, &quot;fatal error&quot;, details)">
+								<push token="." type="int64" kind="static const typename(i64)" value="raise.abort">
+									<left token=".variable" type="void" kind="static const typename(void)" value="raise">
+										<init token="emit" type="void" kind="static const typename(void)" value="nfc(5)" />
+									</left>
+									<right token=".variable" type="int64" kind="static const typename(i64)" value="abort">
+										<init token=".literal" type="int64" kind="static const typename(i64)" value="-1" />
+									</right>
+								</push>
+								<push token="." type="int64" kind="static const typename(i64)" value="raise.noTrace">
+									<left token=".variable" type="void" kind="static const typename(void)" value="raise">
+										<init token="emit" type="void" kind="static const typename(void)" value="nfc(5)" />
+									</left>
+									<right token=".variable" type="int64" kind="static const typename(i64)" value="noTrace">
+										<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
+									</right>
+								</push>
+								<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;fatal error&quot;" />
+								<push token=".variable" type="abortExecution.NotEquals" kind="static const typename(val)" value="details" />
+								<call token=".variable" type="function" kind="static const typename(ref)" value="raise" />
+							</expr>
+						</stmt>
+					</init>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="tryExec" />
+			</init>
+		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="rgbF32" />
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="rgbU8" />
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="color" />
@@ -4271,118 +4615,118 @@
 				</right>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-			<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+		<stmt token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+			<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 		</stmt>
-		<stmt token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-			<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+		<stmt token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+			<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 		</stmt>
-		<stmt token=".variable" type="char" kind="static const typename(u32)" value="chrPls">
-			<init token="+" type="char" kind="static const typename(u32)" value="+chrB">
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+		<stmt token=".variable" type="char" kind="static const typename(i32)" value="chrPls">
+			<init token="+" type="char" kind="static const typename(i32)" value="+chrB">
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="char" kind="static const typename(u32)" value="chrNeg">
-			<init token="-" type="char" kind="static const typename(u32)" value="-chrB">
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+		<stmt token=".variable" type="char" kind="static const typename(i32)" value="chrNeg">
+			<init token="-" type="char" kind="static const typename(i32)" value="-chrB">
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="char" kind="static const typename(u32)" value="chrCmt">
-			<init token="~" type="char" kind="static const typename(u32)" value="~chrB">
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+		<stmt token=".variable" type="char" kind="static const typename(i32)" value="chrCmt">
+			<init token="~" type="char" kind="static const typename(i32)" value="~chrB">
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="char" kind="static const typename(u32)" value="chrAdd">
-			<init token="+" type="char" kind="static const typename(u32)" value="chrA + chrB">
-				<left token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+		<stmt token=".variable" type="char" kind="static const typename(i32)" value="chrAdd">
+			<init token="+" type="char" kind="static const typename(i32)" value="chrA + chrB">
+				<left token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 				</left>
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="char" kind="static const typename(u32)" value="chrSub">
-			<init token="-" type="char" kind="static const typename(u32)" value="chrA - chrB">
-				<left token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+		<stmt token=".variable" type="char" kind="static const typename(i32)" value="chrSub">
+			<init token="-" type="char" kind="static const typename(i32)" value="chrA - chrB">
+				<left token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 				</left>
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="char" kind="static const typename(u32)" value="chrMul">
-			<init token="*" type="char" kind="static const typename(u32)" value="chrA * chrB">
-				<left token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+		<stmt token=".variable" type="char" kind="static const typename(i32)" value="chrMul">
+			<init token="*" type="char" kind="static const typename(i32)" value="chrA * chrB">
+				<left token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 				</left>
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="char" kind="static const typename(u32)" value="chrDiv">
-			<init token="/" type="char" kind="static const typename(u32)" value="chrA / chrB">
-				<left token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+		<stmt token=".variable" type="char" kind="static const typename(i32)" value="chrDiv">
+			<init token="/" type="char" kind="static const typename(i32)" value="chrA / chrB">
+				<left token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 				</left>
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="char" kind="static const typename(u32)" value="chrMod">
-			<init token="%" type="char" kind="static const typename(u32)" value="chrA % chrB">
-				<left token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+		<stmt token=".variable" type="char" kind="static const typename(i32)" value="chrMod">
+			<init token="%" type="char" kind="static const typename(i32)" value="chrA % chrB">
+				<left token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 				</left>
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="char" kind="static const typename(u32)" value="chrAnd">
-			<init token="&amp;" type="char" kind="static const typename(u32)" value="chrA &amp; chrB">
-				<left token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+		<stmt token=".variable" type="char" kind="static const typename(i32)" value="chrAnd">
+			<init token="&amp;" type="char" kind="static const typename(i32)" value="chrA &amp; chrB">
+				<left token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 				</left>
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="char" kind="static const typename(u32)" value="chrIor">
-			<init token="|" type="char" kind="static const typename(u32)" value="chrA | chrB">
-				<left token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+		<stmt token=".variable" type="char" kind="static const typename(i32)" value="chrIor">
+			<init token="|" type="char" kind="static const typename(i32)" value="chrA | chrB">
+				<left token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 				</left>
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="char" kind="static const typename(u32)" value="chrXor">
-			<init token="^" type="char" kind="static const typename(u32)" value="chrA ^ chrB">
-				<left token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+		<stmt token=".variable" type="char" kind="static const typename(i32)" value="chrXor">
+			<init token="^" type="char" kind="static const typename(i32)" value="chrA ^ chrB">
+				<left token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 				</left>
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="char" kind="static const typename(u32)" value="chrShl">
+		<stmt token=".variable" type="char" kind="static const typename(i32)" value="chrShl">
 			<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="(chrA) &lt;&lt; shift">
 				<left token="()" type="int32" kind="static const typename(i32)" value="(chrA)">
-					<push token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-						<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+					<push token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+						<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 					</push>
 				</left>
 				<right token=".variable" type="int32" kind="static const typename(i32)" value="shift">
@@ -4390,11 +4734,11 @@
 				</right>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="char" kind="static const typename(u32)" value="chrShr">
+		<stmt token=".variable" type="char" kind="static const typename(i32)" value="chrShr">
 			<init token="&gt;&gt;" type="int32" kind="static const typename(i32)" value="(chrA) &gt;&gt; shift">
 				<left token="()" type="int32" kind="static const typename(i32)" value="(chrA)">
-					<push token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-						<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+					<push token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+						<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 					</push>
 				</left>
 				<right token=".variable" type="int32" kind="static const typename(i32)" value="shift">
@@ -4405,69 +4749,69 @@
 		<stmt token=".variable" type="bool" kind="static const typename(bool)" value="chrNot">
 			<init token="!" type="bool" kind="static const typename(bool)" value="!(chrB)">
 				<right token="()" type="bool" kind="static const typename(bool)" value="(chrB)">
-					<push token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-						<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+					<push token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+						<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 					</push>
 				</right>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="bool" kind="static const typename(bool)" value="chrCeq">
 			<init token="==" type="bool" kind="static const typename(bool)" value="chrA == chrB">
-				<left token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+				<left token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 				</left>
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="bool" kind="static const typename(bool)" value="chrCne">
 			<init token="!=" type="bool" kind="static const typename(bool)" value="chrA != chrB">
-				<left token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+				<left token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 				</left>
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="bool" kind="static const typename(bool)" value="chrClt">
 			<init token="&lt;" type="bool" kind="static const typename(bool)" value="chrA &lt; chrB">
-				<left token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+				<left token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 				</left>
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="bool" kind="static const typename(bool)" value="chrCle">
 			<init token="&lt;=" type="bool" kind="static const typename(bool)" value="chrA &lt;= chrB">
-				<left token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+				<left token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 				</left>
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="bool" kind="static const typename(bool)" value="chrCgt">
 			<init token="&gt;" type="bool" kind="static const typename(bool)" value="chrA &gt; chrB">
-				<left token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+				<left token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 				</left>
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="bool" kind="static const typename(bool)" value="chrCge">
 			<init token="&gt;=" type="bool" kind="static const typename(bool)" value="chrA &gt;= chrB">
-				<left token=".variable" type="char" kind="static const typename(u32)" value="chrA">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;a&apos;" />
+				<left token=".variable" type="char" kind="static const typename(i32)" value="chrA">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
 				</left>
-				<right token=".variable" type="char" kind="static const typename(u32)" value="chrB">
-					<init token=".literal" type="char" kind="static const typename(u32)" value="&apos;b&apos;" />
+				<right token=".variable" type="char" kind="static const typename(i32)" value="chrB">
+					<init token=".literal" type="char" kind="static const typename(i32)" value="&apos;b&apos;" />
 				</right>
 			</init>
 		</stmt>
