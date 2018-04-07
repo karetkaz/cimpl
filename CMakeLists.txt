@@ -24,6 +24,7 @@ set(CMPL_SRC_FILES
 	src/printer.c
 	src/tree.c
 	src/type.c
+	src/utils.c
 )
 
 # some simple "how to use" code.

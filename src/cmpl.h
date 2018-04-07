@@ -167,37 +167,37 @@ struct rtContextRec {
 	 * These functions can be used in extension libraries (dll or so)
 	 */
 	struct {
-		/// Extend a namespace; @see Core#ccExtend
-		symn (*const ccExtend)(ccContext ctx, symn cls);
-
-		/// Begin a namespace; @see Core#ccBegin
+		/// Begin a namespace; @see ccBegin
 		symn (*const ccBegin)(ccContext ctx, const char *name);
 
-		/// Close a namespace; @see Core#ccEnd
-		symn (*const ccEnd)(ccContext ctx, symn cls);
+		/// Extend a namespace; @see ccExtend
+		symn (*const ccExtend)(ccContext ctx, symn sym);
 
-		/// Declare int constant; @see Core#ccDefInt
+		/// Close a namespace; @see ccEnd
+		symn (*const ccEnd)(ccContext ctx, symn sym);
+
+		/// Declare int constant; @see ccDefInt
 		symn (*const ccDefInt)(ccContext ctx, const char *name, int64_t value);
 
-		/// Declare float constant; @see Core#ccDefFlt
+		/// Declare float constant; @see ccDefFlt
 		symn (*const ccDefFlt)(ccContext ctx, const char *name, float64_t value);
 
-		/// Declare string constant; @see Core#ccDefStr
+		/// Declare string constant; @see ccDefStr
 		symn (*const ccDefStr)(ccContext ctx, const char *name, char *value);
 
-		/// Declare a typename; @see Core#ccDefType
+		/// Declare a typename; @see ccDefType
 		symn (*const ccDefType)(ccContext ctx, const char *name, unsigned size, int refType);
 
-		/// Declare a native function; @see Core#ccDefCall
+		/// Declare a native function; @see ccDefCall
 		symn (*const ccDefCall)(ccContext ctx, vmError libc(nfcContext), const char *proto);
 
-		/// Lookup function by offset; @see Core#rtFindSym
-		symn (*const rtFindSym)(rtContext ctx, size_t offset);
+		/// Lookup function by offset; @see rtLookup
+		symn (*const rtLookup)(rtContext ctx, size_t offset);
 
-		/// Invoke a function; @see Core#invoke
+		/// Invoke a function; @see invoke
 		vmError (*const invoke)(rtContext ctx, symn fun, void *res, void *args, void *extra);
 
-		/// Alloc, resize or free memory; @see Core#rtAlloc
+		/// Alloc, resize or free memory; @see rtAlloc
 		void *(*const rtAlloc)(rtContext ctx, void *ptr, size_t size);
 
 		/// Reset to the first argument inside a native function
@@ -223,13 +223,13 @@ struct rtContextRec {
  * Native function invocation context.
  */
 struct nfcContextRec {
-	rtContext rt;         // runtime context
-	symn sym;             // the invoked function
-	symn param;           // the current parameter
-	char *proto;          // static data (passed to install)
-	void *extra;          // extra data (passed to invoke)
-	void *args;           // arguments
-	size_t argc;          // argument count in bytes
+	const rtContext rt;         // runtime context
+	const symn sym;             // invoked function (returned by ccDefCall)
+	const void *proto;          // static data (passed to ccDefCall)
+	const void *extra;          // extra data (passed to execute or invoke)
+	const void *args;           // arguments
+	const size_t argc;          // argument count in bytes
+	symn param;           // the current parameter (modified by nfcFirstArg and nfcNextArg)
 };
 
 /**
@@ -269,14 +269,14 @@ static inline void *argget(nfcContext args, size_t offset, void *result, size_t 
 
 // speed up of getting arguments of known types
 #define argget(__ARGV, __OFFS, __TYPE) (*(__TYPE*)((char*)(__ARGV)->args + (__OFFS)))
-static inline int32_t argi32(nfcContext args, size_t offs) { return argget(args, offs, int32_t); }
-static inline int64_t argi64(nfcContext args, size_t offs) { return argget(args, offs, int64_t); }
-static inline uint32_t argu32(nfcContext args, size_t offs) { return argget(args, offs, uint32_t); }
-static inline uint64_t argu64(nfcContext args, size_t offs) { return argget(args, offs, uint64_t); }
-static inline float32_t argf32(nfcContext args, size_t offs) { return argget(args, offs, float32_t); }
-static inline float64_t argf64(nfcContext args, size_t offs) { return argget(args, offs, float64_t); }
-static inline void *arghnd(nfcContext args, size_t offs) { return argget(args, offs, void*); }
-static inline size_t argref(nfcContext args, size_t offs) { return argget(args, offs, vmOffs); }
+static inline int32_t argi32(nfcContext ctx, size_t offs) { return argget(ctx, offs, int32_t); }
+static inline int64_t argi64(nfcContext ctx, size_t offs) { return argget(ctx, offs, int64_t); }
+static inline uint32_t argu32(nfcContext ctx, size_t offs) { return argget(ctx, offs, uint32_t); }
+static inline uint64_t argu64(nfcContext ctx, size_t offs) { return argget(ctx, offs, uint64_t); }
+static inline float32_t argf32(nfcContext ctx, size_t offs) { return argget(ctx, offs, float32_t); }
+static inline float64_t argf64(nfcContext ctx, size_t offs) { return argget(ctx, offs, float64_t); }
+static inline void *arghnd(nfcContext ctx, size_t offs) { return argget(ctx, offs, void*); }
+static inline size_t argref(nfcContext ctx, size_t offs) { return argget(ctx, offs, vmOffs); }
 #undef argget
 
 /**
@@ -297,14 +297,14 @@ static inline void *retset(nfcContext args, void *result, size_t size) {
 
 // speed up of setting result of known types.
 #define retset(__ARGV, __TYPE, __VAL) ((__TYPE*)((char *)(__ARGV)->args + (__ARGV)->argc))[-1] = (__TYPE)(__VAL)
-static inline void reti32(nfcContext args, int32_t val) { retset(args, int32_t, val); }
-static inline void reti64(nfcContext args, int64_t val) { retset(args, int64_t, val); }
-static inline void retu32(nfcContext args, uint32_t val) { retset(args, uint32_t, val); }
-static inline void retu64(nfcContext args, uint64_t val) { retset(args, uint64_t, val); }
-static inline void retf32(nfcContext args, float32_t val) { retset(args, float32_t, val); }
-static inline void retf64(nfcContext args, float64_t val) { retset(args, float64_t, val); }
-static inline void retref(nfcContext args, size_t val) { retset(args, vmOffs, val); }
-static inline void rethnd(nfcContext args, void *val) { retset(args, char *, val); }
+static inline void reti32(nfcContext ctx, int32_t val) { retset(ctx, int32_t, val); }
+static inline void reti64(nfcContext ctx, int64_t val) { retset(ctx, int64_t, val); }
+static inline void retu32(nfcContext ctx, uint32_t val) { retset(ctx, uint32_t, val); }
+static inline void retu64(nfcContext ctx, uint64_t val) { retset(ctx, uint64_t, val); }
+static inline void retf32(nfcContext ctx, float32_t val) { retset(ctx, float32_t, val); }
+static inline void retf64(nfcContext ctx, float64_t val) { retset(ctx, float64_t, val); }
+static inline void retref(nfcContext ctx, size_t val) { retset(ctx, vmOffs, val); }
+static inline void rethnd(nfcContext ctx, void *val) { retset(ctx, char *, val); }
 #undef retset
 
 #ifdef __cplusplus

@@ -16,31 +16,6 @@ const struct opcodeRec opcode_tbl[256] = {
 };
 
 
-/// Bit scan forward. (get the index of the highest bit set)
-static inline int32_t bitsf(uint32_t x) {
-	int result = 0;
-	if ((x & 0x0000ffff) == 0) {
-		result += 16;
-		x >>= 16;
-	}
-	if ((x & 0x000000ff) == 0) {
-		result += 8;
-		x >>= 8;
-	}
-	if ((x & 0x0000000f) == 0) {
-		result += 4;
-		x >>= 4;
-	}
-	if ((x & 0x00000003) == 0) {
-		result += 2;
-		x >>= 2;
-	}
-	if ((x & 0x00000001) == 0) {
-		result += 1;
-	}
-	return x ? result : -1;
-}
-
 // instead of void *
 typedef uint8_t *memptr;
 typedef uint32_t *stkptr;
@@ -69,13 +44,11 @@ typedef struct vmProcessor {
 	 *     it points to local variables, arguments.
 	 *     the stack pointer must be greater than the trace pointer
 	 */
-	stkptr sp;		// Stack pointer
-	trcptr tp;		// Trace pointer
+	memptr ip;		// Instruction pointer
 	memptr bp;		// Stack base
+	trcptr tp;		// Trace pointer
+	stkptr sp;		// Stack pointer
 	size_t ss;		// Stack size
-
-	// Instruction pointer
-	memptr ip;
 
 	// multi processing
 	unsigned int	cp;			// slaves (join == 0)
@@ -98,17 +71,6 @@ typedef struct vmInstruction {
 	};
 } *vmInstruction;
 #pragma pack(pop)
-
-/// Check if the pointer is inside the vm.
-static inline int isValidOffset(rtContext rt, void *ptr) {
-	if ((unsigned char*)ptr > rt->_mem + rt->_size) {
-		return 0;
-	}
-	if ((unsigned char*)ptr < rt->_mem) {
-		return 0;
-	}
-	return 1;
-}
 
 static inline vmInstruction lastIp(rtContext rt) {
 	vmInstruction result = vmPointer(rt, rt->vm.pc);
@@ -137,21 +99,6 @@ size_t vmOffset(rtContext rt, void *ptr) {
 	return (unsigned char*)ptr - rt->_mem;
 }
 
-int testOcp(rtContext rt, size_t offs, vmOpcode opc, vmValue *arg) {
-	vmInstruction ip = vmPointer(rt, offs);
-	if (opc >= opc_last) {
-		trace("invalid opc_x%x", opc);
-		return 0;
-	}
-	if (ip != NULL && ip->opc == opc) {
-		if (arg != NULL) {
-			*arg = ip->arg;
-		}
-		return 1;
-	}
-	return 0;
-}
-
 static int removeOpc(rtContext rt, size_t offs) {
 	if (offs >= rt->vm.ro && offs <= rt->vm.pc) {
 		vmInstruction ip = vmPointer(rt, offs);
@@ -164,7 +111,6 @@ static int removeOpc(rtContext rt, size_t offs) {
 	}
 	return 0;
 }
-
 static int decrementStackAccess(rtContext rt, size_t offsBegin, size_t offsEnd, int count) {
 	size_t offs;
 	for (offs = offsBegin; offs < offsEnd; ) {
@@ -1157,6 +1103,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 	dbgEmit("pc[%d]: sp(%d): %A", rt->vm.pc, rt->vm.ss, ip);
 	return rt->vm.pc;
 }
+int testOcp(rtContext rt, size_t offs, vmOpcode opc, vmValue *arg) {
+	vmInstruction ip = vmPointer(rt, offs);
+	if (opc >= opc_last) {
+		trace("invalid opc_x%x", opc);
+		return 0;
+	}
+	if (ip != NULL && ip->opc == opc) {
+		if (arg != NULL) {
+			*arg = ip->arg;
+		}
+		return 1;
+	}
+	return 0;
+}
 int fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
 	dieif(stc > 0 && stc & 3, ERR_INTERNAL_ERROR);
 	if (src != 0) {
@@ -1173,8 +1133,8 @@ int fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
 				dieif(ip->cl != dst - src, ERR_INTERNAL_ERROR);
 				return 1;
 
-			//~ case opc_ldsp:
-			//~ case opc_call:
+				//~ case opc_ldsp:
+				//~ case opc_call:
 			case opc_jmp:
 			case opc_jnz:
 			case opc_jz:
@@ -1190,7 +1150,7 @@ int fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
 }
 
 // TODO: to be removed.
-static inline void vmTrace(vmProcessor pu, int cp, char *msg) {
+static inline void tracePpu(vmProcessor pu, int cp, char *msg) {
 	trace("%s: {pu:%d, ip:%x, bp:%x, sp:%x, stack:%d, parent:%d, children:%d}", msg, cp, pu[cp].ip, pu[cp].bp, pu[cp].sp, pu[cp].ss, pu[cp].pp, pu[cp].cp);
 	(void)pu;
 	(void)cp;
@@ -1218,8 +1178,8 @@ static inline int vmFork(vmProcessor pu, int n, unsigned master, unsigned cl) {
 		pu[slave].sp = (stkptr)pu[slave].bp + pu[slave].ss - cl;
 		memcpy(pu[slave].sp, pu[master].sp, cl * vm_size);
 
-		vmTrace(pu, master, "master");
-		vmTrace(pu, slave, "slave");
+		tracePpu(pu, master, "master");
+		tracePpu(pu, slave, "slave");
 
 		return slave;
 	}
@@ -1229,7 +1189,7 @@ static inline int vmFork(vmProcessor pu, int n, unsigned master, unsigned cl) {
 /// Wait for worker to finish.
 static inline int vmJoin(vmProcessor pu, unsigned slave, int wait) {
 	int master = pu[slave].pp;
-	vmTrace(pu, slave, "join");
+	tracePpu(pu, slave, "join");
 
 	// slave proc
 	if (master != slave) {
@@ -1261,7 +1221,7 @@ static inline int ovf(vmProcessor pu) {
  * @param callee the called function address, -1 on leave.
  * @param extra TO BE REMOVED
  */
-static inline vmError traceCall(rtContext rt, void *sp, size_t caller, size_t callee) {
+static vmError vmTrace(rtContext rt, void *sp, size_t caller, size_t callee) {
 	dbgn (*debugger)(dbgContext, vmError, size_t, void*, size_t, size_t) = rt->dbg->debug;
 	clock_t now = clock();
 	vmProcessor pu = rt->vm.cell;
@@ -1346,7 +1306,7 @@ static inline vmError traceCall(rtContext rt, void *sp, size_t caller, size_t ca
 static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t caller, size_t callee) {
 	if (err != noError) {
 		char *errMsg = vmErrorMessage(err);
-		symn fun = rtLookupSym(ctx->rt, caller, 1);
+		symn fun = rtLookup(ctx->rt, caller, 1);
 		dbgn dbg = mapDbgStatement(ctx->rt, caller);
 		size_t offs = caller;
 		char *file = NULL;
@@ -1405,7 +1365,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 			debugger = dbgDummy;
 		}
 		// invoked function(from external code) will return with a ret instruction, removing trace info
-		execError = traceCall(rt, pu->sp, 0, fun->offs);
+		execError = vmTrace(rt, pu->sp, 0, fun->offs);
 		if (execError != noError) {
 			debugger(rt->dbg, execError, 0, pu->sp, vmOffset(rt, pu->ip), 0);
 			return execError;
@@ -1445,11 +1405,11 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 					if (execError != noError) {
 						debugger(rt->dbg, execError, st - sp, sp, pc, 0);
 						while (pu->tp != oldTP) {
-							traceCall(rt, NULL, 0, (size_t) -2);
+							vmTrace(rt, NULL, 0, (size_t) -2);
 						}
 					}
 					while (pu->tp != oldTP) {
-						traceCall(rt, NULL, 0, (size_t) -1);
+						vmTrace(rt, NULL, 0, (size_t) -1);
 					}
 					return execError;
 
@@ -1481,7 +1441,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 				#define NEXT(__IP, __SP, __CHK) pu->sp -= (__SP); pu->ip += (__IP);
 				#define STOP(__ERR, __CHK) do {if (__CHK) {goto dbg_##__ERR;}} while(0)
 				#define EXEC
-				#define TRACE(__IP) do { if ((execError = traceCall(rt, sp, pc, __IP)) != noError) goto dbg_stop_vm; } while(0)
+				#define TRACE(__IP) do { if ((execError = vmTrace(rt, sp, pc, __IP)) != noError) goto dbg_stop_vm; } while(0)
 				#include "code.inl"
 			}
 			if (dbg != NULL) {
@@ -1637,6 +1597,7 @@ vmError execute(rtContext rt, int argc, char *argv[], void *extra) {
 	return exec(rt, pu, rt->main, extra);
 }
 
+
 int isChecked(dbgContext ctx) {
 	rtContext rt = ctx->rt;
 	vmProcessor pu = rt->vm.cell;
@@ -1644,7 +1605,7 @@ int isChecked(dbgContext ctx) {
 	size_t maxTrace = pu->tp - (trcptr)pu->bp;
 	for (int i = 0; i < maxTrace; ++i) {
 		trcptr trace = &trcBase[maxTrace - i - 1];
-		symn fun = rtLookupSym(rt, trace->callee, 1);
+		symn fun = rtLookup(rt, trace->callee, 1);
 		if (fun == ctx->tryExec) {
 			return 1;
 		}
@@ -1658,7 +1619,6 @@ void printOpc(FILE *out, const char **esc, vmOpcode opc, int64_t args) {
 	instruction.arg.i64 = args;
 	printAsm(out, esc, NULL, &instruction, prName);
 }
-
 void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode) {
 	vmInstruction ip = (vmInstruction)ptr;
 	size_t i, len = (size_t) mode & prAsmCode;
@@ -1670,7 +1630,7 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 	if (rt != NULL) {
 		offs = vmOffset(rt, ptr);
 		if (mode & prAsmName) {
-			sym = rtLookupSym(rt, offs, 0);
+			sym = rtLookup(rt, offs, 0);
 		}
 	}
 
@@ -1841,7 +1801,7 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 
 			printFmt(out, esc, fmt_addr, offs);
 			if (rt != NULL) {
-				sym = rtLookupSym(rt, offs, 0);
+				sym = rtLookup(rt, offs, 0);
 				if (sym != NULL) {
 					printFmt(out, esc, " ;%?T%?+d", sym, offs - sym->offs);
 				}
@@ -1897,7 +1857,7 @@ static void printRef(FILE *out, const char **esc, rtContext rt, void* data) {
 	}
 
 	size_t offs = vmOffset(rt, data);
-	symn sym = rtLookupSym(rt, offs, 0);
+	symn sym = rtLookup(rt, offs, 0);
 	if (sym != NULL) {
 		size_t rel = offs - sym->offs;
 		printFmt(out, esc, "<%?.*T%?+d @%06x>", prSymQual, sym, rel, offs);
@@ -1906,7 +1866,6 @@ static void printRef(FILE *out, const char **esc, rtContext rt, void* data) {
 		printFmt(out, esc, "<@%06x>", offs);
 	}
 }
-
 void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val, dmpMode mode, int indent) {
 	ccKind varCast = castOf(var);
 	const char *format = var->format;
@@ -2197,7 +2156,6 @@ static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, v
 		}
 	}
 }
-
 void traceCalls(dbgContext dbg, FILE *out, int indent, size_t maxCalls) {
 	rtContext rt = dbg->rt;
 	vmProcessor pu = rt->vm.cell;
@@ -2216,7 +2174,7 @@ void traceCalls(dbgContext dbg, FILE *out, int indent, size_t maxCalls) {
 	for (i = 0; i < maxCalls; ++i) {
 		trcptr trace = &trcBase[maxTrace - i - 1];
 		dbgn trInfo = mapDbgStatement(rt, trace->caller);
-		symn fun = rtLookupSym(rt, trace->callee, 1);
+		symn fun = rtLookup(rt, trace->callee, 1);
 		stkptr sp = trace->sp;
 		char *file = NULL;
 		int line = 0;

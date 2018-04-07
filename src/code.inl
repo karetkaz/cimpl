@@ -25,13 +25,13 @@ case opc_nfc:  NEXT(4, 0, 0) {
 	libc nfc = nativeCalls[ip->rel];
 #ifdef EXEC
 	struct nfcContextRec args;
-	args.rt = rt;
-	args.sym = nfc->sym;
+	*((void const **) &args.rt) = rt;
+	*((void const **) &args.sym) = nfc->sym;
+	*((void const **) &args.extra) = extra;
+	*((void const **) &args.proto) = nfc->proto;
+	*((void const **) &args.args) = sp;
+	*((size_t*) &args.argc) = vm_size * nfc->in;
 	args.param = (void *) -1;
-	args.extra = (void *) extra;
-	args.proto = (char *) nfc->proto;
-	args.args = sp;
-	args.argc = vm_size * nfc->in;
 
 	TRACE(nfc->sym->offs);
 	vmError nfcError = nfc->call(&args);

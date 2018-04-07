@@ -32,7 +32,7 @@ static inline astn tagNode(ccContext cc, char *name) {
 			ast->type = NULL;
 			ast->ref.link = NULL;
 			ast->ref.hash = rehash(name, len + 1) % hashTableSize;
-			ast->ref.name = mapstr(cc, name, len + 1, ast->ref.hash);
+			ast->ref.name = ccUniqueStr(cc, name, len + 1, ast->ref.hash);
 		}
 	}
 	return ast;
@@ -231,72 +231,6 @@ static astn expand2Statement(ccContext cc, astn node, int block) {
 	}
 	return result;
 }
-
-/**
- * Open a stream (file or text) for compilation.
- * 
- * @param rt runtime context.
- * @param file file name of input.
- * @param line first line of input.
- * @param text if not null, this will be compiled instead of the file.
- * @return compiler context or null on error.
- * @note invokes ccInit if not initialized.
- */
-static ccContext ccOpen(rtContext rt, char *file, int line, char *text) {
-	ccContext cc = rt->cc;
-
-	if (cc == NULL) {
-		// initialize only once.
-		cc = ccInit(rt, install_def, NULL);
-		if (cc == NULL) {
-			return NULL;
-		}
-	}
-
-	if (srcFile(cc, text ? text : file, text == NULL) != 0) {
-		return NULL;
-	}
-
-	if (file != NULL) {
-		file = mapstr(cc, file, -1, -1);
-	}
-
-	cc->fin.nest = cc->nest;
-	cc->file = file;
-	cc->line = line;
-	return cc;
-}
-
-/**
- * Close stream, ensuring it ends correctly.
- * 
- * @param cc compiler context.
- * @return number of errors.
- */
-static int ccClose(ccContext cc) {
-	astn ast;
-
-	// not initialized
-	if (cc == NULL) {
-		return -1;
-	}
-
-	// check no token left to read
-	if ((ast = nextTok(cc, TOKEN_any, 0))) {
-		error(cc->rt, ast->file, ast->line, ERR_UNEXPECTED_TOKEN, ast);
-	}
-		// check we are on the same nesting level
-	else if (cc->fin.nest != cc->nest) {
-		error(cc->rt, cc->file, cc->line, ERR_INVALID_STATEMENT);
-	}
-
-	// close input
-	srcFile(cc, NULL, 0);
-
-	// return errors
-	return cc->rt->errors;
-}
-
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Parser
 static astn statement_list(ccContext cc);
@@ -936,7 +870,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		skipTok(cc, STMT_end, 1);
 
 		next = cc->tokNext;
-		if (tag->type == cc->type_str && !ccOpen(cc->rt, tag->ref.name, 1, NULL)) {
+		if (tag->type == cc->type_str && ccOpen(cc, tag->ref.name, 1, NULL) != 0) {
 			error(cc->rt, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
 			return NULL;
 		}
@@ -1591,7 +1525,7 @@ static astn statement(ccContext cc, ccKind attr) {
 }
 
 astn ccAddUnit(ccContext cc, char *file, int line, char *text) {
-	if (!ccOpen(cc->rt, file, line, text)) {
+	if (ccOpen(cc, file, line, text) != 0) {
 		error(cc->rt, NULL, 0, ERR_OPENING_FILE, file);
 		return 0;
 	}
@@ -1638,11 +1572,13 @@ astn ccAddUnit(ccContext cc, char *file, int line, char *text) {
 }
 
 int ccAddLib(ccContext cc, int init(ccContext), char *file) {
-	int unitCode = init(cc);
-	if (unitCode == 0 && file != NULL) {
-		return ccAddUnit(cc, file, 1, NULL) != NULL;
+	int error = init(cc);
+	if (error == 0 && file != NULL) {
+		if (!ccAddUnit(cc, file, 1, NULL)) {
+			return -1;
+		}
 	}
-	return unitCode == 0;
+	return error;
 }
 
 symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
@@ -1660,7 +1596,7 @@ symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 		fatal(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
-	if (!ccOpen(rt, NULL, 0, (char*)proto)) {
+	if (ccOpen(cc, NULL, 0, (char*)proto) != 0) {
 		trace(ERR_INTERNAL_ERROR);
 		return NULL;
 	}

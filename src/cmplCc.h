@@ -2,8 +2,8 @@
  * Compiler core functions.
  */
 
-#ifndef CMPL_COMPILER_H
-#define CMPL_COMPILER_H
+#ifndef CMPL_CC_H
+#define CMPL_CC_H
 
 #include "cmpl.h"
 
@@ -42,7 +42,7 @@ typedef enum {
 	MASK_kind  = 0x0030,
 	MASK_attr  = 0x00c0,
 } ccKind;
-// Tokens - CC
+
 typedef enum {
 	#define TOKEN_DEF(NAME, TYPE, SIZE, STR) NAME,
 	#include "defs.inl"
@@ -81,83 +81,102 @@ typedef enum {
 /**
  * Initialize compiler context.
  * 
- * @param ctx Runtime context.
+ * @param rt Runtime context.
  * @param mode specify what to install.
  * @param onHalt function to be executed when execution and external function invocation terminates.
  * @return compiler context.
  * @note installs: builtin types, builtin functions, emit intrinsic, ...
  */
-ccContext ccInit(rtContext ctx, ccInstall mode, vmError onHalt(nfcContext));
+ccContext ccInit(rtContext rt, ccInstall mode, vmError onHalt(nfcContext));
+
+/**
+ * Open a stream (file or text) for compilation.
+ * 
+ * @param cc Compiler context.
+ * @param file file name of input.
+ * @param line first line of input.
+ * @param text if not null, this will be compiled instead of the file.
+ * @return error code, 0 on success.
+ */
+int ccOpen(ccContext cc, char *file, int line, char *text);
+
+/**
+ * Close stream, ensuring it ends correctly.
+ * 
+ * @param cc Compiler context.
+ * @return number of errors.
+ */
+int ccClose(ccContext cc);
 
 /**
  * Begin a namespace (static struct) or scope.
  * 
- * @param ctx Compiler context.
+ * @param cc Compiler context.
  * @param name Name of the namespace.
  * @return Defined symbol, null on error (error is logged).
  */
-symn ccBegin(ccContext ctx, const char *name);
+symn ccBegin(ccContext cc, const char *name);
 /**
  * Extend a namespace (static struct) with static members.
  * 
- * @param ctx Compiler context.
- * @param type Namespace to be extended.
+ * @param cc Compiler context.
+ * @param sym Namespace to be extended.
  * @return type if it can be extended.
  */
-symn ccExtend(ccContext ctx, symn type);
+symn ccExtend(ccContext cc, symn sym);
 /**
  * Close the namespace returned by ccBegin or ccExtend.
  * 
- * @param ctx Compiler context.
+ * @param cc Compiler context.
  * @param cls Namespace to be closed.
  * @note Makes all declared variables static.
 */
-symn ccEnd(ccContext ctx, symn cls);
+symn ccEnd(ccContext cc, symn sym);
 
 /**
  * Define an integer constant.
  * 
- * @param ctx Compiler context.
+ * @param cc Compiler context.
  * @param name Name of the constant.
  * @param value Value of the constant.
  * @return Defined symbol, null on error.
  */
-symn ccDefInt(ccContext ctx, const char *name, int64_t value);
+symn ccDefInt(ccContext cc, const char *name, int64_t value);
 /**
  * Define a floating point constant.
  * 
- * @param ctx Compiler context.
+ * @param cc Compiler context.
  * @param name Name of the constant.
  * @param value Value of the constant.
  * @return Defined symbol, null on error.
  */
-symn ccDefFlt(ccContext ctx, const char *name, double value);
+symn ccDefFlt(ccContext cc, const char *name, double value);
 /**
  * Define a string constant.
  * 
- * @param ctx Compiler context.
+ * @param cc Compiler context.
  * @param name Name of the constant.
  * @param value Value of the constant.
  * @return Defined symbol, null on error.
  */
-symn ccDefStr(ccContext ctx, const char *name, char *value);
+symn ccDefStr(ccContext cc, const char *name, char *value);
 
 /**
  * Define a new type.
  * 
- * @param ctx Compiler context.
+ * @param cc Compiler context.
  * @param name Name of the type.
  * @param size Size of the type.
  * @param refType Value or Reference type.
  * @return Defined symbol, null on error.
  * @see plugins/file.c
  */
-symn ccDefType(ccContext ctx, const char *name, unsigned size, int refType);
+symn ccDefType(ccContext cc, const char *name, unsigned size, int refType);
 
 /**
  * Define a native function.
  * 
- * @param ctx Compiler context.
+ * @param cc Compiler context.
  * @param call The native c function wrapper.
  * @param proto Prototype of the function.
  * @return Defined symbol, null on error.
@@ -173,50 +192,50 @@ symn ccDefType(ccContext ctx, const char *name, unsigned size, int refType);
 		return rt->errors;
 	}
  */
-symn ccDefCall(ccContext ctx, vmError call(nfcContext), const char *proto);
+symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto);
 
 /**
  * Compile the given file or text as a unit.
  * 
- * @param ctx Compiler context.
+ * @param cc Compiler context.
  * @param file File name of input.
  * @param line First line of input.
  * @param text If not null, this will be compiled instead of the file.
  * @return Root node of the compilation unit.
  */
-astn ccAddUnit(ccContext ctx, char *file, int line, char *text);
+astn ccAddUnit(ccContext cc, char *file, int line, char *text);
 
 /**
  * Add a new module or library
  * 
- * @param ctx Compiler context.
+ * @param cc Compiler context.
  * @param init function installing types and native functions.
  * @param unit (optional) extension file to be compiled with this library.
- * @return boolean value of success.
+ * @return error code/count, 0 on success.
  */
-int ccAddLib(ccContext ctx, int init(ccContext), char *unit);
+int ccAddLib(ccContext cc, int init(ccContext), char *unit);
 
 /**
  * Generate bytecode from the compiled syntax tree.
  * 
- * @param ctx Runtime context.
+ * @param cc Compiler context.
  * @param debug generate debug info
- * @return boolean value of success.
+ * @return error code/count, 0 on success.
  */
-int ccGenCode(rtContext ctx, int debug);
+int ccGenCode(ccContext cc, int debug);
 
 /**
  * Lookup a symbol by name.
  * 
- * @param ctx Compiler context.
+ * @param cc Compiler context.
  * @param in search in the members of this symbol.
  * @param name name of the symbol to be found.
  * @return the first found symbol.
  */
-symn ccLookupSym(ccContext ctx, symn in, char *name);
+symn ccLookup(ccContext cc, symn in, char *name);
 
 /// standard modules for `ccAddLib`
-int ccLibStd(ccContext ctx);
+int ccLibStd(ccContext cc);
 
 #ifdef __cplusplus
 }

@@ -59,38 +59,6 @@ typedef struct libc {
 	size_t in, out;		// stack parameters
 } *libc;
 
-// helper macros
-#define lengthOf(__ARRAY) (sizeof(__ARRAY) / sizeof(*(__ARRAY)))
-#define offsetOf(__TYPE, __FIELD) ((size_t) &((__TYPE*)NULL)->__FIELD)
-
-/// Utility function to align offset
-static inline size_t padOffset(size_t offs, size_t align) {
-	size_t mask = align - 1;
-	return (offs + mask) & ~mask;
-}
-
-/// Utility function to align pointer
-static inline void *padPointer(void *offs, size_t align) {
-	ssize_t mask = align - 1;
-	return (void*)(((ssize_t)offs + mask) & ~mask);
-}
-
-/// Utility function to swap memory
-static inline void memSwap(void *_a, void *_b, size_t size) {
-	register char *a = _a;
-	register char *b = _b;
-	register char *end = a + size;
-	while (a < end) {
-		char c = *a;
-		*a = *b;
-		*b = c;
-		a += 1;
-		b += 1;
-	}
-}
-
-void nfcCheckArg(nfcContext nfc, ccKind cast, char *name);
-
 /// Compiler context
 struct ccContextRec {
 	rtContext	rt;
@@ -174,6 +142,112 @@ struct dbgContextRec {
 	symn tryExec;	// the symbol of tryExec function
 };
 
+// helper macros
+#define lengthOf(__ARRAY) (sizeof(__ARRAY) / sizeof(*(__ARRAY)))
+#define offsetOf(__TYPE, __FIELD) ((size_t) &((__TYPE*)NULL)->__FIELD)
+
+/// Bit count: number of bits set to 1
+static inline int32_t bitcnt(uint32_t value) {
+	value -= ((value >> 1) & 0x55555555);
+	value = (((value >> 2) & 0x33333333) + (value & 0x33333333));
+	value = (((value >> 4) + value) & 0x0f0f0f0f);
+	value += (value >> 8) + (value >> 16);
+	return value & 0x3f;
+}
+
+/// Bit scan forward: position of the Least Significant Bit
+static inline int32_t bitsf(uint32_t value) {
+	if (value == 0) {
+		return -1;
+	}
+	int32_t result = 0;
+	if ((value & 0x0000ffff) == 0) {
+		result += 16;
+		value >>= 16;
+	}
+	if ((value & 0x000000ff) == 0) {
+		result += 8;
+		value >>= 8;
+	}
+	if ((value & 0x0000000f) == 0) {
+		result += 4;
+		value >>= 4;
+	}
+	if ((value & 0x00000003) == 0) {
+		result += 2;
+		value >>= 2;
+	}
+	if ((value & 0x00000001) == 0) {
+		result += 1;
+	}
+	return result;
+}
+
+/// Bit scan reverse: position of the Most Significant Bit
+static inline int32_t bitsr(uint32_t value) {
+	if (value == 0) {
+		return -1;
+	}
+	int32_t result = 0;
+	if (value & 0xffff0000) {
+		result += 16;
+		value >>= 16;
+	}
+	if (value & 0x0000ff00) {
+		result +=  8;
+		value >>= 8;
+	}
+	if (value & 0x000000f0) {
+		result += 4;
+		value >>= 4;
+	}
+	if (value & 0x0000000c) {
+		result += 2;
+		value >>= 2;
+	}
+	if (value & 0x00000002) {
+		result += 1;
+	}
+	return result;
+}
+
+/// Utility function to align offset
+static inline size_t padOffset(size_t offs, size_t align) {
+	return (offs + (align - 1)) & ~(align - 1);
+}
+
+/// Utility function to align pointer
+static inline void *padPointer(void *offs, size_t align) {
+	return (void*)padOffset((size_t)offs, align);
+}
+
+/// Utility function to swap memory
+static inline void memSwap(void *_a, void *_b, size_t size) {
+	register char *a = _a;
+	register char *b = _b;
+	register char *end = a + size;
+	while (a < end) {
+		char c = *a;
+		*a = *b;
+		*b = c;
+		a += 1;
+		b += 1;
+	}
+}
+
+/// Check if the pointer is inside the vm.
+static inline int isValidOffset(rtContext rt, void *ptr) {
+	if ((unsigned char*)ptr > rt->_mem + rt->_size) {
+		return 0;
+	}
+	if ((unsigned char*)ptr < rt->_mem) {
+		return 0;
+	}
+	return 1;
+}
+
+void nfcCheckArg(nfcContext nfc, ccKind cast, char *name);
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 extern const char * const type_fmt_signed32;
@@ -206,12 +280,11 @@ unsigned rehash(const char *str, size_t size);
  * @param hash pre-calculated hashcode, -1 recalculates.
  * @return the mapped string in the string table.
  */
-char *mapstr(ccContext cc, const char *str, size_t size/* = -1*/, unsigned hash/* = -1*/);
+char *ccUniqueStr(ccContext cc, const char *str, size_t size/* = -1*/, unsigned hash/* = -1*/);
 
 // open log file for both compiler and runtime
 void logFILE(rtContext ctx, FILE *file);
-int logFile(rtContext ctx, char *file, int append);
-int srcFile(ccContext cc, char *file, int isFile);
+FILE *logFile(rtContext ctx, char *file, int append);
 
 /**
  * Chain the arguments trough ast.next link.

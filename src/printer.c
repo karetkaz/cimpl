@@ -1176,19 +1176,18 @@ void logFILE(rtContext rt, FILE *file) {
 	rt->logFile = file;
 }
 
-int logFile(rtContext rt, char *file, int append) {
+FILE *logFile(rtContext rt, char *file, int append) {
 
 	// close previous file and set stderr
 	logFILE(rt, stdout);
 
 	if (file != NULL) {
 		rt->logFile = fopen(file, append ? "ab" : "wb");
-		if (rt->logFile == NULL) {
-			return 0;
+		if (rt->logFile != NULL) {
+			rt->closeLog = 1;
 		}
-		rt->closeLog = 1;
 	}
-	return 1;
+	return rt->logFile;
 }
 
 const char **escapeStr() {

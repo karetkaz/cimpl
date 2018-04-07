@@ -15,7 +15,7 @@ static inline size_t nextArg(nfcContext ctx) {
 }
 
 static inline symn argSym(nfcContext ctx, size_t offset) {
-	return ctx->rt->api.rtFindSym(ctx->rt, argref(ctx, offset));
+	return ctx->rt->api.rtLookup(ctx->rt, argref(ctx, offset));
 }
 static inline void *argPtr(nfcContext ctx, size_t offset) {
 	return ctx->rt->_mem + argref(ctx, offset);

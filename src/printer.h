@@ -68,11 +68,11 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent);
  * 
  * @param out Output stream.
  * @param esc Escape translation (format string will be not escaped).
- * @param ctx (optional) Runtime context.
+ * @param rt (optional) Runtime context.
  * @param ptr Instruction pointer.
  * @param mode How to print.
  */
-void printAsm(FILE *out, const char **esc, rtContext ctx, void *ptr, dmpMode mode);
+void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode);
 
 /**
  * Print an instruction to the output stream.
@@ -93,7 +93,7 @@ void printOpc(FILE *out, const char **esc, vmOpcode opc, int64_t args);
  * @param ref Base offset of variable.
  * @param level Indentation level. (Used for members and arrays)
  */
-void printVal(FILE *out, const char **esc, rtContext, symn var, vmValue *ref, dmpMode mode, int indent);
+void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *ref, dmpMode mode, int indent);
 
 /**
  * Print formatted text to the output stream.

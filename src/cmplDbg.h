@@ -2,8 +2,8 @@
  * Debugger core functions.
  */
 
-#ifndef CMPL_DEBUGGER_H
-#define CMPL_DEBUGGER_H
+#ifndef CMPL_DBG_H
+#define CMPL_DBG_H
 
 /// Dynamic array
 struct arrBuffer {
@@ -14,7 +14,6 @@ struct arrBuffer {
 };
 
 int initBuff(struct arrBuffer *buff, size_t initCount, size_t elemSize);
-void freeBuff(struct arrBuffer *buff);
 static inline void *getBuff(struct arrBuffer *buff, size_t idx) {
 	size_t pos = idx * buff->esz;
 	if (pos >= buff->cap || buff->ptr == NULL) {
@@ -22,6 +21,9 @@ static inline void *getBuff(struct arrBuffer *buff, size_t idx) {
 	}
 	return buff->ptr + pos;
 }
+void *insBuff(struct arrBuffer *buff, size_t idx, void *data);
+void *setBuff(struct arrBuffer *buff, size_t idx, void *data);
+void freeBuff(struct arrBuffer *buff);
 
 /// Break point actions
 typedef enum {

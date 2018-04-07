@@ -99,6 +99,7 @@ static vmError f32atan2(nfcContext args) {
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ bit operations
+// sign extend
 static vmError b32sxt(nfcContext args) {
 	int32_t val = argi32(args, 8);
 	int32_t ofs = argi32(args, 4);
@@ -106,13 +107,60 @@ static vmError b32sxt(nfcContext args) {
 	reti32(args, (val << (32 - (ofs + cnt))) >> (32 - cnt));
 	return noError;
 }
+// zero extend
 static vmError b32zxt(nfcContext args) {
-	uint32_t val = (uint32_t) argi32(args, 8);
+	uint32_t val = argu32(args, 8);
 	int32_t ofs = argi32(args, 4);
 	int32_t cnt = argi32(args, 0);
 	retu32(args, (val << (32 - (ofs + cnt))) >> (32 - cnt));
 	return noError;
 }
+// count bit population
+static vmError b32pop(nfcContext args) {
+	uint32_t val = argu32(args, 0);
+	retu32(args, bitcnt(val));
+	return noError;
+}
+// swap bits
+static vmError b32swp(nfcContext args) {
+	uint32_t val = argu32(args, 0);
+	val = ((val >> 1) & 0x55555555) | ((val & 0x55555555) << 1);
+	val = ((val >> 2) & 0x33333333) | ((val & 0x33333333) << 2);
+	val = ((val >> 4) & 0x0F0F0F0F) | ((val & 0x0F0F0F0F) << 4);
+	val = ((val >> 8) & 0x00FF00FF) | ((val & 0x00FF00FF) << 8);
+	retu32(args, (val >> 16) | (val << 16));
+	return noError;
+}
+// bit scan reverse: position of the Most Significant Bit
+static vmError b32sr(nfcContext args) {
+	uint32_t val = argu32(args, 0);
+	reti32(args, bitsr(val));
+	return noError;
+}
+// bit scan forward: position of the Least Significant Bit
+static vmError b32sf(nfcContext args) {
+	uint32_t val = argu32(args, 0);
+	reti32(args, bitsf(val));
+	return noError;
+}
+// keep the highest: Most Significant Bit
+static vmError b32hi(nfcContext args) {
+	uint32_t val = argu32(args, 0);
+	val |= val >> 1;
+	val |= val >> 2;
+	val |= val >> 4;
+	val |= val >> 8;
+	val |= val >> 16;
+	retu32(args, val - (val >> 1));
+	return noError;
+}
+// keep the lowest: Least Significant Bit
+static vmError b32lo(nfcContext args) {
+	uint32_t val = argu32(args, 0);
+	retu32(args, val & -val);
+	return noError;
+}
+
 static vmError b64sxt(nfcContext args) {
 	int64_t val = argi64(args, 12);
 	int32_t ofs = argi32(args, 8);
@@ -127,66 +175,8 @@ static vmError b64zxt(nfcContext args) {
 	retu64(args, (val << (64 - (ofs + cnt))) >> (64 - cnt));
 	return noError;
 }
-/* unused bit operations
-static int b32cnt(nfcContext args) {
-	uint32_t x = (uint32_t) argi32(args, 0);
-	x -= ((x >> 1) & 0x55555555);
-	x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
-	x = (((x >> 4) + x) & 0x0f0f0f0f);
-	x += (x >> 8) + (x >> 16);
-	reti32(args, x & 0x3f);
-	return 0;
-}
-static int b32sf(nfcContext args) {
-	int32_t result = 0;
-	uint32_t x = (uint32_t) argi32(args, 0);
-	if ((x & 0x0000ffff) == 0) { result += 16; x >>= 16; }
-	if ((x & 0x000000ff) == 0) { result +=  8; x >>=  8; }
-	if ((x & 0x0000000f) == 0) { result +=  4; x >>=  4; }
-	if ((x & 0x00000003) == 0) { result +=  2; x >>=  2; }
-	if ((x & 0x00000001) == 0) { result +=  1; }
-	reti32(args, x ? result : -1);
-	return 0;
-}
-static int b32sr(nfcContext args) {
-	int32_t result = 0;
-	uint32_t x = (uint32_t) argi32(args, 0);
-	if ((x & 0xffff0000) != 0) { result += 16; x >>= 16; }
-	if ((x & 0x0000ff00) != 0) { result +=  8; x >>=  8; }
-	if ((x & 0x000000f0) != 0) { result +=  4; x >>=  4; }
-	if ((x & 0x0000000c) != 0) { result +=  2; x >>=  2; }
-	if ((x & 0x00000002) != 0) { result +=  1; }
-	reti32(args, x ? result : -1);
-	return 0;
-}
-static int b32hi(nfcContext args) {
-	uint32_t x = (uint32_t) argi32(args, 0);
-	x |= x >> 1;
-	x |= x >> 2;
-	x |= x >> 4;
-	x |= x >> 8;
-	x |= x >> 16;
-	reti32(args, x - (x >> 1));
-	return 0;
-}
-static int b32lo(nfcContext args) {
-	int32_t x = argi32(args, 0);
-	reti32(args, x & -x);
-	return 0;
-}
-static int b32swap(nfcContext args) {
-	uint32_t x = (uint32_t) argi32(args, 0);
-	x = ((x >> 1) & 0x55555555) | ((x & 0x55555555) << 1);
-	x = ((x >> 2) & 0x33333333) | ((x & 0x33333333) << 2);
-	x = ((x >> 4) & 0x0F0F0F0F) | ((x & 0x0F0F0F0F) << 4);
-	x = ((x >> 8) & 0x00FF00FF) | ((x & 0x00FF00FF) << 8);
-	reti64(args, (x >> 16) | (x << 16));
-	return 0;
-}
-// */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ system functions (exit, rand, clock, debug)
-
 #if ((defined __WATCOMC__ && defined __WIN32) || (defined _MSC_VER))
 #include <Windows.h>
 static inline int64_t timeMillis() {
@@ -341,7 +331,7 @@ static vmError sysTryExec(nfcContext ctx) {
 	rtContext rt = ctx->rt;
 	size_t args = argref(ctx, nfcNextArg(ctx));
 	size_t actionOffs = argref(ctx, nfcNextArg(ctx));
-	symn action = rtLookupSym(rt, actionOffs, 1);
+	symn action = rtLookup(rt, actionOffs, 1);
 
 	if (action != NULL && action->offs == actionOffs) {
 		#pragma pack(push, 4)
@@ -397,6 +387,12 @@ int ccLibStd(ccContext cc) {
 	bit32[] = {      // 32 bit operations
 		{b32zxt,    "int32 zxt(int32 value, int32 offs, int32 count)"},
 		{b32sxt,    "int32 sxt(int32 value, int32 offs, int32 count)"},
+		{b32pop,    "int32 pop(int32 value)"},
+		{b32swp,    "int32 swap(int32 value)"},
+		{b32sr,     "int32 bsr(int32 value)"},
+		{b32sf,     "int32 bsf(int32 value)"},
+		{b32hi,     "int32 hib(int32 value)"},
+		{b32lo,     "int32 lob(int32 value)"},
 	},
 	bit64[] = {      // 64 bit operations
 		{b64zxt,    "int64 zxt(int64 value, int32 offs, int32 count)"},

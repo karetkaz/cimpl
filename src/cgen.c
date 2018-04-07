@@ -8,17 +8,15 @@
 
 #include "internal.h"
 
+// forward declarations
+static ccKind genAst(ccContext cc, astn ast, ccKind get);
+
 /// Utility function to use the correct opcode in 32/64 bit
 static inline vmOpcode vmSelect(vmOpcode opc32, vmOpcode opc64) {
 	return sizeof(vmOffs) > vm_size ? opc64 : opc32;
 }
 
-/**
- * @brief get absolute position on stack, of relative offset
- * @param rt Runtime context.
- * @param size size of variable.
- * @return the position of variable on stack.
- */
+/// Utility function to get the absolute position on stack, of a relative offset
 static inline size_t stkOffset(rtContext rt, size_t size) {
 	logif(size > rt->_size, "Error(expected: %d, actual: %d)", rt->_size, size);
 	return padOffset(size, vm_size) + rt->vm.ss * vm_size;
@@ -87,18 +85,8 @@ static inline ccKind castOf2(symn sym) {
 	return got;
 }
 
-/**
- * Generate bytecode from abstract syntax tree.
- * 
- * @param cc Compiler context.
- * @param ast Abstract syntax tree.
- * @param get Override node cast.
- * @return Should be get || cast of ast node.
- */
-static ccKind genAst(ccContext cc, astn ast, ccKind get);
-
 /// Generate byte-code from STMT_for.
-static inline ccKind genLoop(ccContext cc, astn ast) {
+static ccKind genLoop(ccContext cc, astn ast) {
 	rtContext rt = cc->rt;
 	astn jl = cc->jumps;
 
@@ -174,7 +162,7 @@ static inline ccKind genLoop(ccContext cc, astn ast) {
 	return CAST_vid;
 }
 /// Generate byte-code from STMT_if.
-static inline ccKind genBranch(ccContext cc, astn ast) {
+static ccKind genBranch(ccContext cc, astn ast) {
 	rtContext rt = cc->rt;
 	struct astNode testValue;
 	astn *genOnly = NULL;
@@ -342,7 +330,7 @@ static ccKind genIndirection(ccContext cc, symn variable, ccKind get) {
 	return typCast;
 }
 /// Generate byte-code for variable declaration with initialization.
-static inline ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
+static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 	rtContext rt = cc->rt;
 	astn varInit = variable->init;
 	ccKind varCast = castOf(variable);
@@ -420,7 +408,7 @@ static inline ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 	return varCast;
 }
 /// Generate byte-code for variable usage.
-static inline ccKind genVariable(ccContext cc, symn variable, ccKind get, astn ast) {
+static ccKind genVariable(ccContext cc, symn variable, ccKind get, astn ast) {
 	rtContext rt = cc->rt;
 	symn type = variable->type;
 	ccKind got = castOf(variable);
@@ -507,7 +495,7 @@ static inline ccKind genVariable(ccContext cc, symn variable, ccKind get, astn a
 }
 
 /// Generate byte-code for OPER_fnc `a(b)`.
-static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
+static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 	rtContext rt = cc->rt;
 
 	dbgCgen("%?s:%?u: %t", ast->file, ast->line, ast);
@@ -811,7 +799,7 @@ static inline ccKind genCall(ccContext cc, astn ast, ccKind get) {
 	return result;
 }
 /// Generate byte-code for OPER_idx `a[b]`.
-static inline ccKind genIndex(ccContext cc, astn ast, ccKind get) {
+static ccKind genIndex(ccContext cc, astn ast, ccKind get) {
 	rtContext rt = cc->rt;
 	struct astNode tmp;
 
@@ -863,7 +851,7 @@ static inline ccKind genIndex(ccContext cc, astn ast, ccKind get) {
 	return castOf(ast->type);
 }
 /// Generate byte-code for OPER_dot `a.b`.
-static inline ccKind genMember(ccContext cc, astn ast, ccKind get) {
+static ccKind genMember(ccContext cc, astn ast, ccKind get) {
 	rtContext rt = cc->rt;
 	// TODO: this should work as indexing
 	symn object = linkOf(ast->op.lhso, 1);
@@ -1057,7 +1045,6 @@ static ccKind genOperator(rtContext rt, ccToken token, ccKind cast) {
 			opc = opc_not;
 			break;
 
-			// arithmetic
 		case OPER_pls:
 			switch (cast) {
 				default:
@@ -1242,7 +1229,6 @@ static ccKind genOperator(rtContext rt, ccToken token, ccKind cast) {
 			}
 			break;
 
-			// bit operations
 		case OPER_cmt:
 			switch (cast) {
 				default:
@@ -1362,7 +1348,7 @@ static ccKind genOperator(rtContext rt, ccToken token, ccKind cast) {
 	return cast;
 }
 /// Generate byte-code for OPER_sel `a ? b : c`.
-static inline ccKind genLogical(ccContext cc, astn ast) {
+static ccKind genLogical(ccContext cc, astn ast) {
 	rtContext rt = cc->rt;
 	struct astNode tmp;
 
@@ -2036,20 +2022,20 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 	return got;
 }
 
-int ccGenCode(rtContext rt, int debug) {
-	ccContext cc = rt->cc;
+int ccGenCode(ccContext cc, int debug) {
+	rtContext rt = cc->rt;
 
 	if (cc == NULL || rt->errors != 0) {
 		dieif(cc == NULL, ERR_INTERNAL_ERROR);
 		trace("can not generate code with errors");
-		return 0;
+		return rt->errors;
 	}
 
 	// leave the global scope.
 	rt->main = install(cc, ".main", ATTR_stat | KIND_fun, cc->type_fun->size, cc->type_fun, cc->root);
 	cc->scope = leave(cc, rt->genGlobals ? ATTR_stat | KIND_def : KIND_def, 0, 0, NULL);
-
 	dieif(cc->scope != cc->global, ERR_INTERNAL_ERROR);
+
 	/* reorder the initialization of static variables and functions.
 	 *	int f() {
 	 *		static int g = 9;
@@ -2069,7 +2055,7 @@ int ccGenCode(rtContext rt, int debug) {
 					if (prevGlobal == NULL || prevInner == NULL) {
 						// the first globals are the builtin types, so we should never get here
 						fatal("global `%T` cant be generated before `%T`", inner, global);
-						return 0;
+						return -1;
 					}
 
 					// remove inner from list
@@ -2089,7 +2075,10 @@ int ccGenCode(rtContext rt, int debug) {
 		}
 	}
 
-	vmInit(rt, debug, NULL);
+	// prepare to emit instructions
+	if (vmInit(rt, debug, NULL) == 0) {
+		return -2;
+	}
 
 	// static variables & functions
 	if (cc->global != NULL) {
@@ -2148,7 +2137,7 @@ int ccGenCode(rtContext rt, int debug) {
 
 				if (rt->_beg >= rt->_end) {
 					error(rt, var->file, var->line, ERR_DECLARATION_COMPLEX, var);
-					return 0;
+					return -3;
 				}
 			}
 			else {
@@ -2172,7 +2161,7 @@ int ccGenCode(rtContext rt, int debug) {
 			size_t begin = emit(rt, markIP);
 			if (!genDeclaration(cc, var, CAST_vid)) {
 				traceAst(var->tag);
-				return 0;
+				return -4;
 			}
 			addDbgStatement(rt, begin, emit(rt, markIP), var->tag);
 		}
@@ -2180,13 +2169,13 @@ int ccGenCode(rtContext rt, int debug) {
 		// CAST_vid clears the stack
 		if (!genAst(cc, cc->root, rt->genGlobals ? CAST_vid : CAST_val)) {
 			traceAst(cc->root);
-			return 0;
+			return -5;
 		}
 
 		if (cc->jumps != NULL) {
 			fatal(ERR_INTERNAL_ERROR": invalid jump: `%t`", cc->jumps);
 			cc->jumps = cc->jumps->next;
-			return 0;
+			return -6;
 		}
 	}
 
@@ -2221,5 +2210,5 @@ int ccGenCode(rtContext rt, int debug) {
 		}
 	}
 
-	return rt->errors == 0;
+	return rt->errors;
 }

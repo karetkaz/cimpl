@@ -193,7 +193,7 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 	if (def != NULL) {
 		size_t length = strlen(name) + 1;
 		unsigned hash = rehash(name, length) % hashTableSize;
-		def->name = mapstr(cc, (char*)name, length, hash);
+		def->name = ccUniqueStr(cc, (char *) name, length, hash);
 		def->nest = cc->nest;
 		def->type = type;
 		def->init = init;
@@ -510,7 +510,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 						ast->type = rType;
 						ast->ref.link = cc->null_ref;
 						ast->ref.hash = rehash(name, len + 1) % hashTableSize;
-						ast->ref.name = mapstr(cc, name, len + 1, ast->ref.hash);
+						ast->ref.name = ccUniqueStr(cc, name, len + 1, ast->ref.hash);
 						ast->type = rType;
 						return rType;
 					}
@@ -1020,34 +1020,34 @@ size_t argsSize(symn function) {
 }
 
 static inline ccKind castKind(symn typ) {
-	if (typ != NULL) {
-		switch (castOf(typ)) {
-			default:
-				break;
-
-			case CAST_vid:
-				return CAST_vid;
-
-			case CAST_bit:
-				return CAST_bit;
-
-			case CAST_u32:
-			case CAST_i32:
-				return CAST_i32;
-
-			case CAST_i64:
-			case CAST_u64:
-				return CAST_i64;
-
-			case CAST_f32:
-			case CAST_f64:
-				return CAST_f64;
-
-			case KIND_var:
-				return KIND_var;
-		}
+	if (typ == NULL) {
+		return CAST_any;
 	}
-	return CAST_any;
+	switch (castOf(typ)) {
+		default:
+			return CAST_any;
+
+		case CAST_vid:
+			return CAST_vid;
+
+		case CAST_bit:
+			return CAST_bit;
+
+		case CAST_u32:
+		case CAST_i32:
+			return CAST_i32;
+
+		case CAST_i64:
+		case CAST_u64:
+			return CAST_i64;
+
+		case CAST_f32:
+		case CAST_f64:
+			return CAST_f64;
+
+		case KIND_var:
+			return KIND_var;
+	}
 }
 
 // determine the resulting type of a OP b

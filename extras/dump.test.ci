@@ -152,6 +152,12 @@ uint32: typename {
 .print: '%u'
 .field zxt: function (size: 0 -> static const inline)
 .field sxt: function (size: 0 -> static const inline)
+.field pop: function (size: 0 -> static const inline)
+.field swap: function (size: 0 -> static const inline)
+.field bsr: function (size: 0 -> static const inline)
+.field bsf: function (size: 0 -> static const inline)
+.field hib: function (size: 0 -> static const inline)
+.field lob: function (size: 0 -> static const inline)
 .value: 0
 }
 uint32.zxt(value: int32, offs: int32, count: int32): int32: function {
@@ -178,6 +184,66 @@ uint32.sxt(value: int32, offs: int32, count: int32): int32: function {
 .param count: int32 (size: 4 -> variable(i32))
 .value: nfc(18)
 }
+uint32.pop(value: int32): int32: function {
+.kind: static const inline
+.base: `function`
+.size: 0
+.name: 'pop'
+.owner: uint32
+.param .result: int32 (size: 4 -> inline)
+.param value: int32 (size: 4 -> variable(i32))
+.value: nfc(19)
+}
+uint32.swap(value: int32): int32: function {
+.kind: static const inline
+.base: `function`
+.size: 0
+.name: 'swap'
+.owner: uint32
+.param .result: int32 (size: 4 -> inline)
+.param value: int32 (size: 4 -> variable(i32))
+.value: nfc(20)
+}
+uint32.bsr(value: int32): int32: function {
+.kind: static const inline
+.base: `function`
+.size: 0
+.name: 'bsr'
+.owner: uint32
+.param .result: int32 (size: 4 -> inline)
+.param value: int32 (size: 4 -> variable(i32))
+.value: nfc(21)
+}
+uint32.bsf(value: int32): int32: function {
+.kind: static const inline
+.base: `function`
+.size: 0
+.name: 'bsf'
+.owner: uint32
+.param .result: int32 (size: 4 -> inline)
+.param value: int32 (size: 4 -> variable(i32))
+.value: nfc(22)
+}
+uint32.hib(value: int32): int32: function {
+.kind: static const inline
+.base: `function`
+.size: 0
+.name: 'hib'
+.owner: uint32
+.param .result: int32 (size: 4 -> inline)
+.param value: int32 (size: 4 -> variable(i32))
+.value: nfc(23)
+}
+uint32.lob(value: int32): int32: function {
+.kind: static const inline
+.base: `function`
+.size: 0
+.name: 'lob'
+.owner: uint32
+.param .result: int32 (size: 4 -> inline)
+.param value: int32 (size: 4 -> variable(i32))
+.value: nfc(24)
+}
 uint64: typename {
 .kind: static const typename(u64)
 .base: `typename`
@@ -198,7 +264,7 @@ uint64.zxt(value: int64, offs: int32, count: int32): int64: function {
 .param value: int64 (size: 8 -> variable(i64))
 .param offs: int32 (size: 4 -> variable(i32))
 .param count: int32 (size: 4 -> variable(i32))
-.value: nfc(19)
+.value: nfc(25)
 }
 uint64.sxt(value: int64, offs: int32, count: int32): int64: function {
 .kind: static const inline
@@ -210,7 +276,7 @@ uint64.sxt(value: int64, offs: int32, count: int32): int64: function {
 .param value: int64 (size: 8 -> variable(i64))
 .param offs: int32 (size: 4 -> variable(i32))
 .param count: int32 (size: 4 -> variable(i32))
-.value: nfc(20)
+.value: nfc(26)
 }
 float32: typename {
 .kind: static const typename(f32)
@@ -236,7 +302,7 @@ float32.sin(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4 -> inline)
 .param x: float32 (size: 4 -> variable(f32))
-.value: nfc(21)
+.value: nfc(27)
 }
 float32.cos(x: float32): float32: function {
 .kind: static const inline
@@ -246,7 +312,7 @@ float32.cos(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4 -> inline)
 .param x: float32 (size: 4 -> variable(f32))
-.value: nfc(22)
+.value: nfc(28)
 }
 float32.tan(x: float32): float32: function {
 .kind: static const inline
@@ -256,7 +322,7 @@ float32.tan(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4 -> inline)
 .param x: float32 (size: 4 -> variable(f32))
-.value: nfc(23)
+.value: nfc(29)
 }
 float32.log(x: float32): float32: function {
 .kind: static const inline
@@ -266,7 +332,7 @@ float32.log(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4 -> inline)
 .param x: float32 (size: 4 -> variable(f32))
-.value: nfc(24)
+.value: nfc(30)
 }
 float32.exp(x: float32): float32: function {
 .kind: static const inline
@@ -276,7 +342,7 @@ float32.exp(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4 -> inline)
 .param x: float32 (size: 4 -> variable(f32))
-.value: nfc(25)
+.value: nfc(31)
 }
 float32.pow(x: float32, y: float32): float32: function {
 .kind: static const inline
@@ -287,7 +353,7 @@ float32.pow(x: float32, y: float32): float32: function {
 .param .result: float32 (size: 4 -> inline)
 .param x: float32 (size: 4 -> variable(f32))
 .param y: float32 (size: 4 -> variable(f32))
-.value: nfc(26)
+.value: nfc(32)
 }
 float32.sqrt(x: float32): float32: function {
 .kind: static const inline
@@ -297,7 +363,7 @@ float32.sqrt(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4 -> inline)
 .param x: float32 (size: 4 -> variable(f32))
-.value: nfc(27)
+.value: nfc(33)
 }
 float32.atan2(x: float32, y: float32): float32: function {
 .kind: static const inline
@@ -308,7 +374,7 @@ float32.atan2(x: float32, y: float32): float32: function {
 .param .result: float32 (size: 4 -> inline)
 .param x: float32 (size: 4 -> variable(f32))
 .param y: float32 (size: 4 -> variable(f32))
-.value: nfc(28)
+.value: nfc(34)
 }
 float64: typename {
 .kind: static const typename(f64)
@@ -334,7 +400,7 @@ float64.sin(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8 -> inline)
 .param x: float64 (size: 8 -> variable(f64))
-.value: nfc(29)
+.value: nfc(35)
 }
 float64.cos(x: float64): float64: function {
 .kind: static const inline
@@ -344,7 +410,7 @@ float64.cos(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8 -> inline)
 .param x: float64 (size: 8 -> variable(f64))
-.value: nfc(30)
+.value: nfc(36)
 }
 float64.tan(x: float64): float64: function {
 .kind: static const inline
@@ -354,7 +420,7 @@ float64.tan(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8 -> inline)
 .param x: float64 (size: 8 -> variable(f64))
-.value: nfc(31)
+.value: nfc(37)
 }
 float64.log(x: float64): float64: function {
 .kind: static const inline
@@ -364,7 +430,7 @@ float64.log(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8 -> inline)
 .param x: float64 (size: 8 -> variable(f64))
-.value: nfc(32)
+.value: nfc(38)
 }
 float64.exp(x: float64): float64: function {
 .kind: static const inline
@@ -374,7 +440,7 @@ float64.exp(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8 -> inline)
 .param x: float64 (size: 8 -> variable(f64))
-.value: nfc(33)
+.value: nfc(39)
 }
 float64.pow(x: float64, y: float64): float64: function {
 .kind: static const inline
@@ -385,7 +451,7 @@ float64.pow(x: float64, y: float64): float64: function {
 .param .result: float64 (size: 8 -> inline)
 .param x: float64 (size: 8 -> variable(f64))
 .param y: float64 (size: 8 -> variable(f64))
-.value: nfc(34)
+.value: nfc(40)
 }
 float64.sqrt(x: float64): float64: function {
 .kind: static const inline
@@ -395,7 +461,7 @@ float64.sqrt(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8 -> inline)
 .param x: float64 (size: 8 -> variable(f64))
-.value: nfc(35)
+.value: nfc(41)
 }
 float64.atan2(x: float64, y: float64): float64: function {
 .kind: static const inline
@@ -406,7 +472,7 @@ float64.atan2(x: float64, y: float64): float64: function {
 .param .result: float64 (size: 8 -> inline)
 .param x: float64 (size: 8 -> variable(f64))
 .param y: float64 (size: 8 -> variable(f64))
-.value: nfc(36)
+.value: nfc(42)
 }
 pointer: typename {
 .kind: static const typename(ref)
@@ -9529,7 +9595,7 @@ forIdx: int32 {
 	<.main+?>:    load.f64 2.000000
 	<.main+?>:    div.f64
 	<.main+?>:    f64.2f32
-	<.main+?>:    nfc(21) ;float32.sin(x: float32): float32
+	<.main+?>:    nfc(27) ;float32.sin(x: float32): float32
 	test/lang.inlineEmit.ci:17: (5 bytes): emitFloatAsInt1: int32 := floatAsInt32(500)
 	<.main+?>:    load.f32 500.000000
 	test/lang.inlineEmit.ci:18: (6 bytes): emitFloatAsInt2: int64 := floatAsInt32(500)
@@ -10817,82 +10883,82 @@ forIdx: int32 {
 	<.main+?>:    dup.x2 sp(21)
 	<.main+?>:    load.f64 2.000000
 	<.main+?>:    div.f64
-	<.main+?>:    nfc(29) ;float64.sin(x: float64): float64
+	<.main+?>:    nfc(35) ;float64.sin(x: float64): float64
 	test/stdc.nfcNumber.ci:38: (16 bytes): cosF64: float64 := float64.cos(pi64 / (2))
 	<.main+?>:    dup.x2 sp(23)
 	<.main+?>:    load.f64 2.000000
 	<.main+?>:    div.f64
-	<.main+?>:    nfc(30) ;float64.cos(x: float64): float64
+	<.main+?>:    nfc(36) ;float64.cos(x: float64): float64
 	test/stdc.nfcNumber.ci:39: (16 bytes): tanF64: float64 := float64.tan(pi64 / (4))
 	<.main+?>:    dup.x2 sp(25)
 	<.main+?>:    load.f64 4.000000
 	<.main+?>:    div.f64
-	<.main+?>:    nfc(31) ;float64.tan(x: float64): float64
+	<.main+?>:    nfc(37) ;float64.tan(x: float64): float64
 	test/stdc.nfcNumber.ci:40: (12 bytes): logF64: float64 := float64.log(e64 * e64 * e64)
 	<.main+?>:    dup.x2 sp(25)
 	<.main+?>:    dup.x2 sp(27)
 	<.main+?>:    mul.f64
 	<.main+?>:    dup.x2 sp(27)
 	<.main+?>:    mul.f64
-	<.main+?>:    nfc(32) ;float64.log(x: float64): float64
+	<.main+?>:    nfc(38) ;float64.log(x: float64): float64
 	test/stdc.nfcNumber.ci:41: (13 bytes): expF64: float64 := float64.exp(1.000000)
 	<.main+?>:    load.f64 1.000000
-	<.main+?>:    nfc(33) ;float64.exp(x: float64): float64
+	<.main+?>:    nfc(39) ;float64.exp(x: float64): float64
 	test/stdc.nfcNumber.ci:42: (18 bytes): powF64: float64 := float64.pow(pi64 * pi64, 0.500000)
 	<.main+?>:    dup.x2 sp(31)
 	<.main+?>:    dup.x2 sp(33)
 	<.main+?>:    mul.f64
 	<.main+?>:    load.f64 0.500000
-	<.main+?>:    nfc(34) ;float64.pow(x: float64, y: float64): float64
+	<.main+?>:    nfc(40) ;float64.pow(x: float64, y: float64): float64
 	test/stdc.nfcNumber.ci:43: (9 bytes): sqrtF64: float64 := float64.sqrt(pi64 * pi64)
 	<.main+?>:    dup.x2 sp(33)
 	<.main+?>:    dup.x2 sp(35)
 	<.main+?>:    mul.f64
-	<.main+?>:    nfc(35) ;float64.sqrt(x: float64): float64
+	<.main+?>:    nfc(41) ;float64.sqrt(x: float64): float64
 	test/stdc.nfcNumber.ci:44: (15 bytes): atanF64: float64 := float64.atan2(pi64, 1.000000)
 	<.main+?>:    dup.x2 sp(35)
 	<.main+?>:    load.f64 1.000000
-	<.main+?>:    nfc(36) ;float64.atan2(x: float64, y: float64): float64
+	<.main+?>:    nfc(42) ;float64.atan2(x: float64, y: float64): float64
 	test/stdc.nfcNumber.ci:46: (12 bytes): sinF32: float32 := float32.sin(pi32 / (2))
 	<.main+?>:    dup.x1 sp(34)
 	<.main+?>:    load.f32 2.000000
 	<.main+?>:    div.f32
-	<.main+?>:    nfc(21) ;float32.sin(x: float32): float32
+	<.main+?>:    nfc(27) ;float32.sin(x: float32): float32
 	test/stdc.nfcNumber.ci:47: (12 bytes): cosF32: float32 := float32.cos(pi32 / (2))
 	<.main+?>:    dup.x1 sp(35)
 	<.main+?>:    load.f32 2.000000
 	<.main+?>:    div.f32
-	<.main+?>:    nfc(22) ;float32.cos(x: float32): float32
+	<.main+?>:    nfc(28) ;float32.cos(x: float32): float32
 	test/stdc.nfcNumber.ci:48: (12 bytes): tanF32: float32 := float32.tan(pi32 / (4))
 	<.main+?>:    dup.x1 sp(36)
 	<.main+?>:    load.f32 4.000000
 	<.main+?>:    div.f32
-	<.main+?>:    nfc(23) ;float32.tan(x: float32): float32
+	<.main+?>:    nfc(29) ;float32.tan(x: float32): float32
 	test/stdc.nfcNumber.ci:49: (12 bytes): logF32: float32 := float32.log(e32 * e32 * e32)
 	<.main+?>:    dup.x1 sp(36)
 	<.main+?>:    dup.x1 sp(37)
 	<.main+?>:    mul.f32
 	<.main+?>:    dup.x1 sp(37)
 	<.main+?>:    mul.f32
-	<.main+?>:    nfc(24) ;float32.log(x: float32): float32
+	<.main+?>:    nfc(30) ;float32.log(x: float32): float32
 	test/stdc.nfcNumber.ci:50: (9 bytes): expF32: float32 := float32.exp(1.000000)
 	<.main+?>:    load.f32 1.000000
-	<.main+?>:    nfc(25) ;float32.exp(x: float32): float32
+	<.main+?>:    nfc(31) ;float32.exp(x: float32): float32
 	test/stdc.nfcNumber.ci:51: (14 bytes): powF32: float32 := float32.pow(pi32 * pi32, 0.500000)
 	<.main+?>:    dup.x1 sp(39)
 	<.main+?>:    dup.x1 sp(40)
 	<.main+?>:    mul.f32
 	<.main+?>:    load.f32 0.500000
-	<.main+?>:    nfc(26) ;float32.pow(x: float32, y: float32): float32
+	<.main+?>:    nfc(32) ;float32.pow(x: float32, y: float32): float32
 	test/stdc.nfcNumber.ci:52: (9 bytes): sqrtF32: float32 := float32.sqrt(pi32 * pi32)
 	<.main+?>:    dup.x1 sp(40)
 	<.main+?>:    dup.x1 sp(41)
 	<.main+?>:    mul.f32
-	<.main+?>:    nfc(27) ;float32.sqrt(x: float32): float32
+	<.main+?>:    nfc(33) ;float32.sqrt(x: float32): float32
 	test/stdc.nfcNumber.ci:53: (11 bytes): atanF32: float32 := float32.atan2(pi32, 1.000000)
 	<.main+?>:    dup.x1 sp(41)
 	<.main+?>:    load.f32 1.000000
-	<.main+?>:    nfc(28) ;float32.atan2(x: float32, y: float32): float32
+	<.main+?>:    nfc(34) ;float32.atan2(x: float32, y: float32): float32
 	test/stdc.nfcMemory.ci:7: (14 bytes): p1: pointer := malloc(1024)
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    load.c32 1024
@@ -12414,13 +12480,13 @@ test/lang.varInitArray.ci:31: arrArrayInitPtr: int64[*](<@0b3de0>[0] {})
 test/lang.varInitArray.ci:40: strArray: char[*]("string")
 test/lang.varInitArray.ci:44: strSlice: char[]("string")
 test/lang.varInitArray.ci:48: strFixed: char[7]("string")
-test/lang.varInitArray.ci:62: lenSlice: function(<lenSlice @029240>)
-test/lang.varInitArray.ci:63: nthSlice: function(<nthSlice @029248>)
-test/lang.varInitArray.ci:64: nthArray: function(<nthArray @029258>)
-test/lang.varInitArray.ci:65: nthFixed: function(<nthFixed @029268>)
+test/lang.varInitArray.ci:62: lenSlice: function(<lenSlice @029d50>)
+test/lang.varInitArray.ci:63: nthSlice: function(<nthSlice @029d58>)
+test/lang.varInitArray.ci:64: nthArray: function(<nthArray @029d68>)
+test/lang.varInitArray.ci:65: nthFixed: function(<nthFixed @029d78>)
 test/lang.varInitByRef.ci:7: value: int64(42)
 test/lang.varInitByRef.ci:8: valueRef: int64(42)
-test/lang.varInitByRef.ci:9: valuePtr: pointer(<value @029278>)
+test/lang.varInitByRef.ci:9: valuePtr: pointer(<value @029d88>)
 test/lang.varInitByRef.ci:10: valueVar: variant({int64: 42})
 test/lang.varInitByRef.ci:12: fromRef: int64(42)
 test/lang.varInitByRef.ci:13: fromPtr: int64(42)
@@ -12437,7 +12503,7 @@ test/lang.varInitByRef.ci:25: typeTyp: typename(<int64>)
 test/lang.varInitByRef.ci:27: local: int64(42)
 test/lang.varInitByRef.ci:28: copyVal: int64(42)
 test/lang.varInitByRef.ci:29: copyRef: int64(42)
-test/lang.varInitByRef.ci:30: copyPtr: pointer(<value @029278>)
+test/lang.varInitByRef.ci:30: copyPtr: pointer(<value @029d88>)
 test/lang.varInitByRef.ci:31: copyVar: variant({int64: 42})
 test/lang.varInitByRef.ci:32: copyTyp: typename(<int64>)
 test/lang.varInitByRef.ci:35: ptrVoid: pointer(<void @0000a0>)
@@ -12494,7 +12560,7 @@ test/lang.varInitByRef.ci:89: typFunction: typename(<function>)
 test/lang.varInitByRef.ci:90: typPointer: typename(<pointer>)
 test/lang.varInitByRef.ci:91: typVariant: typename(<variant>)
 test/lang.varInitByRef.ci:92: typObject: typename(<object>)
-test/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @029278>)
+test/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @029d88>)
 test/lang.varInitByRef.ci:96: valueOfVar: variant({int64: 42})
 test/lang.varInitByRef.ci:97: valueOfTyp: typename(<int64>)
 test/lang.varInitByRef.ci:99: typeOfValue: typename(<int64>)
@@ -12504,13 +12570,13 @@ test/lang.varInitByVal.ci:7: globalCounter: int64(41)
 test/lang.varInitByVal.ci:9: globalInitCounter1: int64(34)
 test/lang.varInitByVal.ci:32: Record.global: int32(35)
 test/lang.varInitByVal.ci:37: Record.globalConstant: int32(36)
-test/lang.varInitByVal.ci:40: Record.staticMethod: function(<Record.staticMethod @0292a0>)
-test/lang.varInitByVal.ci:45: Record.forwardMethod: function(<Record.forwardMethod @0292b8>)
-test/lang.varInitByVal.ci:51: Record.virtualMethod: function(<Record.virtualMethod @0292b0>)
-test/lang.varInitByVal.ci:63: Record.forwardMethod: function(<Record.forwardMethod @0292b8>)
+test/lang.varInitByVal.ci:40: Record.staticMethod: function(<Record.staticMethod @029db0>)
+test/lang.varInitByVal.ci:45: Record.forwardMethod: function(<Record.forwardMethod @029dc8>)
+test/lang.varInitByVal.ci:51: Record.virtualMethod: function(<Record.virtualMethod @029dc0>)
+test/lang.varInitByVal.ci:63: Record.forwardMethod: function(<Record.forwardMethod @029dc8>)
 test/lang.varInitByVal.ci:11: Record: typename(<Record>)
 test/lang.varInitByVal.ci:68: globalInitCounter2: int64(37)
-test/lang.varInitByVal.ci:70: initMethod: function(<initMethod @0292f8>)
+test/lang.varInitByVal.ci:70: initMethod: function(<initMethod @029e08>)
 test/lang.varInitByVal.ci:88: localNoInit: int64(0)
 test/lang.varInitByVal.ci:89: localInitGlobal: int64(40)
 test/lang.varInitByVal.ci:90: localInitCounter: int64(41)
@@ -12523,13 +12589,13 @@ test/lang.varInitByVal.ci:99: localInitMethodRecordGlobal: int64(39)
 test/lang.varInitByVal.ci:101: localObject: Record(<@0b3b98>{
 	member: int32(39),
 	memberInit: int32(0),
-	memberConstant: int32(168708),
+	memberConstant: int32(171540),
 	memberConstantInit: int32(1),
 	virtualMethod: function(<typename+31 @000027>),
 	abstractMethod: function(null),
-	methodReference: function(<.main+3244 @02a0c6>)
+	methodReference: function(<.main+3244 @02abd6>)
 })
-test/lang.varInitByVal.ci:102: globalObject: Record(<globalObject @029328>{
+test/lang.varInitByVal.ci:102: globalObject: Record(<globalObject @029e38>{
 	member: int32(0),
 	memberInit: int32(0),
 	memberConstant: int32(0),
@@ -12540,17 +12606,17 @@ test/lang.varInitByVal.ci:102: globalObject: Record(<globalObject @029328>{
 })
 test/lang.varInitByVal.ci:104: localStaticCallStaticMethod: int32(7)
 test/lang.varInitByVal.ci:105: localStaticCallForwardMethod: int32(12)
-test/lang.function.ci:3: empty: function(<empty @029348>)
-test/lang.function.ci:6: funAdd: function(<funAdd @029350>)
+test/lang.function.ci:3: empty: function(<empty @029e58>)
+test/lang.function.ci:6: funAdd: function(<funAdd @029e60>)
 test/lang.function.ci:11: funAddResult: int32(9)
-test/lang.function.ci:14: funAddRef: function(<funAdd @029350>)
+test/lang.function.ci:14: funAddRef: function(<funAdd @029e60>)
 test/lang.function.ci:17: funAddRefResult: int32(10)
-test/lang.function.ci:20: funMul: function(<funMul @029358>)
+test/lang.function.ci:20: funMul: function(<funMul @029e68>)
 test/lang.function.ci:23: funMulResult: int32(12)
-test/lang.function.ci:26: funMulRef: function(<funMul @029358>)
+test/lang.function.ci:26: funMulRef: function(<funMul @029e68>)
 test/lang.function.ci:29: funMulRefResult: int32(14)
-test/lang.function.ci:32: funMul: function(<funMul @029358>)
-test/lang.function.ci:37: fib: function(<fib @029360>)
+test/lang.function.ci:32: funMul: function(<funMul @029e68>)
+test/lang.function.ci:37: fib: function(<fib @029e70>)
 test/lang.function.ci:45: fibonacci_13: uint32(233)
 test/lang.reflection.ci:3: sizeofVoid: int32(0)
 test/lang.reflection.ci:4: sizeofBool: int32(1)
@@ -12574,13 +12640,13 @@ test/lang.reflection.ci:22: RecordSizeof: typename(<RecordSizeof>)
 test/lang.reflection.ci:26: RecordSizeofExt: typename(<RecordSizeofExt>)
 test/lang.reflection.ci:30: typeofRecord: typename(<RecordSizeofExt>)
 test/lang.reflection.ci:31: nameOfRecord: char[*]("RecordSizeofExt")
-test/lang.reflection.ci:32: offsetOfRecord: int32(106808)
+test/lang.reflection.ci:32: offsetOfRecord: int32(109592)
 test/lang.reflection.ci:33: sizeOfRecord: int32(16)
 test/lang.reflection.ci:34: fileOfRecord: char[*]("test/lang.reflection.ci")
 test/lang.reflection.ci:35: lineOfRecord: int32(26)
 test/lang.reflection.ci:37: typeofBase: typename(<RecordSizeof>)
 test/lang.reflection.ci:38: nameOfBase: char[*]("RecordSizeof")
-test/lang.reflection.ci:39: offsetOfBase: int32(106536)
+test/lang.reflection.ci:39: offsetOfBase: int32(109320)
 test/lang.reflection.ci:40: sizeOfBase: int32(12)
 test/lang.reflection.ci:41: fileOfBase: char[*]("test/lang.reflection.ci")
 test/lang.reflection.ci:42: lineOfBase: int32(22)
@@ -12627,18 +12693,18 @@ test/stdc.nfcNumber.ci:50: expF32: float32(2.718282)
 test/stdc.nfcNumber.ci:51: powF32: float32(3.141593)
 test/stdc.nfcNumber.ci:52: sqrtF32: float32(3.141593)
 test/stdc.nfcNumber.ci:53: atanF32: float32(1.262627)
-test/stdc.nfcMemory.ci:7: p1: pointer(<@02af08>)
-test/stdc.nfcMemory.ci:8: p2: pointer(<@02b318>)
-test/stdc.nfcMemory.ci:9: p3: pointer(<@02b378>)
-test/stdc.nfcMemory.ci:10: p4: pointer(<@02b428>)
+test/stdc.nfcMemory.ci:7: p1: pointer(<@02ba18>)
+test/stdc.nfcMemory.ci:8: p2: pointer(<@02be28>)
+test/stdc.nfcMemory.ci:9: p3: pointer(<@02be88>)
+test/stdc.nfcMemory.ci:10: p4: pointer(<@02bf38>)
 test/stdc.nfcMemory.ci:23: val1: int64(0)
 test/stdc.nfcMemory.ci:24: val2: int64(42)
-test/stdc.nfcTryExec.ci:10: noError: function(<noError @029398>)
-test/stdc.nfcTryExec.ci:13: stackOverflow: function(<stackOverflow @0293a0>)
-test/stdc.nfcTryExec.ci:18: divisionByZero: function(<divisionByZero @0293b8>)
-test/stdc.nfcTryExec.ci:22: abortExecution: function(<abortExecution @0293c8>)
-test/stdc.nfcTryExec.ci:35: invalidMemoryAccess: function(<invalidMemoryAccess @029408>)
-test/stdc.nfcTryExec.ci:40: invalidInstruction: function(<invalidInstruction @029418>)
+test/stdc.nfcTryExec.ci:10: noError: function(<noError @029ea8>)
+test/stdc.nfcTryExec.ci:13: stackOverflow: function(<stackOverflow @029eb0>)
+test/stdc.nfcTryExec.ci:18: divisionByZero: function(<divisionByZero @029ec8>)
+test/stdc.nfcTryExec.ci:22: abortExecution: function(<abortExecution @029ed8>)
+test/stdc.nfcTryExec.ci:35: invalidMemoryAccess: function(<invalidMemoryAccess @029f18>)
+test/stdc.nfcTryExec.ci:40: invalidInstruction: function(<invalidInstruction @029f28>)
 test/stdc.nfcTryExec.ci:44: tryExecErr0: int32(0)
 test/stdc.nfcTryExec.ci:45: tryExecErr1: int32(1)
 test/stdc.nfcTryExec.ci:46: tryExecErr2: int32(2)
@@ -12907,10 +12973,10 @@ test/lang.statementIf.ci:26: t: int32(0)
 test/lang.statementFor.ci:12: forIdx: int32(2)
 
 ---------- Memory layout:
-memory[meta] @000000; size: 168512(164.6 Kb)
-memory[code] @02941a; size: 6877(6.7 Kb)
-memory[heap] @02aef7; size: 376875(368.0 Kb)
+memory[meta] @000000; size: 171344(167.3 Kb)
+memory[code] @029f2a; size: 6877(6.7 Kb)
+memory[heap] @02ba07; size: 374043(365.3 Kb)
 memory[stack] @059f5c; size: 184262(179.9 Kb)
 
 ---------- Memory allocations:
-memory[free] @02af08; size: 376832(368.0 Kb)
+memory[free] @02ba18; size: 374000(365.2 Kb)

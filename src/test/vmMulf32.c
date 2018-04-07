@@ -29,13 +29,12 @@ int main() {
 	// initialize
 	char mem[512];         // 0.5 Kb memory
 	rtContext rt = rtInit(mem, sizeof(mem));
-	vmInit(rt, 0, onHalt);
 
 	// override optimization flags
 	//rt->foldCasts = 0;
 
-	// start emitting some instructions
-	size_t start = emit(rt, markIP);
+	// start emitting the instructions
+	size_t start = vmInit(rt, 0, onHalt);
 	emitF64(rt, 16.5);
 	emit(rt, f64_f32);
 	emitI64(rt, 13);

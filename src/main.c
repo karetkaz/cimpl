@@ -652,7 +652,7 @@ static void jsonPostProfile(dbgContext ctx) {
 		}
 		covFunc += 1;
 		if (sym == NULL) {
-			sym = rtLookupSym(ctx->rt, dbg->start, 1);
+			sym = rtLookup(ctx->rt, dbg->start, 1);
 		}
 		if (covFunc > 1) {
 			printFmt(out, esc, JSON_OBJ_NEXT, indent + 1);
@@ -675,7 +675,7 @@ static void jsonPostProfile(dbgContext ctx) {
 		}
 		covStmt += 1;
 		if (sym == NULL) {
-			sym = rtLookupSym(ctx->rt, dbg->start, 1);
+			sym = rtLookup(ctx->rt, dbg->start, 1);
 		}
 		if (sym != NULL) {
 			symOffs = dbg->start - sym->offs;
@@ -894,7 +894,7 @@ static void textPostProfile(userContext usr) {
 			}
 			covFunc += 1;
 			if (sym == NULL) {
-				sym = rtLookupSym(rt, fun->start, 1);
+				sym = rtLookup(rt, fun->start, 1);
 			}
 			printFmt(out, esc,
 				"%?s:%?u:[.%06x, .%06x): %?T, hits(%D/%D), time(%D%?+D / %.3F%?+.3F ms)\n", fun->file,
@@ -916,7 +916,7 @@ static void textPostProfile(userContext usr) {
 			}
 			covStmt += 1;
 			if (sym == NULL) {
-				sym = rtLookupSym(rt, fun->start, 1);
+				sym = rtLookup(rt, fun->start, 1);
 			}
 			if (sym != NULL) {
 				symOffs = fun->start - sym->offs;
@@ -944,7 +944,7 @@ static void textPostProfile(userContext usr) {
 					continue;
 				}
 				if (sym == NULL) {
-					sym = rtLookupSym(rt, fun->start, 1);
+					sym = rtLookup(rt, fun->start, 1);
 				}
 				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): %?T\n", fun->file, fun->line, fun->start, fun->end, sym);
 			}
@@ -957,7 +957,7 @@ static void textPostProfile(userContext usr) {
 					continue;
 				}
 				if (sym == NULL) {
-					sym = rtLookupSym(rt, fun->start, 1);
+					sym = rtLookup(rt, fun->start, 1);
 				}
 				if (sym != NULL) {
 					symOffs = fun->start - sym->offs;
@@ -1197,7 +1197,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 				printFmt(out, esc, "[% 3.2F]", now);
 			}
 			if ((ssize_t) callee > 0) {
-				printFmt(out, esc, ">% I %d, %T\n", ss, ctx->usedMem, rtLookupSym(rt, callee, 1));
+				printFmt(out, esc, ">% I %d, %T\n", ss, ctx->usedMem, rtLookup(rt, callee, 1));
 			}
 			else {
 				printFmt(out, esc, "<% I %d\n", ss, ctx->usedMem);
@@ -1252,7 +1252,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 				symn sym = NULL;
 				int32_t val = ((int32_t *) stack)[ss - i - 1];
 				if (val > 0 && val <= rt->vm.px) {
-					sym = rtLookupSym(rt, val, 0);
+					sym = rtLookup(rt, val, 0);
 					if (sym && !isFunction(sym)) {
 						if (sym->offs != val) {
 							sym = NULL;
@@ -1283,7 +1283,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 
 	// print error type
 	if (breakMode & brkPrint) {
-		symn fun = rtLookupSym(rt, caller, 0); 
+		symn fun = rtLookup(rt, caller, 0); 
 		size_t funOffs = caller;
 		if (fun != NULL) {
 			funOffs -= fun->offs;
@@ -1365,7 +1365,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 					}
 				}
 				else {
-					symn sym = ccLookupSym(rt->cc, NULL, arg);
+					symn sym = ccLookup(rt->cc, NULL, arg);
 					printFmt(con, esc, "arg:%T", sym);
 					if (sym && isVariable(sym) && !isStatic(sym)) {
 						printVal(con, esc, rt, sym, (vmValue *) stack, prSymType, 0);
@@ -2095,7 +2095,7 @@ int main(int argc, char *argv[]) {
 	if (install & installLibs) {
 		// install standard library.
 		if (extra.compileSteps != NULL) {printFmt(extra.out, extra.esc, "%sCompile: `%?s`\n", extra.compileSteps, stdLib);}
-		if (!ccAddLib(rt->cc, ccLibStd, stdLib)) {
+		if (ccAddLib(rt->cc, ccLibStd, stdLib) != 0) {
 			error(rt, NULL, 0, "error registering standard library");
 		}
 	}
@@ -2195,7 +2195,7 @@ int main(int argc, char *argv[]) {
 	// generate code only if there are no compilation errors
 	if (rt->errors == 0) {
 		if (extra.compileSteps != NULL) {printFmt(extra.out, extra.esc, "%sGenerate: byte-code\n", extra.compileSteps);}
-		if (!ccGenCode(rt, run_code != run)) {
+		if (ccGenCode(rt->cc, run_code != run) != 0) {
 			trace("error generating code");
 		}
 		// set breakpoints

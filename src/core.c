@@ -8,7 +8,6 @@
  */
 
 #include "internal.h"
-#include "cmpl.h"
 
 const char *const type_fmt_signed32 = "%d";
 const char *const type_fmt_signed64 = "%D";
@@ -28,33 +27,37 @@ static const char *const type_get_line = "int32 line(typename type)";
 static const char *const type_get_name = "typename name(typename type)";
 static const char *const type_get_base = "typename base(typename type)";
 
-/**
- * Install type system.
- * 
- * @param cc Compiler context.
- * @param mode what to install.
- */
-static void install_type(ccContext cc, ccInstall mode);
-/**
- * Install emit intrinsic.
- * 
- * @param cc Compiler context.
- * @param mode what to install.
- */
-static void install_emit(ccContext cc, ccInstall mode);
-/**
- * Install base functions.
- * 
- * @param rt Runtime context.
- * @param onHalt the function to be invoked when execution stops.
- * @returns 0 on success
- */
-static int install_base(rtContext rt, vmError onHalt(nfcContext));
-
 /// Private dummy on exit native function.
 static vmError haltDummy(nfcContext args) {
 	(void)args;
 	return noError;
+}
+
+/// Private native function for reflection.
+static vmError typenameGetField(nfcContext ctx) {
+	size_t symOffs = argref(ctx, 0);
+	symn sym = rtLookup(ctx->rt, symOffs, 0);
+	if (sym == NULL || sym->offs != symOffs) {
+		// invalid symbol offset
+		return nativeCallError;
+	}
+	if (ctx->proto == type_get_file) {
+		retref(ctx, vmOffset(ctx->rt, sym->file));
+		return noError;
+	}
+	if (ctx->proto == type_get_line) {
+		reti32(ctx, sym->line);
+		return noError;
+	}
+	if (ctx->proto == type_get_name) {
+		retref(ctx, vmOffset(ctx->rt, sym->name));
+		return noError;
+	}
+	if (ctx->proto == type_get_base) {
+		retref(ctx, vmOffset(ctx->rt, sym->type));
+		return noError;
+	}
+	return nativeCallError;
 }
 
 /// Private rtAlloc wrapper for the api
@@ -63,14 +66,15 @@ static void *rtAllocApi(rtContext rt, void *ptr, size_t size) {
 }
 
 /// Private rtLookupSym wrapper for the api
-static symn rtLookupSymApi(rtContext rt, size_t offset) {
-	symn sym = rtLookupSym(rt, offset, 0);
+static symn rtLookupApi(rtContext rt, size_t offset) {
+	symn sym = rtLookup(rt, offset, 0);
 	if (sym != NULL && sym->offs == offset) {
 		return sym;
 	}
 	return NULL;
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Native
 
 size_t nfcFirstArg(nfcContext nfc) {
 	nfc->param = (void *) -1;
@@ -169,299 +173,9 @@ void nfcCheckArg(nfcContext nfc, ccKind cast, char *name) {
 	}
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Language
 
-rtContext rtInit(void *mem, size_t size) {
-	rtContext rt = padPointer(mem, pad_size);
-
-	if (rt != mem) {
-		size_t diff = (char*)rt - (char*) mem;
-		size -= diff;
-	}
-
-	if (rt == NULL && size > sizeof(struct rtContextRec)) {
-		rt = malloc(size);
-	}
-
-	if (rt != NULL) {
-		memset(rt, 0, sizeof(struct rtContextRec));
-
-		*(void**)&rt->api.ccExtend = ccExtend;
-		*(void**)&rt->api.ccBegin = ccBegin;
-		*(void**)&rt->api.ccEnd = ccEnd;
-
-		*(void**)&rt->api.ccDefInt = ccDefInt;
-		*(void**)&rt->api.ccDefFlt = ccDefFlt;
-		*(void**)&rt->api.ccDefStr = ccDefStr;
-
-		*(void**)&rt->api.ccDefType = ccDefType;
-		*(void**)&rt->api.ccDefCall = ccDefCall;
-
-		*(void**)&rt->api.invoke = invoke;
-		*(void**)&rt->api.rtAlloc = rtAllocApi;
-		*(void**)&rt->api.rtFindSym = rtLookupSymApi;
-
-		*(void**)&rt->api.nfcFirstArg = nfcFirstArg;
-		*(void**)&rt->api.nfcNextArg = nfcNextArg;
-		*(void**)&rt->api.nfcReadArg = nfcReadArg;
-
-		// default values
-		rt->logLevel = 7;
-		rt->warnLevel = 5;
-		rt->foldCasts = 1;
-		rt->foldConst = 1;
-		rt->foldInstr = 1;
-		rt->fastMemory = 1;
-		rt->fastAssign = 1;
-		rt->genGlobals = 1;
-		rt->freeMem = mem == NULL;
-
-		*(size_t*)&rt->_size = size - sizeof(struct rtContextRec);
-		rt->_end = rt->_mem + rt->_size;
-		rt->_beg = rt->_mem + 1;
-
-		logFILE(rt, stdout);
-	}
-	return rt;
-}
-
-int rtClose(rtContext rt) {
-	// close log file
-	logFile(rt, NULL, 0);
-
-	// release debugger memory
-	if (rt->dbg != NULL) {
-		freeBuff(&rt->dbg->functions);
-		freeBuff(&rt->dbg->statements);
-	}
-	// release memory
-	if (rt->freeMem) {
-		free(rt);
-	}
-	return rt->errors;
-}
-
-rtContext vmInit(rtContext rt, int debug, vmError onHalt(nfcContext)) {
-	ccContext cc = rt->cc;
-
-	// debug info
-	if (debug != 0) {
-		rt->dbg = (dbgContext)(rt->_beg = padPointer(rt->_beg, pad_size));
-		rt->_beg += sizeof(struct dbgContextRec);
-
-		dieif(rt->_beg >= rt->_end, ERR_MEMORY_OVERRUN);
-		memset(rt->dbg, 0, sizeof(struct dbgContextRec));
-
-		rt->dbg->rt = rt;
-		rt->dbg->abort = (dbgn)-1;
-		rt->dbg->tryExec = cc->libc_try;
-		initBuff(&rt->dbg->functions, 128, sizeof(struct dbgNode));
-		initBuff(&rt->dbg->statements, 128, sizeof(struct dbgNode));
-	}
-
-	// initialize native calls
-	if (cc != NULL && cc->native != NULL) {
-		list lst = cc->native;
-		libc last = (libc) lst->data;
-		libc *calls = (libc*)(rt->_beg = padPointer(rt->_beg, pad_size));
-
-		rt->_beg += (last->offs + 1) * sizeof(libc);
-		if(rt->_beg >= rt->_end) {
-			fatal(ERR_MEMORY_OVERRUN);
-			return 0;
-		}
-
-		rt->vm.nfc = calls;
-		for (; lst != NULL; lst = lst->next) {
-			libc nfc = (libc) lst->data;
-			calls[nfc->offs] = nfc;
-
-			// relocate native call offsets to be debuggable and traceable.
-			nfc->sym->offs = vmOffset(rt, nfc);
-			nfc->sym->size = 0;
-			addDbgFunction(rt, nfc->sym);
-		}
-	}
-	else {
-		libc stop = (libc)(rt->_beg = padPointer(rt->_beg, pad_size));
-		rt->_beg += sizeof(struct libc);
-		if(rt->_beg >= rt->_end) {
-			fatal(ERR_MEMORY_OVERRUN);
-			return 0;
-		}
-
-		libc *calls = (libc*)(rt->_beg = padPointer(rt->_beg, pad_size));
-		rt->_beg += sizeof(libc);
-		if(rt->_beg >= rt->_end) {
-			fatal(ERR_MEMORY_OVERRUN);
-			return 0;
-		}
-
-		memset(stop, 0, sizeof(struct libc));
-		stop->call = haltDummy;
-		calls[0] = stop;
-
-		rt->vm.nfc = calls;
-
-		// add the main function
-		if (rt->main == NULL) {
-			symn main = (symn) (rt->_beg = padPointer(rt->_beg, pad_size));
-			rt->_beg += sizeof(struct symNode);
-			if (rt->_beg >= rt->_end) {
-				fatal(ERR_MEMORY_OVERRUN);
-				return 0;
-			}
-			memset(main, 0, sizeof(struct symNode));
-			main->kind = ATTR_stat | ATTR_cnst | CAST_ref | KIND_fun;
-			main->offs = vmOffset(rt, rt->_beg);
-			main->name = ".main";
-			rt->main = main;
-		}
-	}
-
-	// use custom halt function 
-	if (onHalt != NULL) {
-		libc *calls = rt->vm.nfc;
-		calls[0]->call = onHalt;
-	}
-
-	//~ read only memory ends here.
-	//~ strings, types, add(constants, functions, enums, ...)
-	rt->vm.ro = rt->_beg - rt->_mem;
-
-	return rt;
-}
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Compiler
-
-ccContext ccInit(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)) {
-	ccContext cc;
-
-	dieif(rt->cc != NULL, ERR_INTERNAL_ERROR);
-	dieif(rt->_beg != rt->_mem + 1, ERR_INTERNAL_ERROR);
-	dieif(rt->_end != rt->_mem + rt->_size, ERR_INTERNAL_ERROR);
-
-	cc = (ccContext)(rt->_end - sizeof(struct ccContextRec));
-	rt->_end -= sizeof(struct ccContextRec);
-
-	if (rt->_end < rt->_beg) {
-		fatal(ERR_MEMORY_OVERRUN);
-		return NULL;
-	}
-
-	memset(rt->_end, 0, sizeof(struct ccContextRec));
-
-	cc->rt = rt;
-	rt->cc = cc;
-
-	cc->owner = NULL;
-	cc->scope = NULL;
-	cc->global = NULL;
-
-	cc->chrNext = -1;
-
-	cc->fin._ptr = 0;
-	cc->fin._cnt = 0;
-	cc->fin._fin = -1;
-
-	install_type(cc, mode);
-	install_emit(cc, mode);
-	install_base(rt, onHalt);
-
-	cc->root = newNode(cc, STMT_beg);
-	cc->root->type = cc->type_vid;
-
-	return cc;
-}
-
-symn ccBegin(ccContext cc, const char *name) {
-	if (cc == NULL) {
-		trace(ERR_INTERNAL_ERROR);
-		return NULL;
-	}
-	symn result = NULL;
-	if (name != NULL) {
-		result = install(cc, name, ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, cc->type_vid, NULL);
-		if (result == NULL) {
-			return NULL;
-		}
-	}
-	enter(cc, result);
-	return result;
-}
-
-symn ccExtend(ccContext cc, symn symbol) {
-	if (cc == NULL) {
-		trace(ERR_INTERNAL_ERROR);
-		return NULL;
-	}
-	if (symbol == NULL) {
-		// can not extend nothing
-		return NULL;
-	}
-	if (symbol->fields != NULL) {
-		trace(ERR_INTERNAL_ERROR);
-		return NULL;
-	}
-	enter(cc, symbol);
-	return symbol;
-}
-
-symn ccEnd(ccContext cc, symn cls) {
-	if (cc == NULL) {
-		trace(ERR_INTERNAL_ERROR);
-		return NULL;
-	}
-	if (cc->owner != cls) {
-		trace(ERR_INTERNAL_ERROR);
-		return NULL;
-	}
-	symn fields = leave(cc, ATTR_stat | KIND_typ, 0, 0, NULL);
-	if (cls != NULL) {
-		cls->fields = fields;
-	}
-	return fields;
-}
-
-symn ccDefInt(ccContext cc, const char *name, int64_t value) {
-	if (!cc || !name) {
-		trace(ERR_INTERNAL_ERROR);
-		return NULL;
-	}
-	name = mapstr(cc, name, -1, -1);
-	return install(cc, name, KIND_def | CAST_i64, 0, cc->type_i64, intNode(cc, value));
-}
-
-symn ccDefFlt(ccContext cc, const char *name, double value) {
-	if (!cc || !name) {
-		trace(ERR_INTERNAL_ERROR);
-		return NULL;
-	}
-	name = mapstr(cc, name, -1, -1);
-	return install(cc, name, KIND_def | CAST_f64, 0, cc->type_f64, fltNode(cc, value));
-}
-
-symn ccDefStr(ccContext cc, const char *name, char *value) {
-	if (!cc || !name) {
-		trace(ERR_INTERNAL_ERROR);
-		return NULL;
-	}
-	name = mapstr(cc, name, -1, -1);
-	if (value != NULL) {
-		value = mapstr(cc, value, -1, -1);
-	}
-	return install(cc, name, KIND_def | CAST_ref, 0, cc->type_str, strNode(cc, value));
-}
-
-symn ccDefType(ccContext cc, const char *name, unsigned size, int refType) {
-	if (!cc || !name) {
-		trace(ERR_INTERNAL_ERROR);
-		return NULL;
-	}
-	return install(cc, name, ATTR_stat | ATTR_cnst | KIND_typ | (refType ? CAST_ref : CAST_val), size, cc->type_rec, NULL);
-}
-
-/// Install an instruction
+/// Install instruction for the emit intrinsic
 static inline symn ccDefOpCode(ccContext cc, const char *name, symn type, vmOpcode code, size_t args) {
 	astn opc = newNode(cc, TOKEN_opc);
 	if (opc != NULL) {
@@ -473,68 +187,7 @@ static inline symn ccDefOpCode(ccContext cc, const char *name, symn type, vmOpco
 	return NULL;
 }
 
-symn ccLookupSym(ccContext cc, symn in, char *name) {
-	struct astNode ast;
-	memset(&ast, 0, sizeof(struct astNode));
-	ast.kind = TOKEN_var;
-	ast.ref.name = name;
-	ast.ref.hash = rehash(name, -1) % hashTableSize;
-	return lookup(cc, in ? in->fields : cc->scope, &ast, NULL, 1);
-}
-
-symn rtLookupSym(rtContext rt, size_t offs, int callsOnly) {
-	symn sym = rt->main;
-	dieif(offs > rt->_size, ERR_INVALID_OFFSET, offs);
-	if (offs > rt->vm.px + px_size) {
-		// local variable on stack ?
-		return NULL;
-	}
-	if (offs >= sym->offs && offs < sym->offs + sym->size) {
-		// is the main function ?
-		return sym;
-	}
-	for (sym = sym->fields; sym; sym = sym->global) {
-		if (callsOnly && !isInvokable(sym)) {
-			continue;
-		}
-		if (offs == sym->offs) {
-			return sym;
-		}
-		if (offs > sym->offs && offs < sym->offs + sym->size) {
-			return sym;
-		}
-	}
-	return NULL;
-}
-
-
-/// private native function for reflection.
-static vmError typenameGetField(nfcContext args) {
-	size_t symOffs = argref(args, 0);
-	symn sym = rtLookupSym(args->rt, symOffs, 0);
-	if (sym == NULL || sym->offs != symOffs) {
-		// invalid symbol offset
-		return nativeCallError;
-	}
-	if (args->proto == type_get_file) {
-		retref(args, vmOffset(args->rt, sym->file));
-		return noError;
-	}
-	if (args->proto == type_get_line) {
-		reti32(args, sym->line);
-		return noError;
-	}
-	if (args->proto == type_get_name) {
-		retref(args, vmOffset(args->rt, sym->name));
-		return noError;
-	}
-	if (args->proto == type_get_base) {
-		retref(args, vmOffset(args->rt, sym->type));
-		return noError;
-	}
-	return nativeCallError;
-}
-
+/// Install type system.
 static void install_type(ccContext cc, ccInstall mode) {
 	symn type_ptr = NULL, type_var = NULL, type_obj = NULL;
 	astn init_val = intNode(cc, 0);
@@ -643,6 +296,7 @@ static void install_type(ccContext cc, ccInstall mode) {
 	}
 }
 
+/// Install emit intrinsic.
 static void install_emit(ccContext cc, ccInstall mode) {
 	rtContext rt = cc->rt;
 
@@ -840,7 +494,7 @@ static void install_emit(ccContext cc, ccInstall mode) {
 					rt->_beg[2] = (unsigned char) "xyzw"[(i >> 4) & 3];
 					rt->_beg[3] = (unsigned char) "xyzw"[(i >> 6) & 3];
 					rt->_beg[4] = 0;
-					name = mapstr(cc, (char*)rt->_beg, -1, -1);
+					name = ccUniqueStr(cc, (char *) rt->_beg, -1, -1);
 					ccDefOpCode(cc, name, type_p4x, p4x_swz, i);
 				}
 			}
@@ -850,6 +504,13 @@ static void install_emit(ccContext cc, ccInstall mode) {
 	}
 }
 
+/**
+ * Install base functions.
+ * 
+ * @param rt Runtime context.
+ * @param onHalt the function to be invoked when execution stops.
+ * @returns 0 on success
+ */
 static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 	int error = 0;
 	ccContext cc = rt->cc;
@@ -903,6 +564,167 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 		cc->type_rec->fields = leave(cc, KIND_def, 0, 0, NULL);
 	}
 	return error;
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Core
+
+rtContext rtInit(void *mem, size_t size) {
+	rtContext rt = padPointer(mem, pad_size);
+
+	if (rt != mem) {
+		size_t diff = (char*)rt - (char*) mem;
+		size -= diff;
+	}
+
+	if (rt == NULL && size > sizeof(struct rtContextRec)) {
+		rt = malloc(size);
+	}
+
+	if (rt != NULL) {
+		memset(rt, 0, sizeof(struct rtContextRec));
+
+		*(void**)&rt->api.ccExtend = ccExtend;
+		*(void**)&rt->api.ccBegin = ccBegin;
+		*(void**)&rt->api.ccEnd = ccEnd;
+
+		*(void**)&rt->api.ccDefInt = ccDefInt;
+		*(void**)&rt->api.ccDefFlt = ccDefFlt;
+		*(void**)&rt->api.ccDefStr = ccDefStr;
+
+		*(void**)&rt->api.ccDefType = ccDefType;
+		*(void**)&rt->api.ccDefCall = ccDefCall;
+
+		*(void**)&rt->api.invoke = invoke;
+		*(void**)&rt->api.rtAlloc = rtAllocApi;
+		*(void**)&rt->api.rtLookup = rtLookupApi;
+
+		*(void**)&rt->api.nfcFirstArg = nfcFirstArg;
+		*(void**)&rt->api.nfcNextArg = nfcNextArg;
+		*(void**)&rt->api.nfcReadArg = nfcReadArg;
+
+		// default values
+		rt->logLevel = 7;
+		rt->warnLevel = 5;
+		rt->foldCasts = 1;
+		rt->foldConst = 1;
+		rt->foldInstr = 1;
+		rt->fastMemory = 1;
+		rt->fastAssign = 1;
+		rt->genGlobals = 1;
+		rt->freeMem = mem == NULL;
+
+		*(size_t*)&rt->_size = size - sizeof(struct rtContextRec);
+		rt->_end = rt->_mem + rt->_size;
+		rt->_beg = rt->_mem + 1;
+
+		logFILE(rt, stdout);
+	}
+	return rt;
+}
+
+int rtClose(rtContext rt) {
+	// close log file
+	logFile(rt, NULL, 0);
+
+	// release debugger memory
+	if (rt->dbg != NULL) {
+		freeBuff(&rt->dbg->functions);
+		freeBuff(&rt->dbg->statements);
+	}
+	// release memory
+	if (rt->freeMem) {
+		free(rt);
+	}
+	return rt->errors;
+}
+
+size_t vmInit(rtContext rt, int debug, vmError onHalt(nfcContext)) {
+	ccContext cc = rt->cc;
+
+	// debug info
+	if (debug != 0) {
+		rt->dbg = (dbgContext)(rt->_beg = padPointer(rt->_beg, pad_size));
+		rt->_beg += sizeof(struct dbgContextRec);
+
+		dieif(rt->_beg >= rt->_end, ERR_MEMORY_OVERRUN);
+		memset(rt->dbg, 0, sizeof(struct dbgContextRec));
+
+		rt->dbg->rt = rt;
+		rt->dbg->abort = (dbgn)-1;
+		rt->dbg->tryExec = cc->libc_try;
+		initBuff(&rt->dbg->functions, 128, sizeof(struct dbgNode));
+		initBuff(&rt->dbg->statements, 128, sizeof(struct dbgNode));
+	}
+
+	// initialize native calls
+	if (cc != NULL && cc->native != NULL) {
+		list lst = cc->native;
+		libc last = (libc) lst->data;
+		libc *calls = (libc*)(rt->_beg = padPointer(rt->_beg, pad_size));
+
+		rt->_beg += (last->offs + 1) * sizeof(libc);
+		if(rt->_beg >= rt->_end) {
+			fatal(ERR_MEMORY_OVERRUN);
+			return 0;
+		}
+
+		rt->vm.nfc = calls;
+		for (; lst != NULL; lst = lst->next) {
+			libc nfc = (libc) lst->data;
+			calls[nfc->offs] = nfc;
+
+			// relocate native call offsets to be debuggable and traceable.
+			nfc->sym->offs = vmOffset(rt, nfc);
+			nfc->sym->size = 0;
+			addDbgFunction(rt, nfc->sym);
+		}
+	}
+	else {
+		libc stop = (libc)(rt->_beg = padPointer(rt->_beg, pad_size));
+		rt->_beg += sizeof(struct libc);
+		if(rt->_beg >= rt->_end) {
+			fatal(ERR_MEMORY_OVERRUN);
+			return 0;
+		}
+
+		libc *calls = (libc*)(rt->_beg = padPointer(rt->_beg, pad_size));
+		rt->_beg += sizeof(libc);
+		if(rt->_beg >= rt->_end) {
+			fatal(ERR_MEMORY_OVERRUN);
+			return 0;
+		}
+
+		memset(stop, 0, sizeof(struct libc));
+		stop->call = haltDummy;
+		calls[0] = stop;
+
+		rt->vm.nfc = calls;
+
+		// add the main function
+		if (rt->main == NULL) {
+			symn main = (symn) (rt->_beg = padPointer(rt->_beg, pad_size));
+			rt->_beg += sizeof(struct symNode);
+			if (rt->_beg >= rt->_end) {
+				fatal(ERR_MEMORY_OVERRUN);
+				return 0;
+			}
+			memset(main, 0, sizeof(struct symNode));
+			main->kind = ATTR_stat | ATTR_cnst | CAST_ref | KIND_fun;
+			main->offs = vmOffset(rt, rt->_beg);
+			main->name = ".main";
+			rt->main = main;
+		}
+	}
+
+	// use custom halt function 
+	if (onHalt != NULL) {
+		libc *calls = rt->vm.nfc;
+		calls[0]->call = onHalt;
+	}
+
+	//~ read only memory ends here.
+	//~ strings, types, add(constants, functions, enums, ...)
+	return rt->vm.ro = rt->_beg - rt->_mem;
 }
 
 void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(dbgContext, void *, size_t, char *)) {
@@ -1033,7 +855,7 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(dbgContext, void *,
 			chunk = NULL;
 		}
 	}
-	// allocate.
+		// allocate.
 	else if (size > 0) {
 		memChunk prev = chunk = rt->vm.heap;
 
@@ -1090,88 +912,257 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(dbgContext, void *,
 	return chunk ? chunk->data : NULL;
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Compiler
+
+ccContext ccInit(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)) {
+	ccContext cc;
+
+	dieif(rt->cc != NULL, ERR_INTERNAL_ERROR);
+	dieif(rt->_beg != rt->_mem + 1, ERR_INTERNAL_ERROR);
+	dieif(rt->_end != rt->_mem + rt->_size, ERR_INTERNAL_ERROR);
+
+	cc = (ccContext)(rt->_end - sizeof(struct ccContextRec));
+	rt->_end -= sizeof(struct ccContextRec);
+
+	if (rt->_end < rt->_beg) {
+		fatal(ERR_MEMORY_OVERRUN);
+		return NULL;
+	}
+
+	memset(rt->_end, 0, sizeof(struct ccContextRec));
+
+	cc->rt = rt;
+	rt->cc = cc;
+
+	cc->owner = NULL;
+	cc->scope = NULL;
+	cc->global = NULL;
+
+	cc->chrNext = -1;
+
+	cc->fin._ptr = 0;
+	cc->fin._cnt = 0;
+	cc->fin._fin = -1;
+
+	install_type(cc, mode);
+	install_emit(cc, mode);
+	install_base(rt, onHalt);
+
+	cc->root = newNode(cc, STMT_beg);
+	cc->root->type = cc->type_vid;
+
+	return cc;
+}
+
+symn ccBegin(ccContext cc, const char *name) {
+	if (cc == NULL) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	symn result = NULL;
+	if (name != NULL) {
+		result = install(cc, name, ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, cc->type_vid, NULL);
+		if (result == NULL) {
+			return NULL;
+		}
+	}
+	enter(cc, result);
+	return result;
+}
+
+symn ccExtend(ccContext cc, symn sym) {
+	if (cc == NULL) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	if (sym == NULL) {
+		// can not extend nothing
+		return NULL;
+	}
+	if (sym->fields != NULL) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	enter(cc, sym);
+	return sym;
+}
+
+symn ccEnd(ccContext cc, symn sym) {
+	if (cc == NULL) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	if (cc->owner != sym) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	symn fields = leave(cc, ATTR_stat | KIND_typ, 0, 0, NULL);
+	if (sym != NULL) {
+		sym->fields = fields;
+	}
+	return fields;
+}
+
+symn ccDefInt(ccContext cc, const char *name, int64_t value) {
+	if (!cc || !name) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	name = ccUniqueStr(cc, name, -1, -1);
+	return install(cc, name, KIND_def | CAST_i64, 0, cc->type_i64, intNode(cc, value));
+}
+
+symn ccDefFlt(ccContext cc, const char *name, double value) {
+	if (!cc || !name) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	name = ccUniqueStr(cc, name, -1, -1);
+	return install(cc, name, KIND_def | CAST_f64, 0, cc->type_f64, fltNode(cc, value));
+}
+
+symn ccDefStr(ccContext cc, const char *name, char *value) {
+	if (!cc || !name) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	name = ccUniqueStr(cc, name, -1, -1);
+	if (value != NULL) {
+		value = ccUniqueStr(cc, value, -1, -1);
+	}
+	return install(cc, name, KIND_def | CAST_ref, 0, cc->type_str, strNode(cc, value));
+}
+
+symn ccDefType(ccContext cc, const char *name, unsigned size, int refType) {
+	if (!cc || !name) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	return install(cc, name, ATTR_stat | ATTR_cnst | KIND_typ | (refType ? CAST_ref : CAST_val), size, cc->type_rec, NULL);
+}
+
+char *ccUniqueStr(ccContext cc, const char *str, size_t len, unsigned hash) {
+	rtContext rt = cc->rt;
+	list node, next, prev = 0;
+
+	if (len == (size_t)-1) {
+		len = strlen(str) + 1;
+	}
+	else if (str[len - 1] != 0) {
+		fatal(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+
+	if (hash == (unsigned)-1) {
+		hash = rehash(str, len) % hashTableSize;
+	}
+	else if (hash >= hashTableSize) {
+		fatal(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+
+	for (next = cc->strt[hash]; next; next = next->next) {
+		int cmp = memcmp(next->data, str, len);
+		if (cmp == 0) {
+			return (char*)next->data;
+		}
+		if (cmp > 0) {
+			break;
+		}
+		prev = next;
+	}
+
+	if (rt->_beg >= rt->_end - (sizeof(struct list) + len)) {
+		fatal(ERR_MEMORY_OVERRUN);
+		return NULL;
+	}
+	if (str != (char *)rt->_beg) {
+		// copy data from constants ?
+		memcpy(rt->_beg, str, len + 1);
+		str = (char*)rt->_beg;
+	}
+
+	// allocate list node as temp data (end of memory)
+	rt->_end -= sizeof(struct list);
+	node = (list)rt->_end;
+
+	rt->_beg += len;
+
+	if (!prev) {
+		cc->strt[hash] = node;
+	}
+	else {
+		prev->next = node;
+	}
+
+	node->next = next;
+	node->data = (unsigned char*)str;
+
+	return (char*)str;
+}
+
+symn ccLookup(ccContext cc, symn in, char *name) {
+	struct astNode ast;
+	memset(&ast, 0, sizeof(struct astNode));
+	ast.kind = TOKEN_var;
+	ast.ref.name = name;
+	ast.ref.hash = rehash(name, -1) % hashTableSize;
+	return lookup(cc, in ? in->fields : cc->scope, &ast, NULL, 1);
+}
+
+symn rtLookup(rtContext rt, size_t offs, int callsOnly) {
+	symn sym = rt->main;
+	dieif(offs > rt->_size, ERR_INVALID_OFFSET, offs);
+	if (offs > rt->vm.px + px_size) {
+		// local variable on stack ?
+		return NULL;
+	}
+	if (offs >= sym->offs && offs < sym->offs + sym->size) {
+		// is the main function ?
+		return sym;
+	}
+	for (sym = sym->fields; sym; sym = sym->global) {
+		if (callsOnly && !isInvokable(sym)) {
+			continue;
+		}
+		if (offs == sym->offs) {
+			return sym;
+		}
+		if (offs > sym->offs && offs < sym->offs + sym->size) {
+			return sym;
+		}
+	}
+	return NULL;
+}
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Debugger
 
-// arrayBuffer
-static void *setBuff(struct arrBuffer *buff, size_t idx, void *data) {
-	void *newPtr;
-	size_t pos = idx * buff->esz;
+char* vmErrorMessage(vmError error) {
+	switch (error) {
+		case noError:
+			return NULL;
 
-	if (pos >= buff->cap) {
-		buff->cap <<= 1;
-		if (pos > 2 * buff->cap) {
-			buff->cap = pos << 1;
-		}
-		newPtr = realloc(buff->ptr, (size_t)buff->cap);
-		if (newPtr != NULL) {
-			buff->ptr = newPtr;
-		}
-		else {
-			freeBuff(buff);
-		}
+		case illegalState:
+			return "Invalid state";
+
+		case illegalMemoryAccess:
+			return "Invalid memory access";
+
+		case illegalInstruction:
+			return "Invalid instruction";
+
+		case stackOverflow:
+			return "Stack Overflow";
+
+		case divisionByZero:
+			return "Division by Zero";
+
+		case nativeCallError:
+			return "External call aborted execution";
 	}
 
-	if (buff->cnt >= idx) {
-		buff->cnt = idx + 1;
-	}
-
-	if (buff->ptr && data) {
-		memcpy(buff->ptr + pos, data, (size_t) buff->esz);
-	}
-
-	return buff->ptr ? buff->ptr + pos : NULL;
-}
-static void *insBuff(struct arrBuffer *buff, size_t idx, void *data) {
-	void *newPtr;
-	size_t pos = idx * buff->esz;
-	size_t newCap = buff->cnt * buff->esz;
-	if (newCap < pos) {
-		newCap = pos;
-	}
-
-	// resize buffer
-	if (newCap >= buff->cap) {
-		if (newCap > 2 * buff->cap) {
-			buff->cap = newCap;
-		}
-		buff->cap *= 2;
-		newPtr = realloc(buff->ptr, (size_t) buff->cap);
-		if (newPtr != NULL) {
-			buff->ptr = newPtr;
-		}
-		else {
-			freeBuff(buff);
-		}
-	}
-
-	if (idx < buff->cnt) {
-		memmove(buff->ptr + pos + buff->esz, buff->ptr + pos, buff->esz * (buff->cnt - idx));
-		idx = buff->cnt;
-	}
-
-	if (buff->cnt >= idx) {
-		buff->cnt = idx + 1;
-	}
-
-	if (buff->ptr && data) {
-		memcpy(buff->ptr + pos, data, (size_t) buff->esz);
-	}
-
-	return buff->ptr ? buff->ptr + pos : NULL;
-}
-int  initBuff(struct arrBuffer *buff, size_t initCount, size_t elemSize) {
-	buff->cnt = 0;
-	buff->ptr = 0;
-	buff->esz = elemSize;
-	buff->cap = initCount * elemSize;
-	return setBuff(buff, initCount, NULL) != NULL;
-}
-void freeBuff(struct arrBuffer *buff) {
-	free(buff->ptr);
-	buff->ptr = 0;
-	buff->cap = 0;
-	buff->esz = 0;
+	return "Unknown error";
 }
 
 dbgn mapDbgFunction(rtContext rt, size_t position) {
@@ -1287,31 +1278,4 @@ dbgn addDbgStatement(rtContext rt, size_t start, size_t end, astn tag) {
 		}
 	}
 	return result;
-}
-
-char* vmErrorMessage(vmError error) {
-	switch (error) {
-		case noError:
-			return NULL;
-
-		case illegalState:
-			return "Invalid state";
-
-		case illegalMemoryAccess:
-			return "Invalid memory access";
-
-		case illegalInstruction:
-			return "Invalid instruction";
-
-		case stackOverflow:
-			return "Stack Overflow";
-
-		case divisionByZero:
-			return "Division by Zero";
-
-		case nativeCallError:
-			return "External call aborted execution";
-	}
-
-	return "Unknown error";
 }
