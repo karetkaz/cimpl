@@ -2,9 +2,18 @@
 <head>
 	<title>Cmpl live demo</title>
 
+	<!--<meta name="viewport" content="width=device-width">-->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<script src="lib/jquery/jquery.js">/*TODO: use .min.js*/</script>
+	<script src="lib/popper/popper.js">/*TODO: use .min.js*/</script>
+	<link rel="stylesheet" href="lib/bootstrap/css/bootstrap.css">
+	<!--link rel="stylesheet" href="lib/bootstrap/css/bootstrap-theme.min.css"-->
+	<script src="lib/bootstrap/js/bootstrap.js">/*TODO: use .min.js*/</script>
+
 	<!--Code mirror code-->
-	<link rel="stylesheet" href="lib/codemirror.css">
-	<script src="lib/codemirror.js"></script>
+	<link rel="stylesheet" href="lib/codemirror/codemirror.css">
+	<script src="lib/codemirror/codemirror.js"></script>
 	<script src="cmpl.lang.js"></script>
 
 	<!--libraries-->
@@ -14,27 +23,82 @@
 
 </head>
 <body>
-<h1>
-	<a href="https://github.com/karetkaz/cmpl">Cmpl</a> live demo 
-</h1>
-<em class="built-with">
-	built using:
-	<a href="https://codemirror.net/">CodeMirror</a>,
-	<a href="https://kripken.github.io/emscripten-site/">Emscripten</a>,
-	<a href="http://webassembly.org/">WebAssembly</a>
-</em>
-
-<div class="oriented-split" style="top: 3em;">
-	<div>
-		<div class="header">
-			<h2>Input</h2>
-			<input type="button" value="Run" onclick="execute('-run');"/>
-			<input type="button" value="Debug" onclick="execute('-debug');"/>
-			<input type="button" value="Profile" onclick="execute('-profile');"/>
-			<input type="button" value="Compile" onclick="execute();"/>
+<div class="header" style="height: 2.5em">
+	<nav>
+		<div class="nav nav-tabs" id="nav-tab" role="tablist">
+			<!-- input file selection -->
+			<li class="nav-item dropdown disabled" id="nav-input-tab" data-toggle="tab" href="#nav-input" role="tab" aria-controls="nav-input" aria-selected="true">
+				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Input</a>
+				<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+					<a class="dropdown-item" href="#">New</a>
+					<a class="dropdown-item" href="#">Save</a>
+					<div class="dropdown-divider"></div>
+					<a class="dropdown-item" href="#">function</a>
+					<a class="dropdown-item" href="#">inlineEmit</a>
+					<a class="dropdown-item" href="#">inlineMacros</a>
+					<a class="dropdown-item" href="#">record</a>
+					<a class="dropdown-item" href="#">recPacking</a>
+					<a class="dropdown-item" href="#">reflection</a>
+					<a class="dropdown-item" href="#">statementFor</a>
+					<a class="dropdown-item" href="#">statementIf</a>
+					<a class="dropdown-item" href="#">useOperator</a>
+					<a class="dropdown-item" href="#">varInitArray</a>
+					<a class="dropdown-item" href="#">varInitByRef</a>
+					<a class="dropdown-item" href="#">varInitByVal</a>
+					<a class="dropdown-item" href="#">nfcMemory</a>
+					<a class="dropdown-item" href="#">nfcNumber</a>
+					<a class="dropdown-item" href="#">nfcRaise</a>
+					<a class="dropdown-item" href="#">nfcTryExec</a>
+					<a class="dropdown-item" href="#">inlineOverload</a>
+				</div>
+			</li>
+			<!--a class="nav-item nav-link disabled" id="nav-canvas-tab" data-toggle="tab" href="#nav-canvas" role="tab" aria-controls="nav-canvas" aria-selected="false">Canvas</a-->
+			<a class="nav-item nav-link active" id="nav-output-tab" data-toggle="tab" href="#nav-output" role="tab" aria-controls="nav-output" aria-selected="true">Output</a>
+			<!--li class="nav-item dropdown" id="nav-output-tab" data-toggle="tab" href="#nav-output" role="tab" aria-controls="nav-output" aria-selected="false">
+				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Output</a>
+				<div class="dropdown-menu">
+					<a class="dropdown-item" onclick="showConsole(null, 'horizontal')">Split horizontal</a>
+					<a class="dropdown-item" onclick="showConsole(null, 'vertical')">Split vertical</a>
+					<a class="dropdown-item" onclick="showConsole(true)">Show</a>
+					<a class="dropdown-item" onclick="showConsole(false)">Hide</a>
+				</div>
+			</li-->
+			<!--a class="nav-item nav-link" id="nav-minimize-tab" data-toggle="tab" href="#nav-minimize" role="tab" aria-controls="nav-minimize" aria-selected="false">_</a-->
+			<!--li class="nav-item dropdown disabled" id="nav-files-tab" data-toggle="tab" href="#nav-files" role="tab" aria-controls="nav-files" aria-selected="false">
+				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Files</a>
+				<div class="dropdown-menu">
+					<a class="dropdown-item" href="#">Open</a>
+					<a class="dropdown-item" href="#">Save</a>
+				</div>
+			</li-->
+			<div class="nav-item btn-group dropright">
+				<button id="btnExecute" type="button" class="btn btn-sm btn-default" onclick="execute(cmdExecute.value);">
+					Run
+				</button>
+				<button type="button" class="btn btn-sm btn-default dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				</button>
+				<div class="dropdown-menu">
+					<a class="dropdown-item" onclick="btnExecute.innerText=this.innerText; cmdExecute.value='-run/g';">Run</a>
+					<a class="dropdown-item" onclick="btnExecute.innerText=this.innerText; cmdExecute.value='-debug/g';">Debug</a>
+					<a class="dropdown-item" onclick="btnExecute.innerText=this.innerText; cmdExecute.value='-profile/g';">Profile</a>
+					<div class="dropdown-divider"></div>
+					<a class="dropdown-item" onclick="btnExecute.innerText=this.innerText; cmdExecute.value='';">Compile</a>
+					<div class="dropdown-divider"></div>
+					<a class="dropdown-item" onclick="btnExecute.innerText='Custom';"><input id="cmdExecute" type="text" value="-run/g"></a>
+					<span class="dropdown-item">
+						<button type="button" class="btn btn-light" onclick="btnExecute.innerText='Custom'; cmdExecute.value='-api/a';">Api</button>
+						<button type="button" class="btn btn-light" onclick="btnExecute.innerText='Custom'; cmdExecute.value='-asm/a/n/s/m';">Asm</button>
+						<button type="button" class="btn btn-light" onclick="btnExecute.innerText='Custom'; cmdExecute.value='-ast';">Ast</button>
+					</span>
+				</div>
+			</div>
 		</div>
+	</nav>
+</div>
+<div class="oriented-split" style="top:2.5em">
+	<div class="split-input">
 		<div class="text-content">
-		<textarea id="input" rows="20">
+		<textarea id="input">
 void empty() {}
 
 // function with implementation
@@ -77,22 +141,20 @@ uint32 fib(uint32 n) {
 }
 
 // recursive function invocation
-uint32 fibonacci_13 = fib(13);
+uint32 fibonacci_23 = fib(23);
 </textarea>
 		</div>
 	</div>
-	<div>
-		<div class="header">
-			<h2>Output</h2>
-			<input type="button" value="clear" onclick="output.value=''"/>
-			<input id="dumpApi" type="checkbox"/>Api
-			<input id="dumpAsm" type="checkbox"/>Asm
-			<input id="dumpAst" type="checkbox"/>Ast
-			<input id="dumpVal" type="checkbox" checked/>Globals
-			<a href="javascript:saveFSFile()">Download</a>
-		</div>
+	<div class="split-output">
 		<div class="text-content">
-			<textarea id="output" rows="30" readonly spellcheck="false"></textarea>
+			<div class="tab-content" id="nav-tabContent">
+				<div class="tab-pane fade show active" id="nav-output" role="tabpanel" aria-labelledby="nav-output">
+					<textarea id="output" rows="30" readonly spellcheck="false"></textarea>
+				</div>
+				<div class="tab-pane fade" id="nav-minimize" role="tabpanel" aria-labelledby="nav-minimize-tab">...</div>
+				<div class="tab-pane fade" id="nav-files" role="tabpanel" aria-labelledby="nav-files-tab">...</div>
+			</div>
+
 		</div>
 	</div>
 </div>
@@ -110,6 +172,12 @@ uint32 fibonacci_13 = fib(13);
 	editor.setSize('100%', '100%');
 	Module.print = terminal.print;
 
+	$('#nav-output-tab').click(function (ev) {
+		var shown = $('.split-output').hasClass('show');
+		var hidden = $('.split-output').hasClass('hide');
+		showConsole(shown || hidden ? null : true);
+	});
+
 	function terminalFromTextArea(output) {
 		if (output == null) {
 			return {
@@ -120,7 +188,7 @@ uint32 fibonacci_13 = fib(13);
 		}
 
 		return {
-			print: function(text) {
+			print: function (text) {
 				if (arguments.length > 1) {
 					text = Array.prototype.slice.call(arguments).join(' ');
 				}
@@ -130,13 +198,14 @@ uint32 fibonacci_13 = fib(13);
 					output.scrollTop = output.scrollHeight;
 				});
 			},
-			clear: function() {
+			clear: function () {
 				setTimeout(function () {
 					output.value = '';
-				})
+				});
 			}
 		};
 	}
+
 	function saveFSFile(fileName) {
 		if (fileName == null) {
 			fileName = prompt('Download file:', 'stdlib.ci');
@@ -148,28 +217,39 @@ uint32 fibonacci_13 = fib(13);
 		var data = FS.readFile(fileName);
 		saveAs(new Blob([data.buffer], {type: type}), fileName);
 	}
+
+	function showConsole(inout, orientation) {
+		$('.split-input').removeClass('show').removeClass('hide');
+		$('.split-output').removeClass('show').removeClass('hide');
+
+		if (inout === false) {
+			$('.split-input').addClass('show');
+			$('.split-output').addClass('hide');
+		}
+		else if (inout === true) {
+			$('.split-input').addClass('hide');
+			$('.split-output').addClass('show');
+		}
+		if (orientation != null) {
+			$('.oriented-split').removeClass('horizontal').removeClass('vertical');
+			if (orientation === 'vertical') {
+				$('.oriented-split').addClass('vertical');
+			}
+			else if (orientation === 'horizontal') {
+				$('.oriented-split').addClass('horizontal');
+			}
+		}
+
+	}
+
 	function execute(mode) {
+		console.log(mode);
 		var args = [
 			'-X-stdin',         // do not use standard input
 			'-mem3M'            // allocate 3Mb memory in heap
 		];
 
-		if (document.getElementById('dumpApi').checked) {
-			args.push('-api');
-		}
-		if (document.getElementById('dumpAsm').checked) {
-			args.push('-asm/a/n/s/m');
-		}
-		if (document.getElementById('dumpAst').checked) {
-			args.push('-ast');
-		}
-		if (document.getElementById('dumpVal').checked) {
-			if (mode != null) {
-				mode += '/g';
-			}
-		}
-		if (mode != null) {
-			// print globals on exit
+		if (mode != null && mode != '') {
 			args.push(mode);
 		}
 

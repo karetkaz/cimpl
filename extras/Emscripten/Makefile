@@ -14,6 +14,7 @@ SOURCE=\
 	$(SRCDIR)/printer.c\
 	$(SRCDIR)/tree.c\
 	$(SRCDIR)/type.c\
+	$(SRCDIR)/utils.c\
 	$(SRCDIR)/main.c
 
 CFLAGS=-O3

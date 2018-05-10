@@ -6,8 +6,6 @@
 }
 
 /* Splitter: vertical/horizontal */
-.horizontal-split,
-.vertical-split,
 .oriented-split {
 	position: absolute;
 	top: 0;
@@ -16,13 +14,13 @@
 	bottom: 0;
 	overflow: hidden;
 }
-.horizontal-split > div {
+.oriented-split.horizontal > div {
 	width: 100%;
 	height: 50%;
 	overflow: hidden;
 	position: relative;
 }
-.vertical-split > div {
+.oriented-split.vertical > div {
 	width: 50%;
 	height: 100%;
 	float: left;
@@ -36,6 +34,18 @@
 		overflow: hidden;
 		position: relative;
 	}
+	.oriented-split > div.show {
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		position: relative;
+	}
+	.oriented-split > div.hide {
+		width: 100%;
+		height: 0;
+		overflow: hidden;
+		position: relative;
+	}
 }
 @media (orientation: landscape) {
 	.oriented-split > div {
@@ -45,28 +55,35 @@
 		overflow: hidden;
 		position: relative;
 	}
+	.oriented-split > div.show {
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		position: relative;
+	}
+	.oriented-split > div.hide {
+		width: 0;
+		height: 1000%;
+		overflow: hidden;
+		position: relative;
+	}
 }
 
 div.header {
 	top: 0;
 	left: 0;
 	right: 0;
-	height: 2em;
-	overflow: hidden;
-	position: absolute;
-	background-color: rgb(240,240,236)
+	height: 2.2em;
+	/* overflow: hidden; */
+	/*position: absolute;*/
+	background-color: rgb(240,240,236);
 }
 div.text-content {
-	top: 2em;
+	top: 0;
 	left: 0;
 	right: 0;
 	bottom: 0;
 	position: absolute;
-}
-
-div.header>* {
-	display: inline;
-	margin-left: 5px;
 }
 
 textarea {
