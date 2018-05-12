@@ -213,7 +213,7 @@ static inline int32_t bitsr(uint32_t value) {
 
 /// Utility function to align offset
 static inline size_t padOffset(size_t offs, size_t align) {
-	return (offs + (align - 1)) & ~(align - 1);
+	return (offs + (align - 1)) & -align;
 }
 
 /// Utility function to align pointer

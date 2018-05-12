@@ -842,7 +842,6 @@ symn initCheck(ccContext cc, symn var, int raise) {
 ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	symn typ = isTypename(var) ? var : var->type;
 	symn lnk = linkOf(val, 1);
-	ccKind varCast;
 
 	dieif(!var, ERR_INTERNAL_ERROR);
 	dieif(!val, ERR_INTERNAL_ERROR);
@@ -851,12 +850,12 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 		return CAST_any;
 	}
 
-	varCast = castOf(var);
+	ccKind varCast = castOfx(var);
 
 	// assign null or pass by reference
 	if (lnk == cc->null_ref) {
 		if (typ != NULL) {
-			switch (castOf(typ)) {
+			switch (castOfx(typ)) {
 				default:
 					break;
 
@@ -870,7 +869,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 
 				case CAST_var:
 					// assign null to variant
-					return CAST_arr;
+					return CAST_var;
 			}
 		}
 		switch (varCast) {
@@ -965,7 +964,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	}*/
 
 	// Assign array
-	if (castOf(typ) == CAST_arr) {
+	if (castOfx(typ) == CAST_arr) {
 		struct astNode temp;
 		symn vty = val->type;
 

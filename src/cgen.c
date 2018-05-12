@@ -72,19 +72,6 @@ static inline size_t emitVarOffs(rtContext rt, symn var) {
 	return emitInt(rt, opc_lref, var->offs);
 }
 
-static inline ccKind castOf2(symn sym) {
-	ccKind got = castOf(sym);
-
-	if (got == CAST_arr && isArrayType(sym)) {
-		symn len = sym->fields;
-		if (len == NULL || isStatic(len)) {
-			// pointer or fixed size array
-			got = CAST_ref;
-		}
-	}
-	return got;
-}
-
 /// Generate byte-code from STMT_for.
 static ccKind genLoop(ccContext cc, astn ast) {
 	rtContext rt = cc->rt;
@@ -411,7 +398,7 @@ static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 static ccKind genVariable(ccContext cc, symn variable, ccKind get, astn ast) {
 	rtContext rt = cc->rt;
 	symn type = variable->type;
-	ccKind got = castOf(variable);
+	ccKind got = castOfx(variable);
 
 	dbgCgen("%?s:%?u: %T / (%K->%K)", ast->file, ast->line, variable, variable->kind, get);
 	if (variable == cc->null_ref) {
@@ -580,7 +567,7 @@ static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 			offs += padOffset(prm->size, vm_size);
 			// result has a default value
 			size_t resOffs = stkOffset(rt, prm->size);
-			if (!genAst(cc, prm->init, castOf2(prm))) {
+			if (!genAst(cc, prm->init, castOf(prm))) {
 				traceAst(ast);
 				return CAST_any;
 			}
@@ -651,7 +638,7 @@ static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 
 				// generate the argument value
 				size_t argOffs = stkOffset(rt, prm->size);
-				if (!genAst(cc, args, castOf2(prm))) {
+				if (!genAst(cc, args, castOf(prm))) {
 					traceAst(ast);
 					return CAST_any;
 				}
@@ -744,7 +731,7 @@ static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		}
 
 		// float64(3)
-		switch (result = castOf(function)) {
+		switch (result = castOfx(function)) {
 			default:
 			case CAST_val:
 				// cast a variable to the same value-type,
@@ -876,7 +863,7 @@ static ccKind genMember(ccContext cc, astn ast, ccKind get) {
 		return CAST_any;
 	}
 	if (isStatic(member)) {
-		if (!lhsStat && isVariable(object) && castOf(object->type) != CAST_arr) {
+		if (!lhsStat && isVariable(object) && castOfx(object->type) != CAST_arr) {
 			warn(rt, 1, ast->file, ast->line, WARN_STATIC_FIELD_ACCESS, member, object->type);
 		}
 		return genAst(cc, ast->op.rhso, get);
@@ -1406,7 +1393,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 		return CAST_any;
 	}
 
-	ccKind op, got = castOf2(ast->type);
+	ccKind op, got = castOf(ast->type);
 
 	if (get == CAST_any) {
 		get = got;
@@ -1671,7 +1658,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 
 		case INIT_set:  	// '='
 		case ASGN_set: {	// '='
-			ccKind cast = castOf2(ast->op.lhso->type);
+			ccKind cast = castOf(ast->op.lhso->type);
 
 			if (!genAst(cc, ast->op.rhso, cast)) {
 				traceAst(ast);
@@ -2188,7 +2175,7 @@ int ccGenCode(ccContext cc, int debug) {
 	rt->main->offs = lMain;
 	rt->main->size = emit(rt, markIP) - lMain;
 	rt->main->fields = cc->scope;
-	rt->main->format = rt->main->name;
+	rt->main->fmt = rt->main->name;
 	addDbgFunction(rt, rt->main);
 
 	if (rt->dbg != NULL) {

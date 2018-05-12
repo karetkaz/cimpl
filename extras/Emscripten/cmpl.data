@@ -31,3 +31,98 @@ inline assert(bool condition) = void(condition ? void(0) : abort("assertion fail
 }
 
 inline sizeof(typename type) = int(type.size);
+// test if functions are correctly generated and executed
+
+void empty() {}
+
+// function with implementation
+int funAdd(int x, int y) {
+	return x + y;
+}
+
+// function invocation
+int funAddResult = funAdd(2, 7);
+
+// initialized function reference
+int funAddRef(int x, int y) = funAdd;
+
+// function reference invocation
+int funAddRefResult = funAddRef(2, 8);
+
+// forward function reference (must be implemented somewhere)
+int funMul(int x, int y);
+
+// forward function invocation
+int funMulResult = funMul(2, 6);
+
+// initialized forward function reference (copy address)
+int funMulRef(int x, int y) = funMul;
+
+// forward function reference invocation
+int funMulRefResult = funMulRef(2, 7);
+
+// forward function implementation
+int funMul(int x, int y) {
+	return x * y;
+}
+
+// recursive function implementation
+uint32 fib(uint32 n) {
+	if (n <= 1) {
+		return n;
+	}
+	return fib(n-1) + fib(n-2);
+}
+
+// recursive function invocation
+uint32 fibonacci_13 = fib(13);
+/* known errors:
+	Invalid state
+	Invalid memory access
+	Invalid instruction
+	Stack Overflow
+	Division by Zero
+	External call aborted execution
+*/
+
+void noError(pointer ptr) {
+}
+
+void stackOverflow(pointer ptr) {
+	byte data[1 << 10];		// speed up the overflow allocating 1 kb memory in each call
+	stackOverflow(ptr);
+}
+
+void divisionByZero(pointer args) {
+	int value = 3 / 0;
+}
+
+void abortExecution(pointer args) {
+	struct NotEquals {
+		char message[*];
+		int expected;
+		int returned;
+	}
+	NotEquals details;
+	details.message = "assertion failed";
+	details.expected = 97;
+	details.returned = 77;
+	raise(raise.abort, raise.noTrace, "fatal error", details);
+}
+
+void invalidMemoryAccess(pointer args) {
+	int32 i32Ref& = null;
+	int i32Val = i32Ref;
+}
+
+void invalidInstruction(pointer args) {
+	emit(load.z32, ret);
+}
+
+int tryExecErr0 = tryExec(null, noError);
+int tryExecErr1 = tryExec(null, null);
+int tryExecErr2 = tryExec(null, stackOverflow);
+int tryExecErr3 = tryExec(null, divisionByZero);
+int tryExecErr4 = tryExec(null, invalidInstruction);
+int tryExecErr5 = tryExec(null, invalidMemoryAccess);
+int tryExecErr6 = tryExec(null, abortExecution);

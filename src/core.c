@@ -112,7 +112,7 @@ static inline vmValue *nfcPeekArg(nfcContext nfc, size_t argOffs) {
 rtValue nfcReadArg(nfcContext nfc, size_t offs) {
 	vmValue *value = nfcPeekArg(nfc, offs);
 	rtValue result = { .i64 = 0 };
-	switch (castOf(nfc->param)) {
+	switch (castOfx(nfc->param)) {
 		default:
 			fatal(ERR_INTERNAL_ERROR);
 			break;
@@ -224,20 +224,20 @@ static void install_type(ccContext cc, ccInstall mode) {
 		type_obj = install(cc,  "object", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * sizeof(vmOffs), type_rec, NULL);
 	}
 
-	type_vid->format = NULL;
-	type_bol->format = type_fmt_signed32;
-	type_chr->format = type_fmt_character;
-	type_i08->format = type_fmt_signed32;
-	type_i16->format = type_fmt_signed32;
-	type_i32->format = type_fmt_signed32;
-	type_i64->format = type_fmt_signed64;
-	type_u08->format = type_fmt_unsigned32;
-	type_u16->format = type_fmt_unsigned32;
-	type_u32->format = type_fmt_unsigned32;
-	type_u64->format = type_fmt_unsigned64;
-	type_f32->format = type_fmt_float32;
-	type_f64->format = type_fmt_float64;
-	type_rec->format = type_fmt_typename;
+	type_vid->fmt = NULL;
+	type_bol->fmt = type_fmt_signed32;
+	type_chr->fmt = type_fmt_character;
+	type_i08->fmt = type_fmt_signed32;
+	type_i16->fmt = type_fmt_signed32;
+	type_i32->fmt = type_fmt_signed32;
+	type_i64->fmt = type_fmt_signed64;
+	type_u08->fmt = type_fmt_unsigned32;
+	type_u16->fmt = type_fmt_unsigned32;
+	type_u32->fmt = type_fmt_unsigned32;
+	type_u64->fmt = type_fmt_unsigned64;
+	type_f32->fmt = type_fmt_float32;
+	type_f64->fmt = type_fmt_float64;
+	type_rec->fmt = type_fmt_typename;
 
 	cc->type_vid = type_vid;
 	cc->type_bol = type_bol;
@@ -286,7 +286,7 @@ static void install_type(ccContext cc, ccInstall mode) {
 	cc->type_str = install(cc, ".cstr", ATTR_stat | ATTR_cnst | KIND_typ | CAST_arr, sizeof(vmOffs), type_chr, NULL);
 	if (cc->type_str != NULL) {
 		// arrays without length property are c-like pointers
-		cc->type_str->format = type_fmt_string;
+		cc->type_str->fmt = type_fmt_string;
 	}
 	if (cc->type_vid != NULL) {
 		cc->void_tag = lnkNode(cc, cc->type_vid);
@@ -532,7 +532,7 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 
 		if ((field = install(cc, "offset", ATTR_cnst | KIND_var, vm_size, cc->type_i32, NULL))) {
 			field->offs = offsetOf(struct symNode, offs);
-			field->format = "@%06x";
+			field->fmt = "@%06x";
 		}
 		else {
 			error = 1;

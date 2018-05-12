@@ -691,7 +691,7 @@ static astn parameters(ccContext cc, symn resType, astn fun) {
 		}
 
 		// fixed size arrays are passed by reference
-		if (castOf(parameter->type) == CAST_arr) {
+		if (castOfx(parameter->type) == CAST_arr) {
 			if (castOf(parameter) == CAST_val) {
 				parameter->size = sizeof(vmOffs);
 				parameter->kind &= ~MASK_cast;

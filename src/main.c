@@ -182,6 +182,8 @@ struct userContextRec {
 	int dmpGlobals;     // dump global variables after execution
 
 	runMode exec;
+	clock_t ccStart;       // start time of compilation
+	clock_t rtStart;       // start time of execution
 
 	// debugger
 	dbgMode dbgCommand; // last debugger command
@@ -855,11 +857,18 @@ void printGlobals(rtContext rt, FILE *out, const char **esc, int all) {
 }
 
 static void textPostProfile(userContext usr) {
+	static const double CLOCKS_PER_MILLI = CLOCKS_PER_SEC / 1000.;
 	int all = (usr->exec & dmpAllData) != 0;
 	const char **esc = usr->esc;
 	FILE *out = usr->out;
 	rtContext rt = usr->rt;
 	const char *prefix = usr->compileSteps ? usr->compileSteps : "\n---------- ";
+
+	clock_t now = clock();
+	printFmt(out, esc, "%?sExecution:\nCompile: %.3F millis\nExecute: %.3F millis\n", prefix,
+		(usr->rtStart - usr->ccStart) / CLOCKS_PER_MILLI,
+		(now - usr->rtStart) / CLOCKS_PER_MILLI
+	);
 
 	if (usr->dmpGlobals) {
 		printFmt(out, esc, "%?sGlobals:\n", prefix);
@@ -881,7 +890,6 @@ static void textPostProfile(userContext usr) {
 	}
 
 	if (usr->exec & dmpProfile) {
-		const double CLOCKS_PER_MILLI = CLOCKS_PER_SEC / 1000.;
 		size_t covFunc = 0, nFunc = dbg->functions.cnt;
 		size_t covStmt = 0, nStmt = dbg->statements.cnt;
 		dbgn fun = (dbgn) dbg->functions.ptr;
@@ -1029,8 +1037,8 @@ static void dumpApiText(userContext extra, symn sym) {
 			printFmt(out, esc, "%I.offset: %06x\n", indent, sym->offs);
 		}
 		printFmt(out, esc, "%I.name: '%s'\n", indent, sym->name);
-		if (sym->format != NULL) {
-			printFmt(out, esc, "%I.print: '%s'\n", indent, sym->format);
+		if (sym->fmt != NULL) {
+			printFmt(out, esc, "%I.print: '%s'\n", indent, sym->fmt);
 		}
 		if (sym->file != NULL && sym->line > 0) {
 			printFmt(out, esc, "%I.file: '%s'\n", indent, sym->file);
@@ -2055,6 +2063,7 @@ int main(int argc, char *argv[]) {
 		else break;
 	}
 
+	extra.ccStart = clock();
 	// initialize runtime context
 	if (settings.memory > sizeof(mem)) {
 		rt = rtInit(NULL, settings.memory);
@@ -2261,6 +2270,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 		if (extra.compileSteps != NULL) {printFmt(extra.out, extra.esc, "%sExecute:\n", extra.compileSteps);}
+		extra.rtStart = clock();
 		rt->errors = execute(rt, 0, NULL, NULL);
 	}
 

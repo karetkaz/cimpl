@@ -26,51 +26,27 @@
 <div class="header" style="height: 2.5em">
 	<nav>
 		<div class="nav nav-tabs" id="nav-tab" role="tablist">
-			<!-- input file selection -->
-			<li class="nav-item dropdown disabled" id="nav-input-tab" data-toggle="tab" href="#nav-input" role="tab" aria-controls="nav-input" aria-selected="true">
+			<li class="nav-item dropdown active" id="nav-input-tab" data-toggle="tab" href="#nav-input" role="tab" aria-controls="nav-input" aria-selected="true">
 				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Input</a>
 				<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-					<a class="dropdown-item" href="#">New</a>
-					<a class="dropdown-item" href="#">Save</a>
+					<a class="dropdown-item" href="#" onClick="saveInput();">Save</a>
+					<a class="dropdown-item" href="#" onClick="openInput(null);">Close</a>
 					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" href="#">function</a>
-					<a class="dropdown-item" href="#">inlineEmit</a>
-					<a class="dropdown-item" href="#">inlineMacros</a>
-					<a class="dropdown-item" href="#">record</a>
-					<a class="dropdown-item" href="#">recPacking</a>
-					<a class="dropdown-item" href="#">reflection</a>
-					<a class="dropdown-item" href="#">statementFor</a>
-					<a class="dropdown-item" href="#">statementIf</a>
-					<a class="dropdown-item" href="#">useOperator</a>
-					<a class="dropdown-item" href="#">varInitArray</a>
-					<a class="dropdown-item" href="#">varInitByRef</a>
-					<a class="dropdown-item" href="#">varInitByVal</a>
-					<a class="dropdown-item" href="#">nfcMemory</a>
-					<a class="dropdown-item" href="#">nfcNumber</a>
-					<a class="dropdown-item" href="#">nfcRaise</a>
-					<a class="dropdown-item" href="#">nfcTryExec</a>
-					<a class="dropdown-item" href="#">inlineOverload</a>
+					<a class="dropdown-item" href="#" onClick="openInput('function.ci');">function</a>
+					<a class="dropdown-item" href="#" onClick="openInput('execute.ci');">tryExec</a>
 				</div>
 			</li>
-			<!--a class="nav-item nav-link disabled" id="nav-canvas-tab" data-toggle="tab" href="#nav-canvas" role="tab" aria-controls="nav-canvas" aria-selected="false">Canvas</a-->
-			<a class="nav-item nav-link active" id="nav-output-tab" data-toggle="tab" href="#nav-output" role="tab" aria-controls="nav-output" aria-selected="true">Output</a>
-			<!--li class="nav-item dropdown" id="nav-output-tab" data-toggle="tab" href="#nav-output" role="tab" aria-controls="nav-output" aria-selected="false">
-				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Output</a>
+			<!--a class="nav-item nav-link active" id="nav-output-tab" data-toggle="tab" href="#nav-output" role="tab" aria-controls="nav-output" aria-selected="true">Output</a-->
+			<li class="nav-item dropdown" data-toggle="tab" href="#nav-output" role="tab" aria-controls="nav-output" aria-selected="false">
+				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">View</a>
 				<div class="dropdown-menu">
-					<a class="dropdown-item" onclick="showConsole(null, 'horizontal')">Split horizontal</a>
+					<a class="dropdown-item" onclick="showConsole(false)">Input</a>
+					<a class="dropdown-item" onclick="showConsole(true)">Output</a>
+					<a class="dropdown-item" onclick="showConsole(null, '')">Split auto</a>
 					<a class="dropdown-item" onclick="showConsole(null, 'vertical')">Split vertical</a>
-					<a class="dropdown-item" onclick="showConsole(true)">Show</a>
-					<a class="dropdown-item" onclick="showConsole(false)">Hide</a>
+					<a class="dropdown-item" onclick="showConsole(null, 'horizontal')">Split horizontal</a>
 				</div>
-			</li-->
-			<!--a class="nav-item nav-link" id="nav-minimize-tab" data-toggle="tab" href="#nav-minimize" role="tab" aria-controls="nav-minimize" aria-selected="false">_</a-->
-			<!--li class="nav-item dropdown disabled" id="nav-files-tab" data-toggle="tab" href="#nav-files" role="tab" aria-controls="nav-files" aria-selected="false">
-				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Files</a>
-				<div class="dropdown-menu">
-					<a class="dropdown-item" href="#">Open</a>
-					<a class="dropdown-item" href="#">Save</a>
-				</div>
-			</li-->
+			</li>
 			<div class="nav-item btn-group dropright">
 				<button id="btnExecute" type="button" class="btn btn-sm btn-default" onclick="execute(cmdExecute.value);">
 					Run
@@ -92,10 +68,20 @@
 					</span>
 				</div>
 			</div>
+			<!--a class="nav-item nav-link disabled" id="nav-canvas-tab" data-toggle="tab" href="#nav-canvas" role="tab" aria-controls="nav-canvas" aria-selected="false">Canvas</a>
+			<li class="nav-item dropdown disabled" id="nav-files-tab" data-toggle="tab" href="#nav-files" role="tab" aria-controls="nav-files" aria-selected="false">
+				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Download</a>
+				<div class="dropdown-menu">
+					<a class="dropdown-item" href="#">Input</a>
+					<a class="dropdown-item" href="#">Output</a>
+					<a class="dropdown-item" href="#">Dump</a>
+					<a class="dropdown-item" href="#">Log</a>
+				</div>
+			</li-->
 		</div>
 	</nav>
 </div>
-<div class="oriented-split" style="top:2.5em">
+<div class="split-pane" style="top:2.5em">
 	<div class="split-input">
 		<div class="text-content">
 		<textarea id="input">
@@ -147,14 +133,7 @@ uint32 fibonacci_23 = fib(23);
 	</div>
 	<div class="split-output">
 		<div class="text-content">
-			<div class="tab-content" id="nav-tabContent">
-				<div class="tab-pane fade show active" id="nav-output" role="tabpanel" aria-labelledby="nav-output">
-					<textarea id="output" rows="30" readonly spellcheck="false"></textarea>
-				</div>
-				<div class="tab-pane fade" id="nav-minimize" role="tabpanel" aria-labelledby="nav-minimize-tab">...</div>
-				<div class="tab-pane fade" id="nav-files" role="tabpanel" aria-labelledby="nav-files-tab">...</div>
-			</div>
-
+			<textarea id="output" rows="30" readonly spellcheck="false"></textarea>
 		</div>
 	</div>
 </div>
@@ -173,9 +152,8 @@ uint32 fibonacci_23 = fib(23);
 	Module.print = terminal.print;
 
 	$('#nav-output-tab').click(function (ev) {
-		var shown = $('.split-output').hasClass('show');
-		var hidden = $('.split-output').hasClass('hide');
-		showConsole(shown || hidden ? null : true);
+		var shown = $('.split-pane').hasClass('secondary');
+		showConsole(shown ? null : true);
 	});
 
 	function terminalFromTextArea(output) {
@@ -219,27 +197,41 @@ uint32 fibonacci_23 = fib(23);
 	}
 
 	function showConsole(inout, orientation) {
-		$('.split-input').removeClass('show').removeClass('hide');
-		$('.split-output').removeClass('show').removeClass('hide');
+		$('.split-pane')
+			.removeClass('primary')
+			.removeClass('secondary')
+			.removeClass('vertical')
+			.removeClass('horizontal');
 
 		if (inout === false) {
-			$('.split-input').addClass('show');
-			$('.split-output').addClass('hide');
+			$('.split-pane').addClass('primary');
 		}
 		else if (inout === true) {
-			$('.split-input').addClass('hide');
-			$('.split-output').addClass('show');
+			$('.split-pane').addClass('secondary');
 		}
-		if (orientation != null) {
-			$('.oriented-split').removeClass('horizontal').removeClass('vertical');
-			if (orientation === 'vertical') {
-				$('.oriented-split').addClass('vertical');
-			}
-			else if (orientation === 'horizontal') {
-				$('.oriented-split').addClass('horizontal');
-			}
+		if (orientation === 'vertical') {
+			$('.split-pane').addClass('vertical');
 		}
+		else if (orientation === 'horizontal') {
+			$('.split-pane').addClass('horizontal');
+		}
+	}
 
+	function openInput(fileName) {
+		if (fileName == null) {
+			editor.setValue('');
+			return;
+		}
+		var data = FS.readFile(fileName);
+		var dec = new TextDecoder("utf-8");
+
+		editor.setValue(dec.decode(data.buffer));
+	}
+
+	function saveInput() {
+		var inputFile = 'input.ci';
+		FS.writeFile(inputFile, editor.getValue());
+		saveFSFile(inputFile);
 	}
 
 	function execute(mode) {
@@ -249,7 +241,7 @@ uint32 fibonacci_23 = fib(23);
 			'-mem3M'            // allocate 3Mb memory in heap
 		];
 
-		if (mode != null && mode != '') {
+		if (mode != null && mode !== '') {
 			args.push(mode);
 		}
 

@@ -9,28 +9,29 @@
 
 /// Symbol node: types and variables
 struct symNode {
-	char	*name;		// symbol name
-	char	*file;		// declared in file
-	int32_t line;		// declared on line
-	int32_t nest;		// declared on scope level
-	size_t	size;		// variable or function size
-	size_t	offs;		// address of variable or function
+	char *name;        // symbol name
+	char *file;        // declared in file
+	int32_t line;      // declared on line
+	int32_t nest;      // declared on scope level
+	size_t size;       // variable or function size
+	size_t offs;       // address of variable or function
 
-	symn	next;		// next symbol: field / param / ... / (in scope table)
-	symn	type;		// base type of array / typename (void, int, float, struct, function, ...)
-	symn	owner;		// the type that declares the current symbol (DeclaringType)
-	symn	fields;		// all fields: static + non static
-	symn	params;		// function parameters, return value is the first parameter.
+	symn next;          // next symbol: field / param / ... / (in scope table)
+	symn type;          // base type of array / typename (void, int, float, struct, function, ...)
+	symn owner;         // the type that declares the current symbol (DeclaringType)
+	symn fields;        // all fields: static + non static
+	symn params;        // function parameters, return value is the first parameter.
 
-	ccKind	kind;		// KIND_def / KIND_typ / KIND_fun / KIND_var + ATTR_xxx + CAST_xxx
+	ccKind kind;        // KIND_def / KIND_typ / KIND_fun / KIND_var + ATTR_xxx + CAST_xxx
 
 	// TODO: merge scope and global attributes
-	symn	scope;		// global variables and functions / while_compiling variables of the block in reverse order
-	symn	global;		// all static variables and functions
-	astn	init;		// VAR init / FUN body, this should be null after code generation?
+	symn scope;         // global variables and functions / while_compiling variables of the block in reverse order
+	symn global;        // all static variables and functions
+	astn init;          // VAR init / FUN body, this should be null after code generation?
 
-	astn	use, tag;		// TEMP: usage / declaration reference
-	const char*	format;		// TEMP: print format
+	astn use;           // TEMP: usages
+	astn tag;           // TEMP: declaration reference
+	const char *fmt;    // print format
 };
 
 static inline int isConst(symn sym) {
@@ -57,8 +58,20 @@ static inline int isArrayType(symn sym) {
 static inline int isInvokable(symn sym) {
 	return sym->params != NULL;
 }
-static inline ccKind castOf(symn sym) {
+static inline ccKind castOfx(symn sym) {
 	return sym->kind & MASK_cast;
+}
+/// same as castOf forcing arrays to cast as reference 
+static inline ccKind castOf(symn sym) {
+	ccKind got = castOfx(sym);
+	if (got == CAST_arr && isArrayType(sym)) {
+		symn len = sym->fields;
+		if (len == NULL || isStatic(len)) {
+			// pointer or fixed size array
+			got = CAST_ref;
+		}
+	}
+	return got;
 }
 
 size_t argsSize(symn function);

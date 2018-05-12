@@ -1867,8 +1867,8 @@ static void printRef(FILE *out, const char **esc, rtContext rt, void* data) {
 	}
 }
 void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val, dmpMode mode, int indent) {
-	ccKind varCast = castOf(var);
-	const char *format = var->format;
+	ccKind varCast = castOfx(var);
+	const char *format = var->fmt;
 	memptr data = (memptr) val;
 	symn typ = var;
 
@@ -1882,7 +1882,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 	if (!isTypename(var)) {
 		typ = var->type;
 		if (format == NULL) {
-			format = typ->format;
+			format = typ->fmt;
 		}
 		if (varCast == CAST_ref) {
 			data = vmPointer(rt, (size_t) val->ref);
@@ -1896,7 +1896,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 		format = type_fmt_typename;
 	}
 
-	ccKind typCast = castOf(typ);
+	ccKind typCast = castOfx(typ);
 	if (var != typ) {
 		printFmt(out, esc, "%.*T: ", mode & ~prSymType, var);
 	}
@@ -1907,7 +1907,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 
 	// null reference.
 	if (data == NULL) {
-		printFmt(out, esc, "null");
+		printFmt(out, esc, "%s", "null");
 	}
 	// invalid offset.
 	else if (!isValidOffset(rt, data)) {
@@ -1984,7 +1984,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 		symn varType = vmPointer(rt, (size_t) val->type);
 
 		if (varType == NULL || varData == NULL) {
-			printFmt(out, esc, "null");
+			printFmt(out, esc, "%s", "null");
 		}
 		else if (var != typ) {
 			printFmt(out, esc, "{%.T: ", varType);
@@ -2013,9 +2013,9 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 		}
 
 		if (data == NULL) {
-			printFmt(out, esc, "null");
+			printFmt(out, esc, "%s", "null");
 		}
-		else if (typ->type->format == type_fmt_character) {
+		else if (typ->type->fmt == type_fmt_character) {
 			// interpret `char[]`, `char[*]` and `char[n]` as string
 			printFmt(out, esc, "%c", type_fmt_string_chr);
 			printFmt(out, esc ? esc : escapeStr(), type_fmt_string, data);

@@ -171,7 +171,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 	}
 
 	type = ast->type;
-	switch (castOf(type)) {
+	switch (castOfx(type)) {
 		default:
 			fatal(ERR_INTERNAL_ERROR);
 			return CAST_any;

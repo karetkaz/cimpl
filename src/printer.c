@@ -228,7 +228,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 					char *_const = "";
 					char *_paral = "";
 					char *_kind = "";
-					char *_cast = NULL;
+					char *_cast = "ERR";
 
 					if (nil && arg == 0) {
 						if (pad != 0) {
@@ -239,6 +239,10 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 
 					switch (arg & MASK_cast) {
 						default:
+							break;
+
+						case CAST_any:
+							_cast = NULL;
 							break;
 
 						case CAST_vid:
@@ -918,42 +922,42 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 			break;
 
 		case TOKEN_val:
-			if (ast->type->format == NULL) {
+			if (ast->type->fmt == NULL) {
 				printFmt(out, esc, "{%.T @%D}", ast->type, ast->cInt);
 			}
-			else if (ast->type->format == type_fmt_string) {
+			else if (ast->type->fmt == type_fmt_string) {
 				printFmt(out, esc, "%c", type_fmt_string_chr);
 				printFmt(out, esc ? esc : escapeStr(), type_fmt_string, ast->ref.name);
 				printFmt(out, esc, "%c", type_fmt_string_chr);
 			}
-			else if (ast->type->format == type_fmt_character) {
+			else if (ast->type->fmt == type_fmt_character) {
 				printFmt(out, esc, "%c", type_fmt_character_chr);
 				printFmt(out, esc ? esc : escapeStr(), type_fmt_character, ast->cInt);
 				printFmt(out, esc, "%c", type_fmt_character_chr);
 			}
-			else if (ast->type->format == type_fmt_signed32) {
+			else if (ast->type->fmt == type_fmt_signed32) {
 				printFmt(out, esc, type_fmt_signed32, (int32_t) ast->cInt);
 			}
-			else if (ast->type->format == type_fmt_signed64) {
+			else if (ast->type->fmt == type_fmt_signed64) {
 				printFmt(out, esc, type_fmt_signed64, (int64_t) ast->cInt);
 			}
-			else if (ast->type->format == type_fmt_unsigned32) {
+			else if (ast->type->fmt == type_fmt_unsigned32) {
 				printFmt(out, esc, type_fmt_unsigned32, (uint32_t) ast->cInt);
 			}
-			else if (ast->type->format == type_fmt_unsigned64) {
+			else if (ast->type->fmt == type_fmt_unsigned64) {
 				printFmt(out, esc, type_fmt_unsigned64, (uint64_t) ast->cInt);
 			}
-			else if (ast->type->format == type_fmt_float32) {
+			else if (ast->type->fmt == type_fmt_float32) {
 				printFmt(out, esc, type_fmt_float32, (float32_t) ast->cFlt);
 			}
-			else if (ast->type->format == type_fmt_float64) {
+			else if (ast->type->fmt == type_fmt_float64) {
 				printFmt(out, esc, type_fmt_float64, (float64_t) ast->cFlt);
 			}
-			else if (ast->type->format == type_fmt_typename) {
+			else if (ast->type->fmt == type_fmt_typename) {
 				printFmt(out, esc, type_fmt_typename, ast->type);
 			}
 			else {
-				printFmt(out, esc, ast->type->format, ast->cInt);
+				printFmt(out, esc, ast->type->fmt, ast->cInt);
 			}
 			break;
 
@@ -1016,27 +1020,24 @@ void printSym(FILE *out, const char **esc, symn sym, dmpMode mode, int indent) {
 	}
 
 	switch (sym->kind & MASK_kind) {
-		case KIND_typ: switch (castOf(sym)) {
-			case CAST_arr:
+		case KIND_typ:
+			if (castOfx(sym) == CAST_arr) {
 				if (sym->name == NULL) {
 					printArray(out, esc, sym, mode);
 					return;
 				}
-				break;
-			default:
-				if (pr_body) {
-					symn arg;
-					printFmt(out, esc, ": struct %s", "{\n");
+			}
+			else if (pr_body) {
+				symn arg;
+				printFmt(out, esc, ": struct %s", "{\n");
 
-					for (arg = sym->fields; arg; arg = arg->next) {
-						printSym(out, esc, arg, mode & ~prSymQual, indent + 1);
-						if (arg->kind != KIND_typ) {		// nested struct
-							printStr(out, esc, ";\n");
-						}
+				for (arg = sym->fields; arg; arg = arg->next) {
+					printSym(out, esc, arg, mode & ~prSymQual, indent + 1);
+					if (arg->kind != KIND_typ) {		// nested struct
+						printStr(out, esc, ";\n");
 					}
-					printFmt(out, esc, "%I%s", indent, "}");
 				}
-				break;
+				printFmt(out, esc, "%I%s", indent, "}");
 			}
 			break;
 
