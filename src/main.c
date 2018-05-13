@@ -1076,7 +1076,7 @@ static void dumpApiText(userContext extra, symn sym) {
 		}
 	}
 
-	if (dmpAst) {
+	if (dmpAst != 0) {
 		dmpMode mode = extra->dmpAst;
 		if (!dumpExtraData) {
 			printFmt(out, esc, " {\n");

@@ -5,20 +5,21 @@
 	<!--<meta name="viewport" content="width=device-width">-->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+	<!-- Bootstrap -->
+	<link rel="stylesheet" href="lib/bootstrap/css/bootstrap.css">
 	<script src="lib/jquery/jquery.js">/*TODO: use .min.js*/</script>
 	<script src="lib/popper/popper.js">/*TODO: use .min.js*/</script>
-	<link rel="stylesheet" href="lib/bootstrap/css/bootstrap.css">
-	<!--link rel="stylesheet" href="lib/bootstrap/css/bootstrap-theme.min.css"-->
 	<script src="lib/bootstrap/js/bootstrap.js">/*TODO: use .min.js*/</script>
 
-	<!--Code mirror code-->
+	<!-- Code mirror -->
 	<link rel="stylesheet" href="lib/codemirror/codemirror.css">
 	<script src="lib/codemirror/codemirror.js"></script>
 	<script src="cmpl.lang.js"></script>
 
-	<!--libraries-->
+	<!-- Other libs -->
 	<link rel="stylesheet" href="main.css">
 	<script type="text/javascript" src="lib/FileSaver.js"></script>
+	<script type="text/javascript" src="lib/JsArgs.js"></script>
 	<script type="text/javascript" src="cmpl.js"></script>
 
 </head>
@@ -30,10 +31,10 @@
 				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Input</a>
 				<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
 					<a class="dropdown-item" href="#" onClick="saveInput();">Save</a>
-					<a class="dropdown-item" href="#" onClick="openInput(null);">Close</a>
+					<a class="dropdown-item" href="#" onClick="params.update({input: null});">Close</a>
 					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" href="#" onClick="openInput('function.ci');">function</a>
-					<a class="dropdown-item" href="#" onClick="openInput('execute.ci');">tryExec</a>
+					<a class="dropdown-item" href="#" onClick="params.update({input: 'function.ci'});">function</a>
+					<a class="dropdown-item" href="#" onClick="params.update({input: 'execute.ci', exec: '-debug/g/L'});">tryExec</a>
 				</div>
 			</li>
 			<!--a class="nav-item nav-link active" id="nav-output-tab" data-toggle="tab" href="#nav-output" role="tab" aria-controls="nav-output" aria-selected="true">Output</a-->
@@ -48,23 +49,20 @@
 				</div>
 			</li>
 			<div class="nav-item btn-group dropright">
-				<button id="btnExecute" type="button" class="btn btn-sm btn-default" onclick="execute(cmdExecute.value);">
-					Run
-				</button>
-				<button type="button" class="btn btn-sm btn-default dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				</button>
+				<button id="btnExecute" type="button" class="btn btn-sm btn-default" onclick="execute(cmdExecute.value);">Run</button>
+				<button type="button" class="btn btn-sm btn-default dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
 				<div class="dropdown-menu">
-					<a class="dropdown-item" onclick="btnExecute.innerText=this.innerText; cmdExecute.value='-run/g';">Run</a>
-					<a class="dropdown-item" onclick="btnExecute.innerText=this.innerText; cmdExecute.value='-debug/g';">Debug</a>
-					<a class="dropdown-item" onclick="btnExecute.innerText=this.innerText; cmdExecute.value='-profile/g';">Profile</a>
+					<a class="dropdown-item" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-run/g';">Run</a>
+					<a class="dropdown-item" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-debug/g';">Debug</a>
+					<a class="dropdown-item" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-profile/g';">Profile</a>
 					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" onclick="btnExecute.innerText=this.innerText; cmdExecute.value='';">Compile</a>
+					<a class="dropdown-item" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='';">Compile</a>
 					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" onclick="btnExecute.innerText='Custom';"><input id="cmdExecute" type="text" value="-run/g"></a>
+					<a class="dropdown-item" onclick="params.update({exec: null}); btnExecute.innerText='Custom';"><input id="cmdExecute" type="text" value="-run/g"></a>
 					<span class="dropdown-item">
-						<button type="button" class="btn btn-light" onclick="btnExecute.innerText='Custom'; cmdExecute.value='-api/a';">Api</button>
-						<button type="button" class="btn btn-light" onclick="btnExecute.innerText='Custom'; cmdExecute.value='-asm/a/n/s/m';">Asm</button>
-						<button type="button" class="btn btn-light" onclick="btnExecute.innerText='Custom'; cmdExecute.value='-ast';">Ast</button>
+						<button type="button" class="btn btn-light" onclick="params.update({exec: null}); btnExecute.innerText='Tags'; cmdExecute.value='-api/a';">Tags</button>
+						<button type="button" class="btn btn-light" onclick="params.update({exec: null}); btnExecute.innerText='Usages'; cmdExecute.value='-api/u';">Usages</button>
+						<button type="button" class="btn btn-light" onclick="params.update({exec: null}); btnExecute.innerText='Assembly'; cmdExecute.value='-asm/a/n/s/m';">Asm</button>
 					</span>
 				</div>
 			</div>
@@ -84,51 +82,7 @@
 <div class="split-pane" style="top:2.5em">
 	<div class="split-input">
 		<div class="text-content">
-		<textarea id="input">
-void empty() {}
-
-// function with implementation
-int funAdd(int x, int y) {
-	return x + y;
-}
-
-// function invocation
-int funAddResult = funAdd(2, 7);
-
-// initialized function reference
-int funAddRef(int x, int y) = funAdd;
-
-// function reference invocation
-int funAddRefResult = funAddRef(2, 8);
-
-// forward function reference (must be implemented somewhere)
-int funMul(int x, int y);
-
-// forward function invocation
-int funMulResult = funMul(2, 6);
-
-// initialized forward function reference (copy address)
-int funMulRef(int x, int y) = funMul;
-
-// forward function reference invocation
-int funMulRefResult = funMulRef(2, 7);
-
-// forward function implementation
-int funMul(int x, int y) {
-	return x * y;
-}
-
-// recursive function implementation
-uint32 fib(uint32 n) {
-	if (n <= 1) {
-		return n;
-	}
-	return fib(n-1) + fib(n-2);
-}
-
-// recursive function invocation
-uint32 fibonacci_23 = fib(23);
-</textarea>
+		<textarea id="input"></textarea>
 		</div>
 	</div>
 	<div class="split-output">
@@ -148,13 +102,27 @@ uint32 fibonacci_23 = fib(23);
 		indentWithTabs: true
 	});
 	var terminal = terminalFromTextArea(document.getElementById("output"));
+	var params = JsArgs(function (params, changes) {
+		console.log('hash.changed: ' + JSON.stringify({params: params, changes: changes}));
+		if (changes === undefined) {
+			// wait for onRuntimeInitialized
+			return;
+		}
+		if (changes.exec != null && params.exec != null) {
+			cmdExecute.value = params.exec;
+			btnExecute.innerText = 'Custom';
+		}
+		// input field changed (open or close)
+		if (changes.input != null) {
+			openInput(params.input);
+		}
+	});
+
 	editor.setSize('100%', '100%');
 	Module.print = terminal.print;
-
-	$('#nav-output-tab').click(function (ev) {
-		var shown = $('.split-pane').hasClass('secondary');
-		showConsole(shown ? null : true);
-	});
+	Module.onRuntimeInitialized = function () {
+		params.update();
+	};
 
 	function terminalFromTextArea(output) {
 		if (output == null) {
@@ -218,14 +186,19 @@ uint32 fibonacci_23 = fib(23);
 	}
 
 	function openInput(fileName) {
+		terminal.clear();
 		if (fileName == null) {
 			editor.setValue('');
 			return;
 		}
-		var data = FS.readFile(fileName);
-		var dec = new TextDecoder("utf-8");
-
-		editor.setValue(dec.decode(data.buffer));
+		try {
+			var data = FS.readFile(fileName);
+			var dec = new TextDecoder('utf-8');
+			editor.setValue(dec.decode(data.buffer));
+			terminal.print('opening file succeeded: `' + fileName + '`');
+		} catch (err) {
+			terminal.print('opening file failed: `' + fileName + '`: ' + err);
+		}
 	}
 
 	function saveInput() {
@@ -235,11 +208,24 @@ uint32 fibonacci_23 = fib(23);
 	}
 
 	function execute(mode) {
-		console.log(mode);
 		var args = [
-			'-X-stdin',         // do not use standard input
-			'-mem3M'            // allocate 3Mb memory in heap
+			'-X' + (params.X || '-stdin'),      // do not use standard input
+			'-mem' + (params.mem || '2M')       // allocate 2Mb of memory by default
 		];
+
+		if (params.dump != null) {
+			if (params.dump.endsWith('.json')) {
+				args.push('-dump.json');
+			} else {
+				args.push('-dump');
+			}
+			args.push(params.dump);
+		}
+
+		if (params.log != null) {
+			args.push('-log');
+			args.push(params.log);
+		}
 
 		if (mode != null && mode !== '') {
 			args.push(mode);
