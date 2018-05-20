@@ -1,8 +1,22 @@
-CodeMirror.defineMode("cmpl", function(config, parserConfig) {
+// CodeMirror, copyright (c) by Marijn Haverbeke and others
+// Distributed under an MIT license: http://codemirror.net/LICENSE
+
+(function(mod) {
+  if (typeof exports == "object" && typeof module == "object") // CommonJS
+    mod(require("../../lib/codemirror"));
+  else if (typeof define == "function" && define.amd) // AMD
+    define(["../../lib/codemirror"], mod);
+  else // Plain browser env
+    mod(CodeMirror);
+})(function(CodeMirror) {
+"use strict";
+
+CodeMirror.defineMode("d", function(config, parserConfig) {
   var indentUnit = config.indentUnit,
       statementIndentUnit = parserConfig.statementIndentUnit || indentUnit,
       keywords = parserConfig.keywords || {},
       builtin = parserConfig.builtin || {},
+      blockKeywords = parserConfig.blockKeywords || {},
       atoms = parserConfig.atoms || {},
       hooks = parserConfig.hooks || {},
       multiLineStrings = parserConfig.multiLineStrings;
@@ -30,7 +44,7 @@ CodeMirror.defineMode("cmpl", function(config, parserConfig) {
     }
     if (ch == "/") {
       if (stream.eat("+")) {
-        state.tokenize = tokenComment;
+        state.tokenize = tokenNestedComment;
         return tokenNestedComment(stream, state);
       }
       if (stream.eat("*")) {
@@ -46,12 +60,14 @@ CodeMirror.defineMode("cmpl", function(config, parserConfig) {
       stream.eatWhile(isOperatorChar);
       return "operator";
     }
-    stream.eatWhile(/[\w\$_]/);
+    stream.eatWhile(/[\w\$_\xa1-\uffff]/);
     var cur = stream.current();
     if (keywords.propertyIsEnumerable(cur)) {
+      if (blockKeywords.propertyIsEnumerable(cur)) curPunc = "newstatement";
       return "keyword";
     }
     if (builtin.propertyIsEnumerable(cur)) {
+      if (blockKeywords.propertyIsEnumerable(cur)) curPunc = "newstatement";
       return "builtin";
     }
     if (atoms.propertyIsEnumerable(cur)) return "atom";
@@ -166,24 +182,31 @@ CodeMirror.defineMode("cmpl", function(config, parserConfig) {
       else return ctx.indented + (closing ? 0 : indentUnit);
     },
 
-    electricChars: "{}",
-    fold: "brace"
+    electricChars: "{}"
   };
 });
 
-(function() {
   function words(str) {
     var obj = {}, words = str.split(" ");
     for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
     return obj;
   }
 
-  CodeMirror.defineMIME("text/x-cmpl", {
-    name: "cmpl",
-    keywords: words("break const continue else emit enum for if inline parallel return static struct"),
-    builtin: words("void bool char int8 int16 int32 int64 uint8 uint16 uint32 uint64 float32 float64 " +
-        "pointer variant function object typename null true false int byte float double raise tryExec"),
-    atoms: words("true false null"),
+  var blockKeywords = "body catch class do else enum for foreach foreach_reverse if in interface mixin " +
+                      "out scope struct switch try union unittest version while with";
+
+  CodeMirror.defineMIME("text/x-d", {
+    name: "d",
+    keywords: words("abstract alias align asm assert auto break case cast cdouble cent cfloat const continue " +
+                    "debug default delegate delete deprecated export extern final finally function goto immutable " +
+                    "import inout invariant is lazy macro module new nothrow override package pragma private " +
+                    "protected public pure ref return shared short static super synchronized template this " +
+                    "throw typedef typeid typeof volatile __FILE__ __LINE__ __gshared __traits __vector __parameters " +
+                    blockKeywords),
+    blockKeywords: words(blockKeywords),
+    builtin: words("bool byte char creal dchar double float idouble ifloat int ireal long real short ubyte " +
+                   "ucent uint ulong ushort wchar wstring void size_t sizediff_t"),
+    atoms: words("exit failure success true false null"),
     hooks: {
       "@": function(stream, _state) {
         stream.eatWhile(/[\w\$_]/);
@@ -191,4 +214,5 @@ CodeMirror.defineMode("cmpl", function(config, parserConfig) {
       }
     }
   });
-}());
+
+});

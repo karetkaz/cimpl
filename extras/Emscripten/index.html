@@ -2,8 +2,18 @@
 <head>
 	<title>Cmpl live demo</title>
 
-	<!--<meta name="viewport" content="width=device-width">-->
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+
+	<!-- Other libs -->
+	<link rel="stylesheet" href="main.css">
+	<script type="text/javascript" src="lib/FileSaver.js"></script>
+	<script type="text/javascript" src="lib/JsArgs.js"></script>
+	<!--script>
+ 	JsArgs(function (params, changes) {console.trace('params1:', params, 'changes:', changes);});
+ 	JsArgs(function (params, changes) {console.trace('params2:', params, 'changes:', changes);});
+ 	JsArgs(function (params, changes) {console.trace('params3:', params, 'changes:', changes);});
+	</script-->
+	<script type="text/javascript" src="cmpl.js"></script>
 
 	<!-- Bootstrap -->
 	<link rel="stylesheet" href="lib/bootstrap/css/bootstrap.css">
@@ -13,105 +23,122 @@
 
 	<!-- Code mirror -->
 	<link rel="stylesheet" href="lib/codemirror/codemirror.css">
+	<link rel="stylesheet" href="lib/codemirror/theme/idea.css" />
+	<link rel="stylesheet" href="lib/codemirror/theme/darcula.css" />
+	<link rel="stylesheet" href="lib/codemirror/fold/foldgutter.css" />
 	<script src="lib/codemirror/codemirror.js"></script>
-	<script src="cmpl.lang.js"></script>
+	<script src="lib/codemirror/fold/foldcode.js"></script>
+	<script src="lib/codemirror/fold/brace-fold.js"></script>
+	<script src="lib/codemirror/fold/comment-fold.js"></script>
+	<script src="lib/codemirror/fold/foldgutter.js"></script>
+	<script src="lib/codemirror/addon/active-line.js"></script>
+	<script src="lib/codemirror/addon/matchbrackets.js"></script>
+	<script src="lib/codemirror/addon/trailingspace.js"></script>
+	<script src="lib/codemirror/addon/scroll/annotatescrollbar.js"></script>
+	<script src="lib/codemirror/addon/search/matchesonscrollbar.js"></script>
+	<script src="lib/codemirror/addon/search/searchcursor.js"></script>
+	<script src="lib/codemirror/addon/search/match-highlighter.js"></script>
 
-	<!-- Other libs -->
-	<link rel="stylesheet" href="main.css">
-	<script type="text/javascript" src="lib/FileSaver.js"></script>
-	<script type="text/javascript" src="lib/JsArgs.js"></script>
-	<script type="text/javascript" src="cmpl.js"></script>
+	<script src="lib/codemirror/lang/cmpl.js"></script>
 
 </head>
 <body>
-<div class="header" style="height: 2.5em">
+<div class="header" style="height: 2.6em">
 	<nav>
 		<div class="nav nav-tabs" id="nav-tab" role="tablist">
 			<li class="nav-item dropdown active" id="nav-input-tab" data-toggle="tab" href="#nav-input" role="tab" aria-controls="nav-input" aria-selected="true">
 				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Input</a>
-				<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-					<a class="dropdown-item" href="#" onClick="saveInput();">Save</a>
+				<div id="fileList" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+					<a class="dropdown-item" href="#" onClick="downloadInput(params.input);">Dowload</a>
+					<a class="dropdown-item" href="#" onClick="saveInput(params.input);">Save</a>
 					<a class="dropdown-item" href="#" onClick="params.update({input: null});">Close</a>
 					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" href="#" onClick="params.update({input: 'function.ci'});">function</a>
-					<a class="dropdown-item" href="#" onClick="params.update({input: 'execute.ci', exec: '-debug/g/L'});">tryExec</a>
 				</div>
 			</li>
-			<!--a class="nav-item nav-link active" id="nav-output-tab" data-toggle="tab" href="#nav-output" role="tab" aria-controls="nav-output" aria-selected="true">Output</a-->
 			<li class="nav-item dropdown" data-toggle="tab" href="#nav-output" role="tab" aria-controls="nav-output" aria-selected="false">
 				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">View</a>
 				<div class="dropdown-menu">
-					<a class="dropdown-item" onclick="showConsole(false)">Input</a>
-					<a class="dropdown-item" onclick="showConsole(true)">Output</a>
-					<a class="dropdown-item" onclick="showConsole(null, '')">Split auto</a>
-					<a class="dropdown-item" onclick="showConsole(null, 'vertical')">Split vertical</a>
-					<a class="dropdown-item" onclick="showConsole(null, 'horizontal')">Split horizontal</a>
+					<a class="dropdown-item" href="#" onclick="showConsole(false);">Input</a>
+					<a class="dropdown-item" href="#" onclick="showConsole(true);">Output</a>
+					<div class="dropdown-divider"></div>
+					<a class="dropdown-item" href="#" onclick="showConsole(null, '');">Split auto</a>
+					<a class="dropdown-item" href="#" onclick="showConsole(null, 'vertical');">Split vertical</a>
+					<a class="dropdown-item" href="#" onclick="showConsole(null, 'horizontal');">Split horizontal</a>
+					<div class="dropdown-divider"></div>
+					<a class="dropdown-item" href="#" onclick="params.update({theme: 'idea'});">Light theme</a>
+					<a class="dropdown-item" href="#" onclick="params.update({theme: 'darcula'});">Dark theme</a>
 				</div>
 			</li>
-			<div class="nav-item btn-group dropright">
-				<button id="btnExecute" type="button" class="btn btn-sm btn-default" onclick="execute(cmdExecute.value);">Run</button>
+			<li class="nav-item btn-group dropright">
+				<button id="btnExecute" type="button" class="btn btn-sm btn-default" onclick="execute(cmdExecute.value);">Execute</button>
 				<button type="button" class="btn btn-sm btn-default dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
 				<div class="dropdown-menu">
 					<a class="dropdown-item" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-run/g';">Run</a>
 					<a class="dropdown-item" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-debug/g';">Debug</a>
 					<a class="dropdown-item" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-profile/g';">Profile</a>
+					<a class="dropdown-item" onclick="params.update({exec: null}); btnExecute.innerText='Compile'; cmdExecute.value='';">Compile only</a>
 					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='';">Compile</a>
-					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" onclick="params.update({exec: null}); btnExecute.innerText='Custom';"><input id="cmdExecute" type="text" value="-run/g"></a>
+					<a class="dropdown-item" onclick="params.update({exec: cmdExecute.value});"><input id="cmdExecute" onchange="params.update({exec: value});" type="text" value=""></a>
 					<span class="dropdown-item">
-						<button type="button" class="btn btn-light" onclick="params.update({exec: null}); btnExecute.innerText='Tags'; cmdExecute.value='-api/a';">Tags</button>
-						<button type="button" class="btn btn-light" onclick="params.update({exec: null}); btnExecute.innerText='Usages'; cmdExecute.value='-api/u';">Usages</button>
-						<button type="button" class="btn btn-light" onclick="params.update({exec: null}); btnExecute.innerText='Assembly'; cmdExecute.value='-asm/a/n/s/m';">Asm</button>
+						<button type="button" class="btn btn-light" onclick="params.update({exec: '-api/a'});">Tags</button>
+						<button type="button" class="btn btn-light" onclick="params.update({exec: '-api/u'});">Usages</button>
+						<button type="button" class="btn btn-light" onclick="params.update({exec: '-asm/a/n/s/m'});">Asm</button>
 					</span>
 				</div>
-			</div>
-			<!--a class="nav-item nav-link disabled" id="nav-canvas-tab" data-toggle="tab" href="#nav-canvas" role="tab" aria-controls="nav-canvas" aria-selected="false">Canvas</a>
-			<li class="nav-item dropdown disabled" id="nav-files-tab" data-toggle="tab" href="#nav-files" role="tab" aria-controls="nav-files" aria-selected="false">
-				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Download</a>
-				<div class="dropdown-menu">
-					<a class="dropdown-item" href="#">Input</a>
-					<a class="dropdown-item" href="#">Output</a>
-					<a class="dropdown-item" href="#">Dump</a>
-					<a class="dropdown-item" href="#">Log</a>
-				</div>
-			</li-->
+			</li>
 		</div>
 	</nav>
 </div>
-<div class="split-pane" style="top:2.5em">
-	<div class="split-input">
-		<div class="text-content">
+<div class="split-pane" style="top:2.6em;">
+	<div class="text-content">
 		<textarea id="input"></textarea>
-		</div>
 	</div>
-	<div class="split-output">
-		<div class="text-content">
-			<textarea id="output" rows="30" readonly spellcheck="false"></textarea>
-		</div>
+	<div class="text-content">
+		<textarea id="output" readonly spellcheck="false"></textarea>
 	</div>
 </div>
 </body>
 <script type="text/javascript">
-	var editor = CodeMirror.fromTextArea(document.getElementById("input"), {
+	var editor = CodeMirror.fromTextArea(input, {
 		mode: "text/x-cmpl",
 		lineNumbers: true,
-		matchBrackets: true,
 		tabSize: 4,
 		indentUnit: 4,
-		indentWithTabs: true
+		indentWithTabs: true,
+
+		styleActiveLine: true,
+		matchBrackets: true,
+		showTrailingSpace: true,
+
+		foldGutter: true,
+		gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+		highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: true}
 	});
-	var terminal = terminalFromTextArea(document.getElementById("output"));
-	var params = JsArgs(function (params, changes) {
-		console.log('hash.changed: ' + JSON.stringify({params: params, changes: changes}));
+	var terminal = terminalFromTextArea(output);
+	var params = JsArgs('#', function (params, changes) {
+		//console.trace('params:', params, 'changes:', changes);
+
+		// change execution method
+		if (!changes || changes.exec != null) {
+			if (params.exec == null) {
+				cmdExecute.value = '-run/g';
+				btnExecute.innerText = 'Run';
+			} else {
+				cmdExecute.value = params.exec;
+				btnExecute.innerText = 'Execute';
+			}
+		}
+
+		// change theme
+		if (!changes || changes.theme != null) {
+			editor.setOption("theme", params.theme || "default");
+		}
+
 		if (changes === undefined) {
 			// wait for onRuntimeInitialized
 			return;
 		}
-		if (changes.exec != null && params.exec != null) {
-			cmdExecute.value = params.exec;
-			btnExecute.innerText = 'Custom';
-		}
+
 		// input field changed (open or close)
 		if (changes.input != null) {
 			openInput(params.input);
@@ -121,7 +148,18 @@
 	editor.setSize('100%', '100%');
 	Module.print = terminal.print;
 	Module.onRuntimeInitialized = function () {
-		params.update();
+		FS.chdir('/workspace');
+		var contents = FS.analyzePath(FS.cwd()).object.contents;
+		for (var file in contents) {
+			if (!contents.hasOwnProperty(file)) {
+				continue;
+			}
+			if (contents[file].isFolder || contents[file].isDevice) {
+				continue;
+			}
+			fileList.innerHTML += '<a class="dropdown-item" href="#" onClick="params.update({input: this.innerText});">' + file + '</a>';
+		}
+		params.update('input');
 	};
 
 	function terminalFromTextArea(output) {
@@ -159,17 +197,17 @@
 				return;
 			}
 		}
-		var type = "application/octet-stream";
-		var data = FS.readFile(fileName);
+		const type = "application/octet-stream";
+		const data = FS.readFile(fileName);
 		saveAs(new Blob([data.buffer], {type: type}), fileName);
 	}
 
 	function showConsole(inout, orientation) {
 		$('.split-pane')
-			.removeClass('primary')
-			.removeClass('secondary')
-			.removeClass('vertical')
-			.removeClass('horizontal');
+		.removeClass('primary')
+		.removeClass('secondary')
+		.removeClass('vertical')
+		.removeClass('horizontal');
 
 		if (inout === false) {
 			$('.split-pane').addClass('primary');
@@ -192,8 +230,8 @@
 			return;
 		}
 		try {
-			var data = FS.readFile(fileName);
-			var dec = new TextDecoder('utf-8');
+			let data = FS.readFile(fileName);
+			let dec = new TextDecoder('utf-8');
 			editor.setValue(dec.decode(data.buffer));
 			terminal.print('opening file succeeded: `' + fileName + '`');
 		} catch (err) {
@@ -201,14 +239,24 @@
 		}
 	}
 
-	function saveInput() {
-		var inputFile = 'input.ci';
-		FS.writeFile(inputFile, editor.getValue());
-		saveFSFile(inputFile);
+	function saveInput(fileName) {
+		if (!fileName) {
+			terminal.print('nothing to save');
+			return;
+		}
+		FS.writeFile(fileName, editor.getValue());
+	}
+
+	function downloadInput(fileName) {
+		let type = "application/octet-stream";
+		//FS.writeFile(fileName, editor.getValue());
+		// let data = FS.readFile(fileName);
+		// saveAs(new Blob([data.buffer], {type: type}), fileName);
+		saveAs(new Blob([editor.getValue()], {type: type}), fileName);
 	}
 
 	function execute(mode) {
-		var args = [
+		let args = [
 			'-X' + (params.X || '-stdin'),      // do not use standard input
 			'-mem' + (params.mem || '2M')       // allocate 2Mb of memory by default
 		];
@@ -227,14 +275,14 @@
 			args.push(params.log);
 		}
 
-		if (mode != null && mode !== '') {
-			args.push(mode);
+		for (let arg of mode.split(' ')) {
+			args.push(arg);
 		}
 
 		terminal.clear();
 
 		// save the content of the editor to memory file
-		var inputFile = 'input';
+		var inputFile = params.input || 'empty.ci';
 		FS.writeFile(inputFile, editor.getValue());
 
 		// compile the code

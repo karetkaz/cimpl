@@ -24,15 +24,12 @@ OPTIONS+=-s INVOKE_RUN=0
 OPTIONS+=-s ALLOW_MEMORY_GROWTH=1
 #OPTIONS+=-s "EXPORTED_FUNCTIONS=['_main','_rtInit','_ccInit','_ccAddUnit','_ccGenCode','_execute']"
 
-cmpl.js: $(SOURCE) stdlib.ci function.ci execute.ci
-	emcc $(CFLAGS) $(OPTIONS) $(SOURCE) -o cmpl.js --preload-file stdlib.ci --preload-file function.ci --preload-file execute.ci
-	rm stdlib.ci function.ci execute.ci
+cmpl.js: $(SOURCE) workspace
+	emcc $(CFLAGS) $(OPTIONS) $(SOURCE) -o cmpl.js --preload-file workspace
+	rm -R workspace
 
-stdlib.ci: $(BASEDIR)/stdlib.ci
-	cp $(BASEDIR)/stdlib.ci .
-
-function.ci: $(BASEDIR)/test/lang.function.ci
-	cp $(BASEDIR)/test/lang.function.ci ./function.ci
-
-execute.ci: $(BASEDIR)/test/stdc.nfcTryExec.ci
-	cp $(BASEDIR)/test/stdc.nfcTryExec.ci ./execute.ci
+workspace:
+	mkdir workspace
+	cp $(BASEDIR)/stdlib.ci ./workspace/stdlib.ci
+	cp $(BASEDIR)/test/lang.function.ci ./workspace/function.ci
+	cp $(BASEDIR)/test/stdc.nfcTryExec.ci ./workspace/execute.ci

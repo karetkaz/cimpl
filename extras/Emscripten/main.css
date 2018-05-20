@@ -43,40 +43,31 @@
 	.split-pane > div {
 		width: 100%;
 		height: 50%;
-		/*overflow: hidden;*/
-		/*position: relative;*/
 	}
 }
 @media (orientation: landscape) {
 	.split-pane > div {
 		width: 50%;
 		height: 100%;
-		/*float: left;*/
-		/*overflow: hidden;*/
-		/*position: relative;*/
 	}
 }
 
 /* header and content */
 div.header {
-	top: 0;
-	left: 0;
-	right: 0;
-	height: 2.2em;
 	background-color: rgb(240,240,236);
 }
-div.text-content {
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	position: absolute;
+
+.nav-item.nav-right {
+	margin-left: auto;
+}
+
+.text-content {
+	font-size: .8em;
 }
 
 textarea {
 	display: block;
 	padding: 0;
-	border: 0;
 	margin: 0;
 
 	width: 100%;
@@ -88,20 +79,50 @@ textarea {
 	max-height: 100%;
 
 	font-family: 'Lucida Console', Monaco, monospace;
+	font-size: 1em;
+
 	outline: none;
 	overflow-x: auto;
 	overflow-y: scroll;
 	white-space: pre;
+	border-radius: 0;
 }
 textarea#output {
 	color: white;
 	background-color: black;
-	font-size: .8em;
+	border: 0;
+
+	font-family: 'Lucida Console', Monaco, monospace;
+	font-size: 1em;
 }
-.CodeMirror {
+.text-content .CodeMirror {
 	margin: 0;
 	padding: 0;
-	border: 1px solid #eee;
+	border: 0 solid #eee;
 	height: 100%;
+
+	font-family: 'Lucida Console', Monaco, monospace;
+ 	font-size: 1em; 
 }
 
+/* tabs and trailing spaces*/
+.cm-trailingspace {
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAACCAYAAAB/qH1jAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QUXCToH00Y1UgAAACFJREFUCNdjPMDBUc/AwNDAAAFMTAwMDA0OP34wQgX/AQBYgwYEx4f9lQAAAABJRU5ErkJggg==);
+	background-position: bottom left;
+	background-repeat: repeat-x;
+}
+
+.cm-tab {
+	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAMCAYAAAAkuj5RAAAAAXNSR0IArs4c6QAAAGFJREFUSMft1LsRQFAQheHPowAKoACx3IgEKtaEHujDjORSgWTH/ZOdnZOcM/sgk/kFFWY0qV8foQwS4MKBCS3qR6ixBJvElOobYAtivseIE120FaowJPN75GMu8j/LfMwNjh4HUpwg4LUAAAAASUVORK5CYII=);
+	background-position: right;
+	background-repeat: no-repeat;
+}
+
+/* match words */
+.CodeMirror-focused .cm-matchhighlight {
+/* 	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFklEQVQI12NgYGBgkKzc8x9CMDAwAAAmhwSbidEoSQAAAABJRU5ErkJggg==); */
+	background-position: bottom;
+	background-repeat: repeat-x;
+}
+.cm-matchhighlight {background-color: lightgreen}
+.CodeMirror-selection-highlight-scrollbar {background-color: green}

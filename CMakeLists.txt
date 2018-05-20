@@ -27,11 +27,6 @@ set(CMPL_SRC_FILES
 	src/utils.c
 )
 
-# some simple "how to use" code.
-add_executable(cmplVmEmit ${CMPL_SRC_FILES} src/test/vmMulf32.c)
-target_include_directories(cmplVmEmit PUBLIC ./src/)
-target_link_libraries(cmplVmEmit m dl)
-
 add_executable(cmpl ${CMPL_SRC_FILES} src/main.c)
 target_link_libraries(cmpl m dl)
 
@@ -41,3 +36,8 @@ target_include_directories(File PUBLIC ./src/)
 add_library(OpenGL SHARED src/plugin/openGL.c)
 target_include_directories(OpenGL PUBLIC ./src/)
 target_link_libraries(OpenGL GL GLU glut)
+
+# a simple "how to use" demo code.
+#add_executable(cmplVmEmit ${CMPL_SRC_FILES} src/test/vmMulf32.c)
+#target_include_directories(cmplVmEmit PUBLIC ./src/)
+#target_link_libraries(cmplVmEmit m dl)

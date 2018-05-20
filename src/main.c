@@ -148,11 +148,6 @@ typedef enum {
 	trcOpcodes = 0x0020,     // dump executing instructions
 	trcLocals  = 0x0040,     // dump the content of the stack
 	trcTime    = 0x0080,     // dump timestamp
-
-	dmpProfile = 0x0100,     // dump execution times
-	dmpMemory  = 0x0400,     // dump memory statistics
-	dmpAllData = 0x0800
-
 } runMode;
 
 struct userContextRec {
@@ -180,6 +175,8 @@ struct userContextRec {
 	char *compileSteps; // dump compilation steps
 
 	int dmpGlobals;     // dump global variables after execution
+	int dmpProfile;     // dump profile and coverage stats
+	int dmpMemory;      // dump memory allocation free and used chunks
 
 	runMode exec;
 	clock_t ccStart;       // start time of compilation
@@ -858,19 +855,17 @@ void printGlobals(rtContext rt, FILE *out, const char **esc, int all) {
 
 static void textPostProfile(userContext usr) {
 	static const double CLOCKS_PER_MILLI = CLOCKS_PER_SEC / 1000.;
-	int all = (usr->exec & dmpAllData) != 0;
 	const char **esc = usr->esc;
 	FILE *out = usr->out;
 	rtContext rt = usr->rt;
 	const char *prefix = usr->compileSteps ? usr->compileSteps : "\n---------- ";
 
-	clock_t now = clock();
-	printFmt(out, esc, "%?sExecution:\nCompile: %.3F millis\nExecute: %.3F millis\n", prefix,
-		(usr->rtStart - usr->ccStart) / CLOCKS_PER_MILLI,
-		(now - usr->rtStart) / CLOCKS_PER_MILLI
-	);
-
-	if (usr->dmpGlobals) {
+	if (usr->dmpGlobals != 0) {
+		clock_t now = clock();
+		printFmt(out, esc, "%?sExecution:\nCompile: %.3F millis\nExecute: %.3F millis\n", prefix,
+			(usr->rtStart - usr->ccStart) / CLOCKS_PER_MILLI,
+			(now - usr->rtStart) / CLOCKS_PER_MILLI
+		);
 		printFmt(out, esc, "%?sGlobals:\n", prefix);
 		printGlobals(rt, out, esc, usr->dmpGlobals > 1);
 	}
@@ -889,93 +884,114 @@ static void textPostProfile(userContext usr) {
 		dbg->extra = usr;
 	}
 
-	if (usr->exec & dmpProfile) {
-		size_t covFunc = 0, nFunc = dbg->functions.cnt;
-		size_t covStmt = 0, nStmt = dbg->statements.cnt;
-		dbgn fun = (dbgn) dbg->functions.ptr;
+	if (usr->dmpProfile > 0) {
+		int dmpCoverage = usr->dmpProfile > 0;
+		int dmpFunctions = usr->dmpProfile > 1;
+		int dmpStatements = usr->dmpProfile > 2;
+		int dmpNotExecuted = usr->dmpProfile > 2;
 
-		printFmt(out, esc, "%?sProfile: functions\n", prefix);
-		for (int i = 0; i < nFunc; ++i, fun++) {
-			symn sym = fun->func;
-			if (fun->hits == 0) {
-				continue;
+		if (dmpCoverage != 0) {
+			size_t covFunc = 0, nFunc = dbg->functions.cnt;
+			dbgn ptrFunc = (dbgn) dbg->functions.ptr;
+			for (int i = 0; i < nFunc; ++i, ptrFunc++) {
+				covFunc += ptrFunc->hits > 0;
 			}
-			covFunc += 1;
-			if (sym == NULL) {
-				sym = rtLookup(rt, fun->start, 1);
+
+			size_t covStmt = 0, nStmt = dbg->statements.cnt;
+			dbgn ptrStmt = (dbgn) dbg->statements.ptr;
+			for (int i = 0; i < nStmt; ++i, ptrStmt++) {
+				covStmt += ptrStmt->hits > 0;
 			}
-			printFmt(out, esc,
-				"%?s:%?u:[.%06x, .%06x): %?T, hits(%D/%D), time(%D%?+D / %.3F%?+.3F ms)\n", fun->file,
-				fun->line, fun->start, fun->end, sym, (int64_t) fun->hits, (int64_t) fun->exec,
-				(int64_t) fun->total, (int64_t) -(fun->total - fun->self),
-				fun->total / CLOCKS_PER_MILLI, -(fun->total - fun->self) / CLOCKS_PER_MILLI
+
+			printFmt(out, esc, "%?sProfile: coverage\nfunctions: %.2f%% (%d/%d)\nstatements: %.2f%% (%d/%d)\n", prefix,
+				covFunc * 100. / (nFunc ? nFunc : 1), covFunc, nFunc, covStmt * 100. / (nStmt ? nStmt : 1), covStmt, nStmt
 			);
 		}
 
-		if (all) {
-			printFmt(out, esc, "%?sProfile: statements\n", prefix);
-		}
-		fun = (dbgn) rt->dbg->statements.ptr;
-		for (int i = 0; i < nStmt; ++i, fun++) {
-			size_t symOffs = 0;
-			symn sym = fun->func;
-			if (fun->hits == 0) {
-				continue;
-			}
-			covStmt += 1;
-			if (sym == NULL) {
-				sym = rtLookup(rt, fun->start, 1);
-			}
-			if (sym != NULL) {
-				symOffs = fun->start - sym->offs;
-			}
-			if (all) {
+		if (dmpFunctions != 0) {
+			printFmt(out, esc, "%?sProfile: functions\n", prefix);
+			size_t cnt = dbg->functions.cnt;
+			dbgn ptr = (dbgn) dbg->functions.ptr;
+			for (int i = 0; i < cnt; ++i, ptr++) {
+				if (ptr->hits == 0) {
+					continue;
+				}
+				symn sym = ptr->func;
+				if (sym == NULL) {
+					sym = rtLookup(rt, ptr->start, 1);
+				}
 				printFmt(out, esc,
-					"%?s:%?u:[.%06x, .%06x): <%?.T+%d> hits(%D/%D), time(%D%?+D / %.3F%?+.3F ms)\n", fun->file,
-					fun->line, fun->start, fun->end, sym, symOffs, (int64_t) fun->hits, (int64_t) fun->exec,
-					(int64_t) fun->total, (int64_t) -(fun->total - fun->self),
-					fun->total / CLOCKS_PER_MILLI, -(fun->total - fun->self) / CLOCKS_PER_MILLI
+					"%?s:%?u:[.%06x, .%06x): %?T, hits(%D/%D), time(%D%?+D / %.3F%?+.3F ms)\n", ptr->file,
+					ptr->line, ptr->start, ptr->end, sym, (int64_t) ptr->hits, (int64_t) ptr->exec,
+					(int64_t) ptr->total, (int64_t) -(ptr->total - ptr->self),
+					ptr->total / CLOCKS_PER_MILLI, -(ptr->total - ptr->self) / CLOCKS_PER_MILLI
 				);
 			}
 		}
 
-		printFmt(out, esc, "%?sProfile: coverage\nfunctions: %.2f%% (%d/%d)\nstatements: %.2f%% (%d/%d)\n", prefix,
-			covFunc * 100. / (nFunc ? nFunc : 1), covFunc, nFunc, covStmt * 100. / (nStmt ? nStmt : 1), covStmt, nStmt
-		);
-
-		if (all) {
-			printFmt(out, esc, "%?sProfile: functions not executed\n", prefix);
-			fun = (dbgn) dbg->functions.ptr;
-			for (int i = 0; i < nFunc; ++i, fun++) {
-				symn sym = fun->func;
-				if (fun->hits != 0) {
-					continue;
-				}
-				if (sym == NULL) {
-					sym = rtLookup(rt, fun->start, 1);
-				}
-				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): %?T\n", fun->file, fun->line, fun->start, fun->end, sym);
-			}
-			printFmt(out, esc, "%?sProfile: statements not executed\n", prefix);
-			fun = (dbgn) rt->dbg->statements.ptr;
-			for (int i = 0; i < nStmt; ++i, fun++) {
+		if (dmpStatements != 0) {
+			size_t cnt = dbg->statements.cnt;
+			dbgn ptr = (dbgn) dbg->statements.ptr;
+			printFmt(out, esc, "%?sProfile: statements\n", prefix);
+			for (int i = 0; i < cnt; ++i, ptr++) {
 				size_t symOffs = 0;
-				symn sym = fun->func;
-				if (fun->hits != 0) {
+				symn sym = ptr->func;
+				if (ptr->hits == 0) {
 					continue;
 				}
 				if (sym == NULL) {
-					sym = rtLookup(rt, fun->start, 1);
+					sym = rtLookup(rt, ptr->start, 1);
 				}
 				if (sym != NULL) {
-					symOffs = fun->start - sym->offs;
+					symOffs = ptr->start - sym->offs;
 				}
-				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): <%?.T+%d>\n", fun->file, fun->line, fun->start, fun->end, sym, symOffs);
+				if (dmpStatements) {
+					printFmt(out, esc,
+						"%?s:%?u:[.%06x, .%06x): <%?.T+%d> hits(%D/%D), time(%D%?+D / %.3F%?+.3F ms)\n", ptr->file,
+						ptr->line, ptr->start, ptr->end, sym, symOffs, (int64_t) ptr->hits, (int64_t) ptr->exec,
+						(int64_t) ptr->total, (int64_t) -(ptr->total - ptr->self),
+						ptr->total / CLOCKS_PER_MILLI, -(ptr->total - ptr->self) / CLOCKS_PER_MILLI
+					);
+				}
+			}
+		}
+
+		if (dmpNotExecuted != 0) {
+			printFmt(out, esc, "%?sProfile: functions not executed\n", prefix);
+			size_t nFunc = dbg->functions.cnt;
+			dbgn ptrFunc = (dbgn) dbg->functions.ptr;
+			for (int i = 0; i < nFunc; ++i, ptrFunc++) {
+				symn sym = ptrFunc->func;
+				if (ptrFunc->hits != 0) {
+					continue;
+				}
+				if (sym == NULL) {
+					sym = rtLookup(rt, ptrFunc->start, 1);
+				}
+				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): %?T\n", ptrFunc->file, ptrFunc->line, ptrFunc->start, ptrFunc->end, sym);
+			}
+
+			printFmt(out, esc, "%?sProfile: statements not executed\n", prefix);
+			size_t nStmt = dbg->statements.cnt;
+			dbgn ptrStmt = (dbgn) dbg->statements.ptr;
+			for (int i = 0; i < nStmt; ++i, ptrStmt++) {
+				size_t symOffs = 0;
+				symn sym = ptrStmt->func;
+				if (ptrStmt->hits != 0) {
+					continue;
+				}
+				if (sym == NULL) {
+					sym = rtLookup(rt, ptrStmt->start, 1);
+				}
+				if (sym != NULL) {
+					symOffs = ptrStmt->start - sym->offs;
+				}
+				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): <%?.T+%d>\n", ptrStmt->file, ptrStmt->line, ptrStmt->start, ptrStmt->end, sym, symOffs);
 			}
 		}
 	}
 
-	if (usr->exec & dmpMemory) {
+	if (usr->dmpMemory) {
 		// show allocated memory chunks.
 		printFmt(out, esc, "%?sMemory layout:\n", prefix);
 		//textDumpMem(dbg, rt->_mem, rt->_end - (unsigned char*)rt, "all");
@@ -1532,6 +1548,9 @@ int main(int argc, char *argv[]) {
 		.dmpAsmStmt = 0,
 
 		.dmpAst = prSkip,
+		.dmpGlobals = 0,
+		.dmpProfile = 0,
+		.dmpMemory = 0,
 
 		.exec = (runMode) 0,
 
@@ -1659,8 +1678,16 @@ int main(int argc, char *argv[]) {
 						break;
 
 					// dump stats
+					case 'P':
+						extra.dmpProfile = 3;
+						arg2 += 2;
+						break;
 					case 'p':
-						extra.exec |= dmpProfile;
+						extra.dmpProfile = 2;
+						arg2 += 2;
+						break;
+					case 'c':
+						extra.dmpProfile = 1;
 						arg2 += 2;
 						break;
 					case 'G':
@@ -1672,7 +1699,7 @@ int main(int argc, char *argv[]) {
 						arg2 += 2;
 						break;
 					case 'h':
-						extra.exec |= dmpMemory;
+						extra.dmpMemory = 1;
 						arg2 += 2;
 						break;
 				}
@@ -1689,7 +1716,7 @@ int main(int argc, char *argv[]) {
 				return -1;
 			}
 			run_code = profile;
-			extra.exec |= dmpProfile;
+			extra.dmpProfile = 2;
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
@@ -1703,6 +1730,14 @@ int main(int argc, char *argv[]) {
 						break;
 
 					// dump stats
+					case 'P':
+						extra.dmpProfile = 3;
+						arg2 += 2;
+						break;
+					case 'p':
+						extra.dmpProfile = 2;
+						arg2 += 2;
+						break;
 					case 'G':
 						extra.dmpGlobals = 2;
 						arg2 += 2;
@@ -1712,11 +1747,7 @@ int main(int argc, char *argv[]) {
 						arg2 += 2;
 						break;
 					case 'h':
-						extra.exec |= dmpMemory;
-						arg2 += 2;
-						break;
-					case 'a':
-						extra.exec |= dmpAllData;
+						extra.dmpMemory = 1;
 						arg2 += 2;
 						break;
 				}
