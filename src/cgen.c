@@ -330,45 +330,37 @@ static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 	}
 	logif(varCast != get && get != CAST_vid, "%?s:%?u: %T(%K->%K)", variable->file, variable->line, variable, varCast, get);
 
-	if (varInit == NULL && variable->type->init != NULL) {
+	if (varInit == NULL) {
 		varInit = variable->type->init;
-		warn(cc->rt, 6, variable->file, variable->line, WARN_USING_DEFAULT_INITIALIZER, variable, varInit);
-	}
-
-	if (varInit != NULL) {
-		dbgCgen("%?s:%?u: %.T := %t", variable->file, variable->line, variable, varInit);
-		if (varCast == CAST_val && (varInit->kind == OPER_com || varInit->kind == INIT_set)) {
-			// TODO: implement code generation for object literals
-			error(rt, variable->file, variable->line, ERR_EXPR_TOO_COMPLEX);
-			return CAST_any;
+		if (varInit != NULL) {
+			warn(cc->rt, 6, variable->file, variable->line, WARN_USING_DEFAULT_INITIALIZER, variable, varInit);
 		}
-		if (varCast != genAst(cc, varInit, varCast)) {
-			traceAst(varInit);
-			return CAST_any;
+		else if (isConst(variable)) {
+			error(rt, variable->file, variable->line, ERR_UNINITIALIZED_CONSTANT, variable);
 		}
-		if (varOffset != stkOffset(rt, 0)) {
-			traceAst(varInit);
-			return CAST_any;
+		else if (isInvokable(variable)) {
+			error(rt, variable->file, variable->line, ERR_UNIMPLEMENTED_FUNCTION, variable);
 		}
-	}
-	else if (isConst(variable)) {
-		error(rt, variable->file, variable->line, ERR_UNINITIALIZED_CONSTANT, variable);
-	}
-	else if (isInvokable(variable)) {
-		error(rt, variable->file, variable->line, ERR_UNIMPLEMENTED_FUNCTION, variable);
-	}
-	else {
-		warn(rt, 1, variable->file, variable->line, ERR_UNINITIALIZED_VARIABLE, variable);
+		else {
+			warn(rt, 1, variable->file, variable->line, ERR_UNINITIALIZED_VARIABLE, variable);
+		}
 	}
 
 	if (variable->offs == 0) {
 		// local variable => on stack
-		if (varInit == NULL) {
+		if (varInit == NULL || varInit->kind == STMT_beg) {
 			if (!emitInt(rt, opc_spc, padOffset(variable->size, vm_size))) {
 				return CAST_any;
 			}
+			variable->offs = stkOffset(rt, 0);
 		}
-		variable->offs = stkOffset(rt, 0);
+		if (varInit != NULL) {
+			if (varCast != genAst(cc, varInit, varCast)) {
+				traceAst(varInit);
+				return CAST_any;
+			}
+			variable->offs = stkOffset(rt, 0);
+		}
 		debug("%?s:%?u: %.T is local(@%06x)", variable->file, variable->line, variable, variable->offs);
 		if (varOffset != variable->offs) {
 			trace(ERR_INTERNAL_ERROR);
@@ -378,11 +370,17 @@ static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 	else if (!isInline(variable)) {
 		// global variable or function argument
 		if (varInit != NULL) {
-			if (!emitVarOffs(rt, variable)) {
+			if (varCast != genAst(cc, varInit, varCast)) {
+				traceAst(varInit);
 				return CAST_any;
 			}
-			if (!emitInt(rt, opc_sti, variable->size)) {
-				return CAST_any;
+			if (varInit->kind != STMT_beg) {
+				if (!emitVarOffs(rt, variable)) {
+					return CAST_any;
+				}
+				if (!emitInt(rt, opc_sti, variable->size)) {
+					return CAST_any;
+				}
 			}
 		}
 		if (isStatic(variable)) {

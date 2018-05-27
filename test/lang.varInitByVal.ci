@@ -36,7 +36,7 @@ struct Record {
 	// compiler: ERROR if assigned after initialized.
 	static const int32 globalConstant = globalCounter += 1;
 
-	// static method (can not be overridden)
+	// static method
 	static int staticMethod(int x, int y) {
 		return x + y;
 	}
@@ -56,11 +56,11 @@ struct Record {
 	// compiler: ERROR if not initialized/overridden when instantiated.
 	int abstractMethod(int x, int y);
 
-	// virtual method (may be overridden when instantiated)
+	// virtual method (use to delegate)
 	int methodReference(int x, int y) = staticMethod;
 
-	// forward method implementation
-	int forwardMethod(int x, int y) {
+	// static forward method implementation
+	static int forwardMethod(int x, int y) {
 		return x * y;
 	}
 }

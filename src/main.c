@@ -172,6 +172,7 @@ struct userContextRec {
 	int dmpApiUsed;     // dump usages
 	int dmpAsmStmt;     // print source code statements
 	int hideOffsets;    // remove offsets from dumps
+	int dmpTimes;      // show compilation and runtime
 	char *compileSteps; // dump compilation steps
 
 	int dmpGlobals;     // dump global variables after execution
@@ -271,6 +272,11 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 
 		case OPER_dot:		// '.'
 		case OPER_idx:		// '[]'
+			printFmt(out, esc, " value=\"%?t\">\n", ast);
+			dumpAstXML(out, esc, ast->op.lhso, mode & ~prSymInit, indent + 1, "left");
+			dumpAstXML(out, esc, ast->op.rhso, mode & ~prSymInit, indent + 1, "right");
+			printFmt(out, esc, "%I</%s>\n", indent, text);
+			break;
 
 		case OPER_pls:		// '+'
 		case OPER_mns:		// '-'
@@ -860,12 +866,15 @@ static void textPostProfile(userContext usr) {
 	rtContext rt = usr->rt;
 	const char *prefix = usr->compileSteps ? usr->compileSteps : "\n---------- ";
 
-	if (usr->dmpGlobals != 0) {
+	if (usr->dmpTimes != 0) {
 		clock_t now = clock();
-		printFmt(out, esc, "%?sExecution:\nCompile: %.3F millis\nExecute: %.3F millis\n", prefix,
+		printFmt(out, esc, "%?sTime:\nCompile: %.3F millis\nExecute: %.3F millis\n", prefix,
 			(usr->rtStart - usr->ccStart) / CLOCKS_PER_MILLI,
 			(now - usr->rtStart) / CLOCKS_PER_MILLI
 		);
+	}
+
+	if (usr->dmpGlobals != 0) {
 		printFmt(out, esc, "%?sGlobals:\n", prefix);
 		printGlobals(rt, out, esc, usr->dmpGlobals > 1);
 	}
@@ -1137,14 +1146,13 @@ static void dumpApiText(userContext extra, symn sym) {
 
 	// print usages of symbol
 	if (extra->dmpApiUsed) {
-		astn usage;
 		int extUsages = 0;
 		if (!dumpExtraData) {
 			printFmt(out, esc, " {\n");
 			dumpExtraData = 1;
 		}
 		printFmt(out, esc, "%I.references:\n", indent);
-		for (usage = sym->use; usage; usage = usage->ref.used) {
+		for (astn usage = sym->use; usage; usage = usage->ref.used) {
 			if (usage->file && usage->line) {
 				int referenced = usage != sym->tag;
 				printFmt(out, esc, "%I%s:%u: %s as `%t`\n", indent + 1, usage->file, usage->line, referenced ? "referenced" : "defined", usage);
@@ -1542,6 +1550,7 @@ int main(int argc, char *argv[]) {
 		.dmpApiPrms = 0,
 		.dmpApiUsed = 0,
 		.hideOffsets = 0,
+		.dmpTimes = 0,
 		.compileSteps = NULL,
 
 		.dmpAsm = prSkip,
@@ -2075,6 +2084,10 @@ int main(int argc, char *argv[]) {
 				else if (strBegins(arg2 + 1, "offsets")) {
 					extra.hideOffsets = !on;
 					arg2 += 8;
+				}
+				else if (strBegins(arg2 + 1, "times")) {
+					extra.dmpTimes = on;
+					arg2 += 6;
 				}
 				else if (strBegins(arg2 + 1, "steps")) {
 					extra.compileSteps = on ? "\n---------- " : NULL;

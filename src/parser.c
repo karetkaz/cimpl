@@ -221,6 +221,70 @@ static astn expandAssignment(ccContext cc, astn root) {
 	}
 	return root;
 }
+/** Expand literal initializer to initializer statement
+ * complex c = {re: 5, im: 6}; => { c.re = 5; c.im = 6; };
+ * TODO: int ar[3] = {1, 2, 3}; => { ar[0] = 1; ar[1] = 2; ar[2] = 3; };
+ * TODO: int ar[string] = {a: 3, "b": 1}; => { ar["a"] = 3; ar["b"] = 1; };
+ */
+static astn expandInitializer(ccContext cc, symn variable, astn initializer) {
+	dieif(initializer->kind != STMT_beg, ERR_INTERNAL_ERROR);
+	astn varNode = lnkNode(cc, variable);
+	varNode->file = variable->file;
+	varNode->line = variable->line;
+	astn keys = NULL, tail = NULL;
+
+	// translate initialization to assignment
+	for (astn init = initializer->stmt.stmt; init != NULL; init = init->next) {
+		if (init->kind != INIT_set) {
+			error(cc->rt, init->file, init->line, ERR_INITIALIZER_EXPECTED, init);
+			continue;
+		}
+		// key: value => variable.key = value;
+		astn key = init->op.lhso;
+		init->op.lhso = opNode(cc, OPER_dot, varNode, key);
+		init->op.lhso->file = key->file;
+		init->op.lhso->line = key->line;
+
+		typeCheck(cc, NULL, init, 1);
+		init->type = cc->type_vid;
+
+		key->next = keys;
+		keys = key;
+
+		tail = init;
+	}
+
+	// add default initializer of uninitialized fields
+	for (symn field = variable->type->fields; field; field = field->next) {
+		int initialized = 0;
+		for (astn key = keys; key; key = key->next) {
+			if (field->use == key) {
+				initialized = 1;
+				break;
+			}
+		}
+		if (!initialized && field->init != NULL) {
+			astn init = newNode(cc, INIT_set);
+			init->op.lhso = opNode(cc, OPER_dot, varNode, lnkNode(cc, field));
+			init->op.rhso = field->init;
+			if (tail == NULL) {
+				initializer->stmt.stmt = init;
+			}
+			else {
+				tail->next = init;
+			}
+			typeCheck(cc, NULL, init, 1);
+			init->type = cc->type_vid;
+			tail = init;
+			initialized = 1;
+		}
+		if (!initialized) {
+			error(cc->rt, variable->file, variable->line, ERR_UNINITIALIZED_MEMBER, variable, field);
+		}
+	}
+	return initializer;
+}
+/// expand expression or declaration to statement 
 static astn expand2Statement(ccContext cc, astn node, int block) {
 	astn result = newNode(cc, block ? STMT_beg : STMT_end);
 	if (result != NULL) {
@@ -656,15 +720,15 @@ static astn initializer(ccContext cc) {
  * @param mode
  * @return expression tree.
  */
-static astn parameters(ccContext cc, symn resType, astn fun) {
+static astn parameters(ccContext cc, symn returns, astn function) {
 	astn tok = NULL;
 
-	if (resType != NULL) {
-		symn res = install(cc, ".result", KIND_var | castOf(resType), 0, resType, resType->init);
+	if (returns != NULL) {
+		symn res = install(cc, ".result", KIND_var | castOf(returns), 0, returns, returns->init);
 		tok = lnkNode(cc, res);
-		if (fun != NULL) {
-			res->file = fun->file;
-			res->line = fun->line;
+		if (function != NULL) {
+			res->file = function->file;
+			res->line = function->line;
 		}
 	}
 
@@ -843,8 +907,15 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 
 	def = declare(cc, (attr & MASK_attr) | KIND_var | cast, tag, type, params);
 	if (skipTok(cc, ASGN_set, 0)) {
-		def->init = initializer(cc);
-		initCheck(cc, def, 1);
+		astn init = initializer(cc);
+		if (init->kind == STMT_beg) {
+			expandInitializer(cc, def, init);
+			init->type = type;
+		}
+		else {
+			typeCheck(cc, NULL, init, 1);
+		}
+		def->init = init;
 	}
 
 	return tag;
@@ -901,6 +972,13 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		return NULL;
 	}
 
+	// if the tag is a typename it should return an instance of this type
+	symn tagType = cc->deft[tag->ref.hash];
+	tagType = lookup(cc, tagType, tag, NULL, 0);
+	if (tagType && !isTypename(tagType)) {
+		tagType = NULL;
+	}
+
 	enter(cc, NULL);
 
 	if (skipTok(cc, LEFT_par, 0)) {
@@ -910,15 +988,39 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 
 	skipTok(cc, ASGN_set, 1);
 	init = initializer(cc);
-	if (init != NULL) {
-		type = typeCheck(cc, NULL, init, 1);
-		init->type = type;
-		if (type == NULL) {
-			// raise the error if lookup failed
-			error(cc->rt, init->file, init->line, ERR_INVALID_TYPE, init);
-		}
-	}
 	params = leave(cc, KIND_fun, vm_size, 0, NULL);
+	if (init == NULL) {
+		traceAst(init);
+		return NULL;
+	}
+	if (init->kind == STMT_beg) {
+		type = tagType;
+		if (type != NULL && params != NULL) {
+			// force result to be a variable
+			params->type = type;
+			params->size = type->size;
+			params->init = type->init;
+			params->kind = ATTR_paral | KIND_var;
+		}
+		expandInitializer(cc, params, init);
+		for (astn n = init->stmt.stmt; n != NULL; n = n->next) {
+			if (!typeCheck(cc, NULL, n, 0)) {
+				error(cc->rt, n->file, n->line, ERR_INVALID_TYPE, n);
+			}
+			n->type = cc->type_vid;
+		}
+		fatal("%?s:%?u: "ERR_UNIMPLEMENTED_FEATURE": %-t", init->file, init->line, init);
+	} else {
+		type = typeCheck(cc, NULL, init, 1);
+	}
+	init->type = type;
+	if (type == NULL) {
+		// raise the error if lookup failed
+		error(cc->rt, init->file, init->line, ERR_INVALID_TYPE, init);
+	}
+	if (type != NULL && tagType != NULL && type != tagType && params != NULL) {
+		error(cc->rt, init->file, init->line, WARN_FUNCTION_TYPENAME, tagType, type);
+	}
 	if (params != NULL) {
 		size_t offs = 0;
 		if (type != NULL) {
@@ -926,7 +1028,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 			params->type = type;
 			params->size = type->size;
 			params->init = type->init;
-			params->kind = castOf(type) | KIND_def;// | KIND_var;
+			params->kind = (params->kind & ~MASK_cast) | castOf(type);
 		}
 		for (symn param = params; param != NULL; param = param->next) {
 			int usages = 0;
@@ -936,7 +1038,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 				}
 			}
 
-			if (isInline(param) || usages < 2) {
+			if (!(param->kind & ATTR_paral) && (isInline(param) || usages < 2)) {
 				// mark parameter as inline if it was used once or none
 				param->kind = (param->kind & ~MASK_kind) | KIND_def;
 			}

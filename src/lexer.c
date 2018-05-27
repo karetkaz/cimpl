@@ -327,7 +327,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 					chr = readChr(cc);
 				}
 				if (chr == -1) {
-					warn(cc->rt, 9, cc->file, line, WARN_MO_NEW_LINE_AT_END);
+					warn(cc->rt, 9, cc->file, line, WARN_NO_NEW_LINE_AT_END);
 				}
 				else if (cc->line != line + 1) {
 					warn(cc->rt, 9, cc->file, line, WARN_COMMENT_MULTI_LINE, ptr);

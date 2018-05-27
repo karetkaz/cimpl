@@ -257,8 +257,9 @@
 
 	function execute(mode) {
 		let args = [
-			'-X' + (params.X || '-stdin'),      // do not use standard input
-			'-mem' + (params.mem || '2M')       // allocate 2Mb of memory by default
+			'-std/stdlib.ci',                               // standard library is in root
+			'-mem' + (params.mem || '2M'),                  // allocate 2Mb of memory by default,
+			'-X' + (params.X || '-stdin+times'),            // do not use standard input, print times
 		];
 
 		if (params.dump != null) {
@@ -276,13 +277,16 @@
 		}
 
 		for (let arg of mode.split(' ')) {
+			if (arg === '') {
+				continue;
+			}
 			args.push(arg);
 		}
 
 		terminal.clear();
 
 		// save the content of the editor to memory file
-		var inputFile = params.input || 'empty.ci';
+		var inputFile = params.input || 'new.ci';
 		FS.writeFile(inputFile, editor.getValue());
 
 		// compile the code

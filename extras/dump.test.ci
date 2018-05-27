@@ -2766,30 +2766,21 @@ arrFixedNoInit: int64[7] {
 .file: 'test/lang.varInitArray.ci'
 .line: 8
 }
-arrSliceNoInit: int64[] {
-.kind: variable(arr)
-.base: `int64[]`
-.size: 8
-.name: 'arrSliceNoInit'
-.file: 'test/lang.varInitArray.ci'
-.line: 9
-}
 arrArrayNoInit: int64[*] {
 .kind: variable(ref)
 .base: `int64[*]`
 .size: 4
 .name: 'arrArrayNoInit'
 .file: 'test/lang.varInitArray.ci'
-.line: 10
+.line: 9
 }
-arrSliceInitNull: int64[] {
+arrSliceNoInit: int64[] {
 .kind: variable(arr)
 .base: `int64[]`
 .size: 8
-.name: 'arrSliceInitNull'
+.name: 'arrSliceNoInit'
 .file: 'test/lang.varInitArray.ci'
-.line: 18
-.value: null
+.line: 10
 }
 arrArrayInitNull: int64[*] {
 .kind: variable(ref)
@@ -2797,17 +2788,17 @@ arrArrayInitNull: int64[*] {
 .size: 4
 .name: 'arrArrayInitNull'
 .file: 'test/lang.varInitArray.ci'
-.line: 19
+.line: 18
 .value: null
 }
-arrSliceInitFixed: int64[] {
+arrSliceInitNull: int64[] {
 .kind: variable(arr)
 .base: `int64[]`
 .size: 8
-.name: 'arrSliceInitFixed'
+.name: 'arrSliceInitNull'
 .file: 'test/lang.varInitArray.ci'
-.line: 22
-.value: arrFixedNoInit
+.line: 19
+.value: null
 }
 arrArrayInitFixed: int64[*] {
 .kind: variable(ref)
@@ -2815,23 +2806,32 @@ arrArrayInitFixed: int64[*] {
 .size: 4
 .name: 'arrArrayInitFixed'
 .file: 'test/lang.varInitArray.ci'
-.line: 23
+.line: 22
 .value: arrFixedNoInit
 }
-arrSliceInitSlice: int64[] {
+arrSliceInitFixed: int64[] {
 .kind: variable(arr)
 .base: `int64[]`
 .size: 8
-.name: 'arrSliceInitSlice'
+.name: 'arrSliceInitFixed'
 .file: 'test/lang.varInitArray.ci'
-.line: 26
-.value: arrSliceInitFixed
+.line: 23
+.value: arrFixedNoInit
 }
 arrArrayInitSlice: int64[*] {
 .kind: variable(ref)
 .base: `int64[*]`
 .size: 4
 .name: 'arrArrayInitSlice'
+.file: 'test/lang.varInitArray.ci'
+.line: 26
+.value: arrSliceInitFixed
+}
+arrSliceInitSlice: int64[] {
+.kind: variable(arr)
+.base: `int64[]`
+.size: 8
+.name: 'arrSliceInitSlice'
 .file: 'test/lang.varInitArray.ci'
 .line: 27
 .value: arrSliceInitFixed
@@ -2842,8 +2842,16 @@ arrArrayInitPtr: int64[*] {
 .size: 4
 .name: 'arrArrayInitPtr'
 .file: 'test/lang.varInitArray.ci'
-.line: 31
+.line: 30
 .value: arrArrayInitFixed
+}
+strFixed: char[7] {
+.kind: variable(val)
+.base: `char[7]`
+.size: 7
+.name: 'strFixed'
+.file: 'test/lang.varInitArray.ci'
+.line: 40
 }
 strArray: char[*] {
 .kind: variable(ref)
@@ -2851,7 +2859,7 @@ strArray: char[*] {
 .size: 4
 .name: 'strArray'
 .file: 'test/lang.varInitArray.ci'
-.line: 40
+.line: 45
 .value: "string"
 }
 strSlice: char[] {
@@ -2860,16 +2868,8 @@ strSlice: char[] {
 .size: 8
 .name: 'strSlice'
 .file: 'test/lang.varInitArray.ci'
-.line: 44
+.line: 49
 .value: "string"
-}
-strFixed: char[7] {
-.kind: variable(val)
-.base: `char[7]`
-.size: 7
-.name: 'strFixed'
-.file: 'test/lang.varInitArray.ci'
-.line: 48
 }
 lenSlice(values: int64[]): int32: function {
 .kind: static const function
@@ -2889,27 +2889,27 @@ lenSlice(values: int64[]): int32: function {
 	<lenSlice+?>:    set.x1 sp(4)
 	<lenSlice+?>:    ret
 }
-nthSlice(idx: int32, values: int64[]): int64: function {
+nthFixed(idx: int32, values: int64[7]): int64: function {
 .kind: static const function
 .base: `function`
 .size: 12
-.name: 'nthSlice'
+.name: 'nthFixed'
 .file: 'test/lang.varInitArray.ci'
 .line: 63
 .param .result: int64 (size: 8 -> variable(i64))
 .param idx: int32 (size: 4 -> variable(i32))
-.param values: int64[] (size: 8 -> variable(arr))
+.param values: int64[7] (size: 4 -> variable(ref))
 .value: {
 	return .result := values[idx];
 }
 .instructions: (12 bytes)
 	test/lang.varInitArray.ci:63: (12 bytes): return .result := values[idx];
-	<nthSlice+?>:    dup.x1 sp(1)
-	<nthSlice+?>:    dup.x1 sp(4)
-	<nthSlice+?>:    mad.u32 8
-	<nthSlice+?>:    load.i64
-	<nthSlice+?>:    set.x2 sp(6)
-	<nthSlice+?>:    ret
+	<nthFixed+?>:    dup.x1 sp(1)
+	<nthFixed+?>:    dup.x1 sp(3)
+	<nthFixed+?>:    mad.u32 8
+	<nthFixed+?>:    load.i64
+	<nthFixed+?>:    set.x2 sp(5)
+	<nthFixed+?>:    ret
 }
 nthArray(idx: int32, values: int64[*]): int64: function {
 .kind: static const function
@@ -2933,27 +2933,27 @@ nthArray(idx: int32, values: int64[*]): int64: function {
 	<nthArray+?>:    set.x2 sp(5)
 	<nthArray+?>:    ret
 }
-nthFixed(idx: int32, values: int64[7]): int64: function {
+nthSlice(idx: int32, values: int64[]): int64: function {
 .kind: static const function
 .base: `function`
 .size: 12
-.name: 'nthFixed'
+.name: 'nthSlice'
 .file: 'test/lang.varInitArray.ci'
 .line: 65
 .param .result: int64 (size: 8 -> variable(i64))
 .param idx: int32 (size: 4 -> variable(i32))
-.param values: int64[7] (size: 4 -> variable(ref))
+.param values: int64[] (size: 8 -> variable(arr))
 .value: {
 	return .result := values[idx];
 }
 .instructions: (12 bytes)
 	test/lang.varInitArray.ci:65: (12 bytes): return .result := values[idx];
-	<nthFixed+?>:    dup.x1 sp(1)
-	<nthFixed+?>:    dup.x1 sp(3)
-	<nthFixed+?>:    mad.u32 8
-	<nthFixed+?>:    load.i64
-	<nthFixed+?>:    set.x2 sp(5)
-	<nthFixed+?>:    ret
+	<nthSlice+?>:    dup.x1 sp(1)
+	<nthSlice+?>:    dup.x1 sp(4)
+	<nthSlice+?>:    mad.u32 8
+	<nthSlice+?>:    load.i64
+	<nthSlice+?>:    set.x2 sp(6)
+	<nthSlice+?>:    ret
 }
 value: int64 {
 .kind: static variable(i64)
@@ -5053,7 +5053,7 @@ noError(ptr: pointer): void: function {
 .size: 1
 .name: 'noError'
 .file: 'test/stdc.nfcTryExec.ci'
-.line: 10
+.line: 11
 .param .result: void (size: 0 -> variable(void))
 .param ptr: pointer (size: 4 -> variable(ref))
 .value: {
@@ -5067,7 +5067,7 @@ stackOverflow(ptr: pointer): void: function {
 .size: 24
 .name: 'stackOverflow'
 .file: 'test/stdc.nfcTryExec.ci'
-.line: 13
+.line: 14
 .param .result: void (size: 0 -> variable(void))
 .param ptr: pointer (size: 4 -> variable(ref))
 .value: {
@@ -5075,9 +5075,9 @@ stackOverflow(ptr: pointer): void: function {
 	stackOverflow(ptr);
 }
 .instructions: (24 bytes)
-	test/stdc.nfcTryExec.ci:14: (4 bytes): data: uint8[1024]
+	test/stdc.nfcTryExec.ci:15: (4 bytes): data: uint8[1024]
 	<stackOverflow+?>:    inc.sp(+1024)
-	test/stdc.nfcTryExec.ci:15: (15 bytes): stackOverflow(ptr);
+	test/stdc.nfcTryExec.ci:16: (15 bytes): stackOverflow(ptr);
 	<stackOverflow+?>:    load.sp(+1028)
 	<stackOverflow+?>:    load.i32
 	<stackOverflow+?>:    load.ref .?????? ;stackOverflow(ptr: pointer): void
@@ -5092,14 +5092,14 @@ divisionByZero(args: pointer): void: function {
 .size: 12
 .name: 'divisionByZero'
 .file: 'test/stdc.nfcTryExec.ci'
-.line: 18
+.line: 19
 .param .result: void (size: 0 -> variable(void))
 .param args: pointer (size: 4 -> variable(ref))
 .value: {
 	value: int32 := 3 / 0;
 }
 .instructions: (12 bytes)
-	test/stdc.nfcTryExec.ci:19: (7 bytes): value: int32 := 3 / 0
+	test/stdc.nfcTryExec.ci:20: (7 bytes): value: int32 := 3 / 0
 	<divisionByZero+?>:    load.c32 3
 	<divisionByZero+?>:    load.z32
 	<divisionByZero+?>:    div.i32
@@ -5112,7 +5112,7 @@ abortExecution(args: pointer): void: function {
 .size: 64
 .name: 'abortExecution'
 .file: 'test/stdc.nfcTryExec.ci'
-.line: 22
+.line: 23
 .param .result: void (size: 0 -> variable(void))
 .param args: pointer (size: 4 -> variable(ref))
 .value: {
@@ -5121,27 +5121,29 @@ abortExecution(args: pointer): void: function {
 		expected: int32;
 		returned: int32;
 	};
-	details: NotEquals;
-	details.message := ("assertion failed");
-	details.expected := 97;
-	details.returned := 77;
+	details: NotEquals := {
+		details.message := ("assertion failed");
+		details.expected := 97;
+		details.returned := 77;
+	}
+;
 	raise(raise.abort, raise.noTrace, "fatal error", details);
 }
 .instructions: (64 bytes)
-	test/stdc.nfcTryExec.ci:28: (4 bytes): details: NotEquals
+	test/stdc.nfcTryExec.ci:29: (25 bytes): details: NotEquals := {...}
 	<abortExecution+?>:    inc.sp(+16)
-	test/stdc.nfcTryExec.ci:29: (7 bytes): details.message := ("assertion failed");
+	test/stdc.nfcTryExec.ci:30: (7 bytes): details.message := ("assertion failed")
 	<abortExecution+?>:    load.ref .?????? ;"assertion failed"
 	<abortExecution+?>:    set.x1 sp(1)
-	test/stdc.nfcTryExec.ci:30: (7 bytes): details.expected := 97;
+	test/stdc.nfcTryExec.ci:31: (7 bytes): details.expected := 97
 	<abortExecution+?>:    load.c32 97
 	<abortExecution+?>:    set.x1 sp(2)
-	test/stdc.nfcTryExec.ci:31: (7 bytes): details.returned := 77;
+	test/stdc.nfcTryExec.ci:32: (7 bytes): details.returned := 77
 	<abortExecution+?>:    load.c32 77
 	<abortExecution+?>:    set.x1 sp(3)
-	test/stdc.nfcTryExec.ci:32: (34 bytes): raise(raise.abort, raise.noTrace, "fatal error", details);
+	test/stdc.nfcTryExec.ci:34: (34 bytes): raise(raise.abort, raise.noTrace, "fatal error", details);
 	<abortExecution+?>:    load.ref .?????? ;"test/stdc.nfcTryExec.ci"
-	<abortExecution+?>:    load.c32 32
+	<abortExecution+?>:    load.c32 34
 	<abortExecution+?>:    load.c32 -1
 	<abortExecution+?>:    load.z32
 	<abortExecution+?>:    load.ref .?????? ;"fatal error"
@@ -5157,7 +5159,7 @@ invalidMemoryAccess(args: pointer): void: function {
 .size: 13
 .name: 'invalidMemoryAccess'
 .file: 'test/stdc.nfcTryExec.ci'
-.line: 35
+.line: 37
 .param .result: void (size: 0 -> variable(void))
 .param args: pointer (size: 4 -> variable(ref))
 .value: {
@@ -5165,9 +5167,9 @@ invalidMemoryAccess(args: pointer): void: function {
 	i32Val: int32 := i32Ref;
 }
 .instructions: (13 bytes)
-	test/stdc.nfcTryExec.ci:36: (5 bytes): i32Ref: int32 := null
+	test/stdc.nfcTryExec.ci:38: (5 bytes): i32Ref: int32 := null
 	<invalidMemoryAccess+?>:    load.ref .?????? ;null
-	test/stdc.nfcTryExec.ci:37: (3 bytes): i32Val: int32 := i32Ref
+	test/stdc.nfcTryExec.ci:39: (3 bytes): i32Val: int32 := i32Ref
 	<invalidMemoryAccess+?>:    dup.x1 sp(0)
 	<invalidMemoryAccess+?>:    load.i32
 	<invalidMemoryAccess+?>:    inc.sp(-8)
@@ -5179,14 +5181,14 @@ invalidInstruction(args: pointer): void: function {
 .size: 2
 .name: 'invalidInstruction'
 .file: 'test/stdc.nfcTryExec.ci'
-.line: 40
+.line: 42
 .param .result: void (size: 0 -> variable(void))
 .param args: pointer (size: 4 -> variable(ref))
 .value: {
 	emit(load.z32, ret);
 }
 .instructions: (2 bytes)
-	test/stdc.nfcTryExec.ci:41: (2 bytes): emit(load.z32, ret);
+	test/stdc.nfcTryExec.ci:43: (2 bytes): emit(load.z32, ret);
 	<invalidInstruction+?>:    load.z32
 	<invalidInstruction+?>:    ret
 }
@@ -5196,7 +5198,7 @@ tryExecErr0: int32 {
 .size: 4
 .name: 'tryExecErr0'
 .file: 'test/stdc.nfcTryExec.ci'
-.line: 44
+.line: 46
 .value: tryExec(null, noError)
 }
 tryExecErr1: int32 {
@@ -5205,7 +5207,7 @@ tryExecErr1: int32 {
 .size: 4
 .name: 'tryExecErr1'
 .file: 'test/stdc.nfcTryExec.ci'
-.line: 45
+.line: 47
 .value: tryExec(null, null)
 }
 tryExecErr2: int32 {
@@ -5214,7 +5216,7 @@ tryExecErr2: int32 {
 .size: 4
 .name: 'tryExecErr2'
 .file: 'test/stdc.nfcTryExec.ci'
-.line: 46
+.line: 48
 .value: tryExec(null, stackOverflow)
 }
 tryExecErr3: int32 {
@@ -5223,7 +5225,7 @@ tryExecErr3: int32 {
 .size: 4
 .name: 'tryExecErr3'
 .file: 'test/stdc.nfcTryExec.ci'
-.line: 47
+.line: 49
 .value: tryExec(null, divisionByZero)
 }
 tryExecErr4: int32 {
@@ -5232,7 +5234,7 @@ tryExecErr4: int32 {
 .size: 4
 .name: 'tryExecErr4'
 .file: 'test/stdc.nfcTryExec.ci'
-.line: 48
+.line: 50
 .value: tryExec(null, invalidInstruction)
 }
 tryExecErr5: int32 {
@@ -5241,7 +5243,7 @@ tryExecErr5: int32 {
 .size: 4
 .name: 'tryExecErr5'
 .file: 'test/stdc.nfcTryExec.ci'
-.line: 49
+.line: 51
 .value: tryExec(null, invalidMemoryAccess)
 }
 tryExecErr6: int32 {
@@ -5250,7 +5252,7 @@ tryExecErr6: int32 {
 .size: 4
 .name: 'tryExecErr6'
 .file: 'test/stdc.nfcTryExec.ci'
-.line: 50
+.line: 52
 .value: tryExec(null, abortExecution)
 }
 rgbF32: typename {
@@ -8044,7 +8046,7 @@ forIdx: int32 {
 .main: function {
 .kind: static function
 .base: `function`
-.size: 6877
+.size: 6880
 .name: '.main'
 .print: '.main'
 .field typename: typename (size: 136 -> static const typename(ref))
@@ -8168,22 +8170,22 @@ forIdx: int32 {
 .field boilC: Celsius (size: 8 -> variable(val))
 .field boilF: Fahrenheit (size: 8 -> variable(val))
 .field arrFixedNoInit: int64[7] (size: 56 -> variable(val))
-.field arrSliceNoInit: int64[] (size: 8 -> variable(arr))
 .field arrArrayNoInit: int64[*] (size: 4 -> variable(ref))
-.field arrSliceInitNull: int64[] (size: 8 -> variable(arr))
+.field arrSliceNoInit: int64[] (size: 8 -> variable(arr))
 .field arrArrayInitNull: int64[*] (size: 4 -> variable(ref))
-.field arrSliceInitFixed: int64[] (size: 8 -> variable(arr))
+.field arrSliceInitNull: int64[] (size: 8 -> variable(arr))
 .field arrArrayInitFixed: int64[*] (size: 4 -> variable(ref))
-.field arrSliceInitSlice: int64[] (size: 8 -> variable(arr))
+.field arrSliceInitFixed: int64[] (size: 8 -> variable(arr))
 .field arrArrayInitSlice: int64[*] (size: 4 -> variable(ref))
+.field arrSliceInitSlice: int64[] (size: 8 -> variable(arr))
 .field arrArrayInitPtr: int64[*] (size: 4 -> variable(ref))
+.field strFixed: char[7] (size: 7 -> variable(val))
 .field strArray: char[*] (size: 4 -> variable(ref))
 .field strSlice: char[] (size: 8 -> variable(arr))
-.field strFixed: char[7] (size: 7 -> variable(val))
 .field lenSlice: function (size: 5 -> static const function)
-.field nthSlice: function (size: 12 -> static const function)
-.field nthArray: function (size: 12 -> static const function)
 .field nthFixed: function (size: 12 -> static const function)
+.field nthArray: function (size: 12 -> static const function)
+.field nthSlice: function (size: 12 -> static const function)
 .field value: int64 (size: 8 -> static variable(i64))
 .field valueRef: int64 (size: 4 -> variable(ref))
 .field valuePtr: pointer (size: 4 -> variable(ref))
@@ -8656,7 +8658,7 @@ forIdx: int32 {
 .field ptrCne: bool (size: 1 -> variable(bool))
 .field t: int32 (size: 4 -> variable(i32))
 .field forIdx: int32 (size: 4 -> variable(i32))
-.field .main: function (size: 6877 -> static function)
+.field .main: function (size: 6880 -> static function)
 .value: {
 	{
 		static if (typename(raise) == function) {
@@ -8758,28 +8760,28 @@ forIdx: int32 {
 			integer: typename := int32;
 		}
 		arrFixedNoInit: int64[7];
-		arrSliceNoInit: int64[];
 		arrArrayNoInit: int64[*];
+		arrSliceNoInit: int64[];
 		for (i: int32 := 0; i < arrFixedNoInit.length; i := i + 1) {
 			arrFixedNoInit[i] := (42 + i);
 		}
-		arrSliceInitNull: int64[] := null;
 		arrArrayInitNull: int64[*] := null;
-		arrSliceInitFixed: int64[] := arrFixedNoInit;
+		arrSliceInitNull: int64[] := null;
 		arrArrayInitFixed: int64[*] := arrFixedNoInit;
-		arrSliceInitSlice: int64[] := arrSliceInitFixed;
+		arrSliceInitFixed: int64[] := arrFixedNoInit;
 		arrArrayInitSlice: int64[*] := arrSliceInitFixed;
+		arrSliceInitSlice: int64[] := arrSliceInitFixed;
 		arrArrayInitPtr: int64[*] := arrArrayInitFixed;
+		strFixed: char[7];
+		pointer.copy(strFixed, pointer("string"), 7);
+		debug("string as variant", strFixed);
+		debug("string to variant", variant(strFixed));
 		strArray: char[*] := "string";
 		debug("string as variant", strArray);
-		debug("string as variant", variant(strArray));
+		debug("string to variant", variant(strArray));
 		strSlice: char[] := "string";
 		debug("string as variant", strSlice);
-		debug("string as variant", variant(strSlice));
-		strFixed: char[7];
-		pointer.copy(strFixed, strArray, 7);
-		debug("string as variant", strFixed);
-		debug("string as variant", variant(strFixed));
+		debug("string to variant", variant(strSlice));
 		assert(arrSliceNoInit.length >= (0));
 		assert(arrSliceInitNull.length == (0));
 		assert(arrFixedNoInit[0] == (42));
@@ -8787,7 +8789,7 @@ forIdx: int32 {
 			return .result := (values.length);
 		}
 ;
-		static const nthSlice(idx: int32, values: int64[]): int64 := {
+		static const nthFixed(idx: int32, values: int64[7]): int64 := {
 			return .result := values[idx];
 		}
 ;
@@ -8795,7 +8797,7 @@ forIdx: int32 {
 			return .result := values[idx];
 		}
 ;
-		static const nthFixed(idx: int32, values: int64[7]): int64 := {
+		static const nthSlice(idx: int32, values: int64[]): int64 := {
 			return .result := values[idx];
 		}
 ;
@@ -8812,14 +8814,14 @@ forIdx: int32 {
 			assert(expected == arrFixedNoInit[i]);
 			assert(expected == arrArrayInitFixed[i]);
 			assert(expected == arrSliceInitFixed[i]);
-			assert(expected == nthSlice(i, arrFixedNoInit));
-			assert(expected == nthSlice(i, arrSliceInitFixed));
-			assert(expected == nthArray(i, arrFixedNoInit));
-			assert(expected == nthArray(i, arrArrayInitFixed));
-			assert(expected == nthArray(i, arrSliceInitFixed));
 			assert(expected == nthFixed(i, arrFixedNoInit));
 			assert(expected == nthFixed(i, arrArrayInitFixed));
 			assert(expected == nthFixed(i, arrSliceInitFixed));
+			assert(expected == nthArray(i, arrFixedNoInit));
+			assert(expected == nthArray(i, arrArrayInitFixed));
+			assert(expected == nthArray(i, arrSliceInitFixed));
+			assert(expected == nthSlice(i, arrFixedNoInit));
+			assert(expected == nthSlice(i, arrSliceInitFixed));
 			assert(expected == arrSliceInitSlice[i]);
 		}
 		static if (typename(int64) == null) {
@@ -9091,7 +9093,6 @@ forIdx: int32 {
 		pointer.fill(pointer(val1), 0, 8);
 		debug("val1", val1);
 		debug("val2", val2);
-		assert(5 == 5, "5 != 5");
 		static const noError(ptr: pointer): void := {
 		}
 ;
@@ -9110,10 +9111,12 @@ forIdx: int32 {
 				expected: int32;
 				returned: int32;
 			};
-			details: NotEquals;
-			details.message := ("assertion failed");
-			details.expected := 97;
-			details.returned := 77;
+			details: NotEquals := {
+				details.message := ("assertion failed");
+				details.expected := 97;
+				details.returned := 77;
+			}
+;
 			raise(raise.abort, raise.noTrace, "fatal error", details);
 		}
 ;
@@ -9505,7 +9508,7 @@ forIdx: int32 {
 		}
 	}
 }
-.instructions: (6877 bytes)
+.instructions: (6880 bytes)
 	test/lang.varInitByRef.ci:7: (13 bytes): static value: int64 := 42
 	<.main+?>:    load.c64 42
 	<.main+?>:    store.m64 .?????? ;value
@@ -9874,10 +9877,10 @@ forIdx: int32 {
 	<.main+?>:    add.f64
 	test/lang.varInitArray.ci:8: (4 bytes): arrFixedNoInit: int64[7]
 	<.main+?>:    inc.sp(+56)
-	test/lang.varInitArray.ci:9: (4 bytes): arrSliceNoInit: int64[]
-	<.main+?>:    inc.sp(+8)
-	test/lang.varInitArray.ci:10: (4 bytes): arrArrayNoInit: int64[*]
+	test/lang.varInitArray.ci:9: (4 bytes): arrArrayNoInit: int64[*]
 	<.main+?>:    inc.sp(+4)
+	test/lang.varInitArray.ci:10: (4 bytes): arrSliceNoInit: int64[]
+	<.main+?>:    inc.sp(+8)
 	test/lang.varInitArray.ci:13: (45 bytes): for (i: int32 := 0; i < arrFixedNoInit.length; i := i + 1)
 	<.main+?>:    load.z32
 	<.main+?>:    jmp <.main+?>
@@ -9898,55 +9901,51 @@ forIdx: int32 {
 	<.main+?>:    clt.i32
 	<.main+?>:    jnz <.main+?>
 	<.main+?>:    inc.sp(-4)
-	test/lang.varInitArray.ci:18: (6 bytes): arrSliceInitNull: int64[] := null
+	test/lang.varInitArray.ci:18: (5 bytes): arrArrayInitNull: int64[*] := null
+	<.main+?>:    load.ref .?????? ;null
+	test/lang.varInitArray.ci:19: (6 bytes): arrSliceInitNull: int64[] := null
 	<.main+?>:    load.z32
 	<.main+?>:    load.ref .?????? ;null
-	test/lang.varInitArray.ci:19: (5 bytes): arrArrayInitNull: int64[*] := null
-	<.main+?>:    load.ref .?????? ;null
-	test/lang.varInitArray.ci:22: (9 bytes): arrSliceInitFixed: int64[] := arrFixedNoInit
+	test/lang.varInitArray.ci:22: (4 bytes): arrArrayInitFixed: int64[*] := arrFixedNoInit
+	<.main+?>:    load.sp(+24)
+	test/lang.varInitArray.ci:23: (9 bytes): arrSliceInitFixed: int64[] := arrFixedNoInit
 	<.main+?>:    load.c32 7
-	<.main+?>:    load.sp(+28)
-	test/lang.varInitArray.ci:23: (4 bytes): arrArrayInitFixed: int64[*] := arrFixedNoInit
 	<.main+?>:    load.sp(+32)
-	test/lang.varInitArray.ci:26: (2 bytes): arrSliceInitSlice: int64[] := arrSliceInitFixed
+	test/lang.varInitArray.ci:26: (2 bytes): arrArrayInitSlice: int64[*] := arrSliceInitFixed
+	<.main+?>:    dup.x1 sp(0)
+	test/lang.varInitArray.ci:27: (2 bytes): arrSliceInitSlice: int64[] := arrSliceInitFixed
 	<.main+?>:    dup.x2 sp(1)
-	test/lang.varInitArray.ci:27: (2 bytes): arrArrayInitSlice: int64[*] := arrSliceInitFixed
-	<.main+?>:    dup.x1 sp(3)
-	test/lang.varInitArray.ci:31: (2 bytes): arrArrayInitPtr: int64[*] := arrArrayInitFixed
-	<.main+?>:    dup.x1 sp(3)
-	test/lang.varInitArray.ci:40: (5 bytes): strArray: char[*] := "string"
+	test/lang.varInitArray.ci:30: (2 bytes): arrArrayInitPtr: int64[*] := arrArrayInitFixed
+	<.main+?>:    dup.x1 sp(5)
+	test/lang.varInitArray.ci:40: (4 bytes): strFixed: char[7]
+	<.main+?>:    inc.sp(+8)
+	test/lang.varInitArray.ci:41: (22 bytes): pointer.copy(strFixed, pointer("string"), 7);
+	<.main+?>:    load.sp(+0)
 	<.main+?>:    load.ref .?????? ;"string"
-	test/lang.varInitArray.ci:41: (32 bytes): debug("string as variant", strArray);
-	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
-	<.main+?>:    load.c32 41
-	<.main+?>:    load.c32 3
-	<.main+?>:    load.z32
-	<.main+?>:    load.ref .?????? ;"string as variant"
-	<.main+?>:    load.ref .??????
-	<.main+?>:    dup.x1 sp(6)
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/lang.varInitArray.ci:42: (32 bytes): debug("string as variant", variant(strArray));
+	<.main+?>:    load.c32 7
+	<.main+?>:    nfc(9) ;pointer.copy(dst: pointer, src: pointer, size: int32): pointer
+	<.main+?>:    inc.sp(-4)
+	test/lang.varInitArray.ci:42: (34 bytes): debug("string as variant", strFixed);
 	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
 	<.main+?>:    load.c32 42
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.z32
 	<.main+?>:    load.ref .?????? ;"string as variant"
 	<.main+?>:    load.ref .??????
-	<.main+?>:    dup.x1 sp(6)
+	<.main+?>:    load.sp(+24)
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/lang.varInitArray.ci:44: (10 bytes): strSlice: char[] := "string"
-	<.main+?>:    load.c32 6
-	<.main+?>:    load.ref .?????? ;"string"
-	test/lang.varInitArray.ci:45: (32 bytes): debug("string as variant", strSlice);
+	test/lang.varInitArray.ci:43: (34 bytes): debug("string to variant", variant(strFixed));
 	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
-	<.main+?>:    load.c32 45
+	<.main+?>:    load.c32 43
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.z32
-	<.main+?>:    load.ref .?????? ;"string as variant"
+	<.main+?>:    load.ref .?????? ;"string to variant"
 	<.main+?>:    load.ref .??????
-	<.main+?>:    dup.x1 sp(6)
+	<.main+?>:    load.sp(+24)
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/lang.varInitArray.ci:46: (32 bytes): debug("string as variant", variant(strSlice));
+	test/lang.varInitArray.ci:45: (5 bytes): strArray: char[*] := "string"
+	<.main+?>:    load.ref .?????? ;"string"
+	test/lang.varInitArray.ci:46: (32 bytes): debug("string as variant", strArray);
 	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
 	<.main+?>:    load.c32 46
 	<.main+?>:    load.c32 3
@@ -9955,34 +9954,38 @@ forIdx: int32 {
 	<.main+?>:    load.ref .??????
 	<.main+?>:    dup.x1 sp(6)
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/lang.varInitArray.ci:48: (4 bytes): strFixed: char[7]
-	<.main+?>:    inc.sp(+8)
-	test/lang.varInitArray.ci:49: (19 bytes): pointer.copy(strFixed, strArray, 7);
-	<.main+?>:    load.sp(+0)
-	<.main+?>:    dup.x1 sp(5)
-	<.main+?>:    load.c32 7
-	<.main+?>:    nfc(9) ;pointer.copy(dst: pointer, src: pointer, size: int32): pointer
-	<.main+?>:    inc.sp(-4)
-	test/lang.varInitArray.ci:50: (34 bytes): debug("string as variant", strFixed);
+	test/lang.varInitArray.ci:47: (32 bytes): debug("string to variant", variant(strArray));
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 47
+	<.main+?>:    load.c32 3
+	<.main+?>:    load.z32
+	<.main+?>:    load.ref .?????? ;"string to variant"
+	<.main+?>:    load.ref .??????
+	<.main+?>:    dup.x1 sp(6)
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:49: (10 bytes): strSlice: char[] := "string"
+	<.main+?>:    load.c32 6
+	<.main+?>:    load.ref .?????? ;"string"
+	test/lang.varInitArray.ci:50: (32 bytes): debug("string as variant", strSlice);
 	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
 	<.main+?>:    load.c32 50
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.z32
 	<.main+?>:    load.ref .?????? ;"string as variant"
 	<.main+?>:    load.ref .??????
-	<.main+?>:    load.sp(+24)
+	<.main+?>:    dup.x1 sp(6)
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/lang.varInitArray.ci:51: (34 bytes): debug("string as variant", variant(strFixed));
+	test/lang.varInitArray.ci:51: (32 bytes): debug("string to variant", variant(strSlice));
 	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
 	<.main+?>:    load.c32 51
 	<.main+?>:    load.c32 3
 	<.main+?>:    load.z32
-	<.main+?>:    load.ref .?????? ;"string as variant"
+	<.main+?>:    load.ref .?????? ;"string to variant"
 	<.main+?>:    load.ref .??????
-	<.main+?>:    load.sp(+24)
+	<.main+?>:    dup.x1 sp(6)
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang.varInitArray.ci:57: (51 bytes): assert(arrSliceNoInit.length >= (0));
-	<.main+?>:    dup.x1 sp(17)
+	<.main+?>:    dup.x1 sp(16)
 	<.main+?>:    load.z32
 	<.main+?>:    clt.u32
 	<.main+?>:    jnz <.main+?>
@@ -9996,7 +9999,7 @@ forIdx: int32 {
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang.varInitArray.ci:58: (51 bytes): assert(arrSliceInitNull.length == (0));
-	<.main+?>:    dup.x1 sp(14)
+	<.main+?>:    dup.x1 sp(13)
 	<.main+?>:    load.z32
 	<.main+?>:    ceq.i32
 	<.main+?>:    jz <.main+?>
@@ -10038,7 +10041,7 @@ forIdx: int32 {
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang.varInitArray.ci:68: (55 bytes): assert(arrSliceInitFixed.length == (arrFixedNoInit.length));
-	<.main+?>:    dup.x1 sp(11)
+	<.main+?>:    dup.x1 sp(10)
 	<.main+?>:    load.c32 7
 	<.main+?>:    ceq.i32
 	<.main+?>:    jz <.main+?>
@@ -10052,7 +10055,7 @@ forIdx: int32 {
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang.varInitArray.ci:69: (55 bytes): assert(arrSliceInitSlice.length == (arrFixedNoInit.length));
-	<.main+?>:    dup.x1 sp(8)
+	<.main+?>:    dup.x1 sp(7)
 	<.main+?>:    load.c32 7
 	<.main+?>:    ceq.i32
 	<.main+?>:    jz <.main+?>
@@ -10085,7 +10088,7 @@ forIdx: int32 {
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang.varInitArray.ci:72: (62 bytes): assert(lenSlice(arrSliceInitNull) == 0);
 	<.main+?>:    load.z32
-	<.main+?>:    dup.x2 sp(14)
+	<.main+?>:    dup.x2 sp(13)
 	<.main+?>:    load.ref .?????? ;lenSlice(values: int64[]): int32
 	<.main+?>:    call
 	<.main+?>:    inc.sp(-8)
@@ -10122,7 +10125,7 @@ forIdx: int32 {
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang.varInitArray.ci:74: (66 bytes): assert(lenSlice(arrSliceInitFixed) == arrFixedNoInit.length);
 	<.main+?>:    load.z32
-	<.main+?>:    dup.x2 sp(11)
+	<.main+?>:    dup.x2 sp(10)
 	<.main+?>:    load.ref .?????? ;lenSlice(values: int64[]): int32
 	<.main+?>:    call
 	<.main+?>:    inc.sp(-8)
@@ -10140,7 +10143,7 @@ forIdx: int32 {
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang.varInitArray.ci:75: (66 bytes): assert(lenSlice(arrSliceInitSlice) == arrFixedNoInit.length);
 	<.main+?>:    load.z32
-	<.main+?>:    dup.x2 sp(8)
+	<.main+?>:    dup.x2 sp(7)
 	<.main+?>:    load.ref .?????? ;lenSlice(values: int64[]): int32
 	<.main+?>:    call
 	<.main+?>:    inc.sp(-8)
@@ -10183,7 +10186,7 @@ forIdx: int32 {
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang.varInitArray.ci:80: (59 bytes): assert(expected == arrArrayInitFixed[i]);
 	<.main+?>:    dup.x2 sp(0)
-	<.main+?>:    dup.x1 sp(14)
+	<.main+?>:    dup.x1 sp(16)
 	<.main+?>:    dup.x1 sp(5)
 	<.main+?>:    mad.u32 8
 	<.main+?>:    load.i64
@@ -10200,7 +10203,7 @@ forIdx: int32 {
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang.varInitArray.ci:81: (59 bytes): assert(expected == arrSliceInitFixed[i]);
 	<.main+?>:    dup.x2 sp(0)
-	<.main+?>:    dup.x1 sp(15)
+	<.main+?>:    dup.x1 sp(14)
 	<.main+?>:    dup.x1 sp(5)
 	<.main+?>:    mad.u32 8
 	<.main+?>:    load.i64
@@ -10215,15 +10218,14 @@ forIdx: int32 {
 	<.main+?>:    load.ref .?????? ;pointer
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/lang.varInitArray.ci:83: (72 bytes): assert(expected == nthSlice(i, arrFixedNoInit));
+	test/lang.varInitArray.ci:83: (67 bytes): assert(expected == nthFixed(i, arrFixedNoInit));
 	<.main+?>:    dup.x2 sp(0)
 	<.main+?>:    load.z64
 	<.main+?>:    dup.x1 sp(6)
-	<.main+?>:    load.c32 7
-	<.main+?>:    load.sp(+108)
-	<.main+?>:    load.ref .?????? ;nthSlice(idx: int32, values: int64[]): int64
+	<.main+?>:    load.sp(+104)
+	<.main+?>:    load.ref .?????? ;nthFixed(idx: int32, values: int64[7]): int64
 	<.main+?>:    call
-	<.main+?>:    inc.sp(-12)
+	<.main+?>:    inc.sp(-8)
 	<.main+?>:    ceq.i64
 	<.main+?>:    jz <.main+?>
 	<.main+?>:    jmp <.main+?>
@@ -10235,14 +10237,33 @@ forIdx: int32 {
 	<.main+?>:    load.ref .?????? ;pointer
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/lang.varInitArray.ci:85: (65 bytes): assert(expected == nthSlice(i, arrSliceInitFixed));
+	test/lang.varInitArray.ci:84: (65 bytes): assert(expected == nthFixed(i, arrArrayInitFixed));
 	<.main+?>:    dup.x2 sp(0)
 	<.main+?>:    load.z64
 	<.main+?>:    dup.x1 sp(6)
-	<.main+?>:    dup.x2 sp(18)
-	<.main+?>:    load.ref .?????? ;nthSlice(idx: int32, values: int64[]): int64
+	<.main+?>:    dup.x1 sp(19)
+	<.main+?>:    load.ref .?????? ;nthFixed(idx: int32, values: int64[7]): int64
 	<.main+?>:    call
-	<.main+?>:    inc.sp(-12)
+	<.main+?>:    inc.sp(-8)
+	<.main+?>:    ceq.i64
+	<.main+?>:    jz <.main+?>
+	<.main+?>:    jmp <.main+?>
+	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
+	<.main+?>:    load.c32 84
+	<.main+?>:    load.c32 -1
+	<.main+?>:    load.c32 128
+	<.main+?>:    load.ref .?????? ;"assertion failed!"
+	<.main+?>:    load.ref .?????? ;pointer
+	<.main+?>:    load.ref .?????? ;null
+	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	test/lang.varInitArray.ci:85: (65 bytes): assert(expected == nthFixed(i, arrSliceInitFixed));
+	<.main+?>:    dup.x2 sp(0)
+	<.main+?>:    load.z64
+	<.main+?>:    dup.x1 sp(6)
+	<.main+?>:    dup.x1 sp(17)
+	<.main+?>:    load.ref .?????? ;nthFixed(idx: int32, values: int64[7]): int64
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-8)
 	<.main+?>:    ceq.i64
 	<.main+?>:    jz <.main+?>
 	<.main+?>:    jmp <.main+?>
@@ -10277,7 +10298,7 @@ forIdx: int32 {
 	<.main+?>:    dup.x2 sp(0)
 	<.main+?>:    load.z64
 	<.main+?>:    dup.x1 sp(6)
-	<.main+?>:    dup.x1 sp(17)
+	<.main+?>:    dup.x1 sp(19)
 	<.main+?>:    load.ref .?????? ;nthArray(idx: int32, values: int64[*]): int64
 	<.main+?>:    call
 	<.main+?>:    inc.sp(-8)
@@ -10296,7 +10317,7 @@ forIdx: int32 {
 	<.main+?>:    dup.x2 sp(0)
 	<.main+?>:    load.z64
 	<.main+?>:    dup.x1 sp(6)
-	<.main+?>:    dup.x1 sp(18)
+	<.main+?>:    dup.x1 sp(17)
 	<.main+?>:    load.ref .?????? ;nthArray(idx: int32, values: int64[*]): int64
 	<.main+?>:    call
 	<.main+?>:    inc.sp(-8)
@@ -10311,14 +10332,15 @@ forIdx: int32 {
 	<.main+?>:    load.ref .?????? ;pointer
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/lang.varInitArray.ci:91: (67 bytes): assert(expected == nthFixed(i, arrFixedNoInit));
+	test/lang.varInitArray.ci:91: (72 bytes): assert(expected == nthSlice(i, arrFixedNoInit));
 	<.main+?>:    dup.x2 sp(0)
 	<.main+?>:    load.z64
 	<.main+?>:    dup.x1 sp(6)
-	<.main+?>:    load.sp(+104)
-	<.main+?>:    load.ref .?????? ;nthFixed(idx: int32, values: int64[7]): int64
+	<.main+?>:    load.c32 7
+	<.main+?>:    load.sp(+108)
+	<.main+?>:    load.ref .?????? ;nthSlice(idx: int32, values: int64[]): int64
 	<.main+?>:    call
-	<.main+?>:    inc.sp(-8)
+	<.main+?>:    inc.sp(-12)
 	<.main+?>:    ceq.i64
 	<.main+?>:    jz <.main+?>
 	<.main+?>:    jmp <.main+?>
@@ -10330,33 +10352,14 @@ forIdx: int32 {
 	<.main+?>:    load.ref .?????? ;pointer
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/lang.varInitArray.ci:92: (65 bytes): assert(expected == nthFixed(i, arrArrayInitFixed));
+	test/lang.varInitArray.ci:93: (65 bytes): assert(expected == nthSlice(i, arrSliceInitFixed));
 	<.main+?>:    dup.x2 sp(0)
 	<.main+?>:    load.z64
 	<.main+?>:    dup.x1 sp(6)
-	<.main+?>:    dup.x1 sp(17)
-	<.main+?>:    load.ref .?????? ;nthFixed(idx: int32, values: int64[7]): int64
+	<.main+?>:    dup.x2 sp(17)
+	<.main+?>:    load.ref .?????? ;nthSlice(idx: int32, values: int64[]): int64
 	<.main+?>:    call
-	<.main+?>:    inc.sp(-8)
-	<.main+?>:    ceq.i64
-	<.main+?>:    jz <.main+?>
-	<.main+?>:    jmp <.main+?>
-	<.main+?>:    load.ref .?????? ;"test/lang.varInitArray.ci"
-	<.main+?>:    load.c32 92
-	<.main+?>:    load.c32 -1
-	<.main+?>:    load.c32 128
-	<.main+?>:    load.ref .?????? ;"assertion failed!"
-	<.main+?>:    load.ref .?????? ;pointer
-	<.main+?>:    load.ref .?????? ;null
-	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/lang.varInitArray.ci:93: (65 bytes): assert(expected == nthFixed(i, arrSliceInitFixed));
-	<.main+?>:    dup.x2 sp(0)
-	<.main+?>:    load.z64
-	<.main+?>:    dup.x1 sp(6)
-	<.main+?>:    dup.x1 sp(18)
-	<.main+?>:    load.ref .?????? ;nthFixed(idx: int32, values: int64[7]): int64
-	<.main+?>:    call
-	<.main+?>:    inc.sp(-8)
+	<.main+?>:    inc.sp(-12)
 	<.main+?>:    ceq.i64
 	<.main+?>:    jz <.main+?>
 	<.main+?>:    jmp <.main+?>
@@ -10370,7 +10373,7 @@ forIdx: int32 {
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang.varInitArray.ci:95: (59 bytes): assert(expected == arrSliceInitSlice[i]);
 	<.main+?>:    dup.x2 sp(0)
-	<.main+?>:    dup.x1 sp(12)
+	<.main+?>:    dup.x1 sp(11)
 	<.main+?>:    dup.x1 sp(5)
 	<.main+?>:    mad.u32 8
 	<.main+?>:    load.i64
@@ -11059,31 +11062,31 @@ forIdx: int32 {
 	<.main+?>:    load.ref .?????? ;int64
 	<.main+?>:    load.sp(+24)
 	<.main+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/stdc.nfcTryExec.ci:44: (14 bytes): tryExecErr0: int32 := tryExec(null, noError)
+	test/stdc.nfcTryExec.ci:46: (14 bytes): tryExecErr0: int32 := tryExec(null, noError)
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    load.ref .?????? ;noError(ptr: pointer): void
 	<.main+?>:    nfc(6) ;tryExec(args: pointer, action(args: pointer): void): int32
-	test/stdc.nfcTryExec.ci:45: (14 bytes): tryExecErr1: int32 := tryExec(null, null)
+	test/stdc.nfcTryExec.ci:47: (14 bytes): tryExecErr1: int32 := tryExec(null, null)
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    nfc(6) ;tryExec(args: pointer, action(args: pointer): void): int32
-	test/stdc.nfcTryExec.ci:46: (14 bytes): tryExecErr2: int32 := tryExec(null, stackOverflow)
+	test/stdc.nfcTryExec.ci:48: (14 bytes): tryExecErr2: int32 := tryExec(null, stackOverflow)
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    load.ref .?????? ;stackOverflow(ptr: pointer): void
 	<.main+?>:    nfc(6) ;tryExec(args: pointer, action(args: pointer): void): int32
-	test/stdc.nfcTryExec.ci:47: (14 bytes): tryExecErr3: int32 := tryExec(null, divisionByZero)
+	test/stdc.nfcTryExec.ci:49: (14 bytes): tryExecErr3: int32 := tryExec(null, divisionByZero)
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    load.ref .?????? ;divisionByZero(args: pointer): void
 	<.main+?>:    nfc(6) ;tryExec(args: pointer, action(args: pointer): void): int32
-	test/stdc.nfcTryExec.ci:48: (14 bytes): tryExecErr4: int32 := tryExec(null, invalidInstruction)
+	test/stdc.nfcTryExec.ci:50: (14 bytes): tryExecErr4: int32 := tryExec(null, invalidInstruction)
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    load.ref .?????? ;invalidInstruction(args: pointer): void
 	<.main+?>:    nfc(6) ;tryExec(args: pointer, action(args: pointer): void): int32
-	test/stdc.nfcTryExec.ci:49: (14 bytes): tryExecErr5: int32 := tryExec(null, invalidMemoryAccess)
+	test/stdc.nfcTryExec.ci:51: (14 bytes): tryExecErr5: int32 := tryExec(null, invalidMemoryAccess)
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    load.ref .?????? ;invalidMemoryAccess(args: pointer): void
 	<.main+?>:    nfc(6) ;tryExec(args: pointer, action(args: pointer): void): int32
-	test/stdc.nfcTryExec.ci:50: (14 bytes): tryExecErr6: int32 := tryExec(null, abortExecution)
+	test/stdc.nfcTryExec.ci:52: (14 bytes): tryExecErr6: int32 := tryExec(null, abortExecution)
 	<.main+?>:    load.ref .?????? ;null
 	<.main+?>:    load.ref .?????? ;abortExecution(args: pointer): void
 	<.main+?>:    nfc(6) ;tryExec(args: pointer, action(args: pointer): void): int32
@@ -12426,7 +12429,7 @@ test/lang.inlineEmit.ci:17: emitFloatAsInt1: int32(1140457472)
 test/lang.inlineEmit.ci:18: emitFloatAsInt2: int64(1140457472)
 test/lang.inlineEmit.ci:19: emitFloatAsInt3: int32(0)
 test/lang.inlineEmit.ci:20: emitFloatAsInt4: int64(4647503709213818880)
-test/lang.inlineEmit.ci:23: emitSlice: char[]("string")
+test/lang.inlineEmit.ci:23: emitSlice: char[]([3] {'s', 't', 'r'})
 test/lang.inlineMacros.ci:13: ma: int32(3)
 test/lang.inlineMacros.ci:14: mb: int32(6)
 test/lang.inlineMacros.ci:15: mc: int32(9)
@@ -12461,32 +12464,32 @@ test/test.inlineOverload.ci:12: overload4: float32(4.000000)
 test/test.inlineOverload.ci:13: overload5: float32(5.000000)
 test/test.inlineOverload.ci:15: Celsius: typename(<Celsius>)
 test/test.inlineOverload.ci:16: Fahrenheit: typename(<Fahrenheit>)
-test/test.inlineOverload.ci:28: boilC: Celsius(<@0b3e20>{
+test/test.inlineOverload.ci:28: boilC: Celsius({
 	degrees: float64(100.000000)
 })
-test/test.inlineOverload.ci:29: boilF: Fahrenheit(<@0b3e18>{
+test/test.inlineOverload.ci:29: boilF: Fahrenheit({
 	degrees: float64(212.000000)
 })
-test/lang.varInitArray.ci:8: arrFixedNoInit: int64[7](<@0b3de0>[7] {42, 43, 44, 45, 46, 47, 48})
-test/lang.varInitArray.ci:9: arrSliceNoInit: int64[](FIXME: BadRef, ...})
-test/lang.varInitArray.ci:10: arrArrayNoInit: int64[*](BadRef@000114)
-test/lang.varInitArray.ci:18: arrSliceInitNull: int64[](null)
-test/lang.varInitArray.ci:19: arrArrayInitNull: int64[*](null)
-test/lang.varInitArray.ci:22: arrSliceInitFixed: int64[](<@0b3de0>[7] {42, 43, 44, 45, 46, 47, 48})
-test/lang.varInitArray.ci:23: arrArrayInitFixed: int64[*](<@0b3de0>[0] {})
-test/lang.varInitArray.ci:26: arrSliceInitSlice: int64[](<@0b3de0>[7] {42, 43, 44, 45, 46, 47, 48})
-test/lang.varInitArray.ci:27: arrArrayInitSlice: int64[*](<@0b3de0>[0] {})
-test/lang.varInitArray.ci:31: arrArrayInitPtr: int64[*](<@0b3de0>[0] {})
-test/lang.varInitArray.ci:40: strArray: char[*]("string")
-test/lang.varInitArray.ci:44: strSlice: char[]("string")
-test/lang.varInitArray.ci:48: strFixed: char[7]("string")
-test/lang.varInitArray.ci:62: lenSlice: function(<lenSlice @029d50>)
-test/lang.varInitArray.ci:63: nthSlice: function(<nthSlice @029d58>)
-test/lang.varInitArray.ci:64: nthArray: function(<nthArray @029d68>)
-test/lang.varInitArray.ci:65: nthFixed: function(<nthFixed @029d78>)
+test/lang.varInitArray.ci:8: arrFixedNoInit: int64[7]([7] {42, 43, 44, 45, 46, 47, 48})
+test/lang.varInitArray.ci:9: arrArrayNoInit: int64[*](BadRef)
+test/lang.varInitArray.ci:10: arrSliceNoInit: int64[](BadRef)
+test/lang.varInitArray.ci:18: arrArrayInitNull: int64[*](null)
+test/lang.varInitArray.ci:19: arrSliceInitNull: int64[](null)
+test/lang.varInitArray.ci:22: arrArrayInitFixed: int64[*]([0] {})
+test/lang.varInitArray.ci:23: arrSliceInitFixed: int64[]([7] {42, 43, 44, 45, 46, 47, 48})
+test/lang.varInitArray.ci:26: arrArrayInitSlice: int64[*]([0] {})
+test/lang.varInitArray.ci:27: arrSliceInitSlice: int64[]([7] {42, 43, 44, 45, 46, 47, 48})
+test/lang.varInitArray.ci:30: arrArrayInitPtr: int64[*]([0] {})
+test/lang.varInitArray.ci:40: strFixed: char[7]([7] {'s', 't', 'r', 'i', 'n', 'g', ''})
+test/lang.varInitArray.ci:45: strArray: char[*]("string")
+test/lang.varInitArray.ci:49: strSlice: char[]([6] {'s', 't', 'r', 'i', 'n', 'g'})
+test/lang.varInitArray.ci:62: lenSlice: function(<lenSlice @029d40>)
+test/lang.varInitArray.ci:63: nthFixed: function(<nthFixed @029d48>)
+test/lang.varInitArray.ci:64: nthArray: function(<nthArray @029d58>)
+test/lang.varInitArray.ci:65: nthSlice: function(<nthSlice @029d68>)
 test/lang.varInitByRef.ci:7: value: int64(42)
 test/lang.varInitByRef.ci:8: valueRef: int64(42)
-test/lang.varInitByRef.ci:9: valuePtr: pointer(<value @029d88>)
+test/lang.varInitByRef.ci:9: valuePtr: pointer(<value @029d78>)
 test/lang.varInitByRef.ci:10: valueVar: variant({int64: 42})
 test/lang.varInitByRef.ci:12: fromRef: int64(42)
 test/lang.varInitByRef.ci:13: fromPtr: int64(42)
@@ -12503,7 +12506,7 @@ test/lang.varInitByRef.ci:25: typeTyp: typename(<int64>)
 test/lang.varInitByRef.ci:27: local: int64(42)
 test/lang.varInitByRef.ci:28: copyVal: int64(42)
 test/lang.varInitByRef.ci:29: copyRef: int64(42)
-test/lang.varInitByRef.ci:30: copyPtr: pointer(<value @029d88>)
+test/lang.varInitByRef.ci:30: copyPtr: pointer(<value @029d78>)
 test/lang.varInitByRef.ci:31: copyVar: variant({int64: 42})
 test/lang.varInitByRef.ci:32: copyTyp: typename(<int64>)
 test/lang.varInitByRef.ci:35: ptrVoid: pointer(<void @0000a0>)
@@ -12560,7 +12563,7 @@ test/lang.varInitByRef.ci:89: typFunction: typename(<function>)
 test/lang.varInitByRef.ci:90: typPointer: typename(<pointer>)
 test/lang.varInitByRef.ci:91: typVariant: typename(<variant>)
 test/lang.varInitByRef.ci:92: typObject: typename(<object>)
-test/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @029d88>)
+test/lang.varInitByRef.ci:95: valueOfPtr: pointer(<value @029d78>)
 test/lang.varInitByRef.ci:96: valueOfVar: variant({int64: 42})
 test/lang.varInitByRef.ci:97: valueOfTyp: typename(<int64>)
 test/lang.varInitByRef.ci:99: typeOfValue: typename(<int64>)
@@ -12570,13 +12573,13 @@ test/lang.varInitByVal.ci:7: globalCounter: int64(41)
 test/lang.varInitByVal.ci:9: globalInitCounter1: int64(34)
 test/lang.varInitByVal.ci:32: Record.global: int32(35)
 test/lang.varInitByVal.ci:37: Record.globalConstant: int32(36)
-test/lang.varInitByVal.ci:40: Record.staticMethod: function(<Record.staticMethod @029db0>)
-test/lang.varInitByVal.ci:45: Record.forwardMethod: function(<Record.forwardMethod @029dc8>)
-test/lang.varInitByVal.ci:51: Record.virtualMethod: function(<Record.virtualMethod @029dc0>)
-test/lang.varInitByVal.ci:63: Record.forwardMethod: function(<Record.forwardMethod @029dc8>)
+test/lang.varInitByVal.ci:40: Record.staticMethod: function(<Record.staticMethod @029da0>)
+test/lang.varInitByVal.ci:45: Record.forwardMethod: function(<Record.forwardMethod @029db8>)
+test/lang.varInitByVal.ci:51: Record.virtualMethod: function(<Record.virtualMethod @029db0>)
+test/lang.varInitByVal.ci:63: Record.forwardMethod: function(<Record.forwardMethod @029db8>)
 test/lang.varInitByVal.ci:11: Record: typename(<Record>)
 test/lang.varInitByVal.ci:68: globalInitCounter2: int64(37)
-test/lang.varInitByVal.ci:70: initMethod: function(<initMethod @029e08>)
+test/lang.varInitByVal.ci:70: initMethod: function(<initMethod @029df8>)
 test/lang.varInitByVal.ci:88: localNoInit: int64(0)
 test/lang.varInitByVal.ci:89: localInitGlobal: int64(40)
 test/lang.varInitByVal.ci:90: localInitCounter: int64(41)
@@ -12586,16 +12589,16 @@ test/lang.varInitByVal.ci:94: globalInitCounter: int64(40)
 test/lang.varInitByVal.ci:95: globalInitGlobal: int64(40)
 test/lang.varInitByVal.ci:98: localInitMethodGlobal: int64(38)
 test/lang.varInitByVal.ci:99: localInitMethodRecordGlobal: int64(39)
-test/lang.varInitByVal.ci:101: localObject: Record(<@0b3b98>{
+test/lang.varInitByVal.ci:101: localObject: Record({
 	member: int32(39),
 	memberInit: int32(0),
-	memberConstant: int32(171540),
+	memberConstant: int32(171524),
 	memberConstantInit: int32(1),
 	virtualMethod: function(<typename+31 @000027>),
 	abstractMethod: function(null),
-	methodReference: function(<.main+3244 @02abd6>)
+	methodReference: function(<.main+3247 @02abc9>)
 })
-test/lang.varInitByVal.ci:102: globalObject: Record(<globalObject @029e38>{
+test/lang.varInitByVal.ci:102: globalObject: Record({
 	member: int32(0),
 	memberInit: int32(0),
 	memberConstant: int32(0),
@@ -12606,17 +12609,17 @@ test/lang.varInitByVal.ci:102: globalObject: Record(<globalObject @029e38>{
 })
 test/lang.varInitByVal.ci:104: localStaticCallStaticMethod: int32(7)
 test/lang.varInitByVal.ci:105: localStaticCallForwardMethod: int32(12)
-test/lang.function.ci:3: empty: function(<empty @029e58>)
-test/lang.function.ci:6: funAdd: function(<funAdd @029e60>)
+test/lang.function.ci:3: empty: function(<empty @029e48>)
+test/lang.function.ci:6: funAdd: function(<funAdd @029e50>)
 test/lang.function.ci:11: funAddResult: int32(9)
-test/lang.function.ci:14: funAddRef: function(<funAdd @029e60>)
+test/lang.function.ci:14: funAddRef: function(<funAdd @029e50>)
 test/lang.function.ci:17: funAddRefResult: int32(10)
-test/lang.function.ci:20: funMul: function(<funMul @029e68>)
+test/lang.function.ci:20: funMul: function(<funMul @029e58>)
 test/lang.function.ci:23: funMulResult: int32(12)
-test/lang.function.ci:26: funMulRef: function(<funMul @029e68>)
+test/lang.function.ci:26: funMulRef: function(<funMul @029e58>)
 test/lang.function.ci:29: funMulRefResult: int32(14)
-test/lang.function.ci:32: funMul: function(<funMul @029e68>)
-test/lang.function.ci:37: fib: function(<fib @029e70>)
+test/lang.function.ci:32: funMul: function(<funMul @029e58>)
+test/lang.function.ci:37: fib: function(<fib @029e60>)
 test/lang.function.ci:45: fibonacci_13: uint32(233)
 test/lang.reflection.ci:3: sizeofVoid: int32(0)
 test/lang.reflection.ci:4: sizeofBool: int32(1)
@@ -12640,13 +12643,13 @@ test/lang.reflection.ci:22: RecordSizeof: typename(<RecordSizeof>)
 test/lang.reflection.ci:26: RecordSizeofExt: typename(<RecordSizeofExt>)
 test/lang.reflection.ci:30: typeofRecord: typename(<RecordSizeofExt>)
 test/lang.reflection.ci:31: nameOfRecord: char[*]("RecordSizeofExt")
-test/lang.reflection.ci:32: offsetOfRecord: int32(109592)
+test/lang.reflection.ci:32: offsetOfRecord: int32(109584)
 test/lang.reflection.ci:33: sizeOfRecord: int32(16)
 test/lang.reflection.ci:34: fileOfRecord: char[*]("test/lang.reflection.ci")
 test/lang.reflection.ci:35: lineOfRecord: int32(26)
 test/lang.reflection.ci:37: typeofBase: typename(<RecordSizeof>)
 test/lang.reflection.ci:38: nameOfBase: char[*]("RecordSizeof")
-test/lang.reflection.ci:39: offsetOfBase: int32(109320)
+test/lang.reflection.ci:39: offsetOfBase: int32(109312)
 test/lang.reflection.ci:40: sizeOfBase: int32(12)
 test/lang.reflection.ci:41: fileOfBase: char[*]("test/lang.reflection.ci")
 test/lang.reflection.ci:42: lineOfBase: int32(22)
@@ -12699,19 +12702,19 @@ test/stdc.nfcMemory.ci:9: p3: pointer(<@02be88>)
 test/stdc.nfcMemory.ci:10: p4: pointer(<@02bf38>)
 test/stdc.nfcMemory.ci:23: val1: int64(0)
 test/stdc.nfcMemory.ci:24: val2: int64(42)
-test/stdc.nfcTryExec.ci:10: noError: function(<noError @029ea8>)
-test/stdc.nfcTryExec.ci:13: stackOverflow: function(<stackOverflow @029eb0>)
-test/stdc.nfcTryExec.ci:18: divisionByZero: function(<divisionByZero @029ec8>)
-test/stdc.nfcTryExec.ci:22: abortExecution: function(<abortExecution @029ed8>)
-test/stdc.nfcTryExec.ci:35: invalidMemoryAccess: function(<invalidMemoryAccess @029f18>)
-test/stdc.nfcTryExec.ci:40: invalidInstruction: function(<invalidInstruction @029f28>)
-test/stdc.nfcTryExec.ci:44: tryExecErr0: int32(0)
-test/stdc.nfcTryExec.ci:45: tryExecErr1: int32(1)
-test/stdc.nfcTryExec.ci:46: tryExecErr2: int32(2)
-test/stdc.nfcTryExec.ci:47: tryExecErr3: int32(3)
-test/stdc.nfcTryExec.ci:48: tryExecErr4: int32(4)
-test/stdc.nfcTryExec.ci:49: tryExecErr5: int32(5)
-test/stdc.nfcTryExec.ci:50: tryExecErr6: int32(6)
+test/stdc.nfcTryExec.ci:11: noError: function(<noError @029e98>)
+test/stdc.nfcTryExec.ci:14: stackOverflow: function(<stackOverflow @029ea0>)
+test/stdc.nfcTryExec.ci:19: divisionByZero: function(<divisionByZero @029eb8>)
+test/stdc.nfcTryExec.ci:23: abortExecution: function(<abortExecution @029ec8>)
+test/stdc.nfcTryExec.ci:37: invalidMemoryAccess: function(<invalidMemoryAccess @029f08>)
+test/stdc.nfcTryExec.ci:42: invalidInstruction: function(<invalidInstruction @029f18>)
+test/stdc.nfcTryExec.ci:46: tryExecErr0: int32(0)
+test/stdc.nfcTryExec.ci:47: tryExecErr1: int32(1)
+test/stdc.nfcTryExec.ci:48: tryExecErr2: int32(2)
+test/stdc.nfcTryExec.ci:49: tryExecErr3: int32(3)
+test/stdc.nfcTryExec.ci:50: tryExecErr4: int32(4)
+test/stdc.nfcTryExec.ci:51: tryExecErr5: int32(5)
+test/stdc.nfcTryExec.ci:52: tryExecErr6: int32(6)
 test/lang.record.ci:2: rgbF32: typename(<rgbF32>)
 test/lang.record.ci:9: rgbU8: typename(<rgbU8>)
 test/lang.record.ci:16: color: typename(<color>)
@@ -12973,9 +12976,9 @@ test/lang.statementIf.ci:26: t: int32(0)
 test/lang.statementFor.ci:12: forIdx: int32(2)
 
 ---------- Memory layout:
-memory[meta] @000000; size: 171344(167.3 Kb)
-memory[code] @029f2a; size: 6877(6.7 Kb)
-memory[heap] @02ba07; size: 374043(365.3 Kb)
+memory[meta] @000000; size: 171328(167.3 Kb)
+memory[code] @029f1a; size: 6880(6.7 Kb)
+memory[heap] @02b9fa; size: 374056(365.3 Kb)
 memory[stack] @059f5c; size: 184262(179.9 Kb)
 
 ---------- Memory allocations:

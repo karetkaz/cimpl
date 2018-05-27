@@ -384,17 +384,20 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 	}
 
 	symn sym;
-	if (loc != NULL) {
-		sym = lookup(cc, loc->fields, ref, args, 1);
+	if (ref->ref.link != NULL) {
+		sym = ref->ref.link;
+	}
+	else if (loc != NULL) {
+		sym = lookup(cc, loc->fields, ref, args, raise);
 	}
 	else {
 		// first lookup in the current scope
 		sym = cc->deft[ref->ref.hash];
-		sym = lookup(cc, sym, ref, args, 1);
+		sym = lookup(cc, sym, ref, args, raise);
 
 		// lookup parameters, fields, etc.
 		for (loc = cc->owner; loc != NULL; loc = loc->owner) {
-			symn field = lookup(cc, loc->fields, ref, args, 1);
+			symn field = lookup(cc, loc->fields, ref, args, 0);
 			if (sym != NULL && sym->nest < loc->nest) {
 				// symbol found: scope is higher than this parameter
 				break;
@@ -771,7 +774,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 
 		// variable
 		case TOKEN_var:
-			type = typeCheckRef(cc, loc, ast, NULL, 0);
+			type = typeCheckRef(cc, loc, ast, NULL, raise);
 			if (type == NULL) {
 				traceAst(ast);
 				return NULL;
@@ -782,61 +785,6 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 
 	fatal(ERR_INTERNAL_ERROR": unimplemented: %.t (%T, %T): %t", ast, lType, rType, ast);
 	return NULL;
-}
-
-symn initCheck(ccContext cc, symn var, int raise) {
-	symn type = isTypename(var) ? var : var->type;
-	astn ast = var->init;
-	if (ast == NULL) {
-		// uninitialized variable
-		if (raise) {
-			warn(cc->rt, 1, var->file, var->line, ERR_UNINITIALIZED_VARIABLE, var);
-		}
-		return type;
-	}
-
-	if (ast->kind != STMT_beg) {
-		// expression initialized variable
-		type = typeCheck(cc, NULL, ast, raise);
-		if (raise && !canAssign(cc, var, ast, 0)) {
-			warn(cc->rt, 8, ast->file, ast->line, ERR_INVALID_VALUE_ASSIGN, var, ast);
-		}
-	}
-	else if (isTypename(var)) {
-		type = cc->type_fun;
-		warn(cc->rt, 1, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, var);
-	}
-	else if (isFunction(var)) {
-		type = cc->type_fun;
-		warn(cc->rt, 1, ast->file, ast->line, ERR_UNIMPLEMENTED_FUNCTION, var);
-	}
-	else {
-		// literal initialized variable
-		for (astn n = ast->stmt.stmt; n != NULL; n = n->next) {
-			astn id = NULL, val = n;
-			if (n->kind == INIT_set) {
-				id = n->op.lhso;
-				val = n->op.rhso;
-			}
-			if (id != NULL) {
-				symn fieldRef = lookup(cc, type->fields, id, NULL, 0);
-				if (raise && fieldRef == NULL) {
-					error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
-					fieldRef = cc->type_int;
-				}
-				initCheck(cc, fieldRef, raise);
-			}
-			else {
-				type = typeCheck(cc, NULL, val, raise);
-				if (raise && !canAssign(cc, type, val, 0)) {
-					warn(cc->rt, 1, val->file, val->line, ERR_INVALID_VALUE_ASSIGN, type, val);
-				}
-			}
-		}
-		// TODO: convert initializer literal to initializer statement list
-		fatal("%?s:%?u: "ERR_UNIMPLEMENTED_FEATURE": `%T` := `%+t`", var->file, var->line, var, ast);
-	}
-	return ast->type = type;
 }
 
 ccKind canAssign(ccContext cc, symn var, astn val, int strict) {

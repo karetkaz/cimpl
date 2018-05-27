@@ -1,3 +1,4 @@
+// run with `-debug/L` switch to trace caught errors
 /* known errors:
 	Invalid state
 	Invalid memory access
@@ -25,10 +26,11 @@ void abortExecution(pointer args) {
 		int expected;
 		int returned;
 	}
-	NotEquals details;
-	details.message = "assertion failed";
-	details.expected = 97;
-	details.returned = 77;
+	NotEquals details = {
+		message: "assertion failed";
+		expected: 97;
+		returned: 77;
+	};
 	raise(raise.abort, raise.noTrace, "fatal error", details);
 }
 

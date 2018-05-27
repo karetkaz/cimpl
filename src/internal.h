@@ -357,6 +357,7 @@ void closeLibs();
 #define ERR_UNMATCHED_TOKEN "unexpected token `%?.t`, matching `%.k`"
 #define ERR_UNMATCHED_SEPARATOR "unexpected separator `%?.t`, matching `%.k`"
 #define ERR_DECLARATION_EXPECTED "declaration expected, got: `%t`"
+#define ERR_INITIALIZER_EXPECTED "initializer expected, got: `%t`"
 
 // Type checker errors
 #define ERR_DECLARATION_COMPLEX "declaration too complex: `%T`"
@@ -378,6 +379,7 @@ void closeLibs();
 #define ERR_UNIMPLEMENTED_FUNCTION "unimplemented function `%T`"
 #define ERR_UNINITIALIZED_CONSTANT "uninitialized constant `%T`"
 #define ERR_UNINITIALIZED_VARIABLE "uninitialized variable `%T`"
+#define ERR_UNINITIALIZED_MEMBER "uninitialized member `%.T.%.T`"
 
 // Code generator errors
 #define ERR_CAST_EXPRESSION "can not emit expression: %t, invalid cast(%K -> %K)"
@@ -385,7 +387,6 @@ void closeLibs();
 #define ERR_EMIT_VARIABLE "can not emit variable: %T"
 #define ERR_EMIT_FUNCTION "can not emit function: %T"
 #define ERR_EMIT_STATEMENT "can not emit statement: %t"
-#define ERR_INVALID_INSTRUCTION "invalid instruction: %.A @%06x"
 #define ERR_INVALID_JUMP "`%t` statement is invalid due to previous variable declaration within loop"
 #define ERR_INVALID_OFFSET "invalid reference: %06x"
 
@@ -396,8 +397,7 @@ void closeLibs();
 #define WARN_EMPTY_STATEMENT "empty statement `;`"
 #define WARN_USE_BLOCK_STATEMENT "statement should be a block statement {%t}"
 #define WARN_EXPRESSION_STATEMENT "expression statement expected, got: `%t`"
-#define WARN_VARIANT_TO_REF "converting `%T` to reference or pointer discards type information"
-#define WARN_LOCAL_MIGHT_ESCAPE "local variable `%t` can not be referenced outside of its scope"
+//TODO: #define WARN_LOCAL_MIGHT_ESCAPE "local variable `%t` can not be referenced outside of its scope"
 #define WARN_PASS_ARG_NO_CAST "argument `%t` is passed to emit without cast as `%T`"
 #define WARN_SHORT_CIRCUIT "operators `&&` and `||` does not short-circuit yet"
 #define WARN_NO_CODE_GENERATED "no code will be generated for statement: %t"
@@ -406,7 +406,7 @@ void closeLibs();
 #define WARN_STATIC_FIELD_ACCESS "accessing static member using instance variable `%T`/ %T"
 #define WARN_COMMENT_MULTI_LINE "multi-line comment: `%s`"
 #define WARN_IGNORING_NESTED_COMMENT "ignoring nested comment"
-#define WARN_MO_NEW_LINE_AT_END "expected `%s` before end of input"
+#define WARN_NO_NEW_LINE_AT_END "expected <new line> before end of input"
 #define WARN_OCT_ESC_SEQ_OVERFLOW "octal escape sequence overflow"
 #define WARN_CHR_CONST_TRUNCATED "character constant truncated"
 #define WARN_MULTI_CHAR_CONSTANT "multi character constant"
@@ -416,6 +416,7 @@ void closeLibs();
 #define WARN_USING_BEST_OVERLOAD "using overload `%T` of %d declared symbols"
 #define WARN_USING_DEFAULT_INITIALIZER "using default type initializer: %T := %t"
 #define WARN_DECLARATION_REDEFINED "variable `%T` hides previous declaration"
+#define WARN_FUNCTION_TYPENAME "function name `%T` is a type, but returns `%T`"
 
 static inline void _break() {/* Add a breakpoint to break on compiler errors. */}
 static inline void _abort() {/* Add a breakpoint to break on fatal errors. */

@@ -111,15 +111,6 @@ ccKind canAssign(ccContext cc, symn rhs, astn val, int strict);
 symn typeCheck(ccContext cc, symn loc, astn ast, int raise);
 
 /**
- * Type Check initialization of a variable.
- * 
- * @param sym the variable to be checked.
- * @param raise Report errors.
- * @return Type of expression.
- */
-symn initCheck(ccContext cc, symn sym, int raise);
-
-/**
  * @brief Add usage of the symbol.
  * @param sym Symbol typename or variable.
  * @param tag The node of the usage.

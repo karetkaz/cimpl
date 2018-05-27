@@ -1911,7 +1911,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 	}
 	// invalid offset.
 	else if (!isValidOffset(rt, data)) {
-		printFmt(out, esc, "BadRef@%06x", var->offs);
+		printFmt(out, esc, "BadRef");
 	}
 	// builtin type.
 	else if (format != NULL) {
@@ -1996,6 +1996,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 		}
 	}
 	else if (typCast == CAST_arr) {
+		symn lenField = typ->fields;
 		if (typ == var || varCast == CAST_val) {
 			// fixed size array or direct reference
 			data = (memptr) val;
@@ -2015,29 +2016,30 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 		if (data == NULL) {
 			printFmt(out, esc, "%s", "null");
 		}
-		else if (typ->type->fmt == type_fmt_character) {
+		else if (!isValidOffset(rt, data)) {
+			printFmt(out, esc, "BadRef");
+		}
+		else if (typ->type->fmt == type_fmt_character && lenField == NULL) {
 			// interpret `char[]`, `char[*]` and `char[n]` as string
 			printFmt(out, esc, "%c", type_fmt_string_chr);
 			printFmt(out, esc ? esc : escapeStr(), type_fmt_string, data);
 			printFmt(out, esc, "%c", type_fmt_string_chr);
 		}
 		else {
-			size_t length;
+			size_t length = 0;
 			size_t inc = typ->type->size;
-			symn lenField = typ->fields;
-			if (lenField == NULL) {
-				// pointer
-				length = 0;
-			}
-			else if (isStatic(lenField)) {
+			if (lenField && isStatic(lenField)) {
 				// fixed size array
 				length = typ->size / inc;
 			}
-			else {
+			else if (lenField) {
 				// dinamic size array
-				length = val->length;
+				// FIXME: slice without length information
+				if (data != (memptr)val) {
+					length = val->length;
+				}
 			}
-			printRef(out, esc, rt, data);
+
 			printFmt(out, esc, "[%d] {", length);
 			for (size_t idx = 0; idx < length; idx += 1) {
 				if (idx > 0) {
@@ -2055,7 +2057,6 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 	else {
 		// typename, function, pointer, etc (without format option)
 		int fields = 0;
-		printRef(out, esc, rt, data);
 		if (typ->fields != NULL) {
 			for (symn sym = typ->fields; sym; sym = sym->next) {
 				if (isStatic(sym)) {
@@ -2082,6 +2083,9 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 			if (fields > 0) {
 				printFmt(out, esc, "\n%I}", indent);
 			}
+		}
+		if (fields == 0) {
+			printRef(out, esc, rt, data);
 		}
 	}
 
