@@ -69,21 +69,23 @@
 					<a class="dropdown-item" href="#" onclick="params.update({theme: 'darcula'});">Dark theme</a>
 				</div>
 			</li>
-			<li class="nav-item btn-group dropright">
+			<li class="nav-item btn-group dropright" href="#" role="tab" aria-controls="nav-output" aria-selected="false">
 				<button id="btnExecute" type="button" class="btn btn-sm btn-default" onclick="execute(cmdExecute.value);">Execute</button>
 				<button type="button" class="btn btn-sm btn-default dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
 				<div class="dropdown-menu">
-					<a class="dropdown-item" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-run/g';">Run</a>
-					<a class="dropdown-item" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-debug/g';">Debug</a>
-					<a class="dropdown-item" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-profile/g';">Profile</a>
-					<a class="dropdown-item" onclick="params.update({exec: null}); btnExecute.innerText='Compile'; cmdExecute.value='';">Compile only</a>
+					<a class="dropdown-item" href="#" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-run/g'; return false;">Run</a>
+					<a class="dropdown-item" href="#" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-debug/g'; return false;">Debug</a>
+					<a class="dropdown-item" href="#" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-profile/g'; return false;">Profile</a>
+					<a class="dropdown-item" href="#" onclick="params.update({exec: null}); btnExecute.innerText='Compile'; cmdExecute.value=''; return false;">Compile only</a>
 					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" onclick="params.update({exec: cmdExecute.value});"><input id="cmdExecute" onchange="params.update({exec: value});" type="text" value=""></a>
+					<a class="dropdown-item" onclick="params.update({exec: cmdExecute.value});"><input class="btn-block" id="cmdExecute" onchange="params.update({exec: value});" type="text" value=""></a>
 					<span class="dropdown-item">
-						<button type="button" class="btn btn-light" onclick="params.update({exec: '-api/a'});">Tags</button>
-						<button type="button" class="btn btn-light" onclick="params.update({exec: '-api/u'});">Usages</button>
-						<button type="button" class="btn btn-light" onclick="params.update({exec: '-asm/a/n/s/m'});">Asm</button>
+						<button type="button" class="btn btn-light" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-asm/a/n/s/m';">Asm</button>
+						<button type="button" class="btn btn-light" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-api/a';">Tags</button>
+						<button type="button" class="btn btn-light" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-api/u';">Usages</button>
 					</span>
+					<div class="dropdown-divider"></div>
+					<a class="dropdown-item" href="#" onclick="terminal.clear(); return false;">Clear output</a>
 				</div>
 			</li>
 		</div>
@@ -94,7 +96,7 @@
 		<textarea id="input"></textarea>
 	</div>
 	<div class="text-content">
-		<textarea id="output" readonly spellcheck="false"></textarea>
+		<pre id="output"></pre>
 	</div>
 </div>
 </body>
@@ -114,10 +116,20 @@
 		gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
 		highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: true}
 	});
-	var terminal = terminalFromTextArea(output);
+	var terminal = Terminal(output, function(text) {
+		// detect filenames with line numbers
+		return text.replace(/([\t]*)([^<>:;,?"*|]+):([0-9]+)(?::([0-9]+))?/g, function(match, indent, file, line, column) {
+			line = +(line || 0);
+			column = +(column || 0);
+			/*if (file !== params.input) {
+				console.log(file, line, column);
+				// highlight only the file opened
+				return match;
+			}*/
+			return indent + '<a href="#" onClick="return goTo(\'' + file + '\', ' + line + ', ' + column + ');">'+match.substr(indent.length)+'</a>';
+		});
+	});
 	var params = JsArgs('#', function (params, changes) {
-		//console.trace('params:', params, 'changes:', changes);
-
 		// change execution method
 		if (!changes || changes.exec != null) {
 			if (params.exec == null) {
@@ -162,12 +174,23 @@
 		params.update('input');
 	};
 
-	function terminalFromTextArea(output) {
+	function goTo(file, line, column) {
+		params.update({ input: file });
+		editor.setCursor(line - 1, column);
+		return false;
+	}
+
+	function Terminal(output, interpret) {
 		if (output == null) {
 			return {
 				print: console.log,
 				clear: function () {
 				}
+			}
+		}
+		if (interpret == null) {
+			interpret = function(text) {
+				return text;
 			}
 		}
 
@@ -178,13 +201,13 @@
 				}
 				// show and focus the message as soon as possible
 				setTimeout(function () {
-					output.value += text + "\n";
+					output.innerHTML += interpret(text) + "\n";
 					output.scrollTop = output.scrollHeight;
 				});
 			},
 			clear: function () {
 				setTimeout(function () {
-					output.value = '';
+					output.innerHTML = '';
 				});
 			}
 		};
@@ -224,7 +247,6 @@
 	}
 
 	function openInput(fileName) {
-		terminal.clear();
 		if (fileName == null) {
 			editor.setValue('');
 			return;
@@ -233,7 +255,6 @@
 			let data = FS.readFile(fileName);
 			let dec = new TextDecoder('utf-8');
 			editor.setValue(dec.decode(data.buffer));
-			terminal.print('opening file succeeded: `' + fileName + '`');
 		} catch (err) {
 			terminal.print('opening file failed: `' + fileName + '`: ' + err);
 		}
