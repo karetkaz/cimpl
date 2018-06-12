@@ -16,6 +16,6 @@ implementation under refactoring.
 
 ## Tools
 
-[Live Demo](https://karetkaz.github.io/cmpl/extras/Emscripten/index.html#input=function.ci)
+[Live Demo](https://karetkaz.github.io/cmpl/extras/Emscripten/index.html#filename=function.ci)
 
 [Inspector](https://karetkaz.github.io/cmpl/extras/Inspector/Inspector.html)

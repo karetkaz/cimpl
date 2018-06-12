@@ -8,12 +8,6 @@
 	<link rel="stylesheet" href="main.css">
 	<script type="text/javascript" src="lib/FileSaver.js"></script>
 	<script type="text/javascript" src="lib/JsArgs.js"></script>
-	<!--script>
- 	JsArgs(function (params, changes) {console.trace('params1:', params, 'changes:', changes);});
- 	JsArgs(function (params, changes) {console.trace('params2:', params, 'changes:', changes);});
- 	JsArgs(function (params, changes) {console.trace('params3:', params, 'changes:', changes);});
-	</script-->
-	<script type="text/javascript" src="cmpl.js"></script>
 
 	<!-- Bootstrap -->
 	<link rel="stylesheet" href="lib/bootstrap/css/bootstrap.css">
@@ -49,9 +43,10 @@
 			<li class="nav-item dropdown active" id="nav-input-tab" data-toggle="tab" href="#nav-input" role="tab" aria-controls="nav-input" aria-selected="true">
 				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Input</a>
 				<div id="fileList" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-					<a class="dropdown-item" href="#" onClick="downloadInput(params.input);">Dowload</a>
-					<a class="dropdown-item" href="#" onClick="saveInput(params.input);">Save</a>
-					<a class="dropdown-item" href="#" onClick="params.update({input: null});">Close</a>
+					<a class="dropdown-item" href="#" onClick="downloadInput();">Dowload</a>
+					<a class="dropdown-item" href="#" onClick="shareInput();">Share</a>
+					<a class="dropdown-item" href="#" onClick="saveInput();">Save</a>
+					<a class="dropdown-item" href="#" onClick="params.update({filename: null, content: null});">Close</a>
 					<div class="dropdown-divider"></div>
 				</div>
 			</li>
@@ -73,16 +68,16 @@
 				<button id="btnExecute" type="button" class="btn btn-sm btn-default" onclick="execute(cmdExecute.value);">Execute</button>
 				<button type="button" class="btn btn-sm btn-default dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
 				<div class="dropdown-menu">
-					<a class="dropdown-item" href="#" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-run/g'; return false;">Run</a>
-					<a class="dropdown-item" href="#" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-debug/g'; return false;">Debug</a>
-					<a class="dropdown-item" href="#" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-profile/g'; return false;">Profile</a>
-					<a class="dropdown-item" href="#" onclick="params.update({exec: null}); btnExecute.innerText='Compile'; cmdExecute.value=''; return false;">Compile only</a>
+					<a class="dropdown-item" href="#" onclick="params.update({execute: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-run/g'; return false;">Run</a>
+					<a class="dropdown-item" href="#" onclick="params.update({execute: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-debug/g'; return false;">Debug</a>
+					<a class="dropdown-item" href="#" onclick="params.update({execute: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-profile/g'; return false;">Profile</a>
+					<a class="dropdown-item" href="#" onclick="params.update({execute: null}); btnExecute.innerText='Compile'; cmdExecute.value=''; return false;">Compile only</a>
 					<div class="dropdown-divider"></div>
-					<a class="dropdown-item" onclick="params.update({exec: cmdExecute.value});"><input class="btn-block" id="cmdExecute" onchange="params.update({exec: value});" type="text" value=""></a>
+					<a class="dropdown-item" onclick="params.update({execute: cmdExecute.value});"><input class="btn-block" id="cmdExecute" onchange="params.update({execute: value});" type="text" value=""></a>
 					<span class="dropdown-item">
-						<button type="button" class="btn btn-light" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-asm/a/n/s/m';">Asm</button>
-						<button type="button" class="btn btn-light" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-api/a';">Tags</button>
-						<button type="button" class="btn btn-light" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-api/u';">Usages</button>
+						<button type="button" class="btn btn-light" onclick="params.update({execute: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-asm/a/n/s/m';">Asm</button>
+						<button type="button" class="btn btn-light" onclick="params.update({execute: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-api/a';">Tags</button>
+						<button type="button" class="btn btn-light" onclick="params.update({execute: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-api/u';">Usages</button>
 					</span>
 					<div class="dropdown-divider"></div>
 					<a class="dropdown-item" href="#" onclick="terminal.clear(); return false;">Clear output</a>
@@ -101,7 +96,7 @@
 </div>
 </body>
 <script type="text/javascript">
-	var editor = CodeMirror.fromTextArea(input, {
+	let editor = CodeMirror.fromTextArea(input, {
 		mode: "text/x-cmpl",
 		lineNumbers: true,
 		tabSize: 4,
@@ -116,27 +111,47 @@
 		gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
 		highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: true}
 	});
-	var terminal = Terminal(output, function(text) {
+	editor.setSize('100%', '100%');
+
+	let terminal = Terminal(output, function(text) {
 		// detect filenames with line numbers
 		return text.replace(/([\t]*)([^<>:;,?"*|]+):([0-9]+)(?::([0-9]+))?/g, function(match, indent, file, line, column) {
 			line = +(line || 0);
 			column = +(column || 0);
-			/*if (file !== params.input) {
-				console.log(file, line, column);
-				// highlight only the file opened
-				return match;
-			}*/
 			return indent + '<a href="#" onClick="return goTo(\'' + file + '\', ' + line + ', ' + column + ');">'+match.substr(indent.length)+'</a>';
 		});
 	});
-	var params = JsArgs('#', function (params, changes) {
+
+	let worker = new Worker('worker.js');
+	worker.onmessage = function(event) {
+		let data = event.data;
+		if (data.print !== undefined) {
+			terminal.print(data.print);
+		}
+		if (data.filename !== undefined) {
+			params.update({filename: data.filename});
+		}
+		if (data.content !== undefined) {
+			editor.setValue(data.content);
+			//params.update({content: null});
+		}
+		if (data.filelist !== undefined) {
+			for (let file of data.filelist) {
+				//if (!data.filelist.hasOwnProperty(file)) {continue;}
+				fileList.innerHTML += '<a class="dropdown-item" href="#" onClick="params.update({filename: this.innerText, content: null});">' + file + '</a>';
+			}
+			params.update('filename', 'content');
+		}
+	};
+
+	let params = JsArgs('#', function (params, changes) {
 		// change execution method
-		if (!changes || changes.exec != null) {
-			if (params.exec == null) {
+		if (!changes || changes.execute != null) {
+			if (params.execute == null) {
 				cmdExecute.value = '-run/g';
 				btnExecute.innerText = 'Run';
 			} else {
-				cmdExecute.value = params.exec;
+				cmdExecute.value = params.execute;
 				btnExecute.innerText = 'Execute';
 			}
 		}
@@ -151,31 +166,20 @@
 			return;
 		}
 
-		// input field changed (open or close)
-		if (changes.input != null) {
-			openInput(params.input);
+		// filename field changed (open or close)
+		if (changes.content != null || changes.filename != null) {
+			editor.setValue(params.content || '');
+			if (params.filename != null) {
+				worker.postMessage({
+					filename: params.filename,
+					content: params.content
+				});
+			}
 		}
 	});
 
-	editor.setSize('100%', '100%');
-	Module.print = terminal.print;
-	Module.onRuntimeInitialized = function () {
-		FS.chdir('/workspace');
-		var contents = FS.analyzePath(FS.cwd()).object.contents;
-		for (var file in contents) {
-			if (!contents.hasOwnProperty(file)) {
-				continue;
-			}
-			if (contents[file].isFolder || contents[file].isDevice) {
-				continue;
-			}
-			fileList.innerHTML += '<a class="dropdown-item" href="#" onClick="params.update({input: this.innerText});">' + file + '</a>';
-		}
-		params.update('input');
-	};
-
 	function goTo(file, line, column) {
-		params.update({ input: file });
+		params.update({ filename: file });
 		editor.setCursor(line - 1, column);
 		return false;
 	}
@@ -194,35 +198,27 @@
 			}
 		}
 
-		return {
-			print: function (text) {
-				if (arguments.length > 1) {
-					text = Array.prototype.slice.call(arguments).join(' ');
-				}
-				// show and focus the message as soon as possible
-				setTimeout(function () {
-					output.innerHTML += interpret(text) + "\n";
-					output.scrollTop = output.scrollHeight;
-				});
-			},
-			clear: function () {
-				setTimeout(function () {
-					output.innerHTML = '';
-				});
-			}
-		};
-	}
-
-	function saveFSFile(fileName) {
-		if (fileName == null) {
-			fileName = prompt('Download file:', 'stdlib.ci');
-			if (fileName == null) {
+		let buffer = '';
+		function flush() {
+			output.innerHTML += buffer;
+			output.scrollTop = output.scrollHeight;
+			buffer = '';
+		}
+		setInterval(function() {
+			if (buffer == '') {
 				return;
 			}
-		}
-		const type = "application/octet-stream";
-		const data = FS.readFile(fileName);
-		saveAs(new Blob([data.buffer], {type: type}), fileName);
+			flush();
+		}, 1000 / 30);	// @30 fps
+		return {
+			print: function (text) {
+				buffer += interpret(text) + "\n";
+				//if (buffer.length > 1024) { flush(); }
+			},
+			clear: function () {
+				output.innerHTML = '';
+			}
+		};
 	}
 
 	function showConsole(inout, orientation) {
@@ -246,34 +242,22 @@
 		}
 	}
 
-	function openInput(fileName) {
-		if (fileName == null) {
-			editor.setValue('');
-			return;
-		}
-		try {
-			let data = FS.readFile(fileName);
-			let dec = new TextDecoder('utf-8');
-			editor.setValue(dec.decode(data.buffer));
-		} catch (err) {
-			terminal.print('opening file failed: `' + fileName + '`: ' + err);
-		}
+	function saveInput() {
+		worker.postMessage({
+			filename: params.filename,
+			content: editor.getValue()
+		});
 	}
 
-	function saveInput(fileName) {
-		if (!fileName) {
-			terminal.print('nothing to save');
-			return;
-		}
-		FS.writeFile(fileName, editor.getValue());
+	function shareInput() {
+		params.update({
+			content: editor.getValue()
+		});
 	}
 
-	function downloadInput(fileName) {
+	function downloadInput() {
 		let type = "application/octet-stream";
-		//FS.writeFile(fileName, editor.getValue());
-		// let data = FS.readFile(fileName);
-		// saveAs(new Blob([data.buffer], {type: type}), fileName);
-		saveAs(new Blob([editor.getValue()], {type: type}), fileName);
+		saveAs(new Blob([editor.getValue()], {type: type}), params.filename);
 	}
 
 	function execute(mode) {
@@ -306,13 +290,14 @@
 
 		terminal.clear();
 
-		// save the content of the editor to memory file
-		var inputFile = params.input || 'new.ci';
-		FS.writeFile(inputFile, editor.getValue());
-
 		// compile the code
-		args.push(inputFile);
-		Module['callMain'](args);
+		let filename = params.filename || 'new.ci';
+		args.push(filename);
+		worker.postMessage({
+			filename: filename,
+			content: editor.getValue(),
+			execute: args
+		});
 	}
 </script>
 </html>
