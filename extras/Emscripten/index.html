@@ -8,6 +8,7 @@
 	<link rel="stylesheet" href="main.css">
 	<script type="text/javascript" src="lib/FileSaver.js"></script>
 	<script type="text/javascript" src="lib/JsArgs.js"></script>
+	<script type="text/javascript" src="lib/JsTerm.js"></script>
 
 	<!-- Bootstrap -->
 	<link rel="stylesheet" href="lib/bootstrap/css/bootstrap.css">
@@ -43,9 +44,9 @@
 			<li class="nav-item dropdown active" id="nav-input-tab" data-toggle="tab" href="#nav-input" role="tab" aria-controls="nav-input" aria-selected="true">
 				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Input</a>
 				<div id="fileList" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-					<a class="dropdown-item" href="#" onClick="downloadInput();">Dowload</a>
-					<a class="dropdown-item" href="#" onClick="shareInput();">Share</a>
-					<a class="dropdown-item" href="#" onClick="saveInput();">Save</a>
+					<a class="dropdown-item" href="#" onClick="downloadInput();">Dowload file</a>
+					<a class="dropdown-item" href="#" onClick="shareInput();">Create link</a>
+					<a class="dropdown-item" href="#" onClick="saveInput();">Save file</a>
 					<a class="dropdown-item" href="#" onClick="params.update({filename: null, content: null});">Close</a>
 					<div class="dropdown-divider"></div>
 				</div>
@@ -96,6 +97,31 @@
 </div>
 </body>
 <script type="text/javascript">
+	/* communication with worker/args
+	in => {
+		filename - open or save the content of the file
+		content - save the content
+		execute - arguments for the compiler
+	}
+	
+	out => {
+		filelist - list of files in the workspace
+		content - content of the requested filename
+		print - print the message to the output
+	}
+	
+	args => {
+		filelist - to add: download files to a new workspace
+		filename - the file to be opened
+		content - overwrite the content of the file
+		execute
+		theme
+		dump
+		log
+		mem
+		X
+	}*/
+
 	let editor = CodeMirror.fromTextArea(input, {
 		mode: "text/x-cmpl",
 		lineNumbers: true,
@@ -111,8 +137,6 @@
 		gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
 		highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: true}
 	});
-	editor.setSize('100%', '100%');
-
 	let terminal = Terminal(output, function(text) {
 		// detect filenames with line numbers
 		return text.replace(/([\t]*)([^<>:;,?"*|]+):([0-9]+)(?::([0-9]+))?/g, function(match, indent, file, line, column) {
@@ -121,29 +145,6 @@
 			return indent + '<a href="#" onClick="return goTo(\'' + file + '\', ' + line + ', ' + column + ');">'+match.substr(indent.length)+'</a>';
 		});
 	});
-
-	let worker = new Worker('worker.js');
-	worker.onmessage = function(event) {
-		let data = event.data;
-		if (data.print !== undefined) {
-			terminal.print(data.print);
-		}
-		if (data.filename !== undefined) {
-			params.update({filename: data.filename});
-		}
-		if (data.content !== undefined) {
-			editor.setValue(data.content);
-			//params.update({content: null});
-		}
-		if (data.filelist !== undefined) {
-			for (let file of data.filelist) {
-				//if (!data.filelist.hasOwnProperty(file)) {continue;}
-				fileList.innerHTML += '<a class="dropdown-item" href="#" onClick="params.update({filename: this.innerText, content: null});">' + file + '</a>';
-			}
-			params.update('filename', 'content');
-		}
-	};
-
 	let params = JsArgs('#', function (params, changes) {
 		// change execution method
 		if (!changes || changes.execute != null) {
@@ -168,57 +169,50 @@
 
 		// filename field changed (open or close)
 		if (changes.content != null || changes.filename != null) {
-			editor.setValue(params.content || '');
+			let content = params.content;
+			try {
+				if (content != null) {
+					content = atob(content);
+				}
+			} catch (e) {
+				console.warn(e);
+			}
+			editor.setValue(content || '');
 			if (params.filename != null) {
+				document.title = params.filename + " - " + docTitle;
 				worker.postMessage({
 					filename: params.filename,
-					content: params.content
+					content: content
 				});
+			} else {
+				document.title = docTitle;
 			}
 		}
 	});
+	let worker = new Worker('worker.js');
+	let docTitle = document.title;
+
+	editor.setSize('100%', '100%');
+	worker.onmessage = function(event) {
+		let data = event.data;
+		if (data.print !== undefined) {
+			terminal.print(data.print);
+		}
+		if (data.content !== undefined) {
+			editor.setValue(data.content);
+		}
+		if (data.filelist !== undefined) {
+			for (let file of data.filelist) {
+				fileList.innerHTML += '<a class="dropdown-item" href="#" onClick="params.update({filename: this.innerText, content: null});">' + file + '</a>';
+			}
+			params.update('filename', 'content');
+		}
+	};
 
 	function goTo(file, line, column) {
 		params.update({ filename: file });
 		editor.setCursor(line - 1, column);
 		return false;
-	}
-
-	function Terminal(output, interpret) {
-		if (output == null) {
-			return {
-				print: console.log,
-				clear: function () {
-				}
-			}
-		}
-		if (interpret == null) {
-			interpret = function(text) {
-				return text;
-			}
-		}
-
-		let buffer = '';
-		function flush() {
-			output.innerHTML += buffer;
-			output.scrollTop = output.scrollHeight;
-			buffer = '';
-		}
-		setInterval(function() {
-			if (buffer == '') {
-				return;
-			}
-			flush();
-		}, 1000 / 30);	// @30 fps
-		return {
-			print: function (text) {
-				buffer += interpret(text) + "\n";
-				//if (buffer.length > 1024) { flush(); }
-			},
-			clear: function () {
-				output.innerHTML = '';
-			}
-		};
 	}
 
 	function showConsole(inout, orientation) {
@@ -242,22 +236,33 @@
 		}
 	}
 
-	function saveInput() {
-		worker.postMessage({
-			filename: params.filename,
-			content: editor.getValue()
-		});
+	function downloadInput() {
+		let type = "application/octet-stream";
+		saveAs(new Blob([editor.getValue()], {type: type}), params.filename);
 	}
 
 	function shareInput() {
 		params.update({
-			content: editor.getValue()
+			content: btoa(editor.getValue())
 		});
 	}
 
-	function downloadInput() {
-		let type = "application/octet-stream";
-		saveAs(new Blob([editor.getValue()], {type: type}), params.filename);
+	function saveInput() {
+		let filename = params.filename;
+		if (filename == null) {
+			filename = prompt('Save file as:', 'untitled.ci');
+		}
+		if (filename == null) {
+			return;
+		}
+		worker.postMessage({
+			filename: filename,
+			content: editor.getValue()
+		});
+		params.update({
+			filename: filename,
+			content: null
+		});
 	}
 
 	function execute(mode) {

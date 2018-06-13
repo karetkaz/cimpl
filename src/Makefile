@@ -1,6 +1,6 @@
-CFLAGS=-Wall -g3 -ggdb
-#~ CFLAGS=-Wall -Wpadded -g0 -Os
-#~ CFLAGS=-pipe -g -Wall -Wextra
+CFLAGS=-Wall -g0 -O3
+#~ CFLAGS=-Wall -g3 -ggdb
+#~ CFLAGS=-pipe -g -Wall -Wextra -Wpadded
 ARH=-m32
 ARH=-m64
 LIBS=-lm -ldl
@@ -36,6 +36,7 @@ OBJS=\
 	$(OBJDIR)/code.o\
 	$(OBJDIR)/cgen.o\
 	$(OBJDIR)/core.o\
+	$(OBJDIR)/utils.o\
 	$(OBJDIR)/main.o\
 	$(OBJDIR)/plugin.o
 

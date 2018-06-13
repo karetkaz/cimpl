@@ -17,10 +17,11 @@ SOURCE=\
 	$(SRCDIR)/utils.c\
 	$(SRCDIR)/main.c
 
-CFLAGS=-O3
+CFLAGS=-Wall -g0 -O3
 OPTIONS=-s WASM=1
 OPTIONS+=-s EXPORT_ALL=0
 OPTIONS+=-s INVOKE_RUN=0
+#OPTIONS+=-s ASSERTIONS=1
 OPTIONS+=-s ALLOW_MEMORY_GROWTH=1
 #OPTIONS+=-s "EXPORTED_FUNCTIONS=['_main','_rtInit','_ccInit','_ccAddUnit','_ccGenCode','_execute']"
 

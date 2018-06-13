@@ -220,6 +220,14 @@ symn linkOf(astn ast, int follow);
  */
 int isTypeExpr(astn ast);
 
+/**
+ * Check if a qualified variable expression is constant.
+ * 
+ * @param ast Abstract syntax tree to be checked.
+ * @return true or false.
+ */
+int isConstVar(astn ast);
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Lexer
 
 /**

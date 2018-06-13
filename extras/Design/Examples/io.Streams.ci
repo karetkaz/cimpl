@@ -3,11 +3,10 @@
 struct Closeable: object {
 	// abstract method
 	void close(Closeable this);
-
-	void false(Closeable this) {}
 }
 
-inline void(Closeable instance) = Closeable.close(instance);
+// destroy a closeable invoking the abstract close method
+inline void(Closeable instance) = instance.close();
 
 // ByteReader ~= java:InputStream
 struct ByteReader: Closeable {
@@ -24,17 +23,13 @@ struct ByteReader: Closeable {
 		return result;
 	}
 
-	// TODO: bool read(ByteReader this, int8 &value) { /*...*/ }
-	// TODO: bool read(ByteReader this, int16 &value) { /*...*/ }
-	// TODO: bool read(ByteReader this, int32 &value) { /*...*/ }
-	// TODO: bool read(ByteReader this, int64 &value) { /*...*/ }
-	// TODO: bool read(ByteReader this, uint8 &value) { /*...*/ }
-	// TODO: bool read(ByteReader this, uint16 &value) { /*...*/ }
-	// TODO: bool read(ByteReader this, uint32 &value) { /*...*/ }
-	// TODO: bool read(ByteReader this, uint64 &value) { /*...*/ }
-	// TODO: bool read(ByteReader this, float32 &value) { /*...*/ }
-	// TODO: bool read(ByteReader this, float64 &value) { /*...*/ }
-	// TODO: bool read(ByteReader this, variant value) { /*???*/ }
+	bool read(ByteReader this, variant value) {
+		int size = sizeof(typename(value));
+		byte bytes[] = emit(pointer(value), size);
+		// TODO: try to read all bytes in a loop
+		// TODO: little or big endian?
+		return this.read(bytes) < size;
+	}
 
 	/* TODO: subclasses
 		CopyReader
@@ -49,42 +44,36 @@ struct ByteReader: Closeable {
 struct ByteWriter: Closeable {
 	struct Writeable: object {
 		// abstract method
-		int write(Writeable this, ByteWriter writer);
+		void write(Writeable this, ByteWriter writer);
 	}
 
 	// abstract method
-	int write(ByteWriter this, byte bytes[]);
+	void write(ByteWriter this, byte bytes[]);
 
 	// abstract method
 	void flush(ByteWriter this);
 
-	int write(ByteWriter this, byte oneByte) {
+	void write(ByteWriter this, byte oneByte) {
 		byte bytes[1] = { oneByte };
 		return this.write(bytes);
 	}
 
-	int write(ByteWriter this, int write(ByteWriter writer)) {
+	void write(ByteWriter this, void write(ByteWriter writer)) {
 		return write(this);
 	}
 
-	int write(ByteWriter this, Writeable value) {
+	void write(ByteWriter this, Writeable value) {
 		return write(this, value.write);
 	}
 
-	// TODO: bool write(ByteWriter this, int8 value) { /*...*/ }
-	// TODO: bool write(ByteWriter this, int16 value) { /*...*/ }
-	// TODO: bool write(ByteWriter this, int32 value) { /*...*/ }
-	// TODO: bool write(ByteWriter this, int64 value) { /*...*/ }
-	// TODO: bool write(ByteWriter this, uint8 value) { /*...*/ }
-	// TODO: bool write(ByteWriter this, uint16 value) { /*...*/ }
-	// TODO: bool write(ByteWriter this, uint32 value) { /*...*/ }
-	// TODO: bool write(ByteWriter this, uint64 value) { /*...*/ }
-	// TODO: bool write(ByteWriter this, float32 value) { /*...*/ }
-	// TODO: bool write(ByteWriter this, float64 value) { /*...*/ }
-	// TODO: bool write(ByteWriter this, variant value) { /*???*/ }
+	void write(ByteWriter this, variant value) {
+		int size = sizeof(typename(value));
+		byte bytes[] = emit(pointer(value), size);
+		// TODO: little or big endian?
+		return this.write(bytes);
+	}
 
 	/* TODO: subclasses
-	 ?	CopyWriter
 		FileWriter
 		PipedWriter
 		SocketWriter
@@ -95,6 +84,7 @@ struct ByteWriter: Closeable {
 // TextReader := Decoder & Parser
 struct TextReader: Closeable {  // java:Reader + Scanner?Parser?
 	const ByteReader reader;
+	const bool close;
 
 	// abstract method
 	int decode(char chars[], ByteReader reader);
@@ -113,14 +103,16 @@ struct TextReader: Closeable {  // java:Reader + Scanner?Parser?
 	}
 
 	void close(TextReader this) {
-		this.reader.close();
+		if (close) {
+			this.reader.close();
+		}
 	}
 
 	// TODO: string readNext(TextReader this, regex matcher) { /*...*/ }
 	// TODO: string readWord(TextReader this) { return this.readNext(/\w+/); }
 	// TODO: string readLine(TextReader this) { return this.readNext(/.*$/); }
 	// TODO: string readAll(TextReader this) { return this.readMatch(/.*/); }
-	// TODO: string readNumber(TextReader this, Locale locale) { /*...*/ }
+	// TODO: double readNumber(TextReader this, Locale locale) { /*...*/ }
 
 	/* TODO: subclasses
 		Latin1
@@ -134,28 +126,29 @@ struct TextReader: Closeable {  // java:Reader + Scanner?Parser?
 struct TextWriter: Closeable {  // java:Writer + PrintStream
 	struct Writeable: object {
 		// abstract method
-		int write(Writeable this, TextWriter writer);
+		void write(Writeable this, TextWriter writer);
 	}
 
 	const ByteWriter writer;
+	const bool close;
 
 	// abstract method
-	int encode(ByteWriter writer, char chars[]);
+	void encode(ByteWriter writer, char chars[]);
 
-	int write(TextWriter this, char chars[]) {
+	void write(TextWriter this, char chars[]) {
 		return this.encode(this.writer, chars);
 	}
 
-	int write(TextWriter this, char oneChar) {
+	void write(TextWriter this, char oneChar) {
 		char chars[1] = { oneChar };
 		return this.write(chars);
 	}
 
-	int write(TextWriter this, int write(TextWriter writer)) {
+	void write(TextWriter this, void write(TextWriter writer)) {
 		return write(this);
 	}
 
-	int write(TextWriter this, Writeable value) {
+	void write(TextWriter this, Writeable value) {
 		return write(this, value.write);
 	}
 
@@ -164,7 +157,9 @@ struct TextWriter: Closeable {  // java:Writer + PrintStream
 	}
 
 	void close(TextWriter this) {
-		this.writer.close();
+		if (close) {
+			this.writer.close();
+		}
 	}
 
 	/**
@@ -176,7 +171,7 @@ struct TextWriter: Closeable {  // java:Writer + PrintStream
 	 * TextReader input = Utf8Reader("in.txt");
 	 * output.encode(input);
 	*/
-	int encode(TextWriter this, TextReader input) {
+	static int encode(TextWriter this, TextReader input) {
 		int count;
 		char buffer[1024];
 		for ( ; (count = input.read(buffer)) > 0; ) {
@@ -186,17 +181,17 @@ struct TextWriter: Closeable {  // java:Writer + PrintStream
 		return result;
 	}
 
-	// TODO: bool write(TextWriter this, Locale locale, bool value) { /*...*/ }
-	// TODO: bool write(TextWriter this, Locale locale, char value) { /*...*/ }
-	// TODO: bool write(TextWriter this, Locale locale, int32 value) { /*...*/ }
-	// TODO: bool write(TextWriter this, Locale locale, int64 value) { /*...*/ }
-	// TODO: bool write(TextWriter this, Locale locale, uint32 value) { /*...*/ }
-	// TODO: bool write(TextWriter this, Locale locale, uint64 value) { /*...*/ }
-	// TODO: bool write(TextWriter this, Locale locale, float32 value) { /*...*/ }
-	// TODO: bool write(TextWriter this, Locale locale, float64 value) { /*...*/ }
-	// TODO: bool write(TextWriter this, Locale locale, string value) { /*...*/ }
-	// TODO: bool write(TextWriter this, Locale locale, object value) { /*...*/ }
-	// TODO: bool write(TextWriter this, Locale locale, variant value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, bool value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, char value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, int32 value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, int64 value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, uint32 value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, uint64 value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, float32 value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, float64 value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, string value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, object value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, variant value) { /*...*/ }
 
 	/* TODO: subclasses
 		Latin1
@@ -210,6 +205,7 @@ struct TextWriter: Closeable {  // java:Writer + PrintStream
 struct CopyReader: ByteReader {
 	const ByteReader source;
 	const ByteWriter clone;
+	const bool close;
 
 	int read(CopyReader this, byte bytes[]) {
 		result = this.source.read(bytes);
@@ -220,68 +216,16 @@ struct CopyReader: ByteReader {
 	}
 
 	void close(CopyReader this) {
-		// FIXME: do we need to close these streams?
-		this.source.close();
-		this.copy.close();
+		if (close) {
+			this.source.close();
+			this.copy.close();
+		}
 	}
-
-	inline CopyReader(ByteReader source, ByteWriter clone) = {
-		source: source;
-		clone: clone;
-	};
-}
-
-// File byte-streams
-struct FileReader: ByteReader {
-	const File file;
-
-	int read(FileReader this, byte bytes[]) {
-		return File.read(this.file, bytes);
-	}
-
-	void close(FileReader this) {
-		File.close(this.file);
-	}
-
-	// initializer
-	inline FileReader(File file) = {
-		file: file;
-		close: false;   // we did not open it, we will not close it.
-	};
-
-	inline FileReader(Path path) = {
-		file: File.open(path);
-	};
-}
-struct FileWriter: ByteWriter {
-	const File file;
-
-	int write(FileWriter this, byte bytes[]) {
-		return File.write(this.file, bytes);
-	}
-
-	void flush(FileWriter this) {
-		return File.flush(this.file);
-	}
-
-	void close(FileWriter this) {
-		File.close(this.file);
-	}
-
-	// initializer
-	inline FileWriter(File file) = {
-		file: file;
-		close: false;   // we did not open it, we will not close it.
-	};
-
-	inline FileWriter(Path path, bool append) = {
-		file: append ? File.append(path) : File.create(path);
-	};
 }
 
 // Ascii
 struct AsciiReader: TextReader {
-
+	// convert bytes to chars
 	int decode(char chars[], ByteReader reader) {
 		for (result = 0; result < chars.length; result += 1) {
 			int value = reader.read();
@@ -293,47 +237,19 @@ struct AsciiReader: TextReader {
 		}
 		return result;
 	}
-
-	// initializer
-	inline AsciiReader(ByteReader reader) = {
-		reader: reader;
-		close: false;   // we did not open it, we will not close it.
-	};
-
-	inline AsciiReader(Path path) = {
-		reader: FileReader(path);
-	};
 }
 struct AsciiWriter: TextWriter {
-
-	int encode(ByteWriter writer, char chars[]) {
-		result = 0;
+	// convert characters to bytes(can cause data loss)
+	void encode(ByteWriter writer, char chars[]) {
 		for (int i = 0; i < chars.length; i += 1) {
-			int chr = chars[i];
-			if (writer.write(chr) < 0) {
-				// destination stream closed?
-				break;
-			}
-			result += 1;
+			writer.write(byte(chars[i]));
 		}
-		return result;
 	}
-
-	// initializer
-	inline AsciiWriter(ByteWriter writer) = {
-		writer: writer;
-		close: false;   // we did not open it, we will not close it.
-	};
-
-	// open the file appending or creating it
-	inline AsciiWriter(Path path, bool append) = {
-		writer: FileWriter(path, append);
-	};
 }
 
 // Utf-8
 struct Utf8Reader: TextReader {
-
+	// convert utf-8 bytes to characters
 	int decode(char chars[], ByteReader reader) {
 		for (result = 0; result < chars.length; result += 1) {
 			int value = reader.read();
@@ -364,69 +280,42 @@ struct Utf8Reader: TextReader {
 		}
 		return result;
 	}
-
-	// initializer
-	inline Utf8Reader(ByteReader reader) = {
-		reader: reader;
-		close: false;   // we did not open it, we will not close it.
-	};
-
-	inline Utf8Reader(Path path) = {
-		reader: FileReader(path);
-	};
 }
 struct Utf8Writer: TextWriter {
-
-	int encode(ByteWriter writer, char chars[]) {
-		result = 0;
+	// convert characters to utf-8 bytes
+	void encode(ByteWriter writer, char chars[]) {
+		byte bytes[4] = void;
 		for (int i = 0; i < chars.length; i += 1) {
 			int chr = chars[i];
-			byte bytes[4];
-			int size = 0;
 
 			if (chr < 0x80) {
 				bytes[0] = chr;
-				size = 1;
+				writer.write(bytes[0, 1]);
 			}
 			else if (chr < 0x800) {
 				bytes[0] = (chr & 0x7c0) >> 6 | 0xc0;
 				bytes[1] = chr & 0x3f | 0x80;
-				size = 2;
+				writer.write(bytes[0, 2]);
 			}
 			else if (chr < 0xe000) {
 				bytes[0] = (chr & 0xf000) >> 12 | 0xe0;
 				bytes[1] = (chr & 0xfc) >> 6 | 0x80;
 				bytes[2] = chr & 0x3f | 0x80;
-				size = 3;
+				writer.write(bytes[0, 3]);
 			}
 			else {
 				bytes[0] = (chr & 0x1c0000) >> 18 | 0xf0;
 				bytes[1] = (chr & 0x3f0) >> 12 | 0x80;
 				bytes[2] = (chr & 0xfc) >> 6 | 0x80;
 				bytes[3] = chr & 0x3f | 0x80;
-				size = 4;
+				writer.write(bytes[0, 4]);
 			}
-			// FIXME: what if size is 4 but we write only 2 bytes?
-			if (writer.write(bytes[0, size]) < 0) {
-				// destination stream closed?
-				break;
-			}
-			result += size;
 		}
-		return result;
 	}
-
-	// initializer
-	inline Utf8Writer(ByteWriter writer) = {
-		writer: writer;
-		close: false;   // we did not open it, we will not close it.
-	};
-
-	inline Utf8Writer(Path path, bool append) = {
-		writer: FileWriter(path, append);
-	};
 }
 
+// File streams
+static if (typename(File) != null) {
 /*
 struct Path {
 	bool exists();
@@ -437,6 +326,138 @@ struct Path {
 
 	Path parent();
 	// permissions: canRead,write,execute,...
+}*/
+
+struct FileReader: ByteReader {
+	const File file;
+	const bool close;
+
+	int read(FileReader this, byte bytes[]) {
+		return File.read(this.file, bytes);
+	}
+
+	void close(FileReader this) {
+		if (close) {
+			File.close(this.file);
+		}
+	}
+}
+struct FileWriter: ByteWriter {
+	const File file;
+	const bool close;
+
+	void write(FileWriter this, byte bytes[]) {
+		for (int start = 0; start < bytes.length; ) {
+			start += File.write(this.file, bytes[start, bytes.length]);
+		}
+	}
+
+	void flush(FileWriter this) {
+		return File.flush(this.file);
+	}
+
+	void close(FileWriter this) {
+		if (close) {
+			File.close(this.file);
+		}
+	}
 }
 
-//~ */
+inline FileReader(Path path) = {
+	file: File.open(path);
+	close: true;    // close also the file when the reader is closed.
+};
+inline FileWriter(Path path, bool append) = {
+	file: append ? File.append(path) : File.create(path);
+	close: true;    // close also the file when the writer is closed.
+};
+
+inline AsciiReader(Path path) = {
+	reader: FileReader(path);
+	close: true;    // close also the file when the reader is closed.
+};
+inline AsciiWriter(Path path, bool append) = {
+	writer: FileWriter(path, append);
+	close: true;    // close also the file when the writer is closed.
+};
+
+inline Utf8Reader(Path path) = {
+	reader: FileReader(path);
+	close: true;    // close also the file when the reader is closed.
+};
+inline Utf8Writer(Path path, bool append) = {
+	writer: FileWriter(path, append);
+	close: true;    // close also the file when the writer is closed.
+};
+}
+
+struct ByteBuffer {
+	int position = 0;
+	int capacity = 32;
+	int length = 0;
+	byte buffer[*] = pointer.alloc(null, capacity);
+
+	int read(ByteBuffer this, byte bytes[]) {
+		if (this.position >= this.length) {
+			return -1;
+		}
+		for (int i = 0; i < bytes.length; i += 1) {
+			if (this.position >= this.length) {
+				return i;
+			}
+			bytes[i] = this.buffer[this.position];
+			this.position += 1;
+		}
+		return bytes.length;
+	}
+
+	int read(ByteBuffer this) {
+		if (this.position >= this.length) {
+			return -1;
+		}
+		int result = this.buffer[this.position];
+		this.position += 1;
+		return result;
+	}
+
+	void write(ByteBuffer this, byte bytes[]) {
+		int size = this.position + bytes.length;
+		if (size >= this.capacity) {
+			// try to double the current size
+			this.capacity *= 2;
+			if (size > 2 * this.capacity) {
+				// double the calculated size
+				this.capacity = size * 2;
+			}
+
+			byte buffer[*] buffer = this.buffer;
+			this.buffer = pointer.alloc(null, this.capacity);
+
+			// copy old bytes
+			for (int i = 0; i < this.position; i += 1) {
+				this.buffer[i] = buffer[i];
+			}
+			pointer.alloc(buffer, 0);
+		}
+
+		// copy new bytes
+		for (int i = 0; i < bytes.length; i += 1) {
+			this.buffer[this.position] = bytes[i];
+			this.position += 1;
+		}
+	}
+
+	void flush(ByteBuffer this) {
+		// do nothing
+	}
+
+	void close(ByteBuffer this) {
+		// release memory
+		pointer.alloc(this.buffer, 0);
+		this.buffer = null;
+
+		this.position = 0;
+		this.capacity = 0;
+		this.length = 0;
+	}
+}

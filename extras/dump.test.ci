@@ -5132,13 +5132,13 @@ abortExecution(args: pointer): void: function {
 .instructions: (64 bytes)
 	test/stdc.nfcTryExec.ci:29: (25 bytes): details: NotEquals := {...}
 	<abortExecution+?>:    inc.sp(+16)
-	test/stdc.nfcTryExec.ci:30: (7 bytes): details.message := ("assertion failed")
+	test/stdc.nfcTryExec.ci:30: (7 bytes): details.message := ("assertion failed");
 	<abortExecution+?>:    load.ref .?????? ;"assertion failed"
 	<abortExecution+?>:    set.x1 sp(1)
-	test/stdc.nfcTryExec.ci:31: (7 bytes): details.expected := 97
+	test/stdc.nfcTryExec.ci:31: (7 bytes): details.expected := 97;
 	<abortExecution+?>:    load.c32 97
 	<abortExecution+?>:    set.x1 sp(2)
-	test/stdc.nfcTryExec.ci:32: (7 bytes): details.returned := 77
+	test/stdc.nfcTryExec.ci:32: (7 bytes): details.returned := 77;
 	<abortExecution+?>:    load.c32 77
 	<abortExecution+?>:    set.x1 sp(3)
 	test/stdc.nfcTryExec.ci:34: (34 bytes): raise(raise.abort, raise.noTrace, "fatal error", details);
@@ -12374,6 +12374,10 @@ forIdx: int32 {
 }
 
 ---------- Execute:
+
+---------- Time:
+Compile: 108.370 millis
+Execute: 7.276 millis
 
 ---------- Globals:
 typename: typename(<typename>)

@@ -760,7 +760,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				return NULL;
 			}
 
-			if (isConst(sym) && ast->kind != INIT_set) {
+			if (isConstVar(ast->op.lhso) && ast->kind != INIT_set) {
 				error(cc->rt, ast->file, ast->line, ERR_INVALID_CONST_ASSIGN, ast);
 			}
 			if (!canAssign(cc, lType, ast->op.rhso, 0)) {

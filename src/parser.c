@@ -53,6 +53,18 @@ static inline astn argNode(ccContext cc, astn lhs, astn rhs) {
 	return opNode(cc, OPER_com, lhs, rhs);
 }
 
+static inline void addTail(astn list, astn node) {
+	dieif(list == NULL, ERR_INTERNAL_ERROR);
+	dieif(list->kind != STMT_beg, ERR_INTERNAL_ERROR);
+
+	if (list->lst.tail != NULL) {
+		list->lst.tail->next = node;
+	}
+	else {
+		list->lst.head = node;
+	}
+	list->lst.tail = node;
+}
 /// Add length property to arrays.
 static inline void addLength(ccContext cc, symn sym, astn init) {
 	dieif(sym->fields != NULL, ERR_INTERNAL_ERROR);
@@ -221,69 +233,7 @@ static astn expandAssignment(ccContext cc, astn root) {
 	}
 	return root;
 }
-/** Expand literal initializer to initializer statement
- * complex c = {re: 5, im: 6}; => { c.re = 5; c.im = 6; };
- * TODO: int ar[3] = {1, 2, 3}; => { ar[0] = 1; ar[1] = 2; ar[2] = 3; };
- * TODO: int ar[string] = {a: 3, "b": 1}; => { ar["a"] = 3; ar["b"] = 1; };
- */
-static astn expandInitializer(ccContext cc, symn variable, astn initializer) {
-	dieif(initializer->kind != STMT_beg, ERR_INTERNAL_ERROR);
-	astn varNode = lnkNode(cc, variable);
-	varNode->file = variable->file;
-	varNode->line = variable->line;
-	astn keys = NULL, tail = NULL;
 
-	// translate initialization to assignment
-	for (astn init = initializer->stmt.stmt; init != NULL; init = init->next) {
-		if (init->kind != INIT_set) {
-			error(cc->rt, init->file, init->line, ERR_INITIALIZER_EXPECTED, init);
-			continue;
-		}
-		// key: value => variable.key = value;
-		astn key = init->op.lhso;
-		init->op.lhso = opNode(cc, OPER_dot, varNode, key);
-		init->op.lhso->file = key->file;
-		init->op.lhso->line = key->line;
-
-		typeCheck(cc, NULL, init, 1);
-		init->type = cc->type_vid;
-
-		key->next = keys;
-		keys = key;
-
-		tail = init;
-	}
-
-	// add default initializer of uninitialized fields
-	for (symn field = variable->type->fields; field; field = field->next) {
-		int initialized = 0;
-		for (astn key = keys; key; key = key->next) {
-			if (field->use == key) {
-				initialized = 1;
-				break;
-			}
-		}
-		if (!initialized && field->init != NULL) {
-			astn init = newNode(cc, INIT_set);
-			init->op.lhso = opNode(cc, OPER_dot, varNode, lnkNode(cc, field));
-			init->op.rhso = field->init;
-			if (tail == NULL) {
-				initializer->stmt.stmt = init;
-			}
-			else {
-				tail->next = init;
-			}
-			typeCheck(cc, NULL, init, 1);
-			init->type = cc->type_vid;
-			tail = init;
-			initialized = 1;
-		}
-		if (!initialized) {
-			error(cc->rt, variable->file, variable->line, ERR_UNINITIALIZED_MEMBER, variable, field);
-		}
-	}
-	return initializer;
-}
 /// expand expression or declaration to statement 
 static astn expand2Statement(ccContext cc, astn node, int block) {
 	astn result = newNode(cc, block ? STMT_beg : STMT_end);
@@ -296,6 +246,102 @@ static astn expand2Statement(ccContext cc, astn node, int block) {
 	return result;
 }
 
+static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn list) {
+	astn keys = NULL;
+
+	// TODO: if variable instance of object then allocate
+
+	// translate initialization to assignment
+	for (astn init = initObj->stmt.stmt; init != NULL; init = init->next) {
+		if (init->kind != INIT_set) {
+			error(cc->rt, init->file, init->line, ERR_INITIALIZER_EXPECTED, init);
+			continue;
+		}
+		// key: value => variable.key = value;
+		astn key = init->op.lhso;
+		astn value = init->op.rhso;
+		symn field = NULL;
+		init->op.lhso = opNode(cc, OPER_dot, varNode, key);
+		init->op.lhso->file = key->file;
+		init->op.lhso->line = key->line;
+
+		if (value->kind == STMT_beg) {
+			// lookup key
+			if (typeCheck(cc, NULL, init->op.lhso, 1) != NULL) {
+				expandInitializerObj(cc, init->op.lhso, value, list);
+			}
+			init->op.rhso = init->op.lhso;
+		} else {
+			addTail(list, expand2Statement(cc, init, 0));
+
+			// type check assignment
+			if (typeCheck(cc, NULL, init, 1) != NULL) {
+				field = linkOf(key, 1);
+			}
+			if (field != NULL && isStatic(field)) {
+				error(cc->rt, init->file, init->line, ERR_INVALID_STATIC_FIELD_INIT, init);
+			}
+			init->type = cc->type_vid;
+		}
+
+		key->next = keys;
+		keys = key;
+	}
+
+	// add default initializer of uninitialized fields
+	for (symn field = varNode->type->fields; field; field = field->next) {
+		if (isStatic(field)) {
+			continue;
+		}
+		int initialized = 0;
+		// check if last usage is from the current initialization
+		for (astn key = keys; key; key = key->next) {
+			if (field->use == key) {
+				initialized = 1;
+				break;
+			}
+		}
+		if (initialized) {
+			continue;
+		}
+
+		astn defInit = field->init;
+		if (defInit == NULL && !isConst(field) && !isConstVar(varNode)) {
+			// only assignable members can be initialized with default type initializer.
+			defInit = field->type->init;
+		}
+
+		if (defInit != NULL) {
+			astn init = newNode(cc, INIT_set);
+			init->op.lhso = opNode(cc, OPER_dot, varNode, lnkNode(cc, field));
+			init->op.rhso = defInit;
+
+			addTail(list, init);
+
+			typeCheck(cc, NULL, init, 1);
+			init->type = cc->type_vid;
+			initialized = 1;
+		}
+		if (!initialized) {
+			error(cc->rt, varNode->file, varNode->line, ERR_UNINITIALIZED_MEMBER, linkOf(varNode, 0), field);
+		}
+	}
+	return list;
+}
+
+/** Expand literal initializer to initializer statement
+ * complex c = {re: 5, im: 6}; => { c.re = 5; c.im = 6; };
+ * TODO: int ar[3] = {1, 2, 3}; => { ar[0] = 1; ar[1] = 2; ar[2] = 3; };
+ * TODO: int ar[string] = {a: 3, "b": 1}; => { ar["a"] = 3; ar["b"] = 1; };
+ */
+static astn expandInitializer(ccContext cc, symn variable, astn initializer) {
+	dieif(initializer->kind != STMT_beg, ERR_INTERNAL_ERROR);
+	dieif(initializer->lst.tail != NULL, ERR_INTERNAL_ERROR);
+	astn varNode = lnkNode(cc, variable);
+	varNode->file = variable->file;
+	varNode->line = variable->line;
+	return expandInitializerObj(cc, varNode, initializer, initializer);
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Parser
 static astn statement_list(ccContext cc);
 static astn statement(ccContext cc, ccKind attr);
@@ -909,7 +955,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 	if (skipTok(cc, ASGN_set, 0)) {
 		astn init = initializer(cc);
 		if (init->kind == STMT_beg) {
-			expandInitializer(cc, def, init);
+			init = expandInitializer(cc, def, init);
 			init->type = type;
 		}
 		else {
@@ -1002,7 +1048,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 			params->init = type->init;
 			params->kind = ATTR_paral | KIND_var;
 		}
-		expandInitializer(cc, params, init);
+		init = expandInitializer(cc, params, init);
 		for (astn n = init->stmt.stmt; n != NULL; n = n->next) {
 			if (!typeCheck(cc, NULL, n, 0)) {
 				error(cc->rt, n->file, n->line, ERR_INVALID_TYPE, n);
@@ -1653,13 +1699,7 @@ astn ccAddUnit(ccContext cc, char *file, int line, char *text) {
 
 		// add parsed unit to module
 		if (cc->root != NULL && cc->root->kind == STMT_beg) {
-			if (cc->root->lst.tail != NULL) {
-				cc->root->lst.tail->next = unit;
-			}
-			else {
-				cc->root->lst.head = unit;
-			}
-			cc->root->lst.tail = unit;
+			addTail(cc->root, unit);
 		}
 	}
 	else {

@@ -778,15 +778,37 @@ int isTypeExpr(astn ast) {
 		return 0;
 	}
 
-	if (ast->kind == TOKEN_var) {
-		return isTypename(ast->ref.link);
+	switch (ast->kind) {
+		default:
+			break;
+
+		case OPER_dot:
+			return isTypeExpr(ast->op.lhso) && isTypeExpr(ast->op.rhso);
+
+		case TOKEN_var:
+			return ast->ref.link && isTypename(ast->ref.link);
 	}
 
-	if (ast->kind == OPER_dot) {
-		if (isTypeExpr(ast->op.lhso)) {
-			return isTypeExpr(ast->op.rhso);
-		}
+	return 0;
+}
+
+int isConstVar(astn ast) {
+	if (ast == NULL) {
 		return 0;
+	}
+
+	switch (ast->kind) {
+		default:
+			break;
+
+		case OPER_idx:
+			return isConstVar(ast->op.lhso);
+
+		case OPER_dot:
+			return isConstVar(ast->op.rhso) || isConstVar(ast->op.lhso);
+
+		case TOKEN_var:
+			return ast->ref.link && isConst(ast->ref.link);
 	}
 
 	return 0;

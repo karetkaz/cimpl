@@ -22,8 +22,6 @@ Module.onRuntimeInitialized = function () {
 
 onmessage = function(event) {
 	let data = event.data;
-	//postMessage({ "=>": JSON.stringify(data) });
-	console.log(JSON.stringify(data));
 	if (data.filename !== undefined) {
 		if (data.content !== undefined) {
 			FS.writeFile(data.filename, data.content);
