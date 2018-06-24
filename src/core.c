@@ -626,6 +626,7 @@ int rtClose(rtContext rt) {
 	// close log file
 	logFile(rt, NULL, 0);
 
+	int errors = rt->errors;
 	// release debugger memory
 	if (rt->dbg != NULL) {
 		freeBuff(&rt->dbg->functions);
@@ -635,7 +636,7 @@ int rtClose(rtContext rt) {
 	if (rt->freeMem) {
 		free(rt);
 	}
-	return rt->errors;
+	return errors;
 }
 
 size_t vmInit(rtContext rt, int debug, vmError onHalt(nfcContext)) {

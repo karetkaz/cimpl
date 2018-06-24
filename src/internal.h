@@ -381,6 +381,7 @@ void closeLibs();
 #define ERR_UNINITIALIZED_CONSTANT "uninitialized constant `%T`"
 #define ERR_UNINITIALIZED_VARIABLE "uninitialized variable `%T`"
 #define ERR_UNINITIALIZED_MEMBER "uninitialized member `%.T.%.T`"
+#define ERR_PARTIAL_INITIALIZE_UNION "partial union initialization with `%.T.%.T`"
 
 // Code generator errors
 #define ERR_CAST_EXPRESSION "can not emit expression: %t, invalid cast(%K -> %K)"

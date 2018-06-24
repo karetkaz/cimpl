@@ -2,8 +2,7 @@ function Terminal(output, interpret) {
 	if (output == null) {
 		return {
 			print: console.log,
-			clear: function () {
-			}
+			clear: console.clear
 		}
 	}
 	if (interpret == null) {
@@ -35,7 +34,17 @@ function Terminal(output, interpret) {
 	}
 	return {
 		print: function (text) {
-			buffer.push(interpret(text));
+			let escaped = text.replace(/[<>&\r\n]/g, function (match) {
+				switch (match) {
+					default: return match;
+					case '<': return "&lt;";
+					case '>': return "&gt;";
+					case '&': return "&amp;";
+					case '\r': return "<br>";
+					case '\n': return "<br>";
+				}
+			});
+			buffer.push(interpret(escaped, text));
 			if (nextFlush === 0) {
 				nextFlush = setInterval(flush, 1000 / 20);	// @20 fps
 			}

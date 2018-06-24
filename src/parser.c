@@ -289,6 +289,17 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 	}
 
 	// add default initializer of uninitialized fields
+	size_t unionInitSize = varNode->type->size;
+	for (symn field = varNode->type->fields; field; field = field->next) {
+		if (isStatic(field)) {
+			continue;
+		}
+		if (field->offs != 0) {
+			unionInitSize = 0;
+			break;
+		}
+		dieif(unionInitSize < field->size, ERR_INTERNAL_ERROR);
+	}
 	for (symn field = varNode->type->fields; field; field = field->next) {
 		if (isStatic(field)) {
 			continue;
@@ -301,7 +312,11 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 				break;
 			}
 		}
-		if (initialized) {
+
+		if (initialized || unionInitSize > 0) {
+			if (initialized && field->size < unionInitSize) {
+				warn(cc->rt, 1, varNode->file, varNode->line, ERR_PARTIAL_INITIALIZE_UNION, linkOf(varNode, 0), field);
+			}
 			continue;
 		}
 

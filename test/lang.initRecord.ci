@@ -1,3 +1,4 @@
+// test record initializations
 // requires `-X+glob` option to generate non static global variables
 
 static if (typename(integer) == null) {
@@ -9,32 +10,73 @@ static integer globalCounter = 33;
 static integer globalInitCounter1 = globalCounter += 1;
 
 struct Record {
-	// member variable
-	// compiler: WARN if not initialized when instantiated.
-	int32 member;
 
-	// member variable with default value
-	// compiler: use default value if not initialized when instantiated.
-	int32 memberInit = 42;
+	// inner record
+	struct Inner {
+		int32 member;
+		const int32 constant;
+	}
+
+	// member variable
+	// compiler: use `default type initializer` if not initialized when instantiated.
+	int32 member;
 
 	// constant member variable
 	// compiler: ERROR if not initialized when instantiated.
 	// compiler: ERROR if assigned after initialization.
-	const int32 memberConstant;
+	// constants must be initialized on instance creation, because they can not be changed.
+	const int32 constant;
+
+	// member variable with default value
+	// compiler: use `default field initializer` if not initialized when instantiated.
+	int32 memberInit = 2;
 
 	// constant member variable with default value
-	// compiler: use default value if not initialized when instantiated.
+	// compiler: use `default field initializer` if not initialized when instantiated.
 	// compiler: ERROR if assigned after initialization.
-	const int32 memberConstantInit = 43;
+	const int32 constantInit = 3;
+
+	// field must be initialized because there is no `default type initializer`.
+	Inner memberRec;
+
+	// all members of constant fields must be initialized on instance creation, because they can not be changed.
+	const Inner constantRec;
+
+	// if initializer is omitted, initialize with `default field initializer`.
+	// FIXME: Inner memberRecInit = {member: 21, constant: 22};
+
+	// if initializer is omitted, initialize with `default field initializer`.
+	// FIXME: const Inner constantRecInit = {member: 31, constant: 32};
 
 	// global variable(hidden in class)
-	// compiler: WARN if not initialized when declared.
-	static int32 global = globalCounter += 1;
+	// compiler: use `default type initializer` if not initialized when instantiated.
+	static int32 global;
+
+	// global variable(hidden in class)
+	// global variable initialized with initializer.
+	static int32 globalInit = globalCounter += 1;
 
 	// constant global variable(hidden in class)
 	// compiler: ERROR if not initialized when declared.
 	// compiler: ERROR if assigned after initialized.
+	// global constants must be initialized when declared, because they can not be changed.
 	static const int32 globalConstant = globalCounter += 1;
+
+	// global variable(hidden in class)
+	// compiler: ERROR if not initialized when declared (might be filled with garbage (reported also by valgrind)).
+	static Inner globalRec;
+
+	// global variable(hidden in class)
+	// global variable initialized with initializer.
+	static Inner globalRecInit = {member: 51, constant: 52};
+
+	// constant global variable(hidden in class)
+	// compiler: ERROR if not initialized when declared.
+	// compiler: ERROR if assigned after initialized.
+	// global constants must be initialized when declared, because they can not be changed.
+	static const Inner globalConstantRec = {member: 61, constant: 62};
+
+	// TODO: methods and functions
 
 	// static method
 	static int staticMethod(int x, int y) {
@@ -98,8 +140,90 @@ static integer globalInitGlobal = globalCounter;
 integer localInitMethodGlobal = initMethod(false);
 integer localInitMethodRecordGlobal = initMethod(true);
 
-Record localObject;                   // TODO: object must be initialized
-static Record globalObject;           // TODO: object must be initialized
+Record localObjNoInit;                   // TODO: variable must be initialized
+static Record globalObjNoInit;           // TODO: variable must be initialized
+
+Record localObj = {
+//	member: 6;
+	constant: 7;
+//	memberInit: 8;
+//	constantInit: 9;
+
+	memberRec: {
+//		member: 61;
+		constant: 62;
+	};
+	// constant member mut be initialized with all fields set
+	constantRec: {
+		member: 71;
+		constant: 72;
+	};
+
+	abstractMethod: null; // FIXME: error message: uninitialized member `localObj.abstractMethod`
+	/* static fields can not be initialized
+	global: 29;
+	globalInit: 39;
+	globalConstant: 49;
+	// */
+};
+const Record localConstObj = {
+	member: 6;
+	constant: 7;
+	memberRec: {
+		member: 61;
+		constant: 62;
+	};
+	constantRec: {
+		member: 71;
+		constant: 72;
+	};
+
+	abstractMethod: null; // FIXME: error message: uninitialized member `localConstObj.abstractMethod`
+};
+static Record globalObj = {
+	constant: 7;
+
+	memberRec: {
+		constant: 62;
+	};
+	constantRec: {
+		member: 71;
+		constant: 72;
+	};
+
+	abstractMethod: null; // FIXME: error message: uninitialized member `globalObj.abstractMethod`
+};
+static const Record globalConstObj = {
+	member: 6;
+	constant: 7;
+	memberRec: {
+		member: 61;
+		constant: 62;
+	};
+	constantRec: {
+		member: 71;
+		constant: 72;
+	};
+
+	abstractMethod: null; // FIXME: error message: uninitialized member `localConstObj.abstractMethod`
+};
+
+Record localObjCopy = localObj;
+const Record localConstObjCopy = localConstObj;
+static Record globalObjCopy = globalObj;
+static const Record globalConstObjCopy =  globalConstObj;
+
+/* assign new values after initialization
+localObj.member = 74;
+localObj.memberInit = 75;
+// accessing static members using instance variable
+localObj.global = 76;
+localObj.globalInit = 79;
+/* constant variables can not be assigned
+localObj.constant = 79;
+localObj.constantInit = 80;
+localObj.globalConstant = 81;
+// */
 
 int localStaticCallStaticMethod = Record.staticMethod(2, 5);
 int localStaticCallForwardMethod = Record.forwardMethod(2, 6);

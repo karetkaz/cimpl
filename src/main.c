@@ -12,7 +12,6 @@
 #include <time.h>
 
 // default values
-static char mem[720 << 10];         // 720 Kb memory compiler + runtime
 const char *STDLIB = "stdlib.ci";   // standard library
 
 static inline int strEquals(const char *str, const char *with) {
@@ -1587,7 +1586,8 @@ int main(int argc, char *argv[]) {
 		.fastAssign = 1,
 		.genGlobals = 0,
 
-		.memory = sizeof(mem)
+		// 2 Mb memory compiler + runtime
+		.memory = 2 << 20
 	};
 
 	rtContext rt = NULL;
@@ -1785,11 +1785,6 @@ int main(int argc, char *argv[]) {
 		else if (strncmp(arg, "-mem", 4) == 0) {
 			int value = -1;
 			char *arg2 = arg + 4;
-			if (settings.memory != sizeof(mem)) {
-				fatal("argument specified multiple times: %s", arg);
-				return -1;
-			}
-			settings.memory = 1;
 			if (*arg2) {
 				arg2 = parseInt(arg2, &value, 10);
 				settings.memory = (size_t) value;
@@ -2109,12 +2104,7 @@ int main(int argc, char *argv[]) {
 
 	extra.ccStart = clock();
 	// initialize runtime context
-	if (settings.memory > sizeof(mem)) {
-		rt = rtInit(NULL, settings.memory);
-	}
-	else {
-		rt = rtInit(mem, settings.memory);
-	}
+	rt = rtInit(NULL, settings.memory);
 
 	if (rt == NULL) {
 		fatal("initializing runtime context");
@@ -2337,8 +2327,7 @@ int main(int argc, char *argv[]) {
 
 	// release resources
 	closeLibs();
-	rtClose(rt);
 
-	return rt->errors != 0;
+	return rtClose(rt) != 0;
 	(void)dumpVmOpc;
 }

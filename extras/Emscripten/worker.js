@@ -1,46 +1,61 @@
-importScripts("cmpl.js");
-
-Module.print = function(text) {
-	postMessage({ print: text });
-};
-
-Module.onRuntimeInitialized = function () {
-	let filelist = [];
-	FS.chdir('/workspace');
-	let contents = FS.analyzePath(FS.cwd()).object.contents;
-	for (let file in contents) {
-		if (!contents.hasOwnProperty(file)) {
-			continue;
+var Module = {
+	workspace: '/workspace',
+	files: [],
+	print: function(text) {
+		postMessage({ print: text });
+	},
+	onRuntimeInitialized: function () {
+		FS.mkdirTree(Module.workspace);
+		FS.chdir(Module.workspace);
+		let files = [];
+		for (let path of Module.files) {
+			try {
+				let xhr = new XMLHttpRequest();
+				xhr.open('GET', path, false);
+				xhr.send(null);
+				if (!xhr.response || xhr.status < 200 || xhr.status >= 300) {
+					throw new Error(xhr.status + ' (' + xhr.statusText + ')');
+				}
+				let file = path.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3");
+				FS.writeFile(file, xhr.responseText, {encoding: 'utf8'});
+				files.push(file);
+			}
+			catch (err) {
+				Module.print('file download failed: `' + path + '`: ' + err);
+			}
 		}
-		if (contents[file].isFolder || contents[file].isDevice) {
-			continue;
-		}
-		filelist.push(file);
+		postMessage({files: files});
 	}
-	postMessage({filelist: filelist});
 };
+
+importScripts("cmpl.js");
 
 onmessage = function(event) {
 	let data = event.data;
-	if (data.filename !== undefined) {
-		if (data.content !== undefined) {
-			FS.writeFile(data.filename, data.content);
-		} else {
-			try {
-				let dat = FS.readFile(data.filename);
-				let dec = new TextDecoder('utf-8');
+	if (data.files !== undefined) {
+		Module.files = data.files;
+	}
+	if (data.file !== undefined) {
+		try {
+			if (data.content !== undefined) {
+				FS.writeFile(data.file, data.content, {encoding: 'utf8'});
 				postMessage({
-					content: dec.decode(dat.buffer)
+					file: data.file,
+					line: data.line
 				});
-			} catch (err) {
+			} else {
 				postMessage({
-					print: 'opening file failed: `' + data.filename + '`: ' + err
+					file: data.file,
+					line: data.line,
+					content: FS.readFile(data.file, {encoding: 'utf8'})
 				});
 			}
+		} catch (err) {
+			Module.print('file operation failed: `' + data.file + '`: ' + err)
 		}
 	}
-	if (data.execute !== undefined) {
-		Module['callMain'](data.execute);
-		postMessage({ execute: 'success' });
+	if (data.exec !== undefined) {
+		Module['callMain'](data.exec);
+		postMessage({ exec: 'success' });
 	}
-}
+};
