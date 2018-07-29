@@ -20,6 +20,7 @@ SOURCES += \
 	$$CC_DIR/code.c \
 	$$CC_DIR/core.c \
 	$$CC_DIR/lstd.c \
+	$$CC_DIR/utils.c \
 	$$CC_DIR/main.c \
 	$$CC_DIR/plugin.c
 

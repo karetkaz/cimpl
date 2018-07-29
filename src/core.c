@@ -703,17 +703,17 @@ size_t vmInit(rtContext rt, int debug, vmError onHalt(nfcContext)) {
 
 		// add the main function
 		if (rt->main == NULL) {
-			symn main = (symn) (rt->_beg = padPointer(rt->_beg, pad_size));
+			symn sym = (symn) (rt->_beg = padPointer(rt->_beg, pad_size));
 			rt->_beg += sizeof(struct symNode);
 			if (rt->_beg >= rt->_end) {
 				fatal(ERR_MEMORY_OVERRUN);
 				return 0;
 			}
-			memset(main, 0, sizeof(struct symNode));
-			main->kind = ATTR_stat | ATTR_cnst | CAST_ref | KIND_fun;
-			main->offs = vmOffset(rt, rt->_beg);
-			main->name = ".main";
-			rt->main = main;
+			memset(sym, 0, sizeof(struct symNode));
+			sym->kind = ATTR_stat | ATTR_cnst | CAST_ref | KIND_fun;
+			sym->offs = vmOffset(rt, rt->_beg);
+			sym->name = ".main";
+			rt->main = sym;
 		}
 	}
 
@@ -761,7 +761,7 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(dbgContext, void *,
 		char data[];      // here begins the user data
 	};
 
-	const size_t minAllocationSize = sizeof(struct memChunk);
+	const ssize_t minAllocationSize = sizeof(struct memChunk);
 	size_t allocSize = padOffset(size + minAllocationSize, minAllocationSize);
 	memChunk chunk = (memChunk)((char*)ptr - offsetOf(struct memChunk, data));
 
@@ -1187,8 +1187,8 @@ dbgn mapDbgFunction(rtContext rt, size_t position) {
 dbgn addDbgFunction(rtContext rt, symn fun) {
 	dbgn result = NULL;
 	if (rt->dbg != NULL && fun != NULL) {
-		size_t i;
-		for (i = 0; i < rt->dbg->functions.cnt; ++i) {
+		size_t i = 0;
+		for ( ; i < rt->dbg->functions.cnt; ++i) {
 			result = getBuff(&rt->dbg->functions, i);
 			if (fun->offs <= result->start) {
 				break;
@@ -1213,9 +1213,8 @@ dbgn addDbgFunction(rtContext rt, symn fun) {
 
 dbgn getDbgStatement(rtContext rt, char *file, int line) {
 	if (rt->dbg != NULL) {
-		int i;
 		dbgn result = (dbgn)rt->dbg->statements.ptr;
-		for (i = 0; i < rt->dbg->statements.cnt; ++i) {
+		for (size_t i = 0; i < rt->dbg->statements.cnt; ++i) {
 			if (result->file && strcmp(file, result->file) == 0) {
 				if (line == result->line) {
 					return result;

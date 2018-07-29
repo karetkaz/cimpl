@@ -373,6 +373,15 @@ static vmError sysMemCpy(nfcContext ctx) {
 	retref(ctx, vmOffset(ctx->rt, res));
 	return noError;
 }
+// pointer move(pointer dst, pointer src, int32 size);
+static vmError sysMemMove(nfcContext ctx) {
+	void *dst = nfcReadArg(ctx, nfcNextArg(ctx)).ref;
+	void *src = nfcReadArg(ctx, nfcNextArg(ctx)).ref;
+	int size = nfcReadArg(ctx, nfcNextArg(ctx)).i32;
+	void *res = memmove(dst, src, (size_t) size);
+	retref(ctx, vmOffset(ctx->rt, res));
+	return noError;
+}
 //#}#endregion
 
 int ccLibStd(ccContext cc) {
@@ -487,6 +496,9 @@ int ccLibStd(ccContext cc) {
 			err = 3;
 		}
 		if (!ccDefCall(cc, sysMemCpy, "pointer copy(pointer dst, pointer src, int32 size)")) {
+			err = 3;
+		}
+		if (!ccDefCall(cc, sysMemMove, "pointer move(pointer dst, pointer src, int32 size)")) {
 			err = 3;
 		}
 		ccEnd(cc, cc->type_ptr);

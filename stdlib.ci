@@ -28,6 +28,25 @@ inline assert(bool condition, char message[*], variant inspect) = void(condition
 inline assert(bool condition, char message[*]) = void(condition ? void(0) : abort(message));
 inline assert(bool condition) = void(condition ? void(0) : abort("assertion failed!"));
 
+// TODO: make inline
+void assertEq(int expected, int returned, char message[*]) {
+	if (returned == expected) {
+		return;
+	}
+	struct NonEqualIntegers {
+		const int expected;
+		const int returned;
+		const char message[*];
+	}
+	NonEqualIntegers details = {
+		expected: expected;
+		returned: returned;
+		message: message;
+	};
+	raise(raise.abort, raise.defTrace, "assertion failed", details);
+}
+inline assertEq(int expected, int returned) = assertEq(expected, returned, null);
+
 }
 
 inline sizeof(typename type) = int(type.size);

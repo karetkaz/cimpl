@@ -12,7 +12,7 @@
 #include <time.h>
 
 // default values
-const char *STDLIB = "stdlib.ci";   // standard library
+static const char *STDLIB = "stdlib.ci";   // standard library
 
 static inline int strEquals(const char *str, const char *with) {
 	return strcmp(str, with) == 0;
@@ -21,7 +21,7 @@ static inline int strBegins(const char *str, const char *with) {
 	return strncmp(str, with, strlen(with)) == 0;
 }
 
-static char *parseInt(const char *str, int32_t *res, int radix) {
+static const char *parseInt(const char *str, int32_t *res, int radix) {
 	int64_t result = 0;
 	int sign = 1;
 
@@ -29,8 +29,10 @@ static char *parseInt(const char *str, int32_t *res, int radix) {
 	switch (*str) {
 		case '-':
 			sign = -1;
+			// fall through
 		case '+':
 			str += 1;
+			// fall through
 		default:
 			break;
 	}
@@ -94,7 +96,7 @@ static char *parseInt(const char *str, int32_t *res, int radix) {
 
 	*res = (int32_t)(sign * result);
 
-	return (char*)str;
+	return str;
 }
 
 static const char **escapeXML() {
@@ -328,8 +330,8 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 				break;
 			}
 		}
+		// fall through
 
-		// fall trough
 		case TOKEN_opc:
 		case TOKEN_val:
 			printFmt(out, esc, " value=\"%?t\" />\n", ast);
@@ -648,7 +650,7 @@ static void jsonPostProfile(dbgContext ctx) {
 	printFmt(out, esc, JSON_ARR_END, indent + 1);
 
 	printFmt(out, esc, JSON_OBJ_ARR_START, indent + 1, JSON_KEY_FUNC);
-	for (int i = 0; i < nFunc; ++i, dbg++) {
+	for (size_t i = 0; i < nFunc; ++i, dbg++) {
 		symn sym = dbg->func;
 		if (dbg->hits == 0) {
 			// skip functions not invoked
@@ -671,7 +673,7 @@ static void jsonPostProfile(dbgContext ctx) {
 
 	printFmt(out, esc, JSON_OBJ_ARR_START, indent + 1, JSON_KEY_STMT);
 	dbg = (dbgn) ctx->statements.ptr;
-	for (int i = 0; i < nStmt; ++i, dbg++) {
+	for (size_t i = 0; i < nStmt; ++i, dbg++) {
 		size_t symOffs = 0;
 		symn sym = dbg->func;
 		if (dbg->hits == 0) {
@@ -901,13 +903,13 @@ static void textPostProfile(userContext usr) {
 		if (dmpCoverage != 0) {
 			size_t covFunc = 0, nFunc = dbg->functions.cnt;
 			dbgn ptrFunc = (dbgn) dbg->functions.ptr;
-			for (int i = 0; i < nFunc; ++i, ptrFunc++) {
+			for (size_t i = 0; i < nFunc; ++i, ptrFunc++) {
 				covFunc += ptrFunc->hits > 0;
 			}
 
 			size_t covStmt = 0, nStmt = dbg->statements.cnt;
 			dbgn ptrStmt = (dbgn) dbg->statements.ptr;
-			for (int i = 0; i < nStmt; ++i, ptrStmt++) {
+			for (size_t i = 0; i < nStmt; ++i, ptrStmt++) {
 				covStmt += ptrStmt->hits > 0;
 			}
 
@@ -920,7 +922,7 @@ static void textPostProfile(userContext usr) {
 			printFmt(out, esc, "%?sProfile: functions\n", prefix);
 			size_t cnt = dbg->functions.cnt;
 			dbgn ptr = (dbgn) dbg->functions.ptr;
-			for (int i = 0; i < cnt; ++i, ptr++) {
+			for (size_t i = 0; i < cnt; ++i, ptr++) {
 				if (ptr->hits == 0) {
 					continue;
 				}
@@ -941,7 +943,7 @@ static void textPostProfile(userContext usr) {
 			size_t cnt = dbg->statements.cnt;
 			dbgn ptr = (dbgn) dbg->statements.ptr;
 			printFmt(out, esc, "%?sProfile: statements\n", prefix);
-			for (int i = 0; i < cnt; ++i, ptr++) {
+			for (size_t i = 0; i < cnt; ++i, ptr++) {
 				size_t symOffs = 0;
 				symn sym = ptr->func;
 				if (ptr->hits == 0) {
@@ -968,7 +970,7 @@ static void textPostProfile(userContext usr) {
 			printFmt(out, esc, "%?sProfile: functions not executed\n", prefix);
 			size_t nFunc = dbg->functions.cnt;
 			dbgn ptrFunc = (dbgn) dbg->functions.ptr;
-			for (int i = 0; i < nFunc; ++i, ptrFunc++) {
+			for (size_t i = 0; i < nFunc; ++i, ptrFunc++) {
 				symn sym = ptrFunc->func;
 				if (ptrFunc->hits != 0) {
 					continue;
@@ -982,7 +984,7 @@ static void textPostProfile(userContext usr) {
 			printFmt(out, esc, "%?sProfile: statements not executed\n", prefix);
 			size_t nStmt = dbg->statements.cnt;
 			dbgn ptrStmt = (dbgn) dbg->statements.ptr;
-			for (int i = 0; i < nStmt; ++i, ptrStmt++) {
+			for (size_t i = 0; i < nStmt; ++i, ptrStmt++) {
 				size_t symOffs = 0;
 				symn sym = ptrStmt->func;
 				if (ptrStmt->hits != 0) {
@@ -1281,8 +1283,8 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 					printFmt(out, esc, ",");
 				}
 				symn sym = NULL;
-				int32_t val = ((int32_t *) stack)[ss - i - 1];
-				if (val > 0 && val <= rt->vm.px) {
+				uint32_t val = ((uint32_t *) stack)[ss - i - 1];
+				if (val <= rt->vm.px) {
 					sym = rtLookup(rt, val, 0);
 					if (sym && !isFunction(sym)) {
 						if (sym->offs != val) {
@@ -1674,6 +1676,7 @@ int main(int argc, char *argv[]) {
 						break;
 					case 'L':
 						extra.dbgOnCaught |= brkTrace;
+						// fall through
 					case 'l':
 						extra.dbgOnCaught |= brkPrint;
 						arg2 += 2;
@@ -1681,6 +1684,7 @@ int main(int argc, char *argv[]) {
 
 					case 'E':
 						extra.exec |= trcLocals;
+						// fall through
 					case 'e':
 						extra.exec |= trcOpcodes;
 						arg2 += 2;
@@ -1784,7 +1788,7 @@ int main(int argc, char *argv[]) {
 		// override heap size
 		else if (strncmp(arg, "-mem", 4) == 0) {
 			int value = -1;
-			char *arg2 = arg + 4;
+			const char *arg2 = arg + 4;
 			if (*arg2) {
 				arg2 = parseInt(arg2, &value, 10);
 				settings.memory = (size_t) value;

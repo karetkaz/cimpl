@@ -16,6 +16,6 @@ implementation under refactoring.
 
 ## Tools
 
-[Live Demo](https://karetkaz.github.io/cmpl/extras/Emscripten/index.html#file=lang.function.ci&files=/cmpl/test/lang.function.ci;/cmpl/test/stdc.execute.ci;/cmpl/test/stdc.number.ci;/cmpl/test/stdc.memory.ci;/cmpl/test/lang.initFields.ci;/cmpl/test/lang.initArray.ci)
+[Live Demo](https://karetkaz.github.io/cmpl/extras/Emscripten/index.html#file=lang.function.ci&project=/cmpl/test/lang.function.ci;/cmpl/test/stdc.execute.ci;/cmpl/test/stdc.number.ci;/cmpl/test/stdc.memory.ci;/cmpl/test/lang.initFields.ci;/cmpl/test/lang.initArray.ci)
 
 [Inspector](https://karetkaz.github.io/cmpl/extras/Inspector/Inspector.html)

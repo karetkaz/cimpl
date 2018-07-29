@@ -1150,7 +1150,7 @@ int fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
 }
 
 // TODO: to be removed.
-static inline void tracePpu(vmProcessor pu, int cp, char *msg) {
+static inline void tracePpu(vmProcessor pu, unsigned cp, char *msg) {
 	trace("%s: {pu:%d, ip:%x, bp:%x, sp:%x, stack:%d, parent:%d, children:%d}", msg, cp, pu[cp].ip, pu[cp].bp, pu[cp].sp, pu[cp].ss, pu[cp].pp, pu[cp].cp);
 	(void)pu;
 	(void)cp;
@@ -1188,7 +1188,7 @@ static inline int vmFork(vmProcessor pu, int n, unsigned master, unsigned cl) {
 
 /// Wait for worker to finish.
 static inline int vmJoin(vmProcessor pu, unsigned slave, int wait) {
-	int master = pu[slave].pp;
+	unsigned master = pu[slave].pp;
 	tracePpu(pu, slave, "join");
 
 	// slave proc
@@ -1603,7 +1603,7 @@ int isChecked(dbgContext ctx) {
 	vmProcessor pu = rt->vm.cell;
 	trcptr trcBase = (trcptr)pu->bp;
 	size_t maxTrace = pu->tp - (trcptr)pu->bp;
-	for (int i = 0; i < maxTrace; ++i) {
+	for (size_t i = 0; i < maxTrace; ++i) {
 		trcptr trace = &trcBase[maxTrace - i - 1];
 		symn fun = rtLookup(rt, trace->callee, 1);
 		if (fun == ctx->tryExec) {

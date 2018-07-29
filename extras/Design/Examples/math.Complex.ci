@@ -35,15 +35,17 @@ Complex div(Complex a, Complex b) {
 	if (Math.abs(b.re) >= Math.abs(b.im)) {
 		float64 r = b.im / b.re;
 		float64 den = b.re + r * b.im;
-		float64 re = (a.re + r * a.im) / den;
-		float64 im = (a.im - r * a.re) / den;
-		return Complex(re, im);
+		return {
+			re: (a.re + r * a.im) / den;
+			im: (a.im - r * a.re) / den;
+		};
 	}
 	float64 r = b.re / b.im;
 	float64 den = b.im + r * b.re;
-	float64 re = (a.re * r + a.im) / den;
-	float64 im = (a.im * r - a.re) / den;
-	return Complex(re, im);
+	return {
+		re: (a.re * r + a.im) / den;
+		im: (a.im * r - a.re) / den;
+	};
 }
 
 inline /(Complex a, Complex b) = div(a, b);

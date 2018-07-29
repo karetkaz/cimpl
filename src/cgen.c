@@ -741,7 +741,7 @@ static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 					}
 					break;
 				}
-				// fall trough
+				// fall through
 			case CAST_arr:
 			case CAST_ref:
 			case CAST_var:

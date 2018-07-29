@@ -418,7 +418,7 @@ void closeLibs();
 #define WARN_USING_BEST_OVERLOAD "using overload `%T` of %d declared symbols"
 #define WARN_USING_DEFAULT_INITIALIZER "using default type initializer: %T := %t"
 #define WARN_DECLARATION_REDEFINED "variable `%T` hides previous declaration"
-#define WARN_FUNCTION_TYPENAME "function name `%T` is a type, but returns `%T`"
+#define WARN_FUNCTION_TYPENAME "function name `%.t` is a type, but returns `%T`"
 
 static inline void _break() {/* Add a breakpoint to break on compiler errors. */}
 static inline void _abort() {/* Add a breakpoint to break on fatal errors. */

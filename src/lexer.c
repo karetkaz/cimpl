@@ -937,6 +937,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 					switch (chr) {
 						case '-':
 							sgn = -1;
+							// fall through
 						case '+':
 							*ptr++ = (char) chr;
 							chr = readChr(cc);

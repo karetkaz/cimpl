@@ -82,6 +82,15 @@ static inline void addLength(ccContext cc, symn sym, astn init) {
 	sym->fields = leave(cc, KIND_def, 0, 0, NULL);
 }
 
+static inline symn tagType(ccContext cc, astn tag) {
+	symn tagType = cc->deft[tag->ref.hash];
+	tagType = lookup(cc, tagType, tag, NULL, 0);
+	if (tagType != NULL && isTypename(tagType)) {
+		return tagType;
+	}
+	return NULL;
+}
+
 /**
  * Install a new symbol: alias, type, variable or function.
  * 
@@ -168,6 +177,14 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 			}
 			else if (cc->siff) {
 				warn(cc->rt, 3, def->file, def->line, WARN_DECLARATION_REDEFINED, def);
+			}
+		}
+
+		// if the tag is a typename it should return an instance of this type
+		if (params != NULL) {
+			symn tagTyp = tagType(cc, tag);
+			if (tagTyp != NULL && params->type != tagTyp) {
+				error(cc->rt, tag->file, tag->line, WARN_FUNCTION_TYPENAME, tag, params->type);
 			}
 		}
 	}
@@ -659,10 +676,13 @@ static astn expression(ccContext cc, int comma) {
 
 			case 3:
 				ast->op.test = stack[2];
+				// fall through
 			case 2:
 				ast->op.lhso = stack[1];
+				// fall through
 			case 1:
 				ast->op.rhso = stack[0];
+				// fall through
 			case 0:
 				break;
 		}
@@ -950,13 +970,10 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		}
 		skipTok(cc, RIGHT_sqr, 1);
 
-
 		arr->kind = ATTR_stat | KIND_typ | CAST_arr;
 		arr->offs = vmOffset(cc->rt, arr);
 		arr->type = type;
 		type = arr;
-
-//		debug("%?s:%?u: array[size: %d]: %.t: %.T", arr->file, arr->line, arr->size, tag, arr);
 	}
 
 	if (cast == CAST_any) {
@@ -1033,13 +1050,6 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		return NULL;
 	}
 
-	// if the tag is a typename it should return an instance of this type
-	symn tagType = cc->deft[tag->ref.hash];
-	tagType = lookup(cc, tagType, tag, NULL, 0);
-	if (tagType && !isTypename(tagType)) {
-		tagType = NULL;
-	}
-
 	enter(cc, NULL);
 
 	if (skipTok(cc, LEFT_par, 0)) {
@@ -1055,7 +1065,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		return NULL;
 	}
 	if (init->kind == STMT_beg) {
-		type = tagType;
+		type = tagType(cc, tag);
 		if (type != NULL && params != NULL) {
 			// force result to be a variable
 			params->type = type;
@@ -1070,7 +1080,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 			}
 			n->type = cc->type_vid;
 		}
-		fatal("%?s:%?u: "ERR_UNIMPLEMENTED_FEATURE": %-t", init->file, init->line, init);
+		fatal("%?s:%?u: "ERR_UNIMPLEMENTED_FEATURE": %-t", tag->file, tag->line, init);
 	} else {
 		type = typeCheck(cc, NULL, init, 1);
 	}
@@ -1078,9 +1088,6 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 	if (type == NULL) {
 		// raise the error if lookup failed
 		error(cc->rt, init->file, init->line, ERR_INVALID_TYPE, init);
-	}
-	if (type != NULL && tagType != NULL && type != tagType && params != NULL) {
-		error(cc->rt, init->file, init->line, WARN_FUNCTION_TYPENAME, tagType, type);
 	}
 	if (params != NULL) {
 		size_t offs = 0;
@@ -1100,11 +1107,11 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 			}
 
 			if (!(param->kind & ATTR_paral) && (isInline(param) || usages < 2)) {
-				// mark parameter as inline if it was used once or none
+				// mark parameter as inline if it was not used more than once
 				param->kind = (param->kind & ~MASK_kind) | KIND_def;
 			}
 			else {
-				// mark params used more than one as cached
+				// mark params used more than once to be cached
 				offs += padOffset(param->size, vm_size);
 				param->offs = offs;
 			}
@@ -1597,11 +1604,16 @@ static astn statement(ccContext cc, ccKind attr) {
 	else if ((ast = nextTok(cc, STMT_ret, 0))) {   // return expression;
 		symn function = cc->owner;
 		if (!skipTok(cc, STMT_end, 0)) {
-			astn res = expression(cc, 0);
+			astn res = initializer(cc);
 
 			if (res && function && isFunction(function)) {
 				dieif(strcmp(function->params->name, ".result") != 0, ERR_INTERNAL_ERROR);
+				if (res->kind == STMT_beg) {
+					res = expandInitializer(cc, function->params, res);
+					res->type = cc->type_vid;
+				}
 				ast->jmp.value = opNode(cc, ASGN_set, lnkNode(cc, function->params), res);
+				ast->jmp.value->type = res->type;
 			}
 			else {
 				// returning from a non function, or returning a statement?

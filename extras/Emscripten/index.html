@@ -42,12 +42,12 @@
 	<nav>
 		<div class="nav nav-tabs" id="nav-tab" role="tablist">
 			<li class="nav-item dropdown active" id="nav-input-tab" data-toggle="tab" href="#nav-input" role="tab" aria-controls="nav-input" aria-selected="true">
-				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Input</a>
+				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">File</a>
 				<div id="fileList" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-					<a class="dropdown-item" href="#" onClick="downloadInput();">Dowload file</a>
-					<a class="dropdown-item" href="#" onClick="shareInput();">Create link</a>
+					<!--a class="dropdown-item" href="#" onClick="downloadInput();">Download file</a-->
+					<a class="dropdown-item" href="#" onClick="shareInput();">Share file</a>
 					<a class="dropdown-item" href="#" onClick="saveInput();">Save file</a>
-					<a class="dropdown-item" href="#" onClick="params.update({file: null, content: null});">Close</a>
+					<a class="dropdown-item" href="#" onClick="params.update({file: null, content: null});">Close file</a>
 					<div class="dropdown-divider"></div>
 				</div>
 			</li>
@@ -66,19 +66,19 @@
 				</div>
 			</li>
 			<li class="nav-item btn-group dropright" href="#" role="tab" aria-controls="nav-output" aria-selected="false">
-				<button id="btnExecute" type="button" class="btn btn-sm btn-default" onclick="execute(cmdExecute.value);">Execute</button>
+				<button id="btnExecute" type="button" class="btn btn-sm btn-default" onclick="execute(this.innerText, cmdExecute.value);">Execute</button>
 				<button type="button" class="btn btn-sm btn-default dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
 				<div class="dropdown-menu">
-					<a class="dropdown-item" href="#" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-run/g'; return false;">Run</a>
-					<a class="dropdown-item" href="#" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-debug/g'; return false;">Debug</a>
-					<a class="dropdown-item" href="#" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-profile/g'; return false;">Profile</a>
-					<a class="dropdown-item" href="#" onclick="params.update({exec: null}); btnExecute.innerText='Compile'; cmdExecute.value=''; return false;">Compile only</a>
+					<a class="dropdown-item" href="#" onclick="execute(this.innerText, '-run/g'); return false;">Run</a>
+					<a class="dropdown-item" href="#" onclick="execute(this.innerText, '-debug/g'); return false;">Debug</a>
+					<a class="dropdown-item" href="#" onclick="execute(this.innerText, '-profile/g'); return false;">Profile</a>
+					<a class="dropdown-item" href="#" onclick="execute('Compile', ''); return false;">Compile only</a>
 					<div class="dropdown-divider"></div>
 					<a class="dropdown-item" onclick="params.update({exec: cmdExecute.value});"><input class="btn-block" id="cmdExecute" onchange="params.update({exec: value});" type="text" value=""></a>
 					<span class="dropdown-item">
-						<button type="button" class="btn btn-light" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-asm/a/n/s/m';">Asm</button>
-						<button type="button" class="btn btn-light" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-api/a';">Tags</button>
-						<button type="button" class="btn btn-light" onclick="params.update({exec: null}); btnExecute.innerText=this.innerText; cmdExecute.value='-api/u';">Usages</button>
+						<button type="button" class="btn btn-light" onclick="execute(this.innerText, '-asm/a/n/s/m');">Asm</button>
+						<button type="button" class="btn btn-light" onclick="execute(this.innerText, '-api/a');">Tags</button>
+						<button type="button" class="btn btn-light" onclick="execute(this.innerText, '-api/u');">Usages</button>
 					</span>
 					<div class="dropdown-divider"></div>
 					<a class="dropdown-item" href="#" onclick="terminal.clear(); return false;">Clear output</a>
@@ -87,7 +87,7 @@
 		</div>
 	</nav>
 </div>
-<div class="split-pane" style="top:2.6em;">
+<div class="split-pane horizontal" style="top:2.6em;">
 	<div class="text-content">
 		<textarea id="input"></textarea>
 	</div>
@@ -142,15 +142,19 @@
 		highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: true}
 	});
 	let terminal = Terminal(output, function(escaped, text) {
-		// detect uris and file names with line numbers
-		return escaped.replace(/(?=[\w\/])(\w+:\/\/[^\/]+)?([^<>=:;,?#"*|\n\r]+)(?::(\d+))?(?!\/)(?::(\d+))?\b/g, function (match, host, file, line, column) {
+		const regex = /(?=[\w\/])((?:\w+:\/\/)(?:[^:@\n\r"'`]+(?:\:\w+)?@)?(?:[^:/?#\n\r"'`]+)(?:\:\d+)?(?=[/?#]))?([^<>=:;,?#*|\n\r"'`]*)?(?:\:(?:(\d+)(?:\:(\d+))?))?(?:\?([^#\n\r"'`]*))?(?:\#([^\n\r"'`]*))?/g;
+		return escaped.replace(regex, function (match, host, path, line, column, query, hash) {
+			if (path === undefined) {
+				return match;
+			}
+
 			line = +(line || 0);
 			column = +(column || 0);
-			if (host != null) {
-				return '<a href="#" onClick="return false;">' + match + '</a>';
+			if (host !== undefined) {
+				return '<a href="' + encodeURI(match) + '" target="_blank">' + match + '</a>';
 			}
 			if (line > 0) {
-				return '<a href="#" onClick="return goTo(\'' + file + '\', ' + line + ', ' + column + ');">' + match + '</a>';
+				return '<a href="#" onClick="return goTo(\'' + path + '\', ' + line + ', ' + column + ');">' + match + '</a>';
 			}
 			return match;
 		});
@@ -177,8 +181,8 @@
 			return;
 		}
 
-		// reload page if the file list was modified
-		if (changes.files) {
+		// reload page if the project was modified
+		if (changes.project) {
 			params.update(true);
 		}
 
@@ -207,7 +211,6 @@
 		if (changes.line && params.line != null) {
 			editor.setCursor(params.line - 1);
 		}
-
 	});
 	let docTitle = document.title;
 
@@ -233,8 +236,30 @@
 			params.update('file', 'content');
 		}
 	};
-	if (params.files != null) {
-		worker.postMessage({files: params.files.split(';')});
+	if (params.project != null) {
+		let files = [];
+		let content = params.project;
+
+		try {
+			if (content != null) {
+				content = atob(content);
+			}
+		} catch (e) {
+			console.warn(e);
+		}
+
+		if (content.startsWith('[{')) {
+			files = JSON.parse(content);
+		} else {
+			for (let file of content.split(';')) {
+				files.push({
+					path: file.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3"),
+					url: file
+				});
+			}
+		}
+		worker.postMessage({files});
+		fileList.innerHTML += '<a class="dropdown-item" href="#" onClick="params.update({content: params.project, project: undefined, file: undefined, line: undefined});">Edit project</a>';
 	}
 
 	function goTo(file, line, column) {
@@ -276,9 +301,11 @@
 	}
 
 	function shareInput() {
-		params.update({
-			content: btoa(editor.getValue())
-		});
+		let content = editor.getValue();
+		if (content.startsWith('[{')) {
+			terminal.print(window.location.origin + window.location.pathname + '#project=' + btoa(content));
+		}
+		terminal.print(window.location.origin + window.location.pathname + '#content=' + btoa(content));
 	}
 
 	function saveInput() {
@@ -299,12 +326,15 @@
 		});
 	}
 
-	function execute(mode) {
+	function execute(text, cmd) {
 		let args = [
 			'-std/stdlib.ci',                               // standard library is in root
 			'-mem' + (params.mem || '2M'),                  // allocate 2Mb of memory by default,
 			'-X' + (params.X || '-stdin+times'),            // do not use standard input, print times
 		];
+
+		btnExecute.innerText = text;
+		cmdExecute.value = cmd;
 
 		if (params.dump != null) {
 			if (params.dump.endsWith('.json')) {
@@ -320,7 +350,7 @@
 			args.push(params.log);
 		}
 
-		for (let arg of mode.split(' ')) {
+		for (let arg of cmd.split(' ')) {
 			if (arg === '') {
 				continue;
 			}

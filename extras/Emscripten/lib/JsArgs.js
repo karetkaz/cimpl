@@ -162,19 +162,18 @@ function JsArgs(paramSeparator, onHashChange) {
 				}
 			}
 
-			if (onHashChange !== undefined) {
-				let changed = Object.keys(changes).length > 0;
-				if (changed) {
-					onHashChange(this, changes);
-				}
-				if (writeParams == null) {
-					writeParams = changed;
-				}
+			let hasChanges = Object.keys(changes).length > 0;
+			if (writeParams === undefined) {
+				writeParams = hasChanges;
 			}
-			if (writeParams === false) {
-				return this;
+			if (writeParams) {
+				save(this);
 			}
-			return save(this);
+
+			if (hasChanges && onHashChange !== undefined) {
+				onHashChange(this, changes);
+			}
+			return this;
 		}
 	});
 

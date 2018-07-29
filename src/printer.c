@@ -181,7 +181,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 
 						case '-':
 							len = -len;
-							// fall
+							// fall through
 						case '+':
 							if (noPrc) {
 								prc = prFull;
@@ -211,7 +211,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 
 						case '-':
 							len = -len;
-							// fall
+							// fall through
 						case '+':
 							if (noPrc) {
 								prc = prFull;
@@ -503,7 +503,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 				case 'E':		// float64
 				case 'F':		// float64
 					chr -= 'A' - 'a';
-					// no break
+					// fall through
 				case 'e':		// float32
 				case 'f': {		// float32
 					float64_t num = va_arg(ap, float64_t);

@@ -64,15 +64,15 @@ integer nthFixed(int idx, integer values[7]) { return values[idx]; }
 integer nthArray(int idx, integer values[*]) { return values[idx]; }
 integer nthSlice(int idx, integer values[]) { return values[idx]; }
 
-assert(arrFixedNoInit.length == 7);
-assert(arrSliceInitFixed.length == arrFixedNoInit.length);
-assert(arrSliceInitSlice.length == arrFixedNoInit.length);
+assertEq(7, arrFixedNoInit.length);
+assertEq(arrFixedNoInit.length, arrSliceInitFixed.length);
+assertEq(arrFixedNoInit.length, arrSliceInitSlice.length);
 
-assert(lenSlice(null) == 0);
-assert(lenSlice(arrSliceInitNull) == 0);
-assert(lenSlice(arrFixedNoInit) == arrFixedNoInit.length);
-assert(lenSlice(arrSliceInitFixed) == arrFixedNoInit.length);
-assert(lenSlice(arrSliceInitSlice) == arrFixedNoInit.length);
+assertEq(0, lenSlice(null));
+assertEq(0, lenSlice(arrSliceInitNull));
+assertEq(arrFixedNoInit.length, lenSlice(arrFixedNoInit));
+assertEq(arrFixedNoInit.length, lenSlice(arrSliceInitFixed));
+assertEq(arrFixedNoInit.length, lenSlice(arrSliceInitSlice));
 
 for (int i = 0; i < arrFixedNoInit.length; i += 1) {
 	integer expected = 42 + i;
