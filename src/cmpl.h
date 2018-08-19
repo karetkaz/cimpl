@@ -225,7 +225,7 @@ struct rtContextRec {
 struct nfcContextRec {
 	const rtContext rt;         // runtime context
 	const symn sym;             // invoked function (returned by ccDefCall)
-	const void *proto;          // static data (passed to ccDefCall)
+	const char *proto;          // static data (passed to ccDefCall)
 	const void *extra;          // extra data (passed to execute or invoke)
 	const void *args;           // arguments
 	const size_t argc;          // argument count in bytes

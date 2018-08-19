@@ -890,7 +890,7 @@ static void textPostProfile(userContext usr) {
 	}
 
 	if (dbg->extra != usr) {
-		prerr("ERROR", ERR_INTERNAL_ERROR);
+		logif("warn", ERR_INTERNAL_ERROR);
 		dbg->extra = usr;
 	}
 
@@ -1001,17 +1001,18 @@ static void textPostProfile(userContext usr) {
 		}
 	}
 
-	if (usr->dmpMemory) {
-		// show allocated memory chunks.
+	if (usr->dmpMemory > 0) {
 		printFmt(out, esc, "%?sMemory layout:\n", prefix);
-		//textDumpMem(dbg, rt->_mem, rt->_end - (unsigned char*)rt, "all");
-		//textDumpMem(dbg, rt->_mem, rt->_mem - (unsigned char*)rt, "context");
+		textDumpMem(dbg, rt->_mem, rt->_end - (unsigned char*)rt, "all");
 		textDumpMem(dbg, rt->_mem, rt->vm.ro, "meta");
 		textDumpMem(dbg, rt->_mem + rt->vm.pc, rt->vm.px + px_size - rt->vm.pc, "code");
 		textDumpMem(dbg, rt->_beg, rt->_end - rt->_beg, "heap");
 		textDumpMem(dbg, rt->_end - rt->vm.ss, rt->vm.ss, "stack");
-		printFmt(out, esc, "%?sMemory allocations:\n", prefix);
-		rtAlloc(rt, NULL, 0, textDumpMem);
+		if (usr->dmpMemory > 1) {
+			// show allocated memory chunks.
+			printFmt(out, esc, "%?sMemory allocations:\n", prefix);
+			rtAlloc(rt, NULL, 0, textDumpMem);
+		}
 	}
 }
 
@@ -1335,7 +1336,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 		}
 	}
 	if (breakMode & brkTrace) {
-		traceCalls(ctx, out, 1, 20);
+		traceCalls(ctx, out, 1, 20, 0);
 	}
 
 	// pause execution in debugger
@@ -1381,7 +1382,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 				return dbg;
 
 			case dbgPrintStackTrace:
-				traceCalls(ctx, con, 1, 20);
+				traceCalls(ctx, con, 1, 20, 0);
 				break;
 
 			case dbgPrintInstruction:
@@ -1711,6 +1712,10 @@ int main(int argc, char *argv[]) {
 						extra.dmpGlobals = 1;
 						arg2 += 2;
 						break;
+					case 'H':
+						extra.dmpMemory = 2;
+						arg2 += 2;
+						break;
 					case 'h':
 						extra.dmpMemory = 1;
 						arg2 += 2;
@@ -1757,6 +1762,10 @@ int main(int argc, char *argv[]) {
 						break;
 					case 'g':
 						extra.dmpGlobals = 1;
+						arg2 += 2;
+						break;
+					case 'H':
+						extra.dmpMemory = 2;
 						arg2 += 2;
 						break;
 					case 'h':

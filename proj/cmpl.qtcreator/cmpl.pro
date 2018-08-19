@@ -21,8 +21,8 @@ SOURCES += \
 	$$CC_DIR/core.c \
 	$$CC_DIR/lstd.c \
 	$$CC_DIR/utils.c \
-	$$CC_DIR/main.c \
-	$$CC_DIR/plugin.c
+	$$CC_DIR/plugin.c \
+	$$CC_DIR/main.c
 
 OTHER_FILES += \
 	$$CC_DIR/defs.inl \

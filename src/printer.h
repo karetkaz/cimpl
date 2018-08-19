@@ -168,8 +168,9 @@ void dumpApi(rtContext rt, userContext ctx, void action(userContext, symn));
  * @param ctx Debugger context
  * @param out The file to be used as output
  * @param indent indentation
- * @param maxCalls limit the size of the stacktrace 
+ * @param maxCalls limit the size of the stacktrace
+ * @param skipCalls offset of the first call in the stacktrace
  */
-void traceCalls(dbgContext ctx, FILE *out, int indent, size_t maxCalls);
+void traceCalls(dbgContext ctx, FILE *out, int indent, size_t maxCalls, size_t skipCalls);
 
 #endif

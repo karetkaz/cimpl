@@ -1566,6 +1566,10 @@ vmError execute(rtContext rt, int argc, char *argv[], void *extra) {
 	rt->_end -= sizeof(struct vmProcessor);
 	rt->vm.cell = pu = (void*)rt->_end;
 
+	logif(rt->_size != padOffset(rt->_size, pad_size), ERR_INTERNAL_ERROR);
+	logif(rt->_mem !=  padPointer(rt->_mem, pad_size), ERR_INTERNAL_ERROR);
+	logif(rt->_end !=  padPointer(rt->_end, vm_size), ERR_INTERNAL_ERROR);
+
 	if (rt->vm.ss == 0) {
 		rt->vm.ss = rt->_size / 4;
 	}
@@ -1586,10 +1590,6 @@ vmError execute(rtContext rt, int argc, char *argv[], void *extra) {
 	if (pu->bp > (memptr)pu->sp) {
 		fatal(ERR_INTERNAL_ERROR": invalid stack size");
 		return illegalState;
-	}
-	if (pu->sp != padPointer(pu->sp, vm_size)) {
-		// FIXME: this makes the stack smaller
-		pu->sp = padPointer(pu->sp, vm_size);
 	}
 
 	(void)argc;
@@ -2160,7 +2160,7 @@ static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, v
 		}
 	}
 }
-void traceCalls(dbgContext dbg, FILE *out, int indent, size_t maxCalls) {
+void traceCalls(dbgContext dbg, FILE *out, int indent, size_t maxCalls, size_t skipCalls) {
 	rtContext rt = dbg->rt;
 	vmProcessor pu = rt->vm.cell;
 	trcptr trcBase = (trcptr)pu->bp;
@@ -2171,11 +2171,12 @@ void traceCalls(dbgContext dbg, FILE *out, int indent, size_t maxCalls) {
 		out = rt->logFile;
 	}
 
+	maxCalls += skipCalls;
 	if (maxCalls > maxTrace) {
 		maxCalls = maxTrace;
 	}
 
-	for (i = 0; i < maxCalls; ++i) {
+	for (i = skipCalls; i < maxCalls; ++i) {
 		trcptr trace = &trcBase[maxTrace - i - 1];
 		dbgn trInfo = mapDbgStatement(rt, trace->caller);
 		symn fun = rtLookup(rt, trace->callee, 1);

@@ -314,7 +314,7 @@ static vmError sysRaise(nfcContext ctx) {
 
 	// print stack trace including this function
 	if (rt->dbg != NULL && trace > 0) {
-		traceCalls(rt->dbg, rt->logFile, 1, trace - 1);
+		traceCalls(rt->dbg, rt->logFile, 1, trace - 1, 1);
 	}
 
 	// abort the execution

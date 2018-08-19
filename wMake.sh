@@ -29,10 +29,10 @@ fi
 "$OUTPUT" -debug/G/h -X+steps+fold+fast+asgn-stdin-glob-offsets -api/d/p/a -asm/n/s -ast -dump out/dump.test.ci -dump.ast.xml out/dump.test.xml test.ci
 
 # dump profile data in json format
-"$OUTPUT" -X-stdin-steps -dump.json out/dump.test.prof.json -api/a/m/d/p/u -asm/a/n/s -ast/t -profile/t/g/h/a "test.ci"
+"$OUTPUT" -X-stdin-steps -dump.json out/dump.test.prof.json -api/a/m/d/p/u -asm/a/n/s -ast/t -profile/t/P/G/H "test.ci"
 
 # dump profile data in text format
-"$OUTPUT" -X-stdin+steps -dump out/dump.test.prof.ci -api/a/m/d/p/u -asm/a/n/s -ast/t -profile/g/h/a "test.ci"
+"$OUTPUT" -X-stdin+steps -dump out/dump.test.prof.ci -api/a/m/d/p/u -asm/a/n/s -ast/t -profile/P/G/H "test.ci"
 #"$OUTPUT" -X+steps -api/a/m/d/p/u -asm/a/n/s -ast/t test.ci
 
 # dump api for scite

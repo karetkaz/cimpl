@@ -48,6 +48,7 @@ pointer
 pointer.alloc(ptr: pointer, size: int32): pointer
 pointer.fill(dst: pointer, value: int32, size: int32): pointer
 pointer.copy(dst: pointer, src: pointer, size: int32): pointer
+pointer.move(dst: pointer, src: pointer, size: int32): pointer
 variant
 function
 object
@@ -219,4 +220,6 @@ abort(): void
 assert(condition: bool, message: char[*], inspect: variant): void
 assert(condition: bool, message: char[*]): void
 assert(condition: bool): void
+assertEq(expected: int32, returned: int32, message: char[*]): void
+assertEq(expected: int32, returned: int32): void
 sizeof(type: typename): int32

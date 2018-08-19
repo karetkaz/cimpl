@@ -427,52 +427,52 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 	abort();
 #endif
 }
-#define prerr(__DBG, __MSG, ...) do { printFmt(stdout, NULL, "%?s:%?u: " __DBG ": %s: " __MSG "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); } while(0)
+#define prerr(__TAG, __FMT, ...) do { printFmt(stdout, NULL, "%?s:%?u: %s(" __TAG "): " __FMT "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); } while(0)
 
-#define fatal(msg, ...) do { prerr("err", msg, ##__VA_ARGS__); _abort(); } while(0)
-#define dieif(__EXP, msg, ...) do { if (__EXP) { prerr("err("#__EXP")", msg, ##__VA_ARGS__); _abort(); } } while(0)
+#define fatal(__FMT, ...) do { prerr("fatal", __FMT, ##__VA_ARGS__); _abort(); } while(0)
+#define dieif(__EXP, __FMT, ...) do { if (__EXP) { prerr(#__EXP, __FMT, ##__VA_ARGS__); _abort(); } } while(0)
 
 // compilation errors
-#define error(__ENV, __FILE, __LINE, msg, ...) do { logif("ERROR", msg, ##__VA_ARGS__); printErr(__ENV, -1, __FILE, __LINE, msg, ##__VA_ARGS__); _break(); } while(0)
-#define warn(__ENV, __LEVEL, __FILE, __LINE, msg, ...) do { printErr(__ENV, __LEVEL, __FILE, __LINE, msg, ##__VA_ARGS__); } while(0)
-#define info(__ENV, __FILE, __LINE, msg, ...) do { printErr(__ENV, 0, __FILE, __LINE, msg, ##__VA_ARGS__); } while(0)
+#define error(__ENV, __FILE, __LINE, __FMT, ...) do { printErr(__ENV, -1, __FILE, __LINE, __FMT, ##__VA_ARGS__); logif("error", __FMT, ##__VA_ARGS__); } while(0)
+#define warn(__ENV, __LEVEL, __FILE, __LINE, __FMT, ...) do { printErr(__ENV, __LEVEL, __FILE, __LINE, __FMT, ##__VA_ARGS__); logif(!"%?s:%?u: warn[%d]", __FMT, __FILE, __LINE, __LEVEL, ##__VA_ARGS__); } while(0)
+#define info(__ENV, __FILE, __LINE, __FMT, ...) do { printErr(__ENV, 0, __FILE, __LINE, __FMT, ##__VA_ARGS__); } while(0)
 
 #ifdef DEBUGGING	// enable compiler debugging
 
-#define logif(__EXP, msg, ...) do { if (__EXP) { prerr("log("#__EXP")", msg, ##__VA_ARGS__); _break(); } } while(0)
+#define logif(__EXP, __FMT, ...) do { if (__EXP) { prerr(#__EXP, __FMT, ##__VA_ARGS__); _break(); } } while(0)
 
 #if DEBUGGING >= 1	// enable trace
-#define trace(msg, ...) do { prerr("trace", msg, ##__VA_ARGS__); } while(0)
+#define trace(__FMT, ...) do { prerr("trace", __FMT, ##__VA_ARGS__); } while(0)
 #endif
 
 #if DEBUGGING >= 2	// enable debug
-#define debug(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
+#define debug(__FMT, ...) do { prerr("debug", __FMT, ##__VA_ARGS__); } while(0)
 #endif
 
 #if DEBUGGING >= 3	// enable debug cgen
-#define dbgCgen(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
+#define dbgCgen(__FMT, ...) do { prerr("debug", __FMT, ##__VA_ARGS__); } while(0)
 #endif
 
 #if DEBUGGING >= 4	// enable debug emit
-#define dbgEmit(msg, ...) do { prerr("debug", msg, ##__VA_ARGS__); } while(0)
+#define dbgEmit(__FMT, ...) do { prerr("debug", __FMT, ##__VA_ARGS__); } while(0)
 #endif
 
 #endif
 
 #ifndef logif
-#define logif(__EXP, msg, ...) do { (void)(__EXP); } while(0)
+#define logif(__EXP, __FMT, ...) do {} while(0)
 #endif
 #ifndef trace
-#define trace(msg, ...) do {} while(0)
+#define trace(__FMT, ...) do {} while(0)
 #endif
 #ifndef debug
-#define debug(msg, ...) do {} while(0)
+#define debug(__FMT, ...) do {} while(0)
 #endif
 #ifndef dbgCgen
-#define dbgCgen(msg, ...) do {} while(0)
+#define dbgCgen(__FMT, ...) do {} while(0)
 #endif
 #ifndef dbgEmit
-#define dbgEmit(msg, ...) do {} while(0)
+#define dbgEmit(__FMT, ...) do {} while(0)
 #endif
 
 #define traceAst(__AST) do { trace("%.*t", prDbg, __AST); } while(0)
