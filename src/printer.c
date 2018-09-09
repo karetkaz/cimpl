@@ -609,7 +609,6 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 			if (oneLine) {
 				break;
 			}
-			printStr(out, esc, "\n");
 			break;
 
 		case STMT_pbeg:
@@ -624,10 +623,11 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 				break;
 			}
 
-			printStr(out, esc, "{\n");
+			printStr(out, esc, "{");
 			for (astn list = ast->stmt.stmt; list; list = list->next) {
 				int indent2 = indent + 1;
 				int exprStatement = 0;
+				printStr(out, esc, "\n");
 				if (list->kind < STMT_beg || list->kind > STMT_end) {
 					switch (list->kind) {
 						default:
@@ -657,14 +657,14 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 				printAst(out, esc, list, mode, indent2);
 				if (exprStatement != 0) {
 					if (exprStatement < 0) {
-						printFmt(out, esc, "; /* `%k` is not a valid statement */\n", list->kind);
+						printFmt(out, esc, "; /* `%k` is not a valid statement */", list->kind);
 					}
 					else {
-						printStr(out, esc, ";\n");
+						printStr(out, esc, ";");
 					}
 				}
 			}
-			printFmt(out, esc, "%I%s", indent, "}\n");
+			printFmt(out, esc, "\n%I%s", indent, "}");
 			break;
 
 		case STMT_sif:
@@ -695,22 +695,22 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 				}
 			}
 			else {
-				printStr(out, esc, " ;\n");
+				printStr(out, esc, " ;");
 			}
 
 			// if else part
 			if (ast->stmt.step != NULL) {
 				kind = ast->stmt.step->kind;
 				if ((kind == STMT_if || kind == STMT_sif) && !nlElIf) {
-					printFmt(out, esc, "%Ielse ", indent);
+					printFmt(out, esc, "\n%Ielse ", indent);
 					printAst(out, esc, ast->stmt.step, mode, -indent);
 				}
 				else if (kind == STMT_beg && !nlBody) {
-					printFmt(out, esc, "%Ielse ", indent);
+					printFmt(out, esc, "\n%Ielse ", indent);
 					printAst(out, esc, ast->stmt.step, mode, -indent);
 				}
 				else {
-					printFmt(out, esc, "%Ielse\n", indent);
+					printFmt(out, esc, "\n%Ielse\n", indent);
 					printAst(out, esc, ast->stmt.step, mode, indent + (kind != STMT_beg));
 				}
 			}
@@ -747,35 +747,23 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 
 			if (ast->stmt.stmt != NULL) {
 				kind = ast->stmt.stmt->kind;
-				if (kind == STMT_beg && nlBody) {
-					printStr(out, esc, "\n");
-					printAst(out, esc, ast->stmt.stmt, mode, indent + (kind != STMT_beg));
-				}
-				else {
+				if (kind == STMT_beg && !nlBody) {
 					printStr(out, esc, " ");
 					printAst(out, esc, ast->stmt.stmt, mode, -indent);
 				}
+				else {
+					printStr(out, esc, "\n");
+					printAst(out, esc, ast->stmt.stmt, mode, indent + (kind != STMT_beg));
+				}
 			}
 			else {
-				printStr(out, esc, " ;\n");
+				printStr(out, esc, " ;");
 			}
-			break;
-
-		case STMT_con:
-		case STMT_brk:
-			printStr(out, esc, token_tbl[kind].name);
-			if (mode == prName) {
-				break;
-			}
-
-			printStr(out, esc, ";");
-			if (oneLine) {
-				break;
-			}
-			printStr(out, esc, "\n");
 			break;
 
 		case STMT_ret:
+		case STMT_con:
+		case STMT_brk:
 			printStr(out, esc, token_tbl[kind].name);
 			if (mode == prName) {
 				break;
@@ -785,10 +773,6 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 				printAst(out, esc, ast->jmp.value, mode, exprLevel);
 			}
 			printStr(out, esc, ";");
-			if (oneLine) {
-				break;
-			}
-			printStr(out, esc, "\n");
 			break;
 
 		//#}

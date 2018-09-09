@@ -1220,21 +1220,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 
 	symn type = declare(cc, ATTR_stat | ATTR_cnst | KIND_typ | CAST_val, tag, base, NULL);
 	enter(cc, type);
-	astn fields = statement_list(cc);
-	while (fields != NULL) {
-		// post check the list for declarations
-		switch (fields->kind) {
-			default:
-				// report errors in case there are statements inside a record declaration
-				error(cc->rt, fields->file, fields->line, ERR_DECLARATION_EXPECTED, fields);
-				break;
-
-			case TOKEN_var:	// declaration
-			case STMT_sif:	// static if
-				break;
-		}
-		fields = fields->next;
-	}
+	statement_list(cc);
 	type->fields = leave(cc, attr | KIND_typ, pack, baseSize, &type->size);
 
 	skipTok(cc, RIGHT_crl, 1);	// '}'
@@ -1658,15 +1644,17 @@ static astn statement(ccContext cc, ccKind attr) {
 		else if (isTypeExpr(ast)) {
 			backTok(cc, ast);
 			ast = declaration(cc, attr, NULL);
-			type = ast->type;
-			check = ast->ref.link->init;
-			attr &= ~(ast->ref.link->kind & MASK_attr);
+			if (ast != NULL) {
+				type = ast->type;
+				check = ast->ref.link->init;
+				attr &= ~(ast->ref.link->kind & MASK_attr);
+			}
 		}
 		else {
 			check = ast;
 			switch (ast->kind) {
 				default:
-					warn(cc->rt, 1, ast->file, ast->line, WARN_EXPRESSION_STATEMENT, ast);
+					warn(cc->rt, 1, ast->file, ast->line, ERR_STATEMENT_EXPECTED, ast);
 					break;
 
 				case OPER_fnc:
@@ -1680,6 +1668,14 @@ static astn statement(ccContext cc, ccKind attr) {
 		ast->type = type;
 	}
 
+	if (ast != NULL) {
+		// raise an error if a statement is inside a record declaration
+		if (cc->owner && !isFunction(cc->owner) && isTypename(cc->owner)) {
+			if (ast->kind > STMT_beg && ast->kind <= STMT_end && ast->kind != STMT_sif) {
+				error(cc->rt, ast->file, ast->line, ERR_DECLARATION_EXPECTED" in %T", ast, cc->owner);
+			}
+		}
+	}
 	// type check
 	if (check != NULL) {
 		check->type = typeCheck(cc, NULL, check, 1);

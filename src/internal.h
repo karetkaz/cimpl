@@ -358,6 +358,7 @@ void closeLibs();
 #define ERR_UNMATCHED_SEPARATOR "unexpected separator `%?.t`, matching `%.k`"
 #define ERR_DECLARATION_EXPECTED "declaration expected, got: `%t`"
 #define ERR_INITIALIZER_EXPECTED "initializer expected, got: `%t`"
+#define ERR_STATEMENT_EXPECTED "statement expected, got: `%t`"
 
 // Type checker errors
 #define ERR_DECLARATION_COMPLEX "declaration too complex: `%T`"
@@ -398,7 +399,6 @@ void closeLibs();
 
 #define WARN_EMPTY_STATEMENT "empty statement `;`"
 #define WARN_USE_BLOCK_STATEMENT "statement should be a block statement {%t}"
-#define WARN_EXPRESSION_STATEMENT "expression statement expected, got: `%t`"
 //TODO: #define WARN_LOCAL_MIGHT_ESCAPE "local variable `%t` can not be referenced outside of its scope"
 #define WARN_PASS_ARG_NO_CAST "argument `%t` is passed to emit without cast as `%T`"
 #define WARN_SHORT_CIRCUIT "operators `&&` and `||` does not short-circuit yet"

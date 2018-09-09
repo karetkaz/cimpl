@@ -192,8 +192,6 @@ struct userContextRec {
 };
 
 static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int indent, const char *text) {
-	astn list;
-
 	if (ast == NULL) {
 		return;
 	}
@@ -219,7 +217,7 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 		//#{ STATEMENTS
 		case STMT_beg:
 			printFmt(out, esc, ">\n");
-			for (list = ast->stmt.stmt; list; list = list->next) {
+			for (astn list = ast->stmt.stmt; list; list = list->next) {
 				dumpAstXML(out, esc, list, mode, indent + 1, "stmt");
 			}
 			printFmt(out, esc, "%I</%s>\n", indent, text);
@@ -251,20 +249,22 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 
 		case STMT_con:
 		case STMT_brk:
-			printFmt(out, esc, " />\n");
-			break;
-
 		case STMT_ret:
-			printFmt(out, esc, " stmt=\"%?t\">\n", ast);
-			dumpAstXML(out, esc, ast->jmp.value, mode & ~prSymInit, indent + 1, "expr");
-			printFmt(out, esc, "%I</%s>\n", indent, text);
+			if (ast->jmp.value != NULL) {
+				printFmt(out, esc, " stmt=\"%?t\">\n", ast);
+				dumpAstXML(out, esc, ast->jmp.value, mode & ~prSymInit, indent + 1, "expr");
+				printFmt(out, esc, "%I</%s>\n", indent, text);
+			}
+			else {
+				printFmt(out, esc, " stmt=\"%?t\" />\n", ast);
+			}
 			break;
 
 		//#}
 		//#{ OPERATORS
 		case OPER_fnc:		// '()'
 			printFmt(out, esc, " value=\"%?t\">\n", ast);
-			for (list = chainArgs(ast->op.rhso); list != NULL; list = list->next) {
+			for (astn list = chainArgs(ast->op.rhso); list != NULL; list = list->next) {
 				dumpAstXML(out, esc, list, mode, indent + 1, "push");
 			}
 			dumpAstXML(out, esc, ast->op.lhso, mode & ~prSymInit, indent + 1, "call");
@@ -273,11 +273,6 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 
 		case OPER_dot:		// '.'
 		case OPER_idx:		// '[]'
-			printFmt(out, esc, " value=\"%?t\">\n", ast);
-			dumpAstXML(out, esc, ast->op.lhso, mode & ~prSymInit, indent + 1, "left");
-			dumpAstXML(out, esc, ast->op.rhso, mode & ~prSymInit, indent + 1, "right");
-			printFmt(out, esc, "%I</%s>\n", indent, text);
-			break;
 
 		case OPER_pls:		// '+'
 		case OPER_mns:		// '-'
@@ -312,9 +307,9 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 		case INIT_set:		// '='
 		case ASGN_set:		// '='
 			printFmt(out, esc, " value=\"%?t\">\n", ast);
-			dumpAstXML(out, esc, ast->op.test, mode, indent + 1, "test");
-			dumpAstXML(out, esc, ast->op.lhso, mode, indent + 1, "left");
-			dumpAstXML(out, esc, ast->op.rhso, mode, indent + 1, "right");
+			dumpAstXML(out, esc, ast->op.test, mode & ~prSymInit, indent + 1, "test");
+			dumpAstXML(out, esc, ast->op.lhso, mode & ~prSymInit, indent + 1, "left");
+			dumpAstXML(out, esc, ast->op.rhso, mode & ~prSymInit, indent + 1, "right");
 			printFmt(out, esc, "%I</%s>\n", indent, text);
 			break;
 
@@ -1111,10 +1106,7 @@ static void dumpApiText(userContext extra, symn sym) {
 		}
 		printFmt(out, esc, "%I.value: ", indent);
 		printAst(out, esc, sym->init, mode, -indent);
-
-		if ((mode & prOneLine) || sym->init->kind != STMT_beg) {
-			printFmt(out, esc, "\n");
-		}
+		printFmt(out, esc, "\n");
 	}
 
 	// print function disassembled instructions
@@ -1580,6 +1572,7 @@ int main(int argc, char *argv[]) {
 		int fastInstr;
 		int fastAssign;
 		int genGlobals;
+		int warnLevel;
 
 		size_t memory;
 	} settings = {
@@ -1588,6 +1581,7 @@ int main(int argc, char *argv[]) {
 		.fastInstr = 1,
 		.fastAssign = 1,
 		.genGlobals = 0,
+		.warnLevel = 5,
 
 		// 2 Mb memory compiler + runtime
 		.memory = 2 << 20
@@ -1839,7 +1833,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		// logger filename
+		// logger filename and level
 		else if (strncmp(arg, "-log", 4) == 0) {
 			char *arg2 = arg + 4;
 			if (++i >= argc || logFileName) {
@@ -1859,7 +1853,7 @@ int main(int argc, char *argv[]) {
 						break;
 				}
 			}
-			if (*arg2) {
+			if (*parseInt(arg2, &settings.warnLevel, 10)) {
 				fatal("invalid argument '%s'", arg);
 				return -1;
 			}
@@ -2130,6 +2124,7 @@ int main(int argc, char *argv[]) {
 	rt->fastMemory = settings.fastInstr != 0;
 	rt->fastAssign = settings.fastAssign != 0;
 	rt->genGlobals = settings.genGlobals != 0;
+	rt->warnLevel = settings.warnLevel;
 
 	// open log file (global option)
 	if (logFileName && !logFile(rt, logFileName, logAppend)) {
@@ -2138,7 +2133,7 @@ int main(int argc, char *argv[]) {
 
 	// install base type system.
 	if (!ccInit(rt, install, NULL)) {
-		error(rt, NULL, 0, "error registering base types");
+		fatal("error registering base types");
 		logFile(rt, NULL, 0);
 		return -6;
 	}
@@ -2152,11 +2147,10 @@ int main(int argc, char *argv[]) {
 		// install standard library.
 		if (extra.compileSteps != NULL) {printFmt(extra.out, extra.esc, "%sCompile: `%?s`\n", extra.compileSteps, stdLib);}
 		if (ccAddLib(rt->cc, ccLibStd, stdLib) != 0) {
-			error(rt, NULL, 0, "error registering standard library");
+			fatal("error registering standard library");
 		}
 	}
 
-	unsigned warnLevel = rt->warnLevel;
 	// compile and import files / modules
 	for (; i <= argc; ++i) {
 		char *arg = argv[i];
@@ -2167,27 +2161,27 @@ int main(int argc, char *argv[]) {
 				if (ext && (strEquals(ext, ".so") || strEquals(ext, ".dll"))) {
 					int resultCode = importLib(rt, ccFile);
 					if (resultCode != 0) {
-						error(rt, NULL, 0, "error(%d) importing library `%s`", resultCode, ccFile);
+						fatal("error(%d) importing library `%s`", resultCode, ccFile);
 					}
 				}
 				else if (!ccAddUnit(rt->cc, ccFile, 1, NULL)) {
-					error(rt, NULL, 0, "error compiling source `%s`", ccFile);
+					error(rt, ccFile, 1, "error compiling source `%s`", ccFile);
 				}
 			}
 			ccFile = arg;
-			rt->warnLevel = warnLevel;
+			rt->warnLevel = (unsigned) settings.warnLevel;
 		}
 		else {
 			if (ccFile == NULL) {
-				error(rt, NULL, 0, "argument `%s` must be preceded by a file", arg);
+				fatal("argument `%s` must be preceded by a file", arg);
 			}
-			if (arg[1] == 'w') {		// warning level for file
+			if (arg[1] == 'w') {		// warning level for file (TODO: parser warnings only)
 				int level = 0;
 				if (strcmp(arg, "-wa") == 0) {
 					level = 15;
 				}
 				else if (*parseInt(arg + 2, &level, 10)) {
-					error(rt, NULL, 0, "invalid warning level '%s'", arg + 2);
+					fatal("invalid warning level '%s'", arg + 2);
 				}
 				rt->warnLevel = (unsigned) level;
 			}
@@ -2224,7 +2218,7 @@ int main(int argc, char *argv[]) {
 				}
 
 				if (*parseInt(arg2, &line, 10)) {
-					error(rt, NULL, 0, "invalid line number `%s`", arg + 2);
+					fatal("invalid line number `%s`", arg + 2);
 				}
 				bp_type[bp_size] = type;
 				bp_file[bp_size] = ccFile;
@@ -2232,7 +2226,7 @@ int main(int argc, char *argv[]) {
 				bp_size += 1;
 			}
 			else {
-				error(rt, NULL, 0, "invalid option: `%s`", arg);
+				fatal("invalid option: `%s`", arg);
 			}
 		}
 	}
