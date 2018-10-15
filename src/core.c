@@ -65,13 +65,13 @@ static void *rtAllocApi(rtContext rt, void *ptr, size_t size) {
 	return rtAlloc(rt, ptr, size, NULL);
 }
 
-/// Private rtLookupSym wrapper for the api
+/// Private function lookup  wrapper for the api
 static symn rtLookupApi(rtContext rt, size_t offset) {
 	symn sym = rtLookup(rt, offset, 0);
-	if (sym != NULL && sym->offs == offset) {
-		return sym;
+	if (sym == NULL || !isFunction(sym)) {
+		return NULL;
 	}
-	return NULL;
+	return sym;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Native
@@ -242,8 +242,12 @@ static void install_type(ccContext cc, ccInstall mode) {
 	cc->type_vid = type_vid;
 	cc->type_bol = type_bol;
 	cc->type_chr = type_chr;
+	cc->type_i08 = type_i08;
+	cc->type_i16 = type_i16;
 	cc->type_i32 = type_i32;
 	cc->type_i64 = type_i64;
+	cc->type_u08 = type_u08;
+	cc->type_u16 = type_u16;
 	cc->type_u32 = type_u32;
 	cc->type_u64 = type_u64;
 	cc->type_f32 = type_f32;
@@ -517,7 +521,7 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 	symn field;
 
 	// !!! halt must be the first native call.
-	error = error || !ccDefCall(cc, onHalt ? onHalt : haltDummy, "void halt()");
+	error = error || !ccAddCall(cc, onHalt ? onHalt : haltDummy, "void halt()");
 
 	// 4 reflection
 	if (cc->type_rec != NULL && cc->type_var != NULL) {
@@ -538,26 +542,26 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 			error = 1;
 		}
 
-		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_base));
-		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_file));
+		error = error || !(field = ccAddCall(cc, typenameGetField, type_get_base));
+		error = error || !(field = ccAddCall(cc, typenameGetField, type_get_file));
 		if (field != NULL) {// hack: change return type from pointer to string
 			field->params->type = cc->type_str;
 		}
-		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_line));
-		error = error || !(field = ccDefCall(cc, typenameGetField, type_get_name));
+		error = error || !(field = ccAddCall(cc, typenameGetField, type_get_line));
+		error = error || !(field = ccAddCall(cc, typenameGetField, type_get_name));
 		if (field != NULL) {// hack: change return type from pointer to string
 			field->params->type = cc->type_str;
 		}
 
 		/* TODO: more 4 reflection
-		error = error || !ccDefCall(rt, typenameReflect, "variant lookup(variant &obj, int options, string name, variant args...)");
-		error = error || !ccDefCall(rt, typenameReflect, "variant invoke(variant &obj, int options, string name, variant args...)");
+		error = error || !ccAddCall(rt, typenameReflect, "variant lookup(variant &obj, int options, string name, variant args...)");
+		error = error || !ccAddCall(rt, typenameReflect, "variant invoke(variant &obj, int options, string name, variant args...)");
 		// setValue and getValue can be done with lookup and invoke
-		error = error || !ccDefCall(rt, typenameReflect, "variant setValue(typename field, variant value)");
-		error = error || !ccDefCall(rt, typenameReflect, "variant getValue(typename field)");
+		error = error || !ccAddCall(rt, typenameReflect, "variant setValue(typename field, variant value)");
+		error = error || !ccAddCall(rt, typenameReflect, "variant getValue(typename field)");
 
-		error = error || !ccDefCall(rt, typenameReflect, "bool canAssign(typename type, variant value, bool strict)");
-		error = error || !ccDefCall(rt, typenameReflect, "bool instanceOf(typename type, variant obj)");
+		error = error || !ccAddCall(rt, typenameReflect, "bool canAssign(typename type, variant value, bool strict)");
+		error = error || !ccAddCall(rt, typenameReflect, "bool instanceOf(typename type, variant obj)");
 		//~ */
 
 		dieif(cc->type_rec->fields, ERR_INTERNAL_ERROR);
@@ -590,9 +594,11 @@ rtContext rtInit(void *mem, size_t size) {
 		*(void**)&rt->api.ccDefInt = ccDefInt;
 		*(void**)&rt->api.ccDefFlt = ccDefFlt;
 		*(void**)&rt->api.ccDefStr = ccDefStr;
+		*(void**)&rt->api.ccDefVar = ccDefVar;
 
-		*(void**)&rt->api.ccDefType = ccDefType;
-		*(void**)&rt->api.ccDefCall = ccDefCall;
+		*(void**)&rt->api.ccAddType = ccAddType;
+		*(void**)&rt->api.ccAddCall = ccAddCall;
+		*(void**)&rt->api.ccAddCode = ccAddUnit;
 
 		*(void**)&rt->api.invoke = invoke;
 		*(void**)&rt->api.rtAlloc = rtAllocApi;
@@ -997,7 +1003,7 @@ symn ccEnd(ccContext cc, symn sym) {
 		trace(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
-	symn fields = leave(cc, ATTR_stat | KIND_typ, 0, 0, NULL);
+	symn fields = leave(cc, sym->kind & (ATTR_stat | MASK_kind), 0, 0, NULL);
 	if (sym != NULL) {
 		sym->fields = fields;
 	}
@@ -1034,7 +1040,16 @@ symn ccDefStr(ccContext cc, const char *name, char *value) {
 	return install(cc, name, KIND_def | CAST_ref, 0, cc->type_str, strNode(cc, value));
 }
 
-symn ccDefType(ccContext cc, const char *name, unsigned size, int refType) {
+symn ccDefVar(ccContext cc, const char *name, symn type) {
+	if (!cc || !name) {
+		trace(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+	name = ccUniqueStr(cc, name, -1, -1);
+	return install(cc, name, KIND_var | castOf(type), 0, type, NULL);
+}
+
+symn ccAddType(ccContext cc, const char *name, unsigned size, int refType) {
 	if (!cc || !name) {
 		trace(ERR_INTERNAL_ERROR);
 		return NULL;
@@ -1111,19 +1126,28 @@ symn ccLookup(ccContext cc, symn in, char *name) {
 	return lookup(cc, in ? in->fields : cc->scope, &ast, NULL, 1);
 }
 
-symn rtLookup(rtContext rt, size_t offs, int callsOnly) {
-	symn sym = rt->main;
+symn rtLookup(rtContext rt, size_t offs, ccKind filter) {
 	dieif(offs > rt->_size, ERR_INVALID_OFFSET, offs);
 	if (offs > rt->vm.px + px_size) {
 		// local variable on stack ?
 		return NULL;
 	}
+	symn sym = rt->main;
 	if (offs >= sym->offs && offs < sym->offs + sym->size) {
 		// is the main function ?
 		return sym;
 	}
+	ccKind filterKind = filter & MASK_kind;
+	ccKind filterCast = filter & MASK_cast;
+	ccKind filterAttr = filter & MASK_attr;
 	for (sym = sym->fields; sym; sym = sym->global) {
-		if (callsOnly && !isInvokable(sym)) {
+		if (filterCast && (sym->kind & filterCast) == 0) {
+			continue;
+		}
+		if (filterKind && (sym->kind & filterKind) == 0) {
+			continue;
+		}
+		if (filterAttr && (sym->kind & filterAttr) == 0) {
 			continue;
 		}
 		if (offs == sym->offs) {

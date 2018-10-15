@@ -1687,8 +1687,12 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 
 				// assign arrays and variants
 				case CAST_ref:
+					size = cc->type_ptr->size;
+					cast = KIND_var;
+					break;
 				case CAST_arr:
 				case CAST_var:
+					size = cc->type_var->size;
 					cast = KIND_var;
 					break;
 			}

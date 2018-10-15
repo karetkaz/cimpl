@@ -1,20 +1,61 @@
+/* communication with worker/args
+send => {
+	files - download these files to the workspace directory
+	file - open or save the content of the file
+	line - jump to / position in file
+	data(content) - save the content
+	exec - arguments for the compiler
+}
+
+receive => {
+	files - list of files in the workspace
+	data(content) - content of the requested file
+	line - jump to / position in file
+	print - print the message to the output
+}
+
+args => {
+	files - download files to a new workspace
+	file - the file to be opened
+	data(content) - overwrite the content of the file
+	exec
+	theme
+	dump
+	log
+	mem
+	X
+}*/
+
 var Module = {
 	workspace: '/workspace',
-	files: [],
+	files: null,
+	initialized: false,
 	print: function(text) {
 		postMessage({ print: text });
+	},
+	workspaceFiles: function() {
+		let result = [];
+		let dir = FS.analyzePath(Module.workspace);
+		if (dir && dir.exists && dir.object) {
+			for (let file in dir.object.contents) {
+				result.push(file);
+			}
+		}
+		return result;
 	},
 	onRuntimeInitialized: function () {
 		FS.mkdirTree(Module.workspace);
 		FS.chdir(Module.workspace);
-		let files = [];
+		if (Module.files === null || Module.initialized) {
+			return;
+		}
+
 		for (let file of Module.files) {
 			let path = Module.workspace + '/' + file.path;
 			try {
 				if (file.url === undefined) {
 					FS.mkdirTree(path.replace(/^(.*[/])?(.*)(\..*)$/, "$1"));
 					FS.writeFile(path, file.content, {encoding: 'utf8'});
-					files.push(file.path);
 					Module.print('file created: ' + file.path);
 					continue;
 				}
@@ -27,7 +68,6 @@ var Module = {
 				}
 				FS.mkdirTree(path.replace(/^(.*[/])?(.*)(\..*)$/, "$1"));
 				FS.writeFile(path, xhr.responseText, {encoding: 'utf8'});
-				files.push(file.path);
 				Module.print('file downloaded: ' + xhr.responseURL);
 			}
 			catch (err) {
@@ -35,7 +75,8 @@ var Module = {
 				console.error(err);
 			}
 		}
-		postMessage({files: files});
+		postMessage({files: Module.workspaceFiles()});
+		Module.initialized = true;
 	}
 };
 
@@ -46,6 +87,7 @@ onmessage = function(event) {
 	//console.log(data);
 	if (data.files !== undefined) {
 		Module.files = data.files;
+		Module.onRuntimeInitialized();
 	}
 	if (data.file !== undefined) {
 		let path = data.file;
@@ -54,17 +96,19 @@ onmessage = function(event) {
 		}
 		try {
 			if (data.content !== undefined) {
+				let exists = FS.analyzePath(path).exists;
 				FS.mkdirTree(path.replace(/^(.*[/])?(.*)(\..*)$/, "$1"));
 				FS.writeFile(path, data.content, {encoding: 'utf8'});
 				postMessage({
+					files: exists ? undefined : Module.workspaceFiles(),
 					file: data.file,
 					line: data.line
 				});
 			} else {
 				postMessage({
+					content: FS.readFile(path, {encoding: 'utf8'}),
 					file: data.file,
-					line: data.line,
-					content: FS.readFile(path, {encoding: 'utf8'})
+					line: data.line
 				});
 			}
 		} catch (err) {

@@ -1,0 +1,68 @@
+static gxSurf offs = gxSurf.create(1440, 900, 32);
+static gxSurf back = gxSurf.openJpg("asset/image/forest.jpg", 32);
+static gxSurf draw = gxSurf.openPng("asset/image/david.png", 32);
+
+static uint32 lut[256];
+for (int i = 0; i < 256; i += 1) {
+	//~ int g = i / 2;
+	int g = i - 1;
+	if (g < 0) { g = 0; }
+	lut[i] = (((g << 8) | g) << 8) | g;
+}
+
+int onEvent(int action, int button, int x, int y) {
+	static gxRect roi = {x: 30, y: 30, w: 120, h: 120 };
+	if (action == Gui.KEY_PRESS) {
+		if (button == 27) {
+			return -1;
+		}
+		if (button == ' ') {
+			gxSurf.lookup(offs, null, lut);
+		}
+		if (x == 's' && (y & Gui.KEY_MASK_CONTROL) != 0) {
+			trace("dumping screen");
+			gxSurf.saveBmp(offs, "out/dump.bmp", 0);
+		}
+		struct Event {
+			char button;
+			char x;
+			char y;
+		}
+		Event event = {
+			button: button, x: x, y: y
+		};
+		trace("event", event);
+	}
+
+	if (action == Gui.MOUSE_PRESS) {
+		gxSurf.zoomSurf(offs, null, back, null, 1);
+		action = Gui.MOUSE_MOTION;
+	}
+	if (action == Gui.MOUSE_MOTION) {
+		if (button == 1) {
+			gxSurf.copySurf(offs, x, y, draw, null);
+		}
+		if (button == 2) {
+			gxSurf.copySurf(offs, x, y, draw, roi);
+		}
+	}
+
+	/* 
+	static int64 millis = 0;
+	int64 now = System.millis();
+	if (now - millis > 20) {
+		gxSurf.lookup(offs, null, lut);
+		millis = now;
+	}
+	return 0;
+	// */
+
+	return 1;
+}
+onEvent(Gui.MOUSE_PRESS, 0, 0, 0);
+Gui.showWindow(offs, onEvent);
+
+gxSurf.saveBmp(offs, "out/dump.bmp", 0);
+gxSurf.destroy(offs);
+gxSurf.destroy(back);
+gxSurf.destroy(draw);

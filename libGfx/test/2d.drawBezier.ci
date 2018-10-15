@@ -1,0 +1,49 @@
+static gxSurf offs = gxSurf.create(1440, 900, 32);
+
+int onEvent(int action, int button, int ex, int ey) {
+	static int ox = 0;
+	static int oy = 0;
+	static int x[4]; // TODO: = {100, 100, 100, 100};
+	static int y[4]; // TODO: = {100, 100, 100, 100};
+
+	if (action == Gui.KEY_PRESS) {
+		if (button == 27) {
+			return -1;
+		}
+	}
+
+	if (action == Gui.MOUSE_MOTION) {
+		if (button > 0 && button <= x.length) {
+			x[button - 1] += ex - ox;
+			y[button - 1] += ey - oy;
+		}
+
+		inline R = 2;
+		inline controlColor = 0x00ff00;
+		inline bezierColor = 0xffffff;
+
+		gxSurf.fillRect(offs, 0, 0, 65535, 65535, 0x00000000);
+
+		// draw control lines
+		gxSurf.drawLine(offs, x[0], y[0], x[2], y[2], controlColor);
+		gxSurf.drawLine(offs, x[3], y[3], x[1], y[1], controlColor);
+
+		// draw control points
+		gxSurf.drawOval(offs, x[0] - R, y[0] - R, x[0] + R, y[0] + R, controlColor);
+		gxSurf.drawOval(offs, x[1] - R, y[1] - R, x[1] + R, y[1] + R, controlColor);
+		gxSurf.drawOval(offs, x[2] - R, y[2] - R, x[2] + R, y[2] + R, controlColor);
+		gxSurf.drawOval(offs, x[3] - R, y[3] - R, x[3] + R, y[3] + R, controlColor);
+
+		// draw bezier curve
+		gxSurf.drawBezier(offs, x[0], y[0], x[2], y[2], x[3], y[3], x[1], y[1], bezierColor);
+	}
+
+	ox = ex;
+	oy = ey;
+
+	return 1;
+}
+
+Gui.showWindow(offs, onEvent);
+
+gxSurf.destroy(offs);

@@ -29,5 +29,9 @@ cmpl.js: $(SOURCE) stdlib.ci
 	emcc $(CFLAGS) $(OPTIONS) $(SOURCE) -o cmpl.js --embed-file stdlib.ci
 	rm stdlib.ci
 
+cmpl.dbg.js: $(SOURCE) stdlib.ci
+	emcc -g3 -O0 -s WASM=0 $(SOURCE) -o cmpl.dbg.js --embed-file stdlib.ci
+	rm stdlib.ci
+
 stdlib.ci:
 	cp $(BASEDIR)/stdlib.ci ./stdlib.ci

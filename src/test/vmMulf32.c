@@ -52,7 +52,7 @@ int main() {
 	// prepare for execution
 	rt->vm.px = emitInt(rt, opc_nfc, 0);
 	rt->vm.pc = start;
-	rt->vm.ss = 12;
+	rt->vm.ss = 8;
 
 	// print emitted instructions
 	printFmt(stdout, NULL, "\n-- assembly:\n");

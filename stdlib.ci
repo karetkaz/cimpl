@@ -29,7 +29,7 @@ inline assert(bool condition, char message[*]) = void(condition ? void(0) : abor
 inline assert(bool condition) = void(condition ? void(0) : abort("assertion failed!"));
 
 // TODO: make inline
-void assertEq(int expected, int returned, char message[*]) {
+static void assertEq(int expected, int returned, char message[*]) {
 	if (returned == expected) {
 		return;
 	}

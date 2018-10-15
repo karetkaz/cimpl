@@ -1,0 +1,86 @@
+// test field initializations
+
+struct RecordMemberTest {
+
+	struct Inner {
+		int member;
+		const int constant;
+	}
+
+	// if initializer is omitted, initialize with `default type initializer`.
+	int member;
+
+	// constant fields must be initialized on instance creation, because they can not be changed.
+	const int constant;
+
+	// if initializer is omitted, initialize with `default field initializer`
+	int memberInit = 2;
+
+	// if initializer is omitted, initialize with `default field initializer`
+	const int constantInit = 3;
+
+	// field must be initialized because there is no `default type initializer`.
+	Inner memberRec;
+
+	// all members of constant fields must be initialized on instance creation, because they can not be changed.
+	const Inner constantRec;
+
+	// if initializer is omitted, initialize with `default field initializer`.
+	// FIXME: Inner memberRecInit = {member: 21, constant: 22};
+
+	// if initializer is omitted, initialize with `default field initializer`.
+	// FIXME: const Inner constantRecInit = {member: 31, constant: 32};
+
+	// global variable initialized with `default type initializer`
+	static int global;
+
+	// global variable initialized with initializer.
+	static int globalInit = 5;
+
+	// global constants must be initialized when declared, because they can not be changed.
+	static const int globalConstant = 6;
+
+	// raise warning because there is no `default type initializer`, might be filled with garbage.
+	static Inner globalRec;
+
+	// global variable initialized with initializer.
+	static Inner globalRecInit = {member: 51, constant: 52};
+
+	// global constants must be initialized when declared, because they can not be changed.
+	static const Inner globalConstantRec = {member: 61, constant: 62};
+}
+
+RecordMemberTest recordMemberTest = {
+	member: 6;
+	constant: 7;
+	memberInit: 8;
+	constantInit: 9;
+
+	memberRec: {
+		member: 61;
+		constant: 62;
+	};
+	// constant member mut be initialized with all fields set
+	constantRec: {
+		member: 71;
+		constant: 72;
+	};
+
+	/* static fields can not be initialized
+	global: 29;
+	globalInit: 39;
+	globalConstant: 49;
+	// */
+};
+
+/* assign new values after initialization
+r1.member = 74;
+r1.memberInit = 75;
+// accessing static members using instance variable
+r1.global = 76;
+r1.globalInit = 79;
+/* constant variables can not be assigned
+r1.constant = 79;
+r1.constantInit = 80;
+r1.globalConstant = 81;
+// */

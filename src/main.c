@@ -653,7 +653,7 @@ static void jsonPostProfile(dbgContext ctx) {
 		}
 		covFunc += 1;
 		if (sym == NULL) {
-			sym = rtLookup(ctx->rt, dbg->start, 1);
+			sym = rtLookup(ctx->rt, dbg->start, 0);
 		}
 		if (covFunc > 1) {
 			printFmt(out, esc, JSON_OBJ_NEXT, indent + 1);
@@ -676,7 +676,7 @@ static void jsonPostProfile(dbgContext ctx) {
 		}
 		covStmt += 1;
 		if (sym == NULL) {
-			sym = rtLookup(ctx->rt, dbg->start, 1);
+			sym = rtLookup(ctx->rt, dbg->start, 0);
 		}
 		if (sym != NULL) {
 			symOffs = dbg->start - sym->offs;
@@ -923,7 +923,7 @@ static void textPostProfile(userContext usr) {
 				}
 				symn sym = ptr->func;
 				if (sym == NULL) {
-					sym = rtLookup(rt, ptr->start, 1);
+					sym = rtLookup(rt, ptr->start, 0);
 				}
 				printFmt(out, esc,
 					"%?s:%?u:[.%06x, .%06x): %?T, hits(%D/%D), time(%D%?+D / %.3F%?+.3F ms)\n", ptr->file,
@@ -945,7 +945,7 @@ static void textPostProfile(userContext usr) {
 					continue;
 				}
 				if (sym == NULL) {
-					sym = rtLookup(rt, ptr->start, 1);
+					sym = rtLookup(rt, ptr->start, 0);
 				}
 				if (sym != NULL) {
 					symOffs = ptr->start - sym->offs;
@@ -971,7 +971,7 @@ static void textPostProfile(userContext usr) {
 					continue;
 				}
 				if (sym == NULL) {
-					sym = rtLookup(rt, ptrFunc->start, 1);
+					sym = rtLookup(rt, ptrFunc->start, 0);
 				}
 				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): %?T\n", ptrFunc->file, ptrFunc->line, ptrFunc->start, ptrFunc->end, sym);
 			}
@@ -986,7 +986,7 @@ static void textPostProfile(userContext usr) {
 					continue;
 				}
 				if (sym == NULL) {
-					sym = rtLookup(rt, ptrStmt->start, 1);
+					sym = rtLookup(rt, ptrStmt->start, 0);
 				}
 				if (sym != NULL) {
 					symOffs = ptrStmt->start - sym->offs;
@@ -1223,7 +1223,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 				printFmt(out, esc, "[% 3.2F]", now);
 			}
 			if ((ssize_t) callee > 0) {
-				printFmt(out, esc, ">% I %d, %T\n", ss, ctx->usedMem, rtLookup(rt, callee, 1));
+				printFmt(out, esc, ">% I %d, %T\n", ss, ctx->usedMem, rtLookup(rt, callee, 0));
 			}
 			else {
 				printFmt(out, esc, "<% I %d\n", ss, ctx->usedMem);

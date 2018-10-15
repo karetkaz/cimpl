@@ -1,0 +1,233 @@
+* {
+	margin: 0;
+	padding: 0;
+	font-size: inherit;
+	font-family: inherit;
+}
+body {
+	width:100%;
+	margin: auto;
+	display: block;
+	font-size: 1em;
+}
+
+.clear {clear: both;}
+.right {float: right;}
+.left {float: left;}
+
+.content {
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	overflow: hidden;
+	position: absolute;
+	background-color: white;
+	z-index: 100;
+}
+
+.content.list {
+	padding: .5em;
+	overflow-y: auto;
+	background-color: #fafafa;
+}
+
+.content.list > * {
+	padding-top: 1em;
+}
+
+.content.list.right {
+	left: auto;
+	width: 16em;
+	max-width: 50%;
+}
+.content.list.left {
+	right: auto;
+	width: 16em;
+	max-width: 50%;
+}
+
+.content.list li:hover {
+	background-color: #dadada;
+	cursor: hand;
+}
+
+.content.list > ul {
+	padding: .5rem 1em;
+}
+.content.list > ul > li {
+	list-style: none;
+	overflow: hidden;
+	white-space: nowrap;
+	padding: 0.5rem 0.5em;
+}
+.content.list input {
+	margin: 0.25rem 0;
+	padding: 0.25rem 0.5em;
+	width: 100%;
+	border: solid 1px #dadada;
+	border-radius: 0.2em;
+}
+.content.list button {
+	padding: 0.25rem 0.5em;
+	border: solid 1px #eaeaea;
+	border-radius: 0.2em;
+}
+.content.list button:hover {
+	background-color: #fafafa;
+	border: solid 1px #dadada;
+}
+.content.list hr {
+	border: 0;
+	height: 1px;
+	padding: 0;
+	background-color: #dadada;
+}
+
+/* Splitter: vertical & horizontal */
+.split-pane {
+	overflow: hidden;
+}
+.split-pane > div {
+	width: 100%;
+	height: 100%;
+	float: left;
+	overflow: hidden;
+	position: relative;
+}
+.split-pane.vertical > div {
+	width: 50%;
+	height: 100%;
+}
+.split-pane.horizontal > div {
+	width: 100%;
+	height: 50%;
+}
+.split-pane.primary > div {
+	width: 0;
+	height: 0;
+}
+.split-pane.primary > div:first-child {
+	width: 100%;
+	height: 100%;
+}
+.split-pane.secondary > div {
+	width: 0;
+	height: 0;
+}
+.split-pane.secondary > div:last-child {
+	width: 100%;
+	height: 100%;
+}
+
+@media (orientation: portrait) {
+	.split-pane > div {
+		width: 100%;
+		height: 50%;
+	}
+}
+@media (orientation: landscape) {
+	.split-pane > div {
+		width: 50%;
+		height: 100%;
+	}
+}
+
+/* toolbar */
+.toolbar {
+	background-color: #eaeaea;
+	padding: 0;
+	margin: 0;
+}
+.toolbar>span {
+	text-decoration: none;
+	line-height: 2em;
+	text-align: center;
+	display: block;
+	width: auto;
+	overflow: hidden;
+	padding: 0 .5em 0 .5em;
+	cursor: hand;
+}
+.toolbar>span:hover {
+	background-color: #dadada;
+	border-radius: 0.2em;
+}
+.toolbar>span.icon {
+	width: 2em;
+	padding: 0;
+}
+.toolbar>.filename {
+	width: auto;
+	overflow: hidden;
+	text-align: left;
+}
+.toolbar>.filename:after {
+	content: ' ▾';
+}
+.toolbar>.execute:after {
+	content: ' ▸';
+}
+
+/* input and output */
+textarea, #output {
+	display: block;
+	padding: 0;
+	border: 0;
+	margin: 0;
+	width: 100%;
+	min-width: 100%;
+	max-width: 100%;
+	height: 100%;
+	min-height: 100%;
+	max-height: 100%;
+	overflow-x: auto;
+	overflow-y: scroll;
+	border: transparent;
+	border-radius: 0;
+	font-family: monospace;
+}
+#output {
+	color: white;
+	background-color: black;
+	white-space: pre;
+}
+#output p {
+	min-height: 1em;
+}
+
+#output a {
+	color: #007bff;
+/* 	text-decoration: none; */
+}
+
+
+/** CodeMirror */
+.text-content .CodeMirror {
+	margin: 0;
+	padding: 0;
+	border: 0 solid #eee;
+	height: 100%;
+}
+
+/* tabs and trailing spaces*/
+.cm-trailingspace {
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAACCAYAAAB/qH1jAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QUXCToH00Y1UgAAACFJREFUCNdjPMDBUc/AwNDAAAFMTAwMDA0OP34wQgX/AQBYgwYEx4f9lQAAAABJRU5ErkJggg==);
+	background-position: bottom left;
+	background-repeat: repeat-x;
+}
+
+.cm-tab {
+	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAMCAYAAAAkuj5RAAAAAXNSR0IArs4c6QAAAGFJREFUSMft1LsRQFAQheHPowAKoACx3IgEKtaEHujDjORSgWTH/ZOdnZOcM/sgk/kFFWY0qV8foQwS4MKBCS3qR6ixBJvElOobYAtivseIE120FaowJPN75GMu8j/LfMwNjh4HUpwg4LUAAAAASUVORK5CYII=);
+	background-position: right;
+	background-repeat: no-repeat;
+}
+
+/* match words */
+.CodeMirror-focused .cm-matchhighlight {
+/* 	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFklEQVQI12NgYGBgkKzc8x9CMDAwAAAmhwSbidEoSQAAAABJRU5ErkJggg==); */
+	background-position: bottom;
+	background-repeat: repeat-x;
+}
+.cm-matchhighlight {background-color: lightgreen}
+.CodeMirror-selection-highlight-scrollbar {background-color: green}

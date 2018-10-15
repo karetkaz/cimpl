@@ -162,6 +162,16 @@ symn ccDefFlt(ccContext cc, const char *name, double value);
 symn ccDefStr(ccContext cc, const char *name, char *value);
 
 /**
+ * Define a variable or reference.
+ * 
+ * @param cc Compiler context.
+ * @param name Name of the variable.
+ * @param type Type of the variable.
+ * @return Defined symbol, null on error.
+ */
+symn ccDefVar(ccContext cc, const char *name, symn type);
+
+/**
  * Define a new type.
  * 
  * @param cc Compiler context.
@@ -171,7 +181,7 @@ symn ccDefStr(ccContext cc, const char *name, char *value);
  * @return Defined symbol, null on error.
  * @see plugins/file.c
  */
-symn ccDefType(ccContext cc, const char *name, unsigned size, int refType);
+symn ccAddType(ccContext cc, const char *name, unsigned size, int refType);
 
 /**
  * Define a native function.
@@ -192,7 +202,7 @@ symn ccDefType(ccContext cc, const char *name, unsigned size, int refType);
 		return rt->errors;
 	}
  */
-symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto);
+symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto);
 
 /**
  * Compile the given file or text as a unit.

@@ -23,6 +23,8 @@ typedef SSIZE_T ssize_t;
 #define inline __inline
 #else
 #include <stdint.h>
+#include <stdlib.h>
+
 #endif
 
 typedef float float32_t;
@@ -185,11 +187,17 @@ struct rtContextRec {
 		/// Declare string constant; @see ccDefStr
 		symn (*const ccDefStr)(ccContext ctx, const char *name, char *value);
 
-		/// Declare a typename; @see ccDefType
-		symn (*const ccDefType)(ccContext ctx, const char *name, unsigned size, int refType);
+		/// Declare variable; @see ccDefVar
+		symn (*const ccDefVar)(ccContext ctx, const char *name, symn type);
 
-		/// Declare a native function; @see ccDefCall
-		symn (*const ccDefCall)(ccContext ctx, vmError libc(nfcContext), const char *proto);
+		/// Declare a typename; @see ccAddType
+		symn (*const ccAddType)(ccContext ctx, const char *name, unsigned size, int refType);
+
+		/// Declare a native function; @see ccAddCall
+		symn (*const ccAddCall)(ccContext ctx, vmError libc(nfcContext), const char *proto);
+
+		/// Compile code snippet; @see ccAddUnit
+		astn (*const ccAddCode)(ccContext cc, char *file, int line, char *text);
 
 		/// Lookup function by offset; @see rtLookup
 		symn (*const rtLookup)(rtContext ctx, size_t offset);
@@ -224,8 +232,8 @@ struct rtContextRec {
  */
 struct nfcContextRec {
 	const rtContext rt;         // runtime context
-	const symn sym;             // invoked function (returned by ccDefCall)
-	const char *proto;          // static data (passed to ccDefCall)
+	const symn sym;             // invoked function (returned by ccAddCall)
+	const char *proto;          // static data (passed to ccAddCall)
 	const void *extra;          // extra data (passed to execute or invoke)
 	const void *args;           // arguments
 	const size_t argc;          // argument count in bytes
@@ -244,6 +252,27 @@ static inline void *vmPointer(rtContext ctx, size_t offset) {
 		return NULL;
 	}
 	return ctx->_mem + offset;
+}
+
+/**
+ * Get the internal offset of a reference.
+ * 
+ * @param rt Runtime context.
+ * @param ptr Memory location.
+ * @return The internal offset.
+ * @note Aborts if ptr is not null and outside the vm memory.
+ */
+static inline size_t vmOffset(rtContext rt, void *ptr) {
+	if (ptr == NULL) {
+		return 0;
+	}
+	if ((unsigned char*)ptr > rt->_mem + rt->_size) {
+		abort();
+	}
+	if ((unsigned char*)ptr < rt->_mem) {
+		abort();
+	}
+	return (unsigned char*)ptr - rt->_mem;
 }
 
 /**

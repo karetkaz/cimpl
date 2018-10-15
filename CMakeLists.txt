@@ -7,13 +7,16 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m${ARCH}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/out>)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/out>)
 
-set(CMPL_SRC_FILES
+set(CC_HEADER_FILES
 	src/cmpl.h
 	src/cmplVm.h
 	src/cmplCc.h
 	src/parser.h
 	src/printer.h
 	src/internal.h
+)
+
+set(CC_SOURCE_FILES
 	src/cgen.c
 	src/code.c
 	src/core.c
@@ -27,17 +30,41 @@ set(CMPL_SRC_FILES
 	src/utils.c
 )
 
-add_executable(cmpl ${CMPL_SRC_FILES} src/main.c)
+set(GX_HEADER_FILES
+	libGfx/src/gx_surf.h
+	libGfx/src/gx_color.h
+	libGfx/src/g3_math.h
+	libGfx/src/g3_mesh.h
+	libGfx/src/g3_draw.h
+	libGfx/src/gx_gui.h
+)
+
+set(GX_SOURCE_FILES
+	libGfx/src/gx_surf.c
+	libGfx/src/gx_color.c
+	libGfx/src/g2_draw.c
+	libGfx/src/g3_draw.c
+	libGfx/src/g2_image.c
+	libGfx/src/g3_mesh.c
+	libGfx/src/gx_gui.X11.c
+	libGfx/src/gx_main.c
+)
+
+add_executable(cmpl ${CC_SOURCE_FILES} src/main.c)
 target_link_libraries(cmpl m dl)
 
-add_library(File SHARED src/plugin/file.c)
+add_library(File SHARED libEtc/src/file.c)
 target_include_directories(File PUBLIC ./src/)
 
-add_library(OpenGL SHARED src/plugin/openGL.c)
+add_library(OpenGL SHARED libEtc/src/openGL.c)
 target_include_directories(OpenGL PUBLIC ./src/)
 target_link_libraries(OpenGL GL GLU glut)
 
+add_library(Gfx SHARED ${GX_SOURCE_FILES})
+target_include_directories(Gfx PUBLIC ./src/)
+target_link_libraries(Gfx m dl png jpeg X11)
+
 # a simple "how to use" demo code.
-add_executable(cmplVmEmit ${CMPL_SRC_FILES} src/test/vmMulf32.c)
+add_executable(cmplVmEmit ${CC_SOURCE_FILES} src/test/vmMulf32.c)
 target_include_directories(cmplVmEmit PUBLIC ./src/)
 target_link_libraries(cmplVmEmit m dl)

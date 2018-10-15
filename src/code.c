@@ -91,14 +91,6 @@ static inline void rollbackPc(rtContext rt) {
 	}
 }
 
-size_t vmOffset(rtContext rt, void *ptr) {
-	if (ptr == NULL) {
-		return 0;
-	}
-	dieif(!isValidOffset(rt, ptr), ERR_INVALID_OFFSET, ((unsigned char*)ptr - rt->_mem));
-	return (unsigned char*)ptr - rt->_mem;
-}
-
 static int removeOpc(rtContext rt, size_t offs) {
 	if (offs >= rt->vm.ro && offs <= rt->vm.pc) {
 		vmInstruction ip = vmPointer(rt, offs);
@@ -1306,7 +1298,7 @@ static vmError vmTrace(rtContext rt, void *sp, size_t caller, size_t callee) {
 static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t caller, size_t callee) {
 	if (err != noError) {
 		char *errMsg = vmErrorMessage(err);
-		symn fun = rtLookup(ctx->rt, caller, 1);
+		symn fun = rtLookup(ctx->rt, caller, 0);
 		dbgn dbg = mapDbgStatement(ctx->rt, caller);
 		size_t offs = caller;
 		char *file = NULL;
@@ -1605,7 +1597,7 @@ int isChecked(dbgContext ctx) {
 	size_t maxTrace = pu->tp - (trcptr)pu->bp;
 	for (size_t i = 0; i < maxTrace; ++i) {
 		trcptr trace = &trcBase[maxTrace - i - 1];
-		symn fun = rtLookup(rt, trace->callee, 1);
+		symn fun = rtLookup(rt, trace->callee, 0);
 		if (fun == ctx->tryExec) {
 			return 1;
 		}
@@ -2179,7 +2171,7 @@ void traceCalls(dbgContext dbg, FILE *out, int indent, size_t maxCalls, size_t s
 	for (i = skipCalls; i < maxCalls; ++i) {
 		trcptr trace = &trcBase[maxTrace - i - 1];
 		dbgn trInfo = mapDbgStatement(rt, trace->caller);
-		symn fun = rtLookup(rt, trace->callee, 1);
+		symn fun = rtLookup(rt, trace->callee, 0);
 		stkptr sp = trace->sp;
 		char *file = NULL;
 		int line = 0;

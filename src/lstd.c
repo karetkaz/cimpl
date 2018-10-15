@@ -331,7 +331,7 @@ static vmError sysTryExec(nfcContext ctx) {
 	rtContext rt = ctx->rt;
 	size_t args = argref(ctx, nfcNextArg(ctx));
 	size_t actionOffs = argref(ctx, nfcNextArg(ctx));
-	symn action = rtLookup(rt, actionOffs, 1);
+	symn action = rtLookup(rt, actionOffs, KIND_fun);
 
 	if (action != NULL && action->offs == actionOffs) {
 		#pragma pack(push, 4)
@@ -465,7 +465,7 @@ int ccLibStd(ccContext cc) {
 	}
 
 	if (!err && cc->type_var != NULL) {		// debug, trace, assert, fatal, ...
-		cc->libc_dbg = ccDefCall(cc, sysRaise, "void raise(char file[*], int line, int level, int trace, char message[*], variant inspect)");
+		cc->libc_dbg = ccAddCall(cc, sysRaise, "void raise(char file[*], int line, int level, int trace, char message[*], variant inspect)");
 		if (cc->libc_dbg == NULL) {
 			err = 2;
 		}
@@ -481,7 +481,7 @@ int ccLibStd(ccContext cc) {
 	}
 
 	if (!err && cc->type_ptr != NULL) {		// tryExecute
-		cc->libc_try = ccDefCall(cc, sysTryExec, "int tryExec(pointer args, void action(pointer args))");
+		cc->libc_try = ccAddCall(cc, sysTryExec, "int tryExec(pointer args, void action(pointer args))");
 		if (cc->libc_try == NULL) {
 			err = 2;
 		}
@@ -489,16 +489,16 @@ int ccLibStd(ccContext cc) {
 
 	// re-alloc, malloc, free, memset, memcpy
 	if (!err && ccExtend(cc, cc->type_ptr)) {
-		if (!ccDefCall(cc, sysMemMgr, "pointer alloc(pointer ptr, int32 size)")) {
+		if (!ccAddCall(cc, sysMemMgr, "pointer alloc(pointer ptr, int32 size)")) {
 			err = 3;
 		}
-		if (!ccDefCall(cc, sysMemSet, "pointer fill(pointer dst, int value, int32 size)")) {
+		if (!ccAddCall(cc, sysMemSet, "pointer fill(pointer dst, int value, int32 size)")) {
 			err = 3;
 		}
-		if (!ccDefCall(cc, sysMemCpy, "pointer copy(pointer dst, pointer src, int32 size)")) {
+		if (!ccAddCall(cc, sysMemCpy, "pointer copy(pointer dst, pointer src, int32 size)")) {
 			err = 3;
 		}
-		if (!ccDefCall(cc, sysMemMove, "pointer move(pointer dst, pointer src, int32 size)")) {
+		if (!ccAddCall(cc, sysMemMove, "pointer move(pointer dst, pointer src, int32 size)")) {
 			err = 3;
 		}
 		ccEnd(cc, cc->type_ptr);
@@ -507,7 +507,7 @@ int ccLibStd(ccContext cc) {
 	// System.exit(int code), ...
 	if (!err && (nsp = ccBegin(cc, "System"))) {
 		for (i = 0; i < lengthOf(misc); i += 1) {
-			if (!ccDefCall(cc, misc[i].fun, misc[i].def)) {
+			if (!ccAddCall(cc, misc[i].fun, misc[i].def)) {
 				err = 4;
 				break;
 			}
@@ -520,7 +520,7 @@ int ccLibStd(ccContext cc) {
 	// Add extra operations to int32
 	if (!err && ccExtend(cc, cc->type_u32)) {
 		for (i = 0; i < lengthOf(bit32); i += 1) {
-			if (!ccDefCall(cc, bit32[i].fun, bit32[i].def)) {
+			if (!ccAddCall(cc, bit32[i].fun, bit32[i].def)) {
 				err = 5;
 				break;
 			}
@@ -530,7 +530,7 @@ int ccLibStd(ccContext cc) {
 	// Add extra operations to int64
 	if (!err && ccExtend(cc, cc->type_u64)) {
 		for (i = 0; i < lengthOf(bit64); i += 1) {
-			if (!ccDefCall(cc, bit64[i].fun, bit64[i].def)) {
+			if (!ccAddCall(cc, bit64[i].fun, bit64[i].def)) {
 				err = 5;
 				break;
 			}
@@ -540,7 +540,7 @@ int ccLibStd(ccContext cc) {
 	// add math functions to float32
 	if (!err && ccExtend(cc, cc->type_f32)) {
 		for (i = 0; i < lengthOf(flt32); i += 1) {
-			if (!ccDefCall(cc, flt32[i].fun, flt32[i].def)) {
+			if (!ccAddCall(cc, flt32[i].fun, flt32[i].def)) {
 				err = 7;
 				break;
 			}
@@ -550,7 +550,7 @@ int ccLibStd(ccContext cc) {
 	// add math functions to float64
 	if (!err && ccExtend(cc, cc->type_f64)) {
 		for (i = 0; i < lengthOf(flt64); i += 1) {
-			if (!ccDefCall(cc, flt64[i].fun, flt64[i].def)) {
+			if (!ccAddCall(cc, flt64[i].fun, flt64[i].def)) {
 				err = 6;
 				break;
 			}

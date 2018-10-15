@@ -912,6 +912,14 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		// parse function body
 		if (peekTok(cc, STMT_beg)) {
 			def = declare(cc, ATTR_stat | ATTR_cnst | KIND_fun | cast, tag, type, params);
+			if ((attr & ATTR_stat) == 0) {
+				if (cc->owner && isTypename(cc->owner)) {
+					symn virtualFun = declare(cc, (attr & MASK_attr) | KIND_var | CAST_ref, tag, type, params);
+					virtualFun->init = lnkNode(cc, def);
+				} else {
+					warn(cc->rt, 6, tok->file, tok->line, WARN_FUNCTION_MARKED_STATIC, def);
+				}
+			}
 
 			// enable parameter lookup
 			def->fields = params;
@@ -1698,7 +1706,7 @@ static astn statement(ccContext cc, ccKind attr) {
 astn ccAddUnit(ccContext cc, char *file, int line, char *text) {
 	if (ccOpen(cc, file, line, text) != 0) {
 		error(cc->rt, NULL, 0, ERR_OPENING_FILE, file);
-		return 0;
+		return NULL;
 	}
 
 	// pre read all tokens from source
@@ -1746,7 +1754,7 @@ int ccAddLib(ccContext cc, int init(ccContext), char *file) {
 	return error;
 }
 
-symn ccDefCall(ccContext cc, vmError call(nfcContext), const char *proto) {
+symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 	rtContext rt = cc->rt;
 	size_t nfcPos = 0;
 	libc nfc = NULL;

@@ -6,6 +6,7 @@
 #define CMPL_VM_H
 
 #include "cmpl.h"
+#include "cmplCc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -134,7 +135,7 @@ vmError invoke(rtContext rt, symn fun, void *ret, void *args, const void *extra)
 		error(...)
 	}
  */
-symn rtLookup(rtContext rt, size_t offs, int callsOnly);
+symn rtLookup(rtContext rt, size_t offs, ccKind filter);
 
 /**
  * Allocate free and resize memory inside the vm heap.
@@ -180,18 +181,6 @@ size_t nfcNextArg(nfcContext nfc);
  * @note undefined behaviour if the argument is a struct larger than rtValue.
  */
 rtValue nfcReadArg(nfcContext nfc, size_t offs);
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ offset pointer conversions
-
-/**
- * Get the internal offset of a reference.
- * 
- * @param rt Runtime context.
- * @param ptr Memory location.
- * @return The internal offset.
- * @note Aborts if ptr is not null and outside the vm memory.
- */
-size_t vmOffset(rtContext rt, void *ptr);
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Instructions
 /**

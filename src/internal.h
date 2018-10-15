@@ -101,8 +101,12 @@ struct ccContextRec {
 	symn	type_vid;		// void
 	symn	type_bol;		// boolean
 	symn	type_chr;		// character
+	symn	type_i08;		//  8bit signed integer
+	symn	type_i16;		// 16bit signed integer
 	symn	type_i32;		// 32bit signed integer
 	symn	type_i64;		// 64bit signed integer
+	symn	type_u08;		//  8bit unsigned integer
+	symn	type_u16;		// 16bit unsigned integer
 	symn	type_u32;		// 32bit unsigned integer
 	symn	type_u64;		// 64bit unsigned integer
 	symn	type_f32;		// 32bit floating point

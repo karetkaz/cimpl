@@ -93,12 +93,6 @@ symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *out
 				cc->global = sym;
 			}
 		}
-
-		// TODO: this logic should be not here
-		if (!isStatic(sym) && sym->params && sym->init && sym->init->kind == STMT_beg) {
-			warn(cc->rt, 3, sym->file, sym->line, WARN_FUNCTION_MARKED_STATIC, sym);
-			sym->kind |= ATTR_stat;
-		}
 	}
 	cc->scope = sym;
 
@@ -172,9 +166,8 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 	}
 
 	if (isType) {
-		ccKind kind2 = kind;
+		logif((kind & (ATTR_stat | ATTR_cnst)) == 0, "symbol `%s` should be declared as static and constant", name);
 		kind = ATTR_stat | ATTR_cnst | kind;
-		logif(kind != kind2, "symbol `%s` should be declared as static and constant", name);
 	}
 
 	if (size == 0 && (kind & MASK_kind) == KIND_var) {
@@ -397,11 +390,11 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 
 		// lookup parameters, fields, etc.
 		for (loc = cc->owner; loc != NULL; loc = loc->owner) {
-			symn field = lookup(cc, loc->fields, ref, args, 0);
-			if (sym != NULL && sym->nest < loc->nest) {
+			if (sym != NULL && sym->nest > loc->nest) {
 				// symbol found: scope is higher than this parameter
 				break;
 			}
+			symn field = lookup(cc, loc->fields, ref, args, 0);
 			if (field == NULL) {
 				// symbol was not found at this location
 				continue;

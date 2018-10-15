@@ -1,0 +1,49 @@
+// static, virtual and abstract methods
+
+struct RecordMethodTest {
+	// static method
+	// is like a `global function` hidden in a record
+	static int staticMethod(int x, int y) {
+		return x + y;
+	}
+
+	// static forward method
+	// is like a `forward function reference` hidden in a record
+	static int forwardMethod(int x, int y);
+
+	// abstract methods must be overridden when inheriting or instantiating
+	// see @lang.member.ci: the compiler sees it as a `constant function reference` without `default type initializer`
+	int abstractMethod(int x, int y);
+
+	// virtual method (use to delegate)
+	// see @lang.member.ci: the compiler sees it as a `constant function reference` with `default field initializer`
+	int delegateMethod(int x, int y) = forwardMethod;
+
+	// virtual methods can be overridden when inheriting or instantiating
+	// the compiler will generate a static function and instance member:
+	//   1. static int virtualMethod(int x, int y) { ... }
+	//   2. int virtualMethod(int x, int y) = /*static*/ virtualMethod;
+	int virtualMethod(int x, int y) {
+		return x * y;
+	}
+
+	// static forward method implementation
+	static int forwardMethod(int x, int y) {
+		return x * y;
+	}
+
+	// int abstractMethod(int x, int y) { return 0; }      // FIXME: virtualize abstract method
+	// int delegateMethod(int x, int y) { return 0; }      // Error: redefinition of method
+	// int virtualMethod(int x, int y) { return 0; }       // Error: redefinition of method
+	// int staticMethod(int x, int y) { return 0; }        // Error: redefinition of method
+}
+
+static int globalFunction(int x, int y) {
+	return x * y;
+}
+
+RecordMethodTest recordMethodTest = {
+	delegateMethod: globalFunction;
+	abstractMethod: RecordMethodTest.staticMethod;
+	// virtualMethod: RecordMethodTest.staticMethod;          // FIXME: lookup only non static members
+};
