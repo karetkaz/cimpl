@@ -1,12 +1,11 @@
 gxMesh obj = gxMesh.openObj("asset/mesh/bunny.obj");
 
 float32 center[3]; center[0] = center[1] = center[2] = 0;
-float32 resize[3]; resize[0] = resize[1] = resize[2] = 2;
+float32 resize[3]; resize[0] = resize[1] = resize[2] = 1.5f;
 
 gxMesh.normalize(obj, 0, center, resize);
 //gxMesh.saveObj(obj, "out/dump.obj");
 debug("Mesh", obj);
 
-camera.projection(30, 1, 1, 100);
-showMesh(512, 512, obj);
+showMesh(1440, 900, 20, obj);
 gxMesh.destroy(obj);

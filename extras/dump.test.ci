@@ -1706,14 +1706,14 @@ raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], 
 .base: `function`
 .size: 0
 .name: 'raise'
-.field abort: int64 (size: 0 -> static i64)
-.field error: int64 (size: 0 -> static i64)
-.field warn: int64 (size: 0 -> static i64)
-.field info: int64 (size: 0 -> static i64)
-.field debug: int64 (size: 0 -> static i64)
-.field verbose: int64 (size: 0 -> static i64)
-.field noTrace: int64 (size: 0 -> static i64)
-.field defTrace: int64 (size: 0 -> static i64)
+.field abort: int64 (size: 0 -> static const i64)
+.field error: int64 (size: 0 -> static const i64)
+.field warn: int64 (size: 0 -> static const i64)
+.field info: int64 (size: 0 -> static const i64)
+.field debug: int64 (size: 0 -> static const i64)
+.field verbose: int64 (size: 0 -> static const i64)
+.field noTrace: int64 (size: 0 -> static const i64)
+.field defTrace: int64 (size: 0 -> static const i64)
 .param .result: void (size: 0 -> inline)
 .param file: char[*] (size: 4 -> variable(ref))
 .param line: int32 (size: 4 -> variable(i32))
@@ -1724,7 +1724,7 @@ raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], 
 .value: nfc(5)
 }
 raise.abort: int64 {
-.kind: static i64
+.kind: static const i64
 .base: `int64`
 .size: 0
 .name: 'abort'
@@ -1732,7 +1732,7 @@ raise.abort: int64 {
 .value: -1
 }
 raise.error: int64 {
-.kind: static i64
+.kind: static const i64
 .base: `int64`
 .size: 0
 .name: 'error'
@@ -1740,7 +1740,7 @@ raise.error: int64 {
 .value: 0
 }
 raise.warn: int64 {
-.kind: static i64
+.kind: static const i64
 .base: `int64`
 .size: 0
 .name: 'warn'
@@ -1748,7 +1748,7 @@ raise.warn: int64 {
 .value: 1
 }
 raise.info: int64 {
-.kind: static i64
+.kind: static const i64
 .base: `int64`
 .size: 0
 .name: 'info'
@@ -1756,7 +1756,7 @@ raise.info: int64 {
 .value: 2
 }
 raise.debug: int64 {
-.kind: static i64
+.kind: static const i64
 .base: `int64`
 .size: 0
 .name: 'debug'
@@ -1764,7 +1764,7 @@ raise.debug: int64 {
 .value: 3
 }
 raise.verbose: int64 {
-.kind: static i64
+.kind: static const i64
 .base: `int64`
 .size: 0
 .name: 'verbose'
@@ -1772,7 +1772,7 @@ raise.verbose: int64 {
 .value: 4
 }
 raise.noTrace: int64 {
-.kind: static i64
+.kind: static const i64
 .base: `int64`
 .size: 0
 .name: 'noTrace'
@@ -1780,7 +1780,7 @@ raise.noTrace: int64 {
 .value: 0
 }
 raise.defTrace: int64 {
-.kind: static i64
+.kind: static const i64
 .base: `int64`
 .size: 0
 .name: 'defTrace'
@@ -12933,10 +12933,10 @@ test/stdc.number.ci:50: expF32: float32(2.718282)
 test/stdc.number.ci:51: powF32: float32(3.141593)
 test/stdc.number.ci:52: sqrtF32: float32(3.141593)
 test/stdc.number.ci:53: atanF32: float32(1.262627)
-test/stdc.memory.ci:7: p1: pointer(<@02c2a8>)
-test/stdc.memory.ci:8: p2: pointer(<@02c6b8>)
-test/stdc.memory.ci:9: p3: pointer(<@02c718>)
-test/stdc.memory.ci:10: p4: pointer(<@02c7c8>)
+test/stdc.memory.ci:7: p1: pointer(<@02c2a0>)
+test/stdc.memory.ci:8: p2: pointer(<@02c6b0>)
+test/stdc.memory.ci:9: p3: pointer(<@02c710>)
+test/stdc.memory.ci:10: p4: pointer(<@02c7c0>)
 test/stdc.memory.ci:23: val1: int64(0)
 test/stdc.memory.ci:24: val2: int64(42)
 test/stdc.execute.ci:11: noError: function(<noError @02a600>)
@@ -13296,18 +13296,18 @@ test/lang.useOperator.ci:279: f64Cle: bool(0)
 test/lang.useOperator.ci:280: f64Cgt: bool(1)
 test/lang.useOperator.ci:281: f64Cge: bool(1)
 test/lang.useOperator.ci:283: ptrA: pointer(null)
-test/lang.useOperator.ci:284: ptrB: pointer(<@1ff9e8>)
+test/lang.useOperator.ci:284: ptrB: pointer(<@1ff9e0>)
 test/lang.useOperator.ci:299: ptrCeq: bool(0)
 test/lang.useOperator.ci:300: ptrCne: bool(1)
 test/lang.statementIf.ci:26: t: int32(0)
 test/lang.statementFor.ci:12: forIdx: int32(2)
 
 ---------- Memory layout:
-memory[all] @000000; size: 1572878(1.5 Mb)
+memory[all] @000000; size: 1572880(1.5 Mb)
 memory[meta] @000000; size: 173408(169.3 Kb)
 memory[code] @02a718; size: 7025(6.9 Kb)
-memory[heap] @02c289; size: 1391757(1.3 Mb)
-memory[stack] @0fff54; size: 524226(511.9 Kb)
+memory[heap] @02c289; size: 1391751(1.3 Mb)
+memory[stack] @0fff50; size: 524224(511.9 Kb)
 
 ---------- Memory allocations:
-memory[free] @02c2a8; size: 1391696(1.3 Mb)
+memory[free] @02c2a0; size: 1391696(1.3 Mb)

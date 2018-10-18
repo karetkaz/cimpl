@@ -20,11 +20,13 @@ typedef void *library_t;
 static inline void closeLib(library_t lib) { dlclose(lib); }
 static inline library_t openLib(const char *path) { return dlopen(path, RTLD_NOW); }
 static inline library_t findSym(library_t lib, const char *name) { return dlsym(lib, name); }
+static inline char* errorCause() { return dlerror(); }
 #else
 typedef void *library_t;
 static inline void closeLib(library_t lib) { (void)lib;}
 static inline library_t openLib(const char *path) { return 0; }
 static inline library_t findSym(library_t lib, const char *name) { return 0; }
+static inline char* errorCause() { return "Undefined platform"; }
 #endif
 
 static const char *pluginLibInstall = "cmplInit";
@@ -72,6 +74,9 @@ int importLib(rtContext rt, const char *path) {
 		else {
 			result = -2;
 		}
+	}
+	else {
+		error(rt, NULL, 0, "Error opening library: %s", errorCause());
 	}
 	return result;
 }

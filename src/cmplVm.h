@@ -44,6 +44,28 @@ struct opcodeRec {
 };
 extern const struct opcodeRec opcode_tbl[256];
 
+/// Value inside the virtual machine
+typedef union {
+	int8_t i08;
+	int16_t i16;
+	int32_t i32;
+	int64_t i64;
+	uint8_t u08;
+	uint16_t u16;
+	uint32_t u32;
+	uint64_t u64;
+	float32_t f32;
+	float64_t f64;
+	int32_t i24:24;
+	struct {
+		vmOffs ref;
+		union {
+			vmOffs type;
+			vmOffs length;
+		};
+	};
+} vmValue;
+
 /**
  * Initialize runtime context.
  * 

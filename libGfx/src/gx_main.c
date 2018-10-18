@@ -563,8 +563,27 @@ static vmError camera_mgr(nfcContext ctx) {
 	return illegalState;
 }
 
+symn typSigned(rtContext rt, int size) {
+	char *typeName = "void";
+	switch (size) {
+		case 1:
+			typeName = "int8";
+			break;
+		case 2:
+			typeName = "int16";
+			break;
+		case 4:
+			typeName = "int32";
+			break;
+		case 8:
+			typeName = "int64";
+			break;
+	}
+	return rt->api.ccLookup(rt, NULL, typeName);
+}
 
 #define offsetOf(__TYPE, __FIELD) ((size_t) &((__TYPE*)NULL)->__FIELD)
+#define sizeOf(__TYPE, __FIELD) sizeof(((__TYPE*)NULL)->__FIELD)
 
 int cmplInit(rtContext rt) {
 
@@ -646,23 +665,25 @@ int cmplInit(rtContext rt) {
 	// meshes are allocated inside the vm, and are reference types
 	symn symMesh = rt->api.ccAddType(cc, "gxMesh", sizeof(struct gx_Mesh), 1);
 	if (rt->api.ccExtend(cc, symMesh)) {
-//		symn vtxCount = rt->api.ccDefVar(cc, "vertices", cc->type_idx);
-//		symn triCount = rt->api.ccDefVar(cc, "triangles", cc->type_idx);
-//		symn segCount = rt->api.ccDefVar(cc, "segments", cc->type_idx);
 		for (int i = 0; i < sizeof(mesh) / sizeof(*mesh); i += 1) {
 			if (!rt->api.ccAddCall(cc, mesh[i].func, mesh[i].proto)) {
 				return 1;
 			}
 		}
 
-//		ccKind attr = symMesh->kind & ATTR_stat;
-//		symMesh->kind &= ~ATTR_stat;
-		rt->api.ccEnd(cc, symMesh);
-//		symMesh->kind |= attr;
+		symn vtxCount = rt->api.ccDefVar(cc, "vertices", typSigned(rt, sizeOf(struct gx_Mesh, vtxcnt)));
+		symn triCount = rt->api.ccDefVar(cc, "triangles", typSigned(rt, sizeOf(struct gx_Mesh, tricnt)));
+		symn segCount = rt->api.ccDefVar(cc, "segments", typSigned(rt, sizeOf(struct gx_Mesh, segcnt)));
 
-//		vtxCount->offs = offsetOf(struct gx_Mesh, vtxcnt);
-//		triCount->offs = offsetOf(struct gx_Mesh, tricnt);
-//		segCount->offs = offsetOf(struct gx_Mesh, segcnt);
+		ccKind symKind = symMesh->kind;
+		symMesh->kind &= ~ATTR_stat;
+		symMesh->kind |= ATTR_cnst;
+		rt->api.ccEnd(cc, symMesh);
+		symMesh->kind = symKind;
+
+		vtxCount->offs = offsetOf(struct gx_Mesh, vtxcnt);
+		triCount->offs = offsetOf(struct gx_Mesh, tricnt);
+		segCount->offs = offsetOf(struct gx_Mesh, segcnt);
 	}
 
 	// type: gxSurf

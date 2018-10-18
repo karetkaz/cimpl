@@ -1391,7 +1391,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 					}
 				}
 				else {
-					symn sym = ccLookup(rt->cc, NULL, arg);
+					symn sym = ccLookup(rt, NULL, arg);
 					printFmt(con, esc, "arg:%T", sym);
 					if (sym && isVariable(sym) && !isStatic(sym)) {
 						printVal(con, esc, rt, sym, (vmValue *) stack, prSymType, 0);

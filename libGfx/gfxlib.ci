@@ -269,7 +269,7 @@ void tileSurf(gxSurf dst, int x, int y, gxSurf src, gxRect roi&) {
 	}
 }
 
-void showMesh(int w, int h, gxMesh mesh) {
+void showMesh(int w, int h, float32 fovy, gxMesh mesh) {
 	static gxMesh obj;
 	static gxSurf ofs;
 
@@ -330,5 +330,7 @@ void showMesh(int w, int h, gxMesh mesh) {
 
 	obj = mesh;
 	ofs = gxSurf.create3d(w, h);
+
+	camera.projection(fovy, w / float32(h), 1, 100);
 	Gui.showWindow(ofs, onEvent);
 }

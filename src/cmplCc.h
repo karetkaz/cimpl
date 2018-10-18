@@ -12,38 +12,6 @@ extern "C" {
 #endif
 
 typedef enum {
-	CAST_any   = 0x0000,		// error
-	CAST_vid   = 0x0001,		// void
-	CAST_bit   = 0x0002,		// bool
-	CAST_i32   = 0x0003,		// int32, int16, int8
-	CAST_u32   = 0x0004,		// uint32, uint16, uint8
-	CAST_i64   = 0x0005,		// int64
-	CAST_u64   = 0x0006,		// uint64
-	CAST_f32   = 0x0007,		// float32
-	CAST_f64   = 0x0008,		// float64
-	CAST_val   = 0x0009,		// value, record
-	CAST_ref   = 0x000a,		// reference, pointer, array
-	CAST_var   = 0x000b,		// variant: pair of {type, data}
-	CAST_arr   = 0x000c,		// slice: pair of {size, data}
-	//CAST_d   = 0x000d,		// reserved(map)
-	//CAST_e   = 0x000e,		// unused
-	//CAST_f   = 0x000f,		// unused(function)
-
-	KIND_def   = 0x0000,		// alias (/ error at runtime)
-	KIND_typ   = 0x0010,		// typename: struct metadata info.
-	KIND_fun   = 0x0020,		// function
-	KIND_var   = 0x0030,		// variable: function and typename are also variables
-
-	ATTR_stat  = 0x0040,		// static attribute
-	ATTR_cnst  = 0x0080,		// constant attribute
-	ATTR_paral = 0x0100,		// parallel
-
-	MASK_cast  = 0x000f,
-	MASK_kind  = 0x0030,
-	MASK_attr  = 0x00c0,
-} ccKind;
-
-typedef enum {
 	#define TOKEN_DEF(NAME, TYPE, SIZE, STR) NAME,
 	#include "defs.inl"
 	tok_last,
@@ -237,12 +205,12 @@ int ccGenCode(ccContext cc, int debug);
 /**
  * Lookup a symbol by name.
  * 
- * @param cc Compiler context.
- * @param in search in the members of this symbol.
+ * @param rt Runtime context.
+ * @param scope search in the members of this symbol.
  * @param name name of the symbol to be found.
  * @return the first found symbol.
  */
-symn ccLookup(ccContext cc, symn in, char *name);
+symn ccLookup(rtContext rt, symn scope, char *name);
 
 /// standard modules for `ccAddLib`
 int ccLibStd(ccContext cc);

@@ -61,31 +61,6 @@ typedef enum {
 } vmError;
 
 /**
- * Value inside the virtual machine
- * @note pointers are transformed to offsets by subtracting the pointer to vm memory.
- */
-typedef union {
-	int8_t i08;
-	int16_t i16;
-	int32_t i32;
-	int64_t i64;
-	uint8_t u08;
-	uint16_t u16;
-	uint32_t u32;
-	uint64_t u64;
-	float32_t f32;
-	float64_t f64;
-	int32_t i24:24;
-	struct {
-		vmOffs ref;
-		union {
-			vmOffs type;
-			vmOffs length;
-		};
-	};
-} vmValue;
-
-/**
  * Value translated from virtual machine to be used in runtime
  * @note pointers are transformed to offsets by subtracting the pointer to vm memory.
  */
@@ -199,6 +174,9 @@ struct rtContextRec {
 		/// Compile code snippet; @see ccAddUnit
 		astn (*const ccAddCode)(ccContext cc, char *file, int line, char *text);
 
+		/// Lookup function by name; @see ccLookup
+		symn (*const ccLookup)(rtContext ctx, symn scope, const char *name);
+
 		/// Lookup function by offset; @see rtLookup
 		symn (*const rtLookup)(rtContext ctx, size_t offset);
 
@@ -227,6 +205,105 @@ struct rtContextRec {
 	unsigned char _mem[];       // this is where the memory begins.
 };
 
+/// Symbol node: types and variables
+typedef enum {
+	CAST_any   = 0x0000,		// error
+	CAST_vid   = 0x0001,		// void
+	CAST_bit   = 0x0002,		// bool
+	CAST_i32   = 0x0003,		// int32, int16, int8
+	CAST_u32   = 0x0004,		// uint32, uint16, uint8
+	CAST_i64   = 0x0005,		// int64
+	CAST_u64   = 0x0006,		// uint64
+	CAST_f32   = 0x0007,		// float32
+	CAST_f64   = 0x0008,		// float64
+	CAST_val   = 0x0009,		// value, record
+	CAST_ref   = 0x000a,		// reference, pointer, array
+	CAST_var   = 0x000b,		// variant: pair of {type, data}
+	CAST_arr   = 0x000c,		// slice: pair of {size, data}
+	//CAST_d   = 0x000d,		// reserved(map)
+	//CAST_e   = 0x000e,		// unused
+	//CAST_f   = 0x000f,		// unused(function)
+
+	KIND_def   = 0x0000,		// alias (/ error at runtime)
+	KIND_typ   = 0x0010,		// typename: struct metadata info.
+	KIND_fun   = 0x0020,		// function
+	KIND_var   = 0x0030,		// variable: function and typename are also variables
+
+	ATTR_stat  = 0x0040,		// static attribute
+	ATTR_cnst  = 0x0080,		// constant attribute
+	ATTR_paral = 0x0100,		// parallel
+
+	MASK_cast  = 0x000f,
+	MASK_kind  = 0x0030,
+	MASK_attr  = 0x00c0,
+} ccKind;
+
+struct symNode {
+	char *name;        // symbol name
+	char *file;        // declared in file
+	int32_t line;      // declared on line
+	int32_t nest;      // declared on scope level
+	size_t size;       // variable or function size
+	size_t offs;       // address of variable or function
+
+	symn next;          // next symbol: field / param / ... / (in scope table)
+	symn type;          // base type of array / typename (void, int, float, struct, function, ...)
+	symn owner;         // the type that declares the current symbol (DeclaringType)
+	symn fields;        // all fields: static + non static
+	symn params;        // function parameters, return value is the first parameter.
+
+	ccKind kind;        // KIND_def / KIND_typ / KIND_fun / KIND_var + ATTR_xxx + CAST_xxx
+
+	// TODO: merge scope and global attributes
+	symn scope;         // global variables and functions / while_compiling variables of the block in reverse order
+	symn global;        // all static variables and functions
+	astn init;          // VAR init / FUN body, this should be null after code generation?
+
+	astn use;           // TEMP: usages
+	astn tag;           // TEMP: declaration reference
+	const char *fmt;    // print format
+};
+
+static inline int isConst(symn sym) {
+	return (sym->kind & ATTR_cnst) != 0;
+}
+static inline int isStatic(symn sym) {
+	return (sym->kind & ATTR_stat) != 0;
+}
+static inline int isInline(symn sym) {
+	return (sym->kind & MASK_kind) == KIND_def;
+}
+static inline int isFunction(symn sym) {
+	return (sym->kind & MASK_kind) == KIND_fun;
+}
+static inline int isVariable(symn sym) {
+	return (sym->kind & MASK_kind) == KIND_var;
+}
+static inline int isTypename(symn sym) {
+	return (sym->kind & MASK_kind) == KIND_typ;
+}
+static inline int isArrayType(symn sym) {
+	return (sym->kind & (MASK_kind | MASK_cast)) == (KIND_typ | CAST_arr);
+}
+static inline int isInvokable(symn sym) {
+	return sym->params != NULL;
+}
+static inline ccKind castOfx(symn sym) {
+	return sym->kind & MASK_cast;
+}
+/// same as castOf forcing arrays to cast as reference 
+static inline ccKind castOf(symn sym) {
+	ccKind got = castOfx(sym);
+	if (got == CAST_arr && isArrayType(sym)) {
+		symn len = sym->fields;
+		if (len == NULL || isStatic(len)) {
+			// pointer or fixed size array
+			got = CAST_ref;
+		}
+	}
+	return got;
+}
+
 /**
  * Native function invocation context.
  */
@@ -243,19 +320,22 @@ struct nfcContextRec {
 /**
  * Get the pointer to an internal offset inside the vm.
  * 
- * @param ctx Runtime context.
+ * @param rt Runtime context.
  * @param offset global offset inside the vm.
  * @return pointer to the memory.
  */
-static inline void *vmPointer(rtContext ctx, size_t offset) {
+static inline void *vmPointer(rtContext rt, size_t offset) {
 	if (offset == 0) {
 		return NULL;
 	}
-	return ctx->_mem + offset;
+	/* TODO: if (offset >= rt->_size) {
+		abort();
+	}*/
+	return rt->_mem + offset;
 }
 
 /**
- * Get the internal offset of a reference.
+ * Get the internal offset inside the vm of a reference.
  * 
  * @param rt Runtime context.
  * @param ptr Memory location.
@@ -266,13 +346,11 @@ static inline size_t vmOffset(rtContext rt, void *ptr) {
 	if (ptr == NULL) {
 		return 0;
 	}
-	if ((unsigned char*)ptr > rt->_mem + rt->_size) {
+	size_t offset = (unsigned char*)ptr - rt->_mem;
+	if (offset >= rt->_size) {
 		abort();
 	}
-	if ((unsigned char*)ptr < rt->_mem) {
-		abort();
-	}
-	return (unsigned char*)ptr - rt->_mem;
+	return offset;
 }
 
 /**
@@ -286,7 +364,7 @@ static inline size_t vmOffset(rtContext rt, void *ptr) {
  * @note Getting an argument must be used with padded offset.
  */
 static inline void *argget(nfcContext args, size_t offset, void *result, size_t size) {
-	// if result is not null copy
+	// if result is not null, make a copy
 	if (result != NULL && size > 0) {
 		memcpy(result, (char *) args->args + offset, size);
 	}

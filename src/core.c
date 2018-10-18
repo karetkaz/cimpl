@@ -599,6 +599,7 @@ rtContext rtInit(void *mem, size_t size) {
 		*(void**)&rt->api.ccAddType = ccAddType;
 		*(void**)&rt->api.ccAddCall = ccAddCall;
 		*(void**)&rt->api.ccAddCode = ccAddUnit;
+		*(void**)&rt->api.ccLookup = ccLookup;
 
 		*(void**)&rt->api.invoke = invoke;
 		*(void**)&rt->api.rtAlloc = rtAllocApi;
@@ -1003,7 +1004,7 @@ symn ccEnd(ccContext cc, symn sym) {
 		trace(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
-	symn fields = leave(cc, sym->kind & (ATTR_stat | MASK_kind), 0, 0, NULL);
+	symn fields = leave(cc, sym->kind & (ATTR_stat | ATTR_cnst | MASK_kind), 0, 0, NULL);
 	if (sym != NULL) {
 		sym->fields = fields;
 	}
@@ -1117,13 +1118,23 @@ char *ccUniqueStr(ccContext cc, const char *str, size_t len, unsigned hash) {
 	return (char*)str;
 }
 
-symn ccLookup(ccContext cc, symn in, char *name) {
+symn ccLookup(rtContext rt, symn scope, char *name) {
 	struct astNode ast;
 	memset(&ast, 0, sizeof(struct astNode));
 	ast.kind = TOKEN_var;
 	ast.ref.name = name;
 	ast.ref.hash = rehash(name, -1) % hashTableSize;
-	return lookup(cc, in ? in->fields : cc->scope, &ast, NULL, 1);
+	if (scope == NULL) {
+		if (rt->main != NULL) {
+			// code was generated, globals are in the main fields
+			scope = rt->main->fields;
+		}
+		else if (rt->cc != NULL) {
+			// code was not executed, main not generated
+			scope = rt->cc->deft[ast.ref.hash];
+		}
+	}
+	return lookup(rt->cc, scope, &ast, NULL, 1);
 }
 
 symn rtLookup(rtContext rt, size_t offs, ccKind filter) {
