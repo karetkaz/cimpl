@@ -111,7 +111,8 @@ static inline vmValue *nfcPeekArg(nfcContext nfc, size_t argOffs) {
 
 rtValue nfcReadArg(nfcContext nfc, size_t offs) {
 	vmValue *value = nfcPeekArg(nfc, offs);
-	rtValue result = { .i64 = 0 };
+	rtValue result;
+	memset(&result, 0, sizeof(result));
 	switch (castOfx(nfc->param)) {
 		default:
 			fatal(ERR_INTERNAL_ERROR);
@@ -147,11 +148,11 @@ rtValue nfcReadArg(nfcContext nfc, size_t offs) {
 			break;
 
 		case CAST_val:
-			if (nfc->param->size > sizeof(result.i64)) {
+			if (nfc->param->size > sizeof(result)) {
 				fatal(ERR_UNIMPLEMENTED_FEATURE);
 				return result;
 			}
-			result.i64 = value->i64;
+			memcpy(&result, value, nfc->param->size);
 			break;
 	}
 	return result;

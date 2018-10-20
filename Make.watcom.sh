@@ -2,12 +2,11 @@
 
 # test build and run on a 32 bit platform.
 
-SRCDIR=$PWD/src/
 SOURCE=$PWD/src/*.c
-PLUGIN=$PWD/src.ext/*.c
+ROOTDIR=$PWD
 
 OBJECT=$PWD/out/obj
-OUTPUT=$PWD/out/cmpl
+OUTPUT=$PWD/out
 
 export WATCOM="$(echo ~/bin/ow_daily/rel2)"
 if [ ! -z $WATCOM ] && [ -x $WATCOM ]
@@ -19,27 +18,25 @@ then
 
 	ROOT=$PWD
 	cd $OBJECT
-	owcc -std=c99 $SOURCE -o $OUTPUT
+	owcc -std=c99 $SOURCE -o $OUTPUT/cmpl
+	#owcc -shared -std=c99 -I $ROOTDIR/src -o $OUTPUT/libFile.so $ROOTDIR/libEtc/src/file.c
 	cd $ROOT
-else
-	gcc -m32 -o $OUTPUT $SOURCE -lm -ldl
 fi
 
-# dump symbols, syntax tree and global variables (to be compared with files from `extras`)
-"$OUTPUT" -debug/G/h -X+steps+fold+fast+asgn-stdin-glob-offsets -api/d/p/a -asm/n/s -ast -dump out/dump.test.ci -dump.ast.xml out/dump.test.xml test.ci
+## dump api for scite
+./out/cmpl -dump.scite extras/cmpl.api
+#./out/cmpl -dump.scite out/libFile.api out/libFile.so
+#./out/cmpl -dump.scite out/libOpenGL.api out/libOpenGL.so
+#./out/cmpl -dump.scite out/libGfx.api out/libGfx.so libGfx/gfxlib.ci
+
+# dump symbols, assembly, syntax tree and global variables (to be compared with previous version to test if the code is generated properly)
+./out/cmpl -X+steps+fold+fast+asgn-stdin-glob-offsets -debug/G/H -api/d/p/a -asm/n/s -ast -log/0 extras/dump.test.log -dump extras/dump.test.ci -dump.ast.xml extras/dump.test.xml "test.ci"
 
 # dump profile data in json format
-"$OUTPUT" -X-stdin-steps -dump.json out/dump.test.prof.json -api/a/m/d/p/u -asm/a/n/s -ast/t -profile/t/P/G/H "test.ci"
+./out/cmpl -X-stdin-steps -dump.json extras/dump.test.json -api/a/m/d/p/u -asm/a/n/s -ast/t -profile/t/P/G/H "test.ci"
 
 # dump profile data in text format
-"$OUTPUT" -X-stdin+steps -dump out/dump.test.prof.ci -api/a/m/d/p/u -asm/a/n/s -ast/t -profile/P/G/H "test.ci"
-#"$OUTPUT" -X+steps -api/a/m/d/p/u -asm/a/n/s -ast/t test.ci
-
-# dump api for scite
-"$OUTPUT" -api/a/d -dump.scite extras/stdlib.api
+./out/cmpl -X-stdin+steps -log15 out/dump.test.ci -dump out/dump.test.ci -api/a/m/d/p/u -asm/a/n/s -ast/t -profile/P/G/H "test.ci"
 
 # test the virtual machine
-"$OUTPUT" -vmTest
-
-# test File plugin: "$OUTPUT" -run out/libFile.so test/plugin/file.write.ci
-# test OpenGL plugin: "$OUTPUT" -run out/libOpenGL.so test/plugin/openGL.triangle.ci
+./out/cmpl -vmTest

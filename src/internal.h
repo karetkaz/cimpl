@@ -420,7 +420,8 @@ void closeLibs();
 #define WARN_EXPONENT_OVERFLOW "exponent overflow"
 #define WARN_FUNCTION_MARKED_STATIC "marking function to be static: `%T`"
 #define WARN_USING_BEST_OVERLOAD "using overload `%T` of %d declared symbols"
-#define WARN_USING_DEFAULT_INITIALIZER "using default type initializer: %T := %t"
+#define WARN_USING_DEF_TYPE_INITIALIZER "using default type initializer: %T := %t"
+#define WARN_USING_DEF_FIELD_INITIALIZER "using default field initializer: %T := %t"
 #define WARN_DECLARATION_REDEFINED "variable `%T` hides previous declaration"
 #define WARN_FUNCTION_TYPENAME "function name `%.t` is a type, but returns `%T`"
 

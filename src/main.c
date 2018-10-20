@@ -15,6 +15,9 @@
 static const char *STDLIB = "stdlib.ci";   // standard library
 
 static inline int strEquals(const char *str, const char *with) {
+	if (str == NULL || with == NULL) {
+		return str == with;
+	}
 	return strcmp(str, with) == 0;
 }
 static inline int strBegins(const char *str, const char *with) {
@@ -611,14 +614,11 @@ static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, s
 		userContext cc = ctx->extra;
 		FILE *out = cc->out;
 		const char **esc = cc->esc;
-		printFmt(out, esc, "% I", ss);
-		if ((ssize_t) callee < 0) {
-			printFmt(out, esc, "%d,%d,-1%s", ticks, ctx->usedMem, ss ? "," : "");
+		if ((ssize_t)callee < 0) {
+			printFmt(out, esc, "% I%d,%d,%d%s\n", ss, ticks, ctx->usedMem, -1, ss > 0 ? "," : "");
+		} else {
+			printFmt(out, esc, "% I%d,%d,%d%s\n", ss, ticks, ctx->usedMem, (vmOffs) callee, ",");
 		}
-		else {
-			printFmt(out, esc, "%d,%d,%d,", ticks, ctx->usedMem, callee);
-		}
-		printFmt(out, esc, "\n");
 	}
 	(void)caller;
 	(void)error;
@@ -891,8 +891,8 @@ static void textPostProfile(userContext usr) {
 
 	if (usr->dmpProfile > 0) {
 		int dmpCoverage = usr->dmpProfile > 0;
-		int dmpFunctions = usr->dmpProfile > 1;
-		int dmpStatements = usr->dmpProfile > 2;
+		int dmpFunctions = usr->dmpProfile > 0;
+		int dmpStatements = usr->dmpProfile > 1;
 		int dmpNotExecuted = usr->dmpProfile > 2;
 
 		if (dmpCoverage != 0) {
@@ -916,8 +916,8 @@ static void textPostProfile(userContext usr) {
 		if (dmpFunctions != 0) {
 			printFmt(out, esc, "%?sProfile: functions\n", prefix);
 			size_t cnt = dbg->functions.cnt;
-			dbgn ptr = (dbgn) dbg->functions.ptr;
-			for (size_t i = 0; i < cnt; ++i, ptr++) {
+			for (size_t i = 0; i < cnt; ++i) {
+				dbgn ptr = (dbgn) dbg->functions.ptr + i;
 				if (ptr->hits == 0) {
 					continue;
 				}
@@ -932,13 +932,30 @@ static void textPostProfile(userContext usr) {
 					ptr->total / CLOCKS_PER_MILLI, -(ptr->total - ptr->self) / CLOCKS_PER_MILLI
 				);
 			}
+
+			if (dmpNotExecuted != 0) {
+				printFmt(out, esc, "%?sProfile: functions not executed\n", prefix);
+				for (size_t i = 0; i < cnt; ++i) {
+					dbgn ptr = (dbgn) dbg->functions.ptr + i;
+					symn sym = ptr->func;
+					if (ptr->hits != 0) {
+						continue;
+					}
+					if (sym == NULL) {
+						sym = rtLookup(rt, ptr->start, 0);
+					}
+					printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): %?T\n", ptr->file, ptr->line, ptr->start
+						, ptr->end, sym
+					);
+				}
+			}
 		}
 
 		if (dmpStatements != 0) {
 			size_t cnt = dbg->statements.cnt;
-			dbgn ptr = (dbgn) dbg->statements.ptr;
 			printFmt(out, esc, "%?sProfile: statements\n", prefix);
-			for (size_t i = 0; i < cnt; ++i, ptr++) {
+			for (size_t i = 0; i < cnt; ++i) {
+				dbgn ptr = (dbgn) dbg->statements.ptr + i;
 				size_t symOffs = 0;
 				symn sym = ptr->func;
 				if (ptr->hits == 0) {
@@ -959,41 +976,25 @@ static void textPostProfile(userContext usr) {
 					);
 				}
 			}
-		}
 
-		if (dmpNotExecuted != 0) {
-			printFmt(out, esc, "%?sProfile: functions not executed\n", prefix);
-			size_t nFunc = dbg->functions.cnt;
-			dbgn ptrFunc = (dbgn) dbg->functions.ptr;
-			for (size_t i = 0; i < nFunc; ++i, ptrFunc++) {
-				symn sym = ptrFunc->func;
-				if (ptrFunc->hits != 0) {
-					continue;
+			if (dmpNotExecuted != 0) {
+				printFmt(out, esc, "%?sProfile: statements not executed\n", prefix);
+				for (size_t i = 0; i < cnt; ++i) {
+					dbgn ptr = (dbgn) dbg->statements.ptr + i;
+					size_t symOffs = 0;
+					symn sym = ptr->func;
+					if (ptr->hits != 0) {
+						continue;
+					}
+					if (sym == NULL) {
+						sym = rtLookup(rt, ptr->start, 0);
+					}
+					if (sym != NULL) {
+						symOffs = ptr->start - sym->offs;
+					}
+					printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): <%?.T+%d>\n", ptr->file, ptr->line, ptr->start, ptr->end, sym, symOffs);
 				}
-				if (sym == NULL) {
-					sym = rtLookup(rt, ptrFunc->start, 0);
-				}
-				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): %?T\n", ptrFunc->file, ptrFunc->line, ptrFunc->start, ptrFunc->end, sym);
-			}
-
-			printFmt(out, esc, "%?sProfile: statements not executed\n", prefix);
-			size_t nStmt = dbg->statements.cnt;
-			dbgn ptrStmt = (dbgn) dbg->statements.ptr;
-			for (size_t i = 0; i < nStmt; ++i, ptrStmt++) {
-				size_t symOffs = 0;
-				symn sym = ptrStmt->func;
-				if (ptrStmt->hits != 0) {
-					continue;
-				}
-				if (sym == NULL) {
-					sym = rtLookup(rt, ptrStmt->start, 0);
-				}
-				if (sym != NULL) {
-					symOffs = ptrStmt->start - sym->offs;
-				}
-				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): <%?.T+%d>\n", ptrStmt->file, ptrStmt->line, ptrStmt->start, ptrStmt->end, sym, symOffs);
-			}
-		}
+			}		}
 	}
 
 	if (usr->dmpMemory > 0) {
@@ -1226,7 +1227,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 				printFmt(out, esc, ">% I %d, %T\n", ss, ctx->usedMem, rtLookup(rt, callee, 0));
 			}
 			else {
-				printFmt(out, esc, "<% I %d\n", ss, ctx->usedMem);
+				printFmt(out, esc, "<% I %d, return\n", ss, ctx->usedMem);
 			}
 		}
 		return NULL;
@@ -1266,7 +1267,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 	if (error == noError && (usr->exec & trcOpcodes)) {
 		if (usr->exec & trcLocals) {
 			size_t i = 0;
-			printFmt(out, esc, "\tstack(%d): [", ss);
+			printFmt(out, esc, "     sp: <%d> [", ss);
 			if (ss > maxLogItems) {
 				printFmt(out, esc, " …");
 				i = ss - maxLogItems;
@@ -1277,7 +1278,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 				}
 				symn sym = NULL;
 				uint32_t val = ((uint32_t *) stack)[ss - i - 1];
-				if (val <= rt->vm.px) {
+				if (val > 0 && val <= rt->vm.px) {
 					sym = rtLookup(rt, val, 0);
 					if (sym && !isFunction(sym)) {
 						if (sym->offs != val) {
@@ -1435,38 +1436,39 @@ static void testVmOpc(const char *error, const struct opcodeRec *info) {
 }
 
 static int usage() {
-	const char *USAGE = "cmpl [global options] [files with options]..."
+	const char *USAGE = \
+		"cmpl [global options] [files with options]..."
 		"\n"
 		"\n<global options>:"
 		"\n"
 		"\n  -run[*]               run at full speed, but without: debug information, stacktrace, bounds checking, ..."
-		"\n    /g /G               dump global variable values"
+		"\n    /g /G               dump global variable values (/G includes types and functions)"
 		"\n"
 		"\n  -debug[*]             run with attached debugger, pausing on uncaught errors and break points"
-		"\n    /s                  pause on startup"
+		"\n    /g /G               dump global variable values (/G includes types and functions)"
+		"\n    /h /H               dump memory usage (/H includes heap allocations)"
+		"\n    /p /P               print caught errors (/P includes stack trace)"
+		"\n    /t /T               trace the execution of instructions"
 		"\n    /a                  pause on all(caught) errors"
-		"\n    /l /L               print caught errors (/L includes stack trace)"
-		"\n    /g /G               dump global variable values"
-		"\n    /h                  dump allocated heap memory chunks"
-		"\n    /p                  dump function/coverage statistics"
+		"\n    /s                  pause on startup"
 		"\n"
 		"\n  -profile[*]           run code with profiler: coverage, method tracing"
-		"\n    /t                  dump call tree"
-		"\n    /a                  include everything in the dump"
-		"\n    /g /G               dump global variable values"
-		"\n    /h                  dump allocated heap memory chunks"
-		"\n    /p                  dump function/coverage statistics"
+		"\n    /g /G               dump global variable values (/G includes types and functions)"
+		"\n    /h /H               dump memory usage (/H includes heap allocations)"
+		"\n    /p /P               show statement execution times (/P include not executed code)"
+		"\n    /t /T               trace the execution of methods"
 		"\n"
 		"\n  -std<file>            specify custom standard library file (empty file name disables std library compilation)."
 		"\n"
 		"\n  -mem<int>[kKmMgG]     override memory usage for compiler and runtime(heap)"
 		"\n"
-		"\n  -log[*] <file>        set logger for: compilation errors and warnings, runtime debug messages"
+		"\n  -log[*]<int> <file>   set logger for: compilation errors and warnings, runtime debug messages"
+		"\n    <int>               set the default log(warning) level 0 - 15"
 		"\n    /a                  append to the log file"
 		"\n"
 		"\n  -dump[?] <file>       set output for: dump(symbols, assembly, abstract syntax tree, coverage, call tree)"
 		"\n    .scite              dump api for SciTE text editor"
-		"\n    .json               dump api in javascript object notation format"
+		"\n    .json               dump api and profile data in javascript object notation format"
 		"\n"
 		"\n  -api[*]               dump symbols"
 		"\n    /a                  include all builtin symbols"
@@ -1475,16 +1477,24 @@ static int usage() {
 		"\n    /p                  dump params and fields"
 		"\n    /u                  dump usages"
 		"\n"
-		"\n  -asm[*]               dump assembled code: jmp +80"
+		"\n  -asm[*]<int>          dump assembled code: jmp +80"
 		"\n    /a                  use global address: jmp @0x003d8c"
 		"\n    /n                  prefer names over addresses: jmp <main+80>"
 		"\n    /s                  print source code statements"
+		"\n    /m                  include main builtin symbol"
+		"\n    /d                  dump details of symbol"
+		"\n    /p                  dump params and fields"
+		"\n    /u                  dump usages"
 		"\n"
 		"\n  -ast[*]               dump syntax tree"
 		"\n    /t                  dump sub-expression type information"
 		"\n    /l                  do not expand statements (print on single line)"
 		"\n    /b                  don't keep braces ('{') on the same line"
 		"\n    /e                  don't keep `else if` constructs on the same line"
+		"\n    /m                  include main builtin symbol"
+		"\n    /d                  dump details of symbol"
+		"\n    /p                  dump params and fields"
+		"\n    /u                  dump usages"
 		"\n"
 		"\n<files with options>: filename followed by switches"
 		"\n  <file>                if file extension is (.so|.dll) load as library else compile"
@@ -1501,7 +1511,7 @@ static int usage() {
 		"\n>app -run test.tracing.ci"
 		"\n    compile and execute the file `test.tracing.ci`"
 		"\n"
-		"\n>app -debug gl.so -w0 gl.ci -w0 test.ci -wx -b12 -b15 -b/t19"
+		"\n>app -debug gl.so -w0 gl.ci -w0 test.ci -wx -b12 -b15 -b/t/19"
 		"\n    execute in debug mode"
 		"\n    import `gl.so`"
 		"\n        with no warnings"
@@ -1597,6 +1607,7 @@ int main(int argc, char *argv[]) {
 	int logAppend = 0;				// do not clear the log file
 
 	FILE *dumpFile = NULL;			// dump file
+	char *dumpFileName = NULL;		// dump file
 	char *pathDumpXml = NULL;		// dump file path
 	void (*dumpFun)(userContext, symn) = NULL;
 	enum { run, debug, profile, compile } run_code = compile;
@@ -1629,7 +1640,6 @@ int main(int argc, char *argv[]) {
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
-						arg2 += 1;
 						break;
 
 					case 'G':
@@ -1657,47 +1667,8 @@ int main(int argc, char *argv[]) {
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
-						arg2 += 1;
 						break;
 
-					// break, print, trace ...
-					case 's':
-						extra.dbgNextBreak = (size_t)-1;
-						arg2 += 2;
-						break;
-					case 'a':
-						extra.dbgOnCaught |= brkPause;
-						arg2 += 2;
-						break;
-					case 'L':
-						extra.dbgOnCaught |= brkTrace;
-						// fall through
-					case 'l':
-						extra.dbgOnCaught |= brkPrint;
-						arg2 += 2;
-						break;
-
-					case 'E':
-						extra.exec |= trcLocals;
-						// fall through
-					case 'e':
-						extra.exec |= trcOpcodes;
-						arg2 += 2;
-						break;
-
-					// dump stats
-					case 'P':
-						extra.dmpProfile = 3;
-						arg2 += 2;
-						break;
-					case 'p':
-						extra.dmpProfile = 2;
-						arg2 += 2;
-						break;
-					case 'c':
-						extra.dmpProfile = 1;
-						arg2 += 2;
-						break;
 					case 'G':
 						extra.dmpGlobals = 2;
 						arg2 += 2;
@@ -1706,6 +1677,7 @@ int main(int argc, char *argv[]) {
 						extra.dmpGlobals = 1;
 						arg2 += 2;
 						break;
+
 					case 'H':
 						extra.dmpMemory = 2;
 						arg2 += 2;
@@ -1714,6 +1686,33 @@ int main(int argc, char *argv[]) {
 						extra.dmpMemory = 1;
 						arg2 += 2;
 						break;
+
+					case 'P':
+						extra.dbgOnCaught |= brkTrace;
+						// fall through
+					case 'p':
+						extra.dbgOnCaught |= brkPrint;
+						arg2 += 2;
+						break;
+
+					case 'a':
+						extra.dbgOnCaught |= brkPause;
+						arg2 += 2;
+						break;
+					case 's':
+						extra.dbgNextBreak = (size_t)-1;
+						arg2 += 2;
+						break;
+
+					case 'T':
+						extra.exec |= trcLocals;
+						// fall through
+					case 't':
+						extra.exec |= trcOpcodes;
+						arg2 += 2;
+						break;
+
+					// dump stats
 				}
 			}
 			if (*arg2) {
@@ -1728,28 +1727,12 @@ int main(int argc, char *argv[]) {
 				return -1;
 			}
 			run_code = profile;
-			extra.dmpProfile = 2;
+			extra.dmpProfile = 1;
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
-						arg2 += 1;
 						break;
 
-					// dump call tree
-					case 't':
-						extra.exec |= trcTime | trcMethods;
-						arg2 += 2;
-						break;
-
-					// dump stats
-					case 'P':
-						extra.dmpProfile = 3;
-						arg2 += 2;
-						break;
-					case 'p':
-						extra.dmpProfile = 2;
-						arg2 += 2;
-						break;
 					case 'G':
 						extra.dmpGlobals = 2;
 						arg2 += 2;
@@ -1758,12 +1741,30 @@ int main(int argc, char *argv[]) {
 						extra.dmpGlobals = 1;
 						arg2 += 2;
 						break;
+
 					case 'H':
 						extra.dmpMemory = 2;
 						arg2 += 2;
 						break;
 					case 'h':
 						extra.dmpMemory = 1;
+						arg2 += 2;
+						break;
+
+					case 'P':
+						extra.dmpProfile = 3;
+						arg2 += 2;
+						break;
+					case 'p':
+						extra.dmpProfile = 2;
+						arg2 += 2;
+						break;
+
+					case 'T':
+						extra.exec |= trcOpcodes;
+						// fall through
+					case 't':
+						extra.exec |= trcTime | trcMethods;
 						arg2 += 2;
 						break;
 				}
@@ -1844,6 +1845,7 @@ int main(int argc, char *argv[]) {
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
+						// allow `-log/a/12`
 						arg2 += 1;
 						break;
 
@@ -1856,6 +1858,9 @@ int main(int argc, char *argv[]) {
 			if (*parseInt(arg2, &settings.warnLevel, 10)) {
 				fatal("invalid argument '%s'", arg);
 				return -1;
+			}
+			if (settings.warnLevel > 15) {
+				settings.warnLevel = 15;
 			}
 		}
 
@@ -1886,7 +1891,8 @@ int main(int argc, char *argv[]) {
 				fatal("dump file not or double specified");
 				return -1;
 			}
-			dumpFile = fopen(argv[i], "w");
+			dumpFileName = argv[i];
+			dumpFile = fopen(dumpFileName, "w");
 			if (dumpFile == NULL) {
 				fatal("error opening dump file: %s", argv[i]);
 				return -1;
@@ -1902,8 +1908,8 @@ int main(int argc, char *argv[]) {
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
-						arg2 += 1;
 						break;
+
 					case 'a':
 						extra.dmpApiAll = 1;
 						arg2 += 2;
@@ -1939,12 +1945,14 @@ int main(int argc, char *argv[]) {
 				fatal("argument specified multiple times: %s", arg);
 				return -1;
 			}
-			extra.dmpAsm = prAsmCode & 9;
+			extra.dmpAsm = 0;
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
+						// allow `-asm/a/9`
 						arg2 += 1;
 						break;
+
 					case 'a':
 						extra.dmpAsm |= prAsmAddr;
 						arg2 += 2;
@@ -1977,10 +1985,15 @@ int main(int argc, char *argv[]) {
 						break;
 				}
 			}
-			if (*arg2) {
+			int level = 9;
+			if (*arg2 && *parseInt(arg2, &level, 10)) {
 				fatal("invalid argument '%s'", arg);
 				return -1;
 			}
+			if (level > 15) {
+				level = 15;
+			}
+			extra.dmpAsm |= prAsmCode & level;
 		}
 		else if (strncmp(arg, "-ast", 4) == 0) {
 			char *arg2 = arg + 4;
@@ -1992,8 +2005,8 @@ int main(int argc, char *argv[]) {
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
-						arg2 += 1;
 						break;
+
 					case 't':
 						extra.dmpAst |= prAstType;
 						arg2 += 2;
@@ -2127,7 +2140,10 @@ int main(int argc, char *argv[]) {
 	rt->warnLevel = settings.warnLevel;
 
 	// open log file (global option)
-	if (logFileName && !logFile(rt, logFileName, logAppend)) {
+	if (dumpFile && strEquals(dumpFileName, logFileName)) {
+		logFILE(rt, dumpFile);
+	}
+	else if (logFileName && !logFile(rt, logFileName, logAppend)) {
 		info(rt, NULL, 0, ERR_OPENING_FILE, logFileName);
 	}
 
@@ -2195,6 +2211,7 @@ int main(int argc, char *argv[]) {
 				while (*arg2 == '/') {
 					switch (arg2[1]) {
 						default:
+							// allow `-b/p/10`
 							arg2 += 1;
 							break;
 
@@ -2308,6 +2325,12 @@ int main(int argc, char *argv[]) {
 				else {
 					rt->dbg->debug = &conDebug;
 				}
+			}
+		}
+		if (extra.dmpAsm == prSkip) {
+			if (extra.exec & trcOpcodes) {
+				extra.dmpAsmStmt = 1;
+				extra.dmpAsm = prAsmAddr | 9;
 			}
 		}
 		if (extra.compileSteps != NULL) {printFmt(extra.out, extra.esc, "%sExecute:\n", extra.compileSteps);}

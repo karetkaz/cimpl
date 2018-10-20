@@ -544,10 +544,45 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_not) {
-				rt->_beg = (memptr) ip;
-				ip->opc = opc_nop;
-				return rt->vm.pc;
+			switch (ip->opc) {
+				case opc_not:
+					rt->_beg = (memptr) ip;
+					ip->opc = opc_nop;
+					return rt->vm.pc;
+
+				case opc_lc32:
+					ip->arg.i32 = ip->arg.i32 == 0;
+					return rt->vm.pc;
+
+				case opc_lzx1:
+					arg.i64 = 0 == 0;
+					opc = opc_lc32;
+					rollbackPc(rt);
+					break;
+
+				case opc_lzx2:
+					arg.i64 = 0 == 0;
+					opc = opc_lc32;
+					rollbackPc(rt);
+					break;
+
+				case opc_lc64:
+					arg.i64 = ip->arg.i64 == 0;
+					opc = opc_lc32;
+					rollbackPc(rt);
+					break;
+
+				case opc_lf32:
+					arg.i64 = ip->arg.f32 == 0;
+					opc = opc_lc32;
+					rollbackPc(rt);
+					break;
+
+				case opc_lf64:
+					arg.i64 = ip->arg.f64 == 0;
+					opc = opc_lc32;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -715,14 +750,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lzx1) {
-				opc = opc_lzx2;
-				rollbackPc(rt);
-			}
-			else if (ip->opc == opc_lc32) {
-				arg.i64 = ip->arg.u32;
-				opc = opc_lc64;
-				rollbackPc(rt);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx1:
+					opc = opc_lzx2;
+					rollbackPc(rt);
+					break;
+
+				case opc_lc32:
+					arg.i64 = ip->arg.u32;
+					opc = opc_lc64;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -731,10 +772,19 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lc32) {
-				arg.i64 = ip->arg.i32 != 0;
-				opc = opc_lc32;
-				rollbackPc(rt);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx1:
+					// zero is false
+					return rt->vm.pc;
+
+				case opc_lc32:
+					arg.i64 = ip->arg.i32 != 0;
+					opc = opc_lc32;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -743,11 +793,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lc32) {
-				arg.f32 = (float32_t) ip->arg.i32;
-				opc = opc_lf32;
-				rollbackPc(rt);
-				logif(ip->arg.i32 != arg.f32, "inexact cast: %d => %f", ip->arg.i32, arg.f32);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx1:
+					// zero is zero
+					return rt->vm.pc;
+
+				case opc_lc32:
+					arg.f32 = (float32_t) ip->arg.i32;
+					logif(ip->arg.i32 != arg.f32, "inexact cast: %d => %f", ip->arg.i32, arg.f32);
+					opc = opc_lf32;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -756,14 +815,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lzx1) {
-				opc = opc_lzx2;
-				rollbackPc(rt);
-			}
-			else if (ip->opc == opc_lc32) {
-				arg.i64 = ip->arg.i32;
-				opc = opc_lc64;
-				rollbackPc(rt);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx1:
+					opc = opc_lzx2;
+					rollbackPc(rt);
+					break;
+
+				case opc_lc32:
+					arg.i64 = ip->arg.i32;
+					opc = opc_lc64;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -772,11 +837,21 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lc32) {
-				arg.f64 = ip->arg.i32;
-				opc = opc_lf64;
-				rollbackPc(rt);
-				logif(ip->arg.i32 != arg.f64, "inexact cast: %d => %F", ip->arg.i32, arg.f64);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx1:
+					opc = opc_lzx2;
+					rollbackPc(rt);
+					break;
+
+				case opc_lc32:
+					arg.f64 = ip->arg.i32;
+					logif(ip->arg.i32 != arg.f64, "inexact cast: %d => %F", ip->arg.i32, arg.f64);
+					opc = opc_lf64;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -785,16 +860,22 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lzx2) {
-				opc = opc_lzx1;
-				rollbackPc(rt);
-			}
-			else if (ip->opc == opc_lc64) {
-				arg.i64 = ip->arg.i64;
-				opc = opc_lc32;
-				rollbackPc(rt);
-				logif(ip->arg.i64 != arg.i32, "inexact cast: %D => %d", ip->arg.i64, arg.i32);
-				logif(ip->arg.i64 != arg.u32, "inexact cast: %D => %u", ip->arg.i64, arg.u32);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx2:
+					opc = opc_lzx1;
+					rollbackPc(rt);
+					break;
+
+				case  opc_lc64:
+					arg.i64 = ip->arg.i64;
+					logif(ip->arg.i64 != arg.i32, "inexact cast: %D => %d", ip->arg.i64, arg.i32);
+					logif(ip->arg.i64 != arg.u32, "inexact cast: %D => %u", ip->arg.i64, arg.u32);
+					opc = opc_lc32;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -803,11 +884,21 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lc64) {
-				arg.f32 = (float32_t) ip->arg.i64;
-				opc = opc_lf32;
-				rollbackPc(rt);
-				logif(ip->arg.i64 != arg.f32, "inexact cast: %D => %f", ip->arg.i64, arg.f32);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx2:
+					opc = opc_lzx1;
+					rollbackPc(rt);
+					break;
+
+				case opc_lc64:
+					arg.f32 = (float32_t) ip->arg.i64;
+					logif(ip->arg.i64 != arg.f32, "inexact cast: %D => %f", ip->arg.i64, arg.f32);
+					opc = opc_lf32;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -816,14 +907,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lzx2) {
-				opc = opc_lzx1;
-				rollbackPc(rt);
-			}
-			if (ip->opc == opc_lc64) {
-				arg.i64 = ip->arg.i64 != 0;
-				opc = opc_lc32;
-				rollbackPc(rt);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx2:
+					opc = opc_lzx1;
+					rollbackPc(rt);
+					break;
+
+				case opc_lc64:
+					arg.i64 = ip->arg.i64 != 0;
+					opc = opc_lc32;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -832,11 +929,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lc64) {
-				arg.f64 = (float64_t) ip->arg.i64;
-				opc = opc_lf64;
-				rollbackPc(rt);
-				logif(ip->arg.i64 != arg.f64, "inexact cast: %D => %F", ip->arg.i64, arg.f64);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx2:
+					// zero is zero
+					return rt->vm.pc;
+
+				case opc_lc64:
+					arg.f64 = (float64_t) ip->arg.i64;
+					logif(ip->arg.i64 != arg.f64, "inexact cast: %D => %F", ip->arg.i64, arg.f64);
+					opc = opc_lf64;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -845,11 +951,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lf32) {
-				arg.i64 = (int64_t) ip->arg.f32;
-				opc = opc_lc32;
-				rollbackPc(rt);
-				logif(ip->arg.f32 != arg.i32, "inexact cast: %f => %d", ip->arg.f32, arg.i32);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx1:
+					// zero is zero
+					return rt->vm.pc;
+
+				case opc_lf32:
+					arg.i64 = (int64_t) ip->arg.f32;
+					logif(ip->arg.f32 != arg.i32, "inexact cast: %f => %d", ip->arg.f32, arg.i32);
+					opc = opc_lc32;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -858,10 +973,19 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lf32) {
-				arg.i64 = ip->arg.f32 != 0;
-				opc = opc_lc32;
-				rollbackPc(rt);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx1:
+					// zero is false
+					return rt->vm.pc;
+
+				case opc_lf32:
+					arg.i64 = ip->arg.f32 != 0;
+					opc = opc_lc32;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -870,11 +994,21 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lf32) {
-				arg.i64 = (int64_t) ip->arg.f32;
-				opc = opc_lc64;
-				rollbackPc(rt);
-				logif(ip->arg.f32 != arg.i64, "inexact cast: %f => %D", ip->arg.f32, arg.i64);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx1:
+					opc = opc_lzx2;
+					rollbackPc(rt);
+					break;
+
+				case opc_lf32:
+					arg.i64 = (int64_t) ip->arg.f32;
+					logif(ip->arg.f32 != arg.i64, "inexact cast: %f => %D", ip->arg.f32, arg.i64);
+					opc = opc_lc64;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -883,11 +1017,21 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lf32) {
-				arg.f64 = ip->arg.f32;
-				opc = opc_lf64;
-				rollbackPc(rt);
-				logif(ip->arg.f32 != arg.f64, "inexact cast: %f => %F", ip->arg.f32, arg.f64);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx1:
+					opc = opc_lzx2;
+					rollbackPc(rt);
+					break;
+
+				case opc_lf32:
+					arg.f64 = ip->arg.f32;
+					logif(ip->arg.f32 != arg.f64, "inexact cast: %f => %F", ip->arg.f32, arg.f64);
+					opc = opc_lf64;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -896,11 +1040,21 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lf64) {
-				arg.i64 = (int64_t) ip->arg.f64;
-				opc = opc_lc32;
-				rollbackPc(rt);
-				logif(ip->arg.f64 != arg.i32, "inexact cast: %F => %d", ip->arg.f64, arg.i32);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx2:
+					opc = opc_lzx1;
+					rollbackPc(rt);
+					break;
+
+				case opc_lf64:
+					arg.i64 = (int64_t) ip->arg.f64;
+					logif(ip->arg.f64 != arg.i32, "inexact cast: %F => %d", ip->arg.f64, arg.i32);
+					opc = opc_lc32;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -909,11 +1063,21 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lf64) {
-				arg.f32 = (float32_t) ip->arg.f64;
-				opc = opc_lf32;
-				rollbackPc(rt);
-				logif(ip->arg.f64 != arg.f32, "inexact cast: %F => %f", ip->arg.f64, arg.f32);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx2:
+					opc = opc_lzx1;
+					rollbackPc(rt);
+					break;
+
+				case opc_lf64:
+					arg.f32 = (float32_t) ip->arg.f64;
+					logif(ip->arg.f64 != arg.f32, "inexact cast: %F => %f", ip->arg.f64, arg.f32);
+					opc = opc_lf32;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -922,11 +1086,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lf64) {
-				arg.i64 = (int64_t) ip->arg.f64;
-				opc = opc_lc64;
-				rollbackPc(rt);
-				logif(ip->arg.f64 != arg.i64, "inexact cast: %F => %D", ip->arg.f64, arg.i64);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx2:
+					// zero is zero
+					return rt->vm.pc;
+
+				case opc_lf64:
+					arg.i64 = (int64_t) ip->arg.f64;
+					logif(ip->arg.f64 != arg.i64, "inexact cast: %F => %D", ip->arg.f64, arg.i64);
+					opc = opc_lc64;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -935,10 +1108,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lf64) {
-				arg.i64 = ip->arg.f64 != 0;
-				opc = opc_lc32;
-				rollbackPc(rt);
+			switch (ip->opc) {
+				default:
+					break;
+
+				case opc_lzx2:
+					opc = opc_lzx1;
+					rollbackPc(rt);
+					break;
+
+				case opc_lf64:
+					arg.i64 = ip->arg.f64 != 0;
+					opc = opc_lc32;
+					rollbackPc(rt);
+					break;
 			}
 			break;
 
@@ -1051,7 +1234,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 
 		case opc_st64:
 		case opc_ld64:
-			dieif((ip->rel & 7) != 0, ERR_INTERNAL_ERROR);
+			dieif((ip->rel & (sizeof(void*) - 1)) != 0, ERR_INTERNAL_ERROR);
 			dieif(ip->rel != arg.i64, ERR_INTERNAL_ERROR);
 			break;
 
@@ -1345,7 +1528,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 
 	// run in debug or profile mode
 	if (rt->dbg != NULL) {
-		const void *oldTP = pu->tp;
+		const trcptr oldTP = pu->tp;
 		const stkptr spMin = (stkptr)(pu->bp);
 		const stkptr spMax = (stkptr)(pu->bp + pu->ss);
 		const vmInstruction ipMin = (vmInstruction)(rt->_mem + rt->vm.ro);

@@ -111,6 +111,9 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 	if ((kind & MASK_cast) == CAST_ref) {
 		size = sizeof(vmOffs);
 	}
+	else if (type == cc->type_rec) {
+		size = 0;
+	}
 	def = install(cc, tag->ref.name, kind, size, type, NULL);
 
 	if (def != NULL) {
@@ -343,20 +346,25 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 			defInit = field->type->init;
 		}
 
-		if (defInit != NULL) {
-			astn init = newNode(cc, INIT_set);
-			init->op.lhso = opNode(cc, OPER_dot, varNode, lnkNode(cc, field));
-			init->op.rhso = defInit;
-
-			addTail(list, init);
-
-			typeCheck(cc, NULL, init, 1);
-			init->type = cc->type_vid;
-			initialized = 1;
-		}
-		if (!initialized) {
+		if (defInit == NULL) {
 			error(cc->rt, varNode->file, varNode->line, ERR_UNINITIALIZED_MEMBER, linkOf(varNode, 0), field);
+			continue;
 		}
+
+		if (defInit == field->init) {
+			warn(cc->rt, 11, varNode->file, varNode->line, WARN_USING_DEF_FIELD_INITIALIZER, field, defInit);
+		} else {
+			warn(cc->rt, 11, varNode->file, varNode->line, WARN_USING_DEF_TYPE_INITIALIZER, field, defInit);
+		}
+
+		astn init = newNode(cc, INIT_set);
+		init->op.lhso = opNode(cc, OPER_dot, varNode, lnkNode(cc, field));
+		init->op.rhso = defInit;
+
+		addTail(list, init);
+
+		typeCheck(cc, NULL, init, 1);
+		init->type = cc->type_vid;
 	}
 	return list;
 }

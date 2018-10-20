@@ -41,6 +41,7 @@ static inline size_t emitStack(rtContext rt, vmOpcode opc, ssize_t arg) {
 
 		case opc_drop:
 		case opc_ldsp:
+			trace("tmp.u64(%d) > rt->vm.ss(%d) * vm_size(%d)", tmp.u64, rt->vm.ss, vm_size);
 			if (tmp.u64 > rt->vm.ss * vm_size) {
 				trace(ERR_INTERNAL_ERROR);
 				return 0;
@@ -328,12 +329,17 @@ static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 		fatal(ERR_INTERNAL_ERROR);
 		return CAST_vid;
 	}
+	if (variable->size == 0) {
+		// function, struct, alias or enum declaration.
+		error(cc->rt, variable->file, variable->line, ERR_EMIT_VARIABLE, variable);
+		return CAST_vid;
+	}
 	logif(varCast != get && get != CAST_vid, "%?s:%?u: %T(%K->%K)", variable->file, variable->line, variable, varCast, get);
 
 	if (varInit == NULL) {
 		varInit = variable->type->init;
 		if (varInit != NULL) {
-			warn(cc->rt, 6, variable->file, variable->line, WARN_USING_DEFAULT_INITIALIZER, variable, varInit);
+			warn(cc->rt, 6, variable->file, variable->line, WARN_USING_DEF_TYPE_INITIALIZER, variable, varInit);
 		}
 		else if (isConst(variable)) {
 			error(rt, variable->file, variable->line, ERR_UNINITIALIZED_CONSTANT, variable);
@@ -2093,6 +2099,19 @@ int ccGenCode(ccContext cc, int debug) {
 			rt->_beg = padPointer(rt->_beg, pad_size);
 
 			if (isFunction(var)) {
+				size_t offs = 0;
+				// FIXME: recalculate the size of the parameters
+				for (symn param = var->params; param != NULL; param = param->next) {
+					if (isStatic(param)) {
+						continue;
+					}
+					if (param->size != 0) {
+						continue;
+					}
+					param->size = padOffset(param->type->size, vm_size);
+					param->offs = offs += param->size;
+				}
+
 				// reset the stack size
 				fixJump(rt, 0, 0, sizeof(vmOffs) + argsSize(var));
 

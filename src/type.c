@@ -542,9 +542,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 
 			if (!lType || !rType) {
-				if (raise) {
-					traceAst(ast);
-				}
+				traceAst(ast);
 				return NULL;
 			}
 			convert(cc, ast->op.lhso, lType);
