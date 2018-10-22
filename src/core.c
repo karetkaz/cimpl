@@ -1135,7 +1135,7 @@ symn ccLookup(rtContext rt, symn scope, char *name) {
 			scope = rt->cc->deft[ast.ref.hash];
 		}
 	}
-	return lookup(rt->cc, scope, &ast, NULL, 1);
+	return lookup(rt->cc, scope, &ast, NULL, 0, 1);
 }
 
 symn rtLookup(rtContext rt, size_t offs, ccKind filter) {
@@ -1149,17 +1149,21 @@ symn rtLookup(rtContext rt, size_t offs, ccKind filter) {
 		// is the main function ?
 		return sym;
 	}
+	ccKind filterStat = filter & ATTR_stat;
+	ccKind filterCnst = filter & ATTR_cnst;
 	ccKind filterKind = filter & MASK_kind;
 	ccKind filterCast = filter & MASK_cast;
-	ccKind filterAttr = filter & MASK_attr;
 	for (sym = sym->fields; sym; sym = sym->global) {
-		if (filterCast && (sym->kind & filterCast) == 0) {
+		if (filterStat && (sym->kind & ATTR_stat) != filterStat) {
 			continue;
 		}
-		if (filterKind && (sym->kind & filterKind) == 0) {
+		if (filterCnst && (sym->kind & ATTR_cnst) != filterCnst) {
 			continue;
 		}
-		if (filterAttr && (sym->kind & filterAttr) == 0) {
+		if (filterKind && (sym->kind & MASK_kind) != filterKind) {
+			continue;
+		}
+		if (filterCast && (sym->kind & MASK_cast) != filterCast) {
 			continue;
 		}
 		if (offs == sym->offs) {

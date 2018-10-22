@@ -84,7 +84,7 @@ static inline void addLength(ccContext cc, symn sym, astn init) {
 
 static inline symn tagType(ccContext cc, astn tag) {
 	symn tagType = cc->deft[tag->ref.hash];
-	tagType = lookup(cc, tagType, tag, NULL, 0);
+	tagType = lookup(cc, tagType, tag, NULL, 0, 0);
 	if (tagType != NULL && isTypename(tagType)) {
 		return tagType;
 	}
@@ -112,6 +112,7 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 		size = sizeof(vmOffs);
 	}
 	else if (type == cc->type_rec) {
+		// struct Complex { ...
 		size = 0;
 	}
 	def = install(cc, tag->ref.name, kind, size, type, NULL);
@@ -1005,9 +1006,6 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		if (init->kind == STMT_beg) {
 			init = expandInitializer(cc, def, init);
 			init->type = type;
-		}
-		else {
-			typeCheck(cc, NULL, init, 1);
 		}
 		def->init = init;
 	}

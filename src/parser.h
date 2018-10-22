@@ -22,7 +22,7 @@ symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *siz
 symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type, astn init);
 
 /// Lookup an identifier.
-symn lookup(ccContext cc, symn sym, astn ast, astn args, int raise);
+symn lookup(ccContext cc, symn sym, astn ast, astn args, ccKind filter, int raise);
 
 /**
  * Check if a value can be assigned to a symbol.

@@ -229,16 +229,33 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 	return def;
 }
 
-symn lookup(ccContext cc, symn sym, astn ref, astn arguments, int raise) {
+symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int raise) {
 	symn byName = NULL;
 	symn best = NULL;
 	int found = 0;
 
 	dieif(!ref || ref->kind != TOKEN_var, ERR_INTERNAL_ERROR);
 
+	ccKind filterStat = filter & ATTR_stat;
+	ccKind filterCnst = filter & ATTR_cnst;
+	ccKind filterKind = filter & MASK_kind;
+	ccKind filterCast = filter & MASK_cast;
 	for (; sym; sym = sym->next) {
 		symn parameter = sym->params;
 		int hasCast = 0;
+
+		if (filterStat && (sym->kind & ATTR_stat) != filterStat) {
+			continue;
+		}
+		if (filterCnst && (sym->kind & ATTR_cnst) != filterCnst) {
+			continue;
+		}
+		if (filterKind && (sym->kind & MASK_kind) != filterKind) {
+			continue;
+		}
+		if (filterCast && (sym->kind & MASK_cast) != filterCast) {
+			continue;
+		}
 
 		if (sym->name == NULL) {
 			// exclude anonymous symbols
@@ -376,17 +393,23 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 		return NULL;
 	}
 
-	symn sym;
+	symn sym = NULL;
 	if (ref->ref.link != NULL) {
 		sym = ref->ref.link;
 	}
 	else if (loc != NULL) {
-		sym = lookup(cc, loc->fields, ref, args, raise);
+		if (isVariable(loc)) {
+			sym = lookup(cc, loc->type->fields, ref, args, KIND_var, 0);
+			loc = loc->type;
+		}
+		if (sym == NULL) {
+			sym = lookup(cc, loc->fields, ref, args, 0, raise);
+		}
 	}
 	else {
 		// first lookup in the current scope
 		sym = cc->deft[ref->ref.hash];
-		sym = lookup(cc, sym, ref, args, raise);
+		sym = lookup(cc, sym, ref, args, 0, raise);
 
 		// lookup parameters, fields, etc.
 		for (loc = cc->owner; loc != NULL; loc = loc->owner) {
@@ -394,7 +417,7 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 				// symbol found: scope is higher than this parameter
 				break;
 			}
-			symn field = lookup(cc, loc->fields, ref, args, 0);
+			symn field = lookup(cc, loc->fields, ref, args, 0, 0);
 			if (field == NULL) {
 				// symbol was not found at this location
 				continue;
@@ -488,8 +511,40 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 					return NULL;
 				}
 				loc = linkOf(ref->op.lhso, 1);
-				ref->type = cc->type_fun;
-				ref = ref->op.rhso;
+				if (loc && isVariable(loc)) {
+					/* lookup order for a.add(b) => add(a, b)
+						1. search for extension method: add(a, b)
+						2. search for virtual method: a.add(a, b)
+						3. search for static method: T.add(a, b)
+					*/
+					ast->op.lhso = ref->op.rhso;
+					if (args == cc->void_tag) {
+						ast->op.rhso = ref->op.lhso;
+					} else {
+						ast->op.rhso = ref;
+
+						ref->kind = OPER_com;
+						ref->type = cc->type_vid;
+						ref->op.rhso = args;
+					}
+					ref = ast->op.lhso;
+					args = ast->op.rhso;
+					info(cc->rt, __FILE__, __LINE__, "call: %t", ast);
+					type = typeCheckRef(cc, NULL, ref, args, 0);
+					if (type != NULL) {
+						return type;
+					}
+					/* FIXME: this requires: a.add(a, b)
+					type = typeCheckRef(cc, loc, ref, args, 0);
+					if (type != NULL) {
+						return type;
+					}*/
+					return typeCheckRef(cc, loc->type, ref, args, raise);
+				}
+				else {
+					ref->type = cc->type_fun;
+					ref = ref->op.rhso;
+				}
 			}
 
 			if (rType == NULL) {
@@ -535,9 +590,6 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			if (loc == NULL) {
 				traceAst(ast);
 				return NULL;
-			}
-			if (isVariable(loc)) {
-				loc = lType;
 			}
 			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 
