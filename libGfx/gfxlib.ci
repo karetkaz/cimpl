@@ -187,10 +187,46 @@ vec4f Hsv2Rgb(vec4f hsv) {
 
 }
 
-//inline gxSurf() = gxSurf.create(0, 0);
-//inline gxSurf(int width, int height) = gxSurf.create(width, height);
+inline gxSurf(int width, int height, int depth) = gxSurf.create(width, height, depth);
+
+gxSurf gxSurf(char fileName[*], int depth) {
+
+// TODO: move to stdlib
+static int strlen(char str[*]) {
+	int result = 0;
+	for (result = 0; str[result]; result += 1) {}
+	return result;
+}
+
+static bool endsWith(char str[*], char with[*]) {
+	int strLen = strlen(str);
+	int withLen = strlen(with);
+	if (strLen < withLen) {
+		return false;
+	}
+	for (int i = 0; i < withLen; i += 1) {
+		if (str[strLen - i] != with[withLen - i]) {
+			return false;
+		}
+	}
+	return true;
+}
+
+	if (fileName.endsWith(".jpg")) {
+		return gxSurf.openJpg(fileName, depth);
+	}
+	if (fileName.endsWith(".png")) {
+		return gxSurf.openPng(fileName, depth);
+	}
+	if (fileName.endsWith(".bmp")) {
+		return gxSurf.openBmp(fileName, depth);
+	}
+	abort("error opening file", fileName);
+}
+
+//inline gxSurf(char fileName[*]) = gxSurf(fileName, 32);
+//inline gxSurf(int width, int height) = gxSurf.create(width, height, 32);
 // TODO: inline gxSurf(gxSurf copy) = copySurf(newSurf(width(copy), height(copy)), 0, 0, copy, null);
-// TODO: inline gxSurf(char path[*]) = open(gxSurf(), fileName);
 
 //inline fillRect(gxSurf dst, gxRect roi, int col) = fillRect(dst, roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
 //inline drawRect(gxSurf dst, gxRect roi, int col) = drawRect(dst, roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
@@ -198,8 +234,8 @@ vec4f Hsv2Rgb(vec4f hsv) {
 bool clipRect(gxSurf src, gxRect roi&) {
 	int minx = 0;
 	int miny = 0;
-	int maxx = gxSurf.width(src);
-	int maxy = gxSurf.height(src);
+	int maxx = src.width();
+	int maxy = src.height();
 
 	roi.w += roi.x;
 	roi.h += roi.y;
@@ -217,15 +253,14 @@ bool clipRect(gxSurf src, gxRect roi&) {
 	roi.h -= roi.y;
 
 	return roi.w > 0 && roi.h > 0;
-
 }
 void evalSurf(gxSurf dst, gxRect roi&, vec4f eval(double x, double y)) {
 	gxRect rect;
 	/*FIXME:
 	if (roi == null) {
 		rect.x = rect.y = 0;
-		rect.w = gxSurf.width(dst);
-		rect.h = gxSurf.height(dst);
+		rect.w = dst.width();
+		rect.h = dst.height();
 	}
 	else {
 		rect = roi;
@@ -237,7 +272,7 @@ void evalSurf(gxSurf dst, gxRect roi&, vec4f eval(double x, double y)) {
 	for (int y = rect.y; y < rect.y + rect.h; y += 1) {
 		double x01 = 0;
 		for (int x = rect.x; x < rect.x + rect.w; x += 1) {
-			gxSurf.set(dst, x, y, rgb(eval(x01, y01)));
+			dst.set(x, y, rgb(eval(x01, y01)));
 			x01 += dx;
 		}
 		y01 += dy;
@@ -248,8 +283,8 @@ void tileSurf(gxSurf dst, int x, int y, gxSurf src, gxRect roi&) {
 	gxRect clip = {
 		x: 0;
 		y: 0;
-		w: gxSurf.width(src);
-		h: gxSurf.height(src);
+		w: src.width();
+		h: src.height();
 	};
 
 //	if (roi != null) {
@@ -257,19 +292,19 @@ void tileSurf(gxSurf dst, int x, int y, gxSurf src, gxRect roi&) {
 //	}
 
 	if (clipRect(src, clip)) {
-		int dstw = gxSurf.width(dst);
-		int dsth = gxSurf.height(dst);
+		int dstw = dst.width();
+		int dsth = dst.height();
 		if (x < 0) x = -(-x % clip.w);
 		//~ if (y < 0) y = y % clip.h;
 		for (int j = y; j < dsth; j += clip.h) {
 			for (int i = x; i < dstw; i += clip.w) {
-				gxSurf.copySurf(dst, i, j, src, clip);
+				dst.copySurf(i, j, src, clip);
 			}
 		}
 	}
 }
 
-void showMesh(int w, int h, float32 fovy, gxMesh mesh) {
+void showMesh(gxMesh mesh, int w, int h, float32 fovy) {
 	static gxMesh obj;
 	static gxSurf ofs;
 
@@ -323,7 +358,7 @@ void showMesh(int w, int h, float32 fovy, gxMesh mesh) {
 
 		ox = ex;
 		oy = ey;
-		gxSurf.drawMesh(ofs, obj);
+		ofs.drawMesh(obj);
 
 		return 1;
 	}

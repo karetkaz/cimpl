@@ -31,59 +31,63 @@
 </head>
 <body>
 <div class="toolbar">
-	<span class="right icon" href="#" onclick="showMenu(options);">☰</span>
+	<span class="left icon" href="#" onclick="showMenu(options);">☰</span>
 	<span id="btnExecute" class="right execute" href="#" onclick="execute(btnExecute.innerText, cmdExecute.value);"></span>
 	<span id="btnFileName" class="filename" href="#" onclick="showMenu(files);"></span>
 </div>
-<div id="mainSplit" class="content split-pane horizontal" style="top:2em;" onmousedown="showMenu(null);">
-	<div class="text-content">
-		<textarea id="input"></textarea>
+<div class="content split-pane left vertical" style="top:2em;">
+	<div id="sidebar" class="content list left">
+		<div id="options" class="content list" style="display: none;">
+			Execute<ul>
+			<input  class="filename" id="cmdExecute" onchange="params.update({exec: value});" onkeypress="if (event.key == 'Enter') execute(null, this.value)">
+			<li onclick="execute(this.innerText, '-run/g');">Run</li>
+			<li onclick="execute(this.innerText, '-debug/g');">Debug</li>
+			<li onclick="execute(this.innerText, '-profile/g');">Profile</li>
+			<li onclick="execute('Compile', '');">Compile only</li>
+			<hr>
+			<li>
+				<button onclick="execute(this.innerText, '-api/a/m/d/p/u');">Api</button>
+				<button onclick="execute(this.innerText, '-asm/a/n/s/m');">Asm</button>
+				<button class="right icon" onclick="execute();">?</button>
+			</li>
+			<hr>
+			<li onclick="terminal.clear();">Clear output</li>
+		</ul>
+			Project<ul>
+			<li onclick="shareInput();">Share</li>
+			<li onclick="editProject();">Edit</li>
+		</ul>
+			View<ul>
+			<li onclick="showSplit(textSplit, false);">Editor only</li>
+			<li onclick="showSplit(textSplit, true);">Output only</li>
+			<hr/>
+			<li onclick="showSplit(textSplit, 'horizontal');">Split Horizontal</li>
+			<li onclick="showSplit(textSplit, 'vertical');">Split Vertical</li>
+			<li onclick="showSplit(textSplit, '');">Split Auto</li>
+		</ul>
+			Theme<ul>
+			<li onclick="params.update({theme: 'idea'});">Idea</li>
+			<li onclick="params.update({theme: 'darcula'});">Darcula</li>
+		</ul>
+		</div>
+		<div id="files" class="content list">
+		<ul>
+			<li onclick="showFile(null);">Close file</li>
+			<li onclick="saveInput();">Save file</li>
+		</ul>
+		<ul id="fileList"></ul>
 	</div>
-	<div class="text-content">
-		<pre id="output"></pre>
+	</div>
+	<div id="textSplit" class="content split-pane horizontal">
+		<div class="text-content">
+			<textarea id="input"></textarea>
+		</div>
+		<div class="text-content">
+			<pre id="output"></pre>
+		</div>
 	</div>
 </div>
-<div id="options" class="content list right" style="top:2em; display: none;">
-	Execute<ul>
-		<input  class="filename" id="cmdExecute" onchange="params.update({exec: value});" onkeypress="if (event.key == 'Enter') execute(null, this.value)">
-		<li onclick="execute(this.innerText, '-run/g');">Run</li>
-		<li onclick="execute(this.innerText, '-debug/g');">Debug</li>
-		<li onclick="execute(this.innerText, '-profile/g');">Profile</li>
-		<li onclick="execute('Compile', '');">Compile only</li>
-		<hr>
-		<li>
-			<button onclick="execute(this.innerText, '-asm/a/n/s/m');">Asm</button>
-			<button onclick="execute(this.innerText, '-api/a');">Api</button>
-			<button onclick="execute(this.innerText, '-api/u');">Usages</button>
-			<button class="right icon" onclick="execute();">?</button>		
-		</li>
-		<hr>
-		<li onclick="terminal.clear();">Clear output</li>
-	</ul>
-	Project<ul>
-		<li onclick="editProject();">Edit</li>
-		<li onclick="shareInput();">Share</li>
-	</ul>
-	View<ul>
-		<li onclick="showSplit(mainSplit, false);">Editor only</li>
-		<li onclick="showSplit(mainSplit, true);">Output only</li>
-		<hr/>
-		<li onclick="showSplit(mainSplit, 'horizontal');">Split Horizontal</li>
-		<li onclick="showSplit(mainSplit, 'vertical');">Split Vertical</li>
-		<li onclick="showSplit(mainSplit, '');">Split Auto</li>
-	</ul>
-	Theme<ul>
-		<li onclick="params.update({theme: 'idea'});">Idea</li>
-		<li onclick="params.update({theme: 'darcula'});">Darcula</li>
-	</ul>
-</div>
-<div id="files" class="content list right" style="top:2em; display: none;">
-	<ul>
-		<li onclick="showFile(null);">Close file</li>
-		<li onclick="saveInput();">Save file</li>
-	</ul>
-	<ul id="fileList"></ul>
-</div>
+
 <script type="text/javascript" src="main.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-static gxSurf ofs = gxSurf.create(512, 512, 32);
+static gxSurf ofss = gxSurf(512, 512, 32);
 
 vec4f blob(vec4f in) {
 	float64 max(float64 a, float64 b) {
@@ -67,12 +67,13 @@ int onEvent(int action, int button, int ex, int ey) {
 		in.y = 2 * iy / double(resY) - 1;
 		for (int ix = 0; ix < resX; ix += 1) {
 			in.x = 2 * aspect * ix / double(resX) - 1;
-			gxSurf.set(thumb, ix, iy, rgb(blob(in)));
+			thumb.set(ix, iy, rgb(blob(in)));
 		}
 	}
-	gxSurf.zoomSurf(ofs, null, thumb, null, 1);
+	ofss.zoomSurf(null, thumb, null, 1);
 
 	return 0;
 }
 
-Gui.showWindow(ofs, onEvent);
+Gui.showWindow(ofss, onEvent);
+ofss.destroy();

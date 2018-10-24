@@ -521,15 +521,12 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 					if (args == cc->void_tag) {
 						ast->op.rhso = ref->op.lhso;
 					} else {
-						ast->op.rhso = ref;
-
-						ref->kind = OPER_com;
+						ref = argNode(cc, ref->op.lhso, ast->op.rhso);
 						ref->type = cc->type_vid;
-						ref->op.rhso = args;
+						ast->op.rhso = ref;
 					}
 					ref = ast->op.lhso;
 					args = ast->op.rhso;
-					info(cc->rt, __FILE__, __LINE__, "call: %t", ast);
 					type = typeCheckRef(cc, NULL, ref, args, 0);
 					if (type != NULL) {
 						return type;

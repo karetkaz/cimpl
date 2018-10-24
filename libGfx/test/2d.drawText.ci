@@ -1,5 +1,5 @@
 static gxSurf offs = gxSurf.create(1440, 900, 32);
-static gxSurf back = gxSurf.openJpg("asset/image/forest.jpg", 32);
+static gxSurf back = gxSurf("asset/image/forest.jpg", 32);
 static gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
 
 char text[*] = "\
@@ -8,20 +8,20 @@ text
 ";
 
 
-gxSurf.zoomSurf(offs, null, back, null, 1);
+offs.zoomSurf(null, back, null, 1);
 
-gxSurf.drawText(offs, 100, 100, font, text, 0xff00ff);
+offs.drawText(100, 100, font, text, 0xff00ff);
 
 inline p = 2;
 gxRect rect = { x: 100, y: 200, w: 0, h: 0 };
-gxSurf.clipText(font, rect, text);
-gxSurf.fillRect(offs, rect.x - p, rect.y - p, rect.x + rect.w + p, rect.y + rect.h + p, 0x000000);
-gxSurf.drawText(offs, rect.x, rect.y, font, text, 0xff00ff);
+font.clipText(rect, text);
+offs.fillRect(rect.x - p, rect.y - p, rect.x + rect.w + p, rect.y + rect.h + p, 0x000000);
+offs.drawText(rect.x, rect.y, font, text, 0xff00ff);
 debug("rect", rect);
 
 Gui.showWindow(offs, null);
 
-gxSurf.saveBmp(offs, "out/dump.bmp", 0);
-gxSurf.destroy(offs);
-gxSurf.destroy(back);
-gxSurf.destroy(font);
+offs.saveBmp("out/dump.bmp", 0);
+offs.destroy();
+back.destroy();
+font.destroy();

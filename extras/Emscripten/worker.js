@@ -35,12 +35,19 @@ var Module = {
 	},
 	workspaceFiles: function() {
 		let result = [];
-		let dir = FS.analyzePath(Module.workspace);
-		if (dir && dir.exists && dir.object) {
-			for (let file in dir.object.contents) {
-				result.push(file);
+		function lsr(path) {
+			let dir = FS.analyzePath(Module.workspace + '/' + path);
+			if (dir && dir.exists && dir.object) {
+				for (let file in dir.object.contents) {
+					if (dir.object.contents[file].isFolder) {
+						lsr((path ? path + '/' : '') + file);
+					} else {
+						result.push((path ? path + '/' : '') + file);
+					}
+				}
 			}
 		}
+		lsr('');
 		return result;
 	},
 	onRuntimeInitialized: function () {

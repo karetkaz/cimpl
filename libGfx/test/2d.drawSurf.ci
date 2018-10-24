@@ -1,6 +1,6 @@
-static gxSurf offs = gxSurf.create(1440, 900, 32);
-static gxSurf back = gxSurf.openJpg("asset/image/forest.jpg", 32);
-static gxSurf draw = gxSurf.openPng("asset/image/david.png", 32);
+static gxSurf offs = gxSurf(1440, 900, 32);
+static gxSurf back = gxSurf("asset/image/forest.jpg", 32);
+static gxSurf draw = gxSurf("asset/image/david.png", 32);
 
 static uint32 lut[256];
 for (int i = 0; i < 256; i += 1) {
@@ -17,11 +17,11 @@ int onEvent(int action, int button, int x, int y) {
 			return -1;
 		}
 		if (button == ' ') {
-			gxSurf.lookup(offs, null, lut);
+			offs.lookup(null, lut);
 		}
 		if (x == 's' && (y & Gui.KEY_MASK_CONTROL) != 0) {
 			trace("dumping screen");
-			gxSurf.saveBmp(offs, "out/dump.bmp", 0);
+			offs.saveBmp("out/dump.bmp", 0);
 		}
 		struct Event {
 			char button;
@@ -35,15 +35,15 @@ int onEvent(int action, int button, int x, int y) {
 	}
 
 	if (action == Gui.MOUSE_PRESS) {
-		gxSurf.zoomSurf(offs, null, back, null, 1);
+		offs.zoomSurf(null, back, null, 1);
 		action = Gui.MOUSE_MOTION;
 	}
 	if (action == Gui.MOUSE_MOTION) {
 		if (button == 1) {
-			gxSurf.copySurf(offs, x, y, draw, null);
+			offs.copySurf(x, y, draw, null);
 		}
 		if (button == 2) {
-			gxSurf.copySurf(offs, x, y, draw, roi);
+			offs.copySurf(x, y, draw, roi);
 		}
 	}
 
@@ -51,7 +51,7 @@ int onEvent(int action, int button, int x, int y) {
 	static int64 millis = 0;
 	int64 now = System.millis();
 	if (now - millis > 20) {
-		gxSurf.lookup(offs, null, lut);
+		offs.lookup(null, lut);
 		millis = now;
 	}
 	return 0;
@@ -62,7 +62,7 @@ int onEvent(int action, int button, int x, int y) {
 onEvent(Gui.MOUSE_PRESS, 0, 0, 0);
 Gui.showWindow(offs, onEvent);
 
-gxSurf.saveBmp(offs, "out/dump.bmp", 0);
-gxSurf.destroy(offs);
-gxSurf.destroy(back);
-gxSurf.destroy(draw);
+offs.saveBmp("out/dump.bmp", 0);
+offs.destroy();
+back.destroy();
+draw.destroy();

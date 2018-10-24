@@ -1,11 +1,17 @@
-gxMesh obj = gxMesh.openObj("asset/mesh/bunny.obj");
+gxMesh teapot = gxMesh.openObj("asset/mesh/teapot.obj");
+gxMesh bunny = gxMesh.openObj("asset/mesh/bunny.obj");
 
 float32 center[3]; center[0] = center[1] = center[2] = 0;
 float32 resize[3]; resize[0] = resize[1] = resize[2] = 1.5f;
 
-gxMesh.normalize(obj, 0, center, resize);
-//gxMesh.saveObj(obj, "out/dump.obj");
-debug("Mesh", obj);
+teapot.normalize(0, center, resize);
+bunny.normalize(0, center, resize);
 
-showMesh(1440, 900, 20, obj);
-gxMesh.destroy(obj);
+debug("Mesh.teapot", teapot);
+debug("Mesh.bunny", bunny);
+
+teapot.showMesh(1440, 900, 20);
+bunny.showMesh(1440, 900, 20);
+
+teapot.destroy();
+bunny.destroy();

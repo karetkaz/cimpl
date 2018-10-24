@@ -34,7 +34,7 @@ let terminal = Terminal(output, function(escaped, text) {
 	});
 });
 let params = JsArgs('#', function (params, changes) {
-	console.trace('params: ', changes, params);
+	//console.trace('params: ', changes, params);
 	// setup execution method
 	if (!changes || changes.exec != null) {
 		if (params.exec == null) {
@@ -180,10 +180,12 @@ function showMenu(menu) {
 		// menu is opened, hide it
 		menu = null;
 	}
+	sidebar.style.display = 'none';
 	options.style.display = 'none';
 	files.style.display = 'none';
 
 	if (menu != null) {
+		sidebar.style.display = 'block';
 		menu.style.display = 'block';
 	}
 }
@@ -222,7 +224,15 @@ function editProject() {
 				});
 			}
 		}
-		params.update({content: JSON.stringify(files), project: undefined, file: undefined, line: undefined});
+		content = '';
+		for (let file of files) {
+			if (content != '') {
+				content += ", ";
+			}
+			content += JSON.stringify(file, null, '\t');
+		}
+		content = '[' + content + ']';
+		params.update({content: btoa(content), project: undefined, file: undefined, line: undefined});
 	}
 }
 function shareInput() {

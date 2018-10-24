@@ -291,25 +291,64 @@ void logFILE(rtContext ctx, FILE *file);
 FILE *logFile(rtContext ctx, char *file, int append);
 
 /**
+ * Construct reference node.
+ * 
+ * @param cc compiler context.
+ * @param name name of the node.
+ * @return the new node.
+ */
+static inline astn tagNode(ccContext cc, char *name) {
+	astn ast = NULL;
+	if (cc != NULL && name != NULL) {
+		ast = newNode(cc, TOKEN_var);
+		if (ast != NULL) {
+			size_t len = strlen(name);
+			ast->file = cc->file;
+			ast->line = cc->line;
+			ast->type = NULL;
+			ast->ref.link = NULL;
+			ast->ref.hash = rehash(name, len + 1) % hashTableSize;
+			ast->ref.name = ccUniqueStr(cc, name, len + 1, ast->ref.hash);
+		}
+	}
+	return ast;
+}
+
+/**
+ * Construct arguments.
+ * 
+ * @param cc compiler context.
+ * @param lhs arguments or first argument.
+ * @param rhs next argument.
+ * @return if lhs is null return (rhs) else return (lhs, rhs).
+ */
+static inline astn argNode(ccContext cc, astn lhs, astn rhs) {
+	if (lhs == NULL) {
+		return rhs;
+	}
+	return opNode(cc, OPER_com, lhs, rhs);
+}
+
+/**
  * Chain the arguments trough ast.next link.
  * @param args root node of arguments tree.
  */
 static inline astn chainArgs(astn args) {
-	astn next = NULL;
-//	printFmt(stdout, NULL, "%?s:%?u: arguments: %-t\n", __FILE__, __LINE__, args);
-	while (args != NULL) {
-		astn arg = args;
-		if (arg->kind == OPER_com) {
-			args = arg->op.lhso;
-			arg = arg->op.rhso;
-		}
-		else {
-			args = NULL;
-		}
-		arg->next = next;
-		next = arg;
+	if (args == NULL) {
+		return NULL;
 	}
-	return next;
+	if (args->kind == OPER_com) {
+		astn lhs = chainArgs(args->op.lhso);
+		astn rhs = chainArgs(args->op.rhso);
+		args = lhs;
+		while (lhs->next != NULL) {
+			lhs = lhs->next;
+		}
+		lhs->next = rhs;
+	} else {
+		args->next = NULL;
+	}
+	return args;
 }
 
 /**
