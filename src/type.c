@@ -82,6 +82,22 @@ symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *out
 		sym->kind |= mode & MASK_attr;
 		sym->owner = owner;
 
+		// create a virtual and static method
+		if (!isStatic(sym) && isFunction(sym)) {
+			dieif(sym->init == NULL, ERR_INTERNAL_ERROR);
+			dieif(sym->init->kind != STMT_beg, ERR_INTERNAL_ERROR);
+			if (owner && isTypename(owner)) {
+				symn impl = newDef(cc, 0);
+				memcpy(impl, sym, sizeof(struct symNode));
+
+				impl->kind = ATTR_cnst | KIND_var | CAST_ref;
+				impl->init = lnkNode(cc, sym);
+
+				sym->kind |= ATTR_stat;
+				sym->scope = impl;
+			}
+		}
+
 		// add to the list of scope symbols
 		sym->next = result;
 		result = sym;
@@ -402,6 +418,9 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 			sym = lookup(cc, loc->type->fields, ref, args, KIND_var, 0);
 			loc = loc->type;
 		}
+		if (sym == NULL && isTypename(loc)) {
+			sym = lookup(cc, loc->fields, ref, args, ATTR_stat, 0);
+		}
 		if (sym == NULL) {
 			sym = lookup(cc, loc->fields, ref, args, 0, raise);
 		}
@@ -517,26 +536,32 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 						2. search for virtual method: a.add(a, b)
 						3. search for static method: T.add(a, b)
 					*/
-					ast->op.lhso = ref->op.rhso;
+
 					if (args == cc->void_tag) {
-						ast->op.rhso = ref->op.lhso;
-					} else {
-						ref = argNode(cc, ref->op.lhso, ast->op.rhso);
-						ref->type = cc->type_vid;
-						ast->op.rhso = ref;
+						args = ref->op.lhso;
 					}
-					ref = ast->op.lhso;
-					args = ast->op.rhso;
+					else {
+						args = argNode(cc, ref->op.lhso, args);
+						args->type = cc->type_vid;
+					}
+					ref = ref->op.rhso;
+					ast->op.rhso = args;
+
 					type = typeCheckRef(cc, NULL, ref, args, 0);
 					if (type != NULL) {
-						return type;
+						ast->op.lhso = ref;
+						debug("extension function: %t", ast);
+						return ast->type = type;
 					}
-					/* FIXME: this requires: a.add(a, b)
-					type = typeCheckRef(cc, loc, ref, args, 0);
+
+					type = typeCheckRef(cc, loc, ref, args, raise);
 					if (type != NULL) {
-						return type;
-					}*/
-					return typeCheckRef(cc, loc->type, ref, args, raise);
+						ast->op.lhso->type = type;
+						return ast->type = type;
+					}
+
+					ast->type = type;
+					return type;
 				}
 				else {
 					ref->type = cc->type_fun;
@@ -582,6 +607,11 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 		}
 
 		case OPER_dot:
+			if (loc == cc->emit_opc && ast->op.lhso->kind == TOKEN_var) {
+				// Fixme: if we have add.i32 and add was already checked, force lookup
+				ast->op.lhso->type = NULL;
+				ast->op.lhso->ref.link = NULL;
+			}
 			lType = typeCheck(cc, loc, ast->op.lhso, raise);
 			loc = linkOf(ast->op.lhso, 1);
 			if (loc == NULL) {

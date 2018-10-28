@@ -41,7 +41,6 @@ static inline size_t emitStack(rtContext rt, vmOpcode opc, ssize_t arg) {
 
 		case opc_drop:
 		case opc_ldsp:
-			trace("tmp.u64(%d) > rt->vm.ss(%d) * vm_size(%d)", tmp.u64, rt->vm.ss, vm_size);
 			if (tmp.u64 > rt->vm.ss * vm_size) {
 				trace(ERR_INTERNAL_ERROR);
 				return 0;
@@ -462,7 +461,7 @@ static ccKind genVariable(ccContext cc, symn variable, ccKind get, astn ast) {
 	if (get == CAST_arr && got != CAST_arr) {
 		symn length = type->fields;
 		if (length == NULL || !isStatic(length)) {
-			error(rt, ast->file, ast->line, ERR_EMIT_LENGTH, variable);\
+			error(rt, ast->file, ast->line, ERR_EMIT_LENGTH, variable);
 			return CAST_any;
 		}
 		if (!genVariable(cc, length, castOf(length), ast)) {
@@ -2020,7 +2019,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 int ccGenCode(ccContext cc, int debug) {
 	rtContext rt = cc->rt;
 
-	if (cc == NULL || rt->errors != 0) {
+	if (rt->errors != 0) {
 		dieif(cc == NULL, ERR_INTERNAL_ERROR);
 		trace("can not generate code with errors");
 		return rt->errors;

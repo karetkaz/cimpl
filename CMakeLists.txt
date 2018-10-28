@@ -53,10 +53,10 @@ set(GX_SOURCE_FILES
 add_executable(cmpl ${CC_SOURCE_FILES} src/main.c)
 target_link_libraries(cmpl m dl)
 
-add_library(File SHARED libEtc/src/file.c)
+add_library(File SHARED lib/src/file.c)
 target_include_directories(File PUBLIC ./src/)
 
-add_library(OpenGL SHARED libEtc/src/openGL.c)
+add_library(OpenGL SHARED lib/src/openGL.c)
 target_include_directories(OpenGL PUBLIC ./src/)
 target_link_libraries(OpenGL GL GLU glut)
 

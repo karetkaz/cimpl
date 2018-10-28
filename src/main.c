@@ -2259,6 +2259,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	int ccErrors = rt->errors;
 	// generate code only if there are no compilation errors
 	if (rt->errors == 0) {
 		if (extra.compileSteps != NULL) {printFmt(extra.out, extra.esc, "%sGenerate: byte-code\n", extra.compileSteps);}
@@ -2286,7 +2287,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if (rt->errors == 0) {
+	if (ccErrors == 0) {
 		if (dumpFun == dumpApiJSON) {
 			extra.esc = escapeJSON();
 			printFmt(extra.out, NULL, "{\n");

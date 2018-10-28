@@ -1985,7 +1985,8 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 					for (i = 0; i < hashTableSize; i += 1) {
 						list lst;
 						for (lst = rt->cc->strt[i]; lst; lst = lst->next) {
-							if (str == (char*)lst->data) {
+							char *data = (char*)lst->data;
+							if (str >= data && str < data + strlen(data)) {
 								printFmt(out, esc, " ;%c", type_fmt_string_chr);
 								printFmt(out, esc ? esc : escapeStr(), "%s", str);
 								printFmt(out, esc, "%c", type_fmt_string_chr);

@@ -414,6 +414,1415 @@
 				<call token=".variable" type="typename" kind="static const typename(ref)" value="int32" />
 			</init>
 		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="Complex" />
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="Complex(re: float64): Complex">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/math.Complex.ci:40">
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := {...};">
+					<expr token=":=" type="void" kind="static const typename(void)" value=".result := {...}">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value=".result" />
+						<right token="{}" type="void" kind="static const typename(void)">
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.re := re;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.re := re">
+									<left token="." type="float64" kind="static const typename(f64)" value=".result.re">
+										<left token=".variable" type="Complex" kind="static const typename(val)" value=".result" />
+										<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+									</left>
+									<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+								</expr>
+							</stmt>
+							<stmt token=":=" type="void" kind="static const typename(void)" value=".result.im := (0)">
+								<left token="." type="float64" kind="static const typename(f64)" value=".result.im">
+									<left token=".variable" type="Complex" kind="static const typename(val)" value=".result" />
+									<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+								</left>
+								<right token="()" type="float64" kind="static const typename(f64)" value="(0)">
+									<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+								</right>
+							</stmt>
+						</right>
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="Complex(re: float64, im: float64): Complex">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/math.Complex.ci:45">
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := {...};">
+					<expr token=":=" type="void" kind="static const typename(void)" value=".result := {...}">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value=".result" />
+						<right token="{}" type="void" kind="static const typename(void)">
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.re := re;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.re := re">
+									<left token="." type="float64" kind="static const typename(f64)" value=".result.re">
+										<left token=".variable" type="Complex" kind="static const typename(val)" value=".result" />
+										<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+									</left>
+									<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.im := im;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.im := im">
+									<left token="." type="float64" kind="static const typename(f64)" value=".result.im">
+										<left token=".variable" type="Complex" kind="static const typename(val)" value=".result" />
+										<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+									</left>
+									<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+								</expr>
+							</stmt>
+						</right>
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="neg(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(-a.re, -a.im)">
+				<push token="-" type="float64" kind="static const typename(f64)" value="-a.re">
+					<right token="." type="float64" kind="static const typename(f64)" value="a.re">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+					</right>
+				</push>
+				<push token="-" type="float64" kind="static const typename(f64)" value="-a.im">
+					<right token="." type="float64" kind="static const typename(f64)" value="a.im">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+					</right>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="add(a: Complex, b: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(a.re + b.re, a.im + b.im)">
+				<push token="+" type="float64" kind="static const typename(f64)" value="a.re + b.re">
+					<left token="." type="float64" kind="static const typename(f64)" value="a.re">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+					</left>
+					<right token="." type="float64" kind="static const typename(f64)" value="b.re">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+					</right>
+				</push>
+				<push token="+" type="float64" kind="static const typename(f64)" value="a.im + b.im">
+					<left token="." type="float64" kind="static const typename(f64)" value="a.im">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+					</left>
+					<right token="." type="float64" kind="static const typename(f64)" value="b.im">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+					</right>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="add(a: Complex, b: float64): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(a.re + b, a.im)">
+				<push token="+" type="float64" kind="static const typename(f64)" value="a.re + b">
+					<left token="." type="float64" kind="static const typename(f64)" value="a.re">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+					</left>
+					<right token=".variable" type="float64" kind="static const typename(f64)" value="b" />
+				</push>
+				<push token="." type="float64" kind="static const typename(f64)" value="a.im">
+					<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+					<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="add(a: float64, b: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(a + b.re, b.im)">
+				<push token="+" type="float64" kind="static const typename(f64)" value="a + b.re">
+					<left token=".variable" type="float64" kind="static const typename(f64)" value="a" />
+					<right token="." type="float64" kind="static const typename(f64)" value="b.re">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+					</right>
+				</push>
+				<push token="." type="float64" kind="static const typename(f64)" value="b.im">
+					<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+					<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="sub(a: Complex, b: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(a.re - b.re, a.im - b.im)">
+				<push token="-" type="float64" kind="static const typename(f64)" value="a.re - b.re">
+					<left token="." type="float64" kind="static const typename(f64)" value="a.re">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+					</left>
+					<right token="." type="float64" kind="static const typename(f64)" value="b.re">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+					</right>
+				</push>
+				<push token="-" type="float64" kind="static const typename(f64)" value="a.im - b.im">
+					<left token="." type="float64" kind="static const typename(f64)" value="a.im">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+					</left>
+					<right token="." type="float64" kind="static const typename(f64)" value="b.im">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+					</right>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="sub(a: Complex, b: float64): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(a.re - b, a.im)">
+				<push token="-" type="float64" kind="static const typename(f64)" value="a.re - b">
+					<left token="." type="float64" kind="static const typename(f64)" value="a.re">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+					</left>
+					<right token=".variable" type="float64" kind="static const typename(f64)" value="b" />
+				</push>
+				<push token="." type="float64" kind="static const typename(f64)" value="a.im">
+					<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+					<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="sub(a: float64, b: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(a - b.re, b.im)">
+				<push token="-" type="float64" kind="static const typename(f64)" value="a - b.re">
+					<left token=".variable" type="float64" kind="static const typename(f64)" value="a" />
+					<right token="." type="float64" kind="static const typename(f64)" value="b.re">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+					</right>
+				</push>
+				<push token="." type="float64" kind="static const typename(f64)" value="b.im">
+					<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+					<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="mul(a: Complex, b: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re)">
+				<push token="-" type="float64" kind="static const typename(f64)" value="a.re * b.re - a.im * b.im">
+					<left token="*" type="float64" kind="static const typename(f64)" value="a.re * b.re">
+						<left token="." type="float64" kind="static const typename(f64)" value="a.re">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+						</left>
+						<right token="." type="float64" kind="static const typename(f64)" value="b.re">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+						</right>
+					</left>
+					<right token="*" type="float64" kind="static const typename(f64)" value="a.im * b.im">
+						<left token="." type="float64" kind="static const typename(f64)" value="a.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</left>
+						<right token="." type="float64" kind="static const typename(f64)" value="b.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</right>
+					</right>
+				</push>
+				<push token="+" type="float64" kind="static const typename(f64)" value="a.re * b.im + a.im * b.re">
+					<left token="*" type="float64" kind="static const typename(f64)" value="a.re * b.im">
+						<left token="." type="float64" kind="static const typename(f64)" value="a.re">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+						</left>
+						<right token="." type="float64" kind="static const typename(f64)" value="b.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</right>
+					</left>
+					<right token="*" type="float64" kind="static const typename(f64)" value="a.im * b.re">
+						<left token="." type="float64" kind="static const typename(f64)" value="a.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</left>
+						<right token="." type="float64" kind="static const typename(f64)" value="b.re">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+						</right>
+					</right>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="mul(a: Complex, b: float64): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(a.re * b, a.im * b)">
+				<push token="*" type="float64" kind="static const typename(f64)" value="a.re * b">
+					<left token="." type="float64" kind="static const typename(f64)" value="a.re">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+					</left>
+					<right token=".variable" type="float64" kind="static const typename(f64)" value="b" />
+				</push>
+				<push token="*" type="float64" kind="static const typename(f64)" value="a.im * b">
+					<left token="." type="float64" kind="static const typename(f64)" value="a.im">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+					</left>
+					<right token=".variable" type="float64" kind="static const typename(f64)" value="b" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="mul(a: float64, b: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(a * b.re, a * b.im)">
+				<push token="*" type="float64" kind="static const typename(f64)" value="a * b.re">
+					<left token=".variable" type="float64" kind="static const typename(f64)" value="a" />
+					<right token="." type="float64" kind="static const typename(f64)" value="b.re">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+					</right>
+				</push>
+				<push token="*" type="float64" kind="static const typename(f64)" value="a * b.im">
+					<left token=".variable" type="float64" kind="static const typename(f64)" value="a" />
+					<right token="." type="float64" kind="static const typename(f64)" value="b.im">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+					</right>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="div(a: Complex, b: Complex): Complex">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/math.Complex.ci:66">
+				<stmt token="if" type="void" kind="static const typename(void)" stmt="if (Math.abs(b.re) &gt;= Math.abs(b.im))">
+					<test token="&gt;=" type="bool" kind="static const typename(bool)" value="Math.abs(b.re) &gt;= Math.abs(b.im)">
+						<left token="()" type="float64" kind="static const typename(f64)" value="Math.abs(b.re)">
+							<push token="." type="float64" kind="static const typename(f64)" value="b.re">
+								<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+							</push>
+							<call token="." type="function" kind="static const typename(ref)" value="Math.abs">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="abs" />
+							</call>
+						</left>
+						<right token="()" type="float64" kind="static const typename(f64)" value="Math.abs(b.im)">
+							<push token="." type="float64" kind="static const typename(f64)" value="b.im">
+								<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+							</push>
+							<call token="." type="function" kind="static const typename(ref)" value="Math.abs">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="abs" />
+							</call>
+						</right>
+					</test>
+					<then token="{}" type="void" kind="static const typename(void)" file="lib/math.Complex.ci:70">
+						<stmt token=".variable" type="float64" kind="static const typename(f64)" value="r">
+							<init token="/" type="float64" kind="static const typename(f64)" value="b.im / b.re">
+								<left token="." type="float64" kind="static const typename(f64)" value="b.im">
+									<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+									<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+								</left>
+								<right token="." type="float64" kind="static const typename(f64)" value="b.re">
+									<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+									<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+								</right>
+							</init>
+						</stmt>
+						<stmt token=".variable" type="float64" kind="static const typename(f64)" value="den">
+							<init token="+" type="float64" kind="static const typename(f64)" value="b.re + r * b.im">
+								<left token="." type="float64" kind="static const typename(f64)" value="b.re">
+									<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+									<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+								</left>
+								<right token="*" type="float64" kind="static const typename(f64)" value="r * b.im">
+									<left token=".variable" type="float64" kind="static const typename(f64)" value="r" />
+									<right token="." type="float64" kind="static const typename(f64)" value="b.im">
+										<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+										<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+									</right>
+								</right>
+							</init>
+						</stmt>
+						<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := {...};">
+							<expr token=":=" type="void" kind="static const typename(void)" value=".result := {...}">
+								<left token=".variable" type="Complex" kind="static const typename(val)" value=".result" />
+								<right token="{}" type="void" kind="static const typename(void)">
+									<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.re := (a.re + r * a.im) / den;">
+										<expr token=":=" type="void" kind="static const typename(void)" value=".result.re := (a.re + r * a.im) / den">
+											<left token="." type="float64" kind="static const typename(f64)" value=".result.re">
+												<left token=".variable" type="Complex" kind="static const typename(val)" value=".result" />
+												<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+											</left>
+											<right token="/" type="float64" kind="static const typename(f64)" value="(a.re + r * a.im) / den">
+												<left token="()" type="float64" kind="static const typename(f64)" value="(a.re + r * a.im)">
+													<push token="+" type="float64" kind="static const typename(f64)" value="a.re + r * a.im">
+														<left token="." type="float64" kind="static const typename(f64)" value="a.re">
+															<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+															<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+														</left>
+														<right token="*" type="float64" kind="static const typename(f64)" value="r * a.im">
+															<left token=".variable" type="float64" kind="static const typename(f64)" value="r" />
+															<right token="." type="float64" kind="static const typename(f64)" value="a.im">
+																<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+																<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+															</right>
+														</right>
+													</push>
+												</left>
+												<right token=".variable" type="float64" kind="static const typename(f64)" value="den" />
+											</right>
+										</expr>
+									</stmt>
+									<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.im := (a.im - r * a.re) / den;">
+										<expr token=":=" type="void" kind="static const typename(void)" value=".result.im := (a.im - r * a.re) / den">
+											<left token="." type="float64" kind="static const typename(f64)" value=".result.im">
+												<left token=".variable" type="Complex" kind="static const typename(val)" value=".result" />
+												<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+											</left>
+											<right token="/" type="float64" kind="static const typename(f64)" value="(a.im - r * a.re) / den">
+												<left token="()" type="float64" kind="static const typename(f64)" value="(a.im - r * a.re)">
+													<push token="-" type="float64" kind="static const typename(f64)" value="a.im - r * a.re">
+														<left token="." type="float64" kind="static const typename(f64)" value="a.im">
+															<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+															<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+														</left>
+														<right token="*" type="float64" kind="static const typename(f64)" value="r * a.re">
+															<left token=".variable" type="float64" kind="static const typename(f64)" value="r" />
+															<right token="." type="float64" kind="static const typename(f64)" value="a.re">
+																<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+																<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+															</right>
+														</right>
+													</push>
+												</left>
+												<right token=".variable" type="float64" kind="static const typename(f64)" value="den" />
+											</right>
+										</expr>
+									</stmt>
+								</right>
+							</expr>
+						</stmt>
+					</then>
+				</stmt>
+				<stmt token=".variable" type="float64" kind="static const typename(f64)" value="r">
+					<init token="/" type="float64" kind="static const typename(f64)" value="b.re / b.im">
+						<left token="." type="float64" kind="static const typename(f64)" value="b.re">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+						</left>
+						<right token="." type="float64" kind="static const typename(f64)" value="b.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</right>
+					</init>
+				</stmt>
+				<stmt token=".variable" type="float64" kind="static const typename(f64)" value="den">
+					<init token="+" type="float64" kind="static const typename(f64)" value="b.im + r * b.re">
+						<left token="." type="float64" kind="static const typename(f64)" value="b.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</left>
+						<right token="*" type="float64" kind="static const typename(f64)" value="r * b.re">
+							<left token=".variable" type="float64" kind="static const typename(f64)" value="r" />
+							<right token="." type="float64" kind="static const typename(f64)" value="b.re">
+								<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+							</right>
+						</right>
+					</init>
+				</stmt>
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := {...};">
+					<expr token=":=" type="void" kind="static const typename(void)" value=".result := {...}">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value=".result" />
+						<right token="{}" type="void" kind="static const typename(void)">
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.re := (a.re * r + a.im) / den;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.re := (a.re * r + a.im) / den">
+									<left token="." type="float64" kind="static const typename(f64)" value=".result.re">
+										<left token=".variable" type="Complex" kind="static const typename(val)" value=".result" />
+										<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+									</left>
+									<right token="/" type="float64" kind="static const typename(f64)" value="(a.re * r + a.im) / den">
+										<left token="()" type="float64" kind="static const typename(f64)" value="(a.re * r + a.im)">
+											<push token="+" type="float64" kind="static const typename(f64)" value="a.re * r + a.im">
+												<left token="*" type="float64" kind="static const typename(f64)" value="a.re * r">
+													<left token="." type="float64" kind="static const typename(f64)" value="a.re">
+														<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+														<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+													</left>
+													<right token=".variable" type="float64" kind="static const typename(f64)" value="r" />
+												</left>
+												<right token="." type="float64" kind="static const typename(f64)" value="a.im">
+													<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+													<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+												</right>
+											</push>
+										</left>
+										<right token=".variable" type="float64" kind="static const typename(f64)" value="den" />
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.im := (a.im * r - a.re) / den;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.im := (a.im * r - a.re) / den">
+									<left token="." type="float64" kind="static const typename(f64)" value=".result.im">
+										<left token=".variable" type="Complex" kind="static const typename(val)" value=".result" />
+										<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+									</left>
+									<right token="/" type="float64" kind="static const typename(f64)" value="(a.im * r - a.re) / den">
+										<left token="()" type="float64" kind="static const typename(f64)" value="(a.im * r - a.re)">
+											<push token="-" type="float64" kind="static const typename(f64)" value="a.im * r - a.re">
+												<left token="*" type="float64" kind="static const typename(f64)" value="a.im * r">
+													<left token="." type="float64" kind="static const typename(f64)" value="a.im">
+														<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+														<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+													</left>
+													<right token=".variable" type="float64" kind="static const typename(f64)" value="r" />
+												</left>
+												<right token="." type="float64" kind="static const typename(f64)" value="a.re">
+													<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+													<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+												</right>
+											</push>
+										</left>
+										<right token=".variable" type="float64" kind="static const typename(f64)" value="den" />
+									</right>
+								</expr>
+							</stmt>
+						</right>
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="abs(a: Complex): float64">
+			<init token="()" type="float64" kind="static const typename(f64)" value="float64.sqrt(a.re * a.re + a.im * a.im)">
+				<push token="+" type="float64" kind="static const typename(f64)" value="a.re * a.re + a.im * a.im">
+					<left token="*" type="float64" kind="static const typename(f64)" value="a.re * a.re">
+						<left token="." type="float64" kind="static const typename(f64)" value="a.re">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+						</left>
+						<right token="." type="float64" kind="static const typename(f64)" value="a.re">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+						</right>
+					</left>
+					<right token="*" type="float64" kind="static const typename(f64)" value="a.im * a.im">
+						<left token="." type="float64" kind="static const typename(f64)" value="a.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</left>
+						<right token="." type="float64" kind="static const typename(f64)" value="a.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</right>
+					</right>
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="float64.sqrt">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="sqrt" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="arg(a: Complex): float64">
+			<init token="()" type="float64" kind="static const typename(f64)" value="float64.atan2(a.re, a.im)">
+				<push token="." type="float64" kind="static const typename(f64)" value="a.re">
+					<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+					<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+				</push>
+				<push token="." type="float64" kind="static const typename(f64)" value="a.im">
+					<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+					<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="float64.atan2">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="atan2" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="invert(a: Complex): Complex">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/math.Complex.ci:90">
+				<stmt token=".variable" type="float64" kind="static const typename(f64)" value="d">
+					<init token="()" type="float64" kind="static const typename(f64)" value="(a.re * a.re + a.im * a.im)">
+						<push token="+" type="float64" kind="static const typename(f64)" value="a.re * a.re + a.im * a.im">
+							<left token="*" type="float64" kind="static const typename(f64)" value="a.re * a.re">
+								<left token="." type="float64" kind="static const typename(f64)" value="a.re">
+									<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+									<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+								</left>
+								<right token="." type="float64" kind="static const typename(f64)" value="a.re">
+									<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+									<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+								</right>
+							</left>
+							<right token="*" type="float64" kind="static const typename(f64)" value="a.im * a.im">
+								<left token="." type="float64" kind="static const typename(f64)" value="a.im">
+									<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+									<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+								</left>
+								<right token="." type="float64" kind="static const typename(f64)" value="a.im">
+									<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+									<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+								</right>
+							</right>
+						</push>
+					</init>
+				</stmt>
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := Complex(+a.re / d, -a.im / d);">
+					<expr token=":=" type="Complex" kind="static const typename(val)" value=".result := Complex(+a.re / d, -a.im / d)">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value=".result" />
+						<right token="()" type="Complex" kind="static const typename(val)" value="Complex(+a.re / d, -a.im / d)">
+							<push token="/" type="float64" kind="static const typename(f64)" value="+a.re / d">
+								<left token="+" type="float64" kind="static const typename(f64)" value="+a.re">
+									<right token="." type="float64" kind="static const typename(f64)" value="a.re">
+										<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+										<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+									</right>
+								</left>
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="d" />
+							</push>
+							<push token="/" type="float64" kind="static const typename(f64)" value="-a.im / d">
+								<left token="-" type="float64" kind="static const typename(f64)" value="-a.im">
+									<right token="." type="float64" kind="static const typename(f64)" value="a.im">
+										<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+										<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+									</right>
+								</left>
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="d" />
+							</push>
+							<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+						</right>
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="conj(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(a.re, -a.im)">
+				<push token="." type="float64" kind="static const typename(f64)" value="a.re">
+					<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+					<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+				</push>
+				<push token="-" type="float64" kind="static const typename(f64)" value="-a.im">
+					<right token="." type="float64" kind="static const typename(f64)" value="a.im">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+					</right>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="exp(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(float64.exp(a.re) * float64.cos(a.im), float64.exp(a.re) * float64.sin(a.im))">
+				<push token="*" type="float64" kind="static const typename(f64)" value="float64.exp(a.re) * float64.cos(a.im)">
+					<left token="()" type="float64" kind="static const typename(f64)" value="float64.exp(a.re)">
+						<push token="." type="float64" kind="static const typename(f64)" value="a.re">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+						</push>
+						<call token="." type="function" kind="static const typename(ref)" value="float64.exp">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+							<right token=".variable" type="function" kind="static const typename(ref)" value="exp" />
+						</call>
+					</left>
+					<right token="()" type="float64" kind="static const typename(f64)" value="float64.cos(a.im)">
+						<push token="." type="float64" kind="static const typename(f64)" value="a.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</push>
+						<call token="." type="function" kind="static const typename(ref)" value="float64.cos">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+							<right token=".variable" type="function" kind="static const typename(ref)" value="cos" />
+						</call>
+					</right>
+				</push>
+				<push token="*" type="float64" kind="static const typename(f64)" value="float64.exp(a.re) * float64.sin(a.im)">
+					<left token="()" type="float64" kind="static const typename(f64)" value="float64.exp(a.re)">
+						<push token="." type="float64" kind="static const typename(f64)" value="a.re">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+						</push>
+						<call token="." type="function" kind="static const typename(ref)" value="float64.exp">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+							<right token=".variable" type="function" kind="static const typename(ref)" value="exp" />
+						</call>
+					</left>
+					<right token="()" type="float64" kind="static const typename(f64)" value="float64.sin(a.im)">
+						<push token="." type="float64" kind="static const typename(f64)" value="a.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</push>
+						<call token="." type="function" kind="static const typename(ref)" value="float64.sin">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+							<right token=".variable" type="function" kind="static const typename(ref)" value="sin" />
+						</call>
+					</right>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="log(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(float64.log(abs(a)), arg(a))">
+				<push token="()" type="float64" kind="static const typename(f64)" value="float64.log(abs(a))">
+					<push token="()" type="float64" kind="static const typename(f64)" value="abs(a)">
+						<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<call token=".variable" type="function" kind="static const typename(ref)" value="abs" />
+					</push>
+					<call token="." type="function" kind="static const typename(ref)" value="float64.log">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+						<right token=".variable" type="function" kind="static const typename(ref)" value="log" />
+					</call>
+				</push>
+				<push token="()" type="float64" kind="static const typename(f64)" value="arg(a)">
+					<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="arg" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="pow(a: Complex, b: Complex): Complex">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/math.Complex.ci:101">
+				<stmt token=".variable" type="float64" kind="static const typename(f64)" value="r">
+					<init token="()" type="float64" kind="static const typename(f64)" value="abs(a)">
+						<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<call token=".variable" type="function" kind="static const typename(ref)" value="abs" />
+					</init>
+				</stmt>
+				<stmt token=".variable" type="float64" kind="static const typename(f64)" value="t">
+					<init token="()" type="float64" kind="static const typename(f64)" value="arg(a)">
+						<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<call token=".variable" type="function" kind="static const typename(ref)" value="arg" />
+					</init>
+				</stmt>
+				<stmt token=".variable" type="float64" kind="static const typename(f64)" value="u">
+					<init token="+" type="float64" kind="static const typename(f64)" value="b.re * t + b.im * float64.log(r)">
+						<left token="*" type="float64" kind="static const typename(f64)" value="b.re * t">
+							<left token="." type="float64" kind="static const typename(f64)" value="b.re">
+								<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+							</left>
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="t" />
+						</left>
+						<right token="*" type="float64" kind="static const typename(f64)" value="b.im * float64.log(r)">
+							<left token="." type="float64" kind="static const typename(f64)" value="b.im">
+								<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+							</left>
+							<right token="()" type="float64" kind="static const typename(f64)" value="float64.log(r)">
+								<push token=".variable" type="float64" kind="static const typename(f64)" value="r" />
+								<call token="." type="function" kind="static const typename(ref)" value="float64.log">
+									<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="log" />
+								</call>
+							</right>
+						</right>
+					</init>
+				</stmt>
+				<stmt token=".variable" type="float64" kind="static const typename(f64)" value="v">
+					<init token="*" type="float64" kind="static const typename(f64)" value="float64.pow(r, b.re) * float64.exp(-b.im * t)">
+						<left token="()" type="float64" kind="static const typename(f64)" value="float64.pow(r, b.re)">
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="r" />
+							<push token="." type="float64" kind="static const typename(f64)" value="b.re">
+								<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+							</push>
+							<call token="." type="function" kind="static const typename(ref)" value="float64.pow">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="pow" />
+							</call>
+						</left>
+						<right token="()" type="float64" kind="static const typename(f64)" value="float64.exp(-b.im * t)">
+							<push token="*" type="float64" kind="static const typename(f64)" value="-b.im * t">
+								<left token="-" type="float64" kind="static const typename(f64)" value="-b.im">
+									<right token="." type="float64" kind="static const typename(f64)" value="b.im">
+										<left token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+										<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+									</right>
+								</left>
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="t" />
+							</push>
+							<call token="." type="function" kind="static const typename(ref)" value="float64.exp">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="exp" />
+							</call>
+						</right>
+					</init>
+				</stmt>
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := Complex(v * float64.cos(u), v * float64.sin(u));">
+					<expr token=":=" type="Complex" kind="static const typename(val)" value=".result := Complex(v * float64.cos(u), v * float64.sin(u))">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value=".result" />
+						<right token="()" type="Complex" kind="static const typename(val)" value="Complex(v * float64.cos(u), v * float64.sin(u))">
+							<push token="*" type="float64" kind="static const typename(f64)" value="v * float64.cos(u)">
+								<left token=".variable" type="float64" kind="static const typename(f64)" value="v" />
+								<right token="()" type="float64" kind="static const typename(f64)" value="float64.cos(u)">
+									<push token=".variable" type="float64" kind="static const typename(f64)" value="u" />
+									<call token="." type="function" kind="static const typename(ref)" value="float64.cos">
+										<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+										<right token=".variable" type="function" kind="static const typename(ref)" value="cos" />
+									</call>
+								</right>
+							</push>
+							<push token="*" type="float64" kind="static const typename(f64)" value="v * float64.sin(u)">
+								<left token=".variable" type="float64" kind="static const typename(f64)" value="v" />
+								<right token="()" type="float64" kind="static const typename(f64)" value="float64.sin(u)">
+									<push token=".variable" type="float64" kind="static const typename(f64)" value="u" />
+									<call token="." type="function" kind="static const typename(ref)" value="float64.sin">
+										<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+										<right token=".variable" type="function" kind="static const typename(ref)" value="sin" />
+									</call>
+								</right>
+							</push>
+							<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+						</right>
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="pow(a: Complex, b: float64): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="pow(a, Complex(b))">
+				<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+				<push token="()" type="Complex" kind="static const typename(val)" value="Complex(b)">
+					<push token=".variable" type="float64" kind="static const typename(f64)" value="b" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="pow" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="sin(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(float64.sin(a.re) * Math.cosh(a.im), float64.cos(a.re) * Math.sinh(a.im))">
+				<push token="*" type="float64" kind="static const typename(f64)" value="float64.sin(a.re) * Math.cosh(a.im)">
+					<left token="()" type="float64" kind="static const typename(f64)" value="float64.sin(a.re)">
+						<push token="." type="float64" kind="static const typename(f64)" value="a.re">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+						</push>
+						<call token="." type="function" kind="static const typename(ref)" value="float64.sin">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+							<right token=".variable" type="function" kind="static const typename(ref)" value="sin" />
+						</call>
+					</left>
+					<right token="()" type="float64" kind="static const typename(f64)" value="Math.cosh(a.im)">
+						<push token="." type="float64" kind="static const typename(f64)" value="a.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</push>
+						<call token="." type="function" kind="static const typename(ref)" value="Math.cosh">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+							<right token=".variable" type="function" kind="static const typename(ref)" value="cosh" />
+						</call>
+					</right>
+				</push>
+				<push token="*" type="float64" kind="static const typename(f64)" value="float64.cos(a.re) * Math.sinh(a.im)">
+					<left token="()" type="float64" kind="static const typename(f64)" value="float64.cos(a.re)">
+						<push token="." type="float64" kind="static const typename(f64)" value="a.re">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+						</push>
+						<call token="." type="function" kind="static const typename(ref)" value="float64.cos">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+							<right token=".variable" type="function" kind="static const typename(ref)" value="cos" />
+						</call>
+					</left>
+					<right token="()" type="float64" kind="static const typename(f64)" value="Math.sinh(a.im)">
+						<push token="." type="float64" kind="static const typename(f64)" value="a.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</push>
+						<call token="." type="function" kind="static const typename(ref)" value="Math.sinh">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+							<right token=".variable" type="function" kind="static const typename(ref)" value="sinh" />
+						</call>
+					</right>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="cos(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(float64.cos(a.re) * Math.cosh(a.im), -float64.sin(a.re) * Math.sinh(a.im))">
+				<push token="*" type="float64" kind="static const typename(f64)" value="float64.cos(a.re) * Math.cosh(a.im)">
+					<left token="()" type="float64" kind="static const typename(f64)" value="float64.cos(a.re)">
+						<push token="." type="float64" kind="static const typename(f64)" value="a.re">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+						</push>
+						<call token="." type="function" kind="static const typename(ref)" value="float64.cos">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+							<right token=".variable" type="function" kind="static const typename(ref)" value="cos" />
+						</call>
+					</left>
+					<right token="()" type="float64" kind="static const typename(f64)" value="Math.cosh(a.im)">
+						<push token="." type="float64" kind="static const typename(f64)" value="a.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</push>
+						<call token="." type="function" kind="static const typename(ref)" value="Math.cosh">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+							<right token=".variable" type="function" kind="static const typename(ref)" value="cosh" />
+						</call>
+					</right>
+				</push>
+				<push token="*" type="float64" kind="static const typename(f64)" value="-float64.sin(a.re) * Math.sinh(a.im)">
+					<left token="-" type="float64" kind="static const typename(f64)" value="-float64.sin(a.re)">
+						<right token="()" type="float64" kind="static const typename(f64)" value="float64.sin(a.re)">
+							<push token="." type="float64" kind="static const typename(f64)" value="a.re">
+								<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+							</push>
+							<call token="." type="function" kind="static const typename(ref)" value="float64.sin">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="sin" />
+							</call>
+						</right>
+					</left>
+					<right token="()" type="float64" kind="static const typename(f64)" value="Math.sinh(a.im)">
+						<push token="." type="float64" kind="static const typename(f64)" value="a.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</push>
+						<call token="." type="function" kind="static const typename(ref)" value="Math.sinh">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+							<right token=".variable" type="function" kind="static const typename(ref)" value="sinh" />
+						</call>
+					</right>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="tan(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="div(sin(a), cos(a))">
+				<push token="()" type="Complex" kind="static const typename(val)" value="sin(a)">
+					<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="sin" />
+				</push>
+				<push token="()" type="Complex" kind="static const typename(val)" value="cos(a)">
+					<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="cos" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="div" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="toCartesian(x: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(x.re * float64.cos(x.im), x.re * float64.sin(x.im))">
+				<push token="*" type="float64" kind="static const typename(f64)" value="x.re * float64.cos(x.im)">
+					<left token="." type="float64" kind="static const typename(f64)" value="x.re">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="x" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+					</left>
+					<right token="()" type="float64" kind="static const typename(f64)" value="float64.cos(x.im)">
+						<push token="." type="float64" kind="static const typename(f64)" value="x.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="x" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</push>
+						<call token="." type="function" kind="static const typename(ref)" value="float64.cos">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+							<right token=".variable" type="function" kind="static const typename(ref)" value="cos" />
+						</call>
+					</right>
+				</push>
+				<push token="*" type="float64" kind="static const typename(f64)" value="x.re * float64.sin(x.im)">
+					<left token="." type="float64" kind="static const typename(f64)" value="x.re">
+						<left token=".variable" type="Complex" kind="static const typename(val)" value="x" />
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+					</left>
+					<right token="()" type="float64" kind="static const typename(f64)" value="float64.sin(x.im)">
+						<push token="." type="float64" kind="static const typename(f64)" value="x.im">
+							<left token=".variable" type="Complex" kind="static const typename(val)" value="x" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im" />
+						</push>
+						<call token="." type="function" kind="static const typename(ref)" value="float64.sin">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+							<right token=".variable" type="function" kind="static const typename(ref)" value="sin" />
+						</call>
+					</right>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="toPolar(x: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(abs(x), arg(x))">
+				<push token="()" type="float64" kind="static const typename(f64)" value="abs(x)">
+					<push token=".variable" type="Complex" kind="static const typename(val)" value="x" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="abs" />
+				</push>
+				<push token="()" type="float64" kind="static const typename(f64)" value="arg(x)">
+					<push token=".variable" type="Complex" kind="static const typename(val)" value="x" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="arg" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="length(str: char[*]): int32">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:3">
+				<stmt token="if" type="void" kind="static const typename(void)" stmt="if (str == null)">
+					<test token="==" type="bool" kind="static const typename(bool)" value="str == null">
+						<left token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+						<right token=".variable" type="pointer" kind="static const typename(ref)" value="null" />
+					</test>
+					<then token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:4">
+						<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := 0;">
+							<expr token=":=" type="int32" kind="static const typename(i32)" value=".result := 0">
+								<left token=".variable" type="int32" kind="static const typename(i32)" value=".result" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</expr>
+						</stmt>
+					</then>
+				</stmt>
+				<stmt token=".variable" type="int32" kind="static const typename(i32)" value="result">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+				</stmt>
+				<stmt token="for" type="void" kind="static const typename(void)" stmt="for ( ; str[result]; result := result + 1)">
+					<test token="[]" type="char" kind="static const typename(i32)" value="str[result]">
+						<left token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+						<right token=".variable" type="int32" kind="static const typename(i32)" value="result" />
+					</test>
+					<step token=":=" type="int32" kind="static const typename(i32)" value="result := result + 1">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value="result" />
+						<right token="+" type="int32" kind="static const typename(i32)" value="result + 1">
+							<left token=".variable" type="int32" kind="static const typename(i32)" value="result" />
+							<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+						</right>
+					</step>
+				</stmt>
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := result;">
+					<expr token=":=" type="int32" kind="static const typename(i32)" value=".result := result">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value=".result" />
+						<right token=".variable" type="int32" kind="static const typename(i32)" value="result" />
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="indexOf(str: char[*], chr: char): int32">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:14">
+				<stmt token="for" type="void" kind="static const typename(void)" stmt="for (i; str[i]; i := i + 1)">
+					<init token=".variable" type="int32" kind="static const typename(i32)" value="i">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+					</init>
+					<test token="[]" type="char" kind="static const typename(i32)" value="str[i]">
+						<left token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+						<right token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+					</test>
+					<step token=":=" type="int32" kind="static const typename(i32)" value="i := i + 1">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+						<right token="+" type="int32" kind="static const typename(i32)" value="i + 1">
+							<left token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+							<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+						</right>
+					</step>
+					<stmt token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:15">
+						<stmt token="if" type="void" kind="static const typename(void)" stmt="if (str[i] == chr)">
+							<test token="==" type="bool" kind="static const typename(bool)" value="str[i] == chr">
+								<left token="[]" type="char" kind="static const typename(i32)" value="str[i]">
+									<left token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+								</left>
+								<right token=".variable" type="char" kind="static const typename(i32)" value="chr" />
+							</test>
+							<then token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:16">
+								<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := i;">
+									<expr token=":=" type="int32" kind="static const typename(i32)" value=".result := i">
+										<left token=".variable" type="int32" kind="static const typename(i32)" value=".result" />
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+									</expr>
+								</stmt>
+							</then>
+						</stmt>
+					</stmt>
+				</stmt>
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := -1;">
+					<expr token=":=" type="int32" kind="static const typename(i32)" value=".result := -1">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value=".result" />
+						<right token="-" type="int32" kind="static const typename(i32)" value="-1">
+							<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+						</right>
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="lastIndexOf(str: char[*], chr: char): int32">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:24">
+				<stmt token=".variable" type="int32" kind="static const typename(i32)" value="result">
+					<init token="-" type="int32" kind="static const typename(i32)" value="-1">
+						<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+					</init>
+				</stmt>
+				<stmt token="for" type="void" kind="static const typename(void)" stmt="for (i; str[i]; i := i + 1)">
+					<init token=".variable" type="int32" kind="static const typename(i32)" value="i">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+					</init>
+					<test token="[]" type="char" kind="static const typename(i32)" value="str[i]">
+						<left token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+						<right token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+					</test>
+					<step token=":=" type="int32" kind="static const typename(i32)" value="i := i + 1">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+						<right token="+" type="int32" kind="static const typename(i32)" value="i + 1">
+							<left token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+							<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+						</right>
+					</step>
+					<stmt token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:26">
+						<stmt token="if" type="void" kind="static const typename(void)" stmt="if (str[i] == chr)">
+							<test token="==" type="bool" kind="static const typename(bool)" value="str[i] == chr">
+								<left token="[]" type="char" kind="static const typename(i32)" value="str[i]">
+									<left token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+								</left>
+								<right token=".variable" type="char" kind="static const typename(i32)" value="chr" />
+							</test>
+							<then token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:27">
+								<stmt token=";" type="void" kind="static const typename(void)" stmt="result := i;">
+									<expr token=":=" type="int32" kind="static const typename(i32)" value="result := i">
+										<left token=".variable" type="int32" kind="static const typename(i32)" value="result" />
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+									</expr>
+								</stmt>
+							</then>
+						</stmt>
+					</stmt>
+				</stmt>
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := result;">
+					<expr token=":=" type="int32" kind="static const typename(i32)" value=".result := result">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value=".result" />
+						<right token=".variable" type="int32" kind="static const typename(i32)" value="result" />
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="startsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:35">
+				<stmt token="for" type="void" kind="static const typename(void)" stmt="for (i; (with[i]) != 0; i := i + 1)">
+					<init token=".variable" type="int32" kind="static const typename(i32)" value="i">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+					</init>
+					<test token="!=" type="bool" kind="static const typename(bool)" value="(with[i]) != 0">
+						<left token="()" type="int32" kind="static const typename(i32)" value="(with[i])">
+							<push token="[]" type="char" kind="static const typename(i32)" value="with[i]">
+								<left token=".variable" type="char[*]" kind="static typename(arr)" value="with" />
+								<right token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+							</push>
+						</left>
+						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+					</test>
+					<step token=":=" type="int32" kind="static const typename(i32)" value="i := i + 1">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+						<right token="+" type="int32" kind="static const typename(i32)" value="i + 1">
+							<left token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+							<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+						</right>
+					</step>
+					<stmt token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:36">
+						<stmt token="if" type="void" kind="static const typename(void)" stmt="if (cmp(str[i], with[i]) != 0)">
+							<test token="!=" type="bool" kind="static const typename(bool)" value="cmp(str[i], with[i]) != 0">
+								<left token="()" type="int32" kind="static const typename(i32)" value="cmp(str[i], with[i])">
+									<push token="[]" type="char" kind="static const typename(i32)" value="str[i]">
+										<left token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+									</push>
+									<push token="[]" type="char" kind="static const typename(i32)" value="with[i]">
+										<left token=".variable" type="char[*]" kind="static typename(arr)" value="with" />
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+									</push>
+									<call token=".variable" type="function" kind="static const typename(ref)" value="cmp" />
+								</left>
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</test>
+							<then token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:37">
+								<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := false;">
+									<expr token=":=" type="bool" kind="static const typename(bool)" value=".result := false">
+										<left token=".variable" type="bool" kind="static const typename(bool)" value=".result" />
+										<right token=".variable" type="bool" kind="static const typename(bool)" value="false" />
+									</expr>
+								</stmt>
+							</then>
+						</stmt>
+					</stmt>
+				</stmt>
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := true;">
+					<expr token=":=" type="bool" kind="static const typename(bool)" value=".result := true">
+						<left token=".variable" type="bool" kind="static const typename(bool)" value=".result" />
+						<right token=".variable" type="bool" kind="static const typename(bool)" value="true" />
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="endsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:44">
+				<stmt token=".variable" type="int32" kind="static const typename(i32)" value="withLen">
+					<init token="()" type="int32" kind="static const typename(i32)" value="length(with)">
+						<push token=".variable" type="char[*]" kind="static typename(arr)" value="with" />
+						<call token=".variable" type="function" kind="static const typename(ref)" value="length" />
+					</init>
+				</stmt>
+				<stmt token=".variable" type="int32" kind="static const typename(i32)" value="strLen">
+					<init token="()" type="int32" kind="static const typename(i32)" value="length(str)">
+						<push token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+						<call token=".variable" type="function" kind="static const typename(ref)" value="length" />
+					</init>
+				</stmt>
+				<stmt token="if" type="void" kind="static const typename(void)" stmt="if (strLen &lt; withLen)">
+					<test token="&lt;" type="bool" kind="static const typename(bool)" value="strLen &lt; withLen">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value="strLen" />
+						<right token=".variable" type="int32" kind="static const typename(i32)" value="withLen" />
+					</test>
+					<then token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:47">
+						<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := false;">
+							<expr token=":=" type="bool" kind="static const typename(bool)" value=".result := false">
+								<left token=".variable" type="bool" kind="static const typename(bool)" value=".result" />
+								<right token=".variable" type="bool" kind="static const typename(bool)" value="false" />
+							</expr>
+						</stmt>
+					</then>
+				</stmt>
+				<stmt token="for" type="void" kind="static const typename(void)" stmt="for (i; i &lt; withLen; i := i + 1)">
+					<init token=".variable" type="int32" kind="static const typename(i32)" value="i">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+					</init>
+					<test token="&lt;" type="bool" kind="static const typename(bool)" value="i &lt; withLen">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+						<right token=".variable" type="int32" kind="static const typename(i32)" value="withLen" />
+					</test>
+					<step token=":=" type="int32" kind="static const typename(i32)" value="i := i + 1">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+						<right token="+" type="int32" kind="static const typename(i32)" value="i + 1">
+							<left token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+							<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+						</right>
+					</step>
+					<stmt token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:50">
+						<stmt token="if" type="void" kind="static const typename(void)" stmt="if (cmp(str[strLen - withLen + i], with[i]) != 0)">
+							<test token="!=" type="bool" kind="static const typename(bool)" value="cmp(str[strLen - withLen + i], with[i]) != 0">
+								<left token="()" type="int32" kind="static const typename(i32)" value="cmp(str[strLen - withLen + i], with[i])">
+									<push token="[]" type="char" kind="static const typename(i32)" value="str[strLen - withLen + i]">
+										<left token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+										<right token="+" type="int32" kind="static const typename(i32)" value="strLen - withLen + i">
+											<left token="-" type="int32" kind="static const typename(i32)" value="strLen - withLen">
+												<left token=".variable" type="int32" kind="static const typename(i32)" value="strLen" />
+												<right token=".variable" type="int32" kind="static const typename(i32)" value="withLen" />
+											</left>
+											<right token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+										</right>
+									</push>
+									<push token="[]" type="char" kind="static const typename(i32)" value="with[i]">
+										<left token=".variable" type="char[*]" kind="static typename(arr)" value="with" />
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+									</push>
+									<call token=".variable" type="function" kind="static const typename(ref)" value="cmp" />
+								</left>
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</test>
+							<then token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:51">
+								<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := false;">
+									<expr token=":=" type="bool" kind="static const typename(bool)" value=".result := false">
+										<left token=".variable" type="bool" kind="static const typename(bool)" value=".result" />
+										<right token=".variable" type="bool" kind="static const typename(bool)" value="false" />
+									</expr>
+								</stmt>
+							</then>
+						</stmt>
+					</stmt>
+				</stmt>
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := true;">
+					<expr token=":=" type="bool" kind="static const typename(bool)" value=".result := true">
+						<left token=".variable" type="bool" kind="static const typename(bool)" value=".result" />
+						<right token=".variable" type="bool" kind="static const typename(bool)" value="true" />
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="compare(str: char[*], with: char[*], cmp(chr: char, with: char): int32): int32">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:58">
+				<stmt token=".variable" type="int32" kind="static const typename(i32)" value="result">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+				</stmt>
+				<stmt token="for" type="void" kind="static const typename(void)" stmt="for (i; result == 0; i := i + 1)">
+					<init token=".variable" type="int32" kind="static const typename(i32)" value="i">
+						<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+					</init>
+					<test token="==" type="bool" kind="static const typename(bool)" value="result == 0">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value="result" />
+						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+					</test>
+					<step token=":=" type="int32" kind="static const typename(i32)" value="i := i + 1">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+						<right token="+" type="int32" kind="static const typename(i32)" value="i + 1">
+							<left token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+							<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+						</right>
+					</step>
+					<stmt token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:60">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="result := cmp(str[i], with[i]);">
+							<expr token=":=" type="int32" kind="static const typename(i32)" value="result := cmp(str[i], with[i])">
+								<left token=".variable" type="int32" kind="static const typename(i32)" value="result" />
+								<right token="()" type="int32" kind="static const typename(i32)" value="cmp(str[i], with[i])">
+									<push token="[]" type="char" kind="static const typename(i32)" value="str[i]">
+										<left token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+									</push>
+									<push token="[]" type="char" kind="static const typename(i32)" value="with[i]">
+										<left token=".variable" type="char[*]" kind="static typename(arr)" value="with" />
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+									</push>
+									<call token=".variable" type="function" kind="static const typename(ref)" value="cmp" />
+								</right>
+							</expr>
+						</stmt>
+						<stmt token="if" type="void" kind="static const typename(void)" stmt="if ((str[i]) == 0)">
+							<test token="==" type="bool" kind="static const typename(bool)" value="(str[i]) == 0">
+								<left token="()" type="int32" kind="static const typename(i32)" value="(str[i])">
+									<push token="[]" type="char" kind="static const typename(i32)" value="str[i]">
+										<left token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+										<right token=".variable" type="int32" kind="static const typename(i32)" value="i" />
+									</push>
+								</left>
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</test>
+							<then token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:62">
+								<stmt token="break" type="void" kind="static const typename(void)" stmt="break;" />
+							</then>
+						</stmt>
+					</stmt>
+				</stmt>
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := result;">
+					<expr token=":=" type="int32" kind="static const typename(i32)" value=".result := result">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value=".result" />
+						<right token=".variable" type="int32" kind="static const typename(i32)" value="result" />
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="ignCaseCmp(chr: char, with: char): int32">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:70">
+				<stmt token=".variable" type="function" kind="static const typename(ref)" value="ignCase(chr: char): char">
+					<init token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:71">
+						<stmt token="if" type="void" kind="static const typename(void)" stmt="if (chr &gt;= &apos;A&apos; &amp;&amp; chr &lt;= &apos;Z&apos;)">
+							<test token="&amp;&amp;" type="bool" kind="static const typename(bool)" value="chr &gt;= &apos;A&apos; &amp;&amp; chr &lt;= &apos;Z&apos;">
+								<left token="&gt;=" type="bool" kind="static const typename(bool)" value="chr &gt;= &apos;A&apos;">
+									<left token=".variable" type="char" kind="static const typename(i32)" value="chr" />
+									<right token=".literal" type="char" kind="static const typename(i32)" value="&apos;A&apos;" />
+								</left>
+								<right token="&lt;=" type="bool" kind="static const typename(bool)" value="chr &lt;= &apos;Z&apos;">
+									<left token=".variable" type="char" kind="static const typename(i32)" value="chr" />
+									<right token=".literal" type="char" kind="static const typename(i32)" value="&apos;Z&apos;" />
+								</right>
+							</test>
+							<then token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:72">
+								<stmt token=";" type="void" kind="static const typename(void)" stmt="chr := chr - &apos;A&apos;;">
+									<expr token=":=" type="char" kind="static const typename(i32)" value="chr := chr - &apos;A&apos;">
+										<left token=".variable" type="char" kind="static const typename(i32)" value="chr" />
+										<right token="-" type="char" kind="static const typename(i32)" value="chr - &apos;A&apos;">
+											<left token=".variable" type="char" kind="static const typename(i32)" value="chr" />
+											<right token=".literal" type="char" kind="static const typename(i32)" value="&apos;A&apos;" />
+										</right>
+									</expr>
+								</stmt>
+								<stmt token=";" type="void" kind="static const typename(void)" stmt="chr := chr + &apos;a&apos;;">
+									<expr token=":=" type="char" kind="static const typename(i32)" value="chr := chr + &apos;a&apos;">
+										<left token=".variable" type="char" kind="static const typename(i32)" value="chr" />
+										<right token="+" type="char" kind="static const typename(i32)" value="chr + &apos;a&apos;">
+											<left token=".variable" type="char" kind="static const typename(i32)" value="chr" />
+											<right token=".literal" type="char" kind="static const typename(i32)" value="&apos;a&apos;" />
+										</right>
+									</expr>
+								</stmt>
+							</then>
+						</stmt>
+						<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := chr;">
+							<expr token=":=" type="char" kind="static const typename(i32)" value=".result := chr">
+								<left token=".variable" type="char" kind="static const typename(i32)" value=".result" />
+								<right token=".variable" type="char" kind="static const typename(i32)" value="chr" />
+							</expr>
+						</stmt>
+					</init>
+				</stmt>
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := ignCase(chr) - ignCase(with);">
+					<expr token=":=" type="char" kind="static const typename(i32)" value=".result := ignCase(chr) - ignCase(with)">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value=".result" />
+						<right token="-" type="char" kind="static const typename(i32)" value="ignCase(chr) - ignCase(with)">
+							<left token="()" type="char" kind="static const typename(i32)" value="ignCase(chr)">
+								<push token=".variable" type="char" kind="static const typename(i32)" value="chr" />
+								<call token=".variable" type="function" kind="static const typename(ref)" value="ignCase" />
+							</left>
+							<right token="()" type="char" kind="static const typename(i32)" value="ignCase(with)">
+								<push token=".variable" type="char" kind="static const typename(i32)" value="with" />
+								<call token=".variable" type="function" kind="static const typename(ref)" value="ignCase" />
+							</right>
+						</right>
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="caseCmp(chr: char, with: char): int32">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:82">
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := chr - with;">
+					<expr token=":=" type="char" kind="static const typename(i32)" value=".result := chr - with">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value=".result" />
+						<right token="-" type="char" kind="static const typename(i32)" value="chr - with">
+							<left token=".variable" type="char" kind="static const typename(i32)" value="chr" />
+							<right token=".variable" type="char" kind="static const typename(i32)" value="with" />
+						</right>
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="startsWith(str: char[*], with: char[*]): bool">
+			<init token="()" type="bool" kind="static const typename(bool)" value="startsWith(str, with, caseCmp)">
+				<push token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+				<push token=".variable" type="char[*]" kind="static typename(arr)" value="with" />
+				<push token=".variable" type="function" kind="static const typename(ref)" value="caseCmp">
+					<init token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:82">
+						<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := chr - with;">
+							<expr token=":=" type="char" kind="static const typename(i32)" value=".result := chr - with">
+								<left token=".variable" type="int32" kind="static const typename(i32)" value=".result" />
+								<right token="-" type="char" kind="static const typename(i32)" value="chr - with">
+									<left token=".variable" type="char" kind="static const typename(i32)" value="chr" />
+									<right token=".variable" type="char" kind="static const typename(i32)" value="with" />
+								</right>
+							</expr>
+						</stmt>
+					</init>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="startsWith" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="endsWith(str: char[*], with: char[*]): bool">
+			<init token="()" type="bool" kind="static const typename(bool)" value="endsWith(str, with, caseCmp)">
+				<push token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+				<push token=".variable" type="char[*]" kind="static typename(arr)" value="with" />
+				<push token=".variable" type="function" kind="static const typename(ref)" value="caseCmp">
+					<init token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:82">
+						<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := chr - with;">
+							<expr token=":=" type="char" kind="static const typename(i32)" value=".result := chr - with">
+								<left token=".variable" type="int32" kind="static const typename(i32)" value=".result" />
+								<right token="-" type="char" kind="static const typename(i32)" value="chr - with">
+									<left token=".variable" type="char" kind="static const typename(i32)" value="chr" />
+									<right token=".variable" type="char" kind="static const typename(i32)" value="with" />
+								</right>
+							</expr>
+						</stmt>
+					</init>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="endsWith" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="compare(str: char[*], with: char[*]): int32">
+			<init token="()" type="int32" kind="static const typename(i32)" value="compare(str, with, caseCmp)">
+				<push token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+				<push token=".variable" type="char[*]" kind="static typename(arr)" value="with" />
+				<push token=".variable" type="function" kind="static const typename(ref)" value="caseCmp">
+					<init token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:82">
+						<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := chr - with;">
+							<expr token=":=" type="char" kind="static const typename(i32)" value=".result := chr - with">
+								<left token=".variable" type="int32" kind="static const typename(i32)" value=".result" />
+								<right token="-" type="char" kind="static const typename(i32)" value="chr - with">
+									<left token=".variable" type="char" kind="static const typename(i32)" value="chr" />
+									<right token=".variable" type="char" kind="static const typename(i32)" value="with" />
+								</right>
+							</expr>
+						</stmt>
+					</init>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="compare" />
+			</init>
+		</stmt>
 	</stmt>
 	<stmt token="{}" type="void" kind="static const typename(void)" file="test.ci:4">
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="integer">
@@ -3890,7 +5299,7 @@
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="RecordMethodTest" />
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="globalFunction(x: int32, y: int32): int32">
-			<init token="{}" type="void" kind="static const typename(void)" file="test/lang.method.ci:41">
+			<init token="{}" type="void" kind="static const typename(void)" file="test/lang.method.ci:49">
 				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := x * y;">
 					<expr token=":=" type="int32" kind="static const typename(i32)" value=".result := x * y">
 						<left token=".variable" type="int32" kind="static const typename(i32)" value=".result" />
@@ -3932,7 +5341,485 @@
 					</left>
 					<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
 				</stmt>
+				<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.print := print">
+					<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.print">
+						<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+						<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+					</left>
+					<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+				</stmt>
 			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="customPrint(this: RecordMethodTest): void">
+			<init token="{}" type="void" kind="static const typename(void)" file="test/lang.method.ci:59">
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="trace(&quot;override&quot;);">
+					<expr token="()" type="void" kind="static const typename(void)" value="trace(&quot;override&quot;)">
+						<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;override&quot;" />
+						<call token=".variable" type="function" kind="static const typename(ref)" value="trace" />
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint">
+			<init token="{}" type="RecordMethodTest" kind="static const typename(val)">
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTestCustomPrint.abstractMethod := globalFunction;">
+					<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.abstractMethod := globalFunction">
+						<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.abstractMethod">
+							<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+							<right token=".variable" type="function" kind="static const typename(ref)" value="abstractMethod" />
+						</left>
+						<right token=".variable" type="function" kind="static const typename(ref)" value="globalFunction" />
+					</expr>
+				</stmt>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTestCustomPrint.print := customPrint;">
+					<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.print := customPrint">
+						<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.print">
+							<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+							<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+						</left>
+						<right token=".variable" type="function" kind="static const typename(ref)" value="customPrint" />
+					</expr>
+				</stmt>
+				<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.delegateMethod := forwardMethod">
+					<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.delegateMethod">
+						<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+						<right token=".variable" type="function" kind="static const typename(ref)" value="delegateMethod" />
+					</left>
+					<right token=".variable" type="function" kind="static const typename(ref)" value="forwardMethod" />
+				</stmt>
+				<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.virtualMethod := virtualMethod">
+					<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.virtualMethod">
+						<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+						<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+					</left>
+					<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.print(recordMethodTest);">
+			<expr token="()" type="void" kind="static const typename(void)" value="recordMethodTest.print(recordMethodTest)">
+				<push token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest">
+					<init token="{}" type="RecordMethodTest" kind="static const typename(val)">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.delegateMethod := globalFunction;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.delegateMethod := globalFunction">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.delegateMethod">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="delegateMethod" />
+								</left>
+								<right token=".variable" type="function" kind="static const typename(ref)" value="globalFunction" />
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.abstractMethod := RecordMethodTest.staticMethod;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.abstractMethod := RecordMethodTest.staticMethod">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.abstractMethod">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="abstractMethod" />
+								</left>
+								<right token="." type="function" kind="static const typename(ref)" value="RecordMethodTest.staticMethod">
+									<left token=".variable" type="typename" kind="static const typename(ref)" value="RecordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="staticMethod" />
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.virtualMethod := virtualMethod">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.virtualMethod">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.print := print">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.print">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+						</stmt>
+					</init>
+				</push>
+				<call token="." type="void" kind="static const typename(void)" value="recordMethodTest.print">
+					<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+				</call>
+			</expr>
+		</stmt>
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTestCustomPrint.print(recordMethodTestCustomPrint);">
+			<expr token="()" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.print(recordMethodTestCustomPrint)">
+				<push token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint">
+					<init token="{}" type="RecordMethodTest" kind="static const typename(val)">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTestCustomPrint.abstractMethod := globalFunction;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.abstractMethod := globalFunction">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.abstractMethod">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="abstractMethod" />
+								</left>
+								<right token=".variable" type="function" kind="static const typename(ref)" value="globalFunction" />
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTestCustomPrint.print := customPrint;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.print := customPrint">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.print">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+								</left>
+								<right token=".variable" type="function" kind="static const typename(ref)" value="customPrint" />
+							</expr>
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.delegateMethod := forwardMethod">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.delegateMethod">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="delegateMethod" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="forwardMethod" />
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.virtualMethod := virtualMethod">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.virtualMethod">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+						</stmt>
+					</init>
+				</push>
+				<call token="." type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.print">
+					<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+				</call>
+			</expr>
+		</stmt>
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.printStatic(recordMethodTest);">
+			<expr token="()" type="void" kind="static const typename(void)" value="recordMethodTest.printStatic(recordMethodTest)">
+				<push token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest">
+					<init token="{}" type="RecordMethodTest" kind="static const typename(val)">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.delegateMethod := globalFunction;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.delegateMethod := globalFunction">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.delegateMethod">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="delegateMethod" />
+								</left>
+								<right token=".variable" type="function" kind="static const typename(ref)" value="globalFunction" />
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.abstractMethod := RecordMethodTest.staticMethod;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.abstractMethod := RecordMethodTest.staticMethod">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.abstractMethod">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="abstractMethod" />
+								</left>
+								<right token="." type="function" kind="static const typename(ref)" value="RecordMethodTest.staticMethod">
+									<left token=".variable" type="typename" kind="static const typename(ref)" value="RecordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="staticMethod" />
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.virtualMethod := virtualMethod">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.virtualMethod">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.print := print">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.print">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+						</stmt>
+					</init>
+				</push>
+				<call token="." type="void" kind="static const typename(void)" value="recordMethodTest.printStatic">
+					<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="printStatic" />
+				</call>
+			</expr>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="print(this: RecordMethodTest): void">
+			<init token="{}" type="void" kind="static const typename(void)" file="test/lang.method.ci:75">
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="trace(&quot;extension&quot;);">
+					<expr token="()" type="void" kind="static const typename(void)" value="trace(&quot;extension&quot;)">
+						<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;extension&quot;" />
+						<call token=".variable" type="function" kind="static const typename(ref)" value="trace" />
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="printStatic(this: RecordMethodTest): void">
+			<init token="{}" type="void" kind="static const typename(void)" file="test/lang.method.ci:79">
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="trace(&quot;extension&quot;);">
+					<expr token="()" type="void" kind="static const typename(void)" value="trace(&quot;extension&quot;)">
+						<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;extension&quot;" />
+						<call token=".variable" type="function" kind="static const typename(ref)" value="trace" />
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="print(recordMethodTest);">
+			<expr token="()" type="void" kind="static const typename(void)" value="print(recordMethodTest)">
+				<push token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest">
+					<init token="{}" type="RecordMethodTest" kind="static const typename(val)">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.delegateMethod := globalFunction;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.delegateMethod := globalFunction">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.delegateMethod">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="delegateMethod" />
+								</left>
+								<right token=".variable" type="function" kind="static const typename(ref)" value="globalFunction" />
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.abstractMethod := RecordMethodTest.staticMethod;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.abstractMethod := RecordMethodTest.staticMethod">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.abstractMethod">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="abstractMethod" />
+								</left>
+								<right token="." type="function" kind="static const typename(ref)" value="RecordMethodTest.staticMethod">
+									<left token=".variable" type="typename" kind="static const typename(ref)" value="RecordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="staticMethod" />
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.virtualMethod := virtualMethod">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.virtualMethod">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.print := print">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.print">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+						</stmt>
+					</init>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="print" />
+			</expr>
+		</stmt>
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="printStatic(recordMethodTest);">
+			<expr token="()" type="void" kind="static const typename(void)" value="printStatic(recordMethodTest)">
+				<push token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest">
+					<init token="{}" type="RecordMethodTest" kind="static const typename(val)">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.delegateMethod := globalFunction;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.delegateMethod := globalFunction">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.delegateMethod">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="delegateMethod" />
+								</left>
+								<right token=".variable" type="function" kind="static const typename(ref)" value="globalFunction" />
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.abstractMethod := RecordMethodTest.staticMethod;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.abstractMethod := RecordMethodTest.staticMethod">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.abstractMethod">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="abstractMethod" />
+								</left>
+								<right token="." type="function" kind="static const typename(ref)" value="RecordMethodTest.staticMethod">
+									<left token=".variable" type="typename" kind="static const typename(ref)" value="RecordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="staticMethod" />
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.virtualMethod := virtualMethod">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.virtualMethod">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.print := print">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.print">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+						</stmt>
+					</init>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="printStatic" />
+			</expr>
+		</stmt>
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="print(recordMethodTestCustomPrint);">
+			<expr token="()" type="void" kind="static const typename(void)" value="print(recordMethodTestCustomPrint)">
+				<push token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint">
+					<init token="{}" type="RecordMethodTest" kind="static const typename(val)">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTestCustomPrint.abstractMethod := globalFunction;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.abstractMethod := globalFunction">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.abstractMethod">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="abstractMethod" />
+								</left>
+								<right token=".variable" type="function" kind="static const typename(ref)" value="globalFunction" />
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTestCustomPrint.print := customPrint;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.print := customPrint">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.print">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+								</left>
+								<right token=".variable" type="function" kind="static const typename(ref)" value="customPrint" />
+							</expr>
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.delegateMethod := forwardMethod">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.delegateMethod">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="delegateMethod" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="forwardMethod" />
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.virtualMethod := virtualMethod">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.virtualMethod">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+						</stmt>
+					</init>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="print" />
+			</expr>
+		</stmt>
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="RecordMethodTest.print(recordMethodTest);">
+			<expr token="()" type="void" kind="static const typename(void)" value="RecordMethodTest.print(recordMethodTest)">
+				<push token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest">
+					<init token="{}" type="RecordMethodTest" kind="static const typename(val)">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.delegateMethod := globalFunction;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.delegateMethod := globalFunction">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.delegateMethod">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="delegateMethod" />
+								</left>
+								<right token=".variable" type="function" kind="static const typename(ref)" value="globalFunction" />
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.abstractMethod := RecordMethodTest.staticMethod;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.abstractMethod := RecordMethodTest.staticMethod">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.abstractMethod">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="abstractMethod" />
+								</left>
+								<right token="." type="function" kind="static const typename(ref)" value="RecordMethodTest.staticMethod">
+									<left token=".variable" type="typename" kind="static const typename(ref)" value="RecordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="staticMethod" />
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.virtualMethod := virtualMethod">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.virtualMethod">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.print := print">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.print">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+						</stmt>
+					</init>
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="RecordMethodTest.print">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="RecordMethodTest" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+				</call>
+			</expr>
+		</stmt>
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="RecordMethodTest.printStatic(recordMethodTest);">
+			<expr token="()" type="void" kind="static const typename(void)" value="RecordMethodTest.printStatic(recordMethodTest)">
+				<push token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest">
+					<init token="{}" type="RecordMethodTest" kind="static const typename(val)">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.delegateMethod := globalFunction;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.delegateMethod := globalFunction">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.delegateMethod">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="delegateMethod" />
+								</left>
+								<right token=".variable" type="function" kind="static const typename(ref)" value="globalFunction" />
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.abstractMethod := RecordMethodTest.staticMethod;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.abstractMethod := RecordMethodTest.staticMethod">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.abstractMethod">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="abstractMethod" />
+								</left>
+								<right token="." type="function" kind="static const typename(ref)" value="RecordMethodTest.staticMethod">
+									<left token=".variable" type="typename" kind="static const typename(ref)" value="RecordMethodTest" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="staticMethod" />
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.virtualMethod := virtualMethod">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.virtualMethod">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.print := print">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.print">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+						</stmt>
+					</init>
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="RecordMethodTest.printStatic">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="RecordMethodTest" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="printStatic" />
+				</call>
+			</expr>
+		</stmt>
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="RecordMethodTest.print(recordMethodTestCustomPrint);">
+			<expr token="()" type="void" kind="static const typename(void)" value="RecordMethodTest.print(recordMethodTestCustomPrint)">
+				<push token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint">
+					<init token="{}" type="RecordMethodTest" kind="static const typename(val)">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTestCustomPrint.abstractMethod := globalFunction;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.abstractMethod := globalFunction">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.abstractMethod">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="abstractMethod" />
+								</left>
+								<right token=".variable" type="function" kind="static const typename(ref)" value="globalFunction" />
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTestCustomPrint.print := customPrint;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.print := customPrint">
+								<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.print">
+									<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+								</left>
+								<right token=".variable" type="function" kind="static const typename(ref)" value="customPrint" />
+							</expr>
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.delegateMethod := forwardMethod">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.delegateMethod">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="delegateMethod" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="forwardMethod" />
+						</stmt>
+						<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTestCustomPrint.virtualMethod := virtualMethod">
+							<left token="." type="function" kind="static const typename(ref)" value="recordMethodTestCustomPrint.virtualMethod">
+								<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTestCustomPrint" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+							</left>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod" />
+						</stmt>
+					</init>
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="RecordMethodTest.print">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="RecordMethodTest" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="print" />
+				</call>
+			</expr>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="rgbF32" />
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="rgbU8" />

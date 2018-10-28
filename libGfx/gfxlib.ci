@@ -1,152 +1,15 @@
 
 static if (typename(vec2d) == null) {
-struct vec2d {
-	float64 x;
-	float64 y;
-}
-
-vec2d vec2d(float64 x, float64 y) {
-	return {
-		x: x;
-		y: y;
-	};
-}
-
-inline sub(vec2d a, vec2d b) = vec2d(emit(vec2d(a), vec2d(b), sub.p2d));
-/*vec2d sub(const vec2d a&, const vec2d b&) {
-	return {
-		x: a.x - b.x;
-		y: a.y - b.y;
-	};
-}*/
-
-float64 dot(const vec2d a, const vec2d b) {
-	return a.x * b.x + a.y * b.y;
-}
-
+inline "gfxlib.vec2d.ci";
 }
 static if (typename(vec4f) == null) {
-struct vec4f {
-	float32 x;
-	float32 y;
-	float32 z;
-	float32 w;
-}
-
-vec4f vec4f(float32 x, float32 y, float32 z, float32 w) {
-	return { x: x, y: y, z: z, w: w };
-}
-vec4f vec4f(float32 x, float32 y, float32 z) {
-	return { x: x, y: y, z: z, w: 0 };
-}
-vec4f vec4f(float32 xyzw) {
-	return { x: xyzw, y: xyzw, z: xyzw, w: xyzw };
-}
+inline "gfxlib.vec4f.ci";
 }
 
 static if (true) {
+inline "gfxlib.color.ci";
 
-uint32 grayClamp(uint32 c) {
-	if (c > 255) {
-		return 255;
-	}
-	return c;
-}
-uint32 grayClamp(int32 c) {
-	if (c < 0) {
-		return 0;
-	}
-	if (c > 255) {
-		return 255;
-	}
-	return c;
-}
-inline grayAnd(uint32 c) = uint32(c & 255);
-
-inline rgb(uint32 r, uint32 g, uint32 b) = uint32((((r << 8) | g) << 8) | b);
-inline rgbClamp(uint32 r, uint32 g, uint32 b) = rgb(grayClamp(r), grayClamp(g), grayClamp(b));
-inline rgbClamp(int32 r, int32 g, int32 b) = rgb(grayClamp(r), grayClamp(g), grayClamp(b));
-inline rgbAnd(uint32 r, uint32 g, uint32 b) = rgb(grayAnd(r), grayAnd(g), grayAnd(b));
-
-inline rgb(float64 r, float64 g, float64 b) = rgbClamp(int32(r * 255), int32(g * 255), int32(b * 255));
-inline rgb(float32 r, float32 g, float32 b) = rgbClamp(int32(r * 255), int32(g * 255), int32(b * 255));
 inline rgb(vec4f vec) = rgbClamp(int32(vec.x * 255), int32(vec.y * 255), int32(vec.z * 255));
-inline gray(float64 c) = grayClamp(int32(c * 255));
-inline gray(float32 c) = grayClamp(int32(c * 255));
-
-// get the Red channel of the color
-inline rch(int32 col) = int32((col >> 16) & 0xff);
-// get the Green channel of the color
-inline gch(int32 col) = int32((col >> 8) & 0xff);
-// get the Blue channel of the color
-inline bch(int32 col) = int32(col & 0xff);
-// get the luminosity of the color
-inline lum(int32 c) = int32((rch(c) * 76 + gch(c) * 150 + bch(c) * 29) >> 8);
-
-/*struct rgb:1 {
-	int8 b;
-	int8 g;
-	int8 r;
-	int8 x;
-}
-
-define int32(rgb value) = emit(int, rgb(value));
-define asrgb(int32 value) = emit(rgb, int32(value));
-define asrgb(int r, int g, int b) = emit(rgb, rgb(r, g, b));
-*/
-
-uint32 rgbOr(uint32 c1, uint32 c2) {
-	return c1 | c2;
-}
-uint32 rgbXor(uint32 c1, uint32 c2) {
-	return c1 ^ c2;
-}
-uint32 rgbAnd(uint32 c1, uint32 c2) {
-	return c1 & c2;
-}
-uint32 rgbAdd(uint32 c1, uint32 c2) {
-	uint32 r = rch(c1) + rch(c2);
-	uint32 g = gch(c1) + gch(c2);
-	uint32 b = bch(c1) + bch(c2);
-	return rgbClamp(r, g, b);
-}
-uint32 rgbAvg(uint32 c1, uint32 c2) {
-	uint32 r = (rch(c1) + rch(c2)) / 2;
-	uint32 g = (gch(c1) + gch(c2)) / 2;
-	uint32 b = (bch(c1) + bch(c2)) / 2;
-	return rgb(r, g, b);
-}
-uint32 rgbSub(uint32 c1, uint32 c2) {
-	int32 r = rch(c1) - rch(c2);
-	int32 g = gch(c1) - gch(c2);
-	int32 b = bch(c1) - bch(c2);
-	return rgbClamp(r, g, b);
-}
-uint32 rgbMul(uint32 c1, uint32 c2) {
-	uint32 r = (rch(c1) * (rch(c2) + 1)) >> 8;
-	uint32 g = (gch(c1) * (gch(c2) + 1)) >> 8;
-	uint32 b = (bch(c1) * (bch(c2) + 1)) >> 8;
-	return rgb(r, g, b);
-}
-uint32 rgbDiv(uint32 c1, uint32 c2) {
-	uint32 r = (rch(c1) << 8) / (rch(c2) + 1);
-	uint32 g = (gch(c1) << 8) / (gch(c2) + 1);
-	uint32 b = (bch(c1) << 8) / (bch(c2) + 1);
-	return rgb(r, g, b);
-}
-
-uint32 rgbLerp16(uint32 c1, uint32 c2, uint32 t) {
-	inline lrpfix16(uint32 x, uint32 y) = uint32(x + (t * (y - x) >> 16));
-
-	uint32 r = lrpfix16(rch(c1), rch(c2));
-	uint32 g = lrpfix16(gch(c1), gch(c2));
-	uint32 b = lrpfix16(bch(c1), bch(c2));
-	return rgb(r, g, b);
-}
-
-uint32 rgbLerp(uint32 c1, uint32 c2, double t) {
-	return rgbLerp16(c1, c2, uint32(t * (1 << 16)));
-}
 
 vec4f Hsv2Rgb(vec4f hsv) {
 	float32 h = hsv.x;
@@ -190,38 +53,29 @@ vec4f Hsv2Rgb(vec4f hsv) {
 inline gxSurf(int width, int height, int depth) = gxSurf.create(width, height, depth);
 
 gxSurf gxSurf(char fileName[*], int depth) {
-
-// TODO: move to stdlib
-static int strlen(char str[*]) {
-	int result = 0;
-	for (result = 0; str[result]; result += 1) {}
-	return result;
-}
-
-static bool endsWith(char str[*], char with[*]) {
-	int strLen = strlen(str);
-	int withLen = strlen(with);
-	if (strLen < withLen) {
-		return false;
-	}
-	for (int i = 0; i < withLen; i += 1) {
-		if (str[strLen - i] != with[withLen - i]) {
-			return false;
-		}
-	}
-	return true;
-}
-
-	if (fileName.endsWith(".jpg")) {
+	if (fileName.endsWith(".jpeg", ignCaseCmp)) {
 		return gxSurf.openJpg(fileName, depth);
 	}
-	if (fileName.endsWith(".png")) {
+	if (fileName.endsWith(".jpg", ignCaseCmp)) {
+		return gxSurf.openJpg(fileName, depth);
+	}
+	if (fileName.endsWith(".png", ignCaseCmp)) {
 		return gxSurf.openPng(fileName, depth);
 	}
-	if (fileName.endsWith(".bmp")) {
+	if (fileName.endsWith(".bmp", ignCaseCmp)) {
 		return gxSurf.openBmp(fileName, depth);
 	}
-	abort("error opening file", fileName);
+	abort("unknown file extension", fileName);
+}
+
+gxMesh gxMesh(char fileName[*]) {
+	if (fileName.endsWith(".obj", ignCaseCmp)) {
+		return gxMesh.openObj(fileName);
+	}
+	if (fileName.endsWith(".3ds", ignCaseCmp)) {
+		return gxMesh.open3ds(fileName);
+	}
+	abort("unknown file extension", fileName);
 }
 
 //inline gxSurf(char fileName[*]) = gxSurf(fileName, 32);
@@ -254,9 +108,9 @@ bool clipRect(gxSurf src, gxRect roi&) {
 
 	return roi.w > 0 && roi.h > 0;
 }
-void evalSurf(gxSurf dst, gxRect roi&, vec4f eval(double x, double y)) {
-	gxRect rect;
+void evalSurf(gxSurf out, gxRect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
 	/*FIXME:
+	gxRect rect;
 	if (roi == null) {
 		rect.x = rect.y = 0;
 		rect.w = dst.width();
@@ -264,7 +118,7 @@ void evalSurf(gxSurf dst, gxRect roi&, vec4f eval(double x, double y)) {
 	}
 	else {
 		rect = roi;
-	}*/
+	}
 	double dx = 1. / rect.w;
 	double dy = 1. / rect.h;
 
@@ -276,6 +130,21 @@ void evalSurf(gxSurf dst, gxRect roi&, vec4f eval(double x, double y)) {
 			x01 += dx;
 		}
 		y01 += dy;
+	}*/
+	vec4f in = {
+		x: 0;
+		y: 0;
+		z: aspect;
+		w: time;
+	};
+	int w = out.width();
+	int h = out.height();
+	for (int iy = 0; iy < h; iy += 1) {
+		in.y = iy / double(h);
+		for (int ix = 0; ix < w; ix += 1) {
+			in.x = ix / double(w);
+			out.set(ix, iy, rgb(eval(in)));
+		}
 	}
 }
 
@@ -305,10 +174,13 @@ void tileSurf(gxSurf dst, int x, int y, gxSurf src, gxRect roi&) {
 }
 
 void showMesh(gxMesh mesh, int w, int h, float32 fovy) {
-	static gxMesh obj;
-	static gxSurf ofs;
 
-	static int onEvent(int action, int button, int ex, int ey) {
+	struct Closure {
+		gxSurf offs;
+		gxMesh mesh;
+	}
+
+	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
 		static int ox = 0;
 		static int oy = 0;
 		static const float speed = 1. / 100;
@@ -358,14 +230,56 @@ void showMesh(gxMesh mesh, int w, int h, float32 fovy) {
 
 		ox = ex;
 		oy = ey;
-		ofs.drawMesh(obj);
+		closure.offs.drawMesh(closure.mesh);
 
 		return 1;
 	}
 
-	obj = mesh;
-	ofs = gxSurf.create3d(w, h);
-
+	Closure closure = {
+		offs: gxSurf.create3d(w, h);
+		mesh: mesh;
+	};
 	camera.projection(fovy, w / float32(h), 1, 100);
-	Gui.showWindow(ofs, onEvent);
+	Gui.showWindow(closure.offs, closure, onEvent);
+	closure.offs.destroy();
 }
+
+void showWindow(int w, int h, int t, vec4f eval(vec4f in)) {
+	static const int64 start = System.millis();
+	struct Closure {
+		const gxSurf offs;
+		const gxSurf thumb;
+		const float64 aspect;
+		const vec4f eval(vec4f in);
+	}
+
+	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
+		if (action == Gui.WINDOW_CLOSE) {
+			trace("closing ...");
+			return 0;
+		}
+		if (action == Gui.KEY_PRESS) {
+			if (button == 27) {
+				return -1;
+			}
+		}
+
+		float32 time = (System.millis() - start) / 1000f;
+		closure.thumb.evalSurf(null, closure.aspect, time, closure.eval);
+		closure.offs.zoomSurf(null, closure.thumb, null, 1);
+
+		// do not block for any input
+		return 0;
+	}
+
+	Closure closure = {
+		offs: gxSurf(w, h, 32);
+		thumb: gxSurf(t, t, 32);
+		aspect: w / double(h);
+		eval: eval;
+	};
+	Gui.showWindow(closure.offs, closure, onEvent);
+	closure.thumb.destroy();
+	closure.offs.destroy();
+}
+

@@ -19,7 +19,7 @@ then
 	ROOT=$PWD
 	cd $OBJECT
 	owcc -std=c99 $SOURCE -o $OUTPUT/cmpl
-	#owcc -shared -std=c99 -I $ROOTDIR/src -o $OUTPUT/libFile.so $ROOTDIR/libEtc/src/file.c
+	#owcc -shared -std=c99 -I $ROOTDIR/src -o $OUTPUT/libFile.so $ROOTDIR/lib/src/file.c
 	cd $ROOT
 fi
 

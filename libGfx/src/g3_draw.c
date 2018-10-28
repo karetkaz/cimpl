@@ -35,8 +35,8 @@ static vector bsphere(vector s, vector p1, vector p2, vector p3) {
 	return s;
 }
 
-// returns false if triangle is outside of the frustum
-static int ftest_point(struct vector planes[6], vector p) {				// clip point
+// returns false if point, sphere or triangle is outside of the frustum
+/*static int ftest_point(struct vector planes[6], vector p) {				// clip point
 	const scalar r = 0;
 	if (vecdph(p, &planes[0]) <= r) return 0;
 	if (vecdph(p, &planes[1]) <= r) return 0;
@@ -45,7 +45,7 @@ static int ftest_point(struct vector planes[6], vector p) {				// clip point
 	if (vecdph(p, &planes[4]) <= r) return 0;
 	if (vecdph(p, &planes[5]) <= r) return 0;
 	return 1;	// inside
-}
+}*/
 static int ftest_sphere(struct vector planes[6], vector p) {			// clip sphere
 	scalar r = -p->w;
 	if (vecdph(&planes[0], p) <= r) return 0;
@@ -61,7 +61,6 @@ static int ftest_triangle(struct vector planes[6], vector p1, vector p2, vector 
 	bsphere(tmp, p1, p2, p3);
 	return ftest_sphere(planes, tmp);
 }
-// */
 
 static inline vector mappos(vector dst, matrix mat, vector src) {
 	scalar div;

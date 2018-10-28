@@ -1119,8 +1119,7 @@ void dumpApi(rtContext rt, userContext ctx, void customPrinter(userContext, symn
 		dieif(rt->main == NULL, ERR_INTERNAL_ERROR);
 		return;
 	}
-	if (rt->errors > 0 || rt->cc->scope != rt->main->fields) {
-		dieif(rt->errors > 0, ERR_INTERNAL_ERROR);
+	if (rt->cc->scope != rt->main->fields) {
 		dieif(rt->cc->scope != rt->main->fields, ERR_INTERNAL_ERROR);
 		return;
 	}

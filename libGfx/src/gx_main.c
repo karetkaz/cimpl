@@ -436,10 +436,18 @@ static vmError mesh_addVertex(nfcContext ctx) {
 
 
 static const char *proto_window_show = "void showWindow(gxSurf surf, int onEvent(int action, int button, int x, int y))";
+static const char *proto_window_show2 = "void showWindow(gxSurf surf, pointer closure, int onEvent(pointer closure, int action, int button, int x, int y))";
 static vmError window_show(nfcContext ctx) {
 	rtContext rt = ctx->rt;
 	gx_Surf offScreen = nextValue(ctx).ref;
-	size_t cbOffs = argref(ctx, rt->api.nfcNextArg(ctx));
+	size_t cbOffs = 0, cbClosure = 0;
+	if (ctx->proto == proto_window_show) {
+		cbOffs = argref(ctx, rt->api.nfcNextArg(ctx));
+	}
+	else if (ctx->proto == proto_window_show2) {
+		cbClosure = argref(ctx, rt->api.nfcNextArg(ctx));
+		cbOffs = argref(ctx, rt->api.nfcNextArg(ctx));
+	}
 	symn callback = rt->api.rtLookup(ctx->rt, cbOffs);
 
 	int waitEvent = 1;
@@ -452,7 +460,9 @@ static vmError window_show(nfcContext ctx) {
 			int32_t x;
 			int32_t button;
 			int32_t action;
+			vmOffs closure;
 		} event = {
+			.closure = (vmOffs) cbClosure,
 			.action = waitEvent,
 			.button = 0,
 			.x = 0,
@@ -622,6 +632,7 @@ int cmplInit(rtContext rt) {
 		{surf_drawMesh, proto_surf_drawMesh},
 	}, win[] = {
 		{window_show, proto_window_show},
+		{window_show, proto_window_show2},
 		//{surf_, proto_surf_},
 	}, nfcCam[] = {
 		{camera_mgr, proto_camera_projection},

@@ -1,0 +1,89 @@
+// string related 
+
+static int length(char str[*]) {
+	if (str == null) {
+		return 0;
+	} 
+	int result = 0;
+	for (; str[result]; result += 1) {
+	}
+	return result;
+}
+
+/// the first occurrence of a char in string
+static int indexOf(char str[*], char chr) {
+	for (int i = 0; str[i]; i += 1) {
+		if (str[i] == chr) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+/// the last occurrence of a char in string
+static int lastIndexOf(char str[*], char chr) {
+	int result = -1;
+	for (int i = 0; str[i]; i += 1) {
+		if (str[i] == chr) {
+			result = i;
+		}
+	}
+	return result;
+}
+
+
+static bool startsWith(char str[*], char with[*], int cmp(char chr, char with)) {
+	for (int i = 0; with[i] != 0; i += 1) {
+		if (cmp(str[i], with[i]) != 0) {
+			return false;
+		}
+	}
+	return true;
+}
+
+static bool endsWith(char str[*], char with[*], int cmp(char chr, char with)) {
+	int withLen = length(with);
+	int strLen = length(str);
+	if (strLen < withLen) {
+		return false;
+	}
+	for (int i = 0; i < withLen; i += 1) {
+		if (cmp(str[strLen - withLen + i], with[i]) != 0) {
+			return false;
+		}
+	}
+	return true;
+}
+
+static int compare(char str[*], char with[*], int cmp(char chr, char with)) {
+	int result = 0;
+	for (int i = 0; result == 0; i += 1) {
+		result = cmp(str[i], with[i]);
+		if (str[i] == 0) {
+			break;
+		}
+	}
+	return result;
+}
+
+// ignore case compare
+static int ignCaseCmp(char chr, char with) {
+	static char ignCase(char chr) {
+		if (chr >= 'A' && chr <= 'Z') {
+			chr -= 'A';
+			chr += 'a';
+		}
+		return chr;
+	}
+
+	return ignCase(chr) - ignCase(with);
+}
+
+static int caseCmp(char chr, char with) {
+	return chr - with;
+}
+
+inline startsWith(char str[*], char with[*]) = startsWith(str, with, caseCmp);
+inline endsWith(char str[*], char with[*]) = endsWith(str, with, caseCmp);
+inline compare(char str[*], char with[*]) = compare(str, with, caseCmp);
+

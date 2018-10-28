@@ -36,6 +36,14 @@ struct RecordMethodTest {
 	// int delegateMethod(int x, int y) { return 0; }      // Error: redefinition of method
 	// int virtualMethod(int x, int y) { return 0; }       // Error: redefinition of method
 	// int staticMethod(int x, int y) { return 0; }        // Error: redefinition of method
+
+	void print(RecordMethodTest this) {
+		trace("virtual");
+	}
+
+	static void printStatic(RecordMethodTest this) {
+		trace("static");
+	}
 }
 
 static int globalFunction(int x, int y) {
@@ -47,3 +55,39 @@ RecordMethodTest recordMethodTest = {
 	abstractMethod: RecordMethodTest.staticMethod;
 	// virtualMethod: RecordMethodTest.staticMethod;          // FIXME: lookup only non static members
 };
+
+void customPrint(RecordMethodTest this) {
+	trace("override");
+}
+
+RecordMethodTest recordMethodTestCustomPrint = {
+	abstractMethod: globalFunction;
+	print: customPrint;
+};
+
+// extension function is not yet defined, call virtual member function
+recordMethodTest.print();
+recordMethodTestCustomPrint.print();
+
+// extension function is not yet defined, call static member function
+recordMethodTest.printStatic();
+
+void print(RecordMethodTest this) {
+	trace("extension");
+}
+
+void printStatic(RecordMethodTest this) {
+	trace("extension");
+}
+
+// extension function is defined, it has the highest priority.
+recordMethodTest.print();
+recordMethodTest.printStatic();
+recordMethodTestCustomPrint.print();
+
+// force invoke the original methods
+RecordMethodTest.print(recordMethodTest);
+RecordMethodTest.printStatic(recordMethodTest);
+RecordMethodTest.print(recordMethodTestCustomPrint);
+
+// todo: to force or not the overridden method invocation

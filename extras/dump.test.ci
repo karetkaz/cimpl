@@ -2164,6 +2164,2597 @@ sizeof(type: typename): int32: function {
 .param type: typename (size: 4 -> ref)
 .value: int32(type.size)
 }
+Math: typename {
+.kind: static const typename(val)
+.base: `typename`
+.size: 0
+.name: 'Math'
+.file: 'lib/math.ci'
+.line: 3
+.field pi: typename (size: 0 -> static inline)
+.field e: typename (size: 0 -> static inline)
+.field ln2: typename (size: 0 -> static inline)
+.field log2E: typename (size: 0 -> static inline)
+.field ln10: typename (size: 0 -> static inline)
+.field log10E: typename (size: 0 -> static inline)
+.field phi: typename (size: 0 -> static inline)
+.field sqrt2: typename (size: 0 -> static inline)
+.field sqrtE: typename (size: 0 -> static inline)
+.field sqrtPi: typename (size: 0 -> static inline)
+.field sqrtPhi: typename (size: 0 -> static inline)
+.field nan: typename (size: 0 -> static inline)
+.field inf: typename (size: 0 -> static inline)
+.field modf: function (size: 104 -> static const function)
+.field floor: function (size: 36 -> static const function)
+.field ceil: function (size: 0 -> static inline)
+.field round: function (size: 0 -> static inline)
+.field abs: function (size: 19 -> static const function)
+.field abs: function (size: 19 -> static const function)
+.field min: function (size: 19 -> static const function)
+.field min: function (size: 19 -> static const function)
+.field max: function (size: 19 -> static const function)
+.field max: function (size: 19 -> static const function)
+.field clamp: function (size: 33 -> static const function)
+.field clamp: function (size: 33 -> static const function)
+.field lerp: function (size: 14 -> static const function)
+.field lerp: function (size: 15 -> static const function)
+.field cmp: function (size: 57 -> static const function)
+.field cmp: function (size: 57 -> static const function)
+.field sinCos: function (size: 350 -> static const function)
+.field sin: function (size: 0 -> static inline)
+.field cos: function (size: 0 -> static inline)
+.field tan: function (size: 388 -> static const function)
+.field sinh: function (size: 248 -> static const function)
+.field cosh: function (size: 75 -> static const function)
+.field asin: function (size: 183 -> static const function)
+.field acos: function (size: 0 -> static inline)
+.field deg2rad: function (size: 0 -> static inline)
+.field rad2deg: function (size: 0 -> static inline)
+}
+Math.pi: typename {
+.kind: static inline
+.base: `typename`
+.size: 0
+.name: 'pi'
+.file: 'lib/math.ci'
+.line: 22
+.owner: Math
+.value: 3.141593
+}
+Math.e: typename {
+.kind: static inline
+.base: `typename`
+.size: 0
+.name: 'e'
+.file: 'lib/math.ci'
+.line: 23
+.owner: Math
+.value: 2.718282
+}
+Math.ln2: typename {
+.kind: static inline
+.base: `typename`
+.size: 0
+.name: 'ln2'
+.file: 'lib/math.ci'
+.line: 24
+.owner: Math
+.value: 0.693147
+}
+Math.log2E: typename {
+.kind: static inline
+.base: `typename`
+.size: 0
+.name: 'log2E'
+.file: 'lib/math.ci'
+.line: 25
+.owner: Math
+.value: 1.000000 / ln2
+}
+Math.ln10: typename {
+.kind: static inline
+.base: `typename`
+.size: 0
+.name: 'ln10'
+.file: 'lib/math.ci'
+.line: 26
+.owner: Math
+.value: 2.302585
+}
+Math.log10E: typename {
+.kind: static inline
+.base: `typename`
+.size: 0
+.name: 'log10E'
+.file: 'lib/math.ci'
+.line: 27
+.owner: Math
+.value: 1.000000 / ln10
+}
+Math.phi: typename {
+.kind: static inline
+.base: `typename`
+.size: 0
+.name: 'phi'
+.file: 'lib/math.ci'
+.line: 28
+.owner: Math
+.value: 1.618034
+}
+Math.sqrt2: typename {
+.kind: static inline
+.base: `typename`
+.size: 0
+.name: 'sqrt2'
+.file: 'lib/math.ci'
+.line: 29
+.owner: Math
+.value: 1.414214
+}
+Math.sqrtE: typename {
+.kind: static inline
+.base: `typename`
+.size: 0
+.name: 'sqrtE'
+.file: 'lib/math.ci'
+.line: 30
+.owner: Math
+.value: 1.648721
+}
+Math.sqrtPi: typename {
+.kind: static inline
+.base: `typename`
+.size: 0
+.name: 'sqrtPi'
+.file: 'lib/math.ci'
+.line: 31
+.owner: Math
+.value: 1.772454
+}
+Math.sqrtPhi: typename {
+.kind: static inline
+.base: `typename`
+.size: 0
+.name: 'sqrtPhi'
+.file: 'lib/math.ci'
+.line: 32
+.owner: Math
+.value: 1.272020
+}
+Math.nan: typename {
+.kind: static inline
+.base: `typename`
+.size: 0
+.name: 'nan'
+.file: 'lib/math.ci'
+.line: 33
+.owner: Math
+.value: (0) / 0.000000
+}
+Math.inf: typename {
+.kind: static inline
+.base: `typename`
+.size: 0
+.name: 'inf'
+.file: 'lib/math.ci'
+.line: 34
+.owner: Math
+.value: (1) / 0.000000
+}
+Math.modf(x: float64, intPart: float64): float64: function {
+.kind: static const function
+.base: `function`
+.size: 104
+.name: 'modf'
+.file: 'lib/math.ci'
+.line: 36
+.owner: Math
+.param .result: float64 (size: 8 -> variable(f64))
+.param x: float64 (size: 8 -> variable(f64))
+.param intPart: float64 (size: 4 -> variable(ref))
+.value: {
+	if (x < (1)) {
+		if (x < (0)) {
+			result: float64 := -modf(-x, intPart);
+			intPart := -intPart;
+			return .result := result;
+		}
+		intPart := (0);
+		return .result := x;
+	}
+	result: float64 := x % (1);
+	intPart := x - result;
+	return .result := result;
+}
+.instructions: (104 bytes)
+	lib/math.ci:37: (70 bytes): if (x < (1))
+	<modf+?>:    dup.x2 sp(2)
+	<modf+?>:    load.f64 1.000000
+	<modf+?>:    clt.f64
+	<modf+?>:    jz <modf+?>
+	lib/math.ci:38: (45 bytes): if (x < (0))
+	<modf+?>:    dup.x2 sp(2)
+	<modf+?>:    load.z64
+	<modf+?>:    clt.f64
+	<modf+?>:    jz <modf+?>
+	lib/math.ci:39: (17 bytes): result: float64 := -modf(-x, intPart)
+	<modf+?>:    load.z64
+	<modf+?>:    dup.x2 sp(4)
+	<modf+?>:    neg.f64
+	<modf+?>:    dup.x1 sp(5)
+	<modf+?>:    load.ref .?????? ;Math.modf(x: float64, intPart: float64): float64
+	<modf+?>:    call
+	<modf+?>:    inc.sp(-12)
+	<modf+?>:    neg.f64
+	lib/math.ci:40: (7 bytes): intPart := -intPart;
+	<modf+?>:    dup.x1 sp(3)
+	<modf+?>:    load.i64
+	<modf+?>:    neg.f64
+	<modf+?>:    dup.x1 sp(5)
+	<modf+?>:    store.i64
+	lib/math.ci:41: (9 bytes): return .result := result;
+	<modf+?>:    dup.x2 sp(0)
+	<modf+?>:    set.x2 sp(8)
+	<modf+?>:    inc.sp(-8)
+	<modf+?>:    ret
+	<modf+?>:    inc.sp(-8)
+	lib/math.ci:43: (4 bytes): intPart := (0);
+	<modf+?>:    load.z64
+	<modf+?>:    dup.x1 sp(3)
+	<modf+?>:    store.i64
+	lib/math.ci:44: (5 bytes): return .result := x;
+	<modf+?>:    dup.x2 sp(2)
+	<modf+?>:    set.x2 sp(6)
+	<modf+?>:    ret
+	lib/math.ci:46: (12 bytes): result: float64 := x % (1)
+	<modf+?>:    dup.x2 sp(2)
+	<modf+?>:    load.f64 1.000000
+	<modf+?>:    mod.f64
+	lib/math.ci:47: (8 bytes): intPart := x - result;
+	<modf+?>:    dup.x2 sp(4)
+	<modf+?>:    dup.x2 sp(2)
+	<modf+?>:    sub.f64
+	<modf+?>:    dup.x1 sp(5)
+	<modf+?>:    store.i64
+	lib/math.ci:48: (9 bytes): return .result := result;
+	<modf+?>:    dup.x2 sp(0)
+	<modf+?>:    set.x2 sp(8)
+	<modf+?>:    inc.sp(-8)
+	<modf+?>:    ret
+	<modf+?>:    inc.sp(-8)
+	<modf+?>:    ret
+}
+Math.floor(x: float64): float64: function {
+.kind: static const function
+.base: `function`
+.size: 36
+.name: 'floor'
+.file: 'lib/math.ci'
+.line: 73
+.owner: Math
+.param .result: float64 (size: 8 -> variable(f64))
+.param x: float64 (size: 8 -> variable(f64))
+.value: {
+	result: float64;
+	modf(x, result);
+	return .result := result;
+}
+.instructions: (36 bytes)
+	lib/math.ci:74: (1 bytes): result: float64
+	<floor+?>:    load.z128
+	lib/math.ci:75: (21 bytes): modf(x, result);
+	<floor+?>:    i64.2f64
+	<floor+?>:    dup.x2 sp(5)
+	<floor+?>:    load.sp(+16)
+	<floor+?>:    load.ref .?????? ;Math.modf(x: float64, intPart: float64): float64
+	<floor+?>:    call
+	<floor+?>:    inc.sp(-12)
+	<floor+?>:    inc.sp(-8)
+	lib/math.ci:76: (9 bytes): return .result := result;
+	<floor+?>:    dup.x2 sp(0)
+	<floor+?>:    set.x2 sp(7)
+	<floor+?>:    inc.sp(-8)
+	<floor+?>:    ret
+	<floor+?>:    inc.sp(-8)
+	<floor+?>:    ret
+}
+Math.ceil(x: float64): float64: function {
+.kind: static inline
+.base: `function`
+.size: 0
+.name: 'ceil'
+.file: 'lib/math.ci'
+.line: 78
+.owner: Math
+.param .result: float64 (size: 8 -> f64)
+.param x: float64 (size: 8 -> f64)
+.value: -floor(-x)
+}
+Math.round(x: float64): float64: function {
+.kind: static inline
+.base: `function`
+.size: 0
+.name: 'round'
+.file: 'lib/math.ci'
+.line: 79
+.owner: Math
+.param .result: float64 (size: 8 -> f64)
+.param x: float64 (size: 8 -> f64)
+.value: floor(x + 0.500000)
+}
+Math.abs(x: float32): float32: function {
+.kind: static const function
+.base: `function`
+.size: 19
+.name: 'abs'
+.file: 'lib/math.ci'
+.line: 85
+.owner: Math
+.param .result: float32 (size: 4 -> variable(f32))
+.param x: float32 (size: 4 -> variable(f32))
+.value: {
+	if (x < (0)) {
+		return .result := -x;
+	}
+	return .result := x;
+}
+.instructions: (19 bytes)
+	lib/math.ci:86: (14 bytes): if (x < (0))
+	<abs+?>:    dup.x1 sp(1)
+	<abs+?>:    load.z32
+	<abs+?>:    clt.f32
+	<abs+?>:    jz <abs+?>
+	lib/math.ci:87: (6 bytes): return .result := -x;
+	<abs+?>:    dup.x1 sp(1)
+	<abs+?>:    neg.f32
+	<abs+?>:    set.x1 sp(3)
+	<abs+?>:    ret
+	lib/math.ci:89: (5 bytes): return .result := x;
+	<abs+?>:    dup.x1 sp(1)
+	<abs+?>:    set.x1 sp(3)
+	<abs+?>:    ret
+}
+Math.abs(x: float64): float64: function {
+.kind: static const function
+.base: `function`
+.size: 19
+.name: 'abs'
+.file: 'lib/math.ci'
+.line: 91
+.owner: Math
+.param .result: float64 (size: 8 -> variable(f64))
+.param x: float64 (size: 8 -> variable(f64))
+.value: {
+	if (x < (0)) {
+		return .result := -x;
+	}
+	return .result := x;
+}
+.instructions: (19 bytes)
+	lib/math.ci:92: (14 bytes): if (x < (0))
+	<abs+?>:    dup.x2 sp(1)
+	<abs+?>:    load.z64
+	<abs+?>:    clt.f64
+	<abs+?>:    jz <abs+?>
+	lib/math.ci:93: (6 bytes): return .result := -x;
+	<abs+?>:    dup.x2 sp(1)
+	<abs+?>:    neg.f64
+	<abs+?>:    set.x2 sp(5)
+	<abs+?>:    ret
+	lib/math.ci:95: (5 bytes): return .result := x;
+	<abs+?>:    dup.x2 sp(1)
+	<abs+?>:    set.x2 sp(5)
+	<abs+?>:    ret
+}
+Math.min(a: float32, b: float32): float32: function {
+.kind: static const function
+.base: `function`
+.size: 19
+.name: 'min'
+.file: 'lib/math.ci'
+.line: 98
+.owner: Math
+.param .result: float32 (size: 4 -> variable(f32))
+.param a: float32 (size: 4 -> variable(f32))
+.param b: float32 (size: 4 -> variable(f32))
+.value: {
+	if (a < b) {
+		return .result := a;
+	}
+	return .result := b;
+}
+.instructions: (19 bytes)
+	lib/math.ci:99: (14 bytes): if (a < b)
+	<min+?>:    dup.x1 sp(2)
+	<min+?>:    dup.x1 sp(2)
+	<min+?>:    clt.f32
+	<min+?>:    jz <min+?>
+	lib/math.ci:100: (5 bytes): return .result := a;
+	<min+?>:    dup.x1 sp(2)
+	<min+?>:    set.x1 sp(4)
+	<min+?>:    ret
+	lib/math.ci:102: (5 bytes): return .result := b;
+	<min+?>:    dup.x1 sp(1)
+	<min+?>:    set.x1 sp(4)
+	<min+?>:    ret
+}
+Math.min(a: float64, b: float64): float64: function {
+.kind: static const function
+.base: `function`
+.size: 19
+.name: 'min'
+.file: 'lib/math.ci'
+.line: 104
+.owner: Math
+.param .result: float64 (size: 8 -> variable(f64))
+.param a: float64 (size: 8 -> variable(f64))
+.param b: float64 (size: 8 -> variable(f64))
+.value: {
+	if (a < b) {
+		return .result := a;
+	}
+	return .result := b;
+}
+.instructions: (19 bytes)
+	lib/math.ci:105: (14 bytes): if (a < b)
+	<min+?>:    dup.x2 sp(3)
+	<min+?>:    dup.x2 sp(3)
+	<min+?>:    clt.f64
+	<min+?>:    jz <min+?>
+	lib/math.ci:106: (5 bytes): return .result := a;
+	<min+?>:    dup.x2 sp(3)
+	<min+?>:    set.x2 sp(7)
+	<min+?>:    ret
+	lib/math.ci:108: (5 bytes): return .result := b;
+	<min+?>:    dup.x2 sp(1)
+	<min+?>:    set.x2 sp(7)
+	<min+?>:    ret
+}
+Math.max(a: float32, b: float32): float32: function {
+.kind: static const function
+.base: `function`
+.size: 19
+.name: 'max'
+.file: 'lib/math.ci'
+.line: 111
+.owner: Math
+.param .result: float32 (size: 4 -> variable(f32))
+.param a: float32 (size: 4 -> variable(f32))
+.param b: float32 (size: 4 -> variable(f32))
+.value: {
+	if (a > b) {
+		return .result := a;
+	}
+	return .result := b;
+}
+.instructions: (19 bytes)
+	lib/math.ci:112: (14 bytes): if (a > b)
+	<max+?>:    dup.x1 sp(2)
+	<max+?>:    dup.x1 sp(2)
+	<max+?>:    cgt.f32
+	<max+?>:    jz <max+?>
+	lib/math.ci:113: (5 bytes): return .result := a;
+	<max+?>:    dup.x1 sp(2)
+	<max+?>:    set.x1 sp(4)
+	<max+?>:    ret
+	lib/math.ci:115: (5 bytes): return .result := b;
+	<max+?>:    dup.x1 sp(1)
+	<max+?>:    set.x1 sp(4)
+	<max+?>:    ret
+}
+Math.max(a: float64, b: float64): float64: function {
+.kind: static const function
+.base: `function`
+.size: 19
+.name: 'max'
+.file: 'lib/math.ci'
+.line: 117
+.owner: Math
+.param .result: float64 (size: 8 -> variable(f64))
+.param a: float64 (size: 8 -> variable(f64))
+.param b: float64 (size: 8 -> variable(f64))
+.value: {
+	if (a > b) {
+		return .result := a;
+	}
+	return .result := b;
+}
+.instructions: (19 bytes)
+	lib/math.ci:118: (14 bytes): if (a > b)
+	<max+?>:    dup.x2 sp(3)
+	<max+?>:    dup.x2 sp(3)
+	<max+?>:    cgt.f64
+	<max+?>:    jz <max+?>
+	lib/math.ci:119: (5 bytes): return .result := a;
+	<max+?>:    dup.x2 sp(3)
+	<max+?>:    set.x2 sp(7)
+	<max+?>:    ret
+	lib/math.ci:121: (5 bytes): return .result := b;
+	<max+?>:    dup.x2 sp(1)
+	<max+?>:    set.x2 sp(7)
+	<max+?>:    ret
+}
+Math.clamp(t: float32, a: float32, b: float32): float32: function {
+.kind: static const function
+.base: `function`
+.size: 33
+.name: 'clamp'
+.file: 'lib/math.ci'
+.line: 124
+.owner: Math
+.param .result: float32 (size: 4 -> variable(f32))
+.param t: float32 (size: 4 -> variable(f32))
+.param a: float32 (size: 4 -> variable(f32))
+.param b: float32 (size: 4 -> variable(f32))
+.value: {
+	if (t < a) {
+		return .result := a;
+	}
+	if (t > b) {
+		return .result := b;
+	}
+	return .result := t;
+}
+.instructions: (33 bytes)
+	lib/math.ci:125: (14 bytes): if (t < a)
+	<clamp+?>:    dup.x1 sp(3)
+	<clamp+?>:    dup.x1 sp(3)
+	<clamp+?>:    clt.f32
+	<clamp+?>:    jz <clamp+?>
+	lib/math.ci:126: (5 bytes): return .result := a;
+	<clamp+?>:    dup.x1 sp(2)
+	<clamp+?>:    set.x1 sp(5)
+	<clamp+?>:    ret
+	lib/math.ci:128: (14 bytes): if (t > b)
+	<clamp+?>:    dup.x1 sp(3)
+	<clamp+?>:    dup.x1 sp(2)
+	<clamp+?>:    cgt.f32
+	<clamp+?>:    jz <clamp+?>
+	lib/math.ci:129: (5 bytes): return .result := b;
+	<clamp+?>:    dup.x1 sp(1)
+	<clamp+?>:    set.x1 sp(5)
+	<clamp+?>:    ret
+	lib/math.ci:131: (5 bytes): return .result := t;
+	<clamp+?>:    dup.x1 sp(3)
+	<clamp+?>:    set.x1 sp(5)
+	<clamp+?>:    ret
+}
+Math.clamp(t: float64, a: float64, b: float64): float64: function {
+.kind: static const function
+.base: `function`
+.size: 33
+.name: 'clamp'
+.file: 'lib/math.ci'
+.line: 133
+.owner: Math
+.param .result: float64 (size: 8 -> variable(f64))
+.param t: float64 (size: 8 -> variable(f64))
+.param a: float64 (size: 8 -> variable(f64))
+.param b: float64 (size: 8 -> variable(f64))
+.value: {
+	if (t < a) {
+		return .result := a;
+	}
+	if (t > b) {
+		return .result := b;
+	}
+	return .result := t;
+}
+.instructions: (33 bytes)
+	lib/math.ci:134: (14 bytes): if (t < a)
+	<clamp+?>:    dup.x2 sp(5)
+	<clamp+?>:    dup.x2 sp(5)
+	<clamp+?>:    clt.f64
+	<clamp+?>:    jz <clamp+?>
+	lib/math.ci:135: (5 bytes): return .result := a;
+	<clamp+?>:    dup.x2 sp(3)
+	<clamp+?>:    set.x2 sp(9)
+	<clamp+?>:    ret
+	lib/math.ci:137: (14 bytes): if (t > b)
+	<clamp+?>:    dup.x2 sp(5)
+	<clamp+?>:    dup.x2 sp(3)
+	<clamp+?>:    cgt.f64
+	<clamp+?>:    jz <clamp+?>
+	lib/math.ci:138: (5 bytes): return .result := b;
+	<clamp+?>:    dup.x2 sp(1)
+	<clamp+?>:    set.x2 sp(9)
+	<clamp+?>:    ret
+	lib/math.ci:140: (5 bytes): return .result := t;
+	<clamp+?>:    dup.x2 sp(5)
+	<clamp+?>:    set.x2 sp(9)
+	<clamp+?>:    ret
+}
+Math.lerp(t: float32, a: float32, b: float32): float32: function {
+.kind: static const function
+.base: `function`
+.size: 14
+.name: 'lerp'
+.file: 'lib/math.ci'
+.line: 143
+.owner: Math
+.param .result: float32 (size: 4 -> variable(f32))
+.param t: float32 (size: 4 -> variable(f32))
+.param a: float32 (size: 4 -> variable(f32))
+.param b: float32 (size: 4 -> variable(f32))
+.value: {
+	return .result := a + t * (b - a);
+}
+.instructions: (14 bytes)
+	lib/math.ci:144: (14 bytes): return .result := a + t * (b - a);
+	<lerp+?>:    dup.x1 sp(2)
+	<lerp+?>:    dup.x1 sp(4)
+	<lerp+?>:    dup.x1 sp(3)
+	<lerp+?>:    dup.x1 sp(5)
+	<lerp+?>:    sub.f32
+	<lerp+?>:    mul.f32
+	<lerp+?>:    add.f32
+	<lerp+?>:    set.x1 sp(5)
+	<lerp+?>:    ret
+}
+Math.lerp(t: float64, a: float64, b: float64): float32: function {
+.kind: static const function
+.base: `function`
+.size: 15
+.name: 'lerp'
+.file: 'lib/math.ci'
+.line: 146
+.owner: Math
+.param .result: float32 (size: 4 -> variable(f32))
+.param t: float64 (size: 8 -> variable(f64))
+.param a: float64 (size: 8 -> variable(f64))
+.param b: float64 (size: 8 -> variable(f64))
+.value: {
+	return .result := a + t * (b - a);
+}
+.instructions: (15 bytes)
+	lib/math.ci:147: (15 bytes): return .result := a + t * (b - a);
+	<lerp+?>:    dup.x2 sp(3)
+	<lerp+?>:    dup.x2 sp(7)
+	<lerp+?>:    dup.x2 sp(5)
+	<lerp+?>:    dup.x2 sp(9)
+	<lerp+?>:    sub.f64
+	<lerp+?>:    mul.f64
+	<lerp+?>:    add.f64
+	<lerp+?>:    f64.2f32
+	<lerp+?>:    set.x1 sp(8)
+	<lerp+?>:    ret
+}
+Math.cmp(a: float32, b: float32, eps: float32): int32: function {
+.kind: static const function
+.base: `function`
+.size: 57
+.name: 'cmp'
+.file: 'lib/math.ci'
+.line: 223
+.owner: Math
+.param .result: int32 (size: 4 -> variable(i32))
+.param a: float32 (size: 4 -> variable(f32))
+.param b: float32 (size: 4 -> variable(f32))
+.param eps: float32 (size: 4 -> variable(f32))
+.value: {
+	if (a < b) {
+		if (eps < (b - a)) {
+			return .result := -1;
+		}
+	}
+	else {
+		if (eps < (a - b)) {
+			return .result := +1;
+		}
+	}
+	return .result := 0;
+}
+.instructions: (57 bytes)
+	lib/math.ci:224: (53 bytes): if (a < b)
+	<cmp+?>:    dup.x1 sp(3)
+	<cmp+?>:    dup.x1 sp(3)
+	<cmp+?>:    clt.f32
+	<cmp+?>:    jz <cmp+?>
+	lib/math.ci:225: (20 bytes): if (eps < (b - a))
+	<cmp+?>:    dup.x1 sp(1)
+	<cmp+?>:    dup.x1 sp(3)
+	<cmp+?>:    dup.x1 sp(5)
+	<cmp+?>:    sub.f32
+	<cmp+?>:    clt.f32
+	<cmp+?>:    jz <cmp+?>
+	lib/math.ci:226: (8 bytes): return .result := -1;
+	<cmp+?>:    load.c32 -1
+	<cmp+?>:    set.x1 sp(5)
+	<cmp+?>:    ret
+	<cmp+?>:    jmp <cmp+?>
+	lib/math.ci:229: (20 bytes): if (eps < (a - b))
+	<cmp+?>:    dup.x1 sp(1)
+	<cmp+?>:    dup.x1 sp(4)
+	<cmp+?>:    dup.x1 sp(4)
+	<cmp+?>:    sub.f32
+	<cmp+?>:    clt.f32
+	<cmp+?>:    jz <cmp+?>
+	lib/math.ci:230: (8 bytes): return .result := +1;
+	<cmp+?>:    load.c32 1
+	<cmp+?>:    set.x1 sp(5)
+	<cmp+?>:    ret
+	lib/math.ci:232: (4 bytes): return .result := 0;
+	<cmp+?>:    load.z32
+	<cmp+?>:    set.x1 sp(5)
+	<cmp+?>:    ret
+}
+Math.cmp(a: float64, b: float64, eps: float64): int32: function {
+.kind: static const function
+.base: `function`
+.size: 57
+.name: 'cmp'
+.file: 'lib/math.ci'
+.line: 234
+.owner: Math
+.param .result: int32 (size: 4 -> variable(i32))
+.param a: float64 (size: 8 -> variable(f64))
+.param b: float64 (size: 8 -> variable(f64))
+.param eps: float64 (size: 8 -> variable(f64))
+.value: {
+	if (a < b) {
+		if (eps < (b - a)) {
+			return .result := -1;
+		}
+	}
+	else {
+		if (eps < (a - b)) {
+			return .result := +1;
+		}
+	}
+	return .result := 0;
+}
+.instructions: (57 bytes)
+	lib/math.ci:235: (53 bytes): if (a < b)
+	<cmp+?>:    dup.x2 sp(5)
+	<cmp+?>:    dup.x2 sp(5)
+	<cmp+?>:    clt.f64
+	<cmp+?>:    jz <cmp+?>
+	lib/math.ci:236: (20 bytes): if (eps < (b - a))
+	<cmp+?>:    dup.x2 sp(1)
+	<cmp+?>:    dup.x2 sp(5)
+	<cmp+?>:    dup.x2 sp(9)
+	<cmp+?>:    sub.f64
+	<cmp+?>:    clt.f64
+	<cmp+?>:    jz <cmp+?>
+	lib/math.ci:237: (8 bytes): return .result := -1;
+	<cmp+?>:    load.c32 -1
+	<cmp+?>:    set.x1 sp(8)
+	<cmp+?>:    ret
+	<cmp+?>:    jmp <cmp+?>
+	lib/math.ci:240: (20 bytes): if (eps < (a - b))
+	<cmp+?>:    dup.x2 sp(1)
+	<cmp+?>:    dup.x2 sp(7)
+	<cmp+?>:    dup.x2 sp(7)
+	<cmp+?>:    sub.f64
+	<cmp+?>:    clt.f64
+	<cmp+?>:    jz <cmp+?>
+	lib/math.ci:241: (8 bytes): return .result := +1;
+	<cmp+?>:    load.c32 1
+	<cmp+?>:    set.x1 sp(8)
+	<cmp+?>:    ret
+	lib/math.ci:243: (4 bytes): return .result := 0;
+	<cmp+?>:    load.z32
+	<cmp+?>:    set.x1 sp(8)
+	<cmp+?>:    ret
+}
+Math.sinCos(arg: float64, quad: int32): float64: function {
+.kind: static const function
+.base: `function`
+.size: 350
+.name: 'sinCos'
+.file: 'lib/math.ci'
+.line: 246
+.owner: Math
+.param .result: float64 (size: 8 -> variable(f64))
+.param arg: float64 (size: 8 -> variable(f64))
+.param quad: int32 (size: 4 -> variable(i32))
+.value: {
+	PIO2: typename := 1.570796;
+	p0: typename := 13578840.978774;
+	p1: typename := -4942908.100903;
+	p2: typename := 440103.053538;
+	p3: typename := -13847.272500;
+	p4: typename := 145.968841;
+	q0: typename := 8644558.652923;
+	q1: typename := 408179.225234;
+	q2: typename := 9463.096102;
+	q3: typename := 132.653491;
+	x: float64 := arg;
+	if (x < (0)) {
+		x := -x;
+		quad := quad + 2;
+	}
+	y: float64;
+	x := x * (1) / PIO2;
+	if (x > (32764)) {
+		e: float64;
+		y := modf(x, e);
+		e := e + (quad);
+		f: float64;
+		modf(0.250000 * e, f);
+		quad := (e - (4) * f);
+	}
+	else {
+		k: int32 := x;
+		y := x - (k);
+		quad := quad + k;
+		quad := quad & 3;
+	}
+	if (quad & 1) {
+		y := (1) - y;
+	}
+	if (quad > 1) {
+		y := -y;
+	}
+	ysq: float64 := y * y;
+	temp1: float64 := ((((p4 * ysq + p3) * ysq + p2) * ysq + p1) * ysq + p0) * y;
+	temp2: float64 := ((((ysq + q3) * ysq + q2) * ysq + q1) * ysq + q0);
+	return .result := temp1 / temp2;
+}
+.instructions: (350 bytes)
+	lib/math.ci:271: (2 bytes): x: float64 := arg
+	<sinCos+?>:    dup.x2 sp(2)
+	lib/math.ci:272: (21 bytes): if (x < (0))
+	<sinCos+?>:    dup.x2 sp(0)
+	<sinCos+?>:    load.z64
+	<sinCos+?>:    clt.f64
+	<sinCos+?>:    jz <sinCos+?>
+	lib/math.ci:273: (5 bytes): x := -x;
+	<sinCos+?>:    dup.x2 sp(0)
+	<sinCos+?>:    neg.f64
+	<sinCos+?>:    set.x2 sp(2)
+	lib/math.ci:274: (8 bytes): quad := quad + 2;
+	<sinCos+?>:    dup.x1 sp(3)
+	<sinCos+?>:    inc.i32(+2)
+	<sinCos+?>:    set.x1 sp(4)
+	lib/math.ci:277: (1 bytes): y: float64
+	<sinCos+?>:    load.z64
+	lib/math.ci:278: (24 bytes): x := x * (1) / PIO2;
+	<sinCos+?>:    dup.x2 sp(2)
+	<sinCos+?>:    load.f64 1.000000
+	<sinCos+?>:    load.f64 1.570796
+	<sinCos+?>:    div.f64
+	<sinCos+?>:    mul.f64
+	<sinCos+?>:    set.x2 sp(4)
+	lib/math.ci:279: (126 bytes): if (x > (32764))
+	<sinCos+?>:    dup.x2 sp(2)
+	<sinCos+?>:    load.f64 32764.000000
+	<sinCos+?>:    cgt.f64
+	<sinCos+?>:    jz <sinCos+?>
+	lib/math.ci:280: (1 bytes): e: float64
+	<sinCos+?>:    load.z128
+	lib/math.ci:281: (19 bytes): y := modf(x, e);
+	<sinCos+?>:    i64.2f64
+	<sinCos+?>:    dup.x2 sp(6)
+	<sinCos+?>:    load.sp(+16)
+	<sinCos+?>:    load.ref .?????? ;Math.modf(x: float64, intPart: float64): float64
+	<sinCos+?>:    call
+	<sinCos+?>:    inc.sp(-12)
+	<sinCos+?>:    set.x2 sp(4)
+	lib/math.ci:282: (4 bytes): e := e + (quad);
+	<sinCos+?>:    dup.x1 sp(7)
+	<sinCos+?>:    i32.2f64
+	<sinCos+?>:    add.f64
+	lib/math.ci:284: (1 bytes): f: float64
+	<sinCos+?>:    load.z128
+	lib/math.ci:285: (31 bytes): modf(0.250000 * e, f);
+	<sinCos+?>:    i64.2f64
+	<sinCos+?>:    load.f64 0.250000
+	<sinCos+?>:    dup.x2 sp(6)
+	<sinCos+?>:    mul.f64
+	<sinCos+?>:    load.sp(+16)
+	<sinCos+?>:    load.ref .?????? ;Math.modf(x: float64, intPart: float64): float64
+	<sinCos+?>:    call
+	<sinCos+?>:    inc.sp(-12)
+	<sinCos+?>:    inc.sp(-8)
+	lib/math.ci:286: (18 bytes): quad := (e - (4) * f);
+	<sinCos+?>:    dup.x2 sp(2)
+	<sinCos+?>:    load.f64 4.000000
+	<sinCos+?>:    dup.x2 sp(4)
+	<sinCos+?>:    mul.f64
+	<sinCos+?>:    sub.f64
+	<sinCos+?>:    f64.2i32
+	<sinCos+?>:    set.x1 sp(10)
+	<sinCos+?>:    inc.sp(-16)
+	<sinCos+?>:    jmp <sinCos+?>
+	lib/math.ci:289: (3 bytes): k: int32 := x
+	<sinCos+?>:    dup.x2 sp(2)
+	<sinCos+?>:    f64.2i32
+	lib/math.ci:290: (8 bytes): y := x - (k);
+	<sinCos+?>:    dup.x2 sp(3)
+	<sinCos+?>:    dup.x1 sp(2)
+	<sinCos+?>:    i32.2f64
+	<sinCos+?>:    sub.f64
+	<sinCos+?>:    set.x2 sp(3)
+	lib/math.ci:291: (7 bytes): quad := quad + k;
+	<sinCos+?>:    dup.x1 sp(6)
+	<sinCos+?>:    dup.x1 sp(1)
+	<sinCos+?>:    add.i32
+	<sinCos+?>:    set.x1 sp(7)
+	lib/math.ci:292: (6 bytes): quad := quad & 3;
+	<sinCos+?>:    dup.x1 sp(6)
+	<sinCos+?>:    b32.and 0x003
+	<sinCos+?>:    set.x1 sp(7)
+	<sinCos+?>:    inc.sp(-4)
+	lib/math.ci:294: (22 bytes): if (quad & 1)
+	<sinCos+?>:    dup.x1 sp(5)
+	<sinCos+?>:    b32.and 0x001
+	<sinCos+?>:    jz <sinCos+?>
+	lib/math.ci:295: (14 bytes): y := (1) - y;
+	<sinCos+?>:    load.f64 1.000000
+	<sinCos+?>:    dup.x2 sp(2)
+	<sinCos+?>:    sub.f64
+	<sinCos+?>:    set.x2 sp(2)
+	lib/math.ci:297: (17 bytes): if (quad > 1)
+	<sinCos+?>:    dup.x1 sp(5)
+	<sinCos+?>:    load.c32 1
+	<sinCos+?>:    cgt.i32
+	<sinCos+?>:    jz <sinCos+?>
+	lib/math.ci:298: (5 bytes): y := -y;
+	<sinCos+?>:    dup.x2 sp(0)
+	<sinCos+?>:    neg.f64
+	<sinCos+?>:    set.x2 sp(2)
+	lib/math.ci:301: (5 bytes): ysq: float64 := y * y
+	<sinCos+?>:    dup.x2 sp(0)
+	<sinCos+?>:    dup.x2 sp(2)
+	<sinCos+?>:    mul.f64
+	lib/math.ci:302: (64 bytes): temp1: float64 := ((((p4 * ysq + p3) * ysq + p2) * ysq + p1) * ysq + p0) * y
+	<sinCos+?>:    load.f64 145.968841
+	<sinCos+?>:    dup.x2 sp(2)
+	<sinCos+?>:    mul.f64
+	<sinCos+?>:    load.f64 -13847.272500
+	<sinCos+?>:    add.f64
+	<sinCos+?>:    dup.x2 sp(2)
+	<sinCos+?>:    mul.f64
+	<sinCos+?>:    load.f64 440103.053538
+	<sinCos+?>:    add.f64
+	<sinCos+?>:    dup.x2 sp(2)
+	<sinCos+?>:    mul.f64
+	<sinCos+?>:    load.f64 -4942908.100903
+	<sinCos+?>:    add.f64
+	<sinCos+?>:    dup.x2 sp(2)
+	<sinCos+?>:    mul.f64
+	<sinCos+?>:    load.f64 13578840.978774
+	<sinCos+?>:    add.f64
+	<sinCos+?>:    dup.x2 sp(4)
+	<sinCos+?>:    mul.f64
+	lib/math.ci:303: (51 bytes): temp2: float64 := ((((ysq + q3) * ysq + q2) * ysq + q1) * ysq + q0)
+	<sinCos+?>:    dup.x2 sp(2)
+	<sinCos+?>:    load.f64 132.653491
+	<sinCos+?>:    add.f64
+	<sinCos+?>:    dup.x2 sp(4)
+	<sinCos+?>:    mul.f64
+	<sinCos+?>:    load.f64 9463.096102
+	<sinCos+?>:    add.f64
+	<sinCos+?>:    dup.x2 sp(4)
+	<sinCos+?>:    mul.f64
+	<sinCos+?>:    load.f64 408179.225234
+	<sinCos+?>:    add.f64
+	<sinCos+?>:    dup.x2 sp(4)
+	<sinCos+?>:    mul.f64
+	<sinCos+?>:    load.f64 8644558.652923
+	<sinCos+?>:    add.f64
+	lib/math.ci:304: (12 bytes): return .result := temp1 / temp2;
+	<sinCos+?>:    dup.x2 sp(2)
+	<sinCos+?>:    dup.x2 sp(2)
+	<sinCos+?>:    div.f64
+	<sinCos+?>:    set.x2 sp(16)
+	<sinCos+?>:    inc.sp(-40)
+	<sinCos+?>:    ret
+	<sinCos+?>:    inc.sp(-40)
+	<sinCos+?>:    ret
+}
+Math.sin(arg: float64): float64: function {
+.kind: static inline
+.base: `function`
+.size: 0
+.name: 'sin'
+.file: 'lib/math.ci'
+.line: 308
+.owner: Math
+.param .result: float64 (size: 8 -> f64)
+.param arg: float64 (size: 8 -> f64)
+.value: sinCos(arg, 0)
+}
+Math.cos(arg: float64): float64: function {
+.kind: static inline
+.base: `function`
+.size: 0
+.name: 'cos'
+.file: 'lib/math.ci'
+.line: 311
+.owner: Math
+.param .result: float64 (size: 8 -> f64)
+.param arg: float64 (size: 8 -> f64)
+.value: sinCos(abs(arg), 1)
+}
+Math.tan(arg: float64): float64: function {
+.kind: static const function
+.base: `function`
+.size: 388
+.name: 'tan'
+.file: 'lib/math.ci'
+.line: 314
+.owner: Math
+.param .result: float64 (size: 8 -> variable(f64))
+.param arg: float64 (size: 8 -> variable(f64))
+.value: {
+	PIO2: typename := 1.570796;
+	p0: typename := -13068.202648;
+	p1: typename := 1055.970902;
+	p2: typename := -15.506857;
+	p3: typename := 0.034226;
+	p4: typename := 0.000034;
+	q0: typename := -16638.952389;
+	q1: typename := 4765.751363;
+	q2: typename := -155.503316;
+	nan: typename := 0.000000 / (0);
+	complement: bool := false;
+	negate: bool := false;
+	if (arg < (0)) {
+		arg := -arg;
+		negate := true;
+	}
+	arg := (2) * arg / PIO2;
+	e: float64;
+	x: float64 := modf(arg, e);
+	i: int32 := int32(e) % 4;
+	if (i == 0) ;
+	else {
+		if (i == 1) {
+			x := (1) - x;
+			complement := true;
+		}
+		else {
+			if (i == 2) {
+				negate := !negate;
+				complement := true;
+			}
+			else {
+				if (i == 3) {
+					x := (1) - x;
+					negate := !negate;
+				}
+			}
+		}
+	}
+	xsq: float64 := x * x;
+	result: float64 := ((((p4 * xsq + p3) * xsq + p2) * xsq + p1) * xsq + p0) * x;
+	result := result / (((xsq + q2) * xsq + q1) * xsq + q0);
+	if (complement) {
+		if (result == (0)) {
+			return .result := nan;
+		}
+		result := (1) / result;
+	}
+	if (negate) {
+		return .result := -result;
+	}
+	return .result := result;
+}
+.instructions: (388 bytes)
+	lib/math.ci:339: (1 bytes): complement: bool := false
+	<tan+?>:    load.z32
+	lib/math.ci:340: (1 bytes): negate: bool := false
+	<tan+?>:    load.z32
+	lib/math.ci:342: (23 bytes): if (arg < (0))
+	<tan+?>:    dup.x2 sp(3)
+	<tan+?>:    load.z64
+	<tan+?>:    clt.f64
+	<tan+?>:    jz <tan+?>
+	lib/math.ci:343: (5 bytes): arg := -arg;
+	<tan+?>:    dup.x2 sp(3)
+	<tan+?>:    neg.f64
+	<tan+?>:    set.x2 sp(5)
+	lib/math.ci:344: (10 bytes): negate := true;
+	<tan+?>:    load.c32 1
+	<tan+?>:    load.sp(+4)
+	<tan+?>:    store.i8
+	lib/math.ci:346: (24 bytes): arg := (2) * arg / PIO2;
+	<tan+?>:    load.f64 2.000000
+	<tan+?>:    dup.x2 sp(5)
+	<tan+?>:    mul.f64
+	<tan+?>:    load.f64 1.570796
+	<tan+?>:    div.f64
+	<tan+?>:    set.x2 sp(5)
+	lib/math.ci:348: (1 bytes): e: float64
+	<tan+?>:    load.z128
+	lib/math.ci:349: (17 bytes): x: float64 := modf(arg, e)
+	<tan+?>:    i64.2f64
+	<tan+?>:    dup.x2 sp(7)
+	<tan+?>:    load.sp(+16)
+	<tan+?>:    load.ref .?????? ;Math.modf(x: float64, intPart: float64): float64
+	<tan+?>:    call
+	<tan+?>:    inc.sp(-12)
+	lib/math.ci:350: (9 bytes): i: int32 := int32(e) % 4
+	<tan+?>:    dup.x2 sp(2)
+	<tan+?>:    f64.2i32
+	<tan+?>:    load.c32 4
+	<tan+?>:    mod.i32
+	lib/math.ci:352: (122 bytes): if (i == 0)
+	<tan+?>:    dup.x1 sp(0)
+	<tan+?>:    load.z32
+	<tan+?>:    ceq.i32
+	<tan+?>:    jnz <tan+?>
+	lib/math.ci:353: (114 bytes): if (i == 1)
+	<tan+?>:    dup.x1 sp(0)
+	<tan+?>:    load.c32 1
+	<tan+?>:    ceq.i32
+	<tan+?>:    jz <tan+?>
+	lib/math.ci:354: (14 bytes): x := (1) - x;
+	<tan+?>:    load.f64 1.000000
+	<tan+?>:    dup.x2 sp(3)
+	<tan+?>:    sub.f64
+	<tan+?>:    set.x2 sp(3)
+	lib/math.ci:355: (10 bytes): complement := true;
+	<tan+?>:    load.c32 1
+	<tan+?>:    load.sp(+28)
+	<tan+?>:    store.i8
+	<tan+?>:    jmp <tan+?>
+	lib/math.ci:357: (74 bytes): if (i == 2)
+	<tan+?>:    dup.x1 sp(0)
+	<tan+?>:    load.c32 2
+	<tan+?>:    ceq.i32
+	<tan+?>:    jz <tan+?>
+	lib/math.ci:358: (11 bytes): negate := !negate;
+	<tan+?>:    load.sp(+20)
+	<tan+?>:    load.i8
+	<tan+?>:    not.b32
+	<tan+?>:    load.sp(+24)
+	<tan+?>:    store.i8
+	lib/math.ci:359: (10 bytes): complement := true;
+	<tan+?>:    load.c32 1
+	<tan+?>:    load.sp(+28)
+	<tan+?>:    store.i8
+	<tan+?>:    jmp <tan+?>
+	lib/math.ci:361: (37 bytes): if (i == 3)
+	<tan+?>:    dup.x1 sp(0)
+	<tan+?>:    load.c32 3
+	<tan+?>:    ceq.i32
+	<tan+?>:    jz <tan+?>
+	lib/math.ci:362: (14 bytes): x := (1) - x;
+	<tan+?>:    load.f64 1.000000
+	<tan+?>:    dup.x2 sp(3)
+	<tan+?>:    sub.f64
+	<tan+?>:    set.x2 sp(3)
+	lib/math.ci:363: (11 bytes): negate := !negate;
+	<tan+?>:    load.sp(+20)
+	<tan+?>:    load.i8
+	<tan+?>:    not.b32
+	<tan+?>:    load.sp(+24)
+	<tan+?>:    store.i8
+	lib/math.ci:366: (5 bytes): xsq: float64 := x * x
+	<tan+?>:    dup.x2 sp(1)
+	<tan+?>:    dup.x2 sp(3)
+	<tan+?>:    mul.f64
+	lib/math.ci:367: (64 bytes): result: float64 := ((((p4 * xsq + p3) * xsq + p2) * xsq + p1) * xsq + p0) * x
+	<tan+?>:    load.f64 0.000034
+	<tan+?>:    dup.x2 sp(2)
+	<tan+?>:    mul.f64
+	<tan+?>:    load.f64 0.034226
+	<tan+?>:    add.f64
+	<tan+?>:    dup.x2 sp(2)
+	<tan+?>:    mul.f64
+	<tan+?>:    load.f64 -15.506857
+	<tan+?>:    add.f64
+	<tan+?>:    dup.x2 sp(2)
+	<tan+?>:    mul.f64
+	<tan+?>:    load.f64 1055.970902
+	<tan+?>:    add.f64
+	<tan+?>:    dup.x2 sp(2)
+	<tan+?>:    mul.f64
+	<tan+?>:    load.f64 -13068.202648
+	<tan+?>:    add.f64
+	<tan+?>:    dup.x2 sp(5)
+	<tan+?>:    mul.f64
+	lib/math.ci:368: (39 bytes): result := result / (((xsq + q2) * xsq + q1) * xsq + q0);
+	<tan+?>:    dup.x2 sp(2)
+	<tan+?>:    load.f64 -155.503316
+	<tan+?>:    add.f64
+	<tan+?>:    dup.x2 sp(4)
+	<tan+?>:    mul.f64
+	<tan+?>:    load.f64 4765.751363
+	<tan+?>:    add.f64
+	<tan+?>:    dup.x2 sp(4)
+	<tan+?>:    mul.f64
+	<tan+?>:    load.f64 -16638.952389
+	<tan+?>:    add.f64
+	<tan+?>:    div.f64
+	lib/math.ci:370: (49 bytes): if (complement)
+	<tan+?>:    load.sp(+40)
+	<tan+?>:    load.i8
+	<tan+?>:    jz <tan+?>
+	lib/math.ci:371: (26 bytes): if (result == (0))
+	<tan+?>:    dup.x2 sp(0)
+	<tan+?>:    load.z64
+	<tan+?>:    ceq.f64
+	<tan+?>:    jz <tan+?>
+	lib/math.ci:372: (18 bytes): return .result := nan;
+	<tan+?>:    load.f64 0.000000
+	<tan+?>:    load.z64
+	<tan+?>:    div.f64
+	<tan+?>:    set.x2 sp(16)
+	<tan+?>:    inc.sp(-44)
+	<tan+?>:    ret
+	lib/math.ci:374: (14 bytes): result := (1) / result;
+	<tan+?>:    load.f64 1.000000
+	<tan+?>:    dup.x2 sp(2)
+	<tan+?>:    div.f64
+	<tan+?>:    set.x2 sp(2)
+	lib/math.ci:376: (19 bytes): if (negate)
+	<tan+?>:    load.sp(+36)
+	<tan+?>:    load.i8
+	<tan+?>:    jz <tan+?>
+	lib/math.ci:377: (10 bytes): return .result := -result;
+	<tan+?>:    dup.x2 sp(0)
+	<tan+?>:    neg.f64
+	<tan+?>:    set.x2 sp(16)
+	<tan+?>:    inc.sp(-44)
+	<tan+?>:    ret
+	lib/math.ci:379: (9 bytes): return .result := result;
+	<tan+?>:    dup.x2 sp(0)
+	<tan+?>:    set.x2 sp(16)
+	<tan+?>:    inc.sp(-44)
+	<tan+?>:    ret
+	<tan+?>:    inc.sp(-44)
+	<tan+?>:    ret
+}
+Math.sinh(x: float64): float64: function {
+.kind: static const function
+.base: `function`
+.size: 248
+.name: 'sinh'
+.file: 'lib/math.ci'
+.line: 383
+.owner: Math
+.param .result: float64 (size: 8 -> variable(f64))
+.param x: float64 (size: 8 -> variable(f64))
+.value: {
+	P0: typename := -630767.364050;
+	P1: typename := -89912.720220;
+	P2: typename := -2894.211356;
+	P3: typename := -26.305632;
+	Q0: typename := -630767.364050;
+	Q1: typename := 15215.173788;
+	Q2: typename := -173.678954;
+	negate: bool := false;
+	if (x < (0)) {
+		x := -x;
+		negate := true;
+	}
+	if (x > (21)) {
+		return .result := float64.exp(x) / (2);
+	}
+	result: float64;
+	if (x > 0.500000) {
+		result := (float64.exp(x) - float64.exp(-x)) / (2);
+	}
+	else {
+		sq: float64 := x * x;
+		result := (((P3 * sq + P2) * sq + P1) * sq + P0) * x;
+		result := result / (((sq + Q2) * sq + Q1) * sq + Q0);
+	}
+	if (negate) {
+		return .result := -result;
+	}
+	return .result := result;
+}
+.instructions: (248 bytes)
+	lib/math.ci:404: (1 bytes): negate: bool := false
+	<sinh+?>:    load.z32
+	lib/math.ci:405: (23 bytes): if (x < (0))
+	<sinh+?>:    dup.x2 sp(2)
+	<sinh+?>:    load.z64
+	<sinh+?>:    clt.f64
+	<sinh+?>:    jz <sinh+?>
+	lib/math.ci:406: (5 bytes): x := -x;
+	<sinh+?>:    dup.x2 sp(2)
+	<sinh+?>:    neg.f64
+	<sinh+?>:    set.x2 sp(4)
+	lib/math.ci:407: (10 bytes): negate := true;
+	<sinh+?>:    load.c32 1
+	<sinh+?>:    load.sp(+4)
+	<sinh+?>:    store.i8
+	lib/math.ci:410: (39 bytes): if (x > (21))
+	<sinh+?>:    dup.x2 sp(2)
+	<sinh+?>:    load.f64 21.000000
+	<sinh+?>:    cgt.f64
+	<sinh+?>:    jz <sinh+?>
+	lib/math.ci:411: (23 bytes): return .result := float64.exp(x) / (2);
+	<sinh+?>:    dup.x2 sp(2)
+	<sinh+?>:    nfc(40) ;float64.exp(x: float64): float64
+	<sinh+?>:    load.f64 2.000000
+	<sinh+?>:    div.f64
+	<sinh+?>:    set.x2 sp(6)
+	<sinh+?>:    inc.sp(-4)
+	<sinh+?>:    ret
+	lib/math.ci:414: (1 bytes): result: float64
+	<sinh+?>:    load.z64
+	lib/math.ci:415: (151 bytes): if (x > 0.500000)
+	<sinh+?>:    dup.x2 sp(4)
+	<sinh+?>:    load.f64 0.500000
+	<sinh+?>:    cgt.f64
+	<sinh+?>:    jz <sinh+?>
+	lib/math.ci:416: (26 bytes): result := (float64.exp(x) - float64.exp(-x)) / (2);
+	<sinh+?>:    dup.x2 sp(4)
+	<sinh+?>:    nfc(40) ;float64.exp(x: float64): float64
+	<sinh+?>:    dup.x2 sp(6)
+	<sinh+?>:    neg.f64
+	<sinh+?>:    nfc(40) ;float64.exp(x: float64): float64
+	<sinh+?>:    sub.f64
+	<sinh+?>:    load.f64 2.000000
+	<sinh+?>:    div.f64
+	<sinh+?>:    set.x2 sp(2)
+	<sinh+?>:    jmp <sinh+?>
+	lib/math.ci:419: (5 bytes): sq: float64 := x * x
+	<sinh+?>:    dup.x2 sp(4)
+	<sinh+?>:    dup.x2 sp(6)
+	<sinh+?>:    mul.f64
+	lib/math.ci:420: (53 bytes): result := (((P3 * sq + P2) * sq + P1) * sq + P0) * x;
+	<sinh+?>:    load.f64 -26.305632
+	<sinh+?>:    dup.x2 sp(2)
+	<sinh+?>:    mul.f64
+	<sinh+?>:    load.f64 -2894.211356
+	<sinh+?>:    add.f64
+	<sinh+?>:    dup.x2 sp(2)
+	<sinh+?>:    mul.f64
+	<sinh+?>:    load.f64 -89912.720220
+	<sinh+?>:    add.f64
+	<sinh+?>:    dup.x2 sp(2)
+	<sinh+?>:    mul.f64
+	<sinh+?>:    load.f64 -630767.364050
+	<sinh+?>:    add.f64
+	<sinh+?>:    dup.x2 sp(8)
+	<sinh+?>:    mul.f64
+	<sinh+?>:    set.x2 sp(4)
+	lib/math.ci:421: (43 bytes): result := result / (((sq + Q2) * sq + Q1) * sq + Q0);
+	<sinh+?>:    dup.x2 sp(2)
+	<sinh+?>:    dup.x2 sp(2)
+	<sinh+?>:    load.f64 -173.678954
+	<sinh+?>:    add.f64
+	<sinh+?>:    dup.x2 sp(4)
+	<sinh+?>:    mul.f64
+	<sinh+?>:    load.f64 15215.173788
+	<sinh+?>:    add.f64
+	<sinh+?>:    dup.x2 sp(4)
+	<sinh+?>:    mul.f64
+	<sinh+?>:    load.f64 -630767.364050
+	<sinh+?>:    add.f64
+	<sinh+?>:    div.f64
+	<sinh+?>:    set.x2 sp(4)
+	<sinh+?>:    inc.sp(-8)
+	lib/math.ci:424: (19 bytes): if (negate)
+	<sinh+?>:    load.sp(+8)
+	<sinh+?>:    load.i8
+	<sinh+?>:    jz <sinh+?>
+	lib/math.ci:425: (10 bytes): return .result := -result;
+	<sinh+?>:    dup.x2 sp(0)
+	<sinh+?>:    neg.f64
+	<sinh+?>:    set.x2 sp(8)
+	<sinh+?>:    inc.sp(-12)
+	<sinh+?>:    ret
+	lib/math.ci:427: (9 bytes): return .result := result;
+	<sinh+?>:    dup.x2 sp(0)
+	<sinh+?>:    set.x2 sp(8)
+	<sinh+?>:    inc.sp(-12)
+	<sinh+?>:    ret
+	<sinh+?>:    inc.sp(-12)
+	<sinh+?>:    ret
+}
+Math.cosh(x: float64): float64: function {
+.kind: static const function
+.base: `function`
+.size: 75
+.name: 'cosh'
+.file: 'lib/math.ci'
+.line: 431
+.owner: Math
+.param .result: float64 (size: 8 -> variable(f64))
+.param x: float64 (size: 8 -> variable(f64))
+.value: {
+	if (x < (0)) {
+		x := -x;
+	}
+	if (x > (21)) {
+		return .result := float64.exp(x) / (2);
+	}
+	return .result := (float64.exp(x) + float64.exp(-x)) / (2);
+}
+.instructions: (75 bytes)
+	lib/math.ci:432: (13 bytes): if (x < (0))
+	<cosh+?>:    dup.x2 sp(1)
+	<cosh+?>:    load.z64
+	<cosh+?>:    clt.f64
+	<cosh+?>:    jz <cosh+?>
+	lib/math.ci:433: (5 bytes): x := -x;
+	<cosh+?>:    dup.x2 sp(1)
+	<cosh+?>:    neg.f64
+	<cosh+?>:    set.x2 sp(3)
+	lib/math.ci:435: (35 bytes): if (x > (21))
+	<cosh+?>:    dup.x2 sp(1)
+	<cosh+?>:    load.f64 21.000000
+	<cosh+?>:    cgt.f64
+	<cosh+?>:    jz <cosh+?>
+	lib/math.ci:436: (19 bytes): return .result := float64.exp(x) / (2);
+	<cosh+?>:    dup.x2 sp(1)
+	<cosh+?>:    nfc(40) ;float64.exp(x: float64): float64
+	<cosh+?>:    load.f64 2.000000
+	<cosh+?>:    div.f64
+	<cosh+?>:    set.x2 sp(5)
+	<cosh+?>:    ret
+	lib/math.ci:438: (27 bytes): return .result := (float64.exp(x) + float64.exp(-x)) / (2);
+	<cosh+?>:    dup.x2 sp(1)
+	<cosh+?>:    nfc(40) ;float64.exp(x: float64): float64
+	<cosh+?>:    dup.x2 sp(3)
+	<cosh+?>:    neg.f64
+	<cosh+?>:    nfc(40) ;float64.exp(x: float64): float64
+	<cosh+?>:    add.f64
+	<cosh+?>:    load.f64 2.000000
+	<cosh+?>:    div.f64
+	<cosh+?>:    set.x2 sp(5)
+	<cosh+?>:    ret
+}
+Math.asin(x: float64): float64: function {
+.kind: static const function
+.base: `function`
+.size: 183
+.name: 'asin'
+.file: 'lib/math.ci'
+.line: 447
+.owner: Math
+.param .result: float64 (size: 8 -> variable(f64))
+.param x: float64 (size: 8 -> variable(f64))
+.value: {
+	if (x == (0)) {
+		return .result := x;
+	}
+	negate: bool := false;
+	if (x < (0)) {
+		negate := true;
+		x := -x;
+	}
+	if (x > (1)) {
+		return .result := nan;
+	}
+	result: float64 := float64.sqrt((1) - x * x);
+	if (x > 0.700000) {
+		result := pi / (2) - float64.atan2(result, x);
+	}
+	else {
+		result := float64.atan2(x, result);
+	}
+	if (negate) {
+		return .result := -result;
+	}
+	return .result := result;
+}
+.instructions: (183 bytes)
+	lib/math.ci:448: (13 bytes): if (x == (0))
+	<asin+?>:    dup.x2 sp(1)
+	<asin+?>:    load.z64
+	<asin+?>:    ceq.f64
+	<asin+?>:    jz <asin+?>
+	lib/math.ci:450: (5 bytes): return .result := x;
+	<asin+?>:    dup.x2 sp(1)
+	<asin+?>:    set.x2 sp(5)
+	<asin+?>:    ret
+	lib/math.ci:453: (1 bytes): negate: bool := false
+	<asin+?>:    load.z32
+	lib/math.ci:454: (23 bytes): if (x < (0))
+	<asin+?>:    dup.x2 sp(2)
+	<asin+?>:    load.z64
+	<asin+?>:    clt.f64
+	<asin+?>:    jz <asin+?>
+	lib/math.ci:455: (10 bytes): negate := true;
+	<asin+?>:    load.c32 1
+	<asin+?>:    load.sp(+4)
+	<asin+?>:    store.i8
+	lib/math.ci:456: (5 bytes): x := -x;
+	<asin+?>:    dup.x2 sp(2)
+	<asin+?>:    neg.f64
+	<asin+?>:    set.x2 sp(4)
+	lib/math.ci:459: (34 bytes): if (x > (1))
+	<asin+?>:    dup.x2 sp(2)
+	<asin+?>:    load.f64 1.000000
+	<asin+?>:    cgt.f64
+	<asin+?>:    jz <asin+?>
+	lib/math.ci:461: (18 bytes): return .result := nan;
+	<asin+?>:    load.z64
+	<asin+?>:    load.f64 0.000000
+	<asin+?>:    div.f64
+	<asin+?>:    set.x2 sp(6)
+	<asin+?>:    inc.sp(-4)
+	<asin+?>:    ret
+	lib/math.ci:464: (19 bytes): result: float64 := float64.sqrt((1) - x * x)
+	<asin+?>:    load.f64 1.000000
+	<asin+?>:    dup.x2 sp(4)
+	<asin+?>:    dup.x2 sp(6)
+	<asin+?>:    mul.f64
+	<asin+?>:    sub.f64
+	<asin+?>:    nfc(42) ;float64.sqrt(x: float64): float64
+	lib/math.ci:465: (60 bytes): if (x > 0.700000)
+	<asin+?>:    dup.x2 sp(4)
+	<asin+?>:    load.f64 0.700000
+	<asin+?>:    cgt.f64
+	<asin+?>:    jz <asin+?>
+	lib/math.ci:466: (30 bytes): result := pi / (2) - float64.atan2(result, x);
+	<asin+?>:    load.f64 3.141593
+	<asin+?>:    load.f64 2.000000
+	<asin+?>:    div.f64
+	<asin+?>:    dup.x2 sp(2)
+	<asin+?>:    dup.x2 sp(8)
+	<asin+?>:    nfc(43) ;float64.atan2(x: float64, y: float64): float64
+	<asin+?>:    sub.f64
+	<asin+?>:    set.x2 sp(2)
+	<asin+?>:    jmp <asin+?>
+	lib/math.ci:469: (10 bytes): result := float64.atan2(x, result);
+	<asin+?>:    dup.x2 sp(4)
+	<asin+?>:    dup.x2 sp(2)
+	<asin+?>:    nfc(43) ;float64.atan2(x: float64, y: float64): float64
+	<asin+?>:    set.x2 sp(2)
+	lib/math.ci:472: (19 bytes): if (negate)
+	<asin+?>:    load.sp(+8)
+	<asin+?>:    load.i8
+	<asin+?>:    jz <asin+?>
+	lib/math.ci:473: (10 bytes): return .result := -result;
+	<asin+?>:    dup.x2 sp(0)
+	<asin+?>:    neg.f64
+	<asin+?>:    set.x2 sp(8)
+	<asin+?>:    inc.sp(-12)
+	<asin+?>:    ret
+	lib/math.ci:475: (9 bytes): return .result := result;
+	<asin+?>:    dup.x2 sp(0)
+	<asin+?>:    set.x2 sp(8)
+	<asin+?>:    inc.sp(-12)
+	<asin+?>:    ret
+	<asin+?>:    inc.sp(-12)
+	<asin+?>:    ret
+}
+Math.acos(x: float64): float64: function {
+.kind: static inline
+.base: `function`
+.size: 0
+.name: 'acos'
+.file: 'lib/math.ci'
+.line: 482
+.owner: Math
+.param .result: float64 (size: 8 -> f64)
+.param x: float64 (size: 8 -> f64)
+.value: (pi / (2) - asin(x))
+}
+Math.deg2rad(x: float64): float64: function {
+.kind: static inline
+.base: `function`
+.size: 0
+.name: 'deg2rad'
+.file: 'lib/math.ci'
+.line: 505
+.owner: Math
+.param .result: float64 (size: 8 -> f64)
+.param x: float64 (size: 8 -> f64)
+.value: float64(x * pi / (180))
+}
+Math.rad2deg(x: float64): float64: function {
+.kind: static inline
+.base: `function`
+.size: 0
+.name: 'rad2deg'
+.file: 'lib/math.ci'
+.line: 506
+.owner: Math
+.param .result: float64 (size: 8 -> f64)
+.param x: float64 (size: 8 -> f64)
+.value: float64(x * (180) / pi)
+}
+Complex: typename {
+.kind: static const typename(val)
+.base: `typename`
+.size: 16
+.name: 'Complex'
+.file: 'lib/math.Complex.ci'
+.line: 3
+.field re: float64 (size: 8 -> const variable(f64))
+.field im: float64 (size: 8 -> const variable(f64))
+}
+Complex.re: float64 {
+.kind: const variable(f64)
+.base: `float64`
+.size: 8
+.name: 're'
+.file: 'lib/math.Complex.ci'
+.line: 4
+.owner: Complex
+}
+Complex.im: float64 {
+.kind: const variable(f64)
+.base: `float64`
+.size: 8
+.name: 'im'
+.file: 'lib/math.Complex.ci'
+.line: 5
+.owner: Complex
+.value: (0)
+}
+Complex(re: float64): Complex: function {
+.kind: static const function
+.base: `function`
+.size: 8
+.name: 'Complex'
+.file: 'lib/math.Complex.ci'
+.line: 40
+.param .result: Complex (size: 16 -> variable(val))
+.param re: float64 (size: 8 -> variable(f64))
+.value: {
+	return .result := {
+			.result.re := re;
+			.result.im := (0);
+		};
+}
+.instructions: (8 bytes)
+	lib/math.Complex.ci:41: (8 bytes): return .result := {...};
+	<Complex+?>:    dup.x2 sp(1)
+	<Complex+?>:    set.x2 sp(5)
+	:: (3 bytes): .result.im := (0)
+	<Complex+?>:    load.z64
+	<Complex+?>:    set.x2 sp(7)
+	<Complex+?>:    ret
+}
+Complex(re: float64, im: float64): Complex: function {
+.kind: static const function
+.base: `function`
+.size: 9
+.name: 'Complex'
+.file: 'lib/math.Complex.ci'
+.line: 45
+.param .result: Complex (size: 16 -> variable(val))
+.param re: float64 (size: 8 -> variable(f64))
+.param im: float64 (size: 8 -> variable(f64))
+.value: {
+	return .result := {
+			.result.re := re;
+			.result.im := im;
+		};
+}
+.instructions: (9 bytes)
+	lib/math.Complex.ci:46: (9 bytes): return .result := {...};
+	<Complex+?>:    dup.x2 sp(3)
+	<Complex+?>:    set.x2 sp(7)
+	lib/math.Complex.ci:48: (4 bytes): .result.im := im;
+	<Complex+?>:    dup.x2 sp(1)
+	<Complex+?>:    set.x2 sp(9)
+	<Complex+?>:    ret
+}
+neg(a: Complex): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'neg'
+.file: 'lib/math.Complex.ci'
+.line: 52
+.param .result: Complex (size: 16 -> val)
+.param a: Complex (size: 16 -> variable(val))
+.value: Complex(-a.re, -a.im)
+}
+add(a: Complex, b: Complex): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'add'
+.file: 'lib/math.Complex.ci'
+.line: 54
+.param .result: Complex (size: 16 -> val)
+.param a: Complex (size: 16 -> variable(val))
+.param b: Complex (size: 16 -> variable(val))
+.value: Complex(a.re + b.re, a.im + b.im)
+}
+add(a: Complex, b: float64): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'add'
+.file: 'lib/math.Complex.ci'
+.line: 55
+.param .result: Complex (size: 16 -> val)
+.param a: Complex (size: 16 -> variable(val))
+.param b: float64 (size: 8 -> f64)
+.value: Complex(a.re + b, a.im)
+}
+add(a: float64, b: Complex): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'add'
+.file: 'lib/math.Complex.ci'
+.line: 56
+.param .result: Complex (size: 16 -> val)
+.param a: float64 (size: 8 -> f64)
+.param b: Complex (size: 16 -> variable(val))
+.value: Complex(a + b.re, b.im)
+}
+sub(a: Complex, b: Complex): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'sub'
+.file: 'lib/math.Complex.ci'
+.line: 58
+.param .result: Complex (size: 16 -> val)
+.param a: Complex (size: 16 -> variable(val))
+.param b: Complex (size: 16 -> variable(val))
+.value: Complex(a.re - b.re, a.im - b.im)
+}
+sub(a: Complex, b: float64): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'sub'
+.file: 'lib/math.Complex.ci'
+.line: 59
+.param .result: Complex (size: 16 -> val)
+.param a: Complex (size: 16 -> variable(val))
+.param b: float64 (size: 8 -> f64)
+.value: Complex(a.re - b, a.im)
+}
+sub(a: float64, b: Complex): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'sub'
+.file: 'lib/math.Complex.ci'
+.line: 60
+.param .result: Complex (size: 16 -> val)
+.param a: float64 (size: 8 -> f64)
+.param b: Complex (size: 16 -> variable(val))
+.value: Complex(a - b.re, b.im)
+}
+mul(a: Complex, b: Complex): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'mul'
+.file: 'lib/math.Complex.ci'
+.line: 62
+.param .result: Complex (size: 16 -> val)
+.param a: Complex (size: 16 -> variable(val))
+.param b: Complex (size: 16 -> variable(val))
+.value: Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re)
+}
+mul(a: Complex, b: float64): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'mul'
+.file: 'lib/math.Complex.ci'
+.line: 63
+.param .result: Complex (size: 16 -> val)
+.param a: Complex (size: 16 -> variable(val))
+.param b: float64 (size: 8 -> variable(f64))
+.value: Complex(a.re * b, a.im * b)
+}
+mul(a: float64, b: Complex): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'mul'
+.file: 'lib/math.Complex.ci'
+.line: 64
+.param .result: Complex (size: 16 -> val)
+.param a: float64 (size: 8 -> variable(f64))
+.param b: Complex (size: 16 -> variable(val))
+.value: Complex(a * b.re, a * b.im)
+}
+div(a: Complex, b: Complex): Complex: function {
+.kind: static const function
+.base: `function`
+.size: 128
+.name: 'div'
+.file: 'lib/math.Complex.ci'
+.line: 66
+.param .result: Complex (size: 16 -> variable(val))
+.param a: Complex (size: 16 -> variable(val))
+.param b: Complex (size: 16 -> variable(val))
+.value: {
+	if (Math.abs(b.re) >= Math.abs(b.im)) {
+		r: float64 := b.im / b.re;
+		den: float64 := b.re + r * b.im;
+		return .result := {
+			.result.re := (a.re + r * a.im) / den;
+			.result.im := (a.im - r * a.re) / den;
+		};
+	}
+	r: float64 := b.re / b.im;
+	den: float64 := b.im + r * b.re;
+	return .result := {
+			.result.re := (a.re * r + a.im) / den;
+			.result.im := (a.im * r - a.re) / den;
+		};
+}
+.instructions: (128 bytes)
+	lib/math.Complex.ci:70: (79 bytes): if (Math.abs(b.re) >= Math.abs(b.im))
+	<div+?>:    load.z64
+	<div+?>:    dup.x2 sp(3)
+	<div+?>:    load.ref .?????? ;Math.abs(x: float64): float64
+	<div+?>:    call
+	<div+?>:    inc.sp(-8)
+	<div+?>:    load.z64
+	<div+?>:    dup.x2 sp(7)
+	<div+?>:    load.ref .?????? ;Math.abs(x: float64): float64
+	<div+?>:    call
+	<div+?>:    inc.sp(-8)
+	<div+?>:    clt.f64
+	<div+?>:    jnz <div+?>
+	lib/math.Complex.ci:71: (5 bytes): r: float64 := b.im / b.re
+	<div+?>:    dup.x2 sp(3)
+	<div+?>:    dup.x2 sp(3)
+	<div+?>:    div.f64
+	lib/math.Complex.ci:72: (8 bytes): den: float64 := b.re + r * b.im
+	<div+?>:    dup.x2 sp(3)
+	<div+?>:    dup.x2 sp(2)
+	<div+?>:    dup.x2 sp(9)
+	<div+?>:    mul.f64
+	<div+?>:    add.f64
+	lib/math.Complex.ci:73: (31 bytes): return .result := {...};
+	<div+?>:    dup.x2 sp(9)
+	<div+?>:    dup.x2 sp(4)
+	<div+?>:    dup.x2 sp(15)
+	<div+?>:    mul.f64
+	<div+?>:    add.f64
+	<div+?>:    dup.x2 sp(2)
+	<div+?>:    div.f64
+	<div+?>:    set.x2 sp(15)
+	lib/math.Complex.ci:75: (13 bytes): .result.im := (a.im - r * a.re) / den;
+	<div+?>:    dup.x2 sp(11)
+	<div+?>:    dup.x2 sp(4)
+	<div+?>:    dup.x2 sp(13)
+	<div+?>:    mul.f64
+	<div+?>:    sub.f64
+	<div+?>:    dup.x2 sp(2)
+	<div+?>:    div.f64
+	<div+?>:    set.x2 sp(17)
+	<div+?>:    inc.sp(-16)
+	<div+?>:    ret
+	<div+?>:    inc.sp(-16)
+	lib/math.Complex.ci:78: (5 bytes): r: float64 := b.re / b.im
+	<div+?>:    dup.x2 sp(1)
+	<div+?>:    dup.x2 sp(5)
+	<div+?>:    div.f64
+	lib/math.Complex.ci:79: (8 bytes): den: float64 := b.im + r * b.re
+	<div+?>:    dup.x2 sp(5)
+	<div+?>:    dup.x2 sp(2)
+	<div+?>:    dup.x2 sp(7)
+	<div+?>:    mul.f64
+	<div+?>:    add.f64
+	lib/math.Complex.ci:80: (31 bytes): return .result := {...};
+	<div+?>:    dup.x2 sp(9)
+	<div+?>:    dup.x2 sp(4)
+	<div+?>:    mul.f64
+	<div+?>:    dup.x2 sp(13)
+	<div+?>:    add.f64
+	<div+?>:    dup.x2 sp(2)
+	<div+?>:    div.f64
+	<div+?>:    set.x2 sp(15)
+	lib/math.Complex.ci:82: (13 bytes): .result.im := (a.im * r - a.re) / den;
+	<div+?>:    dup.x2 sp(11)
+	<div+?>:    dup.x2 sp(4)
+	<div+?>:    mul.f64
+	<div+?>:    dup.x2 sp(11)
+	<div+?>:    sub.f64
+	<div+?>:    dup.x2 sp(2)
+	<div+?>:    div.f64
+	<div+?>:    set.x2 sp(17)
+	<div+?>:    inc.sp(-16)
+	<div+?>:    ret
+	<div+?>:    inc.sp(-16)
+	<div+?>:    ret
+}
+abs(a: Complex): float64: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'abs'
+.file: 'lib/math.Complex.ci'
+.line: 86
+.param .result: float64 (size: 8 -> f64)
+.param a: Complex (size: 16 -> variable(val))
+.value: float64.sqrt(a.re * a.re + a.im * a.im)
+}
+arg(a: Complex): float64: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'arg'
+.file: 'lib/math.Complex.ci'
+.line: 87
+.param .result: float64 (size: 8 -> f64)
+.param a: Complex (size: 16 -> variable(val))
+.value: float64.atan2(a.re, a.im)
+}
+invert(a: Complex): Complex: function {
+.kind: static const function
+.base: `function`
+.size: 48
+.name: 'invert'
+.file: 'lib/math.Complex.ci'
+.line: 90
+.param .result: Complex (size: 16 -> variable(val))
+.param a: Complex (size: 16 -> variable(val))
+.value: {
+	d: float64 := (a.re * a.re + a.im * a.im);
+	return .result := Complex(+a.re / d, -a.im / d);
+}
+.instructions: (48 bytes)
+	lib/math.Complex.ci:91: (11 bytes): d: float64 := (a.re * a.re + a.im * a.im)
+	<invert+?>:    dup.x2 sp(1)
+	<invert+?>:    dup.x2 sp(3)
+	<invert+?>:    mul.f64
+	<invert+?>:    dup.x2 sp(5)
+	<invert+?>:    dup.x2 sp(7)
+	<invert+?>:    mul.f64
+	<invert+?>:    add.f64
+	lib/math.Complex.ci:92: (32 bytes): return .result := Complex(+a.re / d, -a.im / d);
+	<invert+?>:    inc.sp(+16)
+	<invert+?>:    dup.x2 sp(7)
+	<invert+?>:    dup.x2 sp(6)
+	<invert+?>:    div.f64
+	<invert+?>:    dup.x2 sp(11)
+	<invert+?>:    neg.f64
+	<invert+?>:    dup.x2 sp(8)
+	<invert+?>:    div.f64
+	<invert+?>:    load.ref .?????? ;Complex(re: float64, im: float64): Complex
+	<invert+?>:    call
+	<invert+?>:    inc.sp(-16)
+	<invert+?>:    set.x4 sp(11)
+	<invert+?>:    inc.sp(-8)
+	<invert+?>:    ret
+	<invert+?>:    inc.sp(-8)
+	<invert+?>:    ret
+}
+conj(a: Complex): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'conj'
+.file: 'lib/math.Complex.ci'
+.line: 95
+.param .result: Complex (size: 16 -> val)
+.param a: Complex (size: 16 -> variable(val))
+.value: Complex(a.re, -a.im)
+}
+exp(a: Complex): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'exp'
+.file: 'lib/math.Complex.ci'
+.line: 97
+.param .result: Complex (size: 16 -> val)
+.param a: Complex (size: 16 -> variable(val))
+.value: Complex(float64.exp(a.re) * float64.cos(a.im), float64.exp(a.re) * float64.sin(a.im))
+}
+log(a: Complex): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'log'
+.file: 'lib/math.Complex.ci'
+.line: 99
+.param .result: Complex (size: 16 -> val)
+.param a: Complex (size: 16 -> variable(val))
+.value: Complex(float64.log(abs(a)), arg(a))
+}
+pow(a: Complex, b: Complex): Complex: function {
+.kind: static const function
+.base: `function`
+.size: 117
+.name: 'pow'
+.file: 'lib/math.Complex.ci'
+.line: 101
+.param .result: Complex (size: 16 -> variable(val))
+.param a: Complex (size: 16 -> variable(val))
+.param b: Complex (size: 16 -> variable(val))
+.value: {
+	r: float64 := abs(a);
+	t: float64 := arg(a);
+	u: float64 := b.re * t + b.im * float64.log(r);
+	v: float64 := float64.pow(r, b.re) * float64.exp(-b.im * t);
+	return .result := Complex(v * float64.cos(u), v * float64.sin(u));
+}
+.instructions: (117 bytes)
+	lib/math.Complex.ci:102: (23 bytes): r: float64 := abs(a)
+	<pow+?>:    dup.x4 sp(5)
+	<pow+?>:    dup.x2 sp(0)
+	<pow+?>:    dup.x2 sp(2)
+	<pow+?>:    mul.f64
+	<pow+?>:    dup.x2 sp(4)
+	<pow+?>:    dup.x2 sp(6)
+	<pow+?>:    mul.f64
+	<pow+?>:    add.f64
+	<pow+?>:    nfc(42) ;float64.sqrt(x: float64): float64
+	<pow+?>:    set.x2 sp(4)
+	<pow+?>:    inc.sp(-8)
+	lib/math.Complex.ci:103: (16 bytes): t: float64 := arg(a)
+	<pow+?>:    dup.x4 sp(7)
+	<pow+?>:    dup.x2 sp(0)
+	<pow+?>:    dup.x2 sp(4)
+	<pow+?>:    nfc(43) ;float64.atan2(x: float64, y: float64): float64
+	<pow+?>:    set.x2 sp(4)
+	<pow+?>:    inc.sp(-8)
+	lib/math.Complex.ci:104: (15 bytes): u: float64 := b.re * t + b.im * float64.log(r)
+	<pow+?>:    dup.x2 sp(5)
+	<pow+?>:    dup.x2 sp(2)
+	<pow+?>:    mul.f64
+	<pow+?>:    dup.x2 sp(9)
+	<pow+?>:    dup.x2 sp(6)
+	<pow+?>:    nfc(39) ;float64.log(x: float64): float64
+	<pow+?>:    mul.f64
+	<pow+?>:    add.f64
+	lib/math.Complex.ci:105: (19 bytes): v: float64 := float64.pow(r, b.re) * float64.exp(-b.im * t)
+	<pow+?>:    dup.x2 sp(4)
+	<pow+?>:    dup.x2 sp(9)
+	<pow+?>:    nfc(41) ;float64.pow(x: float64, y: float64): float64
+	<pow+?>:    dup.x2 sp(11)
+	<pow+?>:    neg.f64
+	<pow+?>:    dup.x2 sp(6)
+	<pow+?>:    mul.f64
+	<pow+?>:    nfc(40) ;float64.exp(x: float64): float64
+	<pow+?>:    mul.f64
+	lib/math.Complex.ci:106: (39 bytes): return .result := Complex(v * float64.cos(u), v * float64.sin(u));
+	<pow+?>:    inc.sp(+16)
+	<pow+?>:    dup.x2 sp(4)
+	<pow+?>:    dup.x2 sp(8)
+	<pow+?>:    nfc(37) ;float64.cos(x: float64): float64
+	<pow+?>:    mul.f64
+	<pow+?>:    dup.x2 sp(6)
+	<pow+?>:    dup.x2 sp(10)
+	<pow+?>:    nfc(36) ;float64.sin(x: float64): float64
+	<pow+?>:    mul.f64
+	<pow+?>:    load.ref .?????? ;Complex(re: float64, im: float64): Complex
+	<pow+?>:    call
+	<pow+?>:    inc.sp(-16)
+	<pow+?>:    set.x4 sp(21)
+	<pow+?>:    inc.sp(-32)
+	<pow+?>:    ret
+	<pow+?>:    inc.sp(-32)
+	<pow+?>:    ret
+}
+pow(a: Complex, b: float64): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'pow'
+.file: 'lib/math.Complex.ci'
+.line: 109
+.param .result: Complex (size: 16 -> val)
+.param a: Complex (size: 16 -> val)
+.param b: float64 (size: 8 -> f64)
+.value: pow(a, Complex(b))
+}
+sin(a: Complex): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'sin'
+.file: 'lib/math.Complex.ci'
+.line: 111
+.param .result: Complex (size: 16 -> val)
+.param a: Complex (size: 16 -> variable(val))
+.value: Complex(float64.sin(a.re) * Math.cosh(a.im), float64.cos(a.re) * Math.sinh(a.im))
+}
+cos(a: Complex): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'cos'
+.file: 'lib/math.Complex.ci'
+.line: 112
+.param .result: Complex (size: 16 -> val)
+.param a: Complex (size: 16 -> variable(val))
+.value: Complex(float64.cos(a.re) * Math.cosh(a.im), -float64.sin(a.re) * Math.sinh(a.im))
+}
+tan(a: Complex): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'tan'
+.file: 'lib/math.Complex.ci'
+.line: 113
+.param .result: Complex (size: 16 -> val)
+.param a: Complex (size: 16 -> variable(val))
+.value: div(sin(a), cos(a))
+}
+toCartesian(x: Complex): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'toCartesian'
+.file: 'lib/math.Complex.ci'
+.line: 127
+.param .result: Complex (size: 16 -> val)
+.param x: Complex (size: 16 -> variable(val))
+.value: Complex(x.re * float64.cos(x.im), x.re * float64.sin(x.im))
+}
+toPolar(x: Complex): Complex: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'toPolar'
+.file: 'lib/math.Complex.ci'
+.line: 128
+.param .result: Complex (size: 16 -> val)
+.param x: Complex (size: 16 -> variable(val))
+.value: Complex(abs(x), arg(x))
+}
+length(str: char[*]): int32: function {
+.kind: static const function
+.base: `function`
+.size: 49
+.name: 'length'
+.file: 'lib/string.ci'
+.line: 3
+.param .result: int32 (size: 4 -> variable(i32))
+.param str: char[*] (size: 4 -> variable(ref))
+.value: {
+	if (str == null) {
+		return .result := 0;
+	}
+	result: int32 := 0;
+	for ( ; str[result]; result := result + 1) ;
+	return .result := result;
+}
+.instructions: (49 bytes)
+	lib/string.ci:4: (16 bytes): if (str == null)
+	<length+?>:    dup.x1 sp(1)
+	<length+?>:    load.ref .?????? ;null
+	<length+?>:    ceq.i32
+	<length+?>:    jz <length+?>
+	lib/string.ci:5: (4 bytes): return .result := 0;
+	<length+?>:    load.z32
+	<length+?>:    set.x1 sp(3)
+	<length+?>:    ret
+	lib/string.ci:7: (1 bytes): result: int32 := 0
+	<length+?>:    load.z32
+	lib/string.ci:8: (18 bytes): for ( ; str[result]; result := result + 1)
+	<length+?>:    jmp <length+?>
+	lib/string.ci:8: (4 bytes): result := result + 1
+	<length+?>:    inc.i32(+1)
+	lib/string.ci:8: (10 bytes): str[result]
+	<length+?>:    dup.x1 sp(2)
+	<length+?>:    dup.x1 sp(1)
+	<length+?>:    add.i32
+	<length+?>:    load.i8
+	<length+?>:    jnz <length+?>
+	lib/string.ci:10: (9 bytes): return .result := result;
+	<length+?>:    dup.x1 sp(0)
+	<length+?>:    set.x1 sp(4)
+	<length+?>:    inc.sp(-4)
+	<length+?>:    ret
+	<length+?>:    inc.sp(-4)
+	<length+?>:    ret
+}
+indexOf(str: char[*], chr: char): int32: function {
+.kind: static const function
+.base: `function`
+.size: 56
+.name: 'indexOf'
+.file: 'lib/string.ci'
+.line: 14
+.param .result: int32 (size: 4 -> variable(i32))
+.param str: char[*] (size: 4 -> variable(ref))
+.param chr: char (size: 4 -> variable(i32))
+.value: {
+	for (i: int32 := 0; str[i]; i := i + 1) {
+		if (str[i] == chr) {
+			return .result := i;
+		}
+	}
+	return .result := -1;
+}
+.instructions: (56 bytes)
+	lib/string.ci:15: (48 bytes): for (i: int32 := 0; str[i]; i := i + 1)
+	<indexOf+?>:    load.z32
+	<indexOf+?>:    jmp <indexOf+?>
+	lib/string.ci:16: (25 bytes): if (str[i] == chr)
+	<indexOf+?>:    dup.x1 sp(3)
+	<indexOf+?>:    dup.x1 sp(1)
+	<indexOf+?>:    add.i32
+	<indexOf+?>:    load.i8
+	<indexOf+?>:    load.sp(+12)
+	<indexOf+?>:    load.i8
+	<indexOf+?>:    ceq.i32
+	<indexOf+?>:    jz <indexOf+?>
+	lib/string.ci:17: (9 bytes): return .result := i;
+	<indexOf+?>:    dup.x1 sp(0)
+	<indexOf+?>:    set.x1 sp(5)
+	<indexOf+?>:    inc.sp(-4)
+	<indexOf+?>:    ret
+	lib/string.ci:15: (4 bytes): i := i + 1
+	<indexOf+?>:    inc.i32(+1)
+	lib/string.ci:15: (10 bytes): str[i]
+	<indexOf+?>:    dup.x1 sp(3)
+	<indexOf+?>:    dup.x1 sp(1)
+	<indexOf+?>:    add.i32
+	<indexOf+?>:    load.i8
+	<indexOf+?>:    jnz <indexOf+?>
+	<indexOf+?>:    inc.sp(-4)
+	lib/string.ci:20: (8 bytes): return .result := -1;
+	<indexOf+?>:    load.c32 -1
+	<indexOf+?>:    set.x1 sp(4)
+	<indexOf+?>:    ret
+}
+lastIndexOf(str: char[*], chr: char): int32: function {
+.kind: static const function
+.base: `function`
+.size: 62
+.name: 'lastIndexOf'
+.file: 'lib/string.ci'
+.line: 24
+.param .result: int32 (size: 4 -> variable(i32))
+.param str: char[*] (size: 4 -> variable(ref))
+.param chr: char (size: 4 -> variable(i32))
+.value: {
+	result: int32 := -1;
+	for (i: int32 := 0; str[i]; i := i + 1) {
+		if (str[i] == chr) {
+			result := i;
+		}
+	}
+	return .result := result;
+}
+.instructions: (62 bytes)
+	lib/string.ci:25: (5 bytes): result: int32 := -1
+	<lastIndexOf+?>:    load.c32 -1
+	lib/string.ci:26: (43 bytes): for (i: int32 := 0; str[i]; i := i + 1)
+	<lastIndexOf+?>:    load.z32
+	<lastIndexOf+?>:    jmp <lastIndexOf+?>
+	lib/string.ci:27: (20 bytes): if (str[i] == chr)
+	<lastIndexOf+?>:    dup.x1 sp(4)
+	<lastIndexOf+?>:    dup.x1 sp(1)
+	<lastIndexOf+?>:    add.i32
+	<lastIndexOf+?>:    load.i8
+	<lastIndexOf+?>:    load.sp(+16)
+	<lastIndexOf+?>:    load.i8
+	<lastIndexOf+?>:    ceq.i32
+	<lastIndexOf+?>:    jz <lastIndexOf+?>
+	lib/string.ci:28: (4 bytes): result := i;
+	<lastIndexOf+?>:    dup.x1 sp(0)
+	<lastIndexOf+?>:    set.x1 sp(2)
+	lib/string.ci:26: (4 bytes): i := i + 1
+	<lastIndexOf+?>:    inc.i32(+1)
+	lib/string.ci:26: (10 bytes): str[i]
+	<lastIndexOf+?>:    dup.x1 sp(4)
+	<lastIndexOf+?>:    dup.x1 sp(1)
+	<lastIndexOf+?>:    add.i32
+	<lastIndexOf+?>:    load.i8
+	<lastIndexOf+?>:    jnz <lastIndexOf+?>
+	<lastIndexOf+?>:    inc.sp(-4)
+	lib/string.ci:31: (9 bytes): return .result := result;
+	<lastIndexOf+?>:    dup.x1 sp(0)
+	<lastIndexOf+?>:    set.x1 sp(5)
+	<lastIndexOf+?>:    inc.sp(-4)
+	<lastIndexOf+?>:    ret
+	<lastIndexOf+?>:    inc.sp(-4)
+	<lastIndexOf+?>:    ret
+}
+startsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool: function {
+.kind: static const function
+.base: `function`
+.size: 73
+.name: 'startsWith'
+.file: 'lib/string.ci'
+.line: 35
+.param .result: bool (size: 4 -> variable(bool))
+.param str: char[*] (size: 4 -> variable(ref))
+.param with: char[*] (size: 4 -> variable(ref))
+.param cmp: function (size: 4 -> variable(ref))
+.value: {
+	for (i: int32 := 0; (with[i]) != 0; i := i + 1) {
+		if (cmp(str[i], with[i]) != 0) {
+			return .result := false;
+		}
+	}
+	return .result := true;
+}
+.instructions: (73 bytes)
+	lib/string.ci:36: (62 bytes): for (i: int32 := 0; (with[i]) != 0; i := i + 1)
+	<startsWith+?>:    load.z32
+	<startsWith+?>:    jmp <startsWith+?>
+	lib/string.ci:37: (37 bytes): if (cmp(str[i], with[i]) != 0)
+	<startsWith+?>:    load.z32
+	<startsWith+?>:    dup.x1 sp(5)
+	<startsWith+?>:    dup.x1 sp(2)
+	<startsWith+?>:    add.i32
+	<startsWith+?>:    load.i8
+	<startsWith+?>:    dup.x1 sp(5)
+	<startsWith+?>:    dup.x1 sp(3)
+	<startsWith+?>:    add.i32
+	<startsWith+?>:    load.i8
+	<startsWith+?>:    dup.x1 sp(5)
+	<startsWith+?>:    call
+	<startsWith+?>:    inc.sp(-8)
+	<startsWith+?>:    load.z32
+	<startsWith+?>:    ceq.i32
+	<startsWith+?>:    jnz <startsWith+?>
+	lib/string.ci:38: (11 bytes): return .result := false;
+	<startsWith+?>:    load.z32
+	<startsWith+?>:    load.sp(+24)
+	<startsWith+?>:    store.i8
+	<startsWith+?>:    inc.sp(-4)
+	<startsWith+?>:    ret
+	lib/string.ci:36: (4 bytes): i := i + 1
+	<startsWith+?>:    inc.i32(+1)
+	lib/string.ci:36: (12 bytes): (with[i]) != 0
+	<startsWith+?>:    dup.x1 sp(3)
+	<startsWith+?>:    dup.x1 sp(1)
+	<startsWith+?>:    add.i32
+	<startsWith+?>:    load.i8
+	<startsWith+?>:    load.z32
+	<startsWith+?>:    ceq.i32
+	<startsWith+?>:    jz <startsWith+?>
+	<startsWith+?>:    inc.sp(-4)
+	lib/string.ci:41: (11 bytes): return .result := true;
+	<startsWith+?>:    load.c32 1
+	<startsWith+?>:    load.sp(+20)
+	<startsWith+?>:    store.i8
+	<startsWith+?>:    ret
+}
+endsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool: function {
+.kind: static const function
+.base: `function`
+.size: 131
+.name: 'endsWith'
+.file: 'lib/string.ci'
+.line: 44
+.param .result: bool (size: 4 -> variable(bool))
+.param str: char[*] (size: 4 -> variable(ref))
+.param with: char[*] (size: 4 -> variable(ref))
+.param cmp: function (size: 4 -> variable(ref))
+.value: {
+	withLen: int32 := length(with);
+	strLen: int32 := length(str);
+	if (strLen < withLen) {
+		return .result := false;
+	}
+	for (i: int32 := 0; i < withLen; i := i + 1) {
+		if (cmp(str[strLen - withLen + i], with[i]) != 0) {
+			return .result := false;
+		}
+	}
+	return .result := true;
+}
+.instructions: (131 bytes)
+	lib/string.ci:45: (13 bytes): withLen: int32 := length(with)
+	<endsWith+?>:    load.z32
+	<endsWith+?>:    dup.x1 sp(3)
+	<endsWith+?>:    load.ref .?????? ;length(str: char[*]): int32
+	<endsWith+?>:    call
+	<endsWith+?>:    inc.sp(-4)
+	lib/string.ci:46: (13 bytes): strLen: int32 := length(str)
+	<endsWith+?>:    load.z32
+	<endsWith+?>:    dup.x1 sp(5)
+	<endsWith+?>:    load.ref .?????? ;length(str: char[*]): int32
+	<endsWith+?>:    call
+	<endsWith+?>:    inc.sp(-4)
+	lib/string.ci:47: (20 bytes): if (strLen < withLen)
+	<endsWith+?>:    dup.x1 sp(0)
+	<endsWith+?>:    dup.x1 sp(2)
+	<endsWith+?>:    clt.i32
+	<endsWith+?>:    jz <endsWith+?>
+	lib/string.ci:48: (11 bytes): return .result := false;
+	<endsWith+?>:    load.z32
+	<endsWith+?>:    load.sp(+28)
+	<endsWith+?>:    store.i8
+	<endsWith+?>:    inc.sp(-8)
+	<endsWith+?>:    ret
+	lib/string.ci:50: (65 bytes): for (i: int32 := 0; i < withLen; i := i + 1)
+	<endsWith+?>:    load.z32
+	<endsWith+?>:    jmp <endsWith+?>
+	lib/string.ci:51: (43 bytes): if (cmp(str[strLen - withLen + i], with[i]) != 0)
+	<endsWith+?>:    load.z32
+	<endsWith+?>:    dup.x1 sp(7)
+	<endsWith+?>:    dup.x1 sp(3)
+	<endsWith+?>:    dup.x1 sp(5)
+	<endsWith+?>:    sub.i32
+	<endsWith+?>:    dup.x1 sp(3)
+	<endsWith+?>:    add.i32
+	<endsWith+?>:    add.i32
+	<endsWith+?>:    load.i8
+	<endsWith+?>:    dup.x1 sp(7)
+	<endsWith+?>:    dup.x1 sp(3)
+	<endsWith+?>:    add.i32
+	<endsWith+?>:    load.i8
+	<endsWith+?>:    dup.x1 sp(7)
+	<endsWith+?>:    call
+	<endsWith+?>:    inc.sp(-8)
+	<endsWith+?>:    load.z32
+	<endsWith+?>:    ceq.i32
+	<endsWith+?>:    jnz <endsWith+?>
+	lib/string.ci:52: (11 bytes): return .result := false;
+	<endsWith+?>:    load.z32
+	<endsWith+?>:    load.sp(+32)
+	<endsWith+?>:    store.i8
+	<endsWith+?>:    inc.sp(-12)
+	<endsWith+?>:    ret
+	lib/string.ci:50: (4 bytes): i := i + 1
+	<endsWith+?>:    inc.i32(+1)
+	lib/string.ci:50: (9 bytes): i < withLen
+	<endsWith+?>:    dup.x1 sp(0)
+	<endsWith+?>:    dup.x1 sp(3)
+	<endsWith+?>:    clt.i32
+	<endsWith+?>:    jnz <endsWith+?>
+	<endsWith+?>:    inc.sp(-4)
+	lib/string.ci:55: (15 bytes): return .result := true;
+	<endsWith+?>:    load.c32 1
+	<endsWith+?>:    load.sp(+28)
+	<endsWith+?>:    store.i8
+	<endsWith+?>:    inc.sp(-8)
+	<endsWith+?>:    ret
+	<endsWith+?>:    inc.sp(-8)
+	<endsWith+?>:    ret
+}
+compare(str: char[*], with: char[*], cmp(chr: char, with: char): int32): int32: function {
+.kind: static const function
+.base: `function`
+.size: 74
+.name: 'compare'
+.file: 'lib/string.ci'
+.line: 58
+.param .result: int32 (size: 4 -> variable(i32))
+.param str: char[*] (size: 4 -> variable(ref))
+.param with: char[*] (size: 4 -> variable(ref))
+.param cmp: function (size: 4 -> variable(ref))
+.value: {
+	result: int32 := 0;
+	for (i: int32 := 0; result == 0; i := i + 1) {
+		result := cmp(str[i], with[i]);
+		if ((str[i]) == 0) {
+			break;
+		}
+	}
+	return .result := result;
+}
+.instructions: (74 bytes)
+	lib/string.ci:59: (1 bytes): result: int32 := 0
+	<compare+?>:    load.z32
+	lib/string.ci:60: (59 bytes): for (i: int32 := 0; result == 0; i := i + 1)
+	<compare+?>:    load.z32
+	<compare+?>:    jmp <compare+?>
+	lib/string.ci:61: (22 bytes): result := cmp(str[i], with[i]);
+	<compare+?>:    load.z32
+	<compare+?>:    dup.x1 sp(6)
+	<compare+?>:    dup.x1 sp(2)
+	<compare+?>:    add.i32
+	<compare+?>:    load.i8
+	<compare+?>:    dup.x1 sp(6)
+	<compare+?>:    dup.x1 sp(3)
+	<compare+?>:    add.i32
+	<compare+?>:    load.i8
+	<compare+?>:    dup.x1 sp(6)
+	<compare+?>:    call
+	<compare+?>:    inc.sp(-8)
+	<compare+?>:    set.x1 sp(2)
+	lib/string.ci:62: (16 bytes): if ((str[i]) == 0)
+	<compare+?>:    dup.x1 sp(5)
+	<compare+?>:    dup.x1 sp(1)
+	<compare+?>:    add.i32
+	<compare+?>:    load.i8
+	<compare+?>:    load.z32
+	<compare+?>:    ceq.i32
+	<compare+?>:    jz <compare+?>
+	lib/string.ci:63: (4 bytes): break;
+	<compare+?>:    jmp <compare+?>
+	lib/string.ci:60: (4 bytes): i := i + 1
+	<compare+?>:    inc.i32(+1)
+	lib/string.ci:60: (8 bytes): result == 0
+	<compare+?>:    dup.x1 sp(1)
+	<compare+?>:    load.z32
+	<compare+?>:    ceq.i32
+	<compare+?>:    jnz <compare+?>
+	<compare+?>:    inc.sp(-4)
+	lib/string.ci:66: (9 bytes): return .result := result;
+	<compare+?>:    dup.x1 sp(0)
+	<compare+?>:    set.x1 sp(6)
+	<compare+?>:    inc.sp(-4)
+	<compare+?>:    ret
+	<compare+?>:    inc.sp(-4)
+	<compare+?>:    ret
+}
+ignCaseCmp(chr: char, with: char): int32: function {
+.kind: static const function
+.base: `function`
+.size: 36
+.name: 'ignCaseCmp'
+.file: 'lib/string.ci'
+.line: 70
+.param .result: int32 (size: 4 -> variable(i32))
+.param chr: char (size: 4 -> variable(i32))
+.param with: char (size: 4 -> variable(i32))
+.value: {
+	static const ignCase(chr: char): char := {
+		if (chr >= 'A' && chr <= 'Z') {
+			chr := chr - 'A';
+			chr := chr + 'a';
+		}
+		return .result := chr;
+	};
+	return .result := ignCase(chr) - ignCase(with);
+}
+.instructions: (36 bytes)
+	lib/string.ci:79: (36 bytes): return .result := ignCase(chr) - ignCase(with);
+	<ignCaseCmp+?>:    load.z32
+	<ignCaseCmp+?>:    load.sp(+12)
+	<ignCaseCmp+?>:    load.i8
+	<ignCaseCmp+?>:    load.ref .?????? ;ignCaseCmp.ignCase(chr: char): char
+	<ignCaseCmp+?>:    call
+	<ignCaseCmp+?>:    inc.sp(-4)
+	<ignCaseCmp+?>:    load.z32
+	<ignCaseCmp+?>:    load.sp(+12)
+	<ignCaseCmp+?>:    load.i8
+	<ignCaseCmp+?>:    load.ref .?????? ;ignCaseCmp.ignCase(chr: char): char
+	<ignCaseCmp+?>:    call
+	<ignCaseCmp+?>:    inc.sp(-4)
+	<ignCaseCmp+?>:    sub.i32
+	<ignCaseCmp+?>:    set.x1 sp(4)
+	<ignCaseCmp+?>:    ret
+}
+caseCmp(chr: char, with: char): int32: function {
+.kind: static const function
+.base: `function`
+.size: 14
+.name: 'caseCmp'
+.file: 'lib/string.ci'
+.line: 82
+.param .result: int32 (size: 4 -> variable(i32))
+.param chr: char (size: 4 -> variable(i32))
+.param with: char (size: 4 -> variable(i32))
+.value: {
+	return .result := chr - with;
+}
+.instructions: (14 bytes)
+	lib/string.ci:83: (14 bytes): return .result := chr - with;
+	<caseCmp+?>:    load.sp(+8)
+	<caseCmp+?>:    load.i8
+	<caseCmp+?>:    load.sp(+8)
+	<caseCmp+?>:    load.i8
+	<caseCmp+?>:    sub.i32
+	<caseCmp+?>:    set.x1 sp(4)
+	<caseCmp+?>:    ret
+}
+startsWith(str: char[*], with: char[*]): bool: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'startsWith'
+.file: 'lib/string.ci'
+.line: 86
+.param .result: bool (size: 1 -> bool)
+.param str: char[*] (size: 4 -> ref)
+.param with: char[*] (size: 4 -> ref)
+.value: startsWith(str, with, caseCmp)
+}
+endsWith(str: char[*], with: char[*]): bool: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'endsWith'
+.file: 'lib/string.ci'
+.line: 87
+.param .result: bool (size: 1 -> bool)
+.param str: char[*] (size: 4 -> ref)
+.param with: char[*] (size: 4 -> ref)
+.value: endsWith(str, with, caseCmp)
+}
+compare(str: char[*], with: char[*]): int32: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'compare'
+.file: 'lib/string.ci'
+.line: 88
+.param .result: int32 (size: 4 -> i32)
+.param str: char[*] (size: 4 -> ref)
+.param with: char[*] (size: 4 -> ref)
+.value: compare(str, with, caseCmp)
+}
 integer: typename {
 .kind: inline
 .base: `typename`
@@ -5169,9 +7760,12 @@ RecordMethodTest: typename {
 .field forwardMethod: function (size: 4 -> static variable(ref))
 .field abstractMethod: function (size: 4 -> variable(ref))
 .field delegateMethod: function (size: 4 -> variable(ref))
+.field virtualMethod: function (size: 4 -> const variable(ref))
 .field virtualMethod: function (size: 8 -> static const function)
-.field virtualMethod: function (size: 4 -> variable(ref))
 .field forwardMethod: function (size: 8 -> static const function)
+.field print: function (size: 4 -> const variable(ref))
+.field print: function (size: 40 -> static const function)
+.field printStatic: function (size: 40 -> static const function)
 }
 RecordMethodTest.staticMethod(x: int32, y: int32): int32: function {
 .kind: static const function
@@ -5234,6 +7828,19 @@ RecordMethodTest.delegateMethod(x: int32, y: int32): int32: function {
 .value: forwardMethod
 }
 RecordMethodTest.virtualMethod(x: int32, y: int32): int32: function {
+.kind: const variable(ref)
+.base: `function`
+.size: 4
+.name: 'virtualMethod'
+.file: 'test/lang.method.ci'
+.line: 26
+.owner: RecordMethodTest
+.param .result: int32 (size: 4 -> variable(i32))
+.param x: int32 (size: 4 -> variable(i32))
+.param y: int32 (size: 4 -> variable(i32))
+.value: virtualMethod
+}
+RecordMethodTest.virtualMethod(x: int32, y: int32): int32: function {
 .kind: static const function
 .base: `function`
 .size: 8
@@ -5254,19 +7861,6 @@ RecordMethodTest.virtualMethod(x: int32, y: int32): int32: function {
 	<virtualMethod+?>:    mul.i32
 	<virtualMethod+?>:    set.x1 sp(4)
 	<virtualMethod+?>:    ret
-}
-RecordMethodTest.virtualMethod(x: int32, y: int32): int32: function {
-.kind: variable(ref)
-.base: `function`
-.size: 4
-.name: 'virtualMethod'
-.file: 'test/lang.method.ci'
-.line: 26
-.owner: RecordMethodTest
-.param .result: int32 (size: 4 -> variable(i32))
-.param x: int32 (size: 4 -> variable(i32))
-.param y: int32 (size: 4 -> variable(i32))
-.value: virtualMethod
 }
 RecordMethodTest.forwardMethod(x: int32, y: int32): int32: function {
 .kind: static const function
@@ -5290,13 +7884,75 @@ RecordMethodTest.forwardMethod(x: int32, y: int32): int32: function {
 	<forwardMethod+?>:    set.x1 sp(4)
 	<forwardMethod+?>:    ret
 }
+RecordMethodTest.print(this: RecordMethodTest): void: function {
+.kind: const variable(ref)
+.base: `function`
+.size: 4
+.name: 'print'
+.file: 'test/lang.method.ci'
+.line: 40
+.owner: RecordMethodTest
+.param .result: void (size: 0 -> variable(void))
+.param this: RecordMethodTest (size: 16 -> variable(val))
+.value: print
+}
+RecordMethodTest.print(this: RecordMethodTest): void: function {
+.kind: static const function
+.base: `function`
+.size: 40
+.name: 'print'
+.file: 'test/lang.method.ci'
+.line: 40
+.owner: RecordMethodTest
+.param .result: void (size: 0 -> variable(void))
+.param this: RecordMethodTest (size: 16 -> variable(val))
+.value: {
+	trace("virtual");
+}
+.instructions: (40 bytes)
+	test/lang.method.ci:41: (39 bytes): trace("virtual");
+	<print+?>:    load.ref .?????? ;"test/lang.method.ci"
+	<print+?>:    load.c32 41
+	<print+?>:    load.c32 3
+	<print+?>:    load.c32 128
+	<print+?>:    load.ref .?????? ;"virtual"
+	<print+?>:    load.ref .?????? ;pointer
+	<print+?>:    load.ref .?????? ;null
+	<print+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<print+?>:    ret
+}
+RecordMethodTest.printStatic(this: RecordMethodTest): void: function {
+.kind: static const function
+.base: `function`
+.size: 40
+.name: 'printStatic'
+.file: 'test/lang.method.ci'
+.line: 44
+.owner: RecordMethodTest
+.param .result: void (size: 0 -> variable(void))
+.param this: RecordMethodTest (size: 16 -> variable(val))
+.value: {
+	trace("static");
+}
+.instructions: (40 bytes)
+	test/lang.method.ci:45: (39 bytes): trace("static");
+	<printStatic+?>:    load.ref .?????? ;"test/lang.method.ci"
+	<printStatic+?>:    load.c32 45
+	<printStatic+?>:    load.c32 3
+	<printStatic+?>:    load.c32 128
+	<printStatic+?>:    load.ref .?????? ;"static"
+	<printStatic+?>:    load.ref .?????? ;pointer
+	<printStatic+?>:    load.ref .?????? ;null
+	<printStatic+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<printStatic+?>:    ret
+}
 globalFunction(x: int32, y: int32): int32: function {
 .kind: static const function
 .base: `function`
 .size: 8
 .name: 'globalFunction'
 .file: 'test/lang.method.ci'
-.line: 41
+.line: 49
 .param .result: int32 (size: 4 -> variable(i32))
 .param x: int32 (size: 4 -> variable(i32))
 .param y: int32 (size: 4 -> variable(i32))
@@ -5304,7 +7960,7 @@ globalFunction(x: int32, y: int32): int32: function {
 	return .result := x * y;
 }
 .instructions: (8 bytes)
-	test/lang.method.ci:42: (8 bytes): return .result := x * y;
+	test/lang.method.ci:50: (8 bytes): return .result := x * y;
 	<globalFunction+?>:    dup.x1 sp(2)
 	<globalFunction+?>:    dup.x1 sp(2)
 	<globalFunction+?>:    mul.i32
@@ -5317,12 +7973,99 @@ recordMethodTest: RecordMethodTest {
 .size: 16
 .name: 'recordMethodTest'
 .file: 'test/lang.method.ci'
-.line: 45
+.line: 53
 .value: {
 	recordMethodTest.delegateMethod := globalFunction;
 	recordMethodTest.abstractMethod := RecordMethodTest.staticMethod;
 	recordMethodTest.virtualMethod := virtualMethod;
+	recordMethodTest.print := print;
 }
+}
+customPrint(this: RecordMethodTest): void: function {
+.kind: static const function
+.base: `function`
+.size: 40
+.name: 'customPrint'
+.file: 'test/lang.method.ci'
+.line: 59
+.param .result: void (size: 0 -> variable(void))
+.param this: RecordMethodTest (size: 16 -> variable(val))
+.value: {
+	trace("override");
+}
+.instructions: (40 bytes)
+	test/lang.method.ci:60: (39 bytes): trace("override");
+	<customPrint+?>:    load.ref .?????? ;"test/lang.method.ci"
+	<customPrint+?>:    load.c32 60
+	<customPrint+?>:    load.c32 3
+	<customPrint+?>:    load.c32 128
+	<customPrint+?>:    load.ref .?????? ;"override"
+	<customPrint+?>:    load.ref .?????? ;pointer
+	<customPrint+?>:    load.ref .?????? ;null
+	<customPrint+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<customPrint+?>:    ret
+}
+recordMethodTestCustomPrint: RecordMethodTest {
+.kind: variable(val)
+.base: `RecordMethodTest`
+.size: 16
+.name: 'recordMethodTestCustomPrint'
+.file: 'test/lang.method.ci'
+.line: 63
+.value: {
+	recordMethodTestCustomPrint.abstractMethod := globalFunction;
+	recordMethodTestCustomPrint.print := customPrint;
+	recordMethodTestCustomPrint.delegateMethod := forwardMethod;
+	recordMethodTestCustomPrint.virtualMethod := virtualMethod;
+}
+}
+print(this: RecordMethodTest): void: function {
+.kind: static const function
+.base: `function`
+.size: 40
+.name: 'print'
+.file: 'test/lang.method.ci'
+.line: 75
+.param .result: void (size: 0 -> variable(void))
+.param this: RecordMethodTest (size: 16 -> variable(val))
+.value: {
+	trace("extension");
+}
+.instructions: (40 bytes)
+	test/lang.method.ci:76: (39 bytes): trace("extension");
+	<print+?>:    load.ref .?????? ;"test/lang.method.ci"
+	<print+?>:    load.c32 76
+	<print+?>:    load.c32 3
+	<print+?>:    load.c32 128
+	<print+?>:    load.ref .?????? ;"extension"
+	<print+?>:    load.ref .?????? ;pointer
+	<print+?>:    load.ref .?????? ;null
+	<print+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<print+?>:    ret
+}
+printStatic(this: RecordMethodTest): void: function {
+.kind: static const function
+.base: `function`
+.size: 40
+.name: 'printStatic'
+.file: 'test/lang.method.ci'
+.line: 79
+.param .result: void (size: 0 -> variable(void))
+.param this: RecordMethodTest (size: 16 -> variable(val))
+.value: {
+	trace("extension");
+}
+.instructions: (40 bytes)
+	test/lang.method.ci:80: (39 bytes): trace("extension");
+	<printStatic+?>:    load.ref .?????? ;"test/lang.method.ci"
+	<printStatic+?>:    load.c32 80
+	<printStatic+?>:    load.c32 3
+	<printStatic+?>:    load.c32 128
+	<printStatic+?>:    load.ref .?????? ;"extension"
+	<printStatic+?>:    load.ref .?????? ;pointer
+	<printStatic+?>:    load.ref .?????? ;null
+	<printStatic+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<printStatic+?>:    ret
 }
 rgbF32: typename {
 .kind: static const typename(val)
@@ -8178,7 +10921,7 @@ forIdx: int32 {
 .main: function {
 .kind: static function
 .base: `function`
-.size: 7028
+.size: 7168
 .name: '.main'
 .print: '.main'
 .field typename: typename (size: 136 -> static const typename(ref))
@@ -8235,6 +10978,45 @@ forIdx: int32 {
 .field assertEq: function (size: 69 -> static const function)
 .field assertEq: function (size: 0 -> inline)
 .field sizeof: function (size: 0 -> inline)
+.field Math: typename (size: 0 -> static const typename(val))
+.field Complex: typename (size: 16 -> static const typename(val))
+.field Complex: function (size: 8 -> static const function)
+.field Complex: function (size: 9 -> static const function)
+.field neg: function (size: 0 -> inline)
+.field add: function (size: 0 -> inline)
+.field add: function (size: 0 -> inline)
+.field add: function (size: 0 -> inline)
+.field sub: function (size: 0 -> inline)
+.field sub: function (size: 0 -> inline)
+.field sub: function (size: 0 -> inline)
+.field mul: function (size: 0 -> inline)
+.field mul: function (size: 0 -> inline)
+.field mul: function (size: 0 -> inline)
+.field div: function (size: 128 -> static const function)
+.field abs: function (size: 0 -> inline)
+.field arg: function (size: 0 -> inline)
+.field invert: function (size: 48 -> static const function)
+.field conj: function (size: 0 -> inline)
+.field exp: function (size: 0 -> inline)
+.field log: function (size: 0 -> inline)
+.field pow: function (size: 117 -> static const function)
+.field pow: function (size: 0 -> inline)
+.field sin: function (size: 0 -> inline)
+.field cos: function (size: 0 -> inline)
+.field tan: function (size: 0 -> inline)
+.field toCartesian: function (size: 0 -> inline)
+.field toPolar: function (size: 0 -> inline)
+.field length: function (size: 49 -> static const function)
+.field indexOf: function (size: 56 -> static const function)
+.field lastIndexOf: function (size: 62 -> static const function)
+.field startsWith: function (size: 73 -> static const function)
+.field endsWith: function (size: 131 -> static const function)
+.field compare: function (size: 74 -> static const function)
+.field ignCaseCmp: function (size: 36 -> static const function)
+.field caseCmp: function (size: 14 -> static const function)
+.field startsWith: function (size: 0 -> inline)
+.field endsWith: function (size: 0 -> inline)
+.field compare: function (size: 0 -> inline)
 .field integer: typename (size: 0 -> inline)
 .field emitldz32: int32 (size: 4 -> variable(i32))
 .field emitldz64: int64 (size: 8 -> variable(i64))
@@ -8518,6 +11300,10 @@ forIdx: int32 {
 .field RecordMethodTest: typename (size: 16 -> static const typename(val))
 .field globalFunction: function (size: 8 -> static const function)
 .field recordMethodTest: RecordMethodTest (size: 16 -> variable(val))
+.field customPrint: function (size: 40 -> static const function)
+.field recordMethodTestCustomPrint: RecordMethodTest (size: 16 -> variable(val))
+.field print: function (size: 40 -> static const function)
+.field printStatic: function (size: 40 -> static const function)
 .field rgbF32: typename (size: 16 -> static const typename(val))
 .field rgbU8: typename (size: 3 -> static const typename(val))
 .field color: typename (size: 4 -> static const typename(val))
@@ -8784,7 +11570,7 @@ forIdx: int32 {
 .field ptrCne: bool (size: 1 -> variable(bool))
 .field t: int32 (size: 4 -> variable(i32))
 .field forIdx: int32 (size: 4 -> variable(i32))
-.field .main: function (size: 7028 -> static function)
+.field .main: function (size: 7168 -> static function)
 .value: {
 	{
 		static if (typename(raise) == function) {
@@ -8825,6 +11611,429 @@ forIdx: int32 {
 			assertEq(expected: int32, returned: int32): void := assertEq(expected, returned, null);
 		}
 		sizeof(type: typename): int32 := int32(type.size);
+		static const Math: struct {
+			static pi: typename := 3.141593;
+			static e: typename := 2.718282;
+			static ln2: typename := 0.693147;
+			static log2E: typename := 1.000000 / ln2;
+			static ln10: typename := 2.302585;
+			static log10E: typename := 1.000000 / ln10;
+			static phi: typename := 1.618034;
+			static sqrt2: typename := 1.414214;
+			static sqrtE: typename := 1.648721;
+			static sqrtPi: typename := 1.772454;
+			static sqrtPhi: typename := 1.272020;
+			static nan: typename := (0) / 0.000000;
+			static inf: typename := (1) / 0.000000;
+			static const modf(x: float64, intPart: float64): float64 := {
+				if (x < (1)) {
+					if (x < (0)) {
+						result: float64 := -modf(-x, intPart);
+						intPart := -intPart;
+						return .result := result;
+					}
+					intPart := (0);
+					return .result := x;
+				}
+				result: float64 := x % (1);
+				intPart := x - result;
+				return .result := result;
+			};
+			static const floor(x: float64): float64 := {
+				result: float64;
+				modf(x, result);
+				return .result := result;
+			};
+			static ceil(x: float64): float64 := -floor(-x);
+			static round(x: float64): float64 := floor(x + 0.500000);
+			static const abs(x: float32): float32 := {
+				if (x < (0)) {
+					return .result := -x;
+				}
+				return .result := x;
+			};
+			static const abs(x: float64): float64 := {
+				if (x < (0)) {
+					return .result := -x;
+				}
+				return .result := x;
+			};
+			static const min(a: float32, b: float32): float32 := {
+				if (a < b) {
+					return .result := a;
+				}
+				return .result := b;
+			};
+			static const min(a: float64, b: float64): float64 := {
+				if (a < b) {
+					return .result := a;
+				}
+				return .result := b;
+			};
+			static const max(a: float32, b: float32): float32 := {
+				if (a > b) {
+					return .result := a;
+				}
+				return .result := b;
+			};
+			static const max(a: float64, b: float64): float64 := {
+				if (a > b) {
+					return .result := a;
+				}
+				return .result := b;
+			};
+			static const clamp(t: float32, a: float32, b: float32): float32 := {
+				if (t < a) {
+					return .result := a;
+				}
+				if (t > b) {
+					return .result := b;
+				}
+				return .result := t;
+			};
+			static const clamp(t: float64, a: float64, b: float64): float64 := {
+				if (t < a) {
+					return .result := a;
+				}
+				if (t > b) {
+					return .result := b;
+				}
+				return .result := t;
+			};
+			static const lerp(t: float32, a: float32, b: float32): float32 := {
+				return .result := a + t * (b - a);
+			};
+			static const lerp(t: float64, a: float64, b: float64): float32 := {
+				return .result := a + t * (b - a);
+			};
+			static const cmp(a: float32, b: float32, eps: float32): int32 := {
+				if (a < b) {
+					if (eps < (b - a)) {
+						return .result := -1;
+					}
+				}
+				else {
+					if (eps < (a - b)) {
+						return .result := +1;
+					}
+				}
+				return .result := 0;
+			};
+			static const cmp(a: float64, b: float64, eps: float64): int32 := {
+				if (a < b) {
+					if (eps < (b - a)) {
+						return .result := -1;
+					}
+				}
+				else {
+					if (eps < (a - b)) {
+						return .result := +1;
+					}
+				}
+				return .result := 0;
+			};
+			static const sinCos(arg: float64, quad: int32): float64 := {
+				PIO2: typename := 1.570796;
+				p0: typename := 13578840.978774;
+				p1: typename := -4942908.100903;
+				p2: typename := 440103.053538;
+				p3: typename := -13847.272500;
+				p4: typename := 145.968841;
+				q0: typename := 8644558.652923;
+				q1: typename := 408179.225234;
+				q2: typename := 9463.096102;
+				q3: typename := 132.653491;
+				x: float64 := arg;
+				if (x < (0)) {
+					x := -x;
+					quad := quad + 2;
+				}
+				y: float64;
+				x := x * (1) / PIO2;
+				if (x > (32764)) {
+					e: float64;
+					y := modf(x, e);
+					e := e + (quad);
+					f: float64;
+					modf(0.250000 * e, f);
+					quad := (e - (4) * f);
+				}
+				else {
+					k: int32 := x;
+					y := x - (k);
+					quad := quad + k;
+					quad := quad & 3;
+				}
+				if (quad & 1) {
+					y := (1) - y;
+				}
+				if (quad > 1) {
+					y := -y;
+				}
+				ysq: float64 := y * y;
+				temp1: float64 := ((((p4 * ysq + p3) * ysq + p2) * ysq + p1) * ysq + p0) * y;
+				temp2: float64 := ((((ysq + q3) * ysq + q2) * ysq + q1) * ysq + q0);
+				return .result := temp1 / temp2;
+			};
+			static sin(arg: float64): float64 := sinCos(arg, 0);
+			static cos(arg: float64): float64 := sinCos(abs(arg), 1);
+			static const tan(arg: float64): float64 := {
+				PIO2: typename := 1.570796;
+				p0: typename := -13068.202648;
+				p1: typename := 1055.970902;
+				p2: typename := -15.506857;
+				p3: typename := 0.034226;
+				p4: typename := 0.000034;
+				q0: typename := -16638.952389;
+				q1: typename := 4765.751363;
+				q2: typename := -155.503316;
+				nan: typename := 0.000000 / (0);
+				complement: bool := false;
+				negate: bool := false;
+				if (arg < (0)) {
+					arg := -arg;
+					negate := true;
+				}
+				arg := (2) * arg / PIO2;
+				e: float64;
+				x: float64 := modf(arg, e);
+				i: int32 := int32(e) % 4;
+				if (i == 0) ;
+				else {
+					if (i == 1) {
+						x := (1) - x;
+						complement := true;
+					}
+					else {
+						if (i == 2) {
+							negate := !negate;
+							complement := true;
+						}
+						else {
+							if (i == 3) {
+								x := (1) - x;
+								negate := !negate;
+							}
+						}
+					}
+				}
+				xsq: float64 := x * x;
+				result: float64 := ((((p4 * xsq + p3) * xsq + p2) * xsq + p1) * xsq + p0) * x;
+				result := result / (((xsq + q2) * xsq + q1) * xsq + q0);
+				if (complement) {
+					if (result == (0)) {
+						return .result := nan;
+					}
+					result := (1) / result;
+				}
+				if (negate) {
+					return .result := -result;
+				}
+				return .result := result;
+			};
+			static const sinh(x: float64): float64 := {
+				P0: typename := -630767.364050;
+				P1: typename := -89912.720220;
+				P2: typename := -2894.211356;
+				P3: typename := -26.305632;
+				Q0: typename := -630767.364050;
+				Q1: typename := 15215.173788;
+				Q2: typename := -173.678954;
+				negate: bool := false;
+				if (x < (0)) {
+					x := -x;
+					negate := true;
+				}
+				if (x > (21)) {
+					return .result := float64.exp(x) / (2);
+				}
+				result: float64;
+				if (x > 0.500000) {
+					result := (float64.exp(x) - float64.exp(-x)) / (2);
+				}
+				else {
+					sq: float64 := x * x;
+					result := (((P3 * sq + P2) * sq + P1) * sq + P0) * x;
+					result := result / (((sq + Q2) * sq + Q1) * sq + Q0);
+				}
+				if (negate) {
+					return .result := -result;
+				}
+				return .result := result;
+			};
+			static const cosh(x: float64): float64 := {
+				if (x < (0)) {
+					x := -x;
+				}
+				if (x > (21)) {
+					return .result := float64.exp(x) / (2);
+				}
+				return .result := (float64.exp(x) + float64.exp(-x)) / (2);
+			};
+			static const asin(x: float64): float64 := {
+				if (x == (0)) {
+					return .result := x;
+				}
+				negate: bool := false;
+				if (x < (0)) {
+					negate := true;
+					x := -x;
+				}
+				if (x > (1)) {
+					return .result := nan;
+				}
+				result: float64 := float64.sqrt((1) - x * x);
+				if (x > 0.700000) {
+					result := pi / (2) - float64.atan2(result, x);
+				}
+				else {
+					result := float64.atan2(x, result);
+				}
+				if (negate) {
+					return .result := -result;
+				}
+				return .result := result;
+			};
+			static acos(x: float64): float64 := (pi / (2) - asin(x));
+			static deg2rad(x: float64): float64 := float64(x * pi / (180));
+			static rad2deg(x: float64): float64 := float64(x * (180) / pi);
+		};
+		static const Complex: struct {
+			const re: float64;
+			const im: float64 := (0);
+		};
+		static const Complex(re: float64): Complex := {
+			return .result := {
+			.result.re := re;
+			.result.im := (0);
+		};
+		};
+		static const Complex(re: float64, im: float64): Complex := {
+			return .result := {
+			.result.re := re;
+			.result.im := im;
+		};
+		};
+		neg(a: Complex): Complex := Complex(-a.re, -a.im);
+		add(a: Complex, b: Complex): Complex := Complex(a.re + b.re, a.im + b.im);
+		add(a: Complex, b: float64): Complex := Complex(a.re + b, a.im);
+		add(a: float64, b: Complex): Complex := Complex(a + b.re, b.im);
+		sub(a: Complex, b: Complex): Complex := Complex(a.re - b.re, a.im - b.im);
+		sub(a: Complex, b: float64): Complex := Complex(a.re - b, a.im);
+		sub(a: float64, b: Complex): Complex := Complex(a - b.re, b.im);
+		mul(a: Complex, b: Complex): Complex := Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+		mul(a: Complex, b: float64): Complex := Complex(a.re * b, a.im * b);
+		mul(a: float64, b: Complex): Complex := Complex(a * b.re, a * b.im);
+		static const div(a: Complex, b: Complex): Complex := {
+			if (Math.abs(b.re) >= Math.abs(b.im)) {
+				r: float64 := b.im / b.re;
+				den: float64 := b.re + r * b.im;
+				return .result := {
+			.result.re := (a.re + r * a.im) / den;
+			.result.im := (a.im - r * a.re) / den;
+		};
+			}
+			r: float64 := b.re / b.im;
+			den: float64 := b.im + r * b.re;
+			return .result := {
+			.result.re := (a.re * r + a.im) / den;
+			.result.im := (a.im * r - a.re) / den;
+		};
+		};
+		abs(a: Complex): float64 := float64.sqrt(a.re * a.re + a.im * a.im);
+		arg(a: Complex): float64 := float64.atan2(a.re, a.im);
+		static const invert(a: Complex): Complex := {
+			d: float64 := (a.re * a.re + a.im * a.im);
+			return .result := Complex(+a.re / d, -a.im / d);
+		};
+		conj(a: Complex): Complex := Complex(a.re, -a.im);
+		exp(a: Complex): Complex := Complex(float64.exp(a.re) * float64.cos(a.im), float64.exp(a.re) * float64.sin(a.im));
+		log(a: Complex): Complex := Complex(float64.log(abs(a)), arg(a));
+		static const pow(a: Complex, b: Complex): Complex := {
+			r: float64 := abs(a);
+			t: float64 := arg(a);
+			u: float64 := b.re * t + b.im * float64.log(r);
+			v: float64 := float64.pow(r, b.re) * float64.exp(-b.im * t);
+			return .result := Complex(v * float64.cos(u), v * float64.sin(u));
+		};
+		pow(a: Complex, b: float64): Complex := pow(a, Complex(b));
+		sin(a: Complex): Complex := Complex(float64.sin(a.re) * Math.cosh(a.im), float64.cos(a.re) * Math.sinh(a.im));
+		cos(a: Complex): Complex := Complex(float64.cos(a.re) * Math.cosh(a.im), -float64.sin(a.re) * Math.sinh(a.im));
+		tan(a: Complex): Complex := div(sin(a), cos(a));
+		toCartesian(x: Complex): Complex := Complex(x.re * float64.cos(x.im), x.re * float64.sin(x.im));
+		toPolar(x: Complex): Complex := Complex(abs(x), arg(x));
+		static const length(str: char[*]): int32 := {
+			if (str == null) {
+				return .result := 0;
+			}
+			result: int32 := 0;
+			for ( ; str[result]; result := result + 1) ;
+			return .result := result;
+		};
+		static const indexOf(str: char[*], chr: char): int32 := {
+			for (i: int32 := 0; str[i]; i := i + 1) {
+				if (str[i] == chr) {
+					return .result := i;
+				}
+			}
+			return .result := -1;
+		};
+		static const lastIndexOf(str: char[*], chr: char): int32 := {
+			result: int32 := -1;
+			for (i: int32 := 0; str[i]; i := i + 1) {
+				if (str[i] == chr) {
+					result := i;
+				}
+			}
+			return .result := result;
+		};
+		static const startsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool := {
+			for (i: int32 := 0; (with[i]) != 0; i := i + 1) {
+				if (cmp(str[i], with[i]) != 0) {
+					return .result := false;
+				}
+			}
+			return .result := true;
+		};
+		static const endsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool := {
+			withLen: int32 := length(with);
+			strLen: int32 := length(str);
+			if (strLen < withLen) {
+				return .result := false;
+			}
+			for (i: int32 := 0; i < withLen; i := i + 1) {
+				if (cmp(str[strLen - withLen + i], with[i]) != 0) {
+					return .result := false;
+				}
+			}
+			return .result := true;
+		};
+		static const compare(str: char[*], with: char[*], cmp(chr: char, with: char): int32): int32 := {
+			result: int32 := 0;
+			for (i: int32 := 0; result == 0; i := i + 1) {
+				result := cmp(str[i], with[i]);
+				if ((str[i]) == 0) {
+					break;
+				}
+			}
+			return .result := result;
+		};
+		static const ignCaseCmp(chr: char, with: char): int32 := {
+			static const ignCase(chr: char): char := {
+				if (chr >= 'A' && chr <= 'Z') {
+					chr := chr - 'A';
+					chr := chr + 'a';
+				}
+				return .result := chr;
+			};
+			return .result := ignCase(chr) - ignCase(with);
+		};
+		static const caseCmp(chr: char, with: char): int32 := {
+			return .result := chr - with;
+		};
+		startsWith(str: char[*], with: char[*]): bool := startsWith(str, with, caseCmp);
+		endsWith(str: char[*], with: char[*]): bool := endsWith(str, with, caseCmp);
+		compare(str: char[*], with: char[*]): int32 := compare(str, with, caseCmp);
 	}
 	{
 		integer: typename := int64;
@@ -9249,12 +12458,19 @@ forIdx: int32 {
 			static forwardMethod(x: int32, y: int32): int32 := forwardMethod;
 			abstractMethod(x: int32, y: int32): int32;
 			delegateMethod(x: int32, y: int32): int32 := forwardMethod;
+			const virtualMethod(x: int32, y: int32): int32 := virtualMethod;
 			static const virtualMethod(x: int32, y: int32): int32 := {
 				return .result := x * y;
 			};
-			virtualMethod(x: int32, y: int32): int32 := virtualMethod;
 			static const forwardMethod(x: int32, y: int32): int32 := {
 				return .result := x * y;
+			};
+			const print(this: RecordMethodTest): void := print;
+			static const print(this: RecordMethodTest): void := {
+				trace("virtual");
+			};
+			static const printStatic(this: RecordMethodTest): void := {
+				trace("static");
 			};
 		};
 		static const globalFunction(x: int32, y: int32): int32 := {
@@ -9264,7 +12480,32 @@ forIdx: int32 {
 			recordMethodTest.delegateMethod := globalFunction;
 			recordMethodTest.abstractMethod := RecordMethodTest.staticMethod;
 			recordMethodTest.virtualMethod := virtualMethod;
+			recordMethodTest.print := print;
 		};
+		static const customPrint(this: RecordMethodTest): void := {
+			trace("override");
+		};
+		recordMethodTestCustomPrint: RecordMethodTest := {
+			recordMethodTestCustomPrint.abstractMethod := globalFunction;
+			recordMethodTestCustomPrint.print := customPrint;
+			recordMethodTestCustomPrint.delegateMethod := forwardMethod;
+			recordMethodTestCustomPrint.virtualMethod := virtualMethod;
+		};
+		recordMethodTest.print(recordMethodTest);
+		recordMethodTestCustomPrint.print(recordMethodTestCustomPrint);
+		recordMethodTest.printStatic(recordMethodTest);
+		static const print(this: RecordMethodTest): void := {
+			trace("extension");
+		};
+		static const printStatic(this: RecordMethodTest): void := {
+			trace("extension");
+		};
+		print(recordMethodTest);
+		printStatic(recordMethodTest);
+		print(recordMethodTestCustomPrint);
+		RecordMethodTest.print(recordMethodTest);
+		RecordMethodTest.printStatic(recordMethodTest);
+		RecordMethodTest.print(recordMethodTestCustomPrint);
 		static const rgbF32: struct {
 			r: float32;
 			g: float32;
@@ -9703,7 +12944,7 @@ forIdx: int32 {
 		}
 	}
 }
-.instructions: (7028 bytes)
+.instructions: (7168 bytes)
 	test/lang.initByRef.ci:7: (13 bytes): static value: int64 := 42
 	<.main+?>:    load.c64 42
 	<.main+?>:    store.m64 .?????? ;value
@@ -11158,17 +14399,79 @@ forIdx: int32 {
 	test/lang.member.ci:66: (7 bytes): recordMemberTest.constantRec.constant := 72;
 	<.main+?>:    load.c32 72
 	<.main+?>:    set.x1 sp(8)
-	test/lang.method.ci:45: (25 bytes): recordMethodTest: RecordMethodTest := {...}
+	test/lang.method.ci:53: (32 bytes): recordMethodTest: RecordMethodTest := {...}
 	<.main+?>:    inc.sp(+16)
-	test/lang.method.ci:46: (7 bytes): recordMethodTest.delegateMethod := globalFunction;
+	test/lang.method.ci:54: (7 bytes): recordMethodTest.delegateMethod := globalFunction;
 	<.main+?>:    load.ref .?????? ;globalFunction(x: int32, y: int32): int32
 	<.main+?>:    set.x1 sp(2)
-	test/lang.method.ci:47: (7 bytes): recordMethodTest.abstractMethod := RecordMethodTest.staticMethod;
+	test/lang.method.ci:55: (7 bytes): recordMethodTest.abstractMethod := RecordMethodTest.staticMethod;
 	<.main+?>:    load.ref .?????? ;RecordMethodTest.staticMethod(x: int32, y: int32): int32
 	<.main+?>:    set.x1 sp(1)
 	:: (7 bytes): recordMethodTest.virtualMethod := virtualMethod
 	<.main+?>:    load.ref .?????? ;RecordMethodTest.virtualMethod(x: int32, y: int32): int32
 	<.main+?>:    set.x1 sp(3)
+	:: (7 bytes): recordMethodTest.print := print
+	<.main+?>:    load.ref .?????? ;RecordMethodTest.print(this: RecordMethodTest): void
+	<.main+?>:    set.x1 sp(4)
+	test/lang.method.ci:63: (31 bytes): recordMethodTestCustomPrint: RecordMethodTest := {...}
+	<.main+?>:    inc.sp(+16)
+	test/lang.method.ci:64: (7 bytes): recordMethodTestCustomPrint.abstractMethod := globalFunction;
+	<.main+?>:    load.ref .?????? ;globalFunction(x: int32, y: int32): int32
+	<.main+?>:    set.x1 sp(1)
+	test/lang.method.ci:65: (7 bytes): recordMethodTestCustomPrint.print := customPrint;
+	<.main+?>:    load.ref .?????? ;customPrint(this: RecordMethodTest): void
+	<.main+?>:    set.x1 sp(4)
+	:: (6 bytes): recordMethodTestCustomPrint.delegateMethod := forwardMethod
+	<.main+?>:    load.m32 .?????? ;RecordMethodTest.forwardMethod(x: int32, y: int32): int32
+	<.main+?>:    set.x1 sp(2)
+	:: (7 bytes): recordMethodTestCustomPrint.virtualMethod := virtualMethod
+	<.main+?>:    load.ref .?????? ;RecordMethodTest.virtualMethod(x: int32, y: int32): int32
+	<.main+?>:    set.x1 sp(3)
+	test/lang.method.ci:69: (9 bytes): recordMethodTest.print(recordMethodTest);
+	<.main+?>:    dup.x4 sp(4)
+	<.main+?>:    dup.x1 sp(11)
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-16)
+	test/lang.method.ci:70: (9 bytes): recordMethodTestCustomPrint.print(recordMethodTestCustomPrint);
+	<.main+?>:    dup.x4 sp(0)
+	<.main+?>:    dup.x1 sp(7)
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-16)
+	test/lang.method.ci:73: (12 bytes): recordMethodTest.printStatic(recordMethodTest);
+	<.main+?>:    dup.x4 sp(4)
+	<.main+?>:    load.ref .?????? ;RecordMethodTest.printStatic(this: RecordMethodTest): void
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-16)
+	test/lang.method.ci:84: (12 bytes): print(recordMethodTest);
+	<.main+?>:    dup.x4 sp(4)
+	<.main+?>:    load.ref .?????? ;print(this: RecordMethodTest): void
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-16)
+	test/lang.method.ci:85: (12 bytes): printStatic(recordMethodTest);
+	<.main+?>:    dup.x4 sp(4)
+	<.main+?>:    load.ref .?????? ;printStatic(this: RecordMethodTest): void
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-16)
+	test/lang.method.ci:86: (12 bytes): print(recordMethodTestCustomPrint);
+	<.main+?>:    dup.x4 sp(0)
+	<.main+?>:    load.ref .?????? ;print(this: RecordMethodTest): void
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-16)
+	test/lang.method.ci:89: (12 bytes): RecordMethodTest.print(recordMethodTest);
+	<.main+?>:    dup.x4 sp(4)
+	<.main+?>:    load.ref .?????? ;RecordMethodTest.print(this: RecordMethodTest): void
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-16)
+	test/lang.method.ci:90: (12 bytes): RecordMethodTest.printStatic(recordMethodTest);
+	<.main+?>:    dup.x4 sp(4)
+	<.main+?>:    load.ref .?????? ;RecordMethodTest.printStatic(this: RecordMethodTest): void
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-16)
+	test/lang.method.ci:91: (12 bytes): RecordMethodTest.print(recordMethodTestCustomPrint);
+	<.main+?>:    dup.x4 sp(0)
+	<.main+?>:    load.ref .?????? ;RecordMethodTest.print(this: RecordMethodTest): void
+	<.main+?>:    call
+	<.main+?>:    inc.sp(-16)
 	test/lang.recUnion.ci:26: (22 bytes): black: rgbU8 := {...}
 	<.main+?>:    inc.sp(+4)
 	test/lang.recUnion.ci:26: (6 bytes): black.r := (0);
@@ -12710,7 +16013,41 @@ emit.min: typename(<emit.min>)
 emit.max: typename(<emit.max>)
 emit: typename(<emit>)
 System: typename(<System>)
-stdlib.ci:32: assertEq: function(<assertEq @02a560>)
+stdlib.ci:32: assertEq: function(<assertEq @036890>)
+lib/math.ci:36: Math.modf: function(<Math.modf @0368d8>)
+lib/math.ci:73: Math.floor: function(<Math.floor @036940>)
+lib/math.ci:85: Math.abs: function(<Math.abs @036968>)
+lib/math.ci:91: Math.abs: function(<Math.abs @036980>)
+lib/math.ci:98: Math.min: function(<Math.min @036998>)
+lib/math.ci:104: Math.min: function(<Math.min @0369b0>)
+lib/math.ci:111: Math.max: function(<Math.max @0369c8>)
+lib/math.ci:117: Math.max: function(<Math.max @0369e0>)
+lib/math.ci:124: Math.clamp: function(<Math.clamp @0369f8>)
+lib/math.ci:133: Math.clamp: function(<Math.clamp @036a20>)
+lib/math.ci:143: Math.lerp: function(<Math.lerp @036a48>)
+lib/math.ci:146: Math.lerp: function(<Math.lerp @036a58>)
+lib/math.ci:223: Math.cmp: function(<Math.cmp @036a68>)
+lib/math.ci:234: Math.cmp: function(<Math.cmp @036aa8>)
+lib/math.ci:246: Math.sinCos: function(<Math.sinCos @036ae8>)
+lib/math.ci:314: Math.tan: function(<Math.tan @036c48>)
+lib/math.ci:383: Math.sinh: function(<Math.sinh @036dd0>)
+lib/math.ci:431: Math.cosh: function(<Math.cosh @036ec8>)
+lib/math.ci:447: Math.asin: function(<Math.asin @036f18>)
+lib/math.ci:3: Math: typename(<Math>)
+lib/math.Complex.ci:3: Complex: typename(<Complex>)
+lib/math.Complex.ci:40: Complex: function(<Complex @036fd0>)
+lib/math.Complex.ci:45: Complex: function(<Complex @036fd8>)
+lib/math.Complex.ci:66: div: function(<div @036fe8>)
+lib/math.Complex.ci:90: invert: function(<invert @037068>)
+lib/math.Complex.ci:101: pow: function(<pow @037098>)
+lib/string.ci:3: length: function(<length @037110>)
+lib/string.ci:14: indexOf: function(<indexOf @037148>)
+lib/string.ci:24: lastIndexOf: function(<lastIndexOf @037180>)
+lib/string.ci:35: startsWith: function(<startsWith @0371c0>)
+lib/string.ci:44: endsWith: function(<endsWith @037210>)
+lib/string.ci:58: compare: function(<compare @037298>)
+lib/string.ci:70: ignCaseCmp: function(<ignCaseCmp @037330>)
+lib/string.ci:82: caseCmp: function(<caseCmp @037358>)
 test/lang.inlineEmit.ci:3: emitldz32: int32(0)
 test/lang.inlineEmit.ci:4: emitldz64: int64(0)
 test/lang.inlineEmit.ci:6: emitA: int32(42)
@@ -12765,7 +16102,7 @@ test/test.inlineOverload.ci:29: boilF: Fahrenheit({
 })
 test/lang.initByRef.ci:7: value: int64(42)
 test/lang.initByRef.ci:8: valueRef: int64(42)
-test/lang.initByRef.ci:9: valuePtr: pointer(<value @02a5a8>)
+test/lang.initByRef.ci:9: valuePtr: pointer(<value @037368>)
 test/lang.initByRef.ci:10: valueVar: variant({int64: 42})
 test/lang.initByRef.ci:12: fromRef: int64(42)
 test/lang.initByRef.ci:13: fromPtr: int64(42)
@@ -12782,7 +16119,7 @@ test/lang.initByRef.ci:25: typeTyp: typename(<int64>)
 test/lang.initByRef.ci:27: local: int64(42)
 test/lang.initByRef.ci:28: copyVal: int64(42)
 test/lang.initByRef.ci:29: copyRef: int64(42)
-test/lang.initByRef.ci:30: copyPtr: pointer(<value @02a5a8>)
+test/lang.initByRef.ci:30: copyPtr: pointer(<value @037368>)
 test/lang.initByRef.ci:31: copyVar: variant({int64: 42})
 test/lang.initByRef.ci:32: copyTyp: typename(<int64>)
 test/lang.initByRef.ci:35: ptrVoid: pointer(<void @0000a0>)
@@ -12839,23 +16176,23 @@ test/lang.initByRef.ci:89: typFunction: typename(<function>)
 test/lang.initByRef.ci:90: typPointer: typename(<pointer>)
 test/lang.initByRef.ci:91: typVariant: typename(<variant>)
 test/lang.initByRef.ci:92: typObject: typename(<object>)
-test/lang.initByRef.ci:95: valueOfPtr: pointer(<value @02a5a8>)
+test/lang.initByRef.ci:95: valueOfPtr: pointer(<value @037368>)
 test/lang.initByRef.ci:96: valueOfVar: variant({int64: 42})
 test/lang.initByRef.ci:97: valueOfTyp: typename(<int64>)
 test/lang.initByRef.ci:99: typeOfValue: typename(<int64>)
 test/lang.initByRef.ci:105: copyPtrFloat64: variant({pointer: <float64 @000760>})
 test/lang.initByRef.ci:108: copyVarFloat64: pointer(<float64 @000760>)
-test/lang.function.ci:3: empty: function(<empty @02a5b0>)
-test/lang.function.ci:6: funAdd: function(<funAdd @02a5b8>)
+test/lang.function.ci:3: empty: function(<empty @037370>)
+test/lang.function.ci:6: funAdd: function(<funAdd @037378>)
 test/lang.function.ci:11: funAddResult: int32(9)
-test/lang.function.ci:14: funAddRef: function(<funAdd @02a5b8>)
+test/lang.function.ci:14: funAddRef: function(<funAdd @037378>)
 test/lang.function.ci:17: funAddRefResult: int32(10)
-test/lang.function.ci:20: funMul: function(<funMul @02a5c0>)
+test/lang.function.ci:20: funMul: function(<funMul @037380>)
 test/lang.function.ci:23: funMulResult: int32(12)
-test/lang.function.ci:26: funMulRef: function(<funMul @02a5c0>)
+test/lang.function.ci:26: funMulRef: function(<funMul @037380>)
 test/lang.function.ci:29: funMulRefResult: int32(14)
-test/lang.function.ci:32: funMul: function(<funMul @02a5c0>)
-test/lang.function.ci:37: fib: function(<fib @02a5c8>)
+test/lang.function.ci:32: funMul: function(<funMul @037380>)
+test/lang.function.ci:37: fib: function(<fib @037388>)
 test/lang.function.ci:45: fibonacci_13: uint32(233)
 test/lang.reflect.ci:3: sizeofVoid: int32(0)
 test/lang.reflect.ci:4: sizeofBool: int32(1)
@@ -12879,13 +16216,13 @@ test/lang.reflect.ci:22: RecordSizeof: typename(<RecordSizeof>)
 test/lang.reflect.ci:26: RecordSizeofExt: typename(<RecordSizeofExt>)
 test/lang.reflect.ci:30: typeofRecord: typename(<RecordSizeofExt>)
 test/lang.reflect.ci:31: nameOfRecord: char[*]("RecordSizeofExt")
-test/lang.reflect.ci:32: offsetOfRecord: int32(96432)
+test/lang.reflect.ci:32: offsetOfRecord: int32(143992)
 test/lang.reflect.ci:33: sizeOfRecord: int32(16)
 test/lang.reflect.ci:34: fileOfRecord: char[*]("test/lang.reflect.ci")
 test/lang.reflect.ci:35: lineOfRecord: int32(26)
 test/lang.reflect.ci:37: typeofBase: typename(<RecordSizeof>)
 test/lang.reflect.ci:38: nameOfBase: char[*]("RecordSizeof")
-test/lang.reflect.ci:39: offsetOfBase: int32(96160)
+test/lang.reflect.ci:39: offsetOfBase: int32(143720)
 test/lang.reflect.ci:40: sizeOfBase: int32(12)
 test/lang.reflect.ci:41: fileOfBase: char[*]("test/lang.reflect.ci")
 test/lang.reflect.ci:42: lineOfBase: int32(22)
@@ -12932,18 +16269,18 @@ test/stdc.number.ci:50: expF32: float32(2.718282)
 test/stdc.number.ci:51: powF32: float32(3.141593)
 test/stdc.number.ci:52: sqrtF32: float32(3.141593)
 test/stdc.number.ci:53: atanF32: float32(1.262627)
-test/stdc.memory.ci:7: p1: pointer(<@02c2a0>)
-test/stdc.memory.ci:8: p2: pointer(<@02c6b0>)
-test/stdc.memory.ci:9: p3: pointer(<@02c710>)
-test/stdc.memory.ci:10: p4: pointer(<@02c7c0>)
+test/stdc.memory.ci:7: p1: pointer(<@0391b0>)
+test/stdc.memory.ci:8: p2: pointer(<@0395c0>)
+test/stdc.memory.ci:9: p3: pointer(<@039620>)
+test/stdc.memory.ci:10: p4: pointer(<@0396d0>)
 test/stdc.memory.ci:23: val1: int64(0)
 test/stdc.memory.ci:24: val2: int64(42)
-test/stdc.execute.ci:11: noError: function(<noError @02a600>)
-test/stdc.execute.ci:14: stackOverflow: function(<stackOverflow @02a608>)
-test/stdc.execute.ci:19: divisionByZero: function(<divisionByZero @02a620>)
-test/stdc.execute.ci:23: abortExecution: function(<abortExecution @02a630>)
-test/stdc.execute.ci:37: invalidMemoryAccess: function(<invalidMemoryAccess @02a670>)
-test/stdc.execute.ci:42: invalidInstruction: function(<invalidInstruction @02a680>)
+test/stdc.execute.ci:11: noError: function(<noError @0373c0>)
+test/stdc.execute.ci:14: stackOverflow: function(<stackOverflow @0373c8>)
+test/stdc.execute.ci:19: divisionByZero: function(<divisionByZero @0373e0>)
+test/stdc.execute.ci:23: abortExecution: function(<abortExecution @0373f0>)
+test/stdc.execute.ci:37: invalidMemoryAccess: function(<invalidMemoryAccess @037430>)
+test/stdc.execute.ci:42: invalidInstruction: function(<invalidInstruction @037440>)
 test/stdc.execute.ci:46: tryExecErr0: int32(0)
 test/stdc.execute.ci:47: tryExecErr1: int32(1)
 test/stdc.execute.ci:48: tryExecErr2: int32(2)
@@ -12964,10 +16301,10 @@ test/lang.array.ci:71: arrArrayInitPtr: int64[*]([0] {})
 test/lang.array.ci:81: strFixed: char[7]([7] {'s', 't', 'r', 'i', 'n', 'g', ''})
 test/lang.array.ci:86: strArray: char[*]("string")
 test/lang.array.ci:90: strSlice: char[]([6] {'s', 't', 'r', 'i', 'n', 'g'})
-test/lang.array.ci:103: lenSlice: function(<lenSlice @02a688>)
-test/lang.array.ci:104: nthFixed: function(<nthFixed @02a690>)
-test/lang.array.ci:105: nthArray: function(<nthArray @02a6a0>)
-test/lang.array.ci:106: nthSlice: function(<nthSlice @02a6b0>)
+test/lang.array.ci:103: lenSlice: function(<lenSlice @037448>)
+test/lang.array.ci:104: nthFixed: function(<nthFixed @037450>)
+test/lang.array.ci:105: nthArray: function(<nthArray @037460>)
+test/lang.array.ci:106: nthSlice: function(<nthSlice @037470>)
 test/lang.member.ci:5: RecordMemberTest.Inner: typename(<RecordMemberTest.Inner>)
 test/lang.member.ci:35: RecordMemberTest.global: int32(0)
 test/lang.member.ci:38: RecordMemberTest.globalInit: int32(5)
@@ -12999,17 +16336,29 @@ test/lang.member.ci:53: recordMemberTest: RecordMemberTest({
 		constant: int32(72)
 	})
 })
-test/lang.method.ci:6: RecordMethodTest.staticMethod: function(<RecordMethodTest.staticMethod @02a6f0>)
-test/lang.method.ci:12: RecordMethodTest.forwardMethod: function(<RecordMethodTest.forwardMethod @02a708>)
-test/lang.method.ci:26: RecordMethodTest.virtualMethod: function(<RecordMethodTest.virtualMethod @02a700>)
-test/lang.method.ci:31: RecordMethodTest.forwardMethod: function(<RecordMethodTest.forwardMethod @02a708>)
+test/lang.method.ci:6: RecordMethodTest.staticMethod: function(<RecordMethodTest.staticMethod @0374b0>)
+test/lang.method.ci:12: RecordMethodTest.forwardMethod: function(<RecordMethodTest.forwardMethod @0374c8>)
+test/lang.method.ci:26: RecordMethodTest.virtualMethod: function(<RecordMethodTest.virtualMethod @0374c0>)
+test/lang.method.ci:31: RecordMethodTest.forwardMethod: function(<RecordMethodTest.forwardMethod @0374c8>)
+test/lang.method.ci:40: RecordMethodTest.print: function(<RecordMethodTest.print @0374d0>)
+test/lang.method.ci:44: RecordMethodTest.printStatic: function(<RecordMethodTest.printStatic @0374f8>)
 test/lang.method.ci:3: RecordMethodTest: typename(<RecordMethodTest>)
-test/lang.method.ci:41: globalFunction: function(<globalFunction @02a710>)
-test/lang.method.ci:45: recordMethodTest: RecordMethodTest({
-	abstractMethod: function(<RecordMethodTest.staticMethod @02a6f0>),
-	delegateMethod: function(<globalFunction @02a710>),
-	virtualMethod: function(<RecordMethodTest.virtualMethod @02a700>)
+test/lang.method.ci:49: globalFunction: function(<globalFunction @037520>)
+test/lang.method.ci:53: recordMethodTest: RecordMethodTest({
+	abstractMethod: function(<RecordMethodTest.staticMethod @0374b0>),
+	delegateMethod: function(<globalFunction @037520>),
+	virtualMethod: function(<RecordMethodTest.virtualMethod @0374c0>),
+	print: function(<RecordMethodTest.print @0374d0>)
 })
+test/lang.method.ci:59: customPrint: function(<customPrint @037528>)
+test/lang.method.ci:63: recordMethodTestCustomPrint: RecordMethodTest({
+	abstractMethod: function(<globalFunction @037520>),
+	delegateMethod: function(<RecordMethodTest.forwardMethod @0374c8>),
+	virtualMethod: function(<RecordMethodTest.virtualMethod @0374c0>),
+	print: function(<customPrint @037528>)
+})
+test/lang.method.ci:75: print: function(<print @037550>)
+test/lang.method.ci:79: printStatic: function(<printStatic @037578>)
 test/lang.recUnion.ci:2: rgbF32: typename(<rgbF32>)
 test/lang.recUnion.ci:9: rgbU8: typename(<rgbU8>)
 test/lang.recUnion.ci:16: color: typename(<color>)
@@ -13295,7 +16644,7 @@ test/lang.useOperator.ci:279: f64Cle: bool(0)
 test/lang.useOperator.ci:280: f64Cgt: bool(1)
 test/lang.useOperator.ci:281: f64Cge: bool(1)
 test/lang.useOperator.ci:283: ptrA: pointer(null)
-test/lang.useOperator.ci:284: ptrB: pointer(<@1ff9e0>)
+test/lang.useOperator.ci:284: ptrB: pointer(<@1ff9d0>)
 test/lang.useOperator.ci:299: ptrCeq: bool(0)
 test/lang.useOperator.ci:300: ptrCne: bool(1)
 test/lang.statementIf.ci:26: t: int32(0)
@@ -13303,10 +16652,10 @@ test/lang.statementFor.ci:12: forIdx: int32(2)
 
 ---------- Memory layout:
 memory[all] @000000; size: 1572880(1.5 Mb)
-memory[meta] @000000; size: 173408(169.3 Kb)
-memory[code] @02a718; size: 7028(6.9 Kb)
-memory[heap] @02c28c; size: 1391748(1.3 Mb)
+memory[meta] @000000; size: 223376(218.1 Kb)
+memory[code] @0375a0; size: 7168(7.0 Kb)
+memory[heap] @0391a0; size: 1338736(1.3 Mb)
 memory[stack] @0fff50; size: 524224(511.9 Kb)
 
 ---------- Memory allocations:
-memory[free] @02c2a0; size: 1391696(1.3 Mb)
+memory[free] @0391b0; size: 1338688(1.3 Mb)

@@ -40,11 +40,11 @@ cmpl: $(addprefix $(CC_OUT)/, $(notdir $(filter %.o, $(SRC_CC:%.c=%.o))))
 libGfx.so: $(addprefix $(GX_OUT)/, $(notdir $(filter %.o, $(SRC_GX:%.c=%.o))))
 	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libGfx.so $^ -lm -ldl -lpng -ljpeg -lX11
 
-libFile.so: libEtc/src/file.c
-	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libFile.so libEtc/src/file.c
+libFile.so: lib/src/file.c
+	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libFile.so lib/src/file.c
 
-libOpenGL.so: libEtc/src/openGL.c
-	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libOpenGL.so libEtc/src/openGL.c -lGL -lGLU -lglut
+libOpenGL.so: lib/src/openGL.c
+	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libOpenGL.so lib/src/openGL.c -lGL -lGLU -lglut
 
 cmpl.js: $(SRC_CC) stdlib.ci
 	emcc $(CFLAGS) $(EMFLAGS) $(filter %.c, $^) -o extras/Emscripten/cmpl.js --embed-file stdlib.ci

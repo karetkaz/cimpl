@@ -7,6 +7,8 @@
  */
 
 #include "internal.h"
+#include <unistd.h>
+#include <limits.h>
 
 const struct tokenRec token_tbl[256] = {
 	#define TOKEN_DEF(Name, Type, Args, Text) {Type, Args, Text},
@@ -50,6 +52,59 @@ static inline symn tagType(ccContext cc, astn tag) {
 		return tagType;
 	}
 	return NULL;
+}
+
+/**
+ * Inline the content of a file relative to the path of the file inlines it.
+ * @param cc compiler context.
+ * @param tag ast node containing which file to inline
+ */
+static int ccInline(ccContext cc, astn tag) {
+	static char *CWD = NULL;
+	if (tag->type != cc->type_str) {
+		return 0;
+	}
+
+	if (CWD == NULL) {
+		// lazy init on first call
+		CWD = getcwd(NULL, 0);
+		if (CWD == NULL) {
+			CWD = "";
+		}
+	}
+
+	char buff[PATH_MAX];
+	char *path = realpath(tag->file, buff);
+	if (path != buff) {
+		strncpy(buff, tag->file, sizeof(buff));
+	}
+
+	// replace the file name
+	path = strrchr(buff, '/');
+	if (path != NULL) {
+		*(path += 1) = 0;
+	}
+	strncat(buff, tag->ref.name, sizeof(buff) - (path - buff));
+
+	path = buff;
+	for (int i = 0; buff[i] != 0; ++i) {
+		if (buff[i] == 0) {
+			// use absolute path
+			break;
+		}
+		if (CWD[i] == 0) {
+			if (buff[i] == '/') {
+				// use relative path
+				path = buff + i + 1;
+			}
+			break;
+		}
+		if (buff[i] != CWD[i]) {
+			break;
+		}
+	}
+
+	return ccOpen(cc, path, 1, NULL);
 }
 
 /**
@@ -882,13 +937,9 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		// parse function body
 		if (peekTok(cc, STMT_beg)) {
 			def = declare(cc, ATTR_stat | ATTR_cnst | KIND_fun | cast, tag, type, params);
-			if ((attr & ATTR_stat) == 0) {
-				if (cc->owner && isTypename(cc->owner)) {
-					symn virtualFun = declare(cc, (attr & MASK_attr) | KIND_var | CAST_ref, tag, type, params);
-					virtualFun->init = lnkNode(cc, def);
-				} else {
-					warn(cc->rt, 6, tok->file, tok->line, WARN_FUNCTION_MARKED_STATIC, def);
-				}
+			if ((attr & ATTR_stat) == 0 && cc->owner && isTypename(cc->owner)) {
+				// mark as a virtual method
+				def->kind &= ~ATTR_stat;
 			}
 
 			// enable parameter lookup
@@ -991,11 +1042,16 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 	// inline "file.ci"
 	if ((tag = nextTok(cc, TOKEN_val, 0))) {
 		astn next = NULL, head = NULL, tail = NULL;
+		ccToken optional = skipTok(cc, PNCT_qst, 0);
 		skipTok(cc, STMT_end, 1);
 
 		next = cc->tokNext;
-		if (tag->type == cc->type_str && ccOpen(cc, tag->ref.name, 1, NULL) != 0) {
-			error(cc->rt, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
+		if (ccInline(cc, tag) != 0) {
+			if (optional) {
+				warn(cc->rt, 5, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
+			} else {
+				error(cc->rt, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
+			}
 			return NULL;
 		}
 
@@ -1418,15 +1474,14 @@ static astn statement_list(ccContext cc) {
 	astn ast, head = NULL, tail = NULL;
 
 	while ((ast = peekTok(cc, TOKEN_any)) != NULL) {
-		ccKind attr;
 
 		switch (ast->kind) {
 			default:
 				break;
 
-				//case TOKEN_any:	// error
-				//case RIGHT_par:
-				//case RIGHT_sqr:
+			//case TOKEN_any:	// error
+			//case RIGHT_par:
+			//case RIGHT_sqr:
 			case RIGHT_crl:		// '}'
 				ast = NULL;
 				break;
@@ -1435,7 +1490,7 @@ static astn statement_list(ccContext cc) {
 			break;
 		}
 
-		attr = qualifier(cc);
+		ccKind attr = qualifier(cc);
 		if ((ast = statement(cc, attr))) {
 			if (tail != NULL) {
 				tail->next = ast;

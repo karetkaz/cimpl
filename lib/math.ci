@@ -1,0 +1,507 @@
+// Mathematical utility functions
+
+static struct Math {
+
+	// constants
+	/* TODO: implement enumerations
+	enum: float64 {
+		pi: 3.14159265358979323846264338327950288419716939937510582097494459;		// A000796
+		e: 2.71828182845904523536028747135266249775724709369995957496696763;		// A001113
+		ln2: 0.693147180559945309417232121458176568075500134360255254120680009;	// A002162
+		log2E: 1. / ln2;
+		ln10: 2.30258509299404568401799145468436420760110148862877297603332790;	// A002392
+		log10E: 1. / ln10;
+		phi: 1.61803398874989484820458683436563811772030917980576286213544862;		// A001622
+		sqrt2: 1.41421356237309504880168872420969807856967187537694807317667974;	// A002193
+		sqrtE: 1.64872127070012814684865078781416357165377610071014801157507931;	// A019774
+		sqrtPi: 1.77245385090551602729816748334114518279754945612238712821380779;	// A002161
+		sqrtPhi: 1.27201964951406896425242246173749149171560804184009624861664038;	// A139339
+		nan: 0 / 0.;
+		inf: 1 / 0.;
+	}*/
+	inline pi = 3.14159265358979323846264338327950288419716939937510582097494459;		// A000796
+	inline e = 2.71828182845904523536028747135266249775724709369995957496696763;		// A001113
+	inline ln2 = 0.693147180559945309417232121458176568075500134360255254120680009;	// A002162
+	inline log2E = 1. / ln2;
+	inline ln10 = 2.30258509299404568401799145468436420760110148862877297603332790;	// A002392
+	inline log10E = 1. / ln10;
+	inline phi = 1.61803398874989484820458683436563811772030917980576286213544862;		// A001622
+	inline sqrt2 = 1.41421356237309504880168872420969807856967187537694807317667974;	// A002193
+	inline sqrtE = 1.64872127070012814684865078781416357165377610071014801157507931;	// A019774
+	inline sqrtPi = 1.77245385090551602729816748334114518279754945612238712821380779;	// A002161
+	inline sqrtPhi = 1.27201964951406896425242246173749149171560804184009624861664038;	// A139339
+	inline nan = 0 / 0.;
+	inline inf = 1 / 0.;
+
+	float64 modf(float64 x, float64 intPart&) {
+		if (x < 1) {
+			if (x < 0) {
+				float64 result = -modf(-x, intPart);
+				intPart = -intPart;
+				return result;
+			}
+			intPart = 0;
+			return x;
+		}
+		float64 result = x % 1;
+		intPart = x - result;
+		return result;
+	}
+
+	// inline isNan(float64 x) = x != x;
+	// inline isNan(float32 x) = x != x;
+
+	// inline isInf(float64 x) = x != 0 && x == 2 * x;
+	// inline isInf(float32 x) = x != 0 && x == 2 * x;
+
+	// inline isFinite(float64 x) = x - x == 0;
+	// inline isFinite(float32 x) = x - x == 0;
+
+	// inline abs(int32 x) = x < 0 ? -x : x;
+	// inline abs(int64 x) = x < 0 ? -x : x;
+	// inline abs(uint32 x) = x;
+	// inline abs(float32 x) = x < 0 ? -x : x;
+	// inline abs(float64 x) = x < 0 ? -x : x;
+
+	// inline sign(int32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+	// inline sign(int64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+	// inline sign(uint32 x) = x > 0 ? 1 : 0;
+	// inline sign(uint64 x) = x > 0 ? 1 : 0;
+	// inline sign(float32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+	// inline sign(float64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+
+	float64 floor(float64 x) {
+		float64 result;
+		modf(x, result);
+		return result;
+	}
+	inline ceil(float64 x) = -floor(-x);
+	inline round(float64 x) = floor(x + .5);
+
+	// inline floor(float32 x) = float32(floor(float64(x)));
+	// inline ceil(float32 x) = -floor(-x);
+	// inline round(float32 x) = floor(x + .5f);
+
+	float32 abs(float32 x) {
+		if (x < 0) {
+			return -x;
+		}
+		return x;
+	}
+	float64 abs(float64 x) {
+		if (x < 0) {
+			return -x;
+		}
+		return x;
+	}
+
+	float32 min(float32 a, float32 b) {
+		if (a < b) {
+			return a;
+		}
+		return b;
+	}
+	float64 min(float64 a, float64 b) {
+		if (a < b) {
+			return a;
+		}
+		return b;
+	}
+
+	float32 max(float32 a, float32 b) {
+		if (a > b) {
+			return a;
+		}
+		return b;
+	}
+	float64 max(float64 a, float64 b) {
+		if (a > b) {
+			return a;
+		}
+		return b;
+	}
+
+	float32 clamp(float32 t, float32 a, float32 b) {
+		if (t < a) {
+			return a;
+		}
+		if (t > b) {
+			return b;
+		}
+		return t;
+	}
+	float64 clamp(float64 t, float64 a, float64 b) {
+		if (t < a) {
+			return a;
+		}
+		if (t > b) {
+			return b;
+		}
+		return t;
+	}
+
+	float32 lerp(float32 t, float32 a, float32 b) {
+		return a + t * (b - a);
+	}
+	float32 lerp(float64 t, float64 a, float64 b) {
+		return a + t * (b - a);
+	}
+
+	// inline max(int32 a, int32 b) = a > b ? a : b;
+	// inline max(int64 a, int64 b) = a > b ? a : b;
+	// inline max(uint32 a, uint32 b) = a > b ? a : b;
+	// inline max(float32 a, float32 b) = a > b ? a : b;
+	// inline max(float64 a, float64 b) = a > b ? a : b;
+
+	// inline min(int32 a, int32 b) = a < b ? a : b;
+	// inline min(int64 a, int64 b) = a < b ? a : b;
+	// inline min(uint32 a, uint32 b) = a < b ? a : b;
+	// inline min(float32 a, float32 b) = a < b ? a : b;
+	// inline min(float64 a, float64 b) = a < b ? a : b;
+
+	// inline clamp(int32 t, int32 a, int32 b) = min(max(t, a), b);
+	// inline clamp(int32 t, int32 a, int32 b) = t < a ? a : t > b ? b : t;
+	// inline clamp(float32 t, float32 a, float32 b) = t < a ? a : t > b ? b : t;
+	// inline clamp(float64 t, float64 a, float64 b) = t < a ? a : t > b ? b : t;
+
+	// inline lerp(float32 t, float32 a, float32 b) = a + t * (b - a);
+	// inline lerp(float64 t, float64 a, float64 b) = a + t * (b - a);
+
+	// inline smooth(float32 t) = t * t * (3 - 2 * t);
+	// inline smooth(float64 t) = t * t * (3 - 2 * t);
+	// inline smooth(float32 t, float32 a, float32 b) = smooth(clamp((t - a) / (b - a), float32(0), float32(1)));
+	// inline smooth(float64 t, float64 a, float64 b) = smooth(clamp((t - a) / (b - a), float64(0), float64(1)));
+
+	// inline absMod(int32 val, int32 mod) = (val < 0 ? val + mod : val) % mod;
+	// inline absMod(float32 val, float32 mod) = (val < 0 ? val + mod : val) % mod;
+	// inline absMod(float64 val, float64 mod) = (val < 0 ? val + mod : val) % mod;
+
+	/* TODO: implement vararg functions
+	float64 eval(float64 x, float64 polynomial...) {
+		result = 0;
+		for (int i = polynomial.length; i >= 0; i -= 1) {
+			result = result * x + polynomial[i];
+		}
+		return result;
+	}*/
+
+	// speedup with some inline expressions
+	// inline eval(float64 x, float64 a0, float64 a1) = (a0 + x * a1);
+	// inline eval(float64 x, float64 a0, float64 a1, float64 a2) = (a0 + x * eval(x, a1, a2));
+	// inline eval(float64 x, float64 a0, float64 a1, float64 a2, float64 a3) = (a0 + x * eval(x, a1, a2, a3));
+
+	/* TODO: implement vararg functions
+	float64 min(float64 data...) {
+		result = data[0];
+		for (int i = 1; i < data.length; i += 1) {
+			if (result > data[i]) {
+				result = data[i];
+			}
+		}
+		return result;
+	}
+	float64 max(float64 data...) {
+		result = data[0];
+		for (int i = 1; i < data.length; i += 1) {
+			if (result < data[i]) {
+				result = data[i];
+			}
+		}
+		return result;
+	}
+	float64 sum(float64 data...) {
+		result = 0;
+		for (int i = 0; i < data.length; i += 1) {
+			result += data[i];
+		}
+		return result;
+	}
+	float64 mean(float64 data...) {
+		return sum(data) / data.length;
+	}*/
+
+	int cmp(float32 a, float32 b, float32 eps) {
+		if (a < b) {
+			if (eps < (b - a))
+				return -1;
+		}
+		else {
+			if (eps < (a - b))
+				return +1;
+		}
+		return 0;
+	}
+	int cmp(float64 a, float64 b, float64 eps) {
+		if (a < b) {
+			if (eps < (b - a))
+				return -1;
+		}
+		else {
+			if (eps < (a - b))
+				return +1;
+		}
+		return 0;
+	}
+
+	float64 sinCos(float64 arg, int quad) {
+		/* TODO: implement enumerations
+		enum: float64 {
+			PIO2: 1.570796326794896619231e0;
+			p0: .1357884097877375669092680e8;
+			p1: -.4942908100902844161158627e7;
+			p2: .4401030535375266501944918e6;
+			p3: -.1384727249982452873054457e5;
+			p4: .1459688406665768722226959e3;
+			q0: .8644558652922534429915149e7;
+			q1: .4081792252343299749395779e6;
+			q2: .9463096101538208180571257e4;
+			q3: .1326534908786136358911494e3;
+		}*/
+		inline PIO2 = 1.570796326794896619231e0;
+		inline p0 = .1357884097877375669092680e8;
+		inline p1 = -.4942908100902844161158627e7;
+		inline p2 = .4401030535375266501944918e6;
+		inline p3 = -.1384727249982452873054457e5;
+		inline p4 = .1459688406665768722226959e3;
+		inline q0 = .8644558652922534429915149e7;
+		inline q1 = .4081792252343299749395779e6;
+		inline q2 = .9463096101538208180571257e4;
+		inline q3 = .1326534908786136358911494e3;
+
+		float64 x = arg;
+		if (x < 0) {
+			x = -x;
+			quad += 2;
+		}
+
+		float64 y;
+		x *= 1 / PIO2;	/* underflow? */
+		if (x > 32764) {
+			float64 e;
+			y = modf(x, e);
+			e += quad;
+
+			float64 f;
+			modf(0.25 * e, f);
+			quad = e - 4 * f;
+		}
+		else {
+			int k = x;
+			y = x - k;
+			quad += k;
+			quad &= 3;
+		}
+		if (quad & 1) {
+			y = 1-y;
+		}
+		if (quad > 1) {
+			y = -y;
+		}
+
+		float64 ysq = y * y;
+		float64 temp1 = ((((p4 * ysq + p3) * ysq + p2) * ysq + p1) * ysq + p0) * y;
+		float64 temp2 = ((((ysq + q3) * ysq + q2) * ysq + q1) * ysq + q0);
+		return temp1 / temp2;
+	}
+
+	// Sin returns the sine of arg.
+	inline sin(float64 arg) = sinCos(arg, 0);
+
+	// Cos returns the cosine of arg.
+	inline cos(float64 arg) = sinCos(abs(arg), 1);
+
+	// Tan returns the tangent of arg.
+	float64 tan(float64 arg) {
+		/* TODO: implement enumerations
+		enum: float64 {
+			PIO2: 1.570796326794896619231e0;
+			p0: -0.1306820264754825668269611177e+5;
+			p1:  0.1055970901714953193602353981e+4;
+			p2: -0.1550685653483266376941705728e+2;
+			p3:  0.3422554387241003435328470489e-1;
+			p4:  0.3386638642677172096076369e-4;
+			q0: -0.1663895238947119001851464661e+5;
+			q1:  0.4765751362916483698926655581e+4;
+			q2: -0.1555033164031709966900124574e+3;
+			nan: 0./0;
+		}*/
+		inline PIO2 = 1.570796326794896619231e0;
+		inline p0 = -0.1306820264754825668269611177e+5;
+		inline p1 =  0.1055970901714953193602353981e+4;
+		inline p2 = -0.1550685653483266376941705728e+2;
+		inline p3 =  0.3422554387241003435328470489e-1;
+		inline p4 =  0.3386638642677172096076369e-4;
+		inline q0 = -0.1663895238947119001851464661e+5;
+		inline q1 =  0.4765751362916483698926655581e+4;
+		inline q2 = -0.1555033164031709966900124574e+3;
+		inline nan = 0./0;
+
+		bool complement = false;
+		bool negate = false;
+
+		if (arg < 0) {
+			arg = -arg;
+			negate = true;
+		}
+		arg = 2 * arg / PIO2;   /* overflow? */
+
+		double e;
+		double x = modf(arg, e);
+		int i = int(e) % 4;
+
+		if (i == 0) {}
+		else if (i == 1) {
+			x = 1 - x;
+			complement = true;
+		}
+		else if (i == 2) {
+			negate = !negate;
+			complement = true;
+		}
+		else if (i == 3) {
+			x = 1 - x;
+			negate = !negate;
+		}
+
+		double xsq = x * x;
+		float64 result = ((((p4 * xsq + p3) * xsq + p2) * xsq + p1) * xsq + p0) * x;
+		result /= ((xsq + q2) * xsq + q1) * xsq + q0;
+
+		if (complement) {
+			if (result == 0) {
+				return nan;
+			}
+			result = 1 / result;
+		}
+		if (negate) {
+			return -result;
+		}
+		return result;
+	}
+
+	// Sinh returns the hyperbolic sine of x.
+	float64 sinh(float64 x) {
+		// The coefficients are #2029 from Hart & Cheney. (20.36D)
+		/* TODO: implement enumerations
+		enum: float64 {
+			P0: -0.6307673640497716991184787251e+6;
+			P1: -0.8991272022039509355398013511e+5;
+			P2: -0.2894211355989563807284660366e+4;
+			P3: -0.2630563213397497062819489e+2;
+			Q0: -0.6307673640497716991212077277e+6;
+			Q1: 0.1521517378790019070696485176e+5;
+			Q2: -0.173678953558233699533450911e+3;
+		}*/
+
+		inline P0 = -0.6307673640497716991184787251e+6;
+		inline P1 = -0.8991272022039509355398013511e+5;
+		inline P2 = -0.2894211355989563807284660366e+4;
+		inline P3 = -0.2630563213397497062819489e+2;
+		inline Q0 = -0.6307673640497716991212077277e+6;
+		inline Q1 = 0.1521517378790019070696485176e+5;
+		inline Q2 = -0.173678953558233699533450911e+3;
+
+		bool negate = false;
+		if (x < 0) {
+			x = -x;
+			negate = true;
+		}
+
+		if (x > 21) {
+			return float64.exp(x) / 2;
+		}
+		
+		float64 result;
+		if (x > 0.5) {
+			result = (float64.exp(x) - float64.exp(-x)) / 2;
+		}
+		else {
+			float64 sq = x * x;
+			result = (((P3 * sq + P2) * sq + P1) * sq + P0) * x;
+			result /= ((sq + Q2) * sq + Q1) * sq + Q0;
+		}
+
+		if (negate) {
+			return -result;
+		}
+		return result;
+	}
+
+	// Cosh returns the hyperbolic cosine of x.
+	float64 cosh(float64 x) {
+		if (x < 0) {
+			x = -x;
+		}
+		if (x > 21) {
+			return float64.exp(x) / 2;
+		}
+		return (float64.exp(x) + float64.exp(-x)) / 2;
+	}
+
+	/**
+	 * Asin returns the arcsine of x.
+	 *   Special cases are:
+	 *     Asin(±0) = ±0
+	 *     Asin(x) = NaN if x < -1 or x > 1
+	 */
+	float64 asin(float64 x) {
+		if (x == 0) {
+			// special case
+			return x;
+		}
+
+		bool negate = false;
+		if (x < 0) {
+			negate = true;
+			x = -x;
+		}
+
+		if (x > 1) {
+			// special case
+			return nan;
+		}
+
+		float64 result = float64.sqrt(1 - x * x);
+		if (x > 0.7) {
+			result = pi / 2 - float64.atan2(result, x);
+		}
+		else {
+			result = float64.atan2(x, result);
+		}
+
+		if (negate) {
+			return -result;
+		}
+		return result;
+	}
+
+	/* Acos returns the arccosine of x.
+	 *   Special case is:
+	 *      Acos(x) = NaN if x < -1 or x > 1
+	 */
+	inline acos(float64 x) = (pi / 2 - asin(x));
+
+	/* arccosine of x
+		Absolute error <= 6.7e-5.
+		http://http.developer.nvidia.com/Cg/acos.html
+	float64 acos(float64 x) {
+		float64 negate = 0;
+		if (x < 0) {
+			negate = 1;
+			x = -x;
+		}
+		result = -0.0187293;
+		result = result * x;
+		result = result + 0.0742610;
+		result = result * x;
+		result = result - 0.2121144;
+		result = result * x;
+		result = result + 1.5707288;
+		result = result * sqrt(1. - x);
+		result = result - 2 * negate * result;
+		result = negate * 3.14159265358979 + result;
+	}*/
+
+	inline deg2rad(float64 x) = float64(x * pi / 180);
+	inline rad2deg(float64 x) = float64(x * 180 / pi);
+}
