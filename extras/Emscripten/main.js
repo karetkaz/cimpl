@@ -156,22 +156,41 @@ worker.onmessage = function(event) {
 };
 
 function showSplit(splitter, orientation) {
-	splitter.classList.remove('primary');
-	splitter.classList.remove('secondary');
-	splitter.classList.remove('vertical');
-	splitter.classList.remove('horizontal');
 
 	if (orientation === false) {
+		splitter.classList.remove('primary');
+		splitter.classList.remove('secondary');
 		splitter.classList.add('primary');
 	}
 	else if (orientation === true) {
+		splitter.classList.remove('primary');
+		splitter.classList.remove('secondary');
 		splitter.classList.add('secondary');
 	}
+
+	if (orientation === '!vertical' || orientation === '!horizontal') {
+		splitter.classList.remove('secondary');
+		if (splitter.classList.contains('primary')) {
+			splitter.classList.remove('primary');
+		} else {
+			splitter.classList.add('primary');
+		}
+		orientation = orientation.substring(1);
+	}
+
 	if (orientation === 'vertical') {
+		splitter.classList.remove('horizontal');
+		splitter.classList.remove('vertical');
 		splitter.classList.add('vertical');
 	}
 	else if (orientation === 'horizontal') {
+		splitter.classList.remove('horizontal');
+		splitter.classList.remove('vertical');
 		splitter.classList.add('horizontal');
+	}
+	else if (orientation === '') {
+		splitter.classList.remove('horizontal');
+		splitter.classList.remove('vertical');
 	}
 	editor.setSize('100%', '100%');
 }

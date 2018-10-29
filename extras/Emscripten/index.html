@@ -30,8 +30,9 @@
 
 </head>
 <body>
-<div class="toolbar">
+<div class="toolbar"> <!-- ⛶ 🞕 ⯐ ⌗ ⌑ ⎅ ⏍ ◧ ◨ ⬒ ⬓ ◫ -->
 	<span class="left icon" href="#" onclick="showMenu(options);">☰</span>
+	<span class="right icon" href="#" onclick="showSplit(textSplit, '!horizontal');">⬓</span>
 	<span id="btnExecute" class="right execute" href="#" onclick="execute(btnExecute.innerText, cmdExecute.value);"></span>
 	<span id="btnFileName" class="filename" href="#" onclick="showMenu(files);"></span>
 </div>
@@ -61,9 +62,11 @@
 			<li onclick="showSplit(textSplit, false);">Editor only</li>
 			<li onclick="showSplit(textSplit, true);">Output only</li>
 			<hr/>
-			<li onclick="showSplit(textSplit, 'horizontal');">Split Horizontal</li>
-			<li onclick="showSplit(textSplit, 'vertical');">Split Vertical</li>
-			<li onclick="showSplit(textSplit, '');">Split Auto</li>
+			<li>Split <select onchange="showSplit(textSplit, this.value);">
+				<option value="horizontal">Horizontal
+				<option value="vertical">Vertical
+				<option value="">Auto
+			</select></li>
 		</ul>
 			Theme<ul>
 			<li onclick="params.update({theme: 'idea'});">Idea</li>
