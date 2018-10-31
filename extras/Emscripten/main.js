@@ -194,6 +194,15 @@ function showSplit(splitter, orientation) {
 	}
 	editor.setSize('100%', '100%');
 }
+
+function darkTheme(element) {
+	if (element.classList.contains('dark')) {
+		element.classList.remove('dark');
+	} else {
+		element.classList.add('dark');
+	}
+}
+
 function showMenu(menu) {
 	if (menu && menu.style.display !== 'none') {
 		// menu is opened, hide it
