@@ -1064,8 +1064,7 @@ static void dumpApiText(userContext extra, symn sym) {
 			printFmt(out, esc, "%I.print: '%s'\n", indent, sym->fmt);
 		}
 		if (sym->file != NULL && sym->line > 0) {
-			printFmt(out, esc, "%I.file: '%s'\n", indent, sym->file);
-			printFmt(out, esc, "%I.line: %u\n", indent, sym->line);
+			printFmt(out, esc, "%I.file: '%s:%u'\n", indent, sym->file, sym->line);
 		}
 		if (sym->owner != NULL) {
 			printFmt(out, esc, "%I.owner: %?T\n", indent, sym->owner);

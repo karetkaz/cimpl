@@ -46,6 +46,11 @@ let params = JsArgs('#', function (params, changes) {
 		}
 	}
 
+	// setup theme
+	if (!changes || changes.theme != null) {
+		setTheme(document.body, params.theme || 'dark', 'dark', 'light');
+	}
+
 	// setup project
 	if (!changes && params.project != null) {
 		let files = [];
@@ -313,15 +318,14 @@ function execute(text, cmd) {
 	if (cmd != null) {
 		cmdExecute.value = cmd;
 
-
-		// standard library is in root
-		args.push('-std/stdlib.ci');
+		// do not use standard input, print times
+		args.push('-X' + (params.X || '-stdin+times'));
 
 		// allocate 2Mb of memory by default,
 		args.push('-mem' + (params.mem || '2M'));
 
-		// do not use standard input, print times
-		args.push('-X' + (params.X || '-stdin+times'));
+		// standard library is in root
+		args.push('-std/stdlib.ci');
 
 		if (params.dump != null) {
 			if (params.dump.endsWith('.json')) {
@@ -350,6 +354,7 @@ function execute(text, cmd) {
 	}
 
 	terminal.clear();
+	console.log("execute", args);
 	worker.postMessage({
 		content: editor.getValue(),
 		file: file,

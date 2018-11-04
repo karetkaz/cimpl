@@ -894,6 +894,26 @@
 				</stmt>
 			</init>
 		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="div(a: Complex, b: float64): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="div(a, Complex(b))">
+				<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+				<push token="()" type="Complex" kind="static const typename(val)" value="Complex(b)">
+					<push token=".variable" type="float64" kind="static const typename(f64)" value="b" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="div" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="div(a: float64, b: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="div(Complex(a), b)">
+				<push token="()" type="Complex" kind="static const typename(val)" value="Complex(a)">
+					<push token=".variable" type="float64" kind="static const typename(f64)" value="a" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="Complex" />
+				</push>
+				<push token=".variable" type="Complex" kind="static const typename(val)" value="b" />
+				<call token=".variable" type="function" kind="static const typename(ref)" value="div" />
+			</init>
+		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="abs(a: Complex): float64">
 			<init token="()" type="float64" kind="static const typename(f64)" value="float64.sqrt(a.re * a.re + a.im * a.im)">
 				<push token="+" type="float64" kind="static const typename(f64)" value="a.re * a.re + a.im * a.im">
@@ -940,8 +960,8 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="function" kind="static const typename(ref)" value="invert(a: Complex): Complex">
-			<init token="{}" type="void" kind="static const typename(void)" file="lib/math.Complex.ci:90">
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="inv(a: Complex): Complex">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/math.Complex.ci:93">
 				<stmt token=".variable" type="float64" kind="static const typename(f64)" value="d">
 					<init token="()" type="float64" kind="static const typename(f64)" value="(a.re * a.re + a.im * a.im)">
 						<push token="+" type="float64" kind="static const typename(f64)" value="a.re * a.re + a.im * a.im">
@@ -1080,7 +1100,7 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="pow(a: Complex, b: Complex): Complex">
-			<init token="{}" type="void" kind="static const typename(void)" file="lib/math.Complex.ci:101">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/math.Complex.ci:104">
 				<stmt token=".variable" type="float64" kind="static const typename(f64)" value="r">
 					<init token="()" type="float64" kind="static const typename(f64)" value="abs(a)">
 						<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
@@ -1188,7 +1208,7 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="sin(a: Complex): Complex">
-			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(float64.sin(a.re) * Math.cosh(a.im), float64.cos(a.re) * Math.sinh(a.im))">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(float64.sin(a.re) * Math.cosh(a.im), +float64.cos(a.re) * Math.sinh(a.im))">
 				<push token="*" type="float64" kind="static const typename(f64)" value="float64.sin(a.re) * Math.cosh(a.im)">
 					<left token="()" type="float64" kind="static const typename(f64)" value="float64.sin(a.re)">
 						<push token="." type="float64" kind="static const typename(f64)" value="a.re">
@@ -1211,16 +1231,18 @@
 						</call>
 					</right>
 				</push>
-				<push token="*" type="float64" kind="static const typename(f64)" value="float64.cos(a.re) * Math.sinh(a.im)">
-					<left token="()" type="float64" kind="static const typename(f64)" value="float64.cos(a.re)">
-						<push token="." type="float64" kind="static const typename(f64)" value="a.re">
-							<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
-							<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
-						</push>
-						<call token="." type="function" kind="static const typename(ref)" value="float64.cos">
-							<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
-							<right token=".variable" type="function" kind="static const typename(ref)" value="cos" />
-						</call>
+				<push token="*" type="float64" kind="static const typename(f64)" value="+float64.cos(a.re) * Math.sinh(a.im)">
+					<left token="+" type="float64" kind="static const typename(f64)" value="+float64.cos(a.re)">
+						<right token="()" type="float64" kind="static const typename(f64)" value="float64.cos(a.re)">
+							<push token="." type="float64" kind="static const typename(f64)" value="a.re">
+								<left token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="re" />
+							</push>
+							<call token="." type="function" kind="static const typename(ref)" value="float64.cos">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="cos" />
+							</call>
+						</right>
 					</left>
 					<right token="()" type="float64" kind="static const typename(f64)" value="Math.sinh(a.im)">
 						<push token="." type="float64" kind="static const typename(f64)" value="a.im">
@@ -1298,6 +1320,153 @@
 					<call token=".variable" type="function" kind="static const typename(ref)" value="cos" />
 				</push>
 				<call token=".variable" type="function" kind="static const typename(ref)" value="div" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="cot(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="div(cos(a), sin(a))">
+				<push token="()" type="Complex" kind="static const typename(val)" value="cos(a)">
+					<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="cos" />
+				</push>
+				<push token="()" type="Complex" kind="static const typename(val)" value="sin(a)">
+					<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="sin" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="div" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="sinh(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="div(sub(exp(a), exp(neg(a))), 2)">
+				<push token="()" type="Complex" kind="static const typename(val)" value="sub(exp(a), exp(neg(a)))">
+					<push token="()" type="Complex" kind="static const typename(val)" value="exp(a)">
+						<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<call token=".variable" type="function" kind="static const typename(ref)" value="exp" />
+					</push>
+					<push token="()" type="Complex" kind="static const typename(val)" value="exp(neg(a))">
+						<push token="()" type="Complex" kind="static const typename(val)" value="neg(a)">
+							<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<call token=".variable" type="function" kind="static const typename(ref)" value="neg" />
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="exp" />
+					</push>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="sub" />
+				</push>
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+				<call token=".variable" type="function" kind="static const typename(ref)" value="div" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="cosh(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="div(add(exp(a), exp(neg(a))), 2)">
+				<push token="()" type="Complex" kind="static const typename(val)" value="add(exp(a), exp(neg(a)))">
+					<push token="()" type="Complex" kind="static const typename(val)" value="exp(a)">
+						<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+						<call token=".variable" type="function" kind="static const typename(ref)" value="exp" />
+					</push>
+					<push token="()" type="Complex" kind="static const typename(val)" value="exp(neg(a))">
+						<push token="()" type="Complex" kind="static const typename(val)" value="neg(a)">
+							<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<call token=".variable" type="function" kind="static const typename(ref)" value="neg" />
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="exp" />
+					</push>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="add" />
+				</push>
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+				<call token=".variable" type="function" kind="static const typename(ref)" value="div" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="tanh(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="div(sub(exp(mul(2, a)), 1), add(exp(mul(2, a)), 1))">
+				<push token="()" type="Complex" kind="static const typename(val)" value="sub(exp(mul(2, a)), 1)">
+					<push token="()" type="Complex" kind="static const typename(val)" value="exp(mul(2, a))">
+						<push token="()" type="Complex" kind="static const typename(val)" value="mul(2, a)">
+							<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+							<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<call token=".variable" type="function" kind="static const typename(ref)" value="mul" />
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="exp" />
+					</push>
+					<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="sub" />
+				</push>
+				<push token="()" type="Complex" kind="static const typename(val)" value="add(exp(mul(2, a)), 1)">
+					<push token="()" type="Complex" kind="static const typename(val)" value="exp(mul(2, a))">
+						<push token="()" type="Complex" kind="static const typename(val)" value="mul(2, a)">
+							<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+							<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<call token=".variable" type="function" kind="static const typename(ref)" value="mul" />
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="exp" />
+					</push>
+					<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="add" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="div" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="coth(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="div(add(exp(mul(2, a)), 1), sub(exp(mul(2, a)), 1))">
+				<push token="()" type="Complex" kind="static const typename(val)" value="add(exp(mul(2, a)), 1)">
+					<push token="()" type="Complex" kind="static const typename(val)" value="exp(mul(2, a))">
+						<push token="()" type="Complex" kind="static const typename(val)" value="mul(2, a)">
+							<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+							<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<call token=".variable" type="function" kind="static const typename(ref)" value="mul" />
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="exp" />
+					</push>
+					<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="add" />
+				</push>
+				<push token="()" type="Complex" kind="static const typename(val)" value="sub(exp(mul(2, a)), 1)">
+					<push token="()" type="Complex" kind="static const typename(val)" value="exp(mul(2, a))">
+						<push token="()" type="Complex" kind="static const typename(val)" value="mul(2, a)">
+							<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+							<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+							<call token=".variable" type="function" kind="static const typename(ref)" value="mul" />
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="exp" />
+					</push>
+					<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="sub" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="div" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="sec(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="inv(cos(a))">
+				<push token="()" type="Complex" kind="static const typename(val)" value="cos(a)">
+					<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="cos" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="inv" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="csc(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="inv(sin(a))">
+				<push token="()" type="Complex" kind="static const typename(val)" value="sin(a)">
+					<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="sin" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="inv" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="sech(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="inv(cosh(a))">
+				<push token="()" type="Complex" kind="static const typename(val)" value="cosh(a)">
+					<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="cosh" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="inv" />
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="csch(a: Complex): Complex">
+			<init token="()" type="Complex" kind="static const typename(val)" value="inv(sinh(a))">
+				<push token="()" type="Complex" kind="static const typename(val)" value="sinh(a)">
+					<push token=".variable" type="Complex" kind="static const typename(val)" value="a" />
+					<call token=".variable" type="function" kind="static const typename(ref)" value="sinh" />
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="inv" />
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="toCartesian(x: Complex): Complex">

@@ -777,6 +777,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx1:
+				case opc_lzx2:
+				case opc_lzx4:
 					// zero is false
 					return rt->vm.pc;
 
@@ -798,6 +800,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx1:
+				case opc_lzx2:
+				case opc_lzx4:
 					// zero is zero
 					return rt->vm.pc;
 
@@ -934,6 +938,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx2:
+				case opc_lzx4:
 					// zero is zero
 					return rt->vm.pc;
 
@@ -956,6 +961,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx1:
+				case opc_lzx2:
+				case opc_lzx4:
 					// zero is zero
 					return rt->vm.pc;
 
@@ -978,6 +985,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx1:
+				case opc_lzx2:
+				case opc_lzx4:
 					// zero is false
 					return rt->vm.pc;
 
@@ -1091,6 +1100,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx2:
+				case opc_lzx4:
 					// zero is zero
 					return rt->vm.pc;
 

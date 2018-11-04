@@ -263,6 +263,13 @@ void showWindow(int w, int h, int t, vec4f eval(vec4f in)) {
 				return -1;
 			}
 		}
+		if (action == Gui.KEY_RELEASE) {
+			if (button == ' ') {
+				float32 time = (System.millis() - start) / 1000f;
+				closure.offs.evalSurf(null, closure.aspect, time, closure.eval);
+				return 1;
+			}
+		}
 
 		float32 time = (System.millis() - start) / 1000f;
 		closure.thumb.evalSurf(null, closure.aspect, time, closure.eval);

@@ -1300,7 +1300,7 @@ static astn declare_enum(ccContext cc) {
 	astn ast = initializer(cc);
 	for (astn prop = ast->stmt.stmt; prop != NULL; prop = prop->next) {
 		astn id = prop->kind == INIT_set ? prop->op.lhso : prop;
-		symn member = declare(cc, ATTR_stat | ATTR_cnst | KIND_var | CAST_val, id, base, NULL);
+		symn member = declare(cc, ATTR_stat | ATTR_cnst | KIND_def | CAST_val, id, base, NULL);
 		astn value = NULL;
 		if (id == prop) {
 			value = intNode(cc, nextValue);
@@ -1310,9 +1310,16 @@ static astn declare_enum(ccContext cc) {
 			// TODO: type-check value
 			value = prop->op.rhso;
 
+			if (!typeCheck(cc, NULL, value, 1)) {
+				continue;
+			}
 			switch (eval(cc, &temp, value)) {
 				default:
 					error(cc->rt, id->file, id->line, ERR_INVALID_VALUE_ASSIGN, member, value);
+					break;
+
+				case CAST_f32:
+				case CAST_f64:
 					break;
 
 				case CAST_i32:

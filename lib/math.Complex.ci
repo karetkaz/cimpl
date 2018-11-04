@@ -83,11 +83,14 @@ Complex div(Complex a, Complex b) {
 	};
 }
 
+inline div(Complex a, float64 b) = div(a, Complex(b));
+inline div(float64 a, Complex b) = div(Complex(a), b);
+
 inline abs(Complex a) = float64.sqrt(a.re * a.re + a.im * a.im);
 inline arg(Complex a) = float64.atan2(a.re, a.im);
 
 // reciprocal
-Complex invert(Complex a) {
+Complex inv(Complex a) {
 	float64 d = (a.re * a.re + a.im * a.im);
 	return Complex(+a.re / d, -a.im / d);
 }
@@ -105,24 +108,33 @@ Complex pow(Complex a, Complex b) {
 	float64 v = float64.pow(r, b.re) * float64.exp(-b.im * t);
 	return Complex(v * float64.cos(u), v * float64.sin(u));
 }
-
 inline pow(Complex a, float64 b) = pow(a, Complex(b));
 
-inline sin(Complex a) = Complex(float64.sin(a.re) * Math.cosh(a.im), float64.cos(a.re) * Math.sinh(a.im));
-inline cos(Complex a) = Complex(float64.cos(a.re) * Math.cosh(a.im),-float64.sin(a.re) * Math.sinh(a.im));
+inline sin(Complex a) = Complex(float64.sin(a.re) * Math.cosh(a.im), +float64.cos(a.re) * Math.sinh(a.im));
+inline cos(Complex a) = Complex(float64.cos(a.re) * Math.cosh(a.im), -float64.sin(a.re) * Math.sinh(a.im));
 inline tan(Complex a) = div(sin(a), cos(a));
+inline cot(Complex a) = div(cos(a), sin(a));
+
+inline sinh(Complex a) = div(sub(exp(a), exp(neg(a))), 2);
+inline cosh(Complex a) = div(add(exp(a), exp(neg(a))), 2);
+inline tanh(Complex a) = div(sub(exp(mul(2, a)), 1), add(exp(mul(2, a)), 1));
+inline coth(Complex a) = div(add(exp(mul(2, a)), 1), sub(exp(mul(2, a)), 1));
+
+inline sec(Complex a) = inv(cos(a));
+inline csc(Complex a) = inv(sin(a));
+inline sech(Complex a) = inv(cosh(a));
+inline csch(Complex a) = inv(sinh(a));
 
 /* TODO: implement operator overloading
+inline tan(Complex a) = sin(a) / cos(a);
 inline cot(Complex a) = cos(a) / sin(a);
 
 inline sinh(Complex a) = (exp(a) - exp(-a)) / 2;
 inline cosh(Complex a) = (exp(a) + exp(-a)) / 2;
 inline tanh(Complex a) = (exp(2 * a) - 1) / (exp(2 * a) + 1);
-
 inline coth(Complex a) = (exp(2 * a) + 1) / (exp(2 * a) - 1);
-inline sech(Complex a) = inv(cosh(a));
-inline csch(Complex a) = inv(sinh(a));
 */
+
 
 inline toCartesian(Complex x) = Complex(x.re * double.cos(x.im), x.re * double.sin(x.im));
 inline toPolar(Complex x) = Complex(abs(x), arg(x));

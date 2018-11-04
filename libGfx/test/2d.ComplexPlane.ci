@@ -1,4 +1,5 @@
 // complex plane domain coloring demo.
+
 inline pi = 3.14159265358979323846264338327950288419716939937510582097494459;
 
 inline absMod(double val, double mod) = ((val < 0 ? val + mod : val) % mod);
@@ -6,22 +7,23 @@ inline absMod(double val, double mod) = ((val < 0 ? val + mod : val) % mod);
 vec4f domain(Complex z, double mod) {
 	vec4f result = {
 		x: absMod(arg(z)/(pi*2) + pi/4, mod);
-		y: (absMod(abs(z), 1) * (1 - absMod(abs(z), 1))) * 4;
-		z: 1;//AbsMod(Math.abs(im(z)), 1);
+		y: 4 * absMod(abs(z), 1) * (1 - absMod(abs(z), 1));
+		z: 1;//- absMod(Math.abs(z.im), 1);
 	};
 	return Hsv2Rgb(result);
 }
 
 vec4f rgbOp(vec4f in) {
-	inline N = float(pi / 1.0);
+	inline N = float64(pi / 1.0);
 	Complex z = {
-		re: Math.lerp(in.x, -N, N);
-		im: Math.lerp(in.y, -N, N);
+		re: Math.lerp(float64(in.x), -N, N);
+		im: Math.lerp(float64(in.y), -N, N);
 	};
 
 	// z = sin(z);
 	// z = sin(toPolar(z));
-	z = sin(sin(toPolar(z)));
+	// z = sin(sech(toPolar(z)));
+	z = cosh(toPolar(z));
 //	z = toCartesian(cos(toPolar(z)));
 //	z = toCartesian(sin(toPolar(z)));
 //	z = sin(toCartesian(sin(toPolar(z))));
@@ -29,7 +31,7 @@ vec4f rgbOp(vec4f in) {
 //	z = sin(sin(sin(toCartesian(z))));
 //	z = mul(z, .5); z = div(pow(z, 3), sub(sin(pow(z, 7)), 1));
 
-	z = toCartesian(pow(toPolar(sin(z)), -2));
+	// z = toCartesian(pow(toPolar(sin(z)), -2));
 	return domain(z, 1);
 }
 

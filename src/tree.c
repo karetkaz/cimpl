@@ -244,7 +244,12 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 					break;
 				}
 			}
-			return eval(cc, res, args);
+			ccKind cast = eval(cc, res, args);
+			if (cast == CAST_any) {
+				traceAst(ast);
+				return CAST_any;
+			}
+			break;
 		}
 
 		case OPER_idx:
@@ -366,8 +371,9 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 
 			dieif(lhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
 			dieif(rhs.kind != TOKEN_val, ERR_INTERNAL_ERROR);
-			dieif(lhs.type != rhs.type, ERR_INTERNAL_ERROR);
+			logif(lhs.type != rhs.type, ERR_INTERNAL_ERROR": %t", ast);
 
+			res->kind = TOKEN_val;
 			switch (castOf(lhs.type)) {
 				default:
 					return CAST_any;

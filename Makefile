@@ -3,6 +3,7 @@ GX_OUT=out
 CFLAGS=-Wall -g0 -O3
 EMFLAGS=-s WASM=1 -s EXPORT_ALL=0 -s INVOKE_RUN=0 -s ALLOW_MEMORY_GROWTH=1
 #EMFLAGS+=-s "EXPORTED_FUNCTIONS=['_main','_rtInit','_ccInit','_ccAddUnit','_ccGenCode','_execute']"
+EM_EMBED=--preload-file stdlib.ci --preload-file lib/math.ci --preload-file lib/math.Complex.ci --preload-file lib/string.ci
 
 SRC_CC=\
 	src/*.h\
@@ -47,10 +48,10 @@ libOpenGL.so: lib/src/openGL.c
 	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libOpenGL.so lib/src/openGL.c -lGL -lGLU -lglut
 
 cmpl.js: $(SRC_CC) stdlib.ci
-	emcc $(CFLAGS) $(EMFLAGS) $(filter %.c, $^) -o extras/Emscripten/cmpl.js --embed-file stdlib.ci
+	emcc $(CFLAGS) $(EMFLAGS) $(filter %.c, $^) -o extras/Emscripten/cmpl.js $(EM_EMBED)
 
 cmpl.dbg.js: $(SRC_CC) stdlib.ci
-	emcc -g3 -O0 -s WASM=0 $(filter %.c, $^) -o extras/Emscripten/cmpl.dbg.js --embed-file stdlib.ci
+	emcc -g3 -O0 -s WASM=0 $(filter %.c, $^) -o extras/Emscripten/cmpl.dbg.js
 
 clean:
 	rm -f -R $(BINDIR)
