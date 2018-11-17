@@ -318,6 +318,16 @@ caseCmp(chr: char, with: char): int32
 startsWith(str: char[*], with: char[*]): bool
 endsWith(str: char[*], with: char[*]): bool
 compare(str: char[*], with: char[*]): int32
+contains(str: char[*], chr: char): bool
+FormatFlags
+FormatFlags.radix
+FormatFlags.sign
+FormatFlags.padChr
+FormatFlags.padLen
+FormatFlags.precision
+append(output: char[], pos: int32, value: char[*]): int32
+append(output: char[], pos: int32, value: uint32, format: FormatFlags): int32
+append(output: char[], pos: int32, value: uint32): int32
 gxRect
 gxRect.x
 gxRect.y
@@ -332,6 +342,16 @@ gxMesh.open3ds(path: char[*]): gxMesh
 gxMesh.saveObj(mesh: gxMesh, path: char[*]): void
 gxMesh.normalize(mesh: gxMesh, tolerance: float32, center: float32[3], resize: float32[3]): void
 gxMesh.addVertex(mesh: gxMesh, x: float32, y: float32, z: float32): void
+gxMesh.clearDepth
+gxMesh.clearColor
+gxMesh.cullBack
+gxMesh.cullFront
+gxMesh.drawPlot
+gxMesh.drawWire
+gxMesh.drawFill
+gxMesh.drawMode
+gxMesh.useTexture
+gxMesh.useLights
 gxMesh.vertices
 gxMesh.triangles
 gxMesh.segments
@@ -363,7 +383,7 @@ gxSurf.copySurf(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): voi
 gxSurf.zoomSurf(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate: int32): void
 gxSurf.lookup(surf: gxSurf, roi: gxRect, lut: uint32[]): void
 gxSurf.multiply(surf: gxSurf, roi: gxRect, mat: float32[16]): void
-gxSurf.drawMesh(surf: gxSurf, mesh: gxMesh): void
+gxSurf.drawMesh(surf: gxSurf, mesh: gxMesh, mode: int32): int32
 camera
 camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): void
 camera.lookAt(eye: float32[3], at: float32[3], up: float32[3]): void
@@ -383,6 +403,7 @@ Gui.KEY_MASK_SHIFT
 Gui.KEY_MASK_CONTROL
 Gui.showWindow(surf: gxSurf, onEvent(action: int32, button: int32, x: int32, y: int32): int32): void
 Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+Gui.setTitle(title: char[*]): void
 vec2d
 vec2d.x
 vec2d.y

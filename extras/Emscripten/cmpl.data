@@ -299,23 +299,27 @@ static struct Math {
 
 	int cmp(float32 a, float32 b, float32 eps) {
 		if (a < b) {
-			if (eps < (b - a))
+			if (eps < (b - a)) {
 				return -1;
+			}
 		}
 		else {
-			if (eps < (a - b))
+			if (eps < (a - b)) {
 				return +1;
+			}
 		}
 		return 0;
 	}
 	int cmp(float64 a, float64 b, float64 eps) {
 		if (a < b) {
-			if (eps < (b - a))
+			if (eps < (b - a)) {
 				return -1;
+			}
 		}
 		else {
-			if (eps < (a - b))
+			if (eps < (a - b)) {
 				return +1;
+			}
 		}
 		return 0;
 	}
@@ -644,7 +648,10 @@ inline arg(Complex a) = float64.atan2(a.re, a.im);
 // reciprocal
 Complex inv(Complex a) {
 	float64 d = (a.re * a.re + a.im * a.im);
-	return Complex(+a.re / d, -a.im / d);
+	return {
+		re: +a.re / d;
+		im: -a.im / d;
+	};
 }
 
 inline conj(Complex a) = Complex(a.re, -a.im);
@@ -658,7 +665,10 @@ Complex pow(Complex a, Complex b) {
 	float64 t = arg(a);
 	float64 u = b.re * t + b.im * float64.log(r);
 	float64 v = float64.pow(r, b.re) * float64.exp(-b.im * t);
-	return Complex(v * float64.cos(u), v * float64.sin(u));
+	return {
+		re: v * float64.cos(u);
+		im: v * float64.sin(u);
+	};
 }
 inline pow(Complex a, float64 b) = pow(a, Complex(b));
 
@@ -690,12 +700,12 @@ inline coth(Complex a) = (exp(2 * a) + 1) / (exp(2 * a) - 1);
 
 inline toCartesian(Complex x) = Complex(x.re * double.cos(x.im), x.re * double.sin(x.im));
 inline toPolar(Complex x) = Complex(abs(x), arg(x));
-// string related 
+// string related functions
 
-static int length(char str[*]) {
+int length(char str[*]) {
 	if (str == null) {
 		return 0;
-	} 
+	}
 	int result = 0;
 	for (; str[result]; result += 1) {
 	}
@@ -703,7 +713,7 @@ static int length(char str[*]) {
 }
 
 /// the first occurrence of a char in string
-static int indexOf(char str[*], char chr) {
+int indexOf(char str[*], char chr) {
 	for (int i = 0; str[i]; i += 1) {
 		if (str[i] == chr) {
 			return i;
@@ -713,7 +723,7 @@ static int indexOf(char str[*], char chr) {
 }
 
 /// the last occurrence of a char in string
-static int lastIndexOf(char str[*], char chr) {
+int lastIndexOf(char str[*], char chr) {
 	int result = -1;
 	for (int i = 0; str[i]; i += 1) {
 		if (str[i] == chr) {
@@ -724,7 +734,7 @@ static int lastIndexOf(char str[*], char chr) {
 }
 
 
-static bool startsWith(char str[*], char with[*], int cmp(char chr, char with)) {
+bool startsWith(char str[*], char with[*], int cmp(char chr, char with)) {
 	for (int i = 0; with[i] != 0; i += 1) {
 		if (cmp(str[i], with[i]) != 0) {
 			return false;
@@ -733,7 +743,7 @@ static bool startsWith(char str[*], char with[*], int cmp(char chr, char with)) 
 	return true;
 }
 
-static bool endsWith(char str[*], char with[*], int cmp(char chr, char with)) {
+bool endsWith(char str[*], char with[*], int cmp(char chr, char with)) {
 	int withLen = length(with);
 	int strLen = length(str);
 	if (strLen < withLen) {
@@ -747,7 +757,7 @@ static bool endsWith(char str[*], char with[*], int cmp(char chr, char with)) {
 	return true;
 }
 
-static int compare(char str[*], char with[*], int cmp(char chr, char with)) {
+int compare(char str[*], char with[*], int cmp(char chr, char with)) {
 	int result = 0;
 	for (int i = 0; result == 0; i += 1) {
 		result = cmp(str[i], with[i]);
@@ -759,7 +769,7 @@ static int compare(char str[*], char with[*], int cmp(char chr, char with)) {
 }
 
 // ignore case compare
-static int ignCaseCmp(char chr, char with) {
+int ignCaseCmp(char chr, char with) {
 	static char ignCase(char chr) {
 		if (chr >= 'A' && chr <= 'Z') {
 			chr -= 'A';
@@ -771,7 +781,7 @@ static int ignCaseCmp(char chr, char with) {
 	return ignCase(chr) - ignCase(with);
 }
 
-static int caseCmp(char chr, char with) {
+int caseCmp(char chr, char with) {
 	return chr - with;
 }
 
@@ -779,3 +789,102 @@ inline startsWith(char str[*], char with[*]) = startsWith(str, with, caseCmp);
 inline endsWith(char str[*], char with[*]) = endsWith(str, with, caseCmp);
 inline compare(char str[*], char with[*]) = compare(str, with, caseCmp);
 
+inline contains(char str[*], char chr) = indexOf(str, chr) >= 0;
+
+// convert number to string
+struct FormatFlags {
+	const int radix;	// radix
+	const char sign;	// should be one of: 0, '-', '+'
+	const char padChr;	// padding character: 0, '0'
+	const int padLen;	// padding length
+	const int precision;	// padding length
+}
+
+int append(char output[], int pos, char value[*]) {
+	for (int i = 0; value[i]; i += 1) {
+		if (pos >= output.length) {
+			break;
+		}
+		output[pos] = value[i];
+		pos += 1;
+	}
+
+	if (pos >= output.length) {
+		pos = output.length - 1;
+	}
+	output[pos] = 0;
+	return pos;
+}
+
+int append(char output[], int pos, uint32 value, FormatFlags format&) {
+	static const char whiteSpace[] = " \t\n\r";
+	static const char radixDigits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+
+	int len = 0;
+	char digits[80];
+
+	int radix = format.radix;
+	assert(radix > 1 && radix < radixDigits.length);
+
+	// print digits in reverse order
+	for ( ; value > 0; value /= radix) {
+		digits[len += 1] = radixDigits[value % radix];
+	}
+	if (len == 0) {
+		digits[len += 1] = '0';
+	}
+
+	int maxLen = format.padLen - len;
+
+	char padChr = format.padChr;
+	if (padChr == '\0') {
+		padChr = ' ';
+	}
+
+	// print sign value
+	if (format.sign != '\0') {
+		maxLen -= 1;
+		if (whiteSpace.contains(padChr)) {
+			// if padding character is whitespace padd before sign
+			for ( ; maxLen > 0; maxLen -= 1) {
+				assert(pos < output.length);
+				output[pos] = padChr;
+				pos += 1;
+			}
+		}
+		assert(pos < output.length);
+		output[pos] = format.sign;
+		pos += 1;
+	}
+
+	// print padding
+	for ( ; maxLen > 0; maxLen -= 1) {
+		assert(pos < output.length);
+		output[pos] = padChr;
+		pos += 1;
+	}
+
+	// print digits
+	for (int i = 0; i < len; i += 1) {
+		assert(i < output.length);
+		output[pos] = digits[len - i];
+		pos += 1;
+	}
+
+	if (pos >= output.length) {
+		pos = output.length - 1;
+	}
+	output[pos] = 0;
+	return pos;
+}
+
+int append(char output[], int pos, uint32 value) {
+	static const FormatFlags format = {
+		radix: 10;
+		sign: '\0';
+		padChr: ' ';
+		padLen: 0;
+		precision: 0;
+	};
+	return append(output, pos, value, format);
+}

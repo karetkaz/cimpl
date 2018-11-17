@@ -1018,7 +1018,7 @@ symn ccDefInt(ccContext cc, const char *name, int64_t value) {
 		return NULL;
 	}
 	name = ccUniqueStr(cc, name, -1, -1);
-	return install(cc, name, KIND_def | CAST_i64, 0, cc->type_i64, intNode(cc, value));
+	return install(cc, name, ATTR_stat | ATTR_cnst | KIND_def | CAST_i64, 0, cc->type_i64, intNode(cc, value));
 }
 
 symn ccDefFlt(ccContext cc, const char *name, double value) {
@@ -1027,7 +1027,7 @@ symn ccDefFlt(ccContext cc, const char *name, double value) {
 		return NULL;
 	}
 	name = ccUniqueStr(cc, name, -1, -1);
-	return install(cc, name, KIND_def | CAST_f64, 0, cc->type_f64, fltNode(cc, value));
+	return install(cc, name, ATTR_stat | ATTR_cnst | KIND_def | CAST_f64, 0, cc->type_f64, fltNode(cc, value));
 }
 
 symn ccDefStr(ccContext cc, const char *name, char *value) {
@@ -1039,7 +1039,7 @@ symn ccDefStr(ccContext cc, const char *name, char *value) {
 	if (value != NULL) {
 		value = ccUniqueStr(cc, value, -1, -1);
 	}
-	return install(cc, name, KIND_def | CAST_ref, 0, cc->type_str, strNode(cc, value));
+	return install(cc, name, ATTR_stat | ATTR_cnst | KIND_def | CAST_ref, 0, cc->type_str, strNode(cc, value));
 }
 
 symn ccDefVar(ccContext cc, const char *name, symn type) {

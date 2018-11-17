@@ -609,12 +609,10 @@ static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 			int line = ast->line;
 
 			// use the location of the expression statement, not the expansion
-			if (cc->file != NULL && cc->file != file) {
-				if (cc->line > 0 && cc->line != line) {
-					file = cc->file;
-					line = cc->line;
-					dbgCgen("%?s:%?u: Using the location of the last expression statement", file, line);
-				}
+			if (cc->file != NULL && cc->line > 0) {
+				file = cc->file;
+				line = cc->line;
+				dbgCgen("%?s:%?u: Using the location of the last expression statement", file, line);
 			}
 
 			// add 2 extra computed param to the raise function(file and line)

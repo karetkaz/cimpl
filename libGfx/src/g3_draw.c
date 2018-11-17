@@ -36,7 +36,7 @@ static vector bsphere(vector s, vector p1, vector p2, vector p3) {
 }
 
 // returns false if point, sphere or triangle is outside of the frustum
-/*static int ftest_point(struct vector planes[6], vector p) {				// clip point
+static int ftest_point(struct vector planes[6], vector p) {				// clip point
 	const scalar r = 0;
 	if (vecdph(p, &planes[0]) <= r) return 0;
 	if (vecdph(p, &planes[1]) <= r) return 0;
@@ -45,9 +45,8 @@ static vector bsphere(vector s, vector p1, vector p2, vector p3) {
 	if (vecdph(p, &planes[4]) <= r) return 0;
 	if (vecdph(p, &planes[5]) <= r) return 0;
 	return 1;	// inside
-}*/
-static int ftest_sphere(struct vector planes[6], vector p) {			// clip sphere
-	scalar r = -p->w;
+}
+static int ftest_sphere(struct vector planes[6], vector p, scalar r) {			// clip sphere
 	if (vecdph(&planes[0], p) <= r) return 0;
 	if (vecdph(&planes[1], p) <= r) return 0;
 	if (vecdph(&planes[2], p) <= r) return 0;
@@ -59,23 +58,23 @@ static int ftest_sphere(struct vector planes[6], vector p) {			// clip sphere
 static int ftest_triangle(struct vector planes[6], vector p1, vector p2, vector p3) {
 	struct vector tmp[1];
 	bsphere(tmp, p1, p2, p3);
-	return ftest_sphere(planes, tmp);
+	return ftest_sphere(planes, tmp, -tmp->w);
 }
 
 static inline vector mappos(vector dst, matrix mat, vector src) {
-	scalar div;
 	struct vector tmp;
-	if (src == dst)
+	if (src == dst) {
 		src = veccpy(&tmp, src);
+	}
 
-	div = vecdph(&mat->w, src);
+	scalar div = vecdph(&mat->w, src);
 	if (div != 0) {
-		div = 1. / div;
+		div = 1 / div;
 	}
 	dst->x = vecdph(&mat->x, src) * div;
 	dst->y = vecdph(&mat->y, src) * div;
 	dst->z = vecdph(&mat->z, src) * div;
-	dst->w = 1.;
+	dst->w = 1;
 	return dst;
 }
 

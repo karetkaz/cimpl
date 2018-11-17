@@ -176,20 +176,53 @@ void tileSurf(gxSurf dst, int x, int y, gxSurf src, gxRect roi&) {
 void showMesh(gxMesh mesh, int w, int h, float32 fovy) {
 
 	struct Closure {
+		int mode;
 		gxSurf offs;
 		gxMesh mesh;
 	}
+
+	int next(int32 x, int mask) {
+		int next = x & mask;
+
+		// add lowest bit of mask
+		next += mask & -mask;
+
+		// avoid overflow
+		next &= mask;
+
+		return next | (x & ~mask);
+	};
 
 	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
 		static int ox = 0;
 		static int oy = 0;
 		static const float speed = 1. / 100;
-
 		if (action == Gui.KEY_PRESS) {
+			if (button == 'l') {
+				closure.mode ^= gxMesh.useLights;
+				return 0;
+			}
+
+			if (button == 't') {
+				closure.mode ^= gxMesh.useTexture;
+				return 0;
+			}
+
+			if (button == '/') {
+				closure.mode = next(closure.mode, gxMesh.cullBack | gxMesh.cullFront);
+				return 0;
+			}
+
+			if (button == '\t') {
+				closure.mode = next(closure.mode, gxMesh.drawMode);
+				return 0;
+			}
+
 			if (button == 27) {
 				return -1;
 			}
 		}
+
 		if (action == Gui.MOUSE_MOTION) {
 			float32 dir[3];
 			int dx = ex - ox;
@@ -226,16 +259,25 @@ void showMesh(gxMesh mesh, int w, int h, float32 fovy) {
 				camera.readUp(dir);
 				camera.move(dir, dy * speed);
 			}
+			ox = ex;
+			oy = ey;
 		}
 
-		ox = ex;
-		oy = ey;
-		closure.offs.drawMesh(closure.mesh);
+		int rendered = closure.offs.drawMesh(closure.mesh, closure.mode);
 
+		char text[256];
+		int pos = text.append(0, "Vertices: ");
+		pos = text.append(pos, closure.mesh.vertices);
+		pos = text.append(pos, ", Triangles: ");
+		pos = text.append(pos, closure.mesh.triangles);
+		pos = text.append(pos, "/");
+		pos = text.append(pos, rendered);
+		Gui.setTitle(text);
 		return 1;
 	}
 
 	Closure closure = {
+		mode: gxMesh.clearDepth | gxMesh.clearColor | gxMesh.cullBack | gxMesh.drawFill;
 		offs: gxSurf.create3d(w, h);
 		mesh: mesh;
 	};

@@ -92,7 +92,10 @@ inline arg(Complex a) = float64.atan2(a.re, a.im);
 // reciprocal
 Complex inv(Complex a) {
 	float64 d = (a.re * a.re + a.im * a.im);
-	return Complex(+a.re / d, -a.im / d);
+	return {
+		re: +a.re / d;
+		im: -a.im / d;
+	};
 }
 
 inline conj(Complex a) = Complex(a.re, -a.im);
@@ -106,7 +109,10 @@ Complex pow(Complex a, Complex b) {
 	float64 t = arg(a);
 	float64 u = b.re * t + b.im * float64.log(r);
 	float64 v = float64.pow(r, b.re) * float64.exp(-b.im * t);
-	return Complex(v * float64.cos(u), v * float64.sin(u));
+	return {
+		re: v * float64.cos(u);
+		im: v * float64.sin(u);
+	};
 }
 inline pow(Complex a, float64 b) = pow(a, Complex(b));
 

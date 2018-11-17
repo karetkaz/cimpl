@@ -360,14 +360,13 @@ static vmError mesh_destroy(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_drawMesh = "void drawMesh(gxSurf surf, gxMesh mesh)";
+static const char *proto_surf_drawMesh = "int32 drawMesh(gxSurf surf, gxMesh mesh, int32 mode)";
 static vmError surf_drawMesh(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 	gx_Mesh mesh = nextValue(ctx).ref;
+	int32_t mode = nextValue(ctx).i32;
 
-	int mode = zero_cbuf | zero_zbuf | draw_fill | cull_back;
-	g3_drawMesh(surf, mesh, NULL, cam, mode);
-	//g3_drawBbox(surf, mesh, NULL, cam);
+	reti32(ctx, g3_drawMesh(surf, mesh, NULL, cam, mode));
 	return noError;
 }
 
@@ -506,6 +505,13 @@ static vmError window_show(nfcContext ctx) {
 	return noError;
 }
 
+static const char *proto_window_title = "void setTitle(char title[*])";
+static vmError window_title(nfcContext ctx) {
+	char *title = nextValue(ctx).ref;
+	setCaption(title);
+	return noError;
+}
+
 static const char *proto_camera_lookAt = "void lookAt(float32 eye[3], float32 at[3], float32 up[3])";
 //static const char *proto_camera_ortho = "void orthographic(float32 left, float32 right, float32 bottom, float32 top, float32 near, float32 far)";
 //static const char *proto_camera_persp = "void perspective(float32 left, float32 right, float32 bottom, float32 top, float32 near, float32 far)";
@@ -633,7 +639,7 @@ int cmplInit(rtContext rt) {
 	}, win[] = {
 		{window_show, proto_window_show},
 		{window_show, proto_window_show2},
-		//{surf_, proto_surf_},
+		{window_title, proto_window_title},
 	}, nfcCam[] = {
 		{camera_mgr, proto_camera_projection},
 		{camera_mgr, proto_camera_lookAt},
@@ -644,7 +650,6 @@ int cmplInit(rtContext rt) {
 
 		{camera_mgr, proto_camera_rotate},
 		{camera_mgr, proto_camera_move},
-//		{cam_, proto_cam},
 	}, mesh[] = {
 		{mesh_recycle, proto_mesh_create},
 		{mesh_recycle, proto_mesh_recycle},
@@ -654,12 +659,6 @@ int cmplInit(rtContext rt) {
 		{mesh_save, proto_mesh_saveObj},
 		{mesh_normalize, proto_mesh_normalize},
 		{mesh_addVertex, proto_mesh_addVertex},
-//		{mesh_add, proto_mesh_add},
-		// init
-		// destroy
-		// readObj
-		// read3ds
-		// saveObj
 	};
 
 	ccContext cc = rt->cc;
@@ -681,6 +680,22 @@ int cmplInit(rtContext rt) {
 				return 1;
 			}
 		}
+
+		// clear color and depth buffers
+		rt->api.ccDefInt(cc, "clearDepth", zero_zbuf);
+		rt->api.ccDefInt(cc, "clearColor", zero_cbuf);
+
+		// backface culling
+		rt->api.ccDefInt(cc, "cullBack", cull_back);
+		rt->api.ccDefInt(cc, "cullFront", cull_front);
+
+		rt->api.ccDefInt(cc, "drawPlot", draw_plot);
+		rt->api.ccDefInt(cc, "drawWire", draw_wire);
+		rt->api.ccDefInt(cc, "drawFill", draw_fill);
+		rt->api.ccDefInt(cc, "drawMode", draw_mode);
+
+		rt->api.ccDefInt(cc, "useTexture", draw_tex);
+		rt->api.ccDefInt(cc, "useLights", draw_lit);
 
 		symn vtxCount = rt->api.ccDefVar(cc, "vertices", typSigned(rt, sizeOf(struct gx_Mesh, vtxcnt)));
 		symn triCount = rt->api.ccDefVar(cc, "triangles", typSigned(rt, sizeOf(struct gx_Mesh, tricnt)));
