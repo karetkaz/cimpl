@@ -65,17 +65,17 @@
 			<li>Split: <select onchange="showSplit(textSplit, this.value);">
 				<option value="horizontal">Horizontal
 				<option value="vertical">Vertical
-				<option value="">Auto
+				<option value="auto">Auto
 			</select></li>
-			<li onclick="showSplit(textSplit, true);">Output only</li>
-<!-- 			<li onclick="showSplit(textSplit, false);">Editor only</li> -->
-<!-- 			<li onclick="showSplit(textSplit, null);">Both</li> -->
+			<li onclick="showSplit(textSplit, '!primary');">Editor only</li>
+			<li onclick="showSplit(textSplit, '!secondary');">Output only</li>
 		</ul>
 		</div>
 		<div id="files" class="content list">
 		<ul>
 			<li onclick="showFile(null);">Close file</li>
 			<li onclick="saveInput();">Save file</li>
+			<li onclick="worker.postMessage({files: '*'});">Show all</li>
 		</ul>
 		<ul id="fileList"></ul>
 	</div>

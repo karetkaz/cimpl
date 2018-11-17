@@ -297,7 +297,7 @@ FILE *logFile(rtContext ctx, char *file, int append);
  * @param name name of the node.
  * @return the new node.
  */
-static inline astn tagNode(ccContext cc, char *name) {
+static inline astn tagNode(ccContext cc, const char *name) {
 	astn ast = NULL;
 	if (cc != NULL && name != NULL) {
 		ast = newNode(cc, TOKEN_var);

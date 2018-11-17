@@ -12,7 +12,7 @@
 #include <time.h>
 
 // default values
-static const char *STDLIB = "stdlib.ci";   // standard library
+static const char *STDLIB = "lib/stdlib.ci";   // standard library
 
 static inline int strEquals(const char *str, const char *with) {
 	if (str == NULL || with == NULL) {

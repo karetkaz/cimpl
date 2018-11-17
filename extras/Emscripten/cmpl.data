@@ -51,14 +51,15 @@ inline assertEq(int expected, int returned) = assertEq(expected, returned, null)
 
 inline sizeof(typename type) = int(type.size);
 
-inline "lib/math.ci";
-inline "lib/math.Complex.ci";     // -> Complex<float64>
+inline "math.ci";
+//inline "math.Perlin.ci";     // -> Perlin noise
+inline "math.Complex.ci";     // -> Complex<float64>
+//inline "math.Rational.ci";    // -> Rational<int64>
 
-//inline "lib/math.Rational.ci";    // -> Rational<int64>
-//inline "lib/math.BigInteger.ci"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
-//inline "lib/math.BigDecimal.ci"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
+//inline "math.BigInteger.ci"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
+//inline "math.BigDecimal.ci"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
 
-inline "lib/string.ci";
+inline "string.ci";
 // Mathematical utility functions
 
 static struct Math {
@@ -459,7 +460,7 @@ static struct Math {
 		if (x > 21) {
 			return float64.exp(x) / 2;
 		}
-		
+
 		float64 result;
 		if (x > 0.5) {
 			result = (float64.exp(x) - float64.exp(-x)) / 2;

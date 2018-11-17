@@ -218,6 +218,13 @@ void showMesh(gxMesh mesh, int w, int h, float32 fovy) {
 				return 0;
 			}
 
+			if (button == '\r') {
+				vec4f eye = {x: 0, y: 0, z: 2, w: 1};
+				vec4f at = {x: 0, y: 0, z: 0, w: 1};
+				vec4f up = {x: 0, y: 1, z: 0, w: 1};
+				camera.lookAt(eye.data, at.data, up.data);
+			}
+
 			if (button == 27) {
 				return -1;
 			}

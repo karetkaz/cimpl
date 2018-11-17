@@ -1,5 +1,5 @@
 <main token="{}" type="void" kind="static const typename(void)">
-	<stmt token="{}" type="void" kind="static const typename(void)" file="stdlib.ci:3">
+	<stmt token="{}" type="void" kind="static const typename(void)" file="lib/stdlib.ci:3">
 		<stmt token="static if" type="void" kind="static const typename(void)" stmt="static if (typename(raise) == function)">
 			<test token="==" type="bool" kind="static const typename(bool)" value="typename(raise) == function">
 				<left token="()" type="typename" kind="static const typename(ref)" value="typename(raise)">
@@ -8,7 +8,7 @@
 				</left>
 				<right token=".variable" type="typename" kind="static const typename(ref)" value="function" />
 			</test>
-			<then token="{}" type="void" kind="static const typename(void)" file="stdlib.ci:3">
+			<then token="{}" type="void" kind="static const typename(void)" file="lib/stdlib.ci:3">
 				<stmt token=".variable" type="typename" kind="static const typename(ref)" value="verbose(message: char[*], inspect: variant): void">
 					<init token="()" type="void" kind="static const typename(void)" value="raise(raise.verbose, raise.noTrace, message, inspect)">
 						<push token="." type="int64" kind="static const typename(i64)" value="raise.verbose">
@@ -300,13 +300,13 @@
 					</init>
 				</stmt>
 				<stmt token=".variable" type="function" kind="static const typename(ref)" value="assertEq(expected: int32, returned: int32, message: char[*]): void">
-					<init token="{}" type="void" kind="static const typename(void)" file="stdlib.ci:32">
+					<init token="{}" type="void" kind="static const typename(void)" file="lib/stdlib.ci:32">
 						<stmt token="if" type="void" kind="static const typename(void)" stmt="if (returned == expected)">
 							<test token="==" type="bool" kind="static const typename(bool)" value="returned == expected">
 								<left token=".variable" type="int32" kind="static const typename(i32)" value="returned" />
 								<right token=".variable" type="int32" kind="static const typename(i32)" value="expected" />
 							</test>
-							<then token="{}" type="void" kind="static const typename(void)" file="stdlib.ci:33">
+							<then token="{}" type="void" kind="static const typename(void)" file="lib/stdlib.ci:33">
 								<stmt token="return" type="void" kind="static const typename(void)" stmt="return;" />
 							</then>
 						</stmt>
@@ -5162,16 +5162,8 @@
 						</stmt>
 					</init>
 				</stmt>
-				<stmt token=";" type="void" kind="static const typename(void)" stmt="raise(raise.abort, raise.noTrace, &quot;fatal error&quot;, details);">
-					<expr token="()" type="void" kind="static const typename(void)" value="raise(raise.abort, raise.noTrace, &quot;fatal error&quot;, details)">
-						<push token="." type="int64" kind="static const typename(i64)" value="raise.abort">
-							<left token=".variable" type="void" kind="static const typename(void)" value="raise" />
-							<right token=".variable" type="int64" kind="static const typename(i64)" value="abort" />
-						</push>
-						<push token="." type="int64" kind="static const typename(i64)" value="raise.noTrace">
-							<left token=".variable" type="void" kind="static const typename(void)" value="raise" />
-							<right token=".variable" type="int64" kind="static const typename(i64)" value="noTrace" />
-						</push>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="abort(&quot;fatal error&quot;, details);">
+					<expr token="()" type="void" kind="static const typename(void)" value="abort(&quot;fatal error&quot;, details)">
 						<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;fatal error&quot;" />
 						<push token=".variable" type="abortExecution.NotEquals" kind="static const typename(val)" value="details">
 							<init token="{}" type="abortExecution.NotEquals" kind="static const typename(val)">
@@ -5206,7 +5198,7 @@
 								</stmt>
 							</init>
 						</push>
-						<call token=".variable" type="function" kind="static const typename(ref)" value="raise" />
+						<call token=".variable" type="function" kind="static const typename(ref)" value="abort" />
 					</expr>
 				</stmt>
 			</init>
@@ -5392,16 +5384,8 @@
 								</stmt>
 							</init>
 						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="raise(raise.abort, raise.noTrace, &quot;fatal error&quot;, details);">
-							<expr token="()" type="void" kind="static const typename(void)" value="raise(raise.abort, raise.noTrace, &quot;fatal error&quot;, details)">
-								<push token="." type="int64" kind="static const typename(i64)" value="raise.abort">
-									<left token=".variable" type="void" kind="static const typename(void)" value="raise" />
-									<right token=".variable" type="int64" kind="static const typename(i64)" value="abort" />
-								</push>
-								<push token="." type="int64" kind="static const typename(i64)" value="raise.noTrace">
-									<left token=".variable" type="void" kind="static const typename(void)" value="raise" />
-									<right token=".variable" type="int64" kind="static const typename(i64)" value="noTrace" />
-								</push>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="abort(&quot;fatal error&quot;, details);">
+							<expr token="()" type="void" kind="static const typename(void)" value="abort(&quot;fatal error&quot;, details)">
 								<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;fatal error&quot;" />
 								<push token=".variable" type="abortExecution.NotEquals" kind="static const typename(val)" value="details">
 									<init token="{}" type="abortExecution.NotEquals" kind="static const typename(val)">
@@ -5436,7 +5420,7 @@
 										</stmt>
 									</init>
 								</push>
-								<call token=".variable" type="function" kind="static const typename(ref)" value="raise" />
+								<call token=".variable" type="function" kind="static const typename(ref)" value="abort" />
 							</expr>
 						</stmt>
 					</init>

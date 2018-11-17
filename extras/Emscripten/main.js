@@ -156,52 +156,48 @@ worker.onmessage = function(event) {
 };
 
 function showSplit(splitter, orientation) {
+	if (orientation === undefined) {
+		// cycle through: ['split', 'primary', 'secondary']
+		let isPrimary = splitter.classList.contains('primary');
+		let isSecondary = splitter.classList.contains('secondary');
+		let lastChange = Date.now() - splitter.lastSplitChange;
+		splitter.lastSplitChange = Date.now();
 
-	if (orientation === false) {
-		splitter.classList.remove('primary');
-		splitter.classList.remove('secondary');
-		splitter.classList.add('primary');
-		return;
-	}
-	if (orientation === true) {
-		splitter.classList.remove('primary');
-		splitter.classList.remove('secondary');
-		splitter.classList.add('secondary');
-		return;
-	}
-
-	let isPrimary = splitter.classList.contains('primary');
-	if (orientation == undefined) {
-		splitter.classList.remove('primary');
-		splitter.classList.remove('secondary');
-		if (!isPrimary && orientation !== null) {
-			splitter.classList.add('primary');
+		if (!isSecondary && lastChange < 500) {
+			orientation = 'secondary';
 		}
-		return;
+		else if (!isPrimary && !isSecondary) {
+			orientation = 'primary';
+		}
+		else {
+			orientation = 'split';
+		}
 	}
 
+	let setOrientation = true;
 	if (orientation.startsWith('!')) {
 		orientation = orientation.substring(1);
-		splitter.classList.remove('primary');
-		splitter.classList.remove('secondary');
-		if (!isPrimary) {
-			splitter.classList.add('primary');
+		setOrientation = !splitter.classList.contains(orientation);
+	}
+
+	if (['vertical', 'horizontal', 'auto'].includes(orientation)) {
+		splitter.classList.remove('horizontal');
+		splitter.classList.remove('vertical');
+		if (orientation === 'auto') {
+			orientation = '';
 		}
 	}
 
-	if (orientation === 'vertical') {
-		splitter.classList.remove('horizontal');
-		splitter.classList.remove('vertical');
-		splitter.classList.add('vertical');
+	if (['primary', 'secondary', 'split'].includes(orientation)) {
+		splitter.classList.remove('primary');
+		splitter.classList.remove('secondary');
+		if (orientation === 'split') {
+			orientation = '';
+		}
 	}
-	else if (orientation === 'horizontal') {
-		splitter.classList.remove('horizontal');
-		splitter.classList.remove('vertical');
-		splitter.classList.add('horizontal');
-	}
-	else if (orientation === '') {
-		splitter.classList.remove('horizontal');
-		splitter.classList.remove('vertical');
+
+	if (setOrientation && orientation !== '') {
+		splitter.classList.add(orientation);
 	}
 	editor.setSize('100%', '100%');
 }
@@ -325,7 +321,7 @@ function execute(text, cmd) {
 		args.push('-mem' + (params.mem || '2M'));
 
 		// standard library is in root
-		args.push('-std/stdlib.ci');
+		args.push('-std/lib/stdlib.ci');
 
 		if (params.dump != null) {
 			if (params.dump.endsWith('.json')) {

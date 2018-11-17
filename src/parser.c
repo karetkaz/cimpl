@@ -157,6 +157,11 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 				continue;
 			}
 
+			// generated variable
+			if (ptr->name[0] == '.') {
+				continue;
+			}
+
 			if (strcmp(def->name, ptr->name) != 0) {
 				continue;
 			}
@@ -1177,9 +1182,11 @@ static astn declare_record(ccContext cc, ccKind attr) {
 		return NULL;
 	}
 
-	astn tag = nextTok(cc, TOKEN_var, 1);
+	astn tag = nextTok(cc, TOKEN_var, 0);
+	int expose = 0;
 	if (tag == NULL) {
 		tag = tagNode(cc, ".anonymous");
+		expose = 1;
 	}
 
 	size_t baseSize = 0;
@@ -1253,6 +1260,17 @@ static astn declare_record(ccContext cc, ccKind attr) {
 	enter(cc, type);
 	statement_list(cc);
 	type->fields = leave(cc, attr | KIND_typ, pack, baseSize, &type->size);
+	if (expose) {
+		// HACK: convert the type into a variable of it's own type ...?
+		type->kind = KIND_var | CAST_val;
+		type->type = type;
+
+		for (symn field = type->fields; field; field = field->next) {
+			symn link = install(cc, field->name, KIND_def, 0, field->type, field->tag);
+			link->file = field->file;
+			link->line = field->line;
+		}
+	}
 
 	skipTok(cc, RIGHT_crl, 1);	// '}'
 	return tag;

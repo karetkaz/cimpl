@@ -33,21 +33,24 @@ var Module = {
 	print: function(text) {
 		postMessage({ print: text });
 	},
-	workspaceFiles: function() {
+	listFiles: function(workspace) {
 		let result = [];
-		function lsr(path) {
-			let dir = FS.analyzePath(Module.workspace + '/' + path);
+		(function lsr(path) {
+			let dir = FS.analyzePath(workspace + '/' + path);
 			if (dir && dir.exists && dir.object) {
 				for (let file in dir.object.contents) {
 					if (dir.object.contents[file].isFolder) {
 						lsr((path ? path + '/' : '') + file);
 					} else {
-						result.push((path ? path + '/' : '') + file);
+						if (workspace !== Module.workspace) {
+							result.push(workspace + '/' + (path ? path + '/' : '') + file);
+						} else {
+							result.push((path ? path + '/' : '') + file);
+						}
 					}
 				}
 			}
-		}
-		lsr('');
+		})('');
 		return result;
 	},
 	onRuntimeInitialized: function () {
@@ -82,7 +85,7 @@ var Module = {
 				console.error(err);
 			}
 		}
-		postMessage({files: Module.workspaceFiles()});
+		postMessage({files: Module.listFiles(Module.workspace)});
 		Module.initialized = true;
 	}
 };
@@ -93,6 +96,11 @@ onmessage = function(event) {
 	let data = event.data;
 	//console.log(data);
 	if (data.files !== undefined) {
+		if (data.files == '*') {
+			let files = Module.listFiles(Module.workspace);
+			files.push(...Module.listFiles('/lib'));
+			postMessage({files});
+		}
 		Module.files = data.files;
 		Module.onRuntimeInitialized();
 	}
