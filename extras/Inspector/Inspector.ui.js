@@ -2,29 +2,52 @@
 var data = Inspector();
 
 function loadFile(input) {
-	if (input.files.length !== 1) {
-		setActiveTab(null, null, document.getElementById("error"));
-		throw "Single file required."
-	}
-	setActiveTab(null, null, document.getElementById("loading"));
+	let file = null;
 
-	var fileReader = new FileReader();
-	var fileName = document.getElementById('file_name');
-
-	fileReader.onload = function() {
+	function onFinished(fileName, fileData, error) {
 		try {
-			fileName.innerText = input.files[0].name;
-			data = Inspector(JSON.parse(fileReader.result));
+			if (error !== undefined) {
+				throw error;
+			}
+			let fileElement = document.getElementById('file_name');
+			fileElement.innerText = fileName;
+			data = Inspector(JSON.parse(fileData));
 			// TODO: build the dom here to speed up the inpector
 			setActiveTab(null, null, document.getElementById("loaded"));
 		}
-		catch (error) {
+		catch (err) {
 			setActiveTab(null, null, document.getElementById("error"));
-			console.log(error);
-			throw error;
+			console.log(err);
+			throw err;
 		}
-	};
-	fileReader.readAsText(input.files[0]);
+	}
+
+	if (input != null && input.constructor === String) {
+		let xhr = new XMLHttpRequest();
+		xhr.open('GET', input, true);
+		xhr.onload = function() {
+			let error = undefined;
+			if (!xhr.response || xhr.status < 200 || xhr.status >= 300) {
+				error = new Error(xhr.status + ' (' + xhr.statusText + ')');
+			}
+			onFinished(input, xhr.response, error);
+		};
+		setActiveTab(null, null, document.getElementById("loading"));
+		xhr.send(null);
+	}
+	else if (input.files && input.files.length === 1) {
+		file = input.files[0];
+		var reader = new FileReader();
+		reader.onload = function() {
+			onFinished(file.name, reader.result);
+		};
+		setActiveTab(null, null, document.getElementById("loading"));
+		reader.readAsText(file);
+	}
+	if (input == null) {
+		setActiveTab(null, null, document.getElementById("error"));
+		throw "Single file required.";
+	}
 }
 
 function setActiveTab(tab, ext, node, contentWriter) {

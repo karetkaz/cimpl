@@ -210,8 +210,8 @@ function Inspector(data) {
 
 		function symToString(sym, qual, type) {
 			var result = '';
-			if (sym.declaredIn && qual === true) {
-				result += sym.declaredIn + '.';
+			if (sym.owner && qual === true) {
+				result += sym.owner + '.';
 			}
 			result += sym.name;
 			if (sym.args !== undefined) {
