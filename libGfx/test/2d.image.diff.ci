@@ -39,8 +39,8 @@ static gxSurf image = gxSurf(1000, 1000, 32);
 static gxSurf image1 = gxSurf(image.width(), image.height(), image.depth());
 static gxSurf image2 = gxSurf(image.width(), image.height(), image.depth());
 
-image1.evalSurf(null, 1, 0, rgbOp1);
-image2.evalSurf(null, 1, 0, rgbOp2);
+image1.eval(null, 1, 0, rgbOp1);
+image2.eval(null, 1, 0, rgbOp2);
 image.copySurf(0, 0, image1, null);
 
 int onEvent(int action, int button, int ex, int ey) {
@@ -60,7 +60,7 @@ int onEvent(int action, int button, int ex, int ey) {
 	return 1;
 }
 
-Gui.showWindow(image, onEvent);
+image.show(onEvent);
 image1.destroy();
 image2.destroy();
 image.destroy();

@@ -51,6 +51,14 @@ let params = JsArgs('#', function (params, changes) {
 		setTheme(document.body, params.theme || 'dark', 'dark', 'light');
 	}
 
+	if (params.split && (!changes || changes.split)) {
+		showSpliter(window.editSplit, params.split || 'split');
+	}
+
+	if (params.menu && (!changes || changes.menu)) {
+		showSpliter(window.menuSplit, 'split', params.menu);
+	}
+
 	// setup project
 	if (!changes && params.project != null) {
 		let files = [];
@@ -155,53 +163,6 @@ worker.onmessage = function(event) {
 	}
 };
 
-function showSplit(splitter, orientation) {
-	if (orientation === undefined) {
-		// cycle through: ['split', 'primary', 'secondary']
-		let isPrimary = splitter.classList.contains('primary');
-		let isSecondary = splitter.classList.contains('secondary');
-		let lastChange = Date.now() - splitter.lastSplitChange;
-		splitter.lastSplitChange = Date.now();
-
-		if (!isSecondary && lastChange < 500) {
-			orientation = 'secondary';
-		}
-		else if (!isPrimary && !isSecondary) {
-			orientation = 'primary';
-		}
-		else {
-			orientation = 'split';
-		}
-	}
-
-	let setOrientation = true;
-	if (orientation.startsWith('!')) {
-		orientation = orientation.substring(1);
-		setOrientation = !splitter.classList.contains(orientation);
-	}
-
-	if (['vertical', 'horizontal', 'auto'].includes(orientation)) {
-		splitter.classList.remove('horizontal');
-		splitter.classList.remove('vertical');
-		if (orientation === 'auto') {
-			orientation = '';
-		}
-	}
-
-	if (['primary', 'secondary', 'split'].includes(orientation)) {
-		splitter.classList.remove('primary');
-		splitter.classList.remove('secondary');
-		if (orientation === 'split') {
-			orientation = '';
-		}
-	}
-
-	if (setOrientation && orientation !== '') {
-		splitter.classList.add(orientation);
-	}
-	editor.setSize('100%', '100%');
-}
-
 function setTheme(element, theme, ...remove) {
 	if (theme == null) {
 		return;
@@ -221,21 +182,30 @@ function setTheme(element, theme, ...remove) {
 	}
 }
 
-function showMenu(menu) {
-	if (menu && menu.style.display !== 'none') {
-		// menu is opened, hide it
-		menu = null;
-	}
-	sidebar.style.display = 'none';
-	options.style.display = 'none';
-	files.style.display = 'none';
+function showSplit(splitter, orientation) {
+	if (orientation === undefined) {
+		// cycle through: ['split', 'primary', 'secondary']
+		let isPrimary = splitter.classList.contains('primary');
+		let isSecondary = splitter.classList.contains('secondary');
+		let lastChange = Date.now() - splitter.lastSplitChange;
+		splitter.lastSplitChange = Date.now();
 
-	if (menu != null) {
-		sidebar.style.display = 'block';
-		menu.style.display = 'block';
+		if (!isSecondary && lastChange < 500) {
+			orientation = 'secondary';
+		}
+		else if (!isPrimary && !isSecondary) {
+			orientation = 'primary';
+		}
+		else {
+			orientation = 'split';
+		}
 	}
+	showSpliter(splitter, orientation);
+	editor.setSize('100%', '100%');
 }
+
 function showFile(file, line, column) {
+	showSpliter(window.editSplit, '~secondary');
 	editor.setCursor((line || 1) - 1, column);
 	if (file == null || file != params.file) {
 		params.update({
@@ -283,11 +253,11 @@ function editProject() {
 }
 function shareInput() {
 	let content = editor.getValue();
+	terminal.print('decoded uri: ' + decodeURIComponent(window.location));
 	if (content.startsWith('[{')) {
 		terminal.print('project file: ' + window.location.origin + window.location.pathname + '#project=' + btoa(content));
 	}
 	terminal.print('current file: ' + window.location.origin + window.location.pathname + '#content=' + btoa(content));
-	terminal.print('decoded uri: ' + decodeURIComponent(window.location));
 
 }
 function saveInput() {
@@ -350,6 +320,7 @@ function execute(text, cmd) {
 	}
 
 	terminal.clear();
+	showSpliter(window.editSplit, '~primary');
 	console.log("execute", args);
 	worker.postMessage({
 		content: editor.getValue(),

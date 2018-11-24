@@ -1,6 +1,9 @@
+#include "gx_gui.h"
+#include <sched.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include "gx_gui.h"
+#include <sys/time.h>
+#include <time.h>
 
 static Display *display = NULL;
 static Window window = 0;
@@ -16,10 +19,10 @@ static int create_window(int width, int height) {
 
 	g_image = XCreateImage(display, CopyFromParent, depth, ZPixmap, 0, NULL, width, height, 32, 0);
 	window = XCreateSimpleWindow(display, XDefaultRootWindow(display), 0, 0, width, height, 0, BlackPixel(display, 0), WhitePixel(display, 0));
-	XSelectInput(display, window,  StructureNotifyMask | SubstructureNotifyMask | ExposureMask | DestroyNotify |
-		ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask |
-		VisibilityChangeMask | EnterWindowMask | LeaveWindowMask |
-		PointerMotionMask | ButtonMotionMask
+	XSelectInput(display, window, StructureNotifyMask// | VisibilityChangeMask
+		| ButtonPressMask | ButtonReleaseMask | ButtonMotionMask
+		| KeyPressMask | KeyReleaseMask
+		//| EnterWindowMask | LeaveWindowMask	// 
 	);
 
 	gc = XCreateGC(display, window, GCForeground, &gr_values);
@@ -56,100 +59,124 @@ static int copy_window(gx_Surf src) {
 	return 0;
 }
 
-static int winmsg(int *action, int *button, int *x, int *y) {
-	XEvent event;
-	int result = 0;
+static int winmsg(int timeout, int *button, int *x, int *y) {
 	static int btnstate = 0;
+	XEvent event;
 
-	if (*action) {
-		XPeekEvent(display, &event);
-	}
+	if (timeout > 0) {
+		struct timeval tv;
+		struct timespec ts;
 
-	while (XPending(display)) {
-
-		XNextEvent(display, &event);
-
-		switch (event.type) {
-
-			case DestroyNotify:
-				*action = WINDOW_CLOSE;
+		ts.tv_sec = 0;
+		ts.tv_nsec = 0;
+		gettimeofday(&tv, NULL);
+		uint64_t start = tv.tv_sec * (uint64_t) 1000 + tv.tv_usec / 1000;
+		while (!XPending(display)) {
+			gettimeofday(&tv, NULL);
+			uint64_t now = tv.tv_sec * (uint64_t) 1000 + tv.tv_usec / 1000;
+			if (now - start > timeout) {
 				*button = 0;
-				*x = 0;
-				*y = 0;
-				return -1;
-
-			case ButtonPress:
-				switch (event.xbutton.button) {
-					case 1:
-						btnstate |= 1;
-						break;
-					case 2:
-						btnstate |= 4;
-						break;
-					case 3:
-						btnstate |= 2;
-						break;
-				}
-				*action = MOUSE_PRESS;
-				*button = btnstate;
-				*x = event.xmotion.x;
-				*y = event.xmotion.y;
-				break;
-
-			case ButtonRelease:
-				*action = MOUSE_RELEASE;
-				*button = btnstate;
-				*x = event.xmotion.x;
-				*y = event.xmotion.y;
-				switch (event.xbutton.button) {
-					case 1:
-						btnstate &= ~1;
-						break;
-					case 2:
-						btnstate &= ~4;
-						break;
-					case 3:
-						btnstate &= ~2;
-						break;
-				}
-				break;
-
-			case MotionNotify:
-				*action = MOUSE_MOTION;
-				*button = btnstate;
-				*x = event.xmotion.x;
-				*y = event.xmotion.y;
-				break;
-
-			case KeyPress:
-				*action = KEY_PRESS;
-				goto KeyCase;
-
-			case KeyRelease:
-				*action = KEY_RELEASE;
-				goto KeyCase;
-
-			KeyCase: {
-				char buffer[1];
-				KeySym keysym = XLookupKeysym(&(event.xkey), 0);
-				XLookupString(&(event.xkey), buffer, sizeof(buffer), &keysym, NULL);
-				*button = *buffer;
-				*x = event.xkey.keycode;
-				*y = 0;
-				if (event.xkey.state & ShiftMask) {
-					*y |= KEY_MASK_SHIFT;
-				}
-				if (event.xkey.state & ControlMask) {
-					*y |= KEY_MASK_CONTROL;
-				}
-				break;
+				*x = *y = 0;
+				return EVENT_TIMEOUT;
 			}
-
-			default:
-				break;
+			nanosleep(&ts, NULL);
+			// FIXME: sched_yield();
 		}
 	}
-	return result;
+
+	event.type = 0;
+	while (timeout == 0 || XPending(display)) {
+		XNextEvent(display, &event);
+		timeout = 1;
+		if (event.type != MotionNotify) {
+			// consume MotionNotify events
+			break;
+		}
+	}
+	*button = 0;
+	*x = *y = 0;
+	switch (event.type) {
+		default:
+			*button = event.type;
+			break;
+
+		case CreateNotify:
+			return WINDOW_CREATE;
+
+		case DestroyNotify:
+			return WINDOW_CLOSE;
+
+		case EnterNotify:
+			return WINDOW_ENTER;
+
+		case LeaveNotify:
+			return WINDOW_LEAVE;
+
+		case ButtonPress:
+			switch (event.xbutton.button) {
+				case 1:
+					btnstate |= 1;
+					break;
+				case 2:
+					btnstate |= 4;
+					break;
+				case 3:
+					btnstate |= 2;
+					break;
+			}
+			*button = btnstate;
+			*x = event.xmotion.x;
+			*y = event.xmotion.y;
+			return MOUSE_PRESS;
+
+		case ButtonRelease:
+			*button = btnstate;
+			*x = event.xmotion.x;
+			*y = event.xmotion.y;
+			switch (event.xbutton.button) {
+				case 1:
+					btnstate &= ~1;
+					break;
+				case 2:
+					btnstate &= ~4;
+					break;
+				case 3:
+					btnstate &= ~2;
+					break;
+			}
+			return MOUSE_RELEASE;
+
+		case MotionNotify:
+			*button = btnstate;
+			*x = event.xmotion.x;
+			*y = event.xmotion.y;
+			return MOUSE_MOTION;
+
+		case KeyPress:
+		case KeyRelease: {
+			char buffer[1];
+			KeySym keysym = XLookupKeysym(&(event.xkey), 0);
+			XLookupString(&(event.xkey), buffer, sizeof(buffer), &keysym, NULL);
+			*button = *buffer;
+			*x = event.xkey.keycode;
+			*y = 0;
+			if (event.xkey.state & ShiftMask) {
+				*y |= KEY_MASK_SHIFT;
+			}
+			if (event.xkey.state & ControlMask) {
+				*y |= KEY_MASK_CONTROL;
+			}
+			switch (event.type) {
+				case KeyPress:
+					return KEY_PRESS;
+
+				case KeyRelease:
+					return KEY_RELEASE;
+			}
+			break;
+		}
+	}
+	return 0;
 }
 
 void setCaption(char *str) {

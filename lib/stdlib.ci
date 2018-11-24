@@ -28,17 +28,18 @@ inline assert(bool condition, char message[*], variant inspect) = void(condition
 inline assert(bool condition, char message[*]) = void(condition ? void(0) : abort(message));
 inline assert(bool condition) = void(condition ? void(0) : abort("assertion failed!"));
 
+struct NotEquals {
+	const variant expected;
+	const variant returned;
+	const char message[*];
+}
+
 // TODO: make inline
 static void assertEq(int expected, int returned, char message[*]) {
 	if (returned == expected) {
 		return;
 	}
-	struct NonEqualIntegers {
-		const int expected;
-		const int returned;
-		const char message[*];
-	}
-	NonEqualIntegers details = {
+	NotEquals details = {
 		expected: expected;
 		returned: returned;
 		message: message;

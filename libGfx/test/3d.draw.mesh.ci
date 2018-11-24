@@ -2,7 +2,7 @@ gxMesh teapot = gxMesh.openObj("asset/mesh/teapot.obj");
 gxMesh bunny = gxMesh.openObj("asset/mesh/bunny.obj");
 
 float32 center[3]; center[0] = center[1] = center[2] = 0;
-float32 resize[3]; resize[0] = resize[1] = resize[2] = 1.5f;
+float32 resize[3]; resize[0] = resize[1] = resize[2] = 1;
 
 teapot.normalize(0, center, resize);
 bunny.normalize(0, center, resize);
@@ -10,8 +10,42 @@ bunny.normalize(0, center, resize);
 debug("Mesh.bunny", bunny);
 debug("Mesh.teapot", teapot);
 
-teapot.showMesh(1440, 900, 20);
-bunny.showMesh(1440, 900, 20);
+lights.enable(0, true);
+lights.position(0, 2., -2., 2.);
+lights.ambient(0, .4, .4, .4);
+lights.diffuse(0, .8, .8, .8);
+lights.specular(0, 1., 1., 1.);
+lights.attenuation(0, 1., 0., 0.);
+
+lights.enable(1, false);
+lights.position(1, 2., -2., 2.);
+lights.ambient(1, .4, .0, .0);
+lights.diffuse(1, .8, .0, .0);
+lights.specular(1, 1., 1., 1.);
+lights.attenuation(1, 1., 0., 0.);
+
+lights.enable(2, false);
+lights.position(2, -2, -2, +2);
+lights.ambient(2, .0, .4, .0);
+lights.diffuse(2, .0, .8, .0);
+lights.specular(2, 1., 1., 1.);
+lights.attenuation(2, 1., 0., 0.);
+
+lights.enable(3, false);
+lights.position(3, -2, +2, +2);
+lights.ambient(3, .0, .0, .4);
+lights.diffuse(3, .0, .0, .8);
+lights.specular(3, 1., 1., 1.);
+lights.attenuation(3, 1., 0., 0.);
+
+// material Dash
+teapot.ambient(0.588235, 0.588235, 0.588235);
+teapot.diffuse(0.588235, 0.588235, 0.588235);
+teapot.specular(0.898039, 0.898039, 0.898039);
+teapot.shine(64);
+
+teapot.show(1440, 900, 20);
+bunny.show(1440, 900, 15);
 
 teapot.destroy();
 bunny.destroy();

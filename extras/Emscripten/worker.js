@@ -35,6 +35,9 @@ var Module = {
 	},
 	listFiles: function(workspace) {
 		let result = [];
+		if (workspace === undefined) {
+			workspace = Module.workspace;
+		}
 		(function lsr(path) {
 			let dir = FS.analyzePath(workspace + '/' + path);
 			if (dir && dir.exists && dir.object) {
@@ -85,7 +88,7 @@ var Module = {
 				console.error(err);
 			}
 		}
-		postMessage({files: Module.listFiles(Module.workspace)});
+		postMessage({files: Module.listFiles()});
 		Module.initialized = true;
 	}
 };
@@ -94,14 +97,15 @@ importScripts("cmpl.js");
 
 onmessage = function(event) {
 	let data = event.data;
-	//console.log(data);
+	console.log(data);
 	if (data.files !== undefined) {
-		if (data.files == '*') {
+		if (data.files === null) {
 			let files = Module.listFiles(Module.workspace);
 			files.push(...Module.listFiles('/lib'));
 			postMessage({files});
+		} else {
+			Module.files = data.files;
 		}
-		Module.files = data.files;
 		Module.onRuntimeInitialized();
 	}
 	if (data.file !== undefined) {
@@ -114,11 +118,9 @@ onmessage = function(event) {
 				let exists = FS.analyzePath(path).exists;
 				FS.mkdirTree(path.replace(/^(.*[/])?(.*)(\..*)$/, "$1"));
 				FS.writeFile(path, data.content, {encoding: 'utf8'});
-				postMessage({
-					files: exists ? undefined : Module.workspaceFiles(),
-					file: data.file,
-					line: data.line
-				});
+				if (!exists) {
+					postMessage({ files: Module.listFiles() });
+				}
 			} else {
 				postMessage({
 					content: FS.readFile(path, {encoding: 'utf8'}),

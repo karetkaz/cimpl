@@ -8,6 +8,7 @@
 #include "g3_draw.h"
 
 struct camera cam[1]; // TODO: singleton like camera
+struct gx_Light lights[32];  // max 32 lights
 
 static inline rtValue nextValue(nfcContext ctx) {
 	return ctx->rt->api.nfcReadArg(ctx, ctx->rt->api.nfcNextArg(ctx));
@@ -366,6 +367,7 @@ static vmError surf_drawMesh(nfcContext ctx) {
 	gx_Mesh mesh = nextValue(ctx).ref;
 	int32_t mode = nextValue(ctx).i32;
 
+	mesh->lit = lights;
 	reti32(ctx, g3_drawMesh(surf, mesh, NULL, cam, mode));
 	return noError;
 }
@@ -434,71 +436,53 @@ static vmError mesh_addVertex(nfcContext ctx) {
 }
 
 
-static const char *proto_window_show = "void showWindow(gxSurf surf, int onEvent(int action, int button, int x, int y))";
-static const char *proto_window_show2 = "void showWindow(gxSurf surf, pointer closure, int onEvent(pointer closure, int action, int button, int x, int y))";
+static const char *proto_window_show = "void showWindow(gxSurf surf, pointer closure, int onEvent(pointer closure, int action, int button, int x, int y))";
 static vmError window_show(nfcContext ctx) {
 	rtContext rt = ctx->rt;
 	gx_Surf offScreen = nextValue(ctx).ref;
 	size_t cbOffs = 0, cbClosure = 0;
+
 	if (ctx->proto == proto_window_show) {
-		cbOffs = argref(ctx, rt->api.nfcNextArg(ctx));
-	}
-	else if (ctx->proto == proto_window_show2) {
 		cbClosure = argref(ctx, rt->api.nfcNextArg(ctx));
 		cbOffs = argref(ctx, rt->api.nfcNextArg(ctx));
 	}
 	symn callback = rt->api.rtLookup(ctx->rt, cbOffs);
+	int eventTimeout = 1;
+	struct {
+		int32_t y;
+		int32_t x;
+		int32_t button;
+		int32_t action;
+		const vmOffs closure;
+	} event = {
+		.closure = (vmOffs) cbClosure,
+		.action = 0,
+		.button = 0,
+		.x = 0,
+		.y = 0
+	};
 
-	int waitEvent = 1;
 	flip_scr flipScreen = NULL;
 	peek_msg peekMessage = NULL;
 	initWin(offScreen, &flipScreen, &peekMessage);
 	for ( ; ; ) {
-		struct {
-			int32_t y;
-			int32_t x;
-			int32_t button;
-			int32_t action;
-			vmOffs closure;
-		} event = {
-			.closure = (vmOffs) cbClosure,
-			.action = waitEvent,
-			.button = 0,
-			.x = 0,
-			.y = 0
-		};
-
-		int msg = peekMessage(&event.action, &event.button, &event.x, &event.y);
-		if (msg < 0) {
+		event.action = peekMessage(eventTimeout, &event.button, &event.x, &event.y);
+		if (event.action != 0 && callback != NULL) {
+			rt->api.invoke(rt, callback, &eventTimeout, &event, NULL);
+			if (eventTimeout < 0) {
+				break;
+			}
+		}
+		else if (event.action == KEY_RELEASE && event.button == 27) {
 			break;
 		}
-		if (callback != NULL) {
-			rt->api.invoke(rt, callback, &waitEvent, &event, NULL);
-			if (waitEvent < 0) {
-				break;
-			}
-		}
-		else {
-			if (event.action == KEY_RELEASE && event.button == 27) {
-				break;
-			}
-		}
-
 		flipScreen(offScreen);
 	}
 	if (callback != NULL) {
-		struct {
-			int32_t y;
-			int32_t x;
-			int32_t button;
-			int32_t action;
-		} event = {
-			.action = WINDOW_CLOSE,
-			.button = 0,
-			.x = 0,
-			.y = 0
-		};
-
+		event.action = WINDOW_CLOSE;
+		event.button = 0;
+		event.x = 0;
+		event.y = 0;
 		rt->api.invoke(rt, callback, NULL, &event, NULL);
 	}
 	doneWin();
@@ -511,6 +495,7 @@ static vmError window_title(nfcContext ctx) {
 	setCaption(title);
 	return noError;
 }
+
 
 static const char *proto_camera_lookAt = "void lookAt(float32 eye[3], float32 at[3], float32 up[3])";
 //static const char *proto_camera_ortho = "void orthographic(float32 left, float32 right, float32 bottom, float32 top, float32 near, float32 far)";
@@ -579,6 +564,114 @@ static vmError camera_mgr(nfcContext ctx) {
 	return illegalState;
 }
 
+
+static const char *proto_lights_enabled = "bool enabled(int32 light)";
+static const char *proto_lights_enable = "void enable(int32 light, bool on)";
+static const char *proto_lights_position = "void position(int32 light, float x, float y, float z)";
+static const char *proto_lights_ambient = "void ambient(int32 light, float r, float g, float b)";
+static const char *proto_lights_diffuse = "void diffuse(int32 light, float r, float g, float b)";
+static const char *proto_lights_specular = "void specular(int32 light, float r, float g, float b)";
+static const char *proto_lights_attenuation = "void attenuation(int32 light, float constant, float linear, float quadratic)";
+static vmError lights_manager(nfcContext ctx) {
+	int light = nextValue(ctx).i32;
+
+	if (light >= (sizeof(lights) / sizeof(*lights))) {
+		return nativeCallError;
+	}
+
+	if (ctx->proto == proto_lights_enabled) {
+		reti32(ctx, lights[light].attr);
+		return noError;
+	}
+
+	if (ctx->proto == proto_lights_enable) {
+		int on = nextValue(ctx).i32;
+		lights[light].attr = on;
+		return noError;
+	}
+
+	if (ctx->proto == proto_lights_position) {
+		float32_t x = nextValue(ctx).f32;
+		float32_t y = nextValue(ctx).f32;
+		float32_t z = nextValue(ctx).f32;
+		vecldf(&lights[light].pos, x, y, z, 1);
+		return noError;
+	}
+
+	if (ctx->proto == proto_lights_ambient) {
+		float32_t r = nextValue(ctx).f32;
+		float32_t g = nextValue(ctx).f32;
+		float32_t b = nextValue(ctx).f32;
+		vecldf(&lights[light].ambi, r, g, b, 1);
+		return noError;
+	}
+
+	if (ctx->proto == proto_lights_diffuse) {
+		float32_t r = nextValue(ctx).f32;
+		float32_t g = nextValue(ctx).f32;
+		float32_t b = nextValue(ctx).f32;
+		vecldf(&lights[light].diff, r, g, b, 1);
+		return noError;
+	}
+
+	if (ctx->proto == proto_lights_specular) {
+		float32_t r = nextValue(ctx).f32;
+		float32_t g = nextValue(ctx).f32;
+		float32_t b = nextValue(ctx).f32;
+		vecldf(&lights[light].spec, r, g, b, 0);
+		return noError;
+	}
+
+	if (ctx->proto == proto_lights_attenuation) {
+		float32_t constant = nextValue(ctx).f32;
+		float32_t linear = nextValue(ctx).f32;
+		float32_t quadratic = nextValue(ctx).f32;
+		vecldf(&lights[light].attn, constant, linear, quadratic, 0);
+		return noError;
+	}
+
+	return illegalState;
+}
+
+static const char *proto_material_ambient = "void ambient(gxMesh mesh, float r, float g, float b)";
+static const char *proto_material_diffuse = "void diffuse(gxMesh mesh, float r, float g, float b)";
+static const char *proto_material_specular = "void specular(gxMesh mesh, float r, float g, float b)";
+static const char *proto_material_shine = "void shine(gxMesh mesh, float value)";
+static vmError mesh_material(nfcContext ctx) {
+	gx_Mesh mesh = nextValue(ctx).ref;
+
+	if (ctx->proto == proto_material_ambient) {
+		float32_t r = nextValue(ctx).f32;
+		float32_t g = nextValue(ctx).f32;
+		float32_t b = nextValue(ctx).f32;
+		vecldf(&mesh->mtl.ambi, r, g, b, 1);
+		return noError;
+	}
+
+	if (ctx->proto == proto_material_diffuse) {
+		float32_t r = nextValue(ctx).f32;
+		float32_t g = nextValue(ctx).f32;
+		float32_t b = nextValue(ctx).f32;
+		vecldf(&mesh->mtl.diff, r, g, b, 1);
+		return noError;
+	}
+
+	if (ctx->proto == proto_material_specular) {
+		float32_t r = nextValue(ctx).f32;
+		float32_t g = nextValue(ctx).f32;
+		float32_t b = nextValue(ctx).f32;
+		vecldf(&mesh->mtl.spec, r, g, b, 0);
+		return noError;
+	}
+
+	if (ctx->proto == proto_material_shine) {
+		mesh->mtl.spow = nextValue(ctx).f32;
+		return noError;
+	}
+
+	return illegalState;
+}
+
 symn typSigned(rtContext rt, int size) {
 	char *typeName = "void";
 	switch (size) {
@@ -606,7 +699,8 @@ int cmplInit(rtContext rt) {
 	struct {
 		vmError (*func)(nfcContext);
 		const char *proto;
-	} gfx[] = {
+	}
+	nfcSurf[] = {
 		{surf_recycle,  proto_surf_create2d},
 		{surf_recycle,  proto_surf_create3d},
 		{surf_recycle,  proto_surf_recycle},
@@ -636,11 +730,12 @@ int cmplInit(rtContext rt) {
 		{surf_cLutSurf, proto_surf_cLutSurf},
 		{surf_cMatSurf, proto_surf_cMatSurf},
 		{surf_drawMesh, proto_surf_drawMesh},
-	}, win[] = {
+	},
+	nfcWindow[] = {
 		{window_show, proto_window_show},
-		{window_show, proto_window_show2},
 		{window_title, proto_window_title},
-	}, nfcCam[] = {
+	},
+	nfcCamera[] = {
 		{camera_mgr, proto_camera_projection},
 		{camera_mgr, proto_camera_lookAt},
 
@@ -650,7 +745,8 @@ int cmplInit(rtContext rt) {
 
 		{camera_mgr, proto_camera_rotate},
 		{camera_mgr, proto_camera_move},
-	}, mesh[] = {
+	},
+	nfcMesh[] = {
 		{mesh_recycle, proto_mesh_create},
 		{mesh_recycle, proto_mesh_recycle},
 		{mesh_destroy, proto_mesh_destroy},
@@ -659,6 +755,18 @@ int cmplInit(rtContext rt) {
 		{mesh_save, proto_mesh_saveObj},
 		{mesh_normalize, proto_mesh_normalize},
 		{mesh_addVertex, proto_mesh_addVertex},
+		{mesh_material, proto_material_ambient},
+		{mesh_material, proto_material_diffuse},
+		{mesh_material, proto_material_specular},
+		{mesh_material, proto_material_shine},
+	}, nfcLights[] = {
+		{lights_manager, proto_lights_enabled},
+		{lights_manager, proto_lights_enable},
+		{lights_manager, proto_lights_position},
+		{lights_manager, proto_lights_ambient},
+		{lights_manager, proto_lights_diffuse},
+		{lights_manager, proto_lights_specular},
+		{lights_manager, proto_lights_attenuation},
 	};
 
 	ccContext cc = rt->cc;
@@ -675,8 +783,8 @@ int cmplInit(rtContext rt) {
 	// meshes are allocated inside the vm, and are reference types
 	symn symMesh = rt->api.ccAddType(cc, "gxMesh", sizeof(struct gx_Mesh), 1);
 	if (rt->api.ccExtend(cc, symMesh)) {
-		for (int i = 0; i < sizeof(mesh) / sizeof(*mesh); i += 1) {
-			if (!rt->api.ccAddCall(cc, mesh[i].func, mesh[i].proto)) {
+		for (int i = 0; i < sizeof(nfcMesh) / sizeof(*nfcMesh); i += 1) {
+			if (!rt->api.ccAddCall(cc, nfcMesh[i].func, nfcMesh[i].proto)) {
 				return 1;
 			}
 		}
@@ -715,8 +823,8 @@ int cmplInit(rtContext rt) {
 	// type: gxSurf
 	symn symSurf = rt->api.ccAddType(cc, "gxSurf", sizeof(gx_Surf), 0);
 	if (rt->api.ccExtend(cc, symSurf)) {
-		for (int i = 0; i < sizeof(gfx) / sizeof(*gfx); i += 1) {
-			if (!rt->api.ccAddCall(cc, gfx[i].func, gfx[i].proto)) {
+		for (int i = 0; i < sizeof(nfcSurf) / sizeof(*nfcSurf); i += 1) {
+			if (!rt->api.ccAddCall(cc, nfcSurf[i].func, nfcSurf[i].proto)) {
 				return 1;
 			}
 		}
@@ -725,12 +833,22 @@ int cmplInit(rtContext rt) {
 
 	symn symCam = rt->api.ccBegin(cc, "camera");
 	if (symCam != NULL) {
-		for (int i = 0; i < sizeof(nfcCam) / sizeof(*nfcCam); i += 1) {
-			if (!rt->api.ccAddCall(cc, nfcCam[i].func, nfcCam[i].proto)) {
+		for (int i = 0; i < sizeof(nfcCamera) / sizeof(*nfcCamera); i += 1) {
+			if (!rt->api.ccAddCall(cc, nfcCamera[i].func, nfcCamera[i].proto)) {
 				return 1;
 			}
 		}
 		rt->api.ccEnd(cc, symCam);
+	}
+
+	symn symLights = rt->api.ccBegin(cc, "lights");
+	if (symLights != NULL) {
+		for (int i = 0; i < sizeof(nfcLights) / sizeof(*nfcLights); i += 1) {
+			if (!rt->api.ccAddCall(cc, nfcLights[i].func, nfcLights[i].proto)) {
+				return 1;
+			}
+		}
+		rt->api.ccEnd(cc, symLights);
 	}
 
 
@@ -741,12 +859,13 @@ int cmplInit(rtContext rt) {
 		rt->api.ccDefInt(cc, "MOUSE_PRESS", MOUSE_PRESS);
 		rt->api.ccDefInt(cc, "MOUSE_MOTION", MOUSE_MOTION);
 		rt->api.ccDefInt(cc, "MOUSE_RELEASE", MOUSE_RELEASE);
+		rt->api.ccDefInt(cc, "EVENT_TIMEOUT", EVENT_TIMEOUT);
 		rt->api.ccDefInt(cc, "WINDOW_CLOSE", WINDOW_CLOSE);
 		rt->api.ccDefInt(cc, "KEY_MASK_SHIFT", KEY_MASK_SHIFT);
 		rt->api.ccDefInt(cc, "KEY_MASK_CONTROL", KEY_MASK_CONTROL);
 
-		for (int i = 0; i < sizeof(win) / sizeof(*win); i += 1) {
-			if (!rt->api.ccAddCall(cc, win[i].func, win[i].proto)) {
+		for (int i = 0; i < sizeof(nfcWindow) / sizeof(*nfcWindow); i += 1) {
+			if (!rt->api.ccAddCall(cc, nfcWindow[i].func, nfcWindow[i].proto)) {
 				return 1;
 			}
 		}
@@ -761,6 +880,11 @@ int cmplInit(rtContext rt) {
 
 		projv_mat(&cam->proj, 30, 1, 1, 100);
 		camset(cam, &eye, &tgt, &up);
+
+		memset(lights, 0, sizeof(lights));
+		for (int i = 1; i < sizeof(lights) / sizeof(*lights); ++i) {
+			lights[i - 1].next = lights + i;
+		}
 	}
 	return 0;
 }

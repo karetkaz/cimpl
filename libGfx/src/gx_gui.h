@@ -5,13 +5,17 @@
 #define MOUSE_PRESS 3
 #define MOUSE_RELEASE 4
 #define MOUSE_MOTION 5
-#define WINDOW_CLOSE 6
+#define EVENT_TIMEOUT 6
+#define WINDOW_CREATE 100
+#define WINDOW_CLOSE 101
+#define WINDOW_ENTER 102
+#define WINDOW_LEAVE 103
 
 #define KEY_MASK_SHIFT 1
 #define KEY_MASK_CONTROL 2
 
 
-typedef int (*peek_msg)(int32_t *action, int32_t *button, int32_t *x, int32_t *y);
+typedef int (*peek_msg)(int timeout, int32_t *button, int32_t *x, int32_t *y);
 typedef int (*flip_scr)(gx_Surf);
 
 extern int initWin(gx_Surf offs, flip_scr *flip, peek_msg *msgp);

@@ -220,6 +220,10 @@ abort(): void
 assert(condition: bool, message: char[*], inspect: variant): void
 assert(condition: bool, message: char[*]): void
 assert(condition: bool): void
+NotEquals
+NotEquals.expected
+NotEquals.returned
+NotEquals.message
 assertEq(expected: int32, returned: int32, message: char[*]): void
 assertEq(expected: int32, returned: int32): void
 sizeof(type: typename): int32
@@ -342,6 +346,10 @@ gxMesh.open3ds(path: char[*]): gxMesh
 gxMesh.saveObj(mesh: gxMesh, path: char[*]): void
 gxMesh.normalize(mesh: gxMesh, tolerance: float32, center: float32[3], resize: float32[3]): void
 gxMesh.addVertex(mesh: gxMesh, x: float32, y: float32, z: float32): void
+gxMesh.ambient(mesh: gxMesh, r: float32, g: float32, b: float32): void
+gxMesh.diffuse(mesh: gxMesh, r: float32, g: float32, b: float32): void
+gxMesh.specular(mesh: gxMesh, r: float32, g: float32, b: float32): void
+gxMesh.shine(mesh: gxMesh, value: float32): void
 gxMesh.clearDepth
 gxMesh.clearColor
 gxMesh.cullBack
@@ -392,16 +400,24 @@ camera.readRight(result: float32[3]): void
 camera.readForward(result: float32[3]): void
 camera.rotate(direction: float32[3], orbit: float32[3], angle: float32): void
 camera.move(direction: float32[3], amount: float32): void
+lights
+lights.enabled(light: int32): bool
+lights.enable(light: int32, on: bool): void
+lights.position(light: int32, x: float32, y: float32, z: float32): void
+lights.ambient(light: int32, r: float32, g: float32, b: float32): void
+lights.diffuse(light: int32, r: float32, g: float32, b: float32): void
+lights.specular(light: int32, r: float32, g: float32, b: float32): void
+lights.attenuation(light: int32, constant: float32, linear: float32, quadratic: float32): void
 Gui
 Gui.KEY_PRESS
 Gui.KEY_RELEASE
 Gui.MOUSE_PRESS
 Gui.MOUSE_MOTION
 Gui.MOUSE_RELEASE
+Gui.EVENT_TIMEOUT
 Gui.WINDOW_CLOSE
 Gui.KEY_MASK_SHIFT
 Gui.KEY_MASK_CONTROL
-Gui.showWindow(surf: gxSurf, onEvent(action: int32, button: int32, x: int32, y: int32): int32): void
 Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 Gui.setTitle(title: char[*]): void
 vec2d
@@ -454,7 +470,9 @@ gxSurf(width: int32, height: int32, depth: int32): gxSurf
 gxSurf(fileName: char[*], depth: int32): gxSurf
 gxMesh(fileName: char[*]): gxMesh
 clipRect(src: gxSurf, roi: gxRect): bool
-evalSurf(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): vec4f): void
+eval(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): vec4f): void
 tileSurf(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
-showMesh(mesh: gxMesh, w: int32, h: int32, fovy: float32): void
+show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void
+show(surf: gxSurf): void
+show(surf: gxSurf, onEvent(action: int32, button: int32, ex: int32, ey: int32): int32): void
 showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void

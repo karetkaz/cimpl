@@ -546,44 +546,45 @@ static void draw_triangle(gx_Surf dst, vector p, texcol tc, texcol lc, int i1, i
 
 static argb litpos(vector color, vector V, vector N, vector E, gx_Light lit) {
 	struct vector tmp[8];
-	while (lit) {
-		if (lit->attr & L_on) {
-			vector D = vecsub(tmp+2, V, &lit->pos);
-			vector R, L = &lit->dir;
-			scalar dotp, attn = 1, spot = 1;
+	for (; lit; lit = lit->next) {
+		if (!(lit->attr & L_on)) {
+			continue;
+		}
 
-			if (vecdp3(L, L)) {					// directional or spot light
-				if (lit->sCos) {			// Spot Light
-					spot = vecdp3(L, vecnrm(tmp, D));
-					if (spot > cos(toRad(lit->sCos))) {
-						spot = pow(spot, lit->sExp);
-					}
-					else spot = 0;
-				}// */
-			}
-			else {
-				L = vecnrm(tmp+3, D);
-			}//*/
+		vector D = vecsub(tmp+2, V, &lit->pos);
+		vector R, L = &lit->dir;
+		scalar dotp, attn = 1, spot = 1;
 
-			attn = spot / vecpev(&lit->attn, veclen(D));
-
-			// Ambient
-			vecsca(tmp, &lit->mtl.ambi, attn);
-			vecadd(color, color, tmp);
-			if ((dotp = -vecdp3(N, L)) > 0) {
-				// Diffuse
-				vecsca(tmp, &lit->mtl.diff, attn * dotp);
-				vecadd(color, color, tmp);
-
-				R = vecnrm(tmp+5, vecrfl(tmp+5, vecsub(tmp+4, V, E), N));
-				if ((dotp = -vecdp3(R, L)) > 0) {
-					// Specular
-					vecsca(tmp, &lit->mtl.spec, attn * pow(dotp, lit->mtl.spow));
-					vecadd(color, color, tmp);
+		if (vecdp3(L, L)) {					// directional or spot light
+			if (lit->sCos) {			// Spot Light
+				spot = vecdp3(L, vecnrm(tmp, D));
+				if (spot > cos(toRad(lit->sCos))) {
+					spot = pow(spot, lit->sExp);
 				}
+				else spot = 0;
+			}// */
+		}
+		else {
+			L = vecnrm(tmp+3, D);
+		}//*/
+
+		attn = spot / vecpev(&lit->attn, veclen(D));
+
+		// Ambient
+		vecsca(tmp, &lit->mtl.ambi, attn);
+		vecadd(color, color, tmp);
+		if ((dotp = -vecdp3(N, L)) > 0) {
+			// Diffuse
+			vecsca(tmp, &lit->mtl.diff, attn * dotp);
+			vecadd(color, color, tmp);
+
+			R = vecnrm(tmp+5, vecrfl(tmp+5, vecsub(tmp+4, V, E), N));
+			if ((dotp = -vecdp3(R, L)) > 0) {
+				// Specular
+				vecsca(tmp, &lit->mtl.spec, attn * pow(dotp, lit->mtl.spow));
+				vecadd(color, color, tmp);
 			}
 		}
-		lit = lit->next;
 	}
 	return vecrgb(color);
 }

@@ -299,42 +299,46 @@
 						<call token=".variable" type="typename" kind="static const typename(ref)" value="void" />
 					</init>
 				</stmt>
+				<stmt token=".variable" type="typename" kind="static const typename(ref)" value="NotEquals" />
 				<stmt token=".variable" type="function" kind="static const typename(ref)" value="assertEq(expected: int32, returned: int32, message: char[*]): void">
-					<init token="{}" type="void" kind="static const typename(void)" file="lib/stdlib.ci:32">
+					<init token="{}" type="void" kind="static const typename(void)" file="lib/stdlib.ci:38">
 						<stmt token="if" type="void" kind="static const typename(void)" stmt="if (returned == expected)">
 							<test token="==" type="bool" kind="static const typename(bool)" value="returned == expected">
 								<left token=".variable" type="int32" kind="static const typename(i32)" value="returned" />
 								<right token=".variable" type="int32" kind="static const typename(i32)" value="expected" />
 							</test>
-							<then token="{}" type="void" kind="static const typename(void)" file="lib/stdlib.ci:33">
+							<then token="{}" type="void" kind="static const typename(void)" file="lib/stdlib.ci:39">
 								<stmt token="return" type="void" kind="static const typename(void)" stmt="return;" />
 							</then>
 						</stmt>
-						<stmt token=".variable" type="typename" kind="static const typename(ref)" value="NonEqualIntegers" />
-						<stmt token=".variable" type="assertEq.NonEqualIntegers" kind="static const typename(val)" value="details">
-							<init token="{}" type="assertEq.NonEqualIntegers" kind="static const typename(val)">
-								<stmt token=";" type="void" kind="static const typename(void)" stmt="details.expected := expected;">
-									<expr token=":=" type="void" kind="static const typename(void)" value="details.expected := expected">
-										<left token="." type="int32" kind="static const typename(i32)" value="details.expected">
-											<left token=".variable" type="assertEq.NonEqualIntegers" kind="static const typename(val)" value="details" />
-											<right token=".variable" type="int32" kind="static const typename(i32)" value="expected" />
+						<stmt token=".variable" type="NotEquals" kind="static const typename(val)" value="details">
+							<init token="{}" type="NotEquals" kind="static const typename(val)">
+								<stmt token=";" type="void" kind="static const typename(void)" stmt="details.expected := (expected);">
+									<expr token=":=" type="void" kind="static const typename(void)" value="details.expected := (expected)">
+										<left token="." type="variant" kind="static const typename(var)" value="details.expected">
+											<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+											<right token=".variable" type="variant" kind="static const typename(var)" value="expected" />
 										</left>
-										<right token=".variable" type="int32" kind="static const typename(i32)" value="expected" />
+										<right token="()" type="variant" kind="static const typename(var)" value="(expected)">
+											<push token=".variable" type="int32" kind="static const typename(i32)" value="expected" />
+										</right>
 									</expr>
 								</stmt>
-								<stmt token=";" type="void" kind="static const typename(void)" stmt="details.returned := returned;">
-									<expr token=":=" type="void" kind="static const typename(void)" value="details.returned := returned">
-										<left token="." type="int32" kind="static const typename(i32)" value="details.returned">
-											<left token=".variable" type="assertEq.NonEqualIntegers" kind="static const typename(val)" value="details" />
-											<right token=".variable" type="int32" kind="static const typename(i32)" value="returned" />
+								<stmt token=";" type="void" kind="static const typename(void)" stmt="details.returned := (returned);">
+									<expr token=":=" type="void" kind="static const typename(void)" value="details.returned := (returned)">
+										<left token="." type="variant" kind="static const typename(var)" value="details.returned">
+											<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+											<right token=".variable" type="variant" kind="static const typename(var)" value="returned" />
 										</left>
-										<right token=".variable" type="int32" kind="static const typename(i32)" value="returned" />
+										<right token="()" type="variant" kind="static const typename(var)" value="(returned)">
+											<push token=".variable" type="int32" kind="static const typename(i32)" value="returned" />
+										</right>
 									</expr>
 								</stmt>
 								<stmt token=";" type="void" kind="static const typename(void)" stmt="details.message := (message);">
 									<expr token=":=" type="void" kind="static const typename(void)" value="details.message := (message)">
 										<left token="." type="char[*]" kind="static typename(arr)" value="details.message">
-											<left token=".variable" type="assertEq.NonEqualIntegers" kind="static const typename(val)" value="details" />
+											<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
 											<right token=".variable" type="char[*]" kind="static typename(arr)" value="message" />
 										</left>
 										<right token="()" type="char[*]" kind="static typename(arr)" value="(message)">
@@ -355,30 +359,34 @@
 									<right token=".variable" type="int64" kind="static const typename(i64)" value="defTrace" />
 								</push>
 								<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;assertion failed&quot;" />
-								<push token=".variable" type="assertEq.NonEqualIntegers" kind="static const typename(val)" value="details">
-									<init token="{}" type="assertEq.NonEqualIntegers" kind="static const typename(val)">
-										<stmt token=";" type="void" kind="static const typename(void)" stmt="details.expected := expected;">
-											<expr token=":=" type="void" kind="static const typename(void)" value="details.expected := expected">
-												<left token="." type="int32" kind="static const typename(i32)" value="details.expected">
-													<left token=".variable" type="assertEq.NonEqualIntegers" kind="static const typename(val)" value="details" />
-													<right token=".variable" type="int32" kind="static const typename(i32)" value="expected" />
+								<push token=".variable" type="NotEquals" kind="static const typename(val)" value="details">
+									<init token="{}" type="NotEquals" kind="static const typename(val)">
+										<stmt token=";" type="void" kind="static const typename(void)" stmt="details.expected := (expected);">
+											<expr token=":=" type="void" kind="static const typename(void)" value="details.expected := (expected)">
+												<left token="." type="variant" kind="static const typename(var)" value="details.expected">
+													<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+													<right token=".variable" type="variant" kind="static const typename(var)" value="expected" />
 												</left>
-												<right token=".variable" type="int32" kind="static const typename(i32)" value="expected" />
+												<right token="()" type="variant" kind="static const typename(var)" value="(expected)">
+													<push token=".variable" type="int32" kind="static const typename(i32)" value="expected" />
+												</right>
 											</expr>
 										</stmt>
-										<stmt token=";" type="void" kind="static const typename(void)" stmt="details.returned := returned;">
-											<expr token=":=" type="void" kind="static const typename(void)" value="details.returned := returned">
-												<left token="." type="int32" kind="static const typename(i32)" value="details.returned">
-													<left token=".variable" type="assertEq.NonEqualIntegers" kind="static const typename(val)" value="details" />
-													<right token=".variable" type="int32" kind="static const typename(i32)" value="returned" />
+										<stmt token=";" type="void" kind="static const typename(void)" stmt="details.returned := (returned);">
+											<expr token=":=" type="void" kind="static const typename(void)" value="details.returned := (returned)">
+												<left token="." type="variant" kind="static const typename(var)" value="details.returned">
+													<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+													<right token=".variable" type="variant" kind="static const typename(var)" value="returned" />
 												</left>
-												<right token=".variable" type="int32" kind="static const typename(i32)" value="returned" />
+												<right token="()" type="variant" kind="static const typename(var)" value="(returned)">
+													<push token=".variable" type="int32" kind="static const typename(i32)" value="returned" />
+												</right>
 											</expr>
 										</stmt>
 										<stmt token=";" type="void" kind="static const typename(void)" stmt="details.message := (message);">
 											<expr token=":=" type="void" kind="static const typename(void)" value="details.message := (message)">
 												<left token="." type="char[*]" kind="static typename(arr)" value="details.message">
-													<left token=".variable" type="assertEq.NonEqualIntegers" kind="static const typename(val)" value="details" />
+													<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
 													<right token=".variable" type="char[*]" kind="static typename(arr)" value="message" />
 												</left>
 												<right token="()" type="char[*]" kind="static typename(arr)" value="(message)">
