@@ -241,6 +241,18 @@ void g3_drawline(gx_Surf dst, vector p1, vector p2, uint32_t c) {		// Bresenham
 	}
 }
 
+typedef struct {
+	struct vector emis;        // Emissive
+	struct vector ambi;        // Ambient
+	struct vector diff;        // Diffuse
+	struct vector spec;        // Specular
+	struct vector attn;        // Attenuation
+	struct vector pos;         // light position
+	struct vector dir;         // directional light
+	scalar sCos;               // spot light cutoff
+	scalar sExp;               // spot light
+	scalar sPow;               // Shininess
+} gx_MtlLight;
 typedef struct ssds {
 	int32_t x;
 	int32_t z;
@@ -371,7 +383,7 @@ static inline void init_edge(edge e, ssds s1, ssds s2, int len, int skip) {
 	if (skip > 0) {
 		edge_skip(e, skip);
 	}
-}// */
+}
 
 static void draw_tri_part(gx_Surf dst, gx_Clip roi, edge l, edge r, int swap, int y1, int y2, gx_Surf img) {
 	if (swap) {
@@ -410,9 +422,9 @@ static void draw_tri_part(gx_Surf dst, gx_Clip roi, edge l, edge r, int swap, in
 					if (img) {
 						argb tex;
 						tex.val = gx_getpix16(img, v.s, v.t, 1);
-						cBuff[offs].b = clamp_val((v.b >> 15) + tex.b);
-						cBuff[offs].g = clamp_val((v.g >> 15) + tex.g);
-						cBuff[offs].r = clamp_val((v.r >> 15) + tex.r);
+						cBuff[offs].b = clamp_val((v.b >> 15) * tex.b >> 8);
+						cBuff[offs].g = clamp_val((v.g >> 15) * tex.g >> 8);
+						cBuff[offs].r = clamp_val((v.r >> 15) * tex.r >> 8);
 					} else {
 						cBuff[offs].b = (uint8_t) (v.b >> 16);
 						cBuff[offs].g = (uint8_t) (v.g >> 16);
@@ -427,7 +439,7 @@ static void draw_tri_part(gx_Surf dst, gx_Clip roi, edge l, edge r, int swap, in
 		edge_next(r);
 	}
 }
-static void draw_triangle(gx_Surf dst, vector p, texcol tc, texcol lc, int i1, int i2, int i3, gx_Surf img) {
+static void draw_triangle(gx_Surf dst, vector p, texcol tex, texcol col, int i1, int i2, int i3, gx_Surf img) {
 	// sort by y
 	if (p[i1].y < p[i3].y) {
 		i1 ^= i3;
@@ -466,19 +478,19 @@ static void draw_triangle(gx_Surf dst, vector p, texcol tc, texcol lc, int i1, i
 		s2.z = projz(p + i2);
 		s3.z = projz(p + i3);
 
-		s1.c.col = s2.c.col = s3.c.col = 0;//x00ffffff;
-		s1.s = s2.s = s3.s = 0;
-		s1.t = s2.t = s3.t = 0;
+		s1.c = col[i1].rgb;
+		s2.c = col[i2].rgb;
+		s3.c = col[i3].rgb;
 
-		if (img && tc) {
+		if (img && tex) {
 			int w = img->width-1;
 			int h = img->height-1;
-			s1.s = tc[i1].tex.s * w;
-			s1.t = tc[i1].tex.t * h;
-			s2.s = tc[i2].tex.s * w;
-			s2.t = tc[i2].tex.t * h;
-			s3.s = tc[i3].tex.s * w;
-			s3.t = tc[i3].tex.t * h;
+			s1.s = tex[i1].tex.s * w;
+			s1.t = tex[i1].tex.t * h;
+			s2.s = tex[i2].tex.s * w;
+			s2.t = tex[i2].tex.t * h;
+			s3.s = tex[i3].tex.s * w;
+			s3.t = tex[i3].tex.t * h;
 
 			//TODO: mip-map selection
 			//~ if (y1 == y2) w = X2 - X1;
@@ -488,21 +500,10 @@ static void draw_triangle(gx_Surf dst, vector p, texcol tc, texcol lc, int i1, i
 			//~ if ((w >>= 16) < 0)w = -w;
 			//~ if (tmp > SCRH || ((w < 0 ? -w : w) >> 16) > SCRW) return;
 		}
-		else if (tc) {
-			s1.c = tc[i1].rgb;
-			s2.c = tc[i2].rgb;
-			s3.c = tc[i3].rgb;
-		}
-
-		if (lc) {
-			#define litmix(__r, __a, __b) {\
-				(__r).r = ((__a).r + (__b).r) / 2;\
-				(__r).g = ((__a).g + (__b).g) / 2;\
-				(__r).b = ((__a).b + (__b).b) / 2;}
-			litmix(s1.c, s1.c, lc[i1]);
-			litmix(s2.c, s2.c, lc[i2]);
-			litmix(s3.c, s3.c, lc[i3]);
-			#undef litmix
+		else {
+			s1.s = s1.t = 0;
+			s2.s = s2.t = 0;
+			s3.s = s3.t = 0;
 		}
 
 		// calc slope y3 - y1 (the longest)
@@ -544,47 +545,45 @@ static void draw_triangle(gx_Surf dst, vector p, texcol tc, texcol lc, int i1, i
 	}
 }
 
-static argb litpos(vector color, vector V, vector N, vector E, gx_Light lit) {
+static argb litVertex(vector color, vector V, vector N, vector E, gx_MtlLight *light, int lightCnt) {
 	struct vector tmp[8];
-	for (; lit; lit = lit->next) {
-		if (!(lit->attr & L_on)) {
-			continue;
-		}
+	for (int i = 0; i < lightCnt; ++i) {
+		vector D = vecsub(tmp+2, V, &light->pos);
+		vector L = &light->dir;
 
-		vector D = vecsub(tmp+2, V, &lit->pos);
-		vector R, L = &lit->dir;
-		scalar dotp, attn = 1, spot = 1;
-
+		scalar spot = 1;
 		if (vecdp3(L, L)) {					// directional or spot light
-			if (lit->sCos) {			// Spot Light
+			if (light->sCos) {			// Spot Light
 				spot = vecdp3(L, vecnrm(tmp, D));
-				if (spot > cos(toRad(lit->sCos))) {
-					spot = pow(spot, lit->sExp);
+				if (spot > cos(toRad(light->sCos))) {
+					spot = pow(spot, light->sExp);
 				}
 				else spot = 0;
-			}// */
+			}
 		}
 		else {
 			L = vecnrm(tmp+3, D);
-		}//*/
+		}
 
-		attn = spot / vecpev(&lit->attn, veclen(D));
+		scalar attn = spot / vecpev(&light->attn, veclen(D));
 
 		// Ambient
-		vecsca(tmp, &lit->mtl.ambi, attn);
+		vecsca(tmp, &light->ambi, attn);
 		vecadd(color, color, tmp);
-		if ((dotp = -vecdp3(N, L)) > 0) {
+		scalar dot = -vecdp3(N, L);
+		if (dot > 0) {
 			// Diffuse
-			vecsca(tmp, &lit->mtl.diff, attn * dotp);
+			vecsca(tmp, &light->diff, attn * dot);
 			vecadd(color, color, tmp);
 
-			R = vecnrm(tmp+5, vecrfl(tmp+5, vecsub(tmp+4, V, E), N));
-			if ((dotp = -vecdp3(R, L)) > 0) {
+			vector R = vecnrm(tmp+5, vecrfl(tmp+5, vecsub(tmp+4, V, E), N));
+			if ((dot = -vecdp3(R, L)) > 0) {
 				// Specular
-				vecsca(tmp, &lit->mtl.spec, attn * pow(dotp, lit->mtl.spow));
+				vecsca(tmp, &light->spec, attn * pow(dot, light->sPow));
 				vecadd(color, color, tmp);
 			}
 		}
+		light++;
 	}
 	return vecrgb(color);
 }
@@ -594,6 +593,10 @@ int g3_drawenvc(gx_Surf dst, struct gx_Surf img[6], vector view, matrix proj, do
 	const scalar e = 0;
 	struct vector v[8], nrm[1];
 	struct texcol t[8];
+
+	if ((dst->flags & SurfType) != Surf_3ds) {
+		return -1;
+	}
 
 	v[4].x = v[7].x = v[3].x = v[0].x = -size;
 	v[1].x = v[2].x = v[5].x = v[6].x = +size;
@@ -661,67 +664,76 @@ int g3_drawenvc(gx_Surf dst, struct gx_Surf img[6], vector view, matrix proj, do
 	}
 
 	return 0;
-}// */
+}
 
-int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, int draw) {
+int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, gx_Light lights, int mode) {
 	gx_Surf img = NULL;
 	const int32_t line_col = 0xffffff;
 
-	long i, tricnt = 0;
+	#define MAXVTX (65536*16)
 	struct vector v[8];
 	struct matrix tmp[3];
-	matrix proj, view;
-	gx_Light l;
-
-	#define MAXVTX (65536*16)
+	gx_MtlLight light[32];
 	static struct vector pos[MAXVTX];
-	static struct texcol tmpcolarr[MAXVTX];
-	texcol lit = 0, col = tmpcolarr;
+	static struct texcol col[MAXVTX];
 
-	//~ objm = NULL;
+	if ((dst->flags & SurfType) != Surf_3ds) {
+		return -1;
+	}
 	if (msh->vtxcnt > MAXVTX) {
 		return -1;
 	}
 
-	view = cammat(tmp, cam);
-
-	if (objm != NULL) {
-		view = matmul(tmp + 1, tmp, objm);
-	}
-	proj = matmul(tmp + 2, &cam->proj, view);
-
-	if (draw & zero_cbuf) {
+	if (mode & zero_cbuf) {
 		int *cBuff = (void*)dst->basePtr;
 		for (int e = 0; e < dst->width * dst->height; e += 1)
-			cBuff[e] = 0x00000000;
+			cBuff[e] = 0;
 	}
-	if (draw & zero_zbuf) {
+
+	if (mode & zero_zbuf) {
 		int *zBuff = (void*)dst->tempPtr;
 		for (int e = 0; e < dst->width * dst->height; e += 1)
 			zBuff[e] = 0x3fffffff;
 	}
 
-	if (draw & draw_tex) {
+	if (mode & draw_tex) {
 		img = msh->map;
-		col = msh->tex;
-	}
-	if (draw & draw_lit) {
-		lit = tmpcolarr;
 	}
 
-	for (l = msh->lit; l; l = l->next) {
-		// pre multiply lights (fore back)
-		vecmul(&l->mtl.ambi, &msh->mtl.ambi, &l->ambi);
-		vecmul(&l->mtl.diff, &msh->mtl.diff, &l->diff);
-		vecmul(&l->mtl.spec, &msh->mtl.spec, &l->spec);
-		l->mtl.spow = msh->mtl.spow;
+	// prepare and pre-calculate lightning
+	int lightCnt = 0;
+	if (mode & draw_lit) {
+		for (gx_Light l = lights; l; l = l->next) {
+			if (!(l->attr & L_on)) {
+				continue;
+			}
+			// pre multiply lights (fore back)
+			gx_MtlLight *mLight = &light[lightCnt];
+			vecmul(&mLight->ambi, &msh->mtl.ambi, &l->ambi);
+			vecmul(&mLight->diff, &msh->mtl.diff, &l->diff);
+			vecmul(&mLight->spec, &msh->mtl.spec, &l->spec);
+			mLight->emis = msh->mtl.emis;
+			mLight->sPow = msh->mtl.spow;
+			mLight->attn = l->attn;
+			mLight->sExp = l->sExp;
+			mLight->sCos = l->sCos;
+			mLight->dir = l->dir;
+			mLight->pos = l->pos;
+			lightCnt += 1;
+		}
 	}
 
-	for (i = 0; i < msh->vtxcnt; i += 1) {		// calc
+	// prepare view and projection matrix
+	matrix view = cammat(tmp, cam);
+	if (objm != NULL) {
+		view = matmul(tmp + 1, tmp, objm);
+	}
+	matrix proj = matmul(tmp + 2, &cam->proj, view);
 
+	// calculate positions, lightning, colors
+	for (size_t i = 0; i < msh->vtxcnt; i += 1) {
 		mappos(pos + i, proj, msh->pos + i);
-
-		if (lit) {
+		if (mode & draw_lit) {
 			struct vector Col = msh->mtl.emis;
 			vector V = msh->pos + i;
 			vector N = msh->nrm + i;	// normalVec
@@ -731,31 +743,27 @@ int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, int draw) {
 			}
 			//~ const vector V = matvph(v+1, objm, msh->pos + i);	// vertexPos
 			//~ const vector N = matvp3(v+0, objm, msh->nrm + i);	// normalVec
-			tmpcolarr[i].rgb = litpos(&Col, V, N, &cam->pos, msh->lit);
+			col[i].rgb = litVertex(&Col, V, N, &cam->pos, light, lightCnt);
 		}
 
-		else if ((draw & draw_tex) != 0) {
+		else if ((mode & draw_tex) != 0) {
 			if (msh->hasTex && img != NULL) {
-				int s = col[i].s * (img->width - 1);
-				int t = col[i].t * (img->height - 1);
-				tmpcolarr[i].val = gx_getpix16(img, s, t, 0);
+				int s = msh->tex[i].s * (img->width - 1);
+				int t = msh->tex[i].t * (img->height - 1);
+				col[i].val = gx_getpix16(img, s, t, 0);
 			}
 			else {
-				tmpcolarr[i] = msh->tex[i];
+				col[i] = msh->tex[i];
 			}
 		}
 		else {
-			tmpcolarr[i].rgb = nrmrgb(msh->nrm + i);
+			col[i].rgb = nrmrgb(msh->nrm + i);
 		}
 	}
 
-	if (dst == NULL) {
-		return 0;
-	}
-
+	long triangles = 0;
 	frustum_get(v, proj);
-
-	for (i = 0; i < msh->tricnt; i += 1) {		// draw
+	for (size_t i = 0; i < msh->tricnt; i += 1) {		// draw
 		int32_t i1 = msh->triptr[i].i1;
 		int32_t i2 = msh->triptr[i].i2;
 		int32_t i3 = msh->triptr[i].i3;
@@ -769,15 +777,16 @@ int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, int draw) {
 			continue;
 		}
 
-		switch (draw & cull_mode) {				// culling faces(FIXME)
-			default: return 0;
-			case 0: break;
+		switch (mode & cull_mode) {				// culling faces(FIXME)
+			default:
+				return 0;
+			case 0:
+				break;
 			case cull_front:
 			case cull_back: {
-				vector f = pos;
-				float fA = (f[i2].x - f[i1].x) * (f[i3].y - f[i1].y);
-				float fB = (f[i2].y - f[i1].y) * (f[i3].x - f[i1].x);
-				switch (draw & cull_mode) {
+				float fA = (pos[i2].x - pos[i1].x) * (pos[i3].y - pos[i1].y);
+				float fB = (pos[i2].y - pos[i1].y) * (pos[i3].x - pos[i1].x);
+				switch (mode & cull_mode) {
 					case cull_back:
 						if (fA >= fB) {
 							continue;
@@ -791,32 +800,35 @@ int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, int draw) {
 				}
 			}
 		}
-		switch (draw & draw_mode) {
+		switch (mode & draw_mode) {
 			default:
 				return 0;
-			case draw_plot: {
+
+			case draw_plot:
 				g3_putpixel(dst, pos + i1, col[i1].val);
 				g3_putpixel(dst, pos + i2, col[i2].val);
 				g3_putpixel(dst, pos + i3, col[i3].val);
-			} break;
-			case draw_wire: {
+				break;
+
+			case draw_wire:
 				g3_drawline(dst, pos + i1, pos + i2, col[i1].val);
 				g3_drawline(dst, pos + i2, pos + i3, col[i2].val);
 				g3_drawline(dst, pos + i1, pos + i3, col[i3].val);
-			} break;
-			case draw_fill: {
-				draw_triangle(dst, pos, col, lit, i1, i2, i3, img);
-			} break;
+				break;
+
+			case draw_fill:
+				draw_triangle(dst, pos, msh->tex, col, i1, i2, i3, img);
+				break;
 		}
-		tricnt += 1;
+		triangles += 1;
 	}
-	for (i = 0; i < msh->segcnt; i += 1) {		// draw segs
+	for (size_t i = 0; i < msh->segcnt; i += 1) {		// draw segs
 		int32_t i1 = msh->segptr[i].p1;
 		int32_t i2 = msh->segptr[i].p2;
 		g3_drawline(dst, pos + i1, pos + i2, line_col);
 	}
 
-	return tricnt;
+	return triangles;
 }
 
 int g3_drawBbox(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam) {

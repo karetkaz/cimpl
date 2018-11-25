@@ -77,8 +77,6 @@ gx_Mesh g3_createMesh(gx_Mesh recycle, size_t n) {
 		recycle->map = NULL;
 	}
 
-
-	recycle->lit = NULL;
 	recycle->freeMap = 0;
 	recycle->map = NULL;  // TODO: gx_createSurf(512, 512, 32, 2ds);
 
@@ -125,6 +123,10 @@ void g3_destroyMesh(gx_Mesh msh) {
 	free(msh->triptr);
 	free(msh->segptr);
 	msh->triptr = 0;
+
+	if (msh->freeMesh) {
+		free(msh);
+	}
 }
 
 /*long setgrp(gx_Mesh msh, long idx) {

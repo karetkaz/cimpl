@@ -337,32 +337,6 @@ gxRect.x
 gxRect.y
 gxRect.w
 gxRect.h
-gxMesh
-gxMesh.create(size: int32): gxMesh
-gxMesh.recycle(recycle: gxMesh, size: int32): gxMesh
-gxMesh.destroy(mesh: gxMesh): void
-gxMesh.openObj(path: char[*]): gxMesh
-gxMesh.open3ds(path: char[*]): gxMesh
-gxMesh.saveObj(mesh: gxMesh, path: char[*]): void
-gxMesh.normalize(mesh: gxMesh, tolerance: float32, center: float32[3], resize: float32[3]): void
-gxMesh.addVertex(mesh: gxMesh, x: float32, y: float32, z: float32): void
-gxMesh.ambient(mesh: gxMesh, r: float32, g: float32, b: float32): void
-gxMesh.diffuse(mesh: gxMesh, r: float32, g: float32, b: float32): void
-gxMesh.specular(mesh: gxMesh, r: float32, g: float32, b: float32): void
-gxMesh.shine(mesh: gxMesh, value: float32): void
-gxMesh.clearDepth
-gxMesh.clearColor
-gxMesh.cullBack
-gxMesh.cullFront
-gxMesh.drawPlot
-gxMesh.drawWire
-gxMesh.drawFill
-gxMesh.drawMode
-gxMesh.useTexture
-gxMesh.useLights
-gxMesh.vertices
-gxMesh.triangles
-gxMesh.segments
 gxSurf
 gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
 gxSurf.create3d(width: int32, height: int32): gxSurf
@@ -392,6 +366,33 @@ gxSurf.zoomSurf(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolat
 gxSurf.lookup(surf: gxSurf, roi: gxRect, lut: uint32[]): void
 gxSurf.multiply(surf: gxSurf, roi: gxRect, mat: float32[16]): void
 gxSurf.drawMesh(surf: gxSurf, mesh: gxMesh, mode: int32): int32
+gxMesh
+gxMesh.create(size: int32): gxMesh
+gxMesh.recycle(recycle: gxMesh, size: int32): gxMesh
+gxMesh.destroy(mesh: gxMesh): void
+gxMesh.openObj(path: char[*]): gxMesh
+gxMesh.open3ds(path: char[*]): gxMesh
+gxMesh.saveObj(mesh: gxMesh, path: char[*]): void
+gxMesh.normalize(mesh: gxMesh, tolerance: float32, center: float32[3], resize: float32[3]): void
+gxMesh.addVertex(mesh: gxMesh, x: float32, y: float32, z: float32): void
+gxMesh.ambient(mesh: gxMesh, r: float32, g: float32, b: float32): void
+gxMesh.diffuse(mesh: gxMesh, r: float32, g: float32, b: float32): void
+gxMesh.specular(mesh: gxMesh, r: float32, g: float32, b: float32): void
+gxMesh.shine(mesh: gxMesh, value: float32): void
+gxMesh.texture(mesh: gxMesh, surf: gxSurf): void
+gxMesh.clearDepth
+gxMesh.clearColor
+gxMesh.cullBack
+gxMesh.cullFront
+gxMesh.drawPlot
+gxMesh.drawWire
+gxMesh.drawFill
+gxMesh.drawMode
+gxMesh.useTexture
+gxMesh.useLights
+gxMesh.vertices
+gxMesh.triangles
+gxMesh.segments
 camera
 camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): void
 camera.lookAt(eye: float32[3], at: float32[3], up: float32[3]): void
@@ -415,7 +416,10 @@ Gui.MOUSE_PRESS
 Gui.MOUSE_MOTION
 Gui.MOUSE_RELEASE
 Gui.EVENT_TIMEOUT
+Gui.WINDOW_CREATE
 Gui.WINDOW_CLOSE
+Gui.WINDOW_ENTER
+Gui.WINDOW_LEAVE
 Gui.KEY_MASK_SHIFT
 Gui.KEY_MASK_CONTROL
 Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void

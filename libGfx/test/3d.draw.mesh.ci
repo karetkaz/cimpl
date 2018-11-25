@@ -1,14 +1,12 @@
-gxMesh teapot = gxMesh.openObj("asset/mesh/teapot.obj");
-gxMesh bunny = gxMesh.openObj("asset/mesh/bunny.obj");
+gxSurf texture = gxSurf("asset/image/earth.jpg", 32);
+gxMesh model = gxMesh.openObj("asset/mesh/teapot.obj");
+//gxMesh model = gxMesh.openObj("asset/mesh/bunny.obj");
 
-float32 center[3]; center[0] = center[1] = center[2] = 0;
-float32 resize[3]; resize[0] = resize[1] = resize[2] = 1;
+vec4f center = { x: 0, y: 0, z: 0, w: 1 };
+vec4f resize = { x: 1, y: 1, z: 1, w: 1 };
+model.normalize(0, center.data, resize.data);
 
-teapot.normalize(0, center, resize);
-bunny.normalize(0, center, resize);
-
-debug("Mesh.bunny", bunny);
-debug("Mesh.teapot", teapot);
+debug("model", model);
 
 lights.enable(0, true);
 lights.position(0, 2., -2., 2.);
@@ -39,13 +37,13 @@ lights.specular(3, 1., 1., 1.);
 lights.attenuation(3, 1., 0., 0.);
 
 // material Dash
-teapot.ambient(0.588235, 0.588235, 0.588235);
-teapot.diffuse(0.588235, 0.588235, 0.588235);
-teapot.specular(0.898039, 0.898039, 0.898039);
-teapot.shine(64);
+model.texture(texture);
+model.ambient(0.588235, 0.588235, 0.588235);
+model.diffuse(0.588235, 0.588235, 0.588235);
+model.specular(0.898039, 0.898039, 0.898039);
+model.shine(64);
 
-teapot.show(1440, 900, 20);
-bunny.show(1440, 900, 15);
+model.show(1440, 900, 15);
 
-teapot.destroy();
-bunny.destroy();
+texture.destroy();
+model.destroy();

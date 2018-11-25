@@ -367,8 +367,7 @@ static vmError surf_drawMesh(nfcContext ctx) {
 	gx_Mesh mesh = nextValue(ctx).ref;
 	int32_t mode = nextValue(ctx).i32;
 
-	mesh->lit = lights;
-	reti32(ctx, g3_drawMesh(surf, mesh, NULL, cam, mode));
+	reti32(ctx, g3_drawMesh(surf, mesh, NULL, cam, lights, mode));
 	return noError;
 }
 
@@ -637,6 +636,7 @@ static const char *proto_material_ambient = "void ambient(gxMesh mesh, float r, 
 static const char *proto_material_diffuse = "void diffuse(gxMesh mesh, float r, float g, float b)";
 static const char *proto_material_specular = "void specular(gxMesh mesh, float r, float g, float b)";
 static const char *proto_material_shine = "void shine(gxMesh mesh, float value)";
+static const char *proto_material_texture = "void texture(gxMesh mesh, gxSurf surf)";
 static vmError mesh_material(nfcContext ctx) {
 	gx_Mesh mesh = nextValue(ctx).ref;
 
@@ -666,6 +666,11 @@ static vmError mesh_material(nfcContext ctx) {
 
 	if (ctx->proto == proto_material_shine) {
 		mesh->mtl.spow = nextValue(ctx).f32;
+		return noError;
+	}
+
+	if (ctx->proto == proto_material_texture) {
+		mesh->map = nextValue(ctx).ref;
 		return noError;
 	}
 
@@ -759,6 +764,7 @@ int cmplInit(rtContext rt) {
 		{mesh_material, proto_material_diffuse},
 		{mesh_material, proto_material_specular},
 		{mesh_material, proto_material_shine},
+		{mesh_material, proto_material_texture},
 	}, nfcLights[] = {
 		{lights_manager, proto_lights_enabled},
 		{lights_manager, proto_lights_enable},
@@ -780,8 +786,12 @@ int cmplInit(rtContext rt) {
 		"}\n"
 	);
 
+	// surfaces are allocated outside the vm, and are handler types
+	symn symSurf = rt->api.ccAddType(cc, "gxSurf", sizeof(gx_Surf), 0);
+
 	// meshes are allocated inside the vm, and are reference types
 	symn symMesh = rt->api.ccAddType(cc, "gxMesh", sizeof(struct gx_Mesh), 1);
+
 	if (rt->api.ccExtend(cc, symMesh)) {
 		for (int i = 0; i < sizeof(nfcMesh) / sizeof(*nfcMesh); i += 1) {
 			if (!rt->api.ccAddCall(cc, nfcMesh[i].func, nfcMesh[i].proto)) {
@@ -821,7 +831,6 @@ int cmplInit(rtContext rt) {
 	}
 
 	// type: gxSurf
-	symn symSurf = rt->api.ccAddType(cc, "gxSurf", sizeof(gx_Surf), 0);
 	if (rt->api.ccExtend(cc, symSurf)) {
 		for (int i = 0; i < sizeof(nfcSurf) / sizeof(*nfcSurf); i += 1) {
 			if (!rt->api.ccAddCall(cc, nfcSurf[i].func, nfcSurf[i].proto)) {
@@ -860,7 +869,12 @@ int cmplInit(rtContext rt) {
 		rt->api.ccDefInt(cc, "MOUSE_MOTION", MOUSE_MOTION);
 		rt->api.ccDefInt(cc, "MOUSE_RELEASE", MOUSE_RELEASE);
 		rt->api.ccDefInt(cc, "EVENT_TIMEOUT", EVENT_TIMEOUT);
+
+		rt->api.ccDefInt(cc, "WINDOW_CREATE", WINDOW_CREATE);
 		rt->api.ccDefInt(cc, "WINDOW_CLOSE", WINDOW_CLOSE);
+		rt->api.ccDefInt(cc, "WINDOW_ENTER", WINDOW_ENTER);
+		rt->api.ccDefInt(cc, "WINDOW_LEAVE", WINDOW_LEAVE);
+
 		rt->api.ccDefInt(cc, "KEY_MASK_SHIFT", KEY_MASK_SHIFT);
 		rt->api.ccDefInt(cc, "KEY_MASK_CONTROL", KEY_MASK_CONTROL);
 

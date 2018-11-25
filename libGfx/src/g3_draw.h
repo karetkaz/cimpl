@@ -52,7 +52,6 @@ typedef struct gx_Material {
 
 typedef struct gx_Light {
 	struct gx_Light *next;
-	struct gx_Material mtl;
 
 	struct vector ambi;		// Ambient
 	struct vector diff;		// Diffuse
@@ -72,7 +71,6 @@ typedef struct gx_Light {
 } *gx_Light;
 
 typedef struct gx_Mesh {
-	gx_Light lit;				// mesh lights?
 	gx_Surf map;			// texture map
 	struct gx_Material mtl;	// back, fore?
 
@@ -108,7 +106,6 @@ typedef struct gx_Mesh {
 	uint32_t freeMap:1;
 	uint32_t hasTex:1;// := map != null
 	uint32_t hasNrm:1;// := nrm != null
-	uint32_t padded:29;// padding
 } *gx_Mesh;
 
 gx_Mesh g3_createMesh(gx_Mesh recycle, size_t n);
@@ -134,7 +131,7 @@ long addquad(gx_Mesh msh, long p1, long p2, long p3, long p4);
 
 void g3_drawline(gx_Surf dst, vector p1, vector p2, uint32_t c);
 
-int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, int mode);
+int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, gx_Light lights, int mode);
 
 int g3_drawBbox(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam);
 

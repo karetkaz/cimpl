@@ -194,45 +194,6 @@ void show(gxMesh mesh, int w, int h, float32 fovy) {
 	};
 
 	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
-		/*struct Event {
-			char action[*];
-			int button;
-			int x;
-			int y;
-		}
-		char tmp[80];
-		Event event = {
-			action: "???";
-			button: button;
-			x: ex; y: ey;
-		};
-		if (action == Gui.KEY_PRESS) {
-			event.action = "KEY_PRESS";
-		}
-		else if (action == Gui.KEY_RELEASE) {
-			event.action = "KEY_RELEASE";
-		}
-		else if (action == Gui.MOUSE_PRESS) {
-			event.action = "MOUSE_PRESS";
-		}
-		else if (action == Gui.MOUSE_RELEASE) {
-			event.action = "MOUSE_RELEASE";
-		}
-		else if (action == Gui.MOUSE_MOTION) {
-			event.action = "MOUSE_MOTION";
-		}
-		else if (action == Gui.EVENT_TIMEOUT) {
-			event.action = "EVENT_TIMEOUT";
-		}
-		else if (action == Gui.WINDOW_CLOSE) {
-			event.action = "WINDOW_CLOSE";
-		}
-		else {
-			event.action = tmp;
-			tmp.append(tmp.append(0, "act: "), action);
-		}
-		debug("event", event);// */
-
 		static int ox = 0;
 		static int oy = 0;
 		static const float speed = 1. / 100;
@@ -270,6 +231,11 @@ void show(gxMesh mesh, int w, int h, float32 fovy) {
 				vec4f up = {x: 0, y: 1, z: 0, w: 1};
 				camera.lookAt(eye.data, at.data, up.data);
 			}
+		}
+		else if (action == Gui.MOUSE_PRESS) {
+			ox = ex;
+			oy = ey;
+			return 0;
 		}
 		else if (action == Gui.MOUSE_MOTION) {
 			float32 dir[3];
@@ -325,7 +291,7 @@ void show(gxMesh mesh, int w, int h, float32 fovy) {
 	}
 
 	Closure closure = {
-		mode: gxMesh.clearDepth | gxMesh.clearColor | gxMesh.cullBack | gxMesh.drawFill;
+		mode: gxMesh.clearDepth | gxMesh.clearColor | gxMesh.useLights | gxMesh.cullBack | gxMesh.drawFill;
 		offs: gxSurf.create3d(w, h);
 		mesh: mesh;
 	};
