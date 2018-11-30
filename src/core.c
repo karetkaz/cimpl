@@ -113,7 +113,7 @@ rtValue nfcReadArg(nfcContext nfc, size_t offs) {
 	vmValue *value = nfcPeekArg(nfc, offs);
 	rtValue result;
 	memset(&result, 0, sizeof(result));
-	switch (castOfx(nfc->param)) {
+	switch (castOf(nfc->param)) {
 		default:
 			fatal(ERR_INTERNAL_ERROR);
 			break;
@@ -166,7 +166,7 @@ void nfcCheckArg(nfcContext nfc, ccKind cast, char *name) {
 	if (param == NULL) {
 		fatal(ERR_INTERNAL_ERROR);
 	}
-	if (cast && cast != castOf(param)) {
+	if (cast && cast != refCast(param)) {
 		fatal(ERR_INTERNAL_ERROR);
 	}
 	if (name && strcmp(name, param->name) != 0) {
@@ -193,7 +193,7 @@ static void install_type(ccContext cc, ccInstall mode) {
 	symn type_ptr = NULL, type_var = NULL, type_obj = NULL;
 	astn init_val = intNode(cc, 0);
 
-	symn type_rec = install(cc, "typename", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, sizeof(vmOffs), NULL, NULL);
+	symn type_rec = install(cc, "typename", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, vm_ref_size, NULL, NULL);
 	// update required variables to be able to install other types.
 	cc->type_rec = type_rec->type = type_rec;   // TODO: !cycle: typename is instance of typename
 	type_rec->size = sizeof(struct symNode);    // expose the real size of the internal representation.
@@ -215,14 +215,14 @@ static void install_type(ccContext cc, ccInstall mode) {
 	init_val->type = type_i64;
 
 	if (mode & install_ptr) {
-		type_ptr = install(cc, "pointer", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * sizeof(vmOffs), type_rec, NULL);
+		type_ptr = install(cc, "pointer", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * vm_ref_size, type_rec, NULL);
 	}
 	if (mode & install_var) {
-		type_var = install(cc, "variant", ATTR_stat | ATTR_cnst | KIND_typ | CAST_var, 2 * sizeof(vmOffs), type_rec, NULL);
+		type_var = install(cc, "variant", ATTR_stat | ATTR_cnst | KIND_typ | CAST_var, 2 * vm_ref_size, type_rec, NULL);
 	}
-	symn type_fun = install(cc, "function", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * sizeof(vmOffs), type_rec, NULL);
+	symn type_fun = install(cc, "function", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * vm_ref_size, type_rec, NULL);
 	if (mode & install_obj) {
-		type_obj = install(cc,  "object", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * sizeof(vmOffs), type_rec, NULL);
+		type_obj = install(cc,  "object", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * vm_ref_size, type_rec, NULL);
 	}
 
 	type_vid->fmt = NULL;
@@ -257,7 +257,7 @@ static void install_type(ccContext cc, ccInstall mode) {
 	cc->type_fun = type_fun;
 	cc->type_var = type_var;
 	cc->type_obj = type_obj;
-	if (sizeof(vmOffs) > vm_size) {
+	if (vm_ref_size == 8) {
 		cc->type_int = type_i64;
 		cc->type_idx = type_u64;
 	}
@@ -288,7 +288,7 @@ static void install_type(ccContext cc, ccInstall mode) {
 	install(cc, "float", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_f32));
 	install(cc, "double", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_f64));
 
-	cc->type_str = install(cc, ".cstr", ATTR_stat | ATTR_cnst | KIND_typ | CAST_arr, sizeof(vmOffs), type_chr, NULL);
+	cc->type_str = install(cc, ".cstr", ATTR_stat | ATTR_cnst | KIND_typ | CAST_arr, vm_ref_size, type_chr, NULL);
 	if (cc->type_str != NULL) {
 		// arrays without length property are c-like pointers
 		cc->type_str->fmt = type_fmt_string;
@@ -528,14 +528,14 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 	if (cc->type_rec != NULL && cc->type_var != NULL) {
 		enter(cc, cc->type_rec);
 
-		if ((field = install(cc, "size", ATTR_cnst | KIND_var, vm_size, cc->type_i32, NULL))) {
+		if ((field = install(cc, "size", ATTR_cnst | KIND_var, vm_stk_align, cc->type_i32, NULL))) {
 			field->offs = offsetOf(struct symNode, size);
 		}
 		else {
 			error = 1;
 		}
 
-		if ((field = install(cc, "offset", ATTR_cnst | KIND_var, vm_size, cc->type_i32, NULL))) {
+		if ((field = install(cc, "offset", ATTR_cnst | KIND_var, vm_stk_align, cc->type_i32, NULL))) {
 			field->offs = offsetOf(struct symNode, offs);
 			field->fmt = "@%06x";
 		}
@@ -574,7 +574,7 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Core
 
 rtContext rtInit(void *mem, size_t size) {
-	rtContext rt = padPointer(mem, pad_size);
+	rtContext rt = padPointer(mem, vm_mem_align);
 
 	if (rt != mem) {
 		size_t diff = (char*)rt - (char*) mem;
@@ -652,7 +652,7 @@ size_t vmInit(rtContext rt, int debug, vmError onHalt(nfcContext)) {
 
 	// debug info
 	if (debug != 0) {
-		rt->dbg = (dbgContext)(rt->_beg = padPointer(rt->_beg, pad_size));
+		rt->dbg = (dbgContext)(rt->_beg = padPointer(rt->_beg, vm_mem_align));
 		rt->_beg += sizeof(struct dbgContextRec);
 
 		dieif(rt->_beg >= rt->_end, ERR_MEMORY_OVERRUN);
@@ -669,7 +669,7 @@ size_t vmInit(rtContext rt, int debug, vmError onHalt(nfcContext)) {
 	if (cc != NULL && cc->native != NULL) {
 		list lst = cc->native;
 		libc last = (libc) lst->data;
-		libc *calls = (libc*)(rt->_beg = padPointer(rt->_beg, pad_size));
+		libc *calls = (libc*)(rt->_beg = padPointer(rt->_beg, vm_mem_align));
 
 		rt->_beg += (last->offs + 1) * sizeof(libc);
 		if(rt->_beg >= rt->_end) {
@@ -689,14 +689,14 @@ size_t vmInit(rtContext rt, int debug, vmError onHalt(nfcContext)) {
 		}
 	}
 	else {
-		libc stop = (libc)(rt->_beg = padPointer(rt->_beg, pad_size));
+		libc stop = (libc)(rt->_beg = padPointer(rt->_beg, vm_mem_align));
 		rt->_beg += sizeof(struct libc);
 		if(rt->_beg >= rt->_end) {
 			fatal(ERR_MEMORY_OVERRUN);
 			return 0;
 		}
 
-		libc *calls = (libc*)(rt->_beg = padPointer(rt->_beg, pad_size));
+		libc *calls = (libc*)(rt->_beg = padPointer(rt->_beg, vm_mem_align));
 		rt->_beg += sizeof(libc);
 		if(rt->_beg >= rt->_end) {
 			fatal(ERR_MEMORY_OVERRUN);
@@ -711,7 +711,7 @@ size_t vmInit(rtContext rt, int debug, vmError onHalt(nfcContext)) {
 
 		// add the main function
 		if (rt->main == NULL) {
-			symn sym = (symn) (rt->_beg = padPointer(rt->_beg, pad_size));
+			symn sym = (symn) (rt->_beg = padPointer(rt->_beg, vm_mem_align));
 			rt->_beg += sizeof(struct symNode);
 			if (rt->_beg >= rt->_end) {
 				fatal(ERR_MEMORY_OVERRUN);
@@ -1048,7 +1048,7 @@ symn ccDefVar(ccContext cc, const char *name, symn type) {
 		return NULL;
 	}
 	name = ccUniqueStr(cc, name, -1, -1);
-	return install(cc, name, KIND_var | castOf(type), 0, type, NULL);
+	return install(cc, name, KIND_var | refCast(type), 0, type, NULL);
 }
 
 symn ccAddType(ccContext cc, const char *name, unsigned size, int refType) {

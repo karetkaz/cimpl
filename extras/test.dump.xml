@@ -1559,9 +1559,11 @@
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="length(str: char[*]): int32">
 			<init token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:3">
-				<stmt token="if" type="void" kind="static const typename(void)" stmt="if (str == null)">
-					<test token="==" type="bool" kind="static const typename(bool)" value="str == null">
-						<left token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+				<stmt token="if" type="void" kind="static const typename(void)" stmt="if ((str) == null)">
+					<test token="==" type="bool" kind="static const typename(bool)" value="(str) == null">
+						<left token="()" type="pointer" kind="static const typename(ref)" value="(str)">
+							<push token=".variable" type="char[*]" kind="static typename(arr)" value="str" />
+						</left>
 						<right token=".variable" type="pointer" kind="static const typename(ref)" value="null" />
 					</test>
 					<then token="{}" type="void" kind="static const typename(void)" file="lib/string.ci:4">
@@ -3228,11 +3230,13 @@
 				<call token=".variable" type="function" kind="static const typename(ref)" value="Fahrenheit" />
 			</init>
 		</stmt>
-		<stmt token="static if" type="void" kind="static const typename(void)" stmt="static if (typename(int64) == null)">
-			<test token="==" type="bool" kind="static const typename(bool)" value="typename(int64) == null">
-				<left token="()" type="typename" kind="static const typename(ref)" value="typename(int64)">
-					<push token=".variable" type="typename" kind="static const typename(ref)" value="int64" />
-					<call token=".variable" type="typename" kind="static const typename(ref)" value="typename" />
+		<stmt token="static if" type="void" kind="static const typename(void)" stmt="static if ((typename(int64)) == null)">
+			<test token="==" type="bool" kind="static const typename(bool)" value="(typename(int64)) == null">
+				<left token="()" type="pointer" kind="static const typename(ref)" value="(typename(int64))">
+					<push token="()" type="typename" kind="static const typename(ref)" value="typename(int64)">
+						<push token=".variable" type="typename" kind="static const typename(ref)" value="int64" />
+						<call token=".variable" type="typename" kind="static const typename(ref)" value="typename" />
+					</push>
 				</left>
 				<right token=".variable" type="pointer" kind="static const typename(ref)" value="null" />
 			</test>
@@ -5115,7 +5119,7 @@
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="stackOverflow(ptr: pointer): void">
 			<init token="{}" type="void" kind="static const typename(void)" file="test/stdc.execute.ci:14">
-				<stmt token=".variable" type="uint8[1024]" kind="static typename(arr)" value="data" />
+				<stmt token=".variable" type="uint8[8192]" kind="static typename(arr)" value="data" />
 				<stmt token=";" type="void" kind="static const typename(void)" stmt="stackOverflow(ptr);">
 					<expr token="()" type="void" kind="static const typename(void)" value="stackOverflow(ptr)">
 						<push token=".variable" type="pointer" kind="static const typename(ref)" value="ptr" />
@@ -5273,7 +5277,7 @@
 				</push>
 				<push token=".variable" type="function" kind="static const typename(ref)" value="stackOverflow">
 					<init token="{}" type="void" kind="static const typename(void)" file="test/stdc.execute.ci:14">
-						<stmt token=".variable" type="uint8[1024]" kind="static typename(arr)" value="data" />
+						<stmt token=".variable" type="uint8[8192]" kind="static typename(arr)" value="data" />
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="stackOverflow(ptr);">
 							<expr token="()" type="void" kind="static const typename(void)" value="stackOverflow(ptr)">
 								<push token=".variable" type="pointer" kind="static const typename(ref)" value="ptr" />
@@ -5436,11 +5440,13 @@
 				<call token=".variable" type="function" kind="static const typename(ref)" value="tryExec" />
 			</init>
 		</stmt>
-		<stmt token="static if" type="void" kind="static const typename(void)" stmt="static if (typename(int64) == null)">
-			<test token="==" type="bool" kind="static const typename(bool)" value="typename(int64) == null">
-				<left token="()" type="typename" kind="static const typename(ref)" value="typename(int64)">
-					<push token=".variable" type="typename" kind="static const typename(ref)" value="int64" />
-					<call token=".variable" type="typename" kind="static const typename(ref)" value="typename" />
+		<stmt token="static if" type="void" kind="static const typename(void)" stmt="static if ((typename(int64)) == null)">
+			<test token="==" type="bool" kind="static const typename(bool)" value="(typename(int64)) == null">
+				<left token="()" type="pointer" kind="static const typename(ref)" value="(typename(int64))">
+					<push token="()" type="typename" kind="static const typename(ref)" value="typename(int64)">
+						<push token=".variable" type="typename" kind="static const typename(ref)" value="int64" />
+						<call token=".variable" type="typename" kind="static const typename(ref)" value="typename" />
+					</push>
 				</left>
 				<right token=".variable" type="pointer" kind="static const typename(ref)" value="null" />
 			</test>
@@ -8636,11 +8642,13 @@
 				</else>
 			</stmt>
 		</stmt>
-		<stmt token="static if" type="void" kind="static const typename(void)" stmt="static if (typename(int64) == null)">
-			<test token="==" type="bool" kind="static const typename(bool)" value="typename(int64) == null">
-				<left token="()" type="typename" kind="static const typename(ref)" value="typename(int64)">
-					<push token=".variable" type="typename" kind="static const typename(ref)" value="int64" />
-					<call token=".variable" type="typename" kind="static const typename(ref)" value="typename" />
+		<stmt token="static if" type="void" kind="static const typename(void)" stmt="static if ((typename(int64)) == null)">
+			<test token="==" type="bool" kind="static const typename(bool)" value="(typename(int64)) == null">
+				<left token="()" type="pointer" kind="static const typename(ref)" value="(typename(int64))">
+					<push token="()" type="typename" kind="static const typename(ref)" value="typename(int64)">
+						<push token=".variable" type="typename" kind="static const typename(ref)" value="int64" />
+						<call token=".variable" type="typename" kind="static const typename(ref)" value="typename" />
+					</push>
 				</left>
 				<right token=".variable" type="pointer" kind="static const typename(ref)" value="null" />
 			</test>

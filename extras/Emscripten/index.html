@@ -6,11 +6,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
 
 	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="theme.css">
 
 	<link rel="stylesheet" href="splitter.css">
 	<script type="text/javascript" src="splitter.js"></script>
 
-	<!--<script type="text/javascript" src="application.js"></script>-->
 	<script type="text/javascript" src="lib/JsArgs.js"></script>
 	<script type="text/javascript" src="lib/JsTerm.js"></script>
 
@@ -30,19 +30,17 @@
 	<script src="lib/codemirror/addon/search/searchcursor.js"></script>
 	<script src="lib/codemirror/addon/search/match-highlighter.js"></script>
 	<script src="lib/codemirror/lang/cmpl.js"></script>
-
 </head>
 <body class="dark">
 <div class="toolbar">
-	<!-- 🔆 🔅 ☀ ☼ 🌣 -->
-	<!-- ⛶ 🞕 ⯐ ⌗ ⌑ ⎅ ⏍ ◧ ◨ ⬒ ⬓ ◫ -->
-	<span class="left icon" href="#" onclick="showSpliter(menuSplit, '!secondary', 'options');">☰</span>
+	<span class="left icon" href="#" onclick="showSplitter(menuSplit, '^options', '^secondary', '-files');">☰</span>
+	<!-- 🔆 🔅 ☀ ☼ 🌣 ⛶ 🞕 ⯐ ⌗ ⌑ ⎅ ⏍ ◧ ◨ ⬒ ⬓ ◫ -->
 	<span id="btnExecute" class="right execute" href="#" onclick="execute(btnExecute.innerText, cmdExecute.value);"></span>
-	<span class="right icon" href="#" onclick="showSplit(editSplit);">⬓</span>
+	<span class="right icon" href="#" onclick="showEditor('^primary', '^secondary', '^');">⬓</span>
 	<span class="right icon" href="#" onclick="setTheme(body, '!dark');">☼</span>
-	<span id="btnFileName" class="filename" href="#" onclick="showSpliter(menuSplit, '!secondary', 'files');"></span>
+	<span id="btnFileName" class="filename" href="#" onclick="showSplitter(menuSplit, '^files', '^secondary', '-options');"></span>
 </div>
-<div id="menuSplit" class="content split-pane left vertical secondary" style="top:2em;">
+<div id="menuSplit" class="content split-pane left vertical files" style="top:2em;">
 	<div>
 	<div id="options" class="content list">
 		Execute<ul>
@@ -60,31 +58,31 @@
 			<hr>
 			<li onclick="terminal.clear();">Clear output</li>
 		</ul>
-		Project<ul>
-			<li onclick="shareInput();">Share</li>
-			<li onclick="editProject();">Edit</li>
-		</ul>
 		View<ul>
-			<li>Split: <select onchange="showSpliter(editSplit, this.value);">
+			<li>Split: <select onchange="showEditor(this.value);">
 				<option value="horizontal">Horizontal
 				<option value="vertical">Vertical
 				<option value="auto">Auto
 			</select></li>
-			<li onclick="showSpliter(editSplit, '!primary');">Editor only</li>
-			<li onclick="showSpliter(editSplit, '!secondary');">Output only</li>
+			<li onclick="showEditor('!primary');">Editor only</li>
+			<li onclick="showEditor('!secondary');">Output only</li>
 		</ul>
 	</div>
 	<div id="files" class="content list">
 		<ul>
-			<li onclick="showFile(null);">Close file</li>
 			<li onclick="saveInput();">Save file</li>
-			<li onclick="worker.postMessage({files: null});">Show all</li>
+			<li onclick="shareInput();">Share link</li>
+			<li onclick="showFile(null);">Close file</li>
 		</ul>
-		<ul id="fileList">
+		Files<ul id="fileList">
 		</ul>
+		<ul>
+		<li onclick="worker.postMessage({files: null});">Show all</li>
+		<li onclick="editProject();">Edit project</li>
+	</ul>
 	</div>
 	</div>
-	<div id="editSplit" class="content split-pane horizontal primary">
+	<div id="editSplit" class="content split-pane horizontal">
 		<div class="text-content">
 			<textarea id="input"></textarea>
 		</div>

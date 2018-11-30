@@ -40,7 +40,7 @@ static inline void addLength(ccContext cc, symn sym, astn init) {
 
 	// add static length to array
 	enter(cc, NULL);
-	ccKind kind = ATTR_cnst | ATTR_stat | KIND_def | castOf(cc->type_idx);
+	ccKind kind = ATTR_cnst | ATTR_stat | KIND_def | refCast(cc->type_idx);
 	install(cc, "length", kind, cc->type_idx->size, cc->type_idx, init);
 	sym->fields = leave(cc, KIND_def, 0, 0, NULL);
 }
@@ -125,7 +125,7 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 	}
 
 	if ((kind & MASK_cast) == CAST_ref) {
-		size = sizeof(vmOffs);
+		size = vm_ref_size;
 	}
 	else if (type == cc->type_rec) {
 		// struct Complex { ...
@@ -835,7 +835,7 @@ static astn parameters(ccContext cc, symn returns, astn function) {
 	astn tok = NULL;
 
 	if (returns != NULL) {
-		symn res = install(cc, ".result", KIND_var | castOf(returns), 0, returns, returns->init);
+		symn res = install(cc, ".result", KIND_var | refCast(returns), 0, returns, returns->init);
 		tok = lnkNode(cc, res);
 		if (function != NULL) {
 			res->file = function->file;
@@ -866,8 +866,8 @@ static astn parameters(ccContext cc, symn returns, astn function) {
 		}
 
 		// fixed size arrays are passed by reference
-		if (castOfx(parameter->type) == CAST_arr) {
-			if (castOf(parameter) == CAST_val) {
+		if (castOf(parameter->type) == CAST_arr) {
+			if (refCast(parameter) == CAST_val) {
 				parameter->size = sizeof(vmOffs);
 				parameter->kind &= ~MASK_cast;
 				parameter->kind |= CAST_ref;
@@ -932,7 +932,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		argRoot = parameters(cc, type, tag);
 		skipTok(cc, RIGHT_par, 1);
 
-		params = leave(cc, KIND_fun, vm_size, 0, NULL);
+		params = leave(cc, KIND_fun, vm_stk_align, 0, NULL);
 		type = cc->type_fun;
 
 		if (args != NULL) {
@@ -980,7 +980,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		}
 		else if (skipTok(cc, OPER_mul, 0)) {
 			// unknown-size array: int a[*]
-			arr->size = sizeof(vmOffs);
+			arr->size = vm_ref_size;
 			cast = CAST_ref;
 		}
 		else {
@@ -1011,7 +1011,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 	}
 
 	if (cast == CAST_any) {
-		cast = castOf(type);
+		cast = refCast(type);
 		if (cast == CAST_any) {
 			cast = CAST_val;
 		}
@@ -1095,7 +1095,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 
 	skipTok(cc, ASGN_set, 1);
 	init = initializer(cc);
-	params = leave(cc, KIND_fun, vm_size, 0, NULL);
+	params = leave(cc, KIND_fun, vm_stk_align, 0, NULL);
 	if (init == NULL) {
 		traceAst(init);
 		return NULL;
@@ -1132,7 +1132,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 			params->type = type;
 			params->size = type->size;
 			params->init = type->init;
-			params->kind = (params->kind & ~MASK_cast) | castOf(type);
+			params->kind = (params->kind & ~MASK_cast) | refCast(type);
 		}
 		for (symn param = params; param != NULL; param = param->next) {
 			int usages = 0;
@@ -1148,7 +1148,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 			}
 			else {
 				// mark params used more than once to be cached
-				offs += padOffset(param->size, vm_size);
+				offs += padOffset(param->size, vm_stk_align);
 				param->offs = offs;
 			}
 		}
@@ -1190,7 +1190,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 	}
 
 	size_t baseSize = 0;
-	size_t pack = pad_size;
+	size_t pack = vm_mem_align;
 	symn base = cc->type_rec;
 
 	if (skipTok(cc, PNCT_cln, 0)) {			// ':' base type or packing
@@ -1199,7 +1199,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 			// type-check the base type or packing
 			if (!typeCheck(cc, NULL, tok, 0)) {
 				error(cc->rt, tok->file, tok->line, ERR_INVALID_BASE_TYPE, tok);
-				pack = vm_size;
+				pack = vm_stk_align;
 			}
 			else if (isTypeExpr(tok)) {		// ':' extended type
 				base = linkOf(tok, 1);
@@ -1213,13 +1213,13 @@ static astn declare_record(ccContext cc, ccKind attr) {
 						break;
 					}
 				}
-				pack = vm_size;
+				pack = vm_stk_align;
 			}
 			else if (tok->kind == TOKEN_val) {	// ':' packed type
-				switch (castOf(tok->type)) {
+				switch (refCast(tok->type)) {
 					default:
 						error(cc->rt, tok->file, tok->line, ERR_INVALID_BASE_TYPE, tok);
-						pack = vm_size;
+						pack = vm_stk_align;
 						break;
 
 					case CAST_i32:
@@ -1232,7 +1232,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 				switch (pack) {
 					default:
 						error(cc->rt, tok->file, tok->line, ERR_INVALID_PACK_SIZE, tok);
-						pack = vm_size;
+						pack = vm_stk_align;
 						break;
 
 					case 0:
@@ -1357,7 +1357,7 @@ static astn declare_enum(ccContext cc) {
 	}
 
 	if (type != NULL) {
-		type->fields = leave(cc, KIND_typ, vm_size, 0, &type->size);
+		type->fields = leave(cc, KIND_typ, vm_stk_align, 0, &type->size);
 	}
 
 	return tag;
@@ -1840,7 +1840,7 @@ symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 	rt->_end -= sizeof(struct list);
 	lst = (list) rt->_end;
 
-	rt->_beg = padPointer(rt->_beg, pad_size);
+	rt->_beg = padPointer(rt->_beg, vm_mem_align);
 	nfc = (libc) rt->_beg;
 	rt->_beg += sizeof(struct libc);
 
@@ -1888,11 +1888,11 @@ symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 				nfc->in = param->offs;
 			}
 		}
-		nfc->in /= vm_size;
-		nfc->out = sym->params->size / vm_size;
+		nfc->in /= vm_stk_align;
+		nfc->out = sym->params->size / vm_stk_align;
 	}
 	else {
-		nfc->out = sym->type->size / vm_size;
+		nfc->out = sym->type->size / vm_stk_align;
 	}
 
 	debug("nfc: %02X, in: %U, out: %U, func: %T", nfcPos, nfc->in, nfc->out, nfc->sym);

@@ -127,7 +127,7 @@ static int decrementStackAccess(rtContext rt, size_t offsBegin, size_t offsEnd, 
 				break;
 
 			case opc_ldsp:
-				ip->rel -= count * vm_size;
+				ip->rel -= count * vm_stk_align;
 				break;
 		}
 	}
@@ -303,7 +303,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 
 			default: // we have dst on the stack
 				// push dst
-				if (!emitInt(rt, opc_ldsp, sizeof(vmOffs))) {
+				if (!emitInt(rt, opc_ldsp, vm_ref_size)) {
 					trace(ERR_INTERNAL_ERROR);
 					return 0;
 				}
@@ -371,8 +371,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 
 		case opc_ldi1:/* TODO: sign or zero extend
 			ip = lastIp(rt);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
-				arg.i32 = ip->rel / vm_size;
+			if (ip->opc == opc_ldsp && ((ip->rel & (vm_stk_align-1)) == 0) && ((ip->rel / vm_stk_align) < vm_regs)) {
+				arg.i32 = ip->rel / vm_stk_align;
 				opc = opc_dup1;
 				rt->_beg = (memptr)ip;
 				rt->vm.ss -= 1;
@@ -381,8 +381,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 
 		case opc_ldi2:/* TODO: sign or zero extend
 			ip = lastIp(rt);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size-1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
-				arg.i32 = ip->rel / vm_size;
+			if (ip->opc == opc_ldsp && ((ip->rel & (vm_stk_align-1)) == 0) && ((ip->rel / vm_stk_align) < vm_regs)) {
+				arg.i32 = ip->rel / vm_stk_align;
 				opc = opc_dup1;
 				rt->_beg = (memptr)ip;
 				rt->vm.ss -= 1;
@@ -394,8 +394,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
-				arg.i32 = ip->rel / vm_size;
+			if (ip->opc == opc_ldsp && ((ip->rel & (vm_stk_align - 1)) == 0) && ((ip->rel / vm_stk_align) < vm_regs)) {
+				arg.i32 = ip->rel / vm_stk_align;
 				opc = opc_dup1;
 				rollbackPc(rt);
 			}
@@ -413,8 +413,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
-				arg.i32 = ip->rel / vm_size;
+			if (ip->opc == opc_ldsp && ((ip->rel & (vm_stk_align - 1)) == 0) && ((ip->rel / vm_stk_align) < vm_regs)) {
+				arg.i32 = ip->rel / vm_stk_align;
 				opc = opc_set1;
 				rollbackPc(rt);
 			}
@@ -432,8 +432,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
-				arg.i32 = ip->rel / vm_size;
+			if (ip->opc == opc_ldsp && ((ip->rel & (vm_stk_align - 1)) == 0) && ((ip->rel / vm_stk_align) < vm_regs)) {
+				arg.i32 = ip->rel / vm_stk_align;
 				opc = opc_dup2;
 				rollbackPc(rt);
 			}
@@ -451,8 +451,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) < vm_regs)) {
-				arg.i32 = ip->rel / vm_size;
+			if (ip->opc == opc_ldsp && ((ip->rel & (vm_stk_align - 1)) == 0) && ((ip->rel / vm_stk_align) < vm_regs)) {
+				arg.i32 = ip->rel / vm_stk_align;
 				opc = opc_set2;
 				rollbackPc(rt);
 			}
@@ -470,8 +470,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) <= vm_regs)) {
-				arg.i32 = ip->rel / vm_size;
+			if (ip->opc == opc_ldsp && ((ip->rel & (vm_stk_align - 1)) == 0) && ((ip->rel / vm_stk_align) <= vm_regs)) {
+				arg.i32 = ip->rel / vm_stk_align;
 				opc = opc_dup4;
 				rollbackPc(rt);
 			}
@@ -482,8 +482,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_size - 1)) == 0) && ((ip->rel / vm_size) <= vm_regs)) {
-				arg.i32 = ip->rel / vm_size;
+			if (ip->opc == opc_ldsp && ((ip->rel & (vm_stk_align - 1)) == 0) && ((ip->rel / vm_stk_align) <= vm_regs)) {
+				arg.i32 = ip->rel / vm_stk_align;
 				opc = opc_set4;
 				rollbackPc(rt);
 			}
@@ -1203,7 +1203,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				tmp.i8 = arg.i64 + ip->rel;
 				if (tmp.rel == tmp.i8) {
 					rt->_beg = (memptr)ip;
-					rt->vm.ss -= ip->rel / vm_size;
+					rt->vm.ss -= ip->rel / vm_stk_align;
 					arg.i64 += ip->rel;
 				}
 			} */
@@ -1329,7 +1329,7 @@ int fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
 		}
 	}
 	if (stc != -1) {
-		rt->vm.ss = stc / vm_size;
+		rt->vm.ss = stc / vm_stk_align;
 	}
 	return 1;
 }
@@ -1361,7 +1361,7 @@ static inline int vmFork(vmProcessor pu, int n, unsigned master, unsigned cl) {
 
 		pu[slave].ip = pu[master].ip;
 		pu[slave].sp = (stkptr)pu[slave].bp + pu[slave].ss - cl;
-		memcpy(pu[slave].sp, pu[master].sp, cl * vm_size);
+		memcpy(pu[slave].sp, pu[master].sp, cl * vm_stk_align);
 
 		tracePpu(pu, master, "master");
 		tracePpu(pu, slave, "slave");
@@ -1715,7 +1715,7 @@ vmError invoke(rtContext rt, symn fun, void *res, void *args, const void *extra)
 	void *tp = pu->tp;
 
 	// make space for result and arguments// result is the first param
-	pu->sp -= argSize / vm_size;
+	pu->sp -= argSize / vm_stk_align;
 
 	if (args != NULL) {
 		memcpy((char *)pu->sp, args, argSize - resSize);
@@ -1751,9 +1751,9 @@ vmError execute(rtContext rt, int argc, char *argv[], void *extra) {
 	rt->_end -= sizeof(struct vmProcessor);
 	rt->vm.cell = pu = (void*)rt->_end;
 
-	logif(rt->_size != padOffset(rt->_size, pad_size), ERR_INTERNAL_ERROR);
-	logif(rt->_mem !=  padPointer(rt->_mem, pad_size), ERR_INTERNAL_ERROR);
-	logif(rt->_end !=  padPointer(rt->_end, vm_size), ERR_INTERNAL_ERROR);
+	logif(rt->_size != padOffset(rt->_size, vm_mem_align), ERR_INTERNAL_ERROR);
+	logif(rt->_mem !=  padPointer(rt->_mem, vm_mem_align), ERR_INTERNAL_ERROR);
+	logif(rt->_end !=  padPointer(rt->_end, vm_stk_align), ERR_INTERNAL_ERROR);
 
 	if (rt->vm.ss == 0) {
 		rt->vm.ss = rt->_size / 4;
@@ -2053,7 +2053,7 @@ static void printRef(FILE *out, const char **esc, rtContext rt, void* data) {
 	}
 }
 void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val, dmpMode mode, int indent) {
-	ccKind varCast = castOfx(var);
+	ccKind varCast = castOf(var);
 	const char *format = var->fmt;
 	memptr data = (memptr) val;
 	symn typ = var;
@@ -2082,7 +2082,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 		format = type_fmt_typename;
 	}
 
-	ccKind typCast = castOfx(typ);
+	ccKind typCast = castOf(typ);
 	if (var != typ) {
 		printFmt(out, esc, "%.*T: ", mode & ~prSymType, var);
 	}
@@ -2333,8 +2333,8 @@ static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, v
 
 			dieif(isStatic(sym), ERR_INTERNAL_ERROR);
 			if (isFunction(fun)) {
-				// at vm_size is the return value of the function.
-				offs += vm_size;
+				// at vm_stk_align is the return value of the function.
+				offs += vm_stk_align;
 			}
 			printVal(out, NULL, rt, sym, (vmValue *)((char*)sp + offs), prValue, -indent);
 		}

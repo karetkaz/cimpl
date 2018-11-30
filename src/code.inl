@@ -30,7 +30,7 @@ case opc_nfc:  NEXT(4, 0, 0) {
 	*((void const **) &args.extra) = extra;
 	*((char const **) &args.proto) = nfc->proto;
 	*((void const **) &args.args) = sp;
-	*((size_t*) &args.argc) = vm_size * nfc->in;
+	*((size_t*) &args.argc) = vm_stk_align * nfc->in;
 	args.param = (void *) -1;
 
 	TRACE(nfc->sym->offs);
@@ -87,7 +87,7 @@ case opc_jz:   NEXT(4, -1, 1) {
 }
 case opc_task: NEXT(4, -0, 0) {
 #ifdef EXEC
-	if (vmFork(pu, cc, -1, ip->cl * vm_size))
+	if (vmFork(pu, cc, -1, ip->cl * vm_stk_align))
 		pu->ip += ip->cl - 4;
 #endif
 	break;
@@ -122,8 +122,8 @@ case opc_mad:  NEXT(4, -1, 2) {
 //#}
 //#{ 0x1?: STK		// Stack
 case opc_spc:  NEXT(4, 0, 0) {
-	int sm = ip->rel / vm_size;
-	STOP(error_opc, ip->rel & (vm_size - 1));
+	int sm = ip->rel / vm_stk_align;
+	STOP(error_opc, ip->rel & (vm_stk_align - 1));
 	if (sm > 0) {
 		NEXT(0, sm, 0);
 #ifdef EXEC

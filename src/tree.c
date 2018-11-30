@@ -88,7 +88,7 @@ astn opNode(ccContext cc, ccToken kind, astn lhs, astn rhs) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ get value of constant node
 int bolValue(astn ast) {
 	if (ast != NULL && ast->type != NULL && ast->kind == TOKEN_val) {
-		switch (castOf(ast->type)) {
+		switch (refCast(ast->type)) {
 			default:
 				break;
 
@@ -110,7 +110,7 @@ int bolValue(astn ast) {
 
 int64_t intValue(astn ast) {
 	if (ast != NULL && ast->type != NULL && ast->kind == TOKEN_val) {
-		switch (castOf(ast->type)) {
+		switch (refCast(ast->type)) {
 			default:
 				break;
 
@@ -133,7 +133,7 @@ int64_t intValue(astn ast) {
 
 float64_t fltValue(astn ast) {
 	if (ast != NULL && ast->type != NULL && ast->kind == TOKEN_val) {
-		switch (castOf(ast->type)) {
+		switch (refCast(ast->type)) {
 			default:
 				break;
 
@@ -171,7 +171,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 	}
 
 	type = ast->type;
-	switch (castOfx(type)) {
+	switch (castOf(type)) {
 		default:
 			fatal(ERR_INTERNAL_ERROR);
 			return CAST_any;
@@ -265,10 +265,10 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 				if (!eval(cc, res, var->init)) {
 					return CAST_any;
 				}
-				cast = castOf(type);
+				cast = refCast(type);
 			}
 			else if (isTypename(var)) {
-				cast = castOf(type);
+				cast = refCast(type);
 				type = cc->type_rec;
 				res->kind = TOKEN_val;
 				res->cInt = var->offs;
@@ -291,7 +291,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 			}
 
 			dieif(res->kind != TOKEN_val, ERR_INTERNAL_ERROR);
-			switch (castOf(res->type)) {
+			switch (refCast(res->type)) {
 				default:
 					return CAST_any;
 
@@ -315,7 +315,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 			}
 
 			dieif(res->kind != TOKEN_val, ERR_INTERNAL_ERROR);
-			switch (castOf(res->type)) {
+			switch (refCast(res->type)) {
 				default:
 					return CAST_any;
 
@@ -334,7 +334,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 			}
 
 			dieif(res->kind != TOKEN_val, ERR_INTERNAL_ERROR);
-			switch (castOf(res->type)) {
+			switch (refCast(res->type)) {
 				default:
 					return CAST_any;
 
@@ -374,7 +374,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 			logif(lhs.type != rhs.type, ERR_INTERNAL_ERROR": %t", ast);
 
 			res->kind = TOKEN_val;
-			switch (castOf(lhs.type)) {
+			switch (refCast(lhs.type)) {
 				default:
 					return CAST_any;
 
@@ -476,7 +476,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 			res->kind = TOKEN_val;
 			res->type = ast->type;
 
-			switch (castOf(rhs.type)) {
+			switch (refCast(rhs.type)) {
 				default:
 					fatal(ERR_INTERNAL_ERROR);
 					res->kind = TOKEN_any;
@@ -584,7 +584,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 
 			res->kind = TOKEN_val;
 			res->type = ast->type;
-			switch (castOf(lhs.type)) {
+			switch (refCast(lhs.type)) {
 				default:
 					fatal(ERR_INTERNAL_ERROR);
 					res->kind = TOKEN_any;
@@ -674,7 +674,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 			return CAST_any;
 	}
 
-	if (res->type != NULL && cast != castOf(res->type)) {
+	if (res->type != NULL && cast != refCast(res->type)) {
 		res->kind = TOKEN_val;
 		switch (cast) {
 			default:

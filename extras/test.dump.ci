@@ -4492,7 +4492,7 @@ length(str: char[*]): int32: function {
 .param .result: int32 (size: 4 -> variable(i32))
 .param str: char[*] (size: 4 -> variable(ref))
 .value: {
-	if (str == null) {
+	if ((str) == null) {
 		return .result := 0;
 	}
 	result: int32 := 0;
@@ -4500,7 +4500,7 @@ length(str: char[*]): int32: function {
 	return .result := result;
 }
 .instructions: (49 bytes)
-	lib/string.ci:4: (16 bytes): if (str == null)
+	lib/string.ci:4: (16 bytes): if ((str) == null)
 	<length+?>:    dup.x1 sp(1)
 	<length+?>:    load.ref .?????? ;null
 	<length+?>:    ceq.i32
@@ -7615,19 +7615,19 @@ stackOverflow(ptr: pointer): void: function {
 .param .result: void (size: 0 -> variable(void))
 .param ptr: pointer (size: 4 -> variable(ref))
 .value: {
-	data: uint8[1024];
+	data: uint8[8192];
 	stackOverflow(ptr);
 }
 .instructions: (24 bytes)
-	test/stdc.execute.ci:15: (4 bytes): data: uint8[1024]
-	<stackOverflow+?>:    inc.sp(+1024)
+	test/stdc.execute.ci:15: (4 bytes): data: uint8[8192]
+	<stackOverflow+?>:    inc.sp(+8192)
 	test/stdc.execute.ci:16: (15 bytes): stackOverflow(ptr);
-	<stackOverflow+?>:    load.sp(+1028)
+	<stackOverflow+?>:    load.sp(+8196)
 	<stackOverflow+?>:    load.i32
 	<stackOverflow+?>:    load.ref .?????? ;stackOverflow(ptr: pointer): void
 	<stackOverflow+?>:    call
 	<stackOverflow+?>:    inc.sp(-4)
-	<stackOverflow+?>:    inc.sp(-1024)
+	<stackOverflow+?>:    inc.sp(-8192)
 	<stackOverflow+?>:    ret
 }
 divisionByZero(args: pointer): void: function {
@@ -12057,7 +12057,7 @@ forIdx: int32 {
 		toCartesian(x: Complex): Complex := Complex(x.re * float64.cos(x.im), x.re * float64.sin(x.im));
 		toPolar(x: Complex): Complex := Complex(abs(x), arg(x));
 		static const length(str: char[*]): int32 := {
-			if (str == null) {
+			if ((str) == null) {
 				return .result := 0;
 			}
 			result: int32 := 0;
@@ -12281,7 +12281,7 @@ forIdx: int32 {
 		Fahrenheit(value: Celsius): Fahrenheit := Fahrenheit(value.degrees * 1.800000 + (32));
 		boilC: Celsius := Celsius(100.000000);
 		boilF: Fahrenheit := Fahrenheit(boilC);
-		static if (typename(int64) == null) {
+		static if ((typename(int64)) == null) {
 			integer: typename := int32;
 		}
 		static value: int64 := 42;
@@ -12493,7 +12493,7 @@ forIdx: int32 {
 		static const noError(ptr: pointer): void := {
 		};
 		static const stackOverflow(ptr: pointer): void := {
-			data: uint8[1024];
+			data: uint8[8192];
 			stackOverflow(ptr);
 		};
 		static const divisionByZero(args: pointer): void := {
@@ -12526,7 +12526,7 @@ forIdx: int32 {
 		tryExecErr4: int32 := tryExec(null, invalidInstruction);
 		tryExecErr5: int32 := tryExec(null, invalidMemoryAccess);
 		tryExecErr6: int32 := tryExec(null, abortExecution);
-		static if (typename(int64) == null) {
+		static if ((typename(int64)) == null) {
 			integer: typename := int32;
 		}
 		arrFixedNoInit: int64[7];
@@ -13086,7 +13086,7 @@ forIdx: int32 {
 				}
 			}
 		}
-		static if (typename(int64) == null) {
+		static if ((typename(int64)) == null) {
 			error("integer is not declared");
 		}
 		static if (typename(int64) != typename) {

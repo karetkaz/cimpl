@@ -1005,7 +1005,7 @@ void printSym(FILE *out, const char **esc, symn sym, dmpMode mode, int indent) {
 
 	switch (sym->kind & MASK_kind) {
 		case KIND_typ:
-			if (castOfx(sym) == CAST_arr) {
+			if (castOf(sym) == CAST_arr) {
 				if (sym->name == NULL) {
 					printArray(out, esc, sym, mode);
 					return;

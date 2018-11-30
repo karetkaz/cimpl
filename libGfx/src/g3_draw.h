@@ -130,9 +130,14 @@ long addquad(gx_Mesh msh, long p1, long p2, long p3, long p4);
 
 
 void g3_drawline(gx_Surf dst, vector p1, vector p2, uint32_t c);
-
 int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, gx_Light lights, int mode);
-
 int g3_drawBbox(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam);
-
 int g3_drawenvc(gx_Surf dst, struct gx_Surf img[6], vector view, matrix proj, double size);
+
+// extract the planes (near, far, left, right, top, bottom) from the projection matrix
+void frustum_get(struct vector planes[6], matrix proj);
+
+// test if a point, sphere or triangle is inside or outside of the frustum
+int ftest_point(struct vector planes[6], vector p);
+int ftest_sphere(struct vector planes[6], vector p, scalar r);
+int ftest_triangle(struct vector planes[6], vector p1, vector p2, vector p3);

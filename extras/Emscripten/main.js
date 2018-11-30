@@ -46,20 +46,22 @@ let params = JsArgs('#', function (params, changes) {
 		}
 	}
 
-	// setup theme
-	if (!changes || changes.theme != null) {
+	// setup theme, only after loading
+	if (!changes && params.theme != null) {
 		setTheme(document.body, params.theme || 'dark', 'dark', 'light');
 	}
 
-	if (params.split && (!changes || changes.split)) {
-		showSpliter(window.editSplit, params.split || 'split');
+	// open menu, only after loading
+	if (!changes && params.menu != null) {
+		showSplitter(window.menuSplit, '-files', '-options', params.menu, '-primary');
 	}
 
-	if (params.menu && (!changes || changes.menu)) {
-		showSpliter(window.menuSplit, 'split', params.menu);
+	// show editor or output, only after loading
+	if (!changes && params.split != null) {
+		showEditor(params.split);
 	}
 
-	// setup project
+	// setup project, only after loading
 	if (!changes && params.project != null) {
 		let files = [];
 		let content = params.project;
@@ -182,30 +184,13 @@ function setTheme(element, theme, ...remove) {
 	}
 }
 
-function showSplit(splitter, orientation) {
-	if (orientation === undefined) {
-		// cycle through: ['split', 'primary', 'secondary']
-		let isPrimary = splitter.classList.contains('primary');
-		let isSecondary = splitter.classList.contains('secondary');
-		let lastChange = Date.now() - splitter.lastSplitChange;
-		splitter.lastSplitChange = Date.now();
-
-		if (!isSecondary && lastChange < 500) {
-			orientation = 'secondary';
-		}
-		else if (!isPrimary && !isSecondary) {
-			orientation = 'primary';
-		}
-		else {
-			orientation = 'split';
-		}
-	}
-	showSpliter(splitter, orientation);
+function showEditor(...options) {
+	showSplitter(window.editSplit, ...options);
 	editor.setSize('100%', '100%');
 }
 
 function showFile(file, line, column) {
-	showSpliter(window.editSplit, '~secondary');
+	showEditor('-secondary');
 	editor.setCursor((line || 1) - 1, column);
 	if (file == null || file != params.file) {
 		params.update({
@@ -235,14 +220,14 @@ function editProject() {
 		} else {
 			for (let file of content.split(';')) {
 				files.push({
-					path: file.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3"),
+					path: file.replace(/^(.*[\/])?(.*)(\..*)$/, "$2$3"),
 					url: file
 				});
 			}
 		}
 		content = '';
 		for (let file of files) {
-			if (content != '') {
+			if (content !== '') {
 				content += ", ";
 			}
 			content += JSON.stringify(file, null, '\t');
@@ -252,6 +237,7 @@ function editProject() {
 	}
 }
 function shareInput() {
+	showEditor('-primary');
 	let content = editor.getValue();
 	terminal.print('decoded uri: ' + decodeURIComponent(window.location));
 	if (content.startsWith('[{')) {
@@ -261,8 +247,11 @@ function shareInput() {
 
 }
 function saveInput() {
+	if (params.content !== undefined) {
+		params.update({ content: btoa(editor.getValue()) });
+	}
 	let file = params.file;
-	if (file == null) {
+	if (file == null && params.content == null) {
 		file = prompt('Save file as:', 'untitled.ci');
 	}
 	if (file == null) {
@@ -320,7 +309,7 @@ function execute(text, cmd) {
 	}
 
 	terminal.clear();
-	showSpliter(window.editSplit, '~primary');
+	showEditor('-primary');
 	console.log("execute", args);
 	worker.postMessage({
 		content: editor.getValue(),

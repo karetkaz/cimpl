@@ -68,6 +68,8 @@ gxSurf gxSurf(char fileName[*], int depth) {
 	abort("unknown file extension", fileName);
 }
 
+inline gxSurf(char fileName[*]) = gxSurf(fileName, 32);
+
 gxMesh gxMesh(char fileName[*]) {
 	if (fileName.endsWith(".obj", ignCaseCmp)) {
 		return gxMesh.openObj(fileName);
@@ -78,9 +80,13 @@ gxMesh gxMesh(char fileName[*]) {
 	abort("unknown file extension", fileName);
 }
 
-//inline gxSurf(char fileName[*]) = gxSurf(fileName, 32);
+gxSurf gxSurf(gxSurf copy) {
+	gxSurf result = gxSurf.create(copy.width(), copy.height(), copy.depth());
+	result.copySurf(0, 0, copy, null);
+	return result;
+}
+
 //inline gxSurf(int width, int height) = gxSurf.create(width, height, 32);
-// TODO: inline gxSurf(gxSurf copy) = copySurf(newSurf(width(copy), height(copy)), 0, 0, copy, null);
 
 //inline fillRect(gxSurf dst, gxRect roi, int col) = fillRect(dst, roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
 //inline drawRect(gxSurf dst, gxRect roi, int col) = drawRect(dst, roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
@@ -109,41 +115,28 @@ bool clipRect(gxSurf src, gxRect roi&) {
 	return roi.w > 0 && roi.h > 0;
 }
 void eval(gxSurf out, gxRect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
-	/*FIXME:
 	gxRect rect;
 	if (roi == null) {
 		rect.x = rect.y = 0;
-		rect.w = dst.width();
-		rect.h = dst.height();
+		rect.w = out.width();
+		rect.h = out.height();
 	}
 	else {
 		rect = roi;
 	}
-	double dx = 1. / rect.w;
-	double dy = 1. / rect.h;
-
-	double y01 = 0;
-	for (int y = rect.y; y < rect.y + rect.h; y += 1) {
-		double x01 = 0;
-		for (int x = rect.x; x < rect.x + rect.w; x += 1) {
-			dst.set(x, y, rgb(eval(x01, y01)));
-			x01 += dx;
-		}
-		y01 += dy;
-	}*/
 	vec4f in = {
 		x: 0;
 		y: 0;
 		z: aspect;
 		w: time;
 	};
-	int w = out.width();
-	int h = out.height();
-	for (int iy = 0; iy < h; iy += 1) {
-		in.y = iy / double(h);
-		for (int ix = 0; ix < w; ix += 1) {
-			in.x = ix / double(w);
-			out.set(ix, iy, rgb(eval(in)));
+	float w = out.width();
+	float h = out.height();
+	for (int y = rect.y; y < rect.y + rect.h; y += 1) {
+		in.y = y / h;
+		for (int x = rect.x; x < rect.x + rect.w; x += 1) {
+			in.x = x / w;
+			out.set(x, y, rgb(eval(in)));
 		}
 	}
 }

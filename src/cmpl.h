@@ -220,8 +220,8 @@ typedef enum {
 	CAST_ref   = 0x000a,		// reference, pointer, array
 	CAST_var   = 0x000b,		// variant: pair of {type, data}
 	CAST_arr   = 0x000c,		// slice: pair of {size, data}
-	//CAST_d   = 0x000d,		// reserved(map)
-	//CAST_e   = 0x000e,		// unused
+	//CAST_d   = 0x000d,		// dictionary
+	CAST_enm   = 0x000e,		// enumeration
 	//CAST_f   = 0x000f,		// unused(function)
 
 	KIND_def   = 0x0000,		// alias (/ error at runtime)
@@ -282,18 +282,22 @@ static inline int isVariable(symn sym) {
 static inline int isTypename(symn sym) {
 	return (sym->kind & MASK_kind) == KIND_typ;
 }
+static inline int isEnumType(symn sym) {
+	// TODO: enumerations are also arrays
+	return (sym->kind & (MASK_kind | MASK_cast)) == (KIND_typ | CAST_enm);
+}
 static inline int isArrayType(symn sym) {
 	return (sym->kind & (MASK_kind | MASK_cast)) == (KIND_typ | CAST_arr);
 }
 static inline int isInvokable(symn sym) {
 	return sym->params != NULL;
 }
-static inline ccKind castOfx(symn sym) {
+static inline ccKind castOf(symn sym) {
 	return sym->kind & MASK_cast;
 }
-/// same as castOf forcing arrays to cast as reference 
-static inline ccKind castOf(symn sym) {
-	ccKind got = castOfx(sym);
+/// same as castOf forcing arrays to cast as reference
+static inline ccKind refCast(symn sym) {
+	ccKind got = castOf(sym);
 	if (got == CAST_arr && isArrayType(sym)) {
 		symn len = sym->fields;
 		if (len == NULL || isStatic(len)) {
@@ -302,6 +306,20 @@ static inline ccKind castOf(symn sym) {
 		}
 	}
 	return got;
+}
+
+static inline size_t refSize(symn sym) {
+	switch (refCast(sym)) {
+		default:
+			return sym->size;
+
+		case CAST_ref:
+			return sizeof(vmOffs);
+
+		case CAST_arr:
+		case CAST_var:
+			return 2 * sizeof(vmOffs);
+	}
 }
 
 /**

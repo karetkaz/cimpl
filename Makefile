@@ -1,7 +1,7 @@
 BINDIR=out
 GX_OUT=out
 CFLAGS=-Wall -g0 -O3
-EMFLAGS=-s WASM=1 -s EXPORT_ALL=0 -s INVOKE_RUN=0 -s ALLOW_MEMORY_GROWTH=1
+EMFLAGS=-s WASM=1 -s EXPORT_ALL=0 -s INVOKE_RUN=0 -s ALLOW_MEMORY_GROWTH=1 --no-heap-copy
 #EMFLAGS+=-s "EXPORTED_FUNCTIONS=['_main','_rtInit','_ccInit','_ccAddUnit','_ccGenCode','_execute']"
 EM_EMBED=--preload-file lib/stdlib.ci --preload-file lib/math.ci --preload-file lib/math.Complex.ci --preload-file lib/string.ci
 

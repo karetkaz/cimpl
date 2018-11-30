@@ -4,8 +4,7 @@
 #include "gx_surf.h"
 #include "g3_draw.h"
 
-//~ frustum testing:
-static void frustum_get(struct vector planes[6], matrix mat) {
+void frustum_get(struct vector planes[6], matrix mat) {
 	//~ near and far	: -1 < z < 1
 	vecnrm(&planes[0], vecadd(&planes[0], &mat->w, &mat->z));
 	vecnrm(&planes[1], vecsub(&planes[1], &mat->w, &mat->z));
@@ -35,8 +34,7 @@ static vector bsphere(vector s, vector p1, vector p2, vector p3) {
 	return s;
 }
 
-// returns false if point, sphere or triangle is outside of the frustum
-static int ftest_point(struct vector planes[6], vector p) {				// clip point
+int ftest_point(struct vector planes[6], vector p) {				// clip point
 	const scalar r = 0;
 	if (vecdph(p, &planes[0]) <= r) return 0;
 	if (vecdph(p, &planes[1]) <= r) return 0;
@@ -46,7 +44,7 @@ static int ftest_point(struct vector planes[6], vector p) {				// clip point
 	if (vecdph(p, &planes[5]) <= r) return 0;
 	return 1;	// inside
 }
-static int ftest_sphere(struct vector planes[6], vector p, scalar r) {			// clip sphere
+int ftest_sphere(struct vector planes[6], vector p, scalar r) {			// clip sphere
 	if (vecdph(&planes[0], p) <= r) return 0;
 	if (vecdph(&planes[1], p) <= r) return 0;
 	if (vecdph(&planes[2], p) <= r) return 0;
@@ -55,7 +53,7 @@ static int ftest_sphere(struct vector planes[6], vector p, scalar r) {			// clip
 	if (vecdph(&planes[5], p) <= r) return 0;
 	return 1;	// inside
 }
-static int ftest_triangle(struct vector planes[6], vector p1, vector p2, vector p3) {
+int ftest_triangle(struct vector planes[6], vector p1, vector p2, vector p3) {
 	struct vector tmp[1];
 	bsphere(tmp, p1, p2, p3);
 	return ftest_sphere(planes, tmp, -tmp->w);
@@ -259,7 +257,7 @@ typedef struct ssds {
 	int32_t s;
 	int32_t t;
 	argb c;
-} *ssds;// */
+} *ssds;
 typedef struct edge {
 	int32_t x, dx, z, dz;		//
 	int32_t s, ds, t, dt;		// texture

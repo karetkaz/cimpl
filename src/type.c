@@ -36,7 +36,7 @@ symn newDef(ccContext cc, ccKind kind) {
 	rtContext rt = cc->rt;
 	symn def = NULL;
 
-	rt->_beg = padPointer(rt->_beg, pad_size);
+	rt->_beg = padPointer(rt->_beg, vm_mem_align);
 	if(rt->_beg >= rt->_end) {
 		fatal(ERR_MEMORY_OVERRUN);
 		return NULL;
@@ -187,15 +187,7 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 	}
 
 	if (size == 0 && (kind & MASK_kind) == KIND_var) {
-		switch (castOf(type)) {
-			default:
-				size = type->size;
-				break;
-
-			case CAST_ref:
-				size = sizeof(vmOffs);
-				break;
-		}
+		size = refSize(type);
 	}
 
 	symn def = newDef(cc, kind);
@@ -654,7 +646,9 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				traceAst(ast);
 				return NULL;
 			}
-			type = promote(NULL, rType);
+			if ((type = promote(NULL, rType)) == NULL) {
+				error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
+			}
 			ast->op.rhso = convert(cc, ast->op.rhso, type);
 			ast->type = type;
 			return type;
@@ -683,7 +677,9 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				traceAst(ast);
 				return NULL;
 			}
-			type = promote(lType, rType);
+			if ((type = promote(lType, rType)) == NULL) {
+				error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
+			}
 			ast->op.lhso = convert(cc, ast->op.lhso, type);
 			ast->op.rhso = convert(cc, ast->op.rhso, type);
 			ast->type = type;
@@ -698,12 +694,14 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				traceAst(ast);
 				return NULL;
 			}
-			type = promote(lType, rType);
+			if ((type = promote(lType, rType)) == NULL) {
+				error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
+			}
 			ast->op.lhso = convert(cc, ast->op.lhso, type);
 			ast->op.rhso = convert(cc, ast->op.rhso, cc->type_i32);
 
 			if (type != NULL) {
-				switch (castOf(type)) {
+				switch (refCast(type)) {
 					default:
 						error(cc->rt, ast->file, ast->line, ERR_INVALID_OPERATOR, ast, lType, rType);
 						break;
@@ -729,12 +727,14 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				traceAst(ast);
 				return NULL;
 			}
-			type = promote(lType, rType);
+			if ((type = promote(lType, rType)) == NULL) {
+				error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
+			}
 			ast->op.lhso = convert(cc, ast->op.lhso, type);
 			ast->op.rhso = convert(cc, ast->op.rhso, type);
 
 			if (type != NULL) {
-				switch (castOf(type)) {
+				switch (refCast(type)) {
 					default:
 						error(cc->rt, ast->file, ast->line, ERR_INVALID_OPERATOR, ast, lType, rType);
 						break;
@@ -765,7 +765,9 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				traceAst(ast);
 				return NULL;
 			}
-			type = promote(lType, rType);
+			if ((type = promote(lType, rType)) == NULL) {
+				error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
+			}
 			ast->op.lhso = convert(cc, ast->op.lhso, type);
 			ast->op.rhso = convert(cc, ast->op.rhso, type);
 			type = cc->type_bol;
@@ -796,7 +798,9 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				traceAst(ast);
 				return NULL;
 			}
-			type = promote(lType, rType);
+			if ((type = promote(lType, rType)) == NULL) {
+				error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
+			}
 			ast->op.test = convert(cc, ast->op.test, cc->type_bol);
 			ast->op.lhso = convert(cc, ast->op.lhso, type);
 			ast->op.rhso = convert(cc, ast->op.rhso, type);
@@ -866,12 +870,12 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 		return CAST_any;
 	}
 
-	ccKind varCast = castOfx(var);
+	ccKind varCast = castOf(var);
 
 	// assign null or pass by reference
 	if (lnk == cc->null_ref) {
 		if (typ != NULL) {
-			switch (castOfx(typ)) {
+			switch (castOf(typ)) {
 				default:
 					break;
 
@@ -913,7 +917,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 
 	// assigning a variable to a pointer or variant
 	if (lnk != NULL && (typ == cc->type_ptr || typ == cc->type_var)) {
-		return castOf(typ);
+		return refCast(typ);
 	}
 
 	if (typ != var) {
@@ -980,7 +984,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	}*/
 
 	// Assign array
-	if (castOfx(typ) == CAST_arr) {
+	if (castOf(typ) == CAST_arr) {
 		struct astNode temp;
 		symn vty = val->type;
 
@@ -1009,7 +1013,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 
 	if (!strict && (typ = promote(typ, val->type))) {
 		// TODO: return <?> val->cast ?
-		return castOf(typ);
+		return refCast(typ);
 	}
 
 	debug("%?s:%?u: %T := %T(%t)", val->file, val->line, var, val->type, val);
@@ -1038,7 +1042,7 @@ static inline ccKind castKind(symn typ) {
 	if (typ == NULL) {
 		return CAST_any;
 	}
-	switch (castOf(typ)) {
+	switch (refCast(typ)) {
 		default:
 			return CAST_any;
 
@@ -1060,6 +1064,12 @@ static inline ccKind castKind(symn typ) {
 		case CAST_f64:
 			return CAST_f64;
 
+		case CAST_ref:
+			return CAST_ref;
+
+		case CAST_val:
+			return CAST_val;
+
 		case KIND_var:
 			return KIND_var;
 	}
@@ -1076,6 +1086,28 @@ static symn promote(symn lht, symn rht) {
 				default:
 					break;
 
+				case CAST_val:
+					switch (castKind(lht)) {
+						default:
+							break;
+
+						case CAST_val:
+						case CAST_ref:
+							return lht;
+					}
+					break;
+
+				case CAST_ref:
+					switch (castKind(lht)) {
+						default:
+							break;
+
+						case CAST_val:
+						case CAST_ref:
+							return rht;
+					}
+					break;
+
 				case CAST_i32:
 				case CAST_i64:
 				case CAST_u32:
@@ -1089,7 +1121,7 @@ static symn promote(symn lht, symn rht) {
 						case CAST_u32:
 						case CAST_u64:
 							//~ TODO: bool + int is bool; if sizeof(bool) == 4
-							if (castOf(lht) == CAST_bit && lht->size == rht->size) {
+							if (refCast(lht) == CAST_bit && lht->size == rht->size) {
 								result = rht;
 							}
 							else {

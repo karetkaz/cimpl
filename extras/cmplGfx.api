@@ -428,6 +428,7 @@ vec2d
 vec2d.x
 vec2d.y
 vec2d(x: float64, y: float64): vec2d
+vec2d(value: vec2d): vec2d
 sub(a: vec2d, b: vec2d): vec2d
 dot(a: vec2d, b: vec2d): float64
 vec4f
@@ -472,7 +473,9 @@ rgb(vec: vec4f): uint32
 Hsv2Rgb(hsv: vec4f): vec4f
 gxSurf(width: int32, height: int32, depth: int32): gxSurf
 gxSurf(fileName: char[*], depth: int32): gxSurf
+gxSurf(fileName: char[*]): gxSurf
 gxMesh(fileName: char[*]): gxMesh
+gxSurf(copy: gxSurf): gxSurf
 clipRect(src: gxSurf, roi: gxRect): bool
 eval(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): vec4f): void
 tileSurf(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void

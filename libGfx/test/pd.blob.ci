@@ -14,14 +14,14 @@ vec4f blob(vec4f in) {
 
 	double metaball = 0;
 	//! sum the meatballs as the radius for each blob
-	metaball += 1. / Math.max(1F, dot(sub(p, move1), sub(p, move1)) * 22);
+	metaball += 1. / Math.max(1F, dot(sub(p, move1), sub(p, move1)) * 22.);
 	metaball += 1. / Math.max(1F, dot(sub(p, move2), sub(p, move2)) * 26);
 	metaball += 1. / Math.max(1F, dot(sub(p, move3), sub(p, move3)) * 32);
 	metaball += 1. / Math.max(1F, dot(sub(p, move4), sub(p, move4)) * 32);
 
 
 	//~ alter the cut-off power
-	metaball = Math.clamp(float64.pow(metaball, 8), 0, 1);
+	metaball = Math.clamp(float64.pow(metaball, 8), 0., 1.);
 	return vec4f(float32(metaball));
 }
 

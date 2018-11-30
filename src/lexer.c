@@ -753,7 +753,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 					error(cc->rt, cc->file, cc->line, ERR_EMPTY_CHAR_CONSTANT);
 					return tok->kind = TOKEN_any;
 				}
-				if (ptr > beg + vm_size + 1) {
+				if (ptr > beg + vm_stk_align + 1) {
 					warn(cc->rt, 2, cc->file, cc->line, WARN_CHR_CONST_TRUNCATED, ptr);
 				}
 				else if (ptr > beg + cc->type_chr->size + 1) {
