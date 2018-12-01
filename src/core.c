@@ -65,6 +65,20 @@ static void *rtAllocApi(rtContext rt, void *ptr, size_t size) {
 	return rtAlloc(rt, ptr, size, NULL);
 }
 
+/// Private raise wrapper for the api
+static void raiseApi(nfcContext ctx, int level, const char *msg, ...) {
+	rtContext rt = ctx->rt;
+	va_list vaList;
+	va_start(vaList, msg);
+	print_err(rt, level, NULL, 0, NULL, msg, vaList);
+	va_end(vaList);
+
+	// print stack trace including this function
+	if (rt->dbg != NULL && rt->traceLevel > 0) {
+		traceCalls(rt->dbg, rt->logFile, 1, rt->traceLevel, 0);
+	}
+}
+
 /// Private function lookup  wrapper for the api
 static symn rtLookupApi(rtContext rt, size_t offset) {
 	symn sym = rtLookup(rt, offset, 0);
@@ -602,6 +616,7 @@ rtContext rtInit(void *mem, size_t size) {
 		*(void**)&rt->api.ccAddCode = ccAddUnit;
 		*(void**)&rt->api.ccLookup = ccLookup;
 
+		*(void**)&rt->api.raise = raiseApi;
 		*(void**)&rt->api.invoke = invoke;
 		*(void**)&rt->api.rtAlloc = rtAllocApi;
 		*(void**)&rt->api.rtLookup = rtLookupApi;
@@ -611,8 +626,8 @@ rtContext rtInit(void *mem, size_t size) {
 		*(void**)&rt->api.nfcReadArg = nfcReadArg;
 
 		// default values
-		rt->logLevel = 7;
-		rt->warnLevel = 5;
+		rt->logLevel = 5;
+		rt->traceLevel = 15;
 		rt->foldCasts = 1;
 		rt->foldConst = 1;
 		rt->foldInstr = 1;

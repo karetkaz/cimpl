@@ -41,7 +41,7 @@ static gxSurf image2 = gxSurf(image.width(), image.height(), image.depth());
 
 image1.eval(null, 1, 0, rgbOp1);
 image2.eval(null, 1, 0, rgbOp2);
-image.copySurf(0, 0, image1, null);
+image.copy(0, 0, image1, null);
 
 int onEvent(int action, int button, int ex, int ey) {
 	if (action == Gui.KEY_PRESS) {
@@ -50,11 +50,11 @@ int onEvent(int action, int button, int ex, int ey) {
 		}
 	}
 	if (action == Gui.MOUSE_PRESS) {
-		image.copySurf(0, 0, image2, null);
+		image.copy(0, 0, image2, null);
 		return 1;
 	}
 	if (action == Gui.MOUSE_RELEASE) {
-		image.copySurf(0, 0, image1, null);
+		image.copy(0, 0, image1, null);
 		return 1;
 	}
 	return 1;

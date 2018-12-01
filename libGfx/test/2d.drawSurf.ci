@@ -4,46 +4,47 @@ static gxSurf draw = gxSurf("asset/image/david.png", 32);
 
 static uint32 lut[256];
 for (int i = 0; i < 256; i += 1) {
-	//~ int g = i / 2;
-	int g = i - 1;
-	if (g < 0) { g = 0; }
-	lut[i] = (((g << 8) | g) << 8) | g;
+//	int g = grayClamp(uint32(i / 1.05));
+	int g = grayClamp(i - 10);
+	lut[i] = rgb(g, g, g);
 }
 
 int onEvent(int action, int button, int x, int y) {
-	static gxRect roi = {x: 30, y: 30, w: 120, h: 120 };
+	static const gxRect roi = {
+		x: 30;
+		y: 30;
+		w: 120;
+		h: 120;
+	};
 	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
 		}
 		if (button == ' ') {
-			offs.lookup(null, lut);
+			offs.colorMap(null, lut);
 		}
 		if (x == 's' && (y & Gui.KEY_MASK_CONTROL) != 0) {
 			trace("dumping screen");
 			offs.saveBmp("out/dump.bmp", 0);
 		}
-		struct Event {
-			char button;
-			char x;
-			char y;
-		}
-		Event event = {
-			button: button, x: x, y: y
-		};
-		trace("event", event);
 	}
 
 	if (action == Gui.MOUSE_PRESS) {
-		offs.zoomSurf(null, back, null, 1);
+		offs.resize(null, back, null, 1);
 		action = Gui.MOUSE_MOTION;
 	}
 	if (action == Gui.MOUSE_MOTION) {
 		if (button == 1) {
-			offs.copySurf(x, y, draw, null);
+			offs.copy(x, y, draw, null);
 		}
 		if (button == 2) {
-			offs.copySurf(x, y, draw, roi);
+			offs.copy(x, y, draw, roi);
+		}
+		if (button == 4) {
+			offs.tile(x, y, draw, null);
+		}
+		if (button == 6) {
+			offs.tile(x, y, draw, roi);
 		}
 	}
 
@@ -52,7 +53,7 @@ int onEvent(int action, int button, int x, int y) {
 	inline animateSpeed = 20;
 	int64 now = System.millis();
 	if (now - millis > animateSpeed) {
-		offs.lookup(null, lut);
+		offs.colorMap(null, lut);
 		millis = now;
 	}
 	return animateSpeed;

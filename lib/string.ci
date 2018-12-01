@@ -186,3 +186,21 @@ int append(char output[], int pos, uint32 value) {
 	};
 	return append(output, pos, value, format);
 }
+int append(char output[], int pos, int32 value, bool forceSign, int pad) {
+	char sign = 0;
+	if (value < 0) {
+		value = -value;
+		sign = '-';
+	}
+	else if (forceSign) {
+		sign = '+';
+	}
+	const FormatFlags format = {
+		radix: 10;
+		sign: sign;
+		padChr: '0';
+		padLen: pad;
+		precision: 0;
+	};
+	return append(output, pos, value, format);
+}

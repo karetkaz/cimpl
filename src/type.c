@@ -128,7 +128,7 @@ symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *out
 				}
 				sym->offs = padOffset(offs, align < sym->size ? align : sym->size);
 				if (offs < sym->offs) {
-					warn(cc->rt, 6, sym->file, sym->line, WARN_PADDING_ALIGNMENT, sym, sym->offs - offs, offs, sym->offs);
+					warn(cc->rt, raise_warn_pad6, sym->file, sym->line, WARN_PADDING_ALIGNMENT, sym, sym->offs - offs, offs, sym->offs);
 				}
 				offs = sym->offs + sym->size;
 				if (size < offs) {
@@ -139,7 +139,7 @@ symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *out
 			if (align && size != padded) {
 				char *file = owner ? owner->file : NULL;
 				int line = owner ? owner->line : 0;
-				warn(cc->rt, 6, file, line, WARN_PADDING_ALIGNMENT, owner, padded - size, size, padded);
+				warn(cc->rt, raise_warn_pad6, file, line, WARN_PADDING_ALIGNMENT, owner, padded - size, size, padded);
 				size = padded;
 			}
 			break;
@@ -352,7 +352,7 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 
 	if (sym == NULL && best) {
 		if (found > 1) {
-			warn(cc->rt, 3, ref->file, ref->line, WARN_USING_BEST_OVERLOAD, best, found);
+			warn(cc->rt, raise_warn_typ3, ref->file, ref->line, WARN_USING_BEST_OVERLOAD, best, found);
 		}
 		sym = best;
 	}
@@ -384,7 +384,7 @@ static astn convert(ccContext cc, astn ast, symn type) {
 		return ast;
 	}
 
-	warn(cc->rt, 6, ast->file, ast->line, WARN_ADDING_IMPLICIT_CAST, type, ast, ast->type);
+	warn(cc->rt, raise_warn_typ6, ast->file, ast->line, WARN_ADDING_IMPLICIT_CAST, type, ast, ast->type);
 	astn value = newNode(cc, OPER_fnc);
 	value->file = ast->file;
 	value->line = ast->line;

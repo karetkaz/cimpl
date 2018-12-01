@@ -181,7 +181,7 @@ static ccKind genBranch(ccContext cc, astn ast) {
 			return CAST_any;
 		}
 		if (notGen != NULL) {
-			warn(cc->rt, 8, notGen->file, notGen->line, WARN_NO_CODE_GENERATED, notGen);
+			warn(cc->rt, raise_warn_gen8, notGen->file, notGen->line, WARN_NO_CODE_GENERATED, notGen);
 		}
 	}
 	else if (ast->stmt.stmt && ast->stmt.step) {
@@ -338,7 +338,7 @@ static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 	if (varInit == NULL) {
 		varInit = variable->type->init;
 		if (varInit != NULL) {
-			warn(cc->rt, 6, variable->file, variable->line, WARN_USING_DEF_TYPE_INITIALIZER, variable, varInit);
+			warn(cc->rt, raise_warn_typ6, variable->file, variable->line, WARN_USING_DEF_TYPE_INITIALIZER, variable, varInit);
 		}
 		else if (isConst(variable)) {
 			error(rt, variable->file, variable->line, ERR_UNINITIALIZED_CONSTANT, variable);
@@ -347,7 +347,7 @@ static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 			error(rt, variable->file, variable->line, ERR_UNIMPLEMENTED_FUNCTION, variable);
 		}
 		else {
-			warn(rt, 1, variable->file, variable->line, ERR_UNINITIALIZED_VARIABLE, variable);
+			warn(rt, raiseWarn, variable->file, variable->line, ERR_UNINITIALIZED_VARIABLE, variable);
 		}
 	}
 
@@ -536,7 +536,7 @@ static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 				}
 			}
 
-			warn(rt, 1, ast->file, ast->line, WARN_PASS_ARG_NO_CAST, args, args->type);
+			warn(rt, raiseWarn, ast->file, ast->line, WARN_PASS_ARG_NO_CAST, args, args->type);
 		}
 		return get;
 	}
@@ -600,7 +600,7 @@ static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 			}
 		}
 		else {
-			warn(rt, 1, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
+			warn(rt, raiseWarn, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
 			if (!emitInt(rt, opc_spc, prm->size)) {
 				traceAst(ast);
 				return CAST_any;
@@ -865,7 +865,7 @@ static ccKind genMember(ccContext cc, astn ast, ccKind get) {
 	}
 	if (isStatic(member)) {
 		if (!lhsStat && isVariable(object) && castOf(object->type) != CAST_arr) {
-			warn(rt, 1, ast->file, ast->line, WARN_STATIC_FIELD_ACCESS, member, object->type);
+			warn(rt, raiseWarn, ast->file, ast->line, WARN_STATIC_FIELD_ACCESS, member, object->type);
 		}
 		return genAst(cc, ast->op.rhso, get);
 	}
@@ -1641,13 +1641,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			dieif(ast->op.rhso->type != cc->type_bol, ERR_INTERNAL_ERROR);
 			dieif(got != CAST_bit, ERR_INTERNAL_ERROR": (%t) -> %K", ast, got);
 			#endif
-			if (cc->rt->warnLevel > 0) {
-				static int firstTimeShowOnly = 1;
-				if (firstTimeShowOnly) {
-					warn(rt, 1, ast->file, ast->line, WARN_SHORT_CIRCUIT, ast);
-					firstTimeShowOnly = 0;
-				}
-			}
+			warn(rt, raiseWarn, ast->file, ast->line, WARN_SHORT_CIRCUIT, ast);
 			break;
 		}
 		case OPER_sel:      // '?:'
@@ -1732,7 +1726,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 		case TOKEN_val:
 			if (get == CAST_vid) {
 				// void("message") || void(0)
-				warn(rt, 8, ast->file, ast->line, WARN_NO_CODE_GENERATED, ast);
+				warn(rt, raise_warn_gen8, ast->file, ast->line, WARN_NO_CODE_GENERATED, ast);
 				return CAST_vid;
 			}
 			switch (got) {

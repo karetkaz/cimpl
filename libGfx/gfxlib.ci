@@ -4,6 +4,7 @@ inline "gfxlib.vec2d.ci";
 }
 static if (typename(vec4f) == null) {
 inline "gfxlib.vec4f.ci";
+inline "gfxlib.mat4f.ci";
 }
 
 static if (true) {
@@ -82,7 +83,7 @@ gxMesh gxMesh(char fileName[*]) {
 
 gxSurf gxSurf(gxSurf copy) {
 	gxSurf result = gxSurf.create(copy.width(), copy.height(), copy.depth());
-	result.copySurf(0, 0, copy, null);
+	result.copy(0, 0, copy, null);
 	return result;
 }
 
@@ -91,28 +92,39 @@ gxSurf gxSurf(gxSurf copy) {
 //inline fillRect(gxSurf dst, gxRect roi, int col) = fillRect(dst, roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
 //inline drawRect(gxSurf dst, gxRect roi, int col) = drawRect(dst, roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
 
-bool clipRect(gxSurf src, gxRect roi&) {
-	int minx = 0;
-	int miny = 0;
-	int maxx = src.width();
-	int maxy = src.height();
+bool clip(gxSurf src, gxRect roi&) {
 
 	roi.w += roi.x;
 	roi.h += roi.y;
 
-	if (roi.x < minx)
-		roi.x = minx;
-	if (roi.y < miny)
-		roi.y = miny;
-	if (roi.w > maxx)
-		roi.w = maxx;
-	if (roi.h > maxy)
-		roi.h = maxy;
+	if (roi.x < 0) {
+		roi.x = 0;
+	}
+
+	if (roi.y < 0) {
+		roi.y = 0;
+	}
+
+	int width = src.width();
+	if (roi.w > width) {
+		roi.w = width;
+	}
+
+	int height = src.height();
+	if (roi.h > height) {
+		roi.h = height;
+	}
 
 	roi.w -= roi.x;
 	roi.h -= roi.y;
 
-	return roi.w > 0 && roi.h > 0;
+	if (roi.w <= 0) {
+		return false;
+	}
+	if (roi.h <= 0) {
+		return false;
+	}
+	return true;
 }
 void eval(gxSurf out, gxRect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
 	gxRect rect;
@@ -123,6 +135,9 @@ void eval(gxSurf out, gxRect roi&, float32 aspect, float32 time, vec4f eval(vec4
 	}
 	else {
 		rect = roi;
+		if (!out.clip(rect)) {
+			return;
+		}
 	}
 	vec4f in = {
 		x: 0;
@@ -141,27 +156,37 @@ void eval(gxSurf out, gxRect roi&, float32 aspect, float32 time, vec4f eval(vec4
 	}
 }
 
-void tileSurf(gxSurf dst, int x, int y, gxSurf src, gxRect roi&) {
-	gxRect clip = {
+void tile(gxSurf dst, int x, int y, gxSurf src, gxRect roi&) {
+	gxRect rect = {
 		x: 0;
 		y: 0;
 		w: src.width();
 		h: src.height();
 	};
 
-//	if (roi != null) {
-//		clip = roi;
-//	}
+	if (roi != null) {
+		// FIXME: rect = roi;
+		rect.x = roi.x;
+		rect.y = roi.y;
+		rect.w = roi.w;
+		rect.h = roi.h;
+	}
 
-	if (clipRect(src, clip)) {
-		int dstw = dst.width();
-		int dsth = dst.height();
-		if (x < 0) x = -(-x % clip.w);
-		//~ if (y < 0) y = y % clip.h;
-		for (int j = y; j < dsth; j += clip.h) {
-			for (int i = x; i < dstw; i += clip.w) {
-				dst.copySurf(i, j, src, clip);
-			}
+	if (!src.clip(rect)) {
+		return;
+	}
+
+	if (x < 0) {
+		x = -(-x % rect.w);
+	}
+	if (y < 0) {
+		y = -(-y % rect.h);
+	}
+	int width = dst.width();
+	int height = dst.height();
+	for (int j = y; j < height; j += rect.h) {
+		for (int i = x; i < width; i += rect.w) {
+			dst.copy(i, j, src, rect);
 		}
 	}
 }
@@ -298,6 +323,9 @@ void show(gxSurf surf) {
 }
 
 void show(gxSurf surf, int onEvent(int action, int button, int ex, int ey)) {
+	if (onEvent == null) {
+		return Gui.showWindow(surf, null, null);
+	}
 	static int delegateEvent(int onEvent(int action, int button, int ex, int ey), int action, int button, int ex, int ey) {
 		return onEvent(action, button, ex, ey);
 	}
@@ -333,7 +361,7 @@ void showWindow(int w, int h, int t, vec4f eval(vec4f in)) {
 
 		float32 time = (System.millis() - start) / 1000f;
 		closure.thumb.eval(null, closure.aspect, time, closure.eval);
-		closure.offs.zoomSurf(null, closure.thumb, null, 1);
+		closure.offs.resize(null, closure.thumb, null, 1);
 
 		// do not block for any input
 		return 1;

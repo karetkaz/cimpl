@@ -1,0 +1,47 @@
+
+struct mat4f: 0 {
+	float32 data[16];
+	struct {
+		vec4f x;
+		vec4f y;
+		vec4f z;
+		vec4f w;
+	}
+}
+
+mat4f mat4f(float32 xx, float32 xy, float32 xz, float32 xw,
+			float32 yx, float32 yy, float32 yz, float32 yw,
+			float32 zx, float32 zy, float32 zz, float32 zw,
+			float32 wx, float32 wy, float32 wz, float32 ww) {
+	return {
+		x: { x: xx, y: xy, z: xz, w: xw };
+		y: { x: yx, y: yy, z: yz, w: yw };
+		z: { x: zx, y: zy, z: zz, w: zw };
+		w: { x: wx, y: wy, z: wz, w: ww };
+	};
+}
+
+mat4f mat4f(vec4f x, vec4f y, vec4f z, vec4f w) {
+	return { x: x, y: y, z: z, w: w };
+}
+
+inline dp3(mat4f mat, vec4f vec) = vec4f(dp3(mat.x, vec), dp3(mat.y, vec), dp3(mat.z, vec), float32(1));
+inline dp4(mat4f mat, vec4f vec) = vec4f(dp4(mat.x, vec), dp4(mat.y, vec), dp4(mat.z, vec), dp4(mat.w, vec));
+inline dph(mat4f mat, vec4f vec) = vec4f(dph(mat.x, vec), dph(mat.y, vec), dph(mat.z, vec), dph(mat.w, vec));
+
+mat4f mul(const mat4f lhs&, const mat4f rhs&) {
+	mat4f transposed = {
+		x: { x: rhs.x.x, y: rhs.y.x, z: rhs.z.x, w: rhs.w.x };
+		y: { x: rhs.x.y, y: rhs.y.y, z: rhs.z.y, w: rhs.w.y };
+		z: { x: rhs.x.z, y: rhs.y.z, z: rhs.z.z, w: rhs.w.z };
+		w: { x: rhs.x.w, y: rhs.y.w, z: rhs.z.w, w: rhs.w.w };
+	};
+
+	return {
+		x: dp4(transposed, lhs.x);
+		y: dp4(transposed, lhs.y);
+		z: dp4(transposed, lhs.z);
+		w: dp4(transposed, lhs.w);
+	};
+}
+

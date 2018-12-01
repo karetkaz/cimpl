@@ -250,14 +250,6 @@ static vmError sysMSleep(nfcContext args) {
 	return noError;
 }
 
-enum {
-	raise_abort = -1,   // log and abort execution.
-	raise_error = 0,    // log and continue execution.
-	raise_warn = 1,     // log and continue execution.
-	raise_info = 2,     // log and continue execution.
-	raise_debug = 3,    // log and continue execution.
-	raise_verbose = 4   // log and continue execution.
-};
 // void raise(char file[*], int line, int level, int trace, char message[*], variant inspect);
 static vmError sysRaise(nfcContext ctx) {
 	rtContext rt = ctx->rt;
@@ -273,52 +265,21 @@ static vmError sysRaise(nfcContext ctx) {
 	nfcCheckArg(ctx, CAST_ref, "message");
 	rtValue inspect = nfcReadArg(ctx, nfcNextArg(ctx));
 	nfcCheckArg(ctx, CAST_var, "inspect");
-	int isOutput = 0;
 
 	// logging is disabled or log level not reached.
 	if (rt->logFile == NULL || logLevel > (int)rt->logLevel) {
 		return noError;
 	}
 
-	// print valid code position (where the function was invoked).
-	if (file != NULL && line > 0) {
-		printFmt(rt->logFile, NULL, "%?s:%?u", file, line);
-		isOutput = 1;
-		if (logLevel >= raise_abort && logLevel <= raise_verbose) {
-			printFmt(rt->logFile, NULL, ":/%c", "fewidv"[logLevel - raise_abort]);
-		}
-	}
+	printErr(rt, logLevel, file, line, &inspect, "%?s", message);
 
-	// print the message
-	if (message != NULL) {
-		if (isOutput) {
-			printFmt(rt->logFile, NULL, ": ");
-		}
-		printFmt(rt->logFile, NULL, "%s", message);
-		isOutput = 1;
-	}
-
-	// print the value of the object (handy to inspect values).
-	if (inspect.type != NULL && inspect.ref != NULL) {
-		if (isOutput) {
-			printFmt(rt->logFile, NULL, ": ");
-		}
-		printVal(rt->logFile, NULL, rt, inspect.type, inspect.ref, prSymType, 0);
-		isOutput = 1;
-	}
-
-	// add a line ending to the output.
-	if (isOutput) {
-		printFmt(rt->logFile, NULL, "\n");
-	}
-
-	// print stack trace including this function
+	// print stack trace excluding this function
 	if (rt->dbg != NULL && trace > 0) {
 		traceCalls(rt->dbg, rt->logFile, 1, trace - 1, 1);
 	}
 
 	// abort the execution
-	if (logLevel < 0) {
+	if (logLevel == raiseFatal) {
 		return nativeCallError;
 	}
 
@@ -446,12 +407,12 @@ int ccLibStd(ccContext cc) {
 			{RAND_MAX, "RAND_MAX"},
 	},
 	logLevels[] = {
-		{raise_abort, "abort"},
-		{raise_error, "error"},
-		{raise_warn, "warn"},
-		{raise_info, "info"},
-		{raise_debug, "debug"},
-		{raise_verbose, "verbose"},
+		{raiseFatal, "abort"},
+		{raiseError, "error"},
+		{raiseWarn, "warn"},
+		{raiseInfo, "info"},
+		{raiseDebug, "debug"},
+		{raiseVerbose, "verbose"},
 		// trace levels
 		{0, "noTrace"},
 		{128, "defTrace"},

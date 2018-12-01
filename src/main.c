@@ -97,7 +97,7 @@ static const char *parseInt(const char *str, int32_t *res, int radix) {
 		str += 1;
 	}
 
-	*res = (int32_t)(sign * result);
+	*res = (uint32_t) (sign * result);
 
 	return str;
 }
@@ -1328,7 +1328,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 		}
 	}
 	if (breakMode & brkTrace) {
-		traceCalls(ctx, out, 1, 20, 0);
+		traceCalls(ctx, out, 1, rt->traceLevel, 0);
 	}
 
 	// pause execution in debugger
@@ -1374,7 +1374,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 				return dbg;
 
 			case dbgPrintStackTrace:
-				traceCalls(ctx, con, 1, 20, 0);
+				traceCalls(ctx, con, 1, rt->traceLevel, 0);
 				break;
 
 			case dbgPrintInstruction:
@@ -1542,7 +1542,7 @@ int main(int argc, char *argv[]) {
 	}
 	struct userContextRec extra = {
 		.dbgCommand = dbgResume,	// last command: resume
-		.dbgOnError = brkPause | brkPrint,
+		.dbgOnError = brkPause | brkPrint | brkTrace,
 		.dbgOnCaught = brkSkip,
 		.dbgNextBreak = 0,
 
@@ -1581,7 +1581,8 @@ int main(int argc, char *argv[]) {
 		int fastInstr;
 		int fastAssign;
 		int genGlobals;
-		int warnLevel;
+		int warnLevel;	// compile log level
+		int raiseLevel;	// runtime log level
 
 		size_t memory;
 	} settings = {
@@ -1591,6 +1592,7 @@ int main(int argc, char *argv[]) {
 		.fastAssign = 1,
 		.genGlobals = 0,
 		.warnLevel = 5,
+		.raiseLevel = 15,
 
 		// 2 Mb memory compiler + runtime
 		.memory = 2 << 20
@@ -2136,7 +2138,7 @@ int main(int argc, char *argv[]) {
 	rt->fastMemory = settings.fastInstr != 0;
 	rt->fastAssign = settings.fastAssign != 0;
 	rt->genGlobals = settings.genGlobals != 0;
-	rt->warnLevel = settings.warnLevel;
+	rt->logLevel = settings.warnLevel;
 
 	// open log file (global option)
 	if (dumpFile && strEquals(dumpFileName, logFileName)) {
@@ -2184,7 +2186,7 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			ccFile = arg;
-			rt->warnLevel = (unsigned) settings.warnLevel;
+			rt->logLevel = (unsigned) settings.warnLevel;
 		}
 		else {
 			if (ccFile == NULL) {
@@ -2198,7 +2200,10 @@ int main(int argc, char *argv[]) {
 				else if (*parseInt(arg + 2, &level, 10)) {
 					fatal("invalid warning level '%s'", arg + 2);
 				}
-				rt->warnLevel = (unsigned) level;
+				if (level > 15) {
+					level = 15;
+				}
+				rt->logLevel = (unsigned) level;
 			}
 			else if (arg[1] == 'b') {
 				int line = 0;
@@ -2305,6 +2310,7 @@ int main(int argc, char *argv[]) {
 
 	// run code if there are no compilation errors.
 	if (rt->errors == 0 && run_code != compile) {
+		rt->logLevel = settings.raiseLevel;
 		if (rt->dbg != NULL) {
 			rt->dbg->extra = &extra;
 

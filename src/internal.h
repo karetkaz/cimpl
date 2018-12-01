@@ -14,6 +14,7 @@
 #include "parser.h"
 #include "cmplDbg.h"
 #include "printer.h"
+#include <stdarg.h>
 
 /* Debugging the compiler:
 	0: show where errors were raised
@@ -374,6 +375,8 @@ int importLib(rtContext rt, const char *path);
 void closeLibs();
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Error and warning messages
+void print_err(rtContext rt, raiseLevel level, const char *file, int line, rtValue *value, const char *msg, va_list vaList);
+
 #define ERR_INTERNAL_ERROR "Internal Error"
 #define ERR_MEMORY_OVERRUN "Memory Overrun"
 #define ERR_OPENING_FILE "can not open file: %s"
@@ -438,6 +441,7 @@ void closeLibs();
 
 // Code execution errors
 #define ERR_EXEC_INSTRUCTION "%s at .%06x in function: <%?.T%?+d> executing instruction: %.A"
+#define ERR_EXEC_NATIVE_CALL "%s at .%06x in function: <%?.T%?+d> executing native call: %T"
 #define ERR_EXEC_FUNCTION "can not execute function: %T"
 
 #define WARN_EMPTY_STATEMENT "empty statement `;`"
@@ -477,9 +481,9 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 #define dieif(__EXP, __FMT, ...) do { if (__EXP) { prerr(#__EXP, __FMT, ##__VA_ARGS__); _abort(); } } while(0)
 
 // compilation errors
-#define error(__ENV, __FILE, __LINE, __FMT, ...) do { printErr(__ENV, -1, __FILE, __LINE, __FMT, ##__VA_ARGS__); logif("error", __FMT, ##__VA_ARGS__); } while(0)
-#define warn(__ENV, __LEVEL, __FILE, __LINE, __FMT, ...) do { printErr(__ENV, __LEVEL, __FILE, __LINE, __FMT, ##__VA_ARGS__); logif(!"%?s:%?u: warn[%d]", __FMT, __FILE, __LINE, __LEVEL, ##__VA_ARGS__); } while(0)
-#define info(__ENV, __FILE, __LINE, __FMT, ...) do { printErr(__ENV, 0, __FILE, __LINE, __FMT, ##__VA_ARGS__); } while(0)
+#define error(__ENV, __FILE, __LINE, __FMT, ...) do { printErr(__ENV, raiseError, __FILE, __LINE, NULL, __FMT, ##__VA_ARGS__); logif("error", __FMT, ##__VA_ARGS__); } while(0)
+#define warn(__ENV, __LEVEL, __FILE, __LINE, __FMT, ...) do { printErr(__ENV, __LEVEL, __FILE, __LINE, NULL, __FMT, ##__VA_ARGS__); logif(!"%?s:%?u: warn[%d]", __FMT, __FILE, __LINE, __LEVEL, ##__VA_ARGS__); } while(0)
+#define info(__ENV, __FILE, __LINE, __FMT, ...) do { printErr(__ENV, raisePrint, __FILE, __LINE, NULL, __FMT, ##__VA_ARGS__); } while(0)
 
 #ifdef DEBUGGING	// enable compiler debugging
 

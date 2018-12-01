@@ -29,14 +29,13 @@
  */
 
 #include "internal.h"
-#include <stdarg.h>
 #include <math.h>
 
 /// print a character
 static inline int printChr(FILE *out, int chr) { return fputc(chr, out); }
 
 /// print a string
-static void printStr(FILE *out, const char **esc, char *str) {
+static void printStr(FILE *out, const char **esc, const char *str) {
 	if (str == NULL) {
 		str = "(null)";
 	}
@@ -1073,40 +1072,96 @@ void printFmt(FILE *out, const char **esc, const char *fmt, ...) {
 	va_end(ap);
 }
 
-void printErr(rtContext rt, int level, const char *file, int line, const char *msg, ...) {
+void print_err(rtContext rt, raiseLevel level, const char *file, int line, rtValue *inspect, const char *msg, va_list vaList) {
 	FILE *out = rt->logFile;
 	const char **esc = NULL;
+	const char *logType = "UNKNOWN";
 
-	va_list vaList;
-
-	if (level > (int)rt->warnLevel) {
+	if (level > (int)rt->logLevel) {
 		return;
 	}
-	if (level < 0) {
-		rt->errors += 1;
+	switch (level) {
+		default:
+			if (level > raiseWarn && level < raiseInfo) {
+				logType = "warn";
+				break;
+			}
+			break;
+
+		case raiseFatal:
+			logType = "fatal";
+			rt->errors += 1;
+			break;
+
+		case raiseError:
+			logType = "error";
+			rt->errors += 1;
+			break;
+
+		case raisePrint:
+			logType = NULL;
+			break;
+
+		case raiseWarn:
+			logType = "warn";
+			break;
+
+		case raiseInfo:
+			logType = "info";
+			break;
+
+		case raiseDebug:
+			logType = "debug";
+			break;
+
+		case raiseVerbose:
+			logType = "verbose";
+			break;
 	}
 	if (out == NULL) {
 		return;
 	}
 
+	int wasOutput = 0;
 	if (file != NULL && line > 0) {
-		printFmt(out, esc, "%?s:%?u: ", file, line);
+		printFmt(out, esc, "%?s:%?u", file, line);
+		wasOutput = 1;
 	}
 
-	if (level < 0) {
-		printStr(out, esc, "error: ");
-	}
-	else if (level > 0) {
-		printFmt(out, esc, "warn[%d]: ", level);
-	}
-	else {
-		//printStr(out, esc, "info: ");
+	if (logType != NULL) {
+		if (wasOutput) {
+			printStr(rt->logFile, NULL, ": ");
+		}
+		printStr(out, esc, logType);
+		wasOutput = 1;
 	}
 
+	if (msg != NULL) {
+		if (wasOutput) {
+			printStr(rt->logFile, NULL, ": ");
+		}
+		print_fmt(out, NULL, msg, vaList);
+		wasOutput = 1;
+	}
+
+	if (inspect && inspect->type != NULL && inspect->ref != NULL) {
+		if (wasOutput) {
+			printStr(rt->logFile, NULL, ": ");
+		}
+		printVal(rt->logFile, NULL, rt, inspect->type, inspect->ref, prSymType, 0);
+		wasOutput = 1;
+	}
+
+	if (wasOutput) {
+		printChr(out, '\n');
+		fflush(out);
+	}
+}
+
+void printErr(rtContext rt, raiseLevel level, const char *file, int line, rtValue *inspect, const char *msg, ...) {
+	va_list vaList;
 	va_start(vaList, msg);
-	print_fmt(out, NULL, msg, vaList);
-	printChr(out, '\n');
-	fflush(out);
+	print_err(rt, level, file, line, inspect, msg, vaList);
 	va_end(vaList);
 }
 

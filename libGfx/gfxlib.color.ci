@@ -16,6 +16,7 @@ uint32 grayClamp(int32 c) {
 }
 inline grayAnd(uint32 c) = uint32(c & 255);
 
+inline rgb(int32 r, int32 g, int32 b) = uint32((((r << 8) | g) << 8) | b);
 inline rgb(uint32 r, uint32 g, uint32 b) = uint32((((r << 8) | g) << 8) | b);
 inline rgbClamp(uint32 r, uint32 g, uint32 b) = rgb(grayClamp(r), grayClamp(g), grayClamp(b));
 inline rgbClamp(int32 r, int32 g, int32 b) = rgb(grayClamp(r), grayClamp(g), grayClamp(b));

@@ -280,7 +280,7 @@ static vmError surf_clipText(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_copySurf = "void copySurf(gxSurf surf, int x, int y, gxSurf src, const gxRect roi&)";
+static const char *proto_surf_copySurf = "void copy(gxSurf surf, int x, int y, gxSurf src, const gxRect roi&)";
 static vmError surf_copySurf(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 	int x = nextValue(ctx).i32;
@@ -292,7 +292,8 @@ static vmError surf_copySurf(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_zoomSurf = "void zoomSurf(gxSurf surf, const gxRect rect&, gxSurf src, const gxRect roi&, int interpolate)";
+static const char *proto_surf_zoomSurf = "void resize(gxSurf surf, const gxRect rect&, gxSurf src, const gxRect roi&, int interpolate)";
+//static const char *proto_surf_??Surf = "void transform(gxSurf surf, const gxRect rect&, gxSurf src, const gxRect roi&, float32 mat[16], int interpolate)";
 static vmError surf_zoomSurf(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 	gx_Rect rect = nextValue(ctx).ref;
@@ -304,7 +305,7 @@ static vmError surf_zoomSurf(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_cLutSurf = "void lookup(gxSurf surf, const gxRect roi&, uint32 lut[])";
+static const char *proto_surf_cLutSurf = "void colorMap(gxSurf surf, const gxRect roi&, uint32 lut[])";
 static vmError surf_cLutSurf(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 	gx_Rect roi = nextValue(ctx).ref;
@@ -314,11 +315,19 @@ static vmError surf_cLutSurf(nfcContext ctx) {
 	cLut.trans = 0;
 	cLut.count = lut.length < 256 ? lut.length : 256;
 	memcpy(&cLut.data, lut.ref, cLut.count * sizeof(uint32_t));
-	gx_cLutSurf(surf, roi, &cLut);
+
+	if (surf->depth != 32) {
+		ctx->rt->api.raise(ctx, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
+		return nativeCallError;
+	}
+
+	if (gx_cLutSurf(surf, roi, &cLut) != 0) {
+		return nativeCallError;
+	}
 	return noError;
 }
 
-static const char *proto_surf_cMatSurf = "void multiply(gxSurf surf, const gxRect roi&, float32 mat[16])";
+static const char *proto_surf_cMatSurf = "void colorMat(gxSurf surf, const gxRect roi&, float32 mat[16])";
 static vmError surf_cMatSurf(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 	gx_Rect roi = nextValue(ctx).ref;
@@ -437,6 +446,7 @@ static vmError mesh_addVertex(nfcContext ctx) {
 
 static const char *proto_window_show = "void showWindow(gxSurf surf, pointer closure, int onEvent(pointer closure, int action, int button, int x, int y))";
 static vmError window_show(nfcContext ctx) {
+	vmError error = noError;
 	rtContext rt = ctx->rt;
 	gx_Surf offScreen = nextValue(ctx).ref;
 	size_t cbOffs = 0, cbClosure = 0;
@@ -467,7 +477,10 @@ static vmError window_show(nfcContext ctx) {
 	for ( ; ; ) {
 		event.action = peekMessage(eventTimeout, &event.button, &event.x, &event.y);
 		if (event.action != 0 && callback != NULL) {
-			rt->api.invoke(rt, callback, &eventTimeout, &event, NULL);
+			error = rt->api.invoke(rt, callback, &eventTimeout, &event, NULL);
+			if (error != noError) {
+				break;
+			}
 			if (eventTimeout < 0) {
 				break;
 			}
@@ -477,15 +490,15 @@ static vmError window_show(nfcContext ctx) {
 		}
 		flipScreen(offScreen);
 	}
-	if (callback != NULL) {
+	if (error == noError && callback != NULL) {
 		event.action = WINDOW_CLOSE;
 		event.button = 0;
 		event.x = 0;
 		event.y = 0;
-		rt->api.invoke(rt, callback, NULL, &event, NULL);
+		error = rt->api.invoke(rt, callback, NULL, &event, NULL);
 	}
 	doneWin();
-	return noError;
+	return error;
 }
 
 static const char *proto_window_title = "void setTitle(char title[*])";

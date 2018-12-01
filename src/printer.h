@@ -155,7 +155,7 @@ void printFmt(FILE *out, const char **esc, const char *fmt, ...);
 /**
  * Print compilation and runtime errors.
  */
-void printErr(rtContext rt, int level, const char *file, int line, const char *msg, ...);
+void printErr(rtContext rt, raiseLevel level, const char *file, int line, rtValue *inspect, const char *msg, ...);
 
 /**
  * Dump all accessible symbols.

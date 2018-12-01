@@ -44,6 +44,23 @@ typedef struct dbgContextRec *dbgContext;       // debuggerContext
 typedef struct nfcContextRec *nfcContext;       // nativeCallContext
 typedef struct userContextRec *userContext;     // customUserContext
 
+typedef enum {
+	raiseFatal = -2,
+	raiseError = -1,
+	raisePrint = 0,
+	raiseWarn = 1,
+	raise_warn_par8 = 8,
+	raise_warn_lex2 = 2,
+	raise_warn_lex9 = 9,
+	raise_warn_pad6 = 6,
+	raise_warn_gen8 = 8,
+	raise_warn_typ3 = 3,
+	raise_warn_typ6 = 6,
+	raiseInfo = 13,
+	raiseDebug = 14,
+	raiseVerbose = 15,
+} raiseLevel;
+
 /**
  * Runtime error codes.
  * 
@@ -92,8 +109,8 @@ struct rtContextRec {
 	unsigned fastAssign: 1; // remove dup and set instructions when modifying the last declared variable.
 	unsigned genGlobals: 1; // generate global variables as static variables
 
-	unsigned warnLevel: 4;  // compile logging level (0-15)
-	unsigned logLevel: 3;   // runtime logging level (0-7)
+	unsigned logLevel: 4;   // runtime logging level (0-15)
+	unsigned traceLevel: 8;   // runtime logging level (0-255)
 	int closeLog: 1;        // close log file
 	int freeMem: 1;         // release memory
 
@@ -176,6 +193,8 @@ struct rtContextRec {
 
 		/// Lookup function by name; @see ccLookup
 		symn (*const ccLookup)(rtContext ctx, symn scope, const char *name);
+
+		void (*const raise)(nfcContext rt, raiseLevel level, const char *msg, ...);
 
 		/// Lookup function by offset; @see rtLookup
 		symn (*const rtLookup)(rtContext ctx, size_t offset);

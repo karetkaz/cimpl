@@ -201,7 +201,7 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 				}
 			}
 			else if (cc->siff) {
-				warn(cc->rt, 3, def->file, def->line, WARN_DECLARATION_REDEFINED, def);
+				warn(cc->rt, raise_warn_typ3, def->file, def->line, WARN_DECLARATION_REDEFINED, def);
 			}
 		}
 
@@ -357,7 +357,7 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 
 		if (initialized || unionInitSize > 0) {
 			if (initialized && field->size < unionInitSize) {
-				warn(cc->rt, 1, varNode->file, varNode->line, ERR_PARTIAL_INITIALIZE_UNION, linkOf(varNode, 0), field);
+				warn(cc->rt, raiseWarn, varNode->file, varNode->line, ERR_PARTIAL_INITIALIZE_UNION, linkOf(varNode, 0), field);
 			}
 			continue;
 		}
@@ -374,9 +374,9 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 		}
 
 		if (defInit == field->init) {
-			warn(cc->rt, 11, varNode->file, varNode->line, WARN_USING_DEF_FIELD_INITIALIZER, field, defInit);
+			warn(cc->rt, raiseDebug, varNode->file, varNode->line, WARN_USING_DEF_FIELD_INITIALIZER, field, defInit);
 		} else {
-			warn(cc->rt, 11, varNode->file, varNode->line, WARN_USING_DEF_TYPE_INITIALIZER, field, defInit);
+			warn(cc->rt, raiseDebug, varNode->file, varNode->line, WARN_USING_DEF_TYPE_INITIALIZER, field, defInit);
 		}
 
 		astn init = newNode(cc, INIT_set);
@@ -807,7 +807,7 @@ static astn initializer(ccContext cc) {
 				else {
 					astn next = peekTok(cc, TOKEN_any);
 					if (head != tail && next != NULL) {
-						warn(cc->rt, 1, next->file, next->line, ERR_UNMATCHED_SEPARATOR, next, STMT_end);
+						warn(cc->rt, raiseWarn, next->file, next->line, ERR_UNMATCHED_SEPARATOR, next, STMT_end);
 					}
 					break;
 				}
@@ -1053,7 +1053,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		next = cc->tokNext;
 		if (ccInline(cc, tag) != 0) {
 			if (optional) {
-				warn(cc->rt, 5, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
+				warn(cc->rt, raiseInfo, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
 			} else {
 				error(cc->rt, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
 			}
@@ -1571,7 +1571,7 @@ static astn statement(ccContext cc, ccKind attr) {
 	line = cc->line;
 	// scan the statement
 	if (skipTok(cc, STMT_end, 0)) {             // ;
-		warn(cc->rt, 1, cc->file, cc->line, WARN_EMPTY_STATEMENT);
+		warn(cc->rt, raise_warn_par8, cc->file, cc->line, WARN_EMPTY_STATEMENT);
 	}
 	else if ((ast = nextTok(cc, STMT_beg, 0))) {   // { ... }
 		ast->stmt.stmt = statement_list(cc);
@@ -1601,7 +1601,7 @@ static astn statement(ccContext cc, ccKind attr) {
 					error(cc->rt, ifThen->file, ifThen->line, WARN_USE_BLOCK_STATEMENT, ifThen);
 				}
 				else {
-					warn(cc->rt, 8, ifThen->file, ifThen->line, WARN_USE_BLOCK_STATEMENT, ifThen);
+					warn(cc->rt, raise_warn_par8, ifThen->file, ifThen->line, WARN_USE_BLOCK_STATEMENT, ifThen);
 				}
 			}
 			astn ifElse = ast->stmt.step;
@@ -1611,7 +1611,7 @@ static astn statement(ccContext cc, ccKind attr) {
 					error(cc->rt, ifElse->file, ifElse->line, WARN_USE_BLOCK_STATEMENT, ifElse);
 				}
 				else {
-					warn(cc->rt, 8, ifElse->file, ifElse->line, WARN_USE_BLOCK_STATEMENT, ifElse);
+					warn(cc->rt, raise_warn_par8, ifElse->file, ifElse->line, WARN_USE_BLOCK_STATEMENT, ifElse);
 				}
 			}
 			if (attr & ATTR_stat) {
@@ -1709,7 +1709,7 @@ static astn statement(ccContext cc, ccKind attr) {
 			check = ast;
 			switch (ast->kind) {
 				default:
-					warn(cc->rt, 1, ast->file, ast->line, ERR_STATEMENT_EXPECTED, ast);
+					warn(cc->rt, raiseWarn, ast->file, ast->line, ERR_STATEMENT_EXPECTED, ast);
 					break;
 
 				case OPER_fnc:
