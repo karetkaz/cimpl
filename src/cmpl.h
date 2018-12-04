@@ -110,9 +110,9 @@ struct rtContextRec {
 	unsigned genGlobals: 1; // generate global variables as static variables
 
 	unsigned logLevel: 4;   // runtime logging level (0-15)
-	unsigned traceLevel: 8;   // runtime logging level (0-255)
-	int closeLog: 1;        // close log file
-	int freeMem: 1;         // release memory
+	unsigned traceLevel: 8; // runtime backtrace level (0-255)
+	unsigned closeLog: 1;   // close log file
+	unsigned freeMem: 1;    // release memory
 
 	int32_t errors;         // error count
 	FILE *logFile;          // log file
@@ -152,6 +152,8 @@ struct rtContextRec {
 		size_t px;         // exec: exit point / cgen: -
 
 		size_t ro;         // size of read only memory
+		size_t cs;         // size of code (functions)
+		size_t ds;         // size of data (static var)
 		size_t ss;         // size of stack
 	} vm;
 

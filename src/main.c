@@ -998,15 +998,19 @@ static void textPostProfile(userContext usr) {
 	}
 
 	if (usr->dmpMemory > 0) {
-		printFmt(out, esc, "%?sMemory layout:\n", prefix);
-		textDumpMem(dbg, rt->_mem, rt->_end - (unsigned char*)rt, "all");
-		textDumpMem(dbg, rt->_mem, rt->vm.ro, "meta");
-		textDumpMem(dbg, rt->_mem + rt->vm.pc, rt->vm.px + px_size - rt->vm.pc, "code");
+		printFmt(out, esc, "%?sMemory usage:\n", prefix);
+		textDumpMem(dbg, rt->_mem, rt->_size, "all");
+		textDumpMem(dbg, rt->_mem, rt->vm.px + px_size, "used");
 		textDumpMem(dbg, rt->_beg, rt->_end - rt->_beg, "heap");
 		textDumpMem(dbg, rt->_end - rt->vm.ss, rt->vm.ss, "stack");
+
+		printFmt(out, esc, "%?sused memory:\n", prefix);
+		textDumpMem(dbg, rt->_mem, rt->vm.ro, "meta");
+		textDumpMem(dbg, rt->_mem, rt->vm.cs, "code");
+		textDumpMem(dbg, rt->_mem, rt->vm.ds, "data");
 		if (usr->dmpMemory > 1) {
-			// show allocated memory chunks.
-			printFmt(out, esc, "%?sMemory allocations:\n", prefix);
+			// show allocated and free memory chunks.
+			printFmt(out, esc, "%?sheap memory:\n", prefix);
 			rtAlloc(rt, NULL, 0, textDumpMem);
 		}
 	}
@@ -1641,6 +1645,7 @@ int main(int argc, char *argv[]) {
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
+						arg2 += 1;
 						break;
 
 					case 'G':
@@ -1668,6 +1673,7 @@ int main(int argc, char *argv[]) {
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
+						arg2 += 1;
 						break;
 
 					case 'G':
@@ -1732,6 +1738,7 @@ int main(int argc, char *argv[]) {
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
+						arg2 += 1;
 						break;
 
 					case 'G':
@@ -1909,6 +1916,7 @@ int main(int argc, char *argv[]) {
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
+						arg2 += 1;
 						break;
 
 					case 'a':
@@ -2006,6 +2014,7 @@ int main(int argc, char *argv[]) {
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
+						arg2 += 1;
 						break;
 
 					case 't':

@@ -634,7 +634,7 @@ rtContext rtInit(void *mem, size_t size) {
 		rt->fastMemory = 1;
 		rt->fastAssign = 1;
 		rt->genGlobals = 1;
-		rt->freeMem = mem == NULL;
+		rt->freeMem = (unsigned) (mem == NULL);
 
 		*(size_t*)&rt->_size = size - sizeof(struct rtContextRec);
 		rt->_end = rt->_mem + rt->_size;
@@ -740,15 +740,13 @@ size_t vmInit(rtContext rt, int debug, vmError onHalt(nfcContext)) {
 		}
 	}
 
-	// use custom halt function 
+	// use custom halt function
 	if (onHalt != NULL) {
 		libc *calls = rt->vm.nfc;
 		calls[0]->call = onHalt;
 	}
 
-	//~ read only memory ends here.
-	//~ strings, types, add(constants, functions, enums, ...)
-	return rt->vm.ro = rt->_beg - rt->_mem;
+	return rt->_beg - rt->_mem;
 }
 
 void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(dbgContext, void *, size_t, char *)) {

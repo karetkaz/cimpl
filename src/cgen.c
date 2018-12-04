@@ -2066,82 +2066,91 @@ int ccGenCode(ccContext cc, int debug) {
 		return -2;
 	}
 
+	//~ read only memory ends here.
+	//~ strings, types, add(constants, functions, enums, ...)
+	rt->vm.ro = emit(rt, markIP);
+	rt->vm.cs = rt->vm.ds = 0;
+
 	// static variables & functions
-	if (cc->global != NULL) {
-		for (symn var = cc->global; var; var = var->global) {
+	for (symn var = cc->global; var; var = var->global) {
 
-			if (var == rt->main || isInline(var)) {
-				// exclude main and inline symbols
-				continue;
-			}
-			if (isTypename(var)) {
-				// types are "generated" when they are declared
-				dieif(var->offs == 0, ERR_INTERNAL_ERROR);
-				dieif(!isStatic(var), ERR_INTERNAL_ERROR);
-				continue;
-			}
-			if (!isStatic(var)) {
-				// exclude non static variables
-				continue;
-			}
-			dieif(var->offs != 0, "Error `%T` offs: %d", var, var->offs);	// already generated ?
+		if (var == rt->main || isInline(var)) {
+			// exclude main and inline symbols
+			continue;
+		}
 
-			// align memory. Speed up read, write and execution.
-			rt->_beg = padPointer(rt->_beg, vm_mem_align);
+		if (isTypename(var)) {
+			// types are "generated" when they are declared
+			dieif(var->offs == 0, ERR_INTERNAL_ERROR);
+			dieif(!isStatic(var), ERR_INTERNAL_ERROR);
+			continue;
+		}
 
-			if (isFunction(var)) {
-				size_t offs = 0;
-				// FIXME: recalculate the size of the parameters
-				for (symn param = var->params; param != NULL; param = param->next) {
-					if (isStatic(param)) {
-						continue;
-					}
-					if (param->size != 0) {
-						continue;
-					}
-					param->size = padOffset(param->type->size, vm_stk_align);
-					param->offs = offs += param->size;
+		if (!isStatic(var)) {
+			// exclude non static variables
+			continue;
+		}
+
+		dieif(var->offs != 0, "Error `%T` offs: %d", var, var->offs);    // already generated ?
+
+		// align memory. Speed up read, write and execution.
+		rt->_beg = padPointer(rt->_beg, vm_mem_align);
+
+		if (isFunction(var)) {
+			size_t offs = 0;
+			// FIXME: recalculate the size of the parameters
+			for (symn param = var->params; param != NULL; param = param->next) {
+				if (isStatic(param)) {
+					continue;
 				}
+				if (param->size != 0) {
+					continue;
+				}
+				param->size = padOffset(param->type->size, vm_stk_align);
+				param->offs = offs += param->size;
+			}
 
-				// reset the stack size
-				fixJump(rt, 0, 0, vm_ref_size + argsSize(var));
+			// reset the stack size
+			fixJump(rt, 0, 0, vm_ref_size + argsSize(var));
 
-				var->offs = emit(rt, markIP);
-				if (!genAst(cc, var->init, CAST_vid)) {
+			var->offs = emit(rt, markIP);
+			if (!genAst(cc, var->init, CAST_vid)) {
+				error(rt, var->file, var->line, ERR_EMIT_FUNCTION, var);
+				continue;
+			}
+			size_t end = emit(rt, markIP);
+			if (end == var->offs || !testOcp(rt, rt->vm.pc, opc_jmpi, NULL)) {
+				if (!emit(rt, opc_jmpi)) {
 					error(rt, var->file, var->line, ERR_EMIT_FUNCTION, var);
 					continue;
 				}
-				size_t end = emit(rt, markIP);
-				if (end == var->offs || !testOcp(rt, rt->vm.pc, opc_jmpi, NULL)) {
-					if (!emit(rt, opc_jmpi)) {
-						error(rt, var->file, var->line, ERR_EMIT_FUNCTION, var);
-						continue;
-					}
-				}
-				while (cc->jumps) {
-					fatal(ERR_INTERNAL_ERROR": invalid jump: `%t`", cc->jumps);
-					cc->jumps = cc->jumps->next;
-				}
-				var->size = emit(rt, markIP) - var->offs;
-				var->kind |= ATTR_stat;
-
-				addDbgFunction(rt, var);
 			}
-			else if (isVariable(var)) {
-				dieif(var->size <= 0, "Error `%T` size: %d", var, var->size);	// instance of void ?
-
-				// allocate the memory for the global variable
-				var->offs = vmOffset(rt, rt->_beg);
-				rt->_beg += var->size;
-
-				if (rt->_beg >= rt->_end) {
-					error(rt, var->file, var->line, ERR_DECLARATION_COMPLEX, var);
-					return -3;
-				}
+			while (cc->jumps) {
+				fatal(ERR_INTERNAL_ERROR
+					": invalid jump: `%t`", cc->jumps);
+				cc->jumps = cc->jumps->next;
 			}
-			else {
-				fatal(ERR_INTERNAL_ERROR);
+			var->size = emit(rt, markIP) - var->offs;
+			var->kind |= ATTR_stat;
+
+			rt->vm.cs += var->size;
+			addDbgFunction(rt, var);
+		}
+		else if (isVariable(var)) {
+			dieif(var->size <= 0, "Error `%T` size: %d", var, var->size);    // instance of void ?
+
+			// allocate the memory for the global variable
+			var->offs = vmOffset(rt, rt->_beg);
+			rt->_beg += var->size;
+
+			if (rt->_beg >= rt->_end) {
+				error(rt, var->file, var->line, ERR_DECLARATION_COMPLEX, var);
+				return -3;
 			}
+			rt->vm.ds += var->size;
+		}
+		else {
+			fatal(ERR_INTERNAL_ERROR);
 		}
 	}
 
@@ -2188,6 +2197,8 @@ int ccGenCode(ccContext cc, int debug) {
 	rt->main->size = emit(rt, markIP) - lMain;
 	rt->main->fields = cc->scope;
 	rt->main->fmt = rt->main->name;
+
+	rt->vm.cs += rt->main->size;
 	addDbgFunction(rt, rt->main);
 
 	if (rt->dbg != NULL) {

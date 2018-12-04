@@ -1,0 +1,99 @@
+// Brightness contrast gamma demo.
+
+static gxSurf offs = gxSurf(1440, 900, 32);
+static gxSurf back = gxSurf("asset/image/forest.jpg", 32);
+static gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
+
+static int brightness = 0;
+static int contrast = 0;
+static int gamma = 100;
+
+void brightnessContrastGamma(uint32 lut[256], int brightness, int contrast, double gamma) {
+	double cval = (256 + contrast) / 256.;
+	double gval = 1. / gamma;
+
+	for (int idx = 0; idx < lut.length; idx += 1) {
+		int val = grayClamp(brightness + int(255 * (cval * (float64.pow(idx / 255., gval) - .5) + .5)));
+		lut[idx] = rgb(val, val, val);
+	}
+}
+
+int onEvent(int action, int button, int x, int y) {
+	static int ox = 0;
+	static int oy = 0;
+
+	bool reCalculate = false;
+
+	if (action == Gui.KEY_PRESS) {
+		if (button == 27) {
+			return -1;
+		}
+		if (button == ' ') {
+			reCalculate = true;
+		}
+		if (button == '\r') {
+			brightness = 0;
+			contrast = 0;
+			gamma = 100;
+			reCalculate = true;
+		}
+		if (button == 's') {
+			trace("dumping screen");
+			offs.saveBmp("out/dump.bmp", 0);
+		}
+	}
+	else if (action == Gui.MOUSE_PRESS) {
+		ox = x;
+		oy = y;
+		return 0;
+	}
+	else if (action == Gui.MOUSE_MOTION) {
+		int dx = ox - x;
+		int dy = oy - y;
+
+		if (button == 1) {
+			brightness = Math.clamp(brightness + dy, -255, 255);
+			reCalculate = true;
+		}
+		if (button == 2) {
+			contrast = Math.clamp(contrast + dy, -512, 512);
+			reCalculate = true;
+		}
+		if (button == 3) {
+			gamma = Math.clamp(gamma + dy, 1, 1000);
+			reCalculate = true;
+		}
+		ox = x;
+		oy = y;
+	}
+
+	if (reCalculate) {
+		uint32 lut[256];
+		brightnessContrastGamma(lut, brightness, contrast, gamma / 100.);
+	
+		offs.resize(null, back, null, 1);
+		offs.colorMap(null, lut);
+	
+		inline p = 5;
+		char text[256];
+		int pos = text.append(0, "brightness: ");
+		pos = text.append(pos, brightness, true, 4);
+		pos = text.append(pos, "\ncontrast: ");
+		pos = text.append(pos, contrast, true, 4);
+		pos = text.append(pos, "\ngamma: ");
+		pos = text.append(pos, gamma, true, 4);
+	
+		gxRect rect = { x: 30, y: 30, w: 0, h: 0 };
+		font.clipText(rect, text);
+		offs.fillRect(rect.x - p, rect.y - p, rect.x + rect.w + p, rect.y + rect.h + p, 0x000000);
+		offs.drawText(rect.x, rect.y, font, text, 0xffffff);
+	}
+
+	return 0;
+}
+
+onEvent(Gui.KEY_PRESS, '\r', 0, 0);
+offs.show(onEvent);
+offs.destroy();
+back.destroy();
+font.destroy();
