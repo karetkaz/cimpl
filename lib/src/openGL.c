@@ -439,7 +439,7 @@ int cmplInit(rtContext _rt) {
 		{GL_VENDOR,                    "Vendor"},
 		{GL_RENDERER,                  "Renderer"},
 		{GL_VERSION,                   "Version"},
-		{GL_SHADING_LANGUAGE_VERSION,  "ShLVersion"},
+		//~ {GL_SHADING_LANGUAGE_VERSION,  "ShLVersion"},
 		{GL_EXTENSIONS,                "Extensions"},
 
 		// enable / disable

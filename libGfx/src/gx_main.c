@@ -9,6 +9,7 @@
 
 struct camera cam[1]; // TODO: singleton like camera
 struct gx_Light lights[32];  // max 32 lights
+gxWindow win = NULL;
 
 static inline rtValue nextValue(nfcContext ctx) {
 	return ctx->rt->api.nfcReadArg(ctx, ctx->rt->api.nfcNextArg(ctx));
@@ -456,7 +457,7 @@ static vmError window_show(nfcContext ctx) {
 		cbOffs = argref(ctx, rt->api.nfcNextArg(ctx));
 	}
 	symn callback = rt->api.rtLookup(ctx->rt, cbOffs);
-	int eventTimeout = 1;
+	int timeout = 1;
 	struct {
 		int32_t y;
 		int32_t x;
@@ -471,24 +472,32 @@ static vmError window_show(nfcContext ctx) {
 		.y = 0
 	};
 
-	flip_scr flipScreen = NULL;
-	peek_msg peekMessage = NULL;
-	initWin(offScreen, &flipScreen, &peekMessage);
+	win = createWindow(offScreen);
 	for ( ; ; ) {
-		event.action = peekMessage(eventTimeout, &event.button, &event.x, &event.y);
-		if (event.action != 0 && callback != NULL) {
-			error = rt->api.invoke(rt, callback, &eventTimeout, &event, NULL);
+		event.action = getWindowEvent(win, timeout, &event.button, &event.x, &event.y);
+		if (event.action == WINDOW_CLOSE) {
+			// window is closing, quit loop
+			break;
+		}
+		if (event.action == 0) {
+			// skip unknown events
+			// printf("skip window event: %08x\n", event.button);
+			continue;
+		}
+		if (callback != NULL) {
+			error = rt->api.invoke(rt, callback, &timeout, &event, NULL);
 			if (error != noError) {
 				break;
 			}
-			if (eventTimeout < 0) {
+			if (timeout < 0) {
 				break;
 			}
 		}
 		else if (event.action == KEY_RELEASE && event.button == 27) {
+			// if there is no callback, exit wit esc key
 			break;
 		}
-		flipScreen(offScreen);
+		flushWindow(win);
 	}
 	if (error == noError && callback != NULL) {
 		event.action = WINDOW_CLOSE;
@@ -497,14 +506,14 @@ static vmError window_show(nfcContext ctx) {
 		event.y = 0;
 		error = rt->api.invoke(rt, callback, NULL, &event, NULL);
 	}
-	doneWin();
+	destroyWindow(win);
 	return error;
 }
 
 static const char *proto_window_title = "void setTitle(char title[*])";
 static vmError window_title(nfcContext ctx) {
 	char *title = nextValue(ctx).ref;
-	setCaption(title);
+	setWindowText(win, title);
 	return noError;
 }
 

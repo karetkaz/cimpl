@@ -9,6 +9,9 @@
 
 #include "internal.h"
 
+const char *const pluginLibInstall = "cmplInit";
+const char *const pluginLibDestroy = "cmplDone";
+
 const char *const type_fmt_signed32 = "%d";
 const char *const type_fmt_signed64 = "%D";
 const char *const type_fmt_unsigned32 = "%u";

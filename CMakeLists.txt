@@ -1,9 +1,13 @@
 cmake_minimum_required(VERSION 3.3)
-project(cmpl)
+project(Cmpl)
 
-set(ARCH "64")
+IF (WIN32)
+	set(ARCH "32")
+ELSE()
+	set(ARCH "64")
+ENDIF()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m${ARCH}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m${ARCH} -std=gnu99")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/out>)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/out>)
 
@@ -23,7 +27,7 @@ set(CC_SOURCE_FILES
 	src/lexer.c
 	src/lstd.c
 	src/parser.c
-	src/plugin.c
+	src/platform.c
 	src/printer.c
 	src/tree.c
 	src/type.c
@@ -46,12 +50,18 @@ set(GX_SOURCE_FILES
 	libGfx/src/g3_draw.c
 	libGfx/src/g2_image.c
 	libGfx/src/g3_mesh.c
-	libGfx/src/gx_gui.X11.c
+	#libGfx/src/gx_gui.W32.c
+	#libGfx/src/gx_gui.X11.c
 	libGfx/src/gx_main.c
 )
 
 add_executable(cmpl ${CC_SOURCE_FILES} src/main.c)
-target_link_libraries(cmpl m dl)
+IF (WIN32)
+	target_link_libraries(cmpl m)
+ELSE()
+	target_link_libraries(cmpl m dl)
+ENDIF()
+
 
 add_library(File SHARED lib/src/file.c)
 target_include_directories(File PUBLIC ./src/)
@@ -60,9 +70,14 @@ add_library(OpenGL SHARED lib/src/openGL.c)
 target_include_directories(OpenGL PUBLIC ./src/)
 target_link_libraries(OpenGL GL GLU glut)
 
-add_library(Gfx SHARED ${GX_SOURCE_FILES})
+IF (WIN32)
+	add_library(Gfx SHARED ${GX_SOURCE_FILES} libGfx/src/gx_gui.W32.c)
+	target_link_libraries(Gfx m gdi32)
+ELSE()
+	add_library(Gfx SHARED ${GX_SOURCE_FILES} libGfx/src/gx_gui.X11.c)
+	target_link_libraries(Gfx m dl png jpeg X11)
+ENDIF()
 target_include_directories(Gfx PUBLIC ./src/)
-target_link_libraries(Gfx m dl png jpeg X11)
 
 # a simple "how to use" demo code.
 add_executable(cmplVmEmit ${CC_SOURCE_FILES} src/test/vmMulf32.c)

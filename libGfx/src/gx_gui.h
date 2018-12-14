@@ -14,11 +14,14 @@
 #define KEY_MASK_SHIFT 1
 #define KEY_MASK_CONTROL 2
 
+typedef struct gxWindow *gxWindow;
 
-typedef int (*peek_msg)(int timeout, int32_t *button, int32_t *x, int32_t *y);
-typedef int (*flip_scr)(gx_Surf);
+extern gxWindow createWindow(gx_Surf offs);
 
-extern int initWin(gx_Surf offs, flip_scr *flip, peek_msg *msgp);
-extern void doneWin();
+extern int getWindowEvent(gxWindow window, int timeout, int *button, int *x, int *y);
 
-extern void setCaption(char* str);
+extern void setWindowText(gxWindow window, char *caption);
+
+extern void flushWindow(gxWindow window);
+
+extern void destroyWindow(gxWindow window);

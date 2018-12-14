@@ -575,6 +575,18 @@ inline Complex(float64 re) = { re: re };
 inline Complex(float64 re, float64 im) = { re: re, im: im };
 */
 
+Complex Complex(float64 re) {
+	return {
+		re: re;
+	};
+}
+Complex Complex(float64 re, float64 im) {
+	return {
+		re: re;
+		im: im;
+	};
+}
+
 /* TODO: implement operator overloading
 inline -(Complex a) = Complex(-a.re, -a.im);
 
@@ -594,18 +606,6 @@ inline /(Complex a, Complex b) = div(a, b);
 inline /(Complex a, float64 b) = div(a, Complex(b));
 inline /(float64 a, Complex b) = div(Complex(a), b);
 */
-
-Complex Complex(float64 re) {
-	return {
-		re: re;
-	};
-}
-Complex Complex(float64 re, float64 im) {
-	return {
-		re: re;
-		im: im;
-	};
-}
 
 inline neg(Complex a) = Complex(-a.re, -a.im);
 
@@ -676,6 +676,17 @@ inline pow(Complex a, float64 b) = pow(a, Complex(b));
 
 inline sin(Complex a) = Complex(float64.sin(a.re) * Math.cosh(a.im), +float64.cos(a.re) * Math.sinh(a.im));
 inline cos(Complex a) = Complex(float64.cos(a.re) * Math.cosh(a.im), -float64.sin(a.re) * Math.sinh(a.im));
+
+/* TODO: implement operator overloading
+inline tan(Complex a) = sin(a) / cos(a);
+inline cot(Complex a) = cos(a) / sin(a);
+
+inline sinh(Complex a) = (exp(a) - exp(-a)) / 2;
+inline cosh(Complex a) = (exp(a) + exp(-a)) / 2;
+inline tanh(Complex a) = (exp(2 * a) - 1) / (exp(2 * a) + 1);
+inline coth(Complex a) = (exp(2 * a) + 1) / (exp(2 * a) - 1);
+*/
+
 inline tan(Complex a) = div(sin(a), cos(a));
 inline cot(Complex a) = div(cos(a), sin(a));
 
@@ -688,17 +699,6 @@ inline sec(Complex a) = inv(cos(a));
 inline csc(Complex a) = inv(sin(a));
 inline sech(Complex a) = inv(cosh(a));
 inline csch(Complex a) = inv(sinh(a));
-
-/* TODO: implement operator overloading
-inline tan(Complex a) = sin(a) / cos(a);
-inline cot(Complex a) = cos(a) / sin(a);
-
-inline sinh(Complex a) = (exp(a) - exp(-a)) / 2;
-inline cosh(Complex a) = (exp(a) + exp(-a)) / 2;
-inline tanh(Complex a) = (exp(2 * a) - 1) / (exp(2 * a) + 1);
-inline coth(Complex a) = (exp(2 * a) + 1) / (exp(2 * a) - 1);
-*/
-
 
 inline toCartesian(Complex x) = Complex(x.re * double.cos(x.im), x.re * double.sin(x.im));
 inline toPolar(Complex x) = Complex(abs(x), arg(x));

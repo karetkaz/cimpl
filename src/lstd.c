@@ -177,47 +177,6 @@ static vmError b64zxt(nfcContext args) {
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ system functions (exit, rand, clock, debug)
-#if ((defined __WATCOMC__ && defined __WIN32) || (defined _MSC_VER))
-#include <Windows.h>
-static inline int64_t timeMillis() {
-	static const int64_t kTimeEpoc = 116444736000000000LL;
-	static const int64_t kTimeScaler = 10000;  // 100 ns to us.
-
-	// Although win32 uses 64-bit integers for representing timestamps,
-	// these are packed into a FILETIME structure. The FILETIME
-	// structure is just a struct representing a 64-bit integer. The
-	// TimeStamp union allows access to both a FILETIME and an integer
-	// representation of the timestamp. The Windows timestamp is in
-	// 100-nanosecond intervals since January 1, 1601.
-	typedef union {
-		FILETIME ftime;
-		int64_t time;
-	} TimeStamp;
-	TimeStamp time;
-	GetSystemTimeAsFileTime(&time.ftime);
-	return (time.time - kTimeEpoc) / kTimeScaler;
-}
-static inline void sleepMillis(int64_t milliseconds) {
-	Sleep(milliseconds);
-}
-#else
-#include <sys/time.h>
-static inline uint64_t timeMillis() {
-	uint64_t now;
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	now = tv.tv_sec * (uint64_t)1000;
-	now += tv.tv_usec / (uint64_t)1000;
-	return now;
-}
-static inline void sleepMillis(int64_t milliseconds) {
-	struct timespec ts;
-	ts.tv_sec = milliseconds / 1000;
-	ts.tv_nsec = (milliseconds % 1000) * 1000000;
-	nanosleep(&ts, NULL);
-}
-#endif
-
 static vmError sysExit(nfcContext args) {
 	exit(argi32(args, 0));
 	return noError;

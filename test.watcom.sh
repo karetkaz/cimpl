@@ -30,13 +30,16 @@ fi
 #./out/cmpl -dump.scite out/libGfx.api out/libGfx.so libGfx/gfxlib.ci
 
 # dump symbols, assembly, syntax tree and global variables (to be compared with previous version to test if the code is generated properly)
-./out/cmpl -X+steps+fold+fast+asgn-stdin-glob-offsets -debug/G/H -api/d/p/a -asm/n/s -ast -log/0 extras/dump.test.log -dump extras/dump.test.ci -dump.ast.xml extras/dump.test.xml "test.ci"
+./out/cmpl -X+steps+fold+fast+asgn-stdin-glob-offsets -debug/G/H -api/d/p/a -asm/n/s -ast -log/15 extras/test.dump.ci -dump extras/test.dump.ci -dump.ast.xml extras/test.dump.xml "test.ci"
+
+# dump symbols, assembly, syntax tree and global variables (to be compared with previous version to test if the code is generated properly)
+#./out/cmpl -X+steps+fold+fast+asgn-stdin-glob-offsets -debug/G/H -api/d/p/a -asm/n/s -ast -log/15 extras/libs.dump.ci -dump extras/libs.dump.ci out/libFile.so out/libGfx.so libGfx/gfxlib.ci
 
 # dump profile data in json format
-./out/cmpl -X-stdin-steps -dump.json extras/dump.test.json -api/a/m/d/p/u -asm/a/n/s -ast/t -profile/t/P/G/H "test.ci"
+./out/cmpl -X-stdin-steps -dump.json extras/test.dump.json -api/a/m/d/p/u -asm/a/n/s -ast/t -profile/t/P/G/H "test.ci"
 
 # dump profile data in text format
-./out/cmpl -X-stdin+steps -log15 out/dump.test.ci -dump out/dump.test.ci -api/a/m/d/p/u -asm/a/n/s -ast/t -profile/P/G/H "test.ci"
+./out/cmpl -X-stdin+steps -log/15 out/test.dump.ci -dump out/test.dump.ci -api/a/m/d/p/u -asm/a/n/s -ast/t -profile/P/G/H "test.ci"
 
 # test the virtual machine
 ./out/cmpl -vmTest

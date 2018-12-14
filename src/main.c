@@ -2371,7 +2371,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// release resources
-	closeLibs();
+	closeLibs(rt);
 
 	return rtClose(rt) != 0;
 	(void)dumpVmOpc;

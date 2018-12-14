@@ -255,6 +255,9 @@ void nfcCheckArg(nfcContext nfc, ccKind cast, char *name);
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+extern const char * const pluginLibInstall;
+extern const char * const pluginLibDestroy;
+
 extern const char * const type_fmt_signed32;
 extern const char * const type_fmt_signed64;
 extern const char * const type_fmt_unsigned32;
@@ -268,6 +271,11 @@ extern const char type_fmt_string_chr;
 extern const char type_fmt_character_chr;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+uint64_t timeMillis();
+void sleepMillis(int64_t millis);
+
+char *absolutePath(char *path, char *buff, size_t size);
 
 /** Calculate hash of string.
  * @brief calculate the hash of a string.
@@ -372,7 +380,7 @@ int vmSelfTest(void cb(const char *error, const struct opcodeRec *info));
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Plugins
 int importLib(rtContext rt, const char *path);
-void closeLibs();
+void closeLibs(rtContext rt);
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Error and warning messages
 void print_err(rtContext rt, raiseLevel level, const char *file, int line, rtValue *value, const char *msg, va_list vaList);

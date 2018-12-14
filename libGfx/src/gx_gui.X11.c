@@ -1,65 +1,58 @@
 #include "gx_gui.h"
-#include <sched.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <sys/time.h>
 #include <time.h>
+#include <stdlib.h>
 
-static Display *display = NULL;
-static Window window = 0;
-static XImage *g_image = NULL;
 
-static XGCValues gr_values;
-static GC gc;
+struct gxWindow {
+	gx_Surf image;
 
-static int create_window(int width, int height) {
-	display = XOpenDisplay(NULL);
-	int screen = DefaultScreen(display);
-	int depth = DefaultDepth(display, screen);
+	Display *display;
+	Window window;
+	XImage *g_image;
 
-	g_image = XCreateImage(display, CopyFromParent, depth, ZPixmap, 0, NULL, width, height, 32, 0);
-	window = XCreateSimpleWindow(display, XDefaultRootWindow(display), 0, 0, width, height, 0, BlackPixel(display, 0), WhitePixel(display, 0));
-	XSelectInput(display, window, StructureNotifyMask// | VisibilityChangeMask
-		| ButtonPressMask | ButtonReleaseMask | ButtonMotionMask
-		| KeyPressMask | KeyReleaseMask
-		//| EnterWindowMask | LeaveWindowMask	// 
-	);
+	Atom deleteWindow;
+	XGCValues gr_values;
+	GC gc;
+};
 
-	gc = XCreateGC(display, window, GCForeground, &gr_values);
-	XMapWindow(display, window);
-	return 1;
-}
-
-static int close_window(void) {
-
-	if (window) {
-		XDestroyWindow(display, window);
-		XFreeGC(display, gc);
-		XFlush(display);
-		window = 0;
+gxWindow createWindow(gx_Surf offs) {
+	if (offs == NULL) {
+		return NULL;
 	}
 
-	return 1;
+	gxWindow result = malloc(sizeof(struct gxWindow));
+	if (result == NULL) {
+		return NULL;
+	}
+
+	result->display = XOpenDisplay(NULL);
+	int screen = DefaultScreen(result->display);
+	int depth = DefaultDepth(result->display, screen);
+
+	result->g_image = XCreateImage(result->display, CopyFromParent, depth, ZPixmap, 0, NULL, offs->width, offs->height, 32, 0);
+	result->window = XCreateSimpleWindow(result->display, XDefaultRootWindow(result->display), 0, 0, offs->width, offs->height, 0, BlackPixel(result->display, 0), WhitePixel(result->display, 0));
+
+	XSelectInput(result->display, result->window, StructureNotifyMask// | VisibilityChangeMask
+		| ButtonPressMask | ButtonReleaseMask | ButtonMotionMask
+		| EnterWindowMask | LeaveWindowMask   // mouse enter and leave the window
+		| KeyPressMask | KeyReleaseMask
+	);
+
+	result->gc = XCreateGC(result->display, result->window, GCForeground, &result->gr_values);
+	XMapWindow(result->display, result->window);
+
+	result->deleteWindow = XInternAtom(result->display, "WM_DELETE_WINDOW", False);
+	XSetWMProtocols(result->display, result->window, &result->deleteWindow, 1);
+
+	result->image = offs;
+
+	return result;
 }
 
-static int copy_window(gx_Surf src) {
-	int x = 0, y = 0;
-	int w = src->width;
-	int h = src->height;
-
-	XImage image = *g_image;
-	image.data = src->basePtr;
-	image.width = src->width;
-	image.height = src->height;
-	image.bytes_per_line = src->scanLen;
-	image.bits_per_pixel = src->depth;
-
-	XPutImage(display, window, gc, &image, x, y, x, y, w, h);
-	XFlush(display);
-	return 0;
-}
-
-static int winmsg(int timeout, int *button, int *x, int *y) {
+int getWindowEvent(gxWindow window, int timeout, int *button, int *x, int *y) {
 	static int btnstate = 0;
 	XEvent event;
 
@@ -71,7 +64,7 @@ static int winmsg(int timeout, int *button, int *x, int *y) {
 		ts.tv_nsec = 0;
 		gettimeofday(&tv, NULL);
 		uint64_t start = tv.tv_sec * (uint64_t) 1000 + tv.tv_usec / 1000;
-		while (!XPending(display)) {
+		while (!XPending(window->display)) {
 			gettimeofday(&tv, NULL);
 			uint64_t now = tv.tv_sec * (uint64_t) 1000 + tv.tv_usec / 1000;
 			if (now - start > timeout) {
@@ -85,19 +78,25 @@ static int winmsg(int timeout, int *button, int *x, int *y) {
 	}
 
 	event.type = 0;
-	while (timeout == 0 || XPending(display)) {
-		XNextEvent(display, &event);
-		timeout = 1;
+	while (timeout == 0 || XPending(window->display)) {
+		XNextEvent(window->display, &event);
 		if (event.type != MotionNotify) {
-			// consume MotionNotify events
+			// consume mouse motion events
 			break;
 		}
+		timeout = 1;
 	}
 	*button = 0;
 	*x = *y = 0;
 	switch (event.type) {
 		default:
 			*button = event.type;
+			break;
+
+		case ClientMessage:
+			if (event.xclient.data.l[0] == window->deleteWindow) {
+				return WINDOW_CLOSE;
+			}
 			break;
 
 		case CreateNotify:
@@ -179,41 +178,41 @@ static int winmsg(int timeout, int *button, int *x, int *y) {
 	return 0;
 }
 
-void setCaption(char *str) {
-	XSetStandardProperties(display, window, str, "3d", None, NULL, 0, NULL);
+void setWindowText(gxWindow window, char *caption) {
+	XSetStandardProperties(window->display, window->window, caption, "3d", None, NULL, 0, NULL);
 }
 
-void doneWin(void) {
+void flushWindow(gxWindow window) {
+	gx_Surf src = window->image;
+	XImage *dst = window->g_image;
 
-	if (window)
-		close_window();
+	dst->data = src->basePtr;
+	dst->width = src->width;
+	dst->height = src->height;
+	dst->bits_per_pixel = src->depth;
+	dst->bytes_per_line = src->scanLen;
 
-	if (display)
-		XCloseDisplay(display);
-
-	if (g_image) {
-		g_image->data = NULL; // static data must not be freed.
-		XDestroyImage(g_image);
-	}
-
-	//~ pthread_join(thread_id, NULL);
+	XPutImage(window->display, window->window, window->gc, dst, 0, 0, 0, 0, src->width, src->height);
+	XFlush(window->display);
 }
 
-int initWin(gx_Surf offs, flip_scr *flip, peek_msg *msgp) {
-	/*if (XInitThreads() == 0) {
-		printf("WARNING - cannot support multi threads\n");
-		return -2;
-	}// */
+void destroyWindow(gxWindow window) {
 
-	if (offs && create_window(offs->width, offs->height)) {
-		copy_window(offs);
-		*flip = copy_window;
-		*msgp = winmsg;
-		/*if (pthread_create(&thread_id, NULL, event_thread, NULL) != 0) {
-			printf("ERROR - cannot create event thread for X11\n");
-			return -3;
-		}// */
-		return 0;
+	if (window->g_image) {
+		window->g_image->data = NULL;
+		XDestroyImage(window->g_image);
 	}
-	return offs ? -1 : 0;
+
+	if (window->window) {
+		XDestroyWindow(window->display, window->window);
+		XFreeGC(window->display, window->gc);
+		XFlush(window->display);
+		window->window = 0;
+	}
+
+	if (window->display) {
+		XCloseDisplay(window->display);
+	}
+
+	free(window);
 }

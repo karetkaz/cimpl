@@ -3,7 +3,6 @@
  *   Date: 2017.02.17
  *   Desc: standard file library
  *******************************************************************************
-gcc -shared -fPIC -Wall -g0 -Os -o out/libFile.so src/plugin/file.c -I src/
  */
 
 #include "cmpl.h"

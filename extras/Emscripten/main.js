@@ -274,7 +274,7 @@ function execute(text, cmd) {
 		cmdExecute.value = cmd;
 
 		// do not use standard input, print times
-		args.push('-X' + (params.X || '-stdin+times'));
+		args.push('-X' + (params.X || '-stdin+times+steps'));
 
 		// allocate 2Mb of memory by default,
 		args.push('-mem' + (params.mem || '2M'));

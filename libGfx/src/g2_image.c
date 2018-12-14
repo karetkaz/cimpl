@@ -2,12 +2,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <png.h>
-#include <jpeglib.h>
-
 #include "gx_surf.h"
 
 #define BMP_OS2 0x02
+#define HAVE_JPEG
+#define HAVE_PNG
 
 #pragma pack (push, 1)
 typedef struct {	// BMP_HDR
@@ -543,6 +542,23 @@ gx_Surf gx_loadFnt(gx_Surf dst, const char *src) {
 	return dst;
 }
 
+#ifndef HAVE_JPEG
+gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
+	// TODO: return null
+	dst = gx_createSurf(dst, 256, 256, depth, Surf_2ds);
+	for (int y = 0; y < 256; ++y) {
+		for (int x = 0; x < 256; ++x) {
+			int r = x ^ y;
+			int g = x & y;
+			int b = x | y;
+			gx_setpixel(dst, x, y, __rgb(r, g, b));
+		}
+	}
+	return dst;
+}
+#else
+
+#include <jpeglib.h>
 gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
 
 	if (depth != 32) {
@@ -606,7 +622,25 @@ gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
 	fclose(fin);
 	return dst;
 }
+#endif
 
+#ifndef HAVE_PNG
+gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
+	// TODO: return null
+	dst = gx_createSurf(dst, 256, 256, depth, Surf_2ds);
+	for (int y = 0; y < 256; ++y) {
+		for (int x = 0; x < 256; ++x) {
+			int r = x ^ y;
+			int g = x & y;
+			int b = x | y;
+			gx_setpixel(dst, x, y, __rgb(r, g, b));
+		}
+	}
+	return dst;
+}
+#else
+
+#include <png.h>
 gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 
 	// 8 is the maximum size that can be checked
@@ -730,3 +764,4 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 	fclose(fin);
 	return dst;
 }
+#endif

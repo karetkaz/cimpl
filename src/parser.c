@@ -71,12 +71,24 @@ static int ccInline(ccContext cc, astn tag) {
 		if (CWD == NULL) {
 			CWD = "";
 		}
+		for (char *ptr = CWD; *ptr; ++ptr) {
+			// convert windows path names to uri
+			if (*ptr == '\\') {
+				*ptr = '/';
+			}
+		}
 	}
 
 	char buff[PATH_MAX];
-	char *path = realpath(tag->file, buff);
+	char *path = absolutePath(tag->file, buff, sizeof(buff));
 	if (path != buff) {
 		strncpy(buff, tag->file, sizeof(buff));
+	}
+	for (char *ptr = buff; *ptr; ++ptr) {
+		// convert windows path names to uri
+		if (*ptr == '\\') {
+			*ptr = '/';
+		}
 	}
 
 	// replace the file name

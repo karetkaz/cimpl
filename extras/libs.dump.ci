@@ -53,7 +53,7 @@ lib/math.ci:454: warn: adding implicit cast float64(2: int32)
 lib/math.ci:470: warn: adding implicit cast float64(2: int32)
 lib/math.ci:493: warn: adding implicit cast float64(180: int32)
 lib/math.ci:494: warn: adding implicit cast float64(180: int32)
-lib/math.Complex.ci:40: debug: using default field initializer: Complex.im := 0
+lib/math.Complex.ci:20: debug: using default field initializer: Complex.im := 0
 lib/math.Complex.ci:5: warn: adding implicit cast float64(0: int32)
 lib/string.ci:4: warn: adding implicit cast pointer(str: char[*])
 lib/string.ci:36: warn: adding implicit cast int32(with[i]: char)
@@ -4130,7 +4130,7 @@ Complex(re: float64): Complex: function {
 .base: `function`
 .size: 8
 .name: 'Complex'
-.file: 'lib/math.Complex.ci:40'
+.file: 'lib/math.Complex.ci:20'
 .param .result: Complex (size: 16 -> variable(val))
 .param re: float64 (size: 8 -> variable(f64))
 .value: {
@@ -4140,7 +4140,7 @@ Complex(re: float64): Complex: function {
 		};
 }
 .instructions: (8 bytes)
-	lib/math.Complex.ci:41: (8 bytes): return .result := {...};
+	lib/math.Complex.ci:21: (8 bytes): return .result := {...};
 	<Complex+?>:    dup.x2 sp(1)
 	<Complex+?>:    set.x2 sp(5)
 	:: (3 bytes): .result.im := (0)
@@ -4153,7 +4153,7 @@ Complex(re: float64, im: float64): Complex: function {
 .base: `function`
 .size: 9
 .name: 'Complex'
-.file: 'lib/math.Complex.ci:45'
+.file: 'lib/math.Complex.ci:25'
 .param .result: Complex (size: 16 -> variable(val))
 .param re: float64 (size: 8 -> variable(f64))
 .param im: float64 (size: 8 -> variable(f64))
@@ -4164,10 +4164,10 @@ Complex(re: float64, im: float64): Complex: function {
 		};
 }
 .instructions: (9 bytes)
-	lib/math.Complex.ci:46: (9 bytes): return .result := {...};
+	lib/math.Complex.ci:26: (9 bytes): return .result := {...};
 	<Complex+?>:    dup.x2 sp(3)
 	<Complex+?>:    set.x2 sp(7)
-	lib/math.Complex.ci:48: (4 bytes): .result.im := im;
+	lib/math.Complex.ci:28: (4 bytes): .result.im := im;
 	<Complex+?>:    dup.x2 sp(1)
 	<Complex+?>:    set.x2 sp(9)
 	<Complex+?>:    ret
@@ -4607,7 +4607,7 @@ tan(a: Complex): Complex: function {
 .base: `function`
 .size: 0
 .name: 'tan'
-.file: 'lib/math.Complex.ci:121'
+.file: 'lib/math.Complex.ci:132'
 .param .result: Complex (size: 16 -> val)
 .param a: Complex (size: 16 -> variable(val))
 .value: div(sin(a), cos(a))
@@ -4617,7 +4617,7 @@ cot(a: Complex): Complex: function {
 .base: `function`
 .size: 0
 .name: 'cot'
-.file: 'lib/math.Complex.ci:122'
+.file: 'lib/math.Complex.ci:133'
 .param .result: Complex (size: 16 -> val)
 .param a: Complex (size: 16 -> variable(val))
 .value: div(cos(a), sin(a))
@@ -4627,7 +4627,7 @@ sinh(a: Complex): Complex: function {
 .base: `function`
 .size: 0
 .name: 'sinh'
-.file: 'lib/math.Complex.ci:124'
+.file: 'lib/math.Complex.ci:135'
 .param .result: Complex (size: 16 -> val)
 .param a: Complex (size: 16 -> variable(val))
 .value: div(sub(exp(a), exp(neg(a))), 2)
@@ -4637,7 +4637,7 @@ cosh(a: Complex): Complex: function {
 .base: `function`
 .size: 0
 .name: 'cosh'
-.file: 'lib/math.Complex.ci:125'
+.file: 'lib/math.Complex.ci:136'
 .param .result: Complex (size: 16 -> val)
 .param a: Complex (size: 16 -> variable(val))
 .value: div(add(exp(a), exp(neg(a))), 2)
@@ -4647,7 +4647,7 @@ tanh(a: Complex): Complex: function {
 .base: `function`
 .size: 0
 .name: 'tanh'
-.file: 'lib/math.Complex.ci:126'
+.file: 'lib/math.Complex.ci:137'
 .param .result: Complex (size: 16 -> val)
 .param a: Complex (size: 16 -> variable(val))
 .value: div(sub(exp(mul(2, a)), 1), add(exp(mul(2, a)), 1))
@@ -4657,7 +4657,7 @@ coth(a: Complex): Complex: function {
 .base: `function`
 .size: 0
 .name: 'coth'
-.file: 'lib/math.Complex.ci:127'
+.file: 'lib/math.Complex.ci:138'
 .param .result: Complex (size: 16 -> val)
 .param a: Complex (size: 16 -> variable(val))
 .value: div(add(exp(mul(2, a)), 1), sub(exp(mul(2, a)), 1))
@@ -4667,7 +4667,7 @@ sec(a: Complex): Complex: function {
 .base: `function`
 .size: 0
 .name: 'sec'
-.file: 'lib/math.Complex.ci:129'
+.file: 'lib/math.Complex.ci:140'
 .param .result: Complex (size: 16 -> val)
 .param a: Complex (size: 16 -> val)
 .value: inv(cos(a))
@@ -4677,7 +4677,7 @@ csc(a: Complex): Complex: function {
 .base: `function`
 .size: 0
 .name: 'csc'
-.file: 'lib/math.Complex.ci:130'
+.file: 'lib/math.Complex.ci:141'
 .param .result: Complex (size: 16 -> val)
 .param a: Complex (size: 16 -> val)
 .value: inv(sin(a))
@@ -4687,7 +4687,7 @@ sech(a: Complex): Complex: function {
 .base: `function`
 .size: 0
 .name: 'sech'
-.file: 'lib/math.Complex.ci:131'
+.file: 'lib/math.Complex.ci:142'
 .param .result: Complex (size: 16 -> val)
 .param a: Complex (size: 16 -> val)
 .value: inv(cosh(a))
@@ -4697,7 +4697,7 @@ csch(a: Complex): Complex: function {
 .base: `function`
 .size: 0
 .name: 'csch'
-.file: 'lib/math.Complex.ci:132'
+.file: 'lib/math.Complex.ci:143'
 .param .result: Complex (size: 16 -> val)
 .param a: Complex (size: 16 -> val)
 .value: inv(sinh(a))
@@ -5946,7 +5946,7 @@ gxRect: typename {
 .base: `typename`
 .size: 16
 .name: 'gxRect'
-.file: 'libGfx/src/gx_main.c:794'
+.file: 'libGfx/src/gx_main.c:803'
 .field x: int32 (size: 4 -> variable(i32))
 .field y: int32 (size: 4 -> variable(i32))
 .field w: int32 (size: 4 -> variable(i32))
@@ -5957,7 +5957,7 @@ gxRect.x: int32 {
 .base: `int32`
 .size: 4
 .name: 'x'
-.file: 'libGfx/src/gx_main.c:795'
+.file: 'libGfx/src/gx_main.c:804'
 .owner: gxRect
 }
 gxRect.y: int32 {
@@ -5965,7 +5965,7 @@ gxRect.y: int32 {
 .base: `int32`
 .size: 4
 .name: 'y'
-.file: 'libGfx/src/gx_main.c:796'
+.file: 'libGfx/src/gx_main.c:805'
 .owner: gxRect
 }
 gxRect.w: int32 {
@@ -5973,7 +5973,7 @@ gxRect.w: int32 {
 .base: `int32`
 .size: 4
 .name: 'w'
-.file: 'libGfx/src/gx_main.c:797'
+.file: 'libGfx/src/gx_main.c:806'
 .owner: gxRect
 }
 gxRect.h: int32 {
@@ -5981,7 +5981,7 @@ gxRect.h: int32 {
 .base: `int32`
 .size: 4
 .name: 'h'
-.file: 'libGfx/src/gx_main.c:798'
+.file: 'libGfx/src/gx_main.c:807'
 .owner: gxRect
 }
 gxSurf: typename {
@@ -11237,8 +11237,8 @@ lib/math.ci:419: Math.cosh: function(<Math.cosh @03b598>)
 lib/math.ci:435: Math.asin: function(<Math.asin @03b5e8>)
 lib/math.ci:3: Math: typename(<Math>)
 lib/math.Complex.ci:3: Complex: typename(<Complex>)
-lib/math.Complex.ci:40: Complex: function(<Complex @03b6a0>)
-lib/math.Complex.ci:45: Complex: function(<Complex @03b6a8>)
+lib/math.Complex.ci:20: Complex: function(<Complex @03b6a0>)
+lib/math.Complex.ci:25: Complex: function(<Complex @03b6a8>)
 lib/math.Complex.ci:66: div: function(<div @03b6b8>)
 lib/math.Complex.ci:93: inv: function(<inv @03b738>)
 lib/math.Complex.ci:107: pow: function(<pow @03b760>)
@@ -11256,7 +11256,7 @@ lib/string.ci:117: append: function(<append @03ba90>)
 lib/string.ci:179: append: function(<append @03bd10>)
 lib/string.ci:189: append: function(<append @03bd30>)
 File: typename(<File>)
-libGfx/src/gx_main.c:794: gxRect: typename(<gxRect>)
+libGfx/src/gx_main.c:803: gxRect: typename(<gxRect>)
 gxSurf: typename(<gxSurf>)
 gxMesh: typename(<gxMesh>)
 camera: typename(<camera>)
