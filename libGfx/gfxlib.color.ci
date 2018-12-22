@@ -27,26 +27,28 @@ inline rgb(float32 r, float32 g, float32 b) = rgbClamp(int32(r * 255), int32(g *
 inline gray(float64 c) = grayClamp(int32(c * 255));
 inline gray(float32 c) = grayClamp(int32(c * 255));
 
+// get the Alpha channel of the color
+inline ach(uint32 col) = uint32((col >> 24) & 0xff);
 // get the Red channel of the color
-inline rch(int32 col) = int32((col >> 16) & 0xff);
+inline rch(uint32 col) = uint32((col >> 16) & 0xff);
 // get the Green channel of the color
-inline gch(int32 col) = int32((col >> 8) & 0xff);
+inline gch(uint32 col) = uint32((col >> 8) & 0xff);
 // get the Blue channel of the color
-inline bch(int32 col) = int32(col & 0xff);
+inline bch(uint32 col) = uint32(col & 0xff);
 // get the luminosity of the color
-inline lum(int32 c) = int32((rch(c) * 76 + gch(c) * 150 + bch(c) * 29) >> 8);
+inline lum(uint32 c) = uint32((rch(c) * 76 + gch(c) * 150 + bch(c) * 29) >> 8);
 
-/*struct rgb:1 {
-	int8 b;
-	int8 g;
-	int8 r;
-	int8 x;
+struct argb: 1 {
+	uint8 b;
+	uint8 g;
+	uint8 r;
+	uint8 a;
 }
 
-define int32(rgb value) = emit(int, rgb(value));
-define asrgb(int32 value) = emit(rgb, int32(value));
-define asrgb(int r, int g, int b) = emit(rgb, rgb(r, g, b));
-*/
+inline uint32(argb value) = uint32(emit(struct(value)));
+inline argb(uint32 argb) = argb(emit(uint32(argb)));
+inline argb(uint32 r, uint32 g, uint32 b) = argb(uint32((((r << 8) | g) << 8) | b));
+inline argb(uint32 a, uint32 r, uint32 g, uint32 b) = argb(uint32((((((a << 8) | r) << 8) | g) << 8) | b));
 
 uint32 rgbOr(uint32 c1, uint32 c2) {
 	return c1 | c2;

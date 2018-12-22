@@ -413,11 +413,11 @@ static inline struct vector vec(scalar x, scalar y, scalar z, scalar w) {
 }
 
 static inline argb vecrgb(vector src) {
-	return clamp_rgb(src->r * 255, src->g * 255, src->b * 255);
+	return clamp_srgb(src->a * 255, src->r * 255, src->g * 255, src->b * 255);
 }
 
 static inline argb nrmrgb(vector src) {
-	return clamp_rgb((src->r + 1.) * 127, (src->g + 1.) * 127, (src->b + 1.) * 127);
+	return clamp_srgb((src->a + 1.) * 127, (src->r + 1.) * 127, (src->g + 1.) * 127, (src->b + 1.) * 127);
 }
 
 static inline vector vecrfl(vector dst, vector dir, vector nrm) {	// reflect

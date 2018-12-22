@@ -55,6 +55,7 @@ typedef enum {
 	raise_warn_pad6 = 6,
 	raise_warn_gen8 = 8,
 	raise_warn_typ3 = 3,
+	raise_warn_typ4 = 4,
 	raise_warn_typ6 = 6,
 	raiseInfo = 13,
 	raiseDebug = 14,

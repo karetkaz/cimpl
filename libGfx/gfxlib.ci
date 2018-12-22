@@ -9,10 +9,11 @@ inline "gfxlib.mat4f.ci";
 
 static if (true) {
 inline "gfxlib.color.ci";
+inline "gfxlib.lookup.ci";
 
-inline rgb(vec4f vec) = rgbClamp(int32(vec.x * 255), int32(vec.y * 255), int32(vec.z * 255));
+inline rgb(vec4f vec) = rgb(vec.x, vec.y, vec.z);
 
-vec4f Hsv2Rgb(vec4f hsv) {
+vec4f hsv2rgb(vec4f hsv) {
 	float32 h = hsv.x;
 	float32 s = hsv.y;
 	float32 v = hsv.z;
@@ -127,18 +128,17 @@ bool clip(gxSurf src, gxRect roi&) {
 	return true;
 }
 void eval(gxSurf out, gxRect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
-	gxRect rect;
-	if (roi == null) {
-		rect.x = rect.y = 0;
-		rect.w = out.width();
-		rect.h = out.height();
+	gxRect rect = {
+		x: roi != null ? roi.x : 0;
+		y: roi != null ? roi.y : 0;
+		w: roi != null ? roi.w : out.width();
+		h: roi != null ? roi.h : out.height();
+	};
+
+	if (!out.clip(rect)) {
+		return;
 	}
-	else {
-		rect = roi;
-		if (!out.clip(rect)) {
-			return;
-		}
-	}
+
 	vec4f in = {
 		x: 0;
 		y: 0;
@@ -158,19 +158,11 @@ void eval(gxSurf out, gxRect roi&, float32 aspect, float32 time, vec4f eval(vec4
 
 void tile(gxSurf dst, int x, int y, gxSurf src, gxRect roi&) {
 	gxRect rect = {
-		x: 0;
-		y: 0;
-		w: src.width();
-		h: src.height();
+		x: roi != null ? roi.x : 0;
+		y: roi != null ? roi.y : 0;
+		w: roi != null ? roi.w : src.width();
+		h: roi != null ? roi.h : src.height();
 	};
-
-	if (roi != null) {
-		// FIXME: rect = roi;
-		rect.x = roi.x;
-		rect.y = roi.y;
-		rect.w = roi.w;
-		rect.h = roi.h;
-	}
 
 	if (!src.clip(rect)) {
 		return;
@@ -330,6 +322,38 @@ void show(gxSurf surf, int onEvent(int action, int button, int ex, int ey)) {
 		return onEvent(action, button, ex, ey);
 	}
 	Gui.showWindow(surf, onEvent, delegateEvent);
+}
+
+void showDiff(gxSurf image1, gxSurf image2) {
+	struct Closure {
+		gxSurf offs;
+		gxSurf image1;
+		gxSurf image2;
+	}
+
+	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
+		if (action == Gui.KEY_PRESS) {
+			if (button == 27) {
+				return -1;
+			}
+		}
+		if (action == Gui.MOUSE_PRESS) {
+			closure.offs.copy(0, 0, closure.image2, null);
+			return 0;
+		}
+		if (action == Gui.MOUSE_RELEASE) {
+			closure.offs.copy(0, 0, closure.image1, null);
+			return 0;
+		}
+		return 0;
+	}
+
+	Closure closure = {
+		offs: gxSurf(image1);
+		image1: image1;
+		image2: image2;
+	};
+	Gui.showWindow(closure.offs, closure, onEvent);
 }
 
 void showWindow(int w, int h, int t, vec4f eval(vec4f in)) {

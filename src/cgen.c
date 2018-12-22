@@ -492,6 +492,13 @@ static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 	if (ast->op.lhso == NULL) {
 		return genAst(cc, ast->op.rhso, get);
 	}
+	if (ast->op.lhso->kind == RECORD_kwd) {
+		ccKind cast = castOf(ast->type);
+		if (cast == CAST_ref) {
+			error(cc->rt, ast->file, ast->line, ERR_EMIT_STATEMENT, ast);
+		}
+		return genAst(cc, ast->op.rhso, cast);
+	}
 
 	symn function = linkOf(ast->op.lhso, 0);
 	astn args = chainArgs(ast->op.rhso);
@@ -528,10 +535,14 @@ static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 				continue;
 			}
 
-			if (args->kind == OPER_fnc) {
+			if (args->kind == OPER_fnc && args->op.lhso) {
+				if (args->op.lhso->kind == RECORD_kwd) {
+					// value cast: struct(value)
+					continue;
+				}
 				lnk = linkOf(args->op.lhso, 1);
 				if (lnk && lnk == args->type) {
-					// typecast: float32(value)
+					// type cast: float32(value)
 					continue;
 				}
 			}
@@ -1824,6 +1835,13 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 
 	// generate cast
 	if (get != got) {
+		if ((get == CAST_u32 || get == CAST_u64) && (got == CAST_f32 || got == CAST_f64)) {
+			warn(rt, raise_warn_typ4, ast->file, ast->line, WARN_USING_SIGNED_CAST, ast);
+		}
+		if ((get == CAST_f32 || get == CAST_f64) && (got == CAST_u32 || got == CAST_u64)) {
+			warn(rt, raise_warn_typ4, ast->file, ast->line, WARN_USING_SIGNED_CAST, ast);
+		}
+
 		vmOpcode cast = opc_last;
 		switch (get) {
 			default:
@@ -1864,7 +1882,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				break;
 
 			case CAST_i32:
-			case CAST_u32:	// TODO: not all conversions are ok
+			case CAST_u32:
 				switch (got) {
 					default:
 						break;
@@ -1890,8 +1908,8 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				}
 				break;
 
+			case CAST_u64:
 			case CAST_i64:
-			case CAST_u64:	// TODO: not all conversions are ok
 				switch (got) {
 					default:
 						break;
@@ -1927,10 +1945,12 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 
 					case CAST_bit:
 					case CAST_i32:
+					case CAST_u32:
 						cast = i32_f32;
 						break;
 
 					case CAST_i64:
+					case CAST_u64:
 						cast = i64_f32;
 						break;
 
@@ -1947,10 +1967,12 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 
 					case CAST_bit:
 					case CAST_i32:
+					case CAST_u32:
 						cast = i32_f64;
 						break;
 
 					case CAST_i64:
+					case CAST_u64:
 						cast = i64_f64;
 						break;
 

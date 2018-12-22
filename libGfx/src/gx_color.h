@@ -5,7 +5,6 @@
 
 typedef union {				// ARGB color structutre
 	uint32_t val;
-	uint32_t col;
 	struct {
 		uint8_t b;
 		uint8_t g;
@@ -81,9 +80,41 @@ typedef enum {			// color block transfer
 typedef void (*cblt_proc)(void* dst, void *src, void *lut, size_t cnt);
 
 
-static inline uint32_t rch(uint32_t xrgb) { return xrgb >> 16 & 0xff; }
-static inline uint32_t gch(uint32_t xrgb) { return xrgb >>  8 & 0xff; }
 static inline uint32_t bch(uint32_t xrgb) { return xrgb >>  0 & 0xff; }
+static inline uint32_t gch(uint32_t xrgb) { return xrgb >>  8 & 0xff; }
+static inline uint32_t rch(uint32_t xrgb) { return xrgb >> 16 & 0xff; }
+static inline uint32_t ach(uint32_t xrgb) { return xrgb >> 24 & 0xff; }
+
+static inline uint32_t lum(argb col) {
+	return (uint32_t) ((col.r * 76 + col.g * 150 + col.b * 29) >> 8);
+}
+
+static inline uint8_t clamp_s8(int32_t val) {
+	if (val > 255) {
+		val = 255;
+	}
+	if (val < 0) {
+		val = 0;
+	}
+	return (uint8_t) val;
+}
+static inline uint8_t clamp_u8(uint32_t val) {
+	if (val > 255) {
+		val = 255;
+	}
+	return (uint8_t) val;
+}
+
+static inline argb make_rgb(unsigned a, unsigned r, unsigned g, unsigned b) {
+	return (argb)(uint32_t)(a << 24 | r << 16 | g << 8 | b);
+}
+static inline argb clamp_srgb(signed a, signed r, signed g, signed b) {
+	return make_rgb(clamp_s8(a), clamp_s8(r), clamp_s8(g), clamp_s8(b));
+}
+static inline argb clamp_urgb(unsigned a, unsigned r, unsigned g, unsigned b) {
+	return make_rgb(clamp_u8(a), clamp_u8(r), clamp_u8(g), clamp_u8(b));
+}
+
 
 static inline argb gx_mixcolor(argb c1, argb c2, int alpha) {
 	//~ uint32_t r = (c1 & 0xff0000) + (alpha * ((c2 & 0xff0000) - (c1 & 0xff0000)) >> 8);
@@ -105,51 +136,6 @@ static inline uint8_t gx_mixgray(uint32_t c1, uint32_t c2, int alpha) {
 	return (uint8_t) (c & 0xff);
 }
 
-static inline uint32_t rgblum(argb col) {
-	return (uint32_t) ((col.r * 76 + col.g * 150 + col.b * 29) >> 8);
-}
-
-static inline argb rgbval(uint32_t val) {
-	return (argb) val;
-}
-static inline argb rgbrgb(int r, int g, int b) {
-	argb res;
-	//~ res.a = 0xff;
-	res.r = (uint8_t) (r & 0xff);
-	res.g = (uint8_t) (g & 0xff);
-	res.b = (uint8_t) (b & 0xff);
-	return res;
-}
-
-
-static inline uint8_t clamp_val(int val) {
-	if (val > 255) {
-		val = 255;
-	}
-	if (val < 0) {
-		val = 0;
-	}
-	return (uint8_t) val;
-}
-static inline argb clamp_rgb(int r, int g, int b) {
-	argb res;
-	//~ res.a = 0xff;
-	res.r = clamp_val(r);
-	res.g = clamp_val(g);
-	res.b = clamp_val(b);
-	return res;
-}
-
-static inline argb rgbset(int a, int r, int g, int b) {
-	argb res;
-	res.a = (uint8_t) (a & 0xff);
-	res.r = (uint8_t) (r & 0xff);
-	res.g = (uint8_t) (g & 0xff);
-	res.b = (uint8_t) (b & 0xff);
-	return res;
-}
-static inline uint32_t __rgb(int r, int g, int b) { return (uint32_t) (r << 16 | g << 8 | b); }
-static inline uint32_t __argb(int a, int r, int g, int b) { return (uint32_t) (a << 24 | r << 16 | g << 8 | b); }
 
 void colcpy_32_abgr(void* dst, void *src, void *lut, size_t cnt);
 void colcpy_32_bgr(void* dst, void *src, void *lut, size_t cnt);

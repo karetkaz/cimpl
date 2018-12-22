@@ -420,9 +420,9 @@ static void draw_tri_part(gx_Surf dst, gx_Clip roi, edge l, edge r, int swap, in
 					if (img) {
 						argb tex;
 						tex.val = gx_getpix16(img, v.s, v.t, 1);
-						cBuff[offs].b = clamp_val((v.b >> 15) * tex.b >> 8);
-						cBuff[offs].g = clamp_val((v.g >> 15) * tex.g >> 8);
-						cBuff[offs].r = clamp_val((v.r >> 15) * tex.r >> 8);
+						cBuff[offs].b = clamp_s8((v.b >> 15) * tex.b >> 8);
+						cBuff[offs].g = clamp_s8((v.g >> 15) * tex.g >> 8);
+						cBuff[offs].r = clamp_s8((v.r >> 15) * tex.r >> 8);
 					} else {
 						cBuff[offs].b = (uint8_t) (v.b >> 16);
 						cBuff[offs].g = (uint8_t) (v.g >> 16);

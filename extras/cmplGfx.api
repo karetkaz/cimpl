@@ -364,8 +364,9 @@ gxSurf.clipText(font: gxSurf, rect: gxRect, text: char[*]): void
 gxSurf.drawText(surf: gxSurf, x: int32, y: int32, font: gxSurf, text: char[*], color: int32): void
 gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
 gxSurf.resize(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate: int32): void
-gxSurf.colorMap(surf: gxSurf, roi: gxRect, lut: uint32[]): void
+gxSurf.colorMap(surf: gxSurf, roi: gxRect, lut: uint32[256]): void
 gxSurf.colorMat(surf: gxSurf, roi: gxRect, mat: float32[16]): void
+gxSurf.calcHist(surf: gxSurf, roi: gxRect, rgb: uint32, lut: uint32[256]): void
 gxSurf.drawMesh(surf: gxSurf, mesh: gxMesh, mode: int32): int32
 gxMesh
 gxMesh.create(size: int32): gxMesh
@@ -429,7 +430,6 @@ vec2d
 vec2d.x
 vec2d.y
 vec2d(x: float64, y: float64): vec2d
-vec2d(value: vec2d): vec2d
 sub(a: vec2d, b: vec2d): vec2d
 dot(a: vec2d, b: vec2d): float64
 vec4f
@@ -445,7 +445,6 @@ vec4f.w
 vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
 vec4f(x: float32, y: float32, z: float32): vec4f
 vec4f(xyzw: float32): vec4f
-vec4f(value: vec4f): vec4f
 dp3(lhs: vec4f, rhs: vec4f): float32
 dp4(lhs: vec4f, rhs: vec4f): float32
 dph(lhs: vec4f, rhs: vec4f): float32
@@ -478,10 +477,20 @@ rgb(r: float64, g: float64, b: float64): uint32
 rgb(r: float32, g: float32, b: float32): uint32
 gray(c: float64): uint32
 gray(c: float32): uint32
-rch(col: int32): int32
-gch(col: int32): int32
-bch(col: int32): int32
-lum(c: int32): int32
+ach(col: uint32): uint32
+rch(col: uint32): uint32
+gch(col: uint32): uint32
+bch(col: uint32): uint32
+lum(c: uint32): uint32
+argb
+argb.b
+argb.g
+argb.r
+argb.a
+uint32(value: argb): uint32
+argb(argb: uint32): argb
+argb(r: uint32, g: uint32, b: uint32): argb
+argb(a: uint32, r: uint32, g: uint32, b: uint32): argb
 rgbOr(c1: uint32, c2: uint32): uint32
 rgbXor(c1: uint32, c2: uint32): uint32
 rgbAnd(c1: uint32, c2: uint32): uint32
@@ -492,8 +501,9 @@ rgbMul(c1: uint32, c2: uint32): uint32
 rgbDiv(c1: uint32, c2: uint32): uint32
 rgbLerp16(c1: uint32, c2: uint32, t: uint32): uint32
 rgbLerp(c1: uint32, c2: uint32, t: float64): uint32
+drawHist(image: gxSurf, roi: gxRect, hist: uint32): void
 rgb(vec: vec4f): uint32
-Hsv2Rgb(hsv: vec4f): vec4f
+hsv2rgb(hsv: vec4f): vec4f
 gxSurf(width: int32, height: int32, depth: int32): gxSurf
 gxSurf(fileName: char[*], depth: int32): gxSurf
 gxSurf(fileName: char[*]): gxSurf
@@ -505,4 +515,5 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
 show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void
 show(surf: gxSurf): void
 show(surf: gxSurf, onEvent(action: int32, button: int32, ex: int32, ey: int32): int32): void
+showDiff(image1: gxSurf, image2: gxSurf): void
 showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void

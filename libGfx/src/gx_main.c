@@ -306,41 +306,190 @@ static vmError surf_zoomSurf(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_cLutSurf = "void colorMap(gxSurf surf, const gxRect roi&, uint32 lut[])";
-static vmError surf_cLutSurf(nfcContext ctx) {
+static const char *proto_surf_calcHist = "void calcHist(gxSurf surf, const gxRect roi&, uint32 rgb, uint32 lut[256])";
+static vmError surf_calcHist(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 	gx_Rect roi = nextValue(ctx).ref;
+	uint32_t rgb = nextValue(ctx).u32;
 	rtValue lut = nextValue(ctx);
-	struct gx_Clut cLut;
-	cLut.flags = 0;
-	cLut.trans = 0;
-	cLut.count = lut.length < 256 ? lut.length : 256;
-	memcpy(&cLut.data, lut.ref, cLut.count * sizeof(uint32_t));
 
 	if (surf->depth != 32) {
 		ctx->rt->api.raise(ctx, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
 		return nativeCallError;
 	}
 
-	if (gx_cLutSurf(surf, roi, &cLut) != 0) {
+	/*if (lut.length != 256) {
+		ctx->rt->api.raise(ctx, raiseError, "Invalid table size: %d (should be 256), in function: %T", lut.length, ctx->sym);
 		return nativeCallError;
+	}*/
+
+	struct gx_Rect rect;
+	rect.x = roi ? roi->x : 0;
+	rect.y = roi ? roi->y : 0;
+	rect.w = roi ? roi->w : surf->width;
+	rect.h = roi ? roi->h : surf->height;
+
+	const char *dptr = gx_cliprect(surf, &rect);
+	if (dptr == NULL) {
+		ctx->rt->api.raise(ctx, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
+		return noError;
 	}
+
+	// init
+	uint32_t histoB[256];
+	uint32_t histoG[256];
+	uint32_t histoR[256];
+	uint32_t histoL[256];
+	for (int i = 0; i < 256; i += 1) {
+		histoB[i] = 0;
+		histoG[i] = 0;
+		histoR[i] = 0;
+		histoL[i] = 0;
+	}
+
+	for (int y = 0; y < rect.h; y += 1) {
+		argb *cBuff = (argb *) dptr;
+		for (int x = 0; x < rect.w; x += 1) {
+			histoL[lum(*cBuff)] += 1;
+			histoB[cBuff->b] += 1;
+			histoG[cBuff->g] += 1;
+			histoR[cBuff->r] += 1;
+			cBuff += 1;
+		}
+		dptr += surf->scanLen;
+	}
+
+	int max = 1;
+	int useB = bch(rgb);
+	int useG = gch(rgb);
+	int useR = rch(rgb);
+	int useL = ach(rgb);
+	for (int i = 0; i < 256; i += 1) {
+		histoB[i] = histoB[i] * useB >> 8;
+		histoG[i] = histoG[i] * useG >> 8;
+		histoR[i] = histoR[i] * useR >> 8;
+		histoL[i] = histoL[i] * useL >> 8;
+		if (max < histoB[i]) {
+			max = histoB[i];
+		}
+		if (max < histoG[i]) {
+			max = histoG[i];
+		}
+		if (max < histoR[i]) {
+			max = histoR[i];
+		}
+		if (max < histoL[i]) {
+			max = histoL[i];
+		}
+	}
+
+	argb *data = lut.ref;
+	for (int x = 0; x < 256; x += 1) {
+		data[x].b = clamp_u8(histoB[x] * 255 / max);
+		data[x].g = clamp_u8(histoG[x] * 255 / max);
+		data[x].r = clamp_u8(histoR[x] * 255 / max);
+		data[x].a = clamp_u8(histoL[x] * 255 / max);
+	}
+
 	return noError;
 }
 
-static const char *proto_surf_cMatSurf = "void colorMat(gxSurf surf, const gxRect roi&, float32 mat[16])";
+static const char *proto_surf_cLutSurf = "void colorMap(gxSurf surf, const gxRect roi&, const uint32 lut[256])";
+static vmError surf_cLutSurf(nfcContext ctx) {
+	gx_Surf surf = nextValue(ctx).ref;
+	gx_Rect roi = nextValue(ctx).ref;
+	rtValue lut = nextValue(ctx);
+
+	if (surf->depth != 32) {
+		ctx->rt->api.raise(ctx, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
+		return nativeCallError;
+	}
+
+	/*if (lut.length != 256) {
+		ctx->rt->api.raise(ctx, raiseError, "Invalid table size: %d (should be 256), in function: %T", lut.length, ctx->sym);
+		return nativeCallError;
+	}*/
+
+	struct gx_Rect rect;
+	rect.x = roi ? roi->x : 0;
+	rect.y = roi ? roi->y : 0;
+	rect.w = roi ? roi->w : surf->width;
+	rect.h = roi ? roi->h : surf->height;
+
+	argb *lptr = (argb*)lut.ref;
+	char *dptr = gx_cliprect(surf, &rect);
+	if (dptr == NULL) {
+		ctx->rt->api.raise(ctx, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
+		return noError;
+	}
+
+	for (int y = 0; y < rect.h; y += 1) {
+		argb *cBuff = (argb*)dptr;
+		for (int x = 0; x < rect.w; x += 1) {
+			cBuff->b = lptr[cBuff->b].b;
+			cBuff->g = lptr[cBuff->g].g;
+			cBuff->r = lptr[cBuff->r].r;
+			//cBuff->a = lptr[cBuff->a].a;
+			cBuff += 1;
+		}
+		dptr += surf->scanLen;
+	}
+
+	return noError;
+}
+
+static const char *proto_surf_cMatSurf = "void colorMat(gxSurf surf, const gxRect roi&, const float32 mat[16])";
 static vmError surf_cMatSurf(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 	gx_Rect roi = nextValue(ctx).ref;
-	float32_t *mat = nextValue(ctx).ref;
-	int32_t cMat[16];
-	for (int i = 0; i < 16; i++) {
-		cMat[i] = (int32_t) (mat[i] * 65535);
+	rtValue mat = nextValue(ctx);
+
+	if (surf->depth != 32) {
+		ctx->rt->api.raise(ctx, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
+		return nativeCallError;
 	}
-	gx_cMatSurf(surf, roi, cMat);
+
+	/*if (mat.length != 16) {
+		ctx->rt->api.raise(ctx, raiseError, "Invalid matrix size: %d (should be 16), in function: %T", surf->depth, ctx->sym);
+		return nativeCallError;
+	}*/
+
+	// convert floating point values to fixed point(16.16) values
+	int32_t cMat[16];
+	float32_t *mptr = mat.ref;
+	for (int i = 0; i < 16; i++) {
+		cMat[i] = (int32_t) (mptr[i] * 65535);
+	}
+
+	struct gx_Rect rect;
+	rect.x = roi ? roi->x : 0;
+	rect.y = roi ? roi->y : 0;
+	rect.w = roi ? roi->w : surf->width;
+	rect.h = roi ? roi->h : surf->height;
+
+	char *dptr = gx_cliprect(surf, &rect);
+	if (dptr == NULL) {
+		ctx->rt->api.raise(ctx, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
+		return noError;
+	}
+
+	for (int y = 0; y < rect.h; y += 1) {
+		argb *cBuff = (argb *) dptr;
+		for (int x = 0; x < rect.w; x += 1) {
+			int r = cBuff->r;
+			int g = cBuff->g;
+			int b = cBuff->b;
+			int a = 256;//cBuff->a;
+			cBuff->r = clamp_s8((r * cMat[0x0] + g * cMat[0x1] + b * cMat[0x2] + a * cMat[0x3]) >> 16);
+			cBuff->g = clamp_s8((r * cMat[0x4] + g * cMat[0x5] + b * cMat[0x6] + a * cMat[0x7]) >> 16);
+			cBuff->b = clamp_s8((r * cMat[0x8] + g * cMat[0x9] + b * cMat[0xa] + a * cMat[0xb]) >> 16);
+			//cBuff->a = clamp_s8((r * cMat[0xc] + g * cMat[0xd] + b * cMat[0xe] + a * cMat[0xf]) >> 16);
+			cBuff += 1;
+		}
+		dptr += surf->scanLen;
+	}
 	return noError;
 }
-
 
 static const char *proto_mesh_create = "gxMesh create(int32 size)";
 static const char *proto_mesh_recycle = "gxMesh recycle(gxMesh recycle, int32 size)";
@@ -700,22 +849,23 @@ static vmError mesh_material(nfcContext ctx) {
 }
 
 symn typSigned(rtContext rt, int size) {
-	char *typeName = "void";
 	switch (size) {
+		default:
+			break;
+
 		case 1:
-			typeName = "int8";
-			break;
+			return rt->api.ccLookup(rt, NULL, "int8");
+
 		case 2:
-			typeName = "int16";
-			break;
+			return rt->api.ccLookup(rt, NULL, "int16");
+
 		case 4:
-			typeName = "int32";
-			break;
+			return rt->api.ccLookup(rt, NULL, "int32");
+
 		case 8:
-			typeName = "int64";
-			break;
+			return rt->api.ccLookup(rt, NULL, "int64");
 	}
-	return rt->api.ccLookup(rt, NULL, typeName);
+	return NULL;
 }
 
 #define offsetOf(__TYPE, __FIELD) ((size_t) &((__TYPE*)NULL)->__FIELD)
@@ -756,6 +906,7 @@ int cmplInit(rtContext rt) {
 		{surf_zoomSurf, proto_surf_zoomSurf},
 		{surf_cLutSurf, proto_surf_cLutSurf},
 		{surf_cMatSurf, proto_surf_cMatSurf},
+		{surf_calcHist, proto_surf_calcHist},
 		{surf_drawMesh, proto_surf_drawMesh},
 	},
 	nfcWindow[] = {

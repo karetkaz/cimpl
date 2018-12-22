@@ -513,6 +513,14 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			}
 			// int a = func(4, 2);
 
+			if (loc == cc->emit_opc && ast->op.lhso->kind == RECORD_kwd) {
+				// emit( ..., struct(x), ...)  => emit x by value
+				type = typeCheck(cc, NULL, args, 1);
+				ast->op.rhso->type = type;
+				ast->type = type;
+				return type;
+			}
+
 			// try to lookup arguments in the current scope
 			rType = typeCheck(cc, loc, args, 0);
 

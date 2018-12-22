@@ -58,25 +58,25 @@ lib/math.Complex.ci:5: warn: adding implicit cast float64(0: int32)
 lib/string.ci:4: warn: adding implicit cast pointer(str: char[*])
 lib/string.ci:36: warn: adding implicit cast int32(with[i]: char)
 lib/string.ci:62: warn: adding implicit cast int32(str[i]: char)
-lib/string.ci:97: warn: padding `FormatFlags.padLen` with 2 bytes: (6 -> 8)
-lib/string.ci:103: warn: adding implicit cast int32(output.length: uint32)
-lib/string.ci:110: warn: adding implicit cast int32(output.length: uint32)
-lib/string.ci:111: warn: adding implicit cast uint32(1: int32)
-lib/string.ci:111: warn: adding implicit cast int32(output.length - (1): uint32)
-lib/string.ci:113: warn: adding implicit cast char(0: int32)
-lib/string.ci:125: warn: adding implicit cast int32(radixDigits.length: uint32)
-lib/string.ci:128: warn: adding implicit cast uint32(0: int32)
-lib/string.ci:128: warn: adding implicit cast uint32(radix: int32)
-lib/string.ci:129: warn: adding implicit cast uint32(radix: int32)
-lib/string.ci:148: warn: adding implicit cast int32(output.length: uint32)
-lib/string.ci:153: warn: adding implicit cast int32(output.length: uint32)
-lib/string.ci:160: warn: adding implicit cast int32(output.length: uint32)
-lib/string.ci:167: warn: adding implicit cast int32(output.length: uint32)
-lib/string.ci:172: warn: adding implicit cast int32(output.length: uint32)
-lib/string.ci:173: warn: adding implicit cast uint32(1: int32)
-lib/string.ci:173: warn: adding implicit cast int32(output.length - (1): uint32)
-lib/string.ci:175: warn: adding implicit cast char(0: int32)
-lib/string.ci:195: warn: statement should be a block statement {if (forceSign)}
+lib/string.ci:108: warn: padding `FormatFlags.padLen` with 2 bytes: (6 -> 8)
+lib/string.ci:114: warn: adding implicit cast int32(output.length: uint32)
+lib/string.ci:121: warn: adding implicit cast int32(output.length: uint32)
+lib/string.ci:122: warn: adding implicit cast uint32(1: int32)
+lib/string.ci:122: warn: adding implicit cast int32(output.length - (1): uint32)
+lib/string.ci:124: warn: adding implicit cast char(0: int32)
+lib/string.ci:136: warn: adding implicit cast int32(radixDigits.length: uint32)
+lib/string.ci:139: warn: adding implicit cast uint32(0: int32)
+lib/string.ci:139: warn: adding implicit cast uint32(radix: int32)
+lib/string.ci:140: warn: adding implicit cast uint32(radix: int32)
+lib/string.ci:159: warn: adding implicit cast int32(output.length: uint32)
+lib/string.ci:164: warn: adding implicit cast int32(output.length: uint32)
+lib/string.ci:171: warn: adding implicit cast int32(output.length: uint32)
+lib/string.ci:178: warn: adding implicit cast int32(output.length: uint32)
+lib/string.ci:183: warn: adding implicit cast int32(output.length: uint32)
+lib/string.ci:184: warn: adding implicit cast uint32(1: int32)
+lib/string.ci:184: warn: adding implicit cast int32(output.length - (1): uint32)
+lib/string.ci:186: warn: adding implicit cast char(0: int32)
+lib/string.ci:206: warn: statement should be a block statement {if (forceSign)}
 
 ---------- Compile: `test.ci`
 test/lang.inlineEmit.ci:11: warn: adding implicit cast float64(2: int32)
@@ -171,8 +171,8 @@ lib/math.ci:293: warn: using default type initializer: f := 0
 lib/math.ci:345: warn: using default type initializer: Math.tan.e := 0
 lib/math.ci:402: warn: using default type initializer: Math.sinh.result := 0
 lib/string.ci:72: warn: operators `&&` and `||` does not short-circuit yet
-lib/string.ci:122: warn: uninitialized variable `append.digits`
-lib/string.ci:125: warn: operators `&&` and `||` does not short-circuit yet
+lib/string.ci:133: warn: uninitialized variable `append.digits`
+lib/string.ci:136: warn: operators `&&` and `||` does not short-circuit yet
 lib/stdlib.ci:29: warn: no code will be generated for statement: 0
 lib/stdlib.ci:29: warn: no code will be generated for statement: 0
 lib/stdlib.ci:29: warn: no code will be generated for statement: 0
@@ -201,6 +201,14 @@ lib/stdlib.ci:29: warn: no code will be generated for statement: 0
 lib/stdlib.ci:29: warn: no code will be generated for statement: 0
 lib/stdlib.ci:29: warn: no code will be generated for statement: 0
 test/lang.method.ci:73: warn: accessing static member using instance variable `RecordMethodTest.printStatic(this: RecordMethodTest): void`/ RecordMethodTest
+test/lang.useOperator.ci:3: warn: using signed cast for unsigned value: `96.300000`
+test/lang.useOperator.ci:4: warn: using signed cast for unsigned value: `42.140000`
+test/lang.useOperator.ci:3: warn: using signed cast for unsigned value: `96.300000`
+test/lang.useOperator.ci:4: warn: using signed cast for unsigned value: `42.140000`
+test/lang.useOperator.ci:3: warn: using signed cast for unsigned value: `96.300000`
+test/lang.useOperator.ci:4: warn: using signed cast for unsigned value: `42.140000`
+test/lang.useOperator.ci:3: warn: using signed cast for unsigned value: `96.300000`
+test/lang.useOperator.ci:4: warn: using signed cast for unsigned value: `42.140000`
 test/lang.statementFor.ci:12: warn: using default type initializer: forIdx := 0
 
 ---------- Symbols:
@@ -5157,7 +5165,7 @@ FormatFlags: typename {
 .base: `typename`
 .size: 16
 .name: 'FormatFlags'
-.file: 'lib/string.ci:93'
+.file: 'lib/string.ci:104'
 .field radix: int32 (size: 4 -> const variable(i32))
 .field sign: char (size: 1 -> const variable(i32))
 .field padChr: char (size: 1 -> const variable(i32))
@@ -5169,7 +5177,7 @@ FormatFlags.radix: int32 {
 .base: `int32`
 .size: 4
 .name: 'radix'
-.file: 'lib/string.ci:94'
+.file: 'lib/string.ci:105'
 .owner: FormatFlags
 }
 FormatFlags.sign: char {
@@ -5177,7 +5185,7 @@ FormatFlags.sign: char {
 .base: `char`
 .size: 1
 .name: 'sign'
-.file: 'lib/string.ci:95'
+.file: 'lib/string.ci:106'
 .owner: FormatFlags
 }
 FormatFlags.padChr: char {
@@ -5185,7 +5193,7 @@ FormatFlags.padChr: char {
 .base: `char`
 .size: 1
 .name: 'padChr'
-.file: 'lib/string.ci:96'
+.file: 'lib/string.ci:107'
 .owner: FormatFlags
 }
 FormatFlags.padLen: int32 {
@@ -5193,7 +5201,7 @@ FormatFlags.padLen: int32 {
 .base: `int32`
 .size: 4
 .name: 'padLen'
-.file: 'lib/string.ci:97'
+.file: 'lib/string.ci:108'
 .owner: FormatFlags
 }
 FormatFlags.precision: int32 {
@@ -5201,7 +5209,7 @@ FormatFlags.precision: int32 {
 .base: `int32`
 .size: 4
 .name: 'precision'
-.file: 'lib/string.ci:98'
+.file: 'lib/string.ci:109'
 .owner: FormatFlags
 }
 append(output: char[], pos: int32, value: char[*]): int32: function {
@@ -5209,7 +5217,7 @@ append(output: char[], pos: int32, value: char[*]): int32: function {
 .base: `function`
 .size: 85
 .name: 'append'
-.file: 'lib/string.ci:101'
+.file: 'lib/string.ci:112'
 .param .result: int32 (size: 4 -> variable(i32))
 .param output: char[] (size: 8 -> variable(arr))
 .param pos: int32 (size: 4 -> variable(i32))
@@ -5229,17 +5237,17 @@ append(output: char[], pos: int32, value: char[*]): int32: function {
 	return .result := pos;
 }
 .instructions: (85 bytes)
-	lib/string.ci:102: (56 bytes): for (i: int32 := 0; value[i]; i := i + 1)
+	lib/string.ci:113: (56 bytes): for (i: int32 := 0; value[i]; i := i + 1)
 	<append+?>:    load.z32
 	<append+?>:    jmp <append+?>
-	lib/string.ci:103: (13 bytes): if (pos >= (output.length))
+	lib/string.ci:114: (13 bytes): if (pos >= (output.length))
 	<append+?>:    dup.x1 sp(3)
 	<append+?>:    dup.x1 sp(6)
 	<append+?>:    clt.i32
 	<append+?>:    jnz <append+?>
-	lib/string.ci:104: (4 bytes): break;
+	lib/string.ci:115: (4 bytes): break;
 	<append+?>:    jmp <append+?>
-	lib/string.ci:106: (12 bytes): output[pos] := value[i];
+	lib/string.ci:117: (12 bytes): output[pos] := value[i];
 	<append+?>:    dup.x1 sp(2)
 	<append+?>:    dup.x1 sp(1)
 	<append+?>:    add.i32
@@ -5248,35 +5256,35 @@ append(output: char[], pos: int32, value: char[*]): int32: function {
 	<append+?>:    dup.x1 sp(5)
 	<append+?>:    add.i32
 	<append+?>:    store.i8
-	lib/string.ci:107: (8 bytes): pos := pos + 1;
+	lib/string.ci:118: (8 bytes): pos := pos + 1;
 	<append+?>:    dup.x1 sp(3)
 	<append+?>:    inc.i32(+1)
 	<append+?>:    set.x1 sp(4)
-	lib/string.ci:102: (4 bytes): i := i + 1
+	lib/string.ci:113: (4 bytes): i := i + 1
 	<append+?>:    inc.i32(+1)
-	lib/string.ci:102: (10 bytes): value[i]
+	lib/string.ci:113: (10 bytes): value[i]
 	<append+?>:    dup.x1 sp(2)
 	<append+?>:    dup.x1 sp(1)
 	<append+?>:    add.i32
 	<append+?>:    load.i8
 	<append+?>:    jnz <append+?>
 	<append+?>:    inc.sp(-4)
-	lib/string.ci:110: (17 bytes): if (pos >= (output.length))
+	lib/string.ci:121: (17 bytes): if (pos >= (output.length))
 	<append+?>:    dup.x1 sp(2)
 	<append+?>:    dup.x1 sp(5)
 	<append+?>:    clt.i32
 	<append+?>:    jnz <append+?>
-	lib/string.ci:111: (8 bytes): pos := (output.length - (1));
+	lib/string.ci:122: (8 bytes): pos := (output.length - (1));
 	<append+?>:    dup.x1 sp(4)
 	<append+?>:    inc.i32(-1)
 	<append+?>:    set.x1 sp(3)
-	lib/string.ci:113: (7 bytes): output[pos] := (0);
+	lib/string.ci:124: (7 bytes): output[pos] := (0);
 	<append+?>:    load.z32
 	<append+?>:    dup.x1 sp(4)
 	<append+?>:    dup.x1 sp(4)
 	<append+?>:    add.i32
 	<append+?>:    store.i8
-	lib/string.ci:114: (5 bytes): return .result := pos;
+	lib/string.ci:125: (5 bytes): return .result := pos;
 	<append+?>:    dup.x1 sp(2)
 	<append+?>:    set.x1 sp(6)
 	<append+?>:    ret
@@ -5286,7 +5294,7 @@ append(output: char[], pos: int32, value: uint32, format: FormatFlags): int32: f
 .base: `function`
 .size: 623
 .name: 'append'
-.file: 'lib/string.ci:117'
+.file: 'lib/string.ci:128'
 .param .result: int32 (size: 4 -> variable(i32))
 .param output: char[] (size: 8 -> variable(arr))
 .param pos: int32 (size: 4 -> variable(i32))
@@ -5340,14 +5348,14 @@ append(output: char[], pos: int32, value: uint32, format: FormatFlags): int32: f
 	return .result := pos;
 }
 .instructions: (623 bytes)
-	lib/string.ci:121: (1 bytes): len: int32 := 0
+	lib/string.ci:132: (1 bytes): len: int32 := 0
 	<append+?>:    load.z32
-	lib/string.ci:122: (4 bytes): digits: char[80]
+	lib/string.ci:133: (4 bytes): digits: char[80]
 	<append+?>:    inc.sp(+80)
-	lib/string.ci:124: (3 bytes): radix: int32 := format.radix
+	lib/string.ci:135: (3 bytes): radix: int32 := format.radix
 	<append+?>:    dup.x1 sp(22)
 	<append+?>:    load.i32
-	lib/string.ci:125: (63 bytes): assert(radix > 1 && radix < (radixDigits.length));
+	lib/string.ci:136: (63 bytes): assert(radix > 1 && radix < (radixDigits.length));
 	<append+?>:    dup.x1 sp(0)
 	<append+?>:    load.c32 1
 	<append+?>:    cgt.i32
@@ -5358,16 +5366,16 @@ append(output: char[], pos: int32, value: uint32, format: FormatFlags): int32: f
 	<append+?>:    jz <append+?>
 	<append+?>:    jmp <append+?>
 	<append+?>:    load.ref .?????? ;"lib/string.ci"
-	<append+?>:    load.c32 125
+	<append+?>:    load.c32 136
 	<append+?>:    load.c32 -2
 	<append+?>:    load.c32 128
 	<append+?>:    load.ref .?????? ;"assertion failed!"
 	<append+?>:    load.ref .?????? ;pointer
 	<append+?>:    load.ref .?????? ;null
 	<append+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	lib/string.ci:128: (46 bytes): for ( ; value > (0); value := value / (radix))
+	lib/string.ci:139: (46 bytes): for ( ; value > (0); value := value / (radix))
 	<append+?>:    jmp <append+?>
-	lib/string.ci:129: (27 bytes): digits[len := len + 1] := radixDigits[value % (radix)];
+	lib/string.ci:140: (27 bytes): digits[len := len + 1] := radixDigits[value % (radix)];
 	<append+?>:    load.m32 .?????? ;append.radixDigits
 	<append+?>:    dup.x1 sp(25)
 	<append+?>:    dup.x1 sp(2)
@@ -5381,22 +5389,22 @@ append(output: char[], pos: int32, value: uint32, format: FormatFlags): int32: f
 	<append+?>:    set.x1 sp(25)
 	<append+?>:    add.i32
 	<append+?>:    store.i8
-	lib/string.ci:128: (7 bytes): value := value / (radix)
+	lib/string.ci:139: (7 bytes): value := value / (radix)
 	<append+?>:    dup.x1 sp(24)
 	<append+?>:    dup.x1 sp(1)
 	<append+?>:    div.u32
 	<append+?>:    set.x1 sp(25)
-	lib/string.ci:128: (8 bytes): value > (0)
+	lib/string.ci:139: (8 bytes): value > (0)
 	<append+?>:    dup.x1 sp(24)
 	<append+?>:    load.z32
 	<append+?>:    cgt.u32
 	<append+?>:    jnz <append+?>
-	lib/string.ci:131: (29 bytes): if (len == 0)
+	lib/string.ci:142: (29 bytes): if (len == 0)
 	<append+?>:    dup.x1 sp(21)
 	<append+?>:    load.z32
 	<append+?>:    ceq.i32
 	<append+?>:    jz <append+?>
-	lib/string.ci:132: (21 bytes): digits[len := len + 1] := '0';
+	lib/string.ci:143: (21 bytes): digits[len := len + 1] := '0';
 	<append+?>:    load.c32 48
 	<append+?>:    load.sp(+8)
 	<append+?>:    dup.x1 sp(23)
@@ -5405,38 +5413,38 @@ append(output: char[], pos: int32, value: uint32, format: FormatFlags): int32: f
 	<append+?>:    set.x1 sp(25)
 	<append+?>:    add.i32
 	<append+?>:    store.i8
-	lib/string.ci:135: (10 bytes): maxLen: int32 := format.padLen - len
+	lib/string.ci:146: (10 bytes): maxLen: int32 := format.padLen - len
 	<append+?>:    dup.x1 sp(23)
 	<append+?>:    inc.i32(+8)
 	<append+?>:    load.i32
 	<append+?>:    dup.x1 sp(22)
 	<append+?>:    sub.i32
-	lib/string.ci:137: (7 bytes): padChr: char := format.padChr
+	lib/string.ci:148: (7 bytes): padChr: char := format.padChr
 	<append+?>:    dup.x1 sp(24)
 	<append+?>:    inc.i32(+5)
 	<append+?>:    load.i8
-	lib/string.ci:138: (21 bytes): if (padChr == '')
+	lib/string.ci:149: (21 bytes): if (padChr == '')
 	<append+?>:    load.sp(+0)
 	<append+?>:    load.i8
 	<append+?>:    load.z32
 	<append+?>:    ceq.i32
 	<append+?>:    jz <append+?>
-	lib/string.ci:139: (10 bytes): padChr := ' ';
+	lib/string.ci:150: (10 bytes): padChr := ' ';
 	<append+?>:    load.c32 32
 	<append+?>:    load.sp(+4)
 	<append+?>:    store.i8
-	lib/string.ci:143: (211 bytes): if (format.sign != '')
+	lib/string.ci:154: (211 bytes): if (format.sign != '')
 	<append+?>:    dup.x1 sp(25)
 	<append+?>:    inc.i32(+4)
 	<append+?>:    load.i8
 	<append+?>:    load.z32
 	<append+?>:    ceq.i32
 	<append+?>:    jnz <append+?>
-	lib/string.ci:144: (8 bytes): maxLen := maxLen - 1;
+	lib/string.ci:155: (8 bytes): maxLen := maxLen - 1;
 	<append+?>:    dup.x1 sp(1)
 	<append+?>:    inc.i32(-1)
 	<append+?>:    set.x1 sp(2)
-	lib/string.ci:145: (117 bytes): if (contains(whiteSpace, padChr))
+	lib/string.ci:156: (117 bytes): if (contains(whiteSpace, padChr))
 	<append+?>:    load.z32
 	<append+?>:    load.m32 .?????? ;append.whiteSpace
 	<append+?>:    load.sp(+8)
@@ -5447,57 +5455,57 @@ append(output: char[], pos: int32, value: uint32, format: FormatFlags): int32: f
 	<append+?>:    load.z32
 	<append+?>:    clt.i32
 	<append+?>:    jnz <append+?>
-	lib/string.ci:147: (91 bytes): for ( ; maxLen > 0; maxLen := maxLen - 1)
+	lib/string.ci:158: (91 bytes): for ( ; maxLen > 0; maxLen := maxLen - 1)
 	<append+?>:    jmp <append+?>
-	lib/string.ci:148: (52 bytes): assert(pos < (output.length));
+	lib/string.ci:159: (52 bytes): assert(pos < (output.length));
 	<append+?>:    dup.x1 sp(27)
 	<append+?>:    dup.x1 sp(30)
 	<append+?>:    clt.i32
 	<append+?>:    jz <append+?>
 	<append+?>:    jmp <append+?>
 	<append+?>:    load.ref .?????? ;"lib/string.ci"
-	<append+?>:    load.c32 148
+	<append+?>:    load.c32 159
 	<append+?>:    load.c32 -2
 	<append+?>:    load.c32 128
 	<append+?>:    load.ref .?????? ;"assertion failed!"
 	<append+?>:    load.ref .?????? ;pointer
 	<append+?>:    load.ref .?????? ;null
 	<append+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	lib/string.ci:149: (11 bytes): output[pos] := padChr;
+	lib/string.ci:160: (11 bytes): output[pos] := padChr;
 	<append+?>:    load.sp(+0)
 	<append+?>:    load.i8
 	<append+?>:    dup.x1 sp(29)
 	<append+?>:    dup.x1 sp(29)
 	<append+?>:    add.i32
 	<append+?>:    store.i8
-	lib/string.ci:150: (8 bytes): pos := pos + 1;
+	lib/string.ci:161: (8 bytes): pos := pos + 1;
 	<append+?>:    dup.x1 sp(27)
 	<append+?>:    inc.i32(+1)
 	<append+?>:    set.x1 sp(28)
-	lib/string.ci:147: (8 bytes): maxLen := maxLen - 1
+	lib/string.ci:158: (8 bytes): maxLen := maxLen - 1
 	<append+?>:    dup.x1 sp(1)
 	<append+?>:    inc.i32(-1)
 	<append+?>:    set.x1 sp(2)
-	lib/string.ci:147: (8 bytes): maxLen > 0
+	lib/string.ci:158: (8 bytes): maxLen > 0
 	<append+?>:    dup.x1 sp(1)
 	<append+?>:    load.z32
 	<append+?>:    cgt.i32
 	<append+?>:    jnz <append+?>
-	lib/string.ci:153: (52 bytes): assert(pos < (output.length));
+	lib/string.ci:164: (52 bytes): assert(pos < (output.length));
 	<append+?>:    dup.x1 sp(27)
 	<append+?>:    dup.x1 sp(30)
 	<append+?>:    clt.i32
 	<append+?>:    jz <append+?>
 	<append+?>:    jmp <append+?>
 	<append+?>:    load.ref .?????? ;"lib/string.ci"
-	<append+?>:    load.c32 153
+	<append+?>:    load.c32 164
 	<append+?>:    load.c32 -2
 	<append+?>:    load.c32 128
 	<append+?>:    load.ref .?????? ;"assertion failed!"
 	<append+?>:    load.ref .?????? ;pointer
 	<append+?>:    load.ref .?????? ;null
 	<append+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	lib/string.ci:154: (13 bytes): output[pos] := format.sign;
+	lib/string.ci:165: (13 bytes): output[pos] := format.sign;
 	<append+?>:    dup.x1 sp(25)
 	<append+?>:    inc.i32(+4)
 	<append+?>:    load.i8
@@ -5505,64 +5513,64 @@ append(output: char[], pos: int32, value: uint32, format: FormatFlags): int32: f
 	<append+?>:    dup.x1 sp(29)
 	<append+?>:    add.i32
 	<append+?>:    store.i8
-	lib/string.ci:155: (8 bytes): pos := pos + 1;
+	lib/string.ci:166: (8 bytes): pos := pos + 1;
 	<append+?>:    dup.x1 sp(27)
 	<append+?>:    inc.i32(+1)
 	<append+?>:    set.x1 sp(28)
-	lib/string.ci:159: (91 bytes): for ( ; maxLen > 0; maxLen := maxLen - 1)
+	lib/string.ci:170: (91 bytes): for ( ; maxLen > 0; maxLen := maxLen - 1)
 	<append+?>:    jmp <append+?>
-	lib/string.ci:160: (52 bytes): assert(pos < (output.length));
+	lib/string.ci:171: (52 bytes): assert(pos < (output.length));
 	<append+?>:    dup.x1 sp(27)
 	<append+?>:    dup.x1 sp(30)
 	<append+?>:    clt.i32
 	<append+?>:    jz <append+?>
 	<append+?>:    jmp <append+?>
 	<append+?>:    load.ref .?????? ;"lib/string.ci"
-	<append+?>:    load.c32 160
+	<append+?>:    load.c32 171
 	<append+?>:    load.c32 -2
 	<append+?>:    load.c32 128
 	<append+?>:    load.ref .?????? ;"assertion failed!"
 	<append+?>:    load.ref .?????? ;pointer
 	<append+?>:    load.ref .?????? ;null
 	<append+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	lib/string.ci:161: (11 bytes): output[pos] := padChr;
+	lib/string.ci:172: (11 bytes): output[pos] := padChr;
 	<append+?>:    load.sp(+0)
 	<append+?>:    load.i8
 	<append+?>:    dup.x1 sp(29)
 	<append+?>:    dup.x1 sp(29)
 	<append+?>:    add.i32
 	<append+?>:    store.i8
-	lib/string.ci:162: (8 bytes): pos := pos + 1;
+	lib/string.ci:173: (8 bytes): pos := pos + 1;
 	<append+?>:    dup.x1 sp(27)
 	<append+?>:    inc.i32(+1)
 	<append+?>:    set.x1 sp(28)
-	lib/string.ci:159: (8 bytes): maxLen := maxLen - 1
+	lib/string.ci:170: (8 bytes): maxLen := maxLen - 1
 	<append+?>:    dup.x1 sp(1)
 	<append+?>:    inc.i32(-1)
 	<append+?>:    set.x1 sp(2)
-	lib/string.ci:159: (8 bytes): maxLen > 0
+	lib/string.ci:170: (8 bytes): maxLen > 0
 	<append+?>:    dup.x1 sp(1)
 	<append+?>:    load.z32
 	<append+?>:    cgt.i32
 	<append+?>:    jnz <append+?>
-	lib/string.ci:166: (99 bytes): for (i: int32 := 0; i < len; i := i + 1)
+	lib/string.ci:177: (99 bytes): for (i: int32 := 0; i < len; i := i + 1)
 	<append+?>:    load.z32
 	<append+?>:    jmp <append+?>
-	lib/string.ci:167: (52 bytes): assert(i < (output.length));
+	lib/string.ci:178: (52 bytes): assert(i < (output.length));
 	<append+?>:    dup.x1 sp(0)
 	<append+?>:    dup.x1 sp(31)
 	<append+?>:    clt.i32
 	<append+?>:    jz <append+?>
 	<append+?>:    jmp <append+?>
 	<append+?>:    load.ref .?????? ;"lib/string.ci"
-	<append+?>:    load.c32 167
+	<append+?>:    load.c32 178
 	<append+?>:    load.c32 -2
 	<append+?>:    load.c32 128
 	<append+?>:    load.ref .?????? ;"assertion failed!"
 	<append+?>:    load.ref .?????? ;pointer
 	<append+?>:    load.ref .?????? ;null
 	<append+?>:    nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	lib/string.ci:168: (17 bytes): output[pos] := digits[len - i];
+	lib/string.ci:179: (17 bytes): output[pos] := digits[len - i];
 	<append+?>:    load.sp(+16)
 	<append+?>:    dup.x1 sp(25)
 	<append+?>:    dup.x1 sp(2)
@@ -5573,34 +5581,34 @@ append(output: char[], pos: int32, value: uint32, format: FormatFlags): int32: f
 	<append+?>:    dup.x1 sp(30)
 	<append+?>:    add.i32
 	<append+?>:    store.i8
-	lib/string.ci:169: (8 bytes): pos := pos + 1;
+	lib/string.ci:180: (8 bytes): pos := pos + 1;
 	<append+?>:    dup.x1 sp(28)
 	<append+?>:    inc.i32(+1)
 	<append+?>:    set.x1 sp(29)
-	lib/string.ci:166: (4 bytes): i := i + 1
+	lib/string.ci:177: (4 bytes): i := i + 1
 	<append+?>:    inc.i32(+1)
-	lib/string.ci:166: (9 bytes): i < len
+	lib/string.ci:177: (9 bytes): i < len
 	<append+?>:    dup.x1 sp(0)
 	<append+?>:    dup.x1 sp(25)
 	<append+?>:    clt.i32
 	<append+?>:    jnz <append+?>
 	<append+?>:    inc.sp(-4)
-	lib/string.ci:172: (17 bytes): if (pos >= (output.length))
+	lib/string.ci:183: (17 bytes): if (pos >= (output.length))
 	<append+?>:    dup.x1 sp(27)
 	<append+?>:    dup.x1 sp(30)
 	<append+?>:    clt.i32
 	<append+?>:    jnz <append+?>
-	lib/string.ci:173: (8 bytes): pos := (output.length - (1));
+	lib/string.ci:184: (8 bytes): pos := (output.length - (1));
 	<append+?>:    dup.x1 sp(29)
 	<append+?>:    inc.i32(-1)
 	<append+?>:    set.x1 sp(28)
-	lib/string.ci:175: (7 bytes): output[pos] := (0);
+	lib/string.ci:186: (7 bytes): output[pos] := (0);
 	<append+?>:    load.z32
 	<append+?>:    dup.x1 sp(29)
 	<append+?>:    dup.x1 sp(29)
 	<append+?>:    add.i32
 	<append+?>:    store.i8
-	lib/string.ci:176: (9 bytes): return .result := pos;
+	lib/string.ci:187: (9 bytes): return .result := pos;
 	<append+?>:    dup.x1 sp(27)
 	<append+?>:    set.x1 sp(31)
 	<append+?>:    inc.sp(-96)
@@ -5613,7 +5621,7 @@ append(output: char[], pos: int32, value: uint32): int32: function {
 .base: `function`
 .size: 25
 .name: 'append'
-.file: 'lib/string.ci:179'
+.file: 'lib/string.ci:190'
 .param .result: int32 (size: 4 -> variable(i32))
 .param output: char[] (size: 8 -> variable(arr))
 .param pos: int32 (size: 4 -> variable(i32))
@@ -5629,7 +5637,7 @@ append(output: char[], pos: int32, value: uint32): int32: function {
 	return .result := append(output, pos, value, format);
 }
 .instructions: (25 bytes)
-	lib/string.ci:187: (25 bytes): return .result := append(output, pos, value, format);
+	lib/string.ci:198: (25 bytes): return .result := append(output, pos, value, format);
 	<append+?>:    load.z32
 	<append+?>:    dup.x2 sp(4)
 	<append+?>:    dup.x1 sp(5)
@@ -5646,7 +5654,7 @@ append(output: char[], pos: int32, value: int32, forceSign: bool, pad: int32): i
 .base: `function`
 .size: 118
 .name: 'append'
-.file: 'lib/string.ci:189'
+.file: 'lib/string.ci:200'
 .param .result: int32 (size: 4 -> variable(i32))
 .param output: char[] (size: 8 -> variable(arr))
 .param pos: int32 (size: 4 -> variable(i32))
@@ -5674,51 +5682,51 @@ append(output: char[], pos: int32, value: int32, forceSign: bool, pad: int32): i
 	return .result := append(output, pos, value, format);
 }
 .instructions: (118 bytes)
-	lib/string.ci:190: (1 bytes): sign: char := 0
+	lib/string.ci:201: (1 bytes): sign: char := 0
 	<append+?>:    load.z32
-	lib/string.ci:191: (46 bytes): if (value < 0)
+	lib/string.ci:202: (46 bytes): if (value < 0)
 	<append+?>:    dup.x1 sp(4)
 	<append+?>:    load.z32
 	<append+?>:    clt.i32
 	<append+?>:    jz <append+?>
-	lib/string.ci:192: (5 bytes): value := -value;
+	lib/string.ci:203: (5 bytes): value := -value;
 	<append+?>:    dup.x1 sp(4)
 	<append+?>:    neg.i32
 	<append+?>:    set.x1 sp(5)
-	lib/string.ci:193: (10 bytes): sign := '-';
+	lib/string.ci:204: (10 bytes): sign := '-';
 	<append+?>:    load.c32 45
 	<append+?>:    load.sp(+4)
 	<append+?>:    store.i8
 	<append+?>:    jmp <append+?>
-	lib/string.ci:195: (19 bytes): if (forceSign)
+	lib/string.ci:206: (19 bytes): if (forceSign)
 	<append+?>:    load.sp(+12)
 	<append+?>:    load.i8
 	<append+?>:    jz <append+?>
-	lib/string.ci:196: (10 bytes): sign := '+';
+	lib/string.ci:207: (10 bytes): sign := '+';
 	<append+?>:    load.c32 43
 	<append+?>:    load.sp(+4)
 	<append+?>:    store.i8
-	lib/string.ci:198: (38 bytes): const format: FormatFlags := {...}
+	lib/string.ci:209: (38 bytes): const format: FormatFlags := {...}
 	<append+?>:    inc.sp(+16)
-	lib/string.ci:199: (7 bytes): format.radix := 10;
+	lib/string.ci:210: (7 bytes): format.radix := 10;
 	<append+?>:    load.c32 10
 	<append+?>:    set.x1 sp(1)
-	lib/string.ci:200: (10 bytes): format.sign := sign;
+	lib/string.ci:211: (10 bytes): format.sign := sign;
 	<append+?>:    load.sp(+16)
 	<append+?>:    load.i8
 	<append+?>:    load.sp(+8)
 	<append+?>:    store.i8
-	lib/string.ci:201: (10 bytes): format.padChr := '0';
+	lib/string.ci:212: (10 bytes): format.padChr := '0';
 	<append+?>:    load.c32 48
 	<append+?>:    load.sp(+9)
 	<append+?>:    store.i8
-	lib/string.ci:202: (4 bytes): format.padLen := pad;
+	lib/string.ci:213: (4 bytes): format.padLen := pad;
 	<append+?>:    dup.x1 sp(6)
 	<append+?>:    set.x1 sp(3)
-	lib/string.ci:203: (3 bytes): format.precision := 0;
+	lib/string.ci:214: (3 bytes): format.precision := 0;
 	<append+?>:    load.z32
 	<append+?>:    set.x1 sp(4)
-	lib/string.ci:205: (28 bytes): return .result := append(output, pos, value, format);
+	lib/string.ci:216: (28 bytes): return .result := append(output, pos, value, format);
 	<append+?>:    load.z32
 	<append+?>:    dup.x2 sp(11)
 	<append+?>:    dup.x1 sp(12)
@@ -13429,29 +13437,29 @@ forIdx: int32 {
 	}
 }
 .instructions: (7233 bytes)
-	lib/string.ci:118: (14 bytes): static const whiteSpace: char[] := " \t\n\r"
+	lib/string.ci:129: (14 bytes): static const whiteSpace: char[] := " \t\n\r"
 	<.main+?>:    load.c32 4
 	<.main+?>:    load.ref .?????? ;" \t\n\r"
 	<.main+?>:    store.m64 .?????? ;append.whiteSpace
-	lib/string.ci:119: (14 bytes): static const radixDigits: char[] := "0123456789abcdefghijklmnopqrstuvwxyz"
+	lib/string.ci:130: (14 bytes): static const radixDigits: char[] := "0123456789abcdefghijklmnopqrstuvwxyz"
 	<.main+?>:    load.c32 36
 	<.main+?>:    load.ref .?????? ;"0123456789abcdefghijklmnopqrstuvwxyz"
 	<.main+?>:    store.m64 .?????? ;append.radixDigits
-	lib/string.ci:180: (37 bytes): static const format: FormatFlags := {...}
+	lib/string.ci:191: (37 bytes): static const format: FormatFlags := {...}
 	<.main+?>:    load.c32 10
 	<.main+?>:    store.m32 .?????? ;append.format
-	lib/string.ci:182: (7 bytes): format.sign := '';
+	lib/string.ci:193: (7 bytes): format.sign := '';
 	<.main+?>:    load.z32
 	<.main+?>:    load.ref .?????? ;append.format+4
 	<.main+?>:    store.i8
-	lib/string.ci:183: (11 bytes): format.padChr := ' ';
+	lib/string.ci:194: (11 bytes): format.padChr := ' ';
 	<.main+?>:    load.c32 32
 	<.main+?>:    load.ref .?????? ;append.format+5
 	<.main+?>:    store.i8
-	lib/string.ci:184: (5 bytes): format.padLen := 0;
+	lib/string.ci:195: (5 bytes): format.padLen := 0;
 	<.main+?>:    load.z32
 	<.main+?>:    store.m32 .?????? ;append.format+8
-	lib/string.ci:185: (5 bytes): format.precision := 0;
+	lib/string.ci:196: (5 bytes): format.precision := 0;
 	<.main+?>:    load.z32
 	<.main+?>:    store.m32 .?????? ;append.format+12
 	test/lang.initByRef.ci:7: (13 bytes): static value: int64 := 42
@@ -16679,11 +16687,11 @@ lib/string.ci:44: endsWith: function(<endsWith @03aba8>)
 lib/string.ci:58: compare: function(<compare @03ac30>)
 lib/string.ci:70: ignCaseCmp: function(<ignCaseCmp @03acc8>)
 lib/string.ci:82: caseCmp: function(<caseCmp @03acf0>)
-lib/string.ci:93: FormatFlags: typename(<FormatFlags>)
-lib/string.ci:101: append: function(<append @03ad00>)
-lib/string.ci:117: append: function(<append @03ad68>)
-lib/string.ci:179: append: function(<append @03afe8>)
-lib/string.ci:189: append: function(<append @03b008>)
+lib/string.ci:104: FormatFlags: typename(<FormatFlags>)
+lib/string.ci:112: append: function(<append @03ad00>)
+lib/string.ci:128: append: function(<append @03ad68>)
+lib/string.ci:190: append: function(<append @03afe8>)
+lib/string.ci:200: append: function(<append @03b008>)
 test/lang.inlineEmit.ci:3: emitldz32: int32(0)
 test/lang.inlineEmit.ci:4: emitldz64: int64(0)
 test/lang.inlineEmit.ci:6: emitA: int32(42)

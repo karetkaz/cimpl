@@ -244,8 +244,6 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth);
 
 
 // image effects
-int gx_cLutSurf(gx_Surf surf, gx_Rect roi, gx_Clut lut);
-int gx_cMatSurf(gx_Surf surf, gx_Rect roi, const int32_t mat[16]);
 int gx_gradSurf(gx_Surf dst, gx_Rect roi, gx_Clut lut, gradient_type gradtype, int repeat);
 
 //~ TODO: remove Internal functions

@@ -414,7 +414,7 @@ int gx_saveBmp(const char *dst, gx_Surf src, int flags) {
 			}
 			else {	// use gray palette
 				for (int i = 0; i < 256; ++i) {
-					palette.data[i] = __argb(255, i, i, i);
+					palette.data[i] = make_rgb(255, i, i, i).val;
 				}
 				palette.count = 256;
 				infoHeader.depth = 8;

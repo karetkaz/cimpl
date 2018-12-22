@@ -1,0 +1,43 @@
+void drawHist(gxSurf image, gxRect roi&, uint32 hist) {
+	uint32 lut[256];
+	image.calcHist(roi, hist, lut);
+
+	enum {
+		margin: 20;
+		padding: 7;
+		colB: 0x4371c6;
+		colG: 0x72d874;
+		colR: 0xfc6165;
+		colL: 0xdadada;
+	}
+
+	gxRect rect = {
+		w: 256;
+		h: 128;
+		y: margin;
+		x: image.width() - rect.w - margin;
+	};
+
+	image.fillRect(
+		rect.x - padding,
+		rect.y - padding,
+		rect.x + rect.w + padding,
+		rect.y + rect.h + padding,
+		0
+	);
+
+	for (int x = 0; x < rect.w; x += 1) {
+		int bv = bch(lut[x]) * rect.h / 256;
+		int gv = gch(lut[x]) * rect.h / 256;
+		int rv = rch(lut[x]) * rect.h / 256;
+		int lv = ach(lut[x]) * rect.h / 256; 
+
+		for (int y = 0; y < rect.h; y += 1) {
+			uint32 b = colB * uint32(y < bv);
+			uint32 g = colG * uint32(y < gv);
+			uint32 r = colR * uint32(y < rv);
+			uint32 l = colL * uint32(y < lv);
+			image.set(x + rect.x, rect.h - y + rect.y - 1, r | g | b | l);
+		}
+	}
+}

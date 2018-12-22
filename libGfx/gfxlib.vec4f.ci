@@ -19,9 +19,8 @@ vec4f vec4f(float32 xyzw) {
 	return { x: xyzw, y: xyzw, z: xyzw, w: xyzw };
 }
 
-inline vec4f(vec4f value) = value; // FIXME: only emit should understand this
-inline dp3(vec4f lhs, vec4f rhs) = float32(emit(vec4f(rhs), vec4f(lhs), p4x.dp3));
-inline dp4(vec4f lhs, vec4f rhs) = float32(emit(vec4f(rhs), vec4f(lhs), p4x.dp4));
-inline dph(vec4f lhs, vec4f rhs) = float32(emit(vec4f(rhs), vec4f(lhs), p4x.dph));
+inline dp3(vec4f lhs, vec4f rhs) = float32(emit(struct(rhs), struct(lhs), p4x.dp3));
+inline dp4(vec4f lhs, vec4f rhs) = float32(emit(struct(rhs), struct(lhs), p4x.dp4));
+inline dph(vec4f lhs, vec4f rhs) = float32(emit(struct(rhs), struct(lhs), p4x.dph));
 
 inline cross(vec4f a, vec4f b) = vec4f(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
