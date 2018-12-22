@@ -8,8 +8,8 @@ ELSE()
 ENDIF()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m${ARCH} -std=gnu99")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/out>)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/out>)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/bin>)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/bin>)
 
 set(CC_HEADER_FILES
 	src/cmpl.h
@@ -35,24 +35,24 @@ set(CC_SOURCE_FILES
 )
 
 set(GX_HEADER_FILES
-	libGfx/src/gx_surf.h
-	libGfx/src/gx_color.h
-	libGfx/src/g3_math.h
-	libGfx/src/g3_mesh.h
-	libGfx/src/g3_draw.h
-	libGfx/src/gx_gui.h
+	lib/cmplGfx/src/gx_surf.h
+	lib/cmplGfx/src/gx_color.h
+	lib/cmplGfx/src/g3_math.h
+	lib/cmplGfx/src/g3_mesh.h
+	lib/cmplGfx/src/g3_draw.h
+	lib/cmplGfx/src/gx_gui.h
 )
 
 set(GX_SOURCE_FILES
-	libGfx/src/gx_surf.c
-	libGfx/src/gx_color.c
-	libGfx/src/g2_draw.c
-	libGfx/src/g3_draw.c
-	libGfx/src/g2_image.c
-	libGfx/src/g3_mesh.c
-	#libGfx/src/gx_gui.W32.c
-	#libGfx/src/gx_gui.X11.c
-	libGfx/src/gx_main.c
+	lib/cmplGfx/src/gx_surf.c
+	lib/cmplGfx/src/gx_color.c
+	lib/cmplGfx/src/g2_draw.c
+	lib/cmplGfx/src/g3_draw.c
+	lib/cmplGfx/src/g2_image.c
+	lib/cmplGfx/src/g3_mesh.c
+	#cmplGfx/src/gx_gui.W32.c
+	#cmplGfx/src/gx_gui.X11.c
+	lib/cmplGfx/src/gx_main.c
 )
 
 add_executable(cmpl ${CC_SOURCE_FILES} src/main.c)
@@ -63,18 +63,18 @@ ELSE()
 ENDIF()
 
 
-add_library(File SHARED lib/src/file.c)
+add_library(File SHARED lib/cmplFile/src/file.c)
 target_include_directories(File PUBLIC ./src/)
 
-add_library(OpenGL SHARED lib/src/openGL.c)
+add_library(OpenGL SHARED lib/cmplGL/src/openGL.c)
 target_include_directories(OpenGL PUBLIC ./src/)
 target_link_libraries(OpenGL GL GLU glut)
 
 IF (WIN32)
-	add_library(Gfx SHARED ${GX_SOURCE_FILES} libGfx/src/gx_gui.W32.c)
+	add_library(Gfx SHARED ${GX_SOURCE_FILES} lib/cmplGfx/src/gx_gui.W32.c)
 	target_link_libraries(Gfx m gdi32)
 ELSE()
-	add_library(Gfx SHARED ${GX_SOURCE_FILES} libGfx/src/gx_gui.X11.c)
+	add_library(Gfx SHARED ${GX_SOURCE_FILES} lib/cmplGfx/src/gx_gui.X11.c)
 	target_link_libraries(Gfx m dl png jpeg X11)
 ENDIF()
 target_include_directories(Gfx PUBLIC ./src/)

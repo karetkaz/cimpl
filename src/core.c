@@ -73,7 +73,7 @@ static void raiseApi(nfcContext ctx, int level, const char *msg, ...) {
 	rtContext rt = ctx->rt;
 	va_list vaList;
 	va_start(vaList, msg);
-	print_err(rt, level, NULL, 0, NULL, msg, vaList);
+	print_log(rt, level, NULL, 0, NULL, msg, vaList);
 	va_end(vaList);
 
 	// print stack trace including this function

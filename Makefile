@@ -1,11 +1,12 @@
-BINDIR?=out
+BINDIR?=bin
 CC_OUT=$(BINDIR)/obj.cc
 GX_OUT=$(BINDIR)/obj.gx
+GX_SRC=lib/cmplGfx/src
 
 CFLAGS=-Wall -g0 -O3 -std=gnu99
 EMFLAGS=-s WASM=1 -s EXPORT_ALL=0 -s INVOKE_RUN=0 -s ALLOW_MEMORY_GROWTH=1 --no-heap-copy
 #EMFLAGS+=-s "EXPORTED_FUNCTIONS=['_main','_rtInit','_ccInit','_ccAddUnit','_ccGenCode','_execute']"
-EM_EMBED=--preload-file lib/stdlib.ci --preload-file lib/math.ci --preload-file lib/math.Complex.ci --preload-file lib/string.ci
+EM_EMBED=--preload-file lib/stdlib.ci --preload-file lib/std/math.ci --preload-file lib/std/math.Complex.ci --preload-file lib/std/string.ci
 
 ifneq "$(OS)" "Windows_NT"
 	MKDIRF=--parents
@@ -29,44 +30,44 @@ SRC_CC=\
 	src/main.c
 
 SRC_GX=\
-	libGfx/src/*.h\
-	libGfx/src/gx_surf.c\
-	libGfx/src/gx_color.c\
-	libGfx/src/g2_draw.c\
-	libGfx/src/g3_draw.c\
-	libGfx/src/g2_image.c\
-	libGfx/src/g3_mesh.c\
-	libGfx/src/gx_main.c
+	$GX_SRC/*.h\
+	$GX_SRC/gx_surf.c\
+	$GX_SRC/gx_color.c\
+	$GX_SRC/g2_draw.c\
+	$GX_SRC/g3_draw.c\
+	$GX_SRC/g2_image.c\
+	$GX_SRC/g3_mesh.c\
+	$GX_SRC/gx_main.c
 
 
 # for Linux platform
 cmpl: $(addprefix $(CC_OUT)/, $(notdir $(filter %.o, $(SRC_CC:%.c=%.o))))
 	gcc -o $(BINDIR)/cmpl $^ -lm -ldl
 
-SRC_GX_X11=$(SRC_GX) libGfx/src/gx_gui.X11.c
+SRC_GX_X11=$(SRC_GX) $GX_SRC/gx_gui.X11.c
 libGfx.so: $(addprefix $(GX_OUT)/, $(notdir $(filter %.o, $(SRC_GX_X11:%.c=%.o))))
 	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libGfx.so $^ -lm -ldl -lpng -ljpeg -lX11
 
-libFile.so: lib/src/file.c
-	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libFile.so lib/src/file.c
+libFile.so: lib/cmplFile/src/file.c
+	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libFile.so $^
 
-libOpenGL.so: lib/src/openGL.c
-	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libOpenGL.so lib/src/openGL.c -lGL -lGLU -lglut
+libOpenGL.so: lib/cmplGL/src/openGL.c
+	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libOpenGL.so $^ -lGL -lGLU -lglut
 
 
 # for Windows platform
 cmpl.exe: $(addprefix $(CC_OUT)/, $(notdir $(filter %.o, $(SRC_CC:%.c=%.o))))
 	gcc -o $(BINDIR)/cmpl $^ -lm
 
-SRC_GX_W32=$(SRC_GX) libGfx/src/gx_gui.W32.c
+SRC_GX_W32=$(SRC_GX) $GX_SRC/gx_gui.W32.c
 libGfx.dll: $(addprefix $(GX_OUT)/, $(notdir $(filter %.o, $(SRC_GX_W32:%.c=%.o))))
 	gcc -shared $(CFLAGS) -I src -o $(BINDIR)/libGfx.dll $^ -lm -lgdi32
 
-libFile.dll: lib/src/file.c
-	gcc -shared $(CFLAGS) -I src -o $(BINDIR)/libFile.dll lib/src/file.c
+libFile.dll: lib/cmplFile/src/file.c
+	gcc -shared $(CFLAGS) -I src -o $(BINDIR)/libFile.dll $^
 
-libOpenGL.dll: lib/src/openGL.c
-	gcc -shared $(CFLAGS) -I src -o $(BINDIR)/libOpenGL.dll lib/src/openGL.c -lopengl32 -lglu32 -lglut32
+libOpenGL.dll: lib/cmplGL/src/openGL.c
+	gcc -shared $(CFLAGS) -I src -o $(BINDIR)/libOpenGL.dll $^ -lopengl32 -lglu32 -lglut32
 
 
 # for Browser platform
@@ -86,5 +87,5 @@ clean:
 $(CC_OUT)/%.o: src/%.c $(filter-out %.c, $(SRC_CC))
 	gcc $(CFLAGS) -o $@ -c $<
 
-$(GX_OUT)/%.o: libGfx/src/%.c $(filter-out %.c, $(SRC_CC))
+$(GX_OUT)/%.o: $(GX_SRC)/%.c $(filter-out %.c, $(SRC_CC))
 	gcc $(CFLAGS) -I src -o $@ -c $<

@@ -13,7 +13,7 @@ An expression is constant:
 
 ## Code generation and execution
 [TODO: implementation] code and data are mixed together.  
-[TODO: implementation] enums are generated int the mixed code + data section.  
+[TODO: implementation] enums are generated in the mixed code + data section.  
 
 Every compilation results in a `.main` hidden function, which contains the initialization of all static variables,
 and all the global statements (which are not part of function bodies).

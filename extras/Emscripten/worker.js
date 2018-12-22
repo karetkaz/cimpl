@@ -1,31 +1,3 @@
-/* communication with worker/args
-send => {
-	files - download these files to the workspace directory
-	file - open or save the content of the file
-	line - jump to / position in file
-	data(content) - save the content
-	exec - arguments for the compiler
-}
-
-receive => {
-	files - list of files in the workspace
-	data(content) - content of the requested file
-	line - jump to / position in file
-	print - print the message to the output
-}
-
-args => {
-	files - download files to a new workspace
-	file - the file to be opened
-	data(content) - overwrite the content of the file
-	exec
-	theme
-	dump
-	log
-	mem
-	X
-}*/
-
 var Module = {
 	workspace: '/workspace',
 	files: null,
@@ -35,25 +7,23 @@ var Module = {
 	},
 	listFiles: function(workspace) {
 		let result = [];
-		if (workspace === undefined) {
-			workspace = Module.workspace;
-		}
 		(function lsr(path) {
-			let dir = FS.analyzePath(workspace + '/' + path);
+			let dir = FS.analyzePath(path);
 			if (dir && dir.exists && dir.object) {
 				for (let file in dir.object.contents) {
+					let filepath = path + '/' + file;
 					if (dir.object.contents[file].isFolder) {
-						lsr((path ? path + '/' : '') + file);
+						lsr(filepath);
 					} else {
-						if (workspace !== Module.workspace) {
-							result.push(workspace + '/' + (path ? path + '/' : '') + file);
+						if (workspace === undefined && path.startsWith(Module.workspace)) {
+							result.push(filepath.substr(Module.workspace.length + 1));
 						} else {
-							result.push((path ? path + '/' : '') + file);
+							result.push(filepath);
 						}
 					}
 				}
 			}
-		})('');
+		})(workspace || Module.workspace);
 		return result;
 	},
 	onRuntimeInitialized: function () {

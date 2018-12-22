@@ -56,7 +56,7 @@ Syntax is similar to c/c++ influenced by:
 ## Identifiers
 Identifiers are named references of types, variables and functions.
 
-**[Syntax](../Design/Cmpl.g4)**
+**[Syntax](Cmpl.g4)**
 ```
 Identifier: Letter (Letter | Number)*;
 ```
@@ -81,7 +81,7 @@ Keywords are reserved words, which can not be used as identifiers.
 ## Literals
 [Literals](https://en.wikipedia.org/wiki/Literal_(computer_programming)) are compile time constant values.
 
-**[Syntax](../Design/Cmpl.g4)**
+**[Syntax](Cmpl.g4)**
 ```antlrv4
 Literal
     : '0'[bB][0-1]+
@@ -177,7 +177,7 @@ string html = "\
 # Expressions
 Expressions are responsible for computing values.
 
-**[Syntax](../Design/Cmpl.g4)**
+**[Syntax](Cmpl.g4)**
 ```antlrv4
 expression
     : Literal                                                                                        # LiteralExpression
@@ -210,7 +210,7 @@ Unary expressions are composed from an unary operator and one operand.
 - `-`: unary minus. Change the sign of a number.
 - `+`: unary plus. ???
 
-**[Syntax](../Design/Cmpl.g4)**
+**[Syntax](Cmpl.g4)**
 ```
 unary: ('&' | '+' | '-' | '~' | '!');
 ```
@@ -223,7 +223,7 @@ Are used to return new values computed from the two operands.
 - `+, -` Additive operators
 - `*, /, %` Multiplicative operators
 
-**[Syntax](../Design/Cmpl.g4)**
+**[Syntax](Cmpl.g4)**
 ```
 arithmetic: ('*' | '/' | '%' | '+' | '-');
 ```
@@ -233,7 +233,7 @@ May be used on integer types only.
 - `&, |, ^` Bitwise operators
 - `<<, >>` Bit shift operators
 
-**[Syntax](../Design/Cmpl.g4)**
+**[Syntax](Cmpl.g4)**
 ```
 bitwise: ('&' | '|' | '^' | '<<' | '>>');
 ```
@@ -242,7 +242,7 @@ bitwise: ('&' | '|' | '^' | '<<' | '>>');
 Are used to compare two operands, if one is les or greater than the other.
 The result is a boolean value(true or false).
 
-**[Syntax](../Design/Cmpl.g4)**
+**[Syntax](Cmpl.g4)**
 ```
 relational: ('<' | '<=' | '>' | '>=');
 ```
@@ -251,7 +251,7 @@ relational: ('<' | '<=' | '>' | '>=');
 Are used to check if the left and right operands are equal or not.
 The result is a boolean value(true or false).
 
-**[Syntax](../Design/Cmpl.g4)**
+**[Syntax](Cmpl.g4)**
 ```
 equality: ('==' | '!=');
 ```
@@ -356,7 +356,7 @@ First `a()` is evaluated, and if its value is:
 # Declarations
 Declarations adds new types, functions or variables to the program.
 
-**[Syntax](../Design/Cmpl.g4)**
+**[Syntax](Cmpl.g4)**
 ```antlrv4
 declaration
     : qualifiers? 'enum' identifier? (':' typename)? '{' propertyList '}'                              # EnumDeclaration
@@ -672,7 +672,7 @@ and reject further assignments:
 ### Methods
 [TODO: fix documentation]
 
-**[Example](../Design/Examples/io.Streams.ci)**
+**[Example](../../lib/todo/io.Streams.ci)**
 ```
 struct TextReader: Closeable {
 	const ByteReader reader;
@@ -939,7 +939,7 @@ float64 re2 = a(0);       // => inline ()(Complex c, int idx)
 # Statements
 Statements are the basic blocks of a program.
 
-**[Syntax](../Design/Cmpl.g4)**
+**[Syntax](Cmpl.g4)**
 ```antlrv4
 statement
     : ';'                                                                                               # EmptyStatement

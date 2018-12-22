@@ -116,6 +116,7 @@ static int ccInline(ccContext cc, astn tag) {
 		}
 	}
 
+	printLog(cc->rt, raiseDebug, tag->file, tag->line, NULL, WARN_INLINE_FILE, path);
 	return ccOpen(cc, path, 1, NULL);
 }
 

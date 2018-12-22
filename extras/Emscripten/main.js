@@ -1,3 +1,35 @@
+/* communication with worker/args
+send => {
+	files - download these files to the workspace directory
+	file - open or save the content of the file
+	line - jump to / position in file
+	data(content) - save the content
+	exec - arguments for the compiler
+}
+
+receive => {
+	files - list of files in the workspace
+	data(content) - content of the requested file
+	line - jump to / position in file
+	print - print the message to the output
+}
+
+args => {
+	project - download the content of the given file list
+	content - overwrite the content of the editor
+	file - name of file to be opened
+	line - line position to jump to
+	theme - override default: &theme=light|dark
+	menu - override default: &menu=options|files|none ????|secondary|split
+	split: override default: &split=vertical|horizontal|auto|primary|secondary|split
+
+	exec - override default: &exec=-profile/G/H/P/T
+	dump - dump output to file: &dump=dump.txt|dump.json
+	log - log output to file: &log=dump.txt
+	mem - if 2MB memory is not enough: &mem=128M
+	X
+}*/
+
 let docTitle = document.title;
 let worker = new Worker('worker.js');
 let editor = CodeMirror.fromTextArea(input, {
@@ -53,7 +85,8 @@ let params = JsArgs('#', function (params, changes) {
 
 	// open menu, only after loading
 	if (!changes && params.menu != null) {
-		showSplitter(window.menuSplit, '-files', '-options', params.menu, '-primary');
+		let menu = params.menu === 'none' ? 'secondary' : params.menu;
+		showSplitter(window.menuSplit, '-files', '-options', menu, '-primary');
 	}
 
 	// show editor or output, only after loading
@@ -192,7 +225,7 @@ function showEditor(...options) {
 function showFile(file, line, column) {
 	showEditor('-secondary');
 	editor.setCursor((line || 1) - 1, column);
-	if (file == null || file != params.file) {
+	if (file == null || file !== params.file) {
 		params.update({
 			file: file,
 			line: line,
@@ -274,7 +307,7 @@ function execute(text, cmd) {
 		cmdExecute.value = cmd;
 
 		// do not use standard input, print times
-		args.push('-X' + (params.X || '-stdin+times+steps'));
+		args.push('-X' + (params.X || '-stdin+steps'));
 
 		// allocate 2Mb of memory by default,
 		args.push('-mem' + (params.mem || '2M'));

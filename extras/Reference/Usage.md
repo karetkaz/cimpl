@@ -1,13 +1,10 @@
 # Command Line Reference
 
-## Usage:
-
-To compile and execute a script file, the cmpl program must be invoked with the corresponding arguments.
+To compile and execute a script file, the cmpl application must be invoked with the corresponding arguments.
 
 >cmpl \[global.options\]... \[file \[file.options\]...\]...
 
-
-## Examples:
+## Examples
 
 ### run
 
@@ -22,13 +19,18 @@ When the application is started in **run** mode, the compiled code is executed a
 When the application is started in **debug** mode, the compiled code is executed with some additional checks.
 In case of an error, the debugger will pause the execution of the code at the fault location.
 
-
 ### profile
 
 >cmpl -profile test.ci
 
 When the application is started in **profile** mode, the compiled code is executed and measured.
 When the execution finishes, the collected data is dumped to the to the console, or to the specified file.
+
+### compile
+
+>cmpl test.ci
+
+If there is no global (run, debug or profile) option specified, the given source file(s) will be compiled only.
 
 ### debug with breakpoints
 
@@ -53,7 +55,6 @@ When the execution finishes, the collected data is dumped to the to the console,
 	- `-b/o15` Break execution when line 12 is first hit.
 
 	- `-b/o/L19` Print message and stack trace when line 19 is first hit.
-
 
 ### profile and dump to JSON
 
@@ -82,162 +83,111 @@ If JSON output format is used, the generated file can be opened with the Inspect
 
 ## Global options
 
+- `-run[*]`               run at full speed, but without: debug information, stacktrace, bounds checking, ...
 
-- `-std<file>`
+	- `/g /G`             dump global variable values (/G includes extra information)
 
-	custom standard library file (empty file name disables std library compilation).
+	- `/m /M`             dump memory usage (/M includes extra information)
 
+- `-debug[*]`             run with attached debugger, pausing on uncaught errors and break points
 
-- `-mem<int>[kKmMgG]`
+	- `/g /G`             dump global variable values (/G includes extra information)
 
-	override memory usage for compiler and runtime(heap)
+	- `/m /M`             dump memory usage (/M includes extra information)
 
+	- `/p /P`             print caught errors (/P includes extra information)
 
-- `-log[*]` `<file>`
+	- `/t /T`             trace the execution (/T includes extra information)
 
-	override log output from console to <file> for compiler(errors and warnings) and runtime(messages from raise).
+	- `/a`                pause on all(caught) errors
 
-	additional arguments:
+	- `/s`                pause on startup
 
-	- `/a` append output to the existing log file
+- `-profile[*]`           run code with profiler: coverage, method tracing
 
+	- `/g /G`             dump global variable values (/G includes extra information)
 
-- `-dump[?]` `<file>`
+	- `/m /M`             dump memory usage (/M includes extra information)
 
-	override dump output from console to <file> (symbols, assembly, syntax tree, coverage, call tree) output:
+	- `/p /P`             show statement execution times (/P includes extra information)
 
-	additional arguments:
+	- `/t /T`             trace the execution (/T includes extra information)
 
-	- `.scite` dump api for SciTE text editor
+- `-std<file>`            specify custom standard library file (empty file name disables std library compilation).
 
-	- `.json` dump api in javascript object notation format
+- `-mem<int>[kKmMgG]`     override memory usage for compiler and runtime(heap)
 
+- `-log[*]<int> <file>`   set logger for: compilation errors and warnings, runtime debug messages
 
-- `-api[*]`
+	- `<int>`             set the default log(warning) level 0 - 15
 
-	dump symbols (typenames, variables and functions)
+	- `/a`                append to the log file
 
-	additional arguments:
+- `-dump[?] <file>`       set output for: dump(symbols, assembly, abstract syntax tree, coverage, call tree)
 
-	- `/a` include all(builtin) symbols
+	-`.scite`             dump api for SciTE text editor
 
-	- `/m` include the `.main` initializer function
+	-`.json`              dump api and profile data in javascript object notation format
 
-	- `/d` include symbol details in the dump (size, offset, owner, etc)
+- `-api[*]`               dump symbols
 
-	- `/p` include function parameters and record fields
+	- `/a`                include all builtin symbols
 
-	- `/u` include usages of the symbols
+	- `/m`                include main builtin symbol
 
+	- `/d`                dump details of symbol
 
-- `-asm[*]`
+	- `/p`                dump params and fields
 
-	dump function instructions (disassembled code)
+	- `/u`                dump usages
 
-	additional arguments:
+- `-asm[*]<int>`          dump assembled code: jmp +80
 
-	- `/a` use global address: (@0x003d8c)
+	- `/a`                use global address: jmp @0x003d8c
 
-	- `/n` prefer names over addresses: <main+80>
+	- `/n`                prefer names over addresses: jmp <main+80>
 
-	- `/s` print source code statements
+	- `/s`                print source code statements
 
-	- `/m` include the `.main` initializer function
+	- `/m`                include main builtin symbol
 
-	- `/d` include symbol details in the dump (size, offset, owner, etc)
+	- `/d`                dump details of symbol
 
-	- `/p` include function parameters and record fields
+	- `/p`                dump params and fields
 
-	- `/u` include usages of the symbols
+	- `/u`                dump usages
 
+- `-ast[*]`               dump syntax tree
 
-- `-ast[*]`
+	- `/t`                dump sub-expression type information
 
-	dump syntax tree
+	- `/l`                do not expand statements (print on single line)
 
-	additional arguments:
+	- `/b`                don't keep braces ('{') on the same line
 
-	- `/t` dump sub-expression type information
+	- `/e`                don't keep `else if` constructs on the same line
 
-	- `/l` do not expand statements (print on single line, or replace with `{ ... }`)
+	- `/m`                include main builtin symbol
 
-	- `/b` format.option: don't keep braces ('{') on the same line
+	- `/d`                dump details of symbol
 
-	- `/e` format.option: don't keep `else if` constructs on the same line
+	- `/p`                dump params and fields
 
-	- `/m` include the `.main` initializer function
+	- `/u`                dump usages
 
-	- `/d` include symbol details in the dump (size, offset, owner, etc)
 
-	- `/p` include function parameters and record fields
+## Compilation units
 
-	- `/u` include usages of the symbols
+After the global options are processed, the remaining arguments are processed as units to be compiled.
 
+- `<files with options>`  filename followed by switches
 
-- `-run[*]`
+	- `<file>`            if file extension is (.so|.dll) load as library else compile
 
-	run code with maximum speed: no(debug information, stacktrace, bounds checking, ...)
+	- `-w[a|x|<int>]`     set or disable warning level for current file
 
-	additional arguments:
+	- `-b[*]<int>`        break point on <int> line in current file
 
-	- `/g` or `/G` (globals) on exit dump value of global variables
+		- `/[l|L]`        print only, do not pause (/L includes stack trace)
 
-
-- `-debug[*]`
-
-	execute the compiled code with attached debugger, pausing on uncaught errors and break points.
-
-	additional arguments:
-
-	- `/s` (suspend) pause on startup
-
-	- `/a` (all) pause on all(caught and uncaught) errors
-
-	- `/l` or `/L` (log) print the cause message of caught errors (/L includes stack trace)
-
-	- `/g` or `/G` (globals) on exit dump value of global variables
-
-	- `/h` (heap) on exit dump memory related statistics
-
-	- `/p` (profile) on exit dump function statistics
-
-
-- `-profile[*]`
-
-	run code with attached profiler, calculate code coverage, trace method calls
-
-	additional arguments:
-
-	- `/t` (trace) dump call tree
-
-	- `/a` (all) include all the information in the dump
-
-	- `/g` or `/G` (globals) on exit dump value of global variables
-
-	- `/h` (heap) on exit dump memory related statistics
-
-
-## Compile files
-
-After global options are processed, the rest of arguments are processed as file names to be compiled.
-
-Every filename may have extra arguments, which must be given after this argument.
-
-- `<file>`
-
-	If file extension is `.so` or `.dll` import it as an extension library, else compile it as source code.
-
-
-- `-w[a|<int>]`
-
-	Override warning level for current file.
-
-- `-b[*]<int>`
-
-	Break execution on <int> line in current file (requires `-debug` global option).
-
-	additional arguments:
-
-	- `/o` One shot breakpoint, disabled after first hit.
-
-	- `/l` or `/L` Print only, do not pause execution (/L includes stack trace).
+		- `/o`            one shot breakpoint, disable after first hit

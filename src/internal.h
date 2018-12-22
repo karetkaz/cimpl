@@ -383,7 +383,7 @@ int importLib(rtContext rt, const char *path);
 void closeLibs(rtContext rt);
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Error and warning messages
-void print_err(rtContext rt, raiseLevel level, const char *file, int line, rtValue *value, const char *msg, va_list vaList);
+void print_log(rtContext rt, raiseLevel level, const char *file, int line, rtValue *inspect, const char *msg, va_list vaList);
 
 #define ERR_INTERNAL_ERROR "Internal Error"
 #define ERR_MEMORY_OVERRUN "Memory Overrun"
@@ -462,37 +462,39 @@ void print_err(rtContext rt, raiseLevel level, const char *file, int line, rtVal
 #define WARN_ADDING_IMPLICIT_CAST "adding implicit cast %T(%t: %T)"
 #define WARN_USING_SIGNED_CAST "using signed cast for unsigned value: `%t`"
 #define WARN_STATIC_FIELD_ACCESS "accessing static member using instance variable `%T`/ %T"
+
 #define WARN_COMMENT_MULTI_LINE "multi-line comment: `%s`"
-#define WARN_IGNORING_NESTED_COMMENT "ignoring nested comment"
+#define WARN_COMMENT_NESTED "ignoring nested comment"
 #define WARN_NO_NEW_LINE_AT_END "expected <new line> before end of input"
-#define WARN_OCT_ESC_SEQ_OVERFLOW "octal escape sequence overflow"
-#define WARN_CHR_CONST_TRUNCATED "character constant truncated"
+
 #define WARN_MULTI_CHAR_CONSTANT "multi character constant"
+#define WARN_CHR_CONST_OVERFLOW "character constant truncated"
+#define WARN_OCT_ESC_SEQ_OVERFLOW "octal escape sequence overflow"
 #define WARN_VALUE_OVERFLOW "value overflow"
 #define WARN_EXPONENT_OVERFLOW "exponent overflow"
+
 #define WARN_FUNCTION_MARKED_STATIC "marking function to be static: `%T`"
 #define WARN_USING_BEST_OVERLOAD "using overload `%T` of %d declared symbols"
 #define WARN_USING_DEF_TYPE_INITIALIZER "using default type initializer: %T := %t"
 #define WARN_USING_DEF_FIELD_INITIALIZER "using default field initializer: %T := %t"
 #define WARN_DECLARATION_REDEFINED "variable `%T` hides previous declaration"
 #define WARN_FUNCTION_TYPENAME "function name `%.t` is a type, but returns `%T`"
+#define WARN_INLINE_FILE "inline file: `%s`"
 
-static inline void _break() {/* Add a breakpoint to break on compiler errors. */}
 static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
-	_break();
 #ifndef DEBUGGING	// abort on first internal error
 	abort();
 #endif
 }
-#define prerr(__TAG, __FMT, ...) do { printFmt(stdout, NULL, "%?s:%?u: %s(" __TAG "): " __FMT "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); } while(0)
 
+#define prerr(__TAG, __FMT, ...) do { printFmt(stdout, NULL, "%?s:%?u: %s(" __TAG "): " __FMT "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); } while(0)
 #define fatal(__FMT, ...) do { prerr("fatal", __FMT, ##__VA_ARGS__); _abort(); } while(0)
 #define dieif(__EXP, __FMT, ...) do { if (__EXP) { prerr(#__EXP, __FMT, ##__VA_ARGS__); _abort(); } } while(0)
 
 // compilation errors
-#define error(__ENV, __FILE, __LINE, __FMT, ...) do { printErr(__ENV, raiseError, __FILE, __LINE, NULL, __FMT, ##__VA_ARGS__); logif("error", __FMT, ##__VA_ARGS__); } while(0)
-#define warn(__ENV, __LEVEL, __FILE, __LINE, __FMT, ...) do { printErr(__ENV, __LEVEL, __FILE, __LINE, NULL, __FMT, ##__VA_ARGS__); logif(!"%?s:%?u: warn[%d]", __FMT, __FILE, __LINE, __LEVEL, ##__VA_ARGS__); } while(0)
-#define info(__ENV, __FILE, __LINE, __FMT, ...) do { printErr(__ENV, raisePrint, __FILE, __LINE, NULL, __FMT, ##__VA_ARGS__); } while(0)
+#define error(__ENV, __FILE, __LINE, __FMT, ...) do { printLog(__ENV, raiseError, __FILE, __LINE, NULL, __FMT, ##__VA_ARGS__); logif("error", __FMT, ##__VA_ARGS__); } while(0)
+#define warn(__ENV, __LEVEL, __FILE, __LINE, __FMT, ...) do { printLog(__ENV, __LEVEL, __FILE, __LINE, NULL, __FMT, ##__VA_ARGS__); logif(!"%?s:%?u: warn[%d]", __FMT, __FILE, __LINE, __LEVEL, ##__VA_ARGS__); } while(0)
+#define info(__ENV, __FILE, __LINE, __FMT, ...) do { printLog(__ENV, raisePrint, __FILE, __LINE, NULL, __FMT, ##__VA_ARGS__); } while(0)
 
 #ifdef DEBUGGING	// enable compiler debugging
 

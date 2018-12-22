@@ -1072,7 +1072,7 @@ void printFmt(FILE *out, const char **esc, const char *fmt, ...) {
 	va_end(ap);
 }
 
-void print_err(rtContext rt, raiseLevel level, const char *file, int line, rtValue *inspect, const char *msg, va_list vaList) {
+void print_log(rtContext rt, raiseLevel level, const char *file, int line, rtValue *inspect, const char *msg, va_list vaList) {
 	FILE *out = rt->logFile;
 	const char **esc = NULL;
 	const char *logType = "UNKNOWN";
@@ -1148,7 +1148,7 @@ void print_err(rtContext rt, raiseLevel level, const char *file, int line, rtVal
 		if (wasOutput) {
 			printStr(rt->logFile, NULL, ": ");
 		}
-		printVal(rt->logFile, NULL, rt, inspect->type, inspect->ref, prSymType, 0);
+		printVal(rt->logFile, NULL, rt, inspect->type, inspect->ref, prSymQual | prSymType, 0);
 		wasOutput = 1;
 	}
 
@@ -1158,15 +1158,21 @@ void print_err(rtContext rt, raiseLevel level, const char *file, int line, rtVal
 	}
 }
 
-void printErr(rtContext rt, raiseLevel level, const char *file, int line, rtValue *inspect, const char *msg, ...) {
+void printLog(rtContext rt, raiseLevel level, const char *file, int line, rtValue *inspect, const char *msg, ...) {
 	va_list vaList;
 	va_start(vaList, msg);
-	print_err(rt, level, file, line, inspect, msg, vaList);
+	print_log(rt, level, file, line, inspect, msg, vaList);
 	va_end(vaList);
 }
 
-void dumpApi(rtContext rt, userContext ctx, void customPrinter(userContext, symn)) {
+void dumpApi(rtContext rt, userContext ctx, void dumpSym(userContext, symn)) {
 	symn sym, bp[maxTokenCount], *sp = bp;
+
+	if (rt == NULL || dumpSym == NULL) {
+		dieif(rt == NULL, ERR_INTERNAL_ERROR);
+		dieif(dumpSym == NULL, ERR_INTERNAL_ERROR);
+		return;
+	}
 
 	// compilation errors or compiler was not initialized.
 	if (rt->cc == NULL || rt->main == NULL) {
@@ -1191,19 +1197,9 @@ void dumpApi(rtContext rt, userContext ctx, void customPrinter(userContext, symn
 			}
 			*++sp = sym->fields;
 		}
-
-		if (customPrinter != NULL) {
-			customPrinter(ctx, sym);
-		}
-		else {
-			FILE *out = rt->logFile;
-			printFmt(out, NULL, "%T: %T\n", sym, sym->type);
-			fflush(out);
-		}
+		dumpSym(ctx, sym);
 	}
-	if (customPrinter != NULL) {
-		customPrinter(ctx, rt->main);
-	}
+	dumpSym(ctx, rt->main);
 }
 
 void logFILE(rtContext rt, FILE *file) {

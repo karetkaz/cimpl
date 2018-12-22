@@ -1,0 +1,76 @@
+
+struct vec4f: 0 {
+	float32 data[4];
+	struct {
+		float32 x;
+		float32 y;
+		float32 z;
+		float32 w;
+	}
+}
+
+/* TODO: implement inline initializer
+// constructing a vector
+inline vec4f(float32 x, float32 y, float32 z, float32 w) = { x: x, y: y, z: z, w: w };
+inline vec4f(float32 x, float32 y, float32 z) = { x: x, y: y, z: z, w: 0 };
+inline vec4f(vec4f v, float32 w) = { x: v.x, y: v.y, z: v.z, w: w };
+inline vec4f(float32 val) = { x: val, y: val, z: val, w: val };
+*/
+
+vec4f vec4f(float32 x, float32 y, float32 z, float32 w) {
+	return { x: x, y: y, z: z, w: w };
+}
+inline vec4f(float32 x, float32 y, float32 z) = vec4f(x, y, z, 0f);
+inline vec4f(vec4f xyz, float32 w) = vec4f(xyz.x, xyz.y, xyz.z, w);
+inline vec4f(float32 val) = vec4f(val, val, val, val);
+
+/* TODO: implement operator overloading
+//~ -a => vec4f(-a.x, -a.y, -a.z, -a.w);
+inline -(vec4f rhs) = vec4f(emit(struct(rhs), neg.p4f));
+
+//~ a + b => vec4f(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+inline +(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), add.p4f));
+
+//~ a - b => vec4f(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+inline -(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
+
+//~ a * b => vec4f(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
+inline *(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
+
+//~ a / b => vec4f(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
+inline /(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
+
+inline +(vec4f a, float32 b) = a + vec4f(b);
+inline +(float32 a, vec4f b) = vec4f(a) + b;
+inline -(vec4f a, float32 b) = a - vec4f(b);
+inline -(float32 a, vec4f b) = vec4f(a) - b;
+inline *(vec4f a, float32 b) = a * vec4f(b);
+inline *(float32 a, vec4f b) = vec4f(a) * b;
+inline /(vec4f a, float32 b) = a / vec4f(b);
+inline /(float32 a, vec4f b) = vec4f(a) / b;
+
+inline normalize(vec4f v) = v / len(v);
+*/
+
+inline neg(vec4f rhs) = vec4f(emit(struct(rhs), neg.p4f));
+inline add(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), add.p4f));
+inline sub(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
+inline mul(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
+inline div(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
+
+inline min(vec4f lhs, vec4f rhs) = float32(emit(struct(rhs), struct(lhs), min.p4f));
+inline max(vec4f lhs, vec4f rhs) = float32(emit(struct(rhs), struct(lhs), max.p4f));
+
+// inline dp3(vec4f a, vec4f b) = a.x * b.x + a.y * b.y + a.z * b.z;
+// inline dph(vec4f a, vec4f b) = a.x * b.x + a.y * b.y + a.z * b.z + a.w;
+// inline dp4(vec4f a, vec4f b) = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+inline dp3(vec4f lhs, vec4f rhs) = float32(emit(struct(rhs), struct(lhs), p4x.dp3));
+inline dph(vec4f lhs, vec4f rhs) = float32(emit(struct(rhs), struct(lhs), p4x.dph));
+inline dp4(vec4f lhs, vec4f rhs) = float32(emit(struct(rhs), struct(lhs), p4x.dp4));
+
+inline cross(vec4f a, vec4f b) = vec4f(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
+
+inline len(vec4f v) = float32.sqrt(dp3(v, v));
+inline normalize(vec4f v) = div(v, vec4f(len(v)));
+
+inline eval(vec4f v, float32 x) = float32((((v.w * x + v.z) * x + v.y) * x) + v.x);

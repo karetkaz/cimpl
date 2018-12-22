@@ -230,7 +230,7 @@ static vmError sysRaise(nfcContext ctx) {
 		return noError;
 	}
 
-	printErr(rt, logLevel, file, line, &inspect, "%?s", message);
+	printLog(rt, logLevel, file, line, &inspect, "%?s", message);
 
 	// print stack trace excluding this function
 	if (rt->dbg != NULL && trace > 0) {

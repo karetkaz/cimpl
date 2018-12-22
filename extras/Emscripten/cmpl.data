@@ -52,15 +52,8 @@ inline assertEq(int expected, int returned) = assertEq(expected, returned, null)
 
 inline sizeof(typename type) = int(type.size);
 
-inline "math.ci";
-//inline "math.Perlin.ci";     // -> Perlin noise
-inline "math.Complex.ci";     // -> Complex<float64>
-//inline "math.Rational.ci";    // -> Rational<int64>
-
-//inline "math.BigInteger.ci"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
-//inline "math.BigDecimal.ci"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
-
-inline "string.ci";
+inline "std/math.ci";
+inline "std/string.ci";
 // Mathematical utility functions
 
 static struct Math {
@@ -244,8 +237,8 @@ static struct Math {
 	// inline lerp(float32 t, float32 a, float32 b) = a + t * (b - a);
 	// inline lerp(float64 t, float64 a, float64 b) = a + t * (b - a);
 
-	// inline smooth(float32 t) = t * t * (3 - 2 * t);
-	// inline smooth(float64 t) = t * t * (3 - 2 * t);
+	inline smooth(float32 t) = t * t * (3 - 2 * t);
+	inline smooth(float64 t) = t * t * (3 - 2 * t);
 	// inline smooth(float32 t, float32 a, float32 b) = smooth(clamp((t - a) / (b - a), float32(0), float32(1)));
 	// inline smooth(float64 t, float64 a, float64 b) = smooth(clamp((t - a) / (b - a), float64(0), float64(1)));
 
@@ -556,6 +549,13 @@ static struct Math {
 	inline deg2rad(float64 x) = float64(x * pi / 180);
 	inline rad2deg(float64 x) = float64(x * 180 / pi);
 }
+
+//inline "math.Perlin.ci";      // -> Perlin noise
+inline "math.Complex.ci";     // -> Complex<float64>
+//inline "math.Rational.ci";    // -> Rational<int64>
+
+//inline "math.BigInteger.ci"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
+//inline "math.BigDecimal.ci"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
 // Complex class implementation
 
 struct Complex {

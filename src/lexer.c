@@ -345,7 +345,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 					if (prev_chr == '/' && chr == next) {
 						level += 1;
 						if (level > 1 && next == '*') {
-							warn(cc->rt, raise_warn_lex9, cc->file, cc->line, WARN_IGNORING_NESTED_COMMENT);
+							warn(cc->rt, raise_warn_lex9, cc->file, cc->line, WARN_COMMENT_NESTED);
 							level = 1;
 						}
 						chr = 0;	// disable reading as valid comment: /*/ and /+/
@@ -367,7 +367,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 		}
 
 		if (chr_map[chr & 0xff] == CNTRL) {
-			warn(cc->rt, raise_warn_lex2, cc->file, cc->line, ERR_INVALID_CHARACTER, chr);
+			warn(cc->rt, raise_warn_lex1, cc->file, cc->line, ERR_INVALID_CHARACTER, chr);
 			while (chr == 0) {
 				chr = readChr(cc);
 			}
@@ -754,10 +754,10 @@ static ccToken readTok(ccContext cc, astn tok) {
 					return tok->kind = TOKEN_any;
 				}
 				if (ptr > beg + vm_stk_align + 1) {
-					warn(cc->rt, raise_warn_lex2, cc->file, cc->line, WARN_CHR_CONST_TRUNCATED, ptr);
+					warn(cc->rt, raise_warn_lex2, cc->file, cc->line, WARN_CHR_CONST_OVERFLOW, ptr);
 				}
 				else if (ptr > beg + cc->type_chr->size + 1) {
-					warn(cc->rt, raise_warn_lex2, cc->file, cc->line, WARN_MULTI_CHAR_CONSTANT);
+					warn(cc->rt, raise_warn_lex3, cc->file, cc->line, WARN_MULTI_CHAR_CONSTANT);
 				}
 
 				for (ptr = beg; *ptr; ++ptr) {
@@ -1090,14 +1090,14 @@ astn peekTok(ccContext cc, ccToken match) {
 	return NULL;
 }
 
-astn nextTok(ccContext cc, ccToken match, int raise) {
+astn nextTok(ccContext cc, ccToken match, int raiseError) {
 	astn token = peekTok(cc, match);
 	if (token != NULL) {
 		cc->tokNext = token->next;
 		token->next = NULL;
 		return token;
 	}
-	if (raise) {
+	if (raiseError) {
 		char *file = cc->file;
 		int line = cc->line;
 		token = cc->tokNext;

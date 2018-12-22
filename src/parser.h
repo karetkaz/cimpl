@@ -22,7 +22,7 @@ symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *siz
 symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type, astn init);
 
 /// Lookup an identifier.
-symn lookup(ccContext cc, symn sym, astn ast, astn args, ccKind filter, int raise);
+symn lookup(ccContext cc, symn sym, astn ast, astn args, ccKind filter, int raiseError);
 
 /**
  * Check if a value can be assigned to a symbol.
@@ -41,7 +41,7 @@ ccKind canAssign(ccContext cc, symn rhs, astn val, int strict);
  * @param ast Tree to check.
  * @return Type of expression.
  */
-symn typeCheck(ccContext cc, symn loc, astn ast, int raise);
+symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError);
 
 /**
  * @brief Add usage of the symbol.
@@ -170,7 +170,7 @@ int isConstVar(astn ast);
  * @param match: read next token only if matches.
  * @return next token, or null.
  */
-astn nextTok(ccContext cc, ccToken match, int raise);
+astn nextTok(ccContext cc, ccToken match, int raiseError);
 
 /**
  * Peek the next token.

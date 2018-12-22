@@ -1,0 +1,154 @@
+// Implementation of a Polynomial
+
+struct Polynomial(typename scalar): TextWriter.Writeable {
+	scalar elements[*];
+	const int capacity;
+
+	enum: scalar {
+		c_zero: 0;
+		c_unit: 1;
+	}
+
+	enum: Polynomial {
+		zero: {
+			elements: { c_zero };
+			capacity: 1;
+		}
+	}
+
+	// construct a new instance
+	inline Polynomial(int capacity) = {
+		elements: zero(malloc(capacity * sizeof(scalar)), capacity * sizeof(scalar));
+		capacity: capacity;
+	}
+
+	// clone an existing instance
+	inline Polynomial(Polynomial instance) = {
+		elements: copy(malloc(instance.capacity * sizeof(scalar)), instance.elements, instance.capacity * sizeof(scalar));
+		capacity: instance.capacity;
+	}
+
+	// destroy the instance
+	void void(Polynomial value) {
+		free(value.elements);
+		value.elements = null;
+	}
+
+	int degree(Polynomial &this) {
+		for (int i = this.capacity - 1; i > 0; i--) {
+			if (this.coefficients[i] != c_zero) {
+				return i;
+			}
+		}
+		return 0;
+	}
+
+	scalar evaluate(Polynomial &this, scalar x) const {
+		int deg = this.degree();
+		scalar result = this.coefficients[deg];
+		for (int i = deg - 1; i >= 0; i--) {
+			result = result * x + this.coefficients[i];
+		}
+		return result;
+	}
+
+	scalar get(const Polynomial &this, int index) {
+		assert(index >= 0, "negative index");
+		if (index >= this.capacity) {
+			return c_zero;
+		}
+		return this.coefficients[index];
+	}
+
+	void set(Polynomial &this, int index, scalar value) {
+		assert(index >= 0, "negative index");
+		assert(index < this.capacity, "invalid index");
+		this.coefficients[index] = value;
+		return this;
+	}
+
+	Polynomial neg(const Polynomial &a) {
+		Polynomial result(a.degree(), null);
+		for (int i = 0; i < result.capacity; i++) {
+			result.coefficients[i] = -a.get(i);
+		}
+		return result;
+	}
+
+	Polynomial add(const Polynomial &a, const Polynomial &b) {
+		Polynomial result(max(a.degree(), b.degree()), null);
+		for (int i = 0; i < result.capacity; i++) {
+			result.coefficients[i] = a.get(i) + b.get(i);
+		}
+		return result;
+	}
+
+	Polynomial sub(const Polynomial &a, const Polynomial &b) {
+		Polynomial result(max(a.degree(), b.degree()), null);
+		for (int i = 0; i < result.capacity; i++) {
+			result.coefficients[i] = a.get(i) - b.get(i);
+		}
+		return result;
+	}
+
+	Polynomial mul(const Polynomial &a, const Polynomial &b) {
+		int aDeg = a.degree();
+		int bDeg = b.degree();
+		Polynomial result(aDeg + bDeg, null);
+		for (int i = 0; i < result.capacity; i++) {
+			result.coefficients[i] = 0;
+		}
+		for (int i = 0; i <= aDeg; i++) {
+			for (int j = 0; j <= bDeg; j++) {
+				result.coefficients[i + j] += a.get(i) * b.get(i);
+			}
+		}
+		return result;
+	}
+
+	void write(const Polynomial &this, TextWriter writer) {
+		bool first = true;
+		for (int i = this.degree(); i >= 0; i--) {
+			scalar value = this.elements[i];
+			if (value == c_zero && !(first && i == 0)) {
+				continue;
+			}
+
+			if (value < c_zero) {
+				value = -value;
+				if (!first) {
+					// binary operator
+					out.write(" - ");
+				}
+				else {
+					// unary operator
+					out.write("-");
+				}
+			}
+			else if (!first) {
+				// binary operator
+				out.write(" + ");
+			}
+
+			if (value != c_unit || i == 0) {
+				out.write(value);
+			}
+
+			if (i > 0) {
+				out.write("x");
+				if (i > 1) {
+					out.write("^").write(i);
+				}
+			}
+			first = false;
+		}
+	}
+}
+
+inline [](Polynomial &this, int index) = Polynomial.get(this, index);
+inline ()(Polynomial &this, scalar x) = Polynomial.evaluate(this, x);
+
+inline -(const Polynomial &a) = Polynomial.neg(a);
+inline +(const Polynomial &a, const Polynomial &b) = Polynomial.add(a, b);
+inline -(const Polynomial &a, const Polynomial &b) = Polynomial.sub(a, b);
+inline *(const Polynomial &a, const Polynomial &b) = Polynomial.mul(a, b);
