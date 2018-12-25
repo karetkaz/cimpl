@@ -1815,258 +1815,37 @@ int isChecked(dbgContext ctx) {
 	return 0;
 }
 
-void printOpc(FILE *out, const char **esc, vmOpcode opc, int64_t args) {
-	struct vmInstruction instruction;
-	instruction.opc = opc;
-	instruction.arg.i64 = args;
-	printAsm(out, esc, NULL, &instruction, prName);
-}
-void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode) {
-	vmInstruction ip = (vmInstruction)ptr;
-	size_t i, len = (size_t) mode & prAsmCode;
-	size_t offs = (size_t)ptr;
-	char *fmt_addr = " .%06x";
-	char *fmt_offs = " <%?.T%?+d>";
-	symn sym = NULL;
-
-	if (rt != NULL) {
-		offs = vmOffset(rt, ptr);
-		if (mode & prAsmName) {
-			sym = rtLookup(rt, offs, 0);
-		}
-	}
-
-	if (mode & prNoOffs) {
-		fmt_addr = " .??????";
-		fmt_offs = " <%?.T+?>";
-	}
-	if (mode & prAsmAddr) {
-		printFmt(out, esc, fmt_addr + 1, offs);
-		printFmt(out, esc, ": ");
-	}
-
-	if (mode & prAsmName && sym != NULL) {
-		size_t symOffs = offs - sym->offs;
-		int trailLen = 1, padLen = 4 + !symOffs;
-		printFmt(out, esc, fmt_offs + 1, sym, symOffs);
-
-		while (symOffs > 0) {
-			symOffs /= 10;
-			padLen -= 1;
-		}
-		if (padLen < 0) {
-			padLen = 0;
-		}
-		if (mode & prNoOffs) {
-			padLen = 0;
-			trailLen = 4;
-		}
-		printFmt(out, esc, "% I:% I", padLen, trailLen);
-	}
-
-	if (ip == NULL) {
-		printFmt(out, esc, "%s", "null");
-		return;
-	}
-
-	//~ write code bytes
-	if (len > 1 && len < opcode_tbl[ip->opc].size) {
-		for (i = 0; i < len - 2; i++) {
-			if (i < opcode_tbl[ip->opc].size) {
-				printFmt(out, esc, "%02x ", ((unsigned char *) ptr)[i]);
-			}
-			else {
-				printFmt(out, esc, "   ");
-			}
-		}
-		if (i < opcode_tbl[ip->opc].size) {
-			printFmt(out, esc, "%02x... ", ((unsigned char *) ptr)[i]);
-		}
-	}
-	else {
-		for (i = 0; i < len; i++) {
-			if (i < opcode_tbl[ip->opc].size) {
-				printFmt(out, esc, "%02x ", ((unsigned char *) ptr)[i]);
-			}
-			else {
-				printFmt(out, esc, "   ");
-			}
-		}
-	}
-
-	if (opcode_tbl[ip->opc].name != NULL) {
-		printFmt(out, esc, "%s", opcode_tbl[ip->opc].name);
-	}
-	else {
-		printFmt(out, esc, "opc.x%02x", ip->opc);
-	}
-
-	switch (ip->opc) {
-		default:
-			break;
-
-		case opc_dup1:
-		case opc_dup2:
-		case opc_dup4:
-		case opc_set1:
-		case opc_set2:
-		case opc_set4:
-			printFmt(out, esc, " sp(%d)", ip->idx);
-			break;
-
-		case opc_lc32:
-			printFmt(out, esc, " %d", ip->arg.i32);
-			break;
-
-		case opc_lc64:
-			printFmt(out, esc, " %D", ip->arg.i64);
-			break;
-
-		case opc_lf32:
-			printFmt(out, esc, " %f", ip->arg.f32);
-			break;
-
-		case opc_lf64:
-			printFmt(out, esc, " %F", ip->arg.f64);
-			break;
-
-		case opc_inc:
-		case opc_spc:
-		case opc_ldsp:
-			printFmt(out, esc, "(%+d)", ip->rel);
-			break;
-		case opc_move:
-		case opc_mad:
-			printFmt(out, esc, " %d", ip->rel);
-			break;
-
-		case opc_jmp:
-		case opc_jnz:
-		case opc_jz:
-		case opc_task:
-			if (ip->opc == opc_task) {
-				printFmt(out, esc, " %d,", ip->dl);
-				i = ip->cl;
-			}
-			else {
-				i = (size_t) ip->rel;
-			}
-			if (mode & prAsmName && sym != NULL) {
-				printFmt(out, esc, fmt_offs, sym, offs + i - sym->offs);
-			}
-			else if (mode & prAsmAddr) {
-				printFmt(out, esc, fmt_addr, offs + i);
-			}
-			else {
-				printFmt(out, esc, " %+d", i);
-			}
-			break;
-
-		case opc_sync:
-			printFmt(out, esc, " %d", ip->idx);
-			break;
-
-		case b32_bit: switch (ip->idx & 0xc0) {
-			default:
-				fatal(ERR_INTERNAL_ERROR);
-				return;
-
-			case b32_bit_and:
-				printFmt(out, esc, "%s 0x%03x", "and", (1 << (ip->idx & 0x3f)) - 1);
-				break;
-
-			case b32_bit_shl:
-				printFmt(out, esc, "%s 0x%03x", "shl", ip->idx & 0x3f);
-				break;
-
-			case b32_bit_shr:
-				printFmt(out, esc, "%s 0x%03x", "shr", ip->idx & 0x3f);
-				break;
-
-			case b32_bit_sar:
-				printFmt(out, esc, "%s 0x%03x", "sar", ip->idx & 0x3f);
-				break;
-			}
-			break;
-
-		case opc_ld32:
-		case opc_st32:
-		case opc_ld64:
-		case opc_st64:
-		case opc_lref:
-			if (ip->opc == opc_lref) {
-				offs = ip->arg.u32;
-			}
-			else {
-				offs = (size_t) ip->rel;
-			}
-
-			printFmt(out, esc, fmt_addr, offs);
-			if (rt != NULL) {
-				sym = rtLookup(rt, offs, 0);
-				if (sym != NULL) {
-					printFmt(out, esc, " ;%?T%?+d", sym, offs - sym->offs);
-				}
-				else if (rt->cc != NULL) {
-					char *str = vmPointer(rt, offs);
-					for (i = 0; i < hashTableSize; i += 1) {
-						list lst;
-						for (lst = rt->cc->strt[i]; lst; lst = lst->next) {
-							char *data = (char*)lst->data;
-							if (str >= data && str < data + strlen(data)) {
-								printFmt(out, esc, " ;%c", type_fmt_string_chr);
-								printFmt(out, esc ? esc : escapeStr(), "%s", str);
-								printFmt(out, esc, "%c", type_fmt_string_chr);
-								i = hashTableSize;
-								break;
-							}
-						}
-					}
-				}
-			}
-			break;
-
-		case opc_nfc:
-			offs = (size_t) ip->rel;
-			printFmt(out, esc, "(%d)", offs);
-
-			if (rt != NULL) {
-				sym = NULL;
-				if (rt->vm.nfc != NULL) {
-					sym = ((libc*)rt->vm.nfc)[offs]->sym;
-				}
-				if (sym != NULL) {
-					printFmt(out, esc, " ;%T", sym);
-				}
-			}
-			break;
-
-		case p4x_swz: {
-			char c1 = "xyzw"[ip->idx >> 0 & 3];
-			char c2 = "xyzw"[ip->idx >> 2 & 3];
-			char c3 = "xyzw"[ip->idx >> 4 & 3];
-			char c4 = "xyzw"[ip->idx >> 6 & 3];
-			printFmt(out, esc, " %c%c%c%c(%02x)", c1, c2, c3, c4, ip->idx);
-			break;
-		}
-	}
-}
-
-static void printRef(FILE *out, const char **esc, rtContext rt, void* data) {
-	if (!isValidOffset(rt, data)) {
+static void printRef(FILE *out, const char **esc, symn sym, size_t offs, dmpMode mode, rtContext rt) {
+	if (rt != NULL && offs >= rt->_size) {
 		// we should never get here, but ...
-		printFmt(out, esc, "BadRef@%06x", data);
+		printFmt(out, esc, "<BadRef@%06x>", offs);
 		return;
 	}
 
-	size_t offs = vmOffset(rt, data);
-	symn sym = rtLookup(rt, offs, 0);
 	if (sym != NULL) {
 		size_t rel = offs - sym->offs;
-		printFmt(out, esc, "<%?.*T%?+d @%06x>", prSymQual, sym, rel, offs);
+		printFmt(out, esc, "<%?.*T", mode, sym);
+		if (mode & prRelOffs && mode & prAbsOffs) {
+			printFmt(out, esc, "%?+d @%06x>", rel, offs);
+		}
+		else if (mode & prRelOffs) {
+			printFmt(out, esc, "%?+d>", rel);
+		}
+		else if (mode & prAbsOffs) {
+			printFmt(out, esc, "@%06x>", offs);
+		}
+		else if (rel != 0) {
+			printFmt(out, esc, "+?>");
+		}
+		else {
+			printFmt(out, esc, ">");
+		}
+	}
+	else if (mode & (prRelOffs | prAbsOffs)) {
+		printFmt(out, esc, "<@%06x>", offs);
 	}
 	else {
-		printFmt(out, esc, "<@%06x>", offs);
+		printFmt(out, esc, "<?>", offs);
 	}
 }
 void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val, dmpMode mode, int indent) {
@@ -2189,13 +1968,10 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 		if (varType == NULL || varData == NULL) {
 			printFmt(out, esc, "%s", "null");
 		}
-		else if (var != typ) {
-			printFmt(out, esc, "{%.T: ", varType);
-			printVal(out, esc, rt, varType, (vmValue *) varData, mode & ~(prSymQual | prSymType), -indent);
-			printFmt(out, esc, "}");
-		}
 		else {
-			printRef(out, esc, rt, data);
+			printFmt(out, esc, "%.T: ", varType);
+			printVal(out, esc, rt, varType, (vmValue *) varData, mode & ~(prSymQual | prSymType), -indent);
+			printFmt(out, esc, "");
 		}
 	}
 	else if (typCast == CAST_arr) {
@@ -2236,7 +2012,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 				length = typ->size / inc;
 			}
 			else if (lenField) {
-				// dinamic size array
+				// dynamic size array
 				// FIXME: slice without length information
 				if (data != (memptr)val) {
 					length = val->length;
@@ -2280,7 +2056,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 				}
 
 				printFmt(out, esc, "\n");
-				printVal(out, esc, rt, sym, (void *) (data + sym->offs), mode & ~prSymQual, indent + 1);
+				printVal(out, esc, rt, sym, (void *) (data + sym->offs), prMember, indent + 1);
 				fields += 1;
 			}
 			if (fields > 0) {
@@ -2288,7 +2064,9 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 			}
 		}
 		if (fields == 0) {
-			printRef(out, esc, rt, data);
+			size_t offs = vmOffset(rt, data);
+			symn sym = rtLookup(rt, offs, 0);
+			printRef(out, esc, sym, offs, (mode | prSymQual) & ~prSymType, rt);
 		}
 	}
 
@@ -2353,7 +2131,7 @@ static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, v
 				// at vm_stk_align is the return value of the function.
 				offs += vm_stk_align;
 			}
-			printVal(out, NULL, rt, sym, (vmValue *)((char*)sp + offs), prValue, -indent);
+			printVal(out, NULL, rt, sym, (vmValue *)((char*)sp + offs), prArgs, -indent);
 		}
 		if (indent > 0) {
 			printFmt(out, NULL, ")");
@@ -2409,6 +2187,238 @@ void traceCalls(dbgContext dbg, FILE *out, int indent, size_t maxCalls, size_t s
 
 	if (hasOutput > 0) {
 		printFmt(out, NULL, "\n");;
+	}
+}
+
+void printOpc(FILE *out, const char **esc, vmOpcode opc, int64_t args) {
+	struct vmInstruction instruction;
+	instruction.opc = opc;
+	instruction.arg.i64 = args;
+	printAsm(out, esc, NULL, &instruction, prName);
+}
+void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode) {
+	vmInstruction ip = (vmInstruction)ptr;
+	size_t i, len = (size_t) mode & prAsmCode;
+	size_t offs = (size_t)ptr;
+	symn sym = NULL;
+
+	if (rt != NULL) {
+		offs = vmOffset(rt, ptr);
+		sym = rtLookup(rt, offs, 0);
+	}
+
+	if (mode & prAsmOffs) {
+		printRef(out, esc, sym, offs, mode, rt);
+
+		size_t symOffs = sym == NULL ? 0 : offs - sym->offs;
+		int trailLen = 1, padLen = 0;
+		if (sym != NULL) {
+			if (!(mode & (prRelOffs|prAbsOffs))) {
+				padLen = 2 * !symOffs;
+				symOffs = 0;
+			}
+			else if (mode & prRelOffs) {
+				padLen = 5 + !symOffs;
+			}
+			else {
+				padLen = 0;
+				symOffs = 0;
+			}
+		}
+		while (symOffs > 0) {
+			symOffs /= 10;
+			padLen -= 1;
+		}
+		if (padLen < 0) {
+			padLen = 0;
+		}
+		printFmt(out, esc, "% I:% I", padLen, trailLen);
+	}
+
+	if (ip == NULL) {
+		printFmt(out, esc, "%s", "null");
+		return;
+	}
+
+	//~ write code bytes
+	if (len > 1 && len < opcode_tbl[ip->opc].size) {
+		for (i = 0; i < len - 2; i++) {
+			if (i < opcode_tbl[ip->opc].size) {
+				printFmt(out, esc, "%02x ", ((unsigned char *) ptr)[i]);
+			}
+			else {
+				printFmt(out, esc, "   ");
+			}
+		}
+		if (i < opcode_tbl[ip->opc].size) {
+			printFmt(out, esc, "%02x... ", ((unsigned char *) ptr)[i]);
+		}
+	}
+	else {
+		for (i = 0; i < len; i++) {
+			if (i < opcode_tbl[ip->opc].size) {
+				printFmt(out, esc, "%02x ", ((unsigned char *) ptr)[i]);
+			}
+			else {
+				printFmt(out, esc, "   ");
+			}
+		}
+	}
+
+	if (opcode_tbl[ip->opc].name != NULL) {
+		printFmt(out, esc, "%s", opcode_tbl[ip->opc].name);
+	}
+	else {
+		printFmt(out, esc, "opc.x%02x", ip->opc);
+	}
+
+	switch (ip->opc) {
+		default:
+			break;
+
+		case opc_dup1:
+		case opc_dup2:
+		case opc_dup4:
+		case opc_set1:
+		case opc_set2:
+		case opc_set4:
+			printFmt(out, esc, " sp(%d)", ip->idx);
+			break;
+
+		case opc_lc32:
+			printFmt(out, esc, " %d", ip->arg.i32);
+			break;
+
+		case opc_lc64:
+			printFmt(out, esc, " %D", ip->arg.i64);
+			break;
+
+		case opc_lf32:
+			printFmt(out, esc, " %f", ip->arg.f32);
+			break;
+
+		case opc_lf64:
+			printFmt(out, esc, " %F", ip->arg.f64);
+			break;
+
+		case opc_inc:
+		case opc_spc:
+		case opc_ldsp:
+			printFmt(out, esc, "(%+d)", ip->rel);
+			break;
+		case opc_move:
+		case opc_mad:
+			printFmt(out, esc, " %d", ip->rel);
+			break;
+
+		case opc_jmp:
+		case opc_jnz:
+		case opc_jz:
+		case opc_task:
+			printFmt(out, esc, " ");
+			if (ip->opc == opc_task) {
+				printFmt(out, esc, "%d,", ip->dl);
+				i = ip->cl;
+			}
+			else {
+				i = (size_t) ip->rel;
+			}
+			if (mode & (prRelOffs | prAbsOffs)) {
+				printRef(out, esc, sym, offs + i, mode, rt);
+			}
+			else {
+				printFmt(out, esc, "%+d", i);
+			}
+			break;
+
+		case opc_sync:
+			printFmt(out, esc, " %d", ip->idx);
+			break;
+
+		case b32_bit: switch (ip->idx & 0xc0) {
+				default:
+					fatal(ERR_INTERNAL_ERROR);
+					return;
+
+				case b32_bit_and:
+					printFmt(out, esc, "%s 0x%03x", "and", (1 << (ip->idx & 0x3f)) - 1);
+					break;
+
+				case b32_bit_shl:
+					printFmt(out, esc, "%s 0x%03x", "shl", ip->idx & 0x3f);
+					break;
+
+				case b32_bit_shr:
+					printFmt(out, esc, "%s 0x%03x", "shr", ip->idx & 0x3f);
+					break;
+
+				case b32_bit_sar:
+					printFmt(out, esc, "%s 0x%03x", "sar", ip->idx & 0x3f);
+					break;
+			}
+			break;
+
+		case opc_ld32:
+		case opc_st32:
+		case opc_ld64:
+		case opc_st64:
+		case opc_lref:
+			printFmt(out, esc, " ");
+			if (ip->opc == opc_lref) {
+				offs = ip->arg.u32;
+			}
+			else {
+				offs = (size_t) ip->rel;
+			}
+
+			printRef(out, esc, NULL, offs, mode, rt);
+			if (rt != NULL) {
+				sym = rtLookup(rt, offs, 0);
+				if (sym != NULL) {
+					printFmt(out, esc, " ;%?T%?+d", sym, offs - sym->offs);
+				}
+				else if (rt->cc != NULL) {
+					char *str = vmPointer(rt, offs);
+					for (i = 0; i < hashTableSize; i += 1) {
+						list lst;
+						for (lst = rt->cc->strt[i]; lst; lst = lst->next) {
+							char *data = (char *) lst->data;
+							if (str >= data && str < data + strlen(data)) {
+								printFmt(out, esc, " ;%c", type_fmt_string_chr);
+								printFmt(out, esc ? esc : escapeStr(), "%s", str);
+								printFmt(out, esc, "%c", type_fmt_string_chr);
+								i = hashTableSize;
+								break;
+							}
+						}
+					}
+				}
+			}
+			break;
+
+		case opc_nfc:
+			offs = (size_t) ip->rel;
+			printFmt(out, esc, "(%d)", offs);
+
+			if (rt != NULL) {
+				sym = NULL;
+				if (rt->vm.nfc != NULL) {
+					sym = ((libc*)rt->vm.nfc)[offs]->sym;
+				}
+				if (sym != NULL) {
+					printFmt(out, esc, " ;%T", sym);
+				}
+			}
+			break;
+
+		case p4x_swz: {
+			char c1 = "xyzw"[ip->idx >> 0 & 3];
+			char c2 = "xyzw"[ip->idx >> 2 & 3];
+			char c3 = "xyzw"[ip->idx >> 4 & 3];
+			char c4 = "xyzw"[ip->idx >> 6 & 3];
+			printFmt(out, esc, " %c%c%c%c(%02x)", c1, c2, c3, c4, ip->idx);
+			break;
+		}
 	}
 }
 

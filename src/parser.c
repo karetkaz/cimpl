@@ -1033,7 +1033,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 	def = declare(cc, (attr & MASK_attr) | KIND_var | cast, tag, type, params);
 	if (skipTok(cc, ASGN_set, 0)) {
 		astn init = initializer(cc);
-		if (init->kind == STMT_beg) {
+		if (init && init->kind == STMT_beg) {
 			init = expandInitializer(cc, def, init);
 			init->type = type;
 		}
@@ -1551,15 +1551,19 @@ static astn statement_list(ccContext cc) {
  * @return parsed syntax tree.
  */
 static astn statement(ccContext cc, ccKind attr) {
-	char *file;
-	int line, validStart = 1;
-	astn ast, check = NULL;
+	char *file = cc->file;
+	int line = cc->line;
+	int validStart = 1;
+	astn check = NULL;
+	astn ast = NULL;
 
 	//~ skip to the first valid statement start
 	while ((ast = peekTok(cc, TOKEN_any)) != NULL) {
 		switch (ast->kind) {
 			default:
 				// valid statement start
+				file = ast->file;
+				line = ast->line;
 				ast = NULL;
 				break;
 
@@ -1580,11 +1584,10 @@ static astn statement(ccContext cc, ccKind attr) {
 		}
 	}
 
-	file = cc->file;
-	line = cc->line;
 	// scan the statement
-	if (skipTok(cc, STMT_end, 0)) {             // ;
-		warn(cc->rt, raise_warn_par8, cc->file, cc->line, WARN_EMPTY_STATEMENT);
+	if ((ast = nextTok(cc, STMT_end, 0))) {             // ;
+		warn(cc->rt, raise_warn_par8, ast->file, ast->line, WARN_EMPTY_STATEMENT);
+		recycle(cc, ast);
 	}
 	else if ((ast = nextTok(cc, STMT_beg, 0))) {   // { ... }
 		ast->stmt.stmt = statement_list(cc);

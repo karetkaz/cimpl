@@ -237,7 +237,7 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 	return def;
 }
 
-symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int raiseError) {
+symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int raise) {
 	symn byName = NULL;
 	symn best = NULL;
 	int found = 0;
@@ -362,7 +362,7 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 			debug("as ref `%T`(%?t)", byName, arguments);
 			sym = byName;
 		}
-		else if (raiseError) {
+		else if (raise) {
 			error(cc->rt, ref->file, ref->line, ERR_MULTIPLE_OVERLOADS, found, byName);
 		}
 	}
@@ -393,7 +393,7 @@ static astn convert(ccContext cc, astn ast, symn type) {
 	return value;
 }
 
-static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raiseError) {
+static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise) {
 	if (ref == NULL || ref->kind != TOKEN_var) {
 		traceAst(ref);
 		return NULL;
@@ -412,13 +412,13 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raiseE
 			sym = lookup(cc, loc->fields, ref, args, ATTR_stat, 0);
 		}
 		if (sym == NULL) {
-			sym = lookup(cc, loc->fields, ref, args, 0, raiseError);
+			sym = lookup(cc, loc->fields, ref, args, 0, raise);
 		}
 	}
 	else {
 		// first lookup in the current scope
 		sym = cc->deft[ref->ref.hash];
-		sym = lookup(cc, sym, ref, args, 0, raiseError);
+		sym = lookup(cc, sym, ref, args, 0, raise);
 
 		// lookup parameters, fields, etc.
 		for (loc = cc->owner; loc != NULL; loc = loc->owner) {
@@ -436,7 +436,7 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raiseE
 	}
 
 	if (sym == NULL) {
-		if (raiseError) {
+		if (raise) {
 			error(cc->rt, ref->file, ref->line, ERR_UNDEFINED_DECLARATION, ref);
 		}
 		return NULL;
@@ -467,7 +467,7 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raiseE
 	return type;
 }
 
-symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
+symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 	symn lType = NULL;
 	symn rType = NULL;
 	symn type = NULL;
@@ -494,7 +494,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 
 			if (ref == NULL && args == NULL) {
 				// int a = ();
-				if (raiseError) {
+				if (raise) {
 					error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
 				}
 				traceAst(ast);
@@ -502,7 +502,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 			}
 			if (ref == NULL) {
 				// int a = (3 + 6);
-				rType = typeCheck(cc, linkOf(ref, 1), args, raiseError);
+				rType = typeCheck(cc, linkOf(ref, 1), args, raise);
 				ast->op.rhso = convert(cc, args, rType);
 				ast->type = rType;
 				return rType;
@@ -525,7 +525,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 			rType = typeCheck(cc, loc, args, 0);
 
 			if (ref->kind == OPER_dot) {    // float32.sin(args)
-				if (!typeCheck(cc, loc, ref->op.lhso, raiseError)) {
+				if (!typeCheck(cc, loc, ref->op.lhso, raise)) {
 					traceAst(ast);
 					return NULL;
 				}
@@ -554,7 +554,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 						return ast->type = type;
 					}
 
-					type = typeCheckRef(cc, loc, ref, args, raiseError);
+					type = typeCheckRef(cc, loc, ref, args, raise);
 					if (type != NULL) {
 						ast->op.lhso->type = type;
 						return ast->type = type;
@@ -589,14 +589,14 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 					}
 				}
 				// lookup arguments in the function's scope (emit, raise, ...)
-				rType = typeCheck(cc, linkOf(ref, 1), args, raiseError);
+				rType = typeCheck(cc, linkOf(ref, 1), args, raise);
 			}
 			if (rType == NULL) {
 				// FIXME: error: could not lookup arguments ...
 				traceAst(ast);
 				return NULL;
 			}
-			type = typeCheckRef(cc, loc, ref, args, raiseError);
+			type = typeCheckRef(cc, loc, ref, args, raise);
 			if (type == NULL) {
 				traceAst(ast);
 				return NULL;
@@ -611,13 +611,13 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 				ast->op.lhso->type = NULL;
 				ast->op.lhso->ref.link = NULL;
 			}
-			lType = typeCheck(cc, loc, ast->op.lhso, raiseError);
+			lType = typeCheck(cc, loc, ast->op.lhso, raise);
 			loc = linkOf(ast->op.lhso, 1);
 			if (loc == NULL) {
 				traceAst(ast);
 				return NULL;
 			}
-			rType = typeCheck(cc, loc, ast->op.rhso, raiseError);
+			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 
 			if (!lType || !rType) {
 				traceAst(ast);
@@ -630,10 +630,10 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 
 		case OPER_idx:
 			if (ast->op.lhso != NULL) {
-				lType = typeCheck(cc, loc, ast->op.lhso, raiseError);
+				lType = typeCheck(cc, loc, ast->op.lhso, raise);
 			}
 			if (ast->op.rhso != NULL) {
-				rType = typeCheck(cc, loc, ast->op.rhso, raiseError);
+				rType = typeCheck(cc, loc, ast->op.rhso, raise);
 			}
 
 			if (!lType || !rType) {
@@ -648,7 +648,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 		case OPER_pls:		// '+'
 		case OPER_mns:		// '-'
 		case OPER_cmt:		// '~'
-			rType = typeCheck(cc, loc, ast->op.rhso, raiseError);
+			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 
 			if (!rType) {
 				traceAst(ast);
@@ -662,7 +662,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 			return type;
 
 		case OPER_not:		// '!'
-			rType = typeCheck(cc, loc, ast->op.rhso, raiseError);
+			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 
 			if (!rType) {
 				traceAst(ast);
@@ -678,8 +678,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 		case OPER_mul:		// '*'
 		case OPER_div:		// '/'
 		case OPER_mod:		// '%'
-			lType = typeCheck(cc, loc, ast->op.lhso, raiseError);
-			rType = typeCheck(cc, loc, ast->op.rhso, raiseError);
+			lType = typeCheck(cc, loc, ast->op.lhso, raise);
+			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 
 			if (!lType || !rType) {
 				traceAst(ast);
@@ -695,8 +695,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 
 		case OPER_shl:		// '>>'
 		case OPER_shr:		// '<<'
-			lType = typeCheck(cc, loc, ast->op.lhso, raiseError);
-			rType = typeCheck(cc, loc, ast->op.rhso, raiseError);
+			lType = typeCheck(cc, loc, ast->op.lhso, raise);
+			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 
 			if (!lType || !rType) {
 				traceAst(ast);
@@ -728,8 +728,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 		case OPER_and:		// '&'
 		case OPER_ior:		// '|'
 		case OPER_xor:		// '^'
-			lType = typeCheck(cc, loc, ast->op.lhso, raiseError);
-			rType = typeCheck(cc, loc, ast->op.rhso, raiseError);
+			lType = typeCheck(cc, loc, ast->op.lhso, raise);
+			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 
 			if (!lType || !rType) {
 				traceAst(ast);
@@ -766,8 +766,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 		case OPER_cle:		// '<='
 		case OPER_cgt:		// '>'
 		case OPER_cge:		// '>='
-			lType = typeCheck(cc, loc, ast->op.lhso, raiseError);
-			rType = typeCheck(cc, loc, ast->op.rhso, raiseError);
+			lType = typeCheck(cc, loc, ast->op.lhso, raise);
+			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 
 			if (!lType || !rType) {
 				traceAst(ast);
@@ -784,8 +784,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 
 		case OPER_all:		// '&&'
 		case OPER_any:		// '||'
-			lType = typeCheck(cc, loc, ast->op.lhso, raiseError);
-			rType = typeCheck(cc, loc, ast->op.rhso, raiseError);
+			lType = typeCheck(cc, loc, ast->op.lhso, raise);
+			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 
 			if (!lType || !rType) {
 				traceAst(ast);
@@ -798,9 +798,9 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 			return type;
 
 		case OPER_sel:		// '?:'
-			lType = typeCheck(cc, loc, ast->op.lhso, raiseError);
-			rType = typeCheck(cc, loc, ast->op.rhso, raiseError);
-			type = typeCheck(cc, loc, ast->op.test, raiseError);
+			lType = typeCheck(cc, loc, ast->op.lhso, raise);
+			rType = typeCheck(cc, loc, ast->op.rhso, raise);
+			type = typeCheck(cc, loc, ast->op.test, raise);
 
 			if (!lType || !rType || !type) {
 				traceAst(ast);
@@ -816,8 +816,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 			return type;
 
 		case OPER_com:	// ','
-			lType = typeCheck(cc, loc, ast->op.lhso, raiseError);
-			rType = typeCheck(cc, loc, ast->op.rhso, raiseError);
+			lType = typeCheck(cc, loc, ast->op.lhso, raise);
+			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 
 			if (!lType || !rType) {
 				traceAst(ast);
@@ -832,8 +832,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 		// operator set
 		case INIT_set:		// ':='
 		case ASGN_set:		// ':='
-			lType = typeCheck(cc, loc, ast->op.lhso, raiseError);
-			rType = typeCheck(cc, NULL, ast->op.rhso, raiseError);
+			lType = typeCheck(cc, loc, ast->op.lhso, raise);
+			rType = typeCheck(cc, NULL, ast->op.rhso, raise);
 			sym = linkOf(ast->op.lhso, 1);
 
 			if (!lType || !rType || !sym) {
@@ -854,7 +854,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raiseError) {
 
 		// variable
 		case TOKEN_var:
-			type = typeCheckRef(cc, loc, ast, NULL, raiseError);
+			type = typeCheckRef(cc, loc, ast, NULL, raise);
 			if (type == NULL) {
 				traceAst(ast);
 				return NULL;

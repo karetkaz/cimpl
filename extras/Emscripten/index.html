@@ -34,7 +34,8 @@
 <body class="dark">
 <div class="toolbar">
 	<span class="left icon" href="#" onclick="showSplitter(menuSplit, '^options', '^secondary', '-files');">☰</span>
-	<!-- 🔆 🔅 ☀ ☼ 🌣 ⛶ 🞕 ⯐ ⌗ ⌑ ⎅ ⏍ ◧ ◨ ⬒ ⬓ ◫ -->
+	<!--<span class="left icon" href="#" onclick="saveInput();">💾</span>-->
+	<!--<span class="left icon" href="#" onclick="shareInput();">🔗</span>-->
 	<span id="btnExecute" class="right execute" href="#" onclick="execute(btnExecute.innerText, cmdExecute.value);"></span>
 	<span class="right icon" href="#" onclick="showEditor('^primary', '^secondary', '^');">⬓</span>
 	<span class="right icon" href="#" onclick="setTheme(body, '!dark');">☼</span>
@@ -70,14 +71,15 @@
 	</div>
 	<div id="files" class="content list">
 		<ul>
-			<li onclick="saveInput();">Save file</li>
-			<li onclick="shareInput();">Share link</li>
-			<li onclick="showFile(null);">Close file</li>
+			<li onclick="saveInput();">💾 Save file</li>
+			<li onclick="shareInput();">🔗 Share link</li>
+			<li onclick="showFile(null);">❌ Close file</li>
 		</ul>
-		Files<ul id="fileList">
+		Files <a href="javascript:worker.postMessage({files: false});" style="text-decoration: none;">⟳</a>
+		<ul id="fileList">
 		</ul>
 		<ul>
-		<li onclick="worker.postMessage({files: null});">Show all</li>
+		<li onclick="worker.postMessage({files: true});">Show all</li>
 		<li onclick="editProject();">Edit project</li>
 	</ul>
 	</div>

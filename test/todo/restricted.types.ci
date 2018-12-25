@@ -1,0 +1,34 @@
+// restrict pointers to disallow the null value
+struct NotNull:0 {
+	pointer value;
+
+	static pointer check(pointer value, char message[*]) {
+		assert(value != null, message);
+		return value;
+	}
+}
+
+inline NotNull(pointer value) = NotNull(emit(pointer(NotNull.check(value, "is null (pre check)"))));  // TODO: use initializer
+//inline NotNull(pointer value) = NotNull { value: check(value, "is null (pre check)"); }   // pre condition
+inline pointer(NotNull value) = NotNull.check(value.value, "is null (post check)");       // post condition
+
+// TODO: allow implicit conversions
+//inline (pointer value) = NotNull { value: check(value, "is null (pre check)"); }   // pre condition
+//inline (NotNull value) = NotNull.check(value.value, "is null (post check)");       // post condition
+
+
+int testNotNull(NotNull ptr) {
+	trace("testNotNull.enter", ptr);
+	int value& = pointer(ptr);
+	trace("testNotNull.leave", value);
+	return value;
+}
+
+void test(pointer p) {
+	int value = testNotNull(NotNull(p));
+}
+
+int intVal = 30;
+int intRef& = null;
+int x = tryExec(intVal, test);
+int y = tryExec(intRef, test);

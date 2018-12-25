@@ -13,7 +13,7 @@ void brightnessContrastGamma(uint32 lut[256], int brightness, int contrast, doub
 	double gval = 1. / gamma;
 
 	for (int idx = 0; idx < lut.length; idx += 1) {
-		int val = grayClamp(brightness + int(255 * (cval * (float64.pow(idx / 255., gval) - .5) + .5)));
+		int val = grayClamp(brightness + int(256 * (cval * (float64.pow(idx / 256., gval) - .5) + .5)));
 		lut[idx] = rgb(val, val, val);
 	}
 }
@@ -77,13 +77,14 @@ int onEvent(int action, int button, int x, int y) {
 
 		inline p = 5;
 		char text[256];
+		FormatFlags flags = { padLen: 4 };
 		int pos = text.append(0, "brightness: ");
-		pos = text.append(pos, brightness, true, 4);
+		pos = text.append(pos, brightness, flags);
 		pos = text.append(pos, "\ncontrast: ");
-		pos = text.append(pos, contrast, true, 4);
+		pos = text.append(pos, contrast, flags);
 		pos = text.append(pos, "\ngamma: ");
-		pos = text.append(pos, gamma, true, 4);
-	
+		pos = text.append(pos, gamma, flags);
+
 		gxRect rect = { x: 30, y: 30, w: 0, h: 0 };
 		font.clipText(rect, text);
 		offs.fillRect(rect.x - p, rect.y - p, rect.x + rect.w + p, rect.y + rect.h + p, 0x000000);

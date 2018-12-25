@@ -38,4 +38,4 @@ $BIN/cmpl -X-stdin-steps -dump.json $BIN/test.dump.json -api/a/m/d/p/u -asm/a/n/
 $BIN/cmpl -X-stdin+steps -log/15 $BIN/test.dump.ci -dump $BIN/test.dump.ci -api/a/m/d/p/u -asm/a/n/s -ast/t -profile/P/G/M "test/test.ci"
 
 # test the virtual machine
-$BIN/cmpl -vmTest
+$BIN/cmpl --test-vm

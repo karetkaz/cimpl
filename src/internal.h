@@ -498,7 +498,7 @@ static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
 
 #ifdef DEBUGGING	// enable compiler debugging
 
-#define logif(__EXP, __FMT, ...) do { if (__EXP) { prerr(#__EXP, __FMT, ##__VA_ARGS__); _break(); } } while(0)
+#define logif(__EXP, __FMT, ...) do { if (__EXP) { prerr(#__EXP, __FMT, ##__VA_ARGS__); } } while(0)
 
 #if DEBUGGING >= 1	// enable trace
 #define trace(__FMT, ...) do { prerr("trace", __FMT, ##__VA_ARGS__); } while(0)

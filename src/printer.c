@@ -1148,7 +1148,7 @@ void print_log(rtContext rt, raiseLevel level, const char *file, int line, rtVal
 		if (wasOutput) {
 			printStr(rt->logFile, NULL, ": ");
 		}
-		printVal(rt->logFile, NULL, rt, inspect->type, inspect->ref, prSymQual | prSymType, 0);
+		printVal(rt->logFile, NULL, rt, inspect->type, inspect->ref, prGlobal, 0);
 		wasOutput = 1;
 	}
 

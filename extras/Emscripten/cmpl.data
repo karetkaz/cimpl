@@ -773,11 +773,13 @@ int compare(char str[*], char with[*], int cmp(char chr, char with)) {
 // ignore case compare
 int ignCaseCmp(char chr, char with) {
 	static char ignCase(char chr) {
-		if (chr >= 'A' && chr <= 'Z') {
-			chr -= 'A';
-			chr += 'a';
+		if (chr < 'A') {
+			return chr;
 		}
-		return chr;
+		if (chr > 'Z') {
+			return chr;
+		}
+		return chr - 'A' + 'a';
 	}
 
 	return ignCase(chr) - ignCase(with);
@@ -806,11 +808,10 @@ inline >(char lhs[*], char rhs[*]) = compare(lhs, rhs, caseCmp) > 0;
 
 // convert number to string
 struct FormatFlags {
-	const int radix;	// radix
-	const char sign;	// should be one of: 0, '-', '+'
-	const char padChr;	// padding character: 0, '0'
-	const int padLen;	// padding length
-	const int precision;	// padding length
+	const int radix = 10;       // radix
+	const char padChr = 0;      // padding character: 0, '0'
+	const int padLen = 0;       // padding length
+	const int precision = 0;    // precision
 }
 
 int append(char output[], int pos, char value[*]) {
@@ -829,7 +830,7 @@ int append(char output[], int pos, char value[*]) {
 	return pos;
 }
 
-int append(char output[], int pos, uint32 value, FormatFlags format&) {
+int append(char output[], int pos, char sign, uint32 value, FormatFlags format&) {
 	static const char whiteSpace[] = " \t\n\r";
 	static const char radixDigits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 
@@ -837,7 +838,8 @@ int append(char output[], int pos, uint32 value, FormatFlags format&) {
 	char digits[80];
 
 	int radix = format.radix;
-	assert(radix > 1 && radix < radixDigits.length);
+	assert(radix > 1, "radix is too small", radix);
+	assert(radix < radixDigits.length, "radix is too big", radix);
 
 	// print digits in reverse order
 	for ( ; value > 0; value /= radix) {
@@ -855,7 +857,7 @@ int append(char output[], int pos, uint32 value, FormatFlags format&) {
 	}
 
 	// print sign value
-	if (format.sign != '\0') {
+	if (sign != 0) {
 		maxLen -= 1;
 		if (whiteSpace.contains(padChr)) {
 			// if padding character is whitespace padd before sign
@@ -866,7 +868,7 @@ int append(char output[], int pos, uint32 value, FormatFlags format&) {
 			}
 		}
 		assert(pos < output.length);
-		output[pos] = format.sign;
+		output[pos] = sign;
 		pos += 1;
 	}
 
@@ -891,31 +893,21 @@ int append(char output[], int pos, uint32 value, FormatFlags format&) {
 	return pos;
 }
 
-int append(char output[], int pos, uint32 value) {
-	static const FormatFlags format = {
-		radix: 10;
-		sign: '\0';
-		padChr: ' ';
-		padLen: 0;
-		precision: 0;
-	};
-	return append(output, pos, value, format);
+int append(char output[], int pos, uint32 value, FormatFlags format&) {
+	return append(output, pos, 0, value, format);
 }
-int append(char output[], int pos, int32 value, bool forceSign, int pad) {
-	char sign = 0;
+
+int append(char output[], int pos, int32 value, FormatFlags format&) {
+	int sign = 0;
 	if (value < 0) {
-		value = -value;
 		sign = '-';
+		value = -value;
 	}
-	else if (forceSign) {
-		sign = '+';
-	}
-	const FormatFlags format = {
-		radix: 10;
-		sign: sign;
-		padChr: '0';
-		padLen: pad;
-		precision: 0;
-	};
+	return append(output, pos, sign, value, format);
+}
+
+int append(char output[], int pos, uint32 value) {
+	static const FormatFlags format = {};
 	return append(output, pos, value, format);
 }
+

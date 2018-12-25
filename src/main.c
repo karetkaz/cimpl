@@ -174,35 +174,35 @@ typedef enum {
 
 struct userContextRec {
 	rtContext rt;
-	FILE *in;           // debugger input
+	FILE *in;              // debugger input
 
-	FILE *out;          // dump file
-	int indent;         // dump indentation
-	const char **esc;   // escape characters
+	FILE *out;             // dump file
+	int indent;            // dump indentation
+	const char **esc;      // escape characters
 
-	dmpMode dmpApi;     // dump symbols
-	dmpMode dmpAst;     // dump syntax tree
-	dmpMode dmpAsm;     // dump operation codes
-	//TODO: dmpDoc:     // dump documentation
-	runMode dmpRun;     // dump runtime state 
+	dmpMode dmpApi;        // dump symbols
+	dmpMode dmpAst;        // dump syntax tree
+	dmpMode dmpAsm;        // dump operation codes
+	//TODO: dmpDoc:        // dump documentation
+	runMode dmpRun;        // dump runtime state 
 
-	int dmpMain;        // include main initializer
-	int dmpApiAll;      // include builtin symbols
-	int dmpApiInfo;     // dump detailed info
-	int dmpApiPrms;     // dump parameters and fields
-	int dmpApiUsed;     // dump usages
-	int dmpAsmStmt;     // print source code statements
-	int hideOffsets;    // remove offsets from dumps
-	char *compileSteps; // dump compilation steps
+	int dmpMain;           // include main initializer
+	int dmpApiAll;         // include builtin symbols
+	int dmpApiInfo;        // dump detailed info
+	int dmpApiPrms;        // dump parameters and fields
+	int dmpApiUsed;        // dump usages
+	int dmpAsmStmt;        // print source code statements
+	int hideOffsets;       // remove offsets from dumps
+	char *compileSteps;    // dump compilation steps
 
-	clock_t ccTime;       // time of compilation
-	clock_t rtTime;     // time of execution
+	clock_t ccTime;        // time of compilation
+	clock_t rtTime;        // time of execution
 
 	// debugger
-	dbgMode dbgCommand; // last debugger command
-	brkMode dbgOnError; // on uncaught exception
-	brkMode dbgOnCaught;// on caught exception
-	size_t dbgNextBreak;// offset of the next break (used for step in, out, over, instruction)
+	dbgMode dbgCommand;    // last debugger command
+	brkMode dbgOnError;    // on uncaught exception
+	brkMode dbgOnCaught;   // on caught exception
+	size_t dbgNextBreak;   // offset of the next break (used for step in, out, over, instruction)
 };
 
 static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int indent, const char *text) {
@@ -734,7 +734,7 @@ static void jsonPreProfile(dbgContext ctx) {
 static void textDumpDbg(FILE *out, const char **esc, dbgn dbg, userContext ctx, int indent) {
 	printFmt(out, esc, "%I%?s:%?u", indent, dbg->file, dbg->line);
 	printFmt(out, esc, ": (%d bytes", dbg->end - dbg->start);
-	if (ctx->dmpAsm & prAsmAddr && !ctx->hideOffsets) {
+	if (ctx->dmpAsm & prAsmOffs && !ctx->hideOffsets) {
 		printFmt(out, esc, " @.%06x-.%06x", dbg->start, dbg->end);
 	}
 	printFmt(out, esc, ")");
@@ -744,12 +744,8 @@ static void textDumpDbg(FILE *out, const char **esc, dbgn dbg, userContext ctx, 
 	printFmt(out, esc, "\n");
 }
 static void textDumpAsm(FILE *out, const char **esc, size_t offs, userContext ctx, int indent) {
-	dmpMode mode = ctx->dmpAsm;
-	if (ctx->hideOffsets) {
-		mode = prNoOffs | (mode & ~prAsmCode);
-	}
 	printFmt(out, esc, "%I", indent);
-	printAsm(out, esc, ctx->rt, vmPointer(ctx->rt, offs), mode);
+	printAsm(out, esc, ctx->rt, vmPointer(ctx->rt, offs), ctx->dmpAsm);
 	printFmt(out, esc, "\n");
 }
 static void textDumpMem(dbgContext dbg, void *ptr, size_t size, char *kind) {
@@ -776,7 +772,9 @@ static void textDumpMem(dbgContext dbg, void *ptr, size_t size, char *kind) {
 	printFmt(out, esc, "memory[%s] @%06x; size: %d(%?.1F %s)\n", kind, vmOffset(ctx->rt, ptr), size, value, unit);
 }
 
-void printFields(rtContext rt, symn sym, runMode mode) {
+void printFields(FILE *out, const char **esc, symn sym, userContext ctx) {
+	rtContext rt = ctx->rt;
+	dmpMode valMode = prGlobal;
 	for (symn var = sym->fields; var; var = var->next) {
 		if (var == rt->main || isInline(var)) {
 			// alias and type names.
@@ -784,75 +782,44 @@ void printFields(rtContext rt, symn sym, runMode mode) {
 		}
 		if (isTypename(var)) {
 			dieif(!isStatic(var), ERR_INTERNAL_ERROR);
-			printFields(rt, var, mode);
-			if (!(mode & dmpTypenames)) {
+			printFields(out, esc, var, ctx);
+			if (!(ctx->dmpRun & dmpTypenames)) {
 				continue;
 			}
 		}
 		if (isFunction(var)) {
 			dieif(!isStatic(var), ERR_INTERNAL_ERROR);
-			printFields(rt, var, mode);
-			if (!(mode & dmpFunctions)) {
-				continue;
-			}
-		}
-		if (!isStatic(var)) {
-			// members and locals.
-			continue;
-		}
-
-		if (var->file == NULL || var->line <= 0) {
-			// exclude internal symbols
-			if (!(mode & dmpInternals)) {
-				continue;
-			}
-		}
-
-		rtValue value;
-		value.type = var;
-		value.ref = rt->_mem + var->offs;
-		printLog(rt, raisePrint, var->file, var->line, &value, NULL);
-	}
-}
-void printGlobals(rtContext rt, runMode mode) {
-	for (symn var = rt->main->fields; var; var = var->next) {
-
-		if (var == rt->main || isInline(var)) {
-			continue;
-		}
-		if (isTypename(var)) {
-			dieif(!isStatic(var), ERR_INTERNAL_ERROR);
-			printFields(rt, var, mode);
-			if (!(mode & dmpTypenames)) {
-				continue;
-			}
-		}
-		if (isFunction(var)) {
-			dieif(!isStatic(var), ERR_INTERNAL_ERROR);
-			printFields(rt, var, mode);
-			if (!(mode & dmpTypenames)) {
+			printFields(out, esc, var, ctx);
+			if (!(ctx->dmpRun & dmpFunctions)) {
 				continue;
 			}
 		}
 
 		if (var->file == NULL || var->line <= 0) {
-			// exclude internal symbols
-			if (!(mode & dmpInternals)) {
+			if (!(ctx->dmpRun & dmpInternals)) {
+				// exclude internal symbols
 				continue;
 			}
 		}
 
-		rtValue value;
-		value.type = var;
+		void *value;
 		if (isStatic(var)) {
 			// static variable.
-			value.ref = rt->_mem + var->offs;
+			value = rt->_mem + var->offs;
+		}
+		else if (sym == rt->main) {
+			// HACK: local main variable.
+			value = (char *) rt->vm.cell - var->offs;
 		}
 		else {
-			// local variable (or argument).
-			value.ref = (char *) rt->vm.cell - var->offs;
+			continue;
 		}
-		printLog(rt, raisePrint, var->file, var->line, &value, NULL);
+
+		if (var->file && var->line) {
+			printFmt(out, esc, "%s:%u: ", var->file, var->line);
+		}
+		printVal(out, esc, rt, var, value, valMode, 0);
+		printFmt(out, esc, "\n");
 	}
 }
 
@@ -865,7 +832,7 @@ static void textPostProfile(userContext usr) {
 
 	if (usr->dmpRun & dmpAllGlobal) {
 		printFmt(out, esc, "%?sGlobals:\n", prefix);
-		printGlobals(rt, usr->dmpRun);
+		printFields(out, esc, rt->main, usr);
 	}
 
 	if (usr->dmpRun & (dmpMemoryUse|dmpHeapUsage)) {
@@ -1965,11 +1932,11 @@ int main(int argc, char *argv[]) {
 						break;
 
 					case 'a':
-						extra.dmpAsm |= prAsmAddr;
+						extra.dmpAsm |= prAsmOffs|prAbsOffs;
 						arg2 += 2;
 						break;
 					case 'n':
-						extra.dmpAsm |= prAsmName;
+						extra.dmpAsm |= prAsmOffs|prRelOffs;
 						arg2 += 2;
 						break;
 					case 's':
@@ -2130,6 +2097,12 @@ int main(int argc, char *argv[]) {
 		else break;
 	}
 
+	if (extra.hideOffsets) {
+		extra.dmpApi &= ~(prRelOffs|prAbsOffs);
+		extra.dmpAsm &= ~(prAsmCode|prRelOffs|prAbsOffs);
+		extra.dmpAst &= ~(prRelOffs|prAbsOffs);
+	}
+
 	extra.ccTime = clock();
 	// initialize runtime context
 	rt = rtInit(NULL, settings.memory);
@@ -2274,7 +2247,6 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	int ccErrors = rt->errors;
 	// generate code only if there are no compilation errors
 	if (rt->errors == 0) {
 		if (extra.compileSteps != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sGenerate: byte-code", extra.compileSteps);}
@@ -2304,7 +2276,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if (ccErrors == 0) {
+	if (rt->errors == 0) {
 		if (dumpFun == dumpApiJSON) {
 			extra.esc = escapeJSON();
 			printFmt(extra.out, NULL, "{\n");
@@ -2348,7 +2320,7 @@ int main(int argc, char *argv[]) {
 		if (extra.dmpAsm == prSkip) {
 			if (extra.dmpRun & traceOpcodes) {
 				extra.dmpAsmStmt = 1;
-				extra.dmpAsm = prAsmAddr | 9;
+				extra.dmpAsm = prAsmOffs|prRelOffs | 9;
 			}
 		}
 		if (extra.compileSteps != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sExecute: byte-code", extra.compileSteps);}
@@ -2371,9 +2343,10 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (extra.compileSteps != NULL) {
+		clock_t runTime = extra.hideOffsets ? 0 : extra.rtTime;
 		printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sExitcode: %d, time: %.3F ms",
 			extra.compileSteps, rt->errors,
-			extra.rtTime  * 1000. / CLOCKS_PER_SEC
+			runTime  * 1000. / CLOCKS_PER_SEC
 		);
 	}
 

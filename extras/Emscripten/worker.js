@@ -69,9 +69,14 @@ onmessage = function(event) {
 	let data = event.data;
 	console.log(data);
 	if (data.files !== undefined) {
-		if (data.files === null) {
-			let files = Module.listFiles(Module.workspace);
-			files.push(...Module.listFiles('/lib'));
+		if (data.files === true || data.files === false) {
+			let files = [];
+			if (data.files === false) {
+				files.push(...Module.listFiles());
+			} else {
+				files.push(...Module.listFiles(Module.workspace));
+				files.push(...Module.listFiles('/lib'));
+			}
 			postMessage({files});
 		} else {
 			Module.files = data.files;

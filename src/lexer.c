@@ -304,7 +304,6 @@ static ccToken readTok(ccContext cc, astn tok) {
 	};
 	const char *end = (char*)cc->rt->_end;
 
-	char *beg = NULL;
 	char *ptr = NULL;
 	int chr = readChr(cc);
 
@@ -380,11 +379,11 @@ static ccToken readTok(ccContext cc, astn tok) {
 		chr = readChr(cc);
 	}
 
-	ptr = beg = (char*)cc->rt->_beg;
-
 	if (tok == NULL) {
 		return TOKEN_any;
 	}
+
+	char *beg = ptr = (char*)cc->rt->_beg;
 
 	// our token begins here
 	memset(tok, 0, sizeof(*tok));
@@ -400,7 +399,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			if (chr_map[chr & 0xff] & CWORD) {
 				goto read_idf;
 			}
-			error(cc->rt, cc->file, cc->line, ERR_INVALID_CHARACTER, chr);
+			error(cc->rt, tok->file, tok->line, ERR_INVALID_CHARACTER, chr);
 			tok->kind = TOKEN_any;
 			break;
 
@@ -607,7 +606,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 					int oct, hex1, hex2;
 					switch (chr = readChr(cc)) {
 						default:
-							error(cc->rt, cc->file, cc->line, ERR_INVALID_ESC_SEQ, chr);
+							error(cc->rt, tok->file, tok->line, ERR_INVALID_ESC_SEQ, chr);
 							chr = 0;
 							break;
 
@@ -681,7 +680,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 								}
 							}
 							if (oct & 0xffffff00) {
-								warn(cc->rt, raise_warn_lex2, cc->file, cc->line, WARN_OCT_ESC_SEQ_OVERFLOW);
+								warn(cc->rt, raise_warn_lex2, tok->file, tok->line, WARN_OCT_ESC_SEQ_OVERFLOW);
 							}
 							chr = oct & 0xff;
 							break;
@@ -700,7 +699,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 								hex1 -= 'A' - 10;
 							}
 							else {
-								error(cc->rt, cc->file, cc->line, ERR_INVALID_HEX_SEQ, hex1);
+								error(cc->rt, tok->file, tok->line, ERR_INVALID_HEX_SEQ, hex1);
 								break;
 							}
 							if (hex2 >= '0' && hex2 <= '9') {
@@ -713,7 +712,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 								hex2 -= 'A' - 10;
 							}
 							else {
-								error(cc->rt, cc->file, cc->line, ERR_INVALID_HEX_SEQ, hex2);
+								error(cc->rt, tok->file, tok->line, ERR_INVALID_HEX_SEQ, hex2);
 								break;
 							}
 							chr = hex1 << 4 | hex2;
@@ -736,7 +735,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			*ptr++ = 0;
 
 			if (chr != start_char) {
-				error(cc->rt, cc->file, cc->line, ERR_INVALID_LITERAL, start_char);
+				error(cc->rt, tok->file, tok->line, ERR_INVALID_LITERAL, start_char);
 				return tok->kind = TOKEN_any;
 			}
 
@@ -750,14 +749,14 @@ static ccToken readTok(ccContext cc, astn tok) {
 				int val = 0;
 
 				if (ptr == beg) {
-					error(cc->rt, cc->file, cc->line, ERR_EMPTY_CHAR_CONSTANT);
+					error(cc->rt, tok->file, tok->line, ERR_EMPTY_CHAR_CONSTANT);
 					return tok->kind = TOKEN_any;
 				}
 				if (ptr > beg + vm_stk_align + 1) {
-					warn(cc->rt, raise_warn_lex2, cc->file, cc->line, WARN_CHR_CONST_OVERFLOW, ptr);
+					warn(cc->rt, raise_warn_lex2, tok->file, tok->line, WARN_CHR_CONST_OVERFLOW, ptr);
 				}
 				else if (ptr > beg + cc->type_chr->size + 1) {
-					warn(cc->rt, raise_warn_lex3, cc->file, cc->line, WARN_MULTI_CHAR_CONSTANT);
+					warn(cc->rt, raise_warn_lex3, tok->file, tok->line, WARN_MULTI_CHAR_CONSTANT);
 				}
 
 				for (ptr = beg; *ptr; ++ptr) {
@@ -892,7 +891,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			}
 
 			if (ovf != 0) {
-				warn(cc->rt, raise_warn_lex2, cc->file, cc->line, WARN_VALUE_OVERFLOW);
+				warn(cc->rt, raise_warn_lex2, tok->file, tok->line, WARN_VALUE_OVERFLOW);
 			}
 
 			if ((int32_t)i64v == i64v) {
@@ -961,7 +960,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 						error(cc->rt, tok->file, tok->line, ERR_INVALID_EXPONENT);
 					}
 					else if (ovf) {
-						warn(cc->rt, raise_warn_lex2, cc->file, cc->line, WARN_EXPONENT_OVERFLOW);
+						warn(cc->rt, raise_warn_lex2, tok->file, tok->line, WARN_EXPONENT_OVERFLOW);
 					}
 
 					while (val) {		// pow(10, val);
@@ -1090,14 +1089,14 @@ astn peekTok(ccContext cc, ccToken match) {
 	return NULL;
 }
 
-astn nextTok(ccContext cc, ccToken match, int raiseError) {
+astn nextTok(ccContext cc, ccToken match, int raise) {
 	astn token = peekTok(cc, match);
 	if (token != NULL) {
 		cc->tokNext = token->next;
 		token->next = NULL;
 		return token;
 	}
-	if (raiseError) {
+	if (raise) {
 		char *file = cc->file;
 		int line = cc->line;
 		token = cc->tokNext;

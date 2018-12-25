@@ -16,9 +16,9 @@ const char **escapeStr();
 typedef enum {
 	prSkip = -1,
 	prAsmCode = 0x00000f,   // print code bytes (0-15)
-	prAsmAddr = 0x000010,   // print global address: (@0x003d8c)
-	prAsmName = 0x000020,   // use symbol names instead of addresses: <main+80>
-	//prAsmRefs = 0x000040,   // print memory reference as comments: load.ref .000000 ;null
+	prAsmOffs = 0x000010,   // print offsets: <main...>
+	prRelOffs = 0x000020,   // print relative offsets: <main+80>
+	prAbsOffs = 0x000040,   // print absolute offset: <main@041048>
 
 	prOneLine = 0x000080,   // force printing on a single line (skip: function body, typename fields, statement blocks, ...)
 
@@ -32,13 +32,15 @@ typedef enum {
 	nlAstBody = 0x004000,   // print compound statements on new line (like in cs)
 	nlAstElIf = 0x008000,   // don't keep `else if` constructs on the same line.
 
-	prNoOffs = 0x800000,
-
 	prName = 0,		// print operator or symbol name only.
-	prValue = prOneLine,
+
+	prGlobal = prSymQual | prSymType | prOneLine,
+	prMember = prOneLine,
+	prArgs = prSymQual | prOneLine,
+
 	prShort = prSymQual | prSymArgs | prOneLine ,	// %t, %T
 	prFull = prAttr | prSymQual | prSymArgs | prSymType | prSymInit,		// %±t, %±T
-	prDbg = prAttr | prAstType | prSymQual | prSymArgs | prSymType | prSymInit | prAsmAddr | prAsmName | 9 | prOneLine
+	prDbg = prAttr | prAstType | prSymQual | prSymArgs | prSymType | prSymInit | prRelOffs | prAsmOffs | 9 | prOneLine
 } dmpMode;
 
 /**

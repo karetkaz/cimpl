@@ -123,12 +123,13 @@ int onEvent(int action, int button, int x, int y) {
 		offs.drawHist(null, 0x00ffffff);
 
 		char text[256];
+		FormatFlags flags = { padLen: 4 };
 		int pos = text.append(0, "brightness: ");
-		pos = text.append(pos, brightness, true, 4);
+		pos = text.append(pos, brightness, flags);
 		pos = text.append(pos, "\nsaturation: ");
-		pos = text.append(pos, saturation, true, 4);
+		pos = text.append(pos, saturation, flags);
 		pos = text.append(pos, "\nhue: ");
-		pos = text.append(pos, hue, true, 4);
+		pos = text.append(pos, hue, flags);
 
 		inline p = 5;
 		gxRect rect = { x: 30, y: 30, w: 0, h: 0 };

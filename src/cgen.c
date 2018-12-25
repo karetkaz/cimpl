@@ -668,7 +668,7 @@ static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 					return CAST_any;
 				}
 
-				if (argOffs - locals != prm->offs) {
+				if (argOffs - locals > prm->offs) {
 					if (!emitStack(rt, opc_ldsp, locals + prm->offs)) {
 						trace(ERR_INTERNAL_ERROR);
 						return CAST_any;
@@ -1425,7 +1425,8 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				int errors = rt->errors;
 				int nested = ptr->kind == STMT_beg;
 				size_t ipStart2 = emit(rt, markIP);
-//				trace("%?s:%?u: %t", ptr->file, ptr->line, ptr);
+				cc->file = ptr->file;
+				cc->line = ptr->line;
 				if (!genAst(cc, ptr, nested ? get : CAST_any)) {
 					if (errors == rt->errors) {
 						// report unreported error

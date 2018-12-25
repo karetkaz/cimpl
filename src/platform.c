@@ -58,9 +58,7 @@ void closeLibs(rtContext rt) {}
 #ifdef __NO_REALPATH
 // use a fake path to make the tests work.
 char *absolutePath(char *path, char *buff, size_t size) {
-	buff[0] = '.';
-	buff[1] = '/';
-	strncpy(buff + 2, path, size - 2);
+	strncpy(buff, path, size - 2);
 	return buff;
 }
 #endif //__NO_REALPATH

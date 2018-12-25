@@ -5,53 +5,73 @@ inline last(int a, int b) = b;	// only one param used
 inline sum(int a, int b) = a + b;	// both param used once
 inline any(int a, int b) = a ? a : b;	// one param used 2x, the other once
 inline min(int a, int b) = a < b ? a : b;	// both param used 2x
+inline max(int a, int b) = a > b ? a : b;	// both param used 2x
 
-inline sum(int a, int b, int c) = sum(sum(a, b), c);
-inline any(int a, int b, int c) = any(any(a, b), c);
-inline min(int a, int b, int c) = min(min(a, b), c);
+int i3 = 3;
+int i6 = 6;
+int i2 = 2;
+int i8 = 8;
 
-int ma = 3;
-int mb = 6;
-int mc = 9;
+int zeroVal = zero(3, 6);
+int zeroVar = zero(i3, i6);
+int zeroXpr = zero(i3 + 1, i6 + 1);
 
-int zeroVal = zero(2, 3);
-int zeroVar = zero(ma, mb);
-int zeroXpr = zero(ma + mb, mb + mc);
+int lastVal = last(3, 6);
+int lastVar = last(i3, i6);
+int lastXpr = last(i3 + 1, i6 + 1) - 1;
 
-int lastVal = last(2, 3);
-int lastVar = last(ma, mb);
-int lastXpr = last(ma + mb, mb + mc);
+int sum2Val = sum(3, 6);
+int sum2Var = sum(i3, i6);
+int sum2Xpr = sum(i3 + 1, i6 + 1) - 2;
 
-int sum2Val = sum(3, 12);
-int sum2Var = sum(ma, mb);
-int sum2Xpr = sum(ma + mb, mb + mc);
+int any2Val = any(3, 6);
+int any2Var = any(i3, i6);
+int any2Xpr = any(i3 + 1, i6 + 1) - 1;
 
-int any2Val = any(3, 12);
-int any2Var = any(ma, mb);
-int any2Xpr = any(ma + mb, mb + mc);
+int min2Val = min(3, 6);
+int min2Var = min(i3, i6);
+int min2Xpr = min(i3 + 1, i6 + 1) - 1;
 
-int min2Val = min(3, 12);
-int min2Var = min(ma, mb);
-int min2Xpr = min(ma + mb, mb + mc);
+int max2Val = max(3, 6);
+int max2Var = max(i3, i6);
+int max2Xpr = max(i3 + 1, i6 + 1) - 1;
 
-int sum3Val = sum(3, 2, 6);
-int sum3Var = sum(ma, mb, mc);
-int sum3Xpr = sum(ma + mb, mb + mc, mc + ma);
+inline sumLr(int a, int b, int c, int d) = sum(a, sum(b, sum(c, d)));
+inline sumRl(int a, int b, int c, int d) = sum(sum(sum(a, b), c), d);
+int sumRlVal = sumLr(3, 6, 2, 8);
+int sumLrVal = sumRl(3, 6, 2, 8);
+int sumRlVar = sumLr(i3, i6, i2, i8);
+int sumLrVar = sumRl(i3, i6, i2, i8);
+int sumRlXpr = sumLr(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 4;
+int sumLrXpr = sumRl(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 4;
 
-int any3Val = any(3, 2, 6);
-int any3Var = any(ma, mb, mc);
-int any3Xpr = any(ma + mb, mb + mc, mc + ma);
+inline anyLr(int a, int b, int c, int d) = any(a, any(b, any(c, d)));
+inline anyRl(int a, int b, int c, int d) = any(any(any(a, b), c), d);
+int anyRlVal = anyLr(3, 6, 2, 8);
+int anyLrVal = anyRl(3, 6, 2, 8);
+int anyRlVar = anyLr(i3, i6, i2, i8);
+int anyLrVar = anyRl(i3, i6, i2, i8);
+int anyRlXpr = anyLr(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 1;
+int anyLrXpr = anyRl(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 1;
 
-int min3Val = min(3, 2, 6);
-int min3Var = min(ma, mb, mc);
-int min3Xpr = min(ma + mb, mb + mc, mc + ma);
+inline minLr(int a, int b, int c, int d) = min(a, min(b, min(c, d)));
+inline minRl(int a, int b, int c, int d) = min(min(min(a, b), c), d);
+int minRlVal = minLr(3, 6, 2, 8);
+int minLrVal = minRl(3, 6, 2, 8);
+int minRlVar = minLr(i3, i6, i2, i8);
+int minLrVar = minRl(i3, i6, i2, i8);
+int minRlXpr = minLr(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 1;
+int minLrXpr = minRl(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 1;
 
-/* FIXME: incorrect local variable size with multiple inline arguments
-inline any(int a, int b, int c, int d) = any(a, any(b, any(c, d)));   // err
-//inline any(int a, int b, int c, int d) = any(any(any(a, b), c), d);   // ok
-int any4Val = any(3, 2, 6, 8);
-// */
+inline maxLr(int a, int b, int c, int d) = max(a, max(b, max(c, d)));
+inline maxRl(int a, int b, int c, int d) = max(max(max(a, b), c), d);
+int maxRlVal = maxLr(3, 6, 2, 8);
+int maxLrVal = maxRl(3, 6, 2, 8);
+int maxRlVar = maxLr(i3, i6, i2, i8);
+int maxLrVar = maxRl(i3, i6, i2, i8);
+int maxRlXpr = maxLr(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 1;
+int maxLrXpr = maxRl(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 1;
 
 // TODO: force inline/cache arguments ?
-// inline min(inline int a, inline int b) = a < b ? a : b;
-// inline max(static int a, static int b) = a > b ? a : b;
+// inline min(inline int a, inline int b) = a < b ? a : b;	// forced to be inline
+// inline max(const int a&, const int b&) = a > b ? a : b;	// forced to be references (will be pre calculated)
