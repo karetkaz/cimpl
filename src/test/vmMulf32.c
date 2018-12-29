@@ -10,32 +10,25 @@ static vmError onHalt(nfcContext args) {
 
 /// print the generated instructions
 static void dumpAsm(rtContext rt) {
-	for (size_t pc = rt->vm.pc; pc <= rt->vm.px; ) {
-		unsigned char *ip = vmPointer(rt, pc);
+	size_t end = rt->vm.px + px_size;
+	for (size_t pc = rt->vm.pc, n = pc; pc < end; pc = n) {
+		unsigned char *ip = nextOpc(rt, &n, NULL);
 		if (ip == NULL) {
 			// invalid offset
 			return;
 		}
-
-		int size = opcode_tbl[*ip].size;
-		if (size <= 0) {
-			// invalid instruction
-			return;
-		}
-
 		printFmt(stdout, NULL, "%06x  %.9A\n", pc, ip);
-		pc += size;
 	}
 }
 
 #define dieif(__EXP) do { if (__EXP) { printFmt(stdout, NULL, "%?s:%?u: %s(" #__EXP "): failed to emit instruction\n", __FILE__, __LINE__, __FUNCTION__); abort(); } } while(0)
 
 /// demonstrate how to use of the virtual machine: multiply two float numbers.
-/// memory used by the virtual machine is 520 bytes.
+/// memory used by the virtual machine is 640 bytes.
 /// stack size used for execution is 12 bytes.
 int main() {
 	// initialize
-	char mem[520];         // 0.5 Kb memory
+	char mem[640];
 	rtContext rt = rtInit(mem, sizeof(mem));
 
 	// override optimization flags
@@ -52,7 +45,7 @@ int main() {
 	// prepare for execution
 	rt->vm.px = emitInt(rt, opc_nfc, 0);
 	rt->vm.pc = start;
-	rt->vm.ss = 8;
+	rt->vm.ss = 12;
 
 	// print emitted instructions
 	printFmt(stdout, NULL, "\n-- assembly:\n");

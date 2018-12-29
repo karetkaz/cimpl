@@ -104,15 +104,14 @@ static int removeOpc(rtContext rt, size_t offs) {
 	return 0;
 }
 static int decrementStackAccess(rtContext rt, size_t offsBegin, size_t offsEnd, int count) {
-	size_t offs;
-	for (offs = offsBegin; offs < offsEnd; ) {
-		vmInstruction ip = vmPointer(rt, offs);
-		int size = opcode_tbl[ip->opc].size;
-		if (size <= 0) {
-			fatal(ERR_INTERNAL_ERROR": %.*A", offs, ip);
+	size_t ss = 0;
+	for (size_t pc = offsBegin; pc < offsEnd; ) {
+		size_t stack = ss;
+		vmInstruction ip = nextOpc(rt, &pc, &ss);
+		if (ip == NULL) {
+			fatal(ERR_INTERNAL_ERROR);
 			return 0;
 		}
-		offs += size;
 		switch (ip->opc) {
 			default:
 				break;
@@ -123,11 +122,15 @@ static int decrementStackAccess(rtContext rt, size_t offsBegin, size_t offsEnd, 
 			case opc_dup1:
 			case opc_dup2:
 			case opc_dup4:
-				ip->idx -= count;
+				if (ip->idx * sizeof(*(stkptr)NULL) >= stack) {
+					ip->idx -= count;
+				}
 				break;
 
 			case opc_ldsp:
-				ip->rel -= count * vm_stk_align;
+				if (ip->rel >= stack) {
+					ip->rel -= count * sizeof(*(stkptr)NULL);
+				}
 				break;
 		}
 	}
@@ -143,6 +146,15 @@ int optimizeAssign(rtContext rt, size_t offsBegin, size_t offsEnd) {
 		}
 		if (!testOcp(rt, offsEnd, opc_set1, &arg)) {
 			return 0;
+		}
+		if (offsEnd - offsBegin == 2) {
+			vmInstruction ip = vmPointer(rt, offsBegin);
+			ip->opc = opc_set1;
+			ip->idx = arg.u08 - 1;
+
+			rt->_beg = vmPointer(rt, offsEnd);
+			rt->vm.ss -= ip->idx < 1 ? ip->idx : 1;
+			return 1;
 		}
 		if (arg.u08 != 1) {
 			return 0;
@@ -170,6 +182,15 @@ int optimizeAssign(rtContext rt, size_t offsBegin, size_t offsEnd) {
 		if (!testOcp(rt, offsEnd, opc_set2, &arg)) {
 			return 0;
 		}
+		if (offsEnd - offsBegin == 2) {
+			vmInstruction ip = vmPointer(rt, offsBegin);
+			ip->opc = opc_set2;
+			ip->idx = arg.u08 - 2;
+
+			rt->_beg = vmPointer(rt, offsEnd);
+			rt->vm.ss -= ip->idx < 2 ? ip->idx : 2;
+			return 1;
+		}
 		if (arg.u08 != 2) {
 			return 0;
 		}
@@ -182,6 +203,41 @@ int optimizeAssign(rtContext rt, size_t offsBegin, size_t offsEnd) {
 			return 0;
 		}
 		if (!decrementStackAccess(rt, offsBegin, offsEnd, 2)) {
+			fatal(ERR_INTERNAL_ERROR": %.*A", offsBegin, vmPointer(rt, offsBegin));
+			return 0;
+		}
+		return 1;
+	}
+	if (testOcp(rt, offsBegin, opc_dup4, &arg)) {
+		// duplicate top of stack then set top of stack
+		if (arg.u08 != 0) {
+			return 0;
+		}
+		if (!testOcp(rt, offsEnd, opc_set4, &arg)) {
+			return 0;
+		}
+		if (offsEnd - offsBegin == 2) {
+			vmInstruction ip = vmPointer(rt, offsBegin);
+			ip->opc = opc_set4;
+			ip->idx = arg.u08 - 4;
+
+			rt->_beg = vmPointer(rt, offsEnd);
+			rt->vm.ss -= ip->idx < 4 ? ip->idx : 4;
+			return 1;
+		}
+
+		if (arg.u08 != 4) {
+			return 0;
+		}
+		if (!removeOpc(rt, offsEnd)) {
+			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
+			return 0;
+		}
+		if (!removeOpc(rt, offsBegin)) {
+			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
+			return 0;
+		}
+		if (!decrementStackAccess(rt, offsBegin, offsEnd, 4)) {
 			fatal(ERR_INTERNAL_ERROR": %.*A", offsBegin, vmPointer(rt, offsBegin));
 			return 0;
 		}
@@ -342,6 +398,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case opc_lc32:
+		case opc_lf32:
 			if (!rt->foldInstr) {
 				break;
 			}
@@ -356,6 +413,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case opc_lc64:
+		case opc_lf64:
 			if (!rt->foldInstr) {
 				break;
 			}
@@ -1225,13 +1283,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 	ip->arg = arg;
 	rt->vm.pc = rt->_beg - rt->_mem;	// previous program pointer is here
 
-	// post checks
-	if ((opc == opc_jmp || opc == opc_jnz || opc == opc_jz) && arg.i64 != 0) {
-		ip->rel -= rt->vm.pc;
-		dieif((ip->rel + rt->vm.pc) != arg.u64, ERR_INTERNAL_ERROR);
-	}
-	else switch (opc) {
+	switch (opc) {
 		default:
+			break;
+
+		case opc_jmp:
+		case opc_jnz:
+		case opc_jz:
+			if (arg.i64 == 0) {
+				// offset is not known when emitting the instruction
+				// set it later using fixJump
+				break;
+			}
+			ip->rel -= rt->vm.pc;
+			dieif((ip->rel + rt->vm.pc) != arg.u64, ERR_INTERNAL_ERROR);
 			break;
 
 		case opc_spc:
@@ -1262,6 +1327,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 	}
 
+	dbgEmit("pc[%d]: sp(%d): %A", rt->vm.pc, rt->vm.ss, ip);
 	switch (opc) {
 		error_opc:
 			// invalid instruction
@@ -1285,7 +1351,6 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 		rt->vm.ss -= 1;
 	}
 
-	dbgEmit("pc[%d]: sp(%d): %A", rt->vm.pc, rt->vm.ss, ip);
 	return rt->vm.pc;
 }
 int testOcp(rtContext rt, size_t offs, vmOpcode opc, vmValue *arg) {
@@ -1513,9 +1578,9 @@ static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t
 		if (err == nativeCallError) {
 			libc *nativeCalls = rt->vm.nfc;
 			symn nc = nativeCalls[ip->rel]->sym;
-			error(ctx->rt, file, line, ERR_EXEC_NATIVE_CALL, errMsg, caller, fun, offs, nc);
+			error(rt, file, line, ERR_EXEC_NATIVE_CALL, errMsg, caller, fun, offs, nc);
 		} else {
-			error(ctx->rt, file, line, ERR_EXEC_INSTRUCTION, errMsg, caller, fun, offs, ip);
+			error(rt, file, line, ERR_EXEC_INSTRUCTION, errMsg, caller, fun, offs, ip);
 		}
 		// print stack trace including this function
 		if (rt->dbg != NULL && rt->traceLevel > 0) {
@@ -1815,10 +1880,10 @@ int isChecked(dbgContext ctx) {
 	return 0;
 }
 
-static void printRef(FILE *out, const char **esc, symn sym, size_t offs, dmpMode mode, rtContext rt) {
-	if (rt != NULL && offs >= rt->_size) {
+void printOfs(FILE *out, const char **esc, rtContext ctx, symn sym, size_t offs, dmpMode mode) {
+	if (ctx != NULL && offs >= ctx->_size) {
 		// we should never get here, but ...
-		printFmt(out, esc, "<BadRef@%06x>", offs);
+		printFmt(out, esc, "<BadRef @%06x>", offs);
 		return;
 	}
 
@@ -1832,7 +1897,7 @@ static void printRef(FILE *out, const char **esc, symn sym, size_t offs, dmpMode
 			printFmt(out, esc, "%?+d>", rel);
 		}
 		else if (mode & prAbsOffs) {
-			printFmt(out, esc, "@%06x>", offs);
+			printFmt(out, esc, " @%06x>", offs);
 		}
 		else if (rel != 0) {
 			printFmt(out, esc, "+?>");
@@ -1841,14 +1906,17 @@ static void printRef(FILE *out, const char **esc, symn sym, size_t offs, dmpMode
 			printFmt(out, esc, ">");
 		}
 	}
-	else if (mode & (prRelOffs | prAbsOffs)) {
+	else if (mode & prAbsOffs) {
 		printFmt(out, esc, "<@%06x>", offs);
 	}
+	else if (mode & prRelOffs) {
+		printFmt(out, esc, "<%+d>", offs);
+	}
 	else {
-		printFmt(out, esc, "<?>", offs);
+		printFmt(out, esc, "<?>");
 	}
 }
-void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val, dmpMode mode, int indent) {
+void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val, dmpMode mode, int indent) {
 	ccKind varCast = castOf(var);
 	const char *format = var->fmt;
 	memptr data = (memptr) val;
@@ -1867,14 +1935,14 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 			format = typ->fmt;
 		}
 		if (varCast == CAST_ref) {
-			data = vmPointer(rt, (size_t) val->ref);
+			data = vmPointer(ctx, (size_t) val->ref);
 		}
 	}
-	else if (val == vmPointer(rt, var->offs)) {
+	else if (val == vmPointer(ctx, var->offs)) {
 		if (mode & prSymType) {
 			printFmt(out, esc, "%.*T: ", mode & ~prSymType, var);
 		}
-		typ = var = rt->main->fields;
+		typ = var = ctx->main->fields;
 		format = type_fmt_typename;
 	}
 
@@ -1892,7 +1960,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 		printFmt(out, esc, "%s", "null");
 	}
 	// invalid offset.
-	else if (!isValidOffset(rt, data)) {
+	else if (!isValidOffset(ctx, data)) {
 		printFmt(out, esc, "BadRef");
 	}
 	// builtin type.
@@ -1914,7 +1982,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 		else switch (typ->size) {
 			default:
 				// there should be no formatted(<=> builtin) type matching none of this size.
-				printFmt(out, esc, "%s @%06x, size: %d", format, vmOffset(rt, ref), var->size);
+				printFmt(out, esc, "%s @%06x, size: %d", format, vmOffset(ctx, ref), var->size);
 				break;
 
 			case 1:
@@ -1962,15 +2030,15 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 		printFmt(out, esc, "...");
 	}
 	else if (typCast == CAST_var) {
-		memptr varData = vmPointer(rt, (size_t) val->ref);
-		symn varType = vmPointer(rt, (size_t) val->type);
+		memptr varData = vmPointer(ctx, (size_t) val->ref);
+		symn varType = vmPointer(ctx, (size_t) val->type);
 
 		if (varType == NULL || varData == NULL) {
 			printFmt(out, esc, "%s", "null");
 		}
 		else {
 			printFmt(out, esc, "%.T: ", varType);
-			printVal(out, esc, rt, varType, (vmValue *) varData, mode & ~(prSymQual | prSymType), -indent);
+			printVal(out, esc, ctx, varType, (vmValue *) varData, mode & ~(prSymQual | prSymType), -indent);
 			printFmt(out, esc, "");
 		}
 	}
@@ -1982,7 +2050,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 		}
 		else if (varCast == CAST_arr || varCast == CAST_ref) {
 			// follow indirection
-			data = vmPointer(rt, (size_t) val->ref);
+			data = vmPointer(ctx, (size_t) val->ref);
 		}
 		else {
 			printFmt(out, esc, "@BadArray");
@@ -1995,7 +2063,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 		if (data == NULL) {
 			printFmt(out, esc, "%s", "null");
 		}
-		else if (!isValidOffset(rt, data)) {
+		else if (!isValidOffset(ctx, data)) {
 			printFmt(out, esc, "BadRef");
 		}
 		else if (typ->type->fmt == type_fmt_character && lenField == NULL) {
@@ -2028,7 +2096,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 					printFmt(out, esc, "...");
 					break;
 				}
-				printVal(out, esc, rt, typ->type, (vmValue *) (data + idx * inc), mode & ~(prSymQual | prSymType), -indent);
+				printVal(out, esc, ctx, typ->type, (vmValue *) (data + idx * inc), mode & ~(prSymQual | prSymType), -indent);
 			}
 			printFmt(out, esc, "}");
 		}
@@ -2056,7 +2124,7 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 				}
 
 				printFmt(out, esc, "\n");
-				printVal(out, esc, rt, sym, (void *) (data + sym->offs), prMember, indent + 1);
+				printVal(out, esc, ctx, sym, (void *) (data + sym->offs), prMember, indent + 1);
 				fields += 1;
 			}
 			if (fields > 0) {
@@ -2064,9 +2132,9 @@ void printVal(FILE *out, const char **esc, rtContext rt, symn var, vmValue *val,
 			}
 		}
 		if (fields == 0) {
-			size_t offs = vmOffset(rt, data);
-			symn sym = rtLookup(rt, offs, 0);
-			printRef(out, esc, sym, offs, (mode | prSymQual) & ~prSymType, rt);
+			size_t offs = vmOffset(ctx, data);
+			symn sym = rtLookup(ctx, offs, 0);
+			printOfs(out, esc, ctx, sym, offs, (mode | prSymQual) & ~prSymType);
 		}
 	}
 
@@ -2196,19 +2264,20 @@ void printOpc(FILE *out, const char **esc, vmOpcode opc, int64_t args) {
 	instruction.arg.i64 = args;
 	printAsm(out, esc, NULL, &instruction, prName);
 }
-void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode) {
+void printAsm(FILE *out, const char **esc, rtContext ctx, void *ptr, dmpMode mode) {
 	vmInstruction ip = (vmInstruction)ptr;
+	dmpMode ofsMode = mode & (prSymQual|prRelOffs|prAbsOffs);
 	size_t i, len = (size_t) mode & prAsmCode;
 	size_t offs = (size_t)ptr;
 	symn sym = NULL;
 
-	if (rt != NULL) {
-		offs = vmOffset(rt, ptr);
-		sym = rtLookup(rt, offs, 0);
+	if (ctx != NULL) {
+		offs = vmOffset(ctx, ptr);
+		sym = rtLookup(ctx, offs, 0);
 	}
 
 	if (mode & prAsmOffs) {
-		printRef(out, esc, sym, offs, mode, rt);
+		printOfs(out, esc, ctx, sym, offs, ofsMode);
 
 		size_t symOffs = sym == NULL ? 0 : offs - sym->offs;
 		int trailLen = 1, padLen = 0;
@@ -2324,7 +2393,7 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 				i = (size_t) ip->rel;
 			}
 			if (mode & (prRelOffs | prAbsOffs)) {
-				printRef(out, esc, sym, offs + i, mode, rt);
+				printOfs(out, esc, ctx, sym, offs + i, ofsMode);
 			}
 			else {
 				printFmt(out, esc, "%+d", i);
@@ -2371,17 +2440,17 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 				offs = (size_t) ip->rel;
 			}
 
-			printRef(out, esc, NULL, offs, mode, rt);
-			if (rt != NULL) {
-				sym = rtLookup(rt, offs, 0);
+			printOfs(out, esc, ctx, NULL, offs, ofsMode);
+			if (ctx != NULL) {
+				sym = rtLookup(ctx, offs, 0);
 				if (sym != NULL) {
 					printFmt(out, esc, " ;%?T%?+d", sym, offs - sym->offs);
 				}
-				else if (rt->cc != NULL) {
-					char *str = vmPointer(rt, offs);
+				else if (ctx->cc != NULL) {
+					char *str = vmPointer(ctx, offs);
 					for (i = 0; i < hashTableSize; i += 1) {
 						list lst;
-						for (lst = rt->cc->strt[i]; lst; lst = lst->next) {
+						for (lst = ctx->cc->strt[i]; lst; lst = lst->next) {
 							char *data = (char *) lst->data;
 							if (str >= data && str < data + strlen(data)) {
 								printFmt(out, esc, " ;%c", type_fmt_string_chr);
@@ -2400,10 +2469,10 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 			offs = (size_t) ip->rel;
 			printFmt(out, esc, "(%d)", offs);
 
-			if (rt != NULL) {
+			if (ctx != NULL) {
 				sym = NULL;
-				if (rt->vm.nfc != NULL) {
-					sym = ((libc*)rt->vm.nfc)[offs]->sym;
+				if (ctx->vm.nfc != NULL) {
+					sym = ((libc*)ctx->vm.nfc)[offs]->sym;
 				}
 				if (sym != NULL) {
 					printFmt(out, esc, " ;%T", sym);
@@ -2425,11 +2494,12 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 int vmSelfTest(void cb(const char *, const struct opcodeRec *)) {
 	int errors = 0;
 	struct vmInstruction ip[1];
-	struct libc *nativeCalls[1];
-	struct libc nfc0[1];
 
-	nativeCalls[0] = nfc0;
+	struct libc nfc0[1];
 	memset(nfc0, 0, sizeof(nfc0));
+
+	struct libc *nativeCalls[1];
+	nativeCalls[0] = nfc0;
 
 	for (int i = 0; i < opc_last; i++) {
 		const struct opcodeRec *info = &opcode_tbl[i];
@@ -2504,4 +2574,22 @@ int vmSelfTest(void cb(const char *, const struct opcodeRec *)) {
 		}
 	}
 	return errors;
+}
+
+void* nextOpc(rtContext rt, size_t *pc, size_t *ss) {
+	vmInstruction ip = vmPointer(rt, *pc);
+	if (ip == NULL) {
+		*pc = SIZE_MAX;
+		return NULL;
+	}
+
+	struct libc *nativeCalls[1] = { NULL };
+	switch (ip->opc) {
+		#define STOP(__ERR, __CHK) if (__CHK) return NULL;
+		#define NEXT(__IP, __SP, __CHK)\
+			if (ss != NULL) { *ss += sizeof(*(stkptr)NULL) * (__SP); }\
+			*pc += (__IP);
+		#include "code.inl"
+	}
+	return ip;
 }

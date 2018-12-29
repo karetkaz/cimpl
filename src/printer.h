@@ -14,23 +14,22 @@
 const char **escapeStr();
 
 typedef enum {
-	prSkip = -1,
 	prAsmCode = 0x00000f,   // print code bytes (0-15)
-	prAsmOffs = 0x000010,   // print offsets: <main...>
+	prAsmOffs = 0x000010,   // print offset of the instruction
 	prRelOffs = 0x000020,   // print relative offsets: <main+80>
 	prAbsOffs = 0x000040,   // print absolute offset: <main@041048>
-
-	prOneLine = 0x000080,   // force printing on a single line (skip: function body, typename fields, statement blocks, ...)
+	prAttr    = 0x000080,   // print attributes: const, static, member
 
 	prSymQual = 0x000100,   // print qualified symbol names.
 	prSymArgs = 0x000200,   // print functions parameters.
 	prSymType = 0x000400,   // print variable type, function return type, typename base type.
 	prSymInit = 0x000800,   // print variable initializer, function body, typename fields.
 
-	prAttr    = 0x001000,   // print attributes: const, static, member
-	prAstType = 0x002000,   // print type cast of each subexpression
-	nlAstBody = 0x004000,   // print compound statements on new line (like in cs)
-	nlAstElIf = 0x008000,   // don't keep `else if` constructs on the same line.
+	prAstCast = 0x001000,   // print type cast of each subexpression
+	nlAstBody = 0x002000,   // print compound statements on new line (like in cs)
+	nlAstElIf = 0x004000,   // don't keep `else if` constructs on the same line.
+
+	prOneLine = 0x008000,   // force on a single line (skip: function body, typename fields, statement blocks, ...)
 
 	prName = 0,		// print operator or symbol name only.
 
@@ -40,7 +39,7 @@ typedef enum {
 
 	prShort = prSymQual | prSymArgs | prOneLine ,	// %t, %T
 	prFull = prAttr | prSymQual | prSymArgs | prSymType | prSymInit,		// %±t, %±T
-	prDbg = prAttr | prAstType | prSymQual | prSymArgs | prSymType | prSymInit | prRelOffs | prAsmOffs | 9 | prOneLine
+	prDbg = prAttr | prAstCast | prSymQual | prSymArgs | prSymType | prSymInit | prRelOffs | 9 | prOneLine
 } dmpMode;
 
 /**
@@ -70,11 +69,11 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent);
  * 
  * @param out Output stream.
  * @param esc Escape translation (format string will be not escaped).
- * @param rt (optional) Runtime context.
+ * @param ctx (optional) Runtime context.
  * @param ptr Instruction pointer.
  * @param mode How to print.
  */
-void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode);
+void printAsm(FILE *out, const char **esc, rtContext ctx, void *ptr, dmpMode mode);
 
 /**
  * Print an instruction to the output stream.
@@ -87,13 +86,27 @@ void printAsm(FILE *out, const char **esc, rtContext rt, void *ptr, dmpMode mode
 void printOpc(FILE *out, const char **esc, vmOpcode opc, int64_t args);
 
 /**
- * Print the value of a variable at runtime.
+ * Print the offset of a variable.
  * 
- * @param rt Runtime context.
  * @param out Output stream.
- * @param var Variable to be printed. (May be a typename also)
+ * @param esc Escape output.
+ * @param ctx Runtime context.
+ * @param sym Offset is relative to this symbol (can be null).
+ * @param offs Offset to be printed.
+ * @param mode Flags to modify output format.
+ */
+void printOfs(FILE *out, const char **esc, rtContext ctx, symn sym, size_t offs, dmpMode mode);
+
+/**
+ * Print the value of a variable.
+ * 
+ * @param out Output stream.
+ * @param esc Escape output.
+ * @param ctx Runtime context.
+ * @param var Variable to be printed.
  * @param ref Base offset of variable.
- * @param level Indentation level. (Used for members and arrays)
+ * @param mode Flags to modify output format.
+ * @param indent Indentation level. (Used for members and arrays)
  */
 void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *ref, dmpMode mode, int indent);
 
@@ -125,7 +138,10 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *ref
  *
  *    K: symbol kind
  *    k: token kind
+ *
  *    A: instruction (asm)
+ *    a: offset (address)
+ *
  *    I: indent
  *    b: 32 bit bin value
  *    B: 64 bit bin value
@@ -141,6 +157,7 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *ref
  *    F: 64 bit floating point value
  *    e: 32 bit floating point value (Scientific notation (mantissa/exponent))
  *    E: 64 bit floating point value (Scientific notation (mantissa/exponent))
+ *
  *    s: ansi string
  *    c: ansi character
  *    S: ?wide string

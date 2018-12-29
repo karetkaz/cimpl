@@ -303,7 +303,7 @@ static ccKind genIndirection(ccContext cc, symn variable, ccKind get) {
 		return get;
 	}
 
-	if (varCast == CAST_ref && typCast != CAST_val) {
+	if (varCast == CAST_ref) {
 		// load reference indirection (variable is a reference to a value)
 		if (!emitInt(rt, opc_ldi, vm_ref_size)) {
 			return CAST_any;
@@ -360,7 +360,7 @@ static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 			variable->offs = stkOffset(rt, 0);
 		}
 		if (varInit != NULL) {
-			if (varCast != genAst(cc, varInit, varCast)) {
+			if (!(varCast = genAst(cc, varInit, varCast))) {
 				traceAst(varInit);
 				return CAST_any;
 			}
@@ -485,37 +485,21 @@ static ccKind genVariable(ccContext cc, symn variable, ccKind get, astn ast) {
 }
 
 /// Generate byte-code for OPER_fnc `a(b)`.
-static ccKind genCall(ccContext cc, astn ast, ccKind get) {
+static ccKind genCast(ccContext cc, astn ast, ccKind get) {
 	rtContext rt = cc->rt;
 
-	dbgCgen("%?s:%?u: %t", ast->file, ast->line, ast);
-	if (ast->op.lhso == NULL) {
-		return genAst(cc, ast->op.rhso, get);
-	}
-	if (ast->op.lhso->kind == RECORD_kwd) {
-		ccKind cast = castOf(ast->type);
-		if (cast == CAST_ref) {
-			error(cc->rt, ast->file, ast->line, ERR_EMIT_STATEMENT, ast);
-		}
-		return genAst(cc, ast->op.rhso, cast);
-	}
-
 	symn function = linkOf(ast->op.lhso, 0);
-	astn args = chainArgs(ast->op.rhso);
-	if (function == NULL) {
+	if (function == NULL || !isTypename(function)) {
+		error(rt, ast->file, ast->line, ERR_INVALID_CAST, ast);
 		traceAst(ast);
 		return CAST_any;
 	}
 
-	const ccKind result = refCast(ast->type);
-	const size_t resultSize = refSize(ast->type);
-	const size_t locals = stkOffset(rt, 0);
-	const size_t localSize = stkOffset(rt, resultSize);
-	astn values[maxTokenCount];
-	size_t offsets[maxTokenCount];
-
 	// emit intrinsic
+	// FIXME: don't know why emit is a type ...
 	if (function == cc->emit_opc) {
+		astn args = chainArgs(ast->op.rhso);
+		const size_t locals = stkOffset(rt, 0);
 		dbgCgen("%?s:%?u: emit: %t", ast->file, ast->line, ast);
 		// Reverse Polish notation: int32 a = emit(int32(a), int32(b), i32.add);
 		for (; args != NULL; args = args->next) {
@@ -546,82 +530,84 @@ static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 					continue;
 				}
 			}
-
 			warn(rt, raiseWarn, ast->file, ast->line, WARN_PASS_ARG_NO_CAST, args, args->type);
 		}
 		return get;
 	}
 
-	if (isInline(function)) {
-		int argc = 0;
-		// save parameter offsets and init value
-		for (symn prm = function->params; prm != NULL; prm = prm->next) {
-			if (argc >= maxTokenCount) {
-				traceAst(ast);
-				return CAST_any;
-			}
-			offsets[argc] = prm->offs;
-			values[argc] = prm->init;
-			argc += 1;
-		}
+	astn arg = ast->op.rhso;
+	// casts may have a single argument
+	if (arg == NULL || arg->kind == OPER_com) {
+		error(rt, ast->file, ast->line, ERR_INVALID_CAST, ast);
+		return CAST_any;
 	}
 
-	// generate arguments (push or cache)
-	if (isInvokable(function) && args != NULL) {
-		size_t offs = 0;
+	ccKind cast = refCast(function);
+	// variant(...) || typename(...) || pointer(...)
+	if (function == cc->type_var || function == cc->type_rec || function == cc->type_ptr) {
+		if (function == cc->type_rec) {
+			// push type
+			if (!emitVarOffs(rt, arg->type)) {
+				traceAst(ast);
+				return CAST_any;
+			}
+			return cast;
+		}
+		return genAst(cc, arg, cast);
+	}
+
+	// float64(3)
+	switch (cast) {
+		case CAST_val:
+			// cast the result of an emit to a value-type
+			if (arg->type == cc->emit_opc) {
+				if (!genAst(cc, arg, cast)) {
+					traceAst(ast);
+					return CAST_any;
+				}
+				return cast;
+			}
+			// fall through
+		default:
+			return CAST_any;
+
+			// cast to basic type
+		case CAST_vid:
+		case CAST_bit:
+		case CAST_i32:
+		case CAST_u32:
+		case CAST_i64:
+		case CAST_u64:
+		case CAST_f32:
+		case CAST_f64:
+			return genAst(cc, arg, cast);
+	}
+
+	error(cc->rt, ast->file, ast->line, ERR_INVALID_CAST, ast);
+	return CAST_any;
+}
+static ccKind genCall(ccContext cc, astn ast, ccKind get) {
+	rtContext rt = cc->rt;
+	symn function = linkOf(ast->op.lhso, 0);
+	if (function == NULL || function->params == NULL) {
+		error(cc->rt, ast->file, ast->line, ERR_EMIT_STATEMENT, ast);
+		traceAst(ast);
+		return CAST_any;
+	}
+
+	struct astNode extraArguments[3];
+	size_t offsets[maxTokenCount];
+	astn values[maxTokenCount];
+
+	// save parameter offsets and init value
+	if (function->params != NULL) {
+		// add extra (file, line, ...) arguments to the raise builtin function
+		astn arg = chainArgs(ast->op.rhso);
 		symn prm = function->params;
-		struct astNode argFileLine[2];
+		int argc = 0;
 
-		logif(prm->size != resultSize, ERR_INTERNAL_ERROR": %T : %d - %d", function, prm->size, resultSize);
-		if (preAllocateArgs) {
-			size_t preAlloc = argsSize(function);
-			// alloc space for result and arguments
-			if (preAlloc > 0 && !emitInt(rt, opc_spc, preAlloc)) {
-				traceAst(ast);
-				return CAST_any;
-			}
-		}
-		if (isInline(prm) || prm->size == 0) {
-			// skip generating void or inline result
-		}
-		else if (prm->init != NULL) {
-			offs += padOffset(prm->size, vm_stk_align);
-			// result has a default value
-			size_t resOffs = stkOffset(rt, prm->size);
-			if (!genAst(cc, prm->init, refCast(prm))) {
-				traceAst(ast);
-				return CAST_any;
-			}
+		memset(extraArguments, 0, sizeof(extraArguments));
 
-			if (resOffs != stkOffset(rt, 0)) {
-				fatal(ERR_INTERNAL_ERROR": argument size does not math parameter size");
-				traceAst(ast);
-				return CAST_any;
-			}
-
-			if (resOffs - locals != prm->offs) {
-				if (!emitStack(rt, opc_ldsp, locals + prm->offs)) {
-					trace(ERR_INTERNAL_ERROR);
-					return CAST_any;
-				}
-				if (!emitInt(rt, opc_sti, prm->size)) {
-					trace(ERR_INTERNAL_ERROR);
-					return CAST_any;
-				}
-			}
-		}
-		else {
-			warn(rt, raiseWarn, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
-			if (!emitInt(rt, opc_spc, prm->size)) {
-				traceAst(ast);
-				return CAST_any;
-			}
-		}
-
-		if (isInline(function)) {
-			prm->offs = locals + offs;
-		}
-		prm = prm->next;	// skip from result to the first parameter
 		if (function == cc->libc_dbg) {
 			char *file = ast->file;
 			int line = ast->line;
@@ -633,151 +619,199 @@ static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 				dbgCgen("%?s:%?u: Using the location of the last expression statement", file, line);
 			}
 
-			// add 2 extra computed param to the raise function(file and line)
-			memset(argFileLine, 0, sizeof(argFileLine));
-			argFileLine[0].kind = TOKEN_val;
-			argFileLine[1].kind = TOKEN_val;
-			argFileLine[0].type = prm->type;
-			argFileLine[1].type = prm->next->type;
-			argFileLine[0].ref.name = file;
-			argFileLine[1].cInt = line;
+			// add 2 extra computed argument to the raise function(file and line)
+			extraArguments[1].kind = TOKEN_val;
+			extraArguments[2].kind = TOKEN_val;
+			extraArguments[1].type = function->params->next->type;
+			extraArguments[2].type = function->params->next->next->type;
+			extraArguments[1].ref.name = file;
+			extraArguments[2].cInt = line;
 
 			// chain the new arguments
-			argFileLine[0].next = &argFileLine[1];
-			argFileLine[1].next = args;
-			args = argFileLine;
+			extraArguments[1].next = &extraArguments[2];
+			extraArguments[2].next = arg;
+			arg = &extraArguments[1];
 		}
-		while (prm != NULL && args != NULL) {
-			if (isInline(prm) || prm->size == 0) {
-				// skip generating void or inline parameter
-				prm->init = args;
+
+		if (function->params->init != NULL) {
+			*extraArguments = *function->params->init;
+		}
+
+		extraArguments->type = function->params->type;
+		extraArguments->next = arg;
+		arg = extraArguments;
+
+		while (prm != NULL && arg != NULL) {
+			if (argc >= maxTokenCount) {
+				error(cc->rt, ast->file, ast->line, ERR_EXPR_TOO_COMPLEX, ast);
+				traceAst(ast);
+				return CAST_any;
 			}
-			else {
-				offs += padOffset(prm->size, vm_stk_align);
+			offsets[argc] = prm->offs;
+			values[argc] = prm->init;
+			prm->init = arg;
 
-				// generate the argument value
-				size_t argOffs = stkOffset(rt, prm->size);
-				if (!genAst(cc, args, refCast(prm))) {
-					traceAst(ast);
-					return CAST_any;
-				}
-
-				if (argOffs != stkOffset(rt, 0)) {
-					fatal(ERR_INTERNAL_ERROR": argument size does not match parameter size");
-					traceAst(ast);
-					return CAST_any;
-				}
-
-				if (argOffs - locals > prm->offs) {
-					if (!emitStack(rt, opc_ldsp, locals + prm->offs)) {
-						trace(ERR_INTERNAL_ERROR);
-						return CAST_any;
-					}
-					if (!emitInt(rt, opc_sti, prm->size)) {
-						trace(ERR_INTERNAL_ERROR);
-						return CAST_any;
-					}
-				}
-			}
-
-			if (isInline(function)) {
-				prm->offs = locals + offs;
-			}
+			// advance
 			prm = prm->next;
-			args = args->next;
+			arg = arg->next;
+			argc += 1;
 		}
+
 		// more or less args than params is a fatal error
-		if (prm != NULL || args != NULL) {
+		// should have been raised by the type checker
+		if (prm != NULL || arg != NULL) {
 			fatal(ERR_INTERNAL_ERROR);
 			return CAST_any;
 		}
 	}
 
+	const ccKind resultCast = refCast(function->params->type);
+	const size_t resultOffs = stkOffset(rt, function->params->size);
+
+	// convert const ref parameter arguments to local variables
+	struct {
+		struct symNode var;
+		struct astNode ast;
+	} tempArguments[8], *temp = tempArguments;
+	for (symn prm = function->params; prm; prm = prm->next) {
+		astn arg = prm->init;
+		ccKind typCast = refCast(prm->type);
+
+		if (refCast(prm) != CAST_ref) {
+			continue;
+		}
+		if (typCast == CAST_ref) {
+			continue;
+		}
+
+		switch (arg->kind) {
+
+			default:
+				break;
+
+				// if argument is already a variable, do not create a new one
+			case TOKEN_var:
+			case OPER_dot:
+			case OPER_idx:
+				continue;
+
+			case TOKEN_any:
+			case TOKEN_val:
+				// no need to extract "string constants" to variable
+				if (refCast(arg->type) == CAST_ref) {
+					continue;
+				}
+				break;
+		}
+
+		warn(rt, raiseDebug, ast->file, ast->line, WARN_ADDING_TEMPORARY_VAR, prm, arg);
+		if (temp > tempArguments + lengthOf(tempArguments)) {
+			fatal(ERR_INTERNAL_ERROR);
+			return CAST_any;
+		}
+
+		memset(temp, 0, sizeof(*temp));
+		temp->var.kind = ATTR_cnst | KIND_var | typCast;
+		temp->var.type = prm->type;
+		temp->var.init = prm->init;
+		temp->var.offs = 0;
+		temp->var.size = prm->type->size;
+		temp->var.file = prm->file;
+		temp->var.line = prm->line;
+
+		temp->ast.kind = TOKEN_var;
+		temp->ast.type = prm->type;
+		temp->ast.ref.link = &temp->var;
+		temp->ast.ref.name = prm->name;
+		temp->ast.ref.hash = 0;
+		temp->ast.ref.used = NULL;
+
+		ccKind got = genDeclaration(cc, &temp->var, CAST_val);
+		if (got == CAST_any) {
+			fatal(ERR_INTERNAL_ERROR);
+			return CAST_any;
+		}
+
+		prm->init = &temp->ast;
+		temp++;
+	}
+
+	// generate arguments (push or cache)
+	const size_t locals = stkOffset(rt, 0);
+	size_t resultPos = stkOffset(rt, function->params->size);
+	if (preAllocateArgs && isFunction(function)) {
+		size_t preAlloc = argsSize(function);
+		// alloc space for result and arguments
+		if (preAlloc > 0 && !emitInt(rt, opc_spc, preAlloc)) {
+			traceAst(ast);
+			return CAST_any;
+		}
+	}
+
+	// generate arguments
+	size_t offs = 0;
+	for (symn prm = function->params; prm; prm = prm->next) {
+
+		// skip generating void parameter
+		if (prm->size == 0) {
+			continue;
+		}
+
+		// update the offset of a inline variables
+		if (isInline(prm)) {
+			prm->offs = locals + offs;
+			continue;
+		}
+
+		// allocate space for uninitialized arguments
+		if (prm->init == NULL || prm->init->kind == TOKEN_any) {
+			warn(rt, raiseWarn, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
+			if (!emitInt(rt, opc_spc, prm->size)) {
+				traceAst(ast);
+				return CAST_any;
+			}
+			continue;
+		}
+
+		// generate value
+		offs += padOffset(prm->size, vm_stk_align);
+
+		// generate the argument value
+		size_t argOffs = stkOffset(rt, prm->size);
+		if (!genAst(cc, prm->init, refCast(prm))) {
+			traceAst(ast);
+			return CAST_any;
+		}
+
+		if (argOffs != stkOffset(rt, 0)) {
+			fatal(ERR_INTERNAL_ERROR": argument size does not match parameter size");
+			traceAst(ast);
+			return CAST_any;
+		}
+
+		if (argOffs - locals > prm->offs) {
+			if (!emitStack(rt, opc_ldsp, locals + prm->offs)) {
+				trace(ERR_INTERNAL_ERROR);
+				return CAST_any;
+			}
+			if (!emitInt(rt, opc_sti, prm->size)) {
+				trace(ERR_INTERNAL_ERROR);
+				return CAST_any;
+			}
+		}
+
+		if (isInline(function)) {
+			prm->offs = locals + offs;
+		}
+	}
+
 	if (isInline(function)) {
 		// generate inline expression
-		if (!genAst(cc, function->init, result)) {
+		if (!genAst(cc, function->init, resultCast)) {
 			traceAst(function->init);
 			return CAST_any;
 		}
-
-		int argc = 0;
-		// restore parameter offsets and reset init value
-		for (symn prm = function->params; prm != NULL; prm = prm->next) {
-			prm->offs = offsets[argc];
-			prm->init = values[argc];
-			argc += 1;
-		}
-
-		// drop cached arguments
-		if (localSize < stkOffset(rt, 0)) {
-			// copy result value
-			if (function->params->size > 0) {
-				if (!emitStack(rt, opc_ldsp, localSize)) {
-					trace(ERR_INTERNAL_ERROR);
-					return CAST_any;
-				}
-				if (!emitInt(rt, opc_sti, function->params->size)) {
-					trace(ERR_INTERNAL_ERROR);
-					return CAST_any;
-				}
-			}
-
-			// drop cached arguments
-			if (!emitStack(rt, opc_drop, localSize)) {
-				fatal(ERR_INTERNAL_ERROR);
-				return CAST_any;
-			}
-		}
-	}
-	else if (isTypename(function)) {
-		ccKind cast = refCast(function);
-		// casts may have a single argument
-		if (args == NULL || args->next != NULL) {
-			error(rt, ast->file, ast->line, ERR_INVALID_CAST, ast);
-			return CAST_any;
-		}
-
-		// variant(...) || typename(...) || pointer(...)
-		if (function == cc->type_var || function == cc->type_rec || function == cc->type_ptr) {
-			if (function == cc->type_rec) {
-				// push type
-				if (!emitVarOffs(rt, args->type)) {
-					traceAst(ast);
-					return CAST_any;
-				}
-				return cast;
-			}
-			return genAst(cc, args, cast);
-		}
-
-		// float64(3)
-		switch (cast) {
-			case CAST_val:
-				// cast the result of an emit to a value-type
-				if (args->type == cc->emit_opc) {
-					if (!genAst(cc, args, cast)) {
-						traceAst(ast);
-						return CAST_any;
-					}
-					return cast;
-				}
-				// fall through
-			default:
-				return CAST_any;
-
-			// cast to basic type
-			case CAST_vid:
-			case CAST_bit:
-			case CAST_i32:
-			case CAST_u32:
-			case CAST_i64:
-			case CAST_u64:
-			case CAST_f32:
-			case CAST_f64:
-				return genAst(cc, args, cast);
-		}
-		error(cc->rt, ast->file, ast->line, ERR_EMIT_STATEMENT, ast);
-		return CAST_any;
+		resultPos = stkOffset(rt, 0);
 	}
 	else {
 		if (!genAst(cc, ast->op.lhso, CAST_ref)) {
@@ -788,15 +822,54 @@ static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 			traceAst(ast);
 			return CAST_any;
 		}
-		// drop arguments, except result.
-		if (!emitStack(rt, opc_drop, localSize)) {
-			fatal(ERR_INTERNAL_ERROR);
-			traceAst(ast);
+	}
+
+	// restore parameter offsets and reset init value
+	int argc = 0;
+	for (symn prm = function->params; prm != NULL; prm = prm->next) {
+		prm->offs = offsets[argc];
+		prm->init = values[argc];
+		argc += 1;
+	}
+
+	if (resultPos != resultOffs && function->params->size > 0) {
+		// move result value and free some temporary locals
+
+		size_t assignBegin = emit(rt, markIP);
+		// move result value and free some temporary locals
+		if (!emitStack(rt, opc_ldsp, resultPos)) {
+			trace(ERR_INTERNAL_ERROR);
 			return CAST_any;
 		}
+		if (!emitInt(rt, opc_ldi, function->params->size)) {
+			trace(ERR_INTERNAL_ERROR);
+			return CAST_any;
+		}
+		size_t assignEnd = emit(rt, markIP);
+		if (!emitStack(rt, opc_ldsp, resultOffs)) {
+			trace(ERR_INTERNAL_ERROR);
+			return CAST_any;
+		}
+		if (!emitInt(rt, opc_sti, function->params->size)) {
+			trace(ERR_INTERNAL_ERROR);
+			return CAST_any;
+		}
+
+		// optimize generated assignment to a single `set` instruction
+		if (optimizeAssign(rt, assignBegin, assignEnd)) {
+			debug("assignment optimized: %t", ast);
+		}
 	}
-	return result;
+
+	// drop cached arguments, except result.
+	if (!emitStack(rt, opc_drop, resultOffs)) {
+		fatal(ERR_INTERNAL_ERROR);
+		return CAST_any;
+	}
+
+	return resultCast;
 }
+
 /// Generate byte-code for OPER_idx `a[b]`.
 static ccKind genIndex(ccContext cc, astn ast, ccKind get) {
 	rtContext rt = cc->rt;
@@ -1507,7 +1580,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 					return CAST_any;
 				}
 			}
-			// TODO: destroy local reference variables.
+			// TODO: destroy local variables.
 			if (!emitStack(rt, opc_drop, vm_ref_size + argsSize(ast->jmp.func))) {
 				trace(ERR_INTERNAL_ERROR);
 				return CAST_any;
@@ -1522,6 +1595,38 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 		//#}
 		//#{ OPERATORS
 		case OPER_fnc:		// '()'
+			// parenthesised expression: `(value)`
+			if (ast->op.lhso == NULL) {
+				if (!(got = genAst(cc, ast->op.rhso, get))) {
+					traceAst(ast);
+					return CAST_any;
+				}
+				break;
+			}
+
+			// emit by value: `struct(value)`
+			if (ast->op.lhso->kind == RECORD_kwd) {
+				ccKind cast = castOf(ast->type);
+				if (cast == CAST_ref) {
+					error(cc->rt, ast->file, ast->line, ERR_EMIT_STATEMENT, ast);
+				}
+				if (!(got = genAst(cc, ast->op.rhso, cast))) {
+					traceAst(ast);
+					return CAST_any;
+				}
+				break;
+			}
+
+			// type cast: `typename(value)`
+			if (isTypeExpr(ast->op.lhso)) {
+				if (!(got = genCast(cc, ast, get))) {
+					traceAst(ast);
+					return CAST_any;
+				}
+				break;
+			}
+
+			// function call: `function(arguments)`
 			if (!(got = genCall(cc, ast, get))) {
 				traceAst(ast);
 				return CAST_any;
@@ -1849,7 +1954,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				break;
 
 			case CAST_vid:
-				// TODO: call destructor for variables
+				// TODO: destroy local variables.
 				if (!emitStack(rt, opc_drop, spBegin)) {
 					traceAst(ast);
 					return CAST_any;
@@ -2121,7 +2226,7 @@ int ccGenCode(ccContext cc, int debug) {
 
 		if (isFunction(var)) {
 			size_t offs = 0;
-			// FIXME: recalculate the size of the parameters
+			// recalculate the offsets of the parameters
 			for (symn param = var->params; param != NULL; param = param->next) {
 				if (isStatic(param)) {
 					continue;
@@ -2149,8 +2254,7 @@ int ccGenCode(ccContext cc, int debug) {
 				}
 			}
 			while (cc->jumps) {
-				fatal(ERR_INTERNAL_ERROR
-					": invalid jump: `%t`", cc->jumps);
+				fatal(ERR_INTERNAL_ERROR": invalid jump: `%t`", cc->jumps);
 				cc->jumps = cc->jumps->next;
 			}
 			var->size = emit(rt, markIP) - var->offs;

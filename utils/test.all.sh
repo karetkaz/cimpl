@@ -13,16 +13,16 @@ $BIN/cmpl -dump.scite "$BIN/libFile.api" "$BIN/libFile.so"
 $BIN/cmpl -dump.scite "$BIN/libOpenGL.api" "$BIN/libOpenGL.so"
 
 # dump symbols, assembly, syntax tree and global variables (to be compared with previous version to test if the code is generated properly)
-$BIN/cmpl -X+steps+fold+fast+asgn-stdin-glob-offsets -debug/G/M -api/d/p/a -asm/n/s -ast -log/15 extras/test.dump.ci -dump extras/test.dump.ci -dump.ast.xml extras/test.dump.xml "test/test.ci"
+$BIN/cmpl -X+steps+fold+fast+asgn-stdin-glob-offsets -debug/G/M -api/d/p/a/m -asm/n/s -ast -log/15 "extras/test.dump.ci" -dump "extras/test.dump.ci" -dump.ast.xml "extras/test.dump.xml" "test/test.ci"
 
 # dump symbols, assembly, syntax tree and global variables (to be compared with previous version to test if the code is generated properly)
-$BIN/cmpl -X+steps+fold+fast+asgn-stdin-glob-offsets -debug/G/M -api/d/p/a -asm/n/s -ast -log/15 extras/libs.dump.ci -dump extras/libs.dump.ci "$BIN/libFile.so" "$BIN/libGfx.so" lib/cmplGfx/gfxlib.ci
+$BIN/cmpl -X+steps+fold+fast+asgn-stdin-glob-offsets -debug/G/M -api/d/p/a/m -asm/n/s -ast -log "extras/libs.dump.ci" -dump "extras/libs.dump.ci" "$BIN/libFile.so" "$BIN/libGfx.so" "lib/cmplGfx/gfxlib.ci"
+
+# dump profile data in text format including function tracing
+$BIN/cmpl -X-stdin+steps -profile/t/P/G/M -api/a/m/d/p/u -asm/a/n/s -ast/t -log/15 "extras/test.prof.ci" -dump "extras/test.prof.ci" "test/test.ci"
 
 # dump profile data in json format
-$BIN/cmpl -X-stdin-steps -dump.json extras/test.dump.json -api/a/m/d/p/u -asm/a/n/s -ast/t -profile/t/P/G/M "test/test.ci"
-
-# dump profile data in text format
-$BIN/cmpl -X-stdin+steps -log/15 "$BIN/test.dump.ci" -dump "$BIN/test.dump.ci" -api/a/m/d/p/u -asm/a/n/s -ast/t -profile/P/G/M "test/test.ci"
+$BIN/cmpl -X-stdin-steps -profile/t/P/G/M -api/a/m/d/p/u -asm/a/n/s -ast/t -dump.json "extras/test.prof.json" "test/test.ci"
 
 # test the virtual machine
 $BIN/cmpl --test-vm

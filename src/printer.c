@@ -368,7 +368,54 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 						break;
 					}
 
+					switch (sgn) {
+						default:
+							if (noPrc) {
+								prc = prAbsOffs;
+							}
+							break;
+
+						case '-':
+						case '+':
+							if (noPrc) {
+								// print using relative offset
+								prc = prRelOffs;
+							}
+							break;
+					}
+
+					// length is the max number of bytes to be printed
+					prc |= (prc & prAsmCode) | (len & prAsmCode);
+
 					printAsm(out, esc, NULL, opc, (dmpMode) prc);
+					continue;
+				}
+
+				case 'a': {		// offset
+					size_t offs = va_arg(ap, size_t);
+
+					if (offs == 0 && nil) {
+						str = "";
+						len = 1;
+						break;
+					}
+
+					switch (sgn) {
+						default:
+							if (noPrc) {
+								prc = prAbsOffs;
+							}
+							break;
+
+						case '-':
+						case '+':
+							if (noPrc) {
+								// print using relative offset
+								prc = prRelOffs;
+							}
+							break;
+					}
+					printOfs(out, esc, NULL, NULL, offs, (dmpMode) prc);
 					continue;
 				}
 
@@ -856,7 +903,7 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 			int precedence = token_tbl[kind].type & 0x0f;
 			int putParen = indent > precedence;
 
-			if ((mode & prAstType) && ast->type) {
+			if ((mode & prAstCast) && ast->type) {
 				printSym(out, esc, ast->type, prSymQual, 0);
 				putParen = 1;
 			}

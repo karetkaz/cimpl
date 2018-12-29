@@ -10,28 +10,34 @@
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ create and recycle node
 astn newNode(ccContext cc, ccToken kind) {
+	astn result = cc->tokPool;
 	rtContext rt = cc->rt;
-	astn ast = 0;
-	if (cc->tokPool) {
-		ast = cc->tokPool;
-		cc->tokPool = ast->next;
+
+	dieif(rt->vm.nfc, "Can not create symbols while generating bytecode");
+
+	if (result == NULL) {
+		// allocate memory from temporary storage.
+		rt->_end -= sizeof(struct astNode);
+		if (rt->_beg >= rt->_end) {
+			fatal(ERR_MEMORY_OVERRUN);
+			return NULL;
+		}
+		result = (astn) rt->_end;
+	}
+	else {
+		cc->tokPool = result->next;
 	}
 
-	// allocate memory from temporary storage.
-	rt->_end -= sizeof(struct astNode);
-	if (rt->_beg >= rt->_end) {
-		fatal(ERR_MEMORY_OVERRUN);
-		return NULL;
-	}
-
-	ast = (astn)rt->_end;
-	memset(ast, 0, sizeof(struct astNode));
-	ast->kind = kind;
-	return ast;
+	memset(result, 0, sizeof(struct astNode));
+	result->kind = kind;
+	return result;
 }
 
 void recycle(ccContext cc, astn ast) {
-	if (!ast) return;
+	dieif(cc->rt->vm.nfc, "Compiler state closed");
+	if (ast == NULL) {
+		return;
+	}
 	ast->next = cc->tokPool;
 	cc->tokPool = ast;
 }

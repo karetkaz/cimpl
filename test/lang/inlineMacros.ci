@@ -72,6 +72,8 @@ int maxLrVar = maxRl(i3, i6, i2, i8);
 int maxRlXpr = maxLr(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 1;
 int maxLrXpr = maxRl(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 1;
 
-// TODO: force inline/cache arguments ?
-// inline min(inline int a, inline int b) = a < b ? a : b;	// forced to be inline
-// inline max(const int a&, const int b&) = a > b ? a : b;	// forced to be references (will be pre calculated)
+// to force the pre-calculation of inline arguments, just declare them as const references.
+// inline max(const int a&, const int b&) = a > b ? a : b;
+
+// TODO: force arguments to be inline, to be evaluated each time they are used?
+// inline min(inline int a, inline int b) = a < b ? a : b;

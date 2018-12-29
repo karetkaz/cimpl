@@ -4,13 +4,9 @@ static gxSurf offs = gxSurf(1440, 900, 32);
 static gxSurf back = gxSurf("asset/image/forest.jpg", 32);
 static gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
 
-static int brightness = 0;
-static int saturation = 0;
-static int hue = 0;
+mat4f colorMatrix(float luminosity, float saturation, float hue) {
 
-mat4f colorMatrix(float lum, float sat, float hue) {
-
-	static mat4f matLuminosity(float val) {
+	static mat4f lumMatrix(float val) {
 		return {
 			x: vec4f(1., 0., 0., val);
 			y: vec4f(0., 1., 0., val);
@@ -19,7 +15,7 @@ mat4f colorMatrix(float lum, float sat, float hue) {
 		};
 	}
 
-	static mat4f matSaturation(float val) {
+	static mat4f satMatrix(float val) {
 		//~ val between 0, 3
 		const float inv = 1 - val;
 		const float R = .213f * inv;
@@ -34,7 +30,7 @@ mat4f colorMatrix(float lum, float sat, float hue) {
 		};
 	}
 
-	static mat4f matHue(float val) {
+	static mat4f hueMatrix(float val) {
 		//~ assert(val >= 0 && val <= 2 * Math.pi);
 		inline lR = 0.213;
 		inline lG = 0.715;
@@ -56,18 +52,15 @@ mat4f colorMatrix(float lum, float sat, float hue) {
 		0, 0, 0, 1
 	);
 
-	mat4f tmp;
-
-	tmp = matLuminosity(lum);
-	result = mul(result, tmp);
-
-	tmp = matSaturation(sat);
-	result = mul(result, tmp);
-
-	tmp = matHue(hue);
-	result = mul(result, tmp);
+	result = mul(result, lumMatrix(luminosity));
+	result = mul(result, satMatrix(saturation));
+	result = mul(result, hueMatrix(hue));
 	return result;
 }
+
+static int brightness = 0;
+static int saturation = 0;
+static int hue = 0;
 
 int onEvent(int action, int button, int x, int y) {
 	static int ox = 0;

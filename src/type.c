@@ -34,23 +34,25 @@ static symn aliasOf(symn sym) {
 
 symn newDef(ccContext cc, ccKind kind) {
 	rtContext rt = cc->rt;
-	symn def = NULL;
+	symn result = NULL;
 
+	dieif(rt->vm.nfc, "Can not create symbols while generating bytecode");
 	rt->_beg = padPointer(rt->_beg, vm_mem_align);
-	if(rt->_beg >= rt->_end) {
+	if (rt->_beg >= rt->_end) {
 		fatal(ERR_MEMORY_OVERRUN);
 		return NULL;
 	}
 
-	def = (symn)rt->_beg;
+	result = (symn)rt->_beg;
 	rt->_beg += sizeof(struct symNode);
-	memset(def, 0, sizeof(struct symNode));
-	def->kind = kind;
+	memset(result, 0, sizeof(struct symNode));
+	result->kind = kind;
 
-	return def;
+	return result;
 }
 
 void enter(ccContext cc, symn owner) {
+	dieif(cc->rt->vm.nfc, "Compiler state closed");
 	cc->nest += 1;
 	if (owner != NULL) {
 		owner->owner = cc->owner;
@@ -59,6 +61,7 @@ void enter(ccContext cc, symn owner) {
 }
 
 symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *outSize) {
+	dieif(cc->rt->vm.nfc, "Compiler state closed");
 	symn sym, result = NULL;
 
 	symn owner = cc->owner;
@@ -321,21 +324,28 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 				continue;
 			}
 			else if (argument != NULL) {
-				// more arguments than parameters
-				if (isTypename(aliasOf(sym)) && argument == arguments) {
-					// type(cast)
-				}
-				else if (sym == cc->emit_opc) {
-					// emit(...)
-				}
-				else {
+				// type cast can have one single argument: `int(3.14)`
+				if (argument != arguments) {
 					continue;
 				}
+				symn base = aliasOf(sym);
+
+				// type cast must have on the left a typename.
+				if (!isTypename(base)) {
+					continue;
+				}
+
+				// allow emit type cast like: `Complex(emit(...))`
+				if (argument->type != cc->emit_opc) {
+					// but only for types defined by user
+					if (castOf(base) == CAST_val) {
+						continue;
+					}
+				}
 			}
-			// else ok
 		}
 
-		// perfect match
+		// return first perfect match
 		if (hasCast == 0) {
 			break;
 		}
@@ -372,6 +382,7 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 
 /// change the type of a tree node (replace or implicit cast).
 static astn convert(ccContext cc, astn ast, symn type) {
+	dieif(cc->rt->vm.nfc, "Compiler state closed");
 	if (type == NULL) {
 		return ast;
 	}
@@ -394,6 +405,7 @@ static astn convert(ccContext cc, astn ast, symn type) {
 }
 
 static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise) {
+	dieif(cc->rt->vm.nfc, "Compiler state closed");
 	if (ref == NULL || ref->kind != TOKEN_var) {
 		traceAst(ref);
 		return NULL;
@@ -1046,6 +1058,8 @@ size_t argsSize(symn function) {
 	return result;
 }
 
+// determine the resulting type of a OP b
+// TODO: remove this, and declare each operator in the language
 static inline ccKind castKind(symn typ) {
 	if (typ == NULL) {
 		return CAST_any;
@@ -1082,8 +1096,6 @@ static inline ccKind castKind(symn typ) {
 			return KIND_var;
 	}
 }
-
-// determine the resulting type of a OP b
 static symn promote(symn lht, symn rht) {
 	symn result = 0;
 	if (lht && rht) {

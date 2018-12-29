@@ -460,6 +460,7 @@ void print_log(rtContext rt, raiseLevel level, const char *file, int line, rtVal
 #define WARN_NO_CODE_GENERATED "no code will be generated for statement: %t"
 #define WARN_PADDING_ALIGNMENT "padding `%?T` with %d bytes: (%d -> %d)"
 #define WARN_ADDING_IMPLICIT_CAST "adding implicit cast %T(%t: %T)"
+#define WARN_ADDING_TEMPORARY_VAR "adding temporary variable %T := %t"
 #define WARN_USING_SIGNED_CAST "using signed cast for unsigned value: `%t`"
 #define WARN_STATIC_FIELD_ACCESS "accessing static member using instance variable `%T`/ %T"
 

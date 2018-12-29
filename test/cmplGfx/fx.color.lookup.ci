@@ -4,10 +4,6 @@ static gxSurf offs = gxSurf(1440, 900, 32);
 static gxSurf back = gxSurf("asset/image/forest.jpg", 32);
 static gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
 
-static int brightness = 0;
-static int contrast = 0;
-static int gamma = 100;
-
 void brightnessContrastGamma(uint32 lut[256], int brightness, int contrast, double gamma) {
 	double cval = (256 + contrast) / 256.;
 	double gval = 1. / gamma;
@@ -17,6 +13,10 @@ void brightnessContrastGamma(uint32 lut[256], int brightness, int contrast, doub
 		lut[idx] = rgb(val, val, val);
 	}
 }
+
+static int brightness = 0;
+static int contrast = 0;
+static int gamma = 100;
 
 int onEvent(int action, int button, int x, int y) {
 	static int ox = 0;
