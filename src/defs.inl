@@ -133,56 +133,56 @@ TOKEN_DEF(EMIT_kwd, 0x00, 0, "emit")
 //~ sys ========================================================================
 OPCODE_DEF(opc_nop,  0x00, 1, 0, 0, "nop")          // no operation;
 OPCODE_DEF(opc_nfc,  0x01, 4, 0, 0, "nfc")          // native function call
-OPCODE_DEF(opc_call, 0x02, 1, 1, 1, "call")         // ip = pop(); push(IP); IP = ip;       […, a, b, ip  => […, a, b, ret;
-OPCODE_DEF(opc_jmpi, 0x03, 1, 1, 0, "ret")          // IP = popref();                       […, a, b, c  => […, a, b;
-OPCODE_DEF(opc_jmp,  0x04, 4, 0, 0, "jmp")          // IP += arg.rel;                       […, a, b, c  => […, a, b, c;
-OPCODE_DEF(opc_jnz,  0x05, 4, 1, 0, "jnz")          // if (popi32() != 0) {IP += arg.rel;}      […, a, b, c => […, a, b;
-OPCODE_DEF(opc_jz,   0x06, 4, 1, 0, "jz")           // if (popi32() == 0) {IP += arg.rel;}      […, a, b, c => […, a, b;
+OPCODE_DEF(opc_call, 0x02, 1, 1, 1, "call")         // ip = pop(); push(IP); IP = ip;
+OPCODE_DEF(opc_jmpi, 0x03, 1, 1, 0, "ret")          // IP = popref();
+OPCODE_DEF(opc_jmp,  0x04, 4, 0, 0, "jmp")          // IP += arg.rel;
+OPCODE_DEF(opc_jnz,  0x05, 4, 1, 0, "jnz")          // if (popi32() != 0) {IP += arg.rel;}
+OPCODE_DEF(opc_jz,   0x06, 4, 1, 0, "jz")           // if (popi32() == 0) {IP += arg.rel;}
 OPCODE_DEF(opc_task, 0x07, 4, 0, 0, "task")         // arg.3: [code:16][data:8] task, [?fork if (arg.code == 0)]
 OPCODE_DEF(opc_sync, 0x08, 2, 0, 0, "sync")         // wait, join, sync
-OPCODE_DEF(opc___9,  0x09, 0, 0, 0, NULL)           //
-OPCODE_DEF(opc_not,  0x0a, 1, 1, 1, "not.b32")      // sp(0).u32 = !sp(0).u32;
-OPCODE_DEF(opc_inc,  0x0b, 4, 1, 1, "inc.i32")      // push32(popi32(n) + arg.rel);	[…, a, b, c => […, a, b, c + arg.rel;
-OPCODE_DEF(opc_mad,  0x0c, 4, 2, 1, "mad.u32")      // sp(1).u32 += sp(0).u32 * arg.rel; pop1;	[…, a, b, c => […, a, b + c * arg.rel;
-OPCODE_DEF(opc___d,  0x0d, 0, 0, 0, NULL)           //
-OPCODE_DEF(opc___e,  0x0e, 0, 0, 0, NULL)           //
-OPCODE_DEF(opc___f,  0x0f, 0, 0, 0, NULL)           //
+OPCODE_DEF(opc_spc,  0x09, 4, 0, 0, "inc.sp")       // SP += arg.rel;
+OPCODE_DEF(opc_ldsp, 0x0a, 4, 0, 1, "load.sp")      // push(SP + arg.rel);
+OPCODE_DEF(opc_not,  0x0b, 1, 1, 1, "not.b32")      // sp(0).u32 = !sp(0).u32;
+OPCODE_DEF(opc_inc,  0x0c, 4, 1, 1, "inc.i32")      // push32(popi32(n) + arg.rel);
+OPCODE_DEF(opc_mad,  0x0d, 4, 2, 1, "mad.u32")      // sp(1).u32 += sp(0).u32 * arg.rel; pop1;
+OPCODE_DEF(opc__0e,  0x0e, 0, 0, 0, NULL)           //
+OPCODE_DEF(opc__0f,  0x0f, 0, 0, 0, NULL)           //
 
 //~ stk ========================================================================
-OPCODE_DEF(opc_spc,  0x10, 4, 0, 0, "inc.sp")       // SP += arg.rel;
-OPCODE_DEF(opc_ldsp, 0x11, 4, 0, 1, "load.sp")      // push(SP + arg.rel);     […, a, b, c  => […, a, b, c, SP;
-OPCODE_DEF(opc_dup1, 0x12, 2, 0, 1, "dup.x1")       // push(sp(arg.1: 3));     […, a, b, c, d => […, a, b, c, d, a;
-OPCODE_DEF(opc_dup2, 0x13, 2, 0, 2, "dup.x2")       // pushx2(sp(arg.1: 3));   […, a, b, c, d => […, a, b, c, d, a, b;
-OPCODE_DEF(opc_dup4, 0x14, 2, 0, 4, "dup.x4")       // pushx4(sp(arg.1: 3));   […, a, b, c, d => […, a, b, c, d, a, b, c, d;
-OPCODE_DEF(opc_set1, 0x15, 2, 1, 0, "set.x1")       // sp(arg.1: 3) = pop();   […, a, b, c, d => […, d, b, c;
-OPCODE_DEF(opc_set2, 0x16, 2, 2, 0, "set.x2")       // sp(arg.1: 3) = popx2(); […, a, b, c, d => […, c, d;
-OPCODE_DEF(opc_set4, 0x17, 2, 4, 0, "set.x4")       // sp(arg.1: 3) = popx4(); […, a, b, c, d => […, ;
-OPCODE_DEF(opc_lzx1, 0x18, 1, 0, 1, "load.z32")     // push(0);                […, a, b, c => […, a, b, c, 0;
-OPCODE_DEF(opc_lzx2, 0x19, 1, 0, 2, "load.z64")     // push(0, 0);             […, a, b, c => […, a, b, c, 0, 0;
-OPCODE_DEF(opc_lzx4, 0x1a, 1, 0, 4, "load.z128")    // push(0, 0, 0, 0);       […, a, b, c => […, a, b, c, 0, 0, 0, 0;
-OPCODE_DEF(opc_lc32, 0x1b, 5, 0, 1, "load.c32")     // push(arg.b4: 2);        […, a, b, c => […, a, b, c, 2;
-OPCODE_DEF(opc_lc64, 0x1c, 9, 0, 2, "load.c64")     // pushx2(arg.b8: 2);      […, a, b, c => […, a, b, c, 0, 2;
-OPCODE_DEF(opc_lf32, 0x1d, 5, 0, 1, "load.f32")     // temporary instruction replaceable with load.c32
-OPCODE_DEF(opc_lf64, 0x1e, 9, 0, 2, "load.f64")     // temporary instruction replaceable with load.c64
-OPCODE_DEF(opc_lref, 0x1f, 5, 0, 1, "load.ref")     // temporary instruction replaceable with load.c32
+OPCODE_DEF(opc_dup1, 0x10, 2, 0, 1, "dup.x1")       // push(sp(arg.1: 3));
+OPCODE_DEF(opc_dup2, 0x11, 2, 0, 2, "dup.x2")       // pushx2(sp(arg.1: 3));
+OPCODE_DEF(opc_dup4, 0x12, 2, 0, 4, "dup.x4")       // pushx4(sp(arg.1: 3));
+OPCODE_DEF(opc_set1, 0x13, 2, 1, 0, "set.x1")       // sp(arg.1: 3) = pop();
+OPCODE_DEF(opc_set2, 0x14, 2, 2, 0, "set.x2")       // sp(arg.1: 3) = popx2();
+OPCODE_DEF(opc_set4, 0x15, 2, 4, 0, "set.x4")       // sp(arg.1: 3) = popx4();
+OPCODE_DEF(opc_mov1, 0x16, 3, 0, 0, "mov.x1")       // mov
+OPCODE_DEF(opc_mov2, 0x17, 3, 0, 0, "mov.x2")       // mov
+OPCODE_DEF(opc_mov4, 0x18, 3, 0, 0, "mov.x4")       // mov
+OPCODE_DEF(opc_lzx1, 0x19, 1, 0, 1, "load.z32")      // push(0);
+OPCODE_DEF(opc_lzx2, 0x1a, 1, 0, 2, "load.z64")      // push(0, 0);
+OPCODE_DEF(opc_lzx4, 0x1b, 1, 0, 4, "load.z128")      // push(0, 0, 0, 0);
+OPCODE_DEF(opc_lc32, 0x1c, 5, 0, 1, "load.c32")     // push(arg.b4: 2);
+OPCODE_DEF(opc_lc64, 0x1d, 9, 0, 2, "load.c64")     // pushx2(arg.b8: 2);
+OPCODE_DEF(opc_move, 0x1e, 4, 2, 0, "copy.mem")     // copy(sp(1), sp(0), ip.rel);pop2;
+OPCODE_DEF(opc_lref, 0x1f, 5, 0, 1, "load.ref")     // ----- temp instruction replaceable with load.c32 or load.c64
 
 //~ mem (indirect memory access) ===============================================
-OPCODE_DEF(opc_ldi1, 0x20, 1, 1, 1, "load.i8")      // copy(sp, sp(0), 1);               […, a, b, c => […, a, b, *(int8*)c;
-OPCODE_DEF(opc_ldi2, 0x21, 1, 1, 1, "load.i16")     // copy(sp, sp(0), 2);               […, a, b, c => […, a, b, *(int16*)c;
-OPCODE_DEF(opc_ldi4, 0x22, 1, 1, 1, "load.i32")     // copy(sp, sp(0), 4);               […, a, b, c => […, a, b, *(int32*)c;
-OPCODE_DEF(opc_ldi8, 0x23, 1, 1, 2, "load.i64")     // copy(sp, sp(0), 8);               […, a, b, c => […, a, b, *(int64*)c12;
-OPCODE_DEF(opc_ldiq, 0x24, 1, 1, 4, "load.i128")    // copy(sp, sp(0), 16);              […, a, b, c => […, a, b, *(p4x4*)c1234;
-OPCODE_DEF(opc_sti1, 0x25, 1, 2, 0, "store.i8")     // copy(sp(1), sp(0), 1);pop2;       […, a, b, c => […, a
-OPCODE_DEF(opc_sti2, 0x26, 1, 2, 0, "store.i16")    // copy(sp(1), sp(0), 2);pop2;       […, a, b, c => […
-OPCODE_DEF(opc_sti4, 0x27, 1, 2, 0, "store.i32")    // copy(sp(1), sp(0), 4);pop2;       […, a, b, c => […
-OPCODE_DEF(opc_sti8, 0x28, 1, 3, 0, "store.i64")    // copy(sp(1), sp(0), 8);pop3;       […, a, b, c => […
-OPCODE_DEF(opc_stiq, 0x29, 1, 5, 0, "store.i128")   // copy(sp(1), sp(0), 16);pop5;      […, a, b, c => […
-OPCODE_DEF(opc_ld32, 0x2a, 4, 0, 1, "load.m32")     // copy(sp, ip.rel, 4);              […, a, b, c => […, a, b, c, *(int32*)ip.rel;
-OPCODE_DEF(opc_ld64, 0x2b, 4, 0, 2, "load.m64")     // copy(sp, ip.rel, 8);              […, a, b, c => […, a, b, c, *(int64*)ip.rel;
-OPCODE_DEF(opc___2c, 0x2c, 0, 0, 0, NULL)           //
-OPCODE_DEF(opc_st32, 0x2d, 4, 1, 0, "store.m32")    // copy(ip.rel, sp(0), 4); pop1;     […, a, b, c => […, a, b
-OPCODE_DEF(opc_st64, 0x2e, 4, 2, 0, "store.m64")    // copy(ip.rel, sp(0), 8); pop2;     […, a, b, c => […, a
-OPCODE_DEF(opc_move, 0x2f, 4, 2, 0, "copy.mem")     // copy(sp(1), sp(0), ip.rel);pop2;  […, a, b, c => […, a
+OPCODE_DEF(opc_ldi1, 0x20, 1, 1, 1, "load.i8")      // copy(sp, sp(0), 1);
+OPCODE_DEF(opc_ldi2, 0x21, 1, 1, 1, "load.i16")     // copy(sp, sp(0), 2);
+OPCODE_DEF(opc_ldi4, 0x22, 1, 1, 1, "load.i32")     // copy(sp, sp(0), 4);
+OPCODE_DEF(opc_ldi8, 0x23, 1, 1, 2, "load.i64")     // copy(sp, sp(0), 8);
+OPCODE_DEF(opc_ldiq, 0x24, 1, 1, 4, "load.i128")    // copy(sp, sp(0), 16);
+OPCODE_DEF(opc_sti1, 0x25, 1, 2, 0, "store.i8")     // copy(sp(1), sp(0), 1); pop2;
+OPCODE_DEF(opc_sti2, 0x26, 1, 2, 0, "store.i16")    // copy(sp(1), sp(0), 2); pop2;
+OPCODE_DEF(opc_sti4, 0x27, 1, 2, 0, "store.i32")    // copy(sp(1), sp(0), 4); pop2;
+OPCODE_DEF(opc_sti8, 0x28, 1, 3, 0, "store.i64")    // copy(sp(1), sp(0), 8); pop3;
+OPCODE_DEF(opc_stiq, 0x29, 1, 5, 0, "store.i128")   // copy(sp(1), sp(0), 16); pop5;
+OPCODE_DEF(opc_ld32, 0x2a, 4, 0, 1, "load.m32")     // copy(sp, ip.rel, 4);
+OPCODE_DEF(opc_ld64, 0x2b, 4, 0, 2, "load.m64")     // copy(sp, ip.rel, 8);
+OPCODE_DEF(opc_ld128,0x2c, 4, 0, 4, "load.m128")    // copy(sp, ip.rel, 16);
+OPCODE_DEF(opc_st64, 0x2d, 4, 2, 0, "store.m64")    // copy(ip.rel, sp(0), 8); pop2;
+OPCODE_DEF(opc_st32, 0x2e, 4, 1, 0, "store.m32")    // copy(ip.rel, sp(0), 4); pop1;
+OPCODE_DEF(opc_st128,0x2f, 4, 4, 0, "store.m128")   // copy(ip.rel, sp(0), 16); pop2;
 
 //~ u32 ========================================================================
 OPCODE_DEF(b32_cmt,  0x30, 1, 1, 1, "cmt.b32")      // sp(0).u32 = ~sp(0).u32;
@@ -272,7 +272,7 @@ OPCODE_DEF(f32_bol,  0x7b, 1, 1, 1, "f32.2bool")    // push(pop.f32 != 0)
 OPCODE_DEF(f32_i64,  0x7c, 1, 1, 2, "f32.2i64")     // push(i64(pop.f32))
 OPCODE_DEF(f32_f64,  0x7d, 1, 1, 2, "f32.2f64")     // push(f64(pop.f32))
 OPCODE_DEF(f32___e,  0x7e, 0, 0, 0, NULL)           //
-OPCODE_DEF(f32___f,  0x7f, 0, 0, 0, NULL)           //
+OPCODE_DEF(opc_lf32, 0x7f, 5, 0, 1, "load.f32")     // ----- temp instruction replaceable with load.c32
 
 //~ f64 ========================================================================
 OPCODE_DEF(f64_neg,  0x80, 1, 2, 2, "neg.f64")      // sp(0) = -sp(0);
@@ -290,7 +290,7 @@ OPCODE_DEF(f64_f32,  0x8b, 1, 2, 1, "f64.2f32")     // push(f32(pop.f64))
 OPCODE_DEF(f64_i64,  0x8c, 1, 2, 2, "f64.2i64")     // push(i64(pop.f64))
 OPCODE_DEF(f64_bol,  0x8d, 1, 2, 1, "f64.2bool")    // push(pop.f64 != 0)
 OPCODE_DEF(f64___e,  0x8e, 0, 0, 0, NULL)           //
-OPCODE_DEF(f64___f,  0x8f, 0, 0, 0, NULL)           //
+OPCODE_DEF(opc_lf64, 0x8f, 9, 0, 2, "load.f64")     // ----- temp instruction replaceable with load.c64
 
 //~ v4f[128] ===================================================================
 OPCODE_DEF(v4f_neg,  0x90, 1, 4, 4, "neg.v4f")      // sp(0) = -sp(0);

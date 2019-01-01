@@ -364,11 +364,12 @@ static inline astn chainArgs(astn args) {
  * Optimize an assignment by removing extra copy of the value if it is on the top of the stack.
  * 
  * @param Runtime context.
+ * @param stkBegin Begin of stack.
  * @param offsBegin Begin of the byte code.
  * @param offsEnd End of the byte code.
  * @return non zero if the code was optimized.
  */
-int optimizeAssign(rtContext, size_t offsBegin, size_t offsEnd);
+int optimizeAssign(rtContext, size_t stkBegin, size_t offsBegin, size_t offsEnd);
 
 /**
  * Test the virtual machine instruction set(compare implementation with definition `OPCODE_DEF`).

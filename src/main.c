@@ -148,50 +148,51 @@ typedef enum {
 
 struct userContextRec {
 	rtContext rt;
-	FILE *out;             // dump file
-	const char **esc;      // escape characters
-	int indent;            // dump indentation
-	dmpMode dmpMode;       // dump flags
+	FILE *out;              // dump file
+	const char **esc;       // escape characters
+	int indent;             // dump indentation
+	dmpMode dmpMode;        // dump flags
 
-	int dmpApi:1;          // dump symbols
-	int dmpAsm:1;          // dump instructions
-	int dmpAst:1;          // dump abstract syntax tree
-	//TODO: dmpDoc:        // dump documentation
+	int dmpApi:1;           // dump symbols
+	int dmpAsm:1;           // dump instructions
+	int dmpAst:1;           // dump abstract syntax tree
+	//TODO: dmpDoc:         // dump documentation
 
-	int dmpMain:1;         // include main initializer
-	int dmpBuiltins:1;     // include builtin symbols
-	int dmpDetails:1;      // dump detailed info
-	int dmpParams:1;       // dump parameters and fields
-	int dmpUsages:1;       // dump usages
-	int dmpAsmStmt:1;      // print source code position/statements
+	int dmpMain:1;          // include main initializer
+	int dmpBuiltins:1;      // include builtin symbols
+	int dmpDetails:1;       // dump detailed info
+	int dmpParams:1;        // dump parameters and fields
+	int dmpUsages:1;        // dump usages
+	int dmpAsmStmt:1;       // print source code position/statements
 
-	int dmpGlobals:1;      // dump global variable values
-	int dmpGlobalFun:1;    // dump global functions
-	int dmpGlobalTyp:1;    // dump global types
+	int dmpGlobals:1;       // dump global variable values
+	int dmpGlobalFun:1;     // dump global functions
+	int dmpGlobalTyp:1;     // dump global types
 
 	// dump memory allocation free and used chunks
 	int dmpMemoryUse:1;
 	int dmpHeapUsage:1;
 
-	int traceMethods:1;    // dump function call and return
-	int traceOpcodes:1;    // dump executing instruction
-	int traceLocals:1;     // dump the content of the stack
-	int traceTime:1;       // dump timestamp before `traceMethods` and `traceOpcodes`
-	int profFunctions:1;   // measure function execution times
-	int profStatements:1;  // measure statement execution times
-	int profNotExecuted:1; // include not executed functions and statements in the dump
+	int traceMethods:1;     // dump function call and return
+	int traceOpcodes:1;     // dump executing instruction
+	int traceLocals:1;      // dump the content of the stack
+	int traceTime:1;        // dump timestamp before `traceMethods` and `traceOpcodes`
+	int profFunctions:1;    // measure function execution times
+	int profStatements:1;   // measure statement execution times
+	int profNotExecuted:1;  // include not executed functions and statements in the dump
 
-	int hideOffsets:1;     // remove offsets, bytecode, and durations from dumps
-	char *compileSteps;    // dump compilation steps
+	int closeOut:1;         // close `out` file.
+	int hideOffsets:1;      // remove offsets, bytecode, and durations from dumps
+	char *compileSteps;     // dump compilation steps
 
 	// debugger
-	FILE *in;              // debugger input
-	dbgMode dbgCommand;    // last debugger command
-	brkMode dbgOnError;    // on uncaught exception
-	brkMode dbgOnCaught;   // on caught exception
-	size_t dbgNextBreak;   // offset of the next break (used for step in, out, over, instruction)
+	FILE *in;               // debugger input
+	dbgMode dbgCommand;     // last debugger command
+	brkMode dbgOnError;     // on uncaught exception
+	brkMode dbgOnCaught;    // on caught exception
+	size_t dbgNextBreak;    // offset of the next break (used for step in, out, over, instruction)
 
-	clock_t rtTime;        // time of execution
+	clock_t rtTime;         // time of execution
 };
 
 static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int indent, const char *text) {
@@ -2080,23 +2081,25 @@ int main(int argc, char *argv[]) {
 	rt->genGlobals = settings.genGlobals != 0;
 	rt->logLevel = settings.warnLevel;
 
-	if (dumpFileName != NULL) {
+	// open the log file first (enabling dump appending)
+	if (logFileName && !logFile(rt, logFileName, logAppend)) {
+		info(rt, NULL, 0, ERR_OPENING_FILE, logFileName);
+	}
+	// dump to log file (global option)
+	if (dumpFileName && strEquals(dumpFileName, logFileName)) {
+		// enable logging only as text to the log file
+		if (dumpFun == dumpApiText) {
+			extra.out = rt->logFile;
+		}
+	}
+	else if (dumpFileName != NULL) {
 		extra.out = fopen(dumpFileName, "w");
+		extra.closeOut = 1;
 		if (extra.out == NULL) {
 			info(rt, NULL, 0, ERR_OPENING_FILE, dumpFileName);
 			extra.out = stdout;
+			extra.closeOut = 0;
 		}
-	}
-
-	// open log file (global option)
-	if (dumpFileName && strEquals(dumpFileName, logFileName)) {
-		// disable logging to a json file
-		if (dumpFun != dumpApiJSON) {
-			logFILE(rt, extra.out);
-		}
-	}
-	else if (logFileName && !logFile(rt, logFileName, logAppend)) {
-		info(rt, NULL, 0, ERR_OPENING_FILE, logFileName);
 	}
 
 	// install base type system.
@@ -2310,7 +2313,7 @@ int main(int argc, char *argv[]) {
 		);
 	}
 
-	if (extra.out != NULL && extra.out != stdout && extra.out != stderr) {
+	if (extra.out && extra.closeOut) {
 		fclose(extra.out);
 	}
 

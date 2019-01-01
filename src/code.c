@@ -64,6 +64,11 @@ typedef struct vmInstruction {
 		uint8_t idx;		// usually index for stack
 		int32_t rel:24;		// relative offset (ip, sp) +- 7MB
 		struct {
+			// move instruction: destination, source
+			uint8_t dst;	// index of destination
+			uint8_t src;	// index of source
+		} mov;
+		struct {
 			// used when starting a new parallel task
 			uint8_t  dl;	// data to to be copied to stack
 			uint16_t cl;	// code to to be executed parallel: 0 means fork
@@ -122,14 +127,24 @@ static int decrementStackAccess(rtContext rt, size_t offsBegin, size_t offsEnd, 
 			case opc_dup1:
 			case opc_dup2:
 			case opc_dup4:
-				if (ip->idx * sizeof(*(stkptr)NULL) >= stack) {
+				if (ip->idx * vm_stk_align > stack) {
 					ip->idx -= count;
+				}
+				break;
+			case opc_mov1:
+			case opc_mov2:
+			case opc_mov4:
+				if (ip->mov.dst * vm_stk_align > stack) {
+					ip->mov.dst -= count;
+				}
+				if (ip->mov.src * vm_stk_align > stack) {
+					ip->mov.src -= count;
 				}
 				break;
 
 			case opc_ldsp:
-				if (ip->rel >= stack) {
-					ip->rel -= count * sizeof(*(stkptr)NULL);
+				if (ip->rel > stack) {
+					ip->rel -= count * vm_stk_align;
 				}
 				break;
 		}
@@ -137,29 +152,34 @@ static int decrementStackAccess(rtContext rt, size_t offsBegin, size_t offsEnd, 
 	return 1;
 }
 
-int optimizeAssign(rtContext rt, size_t offsBegin, size_t offsEnd) {
-	vmValue arg;
+int optimizeAssign(rtContext rt, size_t stkBegin, size_t offsBegin, size_t offsEnd) {
+	vmValue arg, argSet;
+	uint64_t stkMax = stkBegin / vm_stk_align;
 	if (testOcp(rt, offsBegin, opc_dup1, &arg)) {
-		// duplicate top of stack then set top of stack
-		if (arg.u08 != 0) {
-			return 0;
-		}
-		if (!testOcp(rt, offsEnd, opc_set1, &arg)) {
+		if (!testOcp(rt, offsEnd, opc_set1, &argSet)) {
 			return 0;
 		}
 		if (offsEnd - offsBegin == 2) {
-			vmInstruction ip = vmPointer(rt, offsBegin);
-			ip->opc = opc_set1;
-			ip->idx = arg.u08 - 1;
-
-			rt->_beg = vmPointer(rt, offsEnd);
-			rt->vm.ss -= ip->idx < 1 ? ip->idx : 1;
-			return 1;
+			if (!removeOpc(rt, offsEnd)) {
+				fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
+				return 0;
+			}
+			if (!removeOpc(rt, offsBegin)) {
+				fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
+				return 0;
+			}
+			if (arg.u08 != 0 || argSet.u08 < stkMax) {
+				arg.p128.u08[1] = arg.u08;
+				arg.p128.u08[0] = argSet.u08 - 1;
+				return emitOpc(rt, opc_mov1, arg);
+			}
+			argSet.u08 -= 1;
+			return emitOpc(rt, opc_set1, argSet);
 		}
-		if (arg.u08 != 1) {
+
+		if (arg.u08 != 0 || argSet.u08 != 1) {
 			return 0;
 		}
-
 		if (!removeOpc(rt, offsEnd)) {
 			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 			return 0;
@@ -175,23 +195,28 @@ int optimizeAssign(rtContext rt, size_t offsBegin, size_t offsEnd) {
 		return 1;
 	}
 	if (testOcp(rt, offsBegin, opc_dup2, &arg)) {
-		// duplicate top of stack then set top of stack
-		if (arg.u08 != 0) {
-			return 0;
-		}
-		if (!testOcp(rt, offsEnd, opc_set2, &arg)) {
+		if (!testOcp(rt, offsEnd, opc_set2, &argSet)) {
 			return 0;
 		}
 		if (offsEnd - offsBegin == 2) {
-			vmInstruction ip = vmPointer(rt, offsBegin);
-			ip->opc = opc_set2;
-			ip->idx = arg.u08 - 2;
-
-			rt->_beg = vmPointer(rt, offsEnd);
-			rt->vm.ss -= ip->idx < 2 ? ip->idx : 2;
-			return 1;
+			if (!removeOpc(rt, offsEnd)) {
+				fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
+				return 0;
+			}
+			if (!removeOpc(rt, offsBegin)) {
+				fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
+				return 0;
+			}
+			if (arg.u08 != 0 || argSet.u08 < stkMax) {
+				arg.p128.u08[1] = arg.u08;
+				arg.p128.u08[0] = argSet.u08 - 2;
+				return emitOpc(rt, opc_mov2, arg);
+			}
+			argSet.u08 -= 2;
+			return emitOpc(rt, opc_set2, argSet);
 		}
-		if (arg.u08 != 2) {
+
+		if (arg.u08 != 0 || argSet.u08 != 2) {
 			return 0;
 		}
 		if (!removeOpc(rt, offsEnd)) {
@@ -209,24 +234,28 @@ int optimizeAssign(rtContext rt, size_t offsBegin, size_t offsEnd) {
 		return 1;
 	}
 	if (testOcp(rt, offsBegin, opc_dup4, &arg)) {
-		// duplicate top of stack then set top of stack
-		if (arg.u08 != 0) {
-			return 0;
-		}
-		if (!testOcp(rt, offsEnd, opc_set4, &arg)) {
+		if (!testOcp(rt, offsEnd, opc_set4, &argSet)) {
 			return 0;
 		}
 		if (offsEnd - offsBegin == 2) {
-			vmInstruction ip = vmPointer(rt, offsBegin);
-			ip->opc = opc_set4;
-			ip->idx = arg.u08 - 4;
-
-			rt->_beg = vmPointer(rt, offsEnd);
-			rt->vm.ss -= ip->idx < 4 ? ip->idx : 4;
-			return 1;
+			if (!removeOpc(rt, offsEnd)) {
+				fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
+				return 0;
+			}
+			if (!removeOpc(rt, offsBegin)) {
+				fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
+				return 0;
+			}
+			if (arg.u08 != 0 || argSet.u08 < stkMax) {
+				arg.p128.u08[1] = arg.u08;
+				arg.p128.u08[0] = argSet.u08 - 4;
+				return emitOpc(rt, opc_mov4, arg);
+			}
+			argSet.u08 -= 4;
+			return emitOpc(rt, opc_set4, argSet);
 		}
 
-		if (arg.u08 != 4) {
+		if (arg.u08 != 0 || argSet.u08 != 4) {
 			return 0;
 		}
 		if (!removeOpc(rt, offsEnd)) {
@@ -533,6 +562,13 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				opc = opc_dup4;
 				rollbackPc(rt);
 			}
+			else if (ip->opc == opc_lref) {
+				arg.i64 = ip->arg.u32;
+				if (arg.i64 == arg.i24) {
+					opc = opc_ld128;
+					rollbackPc(rt);
+				}
+			}
 			break;
 
 		case opc_stiq:
@@ -544,6 +580,13 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				arg.i32 = ip->rel / vm_stk_align;
 				opc = opc_set4;
 				rollbackPc(rt);
+			}
+			else if (ip->opc == opc_lref) {
+				arg.i64 = ip->arg.u32;
+				if (arg.i64 == arg.i24) {
+					opc = opc_st128;
+					rollbackPc(rt);
+				}
 			}
 			break;
 
@@ -1307,15 +1350,17 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			dieif(ip->rel != arg.i64, ERR_INTERNAL_ERROR);
 			break;
 
-		case opc_st64:
-		case opc_ld64:
-			dieif((ip->rel & (sizeof(void*) - 1)) != 0, ERR_INTERNAL_ERROR);
+		case opc_ld32:
+		case opc_st32:
+			dieif((ip->rel & 3) != 0, ERR_INTERNAL_ERROR);
 			dieif(ip->rel != arg.i64, ERR_INTERNAL_ERROR);
 			break;
 
-		case opc_st32:
-		case opc_ld32:
-			dieif((ip->rel & 3) != 0, ERR_INTERNAL_ERROR);
+		case opc_ld64:
+		case opc_st64:
+		case opc_ld128:
+		case opc_st128:
+			dieif((ip->rel & (sizeof(void*) - 1)) != 0, ERR_INTERNAL_ERROR);
 			dieif(ip->rel != arg.i64, ERR_INTERNAL_ERROR);
 			break;
 
@@ -2354,6 +2399,12 @@ void printAsm(FILE *out, const char **esc, rtContext ctx, void *ptr, dmpMode mod
 			printFmt(out, esc, " sp(%d)", ip->idx);
 			break;
 
+		case opc_mov1:
+		case opc_mov2:
+		case opc_mov4:
+			printFmt(out, esc, " sp(%d, %d)", ip->mov.dst, ip->mov.src);
+			break;
+
 		case opc_lc32:
 			printFmt(out, esc, " %d", ip->arg.i32);
 			break;
@@ -2427,11 +2478,13 @@ void printAsm(FILE *out, const char **esc, rtContext ctx, void *ptr, dmpMode mod
 			}
 			break;
 
+		case opc_lref:
 		case opc_ld32:
 		case opc_st32:
 		case opc_ld64:
 		case opc_st64:
-		case opc_lref:
+		case opc_ld128:
+		case opc_st128:
 			printFmt(out, esc, " ");
 			if (ip->opc == opc_lref) {
 				offs = ip->arg.u32;
@@ -2583,11 +2636,11 @@ void* nextOpc(rtContext rt, size_t *pc, size_t *ss) {
 		return NULL;
 	}
 
-	struct libc *nativeCalls[1] = { NULL };
+	libc *nativeCalls = rt->vm.nfc;
 	switch (ip->opc) {
 		#define STOP(__ERR, __CHK) if (__CHK) return NULL;
 		#define NEXT(__IP, __SP, __CHK)\
-			if (ss != NULL) { *ss += sizeof(*(stkptr)NULL) * (__SP); }\
+			if (ss != NULL) { *ss += vm_stk_align * (__SP); }\
 			*pc += (__IP);
 		#include "code.inl"
 	}

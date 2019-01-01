@@ -2125,7 +2125,7 @@ NotEquals.message: char[*] {
 assertEq(expected: int32, returned: int32, message: char[*]): void: function {
 .kind: static const function
 .base: `function`
-.size: 83
+.size: 82
 .name: 'assertEq'
 .file: 'lib/stdlib.ci:38'
 .param .result: void (size: 0, cast: variable(void))
@@ -2143,7 +2143,7 @@ assertEq(expected: int32, returned: int32, message: char[*]): void: function {
 	};
 	raise(raise.abort, raise.defTrace, "assertion failed", details);
 }
-.instructions: (83 bytes)
+.instructions: (82 bytes)
 	lib/stdlib.ci:39: (10 bytes): if (returned == expected)
 	<assertEq>  : dup.x1 sp(2)
 	<assertEq+?>: dup.x1 sp(4)
@@ -2151,7 +2151,7 @@ assertEq(expected: int32, returned: int32, message: char[*]): void: function {
 	<assertEq+?>: jz +5
 	lib/stdlib.ci:40: (1 byte): return;
 	<assertEq+?>: ret
-	lib/stdlib.ci:42: (30 bytes): details: NotEquals := {...}
+	lib/stdlib.ci:42: (29 bytes): details: NotEquals := {...}
 	<assertEq+?>: inc.sp(+24)
 	lib/stdlib.ci:43: (11 bytes): details.expected := (expected);
 	<assertEq+?>: load.ref <?> ;int32
@@ -2161,9 +2161,8 @@ assertEq(expected: int32, returned: int32, message: char[*]): void: function {
 	<assertEq+?>: load.ref <?> ;int32
 	<assertEq+?>: load.sp(+36)
 	<assertEq+?>: set.x2 sp(4)
-	lib/stdlib.ci:45: (4 bytes): details.message := (message);
-	<assertEq+?>: dup.x1 sp(7)
-	<assertEq+?>: set.x1 sp(5)
+	lib/stdlib.ci:45: (3 bytes): details.message := (message);
+	<assertEq+?>: mov.x1 sp(4, 7)
 	lib/stdlib.ci:47: (38 bytes): raise(raise.abort, raise.defTrace, "assertion failed", details);
 	<assertEq+?>: load.ref <?> ;"lib/stdlib.ci"
 	<assertEq+?>: load.c32 47
@@ -2216,20 +2215,20 @@ Math: typename {
 .field sqrtPhi: float64 (size: 8, cast: static const val)
 .field nan: float64 (size: 8, cast: static const val)
 .field inf: float64 (size: 8, cast: static const val)
-.field modf: function (size: 104, cast: static const function)
-.field floor: function (size: 35, cast: static const function)
+.field modf: function (size: 91, cast: static const function)
+.field floor: function (size: 29, cast: static const function)
 .field ceil: function (size: 0, cast: static inline)
 .field round: function (size: 0, cast: static inline)
 .field sign: function (size: 36, cast: static const function)
 .field sign: function (size: 36, cast: static const function)
-.field abs: function (size: 19, cast: static const function)
-.field abs: function (size: 19, cast: static const function)
-.field min: function (size: 19, cast: static const function)
-.field min: function (size: 19, cast: static const function)
-.field max: function (size: 19, cast: static const function)
-.field max: function (size: 19, cast: static const function)
-.field clamp: function (size: 33, cast: static const function)
-.field clamp: function (size: 33, cast: static const function)
+.field abs: function (size: 18, cast: static const function)
+.field abs: function (size: 18, cast: static const function)
+.field min: function (size: 17, cast: static const function)
+.field min: function (size: 17, cast: static const function)
+.field max: function (size: 17, cast: static const function)
+.field max: function (size: 17, cast: static const function)
+.field clamp: function (size: 30, cast: static const function)
+.field clamp: function (size: 30, cast: static const function)
 .field lerp: function (size: 14, cast: static const function)
 .field lerp: function (size: 14, cast: static const function)
 .field smooth: function (size: 53, cast: static const function)
@@ -2238,13 +2237,13 @@ Math: typename {
 .field smooth: function (size: 0, cast: static inline)
 .field cmp: function (size: 57, cast: static const function)
 .field cmp: function (size: 57, cast: static const function)
-.field sinCos: function (size: 348, cast: static const function)
+.field sinCos: function (size: 340, cast: static const function)
 .field sin: function (size: 0, cast: static inline)
 .field cos: function (size: 0, cast: static inline)
-.field tan: function (size: 378, cast: static const function)
-.field sinh: function (size: 248, cast: static const function)
+.field tan: function (size: 376, cast: static const function)
+.field sinh: function (size: 246, cast: static const function)
 .field cosh: function (size: 75, cast: static const function)
-.field asin: function (size: 174, cast: static const function)
+.field asin: function (size: 171, cast: static const function)
 .field acos: function (size: 0, cast: static inline)
 .field deg2rad: function (size: 0, cast: static inline)
 .field rad2deg: function (size: 0, cast: static inline)
@@ -2369,7 +2368,7 @@ Math.inf: float64 {
 Math.modf(x: float64, intPart: float64): float64: function {
 .kind: static const function
 .base: `function`
-.size: 104
+.size: 91
 .name: 'modf'
 .file: 'lib/std/math.ci:22'
 .owner: Math
@@ -2390,17 +2389,17 @@ Math.modf(x: float64, intPart: float64): float64: function {
 	intPart := x - result;
 	return .result := result;
 }
-.instructions: (104 bytes)
-	lib/std/math.ci:23: (70 bytes): if (x < (1))
+.instructions: (91 bytes)
+	lib/std/math.ci:23: (63 bytes): if (x < (1))
 	<modf>  : dup.x2 sp(2)
 	<modf+?>: load.f64 1.000000
 	<modf+?>: clt.f64
-	<modf+?>: jz +58
-	lib/std/math.ci:24: (45 bytes): if (x < (0))
+	<modf+?>: jz +51
+	lib/std/math.ci:24: (39 bytes): if (x < (0))
 	<modf+?>: dup.x2 sp(2)
 	<modf+?>: load.z64
 	<modf+?>: clt.f64
-	<modf+?>: jz +41
+	<modf+?>: jz +35
 	lib/std/math.ci:25: (17 bytes): result: float64 := -modf(-x, intPart)
 	<modf+?>: load.z64
 	<modf+?>: dup.x2 sp(4)
@@ -2416,19 +2415,16 @@ Math.modf(x: float64, intPart: float64): float64: function {
 	<modf+?>: neg.f64
 	<modf+?>: dup.x1 sp(5)
 	<modf+?>: store.i64
-	lib/std/math.ci:27: (9 bytes): return .result := result;
-	<modf+?>: dup.x2 sp(0)
-	<modf+?>: set.x2 sp(8)
-	<modf+?>: inc.sp(-8)
+	lib/std/math.ci:27: (3 bytes): return .result := result;
+	<modf+?>: set.x2 sp(6)
 	<modf+?>: ret
 	<modf+?>: inc.sp(-8)
 	lib/std/math.ci:29: (4 bytes): intPart := (0);
 	<modf+?>: load.z64
 	<modf+?>: dup.x1 sp(3)
 	<modf+?>: store.i64
-	lib/std/math.ci:30: (5 bytes): return .result := x;
-	<modf+?>: dup.x2 sp(2)
-	<modf+?>: set.x2 sp(6)
+	lib/std/math.ci:30: (4 bytes): return .result := x;
+	<modf+?>: mov.x2 sp(4, 2)
 	<modf+?>: ret
 	lib/std/math.ci:32: (12 bytes): result: float64 := x % (1)
 	<modf+?>: dup.x2 sp(2)
@@ -2440,10 +2436,8 @@ Math.modf(x: float64, intPart: float64): float64: function {
 	<modf+?>: sub.f64
 	<modf+?>: dup.x1 sp(5)
 	<modf+?>: store.i64
-	lib/std/math.ci:34: (9 bytes): return .result := result;
-	<modf+?>: dup.x2 sp(0)
-	<modf+?>: set.x2 sp(8)
-	<modf+?>: inc.sp(-8)
+	lib/std/math.ci:34: (3 bytes): return .result := result;
+	<modf+?>: set.x2 sp(6)
 	<modf+?>: ret
 	<modf+?>: inc.sp(-8)
 	<modf+?>: ret
@@ -2451,7 +2445,7 @@ Math.modf(x: float64, intPart: float64): float64: function {
 Math.floor(x: float64): float64: function {
 .kind: static const function
 .base: `function`
-.size: 35
+.size: 29
 .name: 'floor'
 .file: 'lib/std/math.ci:59'
 .owner: Math
@@ -2462,7 +2456,7 @@ Math.floor(x: float64): float64: function {
 	modf(x, result);
 	return .result := result;
 }
-.instructions: (35 bytes)
+.instructions: (29 bytes)
 	lib/std/math.ci:60: (1 byte): result: float64
 	<floor>  : load.z128
 	lib/std/math.ci:61: (20 bytes): modf(x, result);
@@ -2472,10 +2466,8 @@ Math.floor(x: float64): float64: function {
 	<floor+?>: call
 	<floor+?>: inc.sp(-12)
 	<floor+?>: inc.sp(-8)
-	lib/std/math.ci:62: (9 bytes): return .result := result;
-	<floor+?>: dup.x2 sp(0)
-	<floor+?>: set.x2 sp(7)
-	<floor+?>: inc.sp(-8)
+	lib/std/math.ci:62: (3 bytes): return .result := result;
+	<floor+?>: set.x2 sp(5)
 	<floor+?>: ret
 	<floor+?>: inc.sp(-8)
 	<floor+?>: ret
@@ -2589,7 +2581,7 @@ Math.sign(x: float64): int32: function {
 Math.abs(x: float32): float32: function {
 .kind: static const function
 .base: `function`
-.size: 19
+.size: 18
 .name: 'abs'
 .file: 'lib/std/math.ci:90'
 .owner: Math
@@ -2601,7 +2593,7 @@ Math.abs(x: float32): float32: function {
 	}
 	return .result := x;
 }
-.instructions: (19 bytes)
+.instructions: (18 bytes)
 	lib/std/math.ci:91: (14 bytes): if (x < (0))
 	<abs>  : dup.x1 sp(1)
 	<abs+?>: load.z32
@@ -2612,15 +2604,14 @@ Math.abs(x: float32): float32: function {
 	<abs+?>: neg.f32
 	<abs+?>: set.x1 sp(3)
 	<abs+?>: ret
-	lib/std/math.ci:94: (5 bytes): return .result := x;
-	<abs+?>: dup.x1 sp(1)
-	<abs+?>: set.x1 sp(3)
+	lib/std/math.ci:94: (4 bytes): return .result := x;
+	<abs+?>: mov.x1 sp(2, 1)
 	<abs+?>: ret
 }
 Math.abs(x: float64): float64: function {
 .kind: static const function
 .base: `function`
-.size: 19
+.size: 18
 .name: 'abs'
 .file: 'lib/std/math.ci:96'
 .owner: Math
@@ -2632,7 +2623,7 @@ Math.abs(x: float64): float64: function {
 	}
 	return .result := x;
 }
-.instructions: (19 bytes)
+.instructions: (18 bytes)
 	lib/std/math.ci:97: (14 bytes): if (x < (0))
 	<abs>  : dup.x2 sp(1)
 	<abs+?>: load.z64
@@ -2643,15 +2634,14 @@ Math.abs(x: float64): float64: function {
 	<abs+?>: neg.f64
 	<abs+?>: set.x2 sp(5)
 	<abs+?>: ret
-	lib/std/math.ci:100: (5 bytes): return .result := x;
-	<abs+?>: dup.x2 sp(1)
-	<abs+?>: set.x2 sp(5)
+	lib/std/math.ci:100: (4 bytes): return .result := x;
+	<abs+?>: mov.x2 sp(3, 1)
 	<abs+?>: ret
 }
 Math.min(a: float32, b: float32): float32: function {
 .kind: static const function
 .base: `function`
-.size: 19
+.size: 17
 .name: 'min'
 .file: 'lib/std/math.ci:103'
 .owner: Math
@@ -2664,25 +2654,23 @@ Math.min(a: float32, b: float32): float32: function {
 	}
 	return .result := b;
 }
-.instructions: (19 bytes)
-	lib/std/math.ci:104: (14 bytes): if (a < b)
+.instructions: (17 bytes)
+	lib/std/math.ci:104: (13 bytes): if (a < b)
 	<min>  : dup.x1 sp(2)
 	<min+?>: dup.x1 sp(2)
 	<min+?>: clt.f32
-	<min+?>: jz +9
-	lib/std/math.ci:105: (5 bytes): return .result := a;
-	<min+?>: dup.x1 sp(2)
-	<min+?>: set.x1 sp(4)
+	<min+?>: jz +8
+	lib/std/math.ci:105: (4 bytes): return .result := a;
+	<min+?>: mov.x1 sp(3, 2)
 	<min+?>: ret
-	lib/std/math.ci:107: (5 bytes): return .result := b;
-	<min+?>: dup.x1 sp(1)
-	<min+?>: set.x1 sp(4)
+	lib/std/math.ci:107: (4 bytes): return .result := b;
+	<min+?>: mov.x1 sp(3, 1)
 	<min+?>: ret
 }
 Math.min(a: float64, b: float64): float64: function {
 .kind: static const function
 .base: `function`
-.size: 19
+.size: 17
 .name: 'min'
 .file: 'lib/std/math.ci:109'
 .owner: Math
@@ -2695,25 +2683,23 @@ Math.min(a: float64, b: float64): float64: function {
 	}
 	return .result := b;
 }
-.instructions: (19 bytes)
-	lib/std/math.ci:110: (14 bytes): if (a < b)
+.instructions: (17 bytes)
+	lib/std/math.ci:110: (13 bytes): if (a < b)
 	<min>  : dup.x2 sp(3)
 	<min+?>: dup.x2 sp(3)
 	<min+?>: clt.f64
-	<min+?>: jz +9
-	lib/std/math.ci:111: (5 bytes): return .result := a;
-	<min+?>: dup.x2 sp(3)
-	<min+?>: set.x2 sp(7)
+	<min+?>: jz +8
+	lib/std/math.ci:111: (4 bytes): return .result := a;
+	<min+?>: mov.x2 sp(5, 3)
 	<min+?>: ret
-	lib/std/math.ci:113: (5 bytes): return .result := b;
-	<min+?>: dup.x2 sp(1)
-	<min+?>: set.x2 sp(7)
+	lib/std/math.ci:113: (4 bytes): return .result := b;
+	<min+?>: mov.x2 sp(5, 1)
 	<min+?>: ret
 }
 Math.max(a: float32, b: float32): float32: function {
 .kind: static const function
 .base: `function`
-.size: 19
+.size: 17
 .name: 'max'
 .file: 'lib/std/math.ci:116'
 .owner: Math
@@ -2726,25 +2712,23 @@ Math.max(a: float32, b: float32): float32: function {
 	}
 	return .result := b;
 }
-.instructions: (19 bytes)
-	lib/std/math.ci:117: (14 bytes): if (a > b)
+.instructions: (17 bytes)
+	lib/std/math.ci:117: (13 bytes): if (a > b)
 	<max>  : dup.x1 sp(2)
 	<max+?>: dup.x1 sp(2)
 	<max+?>: cgt.f32
-	<max+?>: jz +9
-	lib/std/math.ci:118: (5 bytes): return .result := a;
-	<max+?>: dup.x1 sp(2)
-	<max+?>: set.x1 sp(4)
+	<max+?>: jz +8
+	lib/std/math.ci:118: (4 bytes): return .result := a;
+	<max+?>: mov.x1 sp(3, 2)
 	<max+?>: ret
-	lib/std/math.ci:120: (5 bytes): return .result := b;
-	<max+?>: dup.x1 sp(1)
-	<max+?>: set.x1 sp(4)
+	lib/std/math.ci:120: (4 bytes): return .result := b;
+	<max+?>: mov.x1 sp(3, 1)
 	<max+?>: ret
 }
 Math.max(a: float64, b: float64): float64: function {
 .kind: static const function
 .base: `function`
-.size: 19
+.size: 17
 .name: 'max'
 .file: 'lib/std/math.ci:122'
 .owner: Math
@@ -2757,25 +2741,23 @@ Math.max(a: float64, b: float64): float64: function {
 	}
 	return .result := b;
 }
-.instructions: (19 bytes)
-	lib/std/math.ci:123: (14 bytes): if (a > b)
+.instructions: (17 bytes)
+	lib/std/math.ci:123: (13 bytes): if (a > b)
 	<max>  : dup.x2 sp(3)
 	<max+?>: dup.x2 sp(3)
 	<max+?>: cgt.f64
-	<max+?>: jz +9
-	lib/std/math.ci:124: (5 bytes): return .result := a;
-	<max+?>: dup.x2 sp(3)
-	<max+?>: set.x2 sp(7)
+	<max+?>: jz +8
+	lib/std/math.ci:124: (4 bytes): return .result := a;
+	<max+?>: mov.x2 sp(5, 3)
 	<max+?>: ret
-	lib/std/math.ci:126: (5 bytes): return .result := b;
-	<max+?>: dup.x2 sp(1)
-	<max+?>: set.x2 sp(7)
+	lib/std/math.ci:126: (4 bytes): return .result := b;
+	<max+?>: mov.x2 sp(5, 1)
 	<max+?>: ret
 }
 Math.clamp(t: float32, a: float32, b: float32): float32: function {
 .kind: static const function
 .base: `function`
-.size: 33
+.size: 30
 .name: 'clamp'
 .file: 'lib/std/math.ci:129'
 .owner: Math
@@ -2792,34 +2774,31 @@ Math.clamp(t: float32, a: float32, b: float32): float32: function {
 	}
 	return .result := t;
 }
-.instructions: (33 bytes)
-	lib/std/math.ci:130: (14 bytes): if (t < a)
+.instructions: (30 bytes)
+	lib/std/math.ci:130: (13 bytes): if (t < a)
 	<clamp>  : dup.x1 sp(3)
 	<clamp+?>: dup.x1 sp(3)
 	<clamp+?>: clt.f32
-	<clamp+?>: jz +9
-	lib/std/math.ci:131: (5 bytes): return .result := a;
-	<clamp+?>: dup.x1 sp(2)
-	<clamp+?>: set.x1 sp(5)
+	<clamp+?>: jz +8
+	lib/std/math.ci:131: (4 bytes): return .result := a;
+	<clamp+?>: mov.x1 sp(4, 2)
 	<clamp+?>: ret
-	lib/std/math.ci:133: (14 bytes): if (t > b)
+	lib/std/math.ci:133: (13 bytes): if (t > b)
 	<clamp+?>: dup.x1 sp(3)
 	<clamp+?>: dup.x1 sp(2)
 	<clamp+?>: cgt.f32
-	<clamp+?>: jz +9
-	lib/std/math.ci:134: (5 bytes): return .result := b;
-	<clamp+?>: dup.x1 sp(1)
-	<clamp+?>: set.x1 sp(5)
+	<clamp+?>: jz +8
+	lib/std/math.ci:134: (4 bytes): return .result := b;
+	<clamp+?>: mov.x1 sp(4, 1)
 	<clamp+?>: ret
-	lib/std/math.ci:136: (5 bytes): return .result := t;
-	<clamp+?>: dup.x1 sp(3)
-	<clamp+?>: set.x1 sp(5)
+	lib/std/math.ci:136: (4 bytes): return .result := t;
+	<clamp+?>: mov.x1 sp(4, 3)
 	<clamp+?>: ret
 }
 Math.clamp(t: float64, a: float64, b: float64): float64: function {
 .kind: static const function
 .base: `function`
-.size: 33
+.size: 30
 .name: 'clamp'
 .file: 'lib/std/math.ci:138'
 .owner: Math
@@ -2836,28 +2815,25 @@ Math.clamp(t: float64, a: float64, b: float64): float64: function {
 	}
 	return .result := t;
 }
-.instructions: (33 bytes)
-	lib/std/math.ci:139: (14 bytes): if (t < a)
+.instructions: (30 bytes)
+	lib/std/math.ci:139: (13 bytes): if (t < a)
 	<clamp>  : dup.x2 sp(5)
 	<clamp+?>: dup.x2 sp(5)
 	<clamp+?>: clt.f64
-	<clamp+?>: jz +9
-	lib/std/math.ci:140: (5 bytes): return .result := a;
-	<clamp+?>: dup.x2 sp(3)
-	<clamp+?>: set.x2 sp(9)
+	<clamp+?>: jz +8
+	lib/std/math.ci:140: (4 bytes): return .result := a;
+	<clamp+?>: mov.x2 sp(7, 3)
 	<clamp+?>: ret
-	lib/std/math.ci:142: (14 bytes): if (t > b)
+	lib/std/math.ci:142: (13 bytes): if (t > b)
 	<clamp+?>: dup.x2 sp(5)
 	<clamp+?>: dup.x2 sp(3)
 	<clamp+?>: cgt.f64
-	<clamp+?>: jz +9
-	lib/std/math.ci:143: (5 bytes): return .result := b;
-	<clamp+?>: dup.x2 sp(1)
-	<clamp+?>: set.x2 sp(9)
+	<clamp+?>: jz +8
+	lib/std/math.ci:143: (4 bytes): return .result := b;
+	<clamp+?>: mov.x2 sp(7, 1)
 	<clamp+?>: ret
-	lib/std/math.ci:145: (5 bytes): return .result := t;
-	<clamp+?>: dup.x2 sp(5)
-	<clamp+?>: set.x2 sp(9)
+	lib/std/math.ci:145: (4 bytes): return .result := t;
+	<clamp+?>: mov.x2 sp(7, 5)
 	<clamp+?>: ret
 }
 Math.lerp(t: float32, a: float32, b: float32): float32: function {
@@ -3141,7 +3117,7 @@ Math.cmp(a: float64, b: float64, eps: float64): int32: function {
 Math.sinCos(arg: float64, quad: int32): float64: function {
 .kind: static const function
 .base: `function`
-.size: 348
+.size: 340
 .name: 'sinCos'
 .file: 'lib/std/math.ci:266'
 .owner: Math
@@ -3181,18 +3157,16 @@ Math.sinCos(arg: float64, quad: int32): float64: function {
 	temp2: float64 := ((((ysq + q3) * ysq + q2) * ysq + q1) * ysq + q0);
 	return .result := temp1 / temp2;
 }
-.instructions: (348 bytes)
+.instructions: (340 bytes)
 	lib/std/math.ci:280: (2 bytes): x: float64 := arg
 	<sinCos>  : dup.x2 sp(2)
-	lib/std/math.ci:281: (21 bytes): if (x < (0))
+	lib/std/math.ci:281: (17 bytes): if (x < (0))
 	<sinCos+?>: dup.x2 sp(0)
 	<sinCos+?>: load.z64
 	<sinCos+?>: clt.f64
-	<sinCos+?>: jz +17
-	lib/std/math.ci:282: (5 bytes): x := -x;
-	<sinCos+?>: dup.x2 sp(0)
+	<sinCos+?>: jz +13
+	lib/std/math.ci:282: (1 byte): x := -x;
 	<sinCos+?>: neg.f64
-	<sinCos+?>: set.x2 sp(2)
 	lib/std/math.ci:283: (8 bytes): quad := quad + 2;
 	<sinCos+?>: dup.x1 sp(3)
 	<sinCos+?>: inc.i32(+2)
@@ -3273,15 +3247,13 @@ Math.sinCos(arg: float64, quad: int32): float64: function {
 	<sinCos+?>: dup.x2 sp(2)
 	<sinCos+?>: sub.f64
 	<sinCos+?>: set.x2 sp(2)
-	lib/std/math.ci:306: (17 bytes): if (quad > 1)
+	lib/std/math.ci:306: (13 bytes): if (quad > 1)
 	<sinCos+?>: dup.x1 sp(5)
 	<sinCos+?>: load.c32 1
 	<sinCos+?>: cgt.i32
-	<sinCos+?>: jz +9
-	lib/std/math.ci:307: (5 bytes): y := -y;
-	<sinCos+?>: dup.x2 sp(0)
+	<sinCos+?>: jz +5
+	lib/std/math.ci:307: (1 byte): y := -y;
 	<sinCos+?>: neg.f64
-	<sinCos+?>: set.x2 sp(2)
 	lib/std/math.ci:310: (5 bytes): ysq: float64 := y * y
 	<sinCos+?>: dup.x2 sp(0)
 	<sinCos+?>: dup.x2 sp(2)
@@ -3357,7 +3329,7 @@ Math.cos(arg: float64): float64: function {
 Math.tan(arg: float64): float64: function {
 .kind: static const function
 .base: `function`
-.size: 378
+.size: 376
 .name: 'tan'
 .file: 'lib/std/math.ci:323'
 .owner: Math
@@ -3407,7 +3379,7 @@ Math.tan(arg: float64): float64: function {
 	}
 	return .result := result;
 }
-.instructions: (378 bytes)
+.instructions: (376 bytes)
 	lib/std/math.ci:336: (1 byte): complement: bool := false
 	<tan>  : load.z32
 	lib/std/math.ci:337: (1 byte): negate: bool := false
@@ -3564,10 +3536,9 @@ Math.tan(arg: float64): float64: function {
 	<tan+?>: set.x2 sp(16)
 	<tan+?>: inc.sp(-44)
 	<tan+?>: ret
-	lib/std/math.ci:376: (9 bytes): return .result := result;
-	<tan+?>: dup.x2 sp(0)
-	<tan+?>: set.x2 sp(16)
-	<tan+?>: inc.sp(-44)
+	lib/std/math.ci:376: (7 bytes): return .result := result;
+	<tan+?>: set.x2 sp(14)
+	<tan+?>: inc.sp(-36)
 	<tan+?>: ret
 	<tan+?>: inc.sp(-44)
 	<tan+?>: ret
@@ -3575,7 +3546,7 @@ Math.tan(arg: float64): float64: function {
 Math.sinh(x: float64): float64: function {
 .kind: static const function
 .base: `function`
-.size: 248
+.size: 246
 .name: 'sinh'
 .file: 'lib/std/math.ci:380'
 .owner: Math
@@ -3604,7 +3575,7 @@ Math.sinh(x: float64): float64: function {
 	}
 	return .result := result;
 }
-.instructions: (248 bytes)
+.instructions: (246 bytes)
 	lib/std/math.ci:392: (1 byte): negate: bool := false
 	<sinh>  : load.z32
 	lib/std/math.ci:393: (23 bytes): if (x < (0))
@@ -3698,10 +3669,9 @@ Math.sinh(x: float64): float64: function {
 	<sinh+?>: set.x2 sp(8)
 	<sinh+?>: inc.sp(-12)
 	<sinh+?>: ret
-	lib/std/math.ci:415: (9 bytes): return .result := result;
-	<sinh+?>: dup.x2 sp(0)
-	<sinh+?>: set.x2 sp(8)
-	<sinh+?>: inc.sp(-12)
+	lib/std/math.ci:415: (7 bytes): return .result := result;
+	<sinh+?>: set.x2 sp(6)
+	<sinh+?>: inc.sp(-4)
 	<sinh+?>: ret
 	<sinh+?>: inc.sp(-12)
 	<sinh+?>: ret
@@ -3761,7 +3731,7 @@ Math.cosh(x: float64): float64: function {
 Math.asin(x: float64): float64: function {
 .kind: static const function
 .base: `function`
-.size: 174
+.size: 171
 .name: 'asin'
 .file: 'lib/std/math.ci:435'
 .owner: Math
@@ -3791,15 +3761,14 @@ Math.asin(x: float64): float64: function {
 	}
 	return .result := result;
 }
-.instructions: (174 bytes)
-	lib/std/math.ci:436: (13 bytes): if (x == (0))
+.instructions: (171 bytes)
+	lib/std/math.ci:436: (12 bytes): if (x == (0))
 	<asin>  : dup.x2 sp(1)
 	<asin+?>: load.z64
 	<asin+?>: ceq.f64
-	<asin+?>: jz +9
-	lib/std/math.ci:438: (5 bytes): return .result := x;
-	<asin+?>: dup.x2 sp(1)
-	<asin+?>: set.x2 sp(5)
+	<asin+?>: jz +8
+	lib/std/math.ci:438: (4 bytes): return .result := x;
+	<asin+?>: mov.x2 sp(3, 1)
 	<asin+?>: ret
 	lib/std/math.ci:441: (1 byte): negate: bool := false
 	<asin+?>: load.z32
@@ -3864,10 +3833,9 @@ Math.asin(x: float64): float64: function {
 	<asin+?>: set.x2 sp(8)
 	<asin+?>: inc.sp(-12)
 	<asin+?>: ret
-	lib/std/math.ci:463: (9 bytes): return .result := result;
-	<asin+?>: dup.x2 sp(0)
-	<asin+?>: set.x2 sp(8)
-	<asin+?>: inc.sp(-12)
+	lib/std/math.ci:463: (7 bytes): return .result := result;
+	<asin+?>: set.x2 sp(6)
+	<asin+?>: inc.sp(-4)
 	<asin+?>: ret
 	<asin+?>: inc.sp(-12)
 	<asin+?>: ret
@@ -3934,7 +3902,7 @@ Complex.im: float64 {
 Complex(re: float64): Complex: function {
 .kind: static const function
 .base: `function`
-.size: 8
+.size: 7
 .name: 'Complex'
 .file: 'lib/std/math.Complex.ci:20'
 .param .result: Complex (size: 16, cast: variable(val))
@@ -3945,10 +3913,9 @@ Complex(re: float64): Complex: function {
 			.result.im := (0);
 		};
 }
-.instructions: (8 bytes)
-	lib/std/math.Complex.ci:21: (8 bytes): return .result := {...};
-	<Complex>  : dup.x2 sp(1)
-	<Complex+?>: set.x2 sp(5)
+.instructions: (7 bytes)
+	lib/std/math.Complex.ci:21: (7 bytes): return .result := {...};
+	<Complex>  : mov.x2 sp(3, 1)
 	:: (3 bytes): .result.im := (0)
 	<Complex+?>: load.z64
 	<Complex+?>: set.x2 sp(7)
@@ -3957,7 +3924,7 @@ Complex(re: float64): Complex: function {
 Complex(re: float64, im: float64): Complex: function {
 .kind: static const function
 .base: `function`
-.size: 9
+.size: 7
 .name: 'Complex'
 .file: 'lib/std/math.Complex.ci:25'
 .param .result: Complex (size: 16, cast: variable(val))
@@ -3969,13 +3936,11 @@ Complex(re: float64, im: float64): Complex: function {
 			.result.im := im;
 		};
 }
-.instructions: (9 bytes)
-	lib/std/math.Complex.ci:26: (9 bytes): return .result := {...};
-	<Complex>  : dup.x2 sp(3)
-	<Complex+?>: set.x2 sp(7)
-	lib/std/math.Complex.ci:28: (4 bytes): .result.im := im;
-	<Complex+?>: dup.x2 sp(1)
-	<Complex+?>: set.x2 sp(9)
+.instructions: (7 bytes)
+	lib/std/math.Complex.ci:26: (7 bytes): return .result := {...};
+	<Complex>  : mov.x2 sp(5, 3)
+	lib/std/math.Complex.ci:28: (3 bytes): .result.im := im;
+	<Complex+?>: mov.x2 sp(7, 1)
 	<Complex+?>: ret
 }
 neg(a: Complex): Complex: function {
@@ -4531,7 +4496,7 @@ toPolar(x: Complex): Complex: function {
 length(str: char[*]): int32: function {
 .kind: static const function
 .base: `function`
-.size: 49
+.size: 43
 .name: 'length'
 .file: 'lib/std/string.ci:3'
 .param .result: int32 (size: 4, cast: variable(i32))
@@ -4544,7 +4509,7 @@ length(str: char[*]): int32: function {
 	for ( ; str[result]; result := result + 1) ;
 	return .result := result;
 }
-.instructions: (49 bytes)
+.instructions: (43 bytes)
 	lib/std/string.ci:4: (16 bytes): if ((str) == null)
 	<length>  : dup.x1 sp(1)
 	<length+?>: load.ref <?> ;null
@@ -4566,10 +4531,8 @@ length(str: char[*]): int32: function {
 	<length+?>: add.i32
 	<length+?>: load.i8
 	<length+?>: jnz -10
-	lib/std/string.ci:10: (9 bytes): return .result := result;
-	<length+?>: dup.x1 sp(0)
-	<length+?>: set.x1 sp(4)
-	<length+?>: inc.sp(-4)
+	lib/std/string.ci:10: (3 bytes): return .result := result;
+	<length+?>: set.x1 sp(3)
 	<length+?>: ret
 	<length+?>: inc.sp(-4)
 	<length+?>: ret
@@ -4577,7 +4540,7 @@ length(str: char[*]): int32: function {
 indexOf(str: char[*], chr: char): int32: function {
 .kind: static const function
 .base: `function`
-.size: 56
+.size: 50
 .name: 'indexOf'
 .file: 'lib/std/string.ci:14'
 .param .result: int32 (size: 4, cast: variable(i32))
@@ -4591,11 +4554,11 @@ indexOf(str: char[*], chr: char): int32: function {
 	}
 	return .result := -1;
 }
-.instructions: (56 bytes)
-	lib/std/string.ci:15: (48 bytes): for (i: int32 := 0; str[i]; i := i + 1)
+.instructions: (50 bytes)
+	lib/std/string.ci:15: (42 bytes): for (i: int32 := 0; str[i]; i := i + 1)
 	<indexOf>  : load.z32
-	<indexOf+?>: jmp +33
-	lib/std/string.ci:16: (25 bytes): if (str[i] == chr)
+	<indexOf+?>: jmp +27
+	lib/std/string.ci:16: (19 bytes): if (str[i] == chr)
 	<indexOf+?>: dup.x1 sp(3)
 	<indexOf+?>: dup.x1 sp(1)
 	<indexOf+?>: add.i32
@@ -4603,11 +4566,9 @@ indexOf(str: char[*], chr: char): int32: function {
 	<indexOf+?>: load.sp(+12)
 	<indexOf+?>: load.i8
 	<indexOf+?>: ceq.i32
-	<indexOf+?>: jz +13
-	lib/std/string.ci:17: (9 bytes): return .result := i;
-	<indexOf+?>: dup.x1 sp(0)
-	<indexOf+?>: set.x1 sp(5)
-	<indexOf+?>: inc.sp(-4)
+	<indexOf+?>: jz +7
+	lib/std/string.ci:17: (3 bytes): return .result := i;
+	<indexOf+?>: set.x1 sp(4)
 	<indexOf+?>: ret
 	lib/std/string.ci:15: (4 bytes): i := i + 1
 	<indexOf+?>: inc.i32(+1)
@@ -4616,7 +4577,7 @@ indexOf(str: char[*], chr: char): int32: function {
 	<indexOf+?>: dup.x1 sp(1)
 	<indexOf+?>: add.i32
 	<indexOf+?>: load.i8
-	<indexOf+?>: jnz -35
+	<indexOf+?>: jnz -29
 	<indexOf+?>: inc.sp(-4)
 	lib/std/string.ci:20: (8 bytes): return .result := -1;
 	<indexOf+?>: load.c32 -1
@@ -4626,7 +4587,7 @@ indexOf(str: char[*], chr: char): int32: function {
 lastIndexOf(str: char[*], chr: char): int32: function {
 .kind: static const function
 .base: `function`
-.size: 62
+.size: 55
 .name: 'lastIndexOf'
 .file: 'lib/std/string.ci:24'
 .param .result: int32 (size: 4, cast: variable(i32))
@@ -4641,13 +4602,13 @@ lastIndexOf(str: char[*], chr: char): int32: function {
 	}
 	return .result := result;
 }
-.instructions: (62 bytes)
+.instructions: (55 bytes)
 	lib/std/string.ci:25: (5 bytes): result: int32 := -1
 	<lastIndexOf>  : load.c32 -1
-	lib/std/string.ci:26: (43 bytes): for (i: int32 := 0; str[i]; i := i + 1)
+	lib/std/string.ci:26: (42 bytes): for (i: int32 := 0; str[i]; i := i + 1)
 	<lastIndexOf+?>: load.z32
-	<lastIndexOf+?>: jmp +28
-	lib/std/string.ci:27: (20 bytes): if (str[i] == chr)
+	<lastIndexOf+?>: jmp +27
+	lib/std/string.ci:27: (19 bytes): if (str[i] == chr)
 	<lastIndexOf+?>: dup.x1 sp(4)
 	<lastIndexOf+?>: dup.x1 sp(1)
 	<lastIndexOf+?>: add.i32
@@ -4655,10 +4616,9 @@ lastIndexOf(str: char[*], chr: char): int32: function {
 	<lastIndexOf+?>: load.sp(+16)
 	<lastIndexOf+?>: load.i8
 	<lastIndexOf+?>: ceq.i32
-	<lastIndexOf+?>: jz +8
-	lib/std/string.ci:28: (4 bytes): result := i;
-	<lastIndexOf+?>: dup.x1 sp(0)
-	<lastIndexOf+?>: set.x1 sp(2)
+	<lastIndexOf+?>: jz +7
+	lib/std/string.ci:28: (3 bytes): result := i;
+	<lastIndexOf+?>: mov.x1 sp(1, 0)
 	lib/std/string.ci:26: (4 bytes): i := i + 1
 	<lastIndexOf+?>: inc.i32(+1)
 	lib/std/string.ci:26: (10 bytes): str[i]
@@ -4666,12 +4626,10 @@ lastIndexOf(str: char[*], chr: char): int32: function {
 	<lastIndexOf+?>: dup.x1 sp(1)
 	<lastIndexOf+?>: add.i32
 	<lastIndexOf+?>: load.i8
-	<lastIndexOf+?>: jnz -30
+	<lastIndexOf+?>: jnz -29
 	<lastIndexOf+?>: inc.sp(-4)
-	lib/std/string.ci:31: (9 bytes): return .result := result;
-	<lastIndexOf+?>: dup.x1 sp(0)
-	<lastIndexOf+?>: set.x1 sp(5)
-	<lastIndexOf+?>: inc.sp(-4)
+	lib/std/string.ci:31: (3 bytes): return .result := result;
+	<lastIndexOf+?>: set.x1 sp(4)
 	<lastIndexOf+?>: ret
 	<lastIndexOf+?>: inc.sp(-4)
 	<lastIndexOf+?>: ret
@@ -4833,7 +4791,7 @@ endsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool: 
 compare(str: char[*], with: char[*], cmp(chr: char, with: char): int32): int32: function {
 .kind: static const function
 .base: `function`
-.size: 74
+.size: 68
 .name: 'compare'
 .file: 'lib/std/string.ci:58'
 .param .result: int32 (size: 4, cast: variable(i32))
@@ -4850,7 +4808,7 @@ compare(str: char[*], with: char[*], cmp(chr: char, with: char): int32): int32: 
 	}
 	return .result := result;
 }
-.instructions: (74 bytes)
+.instructions: (68 bytes)
 	lib/std/string.ci:59: (1 byte): result: int32 := 0
 	<compare>  : load.z32
 	lib/std/string.ci:60: (59 bytes): for (i: int32 := 0; result == 0; i := i + 1)
@@ -4888,10 +4846,8 @@ compare(str: char[*], with: char[*], cmp(chr: char, with: char): int32): int32: 
 	<compare+?>: ceq.i32
 	<compare+?>: jnz -46
 	<compare+?>: inc.sp(-4)
-	lib/std/string.ci:66: (9 bytes): return .result := result;
-	<compare+?>: dup.x1 sp(0)
-	<compare+?>: set.x1 sp(6)
-	<compare+?>: inc.sp(-4)
+	lib/std/string.ci:66: (3 bytes): return .result := result;
+	<compare+?>: set.x1 sp(5)
 	<compare+?>: ret
 	<compare+?>: inc.sp(-4)
 	<compare+?>: ret
@@ -5051,7 +5007,7 @@ FormatFlags.precision: int32 {
 append(output: char[], pos: int32, value: char[*]): int32: function {
 .kind: static const function
 .base: `function`
-.size: 85
+.size: 84
 .name: 'append'
 .file: 'lib/std/string.ci:113'
 .param .result: int32 (size: 4, cast: variable(i32))
@@ -5072,7 +5028,7 @@ append(output: char[], pos: int32, value: char[*]): int32: function {
 	output[pos] := (0);
 	return .result := pos;
 }
-.instructions: (85 bytes)
+.instructions: (84 bytes)
 	lib/std/string.ci:114: (56 bytes): for (i: int32 := 0; value[i]; i := i + 1)
 	<append>  : load.z32
 	<append+?>: jmp +41
@@ -5120,15 +5076,14 @@ append(output: char[], pos: int32, value: char[*]): int32: function {
 	<append+?>: dup.x1 sp(4)
 	<append+?>: add.i32
 	<append+?>: store.i8
-	lib/std/string.ci:126: (5 bytes): return .result := pos;
-	<append+?>: dup.x1 sp(2)
-	<append+?>: set.x1 sp(6)
+	lib/std/string.ci:126: (4 bytes): return .result := pos;
+	<append+?>: mov.x1 sp(5, 2)
 	<append+?>: ret
 }
 append(output: char[], pos: int32, sign: char, value: uint32, format: FormatFlags): int32: function {
 .kind: static const function
 .base: `function`
-.size: 663
+.size: 662
 .name: 'append'
 .file: 'lib/std/string.ci:129'
 .param .result: int32 (size: 4, cast: variable(i32))
@@ -5185,7 +5140,7 @@ append(output: char[], pos: int32, sign: char, value: uint32, format: FormatFlag
 	output[pos] := (0);
 	return .result := pos;
 }
-.instructions: (663 bytes)
+.instructions: (662 bytes)
 	lib/std/string.ci:133: (1 byte): len: int32 := 0
 	<append>  : load.z32
 	lib/std/string.ci:134: (4 bytes): digits: char[80]
@@ -5454,9 +5409,8 @@ append(output: char[], pos: int32, sign: char, value: uint32, format: FormatFlag
 	<append+?>: dup.x1 sp(30)
 	<append+?>: add.i32
 	<append+?>: store.i8
-	lib/std/string.ci:189: (9 bytes): return .result := pos;
-	<append+?>: dup.x1 sp(28)
-	<append+?>: set.x1 sp(32)
+	lib/std/string.ci:189: (8 bytes): return .result := pos;
+	<append+?>: mov.x1 sp(31, 28)
 	<append+?>: inc.sp(-96)
 	<append+?>: ret
 	<append+?>: inc.sp(-96)
@@ -6827,7 +6781,7 @@ vec2d.y: float64 {
 vec2d(x: float64, y: float64): vec2d: function {
 .kind: static const function
 .base: `function`
-.size: 9
+.size: 7
 .name: 'vec2d'
 .file: 'lib/cmplGfx/gfxlib.vec2d.ci:6'
 .param .result: vec2d (size: 16, cast: variable(val))
@@ -6839,13 +6793,11 @@ vec2d(x: float64, y: float64): vec2d: function {
 			.result.y := y;
 		};
 }
-.instructions: (9 bytes)
-	lib/cmplGfx/gfxlib.vec2d.ci:7: (9 bytes): return .result := {...};
-	<vec2d>  : dup.x2 sp(3)
-	<vec2d+?>: set.x2 sp(7)
-	lib/cmplGfx/gfxlib.vec2d.ci:9: (4 bytes): .result.y := y;
-	<vec2d+?>: dup.x2 sp(1)
-	<vec2d+?>: set.x2 sp(9)
+.instructions: (7 bytes)
+	lib/cmplGfx/gfxlib.vec2d.ci:7: (7 bytes): return .result := {...};
+	<vec2d>  : mov.x2 sp(5, 3)
+	lib/cmplGfx/gfxlib.vec2d.ci:9: (3 bytes): .result.y := y;
+	<vec2d+?>: mov.x2 sp(7, 1)
 	<vec2d+?>: ret
 }
 sub(a: vec2d, b: vec2d): vec2d: function {
@@ -6896,7 +6848,7 @@ vec4f..anonymous: vec4f..anonymous {
 .base: `vec4f..anonymous`
 .size: 16
 .name: '.anonymous'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:77'
+.file: 'lib/cmplGfx/gfxlib.vec4f.ci:82'
 .owner: vec4f
 .field x: float32 (size: 4, cast: variable(f32))
 .field y: float32 (size: 4, cast: variable(f32))
@@ -6974,7 +6926,7 @@ vec4f.w: float32 {
 vec4f(x: float32, y: float32, z: float32, w: float32): vec4f: function {
 .kind: static const function
 .base: `function`
-.size: 17
+.size: 13
 .name: 'vec4f'
 .file: 'lib/cmplGfx/gfxlib.vec4f.ci:20'
 .param .result: vec4f (size: 16, cast: variable(val))
@@ -6990,19 +6942,15 @@ vec4f(x: float32, y: float32, z: float32, w: float32): vec4f: function {
 			.result.w := w;
 		};
 }
-.instructions: (17 bytes)
-	lib/cmplGfx/gfxlib.vec4f.ci:21: (17 bytes): return .result := {...};
-	<vec4f>  : dup.x1 sp(4)
-	<vec4f+?>: set.x1 sp(6)
-	lib/cmplGfx/gfxlib.vec4f.ci:21: (4 bytes): .result.y := y;
-	<vec4f+?>: dup.x1 sp(3)
-	<vec4f+?>: set.x1 sp(7)
-	lib/cmplGfx/gfxlib.vec4f.ci:21: (4 bytes): .result.z := z;
-	<vec4f+?>: dup.x1 sp(2)
-	<vec4f+?>: set.x1 sp(8)
-	lib/cmplGfx/gfxlib.vec4f.ci:21: (4 bytes): .result.w := w;
-	<vec4f+?>: dup.x1 sp(1)
-	<vec4f+?>: set.x1 sp(9)
+.instructions: (13 bytes)
+	lib/cmplGfx/gfxlib.vec4f.ci:21: (13 bytes): return .result := {...};
+	<vec4f>  : mov.x1 sp(5, 4)
+	lib/cmplGfx/gfxlib.vec4f.ci:21: (3 bytes): .result.y := y;
+	<vec4f+?>: mov.x1 sp(6, 3)
+	lib/cmplGfx/gfxlib.vec4f.ci:21: (3 bytes): .result.z := z;
+	<vec4f+?>: mov.x1 sp(7, 2)
+	lib/cmplGfx/gfxlib.vec4f.ci:21: (3 bytes): .result.w := w;
+	<vec4f+?>: mov.x1 sp(8, 1)
 	<vec4f+?>: ret
 }
 vec4f(x: float32, y: float32, z: float32): vec4f: function {
@@ -7215,7 +7163,7 @@ mat4f..anonymous: mat4f..anonymous {
 .base: `mat4f..anonymous`
 .size: 64
 .name: '.anonymous'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:47'
+.file: 'lib/cmplGfx/gfxlib.mat4f.ci:56'
 .owner: mat4f
 .field x: vec4f (size: 16, cast: variable(val))
 .field y: vec4f (size: 16, cast: variable(val))
@@ -7293,7 +7241,7 @@ mat4f.w: vec4f {
 mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float32, yz: float32, yw: float32, zx: float32, zy: float32, zz: float32, zw: float32, wx: float32, wy: float32, wz: float32, ww: float32): mat4f: function {
 .kind: static const function
 .base: `function`
-.size: 65
+.size: 49
 .name: 'mat4f'
 .file: 'lib/cmplGfx/gfxlib.mat4f.ci:12'
 .param .result: mat4f (size: 64, cast: variable(val))
@@ -7333,55 +7281,39 @@ mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float
 			.result.w.w := ww;
 		};
 }
-.instructions: (65 bytes)
-	lib/cmplGfx/gfxlib.mat4f.ci:16: (65 bytes): return .result := {...};
-	<mat4f>  : dup.x1 sp(16)
-	<mat4f+?>: set.x1 sp(18)
-	lib/cmplGfx/gfxlib.mat4f.ci:17: (4 bytes): .result.x.y := xy;
-	<mat4f+?>: dup.x1 sp(15)
-	<mat4f+?>: set.x1 sp(19)
-	lib/cmplGfx/gfxlib.mat4f.ci:17: (4 bytes): .result.x.z := xz;
-	<mat4f+?>: dup.x1 sp(14)
-	<mat4f+?>: set.x1 sp(20)
-	lib/cmplGfx/gfxlib.mat4f.ci:17: (4 bytes): .result.x.w := xw;
-	<mat4f+?>: dup.x1 sp(13)
-	<mat4f+?>: set.x1 sp(21)
-	lib/cmplGfx/gfxlib.mat4f.ci:18: (4 bytes): .result.y.x := yx;
-	<mat4f+?>: dup.x1 sp(12)
-	<mat4f+?>: set.x1 sp(22)
-	lib/cmplGfx/gfxlib.mat4f.ci:18: (4 bytes): .result.y.y := yy;
-	<mat4f+?>: dup.x1 sp(11)
-	<mat4f+?>: set.x1 sp(23)
-	lib/cmplGfx/gfxlib.mat4f.ci:18: (4 bytes): .result.y.z := yz;
-	<mat4f+?>: dup.x1 sp(10)
-	<mat4f+?>: set.x1 sp(24)
-	lib/cmplGfx/gfxlib.mat4f.ci:18: (4 bytes): .result.y.w := yw;
-	<mat4f+?>: dup.x1 sp(9)
-	<mat4f+?>: set.x1 sp(25)
-	lib/cmplGfx/gfxlib.mat4f.ci:19: (4 bytes): .result.z.x := zx;
-	<mat4f+?>: dup.x1 sp(8)
-	<mat4f+?>: set.x1 sp(26)
-	lib/cmplGfx/gfxlib.mat4f.ci:19: (4 bytes): .result.z.y := zy;
-	<mat4f+?>: dup.x1 sp(7)
-	<mat4f+?>: set.x1 sp(27)
-	lib/cmplGfx/gfxlib.mat4f.ci:19: (4 bytes): .result.z.z := zz;
-	<mat4f+?>: dup.x1 sp(6)
-	<mat4f+?>: set.x1 sp(28)
-	lib/cmplGfx/gfxlib.mat4f.ci:19: (4 bytes): .result.z.w := zw;
-	<mat4f+?>: dup.x1 sp(5)
-	<mat4f+?>: set.x1 sp(29)
-	lib/cmplGfx/gfxlib.mat4f.ci:20: (4 bytes): .result.w.x := wx;
-	<mat4f+?>: dup.x1 sp(4)
-	<mat4f+?>: set.x1 sp(30)
-	lib/cmplGfx/gfxlib.mat4f.ci:20: (4 bytes): .result.w.y := wy;
-	<mat4f+?>: dup.x1 sp(3)
-	<mat4f+?>: set.x1 sp(31)
-	lib/cmplGfx/gfxlib.mat4f.ci:20: (4 bytes): .result.w.z := wz;
-	<mat4f+?>: dup.x1 sp(2)
-	<mat4f+?>: set.x1 sp(32)
-	lib/cmplGfx/gfxlib.mat4f.ci:20: (4 bytes): .result.w.w := ww;
-	<mat4f+?>: dup.x1 sp(1)
-	<mat4f+?>: set.x1 sp(33)
+.instructions: (49 bytes)
+	lib/cmplGfx/gfxlib.mat4f.ci:16: (49 bytes): return .result := {...};
+	<mat4f>  : mov.x1 sp(17, 16)
+	lib/cmplGfx/gfxlib.mat4f.ci:17: (3 bytes): .result.x.y := xy;
+	<mat4f+?>: mov.x1 sp(18, 15)
+	lib/cmplGfx/gfxlib.mat4f.ci:17: (3 bytes): .result.x.z := xz;
+	<mat4f+?>: mov.x1 sp(19, 14)
+	lib/cmplGfx/gfxlib.mat4f.ci:17: (3 bytes): .result.x.w := xw;
+	<mat4f+?>: mov.x1 sp(20, 13)
+	lib/cmplGfx/gfxlib.mat4f.ci:18: (3 bytes): .result.y.x := yx;
+	<mat4f+?>: mov.x1 sp(21, 12)
+	lib/cmplGfx/gfxlib.mat4f.ci:18: (3 bytes): .result.y.y := yy;
+	<mat4f+?>: mov.x1 sp(22, 11)
+	lib/cmplGfx/gfxlib.mat4f.ci:18: (3 bytes): .result.y.z := yz;
+	<mat4f+?>: mov.x1 sp(23, 10)
+	lib/cmplGfx/gfxlib.mat4f.ci:18: (3 bytes): .result.y.w := yw;
+	<mat4f+?>: mov.x1 sp(24, 9)
+	lib/cmplGfx/gfxlib.mat4f.ci:19: (3 bytes): .result.z.x := zx;
+	<mat4f+?>: mov.x1 sp(25, 8)
+	lib/cmplGfx/gfxlib.mat4f.ci:19: (3 bytes): .result.z.y := zy;
+	<mat4f+?>: mov.x1 sp(26, 7)
+	lib/cmplGfx/gfxlib.mat4f.ci:19: (3 bytes): .result.z.z := zz;
+	<mat4f+?>: mov.x1 sp(27, 6)
+	lib/cmplGfx/gfxlib.mat4f.ci:19: (3 bytes): .result.z.w := zw;
+	<mat4f+?>: mov.x1 sp(28, 5)
+	lib/cmplGfx/gfxlib.mat4f.ci:20: (3 bytes): .result.w.x := wx;
+	<mat4f+?>: mov.x1 sp(29, 4)
+	lib/cmplGfx/gfxlib.mat4f.ci:20: (3 bytes): .result.w.y := wy;
+	<mat4f+?>: mov.x1 sp(30, 3)
+	lib/cmplGfx/gfxlib.mat4f.ci:20: (3 bytes): .result.w.z := wz;
+	<mat4f+?>: mov.x1 sp(31, 2)
+	lib/cmplGfx/gfxlib.mat4f.ci:20: (3 bytes): .result.w.w := ww;
+	<mat4f+?>: mov.x1 sp(32, 1)
 	<mat4f+?>: ret
 }
 mat4f(x: vec4f, y: vec4f, z: vec4f, w: vec4f): mat4f: function {
@@ -7711,7 +7643,7 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 grayClamp(c: uint32): uint32: function {
 .kind: static const function
 .base: `function`
-.size: 25
+.size: 24
 .name: 'grayClamp'
 .file: 'lib/cmplGfx/gfxlib.color.ci:2'
 .param .result: uint32 (size: 4, cast: variable(u32))
@@ -7722,7 +7654,7 @@ grayClamp(c: uint32): uint32: function {
 	}
 	return .result := c;
 }
-.instructions: (25 bytes)
+.instructions: (24 bytes)
 	lib/cmplGfx/gfxlib.color.ci:3: (20 bytes): if (c > (255))
 	<grayClamp>  : dup.x1 sp(1)
 	<grayClamp+?>: load.c32 255
@@ -7732,15 +7664,14 @@ grayClamp(c: uint32): uint32: function {
 	<grayClamp+?>: load.c32 255
 	<grayClamp+?>: set.x1 sp(3)
 	<grayClamp+?>: ret
-	lib/cmplGfx/gfxlib.color.ci:6: (5 bytes): return .result := c;
-	<grayClamp+?>: dup.x1 sp(1)
-	<grayClamp+?>: set.x1 sp(3)
+	lib/cmplGfx/gfxlib.color.ci:6: (4 bytes): return .result := c;
+	<grayClamp+?>: mov.x1 sp(2, 1)
 	<grayClamp+?>: ret
 }
 grayClamp(c: int32): uint32: function {
 .kind: static const function
 .base: `function`
-.size: 37
+.size: 36
 .name: 'grayClamp'
 .file: 'lib/cmplGfx/gfxlib.color.ci:8'
 .param .result: uint32 (size: 4, cast: variable(u32))
@@ -7754,7 +7685,7 @@ grayClamp(c: int32): uint32: function {
 	}
 	return .result := c;
 }
-.instructions: (37 bytes)
+.instructions: (36 bytes)
 	lib/cmplGfx/gfxlib.color.ci:9: (12 bytes): if (c < 0)
 	<grayClamp>  : dup.x1 sp(1)
 	<grayClamp+?>: load.z32
@@ -7773,9 +7704,8 @@ grayClamp(c: int32): uint32: function {
 	<grayClamp+?>: load.c32 255
 	<grayClamp+?>: set.x1 sp(3)
 	<grayClamp+?>: ret
-	lib/cmplGfx/gfxlib.color.ci:15: (5 bytes): return .result := c;
-	<grayClamp+?>: dup.x1 sp(1)
-	<grayClamp+?>: set.x1 sp(3)
+	lib/cmplGfx/gfxlib.color.ci:15: (4 bytes): return .result := c;
+	<grayClamp+?>: mov.x1 sp(2, 1)
 	<grayClamp+?>: ret
 }
 grayAnd(c: uint32): uint32: function {
@@ -9088,7 +9018,7 @@ gxMesh(fileName: char[*]): gxMesh: function {
 gxSurf(copy: gxSurf): gxSurf: function {
 .kind: static const function
 .base: `function`
-.size: 51
+.size: 45
 .name: 'gxSurf'
 .file: 'lib/cmplGfx/gfxlib.ci:85'
 .param .result: gxSurf (size: 8, cast: variable(val))
@@ -9098,7 +9028,7 @@ gxSurf(copy: gxSurf): gxSurf: function {
 	result.copy(result, 0, 0, copy, null);
 	return .result := result;
 }
-.instructions: (51 bytes)
+.instructions: (45 bytes)
 	lib/cmplGfx/gfxlib.ci:86: (22 bytes): result: gxSurf := gxSurf.create(copy.width(copy), copy.height(copy), copy.depth(copy))
 	<gxSurf>  : dup.x2 sp(1)
 	<gxSurf+?>: nfc(81) ;gxSurf.width(surf: gxSurf): int32
@@ -9114,10 +9044,8 @@ gxSurf(copy: gxSurf): gxSurf: function {
 	<gxSurf+?>: dup.x2 sp(7)
 	<gxSurf+?>: load.ref <?> ;null
 	<gxSurf+?>: nfc(95) ;gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
-	lib/cmplGfx/gfxlib.ci:88: (9 bytes): return .result := result;
-	<gxSurf+?>: dup.x2 sp(0)
-	<gxSurf+?>: set.x2 sp(7)
-	<gxSurf+?>: inc.sp(-8)
+	lib/cmplGfx/gfxlib.ci:88: (3 bytes): return .result := result;
+	<gxSurf+?>: set.x2 sp(5)
 	<gxSurf+?>: ret
 	<gxSurf+?>: inc.sp(-8)
 	<gxSurf+?>: ret
@@ -9291,7 +9219,7 @@ clip(src: gxSurf, roi: gxRect): bool: function {
 eval(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): vec4f): void: function {
 .kind: static const function
 .base: `function`
-.size: 355
+.size: 353
 .name: 'eval'
 .file: 'lib/cmplGfx/gfxlib.ci:130'
 .param .result: void (size: 0, cast: variable(void))
@@ -9326,7 +9254,7 @@ eval(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 		}
 	}
 }
-.instructions: (355 bytes)
+.instructions: (353 bytes)
 	lib/cmplGfx/gfxlib.ci:131: (114 bytes): rect: gxRect := {...}
 	<eval>  : inc.sp(+16)
 	lib/cmplGfx/gfxlib.ci:132: (22 bytes): rect.x := (roi) != null ? roi.x : 0;
@@ -9385,7 +9313,7 @@ eval(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	lib/cmplGfx/gfxlib.ci:139: (5 bytes): return;
 	<eval+?>: inc.sp(-16)
 	<eval+?>: ret
-	lib/cmplGfx/gfxlib.ci:142: (18 bytes): in: vec4f := {...}
+	lib/cmplGfx/gfxlib.ci:142: (16 bytes): in: vec4f := {...}
 	<eval+?>: inc.sp(+16)
 	lib/cmplGfx/gfxlib.ci:143: (3 bytes): in.x := (0);
 	<eval+?>: load.z32
@@ -9393,12 +9321,10 @@ eval(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	lib/cmplGfx/gfxlib.ci:144: (3 bytes): in.y := (0);
 	<eval+?>: load.z32
 	<eval+?>: set.x1 sp(2)
-	lib/cmplGfx/gfxlib.ci:145: (4 bytes): in.z := aspect;
-	<eval+?>: dup.x1 sp(11)
-	<eval+?>: set.x1 sp(3)
-	lib/cmplGfx/gfxlib.ci:146: (4 bytes): in.w := time;
-	<eval+?>: dup.x1 sp(10)
-	<eval+?>: set.x1 sp(4)
+	lib/cmplGfx/gfxlib.ci:145: (3 bytes): in.z := aspect;
+	<eval+?>: mov.x1 sp(2, 11)
+	lib/cmplGfx/gfxlib.ci:146: (3 bytes): in.w := time;
+	<eval+?>: mov.x1 sp(3, 10)
 	lib/cmplGfx/gfxlib.ci:148: (7 bytes): w: float32 := out.width(out)
 	<eval+?>: dup.x2 sp(13)
 	<eval+?>: nfc(81) ;gxSurf.width(surf: gxSurf): int32
@@ -9656,7 +9582,7 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void: function {
 .kind: static const function
 .base: `function`
-.size: 119
+.size: 118
 .name: 'show'
 .file: 'lib/cmplGfx/gfxlib.ci:186'
 .param .result: void (size: 0, cast: variable(void))
@@ -9816,8 +9742,8 @@ show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void: function {
 	Gui.showWindow(closure.offs, closure, onEvent);
 	closure.offs.destroy(closure.offs);
 }
-.instructions: (119 bytes)
-	lib/cmplGfx/gfxlib.ci:303: (70 bytes): closure: Closure := {...}
+.instructions: (118 bytes)
+	lib/cmplGfx/gfxlib.ci:303: (69 bytes): closure: Closure := {...}
 	<show>  : inc.sp(+24)
 	lib/cmplGfx/gfxlib.ci:304: (52 bytes): closure.mode := (gxMesh.clearDepth | gxMesh.clearColor | gxMesh.useLights | gxMesh.cullBack | gxMesh.drawFill);
 	<show+?>: load.c64 8
@@ -9836,9 +9762,8 @@ show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void: function {
 	<show+?>: dup.x1 sp(9)
 	<show+?>: nfc(73) ;gxSurf.create3d(width: int32, height: int32): gxSurf
 	<show+?>: set.x2 sp(4)
-	lib/cmplGfx/gfxlib.ci:306: (4 bytes): closure.mesh := mesh;
-	<show+?>: dup.x1 sp(10)
-	<show+?>: set.x1 sp(5)
+	lib/cmplGfx/gfxlib.ci:306: (3 bytes): closure.mesh := mesh;
+	<show+?>: mov.x1 sp(4, 10)
 	lib/cmplGfx/gfxlib.ci:308: (23 bytes): camera.projection(fovy, (w) / float32(h), 1, 100);
 	<show+?>: dup.x1 sp(7)
 	<show+?>: dup.x1 sp(10)
@@ -9919,7 +9844,7 @@ show(surf: gxSurf, onEvent(action: int32, button: int32, ex: int32, ey: int32): 
 showDiff(image1: gxSurf, image2: gxSurf): void: function {
 .kind: static const function
 .base: `function`
-.size: 50
+.size: 48
 .name: 'showDiff'
 .file: 'lib/cmplGfx/gfxlib.ci:327'
 .param .result: void (size: 0, cast: variable(void))
@@ -9954,8 +9879,8 @@ showDiff(image1: gxSurf, image2: gxSurf): void: function {
 	};
 	Gui.showWindow(closure.offs, closure, onEvent);
 }
-.instructions: (50 bytes)
-	lib/cmplGfx/gfxlib.ci:351: (30 bytes): closure: Closure := {...}
+.instructions: (48 bytes)
+	lib/cmplGfx/gfxlib.ci:351: (28 bytes): closure: Closure := {...}
 	<showDiff>  : inc.sp(+24)
 	lib/cmplGfx/gfxlib.ci:352: (18 bytes): closure.offs := gxSurf(image1);
 	<showDiff+?>: inc.sp(+8)
@@ -9964,12 +9889,10 @@ showDiff(image1: gxSurf, image2: gxSurf): void: function {
 	<showDiff+?>: call
 	<showDiff+?>: inc.sp(-8)
 	<showDiff+?>: set.x2 sp(2)
-	lib/cmplGfx/gfxlib.ci:353: (4 bytes): closure.image1 := image1;
-	<showDiff+?>: dup.x2 sp(9)
-	<showDiff+?>: set.x2 sp(4)
-	lib/cmplGfx/gfxlib.ci:354: (4 bytes): closure.image2 := image2;
-	<showDiff+?>: dup.x2 sp(7)
-	<showDiff+?>: set.x2 sp(6)
+	lib/cmplGfx/gfxlib.ci:353: (3 bytes): closure.image1 := image1;
+	<showDiff+?>: mov.x2 sp(2, 9)
+	lib/cmplGfx/gfxlib.ci:354: (3 bytes): closure.image2 := image2;
+	<showDiff+?>: mov.x2 sp(4, 7)
 	lib/cmplGfx/gfxlib.ci:356: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
 	<showDiff+?>: dup.x2 sp(0)
 	<showDiff+?>: load.sp(+8)
@@ -9981,7 +9904,7 @@ showDiff(image1: gxSurf, image2: gxSurf): void: function {
 showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function {
 .kind: static const function
 .base: `function`
-.size: 79
+.size: 78
 .name: 'showWindow'
 .file: 'lib/cmplGfx/gfxlib.ci:359'
 .param .result: void (size: 0, cast: variable(void))
@@ -10029,8 +9952,8 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 	closure.thumb.destroy(closure.thumb);
 	closure.offs.destroy(closure.offs);
 }
-.instructions: (79 bytes)
-	lib/cmplGfx/gfxlib.ci:394: (47 bytes): closure: Closure := {...}
+.instructions: (78 bytes)
+	lib/cmplGfx/gfxlib.ci:394: (46 bytes): closure: Closure := {...}
 	<showWindow>  : inc.sp(+32)
 	lib/cmplGfx/gfxlib.ci:395: (15 bytes): closure.offs := gxSurf(w, h, 32);
 	<showWindow+?>: dup.x1 sp(12)
@@ -10051,9 +9974,8 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 	<showWindow+?>: i32.2f64
 	<showWindow+?>: div.f64
 	<showWindow+?>: set.x2 sp(6)
-	lib/cmplGfx/gfxlib.ci:398: (4 bytes): closure.eval := eval;
-	<showWindow+?>: dup.x1 sp(9)
-	<showWindow+?>: set.x1 sp(7)
+	lib/cmplGfx/gfxlib.ci:398: (3 bytes): closure.eval := eval;
+	<showWindow+?>: mov.x1 sp(6, 9)
 	lib/cmplGfx/gfxlib.ci:400: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
 	<showWindow+?>: dup.x2 sp(0)
 	<showWindow+?>: load.sp(+8)
@@ -10126,13 +10048,13 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 .field assert: function (size: 0, cast: inline)
 .field assert: function (size: 0, cast: inline)
 .field NotEquals: typename (size: 24, cast: static const typename(val))
-.field assertEq: function (size: 83, cast: static const function)
+.field assertEq: function (size: 82, cast: static const function)
 .field assertEq: function (size: 0, cast: inline)
 .field sizeof: function (size: 0, cast: inline)
 .field Math: typename (size: 0, cast: static const typename(val))
 .field Complex: typename (size: 16, cast: static const typename(val))
-.field Complex: function (size: 8, cast: static const function)
-.field Complex: function (size: 9, cast: static const function)
+.field Complex: function (size: 7, cast: static const function)
+.field Complex: function (size: 7, cast: static const function)
 .field neg: function (size: 0, cast: inline)
 .field add: function (size: 0, cast: inline)
 .field add: function (size: 0, cast: inline)
@@ -10168,12 +10090,12 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 .field csch: function (size: 0, cast: inline)
 .field toCartesian: function (size: 0, cast: inline)
 .field toPolar: function (size: 0, cast: inline)
-.field length: function (size: 49, cast: static const function)
-.field indexOf: function (size: 56, cast: static const function)
-.field lastIndexOf: function (size: 62, cast: static const function)
+.field length: function (size: 43, cast: static const function)
+.field indexOf: function (size: 50, cast: static const function)
+.field lastIndexOf: function (size: 55, cast: static const function)
 .field startsWith: function (size: 73, cast: static const function)
 .field endsWith: function (size: 131, cast: static const function)
-.field compare: function (size: 74, cast: static const function)
+.field compare: function (size: 68, cast: static const function)
 .field ignCaseCmp: function (size: 36, cast: static const function)
 .field caseCmp: function (size: 14, cast: static const function)
 .field startsWith: function (size: 0, cast: inline)
@@ -10181,8 +10103,8 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 .field compare: function (size: 0, cast: inline)
 .field contains: function (size: 0, cast: inline)
 .field FormatFlags: typename (size: 16, cast: static const typename(val))
-.field append: function (size: 85, cast: static const function)
-.field append: function (size: 663, cast: static const function)
+.field append: function (size: 84, cast: static const function)
+.field append: function (size: 662, cast: static const function)
 .field append: function (size: 23, cast: static const function)
 .field append: function (size: 54, cast: static const function)
 .field append: function (size: 25, cast: static const function)
@@ -10194,11 +10116,11 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 .field lights: void (size: 0, cast: static const typename(void))
 .field Gui: void (size: 0, cast: static const typename(void))
 .field vec2d: typename (size: 16, cast: static const typename(val))
-.field vec2d: function (size: 9, cast: static const function)
+.field vec2d: function (size: 7, cast: static const function)
 .field sub: function (size: 0, cast: inline)
 .field dot: function (size: 0, cast: inline)
 .field vec4f: typename (size: 16, cast: static const typename(val))
-.field vec4f: function (size: 17, cast: static const function)
+.field vec4f: function (size: 13, cast: static const function)
 .field vec4f: function (size: 0, cast: inline)
 .field vec4f: function (size: 0, cast: inline)
 .field vec4f: function (size: 0, cast: inline)
@@ -10217,14 +10139,14 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 .field normalize: function (size: 0, cast: inline)
 .field eval: function (size: 0, cast: inline)
 .field mat4f: typename (size: 64, cast: static const typename(val))
-.field mat4f: function (size: 65, cast: static const function)
+.field mat4f: function (size: 49, cast: static const function)
 .field mat4f: function (size: 21, cast: static const function)
 .field dp3: function (size: 0, cast: inline)
 .field dp4: function (size: 0, cast: inline)
 .field dph: function (size: 0, cast: inline)
 .field mul: function (size: 422, cast: static const function)
-.field grayClamp: function (size: 25, cast: static const function)
-.field grayClamp: function (size: 37, cast: static const function)
+.field grayClamp: function (size: 24, cast: static const function)
+.field grayClamp: function (size: 36, cast: static const function)
 .field grayAnd: function (size: 0, cast: inline)
 .field rgb: function (size: 0, cast: inline)
 .field rgb: function (size: 0, cast: inline)
@@ -10262,15 +10184,15 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 .field gxSurf: function (size: 189, cast: static const function)
 .field gxSurf: function (size: 0, cast: inline)
 .field gxMesh: function (size: 109, cast: static const function)
-.field gxSurf: function (size: 51, cast: static const function)
+.field gxSurf: function (size: 45, cast: static const function)
 .field clip: function (size: 240, cast: static const function)
-.field eval: function (size: 355, cast: static const function)
+.field eval: function (size: 353, cast: static const function)
 .field tile: function (size: 251, cast: static const function)
-.field show: function (size: 119, cast: static const function)
+.field show: function (size: 118, cast: static const function)
 .field show: function (size: 17, cast: static const function)
 .field show: function (size: 43, cast: static const function)
-.field showDiff: function (size: 50, cast: static const function)
-.field showWindow: function (size: 79, cast: static const function)
+.field showDiff: function (size: 48, cast: static const function)
+.field showWindow: function (size: 78, cast: static const function)
 .field .main: function (size: 100, cast: static function)
 .value: {
 	{
@@ -11633,16 +11555,16 @@ lib/cmplGfx/gfxlib.ci:359: showWindow: function(<showWindow>)
 
 ---------- Memory usage:
 memory[all] @000000; size: 2096872(2.0 Mb)
-memory[used] @000000; size: 266979(260.7 Kb)
-memory[heap] @0412e3; size: 1305627(1.2 Mb)
+memory[used] @000000; size: 266842(260.6 Kb)
+memory[heap] @04125a; size: 1305764(1.2 Mb)
 memory[stack] @0fff44; size: 524218(511.9 Kb)
 
 ---------- used memory:
 memory[meta] @000000; size: 258016(252.0 Kb)
-memory[code] @000000; size: 8603(8.4 Kb)
+memory[code] @000000; size: 8486(8.3 Kb)
 memory[data] @000000; size: 52(52.0 bytes)
 
 ---------- heap memory:
-memory[free] @0412f8; size: 1305584(1.2 Mb)
+memory[free] @041278; size: 1305712(1.2 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

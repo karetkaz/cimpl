@@ -8,15 +8,11 @@
  * STOP(__ERR, __CHK)
  * EXEC if execution is needed.
  * TRACE(__CALLEE) trace functions.
- *
- *
- *
 */
 
 #define SP(__POS, __TYP) (((vmValue *)((stkptr)sp + (__POS)))->__TYP)
 #define MP(__POS, __TYP) (((vmValue *)((memptr)mp + (__POS)))->__TYP)
 
-//#{ switch (ip->opc) { ---------------------------------------------------------
 //#{ 0x0?: SYS		// System
 case opc_nop:  NEXT(1, 0, 0) {
 	break;
@@ -159,10 +155,7 @@ case opc_dup2: NEXT(2, +2, ip->idx) {
 case opc_dup4: NEXT(2, +4, ip->idx) {
 #ifdef EXEC
 	STOP(error_ovf, ovf(pu));
-	SP(-4, u32) = SP(ip->idx + 0, u32);
-	SP(-3, u32) = SP(ip->idx + 1, u32);
-	SP(-2, u32) = SP(ip->idx + 2, u32);
-	SP(-1, u32) = SP(ip->idx + 3, u32);
+	SP(-4, p128) = SP(ip->idx, p128);
 #endif
 	break;
 }
@@ -180,12 +173,27 @@ case opc_set2: NEXT(2, ip->idx <= 2 ? -ip->idx : -2, ip->idx) {
 }
 case opc_set4: NEXT(2, ip->idx <= 4 ? -ip->idx : -4, ip->idx) {
 #ifdef EXEC
-	SP(ip->idx + 3, u32) = SP(3, u32);
-	SP(ip->idx + 2, u32) = SP(2, u32);
-	SP(ip->idx + 1, u32) = SP(1, u32);
-	SP(ip->idx + 0, u32) = SP(0, u32);
+	SP(ip->idx, p128) = SP(0, p128);
 #endif
 	break;
+}
+case opc_mov1: NEXT(3, 0, ip->mov.dst < ip->mov.src ? -ip->mov.dst : -ip->mov.src) {
+#ifdef EXEC
+	SP(ip->mov.dst, u32) = SP(ip->mov.src, u32);
+#endif
+break;
+}
+case opc_mov2: NEXT(3, 0, ip->mov.dst < ip->mov.src ? -ip->mov.dst : -ip->mov.src) {
+#ifdef EXEC
+	SP(ip->mov.dst, u64) = SP(ip->mov.src, u64);
+#endif
+break;
+}
+case opc_mov4: NEXT(3, 0, ip->mov.dst < ip->mov.src ? -ip->mov.dst : -ip->mov.src) {
+#ifdef EXEC
+	SP(ip->mov.dst, p128) = SP(ip->mov.src, p128);
+#endif
+break;
 }
 case opc_lzx1: NEXT(1, +1, 0) {
 #ifdef EXEC
@@ -279,7 +287,7 @@ case opc_ldiq: NEXT(1, +3, 1) {
 	STOP(error_mem, mem <= 0);
 	STOP(error_mem, mem > ms - 16);
 	//~ STOP(error_mem, !aligned(mem, 16));
-	memmove(&SP(-3, u32), &MP(mem, u32), 16);
+	SP(-3, p128) = MP(mem, p128);
 #endif
 	break;
 }
@@ -329,7 +337,7 @@ case opc_stiq: NEXT(1, -5, 5) {
 	STOP(error_mem, mem < ro);
 	STOP(error_mem, mem > ms - 16);
 	//~ STOP(error_mem, !aligned(mem, 16));
-	memmove(&MP(mem, u32), &SP(1, u32), 16);
+	MP(mem, p128) = SP(1, p128);
 #endif
 	break;
 }
@@ -353,6 +361,16 @@ case opc_ld64: NEXT(4, +2, 0) {
 #endif
 	break;
 }
+case opc_ld128: NEXT(4, +4, 0) {
+#ifdef EXEC
+	size_t mem = ip->rel;
+	STOP(error_mem, mem <= 0);
+	STOP(error_mem, mem > ms - 16);
+	//~ STOP(error_mem, !aligned(mem, 16));
+	SP(-4, p128) = MP(mem, p128);
+#endif
+	break;
+}
 case opc_st32: NEXT(4, -1, 1) {
 #ifdef EXEC
 	size_t mem = ip->rel;
@@ -370,6 +388,16 @@ case opc_st64: NEXT(4, -2, 2) {
 	STOP(error_mem, mem > ms - 8);
 	//~ STOP(error_mem, !aligned(mem, 8));
 	MP(mem, i64) = SP(0, i64);
+#endif
+	break;
+}
+case opc_st128: NEXT(4, -4, 4) {
+#ifdef EXEC
+	size_t mem = ip->rel;
+	STOP(error_mem, mem < ro);
+	STOP(error_mem, mem > ms - 16);
+	//~ STOP(error_mem, !aligned(mem, 16));
+	MP(mem, p128) = SP(0, p128);
 #endif
 	break;
 }
@@ -1095,7 +1123,6 @@ case v2d_max: NEXT(1, -4, 8) {
 default:
 	STOP(error_opc, 1);
 	break;
-//#}-----------------------------------------------------------------------------
 
 #undef SP
 #undef MP

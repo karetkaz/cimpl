@@ -1,17 +1,24 @@
 static gxSurf offs = gxSurf(1440, 900, 32);
 
+static int x[4]; // TODO: = {100, 100, 100, 100};
+static int y[4]; // TODO: = {100, 100, 100, 100};
+
+x[0] = 100; x[1] = 700; x[2] = 400; x[3] = 400;
+y[0] = 100; y[1] = 400; y[2] = 100; y[3] = 400;
+
 int onEvent(int action, int button, int ex, int ey) {
 	static int ox = 0;
 	static int oy = 0;
-	static int x[4]; // TODO: = {100, 100, 100, 100};
-	static int y[4]; // TODO: = {100, 100, 100, 100};
 
 	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
 		}
 	}
-
+	if (action == Gui.MOUSE_PRESS) {
+		ox = ex;
+		oy = ey;
+	}
 	if (action == Gui.MOUSE_MOTION) {
 		if (button > 0 && button <= x.length) {
 			x[button - 1] += ex - ox;
@@ -36,13 +43,13 @@ int onEvent(int action, int button, int ex, int ey) {
 
 		// draw bezier curve
 		offs.drawBezier(x[0], y[0], x[2], y[2], x[3], y[3], x[1], y[1], bezierColor);
+		ox = ex;
+		oy = ey;
 	}
-
-	ox = ex;
-	oy = ey;
 
 	return 0;
 }
 
+onEvent(Gui.MOUSE_MOTION, 0, 0, 0);
 offs.show(onEvent);
 offs.destroy();

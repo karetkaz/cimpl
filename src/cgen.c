@@ -856,7 +856,7 @@ static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		}
 
 		// optimize generated assignment to a single `set` instruction
-		if (optimizeAssign(rt, assignBegin, assignEnd)) {
+		if (optimizeAssign(rt, 0, assignBegin, assignEnd)) {
 			debug("assignment optimized: %t", ast);
 		}
 	}
@@ -1771,7 +1771,6 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 		case INIT_set:  	// '='
 		case ASGN_set: {	// '='
 			ccKind cast = refCast(ast->op.lhso->type);
-
 			if (!genAst(cc, ast->op.rhso, cast)) {
 				traceAst(ast);
 				return CAST_any;
@@ -1793,7 +1792,6 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				}
 			}
 
-			size_t codeEnd = emit(rt, markIP);
 			switch (cast) {
 				default:
 					cast = CAST_ref;
@@ -1815,18 +1813,17 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				traceAst(ast);
 				return CAST_any;
 			}
-			if (!emitInt(rt, opc_sti, size)) {
+			size_t codeEnd = emitInt(rt, opc_sti, size);
+			if (!codeEnd) {
 				traceAst(ast);
 				return CAST_any;
 			}
 
 			// optimize assignments.
-			if (ast->op.rhso->kind >= OPER_beg && ast->op.rhso->kind <= OPER_end) {
-				if (ast->op.lhso == ast->op.rhso->op.lhso && rt->fastAssign) {
-					// HACK: speed up for (int i = 0; i < 10, i += 1) ...
-					if (optimizeAssign(rt, ipBegin, codeEnd)) {
-						debug("assignment optimized: %t", ast);
-					}
+			if (rt->fastAssign && optimizeAssign(rt, spBegin, ipBegin, codeEnd)) {
+				if (get == CAST_vid && stkOffset(rt, 0) < spBegin) {
+					// we probably cleared the stack
+					got = CAST_vid;
 				}
 			}
 			break;
