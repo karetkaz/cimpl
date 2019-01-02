@@ -273,7 +273,7 @@ void g2_clipText(gx_Rect rect, gx_Surf font, const char *text) {
 					// windows style line end (CrLf)
 					break;
 				}
-				// fall-trough
+				// fall through
 			case '\n':
 				if (*text == '\0') {
 					// new line at end ot text
@@ -318,7 +318,7 @@ void g2_drawText(gx_Surf surf, int x, int y, gx_Surf font, const char *text, uin
 					// windows style line end (CrLf)
 					break;
 				}
-				// fall-trough
+				// fall through
 			case '\n':
 				if (*text == '\0') {
 					// new line at end of text

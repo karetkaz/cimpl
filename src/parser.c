@@ -1766,7 +1766,12 @@ static astn statement(ccContext cc, ccKind attr) {
 	return ast;
 }
 
-astn ccAddUnit(ccContext cc, char *file, int line, char *text) {
+astn ccAddUnit(ccContext cc, int init(ccContext), char *file, int line, char *text) {
+	if (init != NULL && init(cc) != 0) {
+		error(cc->rt, NULL, 0, ERR_OPENING_FILE, file);
+		return NULL;
+	}
+
 	if (ccOpen(cc, file, line, text) != 0) {
 		error(cc->rt, NULL, 0, ERR_OPENING_FILE, file);
 		return NULL;
@@ -1805,16 +1810,6 @@ astn ccAddUnit(ccContext cc, char *file, int line, char *text) {
 		return NULL;
 	}
 	return unit;
-}
-
-int ccAddLib(ccContext cc, int init(ccContext), char *file) {
-	int error = init(cc);
-	if (error == 0 && file != NULL) {
-		if (!ccAddUnit(cc, file, 1, NULL)) {
-			return -1;
-		}
-	}
-	return error;
 }
 
 symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto) {

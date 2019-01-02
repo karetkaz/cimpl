@@ -616,7 +616,7 @@ rtContext rtInit(void *mem, size_t size) {
 
 		*(void**)&rt->api.ccAddType = ccAddType;
 		*(void**)&rt->api.ccAddCall = ccAddCall;
-		*(void**)&rt->api.ccAddCode = ccAddUnit;
+		*(void**)&rt->api.ccAddUnit = ccAddUnit;
 		*(void**)&rt->api.ccLookup = ccLookup;
 
 		*(void**)&rt->api.raise = raiseApi;
@@ -1075,6 +1075,65 @@ symn ccAddType(ccContext cc, const char *name, unsigned size, int refType) {
 	return install(cc, name, ATTR_stat | ATTR_cnst | KIND_typ | (refType ? CAST_ref : CAST_val), size, cc->type_rec, NULL);
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Lookup
+
+symn ccLookup(rtContext rt, symn scope, char *name) {
+	struct astNode ast;
+	memset(&ast, 0, sizeof(struct astNode));
+	ast.kind = TOKEN_var;
+	ast.ref.name = name;
+	ast.ref.hash = rehash(name, -1) % hashTableSize;
+	if (scope == NULL) {
+		if (rt->main != NULL) {
+			// code was generated, globals are in the main fields
+			scope = rt->main->fields;
+		}
+		else if (rt->cc != NULL) {
+			// code was not executed, main not generated
+			scope = rt->cc->deft[ast.ref.hash];
+		}
+	}
+	return lookup(rt->cc, scope, &ast, NULL, 0, 1);
+}
+
+symn rtLookup(rtContext rt, size_t offs, ccKind filter) {
+	dieif(offs > rt->_size, ERR_INVALID_OFFSET, offs);
+	if (offs > rt->vm.px + px_size) {
+		// local variable on stack ?
+		return NULL;
+	}
+	symn sym = rt->main;
+	if (offs >= sym->offs && offs < sym->offs + sym->size) {
+		// is the main function ?
+		return sym;
+	}
+	ccKind filterStat = filter & ATTR_stat;
+	ccKind filterCnst = filter & ATTR_cnst;
+	ccKind filterKind = filter & MASK_kind;
+	ccKind filterCast = filter & MASK_cast;
+	for (sym = sym->fields; sym; sym = sym->global) {
+		if (filterStat && (sym->kind & ATTR_stat) != filterStat) {
+			continue;
+		}
+		if (filterCnst && (sym->kind & ATTR_cnst) != filterCnst) {
+			continue;
+		}
+		if (filterKind && (sym->kind & MASK_kind) != filterKind) {
+			continue;
+		}
+		if (filterCast && (sym->kind & MASK_cast) != filterCast) {
+			continue;
+		}
+		if (offs == sym->offs) {
+			return sym;
+		}
+		if (offs > sym->offs && offs < sym->offs + sym->size) {
+			return sym;
+		}
+	}
+	return NULL;
+}
+
 char *ccUniqueStr(ccContext cc, const char *str, size_t len, unsigned hash) {
 	rtContext rt = cc->rt;
 	list node, next, prev = 0;
@@ -1133,63 +1192,6 @@ char *ccUniqueStr(ccContext cc, const char *str, size_t len, unsigned hash) {
 	node->data = (unsigned char*)str;
 
 	return (char*)str;
-}
-
-symn ccLookup(rtContext rt, symn scope, char *name) {
-	struct astNode ast;
-	memset(&ast, 0, sizeof(struct astNode));
-	ast.kind = TOKEN_var;
-	ast.ref.name = name;
-	ast.ref.hash = rehash(name, -1) % hashTableSize;
-	if (scope == NULL) {
-		if (rt->main != NULL) {
-			// code was generated, globals are in the main fields
-			scope = rt->main->fields;
-		}
-		else if (rt->cc != NULL) {
-			// code was not executed, main not generated
-			scope = rt->cc->deft[ast.ref.hash];
-		}
-	}
-	return lookup(rt->cc, scope, &ast, NULL, 0, 1);
-}
-
-symn rtLookup(rtContext rt, size_t offs, ccKind filter) {
-	dieif(offs > rt->_size, ERR_INVALID_OFFSET, offs);
-	if (offs > rt->vm.px + px_size) {
-		// local variable on stack ?
-		return NULL;
-	}
-	symn sym = rt->main;
-	if (offs >= sym->offs && offs < sym->offs + sym->size) {
-		// is the main function ?
-		return sym;
-	}
-	ccKind filterStat = filter & ATTR_stat;
-	ccKind filterCnst = filter & ATTR_cnst;
-	ccKind filterKind = filter & MASK_kind;
-	ccKind filterCast = filter & MASK_cast;
-	for (sym = sym->fields; sym; sym = sym->global) {
-		if (filterStat && (sym->kind & ATTR_stat) != filterStat) {
-			continue;
-		}
-		if (filterCnst && (sym->kind & ATTR_cnst) != filterCnst) {
-			continue;
-		}
-		if (filterKind && (sym->kind & MASK_kind) != filterKind) {
-			continue;
-		}
-		if (filterCast && (sym->kind & MASK_cast) != filterCast) {
-			continue;
-		}
-		if (offs == sym->offs) {
-			return sym;
-		}
-		if (offs > sym->offs && offs < sym->offs + sym->size) {
-			return sym;
-		}
-	}
-	return NULL;
 }
 
 

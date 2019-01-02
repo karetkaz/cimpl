@@ -16,7 +16,7 @@ static inline vmOpcode vmSelect(vmOpcode opc32, vmOpcode opc64) {
 	return vm_ref_size == 8 ? opc64 : opc32;
 }
 
-/// Utility function to get the absolute position on stack, of a relative offset
+/// Utility function to get the absolute position on stack, of a relative offset 
 static inline size_t stkOffset(rtContext rt, size_t size) {
 	logif(size > rt->_size, "Error(expected: %d, actual: %d)", rt->_size, size);
 	return padOffset(size, vm_stk_align) + rt->vm.ss * vm_stk_align;
@@ -333,7 +333,9 @@ static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 		error(cc->rt, variable->file, variable->line, ERR_EMIT_VARIABLE, variable);
 		return CAST_vid;
 	}
-	logif(varCast != get && get != CAST_vid, "%?s:%?u: %T(%K->%K)", variable->file, variable->line, variable, varCast, get);
+	if (get != CAST_vid) {
+		logif(get != varCast, "%?s:%?u: %T(%K->%K)", variable->file, variable->line, variable, varCast, get);
+	}
 
 	if (varInit == NULL) {
 		varInit = variable->type->init;
@@ -586,7 +588,7 @@ static ccKind genCast(ccContext cc, astn ast, ccKind get) {
 	error(cc->rt, ast->file, ast->line, ERR_INVALID_CAST, ast);
 	return CAST_any;
 }
-static ccKind genCall(ccContext cc, astn ast, ccKind get) {
+static ccKind genCall(ccContext cc, astn ast) {
 	rtContext rt = cc->rt;
 	symn function = linkOf(ast->op.lhso, 0);
 	if (function == NULL || function->params == NULL) {
@@ -726,7 +728,7 @@ static ccKind genCall(ccContext cc, astn ast, ccKind get) {
 		temp->ast.ref.hash = 0;
 		temp->ast.ref.used = NULL;
 
-		ccKind got = genDeclaration(cc, &temp->var, CAST_val);
+		ccKind got = genDeclaration(cc, &temp->var, CAST_vid);
 		if (got == CAST_any) {
 			fatal(ERR_INTERNAL_ERROR);
 			return CAST_any;
@@ -1470,14 +1472,14 @@ static ccKind genLogical(ccContext cc, astn ast) {
 /// Generate bytecode from abstract syntax tree.
 static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 	rtContext rt = cc->rt;
-	const size_t ipBegin = emit(rt, markIP);
-	const size_t spBegin = stkOffset(rt, 0);
 
 	if (ast == NULL || ast->type == NULL) {
 		fatal(ERR_INTERNAL_ERROR);
 		return CAST_any;
 	}
 
+	const size_t ipBegin = emit(rt, markIP);
+	const size_t spBegin = stkOffset(rt, 0);
 	ccKind op, got = refCast(ast->type);
 
 	if (get == CAST_any) {
@@ -1492,9 +1494,9 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			return CAST_any;
 
 		//#{ STATEMENTS
-		case STMT_beg: {	// statement block or function body
-			astn ptr;
-			for (ptr = ast->stmt.stmt; ptr != NULL; ptr = ptr->next) {
+		case STMT_beg:
+			// statement block or function body
+			for (astn ptr = ast->stmt.stmt; ptr != NULL; ptr = ptr->next) {
 				int errors = rt->errors;
 				int nested = ptr->kind == STMT_beg;
 				size_t ipStart2 = emit(rt, markIP);
@@ -1514,12 +1516,13 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				got = CAST_val;
 			}
 			if (get == CAST_val) {
-				// {...}: can produce local variables
+				// {...}: may produce local variables
 				got = CAST_val;
 			}
 			break;
-		}
-		case STMT_end:      // expression statement
+
+		case STMT_end:
+			// expression statement
 			// save the position for inline calls
 			cc->file = ast->file;
 			cc->line = ast->line;
@@ -1550,7 +1553,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 
 		case STMT_con:
 		case STMT_brk: {
-			dieif(get != CAST_vid, ERR_INTERNAL_ERROR": get: %K", get);
+			dieif(get != CAST_vid, ERR_INTERNAL_ERROR);
 			size_t offs = emit(rt, opc_jmp);
 			if (offs == 0) {
 				traceAst(ast);
@@ -1565,7 +1568,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			break;
 		}
 		case STMT_ret:
-			dieif(get != CAST_vid, ERR_INTERNAL_ERROR": get: %K", get);
+			dieif(get != CAST_vid, ERR_INTERNAL_ERROR);
 			if (ast->jmp.value != NULL) {
 				astn res = ast->jmp.value;
 				// `return 3;` must be modified to `return (result := 3);`
@@ -1627,7 +1630,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			}
 
 			// function call: `function(arguments)`
-			if (!(got = genCall(cc, ast, get))) {
+			if (!(got = genCall(cc, ast))) {
 				traceAst(ast);
 				return CAST_any;
 			}
@@ -2187,7 +2190,7 @@ int ccGenCode(ccContext cc, int debug) {
 	}
 
 	// prepare to emit instructions
-	if (vmInit(rt, debug, NULL) == 0) {
+	if (!vmInit(rt, debug, NULL)) {
 		return -2;
 	}
 

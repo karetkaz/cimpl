@@ -94,7 +94,7 @@ gx_Surf gx_createSurf(gx_Surf recycle, int width, int height, int depth, surfFla
 void gx_destroySurf(gx_Surf surf);
 
 // Get current clip region
-static inline const gx_Clip gx_getclip(gx_Surf surf) {
+static inline gx_Clip gx_getclip(gx_Surf surf) {
 	return surf->clipPtr ? surf->clipPtr : (gx_Clip)surf;
 }
 void* gx_cliprect(gx_Surf surf, gx_Rect rect);
@@ -132,11 +132,16 @@ static inline void gx_setpixel(gx_Surf surf, int x, int y, uint32_t color) {
 			case 32:
 			//case 24:
 				*(uint32_t*)address = color;
+				break;
+
 			case 16:
 			case 15:
 				*(uint16_t*)address = color;
+				break;
+
 			case 8:
 				*(uint8_t*)address = color;
+				break;
 		}
 	}
 }
@@ -253,6 +258,6 @@ int gx_gradSurf(gx_Surf dst, gx_Rect roi, gx_Clut lut, gradient_type gradtype, i
 #endif
 
 #define LOBIT(__VAL) ((__VAL) & -(__VAL))
-#define gx_debug(msg, ...) fprintf(stdout, "%s:%d: debug: "msg"\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define gx_debug(msg, ...) do { fprintf(stdout, "%s:%d: %s: debug: "msg"\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); } while(0)
 
 #endif

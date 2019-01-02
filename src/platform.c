@@ -50,9 +50,12 @@ msdod not support
 #ifdef __NO_PLUGINS
 int importLib(rtContext rt, const char *path) {
 	error(rt, NULL, 0, "Error opening library: %s", "Plugins are not supported");
+	(void) path;
 	return -1;
 }
-void closeLibs(rtContext rt) {}
+void closeLibs(rtContext rt) {
+	(void) rt;
+}
 #endif //__NO_PLUGINS
 
 #ifdef __NO_REALPATH

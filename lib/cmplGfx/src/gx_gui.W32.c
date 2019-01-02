@@ -112,7 +112,7 @@ int getWindowEvent(gxWindow window, int timeout, int *button, int *x, int *y) {
 		while (!PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
 			GetSystemTimeAsFileTime(&time.ftime);
 			uint64_t now = (time.time - kTimeEpoc) / kTimeScaler;
-			if (now - start > timeout) {
+			if (now - start > (uint64_t) timeout) {
 				*button = 0;
 				*x = *y = 0;
 				return EVENT_TIMEOUT;
@@ -225,6 +225,7 @@ int getWindowEvent(gxWindow window, int timeout, int *button, int *x, int *y) {
 	}
 	TranslateMessage(&msg);
 	DispatchMessage(&msg);
+	(void) window;
 	return 0;
 }
 

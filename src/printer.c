@@ -3,29 +3,6 @@
  *   Date: 2011/06/23
  *   Desc: Print formatted text to the output stream.
  *******************************************************************************
- * format options:
- *    %T: symbol (inline, typename, function or variable)
- *    %t: token (abstract syntax tree)
- *    %K: symbol kind
- *    %k: token kind
- *    %A: instruction (asm)
- *    %I: indent
- *    %b: 32 bit bin value
- *    %B: 64 bit bin value
- *    %o: 32 bit oct value
- *    %O: 64 bit oct value
- *    %x: 32 bit hex value
- *    %X: 64 bit hex value
- *    %u: 32 bit unsigned value
- *    %U: 64 bit unsigned value
- *    %d: 32 bit signed value (decimal)
- *    %D: 64 bit signed value (decimal)
- *    %f: 32 bit floating point value
- *    %F: 64 bit floating point value
- *    %e: 32 bit floating point value (Scientific notation (mantissa/exponent))
- *    %E: 64 bit floating point value (Scientific notation (mantissa/exponent))
- *    %s: ansi string
- *    %c: ansi character
  */
 
 #include "internal.h"

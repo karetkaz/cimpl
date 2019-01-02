@@ -69,8 +69,6 @@ typedef struct {	// CUR_BMP		BITMAPINFOHEADER
 #pragma pack(pop)
 
 
-#define prerr(__FMT, ...) do { fprintf(stdout, "%s:%u: %s: " __FMT "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); } while(0)
-
 // Bitmap line readers
 typedef int (*readBmp)(unsigned char*, FILE*, unsigned);
 static int readRaw08(unsigned char *dst, FILE *src, unsigned cnt) {
@@ -216,20 +214,20 @@ static int writeRaw01(FILE *dst, unsigned char *src, unsigned cnt) {
 gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
 	FILE *fin = fopen(src, "rb");
 	if (fin == NULL) {
-		prerr("Failed to open file: %s", src);
+		gx_debug("file open error: %s", src);
 		return NULL;
 	}
 
 	BMP_HDR header;
 	if (!fread(&header, sizeof(BMP_HDR), 1, fin)) {
-		prerr("Invalid header");
+		gx_debug("Invalid header");
 		fclose(fin);
 		return NULL;
 	}
 
 	switch (header.manfact) {
 		default:
-			prerr("Invalid bmp format: 0x%04x", header.manfact);
+			gx_debug("Invalid bmp format: 0x%04x", header.manfact);
 			fclose(fin);
 			return NULL;
 
@@ -245,7 +243,7 @@ gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
 
 	switch (header.hdrsize) {
 		default:
-			prerr("Invalid header size: %d", header.hdrsize);
+			gx_debug("Invalid header size: %d", header.hdrsize);
 			fclose(fin);
 			return NULL;
 
@@ -272,7 +270,7 @@ gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
 
 	BMP_INF infoHeader;
 	if (!fread(&infoHeader, header.hdrsize - 4, 1, fin)) {
-		prerr("Invalid info header");
+		gx_debug("Invalid info header");
 		fclose(fin);
 		return NULL;
 	}
@@ -281,7 +279,7 @@ gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
 	readBmp lineReader = NULL;
 	switch (infoHeader.depth) {
 		default:
-			prerr("Invalid depth in header: %d", infoHeader.depth);
+			gx_debug("Invalid depth in header: %d", infoHeader.depth);
 			fclose(fin);
 			return NULL;
 
@@ -314,13 +312,13 @@ gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
 
 	switch (infoHeader.encoding) {
 		default:
-			prerr("Invalid encoding in header: %d", infoHeader.encoding);
+			gx_debug("Invalid encoding in header: %d", infoHeader.encoding);
 			fclose(fin);
 			return NULL;
 
 		case 2:
 			if (lineReader != readRaw04) {
-				prerr("Invalid bitmap");
+				gx_debug("Invalid bitmap");
 				fclose(fin);
 				return NULL;
 			}
@@ -329,7 +327,7 @@ gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
 
 		case 1:
 			if (lineReader != readRaw08) {
-				prerr("Invalid bitmap");
+				gx_debug("Invalid bitmap");
 				fclose(fin);
 				return NULL;
 			}
@@ -340,27 +338,27 @@ gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
 			break;
 	}
 	if (lineReader == NULL) {
-		prerr("Invalid data format");
+		gx_debug("Invalid data format");
 		fclose(fin);
 		return NULL;
 	}
 
 	cblt_proc colorProc = gx_getcbltf(depth, infoHeader.depth < 8 ? 8 : infoHeader.depth);
 	if (colorProc == NULL) {
-		prerr("Invalid color conversion");
+		gx_debug("Invalid color conversion");
 		fclose(fin);
 		return NULL;
 	}
 
 	dst = gx_createSurf(dst, infoHeader.width, infoHeader.height, depth, 0);
 	if (dst == NULL) {
-		prerr("Failed to init surface");
+		gx_debug("Failed to init surface");
 		fclose(fin);
 		return NULL;
 	}
 
 	if (depth == 8) {
-		prerr("TODO: allocate and copy palette");
+		gx_debug("TODO: allocate and copy palette");
 		fclose(fin);
 		return NULL;
 	}
@@ -389,7 +387,7 @@ int gx_saveBmp(const char *dst, gx_Surf src, int flags) {
 
 	switch (src->depth) {
 		default:
-			prerr("Invalid depth: %d", src->depth);
+			gx_debug("Invalid depth: %d", src->depth);
 			return 2;
 
 		case 32:
@@ -425,7 +423,7 @@ int gx_saveBmp(const char *dst, gx_Surf src, int flags) {
 	writeBmp lineWriter = NULL;
 	switch (infoHeader.depth) {
 		default:
-			prerr("Invalid depth: %d", infoHeader.depth);
+			gx_debug("Invalid depth: %d", infoHeader.depth);
 			return 2;
 
 		case 24:
@@ -457,13 +455,13 @@ int gx_saveBmp(const char *dst, gx_Surf src, int flags) {
 
 	cblt_proc colorProc = gx_getcbltf(infoHeader.depth < 8 ? 8 : infoHeader.depth, src->depth);
 	if (colorProc == NULL) {
-		prerr("Invalid color conversion");
+		gx_debug("Invalid color conversion");
 		return 3;
 	}
 
-	FILE *out = fopen(dst,"wb");
+	FILE *out = fopen(dst, "wb");
 	if (out == NULL) {
-		prerr("Failed to open file: %s", dst);
+		gx_debug("file open error: %s", dst);
 		return 1;
 	}
 
@@ -501,7 +499,7 @@ int gx_saveBmp(const char *dst, gx_Surf src, int flags) {
 gx_Surf gx_loadFnt(gx_Surf dst, const char *src) {
 	FILE *fin = fopen(src, "rb");
 	if (fin == NULL) {
-		prerr("Failed to open file: %s", src);
+		gx_debug("file open error: %s", src);
 		return NULL;
 	}
 
@@ -514,7 +512,7 @@ gx_Surf gx_loadFnt(gx_Surf dst, const char *src) {
 
 	dst = gx_createSurf(dst, width, 256 * height, 8, Surf_fnt);
 	if (dst == NULL) {
-		prerr("Failed to init surface");
+		gx_debug("Failed to init surface");
 		return NULL;
 	}
 
@@ -554,6 +552,7 @@ gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
 			gx_setpixel(dst, x, y, make_rgb(0, r, g, b).val);
 		}
 	}
+	(void) src;
 	return dst;
 }
 #else
@@ -567,6 +566,7 @@ gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
 
 	FILE *fin = fopen(src, "rb");
 	if (fin == NULL) {
+		gx_debug("file open error: %s", src);
 		return NULL;
 	}
 	/* We set up the normal JPEG error routines, then override error_exit. */
@@ -636,6 +636,7 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 			gx_setpixel(dst, x, y, make_rgb(0, r, g, b).val);
 		}
 	}
+	(void) src;
 	return dst;
 }
 #else
@@ -647,21 +648,21 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 	unsigned char header[8];
 
 	if (depth != 32) {
-		prerr("Invalid depth: %d", depth);
+		gx_debug("Invalid depth: %d", depth);
 		return NULL;
 	}
 
 	/* open file and test for it being a png */
 	FILE *fin = fopen(src, "rb");
 	if (fin == NULL) {
-		prerr("Failed to open file: %s", src);
+		gx_debug("file open error: %s", src);
 		return NULL;
 	}
 
 	size_t y = fread(header, 1, 8, fin);
 
 	if (y != 8 || png_sig_cmp(header, 0, 8)) {
-		prerr("Invalid header signature");
+		gx_debug("Invalid header signature");
 		fclose(fin);
 		return NULL;
 	}
@@ -670,20 +671,20 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
 	if (png_ptr == NULL) {
-		prerr("Failed to create read struct");
+		gx_debug("Failed to create read struct");
 		fclose(fin);
 		return NULL;
 	}
 
 	png_infop info_ptr = png_create_info_struct(png_ptr);
 	if (info_ptr == NULL) {
-		prerr("Failed to create info struct");
+		gx_debug("Failed to create info struct");
 		fclose(fin);
 		return NULL;
 	}
 
 	if (setjmp(png_jmpbuf(png_ptr))) {
-		prerr("Error reading image");
+		gx_debug("Error reading image");
 		fclose(fin);
 		return NULL;
 	}
@@ -699,9 +700,9 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 	int pngdepth = bit_depth * png_get_channels(png_ptr, info_ptr);
 	int color_type = png_get_color_type(png_ptr, info_ptr);
 
-	dst = gx_createSurf(dst, pngwidth, pngheight, depth, 0);
-	if (dst == NULL) {
-		prerr("Failed to init surface");
+	gx_Surf result = gx_createSurf(dst, pngwidth, pngheight, depth, 0);
+	if (result == NULL) {
+		gx_debug("out of memory");
 		fclose(fin);
 		return NULL;
 	}
@@ -709,7 +710,7 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 	cblt_proc conv_2xrgb = NULL;
 	switch (pngdepth) {
 		default:
-			prerr("Invalid color conversion");
+			gx_debug("Invalid color conversion");
 			fclose(fin);
 			return NULL;
 
@@ -748,12 +749,12 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 
 	/* read file */
 	while (number_of_passes > 0) {
-		unsigned char *ptr = (void*)dst->basePtr;
-		for (y = 0; y < dst->height; y += 1) {
+		unsigned char *ptr = (void*)result->basePtr;
+		for (y = 0; y < result->height; y += 1) {
 			unsigned char tmpbuff[65535*4]; // FIXME: bitmap temp buffer
 			png_read_row(png_ptr, tmpbuff, NULL);
-			conv_2xrgb(ptr, tmpbuff, NULL, dst->width);
-			ptr += dst->scanLen;
+			conv_2xrgb(ptr, tmpbuff, NULL, result->width);
+			ptr += result->scanLen;
 		}
 		number_of_passes -= 1;
 	}
@@ -762,6 +763,6 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
 	fclose(fin);
-	return dst;
+	return result;
 }
 #endif

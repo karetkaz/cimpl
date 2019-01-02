@@ -730,16 +730,16 @@ static void jsonPreProfile(dbgContext ctx) {
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ text output
-static void textDumpOfs(FILE *out, const char **esc, userContext ctx, symn fun, size_t start, size_t end) {
+static void textDumpOfs(FILE *out, const char **esc, userContext ctx, size_t start, size_t end) {
 	size_t size = end - start;
 	printFmt(out, esc, "%d byte%?c", size, size > 1 ? 's' : 0);
 	if (!ctx->hideOffsets) {
 		printFmt(out, esc, ": %a - %a", start, end);
 	}
 }
-static void textDumpDbg(FILE *out, const char **esc, userContext ctx, dbgn dbg, symn fun, int indent) {
+static void textDumpDbg(FILE *out, const char **esc, userContext ctx, dbgn dbg, int indent) {
 	printFmt(out, esc, "%I%?s:%?u: (", indent, dbg->file, dbg->line);
-	textDumpOfs(out, esc, ctx, fun, dbg->start, dbg->end);
+	textDumpOfs(out, esc, ctx, dbg->start, dbg->end);
 	printFmt(out, esc, ")");
 
 	if (dbg->stmt != NULL && ctx->rt->cc != NULL) {
@@ -1043,7 +1043,7 @@ static void dumpApiText(userContext ctx, symn sym) {
 			dumpExtraData = 1;
 		}
 		printFmt(out, esc, "%I.instructions: (", indent);
-		textDumpOfs(out, esc, ctx, sym, sym->offs, sym->offs + sym->size);
+		textDumpOfs(out, esc, ctx, sym->offs, sym->offs + sym->size);
 		printFmt(out, esc, ")\n");
 
 		for (size_t pc = sym->offs, n = pc; pc < end; pc = n) {
@@ -1053,7 +1053,7 @@ static void dumpApiText(userContext ctx, symn sym) {
 			}
 			dbgn dbg = mapDbgStatement(ctx->rt, pc);
 			if (ctx->dmpAsmStmt && dbg && dbg->start == pc) {
-				textDumpDbg(out, esc, ctx, dbg, sym, indent + 1);
+				textDumpDbg(out, esc, ctx, dbg, indent + 1);
 			}
 			textDumpAsm(out, esc, pc, ctx, indent + 1);
 		}
@@ -1153,7 +1153,7 @@ static dbgn conProfile(dbgContext ctx, vmError error, size_t ss, void *stack, si
 	// print executing instruction.
 	if (usr->traceOpcodes) {
 		if (usr->dmpAsmStmt && dbg && dbg->start == caller) {
-			textDumpDbg(out, esc, usr, dbg, NULL, 0);
+			textDumpDbg(out, esc, usr, dbg, 0);
 		}
 
 		if (usr->traceLocals) {
@@ -2114,7 +2114,7 @@ int main(int argc, char *argv[]) {
 	if (install & installLibs) {
 		// install standard library.
 		if (extra.compileSteps != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sCompile: `%?s`", extra.compileSteps, stdLib);}
-		if (ccAddLib(rt->cc, ccLibStd, stdLib) != 0) {
+		if (!ccAddUnit(rt->cc, ccLibStd, stdLib, 1, NULL)) {
 			fatal("error registering standard library");
 		}
 	}
@@ -2132,7 +2132,7 @@ int main(int argc, char *argv[]) {
 						fatal("error(%d) importing library `%s`", resultCode, ccFile);
 					}
 				}
-				else if (!ccAddUnit(rt->cc, ccFile, 1, NULL)) {
+				else if (!ccAddUnit(rt->cc, NULL, ccFile, 1, NULL)) {
 					error(rt, ccFile, 1, "error compiling source `%s`", ccFile);
 				}
 			}

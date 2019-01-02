@@ -197,7 +197,7 @@ struct rtContextRec {
 		symn (*const ccAddCall)(ccContext ctx, vmError libc(nfcContext), const char *proto);
 
 		/// Compile code snippet; @see ccAddUnit
-		astn (*const ccAddCode)(ccContext cc, char *file, int line, char *text);
+		astn (*const ccAddUnit)(ccContext cc, int init(ccContext cc), char *file, int line, char *text);
 
 		/// Lookup function by name; @see ccLookup
 		symn (*const ccLookup)(rtContext ctx, symn scope, const char *name);

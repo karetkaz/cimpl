@@ -415,7 +415,7 @@ static void draw_tri_part(gx_Surf dst, gx_Clip roi, edge l, edge r, int swap, in
 			rx = offs + rx - lx;
 
 			while (offs < rx) {
-				if (zBuff[offs] > v.z) {
+				if (zBuff[offs] > (uint32_t)v.z) {
 					zBuff[offs] = v.z;
 					if (img) {
 						argb tex;
@@ -494,7 +494,6 @@ static void draw_triangle(gx_Surf dst, vector p, texcol tex, texcol col, int i1,
 			//~ if (y1 == y2) w = X2 - X1;
 			//~ else if (y2 == y3) w = X3 - X2;
 			//~ else w = X1 < X3 ? X1 - X2 : X3 - X1;
-			//~ printf ("tri H:(%+014d), W:(%+014d)\r", y3 - y1, ((w < 0 ? -w : w) >> 16));
 			//~ if ((w >>= 16) < 0)w = -w;
 			//~ if (tmp > SCRH || ((w < 0 ? -w : w) >> 16) > SCRW) return;
 		}
@@ -759,7 +758,7 @@ int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, gx_Light ligh
 		}
 	}
 
-	long triangles = 0;
+	int triangles = 0;
 	frustum_get(v, proj);
 	for (size_t i = 0; i < msh->tricnt; i += 1) {		// draw
 		int32_t i1 = msh->triptr[i].i1;

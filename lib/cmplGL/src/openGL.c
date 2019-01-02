@@ -83,6 +83,7 @@ static vmError glFun_Clear(nfcContext ctx) {
 }
 static vmError glFun_Flush(nfcContext ctx) {
 	glFlush();
+	(void) ctx;
 	return noError;
 }
 
@@ -92,6 +93,7 @@ static vmError glFun_Begin(nfcContext ctx) {
 }
 static vmError glFun_End(nfcContext ctx) {
 	glEnd();
+	(void) ctx;
 	return noError;
 }
 
@@ -159,14 +161,17 @@ static vmError glFun_MultMatrix(nfcContext ctx) {
 }
 static vmError glFun_LoadIdentity(nfcContext ctx) {
 	glLoadIdentity();
+	(void) ctx;
 	return noError;
 }
 static vmError glFun_PushMatrix(nfcContext ctx) {
 	glPushMatrix();
+	(void) ctx;
 	return noError;
 }
 static vmError glFun_PopMatrix(nfcContext ctx) {
 	glPopMatrix();
+	(void) ctx;
 	return noError;
 }
 
@@ -272,6 +277,8 @@ static void keyboard(unsigned char key, int x, int y) {
 		rt->api.invoke(rt, onKeyboard, NULL, &args, NULL);
 	}
 	//~ debugGL("keyboard(key:%d)", key);
+	(void) x;
+	(void) y;
 }
 static void display(void) {
 	if (onDisplay && rt) {
@@ -322,15 +329,18 @@ static vmError glutFun_Reshape(nfcContext ctx) {
 
 static vmError glutFun_PostRedisplay(nfcContext ctx) {
 	glutPostRedisplay();
+	(void) ctx;
 	return noError;
 }
 static vmError glutFun_SwapBuffers(nfcContext ctx) {
 	glutSwapBuffers();
+	(void) ctx;
 	return noError;
 }
 
 static vmError glutFun_FullScreen(nfcContext ctx) {
 	glutFullScreen();
+	(void) ctx;
 	return noError;
 }
 
@@ -357,6 +367,7 @@ static vmError glutFun_MainLoop(nfcContext ctx) {
 static vmError glutFun_ExitLoop(nfcContext ctx) {
 	// FIXME: glutLeaveMainLoop();
 	glutDestroyWindow(glutGetWindow());
+	(void) ctx;
 	return noError;
 }
 static vmError glutFun_InitDisplayMode(nfcContext ctx) {
@@ -503,13 +514,13 @@ int cmplInit(rtContext _rt) {
 	rt = _rt;
 	if ((nsp = ccBegin(rt, "gl")) != NULL) {
 
-		for (int i = 0; i < sizeof(defsGl) / sizeof(*defsGl); i += 1) {
+		for (size_t i = 0; i < sizeof(defsGl) / sizeof(*defsGl); i += 1) {
 			if (!rt->api.ccDefInt(rt->cc, defsGl[i].name, defsGl[i].value)) {
 				return +1;
 			}
 		}
 
-		for (int i = 0; i < sizeof(libcGl) / sizeof(*libcGl); i += 1) {
+		for (size_t i = 0; i < sizeof(libcGl) / sizeof(*libcGl); i += 1) {
 			if (!rt->api.ccAddCall(rt->cc, libcGl[i].fun, libcGl[i].def)) {
 				return -1;
 			}
@@ -525,7 +536,7 @@ int cmplInit(rtContext _rt) {
 		ccEnd(rt, nsp);
 	}
 	if ((nsp = ccBegin(rt, "glu"))) {
-		for (int i = 0; i < sizeof(defsGlu) / sizeof(*defsGlu); i += 1) {
+		for (size_t i = 0; i < sizeof(defsGlu) / sizeof(*defsGlu); i += 1) {
 			if (defsGlu[i].name == NULL) {
 				continue;
 			}
@@ -533,7 +544,7 @@ int cmplInit(rtContext _rt) {
 				return -2;
 			}
 		}
-		for (int i = 0; i < sizeof(libcGlu) / sizeof(*libcGlu); i += 1) {
+		for (size_t i = 0; i < sizeof(libcGlu) / sizeof(*libcGlu); i += 1) {
 			if (!rt->api.ccAddCall(rt->cc, libcGlu[i].fun, libcGlu[i].def)) {
 				return -2;
 			}
@@ -541,7 +552,7 @@ int cmplInit(rtContext _rt) {
 		ccEnd(rt, nsp);
 	}
 	if ((nsp = ccBegin(rt, "glut"))) {
-		for (int i = 0; i < sizeof(defsGlut) / sizeof(*defsGlut); i += 1) {
+		for (size_t i = 0; i < sizeof(defsGlut) / sizeof(*defsGlut); i += 1) {
 			if (defsGlut[i].name == NULL) {
 				continue;
 			}
@@ -549,7 +560,7 @@ int cmplInit(rtContext _rt) {
 				return -3;
 			}
 		}
-		for (int i = 0; i < sizeof(libcGlut) / sizeof(*libcGlut); i += 1) {
+		for (size_t i = 0; i < sizeof(libcGlut) / sizeof(*libcGlut); i += 1) {
 			if (!rt->api.ccAddCall(rt->cc, libcGlut[i].fun, libcGlut[i].def)) {
 				return -3;
 			}

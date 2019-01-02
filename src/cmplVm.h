@@ -239,6 +239,16 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg);
 int testOcp(rtContext rt, size_t offs, vmOpcode opc, vmValue *arg);
 
 /**
+ * Advance to the next instruction at the given offset.
+ * 
+ * @param rt Runtime context.
+ * @param pc Offset of the current opcode to be incremented.
+ * @param ss Size of the stack.
+ * @return the current instruction pointer.
+ */
+void* nextOpc(rtContext rt, size_t *pc, size_t *ss);
+
+/**
  * Fix a jump instruction, and the stack size.
  * 
  * @param rt Runtime context.
@@ -249,17 +259,7 @@ int testOcp(rtContext rt, size_t offs, vmOpcode opc, vmValue *arg);
  */
 int fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc);
 
-/**
- * Advance to the next instruction at the given offset.
- * 
- * @param rt Runtime context.
- * @param pc Offset of the current opcode to be incremented.
- * @param ss Size of the stack.
- * @return the current instruction pointer.
- */
-void* nextOpc(rtContext rt, size_t *pc, size_t *ss);
-
-/// Emit an instruction with zero argument(s).
+/// Emit an instruction without argument(s).
 static inline size_t emit(rtContext rt, vmOpcode opc) {
 	vmValue arg;
 	arg.i64 = 0;

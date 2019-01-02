@@ -67,7 +67,7 @@ int getWindowEvent(gxWindow window, int timeout, int *button, int *x, int *y) {
 		while (!XPending(window->display)) {
 			gettimeofday(&tv, NULL);
 			uint64_t now = tv.tv_sec * (uint64_t) 1000 + tv.tv_usec / 1000;
-			if (now - start > timeout) {
+			if (now - start > (uint64_t) timeout) {
 				*button = 0;
 				*x = *y = 0;
 				return EVENT_TIMEOUT;

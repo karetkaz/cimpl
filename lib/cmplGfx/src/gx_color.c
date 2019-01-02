@@ -146,6 +146,7 @@ void colcpy_24_32(void* dst, void *src, void *lut, size_t cnt) {
 
 static void colcpy_08cpy(void* dst, void *src, void *lut, size_t cnt) {
 	memcpy(dst, src, cnt);
+	(void)lut;
 }
 
 

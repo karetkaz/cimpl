@@ -55,7 +55,7 @@ gx_Mesh g3_createMesh(gx_Mesh recycle, size_t n) {
 	if (recycle == NULL) {
 		recycle = malloc(sizeof(struct gx_Mesh));
 		if (recycle == NULL) {
-			gx_debug("allocation failed");
+			gx_debug("out of memory");
 			return NULL;
 		}
 		recycle->freeMesh = 1;
@@ -95,7 +95,7 @@ gx_Mesh g3_createMesh(gx_Mesh recycle, size_t n) {
 	recycle->tex = malloc(sizeof(struct texcol) * recycle->maxvtx);
 
 	if (!recycle->triptr || !recycle->segptr || !recycle->pos || !recycle->nrm || !recycle->tex) {
-		gx_debug("allocation failed");
+		gx_debug("out of memory");
 		g3_destroyMesh(recycle);
 		return NULL;
 	}
@@ -129,33 +129,24 @@ void g3_destroyMesh(gx_Mesh msh) {
 	}
 }
 
-/*long setgrp(gx_Mesh msh, long idx) {
-	if (idx >= msh->maxgrp) {
-		msh->maxgrp = HIBIT(idx) * 2;
-		msh->grpptr = realloc(msh->pos, sizeof(struct grp*) * msh->maxgrp);
-		if (!msh->grpptr) return -1;
-	}
-	if (msh->grpcnt <= idx) {
-		msh->grpcnt = idx + 1;
-	}
-	return idx;
-}*/
-long getvtx(gx_Mesh msh, long idx) {
+int getvtx(gx_Mesh msh, size_t idx) {
 	if (idx >= msh->maxvtx) {
 		msh->maxvtx = HIBIT(idx) * 2;
 		msh->pos = (vector)realloc(msh->pos, sizeof(struct vector) * msh->maxvtx);
 		msh->nrm = (vector)realloc(msh->nrm, sizeof(struct vector) * msh->maxvtx);
 		msh->tex = (texcol)realloc(msh->tex, sizeof(struct texcol) * msh->maxvtx);
-		if (!msh->pos || !msh->nrm || !msh->tex) return -1;
+		if (!msh->pos || !msh->nrm || !msh->tex) {
+			return 0;
+		}
 	}
 	if (msh->vtxcnt <= idx) {
 		msh->vtxcnt = idx + 1;
 	}
-	return idx;
+	return 1;
 }
-long setvtx(gx_Mesh msh, long idx, vector pos, vector nrm, scalar tex[2]) {
-	if (getvtx(msh, idx) < 0) {
-		return -1;
+int setvtx(gx_Mesh msh, size_t idx, vector pos, vector nrm, scalar tex[2]) {
+	if (!getvtx(msh, idx)) {
+		return 0;
 	}
 	if (pos != NULL) {
 		msh->pos[idx] = *pos;
@@ -167,59 +158,58 @@ long setvtx(gx_Mesh msh, long idx, vector pos, vector nrm, scalar tex[2]) {
 		msh->tex[idx].s = (uint16_t) (tex[0] * 65535);
 		msh->tex[idx].t = (uint16_t) (tex[1] * 65535);
 	}
-	return idx;
+	return 1;
 }
 
-long addseg(gx_Mesh msh, long p1, long p2) {
-	if (p1 >= msh->vtxcnt || p2 >= msh->vtxcnt)
-		return -1;
+int addseg(gx_Mesh msh, size_t p1, size_t p2) {
+	if (p1 >= msh->vtxcnt || p2 >= msh->vtxcnt) {
+		return 0;
+	}
 
 	if (msh->segcnt >= msh->maxseg) {
 		if (msh->maxseg == 0) {
 			msh->maxseg = 16;
 		}
 		msh->segptr = (struct seg*)realloc(msh->segptr, sizeof(struct seg) * (msh->maxseg <<= 1));
-		if (!msh->segptr) return -2;
+		if (!msh->segptr) {
+			return 0;
+		}
 	}
 
 	msh->segptr[msh->segcnt].p1 = p1;
 	msh->segptr[msh->segcnt].p2 = p2;
-	return msh->segcnt++;
+	msh->segcnt++;
+	return 1;
 }
-long addtri(gx_Mesh msh, long p1, long p2, long p3) {
+
+int addtri(gx_Mesh msh, size_t p1, size_t p2, size_t p3) {
 	if (p1 >= msh->vtxcnt || p2 >= msh->vtxcnt || p3 >= msh->vtxcnt) {
-		gx_debug("addTri(%ld, %ld, %ld)", p1, p2, p3);
-		return -1;
+		return 0;
 	}
 
-	#define H 1e-10
-	if (vecdst(msh->pos + p1, msh->pos + p2) < H)
-		return 0;
-	if (vecdst(msh->pos + p1, msh->pos + p3) < H)
-		return 0;
-	if (vecdst(msh->pos + p2, msh->pos + p3) < H)
-		return 0;
-	#undef H
+//	#define H 1e-10
+//	if (vecdst(msh->pos + p1, msh->pos + p2) < H)
+//		return 1;
+//	if (vecdst(msh->pos + p1, msh->pos + p3) < H)
+//		return 1;
+//	if (vecdst(msh->pos + p2, msh->pos + p3) < H)
+//		return 1;
+//	#undef H
 
 	if (msh->tricnt >= msh->maxtri) {
 		msh->triptr = (struct tri*)realloc(msh->triptr, sizeof(struct tri) * (msh->maxtri <<= 1));
 		if (msh->triptr == NULL) {
-			return -1;
+			return 0;
 		}
 	}
 	msh->triptr[msh->tricnt].i1 = p1;
 	msh->triptr[msh->tricnt].i2 = p2;
 	msh->triptr[msh->tricnt].i3 = p3;
-	return msh->tricnt++;
-}
-long addquad(gx_Mesh msh, long p1, long p2, long p3, long p4) {
-	if (addtri(msh, p1, p2, p3) != -1) {
-		return addtri(msh, p3, p4, p1);
-	}
-	return -1;
+	msh->tricnt++;
+	return 1;
 }
 
-static int vtxcmp(gx_Mesh msh, int i, int j, scalar tol) {
+static int vtxcmp(gx_Mesh msh, size_t i, size_t j, scalar tol) {
 	scalar dif;
 	dif = msh->pos[i].x - msh->pos[j].x;
 	if (tol < (dif < 0 ? -dif : dif)) return 2;
@@ -227,25 +217,18 @@ static int vtxcmp(gx_Mesh msh, int i, int j, scalar tol) {
 	if (tol < (dif < 0 ? -dif : dif)) return 2;
 	dif = msh->pos[i].z - msh->pos[j].z;
 	if (tol < (dif < 0 ? -dif : dif)) return 2;
-	//~ return msh->tex[i].val != msh->tex[j].val;
 	return !(msh->tex && msh->tex[i].val == msh->tex[j].val);
 }
 
-static int prgDefCB(float prec) { (void)prec; return 0; }
-static float precent(int i, int n) { return 100. * i / n; }
-
 struct growBuffer {
 	char *ptr;
-	int max;
-	//~ int cnt;
-	int esz;
+	size_t max;
+	size_t esz;
 };
 static void* growBuff(struct growBuffer* buff, int idx) {
-	int pos = idx * buff->esz;
+	size_t pos = idx * buff->esz;
 	if (pos >= buff->max) {
 		buff->max = pos << 1;
-		//~ while (pos >= buff->max) buff->max <<= 1;
-		//~ gx_debug("realloc(%x, %d, %d):%d", buff->ptr, buff->esz, buff->max, idx);
 		buff->ptr = realloc(buff->ptr, buff->max);
 	}
 	return buff->ptr ? buff->ptr + pos : NULL;
@@ -289,8 +272,10 @@ int g3_readObj(gx_Mesh msh, const char *file) {
 	struct growBuffer nrmb;
 	struct growBuffer texb;
 
-	if (!(fin = fopen(file, "rb")))
-		return -1;
+	if (!(fin = fopen(file, "rb"))) {
+		gx_debug("file open error: %s", file);
+		return 0;
+	}
 
 	initBuff(&nrmb, 64, 3 * sizeof(float));
 	initBuff(&texb, 64, 2 * sizeof(float));
@@ -299,22 +284,29 @@ int g3_readObj(gx_Mesh msh, const char *file) {
 		char *ptr = buff;
 
 		line++;
-		if (!fgets(buff, sizeof(buff), fin))
+		if (!fgets(buff, sizeof(buff), fin)) {
 			break;
+		}
 
-		if (feof(fin)) break;
+		if (feof(fin)) {
+			break;
+		}
 
 		// remove line end character
-		if ((ptr = strchr(buff, 13)))
+		if ((ptr = strchr(buff, 13))) {
 			*ptr = 0;
+		}
 
-		if ((ptr = strchr(buff, 10)))
+		if ((ptr = strchr(buff, 10))) {
 			*ptr = 0;
+		}
 
-		if (*buff == '#')				// Comment
+		if (*buff == '#') {                // Comment
 			continue;
-		if (*buff == '\0')				// Empty line
+		}
+		if (*buff == '\0') {               // Empty line
 			continue;
+		}
 
 		// Grouping:
 		if (readKVP(buff, "g", NULL, ws)) continue;		// Group name
@@ -338,13 +330,19 @@ int g3_readObj(gx_Mesh msh, const char *file) {
 		if ((ptr = readKVP(buff, "v", NULL, ws))) {		// Geometric vertices
 			struct vector vtx;
 			sscanf(ptr, "%f%f%f", &vtx.x, &vtx.y, &vtx.z);
-			setvtx(msh, posi, &vtx, NULL, NULL);
+			if (!setvtx(msh, posi, &vtx, NULL, NULL)) {
+				gx_debug("out of memory");
+				break;
+			}
 			posi += 1;
 			continue;
 		}
 		if ((ptr = readKVP(buff, "vt", NULL, ws))) {	// Texture vertices
 			float *vtx = growBuff(&texb, texi);
-			if (!vtx) {gx_debug("memory"); break;}
+			if (vtx == NULL) {
+				gx_debug("out of memory");
+				break;
+			}
 
 			sscanf(ptr, "%f%f", vtx + 0, vtx + 1);
 			if (vtx[0] < 0) vtx[0] = -vtx[0];
@@ -353,6 +351,7 @@ int g3_readObj(gx_Mesh msh, const char *file) {
 			if (vtx[1] > 1) vtx[1] = 0;
 
 			if (vtx[0] < 0 || vtx[0] > 1 || vtx[1] < 0 || vtx[1] > 1) {
+				gx_debug("input error");
 				break;
 			}
 
@@ -361,7 +360,10 @@ int g3_readObj(gx_Mesh msh, const char *file) {
 		}
 		if ((ptr = readKVP(buff, "vn", NULL, ws))) {	// Vertex normals
 			float *vtx = growBuff(&nrmb, nrmi);
-			if (!vtx) {gx_debug("memory"); break;}
+			if (vtx == NULL) {
+				gx_debug("out of memory");
+				break;
+			}
 
 			sscanf(ptr, "%f%f%f", vtx + 0, vtx + 1, vtx + 2);
 			nrmi += 1;
@@ -374,17 +376,21 @@ int g3_readObj(gx_Mesh msh, const char *file) {
 			int i, v[4], vn[4], vt[4];
 
 			for (i = 0; *ptr != 0; i++) {
-
-				while (*ptr && strchr(" \t", *ptr)) ptr++;		// skip white spaces
-				if (*ptr == '\0') break;				// end of line
+				while (*ptr && strchr(" \t", *ptr)) {
+					// skip over white spaces
+					ptr++;
+				}
+				if (*ptr == '\0') {
+					// end of line
+					break;
+				}
 
 				if (i > 4) {
-					fprintf(stderr, "%s:%d: face too complex: `%s`\n", file, line, buff);
-					*ptr = 0;
-					break;						// error
+					gx_debug("input error");
+					break;
 				}
-				if (!strchr("+-0123456789", *ptr)) {	// error
-					fprintf(stderr, "unsupported line: `%s`\n", ptr);
+				if (!strchr("+-0123456789", *ptr)) {
+					gx_debug("input error");
 					break;
 				}
 
@@ -403,34 +409,41 @@ int g3_readObj(gx_Mesh msh, const char *file) {
 					}
 				}
 
-				//~ gx_debug("face fragment: vtx(%d), nrm(%d), tex(%d) `%s`", v[i], vn[i], vt[i], ptr);
-
 				if (v[i]) v[i] += v[i] < 0 ? posi : -1;
 				if (vn[i]) vn[i] += vn[i] < 0 ? nrmi : -1;
 				if (vt[i]) vt[i] += vt[i] < 0 ? texi : -1;
 
 				if (v[i] > posi || v[i] < 0) break;
 				if (vn[i] > nrmi || vn[i] < 0) break;
-				//~ if (vt[i] > texi || vt[i] < 0) break;
-				if (vt[i] > texi || vt[i] < 0) vt[i] = 0;
+				if (vt[i] > texi || vt[i] < 0) break;
 
 				if (texi) {
-					setvtx(msh, v[i], NULL, NULL, growBuff(&texb, vt[i]));
+					if (!setvtx(msh, v[i], NULL, NULL, growBuff(&texb, vt[i]))) {
+						gx_debug("input error");
+						break;
+					}
 				}
 				if (nrmi) {
-					setvtx(msh, v[i], NULL, growBuff(&nrmb, vn[i]), NULL);
+					if (!setvtx(msh, v[i], NULL, growBuff(&nrmb, vn[i]), NULL)) {
+						gx_debug("input error");
+						break;
+					}
 				}
 			}
 
-			if (*ptr != '\0')
+			if (*ptr != '\0') {
 				break;
+			}
 
-			if (i == 3 && addtri(msh, v[0], v[1], v[2]) < 0)
+			if (i == 3 && !addtri(msh, v[0], v[1], v[2])) {
+				gx_debug("input error");
 				break;
+			}
 
-			if (i == 4 && addquad(msh, v[0], v[1], v[2], v[3]) < 0)
+			if (i == 4 && !addquad(msh, v[0], v[1], v[2], v[3])) {
+				gx_debug("input error");
 				break;
-
+			}
 			continue;
 		}
 
@@ -456,7 +469,7 @@ int g3_readObj(gx_Mesh msh, const char *file) {
 		//~ if (readKVP(buff, "scrv", NULL, ws)) continue;	// Special curve
 		//~ if (readKVP(buff, "sp", NULL, ws)) continue;		// Special point
 		//~ if (readKVP(buff, "end", NULL, ws)) continue;		// End statement
-		fprintf(stderr, "unsupported line: `%s`\n", buff);
+		gx_debug("input error");
 		break;
 	}
 
@@ -464,38 +477,46 @@ int g3_readObj(gx_Mesh msh, const char *file) {
 	freeBuff(&nrmb);
 
 	if (!feof(fin)) {
-		fprintf(stderr, "%s:%d: pos(%d), nrm(%d), tex(%d) `%s`\n", file, line, posi, nrmi, texi, buff);
+		gx_debug("%s:%d: pos(%d), nrm(%d), tex(%d) `%s`", file, line, posi, nrmi, texi, buff);
 		fclose(fin);
-		return -2;
+		return 0;
 	}
 
 	msh->hasNrm = nrmi != 0;
 	msh->hasTex = texi != 0;
 
 	fclose(fin);
-	return 0;
+	return 1;
 }
 int g3_read3ds(gx_Mesh msh, const char *file) {
-	FILE *fin;
-	char buff[65536];
 
-	unsigned short chunk_id;
-	unsigned int chunk_len;
-	unsigned short qty;
+	FILE *fin = fopen(file, "rb");
+	if (fin == NULL) {
+		gx_debug("file open error: %s", file);
+		return 0;
+	}
 
-	int i, vtxi = 0;
-	int posi = 0, texi = 0;
-	//~ int mtli = 0, obji = 0;				// material, mesh index
-
-	if (!(fin = fopen (file, "rb"))) return -1;
-
+	int vtxi = 0;
+	int posi = 0;
+	int texi = 0;
 	for ( ; ; ) {
-		if (!fread(&chunk_id, 2, 1, fin)) //Read the chunk header
+		//Read the chunk header
+		unsigned short chunk_id;
+		if (!fread(&chunk_id, 2, 1, fin)) {
+			gx_debug("input error");
 			break;
-		if (!fread(&chunk_len, 4, 1, fin)) //Read the lenght of the chunk
+		}
+
+		//Read the lenght of the chunk
+		unsigned int chunk_len;
+		if (!fread(&chunk_len, 4, 1, fin)) {
+			gx_debug("input error");
 			break;
-		if (feof(fin))
+		}
+
+		if (feof(fin)) {
 			break;
+		}
 		switch (chunk_id) {
 			//#{ Color chunks
 				//~ 0x0010 : Rgb (float)
@@ -686,48 +707,58 @@ int g3_read3ds(gx_Mesh msh, const char *file) {
 					case 0xAFFF: goto skipchunk;		// Material block
 
 					case 0x4000: {		// Object block
+						char buff[65536];
 						char *objName = freadstr(buff, sizeof(buff), fin);
-						vtxi = posi;
-						//objName = objName;
 						(void)objName;
-						//~ gx_debug("Object: '%s'", objName);
+						vtxi = posi;
 					} break;
 					case 0x4100: break;	// Triangular mesh
 					case 0x4110: {		// Vertices list
 						struct vector dat;
+						unsigned short qty;
 						if (fread(&qty, sizeof(qty), 1, fin) != 1)
 							goto invChunk;
-						for (i = 0; i < qty; i++) {
-							if (fread(&dat, sizeof(float), 3, fin) != 3)
+						for (int i = 0; i < qty; i++) {
+							if (fread(&dat, sizeof(float), 3, fin) != 3) {
 								goto invChunk;
+							}
 							dat.w = 0;
-							if (setvtx(msh, vtxi + i, &dat, NULL, NULL) < 0) return 1;
-							//~ gx_debug("pos[%d](%f, %f, %f)", vtxi + i, dat[0], dat[1], dat[2]);
+							if (!setvtx(msh, vtxi + i, &dat, NULL, NULL)) {
+								return 0;
+							}
 						}
 						posi += qty;
 					} break;
 					case 0x4120: {		// Faces description
 							unsigned short dat[4];
+						unsigned short qty;
 							if (fread (&qty, sizeof(qty), 1, fin) != 1)
 								goto invChunk;
-							for (i = 0; i < qty; i++) {
-								if (fread(&dat, sizeof(unsigned short), 4, fin) != 4)
+							for (int i = 0; i < qty; i++) {
+								if (fread(&dat, sizeof(unsigned short), 4, fin) != 4) {
 									goto invChunk;
-								addtri(msh, vtxi + dat[0], vtxi + dat[1], vtxi + dat[2]);
+								}
+								if (!addtri(msh, vtxi + dat[0], vtxi + dat[1], vtxi + dat[2])) {
+									return 0;
+								}
 							}
-							//~ gx_debug("faces: %d, %d, %d", vtxi, posi, texi);
 					} break;
 					case 0x4130:		// Faces material list
 						goto skipchunk;
 					case 0x4140: {		// Mapping coordinates list
 						float dat[3];
-						if (fread (&qty, sizeof(qty), 1, fin) != 1)
+						unsigned short qty;
+						if (fread (&qty, sizeof(qty), 1, fin) != 1) {
 							goto invChunk;
-						for (i = 0; i < qty; i++) {
-							if (fread(dat, sizeof(float), 2, fin) != 2)
+						}
+						for (int i = 0; i < qty; i++) {
+							if (fread(dat, sizeof(float), 2, fin) != 2) {
 								goto invChunk;
+							}
 							dat[1] = 1 - dat[1];
-							if (setvtx(msh, vtxi + i, NULL, NULL, dat) < 0) return 2;
+							if (!setvtx(msh, vtxi + i, NULL, NULL, dat)) {
+								return 0;
+							}
 						}
 						texi += qty;
 					} break;
@@ -740,7 +771,7 @@ int g3_read3ds(gx_Mesh msh, const char *file) {
 					goto skipchunk;
 			invChunk:
 			default:
-				gx_debug("unknown Chunk: ID: 0x%04x; Len: %d", chunk_id, chunk_len);
+				gx_debug("unimplemented chunk: 0x%04x; length: %d", chunk_id, chunk_len);
 			skipchunk:
 				fseek(fin, chunk_len - 6, SEEK_CUR);
 				break;
@@ -752,33 +783,35 @@ int g3_read3ds(gx_Mesh msh, const char *file) {
 	normMesh(msh, 0, NULL, NULL);
 	msh->hasTex = texi != 0;
 
-	return 0;
+	return 1;
 }
 int g3_saveObj(gx_Mesh msh, const char *file) {
-	FILE* out;
-	long i;
+	FILE* out = fopen(file, "wt");
 
-	if (!(out = fopen(file, "wt"))) {
-		gx_debug("fopen(%s, 'wt')", file);
-		return -1;
+	if (out == NULL) {
+		gx_debug("file open error: %s", file);
+		return 0;
 	}
 
-	for (i = 0; i < msh->vtxcnt; ++i) {
+	for (size_t i = 0; i < msh->vtxcnt; ++i) {
 		vector pos = msh->pos + i;
 		vector nrm = msh->nrm + i;
 		scalar s = msh->tex[i].s / 65535.;
 		scalar t = msh->tex[i].t / 65535.;
 		if (msh->hasTex && msh->hasNrm) {
-			fprintf(out, "#vertex: %ld\n", i);
+			fprintf(out, "#vertex: %ld\n", (long) i);
 		}
-		//~ fprintf(out, "v  %.*g %.*g %.*g\n", prec, pos->x, prec, pos->y, prec, pos->z);
-		//~ fprintf(out, "v  %g %g %g\n", roundto(pos->x, prec), roundto(pos->y, prec), roundto(pos->z, prec));
+
 		fprintf(out, "v  %g %g %g\n", pos->x, pos->y, pos->z);
-		if (msh->hasTex) fprintf(out, "vt %f %f\n", s, -t);
-		if (msh->hasNrm) fprintf(out, "vn %f %f %f\n", nrm->x, nrm->y, nrm->z);
+		if (msh->hasTex) {
+			fprintf(out, "vt %f %f\n", s, -t);
+		}
+		if (msh->hasNrm) {
+			fprintf(out, "vn %f %f %f\n", nrm->x, nrm->y, nrm->z);
+		}
 	}
 
-	for (i = 0; i < msh->tricnt; ++i) {
+	for (size_t i = 0; i < msh->tricnt; ++i) {
 		int i1 = msh->triptr[i].i1 + 1;
 		int i2 = msh->triptr[i].i2 + 1;
 		int i3 = msh->triptr[i].i3 + 1;
@@ -787,33 +820,47 @@ int g3_saveObj(gx_Mesh msh, const char *file) {
 			int i4 = msh->triptr[i+1].i2 + 1;
 			int I3 = msh->triptr[i+1].i3 + 1;
 			if (i1 == I3 && i3 == I1) {
-				if (msh->hasTex && msh->hasNrm) fprintf(out, "f  %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d\n", i1, i1, i1, i2, i2, i2, i3, i3, i3, i4, i4, i4);
-				else if (msh->hasNrm) fprintf(out, "f  %d//%d %d//%d %d//%d %d//%d\n", i1, i1, i2, i2, i3, i3, i4, i4);
-				else if (msh->hasTex) fprintf(out, "f  %d/%d %d/%d %d/%d %d/%d\n", i1, i1, i2, i2, i3, i3, i4, i4);
-				else fprintf(out, "f  %d %d %d %d\n", i1, i2, i3, i4);
+				if (msh->hasTex && msh->hasNrm) {
+					fprintf(out, "f  %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d\n", i1, i1, i1, i2, i2, i2, i3, i3, i3, i4, i4, i4);
+				}
+				else if (msh->hasNrm) {
+					fprintf(out, "f  %d//%d %d//%d %d//%d %d//%d\n", i1, i1, i2, i2, i3, i3, i4, i4);
+				}
+				else if (msh->hasTex) {
+					fprintf(out, "f  %d/%d %d/%d %d/%d %d/%d\n", i1, i1, i2, i2, i3, i3, i4, i4);
+				}
+				else {
+					fprintf(out, "f  %d %d %d %d\n", i1, i2, i3, i4);
+				}
 				++i;
 				continue;
 			}
 		}
-		if (msh->hasTex && msh->hasNrm) fprintf(out, "f  %d/%d/%d %d/%d/%d %d/%d/%d\n", i1, i1, i1, i2, i2, i2, i3, i3, i3);
-		else if (msh->hasNrm) fprintf(out, "f  %d//%d %d//%d %d//%d\n", i1, i1, i2, i2, i3, i3);
-		else if (msh->hasTex) fprintf(out, "f  %d/%d %d/%d %d/%d\n", i1, i1, i2, i2, i3, i3);
-		else fprintf(out, "f  %d %d %d\n", i1, i2, i3);
+		if (msh->hasTex && msh->hasNrm) {
+			fprintf(out, "f  %d/%d/%d %d/%d/%d %d/%d/%d\n", i1, i1, i1, i2, i2, i2, i3, i3, i3);
+		}
+		else if (msh->hasNrm) {
+			fprintf(out, "f  %d//%d %d//%d %d//%d\n", i1, i1, i2, i2, i3, i3);
+		}
+		else if (msh->hasTex) {
+			fprintf(out, "f  %d/%d %d/%d %d/%d\n", i1, i1, i2, i2, i3, i3);
+		}
+		else {
+			fprintf(out, "f  %d %d %d\n", i1, i2, i3);
+		}
 	}
 
-	for (i = 0; i < msh->segcnt; ++i) {
+	for (size_t i = 0; i < msh->segcnt; ++i) {
 		int i1 = msh->segptr[i].p1 + 1;
 		int i2 = msh->segptr[i].p2 + 1;
 		fprintf(out, "l %d %d\n", i1, i2);
 	}
 
 	fclose(out);
-
-	return 0;
+	return 1;
 }
 
 void bboxMesh(gx_Mesh msh, vector min, vector max) {
-	long i;
 	if (msh->vtxcnt == 0) {
 		vecldf(min, 0, 0, 0, 0);
 		vecldf(max, 0, 0, 0, 0);
@@ -822,64 +869,31 @@ void bboxMesh(gx_Mesh msh, vector min, vector max) {
 
 	*min = *max = msh->pos[0];
 
-	for (i = 1; i < msh->vtxcnt; i += 1) {
+	for (size_t i = 1; i < msh->vtxcnt; i += 1) {
 		vecmax(max, max, &msh->pos[i]);
 		vecmin(min, min, &msh->pos[i]);
 	}
 }
 
-/*
-void centMesh(gx_Mesh msh, scalar size) {
-	long i;
-	struct vector min, max, use;
+void normMesh(gx_Mesh msh, scalar tolerance, vector recenter, vector resize) {
 
-	bboxMesh(msh, &min, &max);
-
-	vecsca(&use, vecadd(&use, &max, &min), 1./2);		// scale
-
-	for (i = 0; i < msh->vtxcnt; i += 1) {
-		vecsub(&msh->pos[i], &msh->pos[i], &use);
-	}
-
-	if (size == 0) {
+	if (msh->vtxcnt == 0) {
 		return;
 	}
+	struct vector min = msh->pos[0];
+	struct vector max = msh->pos[0];
 
-	vecsub(&use, &max, &min);		// resize
-	if (use.x < use.y)
-		use.x = use.y;
-	if (use.x < use.z)
-		use.x = use.z;
-	size = 2 * size / use.x;
-
-	for (i = 0; i < msh->vtxcnt; i += 1) {
-		vecsca(&msh->pos[i], &msh->pos[i], size);
-		msh->pos[i].w = 1;
-	}
-}
-*/
-
-/** recalculate mesh normals
- * 
- */
-void normMesh(gx_Mesh msh, scalar tolerance, vector recenter, vector resize) {
-	struct vector move = vec(0, 0, 0, 0);
-	struct vector size = vec(1, 1, 1, 0);
-	struct vector min = vec(0, 0, 0, 0);
-	struct vector max = vec(0, 0, 0, 0);
-
-	//bboxMesh(msh, &min, &max);
-	for (int i = 0; i < msh->vtxcnt; i += 1) {
+	for (size_t i = 0; i < msh->vtxcnt; i += 1) {
 		vecldf(&msh->nrm[i], 0, 0, 0, 1);
 		vecmax(&max, &max, &msh->pos[i]);
 		vecmin(&min, &min, &msh->pos[i]);
 	}
 
-	for (int i = 0; i < msh->tricnt; i += 1) {
+	for (size_t i = 0; i < msh->tricnt; i += 1) {
 		struct vector nrm;
-		long i1 = msh->triptr[i].i1;
-		long i2 = msh->triptr[i].i2;
-		long i3 = msh->triptr[i].i3;
+		size_t i1 = msh->triptr[i].i1;
+		size_t i2 = msh->triptr[i].i2;
+		size_t i3 = msh->triptr[i].i3;
 		backface(&nrm, &msh->pos[i1], &msh->pos[i2], &msh->pos[i3]);
 		vecadd(&msh->nrm[i1], &msh->nrm[i1], &nrm);
 		vecadd(&msh->nrm[i2], &msh->nrm[i2], &nrm);
@@ -887,8 +901,8 @@ void normMesh(gx_Mesh msh, scalar tolerance, vector recenter, vector resize) {
 	}
 
 	if (tolerance != 0) {
-		for (int i = 1; i < msh->vtxcnt; i += 1) {
-			for (int j = 0; j < i; j += 1) {
+		for (size_t i = 1; i < msh->vtxcnt; i += 1) {
+			for (size_t j = 0; j < i; j += 1) {
 				if (vtxcmp(msh, i, j, tolerance) < 2) {
 					struct vector nrm;
 					vecadd(&nrm, &msh->nrm[j], &msh->nrm[i]);
@@ -900,12 +914,14 @@ void normMesh(gx_Mesh msh, scalar tolerance, vector recenter, vector resize) {
 		}
 	}
 
+	struct vector move = vec(0, 0, 0, 0);
 	if (recenter != NULL) {
 		vecadd(&move, &max, &min);
 		vecsca(&move, &move, 1.f / 2);
 		vecadd(&move, &move, recenter);
 	}
 
+	struct vector size = vec(1, 1, 1, 0);
 	if (resize != NULL) {
 		vecsub(&size, &max, &min);
 		scalar asp = 0;
@@ -931,7 +947,7 @@ void normMesh(gx_Mesh msh, scalar tolerance, vector recenter, vector resize) {
 	}
 
 	// normalize normals, move 
-	for (int i = 0; i < msh->vtxcnt; i += 1) {
+	for (size_t i = 0; i < msh->vtxcnt; i += 1) {
 		vecsub(&msh->pos[i], &msh->pos[i], &move);
 		vecmul(&msh->pos[i], &msh->pos[i], &size);
 		msh->pos[i].w = 1;
@@ -939,159 +955,3 @@ void normMesh(gx_Mesh msh, scalar tolerance, vector recenter, vector resize) {
 		msh->nrm[i].w = 0;
 	}
 }
-
-/**	subdivide mesh
- *	TODO: not bezier curve => patch eval
-**/
-static void pntri(struct vector res[10], gx_Mesh msh, int i1, int i2, int i3) {
-	#define P1 (msh->pos + i1)
-	#define P2 (msh->pos + i2)
-	#define P3 (msh->pos + i3)
-	#define N1 (msh->nrm + i1)
-	#define N2 (msh->nrm + i2)
-	#define N3 (msh->nrm + i3)
-	struct vector tmp[3];
-	scalar w12 = vecdp3(vecsub(tmp, P2, P1), N1);
-	scalar w13 = vecdp3(vecsub(tmp, P3, P1), N1);
-	scalar w21 = vecdp3(vecsub(tmp, P1, P2), N2);
-	scalar w23 = vecdp3(vecsub(tmp, P3, P2), N2);
-	scalar w31 = vecdp3(vecsub(tmp, P1, P3), N3);
-	scalar w32 = vecdp3(vecsub(tmp, P2, P3), N3);
-
-	vector b300 = veccpy(res + 0, P1);
-	vector b030 = veccpy(res + 1, P2);
-	vector b003 = veccpy(res + 2, P3);
-
-	vector b210 = vecsca(res + 3, vecsub(tmp, vecadd(tmp, vecsca(tmp, P1, 2), P2), vecsca(tmp + 1, N1, w12)), 1./3);
-	vector b120 = vecsca(res + 4, vecsub(tmp, vecadd(tmp, vecsca(tmp, P2, 2), P1), vecsca(tmp + 1, N2, w21)), 1./3);
-	vector b021 = vecsca(res + 5, vecsub(tmp, vecadd(tmp, vecsca(tmp, P2, 2), P3), vecsca(tmp + 1, N2, w23)), 1./3);
-	vector b012 = vecsca(res + 6, vecsub(tmp, vecadd(tmp, vecsca(tmp, P3, 2), P2), vecsca(tmp + 1, N3, w32)), 1./3);
-	vector b102 = vecsca(res + 7, vecsub(tmp, vecadd(tmp, vecsca(tmp, P3, 2), P1), vecsca(tmp + 1, N3, w31)), 1./3);
-	vector b201 = vecsca(res + 8, vecsub(tmp, vecadd(tmp, vecsca(tmp, P1, 2), P3), vecsca(tmp + 1, N1, w13)), 1./3);
-
-	vector E = vecsca(tmp + 1, vecadd(tmp, vecadd(tmp, vecadd(tmp, vecadd(tmp, vecadd(tmp, b210, b120), b021), b012), b102), b201), 1./6);
-	vector V = vecsca(tmp + 2, vecadd(tmp, vecadd(tmp, P1, P2), P3), 1./3);
-	vector b111 = vecsca(res + 9, vecadd(tmp, E, vecsub(tmp, E, V)), 1./2);
-
-	(void)b300;
-	(void)b030;
-	(void)b003;
-
-	(void)b210;
-	(void)b120;
-	(void)b021;
-	(void)b012;
-	(void)b102;
-	(void)b201;
-
-	(void)b111;
-
-	#undef P1
-	#undef P2
-	#undef P3
-	#undef N1
-	#undef N2
-	#undef N3
-}
-
-static vector bezexp(struct vector res[4], vector p0, vector c0, vector c1, vector p1) {
-	struct vector tmp[5];
-	p0 = veccpy(tmp + 1, p0);
-	c0 = veccpy(tmp + 2, c0);
-	p1 = veccpy(tmp + 3, p1);
-	c1 = veccpy(tmp + 4, c1);
-
-	veccpy(res + 0, p0);
-	vecsca(res + 1, vecsub(tmp, c0, p0), 3);
-	vecsub(res + 2, vecsca(tmp, vecsub(tmp, c1, c0), 3), res+1);
-	vecsub(res + 3, vecsub(tmp, vecsub(tmp, p1, res+2), res+1), res+0);
-	return res;
-}
-static vector bezevl(struct vector res[1], struct vector p[4], scalar t) {
-	//~ p = (((p3 * t + p2) * t + p1) * t + p0);
-	vecadd(res, vecsca(res, p+3, t), p+2);
-	vecadd(res, vecsca(res, res, t), p+1);
-	vecadd(res, vecsca(res, res, t), p+0);
-	return res;
-}
-
-// subdivide using bezier
-int sdvtxBP(gx_Mesh msh, int a, int b, vector c1, vector c2) {
-	struct vector tmp[6];//, res[3];
-	int r = getvtx(msh, msh->vtxcnt);
-	vecnrm(msh->nrm + r, vecadd(tmp, msh->nrm + a, msh->nrm + b));
-	bezevl(msh->pos + r, bezexp(tmp, msh->pos + a, c1, c2, msh->pos + b), .5);
-	return r;
-}
-int sdvtx(gx_Mesh msh, int a, int b) {
-	struct vector tmp[1];
-	int r = getvtx(msh, msh->vtxcnt);
-	vecnrm(msh->nrm + r, vecadd(tmp, msh->nrm + a, msh->nrm + b));
-	vecsca(msh->pos + r, vecadd(tmp, msh->pos + a, msh->pos + b), .5);
-	return r;
-}
-
-void sdivMesh(gx_Mesh msh, int smooth) {
-	unsigned i, n = msh->tricnt;
-	if (smooth) for (i = 0; i < n; i++) {
-		struct vector pn[11];
-		unsigned i1 = msh->triptr[i].i1;
-		unsigned i2 = msh->triptr[i].i2;
-		unsigned i3 = msh->triptr[i].i3;
-		unsigned i4, i5, i6;
-		pntri(pn, msh, i1, i2, i3);
-		i4 = sdvtxBP(msh, i1, i2, pn + 3, pn + 4);
-		i5 = sdvtxBP(msh, i2, i3, pn + 5, pn + 6);
-		i6 = sdvtxBP(msh, i3, i1, pn + 7, pn + 8);
-
-		msh->triptr[i].i2 = i4;
-		msh->triptr[i].i3 = i6;
-		addtri(msh, i4, i2, i5);
-		addtri(msh, i5, i3, i6);
-		addtri(msh, i4, i5, i6);
-	}
-	else for (i = 0; i < n; i++) {
-		signed i1 = msh->triptr[i].i1;
-		signed i2 = msh->triptr[i].i2;
-		signed i3 = msh->triptr[i].i3;
-		signed i4 = sdvtx(msh, i1, i2);
-		signed i5 = sdvtx(msh, i2, i3);
-		signed i6 = sdvtx(msh, i3, i1);
-
-		msh->triptr[i].i2 = i4;
-		msh->triptr[i].i3 = i6;
-		addtri(msh, i4, i2, i5);
-		addtri(msh, i5, i3, i6);
-		addtri(msh, i4, i5, i6);
-	}
-}
-// */
-
-void optiMesh(gx_Mesh msh, scalar tol, int prgCB(float prec)) {
-	long i, j, k, n;
-	if (prgCB == NULL)
-		prgCB = prgDefCB;
-	prgCB(0);
-	for (n = i = 1; i < msh->vtxcnt; i += 1) {
-		if (prgCB(precent(i, msh->vtxcnt)) == -1) break;
-		for (j = 0; j < n && vtxcmp(msh, i, j, tol) != 0; j += 1);
-
-		if (j == n) {
-			msh->pos[n] = msh->pos[i];
-			msh->nrm[n] = msh->nrm[i];
-			msh->tex[n] = msh->tex[i];
-			n++;
-		}
-		//~ else vecadd(&msh->vtxptr[j].nrm, &msh->vtxptr[j].nrm, &msh->vtxptr[i].nrm);
-		for (k = 0; k < msh->tricnt; k += 1) {
-			if (msh->triptr[k].i1 == i) msh->triptr[k].i1 = j;
-			if (msh->triptr[k].i2 == i) msh->triptr[k].i2 = j;
-			if (msh->triptr[k].i3 == i) msh->triptr[k].i3 = j;
-		}
-	}
-	msh->vtxcnt = n;
-	if (prgCB(100) == -1) return;
-	//~ printf("vtx cnt %d\n", msh->vtxcnt);
-
-	//~ for (j = 0; j < n; j += 1) vecnrm(&msh->vtxptr[j].nrm, &msh->vtxptr[j].nrm);
-}// */

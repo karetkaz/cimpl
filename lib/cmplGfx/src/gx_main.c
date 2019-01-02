@@ -359,12 +359,12 @@ static vmError surf_calcHist(nfcContext ctx) {
 		dptr += surf->scanLen;
 	}
 
-	int max = 1;
-	int useB = bch(rgb);
-	int useG = gch(rgb);
-	int useR = rch(rgb);
-	int useL = ach(rgb);
-	for (int i = 0; i < 256; i += 1) {
+	uint32_t max = 1;
+	uint32_t useB = bch(rgb);
+	uint32_t useG = gch(rgb);
+	uint32_t useR = rch(rgb);
+	uint32_t useL = ach(rgb);
+	for (size_t i = 0; i < 256; i += 1) {
 		histoB[i] = histoB[i] * useB >> 8;
 		histoG[i] = histoG[i] * useG >> 8;
 		histoR[i] = histoR[i] * useR >> 8;
@@ -384,7 +384,7 @@ static vmError surf_calcHist(nfcContext ctx) {
 	}
 
 	argb *data = lut.ref;
-	for (int x = 0; x < 256; x += 1) {
+	for (size_t x = 0; x < 256; x += 1) {
 		data[x].b = clamp_u8(histoB[x] * 255 / max);
 		data[x].g = clamp_u8(histoG[x] * 255 / max);
 		data[x].r = clamp_u8(histoR[x] * 255 / max);
@@ -544,10 +544,14 @@ static vmError mesh_open(nfcContext ctx) {
 	result->hasTex = result->hasNrm = 0;
 	result->tricnt = result->vtxcnt = 0;
 	if (ctx->proto == proto_mesh_openObj) {
-		g3_readObj(result, path);
+		if (!g3_readObj(result, path)) {
+			return nativeCallError;
+		}
 	}
 	else if (ctx->proto == proto_mesh_open3ds) {
-		g3_read3ds(result, path);
+		if (!g3_read3ds(result, path)) {
+			return nativeCallError;
+		}
 	}
 	else {
 		meshMemMgr(ctx->rt, result, 0);
@@ -567,7 +571,9 @@ static vmError mesh_save(nfcContext ctx) {
 		return nativeCallError;
 	}
 
-	g3_saveObj(mesh, path);
+	if (!g3_saveObj(mesh, path)) {
+		return nativeCallError;
+	}
 	return noError;
 }
 
@@ -589,7 +595,9 @@ static vmError mesh_addVertex(nfcContext ctx) {
 	float32_t y = nextValue(ctx).f32;
 	float32_t z = nextValue(ctx).f32;
 	struct vector pos;
-	addvtx(mesh, vecldf(&pos, x, y, z, 0), NULL, NULL);
+	if (!addvtx(mesh, vecldf(&pos, x, y, z, 0), NULL, NULL)) {
+		return nativeCallError;
+	}
 	return noError;
 }
 
@@ -743,7 +751,7 @@ static const char *proto_lights_diffuse = "void diffuse(int32 light, float r, fl
 static const char *proto_lights_specular = "void specular(int32 light, float r, float g, float b)";
 static const char *proto_lights_attenuation = "void attenuation(int32 light, float constant, float linear, float quadratic)";
 static vmError lights_manager(nfcContext ctx) {
-	int light = nextValue(ctx).i32;
+	size_t light = nextValue(ctx).i32;
 
 	if (light >= (sizeof(lights) / sizeof(*lights))) {
 		return nativeCallError;
@@ -951,7 +959,7 @@ int cmplInit(rtContext rt) {
 	ccContext cc = rt->cc;
 
 	// rectangle in 2d
-	rt->api.ccAddCode(cc, __FILE__, __LINE__, "struct gxRect:1 {\n"
+	rt->api.ccAddUnit(cc, NULL, __FILE__, __LINE__, "struct gxRect:1 {\n"
 		"	int32 x;\n"
 		"	int32 y;\n"
 		"	int32 w;\n"
@@ -966,7 +974,7 @@ int cmplInit(rtContext rt) {
 	symn symMesh = rt->api.ccAddType(cc, "gxMesh", sizeof(struct gx_Mesh), 1);
 
 	if (rt->api.ccExtend(cc, symMesh)) {
-		for (int i = 0; i < sizeof(nfcMesh) / sizeof(*nfcMesh); i += 1) {
+		for (size_t i = 0; i < sizeof(nfcMesh) / sizeof(*nfcMesh); i += 1) {
 			if (!rt->api.ccAddCall(cc, nfcMesh[i].func, nfcMesh[i].proto)) {
 				return 1;
 			}
@@ -1005,7 +1013,7 @@ int cmplInit(rtContext rt) {
 
 	// type: gxSurf
 	if (rt->api.ccExtend(cc, symSurf)) {
-		for (int i = 0; i < sizeof(nfcSurf) / sizeof(*nfcSurf); i += 1) {
+		for (size_t i = 0; i < sizeof(nfcSurf) / sizeof(*nfcSurf); i += 1) {
 			if (!rt->api.ccAddCall(cc, nfcSurf[i].func, nfcSurf[i].proto)) {
 				return 1;
 			}
@@ -1015,7 +1023,7 @@ int cmplInit(rtContext rt) {
 
 	symn symCam = rt->api.ccBegin(cc, "camera");
 	if (symCam != NULL) {
-		for (int i = 0; i < sizeof(nfcCamera) / sizeof(*nfcCamera); i += 1) {
+		for (size_t i = 0; i < sizeof(nfcCamera) / sizeof(*nfcCamera); i += 1) {
 			if (!rt->api.ccAddCall(cc, nfcCamera[i].func, nfcCamera[i].proto)) {
 				return 1;
 			}
@@ -1025,7 +1033,7 @@ int cmplInit(rtContext rt) {
 
 	symn symLights = rt->api.ccBegin(cc, "lights");
 	if (symLights != NULL) {
-		for (int i = 0; i < sizeof(nfcLights) / sizeof(*nfcLights); i += 1) {
+		for (size_t i = 0; i < sizeof(nfcLights) / sizeof(*nfcLights); i += 1) {
 			if (!rt->api.ccAddCall(cc, nfcLights[i].func, nfcLights[i].proto)) {
 				return 1;
 			}
@@ -1051,7 +1059,7 @@ int cmplInit(rtContext rt) {
 		rt->api.ccDefInt(cc, "KEY_MASK_SHIFT", KEY_MASK_SHIFT);
 		rt->api.ccDefInt(cc, "KEY_MASK_CONTROL", KEY_MASK_CONTROL);
 
-		for (int i = 0; i < sizeof(nfcWindow) / sizeof(*nfcWindow); i += 1) {
+		for (size_t i = 0; i < sizeof(nfcWindow) / sizeof(*nfcWindow); i += 1) {
 			if (!rt->api.ccAddCall(cc, nfcWindow[i].func, nfcWindow[i].proto)) {
 				return 1;
 			}
@@ -1069,7 +1077,7 @@ int cmplInit(rtContext rt) {
 		camset(cam, &eye, &tgt, &up);
 
 		memset(lights, 0, sizeof(lights));
-		for (int i = 1; i < sizeof(lights) / sizeof(*lights); ++i) {
+		for (size_t i = 1; i < sizeof(lights) / sizeof(*lights); ++i) {
 			lights[i - 1].next = lights + i;
 		}
 	}

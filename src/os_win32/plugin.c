@@ -2,7 +2,7 @@
 
 static struct pluginLib {
 	struct pluginLib *next;		// next plugin
-	void (*onClose)();
+	void (*onClose)(rtContext rt);
 	HANDLE handle;
 } *pluginLibs = NULL;
 
@@ -40,7 +40,7 @@ void closeLibs(rtContext rt) {
 		pluginLibs = lib->next;
 
 		if (lib->onClose != NULL) {
-			lib->onClose();
+			lib->onClose(rt);
 		}
 		if (lib->handle) {
 			FreeLibrary(lib->handle);

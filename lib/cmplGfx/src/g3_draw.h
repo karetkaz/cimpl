@@ -2,7 +2,6 @@
 #include "g3_math.h"
 
 enum {
-	//~ draw_none = 0x00000000,		//
 	draw_plot = 0x00000001,		//
 	draw_wire = 0x00000002,		//
 	draw_fill = 0x00000003,		//
@@ -11,7 +10,6 @@ enum {
 	zero_cbuf = 0x00000004,		// clear color buffer
 	zero_zbuf = 0x00000008,		// clear z buffer
 
-	//~ cull_none = 0x00000000,		// no cull
 	cull_back = 0x00000010,		// front face
 	cull_front= 0x00000020,		// back face
 	cull_all  = 0x00000030,		// back & front face
@@ -74,9 +72,9 @@ typedef struct gx_Mesh {
 	gx_Surf map;			// texture map
 	struct gx_Material mtl;	// back, fore?
 
-	long maxvtx, vtxcnt;	// vertices
-	long maxtri, tricnt;	// triangles
-	long maxseg, segcnt;	// segments
+	size_t maxvtx, vtxcnt;	// vertices
+	size_t maxtri, tricnt;	// triangles
+	size_t maxseg, segcnt;	// segments
 	//size_t maxgrp, grpcnt;	// grouping
 	struct vector *pos;		// (x, y, z, 1) position
 	struct vector *nrm;		// (x, y, z, 0) normal
@@ -84,13 +82,13 @@ typedef struct gx_Mesh {
 
 	struct tri {			// triangle list
 		// signed id;	// groupId
-		long i1;
-		long i2;
-		long i3;
+		size_t i1;
+		size_t i2;
+		size_t i3;
 	} *triptr;
 	struct seg {			// line list
-		long p1;
-		long p2;
+		size_t p1;
+		size_t p2;
 	} *segptr;
 	/* groups
 	struct grp {			// group list
@@ -115,19 +113,80 @@ int g3_readObj(gx_Mesh msh, const char *file);
 int g3_read3ds(gx_Mesh msh, const char *file);
 int g3_saveObj(gx_Mesh msh, const char *file);
 
+/**
+ * get the axis aligned bounding box of the mesh
+ * @param msh mesh
+ * @param min output vector containing the min values (x, y, z)
+ * @param max output vector containing the max values (x, y, z)
+ */
 void bboxMesh(gx_Mesh msh, vector min, vector max);
-//void centMesh(gx_Mesh msh, scalar size);
+
+/**
+ * recalculate mesh normals
+ * @param msh mesh
+ * @param tol tolerance
+ * @param center (optional) translate the mesh
+ * @param resize (optional) resize the mesh
+ */
 void normMesh(gx_Mesh msh, scalar tol, vector center, vector resize);
 
-long setvtx(gx_Mesh msh, long idx, vector pos, vector nrm, scalar tex[2]);
-static inline long addvtx(gx_Mesh msh, vector pos, vector nrm, scalar tex[2]) {
+/**
+ * update one vertex of the mesh at the given index
+ * @param msh mesh to be updated
+ * @param idx index of vertex
+ * @param pos update position
+ * @param nrm update normal
+ * @param tex update texture position
+ * @return 
+ */
+int setvtx(gx_Mesh msh, size_t idx, vector pos, vector nrm, scalar tex[2]);
+
+/**
+ * Add a new vertex to the mesh
+ * @param msh mesh to be updated
+ * @param pos update position
+ * @param nrm update normal
+ * @param tex update texture position
+ * @return 
+ */
+static inline int addvtx(gx_Mesh msh, vector pos, vector nrm, scalar tex[2]) {
 	return setvtx(msh, msh->vtxcnt, pos, nrm, tex);
 }
 
-long addseg(gx_Mesh msh, long p1, long p2);
-long addtri(gx_Mesh msh, long p1, long p2, long p3);
-long addquad(gx_Mesh msh, long p1, long p2, long p3, long p4);
+/**
+ * connect 2 points with a segment (line) in the mesh
+ * @param msh mesh to be updated
+ * @param p1 index of the first vertex
+ * @param p2 index of the second vertex
+ * @return 0 if not possible
+ */
+int addseg(gx_Mesh msh, size_t p1, size_t p2);
 
+/**
+ * connect 3 points (triangle) in the mesh
+ * @param msh mesh to be updated
+ * @param p1 index of the first vertex
+ * @param p2 index of the second vertex
+ * @param p3 index of the third vertex
+ * @return 0 if not possible
+ */
+int addtri(gx_Mesh msh, size_t p1, size_t p2, size_t p3);
+
+/**
+ * connect 4 points (add 2 triangles) in the mesh
+ * @param msh mesh to be updated
+ * @param p1 index of the first vertex
+ * @param p2 index of the second vertex
+ * @param p3 index of the third vertex
+ * @param p4 index of the fourth vertex
+ * @return 0 if not possible
+ */
+static inline int addquad(gx_Mesh msh, size_t p1, size_t p2, size_t p3, size_t p4) {
+	if (!addtri(msh, p1, p2, p3)) {
+		return 0;
+	}
+	return addtri(msh, p1, p3, p4);
+}
 
 void g3_drawline(gx_Surf dst, vector p1, vector p2, uint32_t c);
 int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, gx_Light lights, int mode);

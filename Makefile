@@ -3,7 +3,7 @@ CC_OUT=$(BINDIR)/obj.cc
 GX_OUT=$(BINDIR)/obj.gx
 GX_SRC=lib/cmplGfx/src
 
-CFLAGS=-Wall -g0 -O3 -std=gnu99
+CFLAGS=-Wall -Wextra -g0 -O3 -std=gnu99
 EMFLAGS=-s WASM=1 -s EXPORT_ALL=0 -s INVOKE_RUN=0 -s ALLOW_MEMORY_GROWTH=1 --no-heap-copy
 #EMFLAGS+=-s "EXPORTED_FUNCTIONS=['_main','_rtInit','_ccInit','_ccAddUnit','_ccGenCode','_execute']"
 EM_EMBED=--preload-file lib/stdlib.ci --preload-file lib/std/math.ci --preload-file lib/std/math.Complex.ci --preload-file lib/std/string.ci

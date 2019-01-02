@@ -176,22 +176,13 @@ symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto);
  * Compile the given file or text as a unit.
  * 
  * @param cc Compiler context.
+ * @param init function installing types and native functions.
  * @param file File name of input.
  * @param line First line of input.
  * @param text If not null, this will be compiled instead of the file.
  * @return Root node of the compilation unit.
  */
-astn ccAddUnit(ccContext cc, char *file, int line, char *text);
-
-/**
- * Add a new module or library
- * 
- * @param cc Compiler context.
- * @param init function installing types and native functions.
- * @param unit (optional) extension file to be compiled with this library.
- * @return error code/count, 0 on success.
- */
-int ccAddLib(ccContext cc, int init(ccContext), char *unit);
+astn ccAddUnit(ccContext cc, int init(ccContext), char *file, int line, char *text);
 
 /**
  * Generate bytecode from the compiled syntax tree.

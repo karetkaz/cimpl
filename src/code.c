@@ -50,7 +50,7 @@ typedef struct vmProcessor {
 	stkptr sp;		// Stack pointer
 	size_t ss;		// Stack size
 
-	// multi processing
+	// processing with multi units
 	unsigned int	cp;			// slaves (join == 0)
 	unsigned int	pp;			// parent (main == 0)
 } *vmProcessor;
@@ -131,6 +131,7 @@ static int decrementStackAccess(rtContext rt, size_t offsBegin, size_t offsEnd, 
 					ip->idx -= count;
 				}
 				break;
+
 			case opc_mov1:
 			case opc_mov2:
 			case opc_mov4:
@@ -143,7 +144,7 @@ static int decrementStackAccess(rtContext rt, size_t offsBegin, size_t offsEnd, 
 				break;
 
 			case opc_ldsp:
-				if (ip->rel > stack) {
+				if ((size_t) ip->rel > stack) {
 					ip->rel -= count * vm_stk_align;
 				}
 				break;
@@ -1412,6 +1413,23 @@ int testOcp(rtContext rt, size_t offs, vmOpcode opc, vmValue *arg) {
 	}
 	return 0;
 }
+void* nextOpc(rtContext rt, size_t *pc, size_t *ss) {
+	vmInstruction ip = vmPointer(rt, *pc);
+	if (ip == NULL) {
+		*pc = SIZE_MAX;
+		return NULL;
+	}
+
+	libc *nativeCalls = rt->vm.nfc;
+	switch (ip->opc) {
+#define STOP(__ERR, __CHK) if (__CHK) return NULL;
+#define NEXT(__IP, __SP, __CHK)\
+			if (ss != NULL) { *ss += vm_stk_align * (__SP); }\
+			*pc += (__IP);
+#include "code.inl"
+	}
+	return ip;
+}
 int fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
 	dieif(stc > 0 && stc & 3, ERR_INTERNAL_ERROR);
 	if (src != 0) {
@@ -1917,8 +1935,7 @@ int isChecked(dbgContext ctx) {
 	size_t maxTrace = pu->tp - (trcptr)pu->bp;
 	for (size_t i = 0; i < maxTrace; ++i) {
 		trcptr trace = &trcBase[maxTrace - i - 1];
-		symn fun = rtLookup(rt, trace->callee, 0);
-		if (fun == ctx->tryExec) {
+		if (trace->callee == ctx->tryExec->offs) {
 			return 1;
 		}
 	}
@@ -2627,22 +2644,4 @@ int vmSelfTest(void cb(const char *, const struct opcodeRec *)) {
 		}
 	}
 	return errors;
-}
-
-void* nextOpc(rtContext rt, size_t *pc, size_t *ss) {
-	vmInstruction ip = vmPointer(rt, *pc);
-	if (ip == NULL) {
-		*pc = SIZE_MAX;
-		return NULL;
-	}
-
-	libc *nativeCalls = rt->vm.nfc;
-	switch (ip->opc) {
-		#define STOP(__ERR, __CHK) if (__CHK) return NULL;
-		#define NEXT(__IP, __SP, __CHK)\
-			if (ss != NULL) { *ss += vm_stk_align * (__SP); }\
-			*pc += (__IP);
-		#include "code.inl"
-	}
-	return ip;
 }
