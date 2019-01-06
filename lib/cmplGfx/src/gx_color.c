@@ -5,7 +5,7 @@
 
 static int32_t defaultPalette[256];
 
-static void colcpy_32_24(void* dst, void *src, void *lut, size_t cnt) {
+static void colcpy_32_24(char* dst, char *src, void *lut, size_t cnt) {
 	// RRRRRRRR`GGGGGGGG`BBBBBBBB => 00000000`RRRRRRRR`GGGGGGGG`BBBBBBBB
 	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 3) {
 		register int32_t val = *(int32_t*)src;
@@ -14,7 +14,7 @@ static void colcpy_32_24(void* dst, void *src, void *lut, size_t cnt) {
 	}
 	(void)lut;
 }
-static void colcpy_32_16(void* dst, void *src, void *lut, size_t cnt) {
+static void colcpy_32_16(char* dst, char *src, void *lut, size_t cnt) {
 	// RRRRRGGG`GGGBBBBB => 00000000`RRRRR000`GGGGGG00`BBBBB000
 	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 2) {
 		register int32_t val = *(int16_t*)src;
@@ -25,7 +25,7 @@ static void colcpy_32_16(void* dst, void *src, void *lut, size_t cnt) {
 	}
 	(void)lut;
 }
-static void colcpy_32_15(void* dst, void *src, void *lut, size_t cnt) {
+static void colcpy_32_15(char* dst, char *src, void *lut, size_t cnt) {
 	// XRRRRRGG`GGGBBBBB => 00000000`RRRRR000`GGGGG000`BBBBB000
 	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 2) {
 		register int32_t val = *(int16_t*)src;
@@ -37,7 +37,7 @@ static void colcpy_32_15(void* dst, void *src, void *lut, size_t cnt) {
 	}
 	(void)lut;
 }
-void colcpy_32_08(void* dst, void *src, void *lut, size_t cnt) {
+static void colcpy_32_08(char* dst, char *src, void *lut, size_t cnt) {
 	// convert to gray or use lookup table
 	// IIIIIIII => 00000000`IIIIIIII`IIIIIIII`IIIIIIII
 	if (lut == NULL) {
@@ -49,31 +49,7 @@ void colcpy_32_08(void* dst, void *src, void *lut, size_t cnt) {
 		*(int32_t*)dst = val;
 	}
 }
-void colcpy_32_bgr(void* dst, void *src, void *lut, size_t cnt) {
-	// BBBBBBBB`GGGGGGGG`RRRRRRRR => 00000000`RRRRRRRR`GGGGGGGG`BBBBBBBB
-	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 3) {
-		register int32_t val = *(int32_t*)src;
-		val = ((val & 0xff0000) >> 16)
-			| (val & 0x00ff00)
-			| ((val & 0x0000ff) << 16);
-		*(int32_t*)dst = val;
-	}
-	(void)lut;
-}
-void colcpy_32_abgr(void* dst, void *src, void *lut, size_t cnt) {
-	// AAAAAAAA`BBBBBBBB`GGGGGGGG`RRRRRRRR => AAAAAAAA`RRRRRRRR`GGGGGGGG`BBBBBBBB
-	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 4) {
-		register int32_t val = *(int32_t*)src;
-		val = (val & 0xff000000)
-			| ((val & 0x00ff0000) >> 16)
-			| (val & 0x0000ff00)
-			| ((val & 0x000000ff) << 16);
-		*(int32_t*)dst = val;
-	}
-	(void)lut;
-}
-
-static void colcpy_32cpy(void* dst, void *src, void *lut, size_t cnt) {
+static void colcpy_32cpy(char* dst, char *src, void *lut, size_t cnt) {
 	if (lut != NULL) {
 		for ( ;cnt > 0; cnt -= 1, dst += 4, src += 4) {
 			register int32_t val = *(int32_t*)src;
@@ -87,28 +63,28 @@ static void colcpy_32cpy(void* dst, void *src, void *lut, size_t cnt) {
 		memcpy(dst, src, 4 * cnt);
 	}
 }
-static void colcpy_32and(void* dst, void *src, void *lut, size_t cnt) {
+static void colcpy_32and(char* dst, char *src, void *lut, size_t cnt) {
 	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 4) {
 		register uint32_t val = *(uint32_t*)src;
 		*(int32_t*)dst &= val;
 	}
 	(void)lut;
 }
-static void colcpy_32ior(void* dst, void *src, void *lut, size_t cnt) {
+static void colcpy_32ior(char* dst, char *src, void *lut, size_t cnt) {
 	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 4) {
 		register uint32_t val = *(uint32_t*)src;
 		*(int32_t*)dst |= val;
 	}
 	(void)lut;
 }
-static void colcpy_32xor(void* dst, void *src, void *lut, size_t cnt) {
+static void colcpy_32xor(char* dst, char *src, void *lut, size_t cnt) {
 	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 4) {
 		register uint32_t val = *(uint32_t*)src;
 		*(int32_t*)dst ^= val;
 	}
 	(void)lut;
 }
-static void colcpy_32mix(void* dst, void *src, void *lut, size_t cnt) {
+static void colcpy_32mix(char* dst, char *src, void *lut, size_t cnt) {
 	size_t alpha = (size_t) lut;
 	if (alpha == (size_t) -1) {
 		for (; cnt > 0; cnt -= 1, dst += 4, src += 4) {
@@ -126,15 +102,14 @@ static void colcpy_32mix(void* dst, void *src, void *lut, size_t cnt) {
 	}
 }
 
-void colset_32mix(void* dst, void *src, void *lut, size_t cnt) {
+static void colset_32mix(char* dst, char *src, void *lut, size_t cnt) {
 	argb alpha;
 	alpha.val = (uint32_t) (size_t) lut;
 	for (; cnt > 0; cnt -= 1, dst += 4, src += 1) {
 		*(argb *) dst = gx_mixcolor(*(argb *) dst, alpha, *(uint8_t *) src);
 	}
 }
-
-void colcpy_24_32(void* dst, void *src, void *lut, size_t cnt) {
+static void colcpy_24_32(char* dst, char *src, void *lut, size_t cnt) {
 	// 00000000`RRRRRRRR`GGGGGGGG`BBBBBBBB => RRRRRRRR`GGGGGGGG`BBBBBBBB
 	for ( ;cnt > 0; cnt -= 1, dst += 3, src += 4) {
 		register int32_t val = *(int32_t*)src;
@@ -143,113 +118,135 @@ void colcpy_24_32(void* dst, void *src, void *lut, size_t cnt) {
 	}
 	(void)lut;
 }
-
-static void colcpy_08cpy(void* dst, void *src, void *lut, size_t cnt) {
+static void colcpy_08cpy(char *dst, char *src, void *lut, size_t cnt) {
 	memcpy(dst, src, cnt);
 	(void)lut;
 }
-
 
 cblt_proc gx_getcbltf(cblt_type mode, int srcDepth) {
 	switch (mode) {
 		case cblt_conv_32:
 			switch (srcDepth) {
-				case cblt_conv_32: return colcpy_32cpy;
-				case cblt_conv_24: return colcpy_32_24;
-				case cblt_conv_16: return colcpy_32_16;
-				case cblt_conv_15: return colcpy_32_15;
-				case cblt_conv_08: return colcpy_32_08;
+				case cblt_conv_32: return (cblt_proc) colcpy_32cpy;
+				case cblt_conv_24: return (cblt_proc) colcpy_32_24;
+				case cblt_conv_16: return (cblt_proc) colcpy_32_16;
+				case cblt_conv_15: return (cblt_proc) colcpy_32_15;
+				case cblt_conv_08: return (cblt_proc) colcpy_32_08;
 			}
 			break;
 
 		case cblt_conv_24:
 			switch (srcDepth) {
-				case cblt_conv_32: return colcpy_24_32;
-//				case cblt_conv_24: return colcpy_24cpy;
-//				case cblt_conv_16: return colcpy_24_16;
-//				case cblt_conv_15: return colcpy_24_15;
-//				case cblt_conv_08: return colcpy_24_08;
+				case cblt_conv_32: return (cblt_proc) colcpy_24_32;
+//				case cblt_conv_24: return (cblt_proc) colcpy_24cpy;
+//				case cblt_conv_16: return (cblt_proc) colcpy_24_16;
+//				case cblt_conv_15: return (cblt_proc) colcpy_24_15;
+//				case cblt_conv_08: return (cblt_proc) colcpy_24_08;
 			}
 			break;
 		case cblt_conv_16:
 			switch (srcDepth) {
-//				case cblt_conv_32: return colcpy_16_32;
-//				case cblt_conv_24: return colcpy_16_24;
-//				case cblt_conv_16: return colcpy_16cpy;
-//				case cblt_conv_15: return colcpy_16_15;
-//				case cblt_conv_08: return colcpy_16_08;
+//				case cblt_conv_32: return (cblt_proc) colcpy_16_32;
+//				case cblt_conv_24: return (cblt_proc) colcpy_16_24;
+//				case cblt_conv_16: return (cblt_proc) colcpy_16cpy;
+//				case cblt_conv_15: return (cblt_proc) colcpy_16_15;
+//				case cblt_conv_08: return (cblt_proc) colcpy_16_08;
 			}
 			break;
 		case cblt_conv_15:
 			switch (srcDepth) {
-//				case cblt_conv_32: return colcpy_15_32;
-//				case cblt_conv_24: return colcpy_15_24;
-//				case cblt_conv_16: return colcpy_15_16;
-//				case cblt_conv_15: return colcpy_15cpy;
-//				case cblt_conv_08: return colcpy_15_08;
+//				case cblt_conv_32: return (cblt_proc) colcpy_15_32;
+//				case cblt_conv_24: return (cblt_proc) colcpy_15_24;
+//				case cblt_conv_16: return (cblt_proc) colcpy_15_16;
+//				case cblt_conv_15: return (cblt_proc) colcpy_15cpy;
+//				case cblt_conv_08: return (cblt_proc) colcpy_15_08;
 			}
 			break;
 		case cblt_conv_08:
 			switch (srcDepth) {
-//				case cblt_conv_32: return colcpy_08_32;
-//				case cblt_conv_24: return colcpy_08_24;
-//				case cblt_conv_16: return colcpy_08_16;
-//				case cblt_conv_15: return colcpy_08_15;
-				case cblt_conv_08: return colcpy_08cpy;
+//				case cblt_conv_32: return (cblt_proc) colcpy_08_32;
+//				case cblt_conv_24: return (cblt_proc) colcpy_08_24;
+//				case cblt_conv_16: return (cblt_proc) colcpy_08_16;
+//				case cblt_conv_15: return (cblt_proc) colcpy_08_15;
+				case cblt_conv_08: return (cblt_proc) colcpy_08cpy;
 			}
 			break;
 
 		case cblt_cpy_and:
 			switch (srcDepth) {
-				case cblt_conv_32: return colcpy_32and;
-//				case cblt_conv_24: return colcpy_24and;
-//				case cblt_conv_16: return colcpy_16and;
-//				case cblt_conv_15: return colcpy_15and;
-//				case cblt_conv_08: return colcpy_08and;
+				case cblt_conv_32: return (cblt_proc) colcpy_32and;
+//				case cblt_conv_24: return (cblt_proc) colcpy_24and;
+//				case cblt_conv_16: return (cblt_proc) colcpy_16and;
+//				case cblt_conv_15: return (cblt_proc) colcpy_15and;
+//				case cblt_conv_08: return (cblt_proc) colcpy_08and;
 			}
 			break;
 
 		case cblt_cpy_ior:
 			switch (srcDepth) {
-				case cblt_conv_32: return colcpy_32ior;
-//				case cblt_conv_24: return colcpy_24ior;
-//				case cblt_conv_16: return colcpy_16ior;
-//				case cblt_conv_15: return colcpy_15ior;
-//				case cblt_conv_08: return colcpy_08ior;
+				case cblt_conv_32: return (cblt_proc) colcpy_32ior;
+//				case cblt_conv_24: return (cblt_proc) colcpy_24ior;
+//				case cblt_conv_16: return (cblt_proc) colcpy_16ior;
+//				case cblt_conv_15: return (cblt_proc) colcpy_15ior;
+//				case cblt_conv_08: return (cblt_proc) colcpy_08ior;
 			}
 			break;
 
 		case cblt_cpy_xor:
 			switch (srcDepth) {
-				case cblt_conv_32: return colcpy_32xor;
-//				case cblt_conv_24: return colcpy_24xor;
-//				case cblt_conv_16: return colcpy_16xor;
-//				case cblt_conv_15: return colcpy_15xor;
-//				case cblt_conv_08: return colcpy_08xor;
+				case cblt_conv_32: return (cblt_proc) colcpy_32xor;
+//				case cblt_conv_24: return (cblt_proc) colcpy_24xor;
+//				case cblt_conv_16: return (cblt_proc) colcpy_16xor;
+//				case cblt_conv_15: return (cblt_proc) colcpy_15xor;
+//				case cblt_conv_08: return (cblt_proc) colcpy_08xor;
 			}
 			break;
 
 		case cblt_cpy_mix:
 			switch (srcDepth) {
-				case cblt_conv_32: return colcpy_32mix;
-//				case cblt_conv_24: return colcpy_24mix;
-//				case cblt_conv_16: return colcpy_16mix;
-//				case cblt_conv_15: return colcpy_15mix;
-//				case cblt_conv_08: return colcpy_08mix;
+				case cblt_conv_32: return (cblt_proc) colcpy_32mix;
+//				case cblt_conv_24: return (cblt_proc) colcpy_24mix;
+//				case cblt_conv_16: return (cblt_proc) colcpy_16mix;
+//				case cblt_conv_15: return (cblt_proc) colcpy_15mix;
+//				case cblt_conv_08: return (cblt_proc) colcpy_08mix;
 			}
 			break;
 
 		case cblt_set_mix:
 			switch (srcDepth) {
-				case cblt_conv_32: return colset_32mix;
-//				case cblt_conv_24: return colset_24mix;
-//				case cblt_conv_16: return colset_16mix;
-//				case cblt_conv_15: return colset_15mix;
-//				case cblt_conv_08: return colset_08mix;
+				case cblt_conv_32: return (cblt_proc) colset_32mix;
+//				case cblt_conv_24: return (cblt_proc) colset_24mix;
+//				case cblt_conv_16: return (cblt_proc) colset_16mix;
+//				case cblt_conv_15: return (cblt_proc) colset_15mix;
+//				case cblt_conv_08: return (cblt_proc) colset_08mix;
 			}
 			break;
 	}
 	return NULL;
+}
+
+void colcpy_32_abgr(char* dst, char *src, void *lut, size_t cnt) {
+	// AAAAAAAA`BBBBBBBB`GGGGGGGG`RRRRRRRR => AAAAAAAA`RRRRRRRR`GGGGGGGG`BBBBBBBB
+	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 4) {
+		register int32_t val = *(int32_t*)src;
+		val = (val & 0xff000000)
+			| ((val & 0x00ff0000) >> 16)
+			| (val & 0x0000ff00)
+			| ((val & 0x000000ff) << 16);
+		*(int32_t*)dst = val;
+	}
+	(void)lut;
+}
+void colcpy_32_bgr(char* dst, char *src, void *lut, size_t cnt) {
+	// BBBBBBBB`GGGGGGGG`RRRRRRRR => 00000000`RRRRRRRR`GGGGGGGG`BBBBBBBB
+	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 3) {
+		register int32_t val = *(int32_t*)src;
+		val = ((val & 0xff0000) >> 16)
+			| (val & 0x00ff00)
+			| ((val & 0x0000ff) << 16);
+		*(int32_t*)dst = val;
+	}
+	(void)lut;
 }
 
 static int32_t defaultPalette[256] = {

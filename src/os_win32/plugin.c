@@ -10,13 +10,13 @@ int importLib(rtContext rt, const char *path) {
 
 	HANDLE library = LoadLibraryA(path);
 	if (library == NULL) {
-		error(rt, NULL, 0, "Error[0x%08x] opening library: %s", GetLastError(), path);
+		error(rt, NULL, 0, "Error executing LoadLibrary(`%s`): 0x%08x", path, GetLastError());
 		return -2;
 	}
 
 	int (*install)(rtContext) = (void*)GetProcAddress(library, pluginLibInstall);
 	if (install == NULL) {
-		error(rt, NULL, 0, "Error[0x%08x] opening library: %s", GetLastError(), path);
+		error(rt, NULL, 0, "Error executing GetProcAddress(`%s`, `%s`): 0x%08x", path, pluginLibInstall, GetLastError());
 		FreeLibrary(library);
 		return -1;
 	}

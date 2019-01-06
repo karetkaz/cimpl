@@ -80,19 +80,23 @@ gx_Mesh g3_createMesh(gx_Mesh recycle, size_t n) {
 	recycle->freeMap = 0;
 	recycle->map = NULL;  // TODO: gx_createSurf(512, 512, 32, 2ds);
 
+	if (n < 16) {
+		n = 16;
+	}
+
 	recycle->tricnt = 0;
-	recycle->maxtri = n <= 0 ? 16 : n;
-	recycle->triptr = (struct tri*)malloc(sizeof(struct tri) * recycle->maxtri);
+	recycle->maxtri = n;
+	recycle->triptr = malloc(sizeof(struct tri) * n);
 
 	recycle->segcnt = 0;
-	recycle->maxseg = n <= 0 ? 16 : n;
-	recycle->segptr = (struct seg*)malloc(sizeof(struct seg) * recycle->maxseg);
+	recycle->maxseg = n;
+	recycle->segptr = malloc(sizeof(struct seg) * n);
 
 	recycle->vtxcnt = 0;
-	recycle->maxvtx = n <= 0 ? 16 : n;
-	recycle->pos = malloc(sizeof(struct vector) * recycle->maxvtx);
-	recycle->nrm = malloc(sizeof(struct vector) * recycle->maxvtx);
-	recycle->tex = malloc(sizeof(struct texcol) * recycle->maxvtx);
+	recycle->maxvtx = n;
+	recycle->pos = malloc(sizeof(struct vector) * n);
+	recycle->nrm = malloc(sizeof(struct vector) * n);
+	recycle->tex = malloc(sizeof(struct texcol) * n);
 
 	if (!recycle->triptr || !recycle->segptr || !recycle->pos || !recycle->nrm || !recycle->tex) {
 		gx_debug("out of memory");

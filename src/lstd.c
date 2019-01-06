@@ -162,15 +162,15 @@ static vmError b32lo(nfcContext args) {
 }
 
 static vmError b64sxt(nfcContext args) {
-	int64_t val = argi64(args, 12);
-	int32_t ofs = argi32(args, 8);
+	int64_t val = argi64(args, 8);
+	int32_t ofs = argi32(args, 4);
 	int32_t cnt = argi32(args, 0);
 	reti64(args, (val << (64 - (ofs + cnt))) >> (64 - cnt));
 	return noError;
 }
 static vmError b64zxt(nfcContext args) {
-	uint64_t val = (uint64_t) argi64(args, 12);
-	int32_t ofs = argi32(args, 8);
+	uint64_t val = argu64(args, 8);
+	int32_t ofs = argi32(args, 4);
 	int32_t cnt = argi32(args, 0);
 	retu64(args, (val << (64 - (ofs + cnt))) >> (64 - cnt));
 	return noError;

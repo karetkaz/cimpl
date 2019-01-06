@@ -1,7 +1,10 @@
 #!/bin/sh
 
-BIN=bin
+CMPL="$(dirname "$(dirname "$(readlink -f "$0")")")"
+echo "cmpl home is: $CMPL"
 
+cd $CMPL
+BIN=bin/lnx.gcc
 make clean BINDIR="$BIN"
 make -j 12 cmpl libFile.so libOpenGL.so libGfx.so cmpl.js cmpl.dbg.js BINDIR="$BIN"
 
@@ -28,21 +31,21 @@ $BIN/cmpl -X-stdin-steps -profile/t/P/G/M -api/a/m/d/p/u -asm/a/n/s -ast/t -dump
 $BIN/cmpl --test-vm
 #$BIN/cmpl>extras/Reference/Execution.md --dump-vm
 
-CMPL_HOME="$PWD"
-DUMP_FILE="$PWD/bin/test.dump.ci"
+BIN="$PWD/$BIN"
+TEST_FILES="$CMPL/test/*.ci"
+TEST_FILES="$TEST_FILES $CMPL/test/lang/*.ci"
+TEST_FILES="$TEST_FILES $CMPL/test/stdc/*.ci"
+TEST_FILES="$TEST_FILES $CMPL/test/cmplFile/*.ci"
+TEST_FILES="$TEST_FILES $CMPL/test/cmplGfx/*.ci"
+TEST_FILES="$TEST_FILES $CMPL/test/cmplGL/*.ci"
 
-TEST_FILES="$CMPL_HOME/test/*.ci"
-TEST_FILES="$TEST_FILES $CMPL_HOME/test/lang/*.ci"
-TEST_FILES="$TEST_FILES $CMPL_HOME/test/stdc/*.ci"
-TEST_FILES="$TEST_FILES $CMPL_HOME/test/cmplFile/*.ci"
-TEST_FILES="$TEST_FILES $CMPL_HOME/test/cmplGfx/*.ci"
-TEST_FILES="$TEST_FILES $CMPL_HOME/test/cmplGL/*.ci"
-
+DUMP_FILE="$PWD/bin/test.dump.linux.ci"
+rm "$DUMP_FILE"
 for file in $(echo "$TEST_FILES")
 do
 	cd $(dirname "$file")
 	echo "**** running test: $file"
-	$CMPL_HOME/bin/cmpl -X-stdin+steps -asm/n/s -run/g -log/a "$DUMP_FILE" -dump "$DUMP_FILE" -std"$CMPL_HOME/lib/stdlib.ci" "$CMPL_HOME/$BIN/libFile.so" "$CMPL_HOME/$BIN/libOpenGL.so" "$CMPL_HOME/$BIN/libGfx.so" "$CMPL_HOME/lib/cmplGfx/gfxlib.ci" "$file"
+	$BIN/cmpl -X-stdin+steps -asm/n/s -run/g -log/a "$DUMP_FILE" -dump "$DUMP_FILE" -std"$CMPL/lib/stdlib.ci" "$BIN/libFile.so" "$BIN/libOpenGL.so" "$BIN/libGfx.so" "$CMPL/lib/cmplGfx/gfxlib.ci" "$file"
 	if [ "$?" -ne "0" ]; then
 		echo "******** failed: $file"
 	fi

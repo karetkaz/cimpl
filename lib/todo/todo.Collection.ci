@@ -1,0 +1,539 @@
+// reference counted collection types.
+
+struct Iterator(struct Element): Object {
+
+	bool next(Iterator &this);
+
+	Element get(Iterator &this);
+
+	static bool next(Iterator &this, Element &&current) {
+		if (!this.next()) {
+			return false;
+		}
+		current = this.get();
+		return true;
+	}
+}
+
+/**
+ * A sequence is a finite or infinite enumeration of elements.
+ * All the elements have the same type, and they can repeat
+struct Sequence(struct Element): Object {
+	Iterator Iterator(Sequence this);
+}
+ */
+
+/**
+ * A collection is a finite enumeration of elements.
+ * All the elements have the same type, and they can repeat
+ */
+struct Collection(struct Element): Object {
+
+	int count(const Collection this);
+
+	Element get(const Collection this, int index);
+}
+
+inline count(Collection this) = this == null ? 0 : this.count();
+inline isEmpty(Collection this) = count(this) == 0;
+
+/// Collections are iterable
+Iterator Iterator(Collection(struct Element) collection) {
+	return {
+		Collection &collection = collection;
+		int position = -1;
+
+		bool next(CollectionIterator &this) {
+			if (this.position > this.collection.count()) {
+				return false;
+			}
+			this.position += 1;
+		}
+
+		Element get(CollectionIterator &this) {
+			return this.collection.get(this.position);
+		}
+	};
+}
+
+/// Array is a dynamic size collection
+struct Array(struct Element): Collection(Element) {
+
+	uint count;
+	uint capacity = -1;		// fixed size array by default
+
+	Element values[*];
+
+	// this is a slice of another array.
+	const Array owner = null;
+
+
+	inline Array(int capacity) = {
+		count: 0;
+		capacity: capacity;
+		values: pointer.malloc(capacity * sizeof(Element));
+	};
+
+	Array Array(const Array copy) {
+		Array result = Array(copy.count);
+		for (int i = 0; i < result.count; i += 1) {
+			result.values[i] = copy.values[i];
+		}
+		return result;
+	}
+
+	Array Array(const Element values...) {
+		Array result = Array(values.length);
+		for (int i = 0; i < result.count; i += 1) {
+			result.values[i] = values[i];
+		}
+		return result;
+	}
+
+	void void(Array this) {
+		if (this.owner == null) {
+			free(this.values);
+		}
+	}
+
+	int count(const Array this) {
+		return this.count;
+	}
+
+	static Element &ref(Array this, int index) {
+		assert(this != null, "Null Reference", this);
+		assert(uint(index) < this.count, "Index out of bounds", this);
+		return this.values[index];
+	}
+
+	Element &get(const Array this, int index) {
+		assert(this != null, "Null Reference", this);
+		assert(uint(index) < this.capacity, "Index out of bounds", this);
+		return this.values[index];
+	}
+
+	void set(Array this, int index, T value) {
+		assert(this != null, "Null Reference", this);
+		assert(uint(index) < this.capacity, "Index out of bounds", this);
+		this.values[index] = value;
+	}
+
+	Array slice(Array this, int from, int to) {
+		assert(to >= from);
+		assert(from >= 0);
+		assert(to < this.count);
+		return {
+			count: from - to;
+			values: this.values[to..from];
+			owner: this;
+		}
+	}
+
+	void remove(Array this, int from, int to) {...}
+
+	void insert(Array this, int index, Element items...) {...}
+
+	// enable get and set: ref returns an rvalue.
+	inline [](Array this, int index) = ref(this, index);
+
+	// slice
+	inline [](Array this, int from, int to) = slice(this, from, to);
+
+	static int bsearch(Element array[], Element value, int comparator(Element a, Element b)) {...}
+	static int indexOf(Element array[], Element value, bool comparator(Element a, Element b)) {...}
+	static int lastIndexOf(Element array[], Element value, bool comparator(Element a, Element b)) {...}
+
+	static void reverse(Element values[]) {...}
+	static void sort(Element values[], int comparator(Element a, Element b)) {...}
+	static void fill(Element values[], Element value, int from, int to) {...}
+
+	inline clear(Array array) = remove(array, 0, array.length);
+	inline removeAt(Array array, int at) = remove(array, at, at + 1);
+	inline remove(Array array, Element value) = removeAt(array.indexOf(value));
+
+	inline reverse(Array this) = reverse(this.values[0 .. this.count]);
+	inline sort(Array this, int comparator(Element a, Element b)) = sort(this.values[0 .. this.count], comparator);
+	inline fill(Array this, Element value, int from, int to) = fill(this.values[0 .. this.count], value, from, to);
+	inline fill(Array this, Element value) = fill(this.values[0 .. this.count], value, 0, this.count);
+
+	inline indexOf(Array this, Element value) = indexOf(this.values[0 .. this.count], value, null);
+	inline lastIndexOf(Array this, Element value) = lastIndexOf(this.values[0 .. this.count], value, null);
+	inline contains(Array this, Element value) = indexOf(this.values[0 .. this.count], value, null) >= 0;
+}
+
+struct Stack(struct Value): Collection(Value) {
+	Array[Value] values = Array(16);
+
+	/// count
+	int count(const Stack this) {
+		return this.values.count();
+	}
+
+	/// push
+	void push(Stack this, Value value) {
+		this.values.append(value);
+	}
+
+	/// peek
+	Value peek(Stack this) {
+		return this.values.last();
+	}
+
+	/// pop
+	Value pop(Stack this) {
+		return this.values.removeAt(this.values.count() - 1);
+	}
+}
+
+struct Queue(struct Value): Collection(Value) {
+	Array[Value] values = Array(16);
+
+	/// count
+	int count(const Queue this) {
+		return this.values.count();
+	}
+
+	/// push
+	void push(Queue this, Value value) {
+		this.values.append(value);
+	}
+
+	/// peek
+	Value peek(Stack this) {
+		return this.values.first();
+	}
+
+	/// take
+	Value take(Queue this) {
+		return this.values.removeAt(0);
+	}
+}
+
+struct Map(struct Key, struct Value): Collection(Key) {
+
+	bool has(const Map this, const Key &key);
+
+	Value &get(const Map this, const Key &key, const Value &defVal);
+
+	bool put(Map this, const Key &key, const Value &value);
+
+	bool remove(Map this, const Key &key);
+
+	// common functions
+	Value get(const Map this, const Key &key) {
+		return this.get(key, null);
+	}
+
+	void addAll(Map this, const Map copy) {
+		for (const Key &key : copy) {
+			this.put(key, copy[key]);
+		}
+	}
+
+	void addAll(Map this, const Key values[Value]) {
+		for (const Key &key : values) {
+			this.put(key, values[key]);
+		}
+	}
+}
+
+struct TreeMap(struct Key, struct Value): Map(Key, Value) {
+
+	int count;
+	int capacity;
+
+	Key keys[*];
+	Value values[*];
+
+	static int indexOf(const TreeMap this, const Key &key) {
+		//~ TODO: binary search on keys
+	}
+
+	/// count
+	int count(const TreeMap this) {
+		return this.count;
+	}
+
+	bool has(const TreeMap this, const Key &key) {
+		int pos = indexOf(this, key);
+		return pos >= 0;
+	}
+
+	Value &get(const TreeMap this, const Key &key, const Value &value) {
+		int pos = indexOf(this, key);
+		if (pos < 0) {
+			return value;
+		}
+		return values[pos];
+	}
+
+	bool put(TreeMap this, const Key &key, const Value &value) {
+		int pos = indexOf(this, key);
+		if (pos < 0) {
+			pos = ~pos;
+			this.count += 1;
+			assert(this.count < this.capacity);
+			for (int i = this.count; i > pos; i -= 1) {
+				this.keys[i] = this.keys[i - 1];
+				this.values[i] = this.values[i - 1];
+			}
+			this.keys[pos] = key;
+			this.values[pos] = value;
+			return false;
+		}
+		// update the value at the given position
+		this.values[pos] = value;
+		return true;
+	}
+
+	bool remove(TreeMap this, const Key &key) {
+		int pos = indexOf(this, key);
+		if (pos < 0) {
+			return false;
+		}
+		this.count -= 1;
+		for (int i = 0; i < this.count; i += 1) {
+			this.keys[i + 1] = this.keys[i];
+			this.values[i + 1] = this.values[i];
+		}
+		return true;
+	}
+
+	inline TreeMap(int capacity) = {
+		count: 0;
+		capacity: capacity;
+		keys: pointer.malloc(capacity * sizeof(Key));
+		values: pointer.malloc(capacity * sizeof(Value));
+	};
+
+	TreeMap TreeMap(const Map copy) {
+		TreeMap result = TreeMap(copy.count());
+		result.addAll(copy);
+		return result;
+	}
+
+	TreeMap TreeMap(const Key values[Value]) {
+		TreeMap result = TreeMap(values.length);
+		result.addAll(values);
+		return result;
+	}
+}
+
+struct HashMap(struct Key, struct Value): Map(Key, Value) {
+
+	int count = 0;
+	int capacity;
+
+	Key keys[*];
+	int hashes[*];
+	Value values[*];
+
+	int hash(const Key &key) = null;
+
+	static int indexOf(const TreeMap this, const Key &key) {
+		int keyHash = this.hash(key);
+		for (int idx = 0; i < this.count; i += 1) {
+			if (keyHash == this.hashes[i] && key == this.keys[i]) {
+				return idx;
+			}
+		}
+		return -1;
+	}
+
+	/// count
+	int count(const HashMap this) {
+		return this.count;
+	}
+
+	bool has(const HashMap this, const Key &key) {
+		int pos = indexOf(this, key);
+		return pos >= 0;
+	}
+
+	Value get(const HashMap this, const Key &key, const Value &defVal) {
+		int pos = indexOf(this, key);
+		if (pos < 0) {
+			return defVal;
+		}
+		return values[pos];
+	}
+
+	bool set(HashMap this, const Key &key, const Value &value) {
+		//~ TODO: implement
+	}
+
+	bool remove(HashMap this, const Key &key) {
+		//~ TODO: implement
+	}
+
+	inline HashMap(int capacity) = {
+		count: 0;
+		capacity: capacity;
+		keys: pointer.malloc(capacity * sizeof(Key));
+		hashes: pointer.malloc(capacity * sizeof(int));
+		values: pointer.malloc(capacity * sizeof(Value));
+	};
+
+	HashMap HashMap(const Map copy) {
+		HashMap result = HashMap(copy.count());
+		result.addAll(copy);
+		return result;
+	}
+
+	HashMap HashMap(const Key values[Value]) {
+		HashMap result = HashMap(values.length);
+		result.addAll(values);
+		return result;
+	}
+}
+
+struct Set(struct Key): Collection(Key) {
+	Map[Key, bool] values;
+
+	/// count
+	int count(const Set this) {
+		return this.values.count();
+	}
+
+	bool has(const Set this, const Key &key) {
+		return this.values.has(key);
+	}
+
+	bool get(const Set this, const Key &key) {
+		return this.values.get(key, false);
+	}
+
+	bool put(Set this, const Key &key) {
+		return this.values.put(key, true);
+	}
+
+	bool remove(Set this, const Key &key) {
+		return this.values.remove(key);
+	}
+
+	void addAll(Set this, const Set copy) {
+		for (const Key &key : copy) {
+			this.put(key, copy[key]);
+		}
+	}
+
+	void addAll(Set this, const Key values...) {
+		for (Key value : values) {
+			this.put(value);
+		}
+	}
+}
+
+struct TreeSet(struct Key): Set(Key) {
+	inline TreeSet(int capacity) = {
+		values: TreeMap[Key, bool](capacity);
+	};
+
+	TreeSet TreeSet(const Set copy) {
+		TreeSet result = TreeSet(copy.length);
+		result.addAll(copy);
+		return result;
+	}
+
+	TreeSet TreeSet(const Key values...) {
+		TreeSet result = TreeSet(values.length);
+		result.addAll(...values);
+		return result;
+	}
+}
+
+struct HashSet(struct Key): Set(Key) {
+	inline HashSet(int capacity) = {
+		values: HashMap[Key, bool](capacity);
+	};
+
+	HashSet HashSet(const Set copy) {
+		HashSet result = HashSet(copy.length);
+		result.addAll(copy);
+		return result;
+	}
+
+	HashSet HashSet(const Key values...) {
+		HashSet result = HashSet(values.length);
+		result.addAll(...values);
+		return result;
+	}
+}
+
+struct Bag(struct Key): Collection(Key) {
+	Map[Key, uint] values;
+
+	/// count
+	int count(const Bag this) {
+		return this.values.count();
+	}
+
+	bool has(const Set this, const Key &key) {
+		return this.values.get(key) > 0;
+	}
+
+	uint get(const Bag this, const Key &key) {
+		return this.values.get(key, 0);
+	}
+
+	bool put(Bag this, const Key &key) {
+		return this.values.put(key, this.get(key) + 1);
+	}
+
+	bool remove(Bag this, const Key &key) {
+		int count = this.get(key);
+		if (count > 1) {
+			// this must always return true
+			return this.values.put(key, count - 1);
+		}
+		return this.values.remove(key);
+	}
+
+	void addAll(Bag this, const Bag copy) {
+		for (const Key &key : copy) {
+			this.values.put(key, copy.get(key));
+		}
+	}
+
+	void addAll(Bag this, const Key values...) {
+		for (Key value : values) {
+			this.put(value);
+		}
+	}
+}
+
+struct TreeBag(struct Key): Bag(Key) {
+	inline TreeBag(int capacity) = {
+		values: TreeMap[Key, uint](capacity);
+	};
+
+	TreeBag TreeBag(const Bag copy) {
+		TreeBag result = TreeBag(copy.length);
+		result.addAll(copy);
+		return result;
+	}
+
+	TreeBag TreeBag(const Key values...) {
+		TreeBag result = TreeBag(values.length);
+		result.addAll(...values);
+		return result;
+	}
+}
+
+struct HashBag(struct Key): Bag(Key) {
+	inline HashBag(int capacity) = {
+		values: HashMap[Key, uint](capacity);
+	};
+
+	HashBag HashBag(const Bag copy) {
+		HashBag result = HashBag(copy.length);
+		result.addAll(copy);
+		return result;
+	}
+
+	HashBag HashBag(const Key values...) {
+		HashBag result = HashBag(values.length);
+		result.addAll(...values);
+		return result;
+	}
+}

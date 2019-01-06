@@ -3,10 +3,14 @@
 #ifndef __3D_MATH
 #define __3D_MATH
 
-#define _USE_MATH_DEFINES
+#include "gx_color.h"
+
 #include <math.h>
 #include <stddef.h>
-#include "gx_color.h"
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846264338327950288419716939937510582097494459
+#endif
 
 typedef float scalar;
 

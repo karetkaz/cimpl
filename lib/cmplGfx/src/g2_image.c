@@ -586,14 +586,14 @@ gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
 			return NULL;
 
 		case JCS_GRAYSCALE:	/* monochrome */
-			conv_2xrgb = colcpy_32_08;
+			conv_2xrgb = gx_getcbltf(cblt_conv_08, depth);
 			break;
 
 		case JCS_RGB:		/* red/green/blue */
 		case JCS_YCbCr:		/* Y/Cb/Cr (also known as YUV) */
 		case JCS_CMYK:		/* C/M/Y/K */
 		case JCS_YCCK:		/* Y/Cb/Cr/K */
-			conv_2xrgb = colcpy_32_bgr;
+			conv_2xrgb = (cblt_proc) colcpy_32_bgr;
 			break;
 	}
 
@@ -715,11 +715,11 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 			return NULL;
 
 		case 32:
-			conv_2xrgb = colcpy_32_abgr;
+			conv_2xrgb = (cblt_proc) colcpy_32_abgr;
 			break;
 
 		case 24:
-			conv_2xrgb = colcpy_32_bgr;
+			conv_2xrgb = (cblt_proc) colcpy_32_bgr;
 			break;
 
 		case 8:
@@ -727,7 +727,7 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 		case 2:
 		case 1:
 			// png_set_expand converts gray and paletted colors
-			conv_2xrgb = colcpy_32_bgr;
+			conv_2xrgb = (cblt_proc) colcpy_32_bgr;
 			break;
 	}
 

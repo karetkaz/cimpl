@@ -892,6 +892,24 @@ static astn parameters(ccContext cc, symn returns, astn function) {
 			error(cc->rt, arg->file, arg->line, ERR_UNEXPECTED_ATTR, attr);
 		}
 		if (!skipTok(cc, OPER_com, 0)) {
+			if (skipTok(cc, PNCT_dot3, 0)) {
+				symn arr = newDef(cc, KIND_typ);
+
+				// dynamic-size array: int a[]
+				addLength(cc, arr, NULL);
+				arr->size = 2 * sizeof(vmOffs);
+
+				arr->kind = ATTR_stat | KIND_typ | CAST_arr;
+				arr->offs = vmOffset(cc->rt, arr);
+				arr->type = parameter->type;
+				parameter->size = arr->size;
+				parameter->type = arr;
+				arg->type = arr;
+
+				parameter->kind &= ~MASK_cast;
+				parameter->kind |= CAST_arr;
+				parameter->kind |= ATTR_varg;
+			}
 			break;
 		}
 	}
@@ -1066,7 +1084,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		next = cc->tokNext;
 		if (ccInline(cc, tag) != 0) {
 			if (optional) {
-				warn(cc->rt, raiseInfo, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
+				warn(cc->rt, raiseWarn, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
 			} else {
 				error(cc->rt, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
 			}

@@ -44,7 +44,7 @@ SRC_GX=\
 cmpl: $(addprefix $(CC_OUT)/, $(notdir $(filter %.o, $(SRC_CC:%.c=%.o))))
 	gcc -o $(BINDIR)/cmpl $^ -lm -ldl
 
-SRC_GX_X11=$(SRC_GX) $GX_SRC/gx_gui.X11.c
+SRC_GX_X11=$(SRC_GX) $GX_SRC/os_linux/gx_gui.x11.c
 libGfx.so: $(addprefix $(GX_OUT)/, $(notdir $(filter %.o, $(SRC_GX_X11:%.c=%.o))))
 	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libGfx.so $^ -lm -ldl -lpng -ljpeg -lX11
 
@@ -59,7 +59,7 @@ libOpenGL.so: lib/cmplGL/src/openGL.c
 cmpl.exe: $(addprefix $(CC_OUT)/, $(notdir $(filter %.o, $(SRC_CC:%.c=%.o))))
 	gcc -o $(BINDIR)/cmpl $^ -lm
 
-SRC_GX_W32=$(SRC_GX) $GX_SRC/gx_gui.W32.c
+SRC_GX_W32=$(SRC_GX) $GX_SRC/os_win32/gx_gui.w32.c
 libGfx.dll: $(addprefix $(GX_OUT)/, $(notdir $(filter %.o, $(SRC_GX_W32:%.c=%.o))))
 	gcc -shared $(CFLAGS) -I src -o $(BINDIR)/libGfx.dll $^ -lm -lgdi32
 
@@ -85,7 +85,13 @@ clean:
 	mkdir $(MKDIRF) "$(GX_OUT)"
 
 $(CC_OUT)/%.o: src/%.c $(filter-out %.c, $(SRC_CC))
-	gcc $(CFLAGS) -o $@ -c $<
+	gcc $(CFLAGS) -o "$@" -c "$<"
 
 $(GX_OUT)/%.o: $(GX_SRC)/%.c $(filter-out %.c, $(SRC_CC))
-	gcc $(CFLAGS) -I src -o $@ -c $<
+	gcc $(CFLAGS) -I src -o "$@" -c "$<"
+
+$(GX_OUT)/%.o: $(GX_SRC)/os_win32/%.c $(filter-out %.c, $(SRC_CC))
+	gcc $(CFLAGS) -I src -o "$@" -c "$<"
+
+$(GX_OUT)/%.o: $(GX_SRC)/os_linux/%.c $(filter-out %.c, $(SRC_CC))
+	gcc $(CFLAGS) -I src -o "$@" -c "$<"

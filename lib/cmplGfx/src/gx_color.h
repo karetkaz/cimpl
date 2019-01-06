@@ -2,6 +2,7 @@
 #define __GX_COLOR
 
 #include <stdint.h>
+#include <stddef.h>
 
 typedef union {				// ARGB color structutre
 	uint32_t val;
@@ -105,8 +106,12 @@ static inline uint8_t clamp_u8(uint32_t val) {
 	return (uint8_t) val;
 }
 
+static inline argb cast_rgb(uint32_t val) {
+	return *(argb*)&val;
+}
+
 static inline argb make_rgb(unsigned a, unsigned r, unsigned g, unsigned b) {
-	return (argb)(uint32_t)(a << 24 | r << 16 | g << 8 | b);
+	return cast_rgb(a << 24 | r << 16 | g << 8 | b);
 }
 static inline argb clamp_srgb(signed a, signed r, signed g, signed b) {
 	return make_rgb(clamp_s8(a), clamp_s8(r), clamp_s8(g), clamp_s8(b));
@@ -128,7 +133,7 @@ static inline argb gx_mixcolor(argb c1, argb c2, int alpha) {
 	uint32_t g = c1.val & 0x00ff00;
 	g += alpha * ((c2.val & 0x00ff00) - g) >> 8;
 
-	return (argb)((rb & 0xff00ff) | (g & 0x00ff00));
+	return cast_rgb((rb & 0xff00ff) | (g & 0x00ff00));
 }
 static inline uint8_t gx_mixgray(uint32_t c1, uint32_t c2, int alpha) {
 	uint32_t c = c1 & 0xff;
@@ -136,13 +141,9 @@ static inline uint8_t gx_mixgray(uint32_t c1, uint32_t c2, int alpha) {
 	return (uint8_t) (c & 0xff);
 }
 
-
-void colcpy_32_abgr(void* dst, void *src, void *lut, size_t cnt);
-void colcpy_32_bgr(void* dst, void *src, void *lut, size_t cnt);
-void colcpy_32_08(void* dst, void *src, void *lut, size_t cnt);
-
-void colset_32mix(void* dst, void *src, void *lut, size_t cnt);
-
 cblt_proc gx_getcbltf(cblt_type type, int srcDepth);
+
+void colcpy_32_abgr(char* dst, char *src, void *lut, size_t cnt);
+void colcpy_32_bgr(char* dst, char *src, void *lut, size_t cnt);
 
 #endif

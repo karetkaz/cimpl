@@ -82,6 +82,7 @@ TOKEN_DEF(RIGHT_sqr, 0x00, 0, "]")                  // Right square bracket
 TOKEN_DEF(RIGHT_crl, 0x00, 0, "}")                  // Right curly bracket
 TOKEN_DEF(PNCT_qst,  0x00, 0, "?")                  // question mark
 TOKEN_DEF(PNCT_cln,  0x00, 0, ":")                  // colon
+TOKEN_DEF(PNCT_dot3, 0x00, 0, "...")                // triple dot
 
 TOKEN_DEF(ELSE_kwd, 0x00, 0, "else")
 

@@ -1,7 +1,8 @@
-#include <math.h>
-#include <stdlib.h>
 #include "gx_color.h"
 #include "gx_surf.h"
+#include "g3_math.h"
+
+#include <stdlib.h>
 
 gx_Surf gx_createSurf(gx_Surf recycle, int width, int height, int depth, surfFlags flags) {
 	if (recycle == NULL) {

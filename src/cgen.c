@@ -249,73 +249,6 @@ static ccKind genBranch(ccContext cc, astn ast) {
 	return CAST_vid;
 }
 
-/// Generate byte-code for variable indirect load.
-static ccKind genIndirection(ccContext cc, symn variable, ccKind get) {
-	rtContext rt = cc->rt;
-	symn type = variable->type;
-	ccKind typCast = refCast(type);
-	ccKind varCast = refCast(variable);
-
-	if (get == KIND_var) {
-		// load only the offset of the variable, no matter if its a reference or not
-		// HACK: currently used to get the length of a slice
-		return CAST_ref;
-	}
-
-	switch (variable->kind & MASK_kind) {
-		default:
-			fatal(ERR_INTERNAL_ERROR);
-			return CAST_any;
-
-		case KIND_def:
-			// generate inline
-			return genAst(cc, variable->init, get);
-
-		case KIND_typ:
-		case KIND_fun:
-			// typename is by reference, ex: pointer b = int32;
-			varCast = CAST_val;
-			typCast = CAST_ref;
-			break;
-
-		case KIND_var:
-			break;
-	}
-
-	if (get == CAST_ref || get == CAST_var || get == CAST_arr) {
-		if (varCast == get) {
-			// make a copy of a reference, variant or slice
-			if (!emitInt(rt, opc_ldi, variable->size)) {
-				return CAST_any;
-			}
-			return get;
-		}
-
-		if (varCast == CAST_ref || varCast == CAST_var || varCast == CAST_arr) {
-			// convert a variant or an array to a reference (ex: `int &a = var;`)
-			if (!emitInt(rt, opc_ldi, vm_ref_size)) {
-				return CAST_any;
-			}
-			return get;
-		}
-
-		// use the offset of the variable.
-		return get;
-	}
-
-	if (varCast == CAST_ref) {
-		// load reference indirection (variable is a reference to a value)
-		if (!emitInt(rt, opc_ldi, vm_ref_size)) {
-			return CAST_any;
-		}
-	}
-
-	// load the value of the variable
-	if (!emitInt(rt, opc_ldi, type->size)) {
-		return CAST_any;
-	}
-	return typCast;
-}
 /// Generate byte-code for variable declaration with initialization.
 static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 	rtContext rt = cc->rt;
@@ -398,6 +331,74 @@ static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 		}
 	}
 	return varCast;
+}
+
+/// Generate byte-code for variable indirect load.
+static ccKind genIndirection(ccContext cc, symn variable, ccKind get) {
+	rtContext rt = cc->rt;
+	symn type = variable->type;
+	ccKind typCast = refCast(type);
+	ccKind varCast = refCast(variable);
+
+	if (get == KIND_var) {
+		// load only the offset of the variable, no matter if its a reference or not
+		// HACK: currently used to get the length of a slice
+		return CAST_ref;
+	}
+
+	switch (variable->kind & MASK_kind) {
+		default:
+			fatal(ERR_INTERNAL_ERROR);
+			return CAST_any;
+
+		case KIND_def:
+			// generate inline
+			return genAst(cc, variable->init, get);
+
+		case KIND_typ:
+		case KIND_fun:
+			// typename is by reference, ex: pointer b = int32;
+			varCast = CAST_val;
+			typCast = CAST_ref;
+			break;
+
+		case KIND_var:
+			break;
+	}
+
+	if (get == CAST_ref || get == CAST_var || get == CAST_arr) {
+		if (varCast == get) {
+			// make a copy of a reference, variant or slice
+			if (!emitInt(rt, opc_ldi, variable->size)) {
+				return CAST_any;
+			}
+			return get;
+		}
+
+		if (varCast == CAST_ref || varCast == CAST_var || varCast == CAST_arr) {
+			// convert a variant or an array to a reference (ex: `int &a = var;`)
+			if (!emitInt(rt, opc_ldi, vm_ref_size)) {
+				return CAST_any;
+			}
+			return get;
+		}
+
+		// use the offset of the variable.
+		return get;
+	}
+
+	if (varCast == CAST_ref) {
+		// load reference indirection (variable is a reference to a value)
+		if (!emitInt(rt, opc_ldi, vm_ref_size)) {
+			return CAST_any;
+		}
+	}
+
+	// load the value of the variable
+	if (!emitInt(rt, opc_ldi, type->size)) {
+		return CAST_any;
+	}
+	return typCast;
 }
 /// Generate byte-code for variable usage.
 static ccKind genVariable(ccContext cc, symn variable, ccKind get, astn ast) {
@@ -484,6 +485,120 @@ static ccKind genVariable(ccContext cc, symn variable, ccKind get, astn ast) {
 	}
 
 	return genIndirection(cc, variable, get);
+}
+/// Generate byte-code for OPER_dot `a.b`. // TODO: merge with genVariable
+static ccKind genMember(ccContext cc, astn ast, ccKind get) {
+	rtContext rt = cc->rt;
+	symn object = linkOf(ast->op.lhso, 1);
+	symn member = linkOf(ast->op.rhso, 1);
+	int lhsStat = isTypeExpr(ast->op.lhso);
+
+	dbgCgen("%?s:%?u: %t", ast->file, ast->line, ast);
+	if (member == NULL && ast->op.rhso != NULL) {
+		astn call = ast->op.rhso;
+		if (call->kind == OPER_fnc) {
+			member = linkOf(call->op.lhso, 1);
+		}
+	}
+
+	if (!object || !member) {
+		traceAst(ast);
+		return CAST_any;
+	}
+
+	if (!isStatic(member) && lhsStat) {
+		error(rt, ast->file, ast->line, ERR_INVALID_FIELD_ACCESS, member);
+		return CAST_any;
+	}
+	if (isStatic(member)) {
+		if (!lhsStat && isVariable(object) && castOf(object->type) != CAST_arr) {
+			warn(rt, raiseWarn, ast->file, ast->line, WARN_STATIC_FIELD_ACCESS, member, object->type);
+		}
+		return genAst(cc, ast->op.rhso, get);
+	}
+
+	if (member->kind == KIND_def) {
+		// static array length is of this type
+		dbgCgen("accessing inline field %T: %t", member, ast);
+		return genAst(cc, ast->op.rhso, get);
+	}
+
+	ccKind lhsCast = CAST_ref;
+	if (member == cc->length_ref) {
+		// HACK: dynamic array length: do not load indirect the address of the first element 
+		lhsCast = KIND_var;
+	}
+
+	if (!genAst(cc, ast->op.lhso, lhsCast)) {
+		traceAst(ast);
+		return CAST_any;
+	}
+
+	if (!emitInt(rt, opc_inc, member->offs)) {
+		traceAst(ast);
+		return CAST_any;
+	}
+
+	return genIndirection(cc, member, get);
+}
+/// Generate byte-code for OPER_idx `a[b]`. // TODO: merge with genVariable
+static ccKind genIndex(ccContext cc, astn ast, ccKind get) {
+	rtContext rt = cc->rt;
+	struct astNode tmp;
+
+	// variant: push type of variable first or copy.
+	if (get == CAST_var && refCast(ast->type) != CAST_var) {
+		if (!emitVarOffs(rt, ast->type)) {
+			return CAST_any;
+		}
+	}
+
+	dbgCgen("%?s:%?u: %t", ast->file, ast->line, ast);
+	if (!genAst(cc, ast->op.lhso, CAST_ref)) {
+		traceAst(ast);
+		return CAST_any;
+	}
+
+	size_t elementSize = ast->type->size;	// size of array element
+	if (rt->foldConst && eval(cc, &tmp, ast->op.rhso) == CAST_i64) {
+		size_t offs = elementSize * intValue(&tmp);
+		if (!emitInt(rt, opc_inc, offs)) {
+			traceAst(ast);
+			return CAST_any;
+		}
+	}
+	else {
+		if (!genAst(cc, ast->op.rhso, refCast(cc->type_idx))) {
+			traceAst(ast);
+			return CAST_any;
+		}
+		if (!emitInt(rt, opc_mad, elementSize)) {
+			traceAst(ast);
+			return CAST_any;
+		}
+	}
+
+	if (get == KIND_var) {
+		return CAST_ref;
+	}
+
+	if (refCast(ast->type) == CAST_ref) {
+		if (!emitInt(rt, opc_ldi, vm_ref_size)) {
+			traceAst(ast);
+			return CAST_any;
+		}
+	}
+
+	if (get == CAST_ref || get == CAST_var) {
+		return get;
+	}
+
+	// we need the value on that position (this can be a ref).
+	if (!emitInt(rt, opc_ldi, elementSize)) {
+		traceAst(ast);
+		return CAST_any;
+	}
+	return refCast(ast->type);
 }
 
 /// Generate byte-code for OPER_fnc `a(b)`.
@@ -600,6 +715,8 @@ static ccKind genCall(ccContext cc, astn ast) {
 	struct astNode extraArguments[3];
 	size_t offsets[maxTokenCount];
 	astn values[maxTokenCount];
+	symn vaElemType = NULL;
+	astn vaList = NULL;
 
 	// save parameter offsets and init value
 	if (function->params != NULL) {
@@ -643,7 +760,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 		extraArguments->next = arg;
 		arg = extraArguments;
 
-		while (prm != NULL && arg != NULL) {
+		while (prm != NULL) {
 			if (argc >= maxTokenCount) {
 				error(cc->rt, ast->file, ast->line, ERR_EXPR_TOO_COMPLEX, ast);
 				traceAst(ast);
@@ -652,11 +769,19 @@ static ccKind genCall(ccContext cc, astn ast) {
 			offsets[argc] = prm->offs;
 			values[argc] = prm->init;
 			prm->init = arg;
+			argc += 1;
 
 			// advance
+			if ((prm->kind & ATTR_varg) != 0) {
+				vaElemType = prm->type->type;
+				vaList = arg;
+				arg = NULL;
+			}
 			prm = prm->next;
+			if (arg == NULL) {
+				break;
+			}
 			arg = arg->next;
-			argc += 1;
 		}
 
 		// more or less args than params is a fatal error
@@ -669,15 +794,101 @@ static ccKind genCall(ccContext cc, astn ast) {
 
 	const ccKind resultCast = refCast(function->params->type);
 	const size_t resultOffs = stkOffset(rt, function->params->size);
-
-	// convert const ref parameter arguments to local variables
 	struct {
 		struct symNode var;
 		struct astNode ast;
 	} tempArguments[8], *temp = tempArguments;
+
+	// first make an array of varargs
+	ssize_t vaLength = 0;
+	if (vaElemType != NULL) {
+		size_t vaStore = 0;
+		if (vaElemType->size % vm_stk_align != 0) {
+			vaStore = vaElemType->size;
+
+			size_t vaAlloc = 0;
+			for (astn arg = vaList; arg; arg = arg->next) {
+				vaAlloc += vaStore;
+			}
+
+			vaAlloc = padOffset(vaAlloc, vm_stk_align);
+			if (!emitInt(rt, opc_spc, vaAlloc)) {
+				traceAst(ast);
+				return CAST_any;
+			}
+		}
+		else {
+			// reverse the list of arguments: stack vorks in reverse order
+			astn reverse = NULL;
+			for (astn arg = vaList; arg; ) {
+				astn next = arg->next;
+				arg->next = reverse;
+				reverse = arg;
+				arg = next;
+			}
+			vaList = reverse;
+		}
+
+		// generate the arguments
+		size_t vaOffset = stkOffset(rt, 0);
+		for (astn arg = vaList; arg; arg = arg->next) {
+			if (!genAst(cc, arg, refCast(vaElemType))) {
+				traceAst(ast);
+				return CAST_any;
+			}
+			if (vaStore != 0) {
+				if (!emitStack(rt, opc_ldsp, vaOffset)) {
+					traceAst(ast);
+					return CAST_any;
+				}
+				if (!emitInt(rt, opc_sti, vaStore)) {
+					traceAst(ast);
+					return CAST_any;
+				}
+				vaOffset -= vaStore;
+			}
+			vaLength += 1;
+		}
+	}
+
+	// convert const ref parameter arguments to local variables
 	for (symn prm = function->params; prm; prm = prm->next) {
 		astn arg = prm->init;
 		ccKind typCast = refCast(prm->type);
+
+		if ((prm->kind & ATTR_varg) != 0) {
+			size_t vaOffset = stkOffset(rt, 0);
+			if (!emitOffs(rt, vaLength)) {
+				return CAST_any;
+			}
+			if (!emitStack(rt, opc_ldsp, vaOffset)) {
+				return CAST_any;
+			}
+
+			if (temp > tempArguments + lengthOf(tempArguments)) {
+				fatal(ERR_INTERNAL_ERROR);
+				return CAST_any;
+			}
+			memset(temp, 0, sizeof(*temp));
+			temp->var.name = "<.va_arg>";
+			temp->var.kind = ATTR_cnst | KIND_var | CAST_arr;
+			temp->var.type = prm->type;
+			temp->var.init = prm->init;
+			temp->var.offs = stkOffset(rt, 0);
+			temp->var.size = prm->size;
+			temp->var.file = prm->file;
+			temp->var.line = prm->line;
+
+			temp->ast.kind = TOKEN_var;
+			temp->ast.type = prm->type;
+			temp->ast.ref.link = &temp->var;
+			temp->ast.ref.name = prm->name;
+			temp->ast.ref.hash = 0;
+			temp->ast.ref.used = NULL;
+			prm->init = &temp->ast;
+			temp++;
+			break;
+		}
 
 		if (refCast(prm) != CAST_ref) {
 			continue;
@@ -691,10 +902,10 @@ static ccKind genCall(ccContext cc, astn ast) {
 			default:
 				break;
 
-				// if argument is already a variable, do not create a new one
 			case TOKEN_var:
 			case OPER_dot:
 			case OPER_idx:
+				// if argument is already a variable, do not create a new one
 				continue;
 
 			case TOKEN_any:
@@ -870,116 +1081,6 @@ static ccKind genCall(ccContext cc, astn ast) {
 	}
 
 	return resultCast;
-}
-
-/// Generate byte-code for OPER_idx `a[b]`.
-static ccKind genIndex(ccContext cc, astn ast, ccKind get) {
-	rtContext rt = cc->rt;
-	struct astNode tmp;
-
-	dbgCgen("%?s:%?u: %t", ast->file, ast->line, ast);
-	if (!genAst(cc, ast->op.lhso, CAST_ref)) {
-		traceAst(ast);
-		return CAST_any;
-	}
-
-	size_t elementSize = ast->type->size;	// size of array element
-	if (rt->foldConst && eval(cc, &tmp, ast->op.rhso) == CAST_i64) {
-		size_t offs = elementSize * intValue(&tmp);
-		if (!emitInt(rt, opc_inc, offs)) {
-			traceAst(ast);
-			return CAST_any;
-		}
-	}
-	else {
-		if (!genAst(cc, ast->op.rhso, refCast(cc->type_idx))) {
-			traceAst(ast);
-			return CAST_any;
-		}
-		if (!emitInt(rt, opc_mad, elementSize)) {
-			traceAst(ast);
-			return CAST_any;
-		}
-	}
-
-	if (get == KIND_var) {
-		return CAST_ref;
-	}
-
-	if (refCast(ast->type) == CAST_ref) {
-		if (!emitInt(rt, opc_ldi, vm_ref_size)) {
-			traceAst(ast);
-			return CAST_any;
-		}
-	}
-
-	if (get == CAST_ref) {
-		return CAST_ref;
-	}
-
-	// we need the value on that position (this can be a ref).
-	if (!emitInt(rt, opc_ldi, elementSize)) {
-		traceAst(ast);
-		return CAST_any;
-	}
-	return refCast(ast->type);
-}
-/// Generate byte-code for OPER_dot `a.b`.
-static ccKind genMember(ccContext cc, astn ast, ccKind get) {
-	rtContext rt = cc->rt;
-	// TODO: this should work as indexing
-	symn object = linkOf(ast->op.lhso, 1);
-	symn member = linkOf(ast->op.rhso, 1);
-	int lhsStat = isTypeExpr(ast->op.lhso);
-
-	dbgCgen("%?s:%?u: %t", ast->file, ast->line, ast);
-	if (member == NULL && ast->op.rhso != NULL) {
-		astn call = ast->op.rhso;
-		if (call->kind == OPER_fnc) {
-			member = linkOf(call->op.lhso, 1);
-		}
-	}
-
-	if (!object || !member) {
-		traceAst(ast);
-		return CAST_any;
-	}
-
-	if (!isStatic(member) && lhsStat) {
-		error(rt, ast->file, ast->line, ERR_INVALID_FIELD_ACCESS, member);
-		return CAST_any;
-	}
-	if (isStatic(member)) {
-		if (!lhsStat && isVariable(object) && castOf(object->type) != CAST_arr) {
-			warn(rt, raiseWarn, ast->file, ast->line, WARN_STATIC_FIELD_ACCESS, member, object->type);
-		}
-		return genAst(cc, ast->op.rhso, get);
-	}
-
-	if (member->kind == KIND_def) {
-		// static array length is of this type
-		dbgCgen("accessing inline field %T: %t", member, ast);
-		return genAst(cc, ast->op.rhso, get);
-	}
-
-	ccKind lhsCast = CAST_ref;
-	if (member == cc->length_ref) {
-		// HACK: dynamic array length: do not load indirect the address of the first element 
-		lhsCast = KIND_var;
-	}
-
-	if (!genAst(cc, ast->op.lhso, lhsCast)) {
-		traceAst(ast);
-		return CAST_any;
-	}
-
-	// TODO: invoke genVariable() with member
-	if (!emitInt(rt, opc_inc, member->offs)) {
-		traceAst(ast);
-		return CAST_any;
-	}
-
-	return genIndirection(cc, member, get);
 }
 
 /// Emit operator based on type: (add, sub, mul, ...)
@@ -1925,9 +2026,8 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 	}
 
 	if (ast->kind >= STMT_beg && ast->kind <= STMT_end) {
-		ssize_t locals = stkOffset(rt, 0) - spBegin;
-		if (get == CAST_vid && locals != 0) {
-			debug("%s:%u: locals left on stack(get: %K, size: %D): `%t`", ast->file, ast->line, get, locals, ast);
+		if (get == CAST_vid && spBegin != stkOffset(rt, 0)) {
+			debug("%s:%u: locals left on stack(get: %K, size: %D): `%t`", ast->file, ast->line, get, stkOffset(rt, 0) - spBegin, ast);
 			if (!emitStack(rt, opc_drop, spBegin)) {
 				traceAst(ast);
 				return CAST_any;
@@ -2229,6 +2329,7 @@ int ccGenCode(ccContext cc, int debug) {
 			// recalculate the offsets of the parameters
 			for (symn param = var->params; param != NULL; param = param->next) {
 				if (isStatic(param)) {
+					fatal(ERR_INTERNAL_ERROR);
 					continue;
 				}
 				if (param->size != 0) {
@@ -2238,16 +2339,41 @@ int ccGenCode(ccContext cc, int debug) {
 				param->offs = offs += param->size;
 			}
 
-			// reset the stack size
-			fixJump(rt, 0, 0, vm_ref_size + argsSize(var));
-
+			// function starts here
 			var->offs = emit(rt, markIP);
+
+			// reset the stack size and max jump
+			fixJump(rt, 0, var->offs, vm_ref_size + argsSize(var));
+
 			if (!genAst(cc, var->init, CAST_vid)) {
 				error(rt, var->file, var->line, ERR_EMIT_FUNCTION, var);
 				continue;
 			}
-			size_t end = emit(rt, markIP);
-			if (end == var->offs || !testOcp(rt, rt->vm.pc, opc_jmpi, NULL)) {
+			// add return instruction to functions with empty body
+			if (var->offs == emit(rt, markIP) && !emit(rt, opc_jmpi)) {
+				error(rt, var->file, var->line, ERR_EMIT_FUNCTION, var);
+				continue;
+			}
+			// remove the last (drop; ret) instructions if possible
+			if (testOcp(rt, rt->vm.pc, opc_spc, NULL)) {
+				size_t pc = var->offs;
+				size_t pc1 = pc;
+				while (pc < rt->vm.pc) {
+					pc1 = pc;
+					if (!nextOpc(rt, &pc, NULL)) {
+						fatal(ERR_INTERNAL_ERROR);
+						return -1;
+					}
+				}
+				if (rt->vm.px < pc1 && testOcp(rt, pc1, opc_jmpi, NULL)) {
+					// it is safe to remove the last opcode (clear stack)
+					if (rollbackPc(rt)) {
+						rt->vm.pc = pc1;
+					}
+				}
+			}
+			// last instruction of a function must be ret
+			if (!testOcp(rt, rt->vm.pc, opc_jmpi, NULL)) {
 				if (!emit(rt, opc_jmpi)) {
 					error(rt, var->file, var->line, ERR_EMIT_FUNCTION, var);
 					continue;

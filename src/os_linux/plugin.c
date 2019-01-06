@@ -10,13 +10,13 @@ int importLib(rtContext rt, const char *path) {
 
 	void *library = dlopen(path, RTLD_NOW);
 	if (library == NULL) {
-		error(rt, NULL, 0, "Error opening library: %s", dlerror());
+		error(rt, NULL, 0, "Error executing dlopen(`%s`): %s", path, dlerror());
 		return -2;
 	}
 
 	int (*install)(rtContext) = dlsym(library, pluginLibInstall);
 	if (install == NULL) {
-		error(rt, NULL, 0, "Error opening library: %s", dlerror());
+		error(rt, NULL, 0, "Error executing dlsym(`%s`, `%s`): %s", path, pluginLibInstall, dlerror());
 		dlclose(library);
 		return -1;
 	}

@@ -31,7 +31,8 @@ inline assert(bool condition) = void(condition ? void(0) : abort("assertion fail
 struct NotEquals {
 	const variant expected;
 	const variant returned;
-	const char message[*];
+	const variant argument = null;
+	const char message[*] = null;
 }
 
 // TODO: make inline

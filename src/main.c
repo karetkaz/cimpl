@@ -2288,7 +2288,13 @@ int main(int argc, char *argv[]) {
 		}
 		if (extra.compileSteps != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sExecute: byte-code", extra.compileSteps);}
 		long start = clock();
-		rt->errors = execute(rt, 0, NULL, NULL);
+		if (execute(rt, 0, NULL, NULL) == noError) {
+			// clear caught errors
+			rt->errors = 0;
+		}
+		else {
+			rt->errors = 1;
+		}
 		extra.rtTime = clock() - start;
 	}
 
@@ -2317,7 +2323,7 @@ int main(int argc, char *argv[]) {
 		fclose(extra.out);
 	}
 
-	// release resources
+	// close libraries
 	closeLibs(rt);
 
 	return rtClose(rt) != 0;

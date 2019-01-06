@@ -86,14 +86,30 @@ static inline vmInstruction lastIp(rtContext rt) {
 	return result;
 }
 
-// rollback the last emitted instruction.
-static inline void rollbackPc(rtContext rt) {
-	vmInstruction ip = lastIp(rt);
-	if ((void*)ip != rt->_beg) {
-		const struct opcodeRec *info = &opcode_tbl[ip->opc];
-		rt->vm.ss -= info->stack_out - info->stack_in;
-		rt->_beg = (memptr)ip;
+// TODO: remove fatals and check return value
+void *rollbackPc(rtContext rt) {
+	size_t ss = 0;
+	size_t pc = rt->vm.pc;
+	vmInstruction ip = nextOpc(rt, &pc, &ss);
+
+	if (ip == NULL || (void *) ip == rt->_beg) {
+		fatal(ERR_INTERNAL_ERROR);
+		return NULL;
 	}
+
+	if (rt->vm.px > rt->vm.pc) {
+		fatal(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+
+	if (rt->_beg != vmPointer(rt, pc)) {
+		fatal(ERR_INTERNAL_ERROR);
+		return NULL;
+	}
+
+	rt->vm.ss -= ss / vm_stk_align;
+	rt->_beg = (void *) ip;
+	return ip;
 }
 
 static int removeOpc(rtContext rt, size_t offs) {
@@ -1310,22 +1326,14 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				}
 			} */
 			break;
-
-		case opc_jmpi:
-			/* TODO: only if we have no jump here
-			ip = lastIp(rt);
-			if (ip->opc == opc_jmpi) {
-				//~ rt->_beg = (memptr)ip;
-				return rt->vm.pc;
-			}*/
-			break;
 	}
 
-	ip = (vmInstruction)rt->_beg;
+	// save previous program counter
+	rt->vm.pc = rt->_beg - rt->_mem;
 
+	ip = (vmInstruction) rt->_beg;
 	ip->opc = opc;
 	ip->arg = arg;
-	rt->vm.pc = rt->_beg - rt->_mem;	// previous program pointer is here
 
 	switch (opc) {
 		default:
@@ -1338,6 +1346,9 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				// offset is not known when emitting the instruction
 				// set it later using fixJump
 				break;
+			}
+			if (rt->vm.px < arg.u64) {
+				rt->vm.px = arg.u64;
 			}
 			ip->rel -= rt->vm.pc;
 			dieif((ip->rel + rt->vm.pc) != arg.u64, ERR_INTERNAL_ERROR);
@@ -1430,36 +1441,43 @@ void* nextOpc(rtContext rt, size_t *pc, size_t *ss) {
 	}
 	return ip;
 }
-int fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
+void fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
 	dieif(stc > 0 && stc & 3, ERR_INTERNAL_ERROR);
-	if (src != 0) {
-		vmInstruction ip = vmPointer(rt, src);
-		switch (ip->opc) {
-			default:
-				fatal(ERR_INTERNAL_ERROR);
-				return 0;
 
-			case opc_task:
-				ip->dl = (uint8_t) (stc / 4);
-				ip->cl = (uint16_t) (dst - src);
-				dieif(ip->dl != stc / 4, ERR_INTERNAL_ERROR);
-				dieif(ip->cl != dst - src, ERR_INTERNAL_ERROR);
-				return 1;
-
-				//~ case opc_ldsp:
-				//~ case opc_call:
-			case opc_jmp:
-			case opc_jnz:
-			case opc_jz:
-				ip->rel = (int32_t) (dst - src);
-				dieif(ip->rel != (int32_t) (dst - src), ERR_INTERNAL_ERROR);
-				break;
-		}
+	if (rt->vm.px < dst) {
+		// update max jump
+		rt->vm.px = dst;
 	}
 	if (stc != -1) {
+		// update stack used
 		rt->vm.ss = stc / vm_stk_align;
 	}
-	return 1;
+
+	if (src == 0) {
+		// update only stack size and max jump
+		return;
+	}
+
+	vmInstruction ip = vmPointer(rt, src);
+	switch (ip->opc) {
+		default:
+			fatal(ERR_INTERNAL_ERROR);
+			return;
+
+		case opc_task:
+			ip->dl = (uint8_t) (stc / 4);
+			ip->cl = (uint16_t) (dst - src);
+			dieif(ip->dl != stc / 4, ERR_INTERNAL_ERROR);
+			dieif(ip->cl != dst - src, ERR_INTERNAL_ERROR);
+			break;
+
+		case opc_jmp:
+		case opc_jnz:
+		case opc_jz:
+			ip->rel = (int32_t) (dst - src);
+			dieif(ip->rel != (int32_t) (dst - src), ERR_INTERNAL_ERROR);
+			break;
+	}
 }
 
 // TODO: to be removed.

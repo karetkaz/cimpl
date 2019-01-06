@@ -408,6 +408,14 @@ static ccToken readTok(ccContext cc, astn tok) {
 				goto read_num;
 			}
 			tok->kind = OPER_dot;
+			if (skipChr(cc, '.')) {
+				if (skipChr(cc, '.')) {
+					tok->kind = PNCT_dot3;
+				}
+				else {
+					tok->kind = TOKEN_any;
+				}
+			}
 			break;
 
 		case ';':

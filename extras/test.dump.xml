@@ -301,13 +301,13 @@
 				</stmt>
 				<stmt token=".variable" type="typename" kind="static const typename(ref)" value="NotEquals" />
 				<stmt token=".variable" type="function" kind="static const typename(ref)" value="assertEq(expected: int32, returned: int32, message: char[*]): void">
-					<init token="{}" type="void" kind="static const typename(void)" file="lib/stdlib.ci:38">
+					<init token="{}" type="void" kind="static const typename(void)" file="lib/stdlib.ci:39">
 						<stmt token="if" type="void" kind="static const typename(void)" stmt="if (returned == expected)">
 							<test token="==" type="bool" kind="static const typename(bool)" value="returned == expected">
 								<left token=".variable" type="int32" kind="static const typename(i32)" value="returned" />
 								<right token=".variable" type="int32" kind="static const typename(i32)" value="expected" />
 							</test>
-							<then token="{}" type="void" kind="static const typename(void)" file="lib/stdlib.ci:39">
+							<then token="{}" type="void" kind="static const typename(void)" file="lib/stdlib.ci:40">
 								<stmt token="return" type="void" kind="static const typename(void)" stmt="return;" />
 							</then>
 						</stmt>
@@ -345,6 +345,15 @@
 											<push token=".variable" type="char[*]" kind="static typename(arr)" value="message" />
 										</right>
 									</expr>
+								</stmt>
+								<stmt token=":=" type="void" kind="static const typename(void)" value="details.argument := (null)">
+									<left token="." type="variant" kind="static const typename(var)" value="details.argument">
+										<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+										<right token=".variable" type="variant" kind="static const typename(var)" value="argument" />
+									</left>
+									<right token="()" type="variant" kind="static const typename(var)" value="(null)">
+										<push token=".variable" type="pointer" kind="static const typename(ref)" value="null" />
+									</right>
 								</stmt>
 							</init>
 						</stmt>
@@ -393,6 +402,15 @@
 													<push token=".variable" type="char[*]" kind="static typename(arr)" value="message" />
 												</right>
 											</expr>
+										</stmt>
+										<stmt token=":=" type="void" kind="static const typename(void)" value="details.argument := (null)">
+											<left token="." type="variant" kind="static const typename(var)" value="details.argument">
+												<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+												<right token=".variable" type="variant" kind="static const typename(var)" value="argument" />
+											</left>
+											<right token="()" type="variant" kind="static const typename(var)" value="(null)">
+												<push token=".variable" type="pointer" kind="static const typename(ref)" value="null" />
+											</right>
 										</stmt>
 									</init>
 								</push>
@@ -5169,7 +5187,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="sinF64">
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testSin_f64">
 			<init token="()" type="float64" kind="static const typename(f64)" value="float64.sin(pi64 / (2))">
 				<push token="/" type="float64" kind="static const typename(f64)" value="pi64 / (2)">
 					<left token=".variable" type="float64" kind="static const typename(f64)" value="pi64" />
@@ -5183,7 +5201,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="cosF64">
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testCos_f64">
 			<init token="()" type="float64" kind="static const typename(f64)" value="float64.cos(pi64 / (2))">
 				<push token="/" type="float64" kind="static const typename(f64)" value="pi64 / (2)">
 					<left token=".variable" type="float64" kind="static const typename(f64)" value="pi64" />
@@ -5197,7 +5215,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="tanF64">
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testTan_f64">
 			<init token="()" type="float64" kind="static const typename(f64)" value="float64.tan(pi64 / (4))">
 				<push token="/" type="float64" kind="static const typename(f64)" value="pi64 / (4)">
 					<left token=".variable" type="float64" kind="static const typename(f64)" value="pi64" />
@@ -5211,7 +5229,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="logF64">
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testLog_f64">
 			<init token="()" type="float64" kind="static const typename(f64)" value="float64.log(e64 * e64 * e64)">
 				<push token="*" type="float64" kind="static const typename(f64)" value="e64 * e64 * e64">
 					<left token="*" type="float64" kind="static const typename(f64)" value="e64 * e64">
@@ -5226,7 +5244,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="expF64">
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testExp_f64">
 			<init token="()" type="float64" kind="static const typename(f64)" value="float64.exp(1.000000)">
 				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
 				<call token="." type="function" kind="static const typename(ref)" value="float64.exp">
@@ -5235,7 +5253,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="powF64">
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testPow_f64">
 			<init token="()" type="float64" kind="static const typename(f64)" value="float64.pow(pi64 * pi64, 0.500000)">
 				<push token="*" type="float64" kind="static const typename(f64)" value="pi64 * pi64">
 					<left token=".variable" type="float64" kind="static const typename(f64)" value="pi64" />
@@ -5248,7 +5266,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="sqrtF64">
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testSqrt_f64">
 			<init token="()" type="float64" kind="static const typename(f64)" value="float64.sqrt(pi64 * pi64)">
 				<push token="*" type="float64" kind="static const typename(f64)" value="pi64 * pi64">
 					<left token=".variable" type="float64" kind="static const typename(f64)" value="pi64" />
@@ -5260,7 +5278,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="atanF64">
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testAtan_f64">
 			<init token="()" type="float64" kind="static const typename(f64)" value="float64.atan2(pi64, 1.000000)">
 				<push token=".variable" type="float64" kind="static const typename(f64)" value="pi64">
 					<init token=".literal" type="float64" kind="static const typename(f64)" value="3.141593" />
@@ -5272,7 +5290,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="sinF32">
+		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="testSin_f32">
 			<init token="()" type="float32" kind="static const typename(f32)" value="float32.sin(pi32 / (2))">
 				<push token="/" type="float32" kind="static const typename(f32)" value="pi32 / (2)">
 					<left token=".variable" type="float32" kind="static const typename(f32)" value="pi32" />
@@ -5286,7 +5304,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="cosF32">
+		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="testCos_f32">
 			<init token="()" type="float32" kind="static const typename(f32)" value="float32.cos(pi32 / (2))">
 				<push token="/" type="float32" kind="static const typename(f32)" value="pi32 / (2)">
 					<left token=".variable" type="float32" kind="static const typename(f32)" value="pi32" />
@@ -5300,7 +5318,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="tanF32">
+		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="testTan_f32">
 			<init token="()" type="float32" kind="static const typename(f32)" value="float32.tan(pi32 / (4))">
 				<push token="/" type="float32" kind="static const typename(f32)" value="pi32 / (4)">
 					<left token=".variable" type="float32" kind="static const typename(f32)" value="pi32" />
@@ -5314,7 +5332,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="logF32">
+		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="testLog_f32">
 			<init token="()" type="float32" kind="static const typename(f32)" value="float32.log(e32 * e32 * e32)">
 				<push token="*" type="float32" kind="static const typename(f32)" value="e32 * e32 * e32">
 					<left token="*" type="float32" kind="static const typename(f32)" value="e32 * e32">
@@ -5329,7 +5347,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="expF32">
+		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="testExp_f32">
 			<init token="()" type="float32" kind="static const typename(f32)" value="float32.exp(1.000000)">
 				<push token=".literal" type="float32" kind="static const typename(f32)" value="1.000000" />
 				<call token="." type="function" kind="static const typename(ref)" value="float32.exp">
@@ -5338,7 +5356,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="powF32">
+		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="testPow_f32">
 			<init token="()" type="float32" kind="static const typename(f32)" value="float32.pow(pi32 * pi32, 0.500000)">
 				<push token="*" type="float32" kind="static const typename(f32)" value="pi32 * pi32">
 					<left token=".variable" type="float32" kind="static const typename(f32)" value="pi32" />
@@ -5351,7 +5369,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="sqrtF32">
+		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="testSqrt_f32">
 			<init token="()" type="float32" kind="static const typename(f32)" value="float32.sqrt(pi32 * pi32)">
 				<push token="*" type="float32" kind="static const typename(f32)" value="pi32 * pi32">
 					<left token=".variable" type="float32" kind="static const typename(f32)" value="pi32" />
@@ -5363,7 +5381,7 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="atanF32">
+		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="testAtan_f32">
 			<init token="()" type="float32" kind="static const typename(f32)" value="float32.atan2(pi32, 1.000000)">
 				<push token=".variable" type="float32" kind="static const typename(f32)" value="pi32">
 					<init token=".variable" type="float64" kind="static const typename(f64)" value="pi64">
@@ -5374,6 +5392,324 @@
 				<call token="." type="function" kind="static const typename(ref)" value="float32.atan2">
 					<left token=".variable" type="typename" kind="static const typename(ref)" value="float32" />
 					<right token=".variable" type="function" kind="static const typename(ref)" value="atan2" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="testPopulation_u32">
+			<init token="()" type="int32" kind="static const typename(i32)" value="uint32.pop(r5g6b5)">
+				<push token=".variable" type="int32" kind="static const typename(i32)" value="r5g6b5">
+					<init token="()" type="int32" kind="static const typename(i32)" value="rgb565(r_comp, g_comp, b_comp)">
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="r_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="14 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="14" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="g_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="63 &lt;&lt; 2">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="63" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="b_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="31 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="31" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="rgb565" />
+					</init>
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="uint32.pop">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="uint32" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="pop" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="uint32" kind="static const typename(u32)" value="testSwapBits_u32">
+			<init token="()" type="int32" kind="static const typename(i32)" value="uint32.swap(r5g6b5)">
+				<push token=".variable" type="int32" kind="static const typename(i32)" value="r5g6b5">
+					<init token="()" type="int32" kind="static const typename(i32)" value="rgb565(r_comp, g_comp, b_comp)">
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="r_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="14 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="14" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="g_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="63 &lt;&lt; 2">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="63" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="b_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="31 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="31" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="rgb565" />
+					</init>
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="uint32.swap">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="uint32" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="swap" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="testBitScanReverse_u32">
+			<init token="()" type="int32" kind="static const typename(i32)" value="uint32.bsr(r5g6b5)">
+				<push token=".variable" type="int32" kind="static const typename(i32)" value="r5g6b5">
+					<init token="()" type="int32" kind="static const typename(i32)" value="rgb565(r_comp, g_comp, b_comp)">
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="r_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="14 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="14" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="g_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="63 &lt;&lt; 2">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="63" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="b_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="31 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="31" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="rgb565" />
+					</init>
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="uint32.bsr">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="uint32" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="bsr" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="testBitScanForward_u32">
+			<init token="()" type="int32" kind="static const typename(i32)" value="uint32.bsf(r5g6b5)">
+				<push token=".variable" type="int32" kind="static const typename(i32)" value="r5g6b5">
+					<init token="()" type="int32" kind="static const typename(i32)" value="rgb565(r_comp, g_comp, b_comp)">
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="r_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="14 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="14" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="g_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="63 &lt;&lt; 2">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="63" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="b_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="31 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="31" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="rgb565" />
+					</init>
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="uint32.bsf">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="uint32" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="bsf" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="testHighBit_u32">
+			<init token="()" type="int32" kind="static const typename(i32)" value="uint32.hib(r5g6b5)">
+				<push token=".variable" type="int32" kind="static const typename(i32)" value="r5g6b5">
+					<init token="()" type="int32" kind="static const typename(i32)" value="rgb565(r_comp, g_comp, b_comp)">
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="r_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="14 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="14" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="g_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="63 &lt;&lt; 2">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="63" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="b_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="31 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="31" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="rgb565" />
+					</init>
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="uint32.hib">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="uint32" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="hib" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="testLowBit_u32">
+			<init token="()" type="int32" kind="static const typename(i32)" value="uint32.lob(r5g6b5)">
+				<push token=".variable" type="int32" kind="static const typename(i32)" value="r5g6b5">
+					<init token="()" type="int32" kind="static const typename(i32)" value="rgb565(r_comp, g_comp, b_comp)">
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="r_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="14 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="14" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="g_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="63 &lt;&lt; 2">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="63" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="b_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="31 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="31" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="rgb565" />
+					</init>
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="uint32.lob">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="uint32" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="lob" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="testZeroExtend_u32">
+			<init token="()" type="int32" kind="static const typename(i32)" value="uint32.zxt(r5g6b5, 0, 5)">
+				<push token=".variable" type="int32" kind="static const typename(i32)" value="r5g6b5">
+					<init token="()" type="int32" kind="static const typename(i32)" value="rgb565(r_comp, g_comp, b_comp)">
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="r_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="14 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="14" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="g_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="63 &lt;&lt; 2">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="63" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="b_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="31 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="31" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="rgb565" />
+					</init>
+				</push>
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="5" />
+				<call token="." type="function" kind="static const typename(ref)" value="uint32.zxt">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="uint32" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="zxt" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="testSignExtend_u32">
+			<init token="()" type="int32" kind="static const typename(i32)" value="uint32.sxt(r5g6b5, 0, 5)">
+				<push token=".variable" type="int32" kind="static const typename(i32)" value="r5g6b5">
+					<init token="()" type="int32" kind="static const typename(i32)" value="rgb565(r_comp, g_comp, b_comp)">
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="r_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="14 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="14" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="g_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="63 &lt;&lt; 2">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="63" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="b_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="31 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="31" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="rgb565" />
+					</init>
+				</push>
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="5" />
+				<call token="." type="function" kind="static const typename(ref)" value="uint32.sxt">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="uint32" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="sxt" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="testZeroExtend_u64">
+			<init token="()" type="int64" kind="static const typename(i64)" value="uint64.zxt(r5g6b5, 0, 5)">
+				<push token=".variable" type="int32" kind="static const typename(i32)" value="r5g6b5">
+					<init token="()" type="int32" kind="static const typename(i32)" value="rgb565(r_comp, g_comp, b_comp)">
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="r_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="14 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="14" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="g_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="63 &lt;&lt; 2">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="63" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="b_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="31 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="31" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="rgb565" />
+					</init>
+				</push>
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="5" />
+				<call token="." type="function" kind="static const typename(ref)" value="uint64.zxt">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="uint64" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="zxt" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="int32" kind="static const typename(i32)" value="testSignExtend_u64">
+			<init token="()" type="int64" kind="static const typename(i64)" value="uint64.sxt(r5g6b5, 0, 5)">
+				<push token=".variable" type="int32" kind="static const typename(i32)" value="r5g6b5">
+					<init token="()" type="int32" kind="static const typename(i32)" value="rgb565(r_comp, g_comp, b_comp)">
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="r_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="14 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="14" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="g_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="63 &lt;&lt; 2">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="63" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+							</init>
+						</push>
+						<push token=".variable" type="int32" kind="static const typename(i32)" value="b_comp">
+							<init token="&lt;&lt;" type="int32" kind="static const typename(i32)" value="31 &lt;&lt; 3">
+								<left token=".literal" type="int32" kind="static const typename(i32)" value="31" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+							</init>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="rgb565" />
+					</init>
+				</push>
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="5" />
+				<call token="." type="function" kind="static const typename(ref)" value="uint64.sxt">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="uint64" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="sxt" />
 				</call>
 			</init>
 		</stmt>
@@ -9301,6 +9637,1101 @@
 							<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 						</push>
 						<call token=".variable" type="function" kind="static const typename(ref)" value="debug" />
+					</expr>
+				</stmt>
+			</stmt>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathFloor_1">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.floor(3.200000)">
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="3.200000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.floor">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="floor" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathFloor_2">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.floor(3.500000)">
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="3.500000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.floor">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="floor" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathFloor_3">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.floor(3.600000)">
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="3.600000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.floor">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="floor" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathFloor_4">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.floor(-3.200000)">
+				<push token="-" type="float64" kind="static const typename(f64)" value="-3.200000">
+					<right token=".literal" type="float64" kind="static const typename(f64)" value="3.200000" />
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="Math.floor">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="floor" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathFloor_5">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.floor(-3.500000)">
+				<push token="-" type="float64" kind="static const typename(f64)" value="-3.500000">
+					<right token=".literal" type="float64" kind="static const typename(f64)" value="3.500000" />
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="Math.floor">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="floor" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathFloor_6">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.floor(-3.600000)">
+				<push token="-" type="float64" kind="static const typename(f64)" value="-3.600000">
+					<right token=".literal" type="float64" kind="static const typename(f64)" value="3.600000" />
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="Math.floor">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="floor" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathSign_1F">
+			<init token="()" type="int32" kind="static const typename(i32)" value="Math.sign(0.200000)">
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="0.200000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.sign">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="sign" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathSign_2F">
+			<init token="()" type="int32" kind="static const typename(i32)" value="Math.sign(0.000000)">
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="0.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.sign">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="sign" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathSign_3F">
+			<init token="()" type="int32" kind="static const typename(i32)" value="Math.sign(-0.900000)">
+				<push token="-" type="float64" kind="static const typename(f64)" value="-0.900000">
+					<right token=".literal" type="float64" kind="static const typename(f64)" value="0.900000" />
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="Math.sign">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="sign" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathSign_1f">
+			<init token="()" type="int32" kind="static const typename(i32)" value="Math.sign(0.200000)">
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="0.200000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.sign">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="sign" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathSign_2f">
+			<init token="()" type="int32" kind="static const typename(i32)" value="Math.sign(0.000000)">
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="0.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.sign">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="sign" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathSign_3f">
+			<init token="()" type="int32" kind="static const typename(i32)" value="Math.sign(-0.900000)">
+				<push token="-" type="float32" kind="static const typename(f32)" value="-0.900000">
+					<right token=".literal" type="float32" kind="static const typename(f32)" value="0.900000" />
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="Math.sign">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="sign" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathAbs_1F">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.abs(0.200000)">
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="0.200000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.abs">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="abs" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathAbs_2F">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.abs(0.000000)">
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="0.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.abs">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="abs" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathAbs_3F">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.abs(-0.900000)">
+				<push token="-" type="float64" kind="static const typename(f64)" value="-0.900000">
+					<right token=".literal" type="float64" kind="static const typename(f64)" value="0.900000" />
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="Math.abs">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="abs" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathAbs_1f">
+			<init token="()" type="float32" kind="static const typename(f32)" value="Math.abs(0.200000)">
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="0.200000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.abs">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="abs" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathAbs_2f">
+			<init token="()" type="float32" kind="static const typename(f32)" value="Math.abs(0.000000)">
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="0.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.abs">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="abs" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathAbs_3f">
+			<init token="()" type="float32" kind="static const typename(f32)" value="Math.abs(-0.900000)">
+				<push token="-" type="float32" kind="static const typename(f32)" value="-0.900000">
+					<right token=".literal" type="float32" kind="static const typename(f32)" value="0.900000" />
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="Math.abs">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="abs" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathMin_1f">
+			<init token="()" type="float32" kind="static const typename(f32)" value="Math.min(1.000000, 2.000000)">
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="1.000000" />
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="2.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.min">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="min" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathMax_2f">
+			<init token="()" type="float32" kind="static const typename(f32)" value="Math.max(1.000000, 2.000000)">
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="1.000000" />
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="2.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.max">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="max" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathMin_1F">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.min(1.000000, 2.000000)">
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="2.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.min">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="min" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathMax_2F">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.max(1.000000, 2.000000)">
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="2.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.max">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="max" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathClamp_1f">
+			<init token="()" type="float32" kind="static const typename(f32)" value="Math.clamp(10.000000, 0.000000, 1.000000)">
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="10.000000" />
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="0.000000" />
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="1.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.clamp">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="clamp" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathClamp_1F">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.clamp(10.000000, 0.000000, 1.000000)">
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="10.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="0.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.clamp">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="clamp" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathLerp_1f">
+			<init token="()" type="float32" kind="static const typename(f32)" value="Math.lerp(0.500000, 0.000000, 2.000000)">
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="0.500000" />
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="0.000000" />
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="2.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.lerp">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="lerp" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathLerp_1F">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.lerp(0.500000, 0.000000, 2.000000)">
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="0.500000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="0.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="2.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.lerp">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="lerp" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathSmooth_0f">
+			<init token="()" type="float32" kind="static const typename(f32)" value="Math.smooth(0.000000)">
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="0.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.smooth">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="smooth" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathSmooth_0F">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.smooth(0.000000)">
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="0.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.smooth">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="smooth" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathSmooth_1f">
+			<init token="()" type="float32" kind="static const typename(f32)" value="Math.smooth(1.000000, 0.000000, 1.000000)">
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="1.000000" />
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="0.000000" />
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="1.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.smooth">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="smooth" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathSmooth_1F">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.smooth(1.000000, 0.000000, 1.000000)">
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="0.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.smooth">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="smooth" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathMin_nan">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.min()">
+				<call token="." type="function" kind="static const typename(ref)" value="Math.min">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="min" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathMin_1">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.min(6, 2, 5, 8, 2, 1, 9, 2, 6)">
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="6" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="5" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="8" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="9" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="6" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.min">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="min" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathMax_nan">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.max()">
+				<call token="." type="function" kind="static const typename(ref)" value="Math.max">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="max" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathMax_9">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.max(6, 2, 5, 8, 2, 1, 9, 2, 6)">
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="6" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="5" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="8" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="9" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="6" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.max">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="max" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathSum_0">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.sum()">
+				<call token="." type="function" kind="static const typename(ref)" value="Math.sum">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="sum" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathSum_1">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.sum(1)">
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.sum">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="sum" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathSum_3">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.sum(1, 2)">
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.sum">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="sum" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathSum_55">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.sum(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)">
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="3" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="4" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="5" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="6" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="7" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="8" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="9" />
+				<push token=".literal" type="int32" kind="static const typename(i32)" value="10" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.sum">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="sum" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathEval_x">
+			<init token=".literal" type="int32" kind="static const typename(i32)" value="10" />
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathEval_0">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.eval(testMathEval_x)">
+				<push token=".variable" type="float64" kind="static const typename(f64)" value="testMathEval_x">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="10" />
+				</push>
+				<call token="." type="function" kind="static const typename(ref)" value="Math.eval">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="eval" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathEval_1">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.eval(testMathEval_x, 1.000000)">
+				<push token=".variable" type="float64" kind="static const typename(f64)" value="testMathEval_x">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="10" />
+				</push>
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.eval">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="eval" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathEval_2">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.eval(testMathEval_x, 1.000000, 1.000000)">
+				<push token=".variable" type="float64" kind="static const typename(f64)" value="testMathEval_x">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="10" />
+				</push>
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.eval">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="eval" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathEval_3">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000)">
+				<push token=".variable" type="float64" kind="static const typename(f64)" value="testMathEval_x">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="10" />
+				</push>
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.eval">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="eval" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathEval_4">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000)">
+				<push token=".variable" type="float64" kind="static const typename(f64)" value="testMathEval_x">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="10" />
+				</push>
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.eval">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="eval" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathEval_5">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000)">
+				<push token=".variable" type="float64" kind="static const typename(f64)" value="testMathEval_x">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="10" />
+				</push>
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.eval">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="eval" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="float64" kind="static const typename(f64)" value="testMathEval_6">
+			<init token="()" type="float64" kind="static const typename(f64)" value="Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000)">
+				<push token=".variable" type="float64" kind="static const typename(f64)" value="testMathEval_x">
+					<init token=".literal" type="int32" kind="static const typename(i32)" value="10" />
+				</push>
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<push token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+				<call token="." type="function" kind="static const typename(ref)" value="Math.eval">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="function" kind="static const typename(ref)" value="eval" />
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="assertEq(func: char[*], x: float64, returned: float64, expected: float64): void">
+			<init token="{}" type="void" kind="static const typename(void)" file="test/stdc/test.math.ci:59">
+				<stmt token=".variable" type="typename" kind="static const typename(ref)" value="epsilon">
+					<init token=".literal" type="float64" kind="static const typename(f64)" value="0.000000" />
+				</stmt>
+				<stmt token="if" type="void" kind="static const typename(void)" stmt="if (Math.cmp(returned, expected, epsilon) == 0)">
+					<test token="==" type="bool" kind="static const typename(bool)" value="Math.cmp(returned, expected, epsilon) == 0">
+						<left token="()" type="int32" kind="static const typename(i32)" value="Math.cmp(returned, expected, epsilon)">
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="returned" />
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="expected" />
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="epsilon" />
+							<call token="." type="function" kind="static const typename(ref)" value="Math.cmp">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="cmp" />
+							</call>
+						</left>
+						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+					</test>
+					<then token="{}" type="void" kind="static const typename(void)" file="test/stdc/test.math.ci:61">
+						<stmt token="return" type="void" kind="static const typename(void)" stmt="return;" />
+					</then>
+				</stmt>
+				<stmt token=".variable" type="NotEquals" kind="static const typename(val)" value="details">
+					<init token="{}" type="NotEquals" kind="static const typename(val)">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="details.expected := (expected);">
+							<expr token=":=" type="void" kind="static const typename(void)" value="details.expected := (expected)">
+								<left token="." type="variant" kind="static const typename(var)" value="details.expected">
+									<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+									<right token=".variable" type="variant" kind="static const typename(var)" value="expected" />
+								</left>
+								<right token="()" type="variant" kind="static const typename(var)" value="(expected)">
+									<push token=".variable" type="float64" kind="static const typename(f64)" value="expected" />
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="details.returned := (returned);">
+							<expr token=":=" type="void" kind="static const typename(void)" value="details.returned := (returned)">
+								<left token="." type="variant" kind="static const typename(var)" value="details.returned">
+									<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+									<right token=".variable" type="variant" kind="static const typename(var)" value="returned" />
+								</left>
+								<right token="()" type="variant" kind="static const typename(var)" value="(returned)">
+									<push token=".variable" type="float64" kind="static const typename(f64)" value="returned" />
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="details.argument := (x);">
+							<expr token=":=" type="void" kind="static const typename(void)" value="details.argument := (x)">
+								<left token="." type="variant" kind="static const typename(var)" value="details.argument">
+									<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+									<right token=".variable" type="variant" kind="static const typename(var)" value="argument" />
+								</left>
+								<right token="()" type="variant" kind="static const typename(var)" value="(x)">
+									<push token=".variable" type="float64" kind="static const typename(f64)" value="x" />
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="details.message := (func);">
+							<expr token=":=" type="void" kind="static const typename(void)" value="details.message := (func)">
+								<left token="." type="char[*]" kind="static typename(arr)" value="details.message">
+									<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+									<right token=".variable" type="char[*]" kind="static typename(arr)" value="message" />
+								</left>
+								<right token="()" type="char[*]" kind="static typename(arr)" value="(func)">
+									<push token=".variable" type="char[*]" kind="static typename(arr)" value="func" />
+								</right>
+							</expr>
+						</stmt>
+					</init>
+				</stmt>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="raise(raise.abort, raise.defTrace, &quot;assertion failed&quot;, details);">
+					<expr token="()" type="void" kind="static const typename(void)" value="raise(raise.abort, raise.defTrace, &quot;assertion failed&quot;, details)">
+						<push token="." type="int64" kind="static const typename(i64)" value="raise.abort">
+							<left token=".variable" type="void" kind="static const typename(void)" value="raise" />
+							<right token=".variable" type="int64" kind="static const typename(i64)" value="abort" />
+						</push>
+						<push token="." type="int64" kind="static const typename(i64)" value="raise.defTrace">
+							<left token=".variable" type="void" kind="static const typename(void)" value="raise" />
+							<right token=".variable" type="int64" kind="static const typename(i64)" value="defTrace" />
+						</push>
+						<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;assertion failed&quot;" />
+						<push token=".variable" type="NotEquals" kind="static const typename(val)" value="details">
+							<init token="{}" type="NotEquals" kind="static const typename(val)">
+								<stmt token=";" type="void" kind="static const typename(void)" stmt="details.expected := (expected);">
+									<expr token=":=" type="void" kind="static const typename(void)" value="details.expected := (expected)">
+										<left token="." type="variant" kind="static const typename(var)" value="details.expected">
+											<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+											<right token=".variable" type="variant" kind="static const typename(var)" value="expected" />
+										</left>
+										<right token="()" type="variant" kind="static const typename(var)" value="(expected)">
+											<push token=".variable" type="float64" kind="static const typename(f64)" value="expected" />
+										</right>
+									</expr>
+								</stmt>
+								<stmt token=";" type="void" kind="static const typename(void)" stmt="details.returned := (returned);">
+									<expr token=":=" type="void" kind="static const typename(void)" value="details.returned := (returned)">
+										<left token="." type="variant" kind="static const typename(var)" value="details.returned">
+											<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+											<right token=".variable" type="variant" kind="static const typename(var)" value="returned" />
+										</left>
+										<right token="()" type="variant" kind="static const typename(var)" value="(returned)">
+											<push token=".variable" type="float64" kind="static const typename(f64)" value="returned" />
+										</right>
+									</expr>
+								</stmt>
+								<stmt token=";" type="void" kind="static const typename(void)" stmt="details.argument := (x);">
+									<expr token=":=" type="void" kind="static const typename(void)" value="details.argument := (x)">
+										<left token="." type="variant" kind="static const typename(var)" value="details.argument">
+											<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+											<right token=".variable" type="variant" kind="static const typename(var)" value="argument" />
+										</left>
+										<right token="()" type="variant" kind="static const typename(var)" value="(x)">
+											<push token=".variable" type="float64" kind="static const typename(f64)" value="x" />
+										</right>
+									</expr>
+								</stmt>
+								<stmt token=";" type="void" kind="static const typename(void)" stmt="details.message := (func);">
+									<expr token=":=" type="void" kind="static const typename(void)" value="details.message := (func)">
+										<left token="." type="char[*]" kind="static typename(arr)" value="details.message">
+											<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+											<right token=".variable" type="char[*]" kind="static typename(arr)" value="message" />
+										</left>
+										<right token="()" type="char[*]" kind="static typename(arr)" value="(func)">
+											<push token=".variable" type="char[*]" kind="static typename(arr)" value="func" />
+										</right>
+									</expr>
+								</stmt>
+							</init>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="raise" />
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="assertEq(func: char[*], x: float32, returned: float32, expected: float32): void">
+			<init token="{}" type="void" kind="static const typename(void)" file="test/stdc/test.math.ci:74">
+				<stmt token=".variable" type="typename" kind="static const typename(ref)" value="epsilon">
+					<init token=".literal" type="float32" kind="static const typename(f32)" value="0.000001" />
+				</stmt>
+				<stmt token="if" type="void" kind="static const typename(void)" stmt="if (Math.cmp(returned, expected, epsilon) == 0)">
+					<test token="==" type="bool" kind="static const typename(bool)" value="Math.cmp(returned, expected, epsilon) == 0">
+						<left token="()" type="int32" kind="static const typename(i32)" value="Math.cmp(returned, expected, epsilon)">
+							<push token=".variable" type="float32" kind="static const typename(f32)" value="returned" />
+							<push token=".variable" type="float32" kind="static const typename(f32)" value="expected" />
+							<push token=".variable" type="float32" kind="static const typename(f32)" value="epsilon" />
+							<call token="." type="function" kind="static const typename(ref)" value="Math.cmp">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="cmp" />
+							</call>
+						</left>
+						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+					</test>
+					<then token="{}" type="void" kind="static const typename(void)" file="test/stdc/test.math.ci:76">
+						<stmt token="return" type="void" kind="static const typename(void)" stmt="return;" />
+					</then>
+				</stmt>
+				<stmt token=".variable" type="NotEquals" kind="static const typename(val)" value="details">
+					<init token="{}" type="NotEquals" kind="static const typename(val)">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="details.expected := (expected);">
+							<expr token=":=" type="void" kind="static const typename(void)" value="details.expected := (expected)">
+								<left token="." type="variant" kind="static const typename(var)" value="details.expected">
+									<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+									<right token=".variable" type="variant" kind="static const typename(var)" value="expected" />
+								</left>
+								<right token="()" type="variant" kind="static const typename(var)" value="(expected)">
+									<push token=".variable" type="float32" kind="static const typename(f32)" value="expected" />
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="details.returned := (returned);">
+							<expr token=":=" type="void" kind="static const typename(void)" value="details.returned := (returned)">
+								<left token="." type="variant" kind="static const typename(var)" value="details.returned">
+									<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+									<right token=".variable" type="variant" kind="static const typename(var)" value="returned" />
+								</left>
+								<right token="()" type="variant" kind="static const typename(var)" value="(returned)">
+									<push token=".variable" type="float32" kind="static const typename(f32)" value="returned" />
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="details.argument := (x);">
+							<expr token=":=" type="void" kind="static const typename(void)" value="details.argument := (x)">
+								<left token="." type="variant" kind="static const typename(var)" value="details.argument">
+									<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+									<right token=".variable" type="variant" kind="static const typename(var)" value="argument" />
+								</left>
+								<right token="()" type="variant" kind="static const typename(var)" value="(x)">
+									<push token=".variable" type="float32" kind="static const typename(f32)" value="x" />
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="details.message := (func);">
+							<expr token=":=" type="void" kind="static const typename(void)" value="details.message := (func)">
+								<left token="." type="char[*]" kind="static typename(arr)" value="details.message">
+									<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+									<right token=".variable" type="char[*]" kind="static typename(arr)" value="message" />
+								</left>
+								<right token="()" type="char[*]" kind="static typename(arr)" value="(func)">
+									<push token=".variable" type="char[*]" kind="static typename(arr)" value="func" />
+								</right>
+							</expr>
+						</stmt>
+					</init>
+				</stmt>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="raise(raise.abort, raise.defTrace, &quot;assertion failed&quot;, details);">
+					<expr token="()" type="void" kind="static const typename(void)" value="raise(raise.abort, raise.defTrace, &quot;assertion failed&quot;, details)">
+						<push token="." type="int64" kind="static const typename(i64)" value="raise.abort">
+							<left token=".variable" type="void" kind="static const typename(void)" value="raise" />
+							<right token=".variable" type="int64" kind="static const typename(i64)" value="abort" />
+						</push>
+						<push token="." type="int64" kind="static const typename(i64)" value="raise.defTrace">
+							<left token=".variable" type="void" kind="static const typename(void)" value="raise" />
+							<right token=".variable" type="int64" kind="static const typename(i64)" value="defTrace" />
+						</push>
+						<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;assertion failed&quot;" />
+						<push token=".variable" type="NotEquals" kind="static const typename(val)" value="details">
+							<init token="{}" type="NotEquals" kind="static const typename(val)">
+								<stmt token=";" type="void" kind="static const typename(void)" stmt="details.expected := (expected);">
+									<expr token=":=" type="void" kind="static const typename(void)" value="details.expected := (expected)">
+										<left token="." type="variant" kind="static const typename(var)" value="details.expected">
+											<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+											<right token=".variable" type="variant" kind="static const typename(var)" value="expected" />
+										</left>
+										<right token="()" type="variant" kind="static const typename(var)" value="(expected)">
+											<push token=".variable" type="float32" kind="static const typename(f32)" value="expected" />
+										</right>
+									</expr>
+								</stmt>
+								<stmt token=";" type="void" kind="static const typename(void)" stmt="details.returned := (returned);">
+									<expr token=":=" type="void" kind="static const typename(void)" value="details.returned := (returned)">
+										<left token="." type="variant" kind="static const typename(var)" value="details.returned">
+											<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+											<right token=".variable" type="variant" kind="static const typename(var)" value="returned" />
+										</left>
+										<right token="()" type="variant" kind="static const typename(var)" value="(returned)">
+											<push token=".variable" type="float32" kind="static const typename(f32)" value="returned" />
+										</right>
+									</expr>
+								</stmt>
+								<stmt token=";" type="void" kind="static const typename(void)" stmt="details.argument := (x);">
+									<expr token=":=" type="void" kind="static const typename(void)" value="details.argument := (x)">
+										<left token="." type="variant" kind="static const typename(var)" value="details.argument">
+											<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+											<right token=".variable" type="variant" kind="static const typename(var)" value="argument" />
+										</left>
+										<right token="()" type="variant" kind="static const typename(var)" value="(x)">
+											<push token=".variable" type="float32" kind="static const typename(f32)" value="x" />
+										</right>
+									</expr>
+								</stmt>
+								<stmt token=";" type="void" kind="static const typename(void)" stmt="details.message := (func);">
+									<expr token=":=" type="void" kind="static const typename(void)" value="details.message := (func)">
+										<left token="." type="char[*]" kind="static typename(arr)" value="details.message">
+											<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details" />
+											<right token=".variable" type="char[*]" kind="static typename(arr)" value="message" />
+										</left>
+										<right token="()" type="char[*]" kind="static typename(arr)" value="(func)">
+											<push token=".variable" type="char[*]" kind="static typename(arr)" value="func" />
+										</right>
+									</expr>
+								</stmt>
+							</init>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="raise" />
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token="for" type="void" kind="static const typename(void)" stmt="for (t; t &lt; Math.pi; t := t + 1.000000 / (1000))">
+			<init token=".variable" type="float64" kind="static const typename(f64)" value="t">
+				<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+			</init>
+			<test token="&lt;" type="bool" kind="static const typename(bool)" value="t &lt; Math.pi">
+				<left token=".variable" type="float64" kind="static const typename(f64)" value="t" />
+				<right token="." type="float64" kind="static const typename(f64)" value="Math.pi">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+					<right token=".variable" type="float64" kind="static const typename(f64)" value="pi" />
+				</right>
+			</test>
+			<step token=":=" type="float64" kind="static const typename(f64)" value="t := t + 1.000000 / (1000)">
+				<left token=".variable" type="float64" kind="static const typename(f64)" value="t" />
+				<right token="+" type="float64" kind="static const typename(f64)" value="t + 1.000000 / (1000)">
+					<left token=".variable" type="float64" kind="static const typename(f64)" value="t" />
+					<right token="/" type="float64" kind="static const typename(f64)" value="1.000000 / (1000)">
+						<left token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+						<right token="()" type="float64" kind="static const typename(f64)" value="(1000)">
+							<push token=".literal" type="int32" kind="static const typename(i32)" value="1000" />
+						</right>
+					</right>
+				</right>
+			</step>
+			<stmt token="{}" type="void" kind="static const typename(void)" file="test/stdc/test.math.ci:89">
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(&quot;Sin&quot;, t, Math.sin(t), float64.sin(t));">
+					<expr token="()" type="void" kind="static const typename(void)" value="assertEq(&quot;Sin&quot;, t, Math.sin(t), float64.sin(t))">
+						<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;Sin&quot;" />
+						<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+							<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+						</push>
+						<push token="()" type="float64" kind="static const typename(f64)" value="Math.sin(t)">
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+								<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</push>
+							<call token="." type="function" kind="static const typename(ref)" value="Math.sin">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="sin" />
+							</call>
+						</push>
+						<push token="()" type="float64" kind="static const typename(f64)" value="float64.sin(t)">
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+								<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</push>
+							<call token="." type="function" kind="static const typename(ref)" value="float64.sin">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="sin" />
+							</call>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="assertEq" />
+					</expr>
+				</stmt>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(&quot;Cos&quot;, t, Math.cos(t), float64.cos(t));">
+					<expr token="()" type="void" kind="static const typename(void)" value="assertEq(&quot;Cos&quot;, t, Math.cos(t), float64.cos(t))">
+						<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;Cos&quot;" />
+						<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+							<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+						</push>
+						<push token="()" type="float64" kind="static const typename(f64)" value="Math.cos(t)">
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+								<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</push>
+							<call token="." type="function" kind="static const typename(ref)" value="Math.cos">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="cos" />
+							</call>
+						</push>
+						<push token="()" type="float64" kind="static const typename(f64)" value="float64.cos(t)">
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+								<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</push>
+							<call token="." type="function" kind="static const typename(ref)" value="float64.cos">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="cos" />
+							</call>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="assertEq" />
+					</expr>
+				</stmt>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(&quot;Sin&quot;, float32(t), float32(Math.sin(t)), float32.sin(t));">
+					<expr token="()" type="void" kind="static const typename(void)" value="assertEq(&quot;Sin&quot;, float32(t), float32(Math.sin(t)), float32.sin(t))">
+						<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;Sin&quot;" />
+						<push token="()" type="float32" kind="static const typename(f32)" value="float32(t)">
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+								<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</push>
+							<call token=".variable" type="typename" kind="static const typename(ref)" value="float32" />
+						</push>
+						<push token="()" type="float32" kind="static const typename(f32)" value="float32(Math.sin(t))">
+							<push token="()" type="float64" kind="static const typename(f64)" value="Math.sin(t)">
+								<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+									<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+								</push>
+								<call token="." type="function" kind="static const typename(ref)" value="Math.sin">
+									<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="sin" />
+								</call>
+							</push>
+							<call token=".variable" type="typename" kind="static const typename(ref)" value="float32" />
+						</push>
+						<push token="()" type="float32" kind="static const typename(f32)" value="float32.sin(t)">
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+								<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</push>
+							<call token="." type="function" kind="static const typename(ref)" value="float32.sin">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="float32" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="sin" />
+							</call>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="assertEq" />
+					</expr>
+				</stmt>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(&quot;Cos&quot;, float32(t), float32(Math.cos(t)), float32.cos(t));">
+					<expr token="()" type="void" kind="static const typename(void)" value="assertEq(&quot;Cos&quot;, float32(t), float32(Math.cos(t)), float32.cos(t))">
+						<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;Cos&quot;" />
+						<push token="()" type="float32" kind="static const typename(f32)" value="float32(t)">
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+								<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</push>
+							<call token=".variable" type="typename" kind="static const typename(ref)" value="float32" />
+						</push>
+						<push token="()" type="float32" kind="static const typename(f32)" value="float32(Math.cos(t))">
+							<push token="()" type="float64" kind="static const typename(f64)" value="Math.cos(t)">
+								<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+									<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+								</push>
+								<call token="." type="function" kind="static const typename(ref)" value="Math.cos">
+									<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="cos" />
+								</call>
+							</push>
+							<call token=".variable" type="typename" kind="static const typename(ref)" value="float32" />
+						</push>
+						<push token="()" type="float32" kind="static const typename(f32)" value="float32.cos(t)">
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+								<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</push>
+							<call token="." type="function" kind="static const typename(ref)" value="float32.cos">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="float32" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="cos" />
+							</call>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="assertEq" />
+					</expr>
+				</stmt>
+			</stmt>
+		</stmt>
+		<stmt token="for" type="void" kind="static const typename(void)" stmt="for (t; t &lt; Math.pi / (2) - 0.400000; t := t + 1.000000 / (1000))">
+			<init token=".variable" type="float64" kind="static const typename(f64)" value="t">
+				<init token="+" type="float64" kind="static const typename(f64)" value="-Math.pi / (2) + 0.400000">
+					<left token="/" type="float64" kind="static const typename(f64)" value="-Math.pi / (2)">
+						<left token="-" type="float64" kind="static const typename(f64)" value="-Math.pi">
+							<right token="." type="float64" kind="static const typename(f64)" value="Math.pi">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="pi" />
+							</right>
+						</left>
+						<right token="()" type="float64" kind="static const typename(f64)" value="(2)">
+							<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+						</right>
+					</left>
+					<right token=".literal" type="float64" kind="static const typename(f64)" value="0.400000" />
+				</init>
+			</init>
+			<test token="&lt;" type="bool" kind="static const typename(bool)" value="t &lt; Math.pi / (2) - 0.400000">
+				<left token=".variable" type="float64" kind="static const typename(f64)" value="t" />
+				<right token="-" type="float64" kind="static const typename(f64)" value="Math.pi / (2) - 0.400000">
+					<left token="/" type="float64" kind="static const typename(f64)" value="Math.pi / (2)">
+						<left token="." type="float64" kind="static const typename(f64)" value="Math.pi">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="pi" />
+						</left>
+						<right token="()" type="float64" kind="static const typename(f64)" value="(2)">
+							<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+						</right>
+					</left>
+					<right token=".literal" type="float64" kind="static const typename(f64)" value="0.400000" />
+				</right>
+			</test>
+			<step token=":=" type="float64" kind="static const typename(f64)" value="t := t + 1.000000 / (1000)">
+				<left token=".variable" type="float64" kind="static const typename(f64)" value="t" />
+				<right token="+" type="float64" kind="static const typename(f64)" value="t + 1.000000 / (1000)">
+					<left token=".variable" type="float64" kind="static const typename(f64)" value="t" />
+					<right token="/" type="float64" kind="static const typename(f64)" value="1.000000 / (1000)">
+						<left token=".literal" type="float64" kind="static const typename(f64)" value="1.000000" />
+						<right token="()" type="float64" kind="static const typename(f64)" value="(1000)">
+							<push token=".literal" type="int32" kind="static const typename(i32)" value="1000" />
+						</right>
+					</right>
+				</right>
+			</step>
+			<stmt token="{}" type="void" kind="static const typename(void)" file="test/stdc/test.math.ci:97">
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(&quot;Tan&quot;, t, Math.tan(t), float64.tan(t));">
+					<expr token="()" type="void" kind="static const typename(void)" value="assertEq(&quot;Tan&quot;, t, Math.tan(t), float64.tan(t))">
+						<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;Tan&quot;" />
+						<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+							<init token="+" type="float64" kind="static const typename(f64)" value="-Math.pi / (2) + 0.400000">
+								<left token="/" type="float64" kind="static const typename(f64)" value="-Math.pi / (2)">
+									<left token="-" type="float64" kind="static const typename(f64)" value="-Math.pi">
+										<right token="." type="float64" kind="static const typename(f64)" value="Math.pi">
+											<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+											<right token=".variable" type="float64" kind="static const typename(f64)" value="pi" />
+										</right>
+									</left>
+									<right token="()" type="float64" kind="static const typename(f64)" value="(2)">
+										<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+									</right>
+								</left>
+								<right token=".literal" type="float64" kind="static const typename(f64)" value="0.400000" />
+							</init>
+						</push>
+						<push token="()" type="float64" kind="static const typename(f64)" value="Math.tan(t)">
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+								<init token="+" type="float64" kind="static const typename(f64)" value="-Math.pi / (2) + 0.400000">
+									<left token="/" type="float64" kind="static const typename(f64)" value="-Math.pi / (2)">
+										<left token="-" type="float64" kind="static const typename(f64)" value="-Math.pi">
+											<right token="." type="float64" kind="static const typename(f64)" value="Math.pi">
+												<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+												<right token=".variable" type="float64" kind="static const typename(f64)" value="pi" />
+											</right>
+										</left>
+										<right token="()" type="float64" kind="static const typename(f64)" value="(2)">
+											<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+										</right>
+									</left>
+									<right token=".literal" type="float64" kind="static const typename(f64)" value="0.400000" />
+								</init>
+							</push>
+							<call token="." type="function" kind="static const typename(ref)" value="Math.tan">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="tan" />
+							</call>
+						</push>
+						<push token="()" type="float64" kind="static const typename(f64)" value="float64.tan(t)">
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+								<init token="+" type="float64" kind="static const typename(f64)" value="-Math.pi / (2) + 0.400000">
+									<left token="/" type="float64" kind="static const typename(f64)" value="-Math.pi / (2)">
+										<left token="-" type="float64" kind="static const typename(f64)" value="-Math.pi">
+											<right token="." type="float64" kind="static const typename(f64)" value="Math.pi">
+												<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+												<right token=".variable" type="float64" kind="static const typename(f64)" value="pi" />
+											</right>
+										</left>
+										<right token="()" type="float64" kind="static const typename(f64)" value="(2)">
+											<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+										</right>
+									</left>
+									<right token=".literal" type="float64" kind="static const typename(f64)" value="0.400000" />
+								</init>
+							</push>
+							<call token="." type="function" kind="static const typename(ref)" value="float64.tan">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="float64" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="tan" />
+							</call>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="assertEq" />
+					</expr>
+				</stmt>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(&quot;Tan&quot;, float32(t), float32(Math.tan(t)), float32.tan(t));">
+					<expr token="()" type="void" kind="static const typename(void)" value="assertEq(&quot;Tan&quot;, float32(t), float32(Math.tan(t)), float32.tan(t))">
+						<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;Tan&quot;" />
+						<push token="()" type="float32" kind="static const typename(f32)" value="float32(t)">
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+								<init token="+" type="float64" kind="static const typename(f64)" value="-Math.pi / (2) + 0.400000">
+									<left token="/" type="float64" kind="static const typename(f64)" value="-Math.pi / (2)">
+										<left token="-" type="float64" kind="static const typename(f64)" value="-Math.pi">
+											<right token="." type="float64" kind="static const typename(f64)" value="Math.pi">
+												<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+												<right token=".variable" type="float64" kind="static const typename(f64)" value="pi" />
+											</right>
+										</left>
+										<right token="()" type="float64" kind="static const typename(f64)" value="(2)">
+											<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+										</right>
+									</left>
+									<right token=".literal" type="float64" kind="static const typename(f64)" value="0.400000" />
+								</init>
+							</push>
+							<call token=".variable" type="typename" kind="static const typename(ref)" value="float32" />
+						</push>
+						<push token="()" type="float32" kind="static const typename(f32)" value="float32(Math.tan(t))">
+							<push token="()" type="float64" kind="static const typename(f64)" value="Math.tan(t)">
+								<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+									<init token="+" type="float64" kind="static const typename(f64)" value="-Math.pi / (2) + 0.400000">
+										<left token="/" type="float64" kind="static const typename(f64)" value="-Math.pi / (2)">
+											<left token="-" type="float64" kind="static const typename(f64)" value="-Math.pi">
+												<right token="." type="float64" kind="static const typename(f64)" value="Math.pi">
+													<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+													<right token=".variable" type="float64" kind="static const typename(f64)" value="pi" />
+												</right>
+											</left>
+											<right token="()" type="float64" kind="static const typename(f64)" value="(2)">
+												<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+											</right>
+										</left>
+										<right token=".literal" type="float64" kind="static const typename(f64)" value="0.400000" />
+									</init>
+								</push>
+								<call token="." type="function" kind="static const typename(ref)" value="Math.tan">
+									<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+									<right token=".variable" type="function" kind="static const typename(ref)" value="tan" />
+								</call>
+							</push>
+							<call token=".variable" type="typename" kind="static const typename(ref)" value="float32" />
+						</push>
+						<push token="()" type="float32" kind="static const typename(f32)" value="float32.tan(t)">
+							<push token=".variable" type="float64" kind="static const typename(f64)" value="t">
+								<init token="+" type="float64" kind="static const typename(f64)" value="-Math.pi / (2) + 0.400000">
+									<left token="/" type="float64" kind="static const typename(f64)" value="-Math.pi / (2)">
+										<left token="-" type="float64" kind="static const typename(f64)" value="-Math.pi">
+											<right token="." type="float64" kind="static const typename(f64)" value="Math.pi">
+												<left token=".variable" type="typename" kind="static const typename(ref)" value="Math" />
+												<right token=".variable" type="float64" kind="static const typename(f64)" value="pi" />
+											</right>
+										</left>
+										<right token="()" type="float64" kind="static const typename(f64)" value="(2)">
+											<push token=".literal" type="int32" kind="static const typename(i32)" value="2" />
+										</right>
+									</left>
+									<right token=".literal" type="float64" kind="static const typename(f64)" value="0.400000" />
+								</init>
+							</push>
+							<call token="." type="function" kind="static const typename(ref)" value="float32.tan">
+								<left token=".variable" type="typename" kind="static const typename(ref)" value="float32" />
+								<right token=".variable" type="function" kind="static const typename(ref)" value="tan" />
+							</call>
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="assertEq" />
 					</expr>
 				</stmt>
 			</stmt>

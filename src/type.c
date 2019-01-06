@@ -305,13 +305,21 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 			}
 
 			while (parameter != NULL && argument != NULL) {
+				symn type = parameter->type;
+				if ((parameter->kind & ATTR_varg) != 0) {
+					dieif(castOf(type) != CAST_arr, ERR_INTERNAL_ERROR);
+					dieif(parameter->next != NULL, ERR_INTERNAL_ERROR);
+					type = type->type;
+				}
 				if (!canAssign(cc, parameter, argument, 0)) {
 					break;
 				}
 				if (!canAssign(cc, parameter, argument, 1)) {
 					hasCast += 1;
 				}
-				parameter = parameter->next;
+				if ((parameter->kind & ATTR_varg) == 0) {
+					parameter = parameter->next;
+				}
 				argument = argument->next;
 			}
 
@@ -321,7 +329,9 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 			}
 			else if (parameter != NULL) {
 				// more parameter than arguments
-				continue;
+				if ((parameter->kind & ATTR_varg) == 0) {
+					continue;
+				}
 			}
 			else if (argument != NULL) {
 				// type cast can have one single argument: `int(3.14)`

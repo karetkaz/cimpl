@@ -9,6 +9,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#if defined(__WATCOMC__) && defined(_WIN32)
+typedef signed ssize_t;
+#endif
+
 #ifdef _MSC_VER
 typedef signed char			int8_t;
 typedef signed short		int16_t;
@@ -155,7 +159,7 @@ struct rtContextRec {
 		void *heap;        // heap memory
 
 		size_t pc;         // exec: entry point / cgen: program counter
-		size_t px;         // exec: exit point / cgen: -
+		size_t px;         // exec: exit point / cgen: max jump offset
 
 		size_t ro;         // size of read only memory
 		size_t cs;         // size of code (functions)
@@ -259,6 +263,7 @@ typedef enum {
 	ATTR_stat  = 0x0040,		// static attribute
 	ATTR_cnst  = 0x0080,		// constant attribute
 	ATTR_paral = 0x0100,		// parallel
+	ATTR_varg  = 0x0100,		// variable argument
 
 	MASK_cast  = 0x000f,
 	MASK_kind  = 0x0030,

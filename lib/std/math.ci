@@ -43,19 +43,6 @@ static struct Math {
 	// inline isFinite(float64 x) = x - x == 0;
 	// inline isFinite(float32 x) = x - x == 0;
 
-	// inline abs(int32 x) = x < 0 ? -x : x;
-	// inline abs(int64 x) = x < 0 ? -x : x;
-	// inline abs(uint32 x) = x;
-	// inline abs(float32 x) = x < 0 ? -x : x;
-	// inline abs(float64 x) = x < 0 ? -x : x;
-
-	// inline sign(int32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
-	// inline sign(int64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
-	// inline sign(uint32 x) = x > 0 ? 1 : 0;
-	// inline sign(uint64 x) = x > 0 ? 1 : 0;
-	// inline sign(float32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
-	// inline sign(float64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
-
 	float64 floor(float64 x) {
 		float64 result;
 		modf(x, result);
@@ -86,6 +73,12 @@ static struct Math {
 		}
 		return 1;
 	}
+	// inline sign(int32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+	// inline sign(int64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+	// inline sign(uint32 x) = x > 0 ? 1 : 0;
+	// inline sign(uint64 x) = x > 0 ? 1 : 0;
+	// inline sign(float32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+	// inline sign(float64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
 
 	float32 abs(float32 x) {
 		if (x < 0) {
@@ -99,6 +92,11 @@ static struct Math {
 		}
 		return x;
 	}
+	// inline abs(int32 x) = x < 0 ? -x : x;
+	// inline abs(int64 x) = x < 0 ? -x : x;
+	// inline abs(uint32 x) = x;
+	// inline abs(float32 x) = x < 0 ? -x : x;
+	// inline abs(float64 x) = x < 0 ? -x : x;
 
 	float32 min(float32 a, float32 b) {
 		if (a < b) {
@@ -112,6 +110,11 @@ static struct Math {
 		}
 		return b;
 	}
+	// inline min(int32 a, int32 b) = a < b ? a : b;
+	// inline min(int64 a, int64 b) = a < b ? a : b;
+	// inline min(uint32 a, uint32 b) = a < b ? a : b;
+	// inline min(float32 a, float32 b) = a < b ? a : b;
+	// inline min(float64 a, float64 b) = a < b ? a : b;
 
 	float32 max(float32 a, float32 b) {
 		if (a > b) {
@@ -125,6 +128,11 @@ static struct Math {
 		}
 		return b;
 	}
+	// inline max(int32 a, int32 b) = a > b ? a : b;
+	// inline max(int64 a, int64 b) = a > b ? a : b;
+	// inline max(uint32 a, uint32 b) = a > b ? a : b;
+	// inline max(float32 a, float32 b) = a > b ? a : b;
+	// inline max(float64 a, float64 b) = a > b ? a : b;
 
 	float32 clamp(float32 t, float32 a, float32 b) {
 		if (t < a) {
@@ -144,55 +152,28 @@ static struct Math {
 		}
 		return t;
 	}
-
-	float32 lerp(float32 t, float32 a, float32 b) {
-		return a + t * (b - a);
-	}
-	float64 lerp(float64 t, float64 a, float64 b) {
-		return a + t * (b - a);
-	}
-
-	float32 smooth(float32 t, float32 a, float32 b) {
-		t = clamp((t - a) / (b - a), 0f, 1f);
-		return t * t * (3 - 2 * t);
-	}
-	float64 smooth(float64 t, float64 a, float64 b) {
-		t = clamp((t - a) / (b - a), 0F, 1F);
-		return t * t * (3 - 2 * t);
-	}
-
-	// inline max(int32 a, int32 b) = a > b ? a : b;
-	// inline max(int64 a, int64 b) = a > b ? a : b;
-	// inline max(uint32 a, uint32 b) = a > b ? a : b;
-	// inline max(float32 a, float32 b) = a > b ? a : b;
-	// inline max(float64 a, float64 b) = a > b ? a : b;
-
-	// inline min(int32 a, int32 b) = a < b ? a : b;
-	// inline min(int64 a, int64 b) = a < b ? a : b;
-	// inline min(uint32 a, uint32 b) = a < b ? a : b;
-	// inline min(float32 a, float32 b) = a < b ? a : b;
-	// inline min(float64 a, float64 b) = a < b ? a : b;
-
 	// inline clamp(int32 t, int32 a, int32 b) = min(max(t, a), b);
 	// inline clamp(int32 t, int32 a, int32 b) = t < a ? a : t > b ? b : t;
 	// inline clamp(float32 t, float32 a, float32 b) = t < a ? a : t > b ? b : t;
 	// inline clamp(float64 t, float64 a, float64 b) = t < a ? a : t > b ? b : t;
 
-	// inline lerp(float32 t, float32 a, float32 b) = a + t * (b - a);
-	// inline lerp(float64 t, float64 a, float64 b) = a + t * (b - a);
+	inline lerp(float32 t, float32 a, float32 b) = a + t * (b - a);
+	inline lerp(float64 t, float64 a, float64 b) = a + t * (b - a);
 
 	inline smooth(float32 t) = t * t * (3 - 2 * t);
 	inline smooth(float64 t) = t * t * (3 - 2 * t);
-	// inline smooth(float32 t, float32 a, float32 b) = smooth(clamp((t - a) / (b - a), float32(0), float32(1)));
-	// inline smooth(float64 t, float64 a, float64 b) = smooth(clamp((t - a) / (b - a), float64(0), float64(1)));
+	inline smooth(float32 t, float32 a, float32 b) = smooth(clamp((t - a) / (b - a), float32(0), float32(1)));
+	inline smooth(float64 t, float64 a, float64 b) = smooth(clamp((t - a) / (b - a), float64(0), float64(1)));
 
 	// inline absMod(int32 val, int32 mod) = (val < 0 ? val + mod : val) % mod;
 	// inline absMod(float32 val, float32 mod) = (val < 0 ? val + mod : val) % mod;
 	// inline absMod(float64 val, float64 mod) = (val < 0 ? val + mod : val) % mod;
 
-	/* TODO: implement vararg functions
 	float64 min(float64 data...) {
-		result = data[0];
+		if (data.length == 0) {
+			return nan;
+		}
+		float64 result = data[0];
 		for (int i = 1; i < data.length; i += 1) {
 			if (result > data[i]) {
 				result = data[i];
@@ -201,7 +182,10 @@ static struct Math {
 		return result;
 	}
 	float64 max(float64 data...) {
-		result = data[0];
+		if (data.length == 0) {
+			return nan;
+		}
+		float64 result = data[0];
 		for (int i = 1; i < data.length; i += 1) {
 			if (result < data[i]) {
 				result = data[i];
@@ -211,30 +195,30 @@ static struct Math {
 	}
 
 	float64 sum(float64 data...) {
-		result = 0;
+		float64 result = 0;
 		for (int i = 0; i < data.length; i += 1) {
 			result += data[i];
 		}
 		return result;
 	}
 
+	/*TODO: implement spread operator
 	float64 mean(float64 data...) {
 		return sum(...data) / data.length;
-	}
+	}*/
 
+	// speedup with some inline expressions
+	inline eval(float64 x, float64 a0) = (a0);
+	inline eval(float64 x, float64 a0, float64 a1) = (a0 + x * a1);
+	inline eval(float64 x, float64 a0, float64 a1, float64 a2) = (a0 + x * eval(x, a1, a2));
+	inline eval(float64 x, float64 a0, float64 a1, float64 a2, float64 a3) = (a0 + x * eval(x, a1, a2, a3));
 	float64 eval(float64 x, float64 polynomial...) {
-		result = 0;
-		for (int i = polynomial.length; i >= 0; i -= 1) {
+		float64 result = 0;
+		for (int i = polynomial.length - 1; i >= 0; i -= 1) {
 			result = result * x + polynomial[i];
 		}
 		return result;
 	}
-	// */
-
-	// speedup with some inline expressions
-	// inline eval(float64 x, float64 a0, float64 a1) = (a0 + x * a1);
-	// inline eval(float64 x, float64 a0, float64 a1, float64 a2) = (a0 + x * eval(x, a1, a2));
-	// inline eval(float64 x, float64 a0, float64 a1, float64 a2, float64 a3) = (a0 + x * eval(x, a1, a2, a3));
 
 	int cmp(float32 a, float32 b, float32 eps) {
 		if (a < b) {
@@ -493,6 +477,9 @@ static struct Math {
 	inline deg2rad(float64 x) = float64(x * pi / 180);
 	inline rad2deg(float64 x) = float64(x * 180 / pi);
 }
+
+// rand(int min, int max) = int(min + System.rand() % (max - min));
+// rand(double min, double max) = double(min + (System.rand() / float64(RAND_MAX)) * (max - min));
 
 //inline "math.Perlin.ci";      // -> Perlin noise
 inline "math.Complex.ci";     // -> Complex<float64>

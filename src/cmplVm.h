@@ -244,7 +244,7 @@ int testOcp(rtContext rt, size_t offs, vmOpcode opc, vmValue *arg);
  * @param rt Runtime context.
  * @param pc Offset of the current opcode to be incremented.
  * @param ss Size of the stack.
- * @return the current instruction pointer.
+ * @return NULL or the current instruction pointer.
  */
 void* nextOpc(rtContext rt, size_t *pc, size_t *ss);
 
@@ -257,7 +257,15 @@ void* nextOpc(rtContext rt, size_t *pc, size_t *ss);
  * @param stc Fix also stack size.
  * @return
  */
-int fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc);
+void fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc);
+
+/**
+ * Rollback the last emitted instruction.
+ * 
+ * @param rt Runtime context.
+ * @return NULL or the current instruction pointer.
+ */
+void *rollbackPc(rtContext rt);
 
 /// Emit an instruction without argument(s).
 static inline size_t emit(rtContext rt, vmOpcode opc) {

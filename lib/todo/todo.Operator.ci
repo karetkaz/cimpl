@@ -1,0 +1,127 @@
+// TODO: define operators in the language, not builtin in the compiler
+
+// Cast
+inline int32(int32 rhs) = int32(emit(struct(rhs)));
+inline int32(int64 rhs) = int32(emit(struct(rhs), cvt.i64_i32));
+inline int32(uint32 rhs) = int32(emit(struct(rhs)));
+inline int32(uint64 rhs) = int32(emit(struct(rhs), cvt.u64_i32));
+inline int32(float32 rhs) = int32(emit(struct(rhs), cvt.f32_i32));
+inline int32(float64 rhs) = int32(emit(struct(rhs), cvt.f64_i32));
+
+inline int64(int32 rhs) = int64(emit(struct(rhs), cvt.i32_i64));
+inline int64(int64 rhs) = int64(emit(struct(rhs)));
+inline int64(uint32 rhs) = int64(emit(struct(rhs)), cvt.u32_i64);
+inline int64(uint64 rhs) = int64(emit(struct(rhs), cvt.u64_i64));
+inline int64(float32 rhs) = int64(emit(struct(rhs), cvt.f32_i64));
+inline int64(float64 rhs) = int64(emit(struct(rhs), cvt.f64_i64));
+
+inline uint32(int32 rhs) = uint32(emit(struct(rhs)));
+inline uint32(int64 rhs) = uint32(emit(struct(rhs), cvt.i64_u32));
+inline uint32(uint32 rhs) = uint32(emit(struct(rhs)));
+inline uint32(uint64 rhs) = uint32(emit(struct(rhs), cvt.u64_u32));
+inline uint32(float32 rhs) = uint32(emit(struct(rhs), cvt.f32_u32));
+inline uint32(float64 rhs) = uint32(emit(struct(rhs), cvt.f64_u32));
+
+inline uint64(int32 rhs) = uint64(emit(struct(rhs), cvt.i32_u64));
+inline uint64(int64 rhs) = uint64(emit(struct(rhs)));
+inline uint64(uint32 rhs) = uint64(emit(struct(rhs), cvt.u32_u64));
+inline uint64(uint64 rhs) = uint64(emit(struct(rhs)));
+inline uint64(float32 rhs) = uint64(emit(struct(rhs), cvt.f32_u64));
+inline uint64(float64 rhs) = uint64(emit(struct(rhs), cvt.f64_u64));
+
+inline float32(int32 rhs) = float32(emit(struct(rhs), cvt.i32_f32));
+inline float32(int64 rhs) = float32(emit(struct(rhs), cvt.i64_f32));
+inline float32(uint32 rhs) = float32(emit(struct(rhs), cvt.u32_f32));
+inline float32(uint64 rhs) = float32(emit(struct(rhs), cvt.u64_f32));
+inline float32(float32 rhs) = float32(emit(struct(rhs)));
+inline float32(float64 rhs) = float32(emit(struct(rhs), cvt.f64_f32));
+
+inline float64(int32 rhs) = float64(emit(struct(rhs), cvt.i32_f64));
+inline float64(int64 rhs) = float64(emit(struct(rhs), cvt.i64_f64));
+inline float64(uint32 rhs) = float64(emit(struct(rhs), cvt.u32_f64));
+inline float64(uint64 rhs) = float64(emit(struct(rhs), cvt.u64_f64));
+inline float64(float32 rhs) = float64(emit(struct(rhs), cvt.f32_f64));
+inline float64(float64 rhs) = float64(emit(struct(rhs)));
+
+// Negate
+inline -(int32 rhs) = int32(emit(int32(rhs), neg.i32));
+inline -(int64 rhs) = int64(emit(int64(rhs), neg.i64));
+inline -(uint32 rhs) = uint32(emit(uint32(rhs), neg.u32));
+inline -(uint64 rhs) = uint64(emit(uint64(rhs), neg.u64));
+inline -(float32 rhs) = float32(emit(float32(rhs), neg.f32));
+inline -(float64 rhs) = float64(emit(float64(rhs), neg.f64));
+
+// Addition
+inline +(int32 lhs, int32 rhs) = int32(emit(int32(lhs), int32(rhs), add.i32));
+inline +(int32 lhs, int64 rhs) = int64(emit(int64(lhs), int64(rhs), add.i64));
+inline +(int32 lhs, uint32 rhs) = uint32(emit(int32(lhs), uint32(rhs), add.u32));
+inline +(int32 lhs, uint64 rhs) = uint64(emit(int64(lhs), uint64(rhs), add.u64));
+inline +(int32 lhs, float32 rhs) = float32(emit(float32(lhs), float32(rhs), add.f32));
+inline +(int32 lhs, float64 rhs) = float64(emit(float64(lhs), float64(rhs), add.f64));
+
+inline +(int64 lhs, int32 rhs) = int64(emit(int64(lhs), int64(rhs), add.i64));
+inline +(int64 lhs, int64 rhs) = int64(emit(int64(lhs), int64(rhs), add.i64));
+inline +(int64 lhs, uint32 rhs) = int64(emit(int64(lhs), uint64(rhs), add.i64));
+inline +(int64 lhs, uint64 rhs) = uint64(emit(int64(lhs), uint64(rhs), add.u64));
+inline +(int64 lhs, float32 rhs) = float32(emit(float32(lhs), float32(rhs), add.f32));
+inline +(int64 lhs, float64 rhs) = float64(emit(float64(lhs), float64(rhs), add.f64));
+
+inline +(uint32 lhs, int32 rhs) = uint32(emit(uint32(lhs), int32(rhs), add.u32));
+inline +(uint32 lhs, int64 rhs) = int64(emit(uint64(lhs), int64(rhs), add.i64));
+inline +(uint32 lhs, uint32 rhs) = uint32(emit(uint32(lhs), uint32(rhs), add.u32));
+inline +(uint32 lhs, uint64 rhs) = uint64(emit(uint64(lhs), uint64(rhs), add.u64));
+inline +(uint32 lhs, float32 rhs) = float32(emit(float32(lhs), float32(rhs), add.f32));
+inline +(uint32 lhs, float64 rhs) = float64(emit(float64(lhs), float64(rhs), add.f64));
+
+inline +(uint64 lhs, int32 rhs) = uint64(emit(uint64(lhs), int64(rhs), add.u64));
+inline +(uint64 lhs, int64 rhs) = uint64(emit(uint64(lhs), int64(rhs), add.u64));
+inline +(uint64 lhs, uint32 rhs) = uint64(emit(uint64(lhs), uint64(rhs), add.u64));
+inline +(uint64 lhs, uint64 rhs) = uint64(emit(uint64(lhs), uint64(rhs), add.u64));
+inline +(uint64 lhs, float32 rhs) = float32(emit(float32(lhs), float32(rhs), add.f32));
+inline +(uint64 lhs, float64 rhs) = float64(emit(float64(lhs), float64(rhs), add.f64));
+
+inline +(float32 lhs, int32 rhs) = float32(emit(float32(lhs), float32(rhs), add.f32));
+inline +(float32 lhs, int64 rhs) = float32(emit(float32(lhs), float32(rhs), add.f32));
+inline +(float32 lhs, uint32 rhs) = float32(emit(float32(lhs), float32(rhs), add.f32));
+inline +(float32 lhs, uint64 rhs) = float32(emit(float32(lhs), float32(rhs), add.f32));
+inline +(float32 lhs, float32 rhs) = float32(emit(float32(lhs), float32(rhs), add.f32));
+inline +(float32 lhs, float64 rhs) = float64(emit(float64(lhs), float64(rhs), add.f64));
+
+inline +(float64 lhs, int32 rhs) = float64(emit(float64(lhs), float64(rhs), add.f64));
+inline +(float64 lhs, int64 rhs) = float64(emit(float64(lhs), float64(rhs), add.f64));
+inline +(float64 lhs, uint32 rhs) = float64(emit(float64(lhs), float64(rhs), add.f64));
+inline +(float64 lhs, uint64 rhs) = float64(emit(float64(lhs), float64(rhs), add.f64));
+inline +(float64 lhs, float32 rhs) = float64(emit(float64(lhs), float64(rhs), add.f64));
+inline +(float64 lhs, float64 rhs) = float64(emit(float64(lhs), float64(rhs), add.f64));
+
+// TODO: Sub
+// TODO: Mul
+// TODO: Div
+// TODO: Mod
+
+// TODO: Complement
+// TODO: And
+// TODO: Or
+// TODO: Xor
+// TODO: Shl
+// TODO: Shr
+
+// TODO: Not
+// TODO: Compare
+// TODO: Equal
+
+/* TODO: bool
+inline !(bool rhs) = emit(bool(rhs), not);
+inline &(bool lhs, bool rhs) = emit(bool(lhs), bool(rhs), and.u32);
+inline |(bool lhs, bool rhs) = emit(bool(lhs), bool(rhs), or.u32);
+inline ^(bool lhs, bool rhs) = emit(bool(lhs), bool(rhs), xor.u32);
+inline <>(bool lhs, bool rhs) = emit(bool(lhs), bool(rhs), sub.i32);
+... */
+
+/*
+lang
+io.file
+io.socket
+io.stream
+io.process
+*/
