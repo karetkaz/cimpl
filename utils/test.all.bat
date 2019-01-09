@@ -24,10 +24,10 @@ mingw32-make -C "%CMPL%" -j 12 BINDIR="%BIN%" cmpl.exe libFile.dll libGfx.dll
 
 :: dump symbols, assembly, syntax tree and global variables
 SET DUMP_FILE=%BIN%.ci
-%BIN%\cmpl -std"%CMPL%\lib\stdlib.ci" -X+steps -profile/p/G/M -api/a/m/d/p/u -asm/n/s -ast -log/15 "%DUMP_FILE%" -dump "%DUMP_FILE%" "%CMPL%\test\test.ci"
+%BIN%\cmpl -X-stdin+steps -std"%CMPL%\lib\stdlib.ci" -profile/p/G/M -api/a/m/d/p/u -asm/n/s -ast -log/15 "%DUMP_FILE%" -dump "%DUMP_FILE%" "%CMPL%\test\test.ci"
 
 SET DUMP_FILE=%BIN%.all.ci
-%BIN%\cmpl -std"%CMPL%\lib\stdlib.ci" -X+steps -profile/p/G/M -api/a/m/d/p/u -asm/n/s -ast -log/15 "%DUMP_FILE%" -dump "%DUMP_FILE%" "%BIN%\libFile.dll" "%BIN%\libGfx.dll" "%CMPL%\lib\cmplGfx\gfxlib.ci" "%CMPL%\test\test.ci"
+%BIN%\cmpl -X-stdin+steps -std"%CMPL%\lib\stdlib.ci" -profile/p/G/M -api/a/m/d/p/u -asm/n/s -ast -log/15 "%DUMP_FILE%" -dump "%DUMP_FILE%" "%BIN%\libFile.dll" "%BIN%\libGfx.dll" "%CMPL%\lib\cmplGfx\gfxlib.ci" "%CMPL%\test\test.ci"
 
 SET TEST_FILES=%CMPL%\test\*.ci
 SET TEST_FILES=%TEST_FILES%;%CMPL%\test\lang\*.ci

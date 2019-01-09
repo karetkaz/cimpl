@@ -336,6 +336,8 @@ function execute(text, cmd) {
 			args.push(arg);
 		}
 
+		args.push('libFile.wasm');
+
 		// compile the editing file
 		file = params.file || 'new.ci';
 		args.push(file);

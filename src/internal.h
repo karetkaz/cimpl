@@ -441,7 +441,7 @@ void print_log(rtContext rt, raiseLevel level, const char *file, int line, rtVal
 
 // Code generator errors
 #define ERR_CAST_EXPRESSION "can not emit expression: %t, invalid cast(%K -> %K)"
-#define ERR_EMIT_LENGTH "can not emit length of array: %T"
+#define ERR_EMIT_LENGTH "can not emit length of array: %t"
 #define ERR_EMIT_VARIABLE "can not emit variable: %T"
 #define ERR_EMIT_FUNCTION "can not emit function: %T"
 #define ERR_EMIT_STATEMENT "can not emit statement: %t"

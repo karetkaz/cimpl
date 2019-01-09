@@ -50,8 +50,6 @@ set(GX_SOURCE_FILES
 	lib/cmplGfx/src/g3_draw.c
 	lib/cmplGfx/src/g2_image.c
 	lib/cmplGfx/src/g3_mesh.c
-	#cmplGfx/src/gx_gui.W32.c
-	#cmplGfx/src/gx_gui.X11.c
 	lib/cmplGfx/src/gx_main.c
 )
 

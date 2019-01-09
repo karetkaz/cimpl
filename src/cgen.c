@@ -335,31 +335,26 @@ static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 
 /// Generate byte-code for variable indirect load.
 static ccKind genIndirection(ccContext cc, symn variable, ccKind get) {
-	rtContext rt = cc->rt;
-	symn type = variable->type;
-	ccKind typCast = refCast(type);
-	ccKind varCast = refCast(variable);
-
 	if (get == KIND_var) {
 		// load only the offset of the variable, no matter if its a reference or not
 		// HACK: currently used to get the length of a slice
 		return CAST_ref;
 	}
 
+	rtContext rt = cc->rt;
+	symn type = variable->type;
+	ccKind cast = refCast(variable);
+
 	switch (variable->kind & MASK_kind) {
 		default:
 			fatal(ERR_INTERNAL_ERROR);
 			return CAST_any;
 
-		case KIND_def:
-			// generate inline
-			return genAst(cc, variable->init, get);
-
 		case KIND_typ:
 		case KIND_fun:
 			// typename is by reference, ex: pointer b = int32;
-			varCast = CAST_val;
-			typCast = CAST_ref;
+			cast = CAST_any;
+			type = variable;
 			break;
 
 		case KIND_var:
@@ -367,7 +362,7 @@ static ccKind genIndirection(ccContext cc, symn variable, ccKind get) {
 	}
 
 	if (get == CAST_ref || get == CAST_var || get == CAST_arr) {
-		if (varCast == get) {
+		if (cast == get) {
 			// make a copy of a reference, variant or slice
 			if (!emitInt(rt, opc_ldi, variable->size)) {
 				return CAST_any;
@@ -375,7 +370,7 @@ static ccKind genIndirection(ccContext cc, symn variable, ccKind get) {
 			return get;
 		}
 
-		if (varCast == CAST_ref || varCast == CAST_var || varCast == CAST_arr) {
+		if (cast == CAST_ref || cast == CAST_var || cast == CAST_arr) {
 			// convert a variant or an array to a reference (ex: `int &a = var;`)
 			if (!emitInt(rt, opc_ldi, vm_ref_size)) {
 				return CAST_any;
@@ -387,7 +382,7 @@ static ccKind genIndirection(ccContext cc, symn variable, ccKind get) {
 		return get;
 	}
 
-	if (varCast == CAST_ref) {
+	if (cast == CAST_ref) {
 		// load reference indirection (variable is a reference to a value)
 		if (!emitInt(rt, opc_ldi, vm_ref_size)) {
 			return CAST_any;
@@ -398,8 +393,34 @@ static ccKind genIndirection(ccContext cc, symn variable, ccKind get) {
 	if (!emitInt(rt, opc_ldi, type->size)) {
 		return CAST_any;
 	}
-	return typCast;
+
+	return castOf(type);
 }
+static ccKind genVariable(ccContext cc, symn variable, ccKind get, astn ast);
+static ccKind genPreVarLen(ccContext cc, astn ast, symn type, ccKind get, ccKind got) {
+	rtContext rt = cc->rt;
+
+	// array: push length of variable first or copy.
+	if (get == CAST_arr && got != CAST_arr) {
+		symn length = type->fields;
+		if (length == NULL || !isStatic(length)) {
+			error(rt, ast->file, ast->line, ERR_EMIT_LENGTH, NULL);
+			return CAST_any;
+		}
+		if (!genVariable(cc, length, refCast(length), ast)) {
+			return CAST_any;
+		}
+	}
+
+	// variant: push type of variable first or copy.
+	if (get == CAST_var && got != CAST_var) {
+		if (!emitVarOffs(rt, type)) {
+			return CAST_any;
+		}
+	}
+	return get;
+}
+
 /// Generate byte-code for variable usage.
 static ccKind genVariable(ccContext cc, symn variable, ccKind get, astn ast) {
 	rtContext rt = cc->rt;
@@ -460,23 +481,8 @@ static ccKind genVariable(ccContext cc, symn variable, ccKind get, astn ast) {
 		error(rt, ast->file, ast->line, ERR_EMIT_VARIABLE, variable);
 	}
 
-	// array: push length of variable first or copy.
-	if (get == CAST_arr && got != CAST_arr) {
-		symn length = type->fields;
-		if (length == NULL || !isStatic(length)) {
-			error(rt, ast->file, ast->line, ERR_EMIT_LENGTH, variable);
-			return CAST_any;
-		}
-		if (!genVariable(cc, length, refCast(length), ast)) {
-			return CAST_any;
-		}
-	}
-
-	// variant: push type of variable first or copy.
-	if (get == CAST_var && got != CAST_var) {
-		if (!emitVarOffs(rt, type)) {
-			return CAST_any;
-		}
+	if (!genPreVarLen(cc, ast, type, get, got)) {
+		return CAST_any;
 	}
 
 	// generate the address of the variable
@@ -486,12 +492,11 @@ static ccKind genVariable(ccContext cc, symn variable, ccKind get, astn ast) {
 
 	return genIndirection(cc, variable, get);
 }
-/// Generate byte-code for OPER_dot `a.b`. // TODO: merge with genVariable
+/// Generate byte-code for OPER_dot `a.b`.
 static ccKind genMember(ccContext cc, astn ast, ccKind get) {
 	rtContext rt = cc->rt;
 	symn object = linkOf(ast->op.lhso, 1);
 	symn member = linkOf(ast->op.rhso, 1);
-	int lhsStat = isTypeExpr(ast->op.lhso);
 
 	dbgCgen("%?s:%?u: %t", ast->file, ast->line, ast);
 	if (member == NULL && ast->op.rhso != NULL) {
@@ -506,26 +511,25 @@ static ccKind genMember(ccContext cc, astn ast, ccKind get) {
 		return CAST_any;
 	}
 
-	if (!isStatic(member) && lhsStat) {
-		error(rt, ast->file, ast->line, ERR_INVALID_FIELD_ACCESS, member);
-		return CAST_any;
-	}
 	if (isStatic(member)) {
-		if (!lhsStat && isVariable(object) && castOf(object->type) != CAST_arr) {
+		if (isVariable(object) && !isArrayType(object->type)) {
 			warn(rt, raiseWarn, ast->file, ast->line, WARN_STATIC_FIELD_ACCESS, member, object->type);
 		}
 		return genAst(cc, ast->op.rhso, get);
 	}
 
-	if (member->kind == KIND_def) {
-		// static array length is of this type
-		dbgCgen("accessing inline field %T: %t", member, ast);
-		return genAst(cc, ast->op.rhso, get);
+	if (!isVariable(object) && !isInline(object)) {
+		error(rt, ast->file, ast->line, ERR_INVALID_FIELD_ACCESS, member);
+		return CAST_any;
+	}
+
+	if (!genPreVarLen(cc, ast, member->type, get, castOf(member))) {
+		return CAST_any;
 	}
 
 	ccKind lhsCast = CAST_ref;
 	if (member == cc->length_ref) {
-		// HACK: dynamic array length: do not load indirect the address of the first element 
+		// HACK: dynamic array length: do not load indirect the address of the first element
 		lhsCast = KIND_var;
 	}
 
@@ -541,16 +545,13 @@ static ccKind genMember(ccContext cc, astn ast, ccKind get) {
 
 	return genIndirection(cc, member, get);
 }
-/// Generate byte-code for OPER_idx `a[b]`. // TODO: merge with genVariable
+/// Generate byte-code for OPER_idx `a[b]`.
 static ccKind genIndex(ccContext cc, astn ast, ccKind get) {
 	rtContext rt = cc->rt;
 	struct astNode tmp;
 
-	// variant: push type of variable first or copy.
-	if (get == CAST_var && refCast(ast->type) != CAST_var) {
-		if (!emitVarOffs(rt, ast->type)) {
-			return CAST_any;
-		}
+	if (!genPreVarLen(cc, ast, ast->type, get, refCast(ast->type))) {
+		return CAST_any;
 	}
 
 	dbgCgen("%?s:%?u: %t", ast->file, ast->line, ast);
@@ -578,27 +579,7 @@ static ccKind genIndex(ccContext cc, astn ast, ccKind get) {
 		}
 	}
 
-	if (get == KIND_var) {
-		return CAST_ref;
-	}
-
-	if (refCast(ast->type) == CAST_ref) {
-		if (!emitInt(rt, opc_ldi, vm_ref_size)) {
-			traceAst(ast);
-			return CAST_any;
-		}
-	}
-
-	if (get == CAST_ref || get == CAST_var) {
-		return get;
-	}
-
-	// we need the value on that position (this can be a ref).
-	if (!emitInt(rt, opc_ldi, elementSize)) {
-		traceAst(ast);
-		return CAST_any;
-	}
-	return refCast(ast->type);
+	return genIndirection(cc, ast->type, get);
 }
 
 /// Generate byte-code for OPER_fnc `a(b)`.

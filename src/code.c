@@ -1372,7 +1372,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 		case opc_st64:
 		case opc_ld128:
 		case opc_st128:
-			dieif((ip->rel & (sizeof(void*) - 1)) != 0, ERR_INTERNAL_ERROR);
+			dieif((ip->rel & (vm_mem_align - 1)) != 0, ERR_INTERNAL_ERROR);
 			dieif(ip->rel != arg.i64, ERR_INTERNAL_ERROR);
 			break;
 

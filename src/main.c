@@ -333,6 +333,7 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 
 		case TOKEN_opc:
 		case TOKEN_val:
+		case RECORD_kwd:
 			printFmt(out, esc, " value=\"%?t\" />\n", ast);
 			break;
 
@@ -1796,6 +1797,11 @@ int main(int argc, char *argv[]) {
 						logAppend = 1;
 						arg2 += 2;
 						break;
+
+					case 'd':
+						dumpFileName = logFileName;
+						arg2 += 2;
+						break;
 				}
 			}
 			if (*arg2 && *parseInt(arg2, &settings.warnLevel, 10)) {
@@ -2088,6 +2094,9 @@ int main(int argc, char *argv[]) {
 	// dump to log file (global option)
 	if (dumpFileName && strEquals(dumpFileName, logFileName)) {
 		// enable logging only as text to the log file
+		if (dumpFun == NULL) {
+			dumpFun = dumpApiText;
+		}
 		if (dumpFun == dumpApiText) {
 			extra.out = rt->logFile;
 		}

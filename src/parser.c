@@ -881,7 +881,7 @@ static astn parameters(ccContext cc, symn returns, astn function) {
 		// fixed size arrays are passed by reference
 		if (castOf(parameter->type) == CAST_arr) {
 			if (refCast(parameter) == CAST_val) {
-				parameter->size = sizeof(vmOffs);
+				parameter->size = vm_ref_size;
 				parameter->kind &= ~MASK_cast;
 				parameter->kind |= CAST_ref;
 			}
@@ -897,7 +897,7 @@ static astn parameters(ccContext cc, symn returns, astn function) {
 
 				// dynamic-size array: int a[]
 				addLength(cc, arr, NULL);
-				arr->size = 2 * sizeof(vmOffs);
+				arr->size = 2 * vm_ref_size;
 
 				arr->kind = ATTR_stat | KIND_typ | CAST_arr;
 				arr->offs = vmOffset(cc->rt, arr);
@@ -1006,7 +1006,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		if (peekTok(cc, RIGHT_sqr) != NULL) {
 			// dynamic-size array: int a[]
 			addLength(cc, arr, NULL);
-			arr->size = 2 * sizeof(vmOffs);
+			arr->size = 2 * vm_ref_size;
 			cast = CAST_arr;
 		}
 		else if (skipTok(cc, OPER_mul, 0)) {
