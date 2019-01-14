@@ -2132,17 +2132,20 @@ int main(int argc, char *argv[]) {
 	for (; i <= argc; ++i) {
 		char *arg = argv[i];
 		if (i == argc || *arg != '-') {
-			if (extra.compileSteps != NULL && ccFile != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sCompile: `%?s`", extra.compileSteps, ccFile);}
 			if (ccFile != NULL) {
 				char *ext = strrchr(ccFile, '.');
-				if (ext && (strEquals(ext, ".so") || strEquals(ext, ".dll"))) {
+				if (ext && (strEquals(ext, ".so") || strEquals(ext, ".dll") || strEquals(ext, ".wasm"))) {
+					if (extra.compileSteps != NULL && ccFile != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sLibrary: `%?s`", extra.compileSteps, ccFile);}
 					int resultCode = importLib(rt, ccFile);
 					if (resultCode != 0) {
 						fatal("error(%d) importing library `%s`", resultCode, ccFile);
 					}
 				}
-				else if (!ccAddUnit(rt->cc, NULL, ccFile, 1, NULL)) {
-					error(rt, ccFile, 1, "error compiling source `%s`", ccFile);
+				else {
+					if (extra.compileSteps != NULL && ccFile != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sCompile: `%?s`", extra.compileSteps, ccFile);}
+					if (!ccAddUnit(rt->cc, NULL, ccFile, 1, NULL)) {
+						error(rt, ccFile, 1, "error compiling source `%s`", ccFile);
+					}
 				}
 			}
 			ccFile = arg;

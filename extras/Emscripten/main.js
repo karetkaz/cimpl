@@ -1,37 +1,4 @@
-/* communication with worker/args
-send => {
-	files - download these files to the workspace directory
-	file - open or save the content of the file
-	line - jump to / position in file
-	data(content) - save the content
-	exec - arguments for the compiler
-}
-
-receive => {
-	files - list of files in the workspace
-	data(content) - content of the requested file
-	line - jump to / position in file
-	print - print the message to the output
-}
-
-args => {
-	project - download the content of the given file list
-	content - overwrite the content of the editor
-	file - name of file to be opened
-	line - line position to jump to
-	theme - override default: &theme=light|dark
-	menu - override default: &menu=options|files|none ????|secondary|split
-	split: override default: &split=vertical|horizontal|auto|primary|secondary|split
-
-	exec - override default: &exec=-profile/G/H/P/T
-	dump - dump output to file: &dump=dump.txt|dump.json
-	log - log output to file: &log=dump.txt
-	mem - if 2MB memory is not enough: &mem=128M
-	X
-}*/
-
 let docTitle = document.title;
-let worker = new Worker('worker.js');
 let editor = CodeMirror.fromTextArea(input, {
 	mode: "text/x-cmpl",
 	lineNumbers: true,
@@ -85,8 +52,7 @@ let params = JsArgs('#', function (params, changes) {
 
 	// open menu, only after loading
 	if (!changes && params.menu != null) {
-		let menu = params.menu === 'none' ? 'secondary' : params.menu;
-		showSplitter(window.menuSplit, '-files', '-options', menu, '-primary');
+		showSplitter(window.menuSplit, params.menu === 'none' ? 'secondary' : params.menu);
 	}
 
 	// show editor or output, only after loading
@@ -117,7 +83,7 @@ let params = JsArgs('#', function (params, changes) {
 				});
 			}
 		}
-		worker.postMessage({files});
+		openProject(files);
 	}
 
 	// set editor content
@@ -158,10 +124,7 @@ let params = JsArgs('#', function (params, changes) {
 	// file changed and there is no content -> (open or close)
 	if (changes.file && !params.content) {
 		if (params.file != null) {
-			worker.postMessage({
-				file: params.file,
-				line: params.line,
-			});
+			openInput(params.file, params.line);
 		} else {
 			editor.setValue('');
 		}
@@ -173,30 +136,6 @@ let params = JsArgs('#', function (params, changes) {
 });
 
 editor.setSize('100%', '100%');
-worker.onmessage = function(event) {
-	let data = event.data;
-	//console.log('worker: ', data);
-	if (data.print !== undefined) {
-		terminal.print(data.print);
-	}
-	if (data.content !== undefined) {
-		editor.setValue(data.content);
-	}
-	if (data.file !== undefined) {
-		btnFileName.innerText = data.file;
-		params.update({file: data.file, content: null});
-	}
-	if (data.line !== undefined) {
-		params.update({line: data.line});
-	}
-	if (data.files !== undefined) {
-		fileList.innerHTML = '';
-		for (let file of data.files) {
-			fileList.innerHTML += '<li onclick="showFile(this.innerText);">' + file + '</li>';
-		}
-		params.update('file', 'content');
-	}
-};
 
 function setTheme(element, theme, ...remove) {
 	if (theme == null) {
@@ -269,6 +208,7 @@ function editProject() {
 		params.update({content: btoa(content), project: undefined, file: undefined, line: undefined});
 	}
 }
+
 function shareInput() {
 	showEditor('-primary');
 	let content = editor.getValue();
@@ -277,33 +217,17 @@ function shareInput() {
 		terminal.print('project file: ' + window.location.origin + window.location.pathname + '#project=' + btoa(content));
 	}
 	terminal.print('current file: ' + window.location.origin + window.location.pathname + '#content=' + btoa(content));
-
-}
-function saveInput() {
-	if (params.content !== undefined) {
-		params.update({ content: btoa(editor.getValue()) });
-	}
-	let file = params.file;
-	if (file == null && params.content == null) {
-		file = prompt('Save file as:', 'untitled.ci');
-	}
-	if (file == null) {
-		return;
-	}
-	worker.postMessage({
-		content: editor.getValue(),
-		file: file
-	});
 }
 
 function execute(text, cmd) {
-	let args = [];
+	let args = undefined;
 	let file = undefined;
 
 	if (text != null) {
 		btnExecute.innerText = text;
 	}
 	if (cmd != null) {
+		args = [];
 		cmdExecute.value = cmd;
 
 		// do not use standard input, print times
@@ -335,20 +259,9 @@ function execute(text, cmd) {
 			}
 			args.push(arg);
 		}
-
-		args.push('libFile.wasm');
-
-		// compile the editing file
-		file = params.file || 'new.ci';
-		args.push(file);
 	}
 
-	terminal.clear();
 	showEditor('-primary');
-	console.log("execute", args);
-	worker.postMessage({
-		content: editor.getValue(),
-		file: file,
-		exec: args
-	});
+	terminal.clear();
+	execInput(args);
 }

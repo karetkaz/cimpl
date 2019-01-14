@@ -1,3 +1,67 @@
+void brightnessContrastGamma(uint32 lut[256], int brightness, int contrast, double gamma) {
+	double cval = (256 + contrast) / 256.;
+	double gval = 1. / gamma;
+
+	for (int idx = 0; idx < lut.length; idx += 1) {
+		int val = grayClamp(brightness + int(256 * (cval * (float64.pow(idx / 256., gval) - .5) + .5)));
+		lut[idx] = rgb(val, val, val);
+	}
+}
+
+mat4f colorMatrix(float luminosity, float saturation, float hue) {
+
+	static mat4f lumMatrix(float val) {
+		return {
+			x: vec4f(1., 0., 0., val);
+			y: vec4f(0., 1., 0., val);
+			z: vec4f(0., 0., 1., val);
+			w: vec4f(0., 0., 0.,  1.);
+		};
+	}
+
+	static mat4f satMatrix(float val) {
+		//~ val between 0, 3
+		const float inv = 1 - val;
+		const float R = .213f * inv;
+		const float G = .715f * inv;
+		const float B = .072f * inv;
+	
+		return {
+			x: vec4f(R + val, G, B, 0.);
+			y: vec4f(R, G + val, B, 0.);
+			z: vec4f(R, G, B + val, 0.);
+			w: vec4f(0., 0., 0., 1.);
+		};
+	}
+
+	static mat4f hueMatrix(float val) {
+		//~ assert(val >= 0 && val <= 2 * Math.pi);
+		inline lR = 0.213;
+		inline lG = 0.715;
+		inline lB = 0.072;
+		float cV = val.cos();
+		float sV = val.sin();
+		return {
+			x: vec4f(lR+cV*(1-lR)+sV*(   -lR), lG+cV*(   -lG)+sV*( -lG), lB+cV*( -lB)+sV*(1 - lB),0.);
+			y: vec4f(lR+cV*(0-lR)+sV*(0.1430), lG+cV*(1 - lG)+sV*(0.14), lB+cV*( -lB)+sV*(-0.283),0.);
+			z: vec4f(lR+cV*(0-lR)+sV*(lR - 1), lG+cV*(   -lG)+sV*(  lG), lB+cV*(1-lB)+sV*(    lB),0.);
+			w: vec4f(0., 0., 0., 1.);
+		};
+	}
+
+	mat4f result = mat4f(
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1
+	);
+
+	result = mul(result, lumMatrix(luminosity));
+	result = mul(result, satMatrix(saturation));
+	result = mul(result, hueMatrix(hue));
+	return result;
+}
+
 void drawHist(gxSurf image, gxRect roi&, uint32 hist) {
 	uint32 lut[256];
 	image.calcHist(roi, hist, lut);

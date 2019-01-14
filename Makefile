@@ -4,11 +4,17 @@ GX_OUT=$(BINDIR)/obj.gx
 GX_SRC=lib/cmplGfx/src
 
 CFLAGS=-Wall -Wextra -g0 -O3 -std=gnu99
-EMFLAGS=-s WASM=1 -s EXPORT_ALL=0 -s INVOKE_RUN=0 -s ALLOW_MEMORY_GROWTH=1 --no-heap-copy
+EMFLAGS=-g0 -O3 -s WASM=1 -s EXPORT_ALL=1 -s INVOKE_RUN=0 -s ALLOW_MEMORY_GROWTH=1 -s ASSERTIONS=0 -s BINARYEN_TRAP_MODE='clamp' --no-heap-copy
+
+EM_SIDE_MODULE=-s SIDE_MODULE=1 -s "EXPORTED_FUNCTIONS=['_cmplInit']"
+EM_MAIN_MODULE=-s MAIN_MODULE=1 --preload-file lib/stdlib.ci --preload-file lib/std/math.ci --preload-file lib/std/math.Complex.ci --preload-file lib/std/string.ci
+
 #EMFLAGS+=-s "EXPORTED_FUNCTIONS=['_main','_rtInit','_ccInit','_ccAddUnit','_ccGenCode','_execute']"
-EM_EMBED=--preload-file lib/stdlib.ci --preload-file lib/std/math.ci --preload-file lib/std/math.Complex.ci --preload-file lib/std/string.ci
+#EM_EMBED=--preload-file lib/stdlib.ci --preload-file lib/std/math.ci --preload-file lib/std/math.Complex.ci --preload-file lib/std/string.ci
 
 ifneq "$(OS)" "Windows_NT"
+	CFLAGS+=-D HAVE_JPEG -D HAVE_PNG
+	EMFLAGS+=-D HAVE_PNG
 	MKDIRF=--parents
 	CFLAGS+=-fPIC
 endif
@@ -26,25 +32,25 @@ SRC_CC=\
 	src/printer.c\
 	src/tree.c\
 	src/type.c\
-	src/utils.c\
-	src/main.c
+	src/utils.c
 
 SRC_GX=\
-	$GX_SRC/*.h\
-	$GX_SRC/gx_surf.c\
-	$GX_SRC/gx_color.c\
-	$GX_SRC/g2_draw.c\
-	$GX_SRC/g3_draw.c\
-	$GX_SRC/g2_image.c\
-	$GX_SRC/g3_mesh.c\
-	$GX_SRC/gx_main.c
+	$(GX_SRC)/*.h\
+	$(GX_SRC)/gx_surf.c\
+	$(GX_SRC)/gx_color.c\
+	$(GX_SRC)/g2_draw.c\
+	$(GX_SRC)/g3_draw.c\
+	$(GX_SRC)/g2_image.c\
+	$(GX_SRC)/g3_mesh.c\
+	$(GX_SRC)/gx_main.c
 
 
 # for Linux platform
-cmpl: $(addprefix $(CC_OUT)/, $(notdir $(filter %.o, $(SRC_CC:%.c=%.o))))
+SRC_CC_EXE=$(SRC_CC) src/main.c
+cmpl: $(addprefix $(CC_OUT)/, $(notdir $(filter %.o, $(SRC_CC_EXE:%.c=%.o))))
 	gcc -o $(BINDIR)/cmpl $^ -lm -ldl
 
-SRC_GX_X11=$(SRC_GX) $GX_SRC/os_linux/gx_gui.x11.c
+SRC_GX_X11=$(SRC_GX) $(GX_SRC)/os_linux/gx_gui.x11.c $(GX_SRC)/os_linux/time.unx.c
 libGfx.so: $(addprefix $(GX_OUT)/, $(notdir $(filter %.o, $(SRC_GX_X11:%.c=%.o))))
 	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libGfx.so $^ -lm -ldl -lpng -ljpeg -lX11
 
@@ -56,10 +62,10 @@ libOpenGL.so: lib/cmplGL/src/openGL.c
 
 
 # for Windows platform
-cmpl.exe: $(addprefix $(CC_OUT)/, $(notdir $(filter %.o, $(SRC_CC:%.c=%.o))))
+cmpl.exe: $(addprefix $(CC_OUT)/, $(notdir $(filter %.o, $(SRC_CC_EXE:%.c=%.o))))
 	gcc -o $(BINDIR)/cmpl $^ -lm
 
-SRC_GX_W32=$(SRC_GX) $GX_SRC/os_win32/gx_gui.w32.c
+SRC_GX_W32=$(SRC_GX) $(GX_SRC)/os_win32/gx_gui.w32.c  $(GX_SRC)/os_win32/time.w32.c
 libGfx.dll: $(addprefix $(GX_OUT)/, $(notdir $(filter %.o, $(SRC_GX_W32:%.c=%.o))))
 	gcc -shared $(CFLAGS) -I src -o $(BINDIR)/libGfx.dll $^ -lm -lgdi32
 
@@ -71,10 +77,17 @@ libOpenGL.dll: lib/cmplGL/src/openGL.c
 
 
 # for Browser platform
-cmpl.js: $(SRC_CC) lib/stdlib.ci
-	emcc -g0 -O3 $(EMFLAGS) $(filter %.c, $^) -o extras/Emscripten/cmpl.js $(EM_EMBED)
+cmpl.js: $(SRC_CC_EXE) lib/stdlib.ci
+	emcc $(EMFLAGS) -o extras/Emscripten/cmpl.js $(EM_MAIN_MODULE) -s USE_SDL=2 -s USE_LIBPNG=1 $(filter %.c, $^)
+	sed -i -e 's/$$legalf32//g' extras/Emscripten/cmpl.js
 
-cmpl.dbg.js: $(SRC_CC) lib/stdlib.ci
+libFile.wasm: lib/cmplFile/src/file.c
+	emcc $(EMFLAGS) -o extras/Emscripten/libFile.wasm -I src $(EM_SIDE_MODULE) $(filter %.c, $^)
+
+libGfx.wasm: $(SRC_GX) $(GX_SRC)/os_linux/gx_gui.sdl.c  $(GX_SRC)/os_linux/time.unx.c
+	emcc $(EMFLAGS) -o extras/Emscripten/libGfx.wasm -I src $(EM_SIDE_MODULE) -s USE_SDL=2 -s USE_LIBPNG=1 $(filter %.c, $^)
+
+cmpl.dbg.js: $(SRC_CC_EXE) lib/stdlib.ci
 	emcc -g3 -O0 -s WASM=0 $(filter %.c, $^) -o extras/Emscripten/cmpl.dbg.js
 
 
@@ -84,14 +97,14 @@ clean:
 	mkdir $(MKDIRF) "$(CC_OUT)"
 	mkdir $(MKDIRF) "$(GX_OUT)"
 
-$(CC_OUT)/%.o: src/%.c $(filter-out %.c, $(SRC_CC))
+$(CC_OUT)/%.o: src/%.c $(filter-out %.c, $(SRC_CC_EXE))
 	gcc $(CFLAGS) -o "$@" -c "$<"
 
-$(GX_OUT)/%.o: $(GX_SRC)/%.c $(filter-out %.c, $(SRC_CC))
+$(GX_OUT)/%.o: $(GX_SRC)/%.c $(filter-out %.c, $(SRC_CC_EXE))
 	gcc $(CFLAGS) -I src -o "$@" -c "$<"
 
-$(GX_OUT)/%.o: $(GX_SRC)/os_win32/%.c $(filter-out %.c, $(SRC_CC))
+$(GX_OUT)/%.o: $(GX_SRC)/os_win32/%.c $(filter-out %.c, $(SRC_CC_EXE))
 	gcc $(CFLAGS) -I src -o "$@" -c "$<"
 
-$(GX_OUT)/%.o: $(GX_SRC)/os_linux/%.c $(filter-out %.c, $(SRC_CC))
+$(GX_OUT)/%.o: $(GX_SRC)/os_linux/%.c $(filter-out %.c, $(SRC_CC_EXE))
 	gcc $(CFLAGS) -I src -o "$@" -c "$<"

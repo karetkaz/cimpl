@@ -93,57 +93,25 @@ void flushWindow(gxWindow window) {
 		src->basePtr, &window->BMP, DIB_RGB_COLORS);
 }
 
-int getWindowEvent(gxWindow window, int timeout, int *button, int *x, int *y) {
-	static const uint64_t kTimeEpoc = 116444736000000000LL;
-	static const uint64_t kTimeScaler = 10000;  // 100 ns to us.
+int getWindowEvent(gxWindow window, int *button, int *x, int *y) {
 	static int btnstate = 0;
 
 	MSG msg;
 	msg.message = 0;
-
-	if (timeout > 0) {
-		typedef union {
-			FILETIME ftime;
-			int64_t time;
-		} TimeStamp;
-		TimeStamp time;
-		GetSystemTimeAsFileTime(&time.ftime);
-		uint64_t start = (time.time - kTimeEpoc) / kTimeScaler;
-		while (!PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-			GetSystemTimeAsFileTime(&time.ftime);
-			uint64_t now = (time.time - kTimeEpoc) / kTimeScaler;
-			if (now - start > (uint64_t) timeout) {
-				*button = 0;
-				*x = *y = 0;
-				return EVENT_TIMEOUT;
-			}
-			SwitchToThread();
-		}
-	}
-
-	while (timeout == 0 || PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-		GetMessageA(&msg, NULL, 0, 0);
+	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 		if (msg.message != WM_MOUSEMOVE) {
 			// consume mouse motion events
 			break;
 		}
-		timeout = 1;
 	}
-	*button = 0;
-	*x = *y = 0;
+	*button = *x = *y = 0;
 	switch (msg.message) {
 		default:
 			*button = msg.message;
-			*x = msg.pt.x;
-			*y = msg.pt.y;
 			break;
 
 		case WM_QUIT:
 			return WINDOW_CLOSE;
-
-		case WM_CREATE:
-			DispatchMessage(&msg);
-			return WINDOW_CREATE;
 
 		case WM_DESTROY:
 			DispatchMessage(&msg);

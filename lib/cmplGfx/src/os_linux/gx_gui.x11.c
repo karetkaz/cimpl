@@ -1,17 +1,13 @@
 #include "../gx_gui.h"
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <sys/time.h>
-#include <time.h>
 #include <stdlib.h>
 
 
 struct gxWindow {
-	gx_Surf image;
-
 	Display *display;
 	Window window;
-	XImage *g_image;
+	XImage *image;
 
 	Atom deleteWindow;
 	XGCValues gr_values;
@@ -32,8 +28,9 @@ gxWindow createWindow(gx_Surf offs) {
 	int screen = DefaultScreen(result->display);
 	int depth = DefaultDepth(result->display, screen);
 
-	result->g_image = XCreateImage(result->display, CopyFromParent, depth, ZPixmap, 0, NULL, offs->width, offs->height, 32, 0);
 	result->window = XCreateSimpleWindow(result->display, XDefaultRootWindow(result->display), 0, 0, offs->width, offs->height, 0, BlackPixel(result->display, 0), WhitePixel(result->display, 0));
+	result->image = XCreateImage(result->display, CopyFromParent, depth, ZPixmap, 0, offs->basePtr, offs->width, offs->height, 32, offs->scanLen);
+	result->gc = XCreateGC(result->display, result->window, GCForeground, &result->gr_values);
 
 	XSelectInput(result->display, result->window, StructureNotifyMask// | VisibilityChangeMask
 		| ButtonPressMask | ButtonReleaseMask | ButtonMotionMask
@@ -41,53 +38,39 @@ gxWindow createWindow(gx_Surf offs) {
 		| KeyPressMask | KeyReleaseMask
 	);
 
-	result->gc = XCreateGC(result->display, result->window, GCForeground, &result->gr_values);
-	XMapWindow(result->display, result->window);
-
+	// handle window close event
 	result->deleteWindow = XInternAtom(result->display, "WM_DELETE_WINDOW", False);
 	XSetWMProtocols(result->display, result->window, &result->deleteWindow, 1);
 
-	result->image = offs;
+	// window is not resizeable
+	XSizeHints *xsh = XAllocSizeHints();
+	XWindowAttributes xwa;
+	xsh->flags = PMinSize | PMaxSize;
+	XGetWindowAttributes(result->display, result->window, &xwa);
+	xsh->min_width = xwa.width;
+	xsh->max_width = xwa.width;
+	xsh->min_height = xwa.height;
+	xsh->max_height = xwa.height;
+	XSetWMNormalHints(result->display, result->window, xsh);
+	XFree(xsh);
 
+	XMapWindow(result->display, result->window);
 	return result;
 }
 
-int getWindowEvent(gxWindow window, int timeout, int *button, int *x, int *y) {
+int getWindowEvent(gxWindow window, int *button, int *x, int *y) {
 	static int btnstate = 0;
+
 	XEvent event;
-
-	if (timeout > 0) {
-		struct timeval tv;
-		struct timespec ts;
-
-		ts.tv_sec = 0;
-		ts.tv_nsec = 0;
-		gettimeofday(&tv, NULL);
-		uint64_t start = tv.tv_sec * (uint64_t) 1000 + tv.tv_usec / 1000;
-		while (!XPending(window->display)) {
-			gettimeofday(&tv, NULL);
-			uint64_t now = tv.tv_sec * (uint64_t) 1000 + tv.tv_usec / 1000;
-			if (now - start > (uint64_t) timeout) {
-				*button = 0;
-				*x = *y = 0;
-				return EVENT_TIMEOUT;
-			}
-			nanosleep(&ts, NULL);
-			// FIXME: sched_yield();
-		}
-	}
-
 	event.type = 0;
-	while (timeout == 0 || XPending(window->display)) {
+	while (XPending(window->display)) {
 		XNextEvent(window->display, &event);
 		if (event.type != MotionNotify) {
 			// consume mouse motion events
 			break;
 		}
-		timeout = 1;
 	}
-	*button = 0;
-	*x = *y = 0;
+	*button = *x = *y = 0;
 	switch (event.type) {
 		default:
 			*button = event.type;
@@ -98,9 +81,6 @@ int getWindowEvent(gxWindow window, int timeout, int *button, int *x, int *y) {
 				return WINDOW_CLOSE;
 			}
 			break;
-
-		case CreateNotify:
-			return WINDOW_CREATE;
 
 		case DestroyNotify:
 			return WINDOW_CLOSE;
@@ -179,28 +159,20 @@ int getWindowEvent(gxWindow window, int timeout, int *button, int *x, int *y) {
 }
 
 void setWindowText(gxWindow window, char *caption) {
-	XSetStandardProperties(window->display, window->window, caption, "3d", None, NULL, 0, NULL);
+	XSetStandardProperties(window->display, window->window, caption, "cmpl", None, NULL, 0, NULL);
 }
 
 void flushWindow(gxWindow window) {
-	gx_Surf src = window->image;
-	XImage *dst = window->g_image;
-
-	dst->data = src->basePtr;
-	dst->width = src->width;
-	dst->height = src->height;
-	dst->bits_per_pixel = src->depth;
-	dst->bytes_per_line = src->scanLen;
-
-	XPutImage(window->display, window->window, window->gc, dst, 0, 0, 0, 0, src->width, src->height);
+	XImage *screen = window->image;
+	XPutImage(window->display, window->window, window->gc, screen, 0, 0, 0, 0, screen->width, screen->height);
 	XFlush(window->display);
 }
 
 void destroyWindow(gxWindow window) {
 
-	if (window->g_image) {
-		window->g_image->data = NULL;
-		XDestroyImage(window->g_image);
+	if (window->image) {
+		window->image->data = NULL;
+		XDestroyImage(window->image);
 	}
 
 	if (window->window) {

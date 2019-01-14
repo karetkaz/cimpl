@@ -12,6 +12,7 @@ body {
 	-webkit-text-size-adjust: 100%;
 }
 
+.hidden {display: none;}
 .clear {clear: both;}
 .right {float: right;}
 .left {float: left;}
@@ -31,23 +32,8 @@ body {
 	background-color: #fafafa;
 }
 
-.content.list > * {
-	padding-top: 1em;
-}
-
-#menuSplit > div:first-child {
-	width: 14em;
-	max-width: 45%;
-	float: left;
-}
-
-#menuSplit.options div#options,
-#menuSplit.files div#files {
-	display: inherit;
-}
-#menuSplit.options div#files,
-#menuSplit.files div#options {
-	display: none;
+.content.list * {
+	padding: .5em 0;
 }
 
 .content.list li:hover {
@@ -55,14 +41,17 @@ body {
 	cursor: hand;
 }
 
-.content.list > ul {
-	padding: .5rem 1em;
+.content.list ul {
+	padding: 0 0 0 1em;
 }
-.content.list > ul > li {
+.content.list li {
 	list-style: none;
 	overflow: hidden;
 	white-space: nowrap;
-	padding: 0.5rem 0.5em;
+	padding: 0.5rem 0;
+}
+.content.list li>* {
+	padding: 0;
 }
 .content.list input {
 	margin: 0.25rem 0;
@@ -74,6 +63,9 @@ body {
 
 .content.list button {
 	border-radius: 0.2em;
+	margin: -.35em 0;
+	min-width: 2em;
+	min-height: 2em;
 	padding: 0.25rem 0.5em;
 	background-color: #dadada;
 	border: solid 1px #eaeaea;
@@ -90,10 +82,21 @@ body {
 	background-color: #dadada;
 }
 
+#menuSplit > div:first-child {
+	width: 14em;
+	max-width: 45%;
+	float: left;
+}
+
+#fileList > *:before {
+	content: '📄 ';
+}
+
 /* toolbar */
 .toolbar {
 	margin: 0;
 	padding: 0;
+	height: 2em;
 	background-color: #eaeaea;
 }
 
@@ -120,9 +123,9 @@ body {
 	overflow: hidden;
 	text-align: left;
 }
-.toolbar>.filename:before {
+/*.toolbar>.filename:before {
 	content: ' ▾ ';
-}
+}*/
 .toolbar>.execute:after {
 	content: ' ▸ ';
 }
@@ -148,6 +151,31 @@ textarea, #output {
 }
 #output a {
 	color: #007bff;
+}
+
+.modal-content {
+	background-color: #80808080;
+	z-index: 100;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	overflow: hidden;
+	position: absolute;
+}
+
+.modal-content>canvas {
+	background-color: white;
+	margin: 0;
+	padding: 0;
+	position: relative;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 }
 
 /** CodeMirror */

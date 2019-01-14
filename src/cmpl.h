@@ -62,6 +62,7 @@ typedef enum {
 	raise_warn_par8 = 8,
 	raise_warn_pad6 = 6,
 	raise_warn_gen8 = 8,
+	raise_warn_var8 = 8,
 
 	raise_warn_typ3 = 3,	// WARN_DECLARATION_REDEFINED / WARN_USING_BEST_OVERLOAD
 	raise_warn_typ4 = 4,	// WARN_USING_SIGNED_CAST

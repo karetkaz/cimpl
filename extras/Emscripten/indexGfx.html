@@ -33,472 +33,185 @@
 </head>
 <body class="dark">
 <div class="toolbar">
-	<span class="left icon" href="#" onclick="showSplitter(menuSplit, '^options', '^secondary', '-files');">☰</span>
+	<span class="left icon" href="#" onclick="showSplitter(menuSplit, '!secondary');">☰</span>
 	<!--<span class="left icon" href="#" onclick="saveInput();">💾</span>-->
 	<!--<span class="left icon" href="#" onclick="shareInput();">🔗</span>-->
 	<span id="btnExecute" class="right execute" href="#" onclick="execute(btnExecute.innerText, cmdExecute.value);"></span>
 	<span class="right icon" href="#" onclick="showEditor('^primary', '^secondary', '^');">⬓</span>
-	<span class="right icon" href="#" onclick="setTheme(body, '!dark');">☼</span>
-	<span id="btnFileName" class="filename" href="#" onclick="showSplitter(menuSplit, '^files', '^secondary', '-options');"></span>
+	<span class="right icon" href="#" onclick="setTheme(body, '!dark');">◑</span>
+	<span id="btnFileName" class="filename" href="#" onclick="void(0);"></span>
 </div>
-<div id="menuSplit" class="content split-pane left vertical files" style="top:2em;">
-	<div>
-	<div id="options" class="content list">
-		Execute<ul>
+<div id="menuSplit" class="content split-pane left vertical" style="top:2em;">
+	<div class="content list">
+		<div>Execute</div>
+		<ul>
 			<input  class="filename" id="cmdExecute" onchange="params.update({exec: value});" onkeypress="if (event.key == 'Enter') execute(null, this.value)">
-			<li onclick="execute(this.innerText, '-run/g');">Run</li>
-			<li onclick="execute(this.innerText, '-debug/g');">Debug</li>
-			<li onclick="execute(this.innerText, '-profile/g');">Profile</li>
-			<li onclick="execute('Compile', '');">Compile only</li>
+			<li onclick="execute('Run', '-run/g');">⚡ Run</li>
+			<li onclick="execute('Debug', '-debug/g');">🐞 Debug</li>
+			<li onclick="execute('Profile', '-profile/g');">⏱ Profile</li>
+			<li onclick="execute('Compile', '');">⚙ Compile only</li>
 			<hr>
 			<li>
 				<button onclick="execute(this.innerText, '-api/a/m/d/p/u');">Api</button>
 				<button onclick="execute(this.innerText, '-asm/a/n/s/m');">Asm</button>
-				<button class="right icon" onclick="execute();">?</button>
+				<button class="right" onclick="execute();">?</button>
 			</li>
 			<hr>
 			<li onclick="terminal.clear();">Clear output</li>
+			<li onclick="showEditor('!secondary');">Show output</li>
+			<li onclick="showEditor('!primary');">Show editor</li>
 		</ul>
-		View<ul>
-			<li>Split: <select onchange="showEditor(this.value);">
-				<option value="horizontal">Horizontal
-				<option value="vertical">Vertical
-				<option value="auto">Auto
-			</select></li>
-			<li onclick="showEditor('!primary');">Editor only</li>
-			<li onclick="showEditor('!secondary');">Output only</li>
-		</ul>
-	</div>
-	<div id="files" class="content list">
+		<div>
+		<span>Project</span>
+		<button class="right" onclick="listFiles(false);">⟳</button>
+ 		<!--<button class="right" onclick="uploadFiles();">📤</button> -->
+ 		<!--<button class="right" onclick="downloadFiles(false);">📥</button> -->
+		</div>
 		<ul>
-			<li onclick="saveInput();">💾 Save file</li>
+			<li onclick="editProject();">🛠 Edit project</li>
 			<li onclick="shareInput();">🔗 Share link</li>
-			<li onclick="showFile(null);">❌ Close file</li>
+			<li onclick="saveInput();">💾 Save file</li>
+			<!--<li onclick="showFile(null);">❌ Close file</li>-->
+			<hr>
 		</ul>
-		Files <a href="javascript:Module.listFiles();" style="text-decoration: none;">⟳</a>
 		<ul id="fileList">
 		</ul>
 		<ul>
-		<li onclick="Module.listFiles(true);">Show all</li>
-		<li onclick="editProject();">Edit project</li>
+		<li onclick="listFiles(true);">Show all</li>
 	</ul>
-	</div>
 	</div>
 	<div id="editSplit" class="content split-pane horizontal">
 		<div class="text-content">
 			<textarea id="input"></textarea>
 		</div>
-		<div id="viewOutput" class="content split-pane vertical">
-			<div class="text-content">
-				<pre id="output"></pre>
-			</div>
-			<div class="text-content">
-				<canvas id="canvas"></canvas>
-			</div>
+		<div class="text-content">
+			<pre id="output"></pre>
 		</div>
 	</div>
 </div>
+<div onclick="showCanvas(false)" class="modal-content hidden">
+	<canvas id="canvas" width="0" onclick="event.stopPropagation()"></canvas>
+</div>
 
 <script type="text/javascript">
-var Module = {
-	workspace: '/workspace',
-	files: null,
-	initialized: false,
-	dynamicLibraries: [
-		'libFile.wasm',
-		'libGfx.wasm'
-	],
-	print: console.log,
-	//print: terminal.print,
-	canvas: document.getElementById('canvas'),
-
-	listFiles: function(workspace) {
-		let result = [];
-		(function lsr(path) {
-			let dir = FS.analyzePath(path);
-			if (dir && dir.exists && dir.object) {
-				for (let file in dir.object.contents) {
-					let filepath = path + '/' + file;
-					if (dir.object.contents[file].isFolder) {
-						lsr(filepath);
-					} else {
-						if (workspace === undefined && path.startsWith(Module.workspace)) {
-							result.push(filepath.substr(Module.workspace.length + 1));
-						} else {
-							result.push(filepath);
-						}
-					}
-				}
-			}
-		})(workspace || Module.workspace);
-		fileList.innerHTML = '';
-		for (let file of result) {
-			fileList.innerHTML += '<li onclick="showFile(this.innerText);">' + file + '</li>';
-		}
-		params.update('file', 'content');
-		return result;
-	},
-	onRuntimeInitialized: function () {
-		FS.mkdirTree(Module.workspace);
-		FS.chdir(Module.workspace);
-		if (Module.files === null || Module.initialized) {
-			return;
-		}
-
-		for (let file of Module.files) {
-			let path = Module.workspace + '/' + file.path;
-			try {
-				if (file.url === undefined) {
-					FS.mkdirTree(path.replace(/^(.*[/])?(.*)(\..*)$/, "$1"));
-					FS.writeFile(path, file.content, {encoding: 'utf8'});
-					Module.print('file created: ' + file.path);
-					continue;
-				}
-
-				let xhr = new XMLHttpRequest();
-				xhr.open('GET', file.url, false);
-				xhr.send(null);
-				if (!xhr.response || xhr.status < 200 || xhr.status >= 300) {
-					throw new Error(xhr.status + ' (' + xhr.statusText + ')');
-				}
-				FS.mkdirTree(path.replace(/^(.*[/])?(.*)(\..*)$/, "$1"));
-				FS.writeFile(path, xhr.responseText, {encoding: 'utf8'});
-				Module.print('file downloaded: ' + xhr.responseURL);
-			}
-			catch (err) {
-				Module.print('failed to download: `' + file.path + '`: ' + err);
-				console.error(err);
-			}
-		}
-		Module.listFiles();
-		Module.initialized = true;
-	}
-};
-let docTitle = document.title;
-let editor = CodeMirror.fromTextArea(input, {
-	mode: "text/x-cmpl",
-	lineNumbers: true,
-	tabSize: 4,
-	indentUnit: 4,
-	indentWithTabs: true,
-
-	styleActiveLine: true,
-	matchBrackets: true,
-	showTrailingSpace: true,
-
-	foldGutter: true,
-	gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-	highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: true}
-});
-let terminal = Terminal(output, function(escaped, text) {
-	const regex = /(?=[\w\/])((?:\w+:\/\/)(?:[^:@\n\r"'`]+(?:\:\w+)?@)?(?:[^:/?#\n\r"'`]+)(?:\:\d+)?(?=[/?#]))?([^<>=:;,?#*|\n\r"'`]*)?(?:\:(?:(\d+)(?:\:(\d+))?))?(?:\?([^#\n\r"'`]*))?(?:\#([^\n\r"'`]*))?/g;
-	return escaped.replace(regex, function (match, host, path, line, column, query, hash) {
-		if (path === undefined) {
-			return match;
-		}
-
-		line = +(line || 0);
-		column = +(column || 0);
-		if (host !== undefined) {
-			return '<a href="' + encodeURI(match) + '" target="_blank">' + match + '</a>';
-		}
-		if (line > 0) {
-			return '<a href="#" onClick="return showFile(\'' + path + '\',' + line + ',' + column + ');">' + match + '</a>';
-		}
-		return match;
-	});
-});
-let params = JsArgs('#', function (params, changes) {
-	//console.trace('params: ', changes, params);
-	// setup execution method
-	if (!changes || changes.exec != null) {
-		if (params.exec == null) {
-			cmdExecute.value = '-run/g';
-			btnExecute.innerText = 'Run';
-		} else {
-			cmdExecute.value = params.exec;
-			btnExecute.innerText = 'Execute';
-		}
-	}
-
-	// setup theme, only after loading
-	if (!changes && params.theme != null) {
-		setTheme(document.body, params.theme || 'dark', 'dark', 'light');
-	}
-
-	// open menu, only after loading
-	if (!changes && params.menu != null) {
-		let menu = params.menu === 'none' ? 'secondary' : params.menu;
-		showSplitter(window.menuSplit, '-files', '-options', menu, '-primary');
-	}
-
-	// show editor or output, only after loading
-	if (!changes && params.split != null) {
-		showEditor(params.split);
-	}
-
-	// setup project, only after loading
-	if (!changes && params.project != null) {
-		let files = [];
-		let content = params.project;
-
-		try {
-			if (content != null) {
-				content = atob(content);
-			}
-		} catch (e) {
-			console.warn(e);
-		}
-
-		if (content.startsWith('[{')) {
-			files = JSON.parse(content);
-		} else {
-			for (let file of content.split(';')) {
-				files.push({
-					path: file.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3"),
-					url: file
-				});
-			}
-		}
-		Module.files = files;
-	}
-
-	// set editor content
-	if (!changes || changes.content) {
-		let content = params.content;
-
-		try {
-			if (content != null) {
-				content = atob(content);
-			}
-		} catch (e) {
-			console.warn(e);
-		}
-
-		editor.setValue(content || '');
-	}
-
-	// setup filename
-	if (params.file != null) {
-		document.title = params.file + " - " + docTitle;
-		btnFileName.innerText = params.file;
+function openProject(files) {
+	Module.files = files;
+}
+function listFiles(all) {
+	let files = [];
+	if (all === true) {
+		files.push(...Module.listFiles(Module.workspace));
+		files.push(...Module.listFiles('/lib'));
 	} else {
-		document.title = docTitle;
-		btnFileName.innerText = '';
+		files.push(...Module.listFiles());
 	}
-
-	if (changes === undefined) {
-		// wait for onRuntimeInitialized
-		return;
+	fileList.innerHTML = '';
+	for (let file of files) {
+		fileList.innerHTML += '<li onclick="showFile(this.innerText);">' + file + '</li>';
 	}
-
-	// reload page if the project was modified
-	if (changes.project) {
-		params.update(true);
-		return;
-	}
-
-	// file changed and there is no content -> (open or close)
-	if (changes.file && !params.content) {
-		if (params.file != null) {
-			readInput(params.file);
-		} else {
-			editor.setValue('');
-		}
-	}
-
-	if (changes.line && params.line != null) {
-		editor.setCursor(params.line - 1);
-	}
-});
-
-Module.print = terminal.print;
-editor.setSize('100%', '100%');
-/*worker.onmessage = function(event) {
-	let data = event.data;
-	//console.log('worker: ', data);
-	if (data.print !== undefined) {
-		terminal.print(data.print);
-	}
-	if (data.content !== undefined) {
-		editor.setValue(data.content);
-	}
-	if (data.file !== undefined) {
-		btnFileName.innerText = data.file;
-		params.update({file: data.file, content: null});
-	}
-	if (data.line !== undefined) {
-		params.update({line: data.line});
-	}
-	if (data.files !== undefined) {
-		
-	}
-};*/
-
-function setTheme(element, theme, ...remove) {
-	if (theme == null) {
-		return;
-	}
-
-	let toggle = false;
-	if (theme.startsWith('!')) {
-		theme = theme.substring(1);
-		toggle = true;
-	}
-
-	element.classList.remove(...remove);
-	if (toggle && element.classList.contains(theme)) {
-		element.classList.remove(theme);
-	} else {
-		element.classList.add(theme);
-	}
+	params.update('file', 'content');
 }
 
-function showEditor(...options) {
-	showSplitter(window.editSplit, ...options);
-	editor.setSize('100%', '100%');
-}
-
-function showFile(file, line, column) {
-	showEditor('-secondary');
-	editor.setCursor((line || 1) - 1, column);
-	if (file == null || file !== params.file) {
-		params.update({
-			file: file,
-			line: line,
-			content: null	// when navigating to a different file remove content
-		});
+function openInput(file, line) {
+	try {
+		editor.setValue(FS.readFile(file, {encoding: 'utf8'}));
+	} catch(error) {
+		// in case we open a file that does not exists
+		console.trace(error);
 	}
-	return false;
-}
-
-function editProject() {
-	if (params.project != null) {
-		let files = [];
-		let content = params.project;
-
-		try {
-			if (content != null) {
-				content = atob(content);
-			}
-		} catch (e) {
-			console.warn(e);
-		}
-
-		if (content.startsWith('[{')) {
-			files = JSON.parse(content);
-		} else {
-			for (let file of content.split(';')) {
-				files.push({
-					path: file.replace(/^(.*[\/])?(.*)(\..*)$/, "$2$3"),
-					url: file
-				});
-			}
-		}
-		content = '';
-		for (let file of files) {
-			if (content !== '') {
-				content += ", ";
-			}
-			content += JSON.stringify(file, null, '\t');
-		}
-		content = '[' + content + ']';
-		params.update({content: btoa(content), project: undefined, file: undefined, line: undefined});
-	}
-}
-function shareInput() {
-	showEditor('-primary');
-	let content = editor.getValue();
-	terminal.print('decoded uri: ' + decodeURIComponent(window.location));
-	if (content.startsWith('[{')) {
-		terminal.print('project file: ' + window.location.origin + window.location.pathname + '#project=' + btoa(content));
-	}
-	terminal.print('current file: ' + window.location.origin + window.location.pathname + '#content=' + btoa(content));
-
+	params.update({file, line});
 }
 function saveInput() {
 	if (params.content !== undefined) {
 		params.update({ content: btoa(editor.getValue()) });
 	}
 	let file = params.file;
-	if (file == null && params.content == null) {
+	if (file == null) {
 		file = prompt('Save file as:', 'untitled.ci');
 	}
 	if (file == null) {
-		return;
+		return null;
 	}
+	params.update({ file });
 	let content = editor.getValue();
 	if (content !== undefined) {
 		let exists = FS.analyzePath(file).exists;
 		FS.mkdirTree(file.replace(/^(.*[/])?(.*)(\..*)$/, "$1"));
 		FS.writeFile(file, content, {encoding: 'utf8'});
 		if (!exists) {
-			//TODO: postMessage({ files: Module.listFiles() });
+			listFiles(false);
 		}
 	}
+	return file;
 }
-
-function readInput(path) {
-	editor.setValue(FS.readFile(path, {encoding: 'utf8'}));
-}
-
-function execute(text, cmd) {
-	let args = [];
-	let file = undefined;
-
-	if (text != null) {
-		btnExecute.innerText = text;
+function execInput(args) {
+	let file = saveInput();
+	if (file == null) {
+		return;
 	}
-	if (cmd != null) {
-		cmdExecute.value = cmd;
 
-		// do not use standard input, print times
-		args.push('-X' + (params.X || '-stdin+steps'));
-
-		// allocate 2Mb of memory by default,
-		args.push('-mem' + (params.mem || '2M'));
-
-		// standard library is in root
-		args.push('-std/lib/stdlib.ci');
-
-		if (params.dump != null) {
-			if (params.dump.endsWith('.json')) {
-				args.push('-dump.json');
-			} else {
-				args.push('-dump');
-			}
-			args.push(params.dump);
-		}
-
-		if (params.log != null) {
-			args.push('-log');
-			args.push(params.log);
-		}
-
-		for (let arg of cmd.split(' ')) {
-			if (arg === '') {
-				continue;
-			}
-			args.push(arg);
-		}
-
-		//args.push('libFile.wasm');
+	if (args != null) {
+		args.push('libFile.wasm');
 		args.push('libGfx.wasm');
-		args.push('lib/cmplGfx/gfxlib.ci');
-
-		// compile the editing file
-		file = params.file || 'new.ci';
+		args.push('/lib/gfxlib.ci');
 		args.push(file);
 	}
-
-	terminal.clear();
-	showEditor('-primary');
 	console.log("execute", args);
-	saveInput(file);
-	Module['callMain'](args);
+	Module['callMain'](args || []);
 }
 
+function showCanvas(visible) {
+	if (visible) {
+		canvas.parentElement.classList.remove('hidden');
+		if (Browser.mainLoop.oldPause === undefined) {
+			Browser.mainLoop.oldPause = Browser.mainLoop.pause;
+			Browser.mainLoop.pause = function() {
+				canvas.parentElement.classList.add('hidden');
+				Browser.mainLoop.oldPause();
+				canvas.width = 0;
+			}
+		}
+	} else {
+		Module._SDL_SendQuit();
+	}
+}
+let canvasShown = new MutationObserver(function() {
+	if (canvas.width === 0) {
+		return;
+	}
+	showCanvas(true);
+});
+canvasShown.observe(canvas, { attributes: true });
+
+var Module = {
+	files: null,
+	initialized: false,
+	dynamicLibraries: [
+		'libFile.wasm',
+		'libGfx.wasm'
+	],
+	print: function(message) { terminal.print(message); },
+	canvas: document.getElementById('canvas'),
+
+	onRuntimeInitialized: function () {
+		FS.mkdirTree(Module.workspace);
+		FS.chdir(Module.workspace);
+		if (Module.files == null || Module.initialized) {
+			return;
+		}
+
+		Module.wgetFiles(Module.files, function (inProgress) {
+			listFiles(false);
+			if (inProgress == 0) {
+				Module.initialized = true;
+			}
+		});
+	},
+};
+
 </script>
+<script type="text/javascript" src="module.js"></script>
 <script type="text/javascript" src="cmpl.js"></script>
+<script type="text/javascript" src="main.js"></script>
 </body>
 </html>

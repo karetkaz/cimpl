@@ -12,7 +12,7 @@
 //inline "3d.draw.mesh.ci";
 //inline "pd.blob.ci";
 
-///* test the generated events
+//* test the generated events
 static int onEvent(pointer closure, int action, int button, int x, int y) {
 	struct Event {
 		char actionName[*];
@@ -28,8 +28,12 @@ static int onEvent(pointer closure, int action, int button, int x, int y) {
 		x: x;
 		y: y;
 	};
+	int result = 0;
 	if (action == Gui.KEY_PRESS) {
 		event.actionName = "KEY_PRESS";
+		if (button == 27) {
+			result = -1;
+		}
 	}
 	else if (action == Gui.KEY_RELEASE) {
 		event.actionName = "KEY_RELEASE";
@@ -46,9 +50,6 @@ static int onEvent(pointer closure, int action, int button, int x, int y) {
 	else if (action == Gui.EVENT_TIMEOUT) {
 		event.actionName = "EVENT_TIMEOUT";
 	}
-	else if (action == Gui.WINDOW_CREATE) {
-		event.actionName = "WINDOW_CREATE";
-	}
 	else if (action == Gui.WINDOW_CLOSE) {
 		event.actionName = "WINDOW_CLOSE";
 	}
@@ -60,9 +61,9 @@ static int onEvent(pointer closure, int action, int button, int x, int y) {
 	}
 
 	debug("event", event);
-	return 0;
+	return result;
 }
-gxSurf image = gxSurf("out/dump.bmp");
+gxSurf image = gxSurf(256, 256, 32);
 Gui.showWindow(image, null, onEvent);
 image.destroy();
 // */

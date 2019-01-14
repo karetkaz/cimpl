@@ -601,70 +601,109 @@ static vmError mesh_addVertex(nfcContext ctx) {
 	return noError;
 }
 
-
-static const char *proto_window_show = "void showWindow(gxSurf surf, pointer closure, int onEvent(pointer closure, int action, int button, int x, int y))";
-static vmError window_show(nfcContext ctx) {
-	vmError error = noError;
-	rtContext rt = ctx->rt;
-	gx_Surf offScreen = nextValue(ctx).ref;
-	size_t cbOffs = 0, cbClosure = 0;
-
-	if (ctx->proto == proto_window_show) {
-		cbClosure = argref(ctx, rt->api.nfcNextArg(ctx));
-		cbOffs = argref(ctx, rt->api.nfcNextArg(ctx));
-	}
-	symn callback = rt->api.rtLookup(ctx->rt, cbOffs);
-	int timeout = 1;
+typedef struct looperArgs {
+	rtContext rt;
+	vmError error;
+	int64_t timeout;
+	symn callback;
+	gxWindow window;
 	struct {
 		int32_t y;
 		int32_t x;
 		int32_t button;
 		int32_t action;
-		const vmOffs closure;
-	} event = {
-		.closure = (vmOffs) cbClosure,
-		.action = 0,
-		.button = 0,
-		.x = 0,
-		.y = 0
-	};
+		vmOffs closure;
+	} event;
+
+} *looperArgs;
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+static void exitLooper(looperArgs args) {
+	emscripten_cancel_main_loop();
+	destroyWindow(args->window);
+}
+#else
+
+static void exitLooper(looperArgs args) {
+	args->timeout = -1;
+}
+#endif
+
+static void looperCallback(looperArgs args) {
+	rtContext rt = args->rt;
+	symn callback = args->callback;
+	args->event.action = getWindowEvent(win, &args->event.button, &args->event.x, &args->event.y);
+	if (args->event.action == WINDOW_CLOSE) {
+		// window is closing, quit loop
+		if (callback != NULL) {
+			args->error = rt->api.invoke(rt, callback, NULL, &args->event, NULL);
+		}
+		return exitLooper(args);
+	}
+	if (args->event.action == 0) {
+		// skip unknown events
+		int64_t now = timeMillis();
+		if (now < args->timeout) {
+			return parkThread();
+		}
+		args->event.action = EVENT_TIMEOUT;
+	}
+	if (callback != NULL) {
+		int32_t timeout;
+		args->error = rt->api.invoke(rt, callback, &timeout, &args->event, NULL);
+		if (args->error != noError || timeout < 0) {
+			return exitLooper(args);
+		}
+		if (timeout >= 0) {
+			if (timeout == 0) {
+				args->timeout = INT64_MAX;
+			}
+			else {
+				args->timeout = timeout + timeMillis();
+			}
+		}
+	}
+	else {
+		if (args->event.action == KEY_RELEASE && args->event.button == 27) {
+			// if there is no callback, exit wit esc key
+			return exitLooper(args);
+		}
+		args->timeout = INT64_MAX;
+	}
+	//printf("event(action: %d, button: %d, x: %d, y: %d)\n", args->event.action, args->event.button, args->event.x, args->event.y);
+	flushWindow(win);
+}
+
+static const char *proto_window_show = "void showWindow(gxSurf surf, pointer closure, int onEvent(pointer closure, int action, int button, int x, int y))";
+static vmError window_show(nfcContext ctx) {
+	rtContext rt = ctx->rt;
+	gx_Surf offScreen = nextValue(ctx).ref;
+	size_t cbClosure = argref(ctx, rt->api.nfcNextArg(ctx));
+	size_t cbOffs = argref(ctx, rt->api.nfcNextArg(ctx));
 
 	win = createWindow(offScreen);
-	for ( ; ; ) {
-		event.action = getWindowEvent(win, timeout, &event.button, &event.x, &event.y);
-		if (event.action == WINDOW_CLOSE) {
-			// window is closing, quit loop
-			break;
-		}
-		if (event.action == 0) {
-			// skip unknown events
-			// printf("skip window event: %08x\n", event.button);
-			continue;
-		}
-		if (callback != NULL) {
-			error = rt->api.invoke(rt, callback, &timeout, &event, NULL);
-			if (error != noError) {
-				break;
-			}
-			if (timeout < 0) {
-				break;
-			}
-		}
-		else if (event.action == KEY_RELEASE && event.button == 27) {
-			// if there is no callback, exit wit esc key
-			break;
-		}
-		flushWindow(win);
+	struct looperArgs args;
+	args.rt = rt;
+	args.error = noError;
+	args.timeout = 0;
+	args.callback = rt->api.rtLookup(ctx->rt, cbOffs);
+	args.window = win;
+	args.event.closure = (vmOffs) cbClosure;
+	args.event.action = 0;
+	args.event.button = 0;
+	args.event.x = 0;
+	args.event.y = 0;
+
+#ifdef __EMSCRIPTEN__
+	emscripten_set_main_loop_arg((void*)looperCallback, &args, 0, 1);
+#else
+	for ( ; args.timeout >= 0; ) {
+		looperCallback(&args);
 	}
-	if (error == noError && callback != NULL) {
-		event.action = WINDOW_CLOSE;
-		event.button = 0;
-		event.x = 0;
-		event.y = 0;
-		error = rt->api.invoke(rt, callback, NULL, &event, NULL);
-	}
+#endif
 	destroyWindow(win);
-	return error;
+	return args.error;
 }
 
 static const char *proto_window_title = "void setTitle(char title[*])";
@@ -1051,7 +1090,6 @@ int cmplInit(rtContext rt) {
 		rt->api.ccDefInt(cc, "MOUSE_RELEASE", MOUSE_RELEASE);
 		rt->api.ccDefInt(cc, "EVENT_TIMEOUT", EVENT_TIMEOUT);
 
-		rt->api.ccDefInt(cc, "WINDOW_CREATE", WINDOW_CREATE);
 		rt->api.ccDefInt(cc, "WINDOW_CLOSE", WINDOW_CLOSE);
 		rt->api.ccDefInt(cc, "WINDOW_ENTER", WINDOW_ENTER);
 		rt->api.ccDefInt(cc, "WINDOW_LEAVE", WINDOW_LEAVE);

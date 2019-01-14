@@ -33,56 +33,52 @@
 </head>
 <body class="dark">
 <div class="toolbar">
-	<span class="left icon" href="#" onclick="showSplitter(menuSplit, '^options', '^secondary', '-files');">☰</span>
+	<span class="left icon" href="#" onclick="showSplitter(menuSplit, '!secondary');">☰</span>
 	<!--<span class="left icon" href="#" onclick="saveInput();">💾</span>-->
 	<!--<span class="left icon" href="#" onclick="shareInput();">🔗</span>-->
 	<span id="btnExecute" class="right execute" href="#" onclick="execute(btnExecute.innerText, cmdExecute.value);"></span>
 	<span class="right icon" href="#" onclick="showEditor('^primary', '^secondary', '^');">⬓</span>
-	<span class="right icon" href="#" onclick="setTheme(body, '!dark');">☼</span>
-	<span id="btnFileName" class="filename" href="#" onclick="showSplitter(menuSplit, '^files', '^secondary', '-options');"></span>
+	<span class="right icon" href="#" onclick="setTheme(body, '!dark');">◑</span>
+	<span id="btnFileName" class="filename" href="#" onclick="void(0);"></span>
 </div>
-<div id="menuSplit" class="content split-pane left vertical files" style="top:2em;">
-	<div>
-	<div id="options" class="content list">
-		Execute<ul>
+<div id="menuSplit" class="content split-pane left vertical" style="top:2em;">
+	<div class="content list">
+		<div>Execute</div>
+		<ul>
 			<input  class="filename" id="cmdExecute" onchange="params.update({exec: value});" onkeypress="if (event.key == 'Enter') execute(null, this.value)">
-			<li onclick="execute(this.innerText, '-run/g');">Run</li>
-			<li onclick="execute(this.innerText, '-debug/g');">Debug</li>
-			<li onclick="execute(this.innerText, '-profile/g');">Profile</li>
-			<li onclick="execute('Compile', '');">Compile only</li>
+			<li onclick="execute('Run', '-run/g');">⚡ Run</li>
+			<li onclick="execute('Debug', '-debug/g');">🐞 Debug</li>
+			<li onclick="execute('Profile', '-profile/g');">⏱ Profile</li>
+			<li onclick="execute('Compile', '');">⚙ Compile only</li>
 			<hr>
 			<li>
 				<button onclick="execute(this.innerText, '-api/a/m/d/p/u');">Api</button>
 				<button onclick="execute(this.innerText, '-asm/a/n/s/m');">Asm</button>
-				<button class="right icon" onclick="execute();">?</button>
+				<button class="right" onclick="execute();">?</button>
 			</li>
 			<hr>
 			<li onclick="terminal.clear();">Clear output</li>
+			<li onclick="showEditor('!secondary');">Show output</li>
+			<li onclick="showEditor('!primary');">Show editor</li>
 		</ul>
-		View<ul>
-			<li>Split: <select onchange="showEditor(this.value);">
-				<option value="horizontal">Horizontal
-				<option value="vertical">Vertical
-				<option value="auto">Auto
-			</select></li>
-			<li onclick="showEditor('!primary');">Editor only</li>
-			<li onclick="showEditor('!secondary');">Output only</li>
-		</ul>
-	</div>
-	<div id="files" class="content list">
+		<div>
+		<span>Project</span>
+		<button class="right" onclick="listFiles(false);">⟳</button>
+ 		<!--<button class="right" onclick="uploadFiles();">📤</button> -->
+ 		<!--<button class="right" onclick="downloadFiles(false);">📥</button> -->
+		</div>
 		<ul>
-			<li onclick="saveInput();">💾 Save file</li>
+			<li onclick="editProject();">🛠 Edit project</li>
 			<li onclick="shareInput();">🔗 Share link</li>
-			<li onclick="showFile(null);">❌ Close file</li>
+			<li onclick="saveInput();">💾 Save file</li>
+			<!--<li onclick="showFile(null);">❌ Close file</li>-->
+			<hr>
 		</ul>
-		Files <a href="javascript:worker.postMessage({files: false});" style="text-decoration: none;">⟳</a>
 		<ul id="fileList">
 		</ul>
 		<ul>
-		<li onclick="worker.postMessage({files: true});">Show all</li>
-		<li onclick="editProject();">Edit project</li>
+		<li onclick="listFiles(true);">Show all</li>
 	</ul>
-	</div>
 	</div>
 	<div id="editSplit" class="content split-pane horizontal">
 		<div class="text-content">
@@ -94,6 +90,112 @@
 	</div>
 </div>
 
+<script type="text/javascript">
+function openProject(files) {
+	worker.postMessage({files});
+}
+function listFiles(all) {
+	worker.postMessage({files: all});
+}
+
+function openInput(file, line) {
+	worker.postMessage({file, line});
+}
+function saveInput(skipPostContent) {
+	let file = params.file;
+	if (file == null) {
+		file = prompt('Save file as:', 'untitled.ci');
+		if (file == null) {
+			return null;
+		}
+	}
+	if (params.content !== undefined) {
+		params.update({ file, content: btoa(editor.getValue()) });
+	} else {
+		params.update({ file });
+	}
+	if (skipPostContent !== true) {
+		worker.postMessage({
+			content: editor.getValue(),
+			file: file
+		});
+	}
+	return file;
+}
+function execInput(args) {
+	let file = saveInput(true);
+	if (file == null) {
+		return;
+	}
+
+	if (args != null) {
+		args.push('libFile.wasm');
+		args.push(file);
+	}
+	worker.postMessage({
+		content: editor.getValue(),
+		file: file,
+		exec: args || []
+	});
+}
+
+/* communication with worker/args
+send => {
+	files - download these files to the workspace directory
+	file - open or save the content of the file
+	line - jump to / position in file
+	data(content) - save the content
+	exec - arguments for the compiler
+}
+
+receive => {
+	files - list of files in the workspace
+	data(content) - content of the requested file
+	line - jump to / position in file
+	print - print the message to the output
+}
+
+args => {
+	project - download the content of the given file list
+	content - overwrite the content of the editor
+	file - name of file to be opened
+	line - line position to jump to
+	theme - override default: &theme=light|dark
+	menu - override default: &menu=vertical|horizontal|auto|primary|secondary|split
+	split - override default: &split=vertical|horizontal|auto|primary|secondary|split
+
+	exec - override default: &exec=-profile/G/H/P/T
+	dump - dump output to file: &dump=dump.txt|dump.json
+	log - log output to file: &log=dump.txt
+	mem - if 2MB memory is not enough: &mem=128M
+	X
+}*/
+let worker = new Worker('worker.js');
+worker.onmessage = function(event) {
+	let data = event.data;
+	//console.log('worker: ', data);
+	if (data.print !== undefined) {
+		terminal.print(data.print);
+	}
+	if (data.content !== undefined) {
+		editor.setValue(data.content);
+	}
+	if (data.file !== undefined) {
+		btnFileName.innerText = data.file;
+		params.update({file: data.file, content: null});
+	}
+	if (data.line !== undefined) {
+		params.update({line: data.line});
+	}
+	if (data.files !== undefined) {
+		fileList.innerHTML = '';
+		for (let file of data.files) {
+			fileList.innerHTML += '<li onclick="showFile(this.innerText);">' + file + '</li>';
+		}
+		params.update('file', 'content');
+	}
+};
+</script>
 <script type="text/javascript" src="main.js"></script>
 </body>
 </html>

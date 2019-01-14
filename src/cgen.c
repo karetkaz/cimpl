@@ -959,7 +959,11 @@ static ccKind genCall(ccContext cc, astn ast) {
 
 		// allocate space for uninitialized arguments
 		if (prm->init == NULL || prm->init->kind == TOKEN_any) {
-			warn(rt, raiseWarn, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
+			if (prm->name && *prm->name == '.') {
+				warn(rt, raise_warn_var8, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
+			} else {
+				warn(rt, raiseWarn, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
+			}
 			if (!emitInt(rt, opc_spc, prm->size)) {
 				traceAst(ast);
 				return CAST_any;

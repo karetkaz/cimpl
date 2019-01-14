@@ -59,10 +59,9 @@ Iterator Iterator(Collection(struct Element) collection) {
 /// Array is a dynamic size collection
 struct Array(struct Element): Collection(Element) {
 
-	uint count;
+	uint count = 0;
 	uint capacity = -1;		// fixed size array by default
-
-	Element values[*];
+	Element values[*] = null;
 
 	// this is a slice of another array.
 	const Array owner = null;

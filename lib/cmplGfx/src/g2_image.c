@@ -5,8 +5,6 @@
 #include "gx_surf.h"
 
 #define BMP_OS2 0x02
-#define HAVE_JPEG
-#define HAVE_PNG
 
 #pragma pack (push, 1)
 typedef struct {	// BMP_HDR
@@ -516,7 +514,7 @@ gx_Surf gx_loadFnt(gx_Surf dst, const char *src) {
 		return NULL;
 	}
 
-	char *ptr = dst->basePtr;
+	unsigned char *ptr = (void *) dst->basePtr;
 	gx_Llut lut = dst->LLUTPtr;
 	lut->count = 256;
 	lut->height = height;
@@ -542,7 +540,7 @@ gx_Surf gx_loadFnt(gx_Surf dst, const char *src) {
 
 #ifndef HAVE_JPEG
 gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
-	// TODO: return null
+	/* create a dummy surface
 	dst = gx_createSurf(dst, 256, 256, depth, Surf_2ds);
 	for (int y = 0; y < 256; ++y) {
 		for (int x = 0; x < 256; ++x) {
@@ -552,8 +550,12 @@ gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
 			gx_setpixel(dst, x, y, make_rgb(0, r, g, b).val);
 		}
 	}
-	(void) src;
 	return dst;
+	// */
+	(void) dst;
+	(void) src;
+	(void) depth;
+	return NULL;
 }
 #else
 
@@ -626,7 +628,7 @@ gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
 
 #ifndef HAVE_PNG
 gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
-	// TODO: return null
+	/* create a dummy surface
 	dst = gx_createSurf(dst, 256, 256, depth, Surf_2ds);
 	for (int y = 0; y < 256; ++y) {
 		for (int x = 0; x < 256; ++x) {
@@ -636,8 +638,12 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 			gx_setpixel(dst, x, y, make_rgb(0, r, g, b).val);
 		}
 	}
-	(void) src;
 	return dst;
+	// */
+	(void) dst;
+	(void) src;
+	(void) depth;
+	return NULL;
 }
 #else
 
