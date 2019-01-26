@@ -733,11 +733,6 @@ symn linkOf(astn ast, int follow) {
 		//return linkOf(ast->op.lhso);
 	}
 
-	if (ast->kind == OPER_idx) {
-		// buff[200] => buff
-		return linkOf(ast->op.lhso, follow);
-	}
-
 	if (ast->kind == OPER_dot) {
 		// int.size => size
 		return linkOf(ast->op.rhso, follow);

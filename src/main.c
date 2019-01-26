@@ -1224,6 +1224,15 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 	brkMode breakMode = brkSkip;
 	char *breakCause = NULL;
 
+	if (error == divisionByZero) {
+		// keep quiet performing floating point division by zero
+		if (testOcp(rt, caller, f64_div, NULL)) {
+			error = noError;
+		}
+		if (testOcp(rt, caller, f32_div, NULL)) {
+			error = noError;
+		}
+	}
 	if (error != noError) {
 		breakCause = vmErrorMessage(error);
 		if (isChecked(ctx)) {

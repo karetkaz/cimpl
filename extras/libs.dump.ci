@@ -11,9 +11,9 @@
 lib/std/string.ci:134: warn: uninitialized variable `append.digits`
 lib/cmplGfx/gfxlib.color.ci:103: warn: using signed cast for unsigned value: `t * ((1 << 16))`
 lib/cmplGfx/gfxlib.lookup.ci:66: warn: uninitialized variable `drawHist.lut`
-lib/cmplGfx/gfxlib.ci:247: warn: uninitialized variable `dir`
-lib/cmplGfx/gfxlib.ci:253: warn: uninitialized variable `orig`
-lib/cmplGfx/gfxlib.ci:288: warn: uninitialized variable `show.onEvent.text`
+lib/cmplGfx/gfxlib.ci:249: warn: uninitialized variable `dir`
+lib/cmplGfx/gfxlib.ci:255: warn: uninitialized variable `orig`
+lib/cmplGfx/gfxlib.ci:290: warn: uninitialized variable `show.onEvent.text`
 
 ---------- Symbols:
 typename: typename {
@@ -626,26 +626,26 @@ emit: function {
 .field ret: void (size: 0, cast: static const inline)
 .field call: void (size: 0, cast: static const inline)
 .field p4x: typename (size: 16, cast: static const typename(val))
-.field dup: void (size: 0, cast: static const typename(void))
-.field load: void (size: 0, cast: static const typename(void))
-.field store: void (size: 0, cast: static const typename(void))
-.field cmt: void (size: 0, cast: static const typename(void))
-.field and: void (size: 0, cast: static const typename(void))
-.field or: void (size: 0, cast: static const typename(void))
-.field xor: void (size: 0, cast: static const typename(void))
-.field shl: void (size: 0, cast: static const typename(void))
-.field shr: void (size: 0, cast: static const typename(void))
-.field neg: void (size: 0, cast: static const typename(void))
-.field add: void (size: 0, cast: static const typename(void))
-.field sub: void (size: 0, cast: static const typename(void))
-.field mul: void (size: 0, cast: static const typename(void))
-.field div: void (size: 0, cast: static const typename(void))
-.field mod: void (size: 0, cast: static const typename(void))
-.field ceq: void (size: 0, cast: static const typename(void))
-.field clt: void (size: 0, cast: static const typename(void))
-.field cgt: void (size: 0, cast: static const typename(void))
-.field min: void (size: 0, cast: static const typename(void))
-.field max: void (size: 0, cast: static const typename(void))
+.field dup: typename (size: 0, cast: static const typename(void))
+.field load: typename (size: 0, cast: static const typename(void))
+.field store: typename (size: 0, cast: static const typename(void))
+.field cmt: typename (size: 0, cast: static const typename(void))
+.field and: typename (size: 0, cast: static const typename(void))
+.field or: typename (size: 0, cast: static const typename(void))
+.field xor: typename (size: 0, cast: static const typename(void))
+.field shl: typename (size: 0, cast: static const typename(void))
+.field shr: typename (size: 0, cast: static const typename(void))
+.field neg: typename (size: 0, cast: static const typename(void))
+.field add: typename (size: 0, cast: static const typename(void))
+.field sub: typename (size: 0, cast: static const typename(void))
+.field mul: typename (size: 0, cast: static const typename(void))
+.field div: typename (size: 0, cast: static const typename(void))
+.field mod: typename (size: 0, cast: static const typename(void))
+.field ceq: typename (size: 0, cast: static const typename(void))
+.field clt: typename (size: 0, cast: static const typename(void))
+.field cgt: typename (size: 0, cast: static const typename(void))
+.field min: typename (size: 0, cast: static const typename(void))
+.field max: typename (size: 0, cast: static const typename(void))
 }
 emit.nop: void {
 .kind: static const inline
@@ -721,9 +721,9 @@ emit.p4x.dph: float32 {
 .owner: emit.p4x
 .value: dph.v4f
 }
-emit.dup: void {
+emit.dup: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'dup'
 .owner: emit
@@ -755,9 +755,9 @@ emit.dup.x4: emit.p4x {
 .owner: emit.dup
 .value: dup.x4 sp(0)
 }
-emit.load: void {
+emit.load: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'load'
 .owner: emit
@@ -834,9 +834,9 @@ emit.load.i128: emit.p4x {
 .owner: emit.load
 .value: load.i128
 }
-emit.store: void {
+emit.store: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'store'
 .owner: emit
@@ -886,9 +886,9 @@ emit.store.i128: void {
 .owner: emit.store
 .value: store.i128
 }
-emit.cmt: void {
+emit.cmt: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'cmt'
 .owner: emit
@@ -911,9 +911,9 @@ emit.cmt.u64: uint64 {
 .owner: emit.cmt
 .value: cmt.b64
 }
-emit.and: void {
+emit.and: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'and'
 .owner: emit
@@ -936,9 +936,9 @@ emit.and.u64: uint64 {
 .owner: emit.and
 .value: and.b64
 }
-emit.or: void {
+emit.or: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'or'
 .owner: emit
@@ -961,9 +961,9 @@ emit.or.u64: uint64 {
 .owner: emit.or
 .value: or.b64
 }
-emit.xor: void {
+emit.xor: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'xor'
 .owner: emit
@@ -986,9 +986,9 @@ emit.xor.u64: uint64 {
 .owner: emit.xor
 .value: xor.b64
 }
-emit.shl: void {
+emit.shl: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'shl'
 .owner: emit
@@ -1011,9 +1011,9 @@ emit.shl.u64: uint64 {
 .owner: emit.shl
 .value: shl.b64
 }
-emit.shr: void {
+emit.shr: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'shr'
 .owner: emit
@@ -1054,9 +1054,9 @@ emit.shr.u64: uint64 {
 .owner: emit.shr
 .value: shr.b64
 }
-emit.neg: void {
+emit.neg: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'neg'
 .owner: emit
@@ -1115,9 +1115,9 @@ emit.neg.p2d: emit.p4x {
 .owner: emit.neg
 .value: neg.v2d
 }
-emit.add: void {
+emit.add: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'add'
 .owner: emit
@@ -1176,9 +1176,9 @@ emit.add.p2d: emit.p4x {
 .owner: emit.add
 .value: add.v2d
 }
-emit.sub: void {
+emit.sub: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'sub'
 .owner: emit
@@ -1237,9 +1237,9 @@ emit.sub.p2d: emit.p4x {
 .owner: emit.sub
 .value: sub.v2d
 }
-emit.mul: void {
+emit.mul: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'mul'
 .owner: emit
@@ -1316,9 +1316,9 @@ emit.mul.p2d: emit.p4x {
 .owner: emit.mul
 .value: mul.v2d
 }
-emit.div: void {
+emit.div: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'div'
 .owner: emit
@@ -1395,9 +1395,9 @@ emit.div.p2d: emit.p4x {
 .owner: emit.div
 .value: div.v2d
 }
-emit.mod: void {
+emit.mod: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'mod'
 .owner: emit
@@ -1456,9 +1456,9 @@ emit.mod.f64: float64 {
 .owner: emit.mod
 .value: mod.f64
 }
-emit.ceq: void {
+emit.ceq: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'ceq'
 .owner: emit
@@ -1517,9 +1517,9 @@ emit.ceq.p2d: bool {
 .owner: emit.ceq
 .value: ceq.v2d
 }
-emit.clt: void {
+emit.clt: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'clt'
 .owner: emit
@@ -1578,9 +1578,9 @@ emit.clt.f64: bool {
 .owner: emit.clt
 .value: clt.f64
 }
-emit.cgt: void {
+emit.cgt: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'cgt'
 .owner: emit
@@ -1639,9 +1639,9 @@ emit.cgt.f64: bool {
 .owner: emit.cgt
 .value: cgt.f64
 }
-emit.min: void {
+emit.min: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'min'
 .owner: emit
@@ -1664,9 +1664,9 @@ emit.min.p2d: emit.p4x {
 .owner: emit.min
 .value: min.v2d
 }
-emit.max: void {
+emit.max: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'max'
 .owner: emit
@@ -1807,9 +1807,9 @@ tryExec(args: pointer, action(args: pointer): void): int32: function {
 .param action: function (size: 4, cast: variable(ref))
 .value: nfc(6)
 }
-System: void {
+System: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'System'
 .field exit: function (size: 0, cast: static const inline)
@@ -2200,7 +2200,7 @@ sizeof(type: typename): int32: function {
 .value: int32(type.size)
 }
 Math: typename {
-.kind: static const typename(val)
+.kind: static const typename(void)
 .base: `typename`
 .size: 0
 .name: 'Math'
@@ -7473,9 +7473,9 @@ gxMesh.segments: int64 {
 .name: 'segments'
 .owner: gxMesh
 }
-camera: void {
+camera: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'camera'
 .field projection: function (size: 0, cast: static const inline)
@@ -7564,9 +7564,9 @@ camera.move(direction: float32[3], amount: float32): void: function {
 .param amount: float32 (size: 4, cast: variable(f32))
 .value: nfc(107)
 }
-lights: void {
+lights: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'lights'
 .field enabled: function (size: 0, cast: static const inline)
@@ -7663,9 +7663,9 @@ lights.attenuation(light: int32, constant: float32, linear: float32, quadratic: 
 .param quadratic: float32 (size: 4, cast: variable(f32))
 .value: nfc(114)
 }
-Gui: void {
+Gui: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'Gui'
 .field KEY_PRESS: int64 (size: 0, cast: static const i64)
@@ -9422,12 +9422,23 @@ gxSurf(copy: gxSurf): gxSurf: function {
 	<gxSurf+?>: set.x2 sp(5)
 	<gxSurf+?>: ret
 }
+fill(dst: gxSurf, col: uint32): void: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'fill'
+.file: 'lib/cmplGfx/gfxlib.ci:92'
+.param .result: void (size: 0, cast: void)
+.param dst: gxSurf (size: 8, cast: variable(val))
+.param col: uint32 (size: 4, cast: u32)
+.value: dst.fillRect(dst, 0, 0, dst.width(dst), dst.height(dst), col)
+}
 clip(src: gxSurf, roi: gxRect): bool: function {
 .kind: static const function
 .base: `function`
 .size: 235
 .name: 'clip'
-.file: 'lib/cmplGfx/gfxlib.ci:92'
+.file: 'lib/cmplGfx/gfxlib.ci:94'
 .param .result: bool (size: 4, cast: variable(bool))
 .param src: gxSurf (size: 8, cast: variable(val))
 .param roi: gxRect (size: 4, cast: variable(ref))
@@ -9459,7 +9470,7 @@ clip(src: gxSurf, roi: gxRect): bool: function {
 	return .result := true;
 }
 .instructions: (235 bytes)
-	lib/cmplGfx/gfxlib.ci:94: (18 bytes): roi.w := roi.w + roi.x;
+	lib/cmplGfx/gfxlib.ci:96: (18 bytes): roi.w := roi.w + roi.x;
 	<clip>  : dup.x1 sp(1)
 	<clip+?>: inc.i32(+8)
 	<clip+?>: load.i32
@@ -9469,7 +9480,7 @@ clip(src: gxSurf, roi: gxRect): bool: function {
 	<clip+?>: dup.x1 sp(2)
 	<clip+?>: inc.i32(+8)
 	<clip+?>: store.i32
-	lib/cmplGfx/gfxlib.ci:95: (22 bytes): roi.h := roi.h + roi.y;
+	lib/cmplGfx/gfxlib.ci:97: (22 bytes): roi.h := roi.h + roi.y;
 	<clip+?>: dup.x1 sp(1)
 	<clip+?>: inc.i32(+12)
 	<clip+?>: load.i32
@@ -9480,59 +9491,59 @@ clip(src: gxSurf, roi: gxRect): bool: function {
 	<clip+?>: dup.x1 sp(2)
 	<clip+?>: inc.i32(+12)
 	<clip+?>: store.i32
-	lib/cmplGfx/gfxlib.ci:97: (13 bytes): if (roi.x < 0)
+	lib/cmplGfx/gfxlib.ci:99: (13 bytes): if (roi.x < 0)
 	<clip+?>: dup.x1 sp(1)
 	<clip+?>: load.i32
 	<clip+?>: load.z32
 	<clip+?>: clt.i32
 	<clip+?>: jz +8
-	lib/cmplGfx/gfxlib.ci:98: (4 bytes): roi.x := 0;
+	lib/cmplGfx/gfxlib.ci:100: (4 bytes): roi.x := 0;
 	<clip+?>: load.z32
 	<clip+?>: dup.x1 sp(2)
 	<clip+?>: store.i32
-	lib/cmplGfx/gfxlib.ci:101: (21 bytes): if (roi.y < 0)
+	lib/cmplGfx/gfxlib.ci:103: (21 bytes): if (roi.y < 0)
 	<clip+?>: dup.x1 sp(1)
 	<clip+?>: inc.i32(+4)
 	<clip+?>: load.i32
 	<clip+?>: load.z32
 	<clip+?>: clt.i32
 	<clip+?>: jz +12
-	lib/cmplGfx/gfxlib.ci:102: (8 bytes): roi.y := 0;
+	lib/cmplGfx/gfxlib.ci:104: (8 bytes): roi.y := 0;
 	<clip+?>: load.z32
 	<clip+?>: dup.x1 sp(2)
 	<clip+?>: inc.i32(+4)
 	<clip+?>: store.i32
-	lib/cmplGfx/gfxlib.ci:105: (6 bytes): width: int32 := src.width(src)
+	lib/cmplGfx/gfxlib.ci:107: (6 bytes): width: int32 := src.width(src)
 	<clip+?>: dup.x2 sp(2)
 	<clip+?>: nfc(81) ;gxSurf.width(surf: gxSurf): int32
-	lib/cmplGfx/gfxlib.ci:106: (23 bytes): if (roi.w > width)
+	lib/cmplGfx/gfxlib.ci:108: (23 bytes): if (roi.w > width)
 	<clip+?>: dup.x1 sp(2)
 	<clip+?>: inc.i32(+8)
 	<clip+?>: load.i32
 	<clip+?>: dup.x1 sp(1)
 	<clip+?>: cgt.i32
 	<clip+?>: jz +13
-	lib/cmplGfx/gfxlib.ci:107: (9 bytes): roi.w := width;
+	lib/cmplGfx/gfxlib.ci:109: (9 bytes): roi.w := width;
 	<clip+?>: dup.x1 sp(0)
 	<clip+?>: dup.x1 sp(3)
 	<clip+?>: inc.i32(+8)
 	<clip+?>: store.i32
-	lib/cmplGfx/gfxlib.ci:110: (6 bytes): height: int32 := src.height(src)
+	lib/cmplGfx/gfxlib.ci:112: (6 bytes): height: int32 := src.height(src)
 	<clip+?>: dup.x2 sp(3)
 	<clip+?>: nfc(82) ;gxSurf.height(surf: gxSurf): int32
-	lib/cmplGfx/gfxlib.ci:111: (23 bytes): if (roi.h > height)
+	lib/cmplGfx/gfxlib.ci:113: (23 bytes): if (roi.h > height)
 	<clip+?>: dup.x1 sp(3)
 	<clip+?>: inc.i32(+12)
 	<clip+?>: load.i32
 	<clip+?>: dup.x1 sp(1)
 	<clip+?>: cgt.i32
 	<clip+?>: jz +13
-	lib/cmplGfx/gfxlib.ci:112: (9 bytes): roi.h := height;
+	lib/cmplGfx/gfxlib.ci:114: (9 bytes): roi.h := height;
 	<clip+?>: dup.x1 sp(0)
 	<clip+?>: dup.x1 sp(4)
 	<clip+?>: inc.i32(+12)
 	<clip+?>: store.i32
-	lib/cmplGfx/gfxlib.ci:115: (18 bytes): roi.w := roi.w - roi.x;
+	lib/cmplGfx/gfxlib.ci:117: (18 bytes): roi.w := roi.w - roi.x;
 	<clip+?>: dup.x1 sp(3)
 	<clip+?>: inc.i32(+8)
 	<clip+?>: load.i32
@@ -9542,7 +9553,7 @@ clip(src: gxSurf, roi: gxRect): bool: function {
 	<clip+?>: dup.x1 sp(4)
 	<clip+?>: inc.i32(+8)
 	<clip+?>: store.i32
-	lib/cmplGfx/gfxlib.ci:116: (22 bytes): roi.h := roi.h - roi.y;
+	lib/cmplGfx/gfxlib.ci:118: (22 bytes): roi.h := roi.h - roi.y;
 	<clip+?>: dup.x1 sp(3)
 	<clip+?>: inc.i32(+12)
 	<clip+?>: load.i32
@@ -9553,33 +9564,33 @@ clip(src: gxSurf, roi: gxRect): bool: function {
 	<clip+?>: dup.x1 sp(4)
 	<clip+?>: inc.i32(+12)
 	<clip+?>: store.i32
-	lib/cmplGfx/gfxlib.ci:118: (24 bytes): if (roi.w <= 0)
+	lib/cmplGfx/gfxlib.ci:120: (24 bytes): if (roi.w <= 0)
 	<clip+?>: dup.x1 sp(3)
 	<clip+?>: inc.i32(+8)
 	<clip+?>: load.i32
 	<clip+?>: load.z32
 	<clip+?>: cgt.i32
 	<clip+?>: jnz +15
-	lib/cmplGfx/gfxlib.ci:119: (11 bytes): return .result := false;
+	lib/cmplGfx/gfxlib.ci:121: (11 bytes): return .result := false;
 	<clip+?>: load.z32
 	<clip+?>: load.sp(+28)
 	<clip+?>: store.i8
 	<clip+?>: inc.sp(-8)
 	<clip+?>: ret
-	lib/cmplGfx/gfxlib.ci:121: (24 bytes): if (roi.h <= 0)
+	lib/cmplGfx/gfxlib.ci:123: (24 bytes): if (roi.h <= 0)
 	<clip+?>: dup.x1 sp(3)
 	<clip+?>: inc.i32(+12)
 	<clip+?>: load.i32
 	<clip+?>: load.z32
 	<clip+?>: cgt.i32
 	<clip+?>: jnz +15
-	lib/cmplGfx/gfxlib.ci:122: (11 bytes): return .result := false;
+	lib/cmplGfx/gfxlib.ci:124: (11 bytes): return .result := false;
 	<clip+?>: load.z32
 	<clip+?>: load.sp(+28)
 	<clip+?>: store.i8
 	<clip+?>: inc.sp(-8)
 	<clip+?>: ret
-	lib/cmplGfx/gfxlib.ci:124: (15 bytes): return .result := true;
+	lib/cmplGfx/gfxlib.ci:126: (15 bytes): return .result := true;
 	<clip+?>: load.c32 1
 	<clip+?>: load.sp(+28)
 	<clip+?>: store.i8
@@ -9591,7 +9602,7 @@ eval(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 .base: `function`
 .size: 353
 .name: 'eval'
-.file: 'lib/cmplGfx/gfxlib.ci:126'
+.file: 'lib/cmplGfx/gfxlib.ci:128'
 .param .result: void (size: 0, cast: variable(void))
 .param out: gxSurf (size: 8, cast: variable(val))
 .param roi: gxRect (size: 4, cast: variable(ref))
@@ -9625,9 +9636,9 @@ eval(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	}
 }
 .instructions: (353 bytes)
-	lib/cmplGfx/gfxlib.ci:127: (114 bytes): rect: gxRect := {...}
+	lib/cmplGfx/gfxlib.ci:129: (114 bytes): rect: gxRect := {...}
 	<eval>  : inc.sp(+16)
-	lib/cmplGfx/gfxlib.ci:128: (22 bytes): rect.x := (roi) != null ? roi.x : 0;
+	lib/cmplGfx/gfxlib.ci:130: (22 bytes): rect.x := (roi) != null ? roi.x : 0;
 	<eval+?>: dup.x1 sp(8)
 	<eval+?>: load.ref <?> ;null
 	<eval+?>: ceq.i32
@@ -9637,7 +9648,7 @@ eval(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: jmp +5
 	<eval+?>: load.z32
 	<eval+?>: set.x1 sp(1)
-	lib/cmplGfx/gfxlib.ci:129: (26 bytes): rect.y := (roi) != null ? roi.y : 0;
+	lib/cmplGfx/gfxlib.ci:131: (26 bytes): rect.y := (roi) != null ? roi.y : 0;
 	<eval+?>: dup.x1 sp(8)
 	<eval+?>: load.ref <?> ;null
 	<eval+?>: ceq.i32
@@ -9648,7 +9659,7 @@ eval(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: jmp +5
 	<eval+?>: load.z32
 	<eval+?>: set.x1 sp(2)
-	lib/cmplGfx/gfxlib.ci:130: (31 bytes): rect.w := (roi) != null ? roi.w : out.width(out);
+	lib/cmplGfx/gfxlib.ci:132: (31 bytes): rect.w := (roi) != null ? roi.w : out.width(out);
 	<eval+?>: dup.x1 sp(8)
 	<eval+?>: load.ref <?> ;null
 	<eval+?>: ceq.i32
@@ -9660,7 +9671,7 @@ eval(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: dup.x2 sp(9)
 	<eval+?>: nfc(81) ;gxSurf.width(surf: gxSurf): int32
 	<eval+?>: set.x1 sp(3)
-	lib/cmplGfx/gfxlib.ci:131: (31 bytes): rect.h := (roi) != null ? roi.h : out.height(out);
+	lib/cmplGfx/gfxlib.ci:133: (31 bytes): rect.h := (roi) != null ? roi.h : out.height(out);
 	<eval+?>: dup.x1 sp(8)
 	<eval+?>: load.ref <?> ;null
 	<eval+?>: ceq.i32
@@ -9672,7 +9683,7 @@ eval(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: dup.x2 sp(9)
 	<eval+?>: nfc(82) ;gxSurf.height(surf: gxSurf): int32
 	<eval+?>: set.x1 sp(4)
-	lib/cmplGfx/gfxlib.ci:134: (26 bytes): if (!clip(out, rect))
+	lib/cmplGfx/gfxlib.ci:136: (26 bytes): if (!clip(out, rect))
 	<eval+?>: load.z32
 	<eval+?>: dup.x2 sp(10)
 	<eval+?>: load.sp(+12)
@@ -9680,48 +9691,48 @@ eval(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: call
 	<eval+?>: inc.sp(-12)
 	<eval+?>: jnz +9
-	lib/cmplGfx/gfxlib.ci:135: (5 bytes): return;
+	lib/cmplGfx/gfxlib.ci:137: (5 bytes): return;
 	<eval+?>: inc.sp(-16)
 	<eval+?>: ret
-	lib/cmplGfx/gfxlib.ci:138: (16 bytes): in: vec4f := {...}
+	lib/cmplGfx/gfxlib.ci:140: (16 bytes): in: vec4f := {...}
 	<eval+?>: inc.sp(+16)
-	lib/cmplGfx/gfxlib.ci:139: (3 bytes): in.x := (0);
+	lib/cmplGfx/gfxlib.ci:141: (3 bytes): in.x := (0);
 	<eval+?>: load.z32
 	<eval+?>: set.x1 sp(1)
-	lib/cmplGfx/gfxlib.ci:140: (3 bytes): in.y := (0);
+	lib/cmplGfx/gfxlib.ci:142: (3 bytes): in.y := (0);
 	<eval+?>: load.z32
 	<eval+?>: set.x1 sp(2)
-	lib/cmplGfx/gfxlib.ci:141: (3 bytes): in.z := aspect;
+	lib/cmplGfx/gfxlib.ci:143: (3 bytes): in.z := aspect;
 	<eval+?>: mov.x1 sp(2, 11)
-	lib/cmplGfx/gfxlib.ci:142: (3 bytes): in.w := time;
+	lib/cmplGfx/gfxlib.ci:144: (3 bytes): in.w := time;
 	<eval+?>: mov.x1 sp(3, 10)
-	lib/cmplGfx/gfxlib.ci:144: (7 bytes): w: float32 := out.width(out)
+	lib/cmplGfx/gfxlib.ci:146: (7 bytes): w: float32 := out.width(out)
 	<eval+?>: dup.x2 sp(13)
 	<eval+?>: nfc(81) ;gxSurf.width(surf: gxSurf): int32
 	<eval+?>: i32.2f32
-	lib/cmplGfx/gfxlib.ci:145: (7 bytes): h: float32 := out.height(out)
+	lib/cmplGfx/gfxlib.ci:147: (7 bytes): h: float32 := out.height(out)
 	<eval+?>: dup.x2 sp(14)
 	<eval+?>: nfc(82) ;gxSurf.height(surf: gxSurf): int32
 	<eval+?>: i32.2f32
-	lib/cmplGfx/gfxlib.ci:146: (178 bytes): for (y: int32 := rect.y; y < rect.y + rect.h; y := y + 1)
+	lib/cmplGfx/gfxlib.ci:148: (178 bytes): for (y: int32 := rect.y; y < rect.y + rect.h; y := y + 1)
 	<eval+?>: dup.x1 sp(7)
 	<eval+?>: jmp +160
-	lib/cmplGfx/gfxlib.ci:147: (8 bytes): in.y := (y) / h;
+	lib/cmplGfx/gfxlib.ci:149: (8 bytes): in.y := (y) / h;
 	<eval+?>: dup.x1 sp(0)
 	<eval+?>: i32.2f32
 	<eval+?>: dup.x1 sp(2)
 	<eval+?>: div.f32
 	<eval+?>: set.x1 sp(5)
-	lib/cmplGfx/gfxlib.ci:148: (144 bytes): for (x: int32 := rect.x; x < rect.x + rect.w; x := x + 1)
+	lib/cmplGfx/gfxlib.ci:150: (144 bytes): for (x: int32 := rect.x; x < rect.x + rect.w; x := x + 1)
 	<eval+?>: dup.x1 sp(7)
 	<eval+?>: jmp +126
-	lib/cmplGfx/gfxlib.ci:149: (8 bytes): in.x := (x) / w;
+	lib/cmplGfx/gfxlib.ci:151: (8 bytes): in.x := (x) / w;
 	<eval+?>: dup.x1 sp(0)
 	<eval+?>: i32.2f32
 	<eval+?>: dup.x1 sp(4)
 	<eval+?>: div.f32
 	<eval+?>: set.x1 sp(5)
-	lib/cmplGfx/gfxlib.ci:150: (110 bytes): out.set(out, x, y, rgb(eval(in)));
+	lib/cmplGfx/gfxlib.ci:152: (110 bytes): out.set(out, x, y, rgb(eval(in)));
 	<eval+?>: dup.x2 sp(17)
 	<eval+?>: dup.x1 sp(2)
 	<eval+?>: dup.x1 sp(4)
@@ -9767,9 +9778,9 @@ eval(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: set.x1 sp(5)
 	<eval+?>: inc.sp(-16)
 	<eval+?>: nfc(85) ;gxSurf.set(surf: gxSurf, x: int32, y: int32, color: uint32): void
-	lib/cmplGfx/gfxlib.ci:148: (4 bytes): x := x + 1
+	lib/cmplGfx/gfxlib.ci:150: (4 bytes): x := x + 1
 	<eval+?>: inc.i32(+1)
-	lib/cmplGfx/gfxlib.ci:148: (12 bytes): x < rect.x + rect.w
+	lib/cmplGfx/gfxlib.ci:150: (12 bytes): x < rect.x + rect.w
 	<eval+?>: dup.x1 sp(0)
 	<eval+?>: dup.x1 sp(9)
 	<eval+?>: dup.x1 sp(12)
@@ -9777,9 +9788,9 @@ eval(out: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: clt.i32
 	<eval+?>: jnz -130
 	<eval+?>: inc.sp(-4)
-	lib/cmplGfx/gfxlib.ci:146: (4 bytes): y := y + 1
+	lib/cmplGfx/gfxlib.ci:148: (4 bytes): y := y + 1
 	<eval+?>: inc.i32(+1)
-	lib/cmplGfx/gfxlib.ci:146: (12 bytes): y < rect.y + rect.h
+	lib/cmplGfx/gfxlib.ci:148: (12 bytes): y < rect.y + rect.h
 	<eval+?>: dup.x1 sp(0)
 	<eval+?>: dup.x1 sp(9)
 	<eval+?>: dup.x1 sp(12)
@@ -9795,7 +9806,7 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 .base: `function`
 .size: 251
 .name: 'tile'
-.file: 'lib/cmplGfx/gfxlib.ci:155'
+.file: 'lib/cmplGfx/gfxlib.ci:157'
 .param .result: void (size: 0, cast: variable(void))
 .param dst: gxSurf (size: 8, cast: variable(val))
 .param x: int32 (size: 4, cast: variable(i32))
@@ -9827,9 +9838,9 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	}
 }
 .instructions: (251 bytes)
-	lib/cmplGfx/gfxlib.ci:156: (114 bytes): rect: gxRect := {...}
+	lib/cmplGfx/gfxlib.ci:158: (114 bytes): rect: gxRect := {...}
 	<tile>  : inc.sp(+16)
-	lib/cmplGfx/gfxlib.ci:157: (22 bytes): rect.x := (roi) != null ? roi.x : 0;
+	lib/cmplGfx/gfxlib.ci:159: (22 bytes): rect.x := (roi) != null ? roi.x : 0;
 	<tile+?>: dup.x1 sp(5)
 	<tile+?>: load.ref <?> ;null
 	<tile+?>: ceq.i32
@@ -9839,7 +9850,7 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: jmp +5
 	<tile+?>: load.z32
 	<tile+?>: set.x1 sp(1)
-	lib/cmplGfx/gfxlib.ci:158: (26 bytes): rect.y := (roi) != null ? roi.y : 0;
+	lib/cmplGfx/gfxlib.ci:160: (26 bytes): rect.y := (roi) != null ? roi.y : 0;
 	<tile+?>: dup.x1 sp(5)
 	<tile+?>: load.ref <?> ;null
 	<tile+?>: ceq.i32
@@ -9850,7 +9861,7 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: jmp +5
 	<tile+?>: load.z32
 	<tile+?>: set.x1 sp(2)
-	lib/cmplGfx/gfxlib.ci:159: (31 bytes): rect.w := (roi) != null ? roi.w : src.width(src);
+	lib/cmplGfx/gfxlib.ci:161: (31 bytes): rect.w := (roi) != null ? roi.w : src.width(src);
 	<tile+?>: dup.x1 sp(5)
 	<tile+?>: load.ref <?> ;null
 	<tile+?>: ceq.i32
@@ -9862,7 +9873,7 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: dup.x2 sp(6)
 	<tile+?>: nfc(81) ;gxSurf.width(surf: gxSurf): int32
 	<tile+?>: set.x1 sp(3)
-	lib/cmplGfx/gfxlib.ci:160: (31 bytes): rect.h := (roi) != null ? roi.h : src.height(src);
+	lib/cmplGfx/gfxlib.ci:162: (31 bytes): rect.h := (roi) != null ? roi.h : src.height(src);
 	<tile+?>: dup.x1 sp(5)
 	<tile+?>: load.ref <?> ;null
 	<tile+?>: ceq.i32
@@ -9874,7 +9885,7 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: dup.x2 sp(6)
 	<tile+?>: nfc(82) ;gxSurf.height(surf: gxSurf): int32
 	<tile+?>: set.x1 sp(4)
-	lib/cmplGfx/gfxlib.ci:163: (26 bytes): if (!clip(src, rect))
+	lib/cmplGfx/gfxlib.ci:165: (26 bytes): if (!clip(src, rect))
 	<tile+?>: load.z32
 	<tile+?>: dup.x2 sp(7)
 	<tile+?>: load.sp(+12)
@@ -9882,65 +9893,65 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: call
 	<tile+?>: inc.sp(-12)
 	<tile+?>: jnz +9
-	lib/cmplGfx/gfxlib.ci:164: (5 bytes): return;
+	lib/cmplGfx/gfxlib.ci:166: (5 bytes): return;
 	<tile+?>: inc.sp(-16)
 	<tile+?>: ret
-	lib/cmplGfx/gfxlib.ci:167: (17 bytes): if (x < 0)
+	lib/cmplGfx/gfxlib.ci:169: (17 bytes): if (x < 0)
 	<tile+?>: dup.x1 sp(9)
 	<tile+?>: load.z32
 	<tile+?>: clt.i32
 	<tile+?>: jz +13
-	lib/cmplGfx/gfxlib.ci:168: (9 bytes): x := -(-x % rect.w);
+	lib/cmplGfx/gfxlib.ci:170: (9 bytes): x := -(-x % rect.w);
 	<tile+?>: dup.x1 sp(9)
 	<tile+?>: neg.i32
 	<tile+?>: dup.x1 sp(3)
 	<tile+?>: mod.i32
 	<tile+?>: neg.i32
 	<tile+?>: set.x1 sp(10)
-	lib/cmplGfx/gfxlib.ci:170: (17 bytes): if (y < 0)
+	lib/cmplGfx/gfxlib.ci:172: (17 bytes): if (y < 0)
 	<tile+?>: dup.x1 sp(8)
 	<tile+?>: load.z32
 	<tile+?>: clt.i32
 	<tile+?>: jz +13
-	lib/cmplGfx/gfxlib.ci:171: (9 bytes): y := -(-y % rect.h);
+	lib/cmplGfx/gfxlib.ci:173: (9 bytes): y := -(-y % rect.h);
 	<tile+?>: dup.x1 sp(8)
 	<tile+?>: neg.i32
 	<tile+?>: dup.x1 sp(4)
 	<tile+?>: mod.i32
 	<tile+?>: neg.i32
 	<tile+?>: set.x1 sp(9)
-	lib/cmplGfx/gfxlib.ci:173: (6 bytes): width: int32 := dst.width(dst)
+	lib/cmplGfx/gfxlib.ci:175: (6 bytes): width: int32 := dst.width(dst)
 	<tile+?>: dup.x2 sp(10)
 	<tile+?>: nfc(81) ;gxSurf.width(surf: gxSurf): int32
-	lib/cmplGfx/gfxlib.ci:174: (6 bytes): height: int32 := dst.height(dst)
+	lib/cmplGfx/gfxlib.ci:176: (6 bytes): height: int32 := dst.height(dst)
 	<tile+?>: dup.x2 sp(11)
 	<tile+?>: nfc(82) ;gxSurf.height(surf: gxSurf): int32
-	lib/cmplGfx/gfxlib.ci:175: (60 bytes): for (j: int32 := y; j < height; j := j + rect.h)
+	lib/cmplGfx/gfxlib.ci:177: (60 bytes): for (j: int32 := y; j < height; j := j + rect.h)
 	<tile+?>: dup.x1 sp(10)
 	<tile+?>: jmp +45
-	lib/cmplGfx/gfxlib.ci:176: (38 bytes): for (i: int32 := x; i < width; i := i + rect.w)
+	lib/cmplGfx/gfxlib.ci:178: (38 bytes): for (i: int32 := x; i < width; i := i + rect.w)
 	<tile+?>: dup.x1 sp(12)
 	<tile+?>: jmp +23
-	lib/cmplGfx/gfxlib.ci:177: (16 bytes): dst.copy(dst, i, j, src, rect);
+	lib/cmplGfx/gfxlib.ci:179: (16 bytes): dst.copy(dst, i, j, src, rect);
 	<tile+?>: dup.x2 sp(14)
 	<tile+?>: dup.x1 sp(2)
 	<tile+?>: dup.x1 sp(4)
 	<tile+?>: dup.x2 sp(14)
 	<tile+?>: load.sp(+40)
 	<tile+?>: nfc(95) ;gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
-	lib/cmplGfx/gfxlib.ci:176: (3 bytes): i := i + rect.w
+	lib/cmplGfx/gfxlib.ci:178: (3 bytes): i := i + rect.w
 	<tile+?>: dup.x1 sp(6)
 	<tile+?>: add.i32
-	lib/cmplGfx/gfxlib.ci:176: (9 bytes): i < width
+	lib/cmplGfx/gfxlib.ci:178: (9 bytes): i < width
 	<tile+?>: dup.x1 sp(0)
 	<tile+?>: dup.x1 sp(4)
 	<tile+?>: clt.i32
 	<tile+?>: jnz -24
 	<tile+?>: inc.sp(-4)
-	lib/cmplGfx/gfxlib.ci:175: (3 bytes): j := j + rect.h
+	lib/cmplGfx/gfxlib.ci:177: (3 bytes): j := j + rect.h
 	<tile+?>: dup.x1 sp(6)
 	<tile+?>: add.i32
-	lib/cmplGfx/gfxlib.ci:175: (9 bytes): j < height
+	lib/cmplGfx/gfxlib.ci:177: (9 bytes): j < height
 	<tile+?>: dup.x1 sp(0)
 	<tile+?>: dup.x1 sp(2)
 	<tile+?>: clt.i32
@@ -9954,7 +9965,7 @@ show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void: function {
 .base: `function`
 .size: 118
 .name: 'show'
-.file: 'lib/cmplGfx/gfxlib.ci:182'
+.file: 'lib/cmplGfx/gfxlib.ci:184'
 .param .result: void (size: 0, cast: variable(void))
 .param mesh: gxMesh (size: 4, cast: variable(ref))
 .param w: int32 (size: 4, cast: variable(i32))
@@ -10113,9 +10124,9 @@ show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void: function {
 	closure.offs.destroy(closure.offs);
 }
 .instructions: (118 bytes)
-	lib/cmplGfx/gfxlib.ci:299: (69 bytes): closure: Closure := {...}
+	lib/cmplGfx/gfxlib.ci:301: (69 bytes): closure: Closure := {...}
 	<show>  : inc.sp(+24)
-	lib/cmplGfx/gfxlib.ci:300: (52 bytes): closure.mode := (gxMesh.clearDepth | gxMesh.clearColor | gxMesh.useLights | gxMesh.cullBack | gxMesh.drawFill);
+	lib/cmplGfx/gfxlib.ci:302: (52 bytes): closure.mode := (gxMesh.clearDepth | gxMesh.clearColor | gxMesh.useLights | gxMesh.cullBack | gxMesh.drawFill);
 	<show+?>: load.c64 8
 	<show+?>: load.c64 4
 	<show+?>: or.b64
@@ -10127,14 +10138,14 @@ show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void: function {
 	<show+?>: or.b64
 	<show+?>: i64.2i32
 	<show+?>: set.x1 sp(1)
-	lib/cmplGfx/gfxlib.ci:301: (10 bytes): closure.offs := gxSurf.create3d(w, h);
+	lib/cmplGfx/gfxlib.ci:303: (10 bytes): closure.offs := gxSurf.create3d(w, h);
 	<show+?>: dup.x1 sp(9)
 	<show+?>: dup.x1 sp(9)
 	<show+?>: nfc(73) ;gxSurf.create3d(width: int32, height: int32): gxSurf
 	<show+?>: set.x2 sp(4)
-	lib/cmplGfx/gfxlib.ci:302: (3 bytes): closure.mesh := mesh;
+	lib/cmplGfx/gfxlib.ci:304: (3 bytes): closure.mesh := mesh;
 	<show+?>: mov.x1 sp(4, 10)
-	lib/cmplGfx/gfxlib.ci:304: (23 bytes): camera.projection(fovy, (w) / float32(h), 1, 100);
+	lib/cmplGfx/gfxlib.ci:306: (23 bytes): camera.projection(fovy, (w) / float32(h), 1, 100);
 	<show+?>: dup.x1 sp(7)
 	<show+?>: dup.x1 sp(10)
 	<show+?>: i32.2f32
@@ -10144,12 +10155,12 @@ show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void: function {
 	<show+?>: load.f32 1.000000
 	<show+?>: load.f32 100.000000
 	<show+?>: nfc(101) ;camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): void
-	lib/cmplGfx/gfxlib.ci:305: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
+	lib/cmplGfx/gfxlib.ci:307: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
 	<show+?>: dup.x2 sp(2)
 	<show+?>: load.sp(+8)
 	<show+?>: load.ref <?> ;show.onEvent(closure: Closure, action: int32, button: int32, ex: int32, ey: int32): int32
 	<show+?>: nfc(115) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
-	lib/cmplGfx/gfxlib.ci:306: (6 bytes): closure.offs.destroy(closure.offs);
+	lib/cmplGfx/gfxlib.ci:308: (6 bytes): closure.offs.destroy(closure.offs);
 	<show+?>: dup.x2 sp(2)
 	<show+?>: nfc(75) ;gxSurf.destroy(surf: gxSurf): void
 	<show+?>: inc.sp(-24)
@@ -10160,14 +10171,14 @@ show(surf: gxSurf): void: function {
 .base: `function`
 .size: 17
 .name: 'show'
-.file: 'lib/cmplGfx/gfxlib.ci:309'
+.file: 'lib/cmplGfx/gfxlib.ci:311'
 .param .result: void (size: 0, cast: variable(void))
 .param surf: gxSurf (size: 8, cast: variable(val))
 .value: {
 	Gui.showWindow(surf, null, null);
 }
 .instructions: (17 bytes)
-	lib/cmplGfx/gfxlib.ci:310: (16 bytes): Gui.showWindow(surf, null, null);
+	lib/cmplGfx/gfxlib.ci:312: (16 bytes): Gui.showWindow(surf, null, null);
 	<show>  : dup.x2 sp(1)
 	<show+?>: load.ref <?> ;null
 	<show+?>: load.ref <?> ;null
@@ -10179,7 +10190,7 @@ show(surf: gxSurf, onEvent(action: int32, button: int32, ex: int32, ey: int32): 
 .base: `function`
 .size: 43
 .name: 'show'
-.file: 'lib/cmplGfx/gfxlib.ci:313'
+.file: 'lib/cmplGfx/gfxlib.ci:315'
 .param .result: void (size: 0, cast: variable(void))
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param onEvent: function (size: 4, cast: variable(ref))
@@ -10193,18 +10204,18 @@ show(surf: gxSurf, onEvent(action: int32, button: int32, ex: int32, ey: int32): 
 	Gui.showWindow(surf, onEvent, delegateEvent);
 }
 .instructions: (43 bytes)
-	lib/cmplGfx/gfxlib.ci:314: (29 bytes): if ((onEvent) == null)
+	lib/cmplGfx/gfxlib.ci:316: (29 bytes): if ((onEvent) == null)
 	<show>  : dup.x1 sp(1)
 	<show+?>: load.ref <?> ;null
 	<show+?>: ceq.i32
 	<show+?>: jz +21
-	lib/cmplGfx/gfxlib.ci:315: (17 bytes): return .result := Gui.showWindow(surf, null, null);
+	lib/cmplGfx/gfxlib.ci:317: (17 bytes): return .result := Gui.showWindow(surf, null, null);
 	<show+?>: dup.x2 sp(2)
 	<show+?>: load.ref <?> ;null
 	<show+?>: load.ref <?> ;null
 	<show+?>: nfc(115) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	<show+?>: ret
-	lib/cmplGfx/gfxlib.ci:320: (13 bytes): Gui.showWindow(surf, onEvent, delegateEvent);
+	lib/cmplGfx/gfxlib.ci:322: (13 bytes): Gui.showWindow(surf, onEvent, delegateEvent);
 	<show+?>: dup.x2 sp(2)
 	<show+?>: dup.x1 sp(3)
 	<show+?>: load.ref <?> ;show.delegateEvent(onEvent(action: int32, button: int32, ex: int32, ey: int32): int32, action: int32, button: int32, ex: int32, ey: int32): int32
@@ -10216,7 +10227,7 @@ showDiff(image1: gxSurf, image2: gxSurf): void: function {
 .base: `function`
 .size: 48
 .name: 'showDiff'
-.file: 'lib/cmplGfx/gfxlib.ci:323'
+.file: 'lib/cmplGfx/gfxlib.ci:325'
 .param .result: void (size: 0, cast: variable(void))
 .param image1: gxSurf (size: 8, cast: variable(val))
 .param image2: gxSurf (size: 8, cast: variable(val))
@@ -10250,20 +10261,20 @@ showDiff(image1: gxSurf, image2: gxSurf): void: function {
 	Gui.showWindow(closure.offs, closure, onEvent);
 }
 .instructions: (48 bytes)
-	lib/cmplGfx/gfxlib.ci:347: (28 bytes): closure: Closure := {...}
+	lib/cmplGfx/gfxlib.ci:349: (28 bytes): closure: Closure := {...}
 	<showDiff>  : inc.sp(+24)
-	lib/cmplGfx/gfxlib.ci:348: (18 bytes): closure.offs := gxSurf(image1);
+	lib/cmplGfx/gfxlib.ci:350: (18 bytes): closure.offs := gxSurf(image1);
 	<showDiff+?>: inc.sp(+8)
 	<showDiff+?>: dup.x2 sp(11)
 	<showDiff+?>: load.ref <?> ;gxSurf(copy: gxSurf): gxSurf
 	<showDiff+?>: call
 	<showDiff+?>: inc.sp(-8)
 	<showDiff+?>: set.x2 sp(2)
-	lib/cmplGfx/gfxlib.ci:349: (3 bytes): closure.image1 := image1;
+	lib/cmplGfx/gfxlib.ci:351: (3 bytes): closure.image1 := image1;
 	<showDiff+?>: mov.x2 sp(2, 9)
-	lib/cmplGfx/gfxlib.ci:350: (3 bytes): closure.image2 := image2;
+	lib/cmplGfx/gfxlib.ci:352: (3 bytes): closure.image2 := image2;
 	<showDiff+?>: mov.x2 sp(4, 7)
-	lib/cmplGfx/gfxlib.ci:352: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
+	lib/cmplGfx/gfxlib.ci:354: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
 	<showDiff+?>: dup.x2 sp(0)
 	<showDiff+?>: load.sp(+8)
 	<showDiff+?>: load.ref <?> ;showDiff.onEvent(closure: Closure, action: int32, button: int32, ex: int32, ey: int32): int32
@@ -10276,7 +10287,7 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 .base: `function`
 .size: 78
 .name: 'showWindow'
-.file: 'lib/cmplGfx/gfxlib.ci:355'
+.file: 'lib/cmplGfx/gfxlib.ci:357'
 .param .result: void (size: 0, cast: variable(void))
 .param w: int32 (size: 4, cast: variable(i32))
 .param h: int32 (size: 4, cast: variable(i32))
@@ -10323,38 +10334,38 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 	closure.offs.destroy(closure.offs);
 }
 .instructions: (78 bytes)
-	lib/cmplGfx/gfxlib.ci:390: (46 bytes): closure: Closure := {...}
+	lib/cmplGfx/gfxlib.ci:392: (46 bytes): closure: Closure := {...}
 	<showWindow>  : inc.sp(+32)
-	lib/cmplGfx/gfxlib.ci:391: (15 bytes): closure.offs := gxSurf(w, h, 32);
+	lib/cmplGfx/gfxlib.ci:393: (15 bytes): closure.offs := gxSurf(w, h, 32);
 	<showWindow+?>: dup.x1 sp(12)
 	<showWindow+?>: dup.x1 sp(12)
 	<showWindow+?>: load.c32 32
 	<showWindow+?>: nfc(72) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
 	<showWindow+?>: set.x2 sp(2)
-	lib/cmplGfx/gfxlib.ci:392: (15 bytes): closure.thumb := gxSurf(t, t, 32);
+	lib/cmplGfx/gfxlib.ci:394: (15 bytes): closure.thumb := gxSurf(t, t, 32);
 	<showWindow+?>: dup.x1 sp(10)
 	<showWindow+?>: dup.x1 sp(11)
 	<showWindow+?>: load.c32 32
 	<showWindow+?>: nfc(72) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
 	<showWindow+?>: set.x2 sp(4)
-	lib/cmplGfx/gfxlib.ci:393: (9 bytes): closure.aspect := (w) / float64(h);
+	lib/cmplGfx/gfxlib.ci:395: (9 bytes): closure.aspect := (w) / float64(h);
 	<showWindow+?>: dup.x1 sp(12)
 	<showWindow+?>: i32.2f64
 	<showWindow+?>: dup.x1 sp(13)
 	<showWindow+?>: i32.2f64
 	<showWindow+?>: div.f64
 	<showWindow+?>: set.x2 sp(6)
-	lib/cmplGfx/gfxlib.ci:394: (3 bytes): closure.eval := eval;
+	lib/cmplGfx/gfxlib.ci:396: (3 bytes): closure.eval := eval;
 	<showWindow+?>: mov.x1 sp(6, 9)
-	lib/cmplGfx/gfxlib.ci:396: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
+	lib/cmplGfx/gfxlib.ci:398: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
 	<showWindow+?>: dup.x2 sp(0)
 	<showWindow+?>: load.sp(+8)
 	<showWindow+?>: load.ref <?> ;showWindow.onEvent(closure: Closure, action: int32, button: int32, ex: int32, ey: int32): int32
 	<showWindow+?>: nfc(115) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
-	lib/cmplGfx/gfxlib.ci:397: (6 bytes): closure.thumb.destroy(closure.thumb);
+	lib/cmplGfx/gfxlib.ci:399: (6 bytes): closure.thumb.destroy(closure.thumb);
 	<showWindow+?>: dup.x2 sp(2)
 	<showWindow+?>: nfc(75) ;gxSurf.destroy(surf: gxSurf): void
-	lib/cmplGfx/gfxlib.ci:398: (6 bytes): closure.offs.destroy(closure.offs);
+	lib/cmplGfx/gfxlib.ci:400: (6 bytes): closure.offs.destroy(closure.offs);
 	<showWindow+?>: dup.x2 sp(0)
 	<showWindow+?>: nfc(75) ;gxSurf.destroy(surf: gxSurf): void
 	<showWindow+?>: inc.sp(-32)
@@ -10398,7 +10409,7 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 .field RAND_MAX: int64 (size: 0, cast: static const i64)
 .field raise: function (size: 0, cast: static const inline)
 .field tryExec: function (size: 0, cast: static const inline)
-.field System: void (size: 0, cast: static const typename(void))
+.field System: typename (size: 0, cast: static const typename(void))
 .field verbose: function (size: 0, cast: inline)
 .field verbose: function (size: 0, cast: inline)
 .field trace: function (size: 0, cast: inline)
@@ -10421,7 +10432,7 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 .field assertEq: function (size: 94, cast: static const function)
 .field assertEq: function (size: 0, cast: inline)
 .field sizeof: function (size: 0, cast: inline)
-.field Math: typename (size: 0, cast: static const typename(val))
+.field Math: typename (size: 0, cast: static const typename(void))
 .field Complex: typename (size: 16, cast: static const typename(val))
 .field Complex: function (size: 7, cast: static const function)
 .field Complex: function (size: 7, cast: static const function)
@@ -10512,9 +10523,9 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 .field gxRect: typename (size: 16, cast: static const typename(val))
 .field gxSurf: typename (size: 8, cast: static const typename(val))
 .field gxMesh: typename (size: 176, cast: static const typename(ref))
-.field camera: void (size: 0, cast: static const typename(void))
-.field lights: void (size: 0, cast: static const typename(void))
-.field Gui: void (size: 0, cast: static const typename(void))
+.field camera: typename (size: 0, cast: static const typename(void))
+.field lights: typename (size: 0, cast: static const typename(void))
+.field Gui: typename (size: 0, cast: static const typename(void))
 .field grayClamp: function (size: 24, cast: static const function)
 .field grayClamp: function (size: 36, cast: static const function)
 .field grayAnd: function (size: 0, cast: inline)
@@ -10557,6 +10568,7 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 .field gxSurf: function (size: 0, cast: inline)
 .field gxMesh: function (size: 109, cast: static const function)
 .field gxSurf: function (size: 40, cast: static const function)
+.field fill: function (size: 0, cast: inline)
 .field clip: function (size: 235, cast: static const function)
 .field eval: function (size: 353, cast: static const function)
 .field tile: function (size: 251, cast: static const function)
@@ -11640,6 +11652,7 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 			result.copy(result, 0, 0, copy, null);
 			return .result := result;
 		};
+		fill(dst: gxSurf, col: uint32): void := dst.fillRect(dst, 0, 0, dst.width(dst), dst.height(dst), col);
 		static const clip(src: gxSurf, roi: gxRect): bool := {
 			roi.w := roi.w + roi.x;
 			roi.h := roi.h + roi.y;
@@ -11974,19 +11987,19 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 	:: (5 bytes): format.precision := 0
 	<.main+?>: load.z32
 	<.main+?>: store.m32 <?> ;append.format+12
-	lib/cmplGfx/gfxlib.ci:203: (5 bytes): static ox: int32 := 0
+	lib/cmplGfx/gfxlib.ci:205: (5 bytes): static ox: int32 := 0
 	<.main+?>: load.z32
 	<.main+?>: store.m32 <?> ;show.onEvent.ox
-	lib/cmplGfx/gfxlib.ci:204: (5 bytes): static oy: int32 := 0
+	lib/cmplGfx/gfxlib.ci:206: (5 bytes): static oy: int32 := 0
 	<.main+?>: load.z32
 	<.main+?>: store.m32 <?> ;show.onEvent.oy
-	lib/cmplGfx/gfxlib.ci:205: (24 bytes): static const speed: float32 := 1.000000 / (100)
+	lib/cmplGfx/gfxlib.ci:207: (24 bytes): static const speed: float32 := 1.000000 / (100)
 	<.main+?>: load.f64 1.000000
 	<.main+?>: load.f64 100.000000
 	<.main+?>: div.f64
 	<.main+?>: f64.2f32
 	<.main+?>: store.m32 <?> ;show.onEvent.speed
-	lib/cmplGfx/gfxlib.ci:356: (8 bytes): static const start: int64 := System.millis()
+	lib/cmplGfx/gfxlib.ci:358: (8 bytes): static const start: int64 := System.millis()
 	<.main+?>: nfc(16) ;System.millis(): int64
 	<.main+?>: store.m64 <?> ;showWindow.start
 	<.main+?>: nfc(0) ;halt(): void
@@ -12118,27 +12131,27 @@ lib/cmplGfx/gfxlib.ci:12: hsv2rgb: function(<hsv2rgb>)
 lib/cmplGfx/gfxlib.ci:53: gxSurf: function(<gxSurf>)
 lib/cmplGfx/gfxlib.ci:71: gxMesh: function(<gxMesh>)
 lib/cmplGfx/gfxlib.ci:81: gxSurf: function(<gxSurf>)
-lib/cmplGfx/gfxlib.ci:92: clip: function(<clip>)
-lib/cmplGfx/gfxlib.ci:126: eval: function(<eval>)
-lib/cmplGfx/gfxlib.ci:155: tile: function(<tile>)
-lib/cmplGfx/gfxlib.ci:182: show: function(<show>)
-lib/cmplGfx/gfxlib.ci:309: show: function(<show>)
-lib/cmplGfx/gfxlib.ci:313: show: function(<show>)
-lib/cmplGfx/gfxlib.ci:323: showDiff: function(<showDiff>)
-lib/cmplGfx/gfxlib.ci:355: showWindow: function(<showWindow>)
+lib/cmplGfx/gfxlib.ci:94: clip: function(<clip>)
+lib/cmplGfx/gfxlib.ci:128: eval: function(<eval>)
+lib/cmplGfx/gfxlib.ci:157: tile: function(<tile>)
+lib/cmplGfx/gfxlib.ci:184: show: function(<show>)
+lib/cmplGfx/gfxlib.ci:311: show: function(<show>)
+lib/cmplGfx/gfxlib.ci:315: show: function(<show>)
+lib/cmplGfx/gfxlib.ci:325: showDiff: function(<showDiff>)
+lib/cmplGfx/gfxlib.ci:357: showWindow: function(<showWindow>)
 
 ---------- Memory usage:
 memory[all] @000000; size: 2096872(2.0 Mb)
-memory[used] @000000; size: 300867(293.8 Kb)
-memory[heap] @049743; size: 1271739(1.2 Mb)
+memory[used] @000000; size: 301411(294.3 Kb)
+memory[heap] @049963; size: 1271195(1.2 Mb)
 memory[stack] @0fff44; size: 524218(511.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 290344(283.5 Kb)
+memory[meta] @000000; size: 290888(284.1 Kb)
 memory[code] @000000; size: 10171(9.9 Kb)
 memory[data] @000000; size: 52(52.0 bytes)
 
 ---------- heap memory:
-memory[free] @049758; size: 1271696(1.2 Mb)
+memory[free] @049978; size: 1271152(1.2 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

@@ -1,49 +1,37 @@
 gfx: +transform
 gfx: +blend
 
+/* TODO: `float64 nan = Math.nan;` should not execute division.
+	<.main+54 @028057>   : 1b                         load.z128
+	<.main+55 @028058>   : 84                         div.f64
+*/
+
 Math.floor(x: float64): float64: function {
 .kind: static const function
 .base: `function`
-.size: 35
+.size: 24
 .name: 'floor'
-.file: 'lib/math.ci'
-.line: 73
+.file: 'lib/std/math.ci:46'
 .owner: Math
-.param .result: float64 (size: 8 -> variable(f64))
-.param x: float64 (size: 8 -> variable(f64))
+.param .result: float64 (size: 8, cast: variable(f64))
+.param x: float64 (size: 8, cast: variable(f64))
 .value: {
 	result: float64;
 	modf(x, result);
 	return .result := result;
 }
-.instructions: (35 bytes)
-	lib/math.ci:74: (1 bytes): result: float64
-	<floor+?>:    load.z128
-	lib/math.ci:75: (20 bytes): modf(x, result);
-	<floor+?>:    dup.x2 sp(5)
-	<floor+?>:    load.sp(+16)
-	<floor+?>:    load.ref .?????? ;Math.modf(x: float64, intPart: float64): float64
-	<floor+?>:    call
+.instructions: (24 bytes)
+	lib/std/math.ci:47: (1 byte): result: float64
+	<floor>  : load.z128
+	lib/std/math.ci:48: (20 bytes): modf(x, result);
+	<floor+?>: dup.x2 sp(5)
+	<floor+?>: load.sp(+16)
+	<floor+?>: load.ref <?> ;Math.modf(x: float64, intPart: float64): float64
+	<floor+?>: call
 	// TODO: merge multiple pops
-	<floor+?>:    inc.sp(-12)
-	<floor+?>:    inc.sp(-8)
-	lib/math.ci:76: (9 bytes): return .result := result;
-	// TODO: add mov(x, y) instruction replacing get(x), set(y)
-	<floor+?>:    dup.x2 sp(0)
-	<floor+?>:    set.x2 sp(7)
-	// TODO: generate return only once
-	<floor+?>:    inc.sp(-8)
-	<floor+?>:    ret
-	<floor+?>:    inc.sp(-8)
-	<floor+?>:    ret
+	<floor+?>: inc.sp(-12)
+	<floor+?>: inc.sp(-8)
+	lib/std/math.ci:49: (3 bytes): return .result := result;
+	<floor+?>: set.x2 sp(5)
+	<floor+?>: ret
 }
-
-
-	// TODO: `return nan;` should not emit the division instruction
-	lib/math.ci:365: (18 bytes): return .result := nan;
-	<tan+?>:    load.z64
-	<tan+?>:    load.f64 0.000000
-	<tan+?>:    div.f64
-	<tan+?>:    set.x2 sp(16)
-	<tan+?>:    inc.sp(-44)
-	<tan+?>:    ret

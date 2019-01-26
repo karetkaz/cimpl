@@ -505,6 +505,10 @@ static ccKind genMember(ccContext cc, astn ast, ccKind get) {
 			member = linkOf(call->op.lhso, 1);
 		}
 	}
+	if (object == NULL && ast->op.lhso != NULL) {
+		// we may have an expression that is not a variable: a[0].x;
+		object = ast->op.lhso->type;
+	}
 
 	if (!object || !member) {
 		traceAst(ast);
@@ -518,7 +522,8 @@ static ccKind genMember(ccContext cc, astn ast, ccKind get) {
 		return genAst(cc, ast->op.rhso, get);
 	}
 
-	if (!isVariable(object) && !isInline(object)) {
+	if (isTypeExpr(ast->op.lhso)) {
+		// check what is on the left side
 		error(rt, ast->file, ast->line, ERR_INVALID_FIELD_ACCESS, member);
 		return CAST_any;
 	}

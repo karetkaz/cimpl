@@ -103,7 +103,6 @@ lib/cmplGfx/gfxlib.mat4f.ci:1: warn: adding implicit cast pointer(null: typename
 
 ---------- Compile: `test/test.ci`
 test/test.ci:9: debug: inline file: `test/lang/emit.ci`
-test/lang/emit.ci:11: warn: adding implicit cast float64(2: int32)
 test/test.ci:10: debug: inline file: `test/lang/inlineMacros.ci`
 test/lang/inlineMacros.ci:6: warn: adding implicit cast bool(a: int32)
 test/test.ci:11: debug: inline file: `test/lang/overload.inline.ci`
@@ -203,18 +202,11 @@ test/lang/statementIf.ci:53: warn: statement should be a block statement {if (t 
 test/lang/statementIf.ci:73: warn: adding implicit cast pointer(typename(int64): typename)
 test/test.ci:47: debug: inline file: `test/lang/statementFor.ci`
 test/test.ci:50: debug: inline file: `test/stdc/test.math.ci`
-test/stdc/test.math.ci:66: warn: adding implicit cast variant(expected: float64)
-test/stdc/test.math.ci:67: warn: adding implicit cast variant(returned: float64)
-test/stdc/test.math.ci:68: warn: adding implicit cast variant(x: float64)
-test/stdc/test.math.ci:69: warn: adding implicit cast char[*](func: char[*])
-test/stdc/test.math.ci:81: warn: adding implicit cast variant(expected: float32)
-test/stdc/test.math.ci:82: warn: adding implicit cast variant(returned: float32)
-test/stdc/test.math.ci:83: warn: adding implicit cast variant(x: float32)
-test/stdc/test.math.ci:84: warn: adding implicit cast char[*](func: char[*])
-test/stdc/test.math.ci:89: warn: adding implicit cast float64(1000: int32)
-test/stdc/test.math.ci:97: warn: adding implicit cast float64(2: int32)
-test/stdc/test.math.ci:97: warn: adding implicit cast float64(2: int32)
-test/stdc/test.math.ci:97: warn: adding implicit cast float64(1000: int32)
+test/stdc/test.math.ci:59: warn: adding implicit cast float64(2: int32)
+test/stdc/test.math.ci:60: warn: adding implicit cast float64(2: int32)
+test/stdc/test.math.ci:61: warn: adding implicit cast float64(4: int32)
+test/stdc/test.math.ci:62: warn: adding implicit cast float64(2: int32)
+test/stdc/test.math.ci:63: warn: adding implicit cast float64(2: int32)
 
 ---------- Generate: byte-code
 lib/std/math.ci:47: warn: using default type initializer: Math.floor.result := 0
@@ -878,26 +870,26 @@ emit: function {
 .field ret: void (size: 0, cast: static const inline)
 .field call: void (size: 0, cast: static const inline)
 .field p4x: typename (size: 16, cast: static const typename(val))
-.field dup: void (size: 0, cast: static const typename(void))
-.field load: void (size: 0, cast: static const typename(void))
-.field store: void (size: 0, cast: static const typename(void))
-.field cmt: void (size: 0, cast: static const typename(void))
-.field and: void (size: 0, cast: static const typename(void))
-.field or: void (size: 0, cast: static const typename(void))
-.field xor: void (size: 0, cast: static const typename(void))
-.field shl: void (size: 0, cast: static const typename(void))
-.field shr: void (size: 0, cast: static const typename(void))
-.field neg: void (size: 0, cast: static const typename(void))
-.field add: void (size: 0, cast: static const typename(void))
-.field sub: void (size: 0, cast: static const typename(void))
-.field mul: void (size: 0, cast: static const typename(void))
-.field div: void (size: 0, cast: static const typename(void))
-.field mod: void (size: 0, cast: static const typename(void))
-.field ceq: void (size: 0, cast: static const typename(void))
-.field clt: void (size: 0, cast: static const typename(void))
-.field cgt: void (size: 0, cast: static const typename(void))
-.field min: void (size: 0, cast: static const typename(void))
-.field max: void (size: 0, cast: static const typename(void))
+.field dup: typename (size: 0, cast: static const typename(void))
+.field load: typename (size: 0, cast: static const typename(void))
+.field store: typename (size: 0, cast: static const typename(void))
+.field cmt: typename (size: 0, cast: static const typename(void))
+.field and: typename (size: 0, cast: static const typename(void))
+.field or: typename (size: 0, cast: static const typename(void))
+.field xor: typename (size: 0, cast: static const typename(void))
+.field shl: typename (size: 0, cast: static const typename(void))
+.field shr: typename (size: 0, cast: static const typename(void))
+.field neg: typename (size: 0, cast: static const typename(void))
+.field add: typename (size: 0, cast: static const typename(void))
+.field sub: typename (size: 0, cast: static const typename(void))
+.field mul: typename (size: 0, cast: static const typename(void))
+.field div: typename (size: 0, cast: static const typename(void))
+.field mod: typename (size: 0, cast: static const typename(void))
+.field ceq: typename (size: 0, cast: static const typename(void))
+.field clt: typename (size: 0, cast: static const typename(void))
+.field cgt: typename (size: 0, cast: static const typename(void))
+.field min: typename (size: 0, cast: static const typename(void))
+.field max: typename (size: 0, cast: static const typename(void))
 }
 emit.nop: void {
 .kind: static const inline
@@ -973,9 +965,9 @@ emit.p4x.dph: float32 {
 .owner: emit.p4x
 .value: dph.v4f
 }
-emit.dup: void {
+emit.dup: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'dup'
 .owner: emit
@@ -1007,9 +999,9 @@ emit.dup.x4: emit.p4x {
 .owner: emit.dup
 .value: dup.x4 sp(0)
 }
-emit.load: void {
+emit.load: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'load'
 .owner: emit
@@ -1086,9 +1078,9 @@ emit.load.i128: emit.p4x {
 .owner: emit.load
 .value: load.i128
 }
-emit.store: void {
+emit.store: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'store'
 .owner: emit
@@ -1138,9 +1130,9 @@ emit.store.i128: void {
 .owner: emit.store
 .value: store.i128
 }
-emit.cmt: void {
+emit.cmt: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'cmt'
 .owner: emit
@@ -1163,9 +1155,9 @@ emit.cmt.u64: uint64 {
 .owner: emit.cmt
 .value: cmt.b64
 }
-emit.and: void {
+emit.and: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'and'
 .owner: emit
@@ -1188,9 +1180,9 @@ emit.and.u64: uint64 {
 .owner: emit.and
 .value: and.b64
 }
-emit.or: void {
+emit.or: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'or'
 .owner: emit
@@ -1213,9 +1205,9 @@ emit.or.u64: uint64 {
 .owner: emit.or
 .value: or.b64
 }
-emit.xor: void {
+emit.xor: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'xor'
 .owner: emit
@@ -1238,9 +1230,9 @@ emit.xor.u64: uint64 {
 .owner: emit.xor
 .value: xor.b64
 }
-emit.shl: void {
+emit.shl: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'shl'
 .owner: emit
@@ -1263,9 +1255,9 @@ emit.shl.u64: uint64 {
 .owner: emit.shl
 .value: shl.b64
 }
-emit.shr: void {
+emit.shr: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'shr'
 .owner: emit
@@ -1306,9 +1298,9 @@ emit.shr.u64: uint64 {
 .owner: emit.shr
 .value: shr.b64
 }
-emit.neg: void {
+emit.neg: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'neg'
 .owner: emit
@@ -1367,9 +1359,9 @@ emit.neg.p2d: emit.p4x {
 .owner: emit.neg
 .value: neg.v2d
 }
-emit.add: void {
+emit.add: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'add'
 .owner: emit
@@ -1428,9 +1420,9 @@ emit.add.p2d: emit.p4x {
 .owner: emit.add
 .value: add.v2d
 }
-emit.sub: void {
+emit.sub: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'sub'
 .owner: emit
@@ -1489,9 +1481,9 @@ emit.sub.p2d: emit.p4x {
 .owner: emit.sub
 .value: sub.v2d
 }
-emit.mul: void {
+emit.mul: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'mul'
 .owner: emit
@@ -1568,9 +1560,9 @@ emit.mul.p2d: emit.p4x {
 .owner: emit.mul
 .value: mul.v2d
 }
-emit.div: void {
+emit.div: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'div'
 .owner: emit
@@ -1647,9 +1639,9 @@ emit.div.p2d: emit.p4x {
 .owner: emit.div
 .value: div.v2d
 }
-emit.mod: void {
+emit.mod: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'mod'
 .owner: emit
@@ -1708,9 +1700,9 @@ emit.mod.f64: float64 {
 .owner: emit.mod
 .value: mod.f64
 }
-emit.ceq: void {
+emit.ceq: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'ceq'
 .owner: emit
@@ -1769,9 +1761,9 @@ emit.ceq.p2d: bool {
 .owner: emit.ceq
 .value: ceq.v2d
 }
-emit.clt: void {
+emit.clt: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'clt'
 .owner: emit
@@ -1830,9 +1822,9 @@ emit.clt.f64: bool {
 .owner: emit.clt
 .value: clt.f64
 }
-emit.cgt: void {
+emit.cgt: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'cgt'
 .owner: emit
@@ -1891,9 +1883,9 @@ emit.cgt.f64: bool {
 .owner: emit.cgt
 .value: cgt.f64
 }
-emit.min: void {
+emit.min: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'min'
 .owner: emit
@@ -1916,9 +1908,9 @@ emit.min.p2d: emit.p4x {
 .owner: emit.min
 .value: min.v2d
 }
-emit.max: void {
+emit.max: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'max'
 .owner: emit
@@ -2059,9 +2051,9 @@ tryExec(args: pointer, action(args: pointer): void): int32: function {
 .param action: function (size: 4, cast: variable(ref))
 .value: nfc(6)
 }
-System: void {
+System: typename {
 .kind: static const typename(void)
-.base: `void`
+.base: `typename`
 .size: 0
 .name: 'System'
 .field exit: function (size: 0, cast: static const inline)
@@ -2452,7 +2444,7 @@ sizeof(type: typename): int32: function {
 .value: int32(type.size)
 }
 Math: typename {
-.kind: static const typename(val)
+.kind: static const typename(void)
 .base: `typename`
 .size: 0
 .name: 'Math'
@@ -6881,14 +6873,6 @@ emitDivI32: int32 {
 .name: 'emitDivI32'
 .file: 'test/lang/emit.ci:10'
 .value: emit(int32(10), int32(5), div.i32)
-}
-emitNfcF32: float32 {
-.kind: variable(f32)
-.base: `float32`
-.size: 4
-.name: 'emitNfcF32'
-.file: 'test/lang/emit.ci:11'
-.value: emit(float32(3.140000 / (2)), float32.sin)
 }
 floatAsInt32(value: float32): int32: function {
 .kind: inline
@@ -13039,142 +13023,82 @@ testMathEval_6: float64 {
 .file: 'test/stdc/test.math.ci:57'
 .value: Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000)
 }
-assertEq(func: char[*], x: float64, returned: float64, expected: float64): void: function {
-.kind: static const function
-.base: `function`
-.size: 114
-.name: 'assertEq'
+testMathSin_f64: float64 {
+.kind: variable(f64)
+.base: `float64`
+.size: 8
+.name: 'testMathSin_f64'
 .file: 'test/stdc/test.math.ci:59'
-.param .result: void (size: 0, cast: variable(void))
-.param func: char[*] (size: 4, cast: variable(ref))
-.param x: float64 (size: 8, cast: variable(f64))
-.param returned: float64 (size: 8, cast: variable(f64))
-.param expected: float64 (size: 8, cast: variable(f64))
-.value: {
-	epsilon: typename := 0.000000;
-	if (Math.cmp(returned, expected, epsilon) == 0) {
-		return;
-	}
-	details: NotEquals := {
-		details.expected := (expected);
-		details.returned := (returned);
-		details.argument := (x);
-		details.message := (func);
-	};
-	raise(raise.abort, raise.defTrace, "assertion failed", details);
+.value: Math.sin(Math.pi / (2))
 }
-.instructions: (114 bytes)
-	test/stdc/test.math.ci:61: (31 bytes): if (Math.cmp(returned, expected, epsilon) == 0)
-	<assertEq>  : load.z32
-	<assertEq+?>: dup.x2 sp(4)
-	<assertEq+?>: dup.x2 sp(4)
-	<assertEq+?>: load.f64 0.000000
-	<assertEq+?>: load.ref <?> ;Math.cmp(a: float64, b: float64, eps: float64): int32
-	<assertEq+?>: call
-	<assertEq+?>: inc.sp(-24)
-	<assertEq+?>: load.z32
-	<assertEq+?>: ceq.i32
-	<assertEq+?>: jz +5
-	test/stdc/test.math.ci:62: (1 byte): return;
-	<assertEq+?>: ret
-	test/stdc/test.math.ci:65: (40 bytes): details: NotEquals := {...}
-	<assertEq+?>: inc.sp(+32)
-	test/stdc/test.math.ci:66: (11 bytes): details.expected := (expected);
-	<assertEq+?>: load.ref <?> ;float64
-	<assertEq+?>: load.sp(+40)
-	<assertEq+?>: set.x2 sp(2)
-	test/stdc/test.math.ci:67: (11 bytes): details.returned := (returned);
-	<assertEq+?>: load.ref <?> ;float64
-	<assertEq+?>: load.sp(+48)
-	<assertEq+?>: set.x2 sp(4)
-	test/stdc/test.math.ci:68: (11 bytes): details.argument := (x);
-	<assertEq+?>: load.ref <?> ;float64
-	<assertEq+?>: load.sp(+56)
-	<assertEq+?>: set.x2 sp(6)
-	test/stdc/test.math.ci:69: (3 bytes): details.message := (func);
-	<assertEq+?>: mov.x1 sp(6, 15)
-	test/stdc/test.math.ci:71: (38 bytes): raise(raise.abort, raise.defTrace, "assertion failed", details);
-	<assertEq+?>: load.ref <?> ;"test/stdc/test.math.ci"
-	<assertEq+?>: load.c32 71
-	<assertEq+?>: load.c32 -2
-	<assertEq+?>: load.c32 128
-	<assertEq+?>: load.ref <?> ;"assertion failed"
-	<assertEq+?>: load.ref <?> ;NotEquals
-	<assertEq+?>: load.sp(+24)
-	<assertEq+?>: nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	<assertEq+?>: inc.sp(-32)
-	<assertEq+?>: ret
+testMathCos_f64: float64 {
+.kind: variable(f64)
+.base: `float64`
+.size: 8
+.name: 'testMathCos_f64'
+.file: 'test/stdc/test.math.ci:60'
+.value: Math.cos(Math.pi / (2))
 }
-assertEq(func: char[*], x: float32, returned: float32, expected: float32): void: function {
-.kind: static const function
-.base: `function`
-.size: 110
-.name: 'assertEq'
-.file: 'test/stdc/test.math.ci:74'
-.param .result: void (size: 0, cast: variable(void))
-.param func: char[*] (size: 4, cast: variable(ref))
-.param x: float32 (size: 4, cast: variable(f32))
-.param returned: float32 (size: 4, cast: variable(f32))
-.param expected: float32 (size: 4, cast: variable(f32))
-.value: {
-	epsilon: typename := 0.000001;
-	if (Math.cmp(returned, expected, epsilon) == 0) {
-		return;
-	}
-	details: NotEquals := {
-		details.expected := (expected);
-		details.returned := (returned);
-		details.argument := (x);
-		details.message := (func);
-	};
-	raise(raise.abort, raise.defTrace, "assertion failed", details);
+testMathTan_f64: float64 {
+.kind: variable(f64)
+.base: `float64`
+.size: 8
+.name: 'testMathTan_f64'
+.file: 'test/stdc/test.math.ci:61'
+.value: Math.tan(Math.pi / (4))
 }
-.instructions: (110 bytes)
-	test/stdc/test.math.ci:76: (27 bytes): if (Math.cmp(returned, expected, epsilon) == 0)
-	<assertEq>  : load.z32
-	<assertEq+?>: dup.x1 sp(3)
-	<assertEq+?>: dup.x1 sp(3)
-	<assertEq+?>: load.f32 0.000001
-	<assertEq+?>: load.ref <?> ;Math.cmp(a: float32, b: float32, eps: float32): int32
-	<assertEq+?>: call
-	<assertEq+?>: inc.sp(-12)
-	<assertEq+?>: load.z32
-	<assertEq+?>: ceq.i32
-	<assertEq+?>: jz +5
-	test/stdc/test.math.ci:77: (1 byte): return;
-	<assertEq+?>: ret
-	test/stdc/test.math.ci:80: (40 bytes): details: NotEquals := {...}
-	<assertEq+?>: inc.sp(+32)
-	test/stdc/test.math.ci:81: (11 bytes): details.expected := (expected);
-	<assertEq+?>: load.ref <?> ;float32
-	<assertEq+?>: load.sp(+40)
-	<assertEq+?>: set.x2 sp(2)
-	test/stdc/test.math.ci:82: (11 bytes): details.returned := (returned);
-	<assertEq+?>: load.ref <?> ;float32
-	<assertEq+?>: load.sp(+44)
-	<assertEq+?>: set.x2 sp(4)
-	test/stdc/test.math.ci:83: (11 bytes): details.argument := (x);
-	<assertEq+?>: load.ref <?> ;float32
-	<assertEq+?>: load.sp(+48)
-	<assertEq+?>: set.x2 sp(6)
-	test/stdc/test.math.ci:84: (3 bytes): details.message := (func);
-	<assertEq+?>: mov.x1 sp(6, 12)
-	test/stdc/test.math.ci:86: (38 bytes): raise(raise.abort, raise.defTrace, "assertion failed", details);
-	<assertEq+?>: load.ref <?> ;"test/stdc/test.math.ci"
-	<assertEq+?>: load.c32 86
-	<assertEq+?>: load.c32 -2
-	<assertEq+?>: load.c32 128
-	<assertEq+?>: load.ref <?> ;"assertion failed"
-	<assertEq+?>: load.ref <?> ;NotEquals
-	<assertEq+?>: load.sp(+24)
-	<assertEq+?>: nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	<assertEq+?>: inc.sp(-32)
-	<assertEq+?>: ret
+testMathSinh_f64: float64 {
+.kind: variable(f64)
+.base: `float64`
+.size: 8
+.name: 'testMathSinh_f64'
+.file: 'test/stdc/test.math.ci:62'
+.value: Math.sinh(Math.pi / (2))
+}
+testMathCosh_f64: float64 {
+.kind: variable(f64)
+.base: `float64`
+.size: 8
+.name: 'testMathCosh_f64'
+.file: 'test/stdc/test.math.ci:63'
+.value: Math.cosh(Math.pi / (2))
+}
+testMathAsin_f64: float64 {
+.kind: variable(f64)
+.base: `float64`
+.size: 8
+.name: 'testMathAsin_f64'
+.file: 'test/stdc/test.math.ci:65'
+.value: Math.asin(0.200000)
+}
+testMathAcos_f64: float64 {
+.kind: variable(f64)
+.base: `float64`
+.size: 8
+.name: 'testMathAcos_f64'
+.file: 'test/stdc/test.math.ci:66'
+.value: Math.acos(0.200000)
+}
+testMathCmp_f32: bool {
+.kind: variable(bool)
+.base: `bool`
+.size: 1
+.name: 'testMathCmp_f32'
+.file: 'test/stdc/test.math.ci:69'
+.value: Math.cmp(0.000010, 0.000012, 0.000010) == 0
+}
+testMathCmp_f64: bool {
+.kind: variable(bool)
+.base: `bool`
+.size: 1
+.name: 'testMathCmp_f64'
+.file: 'test/stdc/test.math.ci:70'
+.value: Math.cmp(0.000010, 0.000012, 0.000010) == 0
 }
 .main: function {
 .kind: static function
 .base: `function`
-.size: 10533
+.size: 10408
 .name: '.main'
 .print: '.main'
 .field typename: typename (size: 136, cast: static const typename(ref))
@@ -13209,7 +13133,7 @@ assertEq(func: char[*], x: float32, returned: float32, expected: float32): void:
 .field RAND_MAX: int64 (size: 0, cast: static const i64)
 .field raise: function (size: 0, cast: static const inline)
 .field tryExec: function (size: 0, cast: static const inline)
-.field System: void (size: 0, cast: static const typename(void))
+.field System: typename (size: 0, cast: static const typename(void))
 .field verbose: function (size: 0, cast: inline)
 .field verbose: function (size: 0, cast: inline)
 .field trace: function (size: 0, cast: inline)
@@ -13232,7 +13156,7 @@ assertEq(func: char[*], x: float32, returned: float32, expected: float32): void:
 .field assertEq: function (size: 94, cast: static const function)
 .field assertEq: function (size: 0, cast: inline)
 .field sizeof: function (size: 0, cast: inline)
-.field Math: typename (size: 0, cast: static const typename(val))
+.field Math: typename (size: 0, cast: static const typename(void))
 .field Complex: typename (size: 16, cast: static const typename(val))
 .field Complex: function (size: 7, cast: static const function)
 .field Complex: function (size: 7, cast: static const function)
@@ -13326,7 +13250,6 @@ assertEq(func: char[*], x: float32, returned: float32, expected: float32): void:
 .field emitB: int32 (size: 4, cast: variable(i32))
 .field emitAddI32: int32 (size: 4, cast: variable(i32))
 .field emitDivI32: int32 (size: 4, cast: variable(i32))
-.field emitNfcF32: float32 (size: 4, cast: variable(f32))
 .field floatAsInt32: function (size: 0, cast: inline)
 .field floatAsInt64: function (size: 0, cast: inline)
 .field emitFloatAsInt1: int32 (size: 4, cast: variable(i32))
@@ -13953,9 +13876,16 @@ assertEq(func: char[*], x: float32, returned: float32, expected: float32): void:
 .field testMathEval_4: float64 (size: 8, cast: variable(f64))
 .field testMathEval_5: float64 (size: 8, cast: variable(f64))
 .field testMathEval_6: float64 (size: 8, cast: variable(f64))
-.field assertEq: function (size: 114, cast: static const function)
-.field assertEq: function (size: 110, cast: static const function)
-.field .main: function (size: 10533, cast: static function)
+.field testMathSin_f64: float64 (size: 8, cast: variable(f64))
+.field testMathCos_f64: float64 (size: 8, cast: variable(f64))
+.field testMathTan_f64: float64 (size: 8, cast: variable(f64))
+.field testMathSinh_f64: float64 (size: 8, cast: variable(f64))
+.field testMathCosh_f64: float64 (size: 8, cast: variable(f64))
+.field testMathAsin_f64: float64 (size: 8, cast: variable(f64))
+.field testMathAcos_f64: float64 (size: 8, cast: variable(f64))
+.field testMathCmp_f32: bool (size: 1, cast: variable(bool))
+.field testMathCmp_f64: bool (size: 1, cast: variable(bool))
+.field .main: function (size: 10408, cast: static function)
 .value: {
 	{
 		static if (typename(raise) == function) {
@@ -14687,7 +14617,6 @@ assertEq(func: char[*], x: float32, returned: float32, expected: float32): void:
 		emitB: int32 := 96;
 		emitAddI32: int32 := emit(int32(emitA), int32(emitB), add.i32);
 		emitDivI32: int32 := emit(int32(10), int32(5), div.i32);
-		emitNfcF32: float32 := emit(float32(3.140000 / (2)), float32.sin);
 		floatAsInt32(value: float32): int32 := int32(emit(float32(value)));
 		floatAsInt64(value: float64): int64 := int64(emit(float64(value)));
 		emitFloatAsInt1: int32 := floatAsInt32(500);
@@ -15667,45 +15596,18 @@ assertEq(func: char[*], x: float32, returned: float32, expected: float32): void:
 		testMathEval_4: float64 := Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000);
 		testMathEval_5: float64 := Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000);
 		testMathEval_6: float64 := Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000);
-		static const assertEq(func: char[*], x: float64, returned: float64, expected: float64): void := {
-			epsilon: typename := 0.000000;
-			if (Math.cmp(returned, expected, epsilon) == 0) {
-				return;
-			}
-			details: NotEquals := {
-				details.expected := (expected);
-				details.returned := (returned);
-				details.argument := (x);
-				details.message := (func);
-			};
-			raise(raise.abort, raise.defTrace, "assertion failed", details);
-		};
-		static const assertEq(func: char[*], x: float32, returned: float32, expected: float32): void := {
-			epsilon: typename := 0.000001;
-			if (Math.cmp(returned, expected, epsilon) == 0) {
-				return;
-			}
-			details: NotEquals := {
-				details.expected := (expected);
-				details.returned := (returned);
-				details.argument := (x);
-				details.message := (func);
-			};
-			raise(raise.abort, raise.defTrace, "assertion failed", details);
-		};
-		for (t: float64 := 0; t < Math.pi; t := t + 1.000000 / (1000)) {
-			assertEq("Sin", t, Math.sin(t), float64.sin(t));
-			assertEq("Cos", t, Math.cos(t), float64.cos(t));
-			assertEq("Sin", float32(t), float32(Math.sin(t)), float32.sin(t));
-			assertEq("Cos", float32(t), float32(Math.cos(t)), float32.cos(t));
-		}
-		for (t: float64 := -Math.pi / (2) + 0.400000; t < Math.pi / (2) - 0.400000; t := t + 1.000000 / (1000)) {
-			assertEq("Tan", t, Math.tan(t), float64.tan(t));
-			assertEq("Tan", float32(t), float32(Math.tan(t)), float32.tan(t));
-		}
+		testMathSin_f64: float64 := Math.sin(Math.pi / (2));
+		testMathCos_f64: float64 := Math.cos(Math.pi / (2));
+		testMathTan_f64: float64 := Math.tan(Math.pi / (4));
+		testMathSinh_f64: float64 := Math.sinh(Math.pi / (2));
+		testMathCosh_f64: float64 := Math.cosh(Math.pi / (2));
+		testMathAsin_f64: float64 := Math.asin(0.200000);
+		testMathAcos_f64: float64 := Math.acos(0.200000);
+		testMathCmp_f32: bool := Math.cmp(0.000010, 0.000012, 0.000010) == 0;
+		testMathCmp_f64: bool := Math.cmp(0.000010, 0.000012, 0.000010) == 0;
 	}
 }
-.instructions: (10533 bytes)
+.instructions: (10408 bytes)
 	lib/std/string.ci:130: (14 bytes): static const whiteSpace: char[] := " \t\n\r"
 	<.main>  : load.c32 4
 	<.main+?>: load.ref <?> ;" \t\n\r"
@@ -15770,12 +15672,6 @@ assertEq(func: char[*], x: float32, returned: float32, expected: float32): void:
 	<.main+?>: load.c32 10
 	<.main+?>: load.c32 5
 	<.main+?>: div.i32
-	test/lang/emit.ci:11: (24 bytes): emitNfcF32: float32 := emit(float32(3.140000 / (2)), float32.sin)
-	<.main+?>: load.f64 3.140000
-	<.main+?>: load.f64 2.000000
-	<.main+?>: div.f64
-	<.main+?>: f64.2f32
-	<.main+?>: nfc(28) ;float32.sin(x: float32): float32
 	test/lang/emit.ci:17: (5 bytes): emitFloatAsInt1: int32 := floatAsInt32(500)
 	<.main+?>: load.f32 500.000000
 	test/lang/emit.ci:18: (6 bytes): emitFloatAsInt2: int64 := floatAsInt32(500)
@@ -19718,28 +19614,20 @@ assertEq(func: char[*], x: float32, returned: float32, expected: float32): void:
 	<.main+?>: call
 	<.main+?>: mov.x2 sp(18, 4)
 	<.main+?>: inc.sp(-72)
-	test/stdc/test.math.ci:89: (227 bytes): for (t: float64 := 0; t < Math.pi; t := t + 1.000000 / (1000))
+	test/stdc/test.math.ci:59: (31 bytes): testMathSin_f64: float64 := Math.sin(Math.pi / (2))
 	<.main+?>: load.z64
-	<.main+?>: jmp +206
-	test/stdc/test.math.ci:90: (37 bytes): assertEq("Sin", t, Math.sin(t), float64.sin(t));
-	<.main+?>: load.ref <?> ;"Sin"
-	<.main+?>: dup.x2 sp(1)
-	<.main+?>: load.z64
-	<.main+?>: dup.x2 sp(5)
+	<.main+?>: load.f64 3.141593
+	<.main+?>: load.f64 2.000000
+	<.main+?>: div.f64
 	<.main+?>: load.z32
 	<.main+?>: load.ref <?> ;Math.sinCos(arg: float64, quad: int32): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-12)
-	<.main+?>: dup.x2 sp(5)
-	<.main+?>: nfc(36) ;float64.sin(x: float64): float64
-	<.main+?>: load.ref <?> ;assertEq(func: char[*], x: float64, returned: float64, expected: float64): void
-	<.main+?>: call
-	<.main+?>: inc.sp(-28)
-	test/stdc/test.math.ci:91: (51 bytes): assertEq("Cos", t, Math.cos(t), float64.cos(t));
-	<.main+?>: load.ref <?> ;"Cos"
-	<.main+?>: dup.x2 sp(1)
+	test/stdc/test.math.ci:60: (45 bytes): testMathCos_f64: float64 := Math.cos(Math.pi / (2))
 	<.main+?>: load.z128
-	<.main+?>: dup.x2 sp(7)
+	<.main+?>: load.f64 3.141593
+	<.main+?>: load.f64 2.000000
+	<.main+?>: div.f64
 	<.main+?>: load.ref <?> ;Math.abs(x: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
@@ -19747,110 +19635,66 @@ assertEq(func: char[*], x: float32, returned: float32, expected: float32): void:
 	<.main+?>: load.ref <?> ;Math.sinCos(arg: float64, quad: int32): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-12)
-	<.main+?>: dup.x2 sp(5)
-	<.main+?>: nfc(37) ;float64.cos(x: float64): float64
-	<.main+?>: load.ref <?> ;assertEq(func: char[*], x: float64, returned: float64, expected: float64): void
-	<.main+?>: call
-	<.main+?>: inc.sp(-28)
-	test/stdc/test.math.ci:92: (40 bytes): assertEq("Sin", float32(t), float32(Math.sin(t)), float32.sin(t));
-	<.main+?>: load.ref <?> ;"Sin"
-	<.main+?>: dup.x2 sp(1)
-	<.main+?>: f64.2f32
+	test/stdc/test.math.ci:61: (30 bytes): testMathTan_f64: float64 := Math.tan(Math.pi / (4))
 	<.main+?>: load.z64
-	<.main+?>: dup.x2 sp(4)
-	<.main+?>: load.z32
-	<.main+?>: load.ref <?> ;Math.sinCos(arg: float64, quad: int32): float64
-	<.main+?>: call
-	<.main+?>: inc.sp(-12)
-	<.main+?>: f64.2f32
-	<.main+?>: dup.x2 sp(3)
-	<.main+?>: f64.2f32
-	<.main+?>: nfc(28) ;float32.sin(x: float32): float32
-	<.main+?>: load.ref <?> ;assertEq(func: char[*], x: float32, returned: float32, expected: float32): void
-	<.main+?>: call
-	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:93: (54 bytes): assertEq("Cos", float32(t), float32(Math.cos(t)), float32.cos(t));
-	<.main+?>: load.ref <?> ;"Cos"
-	<.main+?>: dup.x2 sp(1)
-	<.main+?>: f64.2f32
-	<.main+?>: load.z128
-	<.main+?>: dup.x2 sp(6)
-	<.main+?>: load.ref <?> ;Math.abs(x: float64): float64
-	<.main+?>: call
-	<.main+?>: inc.sp(-8)
-	<.main+?>: load.c32 1
-	<.main+?>: load.ref <?> ;Math.sinCos(arg: float64, quad: int32): float64
-	<.main+?>: call
-	<.main+?>: inc.sp(-12)
-	<.main+?>: f64.2f32
-	<.main+?>: dup.x2 sp(3)
-	<.main+?>: f64.2f32
-	<.main+?>: nfc(29) ;float32.cos(x: float32): float32
-	<.main+?>: load.ref <?> ;assertEq(func: char[*], x: float32, returned: float32, expected: float32): void
-	<.main+?>: call
-	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:89: (20 bytes): t := t + 1.000000 / (1000)
-	<.main+?>: load.f64 1.000000
-	<.main+?>: load.f64 1000.000000
-	<.main+?>: div.f64
-	<.main+?>: add.f64
-	test/stdc/test.math.ci:89: (16 bytes): t < Math.pi
-	<.main+?>: dup.x2 sp(0)
 	<.main+?>: load.f64 3.141593
-	<.main+?>: clt.f64
-	<.main+?>: jnz -214
-	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:97: (168 bytes): for (t: float64 := -Math.pi / (2) + 0.400000; t < Math.pi / (2) - 0.400000; t := t + 1.000000 / (1000))
-	<.main+?>: load.f64 -3.141593
-	<.main+?>: load.f64 2.000000
+	<.main+?>: load.f64 4.000000
 	<.main+?>: div.f64
-	<.main+?>: load.f64 0.400000
-	<.main+?>: add.f64
-	<.main+?>: jmp +99
-	test/stdc/test.math.ci:98: (36 bytes): assertEq("Tan", t, Math.tan(t), float64.tan(t));
-	<.main+?>: load.ref <?> ;"Tan"
-	<.main+?>: dup.x2 sp(1)
-	<.main+?>: load.z64
-	<.main+?>: dup.x2 sp(5)
 	<.main+?>: load.ref <?> ;Math.tan(arg: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	<.main+?>: dup.x2 sp(5)
-	<.main+?>: nfc(38) ;float64.tan(x: float64): float64
-	<.main+?>: load.ref <?> ;assertEq(func: char[*], x: float64, returned: float64, expected: float64): void
-	<.main+?>: call
-	<.main+?>: inc.sp(-28)
-	test/stdc/test.math.ci:99: (39 bytes): assertEq("Tan", float32(t), float32(Math.tan(t)), float32.tan(t));
-	<.main+?>: load.ref <?> ;"Tan"
-	<.main+?>: dup.x2 sp(1)
-	<.main+?>: f64.2f32
+	test/stdc/test.math.ci:62: (30 bytes): testMathSinh_f64: float64 := Math.sinh(Math.pi / (2))
 	<.main+?>: load.z64
-	<.main+?>: dup.x2 sp(4)
-	<.main+?>: load.ref <?> ;Math.tan(arg: float64): float64
-	<.main+?>: call
-	<.main+?>: inc.sp(-8)
-	<.main+?>: f64.2f32
-	<.main+?>: dup.x2 sp(3)
-	<.main+?>: f64.2f32
-	<.main+?>: nfc(30) ;float32.tan(x: float32): float32
-	<.main+?>: load.ref <?> ;assertEq(func: char[*], x: float32, returned: float32, expected: float32): void
-	<.main+?>: call
-	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:97: (20 bytes): t := t + 1.000000 / (1000)
-	<.main+?>: load.f64 1.000000
-	<.main+?>: load.f64 1000.000000
-	<.main+?>: div.f64
-	<.main+?>: add.f64
-	test/stdc/test.math.ci:97: (36 bytes): t < Math.pi / (2) - 0.400000
-	<.main+?>: dup.x2 sp(0)
 	<.main+?>: load.f64 3.141593
 	<.main+?>: load.f64 2.000000
 	<.main+?>: div.f64
-	<.main+?>: load.f64 0.400000
+	<.main+?>: load.ref <?> ;Math.sinh(x: float64): float64
+	<.main+?>: call
+	<.main+?>: inc.sp(-8)
+	test/stdc/test.math.ci:63: (30 bytes): testMathCosh_f64: float64 := Math.cosh(Math.pi / (2))
+	<.main+?>: load.z64
+	<.main+?>: load.f64 3.141593
+	<.main+?>: load.f64 2.000000
+	<.main+?>: div.f64
+	<.main+?>: load.ref <?> ;Math.cosh(x: float64): float64
+	<.main+?>: call
+	<.main+?>: inc.sp(-8)
+	test/stdc/test.math.ci:65: (20 bytes): testMathAsin_f64: float64 := Math.asin(0.200000)
+	<.main+?>: load.z64
+	<.main+?>: load.f64 0.200000
+	<.main+?>: load.ref <?> ;Math.asin(x: float64): float64
+	<.main+?>: call
+	<.main+?>: inc.sp(-8)
+	test/stdc/test.math.ci:66: (40 bytes): testMathAcos_f64: float64 := Math.acos(0.200000)
+	<.main+?>: load.f64 3.141593
+	<.main+?>: load.f64 2.000000
+	<.main+?>: div.f64
+	<.main+?>: load.z64
+	<.main+?>: load.f64 0.200000
+	<.main+?>: load.ref <?> ;Math.asin(x: float64): float64
+	<.main+?>: call
+	<.main+?>: inc.sp(-8)
 	<.main+?>: sub.f64
-	<.main+?>: clt.f64
-	<.main+?>: jnz -127
-	<.main+?>: inc.sp(-8)
+	test/stdc/test.math.ci:69: (28 bytes): testMathCmp_f32: bool := Math.cmp(0.000010, 0.000012, 0.000010) == 0
+	<.main+?>: load.z32
+	<.main+?>: load.f32 0.000010
+	<.main+?>: load.f32 0.000012
+	<.main+?>: load.f32 0.000010
+	<.main+?>: load.ref <?> ;Math.cmp(a: float32, b: float32, eps: float32): int32
+	<.main+?>: call
+	<.main+?>: inc.sp(-12)
+	<.main+?>: load.z32
+	<.main+?>: ceq.i32
+	test/stdc/test.math.ci:70: (40 bytes): testMathCmp_f64: bool := Math.cmp(0.000010, 0.000012, 0.000010) == 0
+	<.main+?>: load.z32
+	<.main+?>: load.f64 0.000010
+	<.main+?>: load.f64 0.000012
+	<.main+?>: load.f64 0.000010
+	<.main+?>: load.ref <?> ;Math.cmp(a: float64, b: float64, eps: float64): int32
+	<.main+?>: call
+	<.main+?>: inc.sp(-24)
+	<.main+?>: load.z32
+	<.main+?>: ceq.i32
 	<.main+?>: nfc(0) ;halt(): void
 }
 
@@ -19972,12 +19816,6 @@ test/lang/statementFor.ci:21: debug: for with continue: int32(6)
 test/lang/statementFor.ci:28: debug: for with break: int32(0)
 test/lang/statementFor.ci:28: debug: for with break: int32(1)
 test/lang/statementFor.ci:28: debug: for with break: int32(2)
-lib/std/math.ci:174: Division by Zero at .046179 in function: <min+9> executing instruction: div.f64
-	test/stdc/test.math.ci:40: min(data: [0] {})
-	native.code:: .main
-lib/std/math.ci:186: Division by Zero at .0461c1 in function: <max+9> executing instruction: div.f64
-	test/stdc/test.math.ci:42: max(data: [0] {})
-	native.code:: .main
 
 ---------- Globals:
 typename: typename(<typename>)
@@ -20082,7 +19920,6 @@ test/lang/emit.ci:6: emitA: int32(42)
 test/lang/emit.ci:7: emitB: int32(96)
 test/lang/emit.ci:9: emitAddI32: int32(138)
 test/lang/emit.ci:10: emitDivI32: int32(2)
-test/lang/emit.ci:11: emitNfcF32: float32(1.000000)
 test/lang/emit.ci:17: emitFloatAsInt1: int32(1140457472)
 test/lang/emit.ci:18: emitFloatAsInt2: int64(1140457472)
 test/lang/emit.ci:19: emitFloatAsInt3: int32(0)
@@ -20263,13 +20100,13 @@ test/lang/reflect.ci:22: RecordSizeof: typename(<RecordSizeof>)
 test/lang/reflect.ci:26: RecordSizeofExt: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:30: typeofRecord: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:31: nameOfRecord: char[*]("RecordSizeofExt")
-test/lang/reflect.ci:32: offsetOfRecord: int32(195624)
+test/lang/reflect.ci:32: offsetOfRecord: int32(195480)
 test/lang/reflect.ci:33: sizeOfRecord: int32(16)
 test/lang/reflect.ci:34: fileOfRecord: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:35: lineOfRecord: int32(26)
 test/lang/reflect.ci:37: typeofBase: typename(<RecordSizeof>)
 test/lang/reflect.ci:38: nameOfBase: char[*]("RecordSizeof")
-test/lang/reflect.ci:39: offsetOfBase: int32(195352)
+test/lang/reflect.ci:39: offsetOfBase: int32(195208)
 test/lang/reflect.ci:40: sizeOfBase: int32(12)
 test/lang/reflect.ci:41: fileOfBase: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:42: lineOfBase: int32(22)
@@ -20346,7 +20183,7 @@ test/stdc/tryExec.ci:50: tryExecErr4: int32(4)
 test/stdc/tryExec.ci:51: tryExecErr5: int32(5)
 test/stdc/tryExec.ci:52: tryExecErr6: int32(6)
 test/lang/array.ci:49: arrFixedNoInit: int64[7]([7] {42, 43, 44, 45, 46, 47, 48})
-test/lang/array.ci:50: arrArrayNoInit: int64[*](BadRef)
+test/lang/array.ci:50: arrArrayNoInit: int64[*](null)
 test/lang/array.ci:51: arrSliceNoInit: int64[](null)
 test/lang/array.ci:59: arrArrayInitNull: int64[*](null)
 test/lang/array.ci:60: arrSliceInitNull: int64[](null)
@@ -20752,21 +20589,28 @@ test/stdc/test.math.ci:54: testMathEval_3: float64(111.000000)
 test/stdc/test.math.ci:55: testMathEval_4: float64(1111.000000)
 test/stdc/test.math.ci:56: testMathEval_5: float64(11111.000000)
 test/stdc/test.math.ci:57: testMathEval_6: float64(111111.000000)
-test/stdc/test.math.ci:59: assertEq: function(<assertEq>)
-test/stdc/test.math.ci:74: assertEq: function(<assertEq>)
+test/stdc/test.math.ci:59: testMathSin_f64: float64(1.000000)
+test/stdc/test.math.ci:60: testMathCos_f64: float64(-0.000000)
+test/stdc/test.math.ci:61: testMathTan_f64: float64(1.000000)
+test/stdc/test.math.ci:62: testMathSinh_f64: float64(2.301299)
+test/stdc/test.math.ci:63: testMathCosh_f64: float64(2.509178)
+test/stdc/test.math.ci:65: testMathAsin_f64: float64(0.201358)
+test/stdc/test.math.ci:66: testMathAcos_f64: float64(1.369438)
+test/stdc/test.math.ci:69: testMathCmp_f32: bool(1)
+test/stdc/test.math.ci:70: testMathCmp_f64: bool(1)
 
 ---------- Memory usage:
 memory[all] @000000; size: 2096872(2.0 Mb)
-memory[used] @000000; size: 302251(295.2 Kb)
-memory[heap] @049cab; size: 1270355(1.2 Mb)
+memory[used] @000000; size: 300376(293.3 Kb)
+memory[heap] @049558; size: 1272230(1.2 Mb)
 memory[stack] @0fff44; size: 524218(511.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 286592(279.9 Kb)
-memory[code] @000000; size: 15327(15.0 Kb)
+memory[meta] @000000; size: 285072(278.4 Kb)
+memory[code] @000000; size: 14978(14.6 Kb)
 memory[data] @000000; size: 80(80.0 bytes)
 
 ---------- heap memory:
-memory[free] @049cc8; size: 1270304(1.2 Mb)
+memory[free] @049568; size: 1272192(1.2 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

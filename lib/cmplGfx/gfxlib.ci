@@ -89,6 +89,8 @@ gxSurf gxSurf(gxSurf copy) {
 //inline fillRect(gxSurf dst, gxRect roi, int col) = fillRect(dst, roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
 //inline drawRect(gxSurf dst, gxRect roi, int col) = drawRect(dst, roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
 
+inline fill(gxSurf dst, uint32 col) = dst.fillRect(0, 0, dst.width(), dst.height(), col);
+
 bool clip(gxSurf src, gxRect roi&) {
 
 	roi.w += roi.x;

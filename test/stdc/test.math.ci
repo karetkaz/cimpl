@@ -56,54 +56,26 @@ float64 testMathEval_4 = Math.eval(testMathEval_x, 1., 1., 1., 1.);
 float64 testMathEval_5 = Math.eval(testMathEval_x, 1., 1., 1., 1., 1.);
 float64 testMathEval_6 = Math.eval(testMathEval_x, 1., 1., 1., 1., 1., 1.);
 
-static void assertEq(char func[*], float64 x, float64 returned, float64 expected) {
-	inline epsilon = 1e-15;
-	if (Math.cmp(returned, expected, epsilon) == 0) {
-		return;
-	}
+float64 testMathSin_f64 = Math.sin(Math.pi / 2);
+float64 testMathCos_f64 = Math.cos(Math.pi / 2);
+float64 testMathTan_f64 = Math.tan(Math.pi / 4);
+float64 testMathSinh_f64 = Math.sinh(Math.pi / 2);
+float64 testMathCosh_f64 = Math.cosh(Math.pi / 2);
+//float64 testMathTanh_f64 = Math.tanh(Math.pi / 4);
+float64 testMathAsin_f64 = Math.asin(.2);
+float64 testMathAcos_f64 = Math.acos(.2);
+//float64 testMathAtan_f64 = Math.atan(.3);
 
-	NotEquals details = {
-		expected: expected;
-		returned: returned;
-		argument: x;
-		message: func;
-	};
-	raise(raise.abort, raise.defTrace, "assertion failed", details);
-}
+bool testMathCmp_f32 = Math.cmp(1.0e-5f, 1.2e-5f, 1e-5f) == 0;
+bool testMathCmp_f64 = Math.cmp(1.0e-5F, 1.2e-5F, 1e-5F) == 0;
 
-static void assertEq(char func[*], float32 x, float32 returned, float32 expected) {
-	inline epsilon = 1e-6f;
-	if (Math.cmp(returned, expected, epsilon) == 0) {
-		return;
-	}
-
-	NotEquals details = {
-		expected: expected;
-		returned: returned;
-		argument: x;
-		message: func;
-	};
-	raise(raise.abort, raise.defTrace, "assertion failed", details);
-}
-
-for (float64 t = 0; t < Math.pi; t += 1. / 1000) {
-	assertEq("Sin", t, Math.sin(t), float64.sin(t));
-	assertEq("Cos", t, Math.cos(t), float64.cos(t));
-	assertEq("Sin", float32(t), float32(Math.sin(t)), float32.sin(t));
-	assertEq("Cos", float32(t), float32(Math.cos(t)), float32.cos(t));
-}
-
-// TODO: improve aqquaricy remove padding of 0.4
-for (float64 t = -Math.pi / 2 + .4; t < Math.pi / 2 - .4; t += 1. / 1000) {
-	assertEq("Tan", t, Math.tan(t), float64.tan(t));
-	assertEq("Tan", float32(t), float32(Math.tan(t)), float32.tan(t));
-}
-
+//float64 testMathLog_f64 = Math.log(Math.e * Math.e * Math.e);
+//float64 testMathExp_f64 = Math.exp(1F);
+//float64 testMathPow_f64 = Math.pow(Math.pi * Math.pi, .5F);
+//float64 testMathSqrt_f64 = Math.sqrt(Math.pi * Math.pi);
+//float64 testMathAtan_f64 = Math.atan2(Math.pi, 1F);
 
 // TODO: add tests also these functions
-//lib/std/math.ci:386:[.03dbb0, .03dca1): exec(0), time(0 / 0.000 ms): Math.sinh(x: float64): float64
-//lib/std/math.ci:425:[.03dca8, .03dcf3): exec(0), time(0 / 0.000 ms): Math.cosh(x: float64): float64
-//lib/std/math.ci:441:[.03dcf8, .03dd9e): exec(0), time(0 / 0.000 ms): Math.asin(x: float64): float64
 //lib/std/math.Complex.ci:20:[.03dda0, .03dda7): exec(0), time(0 / 0.000 ms): Complex(re: float64): Complex
 //lib/std/math.Complex.ci:25:[.03dda8, .03ddaf): exec(0), time(0 / 0.000 ms): Complex(re: float64, im: float64): Complex
 //lib/std/math.Complex.ci:66:[.03ddb0, .03de2b): exec(0), time(0 / 0.000 ms): div(a: Complex, b: Complex): Complex

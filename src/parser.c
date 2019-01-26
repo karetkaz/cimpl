@@ -1223,6 +1223,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 	size_t baseSize = 0;
 	size_t pack = vm_mem_align;
 	symn base = cc->type_rec;
+	ccKind cast = CAST_val;
 
 	if (skipTok(cc, PNCT_cln, 0)) {			// ':' base type or packing
 		astn tok = expression(cc, 0);
@@ -1233,6 +1234,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 				pack = vm_stk_align;
 			}
 			else if (isTypeExpr(tok)) {		// ':' extended type
+				cast = CAST_ref;
 				base = linkOf(tok, 1);
 				for (symn ptr = base; ptr; ptr = ptr->type) {
 					if (ptr == cc->type_rec) {
@@ -1287,7 +1289,11 @@ static astn declare_record(ccContext cc, ccKind attr) {
 
 	skipTok(cc, STMT_beg, 1);	// '{'
 
-	symn type = declare(cc, ATTR_stat | ATTR_cnst | KIND_typ | CAST_val, tag, base, NULL);
+	if (attr & ATTR_stat) {
+		// make not instantiable
+		cast = CAST_vid;
+	}
+	symn type = declare(cc, ATTR_stat | ATTR_cnst | KIND_typ | cast, tag, base, NULL);
 	enter(cc, type);
 	statement_list(cc);
 	type->fields = leave(cc, attr | KIND_typ, pack, baseSize, &type->size);

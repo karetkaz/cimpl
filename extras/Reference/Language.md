@@ -13,10 +13,10 @@ Syntax is similar to c/c++ influenced by:
 	* Reflection is part of the language (some of the internal compiler functions exposed).
 
 * Arrays are more than just typed pointers.
-	* Fixed-size arrays: `int fixed[30];` (size is known by the compiler)
-	* Dynamic-size arrays: `int dynamic[] = fixed;` (size is known at run-time)
-	* Unknown-size arrays: `int memcmp(byte a[*], byte b[*], int size);` (size is known by the developer)
-	* Associative arrays: `double constants[string] = {"pi": 3.1415, ...};`
+	* [Fixed-size arrays](#arrays-fixed-size-arrays): `int fixed[30];` (length known by the compiler)
+	* [Dynamic-size arrays](#slices-dynamic-size-arrays): `int dynamic[] = fixed;` (length known at run-time)
+	* [Unknown-size arrays](#pointers-unknown-size-arrays): `int memcmp(byte a[*], byte b[*], int size);` (length known by developer)
+	* [Associative arrays](#maps-associative-arrays): `double constants[string] = {"pi": 3.1415, ...};`
 
 * Enumerations are enumerations:
 	* Enumeration values are named constants of a given base-type (number, object, function, ...).
@@ -24,13 +24,13 @@ Syntax is similar to c/c++ influenced by:
 	* Enumeration type variables can be assigned only with values from the enumeration.
 	* Enumeration type can be iterated and indexed with ordinal or name.
 
-* Expressions and types can be aliased with the `inline` keyword.
+* Expressions can be aliased with the `inline` keyword.
 	* aliasing a type: `inline double = float64;`
 	* aliasing a constant: `inline pi = 3.14159265359;`
 	* aliasing an expression: `inline min(int a, int b) = a < b ? a : b;`
 
 * Conditional compile-time code generation and declarations with `static if` statement.
-	* On 32 bit platform only ...: `static if (int == int32) { ... }`
+	* `static if (int == int32) { /* 32 bit platform code */ }`
 
 * Functions
 	* Extend any class with custom methods using [Uniform Function Call Syntax](https://en.wikipedia.org/wiki/Uniform_Function_Call_Syntax)

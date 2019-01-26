@@ -986,7 +986,7 @@ symn ccBegin(ccContext cc, const char *name) {
 	}
 	symn result = NULL;
 	if (name != NULL) {
-		result = install(cc, name, ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, cc->type_vid, NULL);
+		result = install(cc, name, ATTR_stat | ATTR_cnst | KIND_typ | CAST_vid, 0, cc->type_rec, NULL);
 		if (result == NULL) {
 			return NULL;
 		}

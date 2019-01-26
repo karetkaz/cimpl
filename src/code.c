@@ -1636,43 +1636,45 @@ static vmError vmTrace(rtContext rt, void *sp, size_t caller, size_t callee) {
 /// Private dummy debug function.
 static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t caller, size_t callee) {
 	if (err != noError) {
-		rtContext rt = ctx->rt;
-		char *errMsg = vmErrorMessage(err);
-		vmInstruction ip = vmPointer(rt, caller);
-
-		// file:line
-		dbgn dbg = mapDbgStatement(rt, caller);
-		char *file = NULL;
-		int line = 0;
-		if (dbg != NULL) {
-			file = dbg->file;
-			line = dbg->line;
-		}
-
-		// current function
-		symn fun = rtLookup(rt, caller, 0);
-		size_t offs = caller;
-		if (fun != NULL) {
-			offs -= fun->offs;
-		}
-
-		if (err == nativeCallError) {
-			libc *nativeCalls = rt->vm.nfc;
-			symn nc = nativeCalls[ip->rel]->sym;
-			error(rt, file, line, ERR_EXEC_NATIVE_CALL, errMsg, caller, fun, offs, nc);
-		} else {
-			error(rt, file, line, ERR_EXEC_INSTRUCTION, errMsg, caller, fun, offs, ip);
-		}
-		// print stack trace including this function
-		if (rt->dbg != NULL && rt->traceLevel > 0) {
-			traceCalls(rt->dbg, rt->logFile, 1, rt->traceLevel, 0);
-		}
-		return ctx->abort;
+		return NULL;
 	}
+
+	rtContext rt = ctx->rt;
+	char *errMsg = vmErrorMessage(err);
+	vmInstruction ip = vmPointer(rt, caller);
+
+	// file:line
+	dbgn dbg = mapDbgStatement(rt, caller);
+	char *file = NULL;
+	int line = 0;
+	if (dbg != NULL) {
+		file = dbg->file;
+		line = dbg->line;
+	}
+
+	// current function
+	symn fun = rtLookup(rt, caller, 0);
+	size_t offs = caller;
+	if (fun != NULL) {
+		offs -= fun->offs;
+	}
+
+	if (err == nativeCallError) {
+		libc *nativeCalls = rt->vm.nfc;
+		symn nc = nativeCalls[ip->rel]->sym;
+		error(rt, file, line, ERR_EXEC_NATIVE_CALL, errMsg, caller, fun, offs, nc);
+	}
+	else {
+		error(rt, file, line, ERR_EXEC_INSTRUCTION, errMsg, caller, fun, offs, ip);
+	}
+	// print stack trace including this function
+	if (rt->dbg != NULL && rt->traceLevel > 0) {
+		traceCalls(rt->dbg, rt->logFile, 1, rt->traceLevel, 0);
+	}
+	return ctx->abort;
 	(void) callee;
 	(void) stack;
 	(void) ss;
-	return NULL;
 }
 
 /**

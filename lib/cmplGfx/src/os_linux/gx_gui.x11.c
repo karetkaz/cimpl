@@ -31,6 +31,7 @@ gxWindow createWindow(gx_Surf offs) {
 	result->window = XCreateSimpleWindow(result->display, XDefaultRootWindow(result->display), 0, 0, offs->width, offs->height, 0, BlackPixel(result->display, 0), WhitePixel(result->display, 0));
 	result->image = XCreateImage(result->display, CopyFromParent, depth, ZPixmap, 0, offs->basePtr, offs->width, offs->height, 32, offs->scanLen);
 	result->gc = XCreateGC(result->display, result->window, GCForeground, &result->gr_values);
+	XMapWindow(result->display, result->window);
 
 	XSelectInput(result->display, result->window, StructureNotifyMask// | VisibilityChangeMask
 		| ButtonPressMask | ButtonReleaseMask | ButtonMotionMask
@@ -54,7 +55,6 @@ gxWindow createWindow(gx_Surf offs) {
 	XSetWMNormalHints(result->display, result->window, xsh);
 	XFree(xsh);
 
-	XMapWindow(result->display, result->window);
 	return result;
 }
 
@@ -77,7 +77,7 @@ int getWindowEvent(gxWindow window, int *button, int *x, int *y) {
 			break;
 
 		case ClientMessage:
-			if (event.xclient.data.l[0] == window->deleteWindow) {
+			if ((Atom)event.xclient.data.l[0] == window->deleteWindow) {
 				return WINDOW_CLOSE;
 			}
 			break;

@@ -99,6 +99,13 @@ static vmError FILE_flush(nfcContext ctx) {
 static const char *const proto_file_close = "void close(File file)";
 static vmError FILE_close(nfcContext ctx) {
 	FILE *file = (FILE *) arghnd(ctx, 0);
+	/* TODO: currently it is allowed to close any file
+	if (file == stdin || file == stdout || file == stderr) {
+		return nativeCallError;
+	}
+	if (file == ctx->rt->logFile) {
+		return nativeCallError;
+	}*/
 	fclose(file);
 	return noError;
 }

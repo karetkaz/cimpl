@@ -426,15 +426,23 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 		sym = ref->ref.link;
 	}
 	else if (loc != NULL) {
-		if (isVariable(loc)) {
+		if (!isTypename(loc)) {
+			// try to lookup members first.
 			sym = lookup(cc, loc->type->fields, ref, args, KIND_var, 0);
-			loc = loc->type;
+			if (sym == NULL) {
+				// length of fixed size array is an inline static value
+				sym = lookup(cc, loc->type->fields, ref, args, 0, 0);
+			}
 		}
-		if (sym == NULL && isTypename(loc)) {
-			sym = lookup(cc, loc->fields, ref, args, ATTR_stat, 0);
-		}
+
 		if (sym == NULL) {
-			sym = lookup(cc, loc->fields, ref, args, 0, raise);
+			ccKind kind = isTypename(loc) ? ATTR_stat : 0;
+			sym = lookup(cc, loc->fields, ref, args, kind, raise);
+			if (sym == NULL) {
+				// hack: allow lookup of: vertices[i].x = 2;
+				// int this case the location is a type, and x is a member
+				sym = lookup(cc, loc->fields, ref, args, 0, 0);
+			}
 		}
 	}
 	else {
@@ -464,23 +472,22 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 		return NULL;
 	}
 
-	symn type;
-	if (isInline(sym) && sym->init != NULL) {
+	symn type = sym->type;
+	if (args != NULL) {
+		if (isInvokable(sym)) {
+			// resulting type is the type of result parameter
+			type = sym->params->type;
+		}
+		if (isTypename(sym)) {
+			// resulting type is the type of the cast
+			type = sym;
+		}
+	}
+	else if (isInline(sym) && sym->init != NULL && !isInvokable(sym)) {
 		// resulting type is the type of the inline expression
 		type = sym->init->type;
 	}
-	else if (isInvokable(sym) && args != NULL) {
-		// resulting type is the type of result parameter
-		type = sym->params->type;
-	}
-	else if (isTypename(sym) && args != NULL) {
-		// resulting type is the type of the cast
-		type = sym;
-	}
-	else {
-		// resulting type is the type of the variable
-		type = sym->type;
-	}
+
 
 	dieif(ref->kind != TOKEN_var, ERR_INTERNAL_ERROR);
 	ref->ref.link = sym;
@@ -493,7 +500,6 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 	symn lType = NULL;
 	symn rType = NULL;
 	symn type = NULL;
-	symn sym = NULL;
 
 	if (ast == NULL) {
 		fatal(ERR_INTERNAL_ERROR);
@@ -552,7 +558,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 					return NULL;
 				}
 				loc = linkOf(ref->op.lhso, 1);
-				if (loc && isVariable(loc)) {
+				if (loc != NULL && !isTypename(loc)) {
 					/* lookup order for a.add(b) => add(a, b)
 						1. search for extension method: add(a, b)
 						2. search for virtual method: a.add(a, b)
@@ -629,19 +635,18 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 
 		case OPER_dot:
 			if (loc == cc->emit_opc && ast->op.lhso->kind == TOKEN_var) {
-				// Fixme: if we have add.i32 and add was already checked, force lookup
+				// Fixme: if we have add.i32 and add was already checked, force a new lookup
 				ast->op.lhso->type = NULL;
 				ast->op.lhso->ref.link = NULL;
 			}
 			lType = typeCheck(cc, loc, ast->op.lhso, raise);
 			loc = linkOf(ast->op.lhso, 1);
 			if (loc == NULL) {
-				traceAst(ast);
-				return NULL;
+				loc = lType;
 			}
 			rType = typeCheck(cc, loc, ast->op.rhso, raise);
 
-			if (!lType || !rType) {
+			if (!lType || !rType || !loc) {
 				traceAst(ast);
 				return NULL;
 			}
@@ -655,7 +660,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				lType = typeCheck(cc, loc, ast->op.lhso, raise);
 			}
 			if (ast->op.rhso != NULL) {
-				rType = typeCheck(cc, loc, ast->op.rhso, raise);
+				rType = typeCheck(cc, NULL, ast->op.rhso, raise);
 			}
 
 			if (!lType || !rType) {
@@ -856,9 +861,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 		case ASGN_set:		// ':='
 			lType = typeCheck(cc, loc, ast->op.lhso, raise);
 			rType = typeCheck(cc, NULL, ast->op.rhso, raise);
-			sym = linkOf(ast->op.lhso, 1);
 
-			if (!lType || !rType || !sym) {
+			if (!lType || !rType) {
 				traceAst(ast);
 				return NULL;
 			}
