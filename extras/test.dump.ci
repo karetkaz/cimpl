@@ -94,12 +94,12 @@ lib/std/string.ci:206: debug: using default field initializer: FormatFlags.padCh
 lib/std/string.ci:108: warn: adding implicit cast char(0: int32)
 lib/std/string.ci:206: debug: using default field initializer: FormatFlags.padLen := 0
 lib/std/string.ci:206: debug: using default field initializer: FormatFlags.precision := 0
-lib/stdlib.ci:59: debug: inline file: `lib/cmplGfx/gfxlib.vec2d.ci`
-lib/cmplGfx/gfxlib.vec2d.ci:1: warn: adding implicit cast pointer(null: typename)
-lib/stdlib.ci:60: debug: inline file: `lib/cmplGfx/gfxlib.vec4f.ci`
-lib/cmplGfx/gfxlib.vec4f.ci:1: warn: adding implicit cast pointer(null: typename)
-lib/stdlib.ci:61: debug: inline file: `lib/cmplGfx/gfxlib.mat4f.ci`
-lib/cmplGfx/gfxlib.mat4f.ci:1: warn: adding implicit cast pointer(null: typename)
+lib/stdlib.ci:59: debug: inline file: `lib/vec/vec2d.ci`
+lib/vec/vec2d.ci:1: warn: adding implicit cast pointer(null: typename)
+lib/stdlib.ci:60: debug: inline file: `lib/vec/vec4f.ci`
+lib/vec/vec4f.ci:1: warn: adding implicit cast pointer(null: typename)
+lib/stdlib.ci:61: debug: inline file: `lib/vec/mat4f.ci`
+lib/vec/mat4f.ci:1: warn: adding implicit cast pointer(null: typename)
 
 ---------- Compile: `test/test.ci`
 test/test.ci:9: debug: inline file: `test/lang/emit.ci`
@@ -222,10 +222,10 @@ lib/stdlib.ci:29: warn: no code will be generated for statement: 0
 lib/stdlib.ci:29: warn: no code will be generated for statement: 0
 lib/stdlib.ci:29: warn: no code will be generated for statement: 0
 lib/stdlib.ci:29: warn: no code will be generated for statement: 0
-lib/cmplGfx/gfxlib.mat4f.ci:30: warn: uninitialized variable `.result`
-lib/cmplGfx/gfxlib.mat4f.ci:30: warn: uninitialized variable `.result`
-lib/cmplGfx/gfxlib.mat4f.ci:30: warn: uninitialized variable `.result`
-lib/cmplGfx/gfxlib.mat4f.ci:30: warn: uninitialized variable `.result`
+lib/vec/mat4f.ci:30: warn: uninitialized variable `.result`
+lib/vec/mat4f.ci:30: warn: uninitialized variable `.result`
+lib/vec/mat4f.ci:30: warn: uninitialized variable `.result`
+lib/vec/mat4f.ci:30: warn: uninitialized variable `.result`
 test/stdc/tryExec.ci:15: warn: uninitialized variable `stackOverflow.data`
 test/lang/member.ci:35: warn: using default type initializer: RecordMemberTest.global := 0
 test/lang/member.ci:44: warn: uninitialized variable `RecordMemberTest.globalRec`
@@ -5938,7 +5938,7 @@ vec2d: typename {
 .base: `typename`
 .size: 16
 .name: 'vec2d'
-.file: 'lib/cmplGfx/gfxlib.vec2d.ci:3'
+.file: 'lib/vec/vec2d.ci:3'
 .field x: float64 (size: 8, cast: variable(f64))
 .field y: float64 (size: 8, cast: variable(f64))
 }
@@ -5947,7 +5947,7 @@ vec2d.x: float64 {
 .base: `float64`
 .size: 8
 .name: 'x'
-.file: 'lib/cmplGfx/gfxlib.vec2d.ci:4'
+.file: 'lib/vec/vec2d.ci:4'
 .owner: vec2d
 }
 vec2d.y: float64 {
@@ -5955,7 +5955,7 @@ vec2d.y: float64 {
 .base: `float64`
 .size: 8
 .name: 'y'
-.file: 'lib/cmplGfx/gfxlib.vec2d.ci:5'
+.file: 'lib/vec/vec2d.ci:5'
 .owner: vec2d
 }
 vec2d(x: float64, y: float64): vec2d: function {
@@ -5963,7 +5963,7 @@ vec2d(x: float64, y: float64): vec2d: function {
 .base: `function`
 .size: 7
 .name: 'vec2d'
-.file: 'lib/cmplGfx/gfxlib.vec2d.ci:8'
+.file: 'lib/vec/vec2d.ci:8'
 .param .result: vec2d (size: 16, cast: variable(val))
 .param x: float64 (size: 8, cast: variable(f64))
 .param y: float64 (size: 8, cast: variable(f64))
@@ -5974,9 +5974,9 @@ vec2d(x: float64, y: float64): vec2d: function {
 		};
 }
 .instructions: (7 bytes)
-	lib/cmplGfx/gfxlib.vec2d.ci:9: (7 bytes): return .result := {...};
+	lib/vec/vec2d.ci:9: (7 bytes): return .result := {...};
 	<vec2d>  : mov.x2 sp(5, 3)
-	lib/cmplGfx/gfxlib.vec2d.ci:11: (3 bytes): .result.y := y;
+	lib/vec/vec2d.ci:11: (3 bytes): .result.y := y;
 	<vec2d+?>: mov.x2 sp(7, 1)
 	<vec2d+?>: ret
 }
@@ -5985,7 +5985,7 @@ sub(a: vec2d, b: vec2d): vec2d: function {
 .base: `function`
 .size: 0
 .name: 'sub'
-.file: 'lib/cmplGfx/gfxlib.vec2d.ci:15'
+.file: 'lib/vec/vec2d.ci:15'
 .param .result: vec2d (size: 16, cast: val)
 .param a: vec2d (size: 16, cast: val)
 .param b: vec2d (size: 16, cast: val)
@@ -5996,7 +5996,7 @@ dot(a: vec2d, b: vec2d): float64: function {
 .base: `function`
 .size: 0
 .name: 'dot'
-.file: 'lib/cmplGfx/gfxlib.vec2d.ci:16'
+.file: 'lib/vec/vec2d.ci:16'
 .param .result: float64 (size: 8, cast: f64)
 .param a: vec2d (size: 4, cast: const variable(ref))
 .param b: vec2d (size: 4, cast: const variable(ref))
@@ -6007,7 +6007,7 @@ vec4f: typename {
 .base: `typename`
 .size: 16
 .name: 'vec4f'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:3'
+.file: 'lib/vec/vec4f.ci:3'
 .field data: float32[4] (size: 16, cast: variable(val))
 .field .anonymous: vec4f..anonymous (size: 16, cast: variable(val))
 .field x: float32 (size: 0, cast: inline)
@@ -6020,7 +6020,7 @@ vec4f.data: float32[4] {
 .base: `float32[4]`
 .size: 16
 .name: 'data'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:4'
+.file: 'lib/vec/vec4f.ci:4'
 .owner: vec4f
 }
 vec4f..anonymous: vec4f..anonymous {
@@ -6028,7 +6028,7 @@ vec4f..anonymous: vec4f..anonymous {
 .base: `vec4f..anonymous`
 .size: 16
 .name: '.anonymous'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:84'
+.file: 'lib/vec/vec4f.ci:84'
 .owner: vec4f
 .field x: float32 (size: 4, cast: variable(f32))
 .field y: float32 (size: 4, cast: variable(f32))
@@ -6040,7 +6040,7 @@ vec4f..anonymous.x: float32 {
 .base: `float32`
 .size: 4
 .name: 'x'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:6'
+.file: 'lib/vec/vec4f.ci:6'
 .owner: vec4f..anonymous
 }
 vec4f..anonymous.y: float32 {
@@ -6048,7 +6048,7 @@ vec4f..anonymous.y: float32 {
 .base: `float32`
 .size: 4
 .name: 'y'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:7'
+.file: 'lib/vec/vec4f.ci:7'
 .owner: vec4f..anonymous
 }
 vec4f..anonymous.z: float32 {
@@ -6056,7 +6056,7 @@ vec4f..anonymous.z: float32 {
 .base: `float32`
 .size: 4
 .name: 'z'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:8'
+.file: 'lib/vec/vec4f.ci:8'
 .owner: vec4f..anonymous
 }
 vec4f..anonymous.w: float32 {
@@ -6064,7 +6064,7 @@ vec4f..anonymous.w: float32 {
 .base: `float32`
 .size: 4
 .name: 'w'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:9'
+.file: 'lib/vec/vec4f.ci:9'
 .owner: vec4f..anonymous
 }
 vec4f.x: float32 {
@@ -6072,7 +6072,7 @@ vec4f.x: float32 {
 .base: `float32`
 .size: 0
 .name: 'x'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:6'
+.file: 'lib/vec/vec4f.ci:6'
 .owner: vec4f
 .value: x: float32
 }
@@ -6081,7 +6081,7 @@ vec4f.y: float32 {
 .base: `float32`
 .size: 0
 .name: 'y'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:7'
+.file: 'lib/vec/vec4f.ci:7'
 .owner: vec4f
 .value: y: float32
 }
@@ -6090,7 +6090,7 @@ vec4f.z: float32 {
 .base: `float32`
 .size: 0
 .name: 'z'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:8'
+.file: 'lib/vec/vec4f.ci:8'
 .owner: vec4f
 .value: z: float32
 }
@@ -6099,7 +6099,7 @@ vec4f.w: float32 {
 .base: `float32`
 .size: 0
 .name: 'w'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:9'
+.file: 'lib/vec/vec4f.ci:9'
 .owner: vec4f
 .value: w: float32
 }
@@ -6108,7 +6108,7 @@ vec4f(x: float32, y: float32, z: float32, w: float32): vec4f: function {
 .base: `function`
 .size: 13
 .name: 'vec4f'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:21'
+.file: 'lib/vec/vec4f.ci:21'
 .param .result: vec4f (size: 16, cast: variable(val))
 .param x: float32 (size: 4, cast: variable(f32))
 .param y: float32 (size: 4, cast: variable(f32))
@@ -6123,13 +6123,13 @@ vec4f(x: float32, y: float32, z: float32, w: float32): vec4f: function {
 		};
 }
 .instructions: (13 bytes)
-	lib/cmplGfx/gfxlib.vec4f.ci:22: (13 bytes): return .result := {...};
+	lib/vec/vec4f.ci:22: (13 bytes): return .result := {...};
 	<vec4f>  : mov.x1 sp(5, 4)
-	lib/cmplGfx/gfxlib.vec4f.ci:22: (3 bytes): .result.y := y;
+	lib/vec/vec4f.ci:22: (3 bytes): .result.y := y;
 	<vec4f+?>: mov.x1 sp(6, 3)
-	lib/cmplGfx/gfxlib.vec4f.ci:22: (3 bytes): .result.z := z;
+	lib/vec/vec4f.ci:22: (3 bytes): .result.z := z;
 	<vec4f+?>: mov.x1 sp(7, 2)
-	lib/cmplGfx/gfxlib.vec4f.ci:22: (3 bytes): .result.w := w;
+	lib/vec/vec4f.ci:22: (3 bytes): .result.w := w;
 	<vec4f+?>: mov.x1 sp(8, 1)
 	<vec4f+?>: ret
 }
@@ -6138,7 +6138,7 @@ vec4f(x: float32, y: float32, z: float32): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'vec4f'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:24'
+.file: 'lib/vec/vec4f.ci:24'
 .param .result: vec4f (size: 16, cast: val)
 .param x: float32 (size: 4, cast: f32)
 .param y: float32 (size: 4, cast: f32)
@@ -6150,7 +6150,7 @@ vec4f(xyz: vec4f, w: float32): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'vec4f'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:25'
+.file: 'lib/vec/vec4f.ci:25'
 .param .result: vec4f (size: 16, cast: val)
 .param xyz: vec4f (size: 16, cast: variable(val))
 .param w: float32 (size: 4, cast: f32)
@@ -6161,7 +6161,7 @@ vec4f(val: float32): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'vec4f'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:26'
+.file: 'lib/vec/vec4f.ci:26'
 .param .result: vec4f (size: 16, cast: val)
 .param val: float32 (size: 4, cast: variable(f32))
 .value: vec4f(val, val, val, val)
@@ -6171,7 +6171,7 @@ neg(rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'neg'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:56'
+.file: 'lib/vec/vec4f.ci:56'
 .param .result: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
 .value: vec4f(emit(struct(rhs), neg.p4f))
@@ -6181,7 +6181,7 @@ add(lhs: vec4f, rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'add'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:57'
+.file: 'lib/vec/vec4f.ci:57'
 .param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -6192,7 +6192,7 @@ sub(lhs: vec4f, rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'sub'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:58'
+.file: 'lib/vec/vec4f.ci:58'
 .param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -6203,7 +6203,7 @@ mul(lhs: vec4f, rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'mul'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:59'
+.file: 'lib/vec/vec4f.ci:59'
 .param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -6214,7 +6214,7 @@ div(lhs: vec4f, rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'div'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:60'
+.file: 'lib/vec/vec4f.ci:60'
 .param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -6225,7 +6225,7 @@ min(lhs: vec4f, rhs: vec4f): float32: function {
 .base: `function`
 .size: 0
 .name: 'min'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:62'
+.file: 'lib/vec/vec4f.ci:62'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -6236,7 +6236,7 @@ max(lhs: vec4f, rhs: vec4f): float32: function {
 .base: `function`
 .size: 0
 .name: 'max'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:63'
+.file: 'lib/vec/vec4f.ci:63'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -6247,7 +6247,7 @@ dp3(lhs: vec4f, rhs: vec4f): float32: function {
 .base: `function`
 .size: 0
 .name: 'dp3'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:68'
+.file: 'lib/vec/vec4f.ci:68'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -6258,7 +6258,7 @@ dph(lhs: vec4f, rhs: vec4f): float32: function {
 .base: `function`
 .size: 0
 .name: 'dph'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:69'
+.file: 'lib/vec/vec4f.ci:69'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -6269,7 +6269,7 @@ dp4(lhs: vec4f, rhs: vec4f): float32: function {
 .base: `function`
 .size: 0
 .name: 'dp4'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:70'
+.file: 'lib/vec/vec4f.ci:70'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -6280,7 +6280,7 @@ cross(a: vec4f, b: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'cross'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:72'
+.file: 'lib/vec/vec4f.ci:72'
 .param .result: vec4f (size: 16, cast: val)
 .param a: vec4f (size: 4, cast: const variable(ref))
 .param b: vec4f (size: 4, cast: const variable(ref))
@@ -6291,7 +6291,7 @@ len(v: vec4f): float32: function {
 .base: `function`
 .size: 0
 .name: 'len'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:74'
+.file: 'lib/vec/vec4f.ci:74'
 .param .result: float32 (size: 4, cast: f32)
 .param v: vec4f (size: 16, cast: variable(val))
 .value: float32.sqrt(dp3(v, v))
@@ -6301,7 +6301,7 @@ normalize(v: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'normalize'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:75'
+.file: 'lib/vec/vec4f.ci:75'
 .param .result: vec4f (size: 16, cast: val)
 .param v: vec4f (size: 4, cast: const variable(ref))
 .value: div(v, vec4f(len(v)))
@@ -6311,7 +6311,7 @@ eval(v: vec4f, x: float32): float32: function {
 .base: `function`
 .size: 0
 .name: 'eval'
-.file: 'lib/cmplGfx/gfxlib.vec4f.ci:77'
+.file: 'lib/vec/vec4f.ci:77'
 .param .result: float32 (size: 4, cast: f32)
 .param v: vec4f (size: 4, cast: const variable(ref))
 .param x: float32 (size: 4, cast: variable(f32))
@@ -6322,7 +6322,7 @@ mat4f: typename {
 .base: `typename`
 .size: 64
 .name: 'mat4f'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:3'
+.file: 'lib/vec/mat4f.ci:3'
 .field data: float32[16] (size: 64, cast: variable(val))
 .field .anonymous: mat4f..anonymous (size: 64, cast: variable(val))
 .field x: vec4f (size: 0, cast: inline)
@@ -6335,7 +6335,7 @@ mat4f.data: float32[16] {
 .base: `float32[16]`
 .size: 64
 .name: 'data'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:4'
+.file: 'lib/vec/mat4f.ci:4'
 .owner: mat4f
 }
 mat4f..anonymous: mat4f..anonymous {
@@ -6343,7 +6343,7 @@ mat4f..anonymous: mat4f..anonymous {
 .base: `mat4f..anonymous`
 .size: 64
 .name: '.anonymous'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:59'
+.file: 'lib/vec/mat4f.ci:59'
 .owner: mat4f
 .field x: vec4f (size: 16, cast: variable(val))
 .field y: vec4f (size: 16, cast: variable(val))
@@ -6355,7 +6355,7 @@ mat4f..anonymous.x: vec4f {
 .base: `vec4f`
 .size: 16
 .name: 'x'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:6'
+.file: 'lib/vec/mat4f.ci:6'
 .owner: mat4f..anonymous
 }
 mat4f..anonymous.y: vec4f {
@@ -6363,7 +6363,7 @@ mat4f..anonymous.y: vec4f {
 .base: `vec4f`
 .size: 16
 .name: 'y'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:7'
+.file: 'lib/vec/mat4f.ci:7'
 .owner: mat4f..anonymous
 }
 mat4f..anonymous.z: vec4f {
@@ -6371,7 +6371,7 @@ mat4f..anonymous.z: vec4f {
 .base: `vec4f`
 .size: 16
 .name: 'z'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:8'
+.file: 'lib/vec/mat4f.ci:8'
 .owner: mat4f..anonymous
 }
 mat4f..anonymous.w: vec4f {
@@ -6379,7 +6379,7 @@ mat4f..anonymous.w: vec4f {
 .base: `vec4f`
 .size: 16
 .name: 'w'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:9'
+.file: 'lib/vec/mat4f.ci:9'
 .owner: mat4f..anonymous
 }
 mat4f.x: vec4f {
@@ -6387,7 +6387,7 @@ mat4f.x: vec4f {
 .base: `vec4f`
 .size: 0
 .name: 'x'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:6'
+.file: 'lib/vec/mat4f.ci:6'
 .owner: mat4f
 .value: x: vec4f
 }
@@ -6396,7 +6396,7 @@ mat4f.y: vec4f {
 .base: `vec4f`
 .size: 0
 .name: 'y'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:7'
+.file: 'lib/vec/mat4f.ci:7'
 .owner: mat4f
 .value: y: vec4f
 }
@@ -6405,7 +6405,7 @@ mat4f.z: vec4f {
 .base: `vec4f`
 .size: 0
 .name: 'z'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:8'
+.file: 'lib/vec/mat4f.ci:8'
 .owner: mat4f
 .value: z: vec4f
 }
@@ -6414,7 +6414,7 @@ mat4f.w: vec4f {
 .base: `vec4f`
 .size: 0
 .name: 'w'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:9'
+.file: 'lib/vec/mat4f.ci:9'
 .owner: mat4f
 .value: w: vec4f
 }
@@ -6423,7 +6423,7 @@ mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float
 .base: `function`
 .size: 49
 .name: 'mat4f'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:13'
+.file: 'lib/vec/mat4f.ci:13'
 .param .result: mat4f (size: 64, cast: variable(val))
 .param xx: float32 (size: 4, cast: variable(f32))
 .param xy: float32 (size: 4, cast: variable(f32))
@@ -6462,37 +6462,37 @@ mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float
 		};
 }
 .instructions: (49 bytes)
-	lib/cmplGfx/gfxlib.mat4f.ci:17: (49 bytes): return .result := {...};
+	lib/vec/mat4f.ci:17: (49 bytes): return .result := {...};
 	<mat4f>  : mov.x1 sp(17, 16)
-	lib/cmplGfx/gfxlib.mat4f.ci:18: (3 bytes): .result.x.y := xy;
+	lib/vec/mat4f.ci:18: (3 bytes): .result.x.y := xy;
 	<mat4f+?>: mov.x1 sp(18, 15)
-	lib/cmplGfx/gfxlib.mat4f.ci:18: (3 bytes): .result.x.z := xz;
+	lib/vec/mat4f.ci:18: (3 bytes): .result.x.z := xz;
 	<mat4f+?>: mov.x1 sp(19, 14)
-	lib/cmplGfx/gfxlib.mat4f.ci:18: (3 bytes): .result.x.w := xw;
+	lib/vec/mat4f.ci:18: (3 bytes): .result.x.w := xw;
 	<mat4f+?>: mov.x1 sp(20, 13)
-	lib/cmplGfx/gfxlib.mat4f.ci:19: (3 bytes): .result.y.x := yx;
+	lib/vec/mat4f.ci:19: (3 bytes): .result.y.x := yx;
 	<mat4f+?>: mov.x1 sp(21, 12)
-	lib/cmplGfx/gfxlib.mat4f.ci:19: (3 bytes): .result.y.y := yy;
+	lib/vec/mat4f.ci:19: (3 bytes): .result.y.y := yy;
 	<mat4f+?>: mov.x1 sp(22, 11)
-	lib/cmplGfx/gfxlib.mat4f.ci:19: (3 bytes): .result.y.z := yz;
+	lib/vec/mat4f.ci:19: (3 bytes): .result.y.z := yz;
 	<mat4f+?>: mov.x1 sp(23, 10)
-	lib/cmplGfx/gfxlib.mat4f.ci:19: (3 bytes): .result.y.w := yw;
+	lib/vec/mat4f.ci:19: (3 bytes): .result.y.w := yw;
 	<mat4f+?>: mov.x1 sp(24, 9)
-	lib/cmplGfx/gfxlib.mat4f.ci:20: (3 bytes): .result.z.x := zx;
+	lib/vec/mat4f.ci:20: (3 bytes): .result.z.x := zx;
 	<mat4f+?>: mov.x1 sp(25, 8)
-	lib/cmplGfx/gfxlib.mat4f.ci:20: (3 bytes): .result.z.y := zy;
+	lib/vec/mat4f.ci:20: (3 bytes): .result.z.y := zy;
 	<mat4f+?>: mov.x1 sp(26, 7)
-	lib/cmplGfx/gfxlib.mat4f.ci:20: (3 bytes): .result.z.z := zz;
+	lib/vec/mat4f.ci:20: (3 bytes): .result.z.z := zz;
 	<mat4f+?>: mov.x1 sp(27, 6)
-	lib/cmplGfx/gfxlib.mat4f.ci:20: (3 bytes): .result.z.w := zw;
+	lib/vec/mat4f.ci:20: (3 bytes): .result.z.w := zw;
 	<mat4f+?>: mov.x1 sp(28, 5)
-	lib/cmplGfx/gfxlib.mat4f.ci:21: (3 bytes): .result.w.x := wx;
+	lib/vec/mat4f.ci:21: (3 bytes): .result.w.x := wx;
 	<mat4f+?>: mov.x1 sp(29, 4)
-	lib/cmplGfx/gfxlib.mat4f.ci:21: (3 bytes): .result.w.y := wy;
+	lib/vec/mat4f.ci:21: (3 bytes): .result.w.y := wy;
 	<mat4f+?>: mov.x1 sp(30, 3)
-	lib/cmplGfx/gfxlib.mat4f.ci:21: (3 bytes): .result.w.z := wz;
+	lib/vec/mat4f.ci:21: (3 bytes): .result.w.z := wz;
 	<mat4f+?>: mov.x1 sp(31, 2)
-	lib/cmplGfx/gfxlib.mat4f.ci:21: (3 bytes): .result.w.w := ww;
+	lib/vec/mat4f.ci:21: (3 bytes): .result.w.w := ww;
 	<mat4f+?>: mov.x1 sp(32, 1)
 	<mat4f+?>: ret
 }
@@ -6501,7 +6501,7 @@ mat4f(x: vec4f, y: vec4f, z: vec4f, w: vec4f): mat4f: function {
 .base: `function`
 .size: 21
 .name: 'mat4f'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:25'
+.file: 'lib/vec/mat4f.ci:25'
 .param .result: mat4f (size: 64, cast: variable(val))
 .param x: vec4f (size: 4, cast: const variable(ref))
 .param y: vec4f (size: 4, cast: const variable(ref))
@@ -6516,19 +6516,19 @@ mat4f(x: vec4f, y: vec4f, z: vec4f, w: vec4f): mat4f: function {
 		};
 }
 .instructions: (21 bytes)
-	lib/cmplGfx/gfxlib.mat4f.ci:26: (21 bytes): return .result := {...};
+	lib/vec/mat4f.ci:26: (21 bytes): return .result := {...};
 	<mat4f>  : dup.x1 sp(4)
 	<mat4f+?>: load.i128
 	<mat4f+?>: set.x4 sp(9)
-	lib/cmplGfx/gfxlib.mat4f.ci:26: (5 bytes): .result.y := y;
+	lib/vec/mat4f.ci:26: (5 bytes): .result.y := y;
 	<mat4f+?>: dup.x1 sp(3)
 	<mat4f+?>: load.i128
 	<mat4f+?>: set.x4 sp(13)
-	lib/cmplGfx/gfxlib.mat4f.ci:26: (5 bytes): .result.z := z;
+	lib/vec/mat4f.ci:26: (5 bytes): .result.z := z;
 	<mat4f+?>: dup.x1 sp(2)
 	<mat4f+?>: load.i128
 	<mat4f+?>: set.x4 sp(17)
-	lib/cmplGfx/gfxlib.mat4f.ci:26: (5 bytes): .result.w := w;
+	lib/vec/mat4f.ci:26: (5 bytes): .result.w := w;
 	<mat4f+?>: dup.x1 sp(1)
 	<mat4f+?>: load.i128
 	<mat4f+?>: set.x4 sp(21)
@@ -6539,7 +6539,7 @@ dp3(mat: mat4f, vec: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'dp3'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:29'
+.file: 'lib/vec/mat4f.ci:29'
 .param .result: vec4f (size: 16, cast: val)
 .param mat: mat4f (size: 4, cast: const variable(ref))
 .param vec: vec4f (size: 4, cast: const variable(ref))
@@ -6550,7 +6550,7 @@ dp4(mat: mat4f, vec: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'dp4'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:30'
+.file: 'lib/vec/mat4f.ci:30'
 .param .result: vec4f (size: 16, cast: val)
 .param mat: mat4f (size: 4, cast: const variable(ref))
 .param vec: vec4f (size: 4, cast: const variable(ref))
@@ -6561,7 +6561,7 @@ dph(mat: mat4f, vec: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'dph'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:31'
+.file: 'lib/vec/mat4f.ci:31'
 .param .result: vec4f (size: 16, cast: val)
 .param mat: mat4f (size: 4, cast: const variable(ref))
 .param vec: vec4f (size: 4, cast: const variable(ref))
@@ -6572,7 +6572,7 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 .base: `function`
 .size: 417
 .name: 'mul'
-.file: 'lib/cmplGfx/gfxlib.mat4f.ci:33'
+.file: 'lib/vec/mat4f.ci:33'
 .param .result: mat4f (size: 64, cast: variable(val))
 .param lhs: mat4f (size: 4, cast: const variable(ref))
 .param rhs: mat4f (size: 4, cast: const variable(ref))
@@ -6603,88 +6603,88 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 		};
 }
 .instructions: (417 bytes)
-	lib/cmplGfx/gfxlib.mat4f.ci:34: (144 bytes): transposed: mat4f := {...}
+	lib/vec/mat4f.ci:34: (144 bytes): transposed: mat4f := {...}
 	<mul>  : inc.sp(+64)
-	lib/cmplGfx/gfxlib.mat4f.ci:35: (5 bytes): transposed.x.x := rhs.x.x;
+	lib/vec/mat4f.ci:35: (5 bytes): transposed.x.x := rhs.x.x;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(1)
-	lib/cmplGfx/gfxlib.mat4f.ci:35: (9 bytes): transposed.x.y := rhs.y.x;
+	lib/vec/mat4f.ci:35: (9 bytes): transposed.x.y := rhs.y.x;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: inc.i32(+16)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(2)
-	lib/cmplGfx/gfxlib.mat4f.ci:35: (9 bytes): transposed.x.z := rhs.z.x;
+	lib/vec/mat4f.ci:35: (9 bytes): transposed.x.z := rhs.z.x;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: inc.i32(+32)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(3)
-	lib/cmplGfx/gfxlib.mat4f.ci:35: (9 bytes): transposed.x.w := rhs.w.x;
+	lib/vec/mat4f.ci:35: (9 bytes): transposed.x.w := rhs.w.x;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: inc.i32(+48)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(4)
-	lib/cmplGfx/gfxlib.mat4f.ci:36: (9 bytes): transposed.y.x := rhs.x.y;
+	lib/vec/mat4f.ci:36: (9 bytes): transposed.y.x := rhs.x.y;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: inc.i32(+4)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(5)
-	lib/cmplGfx/gfxlib.mat4f.ci:36: (9 bytes): transposed.y.y := rhs.y.y;
+	lib/vec/mat4f.ci:36: (9 bytes): transposed.y.y := rhs.y.y;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: inc.i32(+20)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(6)
-	lib/cmplGfx/gfxlib.mat4f.ci:36: (9 bytes): transposed.y.z := rhs.z.y;
+	lib/vec/mat4f.ci:36: (9 bytes): transposed.y.z := rhs.z.y;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: inc.i32(+36)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(7)
-	lib/cmplGfx/gfxlib.mat4f.ci:36: (9 bytes): transposed.y.w := rhs.w.y;
+	lib/vec/mat4f.ci:36: (9 bytes): transposed.y.w := rhs.w.y;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: inc.i32(+52)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(8)
-	lib/cmplGfx/gfxlib.mat4f.ci:37: (9 bytes): transposed.z.x := rhs.x.z;
+	lib/vec/mat4f.ci:37: (9 bytes): transposed.z.x := rhs.x.z;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: inc.i32(+8)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(9)
-	lib/cmplGfx/gfxlib.mat4f.ci:37: (9 bytes): transposed.z.y := rhs.y.z;
+	lib/vec/mat4f.ci:37: (9 bytes): transposed.z.y := rhs.y.z;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: inc.i32(+24)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(10)
-	lib/cmplGfx/gfxlib.mat4f.ci:37: (9 bytes): transposed.z.z := rhs.z.z;
+	lib/vec/mat4f.ci:37: (9 bytes): transposed.z.z := rhs.z.z;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: inc.i32(+40)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(11)
-	lib/cmplGfx/gfxlib.mat4f.ci:37: (9 bytes): transposed.z.w := rhs.w.z;
+	lib/vec/mat4f.ci:37: (9 bytes): transposed.z.w := rhs.w.z;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: inc.i32(+56)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(12)
-	lib/cmplGfx/gfxlib.mat4f.ci:38: (9 bytes): transposed.w.x := rhs.x.w;
+	lib/vec/mat4f.ci:38: (9 bytes): transposed.w.x := rhs.x.w;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: inc.i32(+12)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(13)
-	lib/cmplGfx/gfxlib.mat4f.ci:38: (9 bytes): transposed.w.y := rhs.y.w;
+	lib/vec/mat4f.ci:38: (9 bytes): transposed.w.y := rhs.y.w;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: inc.i32(+28)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(14)
-	lib/cmplGfx/gfxlib.mat4f.ci:38: (9 bytes): transposed.w.z := rhs.z.w;
+	lib/vec/mat4f.ci:38: (9 bytes): transposed.w.z := rhs.z.w;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: inc.i32(+44)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(15)
-	lib/cmplGfx/gfxlib.mat4f.ci:38: (9 bytes): transposed.w.w := rhs.w.w;
+	lib/vec/mat4f.ci:38: (9 bytes): transposed.w.w := rhs.w.w;
 	<mul+?>: dup.x1 sp(17)
 	<mul+?>: inc.i32(+60)
 	<mul+?>: load.i32
 	<mul+?>: set.x1 sp(16)
-	lib/cmplGfx/gfxlib.mat4f.ci:41: (273 bytes): return .result := {...};
+	lib/vec/mat4f.ci:41: (273 bytes): return .result := {...};
 	<mul+?>: load.sp(+0)
 	<mul+?>: dup.x1 sp(19)
 	<mul+?>: inc.sp(+16)
@@ -6716,7 +6716,7 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 	<mul+?>: inc.sp(-16)
 	<mul+?>: set.x4 sp(2)
 	<mul+?>: set.x4 sp(23)
-	lib/cmplGfx/gfxlib.mat4f.ci:43: (68 bytes): .result.y := dp4(transposed, lhs.y);
+	lib/vec/mat4f.ci:43: (68 bytes): .result.y := dp4(transposed, lhs.y);
 	<mul+?>: load.sp(+0)
 	<mul+?>: dup.x1 sp(19)
 	<mul+?>: inc.i32(+16)
@@ -6749,7 +6749,7 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 	<mul+?>: inc.sp(-16)
 	<mul+?>: set.x4 sp(2)
 	<mul+?>: set.x4 sp(27)
-	lib/cmplGfx/gfxlib.mat4f.ci:44: (68 bytes): .result.z := dp4(transposed, lhs.z);
+	lib/vec/mat4f.ci:44: (68 bytes): .result.z := dp4(transposed, lhs.z);
 	<mul+?>: load.sp(+0)
 	<mul+?>: dup.x1 sp(19)
 	<mul+?>: inc.i32(+32)
@@ -6782,7 +6782,7 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 	<mul+?>: inc.sp(-16)
 	<mul+?>: set.x4 sp(2)
 	<mul+?>: set.x4 sp(31)
-	lib/cmplGfx/gfxlib.mat4f.ci:45: (68 bytes): .result.w := dp4(transposed, lhs.w);
+	lib/vec/mat4f.ci:45: (68 bytes): .result.w := dp4(transposed, lhs.w);
 	<mul+?>: load.sp(+0)
 	<mul+?>: dup.x1 sp(19)
 	<mul+?>: inc.i32(+48)
@@ -19906,14 +19906,14 @@ lib/std/string.ci:129: append: function(<append>)
 lib/std/string.ci:192: append: function(<append>)
 lib/std/string.ci:196: append: function(<append>)
 lib/std/string.ci:205: append: function(<append>)
-lib/cmplGfx/gfxlib.vec2d.ci:3: vec2d: typename(<vec2d>)
-lib/cmplGfx/gfxlib.vec2d.ci:8: vec2d: function(<vec2d>)
-lib/cmplGfx/gfxlib.vec4f.ci:3: vec4f: typename(<vec4f>)
-lib/cmplGfx/gfxlib.vec4f.ci:21: vec4f: function(<vec4f>)
-lib/cmplGfx/gfxlib.mat4f.ci:3: mat4f: typename(<mat4f>)
-lib/cmplGfx/gfxlib.mat4f.ci:13: mat4f: function(<mat4f>)
-lib/cmplGfx/gfxlib.mat4f.ci:25: mat4f: function(<mat4f>)
-lib/cmplGfx/gfxlib.mat4f.ci:33: mul: function(<mul>)
+lib/vec/vec2d.ci:3: vec2d: typename(<vec2d>)
+lib/vec/vec2d.ci:8: vec2d: function(<vec2d>)
+lib/vec/vec4f.ci:3: vec4f: typename(<vec4f>)
+lib/vec/vec4f.ci:21: vec4f: function(<vec4f>)
+lib/vec/mat4f.ci:3: mat4f: typename(<mat4f>)
+lib/vec/mat4f.ci:13: mat4f: function(<mat4f>)
+lib/vec/mat4f.ci:25: mat4f: function(<mat4f>)
+lib/vec/mat4f.ci:33: mul: function(<mul>)
 test/lang/emit.ci:3: emitldz32: int32(0)
 test/lang/emit.ci:4: emitldz64: int64(0)
 test/lang/emit.ci:6: emitA: int32(42)
@@ -20100,13 +20100,13 @@ test/lang/reflect.ci:22: RecordSizeof: typename(<RecordSizeof>)
 test/lang/reflect.ci:26: RecordSizeofExt: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:30: typeofRecord: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:31: nameOfRecord: char[*]("RecordSizeofExt")
-test/lang/reflect.ci:32: offsetOfRecord: int32(195480)
+test/lang/reflect.ci:32: offsetOfRecord: int32(195424)
 test/lang/reflect.ci:33: sizeOfRecord: int32(16)
 test/lang/reflect.ci:34: fileOfRecord: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:35: lineOfRecord: int32(26)
 test/lang/reflect.ci:37: typeofBase: typename(<RecordSizeof>)
 test/lang/reflect.ci:38: nameOfBase: char[*]("RecordSizeof")
-test/lang/reflect.ci:39: offsetOfBase: int32(195208)
+test/lang/reflect.ci:39: offsetOfBase: int32(195152)
 test/lang/reflect.ci:40: sizeOfBase: int32(12)
 test/lang/reflect.ci:41: fileOfBase: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:42: lineOfBase: int32(22)
@@ -20601,16 +20601,16 @@ test/stdc/test.math.ci:70: testMathCmp_f64: bool(1)
 
 ---------- Memory usage:
 memory[all] @000000; size: 2096872(2.0 Mb)
-memory[used] @000000; size: 300376(293.3 Kb)
-memory[heap] @049558; size: 1272230(1.2 Mb)
+memory[used] @000000; size: 300320(293.3 Kb)
+memory[heap] @049520; size: 1272286(1.2 Mb)
 memory[stack] @0fff44; size: 524218(511.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 285072(278.4 Kb)
+memory[meta] @000000; size: 285016(278.3 Kb)
 memory[code] @000000; size: 14978(14.6 Kb)
 memory[data] @000000; size: 80(80.0 bytes)
 
 ---------- heap memory:
-memory[free] @049568; size: 1272192(1.2 Mb)
+memory[free] @049538; size: 1272240(1.2 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

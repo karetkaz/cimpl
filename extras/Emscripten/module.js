@@ -54,7 +54,9 @@ Module.wgetFiles = function(files, onComplete) {
 						return;
 					}
 					if (xhr.status < 200 || xhr.status >= 300) {
-						throw new Error(xhr.status + ' (' + xhr.statusText + ')');
+						let err = new Error(xhr.status + ' (' + xhr.statusText + ')')
+						Module.print('failed to download: `' + xhr.responseURL + '`: ' + err);
+						return err;
 					}
 					saveFile(path, new Uint8Array(xhr.response));
 					Module.print('file[' + path + '] downloaded: ' + xhr.responseURL);

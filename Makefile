@@ -1,7 +1,7 @@
 BINDIR?=bin
 CC_OUT=$(BINDIR)/obj.cc
 GX_OUT=$(BINDIR)/obj.gx
-GX_SRC=lib/cmplGfx/src
+GX_SRC=cmplGfx/src
 
 CFLAGS=-Wall -Wextra -g0 -O3 -std=gnu99
 EMFLAGS=-g0 -O3 -s WASM=1 -s EXPORT_ALL=1 -s INVOKE_RUN=0 -s ALLOW_MEMORY_GROWTH=1 -s ASSERTIONS=0 -s BINARYEN_TRAP_MODE='clamp' --no-heap-copy
@@ -13,10 +13,12 @@ EM_MAIN_MODULE=-s MAIN_MODULE=1 --preload-file lib/stdlib.ci --preload-file lib/
 #EM_EMBED=--preload-file lib/stdlib.ci --preload-file lib/std/math.ci --preload-file lib/std/math.Complex.ci --preload-file lib/std/string.ci
 
 ifneq "$(OS)" "Windows_NT"
-	CFLAGS+=-D HAVE_JPEG -D HAVE_PNG
-	EMFLAGS+=-D HAVE_PNG
+	CFLAGS+=-D USE_PNG -D USE_JPEG
+	EMFLAGS+=-D USE_PNG
 	MKDIRF=--parents
 	CFLAGS+=-fPIC
+else
+	CFLAGS+=-D MOC_PNG -D MOC_JPEG
 endif
 
 SRC_CC=\
@@ -54,10 +56,10 @@ SRC_GX_X11=$(SRC_GX) $(GX_SRC)/os_linux/gx_gui.x11.c $(GX_SRC)/os_linux/time.unx
 libGfx.so: $(addprefix $(GX_OUT)/, $(notdir $(filter %.o, $(SRC_GX_X11:%.c=%.o))))
 	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libGfx.so $^ -lm -ldl -lpng -ljpeg -lX11
 
-libFile.so: lib/cmplFile/src/file.c
+libFile.so: cmplFile/src/file.c
 	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libFile.so $^
 
-libOpenGL.so: lib/cmplGL/src/openGL.c
+libOpenGL.so: cmplGL/src/openGL.c
 	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libOpenGL.so $^ -lGL -lGLU -lglut
 
 
@@ -69,10 +71,10 @@ SRC_GX_W32=$(SRC_GX) $(GX_SRC)/os_win32/gx_gui.w32.c  $(GX_SRC)/os_win32/time.w3
 libGfx.dll: $(addprefix $(GX_OUT)/, $(notdir $(filter %.o, $(SRC_GX_W32:%.c=%.o))))
 	gcc -shared $(CFLAGS) -I src -o $(BINDIR)/libGfx.dll $^ -lm -lgdi32
 
-libFile.dll: lib/cmplFile/src/file.c
+libFile.dll: cmplFile/src/file.c
 	gcc -shared $(CFLAGS) -I src -o $(BINDIR)/libFile.dll $^
 
-libOpenGL.dll: lib/cmplGL/src/openGL.c
+libOpenGL.dll: cmplGL/src/openGL.c
 	gcc -shared $(CFLAGS) -I src -o $(BINDIR)/libOpenGL.dll $^ -lopengl32 -lglu32 -lglut32
 
 
@@ -81,7 +83,7 @@ cmpl.js: $(SRC_CC_EXE) lib/stdlib.ci
 	emcc $(EMFLAGS) -o extras/Emscripten/cmpl.js $(EM_MAIN_MODULE) -s USE_SDL=2 -s USE_LIBPNG=1 $(filter %.c, $^)
 	sed -i -e 's/$$legalf32//g' extras/Emscripten/cmpl.js
 
-libFile.wasm: lib/cmplFile/src/file.c
+libFile.wasm: cmplFile/src/file.c
 	emcc $(EMFLAGS) -o extras/Emscripten/libFile.wasm -I src $(EM_SIDE_MODULE) $(filter %.c, $^)
 
 libGfx.wasm: $(SRC_GX) $(GX_SRC)/os_linux/gx_gui.sdl.c  $(GX_SRC)/os_linux/time.unx.c

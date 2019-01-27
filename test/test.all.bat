@@ -16,7 +16,7 @@ IF EXIST "%MINGW%" (
 	SET PATH=%MINGW%\bin;%PATH%
 	IF NOT EXIST "%BIN%" mkdir "%BIN%"
 	mingw32-make -C "%CMPL%" BINDIR="%BIN%" clean
-	mingw32-make -C "%CMPL%" -j 12 BINDIR="%BIN%" cmpl.exe libFile.dll libGfx.dll
+	mingw32-make -C "%CMPL%" -j 12 BINDIR="%BIN%" cmpl.exe libFile.dll libGfx.dll libOpenGL.dll
 )
 
 IF EXIST "%WATCOM%" (
@@ -27,8 +27,8 @@ IF EXIST "%WATCOM%" (
 	IF NOT EXIST "%BINW%\obj.cc" mkdir "%BINW%\obj.cc"
 	pushd "%BINW%\obj.cc"
 	owcc -xc -std=c99 -o %BINW%\cmpl.exe %CMPL%\src\*.c
-	REM ~ owcc -xc -std=c99 -shared -I %CMPL%\src -o %BIN%\libFile.dll %CMPL%\lib\cmplFile\src\*.c
-	REM ~ owcc -xc -std=c99 -shared -Wc,-aa -I %CMPL%\src -o %BIN%\libGfx.dll %CMPL%\lib\cmplGfx\src\*.c %CMPL%\lib\cmplGfx\src\os_win32\*.c
+	REM ~ owcc -xc -std=c99 -shared -I %CMPL%\src -o %BIN%\libFile.dll %CMPL%\cmplFile\src\*.c
+	REM ~ owcc -xc -std=c99 -shared -Wc,-aa -I %CMPL%\src -o %BIN%\libGfx.dll %CMPL%\cmplGfx\src\*.c %CMPL%\cmplGfx\src\os_win32\*.c
 	popd
 )
 
@@ -46,16 +46,16 @@ SET TEST_FLAGS=-X+steps-stdin-offsets -asm/m/n/s -debug/g "%CMPL%\test\test.ci"
 SET TEST_FILES=%CMPL%\test\*.ci
 SET TEST_FILES=%TEST_FILES%;%CMPL%\test\lang\*.ci
 SET TEST_FILES=%TEST_FILES%;%CMPL%\test\stdc\*.ci
-SET TEST_FILES=%TEST_FILES%;%CMPL%\test\cmplFile\*.ci
-SET TEST_FILES=%TEST_FILES%;%CMPL%\test\cmplGfx\*.ci
-REM ~ SET TEST_FILES=%TEST_FILES%;%CMPL%\test\cmplGL\*.ci
+SET TEST_FILES=%TEST_FILES%;%CMPL%\cmplFile\test\*.ci
+SET TEST_FILES=%TEST_FILES%;%CMPL%\cmplGfx\test\*.ci
+REM ~ SET TEST_FILES=%TEST_FILES%;%CMPL%\cmplGL\test\*.ci
 
 SET DUMP_FILE=%BIN%.dump.ci
-%BIN%\cmpl -X-stdin+steps -asm/n/s -run/g -log/d "%DUMP_FILE%" -std"%CMPL%\lib\stdlib.ci" "%BIN%\libFile.dll" "%BIN%\libGfx.dll" "%CMPL%\lib\cmplGfx\gfxlib.ci" "%CMPL%\test\test.ci"
+%BIN%\cmpl -X-stdin+steps -asm/n/s -run/g -log/d "%DUMP_FILE%" -std"%CMPL%\lib\stdlib.ci" "%BIN%\libFile.dll" "%BIN%\libGfx.dll" "%CMPL%\cmplGfx\gfxlib.ci" "%CMPL%\test\test.ci"
 FOR %%f IN (%TEST_FILES%) DO (
 	pushd "%%~dpf"
 	echo **** running test: %%f
-	%BIN%\cmpl -X-stdin+steps -run/g -log/a/d "%DUMP_FILE%" -std"%CMPL%\lib\stdlib.ci" "%BIN%\libFile.dll" "%BIN%\libGfx.dll" "%CMPL%\lib\cmplGfx\gfxlib.ci" "%%f"
+	%BIN%\cmpl -X-stdin+steps -run/g -log/a/d "%DUMP_FILE%" -std"%CMPL%\lib\stdlib.ci" "%BIN%\libFile.dll" "%BIN%\libOpenGL.dll" "%BIN%\libGfx.dll" "%CMPL%\cmplGfx\gfxlib.ci" "%%f"
 	IF ERRORLEVEL 1 echo ******** failed: %%f
 	popd
 )

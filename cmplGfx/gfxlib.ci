@@ -1,14 +1,8 @@
+inline "lib/rgb.ci";
+inline "lib/color.ci";
 
-inline "gfxlib.vec2d.ci";
-inline "gfxlib.vec4f.ci";
-inline "gfxlib.mat4f.ci";
-
-static if (true) {
-inline "gfxlib.color.ci";
-inline "gfxlib.lookup.ci";
-
+static if (typename(vec4f) != null) {
 inline rgb(const vec4f vec&) = rgb(vec.x, vec.y, vec.z);
-
 vec4f hsv2rgb(vec4f hsv) {
 	float32 h = hsv.x;
 	float32 s = hsv.y;
@@ -45,7 +39,6 @@ vec4f hsv2rgb(vec4f hsv) {
 	}
 	return vec4f(u, p, q);
 }
-
 }
 
 inline gxSurf(int width, int height, int depth) = gxSurf.create(width, height, depth);

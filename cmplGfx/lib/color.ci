@@ -25,7 +25,7 @@ mat4f colorMatrix(float luminosity, float saturation, float hue) {
 		const float R = .213f * inv;
 		const float G = .715f * inv;
 		const float B = .072f * inv;
-	
+
 		return {
 			x: vec4f(R + val, G, B, 0.);
 			y: vec4f(R, G + val, B, 0.);
@@ -94,7 +94,7 @@ void drawHist(gxSurf image, gxRect roi&, uint32 hist) {
 		int bv = bch(lut[x]) * rect.h / 256;
 		int gv = gch(lut[x]) * rect.h / 256;
 		int rv = rch(lut[x]) * rect.h / 256;
-		int lv = ach(lut[x]) * rect.h / 256; 
+		int lv = ach(lut[x]) * rect.h / 256;
 
 		for (int y = 0; y < rect.h; y += 1) {
 			uint32 b = colB * uint32(y < bv);

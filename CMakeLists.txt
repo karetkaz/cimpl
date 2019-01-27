@@ -35,22 +35,22 @@ set(CC_SOURCE_FILES
 )
 
 set(GX_HEADER_FILES
-	lib/cmplGfx/src/gx_surf.h
-	lib/cmplGfx/src/gx_color.h
-	lib/cmplGfx/src/g3_math.h
-	lib/cmplGfx/src/g3_mesh.h
-	lib/cmplGfx/src/g3_draw.h
-	lib/cmplGfx/src/gx_gui.h
+	cmplGfx/src/gx_surf.h
+	cmplGfx/src/gx_color.h
+	cmplGfx/src/g3_math.h
+	cmplGfx/src/g3_mesh.h
+	cmplGfx/src/g3_draw.h
+	cmplGfx/src/gx_gui.h
 )
 
 set(GX_SOURCE_FILES
-	lib/cmplGfx/src/gx_surf.c
-	lib/cmplGfx/src/gx_color.c
-	lib/cmplGfx/src/g2_draw.c
-	lib/cmplGfx/src/g3_draw.c
-	lib/cmplGfx/src/g2_image.c
-	lib/cmplGfx/src/g3_mesh.c
-	lib/cmplGfx/src/gx_main.c
+	cmplGfx/src/gx_surf.c
+	cmplGfx/src/gx_color.c
+	cmplGfx/src/g2_draw.c
+	cmplGfx/src/g3_draw.c
+	cmplGfx/src/g2_image.c
+	cmplGfx/src/g3_mesh.c
+	cmplGfx/src/gx_main.c
 )
 
 add_executable(cmpl ${CC_SOURCE_FILES} src/main.c)
@@ -61,21 +61,21 @@ ELSE()
 ENDIF()
 
 
-add_library(File SHARED lib/cmplFile/src/file.c)
+add_library(File SHARED cmplFile/src/file.c)
 target_include_directories(File PUBLIC ./src/)
 
-add_library(OpenGL SHARED lib/cmplGL/src/openGL.c)
+add_library(OpenGL SHARED cmplGL/src/openGL.c)
 target_include_directories(OpenGL PUBLIC ./src/)
 target_link_libraries(OpenGL GL GLU glut)
 
 IF (WIN32)
-	add_library(Gfx SHARED ${GX_SOURCE_FILES} lib/cmplGfx/src/os_win32/gx_gui.w32.c lib/cmplGfx/src/os_win32/time.w32.c)
+	add_library(Gfx SHARED ${GX_SOURCE_FILES} cmplGfx/src/os_win32/gx_gui.w32.c cmplGfx/src/os_win32/time.w32.c)
 	target_link_libraries(Gfx m gdi32)
 #ELSE()
-#	add_library(Gfx SHARED ${GX_SOURCE_FILES} lib/cmplGfx/src/os_linux/gx_gui.x11.c lib/cmplGfx/src/os_linux/time.unx.c)
+#	add_library(Gfx SHARED ${GX_SOURCE_FILES} cmplGfx/src/os_linux/gx_gui.x11.c cmplGfx/src/os_linux/time.unx.c)
 #	target_link_libraries(Gfx m dl png jpeg X11)
 ELSE()
-	add_library(Gfx SHARED ${GX_SOURCE_FILES} lib/cmplGfx/src/os_linux/gx_gui.sdl.c lib/cmplGfx/src/os_linux/time.unx.c)
+	add_library(Gfx SHARED ${GX_SOURCE_FILES} cmplGfx/src/os_linux/gx_gui.sdl.c cmplGfx/src/os_linux/time.unx.c)
 	target_link_libraries(Gfx m dl png jpeg SDL2)
 ENDIF()
 target_include_directories(Gfx PUBLIC ./src/)

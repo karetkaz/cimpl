@@ -538,12 +538,12 @@ gx_Surf gx_loadFnt(gx_Surf dst, const char *src) {
 	return dst;
 }
 
-#ifndef HAVE_JPEG
+#ifndef USE_JPEG
 gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
-	/* create a dummy surface
-	dst = gx_createSurf(dst, 256, 256, depth, Surf_2ds);
-	for (int y = 0; y < 256; ++y) {
-		for (int x = 0; x < 256; ++x) {
+#ifdef MOC_JPEG
+	dst = gx_createSurf(dst, 512, 512, depth, Surf_2ds);
+	for (int y = 0; y < dst->height; ++y) {
+		for (int x = 0; x < dst->width; ++x) {
 			int r = x ^ y;
 			int g = x & y;
 			int b = x | y;
@@ -551,7 +551,7 @@ gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
 		}
 	}
 	return dst;
-	// */
+#endif
 	(void) dst;
 	(void) src;
 	(void) depth;
@@ -626,12 +626,12 @@ gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
 }
 #endif
 
-#ifndef HAVE_PNG
+#ifndef USE_PNG
 gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
-	/* create a dummy surface
-	dst = gx_createSurf(dst, 256, 256, depth, Surf_2ds);
-	for (int y = 0; y < 256; ++y) {
-		for (int x = 0; x < 256; ++x) {
+#ifdef MOC_PNG
+	dst = gx_createSurf(dst, 512, 512, depth, Surf_2ds);
+	for (int y = 0; y < dst->height; ++y) {
+		for (int x = 0; x < dst->width; ++x) {
 			int r = x ^ y;
 			int g = x & y;
 			int b = x | y;
@@ -639,7 +639,7 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 		}
 	}
 	return dst;
-	// */
+#endif
 	(void) dst;
 	(void) src;
 	(void) depth;
