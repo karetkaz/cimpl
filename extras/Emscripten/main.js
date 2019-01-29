@@ -104,10 +104,10 @@ let params = JsArgs('#', function (params, changes) {
 	// setup filename
 	if (params.file != null) {
 		document.title = params.file + " - " + docTitle;
-		btnFileName.innerText = params.file;
+		edtFileName.value = params.file;
 	} else {
 		document.title = docTitle;
-		btnFileName.innerText = '';
+		edtFileName.value = '';
 	}
 
 	if (changes === undefined) {
@@ -136,6 +136,41 @@ let params = JsArgs('#', function (params, changes) {
 });
 
 editor.setSize('100%', '100%');
+edtFileName.onblur = function() {
+	edtFileName.value = params.file || '';
+}
+edtFileName.onclick = function() {
+	edtFileName.select();
+}
+edtFileName.onkeypress = function() {
+	if (event.key !== 'Enter') {
+		return;
+	}
+	switch (edtFileName.value) {
+		case '+':
+			editor.execCommand('unfoldAll');
+			break;
+
+		case '-':
+			editor.execCommand('foldAll');
+			break;
+	}
+	// TODO: detect like the terminal: /file(:line(:column)?)?/
+	if (edtFileName.value.startsWith(params.file + ':')) {
+		let line = edtFileName.value.substr(params.file.length+1);
+		params.update({line: line});
+	}
+	edtFileName.blur();
+}
+edtArguments.onkeypress = function() {
+	if (event.key !== 'Enter') {
+		return;
+	}
+	showEditor('-primary');
+	terminal.clear();
+	execInput(edtArguments.value.split(' '), true);
+	edtArguments.blur();
+}
 
 function setTheme(element, theme, ...remove) {
 	if (theme == null) {
@@ -207,6 +242,11 @@ function editProject() {
 		content = '[' + content + ']';
 		params.update({content: btoa(content), project: undefined, file: undefined, line: undefined});
 	}
+}
+
+function editOutput() {
+	params.update({ file: null, content: null });
+	editor.setValue(terminal.text());
 }
 
 function shareInput() {

@@ -491,6 +491,82 @@ static vmError surf_cMatSurf(nfcContext ctx) {
 	return noError;
 }
 
+static const char *proto_surf_cMixColor = "void colorMix(gxSurf surf, uint32 color, const gxRect roi&, vec4f blend(vec4f base, vec4f with))";
+static const char *proto_surf_cMixImage = "void colorMix(gxSurf surf, gxSurf image, const gxRect roi&, vec4f blend(vec4f base, vec4f with))";
+static vmError surf_cMixSurf(nfcContext ctx) {
+	rtContext rt = ctx->rt;
+	struct vector args[2];
+
+	gx_Surf surf = nextValue(ctx).ref;
+	gx_Surf with = NULL;
+
+	if (ctx->proto == proto_surf_cMixImage) {
+		with = nextValue(ctx).ref;
+		if (with == NULL) {
+			return nativeCallError;
+		}
+	}
+	else if (ctx->proto == proto_surf_cMixColor) {
+		uint32_t color = nextValue(ctx).u32;
+		args[1] = vecldc(cast_rgb(color));
+	}
+	else {
+		return nativeCallError;
+	}
+	gx_Rect roi = nextValue(ctx).ref;
+	size_t cbOffs = argref(ctx, rt->api.nfcNextArg(ctx));
+	symn callback = rt->api.rtLookup(ctx->rt, cbOffs);
+
+
+	if (surf->depth != 32) {
+		ctx->rt->api.raise(ctx, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
+		return nativeCallError;
+	}
+
+	struct gx_Rect rect;
+	rect.x = roi ? roi->x : 0;
+	rect.y = roi ? roi->y : 0;
+	rect.w = roi ? roi->w : surf->width;
+	rect.h = roi ? roi->h : surf->height;
+
+	char *dptr = gx_cliprect(surf, &rect);
+	if (dptr == NULL) {
+		ctx->rt->api.raise(ctx, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
+		return noError;
+	}
+
+	if (with != NULL) {
+		for (int y = 0; y < rect.h; y += 1) {
+			argb *cBuff = (argb *) dptr;
+			for (int x = 0; x < rect.w; x += 1) {
+				args[0] = vecldc(*cBuff);
+				args[1] = vecldc(cast_rgb(gx_getpixel(with, x, y)));
+				if (rt->api.invoke(rt, callback, args, args, NULL) != noError) {
+					return nativeCallError;
+				}
+				*cBuff = vecrgb(args);
+				cBuff += 1;
+			}
+			dptr += surf->scanLen;
+		}
+	}
+	else {
+		for (int y = 0; y < rect.h; y += 1) {
+			argb *cBuff = (argb *) dptr;
+			for (int x = 0; x < rect.w; x += 1) {
+				args[0] = vecldc(*cBuff);
+				if (rt->api.invoke(rt, callback, args, args, NULL) != noError) {
+					return nativeCallError;
+				}
+				*cBuff = vecrgb(args);
+				cBuff += 1;
+			}
+			dptr += surf->scanLen;
+		}
+	}
+	return noError;
+}
+
 static const char *proto_mesh_create = "gxMesh create(int32 size)";
 static const char *proto_mesh_recycle = "gxMesh recycle(gxMesh recycle, int32 size)";
 static vmError mesh_recycle(nfcContext ctx) {
@@ -952,6 +1028,8 @@ int cmplInit(rtContext rt) {
 		{surf_copySurf, proto_surf_copySurf},
 		{surf_zoomSurf, proto_surf_zoomSurf},
 		{surf_cLutSurf, proto_surf_cLutSurf},
+		{surf_cMixSurf, proto_surf_cMixColor},
+		{surf_cMixSurf, proto_surf_cMixImage},
 		{surf_cMatSurf, proto_surf_cMatSurf},
 		{surf_calcHist, proto_surf_calcHist},
 		{surf_drawMesh, proto_surf_drawMesh},

@@ -32,52 +32,50 @@
 	<script src="lib/codemirror/lang/cmpl.js"></script>
 </head>
 <body class="dark">
-<div class="toolbar">
-	<span class="left icon" href="#" onclick="showSplitter(menuSplit, '!secondary');">☰</span>
-	<!--<span class="left icon" href="#" onclick="saveInput();">💾</span>-->
-	<!--<span class="left icon" href="#" onclick="shareInput();">🔗</span>-->
-	<span id="btnExecute" class="right execute" href="#" onclick="execute(btnExecute.innerText, cmdExecute.value);"></span>
-	<span class="right icon" href="#" onclick="showEditor('^primary', '^secondary', '^');">⬓</span>
-	<span class="right icon" href="#" onclick="setTheme(body, '!dark');">◑</span>
-	<span id="btnFileName" class="filename" href="#" onclick="void(0);"></span>
+<div id="mainToolBar" class="toolbar">
+	<span class="left icon" onclick="showSplitter(menuSplit, '!secondary');" title="Toggle show menu">☰</span>
+	<span class="left icon" onclick="saveInput();" title="Save editor content">💾</span>
+	<span id="btnExecute" class="right execute" onclick="execute(btnExecute.innerText, cmdExecute.value);" title="Execute"></span>
+	<span class="right icon" onclick="showEditor('!primary');" title="Toggle show output">⬓</span>
+	<!--<span class="right icon" onclick="showEditor('^vertical', '^horizontal');" title="Toggle output">◨</span>-->
+	<span class="right icon" onclick="setTheme(body, '!dark');" title="Toggle dark theme">◑</span>
+	<span class="filename" title="Opened file name"><input id="edtFileName"></input></span>
 </div>
 <div id="menuSplit" class="content split-pane left vertical" style="top:2em;">
 	<div class="content list">
-		<div>Execute</div>
+		<div>
+			<span>Execute</span>
+			<button class="right" onclick="execute();" title="Compiler usage help">?</button>
+		</div>
 		<ul>
 			<input  class="filename" id="cmdExecute" onchange="params.update({exec: value});" onkeypress="if (event.key == 'Enter') execute(null, this.value)">
-			<li onclick="execute('Run', '-run/g');">⚡ Run</li>
-			<li onclick="execute('Debug', '-debug/g');">🐞 Debug</li>
-			<li onclick="execute('Profile', '-profile/g');">⏱ Profile</li>
+			<li onclick="execute('Run', '-run/g');" title="Execute code at full speed">⚡ Run</li>
+			<li onclick="execute('Debug', '-debug/g');" title="Execute code with error detection">🐞 Debug</li>
+			<!--<li onclick="execute('Profile', '-profile/g');" title="Execute code measuring execution time">⏱ Profile</li>-->
 			<li onclick="execute('Compile', '');">⚙ Compile only</li>
-			<hr>
-			<li>
+			<!--<li>
 				<button onclick="execute(this.innerText, '-api/a/m/d/p/u');">Api</button>
 				<button onclick="execute(this.innerText, '-asm/a/n/s/m');">Asm</button>
-				<button class="right" onclick="execute();">?</button>
-			</li>
-			<hr>
-			<li onclick="terminal.clear();">Clear output</li>
-			<li onclick="showEditor('!secondary');">Show output</li>
-			<li onclick="showEditor('!primary');">Show editor</li>
+			</li>-->
 		</ul>
+		<hr>
 		<div>
-		<span>Project</span>
-		<button class="right" onclick="listFiles(false);">⟳</button>
- 		<!--<button class="right" onclick="uploadFiles();">📤</button> -->
- 		<!--<button class="right" onclick="downloadFiles(false);">📥</button> -->
+			<span>Project</span>
+			<button class="right" onclick="listFiles(false);" title="Refresh file list">⟳</button>
+ 			<!--<button class="right" onclick="uploadFiles();">📤</button> -->
+ 			<!--<button class="right" onclick="downloadFiles(false);">📥</button> -->
 		</div>
 		<ul>
 			<li onclick="editProject();">🛠 Edit project</li>
 			<li onclick="shareInput();">🔗 Share link</li>
-			<li onclick="saveInput();">💾 Save file</li>
+			<!--<li onclick="saveInput();">💾 Save file</li> -->
 			<!--<li onclick="showFile(null);">❌ Close file</li>-->
 			<hr>
 		</ul>
 		<ul id="fileList">
 		</ul>
 		<ul>
-		<li onclick="listFiles(true);">Show all</li>
+		<li onclick="listFiles(true);" title="Show files including the /lib folder">Show all</li>
 	</ul>
 	</div>
 	<div id="editSplit" class="content split-pane horizontal">
@@ -85,6 +83,12 @@
 			<textarea id="input"></textarea>
 		</div>
 		<div class="text-content">
+			<div class="toolbar">
+				<span class="left icon bold" onclick="terminal.clear();" title="Clear output">⦸</span>
+				<span class="left icon bold" onclick="editOutput();" title="Open output in editor">⏍</span>
+				<span class="right icon bold" onclick="showEditor('!secondary');" title="Maximize">⬚</span>
+				<span class="filename" title="Execution arguments"><input id="edtArguments"></input></span>
+			</div>
 			<pre id="output"></pre>
 		</div>
 	</div>
@@ -144,17 +148,23 @@ function saveInput() {
 	}
 	return file;
 }
-function execInput(args) {
+function execInput(args, exactArgs) {
 	let file = saveInput();
 	if (file == null) {
 		return;
 	}
 
-	if (args != null) {
-		args.push('libFile.wasm');
-		args.push('libGfx.wasm');
-		args.push('/lib/gfxlib.ci');
-		args.push(file);
+	if (exactArgs !== true) {
+		// todo: used libraries should be defined in the project file
+		if (args != null) {
+			args.push('libFile.wasm');
+			args.push('libGfx.wasm');
+			args.push('/lib/gfxlib.ci');
+			args.push(file);
+			edtArguments.value = args.join(' ');
+		} else {
+			edtArguments.value = "--help";
+		}
 	}
 	console.log("execute", args);
 	Module['callMain'](args || []);

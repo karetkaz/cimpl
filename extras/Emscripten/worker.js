@@ -17,13 +17,6 @@ var Module = {
 		Module.wgetFiles(Module.files);
 		postMessage({files: Module.listFiles()});
 		Module.initialized = true;
-
-		/*Module.wgetFiles(Module.files, function (inProgress) {
-			postMessage({files: Module.listFiles()});
-			if (inProgress == 0) {
-				Module.initialized = true;
-			}
-		});*/
 	}
 };
 

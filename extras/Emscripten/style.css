@@ -48,14 +48,14 @@ body {
 	list-style: none;
 	overflow: hidden;
 	white-space: nowrap;
-	padding: 0.5rem 0;
+	padding: 0.5em 0.25em;
 }
 .content.list li>* {
 	padding: 0;
 }
 .content.list input {
-	margin: 0.25rem 0;
-	padding: 0.25rem 0.5em;
+	margin: 0.25em 0;
+	padding: 0.25em 0.25em;
 	width: 100%;
 	border: solid 1px #dadada;
 	border-radius: 0.2em;
@@ -63,10 +63,10 @@ body {
 
 .content.list button {
 	border-radius: 0.2em;
-	margin: -.35em 0;
-	min-width: 2em;
-	min-height: 2em;
-	padding: 0.25rem 0.5em;
+	margin: -.2em 0;
+	min-width: 1.5em;
+	min-height: 1.5em;
+	padding: 0.1em 0.5em;
 	background-color: #dadada;
 	border: solid 1px #eaeaea;
 }
@@ -97,6 +97,7 @@ body {
 	margin: 0;
 	padding: 0;
 	height: 2em;
+	overflow: hidden;
 	background-color: #eaeaea;
 }
 
@@ -118,10 +119,23 @@ body {
 	width: 2em;
 	padding: 0;
 }
+.toolbar>span.bold {
+	font-weight:bold;
+}
 .toolbar>.filename {
 	width: auto;
 	overflow: hidden;
 	text-align: left;
+}
+.toolbar>.filename>input {
+	display: inline;
+	border: transparent;
+	background-color:transparent;
+	color: inherit;
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
 }
 /*.toolbar>.filename:before {
 	content: ' ▾ ';
@@ -151,6 +165,27 @@ textarea, #output {
 }
 #output a {
 	color: #007bff;
+}
+
+/* todo: recalculate terminal height with and without toolbar */
+#editSplit.split-pane.horizontal #output {
+	height: calc(100% - 2.5em);
+}
+
+/* show terminal toolbar if editor is maximized */
+#editSplit.split-pane.horizontal.primary>div:first-child {
+/* 	height: calc(100% - 2em); */
+}
+#editSplit.split-pane.horizontal.primary>div:last-child {
+/* 	display: block; */
+}
+
+/* hide terminal toolbar if toolbar is maximized */
+#editSplit.split-pane.secondary div.toolbar {
+	display: none;
+}
+#editSplit.split-pane.secondary #output {
+	height: 100%;
 }
 
 .modal-content {

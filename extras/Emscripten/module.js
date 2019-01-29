@@ -60,6 +60,9 @@ Module.wgetFiles = function(files, onComplete) {
 					}
 					saveFile(path, new Uint8Array(xhr.response));
 					Module.print('file[' + path + '] downloaded: ' + xhr.responseURL);
+					if (inProgress == 0) {
+						Module.print("Project initialization complete.");
+					}
 				}
 				xhr.send(null);
 			}

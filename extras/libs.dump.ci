@@ -10,7 +10,7 @@
 ---------- Generate: byte-code
 lib/std/string.ci:134: warn: uninitialized variable `append.digits`
 cmplGfx/lib/rgb.ci:103: warn: using signed cast for unsigned value: `t * ((1 << 16))`
-cmplGfx/lib/color.ci:66: warn: uninitialized variable `drawHist.lut`
+cmplGfx/lib/color.ci:2: warn: uninitialized variable `drawHist.lut`
 cmplGfx/gfxlib.ci:242: warn: uninitialized variable `dir`
 cmplGfx/gfxlib.ci:248: warn: uninitialized variable `orig`
 cmplGfx/gfxlib.ci:283: warn: uninitialized variable `show.onEvent.text`
@@ -6746,7 +6746,7 @@ gxRect: typename {
 .base: `typename`
 .size: 16
 .name: 'gxRect'
-.file: 'cmplGfx/src/gx_main.c:1001'
+.file: 'cmplGfx/src/gx_main.c:1079'
 .field x: int32 (size: 4, cast: variable(i32))
 .field y: int32 (size: 4, cast: variable(i32))
 .field w: int32 (size: 4, cast: variable(i32))
@@ -6757,7 +6757,7 @@ gxRect.x: int32 {
 .base: `int32`
 .size: 4
 .name: 'x'
-.file: 'cmplGfx/src/gx_main.c:1002'
+.file: 'cmplGfx/src/gx_main.c:1080'
 .owner: gxRect
 }
 gxRect.y: int32 {
@@ -6765,7 +6765,7 @@ gxRect.y: int32 {
 .base: `int32`
 .size: 4
 .name: 'y'
-.file: 'cmplGfx/src/gx_main.c:1003'
+.file: 'cmplGfx/src/gx_main.c:1081'
 .owner: gxRect
 }
 gxRect.w: int32 {
@@ -6773,7 +6773,7 @@ gxRect.w: int32 {
 .base: `int32`
 .size: 4
 .name: 'w'
-.file: 'cmplGfx/src/gx_main.c:1004'
+.file: 'cmplGfx/src/gx_main.c:1082'
 .owner: gxRect
 }
 gxRect.h: int32 {
@@ -6781,7 +6781,7 @@ gxRect.h: int32 {
 .base: `int32`
 .size: 4
 .name: 'h'
-.file: 'cmplGfx/src/gx_main.c:1005'
+.file: 'cmplGfx/src/gx_main.c:1083'
 .owner: gxRect
 }
 gxSurf: typename {
@@ -6815,6 +6815,8 @@ gxSurf: typename {
 .field copy: function (size: 0, cast: static const inline)
 .field resize: function (size: 0, cast: static const inline)
 .field colorMap: function (size: 0, cast: static const inline)
+.field colorMix: function (size: 0, cast: static const inline)
+.field colorMix: function (size: 0, cast: static const inline)
 .field colorMat: function (size: 0, cast: static const inline)
 .field calcHist: function (size: 0, cast: static const inline)
 .field drawMesh: function (size: 0, cast: static const inline)
@@ -7154,6 +7156,32 @@ gxSurf.colorMap(surf: gxSurf, roi: gxRect, lut: uint32[256]): void: function {
 .param lut: uint32[256] (size: 4, cast: const variable(ref))
 .value: nfc(97)
 }
+gxSurf.colorMix(surf: gxSurf, color: uint32, roi: gxRect, blend(base: vec4f, with: vec4f): vec4f): void: function {
+.kind: static const inline
+.base: `function`
+.size: 0
+.name: 'colorMix'
+.owner: gxSurf
+.param .result: void (size: 0, cast: inline)
+.param surf: gxSurf (size: 8, cast: variable(val))
+.param color: uint32 (size: 4, cast: variable(u32))
+.param roi: gxRect (size: 4, cast: const variable(ref))
+.param blend: function (size: 4, cast: variable(ref))
+.value: nfc(98)
+}
+gxSurf.colorMix(surf: gxSurf, image: gxSurf, roi: gxRect, blend(base: vec4f, with: vec4f): vec4f): void: function {
+.kind: static const inline
+.base: `function`
+.size: 0
+.name: 'colorMix'
+.owner: gxSurf
+.param .result: void (size: 0, cast: inline)
+.param surf: gxSurf (size: 8, cast: variable(val))
+.param image: gxSurf (size: 8, cast: variable(val))
+.param roi: gxRect (size: 4, cast: const variable(ref))
+.param blend: function (size: 4, cast: variable(ref))
+.value: nfc(99)
+}
 gxSurf.colorMat(surf: gxSurf, roi: gxRect, mat: float32[16]): void: function {
 .kind: static const inline
 .base: `function`
@@ -7164,7 +7192,7 @@ gxSurf.colorMat(surf: gxSurf, roi: gxRect, mat: float32[16]): void: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param roi: gxRect (size: 4, cast: const variable(ref))
 .param mat: float32[16] (size: 4, cast: const variable(ref))
-.value: nfc(98)
+.value: nfc(100)
 }
 gxSurf.calcHist(surf: gxSurf, roi: gxRect, rgb: uint32, lut: uint32[256]): void: function {
 .kind: static const inline
@@ -7177,7 +7205,7 @@ gxSurf.calcHist(surf: gxSurf, roi: gxRect, rgb: uint32, lut: uint32[256]): void:
 .param roi: gxRect (size: 4, cast: const variable(ref))
 .param rgb: uint32 (size: 4, cast: variable(u32))
 .param lut: uint32[256] (size: 4, cast: variable(ref))
-.value: nfc(99)
+.value: nfc(101)
 }
 gxSurf.drawMesh(surf: gxSurf, mesh: gxMesh, mode: int32): int32: function {
 .kind: static const inline
@@ -7189,7 +7217,7 @@ gxSurf.drawMesh(surf: gxSurf, mesh: gxMesh, mode: int32): int32: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param mesh: gxMesh (size: 4, cast: variable(ref))
 .param mode: int32 (size: 4, cast: variable(i32))
-.value: nfc(100)
+.value: nfc(102)
 }
 gxMesh: typename {
 .kind: static const typename(ref)
@@ -7497,7 +7525,7 @@ camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): 
 .param aspect: float32 (size: 4, cast: variable(f32))
 .param near: float32 (size: 4, cast: variable(f32))
 .param far: float32 (size: 4, cast: variable(f32))
-.value: nfc(101)
+.value: nfc(103)
 }
 camera.lookAt(eye: float32[3], at: float32[3], up: float32[3]): void: function {
 .kind: static const inline
@@ -7509,7 +7537,7 @@ camera.lookAt(eye: float32[3], at: float32[3], up: float32[3]): void: function {
 .param eye: float32[3] (size: 4, cast: variable(ref))
 .param at: float32[3] (size: 4, cast: variable(ref))
 .param up: float32[3] (size: 4, cast: variable(ref))
-.value: nfc(102)
+.value: nfc(104)
 }
 camera.readUp(result: float32[3]): void: function {
 .kind: static const inline
@@ -7519,7 +7547,7 @@ camera.readUp(result: float32[3]): void: function {
 .owner: camera
 .param .result: void (size: 0, cast: inline)
 .param result: float32[3] (size: 4, cast: variable(ref))
-.value: nfc(103)
+.value: nfc(105)
 }
 camera.readRight(result: float32[3]): void: function {
 .kind: static const inline
@@ -7529,7 +7557,7 @@ camera.readRight(result: float32[3]): void: function {
 .owner: camera
 .param .result: void (size: 0, cast: inline)
 .param result: float32[3] (size: 4, cast: variable(ref))
-.value: nfc(104)
+.value: nfc(106)
 }
 camera.readForward(result: float32[3]): void: function {
 .kind: static const inline
@@ -7539,7 +7567,7 @@ camera.readForward(result: float32[3]): void: function {
 .owner: camera
 .param .result: void (size: 0, cast: inline)
 .param result: float32[3] (size: 4, cast: variable(ref))
-.value: nfc(105)
+.value: nfc(107)
 }
 camera.rotate(direction: float32[3], orbit: float32[3], angle: float32): void: function {
 .kind: static const inline
@@ -7551,7 +7579,7 @@ camera.rotate(direction: float32[3], orbit: float32[3], angle: float32): void: f
 .param direction: float32[3] (size: 4, cast: variable(ref))
 .param orbit: float32[3] (size: 4, cast: variable(ref))
 .param angle: float32 (size: 4, cast: variable(f32))
-.value: nfc(106)
+.value: nfc(108)
 }
 camera.move(direction: float32[3], amount: float32): void: function {
 .kind: static const inline
@@ -7562,7 +7590,7 @@ camera.move(direction: float32[3], amount: float32): void: function {
 .param .result: void (size: 0, cast: inline)
 .param direction: float32[3] (size: 4, cast: variable(ref))
 .param amount: float32 (size: 4, cast: variable(f32))
-.value: nfc(107)
+.value: nfc(109)
 }
 lights: typename {
 .kind: static const typename(void)
@@ -7585,7 +7613,7 @@ lights.enabled(light: int32): bool: function {
 .owner: lights
 .param .result: bool (size: 4, cast: inline)
 .param light: int32 (size: 4, cast: variable(i32))
-.value: nfc(108)
+.value: nfc(110)
 }
 lights.enable(light: int32, on: bool): void: function {
 .kind: static const inline
@@ -7596,7 +7624,7 @@ lights.enable(light: int32, on: bool): void: function {
 .param .result: void (size: 0, cast: inline)
 .param light: int32 (size: 4, cast: variable(i32))
 .param on: bool (size: 4, cast: variable(bool))
-.value: nfc(109)
+.value: nfc(111)
 }
 lights.position(light: int32, x: float32, y: float32, z: float32): void: function {
 .kind: static const inline
@@ -7609,7 +7637,7 @@ lights.position(light: int32, x: float32, y: float32, z: float32): void: functio
 .param x: float32 (size: 4, cast: variable(f32))
 .param y: float32 (size: 4, cast: variable(f32))
 .param z: float32 (size: 4, cast: variable(f32))
-.value: nfc(110)
+.value: nfc(112)
 }
 lights.ambient(light: int32, r: float32, g: float32, b: float32): void: function {
 .kind: static const inline
@@ -7622,7 +7650,7 @@ lights.ambient(light: int32, r: float32, g: float32, b: float32): void: function
 .param r: float32 (size: 4, cast: variable(f32))
 .param g: float32 (size: 4, cast: variable(f32))
 .param b: float32 (size: 4, cast: variable(f32))
-.value: nfc(111)
+.value: nfc(113)
 }
 lights.diffuse(light: int32, r: float32, g: float32, b: float32): void: function {
 .kind: static const inline
@@ -7635,7 +7663,7 @@ lights.diffuse(light: int32, r: float32, g: float32, b: float32): void: function
 .param r: float32 (size: 4, cast: variable(f32))
 .param g: float32 (size: 4, cast: variable(f32))
 .param b: float32 (size: 4, cast: variable(f32))
-.value: nfc(112)
+.value: nfc(114)
 }
 lights.specular(light: int32, r: float32, g: float32, b: float32): void: function {
 .kind: static const inline
@@ -7648,7 +7676,7 @@ lights.specular(light: int32, r: float32, g: float32, b: float32): void: functio
 .param r: float32 (size: 4, cast: variable(f32))
 .param g: float32 (size: 4, cast: variable(f32))
 .param b: float32 (size: 4, cast: variable(f32))
-.value: nfc(113)
+.value: nfc(115)
 }
 lights.attenuation(light: int32, constant: float32, linear: float32, quadratic: float32): void: function {
 .kind: static const inline
@@ -7661,7 +7689,7 @@ lights.attenuation(light: int32, constant: float32, linear: float32, quadratic: 
 .param constant: float32 (size: 4, cast: variable(f32))
 .param linear: float32 (size: 4, cast: variable(f32))
 .param quadratic: float32 (size: 4, cast: variable(f32))
-.value: nfc(114)
+.value: nfc(116)
 }
 Gui: typename {
 .kind: static const typename(void)
@@ -7780,7 +7808,7 @@ Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action:
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param closure: pointer (size: 4, cast: variable(ref))
 .param onEvent: function (size: 4, cast: variable(ref))
-.value: nfc(115)
+.value: nfc(117)
 }
 Gui.setTitle(title: char[*]): void: function {
 .kind: static const inline
@@ -7790,7 +7818,7 @@ Gui.setTitle(title: char[*]): void: function {
 .owner: Gui
 .param .result: void (size: 0, cast: inline)
 .param title: char[*] (size: 4, cast: variable(ref))
-.value: nfc(116)
+.value: nfc(118)
 }
 grayClamp(c: uint32): uint32: function {
 .kind: static const function
@@ -8567,248 +8595,12 @@ rgbLerp(c1: uint32, c2: uint32, t: float64): uint32: function {
 	<rgbLerp+?>: set.x1 sp(6)
 	<rgbLerp+?>: ret
 }
-brightnessContrastGamma(lut: uint32[256], brightness: int32, contrast: int32, gamma: float64): void: function {
-.kind: static const function
-.base: `function`
-.size: 153
-.name: 'brightnessContrastGamma'
-.file: 'cmplGfx/lib/color.ci:1'
-.param .result: void (size: 0, cast: variable(void))
-.param lut: uint32[256] (size: 4, cast: variable(ref))
-.param brightness: int32 (size: 4, cast: variable(i32))
-.param contrast: int32 (size: 4, cast: variable(i32))
-.param gamma: float64 (size: 8, cast: variable(f64))
-.value: {
-	cval: float64 := ((256 + contrast)) / 256.000000;
-	gval: float64 := 1.000000 / gamma;
-	for (idx: int32 := 0; idx < lut.length; idx := idx + 1) {
-		val: int32 := grayClamp(brightness + int32((256) * (cval * (float64.pow((idx) / 256.000000, gval) - 0.500000) + 0.500000)));
-		lut[idx] := rgb(val, val, val);
-	}
-}
-.instructions: (153 bytes)
-	cmplGfx/lib/color.ci:2: (19 bytes): cval: float64 := ((256 + contrast)) / 256.000000
-	<brightnessContrastGamma>  : load.c32 256
-	<brightnessContrastGamma+?>: dup.x1 sp(4)
-	<brightnessContrastGamma+?>: add.i32
-	<brightnessContrastGamma+?>: i32.2f64
-	<brightnessContrastGamma+?>: load.f64 256.000000
-	<brightnessContrastGamma+?>: div.f64
-	cmplGfx/lib/color.ci:3: (12 bytes): gval: float64 := 1.000000 / gamma
-	<brightnessContrastGamma+?>: load.f64 1.000000
-	<brightnessContrastGamma+?>: dup.x2 sp(5)
-	<brightnessContrastGamma+?>: div.f64
-	cmplGfx/lib/color.ci:5: (117 bytes): for (idx: int32 := 0; idx < lut.length; idx := idx + 1)
-	<brightnessContrastGamma+?>: load.z32
-	<brightnessContrastGamma+?>: jmp +100
-	cmplGfx/lib/color.ci:6: (67 bytes): val: int32 := grayClamp(brightness + int32((256) * (cval * (float64.pow((idx) / 256.000000, gval) - 0.500000) + 0.500000)))
-	<brightnessContrastGamma+?>: load.z32
-	<brightnessContrastGamma+?>: dup.x1 sp(10)
-	<brightnessContrastGamma+?>: load.f64 256.000000
-	<brightnessContrastGamma+?>: dup.x2 sp(7)
-	<brightnessContrastGamma+?>: dup.x1 sp(6)
-	<brightnessContrastGamma+?>: i32.2f64
-	<brightnessContrastGamma+?>: load.f64 256.000000
-	<brightnessContrastGamma+?>: div.f64
-	<brightnessContrastGamma+?>: dup.x2 sp(9)
-	<brightnessContrastGamma+?>: nfc(41) ;float64.pow(x: float64, y: float64): float64
-	<brightnessContrastGamma+?>: load.f64 0.500000
-	<brightnessContrastGamma+?>: sub.f64
-	<brightnessContrastGamma+?>: mul.f64
-	<brightnessContrastGamma+?>: load.f64 0.500000
-	<brightnessContrastGamma+?>: add.f64
-	<brightnessContrastGamma+?>: mul.f64
-	<brightnessContrastGamma+?>: f64.2i32
-	<brightnessContrastGamma+?>: add.i32
-	<brightnessContrastGamma+?>: load.ref <?> ;grayClamp(c: int32): uint32
-	<brightnessContrastGamma+?>: call
-	<brightnessContrastGamma+?>: inc.sp(-4)
-	cmplGfx/lib/color.ci:7: (21 bytes): lut[idx] := rgb(val, val, val);
-	<brightnessContrastGamma+?>: dup.x1 sp(0)
-	<brightnessContrastGamma+?>: b32.shl 0x008
-	<brightnessContrastGamma+?>: dup.x1 sp(1)
-	<brightnessContrastGamma+?>: or.b32
-	<brightnessContrastGamma+?>: b32.shl 0x008
-	<brightnessContrastGamma+?>: dup.x1 sp(1)
-	<brightnessContrastGamma+?>: or.b32
-	<brightnessContrastGamma+?>: dup.x1 sp(12)
-	<brightnessContrastGamma+?>: dup.x1 sp(3)
-	<brightnessContrastGamma+?>: mad.u32 4
-	<brightnessContrastGamma+?>: store.i32
-	<brightnessContrastGamma+?>: inc.sp(-4)
-	cmplGfx/lib/color.ci:5: (4 bytes): idx := idx + 1
-	<brightnessContrastGamma+?>: inc.i32(+1)
-	cmplGfx/lib/color.ci:5: (12 bytes): idx < lut.length
-	<brightnessContrastGamma+?>: dup.x1 sp(0)
-	<brightnessContrastGamma+?>: load.c32 256
-	<brightnessContrastGamma+?>: clt.i32
-	<brightnessContrastGamma+?>: jnz -104
-	<brightnessContrastGamma+?>: inc.sp(-4)
-	<brightnessContrastGamma+?>: inc.sp(-16)
-	<brightnessContrastGamma+?>: ret
-}
-colorMatrix(luminosity: float32, saturation: float32, hue: float32): mat4f: function {
-.kind: static const function
-.base: `function`
-.size: 341
-.name: 'colorMatrix'
-.file: 'cmplGfx/lib/color.ci:11'
-.param .result: mat4f (size: 64, cast: variable(val))
-.param luminosity: float32 (size: 4, cast: variable(f32))
-.param saturation: float32 (size: 4, cast: variable(f32))
-.param hue: float32 (size: 4, cast: variable(f32))
-.value: {
-	static const lumMatrix(val: float32): mat4f := {
-		return .result := {
-			.result.x := vec4f(1.000000, 0.000000, 0.000000, val);
-			.result.y := vec4f(0.000000, 1.000000, 0.000000, val);
-			.result.z := vec4f(0.000000, 0.000000, 1.000000, val);
-			.result.w := vec4f(0.000000, 0.000000, 0.000000, 1.000000);
-		};
-	};
-	static const satMatrix(val: float32): mat4f := {
-		const inv: float32 := (1) - val;
-		const R: float32 := 0.213000 * inv;
-		const G: float32 := 0.715000 * inv;
-		const B: float32 := 0.072000 * inv;
-		return .result := {
-			.result.x := vec4f(R + val, G, B, 0.000000);
-			.result.y := vec4f(R, G + val, B, 0.000000);
-			.result.z := vec4f(R, G, B + val, 0.000000);
-			.result.w := vec4f(0.000000, 0.000000, 0.000000, 1.000000);
-		};
-	};
-	static const hueMatrix(val: float32): mat4f := {
-		lR: typename := 0.213000;
-		lG: typename := 0.715000;
-		lB: typename := 0.072000;
-		cV: float32 := val.cos(val);
-		sV: float32 := val.sin(val);
-		return .result := {
-			.result.x := vec4f(lR + (cV) * ((1) - lR) + (sV) * (-lR), lG + (cV) * (-lG) + (sV) * (-lG), lB + (cV) * (-lB) + (sV) * ((1) - lB), 0.000000);
-			.result.y := vec4f(lR + (cV) * ((0) - lR) + (sV) * (0.143000), lG + (cV) * ((1) - lG) + (sV) * (0.140000), lB + (cV) * (-lB) + (sV) * (-0.283000), 0.000000);
-			.result.z := vec4f(lR + (cV) * ((0) - lR) + (sV) * (lR - (1)), lG + (cV) * (-lG) + (sV) * (lG), lB + (cV) * ((1) - lB) + (sV) * (lB), 0.000000);
-			.result.w := vec4f(0.000000, 0.000000, 0.000000, 1.000000);
-		};
-	};
-	result: mat4f := mat4f(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-	result := mul(result, lumMatrix(luminosity));
-	result := mul(result, satMatrix(saturation));
-	result := mul(result, hueMatrix(hue));
-	return .result := result;
-}
-.instructions: (341 bytes)
-	cmplGfx/lib/color.ci:52: (46 bytes): result: mat4f := mat4f(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)
-	<colorMatrix>  : inc.sp(+64)
-	<colorMatrix+?>: load.f32 1.000000
-	<colorMatrix+?>: load.z32
-	<colorMatrix+?>: load.z32
-	<colorMatrix+?>: load.z32
-	<colorMatrix+?>: load.z32
-	<colorMatrix+?>: load.f32 1.000000
-	<colorMatrix+?>: load.z32
-	<colorMatrix+?>: load.z32
-	<colorMatrix+?>: load.z32
-	<colorMatrix+?>: load.z32
-	<colorMatrix+?>: load.f32 1.000000
-	<colorMatrix+?>: load.z32
-	<colorMatrix+?>: load.z32
-	<colorMatrix+?>: load.z32
-	<colorMatrix+?>: load.z32
-	<colorMatrix+?>: load.f32 1.000000
-	<colorMatrix+?>: load.ref <?> ;mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float32, yz: float32, yw: float32, zx: float32, zy: float32, zz: float32, zw: float32, wx: float32, wy: float32, wz: float32, ww: float32): mat4f
-	<colorMatrix+?>: call
-	<colorMatrix+?>: inc.sp(-64)
-	cmplGfx/lib/color.ci:59: (86 bytes): result := mul(result, lumMatrix(luminosity));
-	<colorMatrix+?>: inc.sp(+64)
-	<colorMatrix+?>: dup.x1 sp(35)
-	<colorMatrix+?>: load.ref <?> ;colorMatrix.lumMatrix(val: float32): mat4f
-	<colorMatrix+?>: call
-	<colorMatrix+?>: inc.sp(-4)
-	<colorMatrix+?>: inc.sp(+64)
-	<colorMatrix+?>: load.sp(+128)
-	<colorMatrix+?>: load.sp(+68)
-	<colorMatrix+?>: load.ref <?> ;mul(lhs: mat4f, rhs: mat4f): mat4f
-	<colorMatrix+?>: call
-	<colorMatrix+?>: load.sp(+8)
-	<colorMatrix+?>: load.sp(-60)
-	<colorMatrix+?>: copy.mem -64
-	<colorMatrix+?>: inc.sp(+64)
-	<colorMatrix+?>: load.sp(+136)
-	<colorMatrix+?>: load.sp(+4)
-	<colorMatrix+?>: copy.mem 64
-	<colorMatrix+?>: inc.sp(-64)
-	<colorMatrix+?>: inc.sp(-72)
-	<colorMatrix+?>: load.sp(+64)
-	<colorMatrix+?>: load.sp(+4)
-	<colorMatrix+?>: copy.mem 64
-	<colorMatrix+?>: inc.sp(-64)
-	cmplGfx/lib/color.ci:60: (86 bytes): result := mul(result, satMatrix(saturation));
-	<colorMatrix+?>: inc.sp(+64)
-	<colorMatrix+?>: dup.x1 sp(34)
-	<colorMatrix+?>: load.ref <?> ;colorMatrix.satMatrix(val: float32): mat4f
-	<colorMatrix+?>: call
-	<colorMatrix+?>: inc.sp(-4)
-	<colorMatrix+?>: inc.sp(+64)
-	<colorMatrix+?>: load.sp(+128)
-	<colorMatrix+?>: load.sp(+68)
-	<colorMatrix+?>: load.ref <?> ;mul(lhs: mat4f, rhs: mat4f): mat4f
-	<colorMatrix+?>: call
-	<colorMatrix+?>: load.sp(+8)
-	<colorMatrix+?>: load.sp(-60)
-	<colorMatrix+?>: copy.mem -64
-	<colorMatrix+?>: inc.sp(+64)
-	<colorMatrix+?>: load.sp(+136)
-	<colorMatrix+?>: load.sp(+4)
-	<colorMatrix+?>: copy.mem 64
-	<colorMatrix+?>: inc.sp(-64)
-	<colorMatrix+?>: inc.sp(-72)
-	<colorMatrix+?>: load.sp(+64)
-	<colorMatrix+?>: load.sp(+4)
-	<colorMatrix+?>: copy.mem 64
-	<colorMatrix+?>: inc.sp(-64)
-	cmplGfx/lib/color.ci:61: (86 bytes): result := mul(result, hueMatrix(hue));
-	<colorMatrix+?>: inc.sp(+64)
-	<colorMatrix+?>: dup.x1 sp(33)
-	<colorMatrix+?>: load.ref <?> ;colorMatrix.hueMatrix(val: float32): mat4f
-	<colorMatrix+?>: call
-	<colorMatrix+?>: inc.sp(-4)
-	<colorMatrix+?>: inc.sp(+64)
-	<colorMatrix+?>: load.sp(+128)
-	<colorMatrix+?>: load.sp(+68)
-	<colorMatrix+?>: load.ref <?> ;mul(lhs: mat4f, rhs: mat4f): mat4f
-	<colorMatrix+?>: call
-	<colorMatrix+?>: load.sp(+8)
-	<colorMatrix+?>: load.sp(-60)
-	<colorMatrix+?>: copy.mem -64
-	<colorMatrix+?>: inc.sp(+64)
-	<colorMatrix+?>: load.sp(+136)
-	<colorMatrix+?>: load.sp(+4)
-	<colorMatrix+?>: copy.mem 64
-	<colorMatrix+?>: inc.sp(-64)
-	<colorMatrix+?>: inc.sp(-72)
-	<colorMatrix+?>: load.sp(+64)
-	<colorMatrix+?>: load.sp(+4)
-	<colorMatrix+?>: copy.mem 64
-	<colorMatrix+?>: inc.sp(-64)
-	cmplGfx/lib/color.ci:62: (37 bytes): return .result := result;
-	<colorMatrix+?>: load.sp(+0)
-	<colorMatrix+?>: load.sp(-60)
-	<colorMatrix+?>: copy.mem -64
-	<colorMatrix+?>: inc.sp(+64)
-	<colorMatrix+?>: load.sp(+144)
-	<colorMatrix+?>: load.sp(+4)
-	<colorMatrix+?>: copy.mem 64
-	<colorMatrix+?>: inc.sp(-64)
-	<colorMatrix+?>: inc.sp(-64)
-	<colorMatrix+?>: ret
-}
 drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 .kind: static const function
 .base: `function`
 .size: 342
 .name: 'drawHist'
-.file: 'cmplGfx/lib/color.ci:65'
+.file: 'cmplGfx/lib/color.ci:1'
 .param .result: void (size: 0, cast: variable(void))
 .param image: gxSurf (size: 8, cast: variable(val))
 .param roi: gxRect (size: 4, cast: variable(ref))
@@ -8838,9 +8630,9 @@ drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 	}
 }
 .instructions: (342 bytes)
-	cmplGfx/lib/color.ci:66: (4 bytes): lut: uint32[256]
+	cmplGfx/lib/color.ci:2: (4 bytes): lut: uint32[256]
 	<drawHist>  : inc.sp(+1024)
-	cmplGfx/lib/color.ci:67: (23 bytes): image.calcHist(image, roi, hist, lut);
+	cmplGfx/lib/color.ci:3: (23 bytes): image.calcHist(image, roi, hist, lut);
 	<drawHist+?>: load.sp(+1036)
 	<drawHist+?>: load.i64
 	<drawHist+?>: load.sp(+1040)
@@ -8848,19 +8640,19 @@ drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 	<drawHist+?>: load.sp(+1040)
 	<drawHist+?>: load.i32
 	<drawHist+?>: load.sp(+16)
-	<drawHist+?>: nfc(99) ;gxSurf.calcHist(surf: gxSurf, roi: gxRect, rgb: uint32, lut: uint32[256]): void
-	cmplGfx/lib/color.ci:78: (43 bytes): rect: gxRect := {...}
+	<drawHist+?>: nfc(101) ;gxSurf.calcHist(surf: gxSurf, roi: gxRect, rgb: uint32, lut: uint32[256]): void
+	cmplGfx/lib/color.ci:14: (43 bytes): rect: gxRect := {...}
 	<drawHist+?>: inc.sp(+16)
-	cmplGfx/lib/color.ci:79: (7 bytes): rect.w := 256;
+	cmplGfx/lib/color.ci:15: (7 bytes): rect.w := 256;
 	<drawHist+?>: load.c32 256
 	<drawHist+?>: set.x1 sp(3)
-	cmplGfx/lib/color.ci:80: (7 bytes): rect.h := 128;
+	cmplGfx/lib/color.ci:16: (7 bytes): rect.h := 128;
 	<drawHist+?>: load.c32 128
 	<drawHist+?>: set.x1 sp(4)
-	cmplGfx/lib/color.ci:81: (7 bytes): rect.y := margin;
+	cmplGfx/lib/color.ci:17: (7 bytes): rect.y := margin;
 	<drawHist+?>: load.c32 20
 	<drawHist+?>: set.x1 sp(2)
-	cmplGfx/lib/color.ci:82: (18 bytes): rect.x := image.width(image) - rect.w - margin;
+	cmplGfx/lib/color.ci:18: (18 bytes): rect.x := image.width(image) - rect.w - margin;
 	<drawHist+?>: load.sp(+1052)
 	<drawHist+?>: load.i64
 	<drawHist+?>: nfc(81) ;gxSurf.width(surf: gxSurf): int32
@@ -8868,7 +8660,7 @@ drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 	<drawHist+?>: sub.i32
 	<drawHist+?>: inc.i32(-20)
 	<drawHist+?>: set.x1 sp(1)
-	cmplGfx/lib/color.ci:85: (40 bytes): image.fillRect(image, rect.x - padding, rect.y - padding, rect.x + rect.w + padding, rect.y + rect.h + padding, 0);
+	cmplGfx/lib/color.ci:21: (40 bytes): image.fillRect(image, rect.x - padding, rect.y - padding, rect.x + rect.w + padding, rect.y + rect.h + padding, 0);
 	<drawHist+?>: load.sp(+1052)
 	<drawHist+?>: load.i64
 	<drawHist+?>: dup.x1 sp(2)
@@ -8885,10 +8677,10 @@ drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 	<drawHist+?>: inc.i32(+7)
 	<drawHist+?>: load.z32
 	<drawHist+?>: nfc(87) ;gxSurf.fillRect(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color: int32): void
-	cmplGfx/lib/color.ci:93: (227 bytes): for (x: int32 := 0; x < rect.w; x := x + 1)
+	cmplGfx/lib/color.ci:29: (227 bytes): for (x: int32 := 0; x < rect.w; x := x + 1)
 	<drawHist+?>: load.z32
 	<drawHist+?>: jmp +213
-	cmplGfx/lib/color.ci:94: (22 bytes): bv: int32 := bch(lut[x]) * (rect.h) / (256)
+	cmplGfx/lib/color.ci:30: (22 bytes): bv: int32 := bch(lut[x]) * (rect.h) / (256)
 	<drawHist+?>: load.sp(+20)
 	<drawHist+?>: dup.x1 sp(1)
 	<drawHist+?>: mad.u32 4
@@ -8898,7 +8690,7 @@ drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 	<drawHist+?>: mul.u32
 	<drawHist+?>: load.c32 256
 	<drawHist+?>: div.u32
-	cmplGfx/lib/color.ci:95: (24 bytes): gv: int32 := gch(lut[x]) * (rect.h) / (256)
+	cmplGfx/lib/color.ci:31: (24 bytes): gv: int32 := gch(lut[x]) * (rect.h) / (256)
 	<drawHist+?>: load.sp(+24)
 	<drawHist+?>: dup.x1 sp(2)
 	<drawHist+?>: mad.u32 4
@@ -8909,7 +8701,7 @@ drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 	<drawHist+?>: mul.u32
 	<drawHist+?>: load.c32 256
 	<drawHist+?>: div.u32
-	cmplGfx/lib/color.ci:96: (24 bytes): rv: int32 := rch(lut[x]) * (rect.h) / (256)
+	cmplGfx/lib/color.ci:32: (24 bytes): rv: int32 := rch(lut[x]) * (rect.h) / (256)
 	<drawHist+?>: load.sp(+28)
 	<drawHist+?>: dup.x1 sp(3)
 	<drawHist+?>: mad.u32 4
@@ -8920,7 +8712,7 @@ drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 	<drawHist+?>: mul.u32
 	<drawHist+?>: load.c32 256
 	<drawHist+?>: div.u32
-	cmplGfx/lib/color.ci:97: (24 bytes): lv: int32 := ach(lut[x]) * (rect.h) / (256)
+	cmplGfx/lib/color.ci:33: (24 bytes): lv: int32 := ach(lut[x]) * (rect.h) / (256)
 	<drawHist+?>: load.sp(+32)
 	<drawHist+?>: dup.x1 sp(4)
 	<drawHist+?>: mad.u32 4
@@ -8931,34 +8723,34 @@ drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 	<drawHist+?>: mul.u32
 	<drawHist+?>: load.c32 256
 	<drawHist+?>: div.u32
-	cmplGfx/lib/color.ci:99: (107 bytes): for (y: int32 := 0; y < rect.h; y := y + 1)
+	cmplGfx/lib/color.ci:35: (107 bytes): for (y: int32 := 0; y < rect.h; y := y + 1)
 	<drawHist+?>: load.z32
 	<drawHist+?>: jmp +93
-	cmplGfx/lib/color.ci:100: (11 bytes): b: uint32 := colB * (uint32(y < bv))
+	cmplGfx/lib/color.ci:36: (11 bytes): b: uint32 := colB * (uint32(y < bv))
 	<drawHist+?>: load.c32 4420038
 	<drawHist+?>: dup.x1 sp(1)
 	<drawHist+?>: dup.x1 sp(6)
 	<drawHist+?>: clt.i32
 	<drawHist+?>: mul.i32
-	cmplGfx/lib/color.ci:101: (11 bytes): g: uint32 := colG * (uint32(y < gv))
+	cmplGfx/lib/color.ci:37: (11 bytes): g: uint32 := colG * (uint32(y < gv))
 	<drawHist+?>: load.c32 7526516
 	<drawHist+?>: dup.x1 sp(2)
 	<drawHist+?>: dup.x1 sp(6)
 	<drawHist+?>: clt.i32
 	<drawHist+?>: mul.i32
-	cmplGfx/lib/color.ci:102: (11 bytes): r: uint32 := colR * (uint32(y < rv))
+	cmplGfx/lib/color.ci:38: (11 bytes): r: uint32 := colR * (uint32(y < rv))
 	<drawHist+?>: load.c32 16540005
 	<drawHist+?>: dup.x1 sp(3)
 	<drawHist+?>: dup.x1 sp(6)
 	<drawHist+?>: clt.i32
 	<drawHist+?>: mul.i32
-	cmplGfx/lib/color.ci:103: (11 bytes): l: uint32 := colL * (uint32(y < lv))
+	cmplGfx/lib/color.ci:39: (11 bytes): l: uint32 := colL * (uint32(y < lv))
 	<drawHist+?>: load.c32 14342874
 	<drawHist+?>: dup.x1 sp(4)
 	<drawHist+?>: dup.x1 sp(6)
 	<drawHist+?>: clt.i32
 	<drawHist+?>: mul.i32
-	cmplGfx/lib/color.ci:104: (37 bytes): image.set(image, x + rect.x, rect.h - y + rect.y - 1, r | g | b | l);
+	cmplGfx/lib/color.ci:40: (37 bytes): image.set(image, x + rect.x, rect.h - y + rect.y - 1, r | g | b | l);
 	<drawHist+?>: load.sp(+1092)
 	<drawHist+?>: load.i64
 	<drawHist+?>: dup.x1 sp(11)
@@ -8979,18 +8771,18 @@ drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 	<drawHist+?>: or.b32
 	<drawHist+?>: nfc(85) ;gxSurf.set(surf: gxSurf, x: int32, y: int32, color: uint32): void
 	<drawHist+?>: inc.sp(-16)
-	cmplGfx/lib/color.ci:99: (4 bytes): y := y + 1
+	cmplGfx/lib/color.ci:35: (4 bytes): y := y + 1
 	<drawHist+?>: inc.i32(+1)
-	cmplGfx/lib/color.ci:99: (9 bytes): y < rect.h
+	cmplGfx/lib/color.ci:35: (9 bytes): y < rect.h
 	<drawHist+?>: dup.x1 sp(0)
 	<drawHist+?>: dup.x1 sp(10)
 	<drawHist+?>: clt.i32
 	<drawHist+?>: jnz -94
 	<drawHist+?>: inc.sp(-4)
 	<drawHist+?>: inc.sp(-16)
-	cmplGfx/lib/color.ci:93: (4 bytes): x := x + 1
+	cmplGfx/lib/color.ci:29: (4 bytes): x := x + 1
 	<drawHist+?>: inc.i32(+1)
-	cmplGfx/lib/color.ci:93: (9 bytes): x < rect.w
+	cmplGfx/lib/color.ci:29: (9 bytes): x < rect.w
 	<drawHist+?>: dup.x1 sp(0)
 	<drawHist+?>: dup.x1 sp(4)
 	<drawHist+?>: clt.i32
@@ -10154,12 +9946,12 @@ show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void: function {
 	<show+?>: div.f32
 	<show+?>: load.f32 1.000000
 	<show+?>: load.f32 100.000000
-	<show+?>: nfc(101) ;camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): void
+	<show+?>: nfc(103) ;camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): void
 	cmplGfx/gfxlib.ci:300: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
 	<show+?>: dup.x2 sp(2)
 	<show+?>: load.sp(+8)
 	<show+?>: load.ref <?> ;show.onEvent(closure: Closure, action: int32, button: int32, ex: int32, ey: int32): int32
-	<show+?>: nfc(115) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<show+?>: nfc(117) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	cmplGfx/gfxlib.ci:301: (6 bytes): closure.offs.destroy(closure.offs);
 	<show+?>: dup.x2 sp(2)
 	<show+?>: nfc(75) ;gxSurf.destroy(surf: gxSurf): void
@@ -10182,7 +9974,7 @@ show(surf: gxSurf): void: function {
 	<show>  : dup.x2 sp(1)
 	<show+?>: load.ref <?> ;null
 	<show+?>: load.ref <?> ;null
-	<show+?>: nfc(115) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<show+?>: nfc(117) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	<show+?>: ret
 }
 show(surf: gxSurf, onEvent(action: int32, button: int32, ex: int32, ey: int32): int32): void: function {
@@ -10213,13 +10005,13 @@ show(surf: gxSurf, onEvent(action: int32, button: int32, ex: int32, ey: int32): 
 	<show+?>: dup.x2 sp(2)
 	<show+?>: load.ref <?> ;null
 	<show+?>: load.ref <?> ;null
-	<show+?>: nfc(115) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<show+?>: nfc(117) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	<show+?>: ret
 	cmplGfx/gfxlib.ci:315: (13 bytes): Gui.showWindow(surf, onEvent, delegateEvent);
 	<show+?>: dup.x2 sp(2)
 	<show+?>: dup.x1 sp(3)
 	<show+?>: load.ref <?> ;show.delegateEvent(onEvent(action: int32, button: int32, ex: int32, ey: int32): int32, action: int32, button: int32, ex: int32, ey: int32): int32
-	<show+?>: nfc(115) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<show+?>: nfc(117) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	<show+?>: ret
 }
 showDiff(image1: gxSurf, image2: gxSurf): void: function {
@@ -10278,7 +10070,7 @@ showDiff(image1: gxSurf, image2: gxSurf): void: function {
 	<showDiff+?>: dup.x2 sp(0)
 	<showDiff+?>: load.sp(+8)
 	<showDiff+?>: load.ref <?> ;showDiff.onEvent(closure: Closure, action: int32, button: int32, ex: int32, ey: int32): int32
-	<showDiff+?>: nfc(115) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<showDiff+?>: nfc(117) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	<showDiff+?>: inc.sp(-24)
 	<showDiff+?>: ret
 }
@@ -10361,7 +10153,7 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 	<showWindow+?>: dup.x2 sp(0)
 	<showWindow+?>: load.sp(+8)
 	<showWindow+?>: load.ref <?> ;showWindow.onEvent(closure: Closure, action: int32, button: int32, ex: int32, ey: int32): int32
-	<showWindow+?>: nfc(115) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<showWindow+?>: nfc(117) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	cmplGfx/gfxlib.ci:392: (6 bytes): closure.thumb.destroy(closure.thumb);
 	<showWindow+?>: dup.x2 sp(2)
 	<showWindow+?>: nfc(75) ;gxSurf.destroy(surf: gxSurf): void
@@ -10558,8 +10350,6 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 .field rgbDiv: function (size: 72, cast: static const function)
 .field rgbLerp16: function (size: 90, cast: static const function)
 .field rgbLerp: function (size: 30, cast: static const function)
-.field brightnessContrastGamma: function (size: 153, cast: static const function)
-.field colorMatrix: function (size: 341, cast: static const function)
 .field drawHist: function (size: 342, cast: static const function)
 .field rgb: function (size: 0, cast: inline)
 .field hsv2rgb: function (size: 344, cast: static const function)
@@ -11399,54 +11189,6 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 		static const rgbLerp(c1: uint32, c2: uint32, t: float64): uint32 := {
 			return .result := rgbLerp16(c1, c2, uint32(t * ((1 << 16))));
 		};
-		static const brightnessContrastGamma(lut: uint32[256], brightness: int32, contrast: int32, gamma: float64): void := {
-			cval: float64 := ((256 + contrast)) / 256.000000;
-			gval: float64 := 1.000000 / gamma;
-			for (idx: int32 := 0; idx < lut.length; idx := idx + 1) {
-				val: int32 := grayClamp(brightness + int32((256) * (cval * (float64.pow((idx) / 256.000000, gval) - 0.500000) + 0.500000)));
-				lut[idx] := rgb(val, val, val);
-			}
-		};
-		static const colorMatrix(luminosity: float32, saturation: float32, hue: float32): mat4f := {
-			static const lumMatrix(val: float32): mat4f := {
-				return .result := {
-			.result.x := vec4f(1.000000, 0.000000, 0.000000, val);
-			.result.y := vec4f(0.000000, 1.000000, 0.000000, val);
-			.result.z := vec4f(0.000000, 0.000000, 1.000000, val);
-			.result.w := vec4f(0.000000, 0.000000, 0.000000, 1.000000);
-		};
-			};
-			static const satMatrix(val: float32): mat4f := {
-				const inv: float32 := (1) - val;
-				const R: float32 := 0.213000 * inv;
-				const G: float32 := 0.715000 * inv;
-				const B: float32 := 0.072000 * inv;
-				return .result := {
-			.result.x := vec4f(R + val, G, B, 0.000000);
-			.result.y := vec4f(R, G + val, B, 0.000000);
-			.result.z := vec4f(R, G, B + val, 0.000000);
-			.result.w := vec4f(0.000000, 0.000000, 0.000000, 1.000000);
-		};
-			};
-			static const hueMatrix(val: float32): mat4f := {
-				lR: typename := 0.213000;
-				lG: typename := 0.715000;
-				lB: typename := 0.072000;
-				cV: float32 := val.cos(val);
-				sV: float32 := val.sin(val);
-				return .result := {
-			.result.x := vec4f(lR + (cV) * ((1) - lR) + (sV) * (-lR), lG + (cV) * (-lG) + (sV) * (-lG), lB + (cV) * (-lB) + (sV) * ((1) - lB), 0.000000);
-			.result.y := vec4f(lR + (cV) * ((0) - lR) + (sV) * (0.143000), lG + (cV) * ((1) - lG) + (sV) * (0.140000), lB + (cV) * (-lB) + (sV) * (-0.283000), 0.000000);
-			.result.z := vec4f(lR + (cV) * ((0) - lR) + (sV) * (lR - (1)), lG + (cV) * (-lG) + (sV) * (lG), lB + (cV) * ((1) - lB) + (sV) * (lB), 0.000000);
-			.result.w := vec4f(0.000000, 0.000000, 0.000000, 1.000000);
-		};
-			};
-			result: mat4f := mat4f(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-			result := mul(result, lumMatrix(luminosity));
-			result := mul(result, satMatrix(saturation));
-			result := mul(result, hueMatrix(hue));
-			return .result := result;
-		};
 		static const drawHist(image: gxSurf, roi: gxRect, hist: uint32): void := {
 			lut: uint32[256];
 			image.calcHist(image, roi, hist, lut);
@@ -11989,7 +11731,7 @@ lib/vec/mat4f.ci:13: mat4f: function(<mat4f>)
 lib/vec/mat4f.ci:25: mat4f: function(<mat4f>)
 lib/vec/mat4f.ci:33: mul: function(<mul>)
 File: typename(<File>)
-cmplGfx/src/gx_main.c:1001: gxRect: typename(<gxRect>)
+cmplGfx/src/gx_main.c:1079: gxRect: typename(<gxRect>)
 gxSurf: typename(<gxSurf>)
 gxMesh: typename(<gxMesh>)
 camera: typename(<camera>)
@@ -12008,9 +11750,7 @@ cmplGfx/lib/rgb.ci:80: rgbMul: function(<rgbMul>)
 cmplGfx/lib/rgb.ci:86: rgbDiv: function(<rgbDiv>)
 cmplGfx/lib/rgb.ci:93: rgbLerp16: function(<rgbLerp16>)
 cmplGfx/lib/rgb.ci:102: rgbLerp: function(<rgbLerp>)
-cmplGfx/lib/color.ci:1: brightnessContrastGamma: function(<brightnessContrastGamma>)
-cmplGfx/lib/color.ci:11: colorMatrix: function(<colorMatrix>)
-cmplGfx/lib/color.ci:65: drawHist: function(<drawHist>)
+cmplGfx/lib/color.ci:1: drawHist: function(<drawHist>)
 cmplGfx/gfxlib.ci:6: hsv2rgb: function(<hsv2rgb>)
 cmplGfx/gfxlib.ci:46: gxSurf: function(<gxSurf>)
 cmplGfx/gfxlib.ci:64: gxMesh: function(<gxMesh>)
@@ -12026,16 +11766,16 @@ cmplGfx/gfxlib.ci:350: showWindow: function(<showWindow>)
 
 ---------- Memory usage:
 memory[all] @000000; size: 2096872(2.0 Mb)
-memory[used] @000000; size: 279930(273.4 Kb)
-memory[heap] @04457a; size: 1292676(1.2 Mb)
+memory[used] @000000; size: 276226(269.8 Kb)
+memory[heap] @043702; size: 1296380(1.2 Mb)
 memory[stack] @0fff44; size: 524218(511.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 269936(263.6 Kb)
-memory[code] @000000; size: 9664(9.4 Kb)
+memory[meta] @000000; size: 267472(261.2 Kb)
+memory[code] @000000; size: 8443(8.2 Kb)
 memory[data] @000000; size: 52(52.0 bytes)
 
 ---------- heap memory:
-memory[free] @044598; size: 1292624(1.2 Mb)
+memory[free] @043718; size: 1296336(1.2 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

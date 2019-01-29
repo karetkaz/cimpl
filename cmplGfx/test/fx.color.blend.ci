@@ -1,0 +1,201 @@
+// Blend two images using a function
+
+inline linear_dodge(float32 base, float32 blend) = Math.min(base + blend, 1f);
+inline linear_burn(float32 base, float32 blend) = Math.max(base + blend - 1, 0f);
+inline color_dodge(float32 base, float32 blend) = (blend == 1 ? blend : Math.min(base / (1 - blend), 1f));
+inline color_burn(float32 base, float32 blend) = (blend == 0 ? blend : Math.max((1 - ((1 - base) / blend)), 0f));
+
+vec4f darken(vec4f base, vec4f blend) {
+	inline op(float32 a, float32 b) = a < b ? a : b;
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f lighten(vec4f base, vec4f blend) {
+	inline op(float32 a, float32 b) = a > b ? a : b;
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f addition(vec4f base, vec4f blend) {
+	inline op(float32 a, float32 b) = a + b;
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f subtract(vec4f base, vec4f blend) {
+	inline op(float32 a, float32 b) = a - b;
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f multiply(vec4f base, vec4f blend) {
+	inline op(float32 a, float32 b) = a * b;
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f divide(vec4f base, vec4f blend) {
+	inline op(float32 a, float32 b) = a / b;
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f difference(vec4f base, vec4f blend) {
+	inline op(float32 a, float32 b) = a > b ? a - b : b - a;
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f colorBurn(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = color_burn(base, blend);
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f linearBurn(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = linear_burn(base, blend);
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f colorDodge(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = color_dodge(base, blend);
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f linearDodge(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = linear_dodge(base, blend);
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f screen(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = 1 - (1 - base) * (1 - blend);
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f overlay(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = base < .5f
+		? (2 * base * blend)
+		: (1 - 2 * (1 - base) * (1 - blend));
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f softLight(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = blend < .5f
+		? (2 * base * blend + base * base * (1 - 2 * blend))
+		: (float32.sqrt(base) * (2 * blend - 1) + 2 * base * (1 - blend));
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f hardLight(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = blend <= .5f
+		? (base * (2 * blend))
+		: (1 - (1 - base) * (1 - 2 * (blend - .5f)));
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f vividLight(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = blend < .5f
+		? color_burn(base, (2 * blend))
+		: color_dodge(base, (2 * (blend - .5f)));
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f linearLight(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = blend < .5f
+		? linear_burn(base, (2 * blend))
+		: linear_dodge(base, (2 * (blend - .5f)));
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f pinLight(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = blend < .5f
+		? Math.min(base, 2 * blend)
+		: Math.max(base, 2 *(blend - .5f));
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f exclusion(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = .5f - 2 * (base - .5f) * (blend - .5f);
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+
+static gxSurf image = gxSurf("asset/image/nol.bmp", 32);
+static gxSurf base = gxSurf("asset/image/forest.png", 32);
+static gxSurf offs = gxSurf(base);
+
+offs.colorMix(image, null, overlay);
+offs.showDiff(base);
+
+image.destroy();
+base.destroy();
+offs.destroy();

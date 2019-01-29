@@ -2,7 +2,10 @@ function Terminal(output, interpret) {
 	if (output == null) {
 		return {
 			print: console.log,
-			clear: console.clear
+			clear: console.clear,
+			text: function () {
+				return '';
+			}
 		}
 	}
 	if (interpret == null) {
@@ -53,6 +56,14 @@ function Terminal(output, interpret) {
 		clear: function () {
 			output.innerHTML = '';
 			buffer = [];
+		},
+		text: function() {
+			let result = '';
+			for (let node of output.childNodes) {
+				result += node.textContent;
+				result += '\n';
+			}
+			return result;
 		}
 	};
 }
