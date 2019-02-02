@@ -139,7 +139,7 @@ void normMesh(gx_Mesh msh, scalar tol, vector center, vector resize);
  * @param tex update texture position
  * @return 
  */
-int setvtx(gx_Mesh msh, size_t idx, vector pos, vector nrm, scalar tex[2]);
+int setvtx(gx_Mesh msh, size_t idx, scalar pos[3], scalar nrm[3], scalar tex[2]);
 
 /**
  * Add a new vertex to the mesh
@@ -149,7 +149,7 @@ int setvtx(gx_Mesh msh, size_t idx, vector pos, vector nrm, scalar tex[2]);
  * @param tex update texture position
  * @return 
  */
-static inline int addvtx(gx_Mesh msh, vector pos, vector nrm, scalar tex[2]) {
+static inline int addvtx(gx_Mesh msh, scalar pos[3], scalar nrm[3], scalar tex[2]) {
 	return setvtx(msh, msh->vtxcnt, pos, nrm, tex);
 }
 

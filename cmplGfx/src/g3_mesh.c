@@ -148,15 +148,21 @@ int getvtx(gx_Mesh msh, size_t idx) {
 	}
 	return 1;
 }
-int setvtx(gx_Mesh msh, size_t idx, vector pos, vector nrm, scalar tex[2]) {
+int setvtx(gx_Mesh msh, size_t idx, scalar pos[3], scalar nrm[3], scalar tex[2]) {
 	if (!getvtx(msh, idx)) {
 		return 0;
 	}
 	if (pos != NULL) {
-		msh->pos[idx] = *pos;
+		msh->pos[idx].x = pos[0];
+		msh->pos[idx].y = pos[1];
+		msh->pos[idx].z = pos[2];
+		msh->pos[idx].w = 1;
 	}
 	if (nrm != NULL) {
-		msh->nrm[idx] = *nrm;
+		msh->nrm[idx].x = nrm[0];
+		msh->nrm[idx].y = nrm[1];
+		msh->nrm[idx].z = nrm[2];
+		msh->nrm[idx].w = 0;
 	}
 	if (tex != NULL) {
 		msh->tex[idx].s = (uint16_t) (tex[0] * 65535);
@@ -334,7 +340,7 @@ int g3_readObj(gx_Mesh msh, const char *file) {
 		if ((ptr = readKVP(buff, "v", NULL, ws))) {		// Geometric vertices
 			struct vector vtx;
 			sscanf(ptr, "%f%f%f", &vtx.x, &vtx.y, &vtx.z);
-			if (!setvtx(msh, posi, &vtx, NULL, NULL)) {
+			if (!setvtx(msh, posi, vtx.v, NULL, NULL)) {
 				gx_debug("out of memory");
 				break;
 			}
@@ -727,7 +733,7 @@ int g3_read3ds(gx_Mesh msh, const char *file) {
 								goto invChunk;
 							}
 							dat.w = 0;
-							if (!setvtx(msh, vtxi + i, &dat, NULL, NULL)) {
+							if (!setvtx(msh, vtxi + i, dat.v, NULL, NULL)) {
 								return 0;
 							}
 						}

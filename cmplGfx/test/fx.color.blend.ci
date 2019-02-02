@@ -189,11 +189,18 @@ vec4f exclusion(vec4f base, vec4f blend) {
 	};
 }
 
-static gxSurf image = gxSurf("asset/image/nol.bmp", 32);
+static gxSurf image = gxSurf("asset/image/texture.png", 32);
 static gxSurf base = gxSurf("asset/image/forest.png", 32);
 static gxSurf offs = gxSurf(base);
 
-offs.colorMix(image, null, overlay);
+gxRect roi = {
+	x: 100;
+	y: 100;
+	w: image.width();
+	h: image.height();
+};
+
+offs.colorMix(image, roi, overlay);
 offs.showDiff(base);
 
 image.destroy();

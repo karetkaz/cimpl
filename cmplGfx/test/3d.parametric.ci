@@ -1,0 +1,188 @@
+gxSurf texture = gxSurf("asset/image/texture.png", 32);
+gxMesh model = gxMesh.create(0);
+
+void eval(gxMesh mesh, int sDivision, int tDivision, float64 epsilon, vec4f pos(float64 s, float64 t));
+
+vec4f ellipse(float64 s, float64 t) {
+	enum: float64 {
+		X: 1;
+		Y: 1;
+		Z: 1;
+		smin: 0.;
+		smax: 2 * Math.pi;
+		tmin: -Math.pi / 2;
+		tmax: +Math.pi / 2;
+	}
+
+	s = Math.lerp(s, smin, smax);
+	t = Math.lerp(t, tmin, tmax);
+
+	return {
+		x: X * float64.cos(t) * float64.cos(s);
+		y: Y * float64.cos(t) * float64.sin(s);
+		z: Z * float64.sin(t);
+	};
+}
+vec4f cylinder(float64 s, float64 t) {
+	enum: float64 {
+		X: 1;
+		Y: 1;
+		Z: 1;
+		sMin: 0;
+		sMax: 1;
+		tMin: 0;
+		tMax: 2 * Math.pi;
+	}
+
+	s = Math.lerp(s, sMin, sMax);
+	t = Math.lerp(t, tMin, tMax);
+
+	return {
+		x: float64.cos(t);
+		y: float64.sin(t);
+		z: -s;
+	};
+}
+vec4f peak(float64 s, float64 t) {
+	enum: float64 {
+		h: 10.;
+		H: 20.;
+		smin: -H;
+		smax: +H;
+		tmin: -H;
+		tmax: +H;
+	}
+	s = Math.lerp(s, smin, smax);
+	t = Math.lerp(t, tmin, tmax);
+	float64 sst = float64.sqrt(s*s + t*t);
+	return {
+		x: s / H;
+		y: t / H;
+		z: h / H * float64.sin(sst) / sst;
+	};
+}
+vec4f shell(float64 s, float64 t) {
+	enum: float64 {
+		sdiv: 128;
+		tdiv: 32;
+		N: 5;
+		H: 3;
+		tMin: -Math.pi;
+		tMax: +Math.pi;
+		sMin: 0.;
+		sMax: 2. * Math.pi;
+	}
+
+	s = Math.lerp(s, sMin, sMax);
+	t = Math.lerp(t, tMin, tMax);
+
+	float64 W = s / (2 * Math.pi);
+	return {
+		x: W * float64.cos(N * s) * (1 + float64.cos(t));
+		y: W * float64.sin(N * s) * (1 + float64.cos(t));
+		z: W * float64.sin(t) + H * (W * W);
+	};
+}
+
+
+model.eval(128, 128, 1e-15, peak);
+debug("model", model);
+lights.enable(0, true);
+lights.position(0, 2., -2., 2.);
+lights.ambient(0, .4, .4, .4);
+lights.diffuse(0, .8, .8, .8);
+lights.specular(0, 1., 1., 1.);
+lights.attenuation(0, 1., 0., 0.);
+
+// material Dash
+model.texture(texture);
+model.ambient(0.588235, 0.588235, 0.588235);
+model.diffuse(0.588235, 0.588235, 0.588235);
+model.specular(0.898039, 0.898039, 0.898039);
+model.shine(64);
+
+vec4f center = { x: 0, y: 0, z: 0, w: 1 };
+vec4f resize = { x: 1, y: 1, z: 1, w: 1 };
+model.normalize(0, center.data, resize.data);
+
+model.show(1440, 900, 15);
+
+texture.destroy();
+model.destroy();
+
+void eval(gxMesh mesh, int sGrid, int tGrid, float64 epsilon, vec4f pos(float64 s, float64 t)) {
+	bool sClosed = false;
+	bool tClosed = false;
+
+	if (sGrid < 0) {
+		sGrid = -sGrid;
+		sClosed = true;
+	}
+	if (tGrid < 0) {
+		tGrid = -tGrid;
+		tClosed = true;
+	}
+
+	float64 sDivision = sGrid - int(!sClosed);
+	float64 tDivision = tGrid - int(!tClosed);
+
+	mesh.recycle(sGrid * tGrid);
+	for (int i = 0; i < tGrid; i += 1) {
+		float64 t = i / tDivision;
+		for (int j = 0; j < sGrid; j += 1) {
+			float64 s = j / sDivision;
+
+			vec4f pos = pos(s, t);
+			vec4f posDs = pos(s + epsilon, t);
+			vec4f posDt = pos(s, t + epsilon);
+
+			posDs.x = (pos.x - posDs.x) / epsilon;
+			posDs.y = (pos.y - posDs.y) / epsilon;
+			posDs.z = (pos.z - posDs.z) / epsilon;
+			posDt.x = (pos.x - posDt.x) / epsilon;
+			posDt.y = (pos.y - posDt.y) / epsilon;
+			posDt.z = (pos.z - posDt.z) / epsilon;
+			vec4f nrm = normalize(cross(posDs, posDt));
+
+			int idx = mesh.addVertex(pos.x, pos.y, pos.z);
+			mesh.setNormal(idx, nrm.x, nrm.y, nrm.z);
+			mesh.setTexture(idx, s, t);
+		}
+	}
+
+	for (int j = 0; j < tGrid - 1; j += 1) {
+		int l1 = j * sGrid;
+		int l2 = l1 + sGrid;
+		for (int i = 0; i < sGrid - 1; i += 1) {
+			int v1 = l1 + i;		// v1 -- v2
+			int v2 = v1 + 1;		//  | \  |
+			int v4 = l2 + i;		//  |  \ |
+			int v3 = v4 + 1;		// v4 -- v3
+			mesh.addFace(v1, v2, v3, v4);
+		}
+	}
+	if (tClosed) {
+		int l2 = 0;
+		int l1 = sGrid * (tGrid - 1);
+		for (int i = 0; i < sGrid - 1; i += 1) {
+			int v1 = l1 + i;		// v1 -- v2
+			int v2 = v1 + 1;		//  | \  |
+			int v4 = l2 + i;		//  |  \ |
+			int v3 = v4 + 1;		// v4 -- v3
+			mesh.addFace(v1, v2, v3, v4);
+		}
+	}
+	if (sClosed) {
+		int i = sGrid - 1;
+		for (int j = 0; j < tGrid - 1; j += 1) {
+			int l1 = j * sGrid;
+			int l2 = l1 + sGrid;
+			int v1 = l1 + i;		// v1 -- v2
+			int v2 = l1 + 0;		//  | \  |
+			int v4 = l2 + i;		//  |  \ |
+			int v3 = l2 + 0;		// v4 -- v3
+			mesh.addFace(v1, v2, v3, v4);
+		}
+	}
+}
+

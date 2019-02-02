@@ -439,7 +439,12 @@ gxMesh.openObj(path: char[*]): gxMesh
 gxMesh.open3ds(path: char[*]): gxMesh
 gxMesh.saveObj(mesh: gxMesh, path: char[*]): void
 gxMesh.normalize(mesh: gxMesh, tolerance: float32, center: float32[3], resize: float32[3]): void
-gxMesh.addVertex(mesh: gxMesh, x: float32, y: float32, z: float32): void
+gxMesh.addVertex(mesh: gxMesh, x: float32, y: float32, z: float32): int32
+gxMesh.addFace(mesh: gxMesh, v1: int32, v2: int32, v3: int32): int32
+gxMesh.addFace(mesh: gxMesh, v1: int32, v2: int32, v3: int32, v4: int32): int32
+gxMesh.setVertex(mesh: gxMesh, idx: int32, x: float32, y: float32, z: float32): bool
+gxMesh.setNormal(mesh: gxMesh, idx: int32, x: float32, y: float32, z: float32): bool
+gxMesh.setTexture(mesh: gxMesh, idx: int32, s: float32, t: float32): bool
 gxMesh.ambient(mesh: gxMesh, r: float32, g: float32, b: float32): void
 gxMesh.diffuse(mesh: gxMesh, r: float32, g: float32, b: float32): void
 gxMesh.specular(mesh: gxMesh, r: float32, g: float32, b: float32): void

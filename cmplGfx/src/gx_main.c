@@ -664,16 +664,77 @@ static vmError mesh_normalize(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_mesh_addVertex = "void addVertex(gxMesh mesh, float32 x, float32 y, float32 z)";
+static const char *proto_mesh_addVertex = "int addVertex(gxMesh mesh, float32 x, float32 y, float32 z)";
 static vmError mesh_addVertex(nfcContext ctx) {
 	gx_Mesh mesh = nextValue(ctx).ref;
-	float32_t x = nextValue(ctx).f32;
-	float32_t y = nextValue(ctx).f32;
-	float32_t z = nextValue(ctx).f32;
-	struct vector pos;
-	if (!addvtx(mesh, vecldf(&pos, x, y, z, 0), NULL, NULL)) {
-		return nativeCallError;
+	scalar pos[3];
+	pos[0] = nextValue(ctx).f32;
+	pos[1] = nextValue(ctx).f32;
+	pos[2] = nextValue(ctx).f32;
+	if (!addvtx(mesh, pos, NULL, NULL)) {
+		// return nativeCallError;
+		reti32(ctx, -1);
+		return noError;
 	}
+	reti32(ctx, mesh->vtxcnt - 1);
+	return noError;
+}
+
+static const char *proto_mesh_addFace3 = "int addFace(gxMesh mesh, int32 v1, int32 v2, int32 v3)";
+static const char *proto_mesh_addFace4 = "int addFace(gxMesh mesh, int32 v1, int32 v2, int32 v3, int32 v4)";
+static vmError mesh_addFace(nfcContext ctx) {
+	gx_Mesh mesh = nextValue(ctx).ref;
+	int res = -1;
+	if (ctx->proto == proto_mesh_addFace3) {
+		int v1 = nextValue(ctx).i32;
+		int v2 = nextValue(ctx).i32;
+		int v3 = nextValue(ctx).i32;
+		res = addtri(mesh, v1, v2, v3);
+	}
+	if (ctx->proto == proto_mesh_addFace4) {
+		int v1 = nextValue(ctx).i32;
+		int v2 = nextValue(ctx).i32;
+		int v3 = nextValue(ctx).i32;
+		int v4 = nextValue(ctx).i32;
+		res = addquad(mesh, v1, v2, v3, v4);
+	}
+	if (!res) {
+		// return nativeCallError;
+		reti32(ctx, -1);
+		return noError;
+	}
+	reti32(ctx, mesh->tricnt - 1);
+	return noError;
+}
+
+static const char *proto_mesh_setVertexPos = "bool setVertex(gxMesh mesh, int idx, float32 x, float32 y, float32 z)";
+static const char *proto_mesh_setVertexNrm = "bool setNormal(gxMesh mesh, int idx, float32 x, float32 y, float32 z)";
+static const char *proto_mesh_setVertexTex = "bool setTexture(gxMesh mesh, int idx, float32 s, float32 t)";
+static vmError mesh_setVertex(nfcContext ctx) {
+	gx_Mesh mesh = nextValue(ctx).ref;
+	int32_t idx = nextValue(ctx).i32;
+	int res = 0;
+	if (ctx->proto == proto_mesh_setVertexPos) {
+		scalar pos[3];
+		pos[0] = nextValue(ctx).f32;
+		pos[1] = nextValue(ctx).f32;
+		pos[2] = nextValue(ctx).f32;
+		res = setvtx(mesh, idx, pos, NULL, NULL);
+	}
+	if (ctx->proto == proto_mesh_setVertexNrm) {
+		scalar nrm[3];
+		nrm[0] = nextValue(ctx).f32;
+		nrm[1] = nextValue(ctx).f32;
+		nrm[2] = nextValue(ctx).f32;
+		res = setvtx(mesh, idx, NULL, nrm, NULL);
+	}
+	if (ctx->proto == proto_mesh_setVertexTex) {
+		scalar tex[2];
+		tex[0] = nextValue(ctx).f32;
+		tex[1] = nextValue(ctx).f32;
+		res = setvtx(mesh, idx, NULL, NULL, tex);
+	}
+	reti32(ctx, res != 0);
 	return noError;
 }
 
@@ -1058,6 +1119,11 @@ int cmplInit(rtContext rt) {
 		{mesh_save, proto_mesh_saveObj},
 		{mesh_normalize, proto_mesh_normalize},
 		{mesh_addVertex, proto_mesh_addVertex},
+		{mesh_addFace, proto_mesh_addFace3},
+		{mesh_addFace, proto_mesh_addFace4},
+		{mesh_setVertex, proto_mesh_setVertexPos},
+		{mesh_setVertex, proto_mesh_setVertexNrm},
+		{mesh_setVertex, proto_mesh_setVertexTex},
 		{mesh_material, proto_material_ambient},
 		{mesh_material, proto_material_diffuse},
 		{mesh_material, proto_material_specular},
