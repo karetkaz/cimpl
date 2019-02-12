@@ -30,7 +30,6 @@ void g2_fillRect(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color) {
 	if (y2 > roi->ymax) {
 		y2 = roi->ymax;
 	}
-	// TODO: optimize for hline, vline and pixel.
 	for (int y = y1; y < y2; y++) {
 		for (int x = x1; x < x2; x++) {
 			gx_setpixel(surf, x, y, color);
@@ -437,29 +436,9 @@ int gx_zoomSurf(gx_Surf surf, gx_Rect rect, gx_Surf src, gx_Rect roi, int interp
 	x0 = x0 * dx + (srec.x << 16);
 	y0 = y0 * dy + (srec.y << 16);
 
-	if (surf->depth == 32) {
-		for (int y = 0, sy = y0; y < drec.h; ++y, sy += dy) {
-			uint32_t *ptr = (void*)dptr;
-			for (int x = 0, sx = x0; x < drec.w; ++x, sx += dx) {
-				*ptr++ = gx_getpix16(src, sx, sy, interpolate);
-			}
-			dptr += surf->scanLen;
-		}
-	}
-	else if (surf->depth == 8) {
-		for (int y = 0, sy = y0; y < drec.h; ++y, sy += dy) {
-			char *ptr = (void*)dptr;
-			for (int x = 0, sx = x0; x < drec.w; ++x, sx += dx) {
-				*ptr++ = gx_getpix16(src, sx, sy, interpolate);
-			}
-			dptr += surf->scanLen;
-		}
-	}
-	else {
-		for (int y = 0, sy = y0; y < drec.h; ++y, sy += dy) {
-			for (int x = 0, sx = x0; x < drec.w; ++x, sx += dx) {
-				gx_setpixel(surf, drec.x + x, drec.y + y, gx_getpix16(src, sx, sy, interpolate));
-			}
+	for (int y = 0, sy = y0; y < drec.h; ++y, sy += dy) {
+		for (int x = 0, sx = x0; x < drec.w; ++x, sx += dx) {
+			gx_setpixel(surf, drec.x + x, drec.y + y, gx_getpix16(src, sx, sy, interpolate));
 		}
 	}
 	return 0;

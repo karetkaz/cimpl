@@ -6746,7 +6746,7 @@ gxRect: typename {
 .base: `typename`
 .size: 16
 .name: 'gxRect'
-.file: 'cmplGfx/src/gx_main.c:1145'
+.file: 'cmplGfx/src/gx_main.c:1156'
 .field x: int32 (size: 4, cast: variable(i32))
 .field y: int32 (size: 4, cast: variable(i32))
 .field w: int32 (size: 4, cast: variable(i32))
@@ -6757,7 +6757,7 @@ gxRect.x: int32 {
 .base: `int32`
 .size: 4
 .name: 'x'
-.file: 'cmplGfx/src/gx_main.c:1146'
+.file: 'cmplGfx/src/gx_main.c:1157'
 .owner: gxRect
 }
 gxRect.y: int32 {
@@ -6765,7 +6765,7 @@ gxRect.y: int32 {
 .base: `int32`
 .size: 4
 .name: 'y'
-.file: 'cmplGfx/src/gx_main.c:1147'
+.file: 'cmplGfx/src/gx_main.c:1158'
 .owner: gxRect
 }
 gxRect.w: int32 {
@@ -6773,7 +6773,7 @@ gxRect.w: int32 {
 .base: `int32`
 .size: 4
 .name: 'w'
-.file: 'cmplGfx/src/gx_main.c:1148'
+.file: 'cmplGfx/src/gx_main.c:1159'
 .owner: gxRect
 }
 gxRect.h: int32 {
@@ -6781,7 +6781,7 @@ gxRect.h: int32 {
 .base: `int32`
 .size: 4
 .name: 'h'
-.file: 'cmplGfx/src/gx_main.c:1149'
+.file: 'cmplGfx/src/gx_main.c:1160'
 .owner: gxRect
 }
 gxSurf: typename {
@@ -6803,6 +6803,7 @@ gxSurf: typename {
 .field depth: function (size: 0, cast: static const inline)
 .field get: function (size: 0, cast: static const inline)
 .field set: function (size: 0, cast: static const inline)
+.field tex: function (size: 0, cast: static const inline)
 .field drawRect: function (size: 0, cast: static const inline)
 .field fillRect: function (size: 0, cast: static const inline)
 .field drawOval: function (size: 0, cast: static const inline)
@@ -6978,6 +6979,18 @@ gxSurf.set(surf: gxSurf, x: int32, y: int32, color: uint32): void: function {
 .param color: uint32 (size: 4, cast: variable(u32))
 .value: nfc(90)
 }
+gxSurf.tex(surf: gxSurf, x: float32, y: float32): int32: function {
+.kind: static const inline
+.base: `function`
+.size: 0
+.name: 'tex'
+.owner: gxSurf
+.param .result: int32 (size: 4, cast: inline)
+.param surf: gxSurf (size: 8, cast: variable(val))
+.param x: float32 (size: 4, cast: variable(f32))
+.param y: float32 (size: 4, cast: variable(f32))
+.value: nfc(91)
+}
 gxSurf.drawRect(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color: int32): void: function {
 .kind: static const inline
 .base: `function`
@@ -6991,7 +7004,7 @@ gxSurf.drawRect(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color:
 .param x2: int32 (size: 4, cast: variable(i32))
 .param y2: int32 (size: 4, cast: variable(i32))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(91)
+.value: nfc(92)
 }
 gxSurf.fillRect(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color: int32): void: function {
 .kind: static const inline
@@ -7006,7 +7019,7 @@ gxSurf.fillRect(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color:
 .param x2: int32 (size: 4, cast: variable(i32))
 .param y2: int32 (size: 4, cast: variable(i32))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(92)
+.value: nfc(93)
 }
 gxSurf.drawOval(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color: int32): void: function {
 .kind: static const inline
@@ -7021,7 +7034,7 @@ gxSurf.drawOval(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color:
 .param x2: int32 (size: 4, cast: variable(i32))
 .param y2: int32 (size: 4, cast: variable(i32))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(93)
+.value: nfc(94)
 }
 gxSurf.fillOval(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color: int32): void: function {
 .kind: static const inline
@@ -7036,7 +7049,7 @@ gxSurf.fillOval(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color:
 .param x2: int32 (size: 4, cast: variable(i32))
 .param y2: int32 (size: 4, cast: variable(i32))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(94)
+.value: nfc(95)
 }
 gxSurf.drawLine(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color: int32): void: function {
 .kind: static const inline
@@ -7051,7 +7064,7 @@ gxSurf.drawLine(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color:
 .param x2: int32 (size: 4, cast: variable(i32))
 .param y2: int32 (size: 4, cast: variable(i32))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(95)
+.value: nfc(96)
 }
 gxSurf.drawBezier(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, x3: int32, y3: int32, color: int32): void: function {
 .kind: static const inline
@@ -7068,7 +7081,7 @@ gxSurf.drawBezier(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, x3: 
 .param x3: int32 (size: 4, cast: variable(i32))
 .param y3: int32 (size: 4, cast: variable(i32))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(96)
+.value: nfc(97)
 }
 gxSurf.drawBezier(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, x3: int32, y3: int32, x4: int32, y4: int32, color: int32): void: function {
 .kind: static const inline
@@ -7087,7 +7100,7 @@ gxSurf.drawBezier(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, x3: 
 .param x4: int32 (size: 4, cast: variable(i32))
 .param y4: int32 (size: 4, cast: variable(i32))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(97)
+.value: nfc(98)
 }
 gxSurf.clipText(font: gxSurf, rect: gxRect, text: char[*]): void: function {
 .kind: static const inline
@@ -7099,7 +7112,7 @@ gxSurf.clipText(font: gxSurf, rect: gxRect, text: char[*]): void: function {
 .param font: gxSurf (size: 8, cast: variable(val))
 .param rect: gxRect (size: 4, cast: variable(ref))
 .param text: char[*] (size: 4, cast: variable(ref))
-.value: nfc(98)
+.value: nfc(99)
 }
 gxSurf.drawText(surf: gxSurf, x: int32, y: int32, font: gxSurf, text: char[*], color: int32): void: function {
 .kind: static const inline
@@ -7114,7 +7127,7 @@ gxSurf.drawText(surf: gxSurf, x: int32, y: int32, font: gxSurf, text: char[*], c
 .param font: gxSurf (size: 8, cast: variable(val))
 .param text: char[*] (size: 4, cast: variable(ref))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(99)
+.value: nfc(100)
 }
 gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function {
 .kind: static const inline
@@ -7128,7 +7141,7 @@ gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: f
 .param y: int32 (size: 4, cast: variable(i32))
 .param src: gxSurf (size: 8, cast: variable(val))
 .param roi: gxRect (size: 4, cast: const variable(ref))
-.value: nfc(100)
+.value: nfc(101)
 }
 gxSurf.resize(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate: int32): void: function {
 .kind: static const inline
@@ -7142,7 +7155,7 @@ gxSurf.resize(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate:
 .param src: gxSurf (size: 8, cast: variable(val))
 .param roi: gxRect (size: 4, cast: const variable(ref))
 .param interpolate: int32 (size: 4, cast: variable(i32))
-.value: nfc(101)
+.value: nfc(102)
 }
 gxSurf.colorMap(surf: gxSurf, roi: gxRect, lut: uint32[256]): void: function {
 .kind: static const inline
@@ -7154,7 +7167,7 @@ gxSurf.colorMap(surf: gxSurf, roi: gxRect, lut: uint32[256]): void: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param roi: gxRect (size: 4, cast: const variable(ref))
 .param lut: uint32[256] (size: 4, cast: const variable(ref))
-.value: nfc(102)
+.value: nfc(103)
 }
 gxSurf.colorMix(surf: gxSurf, color: uint32, roi: gxRect, blend(base: vec4f, with: vec4f): vec4f): void: function {
 .kind: static const inline
@@ -7167,7 +7180,7 @@ gxSurf.colorMix(surf: gxSurf, color: uint32, roi: gxRect, blend(base: vec4f, wit
 .param color: uint32 (size: 4, cast: variable(u32))
 .param roi: gxRect (size: 4, cast: const variable(ref))
 .param blend: function (size: 4, cast: variable(ref))
-.value: nfc(103)
+.value: nfc(104)
 }
 gxSurf.colorMix(surf: gxSurf, image: gxSurf, roi: gxRect, blend(base: vec4f, with: vec4f): vec4f): void: function {
 .kind: static const inline
@@ -7180,7 +7193,7 @@ gxSurf.colorMix(surf: gxSurf, image: gxSurf, roi: gxRect, blend(base: vec4f, wit
 .param image: gxSurf (size: 8, cast: variable(val))
 .param roi: gxRect (size: 4, cast: const variable(ref))
 .param blend: function (size: 4, cast: variable(ref))
-.value: nfc(104)
+.value: nfc(105)
 }
 gxSurf.colorMat(surf: gxSurf, roi: gxRect, mat: float32[16]): void: function {
 .kind: static const inline
@@ -7192,7 +7205,7 @@ gxSurf.colorMat(surf: gxSurf, roi: gxRect, mat: float32[16]): void: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param roi: gxRect (size: 4, cast: const variable(ref))
 .param mat: float32[16] (size: 4, cast: const variable(ref))
-.value: nfc(105)
+.value: nfc(106)
 }
 gxSurf.calcHist(surf: gxSurf, roi: gxRect, rgb: uint32, lut: uint32[256]): void: function {
 .kind: static const inline
@@ -7205,7 +7218,7 @@ gxSurf.calcHist(surf: gxSurf, roi: gxRect, rgb: uint32, lut: uint32[256]): void:
 .param roi: gxRect (size: 4, cast: const variable(ref))
 .param rgb: uint32 (size: 4, cast: variable(u32))
 .param lut: uint32[256] (size: 4, cast: variable(ref))
-.value: nfc(106)
+.value: nfc(107)
 }
 gxSurf.drawMesh(surf: gxSurf, mesh: gxMesh, mode: int32): int32: function {
 .kind: static const inline
@@ -7217,7 +7230,7 @@ gxSurf.drawMesh(surf: gxSurf, mesh: gxMesh, mode: int32): int32: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param mesh: gxMesh (size: 4, cast: variable(ref))
 .param mode: int32 (size: 4, cast: variable(i32))
-.value: nfc(107)
+.value: nfc(108)
 }
 gxMesh: typename {
 .kind: static const typename(ref)
@@ -7598,7 +7611,7 @@ camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): 
 .param aspect: float32 (size: 4, cast: variable(f32))
 .param near: float32 (size: 4, cast: variable(f32))
 .param far: float32 (size: 4, cast: variable(f32))
-.value: nfc(108)
+.value: nfc(109)
 }
 camera.lookAt(eye: float32[3], at: float32[3], up: float32[3]): void: function {
 .kind: static const inline
@@ -7610,7 +7623,7 @@ camera.lookAt(eye: float32[3], at: float32[3], up: float32[3]): void: function {
 .param eye: float32[3] (size: 4, cast: variable(ref))
 .param at: float32[3] (size: 4, cast: variable(ref))
 .param up: float32[3] (size: 4, cast: variable(ref))
-.value: nfc(109)
+.value: nfc(110)
 }
 camera.readUp(result: float32[3]): void: function {
 .kind: static const inline
@@ -7620,7 +7633,7 @@ camera.readUp(result: float32[3]): void: function {
 .owner: camera
 .param .result: void (size: 0, cast: inline)
 .param result: float32[3] (size: 4, cast: variable(ref))
-.value: nfc(110)
+.value: nfc(111)
 }
 camera.readRight(result: float32[3]): void: function {
 .kind: static const inline
@@ -7630,7 +7643,7 @@ camera.readRight(result: float32[3]): void: function {
 .owner: camera
 .param .result: void (size: 0, cast: inline)
 .param result: float32[3] (size: 4, cast: variable(ref))
-.value: nfc(111)
+.value: nfc(112)
 }
 camera.readForward(result: float32[3]): void: function {
 .kind: static const inline
@@ -7640,7 +7653,7 @@ camera.readForward(result: float32[3]): void: function {
 .owner: camera
 .param .result: void (size: 0, cast: inline)
 .param result: float32[3] (size: 4, cast: variable(ref))
-.value: nfc(112)
+.value: nfc(113)
 }
 camera.rotate(direction: float32[3], orbit: float32[3], angle: float32): void: function {
 .kind: static const inline
@@ -7652,7 +7665,7 @@ camera.rotate(direction: float32[3], orbit: float32[3], angle: float32): void: f
 .param direction: float32[3] (size: 4, cast: variable(ref))
 .param orbit: float32[3] (size: 4, cast: variable(ref))
 .param angle: float32 (size: 4, cast: variable(f32))
-.value: nfc(113)
+.value: nfc(114)
 }
 camera.move(direction: float32[3], amount: float32): void: function {
 .kind: static const inline
@@ -7663,7 +7676,7 @@ camera.move(direction: float32[3], amount: float32): void: function {
 .param .result: void (size: 0, cast: inline)
 .param direction: float32[3] (size: 4, cast: variable(ref))
 .param amount: float32 (size: 4, cast: variable(f32))
-.value: nfc(114)
+.value: nfc(115)
 }
 lights: typename {
 .kind: static const typename(void)
@@ -7686,7 +7699,7 @@ lights.enabled(light: int32): bool: function {
 .owner: lights
 .param .result: bool (size: 4, cast: inline)
 .param light: int32 (size: 4, cast: variable(i32))
-.value: nfc(115)
+.value: nfc(116)
 }
 lights.enable(light: int32, on: bool): void: function {
 .kind: static const inline
@@ -7697,7 +7710,7 @@ lights.enable(light: int32, on: bool): void: function {
 .param .result: void (size: 0, cast: inline)
 .param light: int32 (size: 4, cast: variable(i32))
 .param on: bool (size: 4, cast: variable(bool))
-.value: nfc(116)
+.value: nfc(117)
 }
 lights.position(light: int32, x: float32, y: float32, z: float32): void: function {
 .kind: static const inline
@@ -7710,7 +7723,7 @@ lights.position(light: int32, x: float32, y: float32, z: float32): void: functio
 .param x: float32 (size: 4, cast: variable(f32))
 .param y: float32 (size: 4, cast: variable(f32))
 .param z: float32 (size: 4, cast: variable(f32))
-.value: nfc(117)
+.value: nfc(118)
 }
 lights.ambient(light: int32, r: float32, g: float32, b: float32): void: function {
 .kind: static const inline
@@ -7723,7 +7736,7 @@ lights.ambient(light: int32, r: float32, g: float32, b: float32): void: function
 .param r: float32 (size: 4, cast: variable(f32))
 .param g: float32 (size: 4, cast: variable(f32))
 .param b: float32 (size: 4, cast: variable(f32))
-.value: nfc(118)
+.value: nfc(119)
 }
 lights.diffuse(light: int32, r: float32, g: float32, b: float32): void: function {
 .kind: static const inline
@@ -7736,7 +7749,7 @@ lights.diffuse(light: int32, r: float32, g: float32, b: float32): void: function
 .param r: float32 (size: 4, cast: variable(f32))
 .param g: float32 (size: 4, cast: variable(f32))
 .param b: float32 (size: 4, cast: variable(f32))
-.value: nfc(119)
+.value: nfc(120)
 }
 lights.specular(light: int32, r: float32, g: float32, b: float32): void: function {
 .kind: static const inline
@@ -7749,7 +7762,7 @@ lights.specular(light: int32, r: float32, g: float32, b: float32): void: functio
 .param r: float32 (size: 4, cast: variable(f32))
 .param g: float32 (size: 4, cast: variable(f32))
 .param b: float32 (size: 4, cast: variable(f32))
-.value: nfc(120)
+.value: nfc(121)
 }
 lights.attenuation(light: int32, constant: float32, linear: float32, quadratic: float32): void: function {
 .kind: static const inline
@@ -7762,7 +7775,7 @@ lights.attenuation(light: int32, constant: float32, linear: float32, quadratic: 
 .param constant: float32 (size: 4, cast: variable(f32))
 .param linear: float32 (size: 4, cast: variable(f32))
 .param quadratic: float32 (size: 4, cast: variable(f32))
-.value: nfc(121)
+.value: nfc(122)
 }
 Gui: typename {
 .kind: static const typename(void)
@@ -7881,7 +7894,7 @@ Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action:
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param closure: pointer (size: 4, cast: variable(ref))
 .param onEvent: function (size: 4, cast: variable(ref))
-.value: nfc(122)
+.value: nfc(123)
 }
 Gui.setTitle(title: char[*]): void: function {
 .kind: static const inline
@@ -7891,7 +7904,7 @@ Gui.setTitle(title: char[*]): void: function {
 .owner: Gui
 .param .result: void (size: 0, cast: inline)
 .param title: char[*] (size: 4, cast: variable(ref))
-.value: nfc(123)
+.value: nfc(124)
 }
 grayClamp(c: uint32): uint32: function {
 .kind: static const function
@@ -8713,7 +8726,7 @@ drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 	<drawHist+?>: load.sp(+1040)
 	<drawHist+?>: load.i32
 	<drawHist+?>: load.sp(+16)
-	<drawHist+?>: nfc(106) ;gxSurf.calcHist(surf: gxSurf, roi: gxRect, rgb: uint32, lut: uint32[256]): void
+	<drawHist+?>: nfc(107) ;gxSurf.calcHist(surf: gxSurf, roi: gxRect, rgb: uint32, lut: uint32[256]): void
 	cmplGfx/lib/color.ci:14: (43 bytes): rect: gxRect := {...}
 	<drawHist+?>: inc.sp(+16)
 	cmplGfx/lib/color.ci:15: (7 bytes): rect.w := 256;
@@ -8749,7 +8762,7 @@ drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 	<drawHist+?>: add.i32
 	<drawHist+?>: inc.i32(+7)
 	<drawHist+?>: load.z32
-	<drawHist+?>: nfc(92) ;gxSurf.fillRect(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color: int32): void
+	<drawHist+?>: nfc(93) ;gxSurf.fillRect(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color: int32): void
 	cmplGfx/lib/color.ci:29: (227 bytes): for (x: int32 := 0; x < rect.w; x := x + 1)
 	<drawHist+?>: load.z32
 	<drawHist+?>: jmp +213
@@ -9282,7 +9295,7 @@ gxSurf(copy: gxSurf): gxSurf: function {
 	<gxSurf+?>: load.z32
 	<gxSurf+?>: dup.x2 sp(7)
 	<gxSurf+?>: load.ref <?> ;null
-	<gxSurf+?>: nfc(100) ;gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
+	<gxSurf+?>: nfc(101) ;gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
 	cmplGfx/gfxlib.ci:77: (3 bytes): return .result := result;
 	<gxSurf+?>: set.x2 sp(5)
 	<gxSurf+?>: ret
@@ -9803,7 +9816,7 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: dup.x1 sp(4)
 	<tile+?>: dup.x2 sp(14)
 	<tile+?>: load.sp(+40)
-	<tile+?>: nfc(100) ;gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
+	<tile+?>: nfc(101) ;gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
 	cmplGfx/gfxlib.ci:171: (3 bytes): i := i + rect.w
 	<tile+?>: dup.x1 sp(6)
 	<tile+?>: add.i32
@@ -10019,12 +10032,12 @@ show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void: function {
 	<show+?>: div.f32
 	<show+?>: load.f32 1.000000
 	<show+?>: load.f32 100.000000
-	<show+?>: nfc(108) ;camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): void
+	<show+?>: nfc(109) ;camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): void
 	cmplGfx/gfxlib.ci:300: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
 	<show+?>: dup.x2 sp(2)
 	<show+?>: load.sp(+8)
 	<show+?>: load.ref <?> ;show.onEvent(closure: Closure, action: int32, button: int32, ex: int32, ey: int32): int32
-	<show+?>: nfc(122) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<show+?>: nfc(123) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	cmplGfx/gfxlib.ci:301: (6 bytes): closure.offs.destroy(closure.offs);
 	<show+?>: dup.x2 sp(2)
 	<show+?>: nfc(80) ;gxSurf.destroy(surf: gxSurf): void
@@ -10047,7 +10060,7 @@ show(surf: gxSurf): void: function {
 	<show>  : dup.x2 sp(1)
 	<show+?>: load.ref <?> ;null
 	<show+?>: load.ref <?> ;null
-	<show+?>: nfc(122) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<show+?>: nfc(123) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	<show+?>: ret
 }
 show(surf: gxSurf, onEvent(action: int32, button: int32, ex: int32, ey: int32): int32): void: function {
@@ -10078,13 +10091,13 @@ show(surf: gxSurf, onEvent(action: int32, button: int32, ex: int32, ey: int32): 
 	<show+?>: dup.x2 sp(2)
 	<show+?>: load.ref <?> ;null
 	<show+?>: load.ref <?> ;null
-	<show+?>: nfc(122) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<show+?>: nfc(123) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	<show+?>: ret
 	cmplGfx/gfxlib.ci:315: (13 bytes): Gui.showWindow(surf, onEvent, delegateEvent);
 	<show+?>: dup.x2 sp(2)
 	<show+?>: dup.x1 sp(3)
 	<show+?>: load.ref <?> ;show.delegateEvent(onEvent(action: int32, button: int32, ex: int32, ey: int32): int32, action: int32, button: int32, ex: int32, ey: int32): int32
-	<show+?>: nfc(122) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<show+?>: nfc(123) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	<show+?>: ret
 }
 showDiff(image1: gxSurf, image2: gxSurf): void: function {
@@ -10143,7 +10156,7 @@ showDiff(image1: gxSurf, image2: gxSurf): void: function {
 	<showDiff+?>: dup.x2 sp(0)
 	<showDiff+?>: load.sp(+8)
 	<showDiff+?>: load.ref <?> ;showDiff.onEvent(closure: Closure, action: int32, button: int32, ex: int32, ey: int32): int32
-	<showDiff+?>: nfc(122) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<showDiff+?>: nfc(123) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	<showDiff+?>: inc.sp(-24)
 	<showDiff+?>: ret
 }
@@ -10226,7 +10239,7 @@ showWindow(w: int32, h: int32, t: int32, eval(in: vec4f): vec4f): void: function
 	<showWindow+?>: dup.x2 sp(0)
 	<showWindow+?>: load.sp(+8)
 	<showWindow+?>: load.ref <?> ;showWindow.onEvent(closure: Closure, action: int32, button: int32, ex: int32, ey: int32): int32
-	<showWindow+?>: nfc(122) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<showWindow+?>: nfc(123) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	cmplGfx/gfxlib.ci:392: (6 bytes): closure.thumb.destroy(closure.thumb);
 	<showWindow+?>: dup.x2 sp(2)
 	<showWindow+?>: nfc(80) ;gxSurf.destroy(surf: gxSurf): void
@@ -11804,7 +11817,7 @@ lib/vec/mat4f.ci:13: mat4f: function(<mat4f>)
 lib/vec/mat4f.ci:25: mat4f: function(<mat4f>)
 lib/vec/mat4f.ci:33: mul: function(<mul>)
 File: typename(<File>)
-cmplGfx/src/gx_main.c:1145: gxRect: typename(<gxRect>)
+cmplGfx/src/gx_main.c:1156: gxRect: typename(<gxRect>)
 gxSurf: typename(<gxSurf>)
 gxMesh: typename(<gxMesh>)
 camera: typename(<camera>)
@@ -11839,16 +11852,16 @@ cmplGfx/gfxlib.ci:350: showWindow: function(<showWindow>)
 
 ---------- Memory usage:
 memory[all] @000000; size: 2096872(2.0 Mb)
-memory[used] @000000; size: 281090(274.5 Kb)
-memory[heap] @044a02; size: 1291516(1.2 Mb)
+memory[used] @000000; size: 281834(275.2 Kb)
+memory[heap] @044cea; size: 1290772(1.2 Mb)
 memory[stack] @0fff44; size: 524218(511.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 272336(266.0 Kb)
+memory[meta] @000000; size: 273080(266.7 Kb)
 memory[code] @000000; size: 8443(8.2 Kb)
 memory[data] @000000; size: 52(52.0 bytes)
 
 ---------- heap memory:
-memory[free] @044a18; size: 1291472(1.2 Mb)
+memory[free] @044d08; size: 1290720(1.2 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

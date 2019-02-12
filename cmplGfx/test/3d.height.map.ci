@@ -1,0 +1,61 @@
+gxSurf heightMap = gxSurf("asset/image/heightmap.png", 32);
+gxSurf texture = gxSurf("asset/image/texture.png", 32);
+gxMesh model = gxMesh.create(0);
+
+void eval(gxMesh mesh, int sGrid, int tGrid, float32 depth, gxSurf depthMap);
+
+model.eval(256, 256, .3, heightMap);
+debug("model", model);
+lights.enable(0, true);
+lights.position(0, 2., -2., 2.);
+lights.ambient(0, .4, .4, .4);
+lights.diffuse(0, .8, .8, .8);
+lights.specular(0, 1., 1., 1.);
+lights.attenuation(0, 1., 0., 0.);
+
+// material Dash
+model.texture(texture);
+model.ambient(0.588235, 0.588235, 0.588235);
+model.diffuse(0.588235, 0.588235, 0.588235);
+model.specular(0.898039, 0.898039, 0.898039);
+model.shine(64);
+
+vec4f center = { x: 0, y: 0, z: 0, w: 1 };
+vec4f resize = { x: 1, y: 1, z: 1, w: 1 };
+model.normalize(0, center.data, resize.data);
+
+model.show(1440, 900, 15);
+
+texture.destroy();
+model.destroy();
+
+void eval(gxMesh mesh, int sGrid, int tGrid, float32 depth, gxSurf depthMap) {
+
+	float64 sDivision = sGrid;
+	float64 tDivision = tGrid;
+
+	mesh.recycle(sGrid * tGrid);
+	for (int i = 0; i < tGrid; i += 1) {
+		float64 t = i / tDivision;
+		for (int j = 0; j < sGrid; j += 1) {
+			float64 s = j / sDivision;
+
+			float64 z = lum(depthMap.tex(1 - s, 1 - t)) / 255f;
+			int idx = mesh.addVertex(s, t, depth * z);
+			mesh.setNormal(idx, 0, 0, 1);
+			mesh.setTexture(idx, s, t);
+		}
+	}
+
+	for (int j = 0; j < tGrid - 1; j += 1) {
+		int l1 = j * sGrid;
+		int l2 = l1 + sGrid;
+		for (int i = 0; i < sGrid - 1; i += 1) {
+			int v1 = l1 + i;		// v1 -- v2
+			int v2 = v1 + 1;		//  | \  |
+			int v4 = l2 + i;		//  |  \ |
+			int v3 = v4 + 1;		// v4 -- v3
+			mesh.addFace(v1, v2, v3, v4);
+		}
+	}
+}

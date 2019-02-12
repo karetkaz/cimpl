@@ -150,6 +150,16 @@ static vmError surf_get(nfcContext ctx) {
 	return noError;
 }
 
+static const char *proto_surf_tex = "int32 tex(gxSurf surf, float32 x, float32 y)";
+static vmError surf_tex(nfcContext ctx) {
+	gx_Surf surf = nextValue(ctx).ref;
+	int32_t x = nextValue(ctx).f32 * 65535 * surf->width;
+	int32_t y = nextValue(ctx).f32 * 65535 * surf->height;
+
+	reti32(ctx, gx_getpix16(surf, x, y, 1));
+	return noError;
+}
+
 static const char *proto_surf_set = "void set(gxSurf surf, int x, int y, uint32 color)";
 static vmError surf_set(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
@@ -802,7 +812,7 @@ static void looperCallback(looperArgs args) {
 		}
 	}
 	else {
-		if (args->event.action == KEY_RELEASE && args->event.button == 27) {
+		if (args->event.button == 27) {
 			// if there is no callback, exit wit esc key
 			return exitLooper(args);
 		}
@@ -1077,6 +1087,7 @@ int cmplInit(rtContext rt) {
 		{surf_depth,    proto_surf_depth},
 		{surf_get,      proto_surf_get},
 		{surf_set,      proto_surf_set},
+		{surf_tex,      proto_surf_tex},
 		{surf_drawRect, proto_surf_drawRect},
 		{surf_fillRect, proto_surf_fillRect},
 		{surf_drawOval, proto_surf_drawOval},

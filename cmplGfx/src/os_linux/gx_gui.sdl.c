@@ -35,8 +35,9 @@ int getWindowEvent(gxWindow window, int *button, int *x, int *y) {
 
 	event.type = 0;
 	while (SDL_PollEvent(&event)) {
-		if (event.type != SDL_MOUSEMOTION) {
-			// consume mouse motion events
+		if (event.type != SDL_MOUSEMOTION &&
+			event.type != SDL_FINGERMOTION) {
+			// consume motion events
 			break;
 		}
 	}
@@ -141,6 +142,24 @@ int getWindowEvent(gxWindow window, int *button, int *x, int *y) {
 					break;
 			}
 			return MOUSE_RELEASE;
+
+		case SDL_FINGERDOWN:
+			*button = 1;
+			*x = event.tfinger.x * window->image->w;
+			*y = event.tfinger.y * window->image->h;
+			return MOUSE_PRESS;
+
+		case SDL_FINGERUP:
+			*button = 1;
+			*x = event.tfinger.x * window->image->w;
+			*y = event.tfinger.y * window->image->h;
+			return MOUSE_RELEASE;
+
+		case SDL_FINGERMOTION:
+			*button = 1;
+			*x = event.tfinger.x * window->image->w;
+			*y = event.tfinger.y * window->image->h;
+			return MOUSE_MOTION;
 
 		case SDL_MOUSEMOTION:
 			if (btnstate == 0) {

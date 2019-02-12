@@ -130,7 +130,7 @@ static inline void gx_setpixel(gx_Surf surf, int x, int y, uint32_t color) {
 	if (address != NULL) {
 		switch (surf->depth) {
 			case 32:
-			//case 24:
+			// TODO: case 24:
 				*(uint32_t*)address = color;
 				break;
 
@@ -149,8 +149,8 @@ static inline void gx_setpixel(gx_Surf surf, int x, int y, uint32_t color) {
 static inline uint32_t gx_getpix16(gx_Surf surf, int32_t fpx, int32_t fpy, int linear) {
 	int32_t x = (uint32_t)fpx >> 16;
 	int32_t y = (uint32_t)fpy >> 16;
-	char *ofs = gx_getpaddr(surf, x, y);
 
+	char *ofs = gx_getpaddr(surf, x, y);
 	if (ofs == NULL) {
 		return 0;
 	}
@@ -163,60 +163,64 @@ static inline uint32_t gx_getpix16(gx_Surf surf, int32_t fpx, int32_t fpy, int l
 	if (y + 1 >= surf->height) {
 		ly = 0;
 	}
-	if (!linear) {
+	if (linear == 0) {
 		lx = ly = 0;
 	}
 
-	if (surf->depth == 32) {
-		if (lx && ly) {
-			argb p0 = *(argb*)(ofs + 0);
-			argb p1 = *(argb*)(ofs + 4);
-			ofs += surf->scanLen;
-			argb p2 = *(argb*)(ofs + 0);
-			argb p3 = *(argb*)(ofs + 4);
+	switch (surf->depth) {
+		case 32:
+		case 24:
+			if (lx && ly) {
+				argb p0 = *(argb*)(ofs + 0);
+				argb p1 = *(argb*)(ofs + 4);
+				ofs += surf->scanLen;
+				argb p2 = *(argb*)(ofs + 0);
+				argb p3 = *(argb*)(ofs + 4);
 
-			p0 = gx_mixcolor(p0, p1, lx);
-			p2 = gx_mixcolor(p2, p3, lx);
-			return gx_mixcolor(p0, p2, ly).val;
-		}
-		else if (lx) {
-			argb p0 = *(argb*)(ofs + 0);
-			argb p1 = *(argb*)(ofs + 4);
-			return gx_mixcolor(p0, p1, lx).val;
-		}
-		else if (ly) {
-			argb p0 = *(argb*)(ofs + 0);
-			argb p1 = *(argb*)(ofs + surf->scanLen);
-			return gx_mixcolor(p0, p1, ly).val;
-		}
-		return *(uint32_t*)ofs;
+				p0 = gx_mixcolor(p0, p1, lx);
+				p2 = gx_mixcolor(p2, p3, lx);
+				return gx_mixcolor(p0, p2, ly).val;
+			}
+			if (lx) {
+				argb p0 = *(argb*)(ofs + 0);
+				argb p1 = *(argb*)(ofs + 4);
+				return gx_mixcolor(p0, p1, lx).val;
+			}
+			if (ly) {
+				argb p0 = *(argb*)(ofs + 0);
+				argb p1 = *(argb*)(ofs + surf->scanLen);
+				return gx_mixcolor(p0, p1, ly).val;
+			}
+			return *(uint32_t*)ofs;
+		case 15:
+		case 16:
+			// TODO: not implemented
+			return *(uint16_t*)ofs;
+		case 8:
+			if (lx && ly) {
+				uint8_t p0 = *(uint8_t*)(ofs + 0);
+				uint8_t p1 = *(uint8_t*)(ofs + 1);
+				ofs += surf->scanLen;
+				uint8_t p2 = *(uint8_t*)(ofs + 0);
+				uint8_t p3 = *(uint8_t*)(ofs + 1);
+
+				p0 = gx_mixgray(p0, p1, lx);
+				p2 = gx_mixgray(p2, p3, lx);
+				return gx_mixgray(p0, p2, ly);
+			}
+			if (lx) {
+				uint8_t p0 = *(uint8_t*)(ofs + 0);
+				uint8_t p1 = *(uint8_t*)(ofs + 1);
+				return gx_mixgray(p0, p1, lx);
+			}
+			if (ly) {
+				uint8_t p0 = *(uint8_t*)(ofs + 0);
+				uint8_t p1 = *(uint8_t*)(ofs + surf->scanLen);
+				return gx_mixgray(p0, p1, ly);
+			}
+			return *(uint8_t*)ofs;
 	}
-	else if (surf->depth == 8) {
-		if (lx && ly) {
-			uint8_t p0 = *(uint8_t*)(ofs + 0);
-			uint8_t p1 = *(uint8_t*)(ofs + 1);
-			ofs += surf->scanLen;
-			uint8_t p2 = *(uint8_t*)(ofs + 0);
-			uint8_t p3 = *(uint8_t*)(ofs + 1);
-
-			p0 = gx_mixgray(p0, p1, lx);
-			p2 = gx_mixgray(p2, p3, lx);
-			return gx_mixgray(p0, p2, ly);
-		}
-		else if (lx) {
-			uint8_t p0 = *(uint8_t*)(ofs + 0);
-			uint8_t p1 = *(uint8_t*)(ofs + 1);
-			return gx_mixgray(p0, p1, lx);
-		}
-		else if (ly) {
-			uint8_t p0 = *(uint8_t*)(ofs + 0);
-			uint8_t p1 = *(uint8_t*)(ofs + surf->scanLen);
-			return gx_mixgray(p0, p1, ly);
-		}
-		return *(uint8_t*)ofs;
-	}
-
-	return gx_getpixel(surf, x, y);
+	return 0;
 }
 
 

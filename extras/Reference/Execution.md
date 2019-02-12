@@ -139,44 +139,11 @@ Instruction length: 2 bytes
 Requires 0 operands: […  
 Returns 0 values: […, [TODO]  
 
-## Instruction `not.b32`
-Perform [TODO]
-
-### Description
-Instruction code: `0x0a`  
-Instruction length: 1 byte  
-
-### Stack change
-Requires 1 operand: […, a  
-Returns 1 value: […, !a  
-
-## Instruction `inc.i32`
-Perform [TODO]
-
-### Description
-Instruction code: `0x0b`  
-Instruction length: 4 bytes  
-
-### Stack change
-Requires 1 operand: […, a  
-Returns 1 value: […, a, [TODO]  
-
-## Instruction `mad.u32`
-Perform [TODO]
-
-### Description
-Instruction code: `0x0c`  
-Instruction length: 4 bytes  
-
-### Stack change
-Requires 2 operands: […, a, b  
-Returns 1 values: […, a, [TODO]  
-
 ## Instruction `inc.sp`
 Perform [TODO]
 
 ### Description
-Instruction code: `0x10`  
+Instruction code: `0x09`  
 Instruction length: 4 bytes  
 
 ### Stack change
@@ -187,18 +154,51 @@ Returns 0 values: […, [TODO]
 Perform [TODO]
 
 ### Description
-Instruction code: `0x11`  
+Instruction code: `0x0a`  
 Instruction length: 4 bytes  
 
 ### Stack change
 Requires 0 operands: […  
 Returns 1 values: […, a, [TODO]  
 
+## Instruction `not.b32`
+Perform [TODO]
+
+### Description
+Instruction code: `0x0b`  
+Instruction length: 1 byte  
+
+### Stack change
+Requires 1 operand: […, a  
+Returns 1 value: […, !a  
+
+## Instruction `inc.i32`
+Perform [TODO]
+
+### Description
+Instruction code: `0x0c`  
+Instruction length: 4 bytes  
+
+### Stack change
+Requires 1 operand: […, a  
+Returns 1 value: […, a, [TODO]  
+
+## Instruction `mad.u32`
+Perform [TODO]
+
+### Description
+Instruction code: `0x0d`  
+Instruction length: 4 bytes  
+
+### Stack change
+Requires 2 operands: […, a, b  
+Returns 1 values: […, a, [TODO]  
+
 ## Instruction `dup.x1`
 Perform [TODO]
 
 ### Description
-Instruction code: `0x12`  
+Instruction code: `0x10`  
 Instruction length: 2 bytes  
 
 ### Stack change
@@ -209,7 +209,7 @@ Returns 1 values: […, a, [TODO]
 Perform [TODO]
 
 ### Description
-Instruction code: `0x13`  
+Instruction code: `0x11`  
 Instruction length: 2 bytes  
 
 ### Stack change
@@ -220,7 +220,7 @@ Returns 2 values: […, a, b, [TODO]
 Perform [TODO]
 
 ### Description
-Instruction code: `0x14`  
+Instruction code: `0x12`  
 Instruction length: 2 bytes  
 
 ### Stack change
@@ -231,7 +231,7 @@ Returns 4 values: […, a, b, c, d, [TODO]
 Perform [TODO]
 
 ### Description
-Instruction code: `0x15`  
+Instruction code: `0x13`  
 Instruction length: 2 bytes  
 
 ### Stack change
@@ -242,7 +242,7 @@ Returns 0 value: […, [TODO]
 Perform [TODO]
 
 ### Description
-Instruction code: `0x16`  
+Instruction code: `0x14`  
 Instruction length: 2 bytes  
 
 ### Stack change
@@ -253,18 +253,51 @@ Returns 0 values: […, [TODO]
 Perform [TODO]
 
 ### Description
-Instruction code: `0x17`  
+Instruction code: `0x15`  
 Instruction length: 2 bytes  
 
 ### Stack change
 Requires 4 operands: […, a, b, c, d  
 Returns 0 values: […, [TODO]  
 
-## Instruction `load.z32`
+## Instruction `mov.x1`
+Perform [TODO]
+
+### Description
+Instruction code: `0x16`  
+Instruction length: 3 bytes  
+
+### Stack change
+Requires 0 operands: […  
+Returns 0 values: […, [TODO]  
+
+## Instruction `mov.x2`
+Perform [TODO]
+
+### Description
+Instruction code: `0x17`  
+Instruction length: 3 bytes  
+
+### Stack change
+Requires 0 operands: […  
+Returns 0 values: […, [TODO]  
+
+## Instruction `mov.x4`
 Perform [TODO]
 
 ### Description
 Instruction code: `0x18`  
+Instruction length: 3 bytes  
+
+### Stack change
+Requires 0 operands: […  
+Returns 0 values: […, [TODO]  
+
+## Instruction `load.z32`
+Perform [TODO]
+
+### Description
+Instruction code: `0x19`  
 Instruction length: 1 byte  
 
 ### Stack change
@@ -275,7 +308,7 @@ Returns 1 values: […, a, [TODO]
 Perform [TODO]
 
 ### Description
-Instruction code: `0x19`  
+Instruction code: `0x1a`  
 Instruction length: 1 byte  
 
 ### Stack change
@@ -286,7 +319,7 @@ Returns 2 values: […, a, b, [TODO]
 Perform [TODO]
 
 ### Description
-Instruction code: `0x1a`  
+Instruction code: `0x1b`  
 Instruction length: 1 byte  
 
 ### Stack change
@@ -297,7 +330,7 @@ Returns 4 values: […, a, b, c, d, [TODO]
 Perform [TODO]
 
 ### Description
-Instruction code: `0x1b`  
+Instruction code: `0x1c`  
 Instruction length: 5 bytes  
 
 ### Stack change
@@ -308,34 +341,23 @@ Returns 1 values: […, a, [TODO]
 Perform [TODO]
 
 ### Description
-Instruction code: `0x1c`  
+Instruction code: `0x1d`  
 Instruction length: 9 bytes  
 
 ### Stack change
 Requires 0 operands: […  
 Returns 2 values: […, a, b, [TODO]  
 
-## Instruction `load.f32`
-Perform [TODO]
-
-### Description
-Instruction code: `0x1d`  
-Instruction length: 5 bytes  
-
-### Stack change
-Requires 0 operands: […  
-Returns 1 values: […, a, [TODO]  
-
-## Instruction `load.f64`
+## Instruction `copy.mem`
 Perform [TODO]
 
 ### Description
 Instruction code: `0x1e`  
-Instruction length: 9 bytes  
+Instruction length: 4 bytes  
 
 ### Stack change
-Requires 0 operands: […  
-Returns 2 values: […, a, b, [TODO]  
+Requires 2 operands: […, a, b  
+Returns 0 values: […, [TODO]  
 
 ## Instruction `load.ref`
 Perform [TODO]
@@ -480,7 +502,18 @@ Instruction length: 4 bytes
 Requires 0 operands: […  
 Returns 2 values: […, a, b, [TODO]  
 
-## Instruction `store.m32`
+## Instruction `load.m128`
+Perform [TODO]
+
+### Description
+Instruction code: `0x2c`  
+Instruction length: 4 bytes  
+
+### Stack change
+Requires 0 operands: […  
+Returns 4 values: […, a, b, c, d, [TODO]  
+
+## Instruction `store.m64`
 Perform [TODO]
 
 ### Description
@@ -488,10 +521,10 @@ Instruction code: `0x2d`
 Instruction length: 4 bytes  
 
 ### Stack change
-Requires 1 operand: […, a  
-Returns 0 value: […, [TODO]  
+Requires 2 operands: […, a, b  
+Returns 0 values: […, [TODO]  
 
-## Instruction `store.m64`
+## Instruction `store.m32`
 Perform [TODO]
 
 ### Description
@@ -499,10 +532,10 @@ Instruction code: `0x2e`
 Instruction length: 4 bytes  
 
 ### Stack change
-Requires 2 operands: […, a, b  
-Returns 0 values: […, [TODO]  
+Requires 1 operand: […, a  
+Returns 0 value: […, [TODO]  
 
-## Instruction `copy.mem`
+## Instruction `store.m128`
 Perform [TODO]
 
 ### Description
@@ -510,7 +543,7 @@ Instruction code: `0x2f`
 Instruction length: 4 bytes  
 
 ### Stack change
-Requires 2 operands: […, a, b  
+Requires 4 operands: […, a, b, c, d  
 Returns 0 values: […, [TODO]  
 
 ## Instruction `cmt.b32`
@@ -1228,6 +1261,17 @@ Instruction length: 1 byte
 Requires 1 operand: […, a  
 Returns 2 value: […, a, b, [TODO]  
 
+## Instruction `load.f32`
+Perform [TODO]
+
+### Description
+Instruction code: `0x7f`  
+Instruction length: 5 bytes  
+
+### Stack change
+Requires 0 operands: […  
+Returns 1 values: […, a, [TODO]  
+
 ## Instruction `neg.f64`
 Perform [TODO]
 
@@ -1370,6 +1414,17 @@ Instruction length: 1 byte
 ### Stack change
 Requires 2 operands: […, a, b  
 Returns 1 values: […, a, [TODO]  
+
+## Instruction `load.f64`
+Perform [TODO]
+
+### Description
+Instruction code: `0x8f`  
+Instruction length: 9 bytes  
+
+### Stack change
+Requires 0 operands: […  
+Returns 2 values: […, a, b, [TODO]  
 
 ## Instruction `neg.v4f`
 Perform [TODO]

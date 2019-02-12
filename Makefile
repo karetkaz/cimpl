@@ -81,7 +81,6 @@ libOpenGL.dll: cmplGL/src/openGL.c
 # for Browser platform
 cmpl.js: $(SRC_CC_EXE) lib/stdlib.ci
 	emcc $(EMFLAGS) -o extras/Emscripten/cmpl.js $(EM_MAIN_MODULE) -s USE_SDL=2 -s USE_LIBPNG=1 $(filter %.c, $^)
-	sed -i -e 's/$$legalf32//g' extras/Emscripten/cmpl.js
 
 libFile.wasm: cmplFile/src/file.c
 	emcc $(EMFLAGS) -o extras/Emscripten/libFile.wasm -I src $(EM_SIDE_MODULE) $(filter %.c, $^)
