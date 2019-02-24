@@ -1,93 +1,81 @@
 // static, virtual and abstract methods
 
 struct RecordMethodTest {
-	// static method
-	// is like a `global function` hidden in a record
-	static int staticMethod(int x, int y) {
-		return x + y;
+
+	// static method is like a `global function` hidden in a record
+	static void staticMethod(RecordMethodTest this, int x) {
+		trace("staticMethod", x);
 	}
 
-	// static forward method
-	// is like a `forward function reference` hidden in a record
-	static int forwardMethod(int x, int y);
+	// static forward method is like a `forward function reference` hidden in a record
+	static void forwardMethod(RecordMethodTest this, int x);
 
 	// abstract methods must be overridden when inheriting or instantiating
 	// see @lang.member.ci: the compiler sees it as a `constant function reference` without `default type initializer`
-	int abstractMethod(int x, int y);
+	void abstractMethod(RecordMethodTest this, int x);
 
 	// virtual method (use to delegate)
 	// see @lang.member.ci: the compiler sees it as a `constant function reference` with `default field initializer`
-	int delegateMethod(int x, int y) = forwardMethod;
+	void delegateMethod(RecordMethodTest this, int x) = forwardMethod;
 
 	// virtual methods can be overridden when inheriting or instantiating
 	// the compiler will generate a static function and instance member:
-	//   1. static int virtualMethod(int x, int y) { ... }
-	//   2. int virtualMethod(int x, int y) = /*static*/ virtualMethod;
-	int virtualMethod(int x, int y) {
-		return x * y;
+	//   1. static virtualMethod(...) { ... }
+	//   2. virtualMethod(...) = /*static*/ virtualMethod;
+	void virtualMethod(RecordMethodTest this, int x) {
+		trace("virtualMethod", x);
 	}
 
 	// static forward method implementation
-	static int forwardMethod(int x, int y) {
-		return x * y;
+	static void forwardMethod(RecordMethodTest this, int x) {
+		trace("forwardMethod", x);
 	}
 
-	// int abstractMethod(int x, int y) { return 0; }      // FIXME: virtualize abstract method
-	// int delegateMethod(int x, int y) { return 0; }      // Error: redefinition of method
-	// int virtualMethod(int x, int y) { return 0; }       // Error: redefinition of method
-	// int staticMethod(int x, int y) { return 0; }        // Error: redefinition of method
-
-	void print(RecordMethodTest this) {
-		trace("virtual");
-	}
-
-	static void printStatic(RecordMethodTest this) {
-		trace("static");
-	}
+//	void abstractMethod(RecordMethodTest this, int x) {}        // FIXME: make abstract method virtual?
+//	void delegateMethod(RecordMethodTest this, int x) {}        // Error: redefinition of method
+//	void virtualMethod(RecordMethodTest this, int x) {}         // Error: redefinition of method
+//	void staticMethod(RecordMethodTest this, int x) {}          // Error: redefinition of method
 }
 
-static int globalFunction(int x, int y) {
-	return x * y;
+void globalFunction(RecordMethodTest this, int x) {
+	trace("globalFunction", x);
 }
 
 RecordMethodTest recordMethodTest = {
-	delegateMethod: globalFunction;
-	abstractMethod: RecordMethodTest.staticMethod;
-	// virtualMethod: RecordMethodTest.staticMethod;          // FIXME: lookup only non static members
+	// abstract method must be overridden
+	abstractMethod: globalFunction;                             // ok: global function
+//	abstractMethod: RecordMethodTest.staticMethod;              // ok: static method
+//	abstractMethod: RecordMethodTest.virtualMethod;             // ok: using the generated static method
+//	abstractMethod: RecordMethodTest.delegateMethod;            // Error: delegate method is an instance member
+
+	// virtual method can be overridden
+//	virtualMethod: globalFunction;                              // Override virtual method
+//	delegateMethod: globalFunction;                             // Override delegate method
 };
 
-void customPrint(RecordMethodTest this) {
-	trace("override");
-}
 
-RecordMethodTest recordMethodTestCustomPrint = {
-	abstractMethod: globalFunction;
-	print: customPrint;
-};
-
-// extension function is not yet defined, call virtual member function
-recordMethodTest.print();
-recordMethodTestCustomPrint.print();
-
-// extension function is not yet defined, call static member function
-recordMethodTest.printStatic();
-
-void print(RecordMethodTest this) {
-	trace("extension");
-}
-
-void printStatic(RecordMethodTest this) {
-	trace("extension");
-}
+// extension function is not yet defined, lookup the best match defined in the type.
+recordMethodTest.staticMethod(1);                               // => RecordMethodTest.staticMethod(recordMethodTest, 1);
+recordMethodTest.virtualMethod(1);                              // => recordMethodTest.virtualMethod(recordMethodTest, 1);
 
 // extension function is defined, it has the highest priority.
-recordMethodTest.print();
-recordMethodTest.printStatic();
-recordMethodTestCustomPrint.print();
+void staticMethod(RecordMethodTest this, int x) {
+	debug("extension.staticMethod");
+	if (this != null) {
+		RecordMethodTest.staticMethod(this, x);
+	}
+}
+void virtualMethod(RecordMethodTest this, int x) {
+	debug("extension.virtualMethod");
+	if (this != null) {
+		this.virtualMethod(this, x);
+	}
+}
 
-// force invoke the original methods
-RecordMethodTest.print(recordMethodTest);
-RecordMethodTest.printStatic(recordMethodTest);
-RecordMethodTest.print(recordMethodTestCustomPrint);
+recordMethodTest.staticMethod(2);                               // => staticMethod(recordMethodTest, 1);
+recordMethodTest.virtualMethod(2);                              // => virtualMethod(recordMethodTest, 1);
 
-// todo: to force or not the overridden method invocation
+// invoke the original methods, by explicitly passing all the arguments
+RecordMethodTest.staticMethod(recordMethodTest, 3);             // invoke the static method implemented in the type
+RecordMethodTest.virtualMethod(recordMethodTest, 3);            // invoke the static method of the type
+recordMethodTest.virtualMethod(recordMethodTest, 3);            // invoke the virtual method of the instance

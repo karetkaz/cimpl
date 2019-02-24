@@ -198,6 +198,7 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 		size_t length = strlen(name) + 1;
 		unsigned hash = rehash(name, length) % hashTableSize;
 		def->name = ccUniqueStr(cc, (char *) name, length, hash);
+		def->owner = cc->owner;
 		def->nest = cc->nest;
 		def->type = type;
 		def->init = init;
@@ -560,11 +561,21 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				loc = linkOf(ref->op.lhso, 1);
 				if (loc != NULL && !isTypename(loc)) {
 					/* lookup order for a.add(b) => add(a, b)
-						1. search for extension method: add(a, b)
-						2. search for virtual method: a.add(a, b)
-						3. search for static method: T.add(a, b)
+						1. search for the matching method: a.add(a, b)
+						2. search for extension method: add(a, b)
+						3. search for virtual method: a.add(a, b)
+						4. search for static method: T.add(a, b)
 					*/
 
+					// 1. search for the matching method: a.add(a, b)
+					type = typeCheckRef(cc, loc, ref->op.rhso, args, 0);
+					if (type != NULL) {
+						ref->type = type;
+						debug("exact function: %t", ast);
+						return ast->type = type;
+					}
+
+					// convert instance to parameter and try to lookup again
 					if (args == cc->void_tag) {
 						args = ref->op.lhso;
 					}
@@ -575,6 +586,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 					ref = ref->op.rhso;
 					ast->op.rhso = args;
 
+					// 2. search for extension method: add(a, b)
 					type = typeCheckRef(cc, NULL, ref, args, 0);
 					if (type != NULL) {
 						ast->op.lhso = ref;
@@ -582,6 +594,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 						return ast->type = type;
 					}
 
+					// 3. search for virtual method: a.add(a, b)
+					// 4. search for static method: T.add(a, b)
 					type = typeCheckRef(cc, loc, ref, args, raise);
 					if (type != NULL) {
 						ast->op.lhso->type = type;

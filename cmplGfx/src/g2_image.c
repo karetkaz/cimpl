@@ -230,12 +230,12 @@ gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
 			return NULL;
 
 		// Valid Bitmap Formats
-		case 0x4d42:		// BM -
-		case 0x4142:		// BA - Bitmap Array
-		case 0x4943:		// CI - Cursor Icon
-		case 0x5043:		// CP -
-		case 0x4349:		// IC -
-		case 0x5450:		// PT - Pointer
+		case 0x4d42:        // BM -
+		case 0x4142:        // BA - Bitmap Array
+		case 0x4943:        // CI - Cursor Icon
+		case 0x5043:        // CP -
+		case 0x4349:        // IC -
+		case 0x5450:        // PT - Pointer
 			break;
 	}
 
@@ -245,8 +245,8 @@ gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
 			fclose(fin);
 			return NULL;
 
-		case 40:		// Windows;
-		case 64:		// OS/2 2+;
+		case 40:        // Windows;
+		case 64:        // OS/2 2+;
 			break;
 
 		/*TODO: 
@@ -332,7 +332,7 @@ gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
 			lineReader = readRle08;
 			break;
 
-		case 0:		// no compression
+		case 0:        // no compression
 			break;
 	}
 	if (lineReader == NULL) {
@@ -361,7 +361,7 @@ gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
 		return NULL;
 	}
 
-	char *ptr = dst->basePtr + dst->scanLen * dst->height;
+	char *ptr = dst->basePtr + dst->scanLen * (size_t) dst->height;
 	unsigned lineSize = ((infoHeader.depth * infoHeader.width >> 3) + 3) & ~3;
 
 	fseek(fin, header.imgstart, SEEK_SET);
@@ -463,7 +463,7 @@ int gx_saveBmp(const char *dst, gx_Surf src, int flags) {
 		return 1;
 	}
 
-	char *ptr = src->basePtr + src->height * src->scanLen;
+	char *ptr = src->basePtr + src->scanLen * (size_t) src->height;
 	unsigned lineSize = ((infoHeader.depth * src->width >> 3) + 3) & ~3;
 
 	infoHeader.width = src->width;
@@ -587,14 +587,14 @@ gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
 			fclose(fin);
 			return NULL;
 
-		case JCS_GRAYSCALE:	/* monochrome */
+		case JCS_GRAYSCALE:    /* monochrome */
 			conv_2xrgb = gx_getcbltf(cblt_conv_08, depth);
 			break;
 
-		case JCS_RGB:		/* red/green/blue */
-		case JCS_YCbCr:		/* Y/Cb/Cr (also known as YUV) */
-		case JCS_CMYK:		/* C/M/Y/K */
-		case JCS_YCCK:		/* Y/Cb/Cr/K */
+		case JCS_RGB:         /* red/green/blue */
+		case JCS_YCbCr:       /* Y/Cb/Cr (also known as YUV) */
+		case JCS_CMYK:        /* C/M/Y/K */
+		case JCS_YCCK:        /* Y/Cb/Cr/K */
 			conv_2xrgb = (cblt_proc) colcpy_32_bgr;
 			break;
 	}
@@ -606,9 +606,9 @@ gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
 	}
 
 	/* Step 6: while (scan lines remain to be read) */
-	unsigned char *ptr = (void*)dst->basePtr;
+	unsigned char *ptr = (void *) dst->basePtr;
 	while (cinfo.output_scanline < cinfo.output_height) {
-		unsigned char buff[65535*4];		// FIXME: temp buffer
+		unsigned char buff[65535 * 4];
 		unsigned char *tmpbuff[] = {buff};
 		jpeg_read_scanlines(&cinfo, tmpbuff, 1);
 		conv_2xrgb(ptr, buff, NULL, dst->width);

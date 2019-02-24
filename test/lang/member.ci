@@ -1,4 +1,4 @@
-// test field initializations
+// test initializations
 
 struct RecordMemberTest {
 
@@ -26,44 +26,44 @@ struct RecordMemberTest {
 	const Inner constantRec;
 
 	// if initializer is omitted, initialize with `default field initializer`.
-	// FIXME: Inner memberRecInit = {member: 21, constant: 22};
+	// FIXME: Inner memberRecInit = {member: 4, constant: 5};
 
 	// if initializer is omitted, initialize with `default field initializer`.
-	// FIXME: const Inner constantRecInit = {member: 31, constant: 32};
+	// FIXME: const Inner constantRecInit = {member: 6, constant: 7};
 
 	// global variable initialized with `default type initializer`
 	static int global;
 
 	// global variable initialized with initializer.
-	static int globalInit = 5;
+	static int globalInit = 1;
 
 	// global constants must be initialized when declared, because they can not be changed.
-	static const int globalConstant = 6;
+	static const int globalConstant = 2;
 
 	// raise warning because there is no `default type initializer`, might be filled with garbage.
 	static Inner globalRec;
 
 	// global variable initialized with initializer.
-	static Inner globalRecInit = {member: 51, constant: 52};
+	static Inner globalRecInit = {member: 4, constant: 5};
 
 	// global constants must be initialized when declared, because they can not be changed.
-	static const Inner globalConstantRec = {member: 61, constant: 62};
+	static const Inner globalConstantRec = {member: 6, constant: 7};
 }
 
 RecordMemberTest recordMemberTest = {
-	member: 6;
-	constant: 7;
-	memberInit: 8;
-	constantInit: 9;
+	member: 10;
+	constant: 11;
+	memberInit: 12;
+	constantInit: 13;
 
 	memberRec: {
-		member: 61;
-		constant: 62;
+		member: 14;
+		constant: 15;
 	};
 	// constant member mut be initialized with all fields set
 	constantRec: {
-		member: 71;
-		constant: 72;
+		member: 16;
+		constant: 17;
 	};
 
 	/* static fields can not be initialized
@@ -74,13 +74,13 @@ RecordMemberTest recordMemberTest = {
 };
 
 /* assign new values after initialization
-r1.member = 74;
-r1.memberInit = 75;
+recordMemberTest.member = 74;
+recordMemberTest.memberInit = 75;
 // accessing static members using instance variable
-r1.global = 76;
-r1.globalInit = 79;
+recordMemberTest.global = 76;
+recordMemberTest.globalInit = 79;
 /* constant variables can not be assigned
-r1.constant = 79;
-r1.constantInit = 80;
-r1.globalConstant = 81;
+recordMemberTest.constant = 79;
+recordMemberTest.constantInit = 80;
+recordMemberTest.globalConstant = 81;
 // */

@@ -339,9 +339,11 @@ int gx_copySurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi) {
 
 	if (x < 0) {
 		clip.x -= x;
+		clip.w += x;
 	}
 	if (y < 0) {
 		clip.y -= y;
+		clip.h += y;
 	}
 	char *sptr = gx_cliprect(src, &clip);
 	if (sptr == NULL) {
@@ -350,8 +352,12 @@ int gx_copySurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi) {
 
 	clip.x = x;
 	clip.y = y;
-	clip.w = roi ? roi->w : src->width;
-	clip.h = roi ? roi->h : src->height;
+	if (x < 0) {
+		clip.w -= x;
+	}
+	if (y < 0) {
+		clip.h -= y;
+	}
 	char *dptr = gx_cliprect(surf, &clip);
 	if (dptr == NULL) {
 		return -1;

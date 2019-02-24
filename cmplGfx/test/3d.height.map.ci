@@ -40,7 +40,7 @@ void eval(gxMesh mesh, int sGrid, int tGrid, float32 depth, gxSurf depthMap) {
 		for (int j = 0; j < sGrid; j += 1) {
 			float64 s = j / sDivision;
 
-			float64 z = lum(depthMap.tex(1 - s, 1 - t)) / 255f;
+			float64 z = lum(depthMap.tex(1 - s, 1 - t));
 			int idx = mesh.addVertex(s, t, depth * z);
 			mesh.setNormal(idx, 0, 0, 1);
 			mesh.setTexture(idx, s, t);

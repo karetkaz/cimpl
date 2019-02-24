@@ -64,9 +64,10 @@ typedef enum {
 	raise_warn_gen8 = 8,
 	raise_warn_var8 = 8,
 
-	raise_warn_typ3 = 3,	// WARN_DECLARATION_REDEFINED / WARN_USING_BEST_OVERLOAD
+	raise_warn_typ3 = 3,	// WARN_USING_BEST_OVERLOAD
 	raise_warn_typ4 = 4,	// WARN_USING_SIGNED_CAST
 	raise_warn_typ6 = 6,	// WARN_ADDING_IMPLICIT_CAST
+	raise_warn_typ9 = 9,	// WARN_DECLARATION_REDEFINED
 	raiseInfo = 13,
 	raiseDebug = 14,
 	raiseVerbose = 15,
@@ -415,14 +416,13 @@ static inline size_t vmOffset(rtContext rt, void *ptr) {
  * @note Getting an argument must be used with padded offset.
  */
 static inline void *argget(nfcContext args, size_t offset, void *result, size_t size) {
+	char *ptr = (char *) args->args + offset;
 	// if result is not null, make a copy
 	if (result != NULL && size > 0) {
-		memcpy(result, (char *) args->args + offset, size);
+		memcpy(result, ptr, size);
+		return result;
 	}
-	else {
-		result = (void *) ((char *) args->args + offset);
-	}
-	return result;
+	return ptr;
 }
 
 // speed up of getting arguments of known types
@@ -447,10 +447,12 @@ static inline size_t argref(nfcContext ctx, size_t offs) { return argget(ctx, of
  * @note Setting the return value may overwrite some arguments.
  */
 static inline void *retset(nfcContext args, void *result, size_t size) {
-	if (result != NULL) {
-		memcpy((char *) args->args + args->argc, result, size);
+	char *ptr = (char *) args->args + args->argc - size;
+	if (result != NULL && size > 0) {
+		memcpy(ptr, result, size);
+		return result;
 	}
-	return (char *) args->args + args->argc;
+	return ptr;
 }
 
 // speed up of setting result of known types.

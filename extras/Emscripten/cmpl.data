@@ -153,6 +153,19 @@ static struct Math {
 		}
 		return x;
 	}
+	float32 absMod(float32 val, float32 mod) {
+		if ((val %= mod) < 0) {
+			return val + mod;
+		}
+		return val;
+	}
+	float64 absMod(float64 val, float64 mod) {
+		if ((val %= mod) < 0) {
+			return val + mod;
+		}
+		return val;
+	}
+
 	// inline abs(int32 x) = x < 0 ? -x : x;
 	// inline abs(int64 x) = x < 0 ? -x : x;
 	// inline abs(uint32 x) = x;

@@ -213,8 +213,8 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 					info(cc->rt, ptr->file, ptr->line, "previously defined as `%T`", ptr);
 				}
 			}
-			else if (cc->siff) {
-				warn(cc->rt, raise_warn_typ3, def->file, def->line, WARN_DECLARATION_REDEFINED, def);
+			else if (ptr->owner != def->owner) {// TODO: recheck owners
+				warn(cc->rt, raise_warn_typ9, def->file, def->line, WARN_DECLARATION_REDEFINED, def);
 			}
 		}
 
@@ -1443,6 +1443,8 @@ static astn statement_if(ccContext cc, ccKind attr) {
 		enter(cc, NULL);
 	}
 
+	int insideStaticIf = cc->siff;
+	cc->siff = enterThen || insideStaticIf;
 	ast->stmt.stmt = statement(cc, (ccKind) 0);
 
 	// parse else part if next token is 'else'
@@ -1455,12 +1457,14 @@ static astn statement_if(ccContext cc, ccKind attr) {
 			enter(cc, NULL);
 			enterThen = 1;
 		}
+		cc->siff = enterElse || insideStaticIf;
 		ast->stmt.step = statement(cc, (ccKind) 0);
 	}
 
 	if (enterThen) {
 		leave(cc, KIND_def, 0, 0, NULL);
 	}
+	cc->siff = insideStaticIf;
 
 	return ast;
 }
@@ -1612,6 +1616,7 @@ static astn statement(ccContext cc, ccKind attr) {
 	if ((ast = nextTok(cc, STMT_end, 0))) {             // ;
 		warn(cc->rt, raise_warn_par8, ast->file, ast->line, WARN_EMPTY_STATEMENT);
 		recycle(cc, ast);
+		ast = NULL;
 	}
 	else if ((ast = nextTok(cc, STMT_beg, 0))) {   // { ... }
 		ast->stmt.stmt = statement_list(cc);

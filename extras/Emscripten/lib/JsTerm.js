@@ -1,6 +1,8 @@
 function Terminal(output, interpret) {
+	let scrollToEnd = true;
 	if (output == null) {
 		return {
+			scroll: function(){},
 			print: console.log,
 			clear: console.clear,
 			text: function () {
@@ -32,10 +34,25 @@ function Terminal(output, interpret) {
 			output.appendChild(row);
 		}
 
-		output.scrollTop = output.scrollHeight;
+		if (scrollToEnd === true) {
+			output.scrollTop = output.scrollHeight;
+		}
 		buffer = [];
 	}
+	output.onscroll = function(event) {
+		if (scrollToEnd === true) {
+			scrollToEnd = output.scrollTop === output.scrollHeight - output.clientHeight;
+		}
+	}
 	return {
+		scroll: function(end) {
+			scrollToEnd = end;
+			if (end) {
+				output.scrollTop = output.scrollHeight;
+			} else {
+				output.scrollTop = 0;
+			}
+		},
 		print: function (text) {
 			let escaped = text.replace(/[<>&\r\n]/g, function (match) {
 				switch (match) {
@@ -55,6 +72,7 @@ function Terminal(output, interpret) {
 		},
 		clear: function () {
 			output.innerHTML = '';
+			scrollToEnd = true;
 			buffer = [];
 		},
 		text: function() {

@@ -1,3 +1,47 @@
+static if (typename(vec4f) != null) {
+
+inline rgb(const vec4f vec&) = rgb(vec.x, vec.y, vec.z);
+
+inline lum(const vec4f vec&) = 0.299 * vec.x + 0.587 * vec.y + 0.114 * vec.z;
+
+vec4f hsv2rgb(vec4f hsv) {
+	float32 h = hsv.x;
+	float32 s = hsv.y;
+	float32 v = hsv.z;
+
+	if (s == 0) {
+		return vec4f(v);
+	}
+
+	h *= 360 / 60;
+
+	int i = int(h);		// round
+	float32 f = h - i;	// fraction
+
+	float32 u = v;
+	float32 p = v * (1 - s);
+	float32 q = v * (1 - s * f);
+	float32 t = v * (1 - s * (1 - f));
+
+	if (i == 0) {
+		return vec4f(u, t, p);
+	}
+	if (i == 1) {
+		return vec4f(q, u, p);
+	}
+	if (i == 2) {
+		return vec4f(p, u, t);
+	}
+	if (i == 3) {
+		return vec4f(p, q, u);
+	}
+	if (i == 4) {
+		return vec4f(t, p, u);
+	}
+	return vec4f(u, p, q);
+}
+}
+
 void drawHist(gxSurf image, gxRect roi&, uint32 hist) {
 	uint32 lut[256];
 	image.calcHist(roi, hist, lut);

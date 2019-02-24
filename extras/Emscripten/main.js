@@ -37,10 +37,10 @@ let params = JsArgs('#', function (params, changes) {
 	// setup execution method
 	if (!changes || changes.exec != null) {
 		if (params.exec == null) {
-			cmdExecute.value = '-run/g';
+			btnExecute.value = '-run/g';
 			btnExecute.innerText = 'Run';
 		} else {
-			cmdExecute.value = params.exec;
+			btnExecute.value = params.exec;
 			btnExecute.innerText = 'Execute';
 		}
 	}
@@ -135,41 +135,212 @@ let params = JsArgs('#', function (params, changes) {
 	}
 });
 
+function actionError() {
+	edtFileName.classList.add('error');
+	setTimeout(function() {
+		edtFileName.classList.remove('error');
+	}, 250);
+	return false;
+}
+
 editor.setSize('100%', '100%');
+
+edtFileName.onfocus = function() {
+	edtFileName.selectionStart = 0;
+	edtFileName.selectionEnd = edtFileName.value.length;
+}
 edtFileName.onblur = function() {
 	edtFileName.value = params.file || '';
+	editor.focus();
 }
-edtFileName.onclick = function() {
-	edtFileName.select();
-}
-edtFileName.onkeypress = function() {
-	if (event.key !== 'Enter') {
+
+function completeAction(event) {
+	if (edtFileName.value !== event.key) {
 		return;
 	}
-	switch (edtFileName.value) {
-		case '+':
-			editor.execCommand('unfoldAll');
-			break;
-
-		case '-':
-			editor.execCommand('foldAll');
-			break;
+	if (event.key === ':' || event.key === '?' || event.key === '!') {
+		edtFileName.value = event.key + (event.text || '');
+		edtFileName.selectionStart = 1;
+		edtFileName.selectionEnd = edtFileName.value.length;
+		return;
 	}
-	// TODO: detect like the terminal: /file(:line(:column)?)?/
-	if (edtFileName.value.startsWith(params.file + ':')) {
-		let line = edtFileName.value.substr(params.file.length+1);
+	if (event.key === '#') {
+		edtFileName.value = event.key + (params.exec || btnExecute.value);
+		edtFileName.selectionStart = 1;
+		edtFileName.selectionEnd = edtFileName.value.length;
+		return;
+	}
+}
+edtFileName.onkeyup = completeAction;
+edtFileName.onkeydown = function(event) {
+	if (event.key === 'Escape') {
+		edtFileName.blur();
+		return false;
+	}
+	if (event.key !== 'Enter') {
+		return true;
+	}
+
+	// `#arguments` => execute script
+	if (edtFileName.value.startsWith('#')) {
+		let command = edtFileName.value.substr(1);
+		execute('Execute', command);
+		params.update({exec: command});
+	}
+
+	// `:<number>` => goto line
+	else if (edtFileName.value.startsWith(':')) {
+		let line = edtFileName.value.substr(1);
+		if (isNaN(line)) {
+			return actionError();
+		}
 		params.update({line: line});
 	}
+
+	// !find text
+	else if (edtFileName.value.startsWith('?')) {
+		let text = edtFileName.value.substr(1);
+		let cursor = editor.getSearchCursor(text, 0);
+		if (!cursor.findNext()) {
+			edtFileName.cursor = null;
+			return actionError();
+		}
+		editor.setSelection(cursor.from(), cursor.to());
+		edtFileName.cursor = cursor;
+	}
+
+	// !replace all occurences
+	else if (edtFileName.value.startsWith('!')) {
+		let text = edtFileName.value.substr(1);
+		let cursor = editor.getSearchCursor(text, 0);
+		let selections = [];
+		while (cursor.findNext()) {
+			selections.push({
+				anchor: cursor.from(),
+				head: cursor.to()
+			});
+		}
+		if (selections.length < 1) {
+			edtFileName.cursor = null;
+			return actionError();
+		}
+		editor.setCursor(selections[0].head);
+		editor.setSelections(selections);
+	}
+
+	// `+` => unfoldAll
+	else if (edtFileName.value === '+') {
+		editor.execCommand('unfoldAll');
+	}
+
+	// `-` => foldAll
+	else if (edtFileName.value === '-') {
+		editor.execCommand('foldAll');
+	}
+
+	// close file
+	else if (edtFileName.value === '') {
+		showFile(null);
+	}
+	// open file
+	else {
+		showFile(edtFileName.value);
+	}
 	edtFileName.blur();
+	return false;
 }
+
 edtArguments.onkeypress = function() {
 	if (event.key !== 'Enter') {
 		return;
 	}
-	showEditor('-primary');
-	terminal.clear();
-	execInput(edtArguments.value.split(' '), true);
-	edtArguments.blur();
+	execute('Execute', ' ' + edtArguments.value);
+}
+
+window.onkeydown = function() {
+	if (event.metaKey) {
+		return true;
+	}
+
+	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === '-') {
+		editor.execCommand('foldAll');
+		return false;
+	}
+
+	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === '_') {
+		editor.execCommand('foldAll');
+		return false;
+	}
+
+	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === '+') {
+		editor.execCommand('unfoldAll');
+		return false;
+	}
+	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === '=') {
+		editor.execCommand('unfoldAll');
+		return false;
+	}
+
+	// Ctrl + s => save script
+	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 's') {
+		saveInput();
+		return false;
+	}
+
+	// Ctrl + f => search
+	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'f') {
+		edtFileName.focus();
+		edtFileName.value = '?';
+		completeAction({key: '?', text: editor.getSelection() || 'enter a text to search'});
+		return false;
+	}
+
+	// Ctrl + r => search
+	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'r') {
+		edtFileName.focus();
+		edtFileName.value = '!';
+		completeAction({key: '!', text: editor.getSelection() || 'enter a text to replace'});
+		return false;
+	}
+
+	// Ctrl + g => goto line
+	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'g') {
+		edtFileName.focus();
+		edtFileName.value = ':';
+		completeAction({key: ':', text: editor.getCursor().line || 'enter a line number to go to'});
+		return false;
+	}
+
+	if (!event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'F3') {
+		let cursor = edtFileName.cursor;
+		if (cursor && cursor.findNext()) {
+			editor.setSelection(cursor.from(), cursor.to());
+		} else {
+			actionError();
+		}
+		return false;
+	}
+	if (!event.ctrlKey && !event.altKey && event.shiftKey && event.key === 'F3') {
+		let cursor = edtFileName.cursor;
+		if (cursor && cursor.findPrevious()) {
+			editor.setSelection(cursor.from(), cursor.to());
+		} else {
+			actionError();
+		}
+		return false;
+	}
+
+	// Ctrl + Shift + Enter => Execute script
+	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === 'Enter') {
+		btnExecute.click();
+		return false;
+	}
+
+	// Ctrl + Enter => search, jump, fold, ...
+	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'Enter') {
+		edtFileName.focus();
+		return false;
+	}
 }
 
 function setTheme(element, theme, ...remove) {
@@ -260,6 +431,7 @@ function shareInput() {
 }
 
 function execute(text, cmd) {
+	let exactArgs = cmd && cmd.startsWith(' ');
 	let args = undefined;
 	let file = undefined;
 
@@ -267,30 +439,32 @@ function execute(text, cmd) {
 		btnExecute.innerText = text;
 	}
 	if (cmd != null) {
+		btnExecute.value = cmd;
+
 		args = [];
-		cmdExecute.value = cmd;
+		if (exactArgs !== true) {
+			// do not use standard input, print times
+			args.push('-X' + (params.X || '-stdin+steps'));
 
-		// do not use standard input, print times
-		args.push('-X' + (params.X || '-stdin+steps'));
+			// allocate 2Mb of memory by default,
+			args.push('-mem' + (params.mem || '2M'));
 
-		// allocate 2Mb of memory by default,
-		args.push('-mem' + (params.mem || '2M'));
+			// standard library is in root
+			args.push('-std/lib/stdlib.ci');
 
-		// standard library is in root
-		args.push('-std/lib/stdlib.ci');
-
-		if (params.dump != null) {
-			if (params.dump.endsWith('.json')) {
-				args.push('-dump.json');
-			} else {
-				args.push('-dump');
+			if (params.dump != null) {
+				if (params.dump.endsWith('.json')) {
+					args.push('-dump.json');
+				} else {
+					args.push('-dump');
+				}
+				args.push(params.dump);
 			}
-			args.push(params.dump);
-		}
 
-		if (params.log != null) {
-			args.push('-log');
-			args.push(params.log);
+			if (params.log != null) {
+				args.push('-log');
+				args.push(params.log);
+			}
 		}
 
 		for (let arg of cmd.split(' ')) {
@@ -301,7 +475,7 @@ function execute(text, cmd) {
 		}
 	}
 
-	showEditor('-primary');
 	terminal.clear();
-	execInput(args);
+	showEditor('-primary');
+	execInput(args, exactArgs);
 }

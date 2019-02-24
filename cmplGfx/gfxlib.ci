@@ -1,46 +1,6 @@
 inline "lib/rgb.ci";
 inline "lib/color.ci";
 
-static if (typename(vec4f) != null) {
-inline rgb(const vec4f vec&) = rgb(vec.x, vec.y, vec.z);
-vec4f hsv2rgb(vec4f hsv) {
-	float32 h = hsv.x;
-	float32 s = hsv.y;
-	float32 v = hsv.z;
-
-	if (s == 0) {
-		return vec4f(v);
-	}
-
-	h *= 360 / 60;
-
-	int i = int(h);		// round
-	float32 f = h - i;	// fract
-
-	float32 u = v;
-	float32 p = v * (1 - s);
-	float32 q = v * (1 - s * f);
-	float32 t = v * (1 - s * (1 - f));
-
-	if (i == 0) {
-		return vec4f(u, t, p);
-	}
-	if (i == 1) {
-		return vec4f(q, u, p);
-	}
-	if (i == 2) {
-		return vec4f(p, u, t);
-	}
-	if (i == 3) {
-		return vec4f(p, q, u);
-	}
-	if (i == 4) {
-		return vec4f(t, p, u);
-	}
-	return vec4f(u, p, q);
-}
-}
-
 inline gxSurf(int width, int height, int depth) = gxSurf.create(width, height, depth);
 
 gxSurf gxSurf(char fileName[*], int depth) {
@@ -77,13 +37,6 @@ gxSurf gxSurf(gxSurf copy) {
 	return result;
 }
 
-//inline gxSurf(int width, int height) = gxSurf.create(width, height, 32);
-
-//inline fillRect(gxSurf dst, gxRect roi, int col) = fillRect(dst, roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
-//inline drawRect(gxSurf dst, gxRect roi, int col) = drawRect(dst, roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
-
-inline fill(gxSurf dst, uint32 col) = dst.fillRect(0, 0, dst.width(), dst.height(), col);
-
 bool clip(gxSurf src, gxRect roi&) {
 
 	roi.w += roi.x;
@@ -118,15 +71,18 @@ bool clip(gxSurf src, gxRect roi&) {
 	}
 	return true;
 }
-void eval(gxSurf out, gxRect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
+
+inline fill(gxSurf dst, uint32 col) = dst.fillRect(0, 0, 65536, 65536, col);
+
+void eval(gxSurf dst, const gxRect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
 	gxRect rect = {
 		x: roi != null ? roi.x : 0;
 		y: roi != null ? roi.y : 0;
-		w: roi != null ? roi.w : out.width();
-		h: roi != null ? roi.h : out.height();
+		w: roi != null ? roi.w : dst.width();
+		h: roi != null ? roi.h : dst.height();
 	};
 
-	if (!out.clip(rect)) {
+	if (!dst.clip(rect)) {
 		return;
 	}
 
@@ -136,13 +92,13 @@ void eval(gxSurf out, gxRect roi&, float32 aspect, float32 time, vec4f eval(vec4
 		z: aspect;
 		w: time;
 	};
-	float w = out.width();
-	float h = out.height();
+	float w = dst.width();
+	float h = dst.height();
 	for (int y = rect.y; y < rect.y + rect.h; y += 1) {
 		in.y = y / h;
 		for (int x = rect.x; x < rect.x + rect.w; x += 1) {
 			in.x = x / w;
-			out.set(x, y, rgb(eval(in)));
+			dst.set(x, y, rgb(eval(in)));
 		}
 	}
 }
@@ -301,18 +257,16 @@ void show(gxMesh mesh, int w, int h, float32 fovy) {
 	closure.offs.destroy();
 }
 
-void show(gxSurf surf) {
-	Gui.showWindow(surf, null, null);
-}
+inline show(gxSurf surf) = Gui.showWindow(surf, null, null);
 
 void show(gxSurf surf, int onEvent(int action, int button, int ex, int ey)) {
 	if (onEvent == null) {
 		return Gui.showWindow(surf, null, null);
 	}
-	static int delegateEvent(int onEvent(int action, int button, int ex, int ey), int action, int button, int ex, int ey) {
+	static int delegate(int onEvent(int action, int button, int ex, int ey), int action, int button, int ex, int ey) {
 		return onEvent(action, button, ex, ey);
 	}
-	Gui.showWindow(surf, onEvent, delegateEvent);
+	Gui.showWindow(surf, onEvent, delegate);
 }
 
 void showDiff(gxSurf image1, gxSurf image2) {
@@ -347,12 +301,12 @@ void showDiff(gxSurf image1, gxSurf image2) {
 	Gui.showWindow(closure.offs, closure, onEvent);
 }
 
-void showWindow(int w, int h, int t, vec4f eval(vec4f in)) {
+void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) {
 	static const int64 start = System.millis();
 	struct Closure {
 		const gxSurf offs;
 		const gxSurf thumb;
-		const float64 aspect;
+		const float32 aspect;
 		const vec4f eval(vec4f in);
 	}
 
@@ -382,10 +336,19 @@ void showWindow(int w, int h, int t, vec4f eval(vec4f in)) {
 		return 1;
 	}
 
+	if (animationResolution == 0) {
+		float32 aspect = width / float32(height);
+		gxSurf surf = gxSurf(width, height, 32);
+		surf.eval(null, aspect, 0f, eval);
+		surf.show(null);
+		surf.destroy();
+		return;
+	}
+
 	Closure closure = {
-		offs: gxSurf(w, h, 32);
-		thumb: gxSurf(t, t, 32);
-		aspect: w / double(h);
+		offs: gxSurf(width, height, 32);
+		thumb: gxSurf(animationResolution, animationResolution, 32);
+		aspect: width / float32(height);
 		eval: eval;
 	};
 	Gui.showWindow(closure.offs, closure, onEvent);

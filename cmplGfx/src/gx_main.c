@@ -150,13 +150,13 @@ static vmError surf_get(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_tex = "int32 tex(gxSurf surf, float32 x, float32 y)";
+static const char *proto_surf_tex = "vec4f tex(gxSurf surf, float32 x, float32 y)";
 static vmError surf_tex(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 	int32_t x = nextValue(ctx).f32 * 65535 * surf->width;
 	int32_t y = nextValue(ctx).f32 * 65535 * surf->height;
-
-	reti32(ctx, gx_getpix16(surf, x, y, 1));
+	struct vector result = vecldc(cast_rgb(gx_getpix16(surf, x, y, 1)));
+	retset(ctx, &result, sizeof(struct vector));
 	return noError;
 }
 
@@ -303,9 +303,82 @@ static vmError surf_copySurf(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_zoomSurf = "void resize(gxSurf surf, const gxRect rect&, gxSurf src, const gxRect roi&, int interpolate)";
+static const char *proto_surf_blendSurf = "void blend(gxSurf surf, int x, int y, const gxSurf src, const gxRect roi&, vec4f blend(vec4f base, vec4f with))";
+static vmError surf_blendSurf(nfcContext ctx) {
+	rtContext rt = ctx->rt;
+	gx_Surf surf = nextValue(ctx).ref;
+	int x = nextValue(ctx).i32;
+	int y = nextValue(ctx).i32;
+	gx_Surf src = nextValue(ctx).ref;
+	gx_Rect roi = nextValue(ctx).ref;
+	size_t cbOffs = argref(ctx, rt->api.nfcNextArg(ctx));
+	symn callback = rt->api.rtLookup(ctx->rt, cbOffs);
+
+	if (callback == NULL) {
+		ctx->rt->api.raise(ctx, raiseError, "Invalid callback");
+		return nativeCallError;
+	}
+
+	if (surf->depth != 32 || src->depth != 32) {
+		ctx->rt->api.raise(ctx, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
+		return nativeCallError;
+	}
+
+	struct gx_Rect clip;
+	clip.x = roi ? roi->x : 0;
+	clip.y = roi ? roi->y : 0;
+	clip.w = roi ? roi->w : src->width;
+	clip.h = roi ? roi->h : src->height;
+
+	if (x < 0) {
+		clip.x -= x;
+		clip.w += x;
+	}
+	if (y < 0) {
+		clip.y -= y;
+		clip.h += y;
+	}
+	char *sPtr = gx_cliprect(src, &clip);
+	if (sPtr == NULL) {
+		// there are no pixels to get
+		return noError;
+	}
+
+	clip.x = x;
+	clip.y = y;
+	if (x < 0) {
+		clip.w -= x;
+	}
+	if (y < 0) {
+		clip.h -= y;
+	}
+	char *dPtr = gx_cliprect(surf, &clip);
+	if (dPtr == NULL) {
+		// there are no pixels to set
+		return noError;
+	}
+
+	struct vector args[2];
+	while (clip.h-- > 0) {
+		argb *dRgb = (argb *) dPtr;
+		argb *sRgb = (argb *) sPtr;
+		for (int i = 0; i < clip.w; i += 1) {
+			args[0] = vecldc(sRgb[i]);
+			args[1] = vecldc(dRgb[i]);
+			if (rt->api.invoke(rt, callback, args, args, NULL) != noError) {
+				return nativeCallError;
+			}
+			dRgb[i] = vecrgb(args);
+		}
+		dPtr += surf->scanLen;
+		sPtr += src->scanLen;
+	}
+	return noError;
+}
+
+static const char *proto_surf_resizeSurf = "void resize(gxSurf surf, const gxRect rect&, const gxSurf src, const gxRect roi&, int interpolate)";
 //static const char *proto_surf_??Surf = "void transform(gxSurf surf, const gxRect rect&, gxSurf src, const gxRect roi&, float32 mat[16], int interpolate)";
-static vmError surf_zoomSurf(nfcContext ctx) {
+static vmError surf_resizeSurf(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 	gx_Rect rect = nextValue(ctx).ref;
 	gx_Surf src = nextValue(ctx).ref;
@@ -497,82 +570,6 @@ static vmError surf_cMatSurf(nfcContext ctx) {
 			cBuff += 1;
 		}
 		dptr += surf->scanLen;
-	}
-	return noError;
-}
-
-static const char *proto_surf_cMixColor = "void colorMix(gxSurf surf, uint32 color, const gxRect roi&, vec4f blend(vec4f base, vec4f with))";
-static const char *proto_surf_cMixImage = "void colorMix(gxSurf surf, gxSurf image, const gxRect roi&, vec4f blend(vec4f base, vec4f with))";
-static vmError surf_cMixSurf(nfcContext ctx) {
-	rtContext rt = ctx->rt;
-	struct vector args[2];
-
-	gx_Surf surf = nextValue(ctx).ref;
-	gx_Surf with = NULL;
-
-	if (ctx->proto == proto_surf_cMixImage) {
-		with = nextValue(ctx).ref;
-		if (with == NULL) {
-			return nativeCallError;
-		}
-	}
-	else if (ctx->proto == proto_surf_cMixColor) {
-		uint32_t color = nextValue(ctx).u32;
-		args[1] = vecldc(cast_rgb(color));
-	}
-	else {
-		return nativeCallError;
-	}
-	gx_Rect roi = nextValue(ctx).ref;
-	size_t cbOffs = argref(ctx, rt->api.nfcNextArg(ctx));
-	symn callback = rt->api.rtLookup(ctx->rt, cbOffs);
-
-
-	if (surf->depth != 32) {
-		ctx->rt->api.raise(ctx, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
-		return nativeCallError;
-	}
-
-	struct gx_Rect rect;
-	rect.x = roi ? roi->x : 0;
-	rect.y = roi ? roi->y : 0;
-	rect.w = roi ? roi->w : surf->width;
-	rect.h = roi ? roi->h : surf->height;
-
-	char *dptr = gx_cliprect(surf, &rect);
-	if (dptr == NULL) {
-		ctx->rt->api.raise(ctx, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
-		return noError;
-	}
-
-	if (with != NULL) {
-		for (int y = 0; y < rect.h; y += 1) {
-			argb *cBuff = (argb *) dptr;
-			for (int x = 0; x < rect.w; x += 1) {
-				args[0] = vecldc(*cBuff);
-				args[1] = vecldc(cast_rgb(gx_getpixel(with, x, y)));
-				if (rt->api.invoke(rt, callback, args, args, NULL) != noError) {
-					return nativeCallError;
-				}
-				*cBuff = vecrgb(args);
-				cBuff += 1;
-			}
-			dptr += surf->scanLen;
-		}
-	}
-	else {
-		for (int y = 0; y < rect.h; y += 1) {
-			argb *cBuff = (argb *) dptr;
-			for (int x = 0; x < rect.w; x += 1) {
-				args[0] = vecldc(*cBuff);
-				if (rt->api.invoke(rt, callback, args, args, NULL) != noError) {
-					return nativeCallError;
-				}
-				*cBuff = vecrgb(args);
-				cBuff += 1;
-			}
-			dptr += surf->scanLen;
-		}
 	}
 	return noError;
 }
@@ -1098,10 +1095,9 @@ int cmplInit(rtContext rt) {
 		{surf_clipText, proto_surf_clipText},
 		{surf_drawText, proto_surf_drawText},
 		{surf_copySurf, proto_surf_copySurf},
-		{surf_zoomSurf, proto_surf_zoomSurf},
+		{surf_blendSurf, proto_surf_blendSurf},
+		{surf_resizeSurf, proto_surf_resizeSurf},
 		{surf_cLutSurf, proto_surf_cLutSurf},
-		{surf_cMixSurf, proto_surf_cMixColor},
-		{surf_cMixSurf, proto_surf_cMixImage},
 		{surf_cMatSurf, proto_surf_cMatSurf},
 		{surf_calcHist, proto_surf_calcHist},
 		{surf_drawMesh, proto_surf_drawMesh},

@@ -29,6 +29,7 @@ gx_Surf gx_createSurf(gx_Surf recycle, int width, int height, int depth, surfFla
 	recycle->tempPtr = NULL;
 
 	if (width != recycle->width || height != recycle->height) {
+		// dimension did not fit into 16 bit integer
 		gx_destroySurf(recycle);
 		return NULL;
 	}
@@ -58,7 +59,7 @@ gx_Surf gx_createSurf(gx_Surf recycle, int width, int height, int depth, surfFla
 
 	recycle->scanLen = ((unsigned) width * recycle->pixeLen + 3) & ~3;
 	if (width > 0 && height > 0 && depth > 0) {
-		size_t size = recycle->scanLen * height;
+		size_t size = recycle->scanLen * (size_t) height;
 		size_t offs = 0;
 
 		switch (flags & SurfType) {
@@ -80,7 +81,7 @@ gx_Surf gx_createSurf(gx_Surf recycle, int width, int height, int depth, surfFla
 
 			case Surf_3ds:
 				offs = size;
-				size += width * height * 4;
+				size += width * (size_t) height * 4;	// z-buffer
 				break;
 		}
 

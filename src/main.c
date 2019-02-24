@@ -898,11 +898,9 @@ static void textPostProfile(userContext usr) {
 			if (sym == NULL) {
 				sym = rtLookup(rt, ptr->start, 0);
 			}
-			printFmt(out, esc,
-				"%?s:%?u:[.%06x, .%06x): exec(%D%?-D), time(%D%?+D / %.3F%?+.3F ms): %?T\n",
-				ptr->file, ptr->line, ptr->start, ptr->end,
-				ptr->hits, ptr->exec - ptr->hits, ptr->total, ptr->self - ptr->total,
-				ptr->total / CLOCKS_PER_MILLI, -(ptr->total - ptr->self) / CLOCKS_PER_MILLI,
+			printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): exec(%D%?-D), time(%.3F%?+.3F ms): %?T\n",
+				ptr->file, ptr->line, ptr->start, ptr->end, ptr->hits, ptr->exec - ptr->hits,
+				ptr->total / CLOCKS_PER_MILLI, (ptr->self - ptr->total) / CLOCKS_PER_MILLI,
 				sym
 			);
 		}
@@ -932,10 +930,9 @@ static void textPostProfile(userContext usr) {
 			if (sym != NULL) {
 				symOffs = ptr->start - sym->offs;
 			}
-			printFmt(out, esc, "%?s:%?u:[.%06x, .%06x) exec(%D%?-D), time(%D%?+D / %.3F%?+.3F ms): <%?.T+%d>\n",
-				ptr->file, ptr->line, ptr->start, ptr->end,
-				ptr->hits, ptr->exec - ptr->hits, ptr->total, ptr->self - ptr->total,
-				ptr->total / CLOCKS_PER_MILLI, -(ptr->total - ptr->self) / CLOCKS_PER_MILLI,
+			printFmt(out, esc, "%?s:%?u:[.%06x, .%06x) exec(%D%?-D), time(%.3F%?+.3F ms): <%?.T+%d>\n",
+				ptr->file, ptr->line, ptr->start, ptr->end, ptr->hits, ptr->exec - ptr->hits,
+				ptr->total / CLOCKS_PER_MILLI, (ptr->self - ptr->total) / CLOCKS_PER_MILLI,
 				sym, symOffs
 			);
 		}
@@ -1461,7 +1458,7 @@ static int usage() {
 		"\n  <file>                if file extension is (.so|.dll) load as library else compile"
 		"\n  -w[a|x|<int>]         set or disable warning level for current file"
 		"\n  -b[*]<int>            break point on <int> line in current file"
-		"\n    /[l|L]              print only, do not pause (/L includes stack trace)"
+		"\n    /[p|P]              print only, do not pause (/P includes stack trace)"
 		"\n    /o                  one shot breakpoint, disable after first hit"
 		"\n"
 		"\nexamples:"
@@ -1482,7 +1479,9 @@ static int usage() {
 		"\n        treating all warnings as errors"
 		"\n        break execution on lines 12 and 15"
 		"\n        print message when line 19 is hit"
-		"\n";
+		"\n"
+		"\nfor more details visit: https://karetkaz.github.io/Cmpl/"
+		"\n\n";
 	fputs(USAGE, stdout);
 	return 0;
 }
@@ -2191,15 +2190,12 @@ int main(int argc, char *argv[]) {
 							arg2 += 1;
 							break;
 
+						case 'P': // trace only
+							type |= brkTrace;
+							// fall through
 						case 'p': // print only
 							type &= ~brkPause;
 							type |= brkPrint;
-							arg2 += 2;
-							break;
-
-						case 't': // trace only
-							type &= ~brkPause;
-							type |= brkTrace;
 							arg2 += 2;
 							break;
 

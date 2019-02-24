@@ -6,7 +6,7 @@ inline color_dodge(float32 base, float32 blend) = (blend == 1 ? blend : Math.min
 inline color_burn(float32 base, float32 blend) = (blend == 0 ? blend : Math.max((1 - ((1 - base) / blend)), 0f));
 
 vec4f darken(vec4f base, vec4f blend) {
-	inline op(float32 a, float32 b) = a < b ? a : b;
+	inline op(float32 base, float32 blend) = base < blend ? base : blend;
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -15,7 +15,7 @@ vec4f darken(vec4f base, vec4f blend) {
 	};
 }
 vec4f lighten(vec4f base, vec4f blend) {
-	inline op(float32 a, float32 b) = a > b ? a : b;
+	inline op(float32 base, float32 blend) = base > blend ? base : blend;
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -24,7 +24,7 @@ vec4f lighten(vec4f base, vec4f blend) {
 	};
 }
 vec4f addition(vec4f base, vec4f blend) {
-	inline op(float32 a, float32 b) = a + b;
+	inline op(float32 base, float32 blend) = base + blend;
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -33,7 +33,7 @@ vec4f addition(vec4f base, vec4f blend) {
 	};
 }
 vec4f subtract(vec4f base, vec4f blend) {
-	inline op(float32 a, float32 b) = a - b;
+	inline op(float32 base, float32 blend) = base - blend;
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -42,7 +42,7 @@ vec4f subtract(vec4f base, vec4f blend) {
 	};
 }
 vec4f multiply(vec4f base, vec4f blend) {
-	inline op(float32 a, float32 b) = a * b;
+	inline op(float32 base, float32 blend) = base * blend;
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -51,7 +51,7 @@ vec4f multiply(vec4f base, vec4f blend) {
 	};
 }
 vec4f divide(vec4f base, vec4f blend) {
-	inline op(float32 a, float32 b) = a / b;
+	inline op(float32 base, float32 blend) = base / blend;
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -60,7 +60,7 @@ vec4f divide(vec4f base, vec4f blend) {
 	};
 }
 vec4f difference(vec4f base, vec4f blend) {
-	inline op(float32 a, float32 b) = a > b ? a - b : b - a;
+	inline op(float32 base, float32 blend) = base > blend ? base - blend : blend - base;
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -193,15 +193,44 @@ static gxSurf image = gxSurf("asset/image/texture.png", 32);
 static gxSurf base = gxSurf("asset/image/forest.png", 32);
 static gxSurf offs = gxSurf(base);
 
-gxRect roi = {
-	x: 100;
-	y: 100;
-	w: image.width();
-	h: image.height();
-};
+static vec4f blend(vec4f base, vec4f blend) = overlay;
 
-offs.colorMix(image, roi, overlay);
+static if (true) {
+offs.blend(100, 100, image, null, blend);
 offs.showDiff(base);
+}
+else {
+int onEvent(int action, int button, int x, int y) {
+	static gxRect roi = {
+		x: 100;
+		y: 100;
+		w: image.width() / 2;
+		h: image.height() / 2;
+	};
+
+	if (action == Gui.KEY_PRESS) {
+		if (button == 27) {
+			return -1;
+		}
+	}
+
+	if (action == Gui.MOUSE_PRESS) {
+		action = Gui.MOUSE_MOTION;
+	}
+	if (action == Gui.MOUSE_MOTION) {
+		if (button == 1) {
+			offs.resize(null, base, null, 1);
+			offs.blend(x, y, image, null, blend);
+		}
+		if (button == 2) {
+			offs.resize(null, base, null, 1);
+			offs.blend(x, y, image, roi, blend);
+		}
+	}
+	return 0;
+}
+offs.show(onEvent);
+}
 
 image.destroy();
 base.destroy();

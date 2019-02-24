@@ -1101,7 +1101,12 @@ void print_log(rtContext rt, raiseLevel level, const char *file, int line, rtVal
 	const char **esc = NULL;
 	const char *logType = "UNKNOWN";
 
+	if (rt->cc && rt->cc->siff && level < raiseWarn) {
+		// convert errors to warnings inside static if (false) { ... }
+		level = raiseWarn;
+	}
 	if (level > (int)rt->logLevel) {
+		// no need to show the log on the current level
 		return;
 	}
 	switch (level) {

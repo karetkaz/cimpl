@@ -34,12 +34,19 @@
 <body class="dark">
 <div id="mainToolBar" class="toolbar">
 	<span class="left icon" onclick="showSplitter(menuSplit, '!secondary');" title="Toggle show menu">☰</span>
-	<span class="left icon" onclick="saveInput();" title="Save editor content">💾</span>
-	<span id="btnExecute" class="right execute" onclick="execute(btnExecute.innerText, cmdExecute.value);" title="Execute"></span>
-	<span class="right icon" onclick="showEditor('!primary');" title="Toggle show output">⬓</span>
-	<!--<span class="right icon" onclick="showEditor('^vertical', '^horizontal');" title="Toggle output">◨</span>-->
+	<span class="left icon" onclick="saveInput();" title="Save script (Ctrl + s)">💾</span>
+	<span id="btnExecute" class="right execute" onclick="execute(btnExecute.innerText, btnExecute.value);" title="Execute script (Ctrl + Shift + Enter)"></span>
+	<!--<span class="right icon" onclick="showEditor('!primary', 'vertical', '-horizontal');" title="Toggle show output">◨</span>-->
+	<span class="right icon" onclick="showEditor('!primary', 'horizontal', '-vertical');" title="Toggle output">⬓</span>
 	<span class="right icon" onclick="setTheme(body, '!dark');" title="Toggle dark theme">◑</span>
-	<span class="filename" title="Opened file name"><input id="edtFileName"></input></span>
+	<span class="filename" title="Execute action (Ctrl + Enter)
+	'#args' Execute script
+	'?text' Search (Ctrl + f)
+	'!text' Replace (Ctrl + r)
+	':line' Go to line (Ctrl + g)
+	'-' Fold all lines (Ctrl + Shift -)
+	'+' Unfold all lines (Ctrl + Shift +)">
+	<input id="edtFileName" placeholder="#execute; ?search; !replace; :goto; -fold; +unfold"></input></span>
 </div>
 <div id="menuSplit" class="content split-pane left vertical" style="top:2em;">
 	<div class="content list">
@@ -48,7 +55,6 @@
 			<button class="right" onclick="execute();" title="Compiler usage help">?</button>
 		</div>
 		<ul>
-			<input  class="filename" id="cmdExecute" onchange="params.update({exec: value});" onkeypress="if (event.key == 'Enter') execute(null, this.value)">
 			<li onclick="execute('Run', '-run/g');" title="Execute code at full speed">⚡ Run</li>
 			<li onclick="execute('Debug', '-debug/g');" title="Execute code with error detection">🐞 Debug</li>
 			<li onclick="execute('Profile', '-profile/g');" title="Execute code measuring execution time">⏱ Profile</li>
@@ -85,8 +91,10 @@
 		<div class="text-content">
 			<div class="toolbar">
 				<span class="left icon bold" onclick="terminal.clear();" title="Clear output">⦸</span>
-				<span class="left icon bold" onclick="editOutput();" title="Open output in editor">⏍</span>
+				<span class="left icon bold" onclick="editOutput();" title="Open output in editor">⎗</span>
 				<span class="right icon bold" onclick="showEditor('!secondary');" title="Maximize">⬚</span>
+				<span class="right icon bold" onclick="terminal.scroll(true);" title="Scroll to end">⏬</span>
+				<span class="right icon bold" onclick="terminal.scroll(false);" title="Scroll to top">⏫</span>
 				<span class="filename" title="Execution arguments"><input id="edtArguments"></input></span>
 			</div>
 			<pre id="output"></pre>
@@ -127,6 +135,11 @@ function saveInput(skipPostContent) {
 	return file;
 }
 function execInput(args, exactArgs) {
+	if (args == null) {
+		worker.postMessage({exec: ['--help']});
+		return;
+	}
+
 	let file = saveInput(true);
 	if (file == null) {
 		return;
@@ -134,18 +147,15 @@ function execInput(args, exactArgs) {
 
 	if (exactArgs !== true) {
 		// todo: used libraries should be defined in the project file
-		if (args != null) {
-			args.push('libFile.wasm');
-			args.push(file);
-			edtArguments.value = args.join(' ');
-		} else {
-			edtArguments.value = "--help";
-		}
+		args.push('libFile.wasm');
+		args.push(file);
 	}
+
+	edtArguments.value = args.join(' ');
 	worker.postMessage({
 		content: editor.getValue(),
 		file: file,
-		exec: args || []
+		exec: args
 	});
 }
 
@@ -184,6 +194,10 @@ let worker = new Worker('worker.js');
 worker.onmessage = function(event) {
 	let data = event.data;
 	//console.log('worker: ', data);
+	if (data.error !== undefined) {
+		terminal.print(data.error);
+		actionError();
+	}
 	if (data.print !== undefined) {
 		terminal.print(data.print);
 	}

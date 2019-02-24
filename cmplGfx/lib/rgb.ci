@@ -16,14 +16,17 @@ uint32 grayClamp(int32 c) {
 }
 inline grayAnd(uint32 c) = uint32(c & 255);
 
-inline rgb(int32 r, int32 g, int32 b) = uint32((((r << 8) | g) << 8) | b);
 inline rgb(uint32 r, uint32 g, uint32 b) = uint32((((r << 8) | g) << 8) | b);
+inline rgb(int32 r, int32 g, int32 b) = uint32((((r << 8) | g) << 8) | b);
+
 inline rgbClamp(uint32 r, uint32 g, uint32 b) = rgb(grayClamp(r), grayClamp(g), grayClamp(b));
 inline rgbClamp(int32 r, int32 g, int32 b) = rgb(grayClamp(r), grayClamp(g), grayClamp(b));
+
 inline rgbAnd(uint32 r, uint32 g, uint32 b) = rgb(grayAnd(r), grayAnd(g), grayAnd(b));
 
 inline rgb(float64 r, float64 g, float64 b) = rgbClamp(int32(r * 255), int32(g * 255), int32(b * 255));
 inline rgb(float32 r, float32 g, float32 b) = rgbClamp(int32(r * 255), int32(g * 255), int32(b * 255));
+
 inline gray(float64 c) = grayClamp(int32(c * 255));
 inline gray(float32 c) = grayClamp(int32(c * 255));
 

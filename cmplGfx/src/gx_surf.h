@@ -101,12 +101,12 @@ void* gx_cliprect(gx_Surf surf, gx_Rect rect);
 
 // Get Pixel Address
 static inline void* gx_getpaddr(gx_Surf surf, int x, int y) {
-	if ((unsigned)x >= surf->width || (unsigned)y >= surf->height) {
+	if ((unsigned) x >= surf->width || (unsigned) y >= surf->height) {
 		return NULL;
 	}
-	return surf->basePtr + (y * surf->scanLen) + (x * surf->pixeLen);
-
+	return surf->basePtr + ((size_t) y * surf->scanLen) + ((size_t) x * surf->pixeLen);
 }
+
 // Get Pixel Color
 static inline uint32_t gx_getpixel(gx_Surf surf, int x, int y) {
 	void *address = gx_getpaddr(surf, x, y);

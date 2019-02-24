@@ -1879,7 +1879,7 @@ vmError invoke(rtContext rt, symn fun, void *res, void *args, const void *extra)
 	void *sp = pu->sp;
 	void *tp = pu->tp;
 
-	// make space for result and arguments// result is the first param
+	// make space for result and arguments
 	pu->sp -= argSize / vm_stk_align;
 
 	if (args != NULL) {
