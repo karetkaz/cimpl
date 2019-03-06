@@ -25,7 +25,7 @@ importScripts("cmpl.js");
 
 onmessage = function(event) {
 	let data = event.data;
-	console.log(data);
+	//console.log(data);
 	if (data.files !== undefined) {
 		if (data.files === true || data.files === false) {
 			let files = [];

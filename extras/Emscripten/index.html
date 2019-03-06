@@ -75,7 +75,7 @@
 			<li onclick="editProject();">🛠 Edit project</li>
 			<li onclick="shareInput();">🔗 Share link</li>
 			<!--<li onclick="saveInput();">💾 Save file</li> -->
-			<!--<li onclick="showFile(null);">❌ Close file</li>-->
+			<!--<li onclick="setContent('', '');">❌ Close file</li>-->
 			<hr>
 		</ul>
 		<ul id="fileList">
@@ -103,6 +103,10 @@
 </div>
 
 <script type="text/javascript">
+var props = props || {};
+props.libraries = [
+	'libFile.wasm'
+];
 function openProject(files) {
 	worker.postMessage({files});
 }
@@ -113,7 +117,7 @@ function listFiles(all) {
 function openInput(file, line) {
 	worker.postMessage({file, line});
 }
-function saveInput(skipPostContent) {
+function saveInput() {
 	let file = params.file;
 	if (file == null) {
 		file = prompt('Save file as:', 'untitled.ci');
@@ -121,41 +125,18 @@ function saveInput(skipPostContent) {
 			return null;
 		}
 	}
+	let content = editor.getValue();
+	worker.postMessage({ content, file });
 	if (params.content !== undefined) {
-		params.update({ file, content: btoa(editor.getValue()) });
+		params.update({ content, file });
 	} else {
 		params.update({ file });
 	}
-	if (skipPostContent !== true) {
-		worker.postMessage({
-			content: editor.getValue(),
-			file: file
-		});
-	}
 	return file;
 }
-function execInput(args, exactArgs) {
-	if (args == null) {
-		worker.postMessage({exec: ['--help']});
-		return;
-	}
-
-	let file = saveInput(true);
-	if (file == null) {
-		return;
-	}
-
-	if (exactArgs !== true) {
-		// todo: used libraries should be defined in the project file
-		args.push('libFile.wasm');
-		args.push(file);
-	}
-
-	edtArguments.value = args.join(' ');
+function execInput(args) {
 	worker.postMessage({
-		content: editor.getValue(),
-		file: file,
-		exec: args
+		exec: args || []
 	});
 }
 
@@ -201,22 +182,21 @@ worker.onmessage = function(event) {
 	if (data.print !== undefined) {
 		terminal.print(data.print);
 	}
-	if (data.content !== undefined) {
-		editor.setValue(data.content);
-	}
-	if (data.file !== undefined) {
-		edtFileName.value = data.file;
-		params.update({file: data.file, content: null});
-	}
-	if (data.line !== undefined) {
-		params.update({line: data.line});
-	}
 	if (data.files !== undefined) {
 		fileList.innerHTML = '';
 		for (let file of data.files) {
-			fileList.innerHTML += '<li onclick="showFile(this.innerText);">' + file + '</li>';
+			fileList.innerHTML += '<li onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
 		}
 		params.update('file', 'content');
+	}
+
+	if (data.content || data.file || data.line) {
+		setContent(data.content, data.file, data.line);
+		params.update({
+			file: data.file,
+			line: data.line,
+			content: null
+		});
 	}
 };
 </script>

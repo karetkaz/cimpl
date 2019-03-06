@@ -75,7 +75,7 @@
 			<li onclick="editProject();">🛠 Edit project</li>
 			<li onclick="shareInput();">🔗 Share link</li>
 			<!--<li onclick="saveInput();">💾 Save file</li> -->
-			<!--<li onclick="showFile(null);">❌ Close file</li>-->
+			<!--<li onclick="setContent('', '');">❌ Close file</li>-->
 			<hr>
 		</ul>
 		<ul id="fileList">
@@ -106,6 +106,12 @@
 </div>
 
 <script type="text/javascript">
+var props = props || {};
+props.libraries = [
+	'libFile.wasm',
+	'libGfx.wasm',
+	'/lib/gfxlib.ci'
+];
 function openProject(files) {
 	Module.files = files;
 }
@@ -119,19 +125,19 @@ function listFiles(all) {
 	}
 	fileList.innerHTML = '';
 	for (let file of files) {
-		fileList.innerHTML += '<li onclick="showFile(this.innerText);">' + file + '</li>';
+		fileList.innerHTML += '<li onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
 	}
 	params.update('file', 'content');
 }
 
 function openInput(file, line) {
 	try {
-		editor.setValue(FS.readFile(file, {encoding: 'utf8'}));
+		let content = FS.readFile(file, {encoding: 'utf8'});
+		setContent(content, file, line);
 	} catch(error) {
 		// in case we open a file that does not exists
 		console.trace(error);
 	}
-	params.update({file, line});
 }
 function saveInput() {
 	if (params.content !== undefined) {
@@ -156,27 +162,8 @@ function saveInput() {
 	}
 	return file;
 }
-function execInput(args, exactArgs) {
-	if (args == null) {
-		Module['callMain'](['--help']);
-		return;
-	}
-
-	let file = saveInput();
-	if (file == null) {
-		return;
-	}
-
-	if (exactArgs !== true) {
-		// todo: used libraries should be defined in the project file
-		args.push('libFile.wasm');
-		args.push('libGfx.wasm');
-		args.push('/lib/gfxlib.ci');
-		args.push(file);
-	}
-
-	edtArguments.value = args.join(' ');
-	Module['callMain'](args);
+function execInput(args) {
+	Module['callMain'](args || []);
 }
 
 function showCanvas(visible) {

@@ -138,7 +138,7 @@ function JsArgs(paramSeparator, onHashChange) {
 				let newValue = values[key];
 
 				// do not update properties with same values
-				if (oldValue === newValue) {
+				if (oldValue == newValue) {
 					// only if the notification was requested
 					if (changes[key] === undefined) {
 						continue;
