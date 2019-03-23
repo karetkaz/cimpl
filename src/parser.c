@@ -419,7 +419,7 @@ static astn expandInitializer(ccContext cc, symn variable, astn initializer) {
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Parser
 static astn statement_list(ccContext cc);
-static astn statement(ccContext cc, ccKind attr);
+static astn statement(ccContext cc, char *doc);
 static astn declaration(ccContext cc, ccKind attr, astn *args);
 
 /** Parse qualifiers.
@@ -927,7 +927,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 	// read typename
 	astn tok = expression(cc, 0);
 	if (tok == NULL) {
-		error(cc->rt, tok->file, tok->line, ERR_INVALID_TYPE, tok);
+		error(cc->rt, cc->file, cc->line, ERR_INVALID_TYPE, tok);
 		return NULL;
 	}
 
@@ -982,7 +982,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 			def->fields = params;
 
 			enter(cc, def);
-			def->init = statement(cc, (ccKind) 0);
+			def->init = statement(cc, NULL);
 			if (def->init == NULL) {
 				def->init = newNode(cc, STMT_beg);
 				def->init->type = cc->type_vid;
@@ -1077,11 +1077,9 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 
 	// inline "file.ci"
 	if ((tag = nextTok(cc, TOKEN_val, 0))) {
-		astn next = NULL, head = NULL, tail = NULL;
 		ccToken optional = skipTok(cc, PNCT_qst, 0);
 		skipTok(cc, STMT_end, 1);
 
-		next = cc->tokNext;
 		if (ccInline(cc, tag) != 0) {
 			if (optional) {
 				warn(cc->rt, raiseWarn, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
@@ -1089,25 +1087,6 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 				error(cc->rt, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
 			}
 			return NULL;
-		}
-
-		while ((tag = nextTok(cc, TOKEN_any, 0)) != NULL) {
-			if (tail != NULL) {
-				tail->next = tag;
-			}
-			else {
-				head = tag;
-			}
-			tail = tag;
-		}
-		if (tail != NULL) {
-			tail->next = next;
-		}
-		if (head != NULL) {
-			cc->tokNext = head;
-		}
-		else {
-			cc->tokNext = next;
 		}
 		return NULL;
 	}
@@ -1445,7 +1424,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 
 	int insideStaticIf = cc->siff;
 	cc->siff = enterThen || insideStaticIf;
-	ast->stmt.stmt = statement(cc, (ccKind) 0);
+	ast->stmt.stmt = statement(cc, NULL);
 
 	// parse else part if next token is 'else'
 	if (skipTok(cc, ELSE_kwd, 0)) {
@@ -1458,7 +1437,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 			enterThen = 1;
 		}
 		cc->siff = enterElse || insideStaticIf;
-		ast->stmt.step = statement(cc, (ccKind) 0);
+		ast->stmt.step = statement(cc, NULL);
 	}
 
 	if (enterThen) {
@@ -1523,7 +1502,7 @@ static astn statement_for(ccContext cc, ccKind attr) {
 
 	skipTok(cc, RIGHT_par, 1);
 
-	ast->stmt.stmt = statement(cc, (ccKind) 0);
+	ast->stmt.stmt = statement(cc, NULL);
 
 	leave(cc, KIND_def, 0, 0, NULL);
 
@@ -1539,11 +1518,16 @@ static astn statement_for(ccContext cc, ccKind attr) {
 static astn statement_list(ccContext cc) {
 	astn ast, head = NULL, tail = NULL;
 
-	while ((ast = peekTok(cc, TOKEN_any)) != NULL) {
-
+	char *doc = NULL;
+	while ((ast = cc->tokNext) != NULL) {
 		switch (ast->kind) {
 			default:
 				break;
+
+			case TOKEN_doc:
+				cc->tokNext = cc->tokNext->next;
+				doc = ast->ref.name;
+				continue;
 
 			//case TOKEN_any:	// error
 			//case RIGHT_par:
@@ -1556,8 +1540,7 @@ static astn statement_list(ccContext cc) {
 			break;
 		}
 
-		ccKind attr = qualifier(cc);
-		if ((ast = statement(cc, attr))) {
+		if ((ast = statement(cc, doc))) {
 			if (tail != NULL) {
 				tail->next = ast;
 			}
@@ -1566,6 +1549,7 @@ static astn statement_list(ccContext cc) {
 			}
 			tail = ast;
 		}
+		doc = NULL;
 	}
 
 	return head;
@@ -1578,7 +1562,7 @@ static astn statement_list(ccContext cc) {
  * @param attr the qualifier of the statement/declaration
  * @return parsed syntax tree.
  */
-static astn statement(ccContext cc, ccKind attr) {
+static astn statement(ccContext cc, char *doc) {
 	char *file = cc->file;
 	int line = cc->line;
 	int validStart = 1;
@@ -1612,6 +1596,7 @@ static astn statement(ccContext cc, ccKind attr) {
 		}
 	}
 
+	ccKind attr = qualifier(cc);
 	// scan the statement
 	if ((ast = nextTok(cc, STMT_end, 0))) {             // ;
 		warn(cc->rt, raise_warn_par8, ast->file, ast->line, WARN_EMPTY_STATEMENT);
@@ -1716,14 +1701,20 @@ static astn statement(ccContext cc, ccKind attr) {
 	else if (peekTok(cc, INLINE_kwd) != NULL) { // alias
 		ast = declare_alias(cc, attr);
 		if (ast != NULL) {
+			dieif(ast->kind != TOKEN_var, ERR_INTERNAL_ERROR);
 			ast->type = cc->type_rec;
+			ast->ref.link->doc = doc;
+			doc = NULL;
 			//ast = expand2Statement(cc, ast, 0);
 		}
 	}
 	else if (peekTok(cc, RECORD_kwd) != NULL) { // struct
 		ast = declare_record(cc, attr);
 		if (ast != NULL) {
+			dieif(ast->kind != TOKEN_var, ERR_INTERNAL_ERROR);
 			ast->type = cc->type_rec;
+			ast->ref.link->doc = doc;
+			doc = NULL;
 			//ast = expand2Statement(cc, ast, 0);
 		}
 		attr &= ~(ATTR_cnst | ATTR_stat);
@@ -1731,7 +1722,10 @@ static astn statement(ccContext cc, ccKind attr) {
 	else if (peekTok(cc, ENUM_kwd) != NULL) {   // enum
 		ast = declare_enum(cc);
 		if (ast != NULL) {
+			dieif(ast->kind != TOKEN_var, ERR_INTERNAL_ERROR);
 			ast->type = cc->type_rec;
+			ast->ref.link->doc = doc;
+			doc = NULL;
 			//ast = expand2Statement(cc, ast, 0);
 		}
 	}
@@ -1745,9 +1739,12 @@ static astn statement(ccContext cc, ccKind attr) {
 			backTok(cc, ast);
 			ast = declaration(cc, attr, NULL);
 			if (ast != NULL) {
-				type = ast->type;
-				check = ast->ref.link->init;
+				dieif(ast->kind != TOKEN_var, ERR_INTERNAL_ERROR);
 				attr &= ~(ast->ref.link->kind & MASK_attr);
+				check = ast->ref.link->init;
+				type = ast->type;
+				ast->ref.link->doc = doc;
+				doc = NULL;
 			}
 		}
 		else {
@@ -1791,6 +1788,9 @@ static astn statement(ccContext cc, ccKind attr) {
 		}
 		error(cc->rt, file, line, ERR_UNEXPECTED_ATTR, attr);
 	}
+	if (doc != NULL) {
+		warn(cc->rt, raiseWarn, ast->file, ast->line, ERR_INVALID_DOC_COMMENT);
+	}
 
 	return ast;
 }
@@ -1801,24 +1801,10 @@ astn ccAddUnit(ccContext cc, int init(ccContext), char *file, int line, char *te
 		return NULL;
 	}
 
+	int nest = cc->nest;
 	if (ccOpen(cc, file, line, text) != 0) {
 		error(cc->rt, NULL, 0, ERR_OPENING_FILE, file);
 		return NULL;
-	}
-
-	// pre read all tokens from source
-	if (cc->tokNext == NULL) {
-		astn ast, head = NULL, tail = NULL;
-		while ((ast = nextTok(cc, TOKEN_any, 0)) != NULL) {
-			if (tail != NULL) {
-				tail->next = ast;
-			}
-			else {
-				head = ast;
-			}
-			tail = ast;
-		}
-		cc->tokNext = head;
 	}
 
 	astn unit = statement_list(cc);
@@ -1838,6 +1824,9 @@ astn ccAddUnit(ccContext cc, int init(ccContext), char *file, int line, char *te
 	if (ccClose(cc) != 0) {
 		return NULL;
 	}
+	if (nest != cc->nest) {
+		return NULL;
+	}
 	return unit;
 }
 
@@ -1852,10 +1841,11 @@ symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 
 	//~ from: int64 zxt(int64 val, int offs, int bits)
 	//~ make: inline zxt(int64 val, int offs, int bits) = nfc(42);
-	if(call == NULL || proto == NULL) {
+	if (call == NULL || proto == NULL) {
 		fatal(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
+	int nest = cc->nest;
 	if (ccOpen(cc, NULL, 0, (char*)proto) != 0) {
 		trace(ERR_INTERNAL_ERROR);
 		return NULL;
@@ -1872,6 +1862,10 @@ symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 		return NULL;
 	}
 	if ((sym = init->ref.link) == NULL) {
+		error(rt, NULL, 0, ERR_INVALID_DECLARATION, proto);
+		return NULL;
+	}
+	if (nest != cc->nest) {
 		error(rt, NULL, 0, ERR_INVALID_DECLARATION, proto);
 		return NULL;
 	}

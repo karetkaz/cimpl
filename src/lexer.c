@@ -35,98 +35,115 @@ static const struct {
 	{"struct",   RECORD_kwd}
 };
 
+// lexer context
+typedef struct lexContext {
+	ccContext cc;
+	rtContext rt;
+
+	//~ current column = filePos - linePos
+	size_t filePos;		// current file position
+	size_t linePos;		// current line position
+	int    nextChr;		// next look-ahead character
+
+	// buffered reading
+	int     _fin;		// file handle
+	char    *_ptr;		// pointer parsing trough source
+	size_t  _cnt;		// chars left in buffer
+	uint8_t _buf[1024];	// memory file buffer
+} *lexContext;
+
 /**
  * Fill some characters from the file.
  * 
- * @param cc compiler context.
+ * @param ctx lexer context.
  * @return number of characters in buffer.
  */
-static size_t fillBuf(ccContext cc) {
-	if (cc->fin._fin >= 0) {
-		memcpy(cc->fin._buf, cc->fin._ptr, cc->fin._cnt);
+static size_t fillBuf(lexContext ctx) {
+	if (ctx->_fin >= 0) {
+		memcpy(ctx->_buf, ctx->_ptr, ctx->_cnt);
 
-		void *base = cc->fin._buf + cc->fin._cnt;
-		size_t size = sizeof(cc->fin._buf) - cc->fin._cnt;
-		ssize_t l = read(cc->fin._fin, base, size);
+		void *base = ctx->_buf + ctx->_cnt;
+		size_t size = sizeof(ctx->_buf) - ctx->_cnt;
+		ssize_t l = read(ctx->_fin, base, size);
 		if (l <= 0) {	// end of file or error
 			dieif(l < 0, ERR_INTERNAL_ERROR);
-			cc->fin._buf[cc->fin._cnt] = 0;
-			close(cc->fin._fin);
-			cc->fin._fin = -1;
+			ctx->_buf[ctx->_cnt] = 0;
+			close(ctx->_fin);
+			ctx->_fin = -1;
 		}
-		cc->fin._ptr = (char*)cc->fin._buf;
-		cc->fin._cnt += l;
+		ctx->_ptr = (char*)ctx->_buf;
+		ctx->_cnt += l;
 	}
-	return cc->fin._cnt;
+	return ctx->_cnt;
 }
 
 /**
  * Read the next character from input stream.
 
- * @param cc compiler context.
+ * @param ctx lexer context.
  * @return the next character or -1 on end, or error.
  */
-static int readChr(ccContext cc) {
-	int chr = cc->chrNext;
+static int readChr(lexContext ctx) {
+	int chr = ctx->nextChr;
 	if (chr != -1) {
-		cc->chrNext = -1;
+		ctx->nextChr = -1;
 		return chr;
 	}
 
 	// fill in the buffer.
-	if (cc->fin._cnt < 2 && fillBuf(cc) < 1) {
+	if (ctx->_cnt < 2 && fillBuf(ctx) < 1) {
 		return -1;
 	}
 
-	chr = *cc->fin._ptr;
+	chr = *ctx->_ptr;
 	if (chr == '\n' || chr == '\r') {
 
 		// threat 'cr', 'lf' and 'cr + lf' as new line (lf: '\n')
-		if (chr == '\r' && cc->fin._ptr[1] == '\n') {
-			cc->fin._cnt -= 1;
-			cc->fin._ptr += 1;
-			cc->fPos += 1;
+		if (chr == '\r' && ctx->_ptr[1] == '\n') {
+			ctx->_cnt -= 1;
+			ctx->_ptr += 1;
+			ctx->filePos += 1;
 		}
 
 		// advance to next line
-		if (cc->line > 0) {
-			cc->line += 1;
+		if (ctx->cc->line > 0) {
+			ctx->cc->line += 1;
 		}
 
 		// save where the next line begins.
-		cc->lPos = cc->fPos + 1;
+		ctx->linePos = ctx->filePos + 1;
 		chr = '\n';
 	}
 
-	cc->fin._cnt -= 1;
-	cc->fin._ptr += 1;
-	cc->fPos += 1;
+	ctx->_cnt -= 1;
+	ctx->_ptr += 1;
+	ctx->filePos += 1;
 	return chr;
 }
 
 /**
  * Peek the next character from input stream.
  * 
- * @param cc compiler context.
+ * @param ctx lexer context.
  * @return the next character or -1 on end, or error.
  */
-static int peekChr(ccContext cc) {
-	if (cc->chrNext == -1) {
-		cc->chrNext = readChr(cc);
+static int peekChr(lexContext ctx) {
+	if (ctx->nextChr == -1) {
+		ctx->nextChr = readChr(ctx);
 	}
-	return cc->chrNext;
+	return ctx->nextChr;
 }
 
 /**
  * Skip the next character if it matches `chr`.
  * 
- * @param cc compiler context.
+ * @param ctx lexer context.
  * @param chr filter: 0 matches everything.
  * @return the character skipped.
  */
-static int skipChr(ccContext cc, int chr) {
-	if (!chr || chr == peekChr(cc)) {
-		return readChr(cc);
+static int skipChr(lexContext ctx, int chr) {
+	if (!chr || chr == peekChr(ctx)) {
+		return readChr(ctx);
 	}
 	return 0;
 }
@@ -134,27 +151,27 @@ static int skipChr(ccContext cc, int chr) {
 /**
  * Push back a character to be read next time.
  * 
- * @param cc compiler context.
+ * @param ctx lexer context.
  * @param chr the character to be pushed back.
  * @return the character pushed back, -1 on fail.
  */
-static int backChr(ccContext cc, int chr) {
-	if(cc->chrNext != -1) {
+static int backChr(lexContext ctx, int chr) {
+	if(ctx->nextChr != -1) {
 		// can not put back more than one character
 		fatal(ERR_INTERNAL_ERROR);
 		return -1;
 	}
-	return cc->chrNext = chr;
+	return ctx->nextChr = chr;
 }
 
 /**
  * Read the next token from input stream.
  * 
- * @param cc compiler context.
+ * @param ctx lexer context.
  * @param tok (out parameter) to be filled with data.
  * @return the kind of token, TOKEN_any (0) if error occurred.
  */
-static ccToken readTok(ccContext cc, astn tok) {
+static ccToken readTok(lexContext ctx, astn tok) {
 	enum {
 		OTHER = 0x00000000,
 
@@ -302,73 +319,109 @@ static ccToken readTok(ccContext cc, astn tok) {
 		/* 177    */	CNTRL,		// del
 		/* 200     */	OTHER,
 	};
-	const char *end = (char*)cc->rt->_end;
-
-	char *ptr = NULL;
-	int chr = readChr(cc);
+	const char *end = (char*)ctx->rt->_end;
+	char *beg = (char*)ctx->rt->_beg;
+	int chr = readChr(ctx);
 
 	// skip white spaces and comments
 	while (chr != -1) {
 		if (chr == '/') {
-			const int line = cc->line;		// comment begin line
-			const int next = peekChr(cc);	// comment begin char
+			const int line = ctx->cc->line;      // comment begin line
+			const int next = peekChr(ctx);       // comment begin char
+			char *doc = NULL;
+			char *ptr = beg;
 
 			// line comment
-			if (skipChr(cc, '/')) {
-				chr = readChr(cc);
-				ptr = (char*)cc->rt->_beg;
+			if (next == '/') {
+				chr = readChr(ctx);
+
+				if (skipChr(ctx, '/')) {
+					// '/// ...'
+					doc = ptr;
+				}
 
 				while (ptr < end && chr != -1) {
 					if (chr == '\n') {
 						break;
 					}
+					chr = readChr(ctx);
 					*ptr++ = (char) chr;
-					chr = readChr(cc);
 				}
 				if (chr == -1) {
-					warn(cc->rt, raise_warn_lex9, cc->file, line, WARN_NO_NEW_LINE_AT_END);
+					warn(ctx->rt, raise_warn_lex9, ctx->cc->file, line, WARN_NO_NEW_LINE_AT_END);
 				}
-				else if (cc->line != line + 1) {
-					warn(cc->rt, raise_warn_lex9, cc->file, line, WARN_COMMENT_MULTI_LINE, ptr);
+				else if (ctx->cc->line != line + 1) {
+					warn(ctx->rt, raise_warn_lex9, ctx->cc->file, line, WARN_COMMENT_MULTI_LINE, ptr);
 				}
 			}
 
 			// block comment
 			else if (next == '*' || next == '+') {
-				int level = 0;
+				chr = readChr(ctx);
 
-				while (chr != -1) {
+				if (skipChr(ctx, chr)) {
+					// '/** ...' or '/++ ...'
+					if (peekChr(ctx) != '/') {
+						doc = ptr;
+					}
+				}
+
+				int level = 1;
+				while (ptr < end && chr != -1) {
 					int prev_chr = chr;
-					chr = readChr(cc);
+					chr = readChr(ctx);
 
+					if (prev_chr == next && chr == '/') {
+						level -= 1;
+						if (level == 0) {
+							chr = ' ';
+							break;
+						}
+					}
 					if (prev_chr == '/' && chr == next) {
 						level += 1;
 						if (level > 1 && next == '*') {
-							warn(cc->rt, raise_warn_lex9, cc->file, cc->line, WARN_COMMENT_NESTED);
+							warn(ctx->rt, raise_warn_lex9, ctx->cc->file, ctx->cc->line, WARN_COMMENT_NESTED);
 							level = 1;
 						}
 						chr = 0;	// disable reading as valid comment: /*/ and /+/
 					}
 
-					if (prev_chr == next && chr == '/') {
-						level -= 1;
-						if (level == 0) {
-							break;
-						}
-					}
+					*ptr++ = (char) chr;
 				}
 
 				if (chr == -1) {
-					error(cc->rt, cc->file, line, ERR_INVALID_COMMENT);
+					error(ctx->rt, ctx->cc->file, line, ERR_INVALID_COMMENT);
 				}
-				chr = readChr(cc);
+			}
+
+			if (doc != NULL) {
+				if (!ctx->rt->genDocs) {
+					doc = "";
+					ptr = doc + 1;
+				}
+				else {
+					if (ptr == doc) {
+						ptr = beg + 1;
+					}
+					ptr[-1] = 0;
+				}
+
+				memset(tok, 0, sizeof(*tok));
+				tok->kind = TOKEN_doc;
+				tok->type = ctx->cc->type_vid;
+				tok->file = ctx->cc->file;
+				tok->line = line;
+				tok->ref.hash = rehash(doc, ptr - doc) % hashTableSize;
+				tok->ref.name = ccUniqueStr(ctx->cc, doc, ptr - doc, tok->ref.hash);
+				return TOKEN_doc;
 			}
 		}
 
 		if (chr_map[chr & 0xff] == CNTRL) {
-			warn(cc->rt, raise_warn_lex1, cc->file, cc->line, ERR_INVALID_CHARACTER, chr);
+			warn(ctx->rt, raise_warn_lex1, ctx->cc->file, ctx->cc->line, ERR_INVALID_CHARACTER, chr);
 			while (chr == 0) {
-				chr = readChr(cc);
+				chr = readChr(ctx);
 			}
 		}
 
@@ -376,19 +429,19 @@ static ccToken readTok(ccContext cc, astn tok) {
 			break;
 		}
 
-		chr = readChr(cc);
+		chr = readChr(ctx);
 	}
 
 	if (tok == NULL) {
 		return TOKEN_any;
 	}
 
-	char *beg = ptr = (char*)cc->rt->_beg;
+	char *ptr = beg = (char*)ctx->rt->_beg;
 
 	// our token begins here
 	memset(tok, 0, sizeof(*tok));
-	tok->file = cc->file;
-	tok->line = cc->line;
+	tok->file = ctx->cc->file;
+	tok->line = ctx->cc->line;
 
 	// scan
 	if (chr != -1) switch (chr) {
@@ -399,17 +452,17 @@ static ccToken readTok(ccContext cc, astn tok) {
 			if (chr_map[chr & 0xff] & CWORD) {
 				goto read_idf;
 			}
-			error(cc->rt, tok->file, tok->line, ERR_INVALID_CHARACTER, chr);
+			error(ctx->rt, tok->file, tok->line, ERR_INVALID_CHARACTER, chr);
 			tok->kind = TOKEN_any;
 			break;
 
 		case '.':
-			if (chr_map[peekChr(cc) & 0xff] == DIGIT) {
+			if (chr_map[peekChr(ctx) & 0xff] == DIGIT) {
 				goto read_num;
 			}
 			tok->kind = OPER_dot;
-			if (skipChr(cc, '.')) {
-				if (skipChr(cc, '.')) {
+			if (skipChr(ctx, '.')) {
+				if (skipChr(ctx, '.')) {
 					tok->kind = PNCT_dot3;
 				}
 				else {
@@ -463,7 +516,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			break;
 
 		case '=':
-			if (skipChr(cc, '=')) {
+			if (skipChr(ctx, '=')) {
 				tok->kind = OPER_ceq;
 				break;
 			}
@@ -471,7 +524,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			break;
 
 		case '!':
-			if (skipChr(cc, '=')) {
+			if (skipChr(ctx, '=')) {
 				tok->kind = OPER_cne;
 				break;
 			}
@@ -479,10 +532,10 @@ static ccToken readTok(ccContext cc, astn tok) {
 			break;
 
 		case '>':
-			chr = peekChr(cc);
+			chr = peekChr(ctx);
 			if (chr == '>') {
-				readChr(cc);
-				if (skipChr(cc, '=')) {
+				readChr(ctx);
+				if (skipChr(ctx, '=')) {
 					tok->kind = ASGN_shr;
 					break;
 				}
@@ -490,7 +543,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 				break;
 			}
 			if (chr == '=') {
-				readChr(cc);
+				readChr(ctx);
 				tok->kind = OPER_cge;
 				break;
 			}
@@ -498,10 +551,10 @@ static ccToken readTok(ccContext cc, astn tok) {
 			break;
 
 		case '<':
-			chr = peekChr(cc);
+			chr = peekChr(ctx);
 			if (chr == '<') {
-				readChr(cc);
-				if (skipChr(cc, '=')) {
+				readChr(ctx);
+				if (skipChr(ctx, '=')) {
 					tok->kind = ASGN_shl;
 					break;
 				}
@@ -509,7 +562,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 				break;
 			}
 			if (chr == '=') {
-				readChr(cc);
+				readChr(ctx);
 				tok->kind = OPER_cle;
 				break;
 			}
@@ -517,14 +570,14 @@ static ccToken readTok(ccContext cc, astn tok) {
 			break;
 
 		case '&':
-			chr = peekChr(cc);
+			chr = peekChr(ctx);
 			if (chr == '=') {
-				readChr(cc);
+				readChr(ctx);
 				tok->kind = ASGN_and;
 				break;
 			}
 			if (chr == '&') {
-				readChr(cc);
+				readChr(ctx);
 				tok->kind = OPER_all;
 				break;
 			}
@@ -532,14 +585,14 @@ static ccToken readTok(ccContext cc, astn tok) {
 			break;
 
 		case '|':
-			chr = peekChr(cc);
+			chr = peekChr(ctx);
 			if (chr == '=') {
-				readChr(cc);
+				readChr(ctx);
 				tok->kind = ASGN_ior;
 				break;
 			}
 			if (chr == '|') {
-				readChr(cc);
+				readChr(ctx);
 				tok->kind = OPER_any;
 				break;
 			}
@@ -547,7 +600,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			break;
 
 		case '^':
-			if (skipChr(cc, '=')) {
+			if (skipChr(ctx, '=')) {
 				tok->kind = ASGN_xor;
 				break;
 			}
@@ -555,7 +608,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			break;
 
 		case '+':
-			if (skipChr(cc, '=')) {
+			if (skipChr(ctx, '=')) {
 				tok->kind = ASGN_add;
 				break;
 			}
@@ -563,7 +616,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			break;
 
 		case '-':
-			if (skipChr(cc, '=')) {
+			if (skipChr(ctx, '=')) {
 				tok->kind = ASGN_sub;
 				break;
 			}
@@ -571,7 +624,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			break;
 
 		case '*':
-			if (skipChr(cc, '=')) {
+			if (skipChr(ctx, '=')) {
 				tok->kind = ASGN_mul;
 				break;
 			}
@@ -579,7 +632,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			break;
 
 		case '/':
-			if (skipChr(cc, '=')) {
+			if (skipChr(ctx, '=')) {
 				tok->kind = ASGN_div;
 				break;
 			}
@@ -587,7 +640,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			break;
 
 		case '%':
-			if (skipChr(cc, '=')) {
+			if (skipChr(ctx, '=')) {
 				tok->kind = ASGN_mod;
 				break;
 			}
@@ -599,7 +652,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			int multi_line = 0;		// multi line string constant.
 			int start_char = chr;	// literals start character.
 
-			while (ptr < end && (chr = readChr(cc)) != -1) {
+			while (ptr < end && (chr = readChr(ctx)) != -1) {
 
 				// end reached
 				if (chr == start_char)
@@ -612,9 +665,9 @@ static ccToken readTok(ccContext cc, astn tok) {
 				// escape sequence
 				if (chr == '\\') {
 					int oct, hex1, hex2;
-					switch (chr = readChr(cc)) {
+					switch (chr = readChr(ctx)) {
 						default:
-							error(cc->rt, tok->file, tok->line, ERR_INVALID_ESC_SEQ, chr);
+							error(ctx->rt, tok->file, tok->line, ERR_INVALID_ESC_SEQ, chr);
 							chr = 0;
 							break;
 
@@ -679,24 +732,24 @@ static ccToken readTok(ccContext cc, astn tok) {
 						case '7':
 							//~ octal sequence (max length = 3)
 							oct = chr - '0';
-							if ((chr = peekChr(cc)) >= '0' && chr <= '7') {
+							if ((chr = peekChr(ctx)) >= '0' && chr <= '7') {
 								oct = (oct << 3) | (chr - '0');
-								readChr(cc);
-								if ((chr = peekChr(cc)) >= '0' && chr <= '7') {
+								readChr(ctx);
+								if ((chr = peekChr(ctx)) >= '0' && chr <= '7') {
 									oct = (oct << 3) | (chr - '0');
-									readChr(cc);
+									readChr(ctx);
 								}
 							}
 							if (oct & 0xffffff00) {
-								warn(cc->rt, raise_warn_lex2, tok->file, tok->line, WARN_OCT_ESC_SEQ_OVERFLOW);
+								warn(ctx->rt, raise_warn_lex2, tok->file, tok->line, WARN_OCT_ESC_SEQ_OVERFLOW);
 							}
 							chr = oct & 0xff;
 							break;
 
 						case 'x':
 							// hexadecimal sequence (length = 2)
-							hex1 = readChr(cc);
-							hex2 = readChr(cc);
+							hex1 = readChr(ctx);
+							hex2 = readChr(ctx);
 							if (hex1 >= '0' && hex1 <= '9') {
 								hex1 -= '0';
 							}
@@ -707,7 +760,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 								hex1 -= 'A' - 10;
 							}
 							else {
-								error(cc->rt, tok->file, tok->line, ERR_INVALID_HEX_SEQ, hex1);
+								error(ctx->rt, tok->file, tok->line, ERR_INVALID_HEX_SEQ, hex1);
 								break;
 							}
 							if (hex2 >= '0' && hex2 <= '9') {
@@ -720,7 +773,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 								hex2 -= 'A' - 10;
 							}
 							else {
-								error(cc->rt, tok->file, tok->line, ERR_INVALID_HEX_SEQ, hex2);
+								error(ctx->rt, tok->file, tok->line, ERR_INVALID_HEX_SEQ, hex2);
 								break;
 							}
 							chr = hex1 << 4 | hex2;
@@ -743,28 +796,28 @@ static ccToken readTok(ccContext cc, astn tok) {
 			*ptr++ = 0;
 
 			if (chr != start_char) {
-				error(cc->rt, tok->file, tok->line, ERR_INVALID_LITERAL, start_char);
+				error(ctx->rt, tok->file, tok->line, ERR_INVALID_LITERAL, start_char);
 				return tok->kind = TOKEN_any;
 			}
 
 			if (start_char == '"') {
 				tok->kind = TOKEN_val;
-				tok->type = cc->type_str;
+				tok->type = ctx->cc->type_str;
 				tok->ref.hash = rehash(beg, ptr - beg) % hashTableSize;
-				tok->ref.name = ccUniqueStr(cc, beg, ptr - beg, tok->ref.hash);
+				tok->ref.name = ccUniqueStr(ctx->cc, beg, ptr - beg, tok->ref.hash);
 			}
 			else {
 				int val = 0;
 
 				if (ptr == beg) {
-					error(cc->rt, tok->file, tok->line, ERR_EMPTY_CHAR_CONSTANT);
+					error(ctx->rt, tok->file, tok->line, ERR_EMPTY_CHAR_CONSTANT);
 					return tok->kind = TOKEN_any;
 				}
 				if (ptr > beg + vm_stk_align + 1) {
-					warn(cc->rt, raise_warn_lex2, tok->file, tok->line, WARN_CHR_CONST_OVERFLOW, ptr);
+					warn(ctx->rt, raise_warn_lex2, tok->file, tok->line, WARN_CHR_CONST_OVERFLOW, ptr);
 				}
-				else if (ptr > beg + cc->type_chr->size + 1) {
-					warn(cc->rt, raise_warn_lex3, tok->file, tok->line, WARN_MULTI_CHAR_CONSTANT);
+				else if (ptr > beg + ctx->cc->type_chr->size + 1) {
+					warn(ctx->rt, raise_warn_lex3, tok->file, tok->line, WARN_MULTI_CHAR_CONSTANT);
 				}
 
 				for (ptr = beg; *ptr; ++ptr) {
@@ -772,7 +825,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 				}
 
 				tok->kind = TOKEN_val;
-				tok->type = cc->type_chr;
+				tok->type = ctx->cc->type_chr;
 				tok->cInt = val;
 			}
 			break;
@@ -787,9 +840,9 @@ static ccToken readTok(ccContext cc, astn tok) {
 					break;
 				}
 				*ptr++ = (char) chr;
-				chr = readChr(cc);
+				chr = readChr(ctx);
 			}
-			backChr(cc, chr);
+			backChr(ctx, chr);
 			*ptr++ = 0;
 
 			// binary search for keyword
@@ -811,10 +864,10 @@ static ccToken readTok(ccContext cc, astn tok) {
 
 					case EMIT_kwd:
 						tok->kind = TOKEN_var;
-						tok->type = cc->emit_opc;
-						tok->ref.link = cc->emit_opc;
+						tok->type = ctx->cc->emit_opc;
+						tok->ref.link = ctx->cc->emit_opc;
 						tok->ref.hash = rehash(beg, ptr - beg) % hashTableSize;
-						tok->ref.name = ccUniqueStr(cc, beg, ptr - beg, tok->ref.hash);
+						tok->ref.name = ccUniqueStr(ctx->cc, beg, ptr - beg, tok->ref.hash);
 						break;
 				}
 			}
@@ -822,7 +875,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 				tok->kind = TOKEN_var;
 				tok->type = tok->ref.link = NULL;
 				tok->ref.hash = rehash(beg, ptr - beg) % hashTableSize;
-				tok->ref.name = ccUniqueStr(cc, beg, ptr - beg, tok->ref.hash);
+				tok->ref.name = ccUniqueStr(ctx->cc, beg, ptr - beg, tok->ref.hash);
 			}
 			break;
 		}
@@ -837,7 +890,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 			//~ 0[.oObBxX]?
 			if (chr == '0') {
 				*ptr++ = (char) chr;
-				chr = readChr(cc);
+				chr = readChr(ctx);
 
 				switch (chr) {
 					default:
@@ -851,21 +904,21 @@ static ccToken readTok(ccContext cc, astn tok) {
 					case 'B':
 						radix = 2;
 						*ptr++ = (char) chr;
-						chr = readChr(cc);
+						chr = readChr(ctx);
 						break;
 
 					case 'o':
 					case 'O':
 						radix = 8;
 						*ptr++ = (char) chr;
-						chr = readChr(cc);
+						chr = readChr(ctx);
 						break;
 
 					case 'x':
 					case 'X':
 						radix = 16;
 						*ptr++ = (char) chr;
-						chr = readChr(cc);
+						chr = readChr(ctx);
 						break;
 				}
 			}
@@ -895,11 +948,11 @@ static ccToken readTok(ccContext cc, astn tok) {
 				i64v = i64v * radix + value;
 
 				*ptr++ = (char) chr;
-				chr = readChr(cc);
+				chr = readChr(ctx);
 			}
 
 			if (ovf != 0) {
-				warn(cc->rt, raise_warn_lex2, tok->file, tok->line, WARN_VALUE_OVERFLOW);
+				warn(ctx->rt, raise_warn_lex2, tok->file, tok->line, WARN_VALUE_OVERFLOW);
 			}
 
 			if ((int32_t)i64v == i64v) {
@@ -919,14 +972,14 @@ static ccToken readTok(ccContext cc, astn tok) {
 					long double exp = 1;
 
 					*ptr++ = (char) chr;
-					chr = readChr(cc);
+					chr = readChr(ctx);
 
 					while (chr >= '0' && chr <= '9') {
 						val = val * 10 + (chr - '0');
 						exp *= 10;
 
 						*ptr++ = (char) chr;
-						chr = readChr(cc);
+						chr = readChr(ctx);
 					}
 
 					f64v += val / exp;
@@ -939,7 +992,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 					int sgn = 1;
 
 					*ptr++ = (char) chr;
-					chr = readChr(cc);
+					chr = readChr(ctx);
 
 					switch (chr) {
 						case '-':
@@ -947,7 +1000,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 							// fall through
 						case '+':
 							*ptr++ = (char) chr;
-							chr = readChr(cc);
+							chr = readChr(ctx);
 						default:
 							break;
 					}
@@ -961,14 +1014,14 @@ static ccToken readTok(ccContext cc, astn tok) {
 						}
 
 						*ptr++ = (char) chr;
-						chr = readChr(cc);
+						chr = readChr(ctx);
 					}
 
 					if (suffix == ptr) {
-						error(cc->rt, tok->file, tok->line, ERR_INVALID_EXPONENT);
+						error(ctx->rt, tok->file, tok->line, ERR_INVALID_EXPONENT);
 					}
 					else if (ovf) {
-						warn(cc->rt, raise_warn_lex2, tok->file, tok->line, WARN_EXPONENT_OVERFLOW);
+						warn(ctx->rt, raise_warn_lex2, tok->file, tok->line, WARN_EXPONENT_OVERFLOW);
 					}
 
 					while (val) {		// pow(10, val);
@@ -995,9 +1048,9 @@ static ccToken readTok(ccContext cc, astn tok) {
 					break;
 				}
 				*ptr++ = (char) chr;
-				chr = readChr(cc);
+				chr = readChr(ctx);
 			}
-			backChr(cc, chr);
+			backChr(ctx, chr);
 			*ptr++ = 0;
 
 			if (*suffix) {
@@ -1020,7 +1073,7 @@ static ccToken readTok(ccContext cc, astn tok) {
 					cast = CAST_f64;
 				}
 				else {
-					error(cc->rt, tok->file, tok->line, ERR_INVALID_SUFFIX, suffix);
+					error(ctx->rt, tok->file, tok->line, ERR_INVALID_SUFFIX, suffix);
 					tok->kind = TOKEN_any;
 					cast = CAST_any;
 				}
@@ -1032,32 +1085,32 @@ static ccToken readTok(ccContext cc, astn tok) {
 					break;
 				case CAST_i32:
 					tok->kind = TOKEN_val;
-					tok->type = cc->type_i32;
+					tok->type = ctx->cc->type_i32;
 					tok->cInt = i64v;
 					break;
 				case CAST_i64:
 					tok->kind = TOKEN_val;
-					tok->type = cc->type_i64;
+					tok->type = ctx->cc->type_i64;
 					tok->cInt = i64v;
 					break;
 				case CAST_u32:
 					tok->kind = TOKEN_val;
-					tok->type = cc->type_u32;
+					tok->type = ctx->cc->type_u32;
 					tok->cInt = i64v;
 					break;
 				case CAST_u64:
 					tok->kind = TOKEN_val;
-					tok->type = cc->type_u64;
+					tok->type = ctx->cc->type_u64;
 					tok->cInt = i64v;
 					break;
 				case CAST_f32:
 					tok->kind = TOKEN_val;
-					tok->type = cc->type_f32;
+					tok->type = ctx->cc->type_f32;
 					tok->cFlt = f64v;
 					break;
 				case CAST_f64:
 					tok->kind = TOKEN_val;
-					tok->type = cc->type_f64;
+					tok->type = ctx->cc->type_f64;
 					tok->cFlt = f64v;
 					break;
 			}
@@ -1073,28 +1126,23 @@ static ccToken readTok(ccContext cc, astn tok) {
 	return tok->kind;
 }
 
-astn backTok(ccContext cc, astn token) {
-	if (token != NULL) {
-		token->next = cc->tokNext;
-		cc->tokNext = token;
-	}
-	return token;
-}
-
 astn peekTok(ccContext cc, ccToken match) {
 	// read lookahead token
-	if (cc->tokNext == NULL) {
-		cc->tokNext = newNode(cc, TOKEN_any);
-		if (!readTok(cc, cc->tokNext)) {
-			recycle(cc, cc->tokNext);
-			cc->tokNext = NULL;
-			return NULL;
+	while (cc->tokNext != NULL) {
+		astn node = cc->tokNext;
+		if (node->kind != TOKEN_doc) {
+			break;
 		}
+		cc->tokNext = node->next;
+		recycle(cc, node);
 	}
-	if (match == TOKEN_any || match == cc->tokNext->kind) {
-		return cc->tokNext;
+	if (cc->tokNext == NULL) {
+		return NULL;
 	}
-	return NULL;
+	if (match && match != cc->tokNext->kind) {
+		return NULL;
+	}
+	return cc->tokNext;
 }
 
 astn nextTok(ccContext cc, ccToken match, int raise) {
@@ -1127,52 +1175,84 @@ ccToken skipTok(ccContext cc, ccToken match, int raise) {
 	return TOKEN_any;
 }
 
-int ccOpen(ccContext cc, char *file, int line, char *text) {
-	if (cc->fin._fin > 3) {
-		// close previous opened file
-		close(cc->fin._fin);
+astn backTok(ccContext cc, astn token) {
+	if (token != NULL) {
+		token->next = cc->tokNext;
+		cc->tokNext = token;
 	}
+	return token;
+}
 
+int ccOpen(ccContext cc, char *file, int line, char *text) {
+	struct lexContext input;
 	if (text == NULL && file != NULL) {
-		if ((cc->fin._fin = open(file, O_RDONLY)) <= 0) {
+		if ((input._fin = open(file, O_RDONLY)) <= 0) {
 			return -1;
 		}
-		cc->fin._ptr = 0;
-		cc->fin._cnt = 0;
+		input._ptr = 0;
+		input._cnt = 0;
 	}
 	else if (text != NULL) {
-		cc->fin._fin = -1;
-		cc->fin._ptr = text;
-		cc->fin._cnt = strlen(text);
+		input._fin = -1;
+		input._ptr = text;
+		input._cnt = strlen(text);
 	}
 	else {
-		cc->fin._fin = -1;
-		cc->fin._ptr = 0;
-		cc->fin._cnt = 0;
+		input._fin = -1;
+		input._ptr = 0;
+		input._cnt = 0;
 	}
 
 	if (file != NULL) {
 		file = ccUniqueStr(cc, file, -1, -1);
 	}
-	cc->chrNext = -1;
-	cc->tokNext = NULL;
+	input.cc = cc;
+	input.rt = cc->rt;
+	input.filePos = 0;
+	input.linePos = 0;
+	input.nextChr = -1;
+
 	cc->file = file;
 	cc->line = line;
-	cc->fin.nest = cc->nest;
 
-	if (fillBuf(cc) > 2) {
+	if (fillBuf(&input) > 2) {
 		// skip first line if it begins with: #!
-		if (cc->fin._ptr[0] == '#' && cc->fin._ptr[1] == '!') {
-			int chr = readChr(cc);
+		if (input._ptr[0] == '#' && input._ptr[1] == '!') {
+			int chr = readChr(&input);
 			while (chr != -1) {
 				if (chr == '\n') {
 					break;
 				}
-				chr = readChr(cc);
+				chr = readChr(&input);
 			}
 		}
 	}
 
+	astn head = NULL;
+	astn tail = NULL;
+	for ( ; ; ) {
+		astn tok = newNode(cc, TOKEN_any);
+		if (tok == NULL) {
+			break;
+		}
+		if (!readTok(&input, tok)) {
+			recycle(cc, tok);
+			break;
+		}
+		if (head == NULL) {
+			head = tok;
+		}
+		if (tail != NULL) {
+			tail->next = tok;
+		}
+		tail = tok;
+	}
+	if (tail != NULL) {
+		tail->next = cc->tokNext;
+	}
+	if (head != NULL) {
+		cc->tokNext = head;
+	}
 	return 0;
 }
 
@@ -1187,10 +1267,6 @@ int ccClose(ccContext cc) {
 	// check no token left to read
 	if ((ast = nextTok(cc, TOKEN_any, 0))) {
 		error(cc->rt, ast->file, ast->line, ERR_UNEXPECTED_TOKEN, ast);
-	}
-	// check we are on the same nesting level
-	else if (cc->fin.nest != cc->nest) {
-		error(cc->rt, cc->file, cc->line, ERR_INVALID_STATEMENT);
 	}
 
 	// close input

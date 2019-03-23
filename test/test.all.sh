@@ -41,17 +41,17 @@ $CMPL_BIN/cmpl -dump.scite extras/cmpl.api
 $CMPL_BIN/cmpl -dump.scite extras/cmplGfx.api "$BIN/libGfx.so" cmplGfx/gfxlib.ci
 $CMPL_BIN/cmpl -dump.scite extras/cmplAll.api "$BIN/libFile.so" "$BIN/libOpenGL.so" "$BIN/libGfx.so" cmplGfx/gfxlib.ci
 
-# dump symbols, assembly, syntax tree and global variables (to be compared with previous version to test if the code is generated properly)
-$CMPL_BIN/cmpl -X+steps+fold+fast+asgn-stdin-glob-offsets -debug/G/M -api/d/p/a/m -asm/n/s -ast -log/d/15 "extras/test.dump.ci" -dump.ast.xml "extras/test.dump.xml" "test/test.ci"
+# dump symbols, documentation, assembly, syntax tree and global variables (to be compared with previous version to test if the code is generated properly)
+$CMPL_BIN/cmpl -X+steps+fold+fast+asgn-stdin-glob-offsets -debug/G/M -api/d/p/a/m -asm/n/s -ast -doc -log/d/15 "extras/test.dump.ci" -dump.ast.xml "extras/test.dump.xml" "test/test.ci"
 
-# dump symbols, assembly, syntax tree and global variables (to be compared with previous version to test if the code is generated properly)
-$CMPL_BIN/cmpl -X+steps+fold+fast+asgn-stdin-glob-offsets -debug/G/M -api/d/p/a/m -asm/n/s -ast -log/d "extras/libs.dump.ci" "$BIN/libFile.so" "$BIN/libGfx.so" "cmplGfx/gfxlib.ci"
+# dump symbols, documentation, assembly, syntax tree and global variables (to be compared with previous version to test if the code is generated properly)
+$CMPL_BIN/cmpl -X+steps+fold+fast+asgn-stdin-glob-offsets -debug/G/M -api/d/p/a/m -asm/n/s -ast -doc -log/d "extras/libs.dump.ci" "$BIN/libFile.so" "$BIN/libGfx.so" "cmplGfx/gfxlib.ci"
 
 # dump profile data in text format including function tracing
-$CMPL_BIN/cmpl -X-stdin+steps -profile/t/P/G/M -api/a/m/d/p/u -asm/a/n/s -ast/t -log/15 "extras/test.prof.ci" -dump "extras/test.prof.ci" "test/test.ci"
+$CMPL_BIN/cmpl -X-stdin+steps -profile/t/P/G/M -api/a/m/d/p/u -asm/a/n/s -ast/t -doc -log/15 "extras/test.prof.ci" -dump "extras/test.prof.ci" "test/test.ci"
 
 # dump profile data in json format
-$CMPL_BIN/cmpl -X-stdin-steps -profile/t/P/G/M -api/a/m/d/p/u -asm/a/n/s -ast/t -dump.json "extras/test.prof.json" "test/test.ci"
+$CMPL_BIN/cmpl -X-stdin-steps -profile/t/P/G/M -api/a/m/d/p/u -asm/a/n/s -ast/t -doc -dump.json "extras/test.prof.json" "test/test.ci"
 
 # test the virtual machine
 $CMPL_BIN/cmpl --test-vm

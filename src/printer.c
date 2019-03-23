@@ -981,6 +981,10 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 				printStr(out, esc, ast->ref.name);
 			}
 			break;
+
+		case TOKEN_doc:
+			printFmt(out, esc, "/*%?s*/", ast->ref.name);
+			break;
 		//#}
 	}
 }

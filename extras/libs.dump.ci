@@ -19,7 +19,7 @@ cmplGfx/gfxlib.ci:239: warn: uninitialized variable `show.onEvent.text`
 typename: typename {
 .kind: static const typename(ref)
 .base: `typename`
-.size: 136
+.size: 144
 .name: 'typename'
 .print: '<%T>'
 .field size: int32 (size: 4, cast: const variable)
@@ -3994,6 +3994,12 @@ Math.asin(x: float64): float64: function {
 .owner: Math
 .param .result: float64 (size: 8, cast: variable(f64))
 .param x: float64 (size: 8, cast: variable(f64))
+.doc: '
+	 * Asin returns the arcsine of x.
+	 *   Special cases are:
+	 *     Asin(±0) = ±0
+	 *     Asin(x) = NaN if x < -1 or x > 1
+	 '
 .value: {
 	if (x == (0)) {
 		return .result := x;
@@ -4793,6 +4799,7 @@ indexOf(str: char[*], chr: char): int32: function {
 .param .result: int32 (size: 4, cast: variable(i32))
 .param str: char[*] (size: 4, cast: variable(ref))
 .param chr: char (size: 4, cast: variable(i32))
+.doc: ' the first occurrence of a char in string'
 .value: {
 	for (i: int32 := 0; str[i]; i := i + 1) {
 		if (str[i] == chr) {
@@ -4840,6 +4847,7 @@ lastIndexOf(str: char[*], chr: char): int32: function {
 .param .result: int32 (size: 4, cast: variable(i32))
 .param str: char[*] (size: 4, cast: variable(ref))
 .param chr: char (size: 4, cast: variable(i32))
+.doc: ' the last occurrence of a char in string'
 .value: {
 	result: int32 := -1;
 	for (i: int32 := 0; str[i]; i := i + 1) {
@@ -10364,7 +10372,7 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 .size: 100
 .name: '.main'
 .print: '.main'
-.field typename: typename (size: 136, cast: static const typename(ref))
+.field typename: typename (size: 144, cast: static const typename(ref))
 .field void: typename (size: 0, cast: static const typename(void))
 .field bool: typename (size: 1, cast: static const typename(bool))
 .field char: typename (size: 1, cast: static const typename(i32))
@@ -11982,16 +11990,16 @@ cmplGfx/gfxlib.ci:304: show: function(<show>)
 
 ---------- Memory usage:
 memory[all] @000000; size: 2096872(2.0 Mb)
-memory[used] @000000; size: 282716(276.1 Kb)
-memory[heap] @04505c; size: 1289890(1.2 Mb)
+memory[used] @000000; size: 298156(291.2 Kb)
+memory[heap] @048cac; size: 1274450(1.2 Mb)
 memory[stack] @0fff44; size: 524218(511.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 273840(267.4 Kb)
+memory[meta] @000000; size: 289280(282.5 Kb)
 memory[code] @000000; size: 8560(8.4 Kb)
 memory[data] @000000; size: 52(52.0 bytes)
 
 ---------- heap memory:
-memory[free] @045078; size: 1289840(1.2 Mb)
+memory[free] @048cc8; size: 1274400(1.2 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

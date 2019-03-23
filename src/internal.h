@@ -80,23 +80,10 @@ struct ccContextRec {
 	// Parser
 	char*	file;		// current file name
 	int		line;		// current line number
-	size_t	lPos;		// current line position
-	size_t	fPos;		// current file position
-	//~ current column = fPos - lPos
 
 	// Lexer
-	struct {
-		astn	tokPool;		// list of recycled tokens
-		astn	tokNext;		// next token: look-ahead
-		int		chrNext;		// next character: look-ahead
-		struct {				// Input
-			int		nest;		// nesting level on open.
-			int		_fin;		// file handle
-			size_t	_cnt;		// chars left in buffer
-			char*	_ptr;		// pointer parsing trough source
-			uint8_t	_buf[1024];	// memory file buffer
-		} fin;
-	};
+	astn	tokPool;		// list of recycled tokens
+	astn	tokNext;		// next token: look-ahead
 
 	// Type cache
 	symn	type_vid;		// void
@@ -395,6 +382,7 @@ void print_log(rtContext rt, raiseLevel level, const char *file, int line, rtVal
 #define ERR_EMPTY_CHAR_CONSTANT "empty character constant"
 #define ERR_INVALID_CHARACTER "invalid character: '%c'"
 #define ERR_INVALID_COMMENT "unterminated block comment"
+#define ERR_INVALID_DOC_COMMENT "comment does not belong to a declaration"
 #define ERR_INVALID_ESC_SEQ "invalid escape sequence '\\%c'"
 #define ERR_INVALID_EXPONENT "no exponent in numeric constant"
 #define ERR_INVALID_HEX_SEQ "hex escape sequence invalid '%c'"

@@ -562,12 +562,12 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 
 		error = error || !(field = ccAddCall(cc, typenameGetField, type_get_base));
 		error = error || !(field = ccAddCall(cc, typenameGetField, type_get_file));
-		if (field != NULL) {// hack: change return type from pointer to string
+		if (field != NULL && field->params != NULL) {// hack: change return type from pointer to string
 			field->params->type = cc->type_str;
 		}
 		error = error || !(field = ccAddCall(cc, typenameGetField, type_get_line));
 		error = error || !(field = ccAddCall(cc, typenameGetField, type_get_name));
-		if (field != NULL) {// hack: change return type from pointer to string
+		if (field != NULL && field->params != NULL) {// hack: change return type from pointer to string
 			field->params->type = cc->type_str;
 		}
 
@@ -962,12 +962,6 @@ ccContext ccInit(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)) {
 	cc->owner = NULL;
 	cc->scope = NULL;
 	cc->global = NULL;
-
-	cc->chrNext = -1;
-
-	cc->fin._ptr = 0;
-	cc->fin._cnt = 0;
-	cc->fin._fin = -1;
 
 	install_type(cc, mode);
 	install_emit(cc, mode);

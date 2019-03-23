@@ -154,9 +154,9 @@ struct userContextRec {
 	dmpMode dmpMode;        // dump flags
 
 	int dmpApi:1;           // dump symbols
+	int dmpDoc:1;           // dump documentation
 	int dmpAsm:1;           // dump instructions
 	int dmpAst:1;           // dump abstract syntax tree
-	//TODO: dmpDoc:         // dump documentation
 
 	int dmpMain:1;          // include main initializer
 	int dmpBuiltins:1;      // include builtin symbols
@@ -580,6 +580,7 @@ static void jsonDumpAsm(FILE *out, const char **esc, symn sym, rtContext rt, int
 	}
 }
 static void dumpApiJSON(userContext ctx, symn sym) {
+	static char *const JSON_KEY_DOC = "doc";
 	static char *const JSON_KEY_ASM = "asm";
 	static char *const JSON_KEY_AST = "ast";
 
@@ -589,12 +590,14 @@ static void dumpApiJSON(userContext ctx, symn sym) {
 
 	// symbols are always accessible
 	int dmpApi = ctx->dmpApi;
+	// dump documentation if requested
+	int dmpDoc = ctx->dmpDoc && sym->doc;
 	// instructions are available only for functions
 	int dmpAsm = ctx->dmpAsm && isFunction(sym);
 	// syntax tree is unavailable at runtime(compiler context is destroyed)
 	int dmpAst = ctx->dmpAst && sym->init && ctx->rt->cc;
 
-	if (!dmpApi && !dmpAsm && !dmpAst) {
+	if (!dmpApi && !dmpDoc && !dmpAsm && !dmpAst) {
 		// nothing to dump
 		return;
 	}
@@ -605,6 +608,11 @@ static void dumpApiJSON(userContext ctx, symn sym) {
 	}
 
 	jsonDumpSym(out, esc, sym, NULL, indent + 1);
+
+	// export documentation
+	if (dmpDoc) {
+		printFmt(out, esc, "%I\"%s\": \"%?s\"\n", indent + 1, JSON_KEY_DOC, sym->doc);
+	}
 
 	// export valid syntax tree if we still have compiler context
 	if (dmpAst) {
@@ -947,12 +955,14 @@ static void dumpApiText(userContext ctx, symn sym) {
 
 	// symbols are always accessible
 	int dmpApi = ctx->dmpApi;
+	// dump documentation if requested
+	int dmpDoc = ctx->dmpDoc && sym->doc;
 	// instructions are available only for functions
 	int dmpAsm = ctx->dmpAsm && isFunction(sym);
 	// syntax tree is unavailable at runtime(compiler context is destroyed)
 	int dmpAst = ctx->dmpAst && sym->init && ctx->rt->cc;
 
-	if (!dmpApi && !dmpAsm && !dmpAst) {
+	if (!dmpApi && !dmpDoc && !dmpAsm && !dmpAst) {
 		// nothing to dump
 		return;
 	}
@@ -1020,6 +1030,17 @@ static void dumpApiText(userContext ctx, symn sym) {
 				printFmt(out, esc, "%I.param %.T: %?T (size: %d, cast: %K)\n", indent, param, param->type, param->size, param->kind);
 			}
 		}
+	}
+
+	if (dmpDoc) {
+		if (!dumpExtraData) {
+			printFmt(out, esc, " {\n");
+			dumpExtraData = 1;
+		}
+		if (!ctx->dmpDetails && sym->file != NULL && sym->line > 0) {
+			printFmt(out, esc, "%I.file: '%s:%u'\n", indent, sym->file, sym->line);
+		}
+		printFmt(out, esc, "%I.doc: '%s'\n", indent, sym->doc);
 	}
 
 	if (dmpAst) {
@@ -1429,6 +1450,13 @@ static int usage() {
 		"\n    .json               dump api and profile data in javascript object notation format"
 		"\n"
 		"\n  -api[*]               dump symbols"
+		"\n    /a                  include all builtin symbols"
+		"\n    /m                  include main builtin symbol"
+		"\n    /d                  dump details of symbol"
+		"\n    /p                  dump params and fields"
+		"\n    /u                  dump usages"
+		"\n"
+		"\n  -doc[*]               dump documentation"
 		"\n    /a                  include all builtin symbols"
 		"\n    /m                  include main builtin symbol"
 		"\n    /d                  dump details of symbol"
@@ -1894,6 +1922,50 @@ int main(int argc, char *argv[]) {
 				return -1;
 			}
 		}
+		else if (strncmp(arg, "-doc", 4) == 0) {
+			char *arg2 = arg + 4;
+			if (extra.dmpDoc) {
+				fatal("argument specified multiple times: %s", arg);
+				return -1;
+			}
+			extra.dmpDoc = 1;
+			extra.dmpMode |= prName;
+			while (*arg2 == '/') {
+				switch (arg2[1]) {
+					default:
+						arg2 += 1;
+						break;
+
+					case 'a':
+						extra.dmpMode |= prAbsOffs;
+						extra.dmpBuiltins = 1;
+						arg2 += 2;
+						break;
+
+					// include extras in dump
+					case 'm':
+						extra.dmpMain = 1;
+						arg2 += 2;
+						break;
+					case 'd':
+						extra.dmpDetails = 1;
+						arg2 += 2;
+						break;
+					case 'p':
+						extra.dmpParams = 1;
+						arg2 += 2;
+						break;
+					case 'u':
+						extra.dmpUsages = 1;
+						arg2 += 2;
+						break;
+				}
+			}
+			if (*arg2) {
+				fatal("invalid argument '%s'", arg);
+				return -1;
+			}
+		}
 		else if (strncmp(arg, "-asm", 4) == 0) {
 			char *arg2 = arg + 4;
 			if (extra.dmpAsm) {
@@ -2094,6 +2166,7 @@ int main(int argc, char *argv[]) {
 	rt->fastAssign = settings.fastAssign != 0;
 	rt->genGlobals = settings.genGlobals != 0;
 	rt->logLevel = settings.warnLevel;
+	rt->genDocs = extra.dmpDoc;
 
 	// open the log file first (enabling dump appending)
 	if (logFileName && !logFile(rt, logFileName, logAppend)) {
@@ -2253,7 +2326,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (dumpFun == NULL) {
-		if (extra.dmpApi || extra.dmpAsm || extra.dmpAst) {
+		if (extra.dmpApi || extra.dmpDoc || extra.dmpAsm || extra.dmpAst) {
 			dumpFun = dumpApiText;
 		}
 	}

@@ -83,6 +83,7 @@ TOKEN_DEF(RIGHT_crl, 0x00, 0, "}")                  // Right curly bracket
 TOKEN_DEF(PNCT_qst,  0x00, 0, "?")                  // question mark
 TOKEN_DEF(PNCT_cln,  0x00, 0, ":")                  // colon
 TOKEN_DEF(PNCT_dot3, 0x00, 0, "...")                // triple dot
+TOKEN_DEF(TOKEN_doc, 0x00, 0, "/***/")              // doc comment
 
 TOKEN_DEF(ELSE_kwd, 0x00, 0, "else")
 
@@ -94,16 +95,6 @@ TOKEN_DEF(INLINE_kwd, 0x00, 0, "inline")
 TOKEN_DEF(RECORD_kwd, 0x00, 0, "struct")
 TOKEN_DEF(ENUM_kwd, 0x00, 0, "enum")
 TOKEN_DEF(EMIT_kwd, 0x00, 0, "emit")
-
-//~ TOKEN_DEF(OPER_kwd, 0x00, 0, "operator")
-
-//- TOKEN_DEF(OPER_new, 0x00, 0, "new")
-//- TOKEN_DEF(OPER_del, 0x00, 0, "delete")
-
-//- TOKEN_DEF(STMT_try, 0x00, 0, "try")
-//- TOKEN_DEF(STMT_thr, 0x00, 0, "throw")
-//- TOKEN_DEF(STMT_cth, 0x00, 0, "catch")
-//- TOKEN_DEF(STMT_fin, 0x00, 0, "finally")
 
 //~ TOKEN_DEF(STMT_go2, 0x00, 0, "goto")
 //~ TOKEN_DEF(STMT_swc, 0x00, 0, "switch")

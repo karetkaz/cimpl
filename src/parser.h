@@ -164,15 +164,6 @@ int isConstVar(astn ast);
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Lexer
 
 /**
- * Read the next token from input.
- * 
- * @param cc compiler context.
- * @param match: read next token only if matches.
- * @return next token, or null.
- */
-astn nextTok(ccContext cc, ccToken match, int raise);
-
-/**
  * Peek the next token.
  * 
  * @param cc compiler context.
@@ -180,6 +171,15 @@ astn nextTok(ccContext cc, ccToken match, int raise);
  * @return next token, or null.
  */
 astn peekTok(ccContext cc, ccToken match);
+
+/**
+ * Read the next token from input.
+ * 
+ * @param cc compiler context.
+ * @param match: read next token only if matches.
+ * @return next token, or null.
+ */
+astn nextTok(ccContext cc, ccToken match, int raise);
 
 /**
  * Read the next token and recycle it.

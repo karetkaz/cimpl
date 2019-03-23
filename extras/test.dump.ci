@@ -271,7 +271,7 @@ test/lang/statementFor.ci:12: warn: using default type initializer: forIdx := 0
 typename: typename {
 .kind: static const typename(ref)
 .base: `typename`
-.size: 136
+.size: 144
 .name: 'typename'
 .print: '<%T>'
 .field size: int32 (size: 4, cast: const variable)
@@ -4246,6 +4246,12 @@ Math.asin(x: float64): float64: function {
 .owner: Math
 .param .result: float64 (size: 8, cast: variable(f64))
 .param x: float64 (size: 8, cast: variable(f64))
+.doc: '
+	 * Asin returns the arcsine of x.
+	 *   Special cases are:
+	 *     Asin(±0) = ±0
+	 *     Asin(x) = NaN if x < -1 or x > 1
+	 '
 .value: {
 	if (x == (0)) {
 		return .result := x;
@@ -5045,6 +5051,7 @@ indexOf(str: char[*], chr: char): int32: function {
 .param .result: int32 (size: 4, cast: variable(i32))
 .param str: char[*] (size: 4, cast: variable(ref))
 .param chr: char (size: 4, cast: variable(i32))
+.doc: ' the first occurrence of a char in string'
 .value: {
 	for (i: int32 := 0; str[i]; i := i + 1) {
 		if (str[i] == chr) {
@@ -5092,6 +5099,7 @@ lastIndexOf(str: char[*], chr: char): int32: function {
 .param .result: int32 (size: 4, cast: variable(i32))
 .param str: char[*] (size: 4, cast: variable(ref))
 .param chr: char (size: 4, cast: variable(i32))
+.doc: ' the last occurrence of a char in string'
 .value: {
 	result: int32 := -1;
 	for (i: int32 := 0; str[i]; i := i + 1) {
@@ -8915,6 +8923,7 @@ rgb888(r: int32, g: int32, b: int32): int32: function {
 .param r: int32 (size: 4, cast: i32)
 .param g: int32 (size: 4, cast: i32)
 .param b: int32 (size: 4, cast: i32)
+.doc: ' pack 8 bit color components (0 .. 255) to R8G8B8 color format'
 .value: r << 16 & 16711680 | g << 8 & 65280 | b & 255
 }
 rgb565(r: int32, g: int32, b: int32): int32: function {
@@ -8927,6 +8936,7 @@ rgb565(r: int32, g: int32, b: int32): int32: function {
 .param r: int32 (size: 4, cast: i32)
 .param g: int32 (size: 4, cast: i32)
 .param b: int32 (size: 4, cast: i32)
+.doc: ' pack 8 bit color components (0 .. 255) to R5G6B5 color format'
 .value: r << 8 & 63488 | g << 3 & 2016 | b >> 3 & 31
 }
 r_comp: int32 {
@@ -13308,7 +13318,7 @@ testMathAbsMod_f32_8d: float32 {
 .size: 10927
 .name: '.main'
 .print: '.main'
-.field typename: typename (size: 136, cast: static const typename(ref))
+.field typename: typename (size: 144, cast: static const typename(ref))
 .field void: typename (size: 0, cast: static const typename(void))
 .field bool: typename (size: 1, cast: static const typename(bool))
 .field char: typename (size: 1, cast: static const typename(i32))
@@ -20470,29 +20480,29 @@ test/lang/reflect.ci:14: sizeofFloat32: int32(4)
 test/lang/reflect.ci:15: sizeofFloat64: int32(8)
 test/lang/reflect.ci:16: sizeofPointer: int32(4)
 test/lang/reflect.ci:17: sizeofVariant: int32(8)
-test/lang/reflect.ci:18: sizeofTypename: int32(136)
+test/lang/reflect.ci:18: sizeofTypename: int32(144)
 test/lang/reflect.ci:19: sizeofFunction: int32(4)
 test/lang/reflect.ci:20: sizeofObject: int32(4)
 test/lang/reflect.ci:22: RecordSizeof: typename(<RecordSizeof>)
 test/lang/reflect.ci:26: RecordSizeofExt: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:30: typeofRecord: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:31: nameOfRecord: char[*]("RecordSizeofExt")
-test/lang/reflect.ci:32: offsetOfRecord: int32(196512)
+test/lang/reflect.ci:32: offsetOfRecord: int32(207832)
 test/lang/reflect.ci:33: sizeOfRecord: int32(16)
 test/lang/reflect.ci:34: fileOfRecord: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:35: lineOfRecord: int32(26)
 test/lang/reflect.ci:37: typeofBase: typename(<RecordSizeof>)
 test/lang/reflect.ci:38: nameOfBase: char[*]("RecordSizeof")
-test/lang/reflect.ci:39: offsetOfBase: int32(196240)
+test/lang/reflect.ci:39: offsetOfBase: int32(207544)
 test/lang/reflect.ci:40: sizeOfBase: int32(12)
 test/lang/reflect.ci:41: fileOfBase: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:42: lineOfBase: int32(22)
 test/lang/reflect.ci:44: typeofBase1: typename(<object>)
-test/lang/reflect.ci:45: offsetOfBase1: int32(2472)
+test/lang/reflect.ci:45: offsetOfBase1: int32(2608)
 test/lang/reflect.ci:46: sizeOfBase1: int32(4)
 test/lang/reflect.ci:48: typeofBase2: typename(<typename>)
 test/lang/reflect.ci:49: offsetOfBase2: int32(8)
-test/lang/reflect.ci:50: sizeOfBase2: int32(136)
+test/lang/reflect.ci:50: sizeOfBase2: int32(144)
 test/stdc/number.ci:3: pi64: float64(3.141593)
 test/stdc/number.ci:4: e64: float64(2.718282)
 test/stdc/number.ci:6: pi32: float32(3.141593)
@@ -20990,16 +21000,16 @@ test/stdc/test.math.ci:98: testMathAbsMod_f32_8d: float32(8.000000)
 
 ---------- Memory usage:
 memory[all] @000000; size: 2096872(2.0 Mb)
-memory[used] @000000; size: 304262(297.1 Kb)
-memory[heap] @04a486; size: 1268344(1.2 Mb)
+memory[used] @000000; size: 320774(313.3 Kb)
+memory[heap] @04e506; size: 1251832(1.2 Mb)
 memory[stack] @0fff44; size: 524218(511.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 288312(281.6 Kb)
+memory[meta] @000000; size: 304824(297.7 Kb)
 memory[code] @000000; size: 15604(15.2 Kb)
 memory[data] @000000; size: 80(80.0 bytes)
 
 ---------- heap memory:
-memory[free] @04a498; size: 1268304(1.2 Mb)
+memory[free] @04e518; size: 1251792(1.2 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms
