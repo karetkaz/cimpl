@@ -517,7 +517,7 @@ static ccKind genMember(ccContext cc, astn ast, ccKind get) {
 
 	if (isStatic(member)) {
 		if (isVariable(object) && !isArrayType(object->type)) {
-			warn(rt, raiseWarn, ast->file, ast->line, WARN_STATIC_FIELD_ACCESS, member, object->type);
+			warn(rt, raise_warn_typ2, ast->file, ast->line, WARN_STATIC_FIELD_ACCESS, member, object->type);
 		}
 		return genAst(cc, ast->op.rhso, get);
 	}
@@ -862,6 +862,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 			temp->var.init = prm->init;
 			temp->var.offs = stkOffset(rt, 0);
 			temp->var.size = prm->size;
+			temp->var.unit = prm->unit;
 			temp->var.file = prm->file;
 			temp->var.line = prm->line;
 
@@ -915,6 +916,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 		temp->var.init = prm->init;
 		temp->var.offs = 0;
 		temp->var.size = prm->type->size;
+		temp->var.unit = prm->unit;
 		temp->var.file = prm->file;
 		temp->var.line = prm->line;
 
@@ -1852,7 +1854,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			dieif(ast->op.rhso->type != cc->type_bol, ERR_INTERNAL_ERROR);
 			dieif(got != CAST_bit, ERR_INTERNAL_ERROR": (%t) -> %K", ast, got);
 			#endif
-			warn(rt, raiseWarn, ast->file, ast->line, WARN_SHORT_CIRCUIT, ast);
+			warn(rt, raise_warn_todo, ast->file, ast->line, WARN_SHORT_CIRCUIT, ast);
 			break;
 		}
 		case OPER_sel:      // '?:'

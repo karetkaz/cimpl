@@ -390,6 +390,7 @@ int ccLibStd(ccContext cc) {
 			err = 2;
 		}
 		if (!err && ccExtend(cc, cc->libc_dbg)) {
+			cc->libc_dbg->doc = "Report messages or raise errors.";
 			for (i = 0; i < lengthOf(logLevels); i += 1) {
 				if (!ccDefInt(cc, logLevels[i].name, logLevels[i].value)) {
 					err = 1;

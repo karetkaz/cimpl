@@ -63,7 +63,7 @@ Returns M values: […
 N and M are equivalent with the function's argument and return value.
 
 ## Instruction `call`
-Perform [TODO]
+Perform subroutine call.
 
 ### Description
 Instruction code: `0x02`  

@@ -151,6 +151,7 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 		tag->ref.link = def;
 		tag->type = type;
 
+		def->unit = cc->unit;
 		def->file = tag->file;
 		def->line = tag->line;
 		def->params = params;
@@ -820,7 +821,7 @@ static astn initializer(ccContext cc) {
 				else {
 					astn next = peekTok(cc, TOKEN_any);
 					if (head != tail && next != NULL) {
-						warn(cc->rt, raiseWarn, next->file, next->line, ERR_UNMATCHED_SEPARATOR, next, STMT_end);
+						error(cc->rt, next->file, next->line, ERR_UNMATCHED_SEPARATOR, next, STMT_end);
 					}
 					break;
 				}
@@ -851,6 +852,7 @@ static astn parameters(ccContext cc, symn returns, astn function) {
 		symn res = install(cc, ".result", KIND_var | refCast(returns), 0, returns, returns->init);
 		tok = lnkNode(cc, res);
 		if (function != NULL) {
+			res->unit = cc->unit;
 			res->file = function->file;
 			res->line = function->line;
 		}
@@ -1195,7 +1197,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 	astn tag = nextTok(cc, TOKEN_var, 0);
 	int expose = 0;
 	if (tag == NULL) {
-		tag = tagNode(cc, ".anonymous");
+		tag = tagNode(cc, "<?>");
 		expose = 1;
 	}
 
@@ -1283,8 +1285,10 @@ static astn declare_record(ccContext cc, ccKind attr) {
 
 		for (symn field = type->fields; field; field = field->next) {
 			symn link = install(cc, field->name, KIND_def, 0, field->type, field->tag);
+			link->unit = field->unit;
 			link->file = field->file;
 			link->line = field->line;
+			link->doc = field->doc;
 		}
 	}
 
@@ -1369,6 +1373,9 @@ static astn declare_enum(ccContext cc) {
 			error(cc->rt, id->file, id->line, ERR_INVALID_VALUE_ASSIGN, member, value);
 		}
 		member->init = value;
+		// enumeration values are documented public symbols
+		member->doc = member->name;
+
 		logif("ENUM", "%s:%u: enum.member: `%t` => %+T", prop->file, prop->line, prop, member);
 	}
 
@@ -1401,9 +1408,10 @@ static astn statement_if(ccContext cc, ccKind attr) {
 	skipTok(cc, RIGHT_par, 1);
 
 	// static if statement true branch does not enter a new scope to expose declarations.
+	int staticIf = attr & ATTR_stat;
 	int enterThen = 1;
 	int enterElse = 1;
-	if (attr & ATTR_stat) {
+	if (staticIf) {
 		struct astNode value;
 		if (eval(cc, &value, test)) {
 			if (bolValue(&value)) {
@@ -1423,7 +1431,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 	}
 
 	int insideStaticIf = cc->siff;
-	cc->siff = enterThen || insideStaticIf;
+	cc->siff = insideStaticIf || (staticIf && enterThen);
 	ast->stmt.stmt = statement(cc, NULL);
 
 	// parse else part if next token is 'else'
@@ -1436,7 +1444,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 			enter(cc, NULL);
 			enterThen = 1;
 		}
-		cc->siff = enterElse || insideStaticIf;
+		cc->siff = insideStaticIf || (staticIf && enterElse);
 		ast->stmt.step = statement(cc, NULL);
 	}
 
@@ -1596,8 +1604,8 @@ static astn statement(ccContext cc, char *doc) {
 		}
 	}
 
+	// parse the statement
 	ccKind attr = qualifier(cc);
-	// scan the statement
 	if ((ast = nextTok(cc, STMT_end, 0))) {             // ;
 		warn(cc->rt, raise_warn_par8, ast->file, ast->line, WARN_EMPTY_STATEMENT);
 		recycle(cc, ast);
@@ -1801,6 +1809,7 @@ astn ccAddUnit(ccContext cc, int init(ccContext), char *file, int line, char *te
 		return NULL;
 	}
 
+	cc->unit = file;
 	int nest = cc->nest;
 	if (ccOpen(cc, file, line, text) != 0) {
 		error(cc->rt, NULL, 0, ERR_OPENING_FILE, file);
@@ -1898,6 +1907,8 @@ symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 
 	sym->kind = ATTR_stat | ATTR_cnst | KIND_def;
 	sym->init = init;
+	// native calls are undocumented public symbols
+	sym->unit = NULL;
 
 	// update the native call
 	nfc->proto = proto;

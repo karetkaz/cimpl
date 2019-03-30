@@ -954,7 +954,7 @@ ccContext ccInit(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)) {
 		return NULL;
 	}
 
-	memset(rt->_end, 0, sizeof(struct ccContextRec));
+	memset(cc, 0, sizeof(struct ccContextRec));
 
 	cc->rt = rt;
 	rt->cc = cc;

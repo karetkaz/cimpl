@@ -78,6 +78,7 @@ struct ccContextRec {
 	int		siff:1;		// TODO: remove: inside a static if false
 
 	// Parser
+	char*	unit;		// unit file name
 	char*	file;		// current file name
 	int		line;		// current line number
 
@@ -407,6 +408,7 @@ void print_log(rtContext rt, raiseLevel level, const char *file, int line, rtVal
 #define ERR_DECLARATION_COMPLEX "declaration too complex: `%T`"
 #define ERR_DECLARATION_REDEFINED "redefinition of `%T`"
 #define ERR_UNDEFINED_DECLARATION "reference `%t` is not defined"
+#define ERR_PRIVATE_DECLARATION "declaration `%T` is not public"
 #define ERR_INVALID_ARRAY_LENGTH "positive integer constant expected, got `%t`"
 #define ERR_INVALID_INHERITANCE "type must be inherited from object, got `%t`"
 #define ERR_INVALID_BASE_TYPE "invalid struct base type, got `%t`"

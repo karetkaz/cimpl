@@ -611,7 +611,7 @@ static void dumpApiJSON(userContext ctx, symn sym) {
 
 	// export documentation
 	if (dmpDoc) {
-		printFmt(out, esc, "%I\"%s\": \"%?s\"\n", indent + 1, JSON_KEY_DOC, sym->doc);
+		printFmt(out, esc, "%I, \"%s\": \"%?s\"\n", indent + 1, JSON_KEY_DOC, sym->doc);
 	}
 
 	// export valid syntax tree if we still have compiler context
@@ -1444,6 +1444,7 @@ static int usage() {
 		"\n  -log[*]<int> <file>   set logger for: compilation errors and warnings, runtime debug messages"
 		"\n    <int>               set the default log(warning) level 0 - 15"
 		"\n    /a                  append to the log file"
+		"\n    /d                  dump to the log file"
 		"\n"
 		"\n  -dump[?] <file>       set output for: dump(symbols, assembly, abstract syntax tree, coverage, call tree)"
 		"\n    .scite              dump api for SciTE text editor"
@@ -1483,28 +1484,28 @@ static int usage() {
 		"\n    /u                  dump usages"
 		"\n"
 		"\n<files with options>: filename followed by switches"
-		"\n  <file>                if file extension is (.so|.dll) load as library else compile"
-		"\n  -w[a|x|<int>]         set or disable warning level for current file"
+		"\n  <file>                if file extension is (.so|.dll|.wasm) load as library else compile"
+		"\n  -w[a|<int>]           set or disable warning level for current file"
 		"\n  -b[*]<int>            break point on <int> line in current file"
 		"\n    /[p|P]              print only, do not pause (/P includes stack trace)"
 		"\n    /o                  one shot breakpoint, disable after first hit"
 		"\n"
 		"\nexamples:"
 		"\n"
-		"\n>app -dump.json api.json"
+		"\n>app -api -dump.json api.json"
 		"\n    dump builtin symbols to `api.json` file (types, functions, variables, aliases)"
 		"\n"
-		"\n>app -run test.tracing.ci"
-		"\n    compile and execute the file `test.tracing.ci`"
+		"\n>app -run test.all.ci"
+		"\n    compile and execute the file `test.all.ci`"
 		"\n"
-		"\n>app -debug gl.so -w0 gl.ci -w0 test.ci -wx -b12 -b15 -b/t/19"
+		"\n>app -debug gl.so -w0 gl.ci -w0 test.ci -wa -b12 -b15 -b/t/19"
 		"\n    execute in debug mode"
 		"\n    import `gl.so`"
 		"\n        with no warnings"
 		"\n    compile `gl.ci`"
 		"\n        with no warnings"
 		"\n    compile `test.ci`"
-		"\n        treating all warnings as errors"
+		"\n        show all warnings"
 		"\n        break execution on lines 12 and 15"
 		"\n        print message when line 19 is hit"
 		"\n"
@@ -2153,7 +2154,6 @@ int main(int argc, char *argv[]) {
 
 	// initialize runtime context
 	rt = rtInit(NULL, settings.memory);
-
 	if (rt == NULL) {
 		fatal("initializing runtime context");
 		return -1;
@@ -2192,9 +2192,10 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	// install base type system.
-	if (!ccInit(rt, install, NULL)) {
-		fatal("error registering base types");
+	// initialize compiler context, install builtin types
+	ccContext cc = ccInit(rt, install, NULL);
+	if (cc == NULL) {
+		fatal("initializing compiler context");
 		logFile(rt, NULL, 0);
 		return -6;
 	}
@@ -2204,7 +2205,7 @@ int main(int argc, char *argv[]) {
 	if (install & installLibs) {
 		// install standard library.
 		if (extra.compileSteps != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sCompile: `%?s`", extra.compileSteps, stdLib);}
-		if (!ccAddUnit(rt->cc, ccLibStd, stdLib, 1, NULL)) {
+		if (!ccAddUnit(cc, ccLibStd, stdLib, 1, NULL)) {
 			fatal("error registering standard library");
 		}
 	}
@@ -2224,7 +2225,7 @@ int main(int argc, char *argv[]) {
 				}
 				else {
 					if (extra.compileSteps != NULL && ccFile != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sCompile: `%?s`", extra.compileSteps, ccFile);}
-					if (!ccAddUnit(rt->cc, NULL, ccFile, 1, NULL)) {
+					if (!ccAddUnit(cc, NULL, ccFile, 1, NULL)) {
 						error(rt, ccFile, 1, "error compiling source `%s`", ccFile);
 					}
 				}
@@ -2296,7 +2297,7 @@ int main(int argc, char *argv[]) {
 	if (pathDumpXml != NULL) {
 		FILE *xmlFile = fopen(pathDumpXml, "w");
 		if (xmlFile != NULL) {
-			dumpAstXML(xmlFile, escapeXML(), rt->cc->root, prDbg, 0, "main");
+			dumpAstXML(xmlFile, escapeXML(), cc->root, prDbg, 0, "main");
 			fclose(xmlFile);
 		}
 		else {
@@ -2307,7 +2308,7 @@ int main(int argc, char *argv[]) {
 	// generate code only if there are no compilation errors
 	if (rt->errors == 0) {
 		if (extra.compileSteps != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sGenerate: byte-code", extra.compileSteps);}
-		if (ccGenCode(rt->cc, run_code != run) != 0) {
+		if (ccGenCode(cc, run_code != run) != 0) {
 			trace("error generating code");
 		}
 		// set breakpoints

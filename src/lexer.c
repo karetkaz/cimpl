@@ -419,7 +419,7 @@ static ccToken readTok(lexContext ctx, astn tok) {
 		}
 
 		if (chr_map[chr & 0xff] == CNTRL) {
-			warn(ctx->rt, raise_warn_lex1, ctx->cc->file, ctx->cc->line, ERR_INVALID_CHARACTER, chr);
+			warn(ctx->rt, raiseWarn, ctx->cc->file, ctx->cc->line, ERR_INVALID_CHARACTER, chr);
 			while (chr == 0) {
 				chr = readChr(ctx);
 			}

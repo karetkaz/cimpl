@@ -118,7 +118,7 @@ int onEvent(int action, int button, int x, int y) {
 	}
 
 	if (reCalculate) {
-		mat4f mat = colorMatrix(brightness / 100., saturation / 100. + 1, Math.deg2rad(hue));
+		mat4f mat = colorMatrix(brightness / 100., saturation / 100. + 1, Math.radians(hue));
 		offs.resize(null, back, null, 1);
 		offs.colorMat(null, mat.data);
 		offs.drawHist(null, 0x00ffffff);

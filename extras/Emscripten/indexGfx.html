@@ -35,9 +35,8 @@
 <div id="mainToolBar" class="toolbar">
 	<span class="left icon" onclick="showSplitter(menuSplit, '!secondary');" title="Toggle show menu">☰</span>
 	<span class="left icon" onclick="saveInput();" title="Save script (Ctrl + s)">💾</span>
-	<span id="btnExecute" class="right execute" onclick="execute(btnExecute.innerText, btnExecute.value);" title="Execute script (Ctrl + Shift + Enter)"></span>
-	<!--<span class="right icon" onclick="showEditor('!primary', 'vertical', '-horizontal');" title="Toggle show output">◨</span>-->
-	<span class="right icon" onclick="showEditor('!primary', 'horizontal', '-vertical');" title="Toggle output">⬓</span>
+	<!--span class="right icon" onclick="showEditor('!primary', 'vertical', '-horizontal');" title="Toggle show output">◨</span-->
+	<span class="right icon" onclick="showEditor('!primary', 'horizontal', '-vertical');" title="Toggle show output">⬓</span>
 	<span class="right icon" onclick="setTheme(body, '!dark');" title="Toggle dark theme">◑</span>
 	<span class="filename" title="Execute action (Ctrl + Enter)
 	'#args' Execute script
@@ -55,13 +54,13 @@
 			<button class="right" onclick="execute();" title="Compiler usage help">?</button>
 		</div>
 		<ul>
-			<li onclick="execute('Run', '-run/g');" title="Execute code at full speed">⚡ Run</li>
-			<li onclick="execute('Debug', '-debug/g');" title="Execute code with error detection">🐞 Debug</li>
-			<li onclick="execute('Profile', '-profile/g');" title="Execute code measuring execution time">⏱ Profile</li>
-			<li onclick="execute('Compile', '');">⚙ Compile only</li>
-			<!--<li>
-				<button onclick="execute(this.innerText, '-api/a/m/d/p/u');">Api</button>
-				<button onclick="execute(this.innerText, '-asm/a/n/s/m');">Asm</button>
+			<li onclick="execute('-run/g');" title="Execute code at full speed">⚡ Run</li>
+			<li onclick="execute('-debug/g');" title="Execute code with error detection">🐞 Debug</li>
+			<li onclick="execute('-profile/g');" title="Execute code measuring execution time">⏱ Profile</li>
+			<!--<li onclick="execute('');">⚙ Compile only</li>
+			<li>
+				<button onclick="execute('-api/a/m/d/p/u');">Api</button>
+				<button onclick="execute('-asm/a/n/s/m');">Asm</button>
 			</li>-->
 		</ul>
 		<hr>
@@ -95,7 +94,7 @@
 				<span class="right icon bold" onclick="showEditor('!secondary');" title="Maximize">⬚</span>
 				<span class="right icon bold" onclick="terminal.scroll(true);" title="Scroll to end">⏬</span>
 				<span class="right icon bold" onclick="terminal.scroll(false);" title="Scroll to top">⏫</span>
-				<span class="filename" title="Execution arguments"><input id="edtArguments"></input></span>
+				<span class="filename" title="Execution arguments"><input id="edtExecute"></input></span>
 			</div>
 			<pre id="output"></pre>
 		</div>

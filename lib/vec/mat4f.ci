@@ -1,15 +1,29 @@
 static if (typename(mat4f) == null) {
 
+/// A 4x4 matrix
 struct mat4f: 0 {
+	/// Access elements as an array: m[1][0]
+	float32 m[4][4];
+
+	/// Access elements as a flatten array: data[4] => m[1][0]
 	float32 data[16];
+
+	/// Access elements as an array of vectors: v[1].x => m[1][0]
+	vec4f v[4];
+
 	struct {
+		///@public
 		vec4f x;
+		///@public
 		vec4f y;
+		///@public
 		vec4f z;
+		///@public
 		vec4f w;
 	}
 }
 
+/// Initialize all elements with the given values
 mat4f mat4f(float32 xx, float32 xy, float32 xz, float32 xw,
 			float32 yx, float32 yy, float32 yz, float32 yw,
 			float32 zx, float32 zy, float32 zz, float32 zw,
@@ -22,14 +36,19 @@ mat4f mat4f(float32 xx, float32 xy, float32 xz, float32 xw,
 	};
 }
 
+/// Initialize matrix with row vectors
 mat4f mat4f(const vec4f x&, const vec4f y&, const vec4f z&, const vec4f w&) {
 	return { x: x, y: y, z: z, w: w };
 }
 
+/// Multiply with vector: dot product of the first 3 elements
 inline dp3(const mat4f mat&, const vec4f vec&) = vec4f(dp3(mat.x, vec), dp3(mat.y, vec), dp3(mat.z, vec), 1f);
-inline dp4(const mat4f mat&, const vec4f vec&) = vec4f(dp4(mat.x, vec), dp4(mat.y, vec), dp4(mat.z, vec), dp4(mat.w, vec));
+/// Multiply with vector: homogeneous dot product
 inline dph(const mat4f mat&, const vec4f vec&) = vec4f(dph(mat.x, vec), dph(mat.y, vec), dph(mat.z, vec), dph(mat.w, vec));
+/// Multiply with vector: dot product
+inline dp4(const mat4f mat&, const vec4f vec&) = vec4f(dp4(mat.x, vec), dp4(mat.y, vec), dp4(mat.z, vec), dp4(mat.w, vec));
 
+/// Multiply two matrices (rows * cols)
 mat4f mul(const mat4f lhs&, const mat4f rhs&) {
 	mat4f transposed = {
 		x: { x: rhs.x.x, y: rhs.y.x, z: rhs.z.x, w: rhs.w.x };
@@ -37,7 +56,6 @@ mat4f mul(const mat4f lhs&, const mat4f rhs&) {
 		z: { x: rhs.x.z, y: rhs.y.z, z: rhs.z.z, w: rhs.w.z };
 		w: { x: rhs.x.w, y: rhs.y.w, z: rhs.z.w, w: rhs.w.w };
 	};
-
 	return {
 		x: dp4(transposed, lhs.x);
 		y: dp4(transposed, lhs.y);
@@ -46,13 +64,4 @@ mat4f mul(const mat4f lhs&, const mat4f rhs&) {
 	};
 }
 
-/*mat4f mat4f() {
-	static const mat4f identity = {
-		x: { x: 1, y: 0, z: 0, w: 0 };
-		y: { x: 0, y: 1, z: 0, w: 0 };
-		z: { x: 0, y: 0, z: 1, w: 0 };
-		w: { x: 0, y: 0, z: 0, w: 1 };
-	};
-	return identity;
-}*/
 }

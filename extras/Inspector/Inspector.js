@@ -208,7 +208,7 @@ function Inspector(data) {
 			return 'No data available!';
 		}
 
-		function symToString(sym, qual, type) {
+		function symToString(sym, qual, type, doc) {
 			var result = '';
 			if (sym.owner && qual === true) {
 				result += sym.owner + '.';
@@ -220,12 +220,15 @@ function Inspector(data) {
 					if (i > 0) {
 						result += ', ';
 					}
-					result += symToString(sym.args[i], false, true);
+					result += symToString(sym.args[i], false, true, doc);
 				}
 				result += ')';
 			}
 			if (type === true) {
 				result += ": " + sym.type;
+			}
+			if (doc === true && sym.doc != null) {
+				result += "; " + sym.doc.trim().replace(/\n/g, '\\n');
 			}
 			return result;
 		}
@@ -236,7 +239,7 @@ function Inspector(data) {
 			if (!checkSymbol(sym)) {
 				continue;
 			}
-			result += symToString(sym, true, true);
+			result += symToString(sym, true, true, true);
 			result += '\n';
 		}
 		return result;

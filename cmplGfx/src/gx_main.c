@@ -1149,7 +1149,7 @@ int cmplInit(rtContext rt) {
 	ccContext cc = rt->cc;
 
 	// rectangle in 2d
-	rt->api.ccAddUnit(cc, NULL, __FILE__, __LINE__, "struct gxRect:1 {\n"
+	rt->api.ccAddUnit(cc, NULL, NULL, 0, "struct gxRect:1 {\n"
 		"	int32 x;\n"
 		"	int32 y;\n"
 		"	int32 w;\n"

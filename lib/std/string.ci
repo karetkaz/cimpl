@@ -1,5 +1,6 @@
 // string related functions
 
+/// Computes the length of the string
 int length(char str[*]) {
 	if (str == null) {
 		return 0;
@@ -10,7 +11,7 @@ int length(char str[*]) {
 	return result;
 }
 
-/// the first occurrence of a char in string
+/// Returns the index of the first occurrence of a character in string
 int indexOf(char str[*], char chr) {
 	for (int i = 0; str[i]; i += 1) {
 		if (str[i] == chr) {
@@ -20,7 +21,7 @@ int indexOf(char str[*], char chr) {
 	return -1;
 }
 
-/// the last occurrence of a char in string
+/// Returns the index of the last occurrence of a character in string
 int lastIndexOf(char str[*], char chr) {
 	int result = -1;
 	for (int i = 0; str[i]; i += 1) {
@@ -31,7 +32,7 @@ int lastIndexOf(char str[*], char chr) {
 	return result;
 }
 
-
+/// Check if a string begins with a specified string, using a custom comparator
 bool startsWith(char str[*], char with[*], int cmp(char chr, char with)) {
 	for (int i = 0; with[i] != 0; i += 1) {
 		if (cmp(str[i], with[i]) != 0) {
@@ -41,6 +42,7 @@ bool startsWith(char str[*], char with[*], int cmp(char chr, char with)) {
 	return true;
 }
 
+/// Check if a string ends in a specified string, using a custom comparator
 bool endsWith(char str[*], char with[*], int cmp(char chr, char with)) {
 	int withLen = length(with);
 	int strLen = length(str);
@@ -55,6 +57,7 @@ bool endsWith(char str[*], char with[*], int cmp(char chr, char with)) {
 	return true;
 }
 
+/// Check if the two strings are equal, using a custom comparator
 int compare(char str[*], char with[*], int cmp(char chr, char with)) {
 	int result = 0;
 	for (int i = 0; result == 0; i += 1) {
@@ -66,7 +69,7 @@ int compare(char str[*], char with[*], int cmp(char chr, char with)) {
 	return result;
 }
 
-// ignore case compare
+/// ignore case character comparator
 int ignCaseCmp(char chr, char with) {
 	static char ignCase(char chr) {
 		if (chr < 'A') {
@@ -81,6 +84,7 @@ int ignCaseCmp(char chr, char with) {
 	return ignCase(chr) - ignCase(with);
 }
 
+/// default character comparator
 int caseCmp(char chr, char with) {
 	return chr - with;
 }
@@ -89,6 +93,7 @@ inline startsWith(char str[*], char with[*]) = startsWith(str, with, caseCmp);
 inline endsWith(char str[*], char with[*]) = endsWith(str, with, caseCmp);
 inline compare(char str[*], char with[*]) = compare(str, with, caseCmp);
 
+/// Check if a string contains the given character
 inline contains(char str[*], char chr) = indexOf(str, chr) >= 0;
 
 /* TODO: implement operator overloading
@@ -102,14 +107,22 @@ inline >(char lhs[*], char rhs[*]) = compare(lhs, rhs, caseCmp) > 0;
 
 // */
 
-// convert number to string
+/// Flags to convert numbers to string
 struct FormatFlags {
-	const int radix = 10;       // radix
-	const char padChr = 0;      // padding character: 0, '0'
-	const int padLen = 0;       // padding length
-	const int precision = 0;    // precision
+	/// radix to be used at the conversion
+	const int radix = 10;
+
+	/// padding character
+	const char padChr = 0;
+
+	/// padding length
+	const int padLen = 0;
+
+	/// precision
+	const int precision = 0;
 }
 
+/// Append a string to the output at the given position
 int append(char output[], int pos, char value[*]) {
 	for (int i = 0; value[i]; i += 1) {
 		if (pos >= output.length) {
@@ -126,6 +139,7 @@ int append(char output[], int pos, char value[*]) {
 	return pos;
 }
 
+// Append a number to the output at the given position
 int append(char output[], int pos, char sign, uint32 value, FormatFlags format&) {
 	static const char whiteSpace[] = " \t\n\r";
 	static const char radixDigits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
@@ -189,10 +203,12 @@ int append(char output[], int pos, char sign, uint32 value, FormatFlags format&)
 	return pos;
 }
 
+/// Append a number to the output at the given position
 int append(char output[], int pos, uint32 value, FormatFlags format&) {
 	return append(output, pos, 0, value, format);
 }
 
+/// Append a number to the output at the given position
 int append(char output[], int pos, int32 value, FormatFlags format&) {
 	int sign = 0;
 	if (value < 0) {
@@ -202,6 +218,7 @@ int append(char output[], int pos, int32 value, FormatFlags format&) {
 	return append(output, pos, sign, value, format);
 }
 
+/// Append a number to the output at the given position
 int append(char output[], int pos, uint32 value) {
 	static const FormatFlags format = {};
 	return append(output, pos, value, format);

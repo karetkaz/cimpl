@@ -7,8 +7,8 @@ void drawTree(gxSurf surf, int x1, int y1, double angle, double length, int dept
 		return;
 	}
 
-	int x2 = x1 + int(Math.cos(Math.deg2rad(angle)) * depth * length);
-	int y2 = y1 + int(Math.sin(Math.deg2rad(angle)) * depth * length);
+	int x2 = x1 + int(Math.cos(Math.radians(angle)) * depth * length);
+	int y2 = y1 + int(Math.sin(Math.radians(angle)) * depth * length);
 
 	surf.drawLine(x1, y1, x2, y2, 0);
 	surf.drawTree(x2, y2, angle - Angle, length, depth - 1);

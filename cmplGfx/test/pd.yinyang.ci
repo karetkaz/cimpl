@@ -3,10 +3,10 @@
 
 vec4f yinyang(vec4f in) {
 	float time = in.w;
-	float nx = -1 + 2 * in.x;
-	float ny = -1 + 2 * in.y;
-	float x = nx * float.cos(time) - ny * float.sin(time);
-	float y = nx * float.sin(time) + ny * float.cos(time);
+	float nx = 1 - 2 * in.x;
+	float ny = 1 - 2 * in.y;
+	float x = nx * float.sin(time) - ny * float.cos(time);
+	float y = nx * float.cos(time) + ny * float.sin(time);
 	float h = x*x + y*y;
 	if (h < 1.) {
 		float d = Math.abs(y) - h;

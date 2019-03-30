@@ -2,39 +2,66 @@
 
 static if (typename(raise) == function) {
 
+/// report message at `verbose` logging level
 inline verbose(char message[*], variant inspect) = raise(raise.verbose, raise.noTrace, message, inspect);
+/// report message at `verbose` logging level
 inline verbose(char message[*]) = raise(raise.verbose, raise.noTrace, message, null);
 
-inline trace(char message[*], variant inspect) = raise(raise.debug, raise.defTrace, message, inspect);
-inline trace(char message[*]) = raise(raise.debug, raise.defTrace, message, null);
-
+/// report message at `debug` logging level
 inline debug(char message[*], variant inspect) = raise(raise.debug, raise.noTrace, message, inspect);
+/// report message at `debug` logging level
 inline debug(char message[*]) = raise(raise.debug, raise.noTrace, message, null);
 
+/// report message with stacktrace at `debug` logging level
+inline trace(char message[*], variant inspect) = raise(raise.debug, raise.defTrace, message, inspect);
+/// report message with stacktrace at `debug` logging level
+inline trace(char message[*]) = raise(raise.debug, raise.defTrace, message, null);
+
+/// report message at `info` logging level
 inline info(char message[*], variant inspect) = raise(raise.info, raise.noTrace, message, inspect);
+/// report message at `info` logging level
 inline info(char message[*]) = raise(raise.info, raise.noTrace, message, null);
 
+/// report message at `warn` logging level
 inline warn(char message[*], variant inspect) = raise(raise.warn, raise.noTrace, message, inspect);
+/// report message at `warn` logging level
 inline warn(char message[*]) = raise(raise.warn, raise.noTrace, message, null);
 
+/// report message with stacktrace at `error` logging level
 inline error(char message[*], variant inspect) = raise(raise.error, raise.defTrace, message, inspect);
+/// report message with stacktrace at `error` logging level
 inline error(char message[*]) = raise(raise.error, raise.defTrace, message, null);
 
+/// report message with stacktrace at `abort` logging level and abort execution
 inline abort(char message[*], variant inspect) = raise(raise.abort, raise.defTrace, message, inspect);
+/// report message with stacktrace at `abort` logging level and abort execution
 inline abort(char message[*]) = raise(raise.abort, raise.defTrace, message, null);
+/// report message with stacktrace at `abort` logging level and abort execution
 inline abort() = raise(raise.abort, raise.defTrace, "execution aborted!", null);
 
+/// report message and abort the execution if the assertion condition fails (is false)
 inline assert(bool condition, char message[*], variant inspect) = void(condition ? void(0) : abort(message, inspect));
+/// report message and abort the execution if the assertion condition fails (is false)
 inline assert(bool condition, char message[*]) = void(condition ? void(0) : abort(message));
+/// report message and abort the execution if the assertion condition fails (is false)
 inline assert(bool condition) = void(condition ? void(0) : abort("assertion failed!"));
 
+///@public
 struct NotEquals {
+	/// Value of the expected result
 	const variant expected;
+
+	/// Value of the actual result
 	const variant returned;
+
+	/// Extra argument to identify what happened
 	const variant argument = null;
+
+	/// Extra message to identify what happened
 	const char message[*] = null;
 }
 
+/// abort execution if the returned value is not equal to the expected value
 // TODO: make inline
 static void assertEq(int expected, int returned, char message[*]) {
 	if (returned == expected) {
@@ -47,10 +74,12 @@ static void assertEq(int expected, int returned, char message[*]) {
 	};
 	raise(raise.abort, raise.defTrace, "assertion failed", details);
 }
+/// abort execution if the returned value is not equal to the expected value
 inline assertEq(int expected, int returned) = assertEq(expected, returned, null);
 
-}
+}; // FIXME: `if` might have an else part, avoid skipping doc comments using `;`
 
+/// Returns the size of the given type
 inline sizeof(typename type) = int(type.size);
 
 inline "std/math.ci";
@@ -59,8 +88,7 @@ inline "std/string.ci";
 inline "vec/vec2d.ci"?;
 inline "vec/vec4f.ci"?;
 inline "vec/mat4f.ci"?;
-// Mathematical utility functions
-
+/// Mathematical utility functions and constants
 static struct Math {
 
 	// constants
@@ -80,6 +108,7 @@ static struct Math {
 		inf: 1 / 0.;
 	}
 
+	/// Decompose a value into integer and fractional parts
 	float64 modf(float64 x, float64 intPart&) {
 		if (x < 1) {
 			if (x < 0) {
@@ -104,36 +133,29 @@ static struct Math {
 	// inline isFinite(float64 x) = x - x == 0;
 	// inline isFinite(float32 x) = x - x == 0;
 
+	/// Computes the largest integer value not greater than the input
 	float64 floor(float64 x) {
 		float64 result;
 		modf(x, result);
 		return result;
 	}
+
+	/// Computes the smallest integer not less than the input
 	inline ceil(float64 x) = -floor(-x);
+
+	/// Computes the nearest integer to the input
 	inline round(float64 x) = floor(x + .5);
 
 	// inline floor(float32 x) = float32(floor(float64(x)));
 	// inline ceil(float32 x) = -floor(-x);
 	// inline round(float32 x) = floor(x + .5f);
 
-	int sign(float32 x) {
-		if (x == 0) {
-			return 0;
-		}
-		if (x < 0) {
-			return -1;
-		}
-		return 1;
-	}
-	int sign(float64 x) {
-		if (x == 0) {
-			return 0;
-		}
-		if (x < 0) {
-			return -1;
-		}
-		return 1;
-	}
+	/// Returns the signum of the input (`0` if zero, `-1` if negative, `1` if positive)
+	inline sign(float32 x) = int(x > 0) - int(x < 0);
+
+	/// Returns the signum of the input (`0` if zero, `-1` if negative, `1` if positive)
+	inline sign(float64 x) = int(x > 0) - int(x < 0);
+
 	// inline sign(int32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
 	// inline sign(int64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
 	// inline sign(uint32 x) = x > 0 ? 1 : 0;
@@ -141,24 +163,31 @@ static struct Math {
 	// inline sign(float32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
 	// inline sign(float64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
 
+	/// Returns the absolute value of the input
 	float32 abs(float32 x) {
 		if (x < 0) {
 			return -x;
 		}
 		return x;
 	}
+
+	/// Returns the absolute value of the input
 	float64 abs(float64 x) {
 		if (x < 0) {
 			return -x;
 		}
 		return x;
 	}
+
+	/// Returns the positive modulus of the input
 	float32 absMod(float32 val, float32 mod) {
 		if ((val %= mod) < 0) {
 			return val + mod;
 		}
 		return val;
 	}
+
+	/// Returns the positive modulus of the input
 	float64 absMod(float64 val, float64 mod) {
 		if ((val %= mod) < 0) {
 			return val + mod;
@@ -172,42 +201,51 @@ static struct Math {
 	// inline abs(float32 x) = x < 0 ? -x : x;
 	// inline abs(float64 x) = x < 0 ? -x : x;
 
+	/// Returns the smaller value from the input values
 	float32 min(float32 a, float32 b) {
 		if (a < b) {
 			return a;
 		}
 		return b;
 	}
+
+	/// Returns the smaller value from the input values
 	float64 min(float64 a, float64 b) {
 		if (a < b) {
 			return a;
 		}
 		return b;
 	}
+
 	// inline min(int32 a, int32 b) = a < b ? a : b;
 	// inline min(int64 a, int64 b) = a < b ? a : b;
 	// inline min(uint32 a, uint32 b) = a < b ? a : b;
 	// inline min(float32 a, float32 b) = a < b ? a : b;
 	// inline min(float64 a, float64 b) = a < b ? a : b;
 
+	/// Returns the greater value from the input values
 	float32 max(float32 a, float32 b) {
 		if (a > b) {
 			return a;
 		}
 		return b;
 	}
+
+	/// Returns the greater value from the input values
 	float64 max(float64 a, float64 b) {
 		if (a > b) {
 			return a;
 		}
 		return b;
 	}
+
 	// inline max(int32 a, int32 b) = a > b ? a : b;
 	// inline max(int64 a, int64 b) = a > b ? a : b;
 	// inline max(uint32 a, uint32 b) = a > b ? a : b;
 	// inline max(float32 a, float32 b) = a > b ? a : b;
 	// inline max(float64 a, float64 b) = a > b ? a : b;
 
+	/// Returns the value of `t` clamped between `a` and `b`
 	float32 clamp(float32 t, float32 a, float32 b) {
 		if (t < a) {
 			return a;
@@ -217,6 +255,8 @@ static struct Math {
 		}
 		return t;
 	}
+
+	/// Returns the value of `t` clamped between `a` and `b`
 	float64 clamp(float64 t, float64 a, float64 b) {
 		if (t < a) {
 			return a;
@@ -226,23 +266,28 @@ static struct Math {
 		}
 		return t;
 	}
+
 	// inline clamp(int32 t, int32 a, int32 b) = min(max(t, a), b);
 	// inline clamp(int32 t, int32 a, int32 b) = t < a ? a : t > b ? b : t;
 	// inline clamp(float32 t, float32 a, float32 b) = t < a ? a : t > b ? b : t;
 	// inline clamp(float64 t, float64 a, float64 b) = t < a ? a : t > b ? b : t;
 
+	/// Returns the linear interpolation between `a` and `b` by `t`
 	inline lerp(float32 t, float32 a, float32 b) = a + t * (b - a);
+
+	/// Returns the linear interpolation between `a` and `b` by `t`
 	inline lerp(float64 t, float64 a, float64 b) = a + t * (b - a);
 
 	inline smooth(float32 t) = t * t * (3 - 2 * t);
 	inline smooth(float64 t) = t * t * (3 - 2 * t);
+
+	/// Returns smooth interpolation between `a` and `b` by `t`
 	inline smooth(float32 t, float32 a, float32 b) = smooth(clamp((t - a) / (b - a), float32(0), float32(1)));
+
+	/// Returns smooth interpolation between `a` and `b` by `t`
 	inline smooth(float64 t, float64 a, float64 b) = smooth(clamp((t - a) / (b - a), float64(0), float64(1)));
 
-	// inline absMod(int32 val, int32 mod) = (val < 0 ? val + mod : val) % mod;
-	// inline absMod(float32 val, float32 mod) = (val < 0 ? val + mod : val) % mod;
-	// inline absMod(float64 val, float64 mod) = (val < 0 ? val + mod : val) % mod;
-
+	/// Returns the smaller value from the input values
 	float64 min(float64 data...) {
 		if (data.length == 0) {
 			return nan;
@@ -255,6 +300,8 @@ static struct Math {
 		}
 		return result;
 	}
+
+	/// Returns the greater value from the input values
 	float64 max(float64 data...) {
 		if (data.length == 0) {
 			return nan;
@@ -268,6 +315,7 @@ static struct Math {
 		return result;
 	}
 
+	/// Returns the sum of the input values
 	float64 sum(float64 data...) {
 		float64 result = 0;
 		for (int i = 0; i < data.length; i += 1) {
@@ -277,15 +325,24 @@ static struct Math {
 	}
 
 	/*TODO: implement spread operator
+	/// Returns the mean of the input values
 	float64 mean(float64 data...) {
 		return sum(...data) / data.length;
 	}*/
 
-	// speedup with some inline expressions
+	/// Return the polynomial evaluated at x using Horner's algorithm
 	inline eval(float64 x, float64 a0) = (a0);
+
+	/// Return the polynomial evaluated at x using Horner's algorithm
 	inline eval(float64 x, float64 a0, float64 a1) = (a0 + x * a1);
+
+	/// Return the polynomial evaluated at x using Horner's algorithm
 	inline eval(float64 x, float64 a0, float64 a1, float64 a2) = (a0 + x * eval(x, a1, a2));
+
+	/// Return the polynomial evaluated at x using Horner's algorithm
 	inline eval(float64 x, float64 a0, float64 a1, float64 a2, float64 a3) = (a0 + x * eval(x, a1, a2, a3));
+
+	/// Return the polynomial evaluated at x using Horner's algorithm
 	float64 eval(float64 x, float64 polynomial...) {
 		float64 result = 0;
 		for (int i = polynomial.length - 1; i >= 0; i -= 1) {
@@ -294,6 +351,7 @@ static struct Math {
 		return result;
 	}
 
+	/// Compare `a` and `b` floating point with `eps` tolerance
 	int cmp(float32 a, float32 b, float32 eps) {
 		if (a < b) {
 			if (eps < (b - a)) {
@@ -307,6 +365,8 @@ static struct Math {
 		}
 		return 0;
 	}
+
+	/// Compare `a` and `b` floating point with `eps` tolerance
 	int cmp(float64 a, float64 b, float64 eps) {
 		if (a < b) {
 			if (eps < (b - a)) {
@@ -321,6 +381,7 @@ static struct Math {
 		return 0;
 	}
 
+	// calculate sin or cos
 	float64 sinCos(float64 arg, int quad) {
 		enum: float64 {
 			PIO2: 1.570796326794896619231e0;
@@ -371,13 +432,13 @@ static struct Math {
 		return temp1 / temp2;
 	}
 
-	// Sin returns the sine of arg.
+	/// Returns the sine of the input
 	inline sin(float64 arg) = sinCos(arg, 0);
 
-	// Cos returns the cosine of arg.
+	/// Returns the cosine of the input
 	inline cos(float64 arg) = sinCos(abs(arg), 1);
 
-	// Tan returns the tangent of arg.
+	/// Returns the tangent of the input
 	float64 tan(float64 arg) {
 		enum: float64 {
 			PIO2: 1.570796326794896619231e0;
@@ -434,7 +495,7 @@ static struct Math {
 		return result;
 	}
 
-	// Sinh returns the hyperbolic sine of x.
+	/// Returns the hyperbolic sine of the input
 	float64 sinh(float64 x) {
 		// The coefficients are #2029 from Hart & Cheney. (20.36D)
 		enum: float64 {
@@ -473,7 +534,7 @@ static struct Math {
 		return result;
 	}
 
-	// Cosh returns the hyperbolic cosine of x.
+	/// Returns the hyperbolic cosine of the input
 	float64 cosh(float64 x) {
 		if (x < 0) {
 			x = -x;
@@ -484,11 +545,10 @@ static struct Math {
 		return (float64.exp(x) + float64.exp(-x)) / 2;
 	}
 
-	/**
-	 * Asin returns the arcsine of x.
-	 *   Special cases are:
-	 *     Asin(±0) = ±0
-	 *     Asin(x) = NaN if x < -1 or x > 1
+	/** Returns the arc sine of the input
+	 *  Special cases are:
+	 *    Asin(±0) = ±0
+	 *    Asin(x) = NaN if x < -1 or x > 1
 	 */
 	float64 asin(float64 x) {
 		if (x == 0) {
@@ -521,13 +581,13 @@ static struct Math {
 		return result;
 	}
 
-	/* Acos returns the arccosine of x.
-	 *   Special case is:
-	 *      Acos(x) = NaN if x < -1 or x > 1
+	/** Returns the arc cosine of the input
+	 *  Special case is:
+	 *    Acos(x) = NaN if x < -1 or x > 1
 	 */
 	inline acos(float64 x) = (pi / 2 - asin(x));
 
-	/* arccosine of x
+	/* arc cosine of x
 		Absolute error <= 6.7e-5.
 		http://http.developer.nvidia.com/Cg/acos.html
 	float64 acos(float64 x) {
@@ -548,12 +608,15 @@ static struct Math {
 		result = negate * 3.14159265358979 + result;
 	}*/
 
-	inline deg2rad(float64 x) = float64(x * pi / 180);
-	inline rad2deg(float64 x) = float64(x * 180 / pi);
-}
+	/// Converts the input to radians from degrees.
+	inline radians(float64 degrees) = float64(degrees * pi / 180);
 
-// rand(int min, int max) = int(min + System.rand() % (max - min));
-// rand(double min, double max) = double(min + (System.rand() / float64(RAND_MAX)) * (max - min));
+	/// Converts the input to degrees from radians.
+	inline degrees(float64 radians) = float64(radians * 180 / pi);
+
+	// inline rand(int min, int max) = System.rand() % (max - min) + min;
+	// inline rand(double min, double max) = (System.rand() / float64(RAND_MAX)) * (max - min) + min;
+}
 
 //inline "math.Perlin.ci";      // -> Perlin noise
 inline "math.Complex.ci";     // -> Complex<float64>
@@ -561,11 +624,14 @@ inline "math.Complex.ci";     // -> Complex<float64>
 
 //inline "math.BigInteger.ci"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
 //inline "math.BigDecimal.ci"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
-// Complex class implementation
-
+/// Complex number
 struct Complex {
-	const float64 re;       // real
-	const float64 im = 0;   // imaginary
+
+	/// The real component of a complex number.
+	const float64 re;
+
+	/// The imaginary component of a complex number.
+	const float64 im = 0;
 
 	/* TODO: implement enumerations
 	enum: Complex {
@@ -580,11 +646,14 @@ inline Complex(float64 re) = { re: re };
 inline Complex(float64 re, float64 im) = { re: re, im: im };
 */
 
+///@public
 Complex Complex(float64 re) {
 	return {
 		re: re;
 	};
 }
+
+///@public
 Complex Complex(float64 re, float64 im) {
 	return {
 		re: re;
@@ -612,20 +681,31 @@ inline /(Complex a, float64 b) = div(a, Complex(b));
 inline /(float64 a, Complex b) = div(Complex(a), b);
 */
 
+///@public
 inline neg(Complex a) = Complex(-a.re, -a.im);
 
+///@public
 inline add(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
+///@public
 inline add(Complex a, float64 b) = Complex(a.re + b, a.im);
+///@public
 inline add(float64 a, Complex b) = Complex(a + b.re, b.im);
 
+///@public
 inline sub(Complex a, Complex b) = Complex(a.re - b.re, a.im - b.im);
+///@public
 inline sub(Complex a, float64 b) = Complex(a.re - b, a.im);
+///@public
 inline sub(float64 a, Complex b) = Complex(a - b.re, b.im);
 
+///@public
 inline mul(Complex a, Complex b) = Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+///@public
 inline mul(Complex a, float64 b) = Complex(a.re * b, a.im * b);
+///@public
 inline mul(float64 a, Complex b) = Complex(a * b.re, a * b.im);
 
+///@public
 Complex div(Complex a, Complex b) {
 	// Adapted from Numerical Recipes in C - The Art of Scientific Computing
 	// ISBN 0-521-43108-5
@@ -646,13 +726,17 @@ Complex div(Complex a, Complex b) {
 	};
 }
 
+///@public
 inline div(Complex a, float64 b) = div(a, Complex(b));
+///@public
 inline div(float64 a, Complex b) = div(Complex(a), b);
 
+///@public
 inline abs(Complex a) = float64.sqrt(a.re * a.re + a.im * a.im);
+///@public
 inline arg(Complex a) = float64.atan2(a.re, a.im);
 
-// reciprocal
+/// Reciprocal of a complex number (1 / a)
 Complex inv(Complex a) {
 	float64 d = (a.re * a.re + a.im * a.im);
 	return {
@@ -661,12 +745,16 @@ Complex inv(Complex a) {
 	};
 }
 
+///@public
 inline conj(Complex a) = Complex(a.re, -a.im);
 
+///@public
 inline exp(Complex a) = Complex(float64.exp(a.re) * float64.cos(a.im), float64.exp(a.re) * float64.sin(a.im));
 
+///@public
 inline log(Complex a) = Complex(float64.log(abs(a)), arg(a));
 
+///@public
 Complex pow(Complex a, Complex b) {
 	float64 r = abs(a);
 	float64 t = arg(a);
@@ -677,9 +765,12 @@ Complex pow(Complex a, Complex b) {
 		im: v * float64.sin(u);
 	};
 }
+///@public
 inline pow(Complex a, float64 b) = pow(a, Complex(b));
 
+///@public
 inline sin(Complex a) = Complex(float64.sin(a.re) * Math.cosh(a.im), +float64.cos(a.re) * Math.sinh(a.im));
+///@public
 inline cos(Complex a) = Complex(float64.cos(a.re) * Math.cosh(a.im), -float64.sin(a.re) * Math.sinh(a.im));
 
 /* TODO: implement operator overloading
@@ -692,23 +783,36 @@ inline tanh(Complex a) = (exp(2 * a) - 1) / (exp(2 * a) + 1);
 inline coth(Complex a) = (exp(2 * a) + 1) / (exp(2 * a) - 1);
 */
 
+///@public
 inline tan(Complex a) = div(sin(a), cos(a));
+///@public
 inline cot(Complex a) = div(cos(a), sin(a));
 
+///@public
 inline sinh(Complex a) = div(sub(exp(a), exp(neg(a))), 2);
+///@public
 inline cosh(Complex a) = div(add(exp(a), exp(neg(a))), 2);
+///@public
 inline tanh(Complex a) = div(sub(exp(mul(2, a)), 1), add(exp(mul(2, a)), 1));
+///@public
 inline coth(Complex a) = div(add(exp(mul(2, a)), 1), sub(exp(mul(2, a)), 1));
 
+///@public
 inline sec(Complex a) = inv(cos(a));
+///@public
 inline csc(Complex a) = inv(sin(a));
+///@public
 inline sech(Complex a) = inv(cosh(a));
+///@public
 inline csch(Complex a) = inv(sinh(a));
 
+///@public
 inline toCartesian(Complex x) = Complex(x.re * double.cos(x.im), x.re * double.sin(x.im));
+///@public
 inline toPolar(Complex x) = Complex(abs(x), arg(x));
 // string related functions
 
+/// Computes the length of the string
 int length(char str[*]) {
 	if (str == null) {
 		return 0;
@@ -719,7 +823,7 @@ int length(char str[*]) {
 	return result;
 }
 
-/// the first occurrence of a char in string
+/// Returns the index of the first occurrence of a character in string
 int indexOf(char str[*], char chr) {
 	for (int i = 0; str[i]; i += 1) {
 		if (str[i] == chr) {
@@ -729,7 +833,7 @@ int indexOf(char str[*], char chr) {
 	return -1;
 }
 
-/// the last occurrence of a char in string
+/// Returns the index of the last occurrence of a character in string
 int lastIndexOf(char str[*], char chr) {
 	int result = -1;
 	for (int i = 0; str[i]; i += 1) {
@@ -740,7 +844,7 @@ int lastIndexOf(char str[*], char chr) {
 	return result;
 }
 
-
+/// Check if a string begins with a specified string, using a custom comparator
 bool startsWith(char str[*], char with[*], int cmp(char chr, char with)) {
 	for (int i = 0; with[i] != 0; i += 1) {
 		if (cmp(str[i], with[i]) != 0) {
@@ -750,6 +854,7 @@ bool startsWith(char str[*], char with[*], int cmp(char chr, char with)) {
 	return true;
 }
 
+/// Check if a string ends in a specified string, using a custom comparator
 bool endsWith(char str[*], char with[*], int cmp(char chr, char with)) {
 	int withLen = length(with);
 	int strLen = length(str);
@@ -764,6 +869,7 @@ bool endsWith(char str[*], char with[*], int cmp(char chr, char with)) {
 	return true;
 }
 
+/// Check if the two strings are equal, using a custom comparator
 int compare(char str[*], char with[*], int cmp(char chr, char with)) {
 	int result = 0;
 	for (int i = 0; result == 0; i += 1) {
@@ -775,7 +881,7 @@ int compare(char str[*], char with[*], int cmp(char chr, char with)) {
 	return result;
 }
 
-// ignore case compare
+/// ignore case character comparator
 int ignCaseCmp(char chr, char with) {
 	static char ignCase(char chr) {
 		if (chr < 'A') {
@@ -790,6 +896,7 @@ int ignCaseCmp(char chr, char with) {
 	return ignCase(chr) - ignCase(with);
 }
 
+/// default character comparator
 int caseCmp(char chr, char with) {
 	return chr - with;
 }
@@ -798,6 +905,7 @@ inline startsWith(char str[*], char with[*]) = startsWith(str, with, caseCmp);
 inline endsWith(char str[*], char with[*]) = endsWith(str, with, caseCmp);
 inline compare(char str[*], char with[*]) = compare(str, with, caseCmp);
 
+/// Check if a string contains the given character
 inline contains(char str[*], char chr) = indexOf(str, chr) >= 0;
 
 /* TODO: implement operator overloading
@@ -811,14 +919,22 @@ inline >(char lhs[*], char rhs[*]) = compare(lhs, rhs, caseCmp) > 0;
 
 // */
 
-// convert number to string
+/// Flags to convert numbers to string
 struct FormatFlags {
-	const int radix = 10;       // radix
-	const char padChr = 0;      // padding character: 0, '0'
-	const int padLen = 0;       // padding length
-	const int precision = 0;    // precision
+	/// radix to be used at the conversion
+	const int radix = 10;
+
+	/// padding character
+	const char padChr = 0;
+
+	/// padding length
+	const int padLen = 0;
+
+	/// precision
+	const int precision = 0;
 }
 
+/// Append a string to the output at the given position
 int append(char output[], int pos, char value[*]) {
 	for (int i = 0; value[i]; i += 1) {
 		if (pos >= output.length) {
@@ -835,6 +951,7 @@ int append(char output[], int pos, char value[*]) {
 	return pos;
 }
 
+// Append a number to the output at the given position
 int append(char output[], int pos, char sign, uint32 value, FormatFlags format&) {
 	static const char whiteSpace[] = " \t\n\r";
 	static const char radixDigits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
@@ -898,10 +1015,12 @@ int append(char output[], int pos, char sign, uint32 value, FormatFlags format&)
 	return pos;
 }
 
+/// Append a number to the output at the given position
 int append(char output[], int pos, uint32 value, FormatFlags format&) {
 	return append(output, pos, 0, value, format);
 }
 
+/// Append a number to the output at the given position
 int append(char output[], int pos, int32 value, FormatFlags format&) {
 	int sign = 0;
 	if (value < 0) {
@@ -911,6 +1030,7 @@ int append(char output[], int pos, int32 value, FormatFlags format&) {
 	return append(output, pos, sign, value, format);
 }
 
+/// Append a number to the output at the given position
 int append(char output[], int pos, uint32 value) {
 	static const FormatFlags format = {};
 	return append(output, pos, value, format);

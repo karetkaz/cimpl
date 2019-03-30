@@ -52,22 +52,24 @@ typedef enum {
 	raiseFatal = -2,
 	raiseError = -1,
 	raisePrint = 0,
-	raiseWarn = 1,
+	raiseWarn = 1,          // treat these warnings as errors
 
-	raise_warn_lex1 = 1,	// ERR_INVALID_CHARACTER
-	raise_warn_lex2 = 2,	// WARN_<VALUE>_OVERFLOW
-	raise_warn_lex3 = 3,	// WARN_MULTI_CHAR_CONSTANT
-	raise_warn_lex9 = 9,	// WARN_NO_NEW_LINE_AT_END / WARN_COMMENT_MULTI_LINE / WARN_COMMENT_NESTED
+	raise_warn_todo = 1,    // WARN_SHORT_CIRCUIT
+
+	raise_warn_lex2 = 2,    // WARN_<VALUE>_OVERFLOW
+	raise_warn_lex3 = 3,    // WARN_MULTI_CHAR_CONSTANT
+	raise_warn_lex9 = 9,    // WARN_NO_NEW_LINE_AT_END / WARN_COMMENT_MULTI_LINE / WARN_COMMENT_NESTED
 
 	raise_warn_par8 = 8,
 	raise_warn_pad6 = 6,
 	raise_warn_gen8 = 8,
 	raise_warn_var8 = 8,
 
-	raise_warn_typ3 = 3,	// WARN_USING_BEST_OVERLOAD
-	raise_warn_typ4 = 4,	// WARN_USING_SIGNED_CAST
-	raise_warn_typ6 = 6,	// WARN_ADDING_IMPLICIT_CAST
-	raise_warn_typ9 = 9,	// WARN_DECLARATION_REDEFINED
+	raise_warn_typ2 = 2,    // WARN_STATIC_FIELD_ACCESS
+	raise_warn_typ3 = 3,    // WARN_USING_BEST_OVERLOAD
+	raise_warn_typ4 = 4,    // WARN_USING_SIGNED_CAST
+	raise_warn_typ6 = 6,    // WARN_ADDING_IMPLICIT_CAST
+	raise_warn_typ9 = 9,    // WARN_DECLARATION_REDEFINED
 	raiseInfo = 13,
 	raiseDebug = 14,
 	raiseVerbose = 15,
@@ -275,6 +277,7 @@ typedef enum {
 
 struct symNode {
 	char *name;        // symbol name
+	char *unit;        // declared in unit
 	char *file;        // declared in file
 	int32_t line;      // declared on line
 	int32_t nest;      // declared on scope level

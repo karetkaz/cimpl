@@ -1,5 +1,7 @@
 var props = props || {};
 props.title = document.title;
+const pathMather = /(?=[\w\/])((?:\w+:\/\/)(?:[^:@\n\r"'`]+(?:\:\w+)?@)?(?:[^:/?#\n\r"'`]+)(?:\:\d+)?(?=[/?#]))?([^<>=:;,?#*|\n\r"'`]*)?(?:\:(?:(\d+)(?:\:(\d+))?))?(?:\?([^#\n\r"'`]*))?(?:\#([^\n\r"'`]*))?/;
+const pathFinder = new RegExp(pathMather, 'g');
 
 let editor = CodeMirror.fromTextArea(input, {
 	mode: "text/x-cmpl",
@@ -30,8 +32,7 @@ editor.on("gutterClick", function(cm, n) {
 });
 
 let terminal = Terminal(output, function(escaped, text) {
-	const regex = /(?=[\w\/])((?:\w+:\/\/)(?:[^:@\n\r"'`]+(?:\:\w+)?@)?(?:[^:/?#\n\r"'`]+)(?:\:\d+)?(?=[/?#]))?([^<>=:;,?#*|\n\r"'`]*)?(?:\:(?:(\d+)(?:\:(\d+))?))?(?:\?([^#\n\r"'`]*))?(?:\#([^\n\r"'`]*))?/g;
-	return escaped.replace(regex, function (match, host, path, line, column, query, hash) {
+	return escaped.replace(pathFinder, function (match, host, path, line, column, query, hash) {
 		if (path === undefined) {
 			return match;
 		}
@@ -42,23 +43,13 @@ let terminal = Terminal(output, function(escaped, text) {
 			return '<a href="' + encodeURI(match) + '" target="_blank">' + match + '</a>';
 		}
 		if (line > 0) {
-			return '<a href="javascript:void(params.update({file:\'' + path + '\', line:' + line + '}));">' + match + '</a>';
+			return '<a href="javascript:void(params.update({file:\'' + path + '\', line:' + line + ', content: null}));">' + match + '</a>';
 		}
 		return match;
 	});
 });
 let params = JsArgs('#', function (params, changes) {
 	//console.trace('params: ', changes, params);
-	// setup execution method
-	if (!changes || changes.exec != null) {
-		if (params.exec == null) {
-			btnExecute.value = '-run/g';
-			btnExecute.innerText = 'Run';
-		} else {
-			btnExecute.value = params.exec;
-			btnExecute.innerText = 'Execute';
-		}
-	}
 
 	// setup theme, only after loading
 	if (!changes && params.theme != null) {
@@ -180,7 +171,7 @@ edtFileName.onkeydown = function(event) {
 	// `#arguments` => execute script
 	if (edtFileName.value.startsWith('#')) {
 		let command = edtFileName.value.substr(1);
-		execute('Execute', command);
+		execute(command);
 		params.update({exec: command});
 	}
 
@@ -238,21 +229,40 @@ edtFileName.onkeydown = function(event) {
 	else if (edtFileName.value === '') {
 		params.update({ content: null, file: null });
 	}
-	// open file
+	// open or download file
 	else {
-		// TODO: parse and update `path/file.ext:line:column`
-		params.update({ content: null, file: edtFileName.value });
+		// [match, host, path, line, column, query, hash]
+		let match = edtFileName.value.match(pathMather);
+		if (match == null) {
+			return actionError();
+		}
+
+		let file = match[2].replace(/^(.*[/])?(.*)(\..*)$/, "$2$3");
+		let line = match[3];
+		if (match[1] != null) {
+			openProject([{ url: match[1] + match[2], path: file }]);
+		}
+		params.update({ content: null, file, line: match[3] });
 	}
 	edtFileName.blur();
 	return false;
 }
 edtFileName.onkeyup = completeAction;
 
-edtArguments.onkeypress = function() {
-	if (event.key !== 'Enter') {
-		return;
+edtExecute.onkeydown = function(event) {
+	if (event.key === 'Escape') {
+		editor.focus();
+		return false;
 	}
-	execute('Execute', ' ' + edtArguments.value);
+	if (event.key !== 'Enter') {
+		return true;
+	}
+	if (edtExecute.value === '') {
+		execute((params.exec || '-run'));
+	} else {
+		execute(edtExecute.value, true);
+	}
+	return false;
 }
 
 window.onkeydown = function() {
@@ -330,7 +340,8 @@ window.onkeydown = function() {
 
 	// Ctrl + Shift + Enter => Execute script
 	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === 'Enter') {
-		btnExecute.click();
+		edtExecute.onkeydown(event);
+		edtExecute.focus();
 		return false;
 	}
 
@@ -352,7 +363,7 @@ function completeAction(event) {
 		return;
 	}
 	if (event.key === '#') {
-		edtFileName.value = event.key + (params.exec || btnExecute.value);
+		edtFileName.value = event.key + (params.exec || '');
 		edtFileName.selectionStart = 1;
 		edtFileName.selectionEnd = edtFileName.value.length;
 		return;
@@ -385,8 +396,10 @@ function showEditor(...options) {
 
 function setContent(content, file, line, column) {
 	showEditor('-secondary');
+	let contentSet = false;
 	if (content != null && content != editor.getValue()) {
 		editor.setValue(content);
+		contentSet = true;
 	}
 	if (file != null) {
 		edtFileName.value = file;
@@ -397,6 +410,7 @@ function setContent(content, file, line, column) {
 		editor.scrollTo(null, t - middleHeight - 5);
 		editor.setCursor((line || 1) - 1, column);
 	}
+	return contentSet;
 }
 
 function editProject() {
@@ -449,20 +463,14 @@ function shareInput() {
 	terminal.print('current file: ' + window.location.origin + window.location.pathname + '#content=' + btoa(content));
 }
 
-function execute(text, cmd) {
-	let exactArgs = cmd && cmd.startsWith(' ');
+function execute(cmd, exactArgs) {
 	let args = undefined;
 	let file = saveInput();
 
 	if (file == null) {
 		return;
 	}
-	if (text != null) {
-		btnExecute.innerText = text;
-	}
 	if (cmd != null) {
-		btnExecute.value = cmd;
-
 		args = [];
 		for (let arg of cmd.split(' ')) {
 			if (arg === '') {
@@ -506,7 +514,7 @@ function execute(text, cmd) {
 			}
 
 		}
-		edtArguments.value = args.join(' ');
+		edtExecute.value = args.join(' ');
 	}
 
 	terminal.clear();

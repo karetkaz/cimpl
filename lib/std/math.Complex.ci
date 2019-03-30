@@ -1,8 +1,11 @@
-// Complex class implementation
-
+/// Complex number
 struct Complex {
-	const float64 re;       // real
-	const float64 im = 0;   // imaginary
+
+	/// The real component of a complex number.
+	const float64 re;
+
+	/// The imaginary component of a complex number.
+	const float64 im = 0;
 
 	/* TODO: implement enumerations
 	enum: Complex {
@@ -17,11 +20,14 @@ inline Complex(float64 re) = { re: re };
 inline Complex(float64 re, float64 im) = { re: re, im: im };
 */
 
+///@public
 Complex Complex(float64 re) {
 	return {
 		re: re;
 	};
 }
+
+///@public
 Complex Complex(float64 re, float64 im) {
 	return {
 		re: re;
@@ -49,20 +55,31 @@ inline /(Complex a, float64 b) = div(a, Complex(b));
 inline /(float64 a, Complex b) = div(Complex(a), b);
 */
 
+///@public
 inline neg(Complex a) = Complex(-a.re, -a.im);
 
+///@public
 inline add(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
+///@public
 inline add(Complex a, float64 b) = Complex(a.re + b, a.im);
+///@public
 inline add(float64 a, Complex b) = Complex(a + b.re, b.im);
 
+///@public
 inline sub(Complex a, Complex b) = Complex(a.re - b.re, a.im - b.im);
+///@public
 inline sub(Complex a, float64 b) = Complex(a.re - b, a.im);
+///@public
 inline sub(float64 a, Complex b) = Complex(a - b.re, b.im);
 
+///@public
 inline mul(Complex a, Complex b) = Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+///@public
 inline mul(Complex a, float64 b) = Complex(a.re * b, a.im * b);
+///@public
 inline mul(float64 a, Complex b) = Complex(a * b.re, a * b.im);
 
+///@public
 Complex div(Complex a, Complex b) {
 	// Adapted from Numerical Recipes in C - The Art of Scientific Computing
 	// ISBN 0-521-43108-5
@@ -83,13 +100,17 @@ Complex div(Complex a, Complex b) {
 	};
 }
 
+///@public
 inline div(Complex a, float64 b) = div(a, Complex(b));
+///@public
 inline div(float64 a, Complex b) = div(Complex(a), b);
 
+///@public
 inline abs(Complex a) = float64.sqrt(a.re * a.re + a.im * a.im);
+///@public
 inline arg(Complex a) = float64.atan2(a.re, a.im);
 
-// reciprocal
+/// Reciprocal of a complex number (1 / a)
 Complex inv(Complex a) {
 	float64 d = (a.re * a.re + a.im * a.im);
 	return {
@@ -98,12 +119,16 @@ Complex inv(Complex a) {
 	};
 }
 
+///@public
 inline conj(Complex a) = Complex(a.re, -a.im);
 
+///@public
 inline exp(Complex a) = Complex(float64.exp(a.re) * float64.cos(a.im), float64.exp(a.re) * float64.sin(a.im));
 
+///@public
 inline log(Complex a) = Complex(float64.log(abs(a)), arg(a));
 
+///@public
 Complex pow(Complex a, Complex b) {
 	float64 r = abs(a);
 	float64 t = arg(a);
@@ -114,9 +139,12 @@ Complex pow(Complex a, Complex b) {
 		im: v * float64.sin(u);
 	};
 }
+///@public
 inline pow(Complex a, float64 b) = pow(a, Complex(b));
 
+///@public
 inline sin(Complex a) = Complex(float64.sin(a.re) * Math.cosh(a.im), +float64.cos(a.re) * Math.sinh(a.im));
+///@public
 inline cos(Complex a) = Complex(float64.cos(a.re) * Math.cosh(a.im), -float64.sin(a.re) * Math.sinh(a.im));
 
 /* TODO: implement operator overloading
@@ -129,18 +157,30 @@ inline tanh(Complex a) = (exp(2 * a) - 1) / (exp(2 * a) + 1);
 inline coth(Complex a) = (exp(2 * a) + 1) / (exp(2 * a) - 1);
 */
 
+///@public
 inline tan(Complex a) = div(sin(a), cos(a));
+///@public
 inline cot(Complex a) = div(cos(a), sin(a));
 
+///@public
 inline sinh(Complex a) = div(sub(exp(a), exp(neg(a))), 2);
+///@public
 inline cosh(Complex a) = div(add(exp(a), exp(neg(a))), 2);
+///@public
 inline tanh(Complex a) = div(sub(exp(mul(2, a)), 1), add(exp(mul(2, a)), 1));
+///@public
 inline coth(Complex a) = div(add(exp(mul(2, a)), 1), sub(exp(mul(2, a)), 1));
 
+///@public
 inline sec(Complex a) = inv(cos(a));
+///@public
 inline csc(Complex a) = inv(sin(a));
+///@public
 inline sech(Complex a) = inv(cosh(a));
+///@public
 inline csch(Complex a) = inv(sinh(a));
 
+///@public
 inline toCartesian(Complex x) = Complex(x.re * double.cos(x.im), x.re * double.sin(x.im));
+///@public
 inline toPolar(Complex x) = Complex(abs(x), arg(x));
