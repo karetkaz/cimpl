@@ -31,6 +31,7 @@ typedef enum {
 	brkPrint = 0x01,    // print when hit
 	brkTrace = 0x02,    // trace when hit
 	brkPause = 0x04,    // pause when hit
+	brkValue = 0x08,    // print stack after hit
 	brkOnce = 0x10,     // one shoot breakpoint (disabled after first hit)
 } brkMode;
 
@@ -38,8 +39,12 @@ typedef enum {
 struct dbgNode {
 	// the statement tree
 	astn stmt;
-	// the declared function
+
+	// the declaring function
 	symn func;
+
+	// the declared symbol
+	symn decl;
 
 	// position in source file
 	char *file;

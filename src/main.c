@@ -191,6 +191,7 @@ struct userContextRec {
 	brkMode dbgOnError;     // on uncaught exception
 	brkMode dbgOnCaught;    // on caught exception
 	size_t dbgNextBreak;    // offset of the next break (used for step in, out, over, instruction)
+	dbgn dbgNextValue;
 
 	clock_t rtTime;         // time of execution
 };
@@ -1080,23 +1081,23 @@ static void dumpApiText(userContext ctx, symn sym) {
 
 	// print usages of symbol
 	if (ctx->dmpUsages) {
-		int extUsages = 0;
+		int internalUsages = 0;
 		if (!dumpExtraData) {
 			printFmt(out, esc, " {\n");
 			dumpExtraData = 1;
 		}
-		printFmt(out, esc, "%I.references:\n", indent);
+		printFmt(out, esc, "%I.usages:\n", indent);
 		for (astn usage = sym->use; usage; usage = usage->ref.used) {
 			if (usage->file && usage->line) {
 				int referenced = usage != sym->tag;
 				printFmt(out, esc, "%I%s:%u: %s as `%t`\n", indent + 1, usage->file, usage->line, referenced ? "referenced" : "defined", usage);
 			}
 			else {
-				extUsages += 1;
+				internalUsages += 1;
 			}
 		}
-		if (extUsages > 0) {
-			printFmt(out, esc, "%Iinternal references: %d\n", indent + 1, extUsages);
+		if (internalUsages > 0) {
+			printFmt(out, esc, "%Iinternal usages: %d\n", indent + 1, internalUsages);
 		}
 	}
 
@@ -1274,6 +1275,9 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 			if (breakMode & (brkPause | brkPrint | brkTrace)) {
 				breakCause = "Break point";
 			}
+			if (breakMode & brkValue) {
+				usr->dbgNextValue = dbg;
+			}
 			if (breakMode & brkOnce) {
 				// remove breakpoint
 				dbg->bp = brkSkip;
@@ -1284,6 +1288,22 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 	const char **esc = usr->esc;
 	FILE *out = usr->out;
 	FILE *con = stderr;
+
+	// TODO: this might not work on `if`, `for`, `return` and other jump statements,
+	//  or if the initializer is a function call having also `value type breakpoints`.
+	dbgn valPrint = usr->dbgNextValue;
+	if (valPrint && valPrint->end == caller) {
+		// print current file position
+		printFmt(out, esc, "%s:%u: ", valPrint->file, valPrint->line);
+		if (valPrint->decl != NULL) {
+			printVal(out, esc, rt, valPrint->decl, stack, prSymType, 0);
+		} else {
+			vmValue *v = (vmValue *) stack;
+			printFmt(out, esc, "{0x%08x, i32(%d), f32(%f), i64(%D), f64(%F)}", v->i32, v->i32, v->f32, v->i64, v->f64);
+		}
+		printFmt(out, esc, "\n");
+		usr->dbgNextValue = NULL;
+	}
 
 	// print error type
 	if (breakMode & brkPrint) {
@@ -1488,6 +1508,7 @@ static int usage() {
 		"\n  -w[a|<int>]           set or disable warning level for current file"
 		"\n  -b[*]<int>            break point on <int> line in current file"
 		"\n    /[p|P]              print only, do not pause (/P includes stack trace)"
+		"\n    /[v]                after execution evaluate the top of the stack (partially implemented)"
 		"\n    /o                  one shot breakpoint, disable after first hit"
 		"\n"
 		"\nexamples:"
@@ -2273,6 +2294,12 @@ int main(int argc, char *argv[]) {
 							arg2 += 2;
 							break;
 
+						case 'v': // value only
+							type &= ~brkPause;
+							type |= brkValue;
+							arg2 += 2;
+							break;
+
 						case 'o': // remove after first hit
 							type |= brkOnce;
 							arg2 += 2;
@@ -2317,12 +2344,15 @@ int main(int argc, char *argv[]) {
 			int line = bp_line[i];
 			brkMode type = bp_type[i];
 			dbgn dbg = getDbgStatement(rt, file, line);
-			if (dbg != NULL) {
-				dbg->bp = type;
-			}
-			else {
+			if (dbg == NULL) {
 				info(rt, file, line, "invalid breakpoint");
+				continue;
 			}
+
+			if (type & brkValue && dbg->stmt && dbg->stmt->kind == TOKEN_var) {
+				dbg->decl = dbg->stmt->ref.link;
+			}
+			dbg->bp = type;
 		}
 	}
 
