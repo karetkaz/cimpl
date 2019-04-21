@@ -3,12 +3,47 @@ props.title = document.title;
 const pathMather = /(?=[\w\/])((?:\w+:\/\/)(?:[^:@\n\r"'`]+(?:\:\w+)?@)?(?:[^:/?#\n\r"'`]+)(?:\:\d+)?(?=[/?#]))?([^<>=:;,?#*|\n\r"'`]*)?(?:\:(?:(\d+)(?:\:(\d+))?))?(?:\?([^#\n\r"'`]*))?(?:\#([^\n\r"'`]*))?/;
 const pathFinder = new RegExp(pathMather, 'g');
 
+CodeMirror.commands.save = function(cm) {
+	saveInput();
+}
+
+CodeMirror.commands.line = function(cm) {
+	completeAction({key: ':', valueHint: 'enter a line number to go to'});
+}
+
+CodeMirror.commands.find = function(cm) {
+	completeAction({key: '?', valueHint: 'enter a text to search'});
+}
+
+CodeMirror.commands.replace = function(cm) {
+	completeAction({key: '!', valueHint: 'enter a text to replace'});
+}
+
+CodeMirror.commands.findNext = function(cm) {
+	let cursor = edtFileName.cursor;
+	if (cursor && cursor.findNext()) {
+		editor.setSelection(cursor.from(), cursor.to());
+	} else {
+		actionError();
+	}
+}
+
+CodeMirror.commands.findPrev = function(cm) {
+	let cursor = edtFileName.cursor;
+	if (cursor && cursor.findPrevious()) {
+		editor.setSelection(cursor.from(), cursor.to());
+	} else {
+		actionError();
+	}
+}
+
 let editor = CodeMirror.fromTextArea(input, {
 	mode: "text/x-cmpl",
 	lineNumbers: true,
 	tabSize: 4,
 	indentUnit: 4,
 	indentWithTabs: true,
+	keyMap: "extraKeys",
 
 	styleActiveLine: true,
 	matchBrackets: true,
@@ -18,6 +53,7 @@ let editor = CodeMirror.fromTextArea(input, {
 	gutters: ["CodeMirror-linenumbers", "breakpoints", "CodeMirror-foldgutter"],
 	highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: true}
 });
+
 editor.on("gutterClick", function(cm, n) {
 	let info = cm.lineInfo(n);
 	if (info.gutterMarkers == null) {
@@ -149,6 +185,7 @@ function actionError() {
 	return false;
 }
 
+editor.focus();
 editor.setSize('100%', '100%');
 
 edtFileName.onfocus = function() {
@@ -160,10 +197,6 @@ edtFileName.onblur = function() {
 	editor.focus();
 }
 edtFileName.onkeydown = function(event) {
-	if (event.key === 'Escape') {
-		edtFileName.blur();
-		return false;
-	}
 	if (event.key !== 'Enter') {
 		return true;
 	}
@@ -250,15 +283,11 @@ edtFileName.onkeydown = function(event) {
 edtFileName.onkeyup = completeAction;
 
 edtExecute.onkeydown = function(event) {
-	if (event.key === 'Escape') {
-		editor.focus();
-		return false;
-	}
 	if (event.key !== 'Enter') {
 		return true;
 	}
 	if (edtExecute.value === '') {
-		execute((params.exec || '-run'));
+		execute((params.exec || '-run/g'));
 	} else {
 		execute(edtExecute.value, true);
 	}
@@ -266,86 +295,19 @@ edtExecute.onkeydown = function(event) {
 }
 
 window.onkeydown = function() {
-	if (event.metaKey) {
-		return true;
-	}
-
-	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === '-') {
-		editor.execCommand('foldAll');
+	// escape to editor
+	if (event.key == 'Escape') {
+		editor.setSelection(editor.getCursor());
+		editor.focus();
 		return false;
 	}
-
-	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === '_') {
-		editor.execCommand('foldAll');
-		return false;
-	}
-
-	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === '+') {
-		editor.execCommand('unfoldAll');
-		return false;
-	}
-	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === '=') {
-		editor.execCommand('unfoldAll');
-		return false;
-	}
-
-	// Ctrl + s => save script
-	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 's') {
-		saveInput();
-		return false;
-	}
-
-	// Ctrl + f => search
-	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'f') {
-		edtFileName.focus();
-		edtFileName.value = '?';
-		completeAction({key: '?', text: editor.getSelection() || 'enter a text to search'});
-		return false;
-	}
-
-	// Ctrl + r => search
-	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'r') {
-		edtFileName.focus();
-		edtFileName.value = '!';
-		completeAction({key: '!', text: editor.getSelection() || 'enter a text to replace'});
-		return false;
-	}
-
-	// Ctrl + g => goto line
-	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'g') {
-		edtFileName.focus();
-		edtFileName.value = ':';
-		completeAction({key: ':', text: editor.getCursor().line || 'enter a line number to go to'});
-		return false;
-	}
-
-	if (!event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'F3') {
-		let cursor = edtFileName.cursor;
-		if (cursor && cursor.findNext()) {
-			editor.setSelection(cursor.from(), cursor.to());
-		} else {
-			actionError();
-		}
-		return false;
-	}
-	if (!event.ctrlKey && !event.altKey && event.shiftKey && event.key === 'F3') {
-		let cursor = edtFileName.cursor;
-		if (cursor && cursor.findPrevious()) {
-			editor.setSelection(cursor.from(), cursor.to());
-		} else {
-			actionError();
-		}
-		return false;
-	}
-
 	// Ctrl + Shift + Enter => Execute script
 	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === 'Enter') {
-		edtExecute.onkeydown(event);
+		//edtExecute.onkeydown(event);
 		edtExecute.focus();
 		return false;
 	}
-
-	// Ctrl + Enter => search, jump, fold, ...
+	// Ctrl + Enter => Execute command: [search, jump, fold, run, ...]
 	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'Enter') {
 		edtFileName.focus();
 		return false;
@@ -353,21 +315,30 @@ window.onkeydown = function() {
 }
 
 function completeAction(event) {
+	if (event.valueHint !== undefined) {
+		edtFileName.value = event.key;
+		edtFileName.focus();
+	}
 	if (edtFileName.value !== event.key) {
 		return;
 	}
-	if (event.key === ':' || event.key === '?' || event.key === '!') {
-		edtFileName.value = event.key + (event.text || '');
-		edtFileName.selectionStart = 1;
-		edtFileName.selectionEnd = edtFileName.value.length;
-		return;
+
+	switch (event.key) {
+		case ':':
+			edtFileName.value += editor.getCursor().line + 1 || event.valueHint || '';
+			break;
+
+		case '?':
+		case '!':
+			edtFileName.value += editor.getSelection() || event.valueHint || '';
+			break;
+
+		case '#':
+			edtFileName.value += params.exec || '';
+			break;
 	}
-	if (event.key === '#') {
-		edtFileName.value = event.key + (params.exec || '');
-		edtFileName.selectionStart = 1;
-		edtFileName.selectionEnd = edtFileName.value.length;
-		return;
-	}
+	edtFileName.selectionStart = 1;
+	edtFileName.selectionEnd = edtFileName.value.length;
 }
 
 function setTheme(element, theme, ...remove) {
