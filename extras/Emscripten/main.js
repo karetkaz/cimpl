@@ -248,6 +248,12 @@ edtFileName.onkeydown = function(event) {
 		editor.setSelections(selections);
 	}
 
+	// `%` => zoom
+	else if (edtFileName.value.startsWith('%')) {
+		document.body.style.fontSize = (+edtFileName.value.substr(1) / 100) + 'em';
+		editor.setSize('100%', '100%');
+	}
+
 	// `+` => unfoldAll
 	else if (edtFileName.value === '+') {
 		editor.execCommand('unfoldAll');
@@ -262,6 +268,7 @@ edtFileName.onkeydown = function(event) {
 	else if (edtFileName.value === '') {
 		params.update({ content: null, file: null });
 	}
+
 	// open or download file
 	else {
 		// [match, host, path, line, column, query, hash]
@@ -277,6 +284,7 @@ edtFileName.onkeydown = function(event) {
 		}
 		params.update({ content: null, file, line: match[3] });
 	}
+
 	edtFileName.blur();
 	return false;
 }

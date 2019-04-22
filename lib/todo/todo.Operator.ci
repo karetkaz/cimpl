@@ -1,6 +1,6 @@
 // TODO: define operators in the language, not builtin in the compiler
 
-// Cast
+// Explicit Cast
 inline int32(int32 rhs) = int32(emit(struct(rhs)));
 inline int32(int64 rhs) = int32(emit(struct(rhs), cvt.i64_i32));
 inline int32(uint32 rhs) = int32(emit(struct(rhs)));
@@ -42,6 +42,54 @@ inline float64(uint32 rhs) = float64(emit(struct(rhs), cvt.u32_f64));
 inline float64(uint64 rhs) = float64(emit(struct(rhs), cvt.u64_f64));
 inline float64(float32 rhs) = float64(emit(struct(rhs), cvt.f32_f64));
 inline float64(float64 rhs) = float64(emit(struct(rhs)));
+
+// Implicit Cast
+inline (int8 rhs) = int32(rhs);
+inline (int16 rhs) = int32(rhs);
+inline (uint8 rhs) = int32(rhs);
+inline (uint16 rhs) = int32(rhs);
+//inline (uint32 rhs) = int32(rhs);
+
+inline (int8 rhs) = int64(rhs);
+inline (int16 rhs) = int64(rhs);
+inline (int32 rhs) = int64(rhs);
+inline (uint8 rhs) = int64(rhs);
+inline (uint16 rhs) = int64(rhs);
+inline (uint32 rhs) = int64(rhs);
+//inline (uint64 rhs) = int64(rhs);
+
+inline (int8 rhs) = uint32(rhs);
+inline (int16 rhs) = uint32(rhs);
+//inline (int32 rhs) = uint32(rhs);
+inline (uint8 rhs) = uint32(rhs);
+inline (uint16 rhs) = uint32(rhs);
+
+inline (int8 rhs) = uint64(rhs);
+inline (int16 rhs) = uint64(rhs);
+inline (int32 rhs) = uint64(rhs);
+//inline (int64 rhs) = uint64(rhs);
+inline (uint8 rhs) = uint64(rhs);
+inline (uint16 rhs) = uint64(rhs);
+inline (uint32 rhs) = uint64(rhs);
+
+inline (int8 rhs) = float32(rhs);
+inline (int16 rhs) = float32(rhs);
+inline (int32 rhs) = float32(rhs);
+//inline (int64 rhs) = float32(rhs);
+inline (uint8 rhs) = float32(rhs);
+inline (uint16 rhs) = float32(rhs);
+inline (uint32 rhs) = float32(rhs);
+//inline (uint64 rhs) = float32(rhs);
+
+inline (int8 rhs) = float64(rhs);
+inline (int16 rhs) = float64(rhs);
+inline (int32 rhs) = float64(rhs);
+inline (int64 rhs) = float64(rhs);
+inline (uint8 rhs) = float64(rhs);
+inline (uint16 rhs) = float64(rhs);
+inline (uint32 rhs) = float64(rhs);
+inline (uint64 rhs) = float64(rhs);
+inline (float32 rhs) = float64(rhs);
 
 // Negate
 inline -(int32 rhs) = int32(emit(int32(rhs), neg.i32));
@@ -117,11 +165,3 @@ inline |(bool lhs, bool rhs) = emit(bool(lhs), bool(rhs), or.u32);
 inline ^(bool lhs, bool rhs) = emit(bool(lhs), bool(rhs), xor.u32);
 inline <>(bool lhs, bool rhs) = emit(bool(lhs), bool(rhs), sub.i32);
 ... */
-
-/*
-lang
-io.file
-io.socket
-io.stream
-io.process
-*/

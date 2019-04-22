@@ -7,6 +7,7 @@
  */
 
 #include "internal.h"
+#include <limits.h>
 #include <fcntl.h>
 
 #if !(defined _MSC_VER)
@@ -330,6 +331,7 @@ static ccToken readTok(lexContext ctx, astn tok) {
 			const int next = peekChr(ctx);       // comment begin char
 			char *doc = NULL;
 			char *ptr = beg;
+			int newLine = INT_MAX;
 
 			// line comment
 			if (next == '/') {
@@ -345,7 +347,12 @@ static ccToken readTok(lexContext ctx, astn tok) {
 						break;
 					}
 					chr = readChr(ctx);
-					*ptr++ = (char) chr;
+					if (newLine && !(chr_map[chr & 0xff] & SPACE)) {
+						newLine = 0;
+					}
+					if (!newLine) {
+						*ptr++ = (char) chr;
+					}
 				}
 				if (chr == -1) {
 					warn(ctx->rt, raise_warn_lex9, ctx->cc->file, line, WARN_NO_NEW_LINE_AT_END);
@@ -387,7 +394,24 @@ static ccToken readTok(lexContext ctx, astn tok) {
 						chr = 0;	// disable reading as valid comment: /*/ and /+/
 					}
 
-					*ptr++ = (char) chr;
+					if (newLine > 0 && !(chr_map[chr & 0xff] & SPACE)) {
+						if (chr != next) {
+							newLine = 0;
+						}
+					}
+
+					if (newLine == 0) {
+						*ptr++ = (char) chr;
+						if (chr == '\n') {
+							newLine = INT_MAX;
+						}
+					}
+					else if (chr == next) {
+						newLine = 1;
+					}
+					else {
+						newLine -= 1;
+					}
 				}
 
 				if (chr == -1) {
