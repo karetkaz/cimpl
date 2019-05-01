@@ -8,9 +8,7 @@ EMFLAGS=-g0 -O3 -s WASM=1 -s EXPORT_ALL=1 -s INVOKE_RUN=0 -s ALLOW_MEMORY_GROWTH
 
 EM_SIDE_MODULE=-s SIDE_MODULE=1 -s "EXPORTED_FUNCTIONS=['_cmplInit']"
 EM_MAIN_MODULE=-s MAIN_MODULE=1 --preload-file lib/stdlib.ci --preload-file lib/std/math.ci --preload-file lib/std/math.Complex.ci --preload-file lib/std/string.ci
-
-#EMFLAGS+=-s "EXPORTED_FUNCTIONS=['_main','_rtInit','_ccInit','_ccAddUnit','_ccGenCode','_execute']"
-#EM_EMBED=--preload-file lib/stdlib.ci --preload-file lib/std/math.ci --preload-file lib/std/math.Complex.ci --preload-file lib/std/string.ci
+#EM_MAIN_MODULE+=-s "EXPORTED_FUNCTIONS=['_rtInit','_ccInit','_ccAddUnit','_ccGenCode','_execute']"
 
 ifneq "$(OS)" "Windows_NT"
 	CFLAGS+=-D USE_PNG -D USE_JPEG

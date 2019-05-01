@@ -7,7 +7,6 @@
  */
 
 #include "internal.h"
-#include <unistd.h>
 #include <limits.h>
 
 const struct tokenRec token_tbl[256] = {
@@ -60,23 +59,8 @@ static inline symn tagType(ccContext cc, astn tag) {
  * @param tag ast node containing which file to inline
  */
 static int ccInline(ccContext cc, astn tag) {
-	static char *CWD = NULL;
 	if (tag->type != cc->type_str) {
 		return 0;
-	}
-
-	if (CWD == NULL) {
-		// lazy init on first call
-		CWD = getcwd(NULL, 0);
-		if (CWD == NULL) {
-			CWD = "";
-		}
-		for (char *ptr = CWD; *ptr; ++ptr) {
-			// convert windows path names to uri
-			if (*ptr == '\\') {
-				*ptr = '/';
-			}
-		}
 	}
 
 	char buff[PATH_MAX];
@@ -84,8 +68,8 @@ static int ccInline(ccContext cc, astn tag) {
 	if (path != buff) {
 		strncpy(buff, tag->file, sizeof(buff));
 	}
+	// convert windows path names to linux path names
 	for (char *ptr = buff; *ptr; ++ptr) {
-		// convert windows path names to uri
 		if (*ptr == '\\') {
 			*ptr = '/';
 		}
@@ -98,24 +82,7 @@ static int ccInline(ccContext cc, astn tag) {
 	}
 	strncat(buff, tag->ref.name, sizeof(buff) - (path - buff));
 
-	path = buff;
-	for (int i = 0; buff[i] != 0; ++i) {
-		if (buff[i] == 0) {
-			// use absolute path
-			break;
-		}
-		if (CWD[i] == 0) {
-			if (buff[i] == '/') {
-				// use relative path
-				path = buff + i + 1;
-			}
-			break;
-		}
-		if (buff[i] != CWD[i]) {
-			break;
-		}
-	}
-
+	path = relativeToCWD(buff);
 	printLog(cc->rt, raiseDebug, tag->file, tag->line, NULL, WARN_INLINE_FILE, path);
 	return ccOpen(cc, path, 1, NULL);
 }
@@ -1789,15 +1756,15 @@ static astn statement(ccContext cc, char *doc) {
 		}
 	}
 
-	if (attr != 0) {
-		if (ast != NULL) {
-			file = ast->file;
-			line = ast->line;
-		}
-		error(cc->rt, file, line, ERR_UNEXPECTED_ATTR, attr);
+	if (ast != NULL) {
+		file = ast->file;
+		line = ast->line;
 	}
 	if (doc != NULL) {
-		warn(cc->rt, raiseWarn, ast->file, ast->line, ERR_INVALID_DOC_COMMENT);
+		warn(cc->rt, raiseWarn, file, line, ERR_INVALID_DOC_COMMENT);
+	}
+	if (attr != 0) {
+		error(cc->rt, file, line, ERR_UNEXPECTED_ATTR, attr);
 	}
 
 	return ast;

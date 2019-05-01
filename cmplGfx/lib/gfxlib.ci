@@ -1,0 +1,374 @@
+// graphics library extension
+inline "gfx/color.ci";
+
+/// Create a surface with the given with, height and depth
+inline gxSurf(int width, int height, int depth) = gxSurf.create(width, height, depth);
+
+/// Create a surface by opening an image file
+gxSurf gxSurf(char fileName[*], int depth) {
+	if (fileName.endsWith(".jpeg", ignCaseCmp)) {
+		return gxSurf.openJpg(fileName, depth);
+	}
+	if (fileName.endsWith(".jpg", ignCaseCmp)) {
+		return gxSurf.openJpg(fileName, depth);
+	}
+	if (fileName.endsWith(".png", ignCaseCmp)) {
+		return gxSurf.openPng(fileName, depth);
+	}
+	if (fileName.endsWith(".bmp", ignCaseCmp)) {
+		return gxSurf.openBmp(fileName, depth);
+	}
+	abort("unknown file extension", fileName);
+}
+
+/// Create a surface by opening an image file
+inline gxSurf(char fileName[*]) = gxSurf(fileName, 32);
+
+/// Create a mesh by opening a file
+gxMesh gxMesh(char fileName[*]) {
+	if (fileName.endsWith(".obj", ignCaseCmp)) {
+		return gxMesh.openObj(fileName);
+	}
+	if (fileName.endsWith(".3ds", ignCaseCmp)) {
+		return gxMesh.open3ds(fileName);
+	}
+	abort("unknown file extension", fileName);
+}
+
+/// Create a surface by cloning another one
+gxSurf gxSurf(gxSurf copy) {
+	gxSurf result = gxSurf.create(copy.width(), copy.height(), copy.depth());
+	result.copy(0, 0, copy, null);
+	return result;
+}
+
+/// Set the the color of a pixel at the given position
+inline set(gxSurf dst, int32 x, int32 y, argb color) = gxSurf.set(dst, x, y, uint32(color));
+
+///@public
+bool clip(gxSurf src, gxRect roi&) {
+
+	roi.w += roi.x;
+	roi.h += roi.y;
+
+	if (roi.x < 0) {
+		roi.x = 0;
+	}
+
+	if (roi.y < 0) {
+		roi.y = 0;
+	}
+
+	int width = src.width();
+	if (roi.w > width) {
+		roi.w = width;
+	}
+
+	int height = src.height();
+	if (roi.h > height) {
+		roi.h = height;
+	}
+
+	roi.w -= roi.x;
+	roi.h -= roi.y;
+
+	if (roi.w <= 0) {
+		return false;
+	}
+	if (roi.h <= 0) {
+		return false;
+	}
+	return true;
+}
+
+/// Fill the entire surface with the given color
+inline fill(gxSurf dst, uint32 col) = dst.fillRect(0, 0, 65536, 65536, col);
+
+/// Fill the surface by evaluating the given function for each pixel
+void eval(gxSurf dst, const gxRect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
+	gxRect rect = {
+		x: roi != null ? roi.x : 0;
+		y: roi != null ? roi.y : 0;
+		w: roi != null ? roi.w : dst.width();
+		h: roi != null ? roi.h : dst.height();
+	};
+
+	if (!dst.clip(rect)) {
+		return;
+	}
+
+	vec4f in = {
+		x: 0;
+		y: 0;
+		z: aspect;
+		w: time;
+	};
+	float w = dst.width();
+	float h = dst.height();
+	for (int y = rect.y; y < rect.y + rect.h; y += 1) {
+		in.y = y / h;
+		for (int x = rect.x; x < rect.x + rect.w; x += 1) {
+			in.x = x / w;
+			dst.set(x, y, argb(eval(in)));
+		}
+	}
+}
+
+///@public
+void tile(gxSurf dst, int x, int y, gxSurf src, gxRect roi&) {
+	gxRect rect = {
+		x: roi != null ? roi.x : 0;
+		y: roi != null ? roi.y : 0;
+		w: roi != null ? roi.w : src.width();
+		h: roi != null ? roi.h : src.height();
+	};
+
+	if (!src.clip(rect)) {
+		return;
+	}
+
+	if (x < 0) {
+		x = -(-x % rect.w);
+	}
+	if (y < 0) {
+		y = -(-y % rect.h);
+	}
+	int width = dst.width();
+	int height = dst.height();
+	for (int j = y; j < height; j += rect.h) {
+		for (int i = x; i < width; i += rect.w) {
+			dst.copy(i, j, src, rect);
+		}
+	}
+}
+
+/// Show the mesh in a window
+void show(gxMesh mesh, int w, int h, float32 fovy) {
+
+	struct Closure {
+		int mode;
+		gxSurf offs;
+		gxMesh mesh;
+	}
+
+	int next(int32 x, int mask) {
+		int next = x & mask;
+
+		// add lowest bit of mask
+		next += mask & -mask;
+
+		// avoid overflow
+		next &= mask;
+
+		return next | (x & ~mask);
+	}
+
+	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
+		static int ox = 0;
+		static int oy = 0;
+		static const float speed = 1. / 100;
+		if (action == Gui.KEY_PRESS) {
+			if (button == 27) {
+				return -1;
+			}
+			else if (button == 'l') {
+				closure.mode ^= gxMesh.useLights;
+			}
+			else if (button == '0') {
+				lights.enable(0, !lights.enabled(0));
+			}
+			else if (button == '1') {
+				lights.enable(1, !lights.enabled(1));
+			}
+			else if (button == '2') {
+				lights.enable(2, !lights.enabled(2));
+			}
+			else if (button == '3') {
+				lights.enable(3, !lights.enabled(3));
+			}
+			else if (button == 't') {
+				closure.mode ^= gxMesh.useTexture;
+			}
+			else if (button == '/') {
+				closure.mode = next(closure.mode, gxMesh.cullBack | gxMesh.cullFront);
+			}
+			else if (button == '\t') {
+				closure.mode = next(closure.mode, gxMesh.drawMode);
+			}
+			else if (button == '\r') {
+				vec4f eye = {x: 0, y: 0, z: 2, w: 1};
+				vec4f at = {x: 0, y: 0, z: 0, w: 1};
+				vec4f up = {x: 0, y: 1, z: 0, w: 1};
+				camera.lookAt(eye.data, at.data, up.data);
+			}
+		}
+		else if (action == Gui.MOUSE_PRESS) {
+			ox = ex;
+			oy = ey;
+			return 0;
+		}
+		else if (action == Gui.MOUSE_MOTION) {
+			float32 dir[3];
+			int dx = ex - ox;
+			int dy = ey - oy;
+
+			if (button == 1) {
+				// orbit
+				float32 orig[3];
+				orig[0] = 0;
+				orig[1] = 0;
+				orig[2] = 0;
+
+				camera.readUp(dir);
+				camera.rotate(dir, orig, dx * speed);
+				camera.readRight(dir);
+				camera.rotate(dir, orig, dy * speed);
+			}
+			else if (button == 2) {
+				// rotate
+				camera.readUp(dir);
+				camera.rotate(dir, null, -dx * speed);
+				camera.readRight(dir);
+				camera.rotate(dir, null, -dy * speed);
+			}
+			else if (button == 3) {
+				// move
+				camera.readForward(dir);
+				camera.move(dir, dy * speed);
+			}
+			else if (button == 4) {
+				// pan
+				camera.readRight(dir);
+				camera.move(dir, -dx * speed);
+				camera.readUp(dir);
+				camera.move(dir, dy * speed);
+			}
+			ox = ex;
+			oy = ey;
+		}
+
+		int rendered = closure.offs.drawMesh(closure.mesh, closure.mode);
+
+		char text[256];
+		int pos = text.append(0, "Vertices: ");
+		pos = text.append(pos, closure.mesh.vertices);
+		pos = text.append(pos, ", Triangles: ");
+		pos = text.append(pos, closure.mesh.triangles);
+		pos = text.append(pos, "/");
+		pos = text.append(pos, rendered);
+		Gui.setTitle(text);
+		return 0;
+	}
+
+	Closure closure = {
+		mode: gxMesh.clearDepth | gxMesh.clearColor | gxMesh.useLights | gxMesh.cullBack | gxMesh.drawFill;
+		offs: gxSurf.create3d(w, h);
+		mesh: mesh;
+	};
+	camera.projection(fovy, w / float32(h), 1, 100);
+	Gui.showWindow(closure.offs, closure, onEvent);
+	closure.offs.destroy();
+}
+
+/// Show the surface in a window
+inline show(gxSurf surf) = Gui.showWindow(surf, null, null);
+
+/// Show the surface in a window
+void show(gxSurf surf, int onEvent(int action, int button, int ex, int ey)) {
+	if (onEvent == null) {
+		return Gui.showWindow(surf, null, null);
+	}
+	static int delegate(int onEvent(int action, int button, int ex, int ey), int action, int button, int ex, int ey) {
+		return onEvent(action, button, ex, ey);
+	}
+	Gui.showWindow(surf, onEvent, delegate);
+}
+
+/// Show the surfaces in a window clicking on the window toggles the shown surface
+void showDiff(gxSurf image1, gxSurf image2) {
+	struct Closure {
+		gxSurf offs;
+		gxSurf image1;
+		gxSurf image2;
+	}
+
+	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
+		if (action == Gui.KEY_PRESS) {
+			if (button == 27) {
+				return -1;
+			}
+		}
+		if (action == Gui.MOUSE_PRESS) {
+			closure.offs.copy(0, 0, closure.image2, null);
+			return 0;
+		}
+		if (action == Gui.MOUSE_RELEASE) {
+			closure.offs.copy(0, 0, closure.image1, null);
+			return 0;
+		}
+		return 0;
+	}
+
+	Closure closure = {
+		offs: gxSurf(image1);
+		image1: image1;
+		image2: image2;
+	};
+	Gui.showWindow(closure.offs, closure, onEvent);
+}
+
+/// Show or animate the the procedural image generated by the `eval` function
+void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) {
+	static const int64 start = System.millis();
+	struct Closure {
+		const gxSurf offs;
+		const gxSurf thumb;
+		const float32 aspect;
+		const vec4f eval(vec4f in);
+	}
+
+	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
+		if (action == Gui.WINDOW_CLOSE) {
+			trace("closing ...");
+			return 0;
+		}
+		if (action == Gui.KEY_PRESS) {
+			if (button == 27) {
+				return -1;
+			}
+		}
+		if (action == Gui.KEY_RELEASE) {
+			if (button == ' ') {
+				float32 time = (System.millis() - start) / 1000f;
+				closure.offs.eval(null, closure.aspect, time, closure.eval);
+				return 0;
+			}
+		}
+
+		float32 time = (System.millis() - start) / 1000f;
+		closure.thumb.eval(null, closure.aspect, time, closure.eval);
+		closure.offs.resize(null, closure.thumb, null, 1);
+
+		// do not block for any input
+		return 1;
+	}
+
+	if (animationResolution == 0) {
+		float32 aspect = width / float32(height);
+		gxSurf surf = gxSurf(width, height, 32);
+		surf.eval(null, aspect, 0f, eval);
+		surf.show(null);
+		surf.destroy();
+		return;
+	}
+
+	Closure closure = {
+		offs: gxSurf(width, height, 32);
+		thumb: gxSurf(animationResolution, animationResolution, 32);
+		aspect: width / float32(height);
+		eval: eval;
+	};
+	Gui.showWindow(closure.offs, closure, onEvent);
+	closure.thumb.destroy();
+	closure.offs.destroy();
+}

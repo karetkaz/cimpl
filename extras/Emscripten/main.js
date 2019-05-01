@@ -436,10 +436,10 @@ function shareInput() {
 	showEditor('-primary');
 	let content = editor.getValue();
 	terminal.print('decoded uri: ' + decodeURIComponent(window.location));
+	terminal.print('current file: ' + window.location.origin + window.location.pathname + '#content=' + btoa(content));
 	if (content.startsWith('[{')) {
 		terminal.print('project file: ' + window.location.origin + window.location.pathname + '#project=' + btoa(content));
 	}
-	terminal.print('current file: ' + window.location.origin + window.location.pathname + '#content=' + btoa(content));
 }
 
 function execute(cmd, exactArgs) {
@@ -464,9 +464,6 @@ function execute(cmd, exactArgs) {
 
 			// allocate 2Mb of memory by default,
 			args.push('-mem' + (params.mem || '2M'));
-
-			// standard library is in root
-			args.push('-std/lib/stdlib.ci');
 
 			if (params.dump != null) {
 				if (params.dump.endsWith('.json')) {

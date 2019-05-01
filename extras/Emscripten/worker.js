@@ -8,6 +8,7 @@ var Module = {
 		postMessage({ print: text });
 	},
 	onRuntimeInitialized: function () {
+		ENV.CMPL_HOME = '/';
 		FS.mkdirTree(Module.workspace);
 		FS.chdir(Module.workspace);
 		if (Module.files == null || Module.initialized) {

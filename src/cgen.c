@@ -282,7 +282,8 @@ static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 			error(rt, variable->file, variable->line, ERR_UNIMPLEMENTED_FUNCTION, variable);
 		}
 		else {
-			warn(rt, raiseWarn, variable->file, variable->line, ERR_UNINITIALIZED_VARIABLE, variable);
+			raiseLevel level = cc->genUninitialized ? raiseWarn : raiseError;
+			warn(rt, level, variable->file, variable->line, ERR_UNINITIALIZED_VARIABLE, variable);
 		}
 	}
 
@@ -804,7 +805,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 			}
 		}
 		else {
-			// reverse the list of arguments: stack vorks in reverse order
+			// reverse the list of arguments: stack works in reverse order
 			astn reverse = NULL;
 			for (astn arg = vaList; arg; ) {
 				astn next = arg->next;
@@ -968,8 +969,10 @@ static ccKind genCall(ccContext cc, astn ast) {
 		if (prm->init == NULL || prm->init->kind == TOKEN_any) {
 			if (prm->name && *prm->name == '.') {
 				warn(rt, raise_warn_var8, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
-			} else {
-				warn(rt, raiseWarn, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
+			}
+			else {
+				raiseLevel level = cc->genUninitialized ? raiseWarn : raiseError;
+				warn(rt, level, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
 			}
 			if (!emitInt(rt, opc_spc, prm->size)) {
 				traceAst(ast);
@@ -2239,7 +2242,7 @@ int ccGenCode(ccContext cc, int debug) {
 
 	// leave the global scope.
 	rt->main = install(cc, ".main", ATTR_stat | KIND_fun, cc->type_fun->size, cc->type_fun, cc->root);
-	cc->scope = leave(cc, rt->genGlobals ? ATTR_stat | KIND_def : KIND_def, 0, 0, NULL);
+	cc->scope = leave(cc, cc->genGlobals ? ATTR_stat | KIND_def : KIND_def, 0, 0, NULL);
 	dieif(cc->scope != cc->global, ERR_INTERNAL_ERROR);
 
 	/* reorder the initialization of static variables and functions.
@@ -2389,13 +2392,14 @@ int ccGenCode(ccContext cc, int debug) {
 			rt->_beg += var->size;
 
 			if (rt->_beg >= rt->_end) {
-				error(rt, var->file, var->line, ERR_DECLARATION_COMPLEX, var);
+				error(rt, var->file, var->line, ERR_MEMORY_OVERRUN);
 				return -3;
 			}
 			rt->vm.ds += var->size;
 		}
 		else {
 			fatal(ERR_INTERNAL_ERROR);
+			return -1;
 		}
 	}
 
@@ -2420,7 +2424,7 @@ int ccGenCode(ccContext cc, int debug) {
 		}
 
 		// CAST_vid clears the stack
-		if (!genAst(cc, cc->root, rt->genGlobals ? CAST_vid : CAST_val)) {
+		if (!genAst(cc, cc->root, cc->genGlobals ? CAST_vid : CAST_val)) {
 			traceAst(cc->root);
 			return -5;
 		}

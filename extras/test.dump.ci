@@ -1,13 +1,12 @@
 
 ---------- Compile: `lib/stdlib.ci`
-lib/stdlib.ci:50: warn: padding `NotEquals` with 4 bytes: (28 -> 32)
-lib/stdlib.ci:71: warn: adding implicit cast variant(expected: int32)
-lib/stdlib.ci:72: warn: adding implicit cast variant(returned: int32)
-lib/stdlib.ci:73: warn: adding implicit cast char[*](message: char[*])
-lib/stdlib.ci:70: debug: using default field initializer: NotEquals.argument := null
-lib/stdlib.ci:58: warn: adding implicit cast variant(null: pointer)
-lib/stdlib.ci:80: warn: empty statement `;`
-lib/stdlib.ci:85: debug: inline file: `lib/std/math.ci`
+lib/stdlib.ci:59: warn: padding `NotEquals` with 4 bytes: (28 -> 32)
+lib/stdlib.ci:80: warn: adding implicit cast variant(expected: int32)
+lib/stdlib.ci:81: warn: adding implicit cast variant(returned: int32)
+lib/stdlib.ci:82: warn: adding implicit cast char[*](message: char[*])
+lib/stdlib.ci:79: debug: using default field initializer: NotEquals.argument := null
+lib/stdlib.ci:67: warn: adding implicit cast variant(null: pointer)
+lib/stdlib.ci:94: debug: inline file: `lib/std/math.ci`
 lib/std/math.ci:17: warn: adding implicit cast float64(0: int32)
 lib/std/math.ci:18: warn: adding implicit cast float64(1: int32)
 lib/std/math.ci:23: warn: adding implicit cast float64(1: int32)
@@ -70,7 +69,7 @@ lib/std/math.ci:525: warn: adding implicit cast float64(180: int32)
 lib/std/math.ci:532: debug: inline file: `lib/std/math.Complex.ci`
 lib/std/math.Complex.ci:24: debug: using default field initializer: Complex.im := 0
 lib/std/math.Complex.ci:8: warn: adding implicit cast float64(0: int32)
-lib/stdlib.ci:86: debug: inline file: `lib/std/string.ci`
+lib/stdlib.ci:95: debug: inline file: `lib/std/string.ci`
 lib/std/string.ci:5: warn: adding implicit cast pointer(str: char[*])
 lib/std/string.ci:37: warn: adding implicit cast int32(with[i]: char)
 lib/std/string.ci:65: warn: adding implicit cast int32(str[i]: char)
@@ -99,11 +98,11 @@ lib/std/string.ci:223: debug: using default field initializer: FormatFlags.padCh
 lib/std/string.ci:116: warn: adding implicit cast char(0: int32)
 lib/std/string.ci:223: debug: using default field initializer: FormatFlags.padLen := 0
 lib/std/string.ci:223: debug: using default field initializer: FormatFlags.precision := 0
-lib/stdlib.ci:88: debug: inline file: `lib/vec/vec2d.ci`
+lib/stdlib.ci:97: debug: inline file: `lib/vec/vec2d.ci`
 lib/vec/vec2d.ci:1: warn: adding implicit cast pointer(null: typename)
-lib/stdlib.ci:89: debug: inline file: `lib/vec/vec4f.ci`
+lib/stdlib.ci:98: debug: inline file: `lib/vec/vec4f.ci`
 lib/vec/vec4f.ci:1: warn: adding implicit cast pointer(null: typename)
-lib/stdlib.ci:90: debug: inline file: `lib/vec/mat4f.ci`
+lib/stdlib.ci:99: debug: inline file: `lib/vec/mat4f.ci`
 lib/vec/mat4f.ci:1: warn: adding implicit cast pointer(null: typename)
 
 ---------- Compile: `test/test.ci`
@@ -117,9 +116,9 @@ test/lang/overload.inline.ci:26: warn: adding implicit cast float64(32: int32)
 test/test.ci:15: debug: inline file: `test/lang/initByRef.ci`
 test/lang/initByRef.ci:3: warn: adding implicit cast pointer(typename(int64): typename)
 test/test.ci:20: debug: inline file: `test/lang/function.ci`
-test/lang/function.ci:38: warn: adding implicit cast uint32(1: int32)
-test/lang/function.ci:41: warn: adding implicit cast uint32(1: int32)
-test/lang/function.ci:41: warn: adding implicit cast uint32(2: int32)
+test/lang/function.ci:39: warn: adding implicit cast uint32(1: int32)
+test/lang/function.ci:42: warn: adding implicit cast uint32(1: int32)
+test/lang/function.ci:42: warn: adding implicit cast uint32(2: int32)
 test/test.ci:21: debug: inline file: `test/lang/reflect.ci`
 test/test.ci:25: debug: inline file: `test/stdc/number.ci`
 test/stdc/number.ci:37: warn: adding implicit cast float64(2: int32)
@@ -143,11 +142,12 @@ test/lang/array.ci:101: warn: adding implicit cast int64(42: int32)
 test/test.ci:32: debug: inline file: `test/lang/member.ci`
 test/lang/member.ci:82: warn: ignoring nested comment
 test/test.ci:33: debug: inline file: `test/lang/method.ci`
-test/lang/method.ci:3: warn: padding `RecordMethodTest` with 4 bytes: (12 -> 16)
-test/lang/method.ci:44: debug: using default field initializer: RecordMethodTest.delegateMethod(this: RecordMethodTest, x: int32): void := forwardMethod
-test/lang/method.ci:44: debug: using default field initializer: RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void := virtualMethod
-test/lang/method.ci:64: warn: adding implicit cast pointer(this: RecordMethodTest)
-test/lang/method.ci:70: warn: adding implicit cast pointer(this: RecordMethodTest)
+test/lang/method.ci:4: warn: padding `RecordMethodTest` with 4 bytes: (12 -> 16)
+test/lang/method.ci:62: debug: using default field initializer: RecordMethodTest.delegateMethod(this: RecordMethodTest, x: int32): void := forwardMethod
+test/lang/method.ci:62: debug: using default field initializer: RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void := virtualMethod
+test/lang/method.ci:78: warn: comment does not belong to a declaration
+test/lang/method.ci:86: warn: adding implicit cast pointer(this: RecordMethodTest)
+test/lang/method.ci:92: warn: adding implicit cast pointer(this: RecordMethodTest)
 test/test.ci:34: debug: inline file: `test/lang/recUnion.ci`
 test/lang/recUnion.ci:2: warn: padding `rgbF32` with 4 bytes: (12 -> 16)
 test/lang/recUnion.ci:23: warn: variable `Color.value` hides previous declaration
@@ -225,12 +225,12 @@ lib/std/math.ci:322: warn: using default type initializer: f := 0
 lib/std/math.ci:374: warn: using default type initializer: Math.tan.e := 0
 lib/std/math.ci:431: warn: using default type initializer: Math.sinh.result := 0
 lib/std/string.ci:148: warn: uninitialized variable `append.digits`
-lib/stdlib.ci:43: warn: no code will be generated for statement: 0
-lib/stdlib.ci:43: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
+lib/stdlib.ci:52: warn: no code will be generated for statement: 0
+lib/stdlib.ci:52: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
 lib/vec/mat4f.ci:49: warn: uninitialized variable `.result`
 lib/vec/mat4f.ci:49: warn: uninitialized variable `.result`
 lib/vec/mat4f.ci:49: warn: uninitialized variable `.result`
@@ -242,22 +242,22 @@ test/lang/array.ci:49: warn: uninitialized variable `arrFixedNoInit`
 test/lang/array.ci:50: warn: uninitialized variable `arrArrayNoInit`
 test/lang/array.ci:51: warn: uninitialized variable `arrSliceNoInit`
 test/lang/array.ci:81: warn: uninitialized variable `strFixed`
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-lib/stdlib.ci:47: warn: no code will be generated for statement: 0
-test/lang/method.ci:58: warn: accessing static member using instance variable `RecordMethodTest.staticMethod(this: RecordMethodTest, x: int32): void`/ RecordMethodTest
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+lib/stdlib.ci:56: warn: no code will be generated for statement: 0
+test/lang/method.ci:78: warn: accessing static member using instance variable `RecordMethodTest.staticMethod(this: RecordMethodTest, x: int32): void`/ RecordMethodTest
 test/lang/useOperator.ci:3: warn: using signed cast for unsigned value: `96.300000`
 test/lang/useOperator.ci:4: warn: using signed cast for unsigned value: `42.140000`
 test/lang/useOperator.ci:3: warn: using signed cast for unsigned value: `96.300000`
@@ -2145,7 +2145,7 @@ verbose(message: char[*], inspect: variant): void: function {
 .base: `function`
 .size: 0
 .name: 'verbose'
-.file: 'lib/stdlib.ci:6'
+.file: 'lib/stdlib.ci:15'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .param inspect: variant (size: 8, cast: var)
@@ -2157,7 +2157,7 @@ verbose(message: char[*]): void: function {
 .base: `function`
 .size: 0
 .name: 'verbose'
-.file: 'lib/stdlib.ci:8'
+.file: 'lib/stdlib.ci:17'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .doc: 'report message at `verbose` logging level'
@@ -2168,7 +2168,7 @@ debug(message: char[*], inspect: variant): void: function {
 .base: `function`
 .size: 0
 .name: 'debug'
-.file: 'lib/stdlib.ci:11'
+.file: 'lib/stdlib.ci:20'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .param inspect: variant (size: 8, cast: var)
@@ -2180,7 +2180,7 @@ debug(message: char[*]): void: function {
 .base: `function`
 .size: 0
 .name: 'debug'
-.file: 'lib/stdlib.ci:13'
+.file: 'lib/stdlib.ci:22'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .doc: 'report message at `debug` logging level'
@@ -2191,7 +2191,7 @@ trace(message: char[*], inspect: variant): void: function {
 .base: `function`
 .size: 0
 .name: 'trace'
-.file: 'lib/stdlib.ci:16'
+.file: 'lib/stdlib.ci:25'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .param inspect: variant (size: 8, cast: var)
@@ -2203,7 +2203,7 @@ trace(message: char[*]): void: function {
 .base: `function`
 .size: 0
 .name: 'trace'
-.file: 'lib/stdlib.ci:18'
+.file: 'lib/stdlib.ci:27'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .doc: 'report message with stacktrace at `debug` logging level'
@@ -2214,7 +2214,7 @@ info(message: char[*], inspect: variant): void: function {
 .base: `function`
 .size: 0
 .name: 'info'
-.file: 'lib/stdlib.ci:21'
+.file: 'lib/stdlib.ci:30'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .param inspect: variant (size: 8, cast: var)
@@ -2226,7 +2226,7 @@ info(message: char[*]): void: function {
 .base: `function`
 .size: 0
 .name: 'info'
-.file: 'lib/stdlib.ci:23'
+.file: 'lib/stdlib.ci:32'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .doc: 'report message at `info` logging level'
@@ -2237,7 +2237,7 @@ warn(message: char[*], inspect: variant): void: function {
 .base: `function`
 .size: 0
 .name: 'warn'
-.file: 'lib/stdlib.ci:26'
+.file: 'lib/stdlib.ci:35'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .param inspect: variant (size: 8, cast: var)
@@ -2249,7 +2249,7 @@ warn(message: char[*]): void: function {
 .base: `function`
 .size: 0
 .name: 'warn'
-.file: 'lib/stdlib.ci:28'
+.file: 'lib/stdlib.ci:37'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .doc: 'report message at `warn` logging level'
@@ -2260,7 +2260,7 @@ error(message: char[*], inspect: variant): void: function {
 .base: `function`
 .size: 0
 .name: 'error'
-.file: 'lib/stdlib.ci:31'
+.file: 'lib/stdlib.ci:40'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .param inspect: variant (size: 8, cast: var)
@@ -2272,7 +2272,7 @@ error(message: char[*]): void: function {
 .base: `function`
 .size: 0
 .name: 'error'
-.file: 'lib/stdlib.ci:33'
+.file: 'lib/stdlib.ci:42'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .doc: 'report message with stacktrace at `error` logging level'
@@ -2283,7 +2283,7 @@ abort(message: char[*], inspect: variant): void: function {
 .base: `function`
 .size: 0
 .name: 'abort'
-.file: 'lib/stdlib.ci:36'
+.file: 'lib/stdlib.ci:45'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .param inspect: variant (size: 8, cast: var)
@@ -2295,7 +2295,7 @@ abort(message: char[*]): void: function {
 .base: `function`
 .size: 0
 .name: 'abort'
-.file: 'lib/stdlib.ci:38'
+.file: 'lib/stdlib.ci:47'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .doc: 'report message with stacktrace at `abort` logging level and abort execution'
@@ -2306,7 +2306,7 @@ abort(): void: function {
 .base: `function`
 .size: 0
 .name: 'abort'
-.file: 'lib/stdlib.ci:40'
+.file: 'lib/stdlib.ci:49'
 .param .result: void (size: 0, cast: void)
 .doc: 'report message with stacktrace at `abort` logging level and abort execution'
 .value: raise(raise.abort, raise.defTrace, "execution aborted!", null)
@@ -2316,7 +2316,7 @@ assert(condition: bool, message: char[*], inspect: variant): void: function {
 .base: `function`
 .size: 0
 .name: 'assert'
-.file: 'lib/stdlib.ci:43'
+.file: 'lib/stdlib.ci:52'
 .param .result: void (size: 0, cast: void)
 .param condition: bool (size: 4, cast: bool)
 .param message: char[*] (size: 4, cast: ref)
@@ -2329,7 +2329,7 @@ assert(condition: bool, message: char[*]): void: function {
 .base: `function`
 .size: 0
 .name: 'assert'
-.file: 'lib/stdlib.ci:45'
+.file: 'lib/stdlib.ci:54'
 .param .result: void (size: 0, cast: void)
 .param condition: bool (size: 4, cast: bool)
 .param message: char[*] (size: 4, cast: ref)
@@ -2341,7 +2341,7 @@ assert(condition: bool): void: function {
 .base: `function`
 .size: 0
 .name: 'assert'
-.file: 'lib/stdlib.ci:47'
+.file: 'lib/stdlib.ci:56'
 .param .result: void (size: 0, cast: void)
 .param condition: bool (size: 4, cast: bool)
 .doc: 'report message and abort the execution if the assertion condition fails (is false)'
@@ -2352,7 +2352,7 @@ NotEquals: typename {
 .base: `typename`
 .size: 32
 .name: 'NotEquals'
-.file: 'lib/stdlib.ci:50'
+.file: 'lib/stdlib.ci:59'
 .field expected: variant (size: 8, cast: const variable(var))
 .field returned: variant (size: 8, cast: const variable(var))
 .field argument: variant (size: 8, cast: const variable(var))
@@ -2364,7 +2364,7 @@ NotEquals.expected: variant {
 .base: `variant`
 .size: 8
 .name: 'expected'
-.file: 'lib/stdlib.ci:52'
+.file: 'lib/stdlib.ci:61'
 .owner: NotEquals
 .doc: 'Value of the expected result'
 }
@@ -2373,7 +2373,7 @@ NotEquals.returned: variant {
 .base: `variant`
 .size: 8
 .name: 'returned'
-.file: 'lib/stdlib.ci:55'
+.file: 'lib/stdlib.ci:64'
 .owner: NotEquals
 .doc: 'Value of the actual result'
 }
@@ -2382,7 +2382,7 @@ NotEquals.argument: variant {
 .base: `variant`
 .size: 8
 .name: 'argument'
-.file: 'lib/stdlib.ci:58'
+.file: 'lib/stdlib.ci:67'
 .owner: NotEquals
 .doc: 'Extra argument to identify what happened'
 .value: null
@@ -2392,7 +2392,7 @@ NotEquals.message: char[*] {
 .base: `char[*]`
 .size: 4
 .name: 'message'
-.file: 'lib/stdlib.ci:61'
+.file: 'lib/stdlib.ci:70'
 .owner: NotEquals
 .doc: 'Extra message to identify what happened'
 .value: null
@@ -2402,7 +2402,7 @@ assertEq(expected: int32, returned: int32, message: char[*]): void: function {
 .base: `function`
 .size: 94
 .name: 'assertEq'
-.file: 'lib/stdlib.ci:66'
+.file: 'lib/stdlib.ci:75'
 .param .result: void (size: 0, cast: variable(void))
 .param expected: int32 (size: 4, cast: variable(i32))
 .param returned: int32 (size: 4, cast: variable(i32))
@@ -2421,32 +2421,32 @@ assertEq(expected: int32, returned: int32, message: char[*]): void: function {
 	raise(raise.abort, raise.defTrace, "assertion failed", details);
 }
 .instructions: (94 bytes)
-	lib/stdlib.ci:67: (10 bytes): if (returned == expected)
+	lib/stdlib.ci:76: (10 bytes): if (returned == expected)
 	<assertEq>  : dup.x1 sp(2)
 	<assertEq+?>: dup.x1 sp(4)
 	<assertEq+?>: ceq.i32
 	<assertEq+?>: jz +5
-	lib/stdlib.ci:68: (1 byte): return;
+	lib/stdlib.ci:77: (1 byte): return;
 	<assertEq+?>: ret
-	lib/stdlib.ci:70: (41 bytes): details: NotEquals := {...}
+	lib/stdlib.ci:79: (41 bytes): details: NotEquals := {...}
 	<assertEq+?>: inc.sp(+32)
-	lib/stdlib.ci:71: (11 bytes): details.expected := (expected);
+	lib/stdlib.ci:80: (11 bytes): details.expected := (expected);
 	<assertEq+?>: load.ref <?> ;int32
 	<assertEq+?>: load.sp(+48)
 	<assertEq+?>: set.x2 sp(2)
-	lib/stdlib.ci:72: (11 bytes): details.returned := (returned);
+	lib/stdlib.ci:81: (11 bytes): details.returned := (returned);
 	<assertEq+?>: load.ref <?> ;int32
 	<assertEq+?>: load.sp(+44)
 	<assertEq+?>: set.x2 sp(4)
-	lib/stdlib.ci:73: (3 bytes): details.message := (message);
+	lib/stdlib.ci:82: (3 bytes): details.message := (message);
 	<assertEq+?>: mov.x1 sp(6, 9)
 	:: (12 bytes): details.argument := (null)
 	<assertEq+?>: load.ref <?> ;pointer
 	<assertEq+?>: load.ref <?> ;null
 	<assertEq+?>: set.x2 sp(6)
-	lib/stdlib.ci:75: (38 bytes): raise(raise.abort, raise.defTrace, "assertion failed", details);
+	lib/stdlib.ci:84: (38 bytes): raise(raise.abort, raise.defTrace, "assertion failed", details);
 	<assertEq+?>: load.ref <?> ;"lib/stdlib.ci"
-	<assertEq+?>: load.c32 75
+	<assertEq+?>: load.c32 84
 	<assertEq+?>: load.c32 -2
 	<assertEq+?>: load.c32 128
 	<assertEq+?>: load.ref <?> ;"assertion failed"
@@ -2461,7 +2461,7 @@ assertEq(expected: int32, returned: int32): void: function {
 .base: `function`
 .size: 0
 .name: 'assertEq'
-.file: 'lib/stdlib.ci:78'
+.file: 'lib/stdlib.ci:87'
 .param .result: void (size: 0, cast: void)
 .param expected: int32 (size: 4, cast: i32)
 .param returned: int32 (size: 4, cast: i32)
@@ -2473,7 +2473,7 @@ sizeof(type: typename): int32: function {
 .base: `function`
 .size: 0
 .name: 'sizeof'
-.file: 'lib/stdlib.ci:83'
+.file: 'lib/stdlib.ci:92'
 .param .result: int32 (size: 4, cast: i32)
 .param type: typename (size: 4, cast: ref)
 .doc: 'Returns the size of the given type'
@@ -8584,8 +8584,9 @@ empty(): void: function {
 .base: `function`
 .size: 1
 .name: 'empty'
-.file: 'test/lang/function.ci:3'
+.file: 'test/lang/function.ci:4'
 .param .result: void (size: 0, cast: variable(void))
+.doc: 'function with empty implementation'
 .value: {
 }
 .instructions: (1 byte)
@@ -8596,15 +8597,16 @@ funAdd(x: int32, y: int32): int32: function {
 .base: `function`
 .size: 8
 .name: 'funAdd'
-.file: 'test/lang/function.ci:6'
+.file: 'test/lang/function.ci:7'
 .param .result: int32 (size: 4, cast: variable(i32))
 .param x: int32 (size: 4, cast: variable(i32))
 .param y: int32 (size: 4, cast: variable(i32))
+.doc: 'function with implementation'
 .value: {
 	return .result := x + y;
 }
 .instructions: (8 bytes)
-	test/lang/function.ci:7: (8 bytes): return .result := x + y;
+	test/lang/function.ci:8: (8 bytes): return .result := x + y;
 	<funAdd>  : dup.x1 sp(2)
 	<funAdd+?>: dup.x1 sp(2)
 	<funAdd+?>: add.i32
@@ -8616,7 +8618,8 @@ funAddResult: int32 {
 .base: `int32`
 .size: 4
 .name: 'funAddResult'
-.file: 'test/lang/function.ci:11'
+.file: 'test/lang/function.ci:12'
+.doc: 'function invocation'
 .value: funAdd(2, 7)
 }
 funAddRef(x: int32, y: int32): int32: function {
@@ -8624,10 +8627,11 @@ funAddRef(x: int32, y: int32): int32: function {
 .base: `function`
 .size: 4
 .name: 'funAddRef'
-.file: 'test/lang/function.ci:14'
+.file: 'test/lang/function.ci:15'
 .param .result: int32 (size: 4, cast: variable(i32))
 .param x: int32 (size: 4, cast: variable(i32))
 .param y: int32 (size: 4, cast: variable(i32))
+.doc: 'initialized function reference'
 .value: funAdd
 }
 funAddRefResult: int32 {
@@ -8635,7 +8639,8 @@ funAddRefResult: int32 {
 .base: `int32`
 .size: 4
 .name: 'funAddRefResult'
-.file: 'test/lang/function.ci:17'
+.file: 'test/lang/function.ci:18'
+.doc: 'function reference invocation'
 .value: funAddRef(2, 8)
 }
 funMul(x: int32, y: int32): int32: function {
@@ -8643,10 +8648,11 @@ funMul(x: int32, y: int32): int32: function {
 .base: `function`
 .size: 4
 .name: 'funMul'
-.file: 'test/lang/function.ci:20'
+.file: 'test/lang/function.ci:21'
 .param .result: int32 (size: 4, cast: variable(i32))
 .param x: int32 (size: 4, cast: variable(i32))
 .param y: int32 (size: 4, cast: variable(i32))
+.doc: 'forward function reference (must be implemented somewhere)'
 .value: funMul
 }
 funMulResult: int32 {
@@ -8654,7 +8660,8 @@ funMulResult: int32 {
 .base: `int32`
 .size: 4
 .name: 'funMulResult'
-.file: 'test/lang/function.ci:23'
+.file: 'test/lang/function.ci:24'
+.doc: 'forward function invocation'
 .value: funMul(2, 6)
 }
 funMulRef(x: int32, y: int32): int32: function {
@@ -8662,10 +8669,11 @@ funMulRef(x: int32, y: int32): int32: function {
 .base: `function`
 .size: 4
 .name: 'funMulRef'
-.file: 'test/lang/function.ci:26'
+.file: 'test/lang/function.ci:27'
 .param .result: int32 (size: 4, cast: variable(i32))
 .param x: int32 (size: 4, cast: variable(i32))
 .param y: int32 (size: 4, cast: variable(i32))
+.doc: 'initialized function reference (copy address)'
 .value: funMul
 }
 funMulRefResult: int32 {
@@ -8673,7 +8681,8 @@ funMulRefResult: int32 {
 .base: `int32`
 .size: 4
 .name: 'funMulRefResult'
-.file: 'test/lang/function.ci:29'
+.file: 'test/lang/function.ci:30'
+.doc: 'function reference invocation'
 .value: funMulRef(2, 7)
 }
 funMul(x: int32, y: int32): int32: function {
@@ -8681,15 +8690,16 @@ funMul(x: int32, y: int32): int32: function {
 .base: `function`
 .size: 8
 .name: 'funMul'
-.file: 'test/lang/function.ci:32'
+.file: 'test/lang/function.ci:33'
 .param .result: int32 (size: 4, cast: variable(i32))
 .param x: int32 (size: 4, cast: variable(i32))
 .param y: int32 (size: 4, cast: variable(i32))
+.doc: 'forward function implementation'
 .value: {
 	return .result := x * y;
 }
 .instructions: (8 bytes)
-	test/lang/function.ci:33: (8 bytes): return .result := x * y;
+	test/lang/function.ci:34: (8 bytes): return .result := x * y;
 	<funMul>  : dup.x1 sp(2)
 	<funMul+?>: dup.x1 sp(2)
 	<funMul+?>: mul.i32
@@ -8701,9 +8711,10 @@ fib(n: uint32): uint32: function {
 .base: `function`
 .size: 54
 .name: 'fib'
-.file: 'test/lang/function.ci:37'
+.file: 'test/lang/function.ci:38'
 .param .result: uint32 (size: 4, cast: variable(u32))
 .param n: uint32 (size: 4, cast: variable(u32))
+.doc: 'recursive function implementation'
 .value: {
 	if (n <= (1)) {
 		return .result := n;
@@ -8711,15 +8722,15 @@ fib(n: uint32): uint32: function {
 	return .result := fib(n - (1)) + fib(n - (2));
 }
 .instructions: (54 bytes)
-	test/lang/function.ci:38: (16 bytes): if (n <= (1))
+	test/lang/function.ci:39: (16 bytes): if (n <= (1))
 	<fib>  : dup.x1 sp(1)
 	<fib+?>: load.c32 1
 	<fib+?>: cgt.u32
 	<fib+?>: jnz +8
-	test/lang/function.ci:39: (4 bytes): return .result := n;
+	test/lang/function.ci:40: (4 bytes): return .result := n;
 	<fib+?>: mov.x1 sp(2, 1)
 	<fib+?>: ret
-	test/lang/function.ci:41: (38 bytes): return .result := fib(n - (1)) + fib(n - (2));
+	test/lang/function.ci:42: (38 bytes): return .result := fib(n - (1)) + fib(n - (2));
 	<fib+?>: load.z32
 	<fib+?>: dup.x1 sp(2)
 	<fib+?>: inc.i32(-1)
@@ -8741,7 +8752,8 @@ fibonacci_13: uint32 {
 .base: `uint32`
 .size: 4
 .name: 'fibonacci_13'
-.file: 'test/lang/function.ci:45'
+.file: 'test/lang/function.ci:46'
+.doc: 'recursive function invocation'
 .value: fib(13)
 }
 sizeofVoid: int32 {
@@ -10096,7 +10108,7 @@ RecordMethodTest: typename {
 .base: `typename`
 .size: 16
 .name: 'RecordMethodTest'
-.file: 'test/lang/method.ci:3'
+.file: 'test/lang/method.ci:4'
 .field staticMethod: function (size: 39, cast: static const function)
 .field forwardMethod: function (size: 4, cast: static variable(ref))
 .field abstractMethod: function (size: 4, cast: variable(ref))
@@ -10104,24 +10116,27 @@ RecordMethodTest: typename {
 .field virtualMethod: function (size: 4, cast: const variable(ref))
 .field virtualMethod: function (size: 39, cast: static const function)
 .field forwardMethod: function (size: 39, cast: static const function)
+.doc: 'static, virtual and abstract methods'
 }
 RecordMethodTest.staticMethod(this: RecordMethodTest, x: int32): void: function {
 .kind: static const function
 .base: `function`
 .size: 39
 .name: 'staticMethod'
-.file: 'test/lang/method.ci:6'
+.file: 'test/lang/method.ci:10'
 .owner: RecordMethodTest
 .param .result: void (size: 0, cast: variable(void))
 .param this: RecordMethodTest (size: 16, cast: variable(val))
 .param x: int32 (size: 4, cast: variable(i32))
+.doc: 'static method is like a `global function` hidden in a record
+@see lang/function.ci'
 .value: {
 	trace("staticMethod", x);
 }
 .instructions: (39 bytes)
-	test/lang/method.ci:7: (38 bytes): trace("staticMethod", x);
+	test/lang/method.ci:11: (38 bytes): trace("staticMethod", x);
 	<staticMethod>  : load.ref <?> ;"test/lang/method.ci"
-	<staticMethod+?>: load.c32 7
+	<staticMethod+?>: load.c32 11
 	<staticMethod+?>: load.c32 14
 	<staticMethod+?>: load.c32 128
 	<staticMethod+?>: load.ref <?> ;"staticMethod"
@@ -10135,11 +10150,13 @@ RecordMethodTest.forwardMethod(this: RecordMethodTest, x: int32): void: function
 .base: `function`
 .size: 4
 .name: 'forwardMethod'
-.file: 'test/lang/method.ci:11'
+.file: 'test/lang/method.ci:18'
 .owner: RecordMethodTest
 .param .result: void (size: 0, cast: variable(void))
 .param this: RecordMethodTest (size: 0, cast: variable(val))
 .param x: int32 (size: 4, cast: variable(i32))
+.doc: 'static forward method is like a `forward function reference` hidden in a record
+@see lang/function.ci'
 .value: forwardMethod
 }
 RecordMethodTest.abstractMethod(this: RecordMethodTest, x: int32): void: function {
@@ -10147,22 +10164,28 @@ RecordMethodTest.abstractMethod(this: RecordMethodTest, x: int32): void: functio
 .base: `function`
 .size: 4
 .name: 'abstractMethod'
-.file: 'test/lang/method.ci:15'
+.file: 'test/lang/method.ci:25'
 .owner: RecordMethodTest
 .param .result: void (size: 0, cast: variable(void))
 .param this: RecordMethodTest (size: 0, cast: variable(val))
 .param x: int32 (size: 4, cast: variable(i32))
+.doc: 'abstract methods must be overridden when inheriting or instantiating
+the compiler sees it as a `constant function reference` without `default type initializer`
+@see lang/member.ci'
 }
 RecordMethodTest.delegateMethod(this: RecordMethodTest, x: int32): void: function {
 .kind: variable(ref)
 .base: `function`
 .size: 4
 .name: 'delegateMethod'
-.file: 'test/lang/method.ci:19'
+.file: 'test/lang/method.ci:32'
 .owner: RecordMethodTest
 .param .result: void (size: 0, cast: variable(void))
 .param this: RecordMethodTest (size: 0, cast: variable(val))
 .param x: int32 (size: 4, cast: variable(i32))
+.doc: 'virtual method (use to delegate)
+the compiler sees it as a `constant function reference` with `default field initializer`
+@see lang/member.ci'
 .value: forwardMethod
 }
 RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void: function {
@@ -10170,11 +10193,15 @@ RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void: function
 .base: `function`
 .size: 4
 .name: 'virtualMethod'
-.file: 'test/lang/method.ci:25'
+.file: 'test/lang/method.ci:40'
 .owner: RecordMethodTest
 .param .result: void (size: 0, cast: variable(void))
 .param this: RecordMethodTest (size: 16, cast: variable(val))
 .param x: int32 (size: 4, cast: variable(i32))
+.doc: 'virtual methods can be overridden when inheriting or instantiating
+the compiler will generate a static function and an instance member initialized with the static method
+  * static void virtualMethod(...) { ... }
+  * void virtualMethod(...) = [static] virtualMethod;'
 .value: virtualMethod
 }
 RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void: function {
@@ -10182,18 +10209,22 @@ RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void: function
 .base: `function`
 .size: 39
 .name: 'virtualMethod'
-.file: 'test/lang/method.ci:25'
+.file: 'test/lang/method.ci:40'
 .owner: RecordMethodTest
 .param .result: void (size: 0, cast: variable(void))
 .param this: RecordMethodTest (size: 16, cast: variable(val))
 .param x: int32 (size: 4, cast: variable(i32))
+.doc: 'virtual methods can be overridden when inheriting or instantiating
+the compiler will generate a static function and an instance member initialized with the static method
+  * static void virtualMethod(...) { ... }
+  * void virtualMethod(...) = [static] virtualMethod;'
 .value: {
 	trace("virtualMethod", x);
 }
 .instructions: (39 bytes)
-	test/lang/method.ci:26: (38 bytes): trace("virtualMethod", x);
+	test/lang/method.ci:41: (38 bytes): trace("virtualMethod", x);
 	<virtualMethod>  : load.ref <?> ;"test/lang/method.ci"
-	<virtualMethod+?>: load.c32 26
+	<virtualMethod+?>: load.c32 41
 	<virtualMethod+?>: load.c32 14
 	<virtualMethod+?>: load.c32 128
 	<virtualMethod+?>: load.ref <?> ;"virtualMethod"
@@ -10207,18 +10238,19 @@ RecordMethodTest.forwardMethod(this: RecordMethodTest, x: int32): void: function
 .base: `function`
 .size: 39
 .name: 'forwardMethod'
-.file: 'test/lang/method.ci:30'
+.file: 'test/lang/method.ci:47'
 .owner: RecordMethodTest
 .param .result: void (size: 0, cast: variable(void))
 .param this: RecordMethodTest (size: 16, cast: variable(val))
 .param x: int32 (size: 4, cast: variable(i32))
+.doc: 'static forward method implementation'
 .value: {
 	trace("forwardMethod", x);
 }
 .instructions: (39 bytes)
-	test/lang/method.ci:31: (38 bytes): trace("forwardMethod", x);
+	test/lang/method.ci:48: (38 bytes): trace("forwardMethod", x);
 	<forwardMethod>  : load.ref <?> ;"test/lang/method.ci"
-	<forwardMethod+?>: load.c32 31
+	<forwardMethod+?>: load.c32 48
 	<forwardMethod+?>: load.c32 14
 	<forwardMethod+?>: load.c32 128
 	<forwardMethod+?>: load.ref <?> ;"forwardMethod"
@@ -10232,7 +10264,7 @@ globalFunction(this: RecordMethodTest, x: int32): void: function {
 .base: `function`
 .size: 39
 .name: 'globalFunction'
-.file: 'test/lang/method.ci:40'
+.file: 'test/lang/method.ci:57'
 .param .result: void (size: 0, cast: variable(void))
 .param this: RecordMethodTest (size: 16, cast: variable(val))
 .param x: int32 (size: 4, cast: variable(i32))
@@ -10240,9 +10272,9 @@ globalFunction(this: RecordMethodTest, x: int32): void: function {
 	trace("globalFunction", x);
 }
 .instructions: (39 bytes)
-	test/lang/method.ci:41: (38 bytes): trace("globalFunction", x);
+	test/lang/method.ci:58: (38 bytes): trace("globalFunction", x);
 	<globalFunction>  : load.ref <?> ;"test/lang/method.ci"
-	<globalFunction+?>: load.c32 41
+	<globalFunction+?>: load.c32 58
 	<globalFunction+?>: load.c32 14
 	<globalFunction+?>: load.c32 128
 	<globalFunction+?>: load.ref <?> ;"globalFunction"
@@ -10256,7 +10288,8 @@ recordMethodTest: RecordMethodTest {
 .base: `RecordMethodTest`
 .size: 16
 .name: 'recordMethodTest'
-.file: 'test/lang/method.ci:44'
+.file: 'test/lang/method.ci:62'
+.doc: 'create an instance of the type '
 .value: {
 	recordMethodTest.abstractMethod := globalFunction;
 	recordMethodTest.delegateMethod := forwardMethod;
@@ -10268,10 +10301,11 @@ staticMethod(this: RecordMethodTest, x: int32): void: function {
 .base: `function`
 .size: 66
 .name: 'staticMethod'
-.file: 'test/lang/method.ci:62'
+.file: 'test/lang/method.ci:84'
 .param .result: void (size: 0, cast: variable(void))
 .param this: RecordMethodTest (size: 16, cast: variable(val))
 .param x: int32 (size: 4, cast: variable(i32))
+.doc: 'extension function is defined, it has the highest priority.'
 .value: {
 	debug("extension.staticMethod");
 	if ((this) != null) {
@@ -10279,21 +10313,21 @@ staticMethod(this: RecordMethodTest, x: int32): void: function {
 	}
 }
 .instructions: (66 bytes)
-	test/lang/method.ci:63: (35 bytes): debug("extension.staticMethod");
+	test/lang/method.ci:85: (35 bytes): debug("extension.staticMethod");
 	<staticMethod>  : load.ref <?> ;"test/lang/method.ci"
-	<staticMethod+?>: load.c32 63
+	<staticMethod+?>: load.c32 85
 	<staticMethod+?>: load.c32 14
 	<staticMethod+?>: load.z32
 	<staticMethod+?>: load.ref <?> ;"extension.staticMethod"
 	<staticMethod+?>: load.ref <?> ;pointer
 	<staticMethod+?>: load.ref <?> ;null
 	<staticMethod+?>: nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/lang/method.ci:64: (30 bytes): if ((this) != null)
+	test/lang/method.ci:86: (30 bytes): if ((this) != null)
 	<staticMethod+?>: load.sp(+8)
 	<staticMethod+?>: load.ref <?> ;null
 	<staticMethod+?>: ceq.i32
 	<staticMethod+?>: jnz +20
-	test/lang/method.ci:65: (16 bytes): RecordMethodTest.staticMethod(this, x);
+	test/lang/method.ci:87: (16 bytes): RecordMethodTest.staticMethod(this, x);
 	<staticMethod+?>: dup.x4 sp(2)
 	<staticMethod+?>: dup.x1 sp(5)
 	<staticMethod+?>: set.x1 sp(4)
@@ -10307,7 +10341,7 @@ virtualMethod(this: RecordMethodTest, x: int32): void: function {
 .base: `function`
 .size: 63
 .name: 'virtualMethod'
-.file: 'test/lang/method.ci:68'
+.file: 'test/lang/method.ci:90'
 .param .result: void (size: 0, cast: variable(void))
 .param this: RecordMethodTest (size: 16, cast: variable(val))
 .param x: int32 (size: 4, cast: variable(i32))
@@ -10318,21 +10352,21 @@ virtualMethod(this: RecordMethodTest, x: int32): void: function {
 	}
 }
 .instructions: (63 bytes)
-	test/lang/method.ci:69: (35 bytes): debug("extension.virtualMethod");
+	test/lang/method.ci:91: (35 bytes): debug("extension.virtualMethod");
 	<virtualMethod>  : load.ref <?> ;"test/lang/method.ci"
-	<virtualMethod+?>: load.c32 69
+	<virtualMethod+?>: load.c32 91
 	<virtualMethod+?>: load.c32 14
 	<virtualMethod+?>: load.z32
 	<virtualMethod+?>: load.ref <?> ;"extension.virtualMethod"
 	<virtualMethod+?>: load.ref <?> ;pointer
 	<virtualMethod+?>: load.ref <?> ;null
 	<virtualMethod+?>: nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/lang/method.ci:70: (27 bytes): if ((this) != null)
+	test/lang/method.ci:92: (27 bytes): if ((this) != null)
 	<virtualMethod+?>: load.sp(+8)
 	<virtualMethod+?>: load.ref <?> ;null
 	<virtualMethod+?>: ceq.i32
 	<virtualMethod+?>: jnz +17
-	test/lang/method.ci:71: (13 bytes): this.virtualMethod(this, x);
+	test/lang/method.ci:93: (13 bytes): this.virtualMethod(this, x);
 	<virtualMethod+?>: dup.x4 sp(2)
 	<virtualMethod+?>: dup.x1 sp(5)
 	<virtualMethod+?>: set.x1 sp(4)
@@ -16064,7 +16098,7 @@ testMathAbsMod_f32_8d: float32 {
 	test/lang/member.ci:50: (9 bytes): globalConstantRec.constant := 7;
 	<.main+?>: load.c32 7
 	<.main+?>: store.m32 <?> ;RecordMemberTest.globalConstantRec+4
-	test/lang/method.ci:11: (9 bytes): static forwardMethod(this: RecordMethodTest, x: int32): void := forwardMethod
+	test/lang/method.ci:18: (9 bytes): static forwardMethod(this: RecordMethodTest, x: int32): void := forwardMethod
 	<.main+?>: load.ref <?> ;RecordMethodTest.forwardMethod(this: RecordMethodTest, x: int32): void
 	<.main+?>: store.m32 <?> ;RecordMethodTest.forwardMethod(this: RecordMethodTest, x: int32): void
 	test/lang/emit.ci:3: (1 byte): emitldz32: int32 := emit(load.z32)
@@ -17029,41 +17063,41 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: dup.x1 sp(65)
 	test/lang/initByRef.ci:108: (2 bytes): copyVarFloat64: pointer := varFloat64
 	<.main+?>: dup.x1 sp(35)
-	test/lang/function.ci:11: (21 bytes): funAddResult: int32 := funAdd(2, 7)
+	test/lang/function.ci:12: (21 bytes): funAddResult: int32 := funAdd(2, 7)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 2
 	<.main+?>: load.c32 7
 	<.main+?>: load.ref <?> ;funAdd(x: int32, y: int32): int32
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/lang/function.ci:14: (5 bytes): funAddRef(x: int32, y: int32): int32 := funAdd
+	test/lang/function.ci:15: (5 bytes): funAddRef(x: int32, y: int32): int32 := funAdd
 	<.main+?>: load.ref <?> ;funAdd(x: int32, y: int32): int32
-	test/lang/function.ci:17: (18 bytes): funAddRefResult: int32 := funAddRef(2, 8)
+	test/lang/function.ci:18: (18 bytes): funAddRefResult: int32 := funAddRef(2, 8)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 2
 	<.main+?>: load.c32 8
 	<.main+?>: dup.x1 sp(3)
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/lang/function.ci:20: (5 bytes): funMul(x: int32, y: int32): int32 := funMul
+	test/lang/function.ci:21: (5 bytes): funMul(x: int32, y: int32): int32 := funMul
 	<.main+?>: load.ref <?> ;funMul(x: int32, y: int32): int32
-	test/lang/function.ci:23: (18 bytes): funMulResult: int32 := funMul(2, 6)
+	test/lang/function.ci:24: (18 bytes): funMulResult: int32 := funMul(2, 6)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 2
 	<.main+?>: load.c32 6
 	<.main+?>: dup.x1 sp(3)
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/lang/function.ci:26: (2 bytes): funMulRef(x: int32, y: int32): int32 := funMul
+	test/lang/function.ci:27: (2 bytes): funMulRef(x: int32, y: int32): int32 := funMul
 	<.main+?>: dup.x1 sp(1)
-	test/lang/function.ci:29: (18 bytes): funMulRefResult: int32 := funMulRef(2, 7)
+	test/lang/function.ci:30: (18 bytes): funMulRefResult: int32 := funMulRef(2, 7)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 2
 	<.main+?>: load.c32 7
 	<.main+?>: dup.x1 sp(3)
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/lang/function.ci:45: (16 bytes): fibonacci_13: uint32 := fib(13)
+	test/lang/function.ci:46: (16 bytes): fibonacci_13: uint32 := fib(13)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 13
 	<.main+?>: load.ref <?> ;fib(n: uint32): uint32
@@ -18014,9 +18048,9 @@ testMathAbsMod_f32_8d: float32 {
 	test/lang/member.ci:66: (7 bytes): recordMemberTest.constantRec.constant := 17;
 	<.main+?>: load.c32 17
 	<.main+?>: set.x1 sp(8)
-	test/lang/method.ci:44: (24 bytes): recordMethodTest: RecordMethodTest := {...}
+	test/lang/method.ci:62: (24 bytes): recordMethodTest: RecordMethodTest := {...}
 	<.main+?>: inc.sp(+16)
-	test/lang/method.ci:46: (7 bytes): recordMethodTest.abstractMethod := globalFunction;
+	test/lang/method.ci:64: (7 bytes): recordMethodTest.abstractMethod := globalFunction;
 	<.main+?>: load.ref <?> ;globalFunction(this: RecordMethodTest, x: int32): void
 	<.main+?>: set.x1 sp(1)
 	:: (6 bytes): recordMethodTest.delegateMethod := forwardMethod
@@ -18025,47 +18059,47 @@ testMathAbsMod_f32_8d: float32 {
 	:: (7 bytes): recordMethodTest.virtualMethod := virtualMethod
 	<.main+?>: load.ref <?> ;RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void
 	<.main+?>: set.x1 sp(3)
-	test/lang/method.ci:58: (19 bytes): recordMethodTest.staticMethod(recordMethodTest, 1);
+	test/lang/method.ci:78: (19 bytes): recordMethodTest.staticMethod(recordMethodTest, 1);
 	<.main+?>: dup.x4 sp(0)
 	<.main+?>: load.c32 1
 	<.main+?>: set.x1 sp(4)
 	<.main+?>: load.ref <?> ;RecordMethodTest.staticMethod(this: RecordMethodTest, x: int32): void
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/lang/method.ci:59: (16 bytes): recordMethodTest.virtualMethod(recordMethodTest, 1);
+	test/lang/method.ci:79: (16 bytes): recordMethodTest.virtualMethod(recordMethodTest, 1);
 	<.main+?>: dup.x4 sp(0)
 	<.main+?>: load.c32 1
 	<.main+?>: set.x1 sp(4)
 	<.main+?>: dup.x1 sp(6)
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/lang/method.ci:75: (17 bytes): staticMethod(recordMethodTest, 2);
+	test/lang/method.ci:97: (17 bytes): staticMethod(recordMethodTest, 2);
 	<.main+?>: dup.x4 sp(0)
 	<.main+?>: load.c32 2
 	<.main+?>: load.ref <?> ;staticMethod(this: RecordMethodTest, x: int32): void
 	<.main+?>: call
 	<.main+?>: inc.sp(-20)
-	test/lang/method.ci:76: (17 bytes): virtualMethod(recordMethodTest, 2);
+	test/lang/method.ci:98: (17 bytes): virtualMethod(recordMethodTest, 2);
 	<.main+?>: dup.x4 sp(0)
 	<.main+?>: load.c32 2
 	<.main+?>: load.ref <?> ;virtualMethod(this: RecordMethodTest, x: int32): void
 	<.main+?>: call
 	<.main+?>: inc.sp(-20)
-	test/lang/method.ci:79: (19 bytes): RecordMethodTest.staticMethod(recordMethodTest, 3);
+	test/lang/method.ci:101: (19 bytes): RecordMethodTest.staticMethod(recordMethodTest, 3);
 	<.main+?>: dup.x4 sp(0)
 	<.main+?>: load.c32 3
 	<.main+?>: set.x1 sp(4)
 	<.main+?>: load.ref <?> ;RecordMethodTest.staticMethod(this: RecordMethodTest, x: int32): void
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/lang/method.ci:80: (19 bytes): RecordMethodTest.virtualMethod(recordMethodTest, 3);
+	test/lang/method.ci:102: (19 bytes): RecordMethodTest.virtualMethod(recordMethodTest, 3);
 	<.main+?>: dup.x4 sp(0)
 	<.main+?>: load.c32 3
 	<.main+?>: set.x1 sp(4)
 	<.main+?>: load.ref <?> ;RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/lang/method.ci:81: (16 bytes): recordMethodTest.virtualMethod(recordMethodTest, 3);
+	test/lang/method.ci:103: (16 bytes): recordMethodTest.virtualMethod(recordMethodTest, 3);
 	<.main+?>: dup.x4 sp(0)
 	<.main+?>: load.c32 3
 	<.main+?>: set.x1 sp(4)
@@ -20268,62 +20302,62 @@ test/lang/array.ci:87: debug: string as variant: char[*]("string")
 test/lang/array.ci:88: debug: string to variant: char[*]("string")
 test/lang/array.ci:91: debug: string as variant: char[]([0] {})
 test/lang/array.ci:92: debug: string to variant: char[]([0] {})
-test/lang/method.ci:7: debug: staticMethod: int32(1)
-	test/lang/method.ci:58: staticMethod(this: {
+test/lang/method.ci:11: debug: staticMethod: int32(1)
+	test/lang/method.ci:78: staticMethod(this: {
 		abstractMethod: <globalFunction>,
 		delegateMethod: <RecordMethodTest.forwardMethod>,
 		virtualMethod: <RecordMethodTest.virtualMethod>
 	}, x: 1)
 	native.code:: .main
-test/lang/method.ci:26: debug: virtualMethod: int32(1)
-	test/lang/method.ci:59: virtualMethod(this: {
+test/lang/method.ci:41: debug: virtualMethod: int32(1)
+	test/lang/method.ci:79: virtualMethod(this: {
 		abstractMethod: <globalFunction>,
 		delegateMethod: <RecordMethodTest.forwardMethod>,
 		virtualMethod: <RecordMethodTest.virtualMethod>
 	}, x: 1)
 	native.code:: .main
-test/lang/method.ci:63: debug: extension.staticMethod
-test/lang/method.ci:7: debug: staticMethod: int32(2)
-	test/lang/method.ci:65: staticMethod(this: {
+test/lang/method.ci:85: debug: extension.staticMethod
+test/lang/method.ci:11: debug: staticMethod: int32(2)
+	test/lang/method.ci:87: staticMethod(this: {
 		abstractMethod: <globalFunction>,
 		delegateMethod: <RecordMethodTest.forwardMethod>,
 		virtualMethod: <RecordMethodTest.virtualMethod>
 	}, x: 2)
-	test/lang/method.ci:75: staticMethod(this: {
-		abstractMethod: <globalFunction>,
-		delegateMethod: <RecordMethodTest.forwardMethod>,
-		virtualMethod: <RecordMethodTest.virtualMethod>
-	}, x: 2)
-	native.code:: .main
-test/lang/method.ci:69: debug: extension.virtualMethod
-test/lang/method.ci:26: debug: virtualMethod: int32(2)
-	test/lang/method.ci:71: virtualMethod(this: {
-		abstractMethod: <globalFunction>,
-		delegateMethod: <RecordMethodTest.forwardMethod>,
-		virtualMethod: <RecordMethodTest.virtualMethod>
-	}, x: 2)
-	test/lang/method.ci:76: virtualMethod(this: {
+	test/lang/method.ci:97: staticMethod(this: {
 		abstractMethod: <globalFunction>,
 		delegateMethod: <RecordMethodTest.forwardMethod>,
 		virtualMethod: <RecordMethodTest.virtualMethod>
 	}, x: 2)
 	native.code:: .main
-test/lang/method.ci:7: debug: staticMethod: int32(3)
-	test/lang/method.ci:79: staticMethod(this: {
+test/lang/method.ci:91: debug: extension.virtualMethod
+test/lang/method.ci:41: debug: virtualMethod: int32(2)
+	test/lang/method.ci:93: virtualMethod(this: {
+		abstractMethod: <globalFunction>,
+		delegateMethod: <RecordMethodTest.forwardMethod>,
+		virtualMethod: <RecordMethodTest.virtualMethod>
+	}, x: 2)
+	test/lang/method.ci:98: virtualMethod(this: {
+		abstractMethod: <globalFunction>,
+		delegateMethod: <RecordMethodTest.forwardMethod>,
+		virtualMethod: <RecordMethodTest.virtualMethod>
+	}, x: 2)
+	native.code:: .main
+test/lang/method.ci:11: debug: staticMethod: int32(3)
+	test/lang/method.ci:101: staticMethod(this: {
 		abstractMethod: <globalFunction>,
 		delegateMethod: <RecordMethodTest.forwardMethod>,
 		virtualMethod: <RecordMethodTest.virtualMethod>
 	}, x: 3)
 	native.code:: .main
-test/lang/method.ci:26: debug: virtualMethod: int32(3)
-	test/lang/method.ci:80: virtualMethod(this: {
+test/lang/method.ci:41: debug: virtualMethod: int32(3)
+	test/lang/method.ci:102: virtualMethod(this: {
 		abstractMethod: <globalFunction>,
 		delegateMethod: <RecordMethodTest.forwardMethod>,
 		virtualMethod: <RecordMethodTest.virtualMethod>
 	}, x: 3)
 	native.code:: .main
-test/lang/method.ci:26: debug: virtualMethod: int32(3)
-	test/lang/method.ci:81: virtualMethod(this: {
+test/lang/method.ci:41: debug: virtualMethod: int32(3)
+	test/lang/method.ci:103: virtualMethod(this: {
 		abstractMethod: <globalFunction>,
 		delegateMethod: <RecordMethodTest.forwardMethod>,
 		virtualMethod: <RecordMethodTest.virtualMethod>
@@ -20400,8 +20434,8 @@ emit.min: typename(<emit.min>)
 emit.max: typename(<emit.max>)
 emit: typename(<emit>)
 System: typename(<System>)
-lib/stdlib.ci:50: NotEquals: typename(<NotEquals>)
-lib/stdlib.ci:66: assertEq: function(<assertEq>)
+lib/stdlib.ci:59: NotEquals: typename(<NotEquals>)
+lib/stdlib.ci:75: assertEq: function(<assertEq>)
 lib/std/math.ci:22: Math.modf: function(<Math.modf>)
 lib/std/math.ci:47: Math.floor: function(<Math.floor>)
 lib/std/math.ci:77: Math.abs: function(<Math.abs>)
@@ -20606,18 +20640,18 @@ test/lang/initByRef.ci:97: valueOfTyp: typename(<int64>)
 test/lang/initByRef.ci:99: typeOfValue: typename(<int64>)
 test/lang/initByRef.ci:105: copyPtrFloat64: variant(pointer: <float64>)
 test/lang/initByRef.ci:108: copyVarFloat64: pointer(<float64>)
-test/lang/function.ci:3: empty: function(<empty>)
-test/lang/function.ci:6: funAdd: function(<funAdd>)
-test/lang/function.ci:11: funAddResult: int32(9)
-test/lang/function.ci:14: funAddRef: function(<funAdd>)
-test/lang/function.ci:17: funAddRefResult: int32(10)
-test/lang/function.ci:20: funMul: function(<funMul>)
-test/lang/function.ci:23: funMulResult: int32(12)
-test/lang/function.ci:26: funMulRef: function(<funMul>)
-test/lang/function.ci:29: funMulRefResult: int32(14)
-test/lang/function.ci:32: funMul: function(<funMul>)
-test/lang/function.ci:37: fib: function(<fib>)
-test/lang/function.ci:45: fibonacci_13: uint32(233)
+test/lang/function.ci:4: empty: function(<empty>)
+test/lang/function.ci:7: funAdd: function(<funAdd>)
+test/lang/function.ci:12: funAddResult: int32(9)
+test/lang/function.ci:15: funAddRef: function(<funAdd>)
+test/lang/function.ci:18: funAddRefResult: int32(10)
+test/lang/function.ci:21: funMul: function(<funMul>)
+test/lang/function.ci:24: funMulResult: int32(12)
+test/lang/function.ci:27: funMulRef: function(<funMul>)
+test/lang/function.ci:30: funMulRefResult: int32(14)
+test/lang/function.ci:33: funMul: function(<funMul>)
+test/lang/function.ci:38: fib: function(<fib>)
+test/lang/function.ci:46: fibonacci_13: uint32(233)
 test/lang/reflect.ci:3: sizeofVoid: int32(0)
 test/lang/reflect.ci:4: sizeofBool: int32(1)
 test/lang/reflect.ci:5: sizeofChar: int32(1)
@@ -20640,13 +20674,13 @@ test/lang/reflect.ci:22: RecordSizeof: typename(<RecordSizeof>)
 test/lang/reflect.ci:26: RecordSizeofExt: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:30: typeofRecord: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:31: nameOfRecord: char[*]("RecordSizeofExt")
-test/lang/reflect.ci:32: offsetOfRecord: int32(225088)
+test/lang/reflect.ci:32: offsetOfRecord: int32(225464)
 test/lang/reflect.ci:33: sizeOfRecord: int32(16)
 test/lang/reflect.ci:34: fileOfRecord: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:35: lineOfRecord: int32(26)
 test/lang/reflect.ci:37: typeofBase: typename(<RecordSizeof>)
 test/lang/reflect.ci:38: nameOfBase: char[*]("RecordSizeof")
-test/lang/reflect.ci:39: offsetOfBase: int32(224784)
+test/lang/reflect.ci:39: offsetOfBase: int32(225160)
 test/lang/reflect.ci:40: sizeOfBase: int32(12)
 test/lang/reflect.ci:41: fileOfBase: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:42: lineOfBase: int32(22)
@@ -20770,19 +20804,19 @@ test/lang/member.ci:53: recordMemberTest: RecordMemberTest({
 		constant: 17
 	}
 })
-test/lang/method.ci:6: RecordMethodTest.staticMethod: function(<RecordMethodTest.staticMethod>)
-test/lang/method.ci:11: RecordMethodTest.forwardMethod: function(<RecordMethodTest.forwardMethod>)
-test/lang/method.ci:25: RecordMethodTest.virtualMethod: function(<RecordMethodTest.virtualMethod>)
-test/lang/method.ci:30: RecordMethodTest.forwardMethod: function(<RecordMethodTest.forwardMethod>)
-test/lang/method.ci:3: RecordMethodTest: typename(<RecordMethodTest>)
-test/lang/method.ci:40: globalFunction: function(<globalFunction>)
-test/lang/method.ci:44: recordMethodTest: RecordMethodTest({
+test/lang/method.ci:10: RecordMethodTest.staticMethod: function(<RecordMethodTest.staticMethod>)
+test/lang/method.ci:18: RecordMethodTest.forwardMethod: function(<RecordMethodTest.forwardMethod>)
+test/lang/method.ci:40: RecordMethodTest.virtualMethod: function(<RecordMethodTest.virtualMethod>)
+test/lang/method.ci:47: RecordMethodTest.forwardMethod: function(<RecordMethodTest.forwardMethod>)
+test/lang/method.ci:4: RecordMethodTest: typename(<RecordMethodTest>)
+test/lang/method.ci:57: globalFunction: function(<globalFunction>)
+test/lang/method.ci:62: recordMethodTest: RecordMethodTest({
 	abstractMethod: <globalFunction>,
 	delegateMethod: <RecordMethodTest.forwardMethod>,
 	virtualMethod: <RecordMethodTest.virtualMethod>
 })
-test/lang/method.ci:62: staticMethod: function(<staticMethod>)
-test/lang/method.ci:68: virtualMethod: function(<virtualMethod>)
+test/lang/method.ci:84: staticMethod: function(<staticMethod>)
+test/lang/method.ci:90: virtualMethod: function(<virtualMethod>)
 test/lang/recUnion.ci:2: rgbF32: typename(<rgbF32>)
 test/lang/recUnion.ci:9: rgbU8: typename(<rgbU8>)
 test/lang/recUnion.ci:16: color: typename(<color>)
@@ -21151,16 +21185,16 @@ test/stdc/test.math.ci:96: testMathAbsMod_f32_8d: float32(8.000000)
 
 ---------- Memory usage:
 memory[all] @000000; size: 2096872(2.0 Mb)
-memory[used] @000000; size: 342635(334.6 Kb)
-memory[heap] @053a6b; size: 1229971(1.2 Mb)
+memory[used] @000000; size: 344035(336.0 Kb)
+memory[heap] @053fe3; size: 1228571(1.2 Mb)
 memory[stack] @0fff44; size: 524218(511.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 326808(319.1 Kb)
+memory[meta] @000000; size: 328208(320.5 Kb)
 memory[code] @000000; size: 15489(15.1 Kb)
 memory[data] @000000; size: 80(80.0 bytes)
 
 ---------- heap memory:
-memory[free] @053a88; size: 1229920(1.2 Mb)
+memory[free] @053ff8; size: 1228528(1.2 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

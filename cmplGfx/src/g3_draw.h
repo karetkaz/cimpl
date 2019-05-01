@@ -74,8 +74,8 @@ typedef struct gx_Mesh {
 
 	size_t maxvtx, vtxcnt;	// vertices
 	size_t maxtri, tricnt;	// triangles
-	size_t maxseg, segcnt;	// segments
-	//size_t maxgrp, grpcnt;	// grouping
+	size_t maxseg, segcnt;	// polygons
+	//size_t maxgrp, grpcnt;	// groups
 	struct vector *pos;		// (x, y, z, 1) position
 	struct vector *nrm;		// (x, y, z, 0) normal
 	struct texcol *tex;		// (s, t, 0, 0) texture|color
@@ -92,7 +92,7 @@ typedef struct gx_Mesh {
 	} *segptr;
 	/* groups
 	struct grp {			// group list
-		signed t1;			// first triangle in triptr
+		signed t1;			// first triangle
 		signed t2;			// last triangle
 		signed parent;		// parent group of group
 		matrix transform;	// transformation matrix

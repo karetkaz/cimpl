@@ -1,0 +1,86 @@
+// star field
+struct Star {
+	static double speed = 1;
+	double xpos;
+	double ypos;
+	double zpos;
+}
+
+static Star stars[1024];
+
+static const int resolutionx = 1440;
+static const int resolutiony = 900;
+static int centerx = resolutionx / 2;
+static int centery = resolutiony / 2;
+
+void initStar(Star star&) {
+	//~ randomly init stars, generate them around the center of the screen
+	star.xpos = System.rand() / double(RAND_MAX) * 2 * resolutionx - resolutionx;
+	star.ypos = System.rand() / double(RAND_MAX) * 2 * resolutiony - resolutiony;
+	star.zpos = 300;
+}
+
+void drawStars(gxSurf offScreen) {
+
+	double tempx;
+	double tempy;
+
+	//~ clear the screen
+	offScreen.fill(0);
+
+	//~ move and draw stars
+	for (int i = 0; i < stars.length; i += 1) {
+
+		stars[i].zpos -= Star.speed;
+
+		if (stars[i].zpos <= 0) {
+			initStar(stars[i]);
+		}
+
+		//~ compute 3D positions
+		tempx = centerx + resolutionx * stars[i].xpos / stars[i].zpos;
+		tempy = centery + resolutiony * stars[i].ypos / stars[i].zpos;
+
+		//~ check if a star leaves the screen
+		if (tempx < 0 || tempx >= resolutionx || tempy < 0 || tempy >= resolutiony) {
+			initStar(stars[i]);
+			continue;
+		}
+
+		const int ps = Math.max(int32(0x200 / stars[i].zpos), 2);
+		offScreen.fillOval(tempx, tempy, tempx + ps, tempy + ps, 0xffffff);
+	}
+
+}
+
+static gxSurf image = gxSurf(resolutionx, resolutiony, 32);
+static int onEvent(pointer closure, int action, int btn, int x, int y) {
+
+	if (action == Gui.KEY_PRESS) {
+		if (btn == 27) {
+			return -1;
+		}
+		if (btn == '[') {
+			Star.speed -= 1;
+		}
+		if (btn == ']') {
+			Star.speed += 1;
+		}
+	}
+
+	if (action == Gui.MOUSE_PRESS) {
+		if (btn == 1) {
+			centerx = x;
+			centery = y;
+		}
+	}
+
+	drawStars(image);
+	return 20;
+}
+for (int i = 0; i < stars.length; i += 1) {
+	initStar(stars[i]);
+}
+
+Gui.showWindow(image, null, onEvent);
+image.destroy();

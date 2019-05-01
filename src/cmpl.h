@@ -121,9 +121,6 @@ struct rtContextRec {
 	unsigned foldInstr: 1;  // replace some instructions with a faster or shorter version (load 1, add => inc 1)
 	unsigned fastMemory: 1; // fast memory access: use dup, set, load and store instructions instead of `load address` + `load indirect`.
 	unsigned fastAssign: 1; // remove dup and set instructions when modifying the last declared variable.
-	unsigned genGlobals: 1; // generate global variables as static variables
-	unsigned genDocs: 1;    // generate documentation
-
 	unsigned logLevel: 4;   // runtime logging level (0-15)
 	unsigned traceLevel: 8; // runtime backtrace level (0-255)
 	unsigned closeLog: 1;   // close log file

@@ -5,6 +5,7 @@
 #define CMPL_PLATFORM_H
 
 #include "internal.h"
+#include <unistd.h>
 
 // mingw || gcc || emcc
 #if defined(__GNUC__) || defined(__EMSCRIPTEN__)
@@ -60,10 +61,46 @@ void closeLibs(rtContext rt) {
 
 #ifdef __NO_REALPATH
 // use a fake path to make the tests work.
-char *absolutePath(char *path, char *buff, size_t size) {
+char *absolutePath(const char *path, char *buff, size_t size) {
 	strncpy(buff, path, size - 2);
 	return buff;
 }
 #endif //__NO_REALPATH
+
+
+char *relativeToCWD(const char *path) {
+	static char *CWD = NULL;
+	if (CWD == NULL) {
+		// lazy init on first call
+		CWD = getcwd(NULL, 0);
+		if (CWD == NULL) {
+			CWD = "";
+		}
+		for (char *ptr = CWD; *ptr; ++ptr) {
+			// convert windows path names to uri
+			if (*ptr == '\\') {
+				*ptr = '/';
+			}
+		}
+	}
+
+	for (int i = 0; path[i] != 0; ++i) {
+		if (path[i] == 0) {
+			// use absolute path
+			break;
+		}
+		if (CWD[i] == 0) {
+			if (path[i] == '/') {
+				// use relative path
+				return (char *) path + i + 1;
+			}
+			break;
+		}
+		if (path[i] != CWD[i]) {
+			break;
+		}
+	}
+	return (char*) path;
+}
 
 #endif //CMPL_PLATFORM_H

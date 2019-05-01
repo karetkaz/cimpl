@@ -1,32 +1,49 @@
-// static, virtual and abstract methods
-
+/**
+ * static, virtual and abstract methods
+ */
 struct RecordMethodTest {
 
-	// static method is like a `global function` hidden in a record
+	/**
+	 * static method is like a `global function` hidden in a record
+	 * @see lang/function.ci
+	 */
 	static void staticMethod(RecordMethodTest this, int x) {
 		trace("staticMethod", x);
 	}
 
-	// static forward method is like a `forward function reference` hidden in a record
+	/**
+	 * static forward method is like a `forward function reference` hidden in a record
+	 * @see lang/function.ci
+	 */
 	static void forwardMethod(RecordMethodTest this, int x);
 
-	// abstract methods must be overridden when inheriting or instantiating
-	// see @lang.member.ci: the compiler sees it as a `constant function reference` without `default type initializer`
+	/**
+	 * abstract methods must be overridden when inheriting or instantiating
+	 * the compiler sees it as a `constant function reference` without `default type initializer`
+	 * @see lang/member.ci
+	 */
 	void abstractMethod(RecordMethodTest this, int x);
 
-	// virtual method (use to delegate)
-	// see @lang.member.ci: the compiler sees it as a `constant function reference` with `default field initializer`
+	/**
+	 * virtual method (use to delegate)
+	 * the compiler sees it as a `constant function reference` with `default field initializer`
+	 * @see lang/member.ci
+	 */
 	void delegateMethod(RecordMethodTest this, int x) = forwardMethod;
 
-	// virtual methods can be overridden when inheriting or instantiating
-	// the compiler will generate a static function and instance member:
-	//   1. static virtualMethod(...) { ... }
-	//   2. virtualMethod(...) = /*static*/ virtualMethod;
+	/**
+	 * virtual methods can be overridden when inheriting or instantiating
+	 * the compiler will generate a static function and an instance member initialized with the static method
+	 *   * static void virtualMethod(...) { ... }
+	 *   * void virtualMethod(...) = [static] virtualMethod;
+	 */
 	void virtualMethod(RecordMethodTest this, int x) {
 		trace("virtualMethod", x);
 	}
 
-	// static forward method implementation
+	/**
+	 * static forward method implementation
+	 */
 	static void forwardMethod(RecordMethodTest this, int x) {
 		trace("forwardMethod", x);
 	}
@@ -41,6 +58,7 @@ void globalFunction(RecordMethodTest this, int x) {
 	trace("globalFunction", x);
 }
 
+/** create an instance of the type */
 RecordMethodTest recordMethodTest = {
 	// abstract method must be overridden
 	abstractMethod: globalFunction;                             // ok: global function
@@ -54,11 +72,15 @@ RecordMethodTest recordMethodTest = {
 };
 
 
-// extension function is not yet defined, lookup the best match defined in the type.
+/**
+ * extension function is not yet defined, lookup the best match defined in the type.
+ */
 recordMethodTest.staticMethod(1);                               // => RecordMethodTest.staticMethod(recordMethodTest, 1);
 recordMethodTest.virtualMethod(1);                              // => recordMethodTest.virtualMethod(recordMethodTest, 1);
 
-// extension function is defined, it has the highest priority.
+/**
+ * extension function is defined, it has the highest priority.
+ */
 void staticMethod(RecordMethodTest this, int x) {
 	debug("extension.staticMethod");
 	if (this != null) {

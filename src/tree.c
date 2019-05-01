@@ -799,7 +799,7 @@ int isTypeExpr(astn ast) {
 	return 0;
 }
 
-int isConstVar(astn ast) {
+static int isConstAst(astn ast, int varOnly) {
 	if (ast == NULL) {
 		return 0;
 	}
@@ -809,14 +809,31 @@ int isConstVar(astn ast) {
 			break;
 
 		case OPER_idx:
-			return isConstVar(ast->op.lhso);
+			return isConstAst(ast->op.lhso, 0);
 
 		case OPER_dot:
-			return isConstVar(ast->op.rhso) || isConstVar(ast->op.lhso);
+			return isConstAst(ast->op.rhso, 0) || isConstAst(ast->op.lhso, 1);
 
 		case TOKEN_var:
-			return ast->ref.link && isConst(ast->ref.link);
+			if (ast->ref.link != NULL) {
+				symn link = ast->ref.link;
+				switch (link->kind & MASK_kind) {
+					case KIND_def:
+					case KIND_typ:
+					case KIND_fun:
+						if (varOnly) {
+							break;
+						}
+						// fall through
+					case KIND_var:
+						return isConst(link);
+				}
+			}
+			break;
 	}
 
 	return 0;
+}
+int isConstVar(astn ast) {
+	return isConstAst(ast, 0);
 }

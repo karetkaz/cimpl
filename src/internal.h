@@ -62,64 +62,66 @@ typedef struct libc {
 
 /// Compiler context
 struct ccContextRec {
-	rtContext	rt;
-	astn	root;		// statements
-	symn	owner;		// scope variables and functions
-	symn	scope;		// scope variables and functions
-	symn	global;		// global variables and functions
-	list	native;		// list of native functions
+	rtContext rt;
+	astn root;                      // statements
+	symn owner;                     // scope variables and functions
+	symn scope;                     // scope variables and functions
+	symn global;                    // global variables and functions
+	list native;                    // list of native functions
+	astn jumps;                     // list of break and continue statements to fix
 
-	// lists and tables
-	astn	jumps;		// list of break and continue statements to fix
-	list	strt[hashTableSize];		// string hash table
-	symn	deft[hashTableSize];		// symbol hash stack
-
-	int		nest;		// nest level: modified by (enter/leave)
-	int		siff:1;		// TODO: remove: inside a static if false
-
-	// Parser
-	char*	unit;		// unit file name
-	char*	file;		// current file name
-	int		line;		// current line number
+	int nest;                       // nest level: modified by (enter/leave)
+	int siff:1;                     // TODO: remove: inside a static if false
+	int genDocs: 1;                 // generate documentation
+	int genGlobals: 1;              // generate global variables as static variables
+	int genPrivate: 1;              // raise error accessing private data
+	int genUninitialized: 1;        // raise error for uninitialized variables
 
 	// Lexer
-	astn	tokPool;		// list of recycled tokens
-	astn	tokNext;		// next token: look-ahead
+	list strt[hashTableSize];       // string table (hash)
+	astn tokPool;                   // list of recycled tokens
+	astn tokNext;                   // next token: look-ahead
+
+	// Parser
+	symn deft[hashTableSize];       // symbol stack (hash)
+	char *unit;                     // unit file name
+	char *file;                     // current file name
+	int line;                       // current line number
 
 	// Type cache
-	symn	type_vid;		// void
-	symn	type_bol;		// boolean
-	symn	type_chr;		// character
-	symn	type_i08;		//  8bit signed integer
-	symn	type_i16;		// 16bit signed integer
-	symn	type_i32;		// 32bit signed integer
-	symn	type_i64;		// 64bit signed integer
-	symn	type_u08;		//  8bit unsigned integer
-	symn	type_u16;		// 16bit unsigned integer
-	symn	type_u32;		// 32bit unsigned integer
-	symn	type_u64;		// 64bit unsigned integer
-	symn	type_f32;		// 32bit floating point
-	symn	type_f64;		// 64bit floating point
-	symn	type_ptr;		// pointer
-	symn	type_var;		// variant
-	symn	type_rec;		// typename
-	symn	type_fun;		// function
-	symn	type_obj;		// object
-	symn	type_str;		// string
+	symn type_vid;        // void
+	symn type_bol;        // boolean
+	symn type_chr;        // character
+	symn type_i08;        //  8bit signed integer
+	symn type_i16;        // 16bit signed integer
+	symn type_i32;        // 32bit signed integer
+	symn type_i64;        // 64bit signed integer
+	symn type_u08;        //  8bit unsigned integer
+	symn type_u16;        // 16bit unsigned integer
+	symn type_u32;        // 32bit unsigned integer
+	symn type_u64;        // 64bit unsigned integer
+	symn type_f32;        // 32bit floating point
+	symn type_f64;        // 64bit floating point
+	symn type_ptr;        // pointer
+	symn type_var;        // variant
+	symn type_rec;        // typename
+	symn type_fun;        // function
+	symn type_obj;        // object
+	symn type_str;        // string
 
-	symn	type_int;		// integer: 32/64 bit signed
-	symn	type_idx;		// length / index: 32/64 bit unsigned
+	symn type_int;        // integer: 32/64 bit signed
+	symn type_idx;        // length / index: 32/64 bit unsigned
 
-	symn	null_ref;		// variable null
-	symn	true_ref;		// variable true
-	symn	false_ref;		// variable false
-	symn	length_ref;		// slice length attribute
+	symn null_ref;        // variable null
+	symn true_ref;        // variable true
+	symn false_ref;       // variable false
+	symn length_ref;      // slice length attribute
 
-	symn	emit_opc;		// emit intrinsic function, or whatever it is.
-	astn	void_tag;		// used to lookup function call with 0 argument
+	symn emit_opc;        // emit intrinsic function, or whatever it is.
+	astn void_tag;        // used to lookup function call with 0 argument
 
-	symn	libc_dbg;		// raise(char file[*], int line, int level, int trace, char message[*], variant inspect);
-	symn	libc_try;		// tryExec(pointer args, void action(pointer args));
+	symn libc_dbg;        // raise(char file[*], int line, int level, int trace, char message[*], variant inspect);
+	symn libc_try;        // tryExec(pointer args, void action(pointer args));
 };
 
 /// Debugger context
@@ -263,7 +265,9 @@ extern const char type_fmt_character_chr;
 uint64_t timeMillis();
 void sleepMillis(int64_t millis);
 
-char *absolutePath(char *path, char *buff, size_t size);
+char *absolutePath(const char *path, char *buff, size_t size);
+
+char *relativeToCWD(const char *path);
 
 /** Calculate hash of string.
  * @brief calculate the hash of a string.

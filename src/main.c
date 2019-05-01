@@ -1,5 +1,5 @@
 /*******************************************************************************
- *   File: lstd.c
+ *   File: main.c
  *   Date: 2011/06/23
  *   Desc: command line executable
  *******************************************************************************
@@ -13,6 +13,7 @@
 
 // default values
 static const char *STDLIB = "lib/stdlib.ci";   // standard library
+static const char *CMPL_HOME = "CMPL_HOME";    // Home environment path variable name
 
 static inline int strEquals(const char *str, const char *with) {
 	if (str == NULL || with == NULL) {
@@ -184,6 +185,7 @@ struct userContextRec {
 	int closeOut:1;         // close `out` file.
 	int hideOffsets:1;      // remove offsets, bytecode, and durations from dumps
 	char *compileSteps;     // dump compilation steps
+	char *dmpUnitFilter;    // dump compilation unit filter
 
 	// debugger
 	FILE *in;               // debugger input
@@ -203,7 +205,7 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 
 	printFmt(out, esc, "%I<%s token=\"%k\"", indent, text, ast->kind);
 
-	if ((mode & (prSymType|prAstCast)) != 0) {
+	if ((mode & (prSymType | prAstCast)) != 0) {
 		printFmt(out, esc, " type=\"%T\"", ast->type);
 		if (ast->type != NULL) {
 			printFmt(out, esc, " kind=\"%K\"", ast->type->kind);
@@ -267,7 +269,7 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 
 		//#}
 		//#{ OPERATORS
-		case OPER_fnc:		// '()'
+		case OPER_fnc:        // '()'
 			printFmt(out, esc, " value=\"%?t\">\n", ast);
 			for (astn list = chainArgs(ast->op.rhso); list != NULL; list = list->next) {
 				dumpAstXML(out, esc, list, mode, indent + 1, "push");
@@ -276,41 +278,41 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 			printFmt(out, esc, "%I</%s>\n", indent, text);
 			break;
 
-		case OPER_dot:		// '.'
-		case OPER_idx:		// '[]'
+		case OPER_dot:        // '.'
+		case OPER_idx:        // '[]'
 
-		case OPER_pls:		// '+'
-		case OPER_mns:		// '-'
-		case OPER_cmt:		// '~'
-		case OPER_not:		// '!'
+		case OPER_pls:        // '+'
+		case OPER_mns:        // '-'
+		case OPER_cmt:        // '~'
+		case OPER_not:        // '!'
 
-		case OPER_add:		// '+'
-		case OPER_sub:		// '-'
-		case OPER_mul:		// '*'
-		case OPER_div:		// '/'
-		case OPER_mod:		// '%'
+		case OPER_add:        // '+'
+		case OPER_sub:        // '-'
+		case OPER_mul:        // '*'
+		case OPER_div:        // '/'
+		case OPER_mod:        // '%'
 
-		case OPER_shl:		// '>>'
-		case OPER_shr:		// '<<'
-		case OPER_and:		// '&'
-		case OPER_ior:		// '|'
-		case OPER_xor:		// '^'
+		case OPER_shl:        // '>>'
+		case OPER_shr:        // '<<'
+		case OPER_and:        // '&'
+		case OPER_ior:        // '|'
+		case OPER_xor:        // '^'
 
-		case OPER_ceq:		// '=='
-		case OPER_cne:		// '!='
-		case OPER_clt:		// '<'
-		case OPER_cle:		// '<='
-		case OPER_cgt:		// '>'
-		case OPER_cge:		// '>='
+		case OPER_ceq:        // '=='
+		case OPER_cne:        // '!='
+		case OPER_clt:        // '<'
+		case OPER_cle:        // '<='
+		case OPER_cgt:        // '>'
+		case OPER_cge:        // '>='
 
-		case OPER_all:		// '&&'
-		case OPER_any:		// '||'
-		case OPER_sel:		// '?:'
+		case OPER_all:        // '&&'
+		case OPER_any:        // '||'
+		case OPER_sel:        // '?:'
 
-		case OPER_com:		// ','
+		case OPER_com:        // ','
 
-		case INIT_set:		// '='
-		case ASGN_set:		// '='
+		case INIT_set:        // '='
+		case ASGN_set:        // '='
 			printFmt(out, esc, " value=\"%?t\">\n", ast);
 			dumpAstXML(out, esc, ast->op.test, mode & ~prSymInit, indent + 1, "test");
 			dumpAstXML(out, esc, ast->op.lhso, mode & ~prSymInit, indent + 1, "left");
@@ -809,6 +811,9 @@ void printFields(FILE *out, const char **esc, symn sym, userContext ctx) {
 			}
 		}
 
+		if (ctx->dmpUnitFilter && !strEquals(sym->unit, ctx->dmpUnitFilter)) {
+			continue;
+		}
 		if (!ctx->dmpBuiltins && (var->file == NULL || var->line <= 0)) {
 			// exclude builtin symbols
 			continue;
@@ -948,6 +953,150 @@ static void textPostProfile(userContext usr) {
 	}
 }
 
+
+static void dumpApiHtml(userContext ctx, symn sym) {
+	const char *CLASS_SYM = "sym";
+	const char *CLASS_DOC = "doc";
+	const char *CLASS_AST = "ast";
+	const char *CLASS_ASM = "asm";
+	const char *CLASS_POS = "pos";
+
+	FILE *out = ctx->out;
+	int indent = ctx->indent;
+	//const char **esc = ctx->esc;
+	// TODO: set this from outside
+	// lazy initialization of escape characters
+	static const char **esc = NULL;
+	if (esc == NULL) {
+		static const char *esc_html[256];
+		memset(esc_html, 0, sizeof(esc_html));
+		esc_html['&'] = "&amp;";
+		esc_html['<'] = "&lt;";
+		esc_html['>'] = "&gt;";
+		esc = esc_html;
+	}
+
+	// symbols are always accessible
+	int dmpApi = ctx->dmpApi;
+	// dump documentation if requested
+	int dmpDoc = ctx->dmpDoc && sym->doc;
+	// instructions are available only for functions
+	int dmpAsm = ctx->dmpAsm && isFunction(sym);
+	// syntax tree is unavailable at runtime(compiler context is destroyed)
+	int dmpAst = ctx->dmpAst && sym->init && ctx->rt->cc;
+
+	// first symbol
+	if (sym == ctx->rt->main->fields) {
+		printFmt(out, NULL, "<html>"
+							"\n<head>"
+							"\n<style>"
+							"\nli {"
+							"  list-style: none;"
+							"}"
+							"\nli.sym {"
+							"  color: #0046b0;"
+							"  padding: .3em 0 1em 1em;"
+							"}"
+							"\npre {"
+							"  margin: 0 0 0 1em;"
+							"  padding: 0 0 0 1em;"
+							"  border-top: solid 1px transparent;"
+							"  border-left: solid 6px transparent;"
+							"}"
+							"\npre.doc {"
+							"  color: gray;"
+							"  margin: .5em 0 .5em 1em;"
+							"}"
+							"\npre.asm, pre.pos {"
+							"  color: black;"
+							"  border-top: solid 1px #dbdbdb;"
+							"  border-left: solid 6px #93e078;"
+							"}"
+							"\npre.asm {"
+							"  color: gray;"
+							"  border-left: solid 6px #7883e0;"
+							"}"
+							"\npre.ast {"
+							"  display: none;"
+							"}"
+							"\n</style>"
+							"\n</head>"
+							"\n<body>"
+							"\n<ul>"
+		);
+	}
+
+	if (ctx->dmpUnitFilter && !strEquals(sym->unit, ctx->dmpUnitFilter)) {
+		dmpApi = dmpDoc = dmpAsm = dmpAst = 0;
+	}
+	if (!ctx->dmpBuiltins && (sym->file == NULL || sym->line == 0)) {
+		// skip generated or builtin symbols
+		if (!(ctx->dmpMain && sym == ctx->rt->main)) {
+			// skip main initializer symbol
+			dmpApi = dmpDoc = dmpAsm = dmpAst = 0;
+		}
+	}
+
+	if (dmpApi || dmpDoc || dmpAst || dmpAsm) {
+		printFmt(out, esc, "\n<li class=\"%s\">%T", CLASS_SYM, sym);
+	}
+	// export documentation
+	if (dmpDoc) {
+		printFmt(out, esc, "\n<pre class=\"%s\">%s</pre>", CLASS_DOC, sym->doc);
+	}
+
+	// export valid syntax tree if we still have compiler context
+	if (dmpAst) {
+		printFmt(out, esc, "\n<pre class=\"%s\">", CLASS_AST);
+		printAst(out, esc, sym->init, ctx->dmpMode, -indent);
+		printFmt(out, esc, "</pre>");
+	}
+
+	// export assembly
+	if (dmpAsm) {
+		int preOpened = 0;
+		size_t end = sym->offs + sym->size;
+		for (size_t pc = sym->offs, n = pc; pc < end; pc = n) {
+			unsigned char *ip = nextOpc(ctx->rt, &n, NULL);
+			if (ip == NULL) {
+				// invalid instruction
+				break;
+			}
+
+			dbgn dbg = mapDbgStatement(ctx->rt, pc);
+			if (ctx->dmpAsmStmt && dbg && dbg->start == pc) {
+				if (preOpened) {
+					printFmt(out, esc, "</pre>");
+				}
+				printFmt(out, esc, "<pre class=\"%s\">", CLASS_POS);
+				textDumpDbg(out, esc, ctx, dbg, indent);
+				printFmt(out, esc, "</pre>");
+				preOpened = 0;
+			}
+			if (!preOpened) {
+				printFmt(out, esc, "<pre class=\"%s\">", CLASS_ASM);
+			}
+			textDumpAsm(out, esc, pc, ctx, indent);
+			preOpened = 1;
+		}
+		if (preOpened) {
+			printFmt(out, esc, "</pre>");
+		}
+	}
+
+	if (dmpApi || dmpDoc || dmpAst || dmpAsm) {
+		printFmt(out, esc, "</li>");
+	}
+
+	// last symbol
+	if (sym == ctx->rt->main) {
+		printFmt(out, NULL,
+			"\n</ul>"
+			"\n</body>"
+			"\n</html>"
+		);
+	}
+}
 static void dumpApiText(userContext ctx, symn sym) {
 	int dumpExtraData = 0;
 	const char **esc = ctx->esc;
@@ -968,6 +1117,9 @@ static void dumpApiText(userContext ctx, symn sym) {
 		return;
 	}
 
+	if (ctx->dmpUnitFilter && !strEquals(sym->unit, ctx->dmpUnitFilter)) {
+		return;
+	}
 	if (!ctx->dmpBuiltins && (sym->file == NULL || sym->line == 0)) {
 		// skip generated or builtin symbols
 		if (!(ctx->dmpMain && sym == ctx->rt->main)) {
@@ -1469,10 +1621,12 @@ static int usage() {
 		"\n  -dump[?] <file>       set output for: dump(symbols, assembly, abstract syntax tree, coverage, call tree)"
 		"\n    .scite              dump api for SciTE text editor"
 		"\n    .json               dump api and profile data in javascript object notation format"
+		"\n    .html               dump api in html format"
 		"\n"
 		"\n  -api[*]               dump symbols"
 		"\n    /a                  include all builtin symbols"
 		"\n    /m                  include main builtin symbol"
+		"\n    /f                  include only symbols from the last compiled file"
 		"\n    /d                  dump details of symbol"
 		"\n    /p                  dump params and fields"
 		"\n    /u                  dump usages"
@@ -1480,6 +1634,7 @@ static int usage() {
 		"\n  -doc[*]               dump documentation"
 		"\n    /a                  include all builtin symbols"
 		"\n    /m                  include main builtin symbol"
+		"\n    /f                  include only symbols from the last compiled file"
 		"\n    /d                  dump details of symbol"
 		"\n    /p                  dump params and fields"
 		"\n    /u                  dump usages"
@@ -1488,6 +1643,7 @@ static int usage() {
 		"\n    /a                  use global address: jmp @0x003d8c"
 		"\n    /n                  prefer names over addresses: jmp <main+80>"
 		"\n    /s                  print source code statements"
+		"\n    /f                  include only symbols from the last compiled file"
 		"\n    /m                  include main builtin symbol"
 		"\n    /d                  dump details of symbol"
 		"\n    /p                  dump params and fields"
@@ -1498,6 +1654,7 @@ static int usage() {
 		"\n    /l                  do not expand statements (print on single line)"
 		"\n    /b                  don't keep braces ('{') on the same line"
 		"\n    /e                  don't keep `else if` constructs on the same line"
+		"\n    /f                  include only symbols from the last compiled file"
 		"\n    /m                  include main builtin symbol"
 		"\n    /d                  dump details of symbol"
 		"\n    /p                  dump params and fields"
@@ -1563,13 +1720,14 @@ int main(int argc, char *argv[]) {
 	extra.dbgOnError = brkPause | brkPrint | brkTrace;
 	extra.dbgOnCaught = brkSkip;
 
-
 	struct {
 		// optimizations
 		int foldConst;
 		int fastInstr;
 		int fastAssign;
 		int genGlobals;
+		int genPrivate;
+		// TODO: int genUninitialized;
 		int warnLevel;	// compile log level
 		int raiseLevel;	// runtime log level
 
@@ -1580,6 +1738,7 @@ int main(int argc, char *argv[]) {
 		.fastInstr = 1,
 		.fastAssign = 1,
 		.genGlobals = 0,
+		.genPrivate = 1,
 		.warnLevel = 5,
 		.raiseLevel = 15,
 
@@ -1587,17 +1746,29 @@ int main(int argc, char *argv[]) {
 		.memory = 2 << 20
 	};
 
-	rtContext rt = NULL;
+	char stdLib[65536];
+	char *cmpl_home = getenv(CMPL_HOME);
+	if (cmpl_home != NULL) {
+		strncpy(stdLib, cmpl_home, sizeof(stdLib));
+		
+		size_t len = strlen(stdLib);
+		if (len > 0 && stdLib[len - 1] != '/') {
+			stdLib[len] = '/';
+			len += 1;
+		}
+		strncat(stdLib, STDLIB, sizeof(stdLib) - len);
+	} else {
+		strncpy(stdLib, STDLIB, sizeof(stdLib));
+	}
 
 	ccInstall install = install_def;
-	char *stdLib = (char*)STDLIB;	// standard library
 	char *ccFile = NULL;			// compiled filename
 
 	char *logFileName = NULL;		// logger filename
 	int logAppend = 0;				// do not clear the log file
 
-	char *dumpFileName = NULL;		// dump file
-	char *pathDumpXml = NULL;		// dump file path
+	char *dumpFileName = NULL;      // dump file
+	char *pathAstDumpXml = NULL;    // dump ast to xml file before code generation
 	void (*dumpFun)(userContext, symn) = NULL;
 	enum { run, debug, profile, compile } run_code = compile;
 
@@ -1779,16 +1950,12 @@ int main(int argc, char *argv[]) {
 
 		// override stdlib file
 		else if (strncmp(arg, "-std", 4) == 0) {
-			if (stdLib != (char*)STDLIB) {
-				fatal("argument specified multiple times: %s", arg);
-				return -1;
-			}
 			if (arg[4] != 0) {
-				stdLib = arg + 4;
+				strncpy(stdLib, arg + 4, sizeof(stdLib));
 			}
 			else {
 				// disable standard library
-				stdLib = NULL;
+				stdLib[0] = 0;
 			}
 		}
 		// override heap size
@@ -1877,12 +2044,15 @@ int main(int argc, char *argv[]) {
 				dumpFun = dumpApiText;
 			}
 			else if (strEquals(arg, "-dump.ast.xml")) {
-				if (++i >= argc || pathDumpXml) {
+				if (++i >= argc || pathAstDumpXml) {
 					fatal("dump file not or double specified");
 					return -1;
 				}
-				pathDumpXml = argv[i];
+				pathAstDumpXml = argv[i];
 				continue;
+			}
+			else if (strEquals(arg, "-dump.html")) {
+				dumpFun = dumpApiHtml;
 			}
 			else if (strEquals(arg, "-dump.json")) {
 				dumpFun = dumpApiJSON;
@@ -1937,6 +2107,10 @@ int main(int argc, char *argv[]) {
 						extra.dmpUsages = 1;
 						arg2 += 2;
 						break;
+					case 'f':
+						extra.dmpUnitFilter = *stdLib ? stdLib : NULL;
+						arg2 += 2;
+						break;
 				}
 			}
 			if (*arg2) {
@@ -1979,6 +2153,10 @@ int main(int argc, char *argv[]) {
 						break;
 					case 'u':
 						extra.dmpUsages = 1;
+						arg2 += 2;
+						break;
+					case 'f':
+						extra.dmpUnitFilter = *stdLib ? stdLib : NULL;
 						arg2 += 2;
 						break;
 				}
@@ -2030,6 +2208,10 @@ int main(int argc, char *argv[]) {
 						break;
 					case 'u':
 						extra.dmpUsages = 1;
+						arg2 += 2;
+						break;
+					case 'f':
+						extra.dmpUnitFilter = *stdLib ? stdLib : NULL;
 						arg2 += 2;
 						break;
 				}
@@ -2094,6 +2276,10 @@ int main(int argc, char *argv[]) {
 						extra.dmpUsages = 1;
 						arg2 += 2;
 						break;
+					case 'f':
+						extra.dmpUnitFilter = *stdLib ? stdLib : NULL;
+						arg2 += 2;
+						break;
 				}
 			}
 			if (*arg2) {
@@ -2147,6 +2333,10 @@ int main(int argc, char *argv[]) {
 					install = (install & ~installLibs) | on * installLibs;
 					arg2 += 4;
 				}
+				else if (strBegins(arg2 + 1, "private")) {
+					settings.genPrivate = !on;
+					arg2 += 8;
+				}
 				else if (strBegins(arg2 + 1, "offsets")) {
 					extra.hideOffsets = !on;
 					arg2 += 8;
@@ -2174,20 +2364,19 @@ int main(int argc, char *argv[]) {
 	}
 
 	// initialize runtime context
-	rt = rtInit(NULL, settings.memory);
+	rtContext rt = rtInit(NULL, settings.memory);
 	if (rt == NULL) {
 		fatal("initializing runtime context");
 		return -1;
 	}
 
+	extra.rt = rt;
+	rt->logLevel = settings.warnLevel;
 	rt->foldCasts = settings.foldConst != 0;
 	rt->foldConst = settings.foldConst != 0;
 	rt->foldInstr = settings.fastInstr != 0;
 	rt->fastMemory = settings.fastInstr != 0;
 	rt->fastAssign = settings.fastAssign != 0;
-	rt->genGlobals = settings.genGlobals != 0;
-	rt->logLevel = settings.warnLevel;
-	rt->genDocs = extra.dmpDoc;
 
 	// open the log file first (enabling dump appending)
 	if (logFileName && !logFile(rt, logFileName, logAppend)) {
@@ -2220,14 +2409,16 @@ int main(int argc, char *argv[]) {
 		logFile(rt, NULL, 0);
 		return -6;
 	}
-
-	extra.rt = rt;
+	cc->genDocs = extra.dmpDoc;
+	cc->genGlobals = settings.genGlobals != 0;
+	cc->genPrivate = settings.genPrivate != 0;
 
 	if (install & installLibs) {
 		// install standard library.
 		if (extra.compileSteps != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sCompile: `%?s`", extra.compileSteps, stdLib);}
-		if (!ccAddUnit(cc, ccLibStd, stdLib, 1, NULL)) {
-			fatal("error registering standard library");
+		if (!ccAddUnit(cc, ccLibStd, *stdLib ? stdLib : NULL, 1, NULL)) {
+			error(rt, NULL, 0, "error registering standard library");
+			return -1;
 		}
 	}
 
@@ -2251,7 +2442,9 @@ int main(int argc, char *argv[]) {
 					}
 				}
 			}
-			ccFile = arg;
+			if (i < argc) {
+				ccFile = arg;
+			}
 			rt->logLevel = settings.warnLevel;
 		}
 		else {
@@ -2321,15 +2514,19 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if (pathDumpXml != NULL) {
-		FILE *xmlFile = fopen(pathDumpXml, "w");
-		if (xmlFile != NULL) {
-			dumpAstXML(xmlFile, escapeXML(), cc->root, prDbg, 0, "main");
-			fclose(xmlFile);
+	if (extra.dmpUnitFilter != NULL && ccFile != NULL) {
+		// use the last compilation unit
+		extra.dmpUnitFilter = ccFile;
+	}
+
+	if (pathAstDumpXml != NULL) {
+		FILE *xmlFile = fopen(pathAstDumpXml, "w");
+		if (xmlFile == NULL) {
+			fatal(ERR_OPENING_FILE, pathAstDumpXml);
+			return -1;
 		}
-		else {
-			fatal(ERR_OPENING_FILE, pathDumpXml);
-		}
+		dumpAstXML(xmlFile, escapeXML(), cc->root, prDbg, 0, "main");
+		fclose(xmlFile);
 	}
 
 	// generate code only if there are no compilation errors

@@ -1,5 +1,14 @@
 // standard library extension
 
+// TODO: move these aliases here
+//inline int = int32;
+//inline uint = uint32;
+//inline byte = uint8;
+//inline float = float32;
+//inline double = float64;
+//inline true = 0 == 0;
+//inline false = 0 != 0;
+
 static if (typename(raise) == function) {
 
 /// report message at `verbose` logging level
@@ -77,7 +86,7 @@ static void assertEq(int expected, int returned, char message[*]) {
 /// abort execution if the returned value is not equal to the expected value
 inline assertEq(int expected, int returned) = assertEq(expected, returned, null);
 
-}; // FIXME: `if` might have an else part, avoid skipping doc comments using `;`
+}
 
 /// Returns the size of the given type
 inline sizeof(typename type) = int(type.size);

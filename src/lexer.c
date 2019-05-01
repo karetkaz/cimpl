@@ -420,7 +420,7 @@ static ccToken readTok(lexContext ctx, astn tok) {
 			}
 
 			if (doc != NULL) {
-				if (!ctx->rt->genDocs) {
+				if (!ctx->cc->genDocs) {
 					doc = "";
 					ptr = doc + 1;
 				}
@@ -1152,26 +1152,34 @@ static ccToken readTok(lexContext ctx, astn tok) {
 
 astn peekTok(ccContext cc, ccToken match) {
 	// read lookahead token
-	while (cc->tokNext != NULL) {
-		astn node = cc->tokNext;
-		if (node->kind != TOKEN_doc) {
+	astn token = cc->tokNext;
+	while (token != NULL) {
+		if (token->kind != TOKEN_doc) {
 			break;
 		}
-		cc->tokNext = node->next;
-		recycle(cc, node);
+		token = token->next;
 	}
-	if (cc->tokNext == NULL) {
+	if (token == NULL) {
 		return NULL;
 	}
-	if (match && match != cc->tokNext->kind) {
+	if (match && match != token->kind) {
 		return NULL;
 	}
-	return cc->tokNext;
+	return token;
 }
 
 astn nextTok(ccContext cc, ccToken match, int raise) {
 	astn token = peekTok(cc, match);
 	if (token != NULL) {
+		
+		while (cc->tokNext != NULL) {
+			astn temp = cc->tokNext;
+			if (temp == token) {
+				break;
+			}
+			cc->tokNext = temp->next;
+			recycle(cc, temp);
+		}
 		cc->tokNext = token->next;
 		token->next = NULL;
 		return token;

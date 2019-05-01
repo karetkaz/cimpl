@@ -1199,7 +1199,7 @@ void printLog(rtContext rt, raiseLevel level, const char *file, int line, rtValu
 }
 
 void dumpApi(rtContext rt, userContext ctx, void dumpSym(userContext, symn)) {
-	symn sym, bp[maxTokenCount], *sp = bp;
+	symn bp[maxTokenCount], *sp = bp;
 
 	if (rt == NULL || dumpSym == NULL) {
 		dieif(rt == NULL, ERR_INTERNAL_ERROR);
@@ -1218,7 +1218,8 @@ void dumpApi(rtContext rt, userContext ctx, void dumpSym(userContext, symn)) {
 		return;
 	}
 	for (*sp = rt->main->fields; sp >= bp;) {
-		if (!(sym = *sp)) {
+		symn sym = *sp;
+		if (sym == NULL) {
 			--sp;
 			continue;
 		}

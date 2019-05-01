@@ -1971,31 +1971,31 @@ void printOfs(FILE *out, const char **esc, rtContext ctx, symn sym, size_t offs,
 
 	if (sym != NULL) {
 		size_t rel = offs - sym->offs;
-		printFmt(out, esc, "<%?.*T", mode, sym);
+		printFmt(out, esc, "%c%?.*T", '<', mode, sym);
 		if (mode & prRelOffs && mode & prAbsOffs) {
-			printFmt(out, esc, "%?+d @%06x>", rel, offs);
+			printFmt(out, esc, "%?+d @%06x%c", rel, offs, '>');
 		}
 		else if (mode & prRelOffs) {
-			printFmt(out, esc, "%?+d>", rel);
+			printFmt(out, esc, "%?+d%c", rel, '>');
 		}
 		else if (mode & prAbsOffs) {
-			printFmt(out, esc, " @%06x>", offs);
+			printFmt(out, esc, " @%06x%c", offs, '>');
 		}
 		else if (rel != 0) {
-			printFmt(out, esc, "+?>");
+			printFmt(out, esc, "+?%c", '>');
 		}
 		else {
-			printFmt(out, esc, ">");
+			printFmt(out, esc, "%c", '>');
 		}
 	}
 	else if (mode & prAbsOffs) {
-		printFmt(out, esc, "<@%06x>", offs);
+		printFmt(out, esc, "%c@%06x%c", '<', offs, '>');
 	}
 	else if (mode & prRelOffs) {
-		printFmt(out, esc, "<%+d>", offs);
+		printFmt(out, esc, "%c%+d%c", '<', offs, '>');
 	}
 	else {
-		printFmt(out, esc, "<?>");
+		printFmt(out, esc, "%c%s%c", '<', "?", '>');
 	}
 }
 void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val, dmpMode mode, int indent) {

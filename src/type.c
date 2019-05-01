@@ -489,10 +489,9 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 		type = sym->init->type;
 	}
 
-	if (sym != NULL && sym->unit != NULL) {
-		if (sym->doc == NULL && sym->unit != cc->unit) {
-			warn(cc->rt, raiseWarn, ref->file, ref->line, ERR_PRIVATE_DECLARATION, sym);
-		}
+	if (sym && sym->unit && sym->unit != cc->unit && sym->doc == NULL) {
+		raiseLevel level = cc->genPrivate ? raiseWarn : raiseError;
+		warn(cc->rt, level, ref->file, ref->line, ERR_PRIVATE_DECLARATION, sym);
 	}
 
 	dieif(ref->kind != TOKEN_var, ERR_INTERNAL_ERROR);
