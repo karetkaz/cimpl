@@ -37,16 +37,17 @@
 <div id="mainToolBar" class="toolbar">
 	<span class="left icon" onclick="showSplitter(menuSplit, '!secondary');" title="Toggle show menu">☰</span>
 	<span class="left icon" onclick="saveInput();" title="Save script (Ctrl + s)">💾</span>
+	<span class="left icon" onclick="execute(selExecute.data || '-run/g');" title="Execute script (Ctrl + Shift + Enter)">►</span>
 	<!--span class="right icon" onclick="showEditor('!primary', 'vertical', '-horizontal');" title="Toggle show output">◨</span-->
 	<span class="right icon" onclick="showEditor('!primary', 'horizontal', '-vertical');" title="Toggle show output">⬓</span>
 	<span class="right icon" onclick="setTheme(body, '!dark');" title="Toggle dark theme">◑</span>
-	<span class="filename" title="Execute action (Ctrl + Enter)
+	<span class="filename" title="Execute action (Shift + Enter)
 	'#args' Execute script
 	'?text' Search (Ctrl + f)
 	'!text' Replace (Ctrl + r)
 	':line' Go to line (Ctrl + g)
-	'-' Fold all lines (Ctrl + Shift -)
-	'+' Unfold all lines (Ctrl + Shift +)">
+	'-' Fold all lines (Ctrl + Shift + -)
+	'+' Unfold all lines (Ctrl + Shift + +)">
 	<input id="edtFileName" placeholder="#execute; ?search; !replace; :goto; -fold; +unfold"></input></span>
 </div>
 <div id="menuSplit" class="content split-pane left vertical" style="top:2em;">
@@ -56,11 +57,11 @@
 			<button class="right" onclick="execute();" title="Compiler usage help">?</button>
 		</div>
 		<ul>
-			<li onclick="execute('-run/g');" title="Execute code at full speed">⚡ Run</li>
-			<li onclick="execute('-debug/g');" title="Execute code with error detection">🐞 Debug</li>
-			<li onclick="execute('-profile/g');" title="Execute code measuring execution time">⏱ Profile</li>
-			<li onclick="execute(selExecute.value);" >⚙ <select id="selExecute" onchange="execute(this.value);" class="right" onclick="event.stopPropagation()">
-				<option value="">Compile only</option>
+			<li onclick="execute(selExecute.data = '-run/g');" title="Execute code at full speed">⚡ Run</li>
+			<li onclick="execute(selExecute.data = '-debug/g');" title="Execute code with error detection">🐞 Debug</li>
+			<li onclick="execute(selExecute.data = '-profile/g');" title="Execute code measuring execution time">⏱ Profile</li>
+			<li onclick="execute(selExecute.data = selExecute.value);" >⚙ <select id="selExecute" onchange="execute(this.data = this.value);" class="right" onclick="event.stopPropagation()" data="-run/g">
+				<option value="" selected>Compile only</option>
 				<option value="-doc/a/m">Documentation</option>
 				<option value="-asm/a/m/n/s/m">Instructions</option>
 				<option value="-api/a/m">Symbols</option>
@@ -97,7 +98,7 @@
 			<div class="toolbar">
 				<span class="left icon bold" onclick="terminal.clear();" title="Clear output">⦸</span>
 				<span class="left icon bold" onclick="editOutput();" title="Open output in editor">⎗</span>
-				<span class="right icon bold" onclick="showEditor('!secondary');" title="Maximize">⬚</span>
+				<span class="right icon bold" onclick="void(showEditor('!secondary'), showSplitter(menuSplit, 'secondary'));" title="Maximize">⬚</span>
 				<span class="right icon bold" onclick="terminal.scroll(true);" title="Scroll to end">⏬</span>
 				<span class="right icon bold" onclick="terminal.scroll(false);" title="Scroll to top">⏫</span>
 				<span class="filename" title="Execution arguments"><input id="edtExecute"></input></span>
@@ -112,16 +113,13 @@ var props = props || {};
 props.libraries = [
 	'libFile.wasm'
 ];
-function openProject(files) {
-	worker.postMessage({files});
+function openProjectFile(projectOrFile) {
+	worker.postMessage(projectOrFile);
 }
 function listFiles(all) {
-	worker.postMessage({files: all});
+	worker.postMessage({list: all});
 }
 
-function openInput(file, line) {
-	worker.postMessage({file, line});
-}
 function saveInput() {
 	let file = params.file;
 	if (file == null) {
@@ -141,24 +139,28 @@ function saveInput() {
 }
 function execInput(args) {
 	worker.postMessage({
-		exec: args || []
+		execute: args || []
 	});
 }
 
 /* communication with worker/args
 send => {
-	files - download these files to the workspace directory
+	list - download these files to the workspace directory [{path|file, url|content}]
 	file - open or save the content of the file
 	line - jump to / position in file
-	data(content) - save the content
-	exec - arguments for the compiler
+	url - download and save content
+	content - save content
+	execute - arguments for the compiler
 }
 
 receive => {
-	files - list of files in the workspace
-	data(content) - content of the requested file
+	list - list of files in the workspace
+	data - content of the requested file
 	line - jump to / position in file
 	print - print the message to the output
+	error - print the error to the output
+	exitcode - response to execute
+	initialized
 }
 
 args => {
@@ -187,20 +189,19 @@ worker.onmessage = function(event) {
 	if (data.print !== undefined) {
 		terminal.print(data.print);
 	}
-	if (data.files !== undefined) {
+	if (data.list !== undefined) {
 		fileList.innerHTML = '';
-		for (let file of data.files) {
+		for (let file of data.list) {
 			fileList.innerHTML += '<li onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
 		}
-		params.update('file', 'content');
 	}
 
 	if (data.content || data.file || data.line) {
 		if (setContent(data.content, data.file, data.line)) {
 			params.update({
-				file: data.file,
-				line: data.line,
-				content: null
+				file: data.file || params.file,
+				line: data.line || params.line,
+				content: params.content ? data.content : null
 			});
 		} else {
 			params.update({
@@ -208,6 +209,9 @@ worker.onmessage = function(event) {
 				line: data.line
 			});
 		}
+	}
+	if (data.initialized) {
+		params.update('project', 'content', 'file');
 	}
 };
 </script>

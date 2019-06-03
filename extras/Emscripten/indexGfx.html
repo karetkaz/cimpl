@@ -37,16 +37,17 @@
 <div id="mainToolBar" class="toolbar">
 	<span class="left icon" onclick="showSplitter(menuSplit, '!secondary');" title="Toggle show menu">☰</span>
 	<span class="left icon" onclick="saveInput();" title="Save script (Ctrl + s)">💾</span>
+	<span class="left icon" onclick="execute(selExecute.data || '-run/g');" title="Execute script (Ctrl + Shift + Enter)">►</span>
 	<!--span class="right icon" onclick="showEditor('!primary', 'vertical', '-horizontal');" title="Toggle show output">◨</span-->
 	<span class="right icon" onclick="showEditor('!primary', 'horizontal', '-vertical');" title="Toggle show output">⬓</span>
 	<span class="right icon" onclick="setTheme(body, '!dark');" title="Toggle dark theme">◑</span>
-	<span class="filename" title="Execute action (Ctrl + Enter)
+	<span class="filename" title="Execute action (Shift + Enter)
 	'#args' Execute script
 	'?text' Search (Ctrl + f)
 	'!text' Replace (Ctrl + r)
 	':line' Go to line (Ctrl + g)
-	'-' Fold all lines (Ctrl + Shift -)
-	'+' Unfold all lines (Ctrl + Shift +)">
+	'-' Fold all lines (Ctrl + Shift + -)
+	'+' Unfold all lines (Ctrl + Shift + +)">
 	<input id="edtFileName" placeholder="#execute; ?search; !replace; :goto; -fold; +unfold"></input></span>
 </div>
 <div id="menuSplit" class="content split-pane left vertical" style="top:2em;">
@@ -56,11 +57,11 @@
 			<button class="right" onclick="execute();" title="Compiler usage help">?</button>
 		</div>
 		<ul>
-			<li onclick="execute('-run/g');" title="Execute code at full speed">⚡ Run</li>
-			<li onclick="execute('-debug/g');" title="Execute code with error detection">🐞 Debug</li>
-			<li onclick="execute('-profile/g');" title="Execute code measuring execution time">⏱ Profile</li>
 			<li onclick="execute(selExecute.value);" >⚙ <select id="selExecute" onchange="execute(this.value);" class="right" onclick="event.stopPropagation()">
-				<option value="">Compile only</option>
+				<option value="-run/g">⚡ Run</option>
+				<option value="-debug/g">🐞 Debug</option>
+				<option value="-profile/g">⏱ Profile</option>
+				<option value="" selected>Compile only</option>
 				<option value="-doc/a/m">Documentation</option>
 				<option value="-asm/a/m/n/s/m">Instructions</option>
 				<option value="-api/a/m">Symbols</option>
@@ -97,7 +98,7 @@
 			<div class="toolbar">
 				<span class="left icon bold" onclick="terminal.clear();" title="Clear output">⦸</span>
 				<span class="left icon bold" onclick="editOutput();" title="Open output in editor">⎗</span>
-				<span class="right icon bold" onclick="showEditor('!secondary');" title="Maximize">⬚</span>
+				<span class="right icon bold" onclick="void(showEditor('!secondary'), showSplitter(menuSplit, 'secondary'));" title="Maximize">⬚</span>
 				<span class="right icon bold" onclick="terminal.scroll(true);" title="Scroll to end">⏬</span>
 				<span class="right icon bold" onclick="terminal.scroll(false);" title="Scroll to top">⏫</span>
 				<span class="filename" title="Execution arguments"><input id="edtExecute"></input></span>
@@ -117,16 +118,28 @@ props.libraries = [
 	'libGfx.wasm',
 	'/lib/gfxlib.ci'
 ];
-function openProject(files) {
-	Module.files = files;
+function openProjectFile(projectOrFile) {
+	if (projectOrFile.list) {
+		Module.wgetFiles(projectOrFile.list, function (inProgress) {
+			if (inProgress == 0) {
+				listFiles(false);
+			}
+		});
+	}
+	try {
+		let content = FS.readFile(projectOrFile.file, {encoding: 'utf8'});
+		setContent(content, projectOrFile.file, projectOrFile.line);
+	} catch (error) {
+		// in case we open a file that does not exists
+		console.trace(error);
+	}
 }
 function listFiles(all) {
-	let files = [];
+	let files;
 	if (all === true) {
-		files.push(...Module.listFiles(Module.workspace));
-		files.push(...Module.listFiles('/lib'));
+		files = Module.listFiles([Module.workspace, '/lib']);
 	} else {
-		files.push(...Module.listFiles());
+		files = Module.listFiles([Module.workspace]);
 	}
 	fileList.innerHTML = '';
 	for (let file of files) {
@@ -135,15 +148,6 @@ function listFiles(all) {
 	params.update('file', 'content');
 }
 
-function openInput(file, line) {
-	try {
-		let content = FS.readFile(file, {encoding: 'utf8'});
-		setContent(content, file, line);
-	} catch(error) {
-		// in case we open a file that does not exists
-		console.trace(error);
-	}
-}
 function saveInput() {
 	if (params.content !== undefined) {
 		params.update({ content: btoa(editor.getValue()) });
@@ -195,7 +199,6 @@ let canvasShown = new MutationObserver(function() {
 canvasShown.observe(canvas, { attributes: true });
 
 var Module = {
-	files: null,
 	initialized: false,
 	dynamicLibraries: [
 		'libFile.wasm',
@@ -208,16 +211,9 @@ var Module = {
 		ENV.CMPL_HOME = '/';
 		FS.mkdirTree(Module.workspace);
 		FS.chdir(Module.workspace);
-		if (Module.files == null || Module.initialized) {
-			return;
-		}
 
-		Module.wgetFiles(Module.files, function (inProgress) {
-			listFiles(false);
-			if (inProgress == 0) {
-				Module.initialized = true;
-			}
-		});
+		params.update('project', 'content', 'file');
+		Module.initialized = true;
 	}
 };
 

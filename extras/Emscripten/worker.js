@@ -1,5 +1,4 @@
 var Module = {
-	files: null,
 	initialized: false,
 	dynamicLibraries: [
 		'libFile.wasm'
@@ -11,12 +10,7 @@ var Module = {
 		ENV.CMPL_HOME = '/';
 		FS.mkdirTree(Module.workspace);
 		FS.chdir(Module.workspace);
-		if (Module.files == null || Module.initialized) {
-			return;
-		}
-
-		Module.wgetFiles(Module.files);
-		postMessage({files: Module.listFiles()});
+		postMessage({initialized: true});
 		Module.initialized = true;
 	}
 };
@@ -26,52 +20,76 @@ importScripts("cmpl.js");
 
 onmessage = function(event) {
 	let data = event.data;
-	//console.log(data);
-	if (data.files !== undefined) {
-		if (data.files === true || data.files === false) {
-			let files = [];
-			if (data.files === false) {
-				files.push(...Module.listFiles());
-			} else {
-				files.push(...Module.listFiles(Module.workspace));
-				files.push(...Module.listFiles('/lib'));
+	console.log(data);
+	let result = {};
+	try {
+		if (!Module.initialized) {
+			throw "Module not initialized";
+		}
+
+		let list = [];
+		// read, download file list
+		if (data.list !== undefined) {
+			if (data.list === true) {
+				// list all files from workspace and lib directory
+				list = [Module.workspace, '/lib'];
 			}
-			postMessage({files});
-		} else {
-			Module.files = data.files;
+			else if (data.list === false) {
+				// list all files from workspace directory
+				list = [Module.workspace];
+			}
+			else {
+				Module.wgetFiles(data.list);
+				list = [Module.workspace];
+			}
 		}
-		Module.onRuntimeInitialized();
-	}
-	if (data.file !== undefined) {
-		let path = data.file;
-		if (!path.startsWith('/')) {
-			path = Module.workspace + '/' + path;
-		}
-		try {
-			if (data.content !== undefined) {
-				let exists = FS.analyzePath(path).exists;
-				FS.mkdirTree(path.replace(/^(.*[/])?(.*)(\..*)$/, "$1"));
-				FS.writeFile(path, data.content, {encoding: 'utf8'});
-				if (!exists) {
-					postMessage({
-						files: Module.listFiles(),
-						//file: data.file,
-						//line: data.line
-					});
+
+		// open, save, download file
+		if (data.file !== undefined) {
+			try {
+				result.file = data.file;
+				result.line = data.line;
+
+				let path = data.file;
+				if (!path.startsWith('/')) {
+					path = Module.workspace + '/' + path;
 				}
-			} else {
-				postMessage({
-					content: FS.readFile(path, {encoding: 'utf8'}),
-					file: data.file,
-					line: data.line
-				});
+				if (data.content != null) {
+					if (!FS.analyzePath(path).exists) {
+						list = [Module.workspace];
+					}
+					// save file content
+					FS.mkdirTree(path.replace(/^(.*[/])?(.*)(\..*)$/, "$1"));
+					FS.writeFile(path, data.content, {encoding: 'utf8'});
+				}
+				else if (data.url != null) {
+					if (!FS.analyzePath(path).exists) {
+						list = [Module.workspace];
+					}
+					Module.wgetFiles([data]);
+				}
+				else {
+					// read file content
+					result.content = FS.readFile(path, {encoding: 'utf8'});
+				}
+			} catch (err) {
+				result.error = 'file operation failed[' + data.file + ']: ' + err;
+				console.trace(err);
 			}
-		} catch (err) {
-			postMessage({error: 'file operation failed: `' + data.file + '`: ' + err});
 		}
+
+		// execute
+		if (data.execute !== undefined) {
+			Module['callMain'](data.execute);
+			result.exitCode = 0;
+		}
+
+		if (list.length > 0) {
+			result.list = Module.listFiles(list);
+		}
+	} catch (err) {
+		result.error = 'operation failed: ' + err;
+		console.trace(err);
 	}
-	if (data.exec !== undefined) {
-		Module['callMain'](data.exec);
-		postMessage({ exec: 'success' });
-	}
+	postMessage(result);
 };

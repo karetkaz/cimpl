@@ -1,15 +1,15 @@
 Module.workspace = '/workspace';
-Module.listFiles = function(workspace) {
+Module.listFiles = function(folders) {
 	let result = [];
-	(function lsr(path) {
+	function listRecursive(path) {
 		let dir = FS.analyzePath(path);
 		if (dir && dir.exists && dir.object) {
 			for (let file in dir.object.contents) {
 				let filepath = path + '/' + file;
 				if (dir.object.contents[file].isFolder) {
-					lsr(filepath);
+					listRecursive(filepath);
 				} else {
-					if (workspace === undefined && path.startsWith(Module.workspace)) {
+					if (folders === undefined && path.startsWith(Module.workspace)) {
 						result.push(filepath.substr(Module.workspace.length + 1));
 					} else {
 						result.push(filepath);
@@ -17,12 +17,21 @@ Module.listFiles = function(workspace) {
 				}
 			}
 		}
-	})(workspace || Module.workspace);
+	}
+	if (folders != null && folders.constructor == Array) {
+		if (folders.length !== 1 || folders[0] !== Module.workspace) {
+			for (let i = 0; i < folders.length; ++i) {
+				listRecursive(folders[i]);
+			}
+			return result;
+		}
+	}
+	folders = undefined;
+	listRecursive(folders || Module.workspace);
 	return result;
 };
 
 Module.wgetFiles = function(files, onComplete) {
-	Module.files = files;
 	let inProgress = files.length;
 	function saveFile(path, content) {
 		// persist the content of the file
@@ -35,11 +44,11 @@ Module.wgetFiles = function(files, onComplete) {
 	}
 
 	for (let file of files) {
-		let path = file.path;
-		if (path[0] != "/") {
-			path = Module.workspace + '/' + path;
-		}
 		try {
+			let path = file.file || file.path;
+			if (path[0] != "/") {
+				path = Module.workspace + '/' + path;
+			}
 			if (file.content != null) {
 				saveFile(path, file.content);
 				Module.print('file[' + path + '] created with content');
@@ -61,7 +70,7 @@ Module.wgetFiles = function(files, onComplete) {
 					saveFile(path, new Uint8Array(xhr.response));
 					Module.print('file[' + path + '] downloaded: ' + xhr.responseURL);
 					if (inProgress == 0) {
-						Module.print("Project initialization complete.");
+						Module.print("Project file(s) download complete.");
 					}
 				}
 				xhr.send(null);

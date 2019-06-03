@@ -102,32 +102,6 @@ let params = JsArgs('#', function (params, changes) {
 		showEditor(params.split);
 	}
 
-	// setup project, only after loading
-	if (!changes && params.project != null) {
-		let files = [];
-		let content = params.project;
-
-		try {
-			if (content != null) {
-				content = atob(content);
-			}
-		} catch (e) {
-			console.warn(e);
-		}
-
-		if (content.startsWith('[{')) {
-			files = JSON.parse(content);
-		} else {
-			for (let file of content.split(';')) {
-				files.push({
-					path: file.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3"),
-					url: file
-				});
-			}
-		}
-		openProject(files);
-	}
-
 	// setup editor content, only after loading
 	if (!changes && params.content != null) {
 		let content = params.content;
@@ -146,7 +120,35 @@ let params = JsArgs('#', function (params, changes) {
 
 	// reload page if the project was modified
 	if (changes.project) {
-		params.update(true);
+		if (changes.project.old !== changes.project.new) {
+			params.update(true);
+			return;
+		}
+
+		let files = [];
+		let content = params.project;
+
+		try {
+			content = atob(content);
+		} catch (e) {
+			console.warn(e);
+		}
+
+		if (content.startsWith('[{')) {
+			files = JSON.parse(content);
+		} else {
+			for (let url of content.split(';')) {
+				files.push({
+					file: url.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3"),
+					url: url
+				});
+			}
+		}
+		openProjectFile({
+			file: params.file,
+			line: params.line,
+			list: files
+		});
 		return;
 	}
 
@@ -156,7 +158,10 @@ let params = JsArgs('#', function (params, changes) {
 			setContent('', '');
 			return;
 		}
-		openInput(params.file, params.line);
+		openProjectFile({
+			file: params.file,
+			line: params.line
+		});
 		return;
 	}
 
@@ -277,12 +282,16 @@ edtFileName.onkeydown = function(event) {
 			return actionError();
 		}
 
-		let file = match[2].replace(/^(.*[/])?(.*)(\..*)$/, "$2$3");
+		let file = match[2];
 		let line = match[3];
 		if (match[1] != null) {
-			openProject([{ url: match[1] + match[2], path: file }]);
+			file = file.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3");
+			openProjectFile({ file, list: [{
+				file, url: match[1] + match[2]
+			}]});
+		} else {
+			params.update({ content: null, file, line });
 		}
-		params.update({ content: null, file, line: match[3] });
 	}
 
 	edtFileName.blur();
@@ -306,18 +315,29 @@ window.onkeydown = function() {
 	// escape to editor
 	if (event.key == 'Escape') {
 		editor.setSelection(editor.getCursor());
+		if (!editor.hasFocus()) {
+			showEditor('-secondary');
+		} else {
+			showEditor('!primary');
+		}
 		editor.focus();
+		return false;
+	}
+	// Shift + Enter => Focus command: [search, jump, fold, run, ...]
+	if (!event.ctrlKey && !event.altKey && event.shiftKey && event.key === 'Enter') {
+		edtFileName.focus();
+		return false;
+	}
+	// Ctrl + Enter => Focus arguments
+	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'Enter') {
+		showEditor('-primary');
+		edtExecute.focus();
 		return false;
 	}
 	// Ctrl + Shift + Enter => Execute script
 	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === 'Enter') {
-		//edtExecute.onkeydown(event);
 		edtExecute.focus();
-		return false;
-	}
-	// Ctrl + Enter => Execute command: [search, jump, fold, run, ...]
-	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'Enter') {
-		edtFileName.focus();
+		edtExecute.onkeydown(event);
 		return false;
 	}
 }
@@ -342,7 +362,7 @@ function completeAction(event) {
 			break;
 
 		case '#':
-			edtFileName.value += params.exec || '';
+			edtFileName.value += params.exec || selExecute.data || '';
 			break;
 	}
 	edtFileName.selectionStart = 1;
