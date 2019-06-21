@@ -1737,7 +1737,7 @@ int main(int argc, char *argv[]) {
 		.foldConst = 1,
 		.fastInstr = 1,
 		.fastAssign = 1,
-		.genGlobals = 0,
+		.genGlobals = 1,
 		.genPrivate = 1,
 		.warnLevel = 5,
 		.raiseLevel = 15,

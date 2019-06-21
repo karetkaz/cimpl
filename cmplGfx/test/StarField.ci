@@ -4,20 +4,22 @@ struct Star {
 	double xpos;
 	double ypos;
 	double zpos;
+	uint32 color;
 }
 
 static Star stars[1024];
 
-static const int resolutionx = 1440;
-static const int resolutiony = 900;
-static int centerx = resolutionx / 2;
-static int centery = resolutiony / 2;
+const int resolutionx = 1440;
+const int resolutiony = 900;
+int centerx = resolutionx / 2;
+int centery = resolutiony / 2;
 
 void initStar(Star star&) {
 	//~ randomly init stars, generate them around the center of the screen
 	star.xpos = System.rand() / double(RAND_MAX) * 2 * resolutionx - resolutionx;
 	star.ypos = System.rand() / double(RAND_MAX) * 2 * resolutiony - resolutiony;
 	star.zpos = 300;
+	star.color = uint32(argb(System.rand() & 0xff, System.rand() & 0xff, System.rand() & 0xff));
 }
 
 void drawStars(gxSurf offScreen) {
@@ -48,13 +50,13 @@ void drawStars(gxSurf offScreen) {
 		}
 
 		const int ps = Math.max(int32(0x200 / stars[i].zpos), 2);
-		offScreen.fillOval(tempx, tempy, tempx + ps, tempy + ps, 0xffffff);
+		offScreen.fillOval(tempx, tempy, tempx + ps, tempy + ps, stars[i].color);
 	}
 
 }
 
-static gxSurf image = gxSurf(resolutionx, resolutiony, 32);
-static int onEvent(pointer closure, int action, int btn, int x, int y) {
+gxSurf image = gxSurf(resolutionx, resolutiony, 32);
+int onEvent(pointer closure, int action, int btn, int x, int y) {
 
 	if (action == Gui.KEY_PRESS) {
 		if (btn == 27) {

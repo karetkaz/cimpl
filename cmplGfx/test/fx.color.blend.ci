@@ -189,11 +189,11 @@ vec4f exclusion(vec4f base, vec4f blend) {
 	};
 }
 
-static gxSurf image = gxSurf("asset/image/texture.png", 32);
-static gxSurf base = gxSurf("asset/image/forest.png", 32);
-static gxSurf offs = gxSurf(base);
+gxSurf image = gxSurf("asset/image/texture.png", 32);
+gxSurf base = gxSurf("asset/image/forest.png", 32);
+gxSurf offs = gxSurf(base);
 
-static vec4f blend(vec4f base, vec4f blend) = overlay;
+vec4f blend(vec4f base, vec4f blend) = screen;
 
 static if (true) {
 offs.blend(100, 100, image, null, blend);

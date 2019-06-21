@@ -563,15 +563,23 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 					return NULL;
 				}
 				loc = linkOf(ref->op.lhso, 1);
-				if (loc != NULL && !isTypename(loc)) {
-					/* lookup order for a.add(b) => add(a, b)
-						1. search for the matching method: a.add(a, b)
-						2. search for extension method: add(a, b)
-						3. search for virtual method: a.add(a, b)
-						4. search for static method: T.add(a, b)
+				if (loc != NULL && isTypename(loc)) {
+					ref->type = cc->type_fun;
+					ref = ref->op.rhso;
+				}
+				else {
+					/* lookup order for `a.add(b)`
+						1. search for matching method: `a.add(b)`
+						2. search for extension method: `add(a, b)`
+						3. search for virtual method: `a.add(a, b)`
+						4. search for static method: `T.add(a, b)`
 					*/
 
-					// 1. search for the matching method: a.add(a, b)
+					if (loc == NULL) {
+						// in case `a` is an expression use its type
+						loc = ref->op.lhso->type;
+					}
+					// 1. search for the matching method: a.add(b)
 					type = typeCheckRef(cc, loc, ref->op.rhso, args, 0);
 					if (type != NULL) {
 						ref->type = type;
@@ -608,10 +616,6 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 
 					ast->type = type;
 					return type;
-				}
-				else {
-					ref->type = cc->type_fun;
-					ref = ref->op.rhso;
 				}
 			}
 

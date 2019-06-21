@@ -44,9 +44,9 @@ Module.wgetFiles = function(files, onComplete) {
 	}
 
 	for (let file of files) {
+		let path = file.file || file.path;
 		try {
-			let path = file.file || file.path;
-			if (path[0] != "/") {
+			if (path != null && path[0] != "/") {
 				path = Module.workspace + '/' + path;
 			}
 			if (file.content != null) {
@@ -54,6 +54,10 @@ Module.wgetFiles = function(files, onComplete) {
 				Module.print('file[' + path + '] created with content');
 			}
 			else if (file.url != null) {
+				if (path == null) {
+					path = file.url.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3");
+					path = Module.workspace + '/' + path;
+				}
 				let xhr = new XMLHttpRequest();
 				xhr.open('GET', file.url, onComplete != null);
 				xhr.responseType = "arraybuffer";
@@ -81,7 +85,7 @@ Module.wgetFiles = function(files, onComplete) {
 			}
 		}
 		catch (err) {
-			Module.print('failed to download: `' + file.path + '`: ' + err);
+			Module.print('failed to download: `' + path + '`: ' + err);
 			console.error(err);
 			inProgress -= 1;
 		}

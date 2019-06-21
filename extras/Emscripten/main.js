@@ -138,10 +138,7 @@ let params = JsArgs('#', function (params, changes) {
 			files = JSON.parse(content);
 		} else {
 			for (let url of content.split(';')) {
-				files.push({
-					file: url.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3"),
-					url: url
-				});
+				files.push({ url });
 			}
 		}
 		openProjectFile({
@@ -428,11 +425,8 @@ function editProject() {
 		if (content.startsWith('[{')) {
 			files = JSON.parse(content);
 		} else {
-			for (let file of content.split(';')) {
-				files.push({
-					path: file.replace(/^(.*[\/])?(.*)(\..*)$/, "$2$3"),
-					url: file
-				});
+			for (let url of content.split(';')) {
+				files.push({ url });
 			}
 		}
 		content = '';
