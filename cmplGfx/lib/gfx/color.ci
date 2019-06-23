@@ -5,13 +5,13 @@ struct argb: 0 {
 	struct: 1 {
 		/// blue component
 		uint8 b;
-	
+
 		/// green component
 		uint8 g;
-	
+
 		/// red component
 		uint8 r;
-	
+
 		/// alpha component
 		uint8 a;
 	}
@@ -164,11 +164,10 @@ inline lum(argb c) = uint32((rch(c) * 76 + gch(c) * 150 + bch(c) * 29) >> 8);
 
 /// linear interpolation between `c1` and `c2` by `t`, where t is a 16 bit fixed point
 argb rgbLerp16(argb c1, argb c2, uint32 t) {
-	inline lrpfix16(uint32 x, uint32 y) = uint32(x + (t * (y - x) >> 16));
-
-	uint32 r = lrpfix16(rch(c1), rch(c2));
-	uint32 g = lrpfix16(gch(c1), gch(c2));
-	uint32 b = lrpfix16(bch(c1), bch(c2));
+	inline lerp(uint32 x, uint32 y) = uint32(x + (t * (y - x) >> 16));
+	uint32 r = lerp(rch(c1), rch(c2));
+	uint32 g = lerp(gch(c1), gch(c2));
+	uint32 b = lerp(bch(c1), bch(c2));
 	return argb(r, g, b);
 }
 

@@ -85,28 +85,20 @@ static void colcpy_32xor(char* dst, char *src, void *lut, size_t cnt) {
 	(void)lut;
 }
 static void colcpy_32mix(char* dst, char *src, void *lut, size_t cnt) {
-	size_t alpha = (size_t) lut;
-	if (alpha == (size_t) -1) {
-		for (; cnt > 0; cnt -= 1, dst += 4, src += 4) {
-			register argb val = *(argb *) src;
-			val = gx_mixcolor(*(argb *) dst, val, val.a);
-			*(argb *) dst = val;
-		}
-	}
-	else {
-		for (; cnt > 0; cnt -= 1, dst += 4, src += 4) {
-			register argb val = *(argb *) src;
-			val = gx_mixcolor(*(argb *) dst, val, (uint8_t) alpha);
-			*(argb *) dst = val;
-		}
+	int alpha = (ssize_t) lut;
+	for (; cnt > 0; cnt -= 1, dst += 4, src += 4) {
+		register argb val = *(argb *) src;
+		register argb *ptr = (argb *) dst;
+		ptr->r = clamp_s8(ptr->r + alpha * (val.r - ptr->r) / 255);
+		ptr->g = clamp_s8(ptr->g + alpha * (val.g - ptr->g) / 255);
+		ptr->b = clamp_s8(ptr->b + alpha * (val.b - ptr->b) / 255);
 	}
 }
 
 static void colset_32mix(char* dst, char *src, void *lut, size_t cnt) {
-	argb alpha;
-	alpha.val = (uint32_t) (size_t) lut;
+	argb val = cast_rgb((uint32_t) (size_t) lut);
 	for (; cnt > 0; cnt -= 1, dst += 4, src += 1) {
-		*(argb *) dst = gx_mixcolor(*(argb *) dst, alpha, *(uint8_t *) src);
+		*(argb *) dst = gx_mixcolor(*(argb *) dst, val, *(uint8_t *) src);
 	}
 }
 static void colcpy_24_32(char* dst, char *src, void *lut, size_t cnt) {

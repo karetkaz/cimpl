@@ -57,15 +57,15 @@ int onEvent(int action, int button, int x, int y) {
 		int dy = oy - y;
 
 		if (button == 1) {
-			brightness = Math.clamp(brightness + dy, -255, 255);
+			brightness += oy - y;
 			reCalculate = true;
 		}
 		if (button == 2) {
-			contrast = Math.clamp(contrast + dy, -512, 512);
+			contrast += oy - y;
 			reCalculate = true;
 		}
 		if (button >= 3) {
-			gamma = Math.clamp(gamma + dy, 1, 1000);
+			gamma += oy - y;
 			reCalculate = true;
 		}
 		ox = x;
@@ -73,14 +73,21 @@ int onEvent(int action, int button, int x, int y) {
 	}
 
 	if (reCalculate) {
+		// clamp input values
+		brightness = Math.clamp(brightness, -255, 255);
+		contrast = Math.clamp(contrast, -512, 512);
+		gamma = Math.clamp(gamma, 1, 1000);
+
+		uint64 time = System.millis();
 		uint32 lut[256];
 		brightnessContrastGamma(lut, brightness, contrast, gamma / 100.);
-
 		offs.resize(null, back, null, 1);
 		offs.colorMap(null, lut);
 		offs.drawHist(null, 0x00ffffff);
 
-		inline p = 5;
+		// stop measure execution time
+		time = System.millis() - time;
+
 		char text[256];
 		FormatFlags flags = { padLen: 4 };
 		int pos = text.append(0, "brightness: ");
@@ -89,10 +96,14 @@ int onEvent(int action, int button, int x, int y) {
 		pos = text.append(pos, contrast, flags);
 		pos = text.append(pos, "\ngamma: ");
 		pos = text.append(pos, gamma, flags);
+		pos = text.append(pos, "\ntime: ");
+		pos = text.append(pos, time, flags);
+		pos = text.append(pos, " ms\n");
 
+		inline padding = 5;
 		gxRect rect = { x: 30, y: 30, w: 0, h: 0 };
 		font.clipText(rect, text);
-		offs.fillRect(rect.x - p, rect.y - p, rect.x + rect.w + p, rect.y + rect.h + p, 0x000000);
+		offs.fill(rect, padding, 0x000000);
 		offs.drawText(rect.x, rect.y, font, text, 0xffffff);
 	}
 

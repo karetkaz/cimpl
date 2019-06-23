@@ -57,7 +57,7 @@
 			<button class="right" onclick="execute();" title="Compiler usage help">?</button>
 		</div>
 		<ul>
-			<li onclick="execute(selExecute.value);" >⚙ <select id="selExecute" onchange="execute(this.value);" class="right" onclick="event.stopPropagation()">
+			<li onclick="execute(selExecute.value);" ><select id="selExecute" onchange="execute(this.value);" onclick="event.stopPropagation()">
 				<option value="-run/g">⚡ Run</option>
 				<option value="-debug/g">🐞 Debug</option>
 				<option value="-profile/g">⏱ Profile</option>
@@ -67,13 +67,13 @@
 				<option value="-api/a/m">Symbols</option>
 				<option value="-api/a/m/u">Usages</option>
 				<option value="-ast/m">Syntax tree</option>
-				<option value="-profile/t/p/G/M -api/a/m/d/p/u -asm/a/n/s -ast -doc">full dump</option>
+				<option value="-profile/t/p/G/M -api/A/m/d/p/u -asm/a/n/s -ast -doc">full dump</option>
 			</select></li>
 		</ul>
 		<hr>
 		<div>
 			<span>Project</span>
-			<button class="right" onclick="listFiles(false);" title="Refresh file list">⟳</button>
+			<button class="right" onclick="listFiles('.');" title="Refresh file list">⟳</button>
  			<!--<button class="right" onclick="uploadFiles();">📤</button> -->
  			<!--<button class="right" onclick="downloadFiles(false);">📥</button> -->
 		</div>
@@ -87,7 +87,7 @@
 		<ul id="fileList">
 		</ul>
 		<ul>
-		<li onclick="listFiles(true);" title="Show files including the /lib folder">Show all</li>
+		<li onclick="listFiles('*');" title="Show files including the /lib/ folder">Show all</li>
 	</ul>
 	</div>
 	<div id="editSplit" class="content split-pane horizontal">
@@ -122,7 +122,7 @@ function openProjectFile(projectOrFile) {
 	if (projectOrFile.list) {
 		Module.wgetFiles(projectOrFile.list, function (inProgress) {
 			if (inProgress == 0) {
-				listFiles(false);
+				listFiles('.');
 			}
 		});
 	}
@@ -134,16 +134,14 @@ function openProjectFile(projectOrFile) {
 		console.trace(error);
 	}
 }
-function listFiles(all) {
-	let files;
-	if (all === true) {
-		files = Module.listFiles([Module.workspace, '/lib']);
-	} else {
-		files = Module.listFiles([Module.workspace]);
-	}
+function listFiles(dir) {
 	fileList.innerHTML = '';
-	for (let file of files) {
-		fileList.innerHTML += '<li onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
+	for (let file of Module.listFiles(dir)) {
+		if (file.endsWith('/')) {
+			fileList.innerHTML += '<li onclick="listFiles(this.innerText);">' + file + '</li>';
+		} else {
+			fileList.innerHTML += '<li onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
+		}
 	}
 	params.update('file', 'content');
 }
@@ -166,7 +164,7 @@ function saveInput() {
 		FS.mkdirTree(file.replace(/^(.*[/])?(.*)(\..*)$/, "$1"));
 		FS.writeFile(file, content, {encoding: 'utf8'});
 		if (!exists) {
-			listFiles(false);
+			listFiles('.');
 		}
 	}
 	return file;
@@ -175,7 +173,14 @@ function execInput(args) {
 	// show overlay while compiling and initializing
 	canvas.parentElement.classList.remove('hidden');
 	setTimeout(function() {
-		Module['callMain'](args || []);
+		try {
+			Module['callMain'](args || []);
+		} catch (error) {
+			if (canvas.width === 0) {
+				canvas.parentElement.classList.add('hidden');
+			}
+			throw error;
+		}
 		canvas.parentElement.classList.add('hidden');
 	});
 }

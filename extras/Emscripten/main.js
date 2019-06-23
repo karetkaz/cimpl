@@ -8,15 +8,15 @@ CodeMirror.commands.save = function(cm) {
 }
 
 CodeMirror.commands.line = function(cm) {
-	completeAction({key: ':', valueHint: 'enter a line number to go to'});
+	completeAction({key: ':', valueText: key});
 }
 
 CodeMirror.commands.find = function(cm) {
-	completeAction({key: '?', valueHint: 'enter a text to search'});
+	completeAction({key: '?', valueText: key});
 }
 
 CodeMirror.commands.replace = function(cm) {
-	completeAction({key: '!', valueHint: 'enter a text to replace'});
+	completeAction({key: '?!', valueText: key});
 }
 
 CodeMirror.commands.findNext = function(cm) {
@@ -210,30 +210,25 @@ edtFileName.onkeydown = function(event) {
 		params.update({exec: command});
 	}
 
+	// `:%` => zoom
+	else if (edtFileName.value.startsWith(':%')) {
+		document.body.style.fontSize = (+edtFileName.value.substr(2) / 100) + 'em';
+		editor.setSize('100%', '100%');
+	}
+
 	// `:<number>` => goto line
 	else if (edtFileName.value.startsWith(':')) {
 		let line = edtFileName.value.substr(1);
-		if (isNaN(line)) {
-			return actionError();
+		if (!isNaN(line)) {
+			params.update({line: line});
+		} else {
+			editor.execCommand(line);
 		}
-		params.update({line: line});
 	}
 
-	// !find text
-	else if (edtFileName.value.startsWith('?')) {
-		let text = edtFileName.value.substr(1);
-		let cursor = editor.getSearchCursor(text, 0);
-		if (!cursor.findNext()) {
-			edtFileName.cursor = null;
-			return actionError();
-		}
-		editor.setSelection(cursor.from(), cursor.to());
-		edtFileName.cursor = cursor;
-	}
-
-	// !replace all occurences
-	else if (edtFileName.value.startsWith('!')) {
-		let text = edtFileName.value.substr(1);
+	// ?! => replace all occurences
+	else if (edtFileName.value.startsWith('?!')) {
+		let text = edtFileName.value.substr(2);
 		let cursor = editor.getSearchCursor(text, 0);
 		let selections = [];
 		while (cursor.findNext()) {
@@ -250,10 +245,21 @@ edtFileName.onkeydown = function(event) {
 		editor.setSelections(selections);
 	}
 
-	// `%` => zoom
-	else if (edtFileName.value.startsWith('%')) {
-		document.body.style.fontSize = (+edtFileName.value.substr(1) / 100) + 'em';
-		editor.setSize('100%', '100%');
+	// ? => find text
+	else if (edtFileName.value.startsWith('?')) {
+		let text = edtFileName.value.substr(1);
+		let cursor = editor.getSearchCursor(text, 0);
+		if (!cursor.findNext()) {
+			edtFileName.cursor = null;
+			return actionError();
+		}
+		editor.setSelection(cursor.from(), cursor.to());
+		edtFileName.cursor = cursor;
+	}
+
+	// '[{...' => project
+	else if (edtFileName.value.startsWith('[{')) {
+		params.update({ project: edtFileName.value});
 	}
 
 	// `+` => unfoldAll
@@ -286,7 +292,11 @@ edtFileName.onkeydown = function(event) {
 			openProjectFile({ file, list: [{
 				file, url: match[1] + match[2]
 			}]});
-		} else {
+		}
+		else if (file.endsWith('/') || file.endsWith('*')) {
+			listFiles(edtFileName.value);
+		}
+		else {
 			params.update({ content: null, file, line });
 		}
 	}
@@ -340,29 +350,40 @@ window.onkeydown = function() {
 }
 
 function completeAction(event) {
-	if (event.valueHint !== undefined) {
-		edtFileName.value = event.key;
+	if (event.valueText !== undefined) {
+		edtFileName.value = event.valueText;
 		edtFileName.focus();
 	}
-	if (edtFileName.value !== event.key) {
+
+	if (!edtFileName.value.endsWith(event.key)) {
+		// maybe backspace was pressed
 		return;
 	}
 
-	switch (event.key) {
+	switch (edtFileName.value) {
+		default:
+			return;
+
 		case ':':
-			edtFileName.value += editor.getCursor().line + 1 || event.valueHint || '';
+			edtFileName.value += editor.getCursor().line + 1 || 'enter a line number to go to';
+			edtFileName.selectionStart = 1;
 			break;
 
 		case '?':
-		case '!':
-			edtFileName.value += editor.getSelection() || event.valueHint || '';
+			edtFileName.value += editor.getSelection() || 'enter a text to search';
+			edtFileName.selectionStart = 1;
+			break;
+
+		case '?!':
+			edtFileName.value += editor.getSelection() || 'enter a text to replace';
+			edtFileName.selectionStart = 2;
 			break;
 
 		case '#':
 			edtFileName.value += params.exec || selExecute.data || '';
+			edtFileName.selectionStart = 1;
 			break;
 	}
-	edtFileName.selectionStart = 1;
 	edtFileName.selectionEnd = edtFileName.value.length;
 }
 

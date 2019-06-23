@@ -533,8 +533,10 @@ gxSurf.drawBezier(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, x3: 
 gxSurf.clipText(font: gxSurf, rect: gxRect, text: char[*]): void
 gxSurf.drawText(surf: gxSurf, x: int32, y: int32, font: gxSurf, text: char[*], color: int32): void
 gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
-gxSurf.blend(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect, blend(base: vec4f, with: vec4f): vec4f): void
+gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect, alpha: int32): void
+gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect, blend(base: vec4f, with: vec4f): vec4f): void
 gxSurf.resize(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate: int32): void
+gxSurf.blur(surf: gxSurf, radius: int32, sigma: float64): void
 gxSurf.colorMap(surf: gxSurf, roi: gxRect, lut: uint32[256]): void
 gxSurf.colorMat(surf: gxSurf, roi: gxRect, mat: float32[16]): void
 gxSurf.calcHist(surf: gxSurf, roi: gxRect, rgb: uint32, lut: uint32[256]): void
@@ -647,6 +649,8 @@ gxSurf(copy: gxSurf): gxSurf
 set(dst: gxSurf, x: int32, y: int32, color: argb): void
 clip(src: gxSurf, roi: gxRect): bool
 fill(dst: gxSurf, col: uint32): void
+fill(dst: gxSurf, roi: gxRect, col: uint32): void
+fill(dst: gxSurf, roi: gxRect, pad: int32, col: uint32): void
 eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): vec4f): void
 tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
 show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void

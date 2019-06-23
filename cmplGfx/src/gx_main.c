@@ -299,11 +299,28 @@ static vmError surf_copySurf(nfcContext ctx) {
 	gx_Surf src = nextValue(ctx).ref;
 	gx_Rect roi = nextValue(ctx).ref;
 
-	gx_copySurf(surf, x, y, src, roi);
+	if (gx_copySurf(surf, x, y, src, roi) != 0) {
+		return nativeCallError;
+	}
 	return noError;
 }
 
-static const char *proto_surf_blendSurf = "void blend(gxSurf surf, int x, int y, const gxSurf src, const gxRect roi&, vec4f blend(vec4f base, vec4f with))";
+static const char *proto_surf_lerpSurf = "void copy(gxSurf surf, int x, int y, gxSurf src, const gxRect roi&, int alpha)";
+static vmError surf_lerpSurf(nfcContext ctx) {
+	gx_Surf surf = nextValue(ctx).ref;
+	int x = nextValue(ctx).i32;
+	int y = nextValue(ctx).i32;
+	gx_Surf src = nextValue(ctx).ref;
+	gx_Rect roi = nextValue(ctx).ref;
+	int alpha = nextValue(ctx).i32;
+
+	if (gx_lerpSurf(surf, x, y, src, roi, alpha) != 0) {
+		return nativeCallError;
+	}
+	return noError;
+}
+
+static const char *proto_surf_blendSurf = "void copy(gxSurf surf, int x, int y, const gxSurf src, const gxRect roi&, vec4f blend(vec4f base, vec4f with))";
 static vmError surf_blendSurf(nfcContext ctx) {
 	rtContext rt = ctx->rt;
 	gx_Surf surf = nextValue(ctx).ref;
@@ -385,7 +402,21 @@ static vmError surf_resizeSurf(nfcContext ctx) {
 	gx_Rect roi = nextValue(ctx).ref;
 	int interpolate = nextValue(ctx).i32;
 
-	gx_zoomSurf(surf, rect, src, roi, interpolate);
+	if (gx_zoomSurf(surf, rect, src, roi, interpolate) != 0) {
+		return nativeCallError;
+	}
+	return noError;
+}
+
+static const char *proto_surf_blurSurf = "void blur(gxSurf surf, int radius, double sigma)";
+static vmError surf_blurSurf(nfcContext ctx) {
+	gx_Surf surf = nextValue(ctx).ref;
+	int radius = nextValue(ctx).i32;
+	double sigma = nextValue(ctx).f64;
+
+	if (gx_blurSurf(surf, radius, sigma) != 0) {
+		return nativeCallError;
+	}
 	return noError;
 }
 
@@ -1095,8 +1126,10 @@ int cmplInit(rtContext rt) {
 		{surf_clipText, proto_surf_clipText},
 		{surf_drawText, proto_surf_drawText},
 		{surf_copySurf, proto_surf_copySurf},
+		{surf_lerpSurf, proto_surf_lerpSurf},
 		{surf_blendSurf, proto_surf_blendSurf},
 		{surf_resizeSurf, proto_surf_resizeSurf},
+		{surf_blurSurf, proto_surf_blurSurf},
 		{surf_cLutSurf, proto_surf_cLutSurf},
 		{surf_cMatSurf, proto_surf_cMatSurf},
 		{surf_calcHist, proto_surf_calcHist},

@@ -136,6 +136,225 @@ void* gx_cliprect(gx_Surf surf, gx_Rect roi) {
 	return gx_getpaddr(surf, roi->x, roi->y);
 }
 
+static int gx_blitSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, cblt_type mode, void *extra) {
+	struct gx_Rect clip;
+	clip.x = roi ? roi->x : 0;
+	clip.y = roi ? roi->y : 0;
+	clip.w = roi ? roi->w : src->width;
+	clip.h = roi ? roi->h : src->height;
+
+	if (x < 0) {
+		clip.x -= x;
+		clip.w += x;
+	}
+	if (y < 0) {
+		clip.y -= y;
+		clip.h += y;
+	}
+	char *sptr = gx_cliprect(src, &clip);
+	if (sptr == NULL) {
+		// there is noting to copy
+		return 0;
+	}
+
+	clip.x = x;
+	clip.y = y;
+	if (x < 0) {
+		clip.w -= x;
+	}
+	if (y < 0) {
+		clip.h -= y;
+	}
+	char *dptr = gx_cliprect(surf, &clip);
+	if (dptr == NULL) {
+		// there are no pixels to set
+		return 0;
+	}
+
+	cblt_proc blt = gx_getcbltf(mode, src->depth);
+	if(blt == NULL) {
+		// error: operation is invalid or not implemented
+		return -1;
+	}
+
+	while (clip.h--) {
+		blt(dptr, sptr, extra, (size_t) clip.w);
+		dptr += surf->scanLen;
+		sptr += src->scanLen;
+	}
+	return 0;
+}
+
+int gx_copySurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi) {
+	return gx_blitSurf(surf, x, y, src, roi, surf->depth, NULL);
+}
+int gx_lerpSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, int alpha) {
+	if (surf->depth != src->depth) {
+		// both source and destination must have same depth
+		return -2;
+	}
+
+	return gx_blitSurf(surf, x, y, src, roi, cblt_cpy_mix, (void *) (ssize_t) alpha);
+}
+int gx_zoomSurf(gx_Surf surf, gx_Rect rect, gx_Surf src, gx_Rect roi, int interpolate) {
+	if (surf->depth != src->depth) {
+		return -2;
+	}
+
+	struct gx_Rect srec;
+	srec.x = srec.y = 0;
+	srec.w = src->width;
+	srec.h = src->height;
+	if (roi != NULL) {
+		if (roi->x > 0) {
+			srec.w -= roi->x;
+			srec.x = roi->x;
+		}
+		if (roi->y > 0) {
+			srec.h -= roi->y;
+			srec.y = roi->y;
+		}
+		if (roi->w < srec.w)
+			srec.w = roi->w;
+		if (roi->h < srec.h)
+			srec.h = roi->h;
+	}
+
+	struct gx_Rect drec;
+	if (rect != NULL) {
+		drec = *rect;
+	}
+	else {
+		drec.x = drec.y = 0;
+		drec.w = surf->width;
+		drec.h = surf->height;
+	}
+
+	if (drec.w <= 0 || drec.h <= 0) {
+		return 0;
+	}
+	if (srec.w <= 0 || srec.h <= 0) {
+		return 0;
+	}
+
+	int32_t x0 = 0;
+	int32_t y0 = 0;
+	int32_t dx = (srec.w << 16) / drec.w;
+	int32_t dy = (srec.h << 16) / drec.h;
+
+	if (drec.x < 0) {
+		x0 = -drec.x;
+	}
+	if (drec.y < 0) {
+		y0 = -drec.y;
+	}
+
+	char *dptr = gx_cliprect(surf, &drec);
+	if (dptr == NULL) {
+		return 0;
+	}
+
+	if (!interpolate || dx >= 0x20000 || dy >= 0x20000) {
+		for (int y = 0, sy = y0; y < drec.h; ++y, sy += dy) {
+			for (int x = 0, sx = x0; x < drec.w; ++x, sx += dx) {
+				gx_setpixel(surf, drec.x + x, drec.y + y, gx_getpixel(src, sx >> 16, sy >> 16));
+			}
+		}
+		return 0;
+	}
+
+	x0 -= 0x8000;
+	y0 -= 0x8000;
+	for (int y = 0, sy = y0; y < drec.h; ++y, sy += dy) {
+		for (int x = 0, sx = x0; x < drec.w; ++x, sx += dx) {
+			gx_setpixel(surf, drec.x + x, drec.y + y, gx_getpix16(src, sx, sy));
+		}
+	}
+	return 0;
+}
+
+static inline double gauss(double x, double sigma) {
+	double t = x / sigma;
+	double SQRT_2_PI_INV = 0.398942280401432677939946059935;
+	return SQRT_2_PI_INV * exp(-0.5 * t * t) / sigma;
+}
+int gx_blurSurf(gx_Surf surf, int radius, double sigma) {
+	uint32_t kernelF16[1024];
+	double kernel[1024];
+	double kernelSum = 0;
+
+	int size = 2 * (radius + 1);
+	int mid = radius + 1;
+
+	if (surf->depth != 32) {
+		return -1;
+	}
+	if (size >= 1024) {
+		return -1;
+	}
+	if (size < 1) {
+		return 0;
+	}
+
+	for (int i = 0; i < size; i += 1) {
+		kernel[i] = gauss(mid - i, sigma);
+		kernelSum += kernel[i];
+	}
+	for (int i = 0; i < size; i++) {
+		kernelF16[i] = 65536 * (kernel[i] / kernelSum);
+	}
+
+	int width = surf->width;
+	int height = surf->height;
+	gx_Surf tmp = gx_createSurf(NULL, width, height, surf->depth, Surf_2ds);
+
+	if (tmp == NULL) {
+		return -1;
+	}
+
+	// x direction: inout -> temp
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			uint32_t r = 0;
+			uint32_t g = 0;
+			uint32_t b = 0;
+			for (int i = 0; i < size; i += 1) {
+				int _x = x + i - mid;
+				uint32_t _k = kernelF16[i];
+				if (_x >= 0 && _x < width) {
+					uint32_t col = gx_getpixel(surf, _x, y);
+					r += _k * rch(col);
+					g += _k * gch(col);
+					b += _k * bch(col);
+				}
+			}
+			gx_setpixel(tmp, x, y, clamp_srgb(255, r >> 16, g >> 16, b >> 16).val);
+		}
+	}
+
+	// y direction: temp -> inout
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			uint32_t r = 0;
+			uint32_t g = 0;
+			uint32_t b = 0;
+			for (int i = 0; i < size; i += 1) {
+				int _y = y + i - mid;
+				uint32_t _k = kernelF16[i];
+				if (_y >= 0 || _y < height) {
+					uint32_t col = gx_getpixel(tmp, x, _y);
+					r += _k * rch(col);
+					g += _k * gch(col);
+					b += _k * bch(col);
+				}
+			}
+			gx_setpixel(surf, x, y, clamp_srgb(255, r >> 16, g >> 16, b >> 16).val);
+		}
+	}
+	gx_destroySurf(tmp);
+	return 0;
+}
+
 static inline double f64Max(double a, double b) { return a > b ? a : b; }
 static inline double f64Clamp(double t, double a, double b) { return t < a ? a : t > b ? b : t; }
 

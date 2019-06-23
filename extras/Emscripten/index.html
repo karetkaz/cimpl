@@ -60,20 +60,20 @@
 			<li onclick="execute(selExecute.data = '-run/g');" title="Execute code at full speed">⚡ Run</li>
 			<li onclick="execute(selExecute.data = '-debug/g');" title="Execute code with error detection">🐞 Debug</li>
 			<li onclick="execute(selExecute.data = '-profile/g');" title="Execute code measuring execution time">⏱ Profile</li>
-			<li onclick="execute(selExecute.data = selExecute.value);" >⚙ <select id="selExecute" onchange="execute(this.data = this.value);" class="right" onclick="event.stopPropagation()" data="-run/g">
+			<li onclick="execute(selExecute.data = selExecute.value);" ><select id="selExecute" onchange="execute(this.data = this.value);" onclick="event.stopPropagation()" data="-run/g">
 				<option value="" selected>Compile only</option>
 				<option value="-doc/a/m">Documentation</option>
 				<option value="-asm/a/m/n/s/m">Instructions</option>
 				<option value="-api/a/m">Symbols</option>
 				<option value="-api/a/m/u">Usages</option>
 				<option value="-ast/m">Syntax tree</option>
-				<option value="-profile/t/p/G/M -api/a/m/d/p/u -asm/a/n/s -ast -doc">full dump</option>
+				<option value="-profile/t/p/G/M -api/A/m/d/p/u -asm/a/n/s -ast -doc">full dump</option>
 			</select></li>
 		</ul>
 		<hr>
 		<div>
 			<span>Project</span>
-			<button class="right" onclick="listFiles(false);" title="Refresh file list">⟳</button>
+			<button class="right" onclick="listFiles('.');" title="Refresh file list">⟳</button>
  			<!--<button class="right" onclick="uploadFiles();">📤</button> -->
  			<!--<button class="right" onclick="downloadFiles(false);">📥</button> -->
 		</div>
@@ -87,7 +87,7 @@
 		<ul id="fileList">
 		</ul>
 		<ul>
-		<li onclick="listFiles(true);" title="Show files including the /lib folder">Show all</li>
+		<li onclick="listFiles('*');" title="Show files including the /lib/ folder">Show all</li>
 	</ul>
 	</div>
 	<div id="editSplit" class="content split-pane horizontal">
@@ -116,8 +116,8 @@ props.libraries = [
 function openProjectFile(projectOrFile) {
 	worker.postMessage(projectOrFile);
 }
-function listFiles(all) {
-	worker.postMessage({list: all});
+function listFiles(dir) {
+	worker.postMessage({list: dir});
 }
 
 function saveInput() {
@@ -192,7 +192,11 @@ worker.onmessage = function(event) {
 	if (data.list !== undefined) {
 		fileList.innerHTML = '';
 		for (let file of data.list) {
-			fileList.innerHTML += '<li onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
+			if (file.endsWith('/')) {
+				fileList.innerHTML += '<li onclick="listFiles(this.innerText);">' + file + '</li>';
+			} else {
+				fileList.innerHTML += '<li onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
+			}
 		}
 	}
 

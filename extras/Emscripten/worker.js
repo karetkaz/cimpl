@@ -27,25 +27,20 @@ onmessage = function(event) {
 			throw "Module not initialized";
 		}
 
-		let list = [];
-		// read, download file list
-		if (data.list !== undefined) {
-			if (data.list === true) {
-				// list all files from workspace and lib directory
-				list = [Module.workspace, '/lib'];
-			}
-			else if (data.list === false) {
-				// list all files from workspace directory
-				list = [Module.workspace];
-			}
-			else {
+		let list = null;
+		// list files from a directory
+		if (data.list != null) {
+			if (data.list.constructor === Array) {
 				Module.wgetFiles(data.list);
 				list = [Module.workspace];
+			} else {
+				list = data.list;
 			}
 		}
 
 		// open, save, download file
 		if (data.file !== undefined) {
+			let operation = 'operation';
 			try {
 				result.file = data.file;
 				result.line = data.line;
@@ -59,6 +54,7 @@ onmessage = function(event) {
 						list = [Module.workspace];
 					}
 					// save file content
+					operation = 'save';
 					FS.mkdirTree(path.replace(/^(.*[/])?(.*)(\..*)$/, "$1"));
 					FS.writeFile(path, data.content, {encoding: 'utf8'});
 				}
@@ -66,25 +62,31 @@ onmessage = function(event) {
 					if (!FS.analyzePath(path).exists) {
 						list = [Module.workspace];
 					}
+					operation = 'download';
 					Module.wgetFiles([data]);
 				}
 				else {
 					// read file content
+					operation = 'read';
 					result.content = FS.readFile(path, {encoding: 'utf8'});
 				}
 			} catch (err) {
-				result.error = 'file operation failed[' + data.file + ']: ' + err;
+				result.error = 'File ' + operation + ' failed[' + data.file + ']: ' + err;
 				console.trace(err);
 			}
 		}
 
 		// execute
 		if (data.execute !== undefined) {
-			Module['callMain'](data.execute);
-			result.exitCode = 0;
+			try {
+				Module['callMain'](data.execute);
+				result.exitCode = 0;
+			} catch (error) {
+				result.exitCode = -1;
+			}
 		}
 
-		if (list.length > 0) {
+		if (list!= null) {
 			result.list = Module.listFiles(list);
 		}
 	} catch (err) {

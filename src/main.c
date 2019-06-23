@@ -160,7 +160,8 @@ struct userContextRec {
 	int dmpAst:1;           // dump abstract syntax tree
 
 	int dmpMain:1;          // include main initializer
-	int dmpBuiltins:1;      // include builtin symbols
+	int dmpExtern:1;        // include library symbols
+	int dmpBuiltin:1;       // include builtin symbols
 	int dmpDetails:1;       // dump detailed info
 	int dmpParams:1;        // dump parameters and fields
 	int dmpUsages:1;        // dump usages
@@ -185,7 +186,6 @@ struct userContextRec {
 	int closeOut:1;         // close `out` file.
 	int hideOffsets:1;      // remove offsets, bytecode, and durations from dumps
 	char *compileSteps;     // dump compilation steps
-	char *dmpUnitFilter;    // dump compilation unit filter
 
 	// debugger
 	FILE *in;               // debugger input
@@ -342,6 +342,27 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 
 		//#}
 	}
+}
+
+static inline int canDump(userContext ctx, symn sym) {
+	// include generated main symbol
+	int isMain = sym == ctx->rt->main;
+	if (ctx->dmpMain && isMain) {
+		return 1;
+	}
+
+	// include builtin symbols
+	int isBuiltin = sym->file == NULL || sym->line == 0;
+	if (ctx->dmpBuiltin && isBuiltin && !isMain) {
+		return 1;
+	}
+
+	// include external library symbols
+	int isExternal = !strEquals(sym->unit, ctx->rt->main->unit);
+	if (ctx->dmpExtern && isExternal && !isMain && !isBuiltin) {
+		return 1;
+	}
+	return !isMain && !isBuiltin && !isExternal;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ json output
@@ -811,11 +832,7 @@ void printFields(FILE *out, const char **esc, symn sym, userContext ctx) {
 			}
 		}
 
-		if (ctx->dmpUnitFilter && !strEquals(sym->unit, ctx->dmpUnitFilter)) {
-			continue;
-		}
-		if (!ctx->dmpBuiltins && (var->file == NULL || var->line <= 0)) {
-			// exclude builtin symbols
+		if (!canDump(ctx, var)) {
 			continue;
 		}
 
@@ -1026,15 +1043,8 @@ static void dumpApiHtml(userContext ctx, symn sym) {
 		);
 	}
 
-	if (ctx->dmpUnitFilter && !strEquals(sym->unit, ctx->dmpUnitFilter)) {
+	if (!canDump(ctx, sym)) {
 		dmpApi = dmpDoc = dmpAsm = dmpAst = 0;
-	}
-	if (!ctx->dmpBuiltins && (sym->file == NULL || sym->line == 0)) {
-		// skip generated or builtin symbols
-		if (!(ctx->dmpMain && sym == ctx->rt->main)) {
-			// skip main initializer symbol
-			dmpApi = dmpDoc = dmpAsm = dmpAst = 0;
-		}
 	}
 
 	if (dmpApi || dmpDoc || dmpAst || dmpAsm) {
@@ -1117,15 +1127,8 @@ static void dumpApiText(userContext ctx, symn sym) {
 		return;
 	}
 
-	if (ctx->dmpUnitFilter && !strEquals(sym->unit, ctx->dmpUnitFilter)) {
+	if (!canDump(ctx, sym)) {
 		return;
-	}
-	if (!ctx->dmpBuiltins && (sym->file == NULL || sym->line == 0)) {
-		// skip generated or builtin symbols
-		if (!(ctx->dmpMain && sym == ctx->rt->main)) {
-			// skip main initializer symbol
-			return;
-		}
 	}
 
 	// print qualified name with arguments and type
@@ -1598,16 +1601,16 @@ static int usage() {
 		"\n  -debug[*]             run with attached debugger, pausing on uncaught errors and break points"
 		"\n    /g /G               dump global variable values (/G includes extra information)"
 		"\n    /m /M               dump memory usage (/M includes extra information)"
-		"\n    /p /P               print caught errors (/P includes extra information)"
 		"\n    /t /T               trace the execution (/T includes extra information)"
+		"\n    /p /P               print caught errors (/P includes extra information)"
 		"\n    /a                  pause on all(caught) errors"
 		"\n    /s                  pause on startup"
 		"\n"
 		"\n  -profile[*]           run code with profiler: coverage, method tracing"
 		"\n    /g /G               dump global variable values (/G includes extra information)"
 		"\n    /m /M               dump memory usage (/M includes extra information)"
-		"\n    /p /P               show statement execution times (/P includes extra information)"
 		"\n    /t /T               trace the execution (/T includes extra information)"
+		"\n    /p /P               print execution times (/P includes extra information)"
 		"\n"
 		"\n  -std<file>            specify custom standard library file (empty file name disables std library compilation)."
 		"\n"
@@ -1624,41 +1627,39 @@ static int usage() {
 		"\n    .html               dump api in html format"
 		"\n"
 		"\n  -api[*]               dump symbols"
-		"\n    /a                  include all builtin symbols"
-		"\n    /m                  include main builtin symbol"
-		"\n    /f                  include only symbols from the last compiled file"
+		"\n    /a /A               include all library symbols(/A includes builtins)"
+		"\n    /m                  include `main` builtin initializer symbol"
 		"\n    /d                  dump details of symbol"
 		"\n    /p                  dump params and fields"
 		"\n    /u                  dump usages"
 		"\n"
 		"\n  -doc[*]               dump documentation"
-		"\n    /a                  include all builtin symbols"
+		"\n    /a /A               include all library symbols(/A includes builtins)"
 		"\n    /m                  include main builtin symbol"
-		"\n    /f                  include only symbols from the last compiled file"
 		"\n    /d                  dump details of symbol"
 		"\n    /p                  dump params and fields"
 		"\n    /u                  dump usages"
 		"\n"
 		"\n  -asm[*]<int>          dump assembled code: jmp +80"
-		"\n    /a                  use global address: jmp @0x003d8c"
-		"\n    /n                  prefer names over addresses: jmp <main+80>"
-		"\n    /s                  print source code statements"
-		"\n    /f                  include only symbols from the last compiled file"
+		"\n    /a /A               include all library symbols(/A includes builtins)"
 		"\n    /m                  include main builtin symbol"
 		"\n    /d                  dump details of symbol"
 		"\n    /p                  dump params and fields"
 		"\n    /u                  dump usages"
+		"\n    /g                  use global address: jmp @0x003d8c"
+		"\n    /n                  prefer names over addresses: jmp <main+80>"
+		"\n    /s                  print source code statements"
 		"\n"
 		"\n  -ast[*]               dump syntax tree"
+		"\n    /a /A               include all library symbols(/A includes builtins)"
+		"\n    /m                  include main builtin symbol"
+		"\n    /d                  dump details of symbol"
+		"\n    /p                  dump params and fields"
+		"\n    /u                  dump usages"
 		"\n    /t                  dump sub-expression type information"
 		"\n    /l                  do not expand statements (print on single line)"
 		"\n    /b                  don't keep braces ('{') on the same line"
 		"\n    /e                  don't keep `else if` constructs on the same line"
-		"\n    /f                  include only symbols from the last compiled file"
-		"\n    /m                  include main builtin symbol"
-		"\n    /d                  dump details of symbol"
-		"\n    /p                  dump params and fields"
-		"\n    /u                  dump usages"
 		"\n"
 		"\n<files with options>: filename followed by switches"
 		"\n  <file>                if file extension is (.so|.dll|.wasm) load as library else compile"
@@ -1803,21 +1804,20 @@ int main(int argc, char *argv[]) {
 						arg2 += 1;
 						break;
 
+					case 'G':
+						extra.dmpGlobalTyp = 1;
+						extra.dmpGlobalFun = 1;
+						// fall through
+					case 'g':
+						extra.dmpGlobals = 1;
+						arg2 += 2;
+						break;
+
 					case 'M':
 						extra.dmpMemoryUse = 1;
 						// fall through
 					case 'm':
 						extra.dmpHeapUsage = 1;
-						arg2 += 2;
-						break;
-
-					case 'G':
-						extra.dmpGlobalTyp = 1;
-						extra.dmpGlobalFun = 1;
-						extra.dmpBuiltins = 1;
-						// fall through
-					case 'g':
-						extra.dmpGlobals = 1;
 						arg2 += 2;
 						break;
 				}
@@ -1840,6 +1840,15 @@ int main(int argc, char *argv[]) {
 						arg2 += 1;
 						break;
 
+					case 'G':
+						extra.dmpGlobalTyp = 1;
+						extra.dmpGlobalFun = 1;
+						// fall through
+					case 'g':
+						extra.dmpGlobals = 1;
+						arg2 += 2;
+						break;
+
 					case 'M':
 						extra.dmpMemoryUse = 1;
 						// fall through
@@ -1848,13 +1857,11 @@ int main(int argc, char *argv[]) {
 						arg2 += 2;
 						break;
 
-					case 'G':
-						extra.dmpGlobalTyp = 1;
-						extra.dmpGlobalFun = 1;
-						extra.dmpBuiltins = 1;
+					case 'T':
+						extra.traceLocals = 1;
 						// fall through
-					case 'g':
-						extra.dmpGlobals = 1;
+					case 't':
+						extra.traceOpcodes = 1;
 						arg2 += 2;
 						break;
 
@@ -1874,16 +1881,6 @@ int main(int argc, char *argv[]) {
 						extra.dbgNextBreak = (size_t)-1;
 						arg2 += 2;
 						break;
-
-					case 'T':
-						extra.traceLocals = 1;
-						// fall through
-					case 't':
-						extra.traceOpcodes = 1;
-						arg2 += 2;
-						break;
-
-					// dump stats
 				}
 			}
 			if (*arg2) {
@@ -1905,30 +1902,20 @@ int main(int argc, char *argv[]) {
 						arg2 += 1;
 						break;
 
-					case 'M':
-						extra.dmpMemoryUse = 1;
-						// fall through
-					case 'm':
-						extra.dmpHeapUsage = 1;
-						arg2 += 2;
-						break;
-
 					case 'G':
 						extra.dmpGlobalTyp = 1;
 						extra.dmpGlobalFun = 1;
-						extra.dmpBuiltins = 1;
 						// fall through
 					case 'g':
 						extra.dmpGlobals = 1;
 						arg2 += 2;
 						break;
 
-					case 'P':
-						extra.profNotExecuted = 1;
-						extra.profFunctions = 1;
+					case 'M':
+						extra.dmpMemoryUse = 1;
 						// fall through
-					case 'p':
-						extra.profStatements = 1;
+					case 'm':
+						extra.dmpHeapUsage = 1;
 						arg2 += 2;
 						break;
 
@@ -1938,6 +1925,15 @@ int main(int argc, char *argv[]) {
 					case 't':
 						extra.traceMethods = 1;
 						extra.traceTime = 1;
+						arg2 += 2;
+						break;
+
+					case 'P':
+						extra.profNotExecuted = 1;
+						extra.profFunctions = 1;
+						// fall through
+					case 'p':
+						extra.profStatements = 1;
 						arg2 += 2;
 						break;
 				}
@@ -2077,38 +2073,38 @@ int main(int argc, char *argv[]) {
 				return -1;
 			}
 			extra.dmpApi = 1;
-			extra.dmpMode |= prName;
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
 						arg2 += 1;
 						break;
 
+					// include extra symbols
+					case 'A':
+						extra.dmpBuiltin = 1;
+						// fall through
 					case 'a':
-						extra.dmpMode |= prAbsOffs;
-						extra.dmpBuiltins = 1;
+						extra.dmpExtern = 1;
 						arg2 += 2;
 						break;
 
-					// include extras in dump
 					case 'm':
 						extra.dmpMain = 1;
 						arg2 += 2;
 						break;
+
 					case 'd':
 						extra.dmpDetails = 1;
 						arg2 += 2;
 						break;
+
 					case 'p':
 						extra.dmpParams = 1;
 						arg2 += 2;
 						break;
+
 					case 'u':
 						extra.dmpUsages = 1;
-						arg2 += 2;
-						break;
-					case 'f':
-						extra.dmpUnitFilter = *stdLib ? stdLib : NULL;
 						arg2 += 2;
 						break;
 				}
@@ -2125,38 +2121,38 @@ int main(int argc, char *argv[]) {
 				return -1;
 			}
 			extra.dmpDoc = 1;
-			extra.dmpMode |= prName;
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
 						arg2 += 1;
 						break;
 
+					// include extra symbols
+					case 'A':
+						extra.dmpBuiltin = 1;
+						// fall through
 					case 'a':
-						extra.dmpMode |= prAbsOffs;
-						extra.dmpBuiltins = 1;
+						extra.dmpExtern = 1;
 						arg2 += 2;
 						break;
 
-					// include extras in dump
 					case 'm':
 						extra.dmpMain = 1;
 						arg2 += 2;
 						break;
+
 					case 'd':
 						extra.dmpDetails = 1;
 						arg2 += 2;
 						break;
+
 					case 'p':
 						extra.dmpParams = 1;
 						arg2 += 2;
 						break;
+
 					case 'u':
 						extra.dmpUsages = 1;
-						arg2 += 2;
-						break;
-					case 'f':
-						extra.dmpUnitFilter = *stdLib ? stdLib : NULL;
 						arg2 += 2;
 						break;
 				}
@@ -2180,38 +2176,46 @@ int main(int argc, char *argv[]) {
 						arg2 += 1;
 						break;
 
+					case 'A':
+						extra.dmpBuiltin = 1;
+						// fall through
 					case 'a':
-						extra.dmpMode |= prAsmOffs|prAbsOffs;
-						arg2 += 2;
-						break;
-					case 'n':
-						extra.dmpMode |= prAsmOffs|prRelOffs;
-						arg2 += 2;
-						break;
-					case 's':
-						extra.dmpAsmStmt = 1;
+						extra.dmpExtern = 1;
 						arg2 += 2;
 						break;
 
-					// include extras in dump
 					case 'm':
 						extra.dmpMain = 1;
 						arg2 += 2;
 						break;
+
 					case 'd':
 						extra.dmpDetails = 1;
 						arg2 += 2;
 						break;
+
 					case 'p':
 						extra.dmpParams = 1;
 						arg2 += 2;
 						break;
+
 					case 'u':
 						extra.dmpUsages = 1;
 						arg2 += 2;
 						break;
-					case 'f':
-						extra.dmpUnitFilter = *stdLib ? stdLib : NULL;
+
+					case 'g':
+						extra.dmpMode |= prAsmOffs|prAbsOffs;
+						arg2 += 2;
+						break;
+
+					case 'n':
+						extra.dmpMode |= prAsmOffs|prRelOffs;
+						arg2 += 2;
+						break;
+
+					case 's':
+						extra.dmpAsmStmt = 1;
 						arg2 += 2;
 						break;
 				}
@@ -2240,44 +2244,51 @@ int main(int argc, char *argv[]) {
 						arg2 += 1;
 						break;
 
+					case 'A':
+						extra.dmpBuiltin = 1;
+						// fall through
+					case 'a':
+						extra.dmpExtern = 1;
+						arg2 += 2;
+						break;
+
+					case 'm':
+						extra.dmpMain = 1;
+						arg2 += 2;
+						break;
+
+					case 'd':
+						extra.dmpDetails = 1;
+						arg2 += 2;
+						break;
+
+					case 'p':
+						extra.dmpParams = 1;
+						arg2 += 2;
+						break;
+
+					case 'u':
+						extra.dmpUsages = 1;
+						arg2 += 2;
+						break;
+
 					case 't':
 						extra.dmpMode |= prAstCast;
 						arg2 += 2;
 						break;
 
-					// output format options
 					case 'l':
 						extra.dmpMode |= prOneLine;
 						arg2 += 2;
 						break;
+
 					case 'b':
 						extra.dmpMode |= nlAstBody;
 						arg2 += 2;
 						break;
+
 					case 'e':
 						extra.dmpMode |= nlAstElIf;
-						arg2 += 2;
-						break;
-
-					// include extras in dump
-					case 'm':
-						extra.dmpMain = 1;
-						arg2 += 2;
-						break;
-					case 'd':
-						extra.dmpDetails = 1;
-						arg2 += 2;
-						break;
-					case 'p':
-						extra.dmpParams = 1;
-						arg2 += 2;
-						break;
-					case 'u':
-						extra.dmpUsages = 1;
-						arg2 += 2;
-						break;
-					case 'f':
-						extra.dmpUnitFilter = *stdLib ? stdLib : NULL;
 						arg2 += 2;
 						break;
 				}
@@ -2512,11 +2523,6 @@ int main(int argc, char *argv[]) {
 				fatal("invalid option: `%s`", arg);
 			}
 		}
-	}
-
-	if (extra.dmpUnitFilter != NULL && ccFile != NULL) {
-		// use the last compilation unit
-		extra.dmpUnitFilter = ccFile;
 	}
 
 	if (pathAstDumpXml != NULL) {

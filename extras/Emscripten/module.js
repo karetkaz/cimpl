@@ -1,33 +1,76 @@
 Module.workspace = '/workspace';
-Module.listFiles = function(folders) {
+Module.listFiles = function(folders, recursive) {
 	let result = [];
+
 	function listRecursive(path) {
 		let dir = FS.analyzePath(path);
 		if (dir && dir.exists && dir.object) {
+			if (!path.endsWith('/')) {
+				path = path + '/';
+			}
 			for (let file in dir.object.contents) {
-				let filepath = path + '/' + file;
+				let filepath = path + file;
 				if (dir.object.contents[file].isFolder) {
-					listRecursive(filepath);
-				} else {
-					if (folders === undefined && path.startsWith(Module.workspace)) {
-						result.push(filepath.substr(Module.workspace.length + 1));
-					} else {
-						result.push(filepath);
+					filepath += '/';
+					if (recursive) {
+						listRecursive(filepath);
+						//filepath = null;
 					}
+				}
+				if (filepath) {
+					result.push(filepath);
 				}
 			}
 		}
 	}
-	if (folders != null && folders.constructor == Array) {
-		if (folders.length !== 1 || folders[0] !== Module.workspace) {
-			for (let i = 0; i < folders.length; ++i) {
-				listRecursive(folders[i]);
-			}
-			return result;
+
+	if (folders != null && folders.constructor === String) {
+		if (folders.endsWith('/*')) {
+			folders = folders.substr(0, folders.length - 1);
+			recursive = true;
+		}
+		if (folders.endsWith('/') && folders !== '/') {
+			folders = folders.substr(0, folders.length - 1);
+		}
+
+		if (folders === '.') {
+			// list all files from workspace directory
+			folders = [Module.workspace];
+		}
+		else if (folders === '*') {
+			// list all files from workspace and lib directory
+			folders = [Module.workspace, '/lib'];
+		}
+		else if (folders === '**') {
+			// list all files from workspace and lib directory
+			folders = [Module.workspace, '/lib'];
+			recursive = true;
+		}
+		else {
+			folders = [folders];
 		}
 	}
-	folders = undefined;
-	listRecursive(folders || Module.workspace);
+
+	for (let i = 0; i < folders.length; ++i) {
+		let folder = folders[i];
+		let tail = result.length;
+		listRecursive(folder);
+		let sorted = result.slice(tail).sort(function(lhs, rhs) {
+			let lhsDir = lhs.endsWith("/");
+			let rhsDir = rhs.endsWith("/");
+			if (lhsDir !== rhsDir) {
+				return lhsDir ? -1 : 1;
+			}
+			return lhs.localeCompare(rhs);
+		});
+		result = result.slice(0, tail).concat(sorted);
+
+		if (folders.length === 1 && folders[0] === Module.workspace) {
+			for (let i = 0; i < result. length; ++i) {
+				result[i] = result[i].substr(Module.workspace.length + 1);
+			}
+		}
+	}
 	return result;
 };
 

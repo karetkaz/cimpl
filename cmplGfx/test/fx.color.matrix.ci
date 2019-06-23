@@ -98,19 +98,17 @@ int onEvent(int action, int button, int x, int y) {
 		return 0;
 	}
 	else if (action == Gui.MOUSE_MOTION) {
-		int dx = ox - x;
-		int dy = oy - y;
 
 		if (button == 1) {
-			brightness = Math.clamp(brightness + dy, -100, 100);
+			brightness += oy - y;
 			reCalculate = true;
 		}
 		if (button == 2) {
-			saturation = Math.clamp(saturation + dy, -100, 200);
+			saturation += oy - y;
 			reCalculate = true;
 		}
 		if (button >= 3) {
-			hue = Math.clamp(hue + dy, 0, 360);
+			hue += oy - y;
 			reCalculate = true;
 		}
 		ox = x;
@@ -118,10 +116,20 @@ int onEvent(int action, int button, int x, int y) {
 	}
 
 	if (reCalculate) {
+
+		// clamp input values
+		brightness = Math.clamp(brightness, -100, 100);
+		saturation = Math.clamp(saturation, -100, 200);
+		hue = Math.clamp(hue, 0, 360);
+
+		uint64 time = System.millis();
 		mat4f mat = colorMatrix(brightness / 100., saturation / 100. + 1, Math.radians(hue));
 		offs.resize(null, back, null, 1);
 		offs.colorMat(null, mat.data);
 		offs.drawHist(null, 0x00ffffff);
+
+		// stop measure execution time
+		time = System.millis() - time;
 
 		char text[256];
 		FormatFlags flags = { padLen: 4 };
@@ -131,6 +139,9 @@ int onEvent(int action, int button, int x, int y) {
 		pos = text.append(pos, saturation, flags);
 		pos = text.append(pos, "\nhue: ");
 		pos = text.append(pos, hue, flags);
+		pos = text.append(pos, "\ntime: ");
+		pos = text.append(pos, time, flags);
+		pos = text.append(pos, " ms");
 
 		inline p = 5;
 		gxRect rect = { x: 30, y: 30, w: 0, h: 0 };

@@ -245,7 +245,9 @@ void g2_drawChar(gx_Surf surf, int x, int y, gx_Surf font, int chr, uint32_t col
 void g2_drawText(gx_Surf surf, int x, int y, gx_Surf font, const char *text, uint32_t color);
 
 int gx_copySurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi);
+int gx_lerpSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, int alpha);
 int gx_zoomSurf(gx_Surf surf, gx_Rect rect, gx_Surf src, gx_Rect roi, int interpolate);
+int gx_blurSurf(gx_Surf surf, int radius, double sigma);
 
 
 // image read write

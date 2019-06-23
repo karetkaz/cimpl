@@ -2446,6 +2446,7 @@ int ccGenCode(ccContext cc, int debug) {
 	rt->main->size = emit(rt, markIP) - lMain;
 	rt->main->fields = cc->scope;
 	rt->main->fmt = rt->main->name;
+	rt->main->unit = cc->unit;
 
 	rt->vm.cs += rt->main->size;
 	addDbgFunction(rt, rt->main);

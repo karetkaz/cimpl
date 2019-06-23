@@ -1049,7 +1049,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		ccToken optional = skipTok(cc, PNCT_qst, 0);
 		skipTok(cc, STMT_end, 1);
 
-		if (ccInline(cc, tag) != 0) {
+		if (!cc->siff && ccInline(cc, tag) != 0) {
 			if (optional) {
 				warn(cc->rt, raiseWarn, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
 			} else {
@@ -1135,6 +1135,11 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 	}
 	else {
 		type = cc->type_rec;
+		// allow: `inline sin = double.sin;`
+		symn initLnk = linkOf(init, 0);
+		if (initLnk && initLnk->params) {
+			params = initLnk->params;
+		}
 	}
 	skipTok(cc, STMT_end, 1);
 

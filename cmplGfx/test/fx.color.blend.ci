@@ -196,7 +196,7 @@ gxSurf offs = gxSurf(base);
 vec4f blend(vec4f base, vec4f blend) = screen;
 
 static if (true) {
-offs.blend(100, 100, image, null, blend);
+offs.copy(100, 100, image, null, blend);
 offs.showDiff(base);
 }
 else {
@@ -220,11 +220,11 @@ int onEvent(int action, int button, int x, int y) {
 	if (action == Gui.MOUSE_MOTION) {
 		if (button == 1) {
 			offs.resize(null, base, null, 1);
-			offs.blend(x, y, image, null, blend);
+			offs.copy(x, y, image, null, blend);
 		}
 		if (button == 2) {
 			offs.resize(null, base, null, 1);
-			offs.blend(x, y, image, roi, blend);
+			offs.copy(x, y, image, roi, blend);
 		}
 	}
 	return 0;

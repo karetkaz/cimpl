@@ -83,6 +83,10 @@ bool clip(gxSurf src, gxRect roi&) {
 
 /// Fill the entire surface with the given color
 inline fill(gxSurf dst, uint32 col) = dst.fillRect(0, 0, 65536, 65536, col);
+/// Fill the given region with the given color
+inline fill(gxSurf dst, const gxRect roi&, uint32 col) = dst.fillRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
+/// Fill the given region and padding with the given color
+inline fill(gxSurf dst, const gxRect roi&, int pad, uint32 col) = dst.fillRect(roi.x - pad, roi.y - pad, roi.x + roi.w + pad, roi.y + roi.h + pad, col);
 
 /// Fill the surface by evaluating the given function for each pixel
 void eval(gxSurf dst, const gxRect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
