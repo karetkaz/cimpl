@@ -146,25 +146,30 @@ static inline void gx_setpixel(gx_Surf surf, int x, int y, uint32_t color) {
 	}
 }
 // Get Pixel Color linear
-static inline uint32_t gx_getpix16(gx_Surf surf, int32_t fpx, int32_t fpy, int linear) {
-	int32_t x = (uint32_t)fpx >> 16;
-	int32_t y = (uint32_t)fpy >> 16;
+static inline uint32_t gx_getpix16(gx_Surf surf, int32_t fpx, int32_t fpy) {
+	int32_t x = fpx >> 16;
+	int32_t lx = fpx >> 8 & 0xff;
+	if (x + 1 >= surf->width) {
+		x = surf->width - 1;
+		lx = 0;
+	}
+	else if (x < 0) {
+		x = lx = 0;
+	}
+
+	int32_t y = fpy >> 16;
+	int32_t ly = fpy >> 8 & 0xff;
+	if (y + 1 >= surf->height) {
+		y = surf->height - 1;
+		ly = 0;
+	}
+	else if (y < 0) {
+		y = ly = 0;
+	}
 
 	char *ofs = gx_getpaddr(surf, x, y);
 	if (ofs == NULL) {
 		return 0;
-	}
-
-	int32_t lx = fpx >> 8 & 0xff;
-	int32_t ly = fpy >> 8 & 0xff;
-	if (x + 1 >= surf->width) {
-		lx = 0;
-	}
-	if (y + 1 >= surf->height) {
-		ly = 0;
-	}
-	if (linear == 0) {
-		lx = ly = 0;
 	}
 
 	switch (surf->depth) {

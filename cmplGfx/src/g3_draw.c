@@ -419,7 +419,7 @@ static void draw_tri_part(gx_Surf dst, gx_Clip roi, edge l, edge r, int swap, in
 					zBuff[offs] = v.z;
 					if (img) {
 						argb tex;
-						tex.val = gx_getpix16(img, v.s, v.t, 1);
+						tex.val = gx_getpix16(img, v.s, v.t);
 						cBuff[offs].b = clamp_s8((v.b >> 15) * tex.b >> 8);
 						cBuff[offs].g = clamp_s8((v.g >> 15) * tex.g >> 8);
 						cBuff[offs].r = clamp_s8((v.r >> 15) * tex.r >> 8);
@@ -747,7 +747,7 @@ int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, gx_Light ligh
 			if (msh->hasTex && img != NULL) {
 				int s = msh->tex[i].s * (img->width - 1);
 				int t = msh->tex[i].t * (img->height - 1);
-				col[i].val = gx_getpix16(img, s, t, 0);
+				col[i].val = gx_getpix16(img, s, t);
 			}
 			else {
 				col[i] = msh->tex[i];

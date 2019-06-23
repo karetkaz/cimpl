@@ -434,17 +434,20 @@ int gx_zoomSurf(gx_Surf surf, gx_Rect rect, gx_Surf src, gx_Rect roi, int interp
 		return -1;
 	}
 
-	if (dx & 0xfffe0000 || dy & 0xfffe0000) {
-		// TODO: use mip mapping
-		interpolate = 0;
+	if (!interpolate || dx >= 0x20000 || dy >= 0x20000) {
+		for (int y = 0, sy = y0; y < drec.h; ++y, sy += dy) {
+			for (int x = 0, sx = x0; x < drec.w; ++x, sx += dx) {
+				gx_setpixel(surf, drec.x + x, drec.y + y, gx_getpixel(src, sx >> 16, sy >> 16));
+			}
+		}
+		return 0;
 	}
 
-	x0 = x0 * dx + (srec.x << 16);
-	y0 = y0 * dy + (srec.y << 16);
-
+	x0 -= 0x8000;
+	y0 -= 0x8000;
 	for (int y = 0, sy = y0; y < drec.h; ++y, sy += dy) {
 		for (int x = 0, sx = x0; x < drec.w; ++x, sx += dx) {
-			gx_setpixel(surf, drec.x + x, drec.y + y, gx_getpix16(src, sx, sy, interpolate));
+			gx_setpixel(surf, drec.x + x, drec.y + y, gx_getpix16(src, sx, sy));
 		}
 	}
 	return 0;

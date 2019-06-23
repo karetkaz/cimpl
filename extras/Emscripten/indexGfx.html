@@ -172,11 +172,20 @@ function saveInput() {
 	return file;
 }
 function execInput(args) {
-	Module['callMain'](args || []);
+	// show overlay while compiling and initializing
+	canvas.parentElement.classList.remove('hidden');
+	setTimeout(function() {
+		Module['callMain'](args || []);
+		canvas.parentElement.classList.add('hidden');
+	});
 }
 
 function showCanvas(visible) {
 	if (visible) {
+		if ('ontouchstart' in document.documentElement) {
+			// adapt canvas to full hd resolution on mobile phones
+			canvas.style.zoom = Math.min(screen.width, screen.height) / 1080;
+		}
 		canvas.parentElement.classList.remove('hidden');
 		if (Browser.mainLoop.oldPause === undefined) {
 			Browser.mainLoop.oldPause = Browser.mainLoop.pause;

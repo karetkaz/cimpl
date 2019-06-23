@@ -155,7 +155,7 @@ static vmError surf_tex(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 	int32_t x = nextValue(ctx).f32 * 65535 * surf->width;
 	int32_t y = nextValue(ctx).f32 * 65535 * surf->height;
-	struct vector result = vecldc(cast_rgb(gx_getpix16(surf, x, y, 1)));
+	struct vector result = vecldc(cast_rgb(gx_getpix16(surf, x, y)));
 	retset(ctx, &result, sizeof(struct vector));
 	return noError;
 }

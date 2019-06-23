@@ -39,6 +39,15 @@ int onEvent(int action, int button, int x, int y) {
 		if (button == 2) {
 			offs.copy(x, y, draw, roi);
 		}
+		if (button == 3) {
+			gxRect to = {
+				x: 0;
+				y: 0;
+				w: x;
+				h: y;
+			};
+			offs.resize(to, draw, null, 1);
+		}
 		if (button == 4) {
 			offs.tile(x, y, draw, null);
 		}

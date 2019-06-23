@@ -321,6 +321,7 @@ void showDiff(gxSurf image1, gxSurf image2) {
 void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) {
 	static const int64 start = System.millis();
 	struct Closure {
+		bool lerp = true;
 		const gxSurf offs;
 		const gxSurf thumb;
 		const float32 aspect;
@@ -343,11 +344,19 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 				closure.offs.eval(null, closure.aspect, time, closure.eval);
 				return 0;
 			}
+			if (button == '\t') {
+				closure.lerp = !closure.lerp;
+			}
+			if (button == 'S') {
+				trace("dumping screen");
+				closure.offs.saveBmp("out/offs.bmp", 0);
+				closure.thumb.saveBmp("out/thumb.bmp", 0);
+			}
 		}
 
 		float32 time = (System.millis() - start) / 1000f;
 		closure.thumb.eval(null, closure.aspect, time, closure.eval);
-		closure.offs.resize(null, closure.thumb, null, 1);
+		closure.offs.resize(null, closure.thumb, null, closure.lerp ? 1 : 0);
 
 		// do not block for any input
 		return 1;
