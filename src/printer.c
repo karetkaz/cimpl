@@ -1251,10 +1251,12 @@ FILE *logFile(rtContext rt, char *file, int append) {
 	logFILE(rt, stdout);
 
 	if (file != NULL) {
-		rt->logFile = fopen(file, append ? "ab" : "wb");
-		if (rt->logFile != NULL) {
+		FILE *logFile = fopen(file, append ? "ab" : "wb");
+		if (logFile != NULL) {
+			rt->logFile = logFile;
 			rt->closeLog = 1;
 		}
+		return logFile;
 	}
 	return rt->logFile;
 }

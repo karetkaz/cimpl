@@ -410,7 +410,8 @@ int ccLibStd(ccContext cc) {
 
 	// re-alloc, malloc, free, memset, memcpy
 	if (!err && ccExtend(cc, cc->type_ptr)) {
-		if (!ccAddCall(cc, sysMemMgr, "pointer alloc(pointer ptr, int32 size)")) {
+		cc->libc_mem = ccAddCall(cc, sysMemMgr, "pointer alloc(pointer ptr, int32 size)");
+		if (cc->libc_mem == NULL) {
 			err = 3;
 		}
 		if (!ccAddCall(cc, sysMemSet, "pointer fill(pointer dst, int value, int32 size)")) {

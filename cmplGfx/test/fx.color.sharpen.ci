@@ -4,95 +4,6 @@ gxSurf back = gxSurf("asset/image/forest.png", 32);
 gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
 gxSurf offs = gxSurf(back.width(), back.height(), back.depth());
 
-void blur0(gxSurf surf, int radius, double sigma) {
-	static double gauss(double x, double sigma) {
-		inline SQRT_2_PI_INV = 0.398942280401432677939946059935;
-		inline exp = double.exp;
-
-		double t = x / sigma;
-		/*switch (dx) {
-			default:
-				break;
-			case -1:
-				return 1;
-			case 0:
-				return SQRT_2_PI_INV * exp(-0.5*t*t) / sigma;
-			case 1:
-				return -x * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma);
-			case 2:
-				return (x * x - sigma * sigma) * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma * sigma * sigma);
-		}*/
-		return SQRT_2_PI_INV * exp(-0.5 * t * t) / sigma;
-	}
-
-	uint32 kernelF16[1024] = {};
-	float64 kernel[1024] = {};
-	float64 kernelSum = 0;
-
-	int mid = radius + 1;
-	int size = 2 * mid;
-
-	assert(size < kernel.length);
-	if (size <= 0) {
-		return;
-	}
-
-	for (int i = 0; i < size; i += 1) {
-		kernel[i] = gauss(mid - i, sigma);
-		kernelSum += kernel[i];
-	}
-
-	kernelSum = 1;
-	for (int i = 0; i < size; i += 1) {
-		kernelF16[i] = 65536 * (kernel[i] / kernelSum);
-	}
-
-	int width = surf.width();
-	int height = surf.height();
-	gxSurf tmp = gxSurf(width, height, surf.depth());
-
-	// x direction: inout -> temp
-	for (int y = 0; y < height; y += 1) {
-		for (int x = 0; x < width; x += 1) {
-			uint32 r = 0;
-			uint32 g = 0;
-			uint32 b = 0;
-			for (int i = 0; i < size; i += 1) {
-				int _x = x + i - mid;
-				uint32 _k = kernelF16[i];
-				if (_x >= 0 && _x < width) {
-					argb col = argb(surf.get(_x, y));
-					r += _k * rch(col);
-					g += _k * gch(col);
-					b += _k * bch(col);
-				}
-			}
-			tmp.set(x, y, argb(r >> 16, g >> 16, b >> 16));
-		}
-	}
-
-	// y direction: temp -> inout
-	for (int y = 0; y < height; y += 1) {
-		for (int x = 0; x < width; x += 1) {
-			uint32 r = 0;
-			uint32 g = 0;
-			uint32 b = 0;
-			for (int i = 0; i < size; i += 1) {
-				int _y = y + i - mid;
-				uint32 _k = kernelF16[i];
-				if (_y >= 0 || _y < height) {
-					argb col = argb(tmp.get(x, _y));
-					r += _k * rch(col);
-					g += _k * gch(col);
-					b += _k * bch(col);
-				}
-			}
-			surf.set(x, y, argb(r >> 16, g >> 16, b >> 16));
-		}
-	}
-	tmp.destroy();
-}
-
 inline blur(gxSurf surf, int radius) = surf.blur(radius, 0.3 * (radius - 1) + 0.8);
 
 void sharpen(gxSurf surf, int amount, int radius) {
@@ -129,9 +40,136 @@ offs.destroy();
 back.destroy();
 font.destroy();
 
+struct Slider {
+	const char text[*];
+	const int divValue = 1;
+	const int minValue = 0;
+	const int maxValue = 100;
+	bool enabled = true;
+	int value = 0;
+	gxRect rect;// = {x: 0, y: 0, w: 0, h: 0};
+}
+
+struct Layout {
+	variant items[200] = {};
+	int selectedIndex = -1;
+	int count = 0;
+	gxRect rect;
+}
+
+Layout Layout(variant items...) {
+	Layout layout = {
+		selectedIndex: 0;
+		rect: {x: 0, y: 0, w: 0, h: 0};
+	};
+	for (int i = 0; i < items.length; i += 1) {
+		layout.items[i] = items[i];
+	}
+	layout.count = items.length;
+	return layout;
+}
+
+void addItem(Layout this&, Slider slider&) {
+	assert(this.count < this.items.length);
+	this.items[this.count] = slider;
+	this.count += 1;
+}
+
+void measure(Layout layout&) {
+	// TODO
+}
+void layout(Layout layout&) {
+	// TODO
+}
+
+void draw(Layout layout&, int x, int y) {
+	int posAll = 0;
+	char textAll[1024];
+	FormatFlags flags = { padLen: 4 };
+	layout.rect.x = x;
+	layout.rect.y = y;
+	layout.rect.w = 0;
+	layout.rect.h = 0;
+	for (int i = 0; i < layout.count; i += 1) {
+		Slider s& = layout.items[i];
+		gxRect r& = s.rect;
+		char text[256];
+		int pos = 0;
+		if (i == layout.selectedIndex) {
+			pos = text.append(pos, "* ");
+		} else {
+			pos = text.append(pos, " ");
+		}
+		pos = text.append(pos, s.text);
+		pos = text.append(pos, ": ");
+		pos = text.append(pos, s.value / s.divValue, flags);
+		font.clipText(r, text);
+		posAll = textAll.append(posAll, text);
+		posAll = textAll.append(posAll, "\n");
+		r.x = x;
+		r.y = y;
+		y += r.h;
+	}
+	font.clipText(layout.rect, textAll);
+	offs.fill(layout.rect, 5, 0x000000);
+	offs.drawText(layout.rect.x, layout.rect.y, font, textAll, 0xffffff);
+}
+
+bool click(Layout layout&, int x, int y) {
+	for (int i = 0; i < layout.count; i += 1) {
+		Slider s& = layout.items[i];
+		gxRect r& = s.rect;
+		if (x >= r.x && x < r.x + r.w) {
+			if (y >= r.y && y < r.y + r.h) {
+				if (s.enabled) {
+					layout.selectedIndex = i;
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+bool update(Layout layout&, int delta) {
+	if (layout.selectedIndex < 0) {
+		return false;
+	}
+	Slider slider& = layout.items[layout.selectedIndex];
+	slider.value += delta;
+	return true;
+}
+
+int val(Slider slider&) {
+	if (slider.value < slider.minValue) {
+		slider.value = slider.minValue;
+	}
+	if (slider.value > slider.maxValue) {
+		slider.value = slider.maxValue;
+	}
+	return slider.value / slider.divValue;
+}
+
 int onEvent(int action, int button, int x, int y) {
-	static int amount = 0;
-	static int radius = 5;
+	static Slider amount = {
+		text: "amount";
+		minValue: 0;
+		maxValue: 512;
+		rect: {x: 0, y: 0, w: 0, h: 0};
+	};
+	static Slider radius = {
+		text: "radius";
+		divValue: 10;
+		minValue: 50;
+		maxValue: 200;
+		rect: {x: 0, y: 0, w: 0, h: 0};
+	};
+	static Slider time = {
+		text: "time";
+		enabled: false;
+		rect: {x: 0, y: 0, w: 0, h: 0};
+	};
+	static Layout layout = Layout(amount, radius, time);
 	static int ox = 0;
 	static int oy = 0;
 
@@ -166,8 +204,8 @@ int onEvent(int action, int button, int x, int y) {
 			reCalculate = true;
 		}
 		if (button == '\r') {
-			amount = isShift ? 100 : 0;
-			radius = isCtrl ? 100 : 0;
+			amount.value = isShift ? 100 : 0;
+			radius.value = isCtrl ? 100 : 0;
 			reCalculate = true;
 		}
 		if (button == 'S') {
@@ -177,38 +215,34 @@ int onEvent(int action, int button, int x, int y) {
 
 		if (button == 0 && x == 116) {	// down
 			int delta = isShift ? 10 : 1;
-			if (isCtrl) {
-				radius -= delta;
-			} else {
-				amount -= delta;
+			if (layout.update(-delta)) {
+				reCalculate = true;
 			}
-			reCalculate = true;
 		}
 		if (button == 0 && x == 111) {	// up
 			int delta = isShift ? 10 : 1;
-			if (isCtrl) {
-				radius += delta;
-			} else {
-				amount += delta;
+			if (layout.update(+delta)) {
+				reCalculate = true;
 			}
-			reCalculate = true;
 		}
-
-		//debug("keypress", button);
 	}
 	else if (action == Gui.MOUSE_PRESS) {
 		ox = x;
 		oy = y;
 		return 0;
 	}
+	else if (action == Gui.MOUSE_RELEASE) {
+		if (button == 1) {
+			if (layout.click(x, y)) {
+				reCalculate = true;
+			}
+		}
+	}
 	else if (action == Gui.MOUSE_MOTION) {
 		if (button == 1) {
-			amount += oy - y;
-			reCalculate = true;
-		}
-		else if (button > 1) {
-			radius += oy - y;
-			reCalculate = true;
+			if (layout.update(oy - y)) {
+				reCalculate = true;
+			}
 		}
 		ox = x;
 		oy = y;
@@ -216,32 +250,16 @@ int onEvent(int action, int button, int x, int y) {
 
 	if (reCalculate) {
 		// clamp input values
-		amount = Math.clamp(amount, 0, 255);
-		radius = Math.clamp(radius, 50, 200);
+		int amountValue = amount.val();
+		int radiusValue = radius.val();
 
-		uint64 time = System.millis();
+		uint64 start = System.millis();
 		offs.resize(null, back, null, 1);
-		offs.sharpen(amount, radius / 10);
+		offs.sharpen(amountValue, radiusValue);
 		offs.drawHist(null, 0x00ffffff);
+		time.value = System.millis() - start;
 
-		// stop measure execution time
-		time = System.millis() - time;
-
-		char text[256];
-		FormatFlags flags = { padLen: 4 };
-		int pos = text.append(0, "amount: ");
-		pos = text.append(pos, amount, flags);
-		pos = text.append(pos, "\nradius: ");
-		pos = text.append(pos, radius / 10, flags);
-		pos = text.append(pos, "\ntime: ");
-		pos = text.append(pos, time, flags);
-		pos = text.append(pos, " ms\n");
-
-		inline padding = 5;
-		gxRect rect = { x: 30, y: 30, w: 0, h: 0 };
-		font.clipText(rect, text);
-		offs.fill(rect, padding, 0x000000);
-		offs.drawText(rect.x, rect.y, font, text, 0xffffff);
+		layout.draw(30, 30);
 	}
 
 	return 0;

@@ -335,7 +335,7 @@ static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 }
 
 /// Generate byte-code for variable indirect load.
-static ccKind genIndirection(ccContext cc, symn variable, ccKind get) {
+static ccKind genIndirection(ccContext cc, symn variable, ccKind get, int isIndex) {
 	if (get == KIND_var) {
 		// load only the offset of the variable, no matter if its a reference or not
 		// HACK: currently used to get the length of a slice
@@ -354,7 +354,9 @@ static ccKind genIndirection(ccContext cc, symn variable, ccKind get) {
 		case KIND_typ:
 		case KIND_fun:
 			// typename is by reference, ex: pointer b = int32;
-			cast = CAST_any;
+			if (!isIndex) {
+				cast = CAST_any;
+			}
 			type = variable;
 			break;
 
@@ -491,7 +493,7 @@ static ccKind genVariable(ccContext cc, symn variable, ccKind get, astn ast) {
 		return CAST_any;
 	}
 
-	return genIndirection(cc, variable, get);
+	return genIndirection(cc, variable, get, 0);
 }
 /// Generate byte-code for OPER_dot `a.b`.
 static ccKind genMember(ccContext cc, astn ast, ccKind get) {
@@ -549,7 +551,7 @@ static ccKind genMember(ccContext cc, astn ast, ccKind get) {
 		return CAST_any;
 	}
 
-	return genIndirection(cc, member, get);
+	return genIndirection(cc, member, get, 0);
 }
 /// Generate byte-code for OPER_idx `a[b]`.
 static ccKind genIndex(ccContext cc, astn ast, ccKind get) {
@@ -585,7 +587,7 @@ static ccKind genIndex(ccContext cc, astn ast, ccKind get) {
 		}
 	}
 
-	return genIndirection(cc, ast->type, get);
+	return genIndirection(cc, ast->type, get, 1);
 }
 
 /// Generate byte-code for OPER_fnc `a(b)`.

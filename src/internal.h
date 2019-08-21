@@ -122,6 +122,7 @@ struct ccContextRec {
 
 	symn libc_dbg;        // raise(char file[*], int line, int level, int trace, char message[*], variant inspect);
 	symn libc_try;        // tryExec(pointer args, void action(pointer args));
+	symn libc_mem;        // alloc(pointer old, int size;
 };
 
 /// Debugger context

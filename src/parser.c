@@ -868,6 +868,11 @@ static astn parameters(ccContext cc, symn returns, astn function) {
 				addLength(cc, arr, NULL);
 				arr->size = 2 * vm_ref_size;
 
+				// int fun(int a, int b, int refs&...)
+				if (castOf(parameter) == CAST_ref && castOf(parameter->type) != CAST_ref) {
+					error(cc->rt, arg->file, arg->line, ERR_INVALID_TYPE, arg);
+				}
+
 				arr->kind = ATTR_stat | KIND_typ | CAST_arr;
 				arr->offs = vmOffset(cc->rt, arr);
 				arr->type = parameter->type;
@@ -964,13 +969,23 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 			return tag;
 		}
 
+		if (cast != CAST_any) {	// error: int a&(int x) {...}
+			error(cc->rt, tag->file, tag->line, ERR_INVALID_TYPE, tag);
+		}
+
 		// unimplemented functions are function references
 		cast = CAST_ref;
 	}
 
 	// parse array dimensions
+	int arrDepth = 0;
 	while (skipTok(cc, LEFT_sqr, 0)) {		// int a[...][][]...
 		symn arr = newDef(cc, KIND_typ);
+
+		arrDepth += 1;
+		if (cast != CAST_any && arrDepth == 1) {	// error: int a&[100]
+			error(cc->rt, tag->file, tag->line, ERR_INVALID_TYPE, tag);
+		}
 
 		if (peekTok(cc, RIGHT_sqr) != NULL) {
 			// dynamic-size array: int a[]

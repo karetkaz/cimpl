@@ -1751,7 +1751,6 @@ int main(int argc, char *argv[]) {
 	char *cmpl_home = getenv(CMPL_HOME);
 	if (cmpl_home != NULL) {
 		strncpy(stdLib, cmpl_home, sizeof(stdLib));
-		
 		size_t len = strlen(stdLib);
 		if (len > 0 && stdLib[len - 1] != '/') {
 			stdLib[len] = '/';
@@ -2406,11 +2405,11 @@ int main(int argc, char *argv[]) {
 	else if (dumpFileName != NULL) {
 		extra.out = fopen(dumpFileName, "w");
 		extra.closeOut = 1;
-		if (extra.out == NULL) {
-			info(rt, NULL, 0, ERR_OPENING_FILE, dumpFileName);
-			extra.out = stdout;
-			extra.closeOut = 0;
-		}
+	}
+	if (extra.out == NULL) {
+		info(rt, NULL, 0, ERR_OPENING_FILE, dumpFileName);
+		extra.out = stdout;
+		extra.closeOut = 0;
 	}
 
 	// initialize compiler context, install builtin types
