@@ -171,7 +171,9 @@ function JsArgs(paramSeparator, onHashChange) {
 			}
 
 			if (hasChanges && onHashChange !== undefined) {
-				onHashChange(this, changes);
+				if (onHashChange(this, changes) === true) {
+					save(this);
+				}
 			}
 			return this;
 		}

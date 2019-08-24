@@ -57,7 +57,7 @@
 			<button class="right" onclick="execute();" title="Compiler usage help">?</button>
 		</div>
 		<ul>
-			<li onclick="execute(selExecute.value);" ><select id="selExecute" onchange="execute(this.value);" onclick="event.stopPropagation()">
+			<li onclick="execute(selExecute.value = selExecute.value);" ><select id="selExecute" onchange="execute(this.value);" onclick="event.stopPropagation()">
 				<option value="-run/g">⚡ Run</option>
 				<option value="-debug/g">🐞 Debug</option>
 				<option value="-profile/g">⏱ Profile</option>
@@ -81,7 +81,7 @@
 			<li onclick="editProject();">🛠 Edit project</li>
 			<li onclick="shareInput();">🔗 Share link</li>
 			<!--<li onclick="saveInput();">💾 Save file</li> -->
-			<!--<li onclick="setContent('', '');">❌ Close file</li>-->
+			<!--<li onclick="params.update({file: null});">❌ Close file</li>-->
 			<hr>
 		</ul>
 		<ul id="fileList">
@@ -119,15 +119,25 @@ props.libraries = [
 	'/lib/gfxlib.ci'
 ];
 function openProjectFile(projectOrFile) {
+	if (projectOrFile.workspace) {
+		if (Module.initWorkspace(projectOrFile.workspace, function () {
+			openProjectFile(projectOrFile);
+			listFiles('.');
+		})) {
+			return;
+		}
+	}
 	if (projectOrFile.list) {
 		Module.wgetFiles(projectOrFile.list, function (inProgress) {
-			if (inProgress == 0) {
-				listFiles('.');
+			if (inProgress > 0) {
+				return;
 			}
+			FS.syncfs(console.log);
+			listFiles('.');
 		});
 	}
 	try {
-		let content = FS.readFile(projectOrFile.file, {encoding: 'utf8'});
+		let content = Module.readFile(projectOrFile.file);
 		setContent(content, projectOrFile.file, projectOrFile.line);
 	} catch (error) {
 		// in case we open a file that does not exists
@@ -153,19 +163,23 @@ function saveInput() {
 	let file = params.file;
 	if (file == null) {
 		file = prompt('Save file as:', 'untitled.ci');
+		if (file == null) {
+			return null;
+		}
 	}
-	if (file == null) {
-		return null;
-	}
-	params.update({ file });
 	let content = editor.getValue();
 	if (content !== undefined) {
-		let exists = FS.analyzePath(file).exists;
-		FS.mkdirTree(file.replace(/^(.*[/])?(.*)(\..*)$/, "$1"));
-		FS.writeFile(file, content, {encoding: 'utf8'});
+		let exists = Module.pathExists(file);
+		Module.saveFile(file, content);
+		FS.syncfs(console.log);
 		if (!exists) {
 			listFiles('.');
 		}
+	}
+	if (params.content !== undefined) {
+		params.update({ content, file });
+	} else {
+		params.update({ file });
 	}
 	return file;
 }
@@ -226,8 +240,29 @@ var Module = {
 		FS.mkdirTree(Module.workspace);
 		FS.chdir(Module.workspace);
 
-		params.update('project', 'content', 'file');
-		Module.initialized = true;
+		let libs = [{
+			file: '/lib/gfxlib.ci',
+			url: '/Cmpl/cmplGfx/lib/gfxlib.ci'
+		}, {
+			file: '/lib/gfx/color.ci',
+			url: '/Cmpl/cmplGfx/lib/gfx/color.ci'
+		}, {
+			file: '/lib/vec/vec4f.ci',
+			url: '/Cmpl/lib/vec/vec4f.ci'
+		}, {
+			file: '/lib/vec/mat4f.ci',
+			url: '/Cmpl/lib/vec/mat4f.ci'
+		}, {
+			path: '/lib/vec/vec2d.ci',
+			url: '/Cmpl/lib/vec/vec2d.ci'
+		}];
+		Module.wgetFiles(libs, function (inProgress) {
+			if (inProgress > 0) {
+				return;
+			}
+			params.update('workspace', 'project', 'content', 'file');
+			Module.initialized = true;
+		});
 	}
 };
 

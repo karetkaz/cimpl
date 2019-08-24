@@ -81,7 +81,7 @@
 			<li onclick="editProject();">🛠 Edit project</li>
 			<li onclick="shareInput();">🔗 Share link</li>
 			<!--<li onclick="saveInput();">💾 Save file</li> -->
-			<!--<li onclick="setContent('', '');">❌ Close file</li>-->
+			<!--<li onclick="params.update({file: null});">❌ Close file</li>-->
 			<hr>
 		</ul>
 		<ul id="fileList">
@@ -150,6 +150,7 @@ send => {
 	line - jump to / position in file
 	url - download and save content
 	content - save content
+	workspace - switch workspace
 	execute - arguments for the compiler
 }
 
@@ -215,7 +216,8 @@ worker.onmessage = function(event) {
 		}
 	}
 	if (data.initialized) {
-		params.update('project', 'content', 'file');
+		params.update('workspace', 'project', 'content', 'file');
+		listFiles('.');
 	}
 };
 </script>

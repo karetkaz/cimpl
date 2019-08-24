@@ -119,13 +119,13 @@ let params = JsArgs('#', function (params, changes) {
 	}
 
 	// reload page if the project was modified
+	let files = [];
 	if (changes.project) {
 		if (changes.project.old !== changes.project.new) {
 			params.update(true);
 			return;
 		}
 
-		let files = [];
 		let content = params.project;
 
 		try {
@@ -141,11 +141,29 @@ let params = JsArgs('#', function (params, changes) {
 				files.push({ url });
 			}
 		}
-		openProjectFile({
+		/*openProjectFile({
+			workspace: params.workspace,
 			file: params.file,
 			line: params.line,
 			list: files
 		});
+		return;*/
+		if (!changes.workspace) {
+			changes.workspace = true;
+		}
+	}
+
+	if (changes.workspace) {
+		openProjectFile({
+			workspace: params.workspace,
+			file: params.file,
+			line: params.line,
+			list: files
+		});
+		if (params.workspace && params.project) {
+			params.project = null;
+			return true;
+		}
 		return;
 	}
 
@@ -259,7 +277,11 @@ edtFileName.onkeydown = function(event) {
 
 	// '[{...' => project
 	else if (edtFileName.value.startsWith('[{')) {
-		params.update({ project: edtFileName.value});
+		openProjectFile({
+			list: JSON.parse(edtFileName.value),
+			file: params.file,
+			line: params.line
+		});
 	}
 
 	// `+` => unfoldAll
@@ -412,20 +434,27 @@ function showEditor(...options) {
 }
 
 function setContent(content, file, line, column) {
-	showEditor('-secondary');
 	let contentSet = false;
 	if (content != null && content != editor.getValue()) {
 		editor.setValue(content);
+		showEditor('-secondary');
 		contentSet = true;
 	}
 	if (file != null) {
 		edtFileName.value = file;
+		for (let li of fileList.children) {
+			li.classList.remove("active");
+			if (li.innerText === file) {
+				li.classList.add("active");
+			}
+		}
 	}
 	if (line != null) {
 		var middleHeight = editor.getScrollerElement().offsetHeight / 2; 
 		var t = editor.charCoords({line, ch: 0}, "local").top; 
 		editor.scrollTo(null, t - middleHeight - 5);
 		editor.setCursor((line || 1) - 1, column);
+		showEditor('-secondary');
 	}
 	return contentSet;
 }
