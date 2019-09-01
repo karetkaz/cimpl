@@ -113,8 +113,6 @@ struct ccContextRec {
 	symn type_idx;        // length / index: 32/64 bit unsigned
 
 	symn null_ref;        // variable null
-	symn true_ref;        // variable true
-	symn false_ref;       // variable false
 	symn length_ref;      // slice length attribute
 
 	symn emit_opc;        // emit intrinsic function, or whatever it is.

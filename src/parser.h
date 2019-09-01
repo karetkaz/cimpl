@@ -101,6 +101,9 @@ struct astNode {
 /// Allocate a tree node.
 astn newNode(ccContext cc, ccToken kind);
 
+/// Duplicate a tree node.
+astn dupNode(ccContext cc, astn node);
+
 /// Recycle node, so it may be reused.
 void recycle(ccContext cc, astn ast);
 

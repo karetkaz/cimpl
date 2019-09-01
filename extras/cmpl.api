@@ -50,15 +50,12 @@ pointer.fill(dst: pointer, value: int32, size: int32): pointer
 pointer.copy(dst: pointer, src: pointer, size: int32): pointer
 pointer.move(dst: pointer, src: pointer, size: int32): pointer
 variant
+variant.is(var: variant, type: typename): bool
+variant.as(var: variant, type: typename): pointer
 function
 object
 null
-true
-false
 int
-byte
-float
-double
 emit
 emit.nop
 emit.not
@@ -202,6 +199,11 @@ System.time(): int32
 System.clock(): int32
 System.millis(): int64
 System.sleep(millis: int64): void
+true
+false
+byte
+float
+double
 verbose(message: char[*], inspect: variant): void
 verbose(message: char[*]): void
 debug(message: char[*], inspect: variant): void

@@ -120,21 +120,21 @@ static vmError surf_save(nfcContext ctx) {
 
 static const char *proto_surf_width = "int32 width(gxSurf surf)";
 static vmError surf_width(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
+	gx_Surf surf = arghnd(ctx, 0);
 	reti32(ctx, surf->width);
 	return noError;
 }
 
 static const char *proto_surf_height = "int32 height(gxSurf surf)";
 static vmError surf_height(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
+	gx_Surf surf = arghnd(ctx, 0);
 	reti32(ctx, surf->height);
 	return noError;
 }
 
 static const char *proto_surf_depth = "int32 depth(gxSurf surf)";
 static vmError surf_depth(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
+	gx_Surf surf = arghnd(ctx, 0);
 	reti32(ctx, surf->depth);
 	return noError;
 }
@@ -142,9 +142,9 @@ static vmError surf_depth(nfcContext ctx) {
 
 static const char *proto_surf_get = "int32 get(gxSurf surf, int x, int y)";
 static vmError surf_get(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
-	int x = nextValue(ctx).i32;
-	int y = nextValue(ctx).i32;
+	int32_t y = argi32(ctx, 0);
+	int32_t x = argi32(ctx, 4);
+	gx_Surf surf = arghnd(ctx, 8);
 
 	reti32(ctx, gx_getpixel(surf, x, y));
 	return noError;
@@ -162,10 +162,10 @@ static vmError surf_tex(nfcContext ctx) {
 
 static const char *proto_surf_set = "void set(gxSurf surf, int x, int y, uint32 color)";
 static vmError surf_set(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
-	int32_t x = nextValue(ctx).i32;
-	int32_t y = nextValue(ctx).i32;
-	uint32_t color = nextValue(ctx).u32;
+	uint32_t color = argi32(ctx, 0);
+	int32_t y = argi32(ctx, 4);
+	int32_t x = argi32(ctx, 8);
+	gx_Surf surf = arghnd(ctx, 12);
 
 	gx_setpixel(surf, x, y, color);
 	return noError;

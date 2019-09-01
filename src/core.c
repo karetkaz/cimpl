@@ -30,6 +30,9 @@ static const char *const type_get_line = "int32 line(typename type)";
 static const char *const type_get_name = "typename name(typename type)";
 static const char *const type_get_base = "typename base(typename type)";
 
+static const char *const variant_is = "bool is(variant var, typename type)";
+static const char *const variant_as = "pointer as(variant var, typename type)";
+
 /// Private dummy on exit native function.
 static vmError haltDummy(nfcContext args) {
 	(void)args;
@@ -58,6 +61,25 @@ static vmError typenameGetField(nfcContext ctx) {
 	}
 	if (ctx->proto == type_get_base) {
 		retref(ctx, vmOffset(ctx->rt, sym->type));
+		return noError;
+	}
+	return nativeCallError;
+}
+
+static vmError variantHelpers(nfcContext ctx) {
+	size_t symOffs = argref(ctx, 0);
+	vmValue *varOffs = argget(ctx, vm_ref_size, NULL, 2 * vm_ref_size);
+
+	if (ctx->proto == variant_is) {
+		reti32(ctx, varOffs->type == symOffs);
+		return noError;
+	}
+	if (ctx->proto == variant_as) {
+		if (varOffs->type == symOffs) {
+			retref(ctx, varOffs->ref);
+		} else {
+			retref(ctx, 0);
+		}
 		return noError;
 	}
 	return nativeCallError;
@@ -287,11 +309,6 @@ static void install_type(ccContext cc, ccInstall mode) {
 		cc->null_ref = install(cc, "null", ATTR_stat | ATTR_cnst | KIND_def, 0, type_ptr, intNode(cc, 0));
 		cc->null_ref->init->type = type_ptr;
 	}
-	cc->true_ref = install(cc, "true", ATTR_stat | ATTR_cnst | KIND_def, 0, type_bol, intNode(cc, 1));    // 0 == 0
-	cc->true_ref->init->type = type_bol;
-
-	cc->false_ref = install(cc, "false", ATTR_stat | ATTR_cnst | KIND_def, 0, type_bol, intNode(cc, 0));  // 0 != 0
-	cc->false_ref->init->type = type_bol;
 
 	enter(cc, NULL);
 	cc->length_ref = install(cc, "length", ATTR_cnst | KIND_var, cc->type_idx->size, cc->type_idx, NULL);
@@ -301,9 +318,6 @@ static void install_type(ccContext cc, ccInstall mode) {
 
 	// aliases
 	install(cc, "int", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, cc->type_int));
-	install(cc, "byte", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_u08));
-	install(cc, "float", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_f32));
-	install(cc, "double", ATTR_stat | ATTR_cnst | KIND_def, 0, type_rec, lnkNode(cc, type_f64));
 
 	cc->type_str = install(cc, ".cstr", ATTR_stat | ATTR_cnst | KIND_typ | CAST_arr, vm_ref_size, type_chr, NULL);
 	if (cc->type_str != NULL) {
@@ -543,6 +557,15 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 
 	// 4 reflection
 	if (cc->type_rec != NULL && cc->type_var != NULL) {
+		enter(cc, cc->type_var);
+
+		error = error || !(field = ccAddCall(cc, variantHelpers, variant_is));
+		error = error || !(field = ccAddCall(cc, variantHelpers, variant_as));
+
+		dieif(cc->type_var->fields != NULL, ERR_INTERNAL_ERROR);
+		cc->type_var->fields = leave(cc, KIND_def, 0, 0, NULL);
+
+
 		enter(cc, cc->type_rec);
 
 		if ((field = install(cc, "size", ATTR_cnst | KIND_var, vm_stk_align, cc->type_i32, NULL))) {
@@ -582,7 +605,7 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 		error = error || !ccAddCall(rt, typenameReflect, "bool instanceOf(typename type, variant obj)");
 		//~ */
 
-		dieif(cc->type_rec->fields, ERR_INTERNAL_ERROR);
+		dieif(cc->type_rec->fields != NULL, ERR_INTERNAL_ERROR);
 		cc->type_rec->fields = leave(cc, KIND_def, 0, 0, NULL);
 	}
 	return error;

@@ -119,7 +119,7 @@ props.libraries = [
 	'/lib/gfxlib.ci'
 ];
 function openProjectFile(projectOrFile) {
-	if (projectOrFile.workspace) {
+	if (projectOrFile.workspace != null) {
 		if (Module.initWorkspace(projectOrFile.workspace, function () {
 			openProjectFile(projectOrFile);
 			listFiles('.');
@@ -127,7 +127,7 @@ function openProjectFile(projectOrFile) {
 			return;
 		}
 	}
-	if (projectOrFile.list) {
+	if (projectOrFile.list != null) {
 		Module.wgetFiles(projectOrFile.list, function (inProgress) {
 			if (inProgress > 0) {
 				return;
@@ -136,12 +136,14 @@ function openProjectFile(projectOrFile) {
 			listFiles('.');
 		});
 	}
-	try {
-		let content = Module.readFile(projectOrFile.file);
-		setContent(content, projectOrFile.file, projectOrFile.line);
-	} catch (error) {
-		// in case we open a file that does not exists
-		console.trace(error);
+	if (projectOrFile.file != null) {
+		try {
+			let content = Module.readFile(projectOrFile.file);
+			setContent(content, projectOrFile.file, projectOrFile.line);
+		} catch (error) {
+			// in case we open a file that does not exists
+			console.trace(error);
+		}
 	}
 }
 function listFiles(dir) {
@@ -232,6 +234,22 @@ var Module = {
 		'libFile.wasm',
 		'libGfx.wasm'
 	],
+	workspaceLibraries: [{
+		file: '/lib/gfxlib.ci',
+		url: '/Cmpl/cmplGfx/lib/gfxlib.ci'
+	}, {
+		file: '/lib/gfx/color.ci',
+		url: '/Cmpl/cmplGfx/lib/gfx/color.ci'
+	}, {
+		file: '/lib/vec/vec4f.ci',
+		url: '/Cmpl/lib/vec/vec4f.ci'
+	}, {
+		file: '/lib/vec/mat4f.ci',
+		url: '/Cmpl/lib/vec/mat4f.ci'
+	}, {
+		path: '/lib/vec/vec2d.ci',
+		url: '/Cmpl/lib/vec/vec2d.ci'
+	}],
 	print: function(message) { terminal.print(message); },
 	canvas: document.getElementById('canvas'),
 
@@ -240,23 +258,7 @@ var Module = {
 		FS.mkdirTree(Module.workspace);
 		FS.chdir(Module.workspace);
 
-		let libs = [{
-			file: '/lib/gfxlib.ci',
-			url: '/Cmpl/cmplGfx/lib/gfxlib.ci'
-		}, {
-			file: '/lib/gfx/color.ci',
-			url: '/Cmpl/cmplGfx/lib/gfx/color.ci'
-		}, {
-			file: '/lib/vec/vec4f.ci',
-			url: '/Cmpl/lib/vec/vec4f.ci'
-		}, {
-			file: '/lib/vec/mat4f.ci',
-			url: '/Cmpl/lib/vec/mat4f.ci'
-		}, {
-			path: '/lib/vec/vec2d.ci',
-			url: '/Cmpl/lib/vec/vec2d.ci'
-		}];
-		Module.wgetFiles(libs, function (inProgress) {
+		Module.wgetFiles(Module.workspaceLibraries, function (inProgress) {
 			if (inProgress > 0) {
 				return;
 			}

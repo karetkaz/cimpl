@@ -117,7 +117,7 @@ function JsArgs(paramSeparator, onHashChange) {
 				writeParams = false;
 
 				for (let key of arguments) {
-					// properies to be notified
+					// properties to be notified
 					changes[key] = null;
 				}
 
@@ -147,17 +147,17 @@ function JsArgs(paramSeparator, onHashChange) {
 
 				if (newValue != null && oldValue != null) {
 					// update
-					changes[key] = {'old': oldValue, 'new': newValue};
+					changes[key] = oldValue;
 					this[key] = newValue;
 				}
 				else if (newValue != null) {
 					// insert
-					changes[key] = {'new': newValue};
+					changes[key] = newValue;
 					this[key] = newValue;
 				}
 				else if (oldValue != null) {
 					// remove
-					changes[key] = {'old': oldValue};
+					changes[key] = oldValue;
 					delete this[key];
 				}
 			}

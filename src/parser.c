@@ -1113,6 +1113,11 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		fatal("%?s:%?u: "ERR_UNIMPLEMENTED_FEATURE": %-t", tag->file, tag->line, init);
 	} else {
 		type = typeCheck(cc, NULL, init, 1);
+		/* TODO: evaluate inline expressions
+		struct astNode value;
+		if (eval(cc, &value, init)) {
+			init = dupNode(cc, &value);
+		}*/
 	}
 	init->type = type;
 	if (type == NULL) {
@@ -1343,8 +1348,10 @@ static astn declare_enum(ccContext cc) {
 					error(cc->rt, id->file, id->line, ERR_INVALID_VALUE_ASSIGN, member, value);
 					break;
 
+				case CAST_bit:
 				case CAST_f32:
 				case CAST_f64:
+					value = dupNode(cc, &temp);
 					break;
 
 				case CAST_i32:
@@ -1352,6 +1359,7 @@ static astn declare_enum(ccContext cc) {
 				case CAST_u32:
 				case CAST_u64:
 					nextValue = intValue(&temp);
+					value = dupNode(cc, &temp);
 					break;
 			}
 		}
@@ -1388,34 +1396,50 @@ static astn statement_if(ccContext cc, ccKind attr) {
 
 	skipTok(cc, LEFT_par, 1);
 	astn test = expression(cc, 0);
-	if (test != NULL) {
-		test->type = typeCheck(cc, NULL, test, 1);
-		ast->stmt.test = test;
-	}
-	skipTok(cc, RIGHT_par, 1);
-
 	// static if statement true branch does not enter a new scope to expose declarations.
 	int staticIf = attr & ATTR_stat;
 	int enterThen = 1;
 	int enterElse = 1;
-	if (staticIf) {
-		struct astNode value;
-		if (eval(cc, &value, test)) {
-			if (bolValue(&value)) {
-				enterThen = 0;
-			}
-			else {
-				enterElse = 0;
-			}
-		}
-		else {
-			error(cc->rt, test->file, test->line, ERR_INVALID_CONST_EXPR, test);
-		}
-	}
 
-	if (enterThen) {
-		enter(cc, NULL);
+	if (test != NULL) {
+		test->type = typeCheck(cc, NULL, test, 1);
+		if (staticIf) {
+			struct astNode value;
+			if (eval(cc, &value, test)) {
+				if (bolValue(&value)) {
+					enterThen = 0;
+				} else {
+					enterElse = 0;
+				}
+			} else {
+				error(cc->rt, test->file, test->line, ERR_INVALID_CONST_EXPR, test);
+			}
+			if (enterThen) {
+				enter(cc, NULL);
+			}
+		} else {
+			if (enterThen) {
+				enter(cc, NULL);
+			}
+			if (isTypeExpr(test)) {
+				backTok(cc, test);
+				astn def = declaration(cc, attr, NULL);
+				if (def != NULL && def->ref.link->init != NULL) {
+					def->type = typeCheck(cc, NULL, def, 1);
+					ast->stmt.init = def;
+					if (castOf(def->ref.link) == CAST_ref) {
+						test = opNode(cc, OPER_cne, lnkNode(cc, def->ref.link), tagNode(cc, "null"));
+						test->type = typeCheck(cc, NULL, test, 1);
+					} else {
+						test = lnkNode(cc, def->ref.link);
+						test->type = typeCheck(cc, NULL, test, 1);
+					}
+				}
+			}
+		}
+		ast->stmt.test = test;
 	}
+	skipTok(cc, RIGHT_par, 1);
 
 	int insideStaticIf = cc->siff;
 	cc->siff = insideStaticIf || (staticIf && enterThen);

@@ -152,6 +152,10 @@ static ccKind genLoop(ccContext cc, astn ast) {
 static ccKind genBranch(ccContext cc, astn ast) {
 	rtContext rt = cc->rt;
 	struct astNode testValue;
+	if (ast->stmt.init && !genAst(cc, ast->stmt.init, CAST_vid)) {
+		traceAst(ast);
+		return CAST_any;
+	}
 	astn *genOnly = NULL;
 	if (eval(cc, &testValue, ast->stmt.test) != CAST_any) {
 		if (bolValue(&testValue)) {
@@ -1646,7 +1650,6 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				return CAST_any;
 			}
 			dieif(get != CAST_vid, ERR_INTERNAL_ERROR);
-			dieif(spBegin != stkOffset(rt, 0), ERR_INTERNAL_ERROR);
 			break;
 
 		case STMT_con:

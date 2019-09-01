@@ -3,6 +3,7 @@ var Module = {
 	dynamicLibraries: [
 		'libFile.wasm'
 	],
+	workspaceLibraries: [],
 	print: function(text) {
 		postMessage({ print: text });
 	},

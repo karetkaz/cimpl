@@ -34,7 +34,7 @@ typename: typename {
 	lib/vec/vec2d.ci:1: referenced as `typename`
 	lib/stdlib.ci:92: referenced as `typename`
 	lib/stdlib.ci:12: referenced as `typename`
-	internal usages: 7
+	internal usages: 9
 }
 typename.size: int32 {
 .kind: const variable
@@ -62,7 +62,7 @@ typename.base(type: typename): typename: function {
 .owner: typename
 .param .result: typename (size: 4, cast: inline)
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(1)
+.value: nfc(3)
 .usages:
 	internal usages: 1
 }
@@ -74,7 +74,7 @@ typename.file(type: typename): .cstr: function {
 .owner: typename
 .param .result: .cstr (size: 4, cast: inline)
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(2)
+.value: nfc(4)
 .usages:
 	internal usages: 1
 }
@@ -86,7 +86,7 @@ typename.line(type: typename): int32: function {
 .owner: typename
 .param .result: int32 (size: 4, cast: inline)
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(3)
+.value: nfc(5)
 .usages:
 	internal usages: 1
 }
@@ -98,7 +98,7 @@ typename.name(type: typename): .cstr: function {
 .owner: typename
 .param .result: .cstr (size: 4, cast: inline)
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(4)
+.value: nfc(6)
 .usages:
 	internal usages: 1
 }
@@ -144,7 +144,8 @@ bool: typename {
 	lib/stdlib.ci:56: referenced as `bool`
 	lib/stdlib.ci:54: referenced as `bool`
 	lib/stdlib.ci:52: referenced as `bool`
-	internal usages: 5
+	lib/stdlib.ci:3: referenced as `bool`
+	internal usages: 6
 }
 char: typename {
 .kind: static const typename(i32)
@@ -417,6 +418,7 @@ uint8: typename {
 	cmplGfx/lib/gfx/color.ci:13: referenced as `uint8`
 	cmplGfx/lib/gfx/color.ci:10: referenced as `uint8`
 	cmplGfx/lib/gfx/color.ci:7: referenced as `uint8`
+	lib/stdlib.ci:8: referenced as `uint8`
 	internal usages: 4
 }
 uint16: typename {
@@ -507,7 +509,7 @@ uint32.zxt(value: int32, offs: int32, count: int32): int32: function {
 .param value: int32 (size: 4, cast: variable(i32))
 .param offs: int32 (size: 4, cast: variable(i32))
 .param count: int32 (size: 4, cast: variable(i32))
-.value: nfc(18)
+.value: nfc(20)
 .usages:
 	internal usages: 1
 }
@@ -521,7 +523,7 @@ uint32.sxt(value: int32, offs: int32, count: int32): int32: function {
 .param value: int32 (size: 4, cast: variable(i32))
 .param offs: int32 (size: 4, cast: variable(i32))
 .param count: int32 (size: 4, cast: variable(i32))
-.value: nfc(19)
+.value: nfc(21)
 .usages:
 	internal usages: 1
 }
@@ -533,7 +535,7 @@ uint32.pop(value: int32): int32: function {
 .owner: uint32
 .param .result: int32 (size: 4, cast: inline)
 .param value: int32 (size: 4, cast: variable(i32))
-.value: nfc(20)
+.value: nfc(22)
 .usages:
 	internal usages: 1
 }
@@ -545,7 +547,7 @@ uint32.swap(value: int32): int32: function {
 .owner: uint32
 .param .result: int32 (size: 4, cast: inline)
 .param value: int32 (size: 4, cast: variable(i32))
-.value: nfc(21)
+.value: nfc(23)
 .usages:
 	internal usages: 1
 }
@@ -557,7 +559,7 @@ uint32.bsr(value: int32): int32: function {
 .owner: uint32
 .param .result: int32 (size: 4, cast: inline)
 .param value: int32 (size: 4, cast: variable(i32))
-.value: nfc(22)
+.value: nfc(24)
 .usages:
 	internal usages: 1
 }
@@ -569,7 +571,7 @@ uint32.bsf(value: int32): int32: function {
 .owner: uint32
 .param .result: int32 (size: 4, cast: inline)
 .param value: int32 (size: 4, cast: variable(i32))
-.value: nfc(23)
+.value: nfc(25)
 .usages:
 	internal usages: 1
 }
@@ -581,7 +583,7 @@ uint32.hib(value: int32): int32: function {
 .owner: uint32
 .param .result: int32 (size: 4, cast: inline)
 .param value: int32 (size: 4, cast: variable(i32))
-.value: nfc(24)
+.value: nfc(26)
 .usages:
 	internal usages: 1
 }
@@ -593,7 +595,7 @@ uint32.lob(value: int32): int32: function {
 .owner: uint32
 .param .result: int32 (size: 4, cast: inline)
 .param value: int32 (size: 4, cast: variable(i32))
-.value: nfc(25)
+.value: nfc(27)
 .usages:
 	internal usages: 1
 }
@@ -618,7 +620,7 @@ uint64.zxt(value: int64, offs: int32, count: int32): int64: function {
 .param value: int64 (size: 8, cast: variable(i64))
 .param offs: int32 (size: 4, cast: variable(i32))
 .param count: int32 (size: 4, cast: variable(i32))
-.value: nfc(26)
+.value: nfc(28)
 .usages:
 	internal usages: 1
 }
@@ -632,7 +634,7 @@ uint64.sxt(value: int64, offs: int32, count: int32): int64: function {
 .param value: int64 (size: 8, cast: variable(i64))
 .param offs: int32 (size: 4, cast: variable(i32))
 .param count: int32 (size: 4, cast: variable(i32))
-.value: nfc(27)
+.value: nfc(29)
 .usages:
 	internal usages: 1
 }
@@ -747,6 +749,7 @@ float32: typename {
 	lib/std/math.ci:77: referenced as `float32`
 	lib/std/math.ci:77: referenced as `float32`
 	lib/std/math.ci:64: referenced as `float32`
+	lib/stdlib.ci:9: referenced as `float32`
 	internal usages: 75
 }
 float32.sin(x: float32): float32: function {
@@ -757,7 +760,7 @@ float32.sin(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
-.value: nfc(28)
+.value: nfc(30)
 .usages:
 	internal usages: 1
 }
@@ -769,7 +772,7 @@ float32.cos(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
-.value: nfc(29)
+.value: nfc(31)
 .usages:
 	internal usages: 1
 }
@@ -781,7 +784,7 @@ float32.tan(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
-.value: nfc(30)
+.value: nfc(32)
 .usages:
 	internal usages: 1
 }
@@ -793,7 +796,7 @@ float32.log(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
-.value: nfc(31)
+.value: nfc(33)
 .usages:
 	internal usages: 1
 }
@@ -805,7 +808,7 @@ float32.exp(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
-.value: nfc(32)
+.value: nfc(34)
 .usages:
 	internal usages: 1
 }
@@ -818,7 +821,7 @@ float32.pow(x: float32, y: float32): float32: function {
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
 .param y: float32 (size: 4, cast: variable(f32))
-.value: nfc(33)
+.value: nfc(35)
 .usages:
 	internal usages: 1
 }
@@ -830,7 +833,7 @@ float32.sqrt(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
-.value: nfc(34)
+.value: nfc(36)
 .usages:
 	lib/vec/vec4f.ci:98: referenced as `sqrt`
 	internal usages: 1
@@ -844,7 +847,7 @@ float32.atan2(x: float32, y: float32): float32: function {
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
 .param y: float32 (size: 4, cast: variable(f32))
-.value: nfc(35)
+.value: nfc(37)
 .usages:
 	internal usages: 1
 }
@@ -1024,6 +1027,7 @@ float64: typename {
 	lib/std/math.ci:22: referenced as `float64`
 	lib/std/math.ci:22: referenced as `float64`
 	lib/std/math.ci:5: referenced as `float64`
+	lib/stdlib.ci:10: referenced as `float64`
 	internal usages: 19
 }
 float64.sin(x: float64): float64: function {
@@ -1034,7 +1038,7 @@ float64.sin(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
-.value: nfc(36)
+.value: nfc(38)
 .usages:
 	lib/std/math.Complex.ci:184: referenced as `sin`
 	lib/std/math.Complex.ci:148: referenced as `sin`
@@ -1051,7 +1055,7 @@ float64.cos(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
-.value: nfc(37)
+.value: nfc(39)
 .usages:
 	lib/std/math.Complex.ci:184: referenced as `cos`
 	lib/std/math.Complex.ci:148: referenced as `cos`
@@ -1068,7 +1072,7 @@ float64.tan(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
-.value: nfc(38)
+.value: nfc(40)
 .usages:
 	internal usages: 1
 }
@@ -1080,7 +1084,7 @@ float64.log(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
-.value: nfc(39)
+.value: nfc(41)
 .usages:
 	lib/std/math.Complex.ci:135: referenced as `log`
 	lib/std/math.Complex.ci:129: referenced as `log`
@@ -1094,7 +1098,7 @@ float64.exp(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
-.value: nfc(40)
+.value: nfc(42)
 .usages:
 	lib/std/math.Complex.ci:136: referenced as `exp`
 	lib/std/math.Complex.ci:126: referenced as `exp`
@@ -1116,7 +1120,7 @@ float64.pow(x: float64, y: float64): float64: function {
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
 .param y: float64 (size: 8, cast: variable(f64))
-.value: nfc(41)
+.value: nfc(43)
 .usages:
 	lib/std/math.Complex.ci:136: referenced as `pow`
 	internal usages: 1
@@ -1129,7 +1133,7 @@ float64.sqrt(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
-.value: nfc(42)
+.value: nfc(44)
 .usages:
 	lib/std/math.Complex.ci:109: referenced as `sqrt`
 	lib/std/math.ci:480: referenced as `sqrt`
@@ -1144,7 +1148,7 @@ float64.atan2(x: float64, y: float64): float64: function {
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
 .param y: float64 (size: 8, cast: variable(f64))
-.value: nfc(43)
+.value: nfc(45)
 .usages:
 	lib/std/math.Complex.ci:111: referenced as `atan2`
 	lib/std/math.ci:485: referenced as `atan2`
@@ -1161,7 +1165,7 @@ pointer: typename {
 .field copy: function (size: 0, cast: static const inline)
 .field move: function (size: 0, cast: static const inline)
 .usages:
-	internal usages: 14
+	internal usages: 15
 }
 pointer.alloc(ptr: pointer, size: int32): pointer: function {
 .kind: static const inline
@@ -1172,7 +1176,7 @@ pointer.alloc(ptr: pointer, size: int32): pointer: function {
 .param .result: pointer (size: 4, cast: inline)
 .param ptr: pointer (size: 4, cast: variable(ref))
 .param size: int32 (size: 4, cast: variable(i32))
-.value: nfc(7)
+.value: nfc(9)
 .usages:
 	internal usages: 1
 }
@@ -1186,7 +1190,7 @@ pointer.fill(dst: pointer, value: int32, size: int32): pointer: function {
 .param dst: pointer (size: 4, cast: variable(ref))
 .param value: int32 (size: 4, cast: variable(i32))
 .param size: int32 (size: 4, cast: variable(i32))
-.value: nfc(8)
+.value: nfc(10)
 .usages:
 	internal usages: 1
 }
@@ -1200,7 +1204,7 @@ pointer.copy(dst: pointer, src: pointer, size: int32): pointer: function {
 .param dst: pointer (size: 4, cast: variable(ref))
 .param src: pointer (size: 4, cast: variable(ref))
 .param size: int32 (size: 4, cast: variable(i32))
-.value: nfc(9)
+.value: nfc(11)
 .usages:
 	internal usages: 1
 }
@@ -1214,7 +1218,7 @@ pointer.move(dst: pointer, src: pointer, size: int32): pointer: function {
 .param dst: pointer (size: 4, cast: variable(ref))
 .param src: pointer (size: 4, cast: variable(ref))
 .param size: int32 (size: 4, cast: variable(i32))
-.value: nfc(10)
+.value: nfc(12)
 .usages:
 	internal usages: 1
 }
@@ -1223,6 +1227,8 @@ variant: typename {
 .base: `typename`
 .size: 8
 .name: 'variant'
+.field is: function (size: 0, cast: static const inline)
+.field as: function (size: 0, cast: static const inline)
 .usages:
 	lib/stdlib.ci:67: referenced as `variant`
 	lib/stdlib.ci:64: referenced as `variant`
@@ -1235,6 +1241,32 @@ variant: typename {
 	lib/stdlib.ci:25: referenced as `variant`
 	lib/stdlib.ci:20: referenced as `variant`
 	lib/stdlib.ci:15: referenced as `variant`
+	internal usages: 3
+}
+variant.is(var: variant, type: typename): bool: function {
+.kind: static const inline
+.base: `function`
+.size: 0
+.name: 'is'
+.owner: variant
+.param .result: bool (size: 4, cast: inline)
+.param var: variant (size: 8, cast: variable(var))
+.param type: typename (size: 4, cast: variable(ref))
+.value: nfc(1)
+.usages:
+	internal usages: 1
+}
+variant.as(var: variant, type: typename): pointer: function {
+.kind: static const inline
+.base: `function`
+.size: 0
+.name: 'as'
+.owner: variant
+.param .result: pointer (size: 4, cast: inline)
+.param var: variant (size: 8, cast: variable(var))
+.param type: typename (size: 4, cast: variable(ref))
+.value: nfc(2)
+.usages:
 	internal usages: 1
 }
 function: typename {
@@ -1300,70 +1332,12 @@ null: pointer {
 	lib/stdlib.ci:22: referenced as `null`
 	lib/stdlib.ci:17: referenced as `null`
 }
-true: bool {
-.kind: static const inline
-.base: `bool`
-.size: 0
-.name: 'true'
-.value: 1
-.usages:
-	cmplGfx/lib/gfxlib.ci:328: referenced as `true`
-	cmplGfx/lib/gfxlib.ci:81: referenced as `true`
-	lib/std/string.ci:57: referenced as `true`
-	lib/std/string.ci:42: referenced as `true`
-	lib/std/math.ci:471: referenced as `true`
-	lib/std/math.ci:424: referenced as `true`
-	lib/std/math.ci:385: referenced as `true`
-	lib/std/math.ci:381: referenced as `true`
-	lib/std/math.ci:370: referenced as `true`
-}
-false: bool {
-.kind: static const inline
-.base: `bool`
-.size: 0
-.name: 'false'
-.value: 0
-.usages:
-	cmplGfx/lib/gfxlib.ci:79: referenced as `false`
-	cmplGfx/lib/gfxlib.ci:76: referenced as `false`
-	lib/std/string.ci:54: referenced as `false`
-	lib/std/string.ci:50: referenced as `false`
-	lib/std/string.ci:39: referenced as `false`
-	lib/std/math.ci:469: referenced as `false`
-	lib/std/math.ci:421: referenced as `false`
-	lib/std/math.ci:366: referenced as `false`
-	lib/std/math.ci:365: referenced as `false`
-}
 int: typename {
 .kind: static const inline
 .base: `typename`
 .size: 0
 .name: 'int'
 .value: int32
-.usages:
-}
-byte: typename {
-.kind: static const inline
-.base: `typename`
-.size: 0
-.name: 'byte'
-.value: uint8
-.usages:
-}
-float: typename {
-.kind: static const inline
-.base: `typename`
-.size: 0
-.name: 'float'
-.value: float32
-.usages:
-}
-double: typename {
-.kind: static const inline
-.base: `typename`
-.size: 0
-.name: 'double'
-.value: float64
 .usages:
 }
 .cstr: char {
@@ -2651,7 +2625,7 @@ raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], 
 .param message: char[*] (size: 4, cast: variable(ref))
 .param inspect: variant (size: 8, cast: variable(var))
 .doc: 'Report messages or raise errors.'
-.value: nfc(5)
+.value: nfc(7)
 .usages:
 	lib/stdlib.ci:84: referenced as `raise`
 	lib/stdlib.ci:84: referenced as `raise`
@@ -2816,7 +2790,7 @@ tryExec(args: pointer, action(args: pointer): void): int32: function {
 .param .result: int32 (size: 4, cast: inline)
 .param args: pointer (size: 4, cast: variable(ref))
 .param action: function (size: 4, cast: variable(ref))
-.value: nfc(6)
+.value: nfc(8)
 .usages:
 	internal usages: 1
 }
@@ -2845,7 +2819,7 @@ System.exit(code: int32): void: function {
 .owner: System
 .param .result: void (size: 0, cast: inline)
 .param code: int32 (size: 4, cast: variable(i32))
-.value: nfc(11)
+.value: nfc(13)
 .usages:
 	internal usages: 1
 }
@@ -2857,7 +2831,7 @@ System.srand(seed: int32): void: function {
 .owner: System
 .param .result: void (size: 0, cast: inline)
 .param seed: int32 (size: 4, cast: variable(i32))
-.value: nfc(12)
+.value: nfc(14)
 .usages:
 	internal usages: 1
 }
@@ -2868,7 +2842,7 @@ System.rand(): int32: function {
 .name: 'rand'
 .owner: System
 .param .result: int32 (size: 4, cast: inline)
-.value: nfc(13)
+.value: nfc(15)
 .usages:
 	internal usages: 1
 }
@@ -2879,7 +2853,7 @@ System.time(): int32: function {
 .name: 'time'
 .owner: System
 .param .result: int32 (size: 4, cast: inline)
-.value: nfc(14)
+.value: nfc(16)
 .usages:
 	internal usages: 1
 }
@@ -2890,7 +2864,7 @@ System.clock(): int32: function {
 .name: 'clock'
 .owner: System
 .param .result: int32 (size: 4, cast: inline)
-.value: nfc(15)
+.value: nfc(17)
 .usages:
 	internal usages: 1
 }
@@ -2901,7 +2875,7 @@ System.millis(): int64: function {
 .name: 'millis'
 .owner: System
 .param .result: int64 (size: 8, cast: inline)
-.value: nfc(16)
+.value: nfc(18)
 .usages:
 	cmplGfx/lib/gfxlib.ci:361: referenced as `millis`
 	cmplGfx/lib/gfxlib.ci:347: referenced as `millis`
@@ -2916,9 +2890,79 @@ System.sleep(millis: int64): void: function {
 .owner: System
 .param .result: void (size: 0, cast: inline)
 .param millis: int64 (size: 8, cast: variable(i64))
-.value: nfc(17)
+.value: nfc(19)
 .usages:
 	internal usages: 1
+}
+true: bool {
+.kind: static const val
+.base: `bool`
+.size: 1
+.name: 'true'
+.file: 'lib/stdlib.ci:4'
+.doc: 'true'
+.value: 1
+.usages:
+	cmplGfx/lib/gfxlib.ci:328: referenced as `true`
+	cmplGfx/lib/gfxlib.ci:81: referenced as `true`
+	lib/std/string.ci:57: referenced as `true`
+	lib/std/string.ci:42: referenced as `true`
+	lib/std/math.ci:471: referenced as `true`
+	lib/std/math.ci:424: referenced as `true`
+	lib/std/math.ci:385: referenced as `true`
+	lib/std/math.ci:381: referenced as `true`
+	lib/std/math.ci:370: referenced as `true`
+	lib/stdlib.ci:4: defined as `true`
+}
+false: bool {
+.kind: static const val
+.base: `bool`
+.size: 1
+.name: 'false'
+.file: 'lib/stdlib.ci:5'
+.doc: 'false'
+.value: 0
+.usages:
+	cmplGfx/lib/gfxlib.ci:79: referenced as `false`
+	cmplGfx/lib/gfxlib.ci:76: referenced as `false`
+	lib/std/string.ci:54: referenced as `false`
+	lib/std/string.ci:50: referenced as `false`
+	lib/std/string.ci:39: referenced as `false`
+	lib/std/math.ci:469: referenced as `false`
+	lib/std/math.ci:421: referenced as `false`
+	lib/std/math.ci:366: referenced as `false`
+	lib/std/math.ci:365: referenced as `false`
+	lib/stdlib.ci:5: defined as `false`
+}
+byte: typename {
+.kind: inline
+.base: `typename`
+.size: 0
+.name: 'byte'
+.file: 'lib/stdlib.ci:8'
+.value: uint8
+.usages:
+	lib/stdlib.ci:8: defined as `byte`
+}
+float: typename {
+.kind: inline
+.base: `typename`
+.size: 0
+.name: 'float'
+.file: 'lib/stdlib.ci:9'
+.value: float32
+.usages:
+	lib/stdlib.ci:9: defined as `float`
+}
+double: typename {
+.kind: inline
+.base: `typename`
+.size: 0
+.name: 'double'
+.file: 'lib/stdlib.ci:10'
+.value: float64
+.usages:
+	lib/stdlib.ci:10: defined as `double`
 }
 verbose(message: char[*], inspect: variant): void: function {
 .kind: inline
@@ -3295,7 +3339,7 @@ assertEq(expected: int32, returned: int32, message: char[*]): void: function {
 	<assertEq+?>: load.ref <?> ;"assertion failed"
 	<assertEq+?>: load.ref <?> ;NotEquals
 	<assertEq+?>: load.sp(+24)
-	<assertEq+?>: nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<assertEq+?>: nfc(7) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<assertEq+?>: inc.sp(-32)
 	<assertEq+?>: ret
 .usages:
@@ -3370,8 +3414,8 @@ Math: typename {
 .field smooth: function (size: 0, cast: static inline)
 .field smooth: function (size: 0, cast: static inline)
 .field smooth: function (size: 0, cast: static inline)
-.field min: function (size: 72, cast: static const function)
-.field max: function (size: 72, cast: static const function)
+.field min: function (size: 79, cast: static const function)
+.field max: function (size: 79, cast: static const function)
 .field sum: function (size: 40, cast: static const function)
 .field eval: function (size: 0, cast: static inline)
 .field eval: function (size: 0, cast: static inline)
@@ -3383,10 +3427,10 @@ Math: typename {
 .field sinCos: function (size: 335, cast: static const function)
 .field sin: function (size: 0, cast: static inline)
 .field cos: function (size: 0, cast: static inline)
-.field tan: function (size: 371, cast: static const function)
+.field tan: function (size: 378, cast: static const function)
 .field sinh: function (size: 241, cast: static const function)
 .field cosh: function (size: 75, cast: static const function)
-.field asin: function (size: 166, cast: static const function)
+.field asin: function (size: 173, cast: static const function)
 .field acos: function (size: 0, cast: static inline)
 .field radians: function (size: 0, cast: static inline)
 .field degrees: function (size: 0, cast: static inline)
@@ -3449,7 +3493,7 @@ Math.log2E: float64 {
 .file: 'lib/std/math.ci:9'
 .owner: Math
 .doc: 'log2E'
-.value: 1.000000 / ln2
+.value: 1.442695
 .usages:
 	lib/std/math.ci:9: defined as `log2E`
 }
@@ -3474,7 +3518,7 @@ Math.log10E: float64 {
 .file: 'lib/std/math.ci:11'
 .owner: Math
 .doc: 'log10E'
-.value: 1.000000 / ln10
+.value: 0.434294
 .usages:
 	lib/std/math.ci:11: defined as `log10E`
 }
@@ -3546,7 +3590,7 @@ Math.nan: float64 {
 .file: 'lib/std/math.ci:17'
 .owner: Math
 .doc: 'nan'
-.value: (0) / 0.000000
+.value: -nan
 .usages:
 	lib/std/math.ci:477: referenced as `nan`
 	lib/std/math.ci:398: referenced as `nan`
@@ -3562,7 +3606,7 @@ Math.inf: float64 {
 .file: 'lib/std/math.ci:18'
 .owner: Math
 .doc: 'inf'
-.value: (1) / 0.000000
+.value: inf
 .usages:
 	lib/std/math.ci:18: defined as `inf`
 }
@@ -4198,7 +4242,7 @@ Math.smooth(t: float64, a: float64, b: float64): float64: function {
 Math.min(data: float64[]): float64: function {
 .kind: static const function
 .base: `function`
-.size: 72
+.size: 79
 .name: 'min'
 .file: 'lib/std/math.ci:201'
 .owner: Math
@@ -4217,15 +4261,14 @@ Math.min(data: float64[]): float64: function {
 	}
 	return .result := result;
 }
-.instructions: (72 bytes)
-	lib/std/math.ci:202: (13 bytes): if (data.length == (0))
+.instructions: (79 bytes)
+	lib/std/math.ci:202: (20 bytes): if (data.length == (0))
 	<min>  : dup.x32 sp(2)
 	<min+?>: load.z32
 	<min+?>: ceq.i32
-	<min+?>: jz +9
-	lib/std/math.ci:203: (5 bytes): return .result := nan;
-	<min+?>: load.z128
-	<min+?>: div.f64
+	<min+?>: jz +16
+	lib/std/math.ci:203: (12 bytes): return .result := nan;
+	<min+?>: load.f64 -nan
 	<min+?>: set.x64 sp(5)
 	<min+?>: ret
 	lib/std/math.ci:205: (3 bytes): result: float64 := data[0]
@@ -4265,7 +4308,7 @@ Math.min(data: float64[]): float64: function {
 Math.max(data: float64[]): float64: function {
 .kind: static const function
 .base: `function`
-.size: 72
+.size: 79
 .name: 'max'
 .file: 'lib/std/math.ci:215'
 .owner: Math
@@ -4284,15 +4327,14 @@ Math.max(data: float64[]): float64: function {
 	}
 	return .result := result;
 }
-.instructions: (72 bytes)
-	lib/std/math.ci:216: (13 bytes): if (data.length == (0))
+.instructions: (79 bytes)
+	lib/std/math.ci:216: (20 bytes): if (data.length == (0))
 	<max>  : dup.x32 sp(2)
 	<max+?>: load.z32
 	<max+?>: ceq.i32
-	<max+?>: jz +9
-	lib/std/math.ci:217: (5 bytes): return .result := nan;
-	<max+?>: load.z128
-	<max+?>: div.f64
+	<max+?>: jz +16
+	lib/std/math.ci:217: (12 bytes): return .result := nan;
+	<max+?>: load.f64 -nan
 	<max+?>: set.x64 sp(5)
 	<max+?>: ret
 	lib/std/math.ci:219: (3 bytes): result: float64 := data[0]
@@ -4836,7 +4878,7 @@ Math.cos(arg: float64): float64: function {
 Math.tan(arg: float64): float64: function {
 .kind: static const function
 .base: `function`
-.size: 371
+.size: 378
 .name: 'tan'
 .file: 'lib/std/math.ci:352'
 .owner: Math
@@ -4887,7 +4929,7 @@ Math.tan(arg: float64): float64: function {
 	}
 	return .result := result;
 }
-.instructions: (371 bytes)
+.instructions: (378 bytes)
 	lib/std/math.ci:365: (1 byte): complement: bool := false
 	<tan>  : load.z32
 	lib/std/math.ci:366: (1 byte): negate: bool := false
@@ -5014,18 +5056,17 @@ Math.tan(arg: float64): float64: function {
 	<tan+?>: load.f64 -16638.952389
 	<tan+?>: add.f64
 	<tan+?>: div.f64
-	lib/std/math.ci:396: (40 bytes): if (complement)
+	lib/std/math.ci:396: (47 bytes): if (complement)
 	<tan+?>: load.sp(+40)
 	<tan+?>: load.i8
-	<tan+?>: jz +35
-	lib/std/math.ci:397: (17 bytes): if (result == (0))
+	<tan+?>: jz +42
+	lib/std/math.ci:397: (24 bytes): if (result == (0))
 	<tan+?>: dup.x64 sp(0)
 	<tan+?>: load.z64
 	<tan+?>: ceq.f64
-	<tan+?>: jz +13
-	lib/std/math.ci:398: (9 bytes): return .result := nan;
-	<tan+?>: load.z128
-	<tan+?>: div.f64
+	<tan+?>: jz +20
+	lib/std/math.ci:398: (16 bytes): return .result := nan;
+	<tan+?>: load.f64 -nan
 	<tan+?>: set.x64 sp(16)
 	<tan+?>: inc.sp(-44)
 	<tan+?>: ret
@@ -5107,7 +5148,7 @@ Math.sinh(x: float64): float64: function {
 	<sinh+?>: jz +27
 	lib/std/math.ci:428: (23 bytes): return .result := float64.exp(x) / (2);
 	<sinh+?>: dup.x64 sp(2)
-	<sinh+?>: nfc(40) ;float64.exp(x: float64): float64
+	<sinh+?>: nfc(42) ;float64.exp(x: float64): float64
 	<sinh+?>: load.f64 2.000000
 	<sinh+?>: div.f64
 	<sinh+?>: set.x64 sp(6)
@@ -5122,10 +5163,10 @@ Math.sinh(x: float64): float64: function {
 	<sinh+?>: jz +34
 	lib/std/math.ci:433: (26 bytes): result := (float64.exp(x) - float64.exp(-x)) / (2);
 	<sinh+?>: dup.x64 sp(4)
-	<sinh+?>: nfc(40) ;float64.exp(x: float64): float64
+	<sinh+?>: nfc(42) ;float64.exp(x: float64): float64
 	<sinh+?>: dup.x64 sp(6)
 	<sinh+?>: neg.f64
-	<sinh+?>: nfc(40) ;float64.exp(x: float64): float64
+	<sinh+?>: nfc(42) ;float64.exp(x: float64): float64
 	<sinh+?>: sub.f64
 	<sinh+?>: load.f64 2.000000
 	<sinh+?>: div.f64
@@ -5223,17 +5264,17 @@ Math.cosh(x: float64): float64: function {
 	<cosh+?>: jz +23
 	lib/std/math.ci:453: (19 bytes): return .result := float64.exp(x) / (2);
 	<cosh+?>: dup.x64 sp(1)
-	<cosh+?>: nfc(40) ;float64.exp(x: float64): float64
+	<cosh+?>: nfc(42) ;float64.exp(x: float64): float64
 	<cosh+?>: load.f64 2.000000
 	<cosh+?>: div.f64
 	<cosh+?>: set.x64 sp(5)
 	<cosh+?>: ret
 	lib/std/math.ci:455: (27 bytes): return .result := (float64.exp(x) + float64.exp(-x)) / (2);
 	<cosh+?>: dup.x64 sp(1)
-	<cosh+?>: nfc(40) ;float64.exp(x: float64): float64
+	<cosh+?>: nfc(42) ;float64.exp(x: float64): float64
 	<cosh+?>: dup.x64 sp(3)
 	<cosh+?>: neg.f64
-	<cosh+?>: nfc(40) ;float64.exp(x: float64): float64
+	<cosh+?>: nfc(42) ;float64.exp(x: float64): float64
 	<cosh+?>: add.f64
 	<cosh+?>: load.f64 2.000000
 	<cosh+?>: div.f64
@@ -5247,7 +5288,7 @@ Math.cosh(x: float64): float64: function {
 Math.asin(x: float64): float64: function {
 .kind: static const function
 .base: `function`
-.size: 166
+.size: 173
 .name: 'asin'
 .file: 'lib/std/math.ci:463'
 .owner: Math
@@ -5281,7 +5322,7 @@ Math.asin(x: float64): float64: function {
 	}
 	return .result := result;
 }
-.instructions: (166 bytes)
+.instructions: (173 bytes)
 	lib/std/math.ci:464: (12 bytes): if (x == (0))
 	<asin>  : dup.x64 sp(1)
 	<asin+?>: load.z64
@@ -5305,14 +5346,13 @@ Math.asin(x: float64): float64: function {
 	<asin+?>: dup.x64 sp(2)
 	<asin+?>: neg.f64
 	<asin+?>: set.x64 sp(4)
-	lib/std/math.ci:475: (25 bytes): if (x > (1))
+	lib/std/math.ci:475: (32 bytes): if (x > (1))
 	<asin+?>: dup.x64 sp(2)
 	<asin+?>: load.f64 1.000000
 	<asin+?>: cgt.f64
-	<asin+?>: jz +13
-	lib/std/math.ci:477: (9 bytes): return .result := nan;
-	<asin+?>: load.z128
-	<asin+?>: div.f64
+	<asin+?>: jz +20
+	lib/std/math.ci:477: (16 bytes): return .result := nan;
+	<asin+?>: load.f64 -nan
 	<asin+?>: set.x64 sp(6)
 	<asin+?>: inc.sp(-4)
 	<asin+?>: ret
@@ -5322,7 +5362,7 @@ Math.asin(x: float64): float64: function {
 	<asin+?>: dup.x64 sp(6)
 	<asin+?>: mul.f64
 	<asin+?>: sub.f64
-	<asin+?>: nfc(42) ;float64.sqrt(x: float64): float64
+	<asin+?>: nfc(44) ;float64.sqrt(x: float64): float64
 	lib/std/math.ci:481: (60 bytes): if (x > 0.700000)
 	<asin+?>: dup.x64 sp(4)
 	<asin+?>: load.f64 0.700000
@@ -5334,14 +5374,14 @@ Math.asin(x: float64): float64: function {
 	<asin+?>: div.f64
 	<asin+?>: dup.x64 sp(2)
 	<asin+?>: dup.x64 sp(8)
-	<asin+?>: nfc(43) ;float64.atan2(x: float64, y: float64): float64
+	<asin+?>: nfc(45) ;float64.atan2(x: float64, y: float64): float64
 	<asin+?>: sub.f64
 	<asin+?>: set.x64 sp(2)
 	<asin+?>: jmp +14
 	lib/std/math.ci:485: (10 bytes): result := float64.atan2(x, result);
 	<asin+?>: dup.x64 sp(4)
 	<asin+?>: dup.x64 sp(2)
-	<asin+?>: nfc(43) ;float64.atan2(x: float64, y: float64): float64
+	<asin+?>: nfc(45) ;float64.atan2(x: float64, y: float64): float64
 	<asin+?>: set.x64 sp(2)
 	lib/std/math.ci:488: (19 bytes): if (negate)
 	<asin+?>: load.sp(+8)
@@ -6094,14 +6134,14 @@ pow(a: Complex, b: Complex): Complex: function {
 	<pow+?>: dup.x64 sp(6)
 	<pow+?>: mul.f64
 	<pow+?>: add.f64
-	<pow+?>: nfc(42) ;float64.sqrt(x: float64): float64
+	<pow+?>: nfc(44) ;float64.sqrt(x: float64): float64
 	<pow+?>: set.x64 sp(4)
 	<pow+?>: inc.sp(-8)
 	lib/std/math.Complex.ci:134: (16 bytes): t: float64 := arg(a)
 	<pow+?>: dup.x128 sp(7)
 	<pow+?>: dup.x64 sp(0)
 	<pow+?>: dup.x64 sp(4)
-	<pow+?>: nfc(43) ;float64.atan2(x: float64, y: float64): float64
+	<pow+?>: nfc(45) ;float64.atan2(x: float64, y: float64): float64
 	<pow+?>: set.x64 sp(4)
 	<pow+?>: inc.sp(-8)
 	lib/std/math.Complex.ci:135: (15 bytes): u: float64 := b.re * t + b.im * float64.log(r)
@@ -6110,29 +6150,29 @@ pow(a: Complex, b: Complex): Complex: function {
 	<pow+?>: mul.f64
 	<pow+?>: dup.x64 sp(9)
 	<pow+?>: dup.x64 sp(6)
-	<pow+?>: nfc(39) ;float64.log(x: float64): float64
+	<pow+?>: nfc(41) ;float64.log(x: float64): float64
 	<pow+?>: mul.f64
 	<pow+?>: add.f64
 	lib/std/math.Complex.ci:136: (19 bytes): v: float64 := float64.pow(r, b.re) * float64.exp(-b.im * t)
 	<pow+?>: dup.x64 sp(4)
 	<pow+?>: dup.x64 sp(9)
-	<pow+?>: nfc(41) ;float64.pow(x: float64, y: float64): float64
+	<pow+?>: nfc(43) ;float64.pow(x: float64, y: float64): float64
 	<pow+?>: dup.x64 sp(11)
 	<pow+?>: neg.f64
 	<pow+?>: dup.x64 sp(6)
 	<pow+?>: mul.f64
-	<pow+?>: nfc(40) ;float64.exp(x: float64): float64
+	<pow+?>: nfc(42) ;float64.exp(x: float64): float64
 	<pow+?>: mul.f64
 	lib/std/math.Complex.ci:137: (27 bytes): return .result := {...};
 	<pow+?>: dup.x64 sp(0)
 	<pow+?>: dup.x64 sp(4)
-	<pow+?>: nfc(37) ;float64.cos(x: float64): float64
+	<pow+?>: nfc(39) ;float64.cos(x: float64): float64
 	<pow+?>: mul.f64
 	<pow+?>: set.x64 sp(19)
 	lib/std/math.Complex.ci:139: (11 bytes): .result.im := v * float64.sin(u);
 	<pow+?>: dup.x64 sp(0)
 	<pow+?>: dup.x64 sp(4)
-	<pow+?>: nfc(36) ;float64.sin(x: float64): float64
+	<pow+?>: nfc(38) ;float64.sin(x: float64): float64
 	<pow+?>: mul.f64
 	<pow+?>: set.x64 sp(21)
 	<pow+?>: inc.sp(-32)
@@ -7088,7 +7128,7 @@ append(output: char[], pos: int32, sign: char, value: uint32, format: FormatFlag
 	<append+?>: load.ref <?> ;"radix is too small"
 	<append+?>: load.ref <?> ;int32
 	<append+?>: load.sp(+24)
-	<append+?>: nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<append+?>: nfc(7) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	lib/std/string.ci:152: (53 bytes): assert(radix < (radixDigits.length), "radix is too big", radix);
 	<append+?>: dup.x32 sp(0)
 	<append+?>: load.m32 <?> ;append.radixDigits+4
@@ -7102,7 +7142,7 @@ append(output: char[], pos: int32, sign: char, value: uint32, format: FormatFlag
 	<append+?>: load.ref <?> ;"radix is too big"
 	<append+?>: load.ref <?> ;int32
 	<append+?>: load.sp(+24)
-	<append+?>: nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<append+?>: nfc(7) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	lib/std/string.ci:155: (46 bytes): for ( ; value > (0); value := value / (radix))
 	<append+?>: jmp +38
 	lib/std/string.ci:156: (27 bytes): digits[len := len + 1] := radixDigits[value % (radix)];
@@ -7199,7 +7239,7 @@ append(output: char[], pos: int32, sign: char, value: uint32, format: FormatFlag
 	<append+?>: load.ref <?> ;"assertion failed!"
 	<append+?>: load.ref <?> ;pointer
 	<append+?>: load.ref <?> ;null
-	<append+?>: nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<append+?>: nfc(7) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	lib/std/string.ci:176: (11 bytes): output[pos] := padChr;
 	<append+?>: load.sp(+0)
 	<append+?>: load.i8
@@ -7233,7 +7273,7 @@ append(output: char[], pos: int32, sign: char, value: uint32, format: FormatFlag
 	<append+?>: load.ref <?> ;"assertion failed!"
 	<append+?>: load.ref <?> ;pointer
 	<append+?>: load.ref <?> ;null
-	<append+?>: nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<append+?>: nfc(7) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	lib/std/string.ci:181: (11 bytes): output[pos] := sign;
 	<append+?>: load.sp(+108)
 	<append+?>: load.i8
@@ -7260,7 +7300,7 @@ append(output: char[], pos: int32, sign: char, value: uint32, format: FormatFlag
 	<append+?>: load.ref <?> ;"assertion failed!"
 	<append+?>: load.ref <?> ;pointer
 	<append+?>: load.ref <?> ;null
-	<append+?>: nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<append+?>: nfc(7) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	lib/std/string.ci:188: (11 bytes): output[pos] := padChr;
 	<append+?>: load.sp(+0)
 	<append+?>: load.i8
@@ -7297,7 +7337,7 @@ append(output: char[], pos: int32, sign: char, value: uint32, format: FormatFlag
 	<append+?>: load.ref <?> ;"assertion failed!"
 	<append+?>: load.ref <?> ;pointer
 	<append+?>: load.ref <?> ;null
-	<append+?>: nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<append+?>: nfc(7) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	lib/std/string.ci:195: (17 bytes): output[pos] := digits[len - i];
 	<append+?>: load.sp(+16)
 	<append+?>: dup.x32 sp(25)
@@ -8860,7 +8900,7 @@ File.open(path: char[*]): File: function {
 .owner: File
 .param .result: File (size: 8, cast: inline)
 .param path: char[*] (size: 4, cast: variable(ref))
-.value: nfc(44)
+.value: nfc(46)
 .usages:
 	internal usages: 1
 }
@@ -8872,7 +8912,7 @@ File.create(path: char[*]): File: function {
 .owner: File
 .param .result: File (size: 8, cast: inline)
 .param path: char[*] (size: 4, cast: variable(ref))
-.value: nfc(45)
+.value: nfc(47)
 .usages:
 	internal usages: 1
 }
@@ -8884,7 +8924,7 @@ File.append(path: char[*]): File: function {
 .owner: File
 .param .result: File (size: 8, cast: inline)
 .param path: char[*] (size: 4, cast: variable(ref))
-.value: nfc(46)
+.value: nfc(48)
 .usages:
 	internal usages: 1
 }
@@ -8896,7 +8936,7 @@ File.read(file: File): int32: function {
 .owner: File
 .param .result: int32 (size: 4, cast: inline)
 .param file: File (size: 8, cast: variable(val))
-.value: nfc(47)
+.value: nfc(49)
 .usages:
 	internal usages: 1
 }
@@ -8908,7 +8948,7 @@ File.peek(file: File): int32: function {
 .owner: File
 .param .result: int32 (size: 4, cast: inline)
 .param file: File (size: 8, cast: variable(val))
-.value: nfc(48)
+.value: nfc(50)
 .usages:
 	internal usages: 1
 }
@@ -8921,7 +8961,7 @@ File.read(file: File, buff: uint8[]): int32: function {
 .param .result: int32 (size: 4, cast: inline)
 .param file: File (size: 8, cast: variable(val))
 .param buff: uint8[] (size: 8, cast: variable(arr))
-.value: nfc(49)
+.value: nfc(51)
 .usages:
 	internal usages: 1
 }
@@ -8934,7 +8974,7 @@ File.readLine(file: File, buff: uint8[]): int32: function {
 .param .result: int32 (size: 4, cast: inline)
 .param file: File (size: 8, cast: variable(val))
 .param buff: uint8[] (size: 8, cast: variable(arr))
-.value: nfc(50)
+.value: nfc(52)
 .usages:
 	internal usages: 1
 }
@@ -8947,7 +8987,7 @@ File.write(file: File, byte: uint8): int32: function {
 .param .result: int32 (size: 4, cast: inline)
 .param file: File (size: 8, cast: variable(val))
 .param byte: uint8 (size: 4, cast: variable(u32))
-.value: nfc(51)
+.value: nfc(53)
 .usages:
 	internal usages: 1
 }
@@ -8960,7 +9000,7 @@ File.write(file: File, buff: uint8[]): int32: function {
 .param .result: int32 (size: 4, cast: inline)
 .param file: File (size: 8, cast: variable(val))
 .param buff: uint8[] (size: 8, cast: variable(arr))
-.value: nfc(52)
+.value: nfc(54)
 .usages:
 	internal usages: 1
 }
@@ -8972,7 +9012,7 @@ File.flush(file: File): void: function {
 .owner: File
 .param .result: void (size: 0, cast: inline)
 .param file: File (size: 8, cast: variable(val))
-.value: nfc(53)
+.value: nfc(55)
 .usages:
 	internal usages: 1
 }
@@ -8984,7 +9024,7 @@ File.close(file: File): void: function {
 .owner: File
 .param .result: void (size: 0, cast: inline)
 .param file: File (size: 8, cast: variable(val))
-.value: nfc(54)
+.value: nfc(56)
 .usages:
 	internal usages: 1
 }
@@ -8994,7 +9034,7 @@ File.in: File {
 .size: 0
 .name: 'in'
 .owner: File
-.value: nfc(55)
+.value: nfc(57)
 .usages:
 	internal usages: 1
 }
@@ -9004,7 +9044,7 @@ File.out: File {
 .size: 0
 .name: 'out'
 .owner: File
-.value: nfc(56)
+.value: nfc(58)
 .usages:
 	internal usages: 1
 }
@@ -9014,7 +9054,7 @@ File.err: File {
 .size: 0
 .name: 'err'
 .owner: File
-.value: nfc(57)
+.value: nfc(59)
 .usages:
 	internal usages: 1
 }
@@ -9024,7 +9064,7 @@ File.log: File {
 .size: 0
 .name: 'log'
 .owner: File
-.value: nfc(58)
+.value: nfc(60)
 .usages:
 	internal usages: 1
 }
@@ -9244,7 +9284,7 @@ gxSurf.create(width: int32, height: int32, depth: int32): gxSurf: function {
 .param width: int32 (size: 4, cast: variable(i32))
 .param height: int32 (size: 4, cast: variable(i32))
 .param depth: int32 (size: 4, cast: variable(i32))
-.value: nfc(77)
+.value: nfc(79)
 .usages:
 	cmplGfx/lib/gfxlib.ci:40: referenced as `create`
 	cmplGfx/lib/gfxlib.ci:5: referenced as `create`
@@ -9259,7 +9299,7 @@ gxSurf.create3d(width: int32, height: int32): gxSurf: function {
 .param .result: gxSurf (size: 8, cast: inline)
 .param width: int32 (size: 4, cast: variable(i32))
 .param height: int32 (size: 4, cast: variable(i32))
-.value: nfc(78)
+.value: nfc(80)
 .usages:
 	cmplGfx/lib/gfxlib.ci:269: referenced as `create3d`
 	internal usages: 1
@@ -9276,7 +9316,7 @@ gxSurf.recycle(recycle: gxSurf, width: int32, height: int32, depth: int32, flags
 .param height: int32 (size: 4, cast: variable(i32))
 .param depth: int32 (size: 4, cast: variable(i32))
 .param flags: int32 (size: 4, cast: variable(i32))
-.value: nfc(79)
+.value: nfc(81)
 .usages:
 	internal usages: 1
 }
@@ -9288,7 +9328,7 @@ gxSurf.destroy(surf: gxSurf): void: function {
 .owner: gxSurf
 .param .result: void (size: 0, cast: inline)
 .param surf: gxSurf (size: 8, cast: variable(val))
-.value: nfc(80)
+.value: nfc(82)
 .usages:
 	cmplGfx/lib/gfxlib.ci:386: referenced as `destroy`
 	cmplGfx/lib/gfxlib.ci:385: referenced as `destroy`
@@ -9305,7 +9345,7 @@ gxSurf.openBmp(path: char[*], depth: int32): gxSurf: function {
 .param .result: gxSurf (size: 8, cast: inline)
 .param path: char[*] (size: 4, cast: variable(ref))
 .param depth: int32 (size: 4, cast: variable(i32))
-.value: nfc(81)
+.value: nfc(83)
 .usages:
 	cmplGfx/lib/gfxlib.ci:19: referenced as `openBmp`
 	internal usages: 1
@@ -9319,7 +9359,7 @@ gxSurf.openPng(path: char[*], depth: int32): gxSurf: function {
 .param .result: gxSurf (size: 8, cast: inline)
 .param path: char[*] (size: 4, cast: variable(ref))
 .param depth: int32 (size: 4, cast: variable(i32))
-.value: nfc(82)
+.value: nfc(84)
 .usages:
 	cmplGfx/lib/gfxlib.ci:16: referenced as `openPng`
 	internal usages: 1
@@ -9333,7 +9373,7 @@ gxSurf.openJpg(path: char[*], depth: int32): gxSurf: function {
 .param .result: gxSurf (size: 8, cast: inline)
 .param path: char[*] (size: 4, cast: variable(ref))
 .param depth: int32 (size: 4, cast: variable(i32))
-.value: nfc(83)
+.value: nfc(85)
 .usages:
 	cmplGfx/lib/gfxlib.ci:13: referenced as `openJpg`
 	cmplGfx/lib/gfxlib.ci:10: referenced as `openJpg`
@@ -9347,7 +9387,7 @@ gxSurf.openFnt(path: char[*]): gxSurf: function {
 .owner: gxSurf
 .param .result: gxSurf (size: 8, cast: inline)
 .param path: char[*] (size: 4, cast: variable(ref))
-.value: nfc(84)
+.value: nfc(86)
 .usages:
 	internal usages: 1
 }
@@ -9361,7 +9401,7 @@ gxSurf.saveBmp(surf: gxSurf, path: char[*], flags: int32): void: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param path: char[*] (size: 4, cast: variable(ref))
 .param flags: int32 (size: 4, cast: variable(i32))
-.value: nfc(85)
+.value: nfc(87)
 .usages:
 	cmplGfx/lib/gfxlib.ci:357: referenced as `saveBmp`
 	cmplGfx/lib/gfxlib.ci:356: referenced as `saveBmp`
@@ -9375,7 +9415,7 @@ gxSurf.width(surf: gxSurf): int32: function {
 .owner: gxSurf
 .param .result: int32 (size: 4, cast: inline)
 .param surf: gxSurf (size: 8, cast: variable(val))
-.value: nfc(86)
+.value: nfc(88)
 .usages:
 	cmplGfx/lib/gfxlib.ci:140: referenced as `width`
 	cmplGfx/lib/gfxlib.ci:126: referenced as `width`
@@ -9394,7 +9434,7 @@ gxSurf.height(surf: gxSurf): int32: function {
 .owner: gxSurf
 .param .result: int32 (size: 4, cast: inline)
 .param surf: gxSurf (size: 8, cast: variable(val))
-.value: nfc(87)
+.value: nfc(89)
 .usages:
 	cmplGfx/lib/gfxlib.ci:141: referenced as `height`
 	cmplGfx/lib/gfxlib.ci:127: referenced as `height`
@@ -9412,7 +9452,7 @@ gxSurf.depth(surf: gxSurf): int32: function {
 .owner: gxSurf
 .param .result: int32 (size: 4, cast: inline)
 .param surf: gxSurf (size: 8, cast: variable(val))
-.value: nfc(88)
+.value: nfc(90)
 .usages:
 	cmplGfx/lib/gfxlib.ci:40: referenced as `depth`
 	internal usages: 1
@@ -9427,7 +9467,7 @@ gxSurf.get(surf: gxSurf, x: int32, y: int32): int32: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param x: int32 (size: 4, cast: variable(i32))
 .param y: int32 (size: 4, cast: variable(i32))
-.value: nfc(89)
+.value: nfc(91)
 .usages:
 	internal usages: 1
 }
@@ -9442,7 +9482,7 @@ gxSurf.set(surf: gxSurf, x: int32, y: int32, color: uint32): void: function {
 .param x: int32 (size: 4, cast: variable(i32))
 .param y: int32 (size: 4, cast: variable(i32))
 .param color: uint32 (size: 4, cast: variable(u32))
-.value: nfc(90)
+.value: nfc(92)
 .usages:
 	cmplGfx/lib/gfxlib.ci:46: referenced as `set`
 	cmplGfx/lib/gfx/color.ci:275: referenced as `set`
@@ -9458,7 +9498,7 @@ gxSurf.tex(surf: gxSurf, x: float32, y: float32): vec4f: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param x: float32 (size: 4, cast: variable(f32))
 .param y: float32 (size: 4, cast: variable(f32))
-.value: nfc(91)
+.value: nfc(93)
 .usages:
 	internal usages: 1
 }
@@ -9475,7 +9515,7 @@ gxSurf.drawRect(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color:
 .param x2: int32 (size: 4, cast: variable(i32))
 .param y2: int32 (size: 4, cast: variable(i32))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(92)
+.value: nfc(94)
 .usages:
 	internal usages: 1
 }
@@ -9492,7 +9532,7 @@ gxSurf.fillRect(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color:
 .param x2: int32 (size: 4, cast: variable(i32))
 .param y2: int32 (size: 4, cast: variable(i32))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(93)
+.value: nfc(95)
 .usages:
 	cmplGfx/lib/gfxlib.ci:89: referenced as `fillRect`
 	cmplGfx/lib/gfxlib.ci:87: referenced as `fillRect`
@@ -9513,7 +9553,7 @@ gxSurf.drawOval(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color:
 .param x2: int32 (size: 4, cast: variable(i32))
 .param y2: int32 (size: 4, cast: variable(i32))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(94)
+.value: nfc(96)
 .usages:
 	internal usages: 1
 }
@@ -9530,7 +9570,7 @@ gxSurf.fillOval(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color:
 .param x2: int32 (size: 4, cast: variable(i32))
 .param y2: int32 (size: 4, cast: variable(i32))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(95)
+.value: nfc(97)
 .usages:
 	internal usages: 1
 }
@@ -9547,7 +9587,7 @@ gxSurf.drawLine(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color:
 .param x2: int32 (size: 4, cast: variable(i32))
 .param y2: int32 (size: 4, cast: variable(i32))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(96)
+.value: nfc(98)
 .usages:
 	internal usages: 1
 }
@@ -9566,7 +9606,7 @@ gxSurf.drawBezier(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, x3: 
 .param x3: int32 (size: 4, cast: variable(i32))
 .param y3: int32 (size: 4, cast: variable(i32))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(97)
+.value: nfc(99)
 .usages:
 	internal usages: 1
 }
@@ -9587,7 +9627,7 @@ gxSurf.drawBezier(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, x3: 
 .param x4: int32 (size: 4, cast: variable(i32))
 .param y4: int32 (size: 4, cast: variable(i32))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(98)
+.value: nfc(100)
 .usages:
 	internal usages: 1
 }
@@ -9601,7 +9641,7 @@ gxSurf.clipText(font: gxSurf, rect: gxRect, text: char[*]): void: function {
 .param font: gxSurf (size: 8, cast: variable(val))
 .param rect: gxRect (size: 4, cast: variable(ref))
 .param text: char[*] (size: 4, cast: variable(ref))
-.value: nfc(99)
+.value: nfc(101)
 .usages:
 	internal usages: 1
 }
@@ -9618,7 +9658,7 @@ gxSurf.drawText(surf: gxSurf, x: int32, y: int32, font: gxSurf, text: char[*], c
 .param font: gxSurf (size: 8, cast: variable(val))
 .param text: char[*] (size: 4, cast: variable(ref))
 .param color: int32 (size: 4, cast: variable(i32))
-.value: nfc(100)
+.value: nfc(102)
 .usages:
 	internal usages: 1
 }
@@ -9634,7 +9674,7 @@ gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: f
 .param y: int32 (size: 4, cast: variable(i32))
 .param src: gxSurf (size: 8, cast: variable(val))
 .param roi: gxRect (size: 4, cast: const variable(ref))
-.value: nfc(101)
+.value: nfc(103)
 .usages:
 	cmplGfx/lib/gfxlib.ci:310: referenced as `copy`
 	cmplGfx/lib/gfxlib.ci:306: referenced as `copy`
@@ -9655,7 +9695,7 @@ gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect, alpha: i
 .param src: gxSurf (size: 8, cast: variable(val))
 .param roi: gxRect (size: 4, cast: const variable(ref))
 .param alpha: int32 (size: 4, cast: variable(i32))
-.value: nfc(102)
+.value: nfc(104)
 .usages:
 	internal usages: 1
 }
@@ -9672,7 +9712,7 @@ gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect, blend(ba
 .param src: gxSurf (size: 8, cast: const variable(val))
 .param roi: gxRect (size: 4, cast: const variable(ref))
 .param blend: function (size: 4, cast: variable(ref))
-.value: nfc(103)
+.value: nfc(105)
 .usages:
 	internal usages: 1
 }
@@ -9688,7 +9728,7 @@ gxSurf.resize(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate:
 .param src: gxSurf (size: 8, cast: const variable(val))
 .param roi: gxRect (size: 4, cast: const variable(ref))
 .param interpolate: int32 (size: 4, cast: variable(i32))
-.value: nfc(104)
+.value: nfc(106)
 .usages:
 	cmplGfx/lib/gfxlib.ci:363: referenced as `resize`
 	internal usages: 1
@@ -9703,7 +9743,7 @@ gxSurf.blur(surf: gxSurf, radius: int32, sigma: float64): void: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param radius: int32 (size: 4, cast: variable(i32))
 .param sigma: float64 (size: 8, cast: variable(f64))
-.value: nfc(105)
+.value: nfc(107)
 .usages:
 	internal usages: 1
 }
@@ -9717,7 +9757,7 @@ gxSurf.colorMap(surf: gxSurf, roi: gxRect, lut: uint32[256]): void: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param roi: gxRect (size: 4, cast: const variable(ref))
 .param lut: uint32[256] (size: 4, cast: const variable(ref))
-.value: nfc(106)
+.value: nfc(108)
 .usages:
 	internal usages: 1
 }
@@ -9731,7 +9771,7 @@ gxSurf.colorMat(surf: gxSurf, roi: gxRect, mat: float32[16]): void: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param roi: gxRect (size: 4, cast: const variable(ref))
 .param mat: float32[16] (size: 4, cast: const variable(ref))
-.value: nfc(107)
+.value: nfc(109)
 .usages:
 	internal usages: 1
 }
@@ -9746,7 +9786,7 @@ gxSurf.calcHist(surf: gxSurf, roi: gxRect, rgb: uint32, lut: uint32[256]): void:
 .param roi: gxRect (size: 4, cast: const variable(ref))
 .param rgb: uint32 (size: 4, cast: variable(u32))
 .param lut: uint32[256] (size: 4, cast: variable(ref))
-.value: nfc(108)
+.value: nfc(110)
 .usages:
 	cmplGfx/lib/gfx/color.ci:238: referenced as `calcHist`
 	internal usages: 1
@@ -9761,7 +9801,7 @@ gxSurf.drawMesh(surf: gxSurf, mesh: gxMesh, mode: int32): int32: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param mesh: gxMesh (size: 4, cast: variable(ref))
 .param mode: int32 (size: 4, cast: variable(i32))
-.value: nfc(109)
+.value: nfc(111)
 .usages:
 	cmplGfx/lib/gfxlib.ci:254: referenced as `drawMesh`
 	internal usages: 1
@@ -9828,7 +9868,7 @@ gxMesh.create(size: int32): gxMesh: function {
 .owner: gxMesh
 .param .result: gxMesh (size: 4, cast: inline)
 .param size: int32 (size: 4, cast: variable(i32))
-.value: nfc(59)
+.value: nfc(61)
 .usages:
 	internal usages: 1
 }
@@ -9841,7 +9881,7 @@ gxMesh.recycle(recycle: gxMesh, size: int32): gxMesh: function {
 .param .result: gxMesh (size: 4, cast: inline)
 .param recycle: gxMesh (size: 4, cast: variable(ref))
 .param size: int32 (size: 4, cast: variable(i32))
-.value: nfc(60)
+.value: nfc(62)
 .usages:
 	internal usages: 1
 }
@@ -9853,7 +9893,7 @@ gxMesh.destroy(mesh: gxMesh): void: function {
 .owner: gxMesh
 .param .result: void (size: 0, cast: inline)
 .param mesh: gxMesh (size: 4, cast: variable(ref))
-.value: nfc(61)
+.value: nfc(63)
 .usages:
 	internal usages: 1
 }
@@ -9865,7 +9905,7 @@ gxMesh.openObj(path: char[*]): gxMesh: function {
 .owner: gxMesh
 .param .result: gxMesh (size: 4, cast: inline)
 .param path: char[*] (size: 4, cast: variable(ref))
-.value: nfc(62)
+.value: nfc(64)
 .usages:
 	cmplGfx/lib/gfxlib.ci:30: referenced as `openObj`
 	internal usages: 1
@@ -9878,7 +9918,7 @@ gxMesh.open3ds(path: char[*]): gxMesh: function {
 .owner: gxMesh
 .param .result: gxMesh (size: 4, cast: inline)
 .param path: char[*] (size: 4, cast: variable(ref))
-.value: nfc(63)
+.value: nfc(65)
 .usages:
 	cmplGfx/lib/gfxlib.ci:33: referenced as `open3ds`
 	internal usages: 1
@@ -9892,7 +9932,7 @@ gxMesh.saveObj(mesh: gxMesh, path: char[*]): void: function {
 .param .result: void (size: 0, cast: inline)
 .param mesh: gxMesh (size: 4, cast: variable(ref))
 .param path: char[*] (size: 4, cast: variable(ref))
-.value: nfc(64)
+.value: nfc(66)
 .usages:
 	internal usages: 1
 }
@@ -9907,7 +9947,7 @@ gxMesh.normalize(mesh: gxMesh, tolerance: float32, center: float32[3], resize: f
 .param tolerance: float32 (size: 4, cast: variable(f32))
 .param center: float32[3] (size: 4, cast: variable(ref))
 .param resize: float32[3] (size: 4, cast: variable(ref))
-.value: nfc(65)
+.value: nfc(67)
 .usages:
 	internal usages: 1
 }
@@ -9922,7 +9962,7 @@ gxMesh.addVertex(mesh: gxMesh, x: float32, y: float32, z: float32): int32: funct
 .param x: float32 (size: 4, cast: variable(f32))
 .param y: float32 (size: 4, cast: variable(f32))
 .param z: float32 (size: 4, cast: variable(f32))
-.value: nfc(66)
+.value: nfc(68)
 .usages:
 	internal usages: 1
 }
@@ -9937,7 +9977,7 @@ gxMesh.addFace(mesh: gxMesh, v1: int32, v2: int32, v3: int32): int32: function {
 .param v1: int32 (size: 4, cast: variable(i32))
 .param v2: int32 (size: 4, cast: variable(i32))
 .param v3: int32 (size: 4, cast: variable(i32))
-.value: nfc(67)
+.value: nfc(69)
 .usages:
 	internal usages: 1
 }
@@ -9953,7 +9993,7 @@ gxMesh.addFace(mesh: gxMesh, v1: int32, v2: int32, v3: int32, v4: int32): int32:
 .param v2: int32 (size: 4, cast: variable(i32))
 .param v3: int32 (size: 4, cast: variable(i32))
 .param v4: int32 (size: 4, cast: variable(i32))
-.value: nfc(68)
+.value: nfc(70)
 .usages:
 	internal usages: 1
 }
@@ -9969,7 +10009,7 @@ gxMesh.setVertex(mesh: gxMesh, idx: int32, x: float32, y: float32, z: float32): 
 .param x: float32 (size: 4, cast: variable(f32))
 .param y: float32 (size: 4, cast: variable(f32))
 .param z: float32 (size: 4, cast: variable(f32))
-.value: nfc(69)
+.value: nfc(71)
 .usages:
 	internal usages: 1
 }
@@ -9985,7 +10025,7 @@ gxMesh.setNormal(mesh: gxMesh, idx: int32, x: float32, y: float32, z: float32): 
 .param x: float32 (size: 4, cast: variable(f32))
 .param y: float32 (size: 4, cast: variable(f32))
 .param z: float32 (size: 4, cast: variable(f32))
-.value: nfc(70)
+.value: nfc(72)
 .usages:
 	internal usages: 1
 }
@@ -10000,7 +10040,7 @@ gxMesh.setTexture(mesh: gxMesh, idx: int32, s: float32, t: float32): bool: funct
 .param idx: int32 (size: 4, cast: variable(i32))
 .param s: float32 (size: 4, cast: variable(f32))
 .param t: float32 (size: 4, cast: variable(f32))
-.value: nfc(71)
+.value: nfc(73)
 .usages:
 	internal usages: 1
 }
@@ -10015,7 +10055,7 @@ gxMesh.ambient(mesh: gxMesh, r: float32, g: float32, b: float32): void: function
 .param r: float32 (size: 4, cast: variable(f32))
 .param g: float32 (size: 4, cast: variable(f32))
 .param b: float32 (size: 4, cast: variable(f32))
-.value: nfc(72)
+.value: nfc(74)
 .usages:
 	internal usages: 1
 }
@@ -10030,7 +10070,7 @@ gxMesh.diffuse(mesh: gxMesh, r: float32, g: float32, b: float32): void: function
 .param r: float32 (size: 4, cast: variable(f32))
 .param g: float32 (size: 4, cast: variable(f32))
 .param b: float32 (size: 4, cast: variable(f32))
-.value: nfc(73)
+.value: nfc(75)
 .usages:
 	internal usages: 1
 }
@@ -10045,7 +10085,7 @@ gxMesh.specular(mesh: gxMesh, r: float32, g: float32, b: float32): void: functio
 .param r: float32 (size: 4, cast: variable(f32))
 .param g: float32 (size: 4, cast: variable(f32))
 .param b: float32 (size: 4, cast: variable(f32))
-.value: nfc(74)
+.value: nfc(76)
 .usages:
 	internal usages: 1
 }
@@ -10058,7 +10098,7 @@ gxMesh.shine(mesh: gxMesh, value: float32): void: function {
 .param .result: void (size: 0, cast: inline)
 .param mesh: gxMesh (size: 4, cast: variable(ref))
 .param value: float32 (size: 4, cast: variable(f32))
-.value: nfc(75)
+.value: nfc(77)
 .usages:
 	internal usages: 1
 }
@@ -10071,7 +10111,7 @@ gxMesh.texture(mesh: gxMesh, surf: gxSurf): void: function {
 .param .result: void (size: 0, cast: inline)
 .param mesh: gxMesh (size: 4, cast: variable(ref))
 .param surf: gxSurf (size: 8, cast: variable(val))
-.value: nfc(76)
+.value: nfc(78)
 .usages:
 	internal usages: 1
 }
@@ -10242,7 +10282,7 @@ camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): 
 .param aspect: float32 (size: 4, cast: variable(f32))
 .param near: float32 (size: 4, cast: variable(f32))
 .param far: float32 (size: 4, cast: variable(f32))
-.value: nfc(110)
+.value: nfc(112)
 .usages:
 	cmplGfx/lib/gfxlib.ci:272: referenced as `projection`
 	internal usages: 1
@@ -10257,7 +10297,7 @@ camera.lookAt(eye: float32[3], at: float32[3], up: float32[3]): void: function {
 .param eye: float32[3] (size: 4, cast: variable(ref))
 .param at: float32[3] (size: 4, cast: variable(ref))
 .param up: float32[3] (size: 4, cast: variable(ref))
-.value: nfc(111)
+.value: nfc(113)
 .usages:
 	cmplGfx/lib/gfxlib.ci:206: referenced as `lookAt`
 	internal usages: 1
@@ -10270,7 +10310,7 @@ camera.readUp(result: float32[3]): void: function {
 .owner: camera
 .param .result: void (size: 0, cast: inline)
 .param result: float32[3] (size: 4, cast: variable(ref))
-.value: nfc(112)
+.value: nfc(114)
 .usages:
 	cmplGfx/lib/gfxlib.ci:247: referenced as `readUp`
 	cmplGfx/lib/gfxlib.ci:233: referenced as `readUp`
@@ -10285,7 +10325,7 @@ camera.readRight(result: float32[3]): void: function {
 .owner: camera
 .param .result: void (size: 0, cast: inline)
 .param result: float32[3] (size: 4, cast: variable(ref))
-.value: nfc(113)
+.value: nfc(115)
 .usages:
 	cmplGfx/lib/gfxlib.ci:245: referenced as `readRight`
 	cmplGfx/lib/gfxlib.ci:235: referenced as `readRight`
@@ -10300,7 +10340,7 @@ camera.readForward(result: float32[3]): void: function {
 .owner: camera
 .param .result: void (size: 0, cast: inline)
 .param result: float32[3] (size: 4, cast: variable(ref))
-.value: nfc(114)
+.value: nfc(116)
 .usages:
 	cmplGfx/lib/gfxlib.ci:240: referenced as `readForward`
 	internal usages: 1
@@ -10315,7 +10355,7 @@ camera.rotate(direction: float32[3], orbit: float32[3], angle: float32): void: f
 .param direction: float32[3] (size: 4, cast: variable(ref))
 .param orbit: float32[3] (size: 4, cast: variable(ref))
 .param angle: float32 (size: 4, cast: variable(f32))
-.value: nfc(115)
+.value: nfc(117)
 .usages:
 	cmplGfx/lib/gfxlib.ci:236: referenced as `rotate`
 	cmplGfx/lib/gfxlib.ci:234: referenced as `rotate`
@@ -10332,7 +10372,7 @@ camera.move(direction: float32[3], amount: float32): void: function {
 .param .result: void (size: 0, cast: inline)
 .param direction: float32[3] (size: 4, cast: variable(ref))
 .param amount: float32 (size: 4, cast: variable(f32))
-.value: nfc(116)
+.value: nfc(118)
 .usages:
 	cmplGfx/lib/gfxlib.ci:248: referenced as `move`
 	cmplGfx/lib/gfxlib.ci:246: referenced as `move`
@@ -10369,7 +10409,7 @@ lights.enabled(light: int32): bool: function {
 .owner: lights
 .param .result: bool (size: 4, cast: inline)
 .param light: int32 (size: 4, cast: variable(i32))
-.value: nfc(117)
+.value: nfc(119)
 .usages:
 	cmplGfx/lib/gfxlib.ci:191: referenced as `enabled`
 	cmplGfx/lib/gfxlib.ci:188: referenced as `enabled`
@@ -10386,7 +10426,7 @@ lights.enable(light: int32, on: bool): void: function {
 .param .result: void (size: 0, cast: inline)
 .param light: int32 (size: 4, cast: variable(i32))
 .param on: bool (size: 4, cast: variable(bool))
-.value: nfc(118)
+.value: nfc(120)
 .usages:
 	cmplGfx/lib/gfxlib.ci:191: referenced as `enable`
 	cmplGfx/lib/gfxlib.ci:188: referenced as `enable`
@@ -10405,7 +10445,7 @@ lights.position(light: int32, x: float32, y: float32, z: float32): void: functio
 .param x: float32 (size: 4, cast: variable(f32))
 .param y: float32 (size: 4, cast: variable(f32))
 .param z: float32 (size: 4, cast: variable(f32))
-.value: nfc(119)
+.value: nfc(121)
 .usages:
 	internal usages: 1
 }
@@ -10420,7 +10460,7 @@ lights.ambient(light: int32, r: float32, g: float32, b: float32): void: function
 .param r: float32 (size: 4, cast: variable(f32))
 .param g: float32 (size: 4, cast: variable(f32))
 .param b: float32 (size: 4, cast: variable(f32))
-.value: nfc(120)
+.value: nfc(122)
 .usages:
 	internal usages: 1
 }
@@ -10435,7 +10475,7 @@ lights.diffuse(light: int32, r: float32, g: float32, b: float32): void: function
 .param r: float32 (size: 4, cast: variable(f32))
 .param g: float32 (size: 4, cast: variable(f32))
 .param b: float32 (size: 4, cast: variable(f32))
-.value: nfc(121)
+.value: nfc(123)
 .usages:
 	internal usages: 1
 }
@@ -10450,7 +10490,7 @@ lights.specular(light: int32, r: float32, g: float32, b: float32): void: functio
 .param r: float32 (size: 4, cast: variable(f32))
 .param g: float32 (size: 4, cast: variable(f32))
 .param b: float32 (size: 4, cast: variable(f32))
-.value: nfc(122)
+.value: nfc(124)
 .usages:
 	internal usages: 1
 }
@@ -10465,7 +10505,7 @@ lights.attenuation(light: int32, constant: float32, linear: float32, quadratic: 
 .param constant: float32 (size: 4, cast: variable(f32))
 .param linear: float32 (size: 4, cast: variable(f32))
 .param quadratic: float32 (size: 4, cast: variable(f32))
-.value: nfc(123)
+.value: nfc(125)
 .usages:
 	internal usages: 1
 }
@@ -10623,7 +10663,7 @@ Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action:
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param closure: pointer (size: 4, cast: variable(ref))
 .param onEvent: function (size: 4, cast: variable(ref))
-.value: nfc(124)
+.value: nfc(126)
 .usages:
 	cmplGfx/lib/gfxlib.ci:384: referenced as `showWindow`
 	cmplGfx/lib/gfxlib.ci:321: referenced as `showWindow`
@@ -10641,7 +10681,7 @@ Gui.setTitle(title: char[*]): void: function {
 .owner: Gui
 .param .result: void (size: 0, cast: inline)
 .param title: char[*] (size: 4, cast: variable(ref))
-.value: nfc(125)
+.value: nfc(127)
 .usages:
 	cmplGfx/lib/gfxlib.ci:263: referenced as `setTitle`
 	internal usages: 1
@@ -11612,7 +11652,7 @@ drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 	<drawHist+?>: load.sp(+1040)
 	<drawHist+?>: load.i32
 	<drawHist+?>: load.sp(+16)
-	<drawHist+?>: nfc(108) ;gxSurf.calcHist(surf: gxSurf, roi: gxRect, rgb: uint32, lut: uint32[256]): void
+	<drawHist+?>: nfc(110) ;gxSurf.calcHist(surf: gxSurf, roi: gxRect, rgb: uint32, lut: uint32[256]): void
 	cmplGfx/lib/gfx/color.ci:249: (43 bytes): rect: gxRect := {...}
 	<drawHist+?>: inc.sp(+16)
 	cmplGfx/lib/gfx/color.ci:250: (7 bytes): rect.w := 256;
@@ -11627,7 +11667,7 @@ drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 	cmplGfx/lib/gfx/color.ci:253: (18 bytes): rect.x := image.width(image) - rect.w - margin;
 	<drawHist+?>: load.sp(+1052)
 	<drawHist+?>: load.i64
-	<drawHist+?>: nfc(86) ;gxSurf.width(surf: gxSurf): int32
+	<drawHist+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
 	<drawHist+?>: dup.x32 sp(3)
 	<drawHist+?>: sub.i32
 	<drawHist+?>: inc.i32(-20)
@@ -11648,7 +11688,7 @@ drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 	<drawHist+?>: add.i32
 	<drawHist+?>: inc.i32(+7)
 	<drawHist+?>: load.z32
-	<drawHist+?>: nfc(93) ;gxSurf.fillRect(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color: int32): void
+	<drawHist+?>: nfc(95) ;gxSurf.fillRect(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color: int32): void
 	cmplGfx/lib/gfx/color.ci:264: (227 bytes): for (x: int32 := 0; x < rect.w; x := x + 1)
 	<drawHist+?>: load.z32
 	<drawHist+?>: jmp +213
@@ -11741,7 +11781,7 @@ drawHist(image: gxSurf, roi: gxRect, hist: uint32): void: function {
 	<drawHist+?>: or.b32
 	<drawHist+?>: dup.x32 sp(5)
 	<drawHist+?>: or.b32
-	<drawHist+?>: nfc(90) ;gxSurf.set(surf: gxSurf, x: int32, y: int32, color: uint32): void
+	<drawHist+?>: nfc(92) ;gxSurf.set(surf: gxSurf, x: int32, y: int32, color: uint32): void
 	<drawHist+?>: inc.sp(-16)
 	cmplGfx/lib/gfx/color.ci:270: (4 bytes): y := y + 1
 	<drawHist+?>: inc.i32(+1)
@@ -11821,7 +11861,7 @@ gxSurf(fileName: char[*], depth: int32): gxSurf: function {
 	cmplGfx/lib/gfxlib.ci:10: (11 bytes): return .result := gxSurf.openJpg(fileName, depth);
 	<gxSurf+?>: dup.x32 sp(2)
 	<gxSurf+?>: dup.x32 sp(2)
-	<gxSurf+?>: nfc(83) ;gxSurf.openJpg(path: char[*], depth: int32): gxSurf
+	<gxSurf+?>: nfc(85) ;gxSurf.openJpg(path: char[*], depth: int32): gxSurf
 	<gxSurf+?>: set.x64 sp(5)
 	<gxSurf+?>: ret
 	cmplGfx/lib/gfxlib.ci:12: (38 bytes): if (endsWith(fileName, ".jpg", ignCaseCmp))
@@ -11836,7 +11876,7 @@ gxSurf(fileName: char[*], depth: int32): gxSurf: function {
 	cmplGfx/lib/gfxlib.ci:13: (11 bytes): return .result := gxSurf.openJpg(fileName, depth);
 	<gxSurf+?>: dup.x32 sp(2)
 	<gxSurf+?>: dup.x32 sp(2)
-	<gxSurf+?>: nfc(83) ;gxSurf.openJpg(path: char[*], depth: int32): gxSurf
+	<gxSurf+?>: nfc(85) ;gxSurf.openJpg(path: char[*], depth: int32): gxSurf
 	<gxSurf+?>: set.x64 sp(5)
 	<gxSurf+?>: ret
 	cmplGfx/lib/gfxlib.ci:15: (38 bytes): if (endsWith(fileName, ".png", ignCaseCmp))
@@ -11851,7 +11891,7 @@ gxSurf(fileName: char[*], depth: int32): gxSurf: function {
 	cmplGfx/lib/gfxlib.ci:16: (11 bytes): return .result := gxSurf.openPng(fileName, depth);
 	<gxSurf+?>: dup.x32 sp(2)
 	<gxSurf+?>: dup.x32 sp(2)
-	<gxSurf+?>: nfc(82) ;gxSurf.openPng(path: char[*], depth: int32): gxSurf
+	<gxSurf+?>: nfc(84) ;gxSurf.openPng(path: char[*], depth: int32): gxSurf
 	<gxSurf+?>: set.x64 sp(5)
 	<gxSurf+?>: ret
 	cmplGfx/lib/gfxlib.ci:18: (38 bytes): if (endsWith(fileName, ".bmp", ignCaseCmp))
@@ -11866,7 +11906,7 @@ gxSurf(fileName: char[*], depth: int32): gxSurf: function {
 	cmplGfx/lib/gfxlib.ci:19: (11 bytes): return .result := gxSurf.openBmp(fileName, depth);
 	<gxSurf+?>: dup.x32 sp(2)
 	<gxSurf+?>: dup.x32 sp(2)
-	<gxSurf+?>: nfc(81) ;gxSurf.openBmp(path: char[*], depth: int32): gxSurf
+	<gxSurf+?>: nfc(83) ;gxSurf.openBmp(path: char[*], depth: int32): gxSurf
 	<gxSurf+?>: set.x64 sp(5)
 	<gxSurf+?>: ret
 	cmplGfx/lib/gfxlib.ci:21: (36 bytes): abort("unknown file extension", fileName);
@@ -11877,7 +11917,7 @@ gxSurf(fileName: char[*], depth: int32): gxSurf: function {
 	<gxSurf+?>: load.ref <?> ;"unknown file extension"
 	<gxSurf+?>: load.ref <?>
 	<gxSurf+?>: dup.x32 sp(8)
-	<gxSurf+?>: nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<gxSurf+?>: nfc(7) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<gxSurf+?>: ret
 .usages:
 	cmplGfx/lib/gfxlib.ci:25: referenced as `gxSurf`
@@ -11926,7 +11966,7 @@ gxMesh(fileName: char[*]): gxMesh: function {
 	<gxMesh+?>: jz +13
 	cmplGfx/lib/gfxlib.ci:30: (9 bytes): return .result := gxMesh.openObj(fileName);
 	<gxMesh+?>: dup.x32 sp(1)
-	<gxMesh+?>: nfc(62) ;gxMesh.openObj(path: char[*]): gxMesh
+	<gxMesh+?>: nfc(64) ;gxMesh.openObj(path: char[*]): gxMesh
 	<gxMesh+?>: set.x32 sp(3)
 	<gxMesh+?>: ret
 	cmplGfx/lib/gfxlib.ci:32: (36 bytes): if (endsWith(fileName, ".3ds", ignCaseCmp))
@@ -11940,7 +11980,7 @@ gxMesh(fileName: char[*]): gxMesh: function {
 	<gxMesh+?>: jz +13
 	cmplGfx/lib/gfxlib.ci:33: (9 bytes): return .result := gxMesh.open3ds(fileName);
 	<gxMesh+?>: dup.x32 sp(1)
-	<gxMesh+?>: nfc(63) ;gxMesh.open3ds(path: char[*]): gxMesh
+	<gxMesh+?>: nfc(65) ;gxMesh.open3ds(path: char[*]): gxMesh
 	<gxMesh+?>: set.x32 sp(3)
 	<gxMesh+?>: ret
 	cmplGfx/lib/gfxlib.ci:35: (36 bytes): abort("unknown file extension", fileName);
@@ -11951,7 +11991,7 @@ gxMesh(fileName: char[*]): gxMesh: function {
 	<gxMesh+?>: load.ref <?> ;"unknown file extension"
 	<gxMesh+?>: load.ref <?>
 	<gxMesh+?>: dup.x32 sp(7)
-	<gxMesh+?>: nfc(5) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<gxMesh+?>: nfc(7) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<gxMesh+?>: ret
 .usages:
 	cmplGfx/lib/gfxlib.ci:28: defined as `gxMesh(fileName: char[*]): gxMesh`
@@ -11973,19 +12013,19 @@ gxSurf(copy: gxSurf): gxSurf: function {
 .instructions: (40 bytes)
 	cmplGfx/lib/gfxlib.ci:40: (22 bytes): result: gxSurf := gxSurf.create(copy.width(copy), copy.height(copy), copy.depth(copy))
 	<gxSurf>  : dup.x64 sp(1)
-	<gxSurf+?>: nfc(86) ;gxSurf.width(surf: gxSurf): int32
+	<gxSurf+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
 	<gxSurf+?>: dup.x64 sp(2)
-	<gxSurf+?>: nfc(87) ;gxSurf.height(surf: gxSurf): int32
+	<gxSurf+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
 	<gxSurf+?>: dup.x64 sp(3)
-	<gxSurf+?>: nfc(88) ;gxSurf.depth(surf: gxSurf): int32
-	<gxSurf+?>: nfc(77) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
+	<gxSurf+?>: nfc(90) ;gxSurf.depth(surf: gxSurf): int32
+	<gxSurf+?>: nfc(79) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
 	cmplGfx/lib/gfxlib.ci:41: (15 bytes): result.copy(result, 0, 0, copy, null);
 	<gxSurf+?>: dup.x64 sp(0)
 	<gxSurf+?>: load.z32
 	<gxSurf+?>: load.z32
 	<gxSurf+?>: dup.x64 sp(7)
 	<gxSurf+?>: load.ref <?> ;null
-	<gxSurf+?>: nfc(101) ;gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
+	<gxSurf+?>: nfc(103) ;gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
 	cmplGfx/lib/gfxlib.ci:42: (3 bytes): return .result := result;
 	<gxSurf+?>: set.x64 sp(5)
 	<gxSurf+?>: ret
@@ -12093,7 +12133,7 @@ clip(src: gxSurf, roi: gxRect): bool: function {
 	<clip+?>: store.i32
 	cmplGfx/lib/gfxlib.ci:62: (6 bytes): width: int32 := src.width(src)
 	<clip+?>: dup.x64 sp(2)
-	<clip+?>: nfc(86) ;gxSurf.width(surf: gxSurf): int32
+	<clip+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
 	cmplGfx/lib/gfxlib.ci:63: (23 bytes): if (roi.w > width)
 	<clip+?>: dup.x32 sp(2)
 	<clip+?>: inc.i32(+8)
@@ -12108,7 +12148,7 @@ clip(src: gxSurf, roi: gxRect): bool: function {
 	<clip+?>: store.i32
 	cmplGfx/lib/gfxlib.ci:67: (6 bytes): height: int32 := src.height(src)
 	<clip+?>: dup.x64 sp(3)
-	<clip+?>: nfc(87) ;gxSurf.height(surf: gxSurf): int32
+	<clip+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
 	cmplGfx/lib/gfxlib.ci:68: (23 bytes): if (roi.h > height)
 	<clip+?>: dup.x32 sp(3)
 	<clip+?>: inc.i32(+12)
@@ -12297,7 +12337,7 @@ eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: load.i32
 	<eval+?>: jmp +10
 	<eval+?>: dup.x64 sp(9)
-	<eval+?>: nfc(86) ;gxSurf.width(surf: gxSurf): int32
+	<eval+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
 	<eval+?>: set.x32 sp(3)
 	cmplGfx/lib/gfxlib.ci:97: (31 bytes): rect.h := (roi) != null ? roi.h : dst.height(dst);
 	<eval+?>: dup.x32 sp(8)
@@ -12309,7 +12349,7 @@ eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: load.i32
 	<eval+?>: jmp +10
 	<eval+?>: dup.x64 sp(9)
-	<eval+?>: nfc(87) ;gxSurf.height(surf: gxSurf): int32
+	<eval+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
 	<eval+?>: set.x32 sp(4)
 	cmplGfx/lib/gfxlib.ci:100: (26 bytes): if (!clip(dst, rect))
 	<eval+?>: load.z32
@@ -12336,11 +12376,11 @@ eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: mov.x32 sp(3, 10)
 	cmplGfx/lib/gfxlib.ci:110: (7 bytes): w: float32 := dst.width(dst)
 	<eval+?>: dup.x64 sp(13)
-	<eval+?>: nfc(86) ;gxSurf.width(surf: gxSurf): int32
+	<eval+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
 	<eval+?>: i32.2f32
 	cmplGfx/lib/gfxlib.ci:111: (7 bytes): h: float32 := dst.height(dst)
 	<eval+?>: dup.x64 sp(14)
-	<eval+?>: nfc(87) ;gxSurf.height(surf: gxSurf): int32
+	<eval+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
 	<eval+?>: i32.2f32
 	cmplGfx/lib/gfxlib.ci:112: (178 bytes): for (y: int32 := rect.y; y < rect.y + rect.h; y := y + 1)
 	<eval+?>: dup.x32 sp(7)
@@ -12405,7 +12445,7 @@ eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: or.b32
 	<eval+?>: set.x32 sp(5)
 	<eval+?>: inc.sp(-16)
-	<eval+?>: nfc(90) ;gxSurf.set(surf: gxSurf, x: int32, y: int32, color: uint32): void
+	<eval+?>: nfc(92) ;gxSurf.set(surf: gxSurf, x: int32, y: int32, color: uint32): void
 	cmplGfx/lib/gfxlib.ci:114: (4 bytes): x := x + 1
 	<eval+?>: inc.i32(+1)
 	cmplGfx/lib/gfxlib.ci:114: (12 bytes): x < rect.x + rect.w
@@ -12505,7 +12545,7 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: load.i32
 	<tile+?>: jmp +10
 	<tile+?>: dup.x64 sp(6)
-	<tile+?>: nfc(86) ;gxSurf.width(surf: gxSurf): int32
+	<tile+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
 	<tile+?>: set.x32 sp(3)
 	cmplGfx/lib/gfxlib.ci:127: (31 bytes): rect.h := (roi) != null ? roi.h : src.height(src);
 	<tile+?>: dup.x32 sp(5)
@@ -12517,7 +12557,7 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: load.i32
 	<tile+?>: jmp +10
 	<tile+?>: dup.x64 sp(6)
-	<tile+?>: nfc(87) ;gxSurf.height(surf: gxSurf): int32
+	<tile+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
 	<tile+?>: set.x32 sp(4)
 	cmplGfx/lib/gfxlib.ci:130: (26 bytes): if (!clip(src, rect))
 	<tile+?>: load.z32
@@ -12556,10 +12596,10 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: set.x32 sp(9)
 	cmplGfx/lib/gfxlib.ci:140: (6 bytes): width: int32 := dst.width(dst)
 	<tile+?>: dup.x64 sp(10)
-	<tile+?>: nfc(86) ;gxSurf.width(surf: gxSurf): int32
+	<tile+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
 	cmplGfx/lib/gfxlib.ci:141: (6 bytes): height: int32 := dst.height(dst)
 	<tile+?>: dup.x64 sp(11)
-	<tile+?>: nfc(87) ;gxSurf.height(surf: gxSurf): int32
+	<tile+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
 	cmplGfx/lib/gfxlib.ci:142: (60 bytes): for (j: int32 := y; j < height; j := j + rect.h)
 	<tile+?>: dup.x32 sp(10)
 	<tile+?>: jmp +45
@@ -12572,7 +12612,7 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: dup.x32 sp(4)
 	<tile+?>: dup.x64 sp(14)
 	<tile+?>: load.sp(+40)
-	<tile+?>: nfc(101) ;gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
+	<tile+?>: nfc(103) ;gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
 	cmplGfx/lib/gfxlib.ci:143: (3 bytes): i := i + rect.w
 	<tile+?>: dup.x32 sp(6)
 	<tile+?>: add.i32
@@ -12778,7 +12818,7 @@ show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void: function {
 	cmplGfx/lib/gfxlib.ci:269: (10 bytes): closure.offs := gxSurf.create3d(w, h);
 	<show+?>: dup.x32 sp(9)
 	<show+?>: dup.x32 sp(9)
-	<show+?>: nfc(78) ;gxSurf.create3d(width: int32, height: int32): gxSurf
+	<show+?>: nfc(80) ;gxSurf.create3d(width: int32, height: int32): gxSurf
 	<show+?>: set.x64 sp(4)
 	cmplGfx/lib/gfxlib.ci:270: (3 bytes): closure.mesh := mesh;
 	<show+?>: mov.x32 sp(4, 10)
@@ -12791,15 +12831,15 @@ show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void: function {
 	<show+?>: div.f32
 	<show+?>: load.f32 1.000000
 	<show+?>: load.f32 100.000000
-	<show+?>: nfc(110) ;camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): void
+	<show+?>: nfc(112) ;camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): void
 	cmplGfx/lib/gfxlib.ci:273: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
 	<show+?>: dup.x64 sp(2)
 	<show+?>: load.sp(+8)
 	<show+?>: load.ref <?> ;show.onEvent(closure: Closure, action: int32, button: int32, ex: int32, ey: int32): int32
-	<show+?>: nfc(124) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<show+?>: nfc(126) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	cmplGfx/lib/gfxlib.ci:274: (6 bytes): closure.offs.destroy(closure.offs);
 	<show+?>: dup.x64 sp(2)
-	<show+?>: nfc(80) ;gxSurf.destroy(surf: gxSurf): void
+	<show+?>: nfc(82) ;gxSurf.destroy(surf: gxSurf): void
 	<show+?>: inc.sp(-24)
 	<show+?>: ret
 .usages:
@@ -12847,13 +12887,13 @@ show(surf: gxSurf, onEvent(action: int32, button: int32, ex: int32, ey: int32): 
 	<show+?>: dup.x64 sp(2)
 	<show+?>: load.ref <?> ;null
 	<show+?>: load.ref <?> ;null
-	<show+?>: nfc(124) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<show+?>: nfc(126) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	<show+?>: ret
 	cmplGfx/lib/gfxlib.ci:288: (13 bytes): Gui.showWindow(surf, onEvent, delegate);
 	<show+?>: dup.x64 sp(2)
 	<show+?>: dup.x32 sp(3)
 	<show+?>: load.ref <?> ;show.delegate(onEvent(action: int32, button: int32, ex: int32, ey: int32): int32, action: int32, button: int32, ex: int32, ey: int32): int32
-	<show+?>: nfc(124) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<show+?>: nfc(126) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	<show+?>: ret
 .usages:
 	cmplGfx/lib/gfxlib.ci:373: referenced as `show`
@@ -12916,7 +12956,7 @@ showDiff(image1: gxSurf, image2: gxSurf): void: function {
 	<showDiff+?>: dup.x64 sp(0)
 	<showDiff+?>: load.sp(+8)
 	<showDiff+?>: load.ref <?> ;showDiff.onEvent(closure: Closure, action: int32, button: int32, ex: int32, ey: int32): int32
-	<showDiff+?>: nfc(124) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<showDiff+?>: nfc(126) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	<showDiff+?>: inc.sp(-24)
 	<showDiff+?>: ret
 .usages:
@@ -13008,7 +13048,7 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 	<show+?>: dup.x32 sp(5)
 	<show+?>: dup.x32 sp(5)
 	<show+?>: load.c32 32
-	<show+?>: nfc(77) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
+	<show+?>: nfc(79) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
 	cmplGfx/lib/gfxlib.ci:372: (22 bytes): eval(surf, null, aspect, 0.000000, eval);
 	<show+?>: dup.x64 sp(0)
 	<show+?>: load.ref <?> ;null
@@ -13026,7 +13066,7 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 	<show+?>: inc.sp(-12)
 	cmplGfx/lib/gfxlib.ci:374: (6 bytes): surf.destroy(surf);
 	<show+?>: dup.x64 sp(0)
-	<show+?>: nfc(80) ;gxSurf.destroy(surf: gxSurf): void
+	<show+?>: nfc(82) ;gxSurf.destroy(surf: gxSurf): void
 	cmplGfx/lib/gfxlib.ci:375: (5 bytes): return;
 	<show+?>: inc.sp(-12)
 	<show+?>: ret
@@ -13037,13 +13077,13 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 	<show+?>: dup.x32 sp(12)
 	<show+?>: dup.x32 sp(12)
 	<show+?>: load.c32 32
-	<show+?>: nfc(77) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
+	<show+?>: nfc(79) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
 	<show+?>: set.x64 sp(4)
 	cmplGfx/lib/gfxlib.ci:380: (15 bytes): closure.thumb := gxSurf(animationResolution, animationResolution, 32);
 	<show+?>: dup.x32 sp(10)
 	<show+?>: dup.x32 sp(11)
 	<show+?>: load.c32 32
-	<show+?>: nfc(77) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
+	<show+?>: nfc(79) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
 	<show+?>: set.x64 sp(6)
 	cmplGfx/lib/gfxlib.ci:381: (9 bytes): closure.aspect := (width) / float32(height);
 	<show+?>: dup.x32 sp(12)
@@ -13062,13 +13102,13 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 	<show+?>: dup.x64 sp(2)
 	<show+?>: load.sp(+8)
 	<show+?>: load.ref <?> ;show.onEvent(closure: Closure, action: int32, button: int32, ex: int32, ey: int32): int32
-	<show+?>: nfc(124) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+	<show+?>: nfc(126) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	cmplGfx/lib/gfxlib.ci:385: (6 bytes): closure.thumb.destroy(closure.thumb);
 	<show+?>: dup.x64 sp(4)
-	<show+?>: nfc(80) ;gxSurf.destroy(surf: gxSurf): void
+	<show+?>: nfc(82) ;gxSurf.destroy(surf: gxSurf): void
 	cmplGfx/lib/gfxlib.ci:386: (6 bytes): closure.offs.destroy(closure.offs);
 	<show+?>: dup.x64 sp(2)
-	<show+?>: nfc(80) ;gxSurf.destroy(surf: gxSurf): void
+	<show+?>: nfc(82) ;gxSurf.destroy(surf: gxSurf): void
 	<show+?>: inc.sp(-32)
 	<show+?>: ret
 .usages:
@@ -13099,12 +13139,7 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 .field function: typename (size: 4, cast: static const typename(ref))
 .field object: typename (size: 4, cast: static const typename(ref))
 .field null: pointer (size: 0, cast: static const inline)
-.field true: bool (size: 0, cast: static const inline)
-.field false: bool (size: 0, cast: static const inline)
 .field int: typename (size: 0, cast: static const inline)
-.field byte: typename (size: 0, cast: static const inline)
-.field float: typename (size: 0, cast: static const inline)
-.field double: typename (size: 0, cast: static const inline)
 .field .cstr: char (size: 4, cast: static const typename(arr))
 .field emit: function (size: 0, cast: static const typename(void))
 .field halt: function (size: 0, cast: static const inline)
@@ -13113,6 +13148,11 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 .field raise: function (size: 0, cast: static const inline)
 .field tryExec: function (size: 0, cast: static const inline)
 .field System: typename (size: 0, cast: static const typename(void))
+.field true: bool (size: 1, cast: static const val)
+.field false: bool (size: 1, cast: static const val)
+.field byte: typename (size: 0, cast: inline)
+.field float: typename (size: 0, cast: inline)
+.field double: typename (size: 0, cast: inline)
 .field verbose: function (size: 0, cast: inline)
 .field verbose: function (size: 0, cast: inline)
 .field debug: function (size: 0, cast: inline)
@@ -13277,6 +13317,9 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 .field .main: function (size: 100, cast: static function)
 .value: {
 	{
+		byte: typename := uint8;
+		float: typename := float32;
+		double: typename := float64;
 		static if (typename(raise) == function) {
 			verbose(message: char[*], inspect: variant): void := raise(raise.verbose, raise.noTrace, message, inspect);
 			verbose(message: char[*]): void := raise(raise.verbose, raise.noTrace, message, null);
@@ -13321,16 +13364,16 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 			static const pi: float64 := 3.141593;
 			static const e: float64 := 2.718282;
 			static const ln2: float64 := 0.693147;
-			static const log2E: float64 := 1.000000 / ln2;
+			static const log2E: float64 := 1.442695;
 			static const ln10: float64 := 2.302585;
-			static const log10E: float64 := 1.000000 / ln10;
+			static const log10E: float64 := 0.434294;
 			static const phi: float64 := 1.618034;
 			static const sqrt2: float64 := 1.414214;
 			static const sqrtE: float64 := 1.648721;
 			static const sqrtPi: float64 := 1.772454;
 			static const sqrtPhi: float64 := 1.272020;
-			static const nan: float64 := (0) / 0.000000;
-			static const inf: float64 := (1) / 0.000000;
+			static const nan: float64 := -nan;
+			static const inf: float64 := inf;
 			static const modf(x: float64, intPart: float64): float64 := {
 				if (x < (1)) {
 					if (x < (0)) {
@@ -14522,7 +14565,7 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 	<.main+?>: f64.2f32
 	<.main+?>: store.m32 <?> ;show.onEvent.speed
 	cmplGfx/lib/gfxlib.ci:326: (8 bytes): static const start: int64 := System.millis()
-	<.main+?>: nfc(16) ;System.millis(): int64
+	<.main+?>: nfc(18) ;System.millis(): int64
 	<.main+?>: store.m64 <?> ;show.start
 	<.main+?>: nfc(0) ;halt(): void
 .usages:
@@ -14654,16 +14697,16 @@ cmplGfx/lib/gfxlib.ci:325: show: function(<show>)
 
 ---------- Memory usage:
 memory[all] @000000; size: 2096872(2.0 Mb)
-memory[used] @000000; size: 319854(312.4 Kb)
-memory[heap] @04e16e; size: 1252752(1.2 Mb)
+memory[used] @000000; size: 321222(313.7 Kb)
+memory[heap] @04e6c6; size: 1251384(1.2 Mb)
 memory[stack] @0fff44; size: 524218(511.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 311232(303.9 Kb)
-memory[code] @000000; size: 8319(8.1 Kb)
+memory[meta] @000000; size: 312568(305.2 Kb)
+memory[code] @000000; size: 8347(8.2 Kb)
 memory[data] @000000; size: 52(52.0 bytes)
 
 ---------- heap memory:
-memory[free] @04e188; size: 1252704(1.2 Mb)
+memory[free] @04e6d8; size: 1251344(1.2 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

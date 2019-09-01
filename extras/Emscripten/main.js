@@ -121,7 +121,7 @@ let params = JsArgs('#', function (params, changes) {
 	// reload page if the project was modified
 	let files = [];
 	if (changes.project) {
-		if (changes.project.old !== changes.project.new) {
+		if (changes.project !== params.project) {
 			params.update(true);
 			return;
 		}

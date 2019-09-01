@@ -33,6 +33,12 @@ astn newNode(ccContext cc, ccToken kind) {
 	return result;
 }
 
+astn dupNode(ccContext cc, astn node) {
+	astn result = newNode(cc, node->kind);
+	*result = *node;
+	return result;
+}
+
 void recycle(ccContext cc, astn ast) {
 	dieif(cc->rt->vm.nfc, "Compiler state closed");
 	if (ast == NULL) {

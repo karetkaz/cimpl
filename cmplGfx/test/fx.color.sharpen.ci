@@ -11,7 +11,7 @@ void sharpen(gxSurf surf, int amount, int radius) {
 	blur.blur(radius);
 	surf.copy(0, 0, blur, null, -amount);
 
-	/* native function is faster
+	/* native alpha blend function is faster
 	int width = surf.width();
 	int height = surf.height();
 	for (int y = 0; y < height; y += 1) {
@@ -47,39 +47,54 @@ struct Slider {
 	const int maxValue = 100;
 	bool enabled = true;
 	int value = 0;
-	gxRect rect;// = {x: 0, y: 0, w: 0, h: 0};
+	gxRect rect;//FIXME = {x: 0, y: 0, w: 0, h: 0};
+}
+
+int val(Slider slider&) {
+	if (slider.value < slider.minValue) {
+		slider.value = slider.minValue;
+	}
+	if (slider.value > slider.maxValue) {
+		slider.value = slider.maxValue;
+	}
+	return slider.value / slider.divValue;
+}
+
+struct Checker {
+	const char text[*];
+	bool enabled = true;
+	bool checked = false;
+	gxRect rect;//FIXME = {x: 0, y: 0, w: 0, h: 0};
+}
+
+struct Button {
+	const char text[*];
+	bool enabled = true;
+	void onClick();
+	gxRect rect;//FIXME = {x: 0, y: 0, w: 0, h: 0};
 }
 
 struct Layout {
 	variant items[200] = {};
 	int selectedIndex = -1;
 	int count = 0;
-	gxRect rect;
+	gxRect rect;//FIXME = {x: 0, y: 0, w: 0, h: 0};
 }
 
 Layout Layout(variant items...) {
 	Layout layout = {
-		selectedIndex: 0;
+		selectedIndex: -1;
 		rect: {x: 0, y: 0, w: 0, h: 0};
 	};
 	for (int i = 0; i < items.length; i += 1) {
+		if (layout.selectedIndex < 0 && items[i].is(Slider)) {
+			// select first slider
+			layout.selectedIndex = i;
+		}
 		layout.items[i] = items[i];
 	}
 	layout.count = items.length;
 	return layout;
-}
-
-void addItem(Layout this&, Slider slider&) {
-	assert(this.count < this.items.length);
-	this.items[this.count] = slider;
-	this.count += 1;
-}
-
-void measure(Layout layout&) {
-	// TODO
-}
-void layout(Layout layout&) {
-	// TODO
 }
 
 void draw(Layout layout&, int x, int y) {
@@ -91,41 +106,102 @@ void draw(Layout layout&, int x, int y) {
 	layout.rect.w = 0;
 	layout.rect.h = 0;
 	for (int i = 0; i < layout.count; i += 1) {
-		Slider s& = layout.items[i];
-		gxRect r& = s.rect;
-		char text[256];
 		int pos = 0;
+		char text[256];
 		if (i == layout.selectedIndex) {
 			pos = text.append(pos, "* ");
 		} else {
 			pos = text.append(pos, " ");
 		}
-		pos = text.append(pos, s.text);
-		pos = text.append(pos, ": ");
-		pos = text.append(pos, s.value / s.divValue, flags);
-		font.clipText(r, text);
+		if (Slider item& = layout.items[i].as(Slider)) {
+			pos = text.append(pos, item.text);
+			pos = text.append(pos, ": ");
+			pos = text.append(pos, item.value / item.divValue, flags);
+			font.clipText(item.rect, text);
+			item.rect.x = x;
+			item.rect.y = y;
+			y += item.rect.h;
+		}
+		else if (Checker item& = layout.items[i].as(Checker)) {
+			pos = text.append(pos, item.text);
+			pos = text.append(pos, ": ");
+			if (item.checked) {
+				pos = text.append(pos, "on");
+			} else {
+				pos = text.append(pos, "off");
+			}
+			font.clipText(item.rect, text);
+			item.rect.x = x;
+			item.rect.y = y;
+			y += item.rect.h;
+		}
+		else if (Button item& = layout.items[i].as(Button)) {
+			pos = text.append(pos, item.text);
+			font.clipText(item.rect, text);
+			item.rect.x = x;
+			item.rect.y = y;
+			y += item.rect.h;
+		}
+		else {
+			abort("item is not a known ui element", layout.items[i]);
+		}
 		posAll = textAll.append(posAll, text);
 		posAll = textAll.append(posAll, "\n");
-		r.x = x;
-		r.y = y;
-		y += r.h;
 	}
 	font.clipText(layout.rect, textAll);
 	offs.fill(layout.rect, 5, 0x000000);
 	offs.drawText(layout.rect.x, layout.rect.y, font, textAll, 0xffffff);
 }
 
+bool uiEvent(const Layout layout&, int action, int button, int x, int y) {
+// TODO: void measure(Layout layout&) { }
+// TODO: void layout(Layout layout&) { }
 bool click(Layout layout&, int x, int y) {
+	bool test(const gxRect rect&, int x, int y) {
+		if (x < rect.x || x >= rect.x + rect.w) {
+			return false;
+		}
+		if (y < rect.y || y >= rect.y + rect.h) {
+			return false;
+		}
+		return true;
+	}
+
 	for (int i = 0; i < layout.count; i += 1) {
-		Slider s& = layout.items[i];
-		gxRect r& = s.rect;
-		if (x >= r.x && x < r.x + r.w) {
-			if (y >= r.y && y < r.y + r.h) {
-				if (s.enabled) {
-					layout.selectedIndex = i;
-					return true;
+		if (Slider item& = layout.items[i].as(Slider)) {
+			if (item.rect.test(x, y)) {
+				// debug("clicked", item);
+				if (!item.enabled) {
+					return false;
 				}
+				if (layout.selectedIndex == i) {
+					return false;
+				}
+				layout.selectedIndex = i;
+				return true;
 			}
+		}
+		else if (Checker item& = layout.items[i].as(Checker)) {
+			if (item.rect.test(x, y)) {
+				// debug("clicked", item);
+				if (!item.enabled) {
+					return false;
+				}
+				item.checked = !item.checked;
+				return true;
+			}
+		}
+		else if (Button item& = layout.items[i].as(Button)) {
+			if (item.rect.test(x, y)) {
+				// debug("clicked", item);
+				if (!item.enabled) {
+					return false;
+				}
+				item.onClick();
+			}
+		}
+		else {
+			abort("item is not a known ui element", layout.items[i]);
 		}
 	}
 	return false;
@@ -140,38 +216,10 @@ bool update(Layout layout&, int delta) {
 	return true;
 }
 
-int val(Slider slider&) {
-	if (slider.value < slider.minValue) {
-		slider.value = slider.minValue;
-	}
-	if (slider.value > slider.maxValue) {
-		slider.value = slider.maxValue;
-	}
-	return slider.value / slider.divValue;
-}
-
-int onEvent(int action, int button, int x, int y) {
-	static Slider amount = {
-		text: "amount";
-		minValue: 0;
-		maxValue: 512;
-		rect: {x: 0, y: 0, w: 0, h: 0};
-	};
-	static Slider radius = {
-		text: "radius";
-		divValue: 10;
-		minValue: 50;
-		maxValue: 200;
-		rect: {x: 0, y: 0, w: 0, h: 0};
-	};
-	static Slider time = {
-		text: "time";
-		enabled: false;
-		rect: {x: 0, y: 0, w: 0, h: 0};
-	};
-	static Layout layout = Layout(amount, radius, time);
 	static int ox = 0;
+	static int px = 0;
 	static int oy = 0;
+	static int py = 0;
 
 	static bool isCtrl = false;
 	if (button == 0 && x == 37) {
@@ -195,8 +243,77 @@ int onEvent(int action, int button, int x, int y) {
 		debug("Shift", isShift);
 	}
 
-	bool reCalculate = false;
 	if (action == Gui.KEY_PRESS) {
+		if (button == 0 && x == 116) {	// down
+			int delta = isShift ? 10 : 1;
+			if (layout.update(-delta)) {
+				return true;
+			}
+		}
+		if (button == 0 && x == 111) {	// up
+			int delta = isShift ? 10 : 1;
+			if (layout.update(+delta)) {
+				return true;
+			}
+		}
+	}
+	else if (action == Gui.MOUSE_PRESS) {
+		px = ox = x;
+		py = oy = y;
+	}
+	else if (action == Gui.MOUSE_RELEASE) {
+		if (button == 1 && x == px && y == py) {
+			if (layout.click(x, y)) {
+				return true;
+			}
+		}
+	}
+	else if (action == Gui.MOUSE_MOTION) {
+		if (button == 1) {
+			if (layout.update(oy - y)) {
+				ox = x;
+				oy = y;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+int onEvent(int action, int button, int x, int y) {
+	static Checker autoUpdate = {
+		text: "auto update";
+		checked: true;
+		rect: {x: 0, y: 0, w: 0, h: 0};
+	};
+	static Slider amount = {
+		text: "amount";
+		minValue: 0;
+		maxValue: 512;
+		rect: {x: 0, y: 0, w: 0, h: 0};
+	};
+	static Slider radius = {
+		text: "radius";
+		value: 50;
+		divValue: 10;
+		minValue: 0;
+		maxValue: 200;
+		rect: {x: 0, y: 0, w: 0, h: 0};
+	};
+	static Slider time = {
+		text: "time";
+		enabled: false;
+		rect: {x: 0, y: 0, w: 0, h: 0};
+	};
+	static Layout layout = Layout(autoUpdate, amount, radius, time);
+	static int ox = 0;
+	static int oy = 0;
+
+	bool reCalculate = false;
+	if (uiEvent(layout, action, button, x, y)) {
+		reCalculate = true;
+	}
+	else if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
 		}
@@ -204,8 +321,8 @@ int onEvent(int action, int button, int x, int y) {
 			reCalculate = true;
 		}
 		if (button == '\r') {
-			amount.value = isShift ? 100 : 0;
-			radius.value = isCtrl ? 100 : 0;
+			amount.value = 0;
+			radius.value = 0;
 			reCalculate = true;
 		}
 		if (button == 'S') {
@@ -213,18 +330,6 @@ int onEvent(int action, int button, int x, int y) {
 			offs.saveBmp("out/dump.bmp", 0);
 		}
 
-		if (button == 0 && x == 116) {	// down
-			int delta = isShift ? 10 : 1;
-			if (layout.update(-delta)) {
-				reCalculate = true;
-			}
-		}
-		if (button == 0 && x == 111) {	// up
-			int delta = isShift ? 10 : 1;
-			if (layout.update(+delta)) {
-				reCalculate = true;
-			}
-		}
 	}
 	else if (action == Gui.MOUSE_PRESS) {
 		ox = x;
@@ -232,18 +337,8 @@ int onEvent(int action, int button, int x, int y) {
 		return 0;
 	}
 	else if (action == Gui.MOUSE_RELEASE) {
-		if (button == 1) {
-			if (layout.click(x, y)) {
-				reCalculate = true;
-			}
-		}
 	}
 	else if (action == Gui.MOUSE_MOTION) {
-		if (button == 1) {
-			if (layout.update(oy - y)) {
-				reCalculate = true;
-			}
-		}
 		ox = x;
 		oy = y;
 	}
@@ -255,7 +350,9 @@ int onEvent(int action, int button, int x, int y) {
 
 		uint64 start = System.millis();
 		offs.resize(null, back, null, 1);
-		offs.sharpen(amountValue, radiusValue);
+		if (autoUpdate.checked) {
+			offs.sharpen(amountValue, radiusValue);
+		}
 		offs.drawHist(null, 0x00ffffff);
 		time.value = System.millis() - start;
 
