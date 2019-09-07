@@ -1,0 +1,121 @@
+gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
+gxSurf offs = gxSurf("asset/image/forest.png", 32);
+
+gxSurf in = gxSurf(offs, 0);
+
+/// compute the the transformation matrix to center/crop/fit an image to a new size.
+mat4f fitMatrix(const gxSurf src, int newWidth, int newHeight, bool fitWidth, bool fitHeight, double maxAspect) {
+	double scale = 1;
+
+	double widthScale = newWidth / double(src.width());
+	if (fitWidth && scale > widthScale) {
+		scale = widthScale;
+	}
+
+	double heightScale = newHeight / double(src.height());
+	if (fitHeight && scale > heightScale) {
+		scale = heightScale;
+	}
+
+	if (maxAspect > 0) {
+		if (maxAspect < 1) {
+			maxAspect = 1 / maxAspect;
+		}
+		double newAspect = src.width() / double(src.height());
+		if (newAspect < 1) {
+			newAspect = 1 / newAspect;
+		}
+		// debug("new aspect", newAspect);
+		if (newAspect < maxAspect) {
+			scale *= newAspect / maxAspect;
+		}
+	}
+
+	// calculate translation
+	double dx = (newWidth - src.width() * scale) / 2;
+	double dy = (newHeight - src.height() * scale) / 2;
+
+	return {
+		x: {x: 1 / scale, y: 0, z: 0, w: -dx / scale};
+		y: {x: 0, y: 1 / scale, z: 0, w: -dy / scale};
+		z: {x: 0, y: 0, z: 1 / scale, w: 0};
+		w: {x: 0, y: 0, z: 0, w: 1};
+	};
+}
+
+/// apply matrix transformation (scale, rotate, translate or skew) from `in` to `out`
+void transform(gxSurf out, const gxRect roi&, const gxSurf in, const mat4f matrix&) {
+	// TODO: this should be implemented as native function for better performance
+	gxRect rect = {
+		x: roi != null ? roi.x : 0;
+		y: roi != null ? roi.y : 0;
+		w: roi != null ? roi.w : out.width();
+		h: roi != null ? roi.h : out.height();
+	};
+	if (!out.clip(rect)) {
+		return;
+	}
+	for (int y = 0; y < rect.h; y += 1) {
+		for (int x = 0; x < rect.w; x += 1) {
+			vec4f xy = { x: x, y: y, z: 0, w: 1 };
+			xy = dp4(matrix, xy);
+			out.set(x + rect.x, y + rect.y, in.get(xy.x, xy.y));
+		}
+	}
+}
+
+int onEvent(int action, int button, int x, int y) {
+	inline "lib/micro.ui.ci";
+
+	static Checker fitWidth = {
+		text: "fit width";
+		checked: true;
+	};
+	static Checker fitHeight = {
+		text: "fit height";
+		checked: true;
+	};
+	static Slider maxAspect = {
+		text: "max aspect";
+		value: 133;
+		minValue: 100;
+		maxValue: 400;
+	};
+	static Slider imgAspect = {
+		text: "aspect";
+		enabled: false;
+		value: in.width() * 100 / in.height();
+	};
+
+	static Layout ui = Layout(offs, font, fitWidth, fitHeight, maxAspect, imgAspect);
+	bool redraw = action == Gui.WINDOW_INIT;
+
+	if (uiEvent(ui, action, button, x, y)) {
+		redraw = true;
+	}
+	else if (action == Gui.KEY_PRESS) {
+		if (button == 27) {
+			return -1;
+		}
+	}
+
+	if (redraw) {
+		gxRect to = {
+			w: 400;
+			h: 400;
+			x: (offs.width() - to.w) / 2;
+			y: (offs.height() - to.h) / 2;
+		};
+		mat4f mat = fitMatrix(in, to.w, to.h, fitWidth.checked, fitHeight.checked, maxAspect.val() / 100.);
+		offs.transform(to, in, mat);
+		offs.drawRect(to, 0);
+		ui.draw(30, 30);
+	}
+
+	return 0;
+}
+
+offs.show(onEvent);
+font.destroy();
+offs.destroy();
+in.destroy();

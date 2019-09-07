@@ -9,7 +9,6 @@
 
 struct camera cam[1]; // TODO: singleton like camera
 struct gx_Light lights[32];  // max 32 lights
-gxWindow win = NULL;
 
 static inline rtValue nextValue(nfcContext ctx) {
 	return ctx->rt->api.nfcReadArg(ctx, ctx->rt->api.nfcNextArg(ctx));
@@ -778,9 +777,9 @@ static vmError mesh_setVertex(nfcContext ctx) {
 
 typedef struct looperArgs {
 	rtContext rt;
+	symn callback;
 	vmError error;
 	int64_t timeout;
-	symn callback;
 	gxWindow window;
 	struct {
 		int32_t y;
@@ -808,7 +807,7 @@ static void exitLooper(looperArgs args) {
 static void looperCallback(looperArgs args) {
 	rtContext rt = args->rt;
 	symn callback = args->callback;
-	args->event.action = getWindowEvent(win, &args->event.button, &args->event.x, &args->event.y);
+	args->event.action = getWindowEvent(args->window, &args->event.button, &args->event.x, &args->event.y);
 	if (args->event.action == WINDOW_CLOSE) {
 		// window is closing, quit loop
 		if (callback != NULL) {
@@ -826,7 +825,7 @@ static void looperCallback(looperArgs args) {
 	}
 	if (callback != NULL) {
 		int32_t timeout;
-		args->error = rt->api.invoke(rt, callback, &timeout, &args->event, NULL);
+		args->error = rt->api.invoke(rt, callback, &timeout, &args->event, args);
 		if (args->error != noError || timeout < 0) {
 			return exitLooper(args);
 		}
@@ -847,7 +846,7 @@ static void looperCallback(looperArgs args) {
 		args->timeout = INT64_MAX;
 	}
 	//printf("event(action: %d, button: %d, x: %d, y: %d)\n", args->event.action, args->event.button, args->event.x, args->event.y);
-	flushWindow(win);
+	flushWindow(args->window);
 }
 
 static const char *proto_window_show = "void showWindow(gxSurf surf, pointer closure, int onEvent(pointer closure, int action, int button, int x, int y))";
@@ -857,18 +856,25 @@ static vmError window_show(nfcContext ctx) {
 	size_t cbClosure = argref(ctx, rt->api.nfcNextArg(ctx));
 	size_t cbOffs = argref(ctx, rt->api.nfcNextArg(ctx));
 
-	win = createWindow(offScreen);
 	struct looperArgs args;
 	args.rt = rt;
+	args.callback = rt->api.rtLookup(ctx->rt, cbOffs);
 	args.error = noError;
 	args.timeout = 0;
-	args.callback = rt->api.rtLookup(ctx->rt, cbOffs);
-	args.window = win;
+	args.window = NULL;
 	args.event.closure = (vmOffs) cbClosure;
-	args.event.action = 0;
+	args.event.action = WINDOW_INIT;
 	args.event.button = 0;
 	args.event.x = 0;
 	args.event.y = 0;
+
+	if (args.callback != NULL) {
+		vmError error = rt->api.invoke(rt, args.callback, &args.timeout, &args.event, &args);
+		if (error != noError || args.timeout < 0) {
+			return error;
+		}
+	}
+	args.window = createWindow(offScreen);
 
 #ifdef __EMSCRIPTEN__
 	emscripten_set_main_loop_arg((void*)looperCallback, &args, 0, 1);
@@ -877,14 +883,17 @@ static vmError window_show(nfcContext ctx) {
 		looperCallback(&args);
 	}
 #endif
-	destroyWindow(win);
+	destroyWindow(args.window);
 	return args.error;
 }
 
 static const char *proto_window_title = "void setTitle(char title[*])";
 static vmError window_title(nfcContext ctx) {
 	char *title = nextValue(ctx).ref;
-	setWindowText(win, title);
+	looperArgs args = (looperArgs) ctx->extra;
+	if (args != NULL && args->window != NULL) {
+		setWindowText(args->window, title);
+	}
 	return noError;
 }
 
@@ -1274,6 +1283,7 @@ int cmplInit(rtContext rt) {
 		rt->api.ccDefInt(cc, "MOUSE_RELEASE", MOUSE_RELEASE);
 		rt->api.ccDefInt(cc, "EVENT_TIMEOUT", EVENT_TIMEOUT);
 
+		rt->api.ccDefInt(cc, "WINDOW_INIT", WINDOW_INIT);
 		rt->api.ccDefInt(cc, "WINDOW_CLOSE", WINDOW_CLOSE);
 		rt->api.ccDefInt(cc, "WINDOW_ENTER", WINDOW_ENTER);
 		rt->api.ccDefInt(cc, "WINDOW_LEAVE", WINDOW_LEAVE);

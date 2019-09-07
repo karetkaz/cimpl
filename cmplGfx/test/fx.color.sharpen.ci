@@ -34,236 +34,14 @@ void sharpen(gxSurf surf, int amount, int radius) {
 }
 
 int onEvent(int action, int button, int x, int y);
-onEvent(Gui.KEY_PRESS, ' ', 0, 0);
 offs.show(onEvent);
 offs.destroy();
 back.destroy();
 font.destroy();
 
-struct Slider {
-	const char text[*];
-	const int divValue = 1;
-	const int minValue = 0;
-	const int maxValue = 100;
-	bool enabled = true;
-	int value = 0;
-}
-
-int val(Slider slider&) {
-	if (slider.value < slider.minValue) {
-		slider.value = slider.minValue;
-	}
-	if (slider.value > slider.maxValue) {
-		slider.value = slider.maxValue;
-	}
-	return slider.value / slider.divValue;
-}
-
-struct Checker {
-	const char text[*];
-	bool enabled = true;
-	bool checked = false;
-}
-
-struct Button {
-	const char text[*];
-	bool enabled = true;
-	void onClick();
-}
-
-struct Layout {
-	variant items[200] = {};
-	gxRect rects[200] = {};
-	int selectedIndex = -1;
-	int count = 0;
-}
-
-Layout Layout(variant items...) {
-	Layout layout;/* FIXME:BUG: = {
-		selectedIndex: -1;
-		// rect: {x: 0, y: 0, w: 0, h: 0};
-	};*/
-	layout.selectedIndex = -1;
-	for (int i = 0; i < items.length; i += 1) {
-		if (layout.selectedIndex < 0 && items[i].is(Slider)) {
-			// select first slider
-			layout.selectedIndex = i;
-		}
-		layout.items[i] = items[i];
-	}
-	layout.count = items.length;
-	return layout;
-}
-
-void draw(Layout layout&, int x, int y) {
-	int posAll = 0;
-	char textAll[1024];
-	FormatFlags flags = { padLen: 4 };
-	gxRect rectAll = { x:x, y:y, w:0, h:0 };
-
-	for (int i = 0; i < layout.count; i += 1) {
-		int pos = 0;
-		char text[256];
-		gxRect rect& = layout.rects[i];
-		if (i == layout.selectedIndex) {
-			pos = text.append(pos, "* ");
-		} else {
-			pos = text.append(pos, " ");
-		}
-		if (Slider item& = layout.items[i].as(Slider)) {
-			pos = text.append(pos, item.text);
-			pos = text.append(pos, ": ");
-			pos = text.append(pos, item.value / item.divValue, flags);
-		}
-		else if (Checker item& = layout.items[i].as(Checker)) {
-			pos = text.append(pos, item.text);
-			pos = text.append(pos, ": ");
-			if (item.checked) {
-				pos = text.append(pos, "on");
-			} else {
-				pos = text.append(pos, "off");
-			}
-		}
-		else if (Button item& = layout.items[i].as(Button)) {
-			pos = text.append(pos, item.text);
-		}
-		else {
-			abort("item is not a known ui element", layout.items[i]);
-		}
-		posAll = textAll.append(posAll, text);
-		posAll = textAll.append(posAll, "\n");
-		font.clipText(rect, text);
-		rect.x = x;
-		rect.y = y;
-		y += rect.h;
-	}
-	font.clipText(rectAll, textAll);
-	offs.fill(rectAll, 5, 0x000000);
-	offs.drawText(rectAll.x, rectAll.y, font, textAll, 0xffffff);
-}
-
-bool uiEvent(const Layout layout&, int action, int button, int x, int y) {
-// TODO: void measure(Layout layout&) { }
-// TODO: void layout(Layout layout&) { }
-bool click(Layout layout&, int x, int y) {
-	bool test(const gxRect rect&, int x, int y) {
-		if (x < rect.x || x >= rect.x + rect.w) {
-			return false;
-		}
-		if (y < rect.y || y >= rect.y + rect.h) {
-			return false;
-		}
-		return true;
-	}
-
-	for (int i = 0; i < layout.count; i += 1) {
-		if (!layout.rects[i].test(x, y)) {
-			continue;
-		}
-		if (Slider item& = layout.items[i].as(Slider)) {
-			if (!item.enabled) {
-				return false;
-			}
-			if (layout.selectedIndex == i) {
-				return false;
-			}
-			layout.selectedIndex = i;
-			return true;
-		}
-		else if (Checker item& = layout.items[i].as(Checker)) {
-			if (!item.enabled) {
-				return false;
-			}
-			item.checked = !item.checked;
-			return true;
-		}
-		else if (Button item& = layout.items[i].as(Button)) {
-			if (!item.enabled) {
-				return false;
-			}
-			item.onClick();
-		}
-		else {
-			abort("item is not a known ui element", layout.items[i]);
-		}
-	}
-	return false;
-}
-
-bool update(Layout layout&, int delta) {
-	if (layout.selectedIndex < 0) {
-		return false;
-	}
-	Slider slider& = layout.items[layout.selectedIndex];
-	slider.value += delta;
-	return true;
-}
-
-	static int ox = 0;
-	static int px = 0;
-	static int oy = 0;
-	static int py = 0;
-
-	static bool isCtrl = false;
-	if (button == 0 && x == 37) {
-		if (action == Gui.KEY_PRESS) {
-			isCtrl = true;
-		}
-		if (action == Gui.KEY_RELEASE) {
-			isCtrl = false;
-		}
-		debug("Ctrl", isCtrl);
-	}
-
-	static bool isShift = false;
-	if (button == 0 && x == 50) {
-		if (action == Gui.KEY_PRESS) {
-			isShift = true;
-		}
-		if (action == Gui.KEY_RELEASE) {
-			isShift = false;
-		}
-		debug("Shift", isShift);
-	}
-
-	if (action == Gui.KEY_PRESS) {
-		if (button == 0 && x == 116) {	// down
-			int delta = isShift ? 10 : 1;
-			if (layout.update(-delta)) {
-				return true;
-			}
-		}
-		if (button == 0 && x == 111) {	// up
-			int delta = isShift ? 10 : 1;
-			if (layout.update(+delta)) {
-				return true;
-			}
-		}
-	}
-	else if (action == Gui.MOUSE_PRESS) {
-		px = ox = x;
-		py = oy = y;
-	}
-	else if (action == Gui.MOUSE_RELEASE) {
-		if (button == 1 && x == px && y == py) {
-			if (layout.click(x, y)) {
-				return true;
-			}
-		}
-	}
-	else if (action == Gui.MOUSE_MOTION) {
-		if (button == 1) {
-			if (layout.update(oy - y)) {
-				ox = x;
-				oy = y;
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
 int onEvent(int action, int button, int x, int y) {
+	inline "lib/micro.ui.ci";
+
 	static Checker autoUpdate = {
 		text: "auto update";
 		checked: true;
@@ -284,11 +62,9 @@ int onEvent(int action, int button, int x, int y) {
 		text: "time";
 		enabled: false;
 	};
-	static Layout layout = Layout(autoUpdate, amount, radius, time);
-	static int ox = 0;
-	static int oy = 0;
+	static Layout layout = Layout(offs, font, autoUpdate, amount, radius, time);
 
-	bool reCalculate = false;
+	bool reCalculate = action == Gui.WINDOW_INIT;
 	if (uiEvent(layout, action, button, x, y)) {
 		reCalculate = true;
 	}
@@ -296,30 +72,15 @@ int onEvent(int action, int button, int x, int y) {
 		if (button == 27) {
 			return -1;
 		}
-		if (button == ' ') {
-			reCalculate = true;
-		}
 		if (button == '\r') {
 			amount.value = 0;
-			radius.value = 0;
+			radius.value = 50;
 			reCalculate = true;
 		}
-		if (button == 'S') {
+		if (button == ' ') {
 			trace("dumping screen");
 			offs.saveBmp("out/dump.bmp", 0);
 		}
-
-	}
-	else if (action == Gui.MOUSE_PRESS) {
-		ox = x;
-		oy = y;
-		return 0;
-	}
-	else if (action == Gui.MOUSE_RELEASE) {
-	}
-	else if (action == Gui.MOUSE_MOTION) {
-		ox = x;
-		oy = y;
 	}
 
 	if (reCalculate) {

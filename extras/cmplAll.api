@@ -598,6 +598,7 @@ Gui.MOUSE_PRESS
 Gui.MOUSE_MOTION
 Gui.MOUSE_RELEASE
 Gui.EVENT_TIMEOUT
+Gui.WINDOW_INIT
 Gui.WINDOW_CLOSE
 Gui.WINDOW_ENTER
 Gui.WINDOW_LEAVE
@@ -648,11 +649,13 @@ gxSurf(fileName: char[*], depth: int32): gxSurf
 gxSurf(fileName: char[*]): gxSurf
 gxMesh(fileName: char[*]): gxMesh
 gxSurf(copy: gxSurf): gxSurf
+gxSurf(copy: gxSurf, aspect: float64): gxSurf
 set(dst: gxSurf, x: int32, y: int32, color: argb): void
 clip(src: gxSurf, roi: gxRect): bool
 fill(dst: gxSurf, col: uint32): void
 fill(dst: gxSurf, roi: gxRect, col: uint32): void
 fill(dst: gxSurf, roi: gxRect, pad: int32, col: uint32): void
+drawRect(dst: gxSurf, roi: gxRect, col: uint32): void
 eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): vec4f): void
 tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
 show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void

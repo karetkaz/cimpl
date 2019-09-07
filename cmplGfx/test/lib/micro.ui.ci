@@ -1,0 +1,228 @@
+// micro ui
+struct Slider {
+	const char text[*];
+	const int divValue = 1;
+	const int minValue = 0;
+	const int maxValue = -1u >> 1;
+	bool enabled = true;
+	int value = 0;
+}
+int val(Slider slider&) {
+	if (slider.value < slider.minValue) {
+		slider.value = slider.minValue;
+	}
+	if (slider.value > slider.maxValue) {
+		slider.value = slider.maxValue;
+	}
+	return slider.value / slider.divValue;
+}
+
+struct Checker {
+	const char text[*];
+	bool enabled = true;
+	bool checked = false;
+}
+
+struct Button {
+	const char text[*];
+	bool enabled = true;
+	void onClick();
+}
+
+struct Layout {
+	gxSurf offs;
+	gxSurf font;
+	variant items[200] = {};
+	gxRect rects[200] = {};
+	int selectedIndex = -1;
+	int count = 0;
+}
+
+Layout Layout(gxSurf offs, gxSurf font, variant items...) {
+	Layout layout;/* FIXME:BUG: = {
+		selectedIndex: -1;
+		// rect: {x: 0, y: 0, w: 0, h: 0};
+	};*/
+	layout.offs = offs;
+	layout.font = font;
+	layout.selectedIndex = -1;
+	for (int i = 0; i < items.length; i += 1) {
+		if (Slider slider& = items[i].as(Slider)) {
+			if (layout.selectedIndex < 0 && slider.enabled) {
+				// select first enabled slider
+				layout.selectedIndex = i;
+			}
+		}
+		layout.items[i] = items[i];
+	}
+	layout.count = items.length;
+	return layout;
+}
+
+void draw(Layout layout&, int x, int y) {
+	int posAll = 0;
+	char textAll[1024];
+	FormatFlags flags = { padLen: 4 };
+	gxRect rectAll = { x:x, y:y, w:0, h:0 };
+
+	for (int i = 0; i < layout.count; i += 1) {
+		int pos = 0;
+		char text[256];
+		gxRect rect& = layout.rects[i];
+		if (i == layout.selectedIndex) {
+			pos = text.append(pos, "* ");
+		} else {
+			pos = text.append(pos, " ");
+		}
+		if (Slider item& = layout.items[i].as(Slider)) {
+			pos = text.append(pos, item.text);
+			pos = text.append(pos, ": ");
+			pos = text.append(pos, item.val(), flags);
+		}
+		else if (Checker item& = layout.items[i].as(Checker)) {
+			pos = text.append(pos, item.text);
+			pos = text.append(pos, ": ");
+			if (item.checked) {
+				pos = text.append(pos, "on");
+			} else {
+				pos = text.append(pos, "off");
+			}
+		}
+		else if (Button item& = layout.items[i].as(Button)) {
+			pos = text.append(pos, item.text);
+		}
+		else {
+			abort("item is not a known ui element", layout.items[i]);
+		}
+		posAll = textAll.append(posAll, text);
+		posAll = textAll.append(posAll, "\n");
+		layout.font.clipText(rect, text);
+		rect.x = x;
+		rect.y = y;
+		y += rect.h;
+	}
+	layout.font.clipText(rectAll, textAll);
+	layout.offs.fill(rectAll, 5, 0x000000);
+	layout.offs.drawText(rectAll.x, rectAll.y, layout.font, textAll, 0xffffff);
+}
+
+bool uiEvent(const Layout layout&, int action, int button, int x, int y) {
+// TODO: void measure(Layout layout&) { }
+// TODO: void layout(Layout layout&) { }
+bool click(Layout layout&, int x, int y) {
+	bool test(const gxRect rect&, int x, int y) {
+		if (x < rect.x || x >= rect.x + rect.w) {
+			return false;
+		}
+		if (y < rect.y || y >= rect.y + rect.h) {
+			return false;
+		}
+		return true;
+	}
+
+	for (int i = 0; i < layout.count; i += 1) {
+		if (!layout.rects[i].test(x, y)) {
+			continue;
+		}
+		if (Slider item& = layout.items[i].as(Slider)) {
+			if (!item.enabled) {
+				return false;
+			}
+			if (layout.selectedIndex == i) {
+				return false;
+			}
+			layout.selectedIndex = i;
+			return true;
+		}
+		else if (Checker item& = layout.items[i].as(Checker)) {
+			if (!item.enabled) {
+				return false;
+			}
+			item.checked = !item.checked;
+			return true;
+		}
+		else if (Button item& = layout.items[i].as(Button)) {
+			if (!item.enabled) {
+				return false;
+			}
+			item.onClick();
+		}
+		else {
+			abort("item is not a known ui element", layout.items[i]);
+		}
+	}
+	return false;
+}
+
+bool update(Layout layout&, int delta) {
+	if (layout.selectedIndex < 0) {
+		return false;
+	}
+	Slider slider& = layout.items[layout.selectedIndex];
+	slider.value += delta;
+	return true;
+}
+
+	static int ox = 0;
+	static int px = 0;
+	static int oy = 0;
+	static int py = 0;
+
+	static bool isCtrl = false;
+	if (button == 0 && x == 37) {
+		if (action == Gui.KEY_PRESS) {
+			isCtrl = true;
+		}
+		if (action == Gui.KEY_RELEASE) {
+			isCtrl = false;
+		}
+		debug("Ctrl", isCtrl);
+	}
+
+	static bool isShift = false;
+	if (button == 0 && x == 50) {
+		if (action == Gui.KEY_PRESS) {
+			isShift = true;
+		}
+		if (action == Gui.KEY_RELEASE) {
+			isShift = false;
+		}
+		debug("Shift", isShift);
+	}
+
+	if (action == Gui.KEY_PRESS) {
+		if (button == 0 && x == 116) {	// down
+			int delta = isShift ? 10 : 1;
+			if (layout.update(-delta)) {
+				return true;
+			}
+		}
+		if (button == 0 && x == 111) {	// up
+			int delta = isShift ? 10 : 1;
+			if (layout.update(+delta)) {
+				return true;
+			}
+		}
+	}
+	else if (action == Gui.MOUSE_PRESS) {
+		px = ox = x;
+		py = oy = y;
+	}
+	else if (action == Gui.MOUSE_RELEASE) {
+		if (button == 1 && x == px && y == py) {
+			if (layout.click(x, y)) {
+				return true;
+			}
+		}
+	}
+	else if (action == Gui.MOUSE_MOTION) {
+		if (button == 1) {
+			if (layout.update(oy - y)) {
+				ox = x;
+				oy = y;
+				return true;
+			}
+		}
+	}
+	return false;
+}

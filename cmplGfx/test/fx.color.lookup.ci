@@ -14,97 +14,69 @@ void brightnessContrastGamma(uint32 lut[256], int brightness, int contrast, doub
 }
 
 int onEvent(int action, int button, int x, int y);
-onEvent(Gui.KEY_PRESS, ' ', 0, 0);
 offs.show(onEvent);
 offs.destroy();
 back.destroy();
 font.destroy();
 
 int onEvent(int action, int button, int x, int y) {
-	static int brightness = 0;
-	static int contrast = 0;
-	static int gamma = 100;
-	static int ox = 0;
-	static int oy = 0;
+	inline "lib/micro.ui.ci";
 
-	bool reCalculate = false;
+	static Slider brightness = {
+		text: "brightness";
+		value: 0;
+		minValue: -256;
+		maxValue: 256;
+	};
+	static Slider contrast = {
+		text: "contrast";
+		value: 0;
+		minValue: -512;
+		maxValue: 512;
+	};
+	static Slider gamma = {
+		text: "gamma";
+		value: 100;
+		minValue: 1;
+		maxValue: 1000;
+	};
+	static Slider time = {
+		text: "time";
+		enabled: false;
+	};
 
-	if (action == Gui.KEY_PRESS) {
+	static Layout ui = Layout(offs, font, brightness, contrast, gamma, time);
+	bool redraw = action == Gui.WINDOW_INIT;
+
+	if (uiEvent(ui, action, button, x, y)) {
+		redraw = true;
+	}
+	else if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
 		}
-		if (button == ' ') {
-			reCalculate = true;
-		}
 		if (button == '\r') {
-			brightness = 0;
-			contrast = 0;
-			gamma = 100;
-			reCalculate = true;
+			brightness.value = 0;
+			contrast.value = 0;
+			gamma.value = 100;
+			redraw = true;
 		}
-		if (button == 's') {
+		if (button == ' ') {
 			trace("dumping screen");
 			offs.saveBmp("out/dump.bmp", 0);
 		}
 	}
-	else if (action == Gui.MOUSE_PRESS) {
-		ox = x;
-		oy = y;
-		return 0;
-	}
-	else if (action == Gui.MOUSE_MOTION) {
-		int dx = ox - x;
-		int dy = oy - y;
 
-		if (button == 1) {
-			brightness += oy - y;
-			reCalculate = true;
-		}
-		if (button == 2) {
-			contrast += oy - y;
-			reCalculate = true;
-		}
-		if (button >= 3) {
-			gamma += oy - y;
-			reCalculate = true;
-		}
-		ox = x;
-		oy = y;
-	}
-
-	if (reCalculate) {
-		// clamp input values
-		brightness = Math.clamp(brightness, -255, 255);
-		contrast = Math.clamp(contrast, -512, 512);
-		gamma = Math.clamp(gamma, 1, 1000);
-
-		uint64 time = System.millis();
+	if (redraw) {
+		uint64 start = System.millis();
 		uint32 lut[256];
-		brightnessContrastGamma(lut, brightness, contrast, gamma / 100.);
+		brightnessContrastGamma(lut, brightness.val(), contrast.val(), gamma.val() / 100.);
 		offs.resize(null, back, null, 1);
 		offs.colorMap(null, lut);
 		offs.drawHist(null, 0x00ffffff);
 
-		// stop measure execution time
-		time = System.millis() - time;
-
-		char text[256];
-		FormatFlags flags = { padLen: 4 };
-		int pos = text.append(0, "brightness: ");
-		pos = text.append(pos, brightness, flags);
-		pos = text.append(pos, "\ncontrast: ");
-		pos = text.append(pos, contrast, flags);
-		pos = text.append(pos, "\ngamma: ");
-		pos = text.append(pos, gamma, flags);
-		pos = text.append(pos, "\ntime: ");
-		pos = text.append(pos, time, flags);
-		pos = text.append(pos, " ms\n");
-
-		inline padding = 5;
-		gxRect rect = { x: 30, y: 30, w: 0, h: 0 };
-		font.clipText(rect, text);
-		offs.fill(rect, padding, 0x000000);
-		offs.drawText(rect.x, rect.y, font, text, 0xffffff);
+		time.value = System.millis() - start;
+		ui.draw(30, 30);
 	}
 
 	return 0;
