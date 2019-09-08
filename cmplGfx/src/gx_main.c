@@ -392,17 +392,92 @@ static vmError surf_blendSurf(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_resizeSurf = "void resize(gxSurf surf, const gxRect rect&, const gxSurf src, const gxRect roi&, int interpolate)";
-//static const char *proto_surf_??Surf = "void transform(gxSurf surf, const gxRect rect&, gxSurf src, const gxRect roi&, float32 mat[16], int interpolate)";
-static vmError surf_resizeSurf(nfcContext ctx) {
+static const char *proto_surf_transformSurf = "void transform(gxSurf surf, const gxRect rect&, gxSurf src, const gxRect roi&, int interpolate, float32 mat[16])";
+static vmError surf_transformSurf(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 	gx_Rect rect = nextValue(ctx).ref;
 	gx_Surf src = nextValue(ctx).ref;
 	gx_Rect roi = nextValue(ctx).ref;
 	int interpolate = nextValue(ctx).i32;
+	float32_t *mat = nextValue(ctx).ref;
 
-	if (gx_zoomSurf(surf, rect, src, roi, interpolate) != 0) {
+	if (surf->depth != src->depth) {
+		ctx->rt->api.raise(ctx, raiseError, "Invalid source depth: %d, in function: %T", src->depth, ctx->sym);
 		return nativeCallError;
+	}
+
+	struct gx_Rect srec;
+	srec.x = srec.y = 0;
+	srec.w = src->width;
+	srec.h = src->height;
+	if (roi != NULL) {
+		if (roi->x > 0) {
+			srec.w -= roi->x;
+			srec.x = roi->x;
+		}
+		if (roi->y > 0) {
+			srec.h -= roi->y;
+			srec.y = roi->y;
+		}
+		if (roi->w < srec.w)
+			srec.w = roi->w;
+		if (roi->h < srec.h)
+			srec.h = roi->h;
+	}
+
+	struct gx_Rect drec;
+	if (rect != NULL) {
+		drec = *rect;
+	} else {
+		drec.x = drec.y = 0;
+		drec.w = surf->width;
+		drec.h = surf->height;
+	}
+
+	if (drec.w <= 0 || drec.h <= 0) {
+		return noError;
+	}
+	if (srec.w <= 0 || srec.h <= 0) {
+		return noError;
+	}
+
+	if (drec.x < 0) {
+		srec.x = -drec.x;
+	}
+	if (drec.y < 0) {
+		srec.y = -drec.y;
+	}
+
+	char *dptr = gx_cliprect(surf, &drec);
+	if (dptr == NULL) {
+		return noError;
+	}
+
+	// convert floating point values to fixed point(16.16) values (scale + rotate + translate)
+	int32_t xx = mat ? (int32_t) (mat[0] * 65535) : (srec.w << 16) / drec.w;
+	int32_t xy = mat ? (int32_t) (mat[1] * 65535) : 0;
+	int32_t xt = mat ? (int32_t) (mat[3] * 65535) : srec.x;
+	int32_t yy = mat ? (int32_t) (mat[5] * 65535) : (srec.h << 16) / drec.h;
+	int32_t yx = mat ? (int32_t) (mat[4] * 65535) : 0;
+	int32_t yt = mat ? (int32_t) (mat[7] * 65535) : srec.y;
+
+	if (interpolate == 0) {
+		for (int y = 0, sy = srec.y; y < drec.h; ++y, sy += 1) {
+			for (int x = 0, sx = srec.x; x < drec.w; ++x, sx += 1) {
+				int tx = (xx * sx + xy * sy + xt) >> 16;
+				int ty = (yx * sx + yy * sy + yt) >> 16;
+				gx_setpixel(surf, drec.x + x, drec.y + y, gx_getpixel(src, tx, ty));
+			}
+		}
+		return noError;
+	}
+
+	for (int y = 0, sy = srec.y; y < drec.h; ++y, sy += 1) {
+		for (int x = 0, sx = srec.x; x < drec.w; ++x, sx += 1) {
+			int32_t tx = xx * sx + xy * sy + xt;
+			int32_t ty = yx * sx + yy * sy + yt;
+			gx_setpixel(surf, drec.x + x, drec.y + y, gx_getpix16(src, tx, ty));
+		}
 	}
 	return noError;
 }
@@ -1137,7 +1212,7 @@ int cmplInit(rtContext rt) {
 		{surf_copySurf, proto_surf_copySurf},
 		{surf_lerpSurf, proto_surf_lerpSurf},
 		{surf_blendSurf, proto_surf_blendSurf},
-		{surf_resizeSurf, proto_surf_resizeSurf},
+		{surf_transformSurf, proto_surf_transformSurf},
 		{surf_blurSurf, proto_surf_blurSurf},
 		{surf_cLutSurf, proto_surf_cLutSurf},
 		{surf_cMatSurf, proto_surf_cMatSurf},

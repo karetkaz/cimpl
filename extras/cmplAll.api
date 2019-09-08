@@ -371,6 +371,7 @@ vec4f.z
 vec4f.w
 vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
 vec4f(x: float32, y: float32, z: float32): vec4f
+vec4f(x: float32, y: float32): vec4f
 vec4f(xyz: vec4f, w: float32): vec4f
 vec4f(val: float32): vec4f
 neg(rhs: vec4f): vec4f
@@ -384,12 +385,12 @@ dp3(lhs: vec4f, rhs: vec4f): float32
 dph(lhs: vec4f, rhs: vec4f): float32
 dp4(lhs: vec4f, rhs: vec4f): float32
 cross(a: vec4f, b: vec4f): vec4f
-len(v: vec4f): float32
+length(v: vec4f): float32
 normalize(v: vec4f): vec4f
 eval(v: vec4f, x: float32): float32
 mat4f
-mat4f.m
 mat4f.data
+mat4f.m
 mat4f.v
 mat4f.<?>
 mat4f.<?>.x
@@ -400,12 +401,49 @@ mat4f.x
 mat4f.y
 mat4f.z
 mat4f.w
+mat4f.<?>
+mat4f.<?>.xx
+mat4f.<?>.xy
+mat4f.<?>.xz
+mat4f.<?>.xw
+mat4f.<?>.yx
+mat4f.<?>.yy
+mat4f.<?>.yz
+mat4f.<?>.yw
+mat4f.<?>.zx
+mat4f.<?>.zy
+mat4f.<?>.zz
+mat4f.<?>.zw
+mat4f.<?>.wx
+mat4f.<?>.wy
+mat4f.<?>.wz
+mat4f.<?>.ww
+mat4f.xx
+mat4f.xy
+mat4f.xz
+mat4f.xw
+mat4f.yx
+mat4f.yy
+mat4f.yz
+mat4f.yw
+mat4f.zx
+mat4f.zy
+mat4f.zz
+mat4f.zw
+mat4f.wx
+mat4f.wy
+mat4f.wz
+mat4f.ww
 mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float32, yz: float32, yw: float32, zx: float32, zy: float32, zz: float32, zw: float32, wx: float32, wy: float32, wz: float32, ww: float32): mat4f
 mat4f(x: vec4f, y: vec4f, z: vec4f, w: vec4f): mat4f
 dp3(mat: mat4f, vec: vec4f): vec4f
 dph(mat: mat4f, vec: vec4f): vec4f
 dp4(mat: mat4f, vec: vec4f): vec4f
 mul(lhs: mat4f, rhs: mat4f): mat4f
+rotation(center: vec4f, direction: vec4f, angle: float32): mat4f
+rotation(direction: vec4f, angle: float32): mat4f
+translation(direction: vec4f, amount: float32): mat4f
+scale(direction: vec4f, amount: float32): mat4f
 File
 File.open(path: char[*]): File
 File.create(path: char[*]): File
@@ -537,7 +575,7 @@ gxSurf.drawText(surf: gxSurf, x: int32, y: int32, font: gxSurf, text: char[*], c
 gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
 gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect, alpha: int32): void
 gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect, blend(base: vec4f, with: vec4f): vec4f): void
-gxSurf.resize(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate: int32): void
+gxSurf.transform(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate: int32, mat: float32[16]): void
 gxSurf.blur(surf: gxSurf, radius: int32, sigma: float64): void
 gxSurf.colorMap(surf: gxSurf, roi: gxRect, lut: uint32[256]): void
 gxSurf.colorMat(surf: gxSurf, roi: gxRect, mat: float32[16]): void
@@ -651,6 +689,7 @@ gxMesh(fileName: char[*]): gxMesh
 gxSurf(copy: gxSurf): gxSurf
 gxSurf(copy: gxSurf, aspect: float64): gxSurf
 set(dst: gxSurf, x: int32, y: int32, color: argb): void
+resize(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate: int32): void
 clip(src: gxSurf, roi: gxRect): bool
 fill(dst: gxSurf, col: uint32): void
 fill(dst: gxSurf, roi: gxRect, col: uint32): void

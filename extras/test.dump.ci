@@ -104,6 +104,34 @@ lib/stdlib.ci:98: debug: inline file: `lib/vec/vec4f.ci`
 lib/vec/vec4f.ci:1: warn: adding implicit cast pointer(null: typename)
 lib/stdlib.ci:99: debug: inline file: `lib/vec/mat4f.ci`
 lib/vec/mat4f.ci:1: warn: adding implicit cast pointer(null: typename)
+lib/vec/mat4f.ci:110: warn: adding implicit cast float64(len: float32)
+lib/vec/mat4f.ci:134: warn: adding implicit cast float32(1: int32)
+lib/vec/mat4f.ci:162: warn: adding implicit cast float32(1: int32)
+lib/vec/mat4f.ci:162: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:162: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:163: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:163: warn: adding implicit cast float32(1: int32)
+lib/vec/mat4f.ci:163: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:164: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:164: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:164: warn: adding implicit cast float32(1: int32)
+lib/vec/mat4f.ci:165: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:165: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:165: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:165: warn: adding implicit cast float32(1: int32)
+lib/vec/mat4f.ci:170: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:170: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:170: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:171: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:171: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:171: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:172: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:172: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:172: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:173: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:173: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:173: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:173: warn: adding implicit cast float32(1: int32)
 
 ---------- Compile: `test/test.ci`
 test/test.ci:9: debug: inline file: `test/lang/emit.ci`
@@ -231,10 +259,15 @@ lib/stdlib.ci:56: warn: no code will be generated for statement: 0
 lib/stdlib.ci:56: warn: no code will be generated for statement: 0
 lib/stdlib.ci:56: warn: no code will be generated for statement: 0
 lib/stdlib.ci:56: warn: no code will be generated for statement: 0
-lib/vec/mat4f.ci:49: warn: uninitialized variable `.result`
-lib/vec/mat4f.ci:49: warn: uninitialized variable `.result`
-lib/vec/mat4f.ci:49: warn: uninitialized variable `.result`
-lib/vec/mat4f.ci:49: warn: uninitialized variable `.result`
+lib/vec/mat4f.ci:86: warn: uninitialized variable `.result`
+lib/vec/mat4f.ci:86: warn: uninitialized variable `.result`
+lib/vec/mat4f.ci:86: warn: uninitialized variable `.result`
+lib/vec/mat4f.ci:86: warn: uninitialized variable `.result`
+lib/vec/mat4f.ci:113: warn: uninitialized variable `.result`
+lib/vec/mat4f.ci:114: warn: uninitialized variable `.result`
+lib/vec/mat4f.ci:115: warn: uninitialized variable `.result`
+lib/vec/mat4f.ci:116: warn: uninitialized variable `.result`
+lib/vec/mat4f.ci:152: warn: uninitialized variable `.result`
 test/stdc/tryExec.ci:15: warn: uninitialized variable `stackOverflow.data`
 test/lang/member.ci:35: warn: using default type initializer: RecordMemberTest.global := 0
 test/lang/member.ci:44: warn: uninitialized variable `RecordMemberTest.globalRec`
@@ -6268,7 +6301,7 @@ vec4f.<?>: vec4f.<?> {
 .base: `vec4f.<?>`
 .size: 16
 .name: '<?>'
-.file: 'lib/vec/vec4f.ci:105'
+.file: 'lib/vec/vec4f.ci:111'
 .owner: vec4f
 .field x: float32 (size: 4, cast: variable(f32))
 .field y: float32 (size: 4, cast: variable(f32))
@@ -6387,20 +6420,32 @@ vec4f(x: float32, y: float32, z: float32): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'vec4f'
-.file: 'lib/vec/vec4f.ci:32'
+.file: 'lib/vec/vec4f.ci:33'
 .param .result: vec4f (size: 16, cast: val)
 .param x: float32 (size: 4, cast: f32)
 .param y: float32 (size: 4, cast: f32)
 .param z: float32 (size: 4, cast: f32)
-.doc: 'Initialize with given x, y, z components, and w with 0'
-.value: vec4f(x, y, z, 0.000000)
+.doc: 'Initialize with  (x: x, y: y, z: z, w: 1)'
+.value: vec4f(x, y, z, 1.000000)
+}
+vec4f(x: float32, y: float32): vec4f: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'vec4f'
+.file: 'lib/vec/vec4f.ci:36'
+.param .result: vec4f (size: 16, cast: val)
+.param x: float32 (size: 4, cast: f32)
+.param y: float32 (size: 4, cast: f32)
+.doc: 'Initialize with (x: x, y: y, z: 0, w: 1)'
+.value: vec4f(x, y, 0.000000, 1.000000)
 }
 vec4f(xyz: vec4f, w: float32): vec4f: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'vec4f'
-.file: 'lib/vec/vec4f.ci:34'
+.file: 'lib/vec/vec4f.ci:39'
 .param .result: vec4f (size: 16, cast: val)
 .param xyz: vec4f (size: 16, cast: variable(val))
 .param w: float32 (size: 4, cast: f32)
@@ -6412,7 +6457,7 @@ vec4f(val: float32): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'vec4f'
-.file: 'lib/vec/vec4f.ci:36'
+.file: 'lib/vec/vec4f.ci:42'
 .param .result: vec4f (size: 16, cast: val)
 .param val: float32 (size: 4, cast: variable(f32))
 .doc: 'Initialize x, y, z, w components with the given scalar value'
@@ -6423,7 +6468,7 @@ neg(rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'neg'
-.file: 'lib/vec/vec4f.ci:67'
+.file: 'lib/vec/vec4f.ci:73'
 .param .result: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
 .doc: 'Returns a negated copy of the vector.'
@@ -6434,7 +6479,7 @@ add(lhs: vec4f, rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'add'
-.file: 'lib/vec/vec4f.ci:69'
+.file: 'lib/vec/vec4f.ci:75'
 .param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -6446,7 +6491,7 @@ sub(lhs: vec4f, rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'sub'
-.file: 'lib/vec/vec4f.ci:71'
+.file: 'lib/vec/vec4f.ci:77'
 .param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -6458,7 +6503,7 @@ mul(lhs: vec4f, rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'mul'
-.file: 'lib/vec/vec4f.ci:73'
+.file: 'lib/vec/vec4f.ci:79'
 .param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -6470,7 +6515,7 @@ div(lhs: vec4f, rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'div'
-.file: 'lib/vec/vec4f.ci:75'
+.file: 'lib/vec/vec4f.ci:81'
 .param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -6482,79 +6527,79 @@ min(lhs: vec4f, rhs: vec4f): float32: function {
 .base: `function`
 .size: 0
 .name: 'min'
-.file: 'lib/vec/vec4f.ci:78'
+.file: 'lib/vec/vec4f.ci:84'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
 .doc: 'Component wise minimum of the two vectors.'
-.value: float32(emit(struct(rhs), struct(lhs), min.p4f))
+.value: float32(emit(struct(lhs), struct(rhs), min.p4f))
 }
 max(lhs: vec4f, rhs: vec4f): float32: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'max'
-.file: 'lib/vec/vec4f.ci:80'
+.file: 'lib/vec/vec4f.ci:86'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
 .doc: 'Component wise maximum of the two vectors.'
-.value: float32(emit(struct(rhs), struct(lhs), max.p4f))
+.value: float32(emit(struct(lhs), struct(rhs), max.p4f))
 }
 dp3(lhs: vec4f, rhs: vec4f): float32: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'dp3'
-.file: 'lib/vec/vec4f.ci:84'
+.file: 'lib/vec/vec4f.ci:90'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
 .doc: 'Dot product of the first 3 elements'
-.value: float32(emit(struct(rhs), struct(lhs), p4x.dp3))
+.value: float32(emit(struct(lhs), struct(rhs), p4x.dp3))
 }
 dph(lhs: vec4f, rhs: vec4f): float32: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'dph'
-.file: 'lib/vec/vec4f.ci:88'
+.file: 'lib/vec/vec4f.ci:94'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
 .doc: 'Homogeneous dot product'
-.value: float32(emit(struct(rhs), struct(lhs), p4x.dph))
+.value: float32(emit(struct(lhs), struct(rhs), p4x.dph))
 }
 dp4(lhs: vec4f, rhs: vec4f): float32: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'dp4'
-.file: 'lib/vec/vec4f.ci:92'
+.file: 'lib/vec/vec4f.ci:98'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
 .doc: 'Dot product'
-.value: float32(emit(struct(rhs), struct(lhs), p4x.dp4))
+.value: float32(emit(struct(lhs), struct(rhs), p4x.dp4))
 }
 cross(a: vec4f, b: vec4f): vec4f: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'cross'
-.file: 'lib/vec/vec4f.ci:95'
+.file: 'lib/vec/vec4f.ci:101'
 .param .result: vec4f (size: 16, cast: val)
 .param a: vec4f (size: 4, cast: const variable(ref))
 .param b: vec4f (size: 4, cast: const variable(ref))
 .doc: 'Cross product of the first 3 elements'
 .value: vec4f(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x)
 }
-len(v: vec4f): float32: function {
+length(v: vec4f): float32: function {
 .kind: inline
 .base: `function`
 .size: 0
-.name: 'len'
-.file: 'lib/vec/vec4f.ci:98'
+.name: 'length'
+.file: 'lib/vec/vec4f.ci:104'
 .param .result: float32 (size: 4, cast: f32)
 .param v: vec4f (size: 16, cast: variable(val))
 .doc: 'Length of the vector(xyz)'
@@ -6565,18 +6610,18 @@ normalize(v: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'normalize'
-.file: 'lib/vec/vec4f.ci:100'
+.file: 'lib/vec/vec4f.ci:106'
 .param .result: vec4f (size: 16, cast: val)
 .param v: vec4f (size: 4, cast: const variable(ref))
 .doc: 'Normalize the vector(xyz)'
-.value: div(v, vec4f(len(v)))
+.value: div(v, vec4f(length(v)))
 }
 eval(v: vec4f, x: float32): float32: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'eval'
-.file: 'lib/vec/vec4f.ci:103'
+.file: 'lib/vec/vec4f.ci:109'
 .param .result: float32 (size: 4, cast: f32)
 .param v: vec4f (size: 4, cast: const variable(ref))
 .param x: float32 (size: 4, cast: variable(f32))
@@ -6589,33 +6634,50 @@ mat4f: typename {
 .size: 64
 .name: 'mat4f'
 .file: 'lib/vec/mat4f.ci:4'
-.field m: float32[4][4] (size: 64, cast: variable(val))
 .field data: float32[16] (size: 64, cast: variable(val))
+.field m: float32[4][4] (size: 64, cast: variable(val))
 .field v: vec4f[4] (size: 64, cast: variable(val))
 .field <?>: mat4f.<?> (size: 64, cast: variable(val))
 .field x: vec4f (size: 0, cast: inline)
 .field y: vec4f (size: 0, cast: inline)
 .field z: vec4f (size: 0, cast: inline)
 .field w: vec4f (size: 0, cast: inline)
+.field <?>: mat4f.<?> (size: 64, cast: variable(val))
+.field xx: float32 (size: 0, cast: inline)
+.field xy: float32 (size: 0, cast: inline)
+.field xz: float32 (size: 0, cast: inline)
+.field xw: float32 (size: 0, cast: inline)
+.field yx: float32 (size: 0, cast: inline)
+.field yy: float32 (size: 0, cast: inline)
+.field yz: float32 (size: 0, cast: inline)
+.field yw: float32 (size: 0, cast: inline)
+.field zx: float32 (size: 0, cast: inline)
+.field zy: float32 (size: 0, cast: inline)
+.field zz: float32 (size: 0, cast: inline)
+.field zw: float32 (size: 0, cast: inline)
+.field wx: float32 (size: 0, cast: inline)
+.field wy: float32 (size: 0, cast: inline)
+.field wz: float32 (size: 0, cast: inline)
+.field ww: float32 (size: 0, cast: inline)
 .doc: 'A 4x4 matrix'
-}
-mat4f.m: float32[4][4] {
-.kind: variable(val)
-.base: `float32[4][4]`
-.size: 64
-.name: 'm'
-.file: 'lib/vec/mat4f.ci:6'
-.owner: mat4f
-.doc: 'Access elements as an array: m[1][0]'
 }
 mat4f.data: float32[16] {
 .kind: variable(val)
 .base: `float32[16]`
 .size: 64
 .name: 'data'
-.file: 'lib/vec/mat4f.ci:9'
+.file: 'lib/vec/mat4f.ci:6'
 .owner: mat4f
 .doc: 'Access elements as a flatten array: data[4] => m[1][0]'
+}
+mat4f.m: float32[4][4] {
+.kind: variable(val)
+.base: `float32[4][4]`
+.size: 64
+.name: 'm'
+.file: 'lib/vec/mat4f.ci:9'
+.owner: mat4f
+.doc: 'Access elements as an array: m[1][0]'
 }
 mat4f.v: vec4f[4] {
 .kind: variable(val)
@@ -6631,7 +6693,7 @@ mat4f.<?>: mat4f.<?> {
 .base: `mat4f.<?>`
 .size: 64
 .name: '<?>'
-.file: 'lib/vec/mat4f.ci:68'
+.file: 'lib/vec/mat4f.ci:177'
 .owner: mat4f
 .field x: vec4f (size: 16, cast: variable(val))
 .field y: vec4f (size: 16, cast: variable(val))
@@ -6714,12 +6776,340 @@ mat4f.w: vec4f {
 .doc: '@public'
 .value: w: vec4f
 }
+mat4f.<?>: mat4f.<?> {
+.kind: variable(val)
+.base: `mat4f.<?>`
+.size: 64
+.name: '<?>'
+.file: 'lib/vec/mat4f.ci:177'
+.owner: mat4f
+.field xx: float32 (size: 4, cast: variable(f32))
+.field xy: float32 (size: 4, cast: variable(f32))
+.field xz: float32 (size: 4, cast: variable(f32))
+.field xw: float32 (size: 4, cast: variable(f32))
+.field yx: float32 (size: 4, cast: variable(f32))
+.field yy: float32 (size: 4, cast: variable(f32))
+.field yz: float32 (size: 4, cast: variable(f32))
+.field yw: float32 (size: 4, cast: variable(f32))
+.field zx: float32 (size: 4, cast: variable(f32))
+.field zy: float32 (size: 4, cast: variable(f32))
+.field zz: float32 (size: 4, cast: variable(f32))
+.field zw: float32 (size: 4, cast: variable(f32))
+.field wx: float32 (size: 4, cast: variable(f32))
+.field wy: float32 (size: 4, cast: variable(f32))
+.field wz: float32 (size: 4, cast: variable(f32))
+.field ww: float32 (size: 4, cast: variable(f32))
+}
+mat4f.<?>.xx: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'xx'
+.file: 'lib/vec/mat4f.ci:26'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.<?>.xy: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'xy'
+.file: 'lib/vec/mat4f.ci:28'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.<?>.xz: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'xz'
+.file: 'lib/vec/mat4f.ci:30'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.<?>.xw: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'xw'
+.file: 'lib/vec/mat4f.ci:32'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.<?>.yx: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'yx'
+.file: 'lib/vec/mat4f.ci:35'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.<?>.yy: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'yy'
+.file: 'lib/vec/mat4f.ci:37'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.<?>.yz: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'yz'
+.file: 'lib/vec/mat4f.ci:39'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.<?>.yw: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'yw'
+.file: 'lib/vec/mat4f.ci:41'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.<?>.zx: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'zx'
+.file: 'lib/vec/mat4f.ci:44'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.<?>.zy: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'zy'
+.file: 'lib/vec/mat4f.ci:46'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.<?>.zz: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'zz'
+.file: 'lib/vec/mat4f.ci:48'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.<?>.zw: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'zw'
+.file: 'lib/vec/mat4f.ci:50'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.<?>.wx: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'wx'
+.file: 'lib/vec/mat4f.ci:53'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.<?>.wy: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'wy'
+.file: 'lib/vec/mat4f.ci:55'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.<?>.wz: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'wz'
+.file: 'lib/vec/mat4f.ci:57'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.<?>.ww: float32 {
+.kind: variable(f32)
+.base: `float32`
+.size: 4
+.name: 'ww'
+.file: 'lib/vec/mat4f.ci:59'
+.owner: mat4f.<?>
+.doc: '@public'
+}
+mat4f.xx: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'xx'
+.file: 'lib/vec/mat4f.ci:26'
+.owner: mat4f
+.doc: '@public'
+.value: xx: float32
+}
+mat4f.xy: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'xy'
+.file: 'lib/vec/mat4f.ci:28'
+.owner: mat4f
+.doc: '@public'
+.value: xy: float32
+}
+mat4f.xz: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'xz'
+.file: 'lib/vec/mat4f.ci:30'
+.owner: mat4f
+.doc: '@public'
+.value: xz: float32
+}
+mat4f.xw: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'xw'
+.file: 'lib/vec/mat4f.ci:32'
+.owner: mat4f
+.doc: '@public'
+.value: xw: float32
+}
+mat4f.yx: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'yx'
+.file: 'lib/vec/mat4f.ci:35'
+.owner: mat4f
+.doc: '@public'
+.value: yx: float32
+}
+mat4f.yy: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'yy'
+.file: 'lib/vec/mat4f.ci:37'
+.owner: mat4f
+.doc: '@public'
+.value: yy: float32
+}
+mat4f.yz: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'yz'
+.file: 'lib/vec/mat4f.ci:39'
+.owner: mat4f
+.doc: '@public'
+.value: yz: float32
+}
+mat4f.yw: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'yw'
+.file: 'lib/vec/mat4f.ci:41'
+.owner: mat4f
+.doc: '@public'
+.value: yw: float32
+}
+mat4f.zx: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'zx'
+.file: 'lib/vec/mat4f.ci:44'
+.owner: mat4f
+.doc: '@public'
+.value: zx: float32
+}
+mat4f.zy: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'zy'
+.file: 'lib/vec/mat4f.ci:46'
+.owner: mat4f
+.doc: '@public'
+.value: zy: float32
+}
+mat4f.zz: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'zz'
+.file: 'lib/vec/mat4f.ci:48'
+.owner: mat4f
+.doc: '@public'
+.value: zz: float32
+}
+mat4f.zw: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'zw'
+.file: 'lib/vec/mat4f.ci:50'
+.owner: mat4f
+.doc: '@public'
+.value: zw: float32
+}
+mat4f.wx: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'wx'
+.file: 'lib/vec/mat4f.ci:53'
+.owner: mat4f
+.doc: '@public'
+.value: wx: float32
+}
+mat4f.wy: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'wy'
+.file: 'lib/vec/mat4f.ci:55'
+.owner: mat4f
+.doc: '@public'
+.value: wy: float32
+}
+mat4f.wz: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'wz'
+.file: 'lib/vec/mat4f.ci:57'
+.owner: mat4f
+.doc: '@public'
+.value: wz: float32
+}
+mat4f.ww: float32 {
+.kind: inline
+.base: `float32`
+.size: 0
+.name: 'ww'
+.file: 'lib/vec/mat4f.ci:59'
+.owner: mat4f
+.doc: '@public'
+.value: ww: float32
+}
 mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float32, yz: float32, yw: float32, zx: float32, zy: float32, zz: float32, zw: float32, wx: float32, wy: float32, wz: float32, ww: float32): mat4f: function {
 .kind: static const function
 .base: `function`
 .size: 49
 .name: 'mat4f'
-.file: 'lib/vec/mat4f.ci:27'
+.file: 'lib/vec/mat4f.ci:64'
 .param .result: mat4f (size: 64, cast: variable(val))
 .param xx: float32 (size: 4, cast: variable(f32))
 .param xy: float32 (size: 4, cast: variable(f32))
@@ -6759,37 +7149,37 @@ mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float
 		};
 }
 .instructions: (49 bytes)
-	lib/vec/mat4f.ci:31: (49 bytes): return .result := {...};
+	lib/vec/mat4f.ci:68: (49 bytes): return .result := {...};
 	<mat4f>  : mov.x32 sp(17, 16)
-	lib/vec/mat4f.ci:32: (3 bytes): .result.x.y := xy;
+	lib/vec/mat4f.ci:69: (3 bytes): .result.x.y := xy;
 	<mat4f+?>: mov.x32 sp(18, 15)
-	lib/vec/mat4f.ci:32: (3 bytes): .result.x.z := xz;
+	lib/vec/mat4f.ci:69: (3 bytes): .result.x.z := xz;
 	<mat4f+?>: mov.x32 sp(19, 14)
-	lib/vec/mat4f.ci:32: (3 bytes): .result.x.w := xw;
+	lib/vec/mat4f.ci:69: (3 bytes): .result.x.w := xw;
 	<mat4f+?>: mov.x32 sp(20, 13)
-	lib/vec/mat4f.ci:33: (3 bytes): .result.y.x := yx;
+	lib/vec/mat4f.ci:70: (3 bytes): .result.y.x := yx;
 	<mat4f+?>: mov.x32 sp(21, 12)
-	lib/vec/mat4f.ci:33: (3 bytes): .result.y.y := yy;
+	lib/vec/mat4f.ci:70: (3 bytes): .result.y.y := yy;
 	<mat4f+?>: mov.x32 sp(22, 11)
-	lib/vec/mat4f.ci:33: (3 bytes): .result.y.z := yz;
+	lib/vec/mat4f.ci:70: (3 bytes): .result.y.z := yz;
 	<mat4f+?>: mov.x32 sp(23, 10)
-	lib/vec/mat4f.ci:33: (3 bytes): .result.y.w := yw;
+	lib/vec/mat4f.ci:70: (3 bytes): .result.y.w := yw;
 	<mat4f+?>: mov.x32 sp(24, 9)
-	lib/vec/mat4f.ci:34: (3 bytes): .result.z.x := zx;
+	lib/vec/mat4f.ci:71: (3 bytes): .result.z.x := zx;
 	<mat4f+?>: mov.x32 sp(25, 8)
-	lib/vec/mat4f.ci:34: (3 bytes): .result.z.y := zy;
+	lib/vec/mat4f.ci:71: (3 bytes): .result.z.y := zy;
 	<mat4f+?>: mov.x32 sp(26, 7)
-	lib/vec/mat4f.ci:34: (3 bytes): .result.z.z := zz;
+	lib/vec/mat4f.ci:71: (3 bytes): .result.z.z := zz;
 	<mat4f+?>: mov.x32 sp(27, 6)
-	lib/vec/mat4f.ci:34: (3 bytes): .result.z.w := zw;
+	lib/vec/mat4f.ci:71: (3 bytes): .result.z.w := zw;
 	<mat4f+?>: mov.x32 sp(28, 5)
-	lib/vec/mat4f.ci:35: (3 bytes): .result.w.x := wx;
+	lib/vec/mat4f.ci:72: (3 bytes): .result.w.x := wx;
 	<mat4f+?>: mov.x32 sp(29, 4)
-	lib/vec/mat4f.ci:35: (3 bytes): .result.w.y := wy;
+	lib/vec/mat4f.ci:72: (3 bytes): .result.w.y := wy;
 	<mat4f+?>: mov.x32 sp(30, 3)
-	lib/vec/mat4f.ci:35: (3 bytes): .result.w.z := wz;
+	lib/vec/mat4f.ci:72: (3 bytes): .result.w.z := wz;
 	<mat4f+?>: mov.x32 sp(31, 2)
-	lib/vec/mat4f.ci:35: (3 bytes): .result.w.w := ww;
+	lib/vec/mat4f.ci:72: (3 bytes): .result.w.w := ww;
 	<mat4f+?>: mov.x32 sp(32, 1)
 	<mat4f+?>: ret
 }
@@ -6798,7 +7188,7 @@ mat4f(x: vec4f, y: vec4f, z: vec4f, w: vec4f): mat4f: function {
 .base: `function`
 .size: 21
 .name: 'mat4f'
-.file: 'lib/vec/mat4f.ci:40'
+.file: 'lib/vec/mat4f.ci:77'
 .param .result: mat4f (size: 64, cast: variable(val))
 .param x: vec4f (size: 4, cast: const variable(ref))
 .param y: vec4f (size: 4, cast: const variable(ref))
@@ -6814,19 +7204,19 @@ mat4f(x: vec4f, y: vec4f, z: vec4f, w: vec4f): mat4f: function {
 		};
 }
 .instructions: (21 bytes)
-	lib/vec/mat4f.ci:41: (21 bytes): return .result := {...};
+	lib/vec/mat4f.ci:78: (21 bytes): return .result := {...};
 	<mat4f>  : dup.x32 sp(4)
 	<mat4f+?>: load.i128
 	<mat4f+?>: set.x128 sp(9)
-	lib/vec/mat4f.ci:41: (5 bytes): .result.y := y;
+	lib/vec/mat4f.ci:78: (5 bytes): .result.y := y;
 	<mat4f+?>: dup.x32 sp(3)
 	<mat4f+?>: load.i128
 	<mat4f+?>: set.x128 sp(13)
-	lib/vec/mat4f.ci:41: (5 bytes): .result.z := z;
+	lib/vec/mat4f.ci:78: (5 bytes): .result.z := z;
 	<mat4f+?>: dup.x32 sp(2)
 	<mat4f+?>: load.i128
 	<mat4f+?>: set.x128 sp(17)
-	lib/vec/mat4f.ci:41: (5 bytes): .result.w := w;
+	lib/vec/mat4f.ci:78: (5 bytes): .result.w := w;
 	<mat4f+?>: dup.x32 sp(1)
 	<mat4f+?>: load.i128
 	<mat4f+?>: set.x128 sp(21)
@@ -6837,7 +7227,7 @@ dp3(mat: mat4f, vec: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'dp3'
-.file: 'lib/vec/mat4f.ci:45'
+.file: 'lib/vec/mat4f.ci:82'
 .param .result: vec4f (size: 16, cast: val)
 .param mat: mat4f (size: 4, cast: const variable(ref))
 .param vec: vec4f (size: 4, cast: const variable(ref))
@@ -6849,7 +7239,7 @@ dph(mat: mat4f, vec: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'dph'
-.file: 'lib/vec/mat4f.ci:47'
+.file: 'lib/vec/mat4f.ci:84'
 .param .result: vec4f (size: 16, cast: val)
 .param mat: mat4f (size: 4, cast: const variable(ref))
 .param vec: vec4f (size: 4, cast: const variable(ref))
@@ -6861,7 +7251,7 @@ dp4(mat: mat4f, vec: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'dp4'
-.file: 'lib/vec/mat4f.ci:49'
+.file: 'lib/vec/mat4f.ci:86'
 .param .result: vec4f (size: 16, cast: val)
 .param mat: mat4f (size: 4, cast: const variable(ref))
 .param vec: vec4f (size: 4, cast: const variable(ref))
@@ -6873,7 +7263,7 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 .base: `function`
 .size: 417
 .name: 'mul'
-.file: 'lib/vec/mat4f.ci:52'
+.file: 'lib/vec/mat4f.ci:89'
 .param .result: mat4f (size: 64, cast: variable(val))
 .param lhs: mat4f (size: 4, cast: const variable(ref))
 .param rhs: mat4f (size: 4, cast: const variable(ref))
@@ -6905,112 +7295,112 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 		};
 }
 .instructions: (417 bytes)
-	lib/vec/mat4f.ci:53: (144 bytes): transposed: mat4f := {...}
+	lib/vec/mat4f.ci:90: (144 bytes): transposed: mat4f := {...}
 	<mul>  : inc.sp(+64)
-	lib/vec/mat4f.ci:54: (5 bytes): transposed.x.x := rhs.x.x;
+	lib/vec/mat4f.ci:91: (5 bytes): transposed.x.x := rhs.x.x;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(1)
-	lib/vec/mat4f.ci:54: (9 bytes): transposed.x.y := rhs.y.x;
+	lib/vec/mat4f.ci:91: (9 bytes): transposed.x.y := rhs.y.x;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: inc.i32(+16)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(2)
-	lib/vec/mat4f.ci:54: (9 bytes): transposed.x.z := rhs.z.x;
+	lib/vec/mat4f.ci:91: (9 bytes): transposed.x.z := rhs.z.x;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: inc.i32(+32)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(3)
-	lib/vec/mat4f.ci:54: (9 bytes): transposed.x.w := rhs.w.x;
+	lib/vec/mat4f.ci:91: (9 bytes): transposed.x.w := rhs.w.x;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: inc.i32(+48)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(4)
-	lib/vec/mat4f.ci:55: (9 bytes): transposed.y.x := rhs.x.y;
+	lib/vec/mat4f.ci:92: (9 bytes): transposed.y.x := rhs.x.y;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: inc.i32(+4)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(5)
-	lib/vec/mat4f.ci:55: (9 bytes): transposed.y.y := rhs.y.y;
+	lib/vec/mat4f.ci:92: (9 bytes): transposed.y.y := rhs.y.y;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: inc.i32(+20)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(6)
-	lib/vec/mat4f.ci:55: (9 bytes): transposed.y.z := rhs.z.y;
+	lib/vec/mat4f.ci:92: (9 bytes): transposed.y.z := rhs.z.y;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: inc.i32(+36)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(7)
-	lib/vec/mat4f.ci:55: (9 bytes): transposed.y.w := rhs.w.y;
+	lib/vec/mat4f.ci:92: (9 bytes): transposed.y.w := rhs.w.y;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: inc.i32(+52)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(8)
-	lib/vec/mat4f.ci:56: (9 bytes): transposed.z.x := rhs.x.z;
+	lib/vec/mat4f.ci:93: (9 bytes): transposed.z.x := rhs.x.z;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: inc.i32(+8)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(9)
-	lib/vec/mat4f.ci:56: (9 bytes): transposed.z.y := rhs.y.z;
+	lib/vec/mat4f.ci:93: (9 bytes): transposed.z.y := rhs.y.z;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: inc.i32(+24)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(10)
-	lib/vec/mat4f.ci:56: (9 bytes): transposed.z.z := rhs.z.z;
+	lib/vec/mat4f.ci:93: (9 bytes): transposed.z.z := rhs.z.z;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: inc.i32(+40)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(11)
-	lib/vec/mat4f.ci:56: (9 bytes): transposed.z.w := rhs.w.z;
+	lib/vec/mat4f.ci:93: (9 bytes): transposed.z.w := rhs.w.z;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: inc.i32(+56)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(12)
-	lib/vec/mat4f.ci:57: (9 bytes): transposed.w.x := rhs.x.w;
+	lib/vec/mat4f.ci:94: (9 bytes): transposed.w.x := rhs.x.w;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: inc.i32(+12)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(13)
-	lib/vec/mat4f.ci:57: (9 bytes): transposed.w.y := rhs.y.w;
+	lib/vec/mat4f.ci:94: (9 bytes): transposed.w.y := rhs.y.w;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: inc.i32(+28)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(14)
-	lib/vec/mat4f.ci:57: (9 bytes): transposed.w.z := rhs.z.w;
+	lib/vec/mat4f.ci:94: (9 bytes): transposed.w.z := rhs.z.w;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: inc.i32(+44)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(15)
-	lib/vec/mat4f.ci:57: (9 bytes): transposed.w.w := rhs.w.w;
+	lib/vec/mat4f.ci:94: (9 bytes): transposed.w.w := rhs.w.w;
 	<mul+?>: dup.x32 sp(17)
 	<mul+?>: inc.i32(+60)
 	<mul+?>: load.i32
 	<mul+?>: set.x32 sp(16)
-	lib/vec/mat4f.ci:59: (273 bytes): return .result := {...};
+	lib/vec/mat4f.ci:96: (273 bytes): return .result := {...};
 	<mul+?>: load.sp(+0)
 	<mul+?>: dup.x32 sp(19)
 	<mul+?>: inc.sp(+16)
-	<mul+?>: dup.x32 sp(4)
+	<mul+?>: dup.x32 sp(5)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(8)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(6)
+	<mul+?>: inc.i32(+16)
 	<mul+?>: load.i128
 	<mul+?>: dup.x32 sp(9)
 	<mul+?>: load.i128
 	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(5)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(10)
-	<mul+?>: inc.i32(+16)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(6)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(11)
+	<mul+?>: dup.x32 sp(7)
 	<mul+?>: inc.i32(+32)
 	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(7)
+	<mul+?>: dup.x32 sp(10)
 	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(12)
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(8)
 	<mul+?>: inc.i32(+48)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(11)
 	<mul+?>: load.i128
 	<mul+?>: dp4.v4f
 	<mul+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
@@ -7018,32 +7408,32 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 	<mul+?>: inc.sp(-16)
 	<mul+?>: set.x128 sp(2)
 	<mul+?>: set.x128 sp(23)
-	lib/vec/mat4f.ci:61: (68 bytes): .result.y := dp4(transposed, lhs.y);
+	lib/vec/mat4f.ci:98: (68 bytes): .result.y := dp4(transposed, lhs.y);
 	<mul+?>: load.sp(+0)
 	<mul+?>: dup.x32 sp(19)
 	<mul+?>: inc.i32(+16)
 	<mul+?>: inc.sp(+16)
-	<mul+?>: dup.x32 sp(4)
+	<mul+?>: dup.x32 sp(5)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(8)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(6)
+	<mul+?>: inc.i32(+16)
 	<mul+?>: load.i128
 	<mul+?>: dup.x32 sp(9)
 	<mul+?>: load.i128
 	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(5)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(10)
-	<mul+?>: inc.i32(+16)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(6)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(11)
+	<mul+?>: dup.x32 sp(7)
 	<mul+?>: inc.i32(+32)
 	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(7)
+	<mul+?>: dup.x32 sp(10)
 	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(12)
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(8)
 	<mul+?>: inc.i32(+48)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(11)
 	<mul+?>: load.i128
 	<mul+?>: dp4.v4f
 	<mul+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
@@ -7051,32 +7441,32 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 	<mul+?>: inc.sp(-16)
 	<mul+?>: set.x128 sp(2)
 	<mul+?>: set.x128 sp(27)
-	lib/vec/mat4f.ci:62: (68 bytes): .result.z := dp4(transposed, lhs.z);
+	lib/vec/mat4f.ci:99: (68 bytes): .result.z := dp4(transposed, lhs.z);
 	<mul+?>: load.sp(+0)
 	<mul+?>: dup.x32 sp(19)
 	<mul+?>: inc.i32(+32)
 	<mul+?>: inc.sp(+16)
-	<mul+?>: dup.x32 sp(4)
+	<mul+?>: dup.x32 sp(5)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(8)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(6)
+	<mul+?>: inc.i32(+16)
 	<mul+?>: load.i128
 	<mul+?>: dup.x32 sp(9)
 	<mul+?>: load.i128
 	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(5)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(10)
-	<mul+?>: inc.i32(+16)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(6)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(11)
+	<mul+?>: dup.x32 sp(7)
 	<mul+?>: inc.i32(+32)
 	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(7)
+	<mul+?>: dup.x32 sp(10)
 	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(12)
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(8)
 	<mul+?>: inc.i32(+48)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(11)
 	<mul+?>: load.i128
 	<mul+?>: dp4.v4f
 	<mul+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
@@ -7084,32 +7474,32 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 	<mul+?>: inc.sp(-16)
 	<mul+?>: set.x128 sp(2)
 	<mul+?>: set.x128 sp(31)
-	lib/vec/mat4f.ci:63: (68 bytes): .result.w := dp4(transposed, lhs.w);
+	lib/vec/mat4f.ci:100: (68 bytes): .result.w := dp4(transposed, lhs.w);
 	<mul+?>: load.sp(+0)
 	<mul+?>: dup.x32 sp(19)
 	<mul+?>: inc.i32(+48)
 	<mul+?>: inc.sp(+16)
-	<mul+?>: dup.x32 sp(4)
+	<mul+?>: dup.x32 sp(5)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(8)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(6)
+	<mul+?>: inc.i32(+16)
 	<mul+?>: load.i128
 	<mul+?>: dup.x32 sp(9)
 	<mul+?>: load.i128
 	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(5)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(10)
-	<mul+?>: inc.i32(+16)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(6)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(11)
+	<mul+?>: dup.x32 sp(7)
 	<mul+?>: inc.i32(+32)
 	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(7)
+	<mul+?>: dup.x32 sp(10)
 	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(12)
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(8)
 	<mul+?>: inc.i32(+48)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(11)
 	<mul+?>: load.i128
 	<mul+?>: dp4.v4f
 	<mul+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
@@ -7119,6 +7509,565 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 	<mul+?>: set.x128 sp(35)
 	<mul+?>: inc.sp(-64)
 	<mul+?>: ret
+}
+rotation(center: vec4f, direction: vec4f, angle: float32): mat4f: function {
+.kind: static const function
+.base: `function`
+.size: 524
+.name: 'rotation'
+.file: 'lib/vec/mat4f.ci:108'
+.param .result: mat4f (size: 64, cast: variable(val))
+.param center: vec4f (size: 4, cast: const variable(ref))
+.param direction: vec4f (size: 4, cast: const variable(ref))
+.param angle: float32 (size: 4, cast: variable(f32))
+.doc: 'Build a rotation matrix
+adapted from: https://sites.google.com/site/glennmurray/Home/rotation-matrices-and-formulas'
+.value: {
+	len: float32 := length(direction);
+	if ((len) < 0.000000) {
+		trace("invalid direction of rotation", direction);
+		return .result := {
+			.result.x := vec4f(0, 0, 0, 0);
+			.result.y := vec4f(0, 0, 0, 0);
+			.result.z := vec4f(0, 0, 0, 0);
+			.result.w := vec4f(0, 0, 0, 0);
+		};
+	}
+	x: float32 := direction.x / len;
+	y: float32 := direction.y / len;
+	z: float32 := direction.z / len;
+	cx: float32 := center.x;
+	cy: float32 := center.y;
+	cz: float32 := center.z;
+	xx: float32 := x * x;
+	xy: float32 := x * y;
+	xz: float32 := x * z;
+	yy: float32 := y * y;
+	yz: float32 := y * z;
+	zz: float32 := z * z;
+	s: float32 := float32.sin(angle);
+	c: float32 := float32.cos(angle);
+	k: float32 := (1) - c;
+	return .result := {
+			.result.xx := xx + (yy + zz) * c;
+			.result.xy := xy * k - z * s;
+			.result.xz := xz * k + y * s;
+			.result.xw := (cx * (yy + zz) - x * (cy * y + cz * z)) * k + (cy * z - cz * y) * s;
+			.result.yx := xy * k + z * s;
+			.result.yy := yy + (xx + zz) * c;
+			.result.yz := yz * k - x * s;
+			.result.yw := (cy * (xx + zz) - y * (cx * x + cz * z)) * k + (cz * x - cx * z) * s;
+			.result.zx := xz * k - y * s;
+			.result.zy := yz * k + x * s;
+			.result.zz := zz + (xx + yy) * c;
+			.result.zw := (cz * (xx + yy) - z * (cx * x + cy * y)) * k + (cx * y - cy * x) * s;
+			.result.w := vec4f(0, 0, 0, 1);
+		};
+}
+.instructions: (524 bytes)
+	lib/vec/mat4f.ci:109: (18 bytes): len: float32 := length(direction)
+	<rotation>  : dup.x32 sp(2)
+	<rotation+?>: load.i128
+	<rotation+?>: dup.x128 sp(0)
+	<rotation+?>: dup.x128 sp(4)
+	<rotation+?>: dp3.v4f
+	<rotation+?>: nfc(36) ;float32.sqrt(x: float32): float32
+	<rotation+?>: set.x32 sp(4)
+	<rotation+?>: inc.sp(-12)
+	lib/vec/mat4f.ci:110: (138 bytes): if ((len) < 0.000000)
+	<rotation+?>: dup.x32 sp(0)
+	<rotation+?>: f32.2f64
+	<rotation+?>: load.f64 0.000000
+	<rotation+?>: clt.f64
+	<rotation+?>: jz +125
+	lib/vec/mat4f.ci:111: (36 bytes): trace("invalid direction of rotation", direction);
+	<rotation+?>: load.ref <?> ;"lib/vec/mat4f.ci"
+	<rotation+?>: load.c32 111
+	<rotation+?>: load.c32 14
+	<rotation+?>: load.c32 128
+	<rotation+?>: load.ref <?> ;"invalid direction of rotation"
+	<rotation+?>: load.ref <?> ;vec4f
+	<rotation+?>: dup.x32 sp(9)
+	<rotation+?>: nfc(7) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	lib/vec/mat4f.ci:112: (85 bytes): return .result := {...};
+	<rotation+?>: inc.sp(+16)
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
+	<rotation+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
+	<rotation+?>: call
+	<rotation+?>: inc.sp(-16)
+	<rotation+?>: set.x128 sp(9)
+	lib/vec/mat4f.ci:114: (20 bytes): .result.y := vec4f(0, 0, 0, 0);
+	<rotation+?>: inc.sp(+16)
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
+	<rotation+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
+	<rotation+?>: call
+	<rotation+?>: inc.sp(-16)
+	<rotation+?>: set.x128 sp(13)
+	lib/vec/mat4f.ci:115: (20 bytes): .result.z := vec4f(0, 0, 0, 0);
+	<rotation+?>: inc.sp(+16)
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
+	<rotation+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
+	<rotation+?>: call
+	<rotation+?>: inc.sp(-16)
+	<rotation+?>: set.x128 sp(17)
+	lib/vec/mat4f.ci:116: (20 bytes): .result.w := vec4f(0, 0, 0, 0);
+	<rotation+?>: inc.sp(+16)
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
+	<rotation+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
+	<rotation+?>: call
+	<rotation+?>: inc.sp(-16)
+	<rotation+?>: set.x128 sp(21)
+	<rotation+?>: inc.sp(-4)
+	<rotation+?>: ret
+	lib/vec/mat4f.ci:119: (6 bytes): x: float32 := direction.x / len
+	<rotation+?>: dup.x32 sp(3)
+	<rotation+?>: load.i32
+	<rotation+?>: dup.x32 sp(1)
+	<rotation+?>: div.f32
+	lib/vec/mat4f.ci:120: (10 bytes): y: float32 := direction.y / len
+	<rotation+?>: dup.x32 sp(4)
+	<rotation+?>: inc.i32(+4)
+	<rotation+?>: load.i32
+	<rotation+?>: dup.x32 sp(2)
+	<rotation+?>: div.f32
+	lib/vec/mat4f.ci:121: (10 bytes): z: float32 := direction.z / len
+	<rotation+?>: dup.x32 sp(5)
+	<rotation+?>: inc.i32(+8)
+	<rotation+?>: load.i32
+	<rotation+?>: dup.x32 sp(3)
+	<rotation+?>: div.f32
+	lib/vec/mat4f.ci:122: (3 bytes): cx: float32 := center.x
+	<rotation+?>: dup.x32 sp(7)
+	<rotation+?>: load.i32
+	lib/vec/mat4f.ci:123: (7 bytes): cy: float32 := center.y
+	<rotation+?>: dup.x32 sp(8)
+	<rotation+?>: inc.i32(+4)
+	<rotation+?>: load.i32
+	lib/vec/mat4f.ci:124: (7 bytes): cz: float32 := center.z
+	<rotation+?>: dup.x32 sp(9)
+	<rotation+?>: inc.i32(+8)
+	<rotation+?>: load.i32
+	lib/vec/mat4f.ci:125: (5 bytes): xx: float32 := x * x
+	<rotation+?>: dup.x32 sp(5)
+	<rotation+?>: dup.x32 sp(6)
+	<rotation+?>: mul.f32
+	lib/vec/mat4f.ci:126: (5 bytes): xy: float32 := x * y
+	<rotation+?>: dup.x32 sp(6)
+	<rotation+?>: dup.x32 sp(6)
+	<rotation+?>: mul.f32
+	lib/vec/mat4f.ci:127: (5 bytes): xz: float32 := x * z
+	<rotation+?>: dup.x32 sp(7)
+	<rotation+?>: dup.x32 sp(6)
+	<rotation+?>: mul.f32
+	lib/vec/mat4f.ci:128: (5 bytes): yy: float32 := y * y
+	<rotation+?>: dup.x32 sp(7)
+	<rotation+?>: dup.x32 sp(8)
+	<rotation+?>: mul.f32
+	lib/vec/mat4f.ci:129: (5 bytes): yz: float32 := y * z
+	<rotation+?>: dup.x32 sp(8)
+	<rotation+?>: dup.x32 sp(8)
+	<rotation+?>: mul.f32
+	lib/vec/mat4f.ci:130: (5 bytes): zz: float32 := z * z
+	<rotation+?>: dup.x32 sp(8)
+	<rotation+?>: dup.x32 sp(9)
+	<rotation+?>: mul.f32
+	lib/vec/mat4f.ci:132: (6 bytes): s: float32 := float32.sin(angle)
+	<rotation+?>: dup.x32 sp(14)
+	<rotation+?>: nfc(30) ;float32.sin(x: float32): float32
+	lib/vec/mat4f.ci:133: (6 bytes): c: float32 := float32.cos(angle)
+	<rotation+?>: dup.x32 sp(15)
+	<rotation+?>: nfc(31) ;float32.cos(x: float32): float32
+	lib/vec/mat4f.ci:134: (8 bytes): k: float32 := (1) - c
+	<rotation+?>: load.f32 1.000000
+	<rotation+?>: dup.x32 sp(1)
+	<rotation+?>: sub.f32
+	lib/vec/mat4f.ci:136: (275 bytes): return .result := {...};
+	<rotation+?>: dup.x32 sp(8)
+	<rotation+?>: dup.x32 sp(6)
+	<rotation+?>: dup.x32 sp(5)
+	<rotation+?>: add.f32
+	<rotation+?>: dup.x32 sp(3)
+	<rotation+?>: mul.f32
+	<rotation+?>: add.f32
+	<rotation+?>: set.x32 sp(21)
+	lib/vec/mat4f.ci:138: (13 bytes): .result.xy := xy * k - z * s;
+	<rotation+?>: dup.x32 sp(7)
+	<rotation+?>: dup.x32 sp(1)
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(13)
+	<rotation+?>: dup.x32 sp(4)
+	<rotation+?>: mul.f32
+	<rotation+?>: sub.f32
+	<rotation+?>: set.x32 sp(22)
+	lib/vec/mat4f.ci:139: (13 bytes): .result.xz := xz * k + y * s;
+	<rotation+?>: dup.x32 sp(6)
+	<rotation+?>: dup.x32 sp(1)
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(14)
+	<rotation+?>: dup.x32 sp(4)
+	<rotation+?>: mul.f32
+	<rotation+?>: add.f32
+	<rotation+?>: set.x32 sp(23)
+	lib/vec/mat4f.ci:140: (43 bytes): .result.xw := (cx * (yy + zz) - x * (cy * y + cz * z)) * k + (cy * z - cz * y) * s;
+	<rotation+?>: dup.x32 sp(11)
+	<rotation+?>: dup.x32 sp(6)
+	<rotation+?>: dup.x32 sp(5)
+	<rotation+?>: add.f32
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(15)
+	<rotation+?>: dup.x32 sp(12)
+	<rotation+?>: dup.x32 sp(16)
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(12)
+	<rotation+?>: dup.x32 sp(16)
+	<rotation+?>: mul.f32
+	<rotation+?>: add.f32
+	<rotation+?>: mul.f32
+	<rotation+?>: sub.f32
+	<rotation+?>: dup.x32 sp(1)
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(11)
+	<rotation+?>: dup.x32 sp(14)
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(11)
+	<rotation+?>: dup.x32 sp(16)
+	<rotation+?>: mul.f32
+	<rotation+?>: sub.f32
+	<rotation+?>: dup.x32 sp(4)
+	<rotation+?>: mul.f32
+	<rotation+?>: add.f32
+	<rotation+?>: set.x32 sp(24)
+	lib/vec/mat4f.ci:142: (13 bytes): .result.yx := xy * k + z * s;
+	<rotation+?>: dup.x32 sp(7)
+	<rotation+?>: dup.x32 sp(1)
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(13)
+	<rotation+?>: dup.x32 sp(4)
+	<rotation+?>: mul.f32
+	<rotation+?>: add.f32
+	<rotation+?>: set.x32 sp(25)
+	lib/vec/mat4f.ci:143: (13 bytes): .result.yy := yy + (xx + zz) * c;
+	<rotation+?>: dup.x32 sp(5)
+	<rotation+?>: dup.x32 sp(9)
+	<rotation+?>: dup.x32 sp(5)
+	<rotation+?>: add.f32
+	<rotation+?>: dup.x32 sp(3)
+	<rotation+?>: mul.f32
+	<rotation+?>: add.f32
+	<rotation+?>: set.x32 sp(26)
+	lib/vec/mat4f.ci:144: (13 bytes): .result.yz := yz * k - x * s;
+	<rotation+?>: dup.x32 sp(4)
+	<rotation+?>: dup.x32 sp(1)
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(15)
+	<rotation+?>: dup.x32 sp(4)
+	<rotation+?>: mul.f32
+	<rotation+?>: sub.f32
+	<rotation+?>: set.x32 sp(27)
+	lib/vec/mat4f.ci:145: (43 bytes): .result.yw := (cy * (xx + zz) - y * (cx * x + cz * z)) * k + (cz * x - cx * z) * s;
+	<rotation+?>: dup.x32 sp(10)
+	<rotation+?>: dup.x32 sp(9)
+	<rotation+?>: dup.x32 sp(5)
+	<rotation+?>: add.f32
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(14)
+	<rotation+?>: dup.x32 sp(13)
+	<rotation+?>: dup.x32 sp(17)
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(12)
+	<rotation+?>: dup.x32 sp(16)
+	<rotation+?>: mul.f32
+	<rotation+?>: add.f32
+	<rotation+?>: mul.f32
+	<rotation+?>: sub.f32
+	<rotation+?>: dup.x32 sp(1)
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(10)
+	<rotation+?>: dup.x32 sp(16)
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(13)
+	<rotation+?>: dup.x32 sp(15)
+	<rotation+?>: mul.f32
+	<rotation+?>: sub.f32
+	<rotation+?>: dup.x32 sp(4)
+	<rotation+?>: mul.f32
+	<rotation+?>: add.f32
+	<rotation+?>: set.x32 sp(28)
+	lib/vec/mat4f.ci:147: (13 bytes): .result.zx := xz * k - y * s;
+	<rotation+?>: dup.x32 sp(6)
+	<rotation+?>: dup.x32 sp(1)
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(14)
+	<rotation+?>: dup.x32 sp(4)
+	<rotation+?>: mul.f32
+	<rotation+?>: sub.f32
+	<rotation+?>: set.x32 sp(29)
+	lib/vec/mat4f.ci:148: (13 bytes): .result.zy := yz * k + x * s;
+	<rotation+?>: dup.x32 sp(4)
+	<rotation+?>: dup.x32 sp(1)
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(15)
+	<rotation+?>: dup.x32 sp(4)
+	<rotation+?>: mul.f32
+	<rotation+?>: add.f32
+	<rotation+?>: set.x32 sp(30)
+	lib/vec/mat4f.ci:149: (13 bytes): .result.zz := zz + (xx + yy) * c;
+	<rotation+?>: dup.x32 sp(3)
+	<rotation+?>: dup.x32 sp(9)
+	<rotation+?>: dup.x32 sp(7)
+	<rotation+?>: add.f32
+	<rotation+?>: dup.x32 sp(3)
+	<rotation+?>: mul.f32
+	<rotation+?>: add.f32
+	<rotation+?>: set.x32 sp(31)
+	lib/vec/mat4f.ci:150: (43 bytes): .result.zw := (cz * (xx + yy) - z * (cx * x + cy * y)) * k + (cx * y - cy * x) * s;
+	<rotation+?>: dup.x32 sp(9)
+	<rotation+?>: dup.x32 sp(9)
+	<rotation+?>: dup.x32 sp(7)
+	<rotation+?>: add.f32
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(13)
+	<rotation+?>: dup.x32 sp(13)
+	<rotation+?>: dup.x32 sp(17)
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(13)
+	<rotation+?>: dup.x32 sp(17)
+	<rotation+?>: mul.f32
+	<rotation+?>: add.f32
+	<rotation+?>: mul.f32
+	<rotation+?>: sub.f32
+	<rotation+?>: dup.x32 sp(1)
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(12)
+	<rotation+?>: dup.x32 sp(15)
+	<rotation+?>: mul.f32
+	<rotation+?>: dup.x32 sp(12)
+	<rotation+?>: dup.x32 sp(17)
+	<rotation+?>: mul.f32
+	<rotation+?>: sub.f32
+	<rotation+?>: dup.x32 sp(4)
+	<rotation+?>: mul.f32
+	<rotation+?>: add.f32
+	<rotation+?>: set.x32 sp(32)
+	lib/vec/mat4f.ci:152: (24 bytes): .result.w := vec4f(0, 0, 0, 1);
+	<rotation+?>: inc.sp(+16)
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
+	<rotation+?>: load.f32 1.000000
+	<rotation+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
+	<rotation+?>: call
+	<rotation+?>: inc.sp(-16)
+	<rotation+?>: set.x128 sp(36)
+	<rotation+?>: inc.sp(-64)
+	<rotation+?>: ret
+}
+rotation(direction: vec4f, angle: float32): mat4f: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'rotation'
+.file: 'lib/vec/mat4f.ci:157'
+.param .result: mat4f (size: 64, cast: val)
+.param direction: vec4f (size: 4, cast: const ref)
+.param angle: float32 (size: 4, cast: f32)
+.doc: 'Build a rotation matrix'
+.value: rotation(vec4f(0), direction, angle)
+}
+translation(direction: vec4f, amount: float32): mat4f: function {
+.kind: static const function
+.base: `function`
+.size: 88
+.name: 'translation'
+.file: 'lib/vec/mat4f.ci:160'
+.param .result: mat4f (size: 64, cast: variable(val))
+.param direction: vec4f (size: 4, cast: const variable(ref))
+.param amount: float32 (size: 4, cast: variable(f32))
+.doc: 'Build a translation matrix'
+.value: {
+	return .result := {
+			.result.x.x := (1);
+			.result.x.y := (0);
+			.result.x.z := (0);
+			.result.x.w := direction.x * amount;
+			.result.y.x := (0);
+			.result.y.y := (1);
+			.result.y.z := (0);
+			.result.y.w := direction.y * amount;
+			.result.z.x := (0);
+			.result.z.y := (0);
+			.result.z.z := (1);
+			.result.z.w := direction.z * amount;
+			.result.w.x := (0);
+			.result.w.y := (0);
+			.result.w.z := (0);
+			.result.w.w := (1);
+		};
+}
+.instructions: (88 bytes)
+	lib/vec/mat4f.ci:161: (88 bytes): return .result := {...};
+	<translation>  : load.f32 1.000000
+	<translation+?>: set.x32 sp(4)
+	lib/vec/mat4f.ci:162: (3 bytes): .result.x.y := (0);
+	<translation+?>: load.z32
+	<translation+?>: set.x32 sp(5)
+	lib/vec/mat4f.ci:162: (3 bytes): .result.x.z := (0);
+	<translation+?>: load.z32
+	<translation+?>: set.x32 sp(6)
+	lib/vec/mat4f.ci:162: (8 bytes): .result.x.w := direction.x * amount;
+	<translation+?>: dup.x32 sp(2)
+	<translation+?>: load.i32
+	<translation+?>: dup.x32 sp(2)
+	<translation+?>: mul.f32
+	<translation+?>: set.x32 sp(7)
+	lib/vec/mat4f.ci:163: (3 bytes): .result.y.x := (0);
+	<translation+?>: load.z32
+	<translation+?>: set.x32 sp(8)
+	lib/vec/mat4f.ci:163: (7 bytes): .result.y.y := (1);
+	<translation+?>: load.f32 1.000000
+	<translation+?>: set.x32 sp(9)
+	lib/vec/mat4f.ci:163: (3 bytes): .result.y.z := (0);
+	<translation+?>: load.z32
+	<translation+?>: set.x32 sp(10)
+	lib/vec/mat4f.ci:163: (12 bytes): .result.y.w := direction.y * amount;
+	<translation+?>: dup.x32 sp(2)
+	<translation+?>: inc.i32(+4)
+	<translation+?>: load.i32
+	<translation+?>: dup.x32 sp(2)
+	<translation+?>: mul.f32
+	<translation+?>: set.x32 sp(11)
+	lib/vec/mat4f.ci:164: (3 bytes): .result.z.x := (0);
+	<translation+?>: load.z32
+	<translation+?>: set.x32 sp(12)
+	lib/vec/mat4f.ci:164: (3 bytes): .result.z.y := (0);
+	<translation+?>: load.z32
+	<translation+?>: set.x32 sp(13)
+	lib/vec/mat4f.ci:164: (7 bytes): .result.z.z := (1);
+	<translation+?>: load.f32 1.000000
+	<translation+?>: set.x32 sp(14)
+	lib/vec/mat4f.ci:164: (12 bytes): .result.z.w := direction.z * amount;
+	<translation+?>: dup.x32 sp(2)
+	<translation+?>: inc.i32(+8)
+	<translation+?>: load.i32
+	<translation+?>: dup.x32 sp(2)
+	<translation+?>: mul.f32
+	<translation+?>: set.x32 sp(15)
+	lib/vec/mat4f.ci:165: (3 bytes): .result.w.x := (0);
+	<translation+?>: load.z32
+	<translation+?>: set.x32 sp(16)
+	lib/vec/mat4f.ci:165: (3 bytes): .result.w.y := (0);
+	<translation+?>: load.z32
+	<translation+?>: set.x32 sp(17)
+	lib/vec/mat4f.ci:165: (3 bytes): .result.w.z := (0);
+	<translation+?>: load.z32
+	<translation+?>: set.x32 sp(18)
+	lib/vec/mat4f.ci:165: (7 bytes): .result.w.w := (1);
+	<translation+?>: load.f32 1.000000
+	<translation+?>: set.x32 sp(19)
+	<translation+?>: ret
+}
+scale(direction: vec4f, amount: float32): mat4f: function {
+.kind: static const function
+.base: `function`
+.size: 76
+.name: 'scale'
+.file: 'lib/vec/mat4f.ci:168'
+.param .result: mat4f (size: 64, cast: variable(val))
+.param direction: vec4f (size: 4, cast: const variable(ref))
+.param amount: float32 (size: 4, cast: variable(f32))
+.value: {
+	return .result := {
+			.result.x.x := direction.x * amount;
+			.result.x.y := (0);
+			.result.x.z := (0);
+			.result.x.w := (0);
+			.result.y.x := (0);
+			.result.y.y := direction.y * amount;
+			.result.y.z := (0);
+			.result.y.w := (0);
+			.result.z.x := (0);
+			.result.z.y := (0);
+			.result.z.z := direction.z * amount;
+			.result.z.w := (0);
+			.result.w.x := (0);
+			.result.w.y := (0);
+			.result.w.z := (0);
+			.result.w.w := (1);
+		};
+}
+.instructions: (76 bytes)
+	lib/vec/mat4f.ci:169: (76 bytes): return .result := {...};
+	<scale>  : dup.x32 sp(2)
+	<scale+?>: load.i32
+	<scale+?>: dup.x32 sp(2)
+	<scale+?>: mul.f32
+	<scale+?>: set.x32 sp(4)
+	lib/vec/mat4f.ci:170: (3 bytes): .result.x.y := (0);
+	<scale+?>: load.z32
+	<scale+?>: set.x32 sp(5)
+	lib/vec/mat4f.ci:170: (3 bytes): .result.x.z := (0);
+	<scale+?>: load.z32
+	<scale+?>: set.x32 sp(6)
+	lib/vec/mat4f.ci:170: (3 bytes): .result.x.w := (0);
+	<scale+?>: load.z32
+	<scale+?>: set.x32 sp(7)
+	lib/vec/mat4f.ci:171: (3 bytes): .result.y.x := (0);
+	<scale+?>: load.z32
+	<scale+?>: set.x32 sp(8)
+	lib/vec/mat4f.ci:171: (12 bytes): .result.y.y := direction.y * amount;
+	<scale+?>: dup.x32 sp(2)
+	<scale+?>: inc.i32(+4)
+	<scale+?>: load.i32
+	<scale+?>: dup.x32 sp(2)
+	<scale+?>: mul.f32
+	<scale+?>: set.x32 sp(9)
+	lib/vec/mat4f.ci:171: (3 bytes): .result.y.z := (0);
+	<scale+?>: load.z32
+	<scale+?>: set.x32 sp(10)
+	lib/vec/mat4f.ci:171: (3 bytes): .result.y.w := (0);
+	<scale+?>: load.z32
+	<scale+?>: set.x32 sp(11)
+	lib/vec/mat4f.ci:172: (3 bytes): .result.z.x := (0);
+	<scale+?>: load.z32
+	<scale+?>: set.x32 sp(12)
+	lib/vec/mat4f.ci:172: (3 bytes): .result.z.y := (0);
+	<scale+?>: load.z32
+	<scale+?>: set.x32 sp(13)
+	lib/vec/mat4f.ci:172: (12 bytes): .result.z.z := direction.z * amount;
+	<scale+?>: dup.x32 sp(2)
+	<scale+?>: inc.i32(+8)
+	<scale+?>: load.i32
+	<scale+?>: dup.x32 sp(2)
+	<scale+?>: mul.f32
+	<scale+?>: set.x32 sp(14)
+	lib/vec/mat4f.ci:172: (3 bytes): .result.z.w := (0);
+	<scale+?>: load.z32
+	<scale+?>: set.x32 sp(15)
+	lib/vec/mat4f.ci:173: (3 bytes): .result.w.x := (0);
+	<scale+?>: load.z32
+	<scale+?>: set.x32 sp(16)
+	lib/vec/mat4f.ci:173: (3 bytes): .result.w.y := (0);
+	<scale+?>: load.z32
+	<scale+?>: set.x32 sp(17)
+	lib/vec/mat4f.ci:173: (3 bytes): .result.w.z := (0);
+	<scale+?>: load.z32
+	<scale+?>: set.x32 sp(18)
+	lib/vec/mat4f.ci:173: (7 bytes): .result.w.w := (1);
+	<scale+?>: load.f32 1.000000
+	<scale+?>: set.x32 sp(19)
+	<scale+?>: ret
 }
 integer: typename {
 .kind: inline
@@ -13669,6 +14618,7 @@ testMathAbsMod_f32_8d: float32 {
 .field vec4f: function (size: 0, cast: inline)
 .field vec4f: function (size: 0, cast: inline)
 .field vec4f: function (size: 0, cast: inline)
+.field vec4f: function (size: 0, cast: inline)
 .field neg: function (size: 0, cast: inline)
 .field add: function (size: 0, cast: inline)
 .field sub: function (size: 0, cast: inline)
@@ -13680,7 +14630,7 @@ testMathAbsMod_f32_8d: float32 {
 .field dph: function (size: 0, cast: inline)
 .field dp4: function (size: 0, cast: inline)
 .field cross: function (size: 0, cast: inline)
-.field len: function (size: 0, cast: inline)
+.field length: function (size: 0, cast: inline)
 .field normalize: function (size: 0, cast: inline)
 .field eval: function (size: 0, cast: inline)
 .field mat4f: typename (size: 64, cast: static const typename(val))
@@ -13690,6 +14640,10 @@ testMathAbsMod_f32_8d: float32 {
 .field dph: function (size: 0, cast: inline)
 .field dp4: function (size: 0, cast: inline)
 .field mul: function (size: 417, cast: static const function)
+.field rotation: function (size: 524, cast: static const function)
+.field rotation: function (size: 0, cast: inline)
+.field translation: function (size: 88, cast: static const function)
+.field scale: function (size: 76, cast: static const function)
 .field integer: typename (size: 0, cast: inline)
 .field emitldz32: int32 (size: 4, cast: variable(i32))
 .field emitldz64: int64 (size: 8, cast: variable(i64))
@@ -14989,7 +15943,8 @@ testMathAbsMod_f32_8d: float32 {
 			.result.w := w;
 		};
 			};
-			vec4f(x: float32, y: float32, z: float32): vec4f := vec4f(x, y, z, 0.000000);
+			vec4f(x: float32, y: float32, z: float32): vec4f := vec4f(x, y, z, 1.000000);
+			vec4f(x: float32, y: float32): vec4f := vec4f(x, y, 0.000000, 1.000000);
 			vec4f(xyz: vec4f, w: float32): vec4f := vec4f(xyz.x, xyz.y, xyz.z, w);
 			vec4f(val: float32): vec4f := vec4f(val, val, val, val);
 			neg(rhs: vec4f): vec4f := vec4f(emit(struct(rhs), neg.p4f));
@@ -14997,26 +15952,43 @@ testMathAbsMod_f32_8d: float32 {
 			sub(lhs: vec4f, rhs: vec4f): vec4f := vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
 			mul(lhs: vec4f, rhs: vec4f): vec4f := vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
 			div(lhs: vec4f, rhs: vec4f): vec4f := vec4f(emit(struct(lhs), struct(rhs), div.p4f));
-			min(lhs: vec4f, rhs: vec4f): float32 := float32(emit(struct(rhs), struct(lhs), min.p4f));
-			max(lhs: vec4f, rhs: vec4f): float32 := float32(emit(struct(rhs), struct(lhs), max.p4f));
-			dp3(lhs: vec4f, rhs: vec4f): float32 := float32(emit(struct(rhs), struct(lhs), p4x.dp3));
-			dph(lhs: vec4f, rhs: vec4f): float32 := float32(emit(struct(rhs), struct(lhs), p4x.dph));
-			dp4(lhs: vec4f, rhs: vec4f): float32 := float32(emit(struct(rhs), struct(lhs), p4x.dp4));
+			min(lhs: vec4f, rhs: vec4f): float32 := float32(emit(struct(lhs), struct(rhs), min.p4f));
+			max(lhs: vec4f, rhs: vec4f): float32 := float32(emit(struct(lhs), struct(rhs), max.p4f));
+			dp3(lhs: vec4f, rhs: vec4f): float32 := float32(emit(struct(lhs), struct(rhs), p4x.dp3));
+			dph(lhs: vec4f, rhs: vec4f): float32 := float32(emit(struct(lhs), struct(rhs), p4x.dph));
+			dp4(lhs: vec4f, rhs: vec4f): float32 := float32(emit(struct(lhs), struct(rhs), p4x.dp4));
 			cross(const a: vec4f, const b: vec4f): vec4f := vec4f(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
-			len(v: vec4f): float32 := float32.sqrt(dp3(v, v));
-			normalize(const v: vec4f): vec4f := div(v, vec4f(len(v)));
+			length(v: vec4f): float32 := float32.sqrt(dp3(v, v));
+			normalize(const v: vec4f): vec4f := div(v, vec4f(length(v)));
 			eval(const v: vec4f, x: float32): float32 := float32((((v.w * x + v.z) * x + v.y) * x) + v.x);
 		}
 		static if ((null) == null) {
 			static const mat4f: struct {
-				m: float32[4][4];
 				data: float32[16];
+				m: float32[4][4];
 				v: vec4f[4];
 				<?>: <?>;
 				x: vec4f := x: vec4f;
 				y: vec4f := y: vec4f;
 				z: vec4f := z: vec4f;
 				w: vec4f := w: vec4f;
+				<?>: <?>;
+				xx: float32 := xx: float32;
+				xy: float32 := xy: float32;
+				xz: float32 := xz: float32;
+				xw: float32 := xw: float32;
+				yx: float32 := yx: float32;
+				yy: float32 := yy: float32;
+				yz: float32 := yz: float32;
+				yw: float32 := yw: float32;
+				zx: float32 := zx: float32;
+				zy: float32 := zy: float32;
+				zz: float32 := zz: float32;
+				zw: float32 := zw: float32;
+				wx: float32 := wx: float32;
+				wy: float32 := wy: float32;
+				wz: float32 := wz: float32;
+				ww: float32 := ww: float32;
 			};
 			static const mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float32, yz: float32, yw: float32, zx: float32, zy: float32, zz: float32, zw: float32, wx: float32, wy: float32, wz: float32, ww: float32): mat4f := {
 				return .result := {
@@ -15073,6 +16045,89 @@ testMathAbsMod_f32_8d: float32 {
 			.result.y := dp4(transposed, lhs.y);
 			.result.z := dp4(transposed, lhs.z);
 			.result.w := dp4(transposed, lhs.w);
+		};
+			};
+			static const rotation(const center: vec4f, const direction: vec4f, angle: float32): mat4f := {
+				len: float32 := length(direction);
+				if ((len) < 0.000000) {
+					trace("invalid direction of rotation", direction);
+					return .result := {
+			.result.x := vec4f(0, 0, 0, 0);
+			.result.y := vec4f(0, 0, 0, 0);
+			.result.z := vec4f(0, 0, 0, 0);
+			.result.w := vec4f(0, 0, 0, 0);
+		};
+				}
+				x: float32 := direction.x / len;
+				y: float32 := direction.y / len;
+				z: float32 := direction.z / len;
+				cx: float32 := center.x;
+				cy: float32 := center.y;
+				cz: float32 := center.z;
+				xx: float32 := x * x;
+				xy: float32 := x * y;
+				xz: float32 := x * z;
+				yy: float32 := y * y;
+				yz: float32 := y * z;
+				zz: float32 := z * z;
+				s: float32 := float32.sin(angle);
+				c: float32 := float32.cos(angle);
+				k: float32 := (1) - c;
+				return .result := {
+			.result.xx := xx + (yy + zz) * c;
+			.result.xy := xy * k - z * s;
+			.result.xz := xz * k + y * s;
+			.result.xw := (cx * (yy + zz) - x * (cy * y + cz * z)) * k + (cy * z - cz * y) * s;
+			.result.yx := xy * k + z * s;
+			.result.yy := yy + (xx + zz) * c;
+			.result.yz := yz * k - x * s;
+			.result.yw := (cy * (xx + zz) - y * (cx * x + cz * z)) * k + (cz * x - cx * z) * s;
+			.result.zx := xz * k - y * s;
+			.result.zy := yz * k + x * s;
+			.result.zz := zz + (xx + yy) * c;
+			.result.zw := (cz * (xx + yy) - z * (cx * x + cy * y)) * k + (cx * y - cy * x) * s;
+			.result.w := vec4f(0, 0, 0, 1);
+		};
+			};
+			rotation(const direction: vec4f, angle: float32): mat4f := rotation(vec4f(0), direction, angle);
+			static const translation(const direction: vec4f, amount: float32): mat4f := {
+				return .result := {
+			.result.x.x := (1);
+			.result.x.y := (0);
+			.result.x.z := (0);
+			.result.x.w := direction.x * amount;
+			.result.y.x := (0);
+			.result.y.y := (1);
+			.result.y.z := (0);
+			.result.y.w := direction.y * amount;
+			.result.z.x := (0);
+			.result.z.y := (0);
+			.result.z.z := (1);
+			.result.z.w := direction.z * amount;
+			.result.w.x := (0);
+			.result.w.y := (0);
+			.result.w.z := (0);
+			.result.w.w := (1);
+		};
+			};
+			static const scale(const direction: vec4f, amount: float32): mat4f := {
+				return .result := {
+			.result.x.x := direction.x * amount;
+			.result.x.y := (0);
+			.result.x.z := (0);
+			.result.x.w := (0);
+			.result.y.x := (0);
+			.result.y.y := direction.y * amount;
+			.result.y.z := (0);
+			.result.y.w := (0);
+			.result.z.x := (0);
+			.result.z.y := (0);
+			.result.z.z := direction.z * amount;
+			.result.z.w := (0);
+			.result.w.x := (0);
+			.result.w.y := (0);
+			.result.w.z := (0);
+			.result.w.w := (1);
 		};
 			};
 		}
@@ -20515,9 +21570,12 @@ lib/vec/vec2d.ci:16: vec2d: function(<vec2d>)
 lib/vec/vec4f.ci:4: vec4f: typename(<vec4f>)
 lib/vec/vec4f.ci:28: vec4f: function(<vec4f>)
 lib/vec/mat4f.ci:4: mat4f: typename(<mat4f>)
-lib/vec/mat4f.ci:27: mat4f: function(<mat4f>)
-lib/vec/mat4f.ci:40: mat4f: function(<mat4f>)
-lib/vec/mat4f.ci:52: mul: function(<mul>)
+lib/vec/mat4f.ci:64: mat4f: function(<mat4f>)
+lib/vec/mat4f.ci:77: mat4f: function(<mat4f>)
+lib/vec/mat4f.ci:89: mul: function(<mul>)
+lib/vec/mat4f.ci:108: rotation: function(<rotation>)
+lib/vec/mat4f.ci:160: translation: function(<translation>)
+lib/vec/mat4f.ci:168: scale: function(<scale>)
 test/lang/emit.ci:3: emitldz32: int32(0)
 test/lang/emit.ci:4: emitldz64: int64(0)
 test/lang/emit.ci:6: emitA: int32(42)
@@ -20704,13 +21762,13 @@ test/lang/reflect.ci:22: RecordSizeof: typename(<RecordSizeof>)
 test/lang/reflect.ci:26: RecordSizeofExt: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:30: typeofRecord: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:31: nameOfRecord: char[*]("RecordSizeofExt")
-test/lang/reflect.ci:32: offsetOfRecord: int32(226784)
+test/lang/reflect.ci:32: offsetOfRecord: int32(237720)
 test/lang/reflect.ci:33: sizeOfRecord: int32(16)
 test/lang/reflect.ci:34: fileOfRecord: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:35: lineOfRecord: int32(26)
 test/lang/reflect.ci:37: typeofBase: typename(<RecordSizeof>)
 test/lang/reflect.ci:38: nameOfBase: char[*]("RecordSizeof")
-test/lang/reflect.ci:39: offsetOfBase: int32(226480)
+test/lang/reflect.ci:39: offsetOfBase: int32(237416)
 test/lang/reflect.ci:40: sizeOfBase: int32(12)
 test/lang/reflect.ci:41: fileOfBase: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:42: lineOfBase: int32(22)
@@ -21215,16 +22273,16 @@ test/stdc/test.math.ci:96: testMathAbsMod_f32_8d: float32(8.000000)
 
 ---------- Memory usage:
 memory[all] @000000; size: 2096872(2.0 Mb)
-memory[used] @000000; size: 345403(337.3 Kb)
-memory[heap] @05453b; size: 1227203(1.2 Mb)
+memory[used] @000000; size: 357035(348.7 Kb)
+memory[heap] @0572ab; size: 1215571(1.2 Mb)
 memory[stack] @0fff44; size: 524218(511.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 329544(321.8 Kb)
-memory[code] @000000; size: 15517(15.2 Kb)
+memory[meta] @000000; size: 340480(332.5 Kb)
+memory[code] @000000; size: 16205(15.8 Kb)
 memory[data] @000000; size: 80(80.0 bytes)
 
 ---------- heap memory:
-memory[free] @054558; size: 1227152(1.2 Mb)
+memory[free] @0572c8; size: 1215520(1.2 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

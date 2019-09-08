@@ -2,11 +2,11 @@ static if (typename(mat4f) == null) {
 
 /// A 4x4 matrix
 struct mat4f: 0 {
-	/// Access elements as an array: m[1][0]
-	float32 m[4][4];
-
 	/// Access elements as a flatten array: data[4] => m[1][0]
 	float32 data[16];
+
+	/// Access elements as an array: m[1][0]
+	float32 m[4][4];
 
 	/// Access elements as an array of vectors: v[1].x => m[1][0]
 	vec4f v[4];
@@ -20,6 +20,43 @@ struct mat4f: 0 {
 		vec4f z;
 		///@public
 		vec4f w;
+	}
+	struct {
+		///@public
+		float32 xx;
+		///@public
+		float32 xy;
+		///@public
+		float32 xz;
+		///@public
+		float32 xw;
+
+		///@public
+		float32 yx;
+		///@public
+		float32 yy;
+		///@public
+		float32 yz;
+		///@public
+		float32 yw;
+
+		///@public
+		float32 zx;
+		///@public
+		float32 zy;
+		///@public
+		float32 zz;
+		///@public
+		float32 zw;
+
+		///@public
+		float32 wx;
+		///@public
+		float32 wy;
+		///@public
+		float32 wz;
+		///@public
+		float32 ww;
 	}
 }
 
@@ -64,4 +101,76 @@ mat4f mul(const mat4f lhs&, const mat4f rhs&) {
 	};
 }
 
+/**
+ * Build a rotation matrix
+ * adapted from: https://sites.google.com/site/glennmurray/Home/rotation-matrices-and-formulas
+ */
+mat4f rotation(const vec4f center&, const vec4f direction&, float angle) {
+	float len = direction.length();
+	if (len < 1e-9) {
+		trace("invalid direction of rotation", direction);
+		return {
+			x: vec4f(0, 0, 0, 0);
+			y: vec4f(0, 0, 0, 0);
+			z: vec4f(0, 0, 0, 0);
+			w: vec4f(0, 0, 0, 0);
+		};
+	}
+	float x = direction.x / len;
+	float y = direction.y / len;
+	float z = direction.z / len;
+	float cx = center.x;
+	float cy = center.y;
+	float cz = center.z;
+	float xx = x * x;
+	float xy = x * y;
+	float xz = x * z;
+	float yy = y * y;
+	float yz = y * z;
+	float zz = z * z;
+
+	float s = float.sin(angle);
+	float c = float.cos(angle);
+	float k = 1 - c;
+
+	return {
+		xx: xx + (yy + zz) * c;
+		xy: xy * k - z * s;
+		xz: xz * k + y * s;
+		xw: (cx * (yy + zz) - x * (cy * y + cz * z)) * k + (cy * z - cz * y) * s;
+
+		yx: xy * k + z * s;
+		yy: yy + (xx + zz) * c;
+		yz: yz * k - x * s;
+		yw: (cy * (xx + zz) - y * (cx * x + cz * z)) * k + (cz * x - cx * z) * s;
+
+		zx: xz * k - y * s;
+		zy: yz * k + x * s;
+		zz: zz + (xx + yy) * c;
+		zw: (cz * (xx + yy) - z * (cx * x + cy * y)) * k + (cx * y - cy * x) * s;
+
+		w: vec4f(0, 0, 0, 1);
+	};
+}
+
+/// Build a rotation matrix
+inline rotation(const vec4f direction&, float angle) = rotation(vec4f(0), direction, angle);
+
+/// Build a translation matrix
+mat4f translation(const vec4f direction&, float amount) {
+	return {
+		x: {x: 1, y: 0, z: 0, w: direction.x * amount};
+		y: {x: 0, y: 1, z: 0, w: direction.y * amount};
+		z: {x: 0, y: 0, z: 1, w: direction.z * amount};
+		w: {x: 0, y: 0, z: 0, w: 1};
+	};
+}
+mat4f scale(const vec4f direction&, float amount) {
+	return {
+		x: {x: direction.x * amount, y: 0, z: 0, w: 0};
+		y: {x: 0, y: direction.y * amount, z: 0, w: 0};
+		z: {x: 0, y: 0, z: direction.z * amount, w: 0};
+		w: {x: 0, y: 0, z: 0, w: 1};
+	};
+}
 }

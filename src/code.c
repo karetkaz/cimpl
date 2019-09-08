@@ -2169,16 +2169,33 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val
 				}
 			}
 
+			int values = 0;
+			int multiArray = isArrayType(typ->type);
 			printFmt(out, esc, "[%d] {", length);
+			if (multiArray) {
+				printFmt(out, esc, "\n");
+			}
 			for (size_t idx = 0; idx < length; idx += 1) {
 				if (idx > 0) {
-					printFmt(out, esc, ", ");
+					if (multiArray) {
+						printFmt(out, esc, ",\n");
+					} else {
+						printFmt(out, esc, ", ");
+					}
 				}
 				if (idx >= maxLogItems) {
-					printFmt(out, esc, "...");
+					printFmt(out, esc, "%I...", multiArray ? indent + 1 : 0);
 					break;
 				}
-				printVal(out, esc, ctx, typ->type, (vmValue *) (data + idx * inc), mode & ~(prSymQual | prSymType), -indent);
+				if (multiArray) {
+					printVal(out, esc, ctx, typ->type, (vmValue *) (data + idx * inc), mode & ~(prSymQual | prSymType), indent + 1);
+				} else {
+					printVal(out, esc, ctx, typ->type, (vmValue *) (data + idx * inc), mode & ~(prSymQual | prSymType), -indent);
+				}
+				values += 1;
+			}
+			if (values > 0 && multiArray) {
+				printFmt(out, esc, "\n%I", indent);
 			}
 			printFmt(out, esc, "}");
 		}

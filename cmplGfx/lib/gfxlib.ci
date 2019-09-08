@@ -49,12 +49,15 @@ gxSurf gxSurf(gxSurf copy, double aspect) {
 		width = copy.height() * aspect;
 	}
 	gxSurf result = gxSurf.create(width, copy.height(), copy.depth());
-	result.resize(null, copy, null, 1);
+	result.transform(null, copy, null, 1, null);
 	return result;
 }
 
 /// Set the the color of a pixel at the given position
 inline set(gxSurf dst, int32 x, int32 y, argb color) = gxSurf.set(dst, x, y, uint32(color));
+
+///@public
+inline resize(gxSurf surf, const gxRect rect&, const gxSurf src, const gxRect roi&, int interpolate) = gxSurf.transform(surf, rect, src, roi, interpolate, null);
 
 ///@public
 bool clip(gxSurf src, gxRect roi&) {
@@ -99,6 +102,7 @@ inline fill(gxSurf dst, const gxRect roi&, uint32 col) = dst.fillRect(roi.x, roi
 /// Fill the given region and padding with the given color
 inline fill(gxSurf dst, const gxRect roi&, int pad, uint32 col) = dst.fillRect(roi.x - pad, roi.y - pad, roi.x + roi.w + pad, roi.y + roi.h + pad, col);
 
+///@public
 inline drawRect(gxSurf dst, const gxRect roi&, uint32 col) = dst.drawRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
 
 /// Fill the surface by evaluating the given function for each pixel

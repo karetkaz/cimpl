@@ -597,40 +597,45 @@ static inline matrix matldf(matrix dst
 	return dst;
 }
 
-static inline matrix matldR(matrix dst, vector dir, scalar ang) {
-	struct vector tmp;
-	scalar xx, yy, zz, xy, yz, xz;
-	scalar sin_t = sin(ang);
-	scalar cos_t = cos(ang);
-	scalar one_c = 1 - cos_t;
-	vecsca(&tmp, dir, sin_t);
+static inline matrix matldR(matrix dst, vector dir, scalar angle) {
+	float len = veclen(dir);
+	float x = dir->x / len;
+	float y = dir->y / len;
+	float z = dir->z / len;
+	float cx = 0;
+	float cy = 0;
+	float cz = 0;
+	float xx = x * x;
+	float xy = x * y;
+	float xz = x * z;
+	float yy = y * y;
+	float yz = y * z;
+	float zz = z * z;
 
-	xx = dir->x * dir->x;
-	yy = dir->y * dir->y;
-	zz = dir->z * dir->z;
-	xy = dir->x * dir->y;
-	xz = dir->x * dir->z;
-	yz = dir->y * dir->z;
+	float s = sin(angle);
+	float c = cos(angle);
+	float k = 1 - c;
 
-	dst->m11 = one_c * xx + cos_t;
-	dst->m12 = one_c * xy - tmp.z;
-	dst->m13 = one_c * xz + tmp.y;
-	dst->m14 = 0;
+	dst->m11 = xx + (yy + zz) * c;
+	dst->m12 = xy * k - z * s;
+	dst->m13 = xz * k + y * s;
+	dst->m14 = (cx * (yy + zz) - x * (cy * y + cz * z)) * k + (cy * z - cz * y) * s;
 
-	dst->m21 = one_c * xy + tmp.z;
-	dst->m22 = one_c * yy + cos_t;
-	dst->m23 = one_c * yz - tmp.x;
-	dst->m24 = 0;
+	dst->m21 = xy * k + z * s;
+	dst->m22 = yy + (xx + zz) * c;
+	dst->m23 = yz * k - x * s;
+	dst->m24 = (cy * (xx + zz) - y * (cx * x + cz * z)) * k + (cz * x - cx * z) * s;
 
-	dst->m31 = one_c * xz - tmp.y;
-	dst->m32 = one_c * yz + tmp.x;
-	dst->m33 = one_c * zz + cos_t;
-	dst->m34 = 0;
+	dst->m31 = xz * k - y * s;
+	dst->m32 = yz * k + x * s;
+	dst->m33 = zz + (xx + yy) * c;
+	dst->m34 = (cz * (xx + yy) - z * (cx * x + cy * y)) * k + (cx * y - cy * x) * s;
 
 	dst->m41 = 0;
 	dst->m42 = 0;
 	dst->m43 = 0;
 	dst->m44 = 1;
+
 	return dst;
 }
 

@@ -9,6 +9,8 @@
 #include "internal.h"
 #include <limits.h>
 
+static const char *unknown_tag = "<?>";
+
 const struct tokenRec token_tbl[256] = {
 	#define TOKEN_DEF(Name, Type, Args, Text) {Type, Args, Text},
 	#include "defs.inl"
@@ -175,7 +177,7 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 		}
 
 		if (ptr != NULL) {
-			if (ptr->nest >= def->nest) {
+			if (ptr->nest >= def->nest &&  strcmp(def->name, unknown_tag) != 0) {
 				error(cc->rt, def->file, def->line, ERR_DECLARATION_REDEFINED, def);
 				if (ptr->file && ptr->line) {
 					info(cc->rt, ptr->file, ptr->line, "previously defined as `%T`", ptr);
@@ -1189,7 +1191,7 @@ static astn declare_record(ccContext cc, ccKind attr) {
 	astn tag = nextTok(cc, TOKEN_var, 0);
 	int expose = 0;
 	if (tag == NULL) {
-		tag = tagNode(cc, "<?>");
+		tag = tagNode(cc, unknown_tag);
 		expose = 1;
 	}
 
