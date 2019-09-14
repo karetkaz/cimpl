@@ -5,11 +5,8 @@
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
 
-	<link rel="stylesheet" href="style.css">
+ 	<link rel="stylesheet" href="style.css"> 
 	<link rel="stylesheet" href="theme.css">
-
-	<link rel="stylesheet" href="splitter.css">
-	<script type="text/javascript" src="splitter.js"></script>
 
 	<script type="text/javascript" src="lib/JsArgs.js"></script>
 	<script type="text/javascript" src="lib/JsTerm.js"></script>
@@ -33,14 +30,31 @@
 	<script src="lib/codemirror/cmpl.js"></script>
 	<script src="lib/codemirror/keys.js"></script>
 </head>
-<body class="dark">
-<div id="mainToolBar" class="toolbar">
-	<span class="left icon" onclick="showSplitter(menuSplit, '!secondary');" title="Toggle show menu">☰</span>
-	<span class="left icon" onclick="saveInput();" title="Save script (Ctrl + s)">💾</span>
-	<span class="left icon" onclick="execute(selExecute.data || '-run/g');" title="Execute script (Ctrl + Shift + Enter)">►</span>
-	<!--span class="right icon" onclick="showEditor('!primary', 'vertical', '-horizontal');" title="Toggle show output">◨</span-->
-	<span class="right icon" onclick="showEditor('!primary', 'horizontal', '-vertical');" title="Toggle show output">⬓</span>
-	<span class="right icon" onclick="setTheme(body, '!dark');" title="Toggle dark theme">◑</span>
+<body class="dark tool menu editor output">
+<div id="toolbar">
+	<!-- input -->
+	<span class="left icon" title="Toggle show menu"
+		onclick="setStyle(document.body, '!menu');"
+		onmousedown="canvas.classList.add('hidden');"
+		onmouseup="canvas.classList.remove('hidden');"
+		ontouchstart="canvas.classList.add('hidden');"
+		ontouchend="canvas.classList.remove('hidden');"
+	>☰</span>
+	<span class="editor left icon" title="Save script (Ctrl + s)" onclick="saveInput();">💾</span>
+	<span class="left icon" title="Execute script (Ctrl + Enter)" onclick="onExecClick();">►</span>
+
+	<span class="canvas right icon" title="Close canvas" onclick="showCanvas(false);">❌</span>
+
+	<span class="editor output right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
+	<span class="editor output right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
+
+	<span class="editor right icon" title="Toggle show output" onclick="setStyle(body, 'output', '-editor', '-menu');">⬚</span>
+	<span class="output right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
+	<span class="output right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
+	<span class="output right icon bold" onclick="editOutput();" title="Open output in editor">⎗</span>
+	<span class="output right icon bold" title="Clear output" onclick="terminal.clear();">⦸</span>
+
+	<!-- filename -->
 	<span class="filename" title="Execute action (Shift + Enter)
 	'#args' Execute script
 	'?text' Search (Ctrl + f)
@@ -50,68 +64,104 @@
 	'+' Unfold all lines (Ctrl + Shift + +)">
 	<input id="edtFileName" placeholder="#execute; ?search; !replace; :goto; -fold; +unfold"></input></span>
 </div>
-<div id="menuSplit" class="content split-pane left vertical" style="top:2em;">
-	<div class="content list">
-		<div>
-			<span>Execute</span>
-			<button class="right" onclick="execute();" title="Compiler usage help">?</button>
-		</div>
-		<ul>
-			<li onclick="execute(selExecute.value = selExecute.value);" ><select id="selExecute" onchange="execute(this.value);" onclick="event.stopPropagation()">
-				<option value="-run/g">⚡ Run</option>
-				<option value="-debug/g">🐞 Debug</option>
-				<option value="-profile/g">⏱ Profile</option>
-				<option value="" selected>Compile only</option>
-				<option value="-doc/a/m">Documentation</option>
-				<option value="-asm/a/m/n/s/m">Instructions</option>
-				<option value="-api/a/m">Symbols</option>
-				<option value="-api/a/m/u">Usages</option>
-				<option value="-ast/m">Syntax tree</option>
-				<option value="-profile/t/p/G/M -api/A/m/d/p/u -asm/a/n/s -ast -doc">full dump</option>
-			</select></li>
-		</ul>
-		<hr>
-		<div>
-			<span>Project</span>
-			<button class="right" onclick="listFiles('.');" title="Refresh file list">⟳</button>
- 			<!--<button class="right" onclick="uploadFiles();">📤</button> -->
- 			<!--<button class="right" onclick="downloadFiles(false);">📥</button> -->
-		</div>
-		<ul>
-			<li onclick="editProject();">🛠 Edit project</li>
-			<li onclick="shareInput();">🔗 Share link</li>
-			<!--<li onclick="saveInput();">💾 Save file</li> -->
-			<!--<li onclick="params.update({file: null});">❌ Close file</li>-->
-			<hr>
-		</ul>
-		<ul id="fileList">
-		</ul>
-		<ul>
-		<li onclick="listFiles('*');" title="Show files including the /lib/ folder">Show all</li>
+<div id="menu">
+	<div>
+		<span>Execute</span>
+		<button class="right" onclick="execute();" title="Compiler usage help">?</button>
+	</div>
+	<ul>
+		<li onclick="execute(selExecute.data = selExecute.value);" ><select id="selExecute" onchange="execute(this.value);" onclick="event.stopPropagation()">
+			<option value="-run/g">⚡ Run</option>
+			<option value="-debug/g">🐞 Debug</option>
+			<option value="-profile/g">⏱ Profile</option>
+			<option value="">Compile only</option>
+			<option value="-doc/a/m">Documentation</option>
+			<option value="-asm/a/m/n/s/m">Instructions</option>
+			<option value="-api/a/m">Symbols</option>
+			<option value="-api/a/m/u">Usages</option>
+			<option value="-ast/m">Syntax tree</option>
+			<option value="-profile/t/p/G/M -api/A/m/d/p/u -asm/a/n/s -ast -doc">full dump</option>
+		</select></li>
 	</ul>
+	<hr>
+	<div>
+		<span>Workspace</span>
+		<button class="right" onclick="params.update('folder');" title="Refresh file list">⟳</button>
+		<!--<button class="right" onclick="uploadFiles();">📤</button> -->
+		<!--<button class="right" onclick="downloadFiles(false);">📥</button> -->
 	</div>
-	<div id="editSplit" class="content split-pane horizontal">
-		<div class="text-content">
-			<textarea id="input"></textarea>
-		</div>
-		<div class="text-content">
-			<div class="toolbar">
-				<span class="left icon bold" onclick="terminal.clear();" title="Clear output">⦸</span>
-				<span class="left icon bold" onclick="editOutput();" title="Open output in editor">⎗</span>
-				<span class="right icon bold" onclick="void(showEditor('!secondary'), showSplitter(menuSplit, 'secondary'));" title="Maximize">⬚</span>
-				<span class="right icon bold" onclick="terminal.scroll(true);" title="Scroll to end">⏬</span>
-				<span class="right icon bold" onclick="terminal.scroll(false);" title="Scroll to top">⏫</span>
-				<span class="filename" title="Execution arguments"><input id="edtExecute"></input></span>
-			</div>
-			<pre id="output"></pre>
-		</div>
-	</div>
+	<ul id="fileList"></ul>
+	<ul>
+		<hr>
+		<li onclick="editProject();">🛠 Edit project</li>
+		<li onclick="shareInput();">🔗 Share link</li>
+		<!--<li onclick="saveInput();">💾 Save file</li> -->
+		<!--<li onclick="params.update({file: null});">❌ Close file</li> -->
+		<!--<li onclick="params.update({folder: '*'});" title="Show files including the /lib/ folder">Show all</li> -->
+	</ul>
 </div>
-<div onclick="showCanvas(false)" class="modal-content hidden">
+<div>
+	<div id="editor">
+		<textarea id="input"></textarea>
+	</div>
+	<pre id="output"></pre>
+</div>
+<div id="canvasDiv" onclick="void(0);">
 	<canvas id="canvas" width="0" onclick="event.stopPropagation()"></canvas>
+	<div id="canvasMove" class="hidden" onclick="classList.add('hidden');"></div>
 </div>
 
 <script type="text/javascript">
+function centerCanvas() {
+	let zoom = canvas.style.zoom;
+	if (zoom === "") {
+		zoom = 1;
+	}
+	let dx = +zoom * canvas.clientWidth - canvas.parentElement.clientWidth;
+	if (dx > 0) {
+		canvas.parentElement.scrollLeft = dx / 2;
+		canvas.style.left = 0;
+	} else {
+		canvas.parentElement.scrollLeft = 0;
+		canvas.style.left = -dx / zoom / 2;
+	}
+	let dy = +zoom * canvas.clientHeight - canvas.parentElement.clientHeight;
+	if (dy > 0) {
+		canvas.parentElement.scrollTop = dy / 2;
+		canvas.style.top = 0;
+	} else {
+		canvas.parentElement.scrollTop = 0;
+		canvas.style.top = -dy / zoom / 2;
+	}
+	canvasMove.style.width = Math.max(canvas.width, canvas.parentElement.clientWidth);
+	canvasMove.style.height = Math.max(canvas.height, canvas.parentElement.clientHeight);
+}
+function onExecClick() {
+	// if canvas is already shown, zoom or pan
+	if (document.body.classList.contains('canvas')) {
+		if (canvasMove.classList.contains('hidden')) {
+			canvasMove.classList.remove('hidden');
+			canvas.style.zoom = 1;
+		} else {
+			canvasMove.classList.add('hidden');
+			let zoom = Math.min(screen.width / canvas.width, screen.height / canvas.height);
+			if (zoom < 1) {
+				canvas.style.zoom = zoom;
+			}
+		}
+		centerCanvas();
+		return;
+	}
+	execute(selExecute.data || '-run/g');
+}
+
+function onSyncWorkSpace(error) {
+	if (error == null) {
+		return;
+	}
+	console.error(error);
+}
+
 var props = props || {};
 props.libraries = [
 	'libFile.wasm',
@@ -122,7 +172,7 @@ function openProjectFile(projectOrFile) {
 	if (projectOrFile.workspace != null) {
 		if (Module.initWorkspace(projectOrFile.workspace, function () {
 			openProjectFile(projectOrFile);
-			listFiles('.');
+			listFiles(params.folder || '.');
 		})) {
 			return;
 		}
@@ -132,8 +182,8 @@ function openProjectFile(projectOrFile) {
 			if (inProgress > 0) {
 				return;
 			}
-			FS.syncfs(console.log);
-			listFiles('.');
+			FS.syncfs(onSyncWorkSpace);
+			listFiles(params.folder || '.');
 		});
 	}
 	if (projectOrFile.file != null) {
@@ -142,7 +192,7 @@ function openProjectFile(projectOrFile) {
 			setContent(content, projectOrFile.file, projectOrFile.line);
 		} catch (error) {
 			// in case we open a file that does not exists
-			console.trace(error);
+			console.log(error);
 		}
 	}
 }
@@ -150,7 +200,7 @@ function listFiles(dir) {
 	fileList.innerHTML = '';
 	for (let file of Module.listFiles(dir)) {
 		if (file.endsWith('/')) {
-			fileList.innerHTML += '<li onclick="listFiles(this.innerText);">' + file + '</li>';
+			fileList.innerHTML += '<li onclick="params.update({folder: this.innerText});">' + file + '</li>';
 		} else {
 			fileList.innerHTML += '<li onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
 		}
@@ -173,9 +223,9 @@ function saveInput() {
 	if (content !== undefined) {
 		let exists = Module.pathExists(file);
 		Module.saveFile(file, content);
-		FS.syncfs(console.log);
+		FS.syncfs(onSyncWorkSpace);
 		if (!exists) {
-			listFiles('.');
+			listFiles(params.folder || '.');
 		}
 	}
 	if (params.content !== undefined) {
@@ -187,44 +237,60 @@ function saveInput() {
 }
 function execInput(args) {
 	// show overlay while compiling and initializing
-	canvas.parentElement.classList.remove('hidden');
+	//canvas.parentElement.classList.remove('hidden');
+	document.body.classList.add('canvas');
 	setTimeout(function() {
 		try {
 			Module['callMain'](args || []);
 		} catch (error) {
 			if (canvas.width === 0) {
-				canvas.parentElement.classList.add('hidden');
+				//canvas.parentElement.classList.add('hidden');
+				document.body.classList.remove('canvas');
 			}
 			throw error;
 		}
-		canvas.parentElement.classList.add('hidden');
+		if (canvas.width === 0) {
+			//canvas.parentElement.classList.add('hidden');
+			document.body.classList.remove('canvas');
+		}
 	});
 }
 
 function showCanvas(visible) {
-	if (visible) {
-		if ('ontouchstart' in document.documentElement) {
-			// adapt canvas to full hd resolution on mobile phones
-			canvas.style.zoom = Math.min(screen.width, screen.height) / 1080;
-		}
-		canvas.parentElement.classList.remove('hidden');
-		if (Browser.mainLoop.oldPause === undefined) {
-			Browser.mainLoop.oldPause = Browser.mainLoop.pause;
-			Browser.mainLoop.pause = function() {
-				canvas.parentElement.classList.add('hidden');
-				Browser.mainLoop.oldPause();
-				canvas.width = 0;
-			}
-		}
-	} else {
+	if (!visible) {
 		Module._SDL_SendQuit();
+		return;
+	}
+
+	//canvas.parentElement.classList.remove('hidden');
+	document.body.classList.add('canvas');
+
+	if ('ontouchstart' in document.documentElement) {
+		// adapt canvas to full hd resolution on mobile phones
+		let zoom = Math.min(screen.width / canvas.width, screen.height / canvas.height);
+		if (zoom < 1) {
+			canvas.style.zoom = zoom;
+		}
+	}
+	centerCanvas();
+	if (Browser.mainLoop.oldPause === undefined) {
+		Browser.mainLoop.oldPause = Browser.mainLoop.pause;
+		Browser.mainLoop.pause = function() {
+			document.body.classList.remove('canvas');
+			Browser.mainLoop.oldPause();
+			canvas.width = 0;
+		}
 	}
 }
 let canvasShown = new MutationObserver(function() {
 	if (canvas.width === 0) {
 		return;
 	}
+	if (canvasShown.width === canvas.width) {
+		return;
+	}
 	showCanvas(true);
+	canvasShown.width = canvas.width;
 });
 canvasShown.observe(canvas, { attributes: true });
 
@@ -262,7 +328,7 @@ var Module = {
 			if (inProgress > 0) {
 				return;
 			}
-			params.update('workspace', 'project', 'content', 'file');
+			params.update('workspace', 'project', 'content', 'folder', 'file');
 			Module.initialized = true;
 		});
 	}

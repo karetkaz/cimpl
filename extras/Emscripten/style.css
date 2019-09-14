@@ -1,137 +1,136 @@
+.hidden {display: none !important;}
+.clear {clear: both !important;}
+.right {float: right !important;}
+.left {float: left !important;}
+
+/* positioning */
 * {
-	margin: 0px;
+	margin: 0;
 	padding: 0;
 	font-size: inherit;
 	font-family: inherit;
 }
 body {
-	width:100%;
-	margin: auto;
-	display: block;
-	font-size: 1em;
-	-webkit-text-size-adjust: 100%;
-}
-
-.hidden {display: none;}
-.clear {clear: both;}
-.right {float: right;}
-.left {float: left;}
-
-.content {
 	top: 0;
 	left: 0;
 	right: 0;
 	bottom: 0;
+	font-size: 1em;
 	overflow: hidden;
+	-webkit-text-size-adjust: 100%;
+}
+body.tool { padding-top: 2em; }
+body:not(.tool) #toolbar { display: none; }
+
+body.menu {padding-left: 15em;}
+body:not(.menu) #menu { display: none; }
+
+body:not(.output) #editor { height: 100%; }
+body:not(.editor) #output { height: 100%; }
+body:not(.output) #output { display: none; }
+body:not(.canvas) #canvasDiv { display: none; }
+body.output:not(.editor) #editor { display: none; }
+
+body #toolbar>.icon {display: none;}
+body #toolbar>.icon:not(.editor):not(.output):not(.canvas) {display: initial;}
+body.editor #toolbar>.editor.icon {display: initial;}
+body.output #toolbar>.output.icon {display: initial;}
+body.canvas #toolbar>.canvas.icon {display: initial;}
+
+#toolbar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2em;
+	z-index: 200;
+	overflow: hidden;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+}
+#menu {
+	position: fixed;
+	display: block;
+	float: left;
+	top: 2em;
+	left: 0;
+	bottom: 0;
+	width: 14em;
+	padding: .5em;
+	overflow-y: auto;
+	z-index: 10;
+}
+#editor {
+	width: 100%;
+	height: 50%;
+}
+#output {
+	width: 100%;
+	height: 50%;
+	border-radius: 0;
+
+	overflow-x: auto;
+	overflow-y: scroll;
+
+	white-space: pre;
+	font-family: monospace;
+}
+#output>p {
+	min-height: 1em;
+}
+#canvasDiv {
+	background-color: #80808080;
+	position: absolute;
+	display: block;
+	top: 2em;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 100;
+	overflow: auto;
+}
+#canvasDiv>canvas {
+	background-color: white;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
+#canvasDiv>#canvasMove {
+	background-color: #80808080;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	margin: 0;
+	padding: 0;
 	position: absolute;
 }
 
-.content.list {
-	padding: .5em;
-	overflow-y: auto;
-	background-color: #fafafa;
-}
-
-.content.list * {
-	padding: .5em 0;
-}
-
-.content.list li:hover {
-	background-color: #dadada;
-	cursor: hand;
-}
-
-.content.list ul {
-	padding: 0 0 0 1em;
-}
-.content.list li {
-	list-style: none;
-	overflow: hidden;
-	white-space: nowrap;
-	padding: 0.5em 0.25em;
-}
-.content.list li>* {
-	padding: 0;
-}
-/*.content.list input {
-	margin: 0.25em 0;
-	padding: 0.25em 0.25em;
-	width: 100%;
-	border: solid 1px #dadada;
-	border-radius: 0.2em;
-}*/
-
-.content.list button {
-	border-radius: 0.2em;
-	margin: -.2em 0;
-	min-width: 1.5em;
-	min-height: 1.5em;
-	padding: 0.1em 0.5em;
-	background-color: #dadada;
-	border: solid 1px #eaeaea;
-}
-
-.content.list button:hover {
-	background-color: #fafafa;
-	border: solid 1px #dadada;
-}
-.content.list hr {
-	border: 0;
-	height: 1px;
-	padding: 0;
-	background-color: #dadada;
-}
-
-#menuSplit > div:first-child {
-	width: 14em;
-	max-width: 45%;
-	float: left;
-}
-
-#fileList > *:before {
-	content: '📄 ';
-}
-
-#fileList .active {
-	border: #bbb 1px solid;
-}
-
-/* toolbar */
-.toolbar {
-	margin: 0;
-	padding: 0;
-	height: 2em;
-	overflow: hidden;
-	background-color: #eaeaea;
-}
-
-.toolbar>span {
+#toolbar>span {
+	display: block;
 	text-decoration: none;
 	line-height: 2em;
+	/* 	font-weight:bold; */
 	text-align: center;
-	display: block;
-	width: auto;
+	width: 2em;
 	overflow: hidden;
-	padding: 0 .5em 0 .5em;
+	padding: 0;
+	border-radius: 0.2em;
 	cursor: hand;
 }
-.toolbar>span:hover {
-	border-radius: 0.2em;
-	background-color: #dadada;
-}
-.toolbar>span.icon {
-	width: 2em;
-	padding: 0;
-}
-.toolbar>span.bold {
-	font-weight:bold;
-}
-.toolbar>.filename {
+#toolbar>.filename {
 	width: auto;
 	overflow: hidden;
 	text-align: left;
 }
-.toolbar>.filename>input {
+#toolbar>.filename>input {
 	display: inline;
 	border: transparent;
 	background-color:transparent;
@@ -145,97 +144,57 @@ body {
 	-o-transition: box-shadow 0.5s ease-out;
 	transition: box-shadow 0.5s ease-out;
 }
-.toolbar>.filename>input.error {
+#toolbar>.filename>input.error {
 	box-shadow: 0 0 0 0 transparent, inset 0 0 2px 2px #f00;
 	-webkit-transition: none;
 	-moz-transition: none;
 	-o-transition: none;
 	transition: none;
 }
-/*.toolbar>.filename:before {
-	content: ' ▾ ';
-}*/
-.toolbar>.execute:after {
-	content: ' ▸ ';
-}
 
-/* input and output */
-textarea, #output {
-	display: block;
+#menu * {
+	padding: .5em 0;
+}
+#menu ul {
+	padding: 0 0 0 1em;
+}
+#menu li {
+	list-style: none;
+	overflow: hidden;
+	white-space: nowrap;
+	padding: 0.5em 0.25em;
+}
+#menu li:hover {
+	cursor: hand;
+}
+#menu li>* {
 	padding: 0;
+}
+#menu button {
+	border-radius: 0.2em;
+	margin: -.2em 0;
+	width: 1.5em;
+	height: 1.5em;
+	padding: 0;
+	line-height: 1.5em;
+}
+#menu hr {
 	border: 0;
-	margin: 0;
-	width: 100%;
-	height: 100%;
-	overflow-x: auto;
-	overflow-y: scroll;
-	border-radius: 0;
-	font-family: monospace;
-}
-#output {
-	white-space: pre;
-}
-#output p {
-	min-height: 1em;
-}
-#output a {
-	color: #007bff;
+	height: 1px;
+	padding: 0;
 }
 
-/* todo: recalculate terminal height with and without toolbar */
-#editSplit.split-pane.horizontal #output {
-	height: calc(100% - 2.5em);
-}
-
-/* show terminal toolbar if editor is maximized */
-#editSplit.split-pane.horizontal.primary>div:first-child {
-/* 	height: calc(100% - 2em); */
-}
-#editSplit.split-pane.horizontal.primary>div:last-child {
-/* 	display: block; */
-}
-
-/* hide terminal toolbar if toolbar is maximized */
-#editSplit.split-pane.secondary div.toolbar {
+#editor>textarea{
 	display: none;
 }
-#editSplit.split-pane.secondary #output {
-	height: 100%;
+#fileList > *:before {
+	content: '📄 ';
+}
+#fileList .active {
+	border: #bbb 1px solid;
 }
 
-.modal-content {
-	background-color: #80808080;
-	z-index: 100;
-	width: 100%;
-	height: 100%;
-	margin: 0;
-	padding: 0;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	overflow: hidden;
-	position: absolute;
-}
-
-.modal-content>canvas {
-	background-color: white;
-	margin: 0;
-	padding: 0;
-	position: relative;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-}
-
-/** CodeMirror */
-.text-content .CodeMirror {
-	margin: 0;
-	padding: 0;
-	border: 0;
-	height: 100%;
-}
-
+/* custom look and feel */
 .breakpoints {
 	width: 0.8em;
 }
@@ -260,7 +219,7 @@ textarea, #output {
 .cm-trailingspace {
 	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAACCAYAAAB/qH1jAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QUXCToH00Y1UgAAACFJREFUCNdjPMDBUc/AwNDAAAFMTAwMDA0OP34wQgX/AQBYgwYEx4f9lQAAAABJRU5ErkJggg==);
 	background-position: bottom left;
-	background-repeat: repeat-x;
+	/* 	background-repeat: repeat-x; */
 }
 
 .cm-tab {

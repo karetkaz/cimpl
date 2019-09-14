@@ -188,6 +188,9 @@ void show(gxMesh mesh, int w, int h, float32 fovy) {
 		static int ox = 0;
 		static int oy = 0;
 		static const float speed = 1. / 100;
+		if (action == Gui.FINGER_MOTION) {
+			action = Gui.MOUSE_MOTION;
+		}
 		if (action == Gui.KEY_PRESS) {
 			if (button == 27) {
 				return -1;

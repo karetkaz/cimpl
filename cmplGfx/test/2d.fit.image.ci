@@ -23,16 +23,16 @@ mat4f fitMatrix(const gxSurf src, int newWidth, int newHeight, bool fitWidth, bo
 	}
 
 	if (maxAspect > 0) {
-		if (maxAspect < 1) {
+		if (maxAspect > 1) {
 			maxAspect = 1 / maxAspect;
 		}
-		double newAspect = src.width() / double(src.height());
-		if (newAspect < 1) {
-			newAspect = 1 / newAspect;
+		double ratio = src.width() / double(src.height());
+		if (ratio > 1) {
+			ratio = 1 / ratio;
 		}
-		// debug("new aspect", newAspect);
-		if (newAspect < maxAspect) {
-			scale *= newAspect / maxAspect;
+		// debug("new aspect", ratio);
+		if (ratio > maxAspect) {
+			scale *= double.sqrt(maxAspect / ratio);
 		}
 	}
 
@@ -109,7 +109,7 @@ int onEvent(int action, int button, int x, int y) {
 		mat4f rot = rotation(vec4f(in.width() / 2, in.height() / 2, 1, 0), vec4f(0, 0, 1, 0), Math.radians(rotate.val()));
 		mat4f fit = fitMatrix(in, to.w, to.h, fitWidth.checked, fitHeight.checked, maxScale.val() / 100., maxAspect.val() / 100.);
 		mat4f mat = rot.mul(fit);
-		//debug("transform", mat.m);
+		debug("transform", mat.m);
 		offs.transform(to, in, null, quality.checked ? 1 : 0, mat.data);
 		offs.drawRect(to, 0);
 		ui.draw(30, 30);

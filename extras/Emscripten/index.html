@@ -5,11 +5,8 @@
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
 
-	<link rel="stylesheet" href="style.css">
+ 	<link rel="stylesheet" href="style.css"> 
 	<link rel="stylesheet" href="theme.css">
-
-	<link rel="stylesheet" href="splitter.css">
-	<script type="text/javascript" src="splitter.js"></script>
 
 	<script type="text/javascript" src="lib/JsArgs.js"></script>
 	<script type="text/javascript" src="lib/JsTerm.js"></script>
@@ -33,14 +30,25 @@
 	<script src="lib/codemirror/cmpl.js"></script>
 	<script src="lib/codemirror/keys.js"></script>
 </head>
-<body class="dark">
-<div id="mainToolBar" class="toolbar">
-	<span class="left icon" onclick="showSplitter(menuSplit, '!secondary');" title="Toggle show menu">☰</span>
-	<span class="left icon" onclick="saveInput();" title="Save script (Ctrl + s)">💾</span>
-	<span class="left icon" onclick="execute(selExecute.data || '-run/g');" title="Execute script (Ctrl + Shift + Enter)">►</span>
-	<!--span class="right icon" onclick="showEditor('!primary', 'vertical', '-horizontal');" title="Toggle show output">◨</span-->
-	<span class="right icon" onclick="showEditor('!primary', 'horizontal', '-vertical');" title="Toggle show output">⬓</span>
-	<span class="right icon" onclick="setTheme(body, '!dark');" title="Toggle dark theme">◑</span>
+<body class="dark tool menu editor output">
+<div id="toolbar">
+	<!-- input -->
+	<span class="left icon" title="Toggle show menu" onclick="setStyle(document.body, '!menu');">☰</span>
+	<span class="editor left icon" title="Save script (Ctrl + s)" onclick="saveInput();">💾</span>
+	<span class="left icon" title="Execute script (Ctrl + Enter)" onclick="onExecClick();">►</span>
+
+	<span class="canvas right icon" title="Close output" onclick="showCanvas(false);">❌</span>
+
+	<span class="editor output right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
+	<span class="editor output right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
+
+	<span class="editor right icon" title="Toggle show output" onclick="setStyle(body, 'output', '-editor', '-menu');">⬚</span>
+	<span class="output right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
+	<span class="output right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
+	<span class="output right icon bold" onclick="editOutput();" title="Open output in editor">⎗</span>
+	<span class="output right icon bold" title="Clear output" onclick="terminal.clear();">⦸</span>
+
+	<!-- filename -->
 	<span class="filename" title="Execute action (Shift + Enter)
 	'#args' Execute script
 	'?text' Search (Ctrl + f)
@@ -50,65 +58,54 @@
 	'+' Unfold all lines (Ctrl + Shift + +)">
 	<input id="edtFileName" placeholder="#execute; ?search; !replace; :goto; -fold; +unfold"></input></span>
 </div>
-<div id="menuSplit" class="content split-pane left vertical" style="top:2em;">
-	<div class="content list">
-		<div>
-			<span>Execute</span>
-			<button class="right" onclick="execute();" title="Compiler usage help">?</button>
-		</div>
-		<ul>
-			<li onclick="execute(selExecute.data = '-run/g');" title="Execute code at full speed">⚡ Run</li>
-			<li onclick="execute(selExecute.data = '-debug/g');" title="Execute code with error detection">🐞 Debug</li>
-			<li onclick="execute(selExecute.data = '-profile/g');" title="Execute code measuring execution time">⏱ Profile</li>
-			<li onclick="execute(selExecute.data = selExecute.value);" ><select id="selExecute" onchange="execute(this.data = this.value);" onclick="event.stopPropagation()" data="-run/g">
-				<option value="" selected>Compile only</option>
-				<option value="-doc/a/m">Documentation</option>
-				<option value="-asm/a/m/n/s/m">Instructions</option>
-				<option value="-api/a/m">Symbols</option>
-				<option value="-api/a/m/u">Usages</option>
-				<option value="-ast/m">Syntax tree</option>
-				<option value="-profile/t/p/G/M -api/A/m/d/p/u -asm/a/n/s -ast -doc">full dump</option>
-			</select></li>
-		</ul>
-		<hr>
-		<div>
-			<span>Project</span>
-			<button class="right" onclick="listFiles('.');" title="Refresh file list">⟳</button>
- 			<!--<button class="right" onclick="uploadFiles();">📤</button> -->
- 			<!--<button class="right" onclick="downloadFiles(false);">📥</button> -->
-		</div>
-		<ul>
-			<li onclick="editProject();">🛠 Edit project</li>
-			<li onclick="shareInput();">🔗 Share link</li>
-			<!--<li onclick="saveInput();">💾 Save file</li> -->
-			<!--<li onclick="params.update({file: null});">❌ Close file</li>-->
-			<hr>
-		</ul>
-		<ul id="fileList">
-		</ul>
-		<ul>
-		<li onclick="listFiles('*');" title="Show files including the /lib/ folder">Show all</li>
+<div id="menu">
+	<div>
+		<span>Execute</span>
+		<button class="right" onclick="execute();" title="Compiler usage help">?</button>
+	</div>
+	<ul>
+		<li onclick="execute(selExecute.data = '-run/g');" title="Execute code at full speed">⚡ Run</li>
+		<li onclick="execute(selExecute.data = '-debug/g');" title="Execute code with error detection">🐞 Debug</li>
+		<li onclick="execute(selExecute.data = '-profile/g');" title="Execute code measuring execution time">⏱ Profile</li>
+		<li onclick="execute(selExecute.data = selExecute.value);" ><select id="selExecute" onchange="execute(this.value);" onclick="event.stopPropagation()">
+			<option value="">Compile only</option>
+			<option value="-doc/a/m">Documentation</option>
+			<option value="-asm/a/m/n/s/m">Instructions</option>
+			<option value="-api/a/m">Symbols</option>
+			<option value="-api/a/m/u">Usages</option>
+			<option value="-ast/m">Syntax tree</option>
+			<option value="-profile/t/p/G/M -api/A/m/d/p/u -asm/a/n/s -ast -doc">full dump</option>
+		</select></li>
 	</ul>
+	<hr>
+	<div>
+		<span>Workspace</span>
+		<button class="right" onclick="params.update('folder');" title="Refresh file list">⟳</button>
+		<!--<button class="right" onclick="uploadFiles();">📤</button> -->
+		<!--<button class="right" onclick="downloadFiles(false);">📥</button> -->
 	</div>
-	<div id="editSplit" class="content split-pane horizontal">
-		<div class="text-content">
-			<textarea id="input"></textarea>
-		</div>
-		<div class="text-content">
-			<div class="toolbar">
-				<span class="left icon bold" onclick="terminal.clear();" title="Clear output">⦸</span>
-				<span class="left icon bold" onclick="editOutput();" title="Open output in editor">⎗</span>
-				<span class="right icon bold" onclick="void(showEditor('!secondary'), showSplitter(menuSplit, 'secondary'));" title="Maximize">⬚</span>
-				<span class="right icon bold" onclick="terminal.scroll(true);" title="Scroll to end">⏬</span>
-				<span class="right icon bold" onclick="terminal.scroll(false);" title="Scroll to top">⏫</span>
-				<span class="filename" title="Execution arguments"><input id="edtExecute"></input></span>
-			</div>
-			<pre id="output"></pre>
-		</div>
+	<ul id="fileList"></ul>
+	<ul>
+		<hr>
+		<li onclick="editProject();">🛠 Edit project</li>
+		<li onclick="shareInput();">🔗 Share link</li>
+		<!--<li onclick="saveInput();">💾 Save file</li> -->
+		<!--<li onclick="params.update({file: null});">❌ Close file</li> -->
+		<!--<li onclick="params.update({folder: '*'});" title="Show files including the /lib/ folder">Show all</li> -->
+	</ul>
+</div>
+<div>
+	<div id="editor">
+		<textarea id="input"></textarea>
 	</div>
+	<pre id="output"></pre>
 </div>
 
 <script type="text/javascript">
+function onExecClick() {
+	execute(selExecute.data || '-run/g');
+}
+
 var props = props || {};
 props.libraries = [
 	'libFile.wasm'
@@ -194,7 +191,7 @@ worker.onmessage = function(event) {
 		fileList.innerHTML = '';
 		for (let file of data.list) {
 			if (file.endsWith('/')) {
-				fileList.innerHTML += '<li onclick="listFiles(this.innerText);">' + file + '</li>';
+				fileList.innerHTML += '<li onclick="params.update({folder: this.innerText});">' + file + '</li>';
 			} else {
 				fileList.innerHTML += '<li onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
 			}
@@ -216,8 +213,7 @@ worker.onmessage = function(event) {
 		}
 	}
 	if (data.initialized) {
-		params.update('workspace', 'project', 'content', 'file');
-		listFiles('.');
+		params.update('workspace', 'project', 'content', 'folder', 'file');
 	}
 };
 </script>

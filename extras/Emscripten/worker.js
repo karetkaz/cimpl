@@ -21,7 +21,7 @@ importScripts("cmpl.js");
 
 onmessage = function(event) {
 	let data = event.data;
-	console.log(data);
+	//console.log(data);
 	let result = {};
 	try {
 		if (!Module.initialized) {

@@ -190,6 +190,9 @@ bool update(Layout layout&, int delta) {
 		debug("Shift", isShift);
 	}
 
+	if (action == Gui.FINGER_MOTION) {
+		action = Gui.MOUSE_MOTION;
+	}
 	if (action == Gui.KEY_PRESS) {
 		if (button == 0 && x == 116) {	// down
 			int delta = isShift ? 10 : 1;

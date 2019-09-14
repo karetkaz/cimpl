@@ -10,6 +10,9 @@ int onEvent(int action, int button, int ex, int ey) {
 	static int ox = 0;
 	static int oy = 0;
 
+	if (action == Gui.FINGER_MOTION) {
+		action = Gui.MOUSE_MOTION;
+	}
 	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;

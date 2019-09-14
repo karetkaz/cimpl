@@ -1356,6 +1356,9 @@ int cmplInit(rtContext rt) {
 		rt->api.ccDefInt(cc, "MOUSE_PRESS", MOUSE_PRESS);
 		rt->api.ccDefInt(cc, "MOUSE_MOTION", MOUSE_MOTION);
 		rt->api.ccDefInt(cc, "MOUSE_RELEASE", MOUSE_RELEASE);
+		rt->api.ccDefInt(cc, "FINGER_PRESS", FINGER_PRESS);
+		rt->api.ccDefInt(cc, "FINGER_MOTION", FINGER_MOTION);
+		rt->api.ccDefInt(cc, "FINGER_RELEASE", FINGER_RELEASE);
 		rt->api.ccDefInt(cc, "EVENT_TIMEOUT", EVENT_TIMEOUT);
 
 		rt->api.ccDefInt(cc, "WINDOW_INIT", WINDOW_INIT);

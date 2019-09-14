@@ -152,7 +152,7 @@ function JsArgs(paramSeparator, onHashChange) {
 				}
 				else if (newValue != null) {
 					// insert
-					changes[key] = newValue;
+					changes[key] = null;
 					this[key] = newValue;
 				}
 				else if (oldValue != null) {

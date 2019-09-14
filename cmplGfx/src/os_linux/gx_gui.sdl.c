@@ -147,19 +147,19 @@ int getWindowEvent(gxWindow window, int *button, int *x, int *y) {
 			*button = 1;
 			*x = event.tfinger.x * window->image->w;
 			*y = event.tfinger.y * window->image->h;
-			return MOUSE_PRESS;
+			return FINGER_PRESS;
 
 		case SDL_FINGERUP:
 			*button = 1;
 			*x = event.tfinger.x * window->image->w;
 			*y = event.tfinger.y * window->image->h;
-			return MOUSE_RELEASE;
+			return FINGER_RELEASE;
 
 		case SDL_FINGERMOTION:
 			*button = 1;
 			*x = event.tfinger.x * window->image->w;
 			*y = event.tfinger.y * window->image->h;
-			return MOUSE_MOTION;
+			return FINGER_MOTION;
 
 		case SDL_MOUSEMOTION:
 			if (btnstate == 0) {

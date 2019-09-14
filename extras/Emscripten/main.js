@@ -1,3 +1,50 @@
+function setStyle(splitter, ...styles) {
+	if (splitter && splitter.constructor === String) {
+		// allow to reference the splitter using id.
+		splitter = document.getElementById(splitter);
+	}
+
+	let cycleIndex = 0;
+	let cycleItems = [];
+	for (let style of styles) {
+
+		// remove style
+		if (style.startsWith('-')) {
+			splitter.classList.remove(style.substring(1));
+			continue;
+		}
+
+		// toggle style
+		if (style.startsWith('!')) {
+			style = style.substring(1);
+			if (splitter.classList.contains(style)) {
+				splitter.classList.remove(style);
+				continue;
+			}
+		}
+
+		// cycle style
+		if (style.startsWith('^')) {
+			style = style.substring(1);
+			cycleItems.push(style);
+			if (splitter.classList.contains(style)) {
+				splitter.classList.remove(style);
+				cycleIndex = cycleItems.length;
+			}
+			continue;
+		}
+
+		splitter.classList.add(style);
+	}
+	if (cycleItems.length > 0) {
+		let style = cycleItems[cycleIndex % cycleItems.length];
+		if (style !== '') {
+			splitter.classList.add(style);
+		}
+	}
+}
+
+
 var props = props || {};
 props.title = document.title;
 const pathMather = /(?=[\w\/])((?:\w+:\/\/)(?:[^:@\n\r"'`]+(?:\:\w+)?@)?(?:[^:/?#\n\r"'`]+)(?:\:\d+)?(?=[/?#]))?([^<>=:;,?#*|\n\r"'`]*)?(?:\:(?:(\d+)(?:\:(\d+))?))?(?:\?([^#\n\r"'`]*))?(?:\#([^\n\r"'`]*))?/;
@@ -8,15 +55,15 @@ CodeMirror.commands.save = function(cm) {
 }
 
 CodeMirror.commands.line = function(cm) {
-	completeAction({key: ':', valueText: key});
+	completeAction({key: ':', valueText: ':'});
 }
 
 CodeMirror.commands.find = function(cm) {
-	completeAction({key: '?', valueText: key});
+	completeAction({key: '?', valueText: '?'});
 }
 
 CodeMirror.commands.replace = function(cm) {
-	completeAction({key: '?!', valueText: key});
+	completeAction({key: '?!', valueText: '?!'});
 }
 
 CodeMirror.commands.findNext = function(cm) {
@@ -87,41 +134,34 @@ let terminal = Terminal(output, function(escaped, text) {
 let params = JsArgs('#', function (params, changes) {
 	//console.trace('params: ', changes, params);
 
-	// setup theme, only after loading
-	if (!changes && params.theme != null) {
-		setTheme(document.body, params.theme || 'dark', 'dark', 'light');
-	}
-
-	// open menu, only after loading
-	if (!changes && params.menu != null) {
-		showSplitter(window.menuSplit, params.menu === 'none' ? 'secondary' : params.menu);
-	}
-
-	// show editor or output, only after loading
-	if (!changes && params.split != null) {
-		showEditor(params.split);
-	}
-
-	// setup editor content, only after loading
-	if (!changes && params.content != null) {
-		let content = params.content;
-		try {
-			content = atob(content);
-		} catch (e) {
-			console.warn(e);
-		}
-		setContent(content, params.file, params.line);
-	}
-
 	if (changes === undefined) {
-		// wait for onRuntimeInitialized
+		// setup theme, only after loading
+		if (params.theme != null) {
+			setStyle(document.body, '-dark', '-light', params.theme || 'dark');
+		}
+
+		// open menu, only after loading
+		if (params.show != null) {
+			setStyle(document.body, '-menu', '-editor', '-output', params.show);
+		}
+
+		// setup editor content, only after loading
+		if (params.content != null) {
+			let content = params.content;
+			try {
+				content = atob(content);
+			} catch (e) {
+				console.warn(e);
+			}
+			setContent(content, params.file, params.line);
+		}
 		return;
 	}
 
 	// reload page if the project was modified
 	let files = [];
-	if (changes.project) {
-		if (changes.project !== params.project) {
+	if (changes.project !== undefined) {
+		if (changes.project != params.project) {
 			params.update(true);
 			return;
 		}
@@ -134,11 +174,13 @@ let params = JsArgs('#', function (params, changes) {
 			console.warn(e);
 		}
 
-		if (content.startsWith('[{')) {
-			files = JSON.parse(content);
-		} else {
-			for (let url of content.split(';')) {
-				files.push({ url });
+		if (content != null) {
+			if (content.startsWith('[{')) {
+				files = JSON.parse(content);
+			} else {
+				for (let url of content.split(';')) {
+					files.push({ url });
+				}
 			}
 		}
 		/*openProjectFile({
@@ -148,12 +190,12 @@ let params = JsArgs('#', function (params, changes) {
 			list: files
 		});
 		return;*/
-		if (!changes.workspace) {
-			changes.workspace = true;
+		if (changes.workspace === undefined) {
+			changes.workspace = null;
 		}
 	}
 
-	if (changes.workspace) {
+	if (changes.workspace !== undefined) {
 		openProjectFile({
 			workspace: params.workspace,
 			file: params.file,
@@ -167,7 +209,10 @@ let params = JsArgs('#', function (params, changes) {
 		return;
 	}
 
-	if (changes.file) {
+	if (changes.folder !== undefined) {
+		listFiles(params.folder || '.');
+	}
+	if (changes.file !== undefined) {
 		if (params.file == null && params.content == null) {
 			// close the current file
 			setContent('', '');
@@ -180,11 +225,11 @@ let params = JsArgs('#', function (params, changes) {
 		return;
 	}
 
-	if (changes.line) {
+	if (changes.line !== undefined) {
 		setContent(undefined, params.file, params.line);
 	}
 
-	if (changes.content) {
+	if (changes.content !== undefined) {
 		let content = params.content;
 		if (content != null) {
 			try {
@@ -224,8 +269,8 @@ edtFileName.onkeydown = function(event) {
 	// `#arguments` => execute script
 	if (edtFileName.value.startsWith('#')) {
 		let command = edtFileName.value.substr(1);
-		execute(command);
-		params.update({exec: command});
+		//params.update({exec: command});
+		execute(command, true);
 	}
 
 	// `:%` => zoom
@@ -316,7 +361,7 @@ edtFileName.onkeydown = function(event) {
 			}]});
 		}
 		else if (file.endsWith('/') || file.endsWith('*')) {
-			listFiles(edtFileName.value);
+			params.update({ folder: match.input });
 		}
 		else {
 			params.update({ content: null, file, line });
@@ -328,28 +373,22 @@ edtFileName.onkeydown = function(event) {
 }
 edtFileName.onkeyup = completeAction;
 
-edtExecute.onkeydown = function(event) {
-	if (event.key !== 'Enter') {
-		return true;
-	}
-	if (edtExecute.value === '') {
-		execute((params.exec || '-run/g'));
-	} else {
-		execute(edtExecute.value, true);
-	}
-	return false;
-}
-
 window.onkeydown = function() {
 	// escape to editor
 	if (event.key == 'Escape') {
 		editor.setSelection(editor.getCursor());
 		if (!editor.hasFocus()) {
-			showEditor('-secondary');
+			setStyle(document.body, 'editor');
 		} else {
-			showEditor('!primary');
+			setStyle(document.body, '!output');
 		}
 		editor.focus();
+		return false;
+	}
+	// Ctrl + Enter => Execute script
+	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'Enter') {
+		setStyle(document.body, 'output');
+		execute((params.exec || '-run/g'));
 		return false;
 	}
 	// Shift + Enter => Focus command: [search, jump, fold, run, ...]
@@ -357,16 +396,9 @@ window.onkeydown = function() {
 		edtFileName.focus();
 		return false;
 	}
-	// Ctrl + Enter => Focus arguments
-	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'Enter') {
-		showEditor('-primary');
-		edtExecute.focus();
-		return false;
-	}
 	// Ctrl + Shift + Enter => Execute script
 	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === 'Enter') {
-		edtExecute.focus();
-		edtExecute.onkeydown(event);
+		completeAction({key: '#', valueText: '#'});
 		return false;
 	}
 }
@@ -402,42 +434,18 @@ function completeAction(event) {
 			break;
 
 		case '#':
-			edtFileName.value += params.exec || selExecute.data || '';
+			edtFileName.value += selExecute.command || '';
 			edtFileName.selectionStart = 1;
 			break;
 	}
 	edtFileName.selectionEnd = edtFileName.value.length;
 }
 
-function setTheme(element, theme, ...remove) {
-	if (theme == null) {
-		return;
-	}
-
-	let toggle = false;
-	if (theme.startsWith('!')) {
-		theme = theme.substring(1);
-		toggle = true;
-	}
-
-	element.classList.remove(...remove);
-	if (toggle && element.classList.contains(theme)) {
-		element.classList.remove(theme);
-	} else {
-		element.classList.add(theme);
-	}
-}
-
-function showEditor(...options) {
-	showSplitter(window.editSplit, ...options);
-	editor.setSize('100%', '100%');
-}
-
 function setContent(content, file, line, column) {
 	let contentSet = false;
 	if (content != null && content != editor.getValue()) {
+		setStyle(document.body, 'editor');
 		editor.setValue(content);
-		showEditor('-secondary');
 		contentSet = true;
 	}
 	if (file != null) {
@@ -454,7 +462,7 @@ function setContent(content, file, line, column) {
 		var t = editor.charCoords({line, ch: 0}, "local").top; 
 		editor.scrollTo(null, t - middleHeight - 5);
 		editor.setCursor((line || 1) - 1, column);
-		showEditor('-secondary');
+		setStyle(document.body, 'editor');
 	}
 	return contentSet;
 }
@@ -497,7 +505,7 @@ function editOutput() {
 }
 
 function shareInput() {
-	showEditor('-primary');
+	setStyle(document.body, 'output');
 	let content = editor.getValue();
 	terminal.print('decoded uri: ' + decodeURIComponent(window.location));
 	terminal.print('current file: ' + window.location.origin + window.location.pathname + '#content=' + btoa(content));
@@ -554,10 +562,10 @@ function execute(cmd, exactArgs) {
 			}
 
 		}
-		edtExecute.value = args.join(' ');
+		selExecute.command = args.join(' ');
 	}
 
 	terminal.clear();
-	showEditor('-primary');
+	setStyle(document.body, 'output');
 	execInput(args || ['--help']);
 }
