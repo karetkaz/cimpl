@@ -4778,13 +4778,45 @@
 					</init>
 				</stmt>
 				<stmt token=".variable" type="function" kind="static const typename(ref)" value="scale(direction: vec4f, amount: float32): mat4f">
-					<init token="{}" type="void" kind="static const typename(void)" file="lib/vec/mat4f.ci:168">
+					<init token="{}" type="void" kind="static const typename(void)" file="lib/vec/mat4f.ci:170">
+						<stmt token=".variable" type="typename" kind="static const typename(ref)" value="rcp(val: float32): float32">
+							<init token="?:" type="float32" kind="static const typename(f32)" value="((val &lt; (0) ? -val : val)) &lt; 0.000000 ? (0) : (1) / val">
+								<test token="&lt;" type="bool" kind="static const typename(bool)" value="((val &lt; (0) ? -val : val)) &lt; 0.000000">
+									<left token="()" type="float64" kind="static const typename(f64)" value="((val &lt; (0) ? -val : val))">
+										<push token="()" type="float32" kind="static const typename(f32)" value="(val &lt; (0) ? -val : val)">
+											<push token="?:" type="float32" kind="static const typename(f32)" value="val &lt; (0) ? -val : val">
+												<test token="&lt;" type="bool" kind="static const typename(bool)" value="val &lt; (0)">
+													<left token=".variable" type="float32" kind="static const typename(f32)" value="val" />
+													<right token="()" type="float32" kind="static const typename(f32)" value="(0)">
+														<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+													</right>
+												</test>
+												<left token="-" type="float32" kind="static const typename(f32)" value="-val">
+													<right token=".variable" type="float32" kind="static const typename(f32)" value="val" />
+												</left>
+												<right token=".variable" type="float32" kind="static const typename(f32)" value="val" />
+											</push>
+										</push>
+									</left>
+									<right token=".literal" type="float64" kind="static const typename(f64)" value="0.000000" />
+								</test>
+								<left token="()" type="float32" kind="static const typename(f32)" value="(0)">
+									<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+								</left>
+								<right token="/" type="float32" kind="static const typename(f32)" value="(1) / val">
+									<left token="()" type="float32" kind="static const typename(f32)" value="(1)">
+										<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+									</left>
+									<right token=".variable" type="float32" kind="static const typename(f32)" value="val" />
+								</right>
+							</init>
+						</stmt>
 						<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := {...};">
 							<expr token=":=" type="void" kind="static const typename(void)" value=".result := {...}">
 								<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result" />
 								<right token="{}" type="void" kind="static const typename(void)">
-									<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.x.x := direction.x * amount;">
-										<expr token=":=" type="void" kind="static const typename(void)" value=".result.x.x := direction.x * amount">
+									<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.x.x := rcp(direction.x * amount);">
+										<expr token=":=" type="void" kind="static const typename(void)" value=".result.x.x := rcp(direction.x * amount)">
 											<left token="." type="float32" kind="static const typename(f32)" value=".result.x.x">
 												<left token="." type="vec4f" kind="static const typename(val)" value=".result.x">
 													<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result" />
@@ -4792,12 +4824,15 @@
 												</left>
 												<right token=".variable" type="float32" kind="static const typename(f32)" value="x" />
 											</left>
-											<right token="*" type="float32" kind="static const typename(f32)" value="direction.x * amount">
-												<left token="." type="float32" kind="static const typename(f32)" value="direction.x">
-													<left token=".variable" type="vec4f" kind="static const typename(val)" value="direction" />
-													<right token=".variable" type="float32" kind="static const typename(f32)" value="x" />
-												</left>
-												<right token=".variable" type="float32" kind="static const typename(f32)" value="amount" />
+											<right token="()" type="float32" kind="static const typename(f32)" value="rcp(direction.x * amount)">
+												<push token="*" type="float32" kind="static const typename(f32)" value="direction.x * amount">
+													<left token="." type="float32" kind="static const typename(f32)" value="direction.x">
+														<left token=".variable" type="vec4f" kind="static const typename(val)" value="direction" />
+														<right token=".variable" type="float32" kind="static const typename(f32)" value="x" />
+													</left>
+													<right token=".variable" type="float32" kind="static const typename(f32)" value="amount" />
+												</push>
+												<call token=".variable" type="function" kind="static const typename(ref)" value="rcp" />
 											</right>
 										</expr>
 									</stmt>
@@ -4857,8 +4892,8 @@
 											</right>
 										</expr>
 									</stmt>
-									<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.y.y := direction.y * amount;">
-										<expr token=":=" type="void" kind="static const typename(void)" value=".result.y.y := direction.y * amount">
+									<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.y.y := rcp(direction.y * amount);">
+										<expr token=":=" type="void" kind="static const typename(void)" value=".result.y.y := rcp(direction.y * amount)">
 											<left token="." type="float32" kind="static const typename(f32)" value=".result.y.y">
 												<left token="." type="vec4f" kind="static const typename(val)" value=".result.y">
 													<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result" />
@@ -4866,12 +4901,15 @@
 												</left>
 												<right token=".variable" type="float32" kind="static const typename(f32)" value="y" />
 											</left>
-											<right token="*" type="float32" kind="static const typename(f32)" value="direction.y * amount">
-												<left token="." type="float32" kind="static const typename(f32)" value="direction.y">
-													<left token=".variable" type="vec4f" kind="static const typename(val)" value="direction" />
-													<right token=".variable" type="float32" kind="static const typename(f32)" value="y" />
-												</left>
-												<right token=".variable" type="float32" kind="static const typename(f32)" value="amount" />
+											<right token="()" type="float32" kind="static const typename(f32)" value="rcp(direction.y * amount)">
+												<push token="*" type="float32" kind="static const typename(f32)" value="direction.y * amount">
+													<left token="." type="float32" kind="static const typename(f32)" value="direction.y">
+														<left token=".variable" type="vec4f" kind="static const typename(val)" value="direction" />
+														<right token=".variable" type="float32" kind="static const typename(f32)" value="y" />
+													</left>
+													<right token=".variable" type="float32" kind="static const typename(f32)" value="amount" />
+												</push>
+												<call token=".variable" type="function" kind="static const typename(ref)" value="rcp" />
 											</right>
 										</expr>
 									</stmt>
@@ -4931,8 +4969,8 @@
 											</right>
 										</expr>
 									</stmt>
-									<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.z.z := direction.z * amount;">
-										<expr token=":=" type="void" kind="static const typename(void)" value=".result.z.z := direction.z * amount">
+									<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.z.z := rcp(direction.z * amount);">
+										<expr token=":=" type="void" kind="static const typename(void)" value=".result.z.z := rcp(direction.z * amount)">
 											<left token="." type="float32" kind="static const typename(f32)" value=".result.z.z">
 												<left token="." type="vec4f" kind="static const typename(val)" value=".result.z">
 													<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result" />
@@ -4940,12 +4978,15 @@
 												</left>
 												<right token=".variable" type="float32" kind="static const typename(f32)" value="z" />
 											</left>
-											<right token="*" type="float32" kind="static const typename(f32)" value="direction.z * amount">
-												<left token="." type="float32" kind="static const typename(f32)" value="direction.z">
-													<left token=".variable" type="vec4f" kind="static const typename(val)" value="direction" />
-													<right token=".variable" type="float32" kind="static const typename(f32)" value="z" />
-												</left>
-												<right token=".variable" type="float32" kind="static const typename(f32)" value="amount" />
+											<right token="()" type="float32" kind="static const typename(f32)" value="rcp(direction.z * amount)">
+												<push token="*" type="float32" kind="static const typename(f32)" value="direction.z * amount">
+													<left token="." type="float32" kind="static const typename(f32)" value="direction.z">
+														<left token=".variable" type="vec4f" kind="static const typename(val)" value="direction" />
+														<right token=".variable" type="float32" kind="static const typename(f32)" value="z" />
+													</left>
+													<right token=".variable" type="float32" kind="static const typename(f32)" value="amount" />
+												</push>
+												<call token=".variable" type="function" kind="static const typename(ref)" value="rcp" />
 											</right>
 										</expr>
 									</stmt>

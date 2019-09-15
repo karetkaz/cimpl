@@ -119,19 +119,23 @@ lib/vec/mat4f.ci:165: warn: adding implicit cast float32(0: int32)
 lib/vec/mat4f.ci:165: warn: adding implicit cast float32(0: int32)
 lib/vec/mat4f.ci:165: warn: adding implicit cast float32(0: int32)
 lib/vec/mat4f.ci:165: warn: adding implicit cast float32(1: int32)
-lib/vec/mat4f.ci:170: warn: adding implicit cast float32(0: int32)
-lib/vec/mat4f.ci:170: warn: adding implicit cast float32(0: int32)
-lib/vec/mat4f.ci:170: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:171: warn: adding implicit cast float32(1: int32)
 lib/vec/mat4f.ci:171: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:171: warn: adding implicit cast float64((val < (0) ? -val : val): float32)
 lib/vec/mat4f.ci:171: warn: adding implicit cast float32(0: int32)
-lib/vec/mat4f.ci:171: warn: adding implicit cast float32(0: int32)
-lib/vec/mat4f.ci:172: warn: adding implicit cast float32(0: int32)
-lib/vec/mat4f.ci:172: warn: adding implicit cast float32(0: int32)
-lib/vec/mat4f.ci:172: warn: adding implicit cast float32(0: int32)
 lib/vec/mat4f.ci:173: warn: adding implicit cast float32(0: int32)
 lib/vec/mat4f.ci:173: warn: adding implicit cast float32(0: int32)
 lib/vec/mat4f.ci:173: warn: adding implicit cast float32(0: int32)
-lib/vec/mat4f.ci:173: warn: adding implicit cast float32(1: int32)
+lib/vec/mat4f.ci:174: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:174: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:174: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:175: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:175: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:175: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:176: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:176: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:176: warn: adding implicit cast float32(0: int32)
+lib/vec/mat4f.ci:176: warn: adding implicit cast float32(1: int32)
 
 ---------- Compile: `test/test.ci`
 test/test.ci:9: debug: inline file: `test/lang/emit.ci`
@@ -6693,7 +6697,7 @@ mat4f.<?>: mat4f.<?> {
 .base: `mat4f.<?>`
 .size: 64
 .name: '<?>'
-.file: 'lib/vec/mat4f.ci:177'
+.file: 'lib/vec/mat4f.ci:180'
 .owner: mat4f
 .field x: vec4f (size: 16, cast: variable(val))
 .field y: vec4f (size: 16, cast: variable(val))
@@ -6781,7 +6785,7 @@ mat4f.<?>: mat4f.<?> {
 .base: `mat4f.<?>`
 .size: 64
 .name: '<?>'
-.file: 'lib/vec/mat4f.ci:177'
+.file: 'lib/vec/mat4f.ci:180'
 .owner: mat4f
 .field xx: float32 (size: 4, cast: variable(f32))
 .field xy: float32 (size: 4, cast: variable(f32))
@@ -7981,25 +7985,27 @@ translation(direction: vec4f, amount: float32): mat4f: function {
 scale(direction: vec4f, amount: float32): mat4f: function {
 .kind: static const function
 .base: `function`
-.size: 76
+.size: 217
 .name: 'scale'
-.file: 'lib/vec/mat4f.ci:168'
+.file: 'lib/vec/mat4f.ci:170'
 .param .result: mat4f (size: 64, cast: variable(val))
 .param direction: vec4f (size: 4, cast: const variable(ref))
 .param amount: float32 (size: 4, cast: variable(f32))
+.doc: 'Build a scaling matrix'
 .value: {
+	rcp(val: float32): float32 := ((val < (0) ? -val : val)) < 0.000000 ? (0) : (1) / val;
 	return .result := {
-			.result.x.x := direction.x * amount;
+			.result.x.x := rcp(direction.x * amount);
 			.result.x.y := (0);
 			.result.x.z := (0);
 			.result.x.w := (0);
 			.result.y.x := (0);
-			.result.y.y := direction.y * amount;
+			.result.y.y := rcp(direction.y * amount);
 			.result.y.z := (0);
 			.result.y.w := (0);
 			.result.z.x := (0);
 			.result.z.y := (0);
-			.result.z.z := direction.z * amount;
+			.result.z.z := rcp(direction.z * amount);
 			.result.z.w := (0);
 			.result.w.x := (0);
 			.result.w.y := (0);
@@ -8007,64 +8013,118 @@ scale(direction: vec4f, amount: float32): mat4f: function {
 			.result.w.w := (1);
 		};
 }
-.instructions: (76 bytes)
-	lib/vec/mat4f.ci:169: (76 bytes): return .result := {...};
+.instructions: (217 bytes)
+	lib/vec/mat4f.ci:172: (217 bytes): return .result := {...};
 	<scale>  : dup.x32 sp(2)
 	<scale+?>: load.i32
 	<scale+?>: dup.x32 sp(2)
 	<scale+?>: mul.f32
+	<scale+?>: dup.x32 sp(0)
+	<scale+?>: load.z32
+	<scale+?>: clt.f32
+	<scale+?>: jz +11
+	<scale+?>: dup.x32 sp(0)
+	<scale+?>: neg.f32
+	<scale+?>: jmp +6
+	<scale+?>: dup.x32 sp(0)
+	<scale+?>: f32.2f64
+	<scale+?>: load.f64 0.000000
+	<scale+?>: clt.f64
+	<scale+?>: jz +9
+	<scale+?>: load.z32
+	<scale+?>: jmp +12
+	<scale+?>: load.f32 1.000000
+	<scale+?>: dup.x32 sp(1)
+	<scale+?>: div.f32
+	<scale+?>: set.x32 sp(1)
 	<scale+?>: set.x32 sp(4)
-	lib/vec/mat4f.ci:170: (3 bytes): .result.x.y := (0);
+	lib/vec/mat4f.ci:173: (3 bytes): .result.x.y := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(5)
-	lib/vec/mat4f.ci:170: (3 bytes): .result.x.z := (0);
+	lib/vec/mat4f.ci:173: (3 bytes): .result.x.z := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(6)
-	lib/vec/mat4f.ci:170: (3 bytes): .result.x.w := (0);
+	lib/vec/mat4f.ci:173: (3 bytes): .result.x.w := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(7)
-	lib/vec/mat4f.ci:171: (3 bytes): .result.y.x := (0);
+	lib/vec/mat4f.ci:174: (3 bytes): .result.y.x := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(8)
-	lib/vec/mat4f.ci:171: (12 bytes): .result.y.y := direction.y * amount;
+	lib/vec/mat4f.ci:174: (59 bytes): .result.y.y := rcp(direction.y * amount);
 	<scale+?>: dup.x32 sp(2)
 	<scale+?>: inc.i32(+4)
 	<scale+?>: load.i32
 	<scale+?>: dup.x32 sp(2)
 	<scale+?>: mul.f32
+	<scale+?>: dup.x32 sp(0)
+	<scale+?>: load.z32
+	<scale+?>: clt.f32
+	<scale+?>: jz +11
+	<scale+?>: dup.x32 sp(0)
+	<scale+?>: neg.f32
+	<scale+?>: jmp +6
+	<scale+?>: dup.x32 sp(0)
+	<scale+?>: f32.2f64
+	<scale+?>: load.f64 0.000000
+	<scale+?>: clt.f64
+	<scale+?>: jz +9
+	<scale+?>: load.z32
+	<scale+?>: jmp +12
+	<scale+?>: load.f32 1.000000
+	<scale+?>: dup.x32 sp(1)
+	<scale+?>: div.f32
+	<scale+?>: set.x32 sp(1)
 	<scale+?>: set.x32 sp(9)
-	lib/vec/mat4f.ci:171: (3 bytes): .result.y.z := (0);
+	lib/vec/mat4f.ci:174: (3 bytes): .result.y.z := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(10)
-	lib/vec/mat4f.ci:171: (3 bytes): .result.y.w := (0);
+	lib/vec/mat4f.ci:174: (3 bytes): .result.y.w := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(11)
-	lib/vec/mat4f.ci:172: (3 bytes): .result.z.x := (0);
+	lib/vec/mat4f.ci:175: (3 bytes): .result.z.x := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(12)
-	lib/vec/mat4f.ci:172: (3 bytes): .result.z.y := (0);
+	lib/vec/mat4f.ci:175: (3 bytes): .result.z.y := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(13)
-	lib/vec/mat4f.ci:172: (12 bytes): .result.z.z := direction.z * amount;
+	lib/vec/mat4f.ci:175: (59 bytes): .result.z.z := rcp(direction.z * amount);
 	<scale+?>: dup.x32 sp(2)
 	<scale+?>: inc.i32(+8)
 	<scale+?>: load.i32
 	<scale+?>: dup.x32 sp(2)
 	<scale+?>: mul.f32
+	<scale+?>: dup.x32 sp(0)
+	<scale+?>: load.z32
+	<scale+?>: clt.f32
+	<scale+?>: jz +11
+	<scale+?>: dup.x32 sp(0)
+	<scale+?>: neg.f32
+	<scale+?>: jmp +6
+	<scale+?>: dup.x32 sp(0)
+	<scale+?>: f32.2f64
+	<scale+?>: load.f64 0.000000
+	<scale+?>: clt.f64
+	<scale+?>: jz +9
+	<scale+?>: load.z32
+	<scale+?>: jmp +12
+	<scale+?>: load.f32 1.000000
+	<scale+?>: dup.x32 sp(1)
+	<scale+?>: div.f32
+	<scale+?>: set.x32 sp(1)
 	<scale+?>: set.x32 sp(14)
-	lib/vec/mat4f.ci:172: (3 bytes): .result.z.w := (0);
+	lib/vec/mat4f.ci:175: (3 bytes): .result.z.w := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(15)
-	lib/vec/mat4f.ci:173: (3 bytes): .result.w.x := (0);
+	lib/vec/mat4f.ci:176: (3 bytes): .result.w.x := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(16)
-	lib/vec/mat4f.ci:173: (3 bytes): .result.w.y := (0);
+	lib/vec/mat4f.ci:176: (3 bytes): .result.w.y := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(17)
-	lib/vec/mat4f.ci:173: (3 bytes): .result.w.z := (0);
+	lib/vec/mat4f.ci:176: (3 bytes): .result.w.z := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(18)
-	lib/vec/mat4f.ci:173: (7 bytes): .result.w.w := (1);
+	lib/vec/mat4f.ci:176: (7 bytes): .result.w.w := (1);
 	<scale+?>: load.f32 1.000000
 	<scale+?>: set.x32 sp(19)
 	<scale+?>: ret
@@ -14643,7 +14703,7 @@ testMathAbsMod_f32_8d: float32 {
 .field rotation: function (size: 524, cast: static const function)
 .field rotation: function (size: 0, cast: inline)
 .field translation: function (size: 88, cast: static const function)
-.field scale: function (size: 76, cast: static const function)
+.field scale: function (size: 217, cast: static const function)
 .field integer: typename (size: 0, cast: inline)
 .field emitldz32: int32 (size: 4, cast: variable(i32))
 .field emitldz64: int64 (size: 8, cast: variable(i64))
@@ -16111,18 +16171,19 @@ testMathAbsMod_f32_8d: float32 {
 		};
 			};
 			static const scale(const direction: vec4f, amount: float32): mat4f := {
+				rcp(val: float32): float32 := ((val < (0) ? -val : val)) < 0.000000 ? (0) : (1) / val;
 				return .result := {
-			.result.x.x := direction.x * amount;
+			.result.x.x := rcp(direction.x * amount);
 			.result.x.y := (0);
 			.result.x.z := (0);
 			.result.x.w := (0);
 			.result.y.x := (0);
-			.result.y.y := direction.y * amount;
+			.result.y.y := rcp(direction.y * amount);
 			.result.y.z := (0);
 			.result.y.w := (0);
 			.result.z.x := (0);
 			.result.z.y := (0);
-			.result.z.z := direction.z * amount;
+			.result.z.z := rcp(direction.z * amount);
 			.result.z.w := (0);
 			.result.w.x := (0);
 			.result.w.y := (0);
@@ -21575,7 +21636,7 @@ lib/vec/mat4f.ci:77: mat4f: function(<mat4f>)
 lib/vec/mat4f.ci:89: mul: function(<mul>)
 lib/vec/mat4f.ci:108: rotation: function(<rotation>)
 lib/vec/mat4f.ci:160: translation: function(<translation>)
-lib/vec/mat4f.ci:168: scale: function(<scale>)
+lib/vec/mat4f.ci:170: scale: function(<scale>)
 test/lang/emit.ci:3: emitldz32: int32(0)
 test/lang/emit.ci:4: emitldz64: int64(0)
 test/lang/emit.ci:6: emitA: int32(42)
@@ -21762,13 +21823,13 @@ test/lang/reflect.ci:22: RecordSizeof: typename(<RecordSizeof>)
 test/lang/reflect.ci:26: RecordSizeofExt: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:30: typeofRecord: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:31: nameOfRecord: char[*]("RecordSizeofExt")
-test/lang/reflect.ci:32: offsetOfRecord: int32(237720)
+test/lang/reflect.ci:32: offsetOfRecord: int32(238200)
 test/lang/reflect.ci:33: sizeOfRecord: int32(16)
 test/lang/reflect.ci:34: fileOfRecord: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:35: lineOfRecord: int32(26)
 test/lang/reflect.ci:37: typeofBase: typename(<RecordSizeof>)
 test/lang/reflect.ci:38: nameOfBase: char[*]("RecordSizeof")
-test/lang/reflect.ci:39: offsetOfBase: int32(237416)
+test/lang/reflect.ci:39: offsetOfBase: int32(237896)
 test/lang/reflect.ci:40: sizeOfBase: int32(12)
 test/lang/reflect.ci:41: fileOfBase: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:42: lineOfBase: int32(22)
@@ -22273,16 +22334,16 @@ test/stdc/test.math.ci:96: testMathAbsMod_f32_8d: float32(8.000000)
 
 ---------- Memory usage:
 memory[all] @000000; size: 2096872(2.0 Mb)
-memory[used] @000000; size: 357035(348.7 Kb)
-memory[heap] @0572ab; size: 1215571(1.2 Mb)
+memory[used] @000000; size: 357659(349.3 Kb)
+memory[heap] @05751b; size: 1214947(1.2 Mb)
 memory[stack] @0fff44; size: 524218(511.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 340480(332.5 Kb)
-memory[code] @000000; size: 16205(15.8 Kb)
+memory[meta] @000000; size: 340960(333.0 Kb)
+memory[code] @000000; size: 16346(16.0 Kb)
 memory[data] @000000; size: 80(80.0 bytes)
 
 ---------- heap memory:
-memory[free] @0572c8; size: 1215520(1.2 Mb)
+memory[free] @057538; size: 1214896(1.2 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

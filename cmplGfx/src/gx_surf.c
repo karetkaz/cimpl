@@ -136,12 +136,17 @@ void* gx_cliprect(gx_Surf surf, gx_Rect roi) {
 	return gx_getpaddr(surf, roi->x, roi->y);
 }
 
-static int gx_blitSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, cblt_type mode, void *extra) {
+int gx_blitSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, void *extra, cblt_proc blt) {
 	struct gx_Rect clip;
 	clip.x = roi ? roi->x : 0;
 	clip.y = roi ? roi->y : 0;
 	clip.w = roi ? roi->w : src->width;
 	clip.h = roi ? roi->h : src->height;
+
+	if(blt == NULL) {
+		// error: operation is invalid or not implemented
+		return -1;
+	}
 
 	if (x < 0) {
 		clip.x -= x;
@@ -171,31 +176,16 @@ static int gx_blitSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, cbl
 		return 0;
 	}
 
-	cblt_proc blt = gx_getcbltf(mode, src->depth);
-	if(blt == NULL) {
-		// error: operation is invalid or not implemented
-		return -1;
-	}
-
 	while (clip.h--) {
-		blt(dptr, sptr, extra, (size_t) clip.w);
+		if (blt(dptr, sptr, extra, (size_t) clip.w) < 0) {
+			return -1;
+		};
 		dptr += surf->scanLen;
 		sptr += src->scanLen;
 	}
 	return 0;
 }
 
-int gx_copySurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi) {
-	return gx_blitSurf(surf, x, y, src, roi, surf->depth, NULL);
-}
-int gx_lerpSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, int alpha) {
-	if (surf->depth != src->depth) {
-		// both source and destination must have same depth
-		return -2;
-	}
-
-	return gx_blitSurf(surf, x, y, src, roi, cblt_cpy_mix, (void *) (ssize_t) alpha);
-}
 int gx_zoomSurf(gx_Surf surf, gx_Rect rect, gx_Surf src, gx_Rect roi, int interpolate) {
 	if (surf->depth != src->depth) {
 		return -2;

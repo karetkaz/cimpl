@@ -5,16 +5,17 @@
 
 static int32_t defaultPalette[256];
 
-static void colcpy_32_24(char* dst, char *src, void *lut, size_t cnt) {
+static int colcpy_32_24(char* dst, char *src, void *lut, size_t cnt) {
 	// RRRRRRRR`GGGGGGGG`BBBBBBBB => 00000000`RRRRRRRR`GGGGGGGG`BBBBBBBB
 	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 3) {
 		register int32_t val = *(int32_t*)src;
 		val &= 0x00ffffff;
 		*(int32_t*)dst = val;
 	}
+	return 0;
 	(void)lut;
 }
-static void colcpy_32_16(char* dst, char *src, void *lut, size_t cnt) {
+static int colcpy_32_16(char* dst, char *src, void *lut, size_t cnt) {
 	// RRRRRGGG`GGGBBBBB => 00000000`RRRRR000`GGGGGG00`BBBBB000
 	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 2) {
 		register int32_t val = *(int16_t*)src;
@@ -23,9 +24,10 @@ static void colcpy_32_16(char* dst, char *src, void *lut, size_t cnt) {
 			| (val & 0x001f << 3);
 		*(int32_t*)dst = val;
 	}
+	return 0;
 	(void)lut;
 }
-static void colcpy_32_15(char* dst, char *src, void *lut, size_t cnt) {
+static int colcpy_32_15(char* dst, char *src, void *lut, size_t cnt) {
 	// XRRRRRGG`GGGBBBBB => 00000000`RRRRR000`GGGGG000`BBBBB000
 	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 2) {
 		register int32_t val = *(int16_t*)src;
@@ -35,9 +37,10 @@ static void colcpy_32_15(char* dst, char *src, void *lut, size_t cnt) {
 		*(int32_t*)dst = val;
 
 	}
+	return 0;
 	(void)lut;
 }
-static void colcpy_32_08(char* dst, char *src, void *lut, size_t cnt) {
+static int colcpy_32_08(char* dst, char *src, void *lut, size_t cnt) {
 	// convert to gray or use lookup table
 	// IIIIIIII => 00000000`IIIIIIII`IIIIIIII`IIIIIIII
 	if (lut == NULL) {
@@ -48,8 +51,9 @@ static void colcpy_32_08(char* dst, char *src, void *lut, size_t cnt) {
 		val = ((int32_t*)lut)[val];
 		*(int32_t*)dst = val;
 	}
+	return 0;
 }
-static void colcpy_32cpy(char* dst, char *src, void *lut, size_t cnt) {
+static int colcpy_32cpy(char* dst, char *src, void *lut, size_t cnt) {
 	if (lut != NULL) {
 		for ( ;cnt > 0; cnt -= 1, dst += 4, src += 4) {
 			register int32_t val = *(int32_t*)src;
@@ -62,56 +66,70 @@ static void colcpy_32cpy(char* dst, char *src, void *lut, size_t cnt) {
 	else {
 		memcpy(dst, src, 4 * cnt);
 	}
+	return 0;
 }
-static void colcpy_32and(char* dst, char *src, void *lut, size_t cnt) {
+static int colcpy_32and(char* dst, char *src, void *lut, size_t cnt) {
 	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 4) {
 		register uint32_t val = *(uint32_t*)src;
 		*(int32_t*)dst &= val;
 	}
+	return 0;
 	(void)lut;
 }
-static void colcpy_32ior(char* dst, char *src, void *lut, size_t cnt) {
+static int colcpy_32ior(char* dst, char *src, void *lut, size_t cnt) {
 	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 4) {
 		register uint32_t val = *(uint32_t*)src;
 		*(int32_t*)dst |= val;
 	}
+	return 0;
 	(void)lut;
 }
-static void colcpy_32xor(char* dst, char *src, void *lut, size_t cnt) {
+static int colcpy_32xor(char* dst, char *src, void *lut, size_t cnt) {
 	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 4) {
 		register uint32_t val = *(uint32_t*)src;
 		*(int32_t*)dst ^= val;
 	}
+	return 0;
 	(void)lut;
 }
-static void colcpy_32mix(char* dst, char *src, void *lut, size_t cnt) {
-	int alpha = (ssize_t) lut;
+static int colcpy_32mix(char* dst, char *src, void *lut, size_t cnt) {
+	size_t alpha = (size_t) lut;
+	if (alpha == (size_t) -1) {
+		for (; cnt > 0; cnt -= 1, dst += 4, src += 4) {
+			register argb val = *(argb *) src;
+			val = gx_mixcolor(*(argb *) dst, val, val.a);
+			*(argb *) dst = val;
+		}
+		return 0;
+	}
 	for (; cnt > 0; cnt -= 1, dst += 4, src += 4) {
 		register argb val = *(argb *) src;
-		register argb *ptr = (argb *) dst;
-		ptr->r = clamp_s8(ptr->r + alpha * (val.r - ptr->r) / 255);
-		ptr->g = clamp_s8(ptr->g + alpha * (val.g - ptr->g) / 255);
-		ptr->b = clamp_s8(ptr->b + alpha * (val.b - ptr->b) / 255);
+		val = gx_mixcolor(*(argb *) dst, val, (uint8_t) alpha);
+		*(argb *) dst = val;
 	}
+	return 0;
 }
 
-static void colset_32mix(char* dst, char *src, void *lut, size_t cnt) {
+static int colset_32mix(char* dst, char *src, void *lut, size_t cnt) {
 	argb val = cast_rgb((uint32_t) (size_t) lut);
 	for (; cnt > 0; cnt -= 1, dst += 4, src += 1) {
 		*(argb *) dst = gx_mixcolor(*(argb *) dst, val, *(uint8_t *) src);
 	}
+	return 0;
 }
-static void colcpy_24_32(char* dst, char *src, void *lut, size_t cnt) {
+static int colcpy_24_32(char* dst, char *src, void *lut, size_t cnt) {
 	// 00000000`RRRRRRRR`GGGGGGGG`BBBBBBBB => RRRRRRRR`GGGGGGGG`BBBBBBBB
 	for ( ;cnt > 0; cnt -= 1, dst += 3, src += 4) {
 		register int32_t val = *(int32_t*)src;
 		val &= 0x00ffffff;
 		*(int32_t*)dst = val;
 	}
+	return 0;
 	(void)lut;
 }
-static void colcpy_08cpy(char *dst, char *src, void *lut, size_t cnt) {
+static int colcpy_08cpy(char *dst, char *src, void *lut, size_t cnt) {
 	memcpy(dst, src, cnt);
+	return 0;
 	(void)lut;
 }
 
@@ -217,7 +235,7 @@ cblt_proc gx_getcbltf(cblt_type mode, int srcDepth) {
 	return NULL;
 }
 
-void colcpy_32_abgr(char* dst, char *src, void *lut, size_t cnt) {
+int colcpy_32_abgr(char* dst, char *src, void *lut, size_t cnt) {
 	// AAAAAAAA`BBBBBBBB`GGGGGGGG`RRRRRRRR => AAAAAAAA`RRRRRRRR`GGGGGGGG`BBBBBBBB
 	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 4) {
 		register int32_t val = *(int32_t*)src;
@@ -227,9 +245,10 @@ void colcpy_32_abgr(char* dst, char *src, void *lut, size_t cnt) {
 			| ((val & 0x000000ff) << 16);
 		*(int32_t*)dst = val;
 	}
+	return 0;
 	(void)lut;
 }
-void colcpy_32_bgr(char* dst, char *src, void *lut, size_t cnt) {
+int colcpy_32_bgr(char* dst, char *src, void *lut, size_t cnt) {
 	// BBBBBBBB`GGGGGGGG`RRRRRRRR => 00000000`RRRRRRRR`GGGGGGGG`BBBBBBBB
 	for ( ;cnt > 0; cnt -= 1, dst += 4, src += 3) {
 		register int32_t val = *(int32_t*)src;
@@ -238,6 +257,7 @@ void colcpy_32_bgr(char* dst, char *src, void *lut, size_t cnt) {
 			| ((val & 0x0000ff) << 16);
 		*(int32_t*)dst = val;
 	}
+	return 0;
 	(void)lut;
 }
 

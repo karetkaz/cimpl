@@ -78,7 +78,7 @@ typedef enum {			// color block transfer
 	//cblt_set_xor = 28,
 } cblt_type;
 
-typedef void (*cblt_proc)(void* dst, void *src, void *lut, size_t cnt);
+typedef int (*cblt_proc)(void* dst, void *src, void *lut, size_t cnt);
 
 
 static inline uint32_t bch(uint32_t xrgb) { return xrgb >>  0 & 0xff; }
@@ -143,7 +143,7 @@ static inline uint8_t gx_mixgray(uint32_t c1, uint32_t c2, int alpha) {
 
 cblt_proc gx_getcbltf(cblt_type type, int srcDepth);
 
-void colcpy_32_abgr(char* dst, char *src, void *lut, size_t cnt);
-void colcpy_32_bgr(char* dst, char *src, void *lut, size_t cnt);
+int colcpy_32_abgr(char* dst, char *src, void *lut, size_t cnt);
+int colcpy_32_bgr(char* dst, char *src, void *lut, size_t cnt);
 
 #endif

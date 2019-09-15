@@ -34,6 +34,7 @@ struct Layout {
 	gxSurf font;
 	variant items[200] = {};
 	gxRect rects[200] = {};
+	int reset[200] = {};
 	int selectedIndex = -1;
 	int count = 0;
 }
@@ -48,6 +49,7 @@ Layout Layout(gxSurf offs, gxSurf font, variant items...) {
 	layout.selectedIndex = -1;
 	for (int i = 0; i < items.length; i += 1) {
 		if (Slider slider& = items[i].as(Slider)) {
+			layout.reset[i] = slider.value;
 			if (layout.selectedIndex < 0 && slider.enabled) {
 				// select first enabled slider
 				layout.selectedIndex = i;
@@ -154,6 +156,8 @@ bool click(Layout layout&, int x, int y) {
 	return false;
 }
 
+//inline selected(Layout layout&, typename type) = layout.selectedIndex < 0 ? null : layout.items[layout.selectedIndex].as(type);
+
 bool update(Layout layout&, int delta) {
 	if (layout.selectedIndex < 0) {
 		return false;
@@ -163,46 +167,77 @@ bool update(Layout layout&, int delta) {
 	return true;
 }
 
+bool reset(Layout layout&, int index) {
+	if (index < 0) {
+		return false;
+	}
+	if (Slider item& = layout.items[index].as(Slider)) {
+		item.value = layout.reset[index];
+		return true;
+	}
+	return false;
+}
+
+bool reset(Layout layout&, bool all) {
+	if (!all) {
+		return layout.reset(layout.selectedIndex);
+	}
+	for (int i = 0; i < layout.count; i += 1) {
+		layout.reset(i);
+	}
+	return true;
+}
+
+bool select(Layout layout&, bool prev) {
+	for (int i = 1; i < layout.count; i += 1) {
+		int index = layout.selectedIndex + (prev ? -i : i);
+		if (index >= layout.count) {
+			index -= layout.count;
+		}
+		else if (index < 0) {
+			index += layout.count;
+		}
+		if (Slider item& = layout.items[index].as(Slider)) {
+			if (item.enabled) {
+				layout.selectedIndex = index;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 	static int ox = 0;
 	static int px = 0;
 	static int oy = 0;
 	static int py = 0;
 
-	static bool isCtrl = false;
-	if (button == 0 && x == 37) {
-		if (action == Gui.KEY_PRESS) {
-			isCtrl = true;
-		}
-		if (action == Gui.KEY_RELEASE) {
-			isCtrl = false;
-		}
-		debug("Ctrl", isCtrl);
-	}
-
-	static bool isShift = false;
-	if (button == 0 && x == 50) {
-		if (action == Gui.KEY_PRESS) {
-			isShift = true;
-		}
-		if (action == Gui.KEY_RELEASE) {
-			isShift = false;
-		}
-		debug("Shift", isShift);
-	}
+	bool isCtrl = (y & Gui.KEY_MASK_CONTROL) != 0;
+	bool isShift = (y & Gui.KEY_MASK_SHIFT) != 0;
 
 	if (action == Gui.FINGER_MOTION) {
 		action = Gui.MOUSE_MOTION;
 	}
 	if (action == Gui.KEY_PRESS) {
-		if (button == 0 && x == 116) {	// down
+		if (button == '*') {	// reset
+			if (layout.reset(isShift)) {
+				return true;
+			}
+		}
+		if (button == '-') {	// down
 			int delta = isShift ? 10 : 1;
 			if (layout.update(-delta)) {
 				return true;
 			}
 		}
-		if (button == 0 && x == 111) {	// up
+		if (button == '+') {	// up
 			int delta = isShift ? 10 : 1;
 			if (layout.update(+delta)) {
+				return true;
+			}
+		}
+		if (button == '\t') {
+			if (layout.select(isShift)) {
 				return true;
 			}
 		}

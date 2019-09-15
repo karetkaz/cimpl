@@ -239,10 +239,19 @@ void g2_clipText(gx_Rect rect, gx_Surf font, const char *text);
 void g2_drawChar(gx_Surf surf, int x, int y, gx_Surf font, int chr, uint32_t color);
 void g2_drawText(gx_Surf surf, int x, int y, gx_Surf font, const char *text, uint32_t color);
 
-int gx_copySurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi);
-int gx_lerpSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, int alpha);
+int gx_blitSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, void *extra, cblt_proc blt);
 int gx_zoomSurf(gx_Surf surf, gx_Rect rect, gx_Surf src, gx_Rect roi, int interpolate);
 int gx_blurSurf(gx_Surf surf, int radius, double sigma);
+static inline int gx_copySurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi) {
+	return gx_blitSurf(surf, x, y, src, roi, NULL, gx_getcbltf(surf->depth, src->depth));
+}
+static inline int gx_lerpSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, int alpha) {
+	if (surf->depth != src->depth) {
+		// source and destination must have same depth
+		return -2;
+	}
+	return gx_blitSurf(surf, x, y, src, roi, (void *) (ssize_t) alpha, gx_getcbltf(cblt_cpy_mix, src->depth));
+}
 
 
 // image read write

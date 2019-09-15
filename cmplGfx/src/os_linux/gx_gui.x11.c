@@ -133,12 +133,12 @@ int getWindowEvent(gxWindow window, int *button, int *x, int *y) {
 
 		case KeyPress:
 		case KeyRelease: {
-			char buffer[1];
-			KeySym keysym = XLookupKeysym(&(event.xkey), 0);
+			KeySym keysym;
+			char buffer[8];
 			XLookupString(&(event.xkey), buffer, sizeof(buffer), &keysym, NULL);
-			*button = *buffer;
+			*button = buffer[0];
 			*x = event.xkey.keycode;
-			*y = 0;
+			*y = keysym & ~255;
 			if (event.xkey.state & ShiftMask) {
 				*y |= KEY_MASK_SHIFT;
 			}

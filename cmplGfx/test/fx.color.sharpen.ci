@@ -1,42 +1,18 @@
 // Hue saturation brightness demo.
 
-gxSurf back = gxSurf("asset/image/forest.png", 32);
 gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
-gxSurf offs = gxSurf(back.width(), back.height(), back.depth());
+gxSurf surf = gxSurf("asset/image/forest.png", 32);
+gxSurf offs = gxSurf(surf);
+gxSurf blur = gxSurf(surf);
 
 inline blur(gxSurf surf, int radius) = surf.blur(radius, 0.3 * (radius - 1) + 0.8);
 
-void sharpen(gxSurf surf, int amount, int radius) {
-	gxSurf blur = gxSurf(surf);
-	blur.blur(radius);
-	surf.copy(0, 0, blur, null, -amount);
-
-	/* native alpha blend function is faster
-	int width = surf.width();
-	int height = surf.height();
-	for (int y = 0; y < height; y += 1) {
-		for (int x = 0; x < width; x += 1) {
-			inline lerp(int32 x, int32 y) = int32(x + -amount * (y - x) / 255);
-			argb col = argb(blur.get(x,y));
-			int r = rch(col);
-			int g = gch(col);
-			int b = bch(col);
-
-			col = argb(surf.get(x,y));
-			r = lerp(rch(col), r);
-			g = lerp(gch(col), g);
-			b = lerp(bch(col), b);
-
-			surf.set(x, y, argb(r, g, b));
-		}
-	}// */
-	blur.destroy();
-}
-
 int onEvent(int action, int button, int x, int y);
 offs.show(onEvent);
+
+blur.destroy();
 offs.destroy();
-back.destroy();
+surf.destroy();
 font.destroy();
 
 int onEvent(int action, int button, int x, int y) {
@@ -64,6 +40,8 @@ int onEvent(int action, int button, int x, int y) {
 	};
 	static Layout layout = Layout(offs, font, autoUpdate, amount, radius, time);
 
+	static int oldRadius = 0;
+
 	bool reCalculate = action == Gui.WINDOW_INIT;
 	if (uiEvent(layout, action, button, x, y)) {
 		reCalculate = true;
@@ -89,9 +67,14 @@ int onEvent(int action, int button, int x, int y) {
 		int radiusValue = radius.val();
 
 		uint64 start = System.millis();
-		offs.resize(null, back, null, 1);
+		offs.resize(null, surf, null, 1);
 		if (autoUpdate.checked) {
-			offs.sharpen(amountValue, radiusValue);
+			if (oldRadius != radiusValue) {
+				oldRadius = radiusValue;
+				blur.copy(0, 0, surf, null);
+				blur.blur(radiusValue);
+			}
+			offs.blend(0, 0, blur, null, -amountValue, null);
 		}
 		offs.drawHist(null, 0x00ffffff);
 		time.value = System.millis() - start;

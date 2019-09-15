@@ -165,11 +165,14 @@ mat4f translation(const vec4f direction&, float amount) {
 		w: {x: 0, y: 0, z: 0, w: 1};
 	};
 }
+
+/// Build a scaling matrix
 mat4f scale(const vec4f direction&, float amount) {
+	inline rcp(float val) = (val < 0 ? -val : val) < 1e-30 ? 0 : 1 / val;
 	return {
-		x: {x: direction.x * amount, y: 0, z: 0, w: 0};
-		y: {x: 0, y: direction.y * amount, z: 0, w: 0};
-		z: {x: 0, y: 0, z: direction.z * amount, w: 0};
+		x: {x: rcp(direction.x * amount), y: 0, z: 0, w: 0};
+		y: {x: 0, y: rcp(direction.y * amount), z: 0, w: 0};
+		z: {x: 0, y: 0, z: rcp(direction.z * amount), w: 0};
 		w: {x: 0, y: 0, z: 0, w: 1};
 	};
 }

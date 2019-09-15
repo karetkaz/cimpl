@@ -179,14 +179,14 @@ int getWindowEvent(gxWindow window, int *button, int *x, int *y) {
 
 		case WM_KEYDOWN:
 			*button = msg.wParam;
-			*x = LOWORD(msg.lParam);
+			*x = HIWORD(msg.lParam) & 127;
 			*y = HIWORD(msg.lParam);
 			DispatchMessage(&msg);
 			return KEY_PRESS;
 
 		case WM_KEYUP:
 			*button = msg.wParam;
-			*x = LOWORD(msg.lParam);
+			*x = HIWORD(msg.lParam) & 127;
 			*y = HIWORD(msg.lParam);
 			DispatchMessage(&msg);
 			return KEY_RELEASE;

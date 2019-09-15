@@ -48,9 +48,79 @@ mat4f fitMatrix(const gxSurf src, int newWidth, int newHeight, bool fitWidth, bo
 	};
 }
 
+mat4f skewMatrix(float sx, float sy) {
+	return {
+		x: {x: 1, y: float.tan(sx), z: 0, w: 0};
+		y: {x: float.tan(sy), y: 1, z: 0, w: 0};
+		z: {x: 0, y: 0, z: 1, w: 0};
+		w: {x: 0, y: 0, z: 0, w: 1};
+	};
+}
+
 int onEvent(int action, int button, int x, int y) {
 	inline "lib/micro.ui.ci";
 
+	static Checker quality = {
+		text: "high quality";
+		checked: true;
+	};
+	static Checker flipX = {
+		text: "flip x";
+		checked: false;
+	};
+	static Checker flipY = {
+		text: "flip y";
+		checked: false;
+	};
+	static Slider rotate = {
+		text: "rotate";
+		minValue: 0;
+		maxValue: 360;
+		value: 0;
+	};
+	static Slider skewX = {
+		text: "skew x";
+		minValue: -89;
+		maxValue: +89;
+		value: 0;
+	};
+	static Slider skewY = {
+		text: "skew y";
+		minValue: -89;
+		maxValue: +89;
+		value: 0;
+	};
+	static Slider scaleX = {
+		text: "scale x";
+		value: 100;
+		minValue: 10;
+		maxValue: 500;
+	};
+	static Slider scaleY = {
+		text: "scale y";
+		value: 100;
+		minValue: 10;
+		maxValue: 500;
+	};
+	static Slider translateX = {
+		text: "translate x";
+		minValue: -offs.width();
+		maxValue: +offs.width();
+		value: 0;
+	};
+	static Slider translateY = {
+		text: "translate y";
+		minValue: -offs.height();
+		maxValue: +offs.height();
+		value: 0;
+	};
+
+	static Slider fitRatio = {
+		text: "max ratio";
+		value: in.width() * 100 / in.height();
+		minValue: 100;
+		maxValue: 400;
+	};
 	static Checker fitWidth = {
 		text: "fit width";
 		checked: true;
@@ -59,35 +129,24 @@ int onEvent(int action, int button, int x, int y) {
 		text: "fit height";
 		checked: true;
 	};
-	static Slider maxAspect = {
-		text: "max aspect";
-		value: 133;
-		minValue: 100;
-		maxValue: 400;
-	};
-	static Slider maxScale = {
-		text: "max scale";
-		value: 100;
-		minValue: 100;
-		maxValue: 500;
-	};
-	static Slider imgAspect = {
-		text: "aspect";
+	static Slider inRatio = {
+		text: "ratio";
 		enabled: false;
 		value: in.width() * 100 / in.height();
 	};
-	static Checker quality = {
-		text: "high quality";
-		checked: true;
-	};
-	static Slider rotate = {
-		text: "rotate";
-		minValue: 0;
-		maxValue: 360;
-		value: 0;
-	};
 
-	static Layout ui = Layout(offs, font, fitWidth, fitHeight, quality, rotate, maxScale, maxAspect, imgAspect);
+	static Layout ui = Layout(offs, font,
+		quality,
+		fitWidth,
+		fitHeight,
+		fitRatio,
+		translateX, translateY,
+		scaleX, scaleY,
+		skewX, skewY,
+		flipX, flipY,
+		rotate,
+		inRatio
+	);
 	bool redraw = action == Gui.WINDOW_INIT;
 
 	if (uiEvent(ui, action, button, x, y)) {
@@ -106,9 +165,16 @@ int onEvent(int action, int button, int x, int y) {
 			x: (offs.width() - to.w) / 2;
 			y: (offs.height() - to.h) / 2;
 		};
-		mat4f rot = rotation(vec4f(in.width() / 2, in.height() / 2, 1, 0), vec4f(0, 0, 1, 0), Math.radians(rotate.val()));
-		mat4f fit = fitMatrix(in, to.w, to.h, fitWidth.checked, fitHeight.checked, maxScale.val() / 100., maxAspect.val() / 100.);
-		mat4f mat = rot.mul(fit);
+		vec4f center = vec4f(in.width() / 2, in.height() / 2, 0, 0);
+		mat4f mat = translation(center, 1)
+			.mul(translation(vec4f(translateX.val(), translateY.val(), 0, 0), 1))
+			.mul(scale(vec4f(scaleX.val(), scaleY.val(), 1, 1), 1f / 100))
+			.mul(skewMatrix(Math.radians(skewX.val()), Math.radians(skewY.val())))
+			.mul(rotation(vec4f(0, 1, 0, 0), Math.radians(int(flipX.checked) * 180)))
+			.mul(rotation(vec4f(1, 0, 0, 0), Math.radians(int(flipY.checked) * 180)))
+			.mul(rotation(vec4f(0, 0, 1, 0), Math.radians(rotate.val())))
+			.mul(translation(center, -1))
+			.mul(fitMatrix(in, to.w, to.h, fitWidth.checked, fitHeight.checked, 1, fitRatio.val() / 100.));
 		debug("transform", mat.m);
 		offs.transform(to, in, null, quality.checked ? 1 : 0, mat.data);
 		offs.drawRect(to, 0);
