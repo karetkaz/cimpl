@@ -1,9 +1,4 @@
-.hidden {display: none !important;}
-.clear {clear: both !important;}
-.right {float: right !important;}
-.left {float: left !important;}
-
-/* positioning */
+/* defaults */
 * {
 	margin: 0;
 	padding: 0;
@@ -19,24 +14,21 @@ body {
 	overflow: hidden;
 	-webkit-text-size-adjust: 100%;
 }
-body.tool { padding-top: 2em; }
-body:not(.tool) #toolbar { display: none; }
+.overlay {
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	margin: 0;
+	padding: 0;
+	position: absolute;
+}
+.left {float: left !important;}
+.right {float: right !important;}
+.clear {clear: both !important;}
+.hidden {display: none !important;}
 
-body.menu {padding-left: 15em;}
-body:not(.menu) #menu { display: none; }
-
-body:not(.output) #editor { height: 100%; }
-body:not(.editor) #output { height: 100%; }
-body:not(.output) #output { display: none; }
-body:not(.canvas) #canvasDiv { display: none; }
-body.output:not(.editor) #editor { display: none; }
-
-body #toolbar>.icon {display: none;}
-body #toolbar>.icon:not(.editor):not(.output):not(.canvas) {display: initial;}
-body.editor #toolbar>.editor.icon {display: initial;}
-body.output #toolbar>.output.icon {display: initial;}
-body.canvas #toolbar>.canvas.icon {display: initial;}
-
+/* positioning */
 #toolbar {
 	position: fixed;
 	top: 0;
@@ -51,68 +43,6 @@ body.canvas #toolbar>.canvas.icon {display: initial;}
 	-o-user-select: none;
 	user-select: none;
 }
-#menu {
-	position: fixed;
-	display: block;
-	float: left;
-	top: 2em;
-	left: 0;
-	bottom: 0;
-	width: 14em;
-	padding: .5em;
-	overflow-y: auto;
-	z-index: 10;
-}
-#editor {
-	width: 100%;
-	height: 50%;
-}
-#output {
-	width: 100%;
-	height: 50%;
-	border-radius: 0;
-
-	overflow-x: auto;
-	overflow-y: scroll;
-
-	white-space: pre;
-	font-family: monospace;
-}
-#output>p {
-	min-height: 1em;
-}
-#canvasDiv {
-	background-color: #80808080;
-	position: absolute;
-	display: block;
-	top: 2em;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	z-index: 100;
-	overflow: auto;
-}
-#canvasDiv>canvas {
-	background-color: white;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	margin: 0;
-	padding: 0;
-	position: relative;
-}
-#canvasDiv>#canvasMove {
-	background-color: #80808080;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	margin: 0;
-	padding: 0;
-	position: absolute;
-}
-
 #toolbar>span {
 	display: block;
 	text-decoration: none;
@@ -152,6 +82,18 @@ body.canvas #toolbar>.canvas.icon {display: initial;}
 	transition: none;
 }
 
+#menu {
+	position: fixed;
+	display: block;
+	float: left;
+	top: 2em;
+	left: 0;
+	bottom: 0;
+	width: 14em;
+	padding: .5em;
+	overflow-y: auto;
+	z-index: 10;
+}
 #menu * {
 	padding: .5em 0;
 }
@@ -184,15 +126,80 @@ body.canvas #toolbar>.canvas.icon {display: initial;}
 	padding: 0;
 }
 
-#editor>textarea{
-	display: none;
-}
 #fileList > *:before {
 	content: '📄 ';
 }
 #fileList .active {
 	border: #bbb 1px solid;
 }
+
+#menu-overlay {
+	position: fixed;
+	display: none;
+	z-index: 9;
+}
+
+#editor {
+	width: 100%;
+	height: 50%;
+}
+#editor>textarea{
+	display: none;
+}
+
+#output {
+	width: 100%;
+	height: 50%;
+	border-radius: 0;
+
+	overflow-x: auto;
+	overflow-y: scroll;
+
+	white-space: pre;
+	font-family: monospace;
+}
+#output>p {
+	min-height: 1em;
+}
+
+#canvasDiv {
+	position: absolute;
+	display: block;
+	top: 2em;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 100;
+	overflow: auto;
+}
+#canvasDiv>canvas {
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
+
+body.tool { padding-top: 2em; }
+body:not(.tool) #toolbar { display: none; }
+
+body.menu.menu-pin {padding-left: 15em;}
+body:not(.menu) #menu { display: none; }
+body.menu:not(.menu-pin) #menu-overlay { display: block; }
+
+body:not(.output) #editor { height: 100%; }
+body:not(.editor) #output { height: 100%; }
+body:not(.output) #output { display: none; }
+body:not(.canvas) #canvasDiv { display: none; }
+body.output:not(.editor) #editor { display: none; }
+
+body #toolbar>.icon {display: none;}
+body.editor #toolbar>.editor.icon {display: initial;}
+body.output #toolbar>.output.icon {display: initial;}
+body.canvas #toolbar>.canvas.icon {display: initial;}
+body #toolbar>.icon:not(.editor):not(.output):not(.canvas) {display: initial;}
 
 /* custom look and feel */
 .breakpoints {

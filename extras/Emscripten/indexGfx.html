@@ -30,7 +30,7 @@
 	<script src="lib/codemirror/cmpl.js"></script>
 	<script src="lib/codemirror/keys.js"></script>
 </head>
-<body class="dark tool menu editor output">
+<body class="dark tool menu menu-pin editor output">
 <div id="toolbar">
 	<!-- input -->
 	<span class="left icon" title="Toggle show menu"
@@ -43,7 +43,7 @@
 	<span class="editor left icon" title="Save script (Ctrl + s)" onclick="saveInput();">💾</span>
 	<span class="left icon" title="Execute script (Ctrl + Enter)" onclick="onExecClick();">►</span>
 
-	<span class="canvas right icon" title="Close canvas" onclick="showCanvas(false);">❌</span>
+	<span class="canvas right icon" title="Close output" onclick="showCanvas(false);">❌</span>
 
 	<span class="editor output right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
 	<span class="editor output right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
@@ -68,6 +68,7 @@
 	<div>
 		<span>Execute</span>
 		<button class="right" onclick="execute();" title="Compiler usage help">?</button>
+		<button class="right" onclick="setStyle(document.body, '!menu-pin');" title="Pin menu">📌</button>
 	</div>
 	<ul>
 		<li onclick="execute(selExecute.data = selExecute.value);" ><select id="selExecute" onchange="execute(this.value);" onclick="event.stopPropagation()">
@@ -100,15 +101,16 @@
 		<!--<li onclick="params.update({folder: '*'});" title="Show files including the /lib/ folder">Show all</li> -->
 	</ul>
 </div>
+<div id="menu-overlay" class="overlay" onclick="setStyle(document.body, '-menu');"></div>
 <div>
 	<div id="editor">
 		<textarea id="input"></textarea>
 	</div>
 	<pre id="output"></pre>
 </div>
-<div id="canvasDiv" onclick="void(0);">
+<div id="canvasDiv" class="overlay" onclick="void(0);">
 	<canvas id="canvas" width="0" onclick="event.stopPropagation()"></canvas>
-	<div id="canvasMove" class="hidden" onclick="classList.add('hidden');"></div>
+	<div id="canvasMove" class="overlay hidden" onclick="classList.add('hidden');"></div>
 </div>
 
 <script type="text/javascript">
