@@ -14,6 +14,11 @@ body {
 	overflow: hidden;
 	-webkit-text-size-adjust: 100%;
 }
+select {
+	border: 0;
+	padding: 0 .5em;
+}
+
 .overlay {
 	top: 0;
 	left: 0;
@@ -21,98 +26,96 @@ body {
 	bottom: 0;
 	margin: 0;
 	padding: 0;
+	display: none;
 	position: absolute;
+	z-index: 9;
 }
-.left {float: left !important;}
-.right {float: right !important;}
-.clear {clear: both !important;}
-.hidden {display: none !important;}
 
-/* positioning */
-#toolbar {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	height: 2em;
-	z-index: 200;
-	overflow: hidden;
+.left {float: left;}
+.right {float: right;}
+.clear {clear: both;}
+.hidden {display: none;}
+
+/* toolbars */
+.toolbar {
+	display: block;
+	width: 100%;
 	-webkit-user-select: none;
 	-khtml-user-select: none;
 	-moz-user-select: none;
 	-o-user-select: none;
 	user-select: none;
+	overflow: hidden;
+	z-index: 10;
 }
-#toolbar>span {
+.toolbar * {
+	color: inherit;
+	height: inherit;
+	line-height: inherit;
+	background-color:transparent;
+	overflow: hidden;
+}
+.toolbar > span {
 	display: block;
 	text-decoration: none;
-	line-height: 2em;
-	/* 	font-weight:bold; */
 	text-align: center;
-	width: 2em;
-	overflow: hidden;
-	padding: 0;
 	border-radius: 0.2em;
 	cursor: hand;
 }
-#toolbar>.filename {
+.toolbar > span:last-child {
 	width: auto;
 	overflow: hidden;
 	text-align: left;
 }
-#toolbar>.filename>input {
-	display: inline;
-	border: transparent;
-	background-color:transparent;
-	color: inherit;
-	height: 100%;
-	width: 100%;
-	margin: 0;
-	padding: 0;
-	-webkit-transition: box-shadow 0.5s ease-out;
-	-moz-transition: box-shadow 0.5s ease-out;
-	-o-transition: box-shadow 0.5s ease-out;
-	transition: box-shadow 0.5s ease-out;
-}
-#toolbar>.filename>input.error {
-	box-shadow: 0 0 0 0 transparent, inset 0 0 2px 2px #f00;
-	-webkit-transition: none;
-	-moz-transition: none;
-	-o-transition: none;
-	transition: none;
-}
 
-#menu {
+/* sidebar */
+.sidebar {
 	position: fixed;
 	display: block;
-	float: left;
-	top: 2em;
-	left: 0;
+	top: 0;
 	bottom: 0;
 	width: 14em;
+	height: unset;
 	padding: .5em;
 	overflow-y: auto;
 	z-index: 10;
 }
-#menu * {
+.sidebar * {
 	padding: .5em 0;
 }
-#menu ul {
+.sidebar ul {
 	padding: 0 0 0 1em;
 }
-#menu li {
+.sidebar li {
 	list-style: none;
 	overflow: hidden;
 	white-space: nowrap;
 	padding: 0.5em 0.25em;
 }
-#menu li:hover {
+.sidebar li:hover {
 	cursor: hand;
 }
-#menu li>* {
+.sidebar li.submenu:before,
+.sidebar div.submenu {
 	padding: 0;
 }
-#menu button {
+.sidebar div.submenu > li:before {
+	content: '▾ ';
+}
+.sidebar li.collapsed.submenu:before,
+.sidebar div.collapsed.submenu > li:before {
+	content: '▸ ';
+}
+.sidebar li.collapsed > ul,
+.sidebar div.collapsed > ul {
+	display: none;
+}
+.sidebar select {
+	padding: 0;
+	width: 100%;
+	line-height: 1.5em;
+}
+.sidebar button {
 	border-radius: 0.2em;
 	margin: -.2em 0;
 	width: 1.5em;
@@ -120,49 +123,88 @@ body {
 	padding: 0;
 	line-height: 1.5em;
 }
-#menu hr {
+.sidebar hr {
 	border: 0;
 	height: 1px;
 	padding: 0;
 }
 
+/* customizations */
+#main-toolbar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 2em;
+	line-height: 2em;
+}
+#main-toolbar > .icon {
+	min-width: 2em;
+}
+#main-toolbar input {
+	border: 0;
+	height: inherit;
+	width: 100%;
+}
+#output-toolbar {
+	height: 1.5em;
+	line-height: 1.5em;
+}
+#output-toolbar > .icon {
+	min-width: 1.5em;
+}
+
+#left-sidebar {
+	float: left;
+	top: 0;
+	left: 0;
+}
+#right-sidebar {
+	float: right;
+	top: 0;
+	right: 0;
+}
+
 #fileList > *:before {
 	content: '📄 ';
 }
-#fileList .active {
+#fileList > .active {
 	border: #bbb 1px solid;
 }
 
-#menu-overlay {
-	position: fixed;
-	display: none;
-	z-index: 9;
+#main-panel {
+	width: 100%;
+	height: 100%;
 }
 
-#editor {
+#editor-panel {
 	width: 100%;
 	height: 50%;
 }
-#editor>textarea{
+#editor-panel>textarea {
 	display: none;
+}
+#output-panel {
+	width: 100%;
+	height: 50%;
 }
 
 #output {
-	width: 100%;
-	height: 50%;
+	width: inherit;
+	height: 100%;
 	border-radius: 0;
-
 	overflow-x: auto;
 	overflow-y: scroll;
-
 	white-space: pre;
 	font-family: monospace;
+	background-color: inherit;
 }
 #output>p {
 	min-height: 1em;
+	height: 1em;
 }
 
-#canvasDiv {
+#canvas-panel {
 	position: absolute;
 	display: block;
 	top: 2em;
@@ -172,7 +214,7 @@ body {
 	z-index: 100;
 	overflow: auto;
 }
-#canvasDiv>canvas {
+#canvas-panel>canvas {
 	top: 0;
 	left: 0;
 	right: 0;
@@ -182,24 +224,62 @@ body {
 	position: relative;
 }
 
+/* main toolbar translations */
 body.tool { padding-top: 2em; }
-body:not(.tool) #toolbar { display: none; }
+body.tool #left-sidebar { top: 2em; }
+body.tool #right-sidebar { top: 2em; }
+body:not(.tool) #main-toolbar { display: none; }
 
-body.menu.menu-pin {padding-left: 15em;}
-body:not(.menu) #menu { display: none; }
-body.menu:not(.menu-pin) #menu-overlay { display: block; }
+/* left sidebar */
+body.left-bar.left-pin {padding-left: 15em;}
+body:not(.left-bar) #left-sidebar { display: none; }
+body.left-bar:not(.left-pin) #left-overlay { display: block; }
 
-body:not(.output) #editor { height: 100%; }
-body:not(.editor) #output { height: 100%; }
+/* right sidebar */
+body.right-bar.right-pin {padding-right: 15em;}
+body:not(.right-bar) #right-sidebar { display: none; }
+body.right-bar:not(.right-pin) #menu2-overlay { display: block; }
+
+/* panel visibility and size: editor, output, canvas */
+body:not(.output) #editor-panel { height: calc(100% - 1.5em); }
+body.output #editor-panel {height: calc(50% - 1.5em);}
+body:not(.editor) #output-panel { height: calc(100% - 1.5em); }
 body:not(.output) #output { display: none; }
-body:not(.canvas) #canvasDiv { display: none; }
-body.output:not(.editor) #editor { display: none; }
+body:not(.canvas) #canvas-panel { display: none; }
+body.output:not(.editor) #editor-panel { display: none; }
 
-body #toolbar>.icon {display: none;}
-body.editor #toolbar>.editor.icon {display: initial;}
-body.output #toolbar>.output.icon {display: initial;}
-body.canvas #toolbar>.canvas.icon {display: initial;}
-body #toolbar>.icon:not(.editor):not(.output):not(.canvas) {display: initial;}
+.toolbar>.editor,.toolbar>.output,.toolbar>.canvas {display: none;}
+
+/* toolbar icon visibility: editor, output, canvas */
+body.editor .toolbar>.editor {display: initial;}
+body.editor .toolbar>.no-editor {display: none;}
+body:not(.editor) #editor-panel {visibility: hidden;}
+body:not(.editor) .toolbar>.no-editor {display: initial;}
+
+body.output .toolbar>.output {display: initial;}
+body.output .toolbar>.no-output {display: none;}
+body:not(.output) .toolbar>.no-output {display: initial;}
+
+body.canvas .toolbar>.canvas {display: initial;}
+body.canvas .toolbar>.no-canvas {display: none;}
+body:not(.canvas) .toolbar>.no-canvas {display: initial;}
+#canvasMove.overlay.hidden {display: none;}
+#canvasMove.overlay {display: block;}
+
+/* custom full screen output */
+.toolbar>.output-only.icon {display: none;}
+body.output:not(.editor) .toolbar>.output-only.icon {display: initial;}
+body.output:not(.editor) #output {
+	position: absolute;
+	display: block;
+	top: 2.5em;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	width: unset;
+	height: unset;
+	z-index: 10;
+}
 
 /* custom look and feel */
 .breakpoints {
@@ -234,3 +314,22 @@ body #toolbar>.icon:not(.editor):not(.output):not(.canvas) {display: initial;}
 	background-position: right;
 	background-repeat: no-repeat;
 }
+
+/* Animations */
+#main-toolbar>.filename>input {
+	-webkit-transition: box-shadow 0.5s ease-out;
+	-moz-transition: box-shadow 0.5s ease-out;
+	-o-transition: box-shadow 0.5s ease-out;
+	transition: box-shadow 0.5s ease-out;
+}
+#main-toolbar>.filename>input.error {
+	box-shadow: 0 0 0 0 transparent, inset 0 0 2px 2px #f00;
+	-webkit-transition: none;
+	-moz-transition: none;
+	-o-transition: none;
+	transition: none;
+}
+
+/*! slide in-out
+body.left-bar { transition-duration: .4s; }
+*/

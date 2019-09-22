@@ -42,6 +42,7 @@ function setStyle(splitter, ...styles) {
 			splitter.classList.add(style);
 		}
 	}
+	editor.refresh();
 }
 
 
@@ -53,7 +54,6 @@ const pathFinder = new RegExp(pathMather, 'g');
 CodeMirror.commands.save = function(cm) {
 	saveInput();
 }
-
 CodeMirror.commands.line = function(cm) {
 	completeAction({key: ':', valueText: ':'});
 }
@@ -61,11 +61,6 @@ CodeMirror.commands.line = function(cm) {
 CodeMirror.commands.find = function(cm) {
 	completeAction({key: '?', valueText: '?'});
 }
-
-CodeMirror.commands.replace = function(cm) {
-	completeAction({key: '?!', valueText: '?!'});
-}
-
 CodeMirror.commands.findNext = function(cm) {
 	let cursor = edtFileName.cursor;
 	if (cursor && cursor.findNext()) {
@@ -74,7 +69,6 @@ CodeMirror.commands.findNext = function(cm) {
 		actionError();
 	}
 }
-
 CodeMirror.commands.findPrev = function(cm) {
 	let cursor = edtFileName.cursor;
 	if (cursor && cursor.findPrevious()) {
@@ -82,6 +76,9 @@ CodeMirror.commands.findPrev = function(cm) {
 	} else {
 		actionError();
 	}
+}
+CodeMirror.commands.findAndSelect = function(cm) {
+	completeAction({key: '?!', valueText: '?!'});
 }
 
 let editor = CodeMirror.fromTextArea(input, {
@@ -140,9 +137,9 @@ let params = JsArgs('#', function (params, changes) {
 			setStyle(document.body, '-dark', '-light', params.theme || 'dark');
 		}
 
-		// open menu, only after loading
+		// custom layout, only after loading
 		if (params.show != null) {
-			setStyle(document.body, '-menu', '-editor', '-output', params.show);
+			setStyle(document.body, '-left-bar', '-editor', '-output', params.show);
 		}
 
 		// setup editor content, only after loading
@@ -289,7 +286,7 @@ edtFileName.onkeydown = function(event) {
 		}
 	}
 
-	// ?! => replace all occurences
+	// ?! => find and select occurrences
 	else if (edtFileName.value.startsWith('?!')) {
 		let text = edtFileName.value.substr(2);
 		let cursor = editor.getSearchCursor(text, 0);
@@ -429,7 +426,7 @@ function completeAction(event) {
 			break;
 
 		case '?!':
-			edtFileName.value += editor.getSelection() || 'enter a text to replace';
+			edtFileName.value += editor.getSelection() || 'enter a text to search and select occurrences';
 			edtFileName.selectionStart = 2;
 			break;
 
@@ -446,6 +443,7 @@ function setContent(content, file, line, column) {
 	if (content != null && content != editor.getValue()) {
 		setStyle(document.body, 'editor');
 		editor.setValue(content);
+		editor.clearHistory();
 		contentSet = true;
 	}
 	if (file != null) {

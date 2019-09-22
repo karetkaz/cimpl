@@ -10,8 +10,8 @@ CodeMirror.normalizeKeyMap(CodeMirror.keyMap.extraKeys = {
 	//"Shift-Ctrl-S": "sortLines",
 	//"Ctrl-Enter": "splitLine",
 
-	//"Ctrl-E": "jumpToMatchBrace",
-	//"Shift-Ctrl-E": "selectToMatchBrace",
+	"Ctrl-B": "jumpToBrace",
+	"Shift-Ctrl-B": "selectToBrace",
 
 	"Shift-Tab": "indentLess",
 	"Ctrl-/": "toggleCommentIndented",
@@ -41,9 +41,10 @@ CodeMirror.normalizeKeyMap(CodeMirror.keyMap.extraKeys = {
 	"Ctrl-S": "save",
 	"Ctrl-G": "line",
 	"Ctrl-F": "find",
-	"Ctrl-R": "replace",
 	"F3": "findNext",
 	"Shift-F3": "findPrev",
+// 	"Shift-Ctrl-F": "findAndSelect",
+// 	"Ctrl-R": "replace",
 
 // 	"Ctrl-U": "undoSelection",
 // 	"Shift-Ctrl-F": "replace",
@@ -54,38 +55,122 @@ CodeMirror.normalizeKeyMap(CodeMirror.keyMap.extraKeys = {
 	"fallthrough": "basic",
 });
 
-function modifyWordOrSelection(cm, mod) {
+function modifySelection(cm, /*wordOrLine,*/ mod) {
 	cm.operation(function () {
-		var ranges = cm.listSelections(), indices = [], replacements = [];
-		for (var i = 0; i < ranges.length; i++) {
-			var range = ranges[i];
+		let ranges = cm.listSelections(), replacements = [];
+		for (let i = 0; i < ranges.length; i++) {
+			let range = ranges[i];
 			if (range.empty()) {
-				indices.push(i);
+				// todo extend range to line or word
 				replacements.push("");
-			} else replacements.push(mod(cm.getRange(range.from(), range.to())));
+			} else {
+				replacements.push(mod(cm.getRange(range.from(), range.to())));
+			}
 		}
 		cm.replaceSelections(replacements, "around", "case");
-		for (var i = indices.length - 1, at; i >= 0; i--) {
-			var range = ranges[indices[i]];
-			if (at && CodeMirror.cmpPos(range.head, at) > 0) continue;
-			var word = wordAt(cm, range.head);
-			at = word.from;
-			cm.replaceRange(mod(word.word), word.from, word.to);
-		}
 	});
+}
+
+CodeMirror.commands.jumpToBrace = function (cm) {
+	let cursor = cm.getCursor();
+	let result = cm.findMatchingBracket(cursor);
+	if (result && result.match) {
+		if (result.from.ch === cursor.ch) {
+			result.to.ch += 1;
+		}
+		console.log(result);
+		cm.setCursor(result.to);
+	}
+}
+CodeMirror.commands.selectToBrace = function (cm) {
+	let cursor = cm.getCursor();
+	let result = cm.findMatchingBracket(cursor);
+	if (result && result.match) {
+		if (result.from.ch === cursor.ch) {
+			result.to.ch += 1;
+		} else {
+			result.from.ch += 1;
+		}
+		cm.setSelection(result.from, result.to);
+	}
 }
 
 CodeMirror.commands.toggleCommentIndented = function (cm) {
 	cm.toggleComment({indent: true});
 }
 
+CodeMirror.commands.upperCase = function (cm) {
+	modifySelection(cm, function (str) {
+		return str.toUpperCase();
+	});
+}
+CodeMirror.commands.lowerCase = function (cm) {
+	modifySelection(cm, function (str) {
+		return str.toLowerCase();
+	});
+}
 CodeMirror.commands.toggleCase = function (cm) {
-	modifyWordOrSelection(cm, function (str) {
+	modifySelection(cm, function (str) {
 		let result = str.toLowerCase();
 		if (str !== result) {
 			return result;
 		}
 		return str.toUpperCase();
+	});
+}
+CodeMirror.commands.camelCase = function (cm) {
+	modifySelection(cm, function (str) {
+		let result = '';
+		for (let i = 0; i < str.length; ++i) {
+			let ch = str.charAt(i);
+			if (ch === ' ' || ch === '\t' || ch === '\v' || ch == '_') {
+				// skip whitespaces, and '_'
+				continue;
+			}
+
+			// not a number or lower or upper case character => convertUpperCase
+			let chUpperCase = ch.toUpperCase();
+			if (chUpperCase !== ch.toLowerCase()) {
+				let prev = str.charAt(i - 1);
+				let last = result.charAt(result.length - 1);
+				let isLastNum = last >= '0' && last <= '9';
+				if (prev !== last && (isLastNum || last !== last.toUpperCase())) {
+					ch = chUpperCase;
+				}
+			}
+			result += ch;
+		}
+		return result;
+	});
+}
+CodeMirror.commands.snakeCase = function (cm) {
+	modifySelection(cm, function (str) {
+		let result = '';
+		for (let i = 0; i < str.length; ++i) {
+			let ch = str.charAt(i);
+			if (ch === ' ' || ch === '\t' || ch === '\v') {
+				// skip whitespaces
+				continue;
+			}
+
+			// not a lower or upper case character => add_underscore
+			let chUpperCase = ch.toUpperCase();
+			if (chUpperCase !== ch.toLowerCase()) {
+				let prev = str.charAt(i - 1);
+				let last = result.charAt(result.length - 1);
+				let isLastNum = last >= '0' && last <= '9';
+				if (prev !== last && (isLastNum || last.toUpperCase() !== last.toLowerCase())) {
+					// last lower or upper case character is folowed by white space
+					result += '_';
+				}
+				else if (ch === chUpperCase && prev !== prev.toUpperCase()) {
+					// convert from camelCase => camel_Case
+					result += '_';
+				}
+			}
+			result += ch;
+		}
+		return result;
 	});
 }
 
