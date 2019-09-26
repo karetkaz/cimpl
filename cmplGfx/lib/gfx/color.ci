@@ -232,11 +232,8 @@ vec4f hsv2rgb(vec4f hsv) {
 }
 }
 
-/// calculate and draw the histogram of the image
-void drawHist(gxSurf image, gxRect roi&, uint32 hist) {
-	uint32 lut[256];
-	image.calcHist(roi, hist, lut);
-
+/// draw the given lookup table to the image
+void drawLut(gxSurf image, gxRect roi&, uint32 lut[256], bool showBars) {
 	enum {
 		margin: 20;
 		padding: 7;
@@ -247,10 +244,10 @@ void drawHist(gxSurf image, gxRect roi&, uint32 hist) {
 	}
 
 	gxRect rect = {
-		w: 256;
-		h: 128;
-		y: margin;
-		x: image.width() - rect.w - margin;
+		w: roi != null ? roi.w : 256;
+		h: roi != null ? roi.h : 128;
+		y: roi != null ? roi.y : margin;
+		x: roi != null ? roi.x : image.width() - rect.w - margin;
 	};
 
 	image.fillRect(
@@ -267,12 +264,26 @@ void drawHist(gxSurf image, gxRect roi&, uint32 hist) {
 		int rv = rch(argb(lut[x])) * rect.h / 256;
 		int lv = ach(argb(lut[x])) * rect.h / 256;
 
-		for (int y = 0; y < rect.h; y += 1) {
-			uint32 b = colB * uint32(y < bv);
-			uint32 g = colG * uint32(y < gv);
-			uint32 r = colR * uint32(y < rv);
-			uint32 l = colL * uint32(y < lv);
-			image.set(x + rect.x, rect.h - y + rect.y - 1, r | g | b | l);
+		if (showBars) {
+			for (int y = 0; y < rect.h; y += 1) {
+				uint32 b = colB * uint32(y < bv);
+				uint32 g = colG * uint32(y < gv);
+				uint32 r = colR * uint32(y < rv);
+				uint32 l = colL * uint32(y < lv);
+				image.set(x + rect.x, rect.h - y + rect.y - 1, r | g | b | l);
+			}
+		} else {
+				image.set(x + rect.x, rect.h - lv + rect.y - 1, colL);
+				image.set(x + rect.x, rect.h - bv + rect.y - 1, colB);
+				image.set(x + rect.x, rect.h - gv + rect.y - 1, colG);
+				image.set(x + rect.x, rect.h - rv + rect.y - 1, colR);
 		}
 	}
+}
+
+/// calculate and draw the histogram of the image
+void drawHist(gxSurf image, gxRect roi&, uint32 hist) {
+	uint32 lut[256];
+	image.calcHist(roi, hist, lut);
+	image.drawLut(roi, lut, true);
 }

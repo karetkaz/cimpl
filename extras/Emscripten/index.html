@@ -32,14 +32,14 @@
 </head>
 <body class="dark tool left-bar left-pin editor output">
 <div id="main-toolbar" class="toolbar">
-	<span class="left icon" title="Toggle show menu" onclick="setStyle(document.body, '!left-bar', 'editor');">☰</span>
-	<span class="editor left icon" title="Save script (Ctrl + s)" onclick="saveInput();">💾</span>
+	<span class="left icon" title="Toggle show menu" onclick="setStyle(body, '!left-bar', 'editor');">☰</span>
+	<span class="left icon" title="Save script (Ctrl + s)" onclick="saveInput();">💾</span>
 	<span class="left icon" title="Execute script (Ctrl + Enter)" onclick="onExecClick();">►</span>
 
-	<span class="canvas right icon" title="Close canvas" onclick="showCanvas(false);">❌</span>
-	<span class="right no-canvas icon" title="Toggle show menu" onclick="setStyle(body, '!right-bar', 'editor');">⋮</span>
-	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
+	<span class="right icon" title="Toggle show menu" onclick="setStyle(body, '!right-bar', 'editor');">⋮</span>
+	<span class="canvas right icon" title="Stop execution" onclick="showCanvas(false);">❌</span>
 	<span class="right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
+	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
 
 	<span class="output-only right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
 	<span class="output-only right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
@@ -57,9 +57,8 @@
 	<div>
 		<span>Execute</span>
 		<button class="right" onclick="execute();" title="Compiler usage help">?</button>
-		<button class="right" onclick="setStyle(document.body, '!left-pin');" title="Pin menu">📌</button>
 	</div>
-	<ul><li id="selExecute" class="collapsed submenu" onclick="setStyle(this, '!collapsed');">Execute<ul>
+	<ul><li class="collapsed submenu" onclick="setStyle(this, '!collapsed');">Execute<ul>
 		<li onclick="execute('-run/g');">⚡ Run</li>
 		<li onclick="execute('-debug/g');">🐞 Debug</li>
 		<li onclick="execute('-profile/g');">⏱ Profile</li>
@@ -87,7 +86,7 @@
 	</ul>
 </div>
 <div id="right-sidebar" class="sidebar">
-	<div class="submenu">
+	<div class="collapsed submenu">
 	<li onclick="setStyle(parentElement, '!collapsed');">File</li>
 	<ul>
 		<!-- TODO
@@ -135,13 +134,6 @@
 			-->
 		</ul></div>
 		<div class="collapsed submenu">
-		<li onclick="setStyle(parentElement, '!collapsed')">Fold</li><ul>
-			<li onclick="editor.execCommand('fold');">Fold (Ctrl + -)</li>
-			<li onclick="editor.execCommand('unfold');">Unfold (Ctrl + +)</li>
-			<li onclick="editor.execCommand('foldAll');">Fold All (Ctrl+Shift + -)</li>
-			<li onclick="editor.execCommand('unfoldAll');">Unfold All (Ctrl+Shift + -)</li>
-		</ul></div>
-		<div class="collapsed submenu">
 		<li onclick="setStyle(parentElement, '!collapsed')">Case</li><ul>
 			<li onclick="editor.execCommand('toggleCase');" title="">Toggle case(Ctrl + u)</li>
 			<li onclick="editor.execCommand('upperCase');" title="">Upper case</li>
@@ -153,10 +145,27 @@
 	<div class="submenu">
 	<li onclick="setStyle(parentElement, '!collapsed')">Find</li><ul>
 		<li onclick="editor.execCommand('find');" title="">Search (Ctrl + f)</li>
+		<li onclick="editor.execCommand('findNext');" title="">Search Next (F3)</li>
+		<li onclick="editor.execCommand('findPrev');" title="">Search Prev (Shift+F3)</li>
 		<li onclick="editor.execCommand('findAndSelect');" title="">Search and select</li>
 		<li onclick="editor.execCommand('line');" title="">Jump to line (Ctrl + g)</li>
 		<li onclick="editor.execCommand('jumpToBrace');" title="">Jump to brace (Ctrl + b)</li>
 		<li onclick="editor.execCommand('selectToBrace');" title="">Select to brace (Ctrl+Shift + b)</li>
+	</ul></div>
+	<div class="submenu">
+	<li onclick="setStyle(parentElement, '!collapsed')">View</li><ul>
+		<div class="collapsed submenu">
+		<li onclick="setStyle(parentElement, '!collapsed')">Fold</li><ul>
+			<li onclick="editor.execCommand('fold');">Fold (Ctrl + -)</li>
+			<li onclick="editor.execCommand('unfold');">Unfold (Ctrl + +)</li>
+			<li onclick="editor.execCommand('foldAll');">Fold All (Ctrl+Shift + -)</li>
+			<li onclick="editor.execCommand('unfoldAll');">Unfold All (Ctrl+Shift + -)</li>
+		</ul></div>
+		<li onclick="completeAction(':%', '100');" title="">Zoom</li>
+		<li id="wrap-output" onclick="setStyle(body, '!wrap-output');" title="">Wrap output</li>
+		<li id="pin-left" onclick="setStyle(body, '!left-pin');" title="">Pin left sidebar</li>
+		<li id="pin-right" onclick="setStyle(body, '!right-pin');" title="">Pin right sidebar</li>
+		<li id="show-toolbar" onclick="setStyle(body, '!tool');" title="">Show main toolbar</li>
 	</ul></div>
 </div>
 <div id="main-panel">
@@ -169,8 +178,8 @@
 				<option value="Output-0">Output</option>
 				<!-- <option value="Search-0">Search</option> -->
 			</select>
-			<span class="no-output left" onclick="setStyle(document.body, 'output');">Output</span>
-			<!-- <span class="no-output left" onclick="setStyle(document.body, 'output');">Search</span> -->
+			<span class="no-output left" onclick="setStyle(body, 'output');">Output</span>
+			<!-- <span class="no-output left" onclick="setStyle(body, 'output');">Search</span> -->
 			<span class="output left icon bold" onclick="editOutput();" title="Open output in editor">💾</span>
 			<span class="output left icon bold" title="Clear output" onclick="terminal.clear();">❌</span>
 
@@ -182,12 +191,12 @@
 		<pre id="output"></pre>
 	</div>
 </div>
-<div id="left-overlay" class="overlay" onclick="setStyle(document.body, '-left-bar');"></div>
-<div id="menu2-overlay" class="overlay" onclick="setStyle(document.body, '-right-bar');"></div>
+<div id="left-overlay" class="overlay" onclick="setStyle(body, '-left-bar');"></div>
+<div id="menu2-overlay" class="overlay" onclick="setStyle(body, '-right-bar');"></div>
 
 <script type="text/javascript">
 function onExecClick() {
-	execute(selExecute.data || '-run/g');
+	execute(params.exec || '-run/g');
 }
 
 var props = props || {};
@@ -202,6 +211,9 @@ function listFiles(dir) {
 }
 
 function saveInput(saveAs) {
+	if (params.content !== undefined) {
+		params.update({ content: btoa(editor.getValue()) });
+	}
 	let file = params.file;
 	if (file == null || saveAs === true) {
 		file = prompt('Save file as:', file || 'untitled.ci');

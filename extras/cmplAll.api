@@ -576,7 +576,7 @@ gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
 gxSurf.blend(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect, alpha: int32, blend(base: vec4f, with: vec4f): vec4f): void
 gxSurf.transform(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate: int32, mat: float32[16]): void
 gxSurf.blur(surf: gxSurf, radius: int32, sigma: float64): void
-gxSurf.colorMap(surf: gxSurf, roi: gxRect, lut: uint32[256]): void
+gxSurf.colorMap(surf: gxSurf, roi: gxRect, lut: uint32[256], useLuminosity: bool): void
 gxSurf.colorMat(surf: gxSurf, roi: gxRect, mat: float32[16]): void
 gxSurf.calcHist(surf: gxSurf, roi: gxRect, rgb: uint32, lut: uint32[256]): void
 gxSurf.drawMesh(surf: gxSurf, mesh: gxMesh, mode: int32): int32
@@ -683,6 +683,7 @@ lerpLut(lut: uint32[], colors: argb[]): void
 argb(vec: vec4f): argb
 lum(vec: vec4f): float32
 hsv2rgb(hsv: vec4f): vec4f
+drawLut(image: gxSurf, roi: gxRect, lut: uint32[256], showBars: bool): void
 drawHist(image: gxSurf, roi: gxRect, hist: uint32): void
 gxSurf(width: int32, height: int32, depth: int32): gxSurf
 gxSurf(fileName: char[*], depth: int32): gxSurf

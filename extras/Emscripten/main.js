@@ -1,24 +1,27 @@
-function setStyle(splitter, ...styles) {
-	if (splitter && splitter.constructor === String) {
+function setStyle(element, ...styles) {
+	if (element && element.constructor === String) {
 		// allow to reference the splitter using id.
-		splitter = document.getElementById(splitter);
+		element = document.getElementById(element);
 	}
 
 	let cycleIndex = 0;
 	let cycleItems = [];
+	let changedItems = [];
 	for (let style of styles) {
 
 		// remove style
 		if (style.startsWith('-')) {
-			splitter.classList.remove(style.substring(1));
+			element.classList.remove(style.substring(1));
+			changedItems.push(style.substring(1));
 			continue;
 		}
 
 		// toggle style
 		if (style.startsWith('!')) {
 			style = style.substring(1);
-			if (splitter.classList.contains(style)) {
-				splitter.classList.remove(style);
+			if (element.classList.contains(style)) {
+				element.classList.remove(style);
+				changedItems.push(style);
 				continue;
 			}
 		}
@@ -27,24 +30,34 @@ function setStyle(splitter, ...styles) {
 		if (style.startsWith('^')) {
 			style = style.substring(1);
 			cycleItems.push(style);
-			if (splitter.classList.contains(style)) {
-				splitter.classList.remove(style);
+			if (element.classList.contains(style)) {
+				element.classList.remove(style);
+				changedItems.push(style);
 				cycleIndex = cycleItems.length;
 			}
 			continue;
 		}
 
-		splitter.classList.add(style);
+		if (element.classList.contains(style)) {
+			// style alredy set
+			continue;
+		}
+		element.classList.add(style);
+		changedItems.push(style);
 	}
 	if (cycleItems.length > 0) {
 		let style = cycleItems[cycleIndex % cycleItems.length];
 		if (style !== '') {
-			splitter.classList.add(style);
+			element.classList.add(style);
+			changedItems.push(style);
 		}
 	}
-	editor.refresh();
+	if (element === document.body) {
+		if (changedItems.includes('editor') || changedItems.includes('output')) {
+			editor.refresh();
+		}
+	}
 }
-
 
 var props = props || {};
 props.title = document.title;
@@ -55,11 +68,11 @@ CodeMirror.commands.save = function(cm) {
 	saveInput();
 }
 CodeMirror.commands.line = function(cm) {
-	completeAction({key: ':', valueText: ':'});
+	completeAction(':');
 }
 
 CodeMirror.commands.find = function(cm) {
-	completeAction({key: '?', valueText: '?'});
+	completeAction('?');
 }
 CodeMirror.commands.findNext = function(cm) {
 	let cursor = edtFileName.cursor;
@@ -78,7 +91,7 @@ CodeMirror.commands.findPrev = function(cm) {
 	}
 }
 CodeMirror.commands.findAndSelect = function(cm) {
-	completeAction({key: '?!', valueText: '?!'});
+	completeAction('?!');
 }
 
 let editor = CodeMirror.fromTextArea(input, {
@@ -97,20 +110,6 @@ let editor = CodeMirror.fromTextArea(input, {
 	gutters: ["CodeMirror-linenumbers", "breakpoints", "CodeMirror-foldgutter"],
 	highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: true}
 });
-
-editor.on("gutterClick", function(cm, n) {
-	let info = cm.lineInfo(n);
-	if (info.gutterMarkers == null) {
-		let marker = document.createElement("div");
-		marker.classList.add("breakpoint");
-		marker.innerHTML = "●";
-		marker.value = n + 1;
-		cm.setGutterMarker(n, "breakpoints", marker);
-	} else {
-		cm.setGutterMarker(n, "breakpoints", null);
-	}
-});
-
 let terminal = Terminal(output, function(escaped, text) {
 	return escaped.replace(pathFinder, function (match, host, path, line, column, query, hash) {
 		if (path === undefined) {
@@ -247,8 +246,20 @@ function actionError() {
 	return false;
 }
 
-editor.focus();
+editor.on("gutterClick", function(cm, n) {
+	let info = cm.lineInfo(n);
+	if (info.gutterMarkers == null) {
+		let marker = document.createElement("div");
+		marker.classList.add("breakpoint");
+		marker.innerHTML = "●";
+		marker.value = n + 1;
+		cm.setGutterMarker(n, "breakpoints", marker);
+	} else {
+		cm.setGutterMarker(n, "breakpoints", null);
+	}
+});
 editor.setSize('100%', '100%');
+editor.focus();
 
 edtFileName.onfocus = function() {
 	edtFileName.selectionStart = 0;
@@ -273,7 +284,7 @@ edtFileName.onkeydown = function(event) {
 	// `:%` => zoom
 	else if (edtFileName.value.startsWith(':%')) {
 		document.body.style.fontSize = (+edtFileName.value.substr(2) / 100) + 'em';
-		editor.setSize('100%', '100%');
+		editor.refresh();
 	}
 
 	// `:<number>` => goto line
@@ -373,68 +384,76 @@ edtFileName.onkeyup = completeAction;
 window.onkeydown = function() {
 	// escape to editor
 	if (event.key == 'Escape') {
-		editor.setSelection(editor.getCursor());
-		if (!editor.hasFocus()) {
-			setStyle(document.body, 'editor');
+		if (editor.hasFocus()) {
+			setStyle(document.body, '!output', 'editor');
 		} else {
-			setStyle(document.body, '!output');
+			setStyle(document.body, 'editor');
 		}
+		editor.setSelection(editor.getCursor());
 		editor.focus();
 		return false;
 	}
 	// Ctrl + Enter => Execute script
 	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'Enter') {
-		setStyle(document.body, 'output');
 		execute((params.exec || '-run/g'));
 		return false;
 	}
 	// Shift + Enter => Focus command: [search, jump, fold, run, ...]
 	if (!event.ctrlKey && !event.altKey && event.shiftKey && event.key === 'Enter') {
-		edtFileName.focus();
+		completeAction();
 		return false;
 	}
 	// Ctrl + Shift + Enter => Execute script
 	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === 'Enter') {
-		completeAction({key: '#', valueText: '#'});
+		completeAction('#');
 		return false;
 	}
 }
 
-function completeAction(event) {
-	if (event.valueText !== undefined) {
-		edtFileName.value = event.valueText;
-		edtFileName.focus();
-	}
+function completeAction(action, hint) {
+	setStyle(document.body, 'tool');
+	edtFileName.focus();
 
-	if (!edtFileName.value.endsWith(event.key)) {
-		// maybe backspace was pressed
+	if (action == null) {
 		return;
 	}
-
-	switch (edtFileName.value) {
-		default:
+	if (action.constructor === KeyboardEvent) {
+		if (!edtFileName.value.endsWith(action.key)) {
+			// maybe backspace was pressed
 			return;
-
-		case ':':
-			edtFileName.value += editor.getCursor().line + 1 || 'enter a line number to go to';
-			edtFileName.selectionStart = 1;
-			break;
-
-		case '?':
-			edtFileName.value += editor.getSelection() || 'enter a text to search';
-			edtFileName.selectionStart = 1;
-			break;
-
-		case '?!':
-			edtFileName.value += editor.getSelection() || 'enter a text to search and select occurrences';
-			edtFileName.selectionStart = 2;
-			break;
-
-		case '#':
-			edtFileName.value += selExecute.command || '';
-			edtFileName.selectionStart = 1;
-			break;
+		}
+		action = edtFileName.value;
 	}
+	if (hint == null) {
+		switch (action) {
+			default:
+				hint = '';
+				break;
+
+			case ':':
+				hint = editor.getCursor().line + 1 || 'enter a line number to go to';
+				break;
+
+			case ':%':
+				hint = '100';
+				break;
+
+			case '?':
+				hint = editor.getSelection() || 'enter a text to search';
+				break;
+
+			case '?!':
+				hint = editor.getSelection() || 'enter a text to search and select occurrences';
+				break;
+
+			case '#':
+				hint = terminal.command || '';
+				break;
+		}
+	}
+
+	edtFileName.value = action + hint;
+	edtFileName.selectionStart = action.length;
 	edtFileName.selectionEnd = edtFileName.value.length;
 }
 
@@ -449,10 +468,7 @@ function setContent(content, file, line, column) {
 	if (file != null) {
 		edtFileName.value = file;
 		for (let li of fileList.children) {
-			li.classList.remove("active");
-			if (li.innerText === file) {
-				li.classList.add("active");
-			}
+			setStyle(li, li.innerText === file ? "active" : "-active");
 		}
 	}
 	if (line != null) {
@@ -560,7 +576,7 @@ function execute(cmd, exactArgs) {
 			}
 
 		}
-		selExecute.command = args.join(' ');
+		terminal.command = args.join(' ');
 	}
 
 	terminal.clear();

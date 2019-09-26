@@ -1,9 +1,9 @@
 // Blend two images using a function
 
-inline linear_dodge(float32 base, float32 blend) = Math.min(base + blend, 1f);
-inline linear_burn(float32 base, float32 blend) = Math.max(base + blend - 1, 0f);
-inline color_dodge(float32 base, float32 blend) = (blend == 1 ? blend : Math.min(base / (1 - blend), 1f));
-inline color_burn(float32 base, float32 blend) = (blend == 0 ? blend : Math.max((1 - ((1 - base) / blend)), 0f));
+inline linearDodge(float32 base, float32 blend) = Math.min(base + blend, 1f);
+inline linearBurn(float32 base, float32 blend) = Math.max(base + blend - 1, 0f);
+inline colorDodge(float32 base, float32 blend) = (blend == 1 ? blend : Math.min(base / (1 - blend), 1f));
+inline colorBurn(float32 base, float32 blend) = (blend == 0 ? blend : Math.max((1 - ((1 - base) / blend)), 0f));
 
 vec4f darken(vec4f base, vec4f blend) {
 	inline op(float32 base, float32 blend) = base < blend ? base : blend;
@@ -69,7 +69,7 @@ vec4f difference(vec4f base, vec4f blend) {
 	};
 }
 vec4f colorBurn(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = color_burn(base, blend);
+	inline op(float32 base, float32 blend) = colorBurn(base, blend);
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -78,7 +78,7 @@ vec4f colorBurn(vec4f base, vec4f blend) {
 	};
 }
 vec4f linearBurn(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = linear_burn(base, blend);
+	inline op(float32 base, float32 blend) = linearBurn(base, blend);
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -87,7 +87,7 @@ vec4f linearBurn(vec4f base, vec4f blend) {
 	};
 }
 vec4f colorDodge(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = color_dodge(base, blend);
+	inline op(float32 base, float32 blend) = colorDodge(base, blend);
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -96,7 +96,7 @@ vec4f colorDodge(vec4f base, vec4f blend) {
 	};
 }
 vec4f linearDodge(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = linear_dodge(base, blend);
+	inline op(float32 base, float32 blend) = linearDodge(base, blend);
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -148,8 +148,8 @@ vec4f hardLight(vec4f base, vec4f blend) {
 }
 vec4f vividLight(vec4f base, vec4f blend) {
 	inline op(float32 base, float32 blend) = blend < .5f
-		? color_burn(base, (2 * blend))
-		: color_dodge(base, (2 * (blend - .5f)));
+		? colorBurn(base, (2 * blend))
+		: colorDodge(base, (2 * (blend - .5f)));
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -159,8 +159,8 @@ vec4f vividLight(vec4f base, vec4f blend) {
 }
 vec4f linearLight(vec4f base, vec4f blend) {
 	inline op(float32 base, float32 blend) = blend < .5f
-		? linear_burn(base, (2 * blend))
-		: linear_dodge(base, (2 * (blend - .5f)));
+		? linearBurn(base, (2 * blend))
+		: linearDodge(base, (2 * (blend - .5f)));
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);

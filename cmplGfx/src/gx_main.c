@@ -558,11 +558,12 @@ static vmError surf_calcHist(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_cLutSurf = "void colorMap(gxSurf surf, const gxRect roi&, const uint32 lut[256])";
+static const char *proto_surf_cLutSurf = "void colorMap(gxSurf surf, const gxRect roi&, const uint32 lut[256], bool useLuminosity)";
 static vmError surf_cLutSurf(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 	gx_Rect roi = nextValue(ctx).ref;
 	rtValue lut = nextValue(ctx);
+	int useLuminosity = nextValue(ctx).i32;
 
 	if (surf->depth != 32) {
 		ctx->rt->api.raise(ctx, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
@@ -587,6 +588,34 @@ static vmError surf_cLutSurf(nfcContext ctx) {
 		return noError;
 	}
 
+	if (useLuminosity) {
+		for (int y = 0; y < rect.h; y += 1) {
+			argb *cBuff = (argb*)dptr;
+			for (int x = 0; x < rect.w; x += 1) {
+				int32_t r = cBuff->r;
+				int32_t g = cBuff->g;
+				int32_t b = cBuff->b;
+
+				int32_t Y =  ((int32_t) (65536 *  0.2989) * r + (int32_t) (65536 * 0.5866) * g + (int32_t) (65536 * 0.1145) * b) >> 16;
+				int32_t cb = ((int32_t) (65536 * -0.1687) * r - (int32_t) (65536 * 0.3312) * g + (int32_t) (65536 * 0.5000) * b) >> 16;
+				int32_t cr = ((int32_t) (65536 *  0.5000) * r - (int32_t) (65536 * 0.4183) * g - (int32_t) (65536 * 0.0816) * b) >> 16;
+
+				Y = lptr[Y < 0 ? 0 : Y > 255 ? 255 : Y].a;
+
+				r = ((int32_t)(65536 * 1.0000) * Y + (int32_t)(65536 * 1.4022) * cr) >> 16;
+				g = ((int32_t)(65536 * 1.0000) * Y - (int32_t)(65536 * 0.3456) * cb - (int32_t)(65536 * 0.7145) * cr) >> 16;
+				b = ((int32_t)(65536 * 1.0000) * Y + (int32_t)(65536 * 1.7710) * cb) >> 16;
+				cBuff->b = lptr[b < 0 ? 0 : b > 255 ? 255 : b].b;
+				cBuff->g = lptr[g < 0 ? 0 : g > 255 ? 255 : g].g;
+				cBuff->r = lptr[r < 0 ? 0 : r > 255 ? 255 : r].r;
+				cBuff += 1;
+			}
+			dptr += surf->scanLen;
+		}
+		return noError;
+
+	}
+
 	for (int y = 0; y < rect.h; y += 1) {
 		argb *cBuff = (argb*)dptr;
 		for (int x = 0; x < rect.w; x += 1) {
@@ -598,7 +627,6 @@ static vmError surf_cLutSurf(nfcContext ctx) {
 		}
 		dptr += surf->scanLen;
 	}
-
 	return noError;
 }
 

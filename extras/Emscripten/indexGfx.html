@@ -32,20 +32,14 @@
 </head>
 <body class="dark tool left-bar left-pin editor output">
 <div id="main-toolbar" class="toolbar">
-	<span class="left icon" title="Toggle show menu"
-		onclick="setStyle(document.body, '!left-bar', 'editor');"
-		onmousedown="canvas.classList.add('hidden');"
-		onmouseup="canvas.classList.remove('hidden');"
-		ontouchstart="canvas.classList.add('hidden');"
-		ontouchend="canvas.classList.remove('hidden');"
-	>☰</span>
-	<span class="editor left icon" title="Save script (Ctrl + s)" onclick="saveInput();">💾</span>
+	<span class="left icon" title="Toggle show menu" onclick="setStyle(body, '!left-bar', 'editor');">☰</span>
+	<span class="left icon" title="Save script (Ctrl + s)" onclick="saveInput();">💾</span>
 	<span class="left icon" title="Execute script (Ctrl + Enter)" onclick="onExecClick();">►</span>
 
-	<span class="canvas right icon" title="Close canvas" onclick="showCanvas(false);">❌</span>
-	<span class="right no-canvas icon" title="Toggle show menu" onclick="setStyle(body, '!right-bar', 'editor');">⋮</span>
-	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
+	<span class="right icon" title="Toggle show menu" onclick="setStyle(body, '!right-bar', 'editor');">⋮</span>
+	<span class="canvas right icon" title="Stop execution" onclick="showCanvas(false);">❌</span>
 	<span class="right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
+	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
 
 	<span class="output-only right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
 	<span class="output-only right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
@@ -63,9 +57,8 @@
 	<div>
 		<span>Execute</span>
 		<button class="right" onclick="execute();" title="Compiler usage help">?</button>
-		<button class="right" onclick="setStyle(document.body, '!left-pin');" title="Pin menu">📌</button>
 	</div>
-	<ul><li id="selExecute" class="collapsed submenu" onclick="setStyle(this, '!collapsed');">Execute<ul>
+	<ul><li class="collapsed submenu" onclick="setStyle(this, '!collapsed');">Execute<ul>
 		<li onclick="execute('-run/g');">⚡ Run</li>
 		<li onclick="execute('-debug/g');">🐞 Debug</li>
 		<li onclick="execute('-profile/g');">⏱ Profile</li>
@@ -93,7 +86,7 @@
 	</ul>
 </div>
 <div id="right-sidebar" class="sidebar">
-	<div class="submenu">
+	<div class="collapsed submenu">
 	<li onclick="setStyle(parentElement, '!collapsed');">File</li>
 	<ul>
 		<!-- TODO
@@ -141,13 +134,6 @@
 			-->
 		</ul></div>
 		<div class="collapsed submenu">
-		<li onclick="setStyle(parentElement, '!collapsed')">Fold</li><ul>
-			<li onclick="editor.execCommand('fold');">Fold (Ctrl + -)</li>
-			<li onclick="editor.execCommand('unfold');">Unfold (Ctrl + +)</li>
-			<li onclick="editor.execCommand('foldAll');">Fold All (Ctrl+Shift + -)</li>
-			<li onclick="editor.execCommand('unfoldAll');">Unfold All (Ctrl+Shift + -)</li>
-		</ul></div>
-		<div class="collapsed submenu">
 		<li onclick="setStyle(parentElement, '!collapsed')">Case</li><ul>
 			<li onclick="editor.execCommand('toggleCase');" title="">Toggle case(Ctrl + u)</li>
 			<li onclick="editor.execCommand('upperCase');" title="">Upper case</li>
@@ -159,10 +145,27 @@
 	<div class="submenu">
 	<li onclick="setStyle(parentElement, '!collapsed')">Find</li><ul>
 		<li onclick="editor.execCommand('find');" title="">Search (Ctrl + f)</li>
+		<li onclick="editor.execCommand('findNext');" title="">Search Next (F3)</li>
+		<li onclick="editor.execCommand('findPrev');" title="">Search Prev (Shift+F3)</li>
 		<li onclick="editor.execCommand('findAndSelect');" title="">Search and select</li>
 		<li onclick="editor.execCommand('line');" title="">Jump to line (Ctrl + g)</li>
 		<li onclick="editor.execCommand('jumpToBrace');" title="">Jump to brace (Ctrl + b)</li>
 		<li onclick="editor.execCommand('selectToBrace');" title="">Select to brace (Ctrl+Shift + b)</li>
+	</ul></div>
+	<div class="submenu">
+	<li onclick="setStyle(parentElement, '!collapsed')">View</li><ul>
+		<div class="collapsed submenu">
+		<li onclick="setStyle(parentElement, '!collapsed')">Fold</li><ul>
+			<li onclick="editor.execCommand('fold');">Fold (Ctrl + -)</li>
+			<li onclick="editor.execCommand('unfold');">Unfold (Ctrl + +)</li>
+			<li onclick="editor.execCommand('foldAll');">Fold All (Ctrl+Shift + -)</li>
+			<li onclick="editor.execCommand('unfoldAll');">Unfold All (Ctrl+Shift + -)</li>
+		</ul></div>
+		<li onclick="completeAction(':%', '100');" title="">Zoom</li>
+		<li id="wrap-output" onclick="setStyle(body, '!wrap-output');" title="">Wrap output</li>
+		<li id="pin-left" onclick="setStyle(body, '!left-pin');" title="">Pin left sidebar</li>
+		<li id="pin-right" onclick="setStyle(body, '!right-pin');" title="">Pin right sidebar</li>
+		<li id="show-toolbar" onclick="setStyle(body, '!tool');" title="">Show main toolbar</li>
 	</ul></div>
 </div>
 <div id="main-panel">
@@ -175,8 +178,8 @@
 				<option value="Output-0">Output</option>
 				<!-- <option value="Search-0">Search</option> -->
 			</select>
-			<span class="no-output left" onclick="setStyle(document.body, 'output');">Output</span>
-			<!-- <span class="no-output left" onclick="setStyle(document.body, 'output');">Search</span> -->
+			<span class="no-output left" onclick="setStyle(body, 'output');">Output</span>
+			<!-- <span class="no-output left" onclick="setStyle(body, 'output');">Search</span> -->
 			<span class="output left icon bold" onclick="editOutput();" title="Open output in editor">💾</span>
 			<span class="output left icon bold" title="Clear output" onclick="terminal.clear();">❌</span>
 
@@ -188,55 +191,38 @@
 		<pre id="output"></pre>
 	</div>
 </div>
-<div id="left-overlay" class="overlay" onclick="setStyle(document.body, '-left-bar');"></div>
-<div id="menu2-overlay" class="overlay" onclick="setStyle(document.body, '-right-bar');"></div>
-<div id="canvas-panel" class="overlay" onclick="void(0);">
-	<canvas id="canvas" width="0" onclick="event.stopPropagation()"></canvas>
-	<div id="canvasMove" class="hidden overlay" onclick="classList.add('hidden');"></div>
+<div id="left-overlay" class="overlay" onclick="setStyle(body, '-left-bar');"></div>
+<div id="menu2-overlay" class="overlay" onclick="setStyle(body, '-right-bar');"></div>
+<div id="canvas-panel" class="overlay" onclick="void(0);"
+		ontouchstart="setStyle(canvas, 'hidden');"
+		ontouchend="setStyle(canvas, '-hidden');">
+	<canvas id="canvas" width="0" onclick="event.stopPropagation();"
+		ontouchstart="event.stopPropagation();"
+		ontouchend="event.stopPropagation();"
+	></canvas>
+	<div id="canvasMove" class="hidden overlay" onclick="classList.add('hidden');"
+		ontouchstart="event.stopPropagation();"
+		ontouchend="event.stopPropagation();"
+	></div>
 </div>
 
 <script type="text/javascript">
-function centerCanvas() {
-	let zoom = canvas.style.zoom;
-	if (zoom === "") {
-		zoom = 1;
-	}
-	let dx = +zoom * canvas.clientWidth - canvas.parentElement.clientWidth;
-	if (dx > 0) {
-		canvas.parentElement.scrollLeft = dx / 2;
-		canvas.style.left = 0;
-	} else {
-		canvas.parentElement.scrollLeft = 0;
-		canvas.style.left = -dx / zoom / 2;
-	}
-	let dy = +zoom * canvas.clientHeight - canvas.parentElement.clientHeight;
-	if (dy > 0) {
-		canvas.parentElement.scrollTop = dy / 2;
-		canvas.style.top = 0;
-	} else {
-		canvas.parentElement.scrollTop = 0;
-		canvas.style.top = -dy / zoom / 2;
-	}
-	canvasMove.style.width = Math.max(canvas.width, canvas.parentElement.clientWidth);
-	canvasMove.style.height = Math.max(canvas.height, canvas.parentElement.clientHeight);
-}
 function onExecClick() {
 	// if canvas is already shown, zoom or pan
 	if (document.body.classList.contains('canvas')) {
+		if (!('ontouchstart' in document.documentElement)) {
+			return;
+		}
 		if (canvasMove.classList.contains('hidden')) {
 			canvasMove.classList.remove('hidden');
-			canvas.style.zoom = 1;
+			centerCanvas(1);
 		} else {
 			canvasMove.classList.add('hidden');
-			let zoom = Math.min(screen.width / canvas.width, screen.height / canvas.height);
-			if (zoom < 1) {
-				canvas.style.zoom = zoom;
-			}
+			centerCanvas(Math.min(screen.width / canvas.width, screen.height / canvas.height));
 		}
-		centerCanvas();
 		return;
 	}
-	execute(selExecute.data || '-run/g');
+	execute(params.exec || '-run/g');
 }
 
 function onSyncWorkSpace(error) {
@@ -296,13 +282,13 @@ function listFiles(dir) {
 	params.update('file', 'content');
 }
 
-function saveInput() {
+function saveInput(saveAs) {
 	if (params.content !== undefined) {
 		params.update({ content: btoa(editor.getValue()) });
 	}
 	let file = params.file;
-	if (file == null) {
-		file = prompt('Save file as:', 'untitled.ci');
+	if (file == null || saveAs === true) {
+		file = prompt('Save file as:', file || 'untitled.ci');
 		if (file == null) {
 			return null;
 		}
@@ -325,46 +311,75 @@ function saveInput() {
 }
 function execInput(args) {
 	// show overlay while compiling and initializing
-	//canvas.parentElement.classList.remove('hidden');
-	document.body.classList.add('canvas');
+	setStyle(document.body, 'canvas');
 	setTimeout(function() {
 		try {
 			Module['callMain'](args || []);
-		} catch (error) {
+		} finally {
 			if (canvas.width === 0) {
-				//canvas.parentElement.classList.add('hidden');
-				document.body.classList.remove('canvas');
+				setStyle(document.body, '-canvas');
 			}
-			throw error;
-		}
-		if (canvas.width === 0) {
-			//canvas.parentElement.classList.add('hidden');
-			document.body.classList.remove('canvas');
 		}
 	});
 }
 
+function centerCanvas(zoom) {
+	if (zoom === undefined) {
+		if (canvas.style.zoom !== '') {
+			zoom = +canvas.style.zoom;
+		} else {
+			zoom = 1;
+		}
+	}
+	if (zoom > 0 && zoom < 1) {
+		canvas.style.zoom = zoom;
+		canvas.style.top = null;
+		canvas.style.left = null;
+		canvas.style.transform = null;
+		canvas.parentElement.style.overflow = null;
+		return;
+	}
+
+	canvas.style.top = 0;
+	canvas.style.left = 0;
+	canvas.style.transform = 'none';
+	canvas.style.zoom = null;
+	canvas.parentElement.style.overflow = 'auto';
+	let dx = canvas.clientWidth - canvas.parentElement.clientWidth;
+	if (dx > 0) {
+		canvas.parentElement.scrollLeft = dx / 2;
+		canvas.style.left = 0;
+	} else {
+		canvas.parentElement.scrollLeft = 0;
+		canvas.style.left = -dx / 2;
+	}
+	let dy = canvas.clientHeight - canvas.parentElement.clientHeight;
+	if (dy > 0) {
+		canvas.parentElement.scrollTop = dy / 2;
+		canvas.style.top = 0;
+	} else {
+		canvas.parentElement.scrollTop = 0;
+		canvas.style.top = -dy / 2;
+	}
+	canvasMove.style.width = Math.max(canvas.width, canvas.parentElement.clientWidth);
+	canvasMove.style.height = Math.max(canvas.height, canvas.parentElement.clientHeight);
+}
 function showCanvas(visible) {
 	if (!visible) {
 		Module._SDL_SendQuit();
 		return;
 	}
 
-	//canvas.parentElement.classList.remove('hidden');
-	document.body.classList.add('canvas');
+	setStyle(document.body, 'canvas');
 
 	if ('ontouchstart' in document.documentElement) {
-		// adapt canvas to full hd resolution on mobile phones
-		let zoom = Math.min(screen.width / canvas.width, screen.height / canvas.height);
-		if (zoom < 1) {
-			canvas.style.zoom = zoom;
-		}
+		// zoom the canvas on mobile phones
+		centerCanvas(Math.min(screen.width / canvas.width, screen.height / canvas.height));
 	}
-	centerCanvas();
 	if (Browser.mainLoop.oldPause === undefined) {
 		Browser.mainLoop.oldPause = Browser.mainLoop.pause;
 		Browser.mainLoop.pause = function() {
-			document.body.classList.remove('canvas');
+			setStyle(document.body, '-canvas');
 			Browser.mainLoop.oldPause();
 			canvas.width = 0;
 		}

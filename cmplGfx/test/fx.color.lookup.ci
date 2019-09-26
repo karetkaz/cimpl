@@ -55,12 +55,6 @@ int onEvent(int action, int button, int x, int y) {
 		if (button == 27) {
 			return -1;
 		}
-		if (button == '\r') {
-			brightness.value = 0;
-			contrast.value = 0;
-			gamma.value = 100;
-			redraw = true;
-		}
 		if (button == ' ') {
 			trace("dumping screen");
 			offs.saveBmp("out/dump.bmp", 0);
@@ -72,7 +66,7 @@ int onEvent(int action, int button, int x, int y) {
 		uint32 lut[256];
 		brightnessContrastGamma(lut, brightness.val(), contrast.val(), gamma.val() / 100.);
 		offs.resize(null, back, null, 1);
-		offs.colorMap(null, lut);
+		offs.colorMap(null, lut, false);
 		offs.drawHist(null, 0x00ffffff);
 
 		time.value = System.millis() - start;

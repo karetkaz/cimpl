@@ -20,6 +20,11 @@ select {
 }
 
 .overlay {
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-o-user-select: none;
+	user-select: none;
 	top: 0;
 	left: 0;
 	right: 0;
@@ -27,7 +32,7 @@ select {
 	margin: 0;
 	padding: 0;
 	display: none;
-	position: absolute;
+	position: fixed;
 	z-index: 9;
 }
 
@@ -38,14 +43,14 @@ select {
 
 /* toolbars */
 .toolbar {
-	display: block;
-	width: 100%;
 	-webkit-user-select: none;
 	-khtml-user-select: none;
 	-moz-user-select: none;
 	-o-user-select: none;
 	user-select: none;
+	display: block;
 	overflow: hidden;
+	width: 100%;
 	z-index: 10;
 }
 .toolbar * {
@@ -91,6 +96,7 @@ select {
 	overflow: hidden;
 	white-space: nowrap;
 	padding: 0.5em 0.25em;
+	line-height: 1em;
 }
 .sidebar li:hover {
 	cursor: hand;
@@ -109,11 +115,6 @@ select {
 .sidebar li.collapsed > ul,
 .sidebar div.collapsed > ul {
 	display: none;
-}
-.sidebar select {
-	padding: 0;
-	width: 100%;
-	line-height: 1.5em;
 }
 .sidebar button {
 	border-radius: 0.2em;
@@ -143,8 +144,8 @@ select {
 }
 #main-toolbar input {
 	border: 0;
-	height: inherit;
 	width: 100%;
+	height: inherit;
 }
 #output-toolbar {
 	height: 1.5em;
@@ -201,18 +202,17 @@ select {
 }
 #output>p {
 	min-height: 1em;
-	height: 1em;
+}
+body.wrap-output #output {
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
 }
 
 #canvas-panel {
-	position: absolute;
+	position: fixed;
 	display: block;
-	top: 2em;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	z-index: 100;
-	overflow: auto;
+	z-index: 10;
+	overflow: hidden;
 }
 #canvas-panel>canvas {
 	top: 0;
@@ -222,10 +222,14 @@ select {
 	margin: 0;
 	padding: 0;
 	position: relative;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 }
 
 /* main toolbar translations */
 body.tool { padding-top: 2em; }
+body.tool #canvas-panel {top: 2em;}
 body.tool #left-sidebar { top: 2em; }
 body.tool #right-sidebar { top: 2em; }
 body:not(.tool) #main-toolbar { display: none; }
@@ -240,15 +244,22 @@ body.right-bar.right-pin {padding-right: 15em;}
 body:not(.right-bar) #right-sidebar { display: none; }
 body.right-bar:not(.right-pin) #menu2-overlay { display: block; }
 
+/* right sidebar checked items */
+body.tool #show-toolbar:before {content: '✓';}
+body.left-pin #pin-left:before {content: '✓';}
+body.right-pin #pin-right:before {content: '✓';}
+body.wrap-output #wrap-output:before {content: '✓';}
+
 /* panel visibility and size: editor, output, canvas */
-body:not(.output) #editor-panel { height: calc(100% - 1.5em); }
-body.output #editor-panel {height: calc(50% - 1.5em);}
-body:not(.editor) #output-panel { height: calc(100% - 1.5em); }
-body:not(.output) #output { display: none; }
+body:not(.output) #editor-panel { height: 100%; }
+body:not(.output) #output-panel {display: none;}
 body:not(.canvas) #canvas-panel { display: none; }
 body.output:not(.editor) #editor-panel { display: none; }
-
 .toolbar>.editor,.toolbar>.output,.toolbar>.canvas {display: none;}
+
+
+/* FIXME: output has different font-size, remove height from editor */
+body.output #editor-panel {height: calc(50% - 1.5em);}
 
 /* toolbar icon visibility: editor, output, canvas */
 body.editor .toolbar>.editor {display: initial;}
@@ -263,14 +274,16 @@ body:not(.output) .toolbar>.no-output {display: initial;}
 body.canvas .toolbar>.canvas {display: initial;}
 body.canvas .toolbar>.no-canvas {display: none;}
 body:not(.canvas) .toolbar>.no-canvas {display: initial;}
-#canvasMove.overlay.hidden {display: none;}
-#canvasMove.overlay {display: block;}
+#canvasMove.overlay:not(.hidden) {
+	position: absolute;
+	display: block;
+}
 
 /* custom full screen output */
 .toolbar>.output-only.icon {display: none;}
 body.output:not(.editor) .toolbar>.output-only.icon {display: initial;}
 body.output:not(.editor) #output {
-	position: absolute;
+	position: fixed;
 	display: block;
 	top: 2.5em;
 	left: 0;
