@@ -228,6 +228,24 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 			return CAST_any;
 
 		case OPER_dot:
+			// array.length is constant for fixed size arrays
+			if (isArrayType(ast->op.lhso->type)) {
+				symn arr = linkOf(ast->op.lhso, 0);
+				if (!arr || castOf(arr) != CAST_val) {
+					// not a fixed size array
+					return CAST_any;
+				}
+				symn len = linkOf(ast->op.rhso, 0);
+				if (!len || !isInline(len)) {
+					// length must be an inline expression
+					return CAST_any;
+				}
+				if (!isStatic(len) || !isConst(len)) {
+					// extra caution, const and static should be also set for length
+					return CAST_any;
+				}
+				return eval(cc, res, len->init);
+			}
 			if (!isTypeExpr(ast->op.lhso)) {
 				return CAST_any;
 			}
@@ -248,13 +266,26 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 
 			// typename(int64) => typename
 			if (linkOf(func, 1) == cc->type_rec) {
-				if (args && args->kind == TOKEN_var) {
+				if (args == NULL) {
+					traceAst(ast);
+					return CAST_any;
+				}
+				if (args->kind == OPER_dot) {
+					if (!isTypeExpr(args->op.lhso)) {
+						traceAst(ast);
+						return CAST_any;
+					}
+					args = args->op.rhso;
+				}
+				if (args->kind == TOKEN_var) {
 					symn id = args->ref.link;
 					res->kind = TOKEN_val;
 					res->type = cc->type_rec;
 					res->cInt = id && id->type ? id->type->offs : 0;
 					break;
 				}
+				traceAst(ast);
+				return CAST_any;
 			}
 			ccKind cast = eval(cc, res, args);
 			if (cast == CAST_any) {

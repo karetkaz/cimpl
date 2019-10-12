@@ -130,6 +130,7 @@ let terminal = Terminal(output, function(escaped, text) {
 let params = JsArgs('#', function (params, changes) {
 	//console.trace('params: ', changes, params);
 
+	// no changes => page loaded
 	if (changes === undefined) {
 		// setup theme, only after loading
 		if (params.theme != null) {
@@ -158,6 +159,7 @@ let params = JsArgs('#', function (params, changes) {
 	let files = [];
 	if (changes.project !== undefined) {
 		if (changes.project != params.project) {
+			// page needs to be reloaded
 			params.update(true);
 			return;
 		}
@@ -167,7 +169,7 @@ let params = JsArgs('#', function (params, changes) {
 		try {
 			content = atob(content);
 		} catch (e) {
-			console.warn(e);
+			console.log(e);
 		}
 
 		if (content != null) {
@@ -187,7 +189,7 @@ let params = JsArgs('#', function (params, changes) {
 		});
 		return;*/
 		if (changes.workspace === undefined) {
-			changes.workspace = null;
+			changes.workspace = true;
 		}
 	}
 

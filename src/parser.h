@@ -70,8 +70,8 @@ struct astNode {
 			astn	init;			// for statement init
 		} stmt;
 		struct {					// OPER_xxx: operator
-			astn	rhso;			// right hand side operand
 			astn	lhso;			// left hand side operand
+			astn	rhso;			// right hand side operand
 			astn	test;			// ?: operator condition
 			int		prec;			// precedence level
 		} op;

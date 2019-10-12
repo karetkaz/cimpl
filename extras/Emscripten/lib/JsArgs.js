@@ -187,7 +187,9 @@ function JsArgs(paramSeparator, onHashChange) {
 			}
 			result.update();
 		};
-		onHashChange(result);
+		if (onHashChange(result) === true) {
+			save(result);
+		}
 	}
 
 	return result;

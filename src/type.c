@@ -579,6 +579,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 						// in case `a` is an expression use its type
 						loc = ref->op.lhso->type;
 					}
+
 					// 1. search for the matching method: a.add(b)
 					type = typeCheckRef(cc, loc, ref->op.rhso, args, 0);
 					if (type != NULL) {
@@ -596,12 +597,12 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 						args->type = cc->type_vid;
 					}
 					ref = ref->op.rhso;
-					ast->op.rhso = args;
 
 					// 2. search for extension method: add(a, b)
 					type = typeCheckRef(cc, NULL, ref, args, 0);
 					if (type != NULL) {
 						ast->op.lhso = ref;
+						ast->op.rhso = args;
 						debug("extension function: %t", ast);
 						return ast->type = type;
 					}
@@ -610,6 +611,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 					// 4. search for static method: T.add(a, b)
 					type = typeCheckRef(cc, loc, ref, args, raise);
 					if (type != NULL) {
+						ast->op.rhso = args;
 						ast->op.lhso->type = type;
 						return ast->type = type;
 					}
@@ -625,18 +627,14 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 
 				// typename(identifier): returns null if identifier is not defined.
 				if (lType == cc->type_rec && linkOf(ref, 1) == cc->type_rec) {
-					if (args->kind == TOKEN_var) {
-						char *name = cc->type_rec->name;
-						size_t len = strlen(name);
-						rType = cc->type_rec;
-						ast->kind = TOKEN_var;
-						ast->type = rType;
-						ast->ref.link = cc->null_ref;
-						ast->ref.hash = rehash(name, len + 1) % hashTableSize;
-						ast->ref.name = ccUniqueStr(cc, name, len + 1, ast->ref.hash);
-						ast->type = rType;
-						return rType;
-					}
+					char *name = cc->type_rec->name;
+					size_t len = strlen(name);
+					ast->kind = TOKEN_var;
+					ast->ref.link = cc->null_ref;
+					ast->ref.hash = rehash(name, len + 1) % hashTableSize;
+					ast->ref.name = ccUniqueStr(cc, name, len + 1, ast->ref.hash);
+					ast->type = rType;
+					return cc->type_rec;
 				}
 				// lookup arguments in the function's scope (emit, raise, ...)
 				rType = typeCheck(cc, linkOf(ref, 1), args, raise);

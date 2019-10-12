@@ -269,13 +269,8 @@ static inline double gauss(double x, double sigma) {
 	return SQRT_2_PI_INV * exp(-0.5 * t * t) / sigma;
 }
 int gx_blurSurf(gx_Surf surf, int radius, double sigma) {
-	uint32_t kernelF16[1024];
-	double kernel[1024];
-	double kernelSum = 0;
 
-	int size = 2 * (radius + 1);
-	int mid = radius + 1;
-
+	int size = radius * 2 + 1;
 	if (surf->depth != 32) {
 		return -1;
 	}
@@ -286,12 +281,16 @@ int gx_blurSurf(gx_Surf surf, int radius, double sigma) {
 		return 0;
 	}
 
+	double kernelSum = 0;
+	double kernelFlt[1024];
 	for (int i = 0; i < size; i += 1) {
-		kernel[i] = gauss(mid - i, sigma);
-		kernelSum += kernel[i];
+		kernelFlt[i] = gauss(radius - i, sigma);
+		kernelSum += kernelFlt[i];
 	}
+
+	uint32_t kernel[1024];
 	for (int i = 0; i < size; i++) {
-		kernelF16[i] = 65536 * (kernel[i] / kernelSum);
+		kernel[i] = 65536 * (kernelFlt[i] / kernelSum);
 	}
 
 	int width = surf->width;
@@ -309,10 +308,10 @@ int gx_blurSurf(gx_Surf surf, int radius, double sigma) {
 			uint32_t g = 0;
 			uint32_t b = 0;
 			for (int i = 0; i < size; i += 1) {
-				int _x = x + i - mid;
-				uint32_t _k = kernelF16[i];
+				int _x = x + i - radius;
 				if (_x >= 0 && _x < width) {
 					uint32_t col = gx_getpixel(surf, _x, y);
+					uint32_t _k = kernel[i];
 					r += _k * rch(col);
 					g += _k * gch(col);
 					b += _k * bch(col);
@@ -329,10 +328,10 @@ int gx_blurSurf(gx_Surf surf, int radius, double sigma) {
 			uint32_t g = 0;
 			uint32_t b = 0;
 			for (int i = 0; i < size; i += 1) {
-				int _y = y + i - mid;
-				uint32_t _k = kernelF16[i];
+				int _y = y + i - radius;
 				if (_y >= 0 || _y < height) {
 					uint32_t col = gx_getpixel(tmp, x, _y);
+					uint32_t _k = kernel[i];
 					r += _k * rch(col);
 					g += _k * gch(col);
 					b += _k * bch(col);

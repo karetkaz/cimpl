@@ -4,12 +4,25 @@ gxSurf back = gxSurf("asset/image/forest.png", 32);
 gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
 gxSurf offs = gxSurf(back.width(), back.height(), back.depth());
 
-void brightnessContrastGamma(uint32 lut[256], int brightness, int contrast, double gamma) {
-	double cval = (256 + contrast) / 256.;
-	double gval = 1. / gamma;
+void brightnessContrastGamma(uint32 lut[256], int brightness, int contrast, int gamma) {
+	float cVal = (256 + contrast) / 256f;
+	float gVal = 100f / gamma;
+	argb lut2[*] = lut;
 
 	for (int idx = 0; idx < lut.length; idx += 1) {
-		lut[idx] = uint32(gray(brightness + int(256 * (cval * (float64.pow(idx / 256., gval) - .5) + .5))));
+		float bcg = idx / 256f;
+		// apply gamma
+		bcg = float.pow(bcg, gVal);
+		// apply contrast
+		bcg = cVal * (bcg - .5f) + .5f;
+		// apply brightness
+		bcg = bcg + brightness / 256f;
+
+		int rgb = grayClamp(int(256 * bcg));
+		lut2[idx].r = rgb;
+		lut2[idx].g = rgb;
+		lut2[idx].b = rgb;
+		lut2[idx].a = 0;
 	}
 }
 
@@ -63,11 +76,13 @@ int onEvent(int action, int button, int x, int y) {
 
 	if (redraw) {
 		uint64 start = System.millis();
+		uint32 hist[256];
 		uint32 lut[256];
-		brightnessContrastGamma(lut, brightness.val(), contrast.val(), gamma.val() / 100.);
+		brightnessContrastGamma(lut, brightness.val(), contrast.val(), gamma.val());
 		offs.resize(null, back, null, 1);
 		offs.colorMap(null, lut, false);
-		offs.drawHist(null, 0x00ffffff);
+		offs.calcHist(null, 0x00ffffff, hist);
+		offs.drawLut(null, hist, lut);
 
 		time.value = System.millis() - start;
 		ui.draw(30, 30);

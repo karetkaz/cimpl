@@ -10,6 +10,9 @@
 struct camera cam[1]; // TODO: singleton like camera
 struct gx_Light lights[32];  // max 32 lights
 
+// convert a double to 16 bit fixed point
+#define fxp16(__VALUE) ((int32_t)(65536 * (double)(__VALUE)))
+
 static inline rtValue nextValue(nfcContext ctx) {
 	return ctx->rt->api.nfcReadArg(ctx, ctx->rt->api.nfcNextArg(ctx));
 }
@@ -581,48 +584,80 @@ static vmError surf_cLutSurf(nfcContext ctx) {
 	rect.w = roi ? roi->w : surf->width;
 	rect.h = roi ? roi->h : surf->height;
 
-	argb *lptr = (argb*)lut.ref;
+	argb *lptr = (argb *) lut.ref;
 	char *dptr = gx_cliprect(surf, &rect);
 	if (dptr == NULL) {
 		ctx->rt->api.raise(ctx, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
 		return noError;
 	}
 
-	if (useLuminosity) {
+	if (!useLuminosity) {
 		for (int y = 0; y < rect.h; y += 1) {
-			argb *cBuff = (argb*)dptr;
+			argb *cBuff = (argb *) dptr;
 			for (int x = 0; x < rect.w; x += 1) {
-				int32_t r = cBuff->r;
-				int32_t g = cBuff->g;
-				int32_t b = cBuff->b;
-
-				int32_t Y =  ((int32_t) (65536 *  0.2989) * r + (int32_t) (65536 * 0.5866) * g + (int32_t) (65536 * 0.1145) * b) >> 16;
-				int32_t cb = ((int32_t) (65536 * -0.1687) * r - (int32_t) (65536 * 0.3312) * g + (int32_t) (65536 * 0.5000) * b) >> 16;
-				int32_t cr = ((int32_t) (65536 *  0.5000) * r - (int32_t) (65536 * 0.4183) * g - (int32_t) (65536 * 0.0816) * b) >> 16;
-
-				Y = lptr[Y < 0 ? 0 : Y > 255 ? 255 : Y].a;
-
-				r = ((int32_t)(65536 * 1.0000) * Y + (int32_t)(65536 * 1.4022) * cr) >> 16;
-				g = ((int32_t)(65536 * 1.0000) * Y - (int32_t)(65536 * 0.3456) * cb - (int32_t)(65536 * 0.7145) * cr) >> 16;
-				b = ((int32_t)(65536 * 1.0000) * Y + (int32_t)(65536 * 1.7710) * cb) >> 16;
-				cBuff->b = lptr[b < 0 ? 0 : b > 255 ? 255 : b].b;
-				cBuff->g = lptr[g < 0 ? 0 : g > 255 ? 255 : g].g;
-				cBuff->r = lptr[r < 0 ? 0 : r > 255 ? 255 : r].r;
+				cBuff->b = lptr[cBuff->b].b;
+				cBuff->g = lptr[cBuff->g].g;
+				cBuff->r = lptr[cBuff->r].r;
 				cBuff += 1;
 			}
 			dptr += surf->scanLen;
 		}
 		return noError;
-
 	}
 
+	/*static const int32_t RGB2XYZ[12] = {
+		fxp16(0.412453), fxp16(0.357580), fxp16(0.180423), 0,
+		fxp16(0.212671), fxp16(0.715160), fxp16(0.072169), 0,
+		fxp16(0.019334), fxp16(0.119193), fxp16(0.950227), 0,
+	};
+	static const int32_t XYZ2RGB[12] = {
+		fxp16(+3.240479), fxp16(-1.537150), fxp16(-0.498535), 0,
+		fxp16(-0.969256), fxp16(+1.875992), fxp16(+0.041556), 0,
+		fxp16(+0.055648), fxp16(-0.204043), fxp16(+1.057311), 0,
+	};
+
+	static const int32_t RGB2YIQ[] = {
+		fxp16(0.299), fxp16( 0.587), fxp16( 0.114), 0,
+		fxp16(0.596), fxp16(-0.275), fxp16(-0.321), 0,
+		fxp16(0.212), fxp16(-0.523), fxp16( 0.311), 0,
+	};
+	static const int32_t YIQ2RGB[] = {
+		fxp16(1), fxp16( 0.956), fxp16( 0.621), 0,
+		fxp16(1), fxp16(-0.272), fxp16(-0.647), 0,
+		fxp16(1), fxp16(-1.105), fxp16( 1.702), 0,
+	};*/
+
+	static const int32_t RGB2LUV[] = {
+		fxp16( 0.299), fxp16( 0.587), fxp16( 0.114), 0,
+		fxp16(-0.147), fxp16(-0.289), fxp16( 0.437), 0,
+		fxp16( 0.615), fxp16(-0.515), fxp16(-0.100), 0,
+	};
+	static const int32_t LUV2RGB[] = {
+		fxp16(1), fxp16( 0.000), fxp16( 1.140), 0,
+		fxp16(1), fxp16(-0.394), fxp16(-0.581), 0,
+		fxp16(1), fxp16( 2.028), fxp16( 0.000), 0,
+	};
+
+	// use alpha channel as luminosity channel lookup for mapping
+	const int32_t *rgb2luv = RGB2LUV;
+	const int32_t *luv2rgb = LUV2RGB;
 	for (int y = 0; y < rect.h; y += 1) {
-		argb *cBuff = (argb*)dptr;
+		argb *cBuff = (argb *) dptr;
+
 		for (int x = 0; x < rect.w; x += 1) {
-			cBuff->b = lptr[cBuff->b].b;
-			cBuff->g = lptr[cBuff->g].g;
-			cBuff->r = lptr[cBuff->r].r;
-			//cBuff->a = lptr[cBuff->a].a;
+			int32_t r = lptr[cBuff->r].r;
+			int32_t g = lptr[cBuff->g].g;
+			int32_t b = lptr[cBuff->b].b;
+
+			int32_t l = (r * rgb2luv[0x0] + g * rgb2luv[0x1] + b * rgb2luv[0x2]) >> 16;
+			int32_t u = (r * rgb2luv[0x4] + g * rgb2luv[0x5] + b * rgb2luv[0x6]) >> 16;
+			int32_t v = (r * rgb2luv[0x8] + g * rgb2luv[0x9] + b * rgb2luv[0xa]) >> 16;
+
+			l = lptr[clamp_s8(l)].a;
+
+			cBuff->r = clamp_s8((l * luv2rgb[0x0] + u * luv2rgb[0x1] + v * luv2rgb[0x2]) >> 16);
+			cBuff->g = clamp_s8((l * luv2rgb[0x4] + u * luv2rgb[0x5] + v * luv2rgb[0x6]) >> 16);
+			cBuff->b = clamp_s8((l * luv2rgb[0x8] + u * luv2rgb[0x9] + v * luv2rgb[0xa]) >> 16);
 			cBuff += 1;
 		}
 		dptr += surf->scanLen;
@@ -650,7 +685,7 @@ static vmError surf_cMatSurf(nfcContext ctx) {
 	int32_t cMat[16];
 	float32_t *mptr = mat.ref;
 	for (int i = 0; i < 16; i++) {
-		cMat[i] = (int32_t) (mptr[i] * 65535);
+		cMat[i] = fxp16(mptr[i]);
 	}
 
 	struct gx_Rect rect;
@@ -671,11 +706,10 @@ static vmError surf_cMatSurf(nfcContext ctx) {
 			int r = cBuff->r;
 			int g = cBuff->g;
 			int b = cBuff->b;
-			int a = 256;//cBuff->a;
+			const int a = 256;
 			cBuff->r = clamp_s8((r * cMat[0x0] + g * cMat[0x1] + b * cMat[0x2] + a * cMat[0x3]) >> 16);
 			cBuff->g = clamp_s8((r * cMat[0x4] + g * cMat[0x5] + b * cMat[0x6] + a * cMat[0x7]) >> 16);
 			cBuff->b = clamp_s8((r * cMat[0x8] + g * cMat[0x9] + b * cMat[0xa] + a * cMat[0xb]) >> 16);
-			//cBuff->a = clamp_s8((r * cMat[0xc] + g * cMat[0xd] + b * cMat[0xe] + a * cMat[0xf]) >> 16);
 			cBuff += 1;
 		}
 		dptr += surf->scanLen;

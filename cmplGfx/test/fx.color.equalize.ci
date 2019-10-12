@@ -1,0 +1,26 @@
+// equalize image using lookup table.
+gxSurf image = gxSurf("asset/image/forest.png", 32);
+gxSurf offs = gxSurf(image);
+gxRect roi& = null;
+uint32 lut[256];
+
+// calculate histogram, luminosity
+image.calcHist(roi, 0xff000000, lut);
+
+uint32 sum = 0;
+for (int i = 0; i < lut.length; i += 1) {
+	sum += lut[i] >> 16;
+	lut[i] = sum;
+}
+for (uint32 i = 0; i < lut.length; i += 1) {
+	uint32 l = grayClamp(lut[i] * 255 / sum);
+	lut[i] = uint32(_argb(l, i, i, i));
+}
+offs.colorMap(roi, lut, true);
+
+image.drawHist(null, -1);
+offs.drawHist(null, -1);
+
+offs.showDiff(image);
+image.destroy();
+offs.destroy();

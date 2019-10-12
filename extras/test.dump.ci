@@ -99,11 +99,8 @@ lib/std/string.ci:116: warn: adding implicit cast char(0: int32)
 lib/std/string.ci:223: debug: using default field initializer: FormatFlags.padLen := 0
 lib/std/string.ci:223: debug: using default field initializer: FormatFlags.precision := 0
 lib/stdlib.ci:97: debug: inline file: `lib/vec/vec2d.ci`
-lib/vec/vec2d.ci:1: warn: adding implicit cast pointer(null: typename)
 lib/stdlib.ci:98: debug: inline file: `lib/vec/vec4f.ci`
-lib/vec/vec4f.ci:1: warn: adding implicit cast pointer(null: typename)
 lib/stdlib.ci:99: debug: inline file: `lib/vec/mat4f.ci`
-lib/vec/mat4f.ci:1: warn: adding implicit cast pointer(null: typename)
 lib/vec/mat4f.ci:110: warn: adding implicit cast float64(len: float32)
 lib/vec/mat4f.ci:134: warn: adding implicit cast float32(1: int32)
 lib/vec/mat4f.ci:162: warn: adding implicit cast float32(1: int32)
@@ -15970,7 +15967,7 @@ testMathAbsMod_f32_8d: float32 {
 			};
 			return .result := append(output, pos, value, format);
 		};
-		static if ((null) == null) {
+		static if (null == null) {
 			static const vec2d: struct {
 				data: float64[2];
 				<?>: <?>;
@@ -15986,7 +15983,7 @@ testMathAbsMod_f32_8d: float32 {
 			sub(a: vec2d, b: vec2d): vec2d := vec2d(emit(struct(a), struct(b), sub.p2d));
 			dot(const a: vec2d, const b: vec2d): float64 := a.x * b.x + a.y * b.y;
 		}
-		static if ((null) == null) {
+		static if (null == null) {
 			static const vec4f: struct {
 				data: float32[4];
 				<?>: <?>;
@@ -16022,7 +16019,7 @@ testMathAbsMod_f32_8d: float32 {
 			normalize(const v: vec4f): vec4f := div(v, vec4f(length(v)));
 			eval(const v: vec4f, x: float32): float32 := float32((((v.w * x + v.z) * x + v.y) * x) + v.x);
 		}
-		static if ((null) == null) {
+		static if (null == null) {
 			static const mat4f: struct {
 				data: float32[16];
 				m: float32[4][4];

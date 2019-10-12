@@ -55,7 +55,7 @@ $CMPL_BIN/cmpl -X-stdin-steps -profile/t/P/G/M -api/A/m/d/p/u -asm/g/n/s -ast/t 
 
 # test the virtual machine
 $CMPL_BIN/cmpl --test-vm
-$CMPL_BIN/cmpl>tmp/Execution.md --dump-vm
+$CMPL_BIN/cmpl>temp/Execution.md --dump-vm
 
 TEST_FILES="$CMPL_HOME/test/*.ci"
 TEST_FILES="$TEST_FILES $CMPL_HOME/test/lang/*.ci"

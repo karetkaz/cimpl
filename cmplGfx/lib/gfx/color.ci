@@ -1,6 +1,6 @@
 /// an 32 bit argb color
 struct argb: 0 {
-	// value of color
+	/// value of color
 	uint32 v;
 	struct: 1 {
 		/// blue component
@@ -233,7 +233,7 @@ vec4f hsv2rgb(vec4f hsv) {
 }
 
 /// draw the given lookup table to the image
-void drawLut(gxSurf image, gxRect roi&, uint32 lut[256], bool showBars) {
+void drawLut(gxSurf image, gxRect roi&, uint32 bars[256], uint32 lines[256]) {
 	enum {
 		margin: 20;
 		padding: 7;
@@ -258,13 +258,12 @@ void drawLut(gxSurf image, gxRect roi&, uint32 lut[256], bool showBars) {
 		0
 	);
 
-	for (int x = 0; x < rect.w; x += 1) {
-		int bv = bch(argb(lut[x])) * rect.h / 256;
-		int gv = gch(argb(lut[x])) * rect.h / 256;
-		int rv = rch(argb(lut[x])) * rect.h / 256;
-		int lv = ach(argb(lut[x])) * rect.h / 256;
-
-		if (showBars) {
+	if (bars != null) {
+		for (int x = 0; x < rect.w; x += 1) {
+			int bv = bch(argb(bars[x])) * rect.h / 256;
+			int gv = gch(argb(bars[x])) * rect.h / 256;
+			int rv = rch(argb(bars[x])) * rect.h / 256;
+			int lv = ach(argb(bars[x])) * rect.h / 256;
 			for (int y = 0; y < rect.h; y += 1) {
 				uint32 b = colB * uint32(y < bv);
 				uint32 g = colG * uint32(y < gv);
@@ -272,18 +271,41 @@ void drawLut(gxSurf image, gxRect roi&, uint32 lut[256], bool showBars) {
 				uint32 l = colL * uint32(y < lv);
 				image.set(x + rect.x, rect.h - y + rect.y - 1, r | g | b | l);
 			}
-		} else {
-				image.set(x + rect.x, rect.h - lv + rect.y - 1, colL);
-				image.set(x + rect.x, rect.h - bv + rect.y - 1, colB);
-				image.set(x + rect.x, rect.h - gv + rect.y - 1, colG);
-				image.set(x + rect.x, rect.h - rv + rect.y - 1, colR);
+		}
+	}
+	if (lines != null) {
+		int y = rect.y + rect.h - 1;
+		int pb = bch(argb(lines[0])) * rect.h / 256;
+		int pg = gch(argb(lines[0])) * rect.h / 256;
+		int pr = rch(argb(lines[0])) * rect.h / 256;
+		int pl = ach(argb(lines[0])) * rect.h / 256;
+
+		for (int i = 1; i < rect.w; i += 1) {
+			int x = rect.x + i;
+			int bv = bch(argb(lines[i])) * rect.h / 256;
+			int gv = gch(argb(lines[i])) * rect.h / 256;
+			int rv = rch(argb(lines[i])) * rect.h / 256;
+			int lv = ach(argb(lines[i])) * rect.h / 256;
+
+			image.drawLine(x - 1, y - pl, x, y - lv, colL);
+			image.drawLine(x - 1, y - pb, x, y - bv, colB);
+			image.drawLine(x - 1, y - pg, x, y - gv, colG);
+			image.drawLine(x - 1, y - pr, x, y - rv, colR);
+			
+			pl = lv;
+			pb = bv;
+			pg = gv;
+			pr = rv;
 		}
 	}
 }
 
 /// calculate and draw the histogram of the image
-void drawHist(gxSurf image, gxRect roi&, uint32 hist) {
+void drawHist(gxSurf image, gxRect roi&, uint32 hist, uint32 lut2[256]) {
 	uint32 lut[256];
 	image.calcHist(roi, hist, lut);
-	image.drawLut(roi, lut, true);
+	image.drawLut(roi, lut, lut2);
 }
+
+/// calculate and draw the histogram of the image
+inline drawHist(gxSurf image, gxRect roi&, uint32 hist) = drawHist(image, roi, hist, null);
