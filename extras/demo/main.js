@@ -148,7 +148,7 @@ let params = JsArgs('#', function (params, changes) {
 			try {
 				content = atob(content);
 			} catch (e) {
-				console.warn(e);
+				console.debug(e);
 			}
 			setContent(content, params.file, params.line);
 		}
@@ -169,7 +169,7 @@ let params = JsArgs('#', function (params, changes) {
 		try {
 			content = atob(content);
 		} catch (e) {
-			console.log(e);
+			console.debug(e);
 		}
 
 		if (content != null) {
@@ -233,7 +233,7 @@ let params = JsArgs('#', function (params, changes) {
 			try {
 				content = atob(content);
 			} catch (e) {
-				console.warn(e);
+				console.debug(e);
 			}
 		}
 		setContent(content, params.file, params.line);

@@ -3,7 +3,28 @@ var Module = {
 	dynamicLibraries: [
 		'libFile.wasm'
 	],
-	externalLibraries: [],
+	externalLibraries: [{
+		file: '/lib/stdlib.ci',
+		url: '/Cmpl/lib/stdlib.ci'
+	}, {
+		file: '/lib/std/math.ci',
+		url: '/Cmpl/lib/std/math.ci'
+	}, {
+		file: '/lib/std/math.Complex.ci',
+		url: '/Cmpl/lib/std/math.Complex.ci'
+	}, {
+		file: '/lib/std/string.ci',
+		url: '/Cmpl/lib/std/string.ci'
+	}, {
+		file: '/lib/vec/vec4f.ci',
+		url: '/Cmpl/lib/vec/vec4f.ci'
+	}, {
+		file: '/lib/vec/mat4f.ci',
+		url: '/Cmpl/lib/vec/mat4f.ci'
+	}, {
+		path: '/lib/vec/vec2d.ci',
+		url: '/Cmpl/lib/vec/vec2d.ci'
+	}],
 	print: function(text) {
 		postMessage({ print: text });
 	},
@@ -11,8 +32,14 @@ var Module = {
 		ENV.CMPL_HOME = '/';
 		FS.mkdirTree(Module.workspace);
 		FS.chdir(Module.workspace);
-		postMessage({initialized: true});
-		Module.initialized = true;
+
+		Module.wgetFiles(Module.externalLibraries, function (inProgress) {
+			if (inProgress > 0) {
+				return;
+			}
+			postMessage({initialized: true});
+			Module.initialized = true;
+		});
 	}
 };
 

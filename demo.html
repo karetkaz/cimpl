@@ -5,30 +5,30 @@
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
 
-	<link rel="stylesheet" href="style.css">
-	<link rel="stylesheet" href="theme.css">
+	<link rel="stylesheet" href="extras/demo/style.css">
+	<link rel="stylesheet" href="extras/demo/theme.css">
 
-	<script type="text/javascript" src="lib/JsArgs.js"></script>
-	<script type="text/javascript" src="lib/JsTerm.js"></script>
+	<script type="text/javascript" src="extras/demo/lib/JsArgs.js"></script>
+	<script type="text/javascript" src="extras/demo/lib/JsTerm.js"></script>
 
 	<!-- Code mirror -->
-	<link rel="stylesheet" href="lib/codemirror/lib/codemirror.css">
-	<link rel="stylesheet" href="lib/codemirror/addon/fold/foldgutter.css" />
-	<script src="lib/codemirror/lib/codemirror.js"></script>
-	<script src="lib/codemirror/addon/fold/foldcode.js"></script>
-	<script src="lib/codemirror/addon/fold/brace-fold.js"></script>
-	<script src="lib/codemirror/addon/fold/comment-fold.js"></script>
-	<script src="lib/codemirror/addon/fold/foldgutter.js"></script>
-	<script src="lib/codemirror/addon/selection/active-line.js"></script>
-	<script src="lib/codemirror/addon/edit/matchbrackets.js"></script>
-	<script src="lib/codemirror/addon/edit/trailingspace.js"></script>
-	<script src="lib/codemirror/addon/scroll/annotatescrollbar.js"></script>
-	<script src="lib/codemirror/addon/search/matchesonscrollbar.js"></script>
-	<script src="lib/codemirror/addon/search/searchcursor.js"></script>
-	<script src="lib/codemirror/addon/search/match-highlighter.js"></script>
-	<script src="lib/codemirror/addon/comment/comment.js"></script>
-	<script src="lib/codemirror/cmpl.js"></script>
-	<script src="lib/codemirror/keys.js"></script>
+	<link rel="stylesheet" href="extras/demo/codemirror/lib/codemirror.css">
+	<link rel="stylesheet" href="extras/demo/codemirror/addon/fold/foldgutter.css" />
+	<script src="extras/demo/codemirror/lib/codemirror.js"></script>
+	<script src="extras/demo/codemirror/addon/fold/foldcode.js"></script>
+	<script src="extras/demo/codemirror/addon/fold/brace-fold.js"></script>
+	<script src="extras/demo/codemirror/addon/fold/comment-fold.js"></script>
+	<script src="extras/demo/codemirror/addon/fold/foldgutter.js"></script>
+	<script src="extras/demo/codemirror/addon/selection/active-line.js"></script>
+	<script src="extras/demo/codemirror/addon/edit/matchbrackets.js"></script>
+	<script src="extras/demo/codemirror/addon/edit/trailingspace.js"></script>
+	<script src="extras/demo/codemirror/addon/scroll/annotatescrollbar.js"></script>
+	<script src="extras/demo/codemirror/addon/search/matchesonscrollbar.js"></script>
+	<script src="extras/demo/codemirror/addon/search/searchcursor.js"></script>
+	<script src="extras/demo/codemirror/addon/search/match-highlighter.js"></script>
+	<script src="extras/demo/codemirror/addon/comment/comment.js"></script>
+	<script src="extras/demo/codemirror/cmpl.js"></script>
+	<script src="extras/demo/codemirror/keys.js"></script>
 </head>
 <body class="dark tool left-bar left-pin editor output">
 <div id="main-toolbar" class="toolbar">
@@ -37,7 +37,6 @@
 	<span class="left icon" title="Execute script (Ctrl + Enter)" onclick="onExecClick();">►</span>
 
 	<span class="right icon" title="Toggle show menu" onclick="setStyle(body, '!right-bar', 'editor');">⋮</span>
-	<span class="canvas right icon" title="Stop execution" onclick="showCanvas(false);">❌</span>
 	<span class="right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
 	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
 
@@ -63,12 +62,9 @@
 		<li onclick="execute('-debug/g');">🐞 Debug</li>
 		<li onclick="execute('-profile/g');">⏱ Profile</li>
 		<li onclick="execute('');">Compile only</li>
-		<li onclick="execute('-doc/a/m');">Documentation</li>
-		<li onclick="execute('-asm/a/m/n/s/m');">Instructions</li>
-		<li onclick="execute('-api/a/m');">Symbols</li>
-		<li onclick="execute('-api/a/m/u');">Usages</li>
-		<li onclick="execute('-ast/m');">Syntax tree</li>
-		<li onclick="execute('-profile/t/p/G/M -api/A/m/d/p/u -asm/a/n/s -ast -doc');">full dump</li>
+		<li onclick="execute('-asm/n/s/m');">Instructions</li>
+		<li onclick="execute('-api/u -doc');">Symbols doc & use</li>
+		<li onclick="execute('-profile/t/p/G/M -api/A/m/d/p/u -asm/a/n/s -ast -doc');">Profile & full dump</li>
 	</ul></li></ul>
 	<hr>
 	<div>
@@ -211,9 +207,6 @@ function listFiles(dir) {
 }
 
 function saveInput(saveAs) {
-	if (params.content !== undefined) {
-		params.update({ content: btoa(editor.getValue()) });
-	}
 	let file = params.file;
 	if (file == null || saveAs === true) {
 		file = prompt('Save file as:', file || 'untitled.ci');
@@ -224,7 +217,19 @@ function saveInput(saveAs) {
 	let content = editor.getValue();
 	worker.postMessage({ content, file });
 	if (params.content !== undefined) {
-		params.update({ content, file });
+		let oldValue = params.content;
+		let encB64 = true;
+		try {
+			oldValue = atob(oldValue);
+		} catch (err) {
+			encB64 = false;
+			console.debug(err);
+		}
+		if (oldValue !== content) {
+			params.update({ content: encB64 ? btoa(content) : content });
+		} else {
+			params.update({ file });
+		}
 	} else {
 		params.update({ file });
 	}
@@ -271,7 +276,7 @@ args => {
 	mem - if 2MB memory is not enough: &mem=128M
 	X
 }*/
-let worker = new Worker('worker.js');
+let worker = new Worker('extras/demo/emscripten/worker.js');
 worker.onmessage = function(event) {
 	let data = event.data;
 	//console.log('worker: ', data);
@@ -316,6 +321,6 @@ worker.onmessage = function(event) {
 	}
 };
 </script>
-<script type="text/javascript" src="main.js"></script>
+<script type="text/javascript" src="extras/demo/main.js"></script>
 </body>
 </html>

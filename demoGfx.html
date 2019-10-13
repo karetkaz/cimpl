@@ -5,30 +5,30 @@
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
 
-	<link rel="stylesheet" href="style.css">
-	<link rel="stylesheet" href="theme.css">
+	<link rel="stylesheet" href="extras/demo/style.css">
+	<link rel="stylesheet" href="extras/demo/theme.css">
 
-	<script type="text/javascript" src="lib/JsArgs.js"></script>
-	<script type="text/javascript" src="lib/JsTerm.js"></script>
+	<script type="text/javascript" src="extras/demo/lib/JsArgs.js"></script>
+	<script type="text/javascript" src="extras/demo/lib/JsTerm.js"></script>
 
 	<!-- Code mirror -->
-	<link rel="stylesheet" href="lib/codemirror/lib/codemirror.css">
-	<link rel="stylesheet" href="lib/codemirror/addon/fold/foldgutter.css" />
-	<script src="lib/codemirror/lib/codemirror.js"></script>
-	<script src="lib/codemirror/addon/fold/foldcode.js"></script>
-	<script src="lib/codemirror/addon/fold/brace-fold.js"></script>
-	<script src="lib/codemirror/addon/fold/comment-fold.js"></script>
-	<script src="lib/codemirror/addon/fold/foldgutter.js"></script>
-	<script src="lib/codemirror/addon/selection/active-line.js"></script>
-	<script src="lib/codemirror/addon/edit/matchbrackets.js"></script>
-	<script src="lib/codemirror/addon/edit/trailingspace.js"></script>
-	<script src="lib/codemirror/addon/scroll/annotatescrollbar.js"></script>
-	<script src="lib/codemirror/addon/search/matchesonscrollbar.js"></script>
-	<script src="lib/codemirror/addon/search/searchcursor.js"></script>
-	<script src="lib/codemirror/addon/search/match-highlighter.js"></script>
-	<script src="lib/codemirror/addon/comment/comment.js"></script>
-	<script src="lib/codemirror/cmpl.js"></script>
-	<script src="lib/codemirror/keys.js"></script>
+	<link rel="stylesheet" href="extras/demo/codemirror/lib/codemirror.css">
+	<link rel="stylesheet" href="extras/demo/codemirror/addon/fold/foldgutter.css" />
+	<script src="extras/demo/codemirror/lib/codemirror.js"></script>
+	<script src="extras/demo/codemirror/addon/fold/foldcode.js"></script>
+	<script src="extras/demo/codemirror/addon/fold/brace-fold.js"></script>
+	<script src="extras/demo/codemirror/addon/fold/comment-fold.js"></script>
+	<script src="extras/demo/codemirror/addon/fold/foldgutter.js"></script>
+	<script src="extras/demo/codemirror/addon/selection/active-line.js"></script>
+	<script src="extras/demo/codemirror/addon/edit/matchbrackets.js"></script>
+	<script src="extras/demo/codemirror/addon/edit/trailingspace.js"></script>
+	<script src="extras/demo/codemirror/addon/scroll/annotatescrollbar.js"></script>
+	<script src="extras/demo/codemirror/addon/search/matchesonscrollbar.js"></script>
+	<script src="extras/demo/codemirror/addon/search/searchcursor.js"></script>
+	<script src="extras/demo/codemirror/addon/search/match-highlighter.js"></script>
+	<script src="extras/demo/codemirror/addon/comment/comment.js"></script>
+	<script src="extras/demo/codemirror/cmpl.js"></script>
+	<script src="extras/demo/codemirror/keys.js"></script>
 </head>
 <body class="dark tool left-bar left-pin editor output">
 <div id="main-toolbar" class="toolbar">
@@ -36,8 +36,8 @@
 	<span class="left icon" title="Save script (Ctrl + s)" onclick="saveInput();">💾</span>
 	<span class="left icon" title="Execute script (Ctrl + Enter)" onclick="onExecClick();">►</span>
 
-	<span class="right icon" title="Toggle show menu" onclick="setStyle(body, '!right-bar', 'editor');">⋮</span>
 	<span class="canvas right icon" title="Stop execution" onclick="showCanvas(false);">❌</span>
+	<span class="right icon" title="Toggle show menu" onclick="setStyle(body, '!right-bar', 'editor');">⋮</span>
 	<span class="right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
 	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
 
@@ -63,12 +63,9 @@
 		<li onclick="execute('-debug/g');">🐞 Debug</li>
 		<li onclick="execute('-profile/g');">⏱ Profile</li>
 		<li onclick="execute('');">Compile only</li>
-		<li onclick="execute('-doc/a/m');">Documentation</li>
-		<li onclick="execute('-asm/a/m/n/s/m');">Instructions</li>
-		<li onclick="execute('-api/a/m');">Symbols</li>
-		<li onclick="execute('-api/a/m/u');">Usages</li>
-		<li onclick="execute('-ast/m');">Syntax tree</li>
-		<li onclick="execute('-profile/t/p/G/M -api/A/m/d/p/u -asm/a/n/s -ast -doc');">full dump</li>
+		<li onclick="execute('-asm/n/s/m');">Instructions</li>
+		<li onclick="execute('-api/u -doc');">Symbols doc & use</li>
+		<li onclick="execute('-profile/t/p/G/M -api/A/m/d/p/u -asm/a/n/s -ast -doc');">Profile & full dump</li>
 	</ul></li></ul>
 	<hr>
 	<div>
@@ -225,17 +222,10 @@ function onExecClick() {
 	execute(params.exec || '-run/g');
 }
 
-function onSyncWorkSpace(error) {
-	if (error == null) {
-		return;
-	}
-	console.error(error);
-}
-
 var props = props || {};
 props.libraries = [
-	'libFile.wasm',
-	'libGfx.wasm',
+	'extras/demo/emscripten/libFile.wasm',
+	'extras/demo/emscripten/libGfx.wasm',
 	'/lib/gfxlib.ci'
 ];
 function openProjectFile(projectOrFile) {
@@ -283,9 +273,6 @@ function listFiles(dir) {
 }
 
 function saveInput(saveAs) {
-	if (params.content !== undefined) {
-		params.update({ content: btoa(editor.getValue()) });
-	}
 	let file = params.file;
 	if (file == null || saveAs === true) {
 		file = prompt('Save file as:', file || 'untitled.ci');
@@ -303,7 +290,19 @@ function saveInput(saveAs) {
 		}
 	}
 	if (params.content !== undefined) {
-		params.update({ content, file });
+		let oldValue = params.content;
+		let encB64 = true;
+		try {
+			oldValue = atob(oldValue);
+		} catch (err) {
+			encB64 = false;
+			console.debug(err);
+		}
+		if (oldValue !== content) {
+			params.update({ content: encB64 ? btoa(content) : content });
+		} else {
+			params.update({ file });
+		}
 	} else {
 		params.update({ file });
 	}
@@ -321,6 +320,13 @@ function execInput(args) {
 			}
 		}
 	});
+}
+
+function onSyncWorkSpace(error) {
+	if (error == null) {
+		return;
+	}
+	console.error(error);
 }
 
 function centerCanvas(zoom) {
@@ -400,12 +406,24 @@ canvasShown.observe(canvas, { attributes: true });
 var Module = {
 	initialized: false,
 	dynamicLibraries: [
-		'libFile.wasm',
-		'libGfx.wasm'
+		'extras/demo/emscripten/libFile.wasm',
+		'extras/demo/emscripten/libGfx.wasm'
 	],
+	locateFile: function(url) {
+		return 'extras/demo/emscripten/' + url;
+	},
 	externalLibraries: [{
-		file: '/lib/gfxlib.ci',
-		url: '/Cmpl/cmplGfx/lib/gfxlib.ci'
+		file: '/lib/stdlib.ci',
+		url: '/Cmpl/lib/stdlib.ci'
+	}, {
+		file: '/lib/std/math.ci',
+		url: '/Cmpl/lib/std/math.ci'
+	}, {
+		file: '/lib/std/math.Complex.ci',
+		url: '/Cmpl/lib/std/math.Complex.ci'
+	}, {
+		file: '/lib/std/string.ci',
+		url: '/Cmpl/lib/std/string.ci'
 	}, {
 		file: '/lib/gfx/color.ci',
 		url: '/Cmpl/cmplGfx/lib/gfx/color.ci'
@@ -418,11 +436,14 @@ var Module = {
 	}, {
 		path: '/lib/vec/vec2d.ci',
 		url: '/Cmpl/lib/vec/vec2d.ci'
+	}, {
+		file: '/lib/gfxlib.ci',
+		url: '/Cmpl/cmplGfx/lib/gfxlib.ci'
 	}],
 	print: function(message) { terminal.print(message); },
 	canvas: document.getElementById('canvas'),
 
-	onRuntimeInitialized: function () {
+	onRuntimeInitialized: function () {	
 		ENV.CMPL_HOME = '/';
 		FS.mkdirTree(Module.workspace);
 		FS.chdir(Module.workspace);
@@ -436,10 +457,9 @@ var Module = {
 		});
 	}
 };
-
 </script>
-<script type="text/javascript" src="module.js"></script>
-<script type="text/javascript" src="cmpl.js"></script>
-<script type="text/javascript" src="main.js"></script>
+<script type="text/javascript" src="extras/demo/emscripten/module.js"></script>
+<script type="text/javascript" src="extras/demo/emscripten/cmpl.js"></script>
+<script type="text/javascript" src="extras/demo/main.js"></script>
 </body>
 </html>

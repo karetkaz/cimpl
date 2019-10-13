@@ -7,7 +7,7 @@ CFLAGS=-Wall -Wextra -g0 -O3 -std=gnu99
 EMFLAGS=-g0 -O3 -s WASM=1 -s EXPORT_ALL=1 -s INVOKE_RUN=0 -s ALLOW_MEMORY_GROWTH=1 -s ASSERTIONS=0 -s BINARYEN_TRAP_MODE='clamp' --no-heap-copy
 
 EM_SIDE_MODULE=-s SIDE_MODULE=1 -s "EXPORTED_FUNCTIONS=['_cmplInit']"
-EM_MAIN_MODULE=-s MAIN_MODULE=1 --preload-file lib/stdlib.ci --preload-file lib/std/math.ci --preload-file lib/std/math.Complex.ci --preload-file lib/std/string.ci
+EM_MAIN_MODULE=-s MAIN_MODULE=1
 #EM_MAIN_MODULE+=-s "EXPORTED_FUNCTIONS=['_rtInit','_ccInit','_ccAddUnit','_ccGenCode','_execute']"
 
 ifneq "$(OS)" "Windows_NT"
@@ -78,16 +78,16 @@ libOpenGL.dll: cmplGL/src/openGL.c
 
 # for Browser platform
 cmpl.js: $(SRC_CC_EXE) lib/stdlib.ci
-	emcc $(EMFLAGS) -o extras/Emscripten/cmpl.js $(EM_MAIN_MODULE) -s USE_SDL=2 -s USE_LIBPNG=1 $(filter %.c, $^)
+	emcc $(EMFLAGS) -o extras/demo/emscripten/cmpl.js $(EM_MAIN_MODULE) -s USE_SDL=2 -s USE_LIBPNG=1 $(filter %.c, $^)
 
 libFile.wasm: cmplFile/src/file.c
-	emcc $(EMFLAGS) -o extras/Emscripten/libFile.wasm -I src $(EM_SIDE_MODULE) $(filter %.c, $^)
+	emcc $(EMFLAGS) -o extras/demo/emscripten/libFile.wasm -I src $(EM_SIDE_MODULE) $(filter %.c, $^)
 
 libGfx.wasm: $(SRC_GX) $(GX_SRC)/os_linux/gx_gui.sdl.c  $(GX_SRC)/os_linux/time.unx.c
-	emcc $(EMFLAGS) -o extras/Emscripten/libGfx.wasm -I src $(EM_SIDE_MODULE) -s USE_SDL=2 -s USE_LIBPNG=1 $(filter %.c, $^)
+	emcc $(EMFLAGS) -o extras/demo/emscripten/libGfx.wasm -I src $(EM_SIDE_MODULE) -s USE_SDL=2 -s USE_LIBPNG=1 $(filter %.c, $^)
 
 cmpl.dbg.js: $(SRC_CC_EXE) lib/stdlib.ci
-	emcc -g3 -O0 -s WASM=0 $(filter %.c, $^) -o extras/Emscripten/cmpl.dbg.js
+	emcc -g3 -O0 -s WASM=0 $(filter %.c, $^) -o extras/demo/emscripten/cmpl.dbg.js
 
 
 clean:
