@@ -74,6 +74,11 @@ CodeMirror.commands.line = function(cm) {
 CodeMirror.commands.find = function(cm) {
 	completeAction('?');
 }
+
+CodeMirror.commands.findAndSelect = function(cm) {
+	completeAction('?!');
+}
+
 CodeMirror.commands.findNext = function(cm) {
 	let cursor = edtFileName.cursor;
 	if (cursor && cursor.findNext()) {
@@ -89,9 +94,6 @@ CodeMirror.commands.findPrev = function(cm) {
 	} else {
 		actionError();
 	}
-}
-CodeMirror.commands.findAndSelect = function(cm) {
-	completeAction('?!');
 }
 
 let editor = CodeMirror.fromTextArea(input, {
@@ -130,6 +132,16 @@ let terminal = Terminal(output, function(escaped, text) {
 let params = JsArgs('#', function (params, changes) {
 	//console.trace('params: ', changes, params);
 
+	// set window title
+	let title = params.file || '';
+	if (params.line) {
+		title += ':' + params.line;
+	}
+	if (params.folder) {
+		title += '][' + params.folder;
+	}
+	document.title = props.title + ' [' + title + ']';
+
 	// no changes => page loaded
 	if (changes === undefined) {
 		// setup theme, only after loading
@@ -156,7 +168,7 @@ let params = JsArgs('#', function (params, changes) {
 	}
 
 	// reload page if the project was modified
-	let files = [];
+	let project = [];
 	if (changes.project !== undefined) {
 		if (changes.project != params.project) {
 			// page needs to be reloaded
@@ -174,20 +186,13 @@ let params = JsArgs('#', function (params, changes) {
 
 		if (content != null) {
 			if (content.startsWith('[{')) {
-				files = JSON.parse(content);
+				project = JSON.parse(content);
 			} else {
 				for (let url of content.split(';')) {
-					files.push({ url });
+					project.push({ url });
 				}
 			}
 		}
-		/*openProjectFile({
-			workspace: params.workspace,
-			file: params.file,
-			line: params.line,
-			list: files
-		});
-		return;*/
 		if (changes.workspace === undefined) {
 			changes.workspace = true;
 		}
@@ -196,9 +201,10 @@ let params = JsArgs('#', function (params, changes) {
 	if (changes.workspace !== undefined) {
 		openProjectFile({
 			workspace: params.workspace,
+			folder: params.folder,
 			file: params.file,
 			line: params.line,
-			list: files
+			project
 		});
 		if (params.workspace && params.project) {
 			params.project = null;
@@ -210,6 +216,7 @@ let params = JsArgs('#', function (params, changes) {
 	if (changes.folder !== undefined) {
 		listFiles(params.folder || '.');
 	}
+
 	if (changes.file !== undefined) {
 		if (params.file == null && params.content == null) {
 			// close the current file
@@ -333,7 +340,7 @@ edtFileName.onkeydown = function(event) {
 	// '[{...' => project
 	else if (edtFileName.value.startsWith('[{')) {
 		openProjectFile({
-			list: JSON.parse(edtFileName.value),
+			project: JSON.parse(edtFileName.value),
 			file: params.file,
 			line: params.line
 		});
@@ -366,7 +373,7 @@ edtFileName.onkeydown = function(event) {
 		let line = match[3];
 		if (match[1] != null) {
 			file = file.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3");
-			openProjectFile({ file, list: [{
+			openProjectFile({ file, project: [{
 				file, url: match[1] + match[2]
 			}]});
 		}
@@ -391,8 +398,10 @@ window.onkeydown = function() {
 		} else {
 			setStyle(document.body, 'editor');
 		}
-		editor.setSelection(editor.getCursor());
-		editor.focus();
+		if (!document.body.classList.contains('canvas')) {
+			editor.setSelection(editor.getCursor());
+			editor.focus();
+		}
 		return false;
 	}
 	// Ctrl + Enter => Execute script
@@ -532,12 +541,13 @@ function shareInput() {
 
 function execute(cmd, exactArgs) {
 	let args = undefined;
-	let file = saveInput();
 
-	if (file == null) {
-		return;
-	}
 	if (cmd != null) {
+		let file = saveInput();
+		if (file == null) {
+			return;
+		}
+
 		args = [];
 		for (let arg of cmd.split(' ')) {
 			if (arg === '') {

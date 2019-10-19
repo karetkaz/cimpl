@@ -52,7 +52,6 @@ typename.offset: int32 {
 .name: 'offset'
 .print: '@%06x'
 .owner: typename
-.usages:
 }
 typename.base(type: typename): typename: function {
 .kind: static const inline
@@ -230,7 +229,6 @@ int8: typename {
 .name: 'int8'
 .print: '%d'
 .value: 0
-.usages:
 }
 int16: typename {
 .kind: static const typename(i32)
@@ -239,7 +237,6 @@ int16: typename {
 .name: 'int16'
 .print: '%d'
 .value: 0
-.usages:
 }
 int32: typename {
 .kind: static const typename(i32)
@@ -442,7 +439,6 @@ uint16: typename {
 .name: 'uint16'
 .print: '%u'
 .value: 0
-.usages:
 }
 uint32: typename {
 .kind: static const typename(u32)
@@ -627,7 +623,6 @@ uint64: typename {
 .field zxt: function (size: 0, cast: static const inline)
 .field sxt: function (size: 0, cast: static const inline)
 .value: 0
-.usages:
 }
 uint64.zxt(value: int64, offs: int32, count: int32): int64: function {
 .kind: static const inline
@@ -1345,7 +1340,6 @@ object: typename {
 .base: `typename`
 .size: 4
 .name: 'object'
-.usages:
 }
 null: pointer {
 .kind: static const inline
@@ -1412,7 +1406,6 @@ int: typename {
 .size: 0
 .name: 'int'
 .value: int32
-.usages:
 }
 .cstr: char {
 .kind: static const typename(arr)
@@ -1420,7 +1413,6 @@ int: typename {
 .size: 4
 .name: '.cstr'
 .print: '%s'
-.usages:
 }
 emit: function {
 .kind: static const typename(void)
@@ -1475,7 +1467,6 @@ emit.nop: void {
 .name: 'nop'
 .owner: emit
 .value: nop
-.usages:
 }
 emit.not: bool {
 .kind: static const inline
@@ -1484,7 +1475,6 @@ emit.not: bool {
 .name: 'not'
 .owner: emit
 .value: not.b32
-.usages:
 }
 emit.set: void {
 .kind: static const inline
@@ -1493,7 +1483,6 @@ emit.set: void {
 .name: 'set'
 .owner: emit
 .value: set.x32 sp(1)
-.usages:
 }
 emit.ret: void {
 .kind: static const inline
@@ -1502,7 +1491,6 @@ emit.ret: void {
 .name: 'ret'
 .owner: emit
 .value: ret
-.usages:
 }
 emit.call: void {
 .kind: static const inline
@@ -1511,7 +1499,6 @@ emit.call: void {
 .name: 'call'
 .owner: emit
 .value: call
-.usages:
 }
 emit.p4x: typename {
 .kind: static const typename(val)
@@ -1566,7 +1553,6 @@ emit.dup: typename {
 .field x1: int32 (size: 0, cast: static const inline)
 .field x2: int64 (size: 0, cast: static const inline)
 .field x4: emit.p4x (size: 0, cast: static const inline)
-.usages:
 }
 emit.dup.x1: int32 {
 .kind: static const inline
@@ -1575,7 +1561,6 @@ emit.dup.x1: int32 {
 .name: 'x1'
 .owner: emit.dup
 .value: dup.x32 sp(0)
-.usages:
 }
 emit.dup.x2: int64 {
 .kind: static const inline
@@ -1584,7 +1569,6 @@ emit.dup.x2: int64 {
 .name: 'x2'
 .owner: emit.dup
 .value: dup.x64 sp(0)
-.usages:
 }
 emit.dup.x4: emit.p4x {
 .kind: static const inline
@@ -1593,7 +1577,6 @@ emit.dup.x4: emit.p4x {
 .name: 'x4'
 .owner: emit.dup
 .value: dup.x128 sp(0)
-.usages:
 }
 emit.load: typename {
 .kind: static const typename(void)
@@ -1609,7 +1592,6 @@ emit.load: typename {
 .field i32: int32 (size: 0, cast: static const inline)
 .field i64: int64 (size: 0, cast: static const inline)
 .field i128: emit.p4x (size: 0, cast: static const inline)
-.usages:
 }
 emit.load.z32: int32 {
 .kind: static const inline
@@ -1618,7 +1600,6 @@ emit.load.z32: int32 {
 .name: 'z32'
 .owner: emit.load
 .value: load.z32
-.usages:
 }
 emit.load.z64: int64 {
 .kind: static const inline
@@ -1627,7 +1608,6 @@ emit.load.z64: int64 {
 .name: 'z64'
 .owner: emit.load
 .value: load.z64
-.usages:
 }
 emit.load.z128: emit.p4x {
 .kind: static const inline
@@ -1636,7 +1616,6 @@ emit.load.z128: emit.p4x {
 .name: 'z128'
 .owner: emit.load
 .value: load.z128
-.usages:
 }
 emit.load.i8: int32 {
 .kind: static const inline
@@ -1645,7 +1624,6 @@ emit.load.i8: int32 {
 .name: 'i8'
 .owner: emit.load
 .value: load.i8
-.usages:
 }
 emit.load.i16: int32 {
 .kind: static const inline
@@ -1654,7 +1632,6 @@ emit.load.i16: int32 {
 .name: 'i16'
 .owner: emit.load
 .value: load.i16
-.usages:
 }
 emit.load.i32: int32 {
 .kind: static const inline
@@ -1663,7 +1640,6 @@ emit.load.i32: int32 {
 .name: 'i32'
 .owner: emit.load
 .value: load.i32
-.usages:
 }
 emit.load.i64: int64 {
 .kind: static const inline
@@ -1672,7 +1648,6 @@ emit.load.i64: int64 {
 .name: 'i64'
 .owner: emit.load
 .value: load.i64
-.usages:
 }
 emit.load.i128: emit.p4x {
 .kind: static const inline
@@ -1681,7 +1656,6 @@ emit.load.i128: emit.p4x {
 .name: 'i128'
 .owner: emit.load
 .value: load.i128
-.usages:
 }
 emit.store: typename {
 .kind: static const typename(void)
@@ -1694,7 +1668,6 @@ emit.store: typename {
 .field i32: void (size: 0, cast: static const inline)
 .field i64: void (size: 0, cast: static const inline)
 .field i128: void (size: 0, cast: static const inline)
-.usages:
 }
 emit.store.i8: void {
 .kind: static const inline
@@ -1703,7 +1676,6 @@ emit.store.i8: void {
 .name: 'i8'
 .owner: emit.store
 .value: store.i8
-.usages:
 }
 emit.store.i16: void {
 .kind: static const inline
@@ -1712,7 +1684,6 @@ emit.store.i16: void {
 .name: 'i16'
 .owner: emit.store
 .value: store.i16
-.usages:
 }
 emit.store.i32: void {
 .kind: static const inline
@@ -1721,7 +1692,6 @@ emit.store.i32: void {
 .name: 'i32'
 .owner: emit.store
 .value: store.i32
-.usages:
 }
 emit.store.i64: void {
 .kind: static const inline
@@ -1730,7 +1700,6 @@ emit.store.i64: void {
 .name: 'i64'
 .owner: emit.store
 .value: store.i64
-.usages:
 }
 emit.store.i128: void {
 .kind: static const inline
@@ -1739,7 +1708,6 @@ emit.store.i128: void {
 .name: 'i128'
 .owner: emit.store
 .value: store.i128
-.usages:
 }
 emit.cmt: typename {
 .kind: static const typename(void)
@@ -1749,7 +1717,6 @@ emit.cmt: typename {
 .owner: emit
 .field u32: uint32 (size: 0, cast: static const inline)
 .field u64: uint64 (size: 0, cast: static const inline)
-.usages:
 }
 emit.cmt.u32: uint32 {
 .kind: static const inline
@@ -1758,7 +1725,6 @@ emit.cmt.u32: uint32 {
 .name: 'u32'
 .owner: emit.cmt
 .value: cmt.b32
-.usages:
 }
 emit.cmt.u64: uint64 {
 .kind: static const inline
@@ -1767,7 +1733,6 @@ emit.cmt.u64: uint64 {
 .name: 'u64'
 .owner: emit.cmt
 .value: cmt.b64
-.usages:
 }
 emit.and: typename {
 .kind: static const typename(void)
@@ -1777,7 +1742,6 @@ emit.and: typename {
 .owner: emit
 .field u32: uint32 (size: 0, cast: static const inline)
 .field u64: uint64 (size: 0, cast: static const inline)
-.usages:
 }
 emit.and.u32: uint32 {
 .kind: static const inline
@@ -1786,7 +1750,6 @@ emit.and.u32: uint32 {
 .name: 'u32'
 .owner: emit.and
 .value: and.b32
-.usages:
 }
 emit.and.u64: uint64 {
 .kind: static const inline
@@ -1795,7 +1758,6 @@ emit.and.u64: uint64 {
 .name: 'u64'
 .owner: emit.and
 .value: and.b64
-.usages:
 }
 emit.or: typename {
 .kind: static const typename(void)
@@ -1805,7 +1767,6 @@ emit.or: typename {
 .owner: emit
 .field u32: uint32 (size: 0, cast: static const inline)
 .field u64: uint64 (size: 0, cast: static const inline)
-.usages:
 }
 emit.or.u32: uint32 {
 .kind: static const inline
@@ -1814,7 +1775,6 @@ emit.or.u32: uint32 {
 .name: 'u32'
 .owner: emit.or
 .value: or.b32
-.usages:
 }
 emit.or.u64: uint64 {
 .kind: static const inline
@@ -1823,7 +1783,6 @@ emit.or.u64: uint64 {
 .name: 'u64'
 .owner: emit.or
 .value: or.b64
-.usages:
 }
 emit.xor: typename {
 .kind: static const typename(void)
@@ -1833,7 +1792,6 @@ emit.xor: typename {
 .owner: emit
 .field u32: uint32 (size: 0, cast: static const inline)
 .field u64: uint64 (size: 0, cast: static const inline)
-.usages:
 }
 emit.xor.u32: uint32 {
 .kind: static const inline
@@ -1842,7 +1800,6 @@ emit.xor.u32: uint32 {
 .name: 'u32'
 .owner: emit.xor
 .value: xor.b32
-.usages:
 }
 emit.xor.u64: uint64 {
 .kind: static const inline
@@ -1851,7 +1808,6 @@ emit.xor.u64: uint64 {
 .name: 'u64'
 .owner: emit.xor
 .value: xor.b64
-.usages:
 }
 emit.shl: typename {
 .kind: static const typename(void)
@@ -1861,7 +1817,6 @@ emit.shl: typename {
 .owner: emit
 .field u32: uint32 (size: 0, cast: static const inline)
 .field u64: uint64 (size: 0, cast: static const inline)
-.usages:
 }
 emit.shl.u32: uint32 {
 .kind: static const inline
@@ -1870,7 +1825,6 @@ emit.shl.u32: uint32 {
 .name: 'u32'
 .owner: emit.shl
 .value: shl.b32
-.usages:
 }
 emit.shl.u64: uint64 {
 .kind: static const inline
@@ -1879,7 +1833,6 @@ emit.shl.u64: uint64 {
 .name: 'u64'
 .owner: emit.shl
 .value: shl.b64
-.usages:
 }
 emit.shr: typename {
 .kind: static const typename(void)
@@ -1891,7 +1844,6 @@ emit.shr: typename {
 .field i64: int64 (size: 0, cast: static const inline)
 .field u32: uint32 (size: 0, cast: static const inline)
 .field u64: uint64 (size: 0, cast: static const inline)
-.usages:
 }
 emit.shr.i32: int32 {
 .kind: static const inline
@@ -1900,7 +1852,6 @@ emit.shr.i32: int32 {
 .name: 'i32'
 .owner: emit.shr
 .value: sar.b32
-.usages:
 }
 emit.shr.i64: int64 {
 .kind: static const inline
@@ -1909,7 +1860,6 @@ emit.shr.i64: int64 {
 .name: 'i64'
 .owner: emit.shr
 .value: sar.b64
-.usages:
 }
 emit.shr.u32: uint32 {
 .kind: static const inline
@@ -1918,7 +1868,6 @@ emit.shr.u32: uint32 {
 .name: 'u32'
 .owner: emit.shr
 .value: shr.b32
-.usages:
 }
 emit.shr.u64: uint64 {
 .kind: static const inline
@@ -1927,7 +1876,6 @@ emit.shr.u64: uint64 {
 .name: 'u64'
 .owner: emit.shr
 .value: shr.b64
-.usages:
 }
 emit.neg: typename {
 .kind: static const typename(void)
@@ -1941,7 +1889,6 @@ emit.neg: typename {
 .field f64: float64 (size: 0, cast: static const inline)
 .field p4f: emit.p4x (size: 0, cast: static const inline)
 .field p2d: emit.p4x (size: 0, cast: static const inline)
-.usages:
 }
 emit.neg.i32: int32 {
 .kind: static const inline
@@ -1950,7 +1897,6 @@ emit.neg.i32: int32 {
 .name: 'i32'
 .owner: emit.neg
 .value: neg.i32
-.usages:
 }
 emit.neg.i64: int64 {
 .kind: static const inline
@@ -1959,7 +1905,6 @@ emit.neg.i64: int64 {
 .name: 'i64'
 .owner: emit.neg
 .value: neg.i64
-.usages:
 }
 emit.neg.f32: float32 {
 .kind: static const inline
@@ -1968,7 +1913,6 @@ emit.neg.f32: float32 {
 .name: 'f32'
 .owner: emit.neg
 .value: neg.f32
-.usages:
 }
 emit.neg.f64: float64 {
 .kind: static const inline
@@ -1977,7 +1921,6 @@ emit.neg.f64: float64 {
 .name: 'f64'
 .owner: emit.neg
 .value: neg.f64
-.usages:
 }
 emit.neg.p4f: emit.p4x {
 .kind: static const inline
@@ -1996,7 +1939,6 @@ emit.neg.p2d: emit.p4x {
 .name: 'p2d'
 .owner: emit.neg
 .value: neg.v2d
-.usages:
 }
 emit.add: typename {
 .kind: static const typename(void)
@@ -2020,7 +1962,6 @@ emit.add.i32: int32 {
 .name: 'i32'
 .owner: emit.add
 .value: add.i32
-.usages:
 }
 emit.add.i64: int64 {
 .kind: static const inline
@@ -2029,7 +1970,6 @@ emit.add.i64: int64 {
 .name: 'i64'
 .owner: emit.add
 .value: add.i64
-.usages:
 }
 emit.add.f32: float32 {
 .kind: static const inline
@@ -2038,7 +1978,6 @@ emit.add.f32: float32 {
 .name: 'f32'
 .owner: emit.add
 .value: add.f32
-.usages:
 }
 emit.add.f64: float64 {
 .kind: static const inline
@@ -2047,7 +1986,6 @@ emit.add.f64: float64 {
 .name: 'f64'
 .owner: emit.add
 .value: add.f64
-.usages:
 }
 emit.add.p4f: emit.p4x {
 .kind: static const inline
@@ -2066,7 +2004,6 @@ emit.add.p2d: emit.p4x {
 .name: 'p2d'
 .owner: emit.add
 .value: add.v2d
-.usages:
 }
 emit.sub: typename {
 .kind: static const typename(void)
@@ -2091,7 +2028,6 @@ emit.sub.i32: int32 {
 .name: 'i32'
 .owner: emit.sub
 .value: sub.i32
-.usages:
 }
 emit.sub.i64: int64 {
 .kind: static const inline
@@ -2100,7 +2036,6 @@ emit.sub.i64: int64 {
 .name: 'i64'
 .owner: emit.sub
 .value: sub.i64
-.usages:
 }
 emit.sub.f32: float32 {
 .kind: static const inline
@@ -2109,7 +2044,6 @@ emit.sub.f32: float32 {
 .name: 'f32'
 .owner: emit.sub
 .value: sub.f32
-.usages:
 }
 emit.sub.f64: float64 {
 .kind: static const inline
@@ -2118,7 +2052,6 @@ emit.sub.f64: float64 {
 .name: 'f64'
 .owner: emit.sub
 .value: sub.f64
-.usages:
 }
 emit.sub.p4f: emit.p4x {
 .kind: static const inline
@@ -2164,7 +2097,6 @@ emit.mul.i32: int32 {
 .name: 'i32'
 .owner: emit.mul
 .value: mul.i32
-.usages:
 }
 emit.mul.i64: int64 {
 .kind: static const inline
@@ -2173,7 +2105,6 @@ emit.mul.i64: int64 {
 .name: 'i64'
 .owner: emit.mul
 .value: mul.i64
-.usages:
 }
 emit.mul.u32: uint32 {
 .kind: static const inline
@@ -2182,7 +2113,6 @@ emit.mul.u32: uint32 {
 .name: 'u32'
 .owner: emit.mul
 .value: mul.u32
-.usages:
 }
 emit.mul.u64: uint32 {
 .kind: static const inline
@@ -2191,7 +2121,6 @@ emit.mul.u64: uint32 {
 .name: 'u64'
 .owner: emit.mul
 .value: mul.u64
-.usages:
 }
 emit.mul.f32: float32 {
 .kind: static const inline
@@ -2200,7 +2129,6 @@ emit.mul.f32: float32 {
 .name: 'f32'
 .owner: emit.mul
 .value: mul.f32
-.usages:
 }
 emit.mul.f64: float64 {
 .kind: static const inline
@@ -2209,7 +2137,6 @@ emit.mul.f64: float64 {
 .name: 'f64'
 .owner: emit.mul
 .value: mul.f64
-.usages:
 }
 emit.mul.p4f: emit.p4x {
 .kind: static const inline
@@ -2228,7 +2155,6 @@ emit.mul.p2d: emit.p4x {
 .name: 'p2d'
 .owner: emit.mul
 .value: mul.v2d
-.usages:
 }
 emit.div: typename {
 .kind: static const typename(void)
@@ -2254,7 +2180,6 @@ emit.div.i32: int32 {
 .name: 'i32'
 .owner: emit.div
 .value: div.i32
-.usages:
 }
 emit.div.i64: int64 {
 .kind: static const inline
@@ -2263,7 +2188,6 @@ emit.div.i64: int64 {
 .name: 'i64'
 .owner: emit.div
 .value: div.i64
-.usages:
 }
 emit.div.u32: uint32 {
 .kind: static const inline
@@ -2272,7 +2196,6 @@ emit.div.u32: uint32 {
 .name: 'u32'
 .owner: emit.div
 .value: div.u32
-.usages:
 }
 emit.div.u64: uint32 {
 .kind: static const inline
@@ -2281,7 +2204,6 @@ emit.div.u64: uint32 {
 .name: 'u64'
 .owner: emit.div
 .value: div.u64
-.usages:
 }
 emit.div.f32: float32 {
 .kind: static const inline
@@ -2290,7 +2212,6 @@ emit.div.f32: float32 {
 .name: 'f32'
 .owner: emit.div
 .value: div.f32
-.usages:
 }
 emit.div.f64: float64 {
 .kind: static const inline
@@ -2299,7 +2220,6 @@ emit.div.f64: float64 {
 .name: 'f64'
 .owner: emit.div
 .value: div.f64
-.usages:
 }
 emit.div.p4f: emit.p4x {
 .kind: static const inline
@@ -2318,7 +2238,6 @@ emit.div.p2d: emit.p4x {
 .name: 'p2d'
 .owner: emit.div
 .value: div.v2d
-.usages:
 }
 emit.mod: typename {
 .kind: static const typename(void)
@@ -2332,7 +2251,6 @@ emit.mod: typename {
 .field u64: uint32 (size: 0, cast: static const inline)
 .field f32: float32 (size: 0, cast: static const inline)
 .field f64: float64 (size: 0, cast: static const inline)
-.usages:
 }
 emit.mod.i32: int32 {
 .kind: static const inline
@@ -2341,7 +2259,6 @@ emit.mod.i32: int32 {
 .name: 'i32'
 .owner: emit.mod
 .value: mod.i32
-.usages:
 }
 emit.mod.i64: int64 {
 .kind: static const inline
@@ -2350,7 +2267,6 @@ emit.mod.i64: int64 {
 .name: 'i64'
 .owner: emit.mod
 .value: mod.i64
-.usages:
 }
 emit.mod.u32: uint32 {
 .kind: static const inline
@@ -2359,7 +2275,6 @@ emit.mod.u32: uint32 {
 .name: 'u32'
 .owner: emit.mod
 .value: mod.u32
-.usages:
 }
 emit.mod.u64: uint32 {
 .kind: static const inline
@@ -2368,7 +2283,6 @@ emit.mod.u64: uint32 {
 .name: 'u64'
 .owner: emit.mod
 .value: mod.u64
-.usages:
 }
 emit.mod.f32: float32 {
 .kind: static const inline
@@ -2377,7 +2291,6 @@ emit.mod.f32: float32 {
 .name: 'f32'
 .owner: emit.mod
 .value: mod.f32
-.usages:
 }
 emit.mod.f64: float64 {
 .kind: static const inline
@@ -2386,7 +2299,6 @@ emit.mod.f64: float64 {
 .name: 'f64'
 .owner: emit.mod
 .value: mod.f64
-.usages:
 }
 emit.ceq: typename {
 .kind: static const typename(void)
@@ -2400,7 +2312,6 @@ emit.ceq: typename {
 .field f64: bool (size: 0, cast: static const inline)
 .field p4f: bool (size: 0, cast: static const inline)
 .field p2d: bool (size: 0, cast: static const inline)
-.usages:
 }
 emit.ceq.i32: bool {
 .kind: static const inline
@@ -2409,7 +2320,6 @@ emit.ceq.i32: bool {
 .name: 'i32'
 .owner: emit.ceq
 .value: ceq.i32
-.usages:
 }
 emit.ceq.i64: bool {
 .kind: static const inline
@@ -2418,7 +2328,6 @@ emit.ceq.i64: bool {
 .name: 'i64'
 .owner: emit.ceq
 .value: ceq.i64
-.usages:
 }
 emit.ceq.f32: bool {
 .kind: static const inline
@@ -2427,7 +2336,6 @@ emit.ceq.f32: bool {
 .name: 'f32'
 .owner: emit.ceq
 .value: ceq.f32
-.usages:
 }
 emit.ceq.f64: bool {
 .kind: static const inline
@@ -2436,7 +2344,6 @@ emit.ceq.f64: bool {
 .name: 'f64'
 .owner: emit.ceq
 .value: ceq.f64
-.usages:
 }
 emit.ceq.p4f: bool {
 .kind: static const inline
@@ -2445,7 +2352,6 @@ emit.ceq.p4f: bool {
 .name: 'p4f'
 .owner: emit.ceq
 .value: ceq.v4f
-.usages:
 }
 emit.ceq.p2d: bool {
 .kind: static const inline
@@ -2454,7 +2360,6 @@ emit.ceq.p2d: bool {
 .name: 'p2d'
 .owner: emit.ceq
 .value: ceq.v2d
-.usages:
 }
 emit.clt: typename {
 .kind: static const typename(void)
@@ -2468,7 +2373,6 @@ emit.clt: typename {
 .field u64: bool (size: 0, cast: static const inline)
 .field f32: bool (size: 0, cast: static const inline)
 .field f64: bool (size: 0, cast: static const inline)
-.usages:
 }
 emit.clt.i32: bool {
 .kind: static const inline
@@ -2477,7 +2381,6 @@ emit.clt.i32: bool {
 .name: 'i32'
 .owner: emit.clt
 .value: clt.i32
-.usages:
 }
 emit.clt.i64: bool {
 .kind: static const inline
@@ -2486,7 +2389,6 @@ emit.clt.i64: bool {
 .name: 'i64'
 .owner: emit.clt
 .value: clt.i64
-.usages:
 }
 emit.clt.u32: bool {
 .kind: static const inline
@@ -2495,7 +2397,6 @@ emit.clt.u32: bool {
 .name: 'u32'
 .owner: emit.clt
 .value: clt.u32
-.usages:
 }
 emit.clt.u64: bool {
 .kind: static const inline
@@ -2504,7 +2405,6 @@ emit.clt.u64: bool {
 .name: 'u64'
 .owner: emit.clt
 .value: clt.u64
-.usages:
 }
 emit.clt.f32: bool {
 .kind: static const inline
@@ -2513,7 +2413,6 @@ emit.clt.f32: bool {
 .name: 'f32'
 .owner: emit.clt
 .value: clt.f32
-.usages:
 }
 emit.clt.f64: bool {
 .kind: static const inline
@@ -2522,7 +2421,6 @@ emit.clt.f64: bool {
 .name: 'f64'
 .owner: emit.clt
 .value: clt.f64
-.usages:
 }
 emit.cgt: typename {
 .kind: static const typename(void)
@@ -2536,7 +2434,6 @@ emit.cgt: typename {
 .field u64: bool (size: 0, cast: static const inline)
 .field f32: bool (size: 0, cast: static const inline)
 .field f64: bool (size: 0, cast: static const inline)
-.usages:
 }
 emit.cgt.i32: bool {
 .kind: static const inline
@@ -2545,7 +2442,6 @@ emit.cgt.i32: bool {
 .name: 'i32'
 .owner: emit.cgt
 .value: cgt.i32
-.usages:
 }
 emit.cgt.i64: bool {
 .kind: static const inline
@@ -2554,7 +2450,6 @@ emit.cgt.i64: bool {
 .name: 'i64'
 .owner: emit.cgt
 .value: cgt.i64
-.usages:
 }
 emit.cgt.u32: bool {
 .kind: static const inline
@@ -2563,7 +2458,6 @@ emit.cgt.u32: bool {
 .name: 'u32'
 .owner: emit.cgt
 .value: cgt.u32
-.usages:
 }
 emit.cgt.u64: bool {
 .kind: static const inline
@@ -2572,7 +2466,6 @@ emit.cgt.u64: bool {
 .name: 'u64'
 .owner: emit.cgt
 .value: cgt.u64
-.usages:
 }
 emit.cgt.f32: bool {
 .kind: static const inline
@@ -2581,7 +2474,6 @@ emit.cgt.f32: bool {
 .name: 'f32'
 .owner: emit.cgt
 .value: cgt.f32
-.usages:
 }
 emit.cgt.f64: bool {
 .kind: static const inline
@@ -2590,7 +2482,6 @@ emit.cgt.f64: bool {
 .name: 'f64'
 .owner: emit.cgt
 .value: cgt.f64
-.usages:
 }
 emit.min: typename {
 .kind: static const typename(void)
@@ -2620,7 +2511,6 @@ emit.min.p2d: emit.p4x {
 .name: 'p2d'
 .owner: emit.min
 .value: min.v2d
-.usages:
 }
 emit.max: typename {
 .kind: static const typename(void)
@@ -2650,7 +2540,6 @@ emit.max.p2d: emit.p4x {
 .name: 'p2d'
 .owner: emit.max
 .value: max.v2d
-.usages:
 }
 halt(): void: function {
 .kind: static const inline
@@ -2668,7 +2557,6 @@ CLOCKS_PER_SEC: int64 {
 .size: 0
 .name: 'CLOCKS_PER_SEC'
 .value: 1000000
-.usages:
 }
 RAND_MAX: int64 {
 .kind: static const i64
@@ -2676,7 +2564,6 @@ RAND_MAX: int64 {
 .size: 0
 .name: 'RAND_MAX'
 .value: 2147483647
-.usages:
 }
 raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void: function {
 .kind: static const inline
@@ -7661,7 +7548,6 @@ vec2d.x: float64 {
 .owner: vec2d
 .doc: 'X component of the vector'
 .value: x: float64
-.usages:
 }
 vec2d.y: float64 {
 .kind: inline
@@ -7672,7 +7558,6 @@ vec2d.y: float64 {
 .owner: vec2d
 .doc: 'Y component of the vector'
 .value: y: float64
-.usages:
 }
 vec2d(x: float64, y: float64): vec2d: function {
 .kind: static const function
@@ -8030,7 +7915,6 @@ vec4f.x: float32 {
 .owner: vec4f
 .doc: 'X component of the vector'
 .value: x: float32
-.usages:
 }
 vec4f.y: float32 {
 .kind: inline
@@ -8041,7 +7925,6 @@ vec4f.y: float32 {
 .owner: vec4f
 .doc: 'Y component of the vector'
 .value: y: float32
-.usages:
 }
 vec4f.z: float32 {
 .kind: inline
@@ -8052,7 +7935,6 @@ vec4f.z: float32 {
 .owner: vec4f
 .doc: 'Z component of the vector'
 .value: z: float32
-.usages:
 }
 vec4f.w: float32 {
 .kind: inline
@@ -8063,7 +7945,6 @@ vec4f.w: float32 {
 .owner: vec4f
 .doc: 'W component of the vector'
 .value: w: float32
-.usages:
 }
 vec4f(x: float32, y: float32, z: float32, w: float32): vec4f: function {
 .kind: static const function
@@ -8591,7 +8472,6 @@ mat4f.x: vec4f {
 .owner: mat4f
 .doc: '@public'
 .value: x: vec4f
-.usages:
 }
 mat4f.y: vec4f {
 .kind: inline
@@ -8602,7 +8482,6 @@ mat4f.y: vec4f {
 .owner: mat4f
 .doc: '@public'
 .value: y: vec4f
-.usages:
 }
 mat4f.z: vec4f {
 .kind: inline
@@ -8613,7 +8492,6 @@ mat4f.z: vec4f {
 .owner: mat4f
 .doc: '@public'
 .value: z: vec4f
-.usages:
 }
 mat4f.w: vec4f {
 .kind: inline
@@ -8624,7 +8502,6 @@ mat4f.w: vec4f {
 .owner: mat4f
 .doc: '@public'
 .value: w: vec4f
-.usages:
 }
 mat4f.<?>: mat4f.<?> {
 .kind: variable(val)
@@ -8849,7 +8726,6 @@ mat4f.xx: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: xx: float32
-.usages:
 }
 mat4f.xy: float32 {
 .kind: inline
@@ -8860,7 +8736,6 @@ mat4f.xy: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: xy: float32
-.usages:
 }
 mat4f.xz: float32 {
 .kind: inline
@@ -8871,7 +8746,6 @@ mat4f.xz: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: xz: float32
-.usages:
 }
 mat4f.xw: float32 {
 .kind: inline
@@ -8882,7 +8756,6 @@ mat4f.xw: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: xw: float32
-.usages:
 }
 mat4f.yx: float32 {
 .kind: inline
@@ -8893,7 +8766,6 @@ mat4f.yx: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: yx: float32
-.usages:
 }
 mat4f.yy: float32 {
 .kind: inline
@@ -8904,7 +8776,6 @@ mat4f.yy: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: yy: float32
-.usages:
 }
 mat4f.yz: float32 {
 .kind: inline
@@ -8915,7 +8786,6 @@ mat4f.yz: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: yz: float32
-.usages:
 }
 mat4f.yw: float32 {
 .kind: inline
@@ -8926,7 +8796,6 @@ mat4f.yw: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: yw: float32
-.usages:
 }
 mat4f.zx: float32 {
 .kind: inline
@@ -8937,7 +8806,6 @@ mat4f.zx: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: zx: float32
-.usages:
 }
 mat4f.zy: float32 {
 .kind: inline
@@ -8948,7 +8816,6 @@ mat4f.zy: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: zy: float32
-.usages:
 }
 mat4f.zz: float32 {
 .kind: inline
@@ -8959,7 +8826,6 @@ mat4f.zz: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: zz: float32
-.usages:
 }
 mat4f.zw: float32 {
 .kind: inline
@@ -8970,7 +8836,6 @@ mat4f.zw: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: zw: float32
-.usages:
 }
 mat4f.wx: float32 {
 .kind: inline
@@ -8981,7 +8846,6 @@ mat4f.wx: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: wx: float32
-.usages:
 }
 mat4f.wy: float32 {
 .kind: inline
@@ -8992,7 +8856,6 @@ mat4f.wy: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: wy: float32
-.usages:
 }
 mat4f.wz: float32 {
 .kind: inline
@@ -9003,7 +8866,6 @@ mat4f.wz: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: wz: float32
-.usages:
 }
 mat4f.ww: float32 {
 .kind: inline
@@ -9014,7 +8876,6 @@ mat4f.ww: float32 {
 .owner: mat4f
 .doc: '@public'
 .value: ww: float32
-.usages:
 }
 mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float32, yz: float32, yw: float32, zx: float32, zy: float32, zz: float32, zw: float32, wx: float32, wy: float32, wz: float32, ww: float32): mat4f: function {
 .kind: static const function
@@ -11389,7 +11250,6 @@ gxMesh.drawPlot: int64 {
 .name: 'drawPlot'
 .owner: gxMesh
 .value: 1
-.usages:
 }
 gxMesh.drawWire: int64 {
 .kind: static const i64
@@ -11398,7 +11258,6 @@ gxMesh.drawWire: int64 {
 .name: 'drawWire'
 .owner: gxMesh
 .value: 2
-.usages:
 }
 gxMesh.drawFill: int64 {
 .kind: static const i64
@@ -11465,7 +11324,6 @@ gxMesh.segments: int64 {
 .size: 8
 .name: 'segments'
 .owner: gxMesh
-.usages:
 }
 camera: typename {
 .kind: static const typename(void)
@@ -11838,7 +11696,6 @@ Gui.FINGER_PRESS: int64 {
 .name: 'FINGER_PRESS'
 .owner: Gui
 .value: 6
-.usages:
 }
 Gui.FINGER_MOTION: int64 {
 .kind: static const i64
@@ -11857,7 +11714,6 @@ Gui.FINGER_RELEASE: int64 {
 .name: 'FINGER_RELEASE'
 .owner: Gui
 .value: 8
-.usages:
 }
 Gui.EVENT_TIMEOUT: int64 {
 .kind: static const i64
@@ -11866,7 +11722,6 @@ Gui.EVENT_TIMEOUT: int64 {
 .name: 'EVENT_TIMEOUT'
 .owner: Gui
 .value: 10
-.usages:
 }
 Gui.WINDOW_INIT: int64 {
 .kind: static const i64
@@ -11875,7 +11730,6 @@ Gui.WINDOW_INIT: int64 {
 .name: 'WINDOW_INIT'
 .owner: Gui
 .value: 100
-.usages:
 }
 Gui.WINDOW_CLOSE: int64 {
 .kind: static const i64
@@ -11894,7 +11748,6 @@ Gui.WINDOW_ENTER: int64 {
 .name: 'WINDOW_ENTER'
 .owner: Gui
 .value: 102
-.usages:
 }
 Gui.WINDOW_LEAVE: int64 {
 .kind: static const i64
@@ -11903,7 +11756,6 @@ Gui.WINDOW_LEAVE: int64 {
 .name: 'WINDOW_LEAVE'
 .owner: Gui
 .value: 103
-.usages:
 }
 Gui.KEY_MASK_SHIFT: int64 {
 .kind: static const i64
@@ -11912,7 +11764,6 @@ Gui.KEY_MASK_SHIFT: int64 {
 .name: 'KEY_MASK_SHIFT'
 .owner: Gui
 .value: 1
-.usages:
 }
 Gui.KEY_MASK_CONTROL: int64 {
 .kind: static const i64
@@ -11921,7 +11772,6 @@ Gui.KEY_MASK_CONTROL: int64 {
 .name: 'KEY_MASK_CONTROL'
 .owner: Gui
 .value: 2
-.usages:
 }
 Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void: function {
 .kind: static const inline
@@ -12066,7 +11916,6 @@ argb.b: uint8 {
 .owner: argb
 .doc: 'blue component'
 .value: b: uint8
-.usages:
 }
 argb.g: uint8 {
 .kind: inline
@@ -12077,7 +11926,6 @@ argb.g: uint8 {
 .owner: argb
 .doc: 'green component'
 .value: g: uint8
-.usages:
 }
 argb.r: uint8 {
 .kind: inline
@@ -12088,7 +11936,6 @@ argb.r: uint8 {
 .owner: argb
 .doc: 'red component'
 .value: r: uint8
-.usages:
 }
 argb.a: uint8 {
 .kind: inline
@@ -12099,7 +11946,6 @@ argb.a: uint8 {
 .owner: argb
 .doc: 'alpha component'
 .value: a: uint8
-.usages:
 }
 argb(argb: uint32): argb: function {
 .kind: inline
@@ -16375,7 +16221,6 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 	<.main+?>: nfc(18) ;System.millis(): int64
 	<.main+?>: store.m64 <?> ;show.start
 	<.main+?>: nfc(0) ;halt(): void
-.usages:
 }
 
 ---------- Execute: byte-code

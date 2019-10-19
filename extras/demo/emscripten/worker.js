@@ -69,22 +69,24 @@ onmessage = function(event) {
 			onmessage(event);
 		}
 
-		// list files from a directory
+		// setup custom workspace directory
 		if (Module.initWorkspace(data.workspace, onInitWorkSpace)) {
 			return;
 		}
 
 		let list = null;
 		let sync = false;
-		// list files from a directory
-		if (data.list != null) {
-			if (data.list.constructor === Array) {
-				Module.wgetFiles(data.list);
-				sync = true;
-				list = [Module.workspace];
-			} else {
-				list = data.list;
-			}
+
+		// download and store project files
+		if (data.project != null) {
+			Module.wgetFiles(data.project);
+			list = [Module.workspace];
+			sync = true;
+		}
+
+		// list files from custom directory
+		if (data.folder != null) {
+			list = data.folder;
 		}
 
 		// open, save, download file

@@ -1,32 +1,33 @@
 // micro ui
-struct Slider {
+struct Button {
 	const char text[*];
-	const int divValue = 1;
-	const int minValue = 0;
-	const int maxValue = -1u >> 1;
 	bool enabled = true;
-	int value = 0;
-}
-int val(Slider slider&) {
-	if (slider.value < slider.minValue) {
-		slider.value = slider.minValue;
-	}
-	if (slider.value > slider.maxValue) {
-		slider.value = slider.maxValue;
-	}
-	return slider.value / slider.divValue;
+	bool selectable = false;
+
+	bool onClick(Button item&) = null;
 }
 
 struct Checker {
 	const char text[*];
+	const char on[*] = "on";
+	const char off[*] = "off";
 	bool enabled = true;
+	bool selectable = false;
+
 	bool checked = false;
+	bool onClick(Checker item&) = null;
 }
 
-struct Button {
+struct Slider {
 	const char text[*];
 	bool enabled = true;
-	void onClick();
+	bool selectable = true;
+
+	int value = 0;
+	const int divValue = 1;
+	const int minValue = 0;
+	const int maxValue = -1u >> 1;
+	bool onClick(Slider item&) = null;
 }
 
 struct Layout {
@@ -37,6 +38,16 @@ struct Layout {
 	int reset[200] = {};
 	int selectedIndex = -1;
 	int count = 0;
+}
+
+int val(Slider slider&) {
+	if (slider.value < slider.minValue) {
+		slider.value = slider.minValue;
+	}
+	if (slider.value > slider.maxValue) {
+		slider.value = slider.maxValue;
+	}
+	return slider.value / slider.divValue;
 }
 
 Layout Layout(gxSurf offs, gxSurf font, variant items...) {
@@ -85,9 +96,9 @@ void draw(Layout layout&, int x, int y) {
 			pos = text.append(pos, item.text);
 			pos = text.append(pos, ": ");
 			if (item.checked) {
-				pos = text.append(pos, "on");
+				pos = text.append(pos, item.on);
 			} else {
-				pos = text.append(pos, "off");
+				pos = text.append(pos, item.off);
 			}
 		}
 		else if (Button item& = layout.items[i].as(Button)) {
@@ -108,7 +119,11 @@ void draw(Layout layout&, int x, int y) {
 	layout.offs.drawText(rectAll.x, rectAll.y, layout.font, textAll, 0xffffff);
 }
 
-bool uiEvent(const Layout layout&, int action, int button, int x, int y) {
+inline selected(Layout layout&) = layout.selectedIndex < 0 ? null : pointer(layout.items[layout.selectedIndex]);
+inline selected(Layout layout&, typename type) = layout.selectedIndex < 0 ? null : layout.items[layout.selectedIndex].as(type);
+inline isSelected(Layout layout&, pointer item) = item == layout.selected();
+
+bool uiEvent(Layout layout&, int action, int button, int x, int y) {
 // TODO: void measure(Layout layout&) { }
 // TODO: void layout(Layout layout&) { }
 bool click(Layout layout&, int x, int y) {
@@ -130,24 +145,43 @@ bool click(Layout layout&, int x, int y) {
 			if (!item.enabled) {
 				return false;
 			}
-			if (layout.selectedIndex == i) {
-				return false;
+			if (item.selectable) {
+				layout.selectedIndex = i;
 			}
-			layout.selectedIndex = i;
+			if (item.onClick != null) {
+				return item.onClick(item);
+			}
 			return true;
 		}
 		else if (Checker item& = layout.items[i].as(Checker)) {
 			if (!item.enabled) {
 				return false;
 			}
-			item.checked = !item.checked;
+			int previousIndex = i;
+			if (item.selectable) {
+				previousIndex = layout.selectedIndex;
+				layout.selectedIndex = i;
+			}
+			if (previousIndex == i) {
+				// change only if already selected
+				item.checked = !item.checked;
+			}
+			if (item.onClick != null) {
+				return item.onClick(item);
+			}
 			return true;
 		}
 		else if (Button item& = layout.items[i].as(Button)) {
 			if (!item.enabled) {
 				return false;
 			}
-			item.onClick();
+			if (item.selectable) {
+				layout.selectedIndex = i;
+			}
+			if (item.onClick != null) {
+				return item.onClick(item);
+			}
+			return true;
 		}
 		else {
 			abort("item is not a known ui element", layout.items[i]);
@@ -156,15 +190,16 @@ bool click(Layout layout&, int x, int y) {
 	return false;
 }
 
-//inline selected(Layout layout&, typename type) = layout.selectedIndex < 0 ? null : layout.items[layout.selectedIndex].as(type);
-
 bool update(Layout layout&, int delta) {
 	if (layout.selectedIndex < 0) {
 		return false;
 	}
-	Slider slider& = layout.items[layout.selectedIndex];
-	slider.value += delta;
-	return true;
+	variant selectedItem = layout.items[layout.selectedIndex];
+	if (Slider slider& = selectedItem.as(Slider)) {
+		slider.value += delta;
+		return true;
+	}
+	return false;
 }
 
 bool reset(Layout layout&, int index) {
@@ -190,8 +225,20 @@ bool select(Layout layout&, bool prev) {
 		else if (index < 0) {
 			index += layout.count;
 		}
-		if (Slider item& = layout.items[index].as(Slider)) {
-			if (item.enabled) {
+		if (Button item& = layout.items[index].as(Button)) {
+			if (item.enabled && item.selectable) {
+				layout.selectedIndex = index;
+				return true;
+			}
+		}
+		else if (Checker item& = layout.items[index].as(Checker)) {
+			if (item.enabled && item.selectable) {
+				layout.selectedIndex = index;
+				return true;
+			}
+		}
+		else if (Slider item& = layout.items[index].as(Slider)) {
+			if (item.enabled && item.selectable) {
 				layout.selectedIndex = index;
 				return true;
 			}

@@ -95,9 +95,9 @@ If JSON output format is used, the generated file can be opened with the Inspect
 
 	- `/m /M`             dump memory usage (/M includes extra information)
 
-	- `/p /P`             print caught errors (/P includes extra information)
-
 	- `/t /T`             trace the execution (/T includes extra information)
+
+	- `/p /P`             print caught errors (/P includes extra information)
 
 	- `/a`                pause on all(caught) errors
 
@@ -109,9 +109,9 @@ If JSON output format is used, the generated file can be opened with the Inspect
 
 	- `/m /M`             dump memory usage (/M includes extra information)
 
-	- `/p /P`             show statement execution times (/P includes extra information)
-
 	- `/t /T`             trace the execution (/T includes extra information)
+
+	- `/p /P`             print execution times (/P includes extra information)
 
 - `-std<file>`            specify custom standard library file (empty file name disables std library compilation).
 
@@ -123,15 +123,29 @@ If JSON output format is used, the generated file can be opened with the Inspect
 
 	- `/a`                append to the log file
 
+	- `/d`                dump to the log file
+
 - `-dump[?] <file>`       set output for: dump(symbols, assembly, abstract syntax tree, coverage, call tree)
 
-	-`.scite`             dump api for SciTE text editor
+	- `.scite`            dump api for SciTE text editor
 
-	-`.json`              dump api and profile data in javascript object notation format
+	- `.json`             dump api and profile data in javascript object notation format
+
+	- `.html`             dump api in html format
 
 - `-api[*]`               dump symbols
 
-	- `/a`                include all builtin symbols
+	- `/a /A`             include all library symbols(/A includes builtins)
+
+	- `/m`                include `main` builtin initializer symbol
+
+	- `/d`                dump details of symbol
+
+	- `/p`                dump params and fields
+
+- `-doc[*]`               dump documentation
+
+	- `/a /A`             include all library symbols(/A includes builtins)
 
 	- `/m`                include main builtin symbol
 
@@ -139,25 +153,41 @@ If JSON output format is used, the generated file can be opened with the Inspect
 
 	- `/p`                dump params and fields
 
-	- `/u`                dump usages
+- `-use[*]`               dump usages
+
+	- `/a /A`             include all library symbols(/A includes builtins)
+
+	- `/m`                include main builtin symbol
+
+	- `/d`                dump details of symbol
+
+	- `/p`                dump params and fields
 
 - `-asm[*]<int>`          dump assembled code: jmp +80
 
-	- `/a`                use global address: jmp @0x003d8c
+	- `/a /A`             include all library symbols(/A includes builtins)
+
+	- `/m`                include main builtin symbol
+
+	- `/d`                dump details of symbol
+
+	- `/p`                dump params and fields
+
+	- `/g`                use global address: jmp @0x003d8c
 
 	- `/n`                prefer names over addresses: jmp <main+80>
 
 	- `/s`                print source code statements
 
+- `-ast[*]`               dump syntax tree
+
+	- `/a /A`             include all library symbols(/A includes builtins)
+
 	- `/m`                include main builtin symbol
 
 	- `/d`                dump details of symbol
 
 	- `/p`                dump params and fields
-
-	- `/u`                dump usages
-
-- `-ast[*]`               dump syntax tree
 
 	- `/t`                dump sub-expression type information
 
@@ -166,14 +196,6 @@ If JSON output format is used, the generated file can be opened with the Inspect
 	- `/b`                don't keep braces ('{') on the same line
 
 	- `/e`                don't keep `else if` constructs on the same line
-
-	- `/m`                include main builtin symbol
-
-	- `/d`                dump details of symbol
-
-	- `/p`                dump params and fields
-
-	- `/u`                dump usages
 
 
 ## Compilation units

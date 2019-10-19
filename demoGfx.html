@@ -5,12 +5,6 @@
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
 
-	<link rel="stylesheet" href="extras/demo/style.css">
-	<link rel="stylesheet" href="extras/demo/theme.css">
-
-	<script type="text/javascript" src="extras/demo/lib/JsArgs.js"></script>
-	<script type="text/javascript" src="extras/demo/lib/JsTerm.js"></script>
-
 	<!-- Code mirror -->
 	<link rel="stylesheet" href="extras/demo/codemirror/lib/codemirror.css">
 	<link rel="stylesheet" href="extras/demo/codemirror/addon/fold/foldgutter.css" />
@@ -29,6 +23,13 @@
 	<script src="extras/demo/codemirror/addon/comment/comment.js"></script>
 	<script src="extras/demo/codemirror/cmpl.js"></script>
 	<script src="extras/demo/codemirror/keys.js"></script>
+
+	<script type="text/javascript" src="extras/demo/lib/JsArgs.js"></script>
+	<script type="text/javascript" src="extras/demo/lib/JsTerm.js"></script>
+
+	<link rel="stylesheet" href="extras/demo/theme.css">
+	<link rel="stylesheet" href="extras/demo/style.css">
+
 </head>
 <body class="dark tool left-bar left-pin editor output">
 <div id="main-toolbar" class="toolbar">
@@ -54,115 +55,129 @@
 	<input id="edtFileName" placeholder="#execute; ?search; :goto; -fold; +unfold"></input></span>
 </div>
 <div id="left-sidebar" class="sidebar">
-	<div>
-		<span>Execute</span>
-		<button class="right" onclick="execute();" title="Compiler usage help">?</button>
-	</div>
-	<ul><li class="collapsed submenu" onclick="setStyle(this, '!collapsed');">Execute<ul>
+	<div class="collapsed submenu">
+	<li onclick="setStyle(parentElement, '!collapsed');">Execute
+	<button class="right" onclick="execute(); event.stopPropagation();" title="Compiler usage help">?</button>
+	</li>
+	<ul>
 		<li onclick="execute('-run/g');">⚡ Run</li>
 		<li onclick="execute('-debug/g');">🐞 Debug</li>
 		<li onclick="execute('-profile/g');">⏱ Profile</li>
-		<li onclick="execute('');">Compile only</li>
+		<li onclick="execute('');">⚙ Compile only</li>
+		<li onclick="execute('-api -doc -use');">Symbols</li>
 		<li onclick="execute('-asm/n/s/m');">Instructions</li>
-		<li onclick="execute('-api/u -doc');">Symbols doc & use</li>
-		<li onclick="execute('-profile/t/p/G/M -api/A/m/d/p/u -asm/a/n/s -ast -doc');">Profile & full dump</li>
-	</ul></li></ul>
+		<li onclick="execute('-profile/t/p/G/M -api/A/m/d/p -asm/a/n/s -ast -doc -use');">Profile & full dump</li>
+	</ul></li></div>
 	<hr>
-	<div>
-		<span>Workspace</span>
-		<button class="right" onclick="params.update('folder');" title="Refresh file list">⟳</button>
-		<!-- TODO
-		<button class="right" onclick="downloadFiles(false);">📥</button>
-		<button class="right" onclick="uploadFiles();">📤</button>
-		-->
-	</div>
+	<div class="submenu">
+	<li onclick="setStyle(parentElement, '!collapsed');">Workspace
+	<button class="right" onclick="event.stopPropagation(); setStyle(parentElement.parentElement, '-collapsed'); params.update('folder');" title="Refresh file list">⟳</button>
+	<!--<button class="right" onclick="event.stopPropagation(); downloadFiles();">📥</button>-->
+	<!--<button class="right" onclick="event.stopPropagation(); uploadFiles();">📤</button>-->
+	</li>
 	<ul id="fileList"></ul>
 	<ul>
 		<hr>
-		<li onclick="params.update({folder: '*'});" title="Show files including the /lib/ folder">Show all</li>
-	</ul>
+		<li onclick="params.update({folder: '**'});" title="Show files including the /lib/ folder">Show all</li>
+	</ul></div>
 </div>
 <div id="right-sidebar" class="sidebar">
 	<div class="collapsed submenu">
-	<li onclick="setStyle(parentElement, '!collapsed');">File</li>
+	<li onclick="setStyle(parentElement, '!collapsed');">File
+	<button class="right" onclick="event.stopPropagation(); saveInput();" title="Save">💾</button>
+	</li>
 	<ul>
 		<!-- TODO
 		<li>New folder</li>
 		<li>New file</li>
 		-->
-		<li onclick="editProject();">🛠 Edit project</li>
-		<li onclick="shareInput();">🔗 Share link</li>
-		<li onclick="saveInput();">💾 Save (Ctrl + s)</li>
-		<li onclick="saveInput(true);">💾 Save as</li>
-		<li onclick="params.update({file: null});">❌ Close</li>
+		<li onclick="editProject();"><span class="right"></span>🛠 Edit project</li>
+		<li onclick="shareInput();"><span class="right"></span>🔗 Share link</li>
+		<li onclick="saveInput();"><span class="right">Ctrl + s</span>💾 Save</li>
+		<li onclick="saveInput(true);"><span class="right"></span>💾 Save as</li>
+		<li onclick="params.update({file: null});"><span class="right"></span>❌ Close</li>
 	</ul>
 	</div>
-	<div class="submenu">
-	<li onclick="setStyle(parentElement, '!collapsed');">Edit</li>
+	<div class="submenu collapsed">
+	<li onclick="setStyle(parentElement, '!collapsed');">Edit
+	<button class="right" onclick="event.stopPropagation(); editor.execCommand('redo');" title="Redo">↷</button>
+	<button class="right" onclick="event.stopPropagation(); editor.execCommand('undo');" title="Undo">↶</button>
+	</li>
 	<ul>
-		<li onclick="params.update('file');" title="">Revert</li>
-		<li onclick="editor.execCommand('undo');" title="">Undo (Ctrl + z)</li>
-		<li onclick="editor.execCommand('redo');" title="">Redo (Ctrl+Shift + z)</li>
+		<li onclick="params.update('file');"><span class="right"></span>Revert</li>
+		<li onclick="editor.execCommand('undo');"><span class="right">Ctrl + z</span>Undo</li>
+		<li onclick="editor.execCommand('redo');"><span class="right">Ctrl+Shift + z</span>Redo</li>
 		<hr>
 		<!-- no api
-		<li title="">Cut (Ctrl + x)</li>
-		<li title="">Copy (Ctrl + c)</li>
-		<li title="">Paste (Ctrl + v)</li>
+		<li>Cut (Ctrl + x)</li>
+		<li>Copy (Ctrl + c)</li>
+		<li>Paste (Ctrl + v)</li>
 		-->
 		<hr>
 		<!-- TODO
-		<li onclick="editor.execCommand('?');" title="[File | Selection]">Beautify (Ctrl + b)</li>
-		<li onclick="editor.execCommand('?');" title="[Line | Selection]">Block comment (Ctrl+Shift + /)</li>
-		<li onclick="editor.execCommand('deleteLine');" title="[Char | Selection]">Delete (Delete)</li>
-		<li onclick="editor.execCommand('dupplicate');" title="[Line | Selection]">Duplicate (Ctrl + d)</li>
+		<li onclick="editor.execCommand('?');"><span class="right">Ctrl + b</span>Beautify</li>
+		<li onclick="editor.execCommand('?');"><span class="right">Ctrl+Shift + /</span>Block comment</li>
+		<li onclick="editor.execCommand('deleteLine');"><span class="right">Delete</span>Delete</li>
+		<li onclick="editor.execCommand('dupplicate');"><span class="right">Ctrl + d</span>Duplicate</li>
 		-->
-		<li onclick="editor.execCommand('indentMore');" title="[Line | Selection]">Indent (Tab)</li>
-		<li onclick="editor.execCommand('indentLess');" title="[Line | Selection]">Unindent (Shift + Tab)</li>
-		<li onclick="editor.execCommand('toggleCommentIndented');" title="[Line | Selection]">Toggle comment (Ctrl + /)</li>
+		<li onclick="editor.execCommand('indentMore');"><span class="right">Tab</span>Indent</li>
+		<li onclick="editor.execCommand('indentLess');"><span class="right">Shift + Tab</span>Unindent</li>
+		<li onclick="editor.execCommand('toggleCommentIndented');"><span class="right">Ctrl + /</span>Toggle comment</li>
 		<hr>
 		<div class="collapsed submenu">
 		<li onclick="setStyle(parentElement, '!collapsed')">Line</li><ul>
-			<li onclick="editor.execCommand('swapLineUp');" title="">Move(Ctrl+Shift + Up)</li>
-			<li onclick="editor.execCommand('swapLineDown');" title="">Move(Ctrl+Shift + Down)</li>
+			<li onclick="editor.execCommand('swapLineUp');"><span class="right">Ctrl+Shift + Up</span>Move</li>
+			<li onclick="editor.execCommand('swapLineDown');"><span class="right">Ctrl+Shift + Down</span>Move</li>
 			<!-- TODO
-			<li onclick="editor.execCommand('?joinLines');" title="">Join Lines</li>
-			<li onclick="editor.execCommand('?sortLines');" title="">Sort Lines</li>
-			<li onclick="editor.execCommand('?reverseLines');" title="">Reverse Lines</li>
+			<li onclick="editor.execCommand('?duppLines');">Dupplicate Lines</li>
+			<li onclick="editor.execCommand('?joinLines');">Join Lines</li>
+			<li onclick="editor.execCommand('?sortLines');">Sort Lines</li>
+			<li onclick="editor.execCommand('?reverseLines');">Reverse Lines</li>
 			-->
 		</ul></div>
 		<div class="collapsed submenu">
 		<li onclick="setStyle(parentElement, '!collapsed')">Case</li><ul>
-			<li onclick="editor.execCommand('toggleCase');" title="">Toggle case(Ctrl + u)</li>
-			<li onclick="editor.execCommand('upperCase');" title="">Upper case</li>
-			<li onclick="editor.execCommand('lowerCase');" title="">Lower case</li>
-			<li onclick="editor.execCommand('camelCase');" title="">CamelCase</li>
-			<li onclick="editor.execCommand('snakeCase');" title="">Snake_case</li>
+			<li onclick="editor.execCommand('toggleCase');"><span class="right">Ctrl + u</span>Toggle case</li>
+			<li onclick="editor.execCommand('upperCase');"><span class="right"></span>Upper case</li>
+			<li onclick="editor.execCommand('lowerCase');"><span class="right"></span>Lower case</li>
+			<li onclick="editor.execCommand('camelCase');"><span class="right"></span>CamelCase</li>
+			<li onclick="editor.execCommand('snakeCase');"><span class="right"></span>Snake_case</li>
 		</ul></div>
 	</ul></div>
-	<div class="submenu">
-	<li onclick="setStyle(parentElement, '!collapsed')">Find</li><ul>
-		<li onclick="editor.execCommand('find');" title="">Search (Ctrl + f)</li>
-		<li onclick="editor.execCommand('findNext');" title="">Search Next (F3)</li>
-		<li onclick="editor.execCommand('findPrev');" title="">Search Prev (Shift+F3)</li>
-		<li onclick="editor.execCommand('findAndSelect');" title="">Search and select</li>
-		<li onclick="editor.execCommand('line');" title="">Jump to line (Ctrl + g)</li>
-		<li onclick="editor.execCommand('jumpToBrace');" title="">Jump to brace (Ctrl + b)</li>
-		<li onclick="editor.execCommand('selectToBrace');" title="">Select to brace (Ctrl+Shift + b)</li>
+	<div class="submenu collapsed">
+	<li onclick="setStyle(parentElement, '!collapsed')">Find
+	<!-- <button class="right" onclick="event.stopPropagation(); editor.execCommand('findNext');" title="Find Next">↪</button> -->
+	<!-- <button class="right" onclick="event.stopPropagation(); editor.execCommand('findPrev');" title="Find Prev">↩</button> -->
+	<button class="right" onclick="event.stopPropagation(); editor.execCommand('find');" title="Find">🔍</button>
+	</li><ul>
+		<li onclick="editor.execCommand('find');"><span class="right">Ctrl + f</span>Find...</li>
+		<li onclick="editor.execCommand('findNext');"><span class="right">F3</span>Find Next</li>
+		<li onclick="editor.execCommand('findPrev');"><span class="right">Shift + F3</span>Find Previous</li>
+		<!-- <li onclick="editor.execCommand('findAndMark');"><span class="right"></span>Find and mark</li> -->
+		<li onclick="editor.execCommand('findAndSelect');"><span class="right"></span>Find and select</li>
+		<hr>
+		<li onclick="editor.execCommand('line');"><span class="right">Ctrl + g</span>Jump to line</li>
+		<hr>
+		<li onclick="editor.execCommand('jumpToBrace');"><span class="right">Ctrl + b</span>Jump to brace</li>
+		<li onclick="editor.execCommand('selectToBrace');"><span class="right">Ctrl+Shift + b</span>Select to brace</li>
 	</ul></div>
-	<div class="submenu">
-	<li onclick="setStyle(parentElement, '!collapsed')">View</li><ul>
+	<div class="submenu collapsed">
+	<li onclick="setStyle(parentElement, '!collapsed')">View
+	<button class="right" onclick="event.stopPropagation(); editor.execCommand('unfoldAll');" title="Unfold all">⊞</button>
+	<button class="right" onclick="event.stopPropagation(); editor.execCommand('foldAll');" title="Fold all">⊟</button>
+	</li><ul>
 		<div class="collapsed submenu">
 		<li onclick="setStyle(parentElement, '!collapsed')">Fold</li><ul>
-			<li onclick="editor.execCommand('fold');">Fold (Ctrl + -)</li>
-			<li onclick="editor.execCommand('unfold');">Unfold (Ctrl + +)</li>
-			<li onclick="editor.execCommand('foldAll');">Fold All (Ctrl+Shift + -)</li>
-			<li onclick="editor.execCommand('unfoldAll');">Unfold All (Ctrl+Shift + -)</li>
+			<li onclick="editor.execCommand('fold');"><span class="right">Ctrl + -</span>Fold</li>
+			<li onclick="editor.execCommand('unfold');"><span class="right">Ctrl + +</span>Unfold</li>
+			<li onclick="editor.execCommand('foldAll');"><span class="right">Ctrl+Shift + -</span>Fold All</li>
+			<li onclick="editor.execCommand('unfoldAll');"><span class="right">Ctrl+Shift + +</span>Unfold All</li>
 		</ul></div>
-		<li onclick="completeAction(':%', '100');" title="">Zoom</li>
-		<li id="wrap-output" onclick="setStyle(body, '!wrap-output');" title="">Wrap output</li>
-		<li id="pin-left" onclick="setStyle(body, '!left-pin');" title="">Pin left sidebar</li>
-		<li id="pin-right" onclick="setStyle(body, '!right-pin');" title="">Pin right sidebar</li>
-		<li id="show-toolbar" onclick="setStyle(body, '!tool');" title="">Show main toolbar</li>
+		<li onclick="completeAction(':%', '100');">Zoom</li>
+		<li id="wrap-output" onclick="setStyle(body, '!wrap-output');">Wrap output</li>
+		<li id="pin-left" onclick="setStyle(body, '!left-pin');">Pin left sidebar</li>
+		<li id="pin-right" onclick="setStyle(body, '!right-pin');">Pin right sidebar</li>
+		<li id="show-toolbar" onclick="setStyle(body, '!tool');">Show main toolbar</li>
 	</ul></div>
 </div>
 <div id="main-panel">
@@ -237,13 +252,13 @@ function openProjectFile(projectOrFile) {
 			return;
 		}
 	}
-	if (projectOrFile.list != null) {
-		Module.wgetFiles(projectOrFile.list, function (inProgress) {
+	if (projectOrFile.project != null) {
+		Module.wgetFiles(projectOrFile.project, function (inProgress) {
 			if (inProgress > 0) {
 				return;
 			}
 			FS.syncfs(onSyncWorkSpace);
-			listFiles(params.folder || '.');
+			params.update('file', 'folder', 'content');
 		});
 	}
 	if (projectOrFile.file != null) {
@@ -269,7 +284,7 @@ function listFiles(dir) {
 			fileList.innerHTML += '<li onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
 		}
 	}
-	params.update('file', 'content');
+	//params.update('file', 'content');
 }
 
 function saveInput(saveAs) {
@@ -443,7 +458,7 @@ var Module = {
 	print: function(message) { terminal.print(message); },
 	canvas: document.getElementById('canvas'),
 
-	onRuntimeInitialized: function () {	
+	onRuntimeInitialized: function () {
 		ENV.CMPL_HOME = '/';
 		FS.mkdirTree(Module.workspace);
 		FS.chdir(Module.workspace);

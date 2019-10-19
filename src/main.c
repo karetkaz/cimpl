@@ -155,6 +155,7 @@ struct userContextRec {
 	dmpMode dmpMode;        // dump flags
 
 	int dmpApi:1;           // dump symbols
+	int dmpUse:1;           // dump usages
 	int dmpDoc:1;           // dump documentation
 	int dmpAsm:1;           // dump instructions
 	int dmpAst:1;           // dump abstract syntax tree
@@ -164,7 +165,6 @@ struct userContextRec {
 	int dmpBuiltin:1;       // include builtin symbols
 	int dmpDetails:1;       // dump detailed info
 	int dmpParams:1;        // dump parameters and fields
-	int dmpUsages:1;        // dump usages
 	int dmpAsmStmt:1;       // print source code position/statements
 
 	int dmpGlobals:1;       // dump global variable values
@@ -1121,8 +1121,10 @@ static void dumpApiText(userContext ctx, symn sym) {
 	int dmpAsm = ctx->dmpAsm && isFunction(sym);
 	// syntax tree is unavailable at runtime(compiler context is destroyed)
 	int dmpAst = ctx->dmpAst && sym->init && ctx->rt->cc;
+	// dump usages only if the symbol is used
+	int dmpUse = ctx->dmpUse && sym->use && (dmpApi || sym->use != sym->tag);
 
-	if (!dmpApi && !dmpDoc && !dmpAsm && !dmpAst) {
+	if (!dmpApi && !dmpDoc && !dmpAsm && !dmpAst && !dmpUse) {
 		// nothing to dump
 		return;
 	}
@@ -1235,7 +1237,7 @@ static void dumpApiText(userContext ctx, symn sym) {
 	}
 
 	// print usages of symbol
-	if (ctx->dmpUsages) {
+	if (dmpUse) {
 		int internalUsages = 0;
 		if (!dumpExtraData) {
 			printFmt(out, esc, " {\n");
@@ -1631,21 +1633,24 @@ static int usage() {
 		"\n    /m                  include `main` builtin initializer symbol"
 		"\n    /d                  dump details of symbol"
 		"\n    /p                  dump params and fields"
-		"\n    /u                  dump usages"
 		"\n"
 		"\n  -doc[*]               dump documentation"
 		"\n    /a /A               include all library symbols(/A includes builtins)"
 		"\n    /m                  include main builtin symbol"
 		"\n    /d                  dump details of symbol"
 		"\n    /p                  dump params and fields"
-		"\n    /u                  dump usages"
+		"\n"
+		"\n  -use[*]               dump usages"
+		"\n    /a /A               include all library symbols(/A includes builtins)"
+		"\n    /m                  include main builtin symbol"
+		"\n    /d                  dump details of symbol"
+		"\n    /p                  dump params and fields"
 		"\n"
 		"\n  -asm[*]<int>          dump assembled code: jmp +80"
 		"\n    /a /A               include all library symbols(/A includes builtins)"
 		"\n    /m                  include main builtin symbol"
 		"\n    /d                  dump details of symbol"
 		"\n    /p                  dump params and fields"
-		"\n    /u                  dump usages"
 		"\n    /g                  use global address: jmp @0x003d8c"
 		"\n    /n                  prefer names over addresses: jmp <main+80>"
 		"\n    /s                  print source code statements"
@@ -1655,7 +1660,6 @@ static int usage() {
 		"\n    /m                  include main builtin symbol"
 		"\n    /d                  dump details of symbol"
 		"\n    /p                  dump params and fields"
-		"\n    /u                  dump usages"
 		"\n    /t                  dump sub-expression type information"
 		"\n    /l                  do not expand statements (print on single line)"
 		"\n    /b                  don't keep braces ('{') on the same line"
@@ -2101,11 +2105,6 @@ int main(int argc, char *argv[]) {
 						extra.dmpParams = 1;
 						arg2 += 2;
 						break;
-
-					case 'u':
-						extra.dmpUsages = 1;
-						arg2 += 2;
-						break;
 				}
 			}
 			if (*arg2) {
@@ -2149,11 +2148,6 @@ int main(int argc, char *argv[]) {
 						extra.dmpParams = 1;
 						arg2 += 2;
 						break;
-
-					case 'u':
-						extra.dmpUsages = 1;
-						arg2 += 2;
-						break;
 				}
 			}
 			if (*arg2) {
@@ -2195,11 +2189,6 @@ int main(int argc, char *argv[]) {
 
 					case 'p':
 						extra.dmpParams = 1;
-						arg2 += 2;
-						break;
-
-					case 'u':
-						extra.dmpUsages = 1;
 						arg2 += 2;
 						break;
 
@@ -2266,11 +2255,6 @@ int main(int argc, char *argv[]) {
 						arg2 += 2;
 						break;
 
-					case 'u':
-						extra.dmpUsages = 1;
-						arg2 += 2;
-						break;
-
 					case 't':
 						extra.dmpMode |= prAstCast;
 						arg2 += 2;
@@ -2288,6 +2272,49 @@ int main(int argc, char *argv[]) {
 
 					case 'e':
 						extra.dmpMode |= nlAstElIf;
+						arg2 += 2;
+						break;
+				}
+			}
+			if (*arg2) {
+				fatal("invalid argument '%s'", arg);
+				return -1;
+			}
+		}
+		else if (strncmp(arg, "-use", 4) == 0) {
+			char *arg2 = arg + 4;
+			if (extra.dmpUse) {
+				fatal("argument specified multiple times: %s", arg);
+				return -1;
+			}
+			extra.dmpUse = 1;
+			while (*arg2 == '/') {
+				switch (arg2[1]) {
+					default:
+						arg2 += 1;
+						break;
+
+						// include extra symbols
+					case 'A':
+						extra.dmpBuiltin = 1;
+						// fall through
+					case 'a':
+						extra.dmpExtern = 1;
+						arg2 += 2;
+						break;
+
+					case 'm':
+						extra.dmpMain = 1;
+						arg2 += 2;
+						break;
+
+					case 'd':
+						extra.dmpDetails = 1;
+						arg2 += 2;
+						break;
+
+					case 'p':
+						extra.dmpParams = 1;
 						arg2 += 2;
 						break;
 				}

@@ -26,6 +26,51 @@ void brightnessContrastGamma(uint32 lut[256], int brightness, int contrast, int 
 	}
 }
 
+void calcAutoEqualize(uint32 lut[256], gxSurf image, bool luminosity) {
+	if (luminosity) {
+		// calculate histogram, luminosity
+		image.calcHist(null, 0xff000000, lut);
+
+		uint32 sum = 0;
+		for (int i = 0; i < lut.length; i += 1) {
+			sum += lut[i] >> 24;
+			lut[i] = sum;
+		}
+		for (uint32 i = 0; i < lut.length; i += 1) {
+			uint32 l = grayClamp(lut[i] * 255 / sum);
+			lut[i] = uint32(_argb(l, i, i, i));
+		}
+	} else {
+		image.calcHist(null, 0x00ffffff, lut);
+
+		int maxR = 0;
+		int maxG = 0;
+		int maxB = 0;
+		int histoR[256];
+		int histoG[256];
+		int histoB[256];
+		for (int i = 0; i < 256; i += 1) {
+			maxR += histoR[i] = rch(argb(lut[i]));
+			maxG += histoG[i] = gch(argb(lut[i]));
+			maxB += histoB[i] = bch(argb(lut[i]));
+		}
+		int sumR = 0;
+		int sumG = 0;
+		int sumB = 0;
+		int maxRgb = (maxR + maxG + maxB) / 3;
+		for (int i = 0; i < 256; i += 1) {
+			sumR += histoR[i];
+			sumG += histoG[i];
+			sumB += histoB[i];
+			lut[i] = uint32(argb(
+				sumR * 255 / maxRgb,
+				sumG * 255 / maxRgb,
+				sumB * 255 / maxRgb
+			));
+		}
+	}
+}
+
 int onEvent(int action, int button, int x, int y);
 offs.show(onEvent);
 offs.destroy();
@@ -53,12 +98,19 @@ int onEvent(int action, int button, int x, int y) {
 		minValue: 1;
 		maxValue: 1000;
 	};
+	static Checker auto = {
+		on: "luminosity";
+		off: "rgb stretch";
+		text: "auto";
+		checked: true;
+		selectable: true;
+	};
 	static Slider time = {
 		text: "time";
 		enabled: false;
 	};
 
-	static Layout ui = Layout(offs, font, brightness, contrast, gamma, time);
+	static Layout ui = Layout(offs, font, brightness, contrast, gamma, auto, time);
 	bool redraw = action == Gui.WINDOW_INIT;
 
 	if (uiEvent(ui, action, button, x, y)) {
@@ -76,11 +128,17 @@ int onEvent(int action, int button, int x, int y) {
 
 	if (redraw) {
 		uint64 start = System.millis();
-		uint32 hist[256];
 		uint32 lut[256];
-		brightnessContrastGamma(lut, brightness.val(), contrast.val(), gamma.val());
 		offs.resize(null, back, null, 1);
-		offs.colorMap(null, lut, false);
+		if (ui.isSelected(auto)) {
+			calcAutoEqualize(lut, offs, auto.checked);
+			offs.colorMap(null, lut, auto.checked);
+		} else {
+			brightnessContrastGamma(lut, brightness.val(), contrast.val(), gamma.val());
+			offs.colorMap(null, lut, false);
+		}
+
+		uint32 hist[256];
 		offs.calcHist(null, 0x00ffffff, hist);
 		offs.drawLut(null, hist, lut);
 

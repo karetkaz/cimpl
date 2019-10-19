@@ -4,9 +4,43 @@ gxSurf back = gxSurf("asset/image/forest.png", 32);
 gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
 gxSurf offs = gxSurf(back.width(), back.height(), back.depth());
 
-mat4f colorMatrix(float luminosity, float saturation, float hue) {
+static const mat4f INVERT = mat4f(
+	-1, 0, 0, 1,
+	0, -1, 0, 1,
+	0, 0, -1, 1,
+	0, 0,  0, 1
+);
 
-	static mat4f lumMatrix(float val) {
+static const mat4f GREY_SCALE = mat4f(
+	0.299, 0.587, 0.114, 0,
+	0.299, 0.587, 0.114, 0,
+	0.299, 0.587, 0.114, 0,
+	0, 0, 0, 1
+);
+
+static const mat4f BLACK_AND_WHITE = mat4f(
+	1.5, 1.5, 1.5, -1,
+	1.5, 1.5, 1.5, -1,
+	1.5, 1.5, 1.5, -1,
+	0, 0, 0, 1
+);
+
+static const mat4f SEPIA_COLOR = mat4f(
+	0.393, 0.769, 0.189, 0,
+	0.349, 0.686, 0.168, 0,
+	0.272, 0.534, 0.131, 0,
+	0, 0, 0, 1
+);
+
+static const mat4f POLAROID_COLOR = mat4f(
+	1.438,  -0.062, -0.062, 0,
+	-0.122, 1.378,  -0.122, 0,
+	-0.016, -0.016, 1.483, 0,
+	-0.03,  0.05,   -0.02, 1
+);
+
+mat4f colorMatrix(float brightness, float saturation, float contrast, float hue) {
+	static mat4f brightnessMat(float val) {
 		return {
 			x: vec4f(1., 0., 0., val);
 			y: vec4f(0., 1., 0., val);
@@ -15,7 +49,7 @@ mat4f colorMatrix(float luminosity, float saturation, float hue) {
 		};
 	}
 
-	static mat4f satMatrix(float val) {
+	static mat4f saturationMat(float val) {
 		//~ val between 0, 3
 		const float inv = 1 - val;
 		const float R = .213f * inv;
@@ -30,7 +64,19 @@ mat4f colorMatrix(float luminosity, float saturation, float hue) {
 		};
 	}
 
-	static mat4f hueMatrix(float val) {
+	static mat4f contrastMat(float val) {
+		float32 c = val;
+		float32 t = (1 - c) / 2;
+
+		return {
+			x: vec4f(c, 0, 0, t);
+			y: vec4f(0, c, 0, t);
+			z: vec4f(0, 0, c, t);
+			w: vec4f(0, 0, 0, 1);
+		};
+	}
+
+	static mat4f hueMat(float val) {
 		//~ assert(val >= 0 && val <= 2 * Math.pi);
 		inline lR = 0.213;
 		inline lG = 0.715;
@@ -52,10 +98,11 @@ mat4f colorMatrix(float luminosity, float saturation, float hue) {
 		0, 0, 0, 1
 	);
 
-	result = mul(result, lumMatrix(luminosity));
-	result = mul(result, satMatrix(saturation));
-	result = mul(result, hueMatrix(hue));
-	return result;
+	return result
+		.mul(brightnessMat(brightness))
+		.mul(saturationMat(saturation))
+		.mul(contrastMat(contrast))
+		.mul(hueMat(hue));
 }
 
 int onEvent(int action, int button, int x, int y);
@@ -74,20 +121,54 @@ int onEvent(int action, int button, int x, int y) {
 	};
 	static Slider saturation = {
 		text: "saturation";
+		maxValue: 500;
+		value: 100;
+	};
+	static Slider contrast = {
+		text: "contrast";
 		minValue: -100;
-		maxValue: 200;
+		maxValue: 500;
+		value: 100;
 	};
 	static Slider hue = {
 		text: "hue";
 		minValue: 0;
 		maxValue: 360;
 	};
+	static Button original = {
+		text: "original";
+		selectable: true;
+	};
+	static Button invert = {
+		text: "invert";
+		selectable: true;
+	};
+	static Button grayScale = {
+		text: "gray scale";
+		selectable: true;
+	};
+	static Button blackAndWhite = {
+		text: "black & white";
+		selectable: true;
+	};
+	static Button sepiaColor = {
+		text: "sepia color";
+		selectable: true;
+	};
+	static Button polaroidColor = {
+		text: "polaroid color";
+		selectable: true;
+	};
 	static Slider time = {
 		text: "time";
 		enabled: false;
 	};
 
-	static Layout ui = Layout(offs, font, brightness, saturation, hue, time);
+	static Layout ui = Layout(offs, font,
+		brightness, saturation, contrast, hue,
+		original, invert, grayScale, blackAndWhite, sepiaColor, polaroidColor,
+		time
+	);
 	bool redraw = action == Gui.WINDOW_INIT;
 
 	if (uiEvent(ui, action, button, x, y)) {
@@ -105,9 +186,32 @@ int onEvent(int action, int button, int x, int y) {
 
 	if (redraw) {
 		uint64 start = System.millis();
-		mat4f mat = colorMatrix(brightness.val() / 100., saturation.val() / 100. + 1, Math.radians(hue.val()));
 		offs.resize(null, back, null, 1);
-		offs.colorMat(null, mat.data);
+		if (ui.isSelected(original)) {
+		}
+		else if (ui.isSelected(invert)) {
+			offs.colorMat(null, INVERT.data);
+		}
+		else if (ui.isSelected(grayScale)) {
+			offs.colorMat(null, GREY_SCALE.data);
+		}
+		else if (ui.isSelected(blackAndWhite)) {
+			offs.colorMat(null, BLACK_AND_WHITE.data);
+		}
+		else if (ui.isSelected(sepiaColor)) {
+			offs.colorMat(null, SEPIA_COLOR.data);
+		}
+		else if (ui.isSelected(polaroidColor)) {
+			offs.colorMat(null, POLAROID_COLOR.data);
+		}
+		else {
+			float b = brightness.val() / 100.;
+			float s = saturation.val() / 100.;
+			float c = contrast.val() / 100.;
+			float h = hue.val() / 100.;
+			mat4f mat = colorMatrix(b, s, c, h);
+			offs.colorMat(null, mat.data);
+		}
 		offs.drawHist(null, 0x00ffffff);
 
 		time.value = System.millis() - start;
