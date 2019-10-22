@@ -169,21 +169,13 @@ int onEvent(int action, int button, int x, int y) {
 		original, invert, grayScale, blackAndWhite, sepiaColor, polaroidColor,
 		time
 	);
-	bool redraw = action == Gui.WINDOW_INIT;
 
-	if (uiEvent(ui, action, button, x, y)) {
-		redraw = true;
-	}
-	else if (action == Gui.KEY_PRESS) {
+	bool redraw = uiEvent(ui, action, button, x, y);
+	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
 		}
-		if (button == ' ') {
-			trace("dumping screen");
-			offs.saveBmp("out/dump.bmp", 0);
-		}
 	}
-
 	if (redraw) {
 		uint64 start = System.millis();
 		offs.resize(null, back, null, 1);
@@ -217,6 +209,5 @@ int onEvent(int action, int button, int x, int y) {
 		time.value = System.millis() - start;
 		ui.draw(30, 30);
 	}
-
 	return 0;
 }

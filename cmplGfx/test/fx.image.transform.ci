@@ -197,17 +197,13 @@ int onEvent(int action, int button, int x, int y) {
 		rotate,
 		inRatio
 	);
-	bool redraw = action == Gui.WINDOW_INIT;
 
-	if (uiEvent(ui, action, button, x, y)) {
-		redraw = true;
-	}
-	else if (action == Gui.KEY_PRESS) {
+	bool redraw = uiEvent(ui, action, button, x, y);
+	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
 		}
 	}
-
 	if (redraw) {
 		gxRect to = {
 			w: 400;
@@ -230,7 +226,6 @@ int onEvent(int action, int button, int x, int y) {
 		offs.drawRect(to, 0);
 		ui.draw(30, 30);
 	}
-
 	return 0;
 }
 

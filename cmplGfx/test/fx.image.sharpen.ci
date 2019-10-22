@@ -153,25 +153,12 @@ int onEvent(int action, int button, int x, int y) {
 
 	static int oldRadius = 0;
 
-	bool reCalculate = action == Gui.WINDOW_INIT;
-	if (uiEvent(layout, action, button, x, y)) {
-		reCalculate = true;
-	}
-	else if (action == Gui.KEY_PRESS) {
+	bool reCalculate = uiEvent(layout, action, button, x, y);
+	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
 		}
-		if (button == '\r') {
-			amount.value = 0;
-			radius.value = 50;
-			reCalculate = true;
-		}
-		if (button == ' ') {
-			trace("dumping screen");
-			offs.saveBmp("out/dump.bmp", 0);
-		}
 	}
-
 	if (reCalculate) {
 		// clamp input values
 		int amountValue = amount.val();
@@ -192,6 +179,5 @@ int onEvent(int action, int button, int x, int y) {
 
 		layout.draw(30, 30);
 	}
-
 	return 0;
 }

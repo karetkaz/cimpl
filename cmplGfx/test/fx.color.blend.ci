@@ -5,24 +5,6 @@ inline linear_burn(float32 base, float32 blend) = Math.max(base + blend - 1, 0f)
 inline color_dodge(float32 base, float32 blend) = (blend == 1 ? blend : Math.min(base / (1 - blend), 1f));
 inline color_burn(float32 base, float32 blend) = (blend == 0 ? blend : Math.max((1 - ((1 - base) / blend)), 0f));
 
-vec4f darken(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = base < blend ? base : blend;
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f lighten(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = base > blend ? base : blend;
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
 vec4f addition(vec4f base, vec4f blend) {
 	inline op(float32 base, float32 blend) = base + blend;
 	return {
@@ -68,8 +50,35 @@ vec4f difference(vec4f base, vec4f blend) {
 		w: op(base.w, blend.w);
 	};
 }
-vec4f colorBurn(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = color_burn(base, blend);
+vec4f exclusion(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = .5f - 2 * (base - .5f) * (blend - .5f);
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f lighten(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = base > blend ? base : blend;
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f darken(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = base < blend ? base : blend;
+	return {
+		x: op(base.x, blend.x);
+		y: op(base.y, blend.y);
+		z: op(base.z, blend.z);
+		w: op(base.w, blend.w);
+	};
+}
+vec4f linearDodge(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = linear_dodge(base, blend);
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -95,8 +104,8 @@ vec4f colorDodge(vec4f base, vec4f blend) {
 		w: op(base.w, blend.w);
 	};
 }
-vec4f linearDodge(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = linear_dodge(base, blend);
+vec4f colorBurn(vec4f base, vec4f blend) {
+	inline op(float32 base, float32 blend) = color_burn(base, blend);
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -146,10 +155,10 @@ vec4f hardLight(vec4f base, vec4f blend) {
 		w: op(base.w, blend.w);
 	};
 }
-vec4f vividLight(vec4f base, vec4f blend) {
+vec4f linearLight(vec4f base, vec4f blend) {
 	inline op(float32 base, float32 blend) = blend < .5f
-		? color_burn(base, (2 * blend))
-		: color_dodge(base, (2 * (blend - .5f)));
+		? linear_burn(base, (2 * blend))
+		: linear_dodge(base, (2 * (blend - .5f)));
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -157,10 +166,10 @@ vec4f vividLight(vec4f base, vec4f blend) {
 		w: op(base.w, blend.w);
 	};
 }
-vec4f linearLight(vec4f base, vec4f blend) {
+vec4f vividLight(vec4f base, vec4f blend) {
 	inline op(float32 base, float32 blend) = blend < .5f
-		? linear_burn(base, (2 * blend))
-		: linear_dodge(base, (2 * (blend - .5f)));
+		? color_burn(base, (2 * blend))
+		: color_dodge(base, (2 * (blend - .5f)));
 	return {
 		x: op(base.x, blend.x);
 		y: op(base.y, blend.y);
@@ -179,38 +188,205 @@ vec4f pinLight(vec4f base, vec4f blend) {
 		w: op(base.w, blend.w);
 	};
 }
-vec4f exclusion(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = .5f - 2 * (base - .5f) * (blend - .5f);
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
 
+gxSurf base = gxSurf("asset/image/forest.png", 32);
 gxSurf image = gxSurf("asset/image/texture_nature_01.png", 32);
-gxSurf offs = gxSurf("asset/image/forest.png", 32);
-gxSurf copy = gxSurf(offs);
-gxSurf temp = gxSurf(offs);
-
-vec4f blend(vec4f base, vec4f blend) = overlay;
+gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
+gxSurf offs = gxSurf(base);
+gxSurf blend = gxSurf(base);
 
 // TODO: add translation to crop matrix
 float32 xAsp = float32(offs.width()) / image.width();
 float32 yAsp = float32(offs.height()) / image.height();
 mat4f m = scale(vec4f(1, 1, 0, 1), Math.max(xAsp, yAsp));
+blend.transform(null, image, null, 1, m.data);
 
-// blend base with texture
-temp.transform(null, image, null, 1, m.data);
-offs.blend(0, 0, temp, null, 256, blend);
-offs.showDiff(copy);
-
-//offs.transform(null, image, null, 1, m.data);
-//offs.blend(0, 0, copy, null, 256, blend);
-//offs.showDiff(copy);
-
-image.destroy();
+int onEvent(int action, int button, int x, int y);
+offs.show(onEvent);
+font.destroy();
 offs.destroy();
-copy.destroy();
-temp.destroy();
+base.destroy();
+blend.destroy();
+image.destroy();
+
+int onEvent(int action, int button, int x, int y) {
+	inline "lib/micro.ui.ci";
+
+	static Slider btnOriginal = {
+		text: "alpha";
+		maxValue: 255;
+		value: 127;
+	};
+	static Slider btnAddition = {
+		text: "addition";
+		data: addition;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnSubtract = {
+		text: "subtract";
+		data: subtract;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnMultiply = {
+		text: "multiply";
+		data: multiply;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnDivide = {
+		text: "divide";
+		data: divide;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnDifference = {
+		text: "difference";
+		data: difference;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnExclusion = {
+		text: "exclusion";
+		data: exclusion;
+		maxValue: 255;
+		value: 255;
+	};
+
+	static Slider btnLighten = {
+		text: "lighten";
+		data: lighten;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnDarken = {
+		text: "darken";
+		data: darken;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnLinearDodge = {
+		text: "linearDodge";
+		data: linearDodge;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnLinearBurn = {
+		text: "linearBurn";
+		data: linearBurn;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnColorDodge = {
+		text: "colorDodge";
+		data: colorDodge;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnColorBurn = {
+		text: "colorBurn";
+		data: colorBurn;
+		maxValue: 255;
+		value: 255;
+	};
+
+	static Slider btnScreen = {
+		text: "screen";
+		data: screen;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnOverlay = {
+		text: "overlay";
+		data: overlay;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnSoftLight = {
+		text: "softLight";
+		data: softLight;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnHardLight = {
+		text: "hardLight";
+		data: hardLight;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnLinearLight = {
+		text: "linearLight";
+		data: linearLight;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnVividLight = {
+		text: "vividLight";
+		data: vividLight;
+		maxValue: 255;
+		value: 255;
+	};
+	static Slider btnPinLight = {
+		text: "pinLight";
+		data: pinLight;
+		maxValue: 255;
+		value: 255;
+	};
+
+	static Checker chkOrder = {
+		text: "order";
+		on: "a => b";
+		off: "b => a";
+		checked: true;
+	};
+	static Slider time = {
+		text: "time";
+		enabled: false;
+	};
+
+	static Layout ui = Layout(offs, font,
+		btnOriginal,
+		btnAddition,
+		btnSubtract,
+		btnMultiply,
+		btnDivide,
+		btnDifference,
+		btnExclusion,
+		btnLighten,
+		btnDarken,
+		btnLinearDodge,
+		btnLinearBurn,
+		btnColorDodge,
+		btnColorBurn,
+		btnScreen,
+		btnOverlay,
+		btnSoftLight,
+		btnHardLight,
+		btnLinearLight,
+		btnVividLight,
+		btnPinLight,
+		chkOrder,
+		time);
+
+	bool redraw = uiEvent(ui, action, button, x, y);
+	if (action == Gui.KEY_PRESS) {
+		if (button == 27) {
+			return -1;
+		}
+	}
+	if (redraw) {
+		uint64 start = System.millis();
+		bool reverse = chkOrder.checked;
+
+		offs.copy(0, 0, reverse ? base : blend, null);
+		Slider selected& = ui.selected(Slider);
+		if (selected != null) {
+			vec4f fn(vec4f base, vec4f blend) = selected.data;
+			offs.blend(0, 0, reverse ? blend : base, null, selected.val(), fn);
+		}
+		time.value = System.millis() - start;
+		ui.draw(30, 30);
+	}
+	return 0;
+}
