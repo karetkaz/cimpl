@@ -42691,7 +42691,7 @@ function _nfcNextArg($0) {
  $23 = HEAP32[3347]|0;
  HEAP32[$vararg_buffer>>2] = 18755;
  $vararg_ptr1 = ((($vararg_buffer)) + 4|0);
- HEAP32[$vararg_ptr1>>2] = 131;
+ HEAP32[$vararg_ptr1>>2] = 130;
  $vararg_ptr2 = ((($vararg_buffer)) + 8|0);
  HEAP32[$vararg_ptr2>>2] = 18766;
  _printFmt($23,0,29081,$vararg_buffer);
@@ -42814,7 +42814,7 @@ function _nfcReadArg($0,$1,$2) {
    $60 = HEAP32[3347]|0;
    HEAP32[$vararg_buffer3>>2] = 18755;
    $vararg_ptr6 = ((($vararg_buffer3)) + 4|0);
-   HEAP32[$vararg_ptr6>>2] = 191;
+   HEAP32[$vararg_ptr6>>2] = 190;
    $vararg_ptr7 = ((($vararg_buffer3)) + 8|0);
    HEAP32[$vararg_ptr7>>2] = 18777;
    _printFmt($60,0,23829,$vararg_buffer3);
@@ -42827,7 +42827,7 @@ function _nfcReadArg($0,$1,$2) {
    $14 = HEAP32[3347]|0;
    HEAP32[$vararg_buffer>>2] = 18755;
    $vararg_ptr1 = ((($vararg_buffer)) + 4|0);
-   HEAP32[$vararg_ptr1>>2] = 157;
+   HEAP32[$vararg_ptr1>>2] = 156;
    $vararg_ptr2 = ((($vararg_buffer)) + 8|0);
    HEAP32[$vararg_ptr2>>2] = 18777;
    _printFmt($14,0,29081,$vararg_buffer);
@@ -42913,7 +42913,7 @@ function _nfcCheckArg($0,$1,$2) {
   $12 = HEAP32[3347]|0;
   HEAP32[$vararg_buffer>>2] = 18755;
   $vararg_ptr1 = ((($vararg_buffer)) + 4|0);
-  HEAP32[$vararg_ptr1>>2] = 203;
+  HEAP32[$vararg_ptr1>>2] = 202;
   $vararg_ptr2 = ((($vararg_buffer)) + 8|0);
   HEAP32[$vararg_ptr2>>2] = 18788;
   _printFmt($12,0,29081,$vararg_buffer);
@@ -42925,7 +42925,7 @@ function _nfcCheckArg($0,$1,$2) {
   $15 = HEAP32[3347]|0;
   HEAP32[$vararg_buffer3>>2] = 18755;
   $vararg_ptr6 = ((($vararg_buffer3)) + 4|0);
-  HEAP32[$vararg_ptr6>>2] = 206;
+  HEAP32[$vararg_ptr6>>2] = 205;
   $vararg_ptr7 = ((($vararg_buffer3)) + 8|0);
   HEAP32[$vararg_ptr7>>2] = 18788;
   _printFmt($15,0,29081,$vararg_buffer3);
@@ -42942,7 +42942,7 @@ function _nfcCheckArg($0,$1,$2) {
    $22 = HEAP32[3347]|0;
    HEAP32[$vararg_buffer8>>2] = 18755;
    $vararg_ptr11 = ((($vararg_buffer8)) + 4|0);
-   HEAP32[$vararg_ptr11>>2] = 209;
+   HEAP32[$vararg_ptr11>>2] = 208;
    $vararg_ptr12 = ((($vararg_buffer8)) + 8|0);
    HEAP32[$vararg_ptr12>>2] = 18788;
    _printFmt($22,0,29081,$vararg_buffer8);
@@ -42965,7 +42965,7 @@ function _nfcCheckArg($0,$1,$2) {
  $30 = HEAP32[3347]|0;
  HEAP32[$vararg_buffer13>>2] = 18755;
  $vararg_ptr16 = ((($vararg_buffer13)) + 4|0);
- HEAP32[$vararg_ptr16>>2] = 212;
+ HEAP32[$vararg_ptr16>>2] = 211;
  $vararg_ptr17 = ((($vararg_buffer13)) + 8|0);
  HEAP32[$vararg_ptr17>>2] = 18788;
  _printFmt($30,0,29081,$vararg_buffer13);
@@ -43661,48 +43661,45 @@ function _raiseApi($0,$1,$2,$varargs) {
  $1 = $1|0;
  $2 = $2|0;
  $varargs = $varargs|0;
- var $10 = 0, $11 = 0, $12 = 0, $13 = 0, $14 = 0, $15 = 0, $16 = 0, $17 = 0, $18 = 0, $19 = 0, $20 = 0, $21 = 0, $22 = 0, $23 = 0, $24 = 0, $25 = 0, $26 = 0, $27 = 0, $28 = 0, $29 = 0;
- var $3 = 0, $30 = 0, $31 = 0, $4 = 0, $5 = 0, $6 = 0, $7 = 0, $8 = 0, $9 = 0, label = 0, sp = 0;
+ var $10 = 0, $11 = 0, $12 = 0, $13 = 0, $14 = 0, $15 = 0, $16 = 0, $17 = 0, $18 = 0, $19 = 0, $20 = 0, $21 = 0, $22 = 0, $23 = 0, $24 = 0, $25 = 0, $26 = 0, $27 = 0, $28 = 0, $3 = 0;
+ var $4 = 0, $5 = 0, $6 = 0, $7 = 0, $8 = 0, $9 = 0, label = 0, sp = 0;
  sp = STACKTOP;
  STACKTOP = STACKTOP + 32|0; if ((STACKTOP|0) >= (STACK_MAX|0)) abortStackOverflow(32|0);
- $7 = sp;
+ $6 = sp;
  $3 = $0;
  $4 = $1;
  $5 = $2;
- $8 = $3;
- $9 = HEAP32[$8>>2]|0;
- $6 = $9;
- HEAP32[$7>>2] = $varargs;
- $10 = $6;
- $11 = $4;
- $12 = $5;
- _print_log($10,$11,0,0,0,$12,$7);
- $13 = $6;
- $14 = ((($13)) + 20|0);
+ HEAP32[$6>>2] = $varargs;
+ $7 = $3;
+ $8 = $4;
+ $9 = $5;
+ _print_log($7,$8,0,0,0,$9,$6);
+ $10 = $3;
+ $11 = ((($10)) + 20|0);
+ $12 = HEAP32[$11>>2]|0;
+ $13 = ($12|0)!=(0|0);
+ if (!($13)) {
+  STACKTOP = sp;return;
+ }
+ $14 = $3;
  $15 = HEAP32[$14>>2]|0;
- $16 = ($15|0)!=(0|0);
- if (!($16)) {
+ $16 = $15 >>> 9;
+ $17 = $16 & 255;
+ $18 = ($17|0)>(0);
+ if (!($18)) {
   STACKTOP = sp;return;
  }
- $17 = $6;
- $18 = HEAP32[$17>>2]|0;
- $19 = $18 >>> 9;
- $20 = $19 & 255;
- $21 = ($20|0)>(0);
- if (!($21)) {
-  STACKTOP = sp;return;
- }
- $22 = $6;
- $23 = ((($22)) + 20|0);
+ $19 = $3;
+ $20 = ((($19)) + 20|0);
+ $21 = HEAP32[$20>>2]|0;
+ $22 = $3;
+ $23 = ((($22)) + 8|0);
  $24 = HEAP32[$23>>2]|0;
- $25 = $6;
- $26 = ((($25)) + 8|0);
- $27 = HEAP32[$26>>2]|0;
- $28 = $6;
- $29 = HEAP32[$28>>2]|0;
- $30 = $29 >>> 9;
- $31 = $30 & 255;
- _traceCalls($24,$27,1,$31,0);
+ $25 = $3;
+ $26 = HEAP32[$25>>2]|0;
+ $27 = $26 >>> 9;
+ $28 = $27 & 255;
+ _traceCalls($21,$24,1,$28,0);
  STACKTOP = sp;return;
 }
 function _rtAllocApi($0,$1,$2) {
@@ -43776,7 +43773,7 @@ function _rtLookup($0,$1,$2) {
   $18 = $5;
   HEAP32[$vararg_buffer>>2] = 18755;
   $vararg_ptr1 = ((($vararg_buffer)) + 4|0);
-  HEAP32[$vararg_ptr1>>2] = 1121;
+  HEAP32[$vararg_ptr1>>2] = 1120;
   $vararg_ptr2 = ((($vararg_buffer)) + 8|0);
   HEAP32[$vararg_ptr2>>2] = 18856;
   $vararg_ptr3 = ((($vararg_buffer)) + 12|0);
@@ -44290,7 +44287,7 @@ function _rtAlloc($0,$1,$2,$3) {
     $92 = (_vmOffset_280($90,$91)|0);
     HEAP32[$vararg_buffer>>2] = 18755;
     $vararg_ptr2 = ((($vararg_buffer)) + 4|0);
-    HEAP32[$vararg_ptr2>>2] = 833;
+    HEAP32[$vararg_ptr2>>2] = 832;
     $vararg_ptr3 = ((($vararg_buffer)) + 8|0);
     HEAP32[$vararg_ptr3>>2] = 18935;
     $vararg_ptr4 = ((($vararg_buffer)) + 12|0);
@@ -44310,7 +44307,7 @@ function _rtAlloc($0,$1,$2,$3) {
     $101 = (_vmOffset_280($99,$100)|0);
     HEAP32[$vararg_buffer5>>2] = 18755;
     $vararg_ptr8 = ((($vararg_buffer5)) + 4|0);
-    HEAP32[$vararg_ptr8>>2] = 834;
+    HEAP32[$vararg_ptr8>>2] = 833;
     $vararg_ptr9 = ((($vararg_buffer5)) + 8|0);
     HEAP32[$vararg_ptr9>>2] = 18935;
     $vararg_ptr10 = ((($vararg_buffer5)) + 12|0);
@@ -44597,7 +44594,7 @@ function _ccUniqueStr($0,$1,$2,$3) {
    $27 = HEAP32[3347]|0;
    HEAP32[$vararg_buffer>>2] = 18755;
    $vararg_ptr1 = ((($vararg_buffer)) + 4|0);
-   HEAP32[$vararg_ptr1>>2] = 1166;
+   HEAP32[$vararg_ptr1>>2] = 1165;
    $vararg_ptr2 = ((($vararg_buffer)) + 8|0);
    HEAP32[$vararg_ptr2>>2] = 19063;
    _printFmt($27,0,29081,$vararg_buffer);
@@ -44622,7 +44619,7 @@ function _ccUniqueStr($0,$1,$2,$3) {
    $36 = HEAP32[3347]|0;
    HEAP32[$vararg_buffer3>>2] = 18755;
    $vararg_ptr6 = ((($vararg_buffer3)) + 4|0);
-   HEAP32[$vararg_ptr6>>2] = 1174;
+   HEAP32[$vararg_ptr6>>2] = 1173;
    $vararg_ptr7 = ((($vararg_buffer3)) + 8|0);
    HEAP32[$vararg_ptr7>>2] = 19063;
    _printFmt($36,0,29081,$vararg_buffer3);
@@ -44691,7 +44688,7 @@ function _ccUniqueStr($0,$1,$2,$3) {
   $71 = HEAP32[3347]|0;
   HEAP32[$vararg_buffer8>>2] = 18755;
   $vararg_ptr11 = ((($vararg_buffer8)) + 4|0);
-  HEAP32[$vararg_ptr11>>2] = 1190;
+  HEAP32[$vararg_ptr11>>2] = 1189;
   $vararg_ptr12 = ((($vararg_buffer8)) + 8|0);
   HEAP32[$vararg_ptr12>>2] = 19063;
   _printFmt($71,0,25563,$vararg_buffer8);
@@ -44861,7 +44858,7 @@ function _vmInit($0,$1,$2) {
    $40 = HEAP32[3347]|0;
    HEAP32[$vararg_buffer>>2] = 18755;
    $vararg_ptr1 = ((($vararg_buffer)) + 4|0);
-   HEAP32[$vararg_ptr1>>2] = 698;
+   HEAP32[$vararg_ptr1>>2] = 697;
    $vararg_ptr2 = ((($vararg_buffer)) + 8|0);
    HEAP32[$vararg_ptr2>>2] = 19126;
    _printFmt($40,0,19075,$vararg_buffer);
@@ -44946,7 +44943,7 @@ function _vmInit($0,$1,$2) {
      $101 = HEAP32[3347]|0;
      HEAP32[$vararg_buffer3>>2] = 18755;
      $vararg_ptr6 = ((($vararg_buffer3)) + 4|0);
-     HEAP32[$vararg_ptr6>>2] = 716;
+     HEAP32[$vararg_ptr6>>2] = 715;
      $vararg_ptr7 = ((($vararg_buffer3)) + 8|0);
      HEAP32[$vararg_ptr7>>2] = 19126;
      _printFmt($101,0,25563,$vararg_buffer3);
@@ -45031,7 +45028,7 @@ function _vmInit($0,$1,$2) {
     $150 = HEAP32[3347]|0;
     HEAP32[$vararg_buffer8>>2] = 18755;
     $vararg_ptr11 = ((($vararg_buffer8)) + 4|0);
-    HEAP32[$vararg_ptr11>>2] = 735;
+    HEAP32[$vararg_ptr11>>2] = 734;
     $vararg_ptr12 = ((($vararg_buffer8)) + 8|0);
     HEAP32[$vararg_ptr12>>2] = 19126;
     _printFmt($150,0,25563,$vararg_buffer8);
@@ -45064,7 +45061,7 @@ function _vmInit($0,$1,$2) {
     $168 = HEAP32[3347]|0;
     HEAP32[$vararg_buffer13>>2] = 18755;
     $vararg_ptr16 = ((($vararg_buffer13)) + 4|0);
-    HEAP32[$vararg_ptr16>>2] = 742;
+    HEAP32[$vararg_ptr16>>2] = 741;
     $vararg_ptr17 = ((($vararg_buffer13)) + 8|0);
     HEAP32[$vararg_ptr17>>2] = 19126;
     _printFmt($168,0,25563,$vararg_buffer13);
@@ -45134,7 +45131,7 @@ function _vmInit($0,$1,$2) {
     $197 = HEAP32[3347]|0;
     HEAP32[$vararg_buffer18>>2] = 18755;
     $vararg_ptr21 = ((($vararg_buffer18)) + 4|0);
-    HEAP32[$vararg_ptr21>>2] = 757;
+    HEAP32[$vararg_ptr21>>2] = 756;
     $vararg_ptr22 = ((($vararg_buffer18)) + 8|0);
     HEAP32[$vararg_ptr22>>2] = 19126;
     _printFmt($197,0,25563,$vararg_buffer18);
@@ -45374,7 +45371,7 @@ function _ccInit($0,$1,$2) {
   $12 = HEAP32[3347]|0;
   HEAP32[$vararg_buffer>>2] = 18755;
   $vararg_ptr1 = ((($vararg_buffer)) + 4|0);
-  HEAP32[$vararg_ptr1>>2] = 967;
+  HEAP32[$vararg_ptr1>>2] = 966;
   $vararg_ptr2 = ((($vararg_buffer)) + 8|0);
   HEAP32[$vararg_ptr2>>2] = 19184;
   _printFmt($12,0,19139,$vararg_buffer);
@@ -45391,7 +45388,7 @@ function _ccInit($0,$1,$2) {
   $20 = HEAP32[3347]|0;
   HEAP32[$vararg_buffer3>>2] = 18755;
   $vararg_ptr6 = ((($vararg_buffer3)) + 4|0);
-  HEAP32[$vararg_ptr6>>2] = 968;
+  HEAP32[$vararg_ptr6>>2] = 967;
   $vararg_ptr7 = ((($vararg_buffer3)) + 8|0);
   HEAP32[$vararg_ptr7>>2] = 19184;
   _printFmt($20,0,19191,$vararg_buffer3);
@@ -45411,7 +45408,7 @@ function _ccInit($0,$1,$2) {
   $31 = HEAP32[3347]|0;
   HEAP32[$vararg_buffer8>>2] = 18755;
   $vararg_ptr11 = ((($vararg_buffer8)) + 4|0);
-  HEAP32[$vararg_ptr11>>2] = 969;
+  HEAP32[$vararg_ptr11>>2] = 968;
   $vararg_ptr12 = ((($vararg_buffer8)) + 8|0);
   HEAP32[$vararg_ptr12>>2] = 19184;
   _printFmt($31,0,19246,$vararg_buffer8);
@@ -45438,7 +45435,7 @@ function _ccInit($0,$1,$2) {
   $47 = HEAP32[3347]|0;
   HEAP32[$vararg_buffer13>>2] = 18755;
   $vararg_ptr16 = ((($vararg_buffer13)) + 4|0);
-  HEAP32[$vararg_ptr16>>2] = 975;
+  HEAP32[$vararg_ptr16>>2] = 974;
   $vararg_ptr17 = ((($vararg_buffer13)) + 8|0);
   HEAP32[$vararg_ptr17>>2] = 19184;
   _printFmt($47,0,25563,$vararg_buffer13);
@@ -46545,7 +46542,7 @@ function _install_emit($0,$1) {
     $383 = HEAP32[3347]|0;
     HEAP32[$vararg_buffer>>2] = 18755;
     $vararg_ptr1 = ((($vararg_buffer)) + 4|0);
-    HEAP32[$vararg_ptr1>>2] = 525;
+    HEAP32[$vararg_ptr1>>2] = 524;
     $vararg_ptr2 = ((($vararg_buffer)) + 8|0);
     HEAP32[$vararg_ptr2>>2] = 19809;
     _printFmt($383,0,25563,$vararg_buffer);
@@ -46663,7 +46660,7 @@ function _install_base($0,$1) {
   $56 = HEAP32[3347]|0;
   HEAP32[$vararg_buffer>>2] = 18755;
   $vararg_ptr1 = ((($vararg_buffer)) + 4|0);
-  HEAP32[$vararg_ptr1>>2] = 565;
+  HEAP32[$vararg_ptr1>>2] = 564;
   $vararg_ptr2 = ((($vararg_buffer)) + 8|0);
   HEAP32[$vararg_ptr2>>2] = 19455;
   _printFmt($56,0,19396,$vararg_buffer);
@@ -46814,7 +46811,7 @@ function _install_base($0,$1) {
   $149 = HEAP32[3347]|0;
   HEAP32[$vararg_buffer3>>2] = 18755;
   $vararg_ptr6 = ((($vararg_buffer3)) + 4|0);
-  HEAP32[$vararg_ptr6>>2] = 608;
+  HEAP32[$vararg_ptr6>>2] = 607;
   $vararg_ptr7 = ((($vararg_buffer3)) + 8|0);
   HEAP32[$vararg_ptr7>>2] = 19455;
   _printFmt($149,0,19594,$vararg_buffer3);
@@ -58036,7 +58033,7 @@ function _ccInline($0,$1) {
   $21 = $4;
   $22 = ((($21)) + 12|0);
   $23 = HEAP32[$22>>2]|0;
-  (_strncpy($5,$23,4096)|0);
+  (_strncpy($5,$23,4095)|0);
  }
  $7 = $5;
  while(1) {
@@ -72031,7 +72028,7 @@ function _main($0,$1) {
  $88 = ($87|0)!=(0|0);
  if ($88) {
   $89 = $8;
-  (_strncpy($7,$89,65536)|0);
+  (_strncpy($7,$89,65535)|0);
   $90 = (_strlen($7)|0);
   $9 = $90;
   $91 = $9;
@@ -72512,7 +72509,7 @@ function _main($0,$1) {
      if ($319) {
       $320 = $23;
       $321 = ((($320)) + 4|0);
-      (_strncpy($7,$321,65536)|0);
+      (_strncpy($7,$321,65535)|0);
       break;
      } else {
       HEAP8[$7>>0] = 0;

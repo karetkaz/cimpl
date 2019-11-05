@@ -541,11 +541,21 @@ function shareInput() {
 
 function execute(cmd, exactArgs) {
 	let args = undefined;
+	if (typeof(exactArgs) !== 'object') {
+		exactArgs = {
+			addFile: !exactArgs,
+			addLibs: !exactArgs,
+			addPrms: !exactArgs
+		}
+	}
 
 	if (cmd != null) {
-		let file = saveInput();
-		if (file == null) {
-			return;
+		let file = undefined;
+		if (exactArgs.addFile) {
+			file = saveInput();
+			if (file == null) {
+				return;
+			}
 		}
 
 		args = [];
@@ -556,7 +566,7 @@ function execute(cmd, exactArgs) {
 			args.push(arg);
 		}
 
-		if (exactArgs !== true) {
+		if (exactArgs.addPrms) {
 			// do not use standard input, print times
 			args.push('-X' + (params.X || '-stdin+steps'));
 
@@ -576,17 +586,20 @@ function execute(cmd, exactArgs) {
 				args.push('-log');
 				args.push(params.log);
 			}
+		}
 
+		if (exactArgs.addLibs) {
 			// todo: used libraries should be defined in the project file
 			for (let lib of props.libraries) {
 				args.push(lib);
 			}
+		}
 
+		if (file !== undefined) {
 			args.push(file);
 			for (let ln of document.getElementsByClassName('breakpoint')) {
 				args.push('-b/P/' + ln.value);
 			}
-
 		}
 		terminal.command = args.join(' ');
 	}

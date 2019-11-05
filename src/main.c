@@ -1754,7 +1754,7 @@ int main(int argc, char *argv[]) {
 	char stdLib[65536];
 	char *cmpl_home = getenv(CMPL_HOME);
 	if (cmpl_home != NULL) {
-		strncpy(stdLib, cmpl_home, sizeof(stdLib));
+		strncpy(stdLib, cmpl_home, sizeof(stdLib) - 1);
 		size_t len = strlen(stdLib);
 		if (len > 0 && stdLib[len - 1] != '/') {
 			stdLib[len] = '/';
@@ -1950,7 +1950,7 @@ int main(int argc, char *argv[]) {
 		// override stdlib file
 		else if (strncmp(arg, "-std", 4) == 0) {
 			if (arg[4] != 0) {
-				strncpy(stdLib, arg + 4, sizeof(stdLib));
+				strncpy(stdLib, arg + 4, sizeof(stdLib) - 1);
 			}
 			else {
 				// disable standard library

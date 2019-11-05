@@ -1,7 +1,8 @@
-gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
-gxSurf offs = gxSurf("asset/image/forest.png", 32);
+// Image geometry transformation demo.
 
-gxSurf in = gxSurf(offs, 0);
+gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
+gxSurf in = gxSurf("asset/image/forest.png", 32);
+gxSurf offs = gxSurf("asset/image/texture_nature_01.png", in.width(), in.height(), 32);
 
 static if (typename(gxSurf.transform) == null) {
 void transform(gxSurf surf, const gxRect rect&, gxSurf src, const gxRect roi&, int32 interpolate, float32 mat[16]) {
@@ -116,29 +117,23 @@ int onEvent(int action, int button, int x, int y) {
 	};
 	static Checker flipX = {
 		text: "flip x";
-		checked: false;
 	};
 	static Checker flipY = {
 		text: "flip y";
-		checked: false;
 	};
 	static Slider rotate = {
 		text: "rotate";
-		minValue: 0;
 		maxValue: 360;
-		value: 0;
 	};
 	static Slider skewX = {
 		text: "skew x";
-		minValue: -89;
-		maxValue: +89;
-		value: 0;
+		minValue: -45;
+		maxValue: +45;
 	};
 	static Slider skewY = {
 		text: "skew y";
-		minValue: -89;
-		maxValue: +89;
-		value: 0;
+		minValue: -45;
+		maxValue: +45;
 	};
 	static Slider scaleX = {
 		text: "scale x";
@@ -156,16 +151,14 @@ int onEvent(int action, int button, int x, int y) {
 		text: "translate x";
 		minValue: -offs.width();
 		maxValue: +offs.width();
-		value: 0;
 	};
 	static Slider translateY = {
 		text: "translate y";
 		minValue: -offs.height();
 		maxValue: +offs.height();
-		value: 0;
 	};
 
-	static Slider fitRatio = {
+	static Slider maxRatio = {
 		text: "max ratio";
 		value: in.width() * 100 / in.height();
 		minValue: 100;
@@ -173,13 +166,15 @@ int onEvent(int action, int button, int x, int y) {
 	};
 	static Checker fitWidth = {
 		text: "fit width";
-		checked: true;
 	};
 	static Checker fitHeight = {
 		text: "fit height";
+	};
+	static Checker drawRect = {
+		text: "draw rect";
 		checked: true;
 	};
-	static Slider inRatio = {
+	static Slider imgRatio = {
 		text: "ratio";
 		enabled: false;
 		value: in.width() * 100 / in.height();
@@ -189,13 +184,14 @@ int onEvent(int action, int button, int x, int y) {
 		quality,
 		fitWidth,
 		fitHeight,
-		fitRatio,
-		translateX, translateY,
+		maxRatio,
 		scaleX, scaleY,
 		skewX, skewY,
 		flipX, flipY,
 		rotate,
-		inRatio
+		translateX, translateY,
+		drawRect,
+		imgRatio
 	);
 
 	bool redraw = uiEvent(ui, action, button, x, y);
@@ -206,24 +202,29 @@ int onEvent(int action, int button, int x, int y) {
 	}
 	if (redraw) {
 		gxRect to = {
-			w: 400;
-			h: 400;
+			w: offs.width() - 100;
+			h: offs.height() - 100;
 			x: (offs.width() - to.w) / 2;
 			y: (offs.height() - to.h) / 2;
 		};
 		vec4f center = vec4f(in.width() / 2, in.height() / 2, 0, 0);
 		mat4f mat = translation(center, 1)
-			.mul(translation(vec4f(translateX.val(), translateY.val(), 0, 0), 1))
-			.mul(scale(vec4f(scaleX.val(), scaleY.val(), 1, 1), 1f / 100))
+			.mul(scale(vec4f(scaleX.val(), scaleY.val(), 0, 1), 1f / 100))
 			.mul(skewMatrix(Math.radians(skewX.val()), Math.radians(skewY.val())))
 			.mul(rotation(vec4f(0, 1, 0, 0), Math.radians(int(flipX.checked) * 180)))
 			.mul(rotation(vec4f(1, 0, 0, 0), Math.radians(int(flipY.checked) * 180)))
-			.mul(rotation(vec4f(0, 0, 1, 0), Math.radians(rotate.val())))
+			.mul(rotation(vec4f(0, 0, -1, 0), Math.radians(rotate.val())))
+			.mul(translation(vec4f(translateX.val(), translateY.val(), 0, 0), 1))
 			.mul(translation(center, -1))
-			.mul(fitMatrix(in, to.w, to.h, fitWidth.checked, fitHeight.checked, 1, fitRatio.val() / 100.));
+			.mul(fitMatrix(in, to.w, to.h, fitWidth.checked, fitHeight.checked, 1, maxRatio.val() / 100.));
 		debug("transform", mat.m);
 		offs.transform(to, in, null, quality.checked ? 1 : 0, mat.data);
-		offs.drawRect(to, 0);
+		if (drawRect.checked) {
+			// draw interior
+			to.w -= 1;
+			to.h -= 1;
+			offs.drawRect(to, 0);
+		}
 		ui.draw(30, 30);
 	}
 	return 0;

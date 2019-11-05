@@ -57,6 +57,7 @@
 	<div class="collapsed submenu">
 	<li onclick="setStyle(parentElement, '!collapsed');">Execute
 	<button class="right" onclick="execute(); event.stopPropagation();" title="Compiler usage help">?</button>
+	<button class="right" onclick="execute('-api/A/m', {addLibs: true}); event.stopPropagation();" title="Compiler api">ƒ</button>
 	</li>
 	<ul>
 		<li onclick="execute('-run/g');">⚡ Run</li>
@@ -71,8 +72,8 @@
 	<div class="submenu">
 	<li onclick="setStyle(parentElement, '!collapsed');">Workspace
 	<button class="right" onclick="event.stopPropagation(); setStyle(parentElement.parentElement, '-collapsed'); params.update('folder');" title="Refresh file list">⟳</button>
-<!--	<button class="right" onclick="event.stopPropagation(); downloadFiles();">📥</button>-->
-<!--	<button class="right" onclick="event.stopPropagation(); uploadFiles();">📤</button>-->
+	<!--<button class="right" onclick="event.stopPropagation(); downloadFiles();">📥</button>-->
+	<!--<button class="right" onclick="event.stopPropagation(); uploadFiles();">📤</button>-->
 	</li>
 	<ul id="fileList"></ul>
 	<ul>
@@ -176,31 +177,29 @@
 		<li id="wrap-output" onclick="setStyle(body, '!wrap-output');">Wrap output</li>
 		<li id="pin-left" onclick="setStyle(body, '!left-pin');">Pin left sidebar</li>
 		<li id="pin-right" onclick="setStyle(body, '!right-pin');">Pin right sidebar</li>
-		<li id="show-toolbar" onclick="setStyle(body, '!tool');">Show main toolbar</li>
+		<li id="show-output" onclick="setStyle(body, '!output');">Show output</li>
+		<li id="show-editor" onclick="setStyle(body, '!editor');">Show editor</li>
+		<li id="show-toolbar" onclick="setStyle(body, '!tool');">Show toolbar</li>
 	</ul></div>
 </div>
-<div id="main-panel">
-	<div id="editor-panel">
-		<textarea id="input"></textarea>
+<div id="bottom-sidebar" class="sidebar">
+	<div id="output-toolbar" class="toolbar">
+		<select class="output left" id="selOutput" onchange="void(0);" onclick="event.stopPropagation()">
+			<option value="Output-0">Output</option>
+			<!-- <option value="Search-0">Search</option> -->
+		</select>
+		<span class="no-output left" onclick="setStyle(body, 'output');">Output</span>
+		<!-- <span class="no-output left" onclick="setStyle(body, 'output');">Search</span> -->
+		<span class="output left icon bold" onclick="editOutput();" title="Open output in editor">💾</span>
+		<span class="output left icon bold" title="Clear output" onclick="terminal.clear();">❌</span>
+		<span class="output right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
+		<span class="output right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
+		<p/>
 	</div>
-	<div id="output-panel">
-		<div id="output-toolbar" class="toolbar">
-			<select class="output left" id="selOutput" onchange="void(0);" onclick="event.stopPropagation()">
-				<option value="Output-0">Output</option>
-				<!-- <option value="Search-0">Search</option> -->
-			</select>
-			<span class="no-output left" onclick="setStyle(body, 'output');">Output</span>
-			<!-- <span class="no-output left" onclick="setStyle(body, 'output');">Search</span> -->
-			<span class="output left icon bold" onclick="editOutput();" title="Open output in editor">💾</span>
-			<span class="output left icon bold" title="Clear output" onclick="terminal.clear();">❌</span>
-
-			<span class="right icon" title="Full screen output" onclick="setStyle(body, 'output', '-editor');">⛶</span>
-			<span class="output right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
-			<span class="output right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
-			<p/>
-		</div>
-		<pre id="output"></pre>
-	</div>
+	<pre id="output"></pre>
+</div>
+<div id="editor-panel">
+	<textarea id="input"></textarea>
 </div>
 <div id="left-overlay" class="overlay" onclick="setStyle(body, '-left-bar');"></div>
 <div id="menu2-overlay" class="overlay" onclick="setStyle(body, '-right-bar');"></div>

@@ -10,9 +10,12 @@
 ---------- Generate: byte-code
 lib/std/string.ci:148: warn: uninitialized variable `append.digits`
 cmplGfx/lib/gfx/color.ci:305: warn: uninitialized variable `drawHist.lut`
-cmplGfx/lib/gfxlib.ci:235: warn: uninitialized variable `dir`
-cmplGfx/lib/gfxlib.ci:241: warn: uninitialized variable `orig`
-cmplGfx/lib/gfxlib.ci:276: warn: uninitialized variable `show.onEvent.text`
+cmplGfx/lib/gfxlib.ci:51: warn: operators `&&` and `||` does not short-circuit yet
+cmplGfx/lib/gfxlib.ci:72: warn: operators `&&` and `||` does not short-circuit yet
+cmplGfx/lib/gfxlib.ci:80: warn: operators `&&` and `||` does not short-circuit yet
+cmplGfx/lib/gfxlib.ci:313: warn: uninitialized variable `dir`
+cmplGfx/lib/gfxlib.ci:319: warn: uninitialized variable `orig`
+cmplGfx/lib/gfxlib.ci:354: warn: uninitialized variable `show.onEvent.text`
 
 ---------- Symbols:
 typename: typename {
@@ -32,7 +35,7 @@ typename: typename {
 	lib/vec/mat4f.ci:1: referenced as `typename`
 	lib/vec/vec4f.ci:1: referenced as `typename`
 	lib/vec/vec2d.ci:1: referenced as `typename`
-	lib/stdlib.ci:92: referenced as `typename`
+	lib/stdlib.ci:17: referenced as `typename`
 	lib/stdlib.ci:12: referenced as `typename`
 	internal usages: 9
 }
@@ -43,7 +46,7 @@ typename.size: int32 {
 .name: 'size'
 .owner: typename
 .usages:
-	lib/stdlib.ci:92: referenced as `size`
+	lib/stdlib.ci:17: referenced as `size`
 }
 typename.offset: int32 {
 .kind: const variable
@@ -107,22 +110,22 @@ void: typename {
 .size: 0
 .name: 'void'
 .usages:
-	cmplGfx/lib/gfxlib.ci:345: referenced as `void`
-	cmplGfx/lib/gfxlib.ci:312: referenced as `void`
-	cmplGfx/lib/gfxlib.ci:301: referenced as `void`
-	cmplGfx/lib/gfxlib.ci:167: referenced as `void`
-	cmplGfx/lib/gfxlib.ci:139: referenced as `void`
-	cmplGfx/lib/gfxlib.ci:109: referenced as `void`
+	cmplGfx/lib/gfxlib.ci:423: referenced as `void`
+	cmplGfx/lib/gfxlib.ci:390: referenced as `void`
+	cmplGfx/lib/gfxlib.ci:379: referenced as `void`
+	cmplGfx/lib/gfxlib.ci:245: referenced as `void`
+	cmplGfx/lib/gfxlib.ci:217: referenced as `void`
+	cmplGfx/lib/gfxlib.ci:187: referenced as `void`
 	cmplGfx/lib/gfx/color.ci:304: referenced as `void`
 	cmplGfx/lib/gfx/color.ci:236: referenced as `void`
 	cmplGfx/lib/gfx/color.ci:178: referenced as `void`
-	lib/stdlib.ci:75: referenced as `void`
-	lib/stdlib.ci:56: referenced as `void`
-	lib/stdlib.ci:56: referenced as `void`
-	lib/stdlib.ci:54: referenced as `void`
-	lib/stdlib.ci:54: referenced as `void`
-	lib/stdlib.ci:52: referenced as `void`
-	lib/stdlib.ci:52: referenced as `void`
+	lib/std/debug.ci:64: referenced as `void`
+	lib/std/debug.ci:45: referenced as `void`
+	lib/std/debug.ci:45: referenced as `void`
+	lib/std/debug.ci:43: referenced as `void`
+	lib/std/debug.ci:43: referenced as `void`
+	lib/std/debug.ci:41: referenced as `void`
+	lib/std/debug.ci:41: referenced as `void`
 	internal usages: 50
 }
 bool: typename {
@@ -133,17 +136,19 @@ bool: typename {
 .print: '%d'
 .value: 0
 .usages:
-	cmplGfx/lib/gfxlib.ci:348: referenced as `bool`
-	cmplGfx/lib/gfxlib.ci:63: referenced as `bool`
+	cmplGfx/lib/gfxlib.ci:426: referenced as `bool`
+	cmplGfx/lib/gfxlib.ci:141: referenced as `bool`
+	cmplGfx/lib/gfxlib.ci:49: referenced as `bool`
+	cmplGfx/lib/gfxlib.ci:48: referenced as `bool`
 	lib/std/string.ci:46: referenced as `bool`
 	lib/std/string.ci:36: referenced as `bool`
 	lib/std/math.ci:469: referenced as `bool`
 	lib/std/math.ci:421: referenced as `bool`
 	lib/std/math.ci:366: referenced as `bool`
 	lib/std/math.ci:365: referenced as `bool`
-	lib/stdlib.ci:56: referenced as `bool`
-	lib/stdlib.ci:54: referenced as `bool`
-	lib/stdlib.ci:52: referenced as `bool`
+	lib/std/debug.ci:45: referenced as `bool`
+	lib/std/debug.ci:43: referenced as `bool`
+	lib/std/debug.ci:41: referenced as `bool`
 	lib/stdlib.ci:3: referenced as `bool`
 	internal usages: 7
 }
@@ -155,7 +160,10 @@ char: typename {
 .print: '%c'
 .value: 0
 .usages:
-	cmplGfx/lib/gfxlib.ci:276: referenced as `char`
+	cmplGfx/lib/gfxlib.ci:354: referenced as `char`
+	cmplGfx/lib/gfxlib.ci:106: referenced as `char`
+	cmplGfx/lib/gfxlib.ci:103: referenced as `char`
+	cmplGfx/lib/gfxlib.ci:100: referenced as `char`
 	cmplGfx/lib/gfxlib.ci:28: referenced as `char`
 	cmplGfx/lib/gfxlib.ci:25: referenced as `char`
 	cmplGfx/lib/gfxlib.ci:8: referenced as `char`
@@ -202,24 +210,24 @@ char: typename {
 	lib/std/string.ci:15: referenced as `char`
 	lib/std/string.ci:15: referenced as `char`
 	lib/std/string.ci:4: referenced as `char`
-	lib/stdlib.ci:75: referenced as `char`
-	lib/stdlib.ci:70: referenced as `char`
-	lib/stdlib.ci:54: referenced as `char`
-	lib/stdlib.ci:52: referenced as `char`
-	lib/stdlib.ci:47: referenced as `char`
-	lib/stdlib.ci:45: referenced as `char`
-	lib/stdlib.ci:42: referenced as `char`
-	lib/stdlib.ci:40: referenced as `char`
-	lib/stdlib.ci:37: referenced as `char`
-	lib/stdlib.ci:35: referenced as `char`
-	lib/stdlib.ci:32: referenced as `char`
-	lib/stdlib.ci:30: referenced as `char`
-	lib/stdlib.ci:27: referenced as `char`
-	lib/stdlib.ci:25: referenced as `char`
-	lib/stdlib.ci:22: referenced as `char`
-	lib/stdlib.ci:20: referenced as `char`
-	lib/stdlib.ci:17: referenced as `char`
-	lib/stdlib.ci:15: referenced as `char`
+	lib/std/debug.ci:64: referenced as `char`
+	lib/std/debug.ci:59: referenced as `char`
+	lib/std/debug.ci:43: referenced as `char`
+	lib/std/debug.ci:41: referenced as `char`
+	lib/std/debug.ci:36: referenced as `char`
+	lib/std/debug.ci:34: referenced as `char`
+	lib/std/debug.ci:31: referenced as `char`
+	lib/std/debug.ci:29: referenced as `char`
+	lib/std/debug.ci:26: referenced as `char`
+	lib/std/debug.ci:24: referenced as `char`
+	lib/std/debug.ci:21: referenced as `char`
+	lib/std/debug.ci:19: referenced as `char`
+	lib/std/debug.ci:16: referenced as `char`
+	lib/std/debug.ci:14: referenced as `char`
+	lib/std/debug.ci:11: referenced as `char`
+	lib/std/debug.ci:9: referenced as `char`
+	lib/std/debug.ci:6: referenced as `char`
+	lib/std/debug.ci:4: referenced as `char`
 	internal usages: 16
 }
 int8: typename {
@@ -246,67 +254,81 @@ int32: typename {
 .print: '%d'
 .value: 0
 .usages:
+	cmplGfx/lib/gfxlib.ci:433: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:433: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:433: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:433: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:433: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:423: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:423: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:423: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:397: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:397: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:397: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:397: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:397: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:383: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:383: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:383: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:383: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:383: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:383: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:383: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:383: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:383: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:383: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:379: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:379: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:379: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:379: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:379: referenced as `int32`
 	cmplGfx/lib/gfxlib.ci:355: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:355: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:355: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:355: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:355: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:345: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:345: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:345: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:319: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:319: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:319: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:319: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:319: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:305: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:305: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:305: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:305: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:305: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:305: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:305: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:305: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:305: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:305: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:301: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:301: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:301: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:301: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:301: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:277: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:274: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:352: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:315: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:314: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:267: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:266: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:265: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:265: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:265: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:265: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:265: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:254: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:253: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:253: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:253: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:248: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:245: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:245: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:238: referenced as `int32`
 	cmplGfx/lib/gfxlib.ci:237: referenced as `int32`
 	cmplGfx/lib/gfxlib.ci:236: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:189: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:188: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:187: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:187: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:187: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:187: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:187: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:176: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:175: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:175: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:175: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:170: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:167: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:167: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:160: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:235: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:217: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:217: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:209: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:207: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:181: referenced as `int32`
 	cmplGfx/lib/gfxlib.ci:159: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:158: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:157: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:139: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:139: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:131: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:129: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:154: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:138: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:135: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:135: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:125: referenced as `int32`
 	cmplGfx/lib/gfxlib.ci:103: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:81: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:76: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:60: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:57: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:57: referenced as `int32`
-	cmplGfx/lib/gfxlib.ci:47: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:103: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:103: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:100: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:100: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:100: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:100: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:46: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:45: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:29: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:28: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:28: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:28: referenced as `int32`
+	cmplGfx/lib/gfxlib.ci:28: referenced as `int32`
 	cmplGfx/lib/gfxlib.ci:8: referenced as `int32`
 	cmplGfx/lib/gfxlib.ci:5: referenced as `int32`
 	cmplGfx/lib/gfxlib.ci:5: referenced as `int32`
@@ -399,11 +421,11 @@ int32: typename {
 	lib/std/math.ci:67: referenced as `int32`
 	lib/std/math.ci:64: referenced as `int32`
 	lib/std/math.ci:64: referenced as `int32`
-	lib/stdlib.ci:92: referenced as `int32`
-	lib/stdlib.ci:87: referenced as `int32`
-	lib/stdlib.ci:87: referenced as `int32`
-	lib/stdlib.ci:75: referenced as `int32`
-	lib/stdlib.ci:75: referenced as `int32`
+	lib/stdlib.ci:17: referenced as `int32`
+	lib/std/debug.ci:76: referenced as `int32`
+	lib/std/debug.ci:76: referenced as `int32`
+	lib/std/debug.ci:64: referenced as `int32`
+	lib/std/debug.ci:64: referenced as `int32`
 	internal usages: 150
 }
 int64: typename {
@@ -414,7 +436,7 @@ int64: typename {
 .print: '%D'
 .value: 0
 .usages:
-	cmplGfx/lib/gfxlib.ci:346: referenced as `int64`
+	cmplGfx/lib/gfxlib.ci:424: referenced as `int64`
 	internal usages: 6
 }
 uint8: typename {
@@ -456,10 +478,10 @@ uint32: typename {
 .field lob: function (size: 0, cast: static const inline)
 .value: 0
 .usages:
-	cmplGfx/lib/gfxlib.ci:106: referenced as `uint32`
-	cmplGfx/lib/gfxlib.ci:103: referenced as `uint32`
-	cmplGfx/lib/gfxlib.ci:101: referenced as `uint32`
-	cmplGfx/lib/gfxlib.ci:99: referenced as `uint32`
+	cmplGfx/lib/gfxlib.ci:184: referenced as `uint32`
+	cmplGfx/lib/gfxlib.ci:181: referenced as `uint32`
+	cmplGfx/lib/gfxlib.ci:179: referenced as `uint32`
+	cmplGfx/lib/gfxlib.ci:177: referenced as `uint32`
 	cmplGfx/lib/gfx/color.ci:311: referenced as `uint32`
 	cmplGfx/lib/gfx/color.ci:305: referenced as `uint32`
 	cmplGfx/lib/gfx/color.ci:304: referenced as `uint32`
@@ -668,21 +690,21 @@ float32: typename {
 .field atan2: function (size: 0, cast: static const inline)
 .value: 0
 .usages:
-	cmplGfx/lib/gfxlib.ci:401: referenced as `float32`
-	cmplGfx/lib/gfxlib.ci:390: referenced as `float32`
-	cmplGfx/lib/gfxlib.ci:390: referenced as `float32`
-	cmplGfx/lib/gfxlib.ci:381: referenced as `float32`
-	cmplGfx/lib/gfxlib.ci:367: referenced as `float32`
-	cmplGfx/lib/gfxlib.ci:351: referenced as `float32`
-	cmplGfx/lib/gfxlib.ci:292: referenced as `float32`
-	cmplGfx/lib/gfxlib.ci:241: referenced as `float32`
-	cmplGfx/lib/gfxlib.ci:235: referenced as `float32`
-	cmplGfx/lib/gfxlib.ci:190: referenced as `float32`
-	cmplGfx/lib/gfxlib.ci:167: referenced as `float32`
-	cmplGfx/lib/gfxlib.ci:128: referenced as `float32`
-	cmplGfx/lib/gfxlib.ci:127: referenced as `float32`
-	cmplGfx/lib/gfxlib.ci:109: referenced as `float32`
-	cmplGfx/lib/gfxlib.ci:109: referenced as `float32`
+	cmplGfx/lib/gfxlib.ci:479: referenced as `float32`
+	cmplGfx/lib/gfxlib.ci:468: referenced as `float32`
+	cmplGfx/lib/gfxlib.ci:468: referenced as `float32`
+	cmplGfx/lib/gfxlib.ci:459: referenced as `float32`
+	cmplGfx/lib/gfxlib.ci:445: referenced as `float32`
+	cmplGfx/lib/gfxlib.ci:429: referenced as `float32`
+	cmplGfx/lib/gfxlib.ci:370: referenced as `float32`
+	cmplGfx/lib/gfxlib.ci:319: referenced as `float32`
+	cmplGfx/lib/gfxlib.ci:313: referenced as `float32`
+	cmplGfx/lib/gfxlib.ci:268: referenced as `float32`
+	cmplGfx/lib/gfxlib.ci:245: referenced as `float32`
+	cmplGfx/lib/gfxlib.ci:206: referenced as `float32`
+	cmplGfx/lib/gfxlib.ci:205: referenced as `float32`
+	cmplGfx/lib/gfxlib.ci:187: referenced as `float32`
+	cmplGfx/lib/gfxlib.ci:187: referenced as `float32`
 	cmplGfx/lib/gfx/color.ci:214: referenced as `float32`
 	cmplGfx/lib/gfx/color.ci:213: referenced as `float32`
 	cmplGfx/lib/gfx/color.ci:212: referenced as `float32`
@@ -924,7 +946,17 @@ float64: typename {
 .field atan2: function (size: 0, cast: static const inline)
 .value: 0
 .usages:
-	cmplGfx/lib/gfxlib.ci:46: referenced as `float64`
+	cmplGfx/lib/gfxlib.ci:124: referenced as `float64`
+	cmplGfx/lib/gfxlib.ci:79: referenced as `float64`
+	cmplGfx/lib/gfxlib.ci:71: referenced as `float64`
+	cmplGfx/lib/gfxlib.ci:64: referenced as `float64`
+	cmplGfx/lib/gfxlib.ci:61: referenced as `float64`
+	cmplGfx/lib/gfxlib.ci:53: referenced as `float64`
+	cmplGfx/lib/gfxlib.ci:53: referenced as `float64`
+	cmplGfx/lib/gfxlib.ci:52: referenced as `float64`
+	cmplGfx/lib/gfxlib.ci:52: referenced as `float64`
+	cmplGfx/lib/gfxlib.ci:41: referenced as `float64`
+	cmplGfx/lib/gfxlib.ci:28: referenced as `float64`
 	cmplGfx/lib/gfx/color.ci:175: referenced as `float64`
 	cmplGfx/lib/gfx/color.ci:151: referenced as `float64`
 	cmplGfx/lib/gfx/color.ci:151: referenced as `float64`
@@ -1288,17 +1320,17 @@ variant: typename {
 .field is: function (size: 0, cast: static const inline)
 .field as: function (size: 0, cast: static const inline)
 .usages:
-	lib/stdlib.ci:67: referenced as `variant`
-	lib/stdlib.ci:64: referenced as `variant`
-	lib/stdlib.ci:61: referenced as `variant`
-	lib/stdlib.ci:52: referenced as `variant`
-	lib/stdlib.ci:45: referenced as `variant`
-	lib/stdlib.ci:40: referenced as `variant`
-	lib/stdlib.ci:35: referenced as `variant`
-	lib/stdlib.ci:30: referenced as `variant`
-	lib/stdlib.ci:25: referenced as `variant`
-	lib/stdlib.ci:20: referenced as `variant`
-	lib/stdlib.ci:15: referenced as `variant`
+	lib/std/debug.ci:56: referenced as `variant`
+	lib/std/debug.ci:53: referenced as `variant`
+	lib/std/debug.ci:50: referenced as `variant`
+	lib/std/debug.ci:41: referenced as `variant`
+	lib/std/debug.ci:34: referenced as `variant`
+	lib/std/debug.ci:29: referenced as `variant`
+	lib/std/debug.ci:24: referenced as `variant`
+	lib/std/debug.ci:19: referenced as `variant`
+	lib/std/debug.ci:14: referenced as `variant`
+	lib/std/debug.ci:9: referenced as `variant`
+	lib/std/debug.ci:4: referenced as `variant`
 	internal usages: 3
 }
 variant.is(var: variant, type: typename): bool: function {
@@ -1348,34 +1380,36 @@ null: pointer {
 .name: 'null'
 .value: {pointer @0}
 .usages:
-	cmplGfx/lib/gfxlib.ci:393: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:392: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:383: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:383: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:382: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:368: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:330: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:326: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:303: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:303: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:302: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:298: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:298: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:256: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:254: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:144: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:143: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:142: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:141: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:114: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:113: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:112: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:111: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:60: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:52: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:52: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:52: referenced as `null`
-	cmplGfx/lib/gfxlib.ci:41: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:471: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:470: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:461: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:461: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:460: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:446: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:408: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:404: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:381: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:381: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:380: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:376: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:376: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:334: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:332: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:222: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:221: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:220: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:219: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:192: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:191: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:190: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:189: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:138: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:130: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:130: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:130: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:119: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:94: referenced as `null`
+	cmplGfx/lib/gfxlib.ci:94: referenced as `null`
 	cmplGfx/lib/gfx/color.ci:311: referenced as `null`
 	cmplGfx/lib/gfx/color.ci:276: referenced as `null`
 	cmplGfx/lib/gfx/color.ci:261: referenced as `null`
@@ -1388,17 +1422,17 @@ null: pointer {
 	lib/vec/vec4f.ci:1: referenced as `null`
 	lib/vec/vec2d.ci:1: referenced as `null`
 	lib/std/string.ci:5: referenced as `null`
-	lib/stdlib.ci:87: referenced as `null`
-	lib/stdlib.ci:70: referenced as `null`
-	lib/stdlib.ci:67: referenced as `null`
-	lib/stdlib.ci:49: referenced as `null`
-	lib/stdlib.ci:47: referenced as `null`
-	lib/stdlib.ci:42: referenced as `null`
-	lib/stdlib.ci:37: referenced as `null`
-	lib/stdlib.ci:32: referenced as `null`
-	lib/stdlib.ci:27: referenced as `null`
-	lib/stdlib.ci:22: referenced as `null`
-	lib/stdlib.ci:17: referenced as `null`
+	lib/std/debug.ci:76: referenced as `null`
+	lib/std/debug.ci:59: referenced as `null`
+	lib/std/debug.ci:56: referenced as `null`
+	lib/std/debug.ci:38: referenced as `null`
+	lib/std/debug.ci:36: referenced as `null`
+	lib/std/debug.ci:31: referenced as `null`
+	lib/std/debug.ci:26: referenced as `null`
+	lib/std/debug.ci:21: referenced as `null`
+	lib/std/debug.ci:16: referenced as `null`
+	lib/std/debug.ci:11: referenced as `null`
+	lib/std/debug.ci:6: referenced as `null`
 }
 int: typename {
 .kind: static const inline
@@ -2588,54 +2622,54 @@ raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], 
 .doc: 'Report messages or raise errors.'
 .value: nfc(7)
 .usages:
-	lib/stdlib.ci:84: referenced as `raise`
-	lib/stdlib.ci:84: referenced as `raise`
-	lib/stdlib.ci:84: referenced as `raise`
-	lib/stdlib.ci:49: referenced as `raise`
-	lib/stdlib.ci:49: referenced as `raise`
-	lib/stdlib.ci:49: referenced as `raise`
-	lib/stdlib.ci:47: referenced as `raise`
-	lib/stdlib.ci:47: referenced as `raise`
-	lib/stdlib.ci:47: referenced as `raise`
-	lib/stdlib.ci:45: referenced as `raise`
-	lib/stdlib.ci:45: referenced as `raise`
-	lib/stdlib.ci:45: referenced as `raise`
-	lib/stdlib.ci:42: referenced as `raise`
-	lib/stdlib.ci:42: referenced as `raise`
-	lib/stdlib.ci:42: referenced as `raise`
-	lib/stdlib.ci:40: referenced as `raise`
-	lib/stdlib.ci:40: referenced as `raise`
-	lib/stdlib.ci:40: referenced as `raise`
-	lib/stdlib.ci:37: referenced as `raise`
-	lib/stdlib.ci:37: referenced as `raise`
-	lib/stdlib.ci:37: referenced as `raise`
-	lib/stdlib.ci:35: referenced as `raise`
-	lib/stdlib.ci:35: referenced as `raise`
-	lib/stdlib.ci:35: referenced as `raise`
-	lib/stdlib.ci:32: referenced as `raise`
-	lib/stdlib.ci:32: referenced as `raise`
-	lib/stdlib.ci:32: referenced as `raise`
-	lib/stdlib.ci:30: referenced as `raise`
-	lib/stdlib.ci:30: referenced as `raise`
-	lib/stdlib.ci:30: referenced as `raise`
-	lib/stdlib.ci:27: referenced as `raise`
-	lib/stdlib.ci:27: referenced as `raise`
-	lib/stdlib.ci:27: referenced as `raise`
-	lib/stdlib.ci:25: referenced as `raise`
-	lib/stdlib.ci:25: referenced as `raise`
-	lib/stdlib.ci:25: referenced as `raise`
-	lib/stdlib.ci:22: referenced as `raise`
-	lib/stdlib.ci:22: referenced as `raise`
-	lib/stdlib.ci:22: referenced as `raise`
-	lib/stdlib.ci:20: referenced as `raise`
-	lib/stdlib.ci:20: referenced as `raise`
-	lib/stdlib.ci:20: referenced as `raise`
-	lib/stdlib.ci:17: referenced as `raise`
-	lib/stdlib.ci:17: referenced as `raise`
-	lib/stdlib.ci:17: referenced as `raise`
-	lib/stdlib.ci:15: referenced as `raise`
-	lib/stdlib.ci:15: referenced as `raise`
-	lib/stdlib.ci:15: referenced as `raise`
+	lib/std/debug.ci:73: referenced as `raise`
+	lib/std/debug.ci:73: referenced as `raise`
+	lib/std/debug.ci:73: referenced as `raise`
+	lib/std/debug.ci:38: referenced as `raise`
+	lib/std/debug.ci:38: referenced as `raise`
+	lib/std/debug.ci:38: referenced as `raise`
+	lib/std/debug.ci:36: referenced as `raise`
+	lib/std/debug.ci:36: referenced as `raise`
+	lib/std/debug.ci:36: referenced as `raise`
+	lib/std/debug.ci:34: referenced as `raise`
+	lib/std/debug.ci:34: referenced as `raise`
+	lib/std/debug.ci:34: referenced as `raise`
+	lib/std/debug.ci:31: referenced as `raise`
+	lib/std/debug.ci:31: referenced as `raise`
+	lib/std/debug.ci:31: referenced as `raise`
+	lib/std/debug.ci:29: referenced as `raise`
+	lib/std/debug.ci:29: referenced as `raise`
+	lib/std/debug.ci:29: referenced as `raise`
+	lib/std/debug.ci:26: referenced as `raise`
+	lib/std/debug.ci:26: referenced as `raise`
+	lib/std/debug.ci:26: referenced as `raise`
+	lib/std/debug.ci:24: referenced as `raise`
+	lib/std/debug.ci:24: referenced as `raise`
+	lib/std/debug.ci:24: referenced as `raise`
+	lib/std/debug.ci:21: referenced as `raise`
+	lib/std/debug.ci:21: referenced as `raise`
+	lib/std/debug.ci:21: referenced as `raise`
+	lib/std/debug.ci:19: referenced as `raise`
+	lib/std/debug.ci:19: referenced as `raise`
+	lib/std/debug.ci:19: referenced as `raise`
+	lib/std/debug.ci:16: referenced as `raise`
+	lib/std/debug.ci:16: referenced as `raise`
+	lib/std/debug.ci:16: referenced as `raise`
+	lib/std/debug.ci:14: referenced as `raise`
+	lib/std/debug.ci:14: referenced as `raise`
+	lib/std/debug.ci:14: referenced as `raise`
+	lib/std/debug.ci:11: referenced as `raise`
+	lib/std/debug.ci:11: referenced as `raise`
+	lib/std/debug.ci:11: referenced as `raise`
+	lib/std/debug.ci:9: referenced as `raise`
+	lib/std/debug.ci:9: referenced as `raise`
+	lib/std/debug.ci:9: referenced as `raise`
+	lib/std/debug.ci:6: referenced as `raise`
+	lib/std/debug.ci:6: referenced as `raise`
+	lib/std/debug.ci:6: referenced as `raise`
+	lib/std/debug.ci:4: referenced as `raise`
+	lib/std/debug.ci:4: referenced as `raise`
+	lib/std/debug.ci:4: referenced as `raise`
 	lib/stdlib.ci:12: referenced as `raise`
 	internal usages: 1
 }
@@ -2647,10 +2681,10 @@ raise.abort: int64 {
 .owner: raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 .value: -2
 .usages:
-	lib/stdlib.ci:84: referenced as `abort`
-	lib/stdlib.ci:49: referenced as `abort`
-	lib/stdlib.ci:47: referenced as `abort`
-	lib/stdlib.ci:45: referenced as `abort`
+	lib/std/debug.ci:73: referenced as `abort`
+	lib/std/debug.ci:38: referenced as `abort`
+	lib/std/debug.ci:36: referenced as `abort`
+	lib/std/debug.ci:34: referenced as `abort`
 }
 raise.error: int64 {
 .kind: static const i64
@@ -2660,8 +2694,8 @@ raise.error: int64 {
 .owner: raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 .value: -1
 .usages:
-	lib/stdlib.ci:42: referenced as `error`
-	lib/stdlib.ci:40: referenced as `error`
+	lib/std/debug.ci:31: referenced as `error`
+	lib/std/debug.ci:29: referenced as `error`
 }
 raise.warn: int64 {
 .kind: static const i64
@@ -2671,8 +2705,8 @@ raise.warn: int64 {
 .owner: raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 .value: 1
 .usages:
-	lib/stdlib.ci:37: referenced as `warn`
-	lib/stdlib.ci:35: referenced as `warn`
+	lib/std/debug.ci:26: referenced as `warn`
+	lib/std/debug.ci:24: referenced as `warn`
 }
 raise.info: int64 {
 .kind: static const i64
@@ -2682,8 +2716,8 @@ raise.info: int64 {
 .owner: raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 .value: 13
 .usages:
-	lib/stdlib.ci:32: referenced as `info`
-	lib/stdlib.ci:30: referenced as `info`
+	lib/std/debug.ci:21: referenced as `info`
+	lib/std/debug.ci:19: referenced as `info`
 }
 raise.debug: int64 {
 .kind: static const i64
@@ -2693,10 +2727,10 @@ raise.debug: int64 {
 .owner: raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 .value: 14
 .usages:
-	lib/stdlib.ci:27: referenced as `debug`
-	lib/stdlib.ci:25: referenced as `debug`
-	lib/stdlib.ci:22: referenced as `debug`
-	lib/stdlib.ci:20: referenced as `debug`
+	lib/std/debug.ci:16: referenced as `debug`
+	lib/std/debug.ci:14: referenced as `debug`
+	lib/std/debug.ci:11: referenced as `debug`
+	lib/std/debug.ci:9: referenced as `debug`
 }
 raise.verbose: int64 {
 .kind: static const i64
@@ -2706,8 +2740,8 @@ raise.verbose: int64 {
 .owner: raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 .value: 15
 .usages:
-	lib/stdlib.ci:17: referenced as `verbose`
-	lib/stdlib.ci:15: referenced as `verbose`
+	lib/std/debug.ci:6: referenced as `verbose`
+	lib/std/debug.ci:4: referenced as `verbose`
 }
 raise.noTrace: int64 {
 .kind: static const i64
@@ -2717,14 +2751,14 @@ raise.noTrace: int64 {
 .owner: raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 .value: 0
 .usages:
-	lib/stdlib.ci:37: referenced as `noTrace`
-	lib/stdlib.ci:35: referenced as `noTrace`
-	lib/stdlib.ci:32: referenced as `noTrace`
-	lib/stdlib.ci:30: referenced as `noTrace`
-	lib/stdlib.ci:22: referenced as `noTrace`
-	lib/stdlib.ci:20: referenced as `noTrace`
-	lib/stdlib.ci:17: referenced as `noTrace`
-	lib/stdlib.ci:15: referenced as `noTrace`
+	lib/std/debug.ci:26: referenced as `noTrace`
+	lib/std/debug.ci:24: referenced as `noTrace`
+	lib/std/debug.ci:21: referenced as `noTrace`
+	lib/std/debug.ci:19: referenced as `noTrace`
+	lib/std/debug.ci:11: referenced as `noTrace`
+	lib/std/debug.ci:9: referenced as `noTrace`
+	lib/std/debug.ci:6: referenced as `noTrace`
+	lib/std/debug.ci:4: referenced as `noTrace`
 }
 raise.defTrace: int64 {
 .kind: static const i64
@@ -2734,14 +2768,14 @@ raise.defTrace: int64 {
 .owner: raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 .value: 128
 .usages:
-	lib/stdlib.ci:84: referenced as `defTrace`
-	lib/stdlib.ci:49: referenced as `defTrace`
-	lib/stdlib.ci:47: referenced as `defTrace`
-	lib/stdlib.ci:45: referenced as `defTrace`
-	lib/stdlib.ci:42: referenced as `defTrace`
-	lib/stdlib.ci:40: referenced as `defTrace`
-	lib/stdlib.ci:27: referenced as `defTrace`
-	lib/stdlib.ci:25: referenced as `defTrace`
+	lib/std/debug.ci:73: referenced as `defTrace`
+	lib/std/debug.ci:38: referenced as `defTrace`
+	lib/std/debug.ci:36: referenced as `defTrace`
+	lib/std/debug.ci:34: referenced as `defTrace`
+	lib/std/debug.ci:31: referenced as `defTrace`
+	lib/std/debug.ci:29: referenced as `defTrace`
+	lib/std/debug.ci:16: referenced as `defTrace`
+	lib/std/debug.ci:14: referenced as `defTrace`
 }
 tryExec(args: pointer, action(args: pointer): void): int32: function {
 .kind: static const inline
@@ -2768,9 +2802,9 @@ System: typename {
 .field millis: function (size: 0, cast: static const inline)
 .field sleep: function (size: 0, cast: static const inline)
 .usages:
-	cmplGfx/lib/gfxlib.ci:381: referenced as `System`
-	cmplGfx/lib/gfxlib.ci:367: referenced as `System`
-	cmplGfx/lib/gfxlib.ci:346: referenced as `System`
+	cmplGfx/lib/gfxlib.ci:459: referenced as `System`
+	cmplGfx/lib/gfxlib.ci:445: referenced as `System`
+	cmplGfx/lib/gfxlib.ci:424: referenced as `System`
 }
 System.exit(code: int32): void: function {
 .kind: static const inline
@@ -2838,9 +2872,9 @@ System.millis(): int64: function {
 .param .result: int64 (size: 8, cast: inline)
 .value: nfc(18)
 .usages:
-	cmplGfx/lib/gfxlib.ci:381: referenced as `millis`
-	cmplGfx/lib/gfxlib.ci:367: referenced as `millis`
-	cmplGfx/lib/gfxlib.ci:346: referenced as `millis`
+	cmplGfx/lib/gfxlib.ci:459: referenced as `millis`
+	cmplGfx/lib/gfxlib.ci:445: referenced as `millis`
+	cmplGfx/lib/gfxlib.ci:424: referenced as `millis`
 	internal usages: 1
 }
 System.sleep(millis: int64): void: function {
@@ -2864,8 +2898,8 @@ true: bool {
 .doc: 'true'
 .value: 1
 .usages:
-	cmplGfx/lib/gfxlib.ci:348: referenced as `true`
-	cmplGfx/lib/gfxlib.ci:95: referenced as `true`
+	cmplGfx/lib/gfxlib.ci:426: referenced as `true`
+	cmplGfx/lib/gfxlib.ci:173: referenced as `true`
 	lib/std/string.ci:57: referenced as `true`
 	lib/std/string.ci:42: referenced as `true`
 	lib/std/math.ci:471: referenced as `true`
@@ -2884,8 +2918,8 @@ false: bool {
 .doc: 'false'
 .value: 0
 .usages:
-	cmplGfx/lib/gfxlib.ci:93: referenced as `false`
-	cmplGfx/lib/gfxlib.ci:90: referenced as `false`
+	cmplGfx/lib/gfxlib.ci:171: referenced as `false`
+	cmplGfx/lib/gfxlib.ci:168: referenced as `false`
 	lib/std/string.ci:54: referenced as `false`
 	lib/std/string.ci:50: referenced as `false`
 	lib/std/string.ci:39: referenced as `false`
@@ -2930,61 +2964,61 @@ verbose(message: char[*], inspect: variant): void: function {
 .base: `function`
 .size: 0
 .name: 'verbose'
-.file: 'lib/stdlib.ci:15'
+.file: 'lib/std/debug.ci:4'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .param inspect: variant (size: 8, cast: var)
 .doc: 'report message at `verbose` logging level'
 .value: raise(raise.verbose, raise.noTrace, message, inspect)
 .usages:
-	lib/stdlib.ci:15: defined as `verbose(message: char[*], inspect: variant): void`
+	lib/std/debug.ci:4: defined as `verbose(message: char[*], inspect: variant): void`
 }
 verbose(message: char[*]): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'verbose'
-.file: 'lib/stdlib.ci:17'
+.file: 'lib/std/debug.ci:6'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .doc: 'report message at `verbose` logging level'
 .value: raise(raise.verbose, raise.noTrace, message, null)
 .usages:
-	lib/stdlib.ci:17: defined as `verbose(message: char[*]): void`
+	lib/std/debug.ci:6: defined as `verbose(message: char[*]): void`
 }
 debug(message: char[*], inspect: variant): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'debug'
-.file: 'lib/stdlib.ci:20'
+.file: 'lib/std/debug.ci:9'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .param inspect: variant (size: 8, cast: var)
 .doc: 'report message at `debug` logging level'
 .value: raise(raise.debug, raise.noTrace, message, inspect)
 .usages:
-	lib/stdlib.ci:20: defined as `debug(message: char[*], inspect: variant): void`
+	lib/std/debug.ci:9: defined as `debug(message: char[*], inspect: variant): void`
 }
 debug(message: char[*]): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'debug'
-.file: 'lib/stdlib.ci:22'
+.file: 'lib/std/debug.ci:11'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .doc: 'report message at `debug` logging level'
 .value: raise(raise.debug, raise.noTrace, message, null)
 .usages:
-	lib/stdlib.ci:22: defined as `debug(message: char[*]): void`
+	lib/std/debug.ci:11: defined as `debug(message: char[*]): void`
 }
 trace(message: char[*], inspect: variant): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'trace'
-.file: 'lib/stdlib.ci:25'
+.file: 'lib/std/debug.ci:14'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .param inspect: variant (size: 8, cast: var)
@@ -2992,154 +3026,154 @@ trace(message: char[*], inspect: variant): void: function {
 .value: raise(raise.debug, raise.defTrace, message, inspect)
 .usages:
 	lib/vec/mat4f.ci:111: referenced as `trace`
-	lib/stdlib.ci:25: defined as `trace(message: char[*], inspect: variant): void`
+	lib/std/debug.ci:14: defined as `trace(message: char[*], inspect: variant): void`
 }
 trace(message: char[*]): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'trace'
-.file: 'lib/stdlib.ci:27'
+.file: 'lib/std/debug.ci:16'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .doc: 'report message with stacktrace at `debug` logging level'
 .value: raise(raise.debug, raise.defTrace, message, null)
 .usages:
-	cmplGfx/lib/gfxlib.ci:375: referenced as `trace`
-	cmplGfx/lib/gfxlib.ci:357: referenced as `trace`
-	lib/stdlib.ci:27: defined as `trace(message: char[*]): void`
+	cmplGfx/lib/gfxlib.ci:453: referenced as `trace`
+	cmplGfx/lib/gfxlib.ci:435: referenced as `trace`
+	lib/std/debug.ci:16: defined as `trace(message: char[*]): void`
 }
 info(message: char[*], inspect: variant): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'info'
-.file: 'lib/stdlib.ci:30'
+.file: 'lib/std/debug.ci:19'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .param inspect: variant (size: 8, cast: var)
 .doc: 'report message at `info` logging level'
 .value: raise(raise.info, raise.noTrace, message, inspect)
 .usages:
-	lib/stdlib.ci:30: defined as `info(message: char[*], inspect: variant): void`
+	lib/std/debug.ci:19: defined as `info(message: char[*], inspect: variant): void`
 }
 info(message: char[*]): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'info'
-.file: 'lib/stdlib.ci:32'
+.file: 'lib/std/debug.ci:21'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .doc: 'report message at `info` logging level'
 .value: raise(raise.info, raise.noTrace, message, null)
 .usages:
-	lib/stdlib.ci:32: defined as `info(message: char[*]): void`
+	lib/std/debug.ci:21: defined as `info(message: char[*]): void`
 }
 warn(message: char[*], inspect: variant): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'warn'
-.file: 'lib/stdlib.ci:35'
+.file: 'lib/std/debug.ci:24'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .param inspect: variant (size: 8, cast: var)
 .doc: 'report message at `warn` logging level'
 .value: raise(raise.warn, raise.noTrace, message, inspect)
 .usages:
-	lib/stdlib.ci:35: defined as `warn(message: char[*], inspect: variant): void`
+	lib/std/debug.ci:24: defined as `warn(message: char[*], inspect: variant): void`
 }
 warn(message: char[*]): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'warn'
-.file: 'lib/stdlib.ci:37'
+.file: 'lib/std/debug.ci:26'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .doc: 'report message at `warn` logging level'
 .value: raise(raise.warn, raise.noTrace, message, null)
 .usages:
-	lib/stdlib.ci:37: defined as `warn(message: char[*]): void`
+	lib/std/debug.ci:26: defined as `warn(message: char[*]): void`
 }
 error(message: char[*], inspect: variant): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'error'
-.file: 'lib/stdlib.ci:40'
+.file: 'lib/std/debug.ci:29'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .param inspect: variant (size: 8, cast: var)
 .doc: 'report message with stacktrace at `error` logging level'
 .value: raise(raise.error, raise.defTrace, message, inspect)
 .usages:
-	lib/stdlib.ci:40: defined as `error(message: char[*], inspect: variant): void`
+	lib/std/debug.ci:29: defined as `error(message: char[*], inspect: variant): void`
 }
 error(message: char[*]): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'error'
-.file: 'lib/stdlib.ci:42'
+.file: 'lib/std/debug.ci:31'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .doc: 'report message with stacktrace at `error` logging level'
 .value: raise(raise.error, raise.defTrace, message, null)
 .usages:
-	lib/stdlib.ci:42: defined as `error(message: char[*]): void`
+	lib/std/debug.ci:31: defined as `error(message: char[*]): void`
 }
 abort(message: char[*], inspect: variant): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'abort'
-.file: 'lib/stdlib.ci:45'
+.file: 'lib/std/debug.ci:34'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .param inspect: variant (size: 8, cast: var)
 .doc: 'report message with stacktrace at `abort` logging level and abort execution'
 .value: raise(raise.abort, raise.defTrace, message, inspect)
 .usages:
-	cmplGfx/lib/gfxlib.ci:35: referenced as `abort`
+	cmplGfx/lib/gfxlib.ci:113: referenced as `abort`
 	cmplGfx/lib/gfxlib.ci:21: referenced as `abort`
-	lib/stdlib.ci:52: referenced as `abort`
-	lib/stdlib.ci:45: defined as `abort(message: char[*], inspect: variant): void`
+	lib/std/debug.ci:41: referenced as `abort`
+	lib/std/debug.ci:34: defined as `abort(message: char[*], inspect: variant): void`
 }
 abort(message: char[*]): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'abort'
-.file: 'lib/stdlib.ci:47'
+.file: 'lib/std/debug.ci:36'
 .param .result: void (size: 0, cast: void)
 .param message: char[*] (size: 4, cast: ref)
 .doc: 'report message with stacktrace at `abort` logging level and abort execution'
 .value: raise(raise.abort, raise.defTrace, message, null)
 .usages:
-	lib/stdlib.ci:56: referenced as `abort`
-	lib/stdlib.ci:54: referenced as `abort`
-	lib/stdlib.ci:47: defined as `abort(message: char[*]): void`
+	lib/std/debug.ci:45: referenced as `abort`
+	lib/std/debug.ci:43: referenced as `abort`
+	lib/std/debug.ci:36: defined as `abort(message: char[*]): void`
 }
 abort(): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'abort'
-.file: 'lib/stdlib.ci:49'
+.file: 'lib/std/debug.ci:38'
 .param .result: void (size: 0, cast: void)
 .doc: 'report message with stacktrace at `abort` logging level and abort execution'
 .value: raise(raise.abort, raise.defTrace, "execution aborted!", null)
 .usages:
-	lib/stdlib.ci:49: defined as `abort(): void`
+	lib/std/debug.ci:38: defined as `abort(): void`
 }
 assert(condition: bool, message: char[*], inspect: variant): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'assert'
-.file: 'lib/stdlib.ci:52'
+.file: 'lib/std/debug.ci:41'
 .param .result: void (size: 0, cast: void)
 .param condition: bool (size: 4, cast: bool)
 .param message: char[*] (size: 4, cast: ref)
@@ -3149,28 +3183,28 @@ assert(condition: bool, message: char[*], inspect: variant): void: function {
 .usages:
 	lib/std/string.ci:152: referenced as `assert`
 	lib/std/string.ci:151: referenced as `assert`
-	lib/stdlib.ci:52: defined as `assert(condition: bool, message: char[*], inspect: variant): void`
+	lib/std/debug.ci:41: defined as `assert(condition: bool, message: char[*], inspect: variant): void`
 }
 assert(condition: bool, message: char[*]): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'assert'
-.file: 'lib/stdlib.ci:54'
+.file: 'lib/std/debug.ci:43'
 .param .result: void (size: 0, cast: void)
 .param condition: bool (size: 4, cast: bool)
 .param message: char[*] (size: 4, cast: ref)
 .doc: 'report message and abort the execution if the assertion condition fails (is false)'
 .value: void(condition ? void(0) : abort(message))
 .usages:
-	lib/stdlib.ci:54: defined as `assert(condition: bool, message: char[*]): void`
+	lib/std/debug.ci:43: defined as `assert(condition: bool, message: char[*]): void`
 }
 assert(condition: bool): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'assert'
-.file: 'lib/stdlib.ci:56'
+.file: 'lib/std/debug.ci:45'
 .param .result: void (size: 0, cast: void)
 .param condition: bool (size: 4, cast: bool)
 .doc: 'report message and abort the execution if the assertion condition fails (is false)'
@@ -3180,78 +3214,78 @@ assert(condition: bool): void: function {
 	lib/std/string.ci:187: referenced as `assert`
 	lib/std/string.ci:180: referenced as `assert`
 	lib/std/string.ci:175: referenced as `assert`
-	lib/stdlib.ci:56: defined as `assert(condition: bool): void`
+	lib/std/debug.ci:45: defined as `assert(condition: bool): void`
 }
 NotEquals: typename {
 .kind: static const typename(val)
 .base: `typename`
 .size: 32
 .name: 'NotEquals'
-.file: 'lib/stdlib.ci:59'
+.file: 'lib/std/debug.ci:48'
 .field expected: variant (size: 8, cast: const variable(var))
 .field returned: variant (size: 8, cast: const variable(var))
 .field argument: variant (size: 8, cast: const variable(var))
 .field message: char[*] (size: 4, cast: const variable(ref))
 .doc: '@public'
 .usages:
-	lib/stdlib.ci:79: referenced as `NotEquals`
-	lib/stdlib.ci:59: defined as `NotEquals`
+	lib/std/debug.ci:68: referenced as `NotEquals`
+	lib/std/debug.ci:48: defined as `NotEquals`
 }
 NotEquals.expected: variant {
 .kind: const variable(var)
 .base: `variant`
 .size: 8
 .name: 'expected'
-.file: 'lib/stdlib.ci:61'
+.file: 'lib/std/debug.ci:50'
 .owner: NotEquals
 .doc: 'Value of the expected result'
 .usages:
-	lib/stdlib.ci:80: referenced as `expected`
-	lib/stdlib.ci:61: defined as `expected`
+	lib/std/debug.ci:69: referenced as `expected`
+	lib/std/debug.ci:50: defined as `expected`
 }
 NotEquals.returned: variant {
 .kind: const variable(var)
 .base: `variant`
 .size: 8
 .name: 'returned'
-.file: 'lib/stdlib.ci:64'
+.file: 'lib/std/debug.ci:53'
 .owner: NotEquals
 .doc: 'Value of the actual result'
 .usages:
-	lib/stdlib.ci:81: referenced as `returned`
-	lib/stdlib.ci:64: defined as `returned`
+	lib/std/debug.ci:70: referenced as `returned`
+	lib/std/debug.ci:53: defined as `returned`
 }
 NotEquals.argument: variant {
 .kind: const variable(var)
 .base: `variant`
 .size: 8
 .name: 'argument'
-.file: 'lib/stdlib.ci:67'
+.file: 'lib/std/debug.ci:56'
 .owner: NotEquals
 .doc: 'Extra argument to identify what happened'
 .value: null
 .usages:
-	lib/stdlib.ci:67: defined as `argument`
+	lib/std/debug.ci:56: defined as `argument`
 }
 NotEquals.message: char[*] {
 .kind: const variable(ref)
 .base: `char[*]`
 .size: 4
 .name: 'message'
-.file: 'lib/stdlib.ci:70'
+.file: 'lib/std/debug.ci:59'
 .owner: NotEquals
 .doc: 'Extra message to identify what happened'
 .value: null
 .usages:
-	lib/stdlib.ci:82: referenced as `message`
-	lib/stdlib.ci:70: defined as `message`
+	lib/std/debug.ci:71: referenced as `message`
+	lib/std/debug.ci:59: defined as `message`
 }
 assertEq(expected: int32, returned: int32, message: char[*]): void: function {
 .kind: static const function
 .base: `function`
 .size: 94
 .name: 'assertEq'
-.file: 'lib/stdlib.ci:75'
+.file: 'lib/std/debug.ci:64'
 .param .result: void (size: 0, cast: variable(void))
 .param expected: int32 (size: 4, cast: variable(i32))
 .param returned: int32 (size: 4, cast: variable(i32))
@@ -3270,32 +3304,32 @@ assertEq(expected: int32, returned: int32, message: char[*]): void: function {
 	raise(raise.abort, raise.defTrace, "assertion failed", details);
 }
 .instructions: (94 bytes)
-	lib/stdlib.ci:76: (10 bytes): if (returned == expected)
+	lib/std/debug.ci:65: (10 bytes): if (returned == expected)
 	<assertEq>  : dup.x32 sp(2)
 	<assertEq+?>: dup.x32 sp(4)
 	<assertEq+?>: ceq.i32
 	<assertEq+?>: jz +5
-	lib/stdlib.ci:77: (1 byte): return;
+	lib/std/debug.ci:66: (1 byte): return;
 	<assertEq+?>: ret
-	lib/stdlib.ci:79: (41 bytes): details: NotEquals := {...}
+	lib/std/debug.ci:68: (41 bytes): details: NotEquals := {...}
 	<assertEq+?>: inc.sp(+32)
-	lib/stdlib.ci:80: (11 bytes): details.expected := (expected);
+	lib/std/debug.ci:69: (11 bytes): details.expected := (expected);
 	<assertEq+?>: load.ref <?> ;int32
 	<assertEq+?>: load.sp(+48)
 	<assertEq+?>: set.x64 sp(2)
-	lib/stdlib.ci:81: (11 bytes): details.returned := (returned);
+	lib/std/debug.ci:70: (11 bytes): details.returned := (returned);
 	<assertEq+?>: load.ref <?> ;int32
 	<assertEq+?>: load.sp(+44)
 	<assertEq+?>: set.x64 sp(4)
-	lib/stdlib.ci:82: (3 bytes): details.message := (message);
+	lib/std/debug.ci:71: (3 bytes): details.message := (message);
 	<assertEq+?>: mov.x32 sp(6, 9)
 	:: (12 bytes): details.argument := (null)
 	<assertEq+?>: load.ref <?> ;pointer
 	<assertEq+?>: load.ref <?> ;null
 	<assertEq+?>: set.x64 sp(6)
-	lib/stdlib.ci:84: (38 bytes): raise(raise.abort, raise.defTrace, "assertion failed", details);
-	<assertEq+?>: load.ref <?> ;"lib/stdlib.ci"
-	<assertEq+?>: load.c32 84
+	lib/std/debug.ci:73: (38 bytes): raise(raise.abort, raise.defTrace, "assertion failed", details);
+	<assertEq+?>: load.ref <?> ;"lib/std/debug.ci"
+	<assertEq+?>: load.c32 73
 	<assertEq+?>: load.c32 -2
 	<assertEq+?>: load.c32 128
 	<assertEq+?>: load.ref <?> ;"assertion failed"
@@ -3305,35 +3339,35 @@ assertEq(expected: int32, returned: int32, message: char[*]): void: function {
 	<assertEq+?>: inc.sp(-32)
 	<assertEq+?>: ret
 .usages:
-	lib/stdlib.ci:87: referenced as `assertEq`
-	lib/stdlib.ci:75: defined as `assertEq(expected: int32, returned: int32, message: char[*]): void`
+	lib/std/debug.ci:76: referenced as `assertEq`
+	lib/std/debug.ci:64: defined as `assertEq(expected: int32, returned: int32, message: char[*]): void`
 }
 assertEq(expected: int32, returned: int32): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'assertEq'
-.file: 'lib/stdlib.ci:87'
+.file: 'lib/std/debug.ci:76'
 .param .result: void (size: 0, cast: void)
 .param expected: int32 (size: 4, cast: i32)
 .param returned: int32 (size: 4, cast: i32)
 .doc: 'abort execution if the returned value is not equal to the expected value'
 .value: assertEq(expected, returned, null)
 .usages:
-	lib/stdlib.ci:87: defined as `assertEq(expected: int32, returned: int32): void`
+	lib/std/debug.ci:76: defined as `assertEq(expected: int32, returned: int32): void`
 }
 sizeof(type: typename): int32: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'sizeof'
-.file: 'lib/stdlib.ci:92'
+.file: 'lib/stdlib.ci:17'
 .param .result: int32 (size: 4, cast: i32)
 .param type: typename (size: 4, cast: ref)
 .doc: 'Returns the size of the given type'
 .value: int32(type.size)
 .usages:
-	lib/stdlib.ci:92: defined as `sizeof(type: typename): int32`
+	lib/stdlib.ci:17: defined as `sizeof(type: typename): int32`
 }
 Math: typename {
 .kind: static const typename(void)
@@ -3398,6 +3432,10 @@ Math: typename {
 .field degrees: function (size: 0, cast: static inline)
 .doc: 'Mathematical utility functions and constants'
 .usages:
+	cmplGfx/lib/gfxlib.ci:103: referenced as `Math`
+	cmplGfx/lib/gfxlib.ci:100: referenced as `Math`
+	cmplGfx/lib/gfxlib.ci:57: referenced as `Math`
+	cmplGfx/lib/gfxlib.ci:55: referenced as `Math`
 	lib/std/math.Complex.ci:148: referenced as `Math`
 	lib/std/math.Complex.ci:148: referenced as `Math`
 	lib/std/math.Complex.ci:146: referenced as `Math`
@@ -3570,6 +3608,8 @@ Math.inf: float64 {
 .doc: 'inf'
 .value: inf
 .usages:
+	cmplGfx/lib/gfxlib.ci:103: referenced as `inf`
+	cmplGfx/lib/gfxlib.ci:100: referenced as `inf`
 	lib/std/math.ci:18: defined as `inf`
 }
 Math.modf(x: float64, intPart: float64): float64: function {
@@ -3953,6 +3993,7 @@ Math.min(a: float64, b: float64): float64: function {
 	<min+?>: mov.x64 sp(5, 1)
 	<min+?>: ret
 .usages:
+	cmplGfx/lib/gfxlib.ci:57: referenced as `min`
 	lib/std/math.ci:123: defined as `min(a: float64, b: float64): float64`
 }
 Math.max(a: float32, b: float32): float32: function {
@@ -4017,6 +4058,7 @@ Math.max(a: float64, b: float64): float64: function {
 	<max+?>: mov.x64 sp(5, 1)
 	<max+?>: ret
 .usages:
+	cmplGfx/lib/gfxlib.ci:55: referenced as `max`
 	lib/std/math.ci:145: defined as `max(a: float64, b: float64): float64`
 }
 Math.clamp(t: float32, a: float32, b: float32): float32: function {
@@ -6653,8 +6695,8 @@ endsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool: 
 	<endsWith+?>: inc.sp(-8)
 	<endsWith+?>: ret
 .usages:
-	cmplGfx/lib/gfxlib.ci:32: referenced as `endsWith`
-	cmplGfx/lib/gfxlib.ci:29: referenced as `endsWith`
+	cmplGfx/lib/gfxlib.ci:110: referenced as `endsWith`
+	cmplGfx/lib/gfxlib.ci:107: referenced as `endsWith`
 	cmplGfx/lib/gfxlib.ci:18: referenced as `endsWith`
 	cmplGfx/lib/gfxlib.ci:15: referenced as `endsWith`
 	cmplGfx/lib/gfxlib.ci:12: referenced as `endsWith`
@@ -6768,8 +6810,8 @@ ignCaseCmp(chr: char, with: char): int32: function {
 	<ignCaseCmp+?>: set.x32 sp(4)
 	<ignCaseCmp+?>: ret
 .usages:
-	cmplGfx/lib/gfxlib.ci:32: referenced as `ignCaseCmp`
-	cmplGfx/lib/gfxlib.ci:29: referenced as `ignCaseCmp`
+	cmplGfx/lib/gfxlib.ci:110: referenced as `ignCaseCmp`
+	cmplGfx/lib/gfxlib.ci:107: referenced as `ignCaseCmp`
 	cmplGfx/lib/gfxlib.ci:18: referenced as `ignCaseCmp`
 	cmplGfx/lib/gfxlib.ci:15: referenced as `ignCaseCmp`
 	cmplGfx/lib/gfxlib.ci:12: referenced as `ignCaseCmp`
@@ -7004,9 +7046,9 @@ append(output: char[], pos: int32, value: char[*]): int32: function {
 	<append+?>: mov.x32 sp(5, 2)
 	<append+?>: ret
 .usages:
-	cmplGfx/lib/gfxlib.ci:281: referenced as `append`
-	cmplGfx/lib/gfxlib.ci:279: referenced as `append`
-	cmplGfx/lib/gfxlib.ci:277: referenced as `append`
+	cmplGfx/lib/gfxlib.ci:359: referenced as `append`
+	cmplGfx/lib/gfxlib.ci:357: referenced as `append`
+	cmplGfx/lib/gfxlib.ci:355: referenced as `append`
 	lib/std/string.ci:126: defined as `append(output: char[], pos: int32, value: char[*]): int32`
 }
 append(output: char[], pos: int32, sign: char, value: uint32, format: FormatFlags): int32: function {
@@ -7463,9 +7505,9 @@ append(output: char[], pos: int32, value: uint32): int32: function {
 	<append+?>: set.x32 sp(6)
 	<append+?>: ret
 .usages:
-	cmplGfx/lib/gfxlib.ci:282: referenced as `append`
-	cmplGfx/lib/gfxlib.ci:280: referenced as `append`
-	cmplGfx/lib/gfxlib.ci:278: referenced as `append`
+	cmplGfx/lib/gfxlib.ci:360: referenced as `append`
+	cmplGfx/lib/gfxlib.ci:358: referenced as `append`
+	cmplGfx/lib/gfxlib.ci:356: referenced as `append`
 	lib/std/string.ci:222: defined as `append(output: char[], pos: int32, value: uint32): int32`
 }
 vec2d: typename {
@@ -7626,16 +7668,16 @@ vec4f: typename {
 .field w: float32 (size: 0, cast: inline)
 .doc: 'A 4d vector (4x float32)'
 .usages:
-	cmplGfx/lib/gfxlib.ci:352: referenced as `vec4f`
-	cmplGfx/lib/gfxlib.ci:352: referenced as `vec4f`
-	cmplGfx/lib/gfxlib.ci:345: referenced as `vec4f`
-	cmplGfx/lib/gfxlib.ci:345: referenced as `vec4f`
-	cmplGfx/lib/gfxlib.ci:225: referenced as `vec4f`
-	cmplGfx/lib/gfxlib.ci:224: referenced as `vec4f`
-	cmplGfx/lib/gfxlib.ci:223: referenced as `vec4f`
-	cmplGfx/lib/gfxlib.ci:121: referenced as `vec4f`
-	cmplGfx/lib/gfxlib.ci:109: referenced as `vec4f`
-	cmplGfx/lib/gfxlib.ci:109: referenced as `vec4f`
+	cmplGfx/lib/gfxlib.ci:430: referenced as `vec4f`
+	cmplGfx/lib/gfxlib.ci:430: referenced as `vec4f`
+	cmplGfx/lib/gfxlib.ci:423: referenced as `vec4f`
+	cmplGfx/lib/gfxlib.ci:423: referenced as `vec4f`
+	cmplGfx/lib/gfxlib.ci:303: referenced as `vec4f`
+	cmplGfx/lib/gfxlib.ci:302: referenced as `vec4f`
+	cmplGfx/lib/gfxlib.ci:301: referenced as `vec4f`
+	cmplGfx/lib/gfxlib.ci:199: referenced as `vec4f`
+	cmplGfx/lib/gfxlib.ci:187: referenced as `vec4f`
+	cmplGfx/lib/gfxlib.ci:187: referenced as `vec4f`
 	cmplGfx/lib/gfx/color.ci:197: referenced as `vec4f`
 	cmplGfx/lib/gfx/color.ci:197: referenced as `vec4f`
 	cmplGfx/lib/gfx/color.ci:194: referenced as `vec4f`
@@ -7701,9 +7743,9 @@ vec4f.data: float32[4] {
 .owner: vec4f
 .doc: 'Access the components as an array'
 .usages:
-	cmplGfx/lib/gfxlib.ci:226: referenced as `data`
-	cmplGfx/lib/gfxlib.ci:226: referenced as `data`
-	cmplGfx/lib/gfxlib.ci:226: referenced as `data`
+	cmplGfx/lib/gfxlib.ci:304: referenced as `data`
+	cmplGfx/lib/gfxlib.ci:304: referenced as `data`
+	cmplGfx/lib/gfxlib.ci:304: referenced as `data`
 	lib/vec/vec4f.ci:6: defined as `data`
 }
 vec4f.<?>: vec4f.<?> {
@@ -7729,11 +7771,15 @@ vec4f.<?>.x: float32 {
 .owner: vec4f.<?>
 .doc: 'X component of the vector'
 .usages:
-	cmplGfx/lib/gfxlib.ci:225: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:224: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:223: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:132: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:122: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:303: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:302: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:301: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:210: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:200: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:91: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:90: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:89: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:88: referenced as `x`
 	cmplGfx/lib/gfx/color.ci:198: referenced as `x`
 	cmplGfx/lib/gfx/color.ci:194: referenced as `x`
 	cmplGfx/lib/gfx/color.ci:191: referenced as `x`
@@ -7779,11 +7825,15 @@ vec4f.<?>.y: float32 {
 .owner: vec4f.<?>
 .doc: 'Y component of the vector'
 .usages:
-	cmplGfx/lib/gfxlib.ci:225: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:224: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:223: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:130: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:123: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:303: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:302: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:301: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:208: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:201: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:91: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:90: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:89: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:88: referenced as `y`
 	cmplGfx/lib/gfx/color.ci:199: referenced as `y`
 	cmplGfx/lib/gfx/color.ci:194: referenced as `y`
 	cmplGfx/lib/gfx/color.ci:191: referenced as `y`
@@ -7829,10 +7879,14 @@ vec4f.<?>.z: float32 {
 .owner: vec4f.<?>
 .doc: 'Z component of the vector'
 .usages:
-	cmplGfx/lib/gfxlib.ci:225: referenced as `z`
-	cmplGfx/lib/gfxlib.ci:224: referenced as `z`
-	cmplGfx/lib/gfxlib.ci:223: referenced as `z`
-	cmplGfx/lib/gfxlib.ci:124: referenced as `z`
+	cmplGfx/lib/gfxlib.ci:303: referenced as `z`
+	cmplGfx/lib/gfxlib.ci:302: referenced as `z`
+	cmplGfx/lib/gfxlib.ci:301: referenced as `z`
+	cmplGfx/lib/gfxlib.ci:202: referenced as `z`
+	cmplGfx/lib/gfxlib.ci:91: referenced as `z`
+	cmplGfx/lib/gfxlib.ci:90: referenced as `z`
+	cmplGfx/lib/gfxlib.ci:89: referenced as `z`
+	cmplGfx/lib/gfxlib.ci:88: referenced as `z`
 	cmplGfx/lib/gfx/color.ci:200: referenced as `z`
 	cmplGfx/lib/gfx/color.ci:194: referenced as `z`
 	cmplGfx/lib/gfx/color.ci:191: referenced as `z`
@@ -7878,10 +7932,14 @@ vec4f.<?>.w: float32 {
 .owner: vec4f.<?>
 .doc: 'W component of the vector'
 .usages:
-	cmplGfx/lib/gfxlib.ci:225: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:224: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:223: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:125: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:303: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:302: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:301: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:203: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:91: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:90: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:89: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:88: referenced as `w`
 	lib/vec/mat4f.ci:176: referenced as `w`
 	lib/vec/mat4f.ci:175: referenced as `w`
 	lib/vec/mat4f.ci:174: referenced as `w`
@@ -8298,6 +8356,7 @@ mat4f: typename {
 .field ww: float32 (size: 0, cast: inline)
 .doc: 'A 4x4 matrix'
 .usages:
+	cmplGfx/lib/gfxlib.ci:87: referenced as `mat4f`
 	lib/vec/mat4f.ci:170: referenced as `mat4f`
 	lib/vec/mat4f.ci:160: referenced as `mat4f`
 	lib/vec/mat4f.ci:108: referenced as `mat4f`
@@ -8321,6 +8380,7 @@ mat4f.data: float32[16] {
 .owner: mat4f
 .doc: 'Access elements as a flatten array: data[4] => m[1][0]'
 .usages:
+	cmplGfx/lib/gfxlib.ci:94: referenced as `data`
 	lib/vec/mat4f.ci:6: defined as `data`
 }
 mat4f.m: float32[4][4] {
@@ -8368,6 +8428,7 @@ mat4f.<?>.x: vec4f {
 .owner: mat4f.<?>
 .doc: '@public'
 .usages:
+	cmplGfx/lib/gfxlib.ci:88: referenced as `x`
 	lib/vec/mat4f.ci:173: referenced as `x`
 	lib/vec/mat4f.ci:162: referenced as `x`
 	lib/vec/mat4f.ci:113: referenced as `x`
@@ -8394,6 +8455,7 @@ mat4f.<?>.y: vec4f {
 .owner: mat4f.<?>
 .doc: '@public'
 .usages:
+	cmplGfx/lib/gfxlib.ci:89: referenced as `y`
 	lib/vec/mat4f.ci:174: referenced as `y`
 	lib/vec/mat4f.ci:163: referenced as `y`
 	lib/vec/mat4f.ci:114: referenced as `y`
@@ -8420,6 +8482,7 @@ mat4f.<?>.z: vec4f {
 .owner: mat4f.<?>
 .doc: '@public'
 .usages:
+	cmplGfx/lib/gfxlib.ci:90: referenced as `z`
 	lib/vec/mat4f.ci:175: referenced as `z`
 	lib/vec/mat4f.ci:164: referenced as `z`
 	lib/vec/mat4f.ci:115: referenced as `z`
@@ -8446,6 +8509,7 @@ mat4f.<?>.w: vec4f {
 .owner: mat4f.<?>
 .doc: '@public'
 .usages:
+	cmplGfx/lib/gfxlib.ci:91: referenced as `w`
 	lib/vec/mat4f.ci:176: referenced as `w`
 	lib/vec/mat4f.ci:165: referenced as `w`
 	lib/vec/mat4f.ci:152: referenced as `w`
@@ -10132,16 +10196,16 @@ gxRect: typename {
 .field w: int32 (size: 4, cast: variable(i32))
 .field h: int32 (size: 4, cast: variable(i32))
 .usages:
-	cmplGfx/lib/gfxlib.ci:140: referenced as `gxRect`
-	cmplGfx/lib/gfxlib.ci:139: referenced as `gxRect`
-	cmplGfx/lib/gfxlib.ci:110: referenced as `gxRect`
-	cmplGfx/lib/gfxlib.ci:109: referenced as `gxRect`
-	cmplGfx/lib/gfxlib.ci:106: referenced as `gxRect`
-	cmplGfx/lib/gfxlib.ci:103: referenced as `gxRect`
-	cmplGfx/lib/gfxlib.ci:101: referenced as `gxRect`
-	cmplGfx/lib/gfxlib.ci:63: referenced as `gxRect`
-	cmplGfx/lib/gfxlib.ci:60: referenced as `gxRect`
-	cmplGfx/lib/gfxlib.ci:60: referenced as `gxRect`
+	cmplGfx/lib/gfxlib.ci:218: referenced as `gxRect`
+	cmplGfx/lib/gfxlib.ci:217: referenced as `gxRect`
+	cmplGfx/lib/gfxlib.ci:188: referenced as `gxRect`
+	cmplGfx/lib/gfxlib.ci:187: referenced as `gxRect`
+	cmplGfx/lib/gfxlib.ci:184: referenced as `gxRect`
+	cmplGfx/lib/gfxlib.ci:181: referenced as `gxRect`
+	cmplGfx/lib/gfxlib.ci:179: referenced as `gxRect`
+	cmplGfx/lib/gfxlib.ci:141: referenced as `gxRect`
+	cmplGfx/lib/gfxlib.ci:138: referenced as `gxRect`
+	cmplGfx/lib/gfxlib.ci:138: referenced as `gxRect`
 	cmplGfx/lib/gfx/color.ci:311: referenced as `gxRect`
 	cmplGfx/lib/gfx/color.ci:304: referenced as `gxRect`
 	cmplGfx/lib/gfx/color.ci:246: referenced as `gxRect`
@@ -10155,22 +10219,22 @@ gxRect.x: int32 {
 .name: 'x'
 .owner: gxRect
 .usages:
-	cmplGfx/lib/gfxlib.ci:141: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:141: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:131: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:131: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:111: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:111: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:106: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:106: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:103: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:103: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:101: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:101: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:86: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:69: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:68: referenced as `x`
-	cmplGfx/lib/gfxlib.ci:65: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:219: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:219: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:209: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:209: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:189: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:189: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:184: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:184: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:181: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:181: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:179: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:179: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:164: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:147: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:146: referenced as `x`
+	cmplGfx/lib/gfxlib.ci:143: referenced as `x`
 	cmplGfx/lib/gfx/color.ci:284: referenced as `x`
 	cmplGfx/lib/gfx/color.ci:272: referenced as `x`
 	cmplGfx/lib/gfx/color.ci:256: referenced as `x`
@@ -10186,22 +10250,22 @@ gxRect.y: int32 {
 .name: 'y'
 .owner: gxRect
 .usages:
-	cmplGfx/lib/gfxlib.ci:142: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:142: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:129: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:129: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:112: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:112: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:106: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:106: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:103: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:103: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:101: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:101: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:87: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:73: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:72: referenced as `y`
-	cmplGfx/lib/gfxlib.ci:66: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:220: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:220: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:207: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:207: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:190: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:190: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:184: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:184: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:181: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:181: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:179: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:179: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:165: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:151: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:150: referenced as `y`
+	cmplGfx/lib/gfxlib.ci:144: referenced as `y`
 	cmplGfx/lib/gfx/color.ci:277: referenced as `y`
 	cmplGfx/lib/gfx/color.ci:272: referenced as `y`
 	cmplGfx/lib/gfx/color.ci:257: referenced as `y`
@@ -10217,21 +10281,21 @@ gxRect.w: int32 {
 .name: 'w'
 .owner: gxRect
 .usages:
-	cmplGfx/lib/gfxlib.ci:160: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:152: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:238: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:230: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:221: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:221: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:209: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:191: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:191: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:184: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:181: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:179: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:167: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:164: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:156: referenced as `w`
+	cmplGfx/lib/gfxlib.ci:155: referenced as `w`
 	cmplGfx/lib/gfxlib.ci:143: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:143: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:131: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:113: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:113: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:106: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:103: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:101: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:89: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:86: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:78: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:77: referenced as `w`
-	cmplGfx/lib/gfxlib.ci:65: referenced as `w`
 	cmplGfx/lib/gfx/color.ci:283: referenced as `w`
 	cmplGfx/lib/gfx/color.ci:262: referenced as `w`
 	cmplGfx/lib/gfx/color.ci:256: referenced as `w`
@@ -10247,21 +10311,21 @@ gxRect.h: int32 {
 .name: 'h'
 .owner: gxRect
 .usages:
-	cmplGfx/lib/gfxlib.ci:159: referenced as `h`
-	cmplGfx/lib/gfxlib.ci:155: referenced as `h`
+	cmplGfx/lib/gfxlib.ci:237: referenced as `h`
+	cmplGfx/lib/gfxlib.ci:233: referenced as `h`
+	cmplGfx/lib/gfxlib.ci:222: referenced as `h`
+	cmplGfx/lib/gfxlib.ci:222: referenced as `h`
+	cmplGfx/lib/gfxlib.ci:207: referenced as `h`
+	cmplGfx/lib/gfxlib.ci:192: referenced as `h`
+	cmplGfx/lib/gfxlib.ci:192: referenced as `h`
+	cmplGfx/lib/gfxlib.ci:184: referenced as `h`
+	cmplGfx/lib/gfxlib.ci:181: referenced as `h`
+	cmplGfx/lib/gfxlib.ci:179: referenced as `h`
+	cmplGfx/lib/gfxlib.ci:170: referenced as `h`
+	cmplGfx/lib/gfxlib.ci:165: referenced as `h`
+	cmplGfx/lib/gfxlib.ci:161: referenced as `h`
+	cmplGfx/lib/gfxlib.ci:160: referenced as `h`
 	cmplGfx/lib/gfxlib.ci:144: referenced as `h`
-	cmplGfx/lib/gfxlib.ci:144: referenced as `h`
-	cmplGfx/lib/gfxlib.ci:129: referenced as `h`
-	cmplGfx/lib/gfxlib.ci:114: referenced as `h`
-	cmplGfx/lib/gfxlib.ci:114: referenced as `h`
-	cmplGfx/lib/gfxlib.ci:106: referenced as `h`
-	cmplGfx/lib/gfxlib.ci:103: referenced as `h`
-	cmplGfx/lib/gfxlib.ci:101: referenced as `h`
-	cmplGfx/lib/gfxlib.ci:92: referenced as `h`
-	cmplGfx/lib/gfxlib.ci:87: referenced as `h`
-	cmplGfx/lib/gfxlib.ci:83: referenced as `h`
-	cmplGfx/lib/gfxlib.ci:82: referenced as `h`
-	cmplGfx/lib/gfxlib.ci:66: referenced as `h`
 	cmplGfx/lib/gfx/color.ci:288: referenced as `h`
 	cmplGfx/lib/gfx/color.ci:287: referenced as `h`
 	cmplGfx/lib/gfx/color.ci:286: referenced as `h`
@@ -10320,39 +10384,42 @@ gxSurf: typename {
 .field calcHist: function (size: 0, cast: static const inline)
 .field drawMesh: function (size: 0, cast: static const inline)
 .usages:
-	cmplGfx/lib/gfxlib.ci:391: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:350: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:349: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:316: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:315: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:314: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:312: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:312: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:301: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:298: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:289: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:171: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:139: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:139: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:109: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:106: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:103: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:101: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:99: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:63: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:60: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:60: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:60: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:57: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:57: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:51: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:51: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:46: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:46: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:40: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:40: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:39: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:39: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:469: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:428: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:427: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:394: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:393: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:392: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:390: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:390: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:379: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:376: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:367: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:249: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:217: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:217: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:187: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:184: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:181: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:179: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:177: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:141: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:138: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:138: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:138: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:135: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:135: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:129: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:129: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:124: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:124: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:118: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:118: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:117: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:117: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:43: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:42: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:28: referenced as `gxSurf`
 	cmplGfx/lib/gfxlib.ci:19: referenced as `gxSurf`
 	cmplGfx/lib/gfxlib.ci:16: referenced as `gxSurf`
 	cmplGfx/lib/gfxlib.ci:13: referenced as `gxSurf`
@@ -10376,8 +10443,8 @@ gxSurf.create(width: int32, height: int32, depth: int32): gxSurf: function {
 .param depth: int32 (size: 4, cast: variable(i32))
 .value: nfc(79)
 .usages:
-	cmplGfx/lib/gfxlib.ci:51: referenced as `create`
-	cmplGfx/lib/gfxlib.ci:40: referenced as `create`
+	cmplGfx/lib/gfxlib.ci:129: referenced as `create`
+	cmplGfx/lib/gfxlib.ci:118: referenced as `create`
 	cmplGfx/lib/gfxlib.ci:5: referenced as `create`
 	internal usages: 1
 }
@@ -10392,7 +10459,7 @@ gxSurf.create3d(width: int32, height: int32): gxSurf: function {
 .param height: int32 (size: 4, cast: variable(i32))
 .value: nfc(80)
 .usages:
-	cmplGfx/lib/gfxlib.ci:289: referenced as `create3d`
+	cmplGfx/lib/gfxlib.ci:367: referenced as `create3d`
 	internal usages: 1
 }
 gxSurf.recycle(recycle: gxSurf, width: int32, height: int32, depth: int32, flags: int32): gxSurf: function {
@@ -10421,10 +10488,11 @@ gxSurf.destroy(surf: gxSurf): void: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .value: nfc(82)
 .usages:
-	cmplGfx/lib/gfxlib.ci:406: referenced as `destroy`
-	cmplGfx/lib/gfxlib.ci:405: referenced as `destroy`
-	cmplGfx/lib/gfxlib.ci:394: referenced as `destroy`
-	cmplGfx/lib/gfxlib.ci:294: referenced as `destroy`
+	cmplGfx/lib/gfxlib.ci:484: referenced as `destroy`
+	cmplGfx/lib/gfxlib.ci:483: referenced as `destroy`
+	cmplGfx/lib/gfxlib.ci:472: referenced as `destroy`
+	cmplGfx/lib/gfxlib.ci:372: referenced as `destroy`
+	cmplGfx/lib/gfxlib.ci:95: referenced as `destroy`
 	internal usages: 1
 }
 gxSurf.openBmp(path: char[*], depth: int32): gxSurf: function {
@@ -10494,8 +10562,8 @@ gxSurf.saveBmp(surf: gxSurf, path: char[*], flags: int32): void: function {
 .param flags: int32 (size: 4, cast: variable(i32))
 .value: nfc(87)
 .usages:
-	cmplGfx/lib/gfxlib.ci:377: referenced as `saveBmp`
-	cmplGfx/lib/gfxlib.ci:376: referenced as `saveBmp`
+	cmplGfx/lib/gfxlib.ci:455: referenced as `saveBmp`
+	cmplGfx/lib/gfxlib.ci:454: referenced as `saveBmp`
 	internal usages: 1
 }
 gxSurf.width(surf: gxSurf): int32: function {
@@ -10508,13 +10576,17 @@ gxSurf.width(surf: gxSurf): int32: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .value: nfc(88)
 .usages:
-	cmplGfx/lib/gfxlib.ci:157: referenced as `width`
-	cmplGfx/lib/gfxlib.ci:143: referenced as `width`
-	cmplGfx/lib/gfxlib.ci:127: referenced as `width`
-	cmplGfx/lib/gfxlib.ci:113: referenced as `width`
+	cmplGfx/lib/gfxlib.ci:235: referenced as `width`
+	cmplGfx/lib/gfxlib.ci:221: referenced as `width`
+	cmplGfx/lib/gfxlib.ci:205: referenced as `width`
+	cmplGfx/lib/gfxlib.ci:191: referenced as `width`
+	cmplGfx/lib/gfxlib.ci:154: referenced as `width`
+	cmplGfx/lib/gfxlib.ci:125: referenced as `width`
+	cmplGfx/lib/gfxlib.ci:118: referenced as `width`
 	cmplGfx/lib/gfxlib.ci:76: referenced as `width`
-	cmplGfx/lib/gfxlib.ci:47: referenced as `width`
-	cmplGfx/lib/gfxlib.ci:40: referenced as `width`
+	cmplGfx/lib/gfxlib.ci:73: referenced as `width`
+	cmplGfx/lib/gfxlib.ci:61: referenced as `width`
+	cmplGfx/lib/gfxlib.ci:52: referenced as `width`
 	cmplGfx/lib/gfx/color.ci:250: referenced as `width`
 	internal usages: 1
 }
@@ -10528,14 +10600,18 @@ gxSurf.height(surf: gxSurf): int32: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .value: nfc(89)
 .usages:
-	cmplGfx/lib/gfxlib.ci:158: referenced as `height`
-	cmplGfx/lib/gfxlib.ci:144: referenced as `height`
-	cmplGfx/lib/gfxlib.ci:128: referenced as `height`
-	cmplGfx/lib/gfxlib.ci:114: referenced as `height`
+	cmplGfx/lib/gfxlib.ci:236: referenced as `height`
+	cmplGfx/lib/gfxlib.ci:222: referenced as `height`
+	cmplGfx/lib/gfxlib.ci:206: referenced as `height`
+	cmplGfx/lib/gfxlib.ci:192: referenced as `height`
+	cmplGfx/lib/gfxlib.ci:159: referenced as `height`
+	cmplGfx/lib/gfxlib.ci:129: referenced as `height`
+	cmplGfx/lib/gfxlib.ci:127: referenced as `height`
+	cmplGfx/lib/gfxlib.ci:118: referenced as `height`
+	cmplGfx/lib/gfxlib.ci:84: referenced as `height`
 	cmplGfx/lib/gfxlib.ci:81: referenced as `height`
-	cmplGfx/lib/gfxlib.ci:51: referenced as `height`
-	cmplGfx/lib/gfxlib.ci:49: referenced as `height`
-	cmplGfx/lib/gfxlib.ci:40: referenced as `height`
+	cmplGfx/lib/gfxlib.ci:64: referenced as `height`
+	cmplGfx/lib/gfxlib.ci:53: referenced as `height`
 	internal usages: 1
 }
 gxSurf.depth(surf: gxSurf): int32: function {
@@ -10548,8 +10624,8 @@ gxSurf.depth(surf: gxSurf): int32: function {
 .param surf: gxSurf (size: 8, cast: variable(val))
 .value: nfc(90)
 .usages:
-	cmplGfx/lib/gfxlib.ci:51: referenced as `depth`
-	cmplGfx/lib/gfxlib.ci:40: referenced as `depth`
+	cmplGfx/lib/gfxlib.ci:129: referenced as `depth`
+	cmplGfx/lib/gfxlib.ci:118: referenced as `depth`
 	internal usages: 1
 }
 gxSurf.get(surf: gxSurf, x: int32, y: int32): int32: function {
@@ -10579,7 +10655,7 @@ gxSurf.set(surf: gxSurf, x: int32, y: int32, color: uint32): void: function {
 .param color: uint32 (size: 4, cast: variable(u32))
 .value: nfc(92)
 .usages:
-	cmplGfx/lib/gfxlib.ci:57: referenced as `set`
+	cmplGfx/lib/gfxlib.ci:135: referenced as `set`
 	cmplGfx/lib/gfx/color.ci:272: referenced as `set`
 	internal usages: 1
 }
@@ -10612,7 +10688,7 @@ gxSurf.drawRect(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color:
 .param color: int32 (size: 4, cast: variable(i32))
 .value: nfc(94)
 .usages:
-	cmplGfx/lib/gfxlib.ci:106: referenced as `drawRect`
+	cmplGfx/lib/gfxlib.ci:184: referenced as `drawRect`
 	internal usages: 1
 }
 gxSurf.fillRect(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color: int32): void: function {
@@ -10630,9 +10706,9 @@ gxSurf.fillRect(surf: gxSurf, x1: int32, y1: int32, x2: int32, y2: int32, color:
 .param color: int32 (size: 4, cast: variable(i32))
 .value: nfc(95)
 .usages:
-	cmplGfx/lib/gfxlib.ci:103: referenced as `fillRect`
-	cmplGfx/lib/gfxlib.ci:101: referenced as `fillRect`
-	cmplGfx/lib/gfxlib.ci:99: referenced as `fillRect`
+	cmplGfx/lib/gfxlib.ci:181: referenced as `fillRect`
+	cmplGfx/lib/gfxlib.ci:179: referenced as `fillRect`
+	cmplGfx/lib/gfxlib.ci:177: referenced as `fillRect`
 	cmplGfx/lib/gfx/color.ci:253: referenced as `fillRect`
 	internal usages: 1
 }
@@ -10776,10 +10852,10 @@ gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: f
 .param roi: gxRect (size: 4, cast: const variable(ref))
 .value: nfc(103)
 .usages:
-	cmplGfx/lib/gfxlib.ci:330: referenced as `copy`
-	cmplGfx/lib/gfxlib.ci:326: referenced as `copy`
-	cmplGfx/lib/gfxlib.ci:161: referenced as `copy`
-	cmplGfx/lib/gfxlib.ci:41: referenced as `copy`
+	cmplGfx/lib/gfxlib.ci:408: referenced as `copy`
+	cmplGfx/lib/gfxlib.ci:404: referenced as `copy`
+	cmplGfx/lib/gfxlib.ci:239: referenced as `copy`
+	cmplGfx/lib/gfxlib.ci:119: referenced as `copy`
 	internal usages: 1
 }
 gxSurf.blend(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect, alpha: int32, blend(base: vec4f, with: vec4f): vec4f): void: function {
@@ -10815,8 +10891,9 @@ gxSurf.transform(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpola
 .param mat: float32[16] (size: 4, cast: variable(ref))
 .value: nfc(105)
 .usages:
-	cmplGfx/lib/gfxlib.ci:60: referenced as `transform`
-	cmplGfx/lib/gfxlib.ci:52: referenced as `transform`
+	cmplGfx/lib/gfxlib.ci:138: referenced as `transform`
+	cmplGfx/lib/gfxlib.ci:130: referenced as `transform`
+	cmplGfx/lib/gfxlib.ci:94: referenced as `transform`
 	internal usages: 1
 }
 gxSurf.blur(surf: gxSurf, radius: int32, sigma: float64): void: function {
@@ -10890,7 +10967,7 @@ gxSurf.drawMesh(surf: gxSurf, mesh: gxMesh, mode: int32): int32: function {
 .param mode: int32 (size: 4, cast: variable(i32))
 .value: nfc(110)
 .usages:
-	cmplGfx/lib/gfxlib.ci:274: referenced as `drawMesh`
+	cmplGfx/lib/gfxlib.ci:352: referenced as `drawMesh`
 	internal usages: 1
 }
 gxMesh: typename {
@@ -10930,21 +11007,21 @@ gxMesh: typename {
 .field triangles: int64 (size: 8, cast: const variable(i64))
 .field segments: int64 (size: 8, cast: const variable(i64))
 .usages:
-	cmplGfx/lib/gfxlib.ci:288: referenced as `gxMesh`
-	cmplGfx/lib/gfxlib.ci:288: referenced as `gxMesh`
-	cmplGfx/lib/gfxlib.ci:288: referenced as `gxMesh`
-	cmplGfx/lib/gfxlib.ci:288: referenced as `gxMesh`
-	cmplGfx/lib/gfxlib.ci:288: referenced as `gxMesh`
-	cmplGfx/lib/gfxlib.ci:220: referenced as `gxMesh`
-	cmplGfx/lib/gfxlib.ci:217: referenced as `gxMesh`
-	cmplGfx/lib/gfxlib.ci:217: referenced as `gxMesh`
-	cmplGfx/lib/gfxlib.ci:214: referenced as `gxMesh`
-	cmplGfx/lib/gfxlib.ci:199: referenced as `gxMesh`
-	cmplGfx/lib/gfxlib.ci:172: referenced as `gxMesh`
-	cmplGfx/lib/gfxlib.ci:167: referenced as `gxMesh`
-	cmplGfx/lib/gfxlib.ci:33: referenced as `gxMesh`
-	cmplGfx/lib/gfxlib.ci:30: referenced as `gxMesh`
-	cmplGfx/lib/gfxlib.ci:28: referenced as `gxMesh`
+	cmplGfx/lib/gfxlib.ci:366: referenced as `gxMesh`
+	cmplGfx/lib/gfxlib.ci:366: referenced as `gxMesh`
+	cmplGfx/lib/gfxlib.ci:366: referenced as `gxMesh`
+	cmplGfx/lib/gfxlib.ci:366: referenced as `gxMesh`
+	cmplGfx/lib/gfxlib.ci:366: referenced as `gxMesh`
+	cmplGfx/lib/gfxlib.ci:298: referenced as `gxMesh`
+	cmplGfx/lib/gfxlib.ci:295: referenced as `gxMesh`
+	cmplGfx/lib/gfxlib.ci:295: referenced as `gxMesh`
+	cmplGfx/lib/gfxlib.ci:292: referenced as `gxMesh`
+	cmplGfx/lib/gfxlib.ci:277: referenced as `gxMesh`
+	cmplGfx/lib/gfxlib.ci:250: referenced as `gxMesh`
+	cmplGfx/lib/gfxlib.ci:245: referenced as `gxMesh`
+	cmplGfx/lib/gfxlib.ci:111: referenced as `gxMesh`
+	cmplGfx/lib/gfxlib.ci:108: referenced as `gxMesh`
+	cmplGfx/lib/gfxlib.ci:106: referenced as `gxMesh`
 	internal usages: 20
 }
 gxMesh.create(size: int32): gxMesh: function {
@@ -10994,7 +11071,7 @@ gxMesh.openObj(path: char[*]): gxMesh: function {
 .param path: char[*] (size: 4, cast: variable(ref))
 .value: nfc(64)
 .usages:
-	cmplGfx/lib/gfxlib.ci:30: referenced as `openObj`
+	cmplGfx/lib/gfxlib.ci:108: referenced as `openObj`
 	internal usages: 1
 }
 gxMesh.open3ds(path: char[*]): gxMesh: function {
@@ -11007,7 +11084,7 @@ gxMesh.open3ds(path: char[*]): gxMesh: function {
 .param path: char[*] (size: 4, cast: variable(ref))
 .value: nfc(65)
 .usages:
-	cmplGfx/lib/gfxlib.ci:33: referenced as `open3ds`
+	cmplGfx/lib/gfxlib.ci:111: referenced as `open3ds`
 	internal usages: 1
 }
 gxMesh.saveObj(mesh: gxMesh, path: char[*]): void: function {
@@ -11210,7 +11287,7 @@ gxMesh.clearDepth: int64 {
 .owner: gxMesh
 .value: 8
 .usages:
-	cmplGfx/lib/gfxlib.ci:288: referenced as `clearDepth`
+	cmplGfx/lib/gfxlib.ci:366: referenced as `clearDepth`
 }
 gxMesh.clearColor: int64 {
 .kind: static const i64
@@ -11220,7 +11297,7 @@ gxMesh.clearColor: int64 {
 .owner: gxMesh
 .value: 4
 .usages:
-	cmplGfx/lib/gfxlib.ci:288: referenced as `clearColor`
+	cmplGfx/lib/gfxlib.ci:366: referenced as `clearColor`
 }
 gxMesh.cullBack: int64 {
 .kind: static const i64
@@ -11230,8 +11307,8 @@ gxMesh.cullBack: int64 {
 .owner: gxMesh
 .value: 16
 .usages:
-	cmplGfx/lib/gfxlib.ci:288: referenced as `cullBack`
-	cmplGfx/lib/gfxlib.ci:217: referenced as `cullBack`
+	cmplGfx/lib/gfxlib.ci:366: referenced as `cullBack`
+	cmplGfx/lib/gfxlib.ci:295: referenced as `cullBack`
 }
 gxMesh.cullFront: int64 {
 .kind: static const i64
@@ -11241,7 +11318,7 @@ gxMesh.cullFront: int64 {
 .owner: gxMesh
 .value: 32
 .usages:
-	cmplGfx/lib/gfxlib.ci:217: referenced as `cullFront`
+	cmplGfx/lib/gfxlib.ci:295: referenced as `cullFront`
 }
 gxMesh.drawPlot: int64 {
 .kind: static const i64
@@ -11267,7 +11344,7 @@ gxMesh.drawFill: int64 {
 .owner: gxMesh
 .value: 3
 .usages:
-	cmplGfx/lib/gfxlib.ci:288: referenced as `drawFill`
+	cmplGfx/lib/gfxlib.ci:366: referenced as `drawFill`
 }
 gxMesh.drawMode: int64 {
 .kind: static const i64
@@ -11277,7 +11354,7 @@ gxMesh.drawMode: int64 {
 .owner: gxMesh
 .value: 3
 .usages:
-	cmplGfx/lib/gfxlib.ci:220: referenced as `drawMode`
+	cmplGfx/lib/gfxlib.ci:298: referenced as `drawMode`
 }
 gxMesh.useTexture: int64 {
 .kind: static const i64
@@ -11287,7 +11364,7 @@ gxMesh.useTexture: int64 {
 .owner: gxMesh
 .value: 64
 .usages:
-	cmplGfx/lib/gfxlib.ci:214: referenced as `useTexture`
+	cmplGfx/lib/gfxlib.ci:292: referenced as `useTexture`
 }
 gxMesh.useLights: int64 {
 .kind: static const i64
@@ -11297,8 +11374,8 @@ gxMesh.useLights: int64 {
 .owner: gxMesh
 .value: 128
 .usages:
-	cmplGfx/lib/gfxlib.ci:288: referenced as `useLights`
-	cmplGfx/lib/gfxlib.ci:199: referenced as `useLights`
+	cmplGfx/lib/gfxlib.ci:366: referenced as `useLights`
+	cmplGfx/lib/gfxlib.ci:277: referenced as `useLights`
 }
 gxMesh.vertices: int64 {
 .kind: const variable(i64)
@@ -11307,7 +11384,7 @@ gxMesh.vertices: int64 {
 .name: 'vertices'
 .owner: gxMesh
 .usages:
-	cmplGfx/lib/gfxlib.ci:278: referenced as `vertices`
+	cmplGfx/lib/gfxlib.ci:356: referenced as `vertices`
 }
 gxMesh.triangles: int64 {
 .kind: const variable(i64)
@@ -11316,7 +11393,7 @@ gxMesh.triangles: int64 {
 .name: 'triangles'
 .owner: gxMesh
 .usages:
-	cmplGfx/lib/gfxlib.ci:280: referenced as `triangles`
+	cmplGfx/lib/gfxlib.ci:358: referenced as `triangles`
 }
 gxMesh.segments: int64 {
 .kind: const variable(i64)
@@ -11338,22 +11415,22 @@ camera: typename {
 .field rotate: function (size: 0, cast: static const inline)
 .field move: function (size: 0, cast: static const inline)
 .usages:
-	cmplGfx/lib/gfxlib.ci:292: referenced as `camera`
-	cmplGfx/lib/gfxlib.ci:268: referenced as `camera`
-	cmplGfx/lib/gfxlib.ci:267: referenced as `camera`
-	cmplGfx/lib/gfxlib.ci:266: referenced as `camera`
-	cmplGfx/lib/gfxlib.ci:265: referenced as `camera`
-	cmplGfx/lib/gfxlib.ci:261: referenced as `camera`
-	cmplGfx/lib/gfxlib.ci:260: referenced as `camera`
-	cmplGfx/lib/gfxlib.ci:256: referenced as `camera`
-	cmplGfx/lib/gfxlib.ci:255: referenced as `camera`
-	cmplGfx/lib/gfxlib.ci:254: referenced as `camera`
-	cmplGfx/lib/gfxlib.ci:253: referenced as `camera`
-	cmplGfx/lib/gfxlib.ci:249: referenced as `camera`
-	cmplGfx/lib/gfxlib.ci:248: referenced as `camera`
-	cmplGfx/lib/gfxlib.ci:247: referenced as `camera`
-	cmplGfx/lib/gfxlib.ci:246: referenced as `camera`
-	cmplGfx/lib/gfxlib.ci:226: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:370: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:346: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:345: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:344: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:343: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:339: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:338: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:334: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:333: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:332: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:331: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:327: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:326: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:325: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:324: referenced as `camera`
+	cmplGfx/lib/gfxlib.ci:304: referenced as `camera`
 }
 camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): void: function {
 .kind: static const inline
@@ -11368,7 +11445,7 @@ camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): 
 .param far: float32 (size: 4, cast: variable(f32))
 .value: nfc(111)
 .usages:
-	cmplGfx/lib/gfxlib.ci:292: referenced as `projection`
+	cmplGfx/lib/gfxlib.ci:370: referenced as `projection`
 	internal usages: 1
 }
 camera.lookAt(eye: float32[3], at: float32[3], up: float32[3]): void: function {
@@ -11383,7 +11460,7 @@ camera.lookAt(eye: float32[3], at: float32[3], up: float32[3]): void: function {
 .param up: float32[3] (size: 4, cast: variable(ref))
 .value: nfc(112)
 .usages:
-	cmplGfx/lib/gfxlib.ci:226: referenced as `lookAt`
+	cmplGfx/lib/gfxlib.ci:304: referenced as `lookAt`
 	internal usages: 1
 }
 camera.readUp(result: float32[3]): void: function {
@@ -11396,9 +11473,9 @@ camera.readUp(result: float32[3]): void: function {
 .param result: float32[3] (size: 4, cast: variable(ref))
 .value: nfc(113)
 .usages:
-	cmplGfx/lib/gfxlib.ci:267: referenced as `readUp`
-	cmplGfx/lib/gfxlib.ci:253: referenced as `readUp`
-	cmplGfx/lib/gfxlib.ci:246: referenced as `readUp`
+	cmplGfx/lib/gfxlib.ci:345: referenced as `readUp`
+	cmplGfx/lib/gfxlib.ci:331: referenced as `readUp`
+	cmplGfx/lib/gfxlib.ci:324: referenced as `readUp`
 	internal usages: 1
 }
 camera.readRight(result: float32[3]): void: function {
@@ -11411,9 +11488,9 @@ camera.readRight(result: float32[3]): void: function {
 .param result: float32[3] (size: 4, cast: variable(ref))
 .value: nfc(114)
 .usages:
-	cmplGfx/lib/gfxlib.ci:265: referenced as `readRight`
-	cmplGfx/lib/gfxlib.ci:255: referenced as `readRight`
-	cmplGfx/lib/gfxlib.ci:248: referenced as `readRight`
+	cmplGfx/lib/gfxlib.ci:343: referenced as `readRight`
+	cmplGfx/lib/gfxlib.ci:333: referenced as `readRight`
+	cmplGfx/lib/gfxlib.ci:326: referenced as `readRight`
 	internal usages: 1
 }
 camera.readForward(result: float32[3]): void: function {
@@ -11426,7 +11503,7 @@ camera.readForward(result: float32[3]): void: function {
 .param result: float32[3] (size: 4, cast: variable(ref))
 .value: nfc(115)
 .usages:
-	cmplGfx/lib/gfxlib.ci:260: referenced as `readForward`
+	cmplGfx/lib/gfxlib.ci:338: referenced as `readForward`
 	internal usages: 1
 }
 camera.rotate(direction: float32[3], orbit: float32[3], angle: float32): void: function {
@@ -11441,10 +11518,10 @@ camera.rotate(direction: float32[3], orbit: float32[3], angle: float32): void: f
 .param angle: float32 (size: 4, cast: variable(f32))
 .value: nfc(116)
 .usages:
-	cmplGfx/lib/gfxlib.ci:256: referenced as `rotate`
-	cmplGfx/lib/gfxlib.ci:254: referenced as `rotate`
-	cmplGfx/lib/gfxlib.ci:249: referenced as `rotate`
-	cmplGfx/lib/gfxlib.ci:247: referenced as `rotate`
+	cmplGfx/lib/gfxlib.ci:334: referenced as `rotate`
+	cmplGfx/lib/gfxlib.ci:332: referenced as `rotate`
+	cmplGfx/lib/gfxlib.ci:327: referenced as `rotate`
+	cmplGfx/lib/gfxlib.ci:325: referenced as `rotate`
 	internal usages: 1
 }
 camera.move(direction: float32[3], amount: float32): void: function {
@@ -11458,9 +11535,9 @@ camera.move(direction: float32[3], amount: float32): void: function {
 .param amount: float32 (size: 4, cast: variable(f32))
 .value: nfc(117)
 .usages:
-	cmplGfx/lib/gfxlib.ci:268: referenced as `move`
-	cmplGfx/lib/gfxlib.ci:266: referenced as `move`
-	cmplGfx/lib/gfxlib.ci:261: referenced as `move`
+	cmplGfx/lib/gfxlib.ci:346: referenced as `move`
+	cmplGfx/lib/gfxlib.ci:344: referenced as `move`
+	cmplGfx/lib/gfxlib.ci:339: referenced as `move`
 	internal usages: 1
 }
 lights: typename {
@@ -11476,14 +11553,14 @@ lights: typename {
 .field specular: function (size: 0, cast: static const inline)
 .field attenuation: function (size: 0, cast: static const inline)
 .usages:
-	cmplGfx/lib/gfxlib.ci:211: referenced as `lights`
-	cmplGfx/lib/gfxlib.ci:211: referenced as `lights`
-	cmplGfx/lib/gfxlib.ci:208: referenced as `lights`
-	cmplGfx/lib/gfxlib.ci:208: referenced as `lights`
-	cmplGfx/lib/gfxlib.ci:205: referenced as `lights`
-	cmplGfx/lib/gfxlib.ci:205: referenced as `lights`
-	cmplGfx/lib/gfxlib.ci:202: referenced as `lights`
-	cmplGfx/lib/gfxlib.ci:202: referenced as `lights`
+	cmplGfx/lib/gfxlib.ci:289: referenced as `lights`
+	cmplGfx/lib/gfxlib.ci:289: referenced as `lights`
+	cmplGfx/lib/gfxlib.ci:286: referenced as `lights`
+	cmplGfx/lib/gfxlib.ci:286: referenced as `lights`
+	cmplGfx/lib/gfxlib.ci:283: referenced as `lights`
+	cmplGfx/lib/gfxlib.ci:283: referenced as `lights`
+	cmplGfx/lib/gfxlib.ci:280: referenced as `lights`
+	cmplGfx/lib/gfxlib.ci:280: referenced as `lights`
 }
 lights.enabled(light: int32): bool: function {
 .kind: static const inline
@@ -11495,10 +11572,10 @@ lights.enabled(light: int32): bool: function {
 .param light: int32 (size: 4, cast: variable(i32))
 .value: nfc(118)
 .usages:
-	cmplGfx/lib/gfxlib.ci:211: referenced as `enabled`
-	cmplGfx/lib/gfxlib.ci:208: referenced as `enabled`
-	cmplGfx/lib/gfxlib.ci:205: referenced as `enabled`
-	cmplGfx/lib/gfxlib.ci:202: referenced as `enabled`
+	cmplGfx/lib/gfxlib.ci:289: referenced as `enabled`
+	cmplGfx/lib/gfxlib.ci:286: referenced as `enabled`
+	cmplGfx/lib/gfxlib.ci:283: referenced as `enabled`
+	cmplGfx/lib/gfxlib.ci:280: referenced as `enabled`
 	internal usages: 1
 }
 lights.enable(light: int32, on: bool): void: function {
@@ -11512,10 +11589,10 @@ lights.enable(light: int32, on: bool): void: function {
 .param on: bool (size: 4, cast: variable(bool))
 .value: nfc(119)
 .usages:
-	cmplGfx/lib/gfxlib.ci:211: referenced as `enable`
-	cmplGfx/lib/gfxlib.ci:208: referenced as `enable`
-	cmplGfx/lib/gfxlib.ci:205: referenced as `enable`
-	cmplGfx/lib/gfxlib.ci:202: referenced as `enable`
+	cmplGfx/lib/gfxlib.ci:289: referenced as `enable`
+	cmplGfx/lib/gfxlib.ci:286: referenced as `enable`
+	cmplGfx/lib/gfxlib.ci:283: referenced as `enable`
+	cmplGfx/lib/gfxlib.ci:280: referenced as `enable`
 	internal usages: 1
 }
 lights.position(light: int32, x: float32, y: float32, z: float32): void: function {
@@ -11616,24 +11693,24 @@ Gui: typename {
 .field showWindow: function (size: 0, cast: static const inline)
 .field setTitle: function (size: 0, cast: static const inline)
 .usages:
-	cmplGfx/lib/gfxlib.ci:404: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:365: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:360: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:356: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:341: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:329: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:325: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:320: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:308: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:303: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:298: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:293: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:283: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:234: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:229: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:194: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:192: referenced as `Gui`
-	cmplGfx/lib/gfxlib.ci:191: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:482: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:443: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:438: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:434: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:419: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:407: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:403: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:398: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:386: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:381: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:376: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:371: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:361: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:312: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:307: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:272: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:270: referenced as `Gui`
+	cmplGfx/lib/gfxlib.ci:269: referenced as `Gui`
 }
 Gui.KEY_PRESS: int64 {
 .kind: static const i64
@@ -11643,9 +11720,9 @@ Gui.KEY_PRESS: int64 {
 .owner: Gui
 .value: 1
 .usages:
-	cmplGfx/lib/gfxlib.ci:360: referenced as `KEY_PRESS`
-	cmplGfx/lib/gfxlib.ci:320: referenced as `KEY_PRESS`
-	cmplGfx/lib/gfxlib.ci:194: referenced as `KEY_PRESS`
+	cmplGfx/lib/gfxlib.ci:438: referenced as `KEY_PRESS`
+	cmplGfx/lib/gfxlib.ci:398: referenced as `KEY_PRESS`
+	cmplGfx/lib/gfxlib.ci:272: referenced as `KEY_PRESS`
 }
 Gui.KEY_RELEASE: int64 {
 .kind: static const i64
@@ -11655,7 +11732,7 @@ Gui.KEY_RELEASE: int64 {
 .owner: Gui
 .value: 2
 .usages:
-	cmplGfx/lib/gfxlib.ci:365: referenced as `KEY_RELEASE`
+	cmplGfx/lib/gfxlib.ci:443: referenced as `KEY_RELEASE`
 }
 Gui.MOUSE_PRESS: int64 {
 .kind: static const i64
@@ -11665,8 +11742,8 @@ Gui.MOUSE_PRESS: int64 {
 .owner: Gui
 .value: 3
 .usages:
-	cmplGfx/lib/gfxlib.ci:325: referenced as `MOUSE_PRESS`
-	cmplGfx/lib/gfxlib.ci:229: referenced as `MOUSE_PRESS`
+	cmplGfx/lib/gfxlib.ci:403: referenced as `MOUSE_PRESS`
+	cmplGfx/lib/gfxlib.ci:307: referenced as `MOUSE_PRESS`
 }
 Gui.MOUSE_MOTION: int64 {
 .kind: static const i64
@@ -11676,8 +11753,8 @@ Gui.MOUSE_MOTION: int64 {
 .owner: Gui
 .value: 4
 .usages:
-	cmplGfx/lib/gfxlib.ci:234: referenced as `MOUSE_MOTION`
-	cmplGfx/lib/gfxlib.ci:192: referenced as `MOUSE_MOTION`
+	cmplGfx/lib/gfxlib.ci:312: referenced as `MOUSE_MOTION`
+	cmplGfx/lib/gfxlib.ci:270: referenced as `MOUSE_MOTION`
 }
 Gui.MOUSE_RELEASE: int64 {
 .kind: static const i64
@@ -11687,7 +11764,7 @@ Gui.MOUSE_RELEASE: int64 {
 .owner: Gui
 .value: 5
 .usages:
-	cmplGfx/lib/gfxlib.ci:329: referenced as `MOUSE_RELEASE`
+	cmplGfx/lib/gfxlib.ci:407: referenced as `MOUSE_RELEASE`
 }
 Gui.FINGER_PRESS: int64 {
 .kind: static const i64
@@ -11705,7 +11782,7 @@ Gui.FINGER_MOTION: int64 {
 .owner: Gui
 .value: 7
 .usages:
-	cmplGfx/lib/gfxlib.ci:191: referenced as `FINGER_MOTION`
+	cmplGfx/lib/gfxlib.ci:269: referenced as `FINGER_MOTION`
 }
 Gui.FINGER_RELEASE: int64 {
 .kind: static const i64
@@ -11739,7 +11816,7 @@ Gui.WINDOW_CLOSE: int64 {
 .owner: Gui
 .value: 101
 .usages:
-	cmplGfx/lib/gfxlib.ci:356: referenced as `WINDOW_CLOSE`
+	cmplGfx/lib/gfxlib.ci:434: referenced as `WINDOW_CLOSE`
 }
 Gui.WINDOW_ENTER: int64 {
 .kind: static const i64
@@ -11785,12 +11862,12 @@ Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action:
 .param onEvent: function (size: 4, cast: variable(ref))
 .value: nfc(125)
 .usages:
-	cmplGfx/lib/gfxlib.ci:404: referenced as `showWindow`
-	cmplGfx/lib/gfxlib.ci:341: referenced as `showWindow`
-	cmplGfx/lib/gfxlib.ci:308: referenced as `showWindow`
-	cmplGfx/lib/gfxlib.ci:303: referenced as `showWindow`
-	cmplGfx/lib/gfxlib.ci:298: referenced as `showWindow`
-	cmplGfx/lib/gfxlib.ci:293: referenced as `showWindow`
+	cmplGfx/lib/gfxlib.ci:482: referenced as `showWindow`
+	cmplGfx/lib/gfxlib.ci:419: referenced as `showWindow`
+	cmplGfx/lib/gfxlib.ci:386: referenced as `showWindow`
+	cmplGfx/lib/gfxlib.ci:381: referenced as `showWindow`
+	cmplGfx/lib/gfxlib.ci:376: referenced as `showWindow`
+	cmplGfx/lib/gfxlib.ci:371: referenced as `showWindow`
 	internal usages: 1
 }
 Gui.setTitle(title: char[*]): void: function {
@@ -11803,7 +11880,7 @@ Gui.setTitle(title: char[*]): void: function {
 .param title: char[*] (size: 4, cast: variable(ref))
 .value: nfc(126)
 .usages:
-	cmplGfx/lib/gfxlib.ci:283: referenced as `setTitle`
+	cmplGfx/lib/gfxlib.ci:361: referenced as `setTitle`
 	internal usages: 1
 }
 argb: typename {
@@ -11820,7 +11897,7 @@ argb: typename {
 .field a: uint8 (size: 0, cast: inline)
 .doc: 'an 32 bit argb color'
 .usages:
-	cmplGfx/lib/gfxlib.ci:57: referenced as `argb`
+	cmplGfx/lib/gfxlib.ci:135: referenced as `argb`
 	cmplGfx/lib/gfx/color.ci:183: referenced as `argb`
 	cmplGfx/lib/gfx/color.ci:182: referenced as `argb`
 	cmplGfx/lib/gfx/color.ci:178: referenced as `argb`
@@ -11986,7 +12063,7 @@ uint32(value: argb): uint32: function {
 .doc: 'cast argb value to unsigned integer'
 .value: uint32(emit(struct(value)))
 .usages:
-	cmplGfx/lib/gfxlib.ci:57: referenced as `uint32`
+	cmplGfx/lib/gfxlib.ci:135: referenced as `uint32`
 	cmplGfx/lib/gfx/color.ci:184: referenced as `uint32`
 	cmplGfx/lib/gfx/color.ci:161: referenced as `uint32`
 	cmplGfx/lib/gfx/color.ci:159: referenced as `uint32`
@@ -12515,7 +12592,7 @@ argb(vec: vec4f): argb: function {
 .doc: 'convert a floating point vector to rgb'
 .value: argb(vec.x, vec.y, vec.z)
 .usages:
-	cmplGfx/lib/gfxlib.ci:133: referenced as `argb`
+	cmplGfx/lib/gfxlib.ci:211: referenced as `argb`
 	cmplGfx/lib/gfx/color.ci:191: defined as `argb(vec: vec4f): argb`
 }
 lum(vec: vec4f): float32: function {
@@ -13223,9 +13300,10 @@ gxSurf(width: int32, height: int32, depth: int32): gxSurf: function {
 .doc: 'Create a surface with the given with, height and depth'
 .value: gxSurf.create(width, height, depth)
 .usages:
-	cmplGfx/lib/gfxlib.ci:400: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:399: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:391: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:478: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:477: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:469: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:43: referenced as `gxSurf`
 	cmplGfx/lib/gfxlib.ci:5: defined as `gxSurf(width: int32, height: int32, depth: int32): gxSurf`
 }
 gxSurf(fileName: char[*], depth: int32): gxSurf: function {
@@ -13325,6 +13403,7 @@ gxSurf(fileName: char[*], depth: int32): gxSurf: function {
 	<gxSurf+?>: nfc(7) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<gxSurf+?>: ret
 .usages:
+	cmplGfx/lib/gfxlib.ci:42: referenced as `gxSurf`
 	cmplGfx/lib/gfxlib.ci:25: referenced as `gxSurf`
 	cmplGfx/lib/gfxlib.ci:8: defined as `gxSurf(fileName: char[*], depth: int32): gxSurf`
 }
@@ -13341,12 +13420,406 @@ gxSurf(fileName: char[*]): gxSurf: function {
 .usages:
 	cmplGfx/lib/gfxlib.ci:25: defined as `gxSurf(fileName: char[*]): gxSurf`
 }
+gxSurf(fileName: char[*], width: int32, height: int32, depth: int32, align: int32, maxScale: float64): gxSurf: function {
+.kind: static const function
+.base: `function`
+.size: 528
+.name: 'gxSurf'
+.file: 'cmplGfx/lib/gfxlib.ci:28'
+.param .result: gxSurf (size: 8, cast: variable(val))
+.param fileName: char[*] (size: 4, cast: variable(ref))
+.param width: int32 (size: 4, cast: variable(i32))
+.param height: int32 (size: 4, cast: variable(i32))
+.param depth: int32 (size: 4, cast: variable(i32))
+.param align: int32 (size: 4, cast: variable(i32))
+.param maxScale: float64 (size: 8, cast: variable(f64))
+.doc: 'Create a surface by opening an image file with custom width and height'
+.value: {
+	scale: float64 := 1;
+	surf: gxSurf := gxSurf(fileName, depth);
+	result: gxSurf := gxSurf(width, height, depth);
+	alignVertical: int32 := align & fitVertical;
+	alignHorizontal: int32 := align & fitHorizontal;
+	fitWidth: bool := alignVertical == fitVertical;
+	fitHeight: bool := alignHorizontal == fitHorizontal;
+	if (fitWidth && fitHeight) {
+		widthScale: float64 := (width) / float64(surf.width(surf));
+		heightScale: float64 := (height) / float64(surf.height(surf));
+		if (align & fill) {
+			scale := Math.max(widthScale, heightScale);
+		}
+		else {
+			scale := Math.min(widthScale, heightScale);
+		}
+	}
+	else {
+		if (fitWidth) {
+			scale := (width) / float64(surf.width(surf));
+		}
+		else {
+			if (fitHeight) {
+				scale := (height) / float64(surf.height(surf));
+			}
+		}
+	}
+	if (scale > maxScale) {
+		scale := maxScale;
+	}
+	tx: float64 := 0;
+	if (fitWidth || alignVertical == center) {
+		tx := ((width) - (surf.width(surf)) * scale) / (2);
+	}
+	else {
+		if (alignVertical == right) {
+			tx := ((width) - (surf.width(surf)) * scale);
+		}
+	}
+	ty: float64 := 0;
+	if (fitHeight || alignHorizontal == center) {
+		ty := ((height) - (surf.height(surf)) * scale) / (2);
+	}
+	else {
+		if (alignHorizontal == bottom) {
+			ty := ((height) - (surf.height(surf)) * scale);
+		}
+	}
+	mat: mat4f := {
+		mat.x.x := ((1) / scale);
+		mat.x.y := (0);
+		mat.x.z := (0);
+		mat.x.w := (-tx / scale);
+		mat.y.x := (0);
+		mat.y.y := ((1) / scale);
+		mat.y.z := (0);
+		mat.y.w := (-ty / scale);
+		mat.z.x := (0);
+		mat.z.y := (0);
+		mat.z.z := ((1) / scale);
+		mat.z.w := (0);
+		mat.w.x := (0);
+		mat.w.y := (0);
+		mat.w.z := (0);
+		mat.w.w := (1);
+	};
+	result.transform(result, null, surf, null, (align & highRes) ? 1 : 0, mat.data);
+	surf.destroy(surf);
+	return .result := result;
+}
+.instructions: (528 bytes)
+	cmplGfx/lib/gfxlib.ci:41: (9 bytes): scale: float64 := 1
+	<gxSurf>  : load.f64 1.000000
+	cmplGfx/lib/gfxlib.ci:42: (18 bytes): surf: gxSurf := gxSurf(fileName, depth)
+	<gxSurf+?>: inc.sp(+8)
+	<gxSurf+?>: dup.x32 sp(11)
+	<gxSurf+?>: dup.x32 sp(9)
+	<gxSurf+?>: load.ref <?> ;gxSurf(fileName: char[*], depth: int32): gxSurf
+	<gxSurf+?>: call
+	<gxSurf+?>: inc.sp(-8)
+	cmplGfx/lib/gfxlib.ci:43: (10 bytes): result: gxSurf := gxSurf(width, height, depth)
+	<gxSurf+?>: dup.x32 sp(10)
+	<gxSurf+?>: dup.x32 sp(10)
+	<gxSurf+?>: dup.x32 sp(10)
+	<gxSurf+?>: nfc(79) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
+	cmplGfx/lib/gfxlib.ci:45: (4 bytes): alignVertical: int32 := align & fitVertical
+	<gxSurf+?>: dup.x32 sp(9)
+	<gxSurf+?>: b32.and 0x003
+	cmplGfx/lib/gfxlib.ci:46: (8 bytes): alignHorizontal: int32 := align & fitHorizontal
+	<gxSurf+?>: dup.x32 sp(10)
+	<gxSurf+?>: load.c32 12
+	<gxSurf+?>: and.b32
+	cmplGfx/lib/gfxlib.ci:48: (8 bytes): fitWidth: bool := alignVertical == fitVertical
+	<gxSurf+?>: dup.x32 sp(1)
+	<gxSurf+?>: load.c32 3
+	<gxSurf+?>: ceq.i32
+	cmplGfx/lib/gfxlib.ci:49: (8 bytes): fitHeight: bool := alignHorizontal == fitHorizontal
+	<gxSurf+?>: dup.x32 sp(1)
+	<gxSurf+?>: load.c32 12
+	<gxSurf+?>: ceq.i32
+	cmplGfx/lib/gfxlib.ci:51: (143 bytes): if (fitWidth && fitHeight)
+	<gxSurf+?>: load.sp(+4)
+	<gxSurf+?>: load.i8
+	<gxSurf+?>: load.sp(+4)
+	<gxSurf+?>: load.i8
+	<gxSurf+?>: and.b32
+	<gxSurf+?>: jz +84
+	cmplGfx/lib/gfxlib.ci:52: (11 bytes): widthScale: float64 := (width) / float64(surf.width(surf))
+	<gxSurf+?>: dup.x32 sp(16)
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: dup.x64 sp(8)
+	<gxSurf+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: div.f64
+	cmplGfx/lib/gfxlib.ci:53: (11 bytes): heightScale: float64 := (height) / float64(surf.height(surf))
+	<gxSurf+?>: dup.x32 sp(17)
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: dup.x64 sp(10)
+	<gxSurf+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: div.f64
+	cmplGfx/lib/gfxlib.ci:54: (50 bytes): if (align & fill)
+	<gxSurf+?>: dup.x32 sp(17)
+	<gxSurf+?>: load.c32 16
+	<gxSurf+?>: and.b32
+	<gxSurf+?>: jz +25
+	cmplGfx/lib/gfxlib.ci:55: (17 bytes): scale := Math.max(widthScale, heightScale);
+	<gxSurf+?>: load.z64
+	<gxSurf+?>: dup.x64 sp(4)
+	<gxSurf+?>: dup.x64 sp(4)
+	<gxSurf+?>: load.ref <?> ;Math.max(a: float64, b: float64): float64
+	<gxSurf+?>: call
+	<gxSurf+?>: inc.sp(-16)
+	<gxSurf+?>: set.x64 sp(14)
+	<gxSurf+?>: jmp +21
+	cmplGfx/lib/gfxlib.ci:57: (17 bytes): scale := Math.min(widthScale, heightScale);
+	<gxSurf+?>: load.z64
+	<gxSurf+?>: dup.x64 sp(4)
+	<gxSurf+?>: dup.x64 sp(4)
+	<gxSurf+?>: load.ref <?> ;Math.min(a: float64, b: float64): float64
+	<gxSurf+?>: call
+	<gxSurf+?>: inc.sp(-16)
+	<gxSurf+?>: set.x64 sp(14)
+	<gxSurf+?>: inc.sp(-16)
+	<gxSurf+?>: jmp +52
+	cmplGfx/lib/gfxlib.ci:60: (48 bytes): if (fitWidth)
+	<gxSurf+?>: load.sp(+4)
+	<gxSurf+?>: load.i8
+	<gxSurf+?>: jz +21
+	cmplGfx/lib/gfxlib.ci:61: (13 bytes): scale := (width) / float64(surf.width(surf));
+	<gxSurf+?>: dup.x32 sp(16)
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: dup.x64 sp(8)
+	<gxSurf+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: div.f64
+	<gxSurf+?>: set.x64 sp(10)
+	<gxSurf+?>: jmp +26
+	cmplGfx/lib/gfxlib.ci:63: (22 bytes): if (fitHeight)
+	<gxSurf+?>: load.sp(+0)
+	<gxSurf+?>: load.i8
+	<gxSurf+?>: jz +17
+	cmplGfx/lib/gfxlib.ci:64: (13 bytes): scale := (height) / float64(surf.height(surf));
+	<gxSurf+?>: dup.x32 sp(15)
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: dup.x64 sp(8)
+	<gxSurf+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: div.f64
+	<gxSurf+?>: set.x64 sp(10)
+	cmplGfx/lib/gfxlib.ci:66: (12 bytes): if (scale > maxScale)
+	<gxSurf+?>: dup.x64 sp(8)
+	<gxSurf+?>: dup.x64 sp(13)
+	<gxSurf+?>: cgt.f64
+	<gxSurf+?>: jz +7
+	cmplGfx/lib/gfxlib.ci:67: (3 bytes): scale := maxScale;
+	<gxSurf+?>: mov.x64 sp(8, 11)
+	cmplGfx/lib/gfxlib.ci:71: (1 byte): tx: float64 := 0
+	<gxSurf+?>: load.z64
+	cmplGfx/lib/gfxlib.ci:72: (72 bytes): if (fitWidth || alignVertical == center)
+	<gxSurf+?>: load.sp(+12)
+	<gxSurf+?>: load.i8
+	<gxSurf+?>: dup.x32 sp(6)
+	<gxSurf+?>: load.z32
+	<gxSurf+?>: ceq.i32
+	<gxSurf+?>: or.b32
+	<gxSurf+?>: jz +34
+	cmplGfx/lib/gfxlib.ci:73: (26 bytes): tx := ((width) - (surf.width(surf)) * scale) / (2);
+	<gxSurf+?>: dup.x32 sp(18)
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: dup.x64 sp(10)
+	<gxSurf+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: dup.x64 sp(14)
+	<gxSurf+?>: mul.f64
+	<gxSurf+?>: sub.f64
+	<gxSurf+?>: load.f64 2.000000
+	<gxSurf+?>: div.f64
+	<gxSurf+?>: set.x64 sp(2)
+	<gxSurf+?>: jmp +32
+	cmplGfx/lib/gfxlib.ci:75: (28 bytes): if (alignVertical == right)
+	<gxSurf+?>: dup.x32 sp(5)
+	<gxSurf+?>: load.c32 2
+	<gxSurf+?>: ceq.i32
+	<gxSurf+?>: jz +20
+	cmplGfx/lib/gfxlib.ci:76: (16 bytes): tx := ((width) - (surf.width(surf)) * scale);
+	<gxSurf+?>: dup.x32 sp(18)
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: dup.x64 sp(10)
+	<gxSurf+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: dup.x64 sp(14)
+	<gxSurf+?>: mul.f64
+	<gxSurf+?>: sub.f64
+	<gxSurf+?>: set.x64 sp(2)
+	cmplGfx/lib/gfxlib.ci:79: (1 byte): ty: float64 := 0
+	<gxSurf+?>: load.z64
+	cmplGfx/lib/gfxlib.ci:80: (72 bytes): if (fitHeight || alignHorizontal == center)
+	<gxSurf+?>: load.sp(+16)
+	<gxSurf+?>: load.i8
+	<gxSurf+?>: dup.x32 sp(7)
+	<gxSurf+?>: load.z32
+	<gxSurf+?>: ceq.i32
+	<gxSurf+?>: or.b32
+	<gxSurf+?>: jz +34
+	cmplGfx/lib/gfxlib.ci:81: (26 bytes): ty := ((height) - (surf.height(surf)) * scale) / (2);
+	<gxSurf+?>: dup.x32 sp(19)
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: dup.x64 sp(12)
+	<gxSurf+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: dup.x64 sp(16)
+	<gxSurf+?>: mul.f64
+	<gxSurf+?>: sub.f64
+	<gxSurf+?>: load.f64 2.000000
+	<gxSurf+?>: div.f64
+	<gxSurf+?>: set.x64 sp(2)
+	<gxSurf+?>: jmp +32
+	cmplGfx/lib/gfxlib.ci:83: (28 bytes): if (alignHorizontal == bottom)
+	<gxSurf+?>: dup.x32 sp(6)
+	<gxSurf+?>: load.c32 8
+	<gxSurf+?>: ceq.i32
+	<gxSurf+?>: jz +20
+	cmplGfx/lib/gfxlib.ci:84: (16 bytes): ty := ((height) - (surf.height(surf)) * scale);
+	<gxSurf+?>: dup.x32 sp(19)
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: dup.x64 sp(12)
+	<gxSurf+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
+	<gxSurf+?>: i32.2f64
+	<gxSurf+?>: dup.x64 sp(16)
+	<gxSurf+?>: mul.f64
+	<gxSurf+?>: sub.f64
+	<gxSurf+?>: set.x64 sp(2)
+	cmplGfx/lib/gfxlib.ci:87: (104 bytes): mat: mat4f := {...}
+	<gxSurf+?>: inc.sp(+64)
+	cmplGfx/lib/gfxlib.ci:88: (15 bytes): mat.x.x := ((1) / scale);
+	<gxSurf+?>: load.f64 1.000000
+	<gxSurf+?>: dup.x64 sp(30)
+	<gxSurf+?>: div.f64
+	<gxSurf+?>: f64.2f32
+	<gxSurf+?>: set.x32 sp(1)
+	cmplGfx/lib/gfxlib.ci:88: (3 bytes): mat.x.y := (0);
+	<gxSurf+?>: load.z32
+	<gxSurf+?>: set.x32 sp(2)
+	cmplGfx/lib/gfxlib.ci:88: (3 bytes): mat.x.z := (0);
+	<gxSurf+?>: load.z32
+	<gxSurf+?>: set.x32 sp(3)
+	cmplGfx/lib/gfxlib.ci:88: (9 bytes): mat.x.w := (-tx / scale);
+	<gxSurf+?>: dup.x64 sp(18)
+	<gxSurf+?>: neg.f64
+	<gxSurf+?>: dup.x64 sp(30)
+	<gxSurf+?>: div.f64
+	<gxSurf+?>: f64.2f32
+	<gxSurf+?>: set.x32 sp(4)
+	cmplGfx/lib/gfxlib.ci:89: (3 bytes): mat.y.x := (0);
+	<gxSurf+?>: load.z32
+	<gxSurf+?>: set.x32 sp(5)
+	cmplGfx/lib/gfxlib.ci:89: (15 bytes): mat.y.y := ((1) / scale);
+	<gxSurf+?>: load.f64 1.000000
+	<gxSurf+?>: dup.x64 sp(30)
+	<gxSurf+?>: div.f64
+	<gxSurf+?>: f64.2f32
+	<gxSurf+?>: set.x32 sp(6)
+	cmplGfx/lib/gfxlib.ci:89: (3 bytes): mat.y.z := (0);
+	<gxSurf+?>: load.z32
+	<gxSurf+?>: set.x32 sp(7)
+	cmplGfx/lib/gfxlib.ci:89: (9 bytes): mat.y.w := (-ty / scale);
+	<gxSurf+?>: dup.x64 sp(16)
+	<gxSurf+?>: neg.f64
+	<gxSurf+?>: dup.x64 sp(30)
+	<gxSurf+?>: div.f64
+	<gxSurf+?>: f64.2f32
+	<gxSurf+?>: set.x32 sp(8)
+	cmplGfx/lib/gfxlib.ci:90: (3 bytes): mat.z.x := (0);
+	<gxSurf+?>: load.z32
+	<gxSurf+?>: set.x32 sp(9)
+	cmplGfx/lib/gfxlib.ci:90: (3 bytes): mat.z.y := (0);
+	<gxSurf+?>: load.z32
+	<gxSurf+?>: set.x32 sp(10)
+	cmplGfx/lib/gfxlib.ci:90: (15 bytes): mat.z.z := ((1) / scale);
+	<gxSurf+?>: load.f64 1.000000
+	<gxSurf+?>: dup.x64 sp(30)
+	<gxSurf+?>: div.f64
+	<gxSurf+?>: f64.2f32
+	<gxSurf+?>: set.x32 sp(11)
+	cmplGfx/lib/gfxlib.ci:90: (3 bytes): mat.z.w := (0);
+	<gxSurf+?>: load.z32
+	<gxSurf+?>: set.x32 sp(12)
+	cmplGfx/lib/gfxlib.ci:91: (3 bytes): mat.w.x := (0);
+	<gxSurf+?>: load.z32
+	<gxSurf+?>: set.x32 sp(13)
+	cmplGfx/lib/gfxlib.ci:91: (3 bytes): mat.w.y := (0);
+	<gxSurf+?>: load.z32
+	<gxSurf+?>: set.x32 sp(14)
+	cmplGfx/lib/gfxlib.ci:91: (3 bytes): mat.w.z := (0);
+	<gxSurf+?>: load.z32
+	<gxSurf+?>: set.x32 sp(15)
+	cmplGfx/lib/gfxlib.ci:91: (7 bytes): mat.w.w := (1);
+	<gxSurf+?>: load.f32 1.000000
+	<gxSurf+?>: set.x32 sp(16)
+	cmplGfx/lib/gfxlib.ci:94: (44 bytes): result.transform(result, null, surf, null, (align & highRes) ? 1 : 0, mat.data);
+	<gxSurf+?>: dup.x64 sp(24)
+	<gxSurf+?>: load.ref <?> ;null
+	<gxSurf+?>: dup.x64 sp(29)
+	<gxSurf+?>: load.ref <?> ;null
+	<gxSurf+?>: dup.x32 sp(39)
+	<gxSurf+?>: load.c32 32
+	<gxSurf+?>: and.b32
+	<gxSurf+?>: jz +13
+	<gxSurf+?>: load.c32 1
+	<gxSurf+?>: jmp +5
+	<gxSurf+?>: load.z32
+	<gxSurf+?>: load.sp(+28)
+	<gxSurf+?>: nfc(105) ;gxSurf.transform(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate: int32, mat: float32[16]): void
+	cmplGfx/lib/gfxlib.ci:95: (6 bytes): surf.destroy(surf);
+	<gxSurf+?>: dup.x64 sp(26)
+	<gxSurf+?>: nfc(82) ;gxSurf.destroy(surf: gxSurf): void
+	cmplGfx/lib/gfxlib.ci:96: (8 bytes): return .result := result;
+	<gxSurf+?>: mov.x64 sp(38, 24)
+	<gxSurf+?>: inc.sp(-120)
+	<gxSurf+?>: ret
+.usages:
+	cmplGfx/lib/gfxlib.ci:103: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:100: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:28: defined as `gxSurf(fileName: char[*], width: int32, height: int32, depth: int32, align: int32, maxScale: float64): gxSurf`
+}
+gxSurf(fileName: char[*], width: int32, height: int32, depth: int32, align: int32): gxSurf: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'gxSurf'
+.file: 'cmplGfx/lib/gfxlib.ci:100'
+.param .result: gxSurf (size: 8, cast: val)
+.param fileName: char[*] (size: 4, cast: ref)
+.param width: int32 (size: 4, cast: i32)
+.param height: int32 (size: 4, cast: i32)
+.param depth: int32 (size: 4, cast: i32)
+.param align: int32 (size: 4, cast: i32)
+.doc: 'Create a surface by opening an image file with custom width and height'
+.value: gxSurf(fileName, width, height, depth, align, Math.inf)
+.usages:
+	cmplGfx/lib/gfxlib.ci:100: defined as `gxSurf(fileName: char[*], width: int32, height: int32, depth: int32, align: int32): gxSurf`
+}
+gxSurf(fileName: char[*], width: int32, height: int32, depth: int32): gxSurf: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'gxSurf'
+.file: 'cmplGfx/lib/gfxlib.ci:103'
+.param .result: gxSurf (size: 8, cast: val)
+.param fileName: char[*] (size: 4, cast: ref)
+.param width: int32 (size: 4, cast: i32)
+.param height: int32 (size: 4, cast: i32)
+.param depth: int32 (size: 4, cast: i32)
+.doc: 'Create a surface by opening an image file with custom width and height'
+.value: gxSurf(fileName, width, height, depth, -1, Math.inf)
+.usages:
+	cmplGfx/lib/gfxlib.ci:103: defined as `gxSurf(fileName: char[*], width: int32, height: int32, depth: int32): gxSurf`
+}
 gxMesh(fileName: char[*]): gxMesh: function {
 .kind: static const function
 .base: `function`
 .size: 109
 .name: 'gxMesh'
-.file: 'cmplGfx/lib/gfxlib.ci:28'
+.file: 'cmplGfx/lib/gfxlib.ci:106'
 .param .result: gxMesh (size: 4, cast: variable(ref))
 .param fileName: char[*] (size: 4, cast: variable(ref))
 .doc: 'Create a mesh by opening a file'
@@ -13360,7 +13833,7 @@ gxMesh(fileName: char[*]): gxMesh: function {
 	abort("unknown file extension", fileName);
 }
 .instructions: (109 bytes)
-	cmplGfx/lib/gfxlib.ci:29: (36 bytes): if (endsWith(fileName, ".obj", ignCaseCmp))
+	cmplGfx/lib/gfxlib.ci:107: (36 bytes): if (endsWith(fileName, ".obj", ignCaseCmp))
 	<gxMesh>  : load.z32
 	<gxMesh+?>: dup.x32 sp(2)
 	<gxMesh+?>: load.ref <?> ;".obj"
@@ -13369,12 +13842,12 @@ gxMesh(fileName: char[*]): gxMesh: function {
 	<gxMesh+?>: call
 	<gxMesh+?>: inc.sp(-12)
 	<gxMesh+?>: jz +13
-	cmplGfx/lib/gfxlib.ci:30: (9 bytes): return .result := gxMesh.openObj(fileName);
+	cmplGfx/lib/gfxlib.ci:108: (9 bytes): return .result := gxMesh.openObj(fileName);
 	<gxMesh+?>: dup.x32 sp(1)
 	<gxMesh+?>: nfc(64) ;gxMesh.openObj(path: char[*]): gxMesh
 	<gxMesh+?>: set.x32 sp(3)
 	<gxMesh+?>: ret
-	cmplGfx/lib/gfxlib.ci:32: (36 bytes): if (endsWith(fileName, ".3ds", ignCaseCmp))
+	cmplGfx/lib/gfxlib.ci:110: (36 bytes): if (endsWith(fileName, ".3ds", ignCaseCmp))
 	<gxMesh+?>: load.z32
 	<gxMesh+?>: dup.x32 sp(2)
 	<gxMesh+?>: load.ref <?> ;".3ds"
@@ -13383,14 +13856,14 @@ gxMesh(fileName: char[*]): gxMesh: function {
 	<gxMesh+?>: call
 	<gxMesh+?>: inc.sp(-12)
 	<gxMesh+?>: jz +13
-	cmplGfx/lib/gfxlib.ci:33: (9 bytes): return .result := gxMesh.open3ds(fileName);
+	cmplGfx/lib/gfxlib.ci:111: (9 bytes): return .result := gxMesh.open3ds(fileName);
 	<gxMesh+?>: dup.x32 sp(1)
 	<gxMesh+?>: nfc(65) ;gxMesh.open3ds(path: char[*]): gxMesh
 	<gxMesh+?>: set.x32 sp(3)
 	<gxMesh+?>: ret
-	cmplGfx/lib/gfxlib.ci:35: (36 bytes): abort("unknown file extension", fileName);
+	cmplGfx/lib/gfxlib.ci:113: (36 bytes): abort("unknown file extension", fileName);
 	<gxMesh+?>: load.ref <?> ;"cmplGfx/lib/gfxlib.ci"
-	<gxMesh+?>: load.c32 35
+	<gxMesh+?>: load.c32 113
 	<gxMesh+?>: load.c32 -2
 	<gxMesh+?>: load.c32 128
 	<gxMesh+?>: load.ref <?> ;"unknown file extension"
@@ -13399,14 +13872,14 @@ gxMesh(fileName: char[*]): gxMesh: function {
 	<gxMesh+?>: nfc(7) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<gxMesh+?>: ret
 .usages:
-	cmplGfx/lib/gfxlib.ci:28: defined as `gxMesh(fileName: char[*]): gxMesh`
+	cmplGfx/lib/gfxlib.ci:106: defined as `gxMesh(fileName: char[*]): gxMesh`
 }
 gxSurf(copy: gxSurf): gxSurf: function {
 .kind: static const function
 .base: `function`
 .size: 40
 .name: 'gxSurf'
-.file: 'cmplGfx/lib/gfxlib.ci:39'
+.file: 'cmplGfx/lib/gfxlib.ci:117'
 .param .result: gxSurf (size: 8, cast: variable(val))
 .param copy: gxSurf (size: 8, cast: variable(val))
 .doc: 'Create a surface by cloning another one'
@@ -13416,7 +13889,7 @@ gxSurf(copy: gxSurf): gxSurf: function {
 	return .result := result;
 }
 .instructions: (40 bytes)
-	cmplGfx/lib/gfxlib.ci:40: (22 bytes): result: gxSurf := gxSurf.create(copy.width(copy), copy.height(copy), copy.depth(copy))
+	cmplGfx/lib/gfxlib.ci:118: (22 bytes): result: gxSurf := gxSurf.create(copy.width(copy), copy.height(copy), copy.depth(copy))
 	<gxSurf>  : dup.x64 sp(1)
 	<gxSurf+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
 	<gxSurf+?>: dup.x64 sp(2)
@@ -13424,26 +13897,26 @@ gxSurf(copy: gxSurf): gxSurf: function {
 	<gxSurf+?>: dup.x64 sp(3)
 	<gxSurf+?>: nfc(90) ;gxSurf.depth(surf: gxSurf): int32
 	<gxSurf+?>: nfc(79) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
-	cmplGfx/lib/gfxlib.ci:41: (15 bytes): result.copy(result, 0, 0, copy, null);
+	cmplGfx/lib/gfxlib.ci:119: (15 bytes): result.copy(result, 0, 0, copy, null);
 	<gxSurf+?>: dup.x64 sp(0)
 	<gxSurf+?>: load.z32
 	<gxSurf+?>: load.z32
 	<gxSurf+?>: dup.x64 sp(7)
 	<gxSurf+?>: load.ref <?> ;null
 	<gxSurf+?>: nfc(103) ;gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
-	cmplGfx/lib/gfxlib.ci:42: (3 bytes): return .result := result;
+	cmplGfx/lib/gfxlib.ci:120: (3 bytes): return .result := result;
 	<gxSurf+?>: set.x64 sp(5)
 	<gxSurf+?>: ret
 .usages:
-	cmplGfx/lib/gfxlib.ci:337: referenced as `gxSurf`
-	cmplGfx/lib/gfxlib.ci:39: defined as `gxSurf(copy: gxSurf): gxSurf`
+	cmplGfx/lib/gfxlib.ci:415: referenced as `gxSurf`
+	cmplGfx/lib/gfxlib.ci:117: defined as `gxSurf(copy: gxSurf): gxSurf`
 }
 gxSurf(copy: gxSurf, aspect: float64): gxSurf: function {
 .kind: static const function
 .base: `function`
 .size: 80
 .name: 'gxSurf'
-.file: 'cmplGfx/lib/gfxlib.ci:46'
+.file: 'cmplGfx/lib/gfxlib.ci:124'
 .param .result: gxSurf (size: 8, cast: variable(val))
 .param copy: gxSurf (size: 8, cast: variable(val))
 .param aspect: float64 (size: 8, cast: variable(f64))
@@ -13458,15 +13931,15 @@ gxSurf(copy: gxSurf, aspect: float64): gxSurf: function {
 	return .result := result;
 }
 .instructions: (80 bytes)
-	cmplGfx/lib/gfxlib.ci:47: (6 bytes): width: int32 := copy.width(copy)
+	cmplGfx/lib/gfxlib.ci:125: (6 bytes): width: int32 := copy.width(copy)
 	<gxSurf>  : dup.x64 sp(3)
 	<gxSurf+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
-	cmplGfx/lib/gfxlib.ci:48: (21 bytes): if (aspect > (0))
+	cmplGfx/lib/gfxlib.ci:126: (21 bytes): if (aspect > (0))
 	<gxSurf+?>: dup.x64 sp(2)
 	<gxSurf+?>: load.z64
 	<gxSurf+?>: cgt.f64
 	<gxSurf+?>: jz +17
-	cmplGfx/lib/gfxlib.ci:49: (13 bytes): width := ((copy.height(copy)) * aspect);
+	cmplGfx/lib/gfxlib.ci:127: (13 bytes): width := ((copy.height(copy)) * aspect);
 	<gxSurf+?>: dup.x64 sp(4)
 	<gxSurf+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
 	<gxSurf+?>: i32.2f64
@@ -13474,14 +13947,14 @@ gxSurf(copy: gxSurf, aspect: float64): gxSurf: function {
 	<gxSurf+?>: mul.f64
 	<gxSurf+?>: f64.2i32
 	<gxSurf+?>: set.x32 sp(1)
-	cmplGfx/lib/gfxlib.ci:51: (18 bytes): result: gxSurf := gxSurf.create(width, copy.height(copy), copy.depth(copy))
+	cmplGfx/lib/gfxlib.ci:129: (18 bytes): result: gxSurf := gxSurf.create(width, copy.height(copy), copy.depth(copy))
 	<gxSurf+?>: dup.x32 sp(0)
 	<gxSurf+?>: dup.x64 sp(5)
 	<gxSurf+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
 	<gxSurf+?>: dup.x64 sp(6)
 	<gxSurf+?>: nfc(90) ;gxSurf.depth(surf: gxSurf): int32
 	<gxSurf+?>: nfc(79) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
-	cmplGfx/lib/gfxlib.ci:52: (28 bytes): result.transform(result, null, copy, null, 1, null);
+	cmplGfx/lib/gfxlib.ci:130: (28 bytes): result.transform(result, null, copy, null, 1, null);
 	<gxSurf+?>: dup.x64 sp(0)
 	<gxSurf+?>: load.ref <?> ;null
 	<gxSurf+?>: dup.x64 sp(9)
@@ -13489,19 +13962,19 @@ gxSurf(copy: gxSurf, aspect: float64): gxSurf: function {
 	<gxSurf+?>: load.c32 1
 	<gxSurf+?>: load.ref <?> ;null
 	<gxSurf+?>: nfc(105) ;gxSurf.transform(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate: int32, mat: float32[16]): void
-	cmplGfx/lib/gfxlib.ci:53: (7 bytes): return .result := result;
+	cmplGfx/lib/gfxlib.ci:131: (7 bytes): return .result := result;
 	<gxSurf+?>: set.x64 sp(8)
 	<gxSurf+?>: inc.sp(-4)
 	<gxSurf+?>: ret
 .usages:
-	cmplGfx/lib/gfxlib.ci:46: defined as `gxSurf(copy: gxSurf, aspect: float64): gxSurf`
+	cmplGfx/lib/gfxlib.ci:124: defined as `gxSurf(copy: gxSurf, aspect: float64): gxSurf`
 }
 set(dst: gxSurf, x: int32, y: int32, color: argb): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'set'
-.file: 'cmplGfx/lib/gfxlib.ci:57'
+.file: 'cmplGfx/lib/gfxlib.ci:135'
 .param .result: void (size: 0, cast: void)
 .param dst: gxSurf (size: 8, cast: val)
 .param x: int32 (size: 4, cast: i32)
@@ -13510,15 +13983,15 @@ set(dst: gxSurf, x: int32, y: int32, color: argb): void: function {
 .doc: 'Set the the color of a pixel at the given position'
 .value: gxSurf.set(dst, x, y, uint32(color))
 .usages:
-	cmplGfx/lib/gfxlib.ci:133: referenced as `set`
-	cmplGfx/lib/gfxlib.ci:57: defined as `set(dst: gxSurf, x: int32, y: int32, color: argb): void`
+	cmplGfx/lib/gfxlib.ci:211: referenced as `set`
+	cmplGfx/lib/gfxlib.ci:135: defined as `set(dst: gxSurf, x: int32, y: int32, color: argb): void`
 }
 resize(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate: int32): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'resize'
-.file: 'cmplGfx/lib/gfxlib.ci:60'
+.file: 'cmplGfx/lib/gfxlib.ci:138'
 .param .result: void (size: 0, cast: void)
 .param surf: gxSurf (size: 8, cast: val)
 .param rect: gxRect (size: 4, cast: const ref)
@@ -13528,15 +14001,15 @@ resize(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate: int32)
 .doc: '@public'
 .value: gxSurf.transform(surf, rect, src, roi, interpolate, null)
 .usages:
-	cmplGfx/lib/gfxlib.ci:383: referenced as `resize`
-	cmplGfx/lib/gfxlib.ci:60: defined as `resize(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate: int32): void`
+	cmplGfx/lib/gfxlib.ci:461: referenced as `resize`
+	cmplGfx/lib/gfxlib.ci:138: defined as `resize(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpolate: int32): void`
 }
 clip(src: gxSurf, roi: gxRect): bool: function {
 .kind: static const function
 .base: `function`
 .size: 235
 .name: 'clip'
-.file: 'cmplGfx/lib/gfxlib.ci:63'
+.file: 'cmplGfx/lib/gfxlib.ci:141'
 .param .result: bool (size: 4, cast: variable(bool))
 .param src: gxSurf (size: 8, cast: variable(val))
 .param roi: gxRect (size: 4, cast: variable(ref))
@@ -13569,7 +14042,7 @@ clip(src: gxSurf, roi: gxRect): bool: function {
 	return .result := true;
 }
 .instructions: (235 bytes)
-	cmplGfx/lib/gfxlib.ci:65: (18 bytes): roi.w := roi.w + roi.x;
+	cmplGfx/lib/gfxlib.ci:143: (18 bytes): roi.w := roi.w + roi.x;
 	<clip>  : dup.x32 sp(1)
 	<clip+?>: inc.i32(+8)
 	<clip+?>: load.i32
@@ -13579,7 +14052,7 @@ clip(src: gxSurf, roi: gxRect): bool: function {
 	<clip+?>: dup.x32 sp(2)
 	<clip+?>: inc.i32(+8)
 	<clip+?>: store.i32
-	cmplGfx/lib/gfxlib.ci:66: (22 bytes): roi.h := roi.h + roi.y;
+	cmplGfx/lib/gfxlib.ci:144: (22 bytes): roi.h := roi.h + roi.y;
 	<clip+?>: dup.x32 sp(1)
 	<clip+?>: inc.i32(+12)
 	<clip+?>: load.i32
@@ -13590,59 +14063,59 @@ clip(src: gxSurf, roi: gxRect): bool: function {
 	<clip+?>: dup.x32 sp(2)
 	<clip+?>: inc.i32(+12)
 	<clip+?>: store.i32
-	cmplGfx/lib/gfxlib.ci:68: (13 bytes): if (roi.x < 0)
+	cmplGfx/lib/gfxlib.ci:146: (13 bytes): if (roi.x < 0)
 	<clip+?>: dup.x32 sp(1)
 	<clip+?>: load.i32
 	<clip+?>: load.z32
 	<clip+?>: clt.i32
 	<clip+?>: jz +8
-	cmplGfx/lib/gfxlib.ci:69: (4 bytes): roi.x := 0;
+	cmplGfx/lib/gfxlib.ci:147: (4 bytes): roi.x := 0;
 	<clip+?>: load.z32
 	<clip+?>: dup.x32 sp(2)
 	<clip+?>: store.i32
-	cmplGfx/lib/gfxlib.ci:72: (21 bytes): if (roi.y < 0)
+	cmplGfx/lib/gfxlib.ci:150: (21 bytes): if (roi.y < 0)
 	<clip+?>: dup.x32 sp(1)
 	<clip+?>: inc.i32(+4)
 	<clip+?>: load.i32
 	<clip+?>: load.z32
 	<clip+?>: clt.i32
 	<clip+?>: jz +12
-	cmplGfx/lib/gfxlib.ci:73: (8 bytes): roi.y := 0;
+	cmplGfx/lib/gfxlib.ci:151: (8 bytes): roi.y := 0;
 	<clip+?>: load.z32
 	<clip+?>: dup.x32 sp(2)
 	<clip+?>: inc.i32(+4)
 	<clip+?>: store.i32
-	cmplGfx/lib/gfxlib.ci:76: (6 bytes): width: int32 := src.width(src)
+	cmplGfx/lib/gfxlib.ci:154: (6 bytes): width: int32 := src.width(src)
 	<clip+?>: dup.x64 sp(2)
 	<clip+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
-	cmplGfx/lib/gfxlib.ci:77: (23 bytes): if (roi.w > width)
+	cmplGfx/lib/gfxlib.ci:155: (23 bytes): if (roi.w > width)
 	<clip+?>: dup.x32 sp(2)
 	<clip+?>: inc.i32(+8)
 	<clip+?>: load.i32
 	<clip+?>: dup.x32 sp(1)
 	<clip+?>: cgt.i32
 	<clip+?>: jz +13
-	cmplGfx/lib/gfxlib.ci:78: (9 bytes): roi.w := width;
+	cmplGfx/lib/gfxlib.ci:156: (9 bytes): roi.w := width;
 	<clip+?>: dup.x32 sp(0)
 	<clip+?>: dup.x32 sp(3)
 	<clip+?>: inc.i32(+8)
 	<clip+?>: store.i32
-	cmplGfx/lib/gfxlib.ci:81: (6 bytes): height: int32 := src.height(src)
+	cmplGfx/lib/gfxlib.ci:159: (6 bytes): height: int32 := src.height(src)
 	<clip+?>: dup.x64 sp(3)
 	<clip+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
-	cmplGfx/lib/gfxlib.ci:82: (23 bytes): if (roi.h > height)
+	cmplGfx/lib/gfxlib.ci:160: (23 bytes): if (roi.h > height)
 	<clip+?>: dup.x32 sp(3)
 	<clip+?>: inc.i32(+12)
 	<clip+?>: load.i32
 	<clip+?>: dup.x32 sp(1)
 	<clip+?>: cgt.i32
 	<clip+?>: jz +13
-	cmplGfx/lib/gfxlib.ci:83: (9 bytes): roi.h := height;
+	cmplGfx/lib/gfxlib.ci:161: (9 bytes): roi.h := height;
 	<clip+?>: dup.x32 sp(0)
 	<clip+?>: dup.x32 sp(4)
 	<clip+?>: inc.i32(+12)
 	<clip+?>: store.i32
-	cmplGfx/lib/gfxlib.ci:86: (18 bytes): roi.w := roi.w - roi.x;
+	cmplGfx/lib/gfxlib.ci:164: (18 bytes): roi.w := roi.w - roi.x;
 	<clip+?>: dup.x32 sp(3)
 	<clip+?>: inc.i32(+8)
 	<clip+?>: load.i32
@@ -13652,7 +14125,7 @@ clip(src: gxSurf, roi: gxRect): bool: function {
 	<clip+?>: dup.x32 sp(4)
 	<clip+?>: inc.i32(+8)
 	<clip+?>: store.i32
-	cmplGfx/lib/gfxlib.ci:87: (22 bytes): roi.h := roi.h - roi.y;
+	cmplGfx/lib/gfxlib.ci:165: (22 bytes): roi.h := roi.h - roi.y;
 	<clip+?>: dup.x32 sp(3)
 	<clip+?>: inc.i32(+12)
 	<clip+?>: load.i32
@@ -13663,63 +14136,63 @@ clip(src: gxSurf, roi: gxRect): bool: function {
 	<clip+?>: dup.x32 sp(4)
 	<clip+?>: inc.i32(+12)
 	<clip+?>: store.i32
-	cmplGfx/lib/gfxlib.ci:89: (24 bytes): if (roi.w <= 0)
+	cmplGfx/lib/gfxlib.ci:167: (24 bytes): if (roi.w <= 0)
 	<clip+?>: dup.x32 sp(3)
 	<clip+?>: inc.i32(+8)
 	<clip+?>: load.i32
 	<clip+?>: load.z32
 	<clip+?>: cgt.i32
 	<clip+?>: jnz +15
-	cmplGfx/lib/gfxlib.ci:90: (11 bytes): return .result := false;
+	cmplGfx/lib/gfxlib.ci:168: (11 bytes): return .result := false;
 	<clip+?>: load.z32
 	<clip+?>: load.sp(+28)
 	<clip+?>: store.i8
 	<clip+?>: inc.sp(-8)
 	<clip+?>: ret
-	cmplGfx/lib/gfxlib.ci:92: (24 bytes): if (roi.h <= 0)
+	cmplGfx/lib/gfxlib.ci:170: (24 bytes): if (roi.h <= 0)
 	<clip+?>: dup.x32 sp(3)
 	<clip+?>: inc.i32(+12)
 	<clip+?>: load.i32
 	<clip+?>: load.z32
 	<clip+?>: cgt.i32
 	<clip+?>: jnz +15
-	cmplGfx/lib/gfxlib.ci:93: (11 bytes): return .result := false;
+	cmplGfx/lib/gfxlib.ci:171: (11 bytes): return .result := false;
 	<clip+?>: load.z32
 	<clip+?>: load.sp(+28)
 	<clip+?>: store.i8
 	<clip+?>: inc.sp(-8)
 	<clip+?>: ret
-	cmplGfx/lib/gfxlib.ci:95: (15 bytes): return .result := true;
+	cmplGfx/lib/gfxlib.ci:173: (15 bytes): return .result := true;
 	<clip+?>: load.c32 1
 	<clip+?>: load.sp(+28)
 	<clip+?>: store.i8
 	<clip+?>: inc.sp(-8)
 	<clip+?>: ret
 .usages:
-	cmplGfx/lib/gfxlib.ci:147: referenced as `clip`
-	cmplGfx/lib/gfxlib.ci:117: referenced as `clip`
-	cmplGfx/lib/gfxlib.ci:63: defined as `clip(src: gxSurf, roi: gxRect): bool`
+	cmplGfx/lib/gfxlib.ci:225: referenced as `clip`
+	cmplGfx/lib/gfxlib.ci:195: referenced as `clip`
+	cmplGfx/lib/gfxlib.ci:141: defined as `clip(src: gxSurf, roi: gxRect): bool`
 }
 fill(dst: gxSurf, col: uint32): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'fill'
-.file: 'cmplGfx/lib/gfxlib.ci:99'
+.file: 'cmplGfx/lib/gfxlib.ci:177'
 .param .result: void (size: 0, cast: void)
 .param dst: gxSurf (size: 8, cast: val)
 .param col: uint32 (size: 4, cast: u32)
 .doc: 'Fill the entire surface with the given color'
 .value: dst.fillRect(dst, 0, 0, 65536, 65536, col)
 .usages:
-	cmplGfx/lib/gfxlib.ci:99: defined as `fill(dst: gxSurf, col: uint32): void`
+	cmplGfx/lib/gfxlib.ci:177: defined as `fill(dst: gxSurf, col: uint32): void`
 }
 fill(dst: gxSurf, roi: gxRect, col: uint32): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'fill'
-.file: 'cmplGfx/lib/gfxlib.ci:101'
+.file: 'cmplGfx/lib/gfxlib.ci:179'
 .param .result: void (size: 0, cast: void)
 .param dst: gxSurf (size: 8, cast: val)
 .param roi: gxRect (size: 4, cast: const variable(ref))
@@ -13727,14 +14200,14 @@ fill(dst: gxSurf, roi: gxRect, col: uint32): void: function {
 .doc: 'Fill the given region with the given color'
 .value: dst.fillRect(dst, roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col)
 .usages:
-	cmplGfx/lib/gfxlib.ci:101: defined as `fill(dst: gxSurf, roi: gxRect, col: uint32): void`
+	cmplGfx/lib/gfxlib.ci:179: defined as `fill(dst: gxSurf, roi: gxRect, col: uint32): void`
 }
 fill(dst: gxSurf, roi: gxRect, pad: int32, col: uint32): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'fill'
-.file: 'cmplGfx/lib/gfxlib.ci:103'
+.file: 'cmplGfx/lib/gfxlib.ci:181'
 .param .result: void (size: 0, cast: void)
 .param dst: gxSurf (size: 8, cast: val)
 .param roi: gxRect (size: 4, cast: const variable(ref))
@@ -13743,14 +14216,14 @@ fill(dst: gxSurf, roi: gxRect, pad: int32, col: uint32): void: function {
 .doc: 'Fill the given region and padding with the given color'
 .value: dst.fillRect(dst, roi.x - pad, roi.y - pad, roi.x + roi.w + pad, roi.y + roi.h + pad, col)
 .usages:
-	cmplGfx/lib/gfxlib.ci:103: defined as `fill(dst: gxSurf, roi: gxRect, pad: int32, col: uint32): void`
+	cmplGfx/lib/gfxlib.ci:181: defined as `fill(dst: gxSurf, roi: gxRect, pad: int32, col: uint32): void`
 }
 drawRect(dst: gxSurf, roi: gxRect, col: uint32): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'drawRect'
-.file: 'cmplGfx/lib/gfxlib.ci:106'
+.file: 'cmplGfx/lib/gfxlib.ci:184'
 .param .result: void (size: 0, cast: void)
 .param dst: gxSurf (size: 8, cast: val)
 .param roi: gxRect (size: 4, cast: const variable(ref))
@@ -13758,14 +14231,14 @@ drawRect(dst: gxSurf, roi: gxRect, col: uint32): void: function {
 .doc: '@public'
 .value: dst.drawRect(dst, roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col)
 .usages:
-	cmplGfx/lib/gfxlib.ci:106: defined as `drawRect(dst: gxSurf, roi: gxRect, col: uint32): void`
+	cmplGfx/lib/gfxlib.ci:184: defined as `drawRect(dst: gxSurf, roi: gxRect, col: uint32): void`
 }
 eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): vec4f): void: function {
 .kind: static const function
 .base: `function`
 .size: 353
 .name: 'eval'
-.file: 'cmplGfx/lib/gfxlib.ci:109'
+.file: 'cmplGfx/lib/gfxlib.ci:187'
 .param .result: void (size: 0, cast: variable(void))
 .param dst: gxSurf (size: 8, cast: variable(val))
 .param roi: gxRect (size: 4, cast: const variable(ref))
@@ -13800,9 +14273,9 @@ eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	}
 }
 .instructions: (353 bytes)
-	cmplGfx/lib/gfxlib.ci:110: (114 bytes): rect: gxRect := {...}
+	cmplGfx/lib/gfxlib.ci:188: (114 bytes): rect: gxRect := {...}
 	<eval>  : inc.sp(+16)
-	cmplGfx/lib/gfxlib.ci:111: (22 bytes): rect.x := (roi) != null ? roi.x : 0;
+	cmplGfx/lib/gfxlib.ci:189: (22 bytes): rect.x := (roi) != null ? roi.x : 0;
 	<eval+?>: dup.x32 sp(8)
 	<eval+?>: load.ref <?> ;null
 	<eval+?>: ceq.i32
@@ -13812,7 +14285,7 @@ eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: jmp +5
 	<eval+?>: load.z32
 	<eval+?>: set.x32 sp(1)
-	cmplGfx/lib/gfxlib.ci:112: (26 bytes): rect.y := (roi) != null ? roi.y : 0;
+	cmplGfx/lib/gfxlib.ci:190: (26 bytes): rect.y := (roi) != null ? roi.y : 0;
 	<eval+?>: dup.x32 sp(8)
 	<eval+?>: load.ref <?> ;null
 	<eval+?>: ceq.i32
@@ -13823,7 +14296,7 @@ eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: jmp +5
 	<eval+?>: load.z32
 	<eval+?>: set.x32 sp(2)
-	cmplGfx/lib/gfxlib.ci:113: (31 bytes): rect.w := (roi) != null ? roi.w : dst.width(dst);
+	cmplGfx/lib/gfxlib.ci:191: (31 bytes): rect.w := (roi) != null ? roi.w : dst.width(dst);
 	<eval+?>: dup.x32 sp(8)
 	<eval+?>: load.ref <?> ;null
 	<eval+?>: ceq.i32
@@ -13835,7 +14308,7 @@ eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: dup.x64 sp(9)
 	<eval+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
 	<eval+?>: set.x32 sp(3)
-	cmplGfx/lib/gfxlib.ci:114: (31 bytes): rect.h := (roi) != null ? roi.h : dst.height(dst);
+	cmplGfx/lib/gfxlib.ci:192: (31 bytes): rect.h := (roi) != null ? roi.h : dst.height(dst);
 	<eval+?>: dup.x32 sp(8)
 	<eval+?>: load.ref <?> ;null
 	<eval+?>: ceq.i32
@@ -13847,7 +14320,7 @@ eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: dup.x64 sp(9)
 	<eval+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
 	<eval+?>: set.x32 sp(4)
-	cmplGfx/lib/gfxlib.ci:117: (26 bytes): if (!clip(dst, rect))
+	cmplGfx/lib/gfxlib.ci:195: (26 bytes): if (!clip(dst, rect))
 	<eval+?>: load.z32
 	<eval+?>: dup.x64 sp(10)
 	<eval+?>: load.sp(+12)
@@ -13855,48 +14328,48 @@ eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: call
 	<eval+?>: inc.sp(-12)
 	<eval+?>: jnz +9
-	cmplGfx/lib/gfxlib.ci:118: (5 bytes): return;
+	cmplGfx/lib/gfxlib.ci:196: (5 bytes): return;
 	<eval+?>: inc.sp(-16)
 	<eval+?>: ret
-	cmplGfx/lib/gfxlib.ci:121: (16 bytes): in: vec4f := {...}
+	cmplGfx/lib/gfxlib.ci:199: (16 bytes): in: vec4f := {...}
 	<eval+?>: inc.sp(+16)
-	cmplGfx/lib/gfxlib.ci:122: (3 bytes): in.x := (0);
+	cmplGfx/lib/gfxlib.ci:200: (3 bytes): in.x := (0);
 	<eval+?>: load.z32
 	<eval+?>: set.x32 sp(1)
-	cmplGfx/lib/gfxlib.ci:123: (3 bytes): in.y := (0);
+	cmplGfx/lib/gfxlib.ci:201: (3 bytes): in.y := (0);
 	<eval+?>: load.z32
 	<eval+?>: set.x32 sp(2)
-	cmplGfx/lib/gfxlib.ci:124: (3 bytes): in.z := aspect;
+	cmplGfx/lib/gfxlib.ci:202: (3 bytes): in.z := aspect;
 	<eval+?>: mov.x32 sp(2, 11)
-	cmplGfx/lib/gfxlib.ci:125: (3 bytes): in.w := time;
+	cmplGfx/lib/gfxlib.ci:203: (3 bytes): in.w := time;
 	<eval+?>: mov.x32 sp(3, 10)
-	cmplGfx/lib/gfxlib.ci:127: (7 bytes): w: float32 := dst.width(dst)
+	cmplGfx/lib/gfxlib.ci:205: (7 bytes): w: float32 := dst.width(dst)
 	<eval+?>: dup.x64 sp(13)
 	<eval+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
 	<eval+?>: i32.2f32
-	cmplGfx/lib/gfxlib.ci:128: (7 bytes): h: float32 := dst.height(dst)
+	cmplGfx/lib/gfxlib.ci:206: (7 bytes): h: float32 := dst.height(dst)
 	<eval+?>: dup.x64 sp(14)
 	<eval+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
 	<eval+?>: i32.2f32
-	cmplGfx/lib/gfxlib.ci:129: (178 bytes): for (y: int32 := rect.y; y < rect.y + rect.h; y := y + 1)
+	cmplGfx/lib/gfxlib.ci:207: (178 bytes): for (y: int32 := rect.y; y < rect.y + rect.h; y := y + 1)
 	<eval+?>: dup.x32 sp(7)
 	<eval+?>: jmp +160
-	cmplGfx/lib/gfxlib.ci:130: (8 bytes): in.y := (y) / h;
+	cmplGfx/lib/gfxlib.ci:208: (8 bytes): in.y := (y) / h;
 	<eval+?>: dup.x32 sp(0)
 	<eval+?>: i32.2f32
 	<eval+?>: dup.x32 sp(2)
 	<eval+?>: div.f32
 	<eval+?>: set.x32 sp(5)
-	cmplGfx/lib/gfxlib.ci:131: (144 bytes): for (x: int32 := rect.x; x < rect.x + rect.w; x := x + 1)
+	cmplGfx/lib/gfxlib.ci:209: (144 bytes): for (x: int32 := rect.x; x < rect.x + rect.w; x := x + 1)
 	<eval+?>: dup.x32 sp(7)
 	<eval+?>: jmp +126
-	cmplGfx/lib/gfxlib.ci:132: (8 bytes): in.x := (x) / w;
+	cmplGfx/lib/gfxlib.ci:210: (8 bytes): in.x := (x) / w;
 	<eval+?>: dup.x32 sp(0)
 	<eval+?>: i32.2f32
 	<eval+?>: dup.x32 sp(4)
 	<eval+?>: div.f32
 	<eval+?>: set.x32 sp(5)
-	cmplGfx/lib/gfxlib.ci:133: (110 bytes): set(dst, x, y, argb(eval(in)));
+	cmplGfx/lib/gfxlib.ci:211: (110 bytes): set(dst, x, y, argb(eval(in)));
 	<eval+?>: dup.x64 sp(17)
 	<eval+?>: dup.x32 sp(2)
 	<eval+?>: dup.x32 sp(4)
@@ -13942,9 +14415,9 @@ eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: set.x32 sp(5)
 	<eval+?>: inc.sp(-16)
 	<eval+?>: nfc(92) ;gxSurf.set(surf: gxSurf, x: int32, y: int32, color: uint32): void
-	cmplGfx/lib/gfxlib.ci:131: (4 bytes): x := x + 1
+	cmplGfx/lib/gfxlib.ci:209: (4 bytes): x := x + 1
 	<eval+?>: inc.i32(+1)
-	cmplGfx/lib/gfxlib.ci:131: (12 bytes): x < rect.x + rect.w
+	cmplGfx/lib/gfxlib.ci:209: (12 bytes): x < rect.x + rect.w
 	<eval+?>: dup.x32 sp(0)
 	<eval+?>: dup.x32 sp(9)
 	<eval+?>: dup.x32 sp(12)
@@ -13952,9 +14425,9 @@ eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: clt.i32
 	<eval+?>: jnz -130
 	<eval+?>: inc.sp(-4)
-	cmplGfx/lib/gfxlib.ci:129: (4 bytes): y := y + 1
+	cmplGfx/lib/gfxlib.ci:207: (4 bytes): y := y + 1
 	<eval+?>: inc.i32(+1)
-	cmplGfx/lib/gfxlib.ci:129: (12 bytes): y < rect.y + rect.h
+	cmplGfx/lib/gfxlib.ci:207: (12 bytes): y < rect.y + rect.h
 	<eval+?>: dup.x32 sp(0)
 	<eval+?>: dup.x32 sp(9)
 	<eval+?>: dup.x32 sp(12)
@@ -13965,17 +14438,17 @@ eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): 
 	<eval+?>: inc.sp(-40)
 	<eval+?>: ret
 .usages:
-	cmplGfx/lib/gfxlib.ci:392: referenced as `eval`
-	cmplGfx/lib/gfxlib.ci:382: referenced as `eval`
-	cmplGfx/lib/gfxlib.ci:368: referenced as `eval`
-	cmplGfx/lib/gfxlib.ci:109: defined as `eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): vec4f): void`
+	cmplGfx/lib/gfxlib.ci:470: referenced as `eval`
+	cmplGfx/lib/gfxlib.ci:460: referenced as `eval`
+	cmplGfx/lib/gfxlib.ci:446: referenced as `eval`
+	cmplGfx/lib/gfxlib.ci:187: defined as `eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): vec4f): void`
 }
 tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function {
 .kind: static const function
 .base: `function`
 .size: 251
 .name: 'tile'
-.file: 'cmplGfx/lib/gfxlib.ci:139'
+.file: 'cmplGfx/lib/gfxlib.ci:217'
 .param .result: void (size: 0, cast: variable(void))
 .param dst: gxSurf (size: 8, cast: variable(val))
 .param x: int32 (size: 4, cast: variable(i32))
@@ -14008,9 +14481,9 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	}
 }
 .instructions: (251 bytes)
-	cmplGfx/lib/gfxlib.ci:140: (114 bytes): rect: gxRect := {...}
+	cmplGfx/lib/gfxlib.ci:218: (114 bytes): rect: gxRect := {...}
 	<tile>  : inc.sp(+16)
-	cmplGfx/lib/gfxlib.ci:141: (22 bytes): rect.x := (roi) != null ? roi.x : 0;
+	cmplGfx/lib/gfxlib.ci:219: (22 bytes): rect.x := (roi) != null ? roi.x : 0;
 	<tile+?>: dup.x32 sp(5)
 	<tile+?>: load.ref <?> ;null
 	<tile+?>: ceq.i32
@@ -14020,7 +14493,7 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: jmp +5
 	<tile+?>: load.z32
 	<tile+?>: set.x32 sp(1)
-	cmplGfx/lib/gfxlib.ci:142: (26 bytes): rect.y := (roi) != null ? roi.y : 0;
+	cmplGfx/lib/gfxlib.ci:220: (26 bytes): rect.y := (roi) != null ? roi.y : 0;
 	<tile+?>: dup.x32 sp(5)
 	<tile+?>: load.ref <?> ;null
 	<tile+?>: ceq.i32
@@ -14031,7 +14504,7 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: jmp +5
 	<tile+?>: load.z32
 	<tile+?>: set.x32 sp(2)
-	cmplGfx/lib/gfxlib.ci:143: (31 bytes): rect.w := (roi) != null ? roi.w : src.width(src);
+	cmplGfx/lib/gfxlib.ci:221: (31 bytes): rect.w := (roi) != null ? roi.w : src.width(src);
 	<tile+?>: dup.x32 sp(5)
 	<tile+?>: load.ref <?> ;null
 	<tile+?>: ceq.i32
@@ -14043,7 +14516,7 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: dup.x64 sp(6)
 	<tile+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
 	<tile+?>: set.x32 sp(3)
-	cmplGfx/lib/gfxlib.ci:144: (31 bytes): rect.h := (roi) != null ? roi.h : src.height(src);
+	cmplGfx/lib/gfxlib.ci:222: (31 bytes): rect.h := (roi) != null ? roi.h : src.height(src);
 	<tile+?>: dup.x32 sp(5)
 	<tile+?>: load.ref <?> ;null
 	<tile+?>: ceq.i32
@@ -14055,7 +14528,7 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: dup.x64 sp(6)
 	<tile+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
 	<tile+?>: set.x32 sp(4)
-	cmplGfx/lib/gfxlib.ci:147: (26 bytes): if (!clip(src, rect))
+	cmplGfx/lib/gfxlib.ci:225: (26 bytes): if (!clip(src, rect))
 	<tile+?>: load.z32
 	<tile+?>: dup.x64 sp(7)
 	<tile+?>: load.sp(+12)
@@ -14063,65 +14536,65 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: call
 	<tile+?>: inc.sp(-12)
 	<tile+?>: jnz +9
-	cmplGfx/lib/gfxlib.ci:148: (5 bytes): return;
+	cmplGfx/lib/gfxlib.ci:226: (5 bytes): return;
 	<tile+?>: inc.sp(-16)
 	<tile+?>: ret
-	cmplGfx/lib/gfxlib.ci:151: (17 bytes): if (x < 0)
+	cmplGfx/lib/gfxlib.ci:229: (17 bytes): if (x < 0)
 	<tile+?>: dup.x32 sp(9)
 	<tile+?>: load.z32
 	<tile+?>: clt.i32
 	<tile+?>: jz +13
-	cmplGfx/lib/gfxlib.ci:152: (9 bytes): x := -(-x % rect.w);
+	cmplGfx/lib/gfxlib.ci:230: (9 bytes): x := -(-x % rect.w);
 	<tile+?>: dup.x32 sp(9)
 	<tile+?>: neg.i32
 	<tile+?>: dup.x32 sp(3)
 	<tile+?>: mod.i32
 	<tile+?>: neg.i32
 	<tile+?>: set.x32 sp(10)
-	cmplGfx/lib/gfxlib.ci:154: (17 bytes): if (y < 0)
+	cmplGfx/lib/gfxlib.ci:232: (17 bytes): if (y < 0)
 	<tile+?>: dup.x32 sp(8)
 	<tile+?>: load.z32
 	<tile+?>: clt.i32
 	<tile+?>: jz +13
-	cmplGfx/lib/gfxlib.ci:155: (9 bytes): y := -(-y % rect.h);
+	cmplGfx/lib/gfxlib.ci:233: (9 bytes): y := -(-y % rect.h);
 	<tile+?>: dup.x32 sp(8)
 	<tile+?>: neg.i32
 	<tile+?>: dup.x32 sp(4)
 	<tile+?>: mod.i32
 	<tile+?>: neg.i32
 	<tile+?>: set.x32 sp(9)
-	cmplGfx/lib/gfxlib.ci:157: (6 bytes): width: int32 := dst.width(dst)
+	cmplGfx/lib/gfxlib.ci:235: (6 bytes): width: int32 := dst.width(dst)
 	<tile+?>: dup.x64 sp(10)
 	<tile+?>: nfc(88) ;gxSurf.width(surf: gxSurf): int32
-	cmplGfx/lib/gfxlib.ci:158: (6 bytes): height: int32 := dst.height(dst)
+	cmplGfx/lib/gfxlib.ci:236: (6 bytes): height: int32 := dst.height(dst)
 	<tile+?>: dup.x64 sp(11)
 	<tile+?>: nfc(89) ;gxSurf.height(surf: gxSurf): int32
-	cmplGfx/lib/gfxlib.ci:159: (60 bytes): for (j: int32 := y; j < height; j := j + rect.h)
+	cmplGfx/lib/gfxlib.ci:237: (60 bytes): for (j: int32 := y; j < height; j := j + rect.h)
 	<tile+?>: dup.x32 sp(10)
 	<tile+?>: jmp +45
-	cmplGfx/lib/gfxlib.ci:160: (38 bytes): for (i: int32 := x; i < width; i := i + rect.w)
+	cmplGfx/lib/gfxlib.ci:238: (38 bytes): for (i: int32 := x; i < width; i := i + rect.w)
 	<tile+?>: dup.x32 sp(12)
 	<tile+?>: jmp +23
-	cmplGfx/lib/gfxlib.ci:161: (16 bytes): dst.copy(dst, i, j, src, rect);
+	cmplGfx/lib/gfxlib.ci:239: (16 bytes): dst.copy(dst, i, j, src, rect);
 	<tile+?>: dup.x64 sp(14)
 	<tile+?>: dup.x32 sp(2)
 	<tile+?>: dup.x32 sp(4)
 	<tile+?>: dup.x64 sp(14)
 	<tile+?>: load.sp(+40)
 	<tile+?>: nfc(103) ;gxSurf.copy(surf: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void
-	cmplGfx/lib/gfxlib.ci:160: (3 bytes): i := i + rect.w
+	cmplGfx/lib/gfxlib.ci:238: (3 bytes): i := i + rect.w
 	<tile+?>: dup.x32 sp(6)
 	<tile+?>: add.i32
-	cmplGfx/lib/gfxlib.ci:160: (9 bytes): i < width
+	cmplGfx/lib/gfxlib.ci:238: (9 bytes): i < width
 	<tile+?>: dup.x32 sp(0)
 	<tile+?>: dup.x32 sp(4)
 	<tile+?>: clt.i32
 	<tile+?>: jnz -24
 	<tile+?>: inc.sp(-4)
-	cmplGfx/lib/gfxlib.ci:159: (3 bytes): j := j + rect.h
+	cmplGfx/lib/gfxlib.ci:237: (3 bytes): j := j + rect.h
 	<tile+?>: dup.x32 sp(6)
 	<tile+?>: add.i32
-	cmplGfx/lib/gfxlib.ci:159: (9 bytes): j < height
+	cmplGfx/lib/gfxlib.ci:237: (9 bytes): j < height
 	<tile+?>: dup.x32 sp(0)
 	<tile+?>: dup.x32 sp(2)
 	<tile+?>: clt.i32
@@ -14130,14 +14603,14 @@ tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void: function 
 	<tile+?>: inc.sp(-24)
 	<tile+?>: ret
 .usages:
-	cmplGfx/lib/gfxlib.ci:139: defined as `tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void`
+	cmplGfx/lib/gfxlib.ci:217: defined as `tile(dst: gxSurf, x: int32, y: int32, src: gxSurf, roi: gxRect): void`
 }
 show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void: function {
 .kind: static const function
 .base: `function`
 .size: 118
 .name: 'show'
-.file: 'cmplGfx/lib/gfxlib.ci:167'
+.file: 'cmplGfx/lib/gfxlib.ci:245'
 .param .result: void (size: 0, cast: variable(void))
 .param mesh: gxMesh (size: 4, cast: variable(ref))
 .param w: int32 (size: 4, cast: variable(i32))
@@ -14300,9 +14773,9 @@ show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void: function {
 	closure.offs.destroy(closure.offs);
 }
 .instructions: (118 bytes)
-	cmplGfx/lib/gfxlib.ci:287: (69 bytes): closure: Closure := {...}
+	cmplGfx/lib/gfxlib.ci:365: (69 bytes): closure: Closure := {...}
 	<show>  : inc.sp(+24)
-	cmplGfx/lib/gfxlib.ci:288: (52 bytes): closure.mode := (gxMesh.clearDepth | gxMesh.clearColor | gxMesh.useLights | gxMesh.cullBack | gxMesh.drawFill);
+	cmplGfx/lib/gfxlib.ci:366: (52 bytes): closure.mode := (gxMesh.clearDepth | gxMesh.clearColor | gxMesh.useLights | gxMesh.cullBack | gxMesh.drawFill);
 	<show+?>: load.c64 8
 	<show+?>: load.c64 4
 	<show+?>: or.b64
@@ -14314,14 +14787,14 @@ show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void: function {
 	<show+?>: or.b64
 	<show+?>: i64.2i32
 	<show+?>: set.x32 sp(1)
-	cmplGfx/lib/gfxlib.ci:289: (10 bytes): closure.offs := gxSurf.create3d(w, h);
+	cmplGfx/lib/gfxlib.ci:367: (10 bytes): closure.offs := gxSurf.create3d(w, h);
 	<show+?>: dup.x32 sp(9)
 	<show+?>: dup.x32 sp(9)
 	<show+?>: nfc(80) ;gxSurf.create3d(width: int32, height: int32): gxSurf
 	<show+?>: set.x64 sp(4)
-	cmplGfx/lib/gfxlib.ci:290: (3 bytes): closure.mesh := mesh;
+	cmplGfx/lib/gfxlib.ci:368: (3 bytes): closure.mesh := mesh;
 	<show+?>: mov.x32 sp(4, 10)
-	cmplGfx/lib/gfxlib.ci:292: (23 bytes): camera.projection(fovy, (w) / float32(h), 1, 100);
+	cmplGfx/lib/gfxlib.ci:370: (23 bytes): camera.projection(fovy, (w) / float32(h), 1, 100);
 	<show+?>: dup.x32 sp(7)
 	<show+?>: dup.x32 sp(10)
 	<show+?>: i32.2f32
@@ -14331,38 +14804,38 @@ show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void: function {
 	<show+?>: load.f32 1.000000
 	<show+?>: load.f32 100.000000
 	<show+?>: nfc(111) ;camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): void
-	cmplGfx/lib/gfxlib.ci:293: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
+	cmplGfx/lib/gfxlib.ci:371: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
 	<show+?>: dup.x64 sp(2)
 	<show+?>: load.sp(+8)
 	<show+?>: load.ref <?> ;show.onEvent(closure: Closure, action: int32, button: int32, ex: int32, ey: int32): int32
 	<show+?>: nfc(125) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
-	cmplGfx/lib/gfxlib.ci:294: (6 bytes): closure.offs.destroy(closure.offs);
+	cmplGfx/lib/gfxlib.ci:372: (6 bytes): closure.offs.destroy(closure.offs);
 	<show+?>: dup.x64 sp(2)
 	<show+?>: nfc(82) ;gxSurf.destroy(surf: gxSurf): void
 	<show+?>: inc.sp(-24)
 	<show+?>: ret
 .usages:
-	cmplGfx/lib/gfxlib.ci:167: defined as `show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void`
+	cmplGfx/lib/gfxlib.ci:245: defined as `show(mesh: gxMesh, w: int32, h: int32, fovy: float32): void`
 }
 show(surf: gxSurf): void: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'show'
-.file: 'cmplGfx/lib/gfxlib.ci:298'
+.file: 'cmplGfx/lib/gfxlib.ci:376'
 .param .result: void (size: 0, cast: void)
 .param surf: gxSurf (size: 8, cast: val)
 .doc: 'Show the surface in a window'
 .value: Gui.showWindow(surf, null, null)
 .usages:
-	cmplGfx/lib/gfxlib.ci:298: defined as `show(surf: gxSurf): void`
+	cmplGfx/lib/gfxlib.ci:376: defined as `show(surf: gxSurf): void`
 }
 show(surf: gxSurf, onEvent(action: int32, button: int32, ex: int32, ey: int32): int32): void: function {
 .kind: static const function
 .base: `function`
 .size: 43
 .name: 'show'
-.file: 'cmplGfx/lib/gfxlib.ci:301'
+.file: 'cmplGfx/lib/gfxlib.ci:379'
 .param .result: void (size: 0, cast: variable(void))
 .param surf: gxSurf (size: 8, cast: variable(val))
 .param onEvent: function (size: 4, cast: variable(ref))
@@ -14377,33 +14850,33 @@ show(surf: gxSurf, onEvent(action: int32, button: int32, ex: int32, ey: int32): 
 	Gui.showWindow(surf, onEvent, delegate);
 }
 .instructions: (43 bytes)
-	cmplGfx/lib/gfxlib.ci:302: (29 bytes): if ((onEvent) == null)
+	cmplGfx/lib/gfxlib.ci:380: (29 bytes): if ((onEvent) == null)
 	<show>  : dup.x32 sp(1)
 	<show+?>: load.ref <?> ;null
 	<show+?>: ceq.i32
 	<show+?>: jz +21
-	cmplGfx/lib/gfxlib.ci:303: (17 bytes): return .result := Gui.showWindow(surf, null, null);
+	cmplGfx/lib/gfxlib.ci:381: (17 bytes): return .result := Gui.showWindow(surf, null, null);
 	<show+?>: dup.x64 sp(2)
 	<show+?>: load.ref <?> ;null
 	<show+?>: load.ref <?> ;null
 	<show+?>: nfc(125) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	<show+?>: ret
-	cmplGfx/lib/gfxlib.ci:308: (13 bytes): Gui.showWindow(surf, onEvent, delegate);
+	cmplGfx/lib/gfxlib.ci:386: (13 bytes): Gui.showWindow(surf, onEvent, delegate);
 	<show+?>: dup.x64 sp(2)
 	<show+?>: dup.x32 sp(3)
 	<show+?>: load.ref <?> ;show.delegate(onEvent(action: int32, button: int32, ex: int32, ey: int32): int32, action: int32, button: int32, ex: int32, ey: int32): int32
 	<show+?>: nfc(125) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
 	<show+?>: ret
 .usages:
-	cmplGfx/lib/gfxlib.ci:393: referenced as `show`
-	cmplGfx/lib/gfxlib.ci:301: defined as `show(surf: gxSurf, onEvent(action: int32, button: int32, ex: int32, ey: int32): int32): void`
+	cmplGfx/lib/gfxlib.ci:471: referenced as `show`
+	cmplGfx/lib/gfxlib.ci:379: defined as `show(surf: gxSurf, onEvent(action: int32, button: int32, ex: int32, ey: int32): int32): void`
 }
 showDiff(image1: gxSurf, image2: gxSurf): void: function {
 .kind: static const function
 .base: `function`
 .size: 48
 .name: 'showDiff'
-.file: 'cmplGfx/lib/gfxlib.ci:312'
+.file: 'cmplGfx/lib/gfxlib.ci:390'
 .param .result: void (size: 0, cast: variable(void))
 .param image1: gxSurf (size: 8, cast: variable(val))
 .param image2: gxSurf (size: 8, cast: variable(val))
@@ -14438,20 +14911,20 @@ showDiff(image1: gxSurf, image2: gxSurf): void: function {
 	Gui.showWindow(closure.offs, closure, onEvent);
 }
 .instructions: (48 bytes)
-	cmplGfx/lib/gfxlib.ci:336: (28 bytes): closure: Closure := {...}
+	cmplGfx/lib/gfxlib.ci:414: (28 bytes): closure: Closure := {...}
 	<showDiff>  : inc.sp(+24)
-	cmplGfx/lib/gfxlib.ci:337: (18 bytes): closure.offs := gxSurf(image1);
+	cmplGfx/lib/gfxlib.ci:415: (18 bytes): closure.offs := gxSurf(image1);
 	<showDiff+?>: inc.sp(+8)
 	<showDiff+?>: dup.x64 sp(11)
 	<showDiff+?>: load.ref <?> ;gxSurf(copy: gxSurf): gxSurf
 	<showDiff+?>: call
 	<showDiff+?>: inc.sp(-8)
 	<showDiff+?>: set.x64 sp(2)
-	cmplGfx/lib/gfxlib.ci:338: (3 bytes): closure.image1 := image1;
+	cmplGfx/lib/gfxlib.ci:416: (3 bytes): closure.image1 := image1;
 	<showDiff+?>: mov.x64 sp(2, 9)
-	cmplGfx/lib/gfxlib.ci:339: (3 bytes): closure.image2 := image2;
+	cmplGfx/lib/gfxlib.ci:417: (3 bytes): closure.image2 := image2;
 	<showDiff+?>: mov.x64 sp(4, 7)
-	cmplGfx/lib/gfxlib.ci:341: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
+	cmplGfx/lib/gfxlib.ci:419: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
 	<showDiff+?>: dup.x64 sp(0)
 	<showDiff+?>: load.sp(+8)
 	<showDiff+?>: load.ref <?> ;showDiff.onEvent(closure: Closure, action: int32, button: int32, ex: int32, ey: int32): int32
@@ -14459,14 +14932,14 @@ showDiff(image1: gxSurf, image2: gxSurf): void: function {
 	<showDiff+?>: inc.sp(-24)
 	<showDiff+?>: ret
 .usages:
-	cmplGfx/lib/gfxlib.ci:312: defined as `showDiff(image1: gxSurf, image2: gxSurf): void`
+	cmplGfx/lib/gfxlib.ci:390: defined as `showDiff(image1: gxSurf, image2: gxSurf): void`
 }
 show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): vec4f): void: function {
 .kind: static const function
 .base: `function`
 .size: 170
 .name: 'show'
-.file: 'cmplGfx/lib/gfxlib.ci:345'
+.file: 'cmplGfx/lib/gfxlib.ci:423'
 .param .result: void (size: 0, cast: variable(void))
 .param width: int32 (size: 4, cast: variable(i32))
 .param height: int32 (size: 4, cast: variable(i32))
@@ -14532,23 +15005,23 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 	closure.offs.destroy(closure.offs);
 }
 .instructions: (170 bytes)
-	cmplGfx/lib/gfxlib.ci:389: (82 bytes): if (animationResolution == 0)
+	cmplGfx/lib/gfxlib.ci:467: (82 bytes): if (animationResolution == 0)
 	<show>  : dup.x32 sp(2)
 	<show+?>: load.z32
 	<show+?>: ceq.i32
 	<show+?>: jz +78
-	cmplGfx/lib/gfxlib.ci:390: (7 bytes): aspect: float32 := (width) / float32(height)
+	cmplGfx/lib/gfxlib.ci:468: (7 bytes): aspect: float32 := (width) / float32(height)
 	<show+?>: dup.x32 sp(4)
 	<show+?>: i32.2f32
 	<show+?>: dup.x32 sp(4)
 	<show+?>: i32.2f32
 	<show+?>: div.f32
-	cmplGfx/lib/gfxlib.ci:391: (13 bytes): surf: gxSurf := gxSurf(width, height, 32)
+	cmplGfx/lib/gfxlib.ci:469: (13 bytes): surf: gxSurf := gxSurf(width, height, 32)
 	<show+?>: dup.x32 sp(5)
 	<show+?>: dup.x32 sp(5)
 	<show+?>: load.c32 32
 	<show+?>: nfc(79) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
-	cmplGfx/lib/gfxlib.ci:392: (22 bytes): eval(surf, null, aspect, 0.000000, eval);
+	cmplGfx/lib/gfxlib.ci:470: (22 bytes): eval(surf, null, aspect, 0.000000, eval);
 	<show+?>: dup.x64 sp(0)
 	<show+?>: load.ref <?> ;null
 	<show+?>: dup.x32 sp(5)
@@ -14557,61 +15030,61 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 	<show+?>: load.ref <?> ;eval(dst: gxSurf, roi: gxRect, aspect: float32, time: float32, eval(in: vec4f): vec4f): void
 	<show+?>: call
 	<show+?>: inc.sp(-24)
-	cmplGfx/lib/gfxlib.ci:393: (17 bytes): show(surf, null);
+	cmplGfx/lib/gfxlib.ci:471: (17 bytes): show(surf, null);
 	<show+?>: dup.x64 sp(0)
 	<show+?>: load.ref <?> ;null
 	<show+?>: load.ref <?> ;show(surf: gxSurf, onEvent(action: int32, button: int32, ex: int32, ey: int32): int32): void
 	<show+?>: call
 	<show+?>: inc.sp(-12)
-	cmplGfx/lib/gfxlib.ci:394: (6 bytes): surf.destroy(surf);
+	cmplGfx/lib/gfxlib.ci:472: (6 bytes): surf.destroy(surf);
 	<show+?>: dup.x64 sp(0)
 	<show+?>: nfc(82) ;gxSurf.destroy(surf: gxSurf): void
-	cmplGfx/lib/gfxlib.ci:395: (5 bytes): return;
+	cmplGfx/lib/gfxlib.ci:473: (5 bytes): return;
 	<show+?>: inc.sp(-12)
 	<show+?>: ret
 	<show+?>: inc.sp(-12)
-	cmplGfx/lib/gfxlib.ci:398: (56 bytes): closure: Closure := {...}
+	cmplGfx/lib/gfxlib.ci:476: (56 bytes): closure: Closure := {...}
 	<show+?>: inc.sp(+32)
-	cmplGfx/lib/gfxlib.ci:399: (15 bytes): closure.offs := gxSurf(width, height, 32);
+	cmplGfx/lib/gfxlib.ci:477: (15 bytes): closure.offs := gxSurf(width, height, 32);
 	<show+?>: dup.x32 sp(12)
 	<show+?>: dup.x32 sp(12)
 	<show+?>: load.c32 32
 	<show+?>: nfc(79) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
 	<show+?>: set.x64 sp(4)
-	cmplGfx/lib/gfxlib.ci:400: (15 bytes): closure.thumb := gxSurf(animationResolution, animationResolution, 32);
+	cmplGfx/lib/gfxlib.ci:478: (15 bytes): closure.thumb := gxSurf(animationResolution, animationResolution, 32);
 	<show+?>: dup.x32 sp(10)
 	<show+?>: dup.x32 sp(11)
 	<show+?>: load.c32 32
 	<show+?>: nfc(79) ;gxSurf.create(width: int32, height: int32, depth: int32): gxSurf
 	<show+?>: set.x64 sp(6)
-	cmplGfx/lib/gfxlib.ci:401: (9 bytes): closure.aspect := (width) / float32(height);
+	cmplGfx/lib/gfxlib.ci:479: (9 bytes): closure.aspect := (width) / float32(height);
 	<show+?>: dup.x32 sp(12)
 	<show+?>: i32.2f32
 	<show+?>: dup.x32 sp(12)
 	<show+?>: i32.2f32
 	<show+?>: div.f32
 	<show+?>: set.x32 sp(7)
-	cmplGfx/lib/gfxlib.ci:402: (3 bytes): closure.eval := eval;
+	cmplGfx/lib/gfxlib.ci:480: (3 bytes): closure.eval := eval;
 	<show+?>: mov.x32 sp(7, 9)
 	:: (10 bytes): closure.lerp := true
 	<show+?>: load.c32 1
 	<show+?>: load.sp(+4)
 	<show+?>: store.i8
-	cmplGfx/lib/gfxlib.ci:404: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
+	cmplGfx/lib/gfxlib.ci:482: (15 bytes): Gui.showWindow(closure.offs, closure, onEvent);
 	<show+?>: dup.x64 sp(2)
 	<show+?>: load.sp(+8)
 	<show+?>: load.ref <?> ;show.onEvent(closure: Closure, action: int32, button: int32, ex: int32, ey: int32): int32
 	<show+?>: nfc(125) ;Gui.showWindow(surf: gxSurf, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
-	cmplGfx/lib/gfxlib.ci:405: (6 bytes): closure.thumb.destroy(closure.thumb);
+	cmplGfx/lib/gfxlib.ci:483: (6 bytes): closure.thumb.destroy(closure.thumb);
 	<show+?>: dup.x64 sp(4)
 	<show+?>: nfc(82) ;gxSurf.destroy(surf: gxSurf): void
-	cmplGfx/lib/gfxlib.ci:406: (6 bytes): closure.offs.destroy(closure.offs);
+	cmplGfx/lib/gfxlib.ci:484: (6 bytes): closure.offs.destroy(closure.offs);
 	<show+?>: dup.x64 sp(2)
 	<show+?>: nfc(82) ;gxSurf.destroy(surf: gxSurf): void
 	<show+?>: inc.sp(-32)
 	<show+?>: ret
 .usages:
-	cmplGfx/lib/gfxlib.ci:345: defined as `show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): vec4f): void`
+	cmplGfx/lib/gfxlib.ci:423: defined as `show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): vec4f): void`
 }
 .main: function {
 .kind: static function
@@ -14805,6 +15278,9 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 .field drawHist: function (size: 0, cast: inline)
 .field gxSurf: function (size: 0, cast: inline)
 .field gxSurf: function (size: 189, cast: static const function)
+.field gxSurf: function (size: 0, cast: inline)
+.field gxSurf: function (size: 528, cast: static const function)
+.field gxSurf: function (size: 0, cast: inline)
 .field gxSurf: function (size: 0, cast: inline)
 .field gxMesh: function (size: 109, cast: static const function)
 .field gxSurf: function (size: 40, cast: static const function)
@@ -15823,6 +16299,79 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 			abort("unknown file extension", fileName);
 		};
 		gxSurf(fileName: char[*]): gxSurf := gxSurf(fileName, 32);
+		static const gxSurf(fileName: char[*], width: int32, height: int32, depth: int32, align: int32, maxScale: float64): gxSurf := {
+			scale: float64 := 1;
+			surf: gxSurf := gxSurf(fileName, depth);
+			result: gxSurf := gxSurf(width, height, depth);
+			alignVertical: int32 := align & fitVertical;
+			alignHorizontal: int32 := align & fitHorizontal;
+			fitWidth: bool := alignVertical == fitVertical;
+			fitHeight: bool := alignHorizontal == fitHorizontal;
+			if (fitWidth && fitHeight) {
+				widthScale: float64 := (width) / float64(surf.width(surf));
+				heightScale: float64 := (height) / float64(surf.height(surf));
+				if (align & fill) {
+					scale := Math.max(widthScale, heightScale);
+				}
+				else {
+					scale := Math.min(widthScale, heightScale);
+				}
+			}
+			else {
+				if (fitWidth) {
+					scale := (width) / float64(surf.width(surf));
+				}
+				else {
+					if (fitHeight) {
+						scale := (height) / float64(surf.height(surf));
+					}
+				}
+			}
+			if (scale > maxScale) {
+				scale := maxScale;
+			}
+			tx: float64 := 0;
+			if (fitWidth || alignVertical == center) {
+				tx := ((width) - (surf.width(surf)) * scale) / (2);
+			}
+			else {
+				if (alignVertical == right) {
+					tx := ((width) - (surf.width(surf)) * scale);
+				}
+			}
+			ty: float64 := 0;
+			if (fitHeight || alignHorizontal == center) {
+				ty := ((height) - (surf.height(surf)) * scale) / (2);
+			}
+			else {
+				if (alignHorizontal == bottom) {
+					ty := ((height) - (surf.height(surf)) * scale);
+				}
+			}
+			mat: mat4f := {
+				mat.x.x := ((1) / scale);
+				mat.x.y := (0);
+				mat.x.z := (0);
+				mat.x.w := (-tx / scale);
+				mat.y.x := (0);
+				mat.y.y := ((1) / scale);
+				mat.y.z := (0);
+				mat.y.w := (-ty / scale);
+				mat.z.x := (0);
+				mat.z.y := (0);
+				mat.z.z := ((1) / scale);
+				mat.z.w := (0);
+				mat.w.x := (0);
+				mat.w.y := (0);
+				mat.w.z := (0);
+				mat.w.w := (1);
+			};
+			result.transform(result, null, surf, null, (align & highRes) ? 1 : 0, mat.data);
+			surf.destroy(surf);
+			return .result := result;
+		};
+		gxSurf(fileName: char[*], width: int32, height: int32, depth: int32, align: int32): gxSurf := gxSurf(fileName, width, height, depth, align, Math.inf);
+		gxSurf(fileName: char[*], width: int32, height: int32, depth: int32): gxSurf := gxSurf(fileName, width, height, depth, -1, Math.inf);
 		static const gxMesh(fileName: char[*]): gxMesh := {
 			if (endsWith(fileName, ".obj", ignCaseCmp)) {
 				return .result := gxMesh.openObj(fileName);
@@ -16205,19 +16754,19 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 	:: (5 bytes): format.precision := 0
 	<.main+?>: load.z32
 	<.main+?>: store.m32 <?> ;append.format+12
-	cmplGfx/lib/gfxlib.ci:188: (5 bytes): static ox: int32 := 0
+	cmplGfx/lib/gfxlib.ci:266: (5 bytes): static ox: int32 := 0
 	<.main+?>: load.z32
 	<.main+?>: store.m32 <?> ;show.onEvent.ox
-	cmplGfx/lib/gfxlib.ci:189: (5 bytes): static oy: int32 := 0
+	cmplGfx/lib/gfxlib.ci:267: (5 bytes): static oy: int32 := 0
 	<.main+?>: load.z32
 	<.main+?>: store.m32 <?> ;show.onEvent.oy
-	cmplGfx/lib/gfxlib.ci:190: (24 bytes): static const speed: float32 := 1.000000 / (100)
+	cmplGfx/lib/gfxlib.ci:268: (24 bytes): static const speed: float32 := 1.000000 / (100)
 	<.main+?>: load.f64 1.000000
 	<.main+?>: load.f64 100.000000
 	<.main+?>: div.f64
 	<.main+?>: f64.2f32
 	<.main+?>: store.m32 <?> ;show.onEvent.speed
-	cmplGfx/lib/gfxlib.ci:346: (8 bytes): static const start: int64 := System.millis()
+	cmplGfx/lib/gfxlib.ci:424: (8 bytes): static const start: int64 := System.millis()
 	<.main+?>: nfc(18) ;System.millis(): int64
 	<.main+?>: store.m64 <?> ;show.start
 	<.main+?>: nfc(0) ;halt(): void
@@ -16268,8 +16817,8 @@ emit.min: typename(<emit.min>)
 emit.max: typename(<emit.max>)
 emit: typename(<emit>)
 System: typename(<System>)
-lib/stdlib.ci:59: NotEquals: typename(<NotEquals>)
-lib/stdlib.ci:75: assertEq: function(<assertEq>)
+lib/std/debug.ci:48: NotEquals: typename(<NotEquals>)
+lib/std/debug.ci:64: assertEq: function(<assertEq>)
 lib/std/math.ci:22: Math.modf: function(<Math.modf>)
 lib/std/math.ci:47: Math.floor: function(<Math.floor>)
 lib/std/math.ci:77: Math.abs: function(<Math.abs>)
@@ -16341,29 +16890,30 @@ cmplGfx/lib/gfx/color.ci:197: hsv2rgb: function(<hsv2rgb>)
 cmplGfx/lib/gfx/color.ci:236: drawLut: function(<drawLut>)
 cmplGfx/lib/gfx/color.ci:304: drawHist: function(<drawHist>)
 cmplGfx/lib/gfxlib.ci:8: gxSurf: function(<gxSurf>)
-cmplGfx/lib/gfxlib.ci:28: gxMesh: function(<gxMesh>)
-cmplGfx/lib/gfxlib.ci:39: gxSurf: function(<gxSurf>)
-cmplGfx/lib/gfxlib.ci:46: gxSurf: function(<gxSurf>)
-cmplGfx/lib/gfxlib.ci:63: clip: function(<clip>)
-cmplGfx/lib/gfxlib.ci:109: eval: function(<eval>)
-cmplGfx/lib/gfxlib.ci:139: tile: function(<tile>)
-cmplGfx/lib/gfxlib.ci:167: show: function(<show>)
-cmplGfx/lib/gfxlib.ci:301: show: function(<show>)
-cmplGfx/lib/gfxlib.ci:312: showDiff: function(<showDiff>)
-cmplGfx/lib/gfxlib.ci:345: show: function(<show>)
+cmplGfx/lib/gfxlib.ci:28: gxSurf: function(<gxSurf>)
+cmplGfx/lib/gfxlib.ci:106: gxMesh: function(<gxMesh>)
+cmplGfx/lib/gfxlib.ci:117: gxSurf: function(<gxSurf>)
+cmplGfx/lib/gfxlib.ci:124: gxSurf: function(<gxSurf>)
+cmplGfx/lib/gfxlib.ci:141: clip: function(<clip>)
+cmplGfx/lib/gfxlib.ci:187: eval: function(<eval>)
+cmplGfx/lib/gfxlib.ci:217: tile: function(<tile>)
+cmplGfx/lib/gfxlib.ci:245: show: function(<show>)
+cmplGfx/lib/gfxlib.ci:379: show: function(<show>)
+cmplGfx/lib/gfxlib.ci:390: showDiff: function(<showDiff>)
+cmplGfx/lib/gfxlib.ci:423: show: function(<show>)
 
 ---------- Memory usage:
 memory[all] @000000; size: 2096872(2.0 Mb)
-memory[used] @000000; size: 341534(333.5 Kb)
-memory[heap] @05361e; size: 1231072(1.2 Mb)
+memory[used] @000000; size: 349158(341.0 Kb)
+memory[heap] @0553e6; size: 1223448(1.2 Mb)
 memory[stack] @0fff44; size: 524218(511.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 331448(323.7 Kb)
-memory[code] @000000; size: 9762(9.5 Kb)
+memory[meta] @000000; size: 338544(330.6 Kb)
+memory[code] @000000; size: 10290(10.0 Kb)
 memory[data] @000000; size: 52(52.0 bytes)
 
 ---------- heap memory:
-memory[free] @053638; size: 1231024(1.2 Mb)
+memory[free] @0553f8; size: 1223408(1.2 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

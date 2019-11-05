@@ -91,8 +91,7 @@ static void *rtAllocApi(rtContext rt, void *ptr, size_t size) {
 }
 
 /// Private raise wrapper for the api
-static void raiseApi(nfcContext ctx, int level, const char *msg, ...) {
-	rtContext rt = ctx->rt;
+static void raiseApi(rtContext rt, int level, const char *msg, ...) {
 	va_list vaList;
 	va_start(vaList, msg);
 	print_log(rt, level, NULL, 0, NULL, msg, vaList);

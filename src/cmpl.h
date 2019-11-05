@@ -208,7 +208,7 @@ struct rtContextRec {
 		/// Lookup function by name; @see ccLookup
 		symn (*const ccLookup)(rtContext ctx, symn scope, const char *name);
 
-		void (*const raise)(nfcContext rt, raiseLevel level, const char *msg, ...);
+		void (*const raise)(rtContext ctx, raiseLevel level, const char *msg, ...);
 
 		/// Lookup function by offset; @see rtLookup
 		symn (*const rtLookup)(rtContext ctx, size_t offset);

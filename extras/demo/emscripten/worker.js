@@ -13,6 +13,9 @@ var Module = {
 		file: '/lib/std/math.Complex.ci',
 		url: '/Cmpl/lib/std/math.Complex.ci'
 	}, {
+		file: '/lib/std/debug.ci',
+		url: '/Cmpl/lib/std/debug.ci'
+	}, {
 		file: '/lib/std/string.ci',
 		url: '/Cmpl/lib/std/string.ci'
 	}, {

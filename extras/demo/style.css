@@ -10,6 +10,8 @@ body {
 	left: 0;
 	right: 0;
 	bottom: 0;
+	width: inherit;
+	height: inherit;
 	font-size: 1em;
 	overflow: hidden;
 	-webkit-text-size-adjust: 100%;
@@ -78,15 +80,13 @@ select {
 	position: fixed;
 	display: block;
 	top: 0;
+	left: 0;
+	right: 0;
 	bottom: 0;
-	width: 14em;
-	height: unset;
-	padding: .5em;
-	overflow-y: auto;
 	z-index: 10;
 }
 .sidebar * {
-	padding: .5em 0;
+	/*padding: .5em 0;*/
 }
 .sidebar ul {
 	padding: 0 0 0 1em;
@@ -158,13 +158,23 @@ select {
 
 #left-sidebar {
 	float: left;
-	top: 0;
-	left: 0;
+	right: unset;
+	width: 14em;
+	padding: .5em;
+	overflow-y: auto;
 }
 #right-sidebar {
 	float: right;
-	top: 0;
-	right: 0;
+	left: unset;
+	width: 14em;
+	padding: .5em;
+	overflow-y: auto;
+}
+#bottom-sidebar {
+	float: right;
+	top: unset;
+	height : auto;
+	/*padding: 0;*/
 }
 
 #fileList > *:before {
@@ -174,26 +184,25 @@ select {
 	border: #bbb 1px solid;
 }
 
-#main-panel {
-	width: 100%;
-	height: 100%;
-}
-
 #editor-panel {
 	width: 100%;
-	height: 50%;
+	height: 100%;
 }
 #editor-panel>textarea {
 	display: none;
 }
 #output-panel {
 	width: 100%;
-	height: 50%;
+	height: 100%;
 }
 
 #output {
 	width: inherit;
-	height: 100%;
+	height: calc(100% - 1.8em);
+	top: 1.5em;
+	left: 0;
+	right: 0;
+	bottom: 0;
 	border-radius: 0;
 	overflow-x: auto;
 	overflow-y: scroll;
@@ -230,9 +239,9 @@ body.wrap-output #output {
 
 /* main toolbar translations */
 body.tool { padding-top: 2em; }
-body.tool #canvas-panel {top: 2em;}
-body.tool #left-sidebar { top: 2em; }
-body.tool #right-sidebar { top: 2em; }
+body.tool #canvas-panel { top: 2em; }
+body.tool #left-sidebar { top: 2em; bottom: 1.5em; }
+body.tool #right-sidebar { top: 2em; bottom: 1.5em; }
 body:not(.tool) #main-toolbar { display: none; }
 
 /* left sidebar */
@@ -250,31 +259,36 @@ body.tool #show-toolbar:before {content: '✓';}
 body.left-pin #pin-left:before {content: '✓';}
 body.right-pin #pin-right:before {content: '✓';}
 body.wrap-output #wrap-output:before {content: '✓';}
+body.editor #show-editor:before {content: '✓';}
+body.output #show-output:before {content: '✓';}
+
+/* bottom sidebar */
+body.output { padding-bottom: 50vh; }
+body:not(.output) { padding-bottom: 1.5em; }
+body.output.left-bar #bottom-sidebar { left: 15em; }
+body.output #right-sidebar { bottom: 50%; }
+body.output #left-sidebar { bottom: 0; }
+body.output #bottom-sidebar { height: 50vh; }
+body:not(.output) #output { display: none; }
 
 /* panel visibility and size: editor, output, canvas */
-body:not(.output) #editor-panel { height: 100%; }
-body:not(.output) #output-panel {display: none;}
 body:not(.canvas) #canvas-panel { display: none; }
-body.output:not(.editor) #editor-panel { display: none; }
-.toolbar>.editor,.toolbar>.output,.toolbar>.canvas {display: none;}
-
-
-/* FIXME: output has different font-size, remove height from editor */
-body.output #editor-panel {height: calc(50% - 1.5em);}
+body.output:not(.editor) #editor-panel { display: none; } 
+.toolbar>.editor,.toolbar>.output,.toolbar>.canvas { display: none; }
 
 /* toolbar icon visibility: editor, output, canvas */
-body.editor .toolbar>.editor {display: initial;}
-body.editor .toolbar>.no-editor {display: none;}
-body:not(.editor) #editor-panel {visibility: hidden;}
-body:not(.editor) .toolbar>.no-editor {display: initial;}
+body.editor .toolbar>.editor { display: initial; }
+body.editor .toolbar>.no-editor { display: none; }
+body:not(.editor) #editor-panel { visibility: hidden; }
+body:not(.editor) .toolbar>.no-editor { display: initial; }
 
-body.output .toolbar>.output {display: initial;}
-body.output .toolbar>.no-output {display: none;}
-body:not(.output) .toolbar>.no-output {display: initial;}
+body.output .toolbar>.output { display: initial; }
+body.output .toolbar>.no-output { display: none; }
+body:not(.output) .toolbar>.no-output { display: initial; }
 
-body.canvas .toolbar>.canvas {display: initial;}
-body.canvas .toolbar>.no-canvas {display: none;}
-body:not(.canvas) .toolbar>.no-canvas {display: initial;}
+body.canvas .toolbar>.canvas { display: initial; }
+body.canvas .toolbar>.no-canvas { display: none; }
+body:not(.canvas) .toolbar>.no-canvas { display: initial; }
 #canvasMove.overlay:not(.hidden) {
 	position: absolute;
 	display: block;
@@ -294,7 +308,7 @@ body.output:not(.editor) #output {
 	height: unset;
 	z-index: 10;
 }
-
+body.output:not(.tool) #output {top: 0;}
 /* custom look and feel */
 .breakpoints {
 	width: 0.8em;

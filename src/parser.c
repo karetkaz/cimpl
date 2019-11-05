@@ -68,7 +68,7 @@ static int ccInline(ccContext cc, astn tag) {
 	char buff[PATH_MAX];
 	char *path = absolutePath(tag->file, buff, sizeof(buff));
 	if (path != buff) {
-		strncpy(buff, tag->file, sizeof(buff));
+		strncpy(buff, tag->file, sizeof(buff) - 1);
 	}
 	// convert windows path names to linux path names
 	for (char *ptr = buff; *ptr; ++ptr) {

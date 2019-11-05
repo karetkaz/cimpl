@@ -350,12 +350,12 @@ static vmError surf_blendSurf(nfcContext ctx) {
 	symn callback = rt->api.rtLookup(ctx->rt, cbOffs);
 
 	if (cbOffs != 0 && callback == NULL) {
-		ctx->rt->api.raise(ctx, raiseError, "Invalid callback");
+		rt->api.raise(rt, raiseError, "Invalid callback");
 		return nativeCallError;
 	}
 
 	if (surf->depth != 32 || src->depth != 32) {
-		ctx->rt->api.raise(ctx, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
+		rt->api.raise(rt, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
 		return nativeCallError;
 	}
 
@@ -381,7 +381,7 @@ static vmError surf_transformSurf(nfcContext ctx) {
 	float32_t *mat = nextValue(ctx).ref;
 
 	if (surf->depth != src->depth) {
-		ctx->rt->api.raise(ctx, raiseError, "Invalid source depth: %d, in function: %T", src->depth, ctx->sym);
+		ctx->rt->api.raise(ctx->rt, raiseError, "Invalid source depth: %d, in function: %T", src->depth, ctx->sym);
 		return nativeCallError;
 	}
 
@@ -481,7 +481,7 @@ static vmError surf_calcHist(nfcContext ctx) {
 	rtValue lut = nextValue(ctx);
 
 	if (surf->depth != 32) {
-		ctx->rt->api.raise(ctx, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
+		ctx->rt->api.raise(ctx->rt, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
 		return nativeCallError;
 	}
 
@@ -498,7 +498,7 @@ static vmError surf_calcHist(nfcContext ctx) {
 
 	const char *dptr = gx_cliprect(surf, &rect);
 	if (dptr == NULL) {
-		ctx->rt->api.raise(ctx, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
+		ctx->rt->api.raise(ctx->rt, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
 		return noError;
 	}
 
@@ -569,7 +569,7 @@ static vmError surf_cLutSurf(nfcContext ctx) {
 	int useLuminosity = nextValue(ctx).i32;
 
 	if (surf->depth != 32) {
-		ctx->rt->api.raise(ctx, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
+		ctx->rt->api.raise(ctx->rt, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
 		return nativeCallError;
 	}
 
@@ -587,7 +587,7 @@ static vmError surf_cLutSurf(nfcContext ctx) {
 	argb *lptr = (argb *) lut.ref;
 	char *dptr = gx_cliprect(surf, &rect);
 	if (dptr == NULL) {
-		ctx->rt->api.raise(ctx, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
+		ctx->rt->api.raise(ctx->rt, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
 		return noError;
 	}
 
@@ -672,7 +672,7 @@ static vmError surf_cMatSurf(nfcContext ctx) {
 	rtValue mat = nextValue(ctx);
 
 	if (surf->depth != 32) {
-		ctx->rt->api.raise(ctx, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
+		ctx->rt->api.raise(ctx->rt, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
 		return nativeCallError;
 	}
 
@@ -696,7 +696,7 @@ static vmError surf_cMatSurf(nfcContext ctx) {
 
 	char *dptr = gx_cliprect(surf, &rect);
 	if (dptr == NULL) {
-		ctx->rt->api.raise(ctx, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
+		ctx->rt->api.raise(ctx->rt, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
 		return noError;
 	}
 

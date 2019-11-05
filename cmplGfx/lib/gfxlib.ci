@@ -24,6 +24,84 @@ gxSurf gxSurf(char fileName[*], int depth) {
 /// Create a surface by opening an image file
 inline gxSurf(char fileName[*]) = gxSurf(fileName, 32);
 
+/// Create a surface by opening an image file with custom width and height
+gxSurf gxSurf(char fileName[*], int width, int height, int depth, int align, double maxScale) {
+	enum: int {
+		center: 0;
+		left: 1;
+		right: 2;
+		top: 4;
+		bottom: 8;
+		fitVertical: 3;
+		fitHorizontal: 12;
+		fill: 0x10;
+		highRes: 0x20;
+	}
+
+	double scale = 1;
+	gxSurf surf = gxSurf(fileName, depth);
+	gxSurf result = gxSurf(width, height, depth);
+
+	int alignVertical = align & fitVertical;
+	int alignHorizontal = align & fitHorizontal;
+
+	bool fitWidth = alignVertical == fitVertical;
+	bool fitHeight = alignHorizontal == fitHorizontal;
+
+	if (fitWidth && fitHeight) {
+		double widthScale = width / double(surf.width());
+		double heightScale = height / double(surf.height());
+		if (align & fill) {
+			scale = Math.max(widthScale, heightScale);
+		} else {
+			scale = Math.min(widthScale, heightScale);
+		}
+	}
+	else if (fitWidth) {
+		scale = width / double(surf.width());
+	}
+	else if (fitHeight) {
+		scale = height / double(surf.height());
+	}
+	if (scale > maxScale) {
+		scale = maxScale;
+	}
+
+	// calculate translation
+	double tx = 0;
+	if (fitWidth || alignVertical == center) {
+		tx = (width - surf.width() * scale) / 2;
+	}
+	else if (alignVertical == right) {
+		tx = (width - surf.width() * scale);
+	}
+
+	double ty = 0;
+	if (fitHeight || alignHorizontal == center) {
+		ty = (height - surf.height() * scale) / 2;
+	}
+	else if (alignHorizontal == bottom) {
+		ty = (height - surf.height() * scale);
+	}
+
+	mat4f mat = {
+		x: {x: 1 / scale, y: 0, z: 0, w: -tx / scale};
+		y: {x: 0, y: 1 / scale, z: 0, w: -ty / scale};
+		z: {x: 0, y: 0, z: 1 / scale, w: 0};
+		w: {x: 0, y: 0, z: 0, w: 1};
+	};
+
+	result.transform(null, surf, null, align & highRes ? 1 : 0, mat.data);
+	surf.destroy();
+	return result;
+}
+
+/// Create a surface by opening an image file with custom width and height
+inline gxSurf(char fileName[*], int width, int height, int depth, int align) = gxSurf(fileName, width, height, depth, align, Math.inf);
+
+/// Create a surface by opening an image file with custom width and height
+inline gxSurf(char fileName[*], int width, int height, int depth) = gxSurf(fileName, width, height, depth, -1, Math.inf);
+
 /// Create a mesh by opening a file
 gxMesh gxMesh(char fileName[*]) {
 	if (fileName.endsWith(".obj", ignCaseCmp)) {
