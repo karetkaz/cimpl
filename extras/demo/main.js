@@ -67,8 +67,15 @@ const pathFinder = new RegExp(pathMather, 'g');
 CodeMirror.commands.save = function(cm) {
 	saveInput();
 }
-CodeMirror.commands.line = function(cm) {
+CodeMirror.commands.jumpToLine = function(cm) {
 	completeAction(':');
+}
+CodeMirror.commands.scrollToLine = function(cm) {
+	let line = editor.getCursor().line || 1;
+	var middleHeight = editor.getScrollerElement().offsetHeight / 2;
+	var t = editor.charCoords({line, ch: 0}, "local").top;
+	editor.scrollTo(null, t - middleHeight - 5);
+	editor.setCursor(line, column);
 }
 
 CodeMirror.commands.find = function(cm) {

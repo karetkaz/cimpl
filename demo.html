@@ -34,7 +34,6 @@
 <body class="dark tool left-bar left-pin editor output">
 <div id="main-toolbar" class="toolbar">
 	<span class="left icon" title="Toggle show menu" onclick="setStyle(body, '!left-bar', 'editor');">☰</span>
-	<span class="left icon" title="Save script (Ctrl + s)" onclick="saveInput();">💾</span>
 	<span class="left icon" title="Execute script (Ctrl + Enter)" onclick="onExecClick();">►</span>
 
 	<span class="right icon" title="Toggle show menu" onclick="setStyle(body, '!right-bar', 'editor');">⋮</span>
@@ -82,7 +81,7 @@
 	</ul></div>
 </div>
 <div id="right-sidebar" class="sidebar">
-	<div class="collapsed submenu">
+	<div class="submenu collapsed">
 	<li onclick="setStyle(parentElement, '!collapsed');">File
 	<button class="right" onclick="event.stopPropagation(); saveInput();" title="Save">💾</button>
 	</li>
@@ -156,10 +155,11 @@
 		<!-- <li onclick="editor.execCommand('findAndMark');"><span class="right"></span>Find and mark</li> -->
 		<li onclick="editor.execCommand('findAndSelect');"><span class="right"></span>Find and select</li>
 		<hr>
-		<li onclick="editor.execCommand('line');"><span class="right">Ctrl + g</span>Jump to line</li>
-		<hr>
+		<li onclick="editor.execCommand('jumpToLine');"><span class="right">Ctrl + g</span>Jump to line</li>
 		<li onclick="editor.execCommand('jumpToBrace');"><span class="right">Ctrl + b</span>Jump to brace</li>
 		<li onclick="editor.execCommand('selectToBrace');"><span class="right">Ctrl+Shift + b</span>Select to brace</li>
+		<hr>
+		<li onclick="editor.execCommand('scrollToLine');"><span class="right"></span>Scroll to line</li>
 	</ul></div>
 	<div class="submenu collapsed">
 	<li onclick="setStyle(parentElement, '!collapsed')">View
