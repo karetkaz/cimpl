@@ -1,33 +1,18 @@
 var Module = {
 	initialized: false,
+	relativeUrl: function(path) {
+		let worker = '/extras/demo/emscripten/worker.js';
+		if (location.href.endsWith(worker) && !path.startsWith('/')) {
+			return location.href.substr(0, location.href.length - worker.length + 1) + path;
+		}
+		return path;
+	},
+	locateFile: function(path) {
+		return './' + path;
+	},
 	dynamicLibraries: [
 		'libFile.wasm'
 	],
-	externalLibraries: [{
-		file: '/lib/stdlib.ci',
-		url: '/Cmpl/lib/stdlib.ci'
-	}, {
-		file: '/lib/std/math.ci',
-		url: '/Cmpl/lib/std/math.ci'
-	}, {
-		file: '/lib/std/math.Complex.ci',
-		url: '/Cmpl/lib/std/math.Complex.ci'
-	}, {
-		file: '/lib/std/debug.ci',
-		url: '/Cmpl/lib/std/debug.ci'
-	}, {
-		file: '/lib/std/string.ci',
-		url: '/Cmpl/lib/std/string.ci'
-	}, {
-		file: '/lib/vec/vec4f.ci',
-		url: '/Cmpl/lib/vec/vec4f.ci'
-	}, {
-		file: '/lib/vec/mat4f.ci',
-		url: '/Cmpl/lib/vec/mat4f.ci'
-	}, {
-		path: '/lib/vec/vec2d.ci',
-		url: '/Cmpl/lib/vec/vec2d.ci'
-	}],
 	print: function(text) {
 		postMessage({ print: text });
 	},
@@ -35,14 +20,8 @@ var Module = {
 		ENV.CMPL_HOME = '/';
 		FS.mkdirTree(Module.workspace);
 		FS.chdir(Module.workspace);
-
-		Module.wgetFiles(Module.externalLibraries, function (inProgress) {
-			if (inProgress > 0) {
-				return;
-			}
-			postMessage({initialized: true});
-			Module.initialized = true;
-		});
+		postMessage({initialized: true});
+		Module.initialized = true;
 	}
 };
 
@@ -130,7 +109,7 @@ onmessage = function(event) {
 		// execute
 		if (data.execute !== undefined) {
 			try {
-				Module['callMain'](data.execute);
+				callMain(data.execute);
 				result.exitCode = 0;
 				sync = true;
 			} catch (error) {

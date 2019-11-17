@@ -68,24 +68,17 @@ CodeMirror.commands.save = function(cm) {
 	saveInput();
 }
 CodeMirror.commands.jumpToLine = function(cm) {
-	completeAction(':');
-}
-CodeMirror.commands.scrollToLine = function(cm) {
-	let line = editor.getCursor().line || 1;
+	let line = editor.getCursor().line || 0;
+	completeAction(':', line + 1);
 	var middleHeight = editor.getScrollerElement().offsetHeight / 2;
 	var t = editor.charCoords({line, ch: 0}, "local").top;
 	editor.scrollTo(null, t - middleHeight - 5);
-	editor.setCursor(line, column);
+	editor.setCursor(line);
 }
 
 CodeMirror.commands.find = function(cm) {
 	completeAction('?');
 }
-
-CodeMirror.commands.findAndSelect = function(cm) {
-	completeAction('?!');
-}
-
 CodeMirror.commands.findNext = function(cm) {
 	let cursor = edtFileName.cursor;
 	if (cursor && cursor.findNext()) {
@@ -101,6 +94,9 @@ CodeMirror.commands.findPrev = function(cm) {
 	} else {
 		actionError();
 	}
+}
+CodeMirror.commands.findAndSelect = function(cm) {
+	completeAction('?!');
 }
 
 let editor = CodeMirror.fromTextArea(input, {
@@ -307,7 +303,7 @@ edtFileName.onkeydown = function(event) {
 	else if (edtFileName.value.startsWith(':')) {
 		let line = edtFileName.value.substr(1);
 		if (!isNaN(line)) {
-			params.update({line: line});
+			params.update({line});
 		} else {
 			editor.execCommand(line);
 		}
@@ -490,11 +486,11 @@ function setContent(content, file, line, column) {
 		}
 	}
 	if (line != null) {
-		var middleHeight = editor.getScrollerElement().offsetHeight / 2; 
-		var t = editor.charCoords({line, ch: 0}, "local").top; 
+		setStyle(document.body, 'editor');
+		var middleHeight = editor.getScrollerElement().offsetHeight / 2;
+		var t = editor.charCoords({line, ch: 0}, "local").top;
 		editor.scrollTo(null, t - middleHeight - 5);
 		editor.setCursor((line || 1) - 1, column);
-		setStyle(document.body, 'editor');
 	}
 	return contentSet;
 }

@@ -66,9 +66,18 @@ static int ccInline(ccContext cc, astn tag) {
 	}
 
 	char buff[PATH_MAX];
-	char *path = absolutePath(tag->file, buff, sizeof(buff));
-	if (path != buff) {
-		strncpy(buff, tag->file, sizeof(buff) - 1);
+	if (tag->ref.name && tag->ref.name[0] == '/') {
+		absolutePath(cc->home, buff, sizeof(buff));
+	}
+	else {
+		if (!absolutePath(tag->file, buff, sizeof(buff))) {
+			strncpy(buff, tag->file, sizeof(buff) - 1);
+		}
+		// replace the file name
+		char *path = strrchr(buff, '/');
+		if (path != NULL) {
+			*(path += 1) = 0;
+		}
 	}
 	// convert windows path names to linux path names
 	for (char *ptr = buff; *ptr; ++ptr) {
@@ -77,14 +86,8 @@ static int ccInline(ccContext cc, astn tag) {
 		}
 	}
 
-	// replace the file name
-	path = strrchr(buff, '/');
-	if (path != NULL) {
-		*(path += 1) = 0;
-	}
-	strncat(buff, tag->ref.name, sizeof(buff) - (path - buff));
-
-	path = relativeToCWD(buff);
+	strncat(buff, tag->ref.name, sizeof(buff) - strlen(buff) - 1);
+	char *path = relativeToCWD(buff);
 	printLog(cc->rt, raiseDebug, tag->file, tag->line, NULL, WARN_INLINE_FILE, path);
 	return ccOpen(cc, path, 1, NULL);
 }

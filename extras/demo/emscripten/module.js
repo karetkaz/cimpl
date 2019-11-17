@@ -139,7 +139,11 @@ Module.wgetFiles = function(files, onComplete) {
 					path = file.url.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3");
 				}
 				let xhr = new XMLHttpRequest();
-				xhr.open('GET', file.url, onComplete != null);
+				let url = file.url;
+				if (Module.relativeUrl != null) {
+					url = Module.relativeUrl(url);
+				}
+				xhr.open('GET', url, onComplete != null);
 				xhr.responseType = "arraybuffer";
 				xhr.overrideMimeType("application/octet-stream");
 				xhr.onreadystatechange = function () {

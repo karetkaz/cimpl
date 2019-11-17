@@ -38,7 +38,8 @@
 
 	<span class="canvas right icon" title="Stop execution" onclick="showCanvas(false);">❌</span>
 	<span class="right icon" title="Toggle show menu" onclick="setStyle(body, '!right-bar', 'editor');">⋮</span>
-	<span class="right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
+	<span class="editor right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
+	<span class="output-only right icon bold" title="Toggle show editor" onclick="setStyle(body, '!editor', 'output');">⬒</span>
 	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
 
 	<span class="output-only right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
@@ -157,6 +158,7 @@
 		<li onclick="editor.execCommand('findAndSelect');"><span class="right"></span>Find and select</li>
 		<hr>
 		<li onclick="editor.execCommand('jumpToLine');"><span class="right">Ctrl + g</span>Jump to line</li>
+		<hr>
 		<li onclick="editor.execCommand('jumpToBrace');"><span class="right">Ctrl + b</span>Jump to brace</li>
 		<li onclick="editor.execCommand('selectToBrace');"><span class="right">Ctrl+Shift + b</span>Select to brace</li>
 	</ul></div>
@@ -174,6 +176,7 @@
 		</ul></div>
 		<li onclick="completeAction(':%', '100');">Zoom</li>
 		<li id="wrap-output" onclick="setStyle(body, '!wrap-output');">Wrap output</li>
+		<li id="dark-theme" onclick="setStyle(body, '!dark');">Dark theme</li>
 		<li id="pin-left" onclick="setStyle(body, '!left-pin');">Pin left sidebar</li>
 		<li id="pin-right" onclick="setStyle(body, '!right-pin');">Pin right sidebar</li>
 		<li id="show-output" onclick="setStyle(body, '!output');">Show output</li>
@@ -191,6 +194,7 @@
 		<!-- <span class="no-output left" onclick="setStyle(body, 'output');">Search</span> -->
 		<span class="output left icon bold" onclick="editOutput();" title="Open output in editor">💾</span>
 		<span class="output left icon bold" title="Clear output" onclick="terminal.clear();">❌</span>
+		<span class="right icon" title="Full screen output" onclick="setStyle(body, '-editor', 'output');">⬒</span>
 		<span class="output right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
 		<span class="output right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
 		<p/>
@@ -231,6 +235,8 @@ function onExecClick() {
 		}
 		return;
 	}
+	canvasShown.width = 0;
+	canvasMove.classList.add('hidden');
 	execute(params.exec || '-run/g');
 }
 
@@ -325,7 +331,7 @@ function execInput(args) {
 	setStyle(document.body, 'canvas');
 	setTimeout(function() {
 		try {
-			Module['callMain'](args || []);
+			callMain(args || []);
 		} finally {
 			if (canvas.width === 0) {
 				setStyle(document.body, '-canvas');
@@ -384,11 +390,13 @@ function centerCanvas(zoom) {
 }
 function showCanvas(visible) {
 	if (!visible) {
+		editor.setOption("readOnly", false);
 		setStyle(document.body, '-canvas');
 		Module._SDL_SendQuit();
 		return;
 	}
 
+	editor.setOption("readOnly", 'nocursor');
 	setStyle(document.body, 'canvas');
 
 	if ('ontouchstart' in document.documentElement) {
@@ -398,6 +406,7 @@ function showCanvas(visible) {
 	if (Browser.mainLoop.oldPause === undefined) {
 		Browser.mainLoop.oldPause = Browser.mainLoop.pause;
 		Browser.mainLoop.pause = function() {
+			editor.setOption("readOnly", false);
 			setStyle(document.body, '-canvas');
 			Browser.mainLoop.oldPause();
 			canvas.width = 0;
@@ -418,59 +427,31 @@ canvasShown.observe(canvas, { attributes: true });
 
 var Module = {
 	initialized: false,
+	locateFile: function(path) {
+		return 'extras/demo/emscripten/' + path;
+	},
 	dynamicLibraries: [
 		'extras/demo/emscripten/libFile.wasm',
 		'extras/demo/emscripten/libGfx.wasm'
 	],
-	locateFile: function(url) {
-		return 'extras/demo/emscripten/' + url;
+	print: function(message) {
+		//console.log(message);
+		terminal.print(message);
 	},
-	externalLibraries: [{
-		file: '/lib/stdlib.ci',
-		url: '/Cmpl/lib/stdlib.ci'
-	}, {
-		file: '/lib/std/math.ci',
-		url: '/Cmpl/lib/std/math.ci'
-	}, {
-		file: '/lib/std/math.Complex.ci',
-		url: '/Cmpl/lib/std/math.Complex.ci'
-	}, {
-		file: '/lib/std/debug.ci',
-		url: '/Cmpl/lib/std/debug.ci'
-	}, {
-		file: '/lib/std/string.ci',
-		url: '/Cmpl/lib/std/string.ci'
-	}, {
-		file: '/lib/gfx/color.ci',
-		url: '/Cmpl/cmplGfx/lib/gfx/color.ci'
-	}, {
-		file: '/lib/vec/vec4f.ci',
-		url: '/Cmpl/lib/vec/vec4f.ci'
-	}, {
-		file: '/lib/vec/mat4f.ci',
-		url: '/Cmpl/lib/vec/mat4f.ci'
-	}, {
-		path: '/lib/vec/vec2d.ci',
-		url: '/Cmpl/lib/vec/vec2d.ci'
-	}, {
-		file: '/lib/gfxlib.ci',
-		url: '/Cmpl/cmplGfx/lib/gfxlib.ci'
-	}],
-	print: function(message) { terminal.print(message); },
 	canvas: document.getElementById('canvas'),
+	_emscripten_set_main_loop_arg: function() {
+		_emscripten_set_main_loop_arg.call(Module, arguments);
+	},
+	_emscripten_cancel_main_loop: function() {
+		_emscripten_cancel_main_loop.call(Module, arguments);
+	},
 
 	onRuntimeInitialized: function () {
 		ENV.CMPL_HOME = '/';
 		FS.mkdirTree(Module.workspace);
 		FS.chdir(Module.workspace);
-
-		Module.wgetFiles(Module.externalLibraries, function (inProgress) {
-			if (inProgress > 0) {
-				return;
-			}
-			params.update('workspace', 'project', 'content', 'folder', 'file');
-			Module.initialized = true;
-		});
+		params.update('workspace', 'project', 'content', 'folder', 'file');
+		Module.initialized = true;
 	}
 };
 </script>

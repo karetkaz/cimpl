@@ -4,8 +4,10 @@ GX_OUT=$(BINDIR)/obj.gx
 GX_SRC=cmplGfx/src
 
 CFLAGS=-Wall -Wextra -g0 -O3 -std=gnu99
-EMFLAGS=-g0 -O3 -s WASM=1 -s EXPORT_ALL=1 -s INVOKE_RUN=0 -s ALLOW_MEMORY_GROWTH=1 -s ASSERTIONS=0 -s BINARYEN_TRAP_MODE='clamp' --no-heap-copy
+EMFLAGS=-g0 -O3 -s WASM=1 -s EXPORT_ALL=1 -s INVOKE_RUN=0 -s ASSERTIONS=0 -s BINARYEN_TRAP_MODE='clamp' --no-heap-copy
+EMFLAGS+=--memory-init-file 0 -s TOTAL_MEMORY=128MB -s WASM_MEM_MAX=1GB -s ALLOW_MEMORY_GROWTH=1
 
+EM_EMBED=$(shell find lib -type f -name '*.ci' -not -path '*/todo/*' -printf '--preload-file %p\n')
 EM_SIDE_MODULE=-s SIDE_MODULE=1 -s "EXPORTED_FUNCTIONS=['_cmplInit']"
 EM_MAIN_MODULE=-s MAIN_MODULE=1
 #EM_MAIN_MODULE+=-s "EXPORTED_FUNCTIONS=['_rtInit','_ccInit','_ccAddUnit','_ccGenCode','_execute']"
@@ -78,7 +80,7 @@ libOpenGL.dll: cmplGL/src/openGL.c
 
 # for Browser platform
 cmpl.js: $(SRC_CC_EXE) lib/stdlib.ci
-	emcc $(EMFLAGS) -o extras/demo/emscripten/cmpl.js $(EM_MAIN_MODULE) -s USE_SDL=2 -s USE_LIBPNG=1 $(filter %.c, $^)
+	emcc $(EMFLAGS) -o extras/demo/emscripten/cmpl.js $(EM_MAIN_MODULE) -s USE_SDL=2 -s USE_LIBPNG=1 $(filter %.c, $^) $(EM_EMBED)
 
 libFile.wasm: cmplFile/src/file.c
 	emcc $(EMFLAGS) -o extras/demo/emscripten/libFile.wasm -I src $(EM_SIDE_MODULE) $(filter %.c, $^)

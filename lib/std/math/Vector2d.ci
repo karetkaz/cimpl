@@ -1,0 +1,25 @@
+/// A 2d vector (2x float64)
+struct vec2d: 0 {
+	/// Access the components as an array
+	float64 data[2];
+	struct {
+		/// X component of the vector
+		float64 x;
+		/// Y component of the vector
+		float64 y;
+	}
+}
+
+/// Initialize with given x, y components
+vec2d vec2d(float64 x, float64 y) {
+	return {
+		x: x;
+		y: y;
+	};
+}
+
+/// Component wise subtract the two vectors.
+inline sub(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), sub.p2d));
+
+/// Dot product
+inline dot(const vec2d a&, const vec2d b&) = a.x * b.x + a.y * b.y;

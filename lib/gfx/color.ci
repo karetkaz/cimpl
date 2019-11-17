@@ -1,0 +1,311 @@
+/// an 32 bit argb color
+struct argb: 0 {
+	/// value of color
+	uint32 v;
+	struct: 1 {
+		/// blue component
+		uint8 b;
+
+		/// green component
+		uint8 g;
+
+		/// red component
+		uint8 r;
+
+		/// alpha component
+		uint8 a;
+	}
+	/*enum {
+		Black             : 0x00000000;
+		White             : 0x00ffffff;
+		Aquamarine        : 0x007fffd4;
+		Azure             : 0x00007fff;
+		Blue              : 0x000000ff;
+		BlueViolet        : 0x008a2be2;
+		Brown             : 0x00a52a2a;
+		CadetBlue         : 0x005f9ea0;
+		Coral             : 0x00ff7f50;
+		CornflowerBlue    : 0x006495ed;
+		Cyan              : 0x0000ffff;
+		DarkGray          : 0x00a9a9a9;
+		DarkGrey          : 0x00a9a9a9;
+		DarkGreen         : 0x00006400;
+		DarkOliveGreen    : 0x00556b2f;
+		DarkOrchid        : 0x009932cc;
+		DarkSlateBlue     : 0x00483d8b;
+		DarkSlateGray     : 0x002f4f4f;
+		DarkSlateGrey     : 0x002f4f4f;
+		DarkTurquoise     : 0x0000ced1;
+		DarkWood          : 0x000d0301;
+		DeepPink          : 0x00ff1493;
+		DimGray           : 0x00696969;
+		DimGrey           : 0x00696969;
+		FireBrick         : 0x00b22222;
+		ForestGreen       : 0x00228b22;
+		Gold              : 0x00ffd700;
+		Goldenrod         : 0x00daa520;
+		Gray              : 0x00808080;
+		Grey              : 0x00808080;
+		Green             : 0x00008000;
+		GreenYellow       : 0x00adff2f;
+		IndianRed         : 0x00cd5c5c;
+		Khaki             : 0x00f0e68c;
+		LightBlue         : 0x00add8e6;
+		LightGray         : 0x00d3d3d3;
+		LightGrey         : 0x00d3d3d3;
+		LightSteelBlue    : 0x00b0c4de;
+		LightWood         : 0x00993d1a;
+		Lime              : 0x0000ff00;
+		LimeGreen         : 0x0032cd32;
+		Magenta           : 0x00ff00ff;
+		Maroon            : 0x00800000;
+		MedianWood        : 0x004d1f09;
+		MediumAquamarine  : 0x0066cdaa;
+		MediumBlue        : 0x000000cd;
+		MediumForestGreen : 0x006b8e23;
+		MediumGoldenrod   : 0x00eaeaad;
+		MediumOrchid      : 0x00ba55d3;
+		MediumSeaGreen    : 0x003cb371;
+		MediumSlateBlue   : 0x007b68ee;
+		MediumSpringGreen : 0x0000fa9a;
+		MediumTurquoise   : 0x0048d1cc;
+		MediumVioletRed   : 0x00c71585;
+		MidnightBlue      : 0x00191970;
+		Navy              : 0x00000080;
+		NavyBlue          : 0x0023238e;
+		Orange            : 0x00ffa500;
+		OrangeRed         : 0x00ff4500;
+		Orchid            : 0x00da70d6;
+		PaleGreen         : 0x0098fb98;
+		Pink              : 0x00ffc0cb;
+		Plum              : 0x00dda0dd;
+		Red               : 0x00ff0000;
+		Salmon            : 0x00fa8072;
+		SeaGreen          : 0x002e8b57;
+		Sienna            : 0x00a0522d;
+		SkyBlue           : 0x0087ceeb;
+		SlateBlue         : 0x006a5acd;
+		SpringGreen       : 0x0000ff7f;
+		SteelBlue         : 0x004682b4;
+		Tan               : 0x00d2b48c;
+		Thistle           : 0x00d8bfd8;
+		Turquoise         : 0x0040e0d0;
+		Violet            : 0x00ee82ee;
+		VioletRed         : 0x00cc3299;
+		Wheat             : 0x00f5deb3;
+		Yellow            : 0x00ffff00;
+		YellowGreen       : 0x009acd32;
+		//Transparent     : 0xff000000;
+	}*/
+}
+
+/// cast unsigned integer to argb value
+inline argb(uint32 argb) = argb(emit(uint32(argb)));
+/// cast argb value to unsigned integer
+inline uint32(argb value) = uint32(emit(struct(value)));
+
+
+/// clamp signed gray or color component to fit in 8 bits (0 ... 255)
+uint32 grayClamp(int32 c) {
+	if (c < 0) {
+		return 0;
+	}
+	if (c > 255) {
+		return 255;
+	}
+	return c;
+}
+/// clamp unsigned gray or color component to fit in 8 bits (0 ... 255)
+uint32 grayClamp(uint32 c) {
+	if (c > 255) {
+		return 255;
+	}
+	return c;
+}
+
+
+// construct a rgb8 gray color from the given value
+inline _gray(uint32 c) = argb((((c << 8) | c) << 8) | c);
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(int32 c) = _gray(grayClamp(c));
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(uint32 c) = _gray(grayClamp(c));
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(float32 c) = gray(int32(c * 255));
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(float64 c) = gray(int32(c * 255));
+
+
+/// construct an argb color from the given components
+inline _argb(uint32 r, uint32 g, uint32 b) = argb(uint32((((r << 8) | g) << 8) | b));
+/// construct an argb color from the given components
+inline _argb(uint32 a, uint32 r, uint32 g, uint32 b) = argb(uint32((((((a << 8) | r) << 8) | g) << 8) | b));
+
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(int32 r, int32 g, int32 b) = _argb(grayClamp(r), grayClamp(g), grayClamp(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(uint32 r, uint32 g, uint32 b) = _argb(grayClamp(r), grayClamp(g), grayClamp(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float32 r, float32 g, float32 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float64 r, float64 g, float64 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
+
+
+/// get the Alpha channel of the color
+inline ach(argb col) = uint32((uint32(col) >> 24) & 0xff);
+/// get the Red channel of the color
+inline rch(argb col) = uint32((uint32(col) >> 16) & 0xff);
+/// get the Green channel of the color
+inline gch(argb col) = uint32((uint32(col) >> 8) & 0xff);
+/// get the Blue channel of the color
+inline bch(argb col) = uint32(uint32(col) & 0xff);
+/// get the luminosity of the color
+inline lum(argb c) = uint32((rch(c) * 76 + gch(c) * 150 + bch(c) * 29) >> 8);
+
+/// linear interpolation between `c1` and `c2` by `t`, where t is a 16 bit fixed point
+argb rgbLerp16(argb c1, argb c2, uint32 t) {
+	inline lerp(uint32 x, uint32 y) = uint32(x + (t * (y - x) >> 16));
+	uint32 r = lerp(rch(c1), rch(c2));
+	uint32 g = lerp(gch(c1), gch(c2));
+	uint32 b = lerp(bch(c1), bch(c2));
+	return argb(r, g, b);
+}
+
+/// linear interpolation between `c1` and `c2` by `t`, where t is between 0. and 1.
+inline rgbLerp(argb c1, argb c2, double t) = rgbLerp16(c1, c2, uint32(t * (1 << 16)));
+
+/// linear interpolate a lookup-table with the given colors
+void lerpLut(uint32 lut[], argb colors...) {
+	int dt = (colors.length - 1 << 16) / (lut.length - 1);
+	for (int i = 0; i < lut.length; i += 1) {
+		int t = i * dt;
+		argb c1 = colors[t >> 16];
+		argb c2 = colors[(t >> 16) + 1];
+		lut[i] = uint32(rgbLerp16(c1, c2, t & 0xffff));
+	}
+}
+
+static if (typename(vec4f) != null) {
+
+/// convert a floating point vector to rgb
+inline argb(const vec4f vec&) = argb(vec.x, vec.y, vec.z);
+
+/// calculate the luminosity of a color
+inline lum(const vec4f vec&) = 0.299f * vec.x + 0.587f * vec.y + 0.114f * vec.z;
+
+/// convert from hsv color space to rgb color space
+vec4f hsv2rgb(vec4f hsv) {
+	float32 h = hsv.x;
+	float32 s = hsv.y;
+	float32 v = hsv.z;
+
+	if (s == 0) {
+		return vec4f(v);
+	}
+
+	h *= 360 / 60;
+
+	int i = int(h);		// round
+	float32 f = h - i;	// fraction
+
+	float32 u = v;
+	float32 p = v * (1 - s);
+	float32 q = v * (1 - s * f);
+	float32 t = v * (1 - s * (1 - f));
+
+	if (i == 0) {
+		return vec4f(u, t, p);
+	}
+	if (i == 1) {
+		return vec4f(q, u, p);
+	}
+	if (i == 2) {
+		return vec4f(p, u, t);
+	}
+	if (i == 3) {
+		return vec4f(p, q, u);
+	}
+	if (i == 4) {
+		return vec4f(t, p, u);
+	}
+	return vec4f(u, p, q);
+}
+}
+
+/// draw the given lookup table to the image
+void drawLut(gxSurf image, gxRect roi&, uint32 bars[256], uint32 lines[256]) {
+	enum {
+		margin: 20;
+		padding: 7;
+		colB: 0x4371c6;
+		colG: 0x72d874;
+		colR: 0xfc6165;
+		colL: 0xdadada;
+	}
+
+	gxRect rect = {
+		w: roi != null ? roi.w : 256;
+		h: roi != null ? roi.h : 128;
+		y: roi != null ? roi.y : margin;
+		x: roi != null ? roi.x : image.width() - rect.w - margin;
+	};
+
+	image.fillRect(
+		rect.x - padding,
+		rect.y - padding,
+		rect.x + rect.w + padding,
+		rect.y + rect.h + padding,
+		0
+	);
+
+	if (bars != null) {
+		for (int x = 0; x < rect.w; x += 1) {
+			int bv = bch(argb(bars[x])) * rect.h / 256;
+			int gv = gch(argb(bars[x])) * rect.h / 256;
+			int rv = rch(argb(bars[x])) * rect.h / 256;
+			int lv = ach(argb(bars[x])) * rect.h / 256;
+			for (int y = 0; y < rect.h; y += 1) {
+				uint32 b = colB * uint32(y < bv);
+				uint32 g = colG * uint32(y < gv);
+				uint32 r = colR * uint32(y < rv);
+				uint32 l = colL * uint32(y < lv);
+				image.set(x + rect.x, rect.h - y + rect.y - 1, r | g | b | l);
+			}
+		}
+	}
+	if (lines != null) {
+		int y = rect.y + rect.h - 1;
+		int pb = bch(argb(lines[0])) * rect.h / 256;
+		int pg = gch(argb(lines[0])) * rect.h / 256;
+		int pr = rch(argb(lines[0])) * rect.h / 256;
+		int pl = ach(argb(lines[0])) * rect.h / 256;
+
+		for (int i = 1; i < rect.w; i += 1) {
+			int x = rect.x + i;
+			int bv = bch(argb(lines[i])) * rect.h / 256;
+			int gv = gch(argb(lines[i])) * rect.h / 256;
+			int rv = rch(argb(lines[i])) * rect.h / 256;
+			int lv = ach(argb(lines[i])) * rect.h / 256;
+
+			image.drawLine(x - 1, y - pl, x, y - lv, colL);
+			image.drawLine(x - 1, y - pb, x, y - bv, colB);
+			image.drawLine(x - 1, y - pg, x, y - gv, colG);
+			image.drawLine(x - 1, y - pr, x, y - rv, colR);
+			
+			pl = lv;
+			pb = bv;
+			pg = gv;
+			pr = rv;
+		}
+	}
+}
+
+/// calculate and draw the histogram of the image
+void drawHist(gxSurf image, gxRect roi&, uint32 hist, uint32 lut2[256]) {
+	uint32 lut[256];
+	image.calcHist(roi, hist, lut);
+	image.drawLut(roi, lut, lut2);
+}
+
+/// calculate and draw the histogram of the image
+inline drawHist(gxSurf image, gxRect roi&, uint32 hist) = drawHist(image, roi, hist, null);

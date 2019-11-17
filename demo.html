@@ -37,7 +37,8 @@
 	<span class="left icon" title="Execute script (Ctrl + Enter)" onclick="onExecClick();">►</span>
 
 	<span class="right icon" title="Toggle show menu" onclick="setStyle(body, '!right-bar', 'editor');">⋮</span>
-	<span class="right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
+	<span class="editor right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
+	<span class="output-only right icon bold" title="Toggle show editor" onclick="setStyle(body, '!editor', 'output');">⬒</span>
 	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
 
 	<span class="output-only right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
@@ -156,10 +157,9 @@
 		<li onclick="editor.execCommand('findAndSelect');"><span class="right"></span>Find and select</li>
 		<hr>
 		<li onclick="editor.execCommand('jumpToLine');"><span class="right">Ctrl + g</span>Jump to line</li>
+		<hr>
 		<li onclick="editor.execCommand('jumpToBrace');"><span class="right">Ctrl + b</span>Jump to brace</li>
 		<li onclick="editor.execCommand('selectToBrace');"><span class="right">Ctrl+Shift + b</span>Select to brace</li>
-		<hr>
-		<li onclick="editor.execCommand('scrollToLine');"><span class="right"></span>Scroll to line</li>
 	</ul></div>
 	<div class="submenu collapsed">
 	<li onclick="setStyle(parentElement, '!collapsed')">View
@@ -175,6 +175,7 @@
 		</ul></div>
 		<li onclick="completeAction(':%', '100');">Zoom</li>
 		<li id="wrap-output" onclick="setStyle(body, '!wrap-output');">Wrap output</li>
+		<li id="dark-theme" onclick="setStyle(body, '!dark');">Dark theme</li>
 		<li id="pin-left" onclick="setStyle(body, '!left-pin');">Pin left sidebar</li>
 		<li id="pin-right" onclick="setStyle(body, '!right-pin');">Pin right sidebar</li>
 		<li id="show-output" onclick="setStyle(body, '!output');">Show output</li>
@@ -192,6 +193,7 @@
 		<!-- <span class="no-output left" onclick="setStyle(body, 'output');">Search</span> -->
 		<span class="output left icon bold" onclick="editOutput();" title="Open output in editor">💾</span>
 		<span class="output left icon bold" title="Clear output" onclick="terminal.clear();">❌</span>
+		<span class="right icon" title="Full screen output" onclick="setStyle(body, '-editor', 'output');">⬒</span>
 		<span class="output right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
 		<span class="output right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
 		<p/>

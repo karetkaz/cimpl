@@ -112,23 +112,26 @@ back.destroy();
 font.destroy();
 
 int onEvent(int action, int button, int x, int y) {
-	inline "lib/micro.ui.ci";
+	inline "/lib/gfx/micro.ui.ci";
 
 	static Slider brightness = {
 		text: "brightness";
 		minValue: -100;
 		maxValue: 100;
+		divValue: 100;
 	};
 	static Slider saturation = {
 		text: "saturation";
 		maxValue: 500;
 		value: 100;
+		divValue: 100;
 	};
 	static Slider contrast = {
 		text: "contrast";
 		minValue: -100;
 		maxValue: 500;
 		value: 100;
+		divValue: 100;
 	};
 	static Slider hue = {
 		text: "hue";
@@ -197,10 +200,10 @@ int onEvent(int action, int button, int x, int y) {
 			offs.colorMat(null, POLAROID_COLOR.data);
 		}
 		else {
-			float b = brightness.val() / 100.;
-			float s = saturation.val() / 100.;
-			float c = contrast.val() / 100.;
-			float h = hue.val() / 100.;
+			float b = brightness.valFlt();
+			float s = saturation.valFlt();
+			float c = contrast.valFlt();
+			float h = Math.radians(hue.valFlt());
 			mat4f mat = colorMatrix(b, s, c, h);
 			offs.colorMat(null, mat.data);
 		}

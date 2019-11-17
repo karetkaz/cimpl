@@ -2449,6 +2449,7 @@ int main(int argc, char *argv[]) {
 	cc->genDocs = extra.dmpDoc;
 	cc->genGlobals = settings.genGlobals != 0;
 	cc->genPrivate = settings.genPrivate != 0;
+	cc->home = ccUniqueStr(cc, cmpl_home, -1, -1);
 
 	if (install & installLibs) {
 		// install standard library.

@@ -116,7 +116,8 @@ void blend(gxSurf surf, int32 x0, int32 y0, const gxSurf src, const gxRect roi&,
 }
 }
 
-inline blur(gxSurf surf, int radius) = surf.blur(radius, 0.3 * (radius - 1) + 0.8);
+//inline blur(gxSurf surf, int radius) = surf.blur(radius, 0.3 * (radius - 1) + 0.8);
+inline blur(gxSurf surf, double sigma) = surf.blur(Math.max(1., (sigma - 0.8) / 0.3 + 1), sigma);
 
 int onEvent(int action, int button, int x, int y);
 offs.show(onEvent);
@@ -127,7 +128,7 @@ surf.destroy();
 font.destroy();
 
 int onEvent(int action, int button, int x, int y) {
-	inline "lib/micro.ui.ci";
+	inline "/lib/gfx/micro.ui.ci";
 
 	static Checker autoUpdate = {
 		text: "auto update";
@@ -139,11 +140,11 @@ int onEvent(int action, int button, int x, int y) {
 		maxValue: 512;
 	};
 	static Slider radius = {
-		text: "radius";
+		text: "sigma";
 		value: 50;
-		divValue: 10;
-		minValue: 0;
-		maxValue: 200;
+		divValue: 100;
+		minValue: 30;
+		maxValue: 500;
 	};
 	static Slider time = {
 		text: "time";
@@ -170,7 +171,7 @@ int onEvent(int action, int button, int x, int y) {
 			if (oldRadius != radiusValue) {
 				oldRadius = radiusValue;
 				blur.copy(0, 0, surf, null);
-				blur.blur(radiusValue);
+				blur.blur(radius.valFlt());
 			}
 			offs.blend(0, 0, blur, null, -amountValue, null);
 		}

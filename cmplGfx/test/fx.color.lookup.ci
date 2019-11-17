@@ -4,21 +4,19 @@ gxSurf back = gxSurf("asset/image/forest.png", 32);
 gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
 gxSurf offs = gxSurf(back.width(), back.height(), back.depth());
 
-void brightnessContrastGamma(uint32 lut[256], int brightness, int contrast, int gamma) {
-	float cVal = (256 + contrast) / 256f;
-	float gVal = 100f / gamma;
+void brightnessContrastGamma(uint32 lut[256], float brightness, float contrast, float gamma) {
 	argb lut2[*] = lut;
 
 	for (int idx = 0; idx < lut.length; idx += 1) {
-		float bcg = idx / 256f;
+		float val = idx / 256f;
 		// apply gamma
-		bcg = float.pow(bcg, gVal);
+		val = float.pow(val, 1 / gamma);
 		// apply contrast
-		bcg = cVal * (bcg - .5f) + .5f;
+		val = contrast * (val - .5f) + .5f;
 		// apply brightness
-		bcg = bcg + brightness / 256f;
+		val = brightness + val;
 
-		int rgb = grayClamp(int(256 * bcg));
+		int rgb = grayClamp(int(256 * val));
 		lut2[idx].r = rgb;
 		lut2[idx].g = rgb;
 		lut2[idx].b = rgb;
@@ -78,23 +76,26 @@ back.destroy();
 font.destroy();
 
 int onEvent(int action, int button, int x, int y) {
-	inline "lib/micro.ui.ci";
+	inline "/lib/gfx/micro.ui.ci";
 
 	static Slider brightness = {
 		text: "brightness";
 		value: 0;
+		divValue: 256;
 		minValue: -256;
-		maxValue: 256;
+		maxValue: +256;
 	};
 	static Slider contrast = {
 		text: "contrast";
-		value: 0;
-		minValue: -512;
+		value: 256;
+		divValue: 256;
+		minValue: -256;
 		maxValue: 512;
 	};
 	static Slider gamma = {
 		text: "gamma";
 		value: 100;
+		divValue: 100;
 		minValue: 1;
 		maxValue: 1000;
 	};
@@ -126,7 +127,7 @@ int onEvent(int action, int button, int x, int y) {
 			calcAutoEqualize(lut, offs, auto.checked);
 			offs.colorMap(null, lut, auto.checked);
 		} else {
-			brightnessContrastGamma(lut, brightness.val(), contrast.val(), gamma.val());
+			brightnessContrastGamma(lut, brightness.valFlt(), contrast.valFlt(), gamma.valFlt());
 			offs.colorMap(null, lut, false);
 		}
 

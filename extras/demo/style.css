@@ -83,7 +83,6 @@ select {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	z-index: 10;
 }
 .sidebar * {
 	/*padding: .5em 0;*/
@@ -240,9 +239,11 @@ body.wrap-output #output {
 /* main toolbar translations */
 body.tool { padding-top: 2em; }
 body.tool #canvas-panel { top: 2em; }
-body.tool #left-sidebar { top: 2em; bottom: 1.5em; }
-body.tool #right-sidebar { top: 2em; bottom: 1.5em; }
+body.tool #left-sidebar { top: 2em; }
+body.tool #right-sidebar { top: 2em; }
 body:not(.tool) #main-toolbar { display: none; }
+body:not(.output) #left-sidebar { bottom: 1.5em; }
+body:not(.output) #right-sidebar { bottom: 1.5em; }
 
 /* left sidebar */
 body.left-bar.left-pin {padding-left: 15em;}
@@ -259,15 +260,15 @@ body.tool #show-toolbar:before {content: '✓';}
 body.left-pin #pin-left:before {content: '✓';}
 body.right-pin #pin-right:before {content: '✓';}
 body.wrap-output #wrap-output:before {content: '✓';}
+body.dark #dark-theme:before {content: '✓';}
 body.editor #show-editor:before {content: '✓';}
 body.output #show-output:before {content: '✓';}
 
 /* bottom sidebar */
 body.output { padding-bottom: 50vh; }
 body:not(.output) { padding-bottom: 1.5em; }
-body.output.left-bar #bottom-sidebar { left: 15em; }
-body.output #right-sidebar { bottom: 50%; }
-body.output #left-sidebar { bottom: 0; }
+body.output.right-pin.right-bar #bottom-sidebar { right: 15em; }
+body.output.left-pin.left-bar #bottom-sidebar { left: 15em; }
 body.output #bottom-sidebar { height: 50vh; }
 body:not(.output) #output { display: none; }
 
@@ -275,6 +276,8 @@ body:not(.output) #output { display: none; }
 body:not(.canvas) #canvas-panel { display: none; }
 body.output:not(.editor) #editor-panel { display: none; } 
 .toolbar>.editor,.toolbar>.output,.toolbar>.canvas { display: none; }
+body.right-bar #right-sidebar { z-index: 20; }
+body:not(.left-pin) #left-sidebar { z-index: 20; }
 
 /* toolbar icon visibility: editor, output, canvas */
 body.editor .toolbar>.editor { display: initial; }
@@ -297,6 +300,8 @@ body:not(.canvas) .toolbar>.no-canvas { display: initial; }
 /* custom full screen output */
 .toolbar>.output-only.icon {display: none;}
 body.output:not(.editor) .toolbar>.output-only.icon {display: initial;}
+body.output:not(.editor) #right-sidebar { z-index: unset; }
+body.output:not(.editor) #left-sidebar { z-index: unset; }
 body.output:not(.editor) #output {
 	position: fixed;
 	display: block;

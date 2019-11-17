@@ -51,11 +51,11 @@ SET TEST_FILES=%TEST_FILES%;%CMPL%\cmplGfx\test\*.ci
 REM ~ SET TEST_FILES=%TEST_FILES%;%CMPL%\cmplGL\test\*.ci
 
 SET DUMP_FILE=%BIN%.dump.ci
-%BIN%\cmpl -X-stdin+steps -asm/n/s -run/g -log/d "%DUMP_FILE%" -std"%CMPL%\lib\stdlib.ci" "%BIN%\libFile.dll" "%BIN%\libGfx.dll" "%CMPL%\cmplGfx\lib\gfxlib.ci" "%CMPL%\test\test.ci"
+%BIN%\cmpl -X-stdin+steps -asm/n/s -run/g -log/d "%DUMP_FILE%" -std"%CMPL%\lib\stdlib.ci" "%BIN%\libFile.dll" "%BIN%\libGfx.dll" "%CMPL%\lib\gfxlib.ci" "%CMPL%\test\test.ci"
 FOR %%f IN (%TEST_FILES%) DO (
 	pushd "%%~dpf"
 	echo **** running test: %%f
-	%BIN%\cmpl -X-stdin+steps -run/g -log/a/d "%DUMP_FILE%" -std"%CMPL%\lib\stdlib.ci" "%BIN%\libFile.dll" "%BIN%\libOpenGL.dll" "%BIN%\libGfx.dll" "%CMPL%\cmplGfx\lib\gfxlib.ci" "%%f"
+	%BIN%\cmpl -X-stdin+steps -run/g -log/a/d "%DUMP_FILE%" -std"%CMPL%\lib\stdlib.ci" "%BIN%\libFile.dll" "%BIN%\libOpenGL.dll" "%BIN%\libGfx.dll" "%CMPL%\lib\gfxlib.ci" "%%f"
 	IF ERRORLEVEL 1 echo ******** failed: %%f
 	popd
 )
