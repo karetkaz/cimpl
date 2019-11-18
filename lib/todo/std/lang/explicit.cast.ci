@@ -1,0 +1,42 @@
+// Explicit Cast
+inline int32(int32 rhs) = int32(emit(struct(rhs)));
+inline int32(int64 rhs) = int32(emit(struct(rhs), cvt.i64_i32));
+inline int32(uint32 rhs) = int32(emit(struct(rhs)));
+inline int32(uint64 rhs) = int32(emit(struct(rhs), cvt.u64_i32));
+inline int32(float32 rhs) = int32(emit(struct(rhs), cvt.f32_i32));
+inline int32(float64 rhs) = int32(emit(struct(rhs), cvt.f64_i32));
+
+inline int64(int32 rhs) = int64(emit(struct(rhs), cvt.i32_i64));
+inline int64(int64 rhs) = int64(emit(struct(rhs)));
+inline int64(uint32 rhs) = int64(emit(struct(rhs)), cvt.u32_i64);
+inline int64(uint64 rhs) = int64(emit(struct(rhs), cvt.u64_i64));
+inline int64(float32 rhs) = int64(emit(struct(rhs), cvt.f32_i64));
+inline int64(float64 rhs) = int64(emit(struct(rhs), cvt.f64_i64));
+
+inline uint32(int32 rhs) = uint32(emit(struct(rhs)));
+inline uint32(int64 rhs) = uint32(emit(struct(rhs), cvt.i64_u32));
+inline uint32(uint32 rhs) = uint32(emit(struct(rhs)));
+inline uint32(uint64 rhs) = uint32(emit(struct(rhs), cvt.u64_u32));
+inline uint32(float32 rhs) = uint32(emit(struct(rhs), cvt.f32_u32));
+inline uint32(float64 rhs) = uint32(emit(struct(rhs), cvt.f64_u32));
+
+inline uint64(int32 rhs) = uint64(emit(struct(rhs), cvt.i32_u64));
+inline uint64(int64 rhs) = uint64(emit(struct(rhs)));
+inline uint64(uint32 rhs) = uint64(emit(struct(rhs), cvt.u32_u64));
+inline uint64(uint64 rhs) = uint64(emit(struct(rhs)));
+inline uint64(float32 rhs) = uint64(emit(struct(rhs), cvt.f32_u64));
+inline uint64(float64 rhs) = uint64(emit(struct(rhs), cvt.f64_u64));
+
+inline float32(int32 rhs) = float32(emit(struct(rhs), cvt.i32_f32));
+inline float32(int64 rhs) = float32(emit(struct(rhs), cvt.i64_f32));
+inline float32(uint32 rhs) = float32(emit(struct(rhs), cvt.u32_f32));
+inline float32(uint64 rhs) = float32(emit(struct(rhs), cvt.u64_f32));
+inline float32(float32 rhs) = float32(emit(struct(rhs)));
+inline float32(float64 rhs) = float32(emit(struct(rhs), cvt.f64_f32));
+
+inline float64(int32 rhs) = float64(emit(struct(rhs), cvt.i32_f64));
+inline float64(int64 rhs) = float64(emit(struct(rhs), cvt.i64_f64));
+inline float64(uint32 rhs) = float64(emit(struct(rhs), cvt.u32_f64));
+inline float64(uint64 rhs) = float64(emit(struct(rhs), cvt.u64_f64));
+inline float64(float32 rhs) = float64(emit(struct(rhs), cvt.f32_f64));
+inline float64(float64 rhs) = float64(emit(struct(rhs)));

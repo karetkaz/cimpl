@@ -649,7 +649,7 @@ it will be accessible only through the declaring type:
 ### Constant members
 [TODO: documentation]
 
-**[Example](../Design/Examples/math.Complex.ci)**
+**[Example](../../lib/std/math/Complex.ci)**
 ```
 struct complex {
 	const float64 re;           // real part
@@ -672,7 +672,7 @@ and reject further assignments:
 ### Methods
 [TODO: fix documentation]
 
-**[Example](../../lib/todo/io.Streams.ci)**
+**[Example](../../lib/todo/todo.Stream.ci)**
 ```
 struct TextReader: Closeable {
 	const ByteReader reader;
@@ -837,7 +837,7 @@ coord e0;                       // error: enum variable must be initialized.
 An anonymous enumeration does not create the enumeration type,
 and it exposes the enumerated values to the declaring scope.
 
-**[Example](../Design/Examples/math.Complex.ci)**
+**[Example](../../lib/std/math/Complex.ci)**
 ```
 struct complex {
 	const float64 re;       // real
