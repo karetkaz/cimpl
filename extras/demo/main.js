@@ -135,6 +135,32 @@ let terminal = Terminal(output, function(escaped, text) {
 let params = JsArgs('#', function (params, changes) {
 	//console.trace('params: ', changes, params);
 
+	function content(value) {
+		if (value != null) {
+			try {
+				return atob(value);
+			} catch (e) {
+				console.debug(e);
+			}
+		}
+		return value;
+	}
+	function project(value) {
+		value = content(value);
+		if (value != null) {
+			if (value.startsWith('[{')) {
+				return JSON.parse(value);
+			}
+
+			let result = [];
+			for (let url of value.split(';')) {
+				result.push({ url });
+			}
+			return result;
+		}
+		return value;
+	}
+
 	// set window title
 	let title = params.file || '';
 	if (params.line) {
@@ -152,49 +178,40 @@ let params = JsArgs('#', function (params, changes) {
 			setStyle(document.body, '-dark', '-light', params.theme || 'dark');
 		}
 
-		// custom layout, only after loading
-		if (params.show != null) {
-			setStyle(document.body, '-left-bar', '-editor', '-output', params.show);
-		}
-
 		// setup editor content, only after loading
 		if (params.content != null) {
-			let content = params.content;
-			try {
-				content = atob(content);
-			} catch (e) {
-				console.debug(e);
+			setContent(content(params.content), params.file, params.line);
+		}
+
+		// custom layout, only after loading
+		let isInline = false;
+		if (params.show != null) {
+		    let style = params.show;
+			switch (style){
+			    case "inline":
+			        isInline = true;
+			        style = "editor";
 			}
-			setContent(content, params.file, params.line);
+			setStyle(document.body, '-left-bar', '-editor', '-output', style);
+		}
+
+		if (isInline) {
+			setStyle(document.body, 'autoheight');
+			editor.setOption("viewportMargin", Infinity);
+		} else {
+			editor.setSize('100%', '100%');
+			editor.focus();
 		}
 		return;
 	}
 
 	// reload page if the project was modified
-	let project = [];
 	if (changes.project !== undefined) {
 		if (changes.project != params.project) {
-			// page needs to be reloaded
+			// page needs to be reloaded to clean up old files
+			// keep the workspace clean, only one project
 			params.update(true);
 			return;
-		}
-
-		let content = params.project;
-
-		try {
-			content = atob(content);
-		} catch (e) {
-			console.debug(e);
-		}
-
-		if (content != null) {
-			if (content.startsWith('[{')) {
-				project = JSON.parse(content);
-			} else {
-				for (let url of content.split(';')) {
-					project.push({ url });
-				}
-			}
 		}
 		if (changes.workspace === undefined) {
 			changes.workspace = true;
@@ -202,15 +219,26 @@ let params = JsArgs('#', function (params, changes) {
 	}
 
 	if (changes.workspace !== undefined) {
+		if (changes.workspace != params.workspace) {
+			// page needs to be reloaded to clean up old files
+			// mounting one folder second time will fail
+			params.update(true);
+			return;
+		}
 		openProjectFile({
 			workspace: params.workspace,
+			project: project(params.project),
+			content: content(params.content),
 			folder: params.folder,
 			file: params.file,
 			line: params.line,
-			project
 		});
-		if (params.workspace && params.project) {
+		if (params.workspace) {
 			params.project = null;
+			params.content = null;
+			params.folder = null;
+			params.file = null;
+			params.line = null;
 			return true;
 		}
 		return;
@@ -238,15 +266,7 @@ let params = JsArgs('#', function (params, changes) {
 	}
 
 	if (changes.content !== undefined) {
-		let content = params.content;
-		if (content != null) {
-			try {
-				content = atob(content);
-			} catch (e) {
-				console.debug(e);
-			}
-		}
-		setContent(content, params.file, params.line);
+		setContent(content(params.content), params.file, params.line);
 	}
 });
 
@@ -270,8 +290,6 @@ editor.on("gutterClick", function(cm, n) {
 		cm.setGutterMarker(n, "breakpoints", null);
 	}
 });
-editor.setSize('100%', '100%');
-editor.focus();
 
 edtFileName.onfocus = function() {
 	edtFileName.selectionStart = 0;
@@ -608,6 +626,50 @@ function execute(cmd, exactArgs) {
 	}
 
 	terminal.clear();
-	setStyle(document.body, 'output');
 	execInput(args || ['--help']);
+}
+
+function process(data) {
+	if (data == null) {
+		return;
+	}
+	if (data.error !== undefined) {
+		terminal.print(data.error);
+		actionError();
+	}
+	if (data.print !== undefined) {
+		terminal.print(data.print);
+	}
+	if (data.list !== undefined) {
+		fileList.innerHTML = '';
+		for (let file of data.list) {
+			if (file.endsWith('/')) {
+				fileList.innerHTML += '<li onclick="params.update({folder: this.innerText});">' + file + '</li>';
+			}
+			else if (file === params.file) {
+				fileList.innerHTML += '<li class="active" onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
+			}
+			else {
+				fileList.innerHTML += '<li onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
+			}
+		}
+	}
+
+	if (data.content || data.file || data.line) {
+		if (setContent(data.content, data.file, data.line)) {
+			params.update({
+				file: data.file || params.file,
+				line: data.line || params.line,
+				content: params.content ? data.content : null
+			});
+		} else {
+			params.update({
+				file: data.file,
+				line: data.line
+			});
+		}
+	}
+	if (data.initialized) {
+		params.update('workspace', 'project', 'content', 'folder', 'file');
+	}
 }

@@ -9,7 +9,7 @@ EMFLAGS+=--memory-init-file 0 -s TOTAL_MEMORY=128MB -s WASM_MEM_MAX=1GB -s ALLOW
 
 EM_EMBED=$(shell find lib -type f -name '*.ci' -not -path '*/todo/*' -printf '--preload-file %p\n')
 EM_SIDE_MODULE=-s SIDE_MODULE=1 -s "EXPORTED_FUNCTIONS=['_cmplInit']"
-EM_MAIN_MODULE=-s MAIN_MODULE=1
+EM_MAIN_MODULE=-s MAIN_MODULE=1 -lidbfs.js
 #EM_MAIN_MODULE+=-s "EXPORTED_FUNCTIONS=['_rtInit','_ccInit','_ccAddUnit','_ccGenCode','_execute']"
 
 ifneq "$(OS)" "Windows_NT"

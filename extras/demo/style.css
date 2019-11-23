@@ -83,6 +83,7 @@ select {
 	left: 0;
 	right: 0;
 	bottom: 0;
+	z-index: 10;
 }
 .sidebar * {
 	/*padding: .5em 0;*/
@@ -112,7 +113,11 @@ select {
 	content: '▸ ';
 }
 .sidebar li.collapsed > ul,
-.sidebar div.collapsed > ul {
+.sidebar div.collapsed > ul,
+.sidebar li.collapsed > hr,
+.sidebar div.collapsed > hr,
+.sidebar li.collapsed > div,
+.sidebar div.collapsed > div {
 	display: none;
 }
 .sidebar button {
@@ -170,10 +175,8 @@ select {
 	overflow-y: auto;
 }
 #bottom-sidebar {
-	float: right;
 	top: unset;
 	height : auto;
-	/*padding: 0;*/
 }
 
 #fileList > *:before {
@@ -236,14 +239,16 @@ body.wrap-output #output {
 	transform: translate(-50%, -50%);
 }
 
-/* main toolbar translations */
+/* main and bottom toolbar translations */
 body.tool { padding-top: 2em; }
 body.tool #canvas-panel { top: 2em; }
 body.tool #left-sidebar { top: 2em; }
 body.tool #right-sidebar { top: 2em; }
-body:not(.tool) #main-toolbar { display: none; }
+body:not(.output) { padding-bottom: 1.5em; }
+body:not(.output) #canvas-panel { bottom: 1.5em; }
 body:not(.output) #left-sidebar { bottom: 1.5em; }
 body:not(.output) #right-sidebar { bottom: 1.5em; }
+body:not(.tool) #main-toolbar { display: none; }
 
 /* left sidebar */
 body.left-bar.left-pin {padding-left: 15em;}
@@ -313,7 +318,9 @@ body.output:not(.editor) #output {
 	height: unset;
 	z-index: 10;
 }
-body.output:not(.tool) #output {top: 0;}
+body.output:not(.tool) #output { top: 0; }
+body:not(.output) #bottom-sidebar {	z-index: 20; }
+
 /* custom look and feel */
 .breakpoints {
 	width: 0.8em;
@@ -372,3 +379,19 @@ body .sidebar .submenu span {
 	padding: 0;
 	background-color: transparent;
 }
+
+/* inline demo: auto height */
+body.autoheight .CodeMirror {
+	height: unset;
+}
+body.autoheight .CodeMirror-scroll {
+	height: auto;
+}
+body:not(.output).autoheight #output-toolbar {
+	display: none;
+}
+body.autoheight {
+	padding-bottom: 0;
+}
+
+body.autoheight #editor-panel {height: unset;}

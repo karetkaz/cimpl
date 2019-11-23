@@ -36,7 +36,7 @@
 	<span class="left icon" title="Toggle show menu" onclick="setStyle(body, '!left-bar', 'editor');">☰</span>
 	<span class="left icon" title="Execute script (Ctrl + Enter)" onclick="onExecClick();">►</span>
 
-	<span class="canvas right icon" title="Stop execution" onclick="showCanvas(false);">❌</span>
+	<span class="right icon" title="Toggle show menu" onclick="setStyle(body, '!right-bar', 'editor');">⋮</span>
 	<span class="editor right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
 	<span class="output-only right icon bold" title="Toggle show editor" onclick="setStyle(body, '!editor', 'output');">⬒</span>
 	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
@@ -55,19 +55,49 @@
 </div>
 <div id="left-sidebar" class="sidebar">
 	<div class="collapsed submenu">
+	<li onclick="setStyle(parentElement, '!collapsed');">Execute
+	<button class="right" onclick="execute(); event.stopPropagation();" title="Compiler usage help">?</button>
+	<button class="right" onclick="execute('-api/A/m', {addLibs: true}); event.stopPropagation();" title="Compiler api">ƒ</button>
+	</li>
+	<ul>
+		<li onclick="execute('-run/g');">⚡ Run</li>
+		<li onclick="execute('-debug/g');">🐞 Debug</li>
+		<li onclick="execute('-profile/g');">⏱ Profile</li>
+		<li onclick="execute('');">⚙ Compile only</li>
+		<li onclick="execute('-api -doc -use');">Symbols</li>
+		<li onclick="execute('-asm/n/s/m');">Instructions</li>
+		<li onclick="execute('-profile/t/p/G/M -api/A/m/d/p -asm/a/n/s -ast -doc -use');">Profile & full dump</li>
+	</ul></li></div>
+	<hr>
+	<div class="submenu">
+	<li onclick="setStyle(parentElement, '!collapsed');">Workspace
+	<button class="right" onclick="event.stopPropagation(); setStyle(parentElement.parentElement, '-collapsed'); params.update('folder');" title="Refresh file list">⟳</button>
+	<!--<button class="right" onclick="event.stopPropagation(); downloadFiles();">📥</button>-->
+	<!--<button class="right" onclick="event.stopPropagation(); uploadFiles();">📤</button>-->
+	</li>
+	<ul id="fileList"></ul>
+	<ul>
+		<hr>
+		<li onclick="params.update({folder: '**'});" title="Show files including the /lib/ folder">Show all</li>
+	</ul></div>
+</div>
+<div id="right-sidebar" class="sidebar">
+	<div class="submenu collapsed">
 	<li onclick="setStyle(parentElement, '!collapsed');">File
 	<button class="right" onclick="event.stopPropagation(); saveInput();" title="Save">💾</button>
-	</li><ul>
+	</li>
+	<ul>
 		<!-- TODO
 		<li>New folder</li>
 		<li>New file</li>
 		-->
-		<li onclick="params.update({workspace: prompt('Save workspace as:')});"><span class="right"></span>📥 Persist workspace</li>
 		<li onclick="editProject();"><span class="right"></span>🛠 Edit project</li>
 		<li onclick="shareInput();"><span class="right"></span>🔗 Share link</li>
 		<li onclick="saveInput();"><span class="right">Ctrl + s</span>💾 Save</li>
 		<li onclick="saveInput(true);"><span class="right"></span>💾 Save as</li>
 		<li onclick="params.update({file: null});"><span class="right"></span>❌ Close</li>
+	</ul>
+	</div>
 	<div class="submenu collapsed">
 	<li onclick="setStyle(parentElement, '!collapsed');">Edit
 	<button class="right" onclick="event.stopPropagation(); editor.execCommand('redo');" title="Redo">↷</button>
@@ -147,38 +177,10 @@
 		<li id="wrap-output" onclick="setStyle(body, '!wrap-output');">Wrap output</li>
 		<li id="dark-theme" onclick="setStyle(body, '!dark');">Dark theme</li>
 		<li id="pin-left" onclick="setStyle(body, '!left-pin');">Pin left sidebar</li>
+		<li id="pin-right" onclick="setStyle(body, '!right-pin');">Pin right sidebar</li>
 		<li id="show-output" onclick="setStyle(body, '!output');">Show output</li>
 		<li id="show-editor" onclick="setStyle(body, '!editor');">Show editor</li>
 		<li id="show-toolbar" onclick="setStyle(body, '!tool');">Show toolbar</li>
-		</ul></div>
-		<!--<div class=""><li onclick="alert('TODO')">Help</li></div>-->
-	</ul>
-	<hr></div>
-	<div class="collapsed submenu">
-	<li onclick="setStyle(parentElement, '!collapsed');">Execute
-	<button class="right" onclick="execute(); event.stopPropagation();" title="Compiler usage help">?</button>
-	<button class="right" onclick="execute('-api/A/m', {addLibs: true}); event.stopPropagation();" title="Compiler api">ƒ</button>
-	</li>
-	<ul>
-		<li onclick="execute('-run/g');">⚡ Run</li>
-		<li onclick="execute('-debug/g');">🐞 Debug</li>
-		<li onclick="execute('-profile/g');">⏱ Profile</li>
-		<li onclick="execute('');">⚙ Compile only</li>
-		<li onclick="execute('-api -doc -use');">Symbols</li>
-		<li onclick="execute('-asm/n/s/m');">Instructions</li>
-		<li onclick="execute('-profile/t/p/G/M -api/A/m/d/p -asm/a/n/s -ast -doc -use');">Profile & full dump</li>
-	</ul></li>
-	<hr></div>
-	<div class="submenu">
-	<li onclick="setStyle(parentElement, '!collapsed');">Workspace
-	<button class="right" onclick="event.stopPropagation(); setStyle(parentElement.parentElement, '-collapsed'); params.update('folder');" title="Refresh file list">⟳</button>
-	<!--<button class="right" onclick="event.stopPropagation(); downloadFiles();">📥</button>-->
-	<!--<button class="right" onclick="event.stopPropagation(); uploadFiles();">📤</button>-->
-	</li>
-	<ul id="fileList"></ul>
-	<ul>
-		<hr>
-		<li onclick="params.update({folder: '**'});" title="Show files including the /lib/ folder">Show all</li>
 	</ul></div>
 </div>
 <div id="bottom-sidebar" class="sidebar">
@@ -203,45 +205,15 @@
 </div>
 <div id="left-overlay" class="overlay" onclick="setStyle(body, '-left-bar');"></div>
 <div id="menu2-overlay" class="overlay" onclick="setStyle(body, '-right-bar');"></div>
-<div id="canvas-panel" class="overlay" onclick="void(0);"
-		ontouchstart="setStyle(canvas, 'hidden');"
-		ontouchend="setStyle(canvas, '-hidden');">
-	<canvas id="canvas" width="0" onclick="event.stopPropagation();"
-		ontouchstart="event.stopPropagation();"
-		ontouchend="event.stopPropagation();"
-	></canvas>
-	<div id="canvasMove" class="hidden overlay" onclick="classList.add('hidden');"
-		ontouchstart="event.stopPropagation();"
-		ontouchend="event.stopPropagation();"
-	></div>
-</div>
 
 <script type="text/javascript">
 function onExecClick() {
-	// if canvas is already shown, zoom or pan
-	if (document.body.classList.contains('canvas')) {
-		if (!('ontouchstart' in document.documentElement)) {
-			return;
-		}
-		if (canvasMove.classList.contains('hidden')) {
-			canvasMove.classList.remove('hidden');
-			centerCanvas(1);
-		} else {
-			canvasMove.classList.add('hidden');
-			centerCanvas(Math.min(screen.width / canvas.width, screen.height / canvas.height));
-		}
-		return;
-	}
-	canvasShown.width = 0;
-	canvasMove.classList.add('hidden');
 	execute(params.exec || '-run/g');
 }
 
 var props = props || {};
 props.libraries = [
-	'extras/demo/emscripten/libFile.wasm',
-	'extras/demo/emscripten/libGfx.wasm',
-	'/lib/gfxlib.ci'
+	'libFile.wasm'
 ];
 function openProjectFile(projectOrFile) {
 	worker.postMessage(projectOrFile);
@@ -280,141 +252,92 @@ function saveInput(saveAs) {
 	return file;
 }
 function execInput(args) {
-	// show overlay while compiling and initializing
-	setStyle(document.body, 'canvas', 'output');
-	setTimeout(function() {
-		try {
-			callMain(args || []);
-		} finally {
-			if (canvas.width === 0) {
-				setStyle(document.body, '-canvas');
-			}
-		}
+	setStyle(document.body, 'output');
+	worker.postMessage({
+		execute: args || []
 	});
 }
 
-function centerCanvas(zoom) {
-	if (zoom === undefined) {
-		if (canvas.style.zoom !== '') {
-			zoom = +canvas.style.zoom;
+/* communication with worker/args
+send => {
+	list - download these files to the workspace directory [{path|file, url|content}]
+	file - open or save the content of the file
+	line - jump to / position in file
+	url - download and save content
+	content - save content
+	workspace - switch workspace
+	execute - arguments for the compiler
+}
+
+receive => {
+	list - list of files in the workspace
+	data - content of the requested file
+	line - jump to / position in file
+	print - print the message to the output
+	error - print the error to the output
+	exitcode - response to execute
+	initialized
+}
+
+args => {
+	project - download the content of the given file list
+	content - overwrite the content of the editor
+	file - name of file to be opened
+	line - line position to jump to
+	theme - override default: &theme=light|dark
+	show - override default: &show=editor|output
+
+	exec - override default: &exec=-profile/G/H/P/T
+	dump - dump output to file: &dump=dump.txt|dump.json
+	log - log output to file: &log=dump.txt
+	mem - if 2MB memory is not enough: &mem=128M
+	X
+}*/
+let worker = new Worker('extras/demo/emscripten/worker.js');
+worker.onmessage = function(event) {
+	let data = event.data;
+	//console.log('worker: ', data);
+	if (data.error !== undefined) {
+		terminal.print(data.error);
+		actionError();
+	}
+	if (data.print !== undefined) {
+		terminal.print(data.print);
+	}
+	if (data.list !== undefined) {
+		fileList.innerHTML = '';
+		for (let file of data.list) {
+			if (file.endsWith('/')) {
+				fileList.innerHTML += '<li onclick="params.update({folder: this.innerText});">' + file + '</li>';
+			}
+			else if (file === params.file) {
+				fileList.innerHTML += '<li class="active" onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
+			}
+			else {
+				fileList.innerHTML += '<li onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
+			}
+		}
+	}
+
+	if (data.content || data.file || data.line) {
+		if (setContent(data.content, data.file, data.line)) {
+			params.update({
+				file: data.file || params.file,
+				line: data.line || params.line,
+				content: params.content ? data.content : null
+			});
 		} else {
-			zoom = 1;
+			params.update({
+				file: data.file,
+				line: data.line
+			});
 		}
 	}
-	if (zoom > 0 && zoom < 1) {
-		canvas.style.zoom = zoom;
-		canvas.style.top = null;
-		canvas.style.left = null;
-		canvas.style.transform = null;
-		canvas.parentElement.style.overflow = null;
-		return;
-	}
-
-	canvas.style.top = 0;
-	canvas.style.left = 0;
-	canvas.style.transform = 'none';
-	canvas.style.zoom = null;
-	canvas.parentElement.style.overflow = 'auto';
-	let dx = canvas.clientWidth - canvas.parentElement.clientWidth;
-	if (dx > 0) {
-		canvas.parentElement.scrollLeft = dx / 2;
-		canvas.style.left = 0;
-	} else {
-		canvas.parentElement.scrollLeft = 0;
-		canvas.style.left = -dx / 2;
-	}
-	let dy = canvas.clientHeight - canvas.parentElement.clientHeight;
-	if (dy > 0) {
-		canvas.parentElement.scrollTop = dy / 2;
-		canvas.style.top = 0;
-	} else {
-		canvas.parentElement.scrollTop = 0;
-		canvas.style.top = -dy / 2;
-	}
-	canvasMove.style.width = Math.max(canvas.width, canvas.parentElement.clientWidth);
-	canvasMove.style.height = Math.max(canvas.height, canvas.parentElement.clientHeight);
-}
-function showCanvas(visible) {
-	if (!visible) {
-		editor.setOption("readOnly", false);
-		setStyle(document.body, '-canvas');
-		Module._SDL_SendQuit();
-		return;
-	}
-
-	editor.setOption("readOnly", 'nocursor');
-	setStyle(document.body, 'canvas');
-
-	if ('ontouchstart' in document.documentElement) {
-		// zoom the canvas on mobile phones
-		centerCanvas(Math.min(screen.width / canvas.width, screen.height / canvas.height));
-	}
-	if (Browser.mainLoop.oldPause === undefined) {
-		Browser.mainLoop.oldPause = Browser.mainLoop.pause;
-		Browser.mainLoop.pause = function() {
-			editor.setOption("readOnly", false);
-			setStyle(document.body, '-canvas');
-			Browser.mainLoop.oldPause();
-			canvas.width = 0;
-		}
-	}
-}
-let canvasShown = new MutationObserver(function() {
-	if (canvas.width === 0) {
-		return;
-	}
-	if (canvasShown.width === canvas.width) {
-		return;
-	}
-	showCanvas(true);
-	canvasShown.width = canvas.width;
-});
-canvasShown.observe(canvas, { attributes: true });
-
-var Module = {
-	initialized: false,
-	locateFile: function(path) {
-		return 'extras/demo/emscripten/' + path;
-	},
-	dynamicLibraries: [
-		'extras/demo/emscripten/libFile.wasm',
-		'extras/demo/emscripten/libGfx.wasm'
-	],
-	print: function(message) {
-		console.log(message);
-		terminal.print(message);
-	},
-	printErr: function(message) {
-		console.error(message);
-		terminal.print(message);
-	},
-	canvas: document.getElementById('canvas'),
-	onRuntimeInitialized: function () {
-		ENV.CMPL_HOME = '/';
-		FS.mkdirTree(Module.workspace);
-		FS.chdir(Module.workspace);
-		Module.initialized = true;
+	if (data.initialized) {
 		params.update('workspace', 'project', 'content', 'folder', 'file');
-	},
-	onFileDownloaded: function(inProgress) {
-		if (inProgress > 0) {
-			return;
-		}
-		params.update('file', 'folder', 'content');
-
-	},
-	postMessage(data) {
-		try {
-			Module.openProjectFile(data, process);
-		} catch (err) {
-			Module.printErr('operation failed: ' + err);
-		}
 	}
 };
-var worker = Module;
 </script>
-<script type="text/javascript" src="extras/demo/emscripten/module.js"></script>
-<script type="text/javascript" src="extras/demo/emscripten/cmpl.js"></script>
 <script type="text/javascript" src="extras/demo/main.js"></script>
 </body>
 </html>

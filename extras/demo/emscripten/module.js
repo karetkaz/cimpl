@@ -117,13 +117,110 @@ Module.initWorkspace = function(name, callback) {
 	return true;
 }
 
-Module.wgetFiles = function(files, onComplete) {
+Module.openProjectFile = function(data, callBack) {
+	if (!Module.initialized) {
+		throw "Module not initialized";
+	}
+
+	function onInitWorkSpace(error) {
+		if (error != null) {
+			Module.printErr('error: ' + error);
+			return;
+		}
+		if (data.folder == null) {
+			data.folder = Module.workspace;
+		}
+		try {
+			// TODO: remove recursive calls
+			Module.openProjectFile(data, callBack);
+		} catch (err) {
+			Module.printErr('operation failed: ' + err);
+		}
+	}
+
+	// setup custom workspace directory
+	if (Module.initWorkspace(data.workspace, onInitWorkSpace)) {
+		return;
+	}
+
+	let list = null;
+	let sync = false;
+
+	let result = {};
+	// download and store project files
+	if (data.project != null) {
+		sync = !Module.wgetFiles(data.project);
+		list = [Module.workspace];
+	}
+
+	// open, save, download file
+	if (data.file !== undefined) {
+		let operation = 'operation';
+		try {
+			let path = data.file;
+			if (data.content != null) {
+				if (!Module.pathExists(path)) {
+					list = [Module.workspace];
+				}
+				// save file content
+				operation = 'save';
+				Module.saveFile(path, data.content);
+				sync = true;
+			}
+			else if (data.url != null) {
+				if (!Module.pathExists(path)) {
+					list = [Module.workspace];
+				}
+				operation = 'download';
+				sync = Module.wgetFiles([data]);
+			}
+			else {
+				// read file content
+				operation = 'read';
+				result.content = Module.readFile(path);
+				result.file = data.file;
+				result.line = data.line;
+			}
+		} catch (err) {
+			result.error = 'File ' + operation + ' failed[' + data.file + ']: ' + err;
+			console.trace(err);
+		}
+	}
+
+	// list files from custom directory
+	if (data.folder != null) {
+		list = data.folder;
+	}
+
+	if (list != null) {
+		result.list = Module.listFiles(list);
+	}
+	if (sync) {
+		FS.syncfs(function(error) {
+			if (error == null) {
+				return;
+			}
+			Module.printErr('error: ' + error);
+		});
+	}
+	return callBack(result);
+}
+
+Module.wgetFiles = function(files) {
+	let isAsync = Module.onFileDownloaded != null;
 	let inProgress = files.length;
 	function saveFile(path, content) {
 		Module.saveFile(path, content);
+		FS.syncfs(function(error) {
+			if (error == null) {
+				return;
+			}
+			Module.printErr('error: ' + error);
+		});
+
 		inProgress -= 1;
-		if (onComplete != null) {
-			onComplete(inProgress);
+		if (Module.onFileDownloaded != null) {
+			Module.onFileDownloaded(inProgress);
 		}
 	}
 
@@ -133,45 +230,45 @@ Module.wgetFiles = function(files, onComplete) {
 			if (file.content != null) {
 				saveFile(path, file.content);
 				Module.print('Created file: ' + path);
+				continue;
 			}
-			else if (file.url != null) {
-				if (path == null) {
-					path = file.url.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3");
-				}
-				let xhr = new XMLHttpRequest();
-				let url = file.url;
-				if (Module.relativeUrl != null) {
-					url = Module.relativeUrl(url);
-				}
-				xhr.open('GET', url, onComplete != null);
-				xhr.responseType = "arraybuffer";
-				xhr.overrideMimeType("application/octet-stream");
-				xhr.onreadystatechange = function () {
-					if (xhr.readyState !== 4) {
-						return;
-					}
-					if (xhr.status < 200 || xhr.status >= 300) {
-						let err = new Error(xhr.status + ' (' + xhr.statusText + ')')
-						Module.print('Download failed: `' + xhr.responseURL + '`: ' + err);
-						return err;
-					}
-					saveFile(path, new Uint8Array(xhr.response));
-					Module.print('Downloaded file: ' + path + ': ' + xhr.responseURL);
-					if (inProgress == 0) {
-						Module.print("Project file(s) download complete.");
-					}
-				}
-				xhr.send(null);
+
+			// download the file
+			if (path == null) {
+				path = file.url.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3");
 			}
-			else {
-				saveFile(path, '');
-				Module.print('Created empty file: ' + path);
+			let xhr = new XMLHttpRequest();
+			let url = file.url;
+			if (Module.relativeUrl != null) {
+				url = Module.relativeUrl(url);
 			}
+			xhr.open('GET', url, isAsync);
+			xhr.responseType = "arraybuffer";
+			xhr.overrideMimeType("application/octet-stream");
+			xhr.onreadystatechange = function () {
+				if (xhr.readyState !== 4) {
+					return;
+				}
+				if (xhr.status < 200 || xhr.status >= 300) {
+					let err = new Error(xhr.status + ' (' + xhr.statusText + ')')
+					Module.print('Download failed: `' + xhr.responseURL + '`: ' + err);
+					return err;
+				}
+				saveFile(path, new Uint8Array(xhr.response));
+				Module.print('Downloaded file: ' + path + ': ' + xhr.responseURL);
+				if (inProgress == 0) {
+					Module.print("Project file(s) download complete.");
+				}
+			}
+			xhr.send(null);
 		}
 		catch (err) {
-			Module.print('Download failed: `' + path + '`: ' + err);
-			console.error(err);
+			Module.printErr('Download failed: `' + path + '`: ' + err);
 			inProgress -= 1;
+			if (Module.onFileDownloaded != null) {
+				Module.onFileDownloaded(inProgress);
+			}
 		}
 	}
+	return isAsync && files.length > 0;
 };

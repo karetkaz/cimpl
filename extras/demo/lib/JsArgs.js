@@ -1,24 +1,24 @@
 /**
  * Read and update the parameters in the url
  * to query, add, update or remove parameters use the update method
- * 
+ *
  * @param paramSeparator optional parameter separator `#` or `?`
  * @param onHashChange callback to be invoked when the something changes
  * @returns an object containing the parameter names associated with the values
- * 
+ *
  * basic usage of the update method:
  *  	update(true) -> reload page
  *  	update(false) -> reload params, without change detection
- * 
+ *
  *  	update() -> reload params, with change detection
  *  	update(key1, ...) -> reload params, force change detection on given keys
- * 
+ *
  *  	update({...}) -> update params, write back url (escaped)
  *  		update({}) just write back url (escaped)
  *  		update({key1 : 'value1', ...}) update or insert parameter 'key1'
  *  		update({key1 : undefined, ...}) delete parameter 'key1'
  *  		update({key1 : null, ...}) delete parameter 'key1'
- * 
+ *
  * @constructor
  */
 function JsArgs(paramSeparator, onHashChange) {
