@@ -178,6 +178,10 @@ let params = JsArgs('#', function (params, changes) {
 			setStyle(document.body, '-dark', '-light', params.theme || 'dark');
 		}
 
+		if (params.workspace != null) {
+			workspaceName.innerText = ': ' + params.workspace;
+		}
+
 		// setup editor content, only after loading
 		if (params.content != null) {
 			setContent(content(params.content), params.file, params.line);
@@ -186,11 +190,11 @@ let params = JsArgs('#', function (params, changes) {
 		// custom layout, only after loading
 		let isInline = false;
 		if (params.show != null) {
-		    let style = params.show;
+			let style = params.show;
 			switch (style){
-			    case "inline":
-			        isInline = true;
-			        style = "editor";
+				case "inline":
+					isInline = true;
+					style = "editor";
 			}
 			setStyle(document.body, '-left-bar', '-editor', '-output', style);
 		}
@@ -202,6 +206,29 @@ let params = JsArgs('#', function (params, changes) {
 			editor.setSize('100%', '100%');
 			editor.focus();
 		}
+
+		if (params.workspace != null || params.project != null) {
+			// do not show workspaces if a project or workspace is loaded
+			return;
+		}
+		if (indexedDB.databases == null) {
+			console.debug('!indexedDB.databases');
+			return;
+		}
+		workspaceName.innerText = 's';
+		indexedDB.databases().then(function(dbs) {
+			workspaceList.innerHTML = '';
+			for (db of dbs) {
+				let name = db.name;
+				if (name.startsWith('/')) {
+					name = name.substr(1);
+				}
+				let url = window.location.origin + window.location.pathname + '#workspace=' + name;
+				workspaceList.innerHTML += '<li onclick="params.update({workspace: \'' + name + '\'});">' + 'Workspace: ' + name +
+					'<button class="right" onclick="event.stopPropagation(); rmWorkspace(\'' + name + '\')" title="Remove workspace">-</button>' +
+					'</li>'
+			}
+		});
 		return;
 	}
 
@@ -269,6 +296,25 @@ let params = JsArgs('#', function (params, changes) {
 		setContent(content(params.content), params.file, params.line);
 	}
 });
+
+function rmWorkspace(workspace) {
+	if (!confirm("Remove workspace: " + workspace)) {
+		return;
+	}
+	if (!workspace.startsWith('/')) {
+		workspace = '/' + workspace;
+	}
+	var req = indexedDB.deleteDatabase(workspace);
+	req.onsuccess = function(event) {
+		console.log(arguments);
+		if (event.oldVersion === 0) {
+			return;
+		}
+		params.update(true);
+	}
+	req.onerror = console.log;
+	req.onblocked = console.log;
+}
 
 function actionError() {
 	edtFileName.classList.add('error');
