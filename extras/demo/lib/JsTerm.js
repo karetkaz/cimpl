@@ -53,7 +53,7 @@ function Terminal(output, interpret) {
 				output.scrollTop = 0;
 			}
 		},
-		print: function (text) {
+		print: function(text) {
 			let escaped = text.replace(/[<>&\r\n]/g, function (match) {
 				switch (match) {
 					default: return match;

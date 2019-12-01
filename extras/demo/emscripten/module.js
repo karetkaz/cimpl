@@ -101,8 +101,9 @@ Module.initWorkspace = function(name, callback) {
 	if (name == null || name === "") {
 		return false;
 	}
-	if (!name.startsWith('/')) {
-		name = '/' + name;
+	let prefix = '/cmpl/'
+	if (!name.startsWith(prefix)) {
+		name = prefix + name;
 	}
 	if (Module.workspace === name) {
 		return false;

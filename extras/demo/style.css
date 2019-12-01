@@ -240,15 +240,17 @@ body.wrap-output #output {
 }
 
 /* main and bottom toolbar translations */
-body.tool { padding-top: 2em; }
-body.tool #canvas-panel { top: 2em; }
-body.tool #left-sidebar { top: 2em; }
-body.tool #right-sidebar { top: 2em; }
-body:not(.output) { padding-bottom: 1.5em; }
-body:not(.output) #canvas-panel { bottom: 1.5em; }
-body:not(.output) #left-sidebar { bottom: 1.5em; }
-body:not(.output) #right-sidebar { bottom: 1.5em; }
-body:not(.tool) #main-toolbar { display: none; }
+body.tool-bar { padding-top: 2em; }
+body.tool-bar #canvas-panel { top: 2em; }
+body.tool-bar #left-sidebar { top: 2em; }
+body.tool-bar #right-sidebar { top: 2em; }
+body:not(.tool-bar) #main-toolbar { display: none; }
+
+body.bottom-bar:not(.output) { padding-bottom: 1.5em; }
+body.bottom-bar:not(.output) #canvas-panel { bottom: 1.5em; }
+body.bottom-bar:not(.output) #left-sidebar { bottom: 1.5em; }
+body.bottom-bar:not(.output) #right-sidebar { bottom: 1.5em; }
+body:not(.output):not(.bottom-bar) #output-toolbar { display: none; }
 
 /* left sidebar */
 body.left-bar.left-pin {padding-left: 15em;}
@@ -258,11 +260,13 @@ body.left-bar:not(.left-pin) #left-overlay { display: block; }
 /* right sidebar */
 body.right-bar.right-pin {padding-right: 15em;}
 body:not(.right-bar) #right-sidebar { display: none; }
-body.right-bar:not(.right-pin) #menu2-overlay { display: block; }
+body.right-bar:not(.right-pin) #right-overlay { display: block; }
 
 /* right sidebar checked items */
-body.tool #show-toolbar:before {content: '✓';}
+body.tool-bar #show-toolbar:before {content: '✓';}
+body.left-bar #show-left:before {content: '✓';}
 body.left-pin #pin-left:before {content: '✓';}
+body.right-bar #show-right:before {content: '✓';}
 body.right-pin #pin-right:before {content: '✓';}
 body.wrap-output #wrap-output:before {content: '✓';}
 body.dark #dark-theme:before {content: '✓';}
@@ -271,10 +275,9 @@ body.output #show-output:before {content: '✓';}
 
 /* bottom sidebar */
 body.output { padding-bottom: 50vh; }
-body:not(.output) { padding-bottom: 1.5em; }
-body.output.right-pin.right-bar #bottom-sidebar { right: 15em; }
-body.output.left-pin.left-bar #bottom-sidebar { left: 15em; }
 body.output #bottom-sidebar { height: 50vh; }
+body.output.left-pin.left-bar #bottom-sidebar { left: 15em; }
+body.output.right-pin.right-bar #bottom-sidebar { right: 15em; }
 body:not(.output) #output { display: none; }
 
 /* panel visibility and size: editor, output, canvas */
@@ -318,7 +321,7 @@ body.output:not(.editor) #output {
 	height: unset;
 	z-index: 10;
 }
-body.output:not(.tool) #output { top: 0; }
+body.output:not(.tool-bar) #output { top: 0; }
 body:not(.output) #bottom-sidebar {	z-index: 20; }
 
 /* custom look and feel */
@@ -381,17 +384,6 @@ body .sidebar .submenu span {
 }
 
 /* inline demo: auto height */
-body.autoheight .CodeMirror {
-	height: unset;
-}
-body.autoheight .CodeMirror-scroll {
-	height: auto;
-}
-body:not(.output).autoheight #output-toolbar {
-	display: none;
-}
-body.autoheight {
-	padding-bottom: 0;
-}
-
-body.autoheight #editor-panel {height: unset;}
+body.autoheight #editor-panel { height: unset; }
+body.autoheight .CodeMirror { height: unset; }
+body.autoheight .CodeMirror-scroll { height: auto; }

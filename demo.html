@@ -31,7 +31,7 @@
 	<link rel="stylesheet" href="extras/demo/style.css">
 
 </head>
-<body class="dark tool left-bar left-pin editor output">
+<body class="dark tool-bar bottom-bar left-bar left-pin editor output">
 <div id="main-toolbar" class="toolbar">
 	<span class="left icon" title="Toggle show menu" onclick="setStyle(body, '!left-bar', 'editor');">☰</span>
 	<span class="left icon" title="Execute script (Ctrl + Enter)" onclick="onExecClick();">►</span>
@@ -39,9 +39,7 @@
 	<span class="editor right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
 	<span class="output-only right icon bold" title="Toggle show editor" onclick="setStyle(body, '!editor', 'output');">⬒</span>
 	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
-
 	<span class="output-only right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
-	<span class="output-only right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
 
 	<!-- filename -->
 	<span class="filename" title="Execute action (Shift + Enter)
@@ -56,13 +54,13 @@
 	<div class="collapsed submenu">
 	<li onclick="setStyle(parentElement, '!collapsed');">File
 		<button class="right" onclick="event.stopPropagation(); saveInput();" title="Save">💾</button>
-	</li><ul>
-		<!-- TODO
-		<li>New folder</li>
-		<li>New file</li>
-		-->
-		<li onclick="params.update({workspace: prompt('Save workspace as:')});"><span class="right"></span>📥 Persist workspace</li>
+	</li>
+	<ul id="projectOptions" class="hidden">
+		<li onclick="params.update({workspace: prompt('Save project as:')});"><span class="right"></span>📥 Persist project</li>
 		<li onclick="editProject();"><span class="right"></span>🛠 Edit project</li>
+		<hr>
+	</ul>
+	<ul>
 		<li onclick="shareInput();"><span class="right"></span>🔗 Share link</li>
 		<li onclick="saveInput();"><span class="right">Ctrl + s</span>💾 Save</li>
 		<li onclick="saveInput(true);"><span class="right"></span>💾 Save as</li>
@@ -181,6 +179,11 @@
 		<li onclick="params.update({folder: '**'});" title="Show files including the /lib/ folder">Show all</li>
 	</ul></div>
 </div>
+<div id="right-sidebar" class="sidebar">
+	<li id="show-left" onclick="setStyle(body, '!left-bar');">Show left sidebar</li>
+	<li id="pin-right" onclick="setStyle(body, '!right-pin');">Pin right sidebar</li>
+	<li id="show-right" onclick="setStyle(body, '!right-bar');">Show right sidebar</li>
+</div>
 <div id="bottom-sidebar" class="sidebar">
 	<div id="output-toolbar" class="toolbar">
 		<select class="output left" id="selOutput" onchange="void(0);" onclick="event.stopPropagation()">
@@ -202,7 +205,7 @@
 	<textarea id="input"></textarea>
 </div>
 <div id="left-overlay" class="overlay" onclick="setStyle(body, '-left-bar');"></div>
-<div id="menu2-overlay" class="overlay" onclick="setStyle(body, '-right-bar');"></div>
+<div id="right-overlay" class="overlay" onclick="setStyle(body, '-right-bar');"></div>
 
 <script type="text/javascript">
 function onExecClick() {

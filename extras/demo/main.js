@@ -178,6 +178,9 @@ let params = JsArgs('#', function (params, changes) {
 			setStyle(document.body, '-dark', '-light', params.theme || 'dark');
 		}
 
+		if (params.project != null) {
+			setStyle(projectOptions, '-hidden');
+		}
 		if (params.workspace != null) {
 			workspaceName.innerText = ': ' + params.workspace;
 		}
@@ -196,11 +199,11 @@ let params = JsArgs('#', function (params, changes) {
 					isInline = true;
 					style = "editor";
 			}
-			setStyle(document.body, '-left-bar', '-editor', '-output', style);
+			setStyle(document.body, '-left-bar', '-right-bar', '-editor', '-output', style);
 		}
 
 		if (isInline) {
-			setStyle(document.body, 'autoheight');
+			setStyle(document.body, 'autoheight', '-bottom-bar');
 			editor.setOption("viewportMargin", Infinity);
 		} else {
 			editor.setSize('100%', '100%');
@@ -212,17 +215,19 @@ let params = JsArgs('#', function (params, changes) {
 			return;
 		}
 		if (indexedDB.databases == null) {
-			console.debug('!indexedDB.databases');
+			terminal.print('Failed to list workspaces, indexedDB.databases not available');
 			return;
 		}
 		workspaceName.innerText = 's';
 		indexedDB.databases().then(function(dbs) {
 			workspaceList.innerHTML = '';
+			let prefix = '/cmpl/';
 			for (db of dbs) {
 				let name = db.name;
-				if (name.startsWith('/')) {
-					name = name.substr(1);
+				if (!name.startsWith(prefix)) {
+					continue;
 				}
+				name = name.substr(prefix.length);
 				let url = window.location.origin + window.location.pathname + '#workspace=' + name;
 				workspaceList.innerHTML += '<li onclick="params.update({workspace: \'' + name + '\'});">' + 'Workspace: ' + name +
 					'<button class="right" onclick="event.stopPropagation(); rmWorkspace(\'' + name + '\')" title="Remove workspace">-</button>' +
@@ -301,8 +306,8 @@ function rmWorkspace(workspace) {
 	if (!confirm("Remove workspace: " + workspace)) {
 		return;
 	}
-	if (!workspace.startsWith('/')) {
-		workspace = '/' + workspace;
+	if (!workspace.startsWith('/cmpl/')) {
+		workspace = '/cmpl/' + workspace;
 	}
 	var req = indexedDB.deleteDatabase(workspace);
 	req.onsuccess = function(event) {
