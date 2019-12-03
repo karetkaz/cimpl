@@ -494,7 +494,7 @@ window.onkeydown = function() {
 }
 
 function completeAction(action, hint) {
-	setStyle(document.body, 'tool');
+	setStyle(document.body, 'tool-bar');
 	edtFileName.focus();
 
 	if (action == null) {
