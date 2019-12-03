@@ -6,7 +6,9 @@ struct Button {
 	bool selectable = false;
 
 	const variant data = null;
-	bool onClick(Button item&) = null;
+	bool onClick(Button item&) {
+		return true;
+	}
 }
 
 struct Checker {
@@ -18,7 +20,9 @@ struct Checker {
 
 	bool checked = false;
 	const variant data = null;
-	bool onClick(Checker item&) = null;
+	bool onClick(Checker item&) {
+		return true;
+	}
 }
 
 struct Slider {
@@ -26,13 +30,15 @@ struct Slider {
 	bool enabled = true;
 	bool selectable = true;
 
-	const int divValue = 1;
-	const int minValue = 0;
-	const int maxValue = -1u >> 1;
-
 	int value = 0;
+	const int minimum = 0;
+	const int maximum = -1u >> 1;
+	const int divisor = 1;
+
 	const variant data = null;
-	bool onClick(Slider item&) = null;
+	bool onClick(Slider item&) {
+		return true;
+	};
 }
 
 struct Layout {
@@ -46,17 +52,17 @@ struct Layout {
 }
 
 int val(Slider slider&) {
-	if (slider.value < slider.minValue) {
-		slider.value = slider.minValue;
+	if (slider.value < slider.minimum) {
+		slider.value = slider.minimum;
 	}
-	if (slider.value > slider.maxValue) {
-		slider.value = slider.maxValue;
+	if (slider.value > slider.maximum) {
+		slider.value = slider.maximum;
 	}
 	return slider.value;
 }
 
 double valFlt(Slider slider&) {
-	return slider.val() / double(slider.divValue);
+	return slider.val() / double(slider.divisor);
 }
 
 Layout Layout(gxSurf offs, gxSurf font, variant items...) {
@@ -96,7 +102,7 @@ void draw(Layout layout&, int x, int y) {
 		if (Slider item& = layout.items[i].as(Slider)) {
 			pos = text.append(pos, item.text);
 			pos = text.append(pos, ": ");
-			if (item.divValue != 1) {
+			if (item.divisor != 1) {
 				pos = append(text, pos, item.valFlt(), flagsFlt);
 			} else {
 				pos = text.append(pos, item.val(), flagsInt);

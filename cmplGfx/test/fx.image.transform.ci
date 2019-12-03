@@ -123,46 +123,49 @@ int onEvent(int action, int button, int x, int y) {
 	};
 	static Slider rotate = {
 		text: "rotate";
-		maxValue: 360;
+		maximum: 360;
 	};
 	static Slider skewX = {
 		text: "skew x";
-		minValue: -45;
-		maxValue: +45;
+		minimum: -45;
+		maximum: +45;
 	};
 	static Slider skewY = {
 		text: "skew y";
-		minValue: -45;
-		maxValue: +45;
+		minimum: -45;
+		maximum: +45;
 	};
 	static Slider scaleX = {
 		text: "scale x";
 		value: 100;
-		minValue: 10;
-		maxValue: 500;
+		minimum: 10;
+		maximum: 500;
+		divisor: 100;
 	};
 	static Slider scaleY = {
 		text: "scale y";
 		value: 100;
-		minValue: 10;
-		maxValue: 500;
+		minimum: 10;
+		maximum: 500;
+		divisor: 100;
 	};
 	static Slider translateX = {
 		text: "translate x";
-		minValue: -offs.width();
-		maxValue: +offs.width();
+		minimum: -offs.width();
+		maximum: +offs.width();
 	};
 	static Slider translateY = {
 		text: "translate y";
-		minValue: -offs.height();
-		maxValue: +offs.height();
+		minimum: -offs.height();
+		maximum: +offs.height();
 	};
 
 	static Slider maxRatio = {
 		text: "max ratio";
 		value: in.width() * 100 / in.height();
-		minValue: 100;
-		maxValue: 400;
+		minimum: 100;
+		maximum: 400;
+		divisor: 100;
 	};
 	static Checker fitWidth = {
 		text: "fit width";
@@ -177,7 +180,8 @@ int onEvent(int action, int button, int x, int y) {
 	static Slider imgRatio = {
 		text: "ratio";
 		enabled: false;
-		value: in.width() * 100 / in.height();
+		divisor: 100;
+		value: in.width() * imgRatio.divisor / in.height();
 	};
 
 	static Layout ui = Layout(offs, font,
