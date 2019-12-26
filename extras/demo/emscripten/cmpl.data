@@ -796,7 +796,7 @@ void drawLut(gxSurf image, gxRect roi&, uint32 bars[256], uint32 lines[256]) {
 			image.drawLine(x - 1, y - pb, x, y - bv, colB);
 			image.drawLine(x - 1, y - pg, x, y - gv, colG);
 			image.drawLine(x - 1, y - pr, x, y - rv, colR);
-			
+
 			pl = lv;
 			pb = bv;
 			pg = gv;
@@ -813,53 +813,56 @@ void drawHist(gxSurf image, gxRect roi&, uint32 hist, uint32 lut2[256]) {
 }
 
 /// calculate and draw the histogram of the image
-inline drawHist(gxSurf image, gxRect roi&, uint32 hist) = drawHist(image, roi, hist, null);// micro ui
+inline drawHist(gxSurf image, gxRect roi&, uint32 hist) = drawHist(image, roi, hist, null);
+// micro ui
 
-struct Button {
-	const char text[*];
-	bool enabled = true;
-	bool selectable = false;
-
-	const variant data = null;
-	bool onClick(Button item&) {
-		return true;
-	}
-}
-
-struct Checker {
-	const char text[*];
-	const char on[*] = "on";
-	const char off[*] = "off";
-	bool enabled = true;
-	bool selectable = false;
-
-	bool checked = false;
-	const variant data = null;
-	bool onClick(Checker item&) {
-		return true;
-	}
-}
-
-struct Slider {
+struct View: object {
 	const char text[*];
 	bool enabled = true;
 	bool selectable = true;
+	const variant data = null;
 
+	bool onClick(View this) = null; /*{
+		//trace("onClick", this);
+		return true;
+	}*/
+}
+
+struct Button: View {
+	/*bool onClick(Button this) {
+		trace("onClick", this);
+		return true;
+	}*/
+}
+
+struct Checker: View {
+	const char on[*] = "on";
+	const char off[*] = "off";
+
+	bool checked = false;
+}
+
+struct Slider: View {
 	int value = 0;
 	const int minimum = 0;
 	const int maximum = -1u >> 1;
 	const int divisor = 1;
 
-	const variant data = null;
-	bool onClick(Slider item&) {
-		return true;
+	/* FIXME: do the override, use this method as default initializer
+	// TODO: override or overload: bool onClick(Slider this) { ??? }
+	bool onClick(View this) {
+		View.onClick(this);   // call super
+		trace("onClick", this);
+		// FIXME: enable lookup: value.value = 0;
+		return this.enabled;
 	};
+	// */
 }
 
 struct Layout {
 	gxSurf offs;
 	gxSurf font;
-	variant items[200] = {};
+	View items[200] = {};
 	gxRect rects[200] = {};
 	int reset[200] = {};
 	int selectedIndex = -1;
@@ -889,10 +892,10 @@ Layout Layout(gxSurf offs, gxSurf font, variant items...) {
 	layout.font = font;
 	layout.selectedIndex = -1;
 	for (int i = 0; i < items.length; i += 1) {
-		if (Slider slider& = items[i].as(Slider)) {
+		if (Slider slider = items[i].as(Slider)) {
 			layout.reset[i] = slider.value;
 		}
-		layout.items[i] = items[i];
+		layout.items[i] = pointer(items[i]);
 	}
 	layout.count = items.length;
 	return layout;
@@ -914,8 +917,9 @@ void draw(Layout layout&, int x, int y) {
 		} else {
 			pos = text.append(pos, " ");
 		}
-		if (Slider item& = layout.items[i].as(Slider)) {
-			pos = text.append(pos, item.text);
+		View view = layout.items[i];
+		pos = text.append(pos, view.text);
+		if (Slider item = view.as(Slider)) {
 			pos = text.append(pos, ": ");
 			if (item.divisor != 1) {
 				pos = append(text, pos, item.valFlt(), flagsFlt);
@@ -923,8 +927,7 @@ void draw(Layout layout&, int x, int y) {
 				pos = text.append(pos, item.val(), flagsInt);
 			}
 		}
-		else if (Checker item& = layout.items[i].as(Checker)) {
-			pos = text.append(pos, item.text);
+		else if (Checker item = view.as(Checker)) {
 			pos = text.append(pos, ": ");
 			if (item.checked) {
 				pos = text.append(pos, item.on);
@@ -932,11 +935,10 @@ void draw(Layout layout&, int x, int y) {
 				pos = text.append(pos, item.off);
 			}
 		}
-		else if (Button item& = layout.items[i].as(Button)) {
-			pos = text.append(pos, item.text);
+		else if (Button item = view.as(Button)) {
 		}
 		else {
-			abort("item is not a known ui element", layout.items[i]);
+			abort("item is not a known ui element", view);
 		}
 		posAll = textAll.append(posAll, text);
 		posAll = textAll.append(posAll, "\n");
@@ -952,9 +954,45 @@ void draw(Layout layout&, int x, int y) {
 
 inline selected(Layout layout&) = layout.selectedIndex < 0 ? null : pointer(layout.items[layout.selectedIndex]);
 inline selected(Layout layout&, typename type) = layout.selectedIndex < 0 ? null : layout.items[layout.selectedIndex].as(type);
-inline isSelected(Layout layout&, pointer item) = item == layout.selected();
+inline isSelected(Layout layout&, View item) = item == layout.selected();
 
 bool uiEvent(Layout layout&, int action, int button, int x, int y) {
+struct MouseState {
+	int32 clicks;   // click count
+	int64 time;     // old clock
+	int32 btn;      // old button
+	int32 x;        // old x coord
+	int32 y;        // old y coord
+}
+static int click(MouseState old&, int btn, int x, int y) {
+	if ((btn != 0 && btn != old.btn) || x != old.x || y != old.y) {
+		// reset values
+		old.time = System.millis();
+		old.btn = btn;
+		old.clicks = 1;
+		old.x = x;
+		old.y = y;
+		return 0;
+	}
+	if (btn == 0) {
+		// release button
+		// old.time = keep value?;
+		// old.btn = keep value?;
+		// old.cnt = keep value?;
+		return old.clicks;
+	}
+
+	int64 now = System.millis();
+	if ((now - old.time) / 1000. > .5) {
+		// reset counter
+		old.clicks = 0;
+	}
+	old.time = now;
+	old.btn = btn;
+	old.clicks += 1;
+	return old.clicks;
+}
+
 // TODO: void measure(Layout layout&) { }
 // TODO: void layout(Layout layout&) { }
 
@@ -962,19 +1000,21 @@ bool click(Layout layout&, int index) {
 	if (index < 0) {
 		return false;
 	}
-	if (Slider item& = layout.items[index].as(Slider)) {
+	View view = layout.items[index];
+	if (Slider item = view.as(Slider)) {
 		if (!item.enabled) {
 			return false;
 		}
 		if (item.selectable) {
 			layout.selectedIndex = index;
 		}
-		if (item.onClick != null) {
+		if (view.onClick != null) {
+			// FIXME: use: view.onClick(item)
 			return item.onClick(item);
 		}
 		return true;
 	}
-	if (Checker item& = layout.items[index].as(Checker)) {
+	if (Checker item = view.as(Checker)) {
 		if (!item.enabled) {
 			return false;
 		}
@@ -992,7 +1032,7 @@ bool click(Layout layout&, int index) {
 		}
 		return true;
 	}
-	if (Button item& = layout.items[index].as(Button)) {
+	if (Button item = view.as(Button)) {
 		if (!item.enabled) {
 			return false;
 		}
@@ -1005,7 +1045,7 @@ bool click(Layout layout&, int index) {
 		return true;
 	}
 
-	abort("item is not a known ui element", layout.items[index]);
+	abort("item is not a known ui element", view);
 	return false;
 }
 bool click(Layout layout&, int x, int y) {
@@ -1033,12 +1073,12 @@ bool update(Layout layout&, int delta) {
 	if (layout.selectedIndex < 0) {
 		return false;
 	}
-	variant selectedItem = layout.items[layout.selectedIndex];
-	if (Slider slider& = selectedItem.as(Slider)) {
+	View selectedItem = layout.items[layout.selectedIndex];
+	if (Slider slider = selectedItem.as(Slider)) {
 		slider.value += delta;
 		return true;
 	}
-	if (Checker checker& = selectedItem.as(Checker)) {
+	if (Checker checker = selectedItem.as(Checker)) {
 		checker.checked = delta < 0;
 		return true;
 	}
@@ -1052,7 +1092,7 @@ bool reset(Layout layout&, int index) {
 		}
 		return true;
 	}
-	if (Slider item& = layout.items[index].as(Slider)) {
+	if (Slider item = layout.items[index].as(Slider)) {
 		item.value = layout.reset[index];
 		return true;
 	}
@@ -1068,19 +1108,20 @@ bool select(Layout layout&, bool prev) {
 		else if (index < 0) {
 			index += layout.count;
 		}
-		if (Button item& = layout.items[index].as(Button)) {
+		View view = layout.items[index];
+		if (Button item = view.as(Button)) {
 			if (item.enabled && item.selectable) {
 				layout.selectedIndex = index;
 				return true;
 			}
 		}
-		else if (Checker item& = layout.items[index].as(Checker)) {
+		else if (Checker item = view.as(Checker)) {
 			if (item.enabled && item.selectable) {
 				layout.selectedIndex = index;
 				return true;
 			}
 		}
-		else if (Slider item& = layout.items[index].as(Slider)) {
+		else if (Slider item = view.as(Slider)) {
 			if (item.enabled && item.selectable) {
 				layout.selectedIndex = index;
 				return true;
@@ -1090,18 +1131,14 @@ bool select(Layout layout&, bool prev) {
 	return false;
 }
 
-	static int ox = 0;
-	static int px = 0;
-	static int oy = 0;
-	static int py = 0;
-
+	static MouseState old;
 	bool isCtrl = (y & Gui.KEY_MASK_CONTROL) != 0;
 	bool isShift = (y & Gui.KEY_MASK_SHIFT) != 0;
 
 	if (action == Gui.FINGER_MOTION) {
 		action = Gui.MOUSE_MOTION;
 	}
-	
+
 	if (action == Gui.WINDOW_INIT) {
 		layout.selectedIndex = -1;
 		layout.select(false);
@@ -1137,21 +1174,27 @@ bool select(Layout layout&, bool prev) {
 		}
 	}
 	else if (action == Gui.MOUSE_PRESS) {
-		px = ox = x;
-		py = oy = y;
-	}
-	else if (action == Gui.MOUSE_RELEASE) {
-		if (button == 1 && x == px && y == py) {
+		click(old, button, x, y);
+		if (button == 1) {
 			if (layout.click(x, y)) {
 				return true;
 			}
 		}
 	}
+	else if (action == Gui.MOUSE_RELEASE) {
+		int clicks = click(old, 0, x, y);
+		if (button == 1 && clicks == 2) {
+			if (layout.click(x, y)) {
+				layout.reset(layout.selectedIndex);
+				return true;
+			}
+		}
+	}
 	else if (action == Gui.MOUSE_MOTION) {
+		int dy = old.y - y;
+		click(old, -1, x, y);// disable multi clicks
 		if (button == 1) {
-			if (layout.update(oy - y)) {
-				ox = x;
-				oy = y;
+			if (layout.update(dy)) {
 				return true;
 			}
 		}

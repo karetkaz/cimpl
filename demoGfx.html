@@ -31,7 +31,7 @@
 	<link rel="stylesheet" href="extras/demo/style.css">
 
 </head>
-<body class="dark tool-bar bottom-bar left-bar left-pin editor output">
+<body class="dark tool-bar left-bar left-pin editor output">
 <div id="main-toolbar" class="toolbar">
 	<span class="left icon" title="Toggle show menu" onclick="setStyle(body, '!left-bar', 'editor');">☰</span>
 	<span class="left icon" title="Execute script (Ctrl + Enter)" onclick="onExecClick();">►</span>
@@ -54,7 +54,7 @@
 <div id="left-sidebar" class="sidebar">
 	<div class="collapsed submenu">
 	<li onclick="setStyle(parentElement, '!collapsed');">File
-	<button class="right" onclick="event.stopPropagation(); saveInput();" title="Save">💾</button>
+		<button class="right" onclick="event.stopPropagation(); saveInput();" title="Save">💾</button>
 	</li>
 	<ul id="projectOptions" class="hidden">
 		<li onclick="params.update({workspace: prompt('Save project as:')});"><span class="right"></span>📥 Persist project</li>
@@ -66,88 +66,87 @@
 		<li onclick="saveInput();"><span class="right">Ctrl + s</span>💾 Save</li>
 		<li onclick="saveInput(true);"><span class="right"></span>💾 Save as</li>
 		<li onclick="params.update({file: null});"><span class="right"></span>❌ Close</li>
-	<div class="submenu collapsed">
-	<li onclick="setStyle(parentElement, '!collapsed');">Edit
-	<button class="right" onclick="event.stopPropagation(); editor.execCommand('redo');" title="Redo">↷</button>
-	<button class="right" onclick="event.stopPropagation(); editor.execCommand('undo');" title="Undo">↶</button>
-	</li>
-	<ul>
-		<li onclick="params.update('file');"><span class="right"></span>Revert</li>
-		<li onclick="editor.execCommand('undo');"><span class="right">Ctrl + z</span>Undo</li>
-		<li onclick="editor.execCommand('redo');"><span class="right">Ctrl+Shift + z</span>Redo</li>
-		<hr>
-		<!-- no api
-		<li>Cut (Ctrl + x)</li>
-		<li>Copy (Ctrl + c)</li>
-		<li>Paste (Ctrl + v)</li>
-		-->
-		<hr>
-		<!-- TODO
-		<li onclick="editor.execCommand('?');"><span class="right">Ctrl + b</span>Beautify</li>
-		<li onclick="editor.execCommand('?');"><span class="right">Ctrl+Shift + /</span>Block comment</li>
-		<li onclick="editor.execCommand('deleteLine');"><span class="right">Delete</span>Delete</li>
-		<li onclick="editor.execCommand('dupplicate');"><span class="right">Ctrl + d</span>Duplicate</li>
-		-->
-		<li onclick="editor.execCommand('indentMore');"><span class="right">Tab</span>Indent</li>
-		<li onclick="editor.execCommand('indentLess');"><span class="right">Shift + Tab</span>Unindent</li>
-		<li onclick="editor.execCommand('toggleCommentIndented');"><span class="right">Ctrl + /</span>Toggle comment</li>
-		<hr>
-		<div class="collapsed submenu">
-		<li onclick="setStyle(parentElement, '!collapsed')">Line</li><ul>
-			<li onclick="editor.execCommand('swapLineUp');"><span class="right">Ctrl+Shift + Up</span>Move</li>
-			<li onclick="editor.execCommand('swapLineDown');"><span class="right">Ctrl+Shift + Down</span>Move</li>
-			<!-- TODO
-			<li onclick="editor.execCommand('?duppLines');">Dupplicate Lines</li>
-			<li onclick="editor.execCommand('?joinLines');">Join Lines</li>
-			<li onclick="editor.execCommand('?sortLines');">Sort Lines</li>
-			<li onclick="editor.execCommand('?reverseLines');">Reverse Lines</li>
-			-->
+		<div class="submenu collapsed">
+			<li onclick="setStyle(parentElement, '!collapsed');">Edit
+				<button class="right" onclick="event.stopPropagation(); editor.execCommand('redo');" title="Redo">↷</button>
+				<button class="right" onclick="event.stopPropagation(); editor.execCommand('undo');" title="Undo">↶</button>
+			</li>
+			<ul>
+				<li onclick="params.update('file');"><span class="right"></span>Revert</li>
+				<li onclick="editor.execCommand('undo');"><span class="right">Ctrl + z</span>Undo</li>
+				<li onclick="editor.execCommand('redo');"><span class="right">Ctrl+Shift + z</span>Redo</li>
+				<hr>
+				<!-- no api
+				<li>Cut (Ctrl + x)</li>
+				<li>Copy (Ctrl + c)</li>
+				<li>Paste (Ctrl + v)</li>
+				-->
+				<hr>
+				<!-- TODO
+				<li onclick="editor.execCommand('?');"><span class="right">Ctrl + b</span>Beautify</li>
+				<li onclick="editor.execCommand('?');"><span class="right">Ctrl+Shift + /</span>Block comment</li>
+				<li onclick="editor.execCommand('deleteLine');"><span class="right">Delete</span>Delete</li>
+				<li onclick="editor.execCommand('dupplicate');"><span class="right">Ctrl + d</span>Duplicate</li>
+				-->
+				<li onclick="editor.execCommand('indentMore');"><span class="right">Tab</span>Indent</li>
+				<li onclick="editor.execCommand('indentLess');"><span class="right">Shift + Tab</span>Unindent</li>
+				<li onclick="editor.execCommand('toggleCommentIndented');"><span class="right">Ctrl + /</span>Toggle comment</li>
+				<hr>
+				<div class="collapsed submenu">
+					<li onclick="setStyle(parentElement, '!collapsed')">Line</li><ul>
+					<li onclick="editor.execCommand('swapLineUp');"><span class="right">Ctrl+Shift + Up</span>Move</li>
+					<li onclick="editor.execCommand('swapLineDown');"><span class="right">Ctrl+Shift + Down</span>Move</li>
+					<!-- TODO
+					<li onclick="editor.execCommand('?duppLines');">Dupplicate Lines</li>
+					<li onclick="editor.execCommand('?joinLines');">Join Lines</li>
+					<li onclick="editor.execCommand('?sortLines');">Sort Lines</li>
+					<li onclick="editor.execCommand('?reverseLines');">Reverse Lines</li>
+					-->
+				</ul></div>
+				<div class="collapsed submenu">
+					<li onclick="setStyle(parentElement, '!collapsed')">Case</li><ul>
+					<li onclick="editor.execCommand('toggleCase');"><span class="right">Ctrl + u</span>Toggle case</li>
+					<li onclick="editor.execCommand('upperCase');"><span class="right"></span>Upper case</li>
+					<li onclick="editor.execCommand('lowerCase');"><span class="right"></span>Lower case</li>
+					<li onclick="editor.execCommand('camelCase');"><span class="right"></span>CamelCase</li>
+					<li onclick="editor.execCommand('snakeCase');"><span class="right"></span>Snake_case</li>
+				</ul></div>
+			</ul></div>
+		<div class="submenu collapsed">
+			<li onclick="setStyle(parentElement, '!collapsed')">Find
+				<!-- <button class="right" onclick="event.stopPropagation(); editor.execCommand('findNext');" title="Find Next">↪</button> -->
+				<!-- <button class="right" onclick="event.stopPropagation(); editor.execCommand('findPrev');" title="Find Prev">↩</button> -->
+				<button class="right" onclick="event.stopPropagation(); editor.execCommand('find');" title="Find">🔍</button>
+			</li><ul>
+			<li onclick="editor.execCommand('find');"><span class="right">Ctrl + f</span>Find...</li>
+			<li onclick="editor.execCommand('findNext');"><span class="right">F3</span>Find Next</li>
+			<li onclick="editor.execCommand('findPrev');"><span class="right">Shift + F3</span>Find Previous</li>
+			<hr>
+			<li onclick="editor.execCommand('jumpToLine');"><span class="right">Ctrl + g</span>Jump to line</li>
+			<hr>
+			<li onclick="editor.execCommand('jumpToBrace');"><span class="right">Ctrl + b</span>Jump to brace</li>
+			<li onclick="editor.execCommand('selectToBrace');"><span class="right">Ctrl+Shift + b</span>Select to brace</li>
 		</ul></div>
-		<div class="collapsed submenu">
-		<li onclick="setStyle(parentElement, '!collapsed')">Case</li><ul>
-			<li onclick="editor.execCommand('toggleCase');"><span class="right">Ctrl + u</span>Toggle case</li>
-			<li onclick="editor.execCommand('upperCase');"><span class="right"></span>Upper case</li>
-			<li onclick="editor.execCommand('lowerCase');"><span class="right"></span>Lower case</li>
-			<li onclick="editor.execCommand('camelCase');"><span class="right"></span>CamelCase</li>
-			<li onclick="editor.execCommand('snakeCase');"><span class="right"></span>Snake_case</li>
-		</ul></div>
-	</ul></div>
-	<div class="submenu collapsed">
-	<li onclick="setStyle(parentElement, '!collapsed')">Find
-	<!-- <button class="right" onclick="event.stopPropagation(); editor.execCommand('findNext');" title="Find Next">↪</button> -->
-	<!-- <button class="right" onclick="event.stopPropagation(); editor.execCommand('findPrev');" title="Find Prev">↩</button> -->
-	<button class="right" onclick="event.stopPropagation(); editor.execCommand('find');" title="Find">🔍</button>
-	</li><ul>
-		<li onclick="editor.execCommand('find');"><span class="right">Ctrl + f</span>Find...</li>
-		<li onclick="editor.execCommand('findNext');"><span class="right">F3</span>Find Next</li>
-		<li onclick="editor.execCommand('findPrev');"><span class="right">Shift + F3</span>Find Previous</li>
-		<!-- <li onclick="editor.execCommand('findAndMark');"><span class="right"></span>Find and mark</li> -->
-		<li onclick="editor.execCommand('findAndSelect');"><span class="right"></span>Find and select</li>
-		<hr>
-		<li onclick="editor.execCommand('jumpToLine');"><span class="right">Ctrl + g</span>Jump to line</li>
-		<hr>
-		<li onclick="editor.execCommand('jumpToBrace');"><span class="right">Ctrl + b</span>Jump to brace</li>
-		<li onclick="editor.execCommand('selectToBrace');"><span class="right">Ctrl+Shift + b</span>Select to brace</li>
-	</ul></div>
-	<div class="submenu collapsed">
-	<li onclick="setStyle(parentElement, '!collapsed')">View
-	<button class="right" onclick="event.stopPropagation(); editor.execCommand('unfoldAll');" title="Unfold all">⊞</button>
-	<button class="right" onclick="event.stopPropagation(); editor.execCommand('foldAll');" title="Fold all">⊟</button>
-	</li><ul>
-		<div class="collapsed submenu">
-		<li onclick="setStyle(parentElement, '!collapsed')">Fold</li><ul>
-			<li onclick="editor.execCommand('fold');"><span class="right">Ctrl + -</span>Fold</li>
-			<li onclick="editor.execCommand('unfold');"><span class="right">Ctrl + +</span>Unfold</li>
-			<li onclick="editor.execCommand('foldAll');"><span class="right">Ctrl+Shift + -</span>Fold All</li>
-			<li onclick="editor.execCommand('unfoldAll');"><span class="right">Ctrl+Shift + +</span>Unfold All</li>
-		</ul></div>
-		<li onclick="completeAction(':%', '100');">Zoom</li>
-		<li id="wrap-output" onclick="setStyle(body, '!wrap-output');">Wrap output</li>
-		<li id="dark-theme" onclick="setStyle(body, '!dark');">Dark theme</li>
-		<li id="pin-left" onclick="setStyle(body, '!left-pin');">Pin left sidebar</li>
-		<li id="show-output" onclick="setStyle(body, '!output');">Show output</li>
-		<li id="show-editor" onclick="setStyle(body, '!editor');">Show editor</li>
-		<li id="show-toolbar" onclick="setStyle(body, '!tool-bar');">Show toolbar</li>
+		<div class="submenu collapsed">
+			<li onclick="setStyle(parentElement, '!collapsed')">View
+				<button class="right" onclick="event.stopPropagation(); editor.execCommand('unfoldAll');" title="Unfold all">⊞</button>
+				<button class="right" onclick="event.stopPropagation(); editor.execCommand('foldAll');" title="Fold all">⊟</button>
+			</li><ul>
+			<div class="collapsed submenu">
+				<li onclick="setStyle(parentElement, '!collapsed')">Fold</li><ul>
+				<li onclick="editor.execCommand('fold');"><span class="right">Ctrl + -</span>Fold</li>
+				<li onclick="editor.execCommand('unfold');"><span class="right">Ctrl + +</span>Unfold</li>
+				<li onclick="editor.execCommand('foldAll');"><span class="right">Ctrl+Shift + -</span>Fold All</li>
+				<li onclick="editor.execCommand('unfoldAll');"><span class="right">Ctrl+Shift + +</span>Unfold All</li>
+			</ul></div>
+			<li onclick="completeAction('!zoom:', '100');">Zoom</li>
+			<li id="wrap-output" onclick="setStyle(body, '!wrap-output');">Wrap output</li>
+			<li id="dark-theme" onclick="setStyle(body, '!dark');">Dark theme</li>
+			<li id="pin-left" onclick="setStyle(body, '!left-pin');">Pin left sidebar</li>
+			<li id="show-output" onclick="setStyle(body, '!output');">Show output</li>
+			<li id="show-editor" onclick="setStyle(body, '!editor');">Show editor</li>
+			<li id="show-toolbar" onclick="setStyle(body, '!tool-bar');">Show toolbar</li>
+			<li id="show-bottombar" onclick="setStyle(body, '!bottom-bar');">Pin output</li>
 		</ul></div>
 		<!--<div class=""><li onclick="alert('TODO')">Help</li></div>-->
 	</ul>
@@ -195,7 +194,7 @@
 		<!-- <span class="no-output left" onclick="setStyle(body, 'output');">Search</span> -->
 		<span class="output left icon bold" onclick="editOutput();" title="Open output in editor">💾</span>
 		<span class="output left icon bold" title="Clear output" onclick="terminal.clear();">❌</span>
-		<span class="right icon" title="Full screen output" onclick="setStyle(body, '-editor', 'output');">⬒</span>
+		<!-- <span class="right icon" title="Full screen output" onclick="setStyle(body, '-editor', 'output');">⬒</span> -->
 		<span class="output right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
 		<span class="output right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
 		<p/>
@@ -420,5 +419,6 @@ var worker = Module;
 <script type="text/javascript" src="extras/demo/emscripten/module.js"></script>
 <script type="text/javascript" src="extras/demo/emscripten/cmpl.js"></script>
 <script type="text/javascript" src="extras/demo/main.js"></script>
+<script type="text/javascript" src="extras/demo/action.js"></script>
 </body>
 </html>

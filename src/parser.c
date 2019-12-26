@@ -43,7 +43,7 @@ static inline void addLength(ccContext cc, symn sym, astn init) {
 	enter(cc, NULL);
 	ccKind kind = ATTR_cnst | ATTR_stat | KIND_def | refCast(cc->type_idx);
 	install(cc, "length", kind, cc->type_idx->size, cc->type_idx, init);
-	sym->fields = leave(cc, KIND_def, 0, 0, NULL);
+	sym->fields = leave(cc, KIND_def, 0, 0, NULL, NULL);
 }
 
 static inline symn tagType(ccContext cc, astn tag) {
@@ -75,6 +75,10 @@ static int ccInline(ccContext cc, astn tag) {
 		}
 		// replace the file name
 		char *path = strrchr(buff, '/');
+		if (path == NULL) {
+			// TODO: replace '\' with '/' on windows before this
+			path = strrchr(buff, '\\');
+		}
 		if (path != NULL) {
 			*(path += 1) = 0;
 		}
@@ -94,7 +98,7 @@ static int ccInline(ccContext cc, astn tag) {
 
 /**
  * Install a new symbol: alias, type, variable or function.
- * 
+ *
  * @param kind Kind of symbol: (KIND_def, KIND_var, KIND_typ, CAST_arr)
  * @param tag Parsed tree node representing the symbol.
  * @param type Type of symbol.
@@ -262,7 +266,7 @@ static astn expandAssignment(ccContext cc, astn root) {
 	return root;
 }
 
-/// expand expression or declaration to statement 
+/// expand expression or declaration to statement
 static astn expand2Statement(ccContext cc, astn node, int block) {
 	astn result = newNode(cc, block ? STMT_beg : STMT_end);
 	if (result != NULL) {
@@ -276,8 +280,6 @@ static astn expand2Statement(ccContext cc, astn node, int block) {
 
 static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn list) {
 	astn keys = NULL;
-
-	// TODO: if variable instance of object then allocate
 
 	// translate initialization to assignment
 	for (astn init = initObj->stmt.stmt; init != NULL; init = init->next) {
@@ -316,6 +318,28 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 		keys = key;
 	}
 
+	// if variable is instance of object then allocate it
+	if (castOf(varNode->type) == CAST_ref) {
+		if (cc->libc_mem == NULL) {
+			error(cc->rt, varNode->file, varNode->line, "Failed to allocate variable `%t` allocator not found", varNode);
+			return initObj;
+		}
+
+		astn init = newNode(cc, INIT_set);
+		init->type = cc->type_vid;
+		init->file = varNode->file;
+		init->line = varNode->line;
+		init->op.lhso = varNode;
+		init->op.rhso = newNode(cc, OPER_fnc);
+		init->op.rhso->type = initObj->type;
+		init->op.rhso->op.lhso = lnkNode(cc, cc->libc_new);
+		init->op.rhso->op.rhso = lnkNode(cc, initObj->type);
+
+		// make allocation the first statement
+		init->next = list->lst.head;
+		list->lst.head = init;
+	}
+
 	// add default initializer of uninitialized fields
 	size_t unionInitSize = varNode->type->size;
 	for (symn field = varNode->type->fields; field; field = field->next) {
@@ -345,6 +369,11 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 			if (initialized && field->size < unionInitSize) {
 				warn(cc->rt, raiseWarn, varNode->file, varNode->line, ERR_PARTIAL_INITIALIZE_UNION, linkOf(varNode, 0), field);
 			}
+			continue;
+		}
+
+		if (field->name != NULL && *field->name == '.') {
+			// no need to initialize hidden internal fields
 			continue;
 		}
 
@@ -385,7 +414,16 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 static astn expandInitializer(ccContext cc, symn variable, astn initializer) {
 	dieif(initializer->kind != STMT_beg, ERR_INTERNAL_ERROR);
 	dieif(initializer->lst.tail != NULL, ERR_INTERNAL_ERROR);
+	if (initializer->type == NULL) {
+		// initializer type not specified, use from declaration
+		initializer->type = variable->type;
+	}
+	if (!canAssign(cc, variable, initializer, 0)) {
+		error(cc->rt, variable->file, variable->line, ERR_INVALID_VALUE_ASSIGN, variable, initializer);
+		return initializer;
+	}
 	astn varNode = lnkNode(cc, variable);
+	varNode->type = initializer->type;
 	varNode->file = variable->file;
 	varNode->line = variable->line;
 	return expandInitializerObj(cc, varNode, initializer, initializer);
@@ -942,7 +980,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		argRoot = parameters(cc, type, tag);
 		skipTok(cc, RIGHT_par, 1);
 
-		params = leave(cc, KIND_fun, vm_stk_align, 0, NULL);
+		params = leave(cc, KIND_fun, vm_stk_align, 0, NULL, NULL);
 		type = cc->type_fun;
 
 		if (args != NULL) {
@@ -967,7 +1005,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 				def->init->type = cc->type_vid;
 			}
 			backTok(cc, newNode(cc, STMT_end));
-			leave(cc, KIND_def, -1, 0, NULL);
+			leave(cc, KIND_def, -1, 0, NULL, NULL);
 
 			// disable parameter lookup
 			def->fields = NULL;
@@ -1094,7 +1132,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 
 	skipTok(cc, ASGN_set, 1);
 	init = initializer(cc);
-	params = leave(cc, KIND_fun, vm_stk_align, 0, NULL);
+	params = leave(cc, KIND_fun, vm_stk_align, 0, NULL, NULL);
 	if (init == NULL) {
 		traceAst(init);
 		return NULL;
@@ -1200,8 +1238,8 @@ static astn declare_record(ccContext cc, ccKind attr) {
 
 	size_t baseSize = 0;
 	size_t pack = vm_mem_align;
-	symn base = cc->type_rec;
 	ccKind cast = CAST_val;
+	symn base = NULL;
 
 	if (skipTok(cc, PNCT_cln, 0)) {			// ':' base type or packing
 		astn tok = expression(cc, 0);
@@ -1271,10 +1309,14 @@ static astn declare_record(ccContext cc, ccKind attr) {
 		// make not instantiable
 		cast = CAST_vid;
 	}
-	symn type = declare(cc, ATTR_stat | ATTR_cnst | KIND_typ | cast, tag, base, NULL);
+	symn type = base != NULL ? base : cc->type_rec;
+	type = declare(cc, ATTR_stat | ATTR_cnst | KIND_typ | cast, tag, type, NULL);
 	enter(cc, type);
 	statement_list(cc);
-	type->fields = leave(cc, attr | KIND_typ, pack, baseSize, &type->size);
+	if (base != NULL) {
+		type->fields = base->fields;
+	}
+	type->fields = leave(cc, attr | KIND_typ, pack, baseSize, &type->size, type->fields);
 	if (expose) {
 		// HACK: convert the type into a variable of it's own type ...?
 		type->kind = KIND_var | CAST_val;
@@ -1380,7 +1422,7 @@ static astn declare_enum(ccContext cc) {
 	}
 
 	if (type != NULL) {
-		type->fields = leave(cc, KIND_typ, vm_stk_align, 0, &type->size);
+		type->fields = leave(cc, KIND_typ, vm_stk_align, 0, &type->size, NULL);
 	}
 
 	return tag;
@@ -1453,7 +1495,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 	// parse else part if next token is 'else'
 	if (skipTok(cc, ELSE_kwd, 0)) {
 		if (enterThen) {
-			leave(cc, KIND_def, 0, 0, NULL);
+			leave(cc, KIND_def, 0, 0, NULL, NULL);
 			enterThen = 0;
 		}
 		if (enterElse) {
@@ -1465,7 +1507,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 	}
 
 	if (enterThen) {
-		leave(cc, KIND_def, 0, 0, NULL);
+		leave(cc, KIND_def, 0, 0, NULL, NULL);
 	}
 	cc->siff = insideStaticIf;
 
@@ -1528,7 +1570,7 @@ static astn statement_for(ccContext cc, ccKind attr) {
 
 	ast->stmt.stmt = statement(cc, NULL);
 
-	leave(cc, KIND_def, 0, 0, NULL);
+	leave(cc, KIND_def, 0, 0, NULL, NULL);
 
 	ast->type = cc->type_vid;
 	return ast;
@@ -1581,7 +1623,7 @@ static astn statement_list(ccContext cc) {
 
 /**
  * Parse statement.
- * 
+ *
  * @param cc compiler context.
  * @param attr the qualifier of the statement/declaration
  * @return parsed syntax tree.

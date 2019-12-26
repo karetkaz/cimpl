@@ -16,7 +16,7 @@ symn newDef(ccContext cc, ccKind kind);
 void enter(ccContext cc, symn owner);
 
 /// Leave current scope.
-symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *size);
+symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *size, symn result);
 
 /// Install a new symbol in the current scope (typename, variable, function or alias).
 symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type, astn init);
@@ -26,7 +26,7 @@ symn lookup(ccContext cc, symn sym, astn ast, astn args, ccKind filter, int rais
 
 /**
  * Check if a value can be assigned to a symbol.
- * 
+ *
  * @param rhs variable to be assigned to.
  * @param val value to be assigned.
  * @param strict Strict mode: casts are not enabled.
@@ -36,7 +36,7 @@ ccKind canAssign(ccContext cc, symn rhs, astn val, int strict);
 
 /**
  * Type Check an expression.
- * 
+ *
  * @param loc Override scope.
  * @param ast Tree to check.
  * @return Type of expression.
@@ -129,7 +129,7 @@ float64_t fltValue(astn ast);
 
 /**
  * Try to evaluate a constant expression.
- * 
+ *
  * @param res Place the result here.
  * @param ast Abstract syntax tree to be evaluated.
  * @return Type of result: [TYPE_err, CAST_i64, CAST_f64, ...]
@@ -150,7 +150,7 @@ symn linkOf(astn ast, int follow);
 
 /**
  * Check if an expression is a type.
- * 
+ *
  * @param ast Abstract syntax tree to be checked.
  * @return true or false.
  */
@@ -158,7 +158,7 @@ int isTypeExpr(astn ast);
 
 /**
  * Check if a qualified variable expression is constant.
- * 
+ *
  * @param ast Abstract syntax tree to be checked.
  * @return true or false.
  */
@@ -168,7 +168,7 @@ int isConstVar(astn ast);
 
 /**
  * Peek the next token.
- * 
+ *
  * @param cc compiler context.
  * @param match read next token only if matches the given kind.
  * @return next token, or null.
@@ -177,7 +177,7 @@ astn peekTok(ccContext cc, ccToken match);
 
 /**
  * Read the next token from input.
- * 
+ *
  * @param cc compiler context.
  * @param match: read next token only if matches.
  * @return next token, or null.
@@ -186,7 +186,7 @@ astn nextTok(ccContext cc, ccToken match, int raise);
 
 /**
  * Read the next token and recycle it.
- * 
+ *
  * @brief read the next token from input.
  * @param cc compiler context.
  * @param match read next token only if matches.
@@ -197,7 +197,7 @@ ccToken skipTok(ccContext cc, ccToken match, int raise);
 
 /**
  * Push back a token, to be read next time.
- * 
+ *
  * @param cc compiler context.
  * @param token the token to be pushed back.
  */

@@ -77,7 +77,7 @@ typedef enum {
 
 /**
  * Runtime error codes.
- * 
+ *
  * one of these errors is returned by the bytecode execution.
  */
 typedef enum {
@@ -131,21 +131,21 @@ struct rtContextRec {
 
 	/**
 	 * Main initializer function.
-	 * 
+	 *
 	 * This function initializes global variables.
 	 */
 	symn main;
 
 	/**
 	 * Compiler context.
-	 * 
+	 *
 	 * @note After code generation it is set to null.
 	 */
 	ccContext cc;
 
 	/**
 	 * Debugger context.
-	 * 
+	 *
 	 * contains:
 	 *  * profiler function
 	 *  * debugger function
@@ -171,7 +171,7 @@ struct rtContextRec {
 
 	/**
 	 * Extension support api.
-	 * 
+	 *
 	 * These functions can be used in extension libraries (dll or so)
 	 */
 	struct {
@@ -373,7 +373,7 @@ struct nfcContextRec {
 
 /**
  * Get the pointer to an internal offset inside the vm.
- * 
+ *
  * @param rt Runtime context.
  * @param offset global offset inside the vm.
  * @return pointer to the memory.
@@ -390,7 +390,7 @@ static inline void *vmPointer(rtContext rt, size_t offset) {
 
 /**
  * Get the internal offset inside the vm of a reference.
- * 
+ *
  * @param rt Runtime context.
  * @param ptr Memory location.
  * @return The internal offset.
@@ -409,7 +409,7 @@ static inline size_t vmOffset(rtContext rt, void *ptr) {
 
 /**
  * Get the value of a native function argument.
- * 
+ *
  * @param args Native function call arguments context.
  * @param offset Relative offset of argument.
  * @param result Optionally copy here the result.
@@ -441,7 +441,7 @@ static inline size_t argref(nfcContext ctx, size_t offs) { return argget(ctx, of
 
 /**
  * Set the return value of a wrapped native call.
- * 
+ *
  * @param args arguments context.
  * @param result Pointer containing the result value.
  * @param size Size of the argument to copy to result.

@@ -43,7 +43,6 @@ CodeMirror.normalizeKeyMap(CodeMirror.keyMap.extraKeys = {
 	"Ctrl-F": "find",
 	"F3": "findNext",
 	"Shift-F3": "findPrev",
-// 	"Shift-Ctrl-F": "findAndSelect",
 // 	"Ctrl-R": "replace",
 
 // 	"Ctrl-U": "undoSelection",

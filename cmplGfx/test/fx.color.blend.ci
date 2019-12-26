@@ -212,161 +212,107 @@ image.destroy();
 int onEvent(int action, int button, int x, int y) {
 	inline "/lib/gfx/micro.ui.ci";
 
-	static Slider btnOriginal = {
-		text: "alpha";
-		value: 127;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnAddition = {
-		text: "addition";
-		data: addition;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnSubtract = {
-		text: "subtract";
-		data: subtract;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnMultiply = {
-		text: "multiply";
-		data: multiply;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnDivide = {
-		text: "divide";
-		data: divide;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnDifference = {
-		text: "difference";
-		data: difference;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnExclusion = {
-		text: "exclusion";
-		data: exclusion;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-
-	static Slider btnLighten = {
-		text: "lighten";
-		data: lighten;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnDarken = {
-		text: "darken";
-		data: darken;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnLinearDodge = {
-		text: "linearDodge";
-		data: linearDodge;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnLinearBurn = {
-		text: "linearBurn";
-		data: linearBurn;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnColorDodge = {
-		text: "colorDodge";
-		data: colorDodge;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnColorBurn = {
-		text: "colorBurn";
-		data: colorBurn;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-
-	static Slider btnScreen = {
-		text: "screen";
-		data: screen;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnOverlay = {
-		text: "overlay";
-		data: overlay;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnSoftLight = {
-		text: "softLight";
-		data: softLight;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnHardLight = {
-		text: "hardLight";
-		data: hardLight;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnLinearLight = {
-		text: "linearLight";
-		data: linearLight;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnVividLight = {
-		text: "vividLight";
-		data: vividLight;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-	static Slider btnPinLight = {
-		text: "pinLight";
-		data: pinLight;
-		value: 255;
-		maximum: 255;
-		divisor: 255;
-	};
-
 	static Checker chkOrder = {
 		text: "order";
 		on: "a => b";
 		off: "b => a";
 		checked: true;
+		selectable: false;
 	};
+	static Slider btnAlpha = {
+		text: "alpha";
+		value: 192;
+		maximum: 256;
+		divisor: 256;
+	};
+
+	static Button btnAddition = {
+		text: "addition";
+		data: addition;
+	};
+	static Button btnSubtract = {
+		text: "subtract";
+		data: subtract;
+	};
+	static Button btnMultiply = {
+		text: "multiply";
+		data: multiply;
+	};
+	static Button btnDivide = {
+		text: "divide";
+		data: divide;
+	};
+	static Button btnDifference = {
+		text: "difference";
+		data: difference;
+	};
+	static Button btnExclusion = {
+		text: "exclusion";
+		data: exclusion;
+	};
+
+	static Button btnLighten = {
+		text: "lighten";
+		data: lighten;
+	};
+	static Button btnDarken = {
+		text: "darken";
+		data: darken;
+	};
+	static Button btnLinearDodge = {
+		text: "linearDodge";
+		data: linearDodge;
+	};
+	static Button btnLinearBurn = {
+		text: "linearBurn";
+		data: linearBurn;
+	};
+	static Button btnColorDodge = {
+		text: "colorDodge";
+		data: colorDodge;
+	};
+	static Button btnColorBurn = {
+		text: "colorBurn";
+		data: colorBurn;
+	};
+
+	static Button btnScreen = {
+		text: "screen";
+		data: screen;
+	};
+	static Button btnOverlay = {
+		text: "overlay";
+		data: overlay;
+	};
+	static Button btnSoftLight = {
+		text: "softLight";
+		data: softLight;
+	};
+	static Button btnHardLight = {
+		text: "hardLight";
+		data: hardLight;
+	};
+	static Button btnLinearLight = {
+		text: "linearLight";
+		data: linearLight;
+	};
+	static Button btnVividLight = {
+		text: "vividLight";
+		data: vividLight;
+	};
+	static Button btnPinLight = {
+		text: "pinLight";
+		data: pinLight;
+	};
+
 	static Slider time = {
 		text: "time";
 		enabled: false;
 	};
 
 	static Layout ui = Layout(offs, font,
-		btnOriginal,
+		chkOrder,
+		btnAlpha,
 		btnAddition,
 		btnSubtract,
 		btnMultiply,
@@ -386,7 +332,6 @@ int onEvent(int action, int button, int x, int y) {
 		btnLinearLight,
 		btnVividLight,
 		btnPinLight,
-		chkOrder,
 		time);
 
 	bool redraw = uiEvent(ui, action, button, x, y);
@@ -400,10 +345,10 @@ int onEvent(int action, int button, int x, int y) {
 		bool reverse = chkOrder.checked;
 
 		offs.copy(0, 0, reverse ? base : blend, null);
-		Slider selected& = ui.selected(Slider);
+		View selected = ui.selected(View);
 		if (selected != null) {
 			vec4f fn(vec4f base, vec4f blend) = selected.data;
-			offs.blend(0, 0, reverse ? blend : base, null, selected.val(), fn);
+			offs.blend(0, 0, reverse ? blend : base, null, btnAlpha.val(), false, fn);
 		}
 		time.value = System.millis() - start;
 		ui.draw(30, 30);

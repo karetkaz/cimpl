@@ -48,7 +48,7 @@ typedef enum {
 
 /**
  * Initialize compiler context.
- * 
+ *
  * @param rt Runtime context.
  * @param mode specify what to install.
  * @param onHalt function to be executed when execution and external function invocation terminates.
@@ -59,7 +59,7 @@ ccContext ccInit(rtContext rt, ccInstall mode, vmError onHalt(nfcContext));
 
 /**
  * Open a stream (file or text) for compilation.
- * 
+ *
  * @param cc Compiler context.
  * @param file file name of input.
  * @param line first line of input.
@@ -70,7 +70,7 @@ int ccOpen(ccContext cc, char *file, int line, char *text);
 
 /**
  * Close stream, ensuring it ends correctly.
- * 
+ *
  * @param cc Compiler context.
  * @return number of errors.
  */
@@ -78,7 +78,7 @@ int ccClose(ccContext cc);
 
 /**
  * Begin a namespace (static struct) or scope.
- * 
+ *
  * @param cc Compiler context.
  * @param name Name of the namespace.
  * @return Defined symbol, null on error (error is logged).
@@ -86,7 +86,7 @@ int ccClose(ccContext cc);
 symn ccBegin(ccContext cc, const char *name);
 /**
  * Extend a namespace (static struct) with static members.
- * 
+ *
  * @param cc Compiler context.
  * @param sym Namespace to be extended.
  * @return type if it can be extended.
@@ -94,7 +94,7 @@ symn ccBegin(ccContext cc, const char *name);
 symn ccExtend(ccContext cc, symn sym);
 /**
  * Close the namespace returned by ccBegin or ccExtend.
- * 
+ *
  * @param cc Compiler context.
  * @param cls Namespace to be closed.
  * @note Makes all declared variables static.
@@ -103,7 +103,7 @@ symn ccEnd(ccContext cc, symn sym);
 
 /**
  * Define an integer constant.
- * 
+ *
  * @param cc Compiler context.
  * @param name Name of the constant.
  * @param value Value of the constant.
@@ -112,7 +112,7 @@ symn ccEnd(ccContext cc, symn sym);
 symn ccDefInt(ccContext cc, const char *name, int64_t value);
 /**
  * Define a floating point constant.
- * 
+ *
  * @param cc Compiler context.
  * @param name Name of the constant.
  * @param value Value of the constant.
@@ -121,7 +121,7 @@ symn ccDefInt(ccContext cc, const char *name, int64_t value);
 symn ccDefFlt(ccContext cc, const char *name, double value);
 /**
  * Define a string constant.
- * 
+ *
  * @param cc Compiler context.
  * @param name Name of the constant.
  * @param value Value of the constant.
@@ -131,7 +131,7 @@ symn ccDefStr(ccContext cc, const char *name, char *value);
 
 /**
  * Define a variable or reference.
- * 
+ *
  * @param cc Compiler context.
  * @param name Name of the variable.
  * @param type Type of the variable.
@@ -141,7 +141,7 @@ symn ccDefVar(ccContext cc, const char *name, symn type);
 
 /**
  * Define a new type.
- * 
+ *
  * @param cc Compiler context.
  * @param name Name of the type.
  * @param size Size of the type.
@@ -153,7 +153,7 @@ symn ccAddType(ccContext cc, const char *name, unsigned size, int refType);
 
 /**
  * Define a native function.
- * 
+ *
  * @param cc Compiler context.
  * @param call The native c function wrapper.
  * @param proto Prototype of the function.
@@ -174,7 +174,7 @@ symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto);
 
 /**
  * Compile the given file or text as a unit.
- * 
+ *
  * @param cc Compiler context.
  * @param init function installing types and native functions.
  * @param file File name of input.
@@ -186,7 +186,7 @@ astn ccAddUnit(ccContext cc, int init(ccContext), char *file, int line, char *te
 
 /**
  * Generate bytecode from the compiled syntax tree.
- * 
+ *
  * @param cc Compiler context.
  * @param debug generate debug info
  * @return error code/count, 0 on success.
@@ -195,7 +195,7 @@ int ccGenCode(ccContext cc, int debug);
 
 /**
  * Lookup a symbol by name.
- * 
+ *
  * @param rt Runtime context.
  * @param scope search in the members of this symbol.
  * @param name name of the symbol to be found.

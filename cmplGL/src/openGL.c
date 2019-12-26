@@ -455,16 +455,16 @@ int cmplInit(rtContext _rt) {
 		// enable / disable
 		{GL_DEPTH_TEST,                "DepthTest"},		// If enabled, do depth comparisons and update the depth buffer. Note that even if the depth buffer exists and the depth mask is non-zero, the depth buffer is not updated if the depth test is disabled. See glDepthFunc and
 		{GL_LINE_SMOOTH,               "LineSmooth"},		// If enabled, draw lines with correct filtering. Otherwise, draw aliased lines. See glLineWidth.
-		{GL_CULL_FACE,                 "CullFace"},			// 
+		{GL_CULL_FACE,                 "CullFace"},			//
 
 		// CullFace
 		{GL_FRONT,                     "Front"},
-		{GL_BACK,                      "Back"}, 
+		{GL_BACK,                      "Back"},
 		{GL_FRONT_AND_BACK,            "FrontAndBack"},
 
 		// ShadeModel
-		{GL_FLAT,                      "Flat"}, 
-		{GL_SMOOTH,                    "Smooth"}, 
+		{GL_FLAT,                      "Flat"},
+		{GL_SMOOTH,                    "Smooth"},
 
 		// clear
 		{GL_COLOR_BUFFER_BIT,          "ColorBuffer"},		// Indicates the buffers currently enabled for color writing.

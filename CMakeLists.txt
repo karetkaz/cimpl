@@ -46,11 +46,12 @@ set(GX_HEADER_FILES
 set(GX_SOURCE_FILES
 	cmplGfx/src/gx_surf.c
 	cmplGfx/src/gx_color.c
+	cmplGfx/src/gx_gradient.c
 	cmplGfx/src/g2_draw.c
 	cmplGfx/src/g3_draw.c
 	cmplGfx/src/g2_image.c
 	cmplGfx/src/g3_mesh.c
-	cmplGfx/src/gx_main.c
+	cmplGfx/src/gx_cmpl.c
 )
 
 add_executable(cmpl ${CC_SOURCE_FILES} src/main.c)

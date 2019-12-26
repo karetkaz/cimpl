@@ -24,15 +24,6 @@ const char *const type_fmt_typename = "<%T>";
 const char type_fmt_string_chr = '\"';
 const char type_fmt_character_chr = '\'';
 
-// return type for file and name will be converted to string
-static const char *const type_get_file = "typename file(typename type)";
-static const char *const type_get_line = "int32 line(typename type)";
-static const char *const type_get_name = "typename name(typename type)";
-static const char *const type_get_base = "typename base(typename type)";
-
-static const char *const variant_is = "bool is(variant var, typename type)";
-static const char *const variant_as = "pointer as(variant var, typename type)";
-
 /// Private dummy on exit native function.
 static vmError haltDummy(nfcContext args) {
 	(void)args;
@@ -40,6 +31,11 @@ static vmError haltDummy(nfcContext args) {
 }
 
 /// Private native function for reflection.
+// return type for file and name will be converted to string
+static const char *const type_get_file = "typename file(typename type)";
+static const char *const type_get_line = "int32 line(typename type)";
+static const char *const type_get_name = "typename name(typename type)";
+static const char *const type_get_base = "typename base(typename type)";
 static vmError typenameGetField(nfcContext ctx) {
 	size_t symOffs = argref(ctx, 0);
 	symn sym = rtLookup(ctx->rt, symOffs, 0);
@@ -66,6 +62,8 @@ static vmError typenameGetField(nfcContext ctx) {
 	return nativeCallError;
 }
 
+static const char *const variant_is = "bool is(variant var, typename type)";
+static const char *const variant_as = "pointer as(variant var, typename type)";
 static vmError variantHelpers(nfcContext ctx) {
 	size_t symOffs = argref(ctx, 0);
 	vmValue *varOffs = argget(ctx, vm_ref_size, NULL, 2 * vm_ref_size);
@@ -80,6 +78,77 @@ static vmError variantHelpers(nfcContext ctx) {
 		} else {
 			retref(ctx, 0);
 		}
+		return noError;
+	}
+	return nativeCallError;
+}
+
+static inline int isObjectType(symn sym) {
+	symn obj = sym;
+	while (sym != NULL) {
+		if (sym == sym->type/*cc->type_rec*/) {
+			// base type must be valid, we reached typename
+			break;
+		}
+		if ((sym->kind & (MASK_kind | MASK_cast)) != (KIND_typ | CAST_ref)) {
+			// must be a type and cast to reference
+			break;
+		}
+		obj = sym;
+		sym = sym->type;
+	}
+	/* fixme: detect if obj is object
+	if (obj == cc->type_obj) {
+		return 1;
+	}*/
+	return sym != NULL && sym != obj && sym == sym->type;
+}
+
+static const char *const object_create = "pointer create(typename type)";
+static const char *const object_cast = "pointer as(object obj, typename type)";
+static vmError objectHelpers(nfcContext ctx) {
+	rtContext rt = ctx->rt;
+	if (ctx->proto == object_create) {
+		symn sym = rtLookup(rt, argref(ctx, 0), KIND_typ);
+		if (sym == NULL || !isObjectType(sym)) {
+			// invalid type to allocate
+			return nativeCallError;
+		}
+		void *obj = rtAlloc(rt, NULL, sym->size, NULL);
+		if (sym == NULL) {
+			// allocation failed
+			return nativeCallError;
+		}
+		// persist type of object
+		*(vmOffs*)obj = vmOffset(rt, sym);
+		retref(ctx, vmOffset(rt, obj));
+		return noError;
+	}
+
+	if (ctx->proto == object_cast) {
+		symn sym = rtLookup(rt, argref(ctx, 0 * vm_ref_size), KIND_typ);
+		void *obj = vmPointer(rt, argref(ctx, 1 * vm_ref_size));
+		if (sym == NULL || !isObjectType(sym)) {
+			// invalid type to allocate
+			return nativeCallError;
+		}
+		if (obj == NULL) {
+			// null is null type does not matter
+			retref(ctx, vmOffset(rt, obj));
+			return noError;
+		}
+		symn type = vmPointer(rt, *(vmOffs*)obj);
+		while (type != NULL) {
+			if (type == type->type) {
+				obj = NULL;
+				break;
+			}
+			if (sym == type) {
+				break;
+			}
+			type = type->type;
+		}
+		retref(ctx, vmOffset(rt, obj));
 		return noError;
 	}
 	return nativeCallError;
@@ -137,7 +206,7 @@ size_t nfcNextArg(nfcContext nfc) {
 
 /**
  * Get a pointer to the native call argument.
- * 
+ *
  * @param nfc the native call context.
  * @param offs relative offset of the argument.
  * @return pointer to the argument at the relative offset.
@@ -311,7 +380,7 @@ static void install_type(ccContext cc, ccInstall mode) {
 
 	enter(cc, NULL);
 	cc->length_ref = install(cc, "length", ATTR_cnst | KIND_var, cc->type_idx->size, cc->type_idx, NULL);
-	leave(cc, KIND_typ, 0, 0, NULL);
+	leave(cc, KIND_typ, 0, 0, NULL, NULL);
 	cc->length_ref->offs = offsetOf(vmValue, length);
 	cc->length_ref->next = NULL;
 
@@ -541,7 +610,7 @@ static void install_emit(ccContext cc, ccInstall mode) {
 
 /**
  * Install base functions.
- * 
+ *
  * @param rt Runtime context.
  * @param onHalt the function to be invoked when execution stops.
  * @returns 0 on success
@@ -562,7 +631,7 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 		error = error || !(field = ccAddCall(cc, variantHelpers, variant_as));
 
 		dieif(cc->type_var->fields != NULL, ERR_INTERNAL_ERROR);
-		cc->type_var->fields = leave(cc, KIND_def, 0, 0, NULL);
+		cc->type_var->fields = leave(cc, KIND_def, 0, 0, NULL, cc->type_var->fields);
 
 
 		enter(cc, cc->type_rec);
@@ -605,8 +674,25 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 		//~ */
 
 		dieif(cc->type_rec->fields != NULL, ERR_INTERNAL_ERROR);
-		cc->type_rec->fields = leave(cc, KIND_def, 0, 0, NULL);
+		cc->type_rec->fields = leave(cc, KIND_def, 0, 0, NULL, cc->type_rec->fields);
 	}
+
+	if (cc->type_rec != NULL && cc->type_obj != NULL) {
+		enter(cc, cc->type_obj);
+
+		if ((field = install(cc, ".type", ATTR_cnst | KIND_var | CAST_ref, vm_ref_size, cc->type_rec, NULL))) {
+			field->offs = 0;
+		} else {
+			error = 1;
+		}
+
+		error = error || !(cc->libc_new = ccAddCall(cc, objectHelpers, object_create));
+		error = error || !ccAddCall(cc, objectHelpers, object_cast);
+
+		dieif(cc->type_obj->fields != NULL, ERR_INTERNAL_ERROR);
+		cc->type_obj->fields = leave(cc, KIND_def, 0, 0, NULL, cc->type_obj->fields);
+	}
+
 	return error;
 }
 
@@ -1041,7 +1127,7 @@ symn ccEnd(ccContext cc, symn sym) {
 		trace(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
-	symn fields = leave(cc, sym->kind & (ATTR_stat | ATTR_cnst | MASK_kind), 0, 0, NULL);
+	symn fields = leave(cc, sym->kind & (ATTR_stat | ATTR_cnst | MASK_kind), 0, 0, NULL, NULL);
 	if (sym != NULL) {
 		sym->fields = fields;
 	}
@@ -1155,8 +1241,9 @@ symn rtLookup(rtContext rt, size_t offs, ccKind filter) {
 }
 
 char *ccUniqueStr(ccContext cc, const char *str, size_t len, unsigned hash) {
-	rtContext rt = cc->rt;
-	list node, next, prev = 0;
+	if (str == NULL) {
+		return NULL;
+	}
 
 	if (len == (size_t)-1) {
 		len = strlen(str) + 1;
@@ -1174,7 +1261,9 @@ char *ccUniqueStr(ccContext cc, const char *str, size_t len, unsigned hash) {
 		return NULL;
 	}
 
-	for (next = cc->strt[hash]; next; next = next->next) {
+	list prev = NULL;
+	list next = cc->strt[hash];
+	while (next != NULL) {
 		int cmp = memcmp(next->data, str, len);
 		if (cmp == 0) {
 			return (char*)next->data;
@@ -1183,8 +1272,10 @@ char *ccUniqueStr(ccContext cc, const char *str, size_t len, unsigned hash) {
 			break;
 		}
 		prev = next;
+		next = next->next;
 	}
 
+	rtContext rt = cc->rt;
 	if (rt->_beg >= rt->_end - (sizeof(struct list) + len)) {
 		fatal(ERR_MEMORY_OVERRUN);
 		return NULL;
@@ -1197,7 +1288,7 @@ char *ccUniqueStr(ccContext cc, const char *str, size_t len, unsigned hash) {
 
 	// allocate list node as temp data (end of memory)
 	rt->_end -= sizeof(struct list);
-	node = (list)rt->_end;
+	list node = (list)rt->_end;
 
 	rt->_beg += len;
 
@@ -1244,16 +1335,16 @@ char* vmErrorMessage(vmError error) {
 	return "Unknown error";
 }
 
-dbgn mapDbgFunction(rtContext rt, size_t position) {
+dbgn mapDbgFunction(rtContext rt, size_t offset) {
 	if (rt->dbg != NULL) {
 		dbgn result = (dbgn)rt->dbg->functions.ptr;
 		size_t n = rt->dbg->functions.cnt;
 		for (size_t i = 0; i < n; ++i) {
-			if (position == result->start) {
+			if (offset == result->start) {
 				return result;
 			}
-			if (position >= result->start) {
-				if (position < result->end) {
+			if (offset >= result->start) {
+				if (offset < result->end) {
 					return result;
 				}
 			}

@@ -64,41 +64,6 @@ props.title = document.title;
 const pathMather = /(?=[\w\/])((?:\w+:\/\/)(?:[^:@\n\r"'`]+(?:\:\w+)?@)?(?:[^:/?#\n\r"'`]+)(?:\:\d+)?(?=[/?#]))?([^<>=:;,?#*|\n\r"'`]*)?(?:\:(?:(\d+)(?:\:(\d+))?))?(?:\?([^#\n\r"'`]*))?(?:\#([^\n\r"'`]*))?/;
 const pathFinder = new RegExp(pathMather, 'g');
 
-CodeMirror.commands.save = function(cm) {
-	saveInput();
-}
-CodeMirror.commands.jumpToLine = function(cm) {
-	let line = editor.getCursor().line || 0;
-	completeAction(':', line + 1);
-	var middleHeight = editor.getScrollerElement().offsetHeight / 2;
-	var t = editor.charCoords({line, ch: 0}, "local").top;
-	editor.scrollTo(null, t - middleHeight - 5);
-	editor.setCursor(line);
-}
-
-CodeMirror.commands.find = function(cm) {
-	completeAction('?');
-}
-CodeMirror.commands.findNext = function(cm) {
-	let cursor = edtFileName.cursor;
-	if (cursor && cursor.findNext()) {
-		editor.setSelection(cursor.from(), cursor.to());
-	} else {
-		actionError();
-	}
-}
-CodeMirror.commands.findPrev = function(cm) {
-	let cursor = edtFileName.cursor;
-	if (cursor && cursor.findPrevious()) {
-		editor.setSelection(cursor.from(), cursor.to());
-	} else {
-		actionError();
-	}
-}
-CodeMirror.commands.findAndSelect = function(cm) {
-	completeAction('?!');
-}
-
 let editor = CodeMirror.fromTextArea(input, {
 	mode: "text/x-cmpl",
 	lineNumbers: true,
@@ -321,14 +286,6 @@ function rmWorkspace(workspace) {
 	req.onblocked = console.log;
 }
 
-function actionError() {
-	edtFileName.classList.add('error');
-	setTimeout(function() {
-		edtFileName.classList.remove('error');
-	}, 250);
-	return false;
-}
-
 editor.on("gutterClick", function(cm, n) {
 	let info = cm.lineInfo(n);
 	if (info.gutterMarkers == null) {
@@ -341,126 +298,6 @@ editor.on("gutterClick", function(cm, n) {
 		cm.setGutterMarker(n, "breakpoints", null);
 	}
 });
-
-edtFileName.onfocus = function() {
-	edtFileName.selectionStart = 0;
-	edtFileName.selectionEnd = edtFileName.value.length;
-}
-edtFileName.onblur = function() {
-	edtFileName.value = params.file || '';
-	editor.focus();
-}
-edtFileName.onkeydown = function(event) {
-	if (event.key !== 'Enter') {
-		return true;
-	}
-
-	// `#arguments` => execute script
-	if (edtFileName.value.startsWith('#')) {
-		let command = edtFileName.value.substr(1);
-		//params.update({exec: command});
-		execute(command, true);
-	}
-
-	// `:%` => zoom
-	else if (edtFileName.value.startsWith(':%')) {
-		document.body.style.fontSize = (+edtFileName.value.substr(2) / 100) + 'em';
-		editor.refresh();
-	}
-
-	// `:<number>` => goto line
-	else if (edtFileName.value.startsWith(':')) {
-		let line = edtFileName.value.substr(1);
-		if (!isNaN(line)) {
-			params.update({line});
-		} else {
-			editor.execCommand(line);
-		}
-	}
-
-	// ?! => find and select occurrences
-	else if (edtFileName.value.startsWith('?!')) {
-		let text = edtFileName.value.substr(2);
-		let cursor = editor.getSearchCursor(text, 0);
-		let selections = [];
-		while (cursor.findNext()) {
-			selections.push({
-				anchor: cursor.from(),
-				head: cursor.to()
-			});
-		}
-		if (selections.length < 1) {
-			edtFileName.cursor = null;
-			return actionError();
-		}
-		editor.setCursor(selections[0].head);
-		editor.setSelections(selections);
-	}
-
-	// ? => find text
-	else if (edtFileName.value.startsWith('?')) {
-		let text = edtFileName.value.substr(1);
-		let cursor = editor.getSearchCursor(text, 0);
-		if (!cursor.findNext()) {
-			edtFileName.cursor = null;
-			return actionError();
-		}
-		editor.setSelection(cursor.from(), cursor.to());
-		edtFileName.cursor = cursor;
-	}
-
-	// '[{...' => project
-	else if (edtFileName.value.startsWith('[{')) {
-		openProjectFile({
-			project: JSON.parse(edtFileName.value),
-			file: params.file,
-			line: params.line
-		});
-	}
-
-	// `+` => unfoldAll
-	else if (edtFileName.value === '+') {
-		editor.execCommand('unfoldAll');
-	}
-
-	// `-` => foldAll
-	else if (edtFileName.value === '-') {
-		editor.execCommand('foldAll');
-	}
-
-	// close file
-	else if (edtFileName.value === '') {
-		params.update({ content: null, file: null });
-	}
-
-	// open or download file
-	else {
-		// [match, host, path, line, column, query, hash]
-		let match = edtFileName.value.match(pathMather);
-		if (match == null) {
-			return actionError();
-		}
-
-		let file = match[2];
-		let line = match[3];
-		if (match[1] != null) {
-			file = file.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3");
-			openProjectFile({ file, project: [{
-				file, url: match[1] + match[2]
-			}]});
-		}
-		else if (file.endsWith('/') || file.endsWith('*')) {
-			params.update({ folder: match.input });
-		}
-		else {
-			params.update({ content: null, file, line });
-		}
-	}
-
-	edtFileName.blur();
-	return false;
-}
-edtFileName.onkeyup = completeAction;
 
 window.onkeydown = function() {
 	// escape to editor
@@ -491,53 +328,6 @@ window.onkeydown = function() {
 		completeAction('#');
 		return false;
 	}
-}
-
-function completeAction(action, hint) {
-	setStyle(document.body, 'tool-bar');
-	edtFileName.focus();
-
-	if (action == null) {
-		return;
-	}
-	if (action.constructor === KeyboardEvent) {
-		if (!edtFileName.value.endsWith(action.key)) {
-			// maybe backspace was pressed
-			return;
-		}
-		action = edtFileName.value;
-	}
-	if (hint == null) {
-		switch (action) {
-			default:
-				hint = '';
-				break;
-
-			case ':':
-				hint = editor.getCursor().line + 1 || 'enter a line number to go to';
-				break;
-
-			case ':%':
-				hint = '100';
-				break;
-
-			case '?':
-				hint = editor.getSelection() || 'enter a text to search';
-				break;
-
-			case '?!':
-				hint = editor.getSelection() || 'enter a text to search and select occurrences';
-				break;
-
-			case '#':
-				hint = terminal.command || '';
-				break;
-		}
-	}
-
-	edtFileName.value = action + hint;
-	edtFileName.selectionStart = action.length;
-	edtFileName.selectionEnd = edtFileName.value.length;
 }
 
 function setContent(content, file, line, column) {

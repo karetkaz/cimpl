@@ -1679,7 +1679,7 @@ static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t
 
 /**
  * Execute bytecode.
- * 
+ *
  * @param rt Runtime context.
  * @param pu Cell to execute on.
  * @param fun Executing function.

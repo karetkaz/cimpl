@@ -17,11 +17,14 @@ typedef enum {
 } surfFlags;
 
 typedef enum {
-	gradient_lin = 0x000000,		// Linear
-	gradient_rad = 0x010000,		// Radial (elliptical)
-	gradient_sqr = 0x020000,		// Square
-	gradient_con = 0x030000,		// Conical
-	gradient_spr = 0x040000,		// Spiral
+	gradient_lin = 0x00,		// Linear
+	gradient_rad = 0x01,		// Radial (elliptical)
+	gradient_sqr = 0x02,		// Square
+	gradient_con = 0x03,		// Conical
+	gradient_spr = 0x04,		// Spiral
+	mask_type    = 0x07,		// gradient type
+	flag_repeat  = 0x08,		// repeat
+	flag_alpha   = 0x10,		// write alpha channel only
 } gradient_type;
 
 // clipping bound structure [bounding box]
@@ -45,7 +48,7 @@ typedef struct gx_Clut {
 	uint16_t        count;
 	uint8_t         flags;
 	uint8_t         trans;
-	uint32_t        data[256];
+	argb            data[256];
 } *gx_Clut;
 
 // Layer Look Up Table
@@ -264,9 +267,7 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth);
 
 
 // image effects
-int gx_gradSurf(gx_Surf dst, gx_Rect roi, gx_Clut lut, gradient_type gradtype, int repeat);
-
-//~ TODO: remove Internal functions
+int gx_gradSurf(gx_Surf dst, gx_Rect roi, gx_Clut lut, gradient_type type);
 
 #if __cplusplus
 }

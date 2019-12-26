@@ -1,4 +1,29 @@
-// Addition
+/* Addition
+void -> undefined
+bool -> undefined
+char
+int8 -> implicit int32
+int16 -> implicit int32
+int32
+int64
+uint8 -> implicit uint32
+uint16 -> implicit uint32
+uint32
+uint64
+float32
+float64
+pointer
+variant -> undefined
+typename -> undefined
+function -> undefined
+object -> undefined
+*/
+
+inline +(char lhs, char rhs) = char(emit(int32(lhs), int32(rhs), add.i32));
+inline +(char lhs, int32 rhs) = int32(emit(int32(lhs), int32(rhs), add.i32));
+inline +(char lhs, uint32 rhs) = uint32(emit(int32(lhs), uint32(rhs), add.u32));
+
+inline +(int32 lhs, char rhs) = int32(emit(int32(lhs), int32(rhs), add.i32));
 inline +(int32 lhs, int32 rhs) = int32(emit(int32(lhs), int32(rhs), add.i32));
 inline +(int32 lhs, int64 rhs) = int64(emit(int64(lhs), int64(rhs), add.i64));
 inline +(int32 lhs, uint32 rhs) = uint32(emit(int32(lhs), uint32(rhs), add.u32));
@@ -13,6 +38,7 @@ inline +(int64 lhs, uint64 rhs) = uint64(emit(int64(lhs), uint64(rhs), add.u64))
 inline +(int64 lhs, float32 rhs) = float32(emit(float32(lhs), float32(rhs), add.f32));
 inline +(int64 lhs, float64 rhs) = float64(emit(float64(lhs), float64(rhs), add.f64));
 
+inline +(uint32 lhs, char rhs) = uint32(emit(uint32(lhs), int32(rhs), add.u32));
 inline +(uint32 lhs, int32 rhs) = uint32(emit(uint32(lhs), int32(rhs), add.u32));
 inline +(uint32 lhs, int64 rhs) = int64(emit(uint64(lhs), int64(rhs), add.i64));
 inline +(uint32 lhs, uint32 rhs) = uint32(emit(uint32(lhs), uint32(rhs), add.u32));
@@ -40,3 +66,14 @@ inline +(float64 lhs, uint32 rhs) = float64(emit(float64(lhs), float64(rhs), add
 inline +(float64 lhs, uint64 rhs) = float64(emit(float64(lhs), float64(rhs), add.f64));
 inline +(float64 lhs, float32 rhs) = float64(emit(float64(lhs), float64(rhs), add.f64));
 inline +(float64 lhs, float64 rhs) = float64(emit(float64(lhs), float64(rhs), add.f64));
+
+static if (sizeof(pointer) == sizeof(int64)) {
+inline +(int32 lhs, pointer rhs) = pointer(emit(int64(lhs), pointer(rhs), add.u64));
+inline +(int64 lhs, pointer rhs) = pointer(emit(int64(lhs), pointer(rhs), add.u64));
+inline +(pointer lhs, int32 rhs) = pointer(emit(pointer(lhs), int64(rhs), add.u64));
+inline +(pointer lhs, int64 rhs) = pointer(emit(pointer(lhs), int64(rhs), add.u64));
+}
+static if (sizeof(pointer) == sizeof(int32)) {
+inline +(int32 lhs, pointer rhs) = pointer(emit(int32(lhs), pointer(rhs), add.u32));
+inline +(pointer lhs, int32 rhs) = pointer(emit(pointer(lhs), int32(rhs), add.u32));
+}

@@ -16,7 +16,7 @@ static inline vmOpcode vmSelect(vmOpcode opc32, vmOpcode opc64) {
 	return vm_ref_size == 8 ? opc64 : opc32;
 }
 
-/// Utility function to get the absolute position on stack, of a relative offset 
+/// Utility function to get the absolute position on stack, of a relative offset
 static inline size_t stkOffset(rtContext rt, size_t size) {
 	logif(size > rt->_size, "Error(expected: %d, actual: %d)", rt->_size, size);
 	return padOffset(size, vm_stk_align) + rt->vm.ss * vm_stk_align;
@@ -371,7 +371,7 @@ static ccKind genIndirection(ccContext cc, symn variable, ccKind get, int isInde
 	if (get == CAST_ref || get == CAST_var || get == CAST_arr) {
 		if (cast == get) {
 			// make a copy of a reference, variant or slice
-			if (!emitInt(rt, opc_ldi, variable->size)) {
+			if (!emitInt(rt, opc_ldi, refSize(variable))) {
 				return CAST_any;
 			}
 			return get;
@@ -397,7 +397,7 @@ static ccKind genIndirection(ccContext cc, symn variable, ccKind get, int isInde
 	}
 
 	// load the value of the variable
-	if (!emitInt(rt, opc_ldi, type->size)) {
+	if (!emitInt(rt, opc_ldi, refSize(type))) {
 		return CAST_any;
 	}
 
@@ -572,7 +572,7 @@ static ccKind genIndex(ccContext cc, astn ast, ccKind get) {
 		return CAST_any;
 	}
 
-	size_t elementSize = ast->type->size;	// size of array element
+	size_t elementSize = refSize(ast->type);	// size of array element
 	if (rt->foldConst && eval(cc, &tmp, ast->op.rhso) == CAST_i64) {
 		size_t offs = elementSize * intValue(&tmp);
 		if (!emitInt(rt, opc_inc, offs)) {
@@ -2247,7 +2247,7 @@ int ccGenCode(ccContext cc, int debug) {
 
 	// leave the global scope.
 	rt->main = install(cc, ".main", ATTR_stat | KIND_fun, cc->type_fun->size, cc->type_fun, cc->root);
-	cc->scope = leave(cc, cc->genGlobals ? ATTR_stat | KIND_def : KIND_def, 0, 0, NULL);
+	cc->scope = leave(cc, cc->genGlobals ? ATTR_stat | KIND_def : KIND_def, 0, 0, NULL, NULL);
 	dieif(cc->scope != cc->global, ERR_INTERNAL_ERROR);
 
 	/* reorder the initialization of static variables and functions.
@@ -2406,6 +2406,8 @@ int ccGenCode(ccContext cc, int debug) {
 			fatal(ERR_INTERNAL_ERROR);
 			return -1;
 		}
+
+		debug("Global `%T` offs: %d, size: %d", var, var->offs, var->size);
 	}
 
 	size_t lMain = emit(rt, markIP);

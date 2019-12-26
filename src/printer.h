@@ -44,7 +44,7 @@ typedef enum {
 
 /**
  * Print a symbol to the output stream..
- * 
+ *
  * @param out Output stream.
  * @param esc Escape translation (format string will be not escaped).
  * @param sym the symbol to be printed.
@@ -55,7 +55,7 @@ void printSym(FILE *out, const char **esc, symn sym, dmpMode mode, int indent);
 
 /**
  * Print abstract syntax tree to the output stream.
- * 
+ *
  * @param out Output stream.
  * @param esc Escape translation (format string will be not escaped).
  * @param ast the abstract syntax tree to be printed.
@@ -66,7 +66,7 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent);
 
 /**
  * Print an instruction to the output stream.
- * 
+ *
  * @param out Output stream.
  * @param esc Escape translation (format string will be not escaped).
  * @param ctx (optional) Runtime context.
@@ -77,7 +77,7 @@ void printAsm(FILE *out, const char **esc, rtContext ctx, void *ptr, dmpMode mod
 
 /**
  * Print an instruction to the output stream.
- * 
+ *
  * @param out Output stream.
  * @param esc Escape translation (format string will be not escaped).
  * @param opc Operation code of the instruction
@@ -87,7 +87,7 @@ void printOpc(FILE *out, const char **esc, vmOpcode opc, int64_t args);
 
 /**
  * Print the offset of a variable.
- * 
+ *
  * @param out Output stream.
  * @param esc Escape output.
  * @param ctx Runtime context.
@@ -99,7 +99,7 @@ void printOfs(FILE *out, const char **esc, rtContext ctx, symn sym, size_t offs,
 
 /**
  * Print the value of a variable.
- * 
+ *
  * @param out Output stream.
  * @param esc Escape output.
  * @param ctx Runtime context.
@@ -112,7 +112,7 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *ref
 
 /**
  * Print formatted text to the output stream.
- * 
+ *
  * @param out Output stream.
  * @param esc Escape translation (format string will be not escaped).
  * @param fmt Format text.
@@ -162,7 +162,7 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *ref
  *    c: ansi character
  *    S: ?wide string
  *    C: ?wide character
- * 
+ *
  * flags
  *    +-
  *        oOuU: ignored
@@ -183,7 +183,7 @@ void dumpApi(rtContext rt, userContext ctx, void action(userContext, symn));
 
 /**
  * Print the current stacktrace.
- * 
+ *
  * @param ctx Debugger context
  * @param out The file to be used as output
  * @param indent indentation

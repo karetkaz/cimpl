@@ -956,7 +956,7 @@ void normMesh(gx_Mesh msh, scalar tolerance, vector recenter, vector resize) {
 		}
 	}
 
-	// normalize normals, move 
+	// normalize normals, move
 	for (size_t i = 0; i < msh->vtxcnt; i += 1) {
 		vecsub(&msh->pos[i], &msh->pos[i], &move);
 		vecmul(&msh->pos[i], &msh->pos[i], &size);

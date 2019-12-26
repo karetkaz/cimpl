@@ -60,10 +60,9 @@ void enter(ccContext cc, symn owner) {
 	}
 }
 
-symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *outSize) {
+symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *outSize, symn result) {
 	dieif(cc->rt->vm.nfc, "Compiler state closed");
-	symn sym, result = NULL;
-
+	symn sym;
 	symn owner = cc->owner;
 
 	cc->nest -= 1;
@@ -128,6 +127,9 @@ symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *out
 			for (sym = result; sym != NULL; sym = sym->next) {
 				if (isStatic(sym)) {
 					continue;
+				}
+				if (sym->owner != owner) {
+					break;
 				}
 				sym->offs = padOffset(offs, align < sym->size ? align : sym->size);
 				if (offs < sym->offs) {
@@ -660,8 +662,9 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				ast->op.lhso->ref.link = NULL;
 			}
 			lType = typeCheck(cc, loc, ast->op.lhso, raise);
+			// if left side is a function or emit, we need to lookup parameters declared for the function
 			loc = linkOf(ast->op.lhso, 1);
-			if (loc == NULL) {
+			if (loc == NULL || isVariable(loc)) {
 				loc = lType;
 			}
 			rType = typeCheck(cc, loc, ast->op.rhso, raise);
@@ -914,22 +917,19 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 }
 
 ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
-	symn typ = isTypename(var) ? var : var->type;
-	symn lnk = linkOf(val, 1);
-
-	dieif(!var, ERR_INTERNAL_ERROR);
-	dieif(!val, ERR_INTERNAL_ERROR);
-
-	if (val->type == NULL) {
+	if (var == NULL || val == NULL || val->type == NULL) {
+		dieif(!var, ERR_INTERNAL_ERROR);
+		dieif(!val, ERR_INTERNAL_ERROR);
 		return CAST_any;
 	}
-
+	symn varType = isTypename(var) ? var : var->type;
+	symn valName = linkOf(val, 1);
 	ccKind varCast = castOf(var);
 
 	// assign null or pass by reference
-	if (lnk == cc->null_ref) {
-		if (typ != NULL) {
-			switch (castOf(typ)) {
+	if (valName == cc->null_ref) {
+		if (varType != NULL) {
+			switch (castOf(varType)) {
 				default:
 					break;
 
@@ -956,10 +956,9 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 				return varCast;
 		}
 	}
-
 	// assigning a typename or pass by reference
-	if (lnk != NULL && var->type == cc->type_rec) {
-		switch (lnk->kind & MASK_kind) {
+	if (valName != NULL && var->type == cc->type_rec) {
+		switch (valName->kind & MASK_kind) {
 			default:
 				break;
 
@@ -968,13 +967,12 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 				return CAST_ref;
 		}
 	}
-
 	// assigning a variable to a pointer or variant
-	if (lnk != NULL && (typ == cc->type_ptr || typ == cc->type_var)) {
-		return refCast(typ);
+	if (valName != NULL && (varType == cc->type_ptr || varType == cc->type_var)) {
+		return refCast(varType);
 	}
 
-	if (typ != var) {
+	if (varType != var) {
 		// assigning a function
 		if (var->params != NULL) {
 			symn fun = linkOf(val, 1);
@@ -983,7 +981,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 			struct astNode temp;
 
 			temp.kind = TOKEN_var;
-			temp.type = typ;
+			temp.type = varType;
 			temp.ref.link = var;
 
 			if (fun && canAssign(cc, fun->type, &temp, 1)) {
@@ -1003,7 +1001,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 				}
 			}
 			else {
-				trace("%T ~ %T", typ, fun);
+				trace("%T ~ %T", varType, fun);
 				return CAST_any;
 			}
 			if (arg1 || arg2) {
@@ -1018,27 +1016,45 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 		}
 	}
 
-	if (typ == val->type) {
-		return varCast;
+	// assigning a value to an object or base type
+	for (symn sym = val->type; sym != NULL; sym = sym->type) {
+		if (sym == varType) {
+			return varCast;
+		}
+		// TODO: there should be a check if object is in the type hierarchy
+		if (varCast != CAST_ref || castOf(sym) != CAST_ref) {
+			// check base type only if it is a reference type
+			break;
+		}
+		if (isArrayType(sym)) {
+			break;
+		}
+		if (isFunction(sym)) {
+			break;
+		}
+		if (sym == cc->type_rec) {
+			// typename is the last type in the chain
+			break;
+		}
 	}
 
 	/* FIXME: assign enum.
-	if (lnk && lnk->cast == ENUM_kwd) {
-		if (typ == lnk->type->type) {
-			return lnk->type->type->cast;
+	if (valName && valName->cast == ENUM_kwd) {
+		if (varType == valName->type->type) {
+			return valName->type->type->cast;
 		}
 	}
-	else if (typ->cast == ENUM_kwd) {
+	else if (varType->cast == ENUM_kwd) {
 		symn t;
-		for (t = typ->fields; t != NULL; t = t->next) {
-			if (t == lnk) {
-				return lnk->cast;
+		for (t = varType->fields; t != NULL; t = t->next) {
+			if (t == valName) {
+				return valName->cast;
 			}
 		}
 	}*/
 
 	// Assign array
-	if (castOf(typ) == CAST_arr) {
+	if (castOf(varType) == CAST_arr) {
 		struct astNode temp;
 		symn vty = val->type;
 
@@ -1049,12 +1065,12 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 		temp.ref.name = ".generated token";
 
 		//~ check if subtypes are assignable
-		if (canAssign(cc, typ->type, &temp, strict)) {
+		if (canAssign(cc, varType->type, &temp, strict)) {
 			// assign to dynamic array
-			if (typ->init == NULL) {
+			if (varType->init == NULL) {
 				return CAST_arr;
 			}
-			if (typ->size == val->type->size) {
+			if (varType->size == val->type->size) {
 				// TODO: return <?>
 				return KIND_var;
 			}
@@ -1065,9 +1081,9 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 		}
 	}
 
-	if (!strict && (typ = promote(typ, val->type))) {
+	if (!strict && (varType = promote(varType, val->type))) {
 		// TODO: return <?> val->cast ?
-		return refCast(typ);
+		return refCast(varType);
 	}
 
 	debug("%?s:%?u: %T := %T(%t)", val->file, val->line, var, val->type, val);

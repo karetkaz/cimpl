@@ -40,11 +40,12 @@ SRC_GX=\
 	$(GX_SRC)/*.h\
 	$(GX_SRC)/gx_surf.c\
 	$(GX_SRC)/gx_color.c\
+	$(GX_SRC)/gx_gradient.c\
 	$(GX_SRC)/g2_draw.c\
 	$(GX_SRC)/g3_draw.c\
 	$(GX_SRC)/g2_image.c\
 	$(GX_SRC)/g3_mesh.c\
-	$(GX_SRC)/gx_main.c
+	$(GX_SRC)/gx_cmpl.c
 
 
 # for Linux platform

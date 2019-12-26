@@ -70,7 +70,7 @@ int isChecked(dbgContext ctx);
 
 /**
  * Convert an error code to message (string).
- * 
+ *
  * @param error the error code
  * @return the error message for the given code
  */
@@ -79,10 +79,10 @@ char* vmErrorMessage(vmError error);
 /**
  * Request debug information of function
  * @param ctx runtime context
- * @param position 
- * @return 
+ * @param offset the memory offset to lookup
+ * @return the debug information for the given position
  */
-dbgn mapDbgFunction(rtContext ctx, size_t position);
+dbgn mapDbgFunction(rtContext ctx, size_t offset);
 dbgn addDbgFunction(rtContext ctx, symn fun);
 
 dbgn mapDbgStatement(rtContext ctx, size_t position);

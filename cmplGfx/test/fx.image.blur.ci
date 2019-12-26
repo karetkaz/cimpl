@@ -1,0 +1,323 @@
+// Hue saturation brightness demo.
+
+gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
+gxSurf surf = gxSurf("asset/image/forest.png", 32);
+gxSurf offs = gxSurf(surf);
+gxSurf blur = gxSurf(surf);
+
+static if (typename(gxSurf.blur) == null) {
+void blur(gxSurf img, int radius, double sigma) {
+	static double gauss(double x, double sigma) {
+		inline SQRT_2_PI_INV = 0.398942280401432677939946059935;
+		double t = x / sigma;
+		/*switch (dx) {
+			default:
+				break;
+			case -1:
+				return 1;
+			case 0:
+				return SQRT_2_PI_INV * exp(-0.5*t*t) / sigma;
+			case 1:
+				return -x * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma);
+			case 2:
+				return (x * x - sigma * sigma) * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma * sigma * sigma);
+		}*/
+		return SQRT_2_PI_INV * double.exp(-0.5 * t * t) / sigma;
+	}
+
+	uint32 kernel[1024];
+	int size = radius * 2 + 1;
+	assert(size < kernel.length);
+
+	float64 kernelSum = 0;
+	float64 kernelFlt[kernel.length];
+	for (int i = 0; i < size; i += 1) {
+		kernelFlt[i] = gauss(radius - i, sigma);
+		kernelSum += kernelFlt[i];
+	}
+
+	for (int i = 0; i < size; i += 1) {
+		kernel[i] = 65536 * (kernelFlt[i] / kernelSum);
+	}
+
+	int width = img.width();
+	int height = img.height();
+
+	gxSurf tmp = gxSurf(width, height, img.depth());
+
+	// x direction: inout -> temp
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			uint32 r = 0;
+			uint32 g = 0;
+			uint32 b = 0;
+			for (int i = 0; i < size; i += 1) {
+				int _x = x + i - radius;
+				if (_x >= 0 && _x < width) {
+					argb col = argb(img.get(_x, y));
+					uint32 _k = kernel[i];
+					r += _k * rch(col);
+					g += _k * gch(col);
+					b += _k * bch(col);
+				}
+			}
+			tmp.set(x, y, argb(r >> 16, g >> 16, b >> 16));
+		}
+	}
+
+	// y direction: temp -> inout
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			uint32 r = 0;
+			uint32 g = 0;
+			uint32 b = 0;
+			for (int i = 0; i < size; i += 1) {
+				int _y = y + i - radius;
+				if (_y >= 0 && _y < height) {
+					argb col = argb(tmp.get(x, _y));
+					uint32 _k = kernel[i];
+					r += _k * rch(col);
+					g += _k * gch(col);
+					b += _k * bch(col);
+				}
+			}
+			img.set(x, y, argb(r >> 16, g >> 16, b >> 16));
+		}
+	}
+
+	tmp.destroy();
+}
+}
+
+static if (typename(gxSurf.blend) == null) {
+void blend(gxSurf surf, int32 x0, int32 y0, const gxSurf src, const gxRect roi&, int32 alpha, vec4f blend(vec4f base, vec4f with)) {
+	int width = surf.width();
+	int height = surf.height();
+
+	assert(roi == null, "not implemented");
+	assert(blend == null, "not implemented");
+
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			inline lerp(int32 l, int32 r) = int32(l + alpha * (r - l) / 256);
+			argb col = argb(src.get(x,y));
+			int r = rch(col);
+			int g = gch(col);
+			int b = bch(col);
+
+			col = argb(surf.get(x,y));
+			r = lerp(rch(col), r);
+			g = lerp(gch(col), g);
+			b = lerp(bch(col), b);
+
+			surf.set(x + x0, y + y0, argb(r, g, b));
+		}
+	}
+}
+}
+
+//inline blur(gxSurf surf, int radius) = surf.blur(radius, 0.3 * (radius - 1) + 0.8);
+inline blur(gxSurf surf, double sigma) = surf.blur(Math.max(1., (sigma - 0.8) / 0.3 + 1), sigma);
+
+int onEvent(int action, int button, int x, int y);
+offs.show(onEvent);
+
+blur.destroy();
+offs.destroy();
+surf.destroy();
+font.destroy();
+
+int onEvent(int action, int button, int x, int y) {
+	inline "/lib/gfx/micro.ui.ci";
+
+	static Checker autoUpdate = {
+		text: "auto update";
+		checked: true;
+		selectable: false;
+	};
+	static Slider sldBlur = {
+		text: "blur";
+		value: 2000;
+		minimum: 30;
+		maximum: 2000;
+		divisor: 100;
+	};
+	static Slider sldSharpness = {
+		text: "sharpness";
+		minimum: 0;
+		maximum: 512;
+	};
+	static Slider btnLinear = {
+		text: "Linear";
+		minimum: -255;
+		maximum: 255;
+	};
+	static Slider btnRadial = {
+		text: "Radial";
+		minimum: -255;
+		maximum: 255;
+	};
+	static Slider btnSquare = {
+		text: "Square";
+		minimum: -255;
+		maximum: 255;
+	};
+	static Slider btnConical = {
+		text: "Conical";
+		minimum: -255;
+		maximum: 255;
+	};
+	static Slider btnSpiral = {
+		text: "Spiral";
+		minimum: -255;
+		maximum: 255;
+	};
+	static Checker chkInvert = {
+		text: "Invert";
+		selectable: false;
+	};
+	static Checker chkRepeat = {
+		text: "Repeat";
+		selectable: false;
+	};
+	static Checker chkRect = {
+		text: "Show rect";
+		selectable: false;
+	};
+	static bool resetRect(View view);
+	static Button btnReset = {
+		text: "Reset rect";
+		onClick: resetRect;
+		selectable: false;
+	};
+	static Slider time = {
+		text: "time";
+		enabled: false;
+	};
+
+	static Layout layout = Layout(offs, font,
+		autoUpdate, sldBlur, sldSharpness,
+		btnLinear, btnRadial, btnSquare, btnConical, btnSpiral,
+		chkInvert, chkRepeat, chkRect, btnReset, time);
+
+	static int oldRadius = 0;
+	static gxRect rect = {
+		x: offs.width() / 2;
+		y: offs.height() / 2;
+		w: offs.width() / 2 - 1;
+		h: offs.height() / 2 - 1;
+	};
+
+	static bool resetRect(View view) {
+		rect.x = offs.width() / 2;
+		rect.y = offs.height() / 2;
+		rect.w = offs.width() / 2 - 1;
+		rect.h = offs.height() / 2 - 1;
+		return true;
+	}
+
+	bool reCalculate = uiEvent(layout, action, button, x, y);
+	if (action == Gui.KEY_PRESS) {
+		if (button == 27) {
+			return -1;
+		}
+	}
+	if (action == Gui.MOUSE_PRESS && button != 1) {
+		rect.x = x;
+		rect.y = y;
+	}
+	if (action == Gui.MOUSE_MOTION && button != 1) {
+		if (layout.isSelected(btnLinear)) {
+			rect.w = x - rect.x;
+			rect.h = y - rect.y;
+			reCalculate = true;
+		}
+		else if (layout.isSelected(btnRadial)) {
+			rect.w = x - rect.x;
+			rect.h = y - rect.y;
+			reCalculate = true;
+		}
+		else if (layout.isSelected(btnSquare)) {
+			rect.w = x - rect.x;
+			rect.h = y - rect.y;
+			reCalculate = true;
+		}
+		else if (layout.isSelected(btnConical)) {
+			rect.w = x - rect.x;
+			rect.h = y - rect.y;
+			reCalculate = true;
+		}
+		else if (layout.isSelected(btnSpiral)) {
+			rect.w = x - rect.x;
+			rect.h = y - rect.y;
+			reCalculate = true;
+		}
+	}
+	if (action == Gui.MOUSE_RELEASE && button != 1) {
+		rect.w = x - rect.x;
+		rect.h = y - rect.y;
+		reCalculate = true;
+	}
+
+	if (reCalculate) {
+		// clamp input values
+		int amountValue = -sldSharpness.val();
+		int radiusValue = sldBlur.val();
+		gxRect roi = {
+			x: rect.x - rect.w;
+			y: rect.y - rect.h;
+			w: rect.w * 2;
+			h: rect.h * 2;
+		};
+
+		uint64 start = System.millis();
+		offs.resize(null, surf, null, 1);
+		if (autoUpdate.checked) {
+			uint32 startColor = 0;
+			uint32 endColor = 255;
+			bool repeat = chkRepeat.checked;
+			bool invert = chkInvert.checked;
+
+			inline blend() = offs.blend(0, 0, blur, null, 256, true, null);
+			if (oldRadius != radiusValue) {
+				oldRadius = radiusValue;
+				blur.copy(0, 0, surf, null);
+				blur.blur(sldBlur.valFlt());
+			}
+			if (layout.isSelected(sldBlur)) {
+				offs.copy(0, 0, blur, null);
+			}
+			else if (layout.isSelected(sldSharpness)) {
+				offs.blend(0, 0, blur, null, amountValue, false, null);
+			}
+			else if (layout.isSelected(btnLinear)) {
+				int alpha = btnLinear.val();
+				offs.gradient(roi, 0, btnLinear.val(), repeat, invert, endColor, startColor, endColor);
+				blend();
+			}
+			else if (layout.isSelected(btnRadial)) {
+				offs.gradient(roi, 1, btnRadial.val(), repeat, invert, startColor, endColor);
+				blend();
+			}
+			else if (layout.isSelected(btnSquare)) {
+				offs.gradient(roi, 2, btnSquare.val(), repeat, invert, startColor, endColor);
+				blend();
+			}
+			else if (layout.isSelected(btnConical)) {
+				offs.gradient(roi, 3, btnConical.val(), repeat, invert, startColor, endColor);
+				blend();
+			}
+			else if (layout.isSelected(btnSpiral)) {
+				offs.gradient(roi, 4, btnSpiral.val(), repeat, invert, endColor, startColor, endColor);
+				blend();
+			}
+		}
+		if (chkRect.checked) {
+			offs.drawRect(roi, 0xff00ff);
+		}
+		offs.drawHist(null, 0x00ffffff);
+		time.value = System.millis() - start;
+		layout.draw(30, 30);
+	}
+	return 0;
+}

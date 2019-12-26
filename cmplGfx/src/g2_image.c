@@ -249,7 +249,7 @@ gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
 		case 64:        // OS/2 2+;
 			break;
 
-		/*TODO: 
+		/*TODO:
 		case 12:		// OS/2 1.x;
 			typedef struct {
 				uint16_t width;
@@ -410,7 +410,7 @@ int gx_saveBmp(const char *dst, gx_Surf src, int flags) {
 			}
 			else {	// use gray palette
 				for (int i = 0; i < 256; ++i) {
-					palette.data[i] = make_rgb(255, i, i, i).val;
+					palette.data[i] = make_rgb(255, i, i, i);
 				}
 				palette.count = 256;
 				infoHeader.depth = 8;

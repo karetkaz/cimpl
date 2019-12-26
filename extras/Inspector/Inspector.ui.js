@@ -1,4 +1,4 @@
-// 
+//
 var data = Inspector();
 
 function loadFile(input) {

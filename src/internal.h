@@ -121,7 +121,8 @@ struct ccContextRec {
 
 	symn libc_dbg;        // raise(char file[*], int line, int level, int trace, char message[*], variant inspect);
 	symn libc_try;        // tryExec(pointer args, void action(pointer args));
-	symn libc_mem;        // alloc(pointer old, int size;
+	symn libc_mem;        // alloc(pointer old, int size);
+	symn libc_new;        // object.create(typename type);
 };
 
 /// Debugger context
@@ -293,7 +294,7 @@ FILE *logFile(rtContext ctx, char *file, int append);
 
 /**
  * Construct reference node.
- * 
+ *
  * @param cc compiler context.
  * @param name name of the node.
  * @return the new node.
@@ -317,7 +318,7 @@ static inline astn tagNode(ccContext cc, const char *name) {
 
 /**
  * Construct arguments.
- * 
+ *
  * @param cc compiler context.
  * @param lhs arguments or first argument.
  * @param rhs next argument.
@@ -354,7 +355,7 @@ static inline astn chainArgs(astn args) {
 
 /**
  * Optimize an assignment by removing extra copy of the value if it is on the top of the stack.
- * 
+ *
  * @param Runtime context.
  * @param stkBegin Begin of stack.
  * @param offsBegin Begin of the byte code.
@@ -365,7 +366,7 @@ int optimizeAssign(rtContext, size_t stkBegin, size_t offsBegin, size_t offsEnd)
 
 /**
  * Test the virtual machine instruction set(compare implementation with definition `OPCODE_DEF`).
- * 
+ *
  * @param cb callback executed for each instruction.
  * @return number of errors found during the test.
  */

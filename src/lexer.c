@@ -55,7 +55,7 @@ typedef struct lexContext {
 
 /**
  * Fill some characters from the file.
- * 
+ *
  * @param ctx lexer context.
  * @return number of characters in buffer.
  */
@@ -124,7 +124,7 @@ static int readChr(lexContext ctx) {
 
 /**
  * Peek the next character from input stream.
- * 
+ *
  * @param ctx lexer context.
  * @return the next character or -1 on end, or error.
  */
@@ -137,7 +137,7 @@ static int peekChr(lexContext ctx) {
 
 /**
  * Skip the next character if it matches `chr`.
- * 
+ *
  * @param ctx lexer context.
  * @param chr filter: 0 matches everything.
  * @return the character skipped.
@@ -151,7 +151,7 @@ static int skipChr(lexContext ctx, int chr) {
 
 /**
  * Push back a character to be read next time.
- * 
+ *
  * @param ctx lexer context.
  * @param chr the character to be pushed back.
  * @return the character pushed back, -1 on fail.
@@ -167,7 +167,7 @@ static int backChr(lexContext ctx, int chr) {
 
 /**
  * Read the next token from input stream.
- * 
+ *
  * @param ctx lexer context.
  * @param tok (out parameter) to be filled with data.
  * @return the kind of token, TOKEN_any (0) if error occurred.
@@ -1171,7 +1171,6 @@ astn peekTok(ccContext cc, ccToken match) {
 astn nextTok(ccContext cc, ccToken match, int raise) {
 	astn token = peekTok(cc, match);
 	if (token != NULL) {
-		
 		while (cc->tokNext != NULL) {
 			astn temp = cc->tokNext;
 			if (temp == token) {

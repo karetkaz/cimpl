@@ -5,18 +5,18 @@ SET WATCOM=C:\Workspace\ow_daily\rel2
 SET MINGW=C:\Workspace\MinGw-5.3.0
 
 pushd "%~dp0\.."
-SET CMPL=%CD%
+SET CMPL_HOME=%CD%
 popd
-echo cmpl home is: %CMPL%
+echo cmpl home is: %CMPL_HOME%
 
-SET BIN=%CMPL%\bin\win.gcc
-SET BINW=%CMPL%\bin\win.wcc
+SET BIN=%CMPL_HOME%\bin\win.gcc
+SET BINW=%CMPL_HOME%\bin\win.wcc
 
 IF EXIST "%MINGW%" (
 	SET PATH=%MINGW%\bin;%PATH%
 	IF NOT EXIST "%BIN%" mkdir "%BIN%"
-	mingw32-make -C "%CMPL%" BINDIR="%BIN%" clean
-	mingw32-make -C "%CMPL%" -j 12 BINDIR="%BIN%" cmpl.exe libFile.dll libGfx.dll libOpenGL.dll
+	mingw32-make -C "%CMPL_HOME%" BINDIR="%BIN%" clean
+	mingw32-make -C "%CMPL_HOME%" -j 12 BINDIR="%BIN%" cmpl.exe libFile.dll libGfx.dll libOpenGL.dll
 )
 
 IF EXIST "%WATCOM%" (
@@ -26,36 +26,35 @@ IF EXIST "%WATCOM%" (
 
 	IF NOT EXIST "%BINW%\obj.cc" mkdir "%BINW%\obj.cc"
 	pushd "%BINW%\obj.cc"
-	owcc -xc -std=c99 -o %BINW%\cmpl.exe %CMPL%\src\*.c
-	REM ~ owcc -xc -std=c99 -shared -I %CMPL%\src -o %BIN%\libFile.dll %CMPL%\cmplFile\src\*.c
-	REM ~ owcc -xc -std=c99 -shared -Wc,-aa -I %CMPL%\src -o %BIN%\libGfx.dll %CMPL%\cmplGfx\src\*.c %CMPL%\cmplGfx\src\os_win32\*.c
+	owcc -xc -std=c99 -o %BINW%\cmpl.exe %CMPL_HOME%\src\*.c
+	REM ~ owcc -xc -std=c99 -shared -I %CMPL_HOME%\src -o %BIN%\libFile.dll %CMPL_HOME%\cmplFile\src\*.c
+	REM ~ owcc -xc -std=c99 -shared -Wc,-aa -I %CMPL_HOME%\src -o %BIN%\libGfx.dll %CMPL_HOME%\cmplGfx\src\*.c %CMPL_HOME%\cmplGfx\src\os_win32\*.c
 	popd
 )
 
-cd %CMPL%
+cd %CMPL_HOME%
 :: dump symbols, assembly, syntax tree and global variables
-SET TEST_FLAGS=-X+steps-stdin-offsets -asm/m/n/s -debug/g "%CMPL%\test\test.ci"
+SET TEST_FLAGS=-X+steps-stdin-offsets -asm/m/n/s -debug/g "%CMPL_HOME%\test\test.ci"
 %BINW%\cmpl -log/d "%BINW%.ci" %TEST_FLAGS%
 %BIN%\cmpl -log/d "%BIN%.ci" %TEST_FLAGS%
+
 :: test the virtual machine
 %BINW%\cmpl --test-vm
 %BIN%\cmpl --test-vm
 
-:: pause && exit
-
-SET TEST_FILES=%CMPL%\test\*.ci
-SET TEST_FILES=%TEST_FILES%;%CMPL%\test\lang\*.ci
-SET TEST_FILES=%TEST_FILES%;%CMPL%\test\stdc\*.ci
-SET TEST_FILES=%TEST_FILES%;%CMPL%\cmplFile\test\*.ci
-SET TEST_FILES=%TEST_FILES%;%CMPL%\cmplGfx\test\*.ci
-REM ~ SET TEST_FILES=%TEST_FILES%;%CMPL%\cmplGL\test\*.ci
+SET TEST_FILES=%CMPL_HOME%\test\*.ci
+SET TEST_FILES=%TEST_FILES%;%CMPL_HOME%\test\lang\*.ci
+SET TEST_FILES=%TEST_FILES%;%CMPL_HOME%\test\stdc\*.ci
+SET TEST_FILES=%TEST_FILES%;%CMPL_HOME%\cmplFile\test\*.ci
+SET TEST_FILES=%TEST_FILES%;%CMPL_HOME%\cmplGfx\test\*.ci
+REM ~ SET TEST_FILES=%TEST_FILES%;%CMPL_HOME%\cmplGL\test\*.ci
 
 SET DUMP_FILE=%BIN%.dump.ci
-%BIN%\cmpl -X-stdin+steps -asm/n/s -run/g -log/d "%DUMP_FILE%" -std"%CMPL%\lib\stdlib.ci" "%BIN%\libFile.dll" "%BIN%\libGfx.dll" "%CMPL%\lib\gfxlib.ci" "%CMPL%\test\test.ci"
+%BIN%\cmpl -X-stdin+steps -asm/n/s -run/g -log/d "%DUMP_FILE%" "%BIN%\libFile.dll" "%BIN%\libGfx.dll" "%CMPL_HOME%\lib\gfxlib.ci" "%CMPL_HOME%\test\test.ci"
 FOR %%f IN (%TEST_FILES%) DO (
 	pushd "%%~dpf"
 	echo **** running test: %%f
-	%BIN%\cmpl -X-stdin+steps -run/g -log/a/d "%DUMP_FILE%" -std"%CMPL%\lib\stdlib.ci" "%BIN%\libFile.dll" "%BIN%\libOpenGL.dll" "%BIN%\libGfx.dll" "%CMPL%\lib\gfxlib.ci" "%%f"
+	%BIN%\cmpl -X-stdin+steps -run/g -log/a/d "%DUMP_FILE%" "%BIN%\libFile.dll" "%BIN%\libOpenGL.dll" "%BIN%\libGfx.dll" "%CMPL_HOME%\lib\gfxlib.ci" "%%f"
 	IF ERRORLEVEL 1 echo ******** failed: %%f
 	popd
 )

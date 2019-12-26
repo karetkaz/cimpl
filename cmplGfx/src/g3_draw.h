@@ -137,7 +137,7 @@ void normMesh(gx_Mesh msh, scalar tol, vector center, vector resize);
  * @param pos update position
  * @param nrm update normal
  * @param tex update texture position
- * @return 
+ * @return 0 if failed
  */
 int setvtx(gx_Mesh msh, size_t idx, scalar pos[3], scalar nrm[3], scalar tex[2]);
 
@@ -147,7 +147,7 @@ int setvtx(gx_Mesh msh, size_t idx, scalar pos[3], scalar nrm[3], scalar tex[2])
  * @param pos update position
  * @param nrm update normal
  * @param tex update texture position
- * @return 
+ * @return 0 if failed
  */
 static inline int addvtx(gx_Mesh msh, scalar pos[3], scalar nrm[3], scalar tex[2]) {
 	return setvtx(msh, msh->vtxcnt, pos, nrm, tex);

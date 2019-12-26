@@ -140,27 +140,27 @@ int onEvent(int action, int button, int x, int y) {
 	};
 	static Button original = {
 		text: "original";
-		selectable: true;
+		data: null;
 	};
 	static Button invert = {
 		text: "invert";
-		selectable: true;
+		data: INVERT;
 	};
 	static Button grayScale = {
 		text: "gray scale";
-		selectable: true;
+		data: GREY_SCALE;
 	};
 	static Button blackAndWhite = {
 		text: "black & white";
-		selectable: true;
+		data: BLACK_AND_WHITE;
 	};
 	static Button sepiaColor = {
 		text: "sepia color";
-		selectable: true;
+		data: SEPIA_COLOR;
 	};
 	static Button polaroidColor = {
 		text: "polaroid color";
-		selectable: true;
+		data: POLAROID_COLOR;
 	};
 	static Slider time = {
 		text: "time";
@@ -182,24 +182,13 @@ int onEvent(int action, int button, int x, int y) {
 	if (redraw) {
 		uint64 start = System.millis();
 		offs.resize(null, back, null, 1);
-		if (ui.isSelected(original)) {
-		}
-		else if (ui.isSelected(invert)) {
-			offs.colorMat(null, INVERT.data);
-		}
-		else if (ui.isSelected(grayScale)) {
-			offs.colorMat(null, GREY_SCALE.data);
-		}
-		else if (ui.isSelected(blackAndWhite)) {
-			offs.colorMat(null, BLACK_AND_WHITE.data);
-		}
-		else if (ui.isSelected(sepiaColor)) {
-			offs.colorMat(null, SEPIA_COLOR.data);
-		}
-		else if (ui.isSelected(polaroidColor)) {
-			offs.colorMat(null, POLAROID_COLOR.data);
-		}
-		else {
+
+		Button button = ui.selected(Button);
+		if (button != null) {
+			if (mat4f mat& = button.data.as(mat4f)) {
+				offs.colorMat(null, mat.data);
+			}
+		} else {
 			float b = brightness.valFlt();
 			float s = saturation.valFlt();
 			float c = contrast.valFlt();
