@@ -451,7 +451,7 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 	else {
 		// first lookup in the current scope
 		sym = cc->deft[ref->ref.hash];
-		sym = lookup(cc, sym, ref, args, 0, raise);
+		sym = lookup(cc, sym, ref, args, 0, 0);
 
 		// lookup parameters, fields, etc.
 		for (loc = cc->owner; loc != NULL; loc = loc->owner) {
@@ -537,7 +537,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			}
 			if (ref == NULL) {
 				// int a = (3 + 6);
-				rType = typeCheck(cc, linkOf(ref, 1), args, raise);
+				rType = typeCheck(cc, loc, args, raise);
 				ast->op.rhso = convert(cc, args, rType);
 				ast->type = rType;
 				return rType;
@@ -546,18 +546,45 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				// int a = func();
 				args = cc->void_tag;
 			}
-			// int a = func(4, 2);
 
-			if (loc == cc->emit_opc && ast->op.lhso->kind == RECORD_kwd) {
+			if (ref->kind == RECORD_kwd) {
+				if (loc != cc->emit_opc) {
+					// struct(x) not inside emit
+					traceAst(ast);
+					return NULL;
+				}
 				// emit( ..., struct(x), ...)  => emit x by value
 				type = typeCheck(cc, NULL, args, 1);
 				ast->op.rhso->type = type;
 				ast->type = type;
 				return type;
 			}
+			if (ref->kind == TOKEN_var) {
+				type = cc->deft[ref->ref.hash];
+				type = lookup(cc, type, ref, NULL, 0, 0);
 
-			// try to lookup arguments in the current scope
-			rType = typeCheck(cc, loc, args, 0);
+				// typename(identifier): returns null if identifier is not defined.
+				if (type == cc->type_rec) {
+					typeCheck(cc, loc, args, 0);
+					typeCheck(cc, loc, ref, 0);
+					ast->type = cc->type_rec;
+					return cc->type_rec;
+				}
+
+				// emit may contain instructions, but those are hidden in emit (like: emit.sub.i64).
+				if (type == cc->emit_opc) {
+					// lookup first in current scope, than what failed in emit scope
+					typeCheck(cc, loc, args, 0);
+					loc = cc->emit_opc;
+				}
+			}
+
+			// lookup arguments in the current scope
+			rType = typeCheck(cc, loc, args, raise);
+			if (rType == NULL) {
+				traceAst(ast);
+				return NULL;
+			}
 
 			if (ref->kind == OPER_dot) {    // float32.sin(args)
 				if (!typeCheck(cc, loc, ref->op.lhso, raise)) {
@@ -623,29 +650,6 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				}
 			}
 
-			if (rType == NULL) {
-				// if failed, try to lookup the function
-				lType = typeCheck(cc, loc, ref, 0);
-
-				// typename(identifier): returns null if identifier is not defined.
-				if (lType == cc->type_rec && linkOf(ref, 1) == cc->type_rec) {
-					char *name = cc->type_rec->name;
-					size_t len = strlen(name);
-					ast->kind = TOKEN_var;
-					ast->ref.link = cc->null_ref;
-					ast->ref.hash = rehash(name, len + 1) % hashTableSize;
-					ast->ref.name = ccUniqueStr(cc, name, len + 1, ast->ref.hash);
-					ast->type = rType;
-					return cc->type_rec;
-				}
-				// lookup arguments in the function's scope (emit, raise, ...)
-				rType = typeCheck(cc, linkOf(ref, 1), args, raise);
-			}
-			if (rType == NULL) {
-				// FIXME: error: could not lookup arguments ...
-				traceAst(ast);
-				return NULL;
-			}
 			type = typeCheckRef(cc, loc, ref, args, raise);
 			if (type == NULL) {
 				traceAst(ast);

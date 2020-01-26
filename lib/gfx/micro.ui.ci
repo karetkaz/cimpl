@@ -19,7 +19,7 @@ struct Button: View {
 	}*/
 }
 
-struct Checker: View {
+struct Switch: View {
 	const char on[*] = "on";
 	const char off[*] = "off";
 
@@ -43,9 +43,18 @@ struct Slider: View {
 	// */
 }
 
+struct MouseState {
+	int32 clicks;   // click count
+	int64 time;     // old clock
+	int32 btn;      // old button
+	int32 x;        // old x coord
+	int32 y;        // old y coord
+}
+
 struct Layout {
 	gxSurf offs;
 	gxSurf font;
+	MouseState mouse;
 	View items[200] = {};
 	gxRect rects[200] = {};
 	int reset[200] = {};
@@ -67,7 +76,7 @@ double valFlt(Slider slider&) {
 	return slider.val() / double(slider.divisor);
 }
 
-Layout Layout(gxSurf offs, gxSurf font, variant items...) {
+Layout Layout(gxSurf offs, gxSurf font, View items...) {
 	Layout layout;/* FIXME:BUG: = {
 		selectedIndex: -1;
 		// rect: {x: 0, y: 0, w: 0, h: 0};
@@ -79,7 +88,7 @@ Layout Layout(gxSurf offs, gxSurf font, variant items...) {
 		if (Slider slider = items[i].as(Slider)) {
 			layout.reset[i] = slider.value;
 		}
-		layout.items[i] = pointer(items[i]);
+		layout.items[i] = items[i];
 	}
 	layout.count = items.length;
 	return layout;
@@ -111,7 +120,7 @@ void draw(Layout layout&, int x, int y) {
 				pos = text.append(pos, item.val(), flagsInt);
 			}
 		}
-		else if (Checker item = view.as(Checker)) {
+		else if (Switch item = view.as(Switch)) {
 			pos = text.append(pos, ": ");
 			if (item.checked) {
 				pos = text.append(pos, item.on);
@@ -141,13 +150,6 @@ inline selected(Layout layout&, typename type) = layout.selectedIndex < 0 ? null
 inline isSelected(Layout layout&, View item) = item == layout.selected();
 
 bool uiEvent(Layout layout&, int action, int button, int x, int y) {
-struct MouseState {
-	int32 clicks;   // click count
-	int64 time;     // old clock
-	int32 btn;      // old button
-	int32 x;        // old x coord
-	int32 y;        // old y coord
-}
 static int click(MouseState old&, int btn, int x, int y) {
 	if ((btn != 0 && btn != old.btn) || x != old.x || y != old.y) {
 		// reset values
@@ -192,13 +194,16 @@ bool click(Layout layout&, int index) {
 		if (item.selectable) {
 			layout.selectedIndex = index;
 		}
+		if (layout.mouse.clicks > 1) {
+			item.value = layout.reset[index];
+		}
 		if (view.onClick != null) {
 			// FIXME: use: view.onClick(item)
 			return item.onClick(item);
 		}
 		return true;
 	}
-	if (Checker item = view.as(Checker)) {
+	if (Switch item = view.as(Switch)) {
 		if (!item.enabled) {
 			return false;
 		}
@@ -262,8 +267,8 @@ bool update(Layout layout&, int delta) {
 		slider.value += delta;
 		return true;
 	}
-	if (Checker checker = selectedItem.as(Checker)) {
-		checker.checked = delta < 0;
+	if (Switch switch = selectedItem.as(Switch)) {
+		switch.checked = delta < 0;
 		return true;
 	}
 	return false;
@@ -299,7 +304,7 @@ bool select(Layout layout&, bool prev) {
 				return true;
 			}
 		}
-		else if (Checker item = view.as(Checker)) {
+		else if (Switch item = view.as(Switch)) {
 			if (item.enabled && item.selectable) {
 				layout.selectedIndex = index;
 				return true;
@@ -315,7 +320,6 @@ bool select(Layout layout&, bool prev) {
 	return false;
 }
 
-	static MouseState old;
 	bool isCtrl = (y & Gui.KEY_MASK_CONTROL) != 0;
 	bool isShift = (y & Gui.KEY_MASK_SHIFT) != 0;
 
@@ -358,7 +362,7 @@ bool select(Layout layout&, bool prev) {
 		}
 	}
 	else if (action == Gui.MOUSE_PRESS) {
-		click(old, button, x, y);
+		layout.mouse.click(button, x, y);
 		if (button == 1) {
 			if (layout.click(x, y)) {
 				return true;
@@ -366,17 +370,11 @@ bool select(Layout layout&, bool prev) {
 		}
 	}
 	else if (action == Gui.MOUSE_RELEASE) {
-		int clicks = click(old, 0, x, y);
-		if (button == 1 && clicks == 2) {
-			if (layout.click(x, y)) {
-				layout.reset(layout.selectedIndex);
-				return true;
-			}
-		}
+		layout.mouse.click(0, x, y);
 	}
 	else if (action == Gui.MOUSE_MOTION) {
-		int dy = old.y - y;
-		click(old, -1, x, y);// disable multi clicks
+		int dy = layout.mouse.y - y;
+		layout.mouse.click(-1, x, y);
 		if (button == 1) {
 			if (layout.update(dy)) {
 				return true;
