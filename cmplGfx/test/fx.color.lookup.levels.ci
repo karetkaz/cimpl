@@ -20,7 +20,7 @@ void levels(uint32 lut[256], int input, int output) {
 		lut2[idx].r = rgb;
 		lut2[idx].g = rgb;
 		lut2[idx].b = rgb;
-		lut2[idx].a = 0;
+		lut2[idx].a = idx;
 	}
 }
 
@@ -45,12 +45,23 @@ int onEvent(int action, int button, int x, int y) {
 		maximum: 256;
 	};
 
+	static Histogram histogram = {
+		text: null;
+		image: offs;
+		showLines: true;
+	};
+
 	static Slider time = {
 		text: "time";
 		enabled: false;
 	};
 
-	static Layout ui = Layout(offs, font, sldInput, sldOutput, time);
+	static Layout ui = Layout(offs, -30, 30, font,
+		histogram,
+		sldInput,
+		sldOutput,
+		time
+	);
 
 	bool redraw = uiEvent(ui, action, button, x, y);
 	if (action == Gui.KEY_PRESS) {
@@ -63,14 +74,13 @@ int onEvent(int action, int button, int x, int y) {
 	}
 	if (redraw) {
 		uint64 start = System.millis();
-		uint32 lut[256];
-		levels(lut, sldInput.val(), sldOutput.val());
+		levels(histogram.lut, sldInput.val(), sldOutput.val());
 		offs.resize(null, back, null, 1);
-		offs.colorMap(null, lut, false);
-		offs.drawHist(null, 0x00ffffff, lut);
+		offs.colorMap(null, histogram.lut);
+		//offs.drawHist(null, 0x00ffffff, lut);
 
 		time.value = System.millis() - start;
-		ui.draw(30, 30);
+		ui.draw();
 	}
 	return 0;
 }

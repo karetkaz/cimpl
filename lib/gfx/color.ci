@@ -236,7 +236,6 @@ vec4f hsv2rgb(vec4f hsv) {
 void drawLut(gxSurf image, gxRect roi&, uint32 bars[256], uint32 lines[256]) {
 	enum {
 		margin: 20;
-		padding: 7;
 		colB: 0x4371c6;
 		colG: 0x72d874;
 		colR: 0xfc6165;
@@ -250,16 +249,10 @@ void drawLut(gxSurf image, gxRect roi&, uint32 bars[256], uint32 lines[256]) {
 		x: roi != null ? roi.x : image.width() - rect.w - margin;
 	};
 
-	image.fillRect(
-		rect.x - padding,
-		rect.y - padding,
-		rect.x + rect.w + padding,
-		rect.y + rect.h + padding,
-		0
-	);
+	int px = (rect.w - 256) / 2;
 
 	if (bars != null) {
-		for (int x = 0; x < rect.w; x += 1) {
+		for (int x = 0; x < bars.length; x += 1) {
 			int bv = bch(argb(bars[x])) * rect.h / 256;
 			int gv = gch(argb(bars[x])) * rect.h / 256;
 			int rv = rch(argb(bars[x])) * rect.h / 256;
@@ -269,7 +262,7 @@ void drawLut(gxSurf image, gxRect roi&, uint32 bars[256], uint32 lines[256]) {
 				uint32 g = colG * uint32(y < gv);
 				uint32 r = colR * uint32(y < rv);
 				uint32 l = colL * uint32(y < lv);
-				image.set(x + rect.x, rect.h - y + rect.y - 1, r | g | b | l);
+				image.set(x + rect.x + px, rect.h - y + rect.y - 1, r | g | b | l);
 			}
 		}
 	}
@@ -280,8 +273,8 @@ void drawLut(gxSurf image, gxRect roi&, uint32 bars[256], uint32 lines[256]) {
 		int pr = rch(argb(lines[0])) * rect.h / 256;
 		int pl = ach(argb(lines[0])) * rect.h / 256;
 
-		for (int i = 1; i < rect.w; i += 1) {
-			int x = rect.x + i;
+		for (int i = 1; i < lines.length; i += 1) {
+			int x = rect.x + i + px;
 			int bv = bch(argb(lines[i])) * rect.h / 256;
 			int gv = gch(argb(lines[i])) * rect.h / 256;
 			int rv = rch(argb(lines[i])) * rect.h / 256;

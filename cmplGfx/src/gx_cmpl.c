@@ -271,8 +271,19 @@ static vmError surf_drawBez3(nfcContext ctx) {
 }
 
 static const char *proto_surf_drawText = "void drawText(gxSurf surf, int32 x, int32 y, gxSurf font, char text[*], int32 color)";
+static const char *proto_surf_drawTextRoi = "void drawText(gxSurf surf, const gxRect roi&, gxSurf font, char text[*], int32 color)";
 static vmError surf_drawText(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
+
+	if (ctx->proto == proto_surf_drawTextRoi) {
+		gx_Rect roi = nextValue(ctx).ref;
+		gx_Surf font = nextValue(ctx).ref;
+		char *text = nextValue(ctx).ref;
+		uint32_t color = nextValue(ctx).u32;
+		g2_drawTextRoi(surf, roi, font, text, color);
+		return noError;
+	}
+
 	int x = nextValue(ctx).i32;
 	int y = nextValue(ctx).i32;
 	gx_Surf font = nextValue(ctx).ref;
@@ -608,12 +619,12 @@ static vmError surf_calcHist(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_cLutSurf = "void colorMap(gxSurf surf, const gxRect roi&, const uint32 lut[256], bool useLuminosity)";
+static const char *proto_surf_cLutSurf = "void colorMap(gxSurf surf, const gxRect roi&, const uint32 lut[256])";
 static vmError surf_cLutSurf(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 	gx_Rect roi = nextValue(ctx).ref;
 	rtValue lut = nextValue(ctx);
-	int useLuminosity = nextValue(ctx).i32;
+	int useLuminosity = 0;
 
 	if (surf->depth != 32) {
 		ctx->rt->api.raise(ctx->rt, raiseError, "Invalid depth: %d, in function: %T", surf->depth, ctx->sym);
@@ -636,6 +647,13 @@ static vmError surf_cLutSurf(nfcContext ctx) {
 	if (dstPtr == NULL) {
 		ctx->rt->api.raise(ctx->rt, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
 		return noError;
+	}
+
+	for (int i = 0; i < 256; ++i) {
+		if (lutPtr[i].a != i) {
+			useLuminosity = 1;
+			break;
+		}
 	}
 
 	if (!useLuminosity) {
@@ -1332,6 +1350,7 @@ int cmplInit(rtContext rt) {
 		{surf_drawBez3, proto_surf_drawBez3},
 		{surf_clipText, proto_surf_clipText},
 		{surf_drawText, proto_surf_drawText},
+		{surf_drawText, proto_surf_drawTextRoi},
 		{surf_copySurf, proto_surf_copySurf},
 		{surf_blendSurf, proto_surf_blendSurf},
 		{surf_transformSurf, proto_surf_transformSurf},

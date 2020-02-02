@@ -13,10 +13,14 @@ struct View: object {
 }
 
 struct Button: View {
-	/*TODO: bool onClick(Button this) {
+	/* FIXME: do the override, use this method as default initializer
+	// TODO: override or overload: bool onClick(Button this) { ??? }
+	bool onClick(View this) {
+		View.onClick(this);   // call super
 		trace("onClick", this);
-		return true;
-	}*/
+		// FIXME: enable lookup: value.value = 0;
+		return this.enabled;
+	}// */
 }
 
 struct Switch: View {
@@ -31,16 +35,14 @@ struct Slider: View {
 	const int minimum = 0;
 	const int maximum = -1u >> 1;
 	const int divisor = 1;
+}
 
-	/* FIXME: do the override, use this method as default initializer
-	// TODO: override or overload: bool onClick(Slider this) { ??? }
-	bool onClick(View this) {
-		View.onClick(this);   // call super
-		trace("onClick", this);
-		// FIXME: enable lookup: value.value = 0;
-		return this.enabled;
-	};
-	// */
+struct Histogram: View {
+	const gxSurf image;
+	const int height = 128;
+	const bool showLines = false;
+	uint32 lut[256] = null;   // FIXME: this should be not possible
+	uint32 hist[256] = null;   // FIXME: this should be not possible
 }
 
 struct MouseState {
@@ -54,12 +56,21 @@ struct MouseState {
 struct Layout {
 	gxSurf offs;
 	gxSurf font;
+	int border = 3;
+	int padding = 5;
 	MouseState mouse;
-	View items[200] = {};
-	gxRect rects[200] = {};
-	int reset[200] = {};
-	int selectedIndex = -1;
+	gxRect rect;
+
 	int count = 0;
+	View items[200] = null;
+	gxRect rects[200] = null;
+	int reset[200] = null;
+	int selectedIndex = -1;
+
+	int backgroundColor = 0x1a1a1a;
+	int focusedColor = 0x3b4754;
+	int valueColor = 0x6897bb;
+	int textColor = 0xdadada;
 }
 
 int val(Slider slider&) {
@@ -76,56 +87,76 @@ double valFlt(Slider slider&) {
 	return slider.val() / double(slider.divisor);
 }
 
-Layout Layout(gxSurf offs, gxSurf font, View items...) {
-	Layout layout;/* FIXME:BUG: = {
-		selectedIndex: -1;
-		// rect: {x: 0, y: 0, w: 0, h: 0};
-	};*/
-	layout.offs = offs;
-	layout.font = font;
-	layout.selectedIndex = -1;
-	for (int i = 0; i < items.length; i += 1) {
-		if (Slider slider = items[i].as(Slider)) {
-			layout.reset[i] = slider.value;
+void measure(Layout layout&) {
+	int bottom = layout.rect.y;
+	int fontHeight = layout.font.height() / 256;
+
+	// measure
+	for (int i = 0; i < layout.count; i += 1) {
+		gxRect rect& = layout.rects[i];
+		rect.x = layout.rect.x;
+		rect.y = bottom;
+		rect.w = layout.rect.w;
+		rect.h = fontHeight;
+		View view = layout.items[i];
+		if (Histogram item = view.as(Histogram)) {
+			if (rect.h < item.height) {
+				rect.h = item.height;
+			}
 		}
-		layout.items[i] = items[i];
+		else if (Slider item = view.as(Slider)) {
+			rect.h += 2 * layout.padding;
+		}
+		else if (Switch item = view.as(Switch)) {
+			rect.h += 2 * layout.padding;
+		}
+		else if (Button item = view.as(Button)) {
+			rect.h += 2 * layout.padding;
+		}
+		else {
+			abort("item is not a known ui element", view);
+		}
+		bottom += rect.h;
 	}
-	layout.count = items.length;
-	return layout;
+	layout.rect.h = bottom - layout.rect.y;
 }
+void draw(Layout layout&) {
+	static const FormatFlags flagsInt = { padLen: 4 };
+	static const FormatFlags flagsFlt = { padLen: 4, precision: 2 };
 
-void draw(Layout layout&, int x, int y) {
-	int posAll = 0;
-	char textAll[1024];
-	FormatFlags flagsInt = { padLen: 4 };
-	FormatFlags flagsFlt = { padLen: 4, precision: 2 };
-	gxRect rectAll = { x:x, y:y, w:0, h:0 };
+	// draw background
+	if (layout.backgroundColor != -1) {
+		int b = layout.border;
+		const gxRect r& = layout.rect;
+		layout.offs.fillRect(r.x - b, r.y - b, r.x + r.w + b, r.y + r.h + b, layout.backgroundColor);
+	}
 
+	// draw items
 	for (int i = 0; i < layout.count; i += 1) {
 		int pos = 0;
-		char text[256];
-		gxRect rect& = layout.rects[i];
-		if (i == layout.selectedIndex) {
-			pos = text.append(pos, "* ");
-		} else {
-			pos = text.append(pos, " ");
-		}
+		char value[256];
 		View view = layout.items[i];
-		pos = text.append(pos, view.text);
-		if (Slider item = view.as(Slider)) {
-			pos = text.append(pos, ": ");
-			if (item.divisor != 1) {
-				pos = append(text, pos, item.valFlt(), flagsFlt);
+		gxRect rect& = layout.rects[i];
+		value[0] = 0;
+		if (Histogram item = view.as(Histogram)) {
+			if (item.showLines) {
+				offs.drawLut(rect, item.hist, item.lut);
 			} else {
-				pos = text.append(pos, item.val(), flagsInt);
+				offs.drawLut(rect, item.hist, null);
+			}
+		}
+		else if (Slider item = view.as(Slider)) {
+			if (item.divisor != 1) {
+				pos = value.append(pos, item.valFlt(), flagsFlt);
+			} else {
+				pos = value.append(pos, item.val(), flagsInt);
 			}
 		}
 		else if (Switch item = view.as(Switch)) {
-			pos = text.append(pos, ": ");
 			if (item.checked) {
-				pos = text.append(pos, item.on);
+				pos = value.append(pos, item.on);
 			} else {
-				pos = text.append(pos, item.off);
+				pos = value.append(pos, item.off);
 			}
 		}
 		else if (Button item = view.as(Button)) {
@@ -133,16 +164,59 @@ void draw(Layout layout&, int x, int y) {
 		else {
 			abort("item is not a known ui element", view);
 		}
-		posAll = textAll.append(posAll, text);
-		posAll = textAll.append(posAll, "\n");
-		layout.font.clipText(rect, text);
-		rect.x = x;
-		rect.y = y;
-		y += rect.h;
+		if (i == layout.selectedIndex) {
+			layout.offs.fillRect(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, layout.focusedColor);
+		}
+
+		int p = layout.padding;
+		gxRect valueRect = rect;
+		layout.font.clipText(valueRect, value);
+		if (valueRect.w > layout.rect.w - 2 * p) {
+			valueRect.w = layout.rect.w - 2 * p;
+		}
+		if (view.text != null) {
+			gxRect textRect = rect;
+			textRect.x += p;
+			textRect.y += p;
+			textRect.w -= valueRect.w + 3 * p;
+			layout.offs.drawText(textRect, layout.font, view.text, layout.textColor);
+		}
+
+		valueRect.x += rect.w - valueRect.w - p;
+		valueRect.y += p;
+		layout.offs.drawText(valueRect, layout.font, value, layout.valueColor);
 	}
-	layout.font.clipText(rectAll, textAll);
-	layout.offs.fill(rectAll, 5, 0x000000);
-	layout.offs.drawText(rectAll.x, rectAll.y, layout.font, textAll, 0xffffff);
+}
+
+Layout Layout(gxSurf offs, int x, int y, gxSurf font, View items...) {
+	Layout layout = {
+		offs: offs;
+		font: font;
+		mouse: {};
+		rect: {
+			x: x;
+			y: y;
+			w: 256;
+			h: 0;
+		};
+	};
+
+	for (int i = 0; i < items.length; i += 1) {
+		if (Slider slider = items[i].as(Slider)) {
+			layout.reset[i] = slider.value;
+		}
+		layout.items[i] = items[i];
+	}
+	layout.count = items.length;
+
+	if (y < 0) {
+		layout.measure();
+		layout.rect.y = offs.height() - layout.rect.h + y;
+	}
+	if (x < 0) {
+		layout.rect.x = offs.width() - layout.rect.w + x;
+	}
+	return layout;
 }
 
 inline selected(Layout layout&) = layout.selectedIndex < 0 ? null : pointer(layout.items[layout.selectedIndex]);
@@ -179,21 +253,25 @@ static int click(MouseState old&, int btn, int x, int y) {
 	return old.clicks;
 }
 
-// TODO: void measure(Layout layout&) { }
-// TODO: void layout(Layout layout&) { }
-
 bool click(Layout layout&, int index) {
 	if (index < 0) {
 		return false;
 	}
+
 	View view = layout.items[index];
-	if (Slider item = view.as(Slider)) {
-		if (!item.enabled) {
-			return false;
-		}
-		if (item.selectable) {
+	if (!view.enabled) {
+		return false;
+	}
+
+	bool selectedChange = false;
+	if (view.selectable) {
+		if (index != layout.selectedIndex) {
 			layout.selectedIndex = index;
+			selectedChange = true;
 		}
+	}
+
+	if (Slider item = view.as(Slider)) {
 		if (layout.mouse.clicks > 1) {
 			item.value = layout.reset[index];
 		}
@@ -204,15 +282,7 @@ bool click(Layout layout&, int index) {
 		return true;
 	}
 	if (Switch item = view.as(Switch)) {
-		if (!item.enabled) {
-			return false;
-		}
-		int previousIndex = index;
-		if (item.selectable) {
-			previousIndex = layout.selectedIndex;
-			layout.selectedIndex = index;
-		}
-		if (previousIndex == index) {
+		if (!selectedChange) {
 			// change only if already selected
 			item.checked = !item.checked;
 		}
@@ -222,19 +292,11 @@ bool click(Layout layout&, int index) {
 		return true;
 	}
 	if (Button item = view.as(Button)) {
-		if (!item.enabled) {
-			return false;
-		}
-		if (item.selectable) {
-			layout.selectedIndex = index;
-		}
 		if (item.onClick != null) {
 			return item.onClick(item);
 		}
 		return true;
 	}
-
-	abort("item is not a known ui element", view);
 	return false;
 }
 bool click(Layout layout&, int x, int y) {
@@ -248,6 +310,9 @@ bool click(Layout layout&, int x, int y) {
 		return true;
 	}
 
+	if (!layout.rect.test(x, y)) {
+		return false;
+	}
 	for (int i = 0; i < layout.count; i += 1) {
 		if (!layout.rects[i].test(x, y)) {
 			continue;
@@ -323,22 +388,23 @@ bool select(Layout layout&, bool prev) {
 	bool isCtrl = (y & Gui.KEY_MASK_CONTROL) != 0;
 	bool isShift = (y & Gui.KEY_MASK_SHIFT) != 0;
 
-	if (action == Gui.FINGER_MOTION) {
-		action = Gui.MOUSE_MOTION;
-	}
-
 	if (action == Gui.WINDOW_INIT) {
 		layout.selectedIndex = -1;
 		layout.select(false);
+		layout.measure();
 		return true;
 	}
-	else if (action == Gui.KEY_PRESS) {
-		if (button == 8) {	// backspace
-			if (layout.reset(isShift ? -1 : layout.selectedIndex)) {
+
+	if (action == Gui.FINGER_MOTION) {
+		action = Gui.MOUSE_MOTION;
+	}
+	if (action == Gui.KEY_PRESS) {
+		if (button == ' ') {
+			if (isShift) {
+				layout.reset(-1);
 				return true;
 			}
-		}
-		if (button == ' ') {
+			layout.mouse.clicks = 2;  // FIXME: hack: simulate double clock to reset slider 
 			if (layout.click(layout.selectedIndex)) {
 				return true;
 			}

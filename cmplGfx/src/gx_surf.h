@@ -241,6 +241,22 @@ void g2_drawBez3(gx_Surf surf, int x1, int y1, int x2, int y2, int x3, int y3, i
 void g2_clipText(gx_Rect rect, gx_Surf font, const char *text);
 void g2_drawChar(gx_Surf surf, int x, int y, gx_Surf font, int chr, uint32_t color);
 void g2_drawText(gx_Surf surf, int x, int y, gx_Surf font, const char *text, uint32_t color);
+static inline void g2_drawTextRoi(gx_Surf surf, gx_Rect rect, gx_Surf font, const char *text, uint32_t color) {
+	struct gx_Rect textRect = *rect;
+	if (!gx_cliprect(surf, &textRect)) {
+		return;
+	}
+
+	struct gx_Clip textClip;
+	textClip.t = textRect.y;
+	textClip.l = textRect.x;
+	textClip.r = textRect.x + textRect.w;
+	textClip.b = textRect.y + textRect.h;
+	gx_Clip oldClip = surf->clipPtr;
+	surf->clipPtr = &textClip;
+	g2_drawText(surf, rect->x, rect->y, font, text, color);
+	surf->clipPtr = oldClip;
+}
 
 int gx_blitSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, void *extra, cblt_proc blt);
 int gx_zoomSurf(gx_Surf surf, gx_Rect rect, gx_Surf src, gx_Rect roi, int interpolate);

@@ -1,0 +1,116 @@
+// Brightness contrast gamma demo.
+
+gxSurf back = gxSurf("asset/image/forest.png", 32);
+gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
+gxSurf offs = gxSurf(back.width(), back.height(), back.depth());
+
+void buildLut(uint32 lut[256], float highlights, float shadows, float whites, float blacks) {
+	argb lut2[*] = lut;
+
+	highlights += 1;
+	shadows += 1;
+//unused/	whites += 1;
+//unused/	blacks += 1;
+
+	// adapted from: https://github.com/TelegramMessenger/Telegram-iOS/blob/26e5e9bfd94b2ae3eb5a552d16195310aed021e4/submodules/LegacyComponents/LegacyComponents/PGHighlightsTool.m
+	for (int idx = 0; idx < lut.length; idx += 1) {
+		float val = idx / 256f;
+
+		inline pow = float.pow;
+		inline min(float a, float b) = Math.min(a, b);
+		inline max(float a, float b) = Math.max(a, b);
+		inline mix(float x, float y, float a) = Math.lerp(a, x, y);
+		inline clamp(float val, float min, float max) = val < min ? min : val > max ? max : val;
+
+		float hsLuminance = val;
+		float shadow = clamp((pow(hsLuminance, 1.0 / shadows) + (-0.76) * pow(hsLuminance, 2.0 / shadows)) - hsLuminance, 0.0, 1.0);
+		float highlight = clamp((1.0 - (pow(1.0 - hsLuminance, 1.0 / (2.0 - highlights)) + (-0.8) * pow(1.0 - hsLuminance, 2.0 / (2.0 - highlights)))) - hsLuminance, -1.0, 0.0);
+		val = (hsLuminance + shadow + highlight) * (val / hsLuminance);
+
+		float contrastedLuminance = ((hsLuminance - 0.5) * 1.5) + 0.5;
+		float whiteInterp = contrastedLuminance * contrastedLuminance * contrastedLuminance;
+		float whiteTarget = clamp(highlights, 1.0, 2.0) - 1.0;
+		val = mix(val, 1, whiteInterp * whiteTarget);
+
+		float invContrastedLuminance = 1.0 - contrastedLuminance;
+		float blackInterp = invContrastedLuminance * invContrastedLuminance * invContrastedLuminance;
+		float blackTarget = 1.0 - clamp(shadows, 0.0, 1.0);
+		val = mix(val, 0, blackInterp * blackTarget);
+
+		int rgb = grayClamp(int(256 * val));
+		lut2[idx].r = rgb;
+		lut2[idx].g = rgb;
+		lut2[idx].b = rgb;
+		lut2[idx].a = idx;
+	}
+}
+
+int onEvent(int action, int button, int x, int y);
+offs.show(onEvent);
+offs.destroy();
+back.destroy();
+font.destroy();
+
+int onEvent(int action, int button, int x, int y) {
+	inline "/lib/gfx/micro.ui.ci";
+
+	static Slider highlights = {
+		text: "highlights";
+		minimum: -256;
+		maximum: +256;
+		divisor: 256;
+	};
+	static Slider shadows = {
+		text: "shadows";
+		minimum: -256;
+		maximum: +256;
+		divisor: 256;
+	};
+	static Slider whites = {
+		text: "whites";
+		minimum: -256;
+		maximum: +256;
+		divisor: 256;
+	};
+	static Slider blacks = {
+		text: "blacks";
+		minimum: -256;
+		maximum: +256;
+		divisor: 256;
+	};
+	static Histogram histogram = {
+		text: null;
+		image: offs;
+		showLines: true;
+	};
+	static Slider time = {
+		text: "time";
+		enabled: false;
+	};
+
+	static Layout ui = Layout(offs, -30, 30, font,
+		histogram,
+		highlights,
+		shadows,
+//		whites,
+//		blacks,
+		time
+	);
+
+	bool redraw = uiEvent(ui, action, button, x, y);
+	if (action == Gui.KEY_PRESS) {
+		if (button == 27) {
+			return -1;
+		}
+	}
+	if (redraw) {
+		uint64 start = System.millis();
+		offs.resize(null, back, null, 1);
+		buildLut(histogram.lut, highlights.valFlt(), shadows.valFlt(), whites.valFlt(), blacks.valFlt());
+		offs.colorMap(null, histogram.lut);
+		offs.calcHist(null, 0x00ffffff, histogram.hist);
+		time.value = System.millis() - start;
+		ui.draw();
+	}
+	return 0;
+}

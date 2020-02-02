@@ -6,7 +6,7 @@
 
 gx_Surf gx_createSurf(gx_Surf recycle, int width, int height, int depth, surfFlags flags) {
 	if (recycle == NULL) {
-		recycle = (gx_Surf)malloc(sizeof(struct gx_Surf));
+		recycle = (gx_Surf) malloc(sizeof(struct gx_Surf));
 		if (recycle == NULL) {
 			return NULL;
 		}
@@ -81,7 +81,7 @@ gx_Surf gx_createSurf(gx_Surf recycle, int width, int height, int depth, surfFla
 
 			case Surf_3ds:
 				offs = size;
-				size += width * (size_t) height * 4;	// z-buffer
+				size += width * (size_t) height * 4;    // z-buffer
 				break;
 		}
 
@@ -98,6 +98,7 @@ gx_Surf gx_createSurf(gx_Surf recycle, int width, int height, int depth, surfFla
 
 	return recycle;
 }
+
 void gx_destroySurf(gx_Surf surf) {
 	if (surf->flags & Surf_freeData) {
 		surf->flags &= ~Surf_freeData;
@@ -118,20 +119,26 @@ void* gx_cliprect(gx_Surf surf, gx_Rect roi) {
 	roi->w += roi->x;
 	roi->h += roi->y;
 
-	if (clp->l > roi->x)
+	if (clp->l > roi->x) {
 		roi->x = clp->l;
-	if (clp->t > roi->y)
+	}
+	if (clp->t > roi->y) {
 		roi->y = clp->t;
-	if (clp->r < roi->w)
+	}
+	if (clp->r < roi->w) {
 		roi->w = clp->r;
-	if (clp->b < roi->h)
+	}
+	if (clp->b < roi->h) {
 		roi->h = clp->b;
+	}
 
-	if ((roi->w -= roi->x) <= 0)
+	if ((roi->w -= roi->x) <= 0) {
 		return NULL;
+	}
 
-	if ((roi->h -= roi->y) <= 0)
+	if ((roi->h -= roi->y) <= 0) {
 		return NULL;
+	}
 
 	return gx_getpaddr(surf, roi->x, roi->y);
 }
@@ -143,7 +150,7 @@ int gx_blitSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, void *extr
 	clip.w = roi ? roi->w : src->width;
 	clip.h = roi ? roi->h : src->height;
 
-	if(blt == NULL) {
+	if (blt == NULL) {
 		// error: operation is invalid or not implemented
 		return -1;
 	}
@@ -204,10 +211,12 @@ int gx_zoomSurf(gx_Surf surf, gx_Rect rect, gx_Surf src, gx_Rect roi, int interp
 			srec.h -= roi->y;
 			srec.y = roi->y;
 		}
-		if (roi->w < srec.w)
+		if (roi->w < srec.w) {
 			srec.w = roi->w;
-		if (roi->h < srec.h)
+		}
+		if (roi->h < srec.h) {
 			srec.h = roi->h;
+		}
 	}
 
 	struct gx_Rect drec;
@@ -268,6 +277,7 @@ static inline double gauss(double x, double sigma) {
 	double SQRT_2_PI_INV = 0.398942280401432677939946059935;
 	return SQRT_2_PI_INV * exp(-0.5 * t * t) / sigma;
 }
+
 int gx_blurSurf(gx_Surf surf, int radius, double sigma) {
 
 	int size = radius * 2 + 1;

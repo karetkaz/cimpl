@@ -3,9 +3,9 @@ gxSurf back = gxSurf("asset/image/forest.png", 32);
 gxSurf draw = gxSurf("asset/image/david.png", 32);
 
 uint32 lut[256];
-for (int i = 0; i < 256; i += 1) {
-	// lut[i] = uint32(gray(uint32(i / 1.05)));
-	lut[i] = uint32(gray(i - 10));
+for (int idx = 0; idx < 256; idx += 1) {
+	int rgb = grayClamp(idx - 10);
+	lut[idx] = uint32(_argb(idx, rgb, rgb, rgb));
 }
 
 int onEvent(int action, int button, int x, int y) {
@@ -20,7 +20,7 @@ int onEvent(int action, int button, int x, int y) {
 			return -1;
 		}
 		if (button == ' ') {
-			offs.colorMap(null, lut, false);
+			offs.colorMap(null, lut);
 		}
 		if (button == 'S') {
 			trace("dumping screen");

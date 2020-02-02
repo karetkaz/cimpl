@@ -5,53 +5,7 @@ gxSurf in = gxSurf("asset/image/forest.png", 32);
 gxSurf offs = gxSurf("asset/image/texture_nature_01.png", in.width(), in.height(), 32);
 
 static if (typename(gxSurf.transform) == null) {
-void transform(gxSurf surf, const gxRect rect&, gxSurf src, const gxRect roi&, int32 interpolate, float32 mat[16]) {
-	assert(roi == null);
-	assert(rect != null);
-
-	gxRect dRec = {
-		x: rect != null ? rect.x : 0;
-		y: rect != null ? rect.y : 0;
-		w: rect != null ? rect.w : surf.width();
-		h: rect != null ? rect.h : surf.height();
-	};
-
-	gxRect sRec = {
-		x: roi != null ? roi.x : 0;
-		y: roi != null ? roi.y : 0;
-		w: roi != null ? roi.w : src.width();
-		h: roi != null ? roi.h : src.height();
-	};
-
-	float32 xx = mat != null ? mat[0] : float32(sRec.w) / dRec.w;
-	float32 xy = mat != null ? mat[1] : 0;
-	float32 xt = mat != null ? mat[3] : sRec.x;
-	float32 yy = mat != null ? mat[5] : float32(sRec.h) / dRec.h;
-	float32 yx = mat != null ? mat[4] : 0;
-	float32 yt = mat != null ? mat[7] : sRec.y;
-
-	if (!surf.clip(dRec)) {
-		// nothing to set
-		return;
-	}
-
-	if (!src.clip(sRec)) {
-		// nothing to get
-		return;
-	}
-
-	for (int y = 0; y < dRec.h; y += 1) {
-		int dy = dRec.y + y;
-		float32 sy = sRec.y + y;
-		for (int x = 0; x < dRec.w; x += 1) {
-			int dx = dRec.x + x;
-			float32 sx = sRec.x + x;
-			float32 tx = (xx * sx + xy * sy + xt) / src.width();
-			float32 ty = (yx * sx + yy * sy + yt) / src.height();
-			surf.set(dx, dy, argb(src.tex(tx, ty)));
-		}
-	}
-}
+inline "/lib/gfx/gxSurf.transform.ci";
 }
 
 /// compute the the transformation matrix to center/crop/fit an image to a new size.
@@ -114,6 +68,7 @@ int onEvent(int action, int button, int x, int y) {
 	static Switch quality = {
 		text: "high quality";
 		checked: true;
+		selectable: false;
 	};
 	static Switch flipX = {
 		text: "flip x";
@@ -176,6 +131,7 @@ int onEvent(int action, int button, int x, int y) {
 	static Switch drawRect = {
 		text: "draw rect";
 		checked: true;
+		selectable: false;
 	};
 	static Slider imgRatio = {
 		text: "ratio";
@@ -184,7 +140,7 @@ int onEvent(int action, int button, int x, int y) {
 		value: in.width() * imgRatio.divisor / in.height();
 	};
 
-	static Layout ui = Layout(offs, font,
+	static Layout ui = Layout(offs, 30, 30, font,
 		quality,
 		fitWidth,
 		fitHeight,
@@ -229,7 +185,7 @@ int onEvent(int action, int button, int x, int y) {
 			to.h -= 1;
 			offs.drawRect(to, 0);
 		}
-		ui.draw(30, 30);
+		ui.draw();
 	}
 	return 0;
 }

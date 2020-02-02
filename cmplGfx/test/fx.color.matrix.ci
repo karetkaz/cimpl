@@ -162,13 +162,17 @@ int onEvent(int action, int button, int x, int y) {
 		text: "polaroid color";
 		data: POLAROID_COLOR;
 	};
+	static Histogram histogram = {
+		text: null;
+		image: offs;
+	};
 	static Slider time = {
 		text: "time";
 		enabled: false;
 	};
 
-	static Layout ui = Layout(offs, font,
-		brightness, saturation, contrast, hue,
+	static Layout ui = Layout(offs, -30, 30, font,
+		histogram, brightness, saturation, contrast, hue,
 		original, invert, grayScale, blackAndWhite, sepiaColor, polaroidColor,
 		time
 	);
@@ -196,10 +200,10 @@ int onEvent(int action, int button, int x, int y) {
 			mat4f mat = colorMatrix(b, s, c, h);
 			offs.colorMat(null, mat.data);
 		}
-		offs.drawHist(null, 0x00ffffff);
 
+		offs.calcHist(null, 0x00ffffff, histogram.hist);
 		time.value = System.millis() - start;
-		ui.draw(30, 30);
+		ui.draw();
 	}
 	return 0;
 }

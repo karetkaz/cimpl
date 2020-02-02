@@ -310,7 +310,7 @@ int onEvent(int action, int button, int x, int y) {
 		enabled: false;
 	};
 
-	static Layout ui = Layout(offs, font,
+	static Layout ui = Layout(offs, -30, 30, font,
 		chkOrder,
 		btnAlpha,
 		btnAddition,
@@ -351,7 +351,7 @@ int onEvent(int action, int button, int x, int y) {
 			offs.blend(0, 0, reverse ? blend : base, null, btnAlpha.val(), false, fn);
 		}
 		time.value = System.millis() - start;
-		ui.draw(30, 30);
+		ui.draw();
 	}
 	return 0;
 }

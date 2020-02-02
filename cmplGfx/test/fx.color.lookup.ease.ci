@@ -1,4 +1,4 @@
-// Brightness contrast gamma demo.
+// non linear brightness contrast demo.
 
 gxSurf back = gxSurf("asset/image/forest.png", 32);
 gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
@@ -109,7 +109,7 @@ void brightnessContrastGamma(uint32 lut[256], int brightness, int contrast, int 
 		lut2[idx].r = rgb;
 		lut2[idx].g = rgb;
 		lut2[idx].b = rgb;
-		lut2[idx].a = rgb;
+		lut2[idx].a = idx;
 	}
 }
 
@@ -149,12 +149,22 @@ int onEvent(int action, int button, int x, int y) {
 		minimum: -256;
 		maximum: 256;
 	};
+	static Histogram histogram = {
+		text: null;
+		image: offs;
+		showLines: true;
+	};
 	static Slider time = {
 		text: "time";
 		enabled: false;
 	};
 
-	static Layout ui = Layout(offs, font, brightness, contrast, time);
+	static Layout ui = Layout(offs, -30, 30, font,
+		histogram,
+		brightness,
+		contrast,
+		time
+	);
 
 	bool redraw = uiEvent(ui, action, button, x, y);
 	if (action == Gui.KEY_PRESS) {
@@ -164,14 +174,13 @@ int onEvent(int action, int button, int x, int y) {
 	}
 	if (redraw) {
 		uint64 start = System.millis();
-		uint32 lut[256];
-		brightnessContrastGamma(lut, brightness.val(), contrast.val(), gamma.val(), highlights.val(), shadows.val());
+		brightnessContrastGamma(histogram.lut, brightness.val(), contrast.val(), gamma.val(), highlights.val(), shadows.val());
 		offs.resize(null, back, null, 1);
-		offs.colorMap(null, lut, false);
-		offs.drawHist(null, 0x00ffffff, lut);
+		offs.colorMap(null, histogram.lut);
+		// offs.calcHist(null, 0x00ffffff, histogram.hist);
 
 		time.value = System.millis() - start;
-		ui.draw(30, 30);
+		ui.draw();
 	}
 	return 0;
 }

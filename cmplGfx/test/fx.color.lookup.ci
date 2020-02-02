@@ -4,11 +4,81 @@ gxSurf back = gxSurf("asset/image/forest.png", 32);
 gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
 gxSurf offs = gxSurf(back.width(), back.height(), back.depth());
 
-void brightnessContrastGamma(uint32 lut[256], float brightness, float contrast, float gamma) {
-	argb lut2[*] = lut;
+void brightnessContrastGamma(uint32 lut[256], float brightness, float contrast, float gamma, float highlights, float shadows, float whites, float blacks) {
+	// adapted from: https://gitlab.bestminr.com/bestminr/FrontShaders/blob/master/shaders/whites_blacks.glsl
+	float WhitesBlacks(float base, float whites, float blacks) {
+		enum: float {
+			wb: 5.336778471840789E-03;
+			wc: 6.664243592410049E-01;
+			wd: 3.023761372137289E+00;
+			we: -6.994413182098681E+00;
+			wf: 3.293987131616894E+00;
+			wb2: -1.881032803339283E-01;
+			wc2: 2.812945435181010E+00;
+			wd2: -1.495096839176419E+01;
+			we2: 3.349416467551858E+01;
+			wf2: -3.433024909629221E+01;
+			wg2: 1.314308200442166E+01;
 
+			bb: 8.376727344831676E-01;
+			bc: -3.418495999327269E+00;
+			bd: 8.078054837335609E+00;
+			be: -1.209938703324099E+01;
+			bf: 9.520315785756406E+00;
+			bg: -2.919340722745241E+00;
+			ba2: 5.088652898054800E-01;
+			bb2: -9.767371127415029E+00;
+			bc2: 4.910705739925203E+01;
+			bd2: -1.212150899746360E+02;
+			be2: 1.606205314047741E+02;
+			bf2: -1.085660871669277E+02;
+			bg2: 2.931582214601388E+01;
+		}
+		inline min(float a, float b) = Math.min(a, b);
+		inline max(float a, float b) = Math.max(a, b);
+		inline clamp(float val, float min, float max) = val < min ? min : val > max ? max : val;
+
+		if (base == 0) {
+			// HACK: `res * (lum_pos * blacks + lum) / lum` is inf or nan
+			return 0;
+		}
+
+		float lum = base;
+		float x = lum;
+		float x2 = x*x;
+		float x3 = x2*x;
+
+		// whites
+		float lum_pos = min(1 - lum, wb*x + wc*x2+ wd*x3 + we*x2*x2 + wf*x2*x3);
+		float lum_neg = max(-lum, wb2*x + wc2*x2+ wd2*x3 + we2*x2*x2 + wf2*x2*x3 + wg2*x3*x3);
+		float res = whites>=0.0 ? (lum_pos*whites+lum) : (lum-lum_neg*whites);
+		res = clamp(res, 0.0, 1.0);
+
+		// blacks
+		lum_pos = min(1 - lum, bb*x + bc*x2+ bd*x3 + be*x2*x2 + bf*x2*x3 + bg*x3*x3);
+		lum_neg = max(-lum, lum <= 0.23 ? -lum : ba2 + bb2*x + bc2*x2+ bd2*x3 + be2*x2*x2 + bf2*x2*x3 + bg2*x3*x3);
+		res = blacks>=0.0 ? res*(lum_pos*blacks+lum)/lum : res * (lum-lum_neg*blacks)/lum;
+		return clamp(res, 0.0, 1.0);
+	}
+
+	// adapted from: https://stackoverflow.com/questions/29073174/algorithm-behind-the-shadow-highlight-filter-in-photoshop
+	float ShadowsHighlights(float color, float shadows, float highlights) {
+		float h = highlights * 0.05 * (float.pow(8.0, color) - 1);
+		float s = shadows * 0.05 * (float.pow(8.0, 1.0 - color) - 1);
+		return color + h + s;
+	}
+
+	argb lut2[*] = lut;
 	for (int idx = 0; idx < lut.length; idx += 1) {
 		float val = idx / 256f;
+
+		// use luminosity channel for: highlights, shadows, whites, blacks
+		val = WhitesBlacks(val, whites, blacks);
+		val = ShadowsHighlights(val, shadows, highlights);
+		int lum = grayClamp(int(256 * val));
+
+		// use rgb channel for: brightness, contrast, gamma
+		val = idx / 256f;
 		// apply gamma
 		val = float.pow(val, 1 / gamma);
 		// apply contrast
@@ -20,15 +90,14 @@ void brightnessContrastGamma(uint32 lut[256], float brightness, float contrast, 
 		lut2[idx].r = rgb;
 		lut2[idx].g = rgb;
 		lut2[idx].b = rgb;
-		lut2[idx].a = 0;
+		lut2[idx].a = lum;
 	}
 }
 
 void calcAutoEqualize(uint32 lut[256], gxSurf image, bool luminosity) {
+	// calculate histogram, luminosity and rgb
+	image.calcHist(null, 0xffffffff, lut);
 	if (luminosity) {
-		// calculate histogram, luminosity
-		image.calcHist(null, 0xff000000, lut);
-
 		uint32 sum = 0;
 		for (int i = 0; i < lut.length; i += 1) {
 			sum += lut[i] >> 24;
@@ -39,8 +108,6 @@ void calcAutoEqualize(uint32 lut[256], gxSurf image, bool luminosity) {
 			lut[i] = uint32(_argb(l, i, i, i));
 		}
 	} else {
-		image.calcHist(null, 0x00ffffff, lut);
-
 		int maxR = 0;
 		int maxG = 0;
 		int maxB = 0;
@@ -60,10 +127,10 @@ void calcAutoEqualize(uint32 lut[256], gxSurf image, bool luminosity) {
 			sumR += histoR[i];
 			sumG += histoG[i];
 			sumB += histoB[i];
-			lut[i] = uint32(argb(
-				sumR * 255 / maxRgb,
-				sumG * 255 / maxRgb,
-				sumB * 255 / maxRgb
+			lut[i] = uint32(_argb(i,
+				grayClamp(sumR * 255 / maxRgb),
+				grayClamp(sumG * 255 / maxRgb),
+				grayClamp(sumB * 255 / maxRgb)
 			));
 		}
 	}
@@ -98,6 +165,30 @@ int onEvent(int action, int button, int x, int y) {
 		maximum: 1000;
 		divisor: 100;
 	};
+	static Slider highlights = {
+		text: "highlights";
+		minimum: -256;
+		maximum: +256;
+		divisor: 256;
+	};
+	static Slider shadows = {
+		text: "shadows";
+		minimum: -256;
+		maximum: +256;
+		divisor: 256;
+	};
+	static Slider whites = {
+		text: "whites";
+		minimum: -256;
+		maximum: +256;
+		divisor: 256;
+	};
+	static Slider blacks = {
+		text: "blacks";
+		minimum: -256;
+		maximum: +256;
+		divisor: 256;
+	};
 	static Switch auto = {
 		on: "luminosity";
 		off: "rgb stretch";
@@ -105,12 +196,31 @@ int onEvent(int action, int button, int x, int y) {
 		checked: true;
 		selectable: true;
 	};
+	static Histogram histogram = {
+		text: null;
+		image: offs;
+		showLines: true;
+	};
 	static Slider time = {
 		text: "time";
 		enabled: false;
 	};
 
-	static Layout ui = Layout(offs, font, brightness, contrast, gamma, auto, time);
+	static Layout ui = Layout(offs, -30, 30, font,
+		histogram,
+
+		brightness,
+		contrast,
+		gamma,
+
+		highlights,
+		shadows,
+		whites,
+		blacks,
+
+		auto,
+		time
+	);
 
 	bool redraw = uiEvent(ui, action, button, x, y);
 	if (action == Gui.KEY_PRESS) {
@@ -120,22 +230,25 @@ int onEvent(int action, int button, int x, int y) {
 	}
 	if (redraw) {
 		uint64 start = System.millis();
-		uint32 lut[256];
 		offs.resize(null, back, null, 1);
 		if (ui.isSelected(auto)) {
-			calcAutoEqualize(lut, offs, auto.checked);
-			offs.colorMap(null, lut, auto.checked);
+			calcAutoEqualize(histogram.lut, offs, auto.checked);
 		} else {
-			brightnessContrastGamma(lut, brightness.valFlt(), contrast.valFlt(), gamma.valFlt());
-			offs.colorMap(null, lut, false);
+			brightnessContrastGamma(histogram.lut,
+				brightness.valFlt(),
+				contrast.valFlt(),
+				gamma.valFlt(),
+				highlights.valFlt(),
+				shadows.valFlt(),
+				whites.valFlt(),
+				blacks.valFlt()
+			);
 		}
 
-		uint32 hist[256];
-		offs.calcHist(null, 0x00ffffff, hist);
-		offs.drawLut(null, hist, lut);
-
+		offs.colorMap(null, histogram.lut);
+		offs.calcHist(null, 0x00ffffff, histogram.hist);
 		time.value = System.millis() - start;
-		ui.draw(30, 30);
+		ui.draw();
 	}
 	return 0;
 }
