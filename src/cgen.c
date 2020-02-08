@@ -1533,41 +1533,39 @@ static ccKind genLogical(ccContext cc, astn ast) {
 			traceAst(ast);
 			return CAST_any;
 		}
+		return refCast(ast->type);
 	}
-	else {
-		size_t spBegin = stkOffset(rt, 0);
 
-		if (!genAst(cc, ast->op.test, CAST_bit)) {
-			traceAst(ast);
-			return CAST_any;
-		}
-
-		size_t jmpTrue = emit(rt, opc_jz);
-		if (jmpTrue == 0) {
-			traceAst(ast);
-			return CAST_any;
-		}
-
-		if (!genAst(cc, ast->op.lhso, CAST_any)) {
-			traceAst(ast);
-			return CAST_any;
-		}
-
-		size_t jmpFalse = emit(rt, opc_jmp);
-		if (jmpFalse == 0) {
-			traceAst(ast);
-			return CAST_any;
-		}
-
-		fixJump(rt, jmpTrue, emit(rt, markIP), spBegin);
-
-		if (!genAst(cc, ast->op.rhso, CAST_any)) {
-			traceAst(ast);
-			return CAST_any;
-		}
-
-		fixJump(rt, jmpFalse, emit(rt, markIP), -1);
+	size_t spBegin = stkOffset(rt, 0);
+	if (!genAst(cc, ast->op.test, CAST_bit)) {
+		traceAst(ast);
+		return CAST_any;
 	}
+
+	size_t jmpTrue = emit(rt, opc_jz);
+	if (jmpTrue == 0) {
+		traceAst(ast);
+		return CAST_any;
+	}
+
+	if (!genAst(cc, ast->op.lhso, CAST_any)) {
+		traceAst(ast);
+		return CAST_any;
+	}
+
+	size_t jmpFalse = emit(rt, opc_jmp);
+	if (jmpFalse == 0) {
+		traceAst(ast);
+		return CAST_any;
+	}
+
+	fixJump(rt, jmpTrue, emit(rt, markIP), spBegin);
+	if (!genAst(cc, ast->op.rhso, CAST_any)) {
+		traceAst(ast);
+		return CAST_any;
+	}
+
+	fixJump(rt, jmpFalse, emit(rt, markIP), -1);
 	return refCast(ast->type);
 }
 
@@ -2410,7 +2408,7 @@ int ccGenCode(ccContext cc, int debug) {
 		debug("Global `%T` offs: %d, size: %d", var, var->offs, var->size);
 	}
 
-	size_t lMain = emit(rt, markIP);
+	rt->main->offs = emit(rt, markIP);
 	if (cc->root != NULL) {
 		// reset the stack
 		fixJump(rt, 0, 0, 0);
@@ -2445,12 +2443,11 @@ int ccGenCode(ccContext cc, int debug) {
 
 	// program entry(main()) and exit(halt())
 	rt->vm.px = emitInt(rt, opc_nfc, 0);
-	rt->vm.pc = lMain;
+	rt->vm.pc = rt->main->offs;
 	rt->vm.ss = 0;
 
 	// build the main initializer function.
-	rt->main->offs = lMain;
-	rt->main->size = emit(rt, markIP) - lMain;
+	rt->main->size = emit(rt, markIP) - rt->main->offs;
 	rt->main->fields = cc->scope;
 	rt->main->fmt = rt->main->name;
 	rt->main->unit = cc->unit;

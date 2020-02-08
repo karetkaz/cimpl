@@ -41,8 +41,7 @@ struct Histogram: View {
 	const gxSurf image;
 	const int height = 128;
 	const bool showLines = false;
-	uint32 lut[256] = null;   // FIXME: this should be not possible
-	uint32 hist[256] = null;   // FIXME: this should be not possible
+	uint32 data[256] = null;   // FIXME: this should be not possible
 }
 
 struct MouseState {
@@ -140,9 +139,9 @@ void draw(Layout layout&) {
 		value[0] = 0;
 		if (Histogram item = view.as(Histogram)) {
 			if (item.showLines) {
-				offs.drawLut(rect, item.hist, item.lut);
+				offs.drawLut(rect, null, item.data);
 			} else {
-				offs.drawLut(rect, item.hist, null);
+				offs.drawLut(rect, item.data, null);
 			}
 		}
 		else if (Slider item = view.as(Slider)) {
@@ -263,16 +262,14 @@ bool click(Layout layout&, int index) {
 		return false;
 	}
 
-	bool selectedChange = false;
 	if (view.selectable) {
 		if (index != layout.selectedIndex) {
 			layout.selectedIndex = index;
-			selectedChange = true;
 		}
 	}
 
 	if (Slider item = view.as(Slider)) {
-		if (layout.mouse.clicks > 1) {
+		if (layout.mouse.clicks == 2) {
 			item.value = layout.reset[index];
 		}
 		if (view.onClick != null) {
@@ -282,7 +279,7 @@ bool click(Layout layout&, int index) {
 		return true;
 	}
 	if (Switch item = view.as(Switch)) {
-		if (!selectedChange) {
+		if (layout.mouse.clicks == 2) {
 			// change only if already selected
 			item.checked = !item.checked;
 		}
@@ -330,10 +327,6 @@ bool update(Layout layout&, int delta) {
 	View selectedItem = layout.items[layout.selectedIndex];
 	if (Slider slider = selectedItem.as(Slider)) {
 		slider.value += delta;
-		return true;
-	}
-	if (Switch switch = selectedItem.as(Switch)) {
-		switch.checked = delta < 0;
 		return true;
 	}
 	return false;

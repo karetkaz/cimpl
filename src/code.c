@@ -86,24 +86,20 @@ static inline vmInstruction lastIp(rtContext rt) {
 	return result;
 }
 
-// TODO: remove fatals and check return value
 void *rollbackPc(rtContext rt) {
 	size_t ss = 0;
 	size_t pc = rt->vm.pc;
 	vmInstruction ip = nextOpc(rt, &pc, &ss);
 
 	if (ip == NULL || (void *) ip == rt->_beg) {
-		fatal(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
 
 	if (rt->vm.px > rt->vm.pc) {
-		fatal(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
 
 	if (rt->_beg != vmPointer(rt, pc)) {
-		fatal(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
 
@@ -292,6 +288,10 @@ int optimizeAssign(rtContext rt, size_t stkBegin, size_t offsBegin, size_t offsE
 	return 0;
 }
 
+static inline int fitStackReg(size_t offs) {
+	return ((offs & (vm_stk_align - 1)) == 0) && ((offs / vm_stk_align) <= vm_regs);
+}
+
 size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 	libc *nativeCalls = rt->vm.nfc;
 	vmInstruction ip = (vmInstruction)rt->_beg;
@@ -451,9 +451,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (arg.i64 == 0) {
 				opc = opc_lzx1;
 				ip = lastIp(rt);
-				if (ip->opc == opc_lzx1) {
+				if (ip->opc == opc_lzx1 && rollbackPc(rt)) {
 					opc = opc_lzx2;
-					rollbackPc(rt);
 				}
 			}
 			break;
@@ -466,9 +465,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (arg.i64 == 0) {
 				opc = opc_lzx2;
 				ip = lastIp(rt);
-				if (ip->opc == opc_lzx2) {
+				if (ip->opc == opc_lzx2 && rollbackPc(rt)) {
 					opc = opc_lzx4;
-					rollbackPc(rt);
 				}
 			}
 			break;
@@ -498,16 +496,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_stk_align - 1)) == 0) && ((ip->rel / vm_stk_align) < vm_regs)) {
+			if (ip->opc == opc_ldsp) {
+				if (!fitStackReg(ip->rel)) {
+					break;
+				}
+				if (!rollbackPc(rt)) {
+					break;
+				}
 				arg.i32 = ip->rel / vm_stk_align;
 				opc = opc_dup1;
-				rollbackPc(rt);
 			}
 			else if (ip->opc == opc_lref) {
 				arg.i64 = ip->arg.u32;
-				if (arg.i64 == arg.i24) {
+				if (arg.i64 == arg.i24 && rollbackPc(rt)) {
 					opc = opc_ld32;
-					rollbackPc(rt);
 				}
 			}
 			break;
@@ -517,16 +519,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_stk_align - 1)) == 0) && ((ip->rel / vm_stk_align) < vm_regs)) {
+			if (ip->opc == opc_ldsp) {
+				if (!fitStackReg(ip->rel)) {
+					break;
+				}
+				if (!rollbackPc(rt)) {
+					break;
+				}
 				arg.i32 = ip->rel / vm_stk_align;
 				opc = opc_set1;
-				rollbackPc(rt);
 			}
 			else if (ip->opc == opc_lref) {
 				arg.i64 = ip->arg.u32;
-				if (arg.i64 == arg.i24) {
+				if (arg.i64 == arg.i24 && rollbackPc(rt)) {
 					opc = opc_st32;
-					rollbackPc(rt);
 				}
 			}
 			break;
@@ -536,16 +542,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_stk_align - 1)) == 0) && ((ip->rel / vm_stk_align) < vm_regs)) {
+			if (ip->opc == opc_ldsp) {
+				if (!fitStackReg(ip->rel)) {
+					break;
+				}
+				if (!rollbackPc(rt)) {
+					break;
+				}
 				arg.i32 = ip->rel / vm_stk_align;
 				opc = opc_dup2;
-				rollbackPc(rt);
 			}
 			else if (ip->opc == opc_lref) {
 				arg.i64 = ip->arg.u32;
-				if (arg.i64 == arg.i24) {
+				if (arg.i64 == arg.i24 && rollbackPc(rt)) {
 					opc = opc_ld64;
-					rollbackPc(rt);
 				}
 			}
 			break;
@@ -555,16 +565,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_stk_align - 1)) == 0) && ((ip->rel / vm_stk_align) < vm_regs)) {
+			if (ip->opc == opc_ldsp) {
+				if (!fitStackReg(ip->rel)) {
+					break;
+				}
+				if (!rollbackPc(rt)) {
+					break;
+				}
 				arg.i32 = ip->rel / vm_stk_align;
 				opc = opc_set2;
-				rollbackPc(rt);
 			}
 			else if (ip->opc == opc_lref) {
 				arg.i64 = ip->arg.u32;
-				if (arg.i64 == arg.i24) {
+				if (arg.i64 == arg.i24 && rollbackPc(rt)) {
 					opc = opc_st64;
-					rollbackPc(rt);
 				}
 			}
 			break;
@@ -574,16 +588,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_stk_align - 1)) == 0) && ((ip->rel / vm_stk_align) <= vm_regs)) {
+			if (ip->opc == opc_ldsp) {
+				if (!fitStackReg(ip->rel)) {
+					break;
+				}
+				if (!rollbackPc(rt)) {
+					break;
+				}
 				arg.i32 = ip->rel / vm_stk_align;
 				opc = opc_dup4;
-				rollbackPc(rt);
 			}
 			else if (ip->opc == opc_lref) {
 				arg.i64 = ip->arg.u32;
-				if (arg.i64 == arg.i24) {
+				if (arg.i64 == arg.i24 && rollbackPc(rt)) {
 					opc = opc_ld128;
-					rollbackPc(rt);
 				}
 			}
 			break;
@@ -593,16 +611,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_ldsp && ((ip->rel & (vm_stk_align - 1)) == 0) && ((ip->rel / vm_stk_align) <= vm_regs)) {
+			if (ip->opc == opc_ldsp) {
+				if (!fitStackReg(ip->rel)) {
+					break;
+				}
+				if (!rollbackPc(rt)) {
+					break;
+				}
 				arg.i32 = ip->rel / vm_stk_align;
 				opc = opc_set4;
-				rollbackPc(rt);
 			}
 			else if (ip->opc == opc_lref) {
 				arg.i64 = ip->arg.u32;
-				if (arg.i64 == arg.i24) {
+				if (arg.i64 == arg.i24 && rollbackPc(rt)) {
 					opc = opc_st128;
-					rollbackPc(rt);
 				}
 			}
 			break;
@@ -613,10 +635,9 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lc32) {
+			if (ip->opc == opc_lc32 && rollbackPc(rt)) {
 				arg.i32 = b32_bit_shl | (ip->arg.i32 & 0x3f);
 				opc = b32_bit;
-				rollbackPc(rt);
 			}
 			break;
 
@@ -625,10 +646,9 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lc32) {
+			if (ip->opc == opc_lc32 && rollbackPc(rt)) {
 				arg.i32 = b32_bit_shr | (ip->arg.i32 & 0x3f);
 				opc = b32_bit;
-				rollbackPc(rt);
 			}
 			break;
 
@@ -637,10 +657,9 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 				break;
 			}
 			ip = lastIp(rt);
-			if (ip->opc == opc_lc32) {
+			if (ip->opc == opc_lc32 && rollbackPc(rt)) {
 				arg.i32 = b32_bit_sar | (ip->arg.i32 & 0x3f);
 				opc = b32_bit;
-				rollbackPc(rt);
 			}
 			break;
 
@@ -650,9 +669,11 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			}
 			ip = lastIp(rt);
 			if (ip->opc == opc_lc32 && (ip->arg.i32 & (ip->arg.i32 + 1)) == 0) {
+				if (!rollbackPc(rt)) {
+					break;
+				}
 				arg.i32 = b32_bit_and | (bitsf(ip->arg.u32 + 1) & 0x3f);
 				opc = b32_bit;
-				rollbackPc(rt);
 			}
 			break;
 
@@ -673,33 +694,43 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					return rt->vm.pc;
 
 				case opc_lzx1:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = 0 == 0;
 					opc = opc_lc32;
-					rollbackPc(rt);
 					break;
 
 				case opc_lzx2:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = 0 == 0;
 					opc = opc_lc32;
-					rollbackPc(rt);
 					break;
 
 				case opc_lc64:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = ip->arg.i64 == 0;
 					opc = opc_lc32;
-					rollbackPc(rt);
 					break;
 
 				case opc_lf32:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = ip->arg.f32 == 0;
 					opc = opc_lc32;
-					rollbackPc(rt);
 					break;
 
 				case opc_lf64:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = ip->arg.f64 == 0;
 					opc = opc_lc32;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -775,9 +806,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			ip = lastIp(rt);
 			if (ip->opc == opc_lc32) {
 				arg.i64 = ip->arg.i32;
-				if (arg.i24 == arg.i64) {
+				if (arg.i24 == arg.i64 && rollbackPc(rt)) {
 					opc = opc_inc;
-					rollbackPc(rt);
 				}
 			}
 			break;
@@ -789,9 +819,8 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			ip = lastIp(rt);
 			if (ip->opc == opc_lc32) {
 				arg.i64 = -ip->arg.i32;
-				if (arg.i24 == arg.i64) {
+				if (arg.i24 == arg.i64 && rollbackPc(rt)) {
 					opc = opc_inc;
-					rollbackPc(rt);
 				}
 			}
 			break;
@@ -844,17 +873,15 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			if (!rt->foldInstr) {
 				break;
 			}
-			if (arg.i64 == 0) {
+			if (arg.i64 == 0 && rollbackPc(rt)) {
 				opc = opc_inc;
-				rollbackPc(rt);
 			}
-			if (arg.i64 == 1) {
+			else if (arg.i64 == 1) {
 				ip = lastIp(rt);
 				if (ip->opc == opc_lc32) {
 					arg.i64 = ip->arg.i32;
-					if (arg.i24 == arg.i64) {
+					if (arg.i24 == arg.i64 && rollbackPc(rt)) {
 						opc = opc_inc;
-						rollbackPc(rt);
 					}
 				} else {
 					opc = i32_add;
@@ -873,14 +900,18 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx1:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					opc = opc_lzx2;
-					rollbackPc(rt);
 					break;
 
 				case opc_lc32:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = ip->arg.u32;
 					opc = opc_lc64;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -901,9 +932,11 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					return rt->vm.pc;
 
 				case opc_lc32:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = ip->arg.i32 != 0;
 					opc = opc_lc32;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -924,10 +957,12 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					return rt->vm.pc;
 
 				case opc_lc32:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.f32 = (float32_t) ip->arg.i32;
 					logif(ip->arg.i32 != arg.f32, "inexact cast: %d => %f", ip->arg.i32, arg.f32);
 					opc = opc_lf32;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -942,14 +977,18 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx1:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					opc = opc_lzx2;
-					rollbackPc(rt);
 					break;
 
 				case opc_lc32:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = ip->arg.i32;
 					opc = opc_lc64;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -964,15 +1003,19 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx1:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					opc = opc_lzx2;
-					rollbackPc(rt);
 					break;
 
 				case opc_lc32:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.f64 = ip->arg.i32;
 					logif(ip->arg.i32 != arg.f64, "inexact cast: %d => %F", ip->arg.i32, arg.f64);
 					opc = opc_lf64;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -987,16 +1030,20 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx2:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					opc = opc_lzx1;
-					rollbackPc(rt);
 					break;
 
 				case  opc_lc64:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = ip->arg.i64;
 					logif(ip->arg.i64 != arg.i32, "inexact cast: %D => %d", ip->arg.i64, arg.i32);
 					logif(ip->arg.i64 != arg.u32, "inexact cast: %D => %u", ip->arg.i64, arg.u32);
 					opc = opc_lc32;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -1011,15 +1058,19 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx2:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					opc = opc_lzx1;
-					rollbackPc(rt);
 					break;
 
 				case opc_lc64:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.f32 = (float32_t) ip->arg.i64;
 					logif(ip->arg.i64 != arg.f32, "inexact cast: %D => %f", ip->arg.i64, arg.f32);
 					opc = opc_lf32;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -1034,14 +1085,18 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx2:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					opc = opc_lzx1;
-					rollbackPc(rt);
 					break;
 
 				case opc_lc64:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = ip->arg.i64 != 0;
 					opc = opc_lc32;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -1061,10 +1116,12 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					return rt->vm.pc;
 
 				case opc_lc64:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.f64 = (float64_t) ip->arg.i64;
 					logif(ip->arg.i64 != arg.f64, "inexact cast: %D => %F", ip->arg.i64, arg.f64);
 					opc = opc_lf64;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -1085,10 +1142,12 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					return rt->vm.pc;
 
 				case opc_lf32:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = (int64_t) ip->arg.f32;
 					logif(ip->arg.f32 != arg.i32, "inexact cast: %f => %d", ip->arg.f32, arg.i32);
 					opc = opc_lc32;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -1109,9 +1168,11 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					return rt->vm.pc;
 
 				case opc_lf32:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = ip->arg.f32 != 0;
 					opc = opc_lc32;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -1126,15 +1187,19 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx1:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					opc = opc_lzx2;
-					rollbackPc(rt);
 					break;
 
 				case opc_lf32:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = (int64_t) ip->arg.f32;
 					logif(ip->arg.f32 != arg.i64, "inexact cast: %f => %D", ip->arg.f32, arg.i64);
 					opc = opc_lc64;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -1149,15 +1214,19 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx1:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					opc = opc_lzx2;
-					rollbackPc(rt);
 					break;
 
 				case opc_lf32:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.f64 = ip->arg.f32;
 					logif(ip->arg.f32 != arg.f64, "inexact cast: %f => %F", ip->arg.f32, arg.f64);
 					opc = opc_lf64;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -1172,15 +1241,19 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx2:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					opc = opc_lzx1;
-					rollbackPc(rt);
 					break;
 
 				case opc_lf64:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = (int64_t) ip->arg.f64;
 					logif(ip->arg.f64 != arg.i32, "inexact cast: %F => %d", ip->arg.f64, arg.i32);
 					opc = opc_lc32;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -1195,15 +1268,19 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx2:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					opc = opc_lzx1;
-					rollbackPc(rt);
 					break;
 
 				case opc_lf64:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.f32 = (float32_t) ip->arg.f64;
 					logif(ip->arg.f64 != arg.f32, "inexact cast: %F => %f", ip->arg.f64, arg.f32);
 					opc = opc_lf32;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -1223,10 +1300,12 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					return rt->vm.pc;
 
 				case opc_lf64:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = (int64_t) ip->arg.f64;
 					logif(ip->arg.f64 != arg.i64, "inexact cast: %F => %D", ip->arg.f64, arg.i64);
 					opc = opc_lc64;
-					rollbackPc(rt);
 					break;
 			}
 			break;
@@ -1241,14 +1320,18 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 					break;
 
 				case opc_lzx2:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					opc = opc_lzx1;
-					rollbackPc(rt);
 					break;
 
 				case opc_lf64:
+					if (!rollbackPc(rt)) {
+						break;
+					}
 					arg.i64 = ip->arg.f64 != 0;
 					opc = opc_lc32;
-					rollbackPc(rt);
 					break;
 			}
 			break;

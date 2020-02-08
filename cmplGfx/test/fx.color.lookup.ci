@@ -199,6 +199,10 @@ int onEvent(int action, int button, int x, int y) {
 	static Histogram histogram = {
 		text: null;
 		image: offs;
+	};
+	static Histogram curves = {
+		text: null;
+		image: offs;
 		showLines: true;
 	};
 	static Slider time = {
@@ -208,6 +212,7 @@ int onEvent(int action, int button, int x, int y) {
 
 	static Layout ui = Layout(offs, -30, 30, font,
 		histogram,
+		curves,
 
 		brightness,
 		contrast,
@@ -232,9 +237,9 @@ int onEvent(int action, int button, int x, int y) {
 		uint64 start = System.millis();
 		offs.resize(null, back, null, 1);
 		if (ui.isSelected(auto)) {
-			calcAutoEqualize(histogram.lut, offs, auto.checked);
+			calcAutoEqualize(curves.data, offs, auto.checked);
 		} else {
-			brightnessContrastGamma(histogram.lut,
+			brightnessContrastGamma(curves.data,
 				brightness.valFlt(),
 				contrast.valFlt(),
 				gamma.valFlt(),
@@ -245,8 +250,8 @@ int onEvent(int action, int button, int x, int y) {
 			);
 		}
 
-		offs.colorMap(null, histogram.lut);
-		offs.calcHist(null, 0x00ffffff, histogram.hist);
+		offs.colorMap(null, curves.data);
+		offs.calcHist(null, 0x00ffffff, histogram.data);
 		time.value = System.millis() - start;
 		ui.draw();
 	}

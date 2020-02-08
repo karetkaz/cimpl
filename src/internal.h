@@ -478,15 +478,10 @@ void print_log(rtContext rt, raiseLevel level, const char *file, int line, rtVal
 #define WARN_FUNCTION_TYPENAME "function name `%.t` is a type, but returns `%T`"
 #define WARN_INLINE_FILE "inline file: `%s`"
 
-static inline void _abort() {/* Add a breakpoint to break on fatal errors. */
-#ifndef DEBUGGING	// abort on first internal error
-	abort();
-#endif
-}
 
 #define prerr(__TAG, __FMT, ...) do { printFmt(stdout, NULL, "%?s:%?u: %s(" __TAG "): " __FMT "\n", __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__); } while(0)
-#define fatal(__FMT, ...) do { prerr("fatal", __FMT, ##__VA_ARGS__); _abort(); } while(0)
-#define dieif(__EXP, __FMT, ...) do { if (__EXP) { prerr(#__EXP, __FMT, ##__VA_ARGS__); _abort(); } } while(0)
+#define fatal(__FMT, ...) do { prerr("fatal", __FMT, ##__VA_ARGS__); abort(); } while(0)
+#define dieif(__EXP, __FMT, ...) do { if (__EXP) { prerr(#__EXP, __FMT, ##__VA_ARGS__); abort(); } } while(0)
 
 // compilation errors
 #define error(__ENV, __FILE, __LINE, __FMT, ...) do { printLog(__ENV, raiseError, __FILE, __LINE, NULL, __FMT, ##__VA_ARGS__); logif("error", __FMT, ##__VA_ARGS__); } while(0)
