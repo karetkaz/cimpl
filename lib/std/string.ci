@@ -1,7 +1,7 @@
 // string related functions
 
 /// Computes the length of the string
-int length(char str[*]) {
+int length(const char str[*]) {
 	if (str == null) {
 		return 0;
 	}
@@ -12,7 +12,7 @@ int length(char str[*]) {
 }
 
 /// Returns the index of the first occurrence of a character in string
-int indexOf(char str[*], char chr) {
+int indexOf(const char str[*], char chr) {
 	for (int i = 0; str[i]; i += 1) {
 		if (str[i] == chr) {
 			return i;
@@ -22,7 +22,7 @@ int indexOf(char str[*], char chr) {
 }
 
 /// Returns the index of the last occurrence of a character in string
-int lastIndexOf(char str[*], char chr) {
+int lastIndexOf(const char str[*], char chr) {
 	int result = -1;
 	for (int i = 0; str[i]; i += 1) {
 		if (str[i] == chr) {
@@ -33,7 +33,7 @@ int lastIndexOf(char str[*], char chr) {
 }
 
 /// Check if a string begins with a specified string, using a custom comparator
-bool startsWith(char str[*], char with[*], int cmp(char chr, char with)) {
+bool startsWith(const char str[*], const char with[*], int cmp(char chr, char with)) {
 	for (int i = 0; with[i] != 0; i += 1) {
 		if (cmp(str[i], with[i]) != 0) {
 			return false;
@@ -43,7 +43,7 @@ bool startsWith(char str[*], char with[*], int cmp(char chr, char with)) {
 }
 
 /// Check if a string ends in a specified string, using a custom comparator
-bool endsWith(char str[*], char with[*], int cmp(char chr, char with)) {
+bool endsWith(const char str[*], const char with[*], int cmp(char chr, char with)) {
 	int withLen = length(with);
 	int strLen = length(str);
 	if (strLen < withLen) {
@@ -58,7 +58,7 @@ bool endsWith(char str[*], char with[*], int cmp(char chr, char with)) {
 }
 
 /// Check if the two strings are equal, using a custom comparator
-int compare(char str[*], char with[*], int cmp(char chr, char with)) {
+int compare(const char str[*], const char with[*], int cmp(char chr, char with)) {
 	int result = 0;
 	for (int i = 0; result == 0; i += 1) {
 		result = cmp(str[i], with[i]);
@@ -89,21 +89,21 @@ int caseCmp(char chr, char with) {
 	return chr - with;
 }
 
-inline startsWith(char str[*], char with[*]) = startsWith(str, with, caseCmp);
-inline endsWith(char str[*], char with[*]) = endsWith(str, with, caseCmp);
-inline compare(char str[*], char with[*]) = compare(str, with, caseCmp);
+inline startsWith(const char str[*], const char with[*]) = startsWith(str, with, caseCmp);
+inline endsWith(const char str[*], const char with[*]) = endsWith(str, with, caseCmp);
+inline compare(const char str[*], const char with[*]) = compare(str, with, caseCmp);
 
 /// Check if a string contains the given character
-inline contains(char str[*], char chr) = indexOf(str, chr) >= 0;
+inline contains(const char str[*], char chr) = indexOf(str, chr) >= 0;
 
 /* TODO: implement operator overloading
 
-inline ==(char lhs[*], char rhs[*]) = compare(lhs, rhs, caseCmp) == 0;
-inline !=(char lhs[*], char rhs[*]) = compare(lhs, rhs, caseCmp) != 0;
-inline <=(char lhs[*], char rhs[*]) = compare(lhs, rhs, caseCmp) <= 0;
-inline >=(char lhs[*], char rhs[*]) = compare(lhs, rhs, caseCmp) >= 0;
-inline <(char lhs[*], char rhs[*]) = compare(lhs, rhs, caseCmp) < 0;
-inline >(char lhs[*], char rhs[*]) = compare(lhs, rhs, caseCmp) > 0;
+inline ==(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) == 0;
+inline !=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) != 0;
+inline <=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) <= 0;
+inline >=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) >= 0;
+inline <(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) < 0;
+inline >(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) > 0;
 
 // */
 
@@ -123,7 +123,7 @@ struct FormatFlags {
 }
 
 /// Append a string to the output at the given position
-int append(char output[], int pos, char value[*]) {
+int append(char output[], int pos, const char value[*]) {
 	for (int i = 0; value[i]; i += 1) {
 		if (pos >= output.length) {
 			break;
@@ -140,7 +140,7 @@ int append(char output[], int pos, char value[*]) {
 }
 
 // Append a number to the output at the given position
-int append(char output[], int pos, char sign, uint64 value, FormatFlags format&) {
+int append(char output[], int pos, char sign, uint64 value, const FormatFlags format&) {
 	static const char whiteSpace[] = " \t\n\r";
 	static const char radixDigits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 
@@ -213,24 +213,24 @@ int append(char output[], int pos, char sign, uint64 value, FormatFlags format&)
 }
 
 /// Append a number to the output at the given position
-inline append(char output[], int pos, uint64 value, FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+inline append(char output[], int pos, uint64 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, uint32 value, FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+inline append(char output[], int pos, uint32 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, uint16 value, FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+inline append(char output[], int pos, uint16 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, uint8 value, FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+inline append(char output[], int pos, uint8 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, int64 value, FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+inline append(char output[], int pos, int64 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, int32 value, FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+inline append(char output[], int pos, int32 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, int16 value, FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+inline append(char output[], int pos, int16 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, int8 value, FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+inline append(char output[], int pos, int8 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
 
 /// Append a number to the output at the given position
-int append(char output[], int pos, float64 value, FormatFlags format&) {
+int append(char output[], int pos, float64 value, const FormatFlags format&) {
 	FormatFlags formatInt = {
 		showSign: format.showSign;
 		precision : 0;
@@ -245,7 +245,7 @@ int append(char output[], int pos, float64 value, FormatFlags format&) {
 	};
 
 	char sign = value < 0 ? '-' : 0;
-	float64 fract = Math.modf(Math.abs(value), value);
+	float64 fract = Math.modf(Math.abs(value), &value);
 	pos = output.append(pos, sign, uint64(value), formatInt);
 
 	pos = output.append(pos, ".");
@@ -255,7 +255,7 @@ int append(char output[], int pos, float64 value, FormatFlags format&) {
 }
 
 /// Append a number to the output at the given position
-inline append(char output[], int pos, float32 value, FormatFlags format&) = append(output, pos, float64(value), format);
+inline append(char output[], int pos, float32 value, const FormatFlags format&) = append(output, pos, float64(value), format);
 
 /// Append a number to the output at the given position
 int append(char output[], int pos, int value) {
@@ -263,6 +263,6 @@ int append(char output[], int pos, int value) {
 	return append(output, pos, value, format);
 }
 
-//inline append(char output[], uint32 value, FormatFlags format) = output.append(length(output), value, format);
+//inline append(char output[], uint32 value, const FormatFlags format) = output.append(length(output), value, format);
 //inline append(char output[], uint32 value) = output.append(length(output), value);
 //inline append(char output[], char value[*]) = output.append(length(output), value);

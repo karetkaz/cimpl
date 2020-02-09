@@ -2,6 +2,7 @@
 
 struct View: object {
 	const char text[*];
+	const int height = 0;
 	bool enabled = true;
 	bool selectable = true;
 	const variant data = null;
@@ -9,7 +10,7 @@ struct View: object {
 	bool onClick(View this) = null; /*TODO: {
 		//trace("onClick", this);
 		return true;
-	}*/
+	}// */
 }
 
 struct Button: View {
@@ -37,10 +38,17 @@ struct Slider: View {
 	const int divisor = 1;
 }
 
+struct ColorPicker: View {
+	const float lum = 1f;
+	argb value = argb(0);
+	void onUpdate(ColorPicker this) = null;/* {
+		trace("onClick", this);
+	}// */
+}
+
 struct Histogram: View {
 	const gxSurf image;
-	const int height = 128;
-	const bool showLines = false;
+	const bool lines = false;
 	uint32 data[256] = null;   // FIXME: this should be not possible
 }
 
@@ -59,13 +67,16 @@ struct Layout {
 	int padding = 5;
 	MouseState mouse;
 	gxRect rect;
+	bool visible = true;
 
-	int count = 0;
-	View items[200] = null;
+	int items = 0;
+	View views[200] = null;
 	gxRect rects[200] = null;
 	int reset[200] = null;
 	int selectedIndex = -1;
+	int pressedIndex = -1;
 
+	// Style
 	int backgroundColor = 0x1a1a1a;
 	int focusedColor = 0x3b4754;
 	int valueColor = 0x6897bb;
@@ -91,16 +102,25 @@ void measure(Layout layout&) {
 	int fontHeight = layout.font.height() / 256;
 
 	// measure
-	for (int i = 0; i < layout.count; i += 1) {
+	for (int i = 0; i < layout.items; i += 1) {
 		gxRect rect& = layout.rects[i];
 		rect.x = layout.rect.x;
 		rect.y = bottom;
 		rect.w = layout.rect.w;
-		rect.h = fontHeight;
-		View view = layout.items[i];
-		if (Histogram item = view.as(Histogram)) {
-			if (rect.h < item.height) {
-				rect.h = item.height;
+		View view = layout.views[i];
+		if (view.height != 0) {
+			rect.h = view.height;
+		} else {
+			rect.h = fontHeight;
+		}
+		if (ColorPicker item = view.as(ColorPicker)) {
+			if (view.height == 0) {
+				rect.h = 128;
+			}
+		}
+		else if (Histogram item = view.as(Histogram)) {
+			if (view.height == 0) {
+				rect.h = 64;
 			}
 		}
 		else if (Slider item = view.as(Slider)) {
@@ -123,6 +143,9 @@ void draw(Layout layout&) {
 	static const FormatFlags flagsInt = { padLen: 4 };
 	static const FormatFlags flagsFlt = { padLen: 4, precision: 2 };
 
+	if (!layout.visible) {
+		return;
+	}
 	// draw background
 	if (layout.backgroundColor != -1) {
 		int b = layout.border;
@@ -131,20 +154,13 @@ void draw(Layout layout&) {
 	}
 
 	// draw items
-	for (int i = 0; i < layout.count; i += 1) {
+	for (int i = 0; i < layout.items; i += 1) {
 		int pos = 0;
-		char value[256];
-		View view = layout.items[i];
+		char value[256] = {};
+		View view = layout.views[i];
 		gxRect rect& = layout.rects[i];
 		value[0] = 0;
-		if (Histogram item = view.as(Histogram)) {
-			if (item.showLines) {
-				offs.drawLut(rect, null, item.data);
-			} else {
-				offs.drawLut(rect, item.data, null);
-			}
-		}
-		else if (Slider item = view.as(Slider)) {
+		if (Slider item = view.as(Slider)) {
 			if (item.divisor != 1) {
 				pos = value.append(pos, item.valFlt(), flagsFlt);
 			} else {
@@ -161,15 +177,33 @@ void draw(Layout layout&) {
 		else if (Button item = view.as(Button)) {
 		}
 		else {
-			abort("item is not a known ui element", view);
+			//abort("item is not a known ui element", view);
 		}
 		if (i == layout.selectedIndex) {
 			layout.offs.fillRect(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, layout.focusedColor);
 		}
 
+		if (ColorPicker item = view.as(ColorPicker)) {
+			for (int y = 0; y < rect.h; y += 1) {
+				for (int x = 0; x < rect.w; x += 1) {
+					float px = float(x) / rect.w;
+					float py = float(y) / rect.h;
+					argb color = hsv2rgb(px, 1 - py, item.lum);
+					layout.offs.set(x + rect.x, y + rect.y, color);
+				}
+			}
+		}
+		else if (Histogram item = view.as(Histogram)) {
+			if (item.lines) {
+				offs.drawLut(rect, null, item.data);
+			} else {
+				offs.drawLut(rect, item.data, null);
+			}
+		}
+
 		int p = layout.padding;
 		gxRect valueRect = rect;
-		layout.font.clipText(valueRect, value);
+		layout.font.clipText(&valueRect, value);
 		if (valueRect.w > layout.rect.w - 2 * p) {
 			valueRect.w = layout.rect.w - 2 * p;
 		}
@@ -200,13 +234,17 @@ Layout Layout(gxSurf offs, int x, int y, gxSurf font, View items...) {
 		};
 	};
 
+	for (int i = 0; i < layout.views.length; i += 1) {
+		layout.views[i] = null;
+	}
+
 	for (int i = 0; i < items.length; i += 1) {
 		if (Slider slider = items[i].as(Slider)) {
 			layout.reset[i] = slider.value;
 		}
-		layout.items[i] = items[i];
+		layout.views[i] = items[i];
 	}
-	layout.count = items.length;
+	layout.items = items.length;
 
 	if (y < 0) {
 		layout.measure();
@@ -218,9 +256,68 @@ Layout Layout(gxSurf offs, int x, int y, gxSurf font, View items...) {
 	return layout;
 }
 
-inline selected(Layout layout&) = layout.selectedIndex < 0 ? null : pointer(layout.items[layout.selectedIndex]);
-inline selected(Layout layout&, typename type) = layout.selectedIndex < 0 ? null : layout.items[layout.selectedIndex].as(type);
-inline isSelected(Layout layout&, View item) = item == layout.selected();
+inline selected(const Layout layout&) = layout.selectedIndex < 0 ? null : pointer(layout.views[layout.selectedIndex]);
+inline selected(const Layout layout&, typename type) = layout.selectedIndex < 0 ? null : layout.views[layout.selectedIndex].as(type);
+
+inline activeIndex(const Layout layout&) = layout.pressedIndex != -1 ? layout.pressedIndex : layout.selectedIndex;
+
+bool isSelected(const Layout layout&, View items...) {
+	View selected = layout.selected();
+	for (int i = 0; i < items.length; i += 1) {
+		if (items[i] == selected) {
+			return true;
+		}
+	}
+	return false;
+}
+bool isActive(const Layout layout&, View views...) {
+	int activeIndex = layout.pressedIndex != -1 ? layout.pressedIndex : layout.selectedIndex;
+	if (activeIndex < 0) {
+		return false;
+	}
+	View view = layout.views[activeIndex];
+	for (int i = 0; i < views.length; i += 1) {
+		if (views[i] == view) {
+			return true;
+		}
+	}
+	return false;
+
+}
+
+bool setSelected(Layout layout&, View view) {
+	for (int i = 0; i < layout.items; i += 1) {
+		if (layout.views[i] == view) {
+			layout.selectedIndex = i;
+			return true;
+		}
+	}
+	return false;
+}
+
+// FIXME: dispatch click event using inheritance and override
+bool onClick(View this) {
+	if (this.onClick == null) {
+		return true;
+	}
+	if (ColorPicker item = this.as(ColorPicker)) {
+		return item.onClick(item);
+	}
+	if (Histogram item = this.as(Histogram)) {
+		return item.onClick(item);
+	}
+	if (Slider item = this.as(Slider)) {
+		return item.onClick(item);
+	}
+	if (Switch item = this.as(Switch)) {
+		return item.onClick(item);
+	}
+	if (Button item = this.as(Button)) {
+		return item.onClick(item);
+	}
+	abort("invalid view detected", this);
+	return this.onClick();
+}
 
 bool uiEvent(Layout layout&, int action, int button, int x, int y) {
 static int click(MouseState old&, int btn, int x, int y) {
@@ -252,128 +349,166 @@ static int click(MouseState old&, int btn, int x, int y) {
 	return old.clicks;
 }
 
-bool click(Layout layout&, int index) {
-	if (index < 0) {
+bool test(const gxRect rect&, int x, int y) {
+	if (x < rect.x || x >= rect.x + rect.w) {
 		return false;
 	}
+	if (y < rect.y || y >= rect.y + rect.h) {
+		return false;
+	}
+	return true;
+}
 
-	View view = layout.items[index];
+bool select(Layout layout&, int index) {
+	assert(index >= 0, "invalid selection");
+	assert(index < layout.items, "invalid selection");
+
+	View view = layout.views[index];
 	if (!view.enabled) {
 		return false;
 	}
-
-	if (view.selectable) {
-		if (index != layout.selectedIndex) {
-			layout.selectedIndex = index;
+	if (!view.selectable) {
+		return false;
+	}
+	layout.selectedIndex = index;
+	return true;
+}
+bool select(Layout layout&, bool prev) {
+	layout.pressedIndex = -1;
+	int selectedIndex = layout.selectedIndex;
+	for (int i = 1; i < layout.items; i += 1) {
+		int index = selectedIndex + (prev ? -i : i);
+		if (index >= layout.items) {
+			index -= layout.items;
+		}
+		else if (index < 0) {
+			index += layout.items;
+		}
+		if (layout.select(index)) {
+			return true;
 		}
 	}
+	return false;
+}
 
+static void reset(Layout layout&, int index) {
+	assert(index >= 0, "invalid selection");
+	assert(index < layout.items, "invalid selection");
+
+	View view = layout.views[index];
+	if (!view.enabled) {
+		return;
+	}
 	if (Slider item = view.as(Slider)) {
-		if (layout.mouse.clicks == 2) {
-			item.value = layout.reset[index];
+		item.value = layout.reset[index];
+	}
+}
+static bool update(Layout layout&, int index, int dx, int dy) {
+	assert(index >= 0, "invalid selection");
+	assert(index < layout.items, "invalid selection");
+
+	// FIXME: who is y??? debug("y", y);
+
+	View view = layout.views[index];
+	if (!view.enabled) {
+		return false;
+	}
+	if (ColorPicker item = view.as(ColorPicker)) {
+		gxRect rect& = layout.rects[index];
+		int x = layout.mouse.x;
+		int y = layout.mouse.y;
+		if (!rect.test(x, y)) {
+			return false;
 		}
-		if (view.onClick != null) {
-			// FIXME: use: view.onClick(item)
-			return item.onClick(item);
+		float px = float(x - rect.x) / rect.w;
+		float py = float(y - rect.y) / rect.h;
+		item.value = hsv2rgb(px, 1 - py, item.lum);
+		if (item.onUpdate != null) {
+			item.onUpdate();
 		}
+		return true;
+	}
+	if (Histogram item = view.as(Histogram)) {
+		gxRect rect& = layout.rects[index];
+		int min = layout.mouse.x;
+		int max = layout.mouse.x;
+		int y = layout.mouse.y;
+		if (dx < 0) {
+			min += dx;
+		} else {
+			max += dx;
+		}
+		for (int i = min; i < max; i += 1) {
+			int idx = i - rect.x;
+			if (idx >= 0 && idx < 256) {
+				int32 val = 255 * (rect.h - (y - rect.y)) / rect.h;
+				item.data[idx] = uint32(argb(idx, val, val, val));
+			}
+		}
+		return true;
+	}
+	if (Slider item = view.as(Slider)) {
+		if (dx == 0 && dy == 0) {
+			return false;
+		}
+		item.value += dy;
 		return true;
 	}
 	if (Switch item = view.as(Switch)) {
-		if (layout.mouse.clicks == 2) {
-			// change only if already selected
-			item.checked = !item.checked;
+		if (dx != 0 || dy != 0) {
+			// disable change using drag
+			return false;
 		}
-		if (item.onClick != null) {
-			return item.onClick(item);
+		if (layout.selectedIndex != index) {
+			// disable first click update
+			if (item.selectable) {
+				return false;
+			}
 		}
+		item.checked = !item.checked;
 		return true;
 	}
 	if (Button item = view.as(Button)) {
-		if (item.onClick != null) {
-			return item.onClick(item);
-		}
-		return true;
-	}
-	return false;
-}
-bool click(Layout layout&, int x, int y) {
-	bool test(const gxRect rect&, int x, int y) {
-		if (x < rect.x || x >= rect.x + rect.w) {
+		if (dx != 0 || dy != 0) {
+			// disable clicks using drag
 			return false;
 		}
-		if (y < rect.y || y >= rect.y + rect.h) {
-			return false;
-		}
+		item.onClick();
 		return true;
 	}
 
+	// unknown view type
+	return false;
+}
+
+bool click(Layout layout&, int x, int y) {
+	layout.pressedIndex = -1;
 	if (!layout.rect.test(x, y)) {
 		return false;
 	}
-	for (int i = 0; i < layout.count; i += 1) {
+	for (int i = 0; i < layout.items; i += 1) {
 		if (!layout.rects[i].test(x, y)) {
 			continue;
 		}
-		return click(layout, i);
-	}
-	// click is outside any control
-	return false;
-}
 
-bool update(Layout layout&, int delta) {
-	if (layout.selectedIndex < 0) {
-		return false;
-	}
-	View selectedItem = layout.items[layout.selectedIndex];
-	if (Slider slider = selectedItem.as(Slider)) {
-		slider.value += delta;
-		return true;
-	}
-	return false;
-}
+		View view = layout.views[i];
+		if (!view.enabled) {
+			return false;
+		}
 
-bool reset(Layout layout&, int index) {
-	if (index < 0) {
-		for (int i = 0; i < layout.count; i += 1) {
+		bool result = false;
+		layout.pressedIndex = i;
+		if (layout.mouse.clicks > 1) {
 			layout.reset(i);
+			result = true;
 		}
-		return true;
-	}
-	if (Slider item = layout.items[index].as(Slider)) {
-		item.value = layout.reset[index];
-		return true;
-	}
-	return false;
-}
-
-bool select(Layout layout&, bool prev) {
-	for (int i = 1; i < layout.count; i += 1) {
-		int index = layout.selectedIndex + (prev ? -i : i);
-		if (index >= layout.count) {
-			index -= layout.count;
+		if (layout.update(i, 0, 0)) {
+			result = true;
 		}
-		else if (index < 0) {
-			index += layout.count;
+		if (layout.select(i)) {
+			result = true;
 		}
-		View view = layout.items[index];
-		if (Button item = view.as(Button)) {
-			if (item.enabled && item.selectable) {
-				layout.selectedIndex = index;
-				return true;
-			}
-		}
-		else if (Switch item = view.as(Switch)) {
-			if (item.enabled && item.selectable) {
-				layout.selectedIndex = index;
-				return true;
-			}
-		}
-		else if (Slider item = view.as(Slider)) {
-			if (item.enabled && item.selectable) {
-				layout.selectedIndex = index;
-				return true;
-			}
-		}
+		return result;
 	}
 	return false;
 }
@@ -392,53 +527,56 @@ bool select(Layout layout&, bool prev) {
 		action = Gui.MOUSE_MOTION;
 	}
 	if (action == Gui.KEY_PRESS) {
-		if (button == ' ') {
+		if (button == ' ' || button == 8) {
 			if (isShift) {
-				layout.reset(-1);
+				for (int i = 0; i < layout.items; i += 1) {
+					layout.reset(i);
+				}
 				return true;
 			}
-			layout.mouse.clicks = 2;  // FIXME: hack: simulate double clock to reset slider 
-			if (layout.click(layout.selectedIndex)) {
-				return true;
-			}
+			layout.reset(layout.activeIndex());
+			layout.update(layout.activeIndex(), 0, 0);
+			return true;
 		}
 		if (button == '-' || button == '_') {	// down
-			int delta = isShift ? 10 : 1;
-			if (layout.update(-delta)) {
-				return true;
-			}
+			int delta = isShift ? 1 : 10;
+			return layout.update(layout.activeIndex(), -delta, -delta);
 		}
 		if (button == '+' || button == '=') {	// up
-			int delta = isShift ? 10 : 1;
-			if (layout.update(+delta)) {
-				return true;
-			}
+			int delta = isShift ? 1 : 10;
+			return layout.update(layout.activeIndex(), +delta, +delta);
+		}
+		if (button == '[' || button == ']') {	// position
+			layout.visible = !layout.visible;
+			return true;
 		}
 		if (button == '\t') {
-			if (layout.select(isShift)) {
-				return true;
-			}
+			return layout.select(isShift);
 		}
 	}
 	else if (action == Gui.MOUSE_PRESS) {
 		layout.mouse.click(button, x, y);
-		if (button == 1) {
-			if (layout.click(x, y)) {
-				return true;
-			}
+		if (button != 1) {
+			return false;
 		}
+		return layout.click(x, y);
 	}
 	else if (action == Gui.MOUSE_RELEASE) {
 		layout.mouse.click(0, x, y);
+		layout.pressedIndex = -1;
+		return false;
 	}
 	else if (action == Gui.MOUSE_MOTION) {
-		int dy = layout.mouse.y - y;
+		int ox = layout.mouse.x;
+		int oy = layout.mouse.y;
 		layout.mouse.click(-1, x, y);
-		if (button == 1) {
-			if (layout.update(dy)) {
-				return true;
-			}
+		if (button != 1) {
+			return false;
 		}
+		if (ox == x && oy == y) {
+			return false;
+		}
+		return layout.update(layout.activeIndex(), ox - x, oy - y);
 	}
 	return false;
 }

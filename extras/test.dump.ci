@@ -67,11 +67,11 @@ lib/std/math.ci:482: warn: adding implicit cast float64(2: int32)
 lib/std/math.ci:498: warn: adding implicit cast float64(2: int32)
 lib/std/math.ci:522: warn: adding implicit cast float64(180: int32)
 lib/std/math.ci:525: warn: adding implicit cast float64(180: int32)
-lib/std/math.ci:531: debug: inline file: `lib/std/math/Complex.ci`
+lib/stdlib.ci:20: debug: inline file: `lib/std/math/Complex.ci`
 lib/std/math/Complex.ci:24: debug: using default field initializer: Complex.im := 0
 lib/std/math/Complex.ci:8: warn: adding implicit cast float64(0: int32)
-lib/std/math.ci:533: debug: inline file: `lib/std/math/Vector4f.ci`
-lib/std/math.ci:534: debug: inline file: `lib/std/math/Matrix4f.ci`
+lib/stdlib.ci:22: debug: inline file: `lib/std/math/Vector4f.ci`
+lib/stdlib.ci:23: debug: inline file: `lib/std/math/Matrix4f.ci`
 lib/std/math/Matrix4f.ci:108: warn: adding implicit cast float64(len: float32)
 lib/std/math/Matrix4f.ci:132: warn: adding implicit cast float32(1: int32)
 lib/std/math/Matrix4f.ci:160: warn: adding implicit cast float32(1: int32)
@@ -104,8 +104,8 @@ lib/std/math/Matrix4f.ci:174: warn: adding implicit cast float32(0: int32)
 lib/std/math/Matrix4f.ci:174: warn: adding implicit cast float32(0: int32)
 lib/std/math/Matrix4f.ci:174: warn: adding implicit cast float32(0: int32)
 lib/std/math/Matrix4f.ci:174: warn: adding implicit cast float32(1: int32)
-lib/std/math.ci:535: debug: inline file: `lib/std/math/Vector2d.ci`
-lib/stdlib.ci:20: debug: inline file: `lib/std/string.ci`
+lib/stdlib.ci:24: debug: inline file: `lib/std/math/Vector2d.ci`
+lib/stdlib.ci:29: debug: inline file: `lib/std/string.ci`
 lib/std/string.ci:5: warn: adding implicit cast pointer(str: char[*])
 lib/std/string.ci:37: warn: adding implicit cast int32(with[i]: char)
 lib/std/string.ci:65: warn: adding implicit cast int32(str[i]: char)
@@ -188,7 +188,6 @@ test/test.ci:33: debug: inline file: `test/lang/method.ci`
 test/lang/method.ci:4: warn: padding `RecordMethodTest` with 4 bytes: (12 -> 16)
 test/lang/method.ci:62: debug: using default field initializer: RecordMethodTest.delegateMethod(this: RecordMethodTest, x: int32): void := forwardMethod
 test/lang/method.ci:62: debug: using default field initializer: RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void := virtualMethod
-test/lang/method.ci:78: warn: comment does not belong to a declaration
 test/lang/method.ci:86: warn: adding implicit cast pointer(this: RecordMethodTest)
 test/lang/method.ci:92: warn: adding implicit cast pointer(this: RecordMethodTest)
 test/test.ci:34: debug: inline file: `test/lang/recUnion.ci`
@@ -2048,12 +2047,12 @@ raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], 
 .field noTrace: int64 (size: 0, cast: static const i64)
 .field defTrace: int64 (size: 0, cast: static const i64)
 .param .result: void (size: 0, cast: inline)
-.param file: char[*] (size: 4, cast: variable(ref))
+.param file: char[*] (size: 4, cast: const variable(ref))
 .param line: int32 (size: 4, cast: variable(i32))
 .param level: int32 (size: 4, cast: variable(i32))
 .param trace: int32 (size: 4, cast: variable(i32))
-.param message: char[*] (size: 4, cast: variable(ref))
-.param inspect: variant (size: 8, cast: variable(var))
+.param message: char[*] (size: 4, cast: const variable(ref))
+.param inspect: variant (size: 8, cast: const variable(var))
 .doc: 'Report messages or raise errors.'
 .value: nfc(9)
 }
@@ -2259,8 +2258,8 @@ verbose(message: char[*], inspect: variant): void: function {
 .name: 'verbose'
 .file: 'lib/std/debug.ci:4'
 .param .result: void (size: 0, cast: void)
-.param message: char[*] (size: 4, cast: ref)
-.param inspect: variant (size: 8, cast: var)
+.param message: char[*] (size: 4, cast: const ref)
+.param inspect: variant (size: 8, cast: const var)
 .doc: 'report message at `verbose` logging level'
 .value: raise(raise.verbose, raise.noTrace, message, inspect)
 }
@@ -2271,7 +2270,7 @@ verbose(message: char[*]): void: function {
 .name: 'verbose'
 .file: 'lib/std/debug.ci:6'
 .param .result: void (size: 0, cast: void)
-.param message: char[*] (size: 4, cast: ref)
+.param message: char[*] (size: 4, cast: const ref)
 .doc: 'report message at `verbose` logging level'
 .value: raise(raise.verbose, raise.noTrace, message, null)
 }
@@ -2282,8 +2281,8 @@ debug(message: char[*], inspect: variant): void: function {
 .name: 'debug'
 .file: 'lib/std/debug.ci:9'
 .param .result: void (size: 0, cast: void)
-.param message: char[*] (size: 4, cast: ref)
-.param inspect: variant (size: 8, cast: var)
+.param message: char[*] (size: 4, cast: const ref)
+.param inspect: variant (size: 8, cast: const var)
 .doc: 'report message at `debug` logging level'
 .value: raise(raise.debug, raise.noTrace, message, inspect)
 }
@@ -2294,7 +2293,7 @@ debug(message: char[*]): void: function {
 .name: 'debug'
 .file: 'lib/std/debug.ci:11'
 .param .result: void (size: 0, cast: void)
-.param message: char[*] (size: 4, cast: ref)
+.param message: char[*] (size: 4, cast: const ref)
 .doc: 'report message at `debug` logging level'
 .value: raise(raise.debug, raise.noTrace, message, null)
 }
@@ -2305,8 +2304,8 @@ trace(message: char[*], inspect: variant): void: function {
 .name: 'trace'
 .file: 'lib/std/debug.ci:14'
 .param .result: void (size: 0, cast: void)
-.param message: char[*] (size: 4, cast: ref)
-.param inspect: variant (size: 8, cast: var)
+.param message: char[*] (size: 4, cast: const ref)
+.param inspect: variant (size: 8, cast: const var)
 .doc: 'report message with stacktrace at `debug` logging level'
 .value: raise(raise.debug, raise.defTrace, message, inspect)
 }
@@ -2317,7 +2316,7 @@ trace(message: char[*]): void: function {
 .name: 'trace'
 .file: 'lib/std/debug.ci:16'
 .param .result: void (size: 0, cast: void)
-.param message: char[*] (size: 4, cast: ref)
+.param message: char[*] (size: 4, cast: const ref)
 .doc: 'report message with stacktrace at `debug` logging level'
 .value: raise(raise.debug, raise.defTrace, message, null)
 }
@@ -2328,8 +2327,8 @@ info(message: char[*], inspect: variant): void: function {
 .name: 'info'
 .file: 'lib/std/debug.ci:19'
 .param .result: void (size: 0, cast: void)
-.param message: char[*] (size: 4, cast: ref)
-.param inspect: variant (size: 8, cast: var)
+.param message: char[*] (size: 4, cast: const ref)
+.param inspect: variant (size: 8, cast: const var)
 .doc: 'report message at `info` logging level'
 .value: raise(raise.info, raise.noTrace, message, inspect)
 }
@@ -2340,7 +2339,7 @@ info(message: char[*]): void: function {
 .name: 'info'
 .file: 'lib/std/debug.ci:21'
 .param .result: void (size: 0, cast: void)
-.param message: char[*] (size: 4, cast: ref)
+.param message: char[*] (size: 4, cast: const ref)
 .doc: 'report message at `info` logging level'
 .value: raise(raise.info, raise.noTrace, message, null)
 }
@@ -2351,8 +2350,8 @@ warn(message: char[*], inspect: variant): void: function {
 .name: 'warn'
 .file: 'lib/std/debug.ci:24'
 .param .result: void (size: 0, cast: void)
-.param message: char[*] (size: 4, cast: ref)
-.param inspect: variant (size: 8, cast: var)
+.param message: char[*] (size: 4, cast: const ref)
+.param inspect: variant (size: 8, cast: const var)
 .doc: 'report message at `warn` logging level'
 .value: raise(raise.warn, raise.noTrace, message, inspect)
 }
@@ -2363,7 +2362,7 @@ warn(message: char[*]): void: function {
 .name: 'warn'
 .file: 'lib/std/debug.ci:26'
 .param .result: void (size: 0, cast: void)
-.param message: char[*] (size: 4, cast: ref)
+.param message: char[*] (size: 4, cast: const ref)
 .doc: 'report message at `warn` logging level'
 .value: raise(raise.warn, raise.noTrace, message, null)
 }
@@ -2374,8 +2373,8 @@ error(message: char[*], inspect: variant): void: function {
 .name: 'error'
 .file: 'lib/std/debug.ci:29'
 .param .result: void (size: 0, cast: void)
-.param message: char[*] (size: 4, cast: ref)
-.param inspect: variant (size: 8, cast: var)
+.param message: char[*] (size: 4, cast: const ref)
+.param inspect: variant (size: 8, cast: const var)
 .doc: 'report message with stacktrace at `error` logging level'
 .value: raise(raise.error, raise.defTrace, message, inspect)
 }
@@ -2386,7 +2385,7 @@ error(message: char[*]): void: function {
 .name: 'error'
 .file: 'lib/std/debug.ci:31'
 .param .result: void (size: 0, cast: void)
-.param message: char[*] (size: 4, cast: ref)
+.param message: char[*] (size: 4, cast: const ref)
 .doc: 'report message with stacktrace at `error` logging level'
 .value: raise(raise.error, raise.defTrace, message, null)
 }
@@ -2397,8 +2396,8 @@ abort(message: char[*], inspect: variant): void: function {
 .name: 'abort'
 .file: 'lib/std/debug.ci:34'
 .param .result: void (size: 0, cast: void)
-.param message: char[*] (size: 4, cast: ref)
-.param inspect: variant (size: 8, cast: var)
+.param message: char[*] (size: 4, cast: const ref)
+.param inspect: variant (size: 8, cast: const var)
 .doc: 'report message with stacktrace at `abort` logging level and abort execution'
 .value: raise(raise.abort, raise.defTrace, message, inspect)
 }
@@ -2409,7 +2408,7 @@ abort(message: char[*]): void: function {
 .name: 'abort'
 .file: 'lib/std/debug.ci:36'
 .param .result: void (size: 0, cast: void)
-.param message: char[*] (size: 4, cast: ref)
+.param message: char[*] (size: 4, cast: const ref)
 .doc: 'report message with stacktrace at `abort` logging level and abort execution'
 .value: raise(raise.abort, raise.defTrace, message, null)
 }
@@ -2431,8 +2430,8 @@ assert(condition: bool, message: char[*], inspect: variant): void: function {
 .file: 'lib/std/debug.ci:41'
 .param .result: void (size: 0, cast: void)
 .param condition: bool (size: 4, cast: bool)
-.param message: char[*] (size: 4, cast: ref)
-.param inspect: variant (size: 8, cast: var)
+.param message: char[*] (size: 4, cast: const ref)
+.param inspect: variant (size: 8, cast: const var)
 .doc: 'report message and abort the execution if the assertion condition fails (is false)'
 .value: void(condition ? void(0) : abort(message, inspect))
 }
@@ -2444,7 +2443,7 @@ assert(condition: bool, message: char[*]): void: function {
 .file: 'lib/std/debug.ci:43'
 .param .result: void (size: 0, cast: void)
 .param condition: bool (size: 4, cast: bool)
-.param message: char[*] (size: 4, cast: ref)
+.param message: char[*] (size: 4, cast: const ref)
 .doc: 'report message and abort the execution if the assertion condition fails (is false)'
 .value: void(condition ? void(0) : abort(message))
 }
@@ -2518,7 +2517,7 @@ assertEq(expected: int32, returned: int32, message: char[*]): void: function {
 .param .result: void (size: 0, cast: variable(void))
 .param expected: int32 (size: 4, cast: variable(i32))
 .param returned: int32 (size: 4, cast: variable(i32))
-.param message: char[*] (size: 4, cast: variable(ref))
+.param message: char[*] (size: 4, cast: const variable(ref))
 .doc: 'abort execution if the returned value is not equal to the expected value'
 .value: {
 	if (returned == expected) {
@@ -2798,7 +2797,7 @@ Math.modf(x: float64, intPart: float64): float64: function {
 .value: {
 	if (x < (1)) {
 		if (x < (0)) {
-			result: float64 := -modf(-x, intPart);
+			result: float64 := -modf(-x, &intPart);
 			intPart := -intPart;
 			return .result := result;
 		}
@@ -2820,7 +2819,7 @@ Math.modf(x: float64, intPart: float64): float64: function {
 	<modf+?>: load.z64
 	<modf+?>: clt.f64
 	<modf+?>: jz +35
-	lib/std/math.ci:25: (17 bytes): result: float64 := -modf(-x, intPart)
+	lib/std/math.ci:25: (17 bytes): result: float64 := -modf(-x, &intPart)
 	<modf+?>: load.z64
 	<modf+?>: dup.x64 sp(4)
 	<modf+?>: neg.f64
@@ -2872,13 +2871,13 @@ Math.floor(x: float64): float64: function {
 .doc: 'Computes the largest integer value not greater than the input'
 .value: {
 	result: float64;
-	modf(x, result);
+	modf(x, &result);
 	return .result := result;
 }
 .instructions: (24 bytes)
 	lib/std/math.ci:48: (1 byte): result: float64
 	<floor>  : load.z128
-	lib/std/math.ci:49: (20 bytes): modf(x, result);
+	lib/std/math.ci:49: (20 bytes): modf(x, &result);
 	<floor+?>: dup.x64 sp(5)
 	<floor+?>: load.sp(+16)
 	<floor+?>: load.ref <?> ;Math.modf(x: float64, intPart: float64): float64
@@ -3769,10 +3768,10 @@ Math.sinCos(arg: float64, quad: int32): float64: function {
 	x := x * (1) / PIO2;
 	if (x > (32764)) {
 		e: float64;
-		y := modf(x, e);
+		y := modf(x, &e);
 		e := e + (quad);
 		f: float64;
-		modf(0.250000 * e, f);
+		modf(0.250000 * e, &f);
 		quad := (e - (4) * f);
 	}
 	else {
@@ -3822,7 +3821,7 @@ Math.sinCos(arg: float64, quad: int32): float64: function {
 	<sinCos+?>: jz +84
 	lib/std/math.ci:318: (1 byte): e: float64
 	<sinCos+?>: load.z128
-	lib/std/math.ci:319: (18 bytes): y := modf(x, e);
+	lib/std/math.ci:319: (18 bytes): y := modf(x, &e);
 	<sinCos+?>: dup.x64 sp(6)
 	<sinCos+?>: load.sp(+16)
 	<sinCos+?>: load.ref <?> ;Math.modf(x: float64, intPart: float64): float64
@@ -3835,7 +3834,7 @@ Math.sinCos(arg: float64, quad: int32): float64: function {
 	<sinCos+?>: add.f64
 	lib/std/math.ci:322: (1 byte): f: float64
 	<sinCos+?>: load.z128
-	lib/std/math.ci:323: (30 bytes): modf(0.250000 * e, f);
+	lib/std/math.ci:323: (30 bytes): modf(0.250000 * e, &f);
 	<sinCos+?>: load.f64 0.250000
 	<sinCos+?>: dup.x64 sp(6)
 	<sinCos+?>: mul.f64
@@ -3980,7 +3979,7 @@ Math.tan(arg: float64): float64: function {
 	}
 	arg := (2) * arg / PIO2;
 	e: float64;
-	x: float64 := modf(arg, e);
+	x: float64 := modf(arg, &e);
 	i: int32 := int32(e) % 4;
 	if (i == 0) ;
 	else {
@@ -4042,7 +4041,7 @@ Math.tan(arg: float64): float64: function {
 	<tan+?>: set.x64 sp(5)
 	lib/std/math.ci:374: (1 byte): e: float64
 	<tan+?>: load.z128
-	lib/std/math.ci:375: (16 bytes): x: float64 := modf(arg, e)
+	lib/std/math.ci:375: (16 bytes): x: float64 := modf(arg, &e)
 	<tan+?>: dup.x64 sp(7)
 	<tan+?>: load.sp(+16)
 	<tan+?>: load.ref <?> ;Math.modf(x: float64, intPart: float64): float64
@@ -7141,7 +7140,7 @@ length(str: char[*]): int32: function {
 .name: 'length'
 .file: 'lib/std/string.ci:4'
 .param .result: int32 (size: 4, cast: variable(i32))
-.param str: char[*] (size: 4, cast: variable(ref))
+.param str: char[*] (size: 4, cast: const variable(ref))
 .doc: 'Computes the length of the string'
 .value: {
 	if ((str) == null) {
@@ -7184,7 +7183,7 @@ indexOf(str: char[*], chr: char): int32: function {
 .name: 'indexOf'
 .file: 'lib/std/string.ci:15'
 .param .result: int32 (size: 4, cast: variable(i32))
-.param str: char[*] (size: 4, cast: variable(ref))
+.param str: char[*] (size: 4, cast: const variable(ref))
 .param chr: char (size: 4, cast: variable(i32))
 .doc: 'Returns the index of the first occurrence of a character in string'
 .value: {
@@ -7232,7 +7231,7 @@ lastIndexOf(str: char[*], chr: char): int32: function {
 .name: 'lastIndexOf'
 .file: 'lib/std/string.ci:25'
 .param .result: int32 (size: 4, cast: variable(i32))
-.param str: char[*] (size: 4, cast: variable(ref))
+.param str: char[*] (size: 4, cast: const variable(ref))
 .param chr: char (size: 4, cast: variable(i32))
 .doc: 'Returns the index of the last occurrence of a character in string'
 .value: {
@@ -7281,8 +7280,8 @@ startsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool
 .name: 'startsWith'
 .file: 'lib/std/string.ci:36'
 .param .result: bool (size: 4, cast: variable(bool))
-.param str: char[*] (size: 4, cast: variable(ref))
-.param with: char[*] (size: 4, cast: variable(ref))
+.param str: char[*] (size: 4, cast: const variable(ref))
+.param with: char[*] (size: 4, cast: const variable(ref))
 .param cmp: function (size: 4, cast: variable(ref))
 .doc: 'Check if a string begins with a specified string, using a custom comparator'
 .value: {
@@ -7343,8 +7342,8 @@ endsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool: 
 .name: 'endsWith'
 .file: 'lib/std/string.ci:46'
 .param .result: bool (size: 4, cast: variable(bool))
-.param str: char[*] (size: 4, cast: variable(ref))
-.param with: char[*] (size: 4, cast: variable(ref))
+.param str: char[*] (size: 4, cast: const variable(ref))
+.param with: char[*] (size: 4, cast: const variable(ref))
 .param cmp: function (size: 4, cast: variable(ref))
 .doc: 'Check if a string ends in a specified string, using a custom comparator'
 .value: {
@@ -7435,8 +7434,8 @@ compare(str: char[*], with: char[*], cmp(chr: char, with: char): int32): int32: 
 .name: 'compare'
 .file: 'lib/std/string.ci:61'
 .param .result: int32 (size: 4, cast: variable(i32))
-.param str: char[*] (size: 4, cast: variable(ref))
-.param with: char[*] (size: 4, cast: variable(ref))
+.param str: char[*] (size: 4, cast: const variable(ref))
+.param with: char[*] (size: 4, cast: const variable(ref))
 .param cmp: function (size: 4, cast: variable(ref))
 .doc: 'Check if the two strings are equal, using a custom comparator'
 .value: {
@@ -7561,8 +7560,8 @@ startsWith(str: char[*], with: char[*]): bool: function {
 .name: 'startsWith'
 .file: 'lib/std/string.ci:92'
 .param .result: bool (size: 1, cast: bool)
-.param str: char[*] (size: 4, cast: ref)
-.param with: char[*] (size: 4, cast: ref)
+.param str: char[*] (size: 4, cast: const ref)
+.param with: char[*] (size: 4, cast: const ref)
 .value: startsWith(str, with, caseCmp)
 }
 endsWith(str: char[*], with: char[*]): bool: function {
@@ -7572,8 +7571,8 @@ endsWith(str: char[*], with: char[*]): bool: function {
 .name: 'endsWith'
 .file: 'lib/std/string.ci:93'
 .param .result: bool (size: 1, cast: bool)
-.param str: char[*] (size: 4, cast: ref)
-.param with: char[*] (size: 4, cast: ref)
+.param str: char[*] (size: 4, cast: const ref)
+.param with: char[*] (size: 4, cast: const ref)
 .value: endsWith(str, with, caseCmp)
 }
 compare(str: char[*], with: char[*]): int32: function {
@@ -7583,8 +7582,8 @@ compare(str: char[*], with: char[*]): int32: function {
 .name: 'compare'
 .file: 'lib/std/string.ci:94'
 .param .result: int32 (size: 4, cast: i32)
-.param str: char[*] (size: 4, cast: ref)
-.param with: char[*] (size: 4, cast: ref)
+.param str: char[*] (size: 4, cast: const ref)
+.param with: char[*] (size: 4, cast: const ref)
 .value: compare(str, with, caseCmp)
 }
 contains(str: char[*], chr: char): bool: function {
@@ -7594,7 +7593,7 @@ contains(str: char[*], chr: char): bool: function {
 .name: 'contains'
 .file: 'lib/std/string.ci:97'
 .param .result: bool (size: 1, cast: bool)
-.param str: char[*] (size: 4, cast: ref)
+.param str: char[*] (size: 4, cast: const ref)
 .param chr: char (size: 4, cast: i32)
 .doc: 'Check if a string contains the given character'
 .value: indexOf(str, chr) >= 0
@@ -7660,7 +7659,7 @@ append(output: char[], pos: int32, value: char[*]): int32: function {
 .param .result: int32 (size: 4, cast: variable(i32))
 .param output: char[] (size: 8, cast: variable(arr))
 .param pos: int32 (size: 4, cast: variable(i32))
-.param value: char[*] (size: 4, cast: variable(ref))
+.param value: char[*] (size: 4, cast: const variable(ref))
 .doc: 'Append a string to the output at the given position'
 .value: {
 	for (i: int32 := 0; value[i]; i := i + 1) {
@@ -7739,7 +7738,7 @@ append(output: char[], pos: int32, sign: char, value: uint64, format: FormatFlag
 .param pos: int32 (size: 4, cast: variable(i32))
 .param sign: char (size: 4, cast: variable(i32))
 .param value: uint64 (size: 8, cast: variable(u64))
-.param format: FormatFlags (size: 4, cast: variable(ref))
+.param format: FormatFlags (size: 4, cast: const variable(ref))
 .value: {
 	static const whiteSpace: char[] := " \t\n\r";
 	static const radixDigits: char[] := "0123456789abcdefghijklmnopqrstuvwxyz";
@@ -8106,7 +8105,7 @@ append(output: char[], pos: int32, value: uint64, format: FormatFlags): int32: f
 .param output: char[] (size: 8, cast: arr)
 .param pos: int32 (size: 4, cast: i32)
 .param value: uint64 (size: 8, cast: u64)
-.param format: FormatFlags (size: 4, cast: ref)
+.param format: FormatFlags (size: 4, cast: const ref)
 .doc: 'Append a number to the output at the given position'
 .value: append(output, pos, 0, uint64(value), format)
 }
@@ -8120,7 +8119,7 @@ append(output: char[], pos: int32, value: uint32, format: FormatFlags): int32: f
 .param output: char[] (size: 8, cast: arr)
 .param pos: int32 (size: 4, cast: i32)
 .param value: uint32 (size: 4, cast: u32)
-.param format: FormatFlags (size: 4, cast: ref)
+.param format: FormatFlags (size: 4, cast: const ref)
 .doc: 'Append a number to the output at the given position'
 .value: append(output, pos, 0, uint64(value), format)
 }
@@ -8134,7 +8133,7 @@ append(output: char[], pos: int32, value: uint16, format: FormatFlags): int32: f
 .param output: char[] (size: 8, cast: arr)
 .param pos: int32 (size: 4, cast: i32)
 .param value: uint16 (size: 4, cast: u32)
-.param format: FormatFlags (size: 4, cast: ref)
+.param format: FormatFlags (size: 4, cast: const ref)
 .doc: 'Append a number to the output at the given position'
 .value: append(output, pos, 0, uint64(value), format)
 }
@@ -8148,7 +8147,7 @@ append(output: char[], pos: int32, value: uint8, format: FormatFlags): int32: fu
 .param output: char[] (size: 8, cast: arr)
 .param pos: int32 (size: 4, cast: i32)
 .param value: uint8 (size: 4, cast: u32)
-.param format: FormatFlags (size: 4, cast: ref)
+.param format: FormatFlags (size: 4, cast: const ref)
 .doc: 'Append a number to the output at the given position'
 .value: append(output, pos, 0, uint64(value), format)
 }
@@ -8162,7 +8161,7 @@ append(output: char[], pos: int32, value: int64, format: FormatFlags): int32: fu
 .param output: char[] (size: 8, cast: arr)
 .param pos: int32 (size: 4, cast: i32)
 .param value: int64 (size: 8, cast: variable(i64))
-.param format: FormatFlags (size: 4, cast: ref)
+.param format: FormatFlags (size: 4, cast: const ref)
 .doc: 'Append a number to the output at the given position'
 .value: append(output, pos, value < (0) ? ('-') : 0, uint64(value < (0) ? -value : value), format)
 }
@@ -8176,7 +8175,7 @@ append(output: char[], pos: int32, value: int32, format: FormatFlags): int32: fu
 .param output: char[] (size: 8, cast: arr)
 .param pos: int32 (size: 4, cast: i32)
 .param value: int32 (size: 4, cast: variable(i32))
-.param format: FormatFlags (size: 4, cast: ref)
+.param format: FormatFlags (size: 4, cast: const ref)
 .doc: 'Append a number to the output at the given position'
 .value: append(output, pos, value < 0 ? ('-') : 0, uint64(value < 0 ? -value : value), format)
 }
@@ -8190,7 +8189,7 @@ append(output: char[], pos: int32, value: int16, format: FormatFlags): int32: fu
 .param output: char[] (size: 8, cast: arr)
 .param pos: int32 (size: 4, cast: i32)
 .param value: int16 (size: 4, cast: variable(i32))
-.param format: FormatFlags (size: 4, cast: ref)
+.param format: FormatFlags (size: 4, cast: const ref)
 .doc: 'Append a number to the output at the given position'
 .value: append(output, pos, (value) < 0 ? ('-') : 0, uint64((value) < 0 ? -value : value), format)
 }
@@ -8204,7 +8203,7 @@ append(output: char[], pos: int32, value: int8, format: FormatFlags): int32: fun
 .param output: char[] (size: 8, cast: arr)
 .param pos: int32 (size: 4, cast: i32)
 .param value: int8 (size: 4, cast: variable(i32))
-.param format: FormatFlags (size: 4, cast: ref)
+.param format: FormatFlags (size: 4, cast: const ref)
 .doc: 'Append a number to the output at the given position'
 .value: append(output, pos, (value) < 0 ? ('-') : 0, uint64((value) < 0 ? -value : value), format)
 }
@@ -8218,7 +8217,7 @@ append(output: char[], pos: int32, value: float64, format: FormatFlags): int32: 
 .param output: char[] (size: 8, cast: variable(arr))
 .param pos: int32 (size: 4, cast: variable(i32))
 .param value: float64 (size: 8, cast: variable(f64))
-.param format: FormatFlags (size: 4, cast: variable(ref))
+.param format: FormatFlags (size: 4, cast: const variable(ref))
 .doc: 'Append a number to the output at the given position'
 .value: {
 	formatInt: FormatFlags := {
@@ -8234,7 +8233,7 @@ append(output: char[], pos: int32, value: float64, format: FormatFlags): int32: 
 		formatDec.padLen := format.precision;
 	};
 	sign: char := value < (0) ? ('-') : 0;
-	fract: float64 := Math.modf(Math.abs(value), value);
+	fract: float64 := Math.modf(Math.abs(value), &value);
 	pos := append(output, pos, sign, uint64(value), formatInt);
 	pos := append(output, pos, ".");
 	fract := fract * float64.pow(10, format.precision);
@@ -8293,7 +8292,7 @@ append(output: char[], pos: int32, value: float64, format: FormatFlags): int32: 
 	<append+?>: load.c32 45
 	<append+?>: jmp +5
 	<append+?>: load.z32
-	lib/std/string.ci:248: (27 bytes): fract: float64 := Math.modf(Math.abs(value), value)
+	lib/std/string.ci:248: (27 bytes): fract: float64 := Math.modf(Math.abs(value), &value)
 	<append+?>: load.z128
 	<append+?>: dup.x64 sp(15)
 	<append+?>: load.ref <?> ;Math.abs(x: float64): float64
@@ -8360,7 +8359,7 @@ append(output: char[], pos: int32, value: float32, format: FormatFlags): int32: 
 .param output: char[] (size: 8, cast: arr)
 .param pos: int32 (size: 4, cast: i32)
 .param value: float32 (size: 4, cast: f32)
-.param format: FormatFlags (size: 4, cast: ref)
+.param format: FormatFlags (size: 4, cast: const ref)
 .doc: 'Append a number to the output at the given position'
 .value: append(output, pos, float64(value), format)
 }
@@ -11253,7 +11252,7 @@ lenSlice(values: int64[]): int32: function {
 .name: 'lenSlice'
 .file: 'test/lang/array.ci:103'
 .param .result: int32 (size: 4, cast: variable(i32))
-.param values: int64[] (size: 8, cast: variable(arr))
+.param values: int64[] (size: 8, cast: const variable(arr))
 .value: {
 	return .result := values.length;
 }
@@ -11270,7 +11269,7 @@ nthFixed(idx: int32, values: int64[7]): int64: function {
 .file: 'test/lang/array.ci:104'
 .param .result: int64 (size: 8, cast: variable(i64))
 .param idx: int32 (size: 4, cast: variable(i32))
-.param values: int64[7] (size: 4, cast: variable(ref))
+.param values: int64[7] (size: 4, cast: const variable(ref))
 .value: {
 	return .result := values[idx];
 }
@@ -11291,7 +11290,7 @@ nthArray(idx: int32, values: int64[*]): int64: function {
 .file: 'test/lang/array.ci:105'
 .param .result: int64 (size: 8, cast: variable(i64))
 .param idx: int32 (size: 4, cast: variable(i32))
-.param values: int64[*] (size: 4, cast: variable(ref))
+.param values: int64[*] (size: 4, cast: const variable(ref))
 .value: {
 	return .result := values[idx];
 }
@@ -11312,7 +11311,7 @@ nthSlice(idx: int32, values: int64[]): int64: function {
 .file: 'test/lang/array.ci:106'
 .param .result: int64 (size: 8, cast: variable(i64))
 .param idx: int32 (size: 4, cast: variable(i32))
-.param values: int64[] (size: 8, cast: variable(arr))
+.param values: int64[] (size: 8, cast: const variable(arr))
 .value: {
 	return .result := values[idx];
 }
@@ -15767,23 +15766,23 @@ testMathAbsMod_f32_8d: float32 {
 		float: typename := float32;
 		double: typename := float64;
 		static if (typename(raise) == function) {
-			verbose(message: char[*], inspect: variant): void := raise(raise.verbose, raise.noTrace, message, inspect);
-			verbose(message: char[*]): void := raise(raise.verbose, raise.noTrace, message, null);
-			debug(message: char[*], inspect: variant): void := raise(raise.debug, raise.noTrace, message, inspect);
-			debug(message: char[*]): void := raise(raise.debug, raise.noTrace, message, null);
-			trace(message: char[*], inspect: variant): void := raise(raise.debug, raise.defTrace, message, inspect);
-			trace(message: char[*]): void := raise(raise.debug, raise.defTrace, message, null);
-			info(message: char[*], inspect: variant): void := raise(raise.info, raise.noTrace, message, inspect);
-			info(message: char[*]): void := raise(raise.info, raise.noTrace, message, null);
-			warn(message: char[*], inspect: variant): void := raise(raise.warn, raise.noTrace, message, inspect);
-			warn(message: char[*]): void := raise(raise.warn, raise.noTrace, message, null);
-			error(message: char[*], inspect: variant): void := raise(raise.error, raise.defTrace, message, inspect);
-			error(message: char[*]): void := raise(raise.error, raise.defTrace, message, null);
-			abort(message: char[*], inspect: variant): void := raise(raise.abort, raise.defTrace, message, inspect);
-			abort(message: char[*]): void := raise(raise.abort, raise.defTrace, message, null);
+			verbose(const message: char[*], const inspect: variant): void := raise(raise.verbose, raise.noTrace, message, inspect);
+			verbose(const message: char[*]): void := raise(raise.verbose, raise.noTrace, message, null);
+			debug(const message: char[*], const inspect: variant): void := raise(raise.debug, raise.noTrace, message, inspect);
+			debug(const message: char[*]): void := raise(raise.debug, raise.noTrace, message, null);
+			trace(const message: char[*], const inspect: variant): void := raise(raise.debug, raise.defTrace, message, inspect);
+			trace(const message: char[*]): void := raise(raise.debug, raise.defTrace, message, null);
+			info(const message: char[*], const inspect: variant): void := raise(raise.info, raise.noTrace, message, inspect);
+			info(const message: char[*]): void := raise(raise.info, raise.noTrace, message, null);
+			warn(const message: char[*], const inspect: variant): void := raise(raise.warn, raise.noTrace, message, inspect);
+			warn(const message: char[*]): void := raise(raise.warn, raise.noTrace, message, null);
+			error(const message: char[*], const inspect: variant): void := raise(raise.error, raise.defTrace, message, inspect);
+			error(const message: char[*]): void := raise(raise.error, raise.defTrace, message, null);
+			abort(const message: char[*], const inspect: variant): void := raise(raise.abort, raise.defTrace, message, inspect);
+			abort(const message: char[*]): void := raise(raise.abort, raise.defTrace, message, null);
 			abort(): void := raise(raise.abort, raise.defTrace, "execution aborted!", null);
-			assert(condition: bool, message: char[*], inspect: variant): void := void(condition ? void(0) : abort(message, inspect));
-			assert(condition: bool, message: char[*]): void := void(condition ? void(0) : abort(message));
+			assert(condition: bool, const message: char[*], const inspect: variant): void := void(condition ? void(0) : abort(message, inspect));
+			assert(condition: bool, const message: char[*]): void := void(condition ? void(0) : abort(message));
 			assert(condition: bool): void := void(condition ? void(0) : abort("assertion failed!"));
 			static const NotEquals: struct {
 				const expected: variant;
@@ -15791,7 +15790,7 @@ testMathAbsMod_f32_8d: float32 {
 				const argument: variant := null;
 				const message: char[*] := null;
 			};
-			static const assertEq(expected: int32, returned: int32, message: char[*]): void := {
+			static const assertEq(expected: int32, returned: int32, const message: char[*]): void := {
 				if (returned == expected) {
 					return;
 				}
@@ -15823,7 +15822,7 @@ testMathAbsMod_f32_8d: float32 {
 			static const modf(x: float64, intPart: float64): float64 := {
 				if (x < (1)) {
 					if (x < (0)) {
-						result: float64 := -modf(-x, intPart);
+						result: float64 := -modf(-x, &intPart);
 						intPart := -intPart;
 						return .result := result;
 					}
@@ -15836,7 +15835,7 @@ testMathAbsMod_f32_8d: float32 {
 			};
 			static const floor(x: float64): float64 := {
 				result: float64;
-				modf(x, result);
+				modf(x, &result);
 				return .result := result;
 			};
 			static ceil(x: float64): float64 := -floor(-x);
@@ -15993,10 +15992,10 @@ testMathAbsMod_f32_8d: float32 {
 				x := x * (1) / PIO2;
 				if (x > (32764)) {
 					e: float64;
-					y := modf(x, e);
+					y := modf(x, &e);
 					e := e + (quad);
 					f: float64;
-					modf(0.250000 * e, f);
+					modf(0.250000 * e, &f);
 					quad := (e - (4) * f);
 				}
 				else {
@@ -16027,7 +16026,7 @@ testMathAbsMod_f32_8d: float32 {
 				}
 				arg := (2) * arg / PIO2;
 				e: float64;
-				x: float64 := modf(arg, e);
+				x: float64 := modf(arg, &e);
 				i: int32 := int32(e) % 4;
 				if (i == 0) ;
 				else {
@@ -16419,7 +16418,7 @@ testMathAbsMod_f32_8d: float32 {
 		};
 		sub(a: vec2d, b: vec2d): vec2d := vec2d(emit(struct(a), struct(b), sub.p2d));
 		dot(const a: vec2d, const b: vec2d): float64 := a.x * b.x + a.y * b.y;
-		static const length(str: char[*]): int32 := {
+		static const length(const str: char[*]): int32 := {
 			if ((str) == null) {
 				return .result := 0;
 			}
@@ -16427,7 +16426,7 @@ testMathAbsMod_f32_8d: float32 {
 			for ( ; str[result]; result := result + 1) ;
 			return .result := result;
 		};
-		static const indexOf(str: char[*], chr: char): int32 := {
+		static const indexOf(const str: char[*], chr: char): int32 := {
 			for (i: int32 := 0; str[i]; i := i + 1) {
 				if (str[i] == chr) {
 					return .result := i;
@@ -16435,7 +16434,7 @@ testMathAbsMod_f32_8d: float32 {
 			}
 			return .result := -1;
 		};
-		static const lastIndexOf(str: char[*], chr: char): int32 := {
+		static const lastIndexOf(const str: char[*], chr: char): int32 := {
 			result: int32 := -1;
 			for (i: int32 := 0; str[i]; i := i + 1) {
 				if (str[i] == chr) {
@@ -16444,7 +16443,7 @@ testMathAbsMod_f32_8d: float32 {
 			}
 			return .result := result;
 		};
-		static const startsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool := {
+		static const startsWith(const str: char[*], const with: char[*], cmp(chr: char, with: char): int32): bool := {
 			for (i: int32 := 0; (with[i]) != 0; i := i + 1) {
 				if (cmp(str[i], with[i]) != 0) {
 					return .result := false;
@@ -16452,7 +16451,7 @@ testMathAbsMod_f32_8d: float32 {
 			}
 			return .result := true;
 		};
-		static const endsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool := {
+		static const endsWith(const str: char[*], const with: char[*], cmp(chr: char, with: char): int32): bool := {
 			withLen: int32 := length(with);
 			strLen: int32 := length(str);
 			if (strLen < withLen) {
@@ -16465,7 +16464,7 @@ testMathAbsMod_f32_8d: float32 {
 			}
 			return .result := true;
 		};
-		static const compare(str: char[*], with: char[*], cmp(chr: char, with: char): int32): int32 := {
+		static const compare(const str: char[*], const with: char[*], cmp(chr: char, with: char): int32): int32 := {
 			result: int32 := 0;
 			for (i: int32 := 0; result == 0; i := i + 1) {
 				result := cmp(str[i], with[i]);
@@ -16490,17 +16489,17 @@ testMathAbsMod_f32_8d: float32 {
 		static const caseCmp(chr: char, with: char): int32 := {
 			return .result := chr - with;
 		};
-		startsWith(str: char[*], with: char[*]): bool := startsWith(str, with, caseCmp);
-		endsWith(str: char[*], with: char[*]): bool := endsWith(str, with, caseCmp);
-		compare(str: char[*], with: char[*]): int32 := compare(str, with, caseCmp);
-		contains(str: char[*], chr: char): bool := indexOf(str, chr) >= 0;
+		startsWith(const str: char[*], const with: char[*]): bool := startsWith(str, with, caseCmp);
+		endsWith(const str: char[*], const with: char[*]): bool := endsWith(str, with, caseCmp);
+		compare(const str: char[*], const with: char[*]): int32 := compare(str, with, caseCmp);
+		contains(const str: char[*], chr: char): bool := indexOf(str, chr) >= 0;
 		static const FormatFlags: struct {
 			const showSign: bool := false;
 			const precision: int32 := 0;
 			const padChr: char := 0;
 			const padLen: int32 := 0;
 		};
-		static const append(output: char[], pos: int32, value: char[*]): int32 := {
+		static const append(output: char[], pos: int32, const value: char[*]): int32 := {
 			for (i: int32 := 0; value[i]; i := i + 1) {
 				if (pos >= (output.length)) {
 					break;
@@ -16514,7 +16513,7 @@ testMathAbsMod_f32_8d: float32 {
 			output[pos] := (0);
 			return .result := pos;
 		};
-		static const append(output: char[], pos: int32, sign: char, value: uint64, format: FormatFlags): int32 := {
+		static const append(output: char[], pos: int32, sign: char, value: uint64, const format: FormatFlags): int32 := {
 			static const whiteSpace: char[] := " \t\n\r";
 			static const radixDigits: char[] := "0123456789abcdefghijklmnopqrstuvwxyz";
 			len: int32 := 0;
@@ -16570,15 +16569,15 @@ testMathAbsMod_f32_8d: float32 {
 			output[pos] := (0);
 			return .result := pos;
 		};
-		append(output: char[], pos: int32, value: uint64, format: FormatFlags): int32 := append(output, pos, 0, uint64(value), format);
-		append(output: char[], pos: int32, value: uint32, format: FormatFlags): int32 := append(output, pos, 0, uint64(value), format);
-		append(output: char[], pos: int32, value: uint16, format: FormatFlags): int32 := append(output, pos, 0, uint64(value), format);
-		append(output: char[], pos: int32, value: uint8, format: FormatFlags): int32 := append(output, pos, 0, uint64(value), format);
-		append(output: char[], pos: int32, value: int64, format: FormatFlags): int32 := append(output, pos, value < (0) ? ('-') : 0, uint64(value < (0) ? -value : value), format);
-		append(output: char[], pos: int32, value: int32, format: FormatFlags): int32 := append(output, pos, value < 0 ? ('-') : 0, uint64(value < 0 ? -value : value), format);
-		append(output: char[], pos: int32, value: int16, format: FormatFlags): int32 := append(output, pos, (value) < 0 ? ('-') : 0, uint64((value) < 0 ? -value : value), format);
-		append(output: char[], pos: int32, value: int8, format: FormatFlags): int32 := append(output, pos, (value) < 0 ? ('-') : 0, uint64((value) < 0 ? -value : value), format);
-		static const append(output: char[], pos: int32, value: float64, format: FormatFlags): int32 := {
+		append(output: char[], pos: int32, value: uint64, const format: FormatFlags): int32 := append(output, pos, 0, uint64(value), format);
+		append(output: char[], pos: int32, value: uint32, const format: FormatFlags): int32 := append(output, pos, 0, uint64(value), format);
+		append(output: char[], pos: int32, value: uint16, const format: FormatFlags): int32 := append(output, pos, 0, uint64(value), format);
+		append(output: char[], pos: int32, value: uint8, const format: FormatFlags): int32 := append(output, pos, 0, uint64(value), format);
+		append(output: char[], pos: int32, value: int64, const format: FormatFlags): int32 := append(output, pos, value < (0) ? ('-') : 0, uint64(value < (0) ? -value : value), format);
+		append(output: char[], pos: int32, value: int32, const format: FormatFlags): int32 := append(output, pos, value < 0 ? ('-') : 0, uint64(value < 0 ? -value : value), format);
+		append(output: char[], pos: int32, value: int16, const format: FormatFlags): int32 := append(output, pos, (value) < 0 ? ('-') : 0, uint64((value) < 0 ? -value : value), format);
+		append(output: char[], pos: int32, value: int8, const format: FormatFlags): int32 := append(output, pos, (value) < 0 ? ('-') : 0, uint64((value) < 0 ? -value : value), format);
+		static const append(output: char[], pos: int32, value: float64, const format: FormatFlags): int32 := {
 			formatInt: FormatFlags := {
 				formatInt.showSign := format.showSign;
 				formatInt.precision := 0;
@@ -16592,14 +16591,14 @@ testMathAbsMod_f32_8d: float32 {
 				formatDec.padLen := format.precision;
 			};
 			sign: char := value < (0) ? ('-') : 0;
-			fract: float64 := Math.modf(Math.abs(value), value);
+			fract: float64 := Math.modf(Math.abs(value), &value);
 			pos := append(output, pos, sign, uint64(value), formatInt);
 			pos := append(output, pos, ".");
 			fract := fract * float64.pow(10, format.precision);
 			pos := append(output, pos, 0, uint64(fract), formatDec);
 			return .result := pos;
 		};
-		append(output: char[], pos: int32, value: float32, format: FormatFlags): int32 := append(output, pos, float64(value), format);
+		append(output: char[], pos: int32, value: float32, const format: FormatFlags): int32 := append(output, pos, float64(value), format);
 		static const append(output: char[], pos: int32, value: int32): int32 := {
 			static const format: FormatFlags := {
 				format.showSign := false;
@@ -16998,16 +16997,16 @@ testMathAbsMod_f32_8d: float32 {
 		assert(arrSliceNoInit.length >= (0));
 		assert(arrSliceInitNull.length == (0));
 		assert(arrFixedNoInit[0] == (42));
-		static const lenSlice(values: int64[]): int32 := {
+		static const lenSlice(const values: int64[]): int32 := {
 			return .result := values.length;
 		};
-		static const nthFixed(idx: int32, values: int64[7]): int64 := {
+		static const nthFixed(idx: int32, const values: int64[7]): int64 := {
 			return .result := values[idx];
 		};
-		static const nthArray(idx: int32, values: int64[*]): int64 := {
+		static const nthArray(idx: int32, const values: int64[*]): int64 := {
 			return .result := values[idx];
 		};
-		static const nthSlice(idx: int32, values: int64[]): int64 := {
+		static const nthSlice(idx: int32, const values: int64[]): int64 := {
 			return .result := values[idx];
 		};
 		assertEq(7, arrFixedNoInit.length);
@@ -22250,13 +22249,13 @@ test/lang/reflect.ci:22: RecordSizeof: typename(<RecordSizeof>)
 test/lang/reflect.ci:26: RecordSizeofExt: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:30: typeofRecord: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:31: nameOfRecord: char[*]("RecordSizeofExt")
-test/lang/reflect.ci:32: offsetOfRecord: int32(248648)
+test/lang/reflect.ci:32: offsetOfRecord: int32(248664)
 test/lang/reflect.ci:33: sizeOfRecord: int32(16)
 test/lang/reflect.ci:34: fileOfRecord: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:35: lineOfRecord: int32(26)
 test/lang/reflect.ci:37: typeofBase: typename(<RecordSizeof>)
 test/lang/reflect.ci:38: nameOfBase: char[*]("RecordSizeof")
-test/lang/reflect.ci:39: offsetOfBase: int32(248344)
+test/lang/reflect.ci:39: offsetOfBase: int32(248360)
 test/lang/reflect.ci:40: sizeOfBase: int32(12)
 test/lang/reflect.ci:41: fileOfBase: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:42: lineOfBase: int32(22)
@@ -22761,16 +22760,16 @@ test/stdc/test.math.ci:96: testMathAbsMod_f32_8d: float32(8.000000)
 
 ---------- Memory usage:
 memory[all] @000000; size: 2096872(2.0 Mb)
-memory[used] @000000; size: 368353(359.7 Kb)
-memory[heap] @059ee1; size: 1204253(1.1 Mb)
+memory[used] @000000; size: 368289(359.7 Kb)
+memory[heap] @059ea1; size: 1204317(1.1 Mb)
 memory[stack] @0fff44; size: 524218(511.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 351424(343.2 Kb)
+memory[meta] @000000; size: 351360(343.1 Kb)
 memory[code] @000000; size: 16587(16.2 Kb)
 memory[data] @000000; size: 80(80.0 bytes)
 
 ---------- heap memory:
-memory[free] @059ef8; size: 1204208(1.1 Mb)
+memory[free] @059eb8; size: 1204272(1.1 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

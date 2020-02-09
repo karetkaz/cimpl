@@ -281,6 +281,7 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 		case OPER_dot:        // '.'
 		case OPER_idx:        // '[]'
 
+		case OPER_adr:        // '&'
 		case OPER_pls:        // '+'
 		case OPER_mns:        // '-'
 		case OPER_cmt:        // '~'
@@ -322,17 +323,22 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 
 		//#}
 		//#{ VALUES
-		case TOKEN_var: {
-			symn link = ast->ref.link;
-			// declaration
-			if (link && link->init && (mode & prSymInit)) {
-				printFmt(out, esc, " value=\"%?t\">\n", ast);
-				dumpAstXML(out, esc, link->init, mode, indent + 1, "init");
-				printFmt(out, esc, "%I</%s>\n", indent, text);
+		case TOKEN_var:
+			printFmt(out, esc, " value=\"%?t\">\n", ast);
+			if (ast->ref.link == NULL) {
 				break;
 			}
-		}
-		// fall through
+			if (ast->ref.link->init && (mode & prSymInit) != 0) {
+				dumpAstXML(out, esc, ast->ref.link->init, mode, indent + 1, "init");
+			}
+			if (isTypename(ast->ref.link)) {
+				// declaration
+				for (symn field = ast->ref.link->fields; field; field = field->next) {
+					dumpAstXML(out, esc, field->tag, mode, indent + 1, "field");
+				}
+			}
+			printFmt(out, esc, "%I</%s>\n", indent, text);
+			break;
 
 		case TOKEN_opc:
 		case TOKEN_val:
@@ -531,6 +537,7 @@ static void jsonDumpAst(FILE *out, const char **esc, astn ast, const char *kind,
 		case OPER_dot:		// '.'
 		case OPER_idx:		// '[]'
 
+		case OPER_adr:		// '&'
 		case OPER_pls:		// '+'
 		case OPER_mns:		// '-'
 		case OPER_cmt:		// '~'

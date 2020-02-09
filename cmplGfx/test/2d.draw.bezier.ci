@@ -1,10 +1,10 @@
 gxSurf offs = gxSurf(1440, 900, 32);
 
+int idx = 0;
 int x[4]; // TODO: = {100, 100, 100, 100};
 int y[4]; // TODO: = {100, 100, 100, 100};
-
-x[0] = 100; x[1] = 700; x[2] = 400; x[3] = 400;
-y[0] = 100; y[1] = 400; y[2] = 100; y[3] = 400;
+x[0] = 100; x[1] = 400; x[2] = 700; x[3] = 400;
+y[0] = 100; y[1] = 100; y[2] = 400; y[3] = 400;
 
 int onEvent(int action, int button, int ex, int ey) {
 	static int ox = 0;
@@ -17,15 +17,27 @@ int onEvent(int action, int button, int ex, int ey) {
 		if (button == 27) {
 			return -1;
 		}
+		if (button >= '0' && button < '0' + x.length) {
+			idx = button - '0';
+		}
 	}
 	if (action == Gui.MOUSE_PRESS) {
+		idx = 0;
+		inline dst(int dx, int dy) = float.sqrt(dx * dx + dy * dy);
+		inline dst(int i, int cx, int cy) = dst(x[i] - cx, y[i] - cy);
+		for (int i = 1; i < x.length; i += 1) {
+			int len = dst(i, ex, ey);
+			if (len < 25 && len < dst(idx, ex, ey)) {
+				idx = i;
+			}
+		}
 		ox = ex;
 		oy = ey;
 	}
 	if (action == Gui.MOUSE_MOTION) {
-		if (button > 0 && button <= x.length) {
-			x[button - 1] += ex - ox;
-			y[button - 1] += ey - oy;
+		if (idx >= 0 && idx < x.length) {
+			x[idx] += ex - ox;
+			y[idx] += ey - oy;
 		}
 
 		inline R = 2;
@@ -35,8 +47,8 @@ int onEvent(int action, int button, int ex, int ey) {
 		offs.fillRect(0, 0, 65535, 65535, 0x00000000);
 
 		// draw control lines
-		offs.drawLine(x[0], y[0], x[2], y[2], controlColor);
-		offs.drawLine(x[3], y[3], x[1], y[1], controlColor);
+		offs.drawLine(x[0], y[0], x[1], y[1], controlColor);
+		offs.drawLine(x[3], y[3], x[2], y[2], controlColor);
 
 		// draw control points
 		offs.drawOval(x[0] - R, y[0] - R, x[0] + R, y[0] + R, controlColor);
@@ -45,7 +57,7 @@ int onEvent(int action, int button, int ex, int ey) {
 		offs.drawOval(x[3] - R, y[3] - R, x[3] + R, y[3] + R, controlColor);
 
 		// draw bezier curve
-		offs.drawBezier(x[0], y[0], x[2], y[2], x[3], y[3], x[1], y[1], bezierColor);
+		offs.drawBezier(x[0], y[0], x[1], y[1], x[3], y[3], x[2], y[2], bezierColor);
 		ox = ex;
 		oy = ey;
 	}

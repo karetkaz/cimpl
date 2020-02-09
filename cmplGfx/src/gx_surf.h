@@ -283,7 +283,7 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth);
 
 
 // image effects
-int gx_gradSurf(gx_Surf dst, gx_Rect roi, gx_Clut lut, gradient_type type);
+int gx_gradSurf(gx_Surf dst, gx_Rect roi, gradient_type type, int length, uint32_t colors[]);
 
 #if __cplusplus
 }

@@ -5,7 +5,7 @@ inline "gfx/color.ci";
 inline gxSurf(int width, int height, int depth) = gxSurf.create(width, height, depth);
 
 /// Create a surface by opening an image file
-gxSurf gxSurf(char fileName[*], int depth) {
+gxSurf gxSurf(const char fileName[*], int depth) {
 	if (fileName.endsWith(".jpeg", ignCaseCmp)) {
 		return gxSurf.openJpg(fileName, depth);
 	}
@@ -22,10 +22,10 @@ gxSurf gxSurf(char fileName[*], int depth) {
 }
 
 /// Create a surface by opening an image file
-inline gxSurf(char fileName[*]) = gxSurf(fileName, 32);
+inline gxSurf(const char fileName[*]) = gxSurf(fileName, 32);
 
 /// Create a surface by opening an image file with custom width and height
-gxSurf gxSurf(char fileName[*], int width, int height, int depth, int align, double maxScale) {
+gxSurf gxSurf(const char fileName[*], int width, int height, int depth, int align, double maxScale) {
 	enum: int {
 		center: 0;
 		left: 1;
@@ -97,13 +97,13 @@ gxSurf gxSurf(char fileName[*], int width, int height, int depth, int align, dou
 }
 
 /// Create a surface by opening an image file with custom width and height
-inline gxSurf(char fileName[*], int width, int height, int depth, int align) = gxSurf(fileName, width, height, depth, align, Math.inf);
+inline gxSurf(const char fileName[*], int width, int height, int depth, int align) = gxSurf(fileName, width, height, depth, align, Math.inf);
 
 /// Create a surface by opening an image file with custom width and height
-inline gxSurf(char fileName[*], int width, int height, int depth) = gxSurf(fileName, width, height, depth, -1, Math.inf);
+inline gxSurf(const char fileName[*], int width, int height, int depth) = gxSurf(fileName, width, height, depth, -1, Math.inf);
 
 /// Create a mesh by opening a file
-gxMesh gxMesh(char fileName[*]) {
+gxMesh gxMesh(const char fileName[*]) {
 	if (fileName.endsWith(".obj", ignCaseCmp)) {
 		return gxMesh.openObj(fileName);
 	}
@@ -192,7 +192,7 @@ void eval(gxSurf dst, const gxRect roi&, float32 aspect, float32 time, vec4f eva
 		h: roi != null ? roi.h : dst.height();
 	};
 
-	if (!dst.clip(rect)) {
+	if (!dst.clip(&rect)) {
 		return;
 	}
 
@@ -222,7 +222,7 @@ void tile(gxSurf dst, int x, int y, gxSurf src, gxRect roi&) {
 		h: roi != null ? roi.h : src.height();
 	};
 
-	if (!src.clip(rect)) {
+	if (!src.clip(&rect)) {
 		return;
 	}
 
@@ -321,28 +321,28 @@ void show(gxMesh mesh, int w, int h, float32 fovy) {
 				orig[1] = 0;
 				orig[2] = 0;
 
-				camera.readUp(dir);
+				camera.readUp(&dir);
 				camera.rotate(dir, orig, dx * speed);
-				camera.readRight(dir);
+				camera.readRight(&dir);
 				camera.rotate(dir, orig, dy * speed);
 			}
 			else if (button == 2) {
 				// rotate
-				camera.readUp(dir);
+				camera.readUp(&dir);
 				camera.rotate(dir, null, -dx * speed);
-				camera.readRight(dir);
+				camera.readRight(&dir);
 				camera.rotate(dir, null, -dy * speed);
 			}
 			else if (button == 3) {
 				// move
-				camera.readForward(dir);
+				camera.readForward(&dir);
 				camera.move(dir, dy * speed);
 			}
 			else if (button == 4) {
 				// pan
-				camera.readRight(dir);
+				camera.readRight(&dir);
 				camera.move(dir, -dx * speed);
-				camera.readUp(dir);
+				camera.readUp(&dir);
 				camera.move(dir, dy * speed);
 			}
 			ox = ex;

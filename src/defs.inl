@@ -14,6 +14,7 @@ TOKEN_DEF(OPER_fnc, 0x0f, 2, "()")                  // a(x): function call, cast
 TOKEN_DEF(OPER_idx, 0x0f, 2, "[]")                  // a[i]: index
 TOKEN_DEF(OPER_dot, 0x0f, 2, ".")                   // a.b:  member
 
+TOKEN_DEF(OPER_adr, 0x1e, 1, "&")                   // & a:  address of
 TOKEN_DEF(OPER_pls, 0x1e, 1, "+")                   // + a:  unary plus
 TOKEN_DEF(OPER_mns, 0x1e, 1, "-")                   // - a:  unary minus
 TOKEN_DEF(OPER_cmt, 0x1e, 1, "~")                   // ~ a:  complement / ?reciprocal

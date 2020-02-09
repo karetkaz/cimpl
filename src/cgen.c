@@ -696,6 +696,7 @@ static ccKind genCast(ccContext cc, astn ast, ccKind get) {
 	error(cc->rt, ast->file, ast->line, ERR_INVALID_CAST, ast);
 	return CAST_any;
 }
+// TODO: simplify
 static ccKind genCall(ccContext cc, astn ast) {
 	rtContext rt = cc->rt;
 	symn function = linkOf(ast->op.lhso, 0);
@@ -899,6 +900,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 			case TOKEN_var:
 			case OPER_dot:
 			case OPER_idx:
+			case OPER_adr:
 				// if argument is already a variable, do not create a new one
 				continue;
 
@@ -965,14 +967,15 @@ static ccKind genCall(ccContext cc, astn ast) {
 			continue;
 		}
 
-		// update the offset of a inline variables
+		// update offset of inline variable
 		if (isInline(prm)) {
 			prm->offs = locals + offs;
 			continue;
 		}
 
+		astn arg = prm->init;
 		// allocate space for uninitialized arguments
-		if (prm->init == NULL || prm->init->kind == TOKEN_any) {
+		if (arg == NULL || arg->kind == TOKEN_any) {
 			if (prm->name && *prm->name == '.') {
 				warn(rt, raise_warn_var8, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
 			}
@@ -992,7 +995,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 
 		// generate the argument value
 		size_t argOffs = stkOffset(rt, prm->size);
-		if (!genAst(cc, prm->init, refCast(prm))) {
+		if (!genAst(cc, arg, refCast(prm))) {
 			traceAst(ast);
 			return CAST_any;
 		}
@@ -1085,6 +1088,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 }
 
 /// Emit operator based on type: (add, sub, mul, ...)
+// TODO: this should be implemented using operator overloading in `cmpl.lang.ci`
 static ccKind genOperator(rtContext rt, ccToken token, ccKind cast) {
 	vmOpcode opc = opc_last;
 	switch (token) {
@@ -1219,22 +1223,6 @@ static ccKind genOperator(rtContext rt, ccToken token, ccKind cast) {
 				return CAST_any;
 			}
 			opc = opc_not;
-			break;
-
-		case OPER_pls:
-			switch (cast) {
-				default:
-					break;
-
-				case CAST_i32:
-				case CAST_u32:
-				case CAST_i64:
-				case CAST_u64:
-				case CAST_f32:
-				case CAST_f64:
-					opc = opc_nop;
-					break;
-			}
 			break;
 
 		case OPER_mns:
@@ -1523,6 +1511,7 @@ static ccKind genOperator(rtContext rt, ccToken token, ccKind cast) {
 
 	return cast;
 }
+
 /// Generate byte-code for OPER_sel `a ? b : c`.
 static ccKind genLogical(ccContext cc, astn ast) {
 	rtContext rt = cc->rt;
@@ -1651,21 +1640,20 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			break;
 
 		case STMT_con:
-		case STMT_brk: {
+		case STMT_brk:
 			dieif(get != CAST_vid, ERR_INTERNAL_ERROR);
-			size_t offs = emit(rt, opc_jmp);
-			if (offs == 0) {
+
+			ast->jmp.stks = spBegin;
+			ast->jmp.offs = emit(rt, opc_jmp);
+			if (ast->jmp.offs == 0) {
 				traceAst(ast);
 				return CAST_any;
 			}
 
-			ast->jmp.stks = spBegin;
-			ast->jmp.offs = offs;
-
 			ast->next = cc->jumps;
 			cc->jumps = ast;
 			break;
-		}
+
 		case STMT_ret:
 			dieif(get != CAST_vid, ERR_INTERNAL_ERROR);
 			if (ast->jmp.value != NULL) {
@@ -1749,8 +1737,15 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			}
 			break;
 
-		case OPER_not:		// '!'
 		case OPER_pls:		// '+'
+		case OPER_adr:		// '&'
+			if (!(got = genAst(cc, ast->op.rhso, get))) {
+				traceAst(ast);
+				return CAST_any;
+			}
+			break;
+
+		case OPER_not:		// '!'
 		case OPER_mns:		// '-'
 		case OPER_cmt:		// '~'
 			if (!genAst(cc, ast->op.rhso, got)) {
@@ -1873,13 +1868,13 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 		case INIT_set:  	// '='
 		case ASGN_set: {	// '='
 			ccKind cast = refCast(ast->op.lhso->type);
+			size_t size = refSize(ast->op.lhso->type);
+			dieif(size == 0, ERR_INTERNAL_ERROR);
+
 			if (!genAst(cc, ast->op.rhso, cast)) {
 				traceAst(ast);
 				return CAST_any;
 			}
-
-			size_t size = ast->op.lhso->type->size;
-			dieif(size == 0, ERR_INTERNAL_ERROR);
 
 			if (get != CAST_vid) {
 				// in case a = b = sum(2, 700);

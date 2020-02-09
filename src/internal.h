@@ -452,6 +452,7 @@ void print_log(rtContext rt, raiseLevel level, const char *file, int line, rtVal
 #define WARN_USE_BLOCK_STATEMENT "statement should be a block statement {%t}"
 //TODO: #define WARN_LOCAL_MIGHT_ESCAPE "local variable `%t` can not be referenced outside of its scope"
 #define WARN_PASS_ARG_NO_CAST "argument `%t` is passed to emit without cast as `%T`"
+#define WARN_PASS_ARG_BY_REF "argument `%t` is passed by reference to `%T`"
 #define WARN_SHORT_CIRCUIT "operators `&&` and `||` does not short-circuit yet"
 #define WARN_NO_CODE_GENERATED "no code will be generated for statement: %t"
 #define WARN_PADDING_ALIGNMENT "padding `%?T` with %d bytes: (%d -> %d)"

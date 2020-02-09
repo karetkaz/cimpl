@@ -75,10 +75,10 @@ static vmError surf_destroy(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_openBmp = "gxSurf openBmp(char path[*], int32 depth)";
-static const char *proto_surf_openPng = "gxSurf openPng(char path[*], int32 depth)";
-static const char *proto_surf_openJpg = "gxSurf openJpg(char path[*], int32 depth)";
-static const char *proto_surf_openFnt = "gxSurf openFnt(char path[*])";
+static const char *proto_surf_openBmp = "gxSurf openBmp(const char path[*], int32 depth)";
+static const char *proto_surf_openPng = "gxSurf openPng(const char path[*], int32 depth)";
+static const char *proto_surf_openJpg = "gxSurf openJpg(const char path[*], int32 depth)";
+static const char *proto_surf_openFnt = "gxSurf openFnt(const char path[*])";
 static vmError surf_open(nfcContext ctx) {
 	char *path = nextValue(ctx).ref;
 
@@ -106,7 +106,7 @@ static vmError surf_open(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_saveBmp = "void saveBmp(gxSurf surf, char path[*], int32 flags)";
+static const char *proto_surf_saveBmp = "void saveBmp(gxSurf surf, const char path[*], int32 flags)";
 static vmError surf_save(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 	char *path = nextValue(ctx).ref;
@@ -270,8 +270,8 @@ static vmError surf_drawBez3(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_drawText = "void drawText(gxSurf surf, int32 x, int32 y, gxSurf font, char text[*], int32 color)";
-static const char *proto_surf_drawTextRoi = "void drawText(gxSurf surf, const gxRect roi&, gxSurf font, char text[*], int32 color)";
+static const char *proto_surf_drawText = "void drawText(gxSurf surf, int32 x, int32 y, gxSurf font, const char text[*], int32 color)";
+static const char *proto_surf_drawTextRoi = "void drawText(gxSurf surf, const gxRect roi&, gxSurf font, const char text[*], int32 color)";
 static vmError surf_drawText(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 
@@ -294,7 +294,7 @@ static vmError surf_drawText(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_clipText = "void clipText(gxSurf font, gxRect rect&, char text[*])";
+static const char *proto_surf_clipText = "void clipText(gxSurf font, gxRect rect&, const char text[*])";
 static vmError surf_clipText(nfcContext ctx) {
 	gx_Surf font = nextValue(ctx).ref;
 	gx_Rect rect = nextValue(ctx).ref;
@@ -429,7 +429,7 @@ static vmError surf_blendSurf(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_transformSurf = "void transform(gxSurf surf, const gxRect rect&, gxSurf src, const gxRect roi&, int32 interpolate, float32 mat[16])";
+static const char *proto_surf_transformSurf = "void transform(gxSurf surf, const gxRect rect&, gxSurf src, const gxRect roi&, int32 interpolate, const float32 mat[16])";
 static vmError surf_transformSurf(nfcContext ctx) {
 	gx_Surf surf = nextValue(ctx).ref;
 	gx_Rect rect = nextValue(ctx).ref;
@@ -782,42 +782,17 @@ static vmError surf_cMatSurf(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_gradient = "void gradient(gxSurf surf, const gxRect roi&, int32 type, int alpha, bool repeat, bool invert, uint32 lut...)";
+static const char *proto_surf_gradient = "void gradient(gxSurf surf, const gxRect roi&, int32 type, bool repeat, uint32 colors[])";
 static vmError surf_gradient(nfcContext ctx) {
-	struct gx_Clut lut;
 	gx_Surf surf = nextValue(ctx).ref;
 	gx_Rect rect = nextValue(ctx).ref;
 	gradient_type type = nextValue(ctx).i32;
-	int alpha = nextValue(ctx).i32;
 	int repeat = nextValue(ctx).i32;
-	int invert = nextValue(ctx).i32;
 	rtValue colors = nextValue(ctx);
-	uint32_t *colorArr = colors.ref;
-
-	lut.count = 256;
-	lut.flags = lut.trans = 0;
-
-	int mid = alpha < 0 ? 0 : 255;
-	alpha = 256 - clamp_u8(alpha > 0 ? alpha : -alpha);
-	int dt = ((colors.length - 1) << 16) / (lut.count - 1);
-	for (int i = 0; i < lut.count; i += 1) {
-		int t = i * dt;
-		int32_t c1 = colorArr[(t >> 16)];
-		int32_t c2 = colorArr[(t >> 16) + 1];
-		int32_t val = c1 + ((t & 0xffff) * (c2 - c1 + 1) >> 16);
-		lut.data[i].val = clamp_s8((val - mid) * 255 / alpha + mid) << 24;
-	}
-
-	if (invert) {
-		for (int i = 0; i < lut.count; i += 1) {
-			lut.data[i].val = ~lut.data[i].val;
-		}
-	}
 	if (repeat) {
 		type |= flag_repeat;
 	}
-	type |= flag_alpha;
-	gx_gradSurf(surf, rect, &lut, type);
+	gx_gradSurf(surf, rect, type, colors.length, colors.ref);
 	return noError;
 }
 
@@ -860,8 +835,8 @@ static vmError surf_drawMesh(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_mesh_openObj = "gxMesh openObj(char path[*])";
-static const char *proto_mesh_open3ds = "gxMesh open3ds(char path[*])";
+static const char *proto_mesh_openObj = "gxMesh openObj(const char path[*])";
+static const char *proto_mesh_open3ds = "gxMesh open3ds(const char path[*])";
 static vmError mesh_open(nfcContext ctx) {
 	char *path = nextValue(ctx).ref;
 
@@ -892,7 +867,7 @@ static vmError mesh_open(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_mesh_saveObj = "void saveObj(gxMesh mesh, char path[*])";
+static const char *proto_mesh_saveObj = "void saveObj(gxMesh mesh, const char path[*])";
 static vmError mesh_save(nfcContext ctx) {
 	gx_Mesh mesh = nextValue(ctx).ref;
 	char *path = nextValue(ctx).ref;
@@ -1103,7 +1078,7 @@ static vmError window_show(nfcContext ctx) {
 	return args.error;
 }
 
-static const char *proto_window_title = "void setTitle(char title[*])";
+static const char *proto_window_title = "void setTitle(const char title[*])";
 static vmError window_title(nfcContext ctx) {
 	char *title = nextValue(ctx).ref;
 	mainLoopArgs args = (mainLoopArgs) ctx->extra;
@@ -1114,12 +1089,12 @@ static vmError window_title(nfcContext ctx) {
 }
 
 
-static const char *proto_camera_lookAt = "void lookAt(float32 eye[3], float32 at[3], float32 up[3])";
+static const char *proto_camera_lookAt = "void lookAt(const float32 eye[3], const float32 at[3], const float32 up[3])";
 //static const char *proto_camera_ortho = "void orthographic(float32 left, float32 right, float32 bottom, float32 top, float32 near, float32 far)";
 //static const char *proto_camera_perspective = "void perspective(float32 left, float32 right, float32 bottom, float32 top, float32 near, float32 far)";
 static const char *proto_camera_projection = "void projection(float32 fovy, float32 aspect, float32 near, float32 far)";
-static const char *proto_camera_move = "void move(float32 direction[3], float32 amount)";
-static const char *proto_camera_rotate = "void rotate(float32 direction[3], float32 orbit[3], float32 angle)";
+static const char *proto_camera_move = "void move(const float32 direction[3], float32 amount)";
+static const char *proto_camera_rotate = "void rotate(const float32 direction[3], const float32 orbit[3], float32 angle)";
 static const char *proto_camera_readUp = "void readUp(float32 result[3])";
 static const char *proto_camera_readRight = "void readRight(float32 result[3])";
 static const char *proto_camera_readForward = "void readForward(float32 result[3])";
@@ -1357,7 +1332,6 @@ int cmplInit(rtContext rt) {
 		{surf_blurSurf, proto_surf_blurSurf},
 		{surf_cLutSurf, proto_surf_cLutSurf},
 		{surf_cMatSurf, proto_surf_cMatSurf},
-		{surf_gradient, proto_surf_gradient},
 		{surf_calcHist, proto_surf_calcHist},
 		{surf_drawMesh, proto_surf_drawMesh},
 	},
@@ -1468,6 +1442,19 @@ int cmplInit(rtContext rt) {
 			}
 		}
 		rt->api.ccEnd(cc, symSurf);
+	}
+
+	symn gradient = rt->api.ccAddCall(cc, surf_gradient, proto_surf_gradient);
+	if (gradient != NULL && rt->api.ccExtend(cc, gradient)) {
+		rt->api.ccDefInt(cc, "Linear", gradient_lin);
+		rt->api.ccDefInt(cc, "Radial", gradient_rad);
+		rt->api.ccDefInt(cc, "Square", gradient_sqr);
+		rt->api.ccDefInt(cc, "Spiral", gradient_spr);
+		rt->api.ccDefInt(cc, "Conical", gradient_con);
+		rt->api.ccDefInt(cc, "MaskLinear", flag_alpha | gradient_lin);
+		rt->api.ccDefInt(cc, "MaskRadial", flag_alpha | gradient_rad);
+		rt->api.ccDefInt(cc, "MaskSquare", flag_alpha | gradient_sqr);
+		rt->api.ccEnd(cc, gradient);
 	}
 
 	symn symCam = rt->api.ccBegin(cc, "camera");

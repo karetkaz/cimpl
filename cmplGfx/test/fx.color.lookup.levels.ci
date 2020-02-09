@@ -16,7 +16,7 @@ void levels(uint32 lut[256], int input, int output) {
 		// TODO: val = (output * (val - mid)) / input + mid;
 		val = (output * (val - mid2)) / 256 + mid2;
 		val = (val - mid1) * 255 / input + mid1;
-		int rgb = grayClamp(val);
+		int rgb = clamp_s8(val);
 		lut2[idx].r = rgb;
 		lut2[idx].g = rgb;
 		lut2[idx].b = rgb;
@@ -48,11 +48,22 @@ int onEvent(int action, int button, int x, int y) {
 	static Histogram histogram = {
 		text: null;
 		image: offs;
+		height: 128;
+		enabled: false;
 	};
 	static Histogram curves = {
 		text: null;
 		image: offs;
-		showLines: true;
+		height: 128;
+		lines: true;
+		selectable: false;
+	};
+	static bool onColorUpdate(ColorPicker view);
+	static ColorPicker colors = {
+		text: null;
+		//lum: .75f;
+		selectable: false;
+		onUpdate: onColorUpdate;
 	};
 
 	static Slider time = {
@@ -63,23 +74,30 @@ int onEvent(int action, int button, int x, int y) {
 	static Layout ui = Layout(offs, -30, 30, font,
 		histogram,
 		curves,
+		colors,
 		sldInput,
 		sldOutput,
 		time
 	);
 
-	bool redraw = uiEvent(ui, action, button, x, y);
+	static bool onColorUpdate(ColorPicker view) {
+		ui.focusedColor = uint32(view.value);
+	}
+	if (action == Gui.WINDOW_INIT) {
+		ui.setSelected(sldInput);
+	}
+
 	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
 		}
-		if (button == ' ') {
-			redraw = true;
-		}
 	}
-	if (redraw) {
+
+	if (ui.uiEvent(action, button, x, y)) {
 		uint64 start = System.millis();
-		levels(curves.data, sldInput.val(), sldOutput.val());
+		if (ui.isActive(sldInput, sldOutput)) {
+			levels(curves.data, sldInput.val(), sldOutput.val());
+		}
 		offs.resize(null, back, null, 1);
 		offs.colorMap(null, curves.data);
 		offs.calcHist(null, 0x00ffffff, histogram.data);

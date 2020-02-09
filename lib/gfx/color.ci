@@ -106,7 +106,7 @@ inline uint32(argb value) = uint32(emit(struct(value)));
 
 
 /// clamp signed gray or color component to fit in 8 bits (0 ... 255)
-uint32 grayClamp(int32 c) {
+uint32 clamp_s8(int32 c) {
 	if (c < 0) {
 		return 0;
 	}
@@ -116,20 +116,19 @@ uint32 grayClamp(int32 c) {
 	return c;
 }
 /// clamp unsigned gray or color component to fit in 8 bits (0 ... 255)
-uint32 grayClamp(uint32 c) {
+uint32 clamp_u8(uint32 c) {
 	if (c > 255) {
 		return 255;
 	}
 	return c;
 }
 
-
 // construct a rgb8 gray color from the given value
 inline _gray(uint32 c) = argb((((c << 8) | c) << 8) | c);
 /// construct a rgb8 color from the given gray value, clamp the input
-inline gray(int32 c) = _gray(grayClamp(c));
+inline gray(int32 c) = _gray(clamp_s8(c));
 /// construct a rgb8 color from the given gray value, clamp the input
-inline gray(uint32 c) = _gray(grayClamp(c));
+inline gray(uint32 c) = _gray(clamp_s8(c));
 /// construct a rgb8 color from the given gray value, clamp the input
 inline gray(float32 c) = gray(int32(c * 255));
 /// construct a rgb8 color from the given gray value, clamp the input
@@ -142,13 +141,21 @@ inline _argb(uint32 r, uint32 g, uint32 b) = argb(uint32((((r << 8) | g) << 8) |
 inline _argb(uint32 a, uint32 r, uint32 g, uint32 b) = argb(uint32((((((a << 8) | r) << 8) | g) << 8) | b));
 
 /// construct a rgb8 color from the given components, clamp the input
-inline argb(int32 r, int32 g, int32 b) = _argb(grayClamp(r), grayClamp(g), grayClamp(b));
+inline argb(int32 r, int32 g, int32 b) = _argb(clamp_s8(r), clamp_s8(g), clamp_s8(b));
 /// construct a rgb8 color from the given components, clamp the input
-inline argb(uint32 r, uint32 g, uint32 b) = _argb(grayClamp(r), grayClamp(g), grayClamp(b));
+inline argb(uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(r), clamp_u8(g), clamp_u8(b));
 /// construct a rgb8 color from the given components, clamp the input
 inline argb(float32 r, float32 g, float32 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
 /// construct a rgb8 color from the given components, clamp the input
 inline argb(float64 r, float64 g, float64 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(int32 a, int32 r, int32 g, int32 b) = _argb(clamp_s8(a), clamp_s8(r), clamp_s8(g), clamp_s8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(uint32 a, uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(a), clamp_u8(r), clamp_u8(g), clamp_u8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float32 a, float32 r, float32 g, float32 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float64 a, float64 r, float64 g, float64 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
 
 
 /// get the Alpha channel of the color
@@ -162,26 +169,33 @@ inline bch(argb col) = uint32(uint32(col) & 0xff);
 /// get the luminosity of the color
 inline lum(argb c) = uint32((rch(c) * 76 + gch(c) * 150 + bch(c) * 29) >> 8);
 
-/// linear interpolation between `c1` and `c2` by `t`, where t is a 16 bit fixed point
-argb rgbLerp16(argb c1, argb c2, uint32 t) {
-	inline lerp(uint32 x, uint32 y) = uint32(x + (t * (y - x) >> 16));
-	uint32 r = lerp(rch(c1), rch(c2));
-	uint32 g = lerp(gch(c1), gch(c2));
-	uint32 b = lerp(bch(c1), bch(c2));
-	return argb(r, g, b);
-}
-
-/// linear interpolation between `c1` and `c2` by `t`, where t is between 0. and 1.
-inline rgbLerp(argb c1, argb c2, double t) = rgbLerp16(c1, c2, uint32(t * (1 << 16)));
 
 /// linear interpolate a lookup-table with the given colors
-void lerpLut(uint32 lut[], argb colors...) {
+void lerpLut(uint32 lut[], int alpha, bool invert, argb colors...) {
+	inline lrp(int32 t, uint32 x, uint32 y) = x + (t * (y - x) >> 16);
+
+	int mid = alpha < 0 ? 0 : 254;
+	int div = 256 - clamp_u8(alpha > 0 ? alpha : -alpha);
 	int dt = (colors.length - 1 << 16) / (lut.length - 1);
 	for (int i = 0; i < lut.length; i += 1) {
 		int t = i * dt;
 		argb c1 = colors[t >> 16];
 		argb c2 = colors[(t >> 16) + 1];
-		lut[i] = uint32(rgbLerp16(c1, c2, t & 0xffff));
+		int32 a = lrp(t & 0xffff, ach(c1), ach(c2));
+		int32 r = lrp(t & 0xffff, rch(c1), rch(c2));
+		int32 g = lrp(t & 0xffff, gch(c1), gch(c2));
+		int32 b = lrp(t & 0xffff, bch(c1), bch(c2));
+		a = clamp_s8((a - mid) * 256 / div + mid);
+		r = clamp_s8((r - mid) * 256 / div + mid);
+		g = clamp_s8((g - mid) * 256 / div + mid);
+		b = clamp_s8((b - mid) * 256 / div + mid);
+		if (invert) {
+			a = ~a;
+			r = ~r;
+			g = ~g;
+			b = ~b;
+		}
+		lut[i] = a << 24 | r << 16 | g << 8 | b;
 	}
 }
 
@@ -232,8 +246,41 @@ vec4f hsv2rgb(vec4f hsv) {
 }
 }
 
+argb hsv2rgb(float h, float s, float v) {
+	if (s == 0) {
+		return argb(0, 0, 0);
+	}
+
+	h *= 360 / 60;
+
+	int i = int(h);		// round
+	float32 f = h - i;	// fraction
+
+	float32 u = v;
+	float32 p = v * (1 - s);
+	float32 q = v * (1 - s * f);
+	float32 t = v * (1 - s * (1 - f));
+
+	if (i == 0) {
+		return argb(u, t, p);
+	}
+	if (i == 1) {
+		return argb(q, u, p);
+	}
+	if (i == 2) {
+		return argb(p, u, t);
+	}
+	if (i == 3) {
+		return argb(p, q, u);
+	}
+	if (i == 4) {
+		return argb(t, p, u);
+	}
+	return argb(u, p, q);
+}
+
 /// draw the given lookup table to the image
-void drawLut(gxSurf image, gxRect roi&, uint32 bars[256], uint32 lines[256]) {
+void drawLut(gxSurf image, const gxRect roi&, const uint32 bars[256], const uint32 lines[256]) {
 	enum {
 		margin: 20;
 		colB: 0x4371c6;
@@ -280,10 +327,10 @@ void drawLut(gxSurf image, gxRect roi&, uint32 bars[256], uint32 lines[256]) {
 			int rv = rch(argb(lines[i])) * rect.h / 256;
 			int lv = ach(argb(lines[i])) * rect.h / 256;
 
-			image.drawLine(x - 1, y - pl, x, y - lv, colL);
-			image.drawLine(x - 1, y - pb, x, y - bv, colB);
-			image.drawLine(x - 1, y - pg, x, y - gv, colG);
-			image.drawLine(x - 1, y - pr, x, y - rv, colR);
+			image.drawLine(x, y - pl, x, y - lv, colL);
+			image.drawLine(x, y - pb, x, y - bv, colB);
+			image.drawLine(x, y - pg, x, y - gv, colG);
+			image.drawLine(x, y - pr, x, y - rv, colR);
 
 			pl = lv;
 			pb = bv;
@@ -292,13 +339,3 @@ void drawLut(gxSurf image, gxRect roi&, uint32 bars[256], uint32 lines[256]) {
 		}
 	}
 }
-
-/// calculate and draw the histogram of the image
-void drawHist(gxSurf image, gxRect roi&, uint32 hist, uint32 lut2[256]) {
-	uint32 lut[256];
-	image.calcHist(roi, hist, lut);
-	image.drawLut(roi, lut, lut2);
-}
-
-/// calculate and draw the histogram of the image
-inline drawHist(gxSurf image, gxRect roi&, uint32 hist) = drawHist(image, roi, hist, null);

@@ -63,7 +63,7 @@ static double gradientSpiral(struct gradient_data* g) {
 	return f64Modulus(len + ang);
 }
 
-int gx_gradSurf(gx_Surf dst, gx_Rect roi, gx_Clut lut, gradient_type type) {
+int gx_gradSurf(gx_Surf dst, gx_Rect roi, gradient_type type, int length, uint32_t colors[]) {
 	struct gradient_data g;
 
 	if (dst->depth != 32)
@@ -144,7 +144,6 @@ int gx_gradSurf(gx_Surf dst, gx_Rect roi, gx_Clut lut, gradient_type type) {
 			break;
 	}
 
-	argb *p = (argb *) lut->data;
 	gx_Clip clip = gx_getclip(dst);
 	char *dptr = (char *) gx_getpaddr(dst, clip->l, clip->t);
 	if (dptr == NULL) {
@@ -155,7 +154,14 @@ int gx_gradSurf(gx_Surf dst, gx_Rect roi, gx_Clut lut, gradient_type type) {
 		for (g.y = clip->t; g.y < clip->b; ++g.y) {
 			register argb *d = (argb *) dptr;
 			for (g.x = clip->l; g.x < clip->r; ++g.x) {
-				d->a = p[clamp_u8(255 * g.gf(&g))].a;
+				int idx = length * g.gf(&g);
+				if (idx >= length) {
+					idx = length - 1;
+				}
+				else if (idx < 0) {
+					idx = 0;
+				}
+				d->a = colors[idx];
 				d += 1;
 			}
 			dptr += dst->scanLen;
@@ -166,7 +172,14 @@ int gx_gradSurf(gx_Surf dst, gx_Rect roi, gx_Clut lut, gradient_type type) {
 	for (g.y = clip->t; g.y < clip->b; ++g.y) {
 		register argb *d = (argb *) dptr;
 		for (g.x = clip->l; g.x < clip->r; ++g.x) {
-			d->val = p[clamp_s8(255 * g.gf(&g))].val;
+			int idx = length * g.gf(&g);
+			if (idx >= length) {
+				idx = length - 1;
+			}
+			else if (idx < 0) {
+				idx = 0;
+			}
+			d->val = colors[idx];
 			d += 1;
 		}
 		dptr += dst->scanLen;

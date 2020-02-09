@@ -105,7 +105,7 @@ void brightnessContrastGamma(uint32 lut[256], int brightness, int contrast, int 
 			value = Math.lerp(brightness / 256., value, Easing.easeOut(easeIn, value));
 		}
 
-		int rgb = grayClamp(int(256 * value));
+		int rgb = clamp_s8(256 * value);
 		lut2[idx].r = rgb;
 		lut2[idx].g = rgb;
 		lut2[idx].b = rgb;
@@ -152,11 +152,15 @@ int onEvent(int action, int button, int x, int y) {
 	static Histogram histogram = {
 		text: null;
 		image: offs;
+		height: 128;
+		enabled: false;
 	};
 	static Histogram curves = {
 		text: null;
 		image: offs;
-		showLines: true;
+		height: 128;
+		lines: true;
+		enabled: false;
 	};
 	static Slider time = {
 		text: "time";

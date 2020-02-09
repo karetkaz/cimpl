@@ -589,7 +589,6 @@ gxSurf.transform(surf: gxSurf, rect: gxRect, src: gxSurf, roi: gxRect, interpola
 gxSurf.blur(surf: gxSurf, radius: int32, sigma: float64): void
 gxSurf.colorMap(surf: gxSurf, roi: gxRect, lut: uint32[256]): void
 gxSurf.colorMat(surf: gxSurf, roi: gxRect, mat: float32[16]): void
-gxSurf.gradient(surf: gxSurf, roi: gxRect, type: int32, alpha: int32, repeat: bool, invert: bool, lut: uint32[]): void
 gxSurf.calcHist(surf: gxSurf, roi: gxRect, rgb: uint32, lut: uint32[256]): void
 gxSurf.drawMesh(surf: gxSurf, mesh: gxMesh, mode: int32): int32
 gxMesh
@@ -624,6 +623,15 @@ gxMesh.useLights
 gxMesh.vertices
 gxMesh.triangles
 gxMesh.segments
+gradient(surf: gxSurf, roi: gxRect, type: int32, repeat: bool, colors: uint32[]): void
+gradient.Linear
+gradient.Radial
+gradient.Square
+gradient.Spiral
+gradient.Conical
+gradient.MaskLinear
+gradient.MaskRadial
+gradient.MaskSquare
 camera
 camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): void
 camera.lookAt(eye: float32[3], at: float32[3], up: float32[3]): void
@@ -671,8 +679,8 @@ argb.r
 argb.a
 argb(argb: uint32): argb
 uint32(value: argb): uint32
-grayClamp(c: int32): uint32
-grayClamp(c: uint32): uint32
+clamp_s8(c: int32): uint32
+clamp_u8(c: uint32): uint32
 _gray(c: uint32): argb
 gray(c: int32): argb
 gray(c: uint32): argb
@@ -684,20 +692,21 @@ argb(r: int32, g: int32, b: int32): argb
 argb(r: uint32, g: uint32, b: uint32): argb
 argb(r: float32, g: float32, b: float32): argb
 argb(r: float64, g: float64, b: float64): argb
+argb(a: int32, r: int32, g: int32, b: int32): argb
+argb(a: uint32, r: uint32, g: uint32, b: uint32): argb
+argb(a: float32, r: float32, g: float32, b: float32): argb
+argb(a: float64, r: float64, g: float64, b: float64): argb
 ach(col: argb): uint32
 rch(col: argb): uint32
 gch(col: argb): uint32
 bch(col: argb): uint32
 lum(c: argb): uint32
-rgbLerp16(c1: argb, c2: argb, t: uint32): argb
-rgbLerp(c1: argb, c2: argb, t: float64): argb
-lerpLut(lut: uint32[], colors: argb[]): void
+lerpLut(lut: uint32[], alpha: int32, invert: bool, colors: argb[]): void
 argb(vec: vec4f): argb
 lum(vec: vec4f): float32
 hsv2rgb(hsv: vec4f): vec4f
+hsv2rgb(h: float32, s: float32, v: float32): argb
 drawLut(image: gxSurf, roi: gxRect, bars: uint32[256], lines: uint32[256]): void
-drawHist(image: gxSurf, roi: gxRect, hist: uint32, lut2: uint32[256]): void
-drawHist(image: gxSurf, roi: gxRect, hist: uint32): void
 gxSurf(width: int32, height: int32, depth: int32): gxSurf
 gxSurf(fileName: char[*], depth: int32): gxSurf
 gxSurf(fileName: char[*]): gxSurf

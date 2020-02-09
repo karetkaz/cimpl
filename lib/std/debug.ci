@@ -1,46 +1,46 @@
 // debugging related functions
 
 /// report message at `verbose` logging level
-inline verbose(char message[*], variant inspect) = raise(raise.verbose, raise.noTrace, message, inspect);
+inline verbose(const char message[*], const variant inspect) = raise(raise.verbose, raise.noTrace, message, inspect);
 /// report message at `verbose` logging level
-inline verbose(char message[*]) = raise(raise.verbose, raise.noTrace, message, null);
+inline verbose(const char message[*]) = raise(raise.verbose, raise.noTrace, message, null);
 
 /// report message at `debug` logging level
-inline debug(char message[*], variant inspect) = raise(raise.debug, raise.noTrace, message, inspect);
+inline debug(const char message[*], const variant inspect) = raise(raise.debug, raise.noTrace, message, inspect);
 /// report message at `debug` logging level
-inline debug(char message[*]) = raise(raise.debug, raise.noTrace, message, null);
+inline debug(const char message[*]) = raise(raise.debug, raise.noTrace, message, null);
 
 /// report message with stacktrace at `debug` logging level
-inline trace(char message[*], variant inspect) = raise(raise.debug, raise.defTrace, message, inspect);
+inline trace(const char message[*], const variant inspect) = raise(raise.debug, raise.defTrace, message, inspect);
 /// report message with stacktrace at `debug` logging level
-inline trace(char message[*]) = raise(raise.debug, raise.defTrace, message, null);
+inline trace(const char message[*]) = raise(raise.debug, raise.defTrace, message, null);
 
 /// report message at `info` logging level
-inline info(char message[*], variant inspect) = raise(raise.info, raise.noTrace, message, inspect);
+inline info(const char message[*], const variant inspect) = raise(raise.info, raise.noTrace, message, inspect);
 /// report message at `info` logging level
-inline info(char message[*]) = raise(raise.info, raise.noTrace, message, null);
+inline info(const char message[*]) = raise(raise.info, raise.noTrace, message, null);
 
 /// report message at `warn` logging level
-inline warn(char message[*], variant inspect) = raise(raise.warn, raise.noTrace, message, inspect);
+inline warn(const char message[*], const variant inspect) = raise(raise.warn, raise.noTrace, message, inspect);
 /// report message at `warn` logging level
-inline warn(char message[*]) = raise(raise.warn, raise.noTrace, message, null);
+inline warn(const char message[*]) = raise(raise.warn, raise.noTrace, message, null);
 
 /// report message with stacktrace at `error` logging level
-inline error(char message[*], variant inspect) = raise(raise.error, raise.defTrace, message, inspect);
+inline error(const char message[*], const variant inspect) = raise(raise.error, raise.defTrace, message, inspect);
 /// report message with stacktrace at `error` logging level
-inline error(char message[*]) = raise(raise.error, raise.defTrace, message, null);
+inline error(const char message[*]) = raise(raise.error, raise.defTrace, message, null);
 
 /// report message with stacktrace at `abort` logging level and abort execution
-inline abort(char message[*], variant inspect) = raise(raise.abort, raise.defTrace, message, inspect);
+inline abort(const char message[*], const variant inspect) = raise(raise.abort, raise.defTrace, message, inspect);
 /// report message with stacktrace at `abort` logging level and abort execution
-inline abort(char message[*]) = raise(raise.abort, raise.defTrace, message, null);
+inline abort(const char message[*]) = raise(raise.abort, raise.defTrace, message, null);
 /// report message with stacktrace at `abort` logging level and abort execution
 inline abort() = raise(raise.abort, raise.defTrace, "execution aborted!", null);
 
 /// report message and abort the execution if the assertion condition fails (is false)
-inline assert(bool condition, char message[*], variant inspect) = void(condition ? void(0) : abort(message, inspect));
+inline assert(bool condition, const char message[*], const variant inspect) = void(condition ? void(0) : abort(message, inspect));
 /// report message and abort the execution if the assertion condition fails (is false)
-inline assert(bool condition, char message[*]) = void(condition ? void(0) : abort(message));
+inline assert(bool condition, const char message[*]) = void(condition ? void(0) : abort(message));
 /// report message and abort the execution if the assertion condition fails (is false)
 inline assert(bool condition) = void(condition ? void(0) : abort("assertion failed!"));
 
@@ -61,7 +61,7 @@ struct NotEquals {
 
 /// abort execution if the returned value is not equal to the expected value
 // TODO: make inline
-static void assertEq(int expected, int returned, char message[*]) {
+static void assertEq(int expected, int returned, const char message[*]) {
 	if (returned == expected) {
 		return;
 	}

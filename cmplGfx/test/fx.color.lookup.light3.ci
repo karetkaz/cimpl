@@ -34,7 +34,7 @@ void buildLut(uint32 lut[256], float highlights, float shadows, float whites, fl
 		));
 		//x = Math.lerp(x, x * x * (3 - 2 * x), contrast);
 
-		int rgb = grayClamp(int(256 * x));
+		int rgb = clamp_s8(256 * x);
 		lut2[idx].r = idx;
 		lut2[idx].g = idx;
 		lut2[idx].b = idx;
@@ -78,11 +78,15 @@ int onEvent(int action, int button, int x, int y) {
 	static Histogram histogram = {
 		text: null;
 		image: offs;
+		height: 128;
+		enabled: false;
 	};
 	static Histogram curves = {
 		text: null;
 		image: offs;
-		showLines: true;
+		height: 128;
+		lines: true;
+		selectable: false;
 	};
 	static Slider time = {
 		text: "time";

@@ -295,6 +295,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 			break;
 		}
 
+		case OPER_adr:
 		case OPER_idx:
 			return CAST_any;
 
@@ -775,6 +776,11 @@ symn linkOf(astn ast, int follow) {
 		return linkOf(ast->op.rhso, follow);
 	}
 
+	if (ast->kind == OPER_adr) {
+		// &buff => buff
+		return linkOf(ast->op.rhso, 0);
+	}
+
 	if (ast->kind == TOKEN_var) {
 		// TODO: do we need to skip over aliases
 		symn lnk = ast->ref.link;
@@ -807,7 +813,7 @@ void addUsage(symn sym, astn tag) {
 				break;
 			}
 		}
-		dieif(usage == NULL, ERR_INTERNAL_ERROR);
+		logif(usage == NULL, ERR_INTERNAL_ERROR);
 #endif
 		return;
 	}

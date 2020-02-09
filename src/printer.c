@@ -842,6 +842,7 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 			printAst(out, esc, ast->op.rhso, mode, exprLevel);
 			break;
 
+		case OPER_adr:		// '&'
 		case OPER_pls:		// '+'
 		case OPER_mns:		// '-'
 		case OPER_cmt:		// '~'

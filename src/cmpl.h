@@ -60,13 +60,13 @@ typedef enum {
 	raise_warn_lex3 = 3,    // WARN_MULTI_CHAR_CONSTANT
 	raise_warn_lex9 = 9,    // WARN_NO_NEW_LINE_AT_END / WARN_COMMENT_MULTI_LINE / WARN_COMMENT_NESTED
 
-	raise_warn_par8 = 8,
-	raise_warn_pad6 = 6,
-	raise_warn_gen8 = 8,
-	raise_warn_var8 = 8,
+	raise_warn_par8 = 8,    // empty statement / use block statement
+	raise_warn_pad6 = 6,    // WARN_PADDING_ALIGNMENT
+	raise_warn_gen8 = 8,    // WARN_NO_CODE_GENERATED
+	raise_warn_var8 = 8,    // UNINITIALIZED_VARIABLE
 
 	raise_warn_typ2 = 2,    // WARN_STATIC_FIELD_ACCESS
-	raise_warn_typ3 = 3,    // WARN_USING_BEST_OVERLOAD
+	raise_warn_typ3 = 3,    // WARN_USING_BEST_OVERLOAD / PASS_ARG_BY_REFERENCE
 	raise_warn_typ4 = 4,    // WARN_USING_SIGNED_CAST
 	raise_warn_typ6 = 6,    // WARN_ADDING_IMPLICIT_CAST
 	raise_warn_typ9 = 9,    // WARN_DECLARATION_REDEFINED
@@ -324,6 +324,9 @@ static inline int isEnumType(symn sym) {
 }
 static inline int isArrayType(symn sym) {
 	return (sym->kind & (MASK_kind | MASK_cast)) == (KIND_typ | CAST_arr);
+}
+static inline int byReference(symn sym) {
+	return (sym->kind & MASK_cast) == CAST_ref;
 }
 static inline int isInvokable(symn sym) {
 	return sym->params != NULL;

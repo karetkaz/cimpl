@@ -32,20 +32,91 @@ static const mat4f SEPIA_COLOR = mat4f(
 	0, 0, 0, 1
 );
 
-static const mat4f POLAROID_COLOR = mat4f(
-	1.438,  -0.062, -0.062, 0,
-	-0.122, 1.378,  -0.122, 0,
-	-0.016, -0.016, 1.483, 0,
-	-0.03,  0.05,   -0.02, 1
+static const mat4f TECHNICOLOR = mat4f(
+// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
+	1.9125277891456083, -0.8545344976951645, -0.09155508482755585, 11.793603434377337 / 255,
+	-0.3087833385928097, 1.7658908555458428, -0.10601743074722245, -70.35205161461398 / 255,
+	-0.231103377548616, -0.7501899197440212, 1.847597816108189, 30.950940869491138 / 255,
+	0, 0, 0, 1
 );
 
-mat4f colorMatrix(float brightness, float saturation, float contrast, float hue) {
+static const mat4f POLAROID = mat4f(
+// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
+	1.438, -0.062, -0.062, 0,
+	-0.122, 1.378, -0.122, 0,
+	-0.016, -0.016, 1.483, 0,
+	0, 0, 0, 1
+);
+
+static const mat4f KODACHROME = mat4f(
+// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
+	1.1285582396593525, -0.3967382283601348, -0.03992559172921793, 63.72958762196502 / 255,
+	-0.16404339962244616, 1.0835251566291304, -0.05498805115633132, 24.732407896706203 / 255,
+	-0.16786010706155763, -0.5603416277695248, 1.6014850761964943, 35.62982807460946 / 255,
+	0, 0, 0, 1
+);
+
+static const mat4f BROWNI = mat4f(
+// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
+	0.5997023498159715, 0.34553243048391263, -0.2708298674538042, 47.43192855600873 / 255,
+	-0.037703249837783157, 0.8609577587992641, 0.15059552388459913, -36.96841498319127 / 255,
+	0.24113635128153335, -0.07441037908422492, 0.44972182064877153, -7.562075277591283 / 255,
+	0, 0, 0, 1
+);
+
+static const mat4f VINTAGE = mat4f(
+// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
+	0.6279345635605994, 0.3202183420819367, -0.03965408211312453, 9.651285835294123 / 255,
+	0.02578397704808868, 0.6441188644374771, 0.03259127616149294, 7.462829176470591 / 255,
+	0.0466055556782719, -0.0851232987247891, 0.5241648018700465, 5.159190588235296 / 255,
+	0, 0, 0, 1
+);
+
+static const mat4f NIGHT_VISION = mat4f(
+// https://github.com/skratchdot/color-matrix/blob/master/lib/filters.js
+	0.1, 0.4, 0, 0,
+	0.3, 1, 0.3, 0,
+	0, 0.4, 0.1, 0,
+	0, 0, 0, 1
+);
+
+static const mat4f WARM = mat4f(
+// https://github.com/skratchdot/color-matrix/blob/master/lib/filters.js
+	1.06, 0, 0, 0,
+	0, 1.01, 0, 0,
+	0, 0, 0.93, 0,
+	0, 0, 0, 1
+);
+
+static const mat4f COOL = mat4f(
+// https://github.com/skratchdot/color-matrix/blob/master/lib/filters.js
+	0.99, 0, 0, 0,
+	0, 0.93, 0, 0,
+	0, 0, 1.08, 0,
+	0, 0, 0, 1
+);
+
+static const mat4f LSD = mat4f(
+// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
+	2, -0.4, 0.5, 0,
+	-0.5, 2, -0.4, 0,
+	-0.4, -0.5, 3, 0,
+	0, 0, 0, 1
+);
+
+mat4f colorMatrix(float brightness, float saturation, float contrast, float temp, float tint, float hue) {
 	static mat4f brightnessMat(float val) {
+		/*return {
+			x: vec4f(1 + val, 0, 0, 0);
+			y: vec4f(0, 1 + val, 0, 0);
+			z: vec4f(0, 0, 1 + val, 0);
+			w: vec4f(0, 0, 0,  1);
+		};*/
 		return {
-			x: vec4f(1., 0., 0., val);
-			y: vec4f(0., 1., 0., val);
-			z: vec4f(0., 0., 1., val);
-			w: vec4f(0., 0., 0.,  1.);
+			x: vec4f(1, 0, 0, val);
+			y: vec4f(0, 1, 0, val);
+			z: vec4f(0, 0, 1, val);
+			w: vec4f(0, 0, 0,  1.);
 		};
 	}
 
@@ -76,6 +147,24 @@ mat4f colorMatrix(float brightness, float saturation, float contrast, float hue)
 		};
 	}
 
+	static mat4f temperatureMat(float val) {
+		return {
+			x: vec4f(1 + val, 0, 0, 0);
+			y: vec4f(0, 1, 0, 0);
+			z: vec4f(0, 0, 1 - val, 0);
+			w: vec4f(0, 0, 0, 1);
+		};
+	}
+
+	static mat4f tintMat(float val) {
+		return {
+			x: vec4f(1 + val, 0, 0, 0);
+			y: vec4f(0, 1, 0, 0);
+			z: vec4f(0, 0, 1 + val, 0);
+			w: vec4f(0, 0, 0, 1);
+		};
+	}
+
 	static mat4f hueMat(float val) {
 		//~ assert(val >= 0 && val <= 2 * Math.pi);
 		inline lR = 0.213;
@@ -102,6 +191,8 @@ mat4f colorMatrix(float brightness, float saturation, float contrast, float hue)
 		.mul(brightnessMat(brightness))
 		.mul(saturationMat(saturation))
 		.mul(contrastMat(contrast))
+		.mul(temperatureMat(temp))
+		.mul(tintMat(tint))
 		.mul(hueMat(hue));
 }
 
@@ -116,28 +207,42 @@ int onEvent(int action, int button, int x, int y) {
 
 	static Slider brightness = {
 		text: "brightness";
-		minimum: -100;
-		maximum: 100;
-		divisor: 100;
+		minimum: -200;
+		maximum: 200;
+		divisor: 200;
 	};
 	static Slider saturation = {
 		text: "saturation";
-		value: 100;
-		maximum: 500;
-		divisor: 100;
+		value: 200;
+		maximum: 1000;
+		divisor: 200;
 	};
 	static Slider contrast = {
 		text: "contrast";
-		value: 100;
-		minimum: -100;
-		maximum: 500;
-		divisor: 100;
+		value: 200;
+		minimum: -200;
+		maximum: 1000;
+		divisor: 200;
+	};
+	static Slider temp = {
+		text: "temperature";
+		minimum: -200;
+		maximum: 200;
+		divisor: 400;
+	};
+	static Slider tint = {
+		text: "tint";
+		minimum: -200;
+		maximum: 200;
+		divisor: 400;
 	};
 	static Slider hue = {
 		text: "hue";
 		minimum: 0;
-		maximum: 360;
+		maximum: 720;
+		divisor: 2;
 	};
+
 	static Button original = {
 		text: "original";
 		data: null;
@@ -158,38 +263,79 @@ int onEvent(int action, int button, int x, int y) {
 		text: "sepia color";
 		data: SEPIA_COLOR;
 	};
-	static Button polaroidColor = {
-		text: "polaroid color";
-		data: POLAROID_COLOR;
+	static Button technicolor = {
+		text: "technicolor";
+		data: TECHNICOLOR;
 	};
+	static Button polaroid = {
+		text: "polaroid";
+		data: POLAROID;
+	};
+	static Button kodachrome = {
+		text: "kodachrome";
+		data: KODACHROME;
+	};
+	static Button browni = {
+		text: "browni";
+		data: BROWNI;
+	};
+	static Button vintage = {
+		text: "vintage";
+		data: VINTAGE;
+	};
+	static Button nightVision = {
+		text: "night vision";
+		data: NIGHT_VISION;
+	};
+	static Button warm = {
+		text: "warm";
+		data: WARM;
+	};
+	static Button cool = {
+		text: "cool";
+		data: COOL;
+	};
+	static Button lsd = {
+		text: "lsd";
+		data: LSD;
+	};
+
 	static Histogram histogram = {
 		text: null;
 		image: offs;
+		height: 128;
+		enabled: false;
 	};
 	static Slider time = {
 		text: "time";
 		enabled: false;
 	};
+	static Button separator = {
+		text: null;
+		height: 1;
+		enabled: false;
+	};
 
 	static Layout ui = Layout(offs, -30, 30, font,
-		histogram, brightness, saturation, contrast, hue,
-		original, invert, grayScale, blackAndWhite, sepiaColor, polaroidColor,
-		time
+		histogram, separator, 
+		brightness, saturation, contrast, temp, tint, hue, separator,
+		original, invert, grayScale, blackAndWhite, sepiaColor,
+		technicolor, polaroid, kodachrome, browni, vintage,
+		nightVision, warm, cool, lsd, 
+		separator, time
 	);
 
-	bool redraw = uiEvent(ui, action, button, x, y);
 	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
 		}
 	}
-	if (redraw) {
+	if (ui.uiEvent(action, button, x, y)) {
 		uint64 start = System.millis();
 		offs.resize(null, back, null, 1);
 
-		Button button = ui.selected(Button);
-		if (button != null) {
-			if (mat4f mat& = button.data.as(mat4f)) {
+		if (Button btn = ui.selected(Button)) {
+			if (mat4f mat& = btn.data.as(mat4f)) {
 				offs.colorMat(null, mat.data);
 			}
 		} else {
@@ -197,11 +343,13 @@ int onEvent(int action, int button, int x, int y) {
 			float s = saturation.valFlt();
 			float c = contrast.valFlt();
 			float h = Math.radians(hue.valFlt());
-			mat4f mat = colorMatrix(b, s, c, h);
+			float te = temp.valFlt();
+			float ti = tint.valFlt();
+			mat4f mat = colorMatrix(b, s, c, te, ti, h);
 			offs.colorMat(null, mat.data);
 		}
 
-		offs.calcHist(null, 0x00ffffff, histogram.data);
+		offs.calcHist(null, 0x00ffffff, &histogram.data);
 		time.value = System.millis() - start;
 		ui.draw();
 	}

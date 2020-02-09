@@ -5,7 +5,7 @@ inline "gfx/color.ci";
 inline gxSurf(int width, int height, int depth) = gxSurf.create(width, height, depth);
 
 /// Create a surface by opening an image file
-gxSurf gxSurf(char fileName[*], int depth) {
+gxSurf gxSurf(const char fileName[*], int depth) {
 	if (fileName.endsWith(".jpeg", ignCaseCmp)) {
 		return gxSurf.openJpg(fileName, depth);
 	}
@@ -22,10 +22,10 @@ gxSurf gxSurf(char fileName[*], int depth) {
 }
 
 /// Create a surface by opening an image file
-inline gxSurf(char fileName[*]) = gxSurf(fileName, 32);
+inline gxSurf(const char fileName[*]) = gxSurf(fileName, 32);
 
 /// Create a surface by opening an image file with custom width and height
-gxSurf gxSurf(char fileName[*], int width, int height, int depth, int align, double maxScale) {
+gxSurf gxSurf(const char fileName[*], int width, int height, int depth, int align, double maxScale) {
 	enum: int {
 		center: 0;
 		left: 1;
@@ -97,13 +97,13 @@ gxSurf gxSurf(char fileName[*], int width, int height, int depth, int align, dou
 }
 
 /// Create a surface by opening an image file with custom width and height
-inline gxSurf(char fileName[*], int width, int height, int depth, int align) = gxSurf(fileName, width, height, depth, align, Math.inf);
+inline gxSurf(const char fileName[*], int width, int height, int depth, int align) = gxSurf(fileName, width, height, depth, align, Math.inf);
 
 /// Create a surface by opening an image file with custom width and height
-inline gxSurf(char fileName[*], int width, int height, int depth) = gxSurf(fileName, width, height, depth, -1, Math.inf);
+inline gxSurf(const char fileName[*], int width, int height, int depth) = gxSurf(fileName, width, height, depth, -1, Math.inf);
 
 /// Create a mesh by opening a file
-gxMesh gxMesh(char fileName[*]) {
+gxMesh gxMesh(const char fileName[*]) {
 	if (fileName.endsWith(".obj", ignCaseCmp)) {
 		return gxMesh.openObj(fileName);
 	}
@@ -192,7 +192,7 @@ void eval(gxSurf dst, const gxRect roi&, float32 aspect, float32 time, vec4f eva
 		h: roi != null ? roi.h : dst.height();
 	};
 
-	if (!dst.clip(rect)) {
+	if (!dst.clip(&rect)) {
 		return;
 	}
 
@@ -222,7 +222,7 @@ void tile(gxSurf dst, int x, int y, gxSurf src, gxRect roi&) {
 		h: roi != null ? roi.h : src.height();
 	};
 
-	if (!src.clip(rect)) {
+	if (!src.clip(&rect)) {
 		return;
 	}
 
@@ -321,28 +321,28 @@ void show(gxMesh mesh, int w, int h, float32 fovy) {
 				orig[1] = 0;
 				orig[2] = 0;
 
-				camera.readUp(dir);
+				camera.readUp(&dir);
 				camera.rotate(dir, orig, dx * speed);
-				camera.readRight(dir);
+				camera.readRight(&dir);
 				camera.rotate(dir, orig, dy * speed);
 			}
 			else if (button == 2) {
 				// rotate
-				camera.readUp(dir);
+				camera.readUp(&dir);
 				camera.rotate(dir, null, -dx * speed);
-				camera.readRight(dir);
+				camera.readRight(&dir);
 				camera.rotate(dir, null, -dy * speed);
 			}
 			else if (button == 3) {
 				// move
-				camera.readForward(dir);
+				camera.readForward(&dir);
 				camera.move(dir, dy * speed);
 			}
 			else if (button == 4) {
 				// pan
-				camera.readRight(dir);
+				camera.readRight(&dir);
 				camera.move(dir, -dx * speed);
-				camera.readUp(dir);
+				camera.readUp(&dir);
 				camera.move(dir, dy * speed);
 			}
 			ox = ex;
@@ -487,6 +487,7 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 
 struct View: object {
 	const char text[*];
+	const int height = 0;
 	bool enabled = true;
 	bool selectable = true;
 	const variant data = null;
@@ -494,7 +495,7 @@ struct View: object {
 	bool onClick(View this) = null; /*TODO: {
 		//trace("onClick", this);
 		return true;
-	}*/
+	}// */
 }
 
 struct Button: View {
@@ -522,10 +523,18 @@ struct Slider: View {
 	const int divisor = 1;
 }
 
+struct ColorPicker: View {
+	const float lum = 1f;
+	argb value = argb(0);
+	/*bool onClick(ColorPicker this) {
+		trace("onClick", this);
+		return true;
+	}*/
+}
+
 struct Histogram: View {
 	const gxSurf image;
-	const int height = 128;
-	const bool showLines = false;
+	const bool lines = false;
 	uint32 data[256] = null;   // FIXME: this should be not possible
 }
 
@@ -545,12 +554,14 @@ struct Layout {
 	MouseState mouse;
 	gxRect rect;
 
-	int count = 0;
-	View items[200] = null;
+	int items = 0;
+	View views[200] = null;
 	gxRect rects[200] = null;
 	int reset[200] = null;
 	int selectedIndex = -1;
+	int pressedIndex = -1;
 
+	// Style
 	int backgroundColor = 0x1a1a1a;
 	int focusedColor = 0x3b4754;
 	int valueColor = 0x6897bb;
@@ -576,16 +587,25 @@ void measure(Layout layout&) {
 	int fontHeight = layout.font.height() / 256;
 
 	// measure
-	for (int i = 0; i < layout.count; i += 1) {
+	for (int i = 0; i < layout.items; i += 1) {
 		gxRect rect& = layout.rects[i];
 		rect.x = layout.rect.x;
 		rect.y = bottom;
 		rect.w = layout.rect.w;
-		rect.h = fontHeight;
-		View view = layout.items[i];
-		if (Histogram item = view.as(Histogram)) {
-			if (rect.h < item.height) {
-				rect.h = item.height;
+		View view = layout.views[i];
+		if (view.height != 0) {
+			rect.h = view.height;
+		} else {
+			rect.h = fontHeight;
+		}
+		if (ColorPicker item = view.as(ColorPicker)) {
+			if (view.height == 0) {
+				rect.h = 128;
+			}
+		}
+		else if (Histogram item = view.as(Histogram)) {
+			if (view.height == 0) {
+				rect.h = 64;
 			}
 		}
 		else if (Slider item = view.as(Slider)) {
@@ -616,20 +636,13 @@ void draw(Layout layout&) {
 	}
 
 	// draw items
-	for (int i = 0; i < layout.count; i += 1) {
+	for (int i = 0; i < layout.items; i += 1) {
 		int pos = 0;
-		char value[256];
-		View view = layout.items[i];
+		char value[256] = {};
+		View view = layout.views[i];
 		gxRect rect& = layout.rects[i];
 		value[0] = 0;
-		if (Histogram item = view.as(Histogram)) {
-			if (item.showLines) {
-				offs.drawLut(rect, null, item.data);
-			} else {
-				offs.drawLut(rect, item.data, null);
-			}
-		}
-		else if (Slider item = view.as(Slider)) {
+		if (Slider item = view.as(Slider)) {
 			if (item.divisor != 1) {
 				pos = value.append(pos, item.valFlt(), flagsFlt);
 			} else {
@@ -646,15 +659,33 @@ void draw(Layout layout&) {
 		else if (Button item = view.as(Button)) {
 		}
 		else {
-			abort("item is not a known ui element", view);
+			//abort("item is not a known ui element", view);
 		}
 		if (i == layout.selectedIndex) {
 			layout.offs.fillRect(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, layout.focusedColor);
 		}
 
+		if (ColorPicker item = view.as(ColorPicker)) {
+			for (int y = 0; y < rect.h; y += 1) {
+				for (int x = 0; x < rect.w; x += 1) {
+					float px = float(x) / rect.w;
+					float py = float(y) / rect.h;
+					argb color = hsv2rgb(px, 1 - py, item.lum);
+					layout.offs.set(x + rect.x, y + rect.y, color);
+				}
+			}
+		}
+		else if (Histogram item = view.as(Histogram)) {
+			if (item.lines) {
+				offs.drawLut(rect, null, item.data);
+			} else {
+				offs.drawLut(rect, item.data, null);
+			}
+		}
+
 		int p = layout.padding;
 		gxRect valueRect = rect;
-		layout.font.clipText(valueRect, value);
+		layout.font.clipText(&valueRect, value);
 		if (valueRect.w > layout.rect.w - 2 * p) {
 			valueRect.w = layout.rect.w - 2 * p;
 		}
@@ -685,13 +716,17 @@ Layout Layout(gxSurf offs, int x, int y, gxSurf font, View items...) {
 		};
 	};
 
+	for (int i = 0; i < layout.views.length; i += 1) {
+		layout.views[i] = null;
+	}
+
 	for (int i = 0; i < items.length; i += 1) {
 		if (Slider slider = items[i].as(Slider)) {
 			layout.reset[i] = slider.value;
 		}
-		layout.items[i] = items[i];
+		layout.views[i] = items[i];
 	}
-	layout.count = items.length;
+	layout.items = items.length;
 
 	if (y < 0) {
 		layout.measure();
@@ -703,9 +738,42 @@ Layout Layout(gxSurf offs, int x, int y, gxSurf font, View items...) {
 	return layout;
 }
 
-inline selected(Layout layout&) = layout.selectedIndex < 0 ? null : pointer(layout.items[layout.selectedIndex]);
-inline selected(Layout layout&, typename type) = layout.selectedIndex < 0 ? null : layout.items[layout.selectedIndex].as(type);
-inline isSelected(Layout layout&, View item) = item == layout.selected();
+inline selected(const Layout layout&) = layout.selectedIndex < 0 ? null : pointer(layout.views[layout.selectedIndex]);
+inline selected(const Layout layout&, typename type) = layout.selectedIndex < 0 ? null : layout.views[layout.selectedIndex].as(type);
+inline isActiveSelected(const Layout layout&) = layout.pressedIndex < 0 ? true : layout.pressedIndex == layout.selectedIndex;
+bool isSelected(const Layout layout&, View items...) {
+	View selected = layout.selected();
+	for (int i = 0; i < items.length; i += 1) {
+		if (items[i] == selected) {
+			return true;
+		}
+	}
+	return false;
+}
+
+// FIXME: dispatch click event using inheritance and override
+bool onClick(View this) {
+	if (this.onClick == null) {
+		return true;
+	}
+	if (ColorPicker item = this.as(ColorPicker)) {
+		return item.onClick(item);
+	}
+	if (Histogram item = this.as(Histogram)) {
+		return item.onClick(item);
+	}
+	if (Slider item = this.as(Slider)) {
+		return item.onClick(item);
+	}
+	if (Switch item = this.as(Switch)) {
+		return item.onClick(item);
+	}
+	if (Button item = this.as(Button)) {
+		return item.onClick(item);
+	}
+	abort("invalid view detected", this);
+	return this.onClick();
+}
 
 bool uiEvent(Layout layout&, int action, int button, int x, int y) {
 static int click(MouseState old&, int btn, int x, int y) {
@@ -737,128 +805,733 @@ static int click(MouseState old&, int btn, int x, int y) {
 	return old.clicks;
 }
 
-bool click(Layout layout&, int index) {
-	if (index < 0) {
+bool test(const gxRect rect&, int x, int y) {
+	if (x < rect.x || x >= rect.x + rect.w) {
 		return false;
 	}
+	if (y < rect.y || y >= rect.y + rect.h) {
+		return false;
+	}
+	return true;
+}
 
-	View view = layout.items[index];
+bool select(Layout layout&, int index) {
+	assert(index >= 0, "invalid selection");
+	assert(index < layout.items, "invalid selection");
+	View view = layout.views[index];
+	assert(view != null, "selecting null");
 	if (!view.enabled) {
 		return false;
 	}
-
-	if (view.selectable) {
-		if (index != layout.selectedIndex) {
-			layout.selectedIndex = index;
+	if (!view.selectable) {
+		return false;
+	}
+	layout.selectedIndex = index;
+	return true;
+}
+bool select(Layout layout&, bool prev) {
+	layout.pressedIndex = -1;
+	int selectedIndex = layout.selectedIndex;
+	for (int i = 1; i < layout.items; i += 1) {
+		int index = selectedIndex + (prev ? -i : i);
+		if (index >= layout.items) {
+			index -= layout.items;
+		}
+		else if (index < 0) {
+			index += layout.items;
+		}
+		if (layout.select(index)) {
+			return true;
 		}
 	}
+	return false;
+}
 
-	if (Slider item = view.as(Slider)) {
-		if (layout.mouse.clicks == 2) {
-			item.value = layout.reset[index];
+inline reset = 1 << 31;
+inline activeIndex(const Layout layout&) = layout.pressedIndex != -1 ? layout.pressedIndex : layout.selectedIndex;
+bool update(Layout layout&, int index, int value) {
+	assert(index >= 0, "invalid selection");
+	assert(index < layout.items, "invalid selection");
+	View view = layout.views[index];
+	assert(view != null, "selecting null");
+
+	if (ColorPicker picker = selectedItem.as(ColorPicker)) {
+		gxRect rect& = layout.rects[index];
+		int x = layout.mouse.x;
+		int y = layout.mouse.y;
+		if (rect.test(x, y)) {
+			float px = float(x - rect.x) / rect.w;
+			float py = float(y - rect.y) / rect.h;
+			picker.value = hsv2rgb(px, 1 - py, picker.lum);
+			layout.focusedColor = uint32(picker.value);
 		}
-		if (view.onClick != null) {
-			// FIXME: use: view.onClick(item)
-			return item.onClick(item);
+		return true;
+	}
+	if (Slider item = view.as(Slider)) {
+		if (value == reset) {
+			item.value = layout.reset[index];
+		} else {
+			item.value += value;
 		}
 		return true;
 	}
 	if (Switch item = view.as(Switch)) {
-		if (layout.mouse.clicks == 2) {
-			// change only if already selected
+		debug("update Switch");
+		if (value != reset) {
 			item.checked = !item.checked;
 		}
-		if (item.onClick != null) {
-			return item.onClick(item);
-		}
 		return true;
 	}
-	if (Button item = view.as(Button)) {
-		if (item.onClick != null) {
-			return item.onClick(item);
-		}
-		return true;
-	}
-	return false;
+	return true;
 }
-bool click(Layout layout&, int x, int y) {
-	bool test(const gxRect rect&, int x, int y) {
-		if (x < rect.x || x >= rect.x + rect.w) {
-			return false;
-		}
-		if (y < rect.y || y >= rect.y + rect.h) {
-			return false;
-		}
-		return true;
-	}
 
+bool click(Layout layout&, int x, int y) {
 	if (!layout.rect.test(x, y)) {
 		return false;
 	}
-	for (int i = 0; i < layout.count; i += 1) {
+	for (int i = 0; i < layout.items; i += 1) {
 		if (!layout.rects[i].test(x, y)) {
 			continue;
 		}
-		return click(layout, i);
+		layout.pressedIndex = i;
+		if (layout.mouse.clicks > 1) {
+			layout.update(i, reset);
+		} else {
+			layout.update(i, 0);
+		}
+		if (!layout.select(i)) {
+			return !false;
+		}
 	}
 	// click is outside any control
-	return false;
+	return !false;
 }
 
-bool update(Layout layout&, int delta) {
-	if (layout.selectedIndex < 0) {
-		return false;
-	}
-	View selectedItem = layout.items[layout.selectedIndex];
-	if (Slider slider = selectedItem.as(Slider)) {
-		slider.value += delta;
-		return true;
-	}
-	return false;
-}
+	bool isCtrl = (y & Gui.KEY_MASK_CONTROL) != 0;
+	bool isShift = (y & Gui.KEY_MASK_SHIFT) != 0;
 
-bool reset(Layout layout&, int index) {
-	if (index < 0) {
-		for (int i = 0; i < layout.count; i += 1) {
-			layout.reset(i);
-		}
+	if (action == Gui.WINDOW_INIT) {
+		layout.selectedIndex = -1;
+		layout.select(false);
+		layout.measure();
 		return true;
 	}
-	if (Slider item = layout.items[index].as(Slider)) {
-		item.value = layout.reset[index];
-		return true;
-	}
-	return false;
-}
 
-bool select(Layout layout&, bool prev) {
-	for (int i = 1; i < layout.count; i += 1) {
-		int index = layout.selectedIndex + (prev ? -i : i);
-		if (index >= layout.count) {
-			index -= layout.count;
+	if (action == Gui.FINGER_MOTION) {
+		action = Gui.MOUSE_MOTION;
+	}
+	if (action == Gui.KEY_PRESS) {
+		if (button == ' ' || button == 8) {
+			if (isShift) {
+				for (int i = 0; i < layout.items; i += 1) {
+					layout.update(i, reset);
+				}
+				return true;
+			}
+			return layout.update(layout.activeIndex(), reset);
 		}
-		else if (index < 0) {
-			index += layout.count;
+		if (button == '-' || button == '_') {	// down
+			int delta = isShift ? 1 : 10;
+			return layout.update(layout.activeIndex(), -delta);
 		}
-		View view = layout.items[index];
-		if (Button item = view.as(Button)) {
-			if (item.enabled && item.selectable) {
-				layout.selectedIndex = index;
+		if (button == '+' || button == '=') {	// up
+			int delta = isShift ? 1 : 10;
+			return layout.update(layout.activeIndex(), +delta);
+		}
+		if (button == '\t') {
+			return layout.select(isShift);
+		}
+	}
+	else if (action == Gui.MOUSE_PRESS) {
+		layout.mouse.click(button, x, y);
+		if (button == 1) {
+			if (layout.click(x, y)) {
 				return true;
 			}
 		}
-		else if (Switch item = view.as(Switch)) {
-			if (item.enabled && item.selectable) {
-				layout.selectedIndex = index;
+	}
+	else if (action == Gui.MOUSE_RELEASE) {
+		layout.mouse.click(0, x, y);
+//		int index = layout.pressedIndex;
+//		layout.pressedIndex = -1;
+//		if (index == -1) {
+//			index = layout.selectedIndex;
+//		}
+//		if (index < 0) {
+//			return false;
+//		}
+//		View selectedItem = layout.views[index];
+//		if (!selectedItem.enabled) {
+//			return false;
+//		}
+//		if (ColorPicker picker = selectedItem.as(ColorPicker)) {
+//			gxRect rect& = layout.rects[index];
+//			if (rect.test(x, y)) {
+//				float px = float(x - rect.x) / rect.w;
+//				float py = float(y - rect.y) / rect.h;
+//				picker.value = hsv2rgb(px, 1 - py, picker.lum);
+//			}
+//			return true;
+//		}
+	}
+	else if (action == Gui.MOUSE_MOTION) {
+		int ox = layout.mouse.x;
+		int oy = layout.mouse.y;
+		layout.mouse.click(-1, x, y);
+		if (button == 1) {
+			if (layout.update(layout.activeIndex(), oy - y)) {
 				return true;
+			}
+			/*int index = layout.activeIndex();
+			if (index < 0) {
+				return false;
+			}
+			View selectedItem = layout.views[index];
+			if (!selectedItem.enabled) {
+				return false;
+			}
+			if (ColorPicker picker = selectedItem.as(ColorPicker)) {
+				gxRect rect& = layout.rects[index];
+				if (rect.test(x, y)) {
+					float px = float(x - rect.x) / rect.w;
+					float py = float(y - rect.y) / rect.h;
+					picker.value = hsv2rgb(px, 1 - py, picker.lum);
+					layout.focusedColor = uint32(picker.value);
+				}
+				return true;
+			}
+			if (Histogram item = selectedItem.as(Histogram)) {
+				gxRect rect& = layout.rects[index];
+				int min = ox < x ? ox : x;
+				int max = ox > x ? ox : x;
+				for (int i = min; i < max; i += 1) {
+					int idx = i - rect.x;
+					if (idx >= 0 && idx < 256) {
+						int32 val = 255 * (rect.h - (y - rect.y)) / rect.h;
+						item.data[idx] = uint32(argb(idx, val, val, val));
+					}
+				}
+				return true;
+			}
+			if (Slider slider = selectedItem.as(Slider)) {
+				slider.value += oy - y;
+				return true;
+			}*/
+		}
+	}
+	return false;
+}
+// micro ui
+
+struct View: object {
+	const char text[*];
+	const int height = 0;
+	bool enabled = true;
+	bool selectable = true;
+	const variant data = null;
+
+	bool onClick(View this) = null; /*TODO: {
+		//trace("onClick", this);
+		return true;
+	}// */
+}
+
+struct Button: View {
+	/* FIXME: do the override, use this method as default initializer
+	// TODO: override or overload: bool onClick(Button this) { ??? }
+	bool onClick(View this) {
+		View.onClick(this);   // call super
+		trace("onClick", this);
+		// FIXME: enable lookup: value.value = 0;
+		return this.enabled;
+	}// */
+}
+
+struct Switch: View {
+	const char on[*] = "on";
+	const char off[*] = "off";
+
+	bool checked = false;
+}
+
+struct Slider: View {
+	int value = 0;
+	const int minimum = 0;
+	const int maximum = -1u >> 1;
+	const int divisor = 1;
+}
+
+struct ColorPicker: View {
+	const float lum = 1f;
+	argb value = argb(0);
+	void onUpdate(ColorPicker this) = null;/* {
+		trace("onClick", this);
+	}// */
+}
+
+struct Histogram: View {
+	const gxSurf image;
+	const bool lines = false;
+	uint32 data[256] = null;   // FIXME: this should be not possible
+}
+
+struct MouseState {
+	int32 clicks;   // click count
+	int64 time;     // old clock
+	int32 btn;      // old button
+	int32 x;        // old x coord
+	int32 y;        // old y coord
+}
+
+struct Layout {
+	gxSurf offs;
+	gxSurf font;
+	int border = 3;
+	int padding = 5;
+	MouseState mouse;
+	gxRect rect;
+	bool visible = true;
+
+	int items = 0;
+	View views[200] = null;
+	gxRect rects[200] = null;
+	int reset[200] = null;
+	int selectedIndex = -1;
+	int pressedIndex = -1;
+
+	// Style
+	int backgroundColor = 0x1a1a1a;
+	int focusedColor = 0x3b4754;
+	int valueColor = 0x6897bb;
+	int textColor = 0xdadada;
+}
+
+int val(Slider slider&) {
+	if (slider.value < slider.minimum) {
+		slider.value = slider.minimum;
+	}
+	if (slider.value > slider.maximum) {
+		slider.value = slider.maximum;
+	}
+	return slider.value;
+}
+
+double valFlt(Slider slider&) {
+	return slider.val() / double(slider.divisor);
+}
+
+void measure(Layout layout&) {
+	int bottom = layout.rect.y;
+	int fontHeight = layout.font.height() / 256;
+
+	// measure
+	for (int i = 0; i < layout.items; i += 1) {
+		gxRect rect& = layout.rects[i];
+		rect.x = layout.rect.x;
+		rect.y = bottom;
+		rect.w = layout.rect.w;
+		View view = layout.views[i];
+		if (view.height != 0) {
+			rect.h = view.height;
+		} else {
+			rect.h = fontHeight;
+		}
+		if (ColorPicker item = view.as(ColorPicker)) {
+			if (view.height == 0) {
+				rect.h = 128;
+			}
+		}
+		else if (Histogram item = view.as(Histogram)) {
+			if (view.height == 0) {
+				rect.h = 64;
 			}
 		}
 		else if (Slider item = view.as(Slider)) {
-			if (item.enabled && item.selectable) {
-				layout.selectedIndex = index;
-				return true;
+			rect.h += 2 * layout.padding;
+		}
+		else if (Switch item = view.as(Switch)) {
+			rect.h += 2 * layout.padding;
+		}
+		else if (Button item = view.as(Button)) {
+			rect.h += 2 * layout.padding;
+		}
+		else {
+			abort("item is not a known ui element", view);
+		}
+		bottom += rect.h;
+	}
+	layout.rect.h = bottom - layout.rect.y;
+}
+void draw(Layout layout&) {
+	static const FormatFlags flagsInt = { padLen: 4 };
+	static const FormatFlags flagsFlt = { padLen: 4, precision: 2 };
+
+	if (!layout.visible) {
+		return;
+	}
+	// draw background
+	if (layout.backgroundColor != -1) {
+		int b = layout.border;
+		const gxRect r& = layout.rect;
+		layout.offs.fillRect(r.x - b, r.y - b, r.x + r.w + b, r.y + r.h + b, layout.backgroundColor);
+	}
+
+	// draw items
+	for (int i = 0; i < layout.items; i += 1) {
+		int pos = 0;
+		char value[256] = {};
+		View view = layout.views[i];
+		gxRect rect& = layout.rects[i];
+		value[0] = 0;
+		if (Slider item = view.as(Slider)) {
+			if (item.divisor != 1) {
+				pos = value.append(pos, item.valFlt(), flagsFlt);
+			} else {
+				pos = value.append(pos, item.val(), flagsInt);
 			}
 		}
+		else if (Switch item = view.as(Switch)) {
+			if (item.checked) {
+				pos = value.append(pos, item.on);
+			} else {
+				pos = value.append(pos, item.off);
+			}
+		}
+		else if (Button item = view.as(Button)) {
+		}
+		else {
+			//abort("item is not a known ui element", view);
+		}
+		if (i == layout.selectedIndex) {
+			layout.offs.fillRect(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, layout.focusedColor);
+		}
+
+		if (ColorPicker item = view.as(ColorPicker)) {
+			for (int y = 0; y < rect.h; y += 1) {
+				for (int x = 0; x < rect.w; x += 1) {
+					float px = float(x) / rect.w;
+					float py = float(y) / rect.h;
+					argb color = hsv2rgb(px, 1 - py, item.lum);
+					layout.offs.set(x + rect.x, y + rect.y, color);
+				}
+			}
+		}
+		else if (Histogram item = view.as(Histogram)) {
+			if (item.lines) {
+				offs.drawLut(rect, null, item.data);
+			} else {
+				offs.drawLut(rect, item.data, null);
+			}
+		}
+
+		int p = layout.padding;
+		gxRect valueRect = rect;
+		layout.font.clipText(&valueRect, value);
+		if (valueRect.w > layout.rect.w - 2 * p) {
+			valueRect.w = layout.rect.w - 2 * p;
+		}
+		if (view.text != null) {
+			gxRect textRect = rect;
+			textRect.x += p;
+			textRect.y += p;
+			textRect.w -= valueRect.w + 3 * p;
+			layout.offs.drawText(textRect, layout.font, view.text, layout.textColor);
+		}
+
+		valueRect.x += rect.w - valueRect.w - p;
+		valueRect.y += p;
+		layout.offs.drawText(valueRect, layout.font, value, layout.valueColor);
+	}
+}
+
+Layout Layout(gxSurf offs, int x, int y, gxSurf font, View items...) {
+	Layout layout = {
+		offs: offs;
+		font: font;
+		mouse: {};
+		rect: {
+			x: x;
+			y: y;
+			w: 256;
+			h: 0;
+		};
+	};
+
+	for (int i = 0; i < layout.views.length; i += 1) {
+		layout.views[i] = null;
+	}
+
+	for (int i = 0; i < items.length; i += 1) {
+		if (Slider slider = items[i].as(Slider)) {
+			layout.reset[i] = slider.value;
+		}
+		layout.views[i] = items[i];
+	}
+	layout.items = items.length;
+
+	if (y < 0) {
+		layout.measure();
+		layout.rect.y = offs.height() - layout.rect.h + y;
+	}
+	if (x < 0) {
+		layout.rect.x = offs.width() - layout.rect.w + x;
+	}
+	return layout;
+}
+
+inline selected(const Layout layout&) = layout.selectedIndex < 0 ? null : pointer(layout.views[layout.selectedIndex]);
+inline selected(const Layout layout&, typename type) = layout.selectedIndex < 0 ? null : layout.views[layout.selectedIndex].as(type);
+
+inline activeIndex(const Layout layout&) = layout.pressedIndex != -1 ? layout.pressedIndex : layout.selectedIndex;
+
+bool isSelected(const Layout layout&, View items...) {
+	View selected = layout.selected();
+	for (int i = 0; i < items.length; i += 1) {
+		if (items[i] == selected) {
+			return true;
+		}
+	}
+	return false;
+}
+bool isActive(const Layout layout&, View views...) {
+	int activeIndex = layout.pressedIndex != -1 ? layout.pressedIndex : layout.selectedIndex;
+	if (activeIndex < 0) {
+		return false;
+	}
+	View view = layout.views[activeIndex];
+	for (int i = 0; i < views.length; i += 1) {
+		if (views[i] == view) {
+			return true;
+		}
+	}
+	return false;
+
+}
+
+bool setSelected(Layout layout&, View view) {
+	for (int i = 0; i < layout.items; i += 1) {
+		if (layout.views[i] == view) {
+			layout.selectedIndex = i;
+			return true;
+		}
+	}
+	return false;
+}
+
+// FIXME: dispatch click event using inheritance and override
+bool onClick(View this) {
+	if (this.onClick == null) {
+		return true;
+	}
+	if (ColorPicker item = this.as(ColorPicker)) {
+		return item.onClick(item);
+	}
+	if (Histogram item = this.as(Histogram)) {
+		return item.onClick(item);
+	}
+	if (Slider item = this.as(Slider)) {
+		return item.onClick(item);
+	}
+	if (Switch item = this.as(Switch)) {
+		return item.onClick(item);
+	}
+	if (Button item = this.as(Button)) {
+		return item.onClick(item);
+	}
+	abort("invalid view detected", this);
+	return this.onClick();
+}
+
+bool uiEvent(Layout layout&, int action, int button, int x, int y) {
+static int click(MouseState old&, int btn, int x, int y) {
+	if ((btn != 0 && btn != old.btn) || x != old.x || y != old.y) {
+		// reset values
+		old.time = System.millis();
+		old.btn = btn;
+		old.clicks = 1;
+		old.x = x;
+		old.y = y;
+		return 0;
+	}
+	if (btn == 0) {
+		// release button
+		// old.time = keep value?;
+		// old.btn = keep value?;
+		// old.cnt = keep value?;
+		return old.clicks;
+	}
+
+	int64 now = System.millis();
+	if ((now - old.time) / 1000. > .5) {
+		// reset counter
+		old.clicks = 0;
+	}
+	old.time = now;
+	old.btn = btn;
+	old.clicks += 1;
+	return old.clicks;
+}
+
+bool test(const gxRect rect&, int x, int y) {
+	if (x < rect.x || x >= rect.x + rect.w) {
+		return false;
+	}
+	if (y < rect.y || y >= rect.y + rect.h) {
+		return false;
+	}
+	return true;
+}
+
+bool select(Layout layout&, int index) {
+	assert(index >= 0, "invalid selection");
+	assert(index < layout.items, "invalid selection");
+
+	View view = layout.views[index];
+	if (!view.enabled) {
+		return false;
+	}
+	if (!view.selectable) {
+		return false;
+	}
+	layout.selectedIndex = index;
+	return true;
+}
+bool select(Layout layout&, bool prev) {
+	layout.pressedIndex = -1;
+	int selectedIndex = layout.selectedIndex;
+	for (int i = 1; i < layout.items; i += 1) {
+		int index = selectedIndex + (prev ? -i : i);
+		if (index >= layout.items) {
+			index -= layout.items;
+		}
+		else if (index < 0) {
+			index += layout.items;
+		}
+		if (layout.select(index)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+static void reset(Layout layout&, int index) {
+	assert(index >= 0, "invalid selection");
+	assert(index < layout.items, "invalid selection");
+
+	View view = layout.views[index];
+	if (!view.enabled) {
+		return;
+	}
+	if (Slider item = view.as(Slider)) {
+		item.value = layout.reset[index];
+	}
+}
+static bool update(Layout layout&, int index, int dx, int dy) {
+	assert(index >= 0, "invalid selection");
+	assert(index < layout.items, "invalid selection");
+
+	// FIXME: who is y??? debug("y", y);
+
+	View view = layout.views[index];
+	if (!view.enabled) {
+		return false;
+	}
+	if (ColorPicker item = view.as(ColorPicker)) {
+		gxRect rect& = layout.rects[index];
+		int x = layout.mouse.x;
+		int y = layout.mouse.y;
+		if (!rect.test(x, y)) {
+			return false;
+		}
+		float px = float(x - rect.x) / rect.w;
+		float py = float(y - rect.y) / rect.h;
+		item.value = hsv2rgb(px, 1 - py, item.lum);
+		if (item.onUpdate != null) {
+			item.onUpdate();
+		}
+		return true;
+	}
+	if (Histogram item = view.as(Histogram)) {
+		gxRect rect& = layout.rects[index];
+		int min = layout.mouse.x;
+		int max = layout.mouse.x;
+		int y = layout.mouse.y;
+		if (dx < 0) {
+			min += dx;
+		} else {
+			max += dx;
+		}
+		for (int i = min; i < max; i += 1) {
+			int idx = i - rect.x;
+			if (idx >= 0 && idx < 256) {
+				int32 val = 255 * (rect.h - (y - rect.y)) / rect.h;
+				item.data[idx] = uint32(argb(idx, val, val, val));
+			}
+		}
+		return true;
+	}
+	if (Slider item = view.as(Slider)) {
+		if (dx == 0 && dy == 0) {
+			return false;
+		}
+		item.value += dy;
+		return true;
+	}
+	if (Switch item = view.as(Switch)) {
+		if (dx != 0 || dy != 0) {
+			// disable change using drag
+			return false;
+		}
+		if (layout.selectedIndex != index) {
+			// disable first click update
+			if (item.selectable) {
+				return false;
+			}
+		}
+		item.checked = !item.checked;
+		return true;
+	}
+	if (Button item = view.as(Button)) {
+		if (dx != 0 || dy != 0) {
+			// disable clicks using drag
+			return false;
+		}
+		item.onClick();
+		return true;
+	}
+
+	// unknown view type
+	return false;
+}
+
+bool click(Layout layout&, int x, int y) {
+	layout.pressedIndex = -1;
+	if (!layout.rect.test(x, y)) {
+		return false;
+	}
+	for (int i = 0; i < layout.items; i += 1) {
+		if (!layout.rects[i].test(x, y)) {
+			continue;
+		}
+
+		View view = layout.views[i];
+		if (!view.enabled) {
+			return false;
+		}
+
+		bool result = false;
+		layout.pressedIndex = i;
+		if (layout.mouse.clicks > 1) {
+			layout.reset(i);
+			result = true;
+		}
+		if (layout.update(i, 0, 0)) {
+			result = true;
+		}
+		if (layout.select(i)) {
+			result = true;
+		}
+		return result;
 	}
 	return false;
 }
@@ -877,53 +1550,56 @@ bool select(Layout layout&, bool prev) {
 		action = Gui.MOUSE_MOTION;
 	}
 	if (action == Gui.KEY_PRESS) {
-		if (button == ' ') {
+		if (button == ' ' || button == 8) {
 			if (isShift) {
-				layout.reset(-1);
+				for (int i = 0; i < layout.items; i += 1) {
+					layout.reset(i);
+				}
 				return true;
 			}
-			layout.mouse.clicks = 2;  // FIXME: hack: simulate double clock to reset slider 
-			if (layout.click(layout.selectedIndex)) {
-				return true;
-			}
+			layout.reset(layout.activeIndex());
+			layout.update(layout.activeIndex(), 0, 0);
+			return true;
 		}
 		if (button == '-' || button == '_') {	// down
-			int delta = isShift ? 10 : 1;
-			if (layout.update(-delta)) {
-				return true;
-			}
+			int delta = isShift ? 1 : 10;
+			return layout.update(layout.activeIndex(), -delta, -delta);
 		}
 		if (button == '+' || button == '=') {	// up
-			int delta = isShift ? 10 : 1;
-			if (layout.update(+delta)) {
-				return true;
-			}
+			int delta = isShift ? 1 : 10;
+			return layout.update(layout.activeIndex(), +delta, +delta);
+		}
+		if (button == '[' || button == ']') {	// position
+			layout.visible = !layout.visible;
+			return true;
 		}
 		if (button == '\t') {
-			if (layout.select(isShift)) {
-				return true;
-			}
+			return layout.select(isShift);
 		}
 	}
 	else if (action == Gui.MOUSE_PRESS) {
 		layout.mouse.click(button, x, y);
-		if (button == 1) {
-			if (layout.click(x, y)) {
-				return true;
-			}
+		if (button != 1) {
+			return false;
 		}
+		return layout.click(x, y);
 	}
 	else if (action == Gui.MOUSE_RELEASE) {
 		layout.mouse.click(0, x, y);
+		layout.pressedIndex = -1;
+		return false;
 	}
 	else if (action == Gui.MOUSE_MOTION) {
-		int dy = layout.mouse.y - y;
+		int ox = layout.mouse.x;
+		int oy = layout.mouse.y;
 		layout.mouse.click(-1, x, y);
-		if (button == 1) {
-			if (layout.update(dy)) {
-				return true;
-			}
+		if (button != 1) {
+			return false;
 		}
+		if (ox == x && oy == y) {
+			return false;
+		}
+		return layout.update(layout.activeIndex(), ox - x, oy - y);
 	}
 	return false;
 }
@@ -1035,7 +1711,7 @@ inline uint32(argb value) = uint32(emit(struct(value)));
 
 
 /// clamp signed gray or color component to fit in 8 bits (0 ... 255)
-uint32 grayClamp(int32 c) {
+uint32 clamp_s8(int32 c) {
 	if (c < 0) {
 		return 0;
 	}
@@ -1045,20 +1721,19 @@ uint32 grayClamp(int32 c) {
 	return c;
 }
 /// clamp unsigned gray or color component to fit in 8 bits (0 ... 255)
-uint32 grayClamp(uint32 c) {
+uint32 clamp_u8(uint32 c) {
 	if (c > 255) {
 		return 255;
 	}
 	return c;
 }
 
-
 // construct a rgb8 gray color from the given value
 inline _gray(uint32 c) = argb((((c << 8) | c) << 8) | c);
 /// construct a rgb8 color from the given gray value, clamp the input
-inline gray(int32 c) = _gray(grayClamp(c));
+inline gray(int32 c) = _gray(clamp_s8(c));
 /// construct a rgb8 color from the given gray value, clamp the input
-inline gray(uint32 c) = _gray(grayClamp(c));
+inline gray(uint32 c) = _gray(clamp_s8(c));
 /// construct a rgb8 color from the given gray value, clamp the input
 inline gray(float32 c) = gray(int32(c * 255));
 /// construct a rgb8 color from the given gray value, clamp the input
@@ -1071,13 +1746,21 @@ inline _argb(uint32 r, uint32 g, uint32 b) = argb(uint32((((r << 8) | g) << 8) |
 inline _argb(uint32 a, uint32 r, uint32 g, uint32 b) = argb(uint32((((((a << 8) | r) << 8) | g) << 8) | b));
 
 /// construct a rgb8 color from the given components, clamp the input
-inline argb(int32 r, int32 g, int32 b) = _argb(grayClamp(r), grayClamp(g), grayClamp(b));
+inline argb(int32 r, int32 g, int32 b) = _argb(clamp_s8(r), clamp_s8(g), clamp_s8(b));
 /// construct a rgb8 color from the given components, clamp the input
-inline argb(uint32 r, uint32 g, uint32 b) = _argb(grayClamp(r), grayClamp(g), grayClamp(b));
+inline argb(uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(r), clamp_u8(g), clamp_u8(b));
 /// construct a rgb8 color from the given components, clamp the input
 inline argb(float32 r, float32 g, float32 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
 /// construct a rgb8 color from the given components, clamp the input
 inline argb(float64 r, float64 g, float64 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(int32 a, int32 r, int32 g, int32 b) = _argb(clamp_s8(a), clamp_s8(r), clamp_s8(g), clamp_s8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(uint32 a, uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(a), clamp_u8(r), clamp_u8(g), clamp_u8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float32 a, float32 r, float32 g, float32 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float64 a, float64 r, float64 g, float64 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
 
 
 /// get the Alpha channel of the color
@@ -1091,26 +1774,33 @@ inline bch(argb col) = uint32(uint32(col) & 0xff);
 /// get the luminosity of the color
 inline lum(argb c) = uint32((rch(c) * 76 + gch(c) * 150 + bch(c) * 29) >> 8);
 
-/// linear interpolation between `c1` and `c2` by `t`, where t is a 16 bit fixed point
-argb rgbLerp16(argb c1, argb c2, uint32 t) {
-	inline lerp(uint32 x, uint32 y) = uint32(x + (t * (y - x) >> 16));
-	uint32 r = lerp(rch(c1), rch(c2));
-	uint32 g = lerp(gch(c1), gch(c2));
-	uint32 b = lerp(bch(c1), bch(c2));
-	return argb(r, g, b);
-}
-
-/// linear interpolation between `c1` and `c2` by `t`, where t is between 0. and 1.
-inline rgbLerp(argb c1, argb c2, double t) = rgbLerp16(c1, c2, uint32(t * (1 << 16)));
 
 /// linear interpolate a lookup-table with the given colors
-void lerpLut(uint32 lut[], argb colors...) {
+void lerpLut(uint32 lut[], int alpha, bool invert, argb colors...) {
+	inline lrp(int32 t, uint32 x, uint32 y) = x + (t * (y - x) >> 16);
+
+	int mid = alpha < 0 ? 0 : 254;
+	int div = 256 - clamp_u8(alpha > 0 ? alpha : -alpha);
 	int dt = (colors.length - 1 << 16) / (lut.length - 1);
 	for (int i = 0; i < lut.length; i += 1) {
 		int t = i * dt;
 		argb c1 = colors[t >> 16];
 		argb c2 = colors[(t >> 16) + 1];
-		lut[i] = uint32(rgbLerp16(c1, c2, t & 0xffff));
+		int32 a = lrp(t & 0xffff, ach(c1), ach(c2));
+		int32 r = lrp(t & 0xffff, rch(c1), rch(c2));
+		int32 g = lrp(t & 0xffff, gch(c1), gch(c2));
+		int32 b = lrp(t & 0xffff, bch(c1), bch(c2));
+		a = clamp_s8((a - mid) * 256 / div + mid);
+		r = clamp_s8((r - mid) * 256 / div + mid);
+		g = clamp_s8((g - mid) * 256 / div + mid);
+		b = clamp_s8((b - mid) * 256 / div + mid);
+		if (invert) {
+			a = ~a;
+			r = ~r;
+			g = ~g;
+			b = ~b;
+		}
+		lut[i] = a << 24 | r << 16 | g << 8 | b;
 	}
 }
 
@@ -1161,8 +1851,41 @@ vec4f hsv2rgb(vec4f hsv) {
 }
 }
 
+argb hsv2rgb(float h, float s, float v) {
+	if (s == 0) {
+		return argb(0, 0, 0);
+	}
+
+	h *= 360 / 60;
+
+	int i = int(h);		// round
+	float32 f = h - i;	// fraction
+
+	float32 u = v;
+	float32 p = v * (1 - s);
+	float32 q = v * (1 - s * f);
+	float32 t = v * (1 - s * (1 - f));
+
+	if (i == 0) {
+		return argb(u, t, p);
+	}
+	if (i == 1) {
+		return argb(q, u, p);
+	}
+	if (i == 2) {
+		return argb(p, u, t);
+	}
+	if (i == 3) {
+		return argb(p, q, u);
+	}
+	if (i == 4) {
+		return argb(t, p, u);
+	}
+	return argb(u, p, q);
+}
+
 /// draw the given lookup table to the image
-void drawLut(gxSurf image, gxRect roi&, uint32 bars[256], uint32 lines[256]) {
+void drawLut(gxSurf image, const gxRect roi&, const uint32 bars[256], const uint32 lines[256]) {
 	enum {
 		margin: 20;
 		colB: 0x4371c6;
@@ -1209,10 +1932,10 @@ void drawLut(gxSurf image, gxRect roi&, uint32 bars[256], uint32 lines[256]) {
 			int rv = rch(argb(lines[i])) * rect.h / 256;
 			int lv = ach(argb(lines[i])) * rect.h / 256;
 
-			image.drawLine(x - 1, y - pl, x, y - lv, colL);
-			image.drawLine(x - 1, y - pb, x, y - bv, colB);
-			image.drawLine(x - 1, y - pg, x, y - gv, colG);
-			image.drawLine(x - 1, y - pr, x, y - rv, colR);
+			image.drawLine(x, y - pl, x, y - lv, colL);
+			image.drawLine(x, y - pb, x, y - bv, colB);
+			image.drawLine(x, y - pg, x, y - gv, colG);
+			image.drawLine(x, y - pr, x, y - rv, colR);
 
 			pl = lv;
 			pb = bv;
@@ -1221,16 +1944,6 @@ void drawLut(gxSurf image, gxRect roi&, uint32 bars[256], uint32 lines[256]) {
 		}
 	}
 }
-
-/// calculate and draw the histogram of the image
-void drawHist(gxSurf image, gxRect roi&, uint32 hist, uint32 lut2[256]) {
-	uint32 lut[256];
-	image.calcHist(roi, hist, lut);
-	image.drawLut(roi, lut, lut2);
-}
-
-/// calculate and draw the histogram of the image
-inline drawHist(gxSurf image, gxRect roi&, uint32 hist) = drawHist(image, roi, hist, null);
 // emulated implementation
 void transform(gxSurf surf, const gxRect rect&, gxSurf src, const gxRect roi&, int32 interpolate, float32 mat[16]) {
 	assert(roi == null);
@@ -1390,46 +2103,46 @@ void blur(gxSurf img, int radius, double sigma) {
 // debugging related functions
 
 /// report message at `verbose` logging level
-inline verbose(char message[*], variant inspect) = raise(raise.verbose, raise.noTrace, message, inspect);
+inline verbose(const char message[*], const variant inspect) = raise(raise.verbose, raise.noTrace, message, inspect);
 /// report message at `verbose` logging level
-inline verbose(char message[*]) = raise(raise.verbose, raise.noTrace, message, null);
+inline verbose(const char message[*]) = raise(raise.verbose, raise.noTrace, message, null);
 
 /// report message at `debug` logging level
-inline debug(char message[*], variant inspect) = raise(raise.debug, raise.noTrace, message, inspect);
+inline debug(const char message[*], const variant inspect) = raise(raise.debug, raise.noTrace, message, inspect);
 /// report message at `debug` logging level
-inline debug(char message[*]) = raise(raise.debug, raise.noTrace, message, null);
+inline debug(const char message[*]) = raise(raise.debug, raise.noTrace, message, null);
 
 /// report message with stacktrace at `debug` logging level
-inline trace(char message[*], variant inspect) = raise(raise.debug, raise.defTrace, message, inspect);
+inline trace(const char message[*], const variant inspect) = raise(raise.debug, raise.defTrace, message, inspect);
 /// report message with stacktrace at `debug` logging level
-inline trace(char message[*]) = raise(raise.debug, raise.defTrace, message, null);
+inline trace(const char message[*]) = raise(raise.debug, raise.defTrace, message, null);
 
 /// report message at `info` logging level
-inline info(char message[*], variant inspect) = raise(raise.info, raise.noTrace, message, inspect);
+inline info(const char message[*], const variant inspect) = raise(raise.info, raise.noTrace, message, inspect);
 /// report message at `info` logging level
-inline info(char message[*]) = raise(raise.info, raise.noTrace, message, null);
+inline info(const char message[*]) = raise(raise.info, raise.noTrace, message, null);
 
 /// report message at `warn` logging level
-inline warn(char message[*], variant inspect) = raise(raise.warn, raise.noTrace, message, inspect);
+inline warn(const char message[*], const variant inspect) = raise(raise.warn, raise.noTrace, message, inspect);
 /// report message at `warn` logging level
-inline warn(char message[*]) = raise(raise.warn, raise.noTrace, message, null);
+inline warn(const char message[*]) = raise(raise.warn, raise.noTrace, message, null);
 
 /// report message with stacktrace at `error` logging level
-inline error(char message[*], variant inspect) = raise(raise.error, raise.defTrace, message, inspect);
+inline error(const char message[*], const variant inspect) = raise(raise.error, raise.defTrace, message, inspect);
 /// report message with stacktrace at `error` logging level
-inline error(char message[*]) = raise(raise.error, raise.defTrace, message, null);
+inline error(const char message[*]) = raise(raise.error, raise.defTrace, message, null);
 
 /// report message with stacktrace at `abort` logging level and abort execution
-inline abort(char message[*], variant inspect) = raise(raise.abort, raise.defTrace, message, inspect);
+inline abort(const char message[*], const variant inspect) = raise(raise.abort, raise.defTrace, message, inspect);
 /// report message with stacktrace at `abort` logging level and abort execution
-inline abort(char message[*]) = raise(raise.abort, raise.defTrace, message, null);
+inline abort(const char message[*]) = raise(raise.abort, raise.defTrace, message, null);
 /// report message with stacktrace at `abort` logging level and abort execution
 inline abort() = raise(raise.abort, raise.defTrace, "execution aborted!", null);
 
 /// report message and abort the execution if the assertion condition fails (is false)
-inline assert(bool condition, char message[*], variant inspect) = void(condition ? void(0) : abort(message, inspect));
+inline assert(bool condition, const char message[*], const variant inspect) = void(condition ? void(0) : abort(message, inspect));
 /// report message and abort the execution if the assertion condition fails (is false)
-inline assert(bool condition, char message[*]) = void(condition ? void(0) : abort(message));
+inline assert(bool condition, const char message[*]) = void(condition ? void(0) : abort(message));
 /// report message and abort the execution if the assertion condition fails (is false)
 inline assert(bool condition) = void(condition ? void(0) : abort("assertion failed!"));
 
@@ -1450,7 +2163,7 @@ struct NotEquals {
 
 /// abort execution if the returned value is not equal to the expected value
 // TODO: make inline
-static void assertEq(int expected, int returned, char message[*]) {
+static void assertEq(int expected, int returned, const char message[*]) {
 	if (returned == expected) {
 		return;
 	}
@@ -1466,7 +2179,7 @@ inline assertEq(int expected, int returned) = assertEq(expected, returned, null)
 // string related functions
 
 /// Computes the length of the string
-int length(char str[*]) {
+int length(const char str[*]) {
 	if (str == null) {
 		return 0;
 	}
@@ -1477,7 +2190,7 @@ int length(char str[*]) {
 }
 
 /// Returns the index of the first occurrence of a character in string
-int indexOf(char str[*], char chr) {
+int indexOf(const char str[*], char chr) {
 	for (int i = 0; str[i]; i += 1) {
 		if (str[i] == chr) {
 			return i;
@@ -1487,7 +2200,7 @@ int indexOf(char str[*], char chr) {
 }
 
 /// Returns the index of the last occurrence of a character in string
-int lastIndexOf(char str[*], char chr) {
+int lastIndexOf(const char str[*], char chr) {
 	int result = -1;
 	for (int i = 0; str[i]; i += 1) {
 		if (str[i] == chr) {
@@ -1498,7 +2211,7 @@ int lastIndexOf(char str[*], char chr) {
 }
 
 /// Check if a string begins with a specified string, using a custom comparator
-bool startsWith(char str[*], char with[*], int cmp(char chr, char with)) {
+bool startsWith(const char str[*], const char with[*], int cmp(char chr, char with)) {
 	for (int i = 0; with[i] != 0; i += 1) {
 		if (cmp(str[i], with[i]) != 0) {
 			return false;
@@ -1508,7 +2221,7 @@ bool startsWith(char str[*], char with[*], int cmp(char chr, char with)) {
 }
 
 /// Check if a string ends in a specified string, using a custom comparator
-bool endsWith(char str[*], char with[*], int cmp(char chr, char with)) {
+bool endsWith(const char str[*], const char with[*], int cmp(char chr, char with)) {
 	int withLen = length(with);
 	int strLen = length(str);
 	if (strLen < withLen) {
@@ -1523,7 +2236,7 @@ bool endsWith(char str[*], char with[*], int cmp(char chr, char with)) {
 }
 
 /// Check if the two strings are equal, using a custom comparator
-int compare(char str[*], char with[*], int cmp(char chr, char with)) {
+int compare(const char str[*], const char with[*], int cmp(char chr, char with)) {
 	int result = 0;
 	for (int i = 0; result == 0; i += 1) {
 		result = cmp(str[i], with[i]);
@@ -1554,21 +2267,21 @@ int caseCmp(char chr, char with) {
 	return chr - with;
 }
 
-inline startsWith(char str[*], char with[*]) = startsWith(str, with, caseCmp);
-inline endsWith(char str[*], char with[*]) = endsWith(str, with, caseCmp);
-inline compare(char str[*], char with[*]) = compare(str, with, caseCmp);
+inline startsWith(const char str[*], const char with[*]) = startsWith(str, with, caseCmp);
+inline endsWith(const char str[*], const char with[*]) = endsWith(str, with, caseCmp);
+inline compare(const char str[*], const char with[*]) = compare(str, with, caseCmp);
 
 /// Check if a string contains the given character
-inline contains(char str[*], char chr) = indexOf(str, chr) >= 0;
+inline contains(const char str[*], char chr) = indexOf(str, chr) >= 0;
 
 /* TODO: implement operator overloading
 
-inline ==(char lhs[*], char rhs[*]) = compare(lhs, rhs, caseCmp) == 0;
-inline !=(char lhs[*], char rhs[*]) = compare(lhs, rhs, caseCmp) != 0;
-inline <=(char lhs[*], char rhs[*]) = compare(lhs, rhs, caseCmp) <= 0;
-inline >=(char lhs[*], char rhs[*]) = compare(lhs, rhs, caseCmp) >= 0;
-inline <(char lhs[*], char rhs[*]) = compare(lhs, rhs, caseCmp) < 0;
-inline >(char lhs[*], char rhs[*]) = compare(lhs, rhs, caseCmp) > 0;
+inline ==(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) == 0;
+inline !=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) != 0;
+inline <=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) <= 0;
+inline >=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) >= 0;
+inline <(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) < 0;
+inline >(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) > 0;
 
 // */
 
@@ -1588,7 +2301,7 @@ struct FormatFlags {
 }
 
 /// Append a string to the output at the given position
-int append(char output[], int pos, char value[*]) {
+int append(char output[], int pos, const char value[*]) {
 	for (int i = 0; value[i]; i += 1) {
 		if (pos >= output.length) {
 			break;
@@ -1605,7 +2318,7 @@ int append(char output[], int pos, char value[*]) {
 }
 
 // Append a number to the output at the given position
-int append(char output[], int pos, char sign, uint64 value, FormatFlags format&) {
+int append(char output[], int pos, char sign, uint64 value, const FormatFlags format&) {
 	static const char whiteSpace[] = " \t\n\r";
 	static const char radixDigits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 
@@ -1678,24 +2391,24 @@ int append(char output[], int pos, char sign, uint64 value, FormatFlags format&)
 }
 
 /// Append a number to the output at the given position
-inline append(char output[], int pos, uint64 value, FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+inline append(char output[], int pos, uint64 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, uint32 value, FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+inline append(char output[], int pos, uint32 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, uint16 value, FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+inline append(char output[], int pos, uint16 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, uint8 value, FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+inline append(char output[], int pos, uint8 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, int64 value, FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+inline append(char output[], int pos, int64 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, int32 value, FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+inline append(char output[], int pos, int32 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, int16 value, FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+inline append(char output[], int pos, int16 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, int8 value, FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+inline append(char output[], int pos, int8 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
 
 /// Append a number to the output at the given position
-int append(char output[], int pos, float64 value, FormatFlags format&) {
+int append(char output[], int pos, float64 value, const FormatFlags format&) {
 	FormatFlags formatInt = {
 		showSign: format.showSign;
 		precision : 0;
@@ -1710,7 +2423,7 @@ int append(char output[], int pos, float64 value, FormatFlags format&) {
 	};
 
 	char sign = value < 0 ? '-' : 0;
-	float64 fract = Math.modf(Math.abs(value), value);
+	float64 fract = Math.modf(Math.abs(value), &value);
 	pos = output.append(pos, sign, uint64(value), formatInt);
 
 	pos = output.append(pos, ".");
@@ -1720,7 +2433,7 @@ int append(char output[], int pos, float64 value, FormatFlags format&) {
 }
 
 /// Append a number to the output at the given position
-inline append(char output[], int pos, float32 value, FormatFlags format&) = append(output, pos, float64(value), format);
+inline append(char output[], int pos, float32 value, const FormatFlags format&) = append(output, pos, float64(value), format);
 
 /// Append a number to the output at the given position
 int append(char output[], int pos, int value) {
@@ -1728,7 +2441,7 @@ int append(char output[], int pos, int value) {
 	return append(output, pos, value, format);
 }
 
-//inline append(char output[], uint32 value, FormatFlags format) = output.append(length(output), value, format);
+//inline append(char output[], uint32 value, const FormatFlags format) = output.append(length(output), value, format);
 //inline append(char output[], uint32 value) = output.append(length(output), value);
 //inline append(char output[], char value[*]) = output.append(length(output), value);
 /// Mathematical utility functions and constants
@@ -1755,7 +2468,7 @@ static struct Math {
 	float64 modf(float64 x, float64 intPart&) {
 		if (x < 1) {
 			if (x < 0) {
-				float64 result = -modf(-x, intPart);
+				float64 result = -modf(-x, &intPart);
 				intPart = -intPart;
 				return result;
 			}
@@ -1779,7 +2492,7 @@ static struct Math {
 	/// Computes the largest integer value not greater than the input
 	float64 floor(float64 x) {
 		float64 result;
-		modf(x, result);
+		modf(x, &result);
 		return result;
 	}
 
@@ -2049,11 +2762,11 @@ static struct Math {
 		x *= 1 / PIO2;	/* underflow? */
 		if (x > 32764) {
 			float64 e;
-			y = modf(x, e);
+			y = modf(x, &e);
 			e += quad;
 
 			float64 f;
-			modf(0.25 * e, f);
+			modf(0.25 * e, &f);
 			quad = e - 4 * f;
 		}
 		else {
@@ -2105,7 +2818,7 @@ static struct Math {
 		arg = 2 * arg / PIO2;   /* overflow? */
 
 		double e;
-		double x = modf(arg, e);
+		double x = modf(arg, &e);
 		int i = int(e) % 4;
 
 		if (i == 0) {}
@@ -2260,17 +2973,6 @@ static struct Math {
 	// inline rand(int min, int max) = System.rand() % (max - min) + min;
 	// inline rand(double min, double max) = (System.rand() / float64(RAND_MAX)) * (max - min) + min;
 }
-
-inline "math/Complex.ci";     // -> Complex<float64>
-//inline "math/Rational.ci";    // -> Rational<int64>
-inline "math/Vector4f.ci";
-inline "math/Matrix4f.ci";
-inline "math/Vector2d.ci";
-
-//inline "math/BigInteger.ci"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
-//inline "math/BigDecimal.ci"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
-
-//inline "math/Perlin.ci";
 /// A 4x4 matrix
 struct mat4f: 0 {
 	/// Access elements as a flatten array: data[4] => m[1][0]
@@ -2784,4 +3486,13 @@ inline "std/debug.ci";
 inline sizeof(typename type) = int(type.size);
 
 inline "std/math.ci";
+inline "std/math/Complex.ci"?;      // -> Complex<float64>
+//inline "std/math/Rational.ci"?;     // -> Rational<int64>
+inline "std/math/Vector4f.ci"?;
+inline "std/math/Matrix4f.ci"?;
+inline "std/math/Vector2d.ci"?;
+//inline "std/math/BigInteger.ci?"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
+//inline "std/math/BigDecimal.ci?"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
+//inline "std/math/Perlin.ci"?;
+
 inline "std/string.ci";

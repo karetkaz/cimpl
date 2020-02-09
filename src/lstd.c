@@ -385,7 +385,7 @@ int ccLibStd(ccContext cc) {
 	}
 
 	if (!err && cc->type_var != NULL) {		// debug, trace, assert, fatal, ...
-		cc->libc_dbg = ccAddCall(cc, sysRaise, "void raise(char file[*], int line, int level, int trace, char message[*], variant inspect)");
+		cc->libc_dbg = ccAddCall(cc, sysRaise, "void raise(const char file[*], int line, int level, int trace, const char message[*], const variant inspect)");
 		if (cc->libc_dbg == NULL) {
 			err = 2;
 		}

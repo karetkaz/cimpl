@@ -75,7 +75,7 @@ void brightnessContrastGamma(uint32 lut[256], float brightness, float contrast, 
 		// use luminosity channel for: highlights, shadows, whites, blacks
 		val = WhitesBlacks(val, whites, blacks);
 		val = ShadowsHighlights(val, shadows, highlights);
-		int lum = grayClamp(int(256 * val));
+		int lum = clamp_s8(256 * val);
 
 		// use rgb channel for: brightness, contrast, gamma
 		val = idx / 256f;
@@ -86,7 +86,7 @@ void brightnessContrastGamma(uint32 lut[256], float brightness, float contrast, 
 		// apply brightness
 		val = brightness + val;
 
-		int rgb = grayClamp(int(256 * val));
+		int rgb = clamp_s8(256 * val);
 		lut2[idx].r = rgb;
 		lut2[idx].g = rgb;
 		lut2[idx].b = rgb;
@@ -96,7 +96,7 @@ void brightnessContrastGamma(uint32 lut[256], float brightness, float contrast, 
 
 void calcAutoEqualize(uint32 lut[256], gxSurf image, bool luminosity) {
 	// calculate histogram, luminosity and rgb
-	image.calcHist(null, 0xffffffff, lut);
+	image.calcHist(null, 0xffffffff, &lut);
 	if (luminosity) {
 		uint32 sum = 0;
 		for (int i = 0; i < lut.length; i += 1) {
@@ -104,7 +104,7 @@ void calcAutoEqualize(uint32 lut[256], gxSurf image, bool luminosity) {
 			lut[i] = sum;
 		}
 		for (uint32 i = 0; i < lut.length; i += 1) {
-			uint32 l = grayClamp(lut[i] * 255 / sum);
+			uint32 l = clamp_u8(lut[i] * 255 / sum);
 			lut[i] = uint32(_argb(l, i, i, i));
 		}
 	} else {
@@ -128,9 +128,9 @@ void calcAutoEqualize(uint32 lut[256], gxSurf image, bool luminosity) {
 			sumG += histoG[i];
 			sumB += histoB[i];
 			lut[i] = uint32(_argb(i,
-				grayClamp(sumR * 255 / maxRgb),
-				grayClamp(sumG * 255 / maxRgb),
-				grayClamp(sumB * 255 / maxRgb)
+				clamp_u8(sumR * 255 / maxRgb),
+				clamp_u8(sumG * 255 / maxRgb),
+				clamp_u8(sumB * 255 / maxRgb)
 			));
 		}
 	}
@@ -199,11 +199,15 @@ int onEvent(int action, int button, int x, int y) {
 	static Histogram histogram = {
 		text: null;
 		image: offs;
+		height: 128;
+		enabled: false;
 	};
 	static Histogram curves = {
 		text: null;
 		image: offs;
-		showLines: true;
+		height: 128;
+		lines: true;
+		enabled: false;
 	};
 	static Slider time = {
 		text: "time";

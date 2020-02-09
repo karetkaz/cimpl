@@ -254,9 +254,18 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 	ccKind filterCnst = filter & ATTR_cnst;
 	ccKind filterKind = filter & MASK_kind;
 	ccKind filterCast = filter & MASK_cast;
+
+	astn chainedArgs = chainArgs(arguments);
+	if (arguments == cc->void_tag) {
+		chainedArgs = NULL;
+	}
+
 	for (; sym; sym = sym->next) {
-		symn parameter = sym->params;
-		int hasCast = 0;
+
+		if (sym->name == NULL || strcmp(sym->name, ref->ref.name) != 0) {
+			// exclude anonymous symbols or non matching names
+			continue;
+		}
 
 		if (filterStat && (sym->kind & ATTR_stat) != filterStat) {
 			continue;
@@ -271,17 +280,8 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 			continue;
 		}
 
-		if (sym->name == NULL) {
-			// exclude anonymous symbols
-			continue;
-		}
-
-		if (strcmp(sym->name, ref->ref.name) != 0) {
-			// exclude non matching names
-			continue;
-		}
-
 		// lookup function by name (without arguments)
+		symn parameter = sym->params;
 		if (parameter != NULL && arguments == NULL) {
 			// keep the first match.
 			if (byName == NULL) {
@@ -291,11 +291,9 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 			continue;
 		}
 
+		int hasCast = 0;
 		if (arguments != NULL) {
-			astn argument = NULL;
-			if (arguments != cc->void_tag) {
-				argument = chainArgs(arguments);
-			}
+			astn argument = chainedArgs;
 
 			if (parameter != NULL) {
 				// first argument starts next to result.
@@ -308,21 +306,20 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 			}
 
 			while (parameter != NULL && argument != NULL) {
-				symn type = parameter->type;
-				if ((parameter->kind & ATTR_varg) != 0) {
-					dieif(castOf(type) != CAST_arr, ERR_INTERNAL_ERROR);
-					dieif(parameter->next != NULL, ERR_INTERNAL_ERROR);
-					type = type->type;
-				}
 				if (!canAssign(cc, parameter, argument, 0)) {
 					break;
 				}
 				if (!canAssign(cc, parameter, argument, 1)) {
 					hasCast += 1;
 				}
-				if ((parameter->kind & ATTR_varg) == 0) {
-					parameter = parameter->next;
+
+				if ((parameter->kind & ATTR_varg) != 0) {
+					dieif(castOf(parameter->type) != CAST_arr, ERR_INTERNAL_ERROR);
+					dieif(parameter->next != NULL, ERR_INTERNAL_ERROR);
+					argument = argument->next;
+					continue;
 				}
+				parameter = parameter->next;
 				argument = argument->next;
 			}
 
@@ -363,7 +360,7 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 			break;
 		}
 
-		// keep first match
+		// keep first match as the best one
 		if (best == NULL) {
 			best = sym;
 		}
@@ -491,6 +488,36 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 		type = sym->init->type;
 	}
 
+	if (/*raise && */sym != NULL && args != NULL && isInvokable(sym)) {
+		astn arg = chainArgs(args);
+		if (args == cc->void_tag) {
+			arg = NULL;
+		}
+		symn prm = sym->params->next;   // skip to first parameter
+		if (sym == cc->libc_dbg) {
+			prm = prm->next;            // skip hidden param: file
+			prm = prm->next;            // skip hidden param: line
+		}
+		while (arg != NULL && prm != NULL) {
+			// reference arguments must be given as: `&var`
+			if (arg->kind != OPER_adr && byReference(prm) && !byReference(prm->type) && !isConst(prm)) {
+				warn(cc->rt, raise_warn_typ3, arg->file, arg->line, WARN_PASS_ARG_BY_REF, arg, sym);
+			}
+
+			if ((prm->kind & ATTR_varg) == ATTR_varg) {
+				arg = arg->next;
+				continue;
+			}
+			arg = arg->next;
+			prm = prm->next;
+		}
+		if (prm && (prm->kind & ATTR_varg) == ATTR_varg) {
+			prm = prm->next;
+		}
+		dieif(arg || prm, ERR_INTERNAL_ERROR": %t(%t)[%t => %T]", ref, args, arg, prm);
+	}
+
+	// raise error or warning if accessing private symbols
 	if (sym && sym->unit && sym->unit != cc->unit && sym->doc == NULL) {
 		raiseLevel level = cc->genPrivate ? raiseWarn : raiseError;
 		warn(cc->rt, level, ref->file, ref->line, ERR_PRIVATE_DECLARATION, sym);
@@ -617,12 +644,18 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 						return ast->type = type;
 					}
 
+					astn argThis = ref->op.lhso;
+					/* TODO: if (!byReference(argThis->type)) {
+						// FIXME: do this after successful lookup: a.add(b) is converted to: add(&a, b)
+						argThis = opNode(cc, OPER_adr, NULL, ref->op.lhso);
+						argThis->type = argThis->op.rhso->type;
+					}*/
 					// convert instance to parameter and try to lookup again
 					if (args == cc->void_tag) {
-						args = ref->op.lhso;
+						args = argThis;
 					}
 					else {
-						args = argNode(cc, ref->op.lhso, args);
+						args = argNode(cc, argThis, args);
 						args->type = cc->type_vid;
 					}
 					ref = ref->op.rhso;
@@ -699,6 +732,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			ast->type = type;
 			return type;
 
+		case OPER_adr:		// '&'
 		case OPER_pls:		// '+'
 		case OPER_mns:		// '-'
 		case OPER_cmt:		// '~'

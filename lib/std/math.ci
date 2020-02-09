@@ -22,7 +22,7 @@ static struct Math {
 	float64 modf(float64 x, float64 intPart&) {
 		if (x < 1) {
 			if (x < 0) {
-				float64 result = -modf(-x, intPart);
+				float64 result = -modf(-x, &intPart);
 				intPart = -intPart;
 				return result;
 			}
@@ -46,7 +46,7 @@ static struct Math {
 	/// Computes the largest integer value not greater than the input
 	float64 floor(float64 x) {
 		float64 result;
-		modf(x, result);
+		modf(x, &result);
 		return result;
 	}
 
@@ -316,11 +316,11 @@ static struct Math {
 		x *= 1 / PIO2;	/* underflow? */
 		if (x > 32764) {
 			float64 e;
-			y = modf(x, e);
+			y = modf(x, &e);
 			e += quad;
 
 			float64 f;
-			modf(0.25 * e, f);
+			modf(0.25 * e, &f);
 			quad = e - 4 * f;
 		}
 		else {
@@ -372,7 +372,7 @@ static struct Math {
 		arg = 2 * arg / PIO2;   /* overflow? */
 
 		double e;
-		double x = modf(arg, e);
+		double x = modf(arg, &e);
 		int i = int(e) % 4;
 
 		if (i == 0) {}
@@ -527,14 +527,3 @@ static struct Math {
 	// inline rand(int min, int max) = System.rand() % (max - min) + min;
 	// inline rand(double min, double max) = (System.rand() / float64(RAND_MAX)) * (max - min) + min;
 }
-
-inline "math/Complex.ci";     // -> Complex<float64>
-//inline "math/Rational.ci";    // -> Rational<int64>
-inline "math/Vector4f.ci";
-inline "math/Matrix4f.ci";
-inline "math/Vector2d.ci";
-
-//inline "math/BigInteger.ci"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
-//inline "math/BigDecimal.ci"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
-
-//inline "math/Perlin.ci";

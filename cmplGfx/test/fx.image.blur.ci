@@ -4,6 +4,8 @@ gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
 gxSurf surf = gxSurf("asset/image/forest.png", 32);
 gxSurf offs = gxSurf(surf);
 gxSurf blur = gxSurf(surf);
+gxSurf mask = gxSurf(surf);
+mask.fill(0xff0000);
 
 static if (typename(gxSurf.blur) == null) {
 inline "/lib/gfx/gxSurf.blur.ci";
@@ -28,78 +30,83 @@ int onEvent(int action, int button, int x, int y) {
 	inline "/lib/gfx/micro.ui.ci";
 
 	static Switch autoUpdate = {
-		text: "auto update";
+		text: "preview";
 		checked: true;
 		selectable: false;
 	};
 	static Slider sldBlur = {
-		text: "blur";
+		text: "Blur";
 		value: 2000;
 		minimum: 30;
 		maximum: 2000;
 		divisor: 100;
 	};
 	static Slider sldSharpness = {
-		text: "sharpness";
+		text: "Sharp";
+		value: 512;
 		minimum: 0;
 		maximum: 512;
+		divisor: 512;
 	};
-	static Slider btnLinear = {
+	static Slider sldFade = {
+		text: "Hardness";
+		minimum: -255;
+		maximum: 255;
+		selectable: false;
+	};
+	static Button btnReflect = {
+		text: "Reflect";
+	};
+	static Button btnLinear = {
 		text: "Linear";
-		minimum: -255;
-		maximum: 255;
 	};
-	static Slider btnRadial = {
+	static Button btnRadial = {
 		text: "Radial";
-		minimum: -255;
-		maximum: 255;
 	};
-	static Slider btnSquare = {
+	static Button btnSquare = {
 		text: "Square";
-		minimum: -255;
-		maximum: 255;
-	};
-	static Slider btnConical = {
-		text: "Conical";
-		minimum: -255;
-		maximum: 255;
-	};
-	static Slider btnSpiral = {
-		text: "Spiral";
-		minimum: -255;
-		maximum: 255;
 	};
 	static Switch chkInvert = {
 		text: "Invert";
-		selectable: false;
-	};
-	static Switch chkRepeat = {
-		text: "Repeat";
 		selectable: false;
 	};
 	static Switch chkRect = {
 		text: "Show rect";
 		selectable: false;
 	};
-	static bool resetRect(View view);
+	static Switch chkMask = {
+		text: "Show mask";
+		selectable: false;
+	};
+	static bool onResetClick(Button view);
 	static Button btnReset = {
 		text: "Reset rect";
-		onClick: resetRect;
+		onClick: onResetClick;
 		selectable: false;
 	};
 	static Histogram histogram = {
 		text: null;
 		image: offs;
+		height: 128;
+		enabled: false;
 	};
 	static Slider time = {
 		text: "time";
 		enabled: false;
 	};
+	static Button separator = {
+		text: null;
+		height: 3;
+		enabled: false;
+	};
 
 	static Layout layout = Layout(offs, -30, 30, font,
-		histogram, autoUpdate, sldBlur, sldSharpness,
-		btnLinear, btnRadial, btnSquare, btnConical, btnSpiral,
-		chkInvert, chkRepeat, chkRect, btnReset, time);
+		histogram, separator,
+		sldBlur, sldSharpness,
+		separator,
+		btnReflect, btnLinear, btnRadial, btnSquare,
+		sldFade, chkInvert, chkMask, chkRect, btnReset,
+		separator, autoUpdate, time);
 
 	static int oldRadius = 0;
 	static gxRect rect = {
@@ -109,7 +116,7 @@ int onEvent(int action, int button, int x, int y) {
 		h: offs.height() / 2 - 1;
 	};
 
-	static bool resetRect(View view) {
+	static bool onResetClick(Button view) {
 		rect.x = offs.width() / 2;
 		rect.y = offs.height() / 2;
 		rect.w = offs.width() / 2 - 1;
@@ -123,41 +130,25 @@ int onEvent(int action, int button, int x, int y) {
 			return -1;
 		}
 	}
-	if (action == Gui.MOUSE_PRESS && button != 1) {
-		rect.x = x;
-		rect.y = y;
+	if (action == Gui.MOUSE_PRESS && button == 2) {
+		if (layout.isSelected(btnReflect, btnLinear, btnRadial, btnSquare)) {
+			rect.x = x;
+			rect.y = y;
+		}
 	}
-	if (action == Gui.MOUSE_MOTION && button != 1) {
-		if (layout.isSelected(btnLinear)) {
-			rect.w = x - rect.x;
-			rect.h = y - rect.y;
-			reCalculate = true;
-		}
-		else if (layout.isSelected(btnRadial)) {
-			rect.w = x - rect.x;
-			rect.h = y - rect.y;
-			reCalculate = true;
-		}
-		else if (layout.isSelected(btnSquare)) {
-			rect.w = x - rect.x;
-			rect.h = y - rect.y;
-			reCalculate = true;
-		}
-		else if (layout.isSelected(btnConical)) {
-			rect.w = x - rect.x;
-			rect.h = y - rect.y;
-			reCalculate = true;
-		}
-		else if (layout.isSelected(btnSpiral)) {
+	if (action == Gui.MOUSE_MOTION && button == 2) {
+		if (layout.isSelected(btnReflect, btnLinear, btnRadial, btnSquare)) {
 			rect.w = x - rect.x;
 			rect.h = y - rect.y;
 			reCalculate = true;
 		}
 	}
-	if (action == Gui.MOUSE_RELEASE && button != 1) {
-		rect.w = x - rect.x;
-		rect.h = y - rect.y;
-		reCalculate = true;
+	if (action == Gui.MOUSE_RELEASE && button == 2) {
+		if (layout.isSelected(btnReflect, btnLinear, btnRadial, btnSquare)) {
+			rect.w = x - rect.x;
+			rect.h = y - rect.y;
+			reCalculate = true;
+		}
 	}
 
 	if (reCalculate) {
@@ -174,12 +165,14 @@ int onEvent(int action, int button, int x, int y) {
 		uint64 start = System.millis();
 		offs.resize(null, surf, null, 1);
 		if (autoUpdate.checked) {
-			uint32 startColor = 0;
-			uint32 endColor = 255;
-			bool repeat = chkRepeat.checked;
+			argb startColor = argb(0);
+			argb endColor = argb(255);
+			bool repeat = false;
 			bool invert = chkInvert.checked;
+			uint32 colors[512];
+			int alpha = sldFade.val();
 
-			inline blend() = offs.blend(0, 0, blur, null, 256, true, null);
+			inline blend() = offs.blend(0, 0, chkMask.checked ? mask : blur, null, 256, true, null);
 			if (oldRadius != radiusValue) {
 				oldRadius = radiusValue;
 				blur.copy(0, 0, surf, null);
@@ -191,25 +184,24 @@ int onEvent(int action, int button, int x, int y) {
 			else if (layout.isSelected(sldSharpness)) {
 				offs.blend(0, 0, blur, null, amountValue, false, null);
 			}
+			else if (layout.isSelected(btnReflect)) {
+				lerpLut(colors, alpha, invert, endColor, startColor, endColor);
+				offs.gradient(roi, gradient.MaskLinear, repeat, colors);
+				blend();
+			}
 			else if (layout.isSelected(btnLinear)) {
-				int alpha = btnLinear.val();
-				offs.gradient(roi, 0, btnLinear.val(), repeat, invert, endColor, startColor, endColor);
+				lerpLut(colors, alpha, invert, startColor, endColor);
+				offs.gradient(roi, gradient.MaskLinear, repeat, colors);
 				blend();
 			}
 			else if (layout.isSelected(btnRadial)) {
-				offs.gradient(roi, 1, btnRadial.val(), repeat, invert, startColor, endColor);
+				lerpLut(colors, alpha, invert, startColor, endColor);
+				offs.gradient(roi, gradient.MaskRadial, repeat, colors);
 				blend();
 			}
 			else if (layout.isSelected(btnSquare)) {
-				offs.gradient(roi, 2, btnSquare.val(), repeat, invert, startColor, endColor);
-				blend();
-			}
-			else if (layout.isSelected(btnConical)) {
-				offs.gradient(roi, 3, btnConical.val(), repeat, invert, startColor, endColor);
-				blend();
-			}
-			else if (layout.isSelected(btnSpiral)) {
-				offs.gradient(roi, 4, btnSpiral.val(), repeat, invert, endColor, startColor, endColor);
+				lerpLut(colors, alpha, invert, startColor, endColor);
+				offs.gradient(roi, gradient.MaskSquare, repeat, colors);
 				blend();
 			}
 		}
