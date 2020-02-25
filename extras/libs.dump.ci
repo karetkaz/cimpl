@@ -378,6 +378,11 @@ int32: typename {
 	lib/gfx/color.ci:177: referenced as `int32`
 	lib/gfx/color.ci:175: referenced as `int32`
 	lib/gfx/color.ci:174: referenced as `int32`
+	lib/gfx/color.ci:170: referenced as `int32`
+	lib/gfx/color.ci:168: referenced as `int32`
+	lib/gfx/color.ci:166: referenced as `int32`
+	lib/gfx/color.ci:164: referenced as `int32`
+	lib/gfx/color.ci:162: referenced as `int32`
 	lib/gfx/color.ci:158: referenced as `int32`
 	lib/gfx/color.ci:158: referenced as `int32`
 	lib/gfx/color.ci:158: referenced as `int32`
@@ -540,11 +545,6 @@ uint32: typename {
 	lib/gfx/color.ci:175: referenced as `uint32`
 	lib/gfx/color.ci:175: referenced as `uint32`
 	lib/gfx/color.ci:174: referenced as `uint32`
-	lib/gfx/color.ci:170: referenced as `uint32`
-	lib/gfx/color.ci:168: referenced as `uint32`
-	lib/gfx/color.ci:166: referenced as `uint32`
-	lib/gfx/color.ci:164: referenced as `uint32`
-	lib/gfx/color.ci:162: referenced as `uint32`
 	lib/gfx/color.ci:154: referenced as `uint32`
 	lib/gfx/color.ci:154: referenced as `uint32`
 	lib/gfx/color.ci:154: referenced as `uint32`
@@ -12893,34 +12893,34 @@ argb(a: float64, r: float64, g: float64, b: float64): argb: function {
 .usages:
 	lib/gfx/color.ci:158: defined as `argb(a: float64, r: float64, g: float64, b: float64): argb`
 }
-ach(col: argb): uint32: function {
+ach(col: argb): int32: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'ach'
 .file: 'lib/gfx/color.ci:162'
-.param .result: uint32 (size: 4, cast: u32)
+.param .result: int32 (size: 4, cast: i32)
 .param col: argb (size: 4, cast: val)
 .doc: 'get the Alpha channel of the color'
-.value: uint32((uint32(col) >> 24) & (255))
+.value: int32((uint32(col) >> 24) & (255))
 .usages:
 	lib/gfx/color.ci:328: referenced as `ach`
 	lib/gfx/color.ci:321: referenced as `ach`
 	lib/gfx/color.ci:306: referenced as `ach`
 	lib/gfx/color.ci:184: referenced as `ach`
 	lib/gfx/color.ci:184: referenced as `ach`
-	lib/gfx/color.ci:162: defined as `ach(col: argb): uint32`
+	lib/gfx/color.ci:162: defined as `ach(col: argb): int32`
 }
-rch(col: argb): uint32: function {
+rch(col: argb): int32: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'rch'
 .file: 'lib/gfx/color.ci:164'
-.param .result: uint32 (size: 4, cast: u32)
+.param .result: int32 (size: 4, cast: i32)
 .param col: argb (size: 4, cast: val)
 .doc: 'get the Red channel of the color'
-.value: uint32((uint32(col) >> 16) & (255))
+.value: int32((uint32(col) >> 16) & (255))
 .usages:
 	lib/gfx/color.ci:327: referenced as `rch`
 	lib/gfx/color.ci:320: referenced as `rch`
@@ -12928,18 +12928,18 @@ rch(col: argb): uint32: function {
 	lib/gfx/color.ci:185: referenced as `rch`
 	lib/gfx/color.ci:185: referenced as `rch`
 	lib/gfx/color.ci:170: referenced as `rch`
-	lib/gfx/color.ci:164: defined as `rch(col: argb): uint32`
+	lib/gfx/color.ci:164: defined as `rch(col: argb): int32`
 }
-gch(col: argb): uint32: function {
+gch(col: argb): int32: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'gch'
 .file: 'lib/gfx/color.ci:166'
-.param .result: uint32 (size: 4, cast: u32)
+.param .result: int32 (size: 4, cast: i32)
 .param col: argb (size: 4, cast: val)
 .doc: 'get the Green channel of the color'
-.value: uint32((uint32(col) >> 8) & (255))
+.value: int32((uint32(col) >> 8) & (255))
 .usages:
 	lib/gfx/color.ci:326: referenced as `gch`
 	lib/gfx/color.ci:319: referenced as `gch`
@@ -12947,18 +12947,18 @@ gch(col: argb): uint32: function {
 	lib/gfx/color.ci:186: referenced as `gch`
 	lib/gfx/color.ci:186: referenced as `gch`
 	lib/gfx/color.ci:170: referenced as `gch`
-	lib/gfx/color.ci:166: defined as `gch(col: argb): uint32`
+	lib/gfx/color.ci:166: defined as `gch(col: argb): int32`
 }
-bch(col: argb): uint32: function {
+bch(col: argb): int32: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'bch'
 .file: 'lib/gfx/color.ci:168'
-.param .result: uint32 (size: 4, cast: u32)
+.param .result: int32 (size: 4, cast: i32)
 .param col: argb (size: 4, cast: val)
 .doc: 'get the Blue channel of the color'
-.value: uint32(uint32(col) & (255))
+.value: int32(uint32(col) & (255))
 .usages:
 	lib/gfx/color.ci:325: referenced as `bch`
 	lib/gfx/color.ci:318: referenced as `bch`
@@ -12966,20 +12966,20 @@ bch(col: argb): uint32: function {
 	lib/gfx/color.ci:187: referenced as `bch`
 	lib/gfx/color.ci:187: referenced as `bch`
 	lib/gfx/color.ci:170: referenced as `bch`
-	lib/gfx/color.ci:168: defined as `bch(col: argb): uint32`
+	lib/gfx/color.ci:168: defined as `bch(col: argb): int32`
 }
-lum(c: argb): uint32: function {
+lum(c: argb): int32: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'lum'
 .file: 'lib/gfx/color.ci:170'
-.param .result: uint32 (size: 4, cast: u32)
+.param .result: int32 (size: 4, cast: i32)
 .param c: argb (size: 4, cast: variable(val))
 .doc: 'get the luminosity of the color'
-.value: uint32((rch(c) * (76) + gch(c) * (150) + bch(c) * (29)) >> 8)
+.value: int32((rch(c) * 76 + gch(c) * 150 + bch(c) * 29) >> 8)
 .usages:
-	lib/gfx/color.ci:170: defined as `lum(c: argb): uint32`
+	lib/gfx/color.ci:170: defined as `lum(c: argb): int32`
 }
 lerpLut(lut: uint32[], alpha: int32, invert: bool, colors: argb[]): void: function {
 .kind: static const function
@@ -13824,10 +13824,10 @@ drawLut(image: gxSurf, roi: gxRect, bars: uint32[256], lines: uint32[256]): void
 	px: int32 := (rect.w - 256) / 2;
 	if ((bars) != null) {
 		for (x: int32 := 0; x < bars.length; x := x + 1) {
-			bv: int32 := bch(argb(bars[x])) * (rect.h) / (256);
-			gv: int32 := gch(argb(bars[x])) * (rect.h) / (256);
-			rv: int32 := rch(argb(bars[x])) * (rect.h) / (256);
-			lv: int32 := ach(argb(bars[x])) * (rect.h) / (256);
+			bv: int32 := bch(argb(bars[x])) * rect.h / 256;
+			gv: int32 := gch(argb(bars[x])) * rect.h / 256;
+			rv: int32 := rch(argb(bars[x])) * rect.h / 256;
+			lv: int32 := ach(argb(bars[x])) * rect.h / 256;
 			for (y: int32 := 0; y < rect.h; y := y + 1) {
 				b: uint32 := colB * (uint32(y < bv));
 				g: uint32 := colG * (uint32(y < gv));
@@ -13839,16 +13839,16 @@ drawLut(image: gxSurf, roi: gxRect, bars: uint32[256], lines: uint32[256]): void
 	}
 	if ((lines) != null) {
 		y: int32 := rect.y + rect.h - 1;
-		pb: int32 := bch(argb(lines[0])) * (rect.h) / (256);
-		pg: int32 := gch(argb(lines[0])) * (rect.h) / (256);
-		pr: int32 := rch(argb(lines[0])) * (rect.h) / (256);
-		pl: int32 := ach(argb(lines[0])) * (rect.h) / (256);
+		pb: int32 := bch(argb(lines[0])) * rect.h / 256;
+		pg: int32 := gch(argb(lines[0])) * rect.h / 256;
+		pr: int32 := rch(argb(lines[0])) * rect.h / 256;
+		pl: int32 := ach(argb(lines[0])) * rect.h / 256;
 		for (i: int32 := 1; i < lines.length; i := i + 1) {
 			x: int32 := rect.x + i + px;
-			bv: int32 := bch(argb(lines[i])) * (rect.h) / (256);
-			gv: int32 := gch(argb(lines[i])) * (rect.h) / (256);
-			rv: int32 := rch(argb(lines[i])) * (rect.h) / (256);
-			lv: int32 := ach(argb(lines[i])) * (rect.h) / (256);
+			bv: int32 := bch(argb(lines[i])) * rect.h / 256;
+			gv: int32 := gch(argb(lines[i])) * rect.h / 256;
+			rv: int32 := rch(argb(lines[i])) * rect.h / 256;
+			lv: int32 := ach(argb(lines[i])) * rect.h / 256;
 			image.drawLine(image, x, y - pl, x, y - lv, colL);
 			image.drawLine(image, x, y - pb, x, y - bv, colB);
 			image.drawLine(image, x, y - pg, x, y - gv, colG);
@@ -13923,17 +13923,17 @@ drawLut(image: gxSurf, roi: gxRect, bars: uint32[256], lines: uint32[256]): void
 	lib/gfx/color.ci:302: (222 bytes): for (x: int32 := 0; x < bars.length; x := x + 1)
 	<drawLut+?>: load.z32
 	<drawLut+?>: jmp +205
-	lib/gfx/color.ci:303: (20 bytes): bv: int32 := bch(argb(bars[x])) * (rect.h) / (256)
+	lib/gfx/color.ci:303: (20 bytes): bv: int32 := bch(argb(bars[x])) * rect.h / 256
 	<drawLut+?>: dup.x32 sp(8)
 	<drawLut+?>: dup.x32 sp(1)
 	<drawLut+?>: mad.u32 4
 	<drawLut+?>: load.i32
 	<drawLut+?>: b32.and 0x0ff
 	<drawLut+?>: dup.x32 sp(6)
-	<drawLut+?>: mul.u32
+	<drawLut+?>: mul.i32
 	<drawLut+?>: load.c32 256
-	<drawLut+?>: div.u32
-	lib/gfx/color.ci:304: (22 bytes): gv: int32 := gch(argb(bars[x])) * (rect.h) / (256)
+	<drawLut+?>: div.i32
+	lib/gfx/color.ci:304: (22 bytes): gv: int32 := gch(argb(bars[x])) * rect.h / 256
 	<drawLut+?>: dup.x32 sp(9)
 	<drawLut+?>: dup.x32 sp(2)
 	<drawLut+?>: mad.u32 4
@@ -13941,10 +13941,10 @@ drawLut(image: gxSurf, roi: gxRect, bars: uint32[256], lines: uint32[256]): void
 	<drawLut+?>: b32.shr 0x008
 	<drawLut+?>: b32.and 0x0ff
 	<drawLut+?>: dup.x32 sp(7)
-	<drawLut+?>: mul.u32
+	<drawLut+?>: mul.i32
 	<drawLut+?>: load.c32 256
-	<drawLut+?>: div.u32
-	lib/gfx/color.ci:305: (22 bytes): rv: int32 := rch(argb(bars[x])) * (rect.h) / (256)
+	<drawLut+?>: div.i32
+	lib/gfx/color.ci:305: (22 bytes): rv: int32 := rch(argb(bars[x])) * rect.h / 256
 	<drawLut+?>: dup.x32 sp(10)
 	<drawLut+?>: dup.x32 sp(3)
 	<drawLut+?>: mad.u32 4
@@ -13952,10 +13952,10 @@ drawLut(image: gxSurf, roi: gxRect, bars: uint32[256], lines: uint32[256]): void
 	<drawLut+?>: b32.shr 0x010
 	<drawLut+?>: b32.and 0x0ff
 	<drawLut+?>: dup.x32 sp(8)
-	<drawLut+?>: mul.u32
+	<drawLut+?>: mul.i32
 	<drawLut+?>: load.c32 256
-	<drawLut+?>: div.u32
-	lib/gfx/color.ci:306: (22 bytes): lv: int32 := ach(argb(bars[x])) * (rect.h) / (256)
+	<drawLut+?>: div.i32
+	lib/gfx/color.ci:306: (22 bytes): lv: int32 := ach(argb(bars[x])) * rect.h / 256
 	<drawLut+?>: dup.x32 sp(11)
 	<drawLut+?>: dup.x32 sp(4)
 	<drawLut+?>: mad.u32 4
@@ -13963,9 +13963,9 @@ drawLut(image: gxSurf, roi: gxRect, bars: uint32[256], lines: uint32[256]): void
 	<drawLut+?>: b32.shr 0x018
 	<drawLut+?>: b32.and 0x0ff
 	<drawLut+?>: dup.x32 sp(9)
-	<drawLut+?>: mul.u32
+	<drawLut+?>: mul.i32
 	<drawLut+?>: load.c32 256
-	<drawLut+?>: div.u32
+	<drawLut+?>: div.i32
 	lib/gfx/color.ci:307: (107 bytes): for (y: int32 := 0; y < rect.h; y := y + 1)
 	<drawLut+?>: load.z32
 	<drawLut+?>: jmp +93
@@ -14042,41 +14042,41 @@ drawLut(image: gxSurf, roi: gxRect, bars: uint32[256], lines: uint32[256]): void
 	<drawLut+?>: dup.x32 sp(5)
 	<drawLut+?>: add.i32
 	<drawLut+?>: inc.i32(-1)
-	lib/gfx/color.ci:318: (14 bytes): pb: int32 := bch(argb(lines[0])) * (rect.h) / (256)
+	lib/gfx/color.ci:318: (14 bytes): pb: int32 := bch(argb(lines[0])) * rect.h / 256
 	<drawLut+?>: dup.x32 sp(7)
 	<drawLut+?>: load.i32
 	<drawLut+?>: b32.and 0x0ff
 	<drawLut+?>: dup.x32 sp(6)
-	<drawLut+?>: mul.u32
+	<drawLut+?>: mul.i32
 	<drawLut+?>: load.c32 256
-	<drawLut+?>: div.u32
-	lib/gfx/color.ci:319: (16 bytes): pg: int32 := gch(argb(lines[0])) * (rect.h) / (256)
+	<drawLut+?>: div.i32
+	lib/gfx/color.ci:319: (16 bytes): pg: int32 := gch(argb(lines[0])) * rect.h / 256
 	<drawLut+?>: dup.x32 sp(8)
 	<drawLut+?>: load.i32
 	<drawLut+?>: b32.shr 0x008
 	<drawLut+?>: b32.and 0x0ff
 	<drawLut+?>: dup.x32 sp(7)
-	<drawLut+?>: mul.u32
+	<drawLut+?>: mul.i32
 	<drawLut+?>: load.c32 256
-	<drawLut+?>: div.u32
-	lib/gfx/color.ci:320: (16 bytes): pr: int32 := rch(argb(lines[0])) * (rect.h) / (256)
+	<drawLut+?>: div.i32
+	lib/gfx/color.ci:320: (16 bytes): pr: int32 := rch(argb(lines[0])) * rect.h / 256
 	<drawLut+?>: dup.x32 sp(9)
 	<drawLut+?>: load.i32
 	<drawLut+?>: b32.shr 0x010
 	<drawLut+?>: b32.and 0x0ff
 	<drawLut+?>: dup.x32 sp(8)
-	<drawLut+?>: mul.u32
+	<drawLut+?>: mul.i32
 	<drawLut+?>: load.c32 256
-	<drawLut+?>: div.u32
-	lib/gfx/color.ci:321: (16 bytes): pl: int32 := ach(argb(lines[0])) * (rect.h) / (256)
+	<drawLut+?>: div.i32
+	lib/gfx/color.ci:321: (16 bytes): pl: int32 := ach(argb(lines[0])) * rect.h / 256
 	<drawLut+?>: dup.x32 sp(10)
 	<drawLut+?>: load.i32
 	<drawLut+?>: b32.shr 0x018
 	<drawLut+?>: b32.and 0x0ff
 	<drawLut+?>: dup.x32 sp(9)
-	<drawLut+?>: mul.u32
+	<drawLut+?>: mul.i32
 	<drawLut+?>: load.c32 256
-	<drawLut+?>: div.u32
+	<drawLut+?>: div.i32
 	lib/gfx/color.ci:323: (239 bytes): for (i: int32 := 1; i < lines.length; i := i + 1)
 	<drawLut+?>: load.c32 1
 	<drawLut+?>: jmp +218
@@ -14086,17 +14086,17 @@ drawLut(image: gxSurf, roi: gxRect, bars: uint32[256], lines: uint32[256]): void
 	<drawLut+?>: add.i32
 	<drawLut+?>: dup.x32 sp(7)
 	<drawLut+?>: add.i32
-	lib/gfx/color.ci:325: (20 bytes): bv: int32 := bch(argb(lines[i])) * (rect.h) / (256)
+	lib/gfx/color.ci:325: (20 bytes): bv: int32 := bch(argb(lines[i])) * rect.h / 256
 	<drawLut+?>: dup.x32 sp(13)
 	<drawLut+?>: dup.x32 sp(2)
 	<drawLut+?>: mad.u32 4
 	<drawLut+?>: load.i32
 	<drawLut+?>: b32.and 0x0ff
 	<drawLut+?>: dup.x32 sp(12)
-	<drawLut+?>: mul.u32
+	<drawLut+?>: mul.i32
 	<drawLut+?>: load.c32 256
-	<drawLut+?>: div.u32
-	lib/gfx/color.ci:326: (22 bytes): gv: int32 := gch(argb(lines[i])) * (rect.h) / (256)
+	<drawLut+?>: div.i32
+	lib/gfx/color.ci:326: (22 bytes): gv: int32 := gch(argb(lines[i])) * rect.h / 256
 	<drawLut+?>: dup.x32 sp(14)
 	<drawLut+?>: dup.x32 sp(3)
 	<drawLut+?>: mad.u32 4
@@ -14104,10 +14104,10 @@ drawLut(image: gxSurf, roi: gxRect, bars: uint32[256], lines: uint32[256]): void
 	<drawLut+?>: b32.shr 0x008
 	<drawLut+?>: b32.and 0x0ff
 	<drawLut+?>: dup.x32 sp(13)
-	<drawLut+?>: mul.u32
+	<drawLut+?>: mul.i32
 	<drawLut+?>: load.c32 256
-	<drawLut+?>: div.u32
-	lib/gfx/color.ci:327: (22 bytes): rv: int32 := rch(argb(lines[i])) * (rect.h) / (256)
+	<drawLut+?>: div.i32
+	lib/gfx/color.ci:327: (22 bytes): rv: int32 := rch(argb(lines[i])) * rect.h / 256
 	<drawLut+?>: dup.x32 sp(15)
 	<drawLut+?>: dup.x32 sp(4)
 	<drawLut+?>: mad.u32 4
@@ -14115,10 +14115,10 @@ drawLut(image: gxSurf, roi: gxRect, bars: uint32[256], lines: uint32[256]): void
 	<drawLut+?>: b32.shr 0x010
 	<drawLut+?>: b32.and 0x0ff
 	<drawLut+?>: dup.x32 sp(14)
-	<drawLut+?>: mul.u32
+	<drawLut+?>: mul.i32
 	<drawLut+?>: load.c32 256
-	<drawLut+?>: div.u32
-	lib/gfx/color.ci:328: (22 bytes): lv: int32 := ach(argb(lines[i])) * (rect.h) / (256)
+	<drawLut+?>: div.i32
+	lib/gfx/color.ci:328: (22 bytes): lv: int32 := ach(argb(lines[i])) * rect.h / 256
 	<drawLut+?>: dup.x32 sp(16)
 	<drawLut+?>: dup.x32 sp(5)
 	<drawLut+?>: mad.u32 4
@@ -14126,9 +14126,9 @@ drawLut(image: gxSurf, roi: gxRect, bars: uint32[256], lines: uint32[256]): void
 	<drawLut+?>: b32.shr 0x018
 	<drawLut+?>: b32.and 0x0ff
 	<drawLut+?>: dup.x32 sp(15)
-	<drawLut+?>: mul.u32
+	<drawLut+?>: mul.i32
 	<drawLut+?>: load.c32 256
-	<drawLut+?>: div.u32
+	<drawLut+?>: div.i32
 	lib/gfx/color.ci:330: (25 bytes): image.drawLine(image, x, y - pl, x, y - lv, colL);
 	<drawLut+?>: dup.x64 sp(20)
 	<drawLut+?>: dup.x32 sp(6)
@@ -17121,11 +17121,11 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 		argb(a: uint32, r: uint32, g: uint32, b: uint32): argb := _argb(clamp_u8(a), clamp_u8(r), clamp_u8(g), clamp_u8(b));
 		argb(a: float32, r: float32, g: float32, b: float32): argb := argb(int32(a * (255)), int32(r * (255)), int32(g * (255)), int32(b * (255)));
 		argb(a: float64, r: float64, g: float64, b: float64): argb := argb(int32(a * (255)), int32(r * (255)), int32(g * (255)), int32(b * (255)));
-		ach(col: argb): uint32 := uint32((uint32(col) >> 24) & (255));
-		rch(col: argb): uint32 := uint32((uint32(col) >> 16) & (255));
-		gch(col: argb): uint32 := uint32((uint32(col) >> 8) & (255));
-		bch(col: argb): uint32 := uint32(uint32(col) & (255));
-		lum(c: argb): uint32 := uint32((rch(c) * (76) + gch(c) * (150) + bch(c) * (29)) >> 8);
+		ach(col: argb): int32 := int32((uint32(col) >> 24) & (255));
+		rch(col: argb): int32 := int32((uint32(col) >> 16) & (255));
+		gch(col: argb): int32 := int32((uint32(col) >> 8) & (255));
+		bch(col: argb): int32 := int32(uint32(col) & (255));
+		lum(c: argb): int32 := int32((rch(c) * 76 + gch(c) * 150 + bch(c) * 29) >> 8);
 		static const lerpLut(lut: uint32[], alpha: int32, invert: bool, colors: argb[]): void := {
 			lrp(t: int32, x: uint32, y: uint32): uint32 := x + ((t * ((y - x)) >> 16));
 			mid: int32 := alpha < 0 ? 0 : 254;
@@ -17225,10 +17225,10 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 			px: int32 := (rect.w - 256) / 2;
 			if ((bars) != null) {
 				for (x: int32 := 0; x < bars.length; x := x + 1) {
-					bv: int32 := bch(argb(bars[x])) * (rect.h) / (256);
-					gv: int32 := gch(argb(bars[x])) * (rect.h) / (256);
-					rv: int32 := rch(argb(bars[x])) * (rect.h) / (256);
-					lv: int32 := ach(argb(bars[x])) * (rect.h) / (256);
+					bv: int32 := bch(argb(bars[x])) * rect.h / 256;
+					gv: int32 := gch(argb(bars[x])) * rect.h / 256;
+					rv: int32 := rch(argb(bars[x])) * rect.h / 256;
+					lv: int32 := ach(argb(bars[x])) * rect.h / 256;
 					for (y: int32 := 0; y < rect.h; y := y + 1) {
 						b: uint32 := colB * (uint32(y < bv));
 						g: uint32 := colG * (uint32(y < gv));
@@ -17240,16 +17240,16 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 			}
 			if ((lines) != null) {
 				y: int32 := rect.y + rect.h - 1;
-				pb: int32 := bch(argb(lines[0])) * (rect.h) / (256);
-				pg: int32 := gch(argb(lines[0])) * (rect.h) / (256);
-				pr: int32 := rch(argb(lines[0])) * (rect.h) / (256);
-				pl: int32 := ach(argb(lines[0])) * (rect.h) / (256);
+				pb: int32 := bch(argb(lines[0])) * rect.h / 256;
+				pg: int32 := gch(argb(lines[0])) * rect.h / 256;
+				pr: int32 := rch(argb(lines[0])) * rect.h / 256;
+				pl: int32 := ach(argb(lines[0])) * rect.h / 256;
 				for (i: int32 := 1; i < lines.length; i := i + 1) {
 					x: int32 := rect.x + i + px;
-					bv: int32 := bch(argb(lines[i])) * (rect.h) / (256);
-					gv: int32 := gch(argb(lines[i])) * (rect.h) / (256);
-					rv: int32 := rch(argb(lines[i])) * (rect.h) / (256);
-					lv: int32 := ach(argb(lines[i])) * (rect.h) / (256);
+					bv: int32 := bch(argb(lines[i])) * rect.h / 256;
+					gv: int32 := gch(argb(lines[i])) * rect.h / 256;
+					rv: int32 := rch(argb(lines[i])) * rect.h / 256;
+					lv: int32 := ach(argb(lines[i])) * rect.h / 256;
 					image.drawLine(image, x, y - pl, x, y - lv, colL);
 					image.drawLine(image, x, y - pb, x, y - bv, colB);
 					image.drawLine(image, x, y - pg, x, y - gv, colG);

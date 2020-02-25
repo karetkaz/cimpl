@@ -159,15 +159,15 @@ inline argb(float64 a, float64 r, float64 g, float64 b) = argb(int32(a * 255), i
 
 
 /// get the Alpha channel of the color
-inline ach(argb col) = uint32((uint32(col) >> 24) & 0xff);
+inline ach(argb col) = int32((uint32(col) >> 24) & 0xff);
 /// get the Red channel of the color
-inline rch(argb col) = uint32((uint32(col) >> 16) & 0xff);
+inline rch(argb col) = int32((uint32(col) >> 16) & 0xff);
 /// get the Green channel of the color
-inline gch(argb col) = uint32((uint32(col) >> 8) & 0xff);
+inline gch(argb col) = int32((uint32(col) >> 8) & 0xff);
 /// get the Blue channel of the color
-inline bch(argb col) = uint32(uint32(col) & 0xff);
+inline bch(argb col) = int32(uint32(col) & 0xff);
 /// get the luminosity of the color
-inline lum(argb c) = uint32((rch(c) * 76 + gch(c) * 150 + bch(c) * 29) >> 8);
+inline lum(argb c) = int32((rch(c) * 76 + gch(c) * 150 + bch(c) * 29) >> 8);
 
 
 /// linear interpolate a lookup-table with the given colors

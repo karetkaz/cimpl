@@ -177,6 +177,7 @@ let params = JsArgs('#', function (params, changes) {
 
 		if (params.workspace != null || params.project != null) {
 			// do not show workspaces if a project or workspace is loaded
+			workspaceList.innerHTML = '';
 			return;
 		}
 		if (indexedDB.databases == null) {
@@ -185,7 +186,6 @@ let params = JsArgs('#', function (params, changes) {
 		}
 		workspaceName.innerText = 's';
 		indexedDB.databases().then(function(dbs) {
-			workspaceList.innerHTML = '';
 			let prefix = '/cmpl/';
 			for (db of dbs) {
 				let name = db.name;

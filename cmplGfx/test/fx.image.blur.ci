@@ -52,6 +52,7 @@ int onEvent(int action, int button, int x, int y) {
 		text: "Hardness";
 		minimum: -255;
 		maximum: 255;
+		group: 1;
 		selectable: false;
 	};
 	static Button btnReflect = {
@@ -68,21 +69,25 @@ int onEvent(int action, int button, int x, int y) {
 	};
 	static Switch chkInvert = {
 		text: "Invert";
+		group: 1;
 		selectable: false;
 	};
 	static Switch chkRect = {
 		text: "Show rect";
+		group: 1;
 		selectable: false;
 	};
 	static Switch chkMask = {
 		text: "Show mask";
+		group: 1;
 		selectable: false;
 	};
 	static bool onResetClick(Button view);
 	static Button btnReset = {
 		text: "Reset rect";
-		onClick: onResetClick;
+		group: 1;
 		selectable: false;
+		onClick: onResetClick;
 	};
 	static Histogram histogram = {
 		text: null;
@@ -99,13 +104,18 @@ int onEvent(int action, int button, int x, int y) {
 		height: 3;
 		enabled: false;
 	};
+	static Button separator1 = {
+		text: null;
+		height: 3;
+		group: 1;
+		enabled: false;
+	};
 
 	static Layout layout = Layout(offs, -30, 30, font,
 		histogram, separator,
 		sldBlur, sldSharpness,
-		separator,
-		btnReflect, btnLinear, btnRadial, btnSquare,
-		sldFade, chkInvert, chkMask, chkRect, btnReset,
+		btnLinear, btnReflect, btnRadial, btnSquare,
+		separator1, sldFade, chkInvert, chkMask, chkRect, btnReset,
 		separator, autoUpdate, time);
 
 	static int oldRadius = 0;
@@ -211,6 +221,17 @@ int onEvent(int action, int button, int x, int y) {
 
 		offs.calcHist(null, 0x00ffffff, histogram.data);
 		time.value = System.millis() - start;
+		if (layout.isSelected(btnReflect, btnLinear, btnRadial, btnSquare)) {
+			if (layout.group != 1) {
+				layout.group = 1;
+				layout.measure();
+			}
+		} else {
+			if (layout.group != 2) {
+				layout.group = 2;
+				layout.measure();
+			}
+		}
 		layout.draw();
 	}
 	return 0;

@@ -206,18 +206,21 @@ int onEvent(int action, int button, int x, int y) {
 	inline "/lib/gfx/micro.ui.ci";
 
 	static Slider brightness = {
+		group: 1;
 		text: "brightness";
 		minimum: -200;
 		maximum: 200;
 		divisor: 200;
 	};
 	static Slider saturation = {
+		group: 1;
 		text: "saturation";
 		value: 200;
 		maximum: 1000;
 		divisor: 200;
 	};
 	static Slider contrast = {
+		group: 1;
 		text: "contrast";
 		value: 200;
 		minimum: -200;
@@ -225,79 +228,105 @@ int onEvent(int action, int button, int x, int y) {
 		divisor: 200;
 	};
 	static Slider temp = {
+		group: 1;
 		text: "temperature";
 		minimum: -200;
 		maximum: 200;
 		divisor: 400;
 	};
 	static Slider tint = {
+		group: 1;
 		text: "tint";
 		minimum: -200;
 		maximum: 200;
 		divisor: 400;
 	};
 	static Slider hue = {
+		group: 1;
 		text: "hue";
 		minimum: 0;
 		maximum: 720;
 		divisor: 2;
 	};
 
+	// presets
 	static Button original = {
+		group: 2;
 		text: "original";
 		data: null;
 	};
 	static Button invert = {
+		group: 2;
 		text: "invert";
 		data: INVERT;
 	};
 	static Button grayScale = {
+		group: 2;
 		text: "gray scale";
 		data: GREY_SCALE;
 	};
 	static Button blackAndWhite = {
+		group: 2;
 		text: "black & white";
 		data: BLACK_AND_WHITE;
 	};
 	static Button sepiaColor = {
+		group: 2;
 		text: "sepia color";
 		data: SEPIA_COLOR;
 	};
 	static Button technicolor = {
+		group: 2;
 		text: "technicolor";
 		data: TECHNICOLOR;
 	};
 	static Button polaroid = {
+		group: 2;
 		text: "polaroid";
 		data: POLAROID;
 	};
 	static Button kodachrome = {
+		group: 2;
 		text: "kodachrome";
 		data: KODACHROME;
 	};
 	static Button browni = {
+		group: 2;
 		text: "browni";
 		data: BROWNI;
 	};
 	static Button vintage = {
+		group: 2;
 		text: "vintage";
 		data: VINTAGE;
 	};
 	static Button nightVision = {
+		group: 2;
 		text: "night vision";
 		data: NIGHT_VISION;
 	};
 	static Button warm = {
+		group: 2;
 		text: "warm";
 		data: WARM;
 	};
 	static Button cool = {
+		group: 2;
 		text: "cool";
 		data: COOL;
 	};
 	static Button lsd = {
+		group: 2;
 		text: "lsd";
 		data: LSD;
+	};
+
+	static bool onGroupClick(Button view);
+	static Button group = {
+		text: "Presets";
+		value: ">";
+		selectable: !true;
+		onClick: onGroupClick;	// TODO: implement override
 	};
 
 	static Histogram histogram = {
@@ -317,18 +346,31 @@ int onEvent(int action, int button, int x, int y) {
 	};
 
 	static Layout ui = Layout(offs, -30, 30, font,
-		histogram, separator, 
-		brightness, saturation, contrast, temp, tint, hue, separator,
-		original, invert, grayScale, blackAndWhite, sepiaColor,
-		technicolor, polaroid, kodachrome, browni, vintage,
-		nightVision, warm, cool, lsd, 
+		histogram, separator, group, separator,
+		// group 1 - Controls
+		brightness, saturation, contrast, temp, tint, hue,
+		// group 2 - Presets
+		original, invert, grayScale, blackAndWhite, sepiaColor, technicolor, polaroid,
+		kodachrome, browni, vintage, nightVision, warm, cool, lsd,
+
 		separator, time
 	);
+
+	static bool onGroupClick(Button view) {
+		ui.group = ui.group != 1 ? 1 : 2;
+		ui.selectedIndex = -1;
+		group.value = ui.group == 1 ? ">" :"<";
+		ui.measure();
+		return true;
+	}
 
 	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
 		}
+	}
+	if (action == Gui.WINDOW_INIT) {
+		onGroupClick(group);
 	}
 	if (ui.uiEvent(action, button, x, y)) {
 		uint64 start = System.millis();

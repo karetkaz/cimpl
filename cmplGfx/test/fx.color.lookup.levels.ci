@@ -56,16 +56,9 @@ int onEvent(int action, int button, int x, int y) {
 		image: offs;
 		height: 128;
 		lines: true;
+		enabled: false;
 		selectable: false;
 	};
-	static bool onColorUpdate(ColorPicker view);
-	static ColorPicker colors = {
-		text: null;
-		//lum: .75f;
-		selectable: false;
-		onUpdate: onColorUpdate;
-	};
-
 	static Slider time = {
 		text: "time";
 		enabled: false;
@@ -74,15 +67,11 @@ int onEvent(int action, int button, int x, int y) {
 	static Layout ui = Layout(offs, -30, 30, font,
 		histogram,
 		curves,
-		colors,
 		sldInput,
 		sldOutput,
 		time
 	);
 
-	static bool onColorUpdate(ColorPicker view) {
-		ui.focusedColor = uint32(view.value);
-	}
 	if (action == Gui.WINDOW_INIT) {
 		ui.setSelected(sldInput);
 	}

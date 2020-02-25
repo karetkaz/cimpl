@@ -1,0 +1,62 @@
+// Color levels demo.
+
+gxSurf back = gxSurf("asset/image/forest.png", 32);
+gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
+gxSurf offs = gxSurf(back.width(), back.height(), back.depth());
+
+
+int onEvent(int action, int button, int x, int y);
+offs.show(onEvent);
+offs.destroy();
+back.destroy();
+font.destroy();
+
+int onEvent(int action, int button, int x, int y) {
+	inline "/lib/gfx/micro.ui.ci";
+
+	static Histogram histogram = {
+		text: null;
+		image: offs;
+		height: 128;
+		enabled: false;
+	};
+
+	static bool onColorUpdate(ColorPicker view);
+	static ColorPicker colors = {
+		text: null;
+		//lum: .75f;
+		selectable: false;
+		onUpdate: onColorUpdate;
+	};
+
+	static Slider time = {
+		text: "time";
+		enabled: false;
+	};
+
+	static Layout ui = Layout(offs, -30, 30, font,
+		histogram,
+		colors,
+		time
+	);
+
+	static bool onColorUpdate(ColorPicker view) {
+		ui.backgroundColor = uint32(view.value);
+	}
+
+	if (action == Gui.KEY_PRESS) {
+		if (button == 27) {
+			return -1;
+		}
+	}
+
+	if (ui.uiEvent(action, button, x, y)) {
+		uint64 start = System.millis();
+		offs.resize(null, back, null, 1);
+		offs.calcHist(null, 0x00ffffff, histogram.data);
+
+		time.value = System.millis() - start;
+		ui.draw();
+	}
+	return 0;
+}

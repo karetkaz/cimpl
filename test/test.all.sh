@@ -10,7 +10,7 @@ CMPL_BIN=$CMPL_HOME/$BIN
 BINW=$CMPL_HOME/bin/lnx.wcc
 
 make clean BINDIR="$BIN"
-make -j 12 cmpl libFile.so libGfx.so libOpenGL.so cmpl.js libFile.wasm libGfx.wasm cmpl.dbg.js BINDIR="$BIN"
+make -j 12 cmpl libFile.so libGfx.so libOpenGL.so cmpl.js libFile.wasm libGfx.wasm BINDIR="$BIN"
 
 # build and run test on 32 bit platform
 WATCOM="$(echo ~/bin/ow_daily/rel2)"
