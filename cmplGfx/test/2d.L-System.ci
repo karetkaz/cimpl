@@ -1,6 +1,6 @@
 // Recursive tree drawer demo.
 
-void drawTree(gxSurf surf, int x1, int y1, double angle, double length, int depth) {
+void drawTree(Image surf, int x1, int y1, double angle, double length, int depth) {
 	inline Angle = 20;
 
 	if (depth <= 0) {
@@ -15,7 +15,7 @@ void drawTree(gxSurf surf, int x1, int y1, double angle, double length, int dept
 	surf.drawTree(x2, y2, angle + Angle, length, depth - 1);
 }
 
-gxSurf image = gxSurf(1440, 900, 32);
+Image image = Image(1440, 900, 32);
 
 image.fillRect(0, 0, 65535, 65535, 0xffffff);
 drawTree(image, image.width() / 2, image.height() - 22, -90, 11, 12);

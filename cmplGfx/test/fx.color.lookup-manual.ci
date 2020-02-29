@@ -1,0 +1,126 @@
+/* Manual color lookup editing (TODO: add and move curve control points)
+ *
+ * use 'tab' / 'shift' + 'tab' to select next control
+ * use 'enter' / 'shift' + 'enter' to select next control
+ * use '+' / '-' to adjust value of selected control (use shift for more precision)
+ * use 'backspace' / 'shift' + 'backspace' to reset selected / every control value
+ * use 'space' to press a button, toggle switch or reset slider value
+ * use '[' or ']' to show and hide the controls
+ *
+ * drag the mouse up or down in the window to adjust control value
+ */
+
+Image back = Image("asset/image/forest.png", 32);
+Image font = Image.openFnt("asset/font/modern-1.fnt");
+Image offs = Image(back.width(), back.height(), back.depth());
+
+
+int onEvent(int action, int button, int x, int y);
+offs.show(onEvent);
+offs.destroy();
+back.destroy();
+font.destroy();
+
+int onEvent(int action, int button, int x, int y) {
+	inline "/lib/gfx/micro.ui.ci";
+
+	static void onResetClick(Button this);
+	static void onCurveUpdate(Histogram this, int idx, int value);
+
+	static Histogram histogram = {
+		text: null;
+		image: offs;
+		enabled: false;
+	};
+	static Histogram curves = {
+		text: null;
+		image: offs;
+		height: 256;
+		lines: true;
+		enabled: true;
+		selectable: false;
+		onUpdate: onCurveUpdate;
+	};
+
+	static Button separator = {
+		text: null;
+		height: 1;
+		enabled: false;
+	};
+
+	static Button btnLuminosity = {
+		text: "luminosity";
+	};
+	static Button btnRgb = {
+		text: "rgb";
+	};
+	static Button btnRed = {
+		text: "red";
+	};
+	static Button btnGreen = {
+		text: "green";
+	};
+	static Button btnBlue = {
+		text: "blue";
+	};
+
+	static Button btnReset = {
+		text: "reset";
+		selectable: false;
+		onClick: onResetClick;
+	};
+
+	static Slider time = {
+		text: "time";
+		enabled: false;
+	};
+
+	static Layout ui = Layout(offs, -30, 30, font,
+		histogram, curves, separator,
+		btnLuminosity, btnRgb, btnRed, btnGreen, btnBlue,
+		btnReset, separator, time
+	);
+
+static void onCurveUpdate(Histogram this, int idx, int value) {
+	argb data& = this.data[idx];
+	if (ui.isSelected(btnLuminosity)) {
+		data.a = clamp_s8(value);
+		return;
+	}
+	if (ui.isSelected(btnRed)) {
+		data.r = clamp_s8(value);
+		return;
+	}
+	if (ui.isSelected(btnGreen)) {
+		data.g = clamp_s8(value);
+		return;
+	}
+	if (ui.isSelected(btnBlue)) {
+		data.b = clamp_s8(value);
+		return;
+	}
+	if (ui.isSelected(btnRgb)) {
+		data.r = data.g = data.b = clamp_s8(value);
+	}
+}
+static void onResetClick(Button this) {
+	for (int i = 0; i < 256; i += 1) {
+		curves.data[i] = uint32(argb(i, i, i, i));
+	}
+}
+
+	if (action == Gui.KEY_PRESS) {
+		if (button == 27) {
+			return -1;
+		}
+	}
+	if (ui.uiEvent(action, button, x, y)) {
+		uint64 start = System.millis();
+		offs.resize(null, back, null, 1);
+		offs.colorMap(null, curves.data);
+		offs.calcHist(null, 0x00ffffff, histogram.data);
+		time.value = System.millis() - start;
+		ui.draw();
+	}
+	return 0;
+}

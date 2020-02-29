@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 
-struct gxWindow {
+struct GxWindow {
 	Display *display;
 	Window window;
 	XImage *image;
@@ -14,12 +14,12 @@ struct gxWindow {
 	GC gc;
 };
 
-gxWindow createWindow(gx_Surf offs) {
+GxWindow createWindow(GxImage offs) {
 	if (offs == NULL) {
 		return NULL;
 	}
 
-	gxWindow result = malloc(sizeof(struct gxWindow));
+	GxWindow result = malloc(sizeof(struct GxWindow));
 	if (result == NULL) {
 		return NULL;
 	}
@@ -58,7 +58,7 @@ gxWindow createWindow(gx_Surf offs) {
 	return result;
 }
 
-int getWindowEvent(gxWindow window, int *button, int *x, int *y) {
+int getWindowEvent(GxWindow window, int *button, int *x, int *y) {
 	static int btnstate = 0;
 
 	XEvent event;
@@ -158,17 +158,17 @@ int getWindowEvent(gxWindow window, int *button, int *x, int *y) {
 	return 0;
 }
 
-void setWindowText(gxWindow window, char *caption) {
+void setWindowText(GxWindow window, char *caption) {
 	XSetStandardProperties(window->display, window->window, caption, "cmpl", None, NULL, 0, NULL);
 }
 
-void flushWindow(gxWindow window) {
+void flushWindow(GxWindow window) {
 	XImage *screen = window->image;
 	XPutImage(window->display, window->window, window->gc, screen, 0, 0, 0, 0, screen->width, screen->height);
 	XFlush(window->display);
 }
 
-void destroyWindow(gxWindow window) {
+void destroyWindow(GxWindow window) {
 
 	if (window->image) {
 		window->image->data = NULL;

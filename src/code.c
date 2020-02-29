@@ -2201,6 +2201,9 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val
 		if (varType == NULL || varData == NULL) {
 			printFmt(out, esc, "%s", "null");
 		}
+		else if (mode & prOneLine) {
+			printFmt(out, esc, "...");
+		}
 		else {
 			printFmt(out, esc, "%.T: ", varType);
 			printVal(out, esc, ctx, varType, (vmValue *) varData, mode & ~(prSymQual | prSymType), -indent);
@@ -2237,12 +2240,14 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val
 			printFmt(out, esc ? esc : escapeStr(), type_fmt_string, data);
 			printFmt(out, esc, "%c", type_fmt_string_chr);
 		}
+		else if (mode & prOneLine) {
+			printFmt(out, esc, "...");
+		}
 		else {
 			size_t length = 0;
-			size_t inc = typ->type->size;
 			if (lenField && isStatic(lenField)) {
 				// fixed size array
-				length = typ->size / inc;
+				length = typ->size / typ->type->size;
 			}
 			else if (lenField) {
 				// dynamic size array
@@ -2258,6 +2263,7 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val
 			if (multiArray) {
 				printFmt(out, esc, "\n");
 			}
+			size_t step = refSize(typ->type);
 			for (size_t idx = 0; idx < length; idx += 1) {
 				if (idx > 0) {
 					if (multiArray) {
@@ -2270,10 +2276,14 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val
 					printFmt(out, esc, "%I...", multiArray ? indent + 1 : 0);
 					break;
 				}
+				vmValue *element = (vmValue *) (data + idx * step);
+				if (castOf(typ->type) == CAST_ref) {
+					element = vmPointer(ctx, (size_t) element->ref);
+				}
 				if (multiArray) {
-					printVal(out, esc, ctx, typ->type, (vmValue *) (data + idx * inc), mode & ~(prSymQual | prSymType), indent + 1);
+					printVal(out, esc, ctx, typ->type, element, mode & ~(prSymQual | prSymType), indent + 1);
 				} else {
-					printVal(out, esc, ctx, typ->type, (vmValue *) (data + idx * inc), mode & ~(prSymQual | prSymType), -indent);
+					printVal(out, esc, ctx, typ->type, element, mode & ~(prSymQual | prSymType), -indent);
 				}
 				values += 1;
 			}
@@ -2286,7 +2296,7 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val
 	else {
 		// typename, function, pointer, etc (without format option)
 		int fields = 0;
-		if (typ->fields != NULL) {
+		if (typ->fields != NULL && (mode & prOneLine) == 0) {
 			for (symn sym = typ->fields; sym; sym = sym->next) {
 				if (isStatic(sym)) {
 					// skip static fields
@@ -2306,7 +2316,7 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val
 				}
 
 				printFmt(out, esc, "\n");
-				printVal(out, esc, ctx, sym, (void *) (data + sym->offs), prMember, indent + 1);
+				printVal(out, esc, ctx, sym, (void *) (data + sym->offs), mode | prMember, indent + 1);
 				fields += 1;
 			}
 			if (fields > 0) {
@@ -2325,7 +2335,7 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val
 	}
 }
 
-static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, void *sp, int indent) {
+static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, void *sp, int indent, dmpMode mode) {
 	symn sym;
 	int printFileLine = 0;
 
@@ -2381,7 +2391,7 @@ static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, v
 				// at vm_stk_align is the return value of the function.
 				offs += vm_stk_align;
 			}
-			printVal(out, NULL, rt, sym, (vmValue *)((char*)sp + offs), prArgs, -indent);
+			printVal(out, NULL, rt, sym, (vmValue *)((char*)sp + offs), mode, -indent);
 		}
 		if (indent > 0) {
 			printFmt(out, NULL, ")");
@@ -2407,6 +2417,7 @@ void traceCalls(dbgContext dbg, FILE *out, int indent, size_t maxCalls, size_t s
 		maxCalls = maxTrace;
 	}
 
+	dmpMode mode = prArgs;
 	for (i = skipCalls; i < maxCalls; ++i) {
 		trcptr trace = &trcBase[maxTrace - i - 1];
 		dbgn trInfo = mapDbgStatement(rt, trace->caller);
@@ -2423,8 +2434,9 @@ void traceCalls(dbgContext dbg, FILE *out, int indent, size_t maxCalls, size_t s
 		}
 		if (hasOutput > 0) {
 			printFmt(out, NULL, "\n");
+			mode |= prOneLine;
 		}
-		traceArgs(rt, out, fun, file, line, sp, indent);
+		traceArgs(rt, out, fun, file, line, sp, indent, mode);
 		hasOutput += 1;
 	}
 	if (i < maxTrace) {

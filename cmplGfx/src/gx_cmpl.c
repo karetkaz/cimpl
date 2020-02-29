@@ -8,7 +8,7 @@
 #include "g3_draw.h"
 
 struct camera cam[1]; // TODO: singleton like camera
-struct gx_Light lights[32];  // max 32 lights
+struct GxLight lights[32];  // max 32 lights
 
 // convert a double to 16 bit fixed point
 #define fxp16(__VALUE) ((int32_t)(65536 * (double)(__VALUE)))
@@ -28,8 +28,8 @@ static inline vector a2Vec(vector storage, float32_t values[3]) {
 	return storage;
 }
 
-static inline gx_Mesh meshMemMgr(rtContext ctx, gx_Mesh realloc, int size) {
-	gx_Mesh result = ctx->api.rtAlloc(ctx, realloc, size);
+static inline GxMesh meshMemMgr(rtContext ctx, GxMesh recycle, int size) {
+	GxMesh result = ctx->api.rtAlloc(ctx, recycle, size);
 	if (result == NULL) {
 		return NULL;
 	}
@@ -37,29 +37,29 @@ static inline gx_Mesh meshMemMgr(rtContext ctx, gx_Mesh realloc, int size) {
 	return result;
 }
 
-static const char *proto_surf_create2d = "gxSurf create(int32 width, int32 height, int32 depth)";
-static const char *proto_surf_create3d = "gxSurf create3d(int32 width, int32 height)";
-static const char *proto_surf_recycle = "gxSurf recycle(gxSurf recycle, int32 width, int32 height, int32 depth, int32 flags)";
+static const char *proto_image_create2d = "Image create(int32 width, int32 height, int32 depth)";
+static const char *proto_image_create3d = "Image create3d(int32 width, int32 height)";
+static const char *proto_image_recycle = "Image recycle(Image recycle, int32 width, int32 height, int32 depth, int32 flags)";
 static vmError surf_recycle(nfcContext ctx) {
-	gx_Surf result = NULL;
-	if (ctx->proto == proto_surf_recycle) {
-		gx_Surf recycle = nextValue(ctx).ref;
+	GxImage result = NULL;
+	if (ctx->proto == proto_image_recycle) {
+		GxImage recycle = nextValue(ctx).ref;
 		int width = nextValue(ctx).i32;
 		int height = nextValue(ctx).i32;
 		int depth = nextValue(ctx).i32;
 		int flags = nextValue(ctx).i32;
-		result = gx_createSurf(recycle, width, height, depth, flags);
+		result = createImage(recycle, width, height, depth, flags);
 	}
-	if (ctx->proto == proto_surf_create2d) {
+	if (ctx->proto == proto_image_create2d) {
 		int width = nextValue(ctx).i32;
 		int height = nextValue(ctx).i32;
 		int depth = nextValue(ctx).i32;
-		result = gx_createSurf(NULL, width, height, depth, Surf_2ds);
+		result = createImage(NULL, width, height, depth, Image2d);
 	}
-	if (ctx->proto == proto_surf_create3d) {
+	if (ctx->proto == proto_image_create3d) {
 		int width = nextValue(ctx).i32;
 		int height = nextValue(ctx).i32;
-		result = gx_createSurf(NULL, width, height, 32, Surf_3ds);
+		result = createImage(NULL, width, height, 32, Image3d);
 	}
 	if (result == NULL) {
 		return nativeCallError;
@@ -68,35 +68,35 @@ static vmError surf_recycle(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_destroy = "void destroy(gxSurf surf)";
+static const char *proto_image_destroy = "void destroy(Image image)";
 static vmError surf_destroy(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
-	gx_destroySurf(surf);
+	GxImage surf = nextValue(ctx).ref;
+	destroyImage(surf);
 	return noError;
 }
 
-static const char *proto_surf_openBmp = "gxSurf openBmp(const char path[*], int32 depth)";
-static const char *proto_surf_openPng = "gxSurf openPng(const char path[*], int32 depth)";
-static const char *proto_surf_openJpg = "gxSurf openJpg(const char path[*], int32 depth)";
-static const char *proto_surf_openFnt = "gxSurf openFnt(const char path[*])";
+static const char *proto_image_openBmp = "Image openBmp(const char path[*], int32 depth)";
+static const char *proto_image_openPng = "Image openPng(const char path[*], int32 depth)";
+static const char *proto_image_openJpg = "Image openJpg(const char path[*], int32 depth)";
+static const char *proto_image_openFnt = "Image openFnt(const char path[*])";
 static vmError surf_open(nfcContext ctx) {
 	char *path = nextValue(ctx).ref;
 
-	gx_Surf result = NULL;
-	if (ctx->proto == proto_surf_openBmp) {
+	GxImage result = NULL;
+	if (ctx->proto == proto_image_openBmp) {
 		int depth = nextValue(ctx).i32;
-		result = gx_loadBmp(NULL, path, depth);
+		result = loadBmp(NULL, path, depth);
 	}
-	else if (ctx->proto == proto_surf_openPng) {
+	else if (ctx->proto == proto_image_openPng) {
 		int depth = nextValue(ctx).i32;
-		result = gx_loadPng(NULL, path, depth);
+		result = loadPng(NULL, path, depth);
 	}
-	else if (ctx->proto == proto_surf_openJpg) {
+	else if (ctx->proto == proto_image_openJpg) {
 		int depth = nextValue(ctx).i32;
-		result = gx_loadJpg(NULL, path, depth);
+		result = loadJpg(NULL, path, depth);
 	}
-	else if (ctx->proto == proto_surf_openFnt) {
-		result = gx_loadFnt(NULL, path);
+	else if (ctx->proto == proto_image_openFnt) {
+		result = loadFnt(NULL, path);
 	}
 
 	if (result == NULL) {
@@ -106,13 +106,13 @@ static vmError surf_open(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_saveBmp = "void saveBmp(gxSurf surf, const char path[*], int32 flags)";
+static const char *proto_image_saveBmp = "void saveBmp(Image image, const char path[*], int32 flags)";
 static vmError surf_save(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
 	char *path = nextValue(ctx).ref;
 	int flags = nextValue(ctx).i32;
 
-	int result = gx_saveBmp(path, surf, flags);
+	int result = saveBmp(path, surf, flags);
 
 	if (result != 0) {
 		return nativeCallError;
@@ -120,127 +120,127 @@ static vmError surf_save(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_width = "int32 width(gxSurf surf)";
+static const char *proto_image_width = "int32 width(Image image)";
 static vmError surf_width(nfcContext ctx) {
-	gx_Surf surf = arghnd(ctx, 0);
+	GxImage surf = arghnd(ctx, 0);
 	reti32(ctx, surf->width);
 	return noError;
 }
 
-static const char *proto_surf_height = "int32 height(gxSurf surf)";
+static const char *proto_image_height = "int32 height(Image image)";
 static vmError surf_height(nfcContext ctx) {
-	gx_Surf surf = arghnd(ctx, 0);
+	GxImage surf = arghnd(ctx, 0);
 	reti32(ctx, surf->height);
 	return noError;
 }
 
-static const char *proto_surf_depth = "int32 depth(gxSurf surf)";
+static const char *proto_image_depth = "int32 depth(Image image)";
 static vmError surf_depth(nfcContext ctx) {
-	gx_Surf surf = arghnd(ctx, 0);
+	GxImage surf = arghnd(ctx, 0);
 	reti32(ctx, surf->depth);
 	return noError;
 }
 
 
-static const char *proto_surf_get = "int32 get(gxSurf surf, int32 x, int32 y)";
+static const char *proto_image_get = "int32 get(Image image, int32 x, int32 y)";
 static vmError surf_get(nfcContext ctx) {
 	int32_t y = argi32(ctx, 0);
 	int32_t x = argi32(ctx, 4);
-	gx_Surf surf = arghnd(ctx, 8);
+	GxImage surf = arghnd(ctx, 8);
 
-	reti32(ctx, gx_getpixel(surf, x, y));
+	reti32(ctx, getPixel(surf, x, y));
 	return noError;
 }
 
-static const char *proto_surf_tex = "vec4f tex(gxSurf surf, float32 x, float32 y)";
+static const char *proto_image_tex = "vec4f tex(Image image, float32 x, float32 y)";
 static vmError surf_tex(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
 	int32_t x = nextValue(ctx).f32 * 65535 * surf->width;
 	int32_t y = nextValue(ctx).f32 * 65535 * surf->height;
-	struct vector result = vecldc(cast_rgb(gx_getpix16(surf, x, y)));
+	struct vector result = vecldc(cast_rgb(getPixelLinear(surf, x, y)));
 	retset(ctx, &result, sizeof(struct vector));
 	return noError;
 }
 
-static const char *proto_surf_set = "void set(gxSurf surf, int32 x, int32 y, uint32 color)";
+static const char *proto_image_set = "void set(Image image, int32 x, int32 y, uint32 color)";
 static vmError surf_set(nfcContext ctx) {
 	uint32_t color = argi32(ctx, 0);
 	int32_t y = argi32(ctx, 4);
 	int32_t x = argi32(ctx, 8);
-	gx_Surf surf = arghnd(ctx, 12);
+	GxImage surf = arghnd(ctx, 12);
 
-	gx_setpixel(surf, x, y, color);
+	setPixel(surf, x, y, color);
 	return noError;
 }
 
-static const char *proto_surf_drawRect = "void drawRect(gxSurf surf, int32 x1, int32 y1, int32 x2, int32 y2, int32 color)";
+static const char *proto_image_drawRect = "void drawRect(Image image, int32 x1, int32 y1, int32 x2, int32 y2, int32 color)";
 static vmError surf_drawRect(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
 	int x0 = nextValue(ctx).i32;
 	int y0 = nextValue(ctx).i32;
 	int x1 = nextValue(ctx).i32;
 	int y1 = nextValue(ctx).i32;
 	uint32_t color = nextValue(ctx).u32;
 
-	g2_drawRect(surf, x0, y0, x1, y1, color);
+	drawRect(surf, x0, y0, x1, y1, color);
 	return noError;
 }
 
-static const char *proto_surf_fillRect = "void fillRect(gxSurf surf, int32 x1, int32 y1, int32 x2, int32 y2, int32 color)";
+static const char *proto_image_fillRect = "void fillRect(Image image, int32 x1, int32 y1, int32 x2, int32 y2, int32 color)";
 static vmError surf_fillRect(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
 	int x0 = nextValue(ctx).i32;
 	int y0 = nextValue(ctx).i32;
 	int x1 = nextValue(ctx).i32;
 	int y1 = nextValue(ctx).i32;
 	uint32_t color = nextValue(ctx).u32;
 
-	g2_fillRect(surf, x0, y0, x1, y1, color);
+	fillRect(surf, x0, y0, x1, y1, color);
 	return noError;
 }
 
-static const char *proto_surf_drawOval = "void drawOval(gxSurf surf, int32 x1, int32 y1, int32 x2, int32 y2, int32 color)";
+static const char *proto_image_drawOval = "void drawOval(Image image, int32 x1, int32 y1, int32 x2, int32 y2, int32 color)";
 static vmError surf_drawOval(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
 	int x0 = nextValue(ctx).i32;
 	int y0 = nextValue(ctx).i32;
 	int x1 = nextValue(ctx).i32;
 	int y1 = nextValue(ctx).i32;
 	uint32_t color = nextValue(ctx).u32;
 
-	g2_drawOval(surf, x0, y0, x1, y1, color);
+	drawOval(surf, x0, y0, x1, y1, color);
 	return noError;
 }
 
-static const char *proto_surf_fillOval = "void fillOval(gxSurf surf, int32 x1, int32 y1, int32 x2, int32 y2, int32 color)";
+static const char *proto_image_fillOval = "void fillOval(Image image, int32 x1, int32 y1, int32 x2, int32 y2, int32 color)";
 static vmError surf_fillOval(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
 	int x0 = nextValue(ctx).i32;
 	int y0 = nextValue(ctx).i32;
 	int x1 = nextValue(ctx).i32;
 	int y1 = nextValue(ctx).i32;
 	uint32_t color = nextValue(ctx).u32;
 
-	g2_fillOval(surf, x0, y0, x1, y1, color);
+	fillOval(surf, x0, y0, x1, y1, color);
 	return noError;
 }
 
-static const char *proto_surf_drawLine = "void drawLine(gxSurf surf, int32 x1, int32 y1, int32 x2, int32 y2, int32 color)";
+static const char *proto_image_drawLine = "void drawLine(Image image, int32 x1, int32 y1, int32 x2, int32 y2, int32 color)";
 static vmError surf_drawLine(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
 	int x0 = nextValue(ctx).i32;
 	int y0 = nextValue(ctx).i32;
 	int x1 = nextValue(ctx).i32;
 	int y1 = nextValue(ctx).i32;
 	uint32_t color = nextValue(ctx).u32;
 
-	g2_drawLine(surf, x0, y0, x1, y1, color);
+	drawLine(surf, x0, y0, x1, y1, color);
 	return noError;
 }
 
-static const char *proto_surf_drawBez2 = "void drawBezier(gxSurf surf, int32 x1, int32 y1, int32 x2, int32 y2, int32 x3, int32 y3, int32 color)";
+static const char *proto_image_drawBez2 = "void drawBezier(Image image, int32 x1, int32 y1, int32 x2, int32 y2, int32 x3, int32 y3, int32 color)";
 static vmError surf_drawBez2(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
 	int x0 = nextValue(ctx).i32;
 	int y0 = nextValue(ctx).i32;
 	int x1 = nextValue(ctx).i32;
@@ -249,13 +249,13 @@ static vmError surf_drawBez2(nfcContext ctx) {
 	int y2 = nextValue(ctx).i32;
 	uint32_t color = nextValue(ctx).u32;
 
-	g2_drawBez2(surf, x0, y0, x1, y1, x2, y2, color);
+	drawBez2(surf, x0, y0, x1, y1, x2, y2, color);
 	return noError;
 }
 
-static const char *proto_surf_drawBez3 = "void drawBezier(gxSurf surf, int32 x1, int32 y1, int32 x2, int32 y2, int32 x3, int32 y3, int32 x4, int32 y4, int32 color)";
+static const char *proto_image_drawBez3 = "void drawBezier(Image image, int32 x1, int32 y1, int32 x2, int32 y2, int32 x3, int32 y3, int32 x4, int32 y4, int32 color)";
 static vmError surf_drawBez3(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
 	int x0 = nextValue(ctx).i32;
 	int y0 = nextValue(ctx).i32;
 	int x1 = nextValue(ctx).i32;
@@ -266,53 +266,66 @@ static vmError surf_drawBez3(nfcContext ctx) {
 	int y3 = nextValue(ctx).i32;
 	uint32_t color = nextValue(ctx).u32;
 
-	g2_drawBez3(surf, x0, y0, x1, y1, x2, y2, x3, y3, color);
+	drawBez3(surf, x0, y0, x1, y1, x2, y2, x3, y3, color);
 	return noError;
 }
 
-static const char *proto_surf_drawText = "void drawText(gxSurf surf, int32 x, int32 y, gxSurf font, const char text[*], int32 color)";
-static const char *proto_surf_drawTextRoi = "void drawText(gxSurf surf, const gxRect roi&, gxSurf font, const char text[*], int32 color)";
+static const char *proto_image_drawText = "void drawText(Image image, int32 x, int32 y, Image font, const char text[*], int32 color)";
+static const char *proto_image_drawTextRoi = "void drawText(Image image, const Rect roi&, Image font, const char text[*], int32 color)";
 static vmError surf_drawText(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
 
-	if (ctx->proto == proto_surf_drawTextRoi) {
-		gx_Rect roi = nextValue(ctx).ref;
-		gx_Surf font = nextValue(ctx).ref;
+	if (ctx->proto == proto_image_drawTextRoi) {
+		GxRect rect = nextValue(ctx).ref;
+		GxImage font = nextValue(ctx).ref;
 		char *text = nextValue(ctx).ref;
 		uint32_t color = nextValue(ctx).u32;
-		g2_drawTextRoi(surf, roi, font, text, color);
+		struct GxRect textRect = *rect;
+		if (!clipRect(surf, &textRect)) {
+			return noError;
+		}
+
+		struct GxClip textClip;
+		textClip.t = textRect.y;
+		textClip.l = textRect.x;
+		textClip.r = textRect.x + textRect.w;
+		textClip.b = textRect.y + textRect.h;
+		GxClip oldClip = surf->clipPtr;
+		surf->clipPtr = &textClip;
+		drawText(surf, rect->x, rect->y, font, text, color);
+		surf->clipPtr = oldClip;
 		return noError;
 	}
 
 	int x = nextValue(ctx).i32;
 	int y = nextValue(ctx).i32;
-	gx_Surf font = nextValue(ctx).ref;
+	GxImage font = nextValue(ctx).ref;
 	char *text = nextValue(ctx).ref;
 	uint32_t color = nextValue(ctx).u32;
 
-	g2_drawText(surf, x, y, font, text, color);
+	drawText(surf, x, y, font, text, color);
 	return noError;
 }
 
-static const char *proto_surf_clipText = "void clipText(gxSurf font, gxRect rect&, const char text[*])";
+static const char *proto_image_clipText = "void clipText(Image font, Rect rect&, const char text[*])";
 static vmError surf_clipText(nfcContext ctx) {
-	gx_Surf font = nextValue(ctx).ref;
-	gx_Rect rect = nextValue(ctx).ref;
+	GxImage font = nextValue(ctx).ref;
+	GxRect rect = nextValue(ctx).ref;
 	char *text = nextValue(ctx).ref;
 
-	g2_clipText(rect, font, text);
+	clipText(rect, font, text);
 	return noError;
 }
 
-static const char *proto_surf_copySurf = "void copy(gxSurf surf, int32 x, int32 y, gxSurf src, const gxRect roi&)";
+static const char *proto_image_copySurf = "void copy(Image image, int32 x, int32 y, Image src, const Rect roi&)";
 static vmError surf_copySurf(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
 	int x = nextValue(ctx).i32;
 	int y = nextValue(ctx).i32;
-	gx_Surf src = nextValue(ctx).ref;
-	gx_Rect roi = nextValue(ctx).ref;
+	GxImage src = nextValue(ctx).ref;
+	GxRect roi = nextValue(ctx).ref;
 
-	if (gx_blitSurf(surf, x, y, src, roi, NULL, gx_getcbltf(surf->depth, src->depth)) < 0) {
+	if (blitImage(surf, x, y, src, roi, NULL, getBltProc(surf->depth, src->depth)) < 0) {
 		return nativeCallError;
 	}
 	return noError;
@@ -335,9 +348,9 @@ static int blendDstAlphaCallback(argb* dst, argb *src, bltContext ctx, size_t cn
 		}
 		register argb val = vecrgb(args);
 		int alpha = ctxAlpha * dst->a >> 8;
-		dst->r = clamp_s8(dst->r + alpha * (val.r - dst->r) / 256);
-		dst->g = clamp_s8(dst->g + alpha * (val.g - dst->g) / 256);
-		dst->b = clamp_s8(dst->b + alpha * (val.b - dst->b) / 256);
+		dst->r = sat_s8(dst->r + alpha * (val.r - dst->r) / 256);
+		dst->g = sat_s8(dst->g + alpha * (val.g - dst->g) / 256);
+		dst->b = sat_s8(dst->b + alpha * (val.b - dst->b) / 256);
 	}
 	return 0;
 }
@@ -352,9 +365,9 @@ static int blendAlphaCallback(argb* dst, argb *src, bltContext ctx, size_t cnt) 
 			return -1;
 		}
 		register argb val = vecrgb(args);
-		dst->r = clamp_s8(dst->r + alpha * (val.r - dst->r) / 256);
-		dst->g = clamp_s8(dst->g + alpha * (val.g - dst->g) / 256);
-		dst->b = clamp_s8(dst->b + alpha * (val.b - dst->b) / 256);
+		dst->r = sat_s8(dst->r + alpha * (val.r - dst->r) / 256);
+		dst->g = sat_s8(dst->g + alpha * (val.g - dst->g) / 256);
+		dst->b = sat_s8(dst->b + alpha * (val.b - dst->b) / 256);
 	}
 	return 0;
 }
@@ -362,9 +375,9 @@ static int blendDstAlpha(argb* dst, argb *src, bltContext ctx, size_t cnt) {
 	int ctxAlpha = ctx->alpha;
 	for (size_t i = 0; i < cnt; ++i, ++dst, ++src) {
 		int alpha = ctxAlpha * dst->a >> 8;
-		dst->r = clamp_s8(dst->r + alpha * (src->r - dst->r) / 256);
-		dst->g = clamp_s8(dst->g + alpha * (src->g - dst->g) / 256);
-		dst->b = clamp_s8(dst->b + alpha * (src->b - dst->b) / 256);
+		dst->r = sat_s8(dst->r + alpha * (src->r - dst->r) / 256);
+		dst->g = sat_s8(dst->g + alpha * (src->g - dst->g) / 256);
+		dst->b = sat_s8(dst->b + alpha * (src->b - dst->b) / 256);
 	}
 	return 0;
 	(void) ctx;
@@ -372,21 +385,21 @@ static int blendDstAlpha(argb* dst, argb *src, bltContext ctx, size_t cnt) {
 static int blendAlpha(argb* dst, argb *src, bltContext ctx, size_t cnt) {
 	int alpha = ctx->alpha;
 	for (size_t i = 0; i < cnt; ++i, ++dst, ++src) {
-		dst->r = clamp_s8(dst->r + alpha * (src->r - dst->r) / 256);
-		dst->g = clamp_s8(dst->g + alpha * (src->g - dst->g) / 256);
-		dst->b = clamp_s8(dst->b + alpha * (src->b - dst->b) / 256);
+		dst->r = sat_s8(dst->r + alpha * (src->r - dst->r) / 256);
+		dst->g = sat_s8(dst->g + alpha * (src->g - dst->g) / 256);
+		dst->b = sat_s8(dst->b + alpha * (src->b - dst->b) / 256);
 	}
 	return 0;
 }
 
-static const char *proto_surf_blendSurf = "void blend(gxSurf surf, int32 x, int32 y, const gxSurf src, const gxRect roi&, int32 alpha, bool dstAlpha, vec4f blend(vec4f base, vec4f with))";
+static const char *proto_image_blendSurf = "void blend(Image image, int32 x, int32 y, const Image src, const Rect roi&, int32 alpha, bool dstAlpha, vec4f blend(vec4f base, vec4f with))";
 static vmError surf_blendSurf(nfcContext ctx) {
 	rtContext rt = ctx->rt;
-	gx_Surf surf = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
 	int x = nextValue(ctx).i32;
 	int y = nextValue(ctx).i32;
-	gx_Surf src = nextValue(ctx).ref;
-	gx_Rect roi = nextValue(ctx).ref;
+	GxImage src = nextValue(ctx).ref;
+	GxRect roi = nextValue(ctx).ref;
 	int alpha = nextValue(ctx).i32;
 	int dstAlpha = nextValue(ctx).i32;
 	size_t cbOffs = argref(ctx, rt->api.nfcNextArg(ctx));
@@ -408,33 +421,33 @@ static vmError surf_blendSurf(nfcContext ctx) {
 		.rt = rt,
 	};
 
-	cblt_proc blt = NULL;
+	bltProc blt = NULL;
 	if (callback != NULL) {
 		if (dstAlpha) {
-			blt = (cblt_proc) blendDstAlphaCallback;
+			blt = (bltProc) blendDstAlphaCallback;
 		} else {
-			blt = (cblt_proc) blendAlphaCallback;
+			blt = (bltProc) blendAlphaCallback;
 		}
 	} else {
 		if (dstAlpha) {
-			blt = (cblt_proc) blendDstAlpha;
+			blt = (bltProc) blendDstAlpha;
 		} else {
-			blt = (cblt_proc) blendAlpha;
+			blt = (bltProc) blendAlpha;
 		}
 	}
 
-	if (gx_blitSurf(surf, x, y, src, roi, &arg, blt) < 0) {
+	if (blitImage(surf, x, y, src, roi, &arg, blt) < 0) {
 		return nativeCallError;
 	}
 	return noError;
 }
 
-static const char *proto_surf_transformSurf = "void transform(gxSurf surf, const gxRect rect&, gxSurf src, const gxRect roi&, int32 interpolate, const float32 mat[16])";
+static const char *proto_image_transformSurf = "void transform(Image image, const Rect rect&, Image src, const Rect roi&, int32 interpolate, const float32 mat[16])";
 static vmError surf_transformSurf(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
-	gx_Rect rect = nextValue(ctx).ref;
-	gx_Surf src = nextValue(ctx).ref;
-	gx_Rect roi = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
+	GxRect rect = nextValue(ctx).ref;
+	GxImage src = nextValue(ctx).ref;
+	GxRect roi = nextValue(ctx).ref;
 	int interpolate = nextValue(ctx).i32;
 	float32_t *mat = nextValue(ctx).ref;
 
@@ -443,7 +456,7 @@ static vmError surf_transformSurf(nfcContext ctx) {
 		return nativeCallError;
 	}
 
-	struct gx_Rect srcRec;
+	struct GxRect srcRec;
 	srcRec.x = srcRec.y = 0;
 	srcRec.w = src->width;
 	srcRec.h = src->height;
@@ -462,7 +475,7 @@ static vmError surf_transformSurf(nfcContext ctx) {
 			srcRec.h = roi->h;
 	}
 
-	struct gx_Rect dstRec;
+	struct GxRect dstRec;
 	if (rect != NULL) {
 		dstRec = *rect;
 	} else {
@@ -485,7 +498,7 @@ static vmError surf_transformSurf(nfcContext ctx) {
 		srcRec.y = -dstRec.y;
 	}
 
-	char *dptr = gx_cliprect(surf, &dstRec);
+	char *dptr = clipRect(surf, &dstRec);
 	if (dptr == NULL) {
 		return noError;
 	}
@@ -503,7 +516,7 @@ static vmError surf_transformSurf(nfcContext ctx) {
 			for (int x = 0, sx = srcRec.x; x < dstRec.w; ++x, ++sx) {
 				int32_t tx = (xx * sx + xy * sy + xt + 0x8000) >> 16;
 				int32_t ty = (yx * sx + yy * sy + yt + 0x8000) >> 16;
-				gx_setpixel(surf, dstRec.x + x, dstRec.y + y, gx_getpixel(src, tx, ty));
+				setPixel(surf, dstRec.x + x, dstRec.y + y, getPixel(src, tx, ty));
 			}
 		}
 		return noError;
@@ -513,28 +526,28 @@ static vmError surf_transformSurf(nfcContext ctx) {
 		for (int x = 0, sx = srcRec.x; x < dstRec.w; ++x, ++sx) {
 			int32_t tx = xx * sx + xy * sy + xt;
 			int32_t ty = yx * sx + yy * sy + yt;
-			gx_setpixel(surf, dstRec.x + x, dstRec.y + y, gx_getpix16(src, tx, ty));
+			setPixel(surf, dstRec.x + x, dstRec.y + y, getPixelLinear(src, tx, ty));
 		}
 	}
 	return noError;
 }
 
-static const char *proto_surf_blurSurf = "void blur(gxSurf surf, int32 radius, double sigma)";
+static const char *proto_image_blurSurf = "void blur(Image image, int32 radius, double sigma)";
 static vmError surf_blurSurf(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
 	int radius = nextValue(ctx).i32;
 	double sigma = nextValue(ctx).f64;
 
-	if (gx_blurSurf(surf, radius, sigma) != 0) {
+	if (blurImage(surf, radius, sigma) != 0) {
 		return nativeCallError;
 	}
 	return noError;
 }
 
-static const char *proto_surf_calcHist = "void calcHist(gxSurf surf, const gxRect roi&, uint32 rgb, uint32 lut[256])";
+static const char *proto_image_calcHist = "void calcHist(Image image, const Rect roi&, uint32 rgb, uint32 lut[256])";
 static vmError surf_calcHist(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
-	gx_Rect roi = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
+	GxRect roi = nextValue(ctx).ref;
 	uint32_t rgb = nextValue(ctx).u32;
 	rtValue lut = nextValue(ctx);
 
@@ -548,13 +561,13 @@ static vmError surf_calcHist(nfcContext ctx) {
 		return nativeCallError;
 	}*/
 
-	struct gx_Rect rect;
+	struct GxRect rect;
 	rect.x = roi ? roi->x : 0;
 	rect.y = roi ? roi->y : 0;
 	rect.w = roi ? roi->w : surf->width;
 	rect.h = roi ? roi->h : surf->height;
 
-	const char *dptr = gx_cliprect(surf, &rect);
+	const char *dptr = clipRect(surf, &rect);
 	if (dptr == NULL) {
 		ctx->rt->api.raise(ctx->rt, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
 		return noError;
@@ -573,12 +586,12 @@ static vmError surf_calcHist(nfcContext ctx) {
 	}
 
 	for (int y = 0; y < rect.h; y += 1) {
-		argb *cBuff = (argb *) dptr;
+		uint32_t *cBuff = (uint32_t *) dptr;
 		for (int x = 0; x < rect.w; x += 1) {
 			histL[lum(*cBuff)] += 1;
-			histB[cBuff->b] += 1;
-			histG[cBuff->g] += 1;
-			histR[cBuff->r] += 1;
+			histB[bch(*cBuff)] += 1;
+			histG[gch(*cBuff)] += 1;
+			histR[rch(*cBuff)] += 1;
 			cBuff += 1;
 		}
 		dptr += surf->scanLen;
@@ -610,19 +623,19 @@ static vmError surf_calcHist(nfcContext ctx) {
 
 	argb *data = lut.ref;
 	for (size_t x = 0; x < 256; x += 1) {
-		data[x].b = clamp_u8(histB[x] * 255 / max);
-		data[x].g = clamp_u8(histG[x] * 255 / max);
-		data[x].r = clamp_u8(histR[x] * 255 / max);
-		data[x].a = clamp_u8(histL[x] * 255 / max);
+		data[x].b = sat_u8(histB[x] * 255 / max);
+		data[x].g = sat_u8(histG[x] * 255 / max);
+		data[x].r = sat_u8(histR[x] * 255 / max);
+		data[x].a = sat_u8(histL[x] * 255 / max);
 	}
 
 	return noError;
 }
 
-static const char *proto_surf_cLutSurf = "void colorMap(gxSurf surf, const gxRect roi&, const uint32 lut[256])";
+static const char *proto_image_cLutSurf = "void colorMap(Image image, const Rect roi&, const uint32 lut[256])";
 static vmError surf_cLutSurf(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
-	gx_Rect roi = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
+	GxRect roi = nextValue(ctx).ref;
 	rtValue lut = nextValue(ctx);
 	int useLuminosity = 0;
 
@@ -636,14 +649,14 @@ static vmError surf_cLutSurf(nfcContext ctx) {
 		return nativeCallError;
 	}*/
 
-	struct gx_Rect rect;
+	struct GxRect rect;
 	rect.x = roi ? roi->x : 0;
 	rect.y = roi ? roi->y : 0;
 	rect.w = roi ? roi->w : surf->width;
 	rect.h = roi ? roi->h : surf->height;
 
 	argb *lutPtr = (argb *) lut.ref;
-	char *dstPtr = gx_cliprect(surf, &rect);
+	char *dstPtr = clipRect(surf, &rect);
 	if (dstPtr == NULL) {
 		ctx->rt->api.raise(ctx->rt, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
 		return noError;
@@ -718,11 +731,11 @@ static vmError surf_cLutSurf(nfcContext ctx) {
 			int32_t u = (r * rgb2luv[0x4] + g * rgb2luv[0x5] + b * rgb2luv[0x6]) >> 16;
 			int32_t v = (r * rgb2luv[0x8] + g * rgb2luv[0x9] + b * rgb2luv[0xa]) >> 16;
 
-			l = lutPtr[clamp_s8(l)].a;
+			l = lutPtr[sat_s8(l)].a;
 
-			cBuff->r = clamp_s8((l * luv2rgb[0x0] + u * luv2rgb[0x1] + v * luv2rgb[0x2]) >> 16);
-			cBuff->g = clamp_s8((l * luv2rgb[0x4] + u * luv2rgb[0x5] + v * luv2rgb[0x6]) >> 16);
-			cBuff->b = clamp_s8((l * luv2rgb[0x8] + u * luv2rgb[0x9] + v * luv2rgb[0xa]) >> 16);
+			cBuff->r = sat_s8((l * luv2rgb[0x0] + u * luv2rgb[0x1] + v * luv2rgb[0x2]) >> 16);
+			cBuff->g = sat_s8((l * luv2rgb[0x4] + u * luv2rgb[0x5] + v * luv2rgb[0x6]) >> 16);
+			cBuff->b = sat_s8((l * luv2rgb[0x8] + u * luv2rgb[0x9] + v * luv2rgb[0xa]) >> 16);
 			cBuff += 1;
 		}
 		dstPtr += surf->scanLen;
@@ -730,10 +743,10 @@ static vmError surf_cLutSurf(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_cMatSurf = "void colorMat(gxSurf surf, const gxRect roi&, const float32 mat[16])";
+static const char *proto_image_cMatSurf = "void colorMat(Image image, const Rect roi&, const float32 mat[16])";
 static vmError surf_cMatSurf(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
-	gx_Rect roi = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
+	GxRect roi = nextValue(ctx).ref;
 	rtValue mat = nextValue(ctx);
 
 	if (surf->depth != 32) {
@@ -753,13 +766,13 @@ static vmError surf_cMatSurf(nfcContext ctx) {
 		cMat[i] = fxp16(matPtr[i]);
 	}
 
-	struct gx_Rect rect;
+	struct GxRect rect;
 	rect.x = roi ? roi->x : 0;
 	rect.y = roi ? roi->y : 0;
 	rect.w = roi ? roi->w : surf->width;
 	rect.h = roi ? roi->h : surf->height;
 
-	char *dptr = gx_cliprect(surf, &rect);
+	char *dptr = clipRect(surf, &rect);
 	if (dptr == NULL) {
 		ctx->rt->api.raise(ctx->rt, raiseVerbose, "Empty roi, in function: %T", ctx->sym);
 		return noError;
@@ -772,9 +785,9 @@ static vmError surf_cMatSurf(nfcContext ctx) {
 			int g = cBuff->g;
 			int b = cBuff->b;
 			const int a = 256;
-			cBuff->r = clamp_s8((r * cMat[0x0] + g * cMat[0x1] + b * cMat[0x2] + a * cMat[0x3]) >> 16);
-			cBuff->g = clamp_s8((r * cMat[0x4] + g * cMat[0x5] + b * cMat[0x6] + a * cMat[0x7]) >> 16);
-			cBuff->b = clamp_s8((r * cMat[0x8] + g * cMat[0x9] + b * cMat[0xa] + a * cMat[0xb]) >> 16);
+			cBuff->r = sat_s8((r * cMat[0x0] + g * cMat[0x1] + b * cMat[0x2] + a * cMat[0x3]) >> 16);
+			cBuff->g = sat_s8((r * cMat[0x4] + g * cMat[0x5] + b * cMat[0x6] + a * cMat[0x7]) >> 16);
+			cBuff->b = sat_s8((r * cMat[0x8] + g * cMat[0x9] + b * cMat[0xa] + a * cMat[0xb]) >> 16);
 			cBuff += 1;
 		}
 		dptr += surf->scanLen;
@@ -782,34 +795,34 @@ static vmError surf_cMatSurf(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_surf_gradient = "void gradient(gxSurf surf, const gxRect roi&, int32 type, bool repeat, uint32 colors[])";
+static const char *proto_image_gradient = "void gradient(Image image, const Rect roi&, int32 type, bool repeat, uint32 colors[])";
 static vmError surf_gradient(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
-	gx_Rect rect = nextValue(ctx).ref;
-	gradient_type type = nextValue(ctx).i32;
+	GxImage surf = nextValue(ctx).ref;
+	GxRect rect = nextValue(ctx).ref;
+	GradientFlags type = nextValue(ctx).i32;
 	int repeat = nextValue(ctx).i32;
 	rtValue colors = nextValue(ctx);
 	if (repeat) {
 		type |= flag_repeat;
 	}
-	gx_gradSurf(surf, rect, type, colors.length, colors.ref);
+	drawGradient(surf, rect, type, colors.length, colors.ref);
 	return noError;
 }
 
-static const char *proto_mesh_create = "gxMesh create(int32 size)";
-static const char *proto_mesh_recycle = "gxMesh recycle(gxMesh recycle, int32 size)";
+static const char *proto_mesh_create = "Mesh create(int32 size)";
+static const char *proto_mesh_recycle = "Mesh recycle(Mesh recycle, int32 size)";
 static vmError mesh_recycle(nfcContext ctx) {
-	gx_Mesh recycle = NULL;
+	GxMesh recycle = NULL;
 	int size = 32;
 	if (ctx->proto == proto_mesh_recycle) {
 		recycle = nextValue(ctx).ref;
 		size = nextValue(ctx).i32;
 	}
 	if (ctx->proto == proto_mesh_create) {
-		recycle = meshMemMgr(ctx->rt, NULL, sizeof(struct gx_Mesh));
+		recycle = meshMemMgr(ctx->rt, NULL, sizeof(struct GxMesh));
 		size = nextValue(ctx).i32;
 	}
-	gx_Mesh result = g3_createMesh(recycle, (size_t) size);
+	GxMesh result = createMesh(recycle, (size_t) size);
 	if (result == NULL) {
 		return nativeCallError;
 	}
@@ -817,44 +830,44 @@ static vmError mesh_recycle(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_mesh_destroy = "void destroy(gxMesh mesh)";
+static const char *proto_mesh_destroy = "void destroy(Mesh mesh)";
 static vmError mesh_destroy(nfcContext ctx) {
-	gx_Mesh mesh = nextValue(ctx).ref;
-	g3_destroyMesh(mesh);
+	GxMesh mesh = nextValue(ctx).ref;
+	destroyMesh(mesh);
 	meshMemMgr(ctx->rt, mesh, 0);
 	return noError;
 }
 
-static const char *proto_surf_drawMesh = "int32 drawMesh(gxSurf surf, gxMesh mesh, int32 mode)";
+static const char *proto_image_drawMesh = "int32 drawMesh(Image image, Mesh mesh, int32 mode)";
 static vmError surf_drawMesh(nfcContext ctx) {
-	gx_Surf surf = nextValue(ctx).ref;
-	gx_Mesh mesh = nextValue(ctx).ref;
+	GxImage surf = nextValue(ctx).ref;
+	GxMesh mesh = nextValue(ctx).ref;
 	int32_t mode = nextValue(ctx).i32;
 
-	reti32(ctx, g3_drawMesh(surf, mesh, NULL, cam, lights, mode));
+	reti32(ctx, drawMesh(surf, mesh, NULL, cam, lights, mode));
 	return noError;
 }
 
-static const char *proto_mesh_openObj = "gxMesh openObj(const char path[*])";
-static const char *proto_mesh_open3ds = "gxMesh open3ds(const char path[*])";
+static const char *proto_mesh_openObj = "Mesh openObj(const char path[*])";
+static const char *proto_mesh_open3ds = "Mesh open3ds(const char path[*])";
 static vmError mesh_open(nfcContext ctx) {
 	char *path = nextValue(ctx).ref;
 
-	gx_Mesh result = meshMemMgr(ctx->rt, NULL, sizeof(struct gx_Mesh));
+	GxMesh result = meshMemMgr(ctx->rt, NULL, sizeof(struct GxMesh));
 	if (result == NULL) {
 		return nativeCallError;
 	}
-	memset(result, 0, sizeof(struct gx_Mesh));
-	g3_createMesh(result, 20);
+	memset(result, 0, sizeof(struct GxMesh));
+	createMesh(result, 20);
 	result->hasTex = result->hasNrm = 0;
 	result->tricnt = result->vtxcnt = 0;
 	if (ctx->proto == proto_mesh_openObj) {
-		if (!g3_readObj(result, path)) {
+		if (!readObj(result, path)) {
 			return nativeCallError;
 		}
 	}
 	else if (ctx->proto == proto_mesh_open3ds) {
-		if (!g3_read3ds(result, path)) {
+		if (!read3ds(result, path)) {
 			return nativeCallError;
 		}
 	}
@@ -867,25 +880,25 @@ static vmError mesh_open(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_mesh_saveObj = "void saveObj(gxMesh mesh, const char path[*])";
+static const char *proto_mesh_saveObj = "void saveObj(Mesh mesh, const char path[*])";
 static vmError mesh_save(nfcContext ctx) {
-	gx_Mesh mesh = nextValue(ctx).ref;
+	GxMesh mesh = nextValue(ctx).ref;
 	char *path = nextValue(ctx).ref;
 
 	if (mesh == NULL) {
 		return nativeCallError;
 	}
 
-	if (!g3_saveObj(mesh, path)) {
+	if (!saveObj(mesh, path)) {
 		return nativeCallError;
 	}
 	return noError;
 }
 
-static const char *proto_mesh_normalize = "void normalize(gxMesh mesh, float32 tolerance, float32 center[3], float32 resize[3])";
+static const char *proto_mesh_normalize = "void normalize(Mesh mesh, float32 tolerance, float32 center[3], float32 resize[3])";
 static vmError mesh_normalize(nfcContext ctx) {
 	struct vector args[2];
-	gx_Mesh mesh = nextValue(ctx).ref;
+	GxMesh mesh = nextValue(ctx).ref;
 	float32_t tolerance = nextValue(ctx).f32;
 	vector center = a2Vec(&args[0], nextValue(ctx).ref);
 	vector resize = a2Vec(&args[1], nextValue(ctx).ref);
@@ -893,14 +906,14 @@ static vmError mesh_normalize(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_mesh_addVertex = "int32 addVertex(gxMesh mesh, float32 x, float32 y, float32 z)";
+static const char *proto_mesh_addVertex = "int32 addVertex(Mesh mesh, float32 x, float32 y, float32 z)";
 static vmError mesh_addVertex(nfcContext ctx) {
-	gx_Mesh mesh = nextValue(ctx).ref;
+	GxMesh mesh = nextValue(ctx).ref;
 	scalar pos[3];
 	pos[0] = nextValue(ctx).f32;
 	pos[1] = nextValue(ctx).f32;
 	pos[2] = nextValue(ctx).f32;
-	if (!addvtx(mesh, pos, NULL, NULL)) {
+	if (!addVtx(mesh, pos, NULL, NULL)) {
 		// return nativeCallError;
 		reti32(ctx, -1);
 		return noError;
@@ -909,23 +922,23 @@ static vmError mesh_addVertex(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_mesh_addFace3 = "int32 addFace(gxMesh mesh, int32 v1, int32 v2, int32 v3)";
-static const char *proto_mesh_addFace4 = "int32 addFace(gxMesh mesh, int32 v1, int32 v2, int32 v3, int32 v4)";
+static const char *proto_mesh_addFace3 = "int32 addFace(Mesh mesh, int32 v1, int32 v2, int32 v3)";
+static const char *proto_mesh_addFace4 = "int32 addFace(Mesh mesh, int32 v1, int32 v2, int32 v3, int32 v4)";
 static vmError mesh_addFace(nfcContext ctx) {
-	gx_Mesh mesh = nextValue(ctx).ref;
+	GxMesh mesh = nextValue(ctx).ref;
 	int res = -1;
 	if (ctx->proto == proto_mesh_addFace3) {
 		int v1 = nextValue(ctx).i32;
 		int v2 = nextValue(ctx).i32;
 		int v3 = nextValue(ctx).i32;
-		res = addtri(mesh, v1, v2, v3);
+		res = addTri(mesh, v1, v2, v3);
 	}
 	if (ctx->proto == proto_mesh_addFace4) {
 		int v1 = nextValue(ctx).i32;
 		int v2 = nextValue(ctx).i32;
 		int v3 = nextValue(ctx).i32;
 		int v4 = nextValue(ctx).i32;
-		res = addquad(mesh, v1, v2, v3, v4);
+		res = addQuad(mesh, v1, v2, v3, v4);
 	}
 	if (!res) {
 		// return nativeCallError;
@@ -936,11 +949,11 @@ static vmError mesh_addFace(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_mesh_setVertexPos = "bool setVertex(gxMesh mesh, int32 idx, float32 x, float32 y, float32 z)";
-static const char *proto_mesh_setVertexNrm = "bool setNormal(gxMesh mesh, int32 idx, float32 x, float32 y, float32 z)";
-static const char *proto_mesh_setVertexTex = "bool setTexture(gxMesh mesh, int32 idx, float32 s, float32 t)";
+static const char *proto_mesh_setVertexPos = "bool setVertex(Mesh mesh, int32 idx, float32 x, float32 y, float32 z)";
+static const char *proto_mesh_setVertexNrm = "bool setNormal(Mesh mesh, int32 idx, float32 x, float32 y, float32 z)";
+static const char *proto_mesh_setVertexTex = "bool setTexture(Mesh mesh, int32 idx, float32 s, float32 t)";
 static vmError mesh_setVertex(nfcContext ctx) {
-	gx_Mesh mesh = nextValue(ctx).ref;
+	GxMesh mesh = nextValue(ctx).ref;
 	int32_t idx = nextValue(ctx).i32;
 	int res = 0;
 	if (ctx->proto == proto_mesh_setVertexPos) {
@@ -948,20 +961,20 @@ static vmError mesh_setVertex(nfcContext ctx) {
 		pos[0] = nextValue(ctx).f32;
 		pos[1] = nextValue(ctx).f32;
 		pos[2] = nextValue(ctx).f32;
-		res = setvtx(mesh, idx, pos, NULL, NULL);
+		res = setVtx(mesh, idx, pos, NULL, NULL);
 	}
 	if (ctx->proto == proto_mesh_setVertexNrm) {
 		scalar nrm[3];
 		nrm[0] = nextValue(ctx).f32;
 		nrm[1] = nextValue(ctx).f32;
 		nrm[2] = nextValue(ctx).f32;
-		res = setvtx(mesh, idx, NULL, nrm, NULL);
+		res = setVtx(mesh, idx, NULL, nrm, NULL);
 	}
 	if (ctx->proto == proto_mesh_setVertexTex) {
 		scalar tex[2];
 		tex[0] = nextValue(ctx).f32;
 		tex[1] = nextValue(ctx).f32;
-		res = setvtx(mesh, idx, NULL, NULL, tex);
+		res = setVtx(mesh, idx, NULL, NULL, tex);
 	}
 	reti32(ctx, res != 0);
 	return noError;
@@ -972,7 +985,7 @@ typedef struct mainLoopArgs {
 	symn callback;
 	vmError error;
 	int64_t timeout;
-	gxWindow window;
+	GxWindow window;
 	struct {
 		int32_t y;
 		int32_t x;
@@ -1040,10 +1053,10 @@ static void mainLoopCallback(mainLoopArgs args) {
 	flushWindow(args->window);
 }
 
-static const char *proto_window_show = "void showWindow(gxSurf surf, pointer closure, int32 onEvent(pointer closure, int32 action, int32 button, int32 x, int32 y))";
+static const char *proto_window_show = "void showWindow(Image surf, pointer closure, int32 onEvent(pointer closure, int32 action, int32 button, int32 x, int32 y))";
 static vmError window_show(nfcContext ctx) {
 	rtContext rt = ctx->rt;
-	gx_Surf offScreen = nextValue(ctx).ref;
+	GxImage offScreen = nextValue(ctx).ref;
 	size_t cbClosure = argref(ctx, rt->api.nfcNextArg(ctx));
 	size_t cbOffs = argref(ctx, rt->api.nfcNextArg(ctx));
 
@@ -1225,13 +1238,13 @@ static vmError lights_manager(nfcContext ctx) {
 	return illegalState;
 }
 
-static const char *proto_material_ambient = "void ambient(gxMesh mesh, float r, float g, float b)";
-static const char *proto_material_diffuse = "void diffuse(gxMesh mesh, float r, float g, float b)";
-static const char *proto_material_specular = "void specular(gxMesh mesh, float r, float g, float b)";
-static const char *proto_material_shine = "void shine(gxMesh mesh, float value)";
-static const char *proto_material_texture = "void texture(gxMesh mesh, gxSurf surf)";
+static const char *proto_material_ambient = "void ambient(Mesh mesh, float r, float g, float b)";
+static const char *proto_material_diffuse = "void diffuse(Mesh mesh, float r, float g, float b)";
+static const char *proto_material_specular = "void specular(Mesh mesh, float r, float g, float b)";
+static const char *proto_material_shine = "void shine(Mesh mesh, float value)";
+static const char *proto_material_texture = "void texture(Mesh mesh, Image texture)";
 static vmError mesh_material(nfcContext ctx) {
-	gx_Mesh mesh = nextValue(ctx).ref;
+	GxMesh mesh = nextValue(ctx).ref;
 
 	if (ctx->proto == proto_material_ambient) {
 		float32_t r = nextValue(ctx).f32;
@@ -1263,7 +1276,7 @@ static vmError mesh_material(nfcContext ctx) {
 	}
 
 	if (ctx->proto == proto_material_texture) {
-		mesh->map = nextValue(ctx).ref;
+		mesh->texture = nextValue(ctx).ref;
 		return noError;
 	}
 
@@ -1300,40 +1313,40 @@ int cmplInit(rtContext rt) {
 		const char *proto;
 	}
 	nfcSurf[] = {
-		{surf_recycle,  proto_surf_create2d},
-		{surf_recycle,  proto_surf_create3d},
-		{surf_recycle,  proto_surf_recycle},
-		{surf_destroy,  proto_surf_destroy},
-		{surf_open,     proto_surf_openBmp},
-		{surf_open,     proto_surf_openPng},
-		{surf_open,     proto_surf_openJpg},
-		{surf_open,     proto_surf_openFnt},
-		{surf_save,     proto_surf_saveBmp},
+		{surf_recycle,  proto_image_create2d},
+		{surf_recycle,  proto_image_create3d},
+		{surf_recycle,  proto_image_recycle},
+		{surf_destroy,  proto_image_destroy},
+		{surf_open,     proto_image_openBmp},
+		{surf_open,     proto_image_openPng},
+		{surf_open,     proto_image_openJpg},
+		{surf_open,     proto_image_openFnt},
+		{surf_save,     proto_image_saveBmp},
 
-		{surf_width,    proto_surf_width},
-		{surf_height,   proto_surf_height},
-		{surf_depth,    proto_surf_depth},
-		{surf_get,      proto_surf_get},
-		{surf_set,      proto_surf_set},
-		{surf_tex,      proto_surf_tex},
-		{surf_drawRect, proto_surf_drawRect},
-		{surf_fillRect, proto_surf_fillRect},
-		{surf_drawOval, proto_surf_drawOval},
-		{surf_fillOval, proto_surf_fillOval},
-		{surf_drawLine, proto_surf_drawLine},
-		{surf_drawBez2, proto_surf_drawBez2},
-		{surf_drawBez3, proto_surf_drawBez3},
-		{surf_clipText, proto_surf_clipText},
-		{surf_drawText, proto_surf_drawText},
-		{surf_drawText, proto_surf_drawTextRoi},
-		{surf_copySurf, proto_surf_copySurf},
-		{surf_blendSurf, proto_surf_blendSurf},
-		{surf_transformSurf, proto_surf_transformSurf},
-		{surf_blurSurf, proto_surf_blurSurf},
-		{surf_cLutSurf, proto_surf_cLutSurf},
-		{surf_cMatSurf, proto_surf_cMatSurf},
-		{surf_calcHist, proto_surf_calcHist},
-		{surf_drawMesh, proto_surf_drawMesh},
+		{surf_width,    proto_image_width},
+		{surf_height,   proto_image_height},
+		{surf_depth,    proto_image_depth},
+		{surf_get,      proto_image_get},
+		{surf_set,      proto_image_set},
+		{surf_tex,      proto_image_tex},
+		{surf_drawRect, proto_image_drawRect},
+		{surf_fillRect, proto_image_fillRect},
+		{surf_drawOval, proto_image_drawOval},
+		{surf_fillOval, proto_image_fillOval},
+		{surf_drawLine, proto_image_drawLine},
+		{surf_drawBez2, proto_image_drawBez2},
+		{surf_drawBez3, proto_image_drawBez3},
+		{surf_clipText, proto_image_clipText},
+		{surf_drawText, proto_image_drawText},
+		{surf_drawText, proto_image_drawTextRoi},
+		{surf_copySurf, proto_image_copySurf},
+		{surf_blendSurf, proto_image_blendSurf},
+		{surf_transformSurf, proto_image_transformSurf},
+		{surf_blurSurf, proto_image_blurSurf},
+		{surf_cLutSurf, proto_image_cLutSurf},
+		{surf_cMatSurf, proto_image_cMatSurf},
+		{surf_calcHist, proto_image_calcHist},
+		{surf_drawMesh, proto_image_drawMesh},
 	},
 	nfcWindow[] = {
 		{window_show, proto_window_show},
@@ -1382,7 +1395,7 @@ int cmplInit(rtContext rt) {
 	ccContext cc = rt->cc;
 
 	// rectangle in 2d
-	rt->api.ccAddUnit(cc, NULL, NULL, 0, "struct gxRect:1 {\n"
+	rt->api.ccAddUnit(cc, NULL, NULL, 0, "struct Rect:1 {\n"
 		"	int32 x;\n"
 		"	int32 y;\n"
 		"	int32 w;\n"
@@ -1391,10 +1404,10 @@ int cmplInit(rtContext rt) {
 	);
 
 	// surfaces are allocated outside the vm, and are handler types
-	symn symSurf = rt->api.ccAddType(cc, "gxSurf", sizeof(gx_Surf), 0);
+	symn symImage = rt->api.ccAddType(cc, "Image", sizeof(GxImage), 0);
 
 	// meshes are allocated inside the vm, and are reference types
-	symn symMesh = rt->api.ccAddType(cc, "gxMesh", sizeof(struct gx_Mesh), 1);
+	symn symMesh = rt->api.ccAddType(cc, "Mesh", sizeof(struct GxMesh), 1);
 
 	if (rt->api.ccExtend(cc, symMesh)) {
 		for (size_t i = 0; i < sizeof(nfcMesh) / sizeof(*nfcMesh); i += 1) {
@@ -1419,9 +1432,9 @@ int cmplInit(rtContext rt) {
 		rt->api.ccDefInt(cc, "useTexture", draw_tex);
 		rt->api.ccDefInt(cc, "useLights", draw_lit);
 
-		symn vtxCount = rt->api.ccDefVar(cc, "vertices", typSigned(rt, sizeOf(struct gx_Mesh, vtxcnt)));
-		symn triCount = rt->api.ccDefVar(cc, "triangles", typSigned(rt, sizeOf(struct gx_Mesh, tricnt)));
-		symn segCount = rt->api.ccDefVar(cc, "segments", typSigned(rt, sizeOf(struct gx_Mesh, segcnt)));
+		symn vtxCount = rt->api.ccDefVar(cc, "vertices", typSigned(rt, sizeOf(struct GxMesh, vtxcnt)));
+		symn triCount = rt->api.ccDefVar(cc, "triangles", typSigned(rt, sizeOf(struct GxMesh, tricnt)));
+		symn segCount = rt->api.ccDefVar(cc, "segments", typSigned(rt, sizeOf(struct GxMesh, segcnt)));
 
 		ccKind symKind = symMesh->kind;
 		symMesh->kind &= ~ATTR_stat;
@@ -1429,22 +1442,21 @@ int cmplInit(rtContext rt) {
 		rt->api.ccEnd(cc, symMesh);
 		symMesh->kind = symKind;
 
-		vtxCount->offs = offsetOf(struct gx_Mesh, vtxcnt);
-		triCount->offs = offsetOf(struct gx_Mesh, tricnt);
-		segCount->offs = offsetOf(struct gx_Mesh, segcnt);
+		vtxCount->offs = offsetOf(struct GxMesh, vtxcnt);
+		triCount->offs = offsetOf(struct GxMesh, tricnt);
+		segCount->offs = offsetOf(struct GxMesh, segcnt);
 	}
 
-	// type: gxSurf
-	if (rt->api.ccExtend(cc, symSurf)) {
+	if (rt->api.ccExtend(cc, symImage)) {
 		for (size_t i = 0; i < sizeof(nfcSurf) / sizeof(*nfcSurf); i += 1) {
 			if (!rt->api.ccAddCall(cc, nfcSurf[i].func, nfcSurf[i].proto)) {
 				return 1;
 			}
 		}
-		rt->api.ccEnd(cc, symSurf);
+		rt->api.ccEnd(cc, symImage);
 	}
 
-	symn gradient = rt->api.ccAddCall(cc, surf_gradient, proto_surf_gradient);
+	symn gradient = rt->api.ccAddCall(cc, surf_gradient, proto_image_gradient);
 	if (gradient != NULL && rt->api.ccExtend(cc, gradient)) {
 		rt->api.ccDefInt(cc, "Linear", gradient_lin);
 		rt->api.ccDefInt(cc, "Radial", gradient_rad);
@@ -1491,6 +1503,7 @@ int cmplInit(rtContext rt) {
 		rt->api.ccDefInt(cc, "EVENT_TIMEOUT", EVENT_TIMEOUT);
 
 		rt->api.ccDefInt(cc, "WINDOW_INIT", WINDOW_INIT);
+		rt->api.ccDefInt(cc, "WINDOW_DRAW", WINDOW_DRAW);
 		rt->api.ccDefInt(cc, "WINDOW_CLOSE", WINDOW_CLOSE);
 		rt->api.ccDefInt(cc, "WINDOW_ENTER", WINDOW_ENTER);
 		rt->api.ccDefInt(cc, "WINDOW_LEAVE", WINDOW_LEAVE);

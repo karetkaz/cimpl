@@ -6,18 +6,18 @@
 
 #define SDL_Log(...) do{}while(0)
 
-struct gxWindow {
+struct GxWindow {
 	SDL_Window *window;
 	SDL_Surface *image;
 	SDL_Surface *screen;
 };
 
-gxWindow createWindow(gx_Surf offs) {
+GxWindow createWindow(GxImage offs) {
 	if (offs == NULL) {
 		return NULL;
 	}
 
-	gxWindow result = malloc(sizeof(struct gxWindow));
+	GxWindow result = malloc(sizeof(struct GxWindow));
 	if (result == NULL) {
 		return NULL;
 	}
@@ -29,7 +29,7 @@ gxWindow createWindow(gx_Surf offs) {
 	return result;
 }
 
-int getWindowEvent(gxWindow window, int *button, int *x, int *y) {
+int getWindowEvent(GxWindow window, int *button, int *x, int *y) {
 	static int btnstate = 0;
 	SDL_Event event;
 
@@ -194,16 +194,16 @@ int getWindowEvent(gxWindow window, int *button, int *x, int *y) {
 	return 0;
 }
 
-void setWindowText(gxWindow window, char *caption) {
+void setWindowText(GxWindow window, char *caption) {
 	SDL_SetWindowTitle(window->window, caption);
 }
 
-void flushWindow(gxWindow window) {
+void flushWindow(GxWindow window) {
 	SDL_BlitSurface(window->image, NULL, window->screen, NULL);
 	SDL_UpdateWindowSurface(window->window);
 }
 
-void destroyWindow(gxWindow window) {
+void destroyWindow(GxWindow window) {
 	SDL_FreeSurface(window->image);
 	SDL_FreeSurface(window->screen);
 	SDL_DestroyWindow(window->window);

@@ -159,15 +159,15 @@ inline argb(float64 a, float64 r, float64 g, float64 b) = argb(int32(a * 255), i
 
 
 /// get the Alpha channel of the color
-inline ach(argb col) = int32((uint32(col) >> 24) & 0xff);
+inline ach(argb color) = int32((uint32(color) >> 24) & 0xff);
 /// get the Red channel of the color
-inline rch(argb col) = int32((uint32(col) >> 16) & 0xff);
+inline rch(argb color) = int32((uint32(color) >> 16) & 0xff);
 /// get the Green channel of the color
-inline gch(argb col) = int32((uint32(col) >> 8) & 0xff);
+inline gch(argb color) = int32((uint32(color) >> 8) & 0xff);
 /// get the Blue channel of the color
-inline bch(argb col) = int32(uint32(col) & 0xff);
-/// get the luminosity of the color
-inline lum(argb c) = int32((rch(c) * 76 + gch(c) * 150 + bch(c) * 29) >> 8);
+inline bch(argb color) = int32(uint32(color) & 0xff);
+/// get the luminosity of the color (0.299 * color.r + 0.587 * color.g + 0.114 * color.b)
+inline lum(argb color) = int32((19595 * rch(color) + 38470 * gch(color) + 7471 * bch(color)) >> 16);
 
 
 /// linear interpolate a lookup-table with the given colors
@@ -280,7 +280,7 @@ argb hsv2rgb(float h, float s, float v) {
 }
 
 /// draw the given lookup table to the image
-void drawLut(gxSurf image, const gxRect roi&, const uint32 bars[256], const uint32 lines[256]) {
+void drawLut(Image image, const Rect roi&, const uint32 bars[256], const uint32 lines[256]) {
 	enum {
 		margin: 20;
 		colB: 0x4371c6;
@@ -289,7 +289,7 @@ void drawLut(gxSurf image, const gxRect roi&, const uint32 bars[256], const uint
 		colL: 0xdadada;
 	}
 
-	gxRect rect = {
+	Rect rect = {
 		w: roi != null ? roi.w : 256;
 		h: roi != null ? roi.h : 128;
 		y: roi != null ? roi.y : margin;

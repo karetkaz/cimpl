@@ -59,7 +59,7 @@ $CMPL_BIN/cmpl>temp/Execution.md --dump-vm
 
 TEST_FILES="$CMPL_HOME/test/*.ci"
 TEST_FILES="$TEST_FILES $CMPL_HOME/test/lang/*.ci"
-TEST_FILES="$TEST_FILES $CMPL_HOME/test/stdc/*.ci"
+TEST_FILES="$TEST_FILES $CMPL_HOME/test/std/*.ci"
 TEST_FILES="$TEST_FILES $CMPL_HOME/cmplFile/test/*.ci"
 TEST_FILES="$TEST_FILES $CMPL_HOME/cmplGfx/test/*.ci"
 TEST_FILES="$TEST_FILES $CMPL_HOME/cmplGL/test/*.ci"

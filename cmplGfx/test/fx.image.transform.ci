@@ -1,15 +1,25 @@
-// Image geometry transformation demo.
+/* Transform the geometry of an image using 4x4 matrix.
+ *
+ * use 'tab' / 'shift' + 'tab' to select next control
+ * use 'enter' / 'shift' + 'enter' to select next control
+ * use '+' / '-' to adjust value of selected control (use shift for more precision)
+ * use 'backspace' / 'shift' + 'backspace' to reset selected / every control value
+ * use 'space' to press a button, toggle switch or reset slider value
+ * use '[' or ']' to show and hide the controls
+ *
+ * drag the mouse up or down in the window to adjust control value
+ */
 
-gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
-gxSurf in = gxSurf("asset/image/forest.png", 32);
-gxSurf offs = gxSurf("asset/image/texture_nature_01.png", in.width(), in.height(), 32);
+Image font = Image.openFnt("asset/font/modern-1.fnt");
+Image in = Image("asset/image/forest.png", 32);
+Image offs = Image("asset/image/texture_nature_01.png", in.width(), in.height(), 32);
 
-static if (typename(gxSurf.transform) == null) {
-inline "/lib/gfx/gxSurf.transform.ci";
+static if (typename(Image.transform) == null) {
+inline "/lib/gfx/image/transform.ci";
 }
 
 /// compute the the transformation matrix to center/crop/fit an image to a new size.
-mat4f fitMatrix(const gxSurf src, int newWidth, int newHeight, bool fitWidth, bool fitHeight, double maxScale, double maxAspect) {
+mat4f fitMatrix(const Image src, int newWidth, int newHeight, bool fitWidth, bool fitHeight, double maxScale, double maxAspect) {
 	double scale = 1;
 	double widthScale = newWidth / double(src.width());
 	double heightScale = newHeight / double(src.height());
@@ -161,7 +171,7 @@ int onEvent(int action, int button, int x, int y) {
 		}
 	}
 	if (redraw) {
-		gxRect to = {
+		Rect to = {
 			w: offs.width() - 100;
 			h: offs.height() - 100;
 			x: (offs.width() - to.w) / 2;

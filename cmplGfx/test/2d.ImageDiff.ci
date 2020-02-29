@@ -8,7 +8,7 @@ vec4f domain(Complex z, double mod) {
 	vec4f result = {
 		x: absMod(arg(z) / (2 * Math.pi) + Math.pi / 4, mod);
 		y: 4 * absMod(abs(z), 1) * (1 - absMod(abs(z), 1));
-		z: 1;// - absMod(Math.abs(z.im), 1);
+		z: 1;
 	};
 	return hsv2rgb(result);
 }
@@ -35,9 +35,9 @@ vec4f rgbOp2(vec4f in) {
 	return domain(z.sin(), 1);
 }
 
-static gxSurf image = gxSurf(512, 512, 32);
-static gxSurf image1 = gxSurf(image.width(), image.height(), image.depth());
-static gxSurf image2 = gxSurf(image.width(), image.height(), image.depth());
+static Image image = Image(512, 512, 32);
+static Image image1 = Image(image.width(), image.height(), image.depth());
+static Image image2 = Image(image.width(), image.height(), image.depth());
 
 image1.eval(null, 1, 0, rgbOp1);
 image2.eval(null, 1, 0, rgbOp2);

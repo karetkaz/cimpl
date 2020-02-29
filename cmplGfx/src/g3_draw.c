@@ -4,7 +4,7 @@
 #include "gx_surf.h"
 #include "g3_draw.h"
 
-void frustum_get(struct vector planes[6], matrix mat) {
+void getFrustum(struct vector *planes, matrix mat) {
 	//~ near and far	: -1 < z < 1
 	vecnrm(&planes[0], vecadd(&planes[0], &mat->w, &mat->z));
 	vecnrm(&planes[1], vecsub(&planes[1], &mat->w, &mat->z));
@@ -16,7 +16,7 @@ void frustum_get(struct vector planes[6], matrix mat) {
 	vecnrm(&planes[5], vecsub(&planes[5], &mat->w, &mat->y));
 }
 
-static vector bsphere(vector s, vector p1, vector p2, vector p3) {
+static vector boundSphere(vector s, vector p1, vector p2, vector p3) {
 	vecadd(s, vecadd(s, p1, p2), p3);
 	vecsca(s, s, (scalar)(1. / 3));									// set s to Baricentrum;
 
@@ -34,7 +34,7 @@ static vector bsphere(vector s, vector p1, vector p2, vector p3) {
 	return s;
 }
 
-int ftest_point(struct vector planes[6], vector p) {				// clip point
+int testPoint(struct vector *planes, vector p) {				// clip point
 	const scalar r = 0;
 	if (vecdph(p, &planes[0]) <= r) return 0;
 	if (vecdph(p, &planes[1]) <= r) return 0;
@@ -44,7 +44,7 @@ int ftest_point(struct vector planes[6], vector p) {				// clip point
 	if (vecdph(p, &planes[5]) <= r) return 0;
 	return 1;	// inside
 }
-int ftest_sphere(struct vector planes[6], vector p, scalar r) {			// clip sphere
+int testSphere(struct vector *planes, vector p, scalar r) {			// clip sphere
 	if (vecdph(&planes[0], p) <= r) return 0;
 	if (vecdph(&planes[1], p) <= r) return 0;
 	if (vecdph(&planes[2], p) <= r) return 0;
@@ -53,13 +53,13 @@ int ftest_sphere(struct vector planes[6], vector p, scalar r) {			// clip sphere
 	if (vecdph(&planes[5], p) <= r) return 0;
 	return 1;	// inside
 }
-int ftest_triangle(struct vector planes[6], vector p1, vector p2, vector p3) {
+int testTriangle(struct vector *planes, vector p1, vector p2, vector p3) {
 	struct vector tmp[1];
-	bsphere(tmp, p1, p2, p3);
-	return ftest_sphere(planes, tmp, -tmp->w);
+	boundSphere(tmp, p1, p2, p3);
+	return testSphere(planes, tmp, -tmp->w);
 }
 
-static inline vector mappos(vector dst, matrix mat, vector src) {
+static inline vector mapPos(vector dst, matrix mat, vector src) {
 	struct vector tmp;
 	if (src == dst) {
 		src = veccpy(&tmp, src);
@@ -77,20 +77,20 @@ static inline vector mappos(vector dst, matrix mat, vector src) {
 }
 
 static inline uint32_t sca2fix(double __VAL, int __FIX) {return ((uint32_t)((__VAL) * (1 << (__FIX))));}
-static inline uint32_t projx(gx_Surf dst, vector p, int sca) {return sca2fix((dst->width - 1) * (1 + p->x) / 2, sca);}
-static inline uint32_t projy(gx_Surf dst, vector p) {return sca2fix((dst->height - 1) * (1 - p->y) / 2, 0);}
+static inline uint32_t projx(GxImage dst, vector p, int sca) {return sca2fix((dst->width - 1) * (1 + p->x) / 2, sca);}
+static inline uint32_t projy(GxImage dst, vector p) {return sca2fix((dst->height - 1) * (1 - p->y) / 2, 0);}
 static inline uint32_t projz(vector p) {return sca2fix((1 - p->z) / 2, 24);}
 
-static inline int getoffs(gx_Surf dst, int x, int y) {
+static inline int getOffs(GxImage dst, int x, int y) {
 	return y * (dst->scanLen / 4) + x;
 }
 
-void g3_setpixel(gx_Surf dst, int x, int y, unsigned z, uint32_t c) {
-	int offs = getoffs(dst, x, y);
+void setPixel3d(GxImage dst, int x, int y, unsigned z, uint32_t c) {
+	int offs = getOffs(dst, x, y);
 	uint32_t *cBuff = (void*)dst->basePtr;
 	uint32_t *zBuff = (void*)dst->tempPtr;
 
-	const gx_Clip roi = gx_getclip(dst);
+	const GxClip roi = getClip(dst);
 	if (y < roi->ymin || y >= roi->ymax) {
 		return;
 	}
@@ -104,22 +104,22 @@ void g3_setpixel(gx_Surf dst, int x, int y, unsigned z, uint32_t c) {
 	}
 }
 
-void g3_putpixel(gx_Surf dst, vector p, int c) {
+void putPixel3d(GxImage dst, vector p, int c) {
 	int32_t x = projx(dst, p, 0);
 	int32_t y = projy(dst, p);
 	int32_t z = projz(p);
-	g3_setpixel(dst, x, y, z, c);
+	setPixel3d(dst, x, y, z, c);
 }
 
 
-static int calcclip(gx_Clip roi, int x, int y) {
+static int calcclip(GxClip roi, int x, int y) {
 	int c = (y >= roi->ymax) << 0;
 	c |= (y < roi->ymin) << 1;
 	c |= (x >= roi->xmax) << 2;
 	c |= (x < roi->xmin) << 3;
 	return c;
 }
-static int g3_clipline(gx_Clip roi, int *x1, int *y1, int *z1, int *x2, int *y2, int *z2) {
+static int clipLine3d(GxClip roi, int *x1, int *y1, int *z1, int *x2, int *y2, int *z2) {
 	int c1 = calcclip(roi, *x1, *y1);
 	int c2 = calcclip(roi, *x2, *y2);
 	int x = 0, dx, y = 0, dy, z = 0, e;
@@ -188,7 +188,7 @@ static int g3_clipline(gx_Clip roi, int *x1, int *y1, int *z1, int *x2, int *y2,
 
 //~ ----------------------------------------------------------------------------
 
-void g3_drawline(gx_Surf dst, vector p1, vector p2, uint32_t c) {		// Bresenham
+void drawLine3d(GxImage dst, vector p1, vector p2, uint32_t c) {		// Bresenham
 	int32_t sx = 1, dx;
 	int32_t sy = 1, dy;
 	int32_t zs = 0, e;
@@ -209,13 +209,13 @@ void g3_drawline(gx_Surf dst, vector p1, vector p2, uint32_t c) {		// Bresenham
 		dx = -dx;
 		sx = -1;
 	}
-	if (!g3_clipline(gx_getclip(dst), &x1, &y1, &z1, &x2, &y2, &z2)) return;
+	if (!clipLine3d(getClip(dst), &x1, &y1, &z1, &x2, &y2, &z2)) return;
 
 	if (dx > dy) {
 		e = dx >> 1;
 		zs = (z2 - z1) / dx;
 		while (x1 != x2) {
-			g3_setpixel(dst, x1, y1, z1, c);
+			setPixel3d(dst, x1, y1, z1, c);
 			if ((e += dy) > dx) {
 				y1 += sy;
 				e -= dx;
@@ -228,7 +228,7 @@ void g3_drawline(gx_Surf dst, vector p1, vector p2, uint32_t c) {		// Bresenham
 		e = dy >> 1;
 		zs = (z2 - z1) / dy;
 		while (y1 != y2) {
-			g3_setpixel(dst, x1, y1, z1, c);
+			setPixel3d(dst, x1, y1, z1, c);
 			if ((e += dx) > dy) {
 				x1 += sx;
 				e -= dy;
@@ -250,7 +250,7 @@ typedef struct {
 	scalar sCos;               // spot light cutoff
 	scalar sExp;               // spot light
 	scalar sPow;               // Shininess
-} gx_MtlLight;
+} MtlLight;
 typedef struct ssds {
 	int32_t x;
 	int32_t z;
@@ -383,7 +383,7 @@ static inline void init_edge(edge e, ssds s1, ssds s2, int len, int skip) {
 	}
 }
 
-static void draw_tri_part(gx_Surf dst, gx_Clip roi, edge l, edge r, int swap, int y1, int y2, gx_Surf img) {
+static void draw_tri_part(GxImage dst, GxClip roi, edge l, edge r, int swap, int y1, int y2, GxImage img) {
 	if (swap) {
 		edge x = l;
 		l = r;
@@ -411,7 +411,7 @@ static void draw_tri_part(gx_Surf dst, gx_Clip roi, edge l, edge r, int swap, in
 
 			struct edge v;
 			init_frag(&v, l, r, xlr, sx);
-			int offs = getoffs(dst, lx, y);
+			int offs = getOffs(dst, lx, y);
 			rx = offs + rx - lx;
 
 			while (offs < rx) {
@@ -419,10 +419,10 @@ static void draw_tri_part(gx_Surf dst, gx_Clip roi, edge l, edge r, int swap, in
 					zBuff[offs] = v.z;
 					if (img) {
 						argb tex;
-						tex.val = gx_getpix16(img, v.s, v.t);
-						cBuff[offs].b = clamp_s8((v.b >> 15) * tex.b >> 8);
-						cBuff[offs].g = clamp_s8((v.g >> 15) * tex.g >> 8);
-						cBuff[offs].r = clamp_s8((v.r >> 15) * tex.r >> 8);
+						tex.val = getPixelLinear(img, v.s, v.t);
+						cBuff[offs].b = sat_s8((v.b >> 15) * tex.b >> 8);
+						cBuff[offs].g = sat_s8((v.g >> 15) * tex.g >> 8);
+						cBuff[offs].r = sat_s8((v.r >> 15) * tex.r >> 8);
 					} else {
 						cBuff[offs].b = (uint8_t) (v.b >> 16);
 						cBuff[offs].g = (uint8_t) (v.g >> 16);
@@ -437,7 +437,7 @@ static void draw_tri_part(gx_Surf dst, gx_Clip roi, edge l, edge r, int swap, in
 		edge_next(r);
 	}
 }
-static void draw_triangle(gx_Surf dst, vector p, texcol tex, texcol col, int i1, int i2, int i3, gx_Surf img) {
+static void draw_triangle(GxImage dst, vector p, texcol tex, texcol col, int i1, int i2, int i3, GxImage img) {
 	// sort by y
 	if (p[i1].y < p[i3].y) {
 		i1 ^= i3;
@@ -455,7 +455,7 @@ static void draw_triangle(gx_Surf dst, vector p, texcol tex, texcol col, int i1,
 		i2 ^= i3;
 	}
 
-	gx_Clip roi = gx_getclip(dst);
+	GxClip roi = getClip(dst);
 	int32_t y1 = projy(dst, p + i1);
 	int32_t y2 = projy(dst, p + i2);
 	int32_t y3 = projy(dst, p + i3);
@@ -542,7 +542,7 @@ static void draw_triangle(gx_Surf dst, vector p, texcol tex, texcol col, int i1,
 	}
 }
 
-static argb litVertex(vector color, vector V, vector N, vector E, gx_MtlLight *light, int lightCnt) {
+static argb litVertex(vector color, vector V, vector N, vector E, MtlLight *light, int lightCnt) {
 	struct vector tmp[8];
 	for (int i = 0; i < lightCnt; ++i) {
 		vector D = vecsub(tmp+2, V, &light->pos);
@@ -585,13 +585,13 @@ static argb litVertex(vector color, vector V, vector N, vector E, gx_MtlLight *l
 	return vecrgb(color);
 }
 
-int g3_drawenvc(gx_Surf dst, struct gx_Surf img[6], vector view, matrix proj, double size) {
+int drawCubeMap(GxImage dst, struct GxImage *img, vector view, matrix proj, double size) {
 	#define CLPNRM 1
 	const scalar e = 0;
 	struct vector v[8], nrm[1];
 	struct texcol t[8];
 
-	if ((dst->flags & SurfType) != Surf_3ds) {
+	if ((dst->flags & ImageType) != Image3d) {
 		return -1;
 	}
 
@@ -602,14 +602,14 @@ int g3_drawenvc(gx_Surf dst, struct gx_Surf img[6], vector view, matrix proj, do
 	v[1].z = v[2].z = v[3].z = v[0].z = -size;
 	v[4].z = v[5].z = v[7].z = v[6].z = +size;
 
-	mappos(v + 0, proj, v + 0);
-	mappos(v + 1, proj, v + 1);
-	mappos(v + 2, proj, v + 2);
-	mappos(v + 3, proj, v + 3);
-	mappos(v + 4, proj, v + 4);
-	mappos(v + 5, proj, v + 5);
-	mappos(v + 6, proj, v + 6);
-	mappos(v + 7, proj, v + 7);
+	mapPos(v + 0, proj, v + 0);
+	mapPos(v + 1, proj, v + 1);
+	mapPos(v + 2, proj, v + 2);
+	mapPos(v + 3, proj, v + 3);
+	mapPos(v + 4, proj, v + 4);
+	mapPos(v + 5, proj, v + 5);
+	mapPos(v + 6, proj, v + 6);
+	mapPos(v + 7, proj, v + 7);
 
 	if (CLPNRM || vecdp3(view, vecldf(nrm, -1, 0, 0, 0)) < e) {
 		t[1].s = 0x0000; t[1].t = 0xffff;
@@ -663,18 +663,18 @@ int g3_drawenvc(gx_Surf dst, struct gx_Surf img[6], vector view, matrix proj, do
 	return 0;
 }
 
-int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, gx_Light lights, int mode) {
-	gx_Surf img = NULL;
+int drawMesh(GxImage dst, GxMesh msh, matrix objm, camera cam, GxLight lights, int mode) {
+	GxImage img = NULL;
 	const int32_t line_col = 0xffffff;
 
 	#define MAXVTX (65536*16)
 	struct vector v[8];
 	struct matrix tmp[3];
-	gx_MtlLight light[32];
+	MtlLight light[32];
 	static struct vector pos[MAXVTX];
 	static struct texcol col[MAXVTX];
 
-	if ((dst->flags & SurfType) != Surf_3ds) {
+	if ((dst->flags & ImageType) != Image3d) {
 		return -1;
 	}
 	if (msh->vtxcnt > MAXVTX) {
@@ -694,18 +694,18 @@ int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, gx_Light ligh
 	}
 
 	if (mode & draw_tex) {
-		img = msh->map;
+		img = msh->texture;
 	}
 
 	// prepare and pre-calculate lightning
 	int lightCnt = 0;
 	if (mode & draw_lit) {
-		for (gx_Light l = lights; l; l = l->next) {
+		for (GxLight l = lights; l; l = l->next) {
 			if (!(l->attr & L_on)) {
 				continue;
 			}
 			// pre multiply lights (fore back)
-			gx_MtlLight *mLight = &light[lightCnt];
+			MtlLight *mLight = &light[lightCnt];
 			vecmul(&mLight->ambi, &msh->mtl.ambi, &l->ambi);
 			vecmul(&mLight->diff, &msh->mtl.diff, &l->diff);
 			vecmul(&mLight->spec, &msh->mtl.spec, &l->spec);
@@ -729,7 +729,7 @@ int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, gx_Light ligh
 
 	// calculate positions, lightning, colors
 	for (size_t i = 0; i < msh->vtxcnt; i += 1) {
-		mappos(pos + i, proj, msh->pos + i);
+		mapPos(pos + i, proj, msh->pos + i);
 		if (mode & draw_lit) {
 			struct vector Col = msh->mtl.emis;
 			vector V = msh->pos + i;
@@ -747,7 +747,7 @@ int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, gx_Light ligh
 			if (msh->hasTex && img != NULL) {
 				int s = msh->tex[i].s * (img->width - 1);
 				int t = msh->tex[i].t * (img->height - 1);
-				col[i].val = gx_getpix16(img, s, t);
+				col[i].val = getPixelLinear(img, s, t);
 			}
 			else {
 				col[i] = msh->tex[i];
@@ -759,13 +759,13 @@ int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, gx_Light ligh
 	}
 
 	int triangles = 0;
-	frustum_get(v, proj);
+	getFrustum(v, proj);
 	for (size_t i = 0; i < msh->tricnt; i += 1) {		// draw
 		int32_t i1 = msh->triptr[i].i1;
 		int32_t i2 = msh->triptr[i].i2;
 		int32_t i3 = msh->triptr[i].i3;
 
-		if (!ftest_triangle(v, msh->pos + i1, msh->pos + i2, msh->pos + i3)) {
+		if (!testTriangle(v, msh->pos + i1, msh->pos + i2, msh->pos + i3)) {
 			continue;
 		}
 
@@ -802,15 +802,15 @@ int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, gx_Light ligh
 				return 0;
 
 			case draw_plot:
-				g3_putpixel(dst, pos + i1, col[i1].val);
-				g3_putpixel(dst, pos + i2, col[i2].val);
-				g3_putpixel(dst, pos + i3, col[i3].val);
+				putPixel3d(dst, pos + i1, col[i1].val);
+				putPixel3d(dst, pos + i2, col[i2].val);
+				putPixel3d(dst, pos + i3, col[i3].val);
 				break;
 
 			case draw_wire:
-				g3_drawline(dst, pos + i1, pos + i2, col[i1].val);
-				g3_drawline(dst, pos + i2, pos + i3, col[i2].val);
-				g3_drawline(dst, pos + i1, pos + i3, col[i3].val);
+				drawLine3d(dst, pos + i1, pos + i2, col[i1].val);
+				drawLine3d(dst, pos + i2, pos + i3, col[i2].val);
+				drawLine3d(dst, pos + i1, pos + i3, col[i3].val);
 				break;
 
 			case draw_fill:
@@ -822,13 +822,13 @@ int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, gx_Light ligh
 	for (size_t i = 0; i < msh->segcnt; i += 1) {		// draw segs
 		int32_t i1 = msh->segptr[i].p1;
 		int32_t i2 = msh->segptr[i].p2;
-		g3_drawline(dst, pos + i1, pos + i2, line_col);
+		drawLine3d(dst, pos + i1, pos + i2, line_col);
 	}
 
 	return triangles;
 }
 
-int g3_drawBbox(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam) {
+int drawBbox(GxImage dst, GxMesh msh, matrix objm, camera cam) {
 	const int32_t bbox_col = 0xff00ff;
 
 	//~ unsigned i, tricnt = 0;
@@ -852,31 +852,31 @@ int g3_drawBbox(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam) {
 	v[1].z = v[2].z = v[3].z = v[0].z;
 	v[4].z = v[5].z = v[7].z = v[6].z;
 
-	mappos(v + 0, proj, v + 0);
-	mappos(v + 1, proj, v + 1);
-	mappos(v + 2, proj, v + 2);
-	mappos(v + 3, proj, v + 3);
-	mappos(v + 4, proj, v + 4);
-	mappos(v + 5, proj, v + 5);
-	mappos(v + 6, proj, v + 6);
-	mappos(v + 7, proj, v + 7);
+	mapPos(v + 0, proj, v + 0);
+	mapPos(v + 1, proj, v + 1);
+	mapPos(v + 2, proj, v + 2);
+	mapPos(v + 3, proj, v + 3);
+	mapPos(v + 4, proj, v + 4);
+	mapPos(v + 5, proj, v + 5);
+	mapPos(v + 6, proj, v + 6);
+	mapPos(v + 7, proj, v + 7);
 
 	// front
-	g3_drawline(dst, v + 0, v + 1, bbox_col);
-	g3_drawline(dst, v + 1, v + 2, bbox_col);
-	g3_drawline(dst, v + 2, v + 3, bbox_col);
-	g3_drawline(dst, v + 3, v + 0, bbox_col);
+	drawLine3d(dst, v + 0, v + 1, bbox_col);
+	drawLine3d(dst, v + 1, v + 2, bbox_col);
+	drawLine3d(dst, v + 2, v + 3, bbox_col);
+	drawLine3d(dst, v + 3, v + 0, bbox_col);
 
 	// back
-	g3_drawline(dst, v + 4, v + 5, bbox_col);
-	g3_drawline(dst, v + 5, v + 6, bbox_col);
-	g3_drawline(dst, v + 6, v + 7, bbox_col);
-	g3_drawline(dst, v + 7, v + 4, bbox_col);
+	drawLine3d(dst, v + 4, v + 5, bbox_col);
+	drawLine3d(dst, v + 5, v + 6, bbox_col);
+	drawLine3d(dst, v + 6, v + 7, bbox_col);
+	drawLine3d(dst, v + 7, v + 4, bbox_col);
 
 	// join
-	g3_drawline(dst, v + 0, v + 4, bbox_col);
-	g3_drawline(dst, v + 1, v + 5, bbox_col);
-	g3_drawline(dst, v + 2, v + 6, bbox_col);
-	g3_drawline(dst, v + 3, v + 7, bbox_col);
+	drawLine3d(dst, v + 0, v + 4, bbox_col);
+	drawLine3d(dst, v + 1, v + 5, bbox_col);
+	drawLine3d(dst, v + 2, v + 6, bbox_col);
+	drawLine3d(dst, v + 3, v + 7, bbox_col);
 	return 0;
 }

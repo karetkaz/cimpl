@@ -6,15 +6,14 @@
 #include "gx_color.h"
 
 typedef enum {
-	SurfType = 0x000f,		// 0-15
-	Surf_2ds = 0x0000,		// 2d surface (tempPtr:= null)
-	Surf_pal = 0x0001,		// indexed (tempPtr: CLUTPtr: palette)
-	Surf_fnt = 0x0002,		// font (tempPtr: LLUTPtr: fontface)
-	Surf_3ds = 0x0003,		// 3d surface (tempPtr: zbuff)
-	Surf_freeData = 0x0100,		// delete basePtr on destroy
-	Surf_freeSurf = 0x0200,		// delete reference on destroy
-	//Surf_recycle  = 0x0400,
-} surfFlags;
+	ImageType = 0x000f,		// 0-15
+	Image2d = 0x0000,		// 2d image (tempPtr:= null)
+	ImageIdx = 0x0001,		// indexed (tempPtr: CLUTPtr: palette)
+	ImageFnt = 0x0002,		// font (tempPtr: LLUTPtr: fontface)
+	Image3d = 0x0003,		// 3d image (tempPtr: zbuff)
+	freeData = 0x0100,		// delete basePtr on destroy
+	freeImage = 0x0200,		// delete reference on destroy
+} ImageFlags;
 
 typedef enum {
 	gradient_lin = 0x00,		// Linear
@@ -25,46 +24,46 @@ typedef enum {
 	mask_type    = 0x07,		// gradient type
 	flag_repeat  = 0x08,		// repeat
 	flag_alpha   = 0x10,		// write alpha channel only
-} gradient_type;
+} GradientFlags;
 
-// clipping bound structure [bounding box]
-typedef struct gx_Clip {
+// bounding box
+typedef struct GxClip {
 	union { uint16_t l, xmin; };	//(left)
 	union { uint16_t t, ymin; };	//(top)
 	union { uint16_t r, xmax; };	//(right)
 	union { uint16_t b, ymax; };	//(bottom)
-} *gx_Clip;
+} *GxClip;
 
 // Rectangle
-typedef struct gx_Rect {
+typedef struct GxRect {
 	int32_t x;
 	int32_t y;
 	union { int32_t w, width; };
 	union { int32_t h, height; };
-} *gx_Rect;
+} *GxRect;
 
 // Color Look Up Table (Palette)
-typedef struct gx_Clut {
-	uint16_t        count;
-	uint8_t         flags;
-	uint8_t         trans;
-	argb            data[256];
-} *gx_Clut;
+typedef struct GxCLut {
+	uint16_t count;
+	uint8_t flags;
+	uint8_t trans;
+	argb data[256];
+} *GxCLut;
 
 // Layer Look Up Table
-typedef struct gx_Llut {
-	uint16_t        count;			// font faces
-	uint16_t        height;			// font height
-	struct gx_FDIR {
-		uint8_t     pad_x;
-		uint8_t     pad_y;
-		uint16_t    width;
-		void*       basePtr;
+typedef struct GxFLut {
+	uint16_t count;            // font faces
+	uint16_t height;           // font height
+	struct GxFace {
+		uint8_t pad_x;
+		uint8_t pad_y;
+		uint16_t width;
+		void *basePtr;
 	} data[256];
-} *gx_Llut;
+} *GxFLut;
 
-// surface structure
-typedef struct gx_Surf {
+// image structure
+typedef struct GxImage {
 	struct {
 		uint16_t x0;
 		uint16_t y0;
@@ -79,42 +78,41 @@ typedef struct gx_Surf {
 
 	char *basePtr;
 
-	gx_Clip clipPtr;
+	GxClip clipPtr;
 
 	union {
-		gx_Clut CLUTPtr;	// palette
-		gx_Llut LLUTPtr;	// font-faces
-		// gx_Llut facePtr;
+		GxCLut CLUTPtr;	// palette
+		GxFLut LLUTPtr;	// font-faces
 		char *tempPtr; // clutPtr / cibgPtr (cursor BG data) / ...
 	};
-} *gx_Surf;
+} *GxImage;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-gx_Surf gx_createSurf(gx_Surf recycle, int width, int height, int depth, surfFlags flags);
-void gx_destroySurf(gx_Surf surf);
+GxImage createImage(GxImage recycle, int width, int height, int depth, ImageFlags flags);
+void destroyImage(GxImage image);
 
 // Get current clip region
-static inline gx_Clip gx_getclip(gx_Surf surf) {
-	return surf->clipPtr ? surf->clipPtr : (gx_Clip)surf;
+static inline GxClip getClip(GxImage image) {
+	return image->clipPtr ? image->clipPtr : (GxClip)image;
 }
-void* gx_cliprect(gx_Surf surf, gx_Rect rect);
+void* clipRect(GxImage image, GxRect roi);
 
 // Get Pixel Address
-static inline void* gx_getpaddr(gx_Surf surf, int x, int y) {
-	if ((unsigned) x >= surf->width || (unsigned) y >= surf->height) {
+static inline void* getPAddr(GxImage image, int x, int y) {
+	if ((unsigned) x >= image->width || (unsigned) y >= image->height) {
 		return NULL;
 	}
-	return surf->basePtr + ((size_t) y * surf->scanLen) + ((size_t) x * surf->pixeLen);
+	return image->basePtr + ((size_t) y * image->scanLen) + ((size_t) x * image->pixeLen);
 }
 
 // Get Pixel Color
-static inline uint32_t gx_getpixel(gx_Surf surf, int x, int y) {
-	void *address = gx_getpaddr(surf, x, y);
+static inline uint32_t getPixel(GxImage image, int x, int y) {
+	void *address = getPAddr(image, x, y);
 	if (address != NULL) {
-		switch (surf->depth) {
+		switch (image->depth) {
 			case 32:
 			case 24:
 				return *(uint32_t*)address;
@@ -128,12 +126,12 @@ static inline uint32_t gx_getpixel(gx_Surf surf, int x, int y) {
 	return 0;
 }
 // Set Pixel Color
-static inline void gx_setpixel(gx_Surf surf, int x, int y, uint32_t color) {
-	void *address = gx_getpaddr(surf, x, y);
+static inline void setPixel(GxImage image, int x, int y, uint32_t color) {
+	void *address = getPAddr(image, x, y);
 	if (address != NULL) {
-		switch (surf->depth) {
+		switch (image->depth) {
 			case 32:
-			// TODO: case 24:
+				// TODO: case 24:
 				*(uint32_t*)address = color;
 				break;
 
@@ -148,50 +146,50 @@ static inline void gx_setpixel(gx_Surf surf, int x, int y, uint32_t color) {
 		}
 	}
 }
-// Get Pixel Color linear
-static inline uint32_t gx_getpix16(gx_Surf surf, int32_t x16, int32_t y16) {
+// Get Pixel Color using linear interpolation
+static inline uint32_t getPixelLinear(GxImage image, int32_t x16, int32_t y16) {
 	int32_t lx = x16 >> 8 & 0xff;
 	int32_t ly = y16 >> 8 & 0xff;
 	int32_t x = x16 >> 16;
 	int32_t y = y16 >> 16;
 
-	char *ofs = gx_getpaddr(surf, x, y);
+	char *ofs = getPAddr(image, x, y);
 	if (ofs == NULL) {
 		// no pixel, return black
 		return 0;
 	}
 
-	if (x + 1 >= surf->width) {
+	if (x + 1 >= image->width) {
 		// no interpolation, no next pixel
 		lx = 0;
 	}
-	if (y + 1 >= surf->height) {
+	if (y + 1 >= image->height) {
 		// no interpolation, no next pixel
 		ly = 0;
 	}
 
-	switch (surf->depth) {
+	switch (image->depth) {
 		case 32:
 			if (lx && ly) {
 				argb p0 = *(argb*)(ofs + 0);
 				argb p1 = *(argb*)(ofs + 4);
-				ofs += surf->scanLen;
+				ofs += image->scanLen;
 				argb p2 = *(argb*)(ofs + 0);
 				argb p3 = *(argb*)(ofs + 4);
 
-				p0 = gx_mixcolor(p0, p1, lx);
-				p2 = gx_mixcolor(p2, p3, lx);
-				return gx_mixcolor(p0, p2, ly).val;
+				p0 = mix_rgb(p0, p1, lx);
+				p2 = mix_rgb(p2, p3, lx);
+				return mix_rgb(p0, p2, ly).val;
 			}
 			if (lx) {
 				argb p0 = *(argb*)(ofs + 0);
 				argb p1 = *(argb*)(ofs + 4);
-				return gx_mixcolor(p0, p1, lx).val;
+				return mix_rgb(p0, p1, lx).val;
 			}
 			if (ly) {
 				argb p0 = *(argb*)(ofs + 0);
-				argb p1 = *(argb*)(ofs + surf->scanLen);
-				return gx_mixcolor(p0, p1, ly).val;
+				argb p1 = *(argb*)(ofs + image->scanLen);
+				return mix_rgb(p0, p1, ly).val;
 			}
 			return *(uint32_t*)ofs;
 		case 24:
@@ -203,87 +201,71 @@ static inline uint32_t gx_getpix16(gx_Surf surf, int32_t x16, int32_t y16) {
 			if (lx && ly) {
 				uint8_t p0 = *(uint8_t*)(ofs + 0);
 				uint8_t p1 = *(uint8_t*)(ofs + 1);
-				ofs += surf->scanLen;
+				ofs += image->scanLen;
 				uint8_t p2 = *(uint8_t*)(ofs + 0);
 				uint8_t p3 = *(uint8_t*)(ofs + 1);
 
-				p0 = gx_mixgray(p0, p1, lx);
-				p2 = gx_mixgray(p2, p3, lx);
-				return gx_mixgray(p0, p2, ly);
+				p0 = mix_u8(p0, p1, lx);
+				p2 = mix_u8(p2, p3, lx);
+				return mix_u8(p0, p2, ly);
 			}
 			if (lx) {
 				uint8_t p0 = *(uint8_t*)(ofs + 0);
 				uint8_t p1 = *(uint8_t*)(ofs + 1);
-				return gx_mixgray(p0, p1, lx);
+				return mix_u8(p0, p1, lx);
 			}
 			if (ly) {
 				uint8_t p0 = *(uint8_t*)(ofs + 0);
-				uint8_t p1 = *(uint8_t*)(ofs + surf->scanLen);
-				return gx_mixgray(p0, p1, ly);
+				uint8_t p1 = *(uint8_t*)(ofs + image->scanLen);
+				return mix_u8(p0, p1, ly);
 			}
 			return *(uint8_t*)ofs;
 	}
 	return 0;
 }
 
-
 // draw
-void g2_drawRect(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color);
-void g2_fillRect(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color);
+void drawRect(GxImage image, int x1, int y1, int x2, int y2, uint32_t color);
+void fillRect(GxImage image, int x1, int y1, int x2, int y2, uint32_t color);
 
-void g2_drawOval(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color);
-void g2_fillOval(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color);
+void drawOval(GxImage image, int x1, int y1, int x2, int y2, uint32_t color);
+void fillOval(GxImage image, int x1, int y1, int x2, int y2, uint32_t color);
 
-void g2_drawLine(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color);
-void g2_drawBez2(gx_Surf surf, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color);
-void g2_drawBez3(gx_Surf surf, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, uint32_t color);
+void drawLine(GxImage image, int x1, int y1, int x2, int y2, uint32_t color);
+void drawBez2(GxImage image, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color);
+void drawBez3(GxImage image, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, uint32_t color);
 
-void g2_clipText(gx_Rect rect, gx_Surf font, const char *text);
-void g2_drawChar(gx_Surf surf, int x, int y, gx_Surf font, int chr, uint32_t color);
-void g2_drawText(gx_Surf surf, int x, int y, gx_Surf font, const char *text, uint32_t color);
-static inline void g2_drawTextRoi(gx_Surf surf, gx_Rect rect, gx_Surf font, const char *text, uint32_t color) {
-	struct gx_Rect textRect = *rect;
-	if (!gx_cliprect(surf, &textRect)) {
-		return;
-	}
+void clipText(GxRect rect, GxImage font, const char *text);
+void drawChar(GxImage image, int x, int y, GxImage font, int chr, uint32_t color);
+void drawText(GxImage image, int x, int y, GxImage font, const char *text, uint32_t color);
 
-	struct gx_Clip textClip;
-	textClip.t = textRect.y;
-	textClip.l = textRect.x;
-	textClip.r = textRect.x + textRect.w;
-	textClip.b = textRect.y + textRect.h;
-	gx_Clip oldClip = surf->clipPtr;
-	surf->clipPtr = &textClip;
-	g2_drawText(surf, rect->x, rect->y, font, text, color);
-	surf->clipPtr = oldClip;
-}
-
-int gx_blitSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, void *extra, cblt_proc blt);
-int gx_zoomSurf(gx_Surf surf, gx_Rect rect, gx_Surf src, gx_Rect roi, int interpolate);
-int gx_blurSurf(gx_Surf surf, int radius, double sigma);
-static inline int gx_copySurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi) {
-	return gx_blitSurf(surf, x, y, src, roi, NULL, gx_getcbltf(surf->depth, src->depth));
-}
-static inline int gx_lerpSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, int alpha) {
-	if (surf->depth != src->depth) {
-		// source and destination must have same depth
-		return -2;
-	}
-	return gx_blitSurf(surf, x, y, src, roi, (void *) (ssize_t) alpha, gx_getcbltf(cblt_cpy_mix, src->depth));
-}
-
+int blitImage(GxImage image, int x, int y, GxImage src, GxRect roi, void *extra, bltProc blt);
+int resizeImage(GxImage image, GxRect rect, GxImage src, GxRect roi, int interpolation);
 
 // image read write
-gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth);
-int gx_saveBmp(const char *dst, gx_Surf src, int flags);
-
-gx_Surf gx_loadFnt(gx_Surf dst, const char *src);
-gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth);
-gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth);
+GxImage loadBmp(GxImage dst, const char *src, int depth);
+GxImage loadFnt(GxImage dst, const char *src);
+GxImage loadJpg(GxImage dst, const char *src, int depth);
+GxImage loadPng(GxImage dst, const char *src, int depth);
+int saveBmp(const char *dst, GxImage src, int flags);
 
 
 // image effects
-int gx_gradSurf(gx_Surf dst, gx_Rect roi, gradient_type type, int length, uint32_t colors[]);
+int blurImage(GxImage image, int radius, double sigma);
+
+int drawGradient(GxImage dst, GxRect roi, GradientFlags type, int length, uint32_t *colors);
+
+static inline int copyImage(GxImage image, int x, int y, GxImage src, GxRect roi) {
+	return blitImage(image, x, y, src, roi, NULL, getBltProc(image->depth, src->depth));
+}
+
+static inline int blendImage(GxImage image, int x, int y, GxImage src, GxRect roi, int alpha) {
+	if (image->depth != src->depth) {
+		// source and destination must have same depth
+		return -2;
+	}
+	return blitImage(image, x, y, src, roi, (void *) (ssize_t) alpha, getBltProc(cblt_cpy_mix, src->depth));
+}
 
 #if __cplusplus
 }

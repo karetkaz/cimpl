@@ -1,13 +1,13 @@
 #include "gx_surf.h"
 
-void g2_drawRect(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color) {
-	g2_fillRect(surf, x1, y1, x2, y1 + 1, color);
-	g2_fillRect(surf, x1, y2, x2 + 1, y2 + 1, color);
-	g2_fillRect(surf, x1, y1, x1 + 1, y2, color);
-	g2_fillRect(surf, x2, y1, x2 + 1, y2, color);
+void drawRect(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
+	fillRect(image, x1, y1, x2, y1 + 1, color);
+	fillRect(image, x1, y2, x2 + 1, y2 + 1, color);
+	fillRect(image, x1, y1, x1 + 1, y2, color);
+	fillRect(image, x2, y1, x2 + 1, y2, color);
 }
-void g2_fillRect(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color) {
-	gx_Clip roi = gx_getclip(surf);
+void fillRect(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
+	GxClip roi = getClip(image);
 	if (x1 > x2) {
 		int t = x1;
 		x1 = x2;
@@ -32,12 +32,12 @@ void g2_fillRect(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color) {
 	}
 	for (int y = y1; y < y2; y++) {
 		for (int x = x1; x < x2; x++) {
-			gx_setpixel(surf, x, y, color);
+			setPixel(image, x, y, color);
 		}
 	}
 }
 
-void g2_drawOval(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color) {
+void drawOval(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 	if (x1 > x2) {
 		int t = x1;
 		x1 = x2;
@@ -65,10 +65,10 @@ void g2_drawOval(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color) {
 	dy = r << 1;
 
 	while (y1 < y2) {
-		gx_setpixel(surf, x1, y1, color);
-		gx_setpixel(surf, x1, y2, color);
-		gx_setpixel(surf, x2, y1, color);
-		gx_setpixel(surf, x2, y2, color);
+		setPixel(image, x1, y1, color);
+		setPixel(image, x1, y2, color);
+		setPixel(image, x2, y1, color);
+		setPixel(image, x2, y2, color);
 
 		if (r >= 0) {
 			x1 -= 1;
@@ -82,12 +82,12 @@ void g2_drawOval(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color) {
 			r += dy -= sx;
 		}
 	}
-	gx_setpixel(surf, x1, y1, color);
-	gx_setpixel(surf, x1, y2, color);
-	gx_setpixel(surf, x2, y1, color);
-	gx_setpixel(surf, x2, y2, color);
+	setPixel(image, x1, y1, color);
+	setPixel(image, x1, y2, color);
+	setPixel(image, x2, y1, color);
+	setPixel(image, x2, y2, color);
 }
-void g2_fillOval(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color) {
+void fillOval(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 	if (x1 > x2) {
 		int t = x1;
 		x1 = x2;
@@ -115,8 +115,8 @@ void g2_fillOval(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color) {
 	dy = r << 1;
 
 	while (y1 < y2) {
-		g2_fillRect(surf, x1, y1, x1 + 1, y2, color);
-		g2_fillRect(surf, x2, y1, x2 + 1, y2, color);
+		fillRect(image, x1, y1, x1 + 1, y2, color);
+		fillRect(image, x2, y1, x2 + 1, y2, color);
 
 		if (r >= 0) {
 			x1 -= 1;
@@ -130,11 +130,11 @@ void g2_fillOval(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color) {
 			r += dy -= sx;
 		}
 	}
-	g2_fillRect(surf, x1, y1, x1 + 1, y2, color);
-	g2_fillRect(surf, x2, y1, x2 + 1, y2, color);
+	fillRect(image, x1, y1, x1 + 1, y2, color);
+	fillRect(image, x2, y1, x2 + 1, y2, color);
 }
 
-void g2_drawLine(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color) {
+void drawLine(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 	//~ TODO : replace Bresenham with DDA, resolve clipping
 
 	int dx = x2 - x1;
@@ -154,7 +154,7 @@ void g2_drawLine(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color) {
 	if (dx > dy) {
 		int r = dx >> 1;
 		while (x1 != x2) {
-			gx_setpixel(surf, x1, y1, color);
+			setPixel(image, x1, y1, color);
 			if ((r += dy) > dx) {
 				y1 += sy;
 				r -= dx;
@@ -165,7 +165,7 @@ void g2_drawLine(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color) {
 	else {
 		int r = dy >> 1;
 		while (y1 != y2) {
-			gx_setpixel(surf, x1, y1, color);
+			setPixel(image, x1, y1, color);
 			if ((r+=dx) > dy) {
 				x1 += sx;
 				r -= dy;
@@ -173,9 +173,9 @@ void g2_drawLine(gx_Surf surf, int x1, int y1, int x2, int y2, uint32_t color) {
 			y1 += sy;
 		}
 	}
-	gx_setpixel(surf, x1, y1, color);
+	setPixel(image, x1, y1, color);
 }
-void g2_drawBez2(gx_Surf surf, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color) {
+void drawBez2(GxImage image, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color) {
 
 	int px_0 = x1;
 	int py_0 = y1;
@@ -188,13 +188,13 @@ void g2_drawBez2(gx_Surf surf, int x1, int y1, int x2, int y2, int x3, int y3, u
 	for (double t = dt; t < 1; t += dt) {
 		x2 = (px_2 * t + px_1) * t + px_0;
 		y2 = (py_2 * t + py_1) * t + py_0;
-		g2_drawLine(surf, x1, y1, x2, y2, color);
+		drawLine(image, x1, y1, x2, y2, color);
 		x1 = x2;
 		y1 = y2;
 	}
-	g2_drawLine(surf, x1, y1, x3, y3, color);
+	drawLine(image, x1, y1, x3, y3, color);
 }
-void g2_drawBez3(gx_Surf surf, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, uint32_t color) {
+void drawBez3(GxImage image, int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4, uint32_t color) {
 
 	int px_0 = x1;
 	int py_0 = y1;
@@ -209,21 +209,21 @@ void g2_drawBez3(gx_Surf surf, int x1, int y1, int x2, int y2, int x3, int y3, i
 	for (double t = dt; t < 1; t += dt) {
 		x2 = ((px_3 * t + px_2) * t + px_1) * t + px_0;
 		y2 = ((py_3 * t + py_2) * t + py_1) * t + py_0;
-		g2_drawLine(surf, x1, y1, x2, y2, color);
+		drawLine(image, x1, y1, x2, y2, color);
 		x1 = x2;
 		y1 = y2;
 	}
-	g2_drawLine(surf, x1, y1, x4, y4, color);
+	drawLine(image, x1, y1, x4, y4, color);
 }
 
-void g2_drawChar(gx_Surf surf, int x, int y, gx_Surf font, int chr, uint32_t color) {
+void drawChar(GxImage image, int x, int y, GxImage font, int chr, uint32_t color) {
 
-	if ((font->flags & SurfType) != Surf_fnt) {
+	if ((font->flags & ImageType) != ImageFnt) {
 		return;
 	}
 
-	struct gx_Rect clip;
-	struct gx_FDIR *face = &font->LLUTPtr->data[chr & 255];
+	struct GxRect clip;
+	struct GxFace *face = &font->LLUTPtr->data[chr & 255];
 
 	clip.x = x + face->pad_x;
 	clip.y = y + face->pad_y;
@@ -234,25 +234,25 @@ void g2_drawChar(gx_Surf surf, int x, int y, gx_Surf font, int chr, uint32_t col
 	}
 
 	char *sptr = (char*)face->basePtr;
-	char *dptr = (char*)gx_cliprect(surf, &clip);
-	cblt_proc blt = gx_getcbltf(cblt_set_mix, surf->depth);
+	char *dptr = (char*) clipRect(image, &clip);
+	bltProc blt = getBltProc(cblt_set_mix, image->depth);
 	if (dptr == NULL || sptr == NULL || blt == NULL) {
 		return;
 	}
 
 	while (clip.h-- > 0) {
 		blt(dptr, sptr, (void*)(size_t)color, clip.w);
-		dptr += surf->scanLen;
+		dptr += image->scanLen;
 		sptr += face->width;
 	}
 }
-void g2_clipText(gx_Rect rect, gx_Surf font, const char *text) {
+void clipText(GxRect rect, GxImage font, const char *text) {
 	char chr;
 	int x = 0;
 	int y = 0;
 	int x0 = x;
 
-	if ((font->flags & SurfType) != Surf_fnt) {
+	if ((font->flags & ImageType) != ImageFnt) {
 		return;
 	}
 	if (!font->basePtr) {
@@ -295,10 +295,10 @@ void g2_clipText(gx_Rect rect, gx_Surf font, const char *text) {
 	}
 	rect->h += y;
 }
-void g2_drawText(gx_Surf surf, int x, int y, gx_Surf font, const char *text, uint32_t color) {
+void drawText(GxImage image, int x, int y, GxImage font, const char *text, uint32_t color) {
 	int chr, x0 = x;
 
-	if ((font->flags & SurfType) != Surf_fnt) {
+	if ((font->flags & ImageType) != ImageFnt) {
 		return;
 	}
 	if (!font->basePtr) {
@@ -308,7 +308,7 @@ void g2_drawText(gx_Surf surf, int x, int y, gx_Surf font, const char *text, uin
 	while ((chr = *text++) != 0) {
 		switch (chr) {
 			default:
-				g2_drawChar(surf, x, y, font, chr, color);
+				drawChar(image, x, y, font, chr, color);
 				x += font->LLUTPtr->data[chr].width;
 				break;
 

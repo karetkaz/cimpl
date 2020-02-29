@@ -34,8 +34,8 @@ typedef enum {
 	prName = 0,		// print operator or symbol name only.
 
 	prGlobal = prSymQual | prSymType | prOneLine,
-	prMember = prOneLine,
-	prArgs = prSymQual | prOneLine,
+	prMember = prName,
+	prArgs = prName,  // used to print stack trace
 
 	prShort = prSymQual | prSymArgs | prOneLine ,	// %t, %T
 	prFull = prAttr | prSymQual | prSymArgs | prSymType | prSymInit,		// %±t, %±T

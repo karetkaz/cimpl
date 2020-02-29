@@ -1,60 +1,31 @@
-// standard library extension
-
-enum: bool {
-	true: 0 == 0;
-	false: 0 != 0;
-}
-
-inline byte = uint8;
-inline float = float32;
-inline double = float64;
-
-static if (typename(raise) == function) {
-inline "std/debug.ci";
-}
-
-/// Returns the size of the given type
-inline sizeof(typename type) = int(type.size);
-
-inline "std/math.ci";
-inline "std/math/Complex.ci"?;      // -> Complex<float64>
-//inline "std/math/Rational.ci"?;     // -> Rational<int64>
-inline "std/math/Vector4f.ci"?;
-inline "std/math/Matrix4f.ci"?;
-inline "std/math/Vector2d.ci"?;
-//inline "std/math/BigInteger.ci?"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
-//inline "std/math/BigDecimal.ci?"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
-//inline "std/math/Perlin.ci"?;
-
-inline "std/string.ci";
 // graphics library extension
 inline "gfx/color.ci";
 
-/// Create a surface with the given with, height and depth
-inline gxSurf(int width, int height, int depth) = gxSurf.create(width, height, depth);
+/// Create an image with the given with, height and depth
+inline Image(int width, int height, int depth) = Image.create(width, height, depth);
 
-/// Create a surface by opening an image file
-gxSurf gxSurf(const char fileName[*], int depth) {
+/// Create an image by opening an image file
+Image Image(const char fileName[*], int depth) {
 	if (fileName.endsWith(".jpeg", ignCaseCmp)) {
-		return gxSurf.openJpg(fileName, depth);
+		return Image.openJpg(fileName, depth);
 	}
 	if (fileName.endsWith(".jpg", ignCaseCmp)) {
-		return gxSurf.openJpg(fileName, depth);
+		return Image.openJpg(fileName, depth);
 	}
 	if (fileName.endsWith(".png", ignCaseCmp)) {
-		return gxSurf.openPng(fileName, depth);
+		return Image.openPng(fileName, depth);
 	}
 	if (fileName.endsWith(".bmp", ignCaseCmp)) {
-		return gxSurf.openBmp(fileName, depth);
+		return Image.openBmp(fileName, depth);
 	}
 	abort("unknown file extension", fileName);
 }
 
-/// Create a surface by opening an image file
-inline gxSurf(const char fileName[*]) = gxSurf(fileName, 32);
+/// Create an image by opening an image file
+inline Image(const char fileName[*]) = Image(fileName, 32);
 
-/// Create a surface by opening an image file with custom width and height
-gxSurf gxSurf(const char fileName[*], int width, int height, int depth, int align, double maxScale) {
+/// Create an image by opening an image file with custom width and height
+Image Image(const char fileName[*], int width, int height, int depth, int align, double maxScale) {
 	enum: int {
 		center: 0;
 		left: 1;
@@ -68,8 +39,8 @@ gxSurf gxSurf(const char fileName[*], int width, int height, int depth, int alig
 	}
 
 	double scale = 1;
-	gxSurf surf = gxSurf(fileName, depth);
-	gxSurf result = gxSurf(width, height, depth);
+	Image image = Image(fileName, depth);
+	Image result = Image(width, height, depth);
 
 	int alignVertical = align & fitVertical;
 	int alignHorizontal = align & fitHorizontal;
@@ -78,8 +49,8 @@ gxSurf gxSurf(const char fileName[*], int width, int height, int depth, int alig
 	bool fitHeight = alignHorizontal == fitHorizontal;
 
 	if (fitWidth && fitHeight) {
-		double widthScale = width / double(surf.width());
-		double heightScale = height / double(surf.height());
+		double widthScale = width / double(image.width());
+		double heightScale = height / double(image.height());
 		if (align & fill) {
 			scale = Math.max(widthScale, heightScale);
 		} else {
@@ -87,10 +58,10 @@ gxSurf gxSurf(const char fileName[*], int width, int height, int depth, int alig
 		}
 	}
 	else if (fitWidth) {
-		scale = width / double(surf.width());
+		scale = width / double(image.width());
 	}
 	else if (fitHeight) {
-		scale = height / double(surf.height());
+		scale = height / double(image.height());
 	}
 	if (scale > maxScale) {
 		scale = maxScale;
@@ -99,18 +70,18 @@ gxSurf gxSurf(const char fileName[*], int width, int height, int depth, int alig
 	// calculate translation
 	double tx = 0;
 	if (fitWidth || alignVertical == center) {
-		tx = (width - surf.width() * scale) / 2;
+		tx = (width - image.width() * scale) / 2;
 	}
 	else if (alignVertical == right) {
-		tx = (width - surf.width() * scale);
+		tx = (width - image.width() * scale);
 	}
 
 	double ty = 0;
 	if (fitHeight || alignHorizontal == center) {
-		ty = (height - surf.height() * scale) / 2;
+		ty = (height - image.height() * scale) / 2;
 	}
 	else if (alignHorizontal == bottom) {
-		ty = (height - surf.height() * scale);
+		ty = (height - image.height() * scale);
 	}
 
 	mat4f mat = {
@@ -120,54 +91,54 @@ gxSurf gxSurf(const char fileName[*], int width, int height, int depth, int alig
 		w: {x: 0, y: 0, z: 0, w: 1};
 	};
 
-	result.transform(null, surf, null, align & highRes ? 1 : 0, mat.data);
-	surf.destroy();
+	result.transform(null, image, null, align & highRes ? 1 : 0, mat.data);
+	image.destroy();
 	return result;
 }
 
-/// Create a surface by opening an image file with custom width and height
-inline gxSurf(const char fileName[*], int width, int height, int depth, int align) = gxSurf(fileName, width, height, depth, align, Math.inf);
+/// Create an image by opening an image file with custom width and height
+inline Image(const char fileName[*], int width, int height, int depth, int align) = Image(fileName, width, height, depth, align, Math.inf);
 
-/// Create a surface by opening an image file with custom width and height
-inline gxSurf(const char fileName[*], int width, int height, int depth) = gxSurf(fileName, width, height, depth, -1, Math.inf);
+/// Create an image by opening an image file with custom width and height
+inline Image(const char fileName[*], int width, int height, int depth) = Image(fileName, width, height, depth, -1, Math.inf);
 
 /// Create a mesh by opening a file
-gxMesh gxMesh(const char fileName[*]) {
+Mesh Mesh(const char fileName[*]) {
 	if (fileName.endsWith(".obj", ignCaseCmp)) {
-		return gxMesh.openObj(fileName);
+		return Mesh.openObj(fileName);
 	}
 	if (fileName.endsWith(".3ds", ignCaseCmp)) {
-		return gxMesh.open3ds(fileName);
+		return Mesh.open3ds(fileName);
 	}
 	abort("unknown file extension", fileName);
 }
 
-/// Create a surface by cloning another one
-gxSurf gxSurf(gxSurf copy) {
-	gxSurf result = gxSurf.create(copy.width(), copy.height(), copy.depth());
+/// Create an image by copying another one
+Image Image(Image copy) {
+	Image result = Image.create(copy.width(), copy.height(), copy.depth());
 	result.copy(0, 0, copy, null);
 	return result;
 }
 
-/// Create a surface by cloning another one using a custom aspect ratio
-gxSurf gxSurf(gxSurf copy, double aspect) {
+/// Create an image by copying another one using a custom aspect ratio
+Image Image(Image copy, double aspect) {
 	int width = copy.width();
 	if (aspect > 0) {
 		width = copy.height() * aspect;
 	}
-	gxSurf result = gxSurf.create(width, copy.height(), copy.depth());
+	Image result = Image.create(width, copy.height(), copy.depth());
 	result.transform(null, copy, null, 1, null);
 	return result;
 }
 
 /// Set the the color of a pixel at the given position
-inline set(gxSurf dst, int32 x, int32 y, argb color) = gxSurf.set(dst, x, y, uint32(color));
+inline set(Image image, int32 x, int32 y, argb color) = Image.set(image, x, y, uint32(color));
 
 ///@public
-inline resize(gxSurf surf, const gxRect rect&, const gxSurf src, const gxRect roi&, int interpolate) = gxSurf.transform(surf, rect, src, roi, interpolate, null);
+inline resize(Image image, const Rect rect&, const Image src, const Rect roi&, int interpolate) = Image.transform(image, rect, src, roi, interpolate, null);
 
 ///@public
-bool clip(gxSurf src, gxRect roi&) {
+bool clip(Image src, Rect roi&) {
 
 	roi.w += roi.x;
 	roi.h += roi.y;
@@ -202,26 +173,26 @@ bool clip(gxSurf src, gxRect roi&) {
 	return true;
 }
 
-/// Fill the entire surface with the given color
-inline fill(gxSurf dst, uint32 col) = dst.fillRect(0, 0, 65536, 65536, col);
-/// Fill the given region with the given color
-inline fill(gxSurf dst, const gxRect roi&, uint32 col) = dst.fillRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
-/// Fill the given region and padding with the given color
-inline fill(gxSurf dst, const gxRect roi&, int pad, uint32 col) = dst.fillRect(roi.x - pad, roi.y - pad, roi.x + roi.w + pad, roi.y + roi.h + pad, col);
+/// Fill the entire image with the given color
+inline fill(Image image, uint32 color) = image.fillRect(0, 0, 65536, 65536, color);
+/// Fill the given region of the image with the given color
+inline fill(Image image, const Rect roi&, uint32 color) = image.fillRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
+//- Fill the given region and padding of the image with the given color
+inline fill(Image image, const Rect roi&, int pad, uint32 color) = image.fillRect(roi.x - pad, roi.y - pad, roi.x + roi.w + pad, roi.y + roi.h + pad, color);
 
 ///@public
-inline drawRect(gxSurf dst, const gxRect roi&, uint32 col) = dst.drawRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
+inline drawRect(Image image, const Rect roi&, uint32 color) = image.drawRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
 
 /// Fill the surface by evaluating the given function for each pixel
-void eval(gxSurf dst, const gxRect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
-	gxRect rect = {
+void eval(Image image, const Rect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
+	Rect rect = {
 		x: roi != null ? roi.x : 0;
 		y: roi != null ? roi.y : 0;
-		w: roi != null ? roi.w : dst.width();
-		h: roi != null ? roi.h : dst.height();
+		w: roi != null ? roi.w : image.width();
+		h: roi != null ? roi.h : image.height();
 	};
 
-	if (!dst.clip(&rect)) {
+	if (!image.clip(&rect)) {
 		return;
 	}
 
@@ -231,20 +202,20 @@ void eval(gxSurf dst, const gxRect roi&, float32 aspect, float32 time, vec4f eva
 		z: aspect;
 		w: time;
 	};
-	float w = dst.width();
-	float h = dst.height();
+	float w = image.width();
+	float h = image.height();
 	for (int y = rect.y; y < rect.y + rect.h; y += 1) {
 		in.y = y / h;
 		for (int x = rect.x; x < rect.x + rect.w; x += 1) {
 			in.x = x / w;
-			dst.set(x, y, argb(eval(in)));
+			image.set(x, y, argb(eval(in)));
 		}
 	}
 }
 
 ///@public
-void tile(gxSurf dst, int x, int y, gxSurf src, gxRect roi&) {
-	gxRect rect = {
+void tile(Image image, int x, int y, Image src, Rect roi&) {
+	Rect rect = {
 		x: roi != null ? roi.x : 0;
 		y: roi != null ? roi.y : 0;
 		w: roi != null ? roi.w : src.width();
@@ -261,22 +232,22 @@ void tile(gxSurf dst, int x, int y, gxSurf src, gxRect roi&) {
 	if (y < 0) {
 		y = -(-y % rect.h);
 	}
-	int width = dst.width();
-	int height = dst.height();
+	int width = image.width();
+	int height = image.height();
 	for (int j = y; j < height; j += rect.h) {
 		for (int i = x; i < width; i += rect.w) {
-			dst.copy(i, j, src, rect);
+			image.copy(i, j, src, rect);
 		}
 	}
 }
 
 /// Show the mesh in a window
-void show(gxMesh mesh, int w, int h, float32 fovy) {
+void show(Mesh mesh, int w, int h, float32 fovy) {
 
 	struct Closure {
 		int mode;
-		gxSurf offs;
-		gxMesh mesh;
+		Image offs;
+		Mesh mesh;
 	}
 
 	int next(int32 x, int mask) {
@@ -303,7 +274,7 @@ void show(gxMesh mesh, int w, int h, float32 fovy) {
 				return -1;
 			}
 			else if (button == 'l') {
-				closure.mode ^= gxMesh.useLights;
+				closure.mode ^= Mesh.useLights;
 			}
 			else if (button == '0') {
 				lights.enable(0, !lights.enabled(0));
@@ -318,13 +289,13 @@ void show(gxMesh mesh, int w, int h, float32 fovy) {
 				lights.enable(3, !lights.enabled(3));
 			}
 			else if (button == 't') {
-				closure.mode ^= gxMesh.useTexture;
+				closure.mode ^= Mesh.useTexture;
 			}
 			else if (button == '/') {
-				closure.mode = next(closure.mode, gxMesh.cullBack | gxMesh.cullFront);
+				closure.mode = next(closure.mode, Mesh.cullBack | Mesh.cullFront);
 			}
 			else if (button == '\t') {
-				closure.mode = next(closure.mode, gxMesh.drawMode);
+				closure.mode = next(closure.mode, Mesh.drawMode);
 			}
 			else if (button == '\r') {
 				vec4f eye = {x: 0, y: 0, z: 2, w: 1};
@@ -392,8 +363,8 @@ void show(gxMesh mesh, int w, int h, float32 fovy) {
 	}
 
 	Closure closure = {
-		mode: gxMesh.clearDepth | gxMesh.clearColor | gxMesh.useLights | gxMesh.cullBack | gxMesh.drawFill;
-		offs: gxSurf.create3d(w, h);
+		mode: Mesh.clearDepth | Mesh.clearColor | Mesh.useLights | Mesh.cullBack | Mesh.drawFill;
+		offs: Image.create3d(w, h);
 		mesh: mesh;
 	};
 	camera.projection(fovy, w / float32(h), 1, 100);
@@ -402,25 +373,25 @@ void show(gxMesh mesh, int w, int h, float32 fovy) {
 }
 
 /// Show the surface in a window
-inline show(gxSurf surf) = Gui.showWindow(surf, null, null);
+inline show(Image surf) = Gui.showWindow(surf, null, null);
 
 /// Show the surface in a window
-void show(gxSurf surf, int onEvent(int action, int button, int ex, int ey)) {
+void show(Image image, int onEvent(int action, int button, int ex, int ey)) {
 	if (onEvent == null) {
-		return Gui.showWindow(surf, null, null);
+		return Gui.showWindow(image, null, null);
 	}
 	static int delegate(int onEvent(int action, int button, int ex, int ey), int action, int button, int ex, int ey) {
 		return onEvent(action, button, ex, ey);
 	}
-	Gui.showWindow(surf, onEvent, delegate);
+	Gui.showWindow(image, onEvent, delegate);
 }
 
 /// Show the surfaces in a window clicking on the window toggles the shown surface
-void showDiff(gxSurf image1, gxSurf image2) {
+void showDiff(Image image1, Image image2) {
 	struct Closure {
-		gxSurf offs;
-		gxSurf image1;
-		gxSurf image2;
+		Image offs;
+		Image image1;
+		Image image2;
 	}
 
 	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
@@ -441,7 +412,7 @@ void showDiff(gxSurf image1, gxSurf image2) {
 	}
 
 	Closure closure = {
-		offs: gxSurf(image1);
+		offs: Image(image1);
 		image1: image1;
 		image2: image2;
 	};
@@ -453,8 +424,8 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 	static const int64 start = System.millis();
 	struct Closure {
 		bool lerp = true;
-		const gxSurf offs;
-		const gxSurf thumb;
+		const Image offs;
+		const Image thumb;
 		const float32 aspect;
 		const vec4f eval(vec4f in);
 	}
@@ -495,16 +466,16 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 
 	if (animationResolution == 0) {
 		float32 aspect = width / float32(height);
-		gxSurf surf = gxSurf(width, height, 32);
-		surf.eval(null, aspect, 0f, eval);
-		surf.show(null);
-		surf.destroy();
+		Image image = Image(width, height, 32);
+		image.eval(null, aspect, 0f, eval);
+		image.show(null);
+		image.destroy();
 		return;
 	}
 
 	Closure closure = {
-		offs: gxSurf(width, height, 32);
-		thumb: gxSurf(animationResolution, animationResolution, 32);
+		offs: Image(width, height, 32);
+		thumb: Image(animationResolution, animationResolution, 32);
 		aspect: width / float32(height);
 		eval: eval;
 	};
@@ -512,6 +483,941 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 	closure.thumb.destroy();
 	closure.offs.destroy();
 }
+// micro ui, TODO: add comments
+
+struct Style {
+	const Image font;
+	const int fontHeight;
+
+	int backgroundColor = 0x1a1a1a;
+	int focusedColor = 0x3b4754;
+	int valueColor = 0x6897bb;
+	int textColor = 0xdadada;
+
+	int border = 3;
+	int padding = 8;
+}
+struct KeyEvent {
+	const bool release;
+	const bool isShift;
+	const bool isCtrl;
+	const int repeat;
+	const int key;
+}
+struct MouseEvent {
+	const bool release;
+	const bool isShift;
+	const bool isCtrl;
+	const int repeat;
+	const int button;
+	const int dx = 0;
+	const int dy = 0;
+	const int x;
+	const int y;
+}
+
+struct View: object {
+	const char text[*];
+	const int height = 0;
+	const int group = 0;
+	bool enabled = true;
+	bool selectable = true;
+	const variant data = null;
+
+	bool onClick(View this) = null; /*TODO: {
+		//trace("onClick", this);
+		return true;
+	}// */
+}
+
+struct Button: View {
+	char value[*] = null;
+	/* FIXME: do the override, use this method as default initializer
+	// TODO: override or overload: bool onClick(Button this) { ??? }
+	bool onClick(View this) {
+		View.onClick(this);   // call super
+		trace("onClick", this);
+		// FIXME: enable lookup: value.value = 0;
+		return this.enabled;
+	}// */
+}
+
+struct Switch: View {
+	const char on[*] = "on";
+	const char off[*] = "off";
+
+	bool checked = false;
+	const bool resetValue = 0;
+
+	void onUpdate(Switch this, bool checked) = null;/* {
+		this.checked = checked;
+	}// */
+}
+
+struct Slider: View {
+	int value = 0;
+	const int minimum = 0;
+	const int maximum = -1u >> 1;
+	const int divisor = 1;
+	const int resetValue = 0;
+	void onUpdate(Slider this, int value) = null;/* {
+		this.value = value;
+	}// */
+}
+
+struct ColorPicker: View {
+	const float lum = 1f;
+	argb value = argb(0);
+	void onUpdate(ColorPicker this, argb value) = null;/* {
+		this.value = value;
+	}// */
+}
+
+struct Histogram: View {
+	const Image image;
+	const bool lines = false;
+	uint32 data[256] = null;   // FIXME: this should be not possible
+	void onUpdate(Histogram this, int idx, int value) = null;/* {
+		this.data[idx] = uint32(argb(idx, value, value, value));
+	}// */
+}
+
+struct Layout {
+	Style style;
+	Image offs;
+	Rect rect;
+
+	bool visible = true;
+	bool measure = true;
+	int selectedIndex = -1;
+	int activeIndex = -1;
+	View views[30] = null;
+	Rect rects[30] = null;
+	int items = 0;
+	int group = 0;
+}
+
+int val(Slider slider&) {
+	if (slider.value < slider.minimum) {
+		slider.value = slider.minimum;
+	}
+	if (slider.value > slider.maximum) {
+		slider.value = slider.maximum;
+	}
+	return slider.value;
+}
+
+double valFlt(Slider slider&) {
+	return slider.val() / double(slider.divisor);
+}
+
+inline selected(const Layout layout&) = layout.selectedIndex < 0 ? null : pointer(layout.views[layout.selectedIndex]);
+inline selected(const Layout layout&, typename type) = layout.selectedIndex < 0 ? null : layout.views[layout.selectedIndex].as(type);
+
+inline activeIndex(const Layout layout&) = layout.activeIndex != -1 ? layout.activeIndex : layout.selectedIndex;
+
+bool isSelected(const Layout layout&, View items...) {
+	View selected = layout.selected();
+	for (int i = 0; i < items.length; i += 1) {
+		if (items[i] == selected) {
+			return true;
+		}
+	}
+	return false;
+}
+bool isActive(const Layout layout&, View views...) {
+	int activeIndex = layout.activeIndex != -1 ? layout.activeIndex : layout.selectedIndex;
+	if (activeIndex < 0) {
+		return false;
+	}
+	View view = layout.views[activeIndex];
+	for (int i = 0; i < views.length; i += 1) {
+		if (views[i] == view) {
+			return true;
+		}
+	}
+	return false;
+
+}
+
+bool setSelected(Layout layout&, View view) {
+	if (view == null) {
+		layout.selectedIndex = -1;
+		return true;
+	}
+	for (int i = 0; i < layout.items; i += 1) {
+		if (layout.views[i] == view) {
+			layout.selectedIndex = i;
+			return true;
+		}
+	}
+	return false;
+}
+bool setGroup(Layout layout&, int group) {
+	if (layout.group != group) {
+		layout.group = group;
+		layout.measure = true;
+		return true;
+	}
+	return false;
+}
+
+void onInit(View this, Layout layout&, int idx) {
+	// FIXME: dispatch click event using inheritance and override
+	if (ColorPicker item = this.as(ColorPicker)) {
+		return;
+	}
+	if (Histogram item = this.as(Histogram)) {
+		for (int i = 0; i < 256; i += 1) {
+			item.data[i] = uint32(argb(i, i, i, i));
+		}
+		return;
+	}
+	if (Slider item = this.as(Slider)) {
+		int resetValue& = pointer(item.resetValue);
+		resetValue = item.value;
+		return;
+	}
+	if (Switch item = this.as(Switch)) {
+		bool resetValue& = pointer(item.resetValue);
+		resetValue = item.checked;
+		return;
+	}
+	if (Button item = this.as(Button)) {
+		return;
+	}
+	abort("invalid view", this);
+}
+void onReset(View this) {
+	// FIXME: dispatch click event using inheritance and override
+	if (ColorPicker item = this.as(ColorPicker)) {
+		return;
+	}
+	if (Histogram item = this.as(Histogram)) {
+		for (int i = 0; i < 256; i += 1) {
+			item.data[i] = uint32(argb(i, i, i, i));
+		}
+		return;
+	}
+	if (Slider item = this.as(Slider)) {
+		item.value = item.resetValue;
+		return;
+	}
+	if (Switch item = this.as(Switch)) {
+		item.checked = item.resetValue;
+		return;
+	}
+	if (Button item = this.as(Button)) {
+		return;
+	}
+	abort("invalid view", this);
+}
+bool onEvent(View this, const KeyEvent event&) {
+	// FIXME: dispatch click event using inheritance and override
+
+	if (!event.release) {
+		return false;
+	}
+	if (ColorPicker item = this.as(ColorPicker)) {
+		return false;
+	}
+	if (Histogram item = this.as(Histogram)) {
+		if (event.key == ' ' || event.key == 8) {
+			item.onReset();
+			return true;
+		}
+		return false;
+	}
+	if (Slider item = this.as(Slider)) {
+		if (event.key == '+' || event.key == '=') {
+			item.value += event.isShift ? 1 : 10;
+			return true;
+		}
+		if (event.key == '-' || event.key == '_') {
+			item.value -= event.isShift ? 1 : 10;
+			return true;
+		}
+		if (event.key == ' ' || event.key == 8) {
+			item.onReset();
+			return true;
+		}
+		return false;
+	}
+	if (Switch item = this.as(Switch)) {
+		if (event.key == ' ') {
+			if (item.onUpdate != null) {
+				item.onUpdate(!item.checked);
+			} else {
+				item.checked = !item.checked;
+			}
+			if (item.onClick != null) {
+				return item.onClick();
+			}
+			return true;
+		}
+		if (event.key == 8) {
+			item.onReset();
+			return true;
+		}
+		return false;
+	}
+	if (Button item = this.as(Button)) {
+		if (event.key == ' ') {
+			if (item.onClick != null) {
+				return item.onClick();
+			}
+			return false;
+		}
+		return false;
+	}
+	abort("invalid view", this);
+	return false;
+}
+bool onEvent(View this, const MouseEvent event&, const Rect rect&) {
+	// FIXME: dispatch click event using inheritance and override
+
+	if (ColorPicker item = this.as(ColorPicker)) {
+		if (event.release) {
+			if (item.onClick != null) {
+				return item.onClick();
+			}
+			return false;
+		}
+
+		float px = float(Math.clamp(event.x - rect.x, 0, rect.w - 1) / rect.w);
+		float py = float(Math.clamp(event.y - rect.y, 0, rect.h - 1) / rect.h);
+		if (item.onUpdate != null) {
+			item.onUpdate(hsv2rgb(px, 1 - py, item.lum));
+		} else {
+			item.value = hsv2rgb(px, 1 - py, item.lum);
+		}
+		return true;
+	}
+	if (Histogram item = this.as(Histogram)) {
+		if (event.release) {
+			if (event.repeat > 1) {
+				// double click to reset
+				item.onReset();
+				return true;
+			}
+			if (item.onClick != null) {
+				return item.onClick();
+			}
+			return false;
+		}
+
+		int x = event.x - rect.x;
+		int y = event.y - rect.y;
+		int min = x;
+		int max = x;
+		if (event.dx < 0) {
+			min += event.dx;
+		} else {
+			max += event.dx;
+		}
+		if (min < 0) {
+			min = 0;
+		}
+		if (max > 255) {
+			max = 255;
+		}
+		int h = rect.h;
+		for (int idx = min; idx < max; idx += 1) {
+			int32 val = 255 * (h - y) / h;
+			if (item.onUpdate != null) {
+				item.onUpdate(idx, val);
+			} else {
+				item.data[idx] = uint32(argb(idx, val, val, val));
+			}
+		}
+		return true;
+	}
+	if (Slider item = this.as(Slider)) {
+		if (event.release) {
+			if (event.repeat > 1) {
+				// double click to reset
+				item.onReset();
+				return true;
+			}
+			if (item.onClick != null) {
+				return item.onClick();
+			}
+			return false;
+		}
+		if (item.onUpdate != null) {
+			item.onUpdate(item.value + event.dy);
+		} else {
+			item.value += event.dy;
+		}
+		return true;
+	}
+	if (Switch item = this.as(Switch)) {
+		if (event.release) {
+			if (item.onUpdate != null) {
+				item.onUpdate(!item.checked);
+			} else {
+				item.checked = !item.checked;
+			}
+			if (item.onClick != null) {
+				return item.onClick();
+			}
+			return false;
+		}
+		return false;
+	}
+	if (Button item = this.as(Button)) {
+		if (event.release) {
+			if (item.onClick != null) {
+				return item.onClick();
+			}
+		}
+		return false;
+	}
+	abort("invalid view", this);
+	return false;
+}
+
+bool onMeasure(View this, Rect rect&, const Style style&) {
+	// FIXME: dispatch click event using inheritance and override
+	if (ColorPicker item = this.as(ColorPicker)) {
+		if (item.height == 0) {
+			rect.h = 128;
+		} else {
+			rect.h = item.height;
+		}
+		return;
+	}
+	if (Histogram item = this.as(Histogram)) {
+		if (item.height == 0) {
+			rect.h = 128;
+		} else {
+			rect.h = item.height;
+		}
+		return;
+	}
+	if (Slider item = this.as(Slider)) {
+		if (item.height == 0) {
+			rect.h = style.fontHeight + 2 * style.padding;
+		} else {
+			rect.h = item.height;
+		}
+		return;
+	}
+	if (Switch item = this.as(Switch)) {
+		if (item.height == 0) {
+			rect.h = style.fontHeight + 2 * style.padding;
+		} else {
+			rect.h = item.height;
+		}
+		return;
+	}
+	if (Button item = this.as(Button)) {
+		if (item.height == 0) {
+			rect.h = style.fontHeight + 2 * style.padding;
+		}
+		else if (item.text == null) {
+			// TODO: remove hack: empty button used for separator
+			rect.h = item.height * style.padding;
+		}
+		else {
+			rect.h = item.height;
+		}
+		return;
+	}
+	abort("invalid view", this);
+}
+bool onDraw(View this, const Rect rect&, const Style style&) {
+	/* FIXME: dispatch click event using inheritance and override
+	if (ColorPicker item = this.as(ColorPicker)) {
+		return;
+	}
+	if (Histogram item = this.as(Histogram)) {
+		return;
+	}
+	if (Slider item = this.as(Slider)) {
+		return;
+	}
+	if (Switch item = this.as(Switch)) {
+		return;
+	}
+	if (Button item = this.as(Button)) {
+		return;
+	}
+	abort("invalid view", this);
+	*/
+}
+
+bool uiEvent(Layout layout&, int action, int button, int x, int y) {
+	struct Mouse {
+		int32 clicks;   // click count
+		int64 time;     // old clock
+		int32 btn;      // old button
+		int32 x;        // old x coord
+		int32 y;        // old y coord
+	}
+	static Mouse mouse;
+
+static int click(Mouse old&, int btn, int x, int y) {
+	if ((btn != 0 && btn != old.btn) || x != old.x || y != old.y) {
+		// reset values
+		old.clicks = 1;
+		old.time = System.millis();
+		old.btn = btn;
+		old.x = x;
+		old.y = y;
+		return 0;
+	}
+	if (btn == 0) {
+		// release button
+		// old.time = keep value?;
+		// old.btn = keep value?;
+		// old.cnt = keep value?;
+		return old.clicks;
+	}
+
+	int64 now = System.millis();
+	if ((now - old.time) / 1000. > .5) {
+		// reset counter
+		old.clicks = 0;
+	}
+	old.time = now;
+	old.btn = btn;
+	old.clicks += 1;
+	return old.clicks;
+}
+static int click(Layout layout&, int x, int y) {
+static bool test(const Rect rect&, int x, int y) {
+	if (x < rect.x || x >= rect.x + rect.w) {
+		return false;
+	}
+	if (y < rect.y || y >= rect.y + rect.h) {
+		return false;
+	}
+	return true;
+}
+
+	if (!layout.visible) {
+		return -1;
+	}
+	if (!layout.rect.test(x, y)) {
+		return -1;
+	}
+	for (int i = 0; i < layout.items; i += 1) {
+		if (!layout.rects[i].test(x, y)) {
+			continue;
+		}
+
+		View view = layout.views[i];
+		if (!view.enabled) {
+			return -1;
+		}
+		return i;
+	}
+	return -1;
+}
+
+static bool select(Layout layout&, int index) {
+	assert(index >= 0, "invalid selection");
+	assert(index < layout.items, "invalid selection");
+
+	View view = layout.views[index];
+	if (!view.enabled) {
+		return false;
+	}
+	if (!view.selectable) {
+		return false;
+	}
+	if (layout.group != view.group) {
+		if (layout.group != 0) {
+			if (view.group != 0) {
+				return false;
+			}
+		}
+	}
+	layout.selectedIndex = index;
+	return true;
+}
+static bool select(Layout layout&, bool prev) {
+	layout.activeIndex = -1;
+	int selectedIndex = layout.selectedIndex;
+	for (int i = 1; i < layout.items; i += 1) {
+		int index = selectedIndex + (prev ? -i : i);
+		if (index >= layout.items) {
+			index -= layout.items;
+		}
+		else if (index < 0) {
+			index += layout.items;
+		}
+		if (layout.select(index)) {
+			return true;
+		}
+	}
+	return false;
+}
+static View active(const Layout layout&) {
+	int idx = layout.activeIndex;
+	if (idx < 0) {
+		idx = layout.selectedIndex;
+	}
+	if (idx < 0) {
+		return null;
+	}
+	return layout.views[idx];
+}
+
+static void measure(Layout layout&) {
+	// debug("measure");
+	int bottom = layout.rect.y;
+	for (int i = 0; i < layout.items; i += 1) {
+		Rect rect& = layout.rects[i];
+		View view = layout.views[i];
+
+		rect.x = layout.rect.x;
+		rect.y = bottom;
+		rect.w = layout.rect.w;
+		rect.h = view.height;
+
+		view.onMeasure(&rect, layout.style);
+		if (layout.group != view.group) {
+			if (layout.group != 0) {
+				if (view.group != 0) {
+					rect.h = 0;
+				}
+			}
+		}
+		bottom += rect.h;
+	}
+	layout.rect.h = bottom - layout.rect.y;
+}
+static void draw(Layout layout&) {
+	static const FormatFlags flagsInt = { padLen: 4 };
+	static const FormatFlags flagsFlt = { padLen: 4, precision: 2 };
+
+	if (!layout.visible) {
+		return;
+	}
+	// draw background
+	if (layout.style.backgroundColor != -1) {
+		int b = layout.style.border;
+		const Rect r& = layout.rect;
+		layout.offs.fillRect(r.x - b, r.y - b, r.x + r.w + b, r.y + r.h + b, layout.style.backgroundColor);
+	}
+
+	// draw items
+	for (int i = 0; i < layout.items; i += 1) {
+		View view = layout.views[i];
+		Rect rect& = layout.rects[i];
+
+		if (i == layout.selectedIndex) {
+			layout.offs.fillRect(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, layout.style.focusedColor);
+		}
+
+		int pos = 0;
+		char value[256] = {};
+		value[0] = 0;
+		if (ColorPicker item = view.as(ColorPicker)) {
+			for (int y = 0; y < rect.h; y += 1) {
+				for (int x = 0; x < rect.w; x += 1) {
+					float px = float(x) / rect.w;
+					float py = float(y) / rect.h;
+					argb color = hsv2rgb(px, 1 - py, item.lum);
+					layout.offs.set(x + rect.x, y + rect.y, color);
+				}
+			}
+		}
+		else if (Histogram item = view.as(Histogram)) {
+			if (item.lines) {
+				offs.drawLut(rect, null, item.data);
+			} else {
+				offs.drawLut(rect, item.data, null);
+			}
+		}
+		else if (Slider item = view.as(Slider)) {
+			if (item.divisor != 1) {
+				pos = value.append(pos, item.valFlt(), flagsFlt);
+			} else {
+				pos = value.append(pos, item.val(), flagsInt);
+			}
+		}
+		else if (Switch item = view.as(Switch)) {
+			if (item.checked) {
+				pos = value.append(pos, item.on);
+			} else {
+				pos = value.append(pos, item.off);
+			}
+		}
+		else if (Button item = view.as(Button)) {
+			if (item.value != null) {
+				pos = value.append(pos, item.value);
+			}
+		}
+		else {
+			abort("item is not a known ui element", view);
+		}
+		int p = layout.style.padding;
+		Rect valueRect = rect;
+		layout.style.font.clipText(&valueRect, value);
+		if (valueRect.w > layout.rect.w - 2 * p) {
+			valueRect.w = layout.rect.w - 2 * p;
+		}
+		if (view.text != null) {
+			Rect textRect = rect;
+			textRect.x += p;
+			textRect.y += p;
+			textRect.w -= valueRect.w + 3 * p;
+			layout.offs.drawText(textRect, layout.style.font, view.text, layout.style.textColor);
+		}
+
+		valueRect.h = rect.h;
+		valueRect.x += rect.w - valueRect.w - p;
+		valueRect.y += p;
+		layout.offs.drawText(valueRect, layout.style.font, value, layout.style.valueColor);
+
+		if (i == layout.activeIndex) {
+			layout.offs.drawRect(rect.x, rect.y, rect.x + rect.w - 1, rect.y + rect.h - 1, layout.style.valueColor);
+		}
+	}
+}
+
+	bool isCtrl = (y & Gui.KEY_MASK_CONTROL) != 0;
+	bool isShift = (y & Gui.KEY_MASK_SHIFT) != 0;
+
+	if (action == Gui.WINDOW_INIT) {
+		layout.selectedIndex = -1;
+		layout.measure = true;
+		layout.select(false);
+		return true;
+	}
+	if (action == Gui.WINDOW_DRAW) {
+		if (layout.measure) {
+			layout.measure = false;
+			measure(layout);
+		}
+		layout.draw();
+		return true;
+	}
+
+	if (action == Gui.FINGER_PRESS) {
+		// translate to mouse event
+		action = Gui.MOUSE_PRESS;
+		button = -1;
+	}
+	if (action == Gui.FINGER_MOTION) {
+		// translate to mouse event
+		action = Gui.MOUSE_MOTION;
+	}
+	if (action == Gui.FINGER_RELEASE) {
+		// translate to mouse event
+		action = Gui.MOUSE_RELEASE;
+	}
+
+	if (action == Gui.KEY_PRESS) {
+		if (View view = layout.active()) {
+			KeyEvent event = {
+				release: false;
+				isShift: isShift;
+				isCtrl: isCtrl;
+				repeat: 0;
+				key: button;
+			};
+			if (view.onEvent(event)) {
+				return true;
+			}
+		}
+		if (button == '\t' || button == '\r') {
+			// Tab, Enter: select prev or next control.
+			return layout.select(isShift);
+		}
+		if (button == '[' || button == ']') {
+			// hide, show controls
+			layout.visible = !layout.visible;
+			return true;
+		}
+		if (button == 8 && isShift) {
+			for (int i = 0; i < layout.items; i += 1) {
+				layout.views[i].onReset();
+			}
+			return true;
+		}
+		return false;
+	}
+	if (action == Gui.KEY_RELEASE) {
+		if (View view = layout.active()) {
+			KeyEvent event = {
+				release: true;
+				isShift: isShift;
+				isCtrl: isCtrl;
+				repeat: 0;
+				key: button;
+			};
+			if (view.onEvent(event)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	if (action == Gui.MOUSE_PRESS) {
+		mouse.click(button, x, y);
+		if (button != 1) {
+			return false;
+		}
+		bool result = false;
+		int idx = layout.click(x, y);
+		if (layout.activeIndex != idx) {
+			layout.activeIndex = idx;
+			result = true;
+		}
+		if (idx < 0) {
+			// might be a disabled view
+			return result;
+		}
+		if (View view = layout.views[idx]) {
+			Rect rect& = layout.rects[idx];
+			MouseEvent event = {
+				release: false;
+				isShift: isShift;
+				isCtrl: isCtrl;
+				repeat: mouse.clicks;
+				button: button;
+				x: x;
+				y: y;
+			};
+			if (view.onEvent(event, rect)) {
+				return true;
+			}
+		}
+		return result;
+	}
+	if (action == Gui.MOUSE_MOTION) {
+		int ox = mouse.x;
+		int oy = mouse.y;
+		mouse.click(-1, x, y);
+		if (button != 1) {
+			return false;
+		}
+		if (ox == x && oy == y) {
+			return false;
+		}
+		int idx = layout.activeIndex;
+		if (idx < 0) {
+			// allow update of selected control
+			idx = layout.selectedIndex;
+		}
+		if (idx < 0) {
+			return;
+		}
+		if (View view = layout.views[idx]) {
+			Rect rect& = layout.rects[idx];
+			MouseEvent event = {
+				release: false;
+				isShift: isShift;
+				isCtrl: isCtrl;
+				repeat: mouse.clicks;
+				button: button;
+				dx: ox - x;
+				dy: oy - y;
+				x: x;
+				y: y;
+			};
+			if (view.onEvent(event, rect)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	if (action == Gui.MOUSE_RELEASE) {
+		int btn = mouse.btn;
+		mouse.click(0, x, y);
+		if (button != 1) {
+			return false;
+		}
+
+		bool result = false;
+		int idx = layout.activeIndex;
+		if (idx >= 0) {
+			layout.activeIndex = -1;
+			result = true;
+		}
+		if (idx != layout.click(x, y)) {
+			// release on a different view
+			return result;
+		}
+		if (idx < 0) {
+			// might be a disabled view
+			return result;
+		}
+		// select / focus the view
+		if (layout.select(idx)) {
+			result = true;
+		}
+		if (View view = layout.views[idx]) {
+			Rect rect& = layout.rects[idx];
+			MouseEvent event = {
+				release: true;
+				isShift: isShift;
+				isCtrl: isCtrl;
+				repeat: mouse.clicks;
+				button: button;
+				x: x;
+				y: y;
+			};
+			if (view.onEvent(event, rect)) {
+				return true;
+			}
+		}
+		return result;
+	}
+
+	if (action == Gui.WINDOW_ENTER) {
+		// process event
+		return false;
+	}
+	if (action == Gui.WINDOW_LEAVE) {
+		// process event
+		return false;
+	}
+
+	debug("event not processed", action);
+	return false;
+}
+
+Layout Layout(Image offs, int x, int y, Image font, View items...) {
+	Layout layout = {
+		offs: offs;
+		rect: {
+			x: x;
+			y: y;
+			w: 256;
+			h: 0;
+		};
+		style: {
+			font: font;
+			fontHeight: font.height() / 256;
+		};
+	};
+
+	for (int i = 0; i < layout.views.length; i += 1) {
+		layout.views[i] = null;
+	}
+
+	for (int i = 0; i < items.length; i += 1) {
+		layout.views[i] = items[i];
+		items[i].onInit(&layout, i);
+	}
+	layout.items = items.length;
+
+	if (y < 0) {
+		layout.uiEvent(Gui.WINDOW_INIT, 0, 0, 0);
+		layout.rect.y = offs.height() - layout.rect.h + y;
+	}
+	if (x < 0) {
+		layout.rect.x = offs.width() - layout.rect.w + x;
+	}
+	return layout;
+}
+
+inline draw(Layout layout&) = uiEvent(layout, Gui.WINDOW_DRAW, 0, 0, 0);
 /// an 32 bit argb color
 struct argb: 0 {
 	/// value of color
@@ -673,15 +1579,15 @@ inline argb(float64 a, float64 r, float64 g, float64 b) = argb(int32(a * 255), i
 
 
 /// get the Alpha channel of the color
-inline ach(argb col) = int32((uint32(col) >> 24) & 0xff);
+inline ach(argb color) = int32((uint32(color) >> 24) & 0xff);
 /// get the Red channel of the color
-inline rch(argb col) = int32((uint32(col) >> 16) & 0xff);
+inline rch(argb color) = int32((uint32(color) >> 16) & 0xff);
 /// get the Green channel of the color
-inline gch(argb col) = int32((uint32(col) >> 8) & 0xff);
+inline gch(argb color) = int32((uint32(color) >> 8) & 0xff);
 /// get the Blue channel of the color
-inline bch(argb col) = int32(uint32(col) & 0xff);
-/// get the luminosity of the color
-inline lum(argb c) = int32((rch(c) * 76 + gch(c) * 150 + bch(c) * 29) >> 8);
+inline bch(argb color) = int32(uint32(color) & 0xff);
+/// get the luminosity of the color (0.299 * color.r + 0.587 * color.g + 0.114 * color.b)
+inline lum(argb color) = int32((19595 * rch(color) + 38470 * gch(color) + 7471 * bch(color)) >> 16);
 
 
 /// linear interpolate a lookup-table with the given colors
@@ -794,7 +1700,7 @@ argb hsv2rgb(float h, float s, float v) {
 }
 
 /// draw the given lookup table to the image
-void drawLut(gxSurf image, const gxRect roi&, const uint32 bars[256], const uint32 lines[256]) {
+void drawLut(Image image, const Rect roi&, const uint32 bars[256], const uint32 lines[256]) {
 	enum {
 		margin: 20;
 		colB: 0x4371c6;
@@ -803,7 +1709,7 @@ void drawLut(gxSurf image, const gxRect roi&, const uint32 bars[256], const uint
 		colL: 0xdadada;
 	}
 
-	gxRect rect = {
+	Rect rect = {
 		w: roi != null ? roi.w : 256;
 		h: roi != null ? roi.h : 128;
 		y: roi != null ? roi.y : margin;
@@ -854,7 +1760,81 @@ void drawLut(gxSurf image, const gxRect roi&, const uint32 bars[256], const uint
 	}
 }
 // emulated implementation
-void blur(gxSurf img, int radius, double sigma) {
+void transform(Image surf, const Rect rect&, Image src, const Rect roi&, int32 interpolate, float32 mat[16]) {
+	assert(roi == null);
+	assert(rect != null);
+
+	Rect dRec = {
+		x: rect != null ? rect.x : 0;
+		y: rect != null ? rect.y : 0;
+		w: rect != null ? rect.w : surf.width();
+		h: rect != null ? rect.h : surf.height();
+	};
+
+	Rect sRec = {
+		x: roi != null ? roi.x : 0;
+		y: roi != null ? roi.y : 0;
+		w: roi != null ? roi.w : src.width();
+		h: roi != null ? roi.h : src.height();
+	};
+
+	float32 xx = mat != null ? mat[0] : float32(sRec.w) / dRec.w;
+	float32 xy = mat != null ? mat[1] : 0;
+	float32 xt = mat != null ? mat[3] : sRec.x;
+	float32 yy = mat != null ? mat[5] : float32(sRec.h) / dRec.h;
+	float32 yx = mat != null ? mat[4] : 0;
+	float32 yt = mat != null ? mat[7] : sRec.y;
+
+	if (!surf.clip(dRec)) {
+		// nothing to set
+		return;
+	}
+
+	if (!src.clip(sRec)) {
+		// nothing to get
+		return;
+	}
+
+	for (int y = 0; y < dRec.h; y += 1) {
+		int dy = dRec.y + y;
+		float32 sy = sRec.y + y;
+		for (int x = 0; x < dRec.w; x += 1) {
+			int dx = dRec.x + x;
+			float32 sx = sRec.x + x;
+			float32 tx = (xx * sx + xy * sy + xt) / src.width();
+			float32 ty = (yx * sx + yy * sy + yt) / src.height();
+			surf.set(dx, dy, argb(src.tex(tx, ty)));
+		}
+	}
+}
+// emulated implementation
+void blend(Image surf, int32 x0, int32 y0, const Image src, const Rect roi&, int32 alpha, bool dstAlpha, vec4f blend(vec4f base, vec4f with)) {
+	int width = surf.width();
+	int height = surf.height();
+
+	assert(!dstAlpha, "not implemented");
+	assert(roi == null, "not implemented");
+	assert(blend == null, "not implemented");
+
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			inline lerp(int32 l, int32 r) = int32(l + alpha * (r - l) / 256);
+			argb col = argb(src.get(x,y));
+			int r = rch(col);
+			int g = gch(col);
+			int b = bch(col);
+
+			col = argb(surf.get(x,y));
+			r = lerp(rch(col), r);
+			g = lerp(gch(col), g);
+			b = lerp(bch(col), b);
+
+			surf.set(x + x0, y + y0, argb(r, g, b));
+		}
+	}
+}
+// emulated implementation
+void blur(Image img, int radius, double sigma) {
 	static double gauss(double x, double sigma) {
 		inline SQRT_2_PI_INV = 0.398942280401432677939946059935;
 		double t = x / sigma;
@@ -891,7 +1871,7 @@ void blur(gxSurf img, int radius, double sigma) {
 	int width = img.width();
 	int height = img.height();
 
-	gxSurf tmp = gxSurf(width, height, img.depth());
+	Image tmp = Image(width, height, img.depth());
 
 	// x direction: inout -> temp
 	for (int y = 0; y < height; y += 1) {
@@ -934,724 +1914,6 @@ void blur(gxSurf img, int radius, double sigma) {
 	}
 
 	tmp.destroy();
-}
-// emulated implementation
-void blend(gxSurf surf, int32 x0, int32 y0, const gxSurf src, const gxRect roi&, int32 alpha, bool dstAlpha, vec4f blend(vec4f base, vec4f with)) {
-	int width = surf.width();
-	int height = surf.height();
-
-	assert(!dstAlpha, "not implemented");
-	assert(roi == null, "not implemented");
-	assert(blend == null, "not implemented");
-
-	for (int y = 0; y < height; y += 1) {
-		for (int x = 0; x < width; x += 1) {
-			inline lerp(int32 l, int32 r) = int32(l + alpha * (r - l) / 256);
-			argb col = argb(src.get(x,y));
-			int r = rch(col);
-			int g = gch(col);
-			int b = bch(col);
-
-			col = argb(surf.get(x,y));
-			r = lerp(rch(col), r);
-			g = lerp(gch(col), g);
-			b = lerp(bch(col), b);
-
-			surf.set(x + x0, y + y0, argb(r, g, b));
-		}
-	}
-}
-// emulated implementation
-void transform(gxSurf surf, const gxRect rect&, gxSurf src, const gxRect roi&, int32 interpolate, float32 mat[16]) {
-	assert(roi == null);
-	assert(rect != null);
-
-	gxRect dRec = {
-		x: rect != null ? rect.x : 0;
-		y: rect != null ? rect.y : 0;
-		w: rect != null ? rect.w : surf.width();
-		h: rect != null ? rect.h : surf.height();
-	};
-
-	gxRect sRec = {
-		x: roi != null ? roi.x : 0;
-		y: roi != null ? roi.y : 0;
-		w: roi != null ? roi.w : src.width();
-		h: roi != null ? roi.h : src.height();
-	};
-
-	float32 xx = mat != null ? mat[0] : float32(sRec.w) / dRec.w;
-	float32 xy = mat != null ? mat[1] : 0;
-	float32 xt = mat != null ? mat[3] : sRec.x;
-	float32 yy = mat != null ? mat[5] : float32(sRec.h) / dRec.h;
-	float32 yx = mat != null ? mat[4] : 0;
-	float32 yt = mat != null ? mat[7] : sRec.y;
-
-	if (!surf.clip(dRec)) {
-		// nothing to set
-		return;
-	}
-
-	if (!src.clip(sRec)) {
-		// nothing to get
-		return;
-	}
-
-	for (int y = 0; y < dRec.h; y += 1) {
-		int dy = dRec.y + y;
-		float32 sy = sRec.y + y;
-		for (int x = 0; x < dRec.w; x += 1) {
-			int dx = dRec.x + x;
-			float32 sx = sRec.x + x;
-			float32 tx = (xx * sx + xy * sy + xt) / src.width();
-			float32 ty = (yx * sx + yy * sy + yt) / src.height();
-			surf.set(dx, dy, argb(src.tex(tx, ty)));
-		}
-	}
-}
-// micro ui
-
-struct View: object {
-	const char text[*];
-	const int height = 0;
-	const int group = 0;
-	bool enabled = true;
-	bool selectable = true;
-	const variant data = null;
-
-	bool onClick(View this) = null; /*TODO: {
-		//trace("onClick", this);
-		return true;
-	}// */
-}
-
-struct Button: View {
-	char value[*] = null;
-	/* FIXME: do the override, use this method as default initializer
-	// TODO: override or overload: bool onClick(Button this) { ??? }
-	bool onClick(View this) {
-		View.onClick(this);   // call super
-		trace("onClick", this);
-		// FIXME: enable lookup: value.value = 0;
-		return this.enabled;
-	}// */
-}
-
-struct Switch: View {
-	const char on[*] = "on";
-	const char off[*] = "off";
-
-	bool checked = false;
-}
-
-struct Slider: View {
-	int value = 0;
-	const int minimum = 0;
-	const int maximum = -1u >> 1;
-	const int divisor = 1;
-}
-
-struct ColorPicker: View {
-	const float lum = 1f;
-	argb value = argb(0);
-	void onUpdate(ColorPicker this) = null;/* {
-		trace("onClick", this);
-	}// */
-}
-
-static void onHistogramUpdate(View this, int idx, int value);
-struct Histogram: View {
-	const gxSurf image;
-	const bool lines = false;
-	uint32 data[256] = null;   // FIXME: this should be not possible
-	void onUpdate(View this, int idx, int value) = onHistogramUpdate;	// TODO: implement override
-}
-static void onHistogramUpdate(View this, int idx, int value) {
-	if (Histogram item = this.as(Histogram)) {
-		item.data[idx] = uint32(argb(idx, value, value, value));
-	}
-}
-
-struct MouseState {
-	int32 clicks;   // click count
-	int64 time;     // old clock
-	int32 btn;      // old button
-	int32 x;        // old x coord
-	int32 y;        // old y coord
-}
-
-struct Layout {
-	gxSurf offs;
-	gxSurf font;
-	int border = 3;
-	int padding = 5;
-	MouseState mouse;
-	gxRect rect;
-	bool visible = true;
-	int group = 0;
-
-	int items = 0;
-	View views[200] = null;
-	gxRect rects[200] = null;
-	int reset[200] = null;
-	int selectedIndex = -1;
-	int pressedIndex = -1;
-
-	// Style
-	int backgroundColor = 0x1a1a1a;
-	int focusedColor = 0x3b4754;
-	int valueColor = 0x6897bb;
-	int textColor = 0xdadada;
-}
-
-int val(Slider slider&) {
-	if (slider.value < slider.minimum) {
-		slider.value = slider.minimum;
-	}
-	if (slider.value > slider.maximum) {
-		slider.value = slider.maximum;
-	}
-	return slider.value;
-}
-
-double valFlt(Slider slider&) {
-	return slider.val() / double(slider.divisor);
-}
-
-void measure(Layout layout&) {
-	int bottom = layout.rect.y;
-	int fontHeight = layout.font.height() / 256;
-
-	// measure
-	for (int i = 0; i < layout.items; i += 1) {
-		gxRect rect& = layout.rects[i];
-		rect.x = layout.rect.x;
-		rect.y = bottom;
-		rect.w = layout.rect.w;
-		View view = layout.views[i];
-		if (view.height != 0) {
-			rect.h = view.height;
-		} else {
-			rect.h = fontHeight;
-		}
-		if (ColorPicker item = view.as(ColorPicker)) {
-			if (view.height == 0) {
-				rect.h = 128;
-			}
-		}
-		else if (Histogram item = view.as(Histogram)) {
-			if (view.height == 0) {
-				rect.h = 64;
-			}
-		}
-		else if (Slider item = view.as(Slider)) {
-			rect.h += 2 * layout.padding;
-		}
-		else if (Switch item = view.as(Switch)) {
-			rect.h += 2 * layout.padding;
-		}
-		else if (Button item = view.as(Button)) {
-			rect.h += 2 * layout.padding;
-		}
-		else {
-			abort("item is not a known ui element", view);
-		}
-		if (layout.group != view.group) {
-			if (layout.group != 0) {
-				if (view.group != 0) {
-					rect.h = 0;
-				}
-			}
-		}
-		bottom += rect.h;
-	}
-	layout.rect.h = bottom - layout.rect.y;
-}
-void draw(Layout layout&) {
-	static const FormatFlags flagsInt = { padLen: 4 };
-	static const FormatFlags flagsFlt = { padLen: 4, precision: 2 };
-
-	if (!layout.visible) {
-		return;
-	}
-	// draw background
-	if (layout.backgroundColor != -1) {
-		int b = layout.border;
-		const gxRect r& = layout.rect;
-		layout.offs.fillRect(r.x - b, r.y - b, r.x + r.w + b, r.y + r.h + b, layout.backgroundColor);
-	}
-
-	// draw items
-	for (int i = 0; i < layout.items; i += 1) {
-		int pos = 0;
-		char value[256] = {};
-		View view = layout.views[i];
-		gxRect rect& = layout.rects[i];
-		value[0] = 0;
-
-		if (i == layout.selectedIndex) {
-			layout.offs.fillRect(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, layout.focusedColor);
-		}
-
-		if (ColorPicker item = view.as(ColorPicker)) {
-			for (int y = 0; y < rect.h; y += 1) {
-				for (int x = 0; x < rect.w; x += 1) {
-					float px = float(x) / rect.w;
-					float py = float(y) / rect.h;
-					argb color = hsv2rgb(px, 1 - py, item.lum);
-					layout.offs.set(x + rect.x, y + rect.y, color);
-				}
-			}
-		}
-		else if (Histogram item = view.as(Histogram)) {
-			if (item.lines) {
-				offs.drawLut(rect, null, item.data);
-			} else {
-				offs.drawLut(rect, item.data, null);
-			}
-		}
-		else if (Slider item = view.as(Slider)) {
-			if (item.divisor != 1) {
-				pos = value.append(pos, item.valFlt(), flagsFlt);
-			} else {
-				pos = value.append(pos, item.val(), flagsInt);
-			}
-		}
-		else if (Switch item = view.as(Switch)) {
-			if (item.checked) {
-				pos = value.append(pos, item.on);
-			} else {
-				pos = value.append(pos, item.off);
-			}
-		}
-		else if (Button item = view.as(Button)) {
-			if (item.value != null) {
-				pos = value.append(pos, item.value);
-			}
-		}
-		else {
-			abort("item is not a known ui element", view);
-		}
-		int p = layout.padding;
-		gxRect valueRect = rect;
-		layout.font.clipText(&valueRect, value);
-		if (valueRect.w > layout.rect.w - 2 * p) {
-			valueRect.w = layout.rect.w - 2 * p;
-		}
-		if (view.text != null) {
-			gxRect textRect = rect;
-			textRect.x += p;
-			textRect.y += p;
-			textRect.w -= valueRect.w + 3 * p;
-			layout.offs.drawText(textRect, layout.font, view.text, layout.textColor);
-		}
-
-		valueRect.h = rect.h;
-		valueRect.x += rect.w - valueRect.w - p;
-		valueRect.y += p;
-		layout.offs.drawText(valueRect, layout.font, value, layout.valueColor);
-	}
-}
-
-Layout Layout(gxSurf offs, int x, int y, gxSurf font, View items...) {
-	Layout layout = {
-		offs: offs;
-		font: font;
-		mouse: {};
-		rect: {
-			x: x;
-			y: y;
-			w: 256;
-			h: 0;
-		};
-	};
-
-	for (int i = 0; i < layout.views.length; i += 1) {
-		layout.views[i] = null;
-	}
-
-	for (int i = 0; i < items.length; i += 1) {
-		if (Slider slider = items[i].as(Slider)) {
-			layout.reset[i] = slider.value;
-		}
-		layout.views[i] = items[i];
-	}
-	layout.items = items.length;
-
-	if (y < 0) {
-		layout.measure();
-		layout.rect.y = offs.height() - layout.rect.h + y;
-	}
-	if (x < 0) {
-		layout.rect.x = offs.width() - layout.rect.w + x;
-	}
-	return layout;
-}
-
-inline selected(const Layout layout&) = layout.selectedIndex < 0 ? null : pointer(layout.views[layout.selectedIndex]);
-inline selected(const Layout layout&, typename type) = layout.selectedIndex < 0 ? null : layout.views[layout.selectedIndex].as(type);
-
-inline activeIndex(const Layout layout&) = layout.pressedIndex != -1 ? layout.pressedIndex : layout.selectedIndex;
-
-bool isSelected(const Layout layout&, View items...) {
-	View selected = layout.selected();
-	for (int i = 0; i < items.length; i += 1) {
-		if (items[i] == selected) {
-			return true;
-		}
-	}
-	return false;
-}
-bool isActive(const Layout layout&, View views...) {
-	int activeIndex = layout.pressedIndex != -1 ? layout.pressedIndex : layout.selectedIndex;
-	if (activeIndex < 0) {
-		return false;
-	}
-	View view = layout.views[activeIndex];
-	for (int i = 0; i < views.length; i += 1) {
-		if (views[i] == view) {
-			return true;
-		}
-	}
-	return false;
-
-}
-
-bool setSelected(Layout layout&, View view) {
-	if (view == null) {
-		layout.selectedIndex = -1;
-		return true;
-	}
-	for (int i = 0; i < layout.items; i += 1) {
-		if (layout.views[i] == view) {
-			layout.selectedIndex = i;
-			return true;
-		}
-	}
-	return false;
-}
-
-// FIXME: dispatch click event using inheritance and override
-bool onClick(View this) {
-	if (this.onClick == null) {
-		return true;
-	}
-	if (ColorPicker item = this.as(ColorPicker)) {
-		return item.onClick(item);
-	}
-	if (Histogram item = this.as(Histogram)) {
-		return item.onClick(item);
-	}
-	if (Slider item = this.as(Slider)) {
-		return item.onClick(item);
-	}
-	if (Switch item = this.as(Switch)) {
-		return item.onClick(item);
-	}
-	if (Button item = this.as(Button)) {
-		return item.onClick(item);
-	}
-	abort("invalid view detected", this);
-	return this.onClick();
-}
-
-bool uiEvent(Layout layout&, int action, int button, int x, int y) {
-static int click(MouseState old&, int btn, int x, int y) {
-	if ((btn != 0 && btn != old.btn) || x != old.x || y != old.y) {
-		// reset values
-		old.time = System.millis();
-		old.btn = btn;
-		old.clicks = 1;
-		old.x = x;
-		old.y = y;
-		return 0;
-	}
-	if (btn == 0) {
-		// release button
-		// old.time = keep value?;
-		// old.btn = keep value?;
-		// old.cnt = keep value?;
-		return old.clicks;
-	}
-
-	int64 now = System.millis();
-	if ((now - old.time) / 1000. > .5) {
-		// reset counter
-		old.clicks = 0;
-	}
-	old.time = now;
-	old.btn = btn;
-	old.clicks += 1;
-	return old.clicks;
-}
-
-bool test(const gxRect rect&, int x, int y) {
-	if (x < rect.x || x >= rect.x + rect.w) {
-		return false;
-	}
-	if (y < rect.y || y >= rect.y + rect.h) {
-		return false;
-	}
-	return true;
-}
-
-bool select(Layout layout&, int index) {
-	assert(index >= 0, "invalid selection");
-	assert(index < layout.items, "invalid selection");
-
-	View view = layout.views[index];
-	if (!view.enabled) {
-		return false;
-	}
-	if (!view.selectable) {
-		return false;
-	}
-	if (layout.group != view.group) {
-		if (layout.group != 0) {
-			if (view.group != 0) {
-				return false;
-			}
-		}
-	}
-	layout.selectedIndex = index;
-	return true;
-}
-bool select(Layout layout&, bool prev) {
-	layout.pressedIndex = -1;
-	int selectedIndex = layout.selectedIndex;
-	for (int i = 1; i < layout.items; i += 1) {
-		int index = selectedIndex + (prev ? -i : i);
-		if (index >= layout.items) {
-			index -= layout.items;
-		}
-		else if (index < 0) {
-			index += layout.items;
-		}
-		if (layout.select(index)) {
-			return true;
-		}
-	}
-	return false;
-}
-
-static void reset(Layout layout&, int index) {
-	assert(index >= 0, "invalid selection");
-	assert(index < layout.items, "invalid selection");
-
-	View view = layout.views[index];
-	if (!view.enabled) {
-		return;
-	}
-	if (Slider item = view.as(Slider)) {
-		item.value = layout.reset[index];
-	}
-}
-static bool update(Layout layout&, int index, int dx, int dy) {
-	if (index < 0) {
-		return false;
-	}
-	assert(index < layout.items, "invalid selection");
-
-	// FIXME: who is y??? debug("y", y);
-
-	View view = layout.views[index];
-	if (!view.enabled) {
-		return false;
-	}
-	if (ColorPicker item = view.as(ColorPicker)) {
-		gxRect rect& = layout.rects[index];
-		int x = layout.mouse.x;
-		int y = layout.mouse.y;
-		if (!rect.test(x, y)) {
-			return false;
-		}
-		float px = float(x - rect.x) / rect.w;
-		float py = float(y - rect.y) / rect.h;
-		item.value = hsv2rgb(px, 1 - py, item.lum);
-		if (item.onUpdate != null) {
-			item.onUpdate();
-		}
-		item.onClick();
-		return true;
-	}
-	if (Histogram item = view.as(Histogram)) {
-		gxRect rect& = layout.rects[index];
-		int min = layout.mouse.x;
-		int max = layout.mouse.x;
-		int y = layout.mouse.y;
-		if (dx < 0) {
-			min += dx;
-		} else {
-			max += dx;
-		}
-		for (int i = min; i < max; i += 1) {
-			int idx = i - rect.x;
-			if (idx >= 0 && idx < 256) {
-				int32 val = 255 * (rect.h - (y - rect.y)) / rect.h;
-				//item.data[idx] = uint32(argb(idx, val, val, val));
-				item.onUpdate(idx, val);
-			}
-		}
-		item.onClick();
-		return true;
-	}
-	if (Slider item = view.as(Slider)) {
-		if (dx == 0 && dy == 0) {
-			return false;
-		}
-		if (Math.abs(dx) > Math.abs(dy)) {
-			item.value -= dx;
-		} else {
-			item.value += dy;
-		}
-		item.onClick();
-		return true;
-	}
-	if (Switch item = view.as(Switch)) {
-		if (dx != 0 || dy != 0) {
-			// disable change using drag
-			return false;
-		}
-		if (layout.selectedIndex != index) {
-			// disable first click update
-			if (item.selectable) {
-				return false;
-			}
-		}
-		item.checked = !item.checked;
-		item.onClick();
-		return true;
-	}
-	if (Button item = view.as(Button)) {
-		if (dx != 0 || dy != 0) {
-			// disable clicks using drag
-			return false;
-		}
-		item.onClick();
-		return true;
-	}
-
-	// unknown view type
-	return false;
-}
-
-bool click(Layout layout&, int x, int y) {
-	layout.pressedIndex = -1;
-	if (!layout.rect.test(x, y)) {
-		return false;
-	}
-	for (int i = 0; i < layout.items; i += 1) {
-		if (!layout.rects[i].test(x, y)) {
-			continue;
-		}
-
-		View view = layout.views[i];
-		if (!view.enabled) {
-			return false;
-		}
-
-		bool result = false;
-		layout.pressedIndex = i;
-		if (layout.mouse.clicks > 1) {
-			layout.reset(i);
-			result = true;
-		}
-		if (layout.update(i, 0, 0)) {
-			result = true;
-		}
-		if (layout.select(i)) {
-			result = true;
-		}
-		return result;
-	}
-	return false;
-}
-
-	bool isCtrl = (y & Gui.KEY_MASK_CONTROL) != 0;
-	bool isShift = (y & Gui.KEY_MASK_SHIFT) != 0;
-
-	if (action == Gui.WINDOW_INIT) {
-		layout.selectedIndex = -1;
-		layout.select(false);
-		layout.measure();
-		return true;
-	}
-	if (action == Gui.WINDOW_ENTER) {
-		return false;
-	}
-	if (action == Gui.WINDOW_LEAVE) {
-		return false;
-	}
-
-	if (action == Gui.FINGER_PRESS) {
-		action = Gui.MOUSE_PRESS;
-		button = -1;
-	}
-	if (action == Gui.FINGER_MOTION) {
-		action = Gui.MOUSE_MOTION;
-	}
-	if (action == Gui.FINGER_RELEASE) {
-		action = Gui.MOUSE_RELEASE;
-	}
-	if (action == Gui.KEY_PRESS) {
-		if (button == ' ' || button == 8) {
-			if (isShift) {
-				for (int i = 0; i < layout.items; i += 1) {
-					layout.reset(i);
-				}
-				return true;
-			}
-			layout.reset(layout.activeIndex());
-			layout.update(layout.activeIndex(), 0, 0);
-			return true;
-		}
-		if (button == '-' || button == '_') {	// down
-			int delta = isShift ? 1 : 10;
-			return layout.update(layout.activeIndex(), -delta, -delta);
-		}
-		if (button == '+' || button == '=') {	// up
-			int delta = isShift ? 1 : 10;
-			return layout.update(layout.activeIndex(), +delta, +delta);
-		}
-		if (button == '[' || button == ']') {	// position
-			layout.visible = !layout.visible;
-			return true;
-		}
-		if (button == ',' || button == '<') {	// position
-			return layout.select(true);
-		}
-		if (button == '.' || button == '>') {	// position
-			return layout.select(false);
-		}
-		if (button == '\t' || button == '\r') {
-			return layout.select(isShift);
-		}
-	}
-	else if (action == Gui.MOUSE_PRESS) {
-		layout.mouse.click(button, x, y);
-		if (button != 1) {
-			return false;
-		}
-		return layout.click(x, y);
-	}
-	else if (action == Gui.MOUSE_RELEASE) {
-		layout.mouse.click(0, x, y);
-		layout.pressedIndex = -1;
-		return false;
-	}
-	else if (action == Gui.MOUSE_MOTION) {
-		int ox = layout.mouse.x;
-		int oy = layout.mouse.y;
-		layout.mouse.click(-1, x, y);
-		if (button != 1) {
-			return false;
-		}
-		if (ox == x && oy == y) {
-			return false;
-		}
-		return layout.update(layout.activeIndex(), ox - x, oy - y);
-	}
-	return false;
 }
 // debugging related functions
 
@@ -1729,500 +1991,274 @@ static void assertEq(int expected, int returned, const char message[*]) {
 }
 /// abort execution if the returned value is not equal to the expected value
 inline assertEq(int expected, int returned) = assertEq(expected, returned, null);
-/// A 2d vector (2x float64)
-struct vec2d: 0 {
-	/// Access the components as an array
-	float64 data[2];
-	struct {
-		/// X component of the vector
-		float64 x;
-		/// Y component of the vector
-		float64 y;
+// string related functions
+
+/// Computes the length of the string
+int length(const char str[*]) {
+	if (str == null) {
+		return 0;
 	}
-}
-
-/// Initialize with given x, y components
-vec2d vec2d(float64 x, float64 y) {
-	return {
-		x: x;
-		y: y;
-	};
-}
-
-/// Component wise subtract the two vectors.
-inline sub(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), sub.p2d));
-
-/// Dot product
-inline dot(const vec2d a&, const vec2d b&) = a.x * b.x + a.y * b.y;
-/// A 4d vector (4x float32)
-struct vec4f: 0 {
-	/// Access the components as an array
-	float32 data[4];
-	struct {
-		/// X component of the vector
-		float32 x;
-		/// Y component of the vector
-		float32 y;
-		/// Z component of the vector
-		float32 z;
-		/// W component of the vector
-		float32 w;
+	int result = 0;
+	for (; str[result]; result += 1) {
 	}
+	return result;
 }
 
-/* TODO: implement inline initializer
-// constructing a vector
-inline vec4f(float32 x, float32 y, float32 z, float32 w) = { x: x, y: y, z: z, w: w };
-inline vec4f(float32 x, float32 y, float32 z) = { x: x, y: y, z: z, w: 0 };
-inline vec4f(const vec4f v&, float32 w) = { x: v.x, y: v.y, z: v.z, w: w };
-inline vec4f(const float32 val&) = { x: val, y: val, z: val, w: val };
-*/
-
-/// Initialize with given x, y, z, w components
-vec4f vec4f(float32 x, float32 y, float32 z, float32 w) {
-	return { x: x, y: y, z: z, w: w };
+/// Returns the index of the first occurrence of a character in string
+int indexOf(const char str[*], char chr) {
+	for (int i = 0; str[i]; i += 1) {
+		if (str[i] == chr) {
+			return i;
+		}
+	}
+	return -1;
 }
 
-/// Initialize with  (x: x, y: y, z: z, w: 1)
-inline vec4f(float32 x, float32 y, float32 z) = vec4f(x, y, z, 1f);
+/// Returns the index of the last occurrence of a character in string
+int lastIndexOf(const char str[*], char chr) {
+	int result = -1;
+	for (int i = 0; str[i]; i += 1) {
+		if (str[i] == chr) {
+			result = i;
+		}
+	}
+	return result;
+}
 
-/// Initialize with (x: x, y: y, z: 0, w: 1)
-inline vec4f(float32 x, float32 y) = vec4f(x, y, 0f, 1f);
+/// Check if a string begins with a specified string, using a custom comparator
+bool startsWith(const char str[*], const char with[*], int cmp(char chr, char with)) {
+	for (int i = 0; with[i] != 0; i += 1) {
+		if (cmp(str[i], with[i]) != 0) {
+			return false;
+		}
+	}
+	return true;
+}
 
-/// Initialize x, y, z components using the components form the given vector, and w with the given value
-inline vec4f(vec4f xyz, float32 w) = vec4f(xyz.x, xyz.y, xyz.z, w);
+/// Check if a string ends in a specified string, using a custom comparator
+bool endsWith(const char str[*], const char with[*], int cmp(char chr, char with)) {
+	int withLen = length(with);
+	int strLen = length(str);
+	if (strLen < withLen) {
+		return false;
+	}
+	for (int i = 0; i < withLen; i += 1) {
+		if (cmp(str[strLen - withLen + i], with[i]) != 0) {
+			return false;
+		}
+	}
+	return true;
+}
 
-/// Initialize x, y, z, w components with the given scalar value
-inline vec4f(float32 val) = vec4f(val, val, val, val);
+/// Check if the two strings are equal, using a custom comparator
+int compare(const char str[*], const char with[*], int cmp(char chr, char with)) {
+	int result = 0;
+	for (int i = 0; result == 0; i += 1) {
+		result = cmp(str[i], with[i]);
+		if (str[i] == 0) {
+			break;
+		}
+	}
+	return result;
+}
+
+/// ignore case character comparator
+int ignCaseCmp(char chr, char with) {
+	static char ignCase(char chr) {
+		if (chr < 'A') {
+			return chr;
+		}
+		if (chr > 'Z') {
+			return chr;
+		}
+		return chr - 'A' + 'a';
+	}
+
+	return ignCase(chr) - ignCase(with);
+}
+
+/// default character comparator
+int caseCmp(char chr, char with) {
+	return chr - with;
+}
+
+inline startsWith(const char str[*], const char with[*]) = startsWith(str, with, caseCmp);
+inline endsWith(const char str[*], const char with[*]) = endsWith(str, with, caseCmp);
+inline compare(const char str[*], const char with[*]) = compare(str, with, caseCmp);
+
+/// Check if a string contains the given character
+inline contains(const char str[*], char chr) = indexOf(str, chr) >= 0;
 
 /* TODO: implement operator overloading
-//~ -a => vec4f(-a.x, -a.y, -a.z, -a.w);
-inline -(vec4f rhs) = vec4f(emit(struct(rhs), neg.p4f));
 
-//~ a + b => vec4f(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
-inline +(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), add.p4f));
+inline ==(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) == 0;
+inline !=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) != 0;
+inline <=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) <= 0;
+inline >=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) >= 0;
+inline <(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) < 0;
+inline >(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) > 0;
 
-//~ a - b => vec4f(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
-inline -(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
+// */
 
-//~ a * b => vec4f(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
-inline *(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
+/// Flags to convert numbers to string
+struct FormatFlags {
+	/// forced show sign
+	const bool showSign = false;
 
-//~ a / b => vec4f(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
-inline /(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
+	/// precision or radix
+	const int precision = 0;
 
-inline +(vec4f a, float32 b) = a + vec4f(b);
-inline +(float32 a, vec4f b) = vec4f(a) + b;
-inline -(vec4f a, float32 b) = a - vec4f(b);
-inline -(float32 a, vec4f b) = vec4f(a) - b;
-inline *(vec4f a, float32 b) = a * vec4f(b);
-inline *(float32 a, vec4f b) = vec4f(a) * b;
-inline /(vec4f a, float32 b) = a / vec4f(b);
-inline /(float32 a, vec4f b) = vec4f(a) / b;
+	/// padding character
+	const char padChr = 0;
 
-inline normalize(vec4f v) = v / len(v);
-*/
+	/// padding length
+	const int padLen = 0;
+}
 
-/// Returns a negated copy of the vector.
-inline neg(vec4f rhs) = vec4f(emit(struct(rhs), neg.p4f));
-/// Component wise add the two vectors.
-inline add(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), add.p4f));
-/// Component wise subtract the two vectors.
-inline sub(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
-/// Component wise multiply the two vectors.
-inline mul(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
-/// Component wise divide the two vectors.
-inline div(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
-
-/// Component wise minimum of the two vectors.
-inline min(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), min.p4f));
-/// Component wise maximum of the two vectors.
-inline max(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), max.p4f));
-
-/// Dot product of the first 3 elements
-// inline dp3(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z;
-inline dp3(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dp3));
-
-/// Homogeneous dot product
-// inline dph(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z + a.w;
-inline dph(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dph));
-
-/// Dot product
-// inline dp4(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
-inline dp4(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dp4));
-
-/// Cross product of the first 3 elements
-inline cross(const vec4f a&, const vec4f b&) = vec4f(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
-
-/// Length of the vector(xyz)
-inline length(vec4f v) = float32.sqrt(dp3(v, v));
-/// Normalize the vector(xyz)
-inline normalize(const vec4f v&) = div(v, vec4f(length(v)));
-
-/// Evaluate as a polynomial in point x
-inline eval(const vec4f v&, float32 x) = float32((((v.w * x + v.z) * x + v.y) * x) + v.x);
-/// A 4x4 matrix
-struct mat4f: 0 {
-	/// Access elements as a flatten array: data[4] => m[1][0]
-	float32 data[16];
-
-	/// Access elements as an array: m[1][0]
-	float32 m[4][4];
-
-	/// Access elements as an array of vectors: v[1].x => m[1][0]
-	vec4f v[4];
-
-	struct {
-		///@public
-		vec4f x;
-		///@public
-		vec4f y;
-		///@public
-		vec4f z;
-		///@public
-		vec4f w;
+/// Append a string to the output at the given position
+int append(char output[], int pos, const char value[*]) {
+	for (int i = 0; value[i]; i += 1) {
+		if (pos >= output.length) {
+			break;
+		}
+		output[pos] = value[i];
+		pos += 1;
 	}
-	struct {
-		///@public
-		float32 xx;
-		///@public
-		float32 xy;
-		///@public
-		float32 xz;
-		///@public
-		float32 xw;
 
-		///@public
-		float32 yx;
-		///@public
-		float32 yy;
-		///@public
-		float32 yz;
-		///@public
-		float32 yw;
-
-		///@public
-		float32 zx;
-		///@public
-		float32 zy;
-		///@public
-		float32 zz;
-		///@public
-		float32 zw;
-
-		///@public
-		float32 wx;
-		///@public
-		float32 wy;
-		///@public
-		float32 wz;
-		///@public
-		float32 ww;
+	if (pos >= output.length) {
+		pos = output.length - 1;
 	}
+	output[pos] = 0;
+	return pos;
 }
 
-/// Initialize all elements with the given values
-mat4f mat4f(float32 xx, float32 xy, float32 xz, float32 xw,
-			float32 yx, float32 yy, float32 yz, float32 yw,
-			float32 zx, float32 zy, float32 zz, float32 zw,
-			float32 wx, float32 wy, float32 wz, float32 ww) {
-	return {
-		x: { x: xx, y: xy, z: xz, w: xw };
-		y: { x: yx, y: yy, z: yz, w: yw };
-		z: { x: zx, y: zy, z: zz, w: zw };
-		w: { x: wx, y: wy, z: wz, w: ww };
-	};
-}
+// Append a number to the output at the given position
+int append(char output[], int pos, char sign, uint64 value, const FormatFlags format&) {
+	static const char whiteSpace[] = " \t\n\r";
+	static const char radixDigits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 
-/// Initialize matrix with row vectors
-mat4f mat4f(const vec4f x&, const vec4f y&, const vec4f z&, const vec4f w&) {
-	return { x: x, y: y, z: z, w: w };
-}
+	int len = 0;
+	char digits[80];
 
-/// Multiply with vector: dot product of the first 3 elements
-inline dp3(const mat4f mat&, const vec4f vec&) = vec4f(dp3(mat.x, vec), dp3(mat.y, vec), dp3(mat.z, vec), 1f);
-/// Multiply with vector: homogeneous dot product
-inline dph(const mat4f mat&, const vec4f vec&) = vec4f(dph(mat.x, vec), dph(mat.y, vec), dph(mat.z, vec), dph(mat.w, vec));
-/// Multiply with vector: dot product
-inline dp4(const mat4f mat&, const vec4f vec&) = vec4f(dp4(mat.x, vec), dp4(mat.y, vec), dp4(mat.z, vec), dp4(mat.w, vec));
-
-/// Multiply two matrices (rows * cols)
-mat4f mul(const mat4f lhs&, const mat4f rhs&) {
-	mat4f transposed = {
-		x: { x: rhs.x.x, y: rhs.y.x, z: rhs.z.x, w: rhs.w.x };
-		y: { x: rhs.x.y, y: rhs.y.y, z: rhs.z.y, w: rhs.w.y };
-		z: { x: rhs.x.z, y: rhs.y.z, z: rhs.z.z, w: rhs.w.z };
-		w: { x: rhs.x.w, y: rhs.y.w, z: rhs.z.w, w: rhs.w.w };
-	};
-	return {
-		x: dp4(transposed, lhs.x);
-		y: dp4(transposed, lhs.y);
-		z: dp4(transposed, lhs.z);
-		w: dp4(transposed, lhs.w);
-	};
-}
-
-/**
- * Build a rotation matrix
- * adapted from: https://sites.google.com/site/glennmurray/Home/rotation-matrices-and-formulas
- */
-mat4f rotation(const vec4f center&, const vec4f direction&, float angle) {
-	float len = direction.length();
-	if (len < 1e-9) {
-		trace("invalid direction of rotation", direction);
-		return {
-			x: vec4f(0, 0, 0, 0);
-			y: vec4f(0, 0, 0, 0);
-			z: vec4f(0, 0, 0, 0);
-			w: vec4f(0, 0, 0, 0);
-		};
+	if (format.showSign) {
+		if (sign == 0) {
+			sign = '+';
+		}
 	}
-	float x = direction.x / len;
-	float y = direction.y / len;
-	float z = direction.z / len;
-	float cx = center.x;
-	float cy = center.y;
-	float cz = center.z;
-	float xx = x * x;
-	float xy = x * y;
-	float xz = x * z;
-	float yy = y * y;
-	float yz = y * z;
-	float zz = z * z;
 
-	float s = float.sin(angle);
-	float c = float.cos(angle);
-	float k = 1 - c;
-
-	return {
-		xx: xx + (yy + zz) * c;
-		xy: xy * k - z * s;
-		xz: xz * k + y * s;
-		xw: (cx * (yy + zz) - x * (cy * y + cz * z)) * k + (cy * z - cz * y) * s;
-
-		yx: xy * k + z * s;
-		yy: yy + (xx + zz) * c;
-		yz: yz * k - x * s;
-		yw: (cy * (xx + zz) - y * (cx * x + cz * z)) * k + (cz * x - cx * z) * s;
-
-		zx: xz * k - y * s;
-		zy: yz * k + x * s;
-		zz: zz + (xx + yy) * c;
-		zw: (cz * (xx + yy) - z * (cx * x + cy * y)) * k + (cx * y - cy * x) * s;
-
-		w: vec4f(0, 0, 0, 1);
-	};
-}
-
-/// Build a rotation matrix
-inline rotation(const vec4f direction&, float angle) = rotation(vec4f(0), direction, angle);
-
-/// Build a translation matrix
-mat4f translation(const vec4f direction&, float amount) {
-	return {
-		x: {x: 1, y: 0, z: 0, w: direction.x * amount};
-		y: {x: 0, y: 1, z: 0, w: direction.y * amount};
-		z: {x: 0, y: 0, z: 1, w: direction.z * amount};
-		w: {x: 0, y: 0, z: 0, w: 1};
-	};
-}
-
-/// Build a scaling matrix
-mat4f scale(const vec4f direction&, float amount) {
-	inline rcp(float val) = (val < 0 ? -val : val) < 1e-30 ? 0 : 1 / val;
-	return {
-		x: {x: rcp(direction.x * amount), y: 0, z: 0, w: 0};
-		y: {x: 0, y: rcp(direction.y * amount), z: 0, w: 0};
-		z: {x: 0, y: 0, z: rcp(direction.z * amount), w: 0};
-		w: {x: 0, y: 0, z: 0, w: 1};
-	};
-}
-/// Complex number
-struct Complex {
-
-	/// The real component of a complex number.
-	const float64 re;
-
-	/// The imaginary component of a complex number.
-	const float64 im = 0;
-
-	/* TODO: implement enumerations
-	enum: Complex {
-		zero: { re: 0 };	// 0 + 0i
-		unit: { re: 1 };	// 1 + 0i
-	}*/
-}
-
-/* TODO: implement inline initializer
-// constructing a complex number
-inline Complex(float64 re) = { re: re };
-inline Complex(float64 re, float64 im) = { re: re, im: im };
-*/
-
-///@public
-Complex Complex(float64 re) {
-	return {
-		re: re;
-	};
-}
-
-///@public
-Complex Complex(float64 re, float64 im) {
-	return {
-		re: re;
-		im: im;
-	};
-}
-
-/* TODO: implement operator overloading
-inline -(Complex a) = Complex(-a.re, -a.im);
-
-inline +(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
-inline +(Complex a, float64 b) = Complex(a.re + b, a.im);
-inline +(float64 a, Complex b) = Complex(a + b.re, b.im);
-
-inline -(Complex a, Complex b) = Complex(a.re - b.re, a.im - b.im);
-inline -(Complex a, float64 b) = Complex(a.re - b, a.im);
-inline -(float64 a, Complex b) = Complex(a - b.re, b.im);
-
-inline *(Complex a, Complex b) = Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
-inline *(Complex a, float64 b) = Complex(a.re * b, a.im * b);
-inline *(float64 a, Complex b) = Complex(a * b.re, a * b.im);
-
-inline /(Complex a, Complex b) = div(a, b);
-inline /(Complex a, float64 b) = div(a, Complex(b));
-inline /(float64 a, Complex b) = div(Complex(a), b);
-*/
-
-///@public
-inline neg(Complex a) = Complex(-a.re, -a.im);
-
-///@public
-inline add(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
-///@public
-inline add(Complex a, float64 b) = Complex(a.re + b, a.im);
-///@public
-inline add(float64 a, Complex b) = Complex(a + b.re, b.im);
-
-///@public
-inline sub(Complex a, Complex b) = Complex(a.re - b.re, a.im - b.im);
-///@public
-inline sub(Complex a, float64 b) = Complex(a.re - b, a.im);
-///@public
-inline sub(float64 a, Complex b) = Complex(a - b.re, b.im);
-
-///@public
-inline mul(Complex a, Complex b) = Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
-///@public
-inline mul(Complex a, float64 b) = Complex(a.re * b, a.im * b);
-///@public
-inline mul(float64 a, Complex b) = Complex(a * b.re, a * b.im);
-
-///@public
-Complex div(Complex a, Complex b) {
-	// Adapted from Numerical Recipes in C - The Art of Scientific Computing
-	// ISBN 0-521-43108-5
-
-	if (Math.abs(b.re) >= Math.abs(b.im)) {
-		float64 r = b.im / b.re;
-		float64 den = b.re + r * b.im;
-		return {
-			re: (a.re + r * a.im) / den;
-			im: (a.im - r * a.re) / den;
-		};
+	int radix = format.precision;
+	if (radix == 0) {
+		radix = 10;
 	}
-	float64 r = b.re / b.im;
-	float64 den = b.im + r * b.re;
-	return {
-		re: (a.re * r + a.im) / den;
-		im: (a.im * r - a.re) / den;
-	};
+	assert(radix > 1, "radix is too small", radix);
+	assert(radix < radixDigits.length, "radix is too big", radix);
+
+	// print digits in reverse order
+	for ( ; value > 0; value /= radix) {
+		digits[len += 1] = radixDigits[value % radix];
+	}
+	if (len == 0) {
+		digits[len += 1] = '0';
+	}
+
+	int maxLen = format.padLen - len;
+
+	char padChr = format.padChr;
+	if (padChr == '\0') {
+		padChr = ' ';
+	}
+
+	// print sign value
+	if (sign != 0) {
+		maxLen -= 1;
+		if (whiteSpace.contains(padChr)) {
+			// if padding character is whitespace padd before sign
+			for ( ; maxLen > 0; maxLen -= 1) {
+				assert(pos < output.length);
+				output[pos] = padChr;
+				pos += 1;
+			}
+		}
+		assert(pos < output.length);
+		output[pos] = sign;
+		pos += 1;
+	}
+
+	// print padding
+	for ( ; maxLen > 0; maxLen -= 1) {
+		assert(pos < output.length);
+		output[pos] = padChr;
+		pos += 1;
+	}
+
+	// print digits
+	for (int i = 0; i < len; i += 1) {
+		assert(i < output.length);
+		output[pos] = digits[len - i];
+		pos += 1;
+	}
+
+	if (pos >= output.length) {
+		pos = output.length - 1;
+	}
+	output[pos] = 0;
+	return pos;
 }
 
-///@public
-inline div(Complex a, float64 b) = div(a, Complex(b));
-///@public
-inline div(float64 a, Complex b) = div(Complex(a), b);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, uint64 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, uint32 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, uint16 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, uint8 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, int64 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, int32 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, int16 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, int8 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
 
-///@public
-inline abs(Complex a) = float64.sqrt(a.re * a.re + a.im * a.im);
-///@public
-inline arg(Complex a) = float64.atan2(a.re, a.im);
-
-/// Reciprocal of a complex number (1 / a)
-Complex inv(Complex a) {
-	float64 d = (a.re * a.re + a.im * a.im);
-	return {
-		re: +a.re / d;
-		im: -a.im / d;
+/// Append a number to the output at the given position
+int append(char output[], int pos, float64 value, const FormatFlags format&) {
+	FormatFlags formatInt = {
+		showSign: format.showSign;
+		precision : 0;
+		padChr: format.padChr;
+		padLen: format.padLen - format.precision;
 	};
+	FormatFlags formatDec = {
+		showSign: false;
+		precision : 0;
+		padChr: '0';
+		padLen: format.precision;
+	};
+
+	char sign = value < 0 ? '-' : 0;
+	float64 fract = Math.modf(Math.abs(value), &value);
+	pos = output.append(pos, sign, uint64(value), formatInt);
+
+	pos = output.append(pos, ".");
+	fract *= float64.pow(10, format.precision);
+	pos = output.append(pos, 0, uint64(fract), formatDec);
+	return pos;
 }
 
-///@public
-inline conj(Complex a) = Complex(a.re, -a.im);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, float32 value, const FormatFlags format&) = append(output, pos, float64(value), format);
 
-///@public
-inline exp(Complex a) = Complex(float64.exp(a.re) * float64.cos(a.im), float64.exp(a.re) * float64.sin(a.im));
-
-///@public
-inline log(Complex a) = Complex(float64.log(abs(a)), arg(a));
-
-///@public
-Complex pow(Complex a, Complex b) {
-	float64 r = abs(a);
-	float64 t = arg(a);
-	float64 u = b.re * t + b.im * float64.log(r);
-	float64 v = float64.pow(r, b.re) * float64.exp(-b.im * t);
-	return {
-		re: v * float64.cos(u);
-		im: v * float64.sin(u);
-	};
+/// Append a number to the output at the given position
+int append(char output[], int pos, int value) {
+	static const FormatFlags format = {};
+	return append(output, pos, value, format);
 }
-///@public
-inline pow(Complex a, float64 b) = pow(a, Complex(b));
 
-///@public
-inline sin(Complex a) = Complex(float64.sin(a.re) * Math.cosh(a.im), +float64.cos(a.re) * Math.sinh(a.im));
-///@public
-inline cos(Complex a) = Complex(float64.cos(a.re) * Math.cosh(a.im), -float64.sin(a.re) * Math.sinh(a.im));
-
-/* TODO: implement operator overloading
-inline tan(Complex a) = sin(a) / cos(a);
-inline cot(Complex a) = cos(a) / sin(a);
-
-inline sinh(Complex a) = (exp(a) - exp(-a)) / 2;
-inline cosh(Complex a) = (exp(a) + exp(-a)) / 2;
-inline tanh(Complex a) = (exp(2 * a) - 1) / (exp(2 * a) + 1);
-inline coth(Complex a) = (exp(2 * a) + 1) / (exp(2 * a) - 1);
-*/
-
-///@public
-inline tan(Complex a) = div(sin(a), cos(a));
-///@public
-inline cot(Complex a) = div(cos(a), sin(a));
-
-///@public
-inline sinh(Complex a) = div(sub(exp(a), exp(neg(a))), 2);
-///@public
-inline cosh(Complex a) = div(add(exp(a), exp(neg(a))), 2);
-///@public
-inline tanh(Complex a) = div(sub(exp(mul(2, a)), 1), add(exp(mul(2, a)), 1));
-///@public
-inline coth(Complex a) = div(add(exp(mul(2, a)), 1), sub(exp(mul(2, a)), 1));
-
-///@public
-inline sec(Complex a) = inv(cos(a));
-///@public
-inline csc(Complex a) = inv(sin(a));
-///@public
-inline sech(Complex a) = inv(cosh(a));
-///@public
-inline csch(Complex a) = inv(sinh(a));
-
-///@public
-inline toCartesian(Complex x) = Complex(x.re * double.cos(x.im), x.re * double.sin(x.im));
-///@public
-inline toPolar(Complex x) = Complex(abs(x), arg(x));
+//inline append(char output[], uint32 value, const FormatFlags format) = output.append(length(output), value, format);
+//inline append(char output[], uint32 value) = output.append(length(output), value);
+//inline append(char output[], char value[*]) = output.append(length(output), value);
 /// Mathematical utility functions and constants
 static struct Math {
 
@@ -2752,271 +2788,526 @@ static struct Math {
 	// inline rand(int min, int max) = System.rand() % (max - min) + min;
 	// inline rand(double min, double max) = (System.rand() / float64(RAND_MAX)) * (max - min) + min;
 }
-// string related functions
+/// A 4x4 matrix
+struct mat4f: 0 {
+	/// Access elements as a flatten array: data[4] => m[1][0]
+	float32 data[16];
 
-/// Computes the length of the string
-int length(const char str[*]) {
-	if (str == null) {
-		return 0;
+	/// Access elements as an array: m[1][0]
+	float32 m[4][4];
+
+	/// Access elements as an array of vectors: v[1].x => m[1][0]
+	vec4f v[4];
+
+	struct {
+		///@public
+		vec4f x;
+		///@public
+		vec4f y;
+		///@public
+		vec4f z;
+		///@public
+		vec4f w;
 	}
-	int result = 0;
-	for (; str[result]; result += 1) {
+	struct {
+		///@public
+		float32 xx;
+		///@public
+		float32 xy;
+		///@public
+		float32 xz;
+		///@public
+		float32 xw;
+
+		///@public
+		float32 yx;
+		///@public
+		float32 yy;
+		///@public
+		float32 yz;
+		///@public
+		float32 yw;
+
+		///@public
+		float32 zx;
+		///@public
+		float32 zy;
+		///@public
+		float32 zz;
+		///@public
+		float32 zw;
+
+		///@public
+		float32 wx;
+		///@public
+		float32 wy;
+		///@public
+		float32 wz;
+		///@public
+		float32 ww;
 	}
-	return result;
 }
 
-/// Returns the index of the first occurrence of a character in string
-int indexOf(const char str[*], char chr) {
-	for (int i = 0; str[i]; i += 1) {
-		if (str[i] == chr) {
-			return i;
-		}
-	}
-	return -1;
+/// Initialize all elements with the given values
+mat4f mat4f(float32 xx, float32 xy, float32 xz, float32 xw,
+			float32 yx, float32 yy, float32 yz, float32 yw,
+			float32 zx, float32 zy, float32 zz, float32 zw,
+			float32 wx, float32 wy, float32 wz, float32 ww) {
+	return {
+		x: { x: xx, y: xy, z: xz, w: xw };
+		y: { x: yx, y: yy, z: yz, w: yw };
+		z: { x: zx, y: zy, z: zz, w: zw };
+		w: { x: wx, y: wy, z: wz, w: ww };
+	};
 }
 
-/// Returns the index of the last occurrence of a character in string
-int lastIndexOf(const char str[*], char chr) {
-	int result = -1;
-	for (int i = 0; str[i]; i += 1) {
-		if (str[i] == chr) {
-			result = i;
-		}
-	}
-	return result;
+/// Initialize matrix with row vectors
+mat4f mat4f(const vec4f x&, const vec4f y&, const vec4f z&, const vec4f w&) {
+	return { x: x, y: y, z: z, w: w };
 }
 
-/// Check if a string begins with a specified string, using a custom comparator
-bool startsWith(const char str[*], const char with[*], int cmp(char chr, char with)) {
-	for (int i = 0; with[i] != 0; i += 1) {
-		if (cmp(str[i], with[i]) != 0) {
-			return false;
-		}
-	}
-	return true;
+/// Multiply with vector: dot product of the first 3 elements
+inline dp3(const mat4f mat&, const vec4f vec&) = vec4f(dp3(mat.x, vec), dp3(mat.y, vec), dp3(mat.z, vec), 1f);
+/// Multiply with vector: homogeneous dot product
+inline dph(const mat4f mat&, const vec4f vec&) = vec4f(dph(mat.x, vec), dph(mat.y, vec), dph(mat.z, vec), dph(mat.w, vec));
+/// Multiply with vector: dot product
+inline dp4(const mat4f mat&, const vec4f vec&) = vec4f(dp4(mat.x, vec), dp4(mat.y, vec), dp4(mat.z, vec), dp4(mat.w, vec));
+
+/// Multiply two matrices (rows * cols)
+mat4f mul(const mat4f lhs&, const mat4f rhs&) {
+	mat4f transposed = {
+		x: { x: rhs.x.x, y: rhs.y.x, z: rhs.z.x, w: rhs.w.x };
+		y: { x: rhs.x.y, y: rhs.y.y, z: rhs.z.y, w: rhs.w.y };
+		z: { x: rhs.x.z, y: rhs.y.z, z: rhs.z.z, w: rhs.w.z };
+		w: { x: rhs.x.w, y: rhs.y.w, z: rhs.z.w, w: rhs.w.w };
+	};
+	return {
+		x: dp4(transposed, lhs.x);
+		y: dp4(transposed, lhs.y);
+		z: dp4(transposed, lhs.z);
+		w: dp4(transposed, lhs.w);
+	};
 }
 
-/// Check if a string ends in a specified string, using a custom comparator
-bool endsWith(const char str[*], const char with[*], int cmp(char chr, char with)) {
-	int withLen = length(with);
-	int strLen = length(str);
-	if (strLen < withLen) {
-		return false;
+/**
+ * Build a rotation matrix
+ * adapted from: https://sites.google.com/site/glennmurray/Home/rotation-matrices-and-formulas
+ */
+mat4f rotation(const vec4f center&, const vec4f direction&, float angle) {
+	float len = direction.length();
+	if (len < 1e-9) {
+		trace("invalid direction of rotation", direction);
+		return {
+			x: vec4f(0, 0, 0, 0);
+			y: vec4f(0, 0, 0, 0);
+			z: vec4f(0, 0, 0, 0);
+			w: vec4f(0, 0, 0, 0);
+		};
 	}
-	for (int i = 0; i < withLen; i += 1) {
-		if (cmp(str[strLen - withLen + i], with[i]) != 0) {
-			return false;
-		}
-	}
-	return true;
+	float x = direction.x / len;
+	float y = direction.y / len;
+	float z = direction.z / len;
+	float cx = center.x;
+	float cy = center.y;
+	float cz = center.z;
+	float xx = x * x;
+	float xy = x * y;
+	float xz = x * z;
+	float yy = y * y;
+	float yz = y * z;
+	float zz = z * z;
+
+	float s = float.sin(angle);
+	float c = float.cos(angle);
+	float k = 1 - c;
+
+	return {
+		xx: xx + (yy + zz) * c;
+		xy: xy * k - z * s;
+		xz: xz * k + y * s;
+		xw: (cx * (yy + zz) - x * (cy * y + cz * z)) * k + (cy * z - cz * y) * s;
+
+		yx: xy * k + z * s;
+		yy: yy + (xx + zz) * c;
+		yz: yz * k - x * s;
+		yw: (cy * (xx + zz) - y * (cx * x + cz * z)) * k + (cz * x - cx * z) * s;
+
+		zx: xz * k - y * s;
+		zy: yz * k + x * s;
+		zz: zz + (xx + yy) * c;
+		zw: (cz * (xx + yy) - z * (cx * x + cy * y)) * k + (cx * y - cy * x) * s;
+
+		w: vec4f(0, 0, 0, 1);
+	};
 }
 
-/// Check if the two strings are equal, using a custom comparator
-int compare(const char str[*], const char with[*], int cmp(char chr, char with)) {
-	int result = 0;
-	for (int i = 0; result == 0; i += 1) {
-		result = cmp(str[i], with[i]);
-		if (str[i] == 0) {
-			break;
-		}
-	}
-	return result;
+/// Build a rotation matrix
+inline rotation(const vec4f direction&, float angle) = rotation(vec4f(0), direction, angle);
+
+/// Build a translation matrix
+mat4f translation(const vec4f direction&, float amount) {
+	return {
+		x: {x: 1, y: 0, z: 0, w: direction.x * amount};
+		y: {x: 0, y: 1, z: 0, w: direction.y * amount};
+		z: {x: 0, y: 0, z: 1, w: direction.z * amount};
+		w: {x: 0, y: 0, z: 0, w: 1};
+	};
 }
 
-/// ignore case character comparator
-int ignCaseCmp(char chr, char with) {
-	static char ignCase(char chr) {
-		if (chr < 'A') {
-			return chr;
-		}
-		if (chr > 'Z') {
-			return chr;
-		}
-		return chr - 'A' + 'a';
-	}
+/// Build a scaling matrix
+mat4f scale(const vec4f direction&, float amount) {
+	inline rcp(float val) = (val < 0 ? -val : val) < 1e-30 ? 0 : 1 / val;
+	return {
+		x: {x: rcp(direction.x * amount), y: 0, z: 0, w: 0};
+		y: {x: 0, y: rcp(direction.y * amount), z: 0, w: 0};
+		z: {x: 0, y: 0, z: rcp(direction.z * amount), w: 0};
+		w: {x: 0, y: 0, z: 0, w: 1};
+	};
+}
+/// Complex number
+struct Complex {
 
-	return ignCase(chr) - ignCase(with);
+	/// The real component of a complex number.
+	const float64 re;
+
+	/// The imaginary component of a complex number.
+	const float64 im = 0;
+
+	/* TODO: implement enumerations
+	enum: Complex {
+		zero: { re: 0 };	// 0 + 0i
+		unit: { re: 1 };	// 1 + 0i
+	}*/
 }
 
-/// default character comparator
-int caseCmp(char chr, char with) {
-	return chr - with;
+/* TODO: implement inline initializer
+// constructing a complex number
+inline Complex(float64 re) = { re: re };
+inline Complex(float64 re, float64 im) = { re: re, im: im };
+*/
+
+///@public
+Complex Complex(float64 re) {
+	return {
+		re: re;
+	};
 }
 
-inline startsWith(const char str[*], const char with[*]) = startsWith(str, with, caseCmp);
-inline endsWith(const char str[*], const char with[*]) = endsWith(str, with, caseCmp);
-inline compare(const char str[*], const char with[*]) = compare(str, with, caseCmp);
-
-/// Check if a string contains the given character
-inline contains(const char str[*], char chr) = indexOf(str, chr) >= 0;
+///@public
+Complex Complex(float64 re, float64 im) {
+	return {
+		re: re;
+		im: im;
+	};
+}
 
 /* TODO: implement operator overloading
+inline -(Complex a) = Complex(-a.re, -a.im);
 
-inline ==(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) == 0;
-inline !=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) != 0;
-inline <=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) <= 0;
-inline >=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) >= 0;
-inline <(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) < 0;
-inline >(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) > 0;
+inline +(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
+inline +(Complex a, float64 b) = Complex(a.re + b, a.im);
+inline +(float64 a, Complex b) = Complex(a + b.re, b.im);
 
-// */
+inline -(Complex a, Complex b) = Complex(a.re - b.re, a.im - b.im);
+inline -(Complex a, float64 b) = Complex(a.re - b, a.im);
+inline -(float64 a, Complex b) = Complex(a - b.re, b.im);
 
-/// Flags to convert numbers to string
-struct FormatFlags {
-	/// forced show sign
-	const bool showSign = false;
+inline *(Complex a, Complex b) = Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+inline *(Complex a, float64 b) = Complex(a.re * b, a.im * b);
+inline *(float64 a, Complex b) = Complex(a * b.re, a * b.im);
 
-	/// precision or radix
-	const int precision = 0;
+inline /(Complex a, Complex b) = div(a, b);
+inline /(Complex a, float64 b) = div(a, Complex(b));
+inline /(float64 a, Complex b) = div(Complex(a), b);
+*/
 
-	/// padding character
-	const char padChr = 0;
+///@public
+inline neg(Complex a) = Complex(-a.re, -a.im);
 
-	/// padding length
-	const int padLen = 0;
-}
+///@public
+inline add(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
+///@public
+inline add(Complex a, float64 b) = Complex(a.re + b, a.im);
+///@public
+inline add(float64 a, Complex b) = Complex(a + b.re, b.im);
 
-/// Append a string to the output at the given position
-int append(char output[], int pos, const char value[*]) {
-	for (int i = 0; value[i]; i += 1) {
-		if (pos >= output.length) {
-			break;
-		}
-		output[pos] = value[i];
-		pos += 1;
+///@public
+inline sub(Complex a, Complex b) = Complex(a.re - b.re, a.im - b.im);
+///@public
+inline sub(Complex a, float64 b) = Complex(a.re - b, a.im);
+///@public
+inline sub(float64 a, Complex b) = Complex(a - b.re, b.im);
+
+///@public
+inline mul(Complex a, Complex b) = Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+///@public
+inline mul(Complex a, float64 b) = Complex(a.re * b, a.im * b);
+///@public
+inline mul(float64 a, Complex b) = Complex(a * b.re, a * b.im);
+
+///@public
+Complex div(Complex a, Complex b) {
+	// Adapted from Numerical Recipes in C - The Art of Scientific Computing
+	// ISBN 0-521-43108-5
+
+	if (Math.abs(b.re) >= Math.abs(b.im)) {
+		float64 r = b.im / b.re;
+		float64 den = b.re + r * b.im;
+		return {
+			re: (a.re + r * a.im) / den;
+			im: (a.im - r * a.re) / den;
+		};
 	}
-
-	if (pos >= output.length) {
-		pos = output.length - 1;
-	}
-	output[pos] = 0;
-	return pos;
-}
-
-// Append a number to the output at the given position
-int append(char output[], int pos, char sign, uint64 value, const FormatFlags format&) {
-	static const char whiteSpace[] = " \t\n\r";
-	static const char radixDigits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
-
-	int len = 0;
-	char digits[80];
-
-	if (format.showSign) {
-		if (sign == 0) {
-			sign = '+';
-		}
-	}
-
-	int radix = format.precision;
-	if (radix == 0) {
-		radix = 10;
-	}
-	assert(radix > 1, "radix is too small", radix);
-	assert(radix < radixDigits.length, "radix is too big", radix);
-
-	// print digits in reverse order
-	for ( ; value > 0; value /= radix) {
-		digits[len += 1] = radixDigits[value % radix];
-	}
-	if (len == 0) {
-		digits[len += 1] = '0';
-	}
-
-	int maxLen = format.padLen - len;
-
-	char padChr = format.padChr;
-	if (padChr == '\0') {
-		padChr = ' ';
-	}
-
-	// print sign value
-	if (sign != 0) {
-		maxLen -= 1;
-		if (whiteSpace.contains(padChr)) {
-			// if padding character is whitespace padd before sign
-			for ( ; maxLen > 0; maxLen -= 1) {
-				assert(pos < output.length);
-				output[pos] = padChr;
-				pos += 1;
-			}
-		}
-		assert(pos < output.length);
-		output[pos] = sign;
-		pos += 1;
-	}
-
-	// print padding
-	for ( ; maxLen > 0; maxLen -= 1) {
-		assert(pos < output.length);
-		output[pos] = padChr;
-		pos += 1;
-	}
-
-	// print digits
-	for (int i = 0; i < len; i += 1) {
-		assert(i < output.length);
-		output[pos] = digits[len - i];
-		pos += 1;
-	}
-
-	if (pos >= output.length) {
-		pos = output.length - 1;
-	}
-	output[pos] = 0;
-	return pos;
-}
-
-/// Append a number to the output at the given position
-inline append(char output[], int pos, uint64 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, uint32 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, uint16 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, uint8 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, int64 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, int32 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, int16 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, int8 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
-
-/// Append a number to the output at the given position
-int append(char output[], int pos, float64 value, const FormatFlags format&) {
-	FormatFlags formatInt = {
-		showSign: format.showSign;
-		precision : 0;
-		padChr: format.padChr;
-		padLen: format.padLen - format.precision;
+	float64 r = b.re / b.im;
+	float64 den = b.im + r * b.re;
+	return {
+		re: (a.re * r + a.im) / den;
+		im: (a.im * r - a.re) / den;
 	};
-	FormatFlags formatDec = {
-		showSign: false;
-		precision : 0;
-		padChr: '0';
-		padLen: format.precision;
+}
+
+///@public
+inline div(Complex a, float64 b) = div(a, Complex(b));
+///@public
+inline div(float64 a, Complex b) = div(Complex(a), b);
+
+///@public
+inline abs(Complex a) = float64.sqrt(a.re * a.re + a.im * a.im);
+///@public
+inline arg(Complex a) = float64.atan2(a.re, a.im);
+
+/// Reciprocal of a complex number (1 / a)
+Complex inv(Complex a) {
+	float64 d = (a.re * a.re + a.im * a.im);
+	return {
+		re: +a.re / d;
+		im: -a.im / d;
 	};
-
-	char sign = value < 0 ? '-' : 0;
-	float64 fract = Math.modf(Math.abs(value), &value);
-	pos = output.append(pos, sign, uint64(value), formatInt);
-
-	pos = output.append(pos, ".");
-	fract *= float64.pow(10, format.precision);
-	pos = output.append(pos, 0, uint64(fract), formatDec);
-	return pos;
 }
 
-/// Append a number to the output at the given position
-inline append(char output[], int pos, float32 value, const FormatFlags format&) = append(output, pos, float64(value), format);
+///@public
+inline conj(Complex a) = Complex(a.re, -a.im);
 
-/// Append a number to the output at the given position
-int append(char output[], int pos, int value) {
-	static const FormatFlags format = {};
-	return append(output, pos, value, format);
+///@public
+inline exp(Complex a) = Complex(float64.exp(a.re) * float64.cos(a.im), float64.exp(a.re) * float64.sin(a.im));
+
+///@public
+inline log(Complex a) = Complex(float64.log(abs(a)), arg(a));
+
+///@public
+Complex pow(Complex a, Complex b) {
+	float64 r = abs(a);
+	float64 t = arg(a);
+	float64 u = b.re * t + b.im * float64.log(r);
+	float64 v = float64.pow(r, b.re) * float64.exp(-b.im * t);
+	return {
+		re: v * float64.cos(u);
+		im: v * float64.sin(u);
+	};
+}
+///@public
+inline pow(Complex a, float64 b) = pow(a, Complex(b));
+
+///@public
+inline sin(Complex a) = Complex(float64.sin(a.re) * Math.cosh(a.im), +float64.cos(a.re) * Math.sinh(a.im));
+///@public
+inline cos(Complex a) = Complex(float64.cos(a.re) * Math.cosh(a.im), -float64.sin(a.re) * Math.sinh(a.im));
+
+/* TODO: implement operator overloading
+inline tan(Complex a) = sin(a) / cos(a);
+inline cot(Complex a) = cos(a) / sin(a);
+
+inline sinh(Complex a) = (exp(a) - exp(-a)) / 2;
+inline cosh(Complex a) = (exp(a) + exp(-a)) / 2;
+inline tanh(Complex a) = (exp(2 * a) - 1) / (exp(2 * a) + 1);
+inline coth(Complex a) = (exp(2 * a) + 1) / (exp(2 * a) - 1);
+*/
+
+///@public
+inline tan(Complex a) = div(sin(a), cos(a));
+///@public
+inline cot(Complex a) = div(cos(a), sin(a));
+
+///@public
+inline sinh(Complex a) = div(sub(exp(a), exp(neg(a))), 2);
+///@public
+inline cosh(Complex a) = div(add(exp(a), exp(neg(a))), 2);
+///@public
+inline tanh(Complex a) = div(sub(exp(mul(2, a)), 1), add(exp(mul(2, a)), 1));
+///@public
+inline coth(Complex a) = div(add(exp(mul(2, a)), 1), sub(exp(mul(2, a)), 1));
+
+///@public
+inline sec(Complex a) = inv(cos(a));
+///@public
+inline csc(Complex a) = inv(sin(a));
+///@public
+inline sech(Complex a) = inv(cosh(a));
+///@public
+inline csch(Complex a) = inv(sinh(a));
+
+///@public
+inline toCartesian(Complex x) = Complex(x.re * double.cos(x.im), x.re * double.sin(x.im));
+///@public
+inline toPolar(Complex x) = Complex(abs(x), arg(x));
+/// A 4d vector (4x float32)
+struct vec4f: 0 {
+	/// Access the components as an array
+	float32 data[4];
+	struct {
+		/// X component of the vector
+		float32 x;
+		/// Y component of the vector
+		float32 y;
+		/// Z component of the vector
+		float32 z;
+		/// W component of the vector
+		float32 w;
+	}
 }
 
-//inline append(char output[], uint32 value, const FormatFlags format) = output.append(length(output), value, format);
-//inline append(char output[], uint32 value) = output.append(length(output), value);
-//inline append(char output[], char value[*]) = output.append(length(output), value);
+/* TODO: implement inline initializer
+// constructing a vector
+inline vec4f(float32 x, float32 y, float32 z, float32 w) = { x: x, y: y, z: z, w: w };
+inline vec4f(float32 x, float32 y, float32 z) = { x: x, y: y, z: z, w: 0 };
+inline vec4f(const vec4f v&, float32 w) = { x: v.x, y: v.y, z: v.z, w: w };
+inline vec4f(const float32 val&) = { x: val, y: val, z: val, w: val };
+*/
+
+/// Initialize with given x, y, z, w components
+vec4f vec4f(float32 x, float32 y, float32 z, float32 w) {
+	return { x: x, y: y, z: z, w: w };
+}
+
+/// Initialize with  (x: x, y: y, z: z, w: 1)
+inline vec4f(float32 x, float32 y, float32 z) = vec4f(x, y, z, 1f);
+
+/// Initialize with (x: x, y: y, z: 0, w: 1)
+inline vec4f(float32 x, float32 y) = vec4f(x, y, 0f, 1f);
+
+/// Initialize x, y, z components using the components form the given vector, and w with the given value
+inline vec4f(vec4f xyz, float32 w) = vec4f(xyz.x, xyz.y, xyz.z, w);
+
+/// Initialize x, y, z, w components with the given scalar value
+inline vec4f(float32 val) = vec4f(val, val, val, val);
+
+/* TODO: implement operator overloading
+//~ -a => vec4f(-a.x, -a.y, -a.z, -a.w);
+inline -(vec4f rhs) = vec4f(emit(struct(rhs), neg.p4f));
+
+//~ a + b => vec4f(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+inline +(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), add.p4f));
+
+//~ a - b => vec4f(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+inline -(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
+
+//~ a * b => vec4f(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
+inline *(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
+
+//~ a / b => vec4f(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
+inline /(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
+
+inline +(vec4f a, float32 b) = a + vec4f(b);
+inline +(float32 a, vec4f b) = vec4f(a) + b;
+inline -(vec4f a, float32 b) = a - vec4f(b);
+inline -(float32 a, vec4f b) = vec4f(a) - b;
+inline *(vec4f a, float32 b) = a * vec4f(b);
+inline *(float32 a, vec4f b) = vec4f(a) * b;
+inline /(vec4f a, float32 b) = a / vec4f(b);
+inline /(float32 a, vec4f b) = vec4f(a) / b;
+
+inline normalize(vec4f v) = v / len(v);
+*/
+
+/// Returns a negated copy of the vector.
+inline neg(vec4f rhs) = vec4f(emit(struct(rhs), neg.p4f));
+/// Component wise add the two vectors.
+inline add(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), add.p4f));
+/// Component wise subtract the two vectors.
+inline sub(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
+/// Component wise multiply the two vectors.
+inline mul(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
+/// Component wise divide the two vectors.
+inline div(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
+
+/// Component wise minimum of the two vectors.
+inline min(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), min.p4f));
+/// Component wise maximum of the two vectors.
+inline max(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), max.p4f));
+
+/// Dot product of the first 3 elements
+// inline dp3(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z;
+inline dp3(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dp3));
+
+/// Homogeneous dot product
+// inline dph(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z + a.w;
+inline dph(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dph));
+
+/// Dot product
+// inline dp4(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+inline dp4(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dp4));
+
+/// Cross product of the first 3 elements
+inline cross(const vec4f a&, const vec4f b&) = vec4f(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
+
+/// Length of the vector(xyz)
+inline length(vec4f v) = float32.sqrt(dp3(v, v));
+/// Normalize the vector(xyz)
+inline normalize(const vec4f v&) = div(v, vec4f(length(v)));
+
+/// Evaluate as a polynomial in point x
+inline eval(const vec4f v&, float32 x) = float32((((v.w * x + v.z) * x + v.y) * x) + v.x);
+/// A 2d vector (2x float64)
+struct vec2d: 0 {
+	/// Access the components as an array
+	float64 data[2];
+	struct {
+		/// X component of the vector
+		float64 x;
+		/// Y component of the vector
+		float64 y;
+	}
+}
+
+/// Initialize with given x, y components
+vec2d vec2d(float64 x, float64 y) {
+	return {
+		x: x;
+		y: y;
+	};
+}
+
+/// Component wise subtract the two vectors.
+inline sub(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), sub.p2d));
+
+/// Dot product
+inline dot(const vec2d a&, const vec2d b&) = a.x * b.x + a.y * b.y;
+// standard library extension
+
+enum: bool {
+	true: 0 == 0;
+	false: 0 != 0;
+}
+
+inline byte = uint8;
+inline float = float32;
+inline double = float64;
+
+static if (typename(raise) == function) {
+inline "std/debug.ci";
+}
+
+/// Returns the size of the given type
+inline sizeof(typename type) = int(type.size);
+
+inline "std/math.ci";
+inline "std/math/Complex.ci"?;      // -> Complex<float64>
+//inline "std/math/Rational.ci"?;     // -> Rational<int64>
+inline "std/math/Vector4f.ci"?;
+inline "std/math/Matrix4f.ci"?;
+inline "std/math/Vector2d.ci"?;
+//inline "std/math/BigInteger.ci?"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
+//inline "std/math/BigDecimal.ci?"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
+//inline "std/math/Perlin.ci"?;
+
+inline "std/string.ci";

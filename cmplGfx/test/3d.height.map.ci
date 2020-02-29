@@ -1,8 +1,9 @@
-gxSurf heightMap = gxSurf("asset/image/heightmap.png", 32);
-gxSurf texture = gxSurf("asset/image/texture.png", 32);
-gxMesh model = gxMesh.create(0);
+// convert image to mesh and draw it
+Image heightMap = Image("asset/image/heightmap.png", 32);
+Image texture = Image("asset/image/texture.png", 32);
+Mesh model = Mesh.create(0);
 
-void eval(gxMesh mesh, int sGrid, int tGrid, float32 depth, gxSurf depthMap);
+void eval(Mesh mesh, int sGrid, int tGrid, float32 depth, Image depthMap);
 
 model.eval(256, 256, .3, heightMap);
 debug("model", model);
@@ -29,7 +30,7 @@ model.show(1440, 900, 15);
 texture.destroy();
 model.destroy();
 
-void eval(gxMesh mesh, int sGrid, int tGrid, float32 depth, gxSurf depthMap) {
+void eval(Mesh mesh, int sGrid, int tGrid, float32 depth, Image depthMap) {
 
 	float64 sDivision = sGrid;
 	float64 tDivision = tGrid;

@@ -22,7 +22,7 @@ void initStar(Star star&) {
 	star.color = uint32(argb(System.rand() & 0xff, System.rand() & 0xff, System.rand() & 0xff));
 }
 
-void drawStars(gxSurf offScreen) {
+void drawStars(Image offScreen) {
 
 	double tempx;
 	double tempy;
@@ -55,7 +55,7 @@ void drawStars(gxSurf offScreen) {
 
 }
 
-gxSurf image = gxSurf(resolutionx, resolutiony, 32);
+Image image = Image(resolutionx, resolutiony, 32);
 int onEvent(pointer closure, int action, int btn, int x, int y) {
 
 	if (action == Gui.KEY_PRESS) {

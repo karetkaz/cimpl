@@ -1,6 +1,13 @@
-gxSurf offs = gxSurf(1440, 900, 32);
-gxSurf back = gxSurf("asset/image/forest.png", 32);
-gxSurf draw = gxSurf("asset/image/david.png", 32);
+/* image draw demo
+ * click mouse button 1 and drag mouse to draw the image
+ * click mouse button 2 to draw only a region from the original image
+ * click mouse button 3 to draw the image tiled
+ * click mouse button 1+2 to draw the image zoomed
+ * press space bar to toggle fade out animation
+ */
+Image offs = Image(1440, 900, 32);
+Image back = Image("asset/image/forest.png", 32);
+Image draw = Image("asset/image/david.png", 32);
 
 uint32 lut[256];
 for (int idx = 0; idx < 256; idx += 1) {
@@ -9,7 +16,8 @@ for (int idx = 0; idx < 256; idx += 1) {
 }
 
 int onEvent(int action, int button, int x, int y) {
-	static const gxRect roi = {
+	static int64 millis = 0;
+	static const Rect roi = {
 		x: 30;
 		y: 30;
 		w: 120;
@@ -20,14 +28,18 @@ int onEvent(int action, int button, int x, int y) {
 			return -1;
 		}
 		if (button == ' ') {
-			offs.colorMap(null, lut);
+			// toggle animation
+			if (millis == 0) {
+				millis = System.millis();
+			} else {
+				millis = 0;
+			}
 		}
 		if (button == 'S') {
 			trace("dumping screen");
 			offs.saveBmp("out/dump.bmp", 0);
 		}
 	}
-
 	if (action == Gui.FINGER_MOTION) {
 		action = Gui.MOUSE_MOTION;
 	}
@@ -43,7 +55,7 @@ int onEvent(int action, int button, int x, int y) {
 			offs.copy(x, y, draw, roi);
 		}
 		if (button == 3) {
-			gxRect to = {
+			Rect to = {
 				x: 0;
 				y: 0;
 				w: x;
@@ -58,17 +70,15 @@ int onEvent(int action, int button, int x, int y) {
 			offs.tile(x, y, draw, roi);
 		}
 	}
-
-	/* fade out animation
-	static int64 millis = 0;
-	inline animateSpeed = 20;
-	int64 now = System.millis();
-	if (now - millis > animateSpeed) {
-		offs.colorMap(null, lut);
-		millis = now;
+	if (millis != 0) {
+		inline animateSpeed = 20;
+		int64 now = System.millis();
+		if (now - millis > animateSpeed) {
+			offs.colorMap(null, lut);
+			millis = now;
+		}
+		return animateSpeed;
 	}
-	return animateSpeed;
-	// */
 
 	return 0;
 }

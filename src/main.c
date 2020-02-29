@@ -1754,8 +1754,8 @@ int main(int argc, char *argv[]) {
 		.warnLevel = 5,
 		.raiseLevel = 15,
 
-		// 2 Mb memory compiler + runtime
-		.memory = 2 << 20
+		// 4 Mb memory compiler + runtime
+		.memory = 4 << 20
 	};
 
 	char stdLib[65536];

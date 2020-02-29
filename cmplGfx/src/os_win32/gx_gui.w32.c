@@ -2,8 +2,8 @@
 #include <windows.h>
 #include <winuser.h>
 
-struct gxWindow {
-	gx_Surf image;
+struct GxWindow {
+	GxImage image;
 
 	HDC wDC;
 	HWND hwnd;
@@ -18,12 +18,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-gxWindow createWindow(gx_Surf offs) {
-	if (offs == NULL) {
+GxWindow createWindow(GxImage image) {
+	if (image == NULL) {
 		return NULL;
 	}
 
-	gxWindow result = malloc(sizeof(struct gxWindow));
+	GxWindow result = malloc(sizeof(struct GxWindow));
 	if (result == NULL) {
 		return NULL;
 	}
@@ -50,16 +50,16 @@ gxWindow createWindow(gx_Surf offs) {
 		WS_MINIMIZEBOX | WS_SYSMENU,	// Window style
 		CW_USEDEFAULT,			// X coordinate of the window on-screen
 		CW_USEDEFAULT,			// Y coordinate of the window on-screen
-		offs->width,			// width of the window
-		offs->height,			// height of the window
+		image->width,			// width of the window
+		image->height,			// height of the window
 		NULL,				// Handle to a parent window (none)
 		NULL,				// Handle to a child window (none)
 		mainhins,			// Handle to the current Instance
 		0					// Pointer to extra data I don't care about
 	);
 	result->BMP.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	result->BMP.bmiHeader.biWidth = offs->width;
-	result->BMP.bmiHeader.biHeight = -offs->height;
+	result->BMP.bmiHeader.biWidth = image->width;
+	result->BMP.bmiHeader.biHeight = -image->height;
 	result->BMP.bmiHeader.biPlanes = 1;
 	result->BMP.bmiHeader.biBitCount = 32;
 	result->BMP.bmiHeader.biCompression = BI_RGB;
@@ -70,7 +70,7 @@ gxWindow createWindow(gx_Surf offs) {
 	result->BMP.bmiHeader.biClrImportant = 0;
 
 	result->wDC = GetDC(result->hwnd);
-	result->image = offs;
+	result->image = image;
 
 	ShowWindow(result->hwnd, SW_SHOW);
 
@@ -80,20 +80,20 @@ gxWindow createWindow(gx_Surf offs) {
 	GetWindowRect(result->hwnd, &rcWindow);
 	ptDiff.x = (rcWindow.right - rcWindow.left) - rcClient.right;
 	ptDiff.y = (rcWindow.bottom - rcWindow.top) - rcClient.bottom;
-	MoveWindow(result->hwnd, rcWindow.left, rcWindow.top, ptDiff.x + offs->width, ptDiff.y + offs->height, TRUE);
+	MoveWindow(result->hwnd, rcWindow.left, rcWindow.top, ptDiff.x + image->width, ptDiff.y + image->height, TRUE);
 	// */
 	return result;
 }
 
-void flushWindow(gxWindow window) {
-	gx_Surf src = window->image;
+void flushWindow(GxWindow window) {
+	GxImage src = window->image;
 	SetDIBitsToDevice(window->wDC,
 		0, 0, src->width, src->height,
 		0, 0, 0, src->height,
 		src->basePtr, &window->BMP, DIB_RGB_COLORS);
 }
 
-int getWindowEvent(gxWindow window, int *button, int *x, int *y) {
+int getWindowEvent(GxWindow window, int *button, int *x, int *y) {
 	static int btnstate = 0;
 
 	MSG msg;
@@ -197,10 +197,10 @@ int getWindowEvent(gxWindow window, int *button, int *x, int *y) {
 	return 0;
 }
 
-void destroyWindow(gxWindow window) {
+void destroyWindow(GxWindow window) {
 	free(window);
 }
 
-void setWindowText(gxWindow window, char *caption) {
+void setWindowText(GxWindow window, char *caption) {
 	SetWindowTextA(window->hwnd, caption);
 }

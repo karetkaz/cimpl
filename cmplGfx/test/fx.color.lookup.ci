@@ -1,8 +1,17 @@
-// Brightness contrast gamma demo.
-
-gxSurf back = gxSurf("asset/image/forest.png", 32);
-gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
-gxSurf offs = gxSurf(back.width(), back.height(), back.depth());
+/* Brightness contrast gamma demo using a lookup table
+ *
+ * use 'tab' / 'shift' + 'tab' to select next control
+ * use 'enter' / 'shift' + 'enter' to select next control
+ * use '+' / '-' to adjust value of selected control (use shift for more precision)
+ * use 'backspace' / 'shift' + 'backspace' to reset selected / every control value
+ * use 'space' to press a button, toggle switch or reset slider value
+ * use '[' or ']' to show and hide the controls
+ *
+ * drag the mouse up or down in the window to adjust control value
+ */
+Image back = Image("asset/image/forest.png", 32);
+Image font = Image.openFnt("asset/font/modern-1.fnt");
+Image offs = Image(back.width(), back.height(), back.depth());
 
 void brightnessContrastGamma(uint32 lut[256], float brightness, float contrast, float gamma, float highlights, float shadows, float whites, float blacks) {
 	// adapted from: https://gitlab.bestminr.com/bestminr/FrontShaders/blob/master/shaders/whites_blacks.glsl
@@ -94,7 +103,7 @@ void brightnessContrastGamma(uint32 lut[256], float brightness, float contrast, 
 	}
 }
 
-void calcAutoEqualize(uint32 lut[256], gxSurf image, bool luminosity) {
+void calcAutoEqualize(uint32 lut[256], Image image, bool luminosity) {
 	// calculate histogram, luminosity and rgb
 	image.calcHist(null, 0xffffffff, &lut);
 	if (luminosity) {
@@ -145,6 +154,18 @@ font.destroy();
 int onEvent(int action, int button, int x, int y) {
 	inline "/lib/gfx/micro.ui.ci";
 
+	static Histogram histogram = {
+		text: null;
+		image: offs;
+		enabled: false;
+	};
+	static Histogram curves = {
+		text: null;
+		image: offs;
+		lines: true;
+		enabled: false;
+	};
+
 	static Slider brightness = {
 		text: "brightness";
 		minimum: -256;
@@ -189,6 +210,7 @@ int onEvent(int action, int button, int x, int y) {
 		maximum: +256;
 		divisor: 256;
 	};
+
 	static Switch auto = {
 		on: "luminosity";
 		off: "rgb stretch";
@@ -196,17 +218,10 @@ int onEvent(int action, int button, int x, int y) {
 		checked: true;
 		selectable: true;
 	};
-	static Histogram histogram = {
+
+	static Button separator = {
 		text: null;
-		image: offs;
-		height: 128;
-		enabled: false;
-	};
-	static Histogram curves = {
-		text: null;
-		image: offs;
-		height: 128;
-		lines: true;
+		height: 1;
 		enabled: false;
 	};
 	static Slider time = {
@@ -215,20 +230,11 @@ int onEvent(int action, int button, int x, int y) {
 	};
 
 	static Layout ui = Layout(offs, -30, 30, font,
-		histogram,
-		curves,
-
-		brightness,
-		contrast,
-		gamma,
-
-		highlights,
-		shadows,
-		whites,
-		blacks,
-
-		auto,
-		time
+		histogram, curves, separator,
+		brightness, contrast, gamma,
+		highlights, shadows, whites, blacks,
+		separator, auto,
+		separator, time
 	);
 
 	bool redraw = uiEvent(ui, action, button, x, y);
@@ -240,9 +246,7 @@ int onEvent(int action, int button, int x, int y) {
 	if (redraw) {
 		uint64 start = System.millis();
 		offs.resize(null, back, null, 1);
-		if (ui.isSelected(auto)) {
-			calcAutoEqualize(curves.data, offs, auto.checked);
-		} else {
+		if (ui.isActive(brightness, contrast, gamma, highlights, shadows, whites, blacks)) {
 			brightnessContrastGamma(curves.data,
 				brightness.valFlt(),
 				contrast.valFlt(),
@@ -252,6 +256,9 @@ int onEvent(int action, int button, int x, int y) {
 				whites.valFlt(),
 				blacks.valFlt()
 			);
+		}
+		else if (ui.isSelected(auto)) {
+			calcAutoEqualize(curves.data, offs, auto.checked);
 		}
 
 		offs.colorMap(null, curves.data);

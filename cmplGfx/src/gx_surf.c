@@ -4,18 +4,18 @@
 
 #include <stdlib.h>
 
-gx_Surf gx_createSurf(gx_Surf recycle, int width, int height, int depth, surfFlags flags) {
+GxImage createImage(GxImage recycle, int width, int height, int depth, ImageFlags flags) {
 	if (recycle == NULL) {
-		recycle = (gx_Surf) malloc(sizeof(struct gx_Surf));
+		recycle = (GxImage) malloc(sizeof(struct GxImage));
 		if (recycle == NULL) {
 			return NULL;
 		}
-		flags |= Surf_freeSurf;
+		flags |= freeImage;
 		recycle->basePtr = NULL;
 		recycle->flags = flags;
 	}
 
-	if (recycle->flags & Surf_freeData) {
+	if (recycle->flags & freeData) {
 		free(recycle->basePtr);
 	}
 
@@ -30,13 +30,13 @@ gx_Surf gx_createSurf(gx_Surf recycle, int width, int height, int depth, surfFla
 
 	if (width != recycle->width || height != recycle->height) {
 		// dimension did not fit into 16 bit integer
-		gx_destroySurf(recycle);
+		destroyImage(recycle);
 		return NULL;
 	}
 
 	switch (depth) {
 		default:
-			gx_destroySurf(recycle);
+			destroyImage(recycle);
 			return NULL;
 
 		case 32:
@@ -62,35 +62,35 @@ gx_Surf gx_createSurf(gx_Surf recycle, int width, int height, int depth, surfFla
 		size_t size = recycle->scanLen * (size_t) height;
 		size_t offs = 0;
 
-		switch (flags & SurfType) {
+		switch (flags & ImageType) {
 			default:
 				break;
 
-			case Surf_2ds:
+			case Image2d:
 				break;
 
-			case Surf_pal:
+			case ImageIdx:
 				offs = size;
-				size += sizeof(struct gx_Clut);
+				size += sizeof(struct GxCLut);
 				break;
 
-			case Surf_fnt:
+			case ImageFnt:
 				offs = size;
-				size += sizeof(struct gx_Llut);
+				size += sizeof(struct GxFLut);
 				break;
 
-			case Surf_3ds:
+			case Image3d:
 				offs = size;
 				size += width * (size_t) height * 4;    // z-buffer
 				break;
 		}
 
 		if ((recycle->basePtr = malloc(size)) == NULL) {
-			gx_destroySurf(recycle);
+			destroyImage(recycle);
 			return NULL;
 		}
 
-		recycle->flags |= Surf_freeData;
+		recycle->flags |= freeData;
 		if (offs != 0) {
 			recycle->tempPtr = recycle->basePtr + offs;
 		}
@@ -99,22 +99,22 @@ gx_Surf gx_createSurf(gx_Surf recycle, int width, int height, int depth, surfFla
 	return recycle;
 }
 
-void gx_destroySurf(gx_Surf surf) {
-	if (surf->flags & Surf_freeData) {
-		surf->flags &= ~Surf_freeData;
-		if (surf->basePtr != NULL) {
-			free(surf->basePtr);
+void destroyImage(GxImage image) {
+	if (image->flags & freeData) {
+		image->flags &= ~freeData;
+		if (image->basePtr != NULL) {
+			free(image->basePtr);
 		}
 	}
-	surf->basePtr = NULL;
-	if (surf->flags & Surf_freeSurf) {
-		surf->flags &= ~Surf_freeSurf;
-		free(surf);
+	image->basePtr = NULL;
+	if (image->flags & freeImage) {
+		image->flags &= ~freeImage;
+		free(image);
 	}
 }
 
-void* gx_cliprect(gx_Surf surf, gx_Rect roi) {
-	gx_Clip clp = gx_getclip(surf);
+void* clipRect(GxImage image, GxRect roi) {
+	GxClip clp = getClip(image);
 
 	roi->w += roi->x;
 	roi->h += roi->y;
@@ -140,11 +140,11 @@ void* gx_cliprect(gx_Surf surf, gx_Rect roi) {
 		return NULL;
 	}
 
-	return gx_getpaddr(surf, roi->x, roi->y);
+	return getPAddr(image, roi->x, roi->y);
 }
 
-int gx_blitSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, void *extra, cblt_proc blt) {
-	struct gx_Rect clip;
+int blitImage(GxImage image, int x, int y, GxImage src, GxRect roi, void *extra, bltProc blt) {
+	struct GxRect clip;
 	clip.x = roi ? roi->x : 0;
 	clip.y = roi ? roi->y : 0;
 	clip.w = roi ? roi->w : src->width;
@@ -163,7 +163,7 @@ int gx_blitSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, void *extr
 		clip.y -= y;
 		clip.h += y;
 	}
-	char *sptr = gx_cliprect(src, &clip);
+	char *sptr = clipRect(src, &clip);
 	if (sptr == NULL) {
 		// there is noting to copy
 		return 0;
@@ -177,7 +177,7 @@ int gx_blitSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, void *extr
 	if (y < 0) {
 		clip.h -= y;
 	}
-	char *dptr = gx_cliprect(surf, &clip);
+	char *dptr = clipRect(image, &clip);
 	if (dptr == NULL) {
 		// there are no pixels to set
 		return 0;
@@ -187,18 +187,18 @@ int gx_blitSurf(gx_Surf surf, int x, int y, gx_Surf src, gx_Rect roi, void *extr
 		if (blt(dptr, sptr, extra, (size_t) clip.w) < 0) {
 			return -1;
 		};
-		dptr += surf->scanLen;
+		dptr += image->scanLen;
 		sptr += src->scanLen;
 	}
 	return 0;
 }
 
-int gx_zoomSurf(gx_Surf surf, gx_Rect rect, gx_Surf src, gx_Rect roi, int interpolate) {
-	if (surf->depth != src->depth) {
+int resizeImage(GxImage image, GxRect rect, GxImage src, GxRect roi, int interpolation) {
+	if (image->depth != src->depth) {
 		return -2;
 	}
 
-	struct gx_Rect srec;
+	struct GxRect srec;
 	srec.x = srec.y = 0;
 	srec.w = src->width;
 	srec.h = src->height;
@@ -219,14 +219,14 @@ int gx_zoomSurf(gx_Surf surf, gx_Rect rect, gx_Surf src, gx_Rect roi, int interp
 		}
 	}
 
-	struct gx_Rect drec;
+	struct GxRect drec;
 	if (rect != NULL) {
 		drec = *rect;
 	}
 	else {
 		drec.x = drec.y = 0;
-		drec.w = surf->width;
-		drec.h = surf->height;
+		drec.w = image->width;
+		drec.h = image->height;
 	}
 
 	if (drec.w <= 0 || drec.h <= 0) {
@@ -248,15 +248,15 @@ int gx_zoomSurf(gx_Surf surf, gx_Rect rect, gx_Surf src, gx_Rect roi, int interp
 		y0 = -drec.y;
 	}
 
-	char *dptr = gx_cliprect(surf, &drec);
+	char *dptr = clipRect(image, &drec);
 	if (dptr == NULL) {
 		return 0;
 	}
 
-	if (!interpolate || dx >= 0x20000 || dy >= 0x20000) {
+	if (!interpolation || dx >= 0x20000 || dy >= 0x20000) {
 		for (int y = 0, sy = y0; y < drec.h; ++y, sy += dy) {
 			for (int x = 0, sx = x0; x < drec.w; ++x, sx += dx) {
-				gx_setpixel(surf, drec.x + x, drec.y + y, gx_getpixel(src, sx >> 16, sy >> 16));
+				setPixel(image, drec.x + x, drec.y + y, getPixel(src, sx >> 16, sy >> 16));
 			}
 		}
 		return 0;
@@ -266,7 +266,7 @@ int gx_zoomSurf(gx_Surf surf, gx_Rect rect, gx_Surf src, gx_Rect roi, int interp
 	y0 -= 0x8000;
 	for (int y = 0, sy = y0; y < drec.h; ++y, sy += dy) {
 		for (int x = 0, sx = x0; x < drec.w; ++x, sx += dx) {
-			gx_setpixel(surf, drec.x + x, drec.y + y, gx_getpix16(src, sx, sy));
+			setPixel(image, drec.x + x, drec.y + y, getPixelLinear(src, sx, sy));
 		}
 	}
 	return 0;
@@ -278,10 +278,10 @@ static inline double gauss(double x, double sigma) {
 	return SQRT_2_PI_INV * exp(-0.5 * t * t) / sigma;
 }
 
-int gx_blurSurf(gx_Surf surf, int radius, double sigma) {
+int blurImage(GxImage image, int radius, double sigma) {
 
 	int size = radius * 2 + 1;
-	if (surf->depth != 32) {
+	if (image->depth != 32) {
 		return -1;
 	}
 	if (size >= 1024) {
@@ -303,9 +303,9 @@ int gx_blurSurf(gx_Surf surf, int radius, double sigma) {
 		kernel[i] = 65536 * (kernelFlt[i] / kernelSum);
 	}
 
-	int width = surf->width;
-	int height = surf->height;
-	gx_Surf tmp = gx_createSurf(NULL, width, height, surf->depth, Surf_2ds);
+	int width = image->width;
+	int height = image->height;
+	GxImage tmp = createImage(NULL, width, height, image->depth, Image2d);
 
 	if (tmp == NULL) {
 		return -1;
@@ -320,14 +320,14 @@ int gx_blurSurf(gx_Surf surf, int radius, double sigma) {
 			for (int i = 0; i < size; i += 1) {
 				int _x = x + i - radius;
 				if (_x >= 0 && _x < width) {
-					uint32_t col = gx_getpixel(surf, _x, y);
-					uint32_t _k = kernel[i];
+					uint32_t col = getPixel(image, _x, y);
+					int32_t _k = kernel[i];
 					r += _k * rch(col);
 					g += _k * gch(col);
 					b += _k * bch(col);
 				}
 			}
-			gx_setpixel(tmp, x, y, clamp_srgb(255, r >> 16, g >> 16, b >> 16).val);
+			setPixel(tmp, x, y, sat_srgb(255, r >> 16, g >> 16, b >> 16).val);
 		}
 	}
 
@@ -340,16 +340,16 @@ int gx_blurSurf(gx_Surf surf, int radius, double sigma) {
 			for (int i = 0; i < size; i += 1) {
 				int _y = y + i - radius;
 				if (_y >= 0 || _y < height) {
-					uint32_t col = gx_getpixel(tmp, x, _y);
-					uint32_t _k = kernel[i];
+					uint32_t col = getPixel(tmp, x, _y);
+					int32_t _k = kernel[i];
 					r += _k * rch(col);
 					g += _k * gch(col);
 					b += _k * bch(col);
 				}
 			}
-			gx_setpixel(surf, x, y, clamp_srgb(255, r >> 16, g >> 16, b >> 16).val);
+			setPixel(image, x, y, sat_srgb(255, r >> 16, g >> 16, b >> 16).val);
 		}
 	}
-	gx_destroySurf(tmp);
+	destroyImage(tmp);
 	return 0;
 }

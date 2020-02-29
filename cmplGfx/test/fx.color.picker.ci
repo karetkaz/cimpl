@@ -1,8 +1,8 @@
-// Color levels demo.
+// Color picker demo.
 
-gxSurf back = gxSurf("asset/image/forest.png", 32);
-gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
-gxSurf offs = gxSurf(back.width(), back.height(), back.depth());
+Image back = Image("asset/image/forest.png", 32);
+Image font = Image.openFnt("asset/font/modern-1.fnt");
+Image offs = Image(back.width(), back.height(), back.depth());
 
 
 int onEvent(int action, int button, int x, int y);
@@ -17,11 +17,10 @@ int onEvent(int action, int button, int x, int y) {
 	static Histogram histogram = {
 		text: null;
 		image: offs;
-		height: 128;
 		enabled: false;
 	};
 
-	static bool onColorUpdate(ColorPicker view);
+	static bool onColorUpdate(ColorPicker view, argb value);
 	static ColorPicker colors = {
 		text: null;
 		//lum: .75f;
@@ -40,8 +39,9 @@ int onEvent(int action, int button, int x, int y) {
 		time
 	);
 
-	static bool onColorUpdate(ColorPicker view) {
-		ui.backgroundColor = uint32(view.value);
+	static bool onColorUpdate(ColorPicker view, argb value) {
+		view.value = value;
+		ui.style.backgroundColor = uint32(value);
 	}
 
 	if (action == Gui.KEY_PRESS) {

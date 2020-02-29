@@ -209,7 +209,7 @@ static int writeRaw01(FILE *dst, unsigned char *src, unsigned cnt) {
 }
 
 // Read / Write image formats
-gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
+GxImage loadBmp(GxImage dst, const char *src, int depth) {
 	FILE *fin = fopen(src, "rb");
 	if (fin == NULL) {
 		gx_debug("file open error: %s", src);
@@ -273,7 +273,7 @@ gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
 		return NULL;
 	}
 
-	struct gx_Clut palette;
+	struct GxCLut palette;
 	readBmp lineReader = NULL;
 	switch (infoHeader.depth) {
 		default:
@@ -341,16 +341,16 @@ gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
 		return NULL;
 	}
 
-	cblt_proc colorProc = gx_getcbltf(depth, infoHeader.depth < 8 ? 8 : infoHeader.depth);
-	if (colorProc == NULL) {
+	bltProc blt = getBltProc(depth, infoHeader.depth < 8 ? 8 : infoHeader.depth);
+	if (blt == NULL) {
 		gx_debug("Invalid color conversion");
 		fclose(fin);
 		return NULL;
 	}
 
-	dst = gx_createSurf(dst, infoHeader.width, infoHeader.height, depth, 0);
+	dst = createImage(dst, infoHeader.width, infoHeader.height, depth, 0);
 	if (dst == NULL) {
-		gx_debug("Failed to init surface");
+		gx_debug("Failed to init image");
 		fclose(fin);
 		return NULL;
 	}
@@ -369,19 +369,19 @@ gx_Surf gx_loadBmp(gx_Surf dst, const char *src, int depth) {
 		unsigned char tmpbuff[65535*4];	// FIXME: temp buffer
 		ptr -= dst->scanLen;
 		lineReader(tmpbuff, fin, lineSize);
-		colorProc(ptr, tmpbuff, palette.data, infoHeader.width);
+		blt(ptr, tmpbuff, palette.data, infoHeader.width);
 	}
 
 	fclose(fin);
 	return dst;
 }
-int gx_saveBmp(const char *dst, gx_Surf src, int flags) {
+int saveBmp(const char *dst, GxImage src, int flags) {
 	BMP_INF infoHeader;
 	memset(&infoHeader, 0, sizeof(BMP_INF));
 
 	// bitmap palette
-	struct gx_Clut palette;
-	memset(&palette, 0, sizeof(struct gx_Clut));
+	struct GxCLut palette;
+	memset(&palette, 0, sizeof(struct GxCLut));
 
 	switch (src->depth) {
 		default:
@@ -396,7 +396,7 @@ int gx_saveBmp(const char *dst, gx_Surf src, int flags) {
 			break;
 
 		case 8:
-			if ((src->flags & SurfType) == Surf_pal) {
+			if ((src->flags & ImageType) == ImageIdx) {
 				memcpy(&palette, src->CLUTPtr, sizeof(palette));
 				if (palette.count <= 2) {
 					infoHeader.depth = 1;
@@ -451,8 +451,8 @@ int gx_saveBmp(const char *dst, gx_Surf src, int flags) {
 			break;
 	}
 
-	cblt_proc colorProc = gx_getcbltf(infoHeader.depth < 8 ? 8 : infoHeader.depth, src->depth);
-	if (colorProc == NULL) {
+	bltProc blt = getBltProc(infoHeader.depth < 8 ? 8 : infoHeader.depth, src->depth);
+	if (blt == NULL) {
 		gx_debug("Invalid color conversion");
 		return 3;
 	}
@@ -487,14 +487,14 @@ int gx_saveBmp(const char *dst, gx_Surf src, int flags) {
 	while (infoHeader.height--) {
 		unsigned char tmpbuff[65535*4];	// FIXME: temp buffer
 		ptr -= src->scanLen;
-		colorProc(tmpbuff, ptr, palette.data, infoHeader.width);
+		blt(tmpbuff, ptr, palette.data, infoHeader.width);
 		lineWriter(out, tmpbuff, lineSize);
 	}
 	fclose(out);
 	return 0;
 }
 
-gx_Surf gx_loadFnt(gx_Surf dst, const char *src) {
+GxImage loadFnt(GxImage dst, const char *src) {
 	FILE *fin = fopen(src, "rb");
 	if (fin == NULL) {
 		gx_debug("file open error: %s", src);
@@ -508,14 +508,14 @@ gx_Surf gx_loadFnt(gx_Surf dst, const char *src) {
 	uint16_t width = 8;
 	uint16_t height = (uint16_t) (fsize >> 8);
 
-	dst = gx_createSurf(dst, width, 256 * height, 8, Surf_fnt);
+	dst = createImage(dst, width, 256 * height, 8, ImageFnt);
 	if (dst == NULL) {
-		gx_debug("Failed to init surface");
+		gx_debug("Failed to init image");
 		return NULL;
 	}
 
 	unsigned char *ptr = (void *) dst->basePtr;
-	gx_Llut lut = dst->LLUTPtr;
+	GxFLut lut = dst->LLUTPtr;
 	lut->count = 256;
 	lut->height = height;
 	for (int i = 0; i < 256; ++i) {
@@ -539,15 +539,15 @@ gx_Surf gx_loadFnt(gx_Surf dst, const char *src) {
 }
 
 #ifndef USE_JPEG
-gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
+GxImage loadJpg(GxImage dst, const char *src, int depth) {
 #ifdef MOC_JPEG
-	dst = gx_createSurf(dst, 512, 512, depth, Surf_2ds);
+	dst = createImage(dst, 512, 512, depth, Image2d);
 	for (int y = 0; y < dst->height; ++y) {
 		for (int x = 0; x < dst->width; ++x) {
 			int r = x ^ y;
 			int g = x & y;
 			int b = x | y;
-			gx_setpixel(dst, x, y, make_rgb(0, r, g, b).val);
+			setPixel(dst, x, y, make_rgb(0, r, g, b).val);
 		}
 	}
 	return dst;
@@ -560,7 +560,7 @@ gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
 #else
 
 #include <jpeglib.h>
-gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
+GxImage loadJpg(GxImage dst, const char *src, int depth) {
 
 	if (depth != 32) {
 		return NULL;
@@ -581,25 +581,25 @@ gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
 	jpeg_read_header(&cinfo, TRUE);
 	jpeg_start_decompress(&cinfo);
 
-	cblt_proc conv_2xrgb = NULL;
+	bltProc blt = NULL;
 	switch (cinfo.jpeg_color_space) {
 		default:
 			fclose(fin);
 			return NULL;
 
 		case JCS_GRAYSCALE:    /* monochrome */
-			conv_2xrgb = gx_getcbltf(cblt_conv_08, depth);
+			blt = getBltProc(cblt_conv_08, depth);
 			break;
 
 		case JCS_RGB:         /* red/green/blue */
 		case JCS_YCbCr:       /* Y/Cb/Cr (also known as YUV) */
 		case JCS_CMYK:        /* C/M/Y/K */
 		case JCS_YCCK:        /* Y/Cb/Cr/K */
-			conv_2xrgb = (cblt_proc) colcpy_32_bgr;
+			blt = (bltProc) colcpy_32_bgr;
 			break;
 	}
 
-	dst = gx_createSurf(dst, cinfo.output_width, cinfo.output_height, depth, 0);
+	dst = createImage(dst, cinfo.output_width, cinfo.output_height, depth, 0);
 	if (dst == NULL) {
 		fclose(fin);
 		return NULL;
@@ -611,7 +611,7 @@ gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
 		unsigned char buff[65535 * 4];
 		unsigned char *tmpbuff[] = {buff};
 		jpeg_read_scanlines(&cinfo, tmpbuff, 1);
-		conv_2xrgb(ptr, buff, NULL, dst->width);
+		blt(ptr, buff, NULL, dst->width);
 		ptr += dst->scanLen;
 	}
 
@@ -627,15 +627,15 @@ gx_Surf gx_loadJpg(gx_Surf dst, const char *src, int depth) {
 #endif
 
 #ifndef USE_PNG
-gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
+GxImage loadPng(GxImage dst, const char *src, int depth) {
 #ifdef MOC_PNG
-	dst = gx_createSurf(dst, 512, 512, depth, Surf_2ds);
+	dst = createImage(dst, 512, 512, depth, Image2d);
 	for (int y = 0; y < dst->height; ++y) {
 		for (int x = 0; x < dst->width; ++x) {
 			int r = x ^ y;
 			int g = x & y;
 			int b = x | y;
-			gx_setpixel(dst, x, y, make_rgb(0, r, g, b).val);
+			setPixel(dst, x, y, make_rgb(0, r, g, b).val);
 		}
 	}
 	return dst;
@@ -648,7 +648,7 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 #else
 
 #include <png.h>
-gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
+GxImage loadPng(GxImage dst, const char *src, int depth) {
 
 	// 8 is the maximum size that can be checked
 	unsigned char header[8];
@@ -706,14 +706,14 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 	int pngdepth = bit_depth * png_get_channels(png_ptr, info_ptr);
 	int color_type = png_get_color_type(png_ptr, info_ptr);
 
-	gx_Surf result = gx_createSurf(dst, pngwidth, pngheight, depth, 0);
+	GxImage result = createImage(dst, pngwidth, pngheight, depth, 0);
 	if (result == NULL) {
 		gx_debug("out of memory");
 		fclose(fin);
 		return NULL;
 	}
 
-	cblt_proc conv_2xrgb = NULL;
+	bltProc blt = NULL;
 	switch (pngdepth) {
 		default:
 			gx_debug("Invalid color conversion");
@@ -721,11 +721,11 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 			return NULL;
 
 		case 32:
-			conv_2xrgb = (cblt_proc) colcpy_32_abgr;
+			blt = (bltProc) colcpy_32_abgr;
 			break;
 
 		case 24:
-			conv_2xrgb = (cblt_proc) colcpy_32_bgr;
+			blt = (bltProc) colcpy_32_bgr;
 			break;
 
 		case 8:
@@ -733,7 +733,7 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 		case 2:
 		case 1:
 			// png_set_expand converts gray and paletted colors
-			conv_2xrgb = (cblt_proc) colcpy_32_bgr;
+			blt = (bltProc) colcpy_32_bgr;
 			break;
 	}
 
@@ -759,7 +759,7 @@ gx_Surf gx_loadPng(gx_Surf dst, const char *src, int depth) {
 		for (y = 0; y < result->height; y += 1) {
 			unsigned char tmpbuff[65535*4]; // FIXME: bitmap temp buffer
 			png_read_row(png_ptr, tmpbuff, NULL);
-			conv_2xrgb(ptr, tmpbuff, NULL, result->width);
+			blt(ptr, tmpbuff, NULL, result->width);
 			ptr += result->scanLen;
 		}
 		number_of_passes -= 1;

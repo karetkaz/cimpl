@@ -163,19 +163,19 @@ test/lang/function.ci:39: warn: adding implicit cast uint32(1: int32)
 test/lang/function.ci:42: warn: adding implicit cast uint32(1: int32)
 test/lang/function.ci:42: warn: adding implicit cast uint32(2: int32)
 test/test.ci:21: debug: inline file: `test/lang/reflect.ci`
-test/test.ci:25: debug: inline file: `test/stdc/number.ci`
-test/stdc/number.ci:37: warn: adding implicit cast float64(2: int32)
-test/stdc/number.ci:38: warn: adding implicit cast float64(2: int32)
-test/stdc/number.ci:39: warn: adding implicit cast float64(4: int32)
-test/stdc/number.ci:46: warn: adding implicit cast float32(2: int32)
-test/stdc/number.ci:47: warn: adding implicit cast float32(2: int32)
-test/stdc/number.ci:48: warn: adding implicit cast float32(4: int32)
-test/test.ci:26: debug: inline file: `test/stdc/memory.ci`
-test/test.ci:27: debug: inline file: `test/stdc/tryExec.ci`
-test/stdc/tryExec.ci:20: warn: variable `divisionByZero.value` hides previous declaration
-test/stdc/tryExec.ci:24: warn: variable `abortExecution.NotEquals` hides previous declaration
-test/stdc/tryExec.ci:24: warn: padding `abortExecution.NotEquals` with 4 bytes: (12 -> 16)
-test/stdc/tryExec.ci:30: warn: adding implicit cast char[*]("assertion failed": .cstr)
+test/test.ci:25: debug: inline file: `test/std/number.ci`
+test/std/number.ci:37: warn: adding implicit cast float64(2: int32)
+test/std/number.ci:38: warn: adding implicit cast float64(2: int32)
+test/std/number.ci:39: warn: adding implicit cast float64(4: int32)
+test/std/number.ci:46: warn: adding implicit cast float32(2: int32)
+test/std/number.ci:47: warn: adding implicit cast float32(2: int32)
+test/std/number.ci:48: warn: adding implicit cast float32(4: int32)
+test/test.ci:26: debug: inline file: `test/std/memory.ci`
+test/test.ci:27: debug: inline file: `test/std/tryExec.ci`
+test/std/tryExec.ci:20: warn: variable `divisionByZero.value` hides previous declaration
+test/std/tryExec.ci:24: warn: variable `abortExecution.NotEquals` hides previous declaration
+test/std/tryExec.ci:24: warn: padding `abortExecution.NotEquals` with 4 bytes: (12 -> 16)
+test/std/tryExec.ci:30: warn: adding implicit cast char[*]("assertion failed": .cstr)
 test/test.ci:31: debug: inline file: `test/lang/array.ci`
 test/lang/array.ci:44: warn: adding implicit cast pointer(typename(int64): typename)
 test/lang/array.ci:55: warn: adding implicit cast int64(42 + i: int32)
@@ -252,12 +252,12 @@ test/lang/statementIf.ci:56: warn: statement should be a block statement {if (t 
 test/lang/statementIf.ci:53: warn: statement should be a block statement {if (t == 1)}
 test/lang/statementIf.ci:73: warn: adding implicit cast pointer(typename(int64): typename)
 test/test.ci:47: debug: inline file: `test/lang/statementFor.ci`
-test/test.ci:50: debug: inline file: `test/stdc/test.math.ci`
-test/stdc/test.math.ci:57: warn: adding implicit cast float64(2: int32)
-test/stdc/test.math.ci:58: warn: adding implicit cast float64(2: int32)
-test/stdc/test.math.ci:59: warn: adding implicit cast float64(4: int32)
-test/stdc/test.math.ci:60: warn: adding implicit cast float64(2: int32)
-test/stdc/test.math.ci:61: warn: adding implicit cast float64(2: int32)
+test/test.ci:50: debug: inline file: `test/std/test.math.ci`
+test/std/test.math.ci:57: warn: adding implicit cast float64(2: int32)
+test/std/test.math.ci:58: warn: adding implicit cast float64(2: int32)
+test/std/test.math.ci:59: warn: adding implicit cast float64(4: int32)
+test/std/test.math.ci:60: warn: adding implicit cast float64(2: int32)
+test/std/test.math.ci:61: warn: adding implicit cast float64(2: int32)
 
 ---------- Generate: byte-code
 lib/std/math.ci:48: warn: using default type initializer: Math.floor.result := 0
@@ -284,7 +284,7 @@ lib/std/debug.ci:45: warn: no code will be generated for statement: 0
 lib/std/debug.ci:45: warn: no code will be generated for statement: 0
 lib/std/string.ci:249: warn: using signed cast for unsigned value: `value`
 lib/std/string.ci:253: warn: using signed cast for unsigned value: `fract`
-test/stdc/tryExec.ci:15: warn: uninitialized variable `stackOverflow.data`
+test/std/tryExec.ci:15: warn: uninitialized variable `stackOverflow.data`
 test/lang/member.ci:35: warn: using default type initializer: RecordMemberTest.global := 0
 test/lang/member.ci:44: warn: uninitialized variable `RecordMemberTest.globalRec`
 test/lang/array.ci:49: warn: uninitialized variable `arrFixedNoInit`
@@ -10475,7 +10475,7 @@ pi64: float64 {
 .base: `float64`
 .size: 8
 .name: 'pi64'
-.file: 'test/stdc/number.ci:3'
+.file: 'test/std/number.ci:3'
 .value: 3.141593
 }
 e64: float64 {
@@ -10483,7 +10483,7 @@ e64: float64 {
 .base: `float64`
 .size: 8
 .name: 'e64'
-.file: 'test/stdc/number.ci:4'
+.file: 'test/std/number.ci:4'
 .value: 2.718282
 }
 pi32: float32 {
@@ -10491,7 +10491,7 @@ pi32: float32 {
 .base: `float32`
 .size: 4
 .name: 'pi32'
-.file: 'test/stdc/number.ci:6'
+.file: 'test/std/number.ci:6'
 .value: pi64
 }
 e32: float32 {
@@ -10499,7 +10499,7 @@ e32: float32 {
 .base: `float32`
 .size: 4
 .name: 'e32'
-.file: 'test/stdc/number.ci:7'
+.file: 'test/std/number.ci:7'
 .value: e64
 }
 rgb888(r: int32, g: int32, b: int32): int32: function {
@@ -10507,7 +10507,7 @@ rgb888(r: int32, g: int32, b: int32): int32: function {
 .base: `function`
 .size: 0
 .name: 'rgb888'
-.file: 'test/stdc/number.ci:10'
+.file: 'test/std/number.ci:10'
 .param .result: int32 (size: 4, cast: i32)
 .param r: int32 (size: 4, cast: i32)
 .param g: int32 (size: 4, cast: i32)
@@ -10520,7 +10520,7 @@ rgb565(r: int32, g: int32, b: int32): int32: function {
 .base: `function`
 .size: 0
 .name: 'rgb565'
-.file: 'test/stdc/number.ci:12'
+.file: 'test/std/number.ci:12'
 .param .result: int32 (size: 4, cast: i32)
 .param r: int32 (size: 4, cast: i32)
 .param g: int32 (size: 4, cast: i32)
@@ -10533,7 +10533,7 @@ r_comp: int32 {
 .base: `int32`
 .size: 4
 .name: 'r_comp'
-.file: 'test/stdc/number.ci:14'
+.file: 'test/std/number.ci:14'
 .value: 14 << 3
 }
 g_comp: int32 {
@@ -10541,7 +10541,7 @@ g_comp: int32 {
 .base: `int32`
 .size: 4
 .name: 'g_comp'
-.file: 'test/stdc/number.ci:15'
+.file: 'test/std/number.ci:15'
 .value: 63 << 2
 }
 b_comp: int32 {
@@ -10549,7 +10549,7 @@ b_comp: int32 {
 .base: `int32`
 .size: 4
 .name: 'b_comp'
-.file: 'test/stdc/number.ci:16'
+.file: 'test/std/number.ci:16'
 .value: 31 << 3
 }
 r5g6b5: int32 {
@@ -10557,7 +10557,7 @@ r5g6b5: int32 {
 .base: `int32`
 .size: 4
 .name: 'r5g6b5'
-.file: 'test/stdc/number.ci:18'
+.file: 'test/std/number.ci:18'
 .value: rgb565(r_comp, g_comp, b_comp)
 }
 r8g8b8: int32 {
@@ -10565,7 +10565,7 @@ r8g8b8: int32 {
 .base: `int32`
 .size: 4
 .name: 'r8g8b8'
-.file: 'test/stdc/number.ci:19'
+.file: 'test/std/number.ci:19'
 .value: rgb888(r_comp, g_comp, b_comp)
 }
 zxtR5: int32 {
@@ -10573,7 +10573,7 @@ zxtR5: int32 {
 .base: `int32`
 .size: 4
 .name: 'zxtR5'
-.file: 'test/stdc/number.ci:21'
+.file: 'test/std/number.ci:21'
 .value: uint32.zxt(r5g6b5, 11, 5)
 }
 zxtG6: int32 {
@@ -10581,7 +10581,7 @@ zxtG6: int32 {
 .base: `int32`
 .size: 4
 .name: 'zxtG6'
-.file: 'test/stdc/number.ci:22'
+.file: 'test/std/number.ci:22'
 .value: uint32.zxt(r5g6b5, 5, 6)
 }
 zxtB5: int32 {
@@ -10589,7 +10589,7 @@ zxtB5: int32 {
 .base: `int32`
 .size: 4
 .name: 'zxtB5'
-.file: 'test/stdc/number.ci:23'
+.file: 'test/std/number.ci:23'
 .value: uint32.zxt(r5g6b5, 0, 5)
 }
 sxtR5: int32 {
@@ -10597,7 +10597,7 @@ sxtR5: int32 {
 .base: `int32`
 .size: 4
 .name: 'sxtR5'
-.file: 'test/stdc/number.ci:25'
+.file: 'test/std/number.ci:25'
 .value: uint32.sxt(r5g6b5, 11, 5)
 }
 sxtG6: int32 {
@@ -10605,7 +10605,7 @@ sxtG6: int32 {
 .base: `int32`
 .size: 4
 .name: 'sxtG6'
-.file: 'test/stdc/number.ci:26'
+.file: 'test/std/number.ci:26'
 .value: uint32.sxt(r5g6b5, 5, 6)
 }
 sxtB5: int32 {
@@ -10613,7 +10613,7 @@ sxtB5: int32 {
 .base: `int32`
 .size: 4
 .name: 'sxtB5'
-.file: 'test/stdc/number.ci:27'
+.file: 'test/std/number.ci:27'
 .value: uint32.sxt(r5g6b5, 0, 5)
 }
 zxtR8: int32 {
@@ -10621,7 +10621,7 @@ zxtR8: int32 {
 .base: `int32`
 .size: 4
 .name: 'zxtR8'
-.file: 'test/stdc/number.ci:29'
+.file: 'test/std/number.ci:29'
 .value: uint32.zxt(r8g8b8, 16, 8)
 }
 zxtG8: int32 {
@@ -10629,7 +10629,7 @@ zxtG8: int32 {
 .base: `int32`
 .size: 4
 .name: 'zxtG8'
-.file: 'test/stdc/number.ci:30'
+.file: 'test/std/number.ci:30'
 .value: uint32.zxt(r8g8b8, 8, 8)
 }
 zxtB8: int32 {
@@ -10637,7 +10637,7 @@ zxtB8: int32 {
 .base: `int32`
 .size: 4
 .name: 'zxtB8'
-.file: 'test/stdc/number.ci:31'
+.file: 'test/std/number.ci:31'
 .value: uint32.zxt(r8g8b8, 0, 8)
 }
 sxtR8: int32 {
@@ -10645,7 +10645,7 @@ sxtR8: int32 {
 .base: `int32`
 .size: 4
 .name: 'sxtR8'
-.file: 'test/stdc/number.ci:33'
+.file: 'test/std/number.ci:33'
 .value: uint32.sxt(r8g8b8, 16, 8)
 }
 sxtG8: int32 {
@@ -10653,7 +10653,7 @@ sxtG8: int32 {
 .base: `int32`
 .size: 4
 .name: 'sxtG8'
-.file: 'test/stdc/number.ci:34'
+.file: 'test/std/number.ci:34'
 .value: uint32.sxt(r8g8b8, 8, 8)
 }
 sxtB8: int32 {
@@ -10661,7 +10661,7 @@ sxtB8: int32 {
 .base: `int32`
 .size: 4
 .name: 'sxtB8'
-.file: 'test/stdc/number.ci:35'
+.file: 'test/std/number.ci:35'
 .value: uint32.sxt(r8g8b8, 0, 8)
 }
 testSin_f64: float64 {
@@ -10669,7 +10669,7 @@ testSin_f64: float64 {
 .base: `float64`
 .size: 8
 .name: 'testSin_f64'
-.file: 'test/stdc/number.ci:37'
+.file: 'test/std/number.ci:37'
 .value: float64.sin(pi64 / (2))
 }
 testCos_f64: float64 {
@@ -10677,7 +10677,7 @@ testCos_f64: float64 {
 .base: `float64`
 .size: 8
 .name: 'testCos_f64'
-.file: 'test/stdc/number.ci:38'
+.file: 'test/std/number.ci:38'
 .value: float64.cos(pi64 / (2))
 }
 testTan_f64: float64 {
@@ -10685,7 +10685,7 @@ testTan_f64: float64 {
 .base: `float64`
 .size: 8
 .name: 'testTan_f64'
-.file: 'test/stdc/number.ci:39'
+.file: 'test/std/number.ci:39'
 .value: float64.tan(pi64 / (4))
 }
 testLog_f64: float64 {
@@ -10693,7 +10693,7 @@ testLog_f64: float64 {
 .base: `float64`
 .size: 8
 .name: 'testLog_f64'
-.file: 'test/stdc/number.ci:40'
+.file: 'test/std/number.ci:40'
 .value: float64.log(e64 * e64 * e64)
 }
 testExp_f64: float64 {
@@ -10701,7 +10701,7 @@ testExp_f64: float64 {
 .base: `float64`
 .size: 8
 .name: 'testExp_f64'
-.file: 'test/stdc/number.ci:41'
+.file: 'test/std/number.ci:41'
 .value: float64.exp(1.000000)
 }
 testPow_f64: float64 {
@@ -10709,7 +10709,7 @@ testPow_f64: float64 {
 .base: `float64`
 .size: 8
 .name: 'testPow_f64'
-.file: 'test/stdc/number.ci:42'
+.file: 'test/std/number.ci:42'
 .value: float64.pow(pi64 * pi64, 0.500000)
 }
 testSqrt_f64: float64 {
@@ -10717,7 +10717,7 @@ testSqrt_f64: float64 {
 .base: `float64`
 .size: 8
 .name: 'testSqrt_f64'
-.file: 'test/stdc/number.ci:43'
+.file: 'test/std/number.ci:43'
 .value: float64.sqrt(pi64 * pi64)
 }
 testAtan_f64: float64 {
@@ -10725,7 +10725,7 @@ testAtan_f64: float64 {
 .base: `float64`
 .size: 8
 .name: 'testAtan_f64'
-.file: 'test/stdc/number.ci:44'
+.file: 'test/std/number.ci:44'
 .value: float64.atan2(pi64, 1.000000)
 }
 testSin_f32: float32 {
@@ -10733,7 +10733,7 @@ testSin_f32: float32 {
 .base: `float32`
 .size: 4
 .name: 'testSin_f32'
-.file: 'test/stdc/number.ci:46'
+.file: 'test/std/number.ci:46'
 .value: float32.sin(pi32 / (2))
 }
 testCos_f32: float32 {
@@ -10741,7 +10741,7 @@ testCos_f32: float32 {
 .base: `float32`
 .size: 4
 .name: 'testCos_f32'
-.file: 'test/stdc/number.ci:47'
+.file: 'test/std/number.ci:47'
 .value: float32.cos(pi32 / (2))
 }
 testTan_f32: float32 {
@@ -10749,7 +10749,7 @@ testTan_f32: float32 {
 .base: `float32`
 .size: 4
 .name: 'testTan_f32'
-.file: 'test/stdc/number.ci:48'
+.file: 'test/std/number.ci:48'
 .value: float32.tan(pi32 / (4))
 }
 testLog_f32: float32 {
@@ -10757,7 +10757,7 @@ testLog_f32: float32 {
 .base: `float32`
 .size: 4
 .name: 'testLog_f32'
-.file: 'test/stdc/number.ci:49'
+.file: 'test/std/number.ci:49'
 .value: float32.log(e32 * e32 * e32)
 }
 testExp_f32: float32 {
@@ -10765,7 +10765,7 @@ testExp_f32: float32 {
 .base: `float32`
 .size: 4
 .name: 'testExp_f32'
-.file: 'test/stdc/number.ci:50'
+.file: 'test/std/number.ci:50'
 .value: float32.exp(1.000000)
 }
 testPow_f32: float32 {
@@ -10773,7 +10773,7 @@ testPow_f32: float32 {
 .base: `float32`
 .size: 4
 .name: 'testPow_f32'
-.file: 'test/stdc/number.ci:51'
+.file: 'test/std/number.ci:51'
 .value: float32.pow(pi32 * pi32, 0.500000)
 }
 testSqrt_f32: float32 {
@@ -10781,7 +10781,7 @@ testSqrt_f32: float32 {
 .base: `float32`
 .size: 4
 .name: 'testSqrt_f32'
-.file: 'test/stdc/number.ci:52'
+.file: 'test/std/number.ci:52'
 .value: float32.sqrt(pi32 * pi32)
 }
 testAtan_f32: float32 {
@@ -10789,7 +10789,7 @@ testAtan_f32: float32 {
 .base: `float32`
 .size: 4
 .name: 'testAtan_f32'
-.file: 'test/stdc/number.ci:53'
+.file: 'test/std/number.ci:53'
 .value: float32.atan2(pi32, 1.000000)
 }
 testPopulation_u32: int32 {
@@ -10797,7 +10797,7 @@ testPopulation_u32: int32 {
 .base: `int32`
 .size: 4
 .name: 'testPopulation_u32'
-.file: 'test/stdc/number.ci:55'
+.file: 'test/std/number.ci:55'
 .value: uint32.pop(r5g6b5)
 }
 testSwapBits_u32: uint32 {
@@ -10805,7 +10805,7 @@ testSwapBits_u32: uint32 {
 .base: `uint32`
 .size: 4
 .name: 'testSwapBits_u32'
-.file: 'test/stdc/number.ci:56'
+.file: 'test/std/number.ci:56'
 .value: uint32.swap(r5g6b5)
 }
 testBitScanReverse_u32: int32 {
@@ -10813,7 +10813,7 @@ testBitScanReverse_u32: int32 {
 .base: `int32`
 .size: 4
 .name: 'testBitScanReverse_u32'
-.file: 'test/stdc/number.ci:57'
+.file: 'test/std/number.ci:57'
 .value: uint32.bsr(r5g6b5)
 }
 testBitScanForward_u32: int32 {
@@ -10821,7 +10821,7 @@ testBitScanForward_u32: int32 {
 .base: `int32`
 .size: 4
 .name: 'testBitScanForward_u32'
-.file: 'test/stdc/number.ci:58'
+.file: 'test/std/number.ci:58'
 .value: uint32.bsf(r5g6b5)
 }
 testHighBit_u32: int32 {
@@ -10829,7 +10829,7 @@ testHighBit_u32: int32 {
 .base: `int32`
 .size: 4
 .name: 'testHighBit_u32'
-.file: 'test/stdc/number.ci:59'
+.file: 'test/std/number.ci:59'
 .value: uint32.hib(r5g6b5)
 }
 testLowBit_u32: int32 {
@@ -10837,7 +10837,7 @@ testLowBit_u32: int32 {
 .base: `int32`
 .size: 4
 .name: 'testLowBit_u32'
-.file: 'test/stdc/number.ci:60'
+.file: 'test/std/number.ci:60'
 .value: uint32.lob(r5g6b5)
 }
 testZeroExtend_u32: int32 {
@@ -10845,7 +10845,7 @@ testZeroExtend_u32: int32 {
 .base: `int32`
 .size: 4
 .name: 'testZeroExtend_u32'
-.file: 'test/stdc/number.ci:62'
+.file: 'test/std/number.ci:62'
 .value: uint32.zxt(r5g6b5, 0, 5)
 }
 testSignExtend_u32: int32 {
@@ -10853,7 +10853,7 @@ testSignExtend_u32: int32 {
 .base: `int32`
 .size: 4
 .name: 'testSignExtend_u32'
-.file: 'test/stdc/number.ci:63'
+.file: 'test/std/number.ci:63'
 .value: uint32.sxt(r5g6b5, 0, 5)
 }
 testZeroExtend_u64: int32 {
@@ -10861,7 +10861,7 @@ testZeroExtend_u64: int32 {
 .base: `int32`
 .size: 4
 .name: 'testZeroExtend_u64'
-.file: 'test/stdc/number.ci:65'
+.file: 'test/std/number.ci:65'
 .value: uint64.zxt(r5g6b5, 0, 5)
 }
 testSignExtend_u64: int32 {
@@ -10869,7 +10869,7 @@ testSignExtend_u64: int32 {
 .base: `int32`
 .size: 4
 .name: 'testSignExtend_u64'
-.file: 'test/stdc/number.ci:66'
+.file: 'test/std/number.ci:66'
 .value: uint64.sxt(r5g6b5, 0, 5)
 }
 realloc(data: pointer, size: int32): pointer: function {
@@ -10877,7 +10877,7 @@ realloc(data: pointer, size: int32): pointer: function {
 .base: `function`
 .size: 0
 .name: 'realloc'
-.file: 'test/stdc/memory.ci:3'
+.file: 'test/std/memory.ci:3'
 .param .result: pointer (size: 4, cast: ref)
 .param data: pointer (size: 4, cast: ref)
 .param size: int32 (size: 4, cast: i32)
@@ -10888,7 +10888,7 @@ malloc(size: int32): pointer: function {
 .base: `function`
 .size: 0
 .name: 'malloc'
-.file: 'test/stdc/memory.ci:4'
+.file: 'test/std/memory.ci:4'
 .param .result: pointer (size: 4, cast: ref)
 .param size: int32 (size: 4, cast: i32)
 .value: pointer.alloc(null, size)
@@ -10898,7 +10898,7 @@ free(data: pointer): pointer: function {
 .base: `function`
 .size: 0
 .name: 'free'
-.file: 'test/stdc/memory.ci:5'
+.file: 'test/std/memory.ci:5'
 .param .result: pointer (size: 4, cast: ref)
 .param data: pointer (size: 4, cast: ref)
 .value: pointer.alloc(data, 0)
@@ -10908,7 +10908,7 @@ p1: pointer {
 .base: `pointer`
 .size: 4
 .name: 'p1'
-.file: 'test/stdc/memory.ci:7'
+.file: 'test/std/memory.ci:7'
 .value: malloc(1024)
 }
 p2: pointer {
@@ -10916,7 +10916,7 @@ p2: pointer {
 .base: `pointer`
 .size: 4
 .name: 'p2'
-.file: 'test/stdc/memory.ci:8'
+.file: 'test/std/memory.ci:8'
 .value: malloc(80)
 }
 p3: pointer {
@@ -10924,7 +10924,7 @@ p3: pointer {
 .base: `pointer`
 .size: 4
 .name: 'p3'
-.file: 'test/stdc/memory.ci:9'
+.file: 'test/std/memory.ci:9'
 .value: malloc(160)
 }
 p4: pointer {
@@ -10932,7 +10932,7 @@ p4: pointer {
 .base: `pointer`
 .size: 4
 .name: 'p4'
-.file: 'test/stdc/memory.ci:10'
+.file: 'test/std/memory.ci:10'
 .value: malloc(820)
 }
 val1: int64 {
@@ -10940,7 +10940,7 @@ val1: int64 {
 .base: `int64`
 .size: 8
 .name: 'val1'
-.file: 'test/stdc/memory.ci:23'
+.file: 'test/std/memory.ci:23'
 .value: 42
 }
 val2: int64 {
@@ -10948,7 +10948,7 @@ val2: int64 {
 .base: `int64`
 .size: 8
 .name: 'val2'
-.file: 'test/stdc/memory.ci:24'
+.file: 'test/std/memory.ci:24'
 .value: 96
 }
 noError(ptr: pointer): void: function {
@@ -10956,7 +10956,7 @@ noError(ptr: pointer): void: function {
 .base: `function`
 .size: 1
 .name: 'noError'
-.file: 'test/stdc/tryExec.ci:11'
+.file: 'test/std/tryExec.ci:11'
 .param .result: void (size: 0, cast: variable(void))
 .param ptr: pointer (size: 4, cast: variable(ref))
 .value: {
@@ -10969,7 +10969,7 @@ stackOverflow(ptr: pointer): void: function {
 .base: `function`
 .size: 24
 .name: 'stackOverflow'
-.file: 'test/stdc/tryExec.ci:14'
+.file: 'test/std/tryExec.ci:14'
 .param .result: void (size: 0, cast: variable(void))
 .param ptr: pointer (size: 4, cast: variable(ref))
 .value: {
@@ -10977,9 +10977,9 @@ stackOverflow(ptr: pointer): void: function {
 	stackOverflow(ptr);
 }
 .instructions: (24 bytes)
-	test/stdc/tryExec.ci:15: (4 bytes): data: uint8[8192]
+	test/std/tryExec.ci:15: (4 bytes): data: uint8[8192]
 	<stackOverflow>  : inc.sp(+8192)
-	test/stdc/tryExec.ci:16: (15 bytes): stackOverflow(ptr);
+	test/std/tryExec.ci:16: (15 bytes): stackOverflow(ptr);
 	<stackOverflow+?>: load.sp(+8196)
 	<stackOverflow+?>: load.i32
 	<stackOverflow+?>: load.ref <?> ;stackOverflow(ptr: pointer): void
@@ -10993,14 +10993,14 @@ divisionByZero(args: pointer): void: function {
 .base: `function`
 .size: 12
 .name: 'divisionByZero'
-.file: 'test/stdc/tryExec.ci:19'
+.file: 'test/std/tryExec.ci:19'
 .param .result: void (size: 0, cast: variable(void))
 .param args: pointer (size: 4, cast: variable(ref))
 .value: {
 	value: int32 := 3 / 0;
 }
 .instructions: (12 bytes)
-	test/stdc/tryExec.ci:20: (7 bytes): value: int32 := 3 / 0
+	test/std/tryExec.ci:20: (7 bytes): value: int32 := 3 / 0
 	<divisionByZero>  : load.c32 3
 	<divisionByZero+?>: load.z32
 	<divisionByZero+?>: div.i32
@@ -11012,7 +11012,7 @@ abortExecution(args: pointer): void: function {
 .base: `function`
 .size: 68
 .name: 'abortExecution'
-.file: 'test/stdc/tryExec.ci:23'
+.file: 'test/std/tryExec.ci:23'
 .param .result: void (size: 0, cast: variable(void))
 .param args: pointer (size: 4, cast: variable(ref))
 .value: {
@@ -11029,19 +11029,19 @@ abortExecution(args: pointer): void: function {
 	abort("fatal error", details);
 }
 .instructions: (68 bytes)
-	test/stdc/tryExec.ci:29: (25 bytes): details: NotEquals := {...}
+	test/std/tryExec.ci:29: (25 bytes): details: NotEquals := {...}
 	<abortExecution>  : inc.sp(+16)
-	test/stdc/tryExec.ci:30: (7 bytes): details.message := ("assertion failed");
+	test/std/tryExec.ci:30: (7 bytes): details.message := ("assertion failed");
 	<abortExecution+?>: load.ref <?> ;"assertion failed"
 	<abortExecution+?>: set.x32 sp(1)
-	test/stdc/tryExec.ci:31: (7 bytes): details.expected := 97;
+	test/std/tryExec.ci:31: (7 bytes): details.expected := 97;
 	<abortExecution+?>: load.c32 97
 	<abortExecution+?>: set.x32 sp(2)
-	test/stdc/tryExec.ci:32: (7 bytes): details.returned := 77;
+	test/std/tryExec.ci:32: (7 bytes): details.returned := 77;
 	<abortExecution+?>: load.c32 77
 	<abortExecution+?>: set.x32 sp(3)
-	test/stdc/tryExec.ci:34: (38 bytes): abort("fatal error", details);
-	<abortExecution+?>: load.ref <?> ;"test/stdc/tryExec.ci"
+	test/std/tryExec.ci:34: (38 bytes): abort("fatal error", details);
+	<abortExecution+?>: load.ref <?> ;"test/std/tryExec.ci"
 	<abortExecution+?>: load.c32 34
 	<abortExecution+?>: load.c32 -2
 	<abortExecution+?>: load.c32 128
@@ -11057,7 +11057,7 @@ invalidMemoryAccess(args: pointer): void: function {
 .base: `function`
 .size: 13
 .name: 'invalidMemoryAccess'
-.file: 'test/stdc/tryExec.ci:37'
+.file: 'test/std/tryExec.ci:37'
 .param .result: void (size: 0, cast: variable(void))
 .param args: pointer (size: 4, cast: variable(ref))
 .value: {
@@ -11065,9 +11065,9 @@ invalidMemoryAccess(args: pointer): void: function {
 	i32Val: int32 := i32Ref;
 }
 .instructions: (13 bytes)
-	test/stdc/tryExec.ci:38: (5 bytes): i32Ref: int32 := null
+	test/std/tryExec.ci:38: (5 bytes): i32Ref: int32 := null
 	<invalidMemoryAccess>  : load.ref <?> ;null
-	test/stdc/tryExec.ci:39: (3 bytes): i32Val: int32 := i32Ref
+	test/std/tryExec.ci:39: (3 bytes): i32Val: int32 := i32Ref
 	<invalidMemoryAccess+?>: dup.x32 sp(0)
 	<invalidMemoryAccess+?>: load.i32
 	<invalidMemoryAccess+?>: inc.sp(-8)
@@ -11078,14 +11078,14 @@ invalidInstruction(args: pointer): void: function {
 .base: `function`
 .size: 2
 .name: 'invalidInstruction'
-.file: 'test/stdc/tryExec.ci:42'
+.file: 'test/std/tryExec.ci:42'
 .param .result: void (size: 0, cast: variable(void))
 .param args: pointer (size: 4, cast: variable(ref))
 .value: {
 	emit(load.z32, ret);
 }
 .instructions: (2 bytes)
-	test/stdc/tryExec.ci:43: (2 bytes): emit(load.z32, ret);
+	test/std/tryExec.ci:43: (2 bytes): emit(load.z32, ret);
 	<invalidInstruction>  : load.z32
 	<invalidInstruction+?>: ret
 }
@@ -11094,7 +11094,7 @@ tryExecErr0: int32 {
 .base: `int32`
 .size: 4
 .name: 'tryExecErr0'
-.file: 'test/stdc/tryExec.ci:46'
+.file: 'test/std/tryExec.ci:46'
 .value: tryExec(null, noError)
 }
 tryExecErr1: int32 {
@@ -11102,7 +11102,7 @@ tryExecErr1: int32 {
 .base: `int32`
 .size: 4
 .name: 'tryExecErr1'
-.file: 'test/stdc/tryExec.ci:47'
+.file: 'test/std/tryExec.ci:47'
 .value: tryExec(null, null)
 }
 tryExecErr2: int32 {
@@ -11110,7 +11110,7 @@ tryExecErr2: int32 {
 .base: `int32`
 .size: 4
 .name: 'tryExecErr2'
-.file: 'test/stdc/tryExec.ci:48'
+.file: 'test/std/tryExec.ci:48'
 .value: tryExec(null, stackOverflow)
 }
 tryExecErr3: int32 {
@@ -11118,7 +11118,7 @@ tryExecErr3: int32 {
 .base: `int32`
 .size: 4
 .name: 'tryExecErr3'
-.file: 'test/stdc/tryExec.ci:49'
+.file: 'test/std/tryExec.ci:49'
 .value: tryExec(null, divisionByZero)
 }
 tryExecErr4: int32 {
@@ -11126,7 +11126,7 @@ tryExecErr4: int32 {
 .base: `int32`
 .size: 4
 .name: 'tryExecErr4'
-.file: 'test/stdc/tryExec.ci:50'
+.file: 'test/std/tryExec.ci:50'
 .value: tryExec(null, invalidInstruction)
 }
 tryExecErr5: int32 {
@@ -11134,7 +11134,7 @@ tryExecErr5: int32 {
 .base: `int32`
 .size: 4
 .name: 'tryExecErr5'
-.file: 'test/stdc/tryExec.ci:51'
+.file: 'test/std/tryExec.ci:51'
 .value: tryExec(null, invalidMemoryAccess)
 }
 tryExecErr6: int32 {
@@ -11142,7 +11142,7 @@ tryExecErr6: int32 {
 .base: `int32`
 .size: 4
 .name: 'tryExecErr6'
-.file: 'test/stdc/tryExec.ci:52'
+.file: 'test/std/tryExec.ci:52'
 .value: tryExec(null, abortExecution)
 }
 arrFixedNoInit: int64[7] {
@@ -14343,7 +14343,7 @@ testMathFloor_1: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathFloor_1'
-.file: 'test/stdc/test.math.ci:3'
+.file: 'test/std/test.math.ci:3'
 .value: Math.floor(3.200000)
 }
 testMathFloor_2: float64 {
@@ -14351,7 +14351,7 @@ testMathFloor_2: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathFloor_2'
-.file: 'test/stdc/test.math.ci:4'
+.file: 'test/std/test.math.ci:4'
 .value: Math.floor(3.500000)
 }
 testMathFloor_3: float64 {
@@ -14359,7 +14359,7 @@ testMathFloor_3: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathFloor_3'
-.file: 'test/stdc/test.math.ci:5'
+.file: 'test/std/test.math.ci:5'
 .value: Math.floor(3.600000)
 }
 testMathFloor_4: float64 {
@@ -14367,7 +14367,7 @@ testMathFloor_4: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathFloor_4'
-.file: 'test/stdc/test.math.ci:6'
+.file: 'test/std/test.math.ci:6'
 .value: Math.floor(-3.200000)
 }
 testMathFloor_5: float64 {
@@ -14375,7 +14375,7 @@ testMathFloor_5: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathFloor_5'
-.file: 'test/stdc/test.math.ci:7'
+.file: 'test/std/test.math.ci:7'
 .value: Math.floor(-3.500000)
 }
 testMathFloor_6: float64 {
@@ -14383,7 +14383,7 @@ testMathFloor_6: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathFloor_6'
-.file: 'test/stdc/test.math.ci:8'
+.file: 'test/std/test.math.ci:8'
 .value: Math.floor(-3.600000)
 }
 testMathSign_1F: float64 {
@@ -14391,7 +14391,7 @@ testMathSign_1F: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathSign_1F'
-.file: 'test/stdc/test.math.ci:10'
+.file: 'test/std/test.math.ci:10'
 .value: Math.sign(0.200000)
 }
 testMathSign_2F: float64 {
@@ -14399,7 +14399,7 @@ testMathSign_2F: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathSign_2F'
-.file: 'test/stdc/test.math.ci:11'
+.file: 'test/std/test.math.ci:11'
 .value: Math.sign(0.000000)
 }
 testMathSign_3F: float64 {
@@ -14407,7 +14407,7 @@ testMathSign_3F: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathSign_3F'
-.file: 'test/stdc/test.math.ci:12'
+.file: 'test/std/test.math.ci:12'
 .value: Math.sign(-0.900000)
 }
 testMathSign_1f: float64 {
@@ -14415,7 +14415,7 @@ testMathSign_1f: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathSign_1f'
-.file: 'test/stdc/test.math.ci:13'
+.file: 'test/std/test.math.ci:13'
 .value: Math.sign(0.200000)
 }
 testMathSign_2f: float64 {
@@ -14423,7 +14423,7 @@ testMathSign_2f: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathSign_2f'
-.file: 'test/stdc/test.math.ci:14'
+.file: 'test/std/test.math.ci:14'
 .value: Math.sign(0.000000)
 }
 testMathSign_3f: float64 {
@@ -14431,7 +14431,7 @@ testMathSign_3f: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathSign_3f'
-.file: 'test/stdc/test.math.ci:15'
+.file: 'test/std/test.math.ci:15'
 .value: Math.sign(-0.900000)
 }
 testMathAbs_1F: float64 {
@@ -14439,7 +14439,7 @@ testMathAbs_1F: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbs_1F'
-.file: 'test/stdc/test.math.ci:17'
+.file: 'test/std/test.math.ci:17'
 .value: Math.abs(0.200000)
 }
 testMathAbs_2F: float64 {
@@ -14447,7 +14447,7 @@ testMathAbs_2F: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbs_2F'
-.file: 'test/stdc/test.math.ci:18'
+.file: 'test/std/test.math.ci:18'
 .value: Math.abs(0.000000)
 }
 testMathAbs_3F: float64 {
@@ -14455,7 +14455,7 @@ testMathAbs_3F: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbs_3F'
-.file: 'test/stdc/test.math.ci:19'
+.file: 'test/std/test.math.ci:19'
 .value: Math.abs(-0.900000)
 }
 testMathAbs_1f: float64 {
@@ -14463,7 +14463,7 @@ testMathAbs_1f: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbs_1f'
-.file: 'test/stdc/test.math.ci:20'
+.file: 'test/std/test.math.ci:20'
 .value: Math.abs(0.200000)
 }
 testMathAbs_2f: float64 {
@@ -14471,7 +14471,7 @@ testMathAbs_2f: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbs_2f'
-.file: 'test/stdc/test.math.ci:21'
+.file: 'test/std/test.math.ci:21'
 .value: Math.abs(0.000000)
 }
 testMathAbs_3f: float64 {
@@ -14479,7 +14479,7 @@ testMathAbs_3f: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbs_3f'
-.file: 'test/stdc/test.math.ci:22'
+.file: 'test/std/test.math.ci:22'
 .value: Math.abs(-0.900000)
 }
 testMathMin_1f: float64 {
@@ -14487,7 +14487,7 @@ testMathMin_1f: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathMin_1f'
-.file: 'test/stdc/test.math.ci:24'
+.file: 'test/std/test.math.ci:24'
 .value: Math.min(1.000000, 2.000000)
 }
 testMathMax_2f: float64 {
@@ -14495,7 +14495,7 @@ testMathMax_2f: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathMax_2f'
-.file: 'test/stdc/test.math.ci:25'
+.file: 'test/std/test.math.ci:25'
 .value: Math.max(1.000000, 2.000000)
 }
 testMathMin_1F: float64 {
@@ -14503,7 +14503,7 @@ testMathMin_1F: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathMin_1F'
-.file: 'test/stdc/test.math.ci:26'
+.file: 'test/std/test.math.ci:26'
 .value: Math.min(1.000000, 2.000000)
 }
 testMathMax_2F: float64 {
@@ -14511,7 +14511,7 @@ testMathMax_2F: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathMax_2F'
-.file: 'test/stdc/test.math.ci:27'
+.file: 'test/std/test.math.ci:27'
 .value: Math.max(1.000000, 2.000000)
 }
 testMathClamp_1f: float64 {
@@ -14519,7 +14519,7 @@ testMathClamp_1f: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathClamp_1f'
-.file: 'test/stdc/test.math.ci:29'
+.file: 'test/std/test.math.ci:29'
 .value: Math.clamp(10.000000, 0.000000, 1.000000)
 }
 testMathClamp_1F: float64 {
@@ -14527,7 +14527,7 @@ testMathClamp_1F: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathClamp_1F'
-.file: 'test/stdc/test.math.ci:30'
+.file: 'test/std/test.math.ci:30'
 .value: Math.clamp(10.000000, 0.000000, 1.000000)
 }
 testMathLerp_1f: float64 {
@@ -14535,7 +14535,7 @@ testMathLerp_1f: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathLerp_1f'
-.file: 'test/stdc/test.math.ci:32'
+.file: 'test/std/test.math.ci:32'
 .value: Math.lerp(0.500000, 0.000000, 2.000000)
 }
 testMathLerp_1F: float64 {
@@ -14543,7 +14543,7 @@ testMathLerp_1F: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathLerp_1F'
-.file: 'test/stdc/test.math.ci:33'
+.file: 'test/std/test.math.ci:33'
 .value: Math.lerp(0.500000, 0.000000, 2.000000)
 }
 testMathSmooth_1f: float64 {
@@ -14551,7 +14551,7 @@ testMathSmooth_1f: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathSmooth_1f'
-.file: 'test/stdc/test.math.ci:35'
+.file: 'test/std/test.math.ci:35'
 .value: Math.smooth(1.000000, 0.000000, 1.000000)
 }
 testMathSmooth_1F: float64 {
@@ -14559,7 +14559,7 @@ testMathSmooth_1F: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathSmooth_1F'
-.file: 'test/stdc/test.math.ci:36'
+.file: 'test/std/test.math.ci:36'
 .value: Math.smooth(1.000000, 0.000000, 1.000000)
 }
 testMathMin_nan: float64 {
@@ -14567,7 +14567,7 @@ testMathMin_nan: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathMin_nan'
-.file: 'test/stdc/test.math.ci:38'
+.file: 'test/std/test.math.ci:38'
 .value: Math.min()
 }
 testMathMin_1: float64 {
@@ -14575,7 +14575,7 @@ testMathMin_1: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathMin_1'
-.file: 'test/stdc/test.math.ci:39'
+.file: 'test/std/test.math.ci:39'
 .value: Math.min(6, 2, 5, 8, 2, 1, 9, 2, 6)
 }
 testMathMax_nan: float64 {
@@ -14583,7 +14583,7 @@ testMathMax_nan: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathMax_nan'
-.file: 'test/stdc/test.math.ci:40'
+.file: 'test/std/test.math.ci:40'
 .value: Math.max()
 }
 testMathMax_9: float64 {
@@ -14591,7 +14591,7 @@ testMathMax_9: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathMax_9'
-.file: 'test/stdc/test.math.ci:41'
+.file: 'test/std/test.math.ci:41'
 .value: Math.max(6, 2, 5, 8, 2, 1, 9, 2, 6)
 }
 testMathSum_0: float64 {
@@ -14599,7 +14599,7 @@ testMathSum_0: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathSum_0'
-.file: 'test/stdc/test.math.ci:43'
+.file: 'test/std/test.math.ci:43'
 .value: Math.sum()
 }
 testMathSum_1: float64 {
@@ -14607,7 +14607,7 @@ testMathSum_1: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathSum_1'
-.file: 'test/stdc/test.math.ci:44'
+.file: 'test/std/test.math.ci:44'
 .value: Math.sum(1)
 }
 testMathSum_3: float64 {
@@ -14615,7 +14615,7 @@ testMathSum_3: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathSum_3'
-.file: 'test/stdc/test.math.ci:45'
+.file: 'test/std/test.math.ci:45'
 .value: Math.sum(1, 2)
 }
 testMathSum_55: float64 {
@@ -14623,7 +14623,7 @@ testMathSum_55: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathSum_55'
-.file: 'test/stdc/test.math.ci:46'
+.file: 'test/std/test.math.ci:46'
 .value: Math.sum(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 }
 testMathEval_x: float64 {
@@ -14631,7 +14631,7 @@ testMathEval_x: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathEval_x'
-.file: 'test/stdc/test.math.ci:48'
+.file: 'test/std/test.math.ci:48'
 .value: 10
 }
 testMathEval_0: float64 {
@@ -14639,7 +14639,7 @@ testMathEval_0: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathEval_0'
-.file: 'test/stdc/test.math.ci:49'
+.file: 'test/std/test.math.ci:49'
 .value: Math.eval(testMathEval_x)
 }
 testMathEval_1: float64 {
@@ -14647,7 +14647,7 @@ testMathEval_1: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathEval_1'
-.file: 'test/stdc/test.math.ci:50'
+.file: 'test/std/test.math.ci:50'
 .value: Math.eval(testMathEval_x, 1.000000)
 }
 testMathEval_2: float64 {
@@ -14655,7 +14655,7 @@ testMathEval_2: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathEval_2'
-.file: 'test/stdc/test.math.ci:51'
+.file: 'test/std/test.math.ci:51'
 .value: Math.eval(testMathEval_x, 1.000000, 1.000000)
 }
 testMathEval_3: float64 {
@@ -14663,7 +14663,7 @@ testMathEval_3: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathEval_3'
-.file: 'test/stdc/test.math.ci:52'
+.file: 'test/std/test.math.ci:52'
 .value: Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000)
 }
 testMathEval_4: float64 {
@@ -14671,7 +14671,7 @@ testMathEval_4: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathEval_4'
-.file: 'test/stdc/test.math.ci:53'
+.file: 'test/std/test.math.ci:53'
 .value: Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000)
 }
 testMathEval_5: float64 {
@@ -14679,7 +14679,7 @@ testMathEval_5: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathEval_5'
-.file: 'test/stdc/test.math.ci:54'
+.file: 'test/std/test.math.ci:54'
 .value: Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000)
 }
 testMathEval_6: float64 {
@@ -14687,7 +14687,7 @@ testMathEval_6: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathEval_6'
-.file: 'test/stdc/test.math.ci:55'
+.file: 'test/std/test.math.ci:55'
 .value: Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000)
 }
 testMathSin_f64: float64 {
@@ -14695,7 +14695,7 @@ testMathSin_f64: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathSin_f64'
-.file: 'test/stdc/test.math.ci:57'
+.file: 'test/std/test.math.ci:57'
 .value: Math.sin(Math.pi / (2))
 }
 testMathCos_f64: float64 {
@@ -14703,7 +14703,7 @@ testMathCos_f64: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathCos_f64'
-.file: 'test/stdc/test.math.ci:58'
+.file: 'test/std/test.math.ci:58'
 .value: Math.cos(Math.pi / (2))
 }
 testMathTan_f64: float64 {
@@ -14711,7 +14711,7 @@ testMathTan_f64: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathTan_f64'
-.file: 'test/stdc/test.math.ci:59'
+.file: 'test/std/test.math.ci:59'
 .value: Math.tan(Math.pi / (4))
 }
 testMathSinh_f64: float64 {
@@ -14719,7 +14719,7 @@ testMathSinh_f64: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathSinh_f64'
-.file: 'test/stdc/test.math.ci:60'
+.file: 'test/std/test.math.ci:60'
 .value: Math.sinh(Math.pi / (2))
 }
 testMathCosh_f64: float64 {
@@ -14727,7 +14727,7 @@ testMathCosh_f64: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathCosh_f64'
-.file: 'test/stdc/test.math.ci:61'
+.file: 'test/std/test.math.ci:61'
 .value: Math.cosh(Math.pi / (2))
 }
 testMathAsin_f64: float64 {
@@ -14735,7 +14735,7 @@ testMathAsin_f64: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAsin_f64'
-.file: 'test/stdc/test.math.ci:63'
+.file: 'test/std/test.math.ci:63'
 .value: Math.asin(0.200000)
 }
 testMathAcos_f64: float64 {
@@ -14743,7 +14743,7 @@ testMathAcos_f64: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAcos_f64'
-.file: 'test/stdc/test.math.ci:64'
+.file: 'test/std/test.math.ci:64'
 .value: Math.acos(0.200000)
 }
 testMathCmp_f32: bool {
@@ -14751,7 +14751,7 @@ testMathCmp_f32: bool {
 .base: `bool`
 .size: 1
 .name: 'testMathCmp_f32'
-.file: 'test/stdc/test.math.ci:67'
+.file: 'test/std/test.math.ci:67'
 .value: Math.cmp(0.000010, 0.000012, 0.000010) == 0
 }
 testMathCmp_f64: bool {
@@ -14759,7 +14759,7 @@ testMathCmp_f64: bool {
 .base: `bool`
 .size: 1
 .name: 'testMathCmp_f64'
-.file: 'test/stdc/test.math.ci:68'
+.file: 'test/std/test.math.ci:68'
 .value: Math.cmp(0.000010, 0.000012, 0.000010) == 0
 }
 testMathAbsMod_f64_0a: float64 {
@@ -14767,7 +14767,7 @@ testMathAbsMod_f64_0a: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbsMod_f64_0a'
-.file: 'test/stdc/test.math.ci:70'
+.file: 'test/std/test.math.ci:70'
 .value: Math.absMod(10.000000, 10.000000)
 }
 testMathAbsMod_f64_0b: float64 {
@@ -14775,7 +14775,7 @@ testMathAbsMod_f64_0b: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbsMod_f64_0b'
-.file: 'test/stdc/test.math.ci:71'
+.file: 'test/std/test.math.ci:71'
 .value: Math.absMod(0.000000, 10.000000)
 }
 testMathAbsMod_f64_0c: float64 {
@@ -14783,7 +14783,7 @@ testMathAbsMod_f64_0c: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbsMod_f64_0c'
-.file: 'test/stdc/test.math.ci:72'
+.file: 'test/std/test.math.ci:72'
 .value: Math.absMod(-10.000000, 10.000000)
 }
 testMathAbsMod_f64_9a: float64 {
@@ -14791,7 +14791,7 @@ testMathAbsMod_f64_9a: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbsMod_f64_9a'
-.file: 'test/stdc/test.math.ci:74'
+.file: 'test/std/test.math.ci:74'
 .value: Math.absMod(19.000000, 10.000000)
 }
 testMathAbsMod_f64_9b: float64 {
@@ -14799,7 +14799,7 @@ testMathAbsMod_f64_9b: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbsMod_f64_9b'
-.file: 'test/stdc/test.math.ci:75'
+.file: 'test/std/test.math.ci:75'
 .value: Math.absMod(9.000000, 10.000000)
 }
 testMathAbsMod_f64_9c: float64 {
@@ -14807,7 +14807,7 @@ testMathAbsMod_f64_9c: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbsMod_f64_9c'
-.file: 'test/stdc/test.math.ci:76'
+.file: 'test/std/test.math.ci:76'
 .value: Math.absMod(-1.000000, 10.000000)
 }
 testMathAbsMod_f64_9d: float64 {
@@ -14815,7 +14815,7 @@ testMathAbsMod_f64_9d: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbsMod_f64_9d'
-.file: 'test/stdc/test.math.ci:77'
+.file: 'test/std/test.math.ci:77'
 .value: Math.absMod(-11.000000, 10.000000)
 }
 testMathAbsMod_f64_8a: float64 {
@@ -14823,7 +14823,7 @@ testMathAbsMod_f64_8a: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbsMod_f64_8a'
-.file: 'test/stdc/test.math.ci:79'
+.file: 'test/std/test.math.ci:79'
 .value: Math.absMod(18.000000, 10.000000)
 }
 testMathAbsMod_f64_8b: float64 {
@@ -14831,7 +14831,7 @@ testMathAbsMod_f64_8b: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbsMod_f64_8b'
-.file: 'test/stdc/test.math.ci:80'
+.file: 'test/std/test.math.ci:80'
 .value: Math.absMod(8.000000, 10.000000)
 }
 testMathAbsMod_f64_8c: float64 {
@@ -14839,7 +14839,7 @@ testMathAbsMod_f64_8c: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbsMod_f64_8c'
-.file: 'test/stdc/test.math.ci:81'
+.file: 'test/std/test.math.ci:81'
 .value: Math.absMod(-2.000000, 10.000000)
 }
 testMathAbsMod_f64_8d: float64 {
@@ -14847,7 +14847,7 @@ testMathAbsMod_f64_8d: float64 {
 .base: `float64`
 .size: 8
 .name: 'testMathAbsMod_f64_8d'
-.file: 'test/stdc/test.math.ci:82'
+.file: 'test/std/test.math.ci:82'
 .value: Math.absMod(-12.000000, 10.000000)
 }
 testMathAbsMod_f32_0a: float32 {
@@ -14855,7 +14855,7 @@ testMathAbsMod_f32_0a: float32 {
 .base: `float32`
 .size: 4
 .name: 'testMathAbsMod_f32_0a'
-.file: 'test/stdc/test.math.ci:84'
+.file: 'test/std/test.math.ci:84'
 .value: Math.absMod(10.000000, 10.000000)
 }
 testMathAbsMod_f32_0b: float32 {
@@ -14863,7 +14863,7 @@ testMathAbsMod_f32_0b: float32 {
 .base: `float32`
 .size: 4
 .name: 'testMathAbsMod_f32_0b'
-.file: 'test/stdc/test.math.ci:85'
+.file: 'test/std/test.math.ci:85'
 .value: Math.absMod(0.000000, 10.000000)
 }
 testMathAbsMod_f32_0c: float32 {
@@ -14871,7 +14871,7 @@ testMathAbsMod_f32_0c: float32 {
 .base: `float32`
 .size: 4
 .name: 'testMathAbsMod_f32_0c'
-.file: 'test/stdc/test.math.ci:86'
+.file: 'test/std/test.math.ci:86'
 .value: Math.absMod(-10.000000, 10.000000)
 }
 testMathAbsMod_f32_9a: float32 {
@@ -14879,7 +14879,7 @@ testMathAbsMod_f32_9a: float32 {
 .base: `float32`
 .size: 4
 .name: 'testMathAbsMod_f32_9a'
-.file: 'test/stdc/test.math.ci:88'
+.file: 'test/std/test.math.ci:88'
 .value: Math.absMod(19.000000, 10.000000)
 }
 testMathAbsMod_f32_9b: float32 {
@@ -14887,7 +14887,7 @@ testMathAbsMod_f32_9b: float32 {
 .base: `float32`
 .size: 4
 .name: 'testMathAbsMod_f32_9b'
-.file: 'test/stdc/test.math.ci:89'
+.file: 'test/std/test.math.ci:89'
 .value: Math.absMod(9.000000, 10.000000)
 }
 testMathAbsMod_f32_9c: float32 {
@@ -14895,7 +14895,7 @@ testMathAbsMod_f32_9c: float32 {
 .base: `float32`
 .size: 4
 .name: 'testMathAbsMod_f32_9c'
-.file: 'test/stdc/test.math.ci:90'
+.file: 'test/std/test.math.ci:90'
 .value: Math.absMod(-1.000000, 10.000000)
 }
 testMathAbsMod_f32_9d: float32 {
@@ -14903,7 +14903,7 @@ testMathAbsMod_f32_9d: float32 {
 .base: `float32`
 .size: 4
 .name: 'testMathAbsMod_f32_9d'
-.file: 'test/stdc/test.math.ci:91'
+.file: 'test/std/test.math.ci:91'
 .value: Math.absMod(-11.000000, 10.000000)
 }
 testMathAbsMod_f32_8a: float32 {
@@ -14911,7 +14911,7 @@ testMathAbsMod_f32_8a: float32 {
 .base: `float32`
 .size: 4
 .name: 'testMathAbsMod_f32_8a'
-.file: 'test/stdc/test.math.ci:93'
+.file: 'test/std/test.math.ci:93'
 .value: Math.absMod(18.000000, 10.000000)
 }
 testMathAbsMod_f32_8b: float32 {
@@ -14919,7 +14919,7 @@ testMathAbsMod_f32_8b: float32 {
 .base: `float32`
 .size: 4
 .name: 'testMathAbsMod_f32_8b'
-.file: 'test/stdc/test.math.ci:94'
+.file: 'test/std/test.math.ci:94'
 .value: Math.absMod(8.000000, 10.000000)
 }
 testMathAbsMod_f32_8c: float32 {
@@ -14927,7 +14927,7 @@ testMathAbsMod_f32_8c: float32 {
 .base: `float32`
 .size: 4
 .name: 'testMathAbsMod_f32_8c'
-.file: 'test/stdc/test.math.ci:95'
+.file: 'test/std/test.math.ci:95'
 .value: Math.absMod(-2.000000, 10.000000)
 }
 testMathAbsMod_f32_8d: float32 {
@@ -14935,7 +14935,7 @@ testMathAbsMod_f32_8d: float32 {
 .base: `float32`
 .size: 4
 .name: 'testMathAbsMod_f32_8d'
-.file: 'test/stdc/test.math.ci:96'
+.file: 'test/std/test.math.ci:96'
 .value: Math.absMod(-12.000000, 10.000000)
 }
 .main: function {
@@ -18773,26 +18773,26 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: dup.x32 sp(1)
 	<.main+?>: inc.i32(+32)
 	<.main+?>: load.i32
-	test/stdc/number.ci:3: (9 bytes): pi64: float64 := 3.141593
+	test/std/number.ci:3: (9 bytes): pi64: float64 := 3.141593
 	<.main+?>: load.f64 3.141593
-	test/stdc/number.ci:4: (9 bytes): e64: float64 := 2.718282
+	test/std/number.ci:4: (9 bytes): e64: float64 := 2.718282
 	<.main+?>: load.f64 2.718282
-	test/stdc/number.ci:6: (3 bytes): pi32: float32 := pi64
+	test/std/number.ci:6: (3 bytes): pi32: float32 := pi64
 	<.main+?>: dup.x64 sp(2)
 	<.main+?>: f64.2f32
-	test/stdc/number.ci:7: (3 bytes): e32: float32 := e64
+	test/std/number.ci:7: (3 bytes): e32: float32 := e64
 	<.main+?>: dup.x64 sp(1)
 	<.main+?>: f64.2f32
-	test/stdc/number.ci:14: (7 bytes): r_comp: int32 := 14 << 3
+	test/std/number.ci:14: (7 bytes): r_comp: int32 := 14 << 3
 	<.main+?>: load.c32 14
 	<.main+?>: b32.shl 0x003
-	test/stdc/number.ci:15: (7 bytes): g_comp: int32 := 63 << 2
+	test/std/number.ci:15: (7 bytes): g_comp: int32 := 63 << 2
 	<.main+?>: load.c32 63
 	<.main+?>: b32.shl 0x002
-	test/stdc/number.ci:16: (7 bytes): b_comp: int32 := 31 << 3
+	test/std/number.ci:16: (7 bytes): b_comp: int32 := 31 << 3
 	<.main+?>: load.c32 31
 	<.main+?>: b32.shl 0x003
-	test/stdc/number.ci:18: (28 bytes): r5g6b5: int32 := rgb565(r_comp, g_comp, b_comp)
+	test/std/number.ci:18: (28 bytes): r5g6b5: int32 := rgb565(r_comp, g_comp, b_comp)
 	<.main+?>: dup.x32 sp(2)
 	<.main+?>: b32.shl 0x008
 	<.main+?>: load.c32 63488
@@ -18806,7 +18806,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: b32.sar 0x003
 	<.main+?>: b32.and 0x01f
 	<.main+?>: or.b32
-	test/stdc/number.ci:19: (26 bytes): r8g8b8: int32 := rgb888(r_comp, g_comp, b_comp)
+	test/std/number.ci:19: (26 bytes): r8g8b8: int32 := rgb888(r_comp, g_comp, b_comp)
 	<.main+?>: dup.x32 sp(3)
 	<.main+?>: b32.shl 0x010
 	<.main+?>: load.c32 16711680
@@ -18819,242 +18819,242 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: dup.x32 sp(2)
 	<.main+?>: b32.and 0x0ff
 	<.main+?>: or.b32
-	test/stdc/number.ci:21: (16 bytes): zxtR5: int32 := uint32.zxt(r5g6b5, 11, 5)
+	test/std/number.ci:21: (16 bytes): zxtR5: int32 := uint32.zxt(r5g6b5, 11, 5)
 	<.main+?>: dup.x32 sp(1)
 	<.main+?>: load.c32 11
 	<.main+?>: load.c32 5
 	<.main+?>: nfc(22) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
-	test/stdc/number.ci:22: (16 bytes): zxtG6: int32 := uint32.zxt(r5g6b5, 5, 6)
+	test/std/number.ci:22: (16 bytes): zxtG6: int32 := uint32.zxt(r5g6b5, 5, 6)
 	<.main+?>: dup.x32 sp(2)
 	<.main+?>: load.c32 5
 	<.main+?>: load.c32 6
 	<.main+?>: nfc(22) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
-	test/stdc/number.ci:23: (12 bytes): zxtB5: int32 := uint32.zxt(r5g6b5, 0, 5)
+	test/std/number.ci:23: (12 bytes): zxtB5: int32 := uint32.zxt(r5g6b5, 0, 5)
 	<.main+?>: dup.x32 sp(3)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 5
 	<.main+?>: nfc(22) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
-	test/stdc/number.ci:25: (16 bytes): sxtR5: int32 := uint32.sxt(r5g6b5, 11, 5)
+	test/std/number.ci:25: (16 bytes): sxtR5: int32 := uint32.sxt(r5g6b5, 11, 5)
 	<.main+?>: dup.x32 sp(4)
 	<.main+?>: load.c32 11
 	<.main+?>: load.c32 5
 	<.main+?>: nfc(23) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
-	test/stdc/number.ci:26: (16 bytes): sxtG6: int32 := uint32.sxt(r5g6b5, 5, 6)
+	test/std/number.ci:26: (16 bytes): sxtG6: int32 := uint32.sxt(r5g6b5, 5, 6)
 	<.main+?>: dup.x32 sp(5)
 	<.main+?>: load.c32 5
 	<.main+?>: load.c32 6
 	<.main+?>: nfc(23) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
-	test/stdc/number.ci:27: (12 bytes): sxtB5: int32 := uint32.sxt(r5g6b5, 0, 5)
+	test/std/number.ci:27: (12 bytes): sxtB5: int32 := uint32.sxt(r5g6b5, 0, 5)
 	<.main+?>: dup.x32 sp(6)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 5
 	<.main+?>: nfc(23) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
-	test/stdc/number.ci:29: (16 bytes): zxtR8: int32 := uint32.zxt(r8g8b8, 16, 8)
+	test/std/number.ci:29: (16 bytes): zxtR8: int32 := uint32.zxt(r8g8b8, 16, 8)
 	<.main+?>: dup.x32 sp(6)
 	<.main+?>: load.c32 16
 	<.main+?>: load.c32 8
 	<.main+?>: nfc(22) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
-	test/stdc/number.ci:30: (16 bytes): zxtG8: int32 := uint32.zxt(r8g8b8, 8, 8)
+	test/std/number.ci:30: (16 bytes): zxtG8: int32 := uint32.zxt(r8g8b8, 8, 8)
 	<.main+?>: dup.x32 sp(7)
 	<.main+?>: load.c32 8
 	<.main+?>: load.c32 8
 	<.main+?>: nfc(22) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
-	test/stdc/number.ci:31: (12 bytes): zxtB8: int32 := uint32.zxt(r8g8b8, 0, 8)
+	test/std/number.ci:31: (12 bytes): zxtB8: int32 := uint32.zxt(r8g8b8, 0, 8)
 	<.main+?>: dup.x32 sp(8)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 8
 	<.main+?>: nfc(22) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
-	test/stdc/number.ci:33: (16 bytes): sxtR8: int32 := uint32.sxt(r8g8b8, 16, 8)
+	test/std/number.ci:33: (16 bytes): sxtR8: int32 := uint32.sxt(r8g8b8, 16, 8)
 	<.main+?>: dup.x32 sp(9)
 	<.main+?>: load.c32 16
 	<.main+?>: load.c32 8
 	<.main+?>: nfc(23) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
-	test/stdc/number.ci:34: (16 bytes): sxtG8: int32 := uint32.sxt(r8g8b8, 8, 8)
+	test/std/number.ci:34: (16 bytes): sxtG8: int32 := uint32.sxt(r8g8b8, 8, 8)
 	<.main+?>: dup.x32 sp(10)
 	<.main+?>: load.c32 8
 	<.main+?>: load.c32 8
 	<.main+?>: nfc(23) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
-	test/stdc/number.ci:35: (12 bytes): sxtB8: int32 := uint32.sxt(r8g8b8, 0, 8)
+	test/std/number.ci:35: (12 bytes): sxtB8: int32 := uint32.sxt(r8g8b8, 0, 8)
 	<.main+?>: dup.x32 sp(11)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 8
 	<.main+?>: nfc(23) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
-	test/stdc/number.ci:37: (16 bytes): testSin_f64: float64 := float64.sin(pi64 / (2))
+	test/std/number.ci:37: (16 bytes): testSin_f64: float64 := float64.sin(pi64 / (2))
 	<.main+?>: dup.x64 sp(21)
 	<.main+?>: load.f64 2.000000
 	<.main+?>: div.f64
 	<.main+?>: nfc(40) ;float64.sin(x: float64): float64
-	test/stdc/number.ci:38: (16 bytes): testCos_f64: float64 := float64.cos(pi64 / (2))
+	test/std/number.ci:38: (16 bytes): testCos_f64: float64 := float64.cos(pi64 / (2))
 	<.main+?>: dup.x64 sp(23)
 	<.main+?>: load.f64 2.000000
 	<.main+?>: div.f64
 	<.main+?>: nfc(41) ;float64.cos(x: float64): float64
-	test/stdc/number.ci:39: (16 bytes): testTan_f64: float64 := float64.tan(pi64 / (4))
+	test/std/number.ci:39: (16 bytes): testTan_f64: float64 := float64.tan(pi64 / (4))
 	<.main+?>: dup.x64 sp(25)
 	<.main+?>: load.f64 4.000000
 	<.main+?>: div.f64
 	<.main+?>: nfc(42) ;float64.tan(x: float64): float64
-	test/stdc/number.ci:40: (12 bytes): testLog_f64: float64 := float64.log(e64 * e64 * e64)
+	test/std/number.ci:40: (12 bytes): testLog_f64: float64 := float64.log(e64 * e64 * e64)
 	<.main+?>: dup.x64 sp(25)
 	<.main+?>: dup.x64 sp(27)
 	<.main+?>: mul.f64
 	<.main+?>: dup.x64 sp(27)
 	<.main+?>: mul.f64
 	<.main+?>: nfc(43) ;float64.log(x: float64): float64
-	test/stdc/number.ci:41: (13 bytes): testExp_f64: float64 := float64.exp(1.000000)
+	test/std/number.ci:41: (13 bytes): testExp_f64: float64 := float64.exp(1.000000)
 	<.main+?>: load.f64 1.000000
 	<.main+?>: nfc(44) ;float64.exp(x: float64): float64
-	test/stdc/number.ci:42: (18 bytes): testPow_f64: float64 := float64.pow(pi64 * pi64, 0.500000)
+	test/std/number.ci:42: (18 bytes): testPow_f64: float64 := float64.pow(pi64 * pi64, 0.500000)
 	<.main+?>: dup.x64 sp(31)
 	<.main+?>: dup.x64 sp(33)
 	<.main+?>: mul.f64
 	<.main+?>: load.f64 0.500000
 	<.main+?>: nfc(45) ;float64.pow(x: float64, y: float64): float64
-	test/stdc/number.ci:43: (9 bytes): testSqrt_f64: float64 := float64.sqrt(pi64 * pi64)
+	test/std/number.ci:43: (9 bytes): testSqrt_f64: float64 := float64.sqrt(pi64 * pi64)
 	<.main+?>: dup.x64 sp(33)
 	<.main+?>: dup.x64 sp(35)
 	<.main+?>: mul.f64
 	<.main+?>: nfc(46) ;float64.sqrt(x: float64): float64
-	test/stdc/number.ci:44: (15 bytes): testAtan_f64: float64 := float64.atan2(pi64, 1.000000)
+	test/std/number.ci:44: (15 bytes): testAtan_f64: float64 := float64.atan2(pi64, 1.000000)
 	<.main+?>: dup.x64 sp(35)
 	<.main+?>: load.f64 1.000000
 	<.main+?>: nfc(47) ;float64.atan2(x: float64, y: float64): float64
-	test/stdc/number.ci:46: (12 bytes): testSin_f32: float32 := float32.sin(pi32 / (2))
+	test/std/number.ci:46: (12 bytes): testSin_f32: float32 := float32.sin(pi32 / (2))
 	<.main+?>: dup.x32 sp(34)
 	<.main+?>: load.f32 2.000000
 	<.main+?>: div.f32
 	<.main+?>: nfc(32) ;float32.sin(x: float32): float32
-	test/stdc/number.ci:47: (12 bytes): testCos_f32: float32 := float32.cos(pi32 / (2))
+	test/std/number.ci:47: (12 bytes): testCos_f32: float32 := float32.cos(pi32 / (2))
 	<.main+?>: dup.x32 sp(35)
 	<.main+?>: load.f32 2.000000
 	<.main+?>: div.f32
 	<.main+?>: nfc(33) ;float32.cos(x: float32): float32
-	test/stdc/number.ci:48: (12 bytes): testTan_f32: float32 := float32.tan(pi32 / (4))
+	test/std/number.ci:48: (12 bytes): testTan_f32: float32 := float32.tan(pi32 / (4))
 	<.main+?>: dup.x32 sp(36)
 	<.main+?>: load.f32 4.000000
 	<.main+?>: div.f32
 	<.main+?>: nfc(34) ;float32.tan(x: float32): float32
-	test/stdc/number.ci:49: (12 bytes): testLog_f32: float32 := float32.log(e32 * e32 * e32)
+	test/std/number.ci:49: (12 bytes): testLog_f32: float32 := float32.log(e32 * e32 * e32)
 	<.main+?>: dup.x32 sp(36)
 	<.main+?>: dup.x32 sp(37)
 	<.main+?>: mul.f32
 	<.main+?>: dup.x32 sp(37)
 	<.main+?>: mul.f32
 	<.main+?>: nfc(35) ;float32.log(x: float32): float32
-	test/stdc/number.ci:50: (9 bytes): testExp_f32: float32 := float32.exp(1.000000)
+	test/std/number.ci:50: (9 bytes): testExp_f32: float32 := float32.exp(1.000000)
 	<.main+?>: load.f32 1.000000
 	<.main+?>: nfc(36) ;float32.exp(x: float32): float32
-	test/stdc/number.ci:51: (14 bytes): testPow_f32: float32 := float32.pow(pi32 * pi32, 0.500000)
+	test/std/number.ci:51: (14 bytes): testPow_f32: float32 := float32.pow(pi32 * pi32, 0.500000)
 	<.main+?>: dup.x32 sp(39)
 	<.main+?>: dup.x32 sp(40)
 	<.main+?>: mul.f32
 	<.main+?>: load.f32 0.500000
 	<.main+?>: nfc(37) ;float32.pow(x: float32, y: float32): float32
-	test/stdc/number.ci:52: (9 bytes): testSqrt_f32: float32 := float32.sqrt(pi32 * pi32)
+	test/std/number.ci:52: (9 bytes): testSqrt_f32: float32 := float32.sqrt(pi32 * pi32)
 	<.main+?>: dup.x32 sp(40)
 	<.main+?>: dup.x32 sp(41)
 	<.main+?>: mul.f32
 	<.main+?>: nfc(38) ;float32.sqrt(x: float32): float32
-	test/stdc/number.ci:53: (11 bytes): testAtan_f32: float32 := float32.atan2(pi32, 1.000000)
+	test/std/number.ci:53: (11 bytes): testAtan_f32: float32 := float32.atan2(pi32, 1.000000)
 	<.main+?>: dup.x32 sp(41)
 	<.main+?>: load.f32 1.000000
 	<.main+?>: nfc(39) ;float32.atan2(x: float32, y: float32): float32
-	test/stdc/number.ci:55: (6 bytes): testPopulation_u32: int32 := uint32.pop(r5g6b5)
+	test/std/number.ci:55: (6 bytes): testPopulation_u32: int32 := uint32.pop(r5g6b5)
 	<.main+?>: dup.x32 sp(37)
 	<.main+?>: nfc(24) ;uint32.pop(value: int32): int32
-	test/stdc/number.ci:56: (6 bytes): testSwapBits_u32: uint32 := uint32.swap(r5g6b5)
+	test/std/number.ci:56: (6 bytes): testSwapBits_u32: uint32 := uint32.swap(r5g6b5)
 	<.main+?>: dup.x32 sp(38)
 	<.main+?>: nfc(25) ;uint32.swap(value: int32): int32
-	test/stdc/number.ci:57: (6 bytes): testBitScanReverse_u32: int32 := uint32.bsr(r5g6b5)
+	test/std/number.ci:57: (6 bytes): testBitScanReverse_u32: int32 := uint32.bsr(r5g6b5)
 	<.main+?>: dup.x32 sp(39)
 	<.main+?>: nfc(26) ;uint32.bsr(value: int32): int32
-	test/stdc/number.ci:58: (6 bytes): testBitScanForward_u32: int32 := uint32.bsf(r5g6b5)
+	test/std/number.ci:58: (6 bytes): testBitScanForward_u32: int32 := uint32.bsf(r5g6b5)
 	<.main+?>: dup.x32 sp(40)
 	<.main+?>: nfc(27) ;uint32.bsf(value: int32): int32
-	test/stdc/number.ci:59: (6 bytes): testHighBit_u32: int32 := uint32.hib(r5g6b5)
+	test/std/number.ci:59: (6 bytes): testHighBit_u32: int32 := uint32.hib(r5g6b5)
 	<.main+?>: dup.x32 sp(41)
 	<.main+?>: nfc(28) ;uint32.hib(value: int32): int32
-	test/stdc/number.ci:60: (6 bytes): testLowBit_u32: int32 := uint32.lob(r5g6b5)
+	test/std/number.ci:60: (6 bytes): testLowBit_u32: int32 := uint32.lob(r5g6b5)
 	<.main+?>: dup.x32 sp(42)
 	<.main+?>: nfc(29) ;uint32.lob(value: int32): int32
-	test/stdc/number.ci:62: (12 bytes): testZeroExtend_u32: int32 := uint32.zxt(r5g6b5, 0, 5)
+	test/std/number.ci:62: (12 bytes): testZeroExtend_u32: int32 := uint32.zxt(r5g6b5, 0, 5)
 	<.main+?>: dup.x32 sp(43)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 5
 	<.main+?>: nfc(22) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
-	test/stdc/number.ci:63: (12 bytes): testSignExtend_u32: int32 := uint32.sxt(r5g6b5, 0, 5)
+	test/std/number.ci:63: (12 bytes): testSignExtend_u32: int32 := uint32.sxt(r5g6b5, 0, 5)
 	<.main+?>: dup.x32 sp(44)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 5
 	<.main+?>: nfc(23) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
-	test/stdc/number.ci:65: (14 bytes): testZeroExtend_u64: int32 := uint64.zxt(r5g6b5, 0, 5)
+	test/std/number.ci:65: (14 bytes): testZeroExtend_u64: int32 := uint64.zxt(r5g6b5, 0, 5)
 	<.main+?>: dup.x32 sp(45)
 	<.main+?>: i32.2i64
 	<.main+?>: load.z32
 	<.main+?>: load.c32 5
 	<.main+?>: nfc(30) ;uint64.zxt(value: int64, offs: int32, count: int32): int64
 	<.main+?>: i64.2i32
-	test/stdc/number.ci:66: (14 bytes): testSignExtend_u64: int32 := uint64.sxt(r5g6b5, 0, 5)
+	test/std/number.ci:66: (14 bytes): testSignExtend_u64: int32 := uint64.sxt(r5g6b5, 0, 5)
 	<.main+?>: dup.x32 sp(46)
 	<.main+?>: i32.2i64
 	<.main+?>: load.z32
 	<.main+?>: load.c32 5
 	<.main+?>: nfc(31) ;uint64.sxt(value: int64, offs: int32, count: int32): int64
 	<.main+?>: i64.2i32
-	test/stdc/memory.ci:7: (14 bytes): p1: pointer := malloc(1024)
+	test/std/memory.ci:7: (14 bytes): p1: pointer := malloc(1024)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.c32 1024
 	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
-	test/stdc/memory.ci:8: (14 bytes): p2: pointer := malloc(80)
+	test/std/memory.ci:8: (14 bytes): p2: pointer := malloc(80)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.c32 80
 	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
-	test/stdc/memory.ci:9: (14 bytes): p3: pointer := malloc(160)
+	test/std/memory.ci:9: (14 bytes): p3: pointer := malloc(160)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.c32 160
 	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
-	test/stdc/memory.ci:10: (14 bytes): p4: pointer := malloc(820)
+	test/std/memory.ci:10: (14 bytes): p4: pointer := malloc(820)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.c32 820
 	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
-	test/stdc/memory.ci:13: (16 bytes): pointer.fill(p1, 0, 1024);
+	test/std/memory.ci:13: (16 bytes): pointer.fill(p1, 0, 1024);
 	<.main+?>: dup.x32 sp(3)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 1024
 	<.main+?>: nfc(12) ;pointer.fill(dst: pointer, value: int32, size: int32): pointer
 	<.main+?>: inc.sp(-4)
-	test/stdc/memory.ci:14: (17 bytes): pointer.copy(p1, p3, 160);
+	test/std/memory.ci:14: (17 bytes): pointer.copy(p1, p3, 160);
 	<.main+?>: dup.x32 sp(3)
 	<.main+?>: dup.x32 sp(2)
 	<.main+?>: load.c32 160
 	<.main+?>: nfc(13) ;pointer.copy(dst: pointer, src: pointer, size: int32): pointer
 	<.main+?>: inc.sp(-4)
-	test/stdc/memory.ci:17: (11 bytes): free(p1);
+	test/std/memory.ci:17: (11 bytes): free(p1);
 	<.main+?>: dup.x32 sp(3)
 	<.main+?>: load.z32
 	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	<.main+?>: inc.sp(-4)
-	test/stdc/memory.ci:18: (11 bytes): free(p2);
+	test/std/memory.ci:18: (11 bytes): free(p2);
 	<.main+?>: dup.x32 sp(2)
 	<.main+?>: load.z32
 	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	<.main+?>: inc.sp(-4)
-	test/stdc/memory.ci:19: (11 bytes): free(p3);
+	test/std/memory.ci:19: (11 bytes): free(p3);
 	<.main+?>: dup.x32 sp(1)
 	<.main+?>: load.z32
 	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	<.main+?>: inc.sp(-4)
-	test/stdc/memory.ci:20: (11 bytes): free(p4);
+	test/std/memory.ci:20: (11 bytes): free(p4);
 	<.main+?>: dup.x32 sp(0)
 	<.main+?>: load.z32
 	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	<.main+?>: inc.sp(-4)
-	test/stdc/memory.ci:23: (9 bytes): val1: int64 := 42
+	test/std/memory.ci:23: (9 bytes): val1: int64 := 42
 	<.main+?>: load.c64 42
-	test/stdc/memory.ci:24: (9 bytes): val2: int64 := 96
+	test/std/memory.ci:24: (9 bytes): val2: int64 := 96
 	<.main+?>: load.c64 96
-	test/stdc/memory.ci:26: (34 bytes): debug("val1", val1);
-	<.main+?>: load.ref <?> ;"test/stdc/memory.ci"
+	test/std/memory.ci:26: (34 bytes): debug("val1", val1);
+	<.main+?>: load.ref <?> ;"test/std/memory.ci"
 	<.main+?>: load.c32 26
 	<.main+?>: load.c32 14
 	<.main+?>: load.z32
@@ -19062,8 +19062,8 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;int64
 	<.main+?>: load.sp(+32)
 	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/stdc/memory.ci:27: (34 bytes): debug("val2", val2);
-	<.main+?>: load.ref <?> ;"test/stdc/memory.ci"
+	test/std/memory.ci:27: (34 bytes): debug("val2", val2);
+	<.main+?>: load.ref <?> ;"test/std/memory.ci"
 	<.main+?>: load.c32 27
 	<.main+?>: load.c32 14
 	<.main+?>: load.z32
@@ -19071,20 +19071,20 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;int64
 	<.main+?>: load.sp(+24)
 	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/stdc/memory.ci:29: (20 bytes): pointer.move(pointer(val2), pointer(val1), sizeof(int64));
+	test/std/memory.ci:29: (20 bytes): pointer.move(pointer(val2), pointer(val1), sizeof(int64));
 	<.main+?>: load.sp(+0)
 	<.main+?>: load.sp(+12)
 	<.main+?>: load.m32 <?>
 	<.main+?>: nfc(14) ;pointer.move(dst: pointer, src: pointer, size: int32): pointer
 	<.main+?>: inc.sp(-4)
-	test/stdc/memory.ci:30: (17 bytes): pointer.fill(pointer(val1), 0, sizeof(int64));
+	test/std/memory.ci:30: (17 bytes): pointer.fill(pointer(val1), 0, sizeof(int64));
 	<.main+?>: load.sp(+8)
 	<.main+?>: load.z32
 	<.main+?>: load.m32 <?>
 	<.main+?>: nfc(12) ;pointer.fill(dst: pointer, value: int32, size: int32): pointer
 	<.main+?>: inc.sp(-4)
-	test/stdc/memory.ci:32: (34 bytes): debug("val1", val1);
-	<.main+?>: load.ref <?> ;"test/stdc/memory.ci"
+	test/std/memory.ci:32: (34 bytes): debug("val1", val1);
+	<.main+?>: load.ref <?> ;"test/std/memory.ci"
 	<.main+?>: load.c32 32
 	<.main+?>: load.c32 14
 	<.main+?>: load.z32
@@ -19092,8 +19092,8 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;int64
 	<.main+?>: load.sp(+32)
 	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/stdc/memory.ci:33: (34 bytes): debug("val2", val2);
-	<.main+?>: load.ref <?> ;"test/stdc/memory.ci"
+	test/std/memory.ci:33: (34 bytes): debug("val2", val2);
+	<.main+?>: load.ref <?> ;"test/std/memory.ci"
 	<.main+?>: load.c32 33
 	<.main+?>: load.c32 14
 	<.main+?>: load.z32
@@ -19101,31 +19101,31 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;int64
 	<.main+?>: load.sp(+24)
 	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	test/stdc/tryExec.ci:46: (14 bytes): tryExecErr0: int32 := tryExec(null, noError)
+	test/std/tryExec.ci:46: (14 bytes): tryExecErr0: int32 := tryExec(null, noError)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;noError(ptr: pointer): void
 	<.main+?>: nfc(10) ;tryExec(args: pointer, action(args: pointer): void): int32
-	test/stdc/tryExec.ci:47: (14 bytes): tryExecErr1: int32 := tryExec(null, null)
+	test/std/tryExec.ci:47: (14 bytes): tryExecErr1: int32 := tryExec(null, null)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: nfc(10) ;tryExec(args: pointer, action(args: pointer): void): int32
-	test/stdc/tryExec.ci:48: (14 bytes): tryExecErr2: int32 := tryExec(null, stackOverflow)
+	test/std/tryExec.ci:48: (14 bytes): tryExecErr2: int32 := tryExec(null, stackOverflow)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;stackOverflow(ptr: pointer): void
 	<.main+?>: nfc(10) ;tryExec(args: pointer, action(args: pointer): void): int32
-	test/stdc/tryExec.ci:49: (14 bytes): tryExecErr3: int32 := tryExec(null, divisionByZero)
+	test/std/tryExec.ci:49: (14 bytes): tryExecErr3: int32 := tryExec(null, divisionByZero)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;divisionByZero(args: pointer): void
 	<.main+?>: nfc(10) ;tryExec(args: pointer, action(args: pointer): void): int32
-	test/stdc/tryExec.ci:50: (14 bytes): tryExecErr4: int32 := tryExec(null, invalidInstruction)
+	test/std/tryExec.ci:50: (14 bytes): tryExecErr4: int32 := tryExec(null, invalidInstruction)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;invalidInstruction(args: pointer): void
 	<.main+?>: nfc(10) ;tryExec(args: pointer, action(args: pointer): void): int32
-	test/stdc/tryExec.ci:51: (14 bytes): tryExecErr5: int32 := tryExec(null, invalidMemoryAccess)
+	test/std/tryExec.ci:51: (14 bytes): tryExecErr5: int32 := tryExec(null, invalidMemoryAccess)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;invalidMemoryAccess(args: pointer): void
 	<.main+?>: nfc(10) ;tryExec(args: pointer, action(args: pointer): void): int32
-	test/stdc/tryExec.ci:52: (14 bytes): tryExecErr6: int32 := tryExec(null, abortExecution)
+	test/std/tryExec.ci:52: (14 bytes): tryExecErr6: int32 := tryExec(null, abortExecution)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;abortExecution(args: pointer): void
 	<.main+?>: nfc(10) ;tryExec(args: pointer, action(args: pointer): void): int32
@@ -21172,43 +21172,43 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: clt.i32
 	<.main+?>: jnz -62
 	<.main+?>: inc.sp(-4)
-	test/stdc/test.math.ci:3: (20 bytes): testMathFloor_1: float64 := Math.floor(3.200000)
+	test/std/test.math.ci:3: (20 bytes): testMathFloor_1: float64 := Math.floor(3.200000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 3.200000
 	<.main+?>: load.ref <?> ;Math.floor(x: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:4: (20 bytes): testMathFloor_2: float64 := Math.floor(3.500000)
+	test/std/test.math.ci:4: (20 bytes): testMathFloor_2: float64 := Math.floor(3.500000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 3.500000
 	<.main+?>: load.ref <?> ;Math.floor(x: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:5: (20 bytes): testMathFloor_3: float64 := Math.floor(3.600000)
+	test/std/test.math.ci:5: (20 bytes): testMathFloor_3: float64 := Math.floor(3.600000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 3.600000
 	<.main+?>: load.ref <?> ;Math.floor(x: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:6: (20 bytes): testMathFloor_4: float64 := Math.floor(-3.200000)
+	test/std/test.math.ci:6: (20 bytes): testMathFloor_4: float64 := Math.floor(-3.200000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 -3.200000
 	<.main+?>: load.ref <?> ;Math.floor(x: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:7: (20 bytes): testMathFloor_5: float64 := Math.floor(-3.500000)
+	test/std/test.math.ci:7: (20 bytes): testMathFloor_5: float64 := Math.floor(-3.500000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 -3.500000
 	<.main+?>: load.ref <?> ;Math.floor(x: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:8: (20 bytes): testMathFloor_6: float64 := Math.floor(-3.600000)
+	test/std/test.math.ci:8: (20 bytes): testMathFloor_6: float64 := Math.floor(-3.600000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 -3.600000
 	<.main+?>: load.ref <?> ;Math.floor(x: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:10: (25 bytes): testMathSign_1F: float64 := Math.sign(0.200000)
+	test/std/test.math.ci:10: (25 bytes): testMathSign_1F: float64 := Math.sign(0.200000)
 	<.main+?>: load.f64 0.200000
 	<.main+?>: dup.x64 sp(0)
 	<.main+?>: load.z64
@@ -21220,7 +21220,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: set.x32 sp(2)
 	<.main+?>: inc.sp(-4)
 	<.main+?>: i32.2f64
-	test/stdc/test.math.ci:11: (17 bytes): testMathSign_2F: float64 := Math.sign(0.000000)
+	test/std/test.math.ci:11: (17 bytes): testMathSign_2F: float64 := Math.sign(0.000000)
 	<.main+?>: load.z64
 	<.main+?>: dup.x64 sp(0)
 	<.main+?>: load.z64
@@ -21232,7 +21232,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: set.x32 sp(2)
 	<.main+?>: inc.sp(-4)
 	<.main+?>: i32.2f64
-	test/stdc/test.math.ci:12: (25 bytes): testMathSign_3F: float64 := Math.sign(-0.900000)
+	test/std/test.math.ci:12: (25 bytes): testMathSign_3F: float64 := Math.sign(-0.900000)
 	<.main+?>: load.f64 -0.900000
 	<.main+?>: dup.x64 sp(0)
 	<.main+?>: load.z64
@@ -21244,7 +21244,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: set.x32 sp(2)
 	<.main+?>: inc.sp(-4)
 	<.main+?>: i32.2f64
-	test/stdc/test.math.ci:13: (17 bytes): testMathSign_1f: float64 := Math.sign(0.200000)
+	test/std/test.math.ci:13: (17 bytes): testMathSign_1f: float64 := Math.sign(0.200000)
 	<.main+?>: load.f32 0.200000
 	<.main+?>: dup.x32 sp(0)
 	<.main+?>: load.z32
@@ -21255,7 +21255,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: sub.i32
 	<.main+?>: set.x32 sp(1)
 	<.main+?>: i32.2f64
-	test/stdc/test.math.ci:14: (13 bytes): testMathSign_2f: float64 := Math.sign(0.000000)
+	test/std/test.math.ci:14: (13 bytes): testMathSign_2f: float64 := Math.sign(0.000000)
 	<.main+?>: load.z32
 	<.main+?>: dup.x32 sp(0)
 	<.main+?>: load.z32
@@ -21266,7 +21266,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: sub.i32
 	<.main+?>: set.x32 sp(1)
 	<.main+?>: i32.2f64
-	test/stdc/test.math.ci:15: (17 bytes): testMathSign_3f: float64 := Math.sign(-0.900000)
+	test/std/test.math.ci:15: (17 bytes): testMathSign_3f: float64 := Math.sign(-0.900000)
 	<.main+?>: load.f32 -0.900000
 	<.main+?>: dup.x32 sp(0)
 	<.main+?>: load.z32
@@ -21277,45 +21277,45 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: sub.i32
 	<.main+?>: set.x32 sp(1)
 	<.main+?>: i32.2f64
-	test/stdc/test.math.ci:17: (20 bytes): testMathAbs_1F: float64 := Math.abs(0.200000)
+	test/std/test.math.ci:17: (20 bytes): testMathAbs_1F: float64 := Math.abs(0.200000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 0.200000
 	<.main+?>: load.ref <?> ;Math.abs(x: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:18: (11 bytes): testMathAbs_2F: float64 := Math.abs(0.000000)
+	test/std/test.math.ci:18: (11 bytes): testMathAbs_2F: float64 := Math.abs(0.000000)
 	<.main+?>: load.z128
 	<.main+?>: load.ref <?> ;Math.abs(x: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:19: (20 bytes): testMathAbs_3F: float64 := Math.abs(-0.900000)
+	test/std/test.math.ci:19: (20 bytes): testMathAbs_3F: float64 := Math.abs(-0.900000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 -0.900000
 	<.main+?>: load.ref <?> ;Math.abs(x: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:20: (17 bytes): testMathAbs_1f: float64 := Math.abs(0.200000)
+	test/std/test.math.ci:20: (17 bytes): testMathAbs_1f: float64 := Math.abs(0.200000)
 	<.main+?>: load.z32
 	<.main+?>: load.f32 0.200000
 	<.main+?>: load.ref <?> ;Math.abs(x: float32): float32
 	<.main+?>: call
 	<.main+?>: inc.sp(-4)
 	<.main+?>: f32.2f64
-	test/stdc/test.math.ci:21: (13 bytes): testMathAbs_2f: float64 := Math.abs(0.000000)
+	test/std/test.math.ci:21: (13 bytes): testMathAbs_2f: float64 := Math.abs(0.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.z32
 	<.main+?>: load.ref <?> ;Math.abs(x: float32): float32
 	<.main+?>: call
 	<.main+?>: inc.sp(-4)
 	<.main+?>: f32.2f64
-	test/stdc/test.math.ci:22: (17 bytes): testMathAbs_3f: float64 := Math.abs(-0.900000)
+	test/std/test.math.ci:22: (17 bytes): testMathAbs_3f: float64 := Math.abs(-0.900000)
 	<.main+?>: load.z32
 	<.main+?>: load.f32 -0.900000
 	<.main+?>: load.ref <?> ;Math.abs(x: float32): float32
 	<.main+?>: call
 	<.main+?>: inc.sp(-4)
 	<.main+?>: f32.2f64
-	test/stdc/test.math.ci:24: (22 bytes): testMathMin_1f: float64 := Math.min(1.000000, 2.000000)
+	test/std/test.math.ci:24: (22 bytes): testMathMin_1f: float64 := Math.min(1.000000, 2.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.f32 1.000000
 	<.main+?>: load.f32 2.000000
@@ -21323,7 +21323,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
 	<.main+?>: f32.2f64
-	test/stdc/test.math.ci:25: (22 bytes): testMathMax_2f: float64 := Math.max(1.000000, 2.000000)
+	test/std/test.math.ci:25: (22 bytes): testMathMax_2f: float64 := Math.max(1.000000, 2.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.f32 1.000000
 	<.main+?>: load.f32 2.000000
@@ -21331,21 +21331,21 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
 	<.main+?>: f32.2f64
-	test/stdc/test.math.ci:26: (29 bytes): testMathMin_1F: float64 := Math.min(1.000000, 2.000000)
+	test/std/test.math.ci:26: (29 bytes): testMathMin_1F: float64 := Math.min(1.000000, 2.000000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 1.000000
 	<.main+?>: load.f64 2.000000
 	<.main+?>: load.ref <?> ;Math.min(a: float64, b: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:27: (29 bytes): testMathMax_2F: float64 := Math.max(1.000000, 2.000000)
+	test/std/test.math.ci:27: (29 bytes): testMathMax_2F: float64 := Math.max(1.000000, 2.000000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 1.000000
 	<.main+?>: load.f64 2.000000
 	<.main+?>: load.ref <?> ;Math.max(a: float64, b: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:29: (23 bytes): testMathClamp_1f: float64 := Math.clamp(10.000000, 0.000000, 1.000000)
+	test/std/test.math.ci:29: (23 bytes): testMathClamp_1f: float64 := Math.clamp(10.000000, 0.000000, 1.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.f32 10.000000
 	<.main+?>: load.z32
@@ -21354,7 +21354,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: call
 	<.main+?>: inc.sp(-12)
 	<.main+?>: f32.2f64
-	test/stdc/test.math.ci:30: (30 bytes): testMathClamp_1F: float64 := Math.clamp(10.000000, 0.000000, 1.000000)
+	test/std/test.math.ci:30: (30 bytes): testMathClamp_1F: float64 := Math.clamp(10.000000, 0.000000, 1.000000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 10.000000
 	<.main+?>: load.z64
@@ -21362,7 +21362,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;Math.clamp(t: float64, a: float64, b: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-24)
-	test/stdc/test.math.ci:32: (21 bytes): testMathLerp_1f: float64 := Math.lerp(0.500000, 0.000000, 2.000000)
+	test/std/test.math.ci:32: (21 bytes): testMathLerp_1f: float64 := Math.lerp(0.500000, 0.000000, 2.000000)
 	<.main+?>: load.z32
 	<.main+?>: dup.x32 sp(0)
 	<.main+?>: load.f32 0.500000
@@ -21373,7 +21373,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: add.f32
 	<.main+?>: set.x32 sp(1)
 	<.main+?>: f32.2f64
-	test/stdc/test.math.ci:33: (28 bytes): testMathLerp_1F: float64 := Math.lerp(0.500000, 0.000000, 2.000000)
+	test/std/test.math.ci:33: (28 bytes): testMathLerp_1F: float64 := Math.lerp(0.500000, 0.000000, 2.000000)
 	<.main+?>: load.z64
 	<.main+?>: dup.x64 sp(0)
 	<.main+?>: load.f64 0.500000
@@ -21383,7 +21383,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: mul.f64
 	<.main+?>: add.f64
 	<.main+?>: set.x64 sp(2)
-	test/stdc/test.math.ci:35: (60 bytes): testMathSmooth_1f: float64 := Math.smooth(1.000000, 0.000000, 1.000000)
+	test/std/test.math.ci:35: (60 bytes): testMathSmooth_1f: float64 := Math.smooth(1.000000, 0.000000, 1.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.z32
 	<.main+?>: load.f32 1.000000
@@ -21410,7 +21410,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: set.x32 sp(1)
 	<.main+?>: set.x32 sp(1)
 	<.main+?>: f32.2f64
-	test/stdc/test.math.ci:36: (78 bytes): testMathSmooth_1F: float64 := Math.smooth(1.000000, 0.000000, 1.000000)
+	test/std/test.math.ci:36: (78 bytes): testMathSmooth_1F: float64 := Math.smooth(1.000000, 0.000000, 1.000000)
 	<.main+?>: load.z128
 	<.main+?>: load.f64 1.000000
 	<.main+?>: dup.x64 sp(4)
@@ -21435,7 +21435,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: mul.f64
 	<.main+?>: set.x64 sp(2)
 	<.main+?>: set.x64 sp(2)
-	test/stdc/test.math.ci:38: (21 bytes): testMathMin_nan: float64 := Math.min()
+	test/std/test.math.ci:38: (21 bytes): testMathMin_nan: float64 := Math.min()
 	<.main+?>: load.z32
 	<.main+?>: load.sp(+4)
 	<.main+?>: load.z64
@@ -21444,7 +21444,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: call
 	<.main+?>: mov.x64 sp(4, 2)
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:39: (106 bytes): testMathMin_1: float64 := Math.min(6, 2, 5, 8, 2, 1, 9, 2, 6)
+	test/std/test.math.ci:39: (106 bytes): testMathMin_1: float64 := Math.min(6, 2, 5, 8, 2, 1, 9, 2, 6)
 	<.main+?>: load.f64 6.000000
 	<.main+?>: load.f64 2.000000
 	<.main+?>: load.f64 9.000000
@@ -21462,7 +21462,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: call
 	<.main+?>: mov.x64 sp(22, 2)
 	<.main+?>: inc.sp(-88)
-	test/stdc/test.math.ci:40: (21 bytes): testMathMax_nan: float64 := Math.max()
+	test/std/test.math.ci:40: (21 bytes): testMathMax_nan: float64 := Math.max()
 	<.main+?>: load.z32
 	<.main+?>: load.sp(+4)
 	<.main+?>: load.z64
@@ -21471,7 +21471,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: call
 	<.main+?>: mov.x64 sp(4, 2)
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:41: (106 bytes): testMathMax_9: float64 := Math.max(6, 2, 5, 8, 2, 1, 9, 2, 6)
+	test/std/test.math.ci:41: (106 bytes): testMathMax_9: float64 := Math.max(6, 2, 5, 8, 2, 1, 9, 2, 6)
 	<.main+?>: load.f64 6.000000
 	<.main+?>: load.f64 2.000000
 	<.main+?>: load.f64 9.000000
@@ -21489,7 +21489,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: call
 	<.main+?>: mov.x64 sp(22, 2)
 	<.main+?>: inc.sp(-88)
-	test/stdc/test.math.ci:43: (21 bytes): testMathSum_0: float64 := Math.sum()
+	test/std/test.math.ci:43: (21 bytes): testMathSum_0: float64 := Math.sum()
 	<.main+?>: load.z32
 	<.main+?>: load.sp(+4)
 	<.main+?>: load.z64
@@ -21498,7 +21498,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: call
 	<.main+?>: mov.x64 sp(4, 2)
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:44: (34 bytes): testMathSum_1: float64 := Math.sum(1)
+	test/std/test.math.ci:44: (34 bytes): testMathSum_1: float64 := Math.sum(1)
 	<.main+?>: load.f64 1.000000
 	<.main+?>: load.c32 1
 	<.main+?>: load.sp(+4)
@@ -21508,7 +21508,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: call
 	<.main+?>: mov.x64 sp(6, 2)
 	<.main+?>: inc.sp(-24)
-	test/stdc/test.math.ci:45: (43 bytes): testMathSum_3: float64 := Math.sum(1, 2)
+	test/std/test.math.ci:45: (43 bytes): testMathSum_3: float64 := Math.sum(1, 2)
 	<.main+?>: load.f64 2.000000
 	<.main+?>: load.f64 1.000000
 	<.main+?>: load.c32 2
@@ -21519,7 +21519,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: call
 	<.main+?>: mov.x64 sp(8, 2)
 	<.main+?>: inc.sp(-32)
-	test/stdc/test.math.ci:46: (115 bytes): testMathSum_55: float64 := Math.sum(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+	test/std/test.math.ci:46: (115 bytes): testMathSum_55: float64 := Math.sum(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 	<.main+?>: load.f64 10.000000
 	<.main+?>: load.f64 9.000000
 	<.main+?>: load.f64 8.000000
@@ -21538,9 +21538,9 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: call
 	<.main+?>: mov.x64 sp(24, 2)
 	<.main+?>: inc.sp(-96)
-	test/stdc/test.math.ci:48: (9 bytes): testMathEval_x: float64 := 10
+	test/std/test.math.ci:48: (9 bytes): testMathEval_x: float64 := 10
 	<.main+?>: load.f64 10.000000
-	test/stdc/test.math.ci:49: (23 bytes): testMathEval_0: float64 := Math.eval(testMathEval_x)
+	test/std/test.math.ci:49: (23 bytes): testMathEval_0: float64 := Math.eval(testMathEval_x)
 	<.main+?>: load.z32
 	<.main+?>: load.sp(+4)
 	<.main+?>: load.z64
@@ -21550,15 +21550,15 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: call
 	<.main+?>: mov.x64 sp(6, 4)
 	<.main+?>: inc.sp(-24)
-	test/stdc/test.math.ci:50: (9 bytes): testMathEval_1: float64 := Math.eval(testMathEval_x, 1.000000)
+	test/std/test.math.ci:50: (9 bytes): testMathEval_1: float64 := Math.eval(testMathEval_x, 1.000000)
 	<.main+?>: load.f64 1.000000
-	test/stdc/test.math.ci:51: (22 bytes): testMathEval_2: float64 := Math.eval(testMathEval_x, 1.000000, 1.000000)
+	test/std/test.math.ci:51: (22 bytes): testMathEval_2: float64 := Math.eval(testMathEval_x, 1.000000, 1.000000)
 	<.main+?>: load.f64 1.000000
 	<.main+?>: dup.x64 sp(6)
 	<.main+?>: load.f64 1.000000
 	<.main+?>: mul.f64
 	<.main+?>: add.f64
-	test/stdc/test.math.ci:52: (39 bytes): testMathEval_3: float64 := Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000)
+	test/std/test.math.ci:52: (39 bytes): testMathEval_3: float64 := Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000)
 	<.main+?>: dup.x64 sp(6)
 	<.main+?>: load.f64 1.000000
 	<.main+?>: dup.x64 sp(2)
@@ -21570,7 +21570,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: mul.f64
 	<.main+?>: add.f64
 	<.main+?>: set.x64 sp(2)
-	test/stdc/test.math.ci:53: (56 bytes): testMathEval_4: float64 := Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000)
+	test/std/test.math.ci:53: (56 bytes): testMathEval_4: float64 := Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000)
 	<.main+?>: dup.x64 sp(8)
 	<.main+?>: load.f64 1.000000
 	<.main+?>: dup.x64 sp(2)
@@ -21588,7 +21588,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: mul.f64
 	<.main+?>: add.f64
 	<.main+?>: set.x64 sp(2)
-	test/stdc/test.math.ci:54: (72 bytes): testMathEval_5: float64 := Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000)
+	test/std/test.math.ci:54: (72 bytes): testMathEval_5: float64 := Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000)
 	<.main+?>: load.f64 1.000000
 	<.main+?>: load.f64 1.000000
 	<.main+?>: load.f64 1.000000
@@ -21603,7 +21603,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: call
 	<.main+?>: mov.x64 sp(16, 4)
 	<.main+?>: inc.sp(-64)
-	test/stdc/test.math.ci:55: (81 bytes): testMathEval_6: float64 := Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000)
+	test/std/test.math.ci:55: (81 bytes): testMathEval_6: float64 := Math.eval(testMathEval_x, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000, 1.000000)
 	<.main+?>: load.f64 1.000000
 	<.main+?>: load.f64 1.000000
 	<.main+?>: load.f64 1.000000
@@ -21619,7 +21619,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: call
 	<.main+?>: mov.x64 sp(18, 4)
 	<.main+?>: inc.sp(-72)
-	test/stdc/test.math.ci:57: (31 bytes): testMathSin_f64: float64 := Math.sin(Math.pi / (2))
+	test/std/test.math.ci:57: (31 bytes): testMathSin_f64: float64 := Math.sin(Math.pi / (2))
 	<.main+?>: load.z64
 	<.main+?>: load.f64 3.141593
 	<.main+?>: load.f64 2.000000
@@ -21628,7 +21628,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;Math.sinCos(arg: float64, quad: int32): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-12)
-	test/stdc/test.math.ci:58: (45 bytes): testMathCos_f64: float64 := Math.cos(Math.pi / (2))
+	test/std/test.math.ci:58: (45 bytes): testMathCos_f64: float64 := Math.cos(Math.pi / (2))
 	<.main+?>: load.z128
 	<.main+?>: load.f64 3.141593
 	<.main+?>: load.f64 2.000000
@@ -21640,7 +21640,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;Math.sinCos(arg: float64, quad: int32): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-12)
-	test/stdc/test.math.ci:59: (30 bytes): testMathTan_f64: float64 := Math.tan(Math.pi / (4))
+	test/std/test.math.ci:59: (30 bytes): testMathTan_f64: float64 := Math.tan(Math.pi / (4))
 	<.main+?>: load.z64
 	<.main+?>: load.f64 3.141593
 	<.main+?>: load.f64 4.000000
@@ -21648,7 +21648,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;Math.tan(arg: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:60: (30 bytes): testMathSinh_f64: float64 := Math.sinh(Math.pi / (2))
+	test/std/test.math.ci:60: (30 bytes): testMathSinh_f64: float64 := Math.sinh(Math.pi / (2))
 	<.main+?>: load.z64
 	<.main+?>: load.f64 3.141593
 	<.main+?>: load.f64 2.000000
@@ -21656,7 +21656,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;Math.sinh(x: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:61: (30 bytes): testMathCosh_f64: float64 := Math.cosh(Math.pi / (2))
+	test/std/test.math.ci:61: (30 bytes): testMathCosh_f64: float64 := Math.cosh(Math.pi / (2))
 	<.main+?>: load.z64
 	<.main+?>: load.f64 3.141593
 	<.main+?>: load.f64 2.000000
@@ -21664,13 +21664,13 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;Math.cosh(x: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:63: (20 bytes): testMathAsin_f64: float64 := Math.asin(0.200000)
+	test/std/test.math.ci:63: (20 bytes): testMathAsin_f64: float64 := Math.asin(0.200000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 0.200000
 	<.main+?>: load.ref <?> ;Math.asin(x: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:64: (40 bytes): testMathAcos_f64: float64 := Math.acos(0.200000)
+	test/std/test.math.ci:64: (40 bytes): testMathAcos_f64: float64 := Math.acos(0.200000)
 	<.main+?>: load.f64 3.141593
 	<.main+?>: load.f64 2.000000
 	<.main+?>: div.f64
@@ -21680,7 +21680,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
 	<.main+?>: sub.f64
-	test/stdc/test.math.ci:67: (28 bytes): testMathCmp_f32: bool := Math.cmp(0.000010, 0.000012, 0.000010) == 0
+	test/std/test.math.ci:67: (28 bytes): testMathCmp_f32: bool := Math.cmp(0.000010, 0.000012, 0.000010) == 0
 	<.main+?>: load.z32
 	<.main+?>: load.f32 0.000010
 	<.main+?>: load.f32 0.000012
@@ -21690,7 +21690,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: inc.sp(-12)
 	<.main+?>: load.z32
 	<.main+?>: ceq.i32
-	test/stdc/test.math.ci:68: (40 bytes): testMathCmp_f64: bool := Math.cmp(0.000010, 0.000012, 0.000010) == 0
+	test/std/test.math.ci:68: (40 bytes): testMathCmp_f64: bool := Math.cmp(0.000010, 0.000012, 0.000010) == 0
 	<.main+?>: load.z32
 	<.main+?>: load.f64 0.000010
 	<.main+?>: load.f64 0.000012
@@ -21700,153 +21700,153 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: inc.sp(-24)
 	<.main+?>: load.z32
 	<.main+?>: ceq.i32
-	test/stdc/test.math.ci:70: (29 bytes): testMathAbsMod_f64_0a: float64 := Math.absMod(10.000000, 10.000000)
+	test/std/test.math.ci:70: (29 bytes): testMathAbsMod_f64_0a: float64 := Math.absMod(10.000000, 10.000000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 10.000000
 	<.main+?>: load.f64 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float64, mod: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:71: (20 bytes): testMathAbsMod_f64_0b: float64 := Math.absMod(0.000000, 10.000000)
+	test/std/test.math.ci:71: (20 bytes): testMathAbsMod_f64_0b: float64 := Math.absMod(0.000000, 10.000000)
 	<.main+?>: load.z128
 	<.main+?>: load.f64 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float64, mod: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:72: (29 bytes): testMathAbsMod_f64_0c: float64 := Math.absMod(-10.000000, 10.000000)
+	test/std/test.math.ci:72: (29 bytes): testMathAbsMod_f64_0c: float64 := Math.absMod(-10.000000, 10.000000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 -10.000000
 	<.main+?>: load.f64 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float64, mod: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:74: (29 bytes): testMathAbsMod_f64_9a: float64 := Math.absMod(19.000000, 10.000000)
+	test/std/test.math.ci:74: (29 bytes): testMathAbsMod_f64_9a: float64 := Math.absMod(19.000000, 10.000000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 19.000000
 	<.main+?>: load.f64 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float64, mod: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:75: (29 bytes): testMathAbsMod_f64_9b: float64 := Math.absMod(9.000000, 10.000000)
+	test/std/test.math.ci:75: (29 bytes): testMathAbsMod_f64_9b: float64 := Math.absMod(9.000000, 10.000000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 9.000000
 	<.main+?>: load.f64 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float64, mod: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:76: (29 bytes): testMathAbsMod_f64_9c: float64 := Math.absMod(-1.000000, 10.000000)
+	test/std/test.math.ci:76: (29 bytes): testMathAbsMod_f64_9c: float64 := Math.absMod(-1.000000, 10.000000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 -1.000000
 	<.main+?>: load.f64 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float64, mod: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:77: (29 bytes): testMathAbsMod_f64_9d: float64 := Math.absMod(-11.000000, 10.000000)
+	test/std/test.math.ci:77: (29 bytes): testMathAbsMod_f64_9d: float64 := Math.absMod(-11.000000, 10.000000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 -11.000000
 	<.main+?>: load.f64 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float64, mod: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:79: (29 bytes): testMathAbsMod_f64_8a: float64 := Math.absMod(18.000000, 10.000000)
+	test/std/test.math.ci:79: (29 bytes): testMathAbsMod_f64_8a: float64 := Math.absMod(18.000000, 10.000000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 18.000000
 	<.main+?>: load.f64 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float64, mod: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:80: (29 bytes): testMathAbsMod_f64_8b: float64 := Math.absMod(8.000000, 10.000000)
+	test/std/test.math.ci:80: (29 bytes): testMathAbsMod_f64_8b: float64 := Math.absMod(8.000000, 10.000000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 8.000000
 	<.main+?>: load.f64 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float64, mod: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:81: (29 bytes): testMathAbsMod_f64_8c: float64 := Math.absMod(-2.000000, 10.000000)
+	test/std/test.math.ci:81: (29 bytes): testMathAbsMod_f64_8c: float64 := Math.absMod(-2.000000, 10.000000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 -2.000000
 	<.main+?>: load.f64 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float64, mod: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:82: (29 bytes): testMathAbsMod_f64_8d: float64 := Math.absMod(-12.000000, 10.000000)
+	test/std/test.math.ci:82: (29 bytes): testMathAbsMod_f64_8d: float64 := Math.absMod(-12.000000, 10.000000)
 	<.main+?>: load.z64
 	<.main+?>: load.f64 -12.000000
 	<.main+?>: load.f64 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float64, mod: float64): float64
 	<.main+?>: call
 	<.main+?>: inc.sp(-16)
-	test/stdc/test.math.ci:84: (21 bytes): testMathAbsMod_f32_0a: float32 := Math.absMod(10.000000, 10.000000)
+	test/std/test.math.ci:84: (21 bytes): testMathAbsMod_f32_0a: float32 := Math.absMod(10.000000, 10.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.f32 10.000000
 	<.main+?>: load.f32 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float32, mod: float32): float32
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:85: (17 bytes): testMathAbsMod_f32_0b: float32 := Math.absMod(0.000000, 10.000000)
+	test/std/test.math.ci:85: (17 bytes): testMathAbsMod_f32_0b: float32 := Math.absMod(0.000000, 10.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.z32
 	<.main+?>: load.f32 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float32, mod: float32): float32
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:86: (21 bytes): testMathAbsMod_f32_0c: float32 := Math.absMod(-10.000000, 10.000000)
+	test/std/test.math.ci:86: (21 bytes): testMathAbsMod_f32_0c: float32 := Math.absMod(-10.000000, 10.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.f32 -10.000000
 	<.main+?>: load.f32 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float32, mod: float32): float32
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:88: (21 bytes): testMathAbsMod_f32_9a: float32 := Math.absMod(19.000000, 10.000000)
+	test/std/test.math.ci:88: (21 bytes): testMathAbsMod_f32_9a: float32 := Math.absMod(19.000000, 10.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.f32 19.000000
 	<.main+?>: load.f32 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float32, mod: float32): float32
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:89: (21 bytes): testMathAbsMod_f32_9b: float32 := Math.absMod(9.000000, 10.000000)
+	test/std/test.math.ci:89: (21 bytes): testMathAbsMod_f32_9b: float32 := Math.absMod(9.000000, 10.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.f32 9.000000
 	<.main+?>: load.f32 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float32, mod: float32): float32
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:90: (21 bytes): testMathAbsMod_f32_9c: float32 := Math.absMod(-1.000000, 10.000000)
+	test/std/test.math.ci:90: (21 bytes): testMathAbsMod_f32_9c: float32 := Math.absMod(-1.000000, 10.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.f32 -1.000000
 	<.main+?>: load.f32 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float32, mod: float32): float32
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:91: (21 bytes): testMathAbsMod_f32_9d: float32 := Math.absMod(-11.000000, 10.000000)
+	test/std/test.math.ci:91: (21 bytes): testMathAbsMod_f32_9d: float32 := Math.absMod(-11.000000, 10.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.f32 -11.000000
 	<.main+?>: load.f32 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float32, mod: float32): float32
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:93: (21 bytes): testMathAbsMod_f32_8a: float32 := Math.absMod(18.000000, 10.000000)
+	test/std/test.math.ci:93: (21 bytes): testMathAbsMod_f32_8a: float32 := Math.absMod(18.000000, 10.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.f32 18.000000
 	<.main+?>: load.f32 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float32, mod: float32): float32
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:94: (21 bytes): testMathAbsMod_f32_8b: float32 := Math.absMod(8.000000, 10.000000)
+	test/std/test.math.ci:94: (21 bytes): testMathAbsMod_f32_8b: float32 := Math.absMod(8.000000, 10.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.f32 8.000000
 	<.main+?>: load.f32 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float32, mod: float32): float32
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:95: (21 bytes): testMathAbsMod_f32_8c: float32 := Math.absMod(-2.000000, 10.000000)
+	test/std/test.math.ci:95: (21 bytes): testMathAbsMod_f32_8c: float32 := Math.absMod(-2.000000, 10.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.f32 -2.000000
 	<.main+?>: load.f32 10.000000
 	<.main+?>: load.ref <?> ;Math.absMod(val: float32, mod: float32): float32
 	<.main+?>: call
 	<.main+?>: inc.sp(-8)
-	test/stdc/test.math.ci:96: (21 bytes): testMathAbsMod_f32_8d: float32 := Math.absMod(-12.000000, 10.000000)
+	test/std/test.math.ci:96: (21 bytes): testMathAbsMod_f32_8d: float32 := Math.absMod(-12.000000, 10.000000)
 	<.main+?>: load.z32
 	<.main+?>: load.f32 -12.000000
 	<.main+?>: load.f32 10.000000
@@ -21857,24 +21857,20 @@ testMathAbsMod_f32_8d: float32 {
 }
 
 ---------- Execute: byte-code
-test/stdc/memory.ci:26: debug: val1: int64(42)
-test/stdc/memory.ci:27: debug: val2: int64(96)
-test/stdc/memory.ci:32: debug: val1: int64(0)
-test/stdc/memory.ci:33: debug: val2: int64(42)
-test/stdc/tryExec.ci:34: fatal: fatal error: NotEquals({
-	message: "assertion failed",
-	expected: 97,
-	returned: 77
-})
+test/std/memory.ci:26: debug: val1: int64(42)
+test/std/memory.ci:27: debug: val2: int64(96)
+test/std/memory.ci:32: debug: val1: int64(0)
+test/std/memory.ci:33: debug: val2: int64(42)
+test/std/tryExec.ci:34: fatal: fatal error: NotEquals(<?>)
 	native.code:: abortExecution(args: null)
-	test/stdc/tryExec.ci:52: tryExec(args: null, action: <abortExecution>)
+	test/std/tryExec.ci:52: tryExec(args: null, action: <abortExecution>)
 	native.code:: .main
-test/lang/array.ci:83: debug: string as variant: char[7]([7] {'s', 't', 'r', 'i', 'n', 'g', ''})
-test/lang/array.ci:84: debug: string to variant: char[7]([7] {'s', 't', 'r', 'i', 'n', 'g', ''})
+test/lang/array.ci:83: debug: string as variant: char[7](...)
+test/lang/array.ci:84: debug: string to variant: char[7](...)
 test/lang/array.ci:87: debug: string as variant: char[*]("string")
 test/lang/array.ci:88: debug: string to variant: char[*]("string")
-test/lang/array.ci:91: debug: string as variant: char[]([0] {})
-test/lang/array.ci:92: debug: string to variant: char[]([0] {})
+test/lang/array.ci:91: debug: string as variant: char[](...)
+test/lang/array.ci:92: debug: string to variant: char[](...)
 test/lang/method.ci:11: debug: staticMethod: int32(1)
 	test/lang/method.ci:78: staticMethod(this: {
 		abstractMethod: <globalFunction>,
@@ -21896,11 +21892,7 @@ test/lang/method.ci:11: debug: staticMethod: int32(2)
 		delegateMethod: <RecordMethodTest.forwardMethod>,
 		virtualMethod: <RecordMethodTest.virtualMethod>
 	}, x: 2)
-	test/lang/method.ci:97: staticMethod(this: {
-		abstractMethod: <globalFunction>,
-		delegateMethod: <RecordMethodTest.forwardMethod>,
-		virtualMethod: <RecordMethodTest.virtualMethod>
-	}, x: 2)
+	test/lang/method.ci:97: staticMethod(this: <?>, x: 2)
 	native.code:: .main
 test/lang/method.ci:91: debug: extension.virtualMethod
 test/lang/method.ci:41: debug: virtualMethod: int32(2)
@@ -21909,11 +21901,7 @@ test/lang/method.ci:41: debug: virtualMethod: int32(2)
 		delegateMethod: <RecordMethodTest.forwardMethod>,
 		virtualMethod: <RecordMethodTest.virtualMethod>
 	}, x: 2)
-	test/lang/method.ci:98: virtualMethod(this: {
-		abstractMethod: <globalFunction>,
-		delegateMethod: <RecordMethodTest.forwardMethod>,
-		virtualMethod: <RecordMethodTest.virtualMethod>
-	}, x: 2)
+	test/lang/method.ci:98: virtualMethod(this: <?>, x: 2)
 	native.code:: .main
 test/lang/method.ci:11: debug: staticMethod: int32(3)
 	test/lang/method.ci:101: staticMethod(this: {
@@ -22073,7 +22061,7 @@ test/lang/emit.ci:17: emitFloatAsInt1: int32(1140457472)
 test/lang/emit.ci:18: emitFloatAsInt2: int64(1140457472)
 test/lang/emit.ci:19: emitFloatAsInt3: int32(0)
 test/lang/emit.ci:20: emitFloatAsInt4: int64(4647503709213818880)
-test/lang/emit.ci:23: emitSlice: char[]([3] {'s', 't', 'r'})
+test/lang/emit.ci:23: emitSlice: char[](...)
 test/lang/inlineMacros.ci:10: i3: int32(3)
 test/lang/inlineMacros.ci:11: i6: int32(6)
 test/lang/inlineMacros.ci:12: i2: int32(2)
@@ -22127,16 +22115,12 @@ test/lang/overload.inline.ci:12: overload4: float32(4.000000)
 test/lang/overload.inline.ci:13: overload5: float32(5.000000)
 test/lang/overload.inline.ci:15: Celsius: typename(<Celsius>)
 test/lang/overload.inline.ci:16: Fahrenheit: typename(<Fahrenheit>)
-test/lang/overload.inline.ci:28: boilC: Celsius({
-	degrees: 100.000000
-})
-test/lang/overload.inline.ci:29: boilF: Fahrenheit({
-	degrees: 212.000000
-})
+test/lang/overload.inline.ci:28: boilC: Celsius(<?>)
+test/lang/overload.inline.ci:29: boilF: Fahrenheit(<?>)
 test/lang/initByRef.ci:7: value: int64(42)
 test/lang/initByRef.ci:8: valueRef: int64(42)
 test/lang/initByRef.ci:9: valuePtr: pointer(<value>)
-test/lang/initByRef.ci:10: valueVar: variant(int64: 42)
+test/lang/initByRef.ci:10: valueVar: variant(...)
 test/lang/initByRef.ci:12: fromRef: int64(42)
 test/lang/initByRef.ci:13: fromPtr: int64(42)
 test/lang/initByRef.ci:14: fromVar: int64(42)
@@ -22147,13 +22131,13 @@ test/lang/initByRef.ci:19: nullTyp: typename(null)
 test/lang/initByRef.ci:20: nullFun: function(null)
 test/lang/initByRef.ci:21: nullObj: object(null)
 test/lang/initByRef.ci:23: typePtr: pointer(<int64>)
-test/lang/initByRef.ci:24: typeVar: variant(typename: <int64>)
+test/lang/initByRef.ci:24: typeVar: variant(...)
 test/lang/initByRef.ci:25: typeTyp: typename(<int64>)
 test/lang/initByRef.ci:27: local: int64(42)
 test/lang/initByRef.ci:28: copyVal: int64(42)
 test/lang/initByRef.ci:29: copyRef: int64(42)
 test/lang/initByRef.ci:30: copyPtr: pointer(<value>)
-test/lang/initByRef.ci:31: copyVar: variant(int64: 42)
+test/lang/initByRef.ci:31: copyVar: variant(...)
 test/lang/initByRef.ci:32: copyTyp: typename(<int64>)
 test/lang/initByRef.ci:35: ptrVoid: pointer(<void>)
 test/lang/initByRef.ci:36: ptrBool: pointer(<bool>)
@@ -22173,24 +22157,24 @@ test/lang/initByRef.ci:49: ptrFunction: pointer(<function>)
 test/lang/initByRef.ci:50: ptrPointer: pointer(<pointer>)
 test/lang/initByRef.ci:51: ptrVariant: pointer(<variant>)
 test/lang/initByRef.ci:52: ptrObject: pointer(<object>)
-test/lang/initByRef.ci:55: varVoid: variant(typename: <void>)
-test/lang/initByRef.ci:56: varBool: variant(typename: <bool>)
-test/lang/initByRef.ci:57: varChar: variant(typename: <char>)
-test/lang/initByRef.ci:58: varInt8: variant(typename: <int8>)
-test/lang/initByRef.ci:59: varInt16: variant(typename: <int16>)
-test/lang/initByRef.ci:60: varInt32: variant(typename: <int32>)
-test/lang/initByRef.ci:61: varInt64: variant(typename: <int64>)
-test/lang/initByRef.ci:62: varUint8: variant(typename: <uint8>)
-test/lang/initByRef.ci:63: varUint16: variant(typename: <uint16>)
-test/lang/initByRef.ci:64: varUint32: variant(typename: <uint32>)
-test/lang/initByRef.ci:65: varUint64: variant(typename: <uint64>)
-test/lang/initByRef.ci:66: varFloat32: variant(typename: <float32>)
-test/lang/initByRef.ci:67: varFloat64: variant(typename: <float64>)
-test/lang/initByRef.ci:68: varTypename: variant(typename: <typename>)
-test/lang/initByRef.ci:69: varFunction: variant(typename: <function>)
-test/lang/initByRef.ci:70: varPointer: variant(typename: <pointer>)
-test/lang/initByRef.ci:71: varVariant: variant(typename: <variant>)
-test/lang/initByRef.ci:72: varObject: variant(typename: <object>)
+test/lang/initByRef.ci:55: varVoid: variant(...)
+test/lang/initByRef.ci:56: varBool: variant(...)
+test/lang/initByRef.ci:57: varChar: variant(...)
+test/lang/initByRef.ci:58: varInt8: variant(...)
+test/lang/initByRef.ci:59: varInt16: variant(...)
+test/lang/initByRef.ci:60: varInt32: variant(...)
+test/lang/initByRef.ci:61: varInt64: variant(...)
+test/lang/initByRef.ci:62: varUint8: variant(...)
+test/lang/initByRef.ci:63: varUint16: variant(...)
+test/lang/initByRef.ci:64: varUint32: variant(...)
+test/lang/initByRef.ci:65: varUint64: variant(...)
+test/lang/initByRef.ci:66: varFloat32: variant(...)
+test/lang/initByRef.ci:67: varFloat64: variant(...)
+test/lang/initByRef.ci:68: varTypename: variant(...)
+test/lang/initByRef.ci:69: varFunction: variant(...)
+test/lang/initByRef.ci:70: varPointer: variant(...)
+test/lang/initByRef.ci:71: varVariant: variant(...)
+test/lang/initByRef.ci:72: varObject: variant(...)
 test/lang/initByRef.ci:75: typVoid: typename(<void>)
 test/lang/initByRef.ci:76: typBool: typename(<bool>)
 test/lang/initByRef.ci:77: typChar: typename(<char>)
@@ -22210,10 +22194,10 @@ test/lang/initByRef.ci:90: typPointer: typename(<pointer>)
 test/lang/initByRef.ci:91: typVariant: typename(<variant>)
 test/lang/initByRef.ci:92: typObject: typename(<object>)
 test/lang/initByRef.ci:95: valueOfPtr: pointer(<value>)
-test/lang/initByRef.ci:96: valueOfVar: variant(int64: 42)
+test/lang/initByRef.ci:96: valueOfVar: variant(...)
 test/lang/initByRef.ci:97: valueOfTyp: typename(<int64>)
 test/lang/initByRef.ci:99: typeOfValue: typename(<int64>)
-test/lang/initByRef.ci:105: copyPtrFloat64: variant(pointer: <float64>)
+test/lang/initByRef.ci:105: copyPtrFloat64: variant(...)
 test/lang/initByRef.ci:108: copyVarFloat64: pointer(<float64>)
 test/lang/function.ci:4: empty: function(<empty>)
 test/lang/function.ci:7: funAdd: function(<funAdd>)
@@ -22265,85 +22249,85 @@ test/lang/reflect.ci:46: sizeOfBase1: int32(4)
 test/lang/reflect.ci:48: typeofBase2: typename(<typename>)
 test/lang/reflect.ci:49: offsetOfBase2: int32(8)
 test/lang/reflect.ci:50: sizeOfBase2: int32(152)
-test/stdc/number.ci:3: pi64: float64(3.141593)
-test/stdc/number.ci:4: e64: float64(2.718282)
-test/stdc/number.ci:6: pi32: float32(3.141593)
-test/stdc/number.ci:7: e32: float32(2.718282)
-test/stdc/number.ci:14: r_comp: int32(112)
-test/stdc/number.ci:15: g_comp: int32(252)
-test/stdc/number.ci:16: b_comp: int32(248)
-test/stdc/number.ci:18: r5g6b5: int32(30719)
-test/stdc/number.ci:19: r8g8b8: int32(7404792)
-test/stdc/number.ci:21: zxtR5: int32(14)
-test/stdc/number.ci:22: zxtG6: int32(63)
-test/stdc/number.ci:23: zxtB5: int32(31)
-test/stdc/number.ci:25: sxtR5: int32(14)
-test/stdc/number.ci:26: sxtG6: int32(-1)
-test/stdc/number.ci:27: sxtB5: int32(-1)
-test/stdc/number.ci:29: zxtR8: int32(112)
-test/stdc/number.ci:30: zxtG8: int32(252)
-test/stdc/number.ci:31: zxtB8: int32(248)
-test/stdc/number.ci:33: sxtR8: int32(112)
-test/stdc/number.ci:34: sxtG8: int32(-4)
-test/stdc/number.ci:35: sxtB8: int32(-8)
-test/stdc/number.ci:37: testSin_f64: float64(1.000000)
-test/stdc/number.ci:38: testCos_f64: float64(0.000000)
-test/stdc/number.ci:39: testTan_f64: float64(1.000000)
-test/stdc/number.ci:40: testLog_f64: float64(3.000000)
-test/stdc/number.ci:41: testExp_f64: float64(2.718282)
-test/stdc/number.ci:42: testPow_f64: float64(3.141593)
-test/stdc/number.ci:43: testSqrt_f64: float64(3.141593)
-test/stdc/number.ci:44: testAtan_f64: float64(1.262627)
-test/stdc/number.ci:46: testSin_f32: float32(1.000000)
-test/stdc/number.ci:47: testCos_f32: float32(-0.000000)
-test/stdc/number.ci:48: testTan_f32: float32(1.000000)
-test/stdc/number.ci:49: testLog_f32: float32(3.000000)
-test/stdc/number.ci:50: testExp_f32: float32(2.718282)
-test/stdc/number.ci:51: testPow_f32: float32(3.141593)
-test/stdc/number.ci:52: testSqrt_f32: float32(3.141593)
-test/stdc/number.ci:53: testAtan_f32: float32(1.262627)
-test/stdc/number.ci:55: testPopulation_u32: int32(14)
-test/stdc/number.ci:56: testSwapBits_u32: uint32(4293787648)
-test/stdc/number.ci:57: testBitScanReverse_u32: int32(14)
-test/stdc/number.ci:58: testBitScanForward_u32: int32(0)
-test/stdc/number.ci:59: testHighBit_u32: int32(16384)
-test/stdc/number.ci:60: testLowBit_u32: int32(1)
-test/stdc/number.ci:62: testZeroExtend_u32: int32(31)
-test/stdc/number.ci:63: testSignExtend_u32: int32(-1)
-test/stdc/number.ci:65: testZeroExtend_u64: int32(31)
-test/stdc/number.ci:66: testSignExtend_u64: int32(-1)
-test/stdc/memory.ci:7: p1: pointer(<?>)
-test/stdc/memory.ci:8: p2: pointer(<?>)
-test/stdc/memory.ci:9: p3: pointer(<?>)
-test/stdc/memory.ci:10: p4: pointer(<?>)
-test/stdc/memory.ci:23: val1: int64(0)
-test/stdc/memory.ci:24: val2: int64(42)
-test/stdc/tryExec.ci:11: noError: function(<noError>)
-test/stdc/tryExec.ci:14: stackOverflow: function(<stackOverflow>)
-test/stdc/tryExec.ci:19: divisionByZero: function(<divisionByZero>)
-test/stdc/tryExec.ci:23: abortExecution: function(<abortExecution>)
-test/stdc/tryExec.ci:37: invalidMemoryAccess: function(<invalidMemoryAccess>)
-test/stdc/tryExec.ci:42: invalidInstruction: function(<invalidInstruction>)
-test/stdc/tryExec.ci:46: tryExecErr0: int32(0)
-test/stdc/tryExec.ci:47: tryExecErr1: int32(1)
-test/stdc/tryExec.ci:48: tryExecErr2: int32(2)
-test/stdc/tryExec.ci:49: tryExecErr3: int32(3)
-test/stdc/tryExec.ci:50: tryExecErr4: int32(4)
-test/stdc/tryExec.ci:51: tryExecErr5: int32(5)
-test/stdc/tryExec.ci:52: tryExecErr6: int32(6)
-test/lang/array.ci:49: arrFixedNoInit: int64[7]([7] {42, 43, 44, 45, 46, 47, 48})
+test/std/number.ci:3: pi64: float64(3.141593)
+test/std/number.ci:4: e64: float64(2.718282)
+test/std/number.ci:6: pi32: float32(3.141593)
+test/std/number.ci:7: e32: float32(2.718282)
+test/std/number.ci:14: r_comp: int32(112)
+test/std/number.ci:15: g_comp: int32(252)
+test/std/number.ci:16: b_comp: int32(248)
+test/std/number.ci:18: r5g6b5: int32(30719)
+test/std/number.ci:19: r8g8b8: int32(7404792)
+test/std/number.ci:21: zxtR5: int32(14)
+test/std/number.ci:22: zxtG6: int32(63)
+test/std/number.ci:23: zxtB5: int32(31)
+test/std/number.ci:25: sxtR5: int32(14)
+test/std/number.ci:26: sxtG6: int32(-1)
+test/std/number.ci:27: sxtB5: int32(-1)
+test/std/number.ci:29: zxtR8: int32(112)
+test/std/number.ci:30: zxtG8: int32(252)
+test/std/number.ci:31: zxtB8: int32(248)
+test/std/number.ci:33: sxtR8: int32(112)
+test/std/number.ci:34: sxtG8: int32(-4)
+test/std/number.ci:35: sxtB8: int32(-8)
+test/std/number.ci:37: testSin_f64: float64(1.000000)
+test/std/number.ci:38: testCos_f64: float64(0.000000)
+test/std/number.ci:39: testTan_f64: float64(1.000000)
+test/std/number.ci:40: testLog_f64: float64(3.000000)
+test/std/number.ci:41: testExp_f64: float64(2.718282)
+test/std/number.ci:42: testPow_f64: float64(3.141593)
+test/std/number.ci:43: testSqrt_f64: float64(3.141593)
+test/std/number.ci:44: testAtan_f64: float64(1.262627)
+test/std/number.ci:46: testSin_f32: float32(1.000000)
+test/std/number.ci:47: testCos_f32: float32(-0.000000)
+test/std/number.ci:48: testTan_f32: float32(1.000000)
+test/std/number.ci:49: testLog_f32: float32(3.000000)
+test/std/number.ci:50: testExp_f32: float32(2.718282)
+test/std/number.ci:51: testPow_f32: float32(3.141593)
+test/std/number.ci:52: testSqrt_f32: float32(3.141593)
+test/std/number.ci:53: testAtan_f32: float32(1.262627)
+test/std/number.ci:55: testPopulation_u32: int32(14)
+test/std/number.ci:56: testSwapBits_u32: uint32(4293787648)
+test/std/number.ci:57: testBitScanReverse_u32: int32(14)
+test/std/number.ci:58: testBitScanForward_u32: int32(0)
+test/std/number.ci:59: testHighBit_u32: int32(16384)
+test/std/number.ci:60: testLowBit_u32: int32(1)
+test/std/number.ci:62: testZeroExtend_u32: int32(31)
+test/std/number.ci:63: testSignExtend_u32: int32(-1)
+test/std/number.ci:65: testZeroExtend_u64: int32(31)
+test/std/number.ci:66: testSignExtend_u64: int32(-1)
+test/std/memory.ci:7: p1: pointer(<?>)
+test/std/memory.ci:8: p2: pointer(<?>)
+test/std/memory.ci:9: p3: pointer(<?>)
+test/std/memory.ci:10: p4: pointer(<?>)
+test/std/memory.ci:23: val1: int64(0)
+test/std/memory.ci:24: val2: int64(42)
+test/std/tryExec.ci:11: noError: function(<noError>)
+test/std/tryExec.ci:14: stackOverflow: function(<stackOverflow>)
+test/std/tryExec.ci:19: divisionByZero: function(<divisionByZero>)
+test/std/tryExec.ci:23: abortExecution: function(<abortExecution>)
+test/std/tryExec.ci:37: invalidMemoryAccess: function(<invalidMemoryAccess>)
+test/std/tryExec.ci:42: invalidInstruction: function(<invalidInstruction>)
+test/std/tryExec.ci:46: tryExecErr0: int32(0)
+test/std/tryExec.ci:47: tryExecErr1: int32(1)
+test/std/tryExec.ci:48: tryExecErr2: int32(2)
+test/std/tryExec.ci:49: tryExecErr3: int32(3)
+test/std/tryExec.ci:50: tryExecErr4: int32(4)
+test/std/tryExec.ci:51: tryExecErr5: int32(5)
+test/std/tryExec.ci:52: tryExecErr6: int32(6)
+test/lang/array.ci:49: arrFixedNoInit: int64[7](...)
 test/lang/array.ci:50: arrArrayNoInit: int64[*](null)
 test/lang/array.ci:51: arrSliceNoInit: int64[](null)
 test/lang/array.ci:59: arrArrayInitNull: int64[*](null)
 test/lang/array.ci:60: arrSliceInitNull: int64[](null)
-test/lang/array.ci:63: arrArrayInitFixed: int64[*]([0] {})
-test/lang/array.ci:64: arrSliceInitFixed: int64[]([7] {42, 43, 44, 45, 46, 47, 48})
-test/lang/array.ci:67: arrArrayInitSlice: int64[*]([0] {})
-test/lang/array.ci:68: arrSliceInitSlice: int64[]([7] {42, 43, 44, 45, 46, 47, 48})
-test/lang/array.ci:71: arrArrayInitPtr: int64[*]([0] {})
-test/lang/array.ci:81: strFixed: char[7]([7] {'s', 't', 'r', 'i', 'n', 'g', ''})
+test/lang/array.ci:63: arrArrayInitFixed: int64[*](...)
+test/lang/array.ci:64: arrSliceInitFixed: int64[](...)
+test/lang/array.ci:67: arrArrayInitSlice: int64[*](...)
+test/lang/array.ci:68: arrSliceInitSlice: int64[](...)
+test/lang/array.ci:71: arrArrayInitPtr: int64[*](...)
+test/lang/array.ci:81: strFixed: char[7](...)
 test/lang/array.ci:86: strArray: char[*]("string")
-test/lang/array.ci:90: strSlice: char[]([6] {'s', 't', 'r', 'i', 'n', 'g'})
+test/lang/array.ci:90: strSlice: char[](...)
 test/lang/array.ci:103: lenSlice: function(<lenSlice>)
 test/lang/array.ci:104: nthFixed: function(<nthFixed>)
 test/lang/array.ci:105: nthArray: function(<nthArray>)
@@ -22352,81 +22336,29 @@ test/lang/member.ci:5: RecordMemberTest.Inner: typename(<RecordMemberTest.Inner>
 test/lang/member.ci:35: RecordMemberTest.global: int32(0)
 test/lang/member.ci:38: RecordMemberTest.globalInit: int32(1)
 test/lang/member.ci:41: RecordMemberTest.globalConstant: int32(2)
-test/lang/member.ci:44: RecordMemberTest.globalRec: Inner({
-	member: 0,
-	constant: 0
-})
-test/lang/member.ci:47: RecordMemberTest.globalRecInit: Inner({
-	member: 4,
-	constant: 5
-})
-test/lang/member.ci:50: RecordMemberTest.globalConstantRec: Inner({
-	member: 6,
-	constant: 7
-})
+test/lang/member.ci:44: RecordMemberTest.globalRec: Inner(<RecordMemberTest.globalRec>)
+test/lang/member.ci:47: RecordMemberTest.globalRecInit: Inner(<RecordMemberTest.globalRecInit>)
+test/lang/member.ci:50: RecordMemberTest.globalConstantRec: Inner(<RecordMemberTest.globalConstantRec>)
 test/lang/member.ci:3: RecordMemberTest: typename(<RecordMemberTest>)
-test/lang/member.ci:53: recordMemberTest: RecordMemberTest({
-	member: 10,
-	constant: 11,
-	memberInit: 12,
-	constantInit: 13,
-	memberRec: {
-		member: 14,
-		constant: 15
-	},
-	constantRec: {
-		member: 16,
-		constant: 17
-	}
-})
+test/lang/member.ci:53: recordMemberTest: RecordMemberTest(<?>)
 test/lang/method.ci:10: RecordMethodTest.staticMethod: function(<RecordMethodTest.staticMethod>)
 test/lang/method.ci:18: RecordMethodTest.forwardMethod: function(<RecordMethodTest.forwardMethod>)
 test/lang/method.ci:40: RecordMethodTest.virtualMethod: function(<RecordMethodTest.virtualMethod>)
 test/lang/method.ci:47: RecordMethodTest.forwardMethod: function(<RecordMethodTest.forwardMethod>)
 test/lang/method.ci:4: RecordMethodTest: typename(<RecordMethodTest>)
 test/lang/method.ci:57: globalFunction: function(<globalFunction>)
-test/lang/method.ci:62: recordMethodTest: RecordMethodTest({
-	abstractMethod: <globalFunction>,
-	delegateMethod: <RecordMethodTest.forwardMethod>,
-	virtualMethod: <RecordMethodTest.virtualMethod>
-})
+test/lang/method.ci:62: recordMethodTest: RecordMethodTest(<?>)
 test/lang/method.ci:84: staticMethod: function(<staticMethod>)
 test/lang/method.ci:90: virtualMethod: function(<virtualMethod>)
 test/lang/recUnion.ci:2: rgbF32: typename(<rgbF32>)
 test/lang/recUnion.ci:9: rgbU8: typename(<rgbU8>)
 test/lang/recUnion.ci:16: color: typename(<color>)
 test/lang/recUnion.ci:22: Color: typename(<Color>)
-test/lang/recUnion.ci:26: black: rgbU8({
-	b: 0,
-	g: 0,
-	r: 0
-})
-test/lang/recUnion.ci:27: green: rgbU8({
-	b: 0,
-	g: 255,
-	r: 0
-})
-test/lang/recUnion.ci:28: white: rgbU8({
-	b: 255,
-	g: 255,
-	r: 255
-})
-test/lang/recUnion.ci:30: cyan: color({
-	col: 65535,
-	rgb: {
-		b: 255,
-		g: 255,
-		r: 0
-	}
-})
-test/lang/recUnion.ci:31: blue: color({
-	col: 255,
-	rgb: {
-		b: 255,
-		g: 0,
-		r: 0
-	}
-})
+test/lang/recUnion.ci:26: black: rgbU8(<?>)
+test/lang/recUnion.ci:27: green: rgbU8(<?>)
+test/lang/recUnion.ci:28: white: rgbU8(<?>)
+test/lang/recUnion.ci:30: cyan: color(<?>)
+test/lang/recUnion.ci:31: blue: color(<?>)
 test/lang/recPacking.ci:2: record_pack0: typename(<record_pack0>)
 test/lang/recPacking.ci:12: record_pack1: typename(<record_pack1>)
 test/lang/recPacking.ci:22: record_pack2: typename(<record_pack2>)
@@ -22682,87 +22614,87 @@ test/lang/useOperator.ci:299: ptrCeq: bool(0)
 test/lang/useOperator.ci:300: ptrCne: bool(1)
 test/lang/statementIf.ci:26: t: int32(0)
 test/lang/statementFor.ci:12: forIdx: int32(2)
-test/stdc/test.math.ci:3: testMathFloor_1: float64(3.000000)
-test/stdc/test.math.ci:4: testMathFloor_2: float64(3.000000)
-test/stdc/test.math.ci:5: testMathFloor_3: float64(3.000000)
-test/stdc/test.math.ci:6: testMathFloor_4: float64(-3.000000)
-test/stdc/test.math.ci:7: testMathFloor_5: float64(-3.000000)
-test/stdc/test.math.ci:8: testMathFloor_6: float64(-3.000000)
-test/stdc/test.math.ci:10: testMathSign_1F: float64(1.000000)
-test/stdc/test.math.ci:11: testMathSign_2F: float64(0.000000)
-test/stdc/test.math.ci:12: testMathSign_3F: float64(-1.000000)
-test/stdc/test.math.ci:13: testMathSign_1f: float64(1.000000)
-test/stdc/test.math.ci:14: testMathSign_2f: float64(0.000000)
-test/stdc/test.math.ci:15: testMathSign_3f: float64(-1.000000)
-test/stdc/test.math.ci:17: testMathAbs_1F: float64(0.200000)
-test/stdc/test.math.ci:18: testMathAbs_2F: float64(0.000000)
-test/stdc/test.math.ci:19: testMathAbs_3F: float64(0.900000)
-test/stdc/test.math.ci:20: testMathAbs_1f: float64(0.200000)
-test/stdc/test.math.ci:21: testMathAbs_2f: float64(0.000000)
-test/stdc/test.math.ci:22: testMathAbs_3f: float64(0.900000)
-test/stdc/test.math.ci:24: testMathMin_1f: float64(1.000000)
-test/stdc/test.math.ci:25: testMathMax_2f: float64(2.000000)
-test/stdc/test.math.ci:26: testMathMin_1F: float64(1.000000)
-test/stdc/test.math.ci:27: testMathMax_2F: float64(2.000000)
-test/stdc/test.math.ci:29: testMathClamp_1f: float64(1.000000)
-test/stdc/test.math.ci:30: testMathClamp_1F: float64(1.000000)
-test/stdc/test.math.ci:32: testMathLerp_1f: float64(1.000000)
-test/stdc/test.math.ci:33: testMathLerp_1F: float64(1.000000)
-test/stdc/test.math.ci:35: testMathSmooth_1f: float64(1.000000)
-test/stdc/test.math.ci:36: testMathSmooth_1F: float64(1.000000)
-test/stdc/test.math.ci:38: testMathMin_nan: float64(-nan)
-test/stdc/test.math.ci:39: testMathMin_1: float64(1.000000)
-test/stdc/test.math.ci:40: testMathMax_nan: float64(-nan)
-test/stdc/test.math.ci:41: testMathMax_9: float64(9.000000)
-test/stdc/test.math.ci:43: testMathSum_0: float64(0.000000)
-test/stdc/test.math.ci:44: testMathSum_1: float64(1.000000)
-test/stdc/test.math.ci:45: testMathSum_3: float64(3.000000)
-test/stdc/test.math.ci:46: testMathSum_55: float64(55.000000)
-test/stdc/test.math.ci:48: testMathEval_x: float64(10.000000)
-test/stdc/test.math.ci:49: testMathEval_0: float64(0.000000)
-test/stdc/test.math.ci:50: testMathEval_1: float64(1.000000)
-test/stdc/test.math.ci:51: testMathEval_2: float64(11.000000)
-test/stdc/test.math.ci:52: testMathEval_3: float64(111.000000)
-test/stdc/test.math.ci:53: testMathEval_4: float64(1111.000000)
-test/stdc/test.math.ci:54: testMathEval_5: float64(11111.000000)
-test/stdc/test.math.ci:55: testMathEval_6: float64(111111.000000)
-test/stdc/test.math.ci:57: testMathSin_f64: float64(1.000000)
-test/stdc/test.math.ci:58: testMathCos_f64: float64(-0.000000)
-test/stdc/test.math.ci:59: testMathTan_f64: float64(1.000000)
-test/stdc/test.math.ci:60: testMathSinh_f64: float64(2.301299)
-test/stdc/test.math.ci:61: testMathCosh_f64: float64(2.509178)
-test/stdc/test.math.ci:63: testMathAsin_f64: float64(0.201358)
-test/stdc/test.math.ci:64: testMathAcos_f64: float64(1.369438)
-test/stdc/test.math.ci:67: testMathCmp_f32: bool(1)
-test/stdc/test.math.ci:68: testMathCmp_f64: bool(1)
-test/stdc/test.math.ci:70: testMathAbsMod_f64_0a: float64(0.000000)
-test/stdc/test.math.ci:71: testMathAbsMod_f64_0b: float64(0.000000)
-test/stdc/test.math.ci:72: testMathAbsMod_f64_0c: float64(-0.000000)
-test/stdc/test.math.ci:74: testMathAbsMod_f64_9a: float64(9.000000)
-test/stdc/test.math.ci:75: testMathAbsMod_f64_9b: float64(9.000000)
-test/stdc/test.math.ci:76: testMathAbsMod_f64_9c: float64(9.000000)
-test/stdc/test.math.ci:77: testMathAbsMod_f64_9d: float64(9.000000)
-test/stdc/test.math.ci:79: testMathAbsMod_f64_8a: float64(8.000000)
-test/stdc/test.math.ci:80: testMathAbsMod_f64_8b: float64(8.000000)
-test/stdc/test.math.ci:81: testMathAbsMod_f64_8c: float64(8.000000)
-test/stdc/test.math.ci:82: testMathAbsMod_f64_8d: float64(8.000000)
-test/stdc/test.math.ci:84: testMathAbsMod_f32_0a: float32(0.000000)
-test/stdc/test.math.ci:85: testMathAbsMod_f32_0b: float32(0.000000)
-test/stdc/test.math.ci:86: testMathAbsMod_f32_0c: float32(-0.000000)
-test/stdc/test.math.ci:88: testMathAbsMod_f32_9a: float32(9.000000)
-test/stdc/test.math.ci:89: testMathAbsMod_f32_9b: float32(9.000000)
-test/stdc/test.math.ci:90: testMathAbsMod_f32_9c: float32(9.000000)
-test/stdc/test.math.ci:91: testMathAbsMod_f32_9d: float32(9.000000)
-test/stdc/test.math.ci:93: testMathAbsMod_f32_8a: float32(8.000000)
-test/stdc/test.math.ci:94: testMathAbsMod_f32_8b: float32(8.000000)
-test/stdc/test.math.ci:95: testMathAbsMod_f32_8c: float32(8.000000)
-test/stdc/test.math.ci:96: testMathAbsMod_f32_8d: float32(8.000000)
+test/std/test.math.ci:3: testMathFloor_1: float64(3.000000)
+test/std/test.math.ci:4: testMathFloor_2: float64(3.000000)
+test/std/test.math.ci:5: testMathFloor_3: float64(3.000000)
+test/std/test.math.ci:6: testMathFloor_4: float64(-3.000000)
+test/std/test.math.ci:7: testMathFloor_5: float64(-3.000000)
+test/std/test.math.ci:8: testMathFloor_6: float64(-3.000000)
+test/std/test.math.ci:10: testMathSign_1F: float64(1.000000)
+test/std/test.math.ci:11: testMathSign_2F: float64(0.000000)
+test/std/test.math.ci:12: testMathSign_3F: float64(-1.000000)
+test/std/test.math.ci:13: testMathSign_1f: float64(1.000000)
+test/std/test.math.ci:14: testMathSign_2f: float64(0.000000)
+test/std/test.math.ci:15: testMathSign_3f: float64(-1.000000)
+test/std/test.math.ci:17: testMathAbs_1F: float64(0.200000)
+test/std/test.math.ci:18: testMathAbs_2F: float64(0.000000)
+test/std/test.math.ci:19: testMathAbs_3F: float64(0.900000)
+test/std/test.math.ci:20: testMathAbs_1f: float64(0.200000)
+test/std/test.math.ci:21: testMathAbs_2f: float64(0.000000)
+test/std/test.math.ci:22: testMathAbs_3f: float64(0.900000)
+test/std/test.math.ci:24: testMathMin_1f: float64(1.000000)
+test/std/test.math.ci:25: testMathMax_2f: float64(2.000000)
+test/std/test.math.ci:26: testMathMin_1F: float64(1.000000)
+test/std/test.math.ci:27: testMathMax_2F: float64(2.000000)
+test/std/test.math.ci:29: testMathClamp_1f: float64(1.000000)
+test/std/test.math.ci:30: testMathClamp_1F: float64(1.000000)
+test/std/test.math.ci:32: testMathLerp_1f: float64(1.000000)
+test/std/test.math.ci:33: testMathLerp_1F: float64(1.000000)
+test/std/test.math.ci:35: testMathSmooth_1f: float64(1.000000)
+test/std/test.math.ci:36: testMathSmooth_1F: float64(1.000000)
+test/std/test.math.ci:38: testMathMin_nan: float64(-nan)
+test/std/test.math.ci:39: testMathMin_1: float64(1.000000)
+test/std/test.math.ci:40: testMathMax_nan: float64(-nan)
+test/std/test.math.ci:41: testMathMax_9: float64(9.000000)
+test/std/test.math.ci:43: testMathSum_0: float64(0.000000)
+test/std/test.math.ci:44: testMathSum_1: float64(1.000000)
+test/std/test.math.ci:45: testMathSum_3: float64(3.000000)
+test/std/test.math.ci:46: testMathSum_55: float64(55.000000)
+test/std/test.math.ci:48: testMathEval_x: float64(10.000000)
+test/std/test.math.ci:49: testMathEval_0: float64(0.000000)
+test/std/test.math.ci:50: testMathEval_1: float64(1.000000)
+test/std/test.math.ci:51: testMathEval_2: float64(11.000000)
+test/std/test.math.ci:52: testMathEval_3: float64(111.000000)
+test/std/test.math.ci:53: testMathEval_4: float64(1111.000000)
+test/std/test.math.ci:54: testMathEval_5: float64(11111.000000)
+test/std/test.math.ci:55: testMathEval_6: float64(111111.000000)
+test/std/test.math.ci:57: testMathSin_f64: float64(1.000000)
+test/std/test.math.ci:58: testMathCos_f64: float64(-0.000000)
+test/std/test.math.ci:59: testMathTan_f64: float64(1.000000)
+test/std/test.math.ci:60: testMathSinh_f64: float64(2.301299)
+test/std/test.math.ci:61: testMathCosh_f64: float64(2.509178)
+test/std/test.math.ci:63: testMathAsin_f64: float64(0.201358)
+test/std/test.math.ci:64: testMathAcos_f64: float64(1.369438)
+test/std/test.math.ci:67: testMathCmp_f32: bool(1)
+test/std/test.math.ci:68: testMathCmp_f64: bool(1)
+test/std/test.math.ci:70: testMathAbsMod_f64_0a: float64(0.000000)
+test/std/test.math.ci:71: testMathAbsMod_f64_0b: float64(0.000000)
+test/std/test.math.ci:72: testMathAbsMod_f64_0c: float64(-0.000000)
+test/std/test.math.ci:74: testMathAbsMod_f64_9a: float64(9.000000)
+test/std/test.math.ci:75: testMathAbsMod_f64_9b: float64(9.000000)
+test/std/test.math.ci:76: testMathAbsMod_f64_9c: float64(9.000000)
+test/std/test.math.ci:77: testMathAbsMod_f64_9d: float64(9.000000)
+test/std/test.math.ci:79: testMathAbsMod_f64_8a: float64(8.000000)
+test/std/test.math.ci:80: testMathAbsMod_f64_8b: float64(8.000000)
+test/std/test.math.ci:81: testMathAbsMod_f64_8c: float64(8.000000)
+test/std/test.math.ci:82: testMathAbsMod_f64_8d: float64(8.000000)
+test/std/test.math.ci:84: testMathAbsMod_f32_0a: float32(0.000000)
+test/std/test.math.ci:85: testMathAbsMod_f32_0b: float32(0.000000)
+test/std/test.math.ci:86: testMathAbsMod_f32_0c: float32(-0.000000)
+test/std/test.math.ci:88: testMathAbsMod_f32_9a: float32(9.000000)
+test/std/test.math.ci:89: testMathAbsMod_f32_9b: float32(9.000000)
+test/std/test.math.ci:90: testMathAbsMod_f32_9c: float32(9.000000)
+test/std/test.math.ci:91: testMathAbsMod_f32_9d: float32(9.000000)
+test/std/test.math.ci:93: testMathAbsMod_f32_8a: float32(8.000000)
+test/std/test.math.ci:94: testMathAbsMod_f32_8b: float32(8.000000)
+test/std/test.math.ci:95: testMathAbsMod_f32_8c: float32(8.000000)
+test/std/test.math.ci:96: testMathAbsMod_f32_8d: float32(8.000000)
 
 ---------- Memory usage:
-memory[all] @000000; size: 2096872(2.0 Mb)
+memory[all] @000000; size: 4194024(4.0 Mb)
 memory[used] @000000; size: 368289(359.7 Kb)
-memory[heap] @059ea1; size: 1204317(1.1 Mb)
-memory[stack] @0fff44; size: 524218(511.9 Kb)
+memory[heap] @059ea1; size: 2777181(2.6 Mb)
+memory[stack] @1fff44; size: 1048506(1023.9 Kb)
 
 ---------- used memory:
 memory[meta] @000000; size: 351360(343.1 Kb)
@@ -22770,6 +22702,6 @@ memory[code] @000000; size: 16587(16.2 Kb)
 memory[data] @000000; size: 80(80.0 bytes)
 
 ---------- heap memory:
-memory[free] @059eb8; size: 1204272(1.1 Mb)
+memory[free] @059eb8; size: 2777136(2.6 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

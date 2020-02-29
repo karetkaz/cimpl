@@ -44,7 +44,7 @@ SET TEST_FLAGS=-X+steps-stdin-offsets -asm/m/n/s -debug/g "%CMPL_HOME%\test\test
 
 SET TEST_FILES=%CMPL_HOME%\test\*.ci
 SET TEST_FILES=%TEST_FILES%;%CMPL_HOME%\test\lang\*.ci
-SET TEST_FILES=%TEST_FILES%;%CMPL_HOME%\test\stdc\*.ci
+SET TEST_FILES=%TEST_FILES%;%CMPL_HOME%\test\std\*.ci
 SET TEST_FILES=%TEST_FILES%;%CMPL_HOME%\cmplFile\test\*.ci
 SET TEST_FILES=%TEST_FILES%;%CMPL_HOME%\cmplGfx\test\*.ci
 REM ~ SET TEST_FILES=%TEST_FILES%;%CMPL_HOME%\cmplGL\test\*.ci

@@ -100,7 +100,7 @@ function completeAction(action, hint) {
 				}
 				//*
 				for (let cmd in CodeMirror.commands) {
-					commands += '<li onclick="executeAction(\''+cmd+'\');">' + cmd + '</li>' 
+					commands += '<li onclick="executeAction(\''+cmd+'\');">' + cmd + '</li>'
 					items.push('!' + cmd);
 				}
 				// */

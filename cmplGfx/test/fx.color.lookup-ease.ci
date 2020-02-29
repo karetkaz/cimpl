@@ -1,0 +1,203 @@
+/* Brightness contrast demo using non linear functions
+ *
+ * use 'tab' / 'shift' + 'tab' to select next control
+ * use 'enter' / 'shift' + 'enter' to select next control
+ * use '+' / '-' to adjust value of selected control (use shift for more precision)
+ * use 'backspace' / 'shift' + 'backspace' to reset selected / every control value
+ * use 'space' to press a button, toggle switch or reset slider value
+ * use '[' or ']' to show and hide the controls
+ *
+ * drag the mouse up or down in the window to adjust control value
+ */
+
+Image back = Image("asset/image/forest.png", 32);
+Image font = Image.openFnt("asset/font/modern-1.fnt");
+Image offs = Image(back.width(), back.height(), back.depth());
+
+static struct Easing {
+// TODO: enum Easing: double(double t) { ... }
+	double Linear(double t) {
+		return t;
+	}
+	double Quad(double t) {
+		return t * t;
+	}
+	double Cubic(double t) {
+		return t * t * t;
+	}
+	double Quart(double t) {
+		return t * t * t * t;
+	}
+	double Quint(double t) {
+		return t * t * t * t * t;
+	}
+	double Expo(double t) {
+		return t == 0 ? 0 : double.pow(2, 10 * (t - 1));
+	}
+	double Sine(double t) {
+		return -double.cos(t * Math.pi / 2) + 1;
+	}
+	double Circ(double t) {
+		return -(double.sqrt(1 - t * t) - 1);
+	}
+	double Elastic(double t) {
+		if (t == 0.0 || t == 1.0) return t;
+		t = t - 1.0;
+		return - double.pow(2.0, 10.0 * t) * double.sin((t - 0.3 / 4.0) * (2.0 * Math.pi) / 0.3) ;
+	}
+	double Back(double t) {
+		inline s = 1.70158;
+		return t * t * ((s + 1) * t - s);
+	}
+	double Bounce(double t) {
+		static double Helper(float t, float c, float a) {
+			if (t == 1) {
+				return c;
+			}
+			if (t < (4 / 11.)) {
+				return c * (7.5625 * t * t);
+			}
+			if (t < (8 / 11.)) {
+				t -= (6 / 11.);
+				return -a * (1 - (7.5625 * t * t + 0.75)) + c;
+			}
+			if (t < (10 / 11.)) {
+				t -= (9 / 11.0f);
+				return -a * (1 - (7.5625 * t * t + 0.9375)) + c;
+			}
+			t -= (21 / 22.);
+			return -a * (1 - (7.5625 * t * t + 0.984375)) + c;
+		}
+		inline a = 1.70158;
+		return 1 - Helper(1 - t, 1, a);
+	}
+
+	static double easeOut(double easeIn(double ratio), double ratio) {
+		if (easeIn == null) {
+			return ratio;
+		}
+		return 1. - easeIn(1. - ratio);
+	}
+
+	static double easeInOut(double easeIn(double ratio), double ratio) {
+		if (easeIn == null) {
+			return ratio;
+		}
+		ratio *= 2;
+		return (ratio < 1) ? .5 * easeIn(ratio) : .5 * easeOut(easeIn, ratio - 1) + .5;
+	}
+
+	static double easeOutIn(double easeIn(double ratio), double ratio) {
+		if (easeIn == null) {
+			return ratio;
+		}
+		ratio *= 2;
+		return (ratio < 1) ? .5 * easeOut(easeIn, ratio) : .5 * easeIn(ratio - 1) + .5;
+	}
+}
+
+void brightnessContrastGamma(uint32 lut[256], int brightness, int contrast, int gamma, int highlights, int shadows) {
+	float cVal = (256 + contrast) / 256f;
+	float gVal = 100f / gamma;
+	argb lut2[*] = lut;
+
+	double easeIn(double ratio) = Easing.Circ;
+	for (int idx = 0; idx < lut.length; idx += 1) {
+		double value = idx / 256.;
+		if (contrast < 0) {
+			value = Math.lerp(-contrast / 256., value, Easing.easeOutIn(easeIn, value));
+		} else {
+			value = Math.lerp(contrast / 256., value, Easing.easeInOut(easeIn, value));
+		}
+		if (brightness < 0) {
+			value = Math.lerp(-brightness / 256., value, easeIn(value));
+		} else {
+			value = Math.lerp(brightness / 256., value, Easing.easeOut(easeIn, value));
+		}
+
+		int rgb = clamp_s8(256 * value);
+		lut2[idx].r = rgb;
+		lut2[idx].g = rgb;
+		lut2[idx].b = rgb;
+		lut2[idx].a = idx;
+	}
+}
+
+int onEvent(int action, int button, int x, int y);
+offs.show(onEvent);
+offs.destroy();
+back.destroy();
+font.destroy();
+
+int onEvent(int action, int button, int x, int y) {
+	inline "/lib/gfx/micro.ui.ci";
+
+	static Slider brightness = {
+		text: "brightness";
+		minimum: -256;
+		maximum: 256;
+	};
+	static Slider contrast = {
+		text: "contrast";
+		minimum: -256;
+		maximum: 256;
+	};
+	static Slider gamma = {
+		text: "gamma";
+		value: 100;
+		minimum: 1;
+		maximum: 1000;
+	};
+	static Slider highlights = {
+		text: "highlights";
+		minimum: -256;
+		maximum: 256;
+	};
+	static Slider shadows = {
+		text: "shadows";
+		value: 0;
+		minimum: -256;
+		maximum: 256;
+	};
+	static Histogram histogram = {
+		text: null;
+		image: offs;
+		enabled: false;
+	};
+	static Histogram curves = {
+		text: null;
+		image: offs;
+		lines: true;
+		enabled: false;
+	};
+	static Slider time = {
+		text: "time";
+		enabled: false;
+	};
+
+	static Layout ui = Layout(offs, -30, 30, font,
+		histogram,
+		curves,
+		brightness,
+		contrast,
+		time
+	);
+
+	bool redraw = uiEvent(ui, action, button, x, y);
+	if (action == Gui.KEY_PRESS) {
+		if (button == 27) {
+			return -1;
+		}
+	}
+	if (redraw) {
+		uint64 start = System.millis();
+		brightnessContrastGamma(curves.data, brightness.val(), contrast.val(), gamma.val(), highlights.val(), shadows.val());
+		offs.resize(null, back, null, 1);
+		offs.colorMap(null, curves.data);
+		offs.calcHist(null, 0x00ffffff, histogram.data);
+
+		time.value = System.millis() - start;
+		ui.draw();
+	}
+	return 0;
+}

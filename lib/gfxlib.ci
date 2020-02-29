@@ -1,31 +1,31 @@
 // graphics library extension
 inline "gfx/color.ci";
 
-/// Create a surface with the given with, height and depth
-inline gxSurf(int width, int height, int depth) = gxSurf.create(width, height, depth);
+/// Create an image with the given with, height and depth
+inline Image(int width, int height, int depth) = Image.create(width, height, depth);
 
-/// Create a surface by opening an image file
-gxSurf gxSurf(const char fileName[*], int depth) {
+/// Create an image by opening an image file
+Image Image(const char fileName[*], int depth) {
 	if (fileName.endsWith(".jpeg", ignCaseCmp)) {
-		return gxSurf.openJpg(fileName, depth);
+		return Image.openJpg(fileName, depth);
 	}
 	if (fileName.endsWith(".jpg", ignCaseCmp)) {
-		return gxSurf.openJpg(fileName, depth);
+		return Image.openJpg(fileName, depth);
 	}
 	if (fileName.endsWith(".png", ignCaseCmp)) {
-		return gxSurf.openPng(fileName, depth);
+		return Image.openPng(fileName, depth);
 	}
 	if (fileName.endsWith(".bmp", ignCaseCmp)) {
-		return gxSurf.openBmp(fileName, depth);
+		return Image.openBmp(fileName, depth);
 	}
 	abort("unknown file extension", fileName);
 }
 
-/// Create a surface by opening an image file
-inline gxSurf(const char fileName[*]) = gxSurf(fileName, 32);
+/// Create an image by opening an image file
+inline Image(const char fileName[*]) = Image(fileName, 32);
 
-/// Create a surface by opening an image file with custom width and height
-gxSurf gxSurf(const char fileName[*], int width, int height, int depth, int align, double maxScale) {
+/// Create an image by opening an image file with custom width and height
+Image Image(const char fileName[*], int width, int height, int depth, int align, double maxScale) {
 	enum: int {
 		center: 0;
 		left: 1;
@@ -39,8 +39,8 @@ gxSurf gxSurf(const char fileName[*], int width, int height, int depth, int alig
 	}
 
 	double scale = 1;
-	gxSurf surf = gxSurf(fileName, depth);
-	gxSurf result = gxSurf(width, height, depth);
+	Image image = Image(fileName, depth);
+	Image result = Image(width, height, depth);
 
 	int alignVertical = align & fitVertical;
 	int alignHorizontal = align & fitHorizontal;
@@ -49,8 +49,8 @@ gxSurf gxSurf(const char fileName[*], int width, int height, int depth, int alig
 	bool fitHeight = alignHorizontal == fitHorizontal;
 
 	if (fitWidth && fitHeight) {
-		double widthScale = width / double(surf.width());
-		double heightScale = height / double(surf.height());
+		double widthScale = width / double(image.width());
+		double heightScale = height / double(image.height());
 		if (align & fill) {
 			scale = Math.max(widthScale, heightScale);
 		} else {
@@ -58,10 +58,10 @@ gxSurf gxSurf(const char fileName[*], int width, int height, int depth, int alig
 		}
 	}
 	else if (fitWidth) {
-		scale = width / double(surf.width());
+		scale = width / double(image.width());
 	}
 	else if (fitHeight) {
-		scale = height / double(surf.height());
+		scale = height / double(image.height());
 	}
 	if (scale > maxScale) {
 		scale = maxScale;
@@ -70,18 +70,18 @@ gxSurf gxSurf(const char fileName[*], int width, int height, int depth, int alig
 	// calculate translation
 	double tx = 0;
 	if (fitWidth || alignVertical == center) {
-		tx = (width - surf.width() * scale) / 2;
+		tx = (width - image.width() * scale) / 2;
 	}
 	else if (alignVertical == right) {
-		tx = (width - surf.width() * scale);
+		tx = (width - image.width() * scale);
 	}
 
 	double ty = 0;
 	if (fitHeight || alignHorizontal == center) {
-		ty = (height - surf.height() * scale) / 2;
+		ty = (height - image.height() * scale) / 2;
 	}
 	else if (alignHorizontal == bottom) {
-		ty = (height - surf.height() * scale);
+		ty = (height - image.height() * scale);
 	}
 
 	mat4f mat = {
@@ -91,54 +91,54 @@ gxSurf gxSurf(const char fileName[*], int width, int height, int depth, int alig
 		w: {x: 0, y: 0, z: 0, w: 1};
 	};
 
-	result.transform(null, surf, null, align & highRes ? 1 : 0, mat.data);
-	surf.destroy();
+	result.transform(null, image, null, align & highRes ? 1 : 0, mat.data);
+	image.destroy();
 	return result;
 }
 
-/// Create a surface by opening an image file with custom width and height
-inline gxSurf(const char fileName[*], int width, int height, int depth, int align) = gxSurf(fileName, width, height, depth, align, Math.inf);
+/// Create an image by opening an image file with custom width and height
+inline Image(const char fileName[*], int width, int height, int depth, int align) = Image(fileName, width, height, depth, align, Math.inf);
 
-/// Create a surface by opening an image file with custom width and height
-inline gxSurf(const char fileName[*], int width, int height, int depth) = gxSurf(fileName, width, height, depth, -1, Math.inf);
+/// Create an image by opening an image file with custom width and height
+inline Image(const char fileName[*], int width, int height, int depth) = Image(fileName, width, height, depth, -1, Math.inf);
 
 /// Create a mesh by opening a file
-gxMesh gxMesh(const char fileName[*]) {
+Mesh Mesh(const char fileName[*]) {
 	if (fileName.endsWith(".obj", ignCaseCmp)) {
-		return gxMesh.openObj(fileName);
+		return Mesh.openObj(fileName);
 	}
 	if (fileName.endsWith(".3ds", ignCaseCmp)) {
-		return gxMesh.open3ds(fileName);
+		return Mesh.open3ds(fileName);
 	}
 	abort("unknown file extension", fileName);
 }
 
-/// Create a surface by cloning another one
-gxSurf gxSurf(gxSurf copy) {
-	gxSurf result = gxSurf.create(copy.width(), copy.height(), copy.depth());
+/// Create an image by copying another one
+Image Image(Image copy) {
+	Image result = Image.create(copy.width(), copy.height(), copy.depth());
 	result.copy(0, 0, copy, null);
 	return result;
 }
 
-/// Create a surface by cloning another one using a custom aspect ratio
-gxSurf gxSurf(gxSurf copy, double aspect) {
+/// Create an image by copying another one using a custom aspect ratio
+Image Image(Image copy, double aspect) {
 	int width = copy.width();
 	if (aspect > 0) {
 		width = copy.height() * aspect;
 	}
-	gxSurf result = gxSurf.create(width, copy.height(), copy.depth());
+	Image result = Image.create(width, copy.height(), copy.depth());
 	result.transform(null, copy, null, 1, null);
 	return result;
 }
 
 /// Set the the color of a pixel at the given position
-inline set(gxSurf dst, int32 x, int32 y, argb color) = gxSurf.set(dst, x, y, uint32(color));
+inline set(Image image, int32 x, int32 y, argb color) = Image.set(image, x, y, uint32(color));
 
 ///@public
-inline resize(gxSurf surf, const gxRect rect&, const gxSurf src, const gxRect roi&, int interpolate) = gxSurf.transform(surf, rect, src, roi, interpolate, null);
+inline resize(Image image, const Rect rect&, const Image src, const Rect roi&, int interpolate) = Image.transform(image, rect, src, roi, interpolate, null);
 
 ///@public
-bool clip(gxSurf src, gxRect roi&) {
+bool clip(Image src, Rect roi&) {
 
 	roi.w += roi.x;
 	roi.h += roi.y;
@@ -173,26 +173,26 @@ bool clip(gxSurf src, gxRect roi&) {
 	return true;
 }
 
-/// Fill the entire surface with the given color
-inline fill(gxSurf dst, uint32 col) = dst.fillRect(0, 0, 65536, 65536, col);
-/// Fill the given region with the given color
-inline fill(gxSurf dst, const gxRect roi&, uint32 col) = dst.fillRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
-/// Fill the given region and padding with the given color
-inline fill(gxSurf dst, const gxRect roi&, int pad, uint32 col) = dst.fillRect(roi.x - pad, roi.y - pad, roi.x + roi.w + pad, roi.y + roi.h + pad, col);
+/// Fill the entire image with the given color
+inline fill(Image image, uint32 color) = image.fillRect(0, 0, 65536, 65536, color);
+/// Fill the given region of the image with the given color
+inline fill(Image image, const Rect roi&, uint32 color) = image.fillRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
+//- Fill the given region and padding of the image with the given color
+inline fill(Image image, const Rect roi&, int pad, uint32 color) = image.fillRect(roi.x - pad, roi.y - pad, roi.x + roi.w + pad, roi.y + roi.h + pad, color);
 
 ///@public
-inline drawRect(gxSurf dst, const gxRect roi&, uint32 col) = dst.drawRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, col);
+inline drawRect(Image image, const Rect roi&, uint32 color) = image.drawRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
 
 /// Fill the surface by evaluating the given function for each pixel
-void eval(gxSurf dst, const gxRect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
-	gxRect rect = {
+void eval(Image image, const Rect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
+	Rect rect = {
 		x: roi != null ? roi.x : 0;
 		y: roi != null ? roi.y : 0;
-		w: roi != null ? roi.w : dst.width();
-		h: roi != null ? roi.h : dst.height();
+		w: roi != null ? roi.w : image.width();
+		h: roi != null ? roi.h : image.height();
 	};
 
-	if (!dst.clip(&rect)) {
+	if (!image.clip(&rect)) {
 		return;
 	}
 
@@ -202,20 +202,20 @@ void eval(gxSurf dst, const gxRect roi&, float32 aspect, float32 time, vec4f eva
 		z: aspect;
 		w: time;
 	};
-	float w = dst.width();
-	float h = dst.height();
+	float w = image.width();
+	float h = image.height();
 	for (int y = rect.y; y < rect.y + rect.h; y += 1) {
 		in.y = y / h;
 		for (int x = rect.x; x < rect.x + rect.w; x += 1) {
 			in.x = x / w;
-			dst.set(x, y, argb(eval(in)));
+			image.set(x, y, argb(eval(in)));
 		}
 	}
 }
 
 ///@public
-void tile(gxSurf dst, int x, int y, gxSurf src, gxRect roi&) {
-	gxRect rect = {
+void tile(Image image, int x, int y, Image src, Rect roi&) {
+	Rect rect = {
 		x: roi != null ? roi.x : 0;
 		y: roi != null ? roi.y : 0;
 		w: roi != null ? roi.w : src.width();
@@ -232,22 +232,22 @@ void tile(gxSurf dst, int x, int y, gxSurf src, gxRect roi&) {
 	if (y < 0) {
 		y = -(-y % rect.h);
 	}
-	int width = dst.width();
-	int height = dst.height();
+	int width = image.width();
+	int height = image.height();
 	for (int j = y; j < height; j += rect.h) {
 		for (int i = x; i < width; i += rect.w) {
-			dst.copy(i, j, src, rect);
+			image.copy(i, j, src, rect);
 		}
 	}
 }
 
 /// Show the mesh in a window
-void show(gxMesh mesh, int w, int h, float32 fovy) {
+void show(Mesh mesh, int w, int h, float32 fovy) {
 
 	struct Closure {
 		int mode;
-		gxSurf offs;
-		gxMesh mesh;
+		Image offs;
+		Mesh mesh;
 	}
 
 	int next(int32 x, int mask) {
@@ -274,7 +274,7 @@ void show(gxMesh mesh, int w, int h, float32 fovy) {
 				return -1;
 			}
 			else if (button == 'l') {
-				closure.mode ^= gxMesh.useLights;
+				closure.mode ^= Mesh.useLights;
 			}
 			else if (button == '0') {
 				lights.enable(0, !lights.enabled(0));
@@ -289,13 +289,13 @@ void show(gxMesh mesh, int w, int h, float32 fovy) {
 				lights.enable(3, !lights.enabled(3));
 			}
 			else if (button == 't') {
-				closure.mode ^= gxMesh.useTexture;
+				closure.mode ^= Mesh.useTexture;
 			}
 			else if (button == '/') {
-				closure.mode = next(closure.mode, gxMesh.cullBack | gxMesh.cullFront);
+				closure.mode = next(closure.mode, Mesh.cullBack | Mesh.cullFront);
 			}
 			else if (button == '\t') {
-				closure.mode = next(closure.mode, gxMesh.drawMode);
+				closure.mode = next(closure.mode, Mesh.drawMode);
 			}
 			else if (button == '\r') {
 				vec4f eye = {x: 0, y: 0, z: 2, w: 1};
@@ -363,8 +363,8 @@ void show(gxMesh mesh, int w, int h, float32 fovy) {
 	}
 
 	Closure closure = {
-		mode: gxMesh.clearDepth | gxMesh.clearColor | gxMesh.useLights | gxMesh.cullBack | gxMesh.drawFill;
-		offs: gxSurf.create3d(w, h);
+		mode: Mesh.clearDepth | Mesh.clearColor | Mesh.useLights | Mesh.cullBack | Mesh.drawFill;
+		offs: Image.create3d(w, h);
 		mesh: mesh;
 	};
 	camera.projection(fovy, w / float32(h), 1, 100);
@@ -373,25 +373,25 @@ void show(gxMesh mesh, int w, int h, float32 fovy) {
 }
 
 /// Show the surface in a window
-inline show(gxSurf surf) = Gui.showWindow(surf, null, null);
+inline show(Image surf) = Gui.showWindow(surf, null, null);
 
 /// Show the surface in a window
-void show(gxSurf surf, int onEvent(int action, int button, int ex, int ey)) {
+void show(Image image, int onEvent(int action, int button, int ex, int ey)) {
 	if (onEvent == null) {
-		return Gui.showWindow(surf, null, null);
+		return Gui.showWindow(image, null, null);
 	}
 	static int delegate(int onEvent(int action, int button, int ex, int ey), int action, int button, int ex, int ey) {
 		return onEvent(action, button, ex, ey);
 	}
-	Gui.showWindow(surf, onEvent, delegate);
+	Gui.showWindow(image, onEvent, delegate);
 }
 
 /// Show the surfaces in a window clicking on the window toggles the shown surface
-void showDiff(gxSurf image1, gxSurf image2) {
+void showDiff(Image image1, Image image2) {
 	struct Closure {
-		gxSurf offs;
-		gxSurf image1;
-		gxSurf image2;
+		Image offs;
+		Image image1;
+		Image image2;
 	}
 
 	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
@@ -412,7 +412,7 @@ void showDiff(gxSurf image1, gxSurf image2) {
 	}
 
 	Closure closure = {
-		offs: gxSurf(image1);
+		offs: Image(image1);
 		image1: image1;
 		image2: image2;
 	};
@@ -424,8 +424,8 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 	static const int64 start = System.millis();
 	struct Closure {
 		bool lerp = true;
-		const gxSurf offs;
-		const gxSurf thumb;
+		const Image offs;
+		const Image thumb;
 		const float32 aspect;
 		const vec4f eval(vec4f in);
 	}
@@ -466,16 +466,16 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 
 	if (animationResolution == 0) {
 		float32 aspect = width / float32(height);
-		gxSurf surf = gxSurf(width, height, 32);
-		surf.eval(null, aspect, 0f, eval);
-		surf.show(null);
-		surf.destroy();
+		Image image = Image(width, height, 32);
+		image.eval(null, aspect, 0f, eval);
+		image.show(null);
+		image.destroy();
 		return;
 	}
 
 	Closure closure = {
-		offs: gxSurf(width, height, 32);
-		thumb: gxSurf(animationResolution, animationResolution, 32);
+		offs: Image(width, height, 32);
+		thumb: Image(animationResolution, animationResolution, 32);
 		aspect: width / float32(height);
 		eval: eval;
 	};

@@ -97,14 +97,14 @@ static int colcpy_32mix(char* dst, char *src, void *lut, size_t cnt) {
 	if (alpha == (size_t) -1) {
 		for (; cnt > 0; cnt -= 1, dst += 4, src += 4) {
 			register argb val = *(argb *) src;
-			val = gx_mixcolor(*(argb *) dst, val, val.a);
+			val = mix_rgb(*(argb *) dst, val, val.a);
 			*(argb *) dst = val;
 		}
 		return 0;
 	}
 	for (; cnt > 0; cnt -= 1, dst += 4, src += 4) {
 		register argb val = *(argb *) src;
-		val = gx_mixcolor(*(argb *) dst, val, (uint8_t) alpha);
+		val = mix_rgb(*(argb *) dst, val, (uint8_t) alpha);
 		*(argb *) dst = val;
 	}
 	return 0;
@@ -113,7 +113,7 @@ static int colcpy_32mix(char* dst, char *src, void *lut, size_t cnt) {
 static int colset_32mix(char* dst, char *src, void *lut, size_t cnt) {
 	argb val = cast_rgb((uint32_t) (size_t) lut);
 	for (; cnt > 0; cnt -= 1, dst += 4, src += 1) {
-		*(argb *) dst = gx_mixcolor(*(argb *) dst, val, *(uint8_t *) src);
+		*(argb *) dst = mix_rgb(*(argb *) dst, val, *(uint8_t *) src);
 	}
 	return 0;
 }
@@ -133,102 +133,102 @@ static int colcpy_08cpy(char *dst, char *src, void *lut, size_t cnt) {
 	(void)lut;
 }
 
-cblt_proc gx_getcbltf(cblt_type mode, int srcDepth) {
-	switch (mode) {
+bltProc getBltProc(BltType type, int srcDepth) {
+	switch (type) {
 		case cblt_conv_32:
 			switch (srcDepth) {
-				case cblt_conv_32: return (cblt_proc) colcpy_32cpy;
-				case cblt_conv_24: return (cblt_proc) colcpy_32_24;
-				case cblt_conv_16: return (cblt_proc) colcpy_32_16;
-				case cblt_conv_15: return (cblt_proc) colcpy_32_15;
-				case cblt_conv_08: return (cblt_proc) colcpy_32_08;
+				case cblt_conv_32: return (bltProc) colcpy_32cpy;
+				case cblt_conv_24: return (bltProc) colcpy_32_24;
+				case cblt_conv_16: return (bltProc) colcpy_32_16;
+				case cblt_conv_15: return (bltProc) colcpy_32_15;
+				case cblt_conv_08: return (bltProc) colcpy_32_08;
 			}
 			break;
 
 		case cblt_conv_24:
 			switch (srcDepth) {
-				case cblt_conv_32: return (cblt_proc) colcpy_24_32;
-//				case cblt_conv_24: return (cblt_proc) colcpy_24cpy;
-//				case cblt_conv_16: return (cblt_proc) colcpy_24_16;
-//				case cblt_conv_15: return (cblt_proc) colcpy_24_15;
-//				case cblt_conv_08: return (cblt_proc) colcpy_24_08;
+				case cblt_conv_32: return (bltProc) colcpy_24_32;
+//				case cblt_conv_24: return (bltProc) colcpy_24cpy;
+//				case cblt_conv_16: return (bltProc) colcpy_24_16;
+//				case cblt_conv_15: return (bltProc) colcpy_24_15;
+//				case cblt_conv_08: return (bltProc) colcpy_24_08;
 			}
 			break;
 		case cblt_conv_16:
 			switch (srcDepth) {
-//				case cblt_conv_32: return (cblt_proc) colcpy_16_32;
-//				case cblt_conv_24: return (cblt_proc) colcpy_16_24;
-//				case cblt_conv_16: return (cblt_proc) colcpy_16cpy;
-//				case cblt_conv_15: return (cblt_proc) colcpy_16_15;
-//				case cblt_conv_08: return (cblt_proc) colcpy_16_08;
+//				case cblt_conv_32: return (bltProc) colcpy_16_32;
+//				case cblt_conv_24: return (bltProc) colcpy_16_24;
+//				case cblt_conv_16: return (bltProc) colcpy_16cpy;
+//				case cblt_conv_15: return (bltProc) colcpy_16_15;
+//				case cblt_conv_08: return (bltProc) colcpy_16_08;
 			}
 			break;
 		case cblt_conv_15:
 			switch (srcDepth) {
-//				case cblt_conv_32: return (cblt_proc) colcpy_15_32;
-//				case cblt_conv_24: return (cblt_proc) colcpy_15_24;
-//				case cblt_conv_16: return (cblt_proc) colcpy_15_16;
-//				case cblt_conv_15: return (cblt_proc) colcpy_15cpy;
-//				case cblt_conv_08: return (cblt_proc) colcpy_15_08;
+//				case cblt_conv_32: return (bltProc) colcpy_15_32;
+//				case cblt_conv_24: return (bltProc) colcpy_15_24;
+//				case cblt_conv_16: return (bltProc) colcpy_15_16;
+//				case cblt_conv_15: return (bltProc) colcpy_15cpy;
+//				case cblt_conv_08: return (bltProc) colcpy_15_08;
 			}
 			break;
 		case cblt_conv_08:
 			switch (srcDepth) {
-//				case cblt_conv_32: return (cblt_proc) colcpy_08_32;
-//				case cblt_conv_24: return (cblt_proc) colcpy_08_24;
-//				case cblt_conv_16: return (cblt_proc) colcpy_08_16;
-//				case cblt_conv_15: return (cblt_proc) colcpy_08_15;
-				case cblt_conv_08: return (cblt_proc) colcpy_08cpy;
+//				case cblt_conv_32: return (bltProc) colcpy_08_32;
+//				case cblt_conv_24: return (bltProc) colcpy_08_24;
+//				case cblt_conv_16: return (bltProc) colcpy_08_16;
+//				case cblt_conv_15: return (bltProc) colcpy_08_15;
+				case cblt_conv_08: return (bltProc) colcpy_08cpy;
 			}
 			break;
 
 		case cblt_cpy_and:
 			switch (srcDepth) {
-				case cblt_conv_32: return (cblt_proc) colcpy_32and;
-//				case cblt_conv_24: return (cblt_proc) colcpy_24and;
-//				case cblt_conv_16: return (cblt_proc) colcpy_16and;
-//				case cblt_conv_15: return (cblt_proc) colcpy_15and;
-//				case cblt_conv_08: return (cblt_proc) colcpy_08and;
+				case cblt_conv_32: return (bltProc) colcpy_32and;
+//				case cblt_conv_24: return (bltProc) colcpy_24and;
+//				case cblt_conv_16: return (bltProc) colcpy_16and;
+//				case cblt_conv_15: return (bltProc) colcpy_15and;
+//				case cblt_conv_08: return (bltProc) colcpy_08and;
 			}
 			break;
 
 		case cblt_cpy_ior:
 			switch (srcDepth) {
-				case cblt_conv_32: return (cblt_proc) colcpy_32ior;
-//				case cblt_conv_24: return (cblt_proc) colcpy_24ior;
-//				case cblt_conv_16: return (cblt_proc) colcpy_16ior;
-//				case cblt_conv_15: return (cblt_proc) colcpy_15ior;
-//				case cblt_conv_08: return (cblt_proc) colcpy_08ior;
+				case cblt_conv_32: return (bltProc) colcpy_32ior;
+//				case cblt_conv_24: return (bltProc) colcpy_24ior;
+//				case cblt_conv_16: return (bltProc) colcpy_16ior;
+//				case cblt_conv_15: return (bltProc) colcpy_15ior;
+//				case cblt_conv_08: return (bltProc) colcpy_08ior;
 			}
 			break;
 
 		case cblt_cpy_xor:
 			switch (srcDepth) {
-				case cblt_conv_32: return (cblt_proc) colcpy_32xor;
-//				case cblt_conv_24: return (cblt_proc) colcpy_24xor;
-//				case cblt_conv_16: return (cblt_proc) colcpy_16xor;
-//				case cblt_conv_15: return (cblt_proc) colcpy_15xor;
-//				case cblt_conv_08: return (cblt_proc) colcpy_08xor;
+				case cblt_conv_32: return (bltProc) colcpy_32xor;
+//				case cblt_conv_24: return (bltProc) colcpy_24xor;
+//				case cblt_conv_16: return (bltProc) colcpy_16xor;
+//				case cblt_conv_15: return (bltProc) colcpy_15xor;
+//				case cblt_conv_08: return (bltProc) colcpy_08xor;
 			}
 			break;
 
 		case cblt_cpy_mix:
 			switch (srcDepth) {
-				case cblt_conv_32: return (cblt_proc) colcpy_32mix;
-//				case cblt_conv_24: return (cblt_proc) colcpy_24mix;
-//				case cblt_conv_16: return (cblt_proc) colcpy_16mix;
-//				case cblt_conv_15: return (cblt_proc) colcpy_15mix;
-//				case cblt_conv_08: return (cblt_proc) colcpy_08mix;
+				case cblt_conv_32: return (bltProc) colcpy_32mix;
+//				case cblt_conv_24: return (bltProc) colcpy_24mix;
+//				case cblt_conv_16: return (bltProc) colcpy_16mix;
+//				case cblt_conv_15: return (bltProc) colcpy_15mix;
+//				case cblt_conv_08: return (bltProc) colcpy_08mix;
 			}
 			break;
 
 		case cblt_set_mix:
 			switch (srcDepth) {
-				case cblt_conv_32: return (cblt_proc) colset_32mix;
-//				case cblt_conv_24: return (cblt_proc) colset_24mix;
-//				case cblt_conv_16: return (cblt_proc) colset_16mix;
-//				case cblt_conv_15: return (cblt_proc) colset_15mix;
-//				case cblt_conv_08: return (cblt_proc) colset_08mix;
+				case cblt_conv_32: return (bltProc) colset_32mix;
+//				case cblt_conv_24: return (bltProc) colset_24mix;
+//				case cblt_conv_16: return (bltProc) colset_16mix;
+//				case cblt_conv_15: return (bltProc) colset_15mix;
+//				case cblt_conv_08: return (bltProc) colset_08mix;
 			}
 			break;
 	}

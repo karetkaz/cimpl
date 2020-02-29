@@ -40,16 +40,16 @@ typedef struct texcol {
 	};
 } *texcol;
 
-typedef struct gx_Material {
+typedef struct GxMaterial {
 	struct vector emis;		// Emissive
 	struct vector ambi;		// Ambient
 	struct vector diff;		// Diffuse
 	struct vector spec;		// Specular
 	scalar spow;			// Shininess
-} *gx_Material;
+} *GxMaterial;
 
-typedef struct gx_Light {
-	struct gx_Light *next;
+typedef struct GxLight {
+	struct GxLight *next;
 
 	struct vector ambi;		// Ambient
 	struct vector diff;		// Diffuse
@@ -66,11 +66,11 @@ typedef struct gx_Light {
 		//~ L_dir  = 0x0004,		// is directional
 		//~ L_spot = 0x0008,		// is directional
 	} attr;
-} *gx_Light;
+} *GxLight;
 
-typedef struct gx_Mesh {
-	gx_Surf map;			// texture map
-	struct gx_Material mtl;	// back, fore?
+typedef struct GxMesh {
+	GxImage texture; // texture map
+	struct GxMaterial mtl;	// back, fore?
 
 	size_t maxvtx, vtxcnt;	// vertices
 	size_t maxtri, tricnt;	// triangles
@@ -96,22 +96,22 @@ typedef struct gx_Mesh {
 		signed t2;			// last triangle
 		signed parent;		// parent group of group
 		matrix transform;	// transformation matrix
-		gx_Surf map;		// texture map
-		gx_Material mtl;	// back, fore?
+		GxImage map;		// texture map
+		GxMaterial mtl;	// back, fore?
 	} *grpptr; */
 
 	uint32_t freeMesh:1;
 	uint32_t freeMap:1;
 	uint32_t hasTex:1;// := map != null
 	uint32_t hasNrm:1;// := nrm != null
-} *gx_Mesh;
+} *GxMesh;
 
-gx_Mesh g3_createMesh(gx_Mesh recycle, size_t n);
-void g3_destroyMesh(gx_Mesh msh);
+GxMesh createMesh(GxMesh recycle, size_t n);
+void destroyMesh(GxMesh msh);
 
-int g3_readObj(gx_Mesh msh, const char *file);
-int g3_read3ds(gx_Mesh msh, const char *file);
-int g3_saveObj(gx_Mesh msh, const char *file);
+int readObj(GxMesh msh, const char *file);
+int read3ds(GxMesh msh, const char *file);
+int saveObj(GxMesh msh, const char *file);
 
 /**
  * get the axis aligned bounding box of the mesh
@@ -119,7 +119,7 @@ int g3_saveObj(gx_Mesh msh, const char *file);
  * @param min output vector containing the min values (x, y, z)
  * @param max output vector containing the max values (x, y, z)
  */
-void bboxMesh(gx_Mesh msh, vector min, vector max);
+void bboxMesh(GxMesh msh, vector min, vector max);
 
 /**
  * recalculate mesh normals
@@ -128,7 +128,7 @@ void bboxMesh(gx_Mesh msh, vector min, vector max);
  * @param center (optional) translate the mesh
  * @param resize (optional) resize the mesh
  */
-void normMesh(gx_Mesh msh, scalar tol, vector center, vector resize);
+void normMesh(GxMesh msh, scalar tol, vector center, vector resize);
 
 /**
  * update one vertex of the mesh at the given index
@@ -139,7 +139,7 @@ void normMesh(gx_Mesh msh, scalar tol, vector center, vector resize);
  * @param tex update texture position
  * @return 0 if failed
  */
-int setvtx(gx_Mesh msh, size_t idx, scalar pos[3], scalar nrm[3], scalar tex[2]);
+int setVtx(GxMesh msh, size_t idx, scalar *pos, scalar *nrm, scalar *tex);
 
 /**
  * Add a new vertex to the mesh
@@ -149,8 +149,8 @@ int setvtx(gx_Mesh msh, size_t idx, scalar pos[3], scalar nrm[3], scalar tex[2])
  * @param tex update texture position
  * @return 0 if failed
  */
-static inline int addvtx(gx_Mesh msh, scalar pos[3], scalar nrm[3], scalar tex[2]) {
-	return setvtx(msh, msh->vtxcnt, pos, nrm, tex);
+static inline int addVtx(GxMesh msh, scalar *pos, scalar *nrm, scalar *tex) {
+	return setVtx(msh, msh->vtxcnt, pos, nrm, tex);
 }
 
 /**
@@ -160,7 +160,7 @@ static inline int addvtx(gx_Mesh msh, scalar pos[3], scalar nrm[3], scalar tex[2
  * @param p2 index of the second vertex
  * @return 0 if not possible
  */
-int addseg(gx_Mesh msh, size_t p1, size_t p2);
+int addSeg(GxMesh msh, size_t p1, size_t p2);
 
 /**
  * connect 3 points (triangle) in the mesh
@@ -170,7 +170,7 @@ int addseg(gx_Mesh msh, size_t p1, size_t p2);
  * @param p3 index of the third vertex
  * @return 0 if not possible
  */
-int addtri(gx_Mesh msh, size_t p1, size_t p2, size_t p3);
+int addTri(GxMesh msh, size_t p1, size_t p2, size_t p3);
 
 /**
  * connect 4 points (add 2 triangles) in the mesh
@@ -181,22 +181,22 @@ int addtri(gx_Mesh msh, size_t p1, size_t p2, size_t p3);
  * @param p4 index of the fourth vertex
  * @return 0 if not possible
  */
-static inline int addquad(gx_Mesh msh, size_t p1, size_t p2, size_t p3, size_t p4) {
-	if (!addtri(msh, p1, p2, p3)) {
+static inline int addQuad(GxMesh msh, size_t p1, size_t p2, size_t p3, size_t p4) {
+	if (!addTri(msh, p1, p2, p3)) {
 		return 0;
 	}
-	return addtri(msh, p1, p3, p4);
+	return addTri(msh, p1, p3, p4);
 }
 
-void g3_drawline(gx_Surf dst, vector p1, vector p2, uint32_t c);
-int g3_drawMesh(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam, gx_Light lights, int mode);
-int g3_drawBbox(gx_Surf dst, gx_Mesh msh, matrix objm, camera cam);
-int g3_drawenvc(gx_Surf dst, struct gx_Surf img[6], vector view, matrix proj, double size);
+void drawLine3d(GxImage dst, vector p1, vector p2, uint32_t c);
+int drawMesh(GxImage dst, GxMesh msh, matrix objm, camera cam, GxLight lights, int mode);
+int drawBbox(GxImage dst, GxMesh msh, matrix objm, camera cam);
+int drawCubeMap(GxImage dst, struct GxImage *img, vector view, matrix proj, double size);
 
 // extract the planes (near, far, left, right, top, bottom) from the projection matrix
-void frustum_get(struct vector planes[6], matrix proj);
+void getFrustum(struct vector *planes, matrix mat);
 
 // test if a point, sphere or triangle is inside or outside of the frustum
-int ftest_point(struct vector planes[6], vector p);
-int ftest_sphere(struct vector planes[6], vector p, scalar r);
-int ftest_triangle(struct vector planes[6], vector p1, vector p2, vector p3);
+int testPoint(struct vector *planes, vector p);
+int testSphere(struct vector *planes, vector p, scalar r);
+int testTriangle(struct vector *planes, vector p1, vector p2, vector p3);

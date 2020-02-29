@@ -63,7 +63,7 @@ static double gradientSpiral(struct gradient_data* g) {
 	return f64Modulus(len + ang);
 }
 
-int gx_gradSurf(gx_Surf dst, gx_Rect roi, gradient_type type, int length, uint32_t colors[]) {
+int drawGradient(GxImage dst, GxRect roi, GradientFlags type, int length, uint32_t *colors) {
 	struct gradient_data g;
 
 	if (dst->depth != 32)
@@ -144,8 +144,8 @@ int gx_gradSurf(gx_Surf dst, gx_Rect roi, gradient_type type, int length, uint32
 			break;
 	}
 
-	gx_Clip clip = gx_getclip(dst);
-	char *dptr = (char *) gx_getpaddr(dst, clip->l, clip->t);
+	GxClip clip = getClip(dst);
+	char *dptr = (char *) getPAddr(dst, clip->l, clip->t);
 	if (dptr == NULL) {
 		return -2;
 	}

@@ -1,8 +1,18 @@
-// Hue saturation brightness demo.
+/* Hue saturation brightness demo using color matrix
+ *
+ * use 'tab' / 'shift' + 'tab' to select next control
+ * use 'enter' / 'shift' + 'enter' to select next control
+ * use '+' / '-' to adjust value of selected control (use shift for more precision)
+ * use 'backspace' / 'shift' + 'backspace' to reset selected / every control value
+ * use 'space' to press a button, toggle switch or reset slider value
+ * use '[' or ']' to show and hide the controls
+ *
+ * drag the mouse up or down in the window to adjust control value
+ */
 
-gxSurf back = gxSurf("asset/image/forest.png", 32);
-gxSurf font = gxSurf.openFnt("asset/font/modern-1.fnt");
-gxSurf offs = gxSurf(back.width(), back.height(), back.depth());
+Image back = Image("asset/image/forest.png", 32);
+Image font = Image.openFnt("asset/font/modern-1.fnt");
+Image offs = Image(back.width(), back.height(), back.depth());
 
 static const mat4f INVERT = mat4f(
 	-1, 0, 0, 1,
@@ -332,7 +342,6 @@ int onEvent(int action, int button, int x, int y) {
 	static Histogram histogram = {
 		text: null;
 		image: offs;
-		height: 128;
 		enabled: false;
 	};
 	static Slider time = {
@@ -357,10 +366,10 @@ int onEvent(int action, int button, int x, int y) {
 	);
 
 	static bool onGroupClick(Button view) {
-		ui.group = ui.group != 1 ? 1 : 2;
-		ui.selectedIndex = -1;
-		group.value = ui.group == 1 ? ">" :"<";
-		ui.measure();
+		if (ui.setGroup(ui.group != 1 ? 1 : 2)) {
+			ui.selectedIndex = -1;
+			group.value = ui.group == 1 ? ">" :"<";
+		}
 		return true;
 	}
 
