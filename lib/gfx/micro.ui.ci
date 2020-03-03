@@ -321,29 +321,41 @@ bool onEvent(View this, const MouseEvent event&, const Rect rect&) {
 			return false;
 		}
 
-		int x = event.x - rect.x;
-		int y = event.y - rect.y;
-		int min = x;
-		int max = x;
-		if (event.dx < 0) {
-			min += event.dx;
-		} else {
-			max += event.dx;
+		int x0 = event.x - rect.x;
+		int x1 = x0 + event.dx;
+
+		int y0 = event.y - rect.y;
+		int y1 = y0 + event.dy;
+
+		if (x0 > x1) {
+			int x = x0;
+			x0 = x1;
+			x1 = x;
+			int y = y0;
+			y0 = y1;
+			y1 = y;
 		}
-		if (min < 0) {
-			min = 0;
+		int y = y0 << 16;
+		int dy = y1 - y0;
+		if (x1 != x0) {
+			dy = (dy << 16) / (x1 - x0);
 		}
-		if (max > 255) {
-			max = 255;
+		if (x0 < 0) {
+			y -= x0 * dy;
+			x0 = 0;
+		}
+		if (x1 > 256) {
+			x1 = 256;
 		}
 		int h = rect.h;
-		for (int idx = min; idx < max; idx += 1) {
-			int32 val = 255 * (h - y) / h;
+		for (int x = x0; x < x1; x += 1) {
+			int val = 255 * (h - (y >> 16)) / h;
 			if (item.onUpdate != null) {
-				item.onUpdate(idx, val);
+				item.onUpdate(x, val);
 			} else {
-				item.data[idx] = uint32(argb(idx, val, val, val));
+				item.data[x] = uint32(argb(x, val, val, val));
 			}
+			y += dy;
 		}
 		return true;
 	}

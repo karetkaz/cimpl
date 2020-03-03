@@ -818,7 +818,6 @@ static void textDumpMem(dbgContext dbg, void *ptr, size_t size, char *kind) {
 
 void printFields(FILE *out, const char **esc, symn sym, userContext ctx) {
 	rtContext rt = ctx->rt;
-	dmpMode valMode = prGlobal;
 	for (symn var = sym->fields; var; var = var->next) {
 		if (var == rt->main || isInline(var)) {
 			// alias and type names.
@@ -859,7 +858,7 @@ void printFields(FILE *out, const char **esc, symn sym, userContext ctx) {
 		if (var->file && var->line) {
 			printFmt(out, esc, "%s:%u: ", var->file, var->line);
 		}
-		printVal(out, esc, rt, var, value, valMode, 0);
+		printVal(out, esc, rt, var, value, prGlobal, 0);
 		printFmt(out, esc, "\n");
 	}
 }

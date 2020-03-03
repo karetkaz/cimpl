@@ -1,3 +1,32 @@
+// standard library extension
+
+enum: bool {
+	true: 0 == 0;
+	false: 0 != 0;
+}
+
+inline byte = uint8;
+inline float = float32;
+inline double = float64;
+
+static if (typename(raise) == function) {
+inline "std/debug.ci";
+}
+
+/// Returns the size of the given type
+inline sizeof(typename type) = int(type.size);
+
+inline "std/math.ci";
+inline "std/math/Complex.ci"?;      // -> Complex<float64>
+//inline "std/math/Rational.ci"?;     // -> Rational<int64>
+inline "std/math/Vector4f.ci"?;
+inline "std/math/Matrix4f.ci"?;
+inline "std/math/Vector2d.ci"?;
+//inline "std/math/BigInteger.ci?"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
+//inline "std/math/BigDecimal.ci?"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
+//inline "std/math/Perlin.ci"?;
+
+inline "std/string.ci";
 // graphics library extension
 inline "gfx/color.ci";
 
@@ -483,6 +512,503 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 	closure.thumb.destroy();
 	closure.offs.destroy();
 }
+/// an 32 bit argb color
+struct argb: 0 {
+	/// value of color
+	uint32 v;
+	struct: 1 {
+		/// blue component
+		uint8 b;
+
+		/// green component
+		uint8 g;
+
+		/// red component
+		uint8 r;
+
+		/// alpha component
+		uint8 a;
+	}
+	/*enum {
+		Black             : 0x00000000;
+		White             : 0x00ffffff;
+		Aquamarine        : 0x007fffd4;
+		Azure             : 0x00007fff;
+		Blue              : 0x000000ff;
+		BlueViolet        : 0x008a2be2;
+		Brown             : 0x00a52a2a;
+		CadetBlue         : 0x005f9ea0;
+		Coral             : 0x00ff7f50;
+		CornflowerBlue    : 0x006495ed;
+		Cyan              : 0x0000ffff;
+		DarkGray          : 0x00a9a9a9;
+		DarkGrey          : 0x00a9a9a9;
+		DarkGreen         : 0x00006400;
+		DarkOliveGreen    : 0x00556b2f;
+		DarkOrchid        : 0x009932cc;
+		DarkSlateBlue     : 0x00483d8b;
+		DarkSlateGray     : 0x002f4f4f;
+		DarkSlateGrey     : 0x002f4f4f;
+		DarkTurquoise     : 0x0000ced1;
+		DarkWood          : 0x000d0301;
+		DeepPink          : 0x00ff1493;
+		DimGray           : 0x00696969;
+		DimGrey           : 0x00696969;
+		FireBrick         : 0x00b22222;
+		ForestGreen       : 0x00228b22;
+		Gold              : 0x00ffd700;
+		Goldenrod         : 0x00daa520;
+		Gray              : 0x00808080;
+		Grey              : 0x00808080;
+		Green             : 0x00008000;
+		GreenYellow       : 0x00adff2f;
+		IndianRed         : 0x00cd5c5c;
+		Khaki             : 0x00f0e68c;
+		LightBlue         : 0x00add8e6;
+		LightGray         : 0x00d3d3d3;
+		LightGrey         : 0x00d3d3d3;
+		LightSteelBlue    : 0x00b0c4de;
+		LightWood         : 0x00993d1a;
+		Lime              : 0x0000ff00;
+		LimeGreen         : 0x0032cd32;
+		Magenta           : 0x00ff00ff;
+		Maroon            : 0x00800000;
+		MedianWood        : 0x004d1f09;
+		MediumAquamarine  : 0x0066cdaa;
+		MediumBlue        : 0x000000cd;
+		MediumForestGreen : 0x006b8e23;
+		MediumGoldenrod   : 0x00eaeaad;
+		MediumOrchid      : 0x00ba55d3;
+		MediumSeaGreen    : 0x003cb371;
+		MediumSlateBlue   : 0x007b68ee;
+		MediumSpringGreen : 0x0000fa9a;
+		MediumTurquoise   : 0x0048d1cc;
+		MediumVioletRed   : 0x00c71585;
+		MidnightBlue      : 0x00191970;
+		Navy              : 0x00000080;
+		NavyBlue          : 0x0023238e;
+		Orange            : 0x00ffa500;
+		OrangeRed         : 0x00ff4500;
+		Orchid            : 0x00da70d6;
+		PaleGreen         : 0x0098fb98;
+		Pink              : 0x00ffc0cb;
+		Plum              : 0x00dda0dd;
+		Red               : 0x00ff0000;
+		Salmon            : 0x00fa8072;
+		SeaGreen          : 0x002e8b57;
+		Sienna            : 0x00a0522d;
+		SkyBlue           : 0x0087ceeb;
+		SlateBlue         : 0x006a5acd;
+		SpringGreen       : 0x0000ff7f;
+		SteelBlue         : 0x004682b4;
+		Tan               : 0x00d2b48c;
+		Thistle           : 0x00d8bfd8;
+		Turquoise         : 0x0040e0d0;
+		Violet            : 0x00ee82ee;
+		VioletRed         : 0x00cc3299;
+		Wheat             : 0x00f5deb3;
+		Yellow            : 0x00ffff00;
+		YellowGreen       : 0x009acd32;
+		//Transparent     : 0xff000000;
+	}*/
+}
+
+/// cast unsigned integer to argb value
+inline argb(uint32 argb) = argb(emit(uint32(argb)));
+/// cast argb value to unsigned integer
+inline uint32(argb value) = uint32(emit(struct(value)));
+
+
+/// clamp signed gray or color component to fit in 8 bits (0 ... 255)
+uint32 clamp_s8(int32 c) {
+	if (c < 0) {
+		return 0;
+	}
+	if (c > 255) {
+		return 255;
+	}
+	return c;
+}
+/// clamp unsigned gray or color component to fit in 8 bits (0 ... 255)
+uint32 clamp_u8(uint32 c) {
+	if (c > 255) {
+		return 255;
+	}
+	return c;
+}
+
+// construct a rgb8 gray color from the given value
+inline _gray(uint32 c) = argb((((c << 8) | c) << 8) | c);
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(int32 c) = _gray(clamp_s8(c));
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(uint32 c) = _gray(clamp_s8(c));
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(float32 c) = gray(int32(c * 255));
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(float64 c) = gray(int32(c * 255));
+
+
+/// construct an argb color from the given components
+inline _argb(uint32 r, uint32 g, uint32 b) = argb(uint32((((r << 8) | g) << 8) | b));
+/// construct an argb color from the given components
+inline _argb(uint32 a, uint32 r, uint32 g, uint32 b) = argb(uint32((((((a << 8) | r) << 8) | g) << 8) | b));
+
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(int32 r, int32 g, int32 b) = _argb(clamp_s8(r), clamp_s8(g), clamp_s8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(r), clamp_u8(g), clamp_u8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float32 r, float32 g, float32 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float64 r, float64 g, float64 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(int32 a, int32 r, int32 g, int32 b) = _argb(clamp_s8(a), clamp_s8(r), clamp_s8(g), clamp_s8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(uint32 a, uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(a), clamp_u8(r), clamp_u8(g), clamp_u8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float32 a, float32 r, float32 g, float32 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float64 a, float64 r, float64 g, float64 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
+
+
+/// get the Alpha channel of the color
+inline ach(argb color) = int32((uint32(color) >> 24) & 0xff);
+/// get the Red channel of the color
+inline rch(argb color) = int32((uint32(color) >> 16) & 0xff);
+/// get the Green channel of the color
+inline gch(argb color) = int32((uint32(color) >> 8) & 0xff);
+/// get the Blue channel of the color
+inline bch(argb color) = int32(uint32(color) & 0xff);
+/// get the luminosity of the color (0.299 * color.r + 0.587 * color.g + 0.114 * color.b)
+inline lum(argb color) = int32((19595 * rch(color) + 38470 * gch(color) + 7471 * bch(color)) >> 16);
+
+
+/// linear interpolate a lookup-table with the given colors
+void lerpLut(uint32 lut[], int alpha, bool invert, argb colors...) {
+	inline lrp(int32 t, uint32 x, uint32 y) = x + (t * (y - x) >> 16);
+
+	int mid = alpha < 0 ? 0 : 254;
+	int div = 256 - clamp_u8(alpha > 0 ? alpha : -alpha);
+	int dt = (colors.length - 1 << 16) / (lut.length - 1);
+	for (int i = 0; i < lut.length; i += 1) {
+		int t = i * dt;
+		argb c1 = colors[t >> 16];
+		argb c2 = colors[(t >> 16) + 1];
+		int32 a = lrp(t & 0xffff, ach(c1), ach(c2));
+		int32 r = lrp(t & 0xffff, rch(c1), rch(c2));
+		int32 g = lrp(t & 0xffff, gch(c1), gch(c2));
+		int32 b = lrp(t & 0xffff, bch(c1), bch(c2));
+		a = clamp_s8((a - mid) * 256 / div + mid);
+		r = clamp_s8((r - mid) * 256 / div + mid);
+		g = clamp_s8((g - mid) * 256 / div + mid);
+		b = clamp_s8((b - mid) * 256 / div + mid);
+		if (invert) {
+			a = ~a;
+			r = ~r;
+			g = ~g;
+			b = ~b;
+		}
+		lut[i] = a << 24 | r << 16 | g << 8 | b;
+	}
+}
+
+static if (typename(vec4f) != null) {
+
+/// convert a floating point vector to rgb
+inline argb(const vec4f vec&) = argb(vec.x, vec.y, vec.z);
+
+/// calculate the luminosity of a color
+inline lum(const vec4f vec&) = 0.299f * vec.x + 0.587f * vec.y + 0.114f * vec.z;
+
+/// convert from hsv color space to rgb color space
+vec4f hsv2rgb(vec4f hsv) {
+	float32 h = hsv.x;
+	float32 s = hsv.y;
+	float32 v = hsv.z;
+
+	if (s == 0) {
+		return vec4f(v);
+	}
+
+	h *= 360 / 60;
+
+	int i = int(h);		// round
+	float32 f = h - i;	// fraction
+
+	float32 u = v;
+	float32 p = v * (1 - s);
+	float32 q = v * (1 - s * f);
+	float32 t = v * (1 - s * (1 - f));
+
+	if (i == 0) {
+		return vec4f(u, t, p);
+	}
+	if (i == 1) {
+		return vec4f(q, u, p);
+	}
+	if (i == 2) {
+		return vec4f(p, u, t);
+	}
+	if (i == 3) {
+		return vec4f(p, q, u);
+	}
+	if (i == 4) {
+		return vec4f(t, p, u);
+	}
+	return vec4f(u, p, q);
+}
+}
+
+argb hsv2rgb(float h, float s, float v) {
+	if (s == 0) {
+		return argb(0, 0, 0);
+	}
+
+	h *= 360 / 60;
+
+	int i = int(h);		// round
+	float32 f = h - i;	// fraction
+
+	float32 u = v;
+	float32 p = v * (1 - s);
+	float32 q = v * (1 - s * f);
+	float32 t = v * (1 - s * (1 - f));
+
+	if (i == 0) {
+		return argb(u, t, p);
+	}
+	if (i == 1) {
+		return argb(q, u, p);
+	}
+	if (i == 2) {
+		return argb(p, u, t);
+	}
+	if (i == 3) {
+		return argb(p, q, u);
+	}
+	if (i == 4) {
+		return argb(t, p, u);
+	}
+	return argb(u, p, q);
+}
+
+/// draw the given lookup table to the image
+void drawLut(Image image, const Rect roi&, const uint32 bars[256], const uint32 lines[256]) {
+	enum {
+		margin: 20;
+		colB: 0x4371c6;
+		colG: 0x72d874;
+		colR: 0xfc6165;
+		colL: 0xdadada;
+	}
+
+	Rect rect = {
+		w: roi != null ? roi.w : 256;
+		h: roi != null ? roi.h : 128;
+		y: roi != null ? roi.y : margin;
+		x: roi != null ? roi.x : image.width() - rect.w - margin;
+	};
+
+	int px = (rect.w - 256) / 2;
+
+	if (bars != null) {
+		for (int x = 0; x < bars.length; x += 1) {
+			int bv = bch(argb(bars[x])) * rect.h / 256;
+			int gv = gch(argb(bars[x])) * rect.h / 256;
+			int rv = rch(argb(bars[x])) * rect.h / 256;
+			int lv = ach(argb(bars[x])) * rect.h / 256;
+			for (int y = 0; y < rect.h; y += 1) {
+				uint32 b = colB * uint32(y < bv);
+				uint32 g = colG * uint32(y < gv);
+				uint32 r = colR * uint32(y < rv);
+				uint32 l = colL * uint32(y < lv);
+				image.set(x + rect.x + px, rect.h - y + rect.y - 1, r | g | b | l);
+			}
+		}
+	}
+	if (lines != null) {
+		int y = rect.y + rect.h - 1;
+		int pb = bch(argb(lines[0])) * rect.h / 256;
+		int pg = gch(argb(lines[0])) * rect.h / 256;
+		int pr = rch(argb(lines[0])) * rect.h / 256;
+		int pl = ach(argb(lines[0])) * rect.h / 256;
+
+		for (int i = 1; i < lines.length; i += 1) {
+			int x = rect.x + i + px;
+			int bv = bch(argb(lines[i])) * rect.h / 256;
+			int gv = gch(argb(lines[i])) * rect.h / 256;
+			int rv = rch(argb(lines[i])) * rect.h / 256;
+			int lv = ach(argb(lines[i])) * rect.h / 256;
+
+			image.drawLine(x, y - pl, x, y - lv, colL);
+			image.drawLine(x, y - pb, x, y - bv, colB);
+			image.drawLine(x, y - pg, x, y - gv, colG);
+			image.drawLine(x, y - pr, x, y - rv, colR);
+
+			pl = lv;
+			pb = bv;
+			pg = gv;
+			pr = rv;
+		}
+	}
+}
+// emulated implementation
+void blur(Image img, int radius, double sigma) {
+	static double gauss(double x, double sigma) {
+		inline SQRT_2_PI_INV = 0.398942280401432677939946059935;
+		double t = x / sigma;
+		/*switch (dx) {
+			default:
+				break;
+			case -1:
+				return 1;
+			case 0:
+				return SQRT_2_PI_INV * exp(-0.5*t*t) / sigma;
+			case 1:
+				return -x * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma);
+			case 2:
+				return (x * x - sigma * sigma) * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma * sigma * sigma);
+		}*/
+		return SQRT_2_PI_INV * double.exp(-0.5 * t * t) / sigma;
+	}
+
+	uint32 kernel[1024];
+	int size = radius * 2 + 1;
+	assert(size < kernel.length);
+
+	float64 kernelSum = 0;
+	float64 kernelFlt[kernel.length];
+	for (int i = 0; i < size; i += 1) {
+		kernelFlt[i] = gauss(radius - i, sigma);
+		kernelSum += kernelFlt[i];
+	}
+
+	for (int i = 0; i < size; i += 1) {
+		kernel[i] = 65536 * (kernelFlt[i] / kernelSum);
+	}
+
+	int width = img.width();
+	int height = img.height();
+
+	Image tmp = Image(width, height, img.depth());
+
+	// x direction: inout -> temp
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			uint32 r = 0;
+			uint32 g = 0;
+			uint32 b = 0;
+			for (int i = 0; i < size; i += 1) {
+				int _x = x + i - radius;
+				if (_x >= 0 && _x < width) {
+					argb col = argb(img.get(_x, y));
+					uint32 _k = kernel[i];
+					r += _k * rch(col);
+					g += _k * gch(col);
+					b += _k * bch(col);
+				}
+			}
+			tmp.set(x, y, argb(r >> 16, g >> 16, b >> 16));
+		}
+	}
+
+	// y direction: temp -> inout
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			uint32 r = 0;
+			uint32 g = 0;
+			uint32 b = 0;
+			for (int i = 0; i < size; i += 1) {
+				int _y = y + i - radius;
+				if (_y >= 0 && _y < height) {
+					argb col = argb(tmp.get(x, _y));
+					uint32 _k = kernel[i];
+					r += _k * rch(col);
+					g += _k * gch(col);
+					b += _k * bch(col);
+				}
+			}
+			img.set(x, y, argb(r >> 16, g >> 16, b >> 16));
+		}
+	}
+
+	tmp.destroy();
+}
+// emulated implementation
+void transform(Image surf, const Rect rect&, Image src, const Rect roi&, int32 interpolate, float32 mat[16]) {
+	assert(roi == null);
+	assert(rect != null);
+
+	Rect dRec = {
+		x: rect != null ? rect.x : 0;
+		y: rect != null ? rect.y : 0;
+		w: rect != null ? rect.w : surf.width();
+		h: rect != null ? rect.h : surf.height();
+	};
+
+	Rect sRec = {
+		x: roi != null ? roi.x : 0;
+		y: roi != null ? roi.y : 0;
+		w: roi != null ? roi.w : src.width();
+		h: roi != null ? roi.h : src.height();
+	};
+
+	float32 xx = mat != null ? mat[0] : float32(sRec.w) / dRec.w;
+	float32 xy = mat != null ? mat[1] : 0;
+	float32 xt = mat != null ? mat[3] : sRec.x;
+	float32 yy = mat != null ? mat[5] : float32(sRec.h) / dRec.h;
+	float32 yx = mat != null ? mat[4] : 0;
+	float32 yt = mat != null ? mat[7] : sRec.y;
+
+	if (!surf.clip(dRec)) {
+		// nothing to set
+		return;
+	}
+
+	if (!src.clip(sRec)) {
+		// nothing to get
+		return;
+	}
+
+	for (int y = 0; y < dRec.h; y += 1) {
+		int dy = dRec.y + y;
+		float32 sy = sRec.y + y;
+		for (int x = 0; x < dRec.w; x += 1) {
+			int dx = dRec.x + x;
+			float32 sx = sRec.x + x;
+			float32 tx = (xx * sx + xy * sy + xt) / src.width();
+			float32 ty = (yx * sx + yy * sy + yt) / src.height();
+			surf.set(dx, dy, argb(src.tex(tx, ty)));
+		}
+	}
+}
+// emulated implementation
+void blend(Image surf, int32 x0, int32 y0, const Image src, const Rect roi&, int32 alpha, bool dstAlpha, vec4f blend(vec4f base, vec4f with)) {
+	int width = surf.width();
+	int height = surf.height();
+
+	assert(!dstAlpha, "not implemented");
+	assert(roi == null, "not implemented");
+	assert(blend == null, "not implemented");
+
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			inline lerp(int32 l, int32 r) = int32(l + alpha * (r - l) / 256);
+			argb col = argb(src.get(x,y));
+			int r = rch(col);
+			int g = gch(col);
+			int b = bch(col);
+
+			col = argb(surf.get(x,y));
+			r = lerp(rch(col), r);
+			g = lerp(gch(col), g);
+			b = lerp(bch(col), b);
+
+			surf.set(x + x0, y + y0, argb(r, g, b));
+		}
+	}
+}
 // micro ui, TODO: add comments
 
 struct Style {
@@ -806,29 +1332,41 @@ bool onEvent(View this, const MouseEvent event&, const Rect rect&) {
 			return false;
 		}
 
-		int x = event.x - rect.x;
-		int y = event.y - rect.y;
-		int min = x;
-		int max = x;
-		if (event.dx < 0) {
-			min += event.dx;
-		} else {
-			max += event.dx;
+		int x0 = event.x - rect.x;
+		int x1 = x0 + event.dx;
+
+		int y0 = event.y - rect.y;
+		int y1 = y0 + event.dy;
+
+		if (x0 > x1) {
+			int x = x0;
+			x0 = x1;
+			x1 = x;
+			int y = y0;
+			y0 = y1;
+			y1 = y;
 		}
-		if (min < 0) {
-			min = 0;
+		int y = y0 << 16;
+		int dy = y1 - y0;
+		if (x1 != x0) {
+			dy = (dy << 16) / (x1 - x0);
 		}
-		if (max > 255) {
-			max = 255;
+		if (x0 < 0) {
+			y -= x0 * dy;
+			x0 = 0;
+		}
+		if (x1 > 256) {
+			x1 = 256;
 		}
 		int h = rect.h;
-		for (int idx = min; idx < max; idx += 1) {
-			int32 val = 255 * (h - y) / h;
+		for (int x = x0; x < x1; x += 1) {
+			int val = 255 * (h - (y >> 16)) / h;
 			if (item.onUpdate != null) {
-				item.onUpdate(idx, val);
+				item.onUpdate(x, val);
 			} else {
-				item.data[idx] = uint32(argb(idx, val, val, val));
+				item.data[x] = uint32(argb(x, val, val, val));
 			}
+			y += dy;
 		}
 		return true;
 	}
@@ -1418,503 +1956,6 @@ Layout Layout(Image offs, int x, int y, Image font, View items...) {
 }
 
 inline draw(Layout layout&) = uiEvent(layout, Gui.WINDOW_DRAW, 0, 0, 0);
-/// an 32 bit argb color
-struct argb: 0 {
-	/// value of color
-	uint32 v;
-	struct: 1 {
-		/// blue component
-		uint8 b;
-
-		/// green component
-		uint8 g;
-
-		/// red component
-		uint8 r;
-
-		/// alpha component
-		uint8 a;
-	}
-	/*enum {
-		Black             : 0x00000000;
-		White             : 0x00ffffff;
-		Aquamarine        : 0x007fffd4;
-		Azure             : 0x00007fff;
-		Blue              : 0x000000ff;
-		BlueViolet        : 0x008a2be2;
-		Brown             : 0x00a52a2a;
-		CadetBlue         : 0x005f9ea0;
-		Coral             : 0x00ff7f50;
-		CornflowerBlue    : 0x006495ed;
-		Cyan              : 0x0000ffff;
-		DarkGray          : 0x00a9a9a9;
-		DarkGrey          : 0x00a9a9a9;
-		DarkGreen         : 0x00006400;
-		DarkOliveGreen    : 0x00556b2f;
-		DarkOrchid        : 0x009932cc;
-		DarkSlateBlue     : 0x00483d8b;
-		DarkSlateGray     : 0x002f4f4f;
-		DarkSlateGrey     : 0x002f4f4f;
-		DarkTurquoise     : 0x0000ced1;
-		DarkWood          : 0x000d0301;
-		DeepPink          : 0x00ff1493;
-		DimGray           : 0x00696969;
-		DimGrey           : 0x00696969;
-		FireBrick         : 0x00b22222;
-		ForestGreen       : 0x00228b22;
-		Gold              : 0x00ffd700;
-		Goldenrod         : 0x00daa520;
-		Gray              : 0x00808080;
-		Grey              : 0x00808080;
-		Green             : 0x00008000;
-		GreenYellow       : 0x00adff2f;
-		IndianRed         : 0x00cd5c5c;
-		Khaki             : 0x00f0e68c;
-		LightBlue         : 0x00add8e6;
-		LightGray         : 0x00d3d3d3;
-		LightGrey         : 0x00d3d3d3;
-		LightSteelBlue    : 0x00b0c4de;
-		LightWood         : 0x00993d1a;
-		Lime              : 0x0000ff00;
-		LimeGreen         : 0x0032cd32;
-		Magenta           : 0x00ff00ff;
-		Maroon            : 0x00800000;
-		MedianWood        : 0x004d1f09;
-		MediumAquamarine  : 0x0066cdaa;
-		MediumBlue        : 0x000000cd;
-		MediumForestGreen : 0x006b8e23;
-		MediumGoldenrod   : 0x00eaeaad;
-		MediumOrchid      : 0x00ba55d3;
-		MediumSeaGreen    : 0x003cb371;
-		MediumSlateBlue   : 0x007b68ee;
-		MediumSpringGreen : 0x0000fa9a;
-		MediumTurquoise   : 0x0048d1cc;
-		MediumVioletRed   : 0x00c71585;
-		MidnightBlue      : 0x00191970;
-		Navy              : 0x00000080;
-		NavyBlue          : 0x0023238e;
-		Orange            : 0x00ffa500;
-		OrangeRed         : 0x00ff4500;
-		Orchid            : 0x00da70d6;
-		PaleGreen         : 0x0098fb98;
-		Pink              : 0x00ffc0cb;
-		Plum              : 0x00dda0dd;
-		Red               : 0x00ff0000;
-		Salmon            : 0x00fa8072;
-		SeaGreen          : 0x002e8b57;
-		Sienna            : 0x00a0522d;
-		SkyBlue           : 0x0087ceeb;
-		SlateBlue         : 0x006a5acd;
-		SpringGreen       : 0x0000ff7f;
-		SteelBlue         : 0x004682b4;
-		Tan               : 0x00d2b48c;
-		Thistle           : 0x00d8bfd8;
-		Turquoise         : 0x0040e0d0;
-		Violet            : 0x00ee82ee;
-		VioletRed         : 0x00cc3299;
-		Wheat             : 0x00f5deb3;
-		Yellow            : 0x00ffff00;
-		YellowGreen       : 0x009acd32;
-		//Transparent     : 0xff000000;
-	}*/
-}
-
-/// cast unsigned integer to argb value
-inline argb(uint32 argb) = argb(emit(uint32(argb)));
-/// cast argb value to unsigned integer
-inline uint32(argb value) = uint32(emit(struct(value)));
-
-
-/// clamp signed gray or color component to fit in 8 bits (0 ... 255)
-uint32 clamp_s8(int32 c) {
-	if (c < 0) {
-		return 0;
-	}
-	if (c > 255) {
-		return 255;
-	}
-	return c;
-}
-/// clamp unsigned gray or color component to fit in 8 bits (0 ... 255)
-uint32 clamp_u8(uint32 c) {
-	if (c > 255) {
-		return 255;
-	}
-	return c;
-}
-
-// construct a rgb8 gray color from the given value
-inline _gray(uint32 c) = argb((((c << 8) | c) << 8) | c);
-/// construct a rgb8 color from the given gray value, clamp the input
-inline gray(int32 c) = _gray(clamp_s8(c));
-/// construct a rgb8 color from the given gray value, clamp the input
-inline gray(uint32 c) = _gray(clamp_s8(c));
-/// construct a rgb8 color from the given gray value, clamp the input
-inline gray(float32 c) = gray(int32(c * 255));
-/// construct a rgb8 color from the given gray value, clamp the input
-inline gray(float64 c) = gray(int32(c * 255));
-
-
-/// construct an argb color from the given components
-inline _argb(uint32 r, uint32 g, uint32 b) = argb(uint32((((r << 8) | g) << 8) | b));
-/// construct an argb color from the given components
-inline _argb(uint32 a, uint32 r, uint32 g, uint32 b) = argb(uint32((((((a << 8) | r) << 8) | g) << 8) | b));
-
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(int32 r, int32 g, int32 b) = _argb(clamp_s8(r), clamp_s8(g), clamp_s8(b));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(r), clamp_u8(g), clamp_u8(b));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(float32 r, float32 g, float32 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(float64 r, float64 g, float64 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(int32 a, int32 r, int32 g, int32 b) = _argb(clamp_s8(a), clamp_s8(r), clamp_s8(g), clamp_s8(b));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(uint32 a, uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(a), clamp_u8(r), clamp_u8(g), clamp_u8(b));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(float32 a, float32 r, float32 g, float32 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(float64 a, float64 r, float64 g, float64 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
-
-
-/// get the Alpha channel of the color
-inline ach(argb color) = int32((uint32(color) >> 24) & 0xff);
-/// get the Red channel of the color
-inline rch(argb color) = int32((uint32(color) >> 16) & 0xff);
-/// get the Green channel of the color
-inline gch(argb color) = int32((uint32(color) >> 8) & 0xff);
-/// get the Blue channel of the color
-inline bch(argb color) = int32(uint32(color) & 0xff);
-/// get the luminosity of the color (0.299 * color.r + 0.587 * color.g + 0.114 * color.b)
-inline lum(argb color) = int32((19595 * rch(color) + 38470 * gch(color) + 7471 * bch(color)) >> 16);
-
-
-/// linear interpolate a lookup-table with the given colors
-void lerpLut(uint32 lut[], int alpha, bool invert, argb colors...) {
-	inline lrp(int32 t, uint32 x, uint32 y) = x + (t * (y - x) >> 16);
-
-	int mid = alpha < 0 ? 0 : 254;
-	int div = 256 - clamp_u8(alpha > 0 ? alpha : -alpha);
-	int dt = (colors.length - 1 << 16) / (lut.length - 1);
-	for (int i = 0; i < lut.length; i += 1) {
-		int t = i * dt;
-		argb c1 = colors[t >> 16];
-		argb c2 = colors[(t >> 16) + 1];
-		int32 a = lrp(t & 0xffff, ach(c1), ach(c2));
-		int32 r = lrp(t & 0xffff, rch(c1), rch(c2));
-		int32 g = lrp(t & 0xffff, gch(c1), gch(c2));
-		int32 b = lrp(t & 0xffff, bch(c1), bch(c2));
-		a = clamp_s8((a - mid) * 256 / div + mid);
-		r = clamp_s8((r - mid) * 256 / div + mid);
-		g = clamp_s8((g - mid) * 256 / div + mid);
-		b = clamp_s8((b - mid) * 256 / div + mid);
-		if (invert) {
-			a = ~a;
-			r = ~r;
-			g = ~g;
-			b = ~b;
-		}
-		lut[i] = a << 24 | r << 16 | g << 8 | b;
-	}
-}
-
-static if (typename(vec4f) != null) {
-
-/// convert a floating point vector to rgb
-inline argb(const vec4f vec&) = argb(vec.x, vec.y, vec.z);
-
-/// calculate the luminosity of a color
-inline lum(const vec4f vec&) = 0.299f * vec.x + 0.587f * vec.y + 0.114f * vec.z;
-
-/// convert from hsv color space to rgb color space
-vec4f hsv2rgb(vec4f hsv) {
-	float32 h = hsv.x;
-	float32 s = hsv.y;
-	float32 v = hsv.z;
-
-	if (s == 0) {
-		return vec4f(v);
-	}
-
-	h *= 360 / 60;
-
-	int i = int(h);		// round
-	float32 f = h - i;	// fraction
-
-	float32 u = v;
-	float32 p = v * (1 - s);
-	float32 q = v * (1 - s * f);
-	float32 t = v * (1 - s * (1 - f));
-
-	if (i == 0) {
-		return vec4f(u, t, p);
-	}
-	if (i == 1) {
-		return vec4f(q, u, p);
-	}
-	if (i == 2) {
-		return vec4f(p, u, t);
-	}
-	if (i == 3) {
-		return vec4f(p, q, u);
-	}
-	if (i == 4) {
-		return vec4f(t, p, u);
-	}
-	return vec4f(u, p, q);
-}
-}
-
-argb hsv2rgb(float h, float s, float v) {
-	if (s == 0) {
-		return argb(0, 0, 0);
-	}
-
-	h *= 360 / 60;
-
-	int i = int(h);		// round
-	float32 f = h - i;	// fraction
-
-	float32 u = v;
-	float32 p = v * (1 - s);
-	float32 q = v * (1 - s * f);
-	float32 t = v * (1 - s * (1 - f));
-
-	if (i == 0) {
-		return argb(u, t, p);
-	}
-	if (i == 1) {
-		return argb(q, u, p);
-	}
-	if (i == 2) {
-		return argb(p, u, t);
-	}
-	if (i == 3) {
-		return argb(p, q, u);
-	}
-	if (i == 4) {
-		return argb(t, p, u);
-	}
-	return argb(u, p, q);
-}
-
-/// draw the given lookup table to the image
-void drawLut(Image image, const Rect roi&, const uint32 bars[256], const uint32 lines[256]) {
-	enum {
-		margin: 20;
-		colB: 0x4371c6;
-		colG: 0x72d874;
-		colR: 0xfc6165;
-		colL: 0xdadada;
-	}
-
-	Rect rect = {
-		w: roi != null ? roi.w : 256;
-		h: roi != null ? roi.h : 128;
-		y: roi != null ? roi.y : margin;
-		x: roi != null ? roi.x : image.width() - rect.w - margin;
-	};
-
-	int px = (rect.w - 256) / 2;
-
-	if (bars != null) {
-		for (int x = 0; x < bars.length; x += 1) {
-			int bv = bch(argb(bars[x])) * rect.h / 256;
-			int gv = gch(argb(bars[x])) * rect.h / 256;
-			int rv = rch(argb(bars[x])) * rect.h / 256;
-			int lv = ach(argb(bars[x])) * rect.h / 256;
-			for (int y = 0; y < rect.h; y += 1) {
-				uint32 b = colB * uint32(y < bv);
-				uint32 g = colG * uint32(y < gv);
-				uint32 r = colR * uint32(y < rv);
-				uint32 l = colL * uint32(y < lv);
-				image.set(x + rect.x + px, rect.h - y + rect.y - 1, r | g | b | l);
-			}
-		}
-	}
-	if (lines != null) {
-		int y = rect.y + rect.h - 1;
-		int pb = bch(argb(lines[0])) * rect.h / 256;
-		int pg = gch(argb(lines[0])) * rect.h / 256;
-		int pr = rch(argb(lines[0])) * rect.h / 256;
-		int pl = ach(argb(lines[0])) * rect.h / 256;
-
-		for (int i = 1; i < lines.length; i += 1) {
-			int x = rect.x + i + px;
-			int bv = bch(argb(lines[i])) * rect.h / 256;
-			int gv = gch(argb(lines[i])) * rect.h / 256;
-			int rv = rch(argb(lines[i])) * rect.h / 256;
-			int lv = ach(argb(lines[i])) * rect.h / 256;
-
-			image.drawLine(x, y - pl, x, y - lv, colL);
-			image.drawLine(x, y - pb, x, y - bv, colB);
-			image.drawLine(x, y - pg, x, y - gv, colG);
-			image.drawLine(x, y - pr, x, y - rv, colR);
-
-			pl = lv;
-			pb = bv;
-			pg = gv;
-			pr = rv;
-		}
-	}
-}
-// emulated implementation
-void transform(Image surf, const Rect rect&, Image src, const Rect roi&, int32 interpolate, float32 mat[16]) {
-	assert(roi == null);
-	assert(rect != null);
-
-	Rect dRec = {
-		x: rect != null ? rect.x : 0;
-		y: rect != null ? rect.y : 0;
-		w: rect != null ? rect.w : surf.width();
-		h: rect != null ? rect.h : surf.height();
-	};
-
-	Rect sRec = {
-		x: roi != null ? roi.x : 0;
-		y: roi != null ? roi.y : 0;
-		w: roi != null ? roi.w : src.width();
-		h: roi != null ? roi.h : src.height();
-	};
-
-	float32 xx = mat != null ? mat[0] : float32(sRec.w) / dRec.w;
-	float32 xy = mat != null ? mat[1] : 0;
-	float32 xt = mat != null ? mat[3] : sRec.x;
-	float32 yy = mat != null ? mat[5] : float32(sRec.h) / dRec.h;
-	float32 yx = mat != null ? mat[4] : 0;
-	float32 yt = mat != null ? mat[7] : sRec.y;
-
-	if (!surf.clip(dRec)) {
-		// nothing to set
-		return;
-	}
-
-	if (!src.clip(sRec)) {
-		// nothing to get
-		return;
-	}
-
-	for (int y = 0; y < dRec.h; y += 1) {
-		int dy = dRec.y + y;
-		float32 sy = sRec.y + y;
-		for (int x = 0; x < dRec.w; x += 1) {
-			int dx = dRec.x + x;
-			float32 sx = sRec.x + x;
-			float32 tx = (xx * sx + xy * sy + xt) / src.width();
-			float32 ty = (yx * sx + yy * sy + yt) / src.height();
-			surf.set(dx, dy, argb(src.tex(tx, ty)));
-		}
-	}
-}
-// emulated implementation
-void blend(Image surf, int32 x0, int32 y0, const Image src, const Rect roi&, int32 alpha, bool dstAlpha, vec4f blend(vec4f base, vec4f with)) {
-	int width = surf.width();
-	int height = surf.height();
-
-	assert(!dstAlpha, "not implemented");
-	assert(roi == null, "not implemented");
-	assert(blend == null, "not implemented");
-
-	for (int y = 0; y < height; y += 1) {
-		for (int x = 0; x < width; x += 1) {
-			inline lerp(int32 l, int32 r) = int32(l + alpha * (r - l) / 256);
-			argb col = argb(src.get(x,y));
-			int r = rch(col);
-			int g = gch(col);
-			int b = bch(col);
-
-			col = argb(surf.get(x,y));
-			r = lerp(rch(col), r);
-			g = lerp(gch(col), g);
-			b = lerp(bch(col), b);
-
-			surf.set(x + x0, y + y0, argb(r, g, b));
-		}
-	}
-}
-// emulated implementation
-void blur(Image img, int radius, double sigma) {
-	static double gauss(double x, double sigma) {
-		inline SQRT_2_PI_INV = 0.398942280401432677939946059935;
-		double t = x / sigma;
-		/*switch (dx) {
-			default:
-				break;
-			case -1:
-				return 1;
-			case 0:
-				return SQRT_2_PI_INV * exp(-0.5*t*t) / sigma;
-			case 1:
-				return -x * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma);
-			case 2:
-				return (x * x - sigma * sigma) * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma * sigma * sigma);
-		}*/
-		return SQRT_2_PI_INV * double.exp(-0.5 * t * t) / sigma;
-	}
-
-	uint32 kernel[1024];
-	int size = radius * 2 + 1;
-	assert(size < kernel.length);
-
-	float64 kernelSum = 0;
-	float64 kernelFlt[kernel.length];
-	for (int i = 0; i < size; i += 1) {
-		kernelFlt[i] = gauss(radius - i, sigma);
-		kernelSum += kernelFlt[i];
-	}
-
-	for (int i = 0; i < size; i += 1) {
-		kernel[i] = 65536 * (kernelFlt[i] / kernelSum);
-	}
-
-	int width = img.width();
-	int height = img.height();
-
-	Image tmp = Image(width, height, img.depth());
-
-	// x direction: inout -> temp
-	for (int y = 0; y < height; y += 1) {
-		for (int x = 0; x < width; x += 1) {
-			uint32 r = 0;
-			uint32 g = 0;
-			uint32 b = 0;
-			for (int i = 0; i < size; i += 1) {
-				int _x = x + i - radius;
-				if (_x >= 0 && _x < width) {
-					argb col = argb(img.get(_x, y));
-					uint32 _k = kernel[i];
-					r += _k * rch(col);
-					g += _k * gch(col);
-					b += _k * bch(col);
-				}
-			}
-			tmp.set(x, y, argb(r >> 16, g >> 16, b >> 16));
-		}
-	}
-
-	// y direction: temp -> inout
-	for (int y = 0; y < height; y += 1) {
-		for (int x = 0; x < width; x += 1) {
-			uint32 r = 0;
-			uint32 g = 0;
-			uint32 b = 0;
-			for (int i = 0; i < size; i += 1) {
-				int _y = y + i - radius;
-				if (_y >= 0 && _y < height) {
-					argb col = argb(tmp.get(x, _y));
-					uint32 _k = kernel[i];
-					r += _k * rch(col);
-					g += _k * gch(col);
-					b += _k * bch(col);
-				}
-			}
-			img.set(x, y, argb(r >> 16, g >> 16, b >> 16));
-		}
-	}
-
-	tmp.destroy();
-}
 // debugging related functions
 
 /// report message at `verbose` logging level
@@ -1991,274 +2032,500 @@ static void assertEq(int expected, int returned, const char message[*]) {
 }
 /// abort execution if the returned value is not equal to the expected value
 inline assertEq(int expected, int returned) = assertEq(expected, returned, null);
-// string related functions
-
-/// Computes the length of the string
-int length(const char str[*]) {
-	if (str == null) {
-		return 0;
+/// A 2d vector (2x float64)
+struct vec2d: 0 {
+	/// Access the components as an array
+	float64 data[2];
+	struct {
+		/// X component of the vector
+		float64 x;
+		/// Y component of the vector
+		float64 y;
 	}
-	int result = 0;
-	for (; str[result]; result += 1) {
-	}
-	return result;
 }
 
-/// Returns the index of the first occurrence of a character in string
-int indexOf(const char str[*], char chr) {
-	for (int i = 0; str[i]; i += 1) {
-		if (str[i] == chr) {
-			return i;
-		}
-	}
-	return -1;
+/// Initialize with given x, y components
+vec2d vec2d(float64 x, float64 y) {
+	return {
+		x: x;
+		y: y;
+	};
 }
 
-/// Returns the index of the last occurrence of a character in string
-int lastIndexOf(const char str[*], char chr) {
-	int result = -1;
-	for (int i = 0; str[i]; i += 1) {
-		if (str[i] == chr) {
-			result = i;
-		}
+/// Component wise subtract the two vectors.
+inline sub(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), sub.p2d));
+
+/// Dot product
+inline dot(const vec2d a&, const vec2d b&) = a.x * b.x + a.y * b.y;
+/// A 4d vector (4x float32)
+struct vec4f: 0 {
+	/// Access the components as an array
+	float32 data[4];
+	struct {
+		/// X component of the vector
+		float32 x;
+		/// Y component of the vector
+		float32 y;
+		/// Z component of the vector
+		float32 z;
+		/// W component of the vector
+		float32 w;
 	}
-	return result;
 }
 
-/// Check if a string begins with a specified string, using a custom comparator
-bool startsWith(const char str[*], const char with[*], int cmp(char chr, char with)) {
-	for (int i = 0; with[i] != 0; i += 1) {
-		if (cmp(str[i], with[i]) != 0) {
-			return false;
-		}
-	}
-	return true;
+/* TODO: implement inline initializer
+// constructing a vector
+inline vec4f(float32 x, float32 y, float32 z, float32 w) = { x: x, y: y, z: z, w: w };
+inline vec4f(float32 x, float32 y, float32 z) = { x: x, y: y, z: z, w: 0 };
+inline vec4f(const vec4f v&, float32 w) = { x: v.x, y: v.y, z: v.z, w: w };
+inline vec4f(const float32 val&) = { x: val, y: val, z: val, w: val };
+*/
+
+/// Initialize with given x, y, z, w components
+vec4f vec4f(float32 x, float32 y, float32 z, float32 w) {
+	return { x: x, y: y, z: z, w: w };
 }
 
-/// Check if a string ends in a specified string, using a custom comparator
-bool endsWith(const char str[*], const char with[*], int cmp(char chr, char with)) {
-	int withLen = length(with);
-	int strLen = length(str);
-	if (strLen < withLen) {
-		return false;
-	}
-	for (int i = 0; i < withLen; i += 1) {
-		if (cmp(str[strLen - withLen + i], with[i]) != 0) {
-			return false;
-		}
-	}
-	return true;
-}
+/// Initialize with  (x: x, y: y, z: z, w: 1)
+inline vec4f(float32 x, float32 y, float32 z) = vec4f(x, y, z, 1f);
 
-/// Check if the two strings are equal, using a custom comparator
-int compare(const char str[*], const char with[*], int cmp(char chr, char with)) {
-	int result = 0;
-	for (int i = 0; result == 0; i += 1) {
-		result = cmp(str[i], with[i]);
-		if (str[i] == 0) {
-			break;
-		}
-	}
-	return result;
-}
+/// Initialize with (x: x, y: y, z: 0, w: 1)
+inline vec4f(float32 x, float32 y) = vec4f(x, y, 0f, 1f);
 
-/// ignore case character comparator
-int ignCaseCmp(char chr, char with) {
-	static char ignCase(char chr) {
-		if (chr < 'A') {
-			return chr;
-		}
-		if (chr > 'Z') {
-			return chr;
-		}
-		return chr - 'A' + 'a';
-	}
+/// Initialize x, y, z components using the components form the given vector, and w with the given value
+inline vec4f(vec4f xyz, float32 w) = vec4f(xyz.x, xyz.y, xyz.z, w);
 
-	return ignCase(chr) - ignCase(with);
-}
-
-/// default character comparator
-int caseCmp(char chr, char with) {
-	return chr - with;
-}
-
-inline startsWith(const char str[*], const char with[*]) = startsWith(str, with, caseCmp);
-inline endsWith(const char str[*], const char with[*]) = endsWith(str, with, caseCmp);
-inline compare(const char str[*], const char with[*]) = compare(str, with, caseCmp);
-
-/// Check if a string contains the given character
-inline contains(const char str[*], char chr) = indexOf(str, chr) >= 0;
+/// Initialize x, y, z, w components with the given scalar value
+inline vec4f(float32 val) = vec4f(val, val, val, val);
 
 /* TODO: implement operator overloading
+//~ -a => vec4f(-a.x, -a.y, -a.z, -a.w);
+inline -(vec4f rhs) = vec4f(emit(struct(rhs), neg.p4f));
 
-inline ==(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) == 0;
-inline !=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) != 0;
-inline <=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) <= 0;
-inline >=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) >= 0;
-inline <(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) < 0;
-inline >(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) > 0;
+//~ a + b => vec4f(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+inline +(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), add.p4f));
 
-// */
+//~ a - b => vec4f(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+inline -(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
 
-/// Flags to convert numbers to string
-struct FormatFlags {
-	/// forced show sign
-	const bool showSign = false;
+//~ a * b => vec4f(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
+inline *(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
 
-	/// precision or radix
-	const int precision = 0;
+//~ a / b => vec4f(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
+inline /(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
 
-	/// padding character
-	const char padChr = 0;
+inline +(vec4f a, float32 b) = a + vec4f(b);
+inline +(float32 a, vec4f b) = vec4f(a) + b;
+inline -(vec4f a, float32 b) = a - vec4f(b);
+inline -(float32 a, vec4f b) = vec4f(a) - b;
+inline *(vec4f a, float32 b) = a * vec4f(b);
+inline *(float32 a, vec4f b) = vec4f(a) * b;
+inline /(vec4f a, float32 b) = a / vec4f(b);
+inline /(float32 a, vec4f b) = vec4f(a) / b;
 
-	/// padding length
-	const int padLen = 0;
+inline normalize(vec4f v) = v / len(v);
+*/
+
+/// Returns a negated copy of the vector.
+inline neg(vec4f rhs) = vec4f(emit(struct(rhs), neg.p4f));
+/// Component wise add the two vectors.
+inline add(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), add.p4f));
+/// Component wise subtract the two vectors.
+inline sub(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
+/// Component wise multiply the two vectors.
+inline mul(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
+/// Component wise divide the two vectors.
+inline div(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
+
+/// Component wise minimum of the two vectors.
+inline min(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), min.p4f));
+/// Component wise maximum of the two vectors.
+inline max(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), max.p4f));
+
+/// Dot product of the first 3 elements
+// inline dp3(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z;
+inline dp3(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dp3));
+
+/// Homogeneous dot product
+// inline dph(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z + a.w;
+inline dph(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dph));
+
+/// Dot product
+// inline dp4(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+inline dp4(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dp4));
+
+/// Cross product of the first 3 elements
+inline cross(const vec4f a&, const vec4f b&) = vec4f(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
+
+/// Length of the vector(xyz)
+inline length(vec4f v) = float32.sqrt(dp3(v, v));
+/// Normalize the vector(xyz)
+inline normalize(const vec4f v&) = div(v, vec4f(length(v)));
+
+/// Evaluate as a polynomial in point x
+inline eval(const vec4f v&, float32 x) = float32((((v.w * x + v.z) * x + v.y) * x) + v.x);
+/// A 4x4 matrix
+struct mat4f: 0 {
+	/// Access elements as a flatten array: data[4] => m[1][0]
+	float32 data[16];
+
+	/// Access elements as an array: m[1][0]
+	float32 m[4][4];
+
+	/// Access elements as an array of vectors: v[1].x => m[1][0]
+	vec4f v[4];
+
+	struct {
+		///@public
+		vec4f x;
+		///@public
+		vec4f y;
+		///@public
+		vec4f z;
+		///@public
+		vec4f w;
+	}
+	struct {
+		///@public
+		float32 xx;
+		///@public
+		float32 xy;
+		///@public
+		float32 xz;
+		///@public
+		float32 xw;
+
+		///@public
+		float32 yx;
+		///@public
+		float32 yy;
+		///@public
+		float32 yz;
+		///@public
+		float32 yw;
+
+		///@public
+		float32 zx;
+		///@public
+		float32 zy;
+		///@public
+		float32 zz;
+		///@public
+		float32 zw;
+
+		///@public
+		float32 wx;
+		///@public
+		float32 wy;
+		///@public
+		float32 wz;
+		///@public
+		float32 ww;
+	}
 }
 
-/// Append a string to the output at the given position
-int append(char output[], int pos, const char value[*]) {
-	for (int i = 0; value[i]; i += 1) {
-		if (pos >= output.length) {
-			break;
-		}
-		output[pos] = value[i];
-		pos += 1;
-	}
-
-	if (pos >= output.length) {
-		pos = output.length - 1;
-	}
-	output[pos] = 0;
-	return pos;
-}
-
-// Append a number to the output at the given position
-int append(char output[], int pos, char sign, uint64 value, const FormatFlags format&) {
-	static const char whiteSpace[] = " \t\n\r";
-	static const char radixDigits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
-
-	int len = 0;
-	char digits[80];
-
-	if (format.showSign) {
-		if (sign == 0) {
-			sign = '+';
-		}
-	}
-
-	int radix = format.precision;
-	if (radix == 0) {
-		radix = 10;
-	}
-	assert(radix > 1, "radix is too small", radix);
-	assert(radix < radixDigits.length, "radix is too big", radix);
-
-	// print digits in reverse order
-	for ( ; value > 0; value /= radix) {
-		digits[len += 1] = radixDigits[value % radix];
-	}
-	if (len == 0) {
-		digits[len += 1] = '0';
-	}
-
-	int maxLen = format.padLen - len;
-
-	char padChr = format.padChr;
-	if (padChr == '\0') {
-		padChr = ' ';
-	}
-
-	// print sign value
-	if (sign != 0) {
-		maxLen -= 1;
-		if (whiteSpace.contains(padChr)) {
-			// if padding character is whitespace padd before sign
-			for ( ; maxLen > 0; maxLen -= 1) {
-				assert(pos < output.length);
-				output[pos] = padChr;
-				pos += 1;
-			}
-		}
-		assert(pos < output.length);
-		output[pos] = sign;
-		pos += 1;
-	}
-
-	// print padding
-	for ( ; maxLen > 0; maxLen -= 1) {
-		assert(pos < output.length);
-		output[pos] = padChr;
-		pos += 1;
-	}
-
-	// print digits
-	for (int i = 0; i < len; i += 1) {
-		assert(i < output.length);
-		output[pos] = digits[len - i];
-		pos += 1;
-	}
-
-	if (pos >= output.length) {
-		pos = output.length - 1;
-	}
-	output[pos] = 0;
-	return pos;
-}
-
-/// Append a number to the output at the given position
-inline append(char output[], int pos, uint64 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, uint32 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, uint16 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, uint8 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, int64 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, int32 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, int16 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, int8 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
-
-/// Append a number to the output at the given position
-int append(char output[], int pos, float64 value, const FormatFlags format&) {
-	FormatFlags formatInt = {
-		showSign: format.showSign;
-		precision : 0;
-		padChr: format.padChr;
-		padLen: format.padLen - format.precision;
+/// Initialize all elements with the given values
+mat4f mat4f(float32 xx, float32 xy, float32 xz, float32 xw,
+			float32 yx, float32 yy, float32 yz, float32 yw,
+			float32 zx, float32 zy, float32 zz, float32 zw,
+			float32 wx, float32 wy, float32 wz, float32 ww) {
+	return {
+		x: { x: xx, y: xy, z: xz, w: xw };
+		y: { x: yx, y: yy, z: yz, w: yw };
+		z: { x: zx, y: zy, z: zz, w: zw };
+		w: { x: wx, y: wy, z: wz, w: ww };
 	};
-	FormatFlags formatDec = {
-		showSign: false;
-		precision : 0;
-		padChr: '0';
-		padLen: format.precision;
+}
+
+/// Initialize matrix with row vectors
+mat4f mat4f(const vec4f x&, const vec4f y&, const vec4f z&, const vec4f w&) {
+	return { x: x, y: y, z: z, w: w };
+}
+
+/// Multiply with vector: dot product of the first 3 elements
+inline dp3(const mat4f mat&, const vec4f vec&) = vec4f(dp3(mat.x, vec), dp3(mat.y, vec), dp3(mat.z, vec), 1f);
+/// Multiply with vector: homogeneous dot product
+inline dph(const mat4f mat&, const vec4f vec&) = vec4f(dph(mat.x, vec), dph(mat.y, vec), dph(mat.z, vec), dph(mat.w, vec));
+/// Multiply with vector: dot product
+inline dp4(const mat4f mat&, const vec4f vec&) = vec4f(dp4(mat.x, vec), dp4(mat.y, vec), dp4(mat.z, vec), dp4(mat.w, vec));
+
+/// Multiply two matrices (rows * cols)
+mat4f mul(const mat4f lhs&, const mat4f rhs&) {
+	mat4f transposed = {
+		x: { x: rhs.x.x, y: rhs.y.x, z: rhs.z.x, w: rhs.w.x };
+		y: { x: rhs.x.y, y: rhs.y.y, z: rhs.z.y, w: rhs.w.y };
+		z: { x: rhs.x.z, y: rhs.y.z, z: rhs.z.z, w: rhs.w.z };
+		w: { x: rhs.x.w, y: rhs.y.w, z: rhs.z.w, w: rhs.w.w };
 	};
-
-	char sign = value < 0 ? '-' : 0;
-	float64 fract = Math.modf(Math.abs(value), &value);
-	pos = output.append(pos, sign, uint64(value), formatInt);
-
-	pos = output.append(pos, ".");
-	fract *= float64.pow(10, format.precision);
-	pos = output.append(pos, 0, uint64(fract), formatDec);
-	return pos;
+	return {
+		x: dp4(transposed, lhs.x);
+		y: dp4(transposed, lhs.y);
+		z: dp4(transposed, lhs.z);
+		w: dp4(transposed, lhs.w);
+	};
 }
 
-/// Append a number to the output at the given position
-inline append(char output[], int pos, float32 value, const FormatFlags format&) = append(output, pos, float64(value), format);
+/**
+ * Build a rotation matrix
+ * adapted from: https://sites.google.com/site/glennmurray/Home/rotation-matrices-and-formulas
+ */
+mat4f rotation(const vec4f center&, const vec4f direction&, float angle) {
+	float len = direction.length();
+	if (len < 1e-9) {
+		trace("invalid direction of rotation", direction);
+		return {
+			x: vec4f(0, 0, 0, 0);
+			y: vec4f(0, 0, 0, 0);
+			z: vec4f(0, 0, 0, 0);
+			w: vec4f(0, 0, 0, 0);
+		};
+	}
+	float x = direction.x / len;
+	float y = direction.y / len;
+	float z = direction.z / len;
+	float cx = center.x;
+	float cy = center.y;
+	float cz = center.z;
+	float xx = x * x;
+	float xy = x * y;
+	float xz = x * z;
+	float yy = y * y;
+	float yz = y * z;
+	float zz = z * z;
 
-/// Append a number to the output at the given position
-int append(char output[], int pos, int value) {
-	static const FormatFlags format = {};
-	return append(output, pos, value, format);
+	float s = float.sin(angle);
+	float c = float.cos(angle);
+	float k = 1 - c;
+
+	return {
+		xx: xx + (yy + zz) * c;
+		xy: xy * k - z * s;
+		xz: xz * k + y * s;
+		xw: (cx * (yy + zz) - x * (cy * y + cz * z)) * k + (cy * z - cz * y) * s;
+
+		yx: xy * k + z * s;
+		yy: yy + (xx + zz) * c;
+		yz: yz * k - x * s;
+		yw: (cy * (xx + zz) - y * (cx * x + cz * z)) * k + (cz * x - cx * z) * s;
+
+		zx: xz * k - y * s;
+		zy: yz * k + x * s;
+		zz: zz + (xx + yy) * c;
+		zw: (cz * (xx + yy) - z * (cx * x + cy * y)) * k + (cx * y - cy * x) * s;
+
+		w: vec4f(0, 0, 0, 1);
+	};
 }
 
-//inline append(char output[], uint32 value, const FormatFlags format) = output.append(length(output), value, format);
-//inline append(char output[], uint32 value) = output.append(length(output), value);
-//inline append(char output[], char value[*]) = output.append(length(output), value);
+/// Build a rotation matrix
+inline rotation(const vec4f direction&, float angle) = rotation(vec4f(0), direction, angle);
+
+/// Build a translation matrix
+mat4f translation(const vec4f direction&, float amount) {
+	return {
+		x: {x: 1, y: 0, z: 0, w: direction.x * amount};
+		y: {x: 0, y: 1, z: 0, w: direction.y * amount};
+		z: {x: 0, y: 0, z: 1, w: direction.z * amount};
+		w: {x: 0, y: 0, z: 0, w: 1};
+	};
+}
+
+/// Build a scaling matrix
+mat4f scale(const vec4f direction&, float amount) {
+	inline rcp(float val) = (val < 0 ? -val : val) < 1e-30 ? 0 : 1 / val;
+	return {
+		x: {x: rcp(direction.x * amount), y: 0, z: 0, w: 0};
+		y: {x: 0, y: rcp(direction.y * amount), z: 0, w: 0};
+		z: {x: 0, y: 0, z: rcp(direction.z * amount), w: 0};
+		w: {x: 0, y: 0, z: 0, w: 1};
+	};
+}
+/// Complex number
+struct Complex {
+
+	/// The real component of a complex number.
+	const float64 re;
+
+	/// The imaginary component of a complex number.
+	const float64 im = 0;
+
+	/* TODO: implement enumerations
+	enum: Complex {
+		zero: { re: 0 };	// 0 + 0i
+		unit: { re: 1 };	// 1 + 0i
+	}*/
+}
+
+/* TODO: implement inline initializer
+// constructing a complex number
+inline Complex(float64 re) = { re: re };
+inline Complex(float64 re, float64 im) = { re: re, im: im };
+*/
+
+///@public
+Complex Complex(float64 re) {
+	return {
+		re: re;
+	};
+}
+
+///@public
+Complex Complex(float64 re, float64 im) {
+	return {
+		re: re;
+		im: im;
+	};
+}
+
+/* TODO: implement operator overloading
+inline -(Complex a) = Complex(-a.re, -a.im);
+
+inline +(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
+inline +(Complex a, float64 b) = Complex(a.re + b, a.im);
+inline +(float64 a, Complex b) = Complex(a + b.re, b.im);
+
+inline -(Complex a, Complex b) = Complex(a.re - b.re, a.im - b.im);
+inline -(Complex a, float64 b) = Complex(a.re - b, a.im);
+inline -(float64 a, Complex b) = Complex(a - b.re, b.im);
+
+inline *(Complex a, Complex b) = Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+inline *(Complex a, float64 b) = Complex(a.re * b, a.im * b);
+inline *(float64 a, Complex b) = Complex(a * b.re, a * b.im);
+
+inline /(Complex a, Complex b) = div(a, b);
+inline /(Complex a, float64 b) = div(a, Complex(b));
+inline /(float64 a, Complex b) = div(Complex(a), b);
+*/
+
+///@public
+inline neg(Complex a) = Complex(-a.re, -a.im);
+
+///@public
+inline add(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
+///@public
+inline add(Complex a, float64 b) = Complex(a.re + b, a.im);
+///@public
+inline add(float64 a, Complex b) = Complex(a + b.re, b.im);
+
+///@public
+inline sub(Complex a, Complex b) = Complex(a.re - b.re, a.im - b.im);
+///@public
+inline sub(Complex a, float64 b) = Complex(a.re - b, a.im);
+///@public
+inline sub(float64 a, Complex b) = Complex(a - b.re, b.im);
+
+///@public
+inline mul(Complex a, Complex b) = Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+///@public
+inline mul(Complex a, float64 b) = Complex(a.re * b, a.im * b);
+///@public
+inline mul(float64 a, Complex b) = Complex(a * b.re, a * b.im);
+
+///@public
+Complex div(Complex a, Complex b) {
+	// Adapted from Numerical Recipes in C - The Art of Scientific Computing
+	// ISBN 0-521-43108-5
+
+	if (Math.abs(b.re) >= Math.abs(b.im)) {
+		float64 r = b.im / b.re;
+		float64 den = b.re + r * b.im;
+		return {
+			re: (a.re + r * a.im) / den;
+			im: (a.im - r * a.re) / den;
+		};
+	}
+	float64 r = b.re / b.im;
+	float64 den = b.im + r * b.re;
+	return {
+		re: (a.re * r + a.im) / den;
+		im: (a.im * r - a.re) / den;
+	};
+}
+
+///@public
+inline div(Complex a, float64 b) = div(a, Complex(b));
+///@public
+inline div(float64 a, Complex b) = div(Complex(a), b);
+
+///@public
+inline abs(Complex a) = float64.sqrt(a.re * a.re + a.im * a.im);
+///@public
+inline arg(Complex a) = float64.atan2(a.re, a.im);
+
+/// Reciprocal of a complex number (1 / a)
+Complex inv(Complex a) {
+	float64 d = (a.re * a.re + a.im * a.im);
+	return {
+		re: +a.re / d;
+		im: -a.im / d;
+	};
+}
+
+///@public
+inline conj(Complex a) = Complex(a.re, -a.im);
+
+///@public
+inline exp(Complex a) = Complex(float64.exp(a.re) * float64.cos(a.im), float64.exp(a.re) * float64.sin(a.im));
+
+///@public
+inline log(Complex a) = Complex(float64.log(abs(a)), arg(a));
+
+///@public
+Complex pow(Complex a, Complex b) {
+	float64 r = abs(a);
+	float64 t = arg(a);
+	float64 u = b.re * t + b.im * float64.log(r);
+	float64 v = float64.pow(r, b.re) * float64.exp(-b.im * t);
+	return {
+		re: v * float64.cos(u);
+		im: v * float64.sin(u);
+	};
+}
+///@public
+inline pow(Complex a, float64 b) = pow(a, Complex(b));
+
+///@public
+inline sin(Complex a) = Complex(float64.sin(a.re) * Math.cosh(a.im), +float64.cos(a.re) * Math.sinh(a.im));
+///@public
+inline cos(Complex a) = Complex(float64.cos(a.re) * Math.cosh(a.im), -float64.sin(a.re) * Math.sinh(a.im));
+
+/* TODO: implement operator overloading
+inline tan(Complex a) = sin(a) / cos(a);
+inline cot(Complex a) = cos(a) / sin(a);
+
+inline sinh(Complex a) = (exp(a) - exp(-a)) / 2;
+inline cosh(Complex a) = (exp(a) + exp(-a)) / 2;
+inline tanh(Complex a) = (exp(2 * a) - 1) / (exp(2 * a) + 1);
+inline coth(Complex a) = (exp(2 * a) + 1) / (exp(2 * a) - 1);
+*/
+
+///@public
+inline tan(Complex a) = div(sin(a), cos(a));
+///@public
+inline cot(Complex a) = div(cos(a), sin(a));
+
+///@public
+inline sinh(Complex a) = div(sub(exp(a), exp(neg(a))), 2);
+///@public
+inline cosh(Complex a) = div(add(exp(a), exp(neg(a))), 2);
+///@public
+inline tanh(Complex a) = div(sub(exp(mul(2, a)), 1), add(exp(mul(2, a)), 1));
+///@public
+inline coth(Complex a) = div(add(exp(mul(2, a)), 1), sub(exp(mul(2, a)), 1));
+
+///@public
+inline sec(Complex a) = inv(cos(a));
+///@public
+inline csc(Complex a) = inv(sin(a));
+///@public
+inline sech(Complex a) = inv(cosh(a));
+///@public
+inline csch(Complex a) = inv(sinh(a));
+
+///@public
+inline toCartesian(Complex x) = Complex(x.re * double.cos(x.im), x.re * double.sin(x.im));
+///@public
+inline toPolar(Complex x) = Complex(abs(x), arg(x));
 /// Mathematical utility functions and constants
 static struct Math {
 
@@ -2788,526 +3055,271 @@ static struct Math {
 	// inline rand(int min, int max) = System.rand() % (max - min) + min;
 	// inline rand(double min, double max) = (System.rand() / float64(RAND_MAX)) * (max - min) + min;
 }
-/// A 4x4 matrix
-struct mat4f: 0 {
-	/// Access elements as a flatten array: data[4] => m[1][0]
-	float32 data[16];
+// string related functions
 
-	/// Access elements as an array: m[1][0]
-	float32 m[4][4];
-
-	/// Access elements as an array of vectors: v[1].x => m[1][0]
-	vec4f v[4];
-
-	struct {
-		///@public
-		vec4f x;
-		///@public
-		vec4f y;
-		///@public
-		vec4f z;
-		///@public
-		vec4f w;
+/// Computes the length of the string
+int length(const char str[*]) {
+	if (str == null) {
+		return 0;
 	}
-	struct {
-		///@public
-		float32 xx;
-		///@public
-		float32 xy;
-		///@public
-		float32 xz;
-		///@public
-		float32 xw;
-
-		///@public
-		float32 yx;
-		///@public
-		float32 yy;
-		///@public
-		float32 yz;
-		///@public
-		float32 yw;
-
-		///@public
-		float32 zx;
-		///@public
-		float32 zy;
-		///@public
-		float32 zz;
-		///@public
-		float32 zw;
-
-		///@public
-		float32 wx;
-		///@public
-		float32 wy;
-		///@public
-		float32 wz;
-		///@public
-		float32 ww;
+	int result = 0;
+	for (; str[result]; result += 1) {
 	}
+	return result;
 }
 
-/// Initialize all elements with the given values
-mat4f mat4f(float32 xx, float32 xy, float32 xz, float32 xw,
-			float32 yx, float32 yy, float32 yz, float32 yw,
-			float32 zx, float32 zy, float32 zz, float32 zw,
-			float32 wx, float32 wy, float32 wz, float32 ww) {
-	return {
-		x: { x: xx, y: xy, z: xz, w: xw };
-		y: { x: yx, y: yy, z: yz, w: yw };
-		z: { x: zx, y: zy, z: zz, w: zw };
-		w: { x: wx, y: wy, z: wz, w: ww };
-	};
-}
-
-/// Initialize matrix with row vectors
-mat4f mat4f(const vec4f x&, const vec4f y&, const vec4f z&, const vec4f w&) {
-	return { x: x, y: y, z: z, w: w };
-}
-
-/// Multiply with vector: dot product of the first 3 elements
-inline dp3(const mat4f mat&, const vec4f vec&) = vec4f(dp3(mat.x, vec), dp3(mat.y, vec), dp3(mat.z, vec), 1f);
-/// Multiply with vector: homogeneous dot product
-inline dph(const mat4f mat&, const vec4f vec&) = vec4f(dph(mat.x, vec), dph(mat.y, vec), dph(mat.z, vec), dph(mat.w, vec));
-/// Multiply with vector: dot product
-inline dp4(const mat4f mat&, const vec4f vec&) = vec4f(dp4(mat.x, vec), dp4(mat.y, vec), dp4(mat.z, vec), dp4(mat.w, vec));
-
-/// Multiply two matrices (rows * cols)
-mat4f mul(const mat4f lhs&, const mat4f rhs&) {
-	mat4f transposed = {
-		x: { x: rhs.x.x, y: rhs.y.x, z: rhs.z.x, w: rhs.w.x };
-		y: { x: rhs.x.y, y: rhs.y.y, z: rhs.z.y, w: rhs.w.y };
-		z: { x: rhs.x.z, y: rhs.y.z, z: rhs.z.z, w: rhs.w.z };
-		w: { x: rhs.x.w, y: rhs.y.w, z: rhs.z.w, w: rhs.w.w };
-	};
-	return {
-		x: dp4(transposed, lhs.x);
-		y: dp4(transposed, lhs.y);
-		z: dp4(transposed, lhs.z);
-		w: dp4(transposed, lhs.w);
-	};
-}
-
-/**
- * Build a rotation matrix
- * adapted from: https://sites.google.com/site/glennmurray/Home/rotation-matrices-and-formulas
- */
-mat4f rotation(const vec4f center&, const vec4f direction&, float angle) {
-	float len = direction.length();
-	if (len < 1e-9) {
-		trace("invalid direction of rotation", direction);
-		return {
-			x: vec4f(0, 0, 0, 0);
-			y: vec4f(0, 0, 0, 0);
-			z: vec4f(0, 0, 0, 0);
-			w: vec4f(0, 0, 0, 0);
-		};
+/// Returns the index of the first occurrence of a character in string
+int indexOf(const char str[*], char chr) {
+	for (int i = 0; str[i]; i += 1) {
+		if (str[i] == chr) {
+			return i;
+		}
 	}
-	float x = direction.x / len;
-	float y = direction.y / len;
-	float z = direction.z / len;
-	float cx = center.x;
-	float cy = center.y;
-	float cz = center.z;
-	float xx = x * x;
-	float xy = x * y;
-	float xz = x * z;
-	float yy = y * y;
-	float yz = y * z;
-	float zz = z * z;
-
-	float s = float.sin(angle);
-	float c = float.cos(angle);
-	float k = 1 - c;
-
-	return {
-		xx: xx + (yy + zz) * c;
-		xy: xy * k - z * s;
-		xz: xz * k + y * s;
-		xw: (cx * (yy + zz) - x * (cy * y + cz * z)) * k + (cy * z - cz * y) * s;
-
-		yx: xy * k + z * s;
-		yy: yy + (xx + zz) * c;
-		yz: yz * k - x * s;
-		yw: (cy * (xx + zz) - y * (cx * x + cz * z)) * k + (cz * x - cx * z) * s;
-
-		zx: xz * k - y * s;
-		zy: yz * k + x * s;
-		zz: zz + (xx + yy) * c;
-		zw: (cz * (xx + yy) - z * (cx * x + cy * y)) * k + (cx * y - cy * x) * s;
-
-		w: vec4f(0, 0, 0, 1);
-	};
+	return -1;
 }
 
-/// Build a rotation matrix
-inline rotation(const vec4f direction&, float angle) = rotation(vec4f(0), direction, angle);
-
-/// Build a translation matrix
-mat4f translation(const vec4f direction&, float amount) {
-	return {
-		x: {x: 1, y: 0, z: 0, w: direction.x * amount};
-		y: {x: 0, y: 1, z: 0, w: direction.y * amount};
-		z: {x: 0, y: 0, z: 1, w: direction.z * amount};
-		w: {x: 0, y: 0, z: 0, w: 1};
-	};
+/// Returns the index of the last occurrence of a character in string
+int lastIndexOf(const char str[*], char chr) {
+	int result = -1;
+	for (int i = 0; str[i]; i += 1) {
+		if (str[i] == chr) {
+			result = i;
+		}
+	}
+	return result;
 }
 
-/// Build a scaling matrix
-mat4f scale(const vec4f direction&, float amount) {
-	inline rcp(float val) = (val < 0 ? -val : val) < 1e-30 ? 0 : 1 / val;
-	return {
-		x: {x: rcp(direction.x * amount), y: 0, z: 0, w: 0};
-		y: {x: 0, y: rcp(direction.y * amount), z: 0, w: 0};
-		z: {x: 0, y: 0, z: rcp(direction.z * amount), w: 0};
-		w: {x: 0, y: 0, z: 0, w: 1};
-	};
-}
-/// Complex number
-struct Complex {
-
-	/// The real component of a complex number.
-	const float64 re;
-
-	/// The imaginary component of a complex number.
-	const float64 im = 0;
-
-	/* TODO: implement enumerations
-	enum: Complex {
-		zero: { re: 0 };	// 0 + 0i
-		unit: { re: 1 };	// 1 + 0i
-	}*/
+/// Check if a string begins with a specified string, using a custom comparator
+bool startsWith(const char str[*], const char with[*], int cmp(char chr, char with)) {
+	for (int i = 0; with[i] != 0; i += 1) {
+		if (cmp(str[i], with[i]) != 0) {
+			return false;
+		}
+	}
+	return true;
 }
 
-/* TODO: implement inline initializer
-// constructing a complex number
-inline Complex(float64 re) = { re: re };
-inline Complex(float64 re, float64 im) = { re: re, im: im };
-*/
-
-///@public
-Complex Complex(float64 re) {
-	return {
-		re: re;
-	};
+/// Check if a string ends in a specified string, using a custom comparator
+bool endsWith(const char str[*], const char with[*], int cmp(char chr, char with)) {
+	int withLen = length(with);
+	int strLen = length(str);
+	if (strLen < withLen) {
+		return false;
+	}
+	for (int i = 0; i < withLen; i += 1) {
+		if (cmp(str[strLen - withLen + i], with[i]) != 0) {
+			return false;
+		}
+	}
+	return true;
 }
 
-///@public
-Complex Complex(float64 re, float64 im) {
-	return {
-		re: re;
-		im: im;
-	};
+/// Check if the two strings are equal, using a custom comparator
+int compare(const char str[*], const char with[*], int cmp(char chr, char with)) {
+	int result = 0;
+	for (int i = 0; result == 0; i += 1) {
+		result = cmp(str[i], with[i]);
+		if (str[i] == 0) {
+			break;
+		}
+	}
+	return result;
 }
+
+/// ignore case character comparator
+int ignCaseCmp(char chr, char with) {
+	static char ignCase(char chr) {
+		if (chr < 'A') {
+			return chr;
+		}
+		if (chr > 'Z') {
+			return chr;
+		}
+		return chr - 'A' + 'a';
+	}
+
+	return ignCase(chr) - ignCase(with);
+}
+
+/// default character comparator
+int caseCmp(char chr, char with) {
+	return chr - with;
+}
+
+inline startsWith(const char str[*], const char with[*]) = startsWith(str, with, caseCmp);
+inline endsWith(const char str[*], const char with[*]) = endsWith(str, with, caseCmp);
+inline compare(const char str[*], const char with[*]) = compare(str, with, caseCmp);
+
+/// Check if a string contains the given character
+inline contains(const char str[*], char chr) = indexOf(str, chr) >= 0;
 
 /* TODO: implement operator overloading
-inline -(Complex a) = Complex(-a.re, -a.im);
 
-inline +(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
-inline +(Complex a, float64 b) = Complex(a.re + b, a.im);
-inline +(float64 a, Complex b) = Complex(a + b.re, b.im);
+inline ==(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) == 0;
+inline !=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) != 0;
+inline <=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) <= 0;
+inline >=(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) >= 0;
+inline <(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) < 0;
+inline >(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) > 0;
 
-inline -(Complex a, Complex b) = Complex(a.re - b.re, a.im - b.im);
-inline -(Complex a, float64 b) = Complex(a.re - b, a.im);
-inline -(float64 a, Complex b) = Complex(a - b.re, b.im);
+// */
 
-inline *(Complex a, Complex b) = Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
-inline *(Complex a, float64 b) = Complex(a.re * b, a.im * b);
-inline *(float64 a, Complex b) = Complex(a * b.re, a * b.im);
+/// Flags to convert numbers to string
+struct FormatFlags {
+	/// forced show sign
+	const bool showSign = false;
 
-inline /(Complex a, Complex b) = div(a, b);
-inline /(Complex a, float64 b) = div(a, Complex(b));
-inline /(float64 a, Complex b) = div(Complex(a), b);
-*/
+	/// precision or radix
+	const int precision = 0;
 
-///@public
-inline neg(Complex a) = Complex(-a.re, -a.im);
+	/// padding character
+	const char padChr = 0;
 
-///@public
-inline add(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
-///@public
-inline add(Complex a, float64 b) = Complex(a.re + b, a.im);
-///@public
-inline add(float64 a, Complex b) = Complex(a + b.re, b.im);
+	/// padding length
+	const int padLen = 0;
+}
 
-///@public
-inline sub(Complex a, Complex b) = Complex(a.re - b.re, a.im - b.im);
-///@public
-inline sub(Complex a, float64 b) = Complex(a.re - b, a.im);
-///@public
-inline sub(float64 a, Complex b) = Complex(a - b.re, b.im);
-
-///@public
-inline mul(Complex a, Complex b) = Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
-///@public
-inline mul(Complex a, float64 b) = Complex(a.re * b, a.im * b);
-///@public
-inline mul(float64 a, Complex b) = Complex(a * b.re, a * b.im);
-
-///@public
-Complex div(Complex a, Complex b) {
-	// Adapted from Numerical Recipes in C - The Art of Scientific Computing
-	// ISBN 0-521-43108-5
-
-	if (Math.abs(b.re) >= Math.abs(b.im)) {
-		float64 r = b.im / b.re;
-		float64 den = b.re + r * b.im;
-		return {
-			re: (a.re + r * a.im) / den;
-			im: (a.im - r * a.re) / den;
-		};
+/// Append a string to the output at the given position
+int append(char output[], int pos, const char value[*]) {
+	for (int i = 0; value[i]; i += 1) {
+		if (pos >= output.length) {
+			break;
+		}
+		output[pos] = value[i];
+		pos += 1;
 	}
-	float64 r = b.re / b.im;
-	float64 den = b.im + r * b.re;
-	return {
-		re: (a.re * r + a.im) / den;
-		im: (a.im * r - a.re) / den;
-	};
-}
 
-///@public
-inline div(Complex a, float64 b) = div(a, Complex(b));
-///@public
-inline div(float64 a, Complex b) = div(Complex(a), b);
-
-///@public
-inline abs(Complex a) = float64.sqrt(a.re * a.re + a.im * a.im);
-///@public
-inline arg(Complex a) = float64.atan2(a.re, a.im);
-
-/// Reciprocal of a complex number (1 / a)
-Complex inv(Complex a) {
-	float64 d = (a.re * a.re + a.im * a.im);
-	return {
-		re: +a.re / d;
-		im: -a.im / d;
-	};
-}
-
-///@public
-inline conj(Complex a) = Complex(a.re, -a.im);
-
-///@public
-inline exp(Complex a) = Complex(float64.exp(a.re) * float64.cos(a.im), float64.exp(a.re) * float64.sin(a.im));
-
-///@public
-inline log(Complex a) = Complex(float64.log(abs(a)), arg(a));
-
-///@public
-Complex pow(Complex a, Complex b) {
-	float64 r = abs(a);
-	float64 t = arg(a);
-	float64 u = b.re * t + b.im * float64.log(r);
-	float64 v = float64.pow(r, b.re) * float64.exp(-b.im * t);
-	return {
-		re: v * float64.cos(u);
-		im: v * float64.sin(u);
-	};
-}
-///@public
-inline pow(Complex a, float64 b) = pow(a, Complex(b));
-
-///@public
-inline sin(Complex a) = Complex(float64.sin(a.re) * Math.cosh(a.im), +float64.cos(a.re) * Math.sinh(a.im));
-///@public
-inline cos(Complex a) = Complex(float64.cos(a.re) * Math.cosh(a.im), -float64.sin(a.re) * Math.sinh(a.im));
-
-/* TODO: implement operator overloading
-inline tan(Complex a) = sin(a) / cos(a);
-inline cot(Complex a) = cos(a) / sin(a);
-
-inline sinh(Complex a) = (exp(a) - exp(-a)) / 2;
-inline cosh(Complex a) = (exp(a) + exp(-a)) / 2;
-inline tanh(Complex a) = (exp(2 * a) - 1) / (exp(2 * a) + 1);
-inline coth(Complex a) = (exp(2 * a) + 1) / (exp(2 * a) - 1);
-*/
-
-///@public
-inline tan(Complex a) = div(sin(a), cos(a));
-///@public
-inline cot(Complex a) = div(cos(a), sin(a));
-
-///@public
-inline sinh(Complex a) = div(sub(exp(a), exp(neg(a))), 2);
-///@public
-inline cosh(Complex a) = div(add(exp(a), exp(neg(a))), 2);
-///@public
-inline tanh(Complex a) = div(sub(exp(mul(2, a)), 1), add(exp(mul(2, a)), 1));
-///@public
-inline coth(Complex a) = div(add(exp(mul(2, a)), 1), sub(exp(mul(2, a)), 1));
-
-///@public
-inline sec(Complex a) = inv(cos(a));
-///@public
-inline csc(Complex a) = inv(sin(a));
-///@public
-inline sech(Complex a) = inv(cosh(a));
-///@public
-inline csch(Complex a) = inv(sinh(a));
-
-///@public
-inline toCartesian(Complex x) = Complex(x.re * double.cos(x.im), x.re * double.sin(x.im));
-///@public
-inline toPolar(Complex x) = Complex(abs(x), arg(x));
-/// A 4d vector (4x float32)
-struct vec4f: 0 {
-	/// Access the components as an array
-	float32 data[4];
-	struct {
-		/// X component of the vector
-		float32 x;
-		/// Y component of the vector
-		float32 y;
-		/// Z component of the vector
-		float32 z;
-		/// W component of the vector
-		float32 w;
+	if (pos >= output.length) {
+		pos = output.length - 1;
 	}
+	output[pos] = 0;
+	return pos;
 }
 
-/* TODO: implement inline initializer
-// constructing a vector
-inline vec4f(float32 x, float32 y, float32 z, float32 w) = { x: x, y: y, z: z, w: w };
-inline vec4f(float32 x, float32 y, float32 z) = { x: x, y: y, z: z, w: 0 };
-inline vec4f(const vec4f v&, float32 w) = { x: v.x, y: v.y, z: v.z, w: w };
-inline vec4f(const float32 val&) = { x: val, y: val, z: val, w: val };
-*/
+// Append a number to the output at the given position
+int append(char output[], int pos, char sign, uint64 value, const FormatFlags format&) {
+	static const char whiteSpace[] = " \t\n\r";
+	static const char radixDigits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 
-/// Initialize with given x, y, z, w components
-vec4f vec4f(float32 x, float32 y, float32 z, float32 w) {
-	return { x: x, y: y, z: z, w: w };
-}
+	int len = 0;
+	char digits[80];
 
-/// Initialize with  (x: x, y: y, z: z, w: 1)
-inline vec4f(float32 x, float32 y, float32 z) = vec4f(x, y, z, 1f);
-
-/// Initialize with (x: x, y: y, z: 0, w: 1)
-inline vec4f(float32 x, float32 y) = vec4f(x, y, 0f, 1f);
-
-/// Initialize x, y, z components using the components form the given vector, and w with the given value
-inline vec4f(vec4f xyz, float32 w) = vec4f(xyz.x, xyz.y, xyz.z, w);
-
-/// Initialize x, y, z, w components with the given scalar value
-inline vec4f(float32 val) = vec4f(val, val, val, val);
-
-/* TODO: implement operator overloading
-//~ -a => vec4f(-a.x, -a.y, -a.z, -a.w);
-inline -(vec4f rhs) = vec4f(emit(struct(rhs), neg.p4f));
-
-//~ a + b => vec4f(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
-inline +(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), add.p4f));
-
-//~ a - b => vec4f(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
-inline -(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
-
-//~ a * b => vec4f(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
-inline *(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
-
-//~ a / b => vec4f(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
-inline /(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
-
-inline +(vec4f a, float32 b) = a + vec4f(b);
-inline +(float32 a, vec4f b) = vec4f(a) + b;
-inline -(vec4f a, float32 b) = a - vec4f(b);
-inline -(float32 a, vec4f b) = vec4f(a) - b;
-inline *(vec4f a, float32 b) = a * vec4f(b);
-inline *(float32 a, vec4f b) = vec4f(a) * b;
-inline /(vec4f a, float32 b) = a / vec4f(b);
-inline /(float32 a, vec4f b) = vec4f(a) / b;
-
-inline normalize(vec4f v) = v / len(v);
-*/
-
-/// Returns a negated copy of the vector.
-inline neg(vec4f rhs) = vec4f(emit(struct(rhs), neg.p4f));
-/// Component wise add the two vectors.
-inline add(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), add.p4f));
-/// Component wise subtract the two vectors.
-inline sub(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
-/// Component wise multiply the two vectors.
-inline mul(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
-/// Component wise divide the two vectors.
-inline div(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
-
-/// Component wise minimum of the two vectors.
-inline min(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), min.p4f));
-/// Component wise maximum of the two vectors.
-inline max(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), max.p4f));
-
-/// Dot product of the first 3 elements
-// inline dp3(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z;
-inline dp3(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dp3));
-
-/// Homogeneous dot product
-// inline dph(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z + a.w;
-inline dph(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dph));
-
-/// Dot product
-// inline dp4(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
-inline dp4(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dp4));
-
-/// Cross product of the first 3 elements
-inline cross(const vec4f a&, const vec4f b&) = vec4f(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
-
-/// Length of the vector(xyz)
-inline length(vec4f v) = float32.sqrt(dp3(v, v));
-/// Normalize the vector(xyz)
-inline normalize(const vec4f v&) = div(v, vec4f(length(v)));
-
-/// Evaluate as a polynomial in point x
-inline eval(const vec4f v&, float32 x) = float32((((v.w * x + v.z) * x + v.y) * x) + v.x);
-/// A 2d vector (2x float64)
-struct vec2d: 0 {
-	/// Access the components as an array
-	float64 data[2];
-	struct {
-		/// X component of the vector
-		float64 x;
-		/// Y component of the vector
-		float64 y;
+	if (format.showSign) {
+		if (sign == 0) {
+			sign = '+';
+		}
 	}
+
+	int radix = format.precision;
+	if (radix == 0) {
+		radix = 10;
+	}
+	assert(radix > 1, "radix is too small", radix);
+	assert(radix < radixDigits.length, "radix is too big", radix);
+
+	// print digits in reverse order
+	for ( ; value > 0; value /= radix) {
+		digits[len += 1] = radixDigits[value % radix];
+	}
+	if (len == 0) {
+		digits[len += 1] = '0';
+	}
+
+	int maxLen = format.padLen - len;
+
+	char padChr = format.padChr;
+	if (padChr == '\0') {
+		padChr = ' ';
+	}
+
+	// print sign value
+	if (sign != 0) {
+		maxLen -= 1;
+		if (whiteSpace.contains(padChr)) {
+			// if padding character is whitespace padd before sign
+			for ( ; maxLen > 0; maxLen -= 1) {
+				assert(pos < output.length);
+				output[pos] = padChr;
+				pos += 1;
+			}
+		}
+		assert(pos < output.length);
+		output[pos] = sign;
+		pos += 1;
+	}
+
+	// print padding
+	for ( ; maxLen > 0; maxLen -= 1) {
+		assert(pos < output.length);
+		output[pos] = padChr;
+		pos += 1;
+	}
+
+	// print digits
+	for (int i = 0; i < len; i += 1) {
+		assert(i < output.length);
+		output[pos] = digits[len - i];
+		pos += 1;
+	}
+
+	if (pos >= output.length) {
+		pos = output.length - 1;
+	}
+	output[pos] = 0;
+	return pos;
 }
 
-/// Initialize with given x, y components
-vec2d vec2d(float64 x, float64 y) {
-	return {
-		x: x;
-		y: y;
+/// Append a number to the output at the given position
+inline append(char output[], int pos, uint64 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, uint32 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, uint16 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, uint8 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, int64 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, int32 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, int16 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, int8 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+
+/// Append a number to the output at the given position
+int append(char output[], int pos, float64 value, const FormatFlags format&) {
+	FormatFlags formatInt = {
+		showSign: format.showSign;
+		precision : 0;
+		padChr: format.padChr;
+		padLen: format.padLen - format.precision;
 	};
+	FormatFlags formatDec = {
+		showSign: false;
+		precision : 0;
+		padChr: '0';
+		padLen: format.precision;
+	};
+
+	char sign = value < 0 ? '-' : 0;
+	float64 fract = Math.modf(Math.abs(value), &value);
+	pos = output.append(pos, sign, uint64(value), formatInt);
+
+	pos = output.append(pos, ".");
+	fract *= float64.pow(10, format.precision);
+	pos = output.append(pos, 0, uint64(fract), formatDec);
+	return pos;
 }
 
-/// Component wise subtract the two vectors.
-inline sub(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), sub.p2d));
+/// Append a number to the output at the given position
+inline append(char output[], int pos, float32 value, const FormatFlags format&) = append(output, pos, float64(value), format);
 
-/// Dot product
-inline dot(const vec2d a&, const vec2d b&) = a.x * b.x + a.y * b.y;
-// standard library extension
-
-enum: bool {
-	true: 0 == 0;
-	false: 0 != 0;
+/// Append a number to the output at the given position
+int append(char output[], int pos, int value) {
+	static const FormatFlags format = {};
+	return append(output, pos, value, format);
 }
 
-inline byte = uint8;
-inline float = float32;
-inline double = float64;
-
-static if (typename(raise) == function) {
-inline "std/debug.ci";
-}
-
-/// Returns the size of the given type
-inline sizeof(typename type) = int(type.size);
-
-inline "std/math.ci";
-inline "std/math/Complex.ci"?;      // -> Complex<float64>
-//inline "std/math/Rational.ci"?;     // -> Rational<int64>
-inline "std/math/Vector4f.ci"?;
-inline "std/math/Matrix4f.ci"?;
-inline "std/math/Vector2d.ci"?;
-//inline "std/math/BigInteger.ci?"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
-//inline "std/math/BigDecimal.ci?"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
-//inline "std/math/Perlin.ci"?;
-
-inline "std/string.ci";
+//inline append(char output[], uint32 value, const FormatFlags format) = output.append(length(output), value, format);
+//inline append(char output[], uint32 value) = output.append(length(output), value);
+//inline append(char output[], char value[*]) = output.append(length(output), value);

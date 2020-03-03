@@ -2316,7 +2316,7 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val
 				}
 
 				printFmt(out, esc, "\n");
-				printVal(out, esc, ctx, sym, (void *) (data + sym->offs), mode | prMember, indent + 1);
+				printVal(out, esc, ctx, sym, (void *) (data + sym->offs), (mode | prMember) & ~prSymQual, indent + 1);
 				fields += 1;
 			}
 			if (fields > 0) {

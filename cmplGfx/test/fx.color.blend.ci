@@ -344,16 +344,21 @@ int onEvent(int action, int button, int x, int y) {
 		btnPinLight,
 		time);
 
-	bool redraw = uiEvent(ui, action, button, x, y);
 	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
 		}
 	}
-	if (redraw) {
-		uint64 start = System.millis();
-		bool reverse = chkOrder.checked;
+	uint64 start = System.millis();
+	if (uiEvent(ui, action, button, x, y)) {
+		if (ui.activeIndex != -1) {
+			// redraw only ui, in case there is an active control
+			time.value = System.millis() - start;
+			ui.draw();
+			return 0;
+		}
 
+		bool reverse = chkOrder.checked;
 		offs.copy(0, 0, reverse ? base : blend, null);
 		View selected = ui.selected(View);
 		if (selected != null) {

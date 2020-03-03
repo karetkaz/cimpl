@@ -33,7 +33,7 @@ typedef enum {
 
 	prName = 0,		// print operator or symbol name only.
 
-	prGlobal = prSymQual | prSymType | prOneLine,
+	prGlobal = prSymQual | prSymType,
 	prMember = prName,
 	prArgs = prName,  // used to print stack trace
 
