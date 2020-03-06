@@ -14,6 +14,13 @@ Image back = Image("asset/image/forest.png", 32);
 Image font = Image.openFnt("asset/font/modern-1.fnt");
 Image offs = Image(back.width(), back.height(), back.depth());
 
+static const mat4f IDENTITY = mat4f(
+	1, 0, 0, 0,
+	0, 1, 0, 0,
+	0, 0, 1, 0,
+	0, 0, 0, 1
+);
+
 static const mat4f INVERT = mat4f(
 	-1, 0, 0, 1,
 	0, -1, 0, 1,
@@ -215,6 +222,27 @@ font.destroy();
 int onEvent(int action, int button, int x, int y) {
 	inline "/lib/gfx/micro.ui.ci";
 
+	static bool onPresetsClick(Button view);
+	static bool onResetClick(Button view);
+	static Histogram histogram = {
+		text: null;
+		image: offs;
+		enabled: false;
+	};
+	static Button btnPresets = {
+		text: "Presets";
+		value: ">";
+		selectable: false;
+		onClick: onPresetsClick;	// TODO: implement override
+	};
+	static Button btnMask = {
+		text: "Mask";
+		value: ">";
+		selectable: false;
+		onClick: onPresetsClick;	// TODO: implement override
+	};
+
+	// controls
 	static Slider brightness = {
 		group: 1;
 		text: "brightness";
@@ -263,7 +291,7 @@ int onEvent(int action, int button, int x, int y) {
 	static Button original = {
 		group: 2;
 		text: "original";
-		data: null;
+		data: IDENTITY;
 	};
 	static Button invert = {
 		group: 2;
@@ -331,46 +359,123 @@ int onEvent(int action, int button, int x, int y) {
 		data: LSD;
 	};
 
-	static bool onGroupClick(Button view);
-	static Button group = {
-		text: "Presets";
-		value: ">";
-		selectable: !true;
-		onClick: onGroupClick;	// TODO: implement override
+	// mask
+	static Button btnReflect = {
+		group: 3;
+		text: "Reflect";
+	};
+	static Button btnLinear = {
+		group: 3;
+		text: "Linear";
+	};
+	static Button btnRadial = {
+		group: 3;
+		text: "Radial";
+	};
+	static Button btnSquare = {
+		group: 3;
+		text: "Square";
+	};
+	static Slider sldHardness = {
+		group: 3;
+		text: "Hardness";
+		minimum: -255;
+		maximum: 255;
+		value: 200;
+		selectable: false;
+	};
+	static Switch chkInvert = {
+		group: 3;
+		text: "Invert";
+		checked: true;
+		selectable: false;
+	};
+	static Button btnReset = {
+		group: 3;
+		text: "Reset rect";
+		selectable: false;
+		onClick: onResetClick;
+	};
+	static Switch chkMask = {
+		group: 3;
+		text: "Show mask";
+		selectable: false;
 	};
 
-	static Histogram histogram = {
+	static Button separator = {
 		text: null;
-		image: offs;
+		height: 1;
+		enabled: false;
+	};
+	static Button separator1 = {
+		group: 1;
+		text: null;
+		height: 1;
+		enabled: false;
+	};
+	static Button separator3 = {
+		group: 3;
+		text: null;
+		height: 1;
 		enabled: false;
 	};
 	static Slider time = {
 		text: "time";
 		enabled: false;
 	};
-	static Button separator = {
-		text: null;
-		height: 1;
-		enabled: false;
-	};
 
 	static Layout ui = Layout(offs, -30, 30, font,
-		histogram, separator, group, separator,
+		histogram, separator, btnPresets, btnMask, separator,
 		// group 1 - Controls
 		brightness, saturation, contrast, temp, tint, hue,
 		// group 2 - Presets
 		original, invert, grayScale, blackAndWhite, sepiaColor, technicolor, polaroid,
 		kodachrome, browni, vintage, nightVision, warm, cool, lsd,
 
+		// group 3 - Mask
+		btnLinear, btnReflect, btnRadial, btnSquare,
+		separator3, sldHardness, chkInvert, chkMask, btnReset,
+
 		separator, time
 	);
 
-	static bool onGroupClick(Button view) {
-		if (ui.setGroup(ui.group != 1 ? 1 : 2)) {
-			ui.selectedIndex = -1;
-			group.value = ui.group == 1 ? ">" :"<";
-		}
+	static mat4f mat = {
+		xx: 1; xy: 0; xz: 0; xw:0;
+		yx: 0; yy: 1; yz: 0; yw:0;
+		zx: 0; zy: 0; zz: 1; zw:0;
+		wx: 0; wy: 0; wz: 0; ww:1;
+	};
+	static Rect rect = {
+		x: offs.width() / 2;
+		y: offs.height() / 2;
+		w: offs.width() / 2 - 1;
+		h: offs.height() / 2 - 1;
+	};
+	static bool onResetClick(Button view) {
+		rect.x = offs.width() / 2;
+		rect.y = offs.height() / 2;
+		rect.w = offs.width() / 2 - 1;
+		rect.h = offs.height() / 2 - 1;
 		return true;
+	}
+	static bool onPresetsClick(Button view) {
+		if (view == btnPresets) {
+			if (ui.setGroup(ui.group != 2 ? 2 : 1)) {
+				btnPresets.value = ui.group == 2 ? "<" :">";
+				btnMask.value = ui.group == 3 ? "<" :">";
+				//ui.selectedIndex = -1;
+			}
+			return true;
+		}
+		if (view == btnMask) {
+			if (ui.setGroup(ui.group != 3 ? 3 : 1)) {
+				btnPresets.value = ui.group == 2 ? "<" :">";
+				btnMask.value = ui.group == 3 ? "<" :">";
+				//ui.selectedIndex = -1;
+			}
+			return true;
+		}
+		return false;
 	}
 
 	if (action == Gui.KEY_PRESS) {
@@ -379,25 +484,88 @@ int onEvent(int action, int button, int x, int y) {
 		}
 	}
 	if (action == Gui.WINDOW_INIT) {
-		onGroupClick(group);
+		ui.setGroup(1);
 	}
-	if (ui.uiEvent(action, button, x, y)) {
+	bool force = false;
+	if (action == Gui.MOUSE_PRESS && button == 2) {
+		if (ui.isSelected(btnReflect, btnLinear, btnRadial, btnSquare)) {
+			rect.x = x;
+			rect.y = y;
+		}
+	}
+	if (action == Gui.MOUSE_MOTION && button == 2) {
+		if (ui.isSelected(btnReflect, btnLinear, btnRadial, btnSquare)) {
+			rect.w = x - rect.x;
+			rect.h = y - rect.y;
+			force = true;
+		}
+	}
+	if (action == Gui.MOUSE_RELEASE && button == 2) {
+		if (ui.isSelected(btnReflect, btnLinear, btnRadial, btnSquare)) {
+			rect.w = x - rect.x;
+			rect.h = y - rect.y;
+			force = true;
+		}
+	}
+	if (ui.uiEvent(action, button, x, y) || force) {
 		uint64 start = System.millis();
-		offs.resize(null, back, null, 1);
 
-		if (Button btn = ui.selected(Button)) {
-			if (mat4f mat& = btn.data.as(mat4f)) {
-				offs.colorMat(null, mat.data);
-			}
-		} else {
+		if (ui.isActive(brightness, saturation, contrast, temp, tint, hue)) {
 			float b = brightness.valFlt();
 			float s = saturation.valFlt();
 			float c = contrast.valFlt();
 			float h = Math.radians(hue.valFlt());
 			float te = temp.valFlt();
 			float ti = tint.valFlt();
-			mat4f mat = colorMatrix(b, s, c, te, ti, h);
-			offs.colorMat(null, mat.data);
+			mat = colorMatrix(b, s, c, te, ti, h);
+		}
+		else if (Button btn = ui.selected(Button)) {
+			if (mat4f preset& = btn.data.as(mat4f)) {
+				// the data is a matrix, so use it
+				mat = preset;
+			}
+		}
+
+		offs.resize(null, back, null, 1);
+		offs.colorMat(null, mat.data);
+
+		if (ui.isSelected(btnLinear, btnReflect, btnRadial, btnSquare)) {
+			const argb startColor = argb(0);
+			const argb endColor = argb(255);
+			uint32 colors[256];
+			bool invert = chkInvert.checked;
+			int alpha = sldHardness.val();
+
+			Rect roi = {
+				x: rect.x - rect.w;
+				y: rect.y - rect.h;
+				w: rect.w * 2;
+				h: rect.h * 2;
+			};
+
+			if (chkMask.checked) {
+				offs.fill(0xff0000);
+			}
+			if (ui.isSelected(btnReflect)) {
+				lerpLut(colors, alpha, invert, endColor, startColor, endColor);
+				offs.gradient(roi, gradient.MaskLinear, false, colors);
+				offs.blend(0, 0, back, null, 256, true, null);
+			}
+			else if (ui.isSelected(btnLinear)) {
+				lerpLut(colors, alpha, invert, startColor, endColor);
+				offs.gradient(roi, gradient.MaskLinear, false, colors);
+				offs.blend(0, 0, back, null, 256, true, null);
+			}
+			else if (ui.isSelected(btnRadial)) {
+				lerpLut(colors, alpha, invert, startColor, endColor);
+				offs.gradient(roi, gradient.MaskRadial, false, colors);
+				offs.blend(0, 0, back, null, 256, true, null);
+			}
+			else if (ui.isSelected(btnSquare)) {
+				lerpLut(colors, alpha, invert, startColor, endColor);
+				offs.gradient(roi, gradient.MaskSquare, false, colors);
+				offs.blend(0, 0, back, null, 256, true, null);
+			}
 		}
 
 		offs.calcHist(null, 0x00ffffff, &histogram.data);

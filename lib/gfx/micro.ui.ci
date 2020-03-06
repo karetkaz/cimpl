@@ -106,8 +106,8 @@ struct Layout {
 	bool measure = true;
 	int selectedIndex = -1;
 	int activeIndex = -1;
-	View views[30] = null;
-	Rect rects[30] = null;
+	View views[64] = null;
+	Rect rects[64] = null;
 	int items = 0;
 	int group = 0;
 }
@@ -929,6 +929,7 @@ Layout Layout(Image offs, int x, int y, Image font, View items...) {
 	}
 
 	for (int i = 0; i < items.length; i += 1) {
+		assert(i < layout.views.length);
 		layout.views[i] = items[i];
 		items[i].onInit(&layout, i);
 	}

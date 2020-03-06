@@ -135,46 +135,55 @@ void fillOval(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 }
 
 void drawLine(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
-	//~ TODO : replace Bresenham with DDA, resolve clipping
+	int dx = ((x2 - x1) << 16) / (y2 == y1 ? 1 : y2 - y1);
+	if ((dx >> 16) == (dx >> 31)) {
+		if (y1 > y2) {
+			int x = x1;
+			x1 = x2;
+			x2 = x;
+			int y = y1;
+			y1 = y2;
+			y2 = y;
+		}
+		int x = (x1 << 16) + 0x8000;
+		if (y1 < 0) {
+			x -= dx * y1;
+			y1 = 0;
+		}
+		if (y2 > image->height) {
+			y2 = image->height;
+		}
 
-	int dx = x2 - x1;
-	int sx = 1;
-	if (dx < 0) {
-		dx = -dx;
-		sx = -1;
-	}
+		for (int y = y1; y <= y2; y++) {
+			setPixel(image, x >> 16, y, color);
+			x += dx;
+		}
+	} else {
+		int dy = ((y2 - y1) << 16) / (x2 == x1 ? 1 : x2 - x1);
+		if (x1 > x2) {
+			int x = x1;
+			x1 = x2;
+			x2 = x;
+			int y = y1;
+			y1 = y2;
+			y2 = y;
+		}
+		int y = (y1 << 16) + 0x8000;
+		if (x1 < 0) {
+			y -= dy * x1;
+			x1 = 0;
+		}
+		if (x2 > image->width) {
+			x2 = image->width;
+		}
 
-	int dy = y2 - y1;
-	int sy = 1;
-	if (dy < 0) {
-		dy = -dy;
-		sy = -1;
-	}
-
-	if (dx > dy) {
-		int r = dx >> 1;
-		while (x1 != x2) {
-			setPixel(image, x1, y1, color);
-			if ((r += dy) > dx) {
-				y1 += sy;
-				r -= dx;
-			}
-			x1 += sx;
+		for (int x = x1; x <= x2; x++) {
+			setPixel(image, x, y >> 16, color);
+			y += dy;
 		}
 	}
-	else {
-		int r = dy >> 1;
-		while (y1 != y2) {
-			setPixel(image, x1, y1, color);
-			if ((r+=dx) > dy) {
-				x1 += sx;
-				r -= dy;
-			}
-			y1 += sy;
-		}
-	}
-	setPixel(image, x1, y1, color);
 }
+
 void drawBez2(GxImage image, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color) {
 
 	int px_0 = x1;

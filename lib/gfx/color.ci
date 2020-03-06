@@ -172,7 +172,7 @@ inline lum(argb color) = int32((19595 * rch(color) + 38470 * gch(color) + 7471 *
 
 /// linear interpolate a lookup-table with the given colors
 void lerpLut(uint32 lut[], int alpha, bool invert, argb colors...) {
-	inline lrp(int32 t, uint32 x, uint32 y) = x + (t * (y - x) >> 16);
+	inline lrp(int32 t, uint32 x, uint32 y) = x + (t * (y - x + 1) >> 16);
 
 	int mid = alpha < 0 ? 0 : 254;
 	int div = 256 - clamp_u8(alpha > 0 ? alpha : -alpha);

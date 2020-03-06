@@ -347,10 +347,10 @@ static int blendDstAlphaCallback(argb* dst, argb *src, bltContext ctx, size_t cn
 			return -1;
 		}
 		register argb val = vecrgb(args);
-		int alpha = ctxAlpha * dst->a >> 8;
-		dst->r = sat_s8(dst->r + alpha * (val.r - dst->r) / 256);
-		dst->g = sat_s8(dst->g + alpha * (val.g - dst->g) / 256);
-		dst->b = sat_s8(dst->b + alpha * (val.b - dst->b) / 256);
+		int alpha = ctxAlpha * dst->a / 255;
+		dst->r = sat_s8(dst->r + alpha * (val.r - dst->r) / 255);
+		dst->g = sat_s8(dst->g + alpha * (val.g - dst->g) / 255);
+		dst->b = sat_s8(dst->b + alpha * (val.b - dst->b) / 255);
 	}
 	return 0;
 }
@@ -365,19 +365,19 @@ static int blendAlphaCallback(argb* dst, argb *src, bltContext ctx, size_t cnt) 
 			return -1;
 		}
 		register argb val = vecrgb(args);
-		dst->r = sat_s8(dst->r + alpha * (val.r - dst->r) / 256);
-		dst->g = sat_s8(dst->g + alpha * (val.g - dst->g) / 256);
-		dst->b = sat_s8(dst->b + alpha * (val.b - dst->b) / 256);
+		dst->r = sat_s8(dst->r + alpha * (val.r - dst->r) / 255);
+		dst->g = sat_s8(dst->g + alpha * (val.g - dst->g) / 255);
+		dst->b = sat_s8(dst->b + alpha * (val.b - dst->b) / 255);
 	}
 	return 0;
 }
 static int blendDstAlpha(argb* dst, argb *src, bltContext ctx, size_t cnt) {
 	int ctxAlpha = ctx->alpha;
 	for (size_t i = 0; i < cnt; ++i, ++dst, ++src) {
-		int alpha = ctxAlpha * dst->a >> 8;
-		dst->r = sat_s8(dst->r + alpha * (src->r - dst->r) / 256);
-		dst->g = sat_s8(dst->g + alpha * (src->g - dst->g) / 256);
-		dst->b = sat_s8(dst->b + alpha * (src->b - dst->b) / 256);
+		int alpha = ctxAlpha * dst->a / 255;
+		dst->r = sat_s8(dst->r + alpha * (src->r - dst->r) / 255);
+		dst->g = sat_s8(dst->g + alpha * (src->g - dst->g) / 255);
+		dst->b = sat_s8(dst->b + alpha * (src->b - dst->b) / 255);
 	}
 	return 0;
 	(void) ctx;
@@ -385,9 +385,9 @@ static int blendDstAlpha(argb* dst, argb *src, bltContext ctx, size_t cnt) {
 static int blendAlpha(argb* dst, argb *src, bltContext ctx, size_t cnt) {
 	int alpha = ctx->alpha;
 	for (size_t i = 0; i < cnt; ++i, ++dst, ++src) {
-		dst->r = sat_s8(dst->r + alpha * (src->r - dst->r) / 256);
-		dst->g = sat_s8(dst->g + alpha * (src->g - dst->g) / 256);
-		dst->b = sat_s8(dst->b + alpha * (src->b - dst->b) / 256);
+		dst->r = sat_s8(dst->r + alpha * (src->r - dst->r) / 255);
+		dst->g = sat_s8(dst->g + alpha * (src->g - dst->g) / 255);
+		dst->b = sat_s8(dst->b + alpha * (src->b - dst->b) / 255);
 	}
 	return 0;
 }
@@ -603,10 +603,10 @@ static vmError surf_calcHist(nfcContext ctx) {
 	uint32_t useR = rch(rgb);
 	uint32_t useL = ach(rgb);
 	for (size_t i = 0; i < 256; i += 1) {
-		histB[i] = histB[i] * useB >> 8;
-		histG[i] = histG[i] * useG >> 8;
-		histR[i] = histR[i] * useR >> 8;
-		histL[i] = histL[i] * useL >> 8;
+		histB[i] = histB[i] * useB / 255;
+		histG[i] = histG[i] * useG / 255;
+		histR[i] = histR[i] * useR / 255;
+		histL[i] = histL[i] * useL / 255;
 		if (max < histB[i]) {
 			max = histB[i];
 		}

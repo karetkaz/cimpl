@@ -12993,7 +12993,7 @@ lum(color: argb): int32: function {
 lerpLut(lut: uint32[], alpha: int32, invert: bool, colors: argb[]): void: function {
 .kind: static const function
 .base: `function`
-.size: 404
+.size: 420
 .name: 'lerpLut'
 .file: 'lib/gfx/color.ci:174'
 .param .result: void (size: 0, cast: variable(void))
@@ -13003,7 +13003,7 @@ lerpLut(lut: uint32[], alpha: int32, invert: bool, colors: argb[]): void: functi
 .param colors: argb[] (size: 8, cast: parallel variable(arr))
 .doc: 'linear interpolate a lookup-table with the given colors'
 .value: {
-	lrp(t: int32, x: uint32, y: uint32): uint32 := x + ((t * ((y - x)) >> 16));
+	lrp(t: int32, x: uint32, y: uint32): uint32 := x + ((t * ((y - x + (1))) >> 16));
 	mid: int32 := alpha < 0 ? 0 : 254;
 	div: int32 := 256 - (clamp_u8(alpha > 0 ? alpha : -alpha));
 	dt: int32 := (colors.length - (1) << 16) / (lut.length - (1));
@@ -13028,7 +13028,7 @@ lerpLut(lut: uint32[], alpha: int32, invert: bool, colors: argb[]): void: functi
 		lut[i] := (a << 24 | r << 16 | g << 8 | b);
 	}
 }
-.instructions: (404 bytes)
+.instructions: (420 bytes)
 	lib/gfx/color.ci:177: (18 bytes): mid: int32 := alpha < 0 ? 0 : 254
 	<lerpLut>  : dup.x32 sp(4)
 	<lerpLut+?>: load.z32
@@ -13059,9 +13059,9 @@ lerpLut(lut: uint32[], alpha: int32, invert: bool, colors: argb[]): void: functi
 	<lerpLut+?>: dup.x32 sp(9)
 	<lerpLut+?>: inc.i32(-1)
 	<lerpLut+?>: div.u32
-	lib/gfx/color.ci:180: (332 bytes): for (i: int32 := 0; i < (lut.length); i := i + 1)
+	lib/gfx/color.ci:180: (348 bytes): for (i: int32 := 0; i < (lut.length); i := i + 1)
 	<lerpLut+?>: load.z32
-	<lerpLut+?>: jmp +318
+	<lerpLut+?>: jmp +334
 	lib/gfx/color.ci:181: (5 bytes): t: int32 := i * dt
 	<lerpLut+?>: dup.x32 sp(0)
 	<lerpLut+?>: dup.x32 sp(2)
@@ -13079,7 +13079,7 @@ lerpLut(lut: uint32[], alpha: int32, invert: bool, colors: argb[]): void: functi
 	<lerpLut+?>: inc.i32(+1)
 	<lerpLut+?>: mad.u32 4
 	<lerpLut+?>: load.i32
-	lib/gfx/color.ci:184: (27 bytes): a: int32 := lrp(t & 65535, ach(c1), ach(c2))
+	lib/gfx/color.ci:184: (31 bytes): a: int32 := lrp(t & 65535, ach(c1), ach(c2))
 	<lerpLut+?>: dup.x32 sp(1)
 	<lerpLut+?>: b32.shr 0x018
 	<lerpLut+?>: b32.and 0x0ff
@@ -13091,11 +13091,12 @@ lerpLut(lut: uint32[], alpha: int32, invert: bool, colors: argb[]): void: functi
 	<lerpLut+?>: b32.and 0x0ff
 	<lerpLut+?>: dup.x32 sp(3)
 	<lerpLut+?>: sub.i32
+	<lerpLut+?>: inc.i32(+1)
 	<lerpLut+?>: mul.i32
 	<lerpLut+?>: b32.sar 0x010
 	<lerpLut+?>: add.i32
 	<lerpLut+?>: set.x32 sp(1)
-	lib/gfx/color.ci:185: (27 bytes): r: int32 := lrp(t & 65535, rch(c1), rch(c2))
+	lib/gfx/color.ci:185: (31 bytes): r: int32 := lrp(t & 65535, rch(c1), rch(c2))
 	<lerpLut+?>: dup.x32 sp(2)
 	<lerpLut+?>: b32.shr 0x010
 	<lerpLut+?>: b32.and 0x0ff
@@ -13107,11 +13108,12 @@ lerpLut(lut: uint32[], alpha: int32, invert: bool, colors: argb[]): void: functi
 	<lerpLut+?>: b32.and 0x0ff
 	<lerpLut+?>: dup.x32 sp(3)
 	<lerpLut+?>: sub.i32
+	<lerpLut+?>: inc.i32(+1)
 	<lerpLut+?>: mul.i32
 	<lerpLut+?>: b32.sar 0x010
 	<lerpLut+?>: add.i32
 	<lerpLut+?>: set.x32 sp(1)
-	lib/gfx/color.ci:186: (27 bytes): g: int32 := lrp(t & 65535, gch(c1), gch(c2))
+	lib/gfx/color.ci:186: (31 bytes): g: int32 := lrp(t & 65535, gch(c1), gch(c2))
 	<lerpLut+?>: dup.x32 sp(3)
 	<lerpLut+?>: b32.shr 0x008
 	<lerpLut+?>: b32.and 0x0ff
@@ -13123,11 +13125,12 @@ lerpLut(lut: uint32[], alpha: int32, invert: bool, colors: argb[]): void: functi
 	<lerpLut+?>: b32.and 0x0ff
 	<lerpLut+?>: dup.x32 sp(3)
 	<lerpLut+?>: sub.i32
+	<lerpLut+?>: inc.i32(+1)
 	<lerpLut+?>: mul.i32
 	<lerpLut+?>: b32.sar 0x010
 	<lerpLut+?>: add.i32
 	<lerpLut+?>: set.x32 sp(1)
-	lib/gfx/color.ci:187: (23 bytes): b: int32 := lrp(t & 65535, bch(c1), bch(c2))
+	lib/gfx/color.ci:187: (27 bytes): b: int32 := lrp(t & 65535, bch(c1), bch(c2))
 	<lerpLut+?>: dup.x32 sp(4)
 	<lerpLut+?>: b32.and 0x0ff
 	<lerpLut+?>: dup.x32 sp(0)
@@ -13137,6 +13140,7 @@ lerpLut(lut: uint32[], alpha: int32, invert: bool, colors: argb[]): void: functi
 	<lerpLut+?>: b32.and 0x0ff
 	<lerpLut+?>: dup.x32 sp(3)
 	<lerpLut+?>: sub.i32
+	<lerpLut+?>: inc.i32(+1)
 	<lerpLut+?>: mul.i32
 	<lerpLut+?>: b32.sar 0x010
 	<lerpLut+?>: add.i32
@@ -13241,7 +13245,7 @@ lerpLut(lut: uint32[], alpha: int32, invert: bool, colors: argb[]): void: functi
 	<lerpLut+?>: dup.x32 sp(0)
 	<lerpLut+?>: dup.x32 sp(11)
 	<lerpLut+?>: clt.i32
-	<lerpLut+?>: jnz -319
+	<lerpLut+?>: jnz -335
 	<lerpLut+?>: inc.sp(-4)
 	<lerpLut+?>: inc.sp(-12)
 	<lerpLut+?>: ret
@@ -16201,7 +16205,7 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 .field gch: function (size: 0, cast: inline)
 .field bch: function (size: 0, cast: inline)
 .field lum: function (size: 0, cast: inline)
-.field lerpLut: function (size: 404, cast: static const function)
+.field lerpLut: function (size: 420, cast: static const function)
 .field argb: function (size: 0, cast: inline)
 .field lum: function (size: 0, cast: inline)
 .field hsv2rgb: function (size: 368, cast: static const function)
@@ -17135,7 +17139,7 @@ show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): v
 		bch(color: argb): int32 := int32(uint32(color) & (255));
 		lum(color: argb): int32 := int32((19595 * rch(color) + 38470 * gch(color) + 7471 * bch(color)) >> 16);
 		static const lerpLut(lut: uint32[], alpha: int32, invert: bool, colors: argb[]): void := {
-			lrp(t: int32, x: uint32, y: uint32): uint32 := x + ((t * ((y - x)) >> 16));
+			lrp(t: int32, x: uint32, y: uint32): uint32 := x + ((t * ((y - x + (1))) >> 16));
 			mid: int32 := alpha < 0 ? 0 : 254;
 			div: int32 := 256 - (clamp_u8(alpha > 0 ? alpha : -alpha));
 			dt: int32 := (colors.length - (1) << 16) / (lut.length - (1));
@@ -17890,16 +17894,16 @@ lib/gfxlib.ci:423: show: function(<show>)
 
 ---------- Memory usage:
 memory[all] @000000; size: 4194024(4.0 Mb)
-memory[used] @000000; size: 366708(358.1 Kb)
-memory[heap] @059874; size: 2778762(2.7 Mb)
+memory[used] @000000; size: 366724(358.1 Kb)
+memory[heap] @059884; size: 2778746(2.7 Mb)
 memory[stack] @1fff44; size: 1048506(1023.9 Kb)
 
 ---------- used memory:
 memory[meta] @000000; size: 355160(346.8 Kb)
-memory[code] @000000; size: 11234(11.0 Kb)
+memory[code] @000000; size: 11250(11.0 Kb)
 memory[data] @000000; size: 52(52.0 bytes)
 
 ---------- heap memory:
-memory[free] @059888; size: 2778720(2.6 Mb)
+memory[free] @059898; size: 2778704(2.6 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms
