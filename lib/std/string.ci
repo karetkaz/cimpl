@@ -92,6 +92,7 @@ int caseCmp(char chr, char with) {
 inline startsWith(const char str[*], const char with[*]) = startsWith(str, with, caseCmp);
 inline endsWith(const char str[*], const char with[*]) = endsWith(str, with, caseCmp);
 inline compare(const char str[*], const char with[*]) = compare(str, with, caseCmp);
+inline equals(const char str[*], const char with[*]) = compare(str, with, caseCmp) == 0;
 
 /// Check if a string contains the given character
 inline contains(const char str[*], char chr) = indexOf(str, chr) >= 0;
@@ -266,3 +267,107 @@ int append(char output[], int pos, int value) {
 //inline append(char output[], uint32 value, const FormatFlags format) = output.append(length(output), value, format);
 //inline append(char output[], uint32 value) = output.append(length(output), value);
 //inline append(char output[], char value[*]) = output.append(length(output), value);
+
+/* TODO: leftovers
+ * Format integer to text
+ * @param output write output to this buffer
+ * @param format format string
+ *  	%b format as binary
+ *  	%o format as octal
+ *  	%d format as decimal
+ *  	%x format as hexadecimal
+ *  	%i format as custom radix
+ *  	null defaults to: "%d"
+ * @param value date to format
+int format(char output[], string format, int value) {
+	int pos = 0;
+	if (format == null) {
+		format = "%d";
+	}
+	int spos = 0;
+	for (int chr; chr = format[spos]; spos += 1) {
+		if (chr == '%') {
+			chr = format[spos += 1];
+			if (chr == '%') {
+				if (pos < output.length) {
+					output[pos] = chr;
+					pos += 1;
+				}
+				continue;
+			}
+
+			int sgnChr = 0;
+			if (chr == '-' || chr == '+') {
+				sgnChr = chr;
+				chr = format[spos += 1];
+			}
+
+			int padChr = ' ';
+			if (chr == '0') {
+				padChr = chr;
+				chr = format[spos += 1];
+			}
+
+			int padLen = 0;
+			for (;chr >= '0' && chr <= '9';) {
+				padLen = padLen * 10 + chr - '0';
+				chr = format[spos += 1];
+			}
+
+			int precision = 0;
+			if (chr == '.') {
+				chr = format[spos += 1];
+				for ( ;chr >= '0' && chr <= '9'; ) {
+					precision = precision * 10 + chr - '0';
+					chr = format[spos += 1];
+				}
+			}
+
+
+			int rad = 10;
+			if (chr == 'b') {
+				rad = 2;
+			}
+			else if (chr == 'o') {
+				rad = 8;
+			}
+			else if (chr == 'd') {
+				rad = 10;
+			}
+			else if (chr == 'x') {
+				rad = 16;
+			}
+			else if (chr == 'i') {
+				rad = precision;
+			}
+
+			int val = value;
+			if (val < 0) {
+				val = -val;
+				sgnChr = '-';
+			}
+			else {
+				if (val == 0) {
+					padChr = '0';
+					if (!padLen) {
+						padLen = 1;
+					}
+				}
+			}
+
+			FormatFlags flags = FormatFlags(rad, sgnChr, padChr, padLen, precision);
+			pos = format(output, pos, &flags, val);
+		}
+		else if (pos < output.length) {
+			output[pos] = chr;
+			pos += 1;
+		}
+	}
+
+	if (pos >= output.length) {
+		pos = output.length - 1;
+	}
+	output[pos] = 0;
+	return pos;
+}
+// */

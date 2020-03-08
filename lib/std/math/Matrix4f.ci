@@ -83,14 +83,19 @@ inline dph(const mat4f mat&, const vec4f vec&) = vec4f(dph(mat.x, vec), dph(mat.
 /// Multiply with vector: dot product
 inline dp4(const mat4f mat&, const vec4f vec&) = vec4f(dp4(mat.x, vec), dp4(mat.y, vec), dp4(mat.z, vec), dp4(mat.w, vec));
 
+/// Transpose the matrix
+mat4f transpose(const mat4f mat) {
+	return {
+		xx: mat.xx; xy: mat.yx; xz: mat.zx; xw: mat.wx;
+		yx: mat.xy; yy: mat.yy; yz: mat.zy; yw: mat.wy;
+		zx: mat.xz; zy: mat.yz; zz: mat.zz; zw: mat.wz;
+		wx: mat.xw; wy: mat.yw; wz: mat.zw; ww: mat.ww;
+	};
+}
+
 /// Multiply two matrices (rows * cols)
 mat4f mul(const mat4f lhs&, const mat4f rhs&) {
-	mat4f transposed = {
-		x: { x: rhs.x.x, y: rhs.y.x, z: rhs.z.x, w: rhs.w.x };
-		y: { x: rhs.x.y, y: rhs.y.y, z: rhs.z.y, w: rhs.w.y };
-		z: { x: rhs.x.z, y: rhs.y.z, z: rhs.z.z, w: rhs.w.z };
-		w: { x: rhs.x.w, y: rhs.y.w, z: rhs.z.w, w: rhs.w.w };
-	};
+	mat4f transposed = transpose(rhs);
 	return {
 		x: dp4(transposed, lhs.x);
 		y: dp4(transposed, lhs.y);

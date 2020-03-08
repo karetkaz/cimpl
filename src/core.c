@@ -582,10 +582,10 @@ static void install_emit(ccContext cc, ccInstall mode) {
 			ccDefOpCode(cc, "p2d", type_p4x, v2d_max, 0);
 			ccEnd(cc, opc);
 		}
-		if ((opc = ccExtend(cc, type_p4x)) != NULL) {
-			ccDefOpCode(cc, "dp3", type_f32, v4f_dp3, 0);
-			ccDefOpCode(cc, "dp4", type_f32, v4f_dp4, 0);
-			ccDefOpCode(cc, "dph", type_f32, v4f_dph, 0);
+		if ((opc = ccBegin(cc, "swz")) != NULL) {
+			//ccDefOpCode(cc, "x0", type_i32, p4x_swz, 0 | 1 << 2 | 2 << 4 | 3 << 6);
+			//ccDefOpCode(cc, "x1", type_i32, p4x_swz, 1 | 0 << 2 | 2 << 4 | 3 << 6);
+			ccDefOpCode(cc, "x2", type_i32, p4x_swz, 2 | 3 << 2 | 0 << 4 | 1 << 6);
 			if ((mode & installEswz) == installEswz) {
 				for (size_t i = 0; i < 256; i += 1) {
 					char *name;
@@ -602,6 +602,12 @@ static void install_emit(ccContext cc, ccInstall mode) {
 					ccDefOpCode(cc, name, type_p4x, p4x_swz, i);
 				}
 			}
+			ccEnd(cc, opc);
+		}
+		if ((opc = ccExtend(cc, type_p4x)) != NULL) {
+			ccDefOpCode(cc, "dp3", type_f32, v4f_dp3, 0);
+			ccDefOpCode(cc, "dp4", type_f32, v4f_dp4, 0);
+			ccDefOpCode(cc, "dph", type_f32, v4f_dph, 0);
 			ccEnd(cc, opc);
 		}
 		ccEnd(cc, cc->emit_opc);

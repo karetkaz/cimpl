@@ -234,11 +234,10 @@ static struct Math {
 		return result;
 	}
 
-	/*TODO: implement spread operator
 	/// Returns the mean of the input values
 	float64 mean(float64 data...) {
 		return sum(...data) / data.length;
-	}*/
+	}
 
 	/// Return the polynomial evaluated at x using Horner's algorithm
 	inline eval(float64 x, float64 a0) = (a0);
@@ -527,3 +526,69 @@ static struct Math {
 	// inline rand(int min, int max) = System.rand() % (max - min) + min;
 	// inline rand(double min, double max) = (System.rand() / float64(RAND_MAX)) * (max - min) + min;
 }
+
+/* TODO: leftovers
+//~ float64 abs(float64 x);
+//~ float64 sin(float64 x);
+//~ float64 cos(float64 x);
+//~ float64 tan(float64 x);
+//~ float64 log(float64 x);
+//~ float64 exp(float64 x);
+//~ float64 pow(float64 x, float64 y);
+//~ float64 sqrt(float64 x);
+//~ float64 atan2(float64 x, float64 y);
+
+//~ Number.prototype.abs = function(){return Math.abs(this);};
+//~ Number.prototype.sign = function(){return this == 0 ? 0 : (this > 0 ? 1 : -1);};
+//~ Number.prototype.ceil = function(){return Math.ceil(this);};
+//~ Number.prototype.floor = function(){return Math.floor(this);};
+//~ Number.prototype.round = function(){return Math.round(this);};
+//~ Number.prototype.degToRad = function(){return this * Math.PI / 180;};
+//~ Number.prototype.radToDeg = function(){return this * 180 / Math.PI;};
+
+//~ Number.prototype.sin = function(){return Math.sin(this);};
+//~ Number.prototype.sinh = function(){return (Math.exp(this) - Math.exp(-this)) / 2;};
+//~ Number.prototype.asin = function(){return Math.asin(this);};
+Number.prototype.asinh = function(){return Math.log(this + Math.sqrt(this * this + 1));};
+
+Number.prototype.sec = function(){return 1 / Math.cos(this);};
+Number.prototype.sech = function(){return 2 / (Math.exp(this) + Math.exp(-this));};
+Number.prototype.asec = function(){return Math.PI / 2 - Math.asin(1 / this);};
+Number.prototype.asech = function(){return Math.log((1 + Math.sqrt(1 - this * this)) / this);};
+
+//~ Number.prototype.cos = function(){return Math.cos(this);};
+//~ Number.prototype.cosh = function(){return (Math.exp(this) + Math.exp(-this)) / 2;};
+//~ Number.prototype.acos = function(){return Math.acos(this);};
+Number.prototype.acosh = function(){return Math.log(this + Math.sqrt(this * this - 1));};
+
+Number.prototype.cot = function(){return 1 / Math.tan(this);};
+Number.prototype.coth = function(){return (Math.exp(this) + Math.exp(-this)) / (Math.exp(this) - Math.exp(-this));};
+Number.prototype.acot = function(){return Math.PI / 2 - Math.atan(this);};
+Number.prototype.acoth = function(){return Math.log((this + 1) / (this - 1)) / 2;};
+
+Number.prototype.cosec = function(){return 1 / Math.sin(this);};
+Number.prototype.cosech = function(){return 2 / (Math.exp(this) - Math.exp(-this));};
+Number.prototype.acosec = function(){return Math.asin(1 / this);};
+Number.prototype.acosech = function(){
+	return this < 0
+		? Math.log((1 - Math.sqrt(1 + this * this)) / this)
+		: Math.log((1 + Math.sqrt(1 + this * this)) / this);
+};
+
+//~ Number.prototype.tan = function(){return Math.tan(this);};
+Number.prototype.tanh = function(){return (Math.exp(this) - Math.exp(-this)) / (Math.exp(this) + Math.exp(-this));};
+Number.prototype.atan = function(){return Math.atan(this);};
+Number.prototype.atanh = function(){return Math.log((1 + this) / (1 - this)) / 2;};
+
+Number.prototype.ln = function(){return Math.log(this);};
+//~ Number.prototype.log = function(base){return Math.log(this) / Math.log(base);};
+Number.prototype.log2 = function(){return Math.log(this) / Math.LN2;};
+Number.prototype.log10 = function(){return Math.log(this) / Math.LN10;};
+//~ Number.prototype.exp = function(){return Math.exp(this);};
+
+//~ Number.prototype.sqrt = function(){return Math.sqrt(this);};
+//~ Number.prototype.pow = function(exponent){return Math.pow(this,exponent);};
+//- Number.prototype.mod = function(modulus){return this >= 0 ? this % modulus : (this % modulus + Math.abs(modulus)) % modulus;};
+//- Number.prototype.wrap = function(low, high){return low + (this - low).mod(high - low);};
+// */
+

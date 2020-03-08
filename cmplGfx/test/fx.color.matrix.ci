@@ -548,22 +548,22 @@ int onEvent(int action, int button, int x, int y) {
 			}
 			if (ui.isSelected(btnReflect)) {
 				lerpLut(colors, alpha, invert, endColor, startColor, endColor);
-				offs.gradient(roi, gradient.MaskLinear, false, colors);
+				offs.gradient(roi, gradient.MaskLinear, false, ...colors);
 				offs.blend(0, 0, back, null, 256, true, null);
 			}
 			else if (ui.isSelected(btnLinear)) {
 				lerpLut(colors, alpha, invert, startColor, endColor);
-				offs.gradient(roi, gradient.MaskLinear, false, colors);
+				offs.gradient(roi, gradient.MaskLinear, false, ...colors);
 				offs.blend(0, 0, back, null, 256, true, null);
 			}
 			else if (ui.isSelected(btnRadial)) {
 				lerpLut(colors, alpha, invert, startColor, endColor);
-				offs.gradient(roi, gradient.MaskRadial, false, colors);
+				offs.gradient(roi, gradient.MaskRadial, false, ...colors);
 				offs.blend(0, 0, back, null, 256, true, null);
 			}
 			else if (ui.isSelected(btnSquare)) {
 				lerpLut(colors, alpha, invert, startColor, endColor);
-				offs.gradient(roi, gradient.MaskSquare, false, colors);
+				offs.gradient(roi, gradient.MaskSquare, false, ...colors);
 				offs.blend(0, 0, back, null, 256, true, null);
 			}
 		}

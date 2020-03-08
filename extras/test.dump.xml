@@ -1771,6 +1771,34 @@
 					</stmt>
 				</init>
 			</field>
+			<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:238">
+					<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := sum(...data) / (data.length);">
+						<expr token=":=" type="float64" kind="static const typename(f64)" value=".result := sum(...data) / (data.length)">
+							<left token=".variable" type="float64" kind="static const typename(f64)" value=".result">
+							</left>
+							<right token="/" type="float64" kind="static const typename(f64)" value="sum(...data) / (data.length)">
+								<left token="()" type="float64" kind="static const typename(f64)" value="sum(...data)">
+									<push token="..." type="float64[]" kind="static typename(arr)" value="...data">
+										<right token=".variable" type="float64[]" kind="static typename(arr)" value="data">
+										</right>
+									</push>
+									<call token=".variable" type="function" kind="static const typename(ref)" value="sum">
+									</call>
+								</left>
+								<right token="()" type="float64" kind="static const typename(f64)" value="(data.length)">
+									<push token="." type="uint32" kind="static const typename(u32)" value="data.length">
+										<left token=".variable" type="float64[]" kind="static typename(arr)" value="data">
+										</left>
+										<right token=".variable" type="uint32" kind="static const typename(u32)" value="length">
+										</right>
+									</push>
+								</right>
+							</right>
+						</expr>
+					</stmt>
+				</init>
+			</field>
 			<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 				<init token="()" type="float64" kind="static const typename(f64)" value="(a0)">
 					<push token=".variable" type="float64" kind="static const typename(f64)" value="a0">
@@ -1838,7 +1866,7 @@
 				</init>
 			</field>
 			<field token=".variable" type="function" kind="static const typename(ref)" value="eval(x: float64, polynomial: float64[]): float64">
-				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:256">
+				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:255">
 					<stmt token=".variable" type="float64" kind="static const typename(f64)" value="result">
 						<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 					</stmt>
@@ -1870,7 +1898,7 @@
 								<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
 							</right>
 						</step>
-						<stmt token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:258">
+						<stmt token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:257">
 							<stmt token=";" type="void" kind="static const typename(void)" stmt="result := result * x + polynomial[i];">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value="result := result * x + polynomial[i]">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value="result">
@@ -1904,7 +1932,7 @@
 				</init>
 			</field>
 			<field token=".variable" type="function" kind="static const typename(ref)" value="cmp(a: float32, b: float32, eps: float32): int32">
-				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:265">
+				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:264">
 					<stmt token="if" type="void" kind="static const typename(void)" stmt="if (a &lt; b)">
 						<test token="&lt;" type="bool" kind="static const typename(bool)" value="a &lt; b">
 							<left token=".variable" type="float32" kind="static const typename(f32)" value="a">
@@ -1912,7 +1940,7 @@
 							<right token=".variable" type="float32" kind="static const typename(f32)" value="b">
 							</right>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:266">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:265">
 							<stmt token="if" type="void" kind="static const typename(void)" stmt="if (eps &lt; (b - a))">
 								<test token="&lt;" type="bool" kind="static const typename(bool)" value="eps &lt; (b - a)">
 									<left token=".variable" type="float32" kind="static const typename(f32)" value="eps">
@@ -1926,7 +1954,7 @@
 										</push>
 									</right>
 								</test>
-								<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:267">
+								<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:266">
 									<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := -1;">
 										<expr token=":=" type="int32" kind="static const typename(i32)" value=".result := -1">
 											<left token=".variable" type="int32" kind="static const typename(i32)" value=".result">
@@ -1939,7 +1967,7 @@
 								</then>
 							</stmt>
 						</then>
-						<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:271">
+						<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:270">
 							<stmt token="if" type="void" kind="static const typename(void)" stmt="if (eps &lt; (a - b))">
 								<test token="&lt;" type="bool" kind="static const typename(bool)" value="eps &lt; (a - b)">
 									<left token=".variable" type="float32" kind="static const typename(f32)" value="eps">
@@ -1953,7 +1981,7 @@
 										</push>
 									</right>
 								</test>
-								<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:272">
+								<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:271">
 									<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := +1;">
 										<expr token=":=" type="int32" kind="static const typename(i32)" value=".result := +1">
 											<left token=".variable" type="int32" kind="static const typename(i32)" value=".result">
@@ -1977,7 +2005,7 @@
 				</init>
 			</field>
 			<field token=".variable" type="function" kind="static const typename(ref)" value="cmp(a: float64, b: float64, eps: float64): int32">
-				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:280">
+				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:279">
 					<stmt token="if" type="void" kind="static const typename(void)" stmt="if (a &lt; b)">
 						<test token="&lt;" type="bool" kind="static const typename(bool)" value="a &lt; b">
 							<left token=".variable" type="float64" kind="static const typename(f64)" value="a">
@@ -1985,7 +2013,7 @@
 							<right token=".variable" type="float64" kind="static const typename(f64)" value="b">
 							</right>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:281">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:280">
 							<stmt token="if" type="void" kind="static const typename(void)" stmt="if (eps &lt; (b - a))">
 								<test token="&lt;" type="bool" kind="static const typename(bool)" value="eps &lt; (b - a)">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value="eps">
@@ -1999,7 +2027,7 @@
 										</push>
 									</right>
 								</test>
-								<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:282">
+								<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:281">
 									<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := -1;">
 										<expr token=":=" type="int32" kind="static const typename(i32)" value=".result := -1">
 											<left token=".variable" type="int32" kind="static const typename(i32)" value=".result">
@@ -2012,7 +2040,7 @@
 								</then>
 							</stmt>
 						</then>
-						<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:286">
+						<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:285">
 							<stmt token="if" type="void" kind="static const typename(void)" stmt="if (eps &lt; (a - b))">
 								<test token="&lt;" type="bool" kind="static const typename(bool)" value="eps &lt; (a - b)">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value="eps">
@@ -2026,7 +2054,7 @@
 										</push>
 									</right>
 								</test>
-								<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:287">
+								<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:286">
 									<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := +1;">
 										<expr token=":=" type="int32" kind="static const typename(i32)" value=".result := +1">
 											<left token=".variable" type="int32" kind="static const typename(i32)" value=".result">
@@ -2050,7 +2078,7 @@
 				</init>
 			</field>
 			<field token=".variable" type="function" kind="static const typename(ref)" value="sinCos(arg: float64, quad: int32): float64">
-				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:295">
+				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:294">
 					<stmt token=".variable" type="float64" kind="static const typename(f64)" value="x">
 						<init token=".variable" type="float64" kind="static const typename(f64)" value="arg">
 						</init>
@@ -2063,7 +2091,7 @@
 								<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 							</right>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:310">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:309">
 							<stmt token=";" type="void" kind="static const typename(void)" stmt="x := -x;">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value="x := -x">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value="x">
@@ -2114,7 +2142,7 @@
 								<push token=".literal" type="int32" kind="static const typename(i32)" value="32764" />
 							</right>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:317">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:316">
 							<stmt token=".variable" type="float64" kind="static const typename(f64)" value="e">
 							</stmt>
 							<stmt token=";" type="void" kind="static const typename(void)" stmt="y := modf(x, &amp;e);">
@@ -2184,7 +2212,7 @@
 								</expr>
 							</stmt>
 						</then>
-						<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:326">
+						<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:325">
 							<stmt token=".variable" type="int32" kind="static const typename(i32)" value="k">
 								<init token=".variable" type="float64" kind="static const typename(f64)" value="x">
 									<init token=".variable" type="float64" kind="static const typename(f64)" value="arg">
@@ -2236,7 +2264,7 @@
 							</left>
 							<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:332">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:331">
 							<stmt token=";" type="void" kind="static const typename(void)" stmt="y := (1) - y;">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value="y := (1) - y">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value="y">
@@ -2258,7 +2286,7 @@
 							</left>
 							<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:335">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:334">
 							<stmt token=";" type="void" kind="static const typename(void)" stmt="y := -y;">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value="y := -y">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value="y">
@@ -2404,7 +2432,7 @@
 				</init>
 			</field>
 			<field token=".variable" type="function" kind="static const typename(ref)" value="tan(arg: float64): float64">
-				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:352">
+				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:351">
 					<stmt token=".variable" type="bool" kind="static const typename(bool)" value="complement">
 						<init token=".variable" type="bool" kind="static const typename(bool)" value="false">
 							<init token=".literal" type="bool" kind="static const typename(bool)" value="0" />
@@ -2423,7 +2451,7 @@
 								<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 							</right>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:368">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:367">
 							<stmt token=";" type="void" kind="static const typename(void)" stmt="arg := -arg;">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value="arg := -arg">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value="arg">
@@ -2492,14 +2520,14 @@
 							</left>
 							<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 						</test>
-						<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:379">
+						<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:378">
 							<stmt token="if" type="void" kind="static const typename(void)" stmt="if (i == 1)">
 								<test token="==" type="bool" kind="static const typename(bool)" value="i == 1">
 									<left token=".variable" type="int32" kind="static const typename(i32)" value="i">
 									</left>
 									<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
 								</test>
-								<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:379">
+								<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:378">
 									<stmt token=";" type="void" kind="static const typename(void)" stmt="x := (1) - x;">
 										<expr token=":=" type="float64" kind="static const typename(f64)" value="x := (1) - x">
 											<left token=".variable" type="float64" kind="static const typename(f64)" value="x">
@@ -2522,14 +2550,14 @@
 										</expr>
 									</stmt>
 								</then>
-								<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:383">
+								<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:382">
 									<stmt token="if" type="void" kind="static const typename(void)" stmt="if (i == 2)">
 										<test token="==" type="bool" kind="static const typename(bool)" value="i == 2">
 											<left token=".variable" type="int32" kind="static const typename(i32)" value="i">
 											</left>
 											<right token=".literal" type="int32" kind="static const typename(i32)" value="2" />
 										</test>
-										<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:383">
+										<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:382">
 											<stmt token=";" type="void" kind="static const typename(void)" stmt="negate := !negate;">
 												<expr token=":=" type="bool" kind="static const typename(bool)" value="negate := !negate">
 													<left token=".variable" type="bool" kind="static const typename(bool)" value="negate">
@@ -2549,14 +2577,14 @@
 												</expr>
 											</stmt>
 										</then>
-										<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:387">
+										<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:386">
 											<stmt token="if" type="void" kind="static const typename(void)" stmt="if (i == 3)">
 												<test token="==" type="bool" kind="static const typename(bool)" value="i == 3">
 													<left token=".variable" type="int32" kind="static const typename(i32)" value="i">
 													</left>
 													<right token=".literal" type="int32" kind="static const typename(i32)" value="3" />
 												</test>
-												<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:387">
+												<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:386">
 													<stmt token=";" type="void" kind="static const typename(void)" stmt="x := (1) - x;">
 														<expr token=":=" type="float64" kind="static const typename(f64)" value="x := (1) - x">
 															<left token=".variable" type="float64" kind="static const typename(f64)" value="x">
@@ -2686,7 +2714,7 @@
 								<init token=".literal" type="bool" kind="static const typename(bool)" value="0" />
 							</init>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:396">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:395">
 							<stmt token="if" type="void" kind="static const typename(void)" stmt="if (result == (0))">
 								<test token="==" type="bool" kind="static const typename(bool)" value="result == (0)">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value="result">
@@ -2695,7 +2723,7 @@
 										<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 									</right>
 								</test>
-								<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:397">
+								<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:396">
 									<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := nan;">
 										<expr token=":=" type="float64" kind="static const typename(f64)" value=".result := nan">
 											<left token=".variable" type="float64" kind="static const typename(f64)" value=".result">
@@ -2727,7 +2755,7 @@
 								<init token=".literal" type="bool" kind="static const typename(bool)" value="0" />
 							</init>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:402">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:401">
 							<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := -result;">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value=".result := -result">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value=".result">
@@ -2751,7 +2779,7 @@
 				</init>
 			</field>
 			<field token=".variable" type="function" kind="static const typename(ref)" value="sinh(x: float64): float64">
-				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:409">
+				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:408">
 					<stmt token=".variable" type="bool" kind="static const typename(bool)" value="negate">
 						<init token=".variable" type="bool" kind="static const typename(bool)" value="false">
 							<init token=".literal" type="bool" kind="static const typename(bool)" value="0" />
@@ -2765,7 +2793,7 @@
 								<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 							</right>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:422">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:421">
 							<stmt token=";" type="void" kind="static const typename(void)" stmt="x := -x;">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value="x := -x">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value="x">
@@ -2794,7 +2822,7 @@
 								<push token=".literal" type="int32" kind="static const typename(i32)" value="21" />
 							</right>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:427">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:426">
 							<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := float64.exp(x) / (2);">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value=".result := float64.exp(x) / (2)">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value=".result">
@@ -2842,7 +2870,7 @@
 							</left>
 							<right token=".literal" type="float64" kind="static const typename(f64)" value="0.500000" />
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:432">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:431">
 							<stmt token=";" type="void" kind="static const typename(void)" stmt="result := (float64.exp(x) - float64.exp(-x)) / (2);">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value="result := (float64.exp(x) - float64.exp(-x)) / (2)">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value="result">
@@ -2913,7 +2941,7 @@
 								</expr>
 							</stmt>
 						</then>
-						<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:435">
+						<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:434">
 							<stmt token=".variable" type="float64" kind="static const typename(f64)" value="sq">
 								<init token="*" type="float64" kind="static const typename(f64)" value="x * x">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value="x">
@@ -3008,7 +3036,7 @@
 								<init token=".literal" type="bool" kind="static const typename(bool)" value="0" />
 							</init>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:441">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:440">
 							<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := -result;">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value=".result := -result">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value=".result">
@@ -3032,7 +3060,7 @@
 				</init>
 			</field>
 			<field token=".variable" type="function" kind="static const typename(ref)" value="cosh(x: float64): float64">
-				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:448">
+				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:447">
 					<stmt token="if" type="void" kind="static const typename(void)" stmt="if (x &lt; (0))">
 						<test token="&lt;" type="bool" kind="static const typename(bool)" value="x &lt; (0)">
 							<left token=".variable" type="float64" kind="static const typename(f64)" value="x">
@@ -3041,7 +3069,7 @@
 								<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 							</right>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:449">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:448">
 							<stmt token=";" type="void" kind="static const typename(void)" stmt="x := -x;">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value="x := -x">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value="x">
@@ -3062,7 +3090,7 @@
 								<push token=".literal" type="int32" kind="static const typename(i32)" value="21" />
 							</right>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:452">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:451">
 							<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := float64.exp(x) / (2);">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value=".result := float64.exp(x) / (2)">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value=".result">
@@ -3174,7 +3202,7 @@
 				</init>
 			</field>
 			<field token=".variable" type="function" kind="static const typename(ref)" value="asin(x: float64): float64">
-				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:463">
+				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:462">
 					<stmt token="if" type="void" kind="static const typename(void)" stmt="if (x == (0))">
 						<test token="==" type="bool" kind="static const typename(bool)" value="x == (0)">
 							<left token=".variable" type="float64" kind="static const typename(f64)" value="x">
@@ -3183,7 +3211,7 @@
 								<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 							</right>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:464">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:463">
 							<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := x;">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value=".result := x">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value=".result">
@@ -3207,7 +3235,7 @@
 								<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 							</right>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:470">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:469">
 							<stmt token=";" type="void" kind="static const typename(void)" stmt="negate := true;">
 								<expr token=":=" type="bool" kind="static const typename(bool)" value="negate := true">
 									<left token=".variable" type="bool" kind="static const typename(bool)" value="negate">
@@ -3236,7 +3264,7 @@
 								<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
 							</right>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:475">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:474">
 							<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := nan;">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value=".result := nan">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value=".result">
@@ -3290,7 +3318,7 @@
 							</left>
 							<right token=".literal" type="float64" kind="static const typename(f64)" value="0.700000" />
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:481">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:480">
 							<stmt token=";" type="void" kind="static const typename(void)" stmt="result := pi / (2) - float64.atan2(result, x);">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value="result := pi / (2) - float64.atan2(result, x)">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value="result">
@@ -3335,7 +3363,7 @@
 								</expr>
 							</stmt>
 						</then>
-						<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:484">
+						<else token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:483">
 							<stmt token=";" type="void" kind="static const typename(void)" stmt="result := float64.atan2(x, result);">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value="result := float64.atan2(x, result)">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value="result">
@@ -3378,7 +3406,7 @@
 								<init token=".literal" type="bool" kind="static const typename(bool)" value="0" />
 							</init>
 						</test>
-						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:488">
+						<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:487">
 							<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := -result;">
 								<expr token=":=" type="float64" kind="static const typename(f64)" value=".result := -result">
 									<left token=".variable" type="float64" kind="static const typename(f64)" value=".result">
@@ -3566,58 +3594,57 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="neg(a: Complex): Complex">
-			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(-a.re, -a.im)">
-				<push token="-" type="float64" kind="static const typename(f64)" value="-a.re">
-					<right token="." type="float64" kind="static const typename(f64)" value="a.re">
-						<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(emit(struct(a), neg.p2d))">
+				<push token="()" type="emit" kind="static const typename(void)" value="emit(struct(a), neg.p2d)">
+					<push token="()" type="Complex" kind="static const typename(val)" value="struct(a)">
+						<push token=".variable" type="Complex" kind="static const typename(val)" value="a">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="." type="emit.p4x" kind="static const typename(val)" value="neg.p2d">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="neg">
 						</left>
-						<right token=".variable" type="float64" kind="static const typename(f64)" value="re">
+						<right token=".variable" type="emit.p4x" kind="static const typename(val)" value="p2d">
 						</right>
-					</right>
+					</push>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="emit">
+					</call>
 				</push>
-				<push token="-" type="float64" kind="static const typename(f64)" value="-a.im">
-					<right token="." type="float64" kind="static const typename(f64)" value="a.im">
-						<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
-						</left>
-						<right token=".variable" type="float64" kind="static const typename(f64)" value="im">
-						</right>
-					</right>
-				</push>
-				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex">
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="Complex">
+					<field token=".variable" type="float64" kind="static const typename(f64)" value="re">
+					</field>
+					<field token=".variable" type="float64" kind="static const typename(f64)" value="im">
+					</field>
 				</call>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="add(a: Complex, b: Complex): Complex">
-			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(a.re + b.re, a.im + b.im)">
-				<push token="+" type="float64" kind="static const typename(f64)" value="a.re + b.re">
-					<left token="." type="float64" kind="static const typename(f64)" value="a.re">
-						<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(emit(struct(a), struct(b), add.p2d))">
+				<push token="()" type="emit" kind="static const typename(void)" value="emit(struct(a), struct(b), add.p2d)">
+					<push token="()" type="Complex" kind="static const typename(val)" value="struct(a)">
+						<push token=".variable" type="Complex" kind="static const typename(val)" value="a">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="()" type="Complex" kind="static const typename(val)" value="struct(b)">
+						<push token=".variable" type="Complex" kind="static const typename(val)" value="b">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="." type="emit.p4x" kind="static const typename(val)" value="add.p2d">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="add">
 						</left>
-						<right token=".variable" type="float64" kind="static const typename(f64)" value="re">
+						<right token=".variable" type="emit.p4x" kind="static const typename(val)" value="p2d">
 						</right>
-					</left>
-					<right token="." type="float64" kind="static const typename(f64)" value="b.re">
-						<left token=".variable" type="Complex" kind="static const typename(val)" value="b">
-						</left>
-						<right token=".variable" type="float64" kind="static const typename(f64)" value="re">
-						</right>
-					</right>
+					</push>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="emit">
+					</call>
 				</push>
-				<push token="+" type="float64" kind="static const typename(f64)" value="a.im + b.im">
-					<left token="." type="float64" kind="static const typename(f64)" value="a.im">
-						<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
-						</left>
-						<right token=".variable" type="float64" kind="static const typename(f64)" value="im">
-						</right>
-					</left>
-					<right token="." type="float64" kind="static const typename(f64)" value="b.im">
-						<left token=".variable" type="Complex" kind="static const typename(val)" value="b">
-						</left>
-						<right token=".variable" type="float64" kind="static const typename(f64)" value="im">
-						</right>
-					</right>
-				</push>
-				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex">
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="Complex">
+					<field token=".variable" type="float64" kind="static const typename(f64)" value="re">
+					</field>
+					<field token=".variable" type="float64" kind="static const typename(f64)" value="im">
+					</field>
 				</call>
 			</init>
 		</stmt>
@@ -3666,36 +3693,32 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="sub(a: Complex, b: Complex): Complex">
-			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(a.re - b.re, a.im - b.im)">
-				<push token="-" type="float64" kind="static const typename(f64)" value="a.re - b.re">
-					<left token="." type="float64" kind="static const typename(f64)" value="a.re">
-						<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(emit(struct(a), struct(b), sub.p2d))">
+				<push token="()" type="emit" kind="static const typename(void)" value="emit(struct(a), struct(b), sub.p2d)">
+					<push token="()" type="Complex" kind="static const typename(val)" value="struct(a)">
+						<push token=".variable" type="Complex" kind="static const typename(val)" value="a">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="()" type="Complex" kind="static const typename(val)" value="struct(b)">
+						<push token=".variable" type="Complex" kind="static const typename(val)" value="b">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="." type="emit.p4x" kind="static const typename(val)" value="sub.p2d">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="sub">
 						</left>
-						<right token=".variable" type="float64" kind="static const typename(f64)" value="re">
+						<right token=".variable" type="emit.p4x" kind="static const typename(val)" value="p2d">
 						</right>
-					</left>
-					<right token="." type="float64" kind="static const typename(f64)" value="b.re">
-						<left token=".variable" type="Complex" kind="static const typename(val)" value="b">
-						</left>
-						<right token=".variable" type="float64" kind="static const typename(f64)" value="re">
-						</right>
-					</right>
+					</push>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="emit">
+					</call>
 				</push>
-				<push token="-" type="float64" kind="static const typename(f64)" value="a.im - b.im">
-					<left token="." type="float64" kind="static const typename(f64)" value="a.im">
-						<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
-						</left>
-						<right token=".variable" type="float64" kind="static const typename(f64)" value="im">
-						</right>
-					</left>
-					<right token="." type="float64" kind="static const typename(f64)" value="b.im">
-						<left token=".variable" type="Complex" kind="static const typename(val)" value="b">
-						</left>
-						<right token=".variable" type="float64" kind="static const typename(f64)" value="im">
-						</right>
-					</right>
-				</push>
-				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex">
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="Complex">
+					<field token=".variable" type="float64" kind="static const typename(f64)" value="re">
+					</field>
+					<field token=".variable" type="float64" kind="static const typename(f64)" value="im">
+					</field>
 				</call>
 			</init>
 		</stmt>
@@ -3744,68 +3767,72 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="mul(a: Complex, b: Complex): Complex">
-			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re)">
-				<push token="-" type="float64" kind="static const typename(f64)" value="a.re * b.re - a.im * b.im">
-					<left token="*" type="float64" kind="static const typename(f64)" value="a.re * b.re">
-						<left token="." type="float64" kind="static const typename(f64)" value="a.re">
-							<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
-							</left>
-							<right token=".variable" type="float64" kind="static const typename(f64)" value="re">
-							</right>
+			<init token="()" type="Complex" kind="static const typename(val)" value="Complex(emit(struct(a), struct(b), swz.x2, mul.p2d, add.f64, struct(a), struct(b), mul.p2d, swz.x2, sub.f64))">
+				<push token="()" type="emit" kind="static const typename(void)" value="emit(struct(a), struct(b), swz.x2, mul.p2d, add.f64, struct(a), struct(b), mul.p2d, swz.x2, sub.f64)">
+					<push token="()" type="Complex" kind="static const typename(val)" value="struct(a)">
+						<push token=".variable" type="Complex" kind="static const typename(val)" value="a">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="()" type="Complex" kind="static const typename(val)" value="struct(b)">
+						<push token=".variable" type="Complex" kind="static const typename(val)" value="b">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="." type="int32" kind="static const typename(i32)" value="swz.x2">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="swz">
 						</left>
-						<right token="." type="float64" kind="static const typename(f64)" value="b.re">
-							<left token=".variable" type="Complex" kind="static const typename(val)" value="b">
-							</left>
-							<right token=".variable" type="float64" kind="static const typename(f64)" value="re">
-							</right>
+						<right token=".variable" type="int32" kind="static const typename(i32)" value="x2">
 						</right>
-					</left>
-					<right token="*" type="float64" kind="static const typename(f64)" value="a.im * b.im">
-						<left token="." type="float64" kind="static const typename(f64)" value="a.im">
-							<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
-							</left>
-							<right token=".variable" type="float64" kind="static const typename(f64)" value="im">
-							</right>
+					</push>
+					<push token="." type="emit.p4x" kind="static const typename(val)" value="mul.p2d">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="mul">
 						</left>
-						<right token="." type="float64" kind="static const typename(f64)" value="b.im">
-							<left token=".variable" type="Complex" kind="static const typename(val)" value="b">
-							</left>
-							<right token=".variable" type="float64" kind="static const typename(f64)" value="im">
-							</right>
+						<right token=".variable" type="emit.p4x" kind="static const typename(val)" value="p2d">
 						</right>
-					</right>
+					</push>
+					<push token="." type="float64" kind="static const typename(f64)" value="add.f64">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="add">
+						</left>
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="f64">
+						</right>
+					</push>
+					<push token="()" type="Complex" kind="static const typename(val)" value="struct(a)">
+						<push token=".variable" type="Complex" kind="static const typename(val)" value="a">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="()" type="Complex" kind="static const typename(val)" value="struct(b)">
+						<push token=".variable" type="Complex" kind="static const typename(val)" value="b">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="." type="emit.p4x" kind="static const typename(val)" value="mul.p2d">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="mul">
+						</left>
+						<right token=".variable" type="emit.p4x" kind="static const typename(val)" value="p2d">
+						</right>
+					</push>
+					<push token="." type="int32" kind="static const typename(i32)" value="swz.x2">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="swz">
+						</left>
+						<right token=".variable" type="int32" kind="static const typename(i32)" value="x2">
+						</right>
+					</push>
+					<push token="." type="float64" kind="static const typename(f64)" value="sub.f64">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="sub">
+						</left>
+						<right token=".variable" type="float64" kind="static const typename(f64)" value="f64">
+						</right>
+					</push>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="emit">
+					</call>
 				</push>
-				<push token="+" type="float64" kind="static const typename(f64)" value="a.re * b.im + a.im * b.re">
-					<left token="*" type="float64" kind="static const typename(f64)" value="a.re * b.im">
-						<left token="." type="float64" kind="static const typename(f64)" value="a.re">
-							<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
-							</left>
-							<right token=".variable" type="float64" kind="static const typename(f64)" value="re">
-							</right>
-						</left>
-						<right token="." type="float64" kind="static const typename(f64)" value="b.im">
-							<left token=".variable" type="Complex" kind="static const typename(val)" value="b">
-							</left>
-							<right token=".variable" type="float64" kind="static const typename(f64)" value="im">
-							</right>
-						</right>
-					</left>
-					<right token="*" type="float64" kind="static const typename(f64)" value="a.im * b.re">
-						<left token="." type="float64" kind="static const typename(f64)" value="a.im">
-							<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
-							</left>
-							<right token=".variable" type="float64" kind="static const typename(f64)" value="im">
-							</right>
-						</left>
-						<right token="." type="float64" kind="static const typename(f64)" value="b.re">
-							<left token=".variable" type="Complex" kind="static const typename(val)" value="b">
-							</left>
-							<right token=".variable" type="float64" kind="static const typename(f64)" value="re">
-							</right>
-						</right>
-					</right>
-				</push>
-				<call token=".variable" type="function" kind="static const typename(ref)" value="Complex">
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="Complex">
+					<field token=".variable" type="float64" kind="static const typename(f64)" value="re">
+					</field>
+					<field token=".variable" type="float64" kind="static const typename(f64)" value="im">
+					</field>
 				</call>
 			</init>
 		</stmt>
@@ -3862,7 +3889,7 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="div(a: Complex, b: Complex): Complex">
-			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Complex.ci:83">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Complex.ci:86">
 				<stmt token="if" type="void" kind="static const typename(void)" stmt="if (Math.abs(b.re) &gt;= Math.abs(b.im))">
 					<test token="&gt;=" type="bool" kind="static const typename(bool)" value="Math.abs(b.re) &gt;= Math.abs(b.im)">
 						<left token="()" type="float64" kind="static const typename(f64)" value="Math.abs(b.re)">
@@ -3949,6 +3976,8 @@
 									<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 									</field>
 									<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+									</field>
+									<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 									</field>
 									<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 									</field>
@@ -4074,6 +4103,8 @@
 									</field>
 									<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 									</field>
+									<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+									</field>
 									<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 									</field>
 									<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -4114,7 +4145,7 @@
 							</call>
 						</right>
 					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Complex.ci:87">
+					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Complex.ci:90">
 						<stmt token=".variable" type="float64" kind="static const typename(f64)" value="r">
 							<init token="/" type="float64" kind="static const typename(f64)" value="b.im / b.re">
 								<left token="." type="float64" kind="static const typename(f64)" value="b.im">
@@ -4466,39 +4497,37 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="inv(a: Complex): Complex">
-			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Complex.ci:114">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Complex.ci:117">
 				<stmt token=".variable" type="float64" kind="static const typename(f64)" value="d">
-					<init token="()" type="float64" kind="static const typename(f64)" value="(a.re * a.re + a.im * a.im)">
-						<push token="+" type="float64" kind="static const typename(f64)" value="a.re * a.re + a.im * a.im">
-							<left token="*" type="float64" kind="static const typename(f64)" value="a.re * a.re">
-								<left token="." type="float64" kind="static const typename(f64)" value="a.re">
-									<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
-									</left>
-									<right token=".variable" type="float64" kind="static const typename(f64)" value="re">
-									</right>
+					<init token="+" type="float64" kind="static const typename(f64)" value="a.re * a.re + a.im * a.im">
+						<left token="*" type="float64" kind="static const typename(f64)" value="a.re * a.re">
+							<left token="." type="float64" kind="static const typename(f64)" value="a.re">
+								<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
 								</left>
-								<right token="." type="float64" kind="static const typename(f64)" value="a.re">
-									<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
-									</left>
-									<right token=".variable" type="float64" kind="static const typename(f64)" value="re">
-									</right>
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="re">
 								</right>
 							</left>
-							<right token="*" type="float64" kind="static const typename(f64)" value="a.im * a.im">
-								<left token="." type="float64" kind="static const typename(f64)" value="a.im">
-									<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
-									</left>
-									<right token=".variable" type="float64" kind="static const typename(f64)" value="im">
-									</right>
+							<right token="." type="float64" kind="static const typename(f64)" value="a.re">
+								<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
 								</left>
-								<right token="." type="float64" kind="static const typename(f64)" value="a.im">
-									<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
-									</left>
-									<right token=".variable" type="float64" kind="static const typename(f64)" value="im">
-									</right>
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="re">
 								</right>
 							</right>
-						</push>
+						</left>
+						<right token="*" type="float64" kind="static const typename(f64)" value="a.im * a.im">
+							<left token="." type="float64" kind="static const typename(f64)" value="a.im">
+								<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
+								</left>
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="im">
+								</right>
+							</left>
+							<right token="." type="float64" kind="static const typename(f64)" value="a.im">
+								<left token=".variable" type="Complex" kind="static const typename(val)" value="a">
+								</left>
+								<right token=".variable" type="float64" kind="static const typename(f64)" value="im">
+								</right>
+							</right>
+						</right>
 					</init>
 				</stmt>
 				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := {...};">
@@ -4748,7 +4777,7 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="pow(a: Complex, b: Complex): Complex">
-			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Complex.ci:132">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Complex.ci:135">
 				<stmt token=".variable" type="float64" kind="static const typename(f64)" value="r">
 					<init token="()" type="float64" kind="static const typename(f64)" value="abs(a)">
 						<push token=".variable" type="Complex" kind="static const typename(val)" value="a">
@@ -5107,6 +5136,8 @@
 								</field>
 								<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 								</field>
+								<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+								</field>
 								<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 								</field>
 								<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -5264,6 +5295,8 @@
 								<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 								</field>
 								<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+								</field>
+								<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 								</field>
 								<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 								</field>
@@ -5427,6 +5460,8 @@
 								</field>
 								<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 								</field>
+								<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+								</field>
 								<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 								</field>
 								<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -5584,6 +5619,8 @@
 								<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 								</field>
 								<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+								</field>
+								<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 								</field>
 								<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 								</field>
@@ -7138,394 +7175,282 @@
 				</call>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="function" kind="static const typename(ref)" value="mul(lhs: mat4f, rhs: mat4f): mat4f">
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="transpose(mat: mat4f): mat4f">
 			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Matrix4f.ci:87">
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := {...};">
+					<expr token=":=" type="void" kind="static const typename(void)" value=".result := {...}">
+						<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+						</left>
+						<right token="{}" type="void" kind="static const typename(void)">
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.xx := mat.xx;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.xx := mat.xx">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.xx">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="xx">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.xx">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="xx">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.xy := mat.yx;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.xy := mat.yx">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.xy">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="xy">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.yx">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="yx">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.xz := mat.zx;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.xz := mat.zx">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.xz">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="xz">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.zx">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="zx">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.xw := mat.wx;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.xw := mat.wx">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.xw">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="xw">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.wx">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="wx">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.yx := mat.xy;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.yx := mat.xy">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.yx">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="yx">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.xy">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="xy">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.yy := mat.yy;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.yy := mat.yy">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.yy">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="yy">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.yy">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="yy">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.yz := mat.zy;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.yz := mat.zy">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.yz">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="yz">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.zy">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="zy">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.yw := mat.wy;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.yw := mat.wy">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.yw">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="yw">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.wy">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="wy">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.zx := mat.xz;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.zx := mat.xz">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.zx">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="zx">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.xz">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="xz">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.zy := mat.yz;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.zy := mat.yz">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.zy">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="zy">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.yz">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="yz">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.zz := mat.zz;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.zz := mat.zz">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.zz">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="zz">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.zz">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="zz">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.zw := mat.wz;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.zw := mat.wz">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.zw">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="zw">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.wz">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="wz">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.wx := mat.xw;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.wx := mat.xw">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.wx">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="wx">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.xw">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="xw">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.wy := mat.yw;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.wy := mat.yw">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.wy">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="wy">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.yw">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="yw">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.wz := mat.zw;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.wz := mat.zw">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.wz">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="wz">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.zw">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="zw">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.ww := mat.ww;">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.ww := mat.ww">
+									<left token="." type="float32" kind="static const typename(f32)" value=".result.ww">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="ww">
+										</right>
+									</left>
+									<right token="." type="float32" kind="static const typename(f32)" value="mat.ww">
+										<left token=".variable" type="mat4f" kind="static const typename(val)" value="mat">
+										</left>
+										<right token=".variable" type="float32" kind="static const typename(f32)" value="ww">
+										</right>
+									</right>
+								</expr>
+							</stmt>
+						</right>
+					</expr>
+				</stmt>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="mul(lhs: mat4f, rhs: mat4f): mat4f">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Matrix4f.ci:97">
 				<stmt token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-					<init token="{}" type="mat4f" kind="static const typename(val)">
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.x.x := rhs.x.x;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.x.x := rhs.x.x">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.x.x">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.x">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="x">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="x">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.x.x">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.x">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="x">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="x">
-									</right>
-								</right>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.x.y := rhs.y.x;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.x.y := rhs.y.x">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.x.y">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.x">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="x">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="y">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.y.x">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.y">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="y">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="x">
-									</right>
-								</right>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.x.z := rhs.z.x;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.x.z := rhs.z.x">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.x.z">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.x">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="x">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="z">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.z.x">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.z">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="z">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="x">
-									</right>
-								</right>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.x.w := rhs.w.x;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.x.w := rhs.w.x">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.x.w">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.x">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="x">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="w">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.w.x">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.w">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="w">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="x">
-									</right>
-								</right>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.y.x := rhs.x.y;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.y.x := rhs.x.y">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.y.x">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.y">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="y">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="x">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.x.y">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.x">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="x">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="y">
-									</right>
-								</right>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.y.y := rhs.y.y;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.y.y := rhs.y.y">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.y.y">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.y">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="y">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="y">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.y.y">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.y">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="y">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="y">
-									</right>
-								</right>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.y.z := rhs.z.y;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.y.z := rhs.z.y">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.y.z">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.y">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="y">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="z">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.z.y">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.z">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="z">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="y">
-									</right>
-								</right>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.y.w := rhs.w.y;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.y.w := rhs.w.y">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.y.w">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.y">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="y">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="w">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.w.y">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.w">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="w">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="y">
-									</right>
-								</right>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.z.x := rhs.x.z;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.z.x := rhs.x.z">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.z.x">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.z">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="z">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="x">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.x.z">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.x">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="x">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="z">
-									</right>
-								</right>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.z.y := rhs.y.z;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.z.y := rhs.y.z">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.z.y">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.z">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="z">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="y">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.y.z">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.y">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="y">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="z">
-									</right>
-								</right>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.z.z := rhs.z.z;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.z.z := rhs.z.z">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.z.z">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.z">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="z">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="z">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.z.z">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.z">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="z">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="z">
-									</right>
-								</right>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.z.w := rhs.w.z;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.z.w := rhs.w.z">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.z.w">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.z">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="z">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="w">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.w.z">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.w">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="w">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="z">
-									</right>
-								</right>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.w.x := rhs.x.w;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.w.x := rhs.x.w">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.w.x">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.w">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="w">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="x">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.x.w">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.x">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="x">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="w">
-									</right>
-								</right>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.w.y := rhs.y.w;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.w.y := rhs.y.w">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.w.y">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.w">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="w">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="y">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.y.w">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.y">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="y">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="w">
-									</right>
-								</right>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.w.z := rhs.z.w;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.w.z := rhs.z.w">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.w.z">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.w">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="w">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="z">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.z.w">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.z">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="z">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="w">
-									</right>
-								</right>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="transposed.w.w := rhs.w.w;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="transposed.w.w := rhs.w.w">
-								<left token="." type="float32" kind="static const typename(f32)" value="transposed.w.w">
-									<left token="." type="vec4f" kind="static const typename(val)" value="transposed.w">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="transposed">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="w">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="w">
-									</right>
-								</left>
-								<right token="." type="float32" kind="static const typename(f32)" value="rhs.w.w">
-									<left token="." type="vec4f" kind="static const typename(val)" value="rhs.w">
-										<left token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
-										</left>
-										<right token=".variable" type="vec4f" kind="static const typename(val)" value="w">
-										</right>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="w">
-									</right>
-								</right>
-							</expr>
-						</stmt>
+					<init token="()" type="mat4f" kind="static const typename(val)" value="transpose(rhs)">
+						<push token=".variable" type="mat4f" kind="static const typename(val)" value="rhs">
+						</push>
+						<call token=".variable" type="function" kind="static const typename(ref)" value="transpose">
+						</call>
 					</init>
 				</stmt>
 				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := {...};">
@@ -7627,7 +7552,7 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="rotation(center: vec4f, direction: vec4f, angle: float32): mat4f">
-			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Matrix4f.ci:106">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Matrix4f.ci:111">
 				<stmt token=".variable" type="float32" kind="static const typename(f32)" value="len">
 					<init token="()" type="float32" kind="static const typename(f32)" value="length(direction)">
 						<push token=".variable" type="vec4f" kind="static const typename(val)" value="direction">
@@ -7644,7 +7569,7 @@
 						</left>
 						<right token=".literal" type="float64" kind="static const typename(f64)" value="0.000000" />
 					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Matrix4f.ci:108">
+					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Matrix4f.ci:113">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="trace(&quot;invalid direction of rotation&quot;, direction);">
 							<expr token="()" type="void" kind="static const typename(void)" value="trace(&quot;invalid direction of rotation&quot;, direction)">
 								<push token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot;invalid direction of rotation&quot;" />
@@ -8391,7 +8316,7 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="translation(direction: vec4f, amount: float32): mat4f">
-			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Matrix4f.ci:158">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Matrix4f.ci:163">
 				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := {...};">
 					<expr token=":=" type="void" kind="static const typename(void)" value=".result := {...}">
 						<left token=".variable" type="mat4f" kind="static const typename(val)" value=".result">
@@ -8696,7 +8621,7 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="scale(direction: vec4f, amount: float32): mat4f">
-			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Matrix4f.ci:168">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Matrix4f.ci:173">
 				<stmt token=".variable" type="typename" kind="static const typename(ref)" value="rcp(val: float32): float32">
 					<init token="?:" type="float32" kind="static const typename(f32)" value="((val &lt; (0) ? -val : val)) &lt; 0.000000 ? (0) : (1) / val">
 						<test token="&lt;" type="bool" kind="static const typename(bool)" value="((val &lt; (0) ? -val : val)) &lt; 0.000000">
@@ -9090,6 +9015,36 @@
 				</stmt>
 			</init>
 		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="add(a: vec2d, b: vec2d): vec2d">
+			<init token="()" type="vec2d" kind="static const typename(val)" value="vec2d(emit(struct(a), struct(b), add.p2d))">
+				<push token="()" type="emit" kind="static const typename(void)" value="emit(struct(a), struct(b), add.p2d)">
+					<push token="()" type="vec2d" kind="static const typename(val)" value="struct(a)">
+						<push token=".variable" type="vec2d" kind="static const typename(val)" value="a">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="()" type="vec2d" kind="static const typename(val)" value="struct(b)">
+						<push token=".variable" type="vec2d" kind="static const typename(val)" value="b">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="." type="emit.p4x" kind="static const typename(val)" value="add.p2d">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="add">
+						</left>
+						<right token=".variable" type="emit.p4x" kind="static const typename(val)" value="p2d">
+						</right>
+					</push>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="emit">
+					</call>
+				</push>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="vec2d">
+					<field token=".variable" type="float64[2]" kind="static typename(arr)" value="data">
+					</field>
+					<field token=".variable" type="typename" kind="static const typename(ref)" value="&lt;?&gt;">
+					</field>
+				</call>
+			</init>
+		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="sub(a: vec2d, b: vec2d): vec2d">
 			<init token="()" type="vec2d" kind="static const typename(val)" value="vec2d(emit(struct(a), struct(b), sub.p2d))">
 				<push token="()" type="emit" kind="static const typename(void)" value="emit(struct(a), struct(b), sub.p2d)">
@@ -9107,6 +9062,156 @@
 						<left token=".variable" type="typename" kind="static const typename(ref)" value="sub">
 						</left>
 						<right token=".variable" type="emit.p4x" kind="static const typename(val)" value="p2d">
+						</right>
+					</push>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="emit">
+					</call>
+				</push>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="vec2d">
+					<field token=".variable" type="float64[2]" kind="static typename(arr)" value="data">
+					</field>
+					<field token=".variable" type="typename" kind="static const typename(ref)" value="&lt;?&gt;">
+					</field>
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="mul(a: vec2d, b: vec2d): vec2d">
+			<init token="()" type="vec2d" kind="static const typename(val)" value="vec2d(emit(struct(a), struct(b), mul.p2d))">
+				<push token="()" type="emit" kind="static const typename(void)" value="emit(struct(a), struct(b), mul.p2d)">
+					<push token="()" type="vec2d" kind="static const typename(val)" value="struct(a)">
+						<push token=".variable" type="vec2d" kind="static const typename(val)" value="a">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="()" type="vec2d" kind="static const typename(val)" value="struct(b)">
+						<push token=".variable" type="vec2d" kind="static const typename(val)" value="b">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="." type="emit.p4x" kind="static const typename(val)" value="mul.p2d">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="mul">
+						</left>
+						<right token=".variable" type="emit.p4x" kind="static const typename(val)" value="p2d">
+						</right>
+					</push>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="emit">
+					</call>
+				</push>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="vec2d">
+					<field token=".variable" type="float64[2]" kind="static typename(arr)" value="data">
+					</field>
+					<field token=".variable" type="typename" kind="static const typename(ref)" value="&lt;?&gt;">
+					</field>
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="div(a: vec2d, b: vec2d): vec2d">
+			<init token="()" type="vec2d" kind="static const typename(val)" value="vec2d(emit(struct(a), struct(b), div.p2d))">
+				<push token="()" type="emit" kind="static const typename(void)" value="emit(struct(a), struct(b), div.p2d)">
+					<push token="()" type="vec2d" kind="static const typename(val)" value="struct(a)">
+						<push token=".variable" type="vec2d" kind="static const typename(val)" value="a">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="()" type="vec2d" kind="static const typename(val)" value="struct(b)">
+						<push token=".variable" type="vec2d" kind="static const typename(val)" value="b">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="." type="emit.p4x" kind="static const typename(val)" value="div.p2d">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="div">
+						</left>
+						<right token=".variable" type="emit.p4x" kind="static const typename(val)" value="p2d">
+						</right>
+					</push>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="emit">
+					</call>
+				</push>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="vec2d">
+					<field token=".variable" type="float64[2]" kind="static typename(arr)" value="data">
+					</field>
+					<field token=".variable" type="typename" kind="static const typename(ref)" value="&lt;?&gt;">
+					</field>
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="min(a: vec2d, b: vec2d): vec2d">
+			<init token="()" type="vec2d" kind="static const typename(val)" value="vec2d(emit(struct(a), struct(b), min.p2d))">
+				<push token="()" type="emit" kind="static const typename(void)" value="emit(struct(a), struct(b), min.p2d)">
+					<push token="()" type="vec2d" kind="static const typename(val)" value="struct(a)">
+						<push token=".variable" type="vec2d" kind="static const typename(val)" value="a">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="()" type="vec2d" kind="static const typename(val)" value="struct(b)">
+						<push token=".variable" type="vec2d" kind="static const typename(val)" value="b">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="." type="emit.p4x" kind="static const typename(val)" value="min.p2d">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="min">
+						</left>
+						<right token=".variable" type="emit.p4x" kind="static const typename(val)" value="p2d">
+						</right>
+					</push>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="emit">
+					</call>
+				</push>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="vec2d">
+					<field token=".variable" type="float64[2]" kind="static typename(arr)" value="data">
+					</field>
+					<field token=".variable" type="typename" kind="static const typename(ref)" value="&lt;?&gt;">
+					</field>
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="max(a: vec2d, b: vec2d): vec2d">
+			<init token="()" type="vec2d" kind="static const typename(val)" value="vec2d(emit(struct(a), struct(b), max.p2d))">
+				<push token="()" type="emit" kind="static const typename(void)" value="emit(struct(a), struct(b), max.p2d)">
+					<push token="()" type="vec2d" kind="static const typename(val)" value="struct(a)">
+						<push token=".variable" type="vec2d" kind="static const typename(val)" value="a">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="()" type="vec2d" kind="static const typename(val)" value="struct(b)">
+						<push token=".variable" type="vec2d" kind="static const typename(val)" value="b">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="." type="emit.p4x" kind="static const typename(val)" value="max.p2d">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="max">
+						</left>
+						<right token=".variable" type="emit.p4x" kind="static const typename(val)" value="p2d">
+						</right>
+					</push>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="emit">
+					</call>
+				</push>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="vec2d">
+					<field token=".variable" type="float64[2]" kind="static typename(arr)" value="data">
+					</field>
+					<field token=".variable" type="typename" kind="static const typename(ref)" value="&lt;?&gt;">
+					</field>
+				</call>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="ceq(a: vec2d, b: vec2d): vec2d">
+			<init token="()" type="vec2d" kind="static const typename(val)" value="vec2d(emit(struct(a), struct(b), ceq.p2d))">
+				<push token="()" type="emit" kind="static const typename(void)" value="emit(struct(a), struct(b), ceq.p2d)">
+					<push token="()" type="vec2d" kind="static const typename(val)" value="struct(a)">
+						<push token=".variable" type="vec2d" kind="static const typename(val)" value="a">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="()" type="vec2d" kind="static const typename(val)" value="struct(b)">
+						<push token=".variable" type="vec2d" kind="static const typename(val)" value="b">
+						</push>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="." type="bool" kind="static const typename(bool)" value="ceq.p2d">
+						<left token=".variable" type="typename" kind="static const typename(ref)" value="ceq">
+						</left>
+						<right token=".variable" type="bool" kind="static const typename(bool)" value="p2d">
 						</right>
 					</push>
 					<call token=".variable" type="function" kind="static const typename(ref)" value="emit">
@@ -9742,6 +9847,21 @@
 				</call>
 			</init>
 		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="equals(str: char[*], with: char[*]): bool">
+			<init token="==" type="bool" kind="static const typename(bool)" value="compare(str, with, caseCmp) == 0">
+				<left token="()" type="int32" kind="static const typename(i32)" value="compare(str, with, caseCmp)">
+					<push token=".variable" type="char[*]" kind="static typename(arr)" value="str">
+					</push>
+					<push token=".variable" type="char[*]" kind="static typename(arr)" value="with">
+					</push>
+					<push token=".variable" type="function" kind="static const typename(ref)" value="caseCmp">
+					</push>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="compare">
+					</call>
+				</left>
+				<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+			</init>
+		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="contains(str: char[*], chr: char): bool">
 			<init token="&gt;=" type="bool" kind="static const typename(bool)" value="indexOf(str, chr) &gt;= 0">
 				<left token="()" type="int32" kind="static const typename(i32)" value="indexOf(str, chr)">
@@ -9772,7 +9892,7 @@
 			</field>
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="append(output: char[], pos: int32, value: char[*]): int32">
-			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:126">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:127">
 				<stmt token="for" type="void" kind="static const typename(void)" stmt="for (i; value[i]; i := i + 1)">
 					<init token=".variable" type="int32" kind="static const typename(i32)" value="i">
 						<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
@@ -9792,7 +9912,7 @@
 							<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
 						</right>
 					</step>
-					<stmt token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:127">
+					<stmt token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:128">
 						<stmt token="if" type="void" kind="static const typename(void)" stmt="if (pos &gt;= (output.length))">
 							<test token="&gt;=" type="bool" kind="static const typename(bool)" value="pos &gt;= (output.length)">
 								<left token=".variable" type="int32" kind="static const typename(i32)" value="pos">
@@ -9806,7 +9926,7 @@
 									</push>
 								</right>
 							</test>
-							<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:128">
+							<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:129">
 								<stmt token="break" type="void" kind="static const typename(void)" stmt="break;" />
 							</then>
 						</stmt>
@@ -9852,7 +9972,7 @@
 							</push>
 						</right>
 					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:135">
+					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:136">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="pos := (output.length - (1));">
 							<expr token=":=" type="int32" kind="static const typename(i32)" value="pos := (output.length - (1))">
 								<left token=".variable" type="int32" kind="static const typename(i32)" value="pos">
@@ -9898,7 +10018,7 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="append(output: char[], pos: int32, sign: char, value: uint64, format: FormatFlags): int32">
-			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:143">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:144">
 				<stmt token=".variable" type="char[]" kind="static typename(arr)" value="whiteSpace">
 					<init token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot; 	
 &quot;" />
@@ -9918,7 +10038,7 @@
 						<right token=".variable" type="bool" kind="static const typename(bool)" value="showSign">
 						</right>
 					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:150">
+					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:151">
 						<stmt token="if" type="void" kind="static const typename(void)" stmt="if ((sign) == 0)">
 							<test token="==" type="bool" kind="static const typename(bool)" value="(sign) == 0">
 								<left token="()" type="int32" kind="static const typename(i32)" value="(sign)">
@@ -9927,7 +10047,7 @@
 								</left>
 								<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 							</test>
-							<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:151">
+							<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:152">
 								<stmt token=";" type="void" kind="static const typename(void)" stmt="sign := &apos;+&apos;;">
 									<expr token=":=" type="char" kind="static const typename(i32)" value="sign := &apos;+&apos;">
 										<left token=".variable" type="char" kind="static const typename(i32)" value="sign">
@@ -9953,7 +10073,7 @@
 						</left>
 						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:157">
+					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:158">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="radix := 10;">
 							<expr token=":=" type="int32" kind="static const typename(i32)" value="radix := 10">
 								<left token=".variable" type="int32" kind="static const typename(i32)" value="radix">
@@ -10030,7 +10150,7 @@
 							</right>
 						</right>
 					</step>
-					<stmt token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:164">
+					<stmt token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:165">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="digits[len := len + 1] := radixDigits[value % (radix)];">
 							<expr token=":=" type="char" kind="static const typename(i32)" value="digits[len := len + 1] := radixDigits[value % (radix)]">
 								<left token="[]" type="char" kind="static const typename(i32)" value="digits[len := len + 1]">
@@ -10068,7 +10188,7 @@
 						</left>
 						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:167">
+					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:168">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="digits[len := len + 1] := &apos;0&apos;;">
 							<expr token=":=" type="char" kind="static const typename(i32)" value="digits[len := len + 1] := &apos;0&apos;">
 								<left token="[]" type="char" kind="static const typename(i32)" value="digits[len := len + 1]">
@@ -10115,7 +10235,7 @@
 						</left>
 						<right token=".literal" type="char" kind="static const typename(i32)" value="&apos;&apos;" />
 					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:174">
+					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:175">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="padChr := &apos; &apos;;">
 							<expr token=":=" type="char" kind="static const typename(i32)" value="padChr := &apos; &apos;">
 								<left token=".variable" type="char" kind="static const typename(i32)" value="padChr">
@@ -10133,7 +10253,7 @@
 						</left>
 						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:179">
+					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:180">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="maxLen := maxLen - 1;">
 							<expr token=":=" type="int32" kind="static const typename(i32)" value="maxLen := maxLen - 1">
 								<left token=".variable" type="int32" kind="static const typename(i32)" value="maxLen">
@@ -10162,7 +10282,7 @@
 								<call token=".variable" type="function" kind="static const typename(ref)" value="contains">
 								</call>
 							</test>
-							<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:181">
+							<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:182">
 								<stmt token="for" type="void" kind="static const typename(void)" stmt="for ( ; maxLen &gt; 0; maxLen := maxLen - 1)">
 									<test token="&gt;" type="bool" kind="static const typename(bool)" value="maxLen &gt; 0">
 										<left token=".variable" type="int32" kind="static const typename(i32)" value="maxLen">
@@ -10178,7 +10298,7 @@
 											<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
 										</right>
 									</step>
-									<stmt token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:183">
+									<stmt token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:184">
 										<stmt token=";" type="void" kind="static const typename(void)" stmt="assert(pos &lt; (output.length));">
 											<expr token="()" type="void" kind="static const typename(void)" value="assert(pos &lt; (output.length))">
 												<push token="&lt;" type="bool" kind="static const typename(bool)" value="pos &lt; (output.length)">
@@ -10282,7 +10402,7 @@
 							<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
 						</right>
 					</step>
-					<stmt token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:195">
+					<stmt token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:196">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="assert(pos &lt; (output.length));">
 							<expr token="()" type="void" kind="static const typename(void)" value="assert(pos &lt; (output.length))">
 								<push token="&lt;" type="bool" kind="static const typename(bool)" value="pos &lt; (output.length)">
@@ -10345,7 +10465,7 @@
 							<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
 						</right>
 					</step>
-					<stmt token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:202">
+					<stmt token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:203">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="assert(i &lt; (output.length));">
 							<expr token="()" type="void" kind="static const typename(void)" value="assert(i &lt; (output.length))">
 								<push token="&lt;" type="bool" kind="static const typename(bool)" value="i &lt; (output.length)">
@@ -10410,7 +10530,7 @@
 							</push>
 						</right>
 					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:208">
+					<then token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:209">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="pos := (output.length - (1));">
 							<expr token=":=" type="int32" kind="static const typename(i32)" value="pos := (output.length - (1))">
 								<left token=".variable" type="int32" kind="static const typename(i32)" value="pos">
@@ -10736,7 +10856,7 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="append(output: char[], pos: int32, value: float64, format: FormatFlags): int32">
-			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:233">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:234">
 				<stmt token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatInt">
 					<init token="{}" type="FormatFlags" kind="static const typename(val)">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatInt.showSign := format.showSign;">
@@ -10960,6 +11080,8 @@
 									</field>
 									<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 									</field>
+									<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+									</field>
 									<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 									</field>
 									<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -11080,6 +11202,8 @@
 								<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 								</field>
 								<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+								</field>
+								<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 								</field>
 								<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 								</field>
@@ -11277,7 +11401,7 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="append(output: char[], pos: int32, value: int32): int32">
-			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:261">
+			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/string.ci:262">
 				<stmt token=".variable" type="FormatFlags" kind="static const typename(val)" value="format">
 					<init token="{}" type="FormatFlags" kind="static const typename(val)">
 						<stmt token=":=" type="void" kind="static const typename(void)" value="format.showSign := false">
@@ -21504,6 +21628,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -21625,6 +21751,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -21745,6 +21873,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -21869,6 +21999,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -21991,6 +22123,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -22115,6 +22249,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -22236,6 +22372,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -22356,6 +22494,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -22480,6 +22620,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -22601,6 +22743,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -22721,6 +22865,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -22845,6 +22991,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -22966,6 +23114,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -23086,6 +23236,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -23210,6 +23362,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -23331,6 +23485,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -23451,6 +23607,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -23575,6 +23733,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -23696,6 +23856,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -23819,6 +23981,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -23941,6 +24105,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -24062,6 +24228,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -24186,6 +24354,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -24308,6 +24478,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -24432,6 +24604,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -24554,6 +24728,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -24678,6 +24854,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -24801,6 +24979,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -24920,6 +25100,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -25050,6 +25232,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -25169,6 +25353,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -25299,6 +25485,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -25418,6 +25606,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -25540,6 +25730,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -25661,6 +25853,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -25792,6 +25986,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -25918,6 +26114,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -26041,6 +26239,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -26167,6 +26367,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -26292,6 +26494,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -26420,6 +26624,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -26547,6 +26753,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -26677,6 +26885,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -26798,6 +27008,8 @@
 							</field>
 							<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 							</field>
+							<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+							</field>
 							<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 							</field>
 							<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -26917,6 +27129,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -27039,6 +27253,8 @@
 							</field>
 							<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 							</field>
+							<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+							</field>
 							<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 							</field>
 							<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -27158,6 +27374,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -27280,6 +27498,8 @@
 							</field>
 							<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 							</field>
+							<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+							</field>
 							<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 							</field>
 							<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -27399,6 +27619,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -27521,6 +27743,8 @@
 							</field>
 							<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 							</field>
+							<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+							</field>
 							<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 							</field>
 							<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -27640,6 +27864,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -27762,6 +27988,8 @@
 							</field>
 							<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 							</field>
+							<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+							</field>
 							<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 							</field>
 							<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -27881,6 +28109,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -28003,6 +28233,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -28123,6 +28355,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -28247,6 +28481,8 @@
 							<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 							</field>
 							<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+							</field>
+							<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 							</field>
 							<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 							</field>
@@ -28374,6 +28610,8 @@
 							</field>
 							<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 							</field>
+							<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+							</field>
 							<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 							</field>
 							<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -28498,6 +28736,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -28619,6 +28859,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -28744,6 +28986,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -28866,6 +29110,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -28987,6 +29233,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -29112,6 +29360,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -29236,6 +29486,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -29358,6 +29610,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -29479,6 +29733,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -29604,6 +29860,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -29728,6 +29986,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -29850,6 +30110,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -29971,6 +30233,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -30096,6 +30360,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -30218,6 +30484,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -30339,6 +30607,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -30464,6 +30734,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -30588,6 +30860,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -30710,6 +30984,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -30831,6 +31107,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
@@ -30956,6 +31234,8 @@
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
 						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
+						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64, a1: float64): float64">
@@ -31079,6 +31359,8 @@
 						<field token=".variable" type="function" kind="static const typename(ref)" value="max(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="function" kind="static const typename(ref)" value="sum(data: float64[]): float64">
+						</field>
+						<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 						</field>
 						<field token=".variable" type="typename" kind="static const typename(ref)" value="eval(x: float64, a0: float64): float64">
 						</field>

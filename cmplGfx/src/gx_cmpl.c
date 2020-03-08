@@ -795,7 +795,7 @@ static vmError surf_cMatSurf(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_image_gradient = "void gradient(Image image, const Rect roi&, int32 type, bool repeat, uint32 colors[])";
+static const char *proto_image_gradient = "void gradient(Image image, const Rect roi&, int32 type, bool repeat, uint32 colors...)";
 static vmError surf_gradient(nfcContext ctx) {
 	GxImage surf = nextValue(ctx).ref;
 	GxRect rect = nextValue(ctx).ref;

@@ -14,6 +14,7 @@ TOKEN_DEF(OPER_fnc, 0x0f, 2, "()")                  // a(x): function call, cast
 TOKEN_DEF(OPER_idx, 0x0f, 2, "[]")                  // a[i]: index
 TOKEN_DEF(OPER_dot, 0x0f, 2, ".")                   // a.b:  member
 
+TOKEN_DEF(PNCT_dot3, 0x1e, 1, "...")                // ...a, triple dot
 TOKEN_DEF(OPER_adr, 0x1e, 1, "&")                   // & a:  address of
 TOKEN_DEF(OPER_pls, 0x1e, 1, "+")                   // + a:  unary plus
 TOKEN_DEF(OPER_mns, 0x1e, 1, "-")                   // - a:  unary minus
@@ -83,7 +84,6 @@ TOKEN_DEF(RIGHT_sqr, 0x00, 0, "]")                  // Right square bracket
 TOKEN_DEF(RIGHT_crl, 0x00, 0, "}")                  // Right curly bracket
 TOKEN_DEF(PNCT_qst,  0x00, 0, "?")                  // question mark
 TOKEN_DEF(PNCT_cln,  0x00, 0, ":")                  // colon
-TOKEN_DEF(PNCT_dot3, 0x00, 0, "...")                // triple dot
 TOKEN_DEF(TOKEN_doc, 0x00, 0, "/***/")              // doc comment
 
 TOKEN_DEF(ELSE_kwd, 0x00, 0, "else")

@@ -282,6 +282,7 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 		case OPER_idx:        // '[]'
 
 		case OPER_adr:        // '&'
+		case PNCT_dot3:       // '...'
 		case OPER_pls:        // '+'
 		case OPER_mns:        // '-'
 		case OPER_cmt:        // '~'
@@ -534,42 +535,43 @@ static void jsonDumpAst(FILE *out, const char **esc, astn ast, const char *kind,
 			break;
 		}
 
-		case OPER_dot:		// '.'
-		case OPER_idx:		// '[]'
+		case OPER_dot:      // '.'
+		case OPER_idx:      // '[]'
 
-		case OPER_adr:		// '&'
-		case OPER_pls:		// '+'
-		case OPER_mns:		// '-'
-		case OPER_cmt:		// '~'
-		case OPER_not:		// '!'
+		case OPER_adr:      // '&'
+		case PNCT_dot3:     // '...'
+		case OPER_pls:      // '+'
+		case OPER_mns:      // '-'
+		case OPER_cmt:      // '~'
+		case OPER_not:      // '!'
 
-		case OPER_add:		// '+'
-		case OPER_sub:		// '-'
-		case OPER_mul:		// '*'
-		case OPER_div:		// '/'
-		case OPER_mod:		// '%'
+		case OPER_add:      // '+'
+		case OPER_sub:      // '-'
+		case OPER_mul:      // '*'
+		case OPER_div:      // '/'
+		case OPER_mod:      // '%'
 
-		case OPER_shl:		// '>>'
-		case OPER_shr:		// '<<'
-		case OPER_and:		// '&'
-		case OPER_ior:		// '|'
-		case OPER_xor:		// '^'
+		case OPER_shl:      // '>>'
+		case OPER_shr:      // '<<'
+		case OPER_and:      // '&'
+		case OPER_ior:      // '|'
+		case OPER_xor:      // '^'
 
-		case OPER_ceq:		// '=='
-		case OPER_cne:		// '!='
-		case OPER_clt:		// '<'
-		case OPER_cle:		// '<='
-		case OPER_cgt:		// '>'
-		case OPER_cge:		// '>='
+		case OPER_ceq:      // '=='
+		case OPER_cne:      // '!='
+		case OPER_clt:      // '<'
+		case OPER_cle:      // '<='
+		case OPER_cgt:      // '>'
+		case OPER_cge:      // '>='
 
-		case OPER_all:		// '&&'
-		case OPER_any:		// '||'
-		case OPER_sel:		// '?:'
+		case OPER_all:      // '&&'
+		case OPER_any:      // '||'
+		case OPER_sel:      // '?:'
 
-		case OPER_com:		// ','
+		case OPER_com:      // ','
 
-		case INIT_set:		// '='
-		case ASGN_set:		// '='
+		case INIT_set:      // '='
+		case ASGN_set:      // '='
 			jsonDumpAst(out, esc, ast->op.test, JSON_KEY_TEST, indent + 1);
 			jsonDumpAst(out, esc, ast->op.lhso, JSON_KEY_LHSO, indent + 1);
 			jsonDumpAst(out, esc, ast->op.rhso, JSON_KEY_RHSO, indent + 1);

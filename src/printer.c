@@ -843,6 +843,7 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 			break;
 
 		case OPER_adr:		// '&'
+		case PNCT_dot3:		// '...'
 		case OPER_pls:		// '+'
 		case OPER_mns:		// '-'
 		case OPER_cmt:		// '~'

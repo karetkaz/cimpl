@@ -296,6 +296,7 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 		}
 
 		case OPER_adr:
+		case PNCT_dot3:
 		case OPER_idx:
 			return CAST_any;
 
@@ -778,6 +779,11 @@ symn linkOf(astn ast, int follow) {
 
 	if (ast->kind == OPER_adr) {
 		// &buff => buff
+		return linkOf(ast->op.rhso, 0);
+	}
+
+	if (ast->kind == PNCT_dot3) {
+		// ...buff => buff
 		return linkOf(ast->op.rhso, 0);
 	}
 

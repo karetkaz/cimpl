@@ -105,3 +105,22 @@ inline normalize(const vec4f v&) = div(v, vec4f(length(v)));
 
 /// Evaluate as a polynomial in point x
 inline eval(const vec4f v&, float32 x) = float32((((v.w * x + v.z) * x + v.y) * x) + v.x);
+
+/* TODO: leftovers
+inline add(float32 a, vec4f b) = add(vec4f(a), b);
+inline add(vec4f a, float32 b) = add(a, vec4f(b));
+inline sub(float32 a, vec4f b) = sub(vec4f(a), b);
+inline sub(vec4f a, float32 b) = sub(a, vec4f(b));
+inline mul(float32 a, vec4f b) = mul(vec4f(a), b);
+inline mul(vec4f a, float32 b) = mul(a, vec4f(b));
+inline div(float32 a, vec4f b) = div(vec4f(a), b);
+inline div(vec4f a, float32 b) = div(a, vec4f(b));
+
+inline ceq(vec4f x, vec4f y) = emit(ceq.p4f, vec4f(y), vec4f(x));
+inline mad(vec4f a, vec4f b, vec4f c) = emit(vec4f, add.p4f, mul.p4f, vec4f(a), vec4f(b), vec4f(c));	// a * b + c
+
+inline lerp(float32 t, vec4f lhs, vec4f rhs) = vec4f(Math.lerp(t, lhs.x, rhs.x), Math.lerp(t, lhs.y, rhs.y), Math.lerp(t, lhs.z, rhs.z), Math.lerp(t, lhs.w, rhs.w));
+
+inline float32(vec4f &vec) = float32(vec.w);
+inline bool(vec4f vec) = bool(vec.x && vec.y && vec.z && vec.w);
+*/

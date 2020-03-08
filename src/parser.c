@@ -650,6 +650,7 @@ static astn expression(ccContext cc, int comma) {
 
 			case OPER_not:		// '!'
 			case OPER_cmt:		// '~'
+			case PNCT_dot3:		// '...'
 				if (!unary) {
 					error(cc->rt, ast->file, ast->line, ERR_SYNTAX_ERR_BEFORE, ast);
 				}

@@ -398,6 +398,9 @@ inline false = 0 != 0;
 inline min(int a, int b) = a < b ? a : b;
 inline max(float32 a, float32 b) = a > b ? a : b;
 ```
+- the right hand side can also use local variables if static is not used
+- static should force the right side not to use local variables
+- const should force the right side to be constant
 
 ## Variables
 A [Variable](https://en.wikipedia.org/wiki/Variable_(computer_science)) is a symbolic name associated with a value, this value may be changed at runtime.

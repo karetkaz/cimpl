@@ -313,7 +313,7 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 					hasCast += 1;
 				}
 
-				if ((parameter->kind & ATTR_varg) != 0) {
+				if ((parameter->kind & ATTR_varg) != 0 && argument->kind != PNCT_dot3) {
 					dieif(castOf(parameter->type) != CAST_arr, ERR_INTERNAL_ERROR);
 					dieif(parameter->next != NULL, ERR_INTERNAL_ERROR);
 					argument = argument->next;
@@ -733,6 +733,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			return type;
 
 		case OPER_adr:		// '&'
+		case PNCT_dot3:		// '...'
 		case OPER_pls:		// '+'
 		case OPER_mns:		// '-'
 		case OPER_cmt:		// '~'

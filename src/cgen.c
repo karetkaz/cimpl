@@ -766,7 +766,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 			argc += 1;
 
 			// advance
-			if ((prm->kind & ATTR_varg) != 0) {
+			if ((prm->kind & ATTR_varg) != 0 && (arg == NULL || arg->kind != PNCT_dot3)) {
 				vaElemType = prm->type->type;
 				vaList = arg;
 				arg = NULL;
@@ -850,7 +850,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 		astn arg = prm->init;
 		ccKind typCast = refCast(prm->type);
 
-		if ((prm->kind & ATTR_varg) != 0) {
+		if ((prm->kind & ATTR_varg) != 0 && (arg == NULL || arg->kind != PNCT_dot3)) {
 			size_t vaOffset = stkOffset(rt, 0);
 			if (!emitOffs(rt, vaLength)) {
 				return CAST_any;
@@ -901,6 +901,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 			case OPER_dot:
 			case OPER_idx:
 			case OPER_adr:
+			case PNCT_dot3:
 				// if argument is already a variable, do not create a new one
 				continue;
 
@@ -974,6 +975,15 @@ static ccKind genCall(ccContext cc, astn ast) {
 		}
 
 		astn arg = prm->init;
+		if ((prm->kind & ATTR_varg) != 0 && arg && arg->kind == PNCT_dot3) {
+			// drop `...`
+			arg = arg->op.rhso;
+		}
+		if (castOf(prm) == CAST_ref && arg && arg->kind == OPER_adr) {
+			// drop `&`
+			arg = arg->op.rhso;
+		}
+
 		// allocate space for uninitialized arguments
 		if (arg == NULL || arg->kind == TOKEN_any) {
 			if (prm->name && *prm->name == '.') {
@@ -1737,8 +1747,13 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			}
 			break;
 
-		case OPER_pls:		// '+'
 		case OPER_adr:		// '&'
+		case PNCT_dot3:		// '...'
+			// `&` and `...` may be used only in arguments, raise error if used somewhere else
+			error(rt, ast->file, ast->line, ERR_INVALID_OPERATOR, ast, cc->type_ptr, ast->type);
+			// fall through
+
+		case OPER_pls:		// '+'
 			if (!(got = genAst(cc, ast->op.rhso, get))) {
 				traceAst(ast);
 				return CAST_any;

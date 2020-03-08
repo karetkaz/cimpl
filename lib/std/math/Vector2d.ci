@@ -18,8 +18,26 @@ vec2d vec2d(float64 x, float64 y) {
 	};
 }
 
+/// Component wise add the two vectors.
+inline add(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), add.p2d));
+
 /// Component wise subtract the two vectors.
 inline sub(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), sub.p2d));
 
-/// Dot product
+/// Component wise multiply the two vectors.
+inline mul(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), mul.p2d));
+
+/// Component wise divide the two vectors.
+inline div(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), div.p2d));
+
+/// Component wise select the minimum from the two vectors.
+inline min(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), min.p2d));
+
+/// Component wise select the maximum from the two vectors.
+inline max(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), max.p2d));
+
+/// Compare the two vectors for equality.
+inline ceq(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), ceq.p2d));
+
+/// Dot product of thw two vectors
 inline dot(const vec2d a&, const vec2d b&) = a.x * b.x + a.y * b.y;
