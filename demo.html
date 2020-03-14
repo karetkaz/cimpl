@@ -31,25 +31,26 @@
 	<link rel="stylesheet" href="extras/demo/style.css">
 
 </head>
-<body class="dark tool-bar left-bar left-pin editor output">
-<div id="main-toolbar" class="toolbar">
-	<span class="left icon" title="Toggle show menu" onclick="setStyle(body, '!left-bar', 'editor');">☰</span>
-	<span class="left icon" title="Execute script (Ctrl + Enter)" onclick="onExecClick();">►</span>
+<body class="dark tool-bar">
 
-	<span class="editor right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
-	<span class="output-only right icon bold" title="Toggle show editor" onclick="setStyle(body, '!editor', 'output');">⬒</span>
-	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
-	<span class="output-only right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
-
-	<!-- filename -->
-	<span class="filename" title="Execute action (Shift + Enter)
-	'#args' Execute script
-	'?text' Search (Ctrl + f)
-	':line' Go to line (Ctrl + g)
-	'-' Fold all lines (Ctrl + Shift + -)
-	'+' Unfold all lines (Ctrl + Shift + +)">
-	<input id="edtFileName" placeholder="#execute; ?search; :goto; -fold; +unfold"></input></span>
+<div id="bottom-sidebar" class="sidebar">
+	<div id="output-toolbar" class="toolbar">
+		<select class="output left" id="selOutput" onchange="void(0);" onclick="event.stopPropagation()">
+			<option value="Output-0">Output</option>
+			<!-- <option value="Search-0">Search</option> -->
+		</select>
+		<span class="no-output left" onclick="setStyle(body, 'output');">Output</span>
+		<!-- <span class="no-output left" onclick="setStyle(body, 'output');">Search</span> -->
+		<span class="output left icon bold" onclick="editOutput();" title="Open output in editor">💾</span>
+		<span class="output left icon bold" title="Clear output" onclick="terminal.clear();">❌</span>
+		<!-- <span class="right icon" title="Full screen output" onclick="setStyle(body, '-editor', 'output');">⬒</span> -->
+		<span class="output right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
+		<span class="output right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
+		<p/>
+	</div>
+	<pre id="output"></pre>
 </div>
+<div id="left-overlay" class="overlay" onclick="setStyle(body, '-left-bar');"></div>
 <div id="left-sidebar" class="sidebar">
 	<div class="collapsed submenu">
 	<li onclick="setStyle(parentElement, '!collapsed');">File
@@ -141,7 +142,7 @@
 			<li onclick="completeAction('!zoom:', '100');">Zoom</li>
 			<li id="wrap-output" onclick="setStyle(body, '!wrap-output');">Wrap output</li>
 			<li id="dark-theme" onclick="setStyle(body, '!dark');">Dark theme</li>
-			<li id="pin-left" onclick="setStyle(body, '!left-pin');">Pin left sidebar</li>
+			<li id="pin-left" onclick="setStyle(body, '!left-pin');">Pin sidebar</li>
 			<li id="show-output" onclick="setStyle(body, '!output');">Show output</li>
 			<li id="show-editor" onclick="setStyle(body, '!editor');">Show editor</li>
 			<li id="show-toolbar" onclick="setStyle(body, '!tool-bar');">Show toolbar</li>
@@ -150,7 +151,7 @@
 		<!--<div class=""><li onclick="alert('TODO')">Help</li></div>-->
 	</ul>
 	<hr></div>
-	<div class="collapsed submenu">
+<div class="collapsed submenu">
 	<li onclick="setStyle(parentElement, '!collapsed');">Execute
 	<button class="right" onclick="execute(); event.stopPropagation();" title="Compiler usage help">?</button>
 	<button class="right" onclick="execute('-api/A/m', {addLibs: true}); event.stopPropagation();" title="Compiler api">ƒ</button>
@@ -165,7 +166,7 @@
 		<li onclick="execute('-profile/t/p/G/M -api/A/m/d/p -asm/a/n/s -ast -doc -use');">Profile & full dump</li>
 	</ul></li>
 	<hr></div>
-	<div class="submenu">
+<div class="submenu">
 	<li onclick="setStyle(parentElement, '!collapsed');">Workspace<span class="" id="workspaceName"></span>
 	<button class="right" onclick="event.stopPropagation(); setStyle(parentElement.parentElement, '-collapsed'); params.update('folder');" title="Refresh file list">⟳</button>
 	<!--<button class="right" onclick="event.stopPropagation(); downloadFiles();">📥</button>-->
@@ -180,33 +181,34 @@
 		<li onclick="params.update({folder: '**'});" title="Show files including the /lib/ folder">Show all</li>
 	</ul></div>
 </div>
+<div id="right-overlay" class="overlay" onclick="setStyle(body, '-right-bar');"></div>
 <div id="right-sidebar" class="sidebar">
 	<li id="show-left" onclick="setStyle(body, '!left-bar');">Show left sidebar</li>
 	<li id="pin-right" onclick="setStyle(body, '!right-pin');">Pin right sidebar</li>
 	<li id="show-right" onclick="setStyle(body, '!right-bar');">Show right sidebar</li>
 </div>
-<div id="bottom-sidebar" class="sidebar">
-	<div id="output-toolbar" class="toolbar">
-		<select class="output left" id="selOutput" onchange="void(0);" onclick="event.stopPropagation()">
-			<option value="Output-0">Output</option>
-			<!-- <option value="Search-0">Search</option> -->
-		</select>
-		<span class="no-output left" onclick="setStyle(body, 'output');">Output</span>
-		<!-- <span class="no-output left" onclick="setStyle(body, 'output');">Search</span> -->
-		<span class="output left icon bold" onclick="editOutput();" title="Open output in editor">💾</span>
-		<span class="output left icon bold" title="Clear output" onclick="terminal.clear();">❌</span>
-		<!-- <span class="right icon" title="Full screen output" onclick="setStyle(body, '-editor', 'output');">⬒</span> -->
-		<span class="output right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
-		<span class="output right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
-		<p/>
-	</div>
-	<pre id="output"></pre>
-</div>
 <div id="editor-panel">
 	<textarea id="input"></textarea>
 </div>
-<div id="left-overlay" class="overlay" onclick="setStyle(body, '-left-bar');"></div>
-<div id="right-overlay" class="overlay" onclick="setStyle(body, '-right-bar');"></div>
+<div id="main-toolbar" class="toolbar">
+	<span class="left icon" title="Toggle show menu" onclick="setStyle(body, '!left-bar', 'editor');">☰</span>
+	<span class="left icon" title="Execute script (Ctrl + Enter)" onclick="onExecClick();">►</span>
+
+	<span class="canvas right icon" title="Stop execution" onclick="showCanvas(false);">❌</span>
+	<span class="canvas right icon" title="Toggle show editor" onclick="setStyle(body, '!editor', 'output');">⬒</span>
+	<span class="canvas-gone right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
+	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
+	<span class="output-only right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
+
+	<!-- filename -->
+	<span class="filename" title="Execute action (Shift + Enter)
+	'#args' Execute script
+	'?text' Search (Ctrl + f)
+	':line' Go to line (Ctrl + g)
+	'-' Fold all lines (Ctrl + Shift + -)
+	'+' Unfold all lines (Ctrl + Shift + +)">
+	<input id="edtFileName" placeholder="#execute; ?search; :goto; -fold; +unfold"></input></span>
+</div>
 
 <script type="text/javascript">
 function onExecClick() {

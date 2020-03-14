@@ -156,24 +156,47 @@ let params = JsArgs('#', function (params, changes) {
 		}
 
 		// custom layout, only after loading
-		let isInline = false;
-		if (params.show != null) {
-			let style = params.show;
-			switch (style){
-				case "inline":
-					isInline = true;
-					style = "editor";
-			}
-			setStyle(document.body, '-left-bar', '-right-bar', '-editor', '-output', style);
-		}
+		switch (params.show || 'auto') {
+			default:
+			case 'auto':
+				if (!('ontouchstart' in document.documentElement)) {
+					setStyle(document.body, 'editor', 'left-pin', 'left-bar');
+					editor.setSize('100%', '100%');
+					break;
+				}
+				// fall trough: using mobile
 
-		if (isInline) {
-			setStyle(document.body, 'autoheight', '-bottom-bar');
-			editor.setOption("viewportMargin", Infinity);
-		} else {
-			editor.setSize('100%', '100%');
-			editor.focus();
+			case 'mobile':
+				if (params.content == null && params.file == null) {
+					setStyle(document.body, 'editor', 'left-bar');
+				} else {
+					setStyle(document.body, 'editor');
+				}
+				document.body.style.fontSize = '1.2em';
+				editor.setSize('100%', '100%');
+				break;
+
+			case "embedded":
+				setStyle(document.body, 'autoheight', 'editor');
+				editor.setOption("viewportMargin", Infinity);
+				break;
+
+			case 'editor':
+				setStyle(document.body, 'editor');
+				editor.setSize('100%', '100%');
+				break;
+
+			case 'normal':
+				setStyle(document.body, 'editor', 'left-pin', 'left-bar');
+				editor.setSize('100%', '100%');
+				break;
+
+			case 'full':
+				setStyle(document.body, 'editor', 'output', 'left-pin', 'left-bar', 'bottom-bar');
+				editor.setSize('100%', '100%');
+				break;
 		}
+		editor.focus();
 
 		if (params.workspace != null || params.project != null) {
 			// do not show workspaces if a project or workspace is loaded

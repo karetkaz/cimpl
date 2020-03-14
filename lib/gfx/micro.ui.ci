@@ -32,7 +32,6 @@ struct MouseEvent {
 }
 
 struct View: object {
-	const char text[*];
 	const int height = 0;
 	const int group = 0;
 	bool enabled = true;
@@ -46,6 +45,7 @@ struct View: object {
 }
 
 struct Button: View {
+	const char text[*];
 	char value[*] = null;
 	/* FIXME: do the override, use this method as default initializer
 	// TODO: override or overload: bool onClick(Button this) { ??? }
@@ -58,6 +58,7 @@ struct Button: View {
 }
 
 struct Switch: View {
+	const char text[*];
 	const char on[*] = "on";
 	const char off[*] = "off";
 
@@ -70,6 +71,7 @@ struct Switch: View {
 }
 
 struct Slider: View {
+	const char text[*];
 	int value = 0;
 	const int minimum = 0;
 	const int maximum = -1u >> 1;
@@ -80,20 +82,20 @@ struct Slider: View {
 	}// */
 }
 
-struct ColorPicker: View {
-	const float lum = 1f;
-	argb value = argb(0);
-	void onUpdate(ColorPicker this, argb value) = null;/* {
-		this.value = value;
-	}// */
-}
-
 struct Histogram: View {
 	const Image image;
 	const bool lines = false;
 	uint32 data[256] = null;   // FIXME: this should be not possible
 	void onUpdate(Histogram this, int idx, int value) = null;/* {
 		this.data[idx] = uint32(argb(idx, value, value, value));
+	}// */
+}
+
+struct ColorPicker: View {
+	const float lum = 1f;
+	argb value = argb(0);
+	void onUpdate(ColorPicker this, argb value) = null;/* {
+		this.value = value;
 	}// */
 }
 
@@ -404,7 +406,7 @@ bool onEvent(View this, const MouseEvent event&, const Rect rect&) {
 	return false;
 }
 
-bool onMeasure(View this, Rect rect&, const Style style&) {
+void onMeasure(View this, Rect rect&, const Style style&) {
 	// FIXME: dispatch click event using inheritance and override
 	if (ColorPicker item = this.as(ColorPicker)) {
 		if (item.height == 0) {
@@ -593,7 +595,6 @@ static View active(const Layout layout&) {
 }
 
 static void measure(Layout layout&) {
-	// debug("measure");
 	int bottom = layout.rect.y;
 	for (int i = 0; i < layout.items; i += 1) {
 		Rect rect& = layout.rects[i];
@@ -640,6 +641,7 @@ static void draw(Layout layout&) {
 		}
 
 		int pos = 0;
+		char text[*] = null;
 		char value[256] = {};
 		value[0] = 0;
 		if (ColorPicker item = view.as(ColorPicker)) {
@@ -660,6 +662,7 @@ static void draw(Layout layout&) {
 			}
 		}
 		else if (Slider item = view.as(Slider)) {
+			text = item.text;
 			if (item.divisor != 1) {
 				pos = value.append(pos, item.valFlt(), flagsFlt);
 			} else {
@@ -667,6 +670,7 @@ static void draw(Layout layout&) {
 			}
 		}
 		else if (Switch item = view.as(Switch)) {
+			text = item.text;
 			if (item.checked) {
 				pos = value.append(pos, item.on);
 			} else {
@@ -674,6 +678,7 @@ static void draw(Layout layout&) {
 			}
 		}
 		else if (Button item = view.as(Button)) {
+			text = item.text;
 			if (item.value != null) {
 				pos = value.append(pos, item.value);
 			}
@@ -687,12 +692,12 @@ static void draw(Layout layout&) {
 		if (valueRect.w > layout.rect.w - 2 * p) {
 			valueRect.w = layout.rect.w - 2 * p;
 		}
-		if (view.text != null) {
+		if (text != null) {
 			Rect textRect = rect;
 			textRect.x += p;
 			textRect.y += p;
 			textRect.w -= valueRect.w + 3 * p;
-			layout.offs.drawText(textRect, layout.style.font, view.text, layout.style.textColor);
+			layout.offs.drawText(textRect, layout.style.font, text, layout.style.textColor);
 		}
 
 		valueRect.h = rect.h;
@@ -723,64 +728,27 @@ static void draw(Layout layout&) {
 		layout.draw();
 		return true;
 	}
+	if (action == Gui.WINDOW_ENTER) {
+		// do not process event
+		return false;
+	}
+	if (action == Gui.WINDOW_LEAVE) {
+		// do not process event
+		return false;
+	}
 
 	if (action == Gui.FINGER_PRESS) {
-		// translate to mouse event
-		action = Gui.MOUSE_PRESS;
-		button = -1;
+		// finger press results also a mouse event
+		// skip the finger event
+		return false;
 	}
 	if (action == Gui.FINGER_MOTION) {
 		// translate to mouse event
 		action = Gui.MOUSE_MOTION;
 	}
 	if (action == Gui.FINGER_RELEASE) {
-		// translate to mouse event
-		action = Gui.MOUSE_RELEASE;
-	}
-
-	if (action == Gui.KEY_PRESS) {
-		if (View view = layout.active()) {
-			KeyEvent event = {
-				release: false;
-				isShift: isShift;
-				isCtrl: isCtrl;
-				repeat: 0;
-				key: button;
-			};
-			if (view.onEvent(event)) {
-				return true;
-			}
-		}
-		if (button == '\t' || button == '\r') {
-			// Tab, Enter: select prev or next control.
-			return layout.select(isShift);
-		}
-		if (button == '[' || button == ']') {
-			// hide, show controls
-			layout.visible = !layout.visible;
-			return true;
-		}
-		if (button == 8 && isShift) {
-			for (int i = 0; i < layout.items; i += 1) {
-				layout.views[i].onReset();
-			}
-			return true;
-		}
-		return false;
-	}
-	if (action == Gui.KEY_RELEASE) {
-		if (View view = layout.active()) {
-			KeyEvent event = {
-				release: true;
-				isShift: isShift;
-				isCtrl: isCtrl;
-				repeat: 0;
-				key: button;
-			};
-			if (view.onEvent(event)) {
-				return true;
-			}
-		}
+		// finger release results also a mouse event
+		// skip the finger event
 		return false;
 	}
 
@@ -896,12 +864,49 @@ static void draw(Layout layout&) {
 		return result;
 	}
 
-	if (action == Gui.WINDOW_ENTER) {
-		// process event
+	if (action == Gui.KEY_PRESS) {
+		if (View view = layout.active()) {
+			KeyEvent event = {
+				release: false;
+				isShift: isShift;
+				isCtrl: isCtrl;
+				repeat: 0;
+				key: button;
+			};
+			if (view.onEvent(event)) {
+				return true;
+			}
+		}
+		if (button == '\t' || button == '\r') {
+			// Tab, Enter: select prev or next control.
+			return layout.select(isShift);
+		}
+		if (button == '[' || button == ']') {
+			// hide, show controls
+			layout.visible = !layout.visible;
+			return true;
+		}
+		if (button == 8 && isShift) {
+			for (int i = 0; i < layout.items; i += 1) {
+				layout.views[i].onReset();
+			}
+			return true;
+		}
 		return false;
 	}
-	if (action == Gui.WINDOW_LEAVE) {
-		// process event
+	if (action == Gui.KEY_RELEASE) {
+		if (View view = layout.active()) {
+			KeyEvent event = {
+				release: true;
+				isShift: isShift;
+				isCtrl: isCtrl;
+				repeat: 0;
+				key: button;
+			};
+			if (view.onEvent(event)) {
+				return true;
+			}
+		}
 		return false;
 	}
 

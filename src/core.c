@@ -109,8 +109,9 @@ static const char *const object_cast = "pointer as(object obj, typename type)";
 static vmError objectHelpers(nfcContext ctx) {
 	rtContext rt = ctx->rt;
 	if (ctx->proto == object_create) {
-		symn sym = rtLookup(rt, argref(ctx, 0), KIND_typ);
-		if (sym == NULL || !isObjectType(sym)) {
+		size_t offs = argref(ctx, 0);
+		symn sym = rtLookup(rt, offs, KIND_typ);
+		if (sym == NULL || sym->offs != offs || !isObjectType(sym)) {
 			// invalid type to allocate
 			return nativeCallError;
 		}
@@ -126,10 +127,11 @@ static vmError objectHelpers(nfcContext ctx) {
 	}
 
 	if (ctx->proto == object_cast) {
-		symn sym = rtLookup(rt, argref(ctx, 0 * vm_ref_size), KIND_typ);
+		size_t offs = argref(ctx, 0 * vm_ref_size);
+		symn sym = rtLookup(rt, offs, KIND_typ);
 		void *obj = vmPointer(rt, argref(ctx, 1 * vm_ref_size));
-		if (sym == NULL || !isObjectType(sym)) {
-			// invalid type to allocate
+		if (sym == NULL || sym->offs != offs || !isObjectType(sym)) {
+			// invalid type to cast as
 			return nativeCallError;
 		}
 		if (obj == NULL) {
@@ -1076,6 +1078,7 @@ ccContext ccInit(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)) {
 	cc->genGlobals = 0;
 	cc->genPrivate = 1;
 	cc->genUninitialized = 1;
+	cc->warnShortCircuit = 1;
 
 	cc->owner = NULL;
 	cc->scope = NULL;
@@ -1230,7 +1233,8 @@ symn rtLookup(rtContext rt, size_t offs, ccKind filter) {
 		if (filterCnst && (sym->kind & ATTR_cnst) != filterCnst) {
 			continue;
 		}
-		if (filterKind && (sym->kind & MASK_kind) != filterKind) {
+		ccKind symKind = sym->kind & MASK_kind;
+		if (filterKind && symKind != filterKind) {
 			continue;
 		}
 		if (filterCast && (sym->kind & MASK_cast) != filterCast) {
@@ -1239,7 +1243,19 @@ symn rtLookup(rtContext rt, size_t offs, ccKind filter) {
 		if (offs == sym->offs) {
 			return sym;
 		}
-		if (offs > sym->offs && offs < sym->offs + sym->size) {
+		if (symKind == KIND_def) {
+			// skip inline symbols
+			continue;
+		}
+
+		size_t size;
+		if (symKind == KIND_typ) {
+			// size of a type is typename->size
+			size = sym->type->size;
+		} else {
+			size = refSize(sym);
+		}
+		if (offs > sym->offs && offs < sym->offs + size) {
 			return sym;
 		}
 	}

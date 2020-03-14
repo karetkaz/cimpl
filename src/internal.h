@@ -76,6 +76,7 @@ struct ccContextRec {
 	int genGlobals: 1;              // generate global variables as static variables
 	int genPrivate: 1;              // raise error accessing private data
 	int genUninitialized: 1;        // raise error for uninitialized variables
+	int warnShortCircuit: 1;        // raise error for uninitialized variables
 
 	// Lexer
 	list strt[hashTableSize];       // string table (hash)

@@ -1870,7 +1870,10 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			dieif(ast->op.rhso->type != cc->type_bol, ERR_INTERNAL_ERROR);
 			dieif(got != CAST_bit, ERR_INTERNAL_ERROR": (%t) -> %K", ast, got);
 			#endif
-			warn(rt, raise_warn_todo, ast->file, ast->line, WARN_SHORT_CIRCUIT, ast);
+			if (cc->warnShortCircuit) {
+				warn(rt, raise_warn_todo, ast->file, ast->line, WARN_SHORT_CIRCUIT, ast);
+				cc->warnShortCircuit = 0;
+			}
 			break;
 		}
 		case OPER_sel:      // '?:'

@@ -35,7 +35,7 @@ select {
 	padding: 0;
 	display: none;
 	position: fixed;
-	z-index: 9;
+	z-index: 10;
 }
 
 .left {float: left;}
@@ -285,8 +285,6 @@ body:not(.output) #output { display: none; }
 body:not(.canvas) #canvas-panel { display: none; }
 body.output:not(.editor) #editor-panel { display: none; }
 .toolbar>.editor,.toolbar>.output,.toolbar>.canvas { display: none; }
-body.right-bar #right-sidebar { z-index: 20; }
-body:not(.left-pin) #left-sidebar { z-index: 20; }
 
 /* toolbar icon visibility: editor, output, canvas */
 body.editor .toolbar>.editor { display: initial; }
@@ -306,11 +304,11 @@ body:not(.canvas) .toolbar>.no-canvas { display: initial; }
 	display: block;
 }
 
+body.canvas .toolbar>.canvas-gone.icon {display: none;}
+
 /* custom full screen output */
 .toolbar>.output-only.icon {display: none;}
 body.output:not(.editor) .toolbar>.output-only.icon {display: initial;}
-body.output:not(.editor) #right-sidebar { z-index: unset; }
-body.output:not(.editor) #left-sidebar { z-index: unset; }
 body.output:not(.editor) #output {
 	position: fixed;
 	display: block;
@@ -323,14 +321,13 @@ body.output:not(.editor) #output {
 	z-index: 10;
 }
 body.output:not(.tool-bar) #output { top: 0; }
-body:not(.output) #bottom-sidebar { z-index: 20; }
 
 /* custom look and feel */
 .breakpoints {
 	width: 0.8em;
 }
 .breakpoint {
-	color: #822;
+	color: #2b2b2b;
 }
 
 /* match words */
