@@ -420,7 +420,7 @@ static ccToken readTok(lexContext ctx, astn tok) {
 			}
 
 			if (doc != NULL) {
-				if (!ctx->cc->genDocs) {
+				if (!ctx->cc->genDocumentation) {
 					doc = "";
 					ptr = doc + 1;
 				}
@@ -636,12 +636,24 @@ static ccToken readTok(lexContext ctx, astn tok) {
 				tok->kind = ASGN_add;
 				break;
 			}
+			if (skipChr(ctx, '+')) {
+				// disable `++` operator
+				error(ctx->rt, ctx->cc->file, ctx->cc->line, ERR_INVALID_CHARACTER, chr);
+				tok->kind = TOKEN_any;
+				break;
+			}
 			tok->kind = OPER_add;
 			break;
 
 		case '-':
 			if (skipChr(ctx, '=')) {
 				tok->kind = ASGN_sub;
+				break;
+			}
+			if (skipChr(ctx, '-')) {
+				// disable `--` operator
+				error(ctx->rt, ctx->cc->file, ctx->cc->line, ERR_INVALID_CHARACTER, chr);
+				tok->kind = TOKEN_any;
 				break;
 			}
 			tok->kind = OPER_sub;

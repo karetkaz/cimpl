@@ -579,12 +579,14 @@ struct Histogram: View {
 struct ColorPicker: View {
 	const float lum = 1f;
 	argb value = argb(0);
+	int x = 0;
+	int y = 0;
 	void onUpdate(ColorPicker this, argb value) = null;/* {
 		this.value = value;
 	}// */
 }
 
-struct Layout {
+struct Layout: object {
 	Style style;
 	Image offs;
 	Rect rect;
@@ -786,13 +788,15 @@ bool onEvent(View this, const MouseEvent event&, const Rect rect&) {
 			return false;
 		}
 
-		float px = float(Math.clamp(event.x - rect.x, 0, rect.w - 1) / rect.w);
-		float py = float(Math.clamp(event.y - rect.y, 0, rect.h - 1) / rect.h);
+		float px = Math.clamp(float(event.x - rect.x), 0f, rect.w - 1f) / rect.w;
+		float py = Math.clamp(float(event.y - rect.y), 0f, rect.h - 1f) / rect.h;
 		if (item.onUpdate != null) {
 			item.onUpdate(hsv2rgb(px, 1 - py, item.lum));
 		} else {
 			item.value = hsv2rgb(px, 1 - py, item.lum);
 		}
+		item.x = event.x - rect.x;
+		item.y = event.y - rect.y;
 		return true;
 	}
 	if (Histogram item = this.as(Histogram)) {
@@ -1138,12 +1142,17 @@ static void draw(Layout layout&) {
 					layout.offs.set(x + rect.x, y + rect.y, color);
 				}
 			}
+			int x = rect.x + Math.clamp(float(item.x), 0f, rect.w - 1f);
+			int y = rect.y + Math.clamp(float(item.y), 0f, rect.h - 1f);
+			layout.offs.drawOval(x - 4, y - 4, x + 4, y + 4, layout.style.valueColor);
+			layout.offs.drawOval(x - 2, y - 2, x + 2, y + 2, layout.style.valueColor);
+			layout.offs.drawOval(x - 1, y - 1, x + 1, y + 1, layout.style.valueColor);
 		}
 		else if (Histogram item = view.as(Histogram)) {
 			if (item.lines) {
-				offs.drawLut(rect, null, item.data);
+				layout.offs.drawLut(rect, null, item.data);
 			} else {
-				offs.drawLut(rect, item.data, null);
+				layout.offs.drawLut(rect, item.data, null);
 			}
 		}
 		else if (Slider item = view.as(Slider)) {
@@ -1684,6 +1693,7 @@ vec4f hsv2rgb(vec4f hsv) {
 }
 }
 
+/// convert from hsv color space to rgb color space
 argb hsv2rgb(float h, float s, float v) {
 	if (s == 0) {
 		return argb(0, 0, 0);

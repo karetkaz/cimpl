@@ -519,7 +519,7 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 
 	// raise error or warning if accessing private symbols
 	if (sym && sym->unit && sym->unit != cc->unit && sym->doc == NULL) {
-		raiseLevel level = cc->genPrivate ? raiseWarn : raiseError;
+		raiseLevel level = cc->errPrivateAccess ? raiseWarn : raiseError;
 		warn(cc->rt, level, ref->file, ref->line, ERR_PRIVATE_DECLARATION, sym);
 	}
 

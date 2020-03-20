@@ -1735,23 +1735,20 @@ int main(int argc, char *argv[]) {
 
 	struct {
 		// optimizations
-		int foldConst;
-		int fastInstr;
-		int fastAssign;
-		int genGlobals;
-		int genPrivate;
-		// TODO: int genUninitialized;
+		int foldConstants;
+		int foldInstruction;
+		int genStaticGlobals;
+		int errPrivateAccess;
 		int warnLevel;	// compile log level
 		int raiseLevel;	// runtime log level
 
 		size_t memory;
 	} settings = {
 		// use all optimizations by default
-		.foldConst = 1,
-		.fastInstr = 1,
-		.fastAssign = 1,
-		.genGlobals = 1,
-		.genPrivate = 1,
+		.foldConstants = 1,
+		.foldInstruction = 1,
+		.genStaticGlobals = 1,
+		.errPrivateAccess = 1,
 		.warnLevel = 5,
 		.raiseLevel = 15,
 
@@ -2339,19 +2336,15 @@ int main(int argc, char *argv[]) {
 			while (*arg2 == '-' || *arg2 == '+') {
 				int on = *arg2 == '+';
 				if (strBegins(arg2 + 1, "fold")) {
-					settings.foldConst = on;
+					settings.foldConstants = on;
 					arg2 += 5;
 				}
 				else if (strBegins(arg2 + 1, "fast")) {
-					settings.fastInstr = on;
-					arg2 += 5;
-				}
-				else if (strBegins(arg2 + 1, "asgn")) {
-					settings.fastAssign = on;
+					settings.foldInstruction = on;
 					arg2 += 5;
 				}
 				else if (strBegins(arg2 + 1, "glob")) {
-					settings.genGlobals = on;
+					settings.genStaticGlobals = on;
 					arg2 += 5;
 				}
 				else if (strBegins(arg2 + 1, "emit")) {
@@ -2379,7 +2372,7 @@ int main(int argc, char *argv[]) {
 					arg2 += 4;
 				}
 				else if (strBegins(arg2 + 1, "private")) {
-					settings.genPrivate = !on;
+					settings.errPrivateAccess = !on;
 					arg2 += 8;
 				}
 				else if (strBegins(arg2 + 1, "offsets")) {
@@ -2416,12 +2409,15 @@ int main(int argc, char *argv[]) {
 	}
 
 	extra.rt = rt;
+	// override log level
 	rt->logLevel = settings.warnLevel;
-	rt->foldCasts = settings.foldConst != 0;
-	rt->foldConst = settings.foldConst != 0;
-	rt->foldInstr = settings.fastInstr != 0;
-	rt->fastMemory = settings.fastInstr != 0;
-	rt->fastAssign = settings.fastAssign != 0;
+	// override constant folding
+	rt->foldCasts = settings.foldConstants != 0;
+	rt->foldConst = settings.foldConstants != 0;
+	// override instruction folding
+	rt->foldInstr = settings.foldInstruction != 0;
+	rt->foldMemory = settings.foldInstruction != 0;
+	rt->foldAssign = settings.foldInstruction != 0;
 
 	// open the log file first (enabling dump appending)
 	if (logFileName && !logFile(rt, logFileName, logAppend)) {
@@ -2454,9 +2450,9 @@ int main(int argc, char *argv[]) {
 		logFile(rt, NULL, 0);
 		return -6;
 	}
-	cc->genDocs = extra.dmpDoc;
-	cc->genGlobals = settings.genGlobals != 0;
-	cc->genPrivate = settings.genPrivate != 0;
+	cc->genDocumentation = extra.dmpDoc;
+	cc->genStaticGlobals = settings.genStaticGlobals != 0;
+	cc->errPrivateAccess = settings.errPrivateAccess != 0;
 	cc->home = ccUniqueStr(cc, cmpl_home, -1, -1);
 
 	if (install & installLibs) {

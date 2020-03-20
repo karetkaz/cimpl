@@ -42,10 +42,10 @@ $CMPL_BIN/cmpl -dump.scite extras/cmplGfx.api "$BIN/libGfx.so" lib/gfxlib.ci
 $CMPL_BIN/cmpl -dump.scite extras/cmplAll.api "$BIN/libFile.so" "$BIN/libOpenGL.so" "$BIN/libGfx.so" lib/gfxlib.ci
 
 # dump symbols, documentation, assembly, syntax tree and global variables (to be compared with previous version to test if the code is generated properly)
-$CMPL_BIN/cmpl -X+steps+fold+fast+asgn-stdin-glob-offsets -debug/G/M -api/A/m/d/p -asm/n/s -ast -doc -log/d/15 "extras/test.dump.ci" -dump.ast.xml "extras/test.dump.xml" -stdlib/stdlib.ci "test/test.ci"
+$CMPL_BIN/cmpl -X+steps+fold+fast-stdin-glob-offsets -debug/G/M -api/A/m/d/p -asm/n/s -ast -doc -log/d/15 "extras/test.dump.ci" -dump.ast.xml "extras/test.dump.xml" -stdlib/stdlib.ci "test/test.ci"
 
 # dump symbols, documentation, assembly, syntax tree and global variables (to be compared with previous version to test if the code is generated properly)
-$CMPL_BIN/cmpl -X+steps+fold+fast+asgn-stdin-glob-offsets -debug/G/M -api/A/m/d/p -asm/n/s -ast -doc -use -log/d "extras/libs.dump.ci" -stdlib/stdlib.ci "$BIN/libFile.so" "$BIN/libGfx.so" "lib/gfxlib.ci"
+$CMPL_BIN/cmpl -X+steps+fold+fast-stdin-glob-offsets -debug/G/M -api/A/m/d/p -asm/n/s -ast -doc -use -log/d "extras/libs.dump.ci" -stdlib/stdlib.ci "$BIN/libFile.so" "$BIN/libGfx.so" "lib/gfxlib.ci"
 
 # dump profile data in text format including function tracing
 $CMPL_BIN/cmpl -X-stdin+steps -profile/t/P/G/M -api/A/m/d/p -asm/g/n/s -ast/t -doc -use -log/15 "extras/test.prof.ci" -dump "extras/test.prof.ci" -stdlib/stdlib.ci "test/test.ci"

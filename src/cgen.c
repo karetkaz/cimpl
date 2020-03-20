@@ -286,7 +286,7 @@ static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 			error(rt, variable->file, variable->line, ERR_UNIMPLEMENTED_FUNCTION, variable);
 		}
 		else {
-			raiseLevel level = cc->genUninitialized ? raiseWarn : raiseError;
+			raiseLevel level = cc->errUninitialized ? raiseWarn : raiseError;
 			warn(rt, level, variable->file, variable->line, ERR_UNINITIALIZED_VARIABLE, variable);
 		}
 	}
@@ -990,7 +990,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 				warn(rt, raise_warn_var8, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
 			}
 			else {
-				raiseLevel level = cc->genUninitialized ? raiseWarn : raiseError;
+				raiseLevel level = cc->errUninitialized ? raiseWarn : raiseError;
 				warn(rt, level, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
 			}
 			if (!emitInt(rt, opc_spc, prm->size)) {
@@ -1083,7 +1083,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 		}
 
 		// optimize generated assignment to a single `set` instruction
-		if (optimizeAssign(rt, 0, assignBegin, assignEnd)) {
+		if (foldAssignment(rt, 0, assignBegin, assignEnd)) {
 			debug("assignment optimized: %t", ast);
 		}
 	}
@@ -1579,6 +1579,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 
 	const size_t ipBegin = emit(rt, markIP);
 	const size_t spBegin = stkOffset(rt, 0);
+	const size_t spEnd = stkOffset(rt, refCast(ast->type));
 	ccKind op, got = refCast(ast->type);
 
 	if (get == CAST_any) {
@@ -1835,47 +1836,43 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			break;
 
 		case OPER_all:		// '&&'
-		case OPER_any: {	// '||'
-			ccToken operator = TOKEN_any;
-			switch (ast->kind) {
-				default:
-					break;
-
-				case OPER_all:
-					operator = OPER_and;// TODO: short circuit
-					break;
-
-				case OPER_any:
-					operator = OPER_ior;// TODO: short circuit
-					break;
-			}
-
+		case OPER_any:		// '||'
 			if (!genAst(cc, ast->op.lhso, CAST_bit)) {
 				traceAst(ast);
 				return CAST_any;
 			}
 
+			// duplicate lhs and check if it is true
+			if (!emitInt(rt, opc_dup1, 0)) {
+				traceAst(ast);
+				return CAST_any;
+			}
+			vmOpcode opc = ast->kind != OPER_all ? opc_jnz : opc_jz;
+			size_t jmp = emit(rt, opc);
+			if (jmp == 0) {
+				traceAst(ast);
+				return CAST_any;
+			}
+
+			// discard lhs and replace it with rhs
+			if (!emitInt(rt, opc_spc, -vm_stk_align)) {
+				traceAst(ast);
+				return CAST_any;
+			}
 			if (!genAst(cc, ast->op.rhso, CAST_bit)) {
 				traceAst(ast);
 				return CAST_any;
 			}
 
-			if (!genOperator(rt, operator, CAST_u32)) {
-				traceAst(ast);
-				return CAST_any;
-			}
+			fixJump(rt, jmp, emit(rt, markIP), spEnd);
 
 			#ifdef DEBUGGING	// extra check: validate some conditions.
 			dieif(ast->op.lhso->type != cc->type_bol, ERR_INTERNAL_ERROR);
 			dieif(ast->op.rhso->type != cc->type_bol, ERR_INTERNAL_ERROR);
 			dieif(got != CAST_bit, ERR_INTERNAL_ERROR": (%t) -> %K", ast, got);
 			#endif
-			if (cc->warnShortCircuit) {
-				warn(rt, raise_warn_todo, ast->file, ast->line, WARN_SHORT_CIRCUIT, ast);
-				cc->warnShortCircuit = 0;
-			}
 			break;
-		}
+
 		case OPER_sel:      // '?:'
 			if (!genLogical(cc, ast)) {
 				traceAst(ast);
@@ -1935,7 +1932,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			}
 
 			// optimize assignments.
-			if (rt->fastAssign && optimizeAssign(rt, spBegin, ipBegin, codeEnd)) {
+			if (rt->foldAssign && foldAssignment(rt, spBegin, ipBegin, codeEnd)) {
 				if (get == CAST_vid && stkOffset(rt, 0) < spBegin) {
 					// we probably cleared the stack
 					got = CAST_vid;
@@ -2258,7 +2255,7 @@ int ccGenCode(ccContext cc, int debug) {
 
 	// leave the global scope.
 	rt->main = install(cc, ".main", ATTR_stat | KIND_fun, cc->type_fun->size, cc->type_fun, cc->root);
-	cc->scope = leave(cc, cc->genGlobals ? ATTR_stat | KIND_def : KIND_def, 0, 0, NULL, NULL);
+	cc->scope = leave(cc, cc->genStaticGlobals ? ATTR_stat | KIND_def : KIND_def, 0, 0, NULL, NULL);
 	dieif(cc->scope != cc->global, ERR_INTERNAL_ERROR);
 
 	/* reorder the initialization of static variables and functions.
@@ -2442,7 +2439,7 @@ int ccGenCode(ccContext cc, int debug) {
 		}
 
 		// CAST_vid clears the stack
-		if (!genAst(cc, cc->root, cc->genGlobals ? CAST_vid : CAST_val)) {
+		if (!genAst(cc, cc->root, cc->genStaticGlobals ? CAST_vid : CAST_val)) {
 			traceAst(cc->root);
 			return -5;
 		}

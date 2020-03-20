@@ -750,8 +750,8 @@ rtContext rtInit(void *mem, size_t size) {
 		rt->foldCasts = 1;
 		rt->foldConst = 1;
 		rt->foldInstr = 1;
-		rt->fastMemory = 1;
-		rt->fastAssign = 1;
+		rt->foldMemory = 1;
+		rt->foldAssign = 1;
 		rt->freeMem = (unsigned) (mem == NULL);
 
 		*(size_t*)&rt->_size = size - sizeof(struct rtContextRec);
@@ -1074,11 +1074,10 @@ ccContext ccInit(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)) {
 	cc->rt = rt;
 	rt->cc = cc;
 
-	cc->genDocs = 0;
-	cc->genGlobals = 0;
-	cc->genPrivate = 1;
-	cc->genUninitialized = 1;
-	cc->warnShortCircuit = 1;
+	cc->genDocumentation = 0;
+	cc->genStaticGlobals = 1;
+	cc->errPrivateAccess = 1;
+	cc->errUninitialized = 1;
 
 	cc->owner = NULL;
 	cc->scope = NULL;

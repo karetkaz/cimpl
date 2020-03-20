@@ -54,8 +54,6 @@ typedef enum {
 	raisePrint = 0,
 	raiseWarn = 1,          // treat these warnings as errors
 
-	raise_warn_todo = 1,    // WARN_SHORT_CIRCUIT
-
 	raise_warn_lex2 = 2,    // WARN_<VALUE>_OVERFLOW
 	raise_warn_lex3 = 3,    // WARN_MULTI_CHAR_CONSTANT
 	raise_warn_lex9 = 9,    // WARN_NO_NEW_LINE_AT_END / WARN_COMMENT_MULTI_LINE / WARN_COMMENT_NESTED
@@ -117,10 +115,10 @@ typedef union {
  */
 struct rtContextRec {
 	unsigned foldConst: 1;  // fold constant expressions (3 + 4 => 7)
-	unsigned foldCasts: 1;  // fold fold cast expressions (float(int(3.2)) => 3.f)
-	unsigned foldInstr: 1;  // replace some instructions with a faster or shorter version (load 1, add => inc 1)
-	unsigned fastMemory: 1; // fast memory access: use dup, set, load and store instructions instead of `load address` + `load indirect`.
-	unsigned fastAssign: 1; // remove dup and set instructions when modifying the last declared variable.
+	unsigned foldCasts: 1;  // fold cast expressions (float(int(3.2)) => 3.f)
+	unsigned foldInstr: 1;  // replace instructions with a faster or shorter version (`load 1`, `add.i32` with `inc 1`)
+	unsigned foldMemory: 1; // replace `load address`, `load indirect` with `dup`, `set`, `load` or `store` instruction
+	unsigned foldAssign: 1; // replace `dup x`, `set y` instructions with `move x, y` instruction
 	unsigned logLevel: 4;   // runtime logging level (0-15)
 	unsigned traceLevel: 8; // runtime backtrace level (0-255)
 	unsigned closeLog: 1;   // close log file

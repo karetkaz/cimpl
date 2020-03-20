@@ -108,7 +108,7 @@ void *rollbackPc(rtContext rt) {
 	return ip;
 }
 
-static int removeOpc(rtContext rt, size_t offs) {
+static int removeInstruction(rtContext rt, size_t offs) {
 	if (offs >= rt->vm.ro && offs <= rt->vm.pc) {
 		vmInstruction ip = vmPointer(rt, offs);
 		unsigned char *dst = (unsigned char *)ip;
@@ -165,7 +165,7 @@ static int decrementStackAccess(rtContext rt, size_t offsBegin, size_t offsEnd, 
 	return 1;
 }
 
-int optimizeAssign(rtContext rt, size_t stkBegin, size_t offsBegin, size_t offsEnd) {
+int foldAssignment(rtContext rt, size_t stkBegin, size_t offsBegin, size_t offsEnd) {
 	vmValue arg, argSet;
 	uint64_t stkMax = stkBegin / vm_stk_align;
 	if (testOcp(rt, offsBegin, opc_dup1, &arg)) {
@@ -173,11 +173,11 @@ int optimizeAssign(rtContext rt, size_t stkBegin, size_t offsBegin, size_t offsE
 			return 0;
 		}
 		if (offsEnd - offsBegin == 2) {
-			if (!removeOpc(rt, offsEnd)) {
+			if (!removeInstruction(rt, offsEnd)) {
 				fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 				return 0;
 			}
-			if (!removeOpc(rt, offsBegin)) {
+			if (!removeInstruction(rt, offsBegin)) {
 				fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 				return 0;
 			}
@@ -193,11 +193,11 @@ int optimizeAssign(rtContext rt, size_t stkBegin, size_t offsBegin, size_t offsE
 		if (arg.u08 != 0 || argSet.u08 != 1) {
 			return 0;
 		}
-		if (!removeOpc(rt, offsEnd)) {
+		if (!removeInstruction(rt, offsEnd)) {
 			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 			return 0;
 		}
-		if (!removeOpc(rt, offsBegin)) {
+		if (!removeInstruction(rt, offsBegin)) {
 			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 			return 0;
 		}
@@ -212,11 +212,11 @@ int optimizeAssign(rtContext rt, size_t stkBegin, size_t offsBegin, size_t offsE
 			return 0;
 		}
 		if (offsEnd - offsBegin == 2) {
-			if (!removeOpc(rt, offsEnd)) {
+			if (!removeInstruction(rt, offsEnd)) {
 				fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 				return 0;
 			}
-			if (!removeOpc(rt, offsBegin)) {
+			if (!removeInstruction(rt, offsBegin)) {
 				fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 				return 0;
 			}
@@ -232,11 +232,11 @@ int optimizeAssign(rtContext rt, size_t stkBegin, size_t offsBegin, size_t offsE
 		if (arg.u08 != 0 || argSet.u08 != 2) {
 			return 0;
 		}
-		if (!removeOpc(rt, offsEnd)) {
+		if (!removeInstruction(rt, offsEnd)) {
 			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 			return 0;
 		}
-		if (!removeOpc(rt, offsBegin)) {
+		if (!removeInstruction(rt, offsBegin)) {
 			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 			return 0;
 		}
@@ -251,11 +251,11 @@ int optimizeAssign(rtContext rt, size_t stkBegin, size_t offsBegin, size_t offsE
 			return 0;
 		}
 		if (offsEnd - offsBegin == 2) {
-			if (!removeOpc(rt, offsEnd)) {
+			if (!removeInstruction(rt, offsEnd)) {
 				fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 				return 0;
 			}
-			if (!removeOpc(rt, offsBegin)) {
+			if (!removeInstruction(rt, offsBegin)) {
 				fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 				return 0;
 			}
@@ -271,11 +271,11 @@ int optimizeAssign(rtContext rt, size_t stkBegin, size_t offsBegin, size_t offsE
 		if (arg.u08 != 0 || argSet.u08 != 4) {
 			return 0;
 		}
-		if (!removeOpc(rt, offsEnd)) {
+		if (!removeInstruction(rt, offsEnd)) {
 			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 			return 0;
 		}
-		if (!removeOpc(rt, offsBegin)) {
+		if (!removeInstruction(rt, offsBegin)) {
 			fatal(ERR_INTERNAL_ERROR": %.*A", offsEnd, vmPointer(rt, offsEnd));
 			return 0;
 		}
@@ -492,7 +492,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case opc_ldi4:
-			if (!rt->fastMemory) {
+			if (!rt->foldMemory) {
 				break;
 			}
 			ip = lastIp(rt);
@@ -515,7 +515,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case opc_sti4:
-			if (!rt->fastMemory) {
+			if (!rt->foldMemory) {
 				break;
 			}
 			ip = lastIp(rt);
@@ -538,7 +538,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case opc_ldi8:
-			if (!rt->fastMemory) {
+			if (!rt->foldMemory) {
 				break;
 			}
 			ip = lastIp(rt);
@@ -561,7 +561,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case opc_sti8:
-			if (!rt->fastMemory) {
+			if (!rt->foldMemory) {
 				break;
 			}
 			ip = lastIp(rt);
@@ -584,7 +584,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case opc_ldiq:
-			if (!rt->fastMemory) {
+			if (!rt->foldMemory) {
 				break;
 			}
 			ip = lastIp(rt);
@@ -607,7 +607,7 @@ size_t emitOpc(rtContext rt, vmOpcode opc, vmValue arg) {
 			break;
 
 		case opc_stiq:
-			if (!rt->fastMemory) {
+			if (!rt->foldMemory) {
 				break;
 			}
 			ip = lastIp(rt);
@@ -1527,6 +1527,10 @@ void* nextOpc(rtContext rt, size_t *pc, size_t *ss) {
 void fixJump(rtContext rt, size_t src, size_t dst, ssize_t stc) {
 	dieif(stc > 0 && stc & 3, ERR_INTERNAL_ERROR);
 
+	if (rt->vm.pc < dst) {
+		// protect jumps
+		rt->vm.pc = dst;
+	}
 	if (rt->vm.px < dst) {
 		// update max jump
 		rt->vm.px = dst;

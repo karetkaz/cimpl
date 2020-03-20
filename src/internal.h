@@ -72,11 +72,10 @@ struct ccContextRec {
 
 	int nest;                       // nest level: modified by (enter/leave)
 	int siff:1;                     // TODO: remove: inside a static if false
-	int genDocs: 1;                 // generate documentation
-	int genGlobals: 1;              // generate global variables as static variables
-	int genPrivate: 1;              // raise error accessing private data
-	int genUninitialized: 1;        // raise error for uninitialized variables
-	int warnShortCircuit: 1;        // raise error for uninitialized variables
+	int genDocumentation: 1;        // generate documentation
+	int genStaticGlobals: 1;        // generate global variables as static variables
+	int errPrivateAccess: 1;        // raise error accessing private data
+	int errUninitialized: 1;        // raise error for uninitialized variables
 
 	// Lexer
 	list strt[hashTableSize];       // string table (hash)
@@ -356,6 +355,8 @@ static inline astn chainArgs(astn args) {
 
 /**
  * Optimize an assignment by removing extra copy of the value if it is on the top of the stack.
+ * replace `dup x`, `set y` with a single `mov x, y` instruction
+ * replace `dup 0`, `set x` with a single `set x` instruction
  *
  * @param Runtime context.
  * @param stkBegin Begin of stack.
@@ -363,7 +364,7 @@ static inline astn chainArgs(astn args) {
  * @param offsEnd End of the byte code.
  * @return non zero if the code was optimized.
  */
-int optimizeAssign(rtContext, size_t stkBegin, size_t offsBegin, size_t offsEnd);
+int foldAssignment(rtContext rt, size_t stkBegin, size_t offsBegin, size_t offsEnd);
 
 /**
  * Test the virtual machine instruction set(compare implementation with definition `OPCODE_DEF`).
@@ -454,7 +455,6 @@ void print_log(rtContext rt, raiseLevel level, const char *file, int line, rtVal
 //TODO: #define WARN_LOCAL_MIGHT_ESCAPE "local variable `%t` can not be referenced outside of its scope"
 #define WARN_PASS_ARG_NO_CAST "argument `%t` is passed to emit without cast as `%T`"
 #define WARN_PASS_ARG_BY_REF "argument `%t` is passed by reference to `%T`"
-#define WARN_SHORT_CIRCUIT "operators `&&` and `||` does not short-circuit yet"
 #define WARN_NO_CODE_GENERATED "no code will be generated for statement: %t"
 #define WARN_PADDING_ALIGNMENT "padding `%?T` with %d bytes: (%d -> %d)"
 #define WARN_ADDING_IMPLICIT_CAST "adding implicit cast %T(%t: %T)"
