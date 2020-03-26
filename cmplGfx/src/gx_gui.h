@@ -16,7 +16,8 @@
 #define WINDOW_LEAVE 104
 
 #define KEY_MASK_SHIFT 1
-#define KEY_MASK_CONTROL 2
+#define KEY_MASK_CTRL 2
+#define KEY_MASK_ALT 4
 
 typedef struct GxWindow *GxWindow;
 

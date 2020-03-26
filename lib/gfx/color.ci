@@ -171,11 +171,9 @@ inline lum(argb color) = int32((19595 * rch(color) + 38470 * gch(color) + 7471 *
 
 
 /// linear interpolate a lookup-table with the given colors
-void lerpLut(uint32 lut[], int alpha, bool invert, argb colors...) {
+void lerpLut(uint32 lut[], argb colors...) {
 	inline lrp(int32 t, uint32 x, uint32 y) = x + (t * (y - x + 1) >> 16);
 
-	int mid = alpha < 0 ? 0 : 254;
-	int div = 256 - clamp_u8(alpha > 0 ? alpha : -alpha);
 	int dt = (colors.length - 1 << 16) / (lut.length - 1);
 	for (int i = 0; i < lut.length; i += 1) {
 		int t = i * dt;
@@ -185,17 +183,30 @@ void lerpLut(uint32 lut[], int alpha, bool invert, argb colors...) {
 		int32 r = lrp(t & 0xffff, rch(c1), rch(c2));
 		int32 g = lrp(t & 0xffff, gch(c1), gch(c2));
 		int32 b = lrp(t & 0xffff, bch(c1), bch(c2));
-		a = clamp_s8((a - mid) * 256 / div + mid);
-		r = clamp_s8((r - mid) * 256 / div + mid);
-		g = clamp_s8((g - mid) * 256 / div + mid);
-		b = clamp_s8((b - mid) * 256 / div + mid);
-		if (invert) {
-			a = ~a;
-			r = ~r;
-			g = ~g;
-			b = ~b;
-		}
 		lut[i] = a << 24 | r << 16 | g << 8 | b;
+	}
+}
+
+/// linear interpolate a alpha lookup-table with the given colors
+void alphaLut(uint32 lut[], int hardness, int alpha, bool reflect) {
+	int mid = hardness <= 0 ? -1 : 255;
+	int div = 256 - clamp_u8(hardness < 0 ? -hardness : hardness);
+	for (int i = 0; i < lut.length; i += 1) {
+		int t = i * 255 / (lut.length - 1);
+		lut[i] = clamp_s8((t - mid) * 255 / div + mid);
+		if (alpha < 0) {
+			lut[i] = 255 - (255 - lut[i]) * -alpha / 255;
+		} else {
+			lut[i] = 255 - lut[i] * alpha / 255;
+		}
+	}
+	if (reflect) {
+		for (int i = 0; i < lut.length / 2; i += 1) {
+			lut[i] = 255 - lut[i * 2];
+		}
+		for (int i = 0; i < lut.length / 2; i += 1) {
+			lut[lut.length - i - 1] = lut[i];
+		}
 	}
 }
 

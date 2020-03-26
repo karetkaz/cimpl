@@ -1509,7 +1509,8 @@ int cmplInit(rtContext rt) {
 		rt->api.ccDefInt(cc, "WINDOW_LEAVE", WINDOW_LEAVE);
 
 		rt->api.ccDefInt(cc, "KEY_MASK_SHIFT", KEY_MASK_SHIFT);
-		rt->api.ccDefInt(cc, "KEY_MASK_CONTROL", KEY_MASK_CONTROL);
+		rt->api.ccDefInt(cc, "KEY_MASK_CTRL", KEY_MASK_CTRL);
+		rt->api.ccDefInt(cc, "KEY_MASK_ALT", KEY_MASK_ALT);
 
 		for (size_t i = 0; i < sizeof(nfcWindow) / sizeof(*nfcWindow); i += 1) {
 			if (!rt->api.ccAddCall(cc, nfcWindow[i].func, nfcWindow[i].proto)) {

@@ -16,6 +16,7 @@ struct KeyEvent {
 	const bool release;
 	const bool isShift;
 	const bool isCtrl;
+	const bool isAlt;
 	const int repeat;
 	const int key;
 }
@@ -23,12 +24,14 @@ struct MouseEvent {
 	const bool release;
 	const bool isShift;
 	const bool isCtrl;
+	const bool isAlt;
 	const int repeat;
 	const int button;
 	const int dx = 0;
 	const int dy = 0;
 	const int x;
 	const int y;
+	const pointer client&;	// FIXME: needs to be reference assignable at initialization `const Rect client&`
 }
 
 struct View: object {
@@ -38,6 +41,7 @@ struct View: object {
 	bool selectable = true;
 	const variant data = null;
 
+	bool onMouseEvent(View this, const MouseEvent event&) = null;
 	bool onClick(View this) = null; /*TODO: {
 		//trace("onClick", this);
 		return true;
@@ -46,19 +50,25 @@ struct View: object {
 
 struct Button: View {
 	const char text[*];
-	char value[*] = null;
 	/* FIXME: do the override, use this method as default initializer
-	// TODO: override or overload: bool onClick(Button this) { ??? }
-	bool onClick(View this) {
+	// TODO: override or overload: bool onClick(Button this) { ... }
+	bool onClick(Button this) {
 		View.onClick(this);   // call super
 		trace("onClick", this);
-		// FIXME: enable lookup: value.value = 0;
+		// FIXME: enable lookup
 		return this.enabled;
 	}// */
 }
 
 struct Switch: View {
 	const char text[*];
+	/* TODO: 
+	const char values[*][] = {
+		"off",
+		"on"
+	};
+	int value = 0;*/
+
 	const char on[*] = "on";
 	const char off[*] = "off";
 
@@ -263,6 +273,21 @@ bool onEvent(View this, const KeyEvent event&) {
 		return false;
 	}
 	if (Switch item = this.as(Switch)) {
+		/* TODO
+		if (event.key == '+' || event.key == '=' || event.key == ' ') {
+			item.value += 1;
+			if (item.value >= item.values.length) {
+				item.value = item.values.length - 1;
+			}
+			return true;
+		}
+		if (event.key == '-' || event.key == '_' || event.key == 8) {
+			item.value -= 1;
+			if (item.value < 0) {
+				item.value = 0;
+			}
+			return true;
+		}*/
 		if (event.key == ' ') {
 			if (item.onUpdate != null) {
 				item.onUpdate(!item.checked);
@@ -292,8 +317,12 @@ bool onEvent(View this, const KeyEvent event&) {
 	abort("invalid view", this);
 	return false;
 }
-bool onEvent(View this, const MouseEvent event&, const Rect rect&) {
+bool onEvent(View this, const MouseEvent event&) {
 	// FIXME: dispatch click event using inheritance and override
+
+	if (this.onMouseEvent != null) {
+		return this.onMouseEvent(event);
+	}
 
 	if (ColorPicker item = this.as(ColorPicker)) {
 		if (event.release) {
@@ -303,6 +332,7 @@ bool onEvent(View this, const MouseEvent event&, const Rect rect&) {
 			return false;
 		}
 
+		const Rect rect& = event.client;
 		float px = Math.clamp(float(event.x - rect.x), 0f, rect.w - 1f) / rect.w;
 		float py = Math.clamp(float(event.y - rect.y), 0f, rect.h - 1f) / rect.h;
 		if (item.onUpdate != null) {
@@ -327,9 +357,9 @@ bool onEvent(View this, const MouseEvent event&, const Rect rect&) {
 			return false;
 		}
 
+		const Rect rect& = event.client;
 		int x0 = event.x - rect.x;
 		int x1 = x0 + event.dx;
-
 		int y0 = event.y - rect.y;
 		int y1 = y0 + event.dy;
 
@@ -489,6 +519,9 @@ bool uiEvent(Layout layout&, int action, int button, int x, int y) {
 		int32 y;        // old y coord
 	}
 	static Mouse mouse;
+	static bool isShift;
+	static bool isCtrl;
+	static bool isAlt;
 
 static int click(Mouse old&, int btn, int x, int y) {
 	if ((btn != 0 && btn != old.btn) || x != old.x || y != old.y) {
@@ -688,9 +721,6 @@ static void draw(Layout layout&) {
 		}
 		else if (Button item = view.as(Button)) {
 			text = item.text;
-			if (item.value != null) {
-				pos = value.append(pos, item.value);
-			}
 		}
 		else {
 			abort("item is not a known ui element", view);
@@ -719,9 +749,6 @@ static void draw(Layout layout&) {
 		}
 	}
 }
-
-	bool isCtrl = (y & Gui.KEY_MASK_CONTROL) != 0;
-	bool isShift = (y & Gui.KEY_MASK_SHIFT) != 0;
 
 	if (action == Gui.WINDOW_INIT) {
 		layout.selectedIndex = -1;
@@ -767,27 +794,33 @@ static void draw(Layout layout&) {
 			return false;
 		}
 		bool result = false;
-		int idx = layout.click(x, y);
-		if (layout.activeIndex != idx) {
-			layout.activeIndex = idx;
+		int activeIndex = layout.click(x, y);
+		if (layout.activeIndex != activeIndex) {
+			// active index changed, most probably from -1
+			layout.activeIndex = activeIndex;
 			result = true;
 		}
-		if (idx < 0) {
-			// might be a disabled view
-			return result;
+		if (activeIndex < 0) {
+			// allow update of selected control
+			activeIndex = layout.selectedIndex;
+			if (activeIndex < 0) {
+				return result;
+			}
 		}
-		if (View view = layout.views[idx]) {
-			Rect rect& = layout.rects[idx];
+		if (View view = layout.views[activeIndex]) {
+			Rect rect& = layout.rects[activeIndex];
 			MouseEvent event = {
 				release: false;
 				isShift: isShift;
 				isCtrl: isCtrl;
+				isAlt: isAlt;
 				repeat: mouse.clicks;
 				button: button;
 				x: x;
 				y: y;
+				client: pointer(rect);
 			};
-			if (view.onEvent(event, rect)) {
+			if (view.onEvent(event)) {
 				return true;
 			}
 		}
@@ -803,28 +836,30 @@ static void draw(Layout layout&) {
 		if (ox == x && oy == y) {
 			return false;
 		}
-		int idx = layout.activeIndex;
-		if (idx < 0) {
+		int activeIndex = layout.activeIndex;
+		if (activeIndex < 0) {
 			// allow update of selected control
-			idx = layout.selectedIndex;
+			activeIndex = layout.selectedIndex;
+			if (activeIndex < 0) {
+				return;
+			}
 		}
-		if (idx < 0) {
-			return;
-		}
-		if (View view = layout.views[idx]) {
-			Rect rect& = layout.rects[idx];
+		if (View view = layout.views[activeIndex]) {
+			Rect rect& = layout.rects[activeIndex];
 			MouseEvent event = {
 				release: false;
 				isShift: isShift;
 				isCtrl: isCtrl;
+				isAlt: isAlt;
 				repeat: mouse.clicks;
 				button: button;
 				dx: ox - x;
 				dy: oy - y;
 				x: x;
 				y: y;
+				client: pointer(rect);
 			};
-			if (view.onEvent(event, rect)) {
+			if (view.onEvent(event)) {
 				return true;
 			}
 		}
@@ -838,47 +873,53 @@ static void draw(Layout layout&) {
 		}
 
 		bool result = false;
-		int idx = layout.activeIndex;
-		if (idx >= 0) {
+		int activeIndex = layout.activeIndex;
+		if (activeIndex >= 0) {
 			layout.activeIndex = -1;
 			result = true;
 		}
-		if (idx != layout.click(x, y)) {
+		if (activeIndex != layout.click(x, y)) {
 			// release on a different view
 			return result;
 		}
-		if (idx < 0) {
+		if (activeIndex < 0) {
 			// might be a disabled view
 			return result;
 		}
 		// select / focus the view
-		if (layout.select(idx)) {
+		if (layout.select(activeIndex)) {
 			result = true;
 		}
-		if (View view = layout.views[idx]) {
-			Rect rect& = layout.rects[idx];
+		if (View view = layout.views[activeIndex]) {
+			Rect rect& = layout.rects[activeIndex];
 			MouseEvent event = {
 				release: true;
 				isShift: isShift;
 				isCtrl: isCtrl;
+				isAlt: isAlt;
 				repeat: mouse.clicks;
 				button: button;
 				x: x;
 				y: y;
+				client: pointer(rect);
 			};
-			if (view.onEvent(event, rect)) {
-				return true;
+			if (view.onEvent(event)) {
+				result = true;
 			}
 		}
 		return result;
 	}
 
 	if (action == Gui.KEY_PRESS) {
+		isShift = (y & Gui.KEY_MASK_SHIFT) != 0;
+		isCtrl = (y & Gui.KEY_MASK_CTRL) != 0;
+		isAlt = (y & Gui.KEY_MASK_ALT) != 0;
 		if (View view = layout.active()) {
 			KeyEvent event = {
 				release: false;
 				isShift: isShift;
 				isCtrl: isCtrl;
+				isAlt: isAlt;
 				repeat: 0;
 				key: button;
 			};
@@ -904,11 +945,15 @@ static void draw(Layout layout&) {
 		return false;
 	}
 	if (action == Gui.KEY_RELEASE) {
+		isShift = (y & Gui.KEY_MASK_SHIFT) != 0;
+		isCtrl = (y & Gui.KEY_MASK_CTRL) != 0;
+		isAlt = (y & Gui.KEY_MASK_ALT) != 0;
 		if (View view = layout.active()) {
 			KeyEvent event = {
 				release: true;
 				isShift: isShift;
 				isCtrl: isCtrl;
+				isAlt: isAlt;
 				repeat: 0;
 				key: button;
 			};

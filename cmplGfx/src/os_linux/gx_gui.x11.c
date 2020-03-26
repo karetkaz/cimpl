@@ -143,7 +143,7 @@ int getWindowEvent(GxWindow window, int *button, int *x, int *y) {
 				*y |= KEY_MASK_SHIFT;
 			}
 			if (event.xkey.state & ControlMask) {
-				*y |= KEY_MASK_CONTROL;
+				*y |= KEY_MASK_CTRL;
 			}
 			switch (event.type) {
 				case KeyPress:

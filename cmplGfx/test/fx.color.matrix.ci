@@ -222,21 +222,24 @@ font.destroy();
 int onEvent(int action, int button, int x, int y) {
 	inline "/lib/gfx/micro.ui.ci";
 
-	static bool onPresetsClick(Button view);
+	static bool onMouseEvent(Button view, const MouseEvent event&);
+	static bool onPresetsClick(Switch view);
 	static bool onResetClick(Button view);
 	static Histogram histogram = {
 		image: offs;
 		enabled: false;
 	};
-	static Button btnPresets = {
+	static Switch btnPresets = {
 		text: "Presets";
-		value: ">";
+		off: ">";
+		on: "<<<";
 		selectable: false;
 		onClick: onPresetsClick;	// TODO: implement override
 	};
-	static Button btnMask = {
+	static Switch btnMask = {
 		text: "Mask";
-		value: ">";
+		off: ">";
+		on: "<<<";
 		selectable: false;
 		onClick: onPresetsClick;	// TODO: implement override
 	};
@@ -362,31 +365,44 @@ int onEvent(int action, int button, int x, int y) {
 	static Button btnReflect = {
 		group: 3;
 		text: "Reflect";
+		onMouseEvent: onMouseEvent;
 	};
 	static Button btnLinear = {
 		group: 3;
 		text: "Linear";
+		onMouseEvent: onMouseEvent;
 	};
 	static Button btnRadial = {
 		group: 3;
 		text: "Radial";
+		onMouseEvent: onMouseEvent;
 	};
 	static Button btnSquare = {
 		group: 3;
 		text: "Square";
+		onMouseEvent: onMouseEvent;
 	};
 	static Slider sldHardness = {
 		group: 3;
 		text: "Hardness";
 		minimum: -255;
 		maximum: 255;
-		value: 200;
+		value: 128;
 		selectable: false;
 	};
-	static Switch chkInvert = {
+	static Slider sldAlpha = {
 		group: 3;
-		text: "Invert";
-		checked: true;
+		text: "Alpha";
+		minimum: -255;
+		maximum: 255;
+		value: 256;
+		selectable: false;
+	};
+	static Switch chkMoveScale = {
+		group: 3;
+		text: "Drag mode";
+		off: "move";
+		on: "scale";
 		selectable: false;
 	};
 	static Button btnReset = {
@@ -433,7 +449,7 @@ int onEvent(int action, int button, int x, int y) {
 
 		// group 3 - Mask
 		btnLinear, btnReflect, btnRadial, btnSquare,
-		separator3, sldHardness, chkInvert, chkMask, btnReset,
+		separator3, sldHardness, sldAlpha, chkMoveScale, chkMask, btnReset,
 
 		separator, time
 	);
@@ -445,33 +461,56 @@ int onEvent(int action, int button, int x, int y) {
 		wx: 0; wy: 0; wz: 0; ww:1;
 	};
 	static Rect rect = {
-		x: offs.width() / 2;
-		y: offs.height() / 2;
-		w: offs.width() / 2 - 1;
-		h: offs.height() / 2 - 1;
+		x: 0;
+		y: 0;
+		w: offs.width();
+		h: offs.height();
 	};
 	static bool onResetClick(Button view) {
-		rect.x = offs.width() / 2;
-		rect.y = offs.height() / 2;
-		rect.w = offs.width() / 2 - 1;
-		rect.h = offs.height() / 2 - 1;
+		rect.x = 0;
+		rect.y = 0;
+		rect.w = offs.width();
+		rect.h = offs.height();
 		return true;
 	}
-	static bool onPresetsClick(Button view) {
-		if (view == btnPresets) {
-			if (ui.setGroup(ui.group != 2 ? 2 : 1)) {
-				btnPresets.value = ui.group == 2 ? "<" :">";
-				btnMask.value = ui.group == 3 ? "<" :">";
-				//ui.selectedIndex = -1;
-			}
+	static bool onMouseEvent(Button view, const MouseEvent event&) {
+		if (ui.activeIndex != -1) {
+			// clicked on a ui element
+			return false;
+		}
+		if (event.release) {
+			// mouse button released
+			return false;
+		}
+		if (event.isAlt) {
+			rect.w -= event.dx;
+			rect.h -= event.dy;
 			return true;
 		}
+		if (chkMoveScale.checked == event.isShift) {
+			rect.x -= event.dx;
+			rect.y -= event.dy;
+			return true;
+		}
+		rect.x += event.dx;
+		rect.y += event.dy;
+		rect.w -= 2 * event.dx;
+		rect.h -= 2 * event.dy;
+		return true;
+	}
+	static bool onPresetsClick(Switch view) {
+		int group = ui.group;
+		if (view == btnPresets) {
+			// toggle group 2 <> 1
+			group = group != 2 ? 2 : 1;
+		}
 		if (view == btnMask) {
-			if (ui.setGroup(ui.group != 3 ? 3 : 1)) {
-				btnPresets.value = ui.group == 2 ? "<" :">";
-				btnMask.value = ui.group == 3 ? "<" :">";
-				//ui.selectedIndex = -1;
-			}
+			// toggle group 3 <> 1
+			group = group != 3 ? 3 : 1;
+		}
+		if (ui.setGroup(group)) {
+			btnPresets.checked = ui.group == 2;
+			btnMask.checked = ui.group == 3;
 			return true;
 		}
 		return false;
@@ -485,28 +524,7 @@ int onEvent(int action, int button, int x, int y) {
 	if (action == Gui.WINDOW_INIT) {
 		ui.setGroup(1);
 	}
-	bool force = false;
-	if (action == Gui.MOUSE_PRESS && button == 2) {
-		if (ui.isSelected(btnReflect, btnLinear, btnRadial, btnSquare)) {
-			rect.x = x;
-			rect.y = y;
-		}
-	}
-	if (action == Gui.MOUSE_MOTION && button == 2) {
-		if (ui.isSelected(btnReflect, btnLinear, btnRadial, btnSquare)) {
-			rect.w = x - rect.x;
-			rect.h = y - rect.y;
-			force = true;
-		}
-	}
-	if (action == Gui.MOUSE_RELEASE && button == 2) {
-		if (ui.isSelected(btnReflect, btnLinear, btnRadial, btnSquare)) {
-			rect.w = x - rect.x;
-			rect.h = y - rect.y;
-			force = true;
-		}
-	}
-	if (ui.uiEvent(action, button, x, y) || force) {
+	if (ui.uiEvent(action, button, x, y)) {
 		uint64 start = System.millis();
 
 		if (ui.isActive(brightness, saturation, contrast, temp, tint, hue)) {
@@ -529,40 +547,31 @@ int onEvent(int action, int button, int x, int y) {
 		offs.colorMat(null, mat.data);
 
 		if (ui.isSelected(btnLinear, btnReflect, btnRadial, btnSquare)) {
-			const argb startColor = argb(0);
-			const argb endColor = argb(255);
-			uint32 colors[256];
-			bool invert = chkInvert.checked;
-			int alpha = sldHardness.val();
-
-			Rect roi = {
-				x: rect.x - rect.w;
-				y: rect.y - rect.h;
-				w: rect.w * 2;
-				h: rect.h * 2;
-			};
+			int hardness = sldHardness.val();
+			int alpha = sldAlpha.val();
+			uint32 colors[512];
 
 			if (chkMask.checked) {
 				offs.fill(0xff0000);
 			}
 			if (ui.isSelected(btnReflect)) {
-				lerpLut(colors, alpha, invert, endColor, startColor, endColor);
-				offs.gradient(roi, gradient.MaskLinear, false, ...colors);
+				alphaLut(colors, hardness, alpha, true);
+				offs.gradient(&rect, gradient.MaskLinear, false, ...colors);
 				offs.blend(0, 0, back, null, 256, true, null);
 			}
 			else if (ui.isSelected(btnLinear)) {
-				lerpLut(colors, alpha, invert, startColor, endColor);
-				offs.gradient(roi, gradient.MaskLinear, false, ...colors);
+				alphaLut(colors, hardness, alpha, false);
+				offs.gradient(&rect, gradient.MaskLinear, false, ...colors);
 				offs.blend(0, 0, back, null, 256, true, null);
 			}
 			else if (ui.isSelected(btnRadial)) {
-				lerpLut(colors, alpha, invert, startColor, endColor);
-				offs.gradient(roi, gradient.MaskRadial, false, ...colors);
+				alphaLut(colors, hardness, alpha, false);
+				offs.gradient(&rect, gradient.MaskRadial, false, ...colors);
 				offs.blend(0, 0, back, null, 256, true, null);
 			}
 			else if (ui.isSelected(btnSquare)) {
-				lerpLut(colors, alpha, invert, startColor, endColor);
-				offs.gradient(roi, gradient.MaskSquare, false, ...colors);
+				alphaLut(colors, hardness, alpha, false);
+				offs.gradient(&rect, gradient.MaskSquare, false, ...colors);
 				offs.blend(0, 0, back, null, 256, true, null);
 			}
 		}

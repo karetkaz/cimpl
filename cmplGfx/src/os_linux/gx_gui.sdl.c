@@ -179,7 +179,10 @@ int getWindowEvent(GxWindow window, int *button, int *x, int *y) {
 				*y |= KEY_MASK_SHIFT;
 			}
 			if (event.key.keysym.mod & (KMOD_LCTRL | KMOD_RCTRL)) {
-				*y |= KEY_MASK_CONTROL;
+				*y |= KEY_MASK_CTRL;
+			}
+			if (event.key.keysym.mod & (KMOD_LALT | KMOD_RALT)) {
+				*y |= KEY_MASK_ALT;
 			}
 			switch (event.type) {
 				case SDL_KEYDOWN:
