@@ -1886,6 +1886,14 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			size_t size = refSize(ast->op.lhso->type);
 			dieif(size == 0, ERR_INTERNAL_ERROR);
 
+			if (ast->kind == INIT_set) {
+				symn var = linkOf(ast->op.lhso, 0);
+				// initialize variables by reference as reference
+				if (var != NULL && castOf(var) == CAST_ref) {
+					cast = CAST_ref;
+				}
+			}
+
 			if (!genAst(cc, ast->op.rhso, cast)) {
 				traceAst(ast);
 				return CAST_any;
@@ -2458,7 +2466,7 @@ int ccGenCode(ccContext cc, int debug) {
 
 	// build the main initializer function.
 	rt->main->size = emit(rt, markIP) - rt->main->offs;
-	rt->main->fields = cc->scope;
+	rt->main->fields = cc->global;
 	rt->main->fmt = rt->main->name;
 	rt->main->unit = cc->unit;
 

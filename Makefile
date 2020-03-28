@@ -53,9 +53,9 @@ SRC_CC_EXE=$(SRC_CC) src/main.c
 cmpl: $(addprefix $(CC_OUT)/, $(notdir $(filter %.o, $(SRC_CC_EXE:%.c=%.o))))
 	gcc -o $(BINDIR)/cmpl $^ -lm -ldl
 
-SRC_GX_X11=$(SRC_GX) $(GX_SRC)/os_linux/gx_gui.x11.c $(GX_SRC)/os_linux/time.unx.c
+SRC_GX_X11=$(SRC_GX) $(GX_SRC)/os_linux/gx_gui.sdl.c $(GX_SRC)/os_linux/time.unx.c
 libGfx.so: $(addprefix $(GX_OUT)/, $(notdir $(filter %.o, $(SRC_GX_X11:%.c=%.o))))
-	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libGfx.so $^ -lm -ldl -lpng -ljpeg -lX11
+	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libGfx.so $^ -lm -ldl -lpng -ljpeg -lSDL2
 
 libFile.so: cmplFile/src/file.c
 	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libFile.so $^
@@ -86,7 +86,7 @@ cmpl.js: $(SRC_CC_EXE) lib/stdlib.ci
 libFile.wasm: cmplFile/src/file.c
 	emcc $(EMFLAGS) -o extras/demo/emscripten/libFile.wasm -I src $(EM_SIDE_MODULE) $(filter %.c, $^)
 
-libGfx.wasm: $(SRC_GX) $(GX_SRC)/os_linux/gx_gui.sdl.c  $(GX_SRC)/os_linux/time.unx.c
+libGfx.wasm: $(SRC_GX) $(GX_SRC)/os_linux/gx_gui.sdl.c $(GX_SRC)/os_linux/time.unx.c
 	emcc $(EMFLAGS) -o extras/demo/emscripten/libGfx.wasm -I src $(EM_SIDE_MODULE) -s USE_SDL=2 -s USE_LIBPNG=1 $(filter %.c, $^)
 
 cmpl.dbg.js: $(SRC_CC_EXE) lib/stdlib.ci

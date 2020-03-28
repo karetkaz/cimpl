@@ -47,7 +47,7 @@ static inline void addLength(ccContext cc, symn sym, astn init) {
 }
 
 static inline symn tagType(ccContext cc, astn tag) {
-	symn tagType = cc->deft[tag->ref.hash];
+	symn tagType = cc->symbolStack[tag->ref.hash];
 	tagType = lookup(cc, tagType, tag, NULL, 0, 0);
 	if (tagType != NULL && isTypename(tagType)) {
 		return tagType;
@@ -1115,7 +1115,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		ccToken optional = skipTok(cc, PNCT_qst, 0);
 		skipTok(cc, STMT_end, 1);
 
-		if (!cc->siff && ccInline(cc, tag) != 0) {
+		if (!cc->inStaticIfFalse && ccInline(cc, tag) != 0) {
 			if (optional) {
 				warn(cc->rt, raiseWarn, tag->file, tag->line, ERR_OPENING_FILE, tag->ref.name);
 			} else {
@@ -1496,8 +1496,8 @@ static astn statement_if(ccContext cc, ccKind attr) {
 	}
 	skipTok(cc, RIGHT_par, 1);
 
-	int insideStaticIf = cc->siff;
-	cc->siff = insideStaticIf || (staticIf && enterThen);
+	int insideStaticIf = cc->inStaticIfFalse;
+	cc->inStaticIfFalse = insideStaticIf || (staticIf && enterThen);
 	ast->stmt.stmt = statement(cc, NULL);
 
 	// parse else part if next token is 'else'
@@ -1510,14 +1510,14 @@ static astn statement_if(ccContext cc, ccKind attr) {
 			enter(cc, NULL);
 			enterThen = 1;
 		}
-		cc->siff = insideStaticIf || (staticIf && enterElse);
+		cc->inStaticIfFalse = insideStaticIf || (staticIf && enterElse);
 		ast->stmt.step = statement(cc, NULL);
 	}
 
 	if (enterThen) {
 		leave(cc, KIND_def, 0, 0, NULL, NULL);
 	}
-	cc->siff = insideStaticIf;
+	cc->inStaticIfFalse = insideStaticIf;
 
 	return ast;
 }
@@ -1553,10 +1553,10 @@ static astn statement_for(ccContext cc, ccKind attr) {
 	}
 
 	if (peekTok(cc, PNCT_cln)) {
-		// transform `for (iterator i: iterable) ...` to
-		// `for (iterator $it = iterator(iterable), iterator i = $it; $it.next(); i = $it) ...`
-		// transform `for (integer i: iterable) ...` to
-		// `for (iterator $it = iterator(iterable), integer i; next($it, &&i); ) ...`
+		// transform `for (type value : values) {...}` to
+		// `for (type value, iterator .it = iterator(values); .it.next(&value); ) {...}`
+		// `for (iterator value = iterator(values); value.next(); ) {...}`
+		// depending on the result type of: `iterator(values)`
 		fatal(ERR_UNIMPLEMENTED_FEATURE);
 	}
 

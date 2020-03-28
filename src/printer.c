@@ -1107,7 +1107,7 @@ void print_log(rtContext rt, raiseLevel level, const char *file, int line, rtVal
 	const char **esc = NULL;
 	const char *logType = "UNKNOWN";
 
-	if (rt->cc && rt->cc->siff && level < raiseWarn) {
+	if (rt->cc && rt->cc->inStaticIfFalse && level < raiseWarn) {
 		// convert errors to warnings inside static if (false) { ... }
 		level = raiseWarn;
 	}

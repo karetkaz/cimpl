@@ -21,6 +21,7 @@ struct KeyEvent {
 	const int key;
 }
 struct MouseEvent {
+	const Rect clientRect&;
 	const bool release;
 	const bool isShift;
 	const bool isCtrl;
@@ -31,7 +32,6 @@ struct MouseEvent {
 	const int dy = 0;
 	const int x;
 	const int y;
-	const pointer client&;	// FIXME: needs to be reference assignable at initialization `const Rect client&`
 }
 
 struct View: object {
@@ -332,7 +332,7 @@ bool onEvent(View this, const MouseEvent event&) {
 			return false;
 		}
 
-		const Rect rect& = event.client;
+		const Rect rect& = event.clientRect;
 		float px = Math.clamp(float(event.x - rect.x), 0f, rect.w - 1f) / rect.w;
 		float py = Math.clamp(float(event.y - rect.y), 0f, rect.h - 1f) / rect.h;
 		if (item.onUpdate != null) {
@@ -357,7 +357,7 @@ bool onEvent(View this, const MouseEvent event&) {
 			return false;
 		}
 
-		const Rect rect& = event.client;
+		const Rect rect& = event.clientRect;
 		int x0 = event.x - rect.x;
 		int x1 = x0 + event.dx;
 		int y0 = event.y - rect.y;
@@ -810,6 +810,7 @@ static void draw(Layout layout&) {
 		if (View view = layout.views[activeIndex]) {
 			Rect rect& = layout.rects[activeIndex];
 			MouseEvent event = {
+				clientRect: rect;
 				release: false;
 				isShift: isShift;
 				isCtrl: isCtrl;
@@ -818,7 +819,6 @@ static void draw(Layout layout&) {
 				button: button;
 				x: x;
 				y: y;
-				client: pointer(rect);
 			};
 			if (view.onEvent(event)) {
 				return true;
@@ -847,6 +847,7 @@ static void draw(Layout layout&) {
 		if (View view = layout.views[activeIndex]) {
 			Rect rect& = layout.rects[activeIndex];
 			MouseEvent event = {
+				clientRect: rect;
 				release: false;
 				isShift: isShift;
 				isCtrl: isCtrl;
@@ -857,7 +858,6 @@ static void draw(Layout layout&) {
 				dy: oy - y;
 				x: x;
 				y: y;
-				client: pointer(rect);
 			};
 			if (view.onEvent(event)) {
 				return true;
@@ -893,6 +893,7 @@ static void draw(Layout layout&) {
 		if (View view = layout.views[activeIndex]) {
 			Rect rect& = layout.rects[activeIndex];
 			MouseEvent event = {
+				clientRect: rect;
 				release: true;
 				isShift: isShift;
 				isCtrl: isCtrl;
@@ -901,7 +902,6 @@ static void draw(Layout layout&) {
 				button: button;
 				x: x;
 				y: y;
-				client: pointer(rect);
 			};
 			if (view.onEvent(event)) {
 				result = true;

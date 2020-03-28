@@ -53,6 +53,7 @@ symn newDef(ccContext cc, ccKind kind) {
 
 void enter(ccContext cc, symn owner) {
 	dieif(cc->rt->vm.nfc, "Compiler state closed");
+
 	cc->nest += 1;
 	if (owner != NULL) {
 		owner->owner = cc->owner;
@@ -74,9 +75,9 @@ symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *out
 
 	// clear from symbol table
 	for (int i = 0; i < hashTableSize; i++) {
-		for (sym = cc->deft[i]; sym && sym->nest > cc->nest; sym = sym->next) {
+		for (sym = cc->symbolStack[i]; sym && sym->nest > cc->nest; sym = sym->next) {
 		}
-		cc->deft[i] = sym;
+		cc->symbolStack[i] = sym;
 	}
 
 	// clear from scope stack
@@ -106,7 +107,7 @@ symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *out
 
 		// add to the list of global symbols
 		if (isStatic(sym)) {
-			if (!cc->siff && sym->global == NULL) {
+			if (!cc->inStaticIfFalse && sym->global == NULL) {
 				sym->global = cc->global;
 				cc->global = sym;
 			}
@@ -235,8 +236,8 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 			}
 		}
 
-		def->next = cc->deft[hash];
-		cc->deft[hash] = def;
+		def->next = cc->symbolStack[hash];
+		cc->symbolStack[hash] = def;
 		def->scope = cc->scope;
 		cc->scope = def;
 	}
@@ -378,7 +379,7 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 	}
 
 	if (sym == NULL && byName) {
-		if (found == 1 || cc->siff) {
+		if (found == 1 || cc->inStaticIfFalse) {
 			debug("as ref `%T`(%?t)", byName, arguments);
 			sym = byName;
 		}
@@ -447,7 +448,7 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 	}
 	else {
 		// first lookup in the current scope
-		sym = cc->deft[ref->ref.hash];
+		sym = cc->symbolStack[ref->ref.hash];
 		sym = lookup(cc, sym, ref, args, 0, 0);
 
 		// lookup parameters, fields, etc.
@@ -587,7 +588,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				return type;
 			}
 			if (ref->kind == TOKEN_var) {
-				type = cc->deft[ref->ref.hash];
+				type = cc->symbolStack[ref->ref.hash];
 				type = lookup(cc, type, ref, NULL, 0, 0);
 
 				// typename(identifier): returns null if identifier is not defined.

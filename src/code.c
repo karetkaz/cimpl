@@ -2656,7 +2656,7 @@ void printAsm(FILE *out, const char **esc, rtContext ctx, void *ptr, dmpMode mod
 					char *str = vmPointer(ctx, offs);
 					for (i = 0; i < hashTableSize; i += 1) {
 						list lst;
-						for (lst = ctx->cc->strt[i]; lst; lst = lst->next) {
+						for (lst = ctx->cc->stringTable[i]; lst; lst = lst->next) {
 							char *data = (char *) lst->data;
 							if (str >= data && str < data + strlen(data)) {
 								printFmt(out, esc, " ;%c", type_fmt_string_chr);

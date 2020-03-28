@@ -27,13 +27,14 @@
 //#define DEBUGGING 1
 
 enum Settings {
+	// maximum token count in expressions
+	maxTokenCount = 1024,
+
+	// size of the hash table for the symbol names
 	hashTableSize = 512,
 
 	// limit the count of printed elements(stacktrace, array elements)
 	maxLogItems = 25,
-
-	// maximum token count in expressions & nesting level
-	maxTokenCount = 1024,
 
 	// pre allocate space for argument on the stack
 	// faster execution if each argument is pushed when calculated
@@ -65,25 +66,25 @@ struct ccContextRec {
 	rtContext rt;
 	astn root;                      // statements
 	symn owner;                     // scope variables and functions
-	symn scope;                     // scope variables and functions
-	symn global;                    // global variables and functions
+	symn scope;                     // scope variables and functions (next is symn->scope)
+	symn global;                    // global variables and functions (next is symn->global)
 	list native;                    // list of native functions
 	astn jumps;                     // list of break and continue statements to fix
 
 	int nest;                       // nest level: modified by (enter/leave)
-	int siff:1;                     // TODO: remove: inside a static if false
+	int inStaticIfFalse:1;          // inside a static if false
 	int genDocumentation: 1;        // generate documentation
 	int genStaticGlobals: 1;        // generate global variables as static variables
 	int errPrivateAccess: 1;        // raise error accessing private data
 	int errUninitialized: 1;        // raise error for uninitialized variables
 
 	// Lexer
-	list strt[hashTableSize];       // string table (hash)
+	list stringTable[hashTableSize];// string table (hash)
 	astn tokPool;                   // list of recycled tokens
 	astn tokNext;                   // next token: look-ahead
 
 	// Parser
-	symn deft[hashTableSize];       // symbol stack (hash)
+	symn symbolStack[hashTableSize];// symbol stack (hash)
 	char *home;                     // home folder
 	char *unit;                     // unit file name
 	char *file;                     // current file name
@@ -121,7 +122,7 @@ struct ccContextRec {
 
 	symn libc_dbg;        // raise(char file[*], int line, int level, int trace, char message[*], variant inspect);
 	symn libc_try;        // tryExec(pointer args, void action(pointer args));
-	symn libc_mem;        // alloc(pointer old, int size);
+	symn libc_mem;        // pointer.alloc(pointer old, int size);
 	symn libc_new;        // object.create(typename type);
 };
 

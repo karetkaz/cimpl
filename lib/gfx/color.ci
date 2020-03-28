@@ -201,11 +201,14 @@ void alphaLut(uint32 lut[], int hardness, int alpha, bool reflect) {
 		}
 	}
 	if (reflect) {
-		for (int i = 0; i < lut.length / 2; i += 1) {
-			lut[i] = 255 - lut[i * 2];
+		int end = lut.length - 1;
+		int mid = lut.length / 2;
+		for (int i = end; i >= mid; i -= 1) {
+			lut[i] = lut[end];
+			end -= 2;
 		}
-		for (int i = 0; i < lut.length / 2; i += 1) {
-			lut[lut.length - i - 1] = lut[i];
+		for (int i = 0; i < mid; i += 1) {
+			lut[i] = lut[lut.length - i - 1];
 		}
 	}
 }

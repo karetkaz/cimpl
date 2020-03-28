@@ -1079,10 +1079,6 @@ ccContext ccInit(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)) {
 	cc->errPrivateAccess = 1;
 	cc->errUninitialized = 1;
 
-	cc->owner = NULL;
-	cc->scope = NULL;
-	cc->global = NULL;
-
 	install_type(cc, mode);
 	install_emit(cc, mode);
 	install_base(rt, onHalt);
@@ -1204,7 +1200,7 @@ symn ccLookup(rtContext rt, symn scope, char *name) {
 		}
 		else if (rt->cc != NULL) {
 			// code was not executed, main not generated
-			scope = rt->cc->deft[ast.ref.hash];
+			scope = rt->cc->symbolStack[ast.ref.hash];
 		}
 	}
 	return lookup(rt->cc, scope, &ast, NULL, 0, 1);
@@ -1283,7 +1279,7 @@ char *ccUniqueStr(ccContext cc, const char *str, size_t len, unsigned hash) {
 	}
 
 	list prev = NULL;
-	list next = cc->strt[hash];
+	list next = cc->stringTable[hash];
 	while (next != NULL) {
 		int cmp = memcmp(next->data, str, len);
 		if (cmp == 0) {
@@ -1314,7 +1310,7 @@ char *ccUniqueStr(ccContext cc, const char *str, size_t len, unsigned hash) {
 	rt->_beg += len;
 
 	if (!prev) {
-		cc->strt[hash] = node;
+		cc->stringTable[hash] = node;
 	}
 	else {
 		prev->next = node;
