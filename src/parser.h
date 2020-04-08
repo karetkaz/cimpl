@@ -12,7 +12,7 @@ size_t argsSize(symn function);
 symn newDef(ccContext cc, ccKind kind);
 
 /// Enter a new scope.
-void enter(ccContext cc, symn owner);
+void enter(ccContext cc, astn node, symn owner);
 
 /// Leave current scope.
 symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *size, symn result);

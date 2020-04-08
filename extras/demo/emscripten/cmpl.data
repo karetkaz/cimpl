@@ -527,10 +527,9 @@ struct View: object {
 	const variant data = null;
 
 	bool onMouseEvent(View this, const MouseEvent event&) = null;
-	bool onClick(View this) = null; /*TODO: {
-		//trace("onClick", this);
+	bool onClick(View this) {
 		return true;
-	}// */
+	}
 }
 
 struct Button: View {
@@ -558,11 +557,12 @@ struct Switch: View {
 	const char off[*] = "off";
 
 	bool checked = false;
-	const bool resetValue = 0;
+	const bool resetValue = false;
 
-	void onUpdate(Switch this, bool checked) = null;/* {
+	bool onUpdate(Switch this, bool checked) {
 		this.checked = checked;
-	}// */
+		return true;
+	}
 }
 
 struct Slider: View {
@@ -572,18 +572,22 @@ struct Slider: View {
 	const int maximum = -1u >> 1;
 	const int divisor = 1;
 	const int resetValue = 0;
-	void onUpdate(Slider this, int value) = null;/* {
+
+	bool onUpdate(Slider this, int value) {
 		this.value = value;
-	}// */
+		return true;
+	}
 }
 
 struct Histogram: View {
 	const Image image;
 	const bool lines = false;
 	uint32 data[256] = null;   // FIXME: this should be not possible
-	void onUpdate(Histogram this, int idx, int value) = null;/* {
+
+	bool onUpdate(Histogram this, int idx, int value) {
 		this.data[idx] = uint32(argb(idx, value, value, value));
-	}// */
+		return true;
+	}
 }
 
 struct ColorPicker: View {
@@ -591,9 +595,11 @@ struct ColorPicker: View {
 	argb value = argb(0);
 	int x = 0;
 	int y = 0;
-	void onUpdate(ColorPicker this, argb value) = null;/* {
+
+	bool onUpdate(ColorPicker this, argb value) {
 		this.value = value;
-	}// */
+		return true;
+	}
 }
 
 struct Layout: object {
@@ -702,29 +708,44 @@ void onInit(View this, Layout layout&, int idx) {
 	}
 	abort("invalid view", this);
 }
-void onReset(View this) {
+bool onClick(View this) {
+	if (this.onClick == null) {
+		return false;
+	}
+	return this.onClick(this);
+}
+bool onReset(View this) {
 	// FIXME: dispatch click event using inheritance and override
 	if (ColorPicker item = this.as(ColorPicker)) {
-		return;
+		return false;
 	}
 	if (Histogram item = this.as(Histogram)) {
-		for (int i = 0; i < 256; i += 1) {
-			item.data[i] = uint32(argb(i, i, i, i));
+		if (item.onUpdate == null) {
+			return false;
 		}
-		return;
+		bool result = false;
+		for (int i = 0; i < 256; i += 1) {
+			result |= item.onUpdate(i, i);
+		}
+		return result;
 	}
 	if (Slider item = this.as(Slider)) {
-		item.value = item.resetValue;
-		return;
+		if (item.onUpdate == null) {
+			return false;
+		}
+		return item.onUpdate(item.resetValue);
 	}
 	if (Switch item = this.as(Switch)) {
-		item.checked = item.resetValue;
-		return;
+		if (item.onUpdate == null) {
+			return false;
+		}
+		return item.onUpdate(item.resetValue);
 	}
 	if (Button item = this.as(Button)) {
-		return;
+		return false;
 	}
 	abort("invalid view", this);
+	return false;
 }
 bool onEvent(View this, const KeyEvent event&) {
 	// FIXME: dispatch click event using inheritance and override
@@ -737,65 +758,43 @@ bool onEvent(View this, const KeyEvent event&) {
 	}
 	if (Histogram item = this.as(Histogram)) {
 		if (event.key == ' ' || event.key == 8) {
-			item.onReset();
-			return true;
+			return item.onReset();
 		}
 		return false;
 	}
 	if (Slider item = this.as(Slider)) {
 		if (event.key == '+' || event.key == '=') {
-			item.value += event.isShift ? 1 : 10;
-			return true;
+			if (item.onUpdate == null) {
+				return false;
+			}
+			return item.onUpdate(item.value + (event.isShift ? 1 : 10));
 		}
 		if (event.key == '-' || event.key == '_') {
-			item.value -= event.isShift ? 1 : 10;
-			return true;
+			if (item.onUpdate == null) {
+				return false;
+			}
+			return item.onUpdate(item.value - (event.isShift ? 1 : 10));
 		}
 		if (event.key == ' ' || event.key == 8) {
-			item.onReset();
-			return true;
+			return item.onReset();
 		}
 		return false;
 	}
 	if (Switch item = this.as(Switch)) {
-		/* TODO
-		if (event.key == '+' || event.key == '=' || event.key == ' ') {
-			item.value += 1;
-			if (item.value >= item.values.length) {
-				item.value = item.values.length - 1;
-			}
-			return true;
-		}
-		if (event.key == '-' || event.key == '_' || event.key == 8) {
-			item.value -= 1;
-			if (item.value < 0) {
-				item.value = 0;
-			}
-			return true;
-		}*/
 		if (event.key == ' ') {
 			if (item.onUpdate != null) {
 				item.onUpdate(!item.checked);
-			} else {
-				item.checked = !item.checked;
 			}
-			if (item.onClick != null) {
-				return item.onClick();
-			}
-			return true;
+			return item.onClick();
 		}
 		if (event.key == 8) {
-			item.onReset();
-			return true;
+			return item.onReset();
 		}
 		return false;
 	}
 	if (Button item = this.as(Button)) {
 		if (event.key == ' ') {
-			if (item.onClick != null) {
-				return item.onClick();
-			}
-			return false;
+			return item.onClick();
 		}
 		return false;
 	}
@@ -811,20 +810,16 @@ bool onEvent(View this, const MouseEvent event&) {
 
 	if (ColorPicker item = this.as(ColorPicker)) {
 		if (event.release) {
-			if (item.onClick != null) {
-				return item.onClick();
-			}
+			return item.onClick();
+		}
+		if (item.onUpdate == null) {
 			return false;
 		}
 
 		const Rect rect& = event.clientRect;
 		float px = Math.clamp(float(event.x - rect.x), 0f, rect.w - 1f) / rect.w;
 		float py = Math.clamp(float(event.y - rect.y), 0f, rect.h - 1f) / rect.h;
-		if (item.onUpdate != null) {
-			item.onUpdate(hsv2rgb(px, 1 - py, item.lum));
-		} else {
-			item.value = hsv2rgb(px, 1 - py, item.lum);
-		}
+		item.onUpdate(hsv2rgb(px, 1 - py, item.lum));
 		item.x = event.x - rect.x;
 		item.y = event.y - rect.y;
 		return true;
@@ -833,12 +828,11 @@ bool onEvent(View this, const MouseEvent event&) {
 		if (event.release) {
 			if (event.repeat > 1) {
 				// double click to reset
-				item.onReset();
-				return true;
+				return item.onReset();
 			}
-			if (item.onClick != null) {
-				return item.onClick();
-			}
+			return item.onClick();
+		}
+		if (item.onUpdate == null) {
 			return false;
 		}
 
@@ -871,11 +865,7 @@ bool onEvent(View this, const MouseEvent event&) {
 		int h = rect.h;
 		for (int x = x0; x < x1; x += 1) {
 			int val = 255 * (h - (y >> 16)) / h;
-			if (item.onUpdate != null) {
-				item.onUpdate(x, val);
-			} else {
-				item.data[x] = uint32(argb(x, val, val, val));
-			}
+			item.onUpdate(x, val);
 			y += dy;
 		}
 		return true;
@@ -884,40 +874,28 @@ bool onEvent(View this, const MouseEvent event&) {
 		if (event.release) {
 			if (event.repeat > 1) {
 				// double click to reset
-				item.onReset();
-				return true;
+				return item.onReset();
 			}
-			if (item.onClick != null) {
-				return item.onClick();
-			}
+			return item.onClick();
+		}
+		if (item.onUpdate == null) {
 			return false;
 		}
-		if (item.onUpdate != null) {
-			item.onUpdate(item.value + event.dy);
-		} else {
-			item.value += event.dy;
-		}
-		return true;
+
+		return item.onUpdate(item.value + event.dy);
 	}
 	if (Switch item = this.as(Switch)) {
 		if (event.release) {
 			if (item.onUpdate != null) {
 				item.onUpdate(!item.checked);
-			} else {
-				item.checked = !item.checked;
 			}
-			if (item.onClick != null) {
-				return item.onClick();
-			}
-			return false;
+			return item.onClick();
 		}
 		return false;
 	}
 	if (Button item = this.as(Button)) {
 		if (event.release) {
-			if (item.onClick != null) {
-				return item.onClick();
-			}
+			return item.onClick();
 		}
 		return false;
 	}

@@ -24,7 +24,7 @@
 	4: include debug messages from code emitter
  	if not defined no extra messages and extra checks are performed.
 */
-//#define DEBUGGING 1
+//#define DEBUGGING 0
 
 enum Settings {
 	// maximum token count in expressions
@@ -71,12 +71,13 @@ struct ccContextRec {
 	list native;                    // list of native functions
 	astn jumps;                     // list of break and continue statements to fix
 
-	int nest;                       // nest level: modified by (enter/leave)
-	int inStaticIfFalse:1;          // inside a static if false
-	int genDocumentation: 1;        // generate documentation
-	int genStaticGlobals: 1;        // generate global variables as static variables
-	int errPrivateAccess: 1;        // raise error accessing private data
-	int errUninitialized: 1;        // raise error for uninitialized variables
+	int32_t nest;                   // nest level: modified by (enter/leave)
+	int32_t inStaticIfFalse: 1;     // inside a static if false
+	int32_t genDocumentation: 1;    // generate documentation
+	int32_t genStaticGlobals: 1;    // generate global variables as static variables
+	int32_t errPrivateAccess: 1;    // raise error accessing private data
+	int32_t errUninitialized: 1;    // raise error for uninitialized variables
+	astn scopeStack[maxTokenCount]; // scope stack used by enter leave
 
 	// Lexer
 	list stringTable[hashTableSize];// string table (hash)

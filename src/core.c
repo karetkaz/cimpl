@@ -380,7 +380,7 @@ static void install_type(ccContext cc, ccInstall mode) {
 		cc->null_ref->init->type = type_ptr;
 	}
 
-	enter(cc, NULL);
+	enter(cc, NULL, NULL);
 	cc->length_ref = install(cc, "length", ATTR_cnst | KIND_var, cc->type_idx->size, cc->type_idx, NULL);
 	leave(cc, KIND_typ, 0, 0, NULL, NULL);
 	cc->length_ref->offs = offsetOf(vmValue, length);
@@ -633,7 +633,7 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 
 	// 4 reflection
 	if (cc->type_rec != NULL && cc->type_var != NULL) {
-		enter(cc, cc->type_var);
+		enter(cc, NULL, cc->type_var);
 
 		error = error || !(field = ccAddCall(cc, variantHelpers, variant_is));
 		error = error || !(field = ccAddCall(cc, variantHelpers, variant_as));
@@ -642,7 +642,7 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 		cc->type_var->fields = leave(cc, KIND_def, 0, 0, NULL, cc->type_var->fields);
 
 
-		enter(cc, cc->type_rec);
+		enter(cc, NULL, cc->type_rec);
 
 		if ((field = install(cc, "size", ATTR_cnst | KIND_var, vm_stk_align, cc->type_i32, NULL))) {
 			field->offs = offsetOf(struct symNode, size);
@@ -686,7 +686,7 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 	}
 
 	if (cc->type_rec != NULL && cc->type_obj != NULL) {
-		enter(cc, cc->type_obj);
+		enter(cc, NULL, cc->type_obj);
 
 		if ((field = install(cc, ".type", ATTR_cnst | KIND_var | CAST_ref, vm_ref_size, cc->type_rec, NULL))) {
 			field->offs = 0;
@@ -1101,7 +1101,7 @@ symn ccBegin(ccContext cc, const char *name) {
 			return NULL;
 		}
 	}
-	enter(cc, result);
+	enter(cc, result->tag, result);
 	return result;
 }
 
@@ -1118,7 +1118,7 @@ symn ccExtend(ccContext cc, symn sym) {
 		trace(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
-	enter(cc, sym);
+	enter(cc, sym->tag, sym);
 	return sym;
 }
 

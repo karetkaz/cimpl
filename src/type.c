@@ -32,6 +32,22 @@ static symn aliasOf(symn sym) {
 	return sym;
 }
 
+static inline int isOwnerScope(ccContext cc) {
+	if (cc->nest <= 0 || cc->owner == NULL) {
+		// global or out of scope
+		return 0;
+	}
+	if (!isTypename(cc->owner)) {
+		return 0;
+	}
+	astn ast = cc->scopeStack[cc->nest - 1];
+	if (cc->owner != linkOf(ast, 0)) {
+		return 0;
+	}
+	return 1;
+}
+
+
 symn newDef(ccContext cc, ccKind kind) {
 	rtContext rt = cc->rt;
 	symn result = NULL;
@@ -51,10 +67,13 @@ symn newDef(ccContext cc, ccKind kind) {
 	return result;
 }
 
-void enter(ccContext cc, symn owner) {
+void enter(ccContext cc, astn node, symn owner) {
 	dieif(cc->rt->vm.nfc, "Compiler state closed");
 
+	dieif(cc->nest >= maxTokenCount, "Out of scope");
+	cc->scopeStack[cc->nest] = node;
 	cc->nest += 1;
+
 	if (owner != NULL) {
 		owner->owner = cc->owner;
 		cc->owner = owner;
@@ -236,8 +255,13 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 			}
 		}
 
-		def->next = cc->symbolStack[hash];
-		cc->symbolStack[hash] = def;
+		if (isOwnerScope(cc)) {
+			def->next = cc->owner->fields;
+			cc->owner->fields = def;
+		} else {
+			def->next = cc->symbolStack[hash];
+			cc->symbolStack[hash] = def;
+		}
 		def->scope = cc->scope;
 		cc->scope = def;
 	}
@@ -702,7 +726,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			lType = typeCheck(cc, loc, ast->op.lhso, raise);
 			// if left side is a function or emit, we need to lookup parameters declared for the function
 			loc = linkOf(ast->op.lhso, 1);
-			if (loc == NULL || isVariable(loc)) {
+			if (loc == NULL) {
 				loc = lType;
 			}
 			rType = typeCheck(cc, loc, ast->op.rhso, raise);
@@ -934,7 +958,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				error(cc->rt, ast->file, ast->line, ERR_INVALID_CONST_ASSIGN, ast);
 			}
 			if (!canAssign(cc, lType, ast->op.rhso, 0)) {
-				traceAst(ast);
+				error(cc->rt, ast->file, ast->line, ERR_INVALID_VALUE_ASSIGN, lType, ast);
 				return NULL;
 			}
 			ast->op.rhso = convert(cc, ast->op.rhso, lType);

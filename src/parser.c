@@ -40,7 +40,7 @@ static inline void addLength(ccContext cc, symn sym, astn init) {
 	}
 
 	// add static length to array
-	enter(cc, NULL);
+	enter(cc, NULL, NULL);
 	ccKind kind = ATTR_cnst | ATTR_stat | KIND_def | refCast(cc->type_idx);
 	install(cc, "length", kind, cc->type_idx->size, cc->type_idx, init);
 	sym->fields = leave(cc, KIND_def, 0, 0, NULL, NULL);
@@ -184,14 +184,14 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 		}
 
 		if (ptr != NULL) {
-			if (ptr->nest >= def->nest &&  strcmp(def->name, unknown_tag) != 0) {
+			if (ptr->owner != def->owner) {
+				warn(cc->rt, raise_warn_typ9, def->file, def->line, WARN_DECLARATION_REDEFINED, def);
+			}
+			else if (ptr->nest >= def->nest && strcmp(def->name, unknown_tag) != 0) {
 				error(cc->rt, def->file, def->line, ERR_DECLARATION_REDEFINED, def);
 				if (ptr->file && ptr->line) {
 					info(cc->rt, ptr->file, ptr->line, "previously defined as `%T`", ptr);
 				}
-			}
-			else if (ptr->owner != def->owner) {// TODO: recheck owners
-				warn(cc->rt, raise_warn_typ9, def->file, def->line, WARN_DECLARATION_REDEFINED, def);
 			}
 		}
 
@@ -984,7 +984,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 	symn def = NULL, params = NULL;
 	if (skipTok(cc, LEFT_par, 0)) {			// int a(...)
 		astn argRoot;
-		enter(cc, def);
+		enter(cc, tag, def);
 		argRoot = parameters(cc, type, tag);
 		skipTok(cc, RIGHT_par, 1);
 
@@ -1006,7 +1006,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 			// enable parameter lookup
 			def->fields = params;
 
-			enter(cc, def);
+			enter(cc, tag, def);
 			def->init = statement(cc, NULL);
 			if (def->init == NULL) {
 				def->init = newNode(cc, STMT_beg);
@@ -1131,7 +1131,7 @@ static astn declare_alias(ccContext cc, ccKind attr) {
 		return NULL;
 	}
 
-	enter(cc, NULL);
+	enter(cc, tag, NULL);
 
 	if (skipTok(cc, LEFT_par, 0)) {
 		parameters(cc, cc->type_vid, tag);
@@ -1317,14 +1317,13 @@ static astn declare_record(ccContext cc, ccKind attr) {
 		// make not instantiable
 		cast = CAST_vid;
 	}
-	symn type = base != NULL ? base : cc->type_rec;
+	symn type = base == NULL ? cc->type_rec : base;
+	symn fields = base == NULL ? NULL : base->fields;
 	type = declare(cc, ATTR_stat | ATTR_cnst | KIND_typ | cast, tag, type, NULL);
-	enter(cc, type);
+	type->fields = fields; // allow lookup of fields from base type
+	enter(cc, tag, type);
 	statement_list(cc);
-	if (base != NULL) {
-		type->fields = base->fields;
-	}
-	type->fields = leave(cc, attr | KIND_typ, pack, baseSize, &type->size, type->fields);
+	type->fields = leave(cc, attr | KIND_typ, pack, baseSize, &type->size, fields);
 	if (expose) {
 		// HACK: convert the type into a variable of it's own type ...?
 		type->kind = KIND_var | CAST_val;
@@ -1378,7 +1377,7 @@ static astn declare_enum(ccContext cc) {
 	symn type = NULL;
 	if (tag != NULL) {
 		type = declare(cc, ATTR_stat | ATTR_cnst | KIND_typ | CAST_val, tag, base, NULL);
-		enter(cc, type);
+		enter(cc, tag, type);
 	}
 
 	int64_t nextValue = 0;
@@ -1426,7 +1425,7 @@ static astn declare_enum(ccContext cc) {
 		// enumeration values are documented public symbols
 		member->doc = member->name;
 
-		logif("ENUM", "%s:%u: enum.member: `%t` => %+T", prop->file, prop->line, prop, member);
+		debug("%s:%u: enum.member: `%t` => %+T", prop->file, prop->line, prop, member);
 	}
 
 	if (type != NULL) {
@@ -1470,11 +1469,11 @@ static astn statement_if(ccContext cc, ccKind attr) {
 				error(cc->rt, test->file, test->line, ERR_INVALID_CONST_EXPR, test);
 			}
 			if (enterThen) {
-				enter(cc, NULL);
+				enter(cc, ast, NULL);
 			}
 		} else {
 			if (enterThen) {
-				enter(cc, NULL);
+				enter(cc, ast, NULL);
 			}
 			if (isTypeExpr(test)) {
 				backTok(cc, test);
@@ -1507,7 +1506,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 			enterThen = 0;
 		}
 		if (enterElse) {
-			enter(cc, NULL);
+			enter(cc, ast, NULL);
 			enterThen = 1;
 		}
 		cc->inStaticIfFalse = insideStaticIf || (staticIf && enterElse);
@@ -1535,7 +1534,7 @@ static astn statement_for(ccContext cc, ccKind attr) {
 		return NULL;
 	}
 
-	enter(cc, NULL);
+	enter(cc, ast, NULL);
 	skipTok(cc, LEFT_par, 1);
 
 	astn init = peekTok(cc, STMT_end) ? NULL : expression(cc, 0);
