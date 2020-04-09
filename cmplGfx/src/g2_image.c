@@ -508,21 +508,21 @@ GxImage loadFnt(GxImage dst, const char *src) {
 	uint16_t width = 8;
 	uint16_t height = (uint16_t) (fsize >> 8);
 
-	dst = createImage(dst, width, 256 * height, 8, ImageFnt);
+	dst = createImage(dst, 256 * width, height, 8, ImageFnt);
 	if (dst == NULL) {
 		gx_debug("Failed to init image");
 		return NULL;
 	}
 
-	unsigned char *ptr = (void *) dst->basePtr;
+	unsigned char *chrPtr = (void *) dst->basePtr;
 	GxFLut lut = dst->LLUTPtr;
 	lut->count = 256;
-	lut->height = height;
 	for (int i = 0; i < 256; ++i) {
 		lut->data[i].pad_x = 0;
 		lut->data[i].pad_y = 0;
 		lut->data[i].width = width;
-		lut->data[i].basePtr = ptr;
+		lut->data[i].basePtr = chrPtr;
+		unsigned char *ptr = chrPtr;
 		for (int y = 0; y < height; ++y) {
 			ptr[0] = (tmp[i * height + y] & 0X80) ? 255 : 0;
 			ptr[1] = (tmp[i * height + y] & 0X40) ? 255 : 0;
@@ -534,6 +534,7 @@ GxImage loadFnt(GxImage dst, const char *src) {
 			ptr[7] = (tmp[i * height + y] & 0X01) ? 255 : 0;
 			ptr += dst->scanLen;
 		}
+		chrPtr += width;
 	}
 	return dst;
 }

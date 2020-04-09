@@ -2,7 +2,6 @@
 
 struct Style {
 	const Image font;
-	const int fontHeight;
 
 	int backgroundColor = 0x1a1a1a;
 	int focusedColor = 0x3b4754;
@@ -438,7 +437,7 @@ void onMeasure(View this, Rect rect&, const Style style&) {
 	}
 	if (Slider item = this.as(Slider)) {
 		if (item.height == 0) {
-			rect.h = style.fontHeight + 2 * style.padding;
+			rect.h = style.font.height() + 2 * style.padding;
 		} else {
 			rect.h = item.height;
 		}
@@ -446,7 +445,7 @@ void onMeasure(View this, Rect rect&, const Style style&) {
 	}
 	if (Switch item = this.as(Switch)) {
 		if (item.height == 0) {
-			rect.h = style.fontHeight + 2 * style.padding;
+			rect.h = style.font.height() + 2 * style.padding;
 		} else {
 			rect.h = item.height;
 		}
@@ -454,7 +453,7 @@ void onMeasure(View this, Rect rect&, const Style style&) {
 	}
 	if (Button item = this.as(Button)) {
 		if (item.height == 0) {
-			rect.h = style.fontHeight + 2 * style.padding;
+			rect.h = style.font.height() + 2 * style.padding;
 		}
 		else if (item.text == null) {
 			// TODO: remove hack: empty button used for separator
@@ -957,7 +956,6 @@ Layout Layout(Image offs, int x, int y, Image font, View items...) {
 		};
 		style: {
 			font: font;
-			fontHeight: font.height() / 256;
 		};
 	};
 

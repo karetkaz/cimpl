@@ -231,7 +231,7 @@
         var content = ts.options.completionTip ? ts.options.completionTip(cur.data) : cur.data.doc;
         if (content) {
           tooltip = makeTooltip(node.parentNode.getBoundingClientRect().right + window.pageXOffset,
-                                node.getBoundingClientRect().top + window.pageYOffset, content, cm);
+                                node.getBoundingClientRect().top + window.pageYOffset, content);
           tooltip.className += " " + cls + "hint-doc";
         }
       });
@@ -334,7 +334,7 @@
     tip.appendChild(document.createTextNode(tp.rettype ? ") ->\u00a0" : ")"));
     if (tp.rettype) tip.appendChild(elt("span", cls + "type", tp.rettype));
     var place = cm.cursorCoords(null, "page");
-    var tooltip = ts.activeArgHints = makeTooltip(place.right + 1, place.bottom, tip, cm)
+    var tooltip = ts.activeArgHints = makeTooltip(place.right + 1, place.bottom, tip)
     setTimeout(function() {
       tooltip.clear = onEditorActivity(cm, function() {
         if (ts.activeArgHints == tooltip) closeArgHints(ts) })
@@ -601,7 +601,7 @@
   function tempTooltip(cm, content, ts) {
     if (cm.state.ternTooltip) remove(cm.state.ternTooltip);
     var where = cm.cursorCoords();
-    var tip = cm.state.ternTooltip = makeTooltip(where.right + 1, where.bottom, content, cm);
+    var tip = cm.state.ternTooltip = makeTooltip(where.right + 1, where.bottom, content);
     function maybeClear() {
       old = true;
       if (!mouseOnTip) clear();
@@ -637,12 +637,11 @@
     }
   }
 
-  function makeTooltip(x, y, content, cm) {
+  function makeTooltip(x, y, content) {
     var node = elt("div", cls + "tooltip", content);
     node.style.left = x + "px";
     node.style.top = y + "px";
-    var container = ((cm.options || {}).hintOptions || {}).container || document.body;
-    container.appendChild(node);
+    document.body.appendChild(node);
     return node;
   }
 

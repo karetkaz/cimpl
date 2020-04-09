@@ -237,7 +237,7 @@ void drawChar(GxImage image, int x, int y, GxImage font, int chr, uint32_t color
 	clip.x = x + face->pad_x;
 	clip.y = y + face->pad_y;
 	clip.w = face->width;
-	clip.h = font->LLUTPtr->height;
+	clip.h = font->height;
 	if (clip.w <= 0 || clip.h <= 0) {
 		return;
 	}
@@ -252,7 +252,7 @@ void drawChar(GxImage image, int x, int y, GxImage font, int chr, uint32_t color
 	while (clip.h-- > 0) {
 		blt(dptr, sptr, (void*)(size_t)color, clip.w);
 		dptr += image->scanLen;
-		sptr += face->width;
+		sptr += font->scanLen;
 	}
 }
 void clipText(GxRect rect, GxImage font, const char *text) {
@@ -269,7 +269,7 @@ void clipText(GxRect rect, GxImage font, const char *text) {
 	}
 
 	rect->w = 0;
-	rect->h = font->LLUTPtr->height;
+	rect->h = font->height;
 	while ((chr = *text++) != 0) {
 		switch (chr) {
 			default:
@@ -287,7 +287,7 @@ void clipText(GxRect rect, GxImage font, const char *text) {
 					// new line at end ot text
 					break;
 				}
-				y += font->LLUTPtr->height;
+				y += font->height;
 				x = x0;
 				break;
 
@@ -332,7 +332,7 @@ void drawText(GxImage image, int x, int y, GxImage font, const char *text, uint3
 					// new line at end of text
 					break;
 				}
-				y += font->LLUTPtr->height;
+				y += font->height;
 				x = x0;
 				break;
 		}

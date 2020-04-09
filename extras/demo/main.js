@@ -160,7 +160,11 @@ let params = JsArgs('#', function (params, changes) {
 			default:
 			case 'auto':
 				if (!('ontouchstart' in document.documentElement)) {
-					setStyle(document.body, 'editor', 'left-pin', 'left-bar');
+					if (params.workspace != null || params.project != null) {
+						setStyle(document.body, 'editor', 'output', 'left-pin', 'left-bar');
+					} else {
+						setStyle(document.body, 'editor', 'left-pin', 'left-bar');
+					}
 					editor.setSize('100%', '100%');
 					break;
 				}

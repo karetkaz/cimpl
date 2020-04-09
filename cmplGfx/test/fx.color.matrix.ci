@@ -229,14 +229,14 @@ int onEvent(int action, int button, int x, int y) {
 		image: offs;
 		enabled: false;
 	};
-	static Switch btnPresets = {
+	static Switch grpPresets = {
 		text: "Presets";
 		off: ">";
 		on: "<<<";
 		selectable: false;
 		onClick: onPresetsClick;	// TODO: implement override
 	};
-	static Switch btnMask = {
+	static Switch grpMask = {
 		text: "Mask";
 		off: ">";
 		on: "<<<";
@@ -440,7 +440,7 @@ int onEvent(int action, int button, int x, int y) {
 	};
 
 	static Layout ui = Layout(offs, -30, 30, font,
-		histogram, separator, btnPresets, btnMask, separator,
+		histogram, separator, grpPresets, grpMask, separator,
 		// group 1 - Controls
 		brightness, saturation, contrast, temp, tint, hue,
 		// group 2 - Presets
@@ -500,32 +500,40 @@ int onEvent(int action, int button, int x, int y) {
 	}
 	static bool onPresetsClick(Switch view) {
 		int group = ui.group;
-		if (view == btnPresets) {
+		if (view == grpPresets) {
 			// toggle group 2 <> 1
 			group = group != 2 ? 2 : 1;
 		}
-		if (view == btnMask) {
+		if (view == grpMask) {
 			// toggle group 3 <> 1
 			group = group != 3 ? 3 : 1;
 		}
-		if (ui.setGroup(group)) {
-			btnPresets.checked = ui.group == 2;
-			btnMask.checked = ui.group == 3;
-			return true;
-		}
-		return false;
+		return ui.setGroup(group);
 	}
 
+	bool draw = false;
 	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
 		}
+		if (button == 'm' || button == 'M') {
+			chkMask.checked = !chkMask.checked;
+			if (!ui.isSelected(btnLinear, btnReflect, btnRadial, btnSquare)) {
+				ui.setSelected(btnLinear);
+			}
+			ui.setGroup(3);
+			draw = true;
+		}
 	}
 	if (action == Gui.WINDOW_INIT) {
 		ui.setGroup(1);
+		draw = true;
 	}
-	if (ui.uiEvent(action, button, x, y)) {
+	if (ui.uiEvent(action, button, x, y) || draw) {
 		uint64 start = System.millis();
+
+		grpPresets.checked = ui.group == 2;
+		grpMask.checked = ui.group == 3;
 
 		if (ui.isActive(brightness, saturation, contrast, temp, tint, hue)) {
 			float b = brightness.valFlt();

@@ -52,8 +52,7 @@ typedef struct GxCLut {
 
 // Layer Look Up Table
 typedef struct GxFLut {
-	uint16_t count;            // font faces
-	uint16_t height;           // font height
+	uint32_t count;            // font faces
 	struct GxFace {
 		uint8_t pad_x;
 		uint8_t pad_y;
