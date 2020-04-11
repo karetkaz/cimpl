@@ -3,16 +3,16 @@
 
 vec4f blob(vec4f in) {
 
-	double time = in.w / 2;
+	float64 time = in.w / 2;
 	vec2d p = vec2d(in.x * in.z * 2 - 1, in.y * 2 - 1);
 
 	//! the centre point of each blob
-	vec2d move1 = vec2d(double.cos(time * 4.5) * 0.4, double.sin(time * 1.5) * 0.4);
-	vec2d move2 = vec2d(double.cos(time * 2.0) * 0.4, double.sin(time * 3.0) * 0.4);
-	vec2d move3 = vec2d(double.cos(time * 7.0) * 0.4, double.sin(time * 2.0) * 0.4);
-	vec2d move4 = vec2d(double.cos(time * 2.0) * 0.4, double.sin(time * 4.3) * 0.4);
+	vec2d move1 = vec2d(float64.cos(time * 4.5) * 0.4, float64.sin(time * 1.5) * 0.4);
+	vec2d move2 = vec2d(float64.cos(time * 2.0) * 0.4, float64.sin(time * 3.0) * 0.4);
+	vec2d move3 = vec2d(float64.cos(time * 7.0) * 0.4, float64.sin(time * 2.0) * 0.4);
+	vec2d move4 = vec2d(float64.cos(time * 2.0) * 0.4, float64.sin(time * 4.3) * 0.4);
 
-	double metaball = 0;
+	float64 metaball = 0;
 	//! sum the meatballs as the radius for each blob
 	metaball += 1. / Math.max(1F, dot(sub(p, move1), sub(p, move1)) * 22.);
 	metaball += 1. / Math.max(1F, dot(sub(p, move2), sub(p, move2)) * 26);

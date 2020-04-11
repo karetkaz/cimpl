@@ -1253,11 +1253,10 @@ static void dumpApiText(userContext ctx, symn sym) {
 		}
 		printFmt(out, esc, "%I.usages:\n", indent);
 		for (astn usage = sym->use; usage; usage = usage->ref.used) {
-			if (usage->file && usage->line) {
-				int referenced = usage != sym->tag;
-				printFmt(out, esc, "%I%s:%u: %s as `%t`\n", indent + 1, usage->file, usage->line, referenced ? "referenced" : "defined", usage);
+			if (usage->file && usage->line && usage != sym->tag) {
+				printFmt(out, esc, "%I%?s:%?u: referenced as `%.t`\n", indent + 1, usage->file, usage->line, usage);
 			}
-			else {
+			else if (usage != sym->tag) {
 				internalUsages += 1;
 			}
 		}
@@ -2591,7 +2590,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (dumpFun == NULL) {
-		if (extra.dmpApi || extra.dmpDoc || extra.dmpAsm || extra.dmpAst) {
+		if (extra.dmpApi || extra.dmpDoc || extra.dmpAsm || extra.dmpAst || extra.dmpUse) {
 			dumpFun = dumpApiText;
 		}
 	}

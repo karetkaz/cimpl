@@ -53,19 +53,18 @@ struct Button: View {
 	bool onClick(Button this) {
 		View.onClick(this);   // call super
 		trace("onClick", this);
-		// FIXME: enable lookup
 		return this.enabled;
 	}// */
 }
 
 struct Switch: View {
 	const char text[*];
-	/* TODO: 
-	const char values[*][] = {
+	/* TODO: allow selecting one out of multiple choices
+	const char choices[*][] = {
 		"off",
 		"on"
 	};
-	int value = 0;*/
+	int selected = 0;*/
 
 	const char on[*] = "on";
 	const char off[*] = "off";
@@ -105,7 +104,7 @@ struct Histogram: View {
 }
 
 struct ColorPicker: View {
-	const float lum = 1f;
+	const float32 lum = 1f;
 	argb value = argb(0);
 	int x = 0;
 	int y = 0;
@@ -141,8 +140,8 @@ int val(Slider slider&) {
 	return slider.value;
 }
 
-double valFlt(Slider slider&) {
-	return slider.val() / double(slider.divisor);
+float64 valFlt(Slider slider&) {
+	return slider.val() / float64(slider.divisor);
 }
 
 inline selected(const Layout layout&) = layout.selectedIndex < 0 ? null : pointer(layout.views[layout.selectedIndex]);
@@ -331,8 +330,8 @@ bool onEvent(View this, const MouseEvent event&) {
 		}
 
 		const Rect rect& = event.clientRect;
-		float px = Math.clamp(float(event.x - rect.x), 0f, rect.w - 1f) / rect.w;
-		float py = Math.clamp(float(event.y - rect.y), 0f, rect.h - 1f) / rect.h;
+		float32 px = Math.clamp(float32(event.x - rect.x), 0f, rect.w - 1f) / rect.w;
+		float32 py = Math.clamp(float32(event.y - rect.y), 0f, rect.h - 1f) / rect.h;
 		item.onUpdate(hsv2rgb(px, 1 - py, item.lum));
 		item.x = event.x - rect.x;
 		item.y = event.y - rect.y;
@@ -661,14 +660,14 @@ static void draw(Layout layout&) {
 		if (ColorPicker item = view.as(ColorPicker)) {
 			for (int y = 0; y < rect.h; y += 1) {
 				for (int x = 0; x < rect.w; x += 1) {
-					float px = float(x) / rect.w;
-					float py = float(y) / rect.h;
+					float32 px = float32(x) / rect.w;
+					float32 py = float32(y) / rect.h;
 					argb color = hsv2rgb(px, 1 - py, item.lum);
 					layout.offs.set(x + rect.x, y + rect.y, color);
 				}
 			}
-			int x = rect.x + Math.clamp(float(item.x), 0f, rect.w - 1f);
-			int y = rect.y + Math.clamp(float(item.y), 0f, rect.h - 1f);
+			int x = rect.x + Math.clamp(float32(item.x), 0f, rect.w - 1f);
+			int y = rect.y + Math.clamp(float32(item.y), 0f, rect.h - 1f);
 			layout.offs.drawOval(x - 4, y - 4, x + 4, y + 4, layout.style.valueColor);
 			layout.offs.drawOval(x - 2, y - 2, x + 2, y + 2, layout.style.valueColor);
 			layout.offs.drawOval(x - 1, y - 1, x + 1, y + 1, layout.style.valueColor);

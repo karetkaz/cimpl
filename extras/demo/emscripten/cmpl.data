@@ -1,3 +1,32 @@
+// standard library extension
+
+enum: bool {
+	true: 0 == 0;
+	false: 0 != 0;
+}
+
+inline byte = uint8;
+inline float = float32;
+inline double = float64;
+
+static if (typename(raise) == function) {
+inline "std/debug.ci";
+}
+
+/// Returns the size of the given type
+inline sizeof(typename type) = int(type.size);
+
+inline "std/math.ci";
+inline "std/math/Complex.ci"?;      // -> Complex<float64>
+//inline "std/math/Rational.ci"?;     // -> Rational<int64>
+inline "std/math/Vector4f.ci"?;
+inline "std/math/Matrix4f.ci"?;
+inline "std/math/Vector2d.ci"?;
+//inline "std/math/BigInteger.ci?"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
+//inline "std/math/BigDecimal.ci?"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
+//inline "std/math/Perlin.ci"?;
+
+inline "std/string.ci";
 // graphics library extension
 inline "gfx/color.ci";
 
@@ -25,7 +54,7 @@ Image Image(const char fileName[*], int depth) {
 inline Image(const char fileName[*]) = Image(fileName, 32);
 
 /// Create an image by opening an image file with custom width and height
-Image Image(const char fileName[*], int width, int height, int depth, int align, double maxScale) {
+Image Image(const char fileName[*], int width, int height, int depth, int align, float64 maxScale) {
 	enum: int {
 		center: 0;
 		left: 1;
@@ -38,7 +67,7 @@ Image Image(const char fileName[*], int width, int height, int depth, int align,
 		highRes: 0x20;
 	}
 
-	double scale = 1;
+	float64 scale = 1;
 	Image image = Image(fileName, depth);
 	Image result = Image(width, height, depth);
 
@@ -49,8 +78,8 @@ Image Image(const char fileName[*], int width, int height, int depth, int align,
 	bool fitHeight = alignHorizontal == fitHorizontal;
 
 	if (fitWidth && fitHeight) {
-		double widthScale = width / double(image.width());
-		double heightScale = height / double(image.height());
+		float64 widthScale = width / float64(image.width());
+		float64 heightScale = height / float64(image.height());
 		if (align & fill) {
 			scale = Math.max(widthScale, heightScale);
 		} else {
@@ -58,17 +87,17 @@ Image Image(const char fileName[*], int width, int height, int depth, int align,
 		}
 	}
 	else if (fitWidth) {
-		scale = width / double(image.width());
+		scale = width / float64(image.width());
 	}
 	else if (fitHeight) {
-		scale = height / double(image.height());
+		scale = height / float64(image.height());
 	}
 	if (scale > maxScale) {
 		scale = maxScale;
 	}
 
 	// calculate translation
-	double tx = 0;
+	float64 tx = 0;
 	if (fitWidth || alignVertical == center) {
 		tx = (width - image.width() * scale) / 2;
 	}
@@ -76,7 +105,7 @@ Image Image(const char fileName[*], int width, int height, int depth, int align,
 		tx = (width - image.width() * scale);
 	}
 
-	double ty = 0;
+	float64 ty = 0;
 	if (fitHeight || alignHorizontal == center) {
 		ty = (height - image.height() * scale) / 2;
 	}
@@ -121,7 +150,7 @@ Image Image(Image copy) {
 }
 
 /// Create an image by copying another one using a custom aspect ratio
-Image Image(Image copy, double aspect) {
+Image Image(Image copy, float64 aspect) {
 	int width = copy.width();
 	if (aspect > 0) {
 		width = copy.height() * aspect;
@@ -202,8 +231,8 @@ void eval(Image image, const Rect roi&, float32 aspect, float32 time, vec4f eval
 		z: aspect;
 		w: time;
 	};
-	float w = image.width();
-	float h = image.height();
+	float32 w = image.width();
+	float32 h = image.height();
 	for (int y = rect.y; y < rect.y + rect.h; y += 1) {
 		in.y = y / h;
 		for (int x = rect.x; x < rect.x + rect.w; x += 1) {
@@ -265,7 +294,7 @@ void show(Mesh mesh, int w, int h, float32 fovy) {
 	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
 		static int ox = 0;
 		static int oy = 0;
-		static const float speed = 1. / 100;
+		static const float32 speed = 1 / 100f;
 		if (action == Gui.FINGER_MOTION) {
 			action = Gui.MOUSE_MOTION;
 		}
@@ -483,6 +512,518 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 	closure.thumb.destroy();
 	closure.offs.destroy();
 }
+/// an 32 bit argb color
+struct argb: 0 {
+	/// value of color
+	uint32 v;
+	struct: 1 {
+		/// blue component
+		uint8 b;
+
+		/// green component
+		uint8 g;
+
+		/// red component
+		uint8 r;
+
+		/// alpha component
+		uint8 a;
+	}
+	/*enum {
+		Black             : 0x00000000;
+		White             : 0x00ffffff;
+		Aquamarine        : 0x007fffd4;
+		Azure             : 0x00007fff;
+		Blue              : 0x000000ff;
+		BlueViolet        : 0x008a2be2;
+		Brown             : 0x00a52a2a;
+		CadetBlue         : 0x005f9ea0;
+		Coral             : 0x00ff7f50;
+		CornflowerBlue    : 0x006495ed;
+		Cyan              : 0x0000ffff;
+		DarkGray          : 0x00a9a9a9;
+		DarkGrey          : 0x00a9a9a9;
+		DarkGreen         : 0x00006400;
+		DarkOliveGreen    : 0x00556b2f;
+		DarkOrchid        : 0x009932cc;
+		DarkSlateBlue     : 0x00483d8b;
+		DarkSlateGray     : 0x002f4f4f;
+		DarkSlateGrey     : 0x002f4f4f;
+		DarkTurquoise     : 0x0000ced1;
+		DarkWood          : 0x000d0301;
+		DeepPink          : 0x00ff1493;
+		DimGray           : 0x00696969;
+		DimGrey           : 0x00696969;
+		FireBrick         : 0x00b22222;
+		ForestGreen       : 0x00228b22;
+		Gold              : 0x00ffd700;
+		Goldenrod         : 0x00daa520;
+		Gray              : 0x00808080;
+		Grey              : 0x00808080;
+		Green             : 0x00008000;
+		GreenYellow       : 0x00adff2f;
+		IndianRed         : 0x00cd5c5c;
+		Khaki             : 0x00f0e68c;
+		LightBlue         : 0x00add8e6;
+		LightGray         : 0x00d3d3d3;
+		LightGrey         : 0x00d3d3d3;
+		LightSteelBlue    : 0x00b0c4de;
+		LightWood         : 0x00993d1a;
+		Lime              : 0x0000ff00;
+		LimeGreen         : 0x0032cd32;
+		Magenta           : 0x00ff00ff;
+		Maroon            : 0x00800000;
+		MedianWood        : 0x004d1f09;
+		MediumAquamarine  : 0x0066cdaa;
+		MediumBlue        : 0x000000cd;
+		MediumForestGreen : 0x006b8e23;
+		MediumGoldenrod   : 0x00eaeaad;
+		MediumOrchid      : 0x00ba55d3;
+		MediumSeaGreen    : 0x003cb371;
+		MediumSlateBlue   : 0x007b68ee;
+		MediumSpringGreen : 0x0000fa9a;
+		MediumTurquoise   : 0x0048d1cc;
+		MediumVioletRed   : 0x00c71585;
+		MidnightBlue      : 0x00191970;
+		Navy              : 0x00000080;
+		NavyBlue          : 0x0023238e;
+		Orange            : 0x00ffa500;
+		OrangeRed         : 0x00ff4500;
+		Orchid            : 0x00da70d6;
+		PaleGreen         : 0x0098fb98;
+		Pink              : 0x00ffc0cb;
+		Plum              : 0x00dda0dd;
+		Red               : 0x00ff0000;
+		Salmon            : 0x00fa8072;
+		SeaGreen          : 0x002e8b57;
+		Sienna            : 0x00a0522d;
+		SkyBlue           : 0x0087ceeb;
+		SlateBlue         : 0x006a5acd;
+		SpringGreen       : 0x0000ff7f;
+		SteelBlue         : 0x004682b4;
+		Tan               : 0x00d2b48c;
+		Thistle           : 0x00d8bfd8;
+		Turquoise         : 0x0040e0d0;
+		Violet            : 0x00ee82ee;
+		VioletRed         : 0x00cc3299;
+		Wheat             : 0x00f5deb3;
+		Yellow            : 0x00ffff00;
+		YellowGreen       : 0x009acd32;
+		//Transparent     : 0xff000000;
+	}*/
+}
+
+/// cast unsigned integer to argb value
+inline argb(uint32 argb) = argb(emit(uint32(argb)));
+/// cast argb value to unsigned integer
+inline uint32(argb value) = uint32(emit(struct(value)));
+
+
+/// clamp signed gray or color component to fit in 8 bits (0 ... 255)
+uint32 clamp_s8(int32 c) {
+	if (c < 0) {
+		return 0;
+	}
+	if (c > 255) {
+		return 255;
+	}
+	return c;
+}
+/// clamp unsigned gray or color component to fit in 8 bits (0 ... 255)
+uint32 clamp_u8(uint32 c) {
+	if (c > 255) {
+		return 255;
+	}
+	return c;
+}
+
+// construct a rgb8 gray color from the given value
+inline _gray(uint32 c) = argb((((c << 8) | c) << 8) | c);
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(int32 c) = _gray(clamp_s8(c));
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(uint32 c) = _gray(clamp_s8(c));
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(float32 c) = gray(int32(c * 255));
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(float64 c) = gray(int32(c * 255));
+
+
+/// construct an argb color from the given components
+inline _argb(uint32 r, uint32 g, uint32 b) = argb(uint32((((r << 8) | g) << 8) | b));
+/// construct an argb color from the given components
+inline _argb(uint32 a, uint32 r, uint32 g, uint32 b) = argb(uint32((((((a << 8) | r) << 8) | g) << 8) | b));
+
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(int32 r, int32 g, int32 b) = _argb(clamp_s8(r), clamp_s8(g), clamp_s8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(r), clamp_u8(g), clamp_u8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float32 r, float32 g, float32 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float64 r, float64 g, float64 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(int32 a, int32 r, int32 g, int32 b) = _argb(clamp_s8(a), clamp_s8(r), clamp_s8(g), clamp_s8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(uint32 a, uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(a), clamp_u8(r), clamp_u8(g), clamp_u8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float32 a, float32 r, float32 g, float32 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float64 a, float64 r, float64 g, float64 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
+
+
+/// get the Alpha channel of the color
+inline ach(argb color) = int32((uint32(color) >> 24) & 0xff);
+/// get the Red channel of the color
+inline rch(argb color) = int32((uint32(color) >> 16) & 0xff);
+/// get the Green channel of the color
+inline gch(argb color) = int32((uint32(color) >> 8) & 0xff);
+/// get the Blue channel of the color
+inline bch(argb color) = int32(uint32(color) & 0xff);
+/// get the luminosity of the color (0.299 * color.r + 0.587 * color.g + 0.114 * color.b)
+inline lum(argb color) = int32((19595 * rch(color) + 38470 * gch(color) + 7471 * bch(color)) >> 16);
+
+
+/// linear interpolate a lookup-table with the given colors
+void lerpLut(uint32 lut[], argb colors...) {
+	inline lrp(int32 t, uint32 x, uint32 y) = x + (t * (y - x + 1) >> 16);
+
+	int dt = (colors.length - 1 << 16) / (lut.length - 1);
+	for (int i = 0; i < lut.length; i += 1) {
+		int t = i * dt;
+		argb c1 = colors[t >> 16];
+		argb c2 = colors[(t >> 16) + 1];
+		int32 a = lrp(t & 0xffff, ach(c1), ach(c2));
+		int32 r = lrp(t & 0xffff, rch(c1), rch(c2));
+		int32 g = lrp(t & 0xffff, gch(c1), gch(c2));
+		int32 b = lrp(t & 0xffff, bch(c1), bch(c2));
+		lut[i] = a << 24 | r << 16 | g << 8 | b;
+	}
+}
+
+/// linear interpolate a alpha lookup-table with the given colors
+void alphaLut(uint32 lut[], int hardness, int alpha, bool reflect) {
+	int mid = hardness <= 0 ? -1 : 255;
+	int div = 256 - clamp_u8(hardness < 0 ? -hardness : hardness);
+	for (int i = 0; i < lut.length; i += 1) {
+		int t = i * 255 / (lut.length - 1);
+		lut[i] = clamp_s8((t - mid) * 255 / div + mid);
+		if (alpha < 0) {
+			lut[i] = 255 - (255 - lut[i]) * -alpha / 255;
+		} else {
+			lut[i] = 255 - lut[i] * alpha / 255;
+		}
+	}
+	if (reflect) {
+		int end = lut.length - 1;
+		int mid = lut.length / 2;
+		for (int i = end; i >= mid; i -= 1) {
+			lut[i] = lut[end];
+			end -= 2;
+		}
+		for (int i = 0; i < mid; i += 1) {
+			lut[i] = lut[lut.length - i - 1];
+		}
+	}
+}
+
+static if (typename(vec4f) != null) {
+
+/// convert a floating point vector to rgb
+inline argb(const vec4f vec&) = argb(vec.x, vec.y, vec.z);
+
+/// calculate the luminosity of a color
+inline lum(const vec4f vec&) = 0.299f * vec.x + 0.587f * vec.y + 0.114f * vec.z;
+
+/// convert from hsv color space to rgb color space
+vec4f hsv2rgb(vec4f hsv) {
+	float32 h = hsv.x;
+	float32 s = hsv.y;
+	float32 v = hsv.z;
+
+	if (s == 0) {
+		return vec4f(v);
+	}
+
+	h *= 360 / 60;
+
+	int i = int(h);		// round
+	float32 f = h - i;	// fraction
+
+	float32 u = v;
+	float32 p = v * (1 - s);
+	float32 q = v * (1 - s * f);
+	float32 t = v * (1 - s * (1 - f));
+
+	if (i == 0) {
+		return vec4f(u, t, p);
+	}
+	if (i == 1) {
+		return vec4f(q, u, p);
+	}
+	if (i == 2) {
+		return vec4f(p, u, t);
+	}
+	if (i == 3) {
+		return vec4f(p, q, u);
+	}
+	if (i == 4) {
+		return vec4f(t, p, u);
+	}
+	return vec4f(u, p, q);
+}
+}
+
+/// convert from hsv color space to rgb color space
+argb hsv2rgb(float32 h, float32 s, float32 v) {
+	if (s == 0) {
+		return argb(0, 0, 0);
+	}
+
+	h *= 360 / 60;
+
+	int i = int(h);		// round
+	float32 f = h - i;	// fraction
+
+	float32 u = v;
+	float32 p = v * (1 - s);
+	float32 q = v * (1 - s * f);
+	float32 t = v * (1 - s * (1 - f));
+
+	if (i == 0) {
+		return argb(u, t, p);
+	}
+	if (i == 1) {
+		return argb(q, u, p);
+	}
+	if (i == 2) {
+		return argb(p, u, t);
+	}
+	if (i == 3) {
+		return argb(p, q, u);
+	}
+	if (i == 4) {
+		return argb(t, p, u);
+	}
+	return argb(u, p, q);
+}
+
+/// draw the given lookup table to the image
+void drawLut(Image image, const Rect roi&, const uint32 bars[256], const uint32 lines[256]) {
+	enum {
+		margin: 20;
+		colB: 0x4371c6;
+		colG: 0x72d874;
+		colR: 0xfc6165;
+		colL: 0xdadada;
+	}
+
+	Rect rect = {
+		w: roi != null ? roi.w : 256;
+		h: roi != null ? roi.h : 128;
+		y: roi != null ? roi.y : margin;
+		x: roi != null ? roi.x : image.width() - rect.w - margin;
+	};
+
+	int px = (rect.w - 256) / 2;
+
+	if (bars != null) {
+		for (int x = 0; x < bars.length; x += 1) {
+			int bv = bch(argb(bars[x])) * rect.h / 256;
+			int gv = gch(argb(bars[x])) * rect.h / 256;
+			int rv = rch(argb(bars[x])) * rect.h / 256;
+			int lv = ach(argb(bars[x])) * rect.h / 256;
+			for (int y = 0; y < rect.h; y += 1) {
+				uint32 b = colB * uint32(y < bv);
+				uint32 g = colG * uint32(y < gv);
+				uint32 r = colR * uint32(y < rv);
+				uint32 l = colL * uint32(y < lv);
+				image.set(x + rect.x + px, rect.h - y + rect.y - 1, r | g | b | l);
+			}
+		}
+	}
+	if (lines != null) {
+		int y = rect.y + rect.h - 1;
+		int pb = bch(argb(lines[0])) * rect.h / 256;
+		int pg = gch(argb(lines[0])) * rect.h / 256;
+		int pr = rch(argb(lines[0])) * rect.h / 256;
+		int pl = ach(argb(lines[0])) * rect.h / 256;
+
+		for (int i = 1; i < lines.length; i += 1) {
+			int x = rect.x + i + px;
+			int bv = bch(argb(lines[i])) * rect.h / 256;
+			int gv = gch(argb(lines[i])) * rect.h / 256;
+			int rv = rch(argb(lines[i])) * rect.h / 256;
+			int lv = ach(argb(lines[i])) * rect.h / 256;
+
+			image.drawLine(x, y - pl, x, y - lv, colL);
+			image.drawLine(x, y - pb, x, y - bv, colB);
+			image.drawLine(x, y - pg, x, y - gv, colG);
+			image.drawLine(x, y - pr, x, y - rv, colR);
+
+			pl = lv;
+			pb = bv;
+			pg = gv;
+			pr = rv;
+		}
+	}
+}
+// emulated implementation
+void blur(Image img, int radius, double sigma) {
+	static double gauss(double x, double sigma) {
+		inline SQRT_2_PI_INV = 0.398942280401432677939946059935;
+		double t = x / sigma;
+		/*switch (dx) {
+			default:
+				break;
+			case -1:
+				return 1;
+			case 0:
+				return SQRT_2_PI_INV * exp(-0.5*t*t) / sigma;
+			case 1:
+				return -x * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma);
+			case 2:
+				return (x * x - sigma * sigma) * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma * sigma * sigma);
+		}*/
+		return SQRT_2_PI_INV * double.exp(-0.5 * t * t) / sigma;
+	}
+
+	uint32 kernel[1024];
+	int size = radius * 2 + 1;
+	assert(size < kernel.length);
+
+	float64 kernelSum = 0;
+	float64 kernelFlt[kernel.length];
+	for (int i = 0; i < size; i += 1) {
+		kernelFlt[i] = gauss(radius - i, sigma);
+		kernelSum += kernelFlt[i];
+	}
+
+	for (int i = 0; i < size; i += 1) {
+		kernel[i] = 65536 * (kernelFlt[i] / kernelSum);
+	}
+
+	int width = img.width();
+	int height = img.height();
+
+	Image tmp = Image(width, height, img.depth());
+
+	// x direction: inout -> temp
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			uint32 r = 0;
+			uint32 g = 0;
+			uint32 b = 0;
+			for (int i = 0; i < size; i += 1) {
+				int _x = x + i - radius;
+				if (_x >= 0 && _x < width) {
+					argb col = argb(img.get(_x, y));
+					uint32 _k = kernel[i];
+					r += _k * rch(col);
+					g += _k * gch(col);
+					b += _k * bch(col);
+				}
+			}
+			tmp.set(x, y, argb(r >> 16, g >> 16, b >> 16));
+		}
+	}
+
+	// y direction: temp -> inout
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			uint32 r = 0;
+			uint32 g = 0;
+			uint32 b = 0;
+			for (int i = 0; i < size; i += 1) {
+				int _y = y + i - radius;
+				if (_y >= 0 && _y < height) {
+					argb col = argb(tmp.get(x, _y));
+					uint32 _k = kernel[i];
+					r += _k * rch(col);
+					g += _k * gch(col);
+					b += _k * bch(col);
+				}
+			}
+			img.set(x, y, argb(r >> 16, g >> 16, b >> 16));
+		}
+	}
+
+	tmp.destroy();
+}
+// emulated implementation
+void transform(Image surf, const Rect rect&, Image src, const Rect roi&, int32 interpolate, float32 mat[16]) {
+	assert(roi == null);
+	assert(rect != null);
+
+	Rect dRec = {
+		x: rect != null ? rect.x : 0;
+		y: rect != null ? rect.y : 0;
+		w: rect != null ? rect.w : surf.width();
+		h: rect != null ? rect.h : surf.height();
+	};
+
+	Rect sRec = {
+		x: roi != null ? roi.x : 0;
+		y: roi != null ? roi.y : 0;
+		w: roi != null ? roi.w : src.width();
+		h: roi != null ? roi.h : src.height();
+	};
+
+	float32 xx = mat != null ? mat[0] : float32(sRec.w) / dRec.w;
+	float32 xy = mat != null ? mat[1] : 0;
+	float32 xt = mat != null ? mat[3] : sRec.x;
+	float32 yy = mat != null ? mat[5] : float32(sRec.h) / dRec.h;
+	float32 yx = mat != null ? mat[4] : 0;
+	float32 yt = mat != null ? mat[7] : sRec.y;
+
+	if (!surf.clip(dRec)) {
+		// nothing to set
+		return;
+	}
+
+	if (!src.clip(sRec)) {
+		// nothing to get
+		return;
+	}
+
+	for (int y = 0; y < dRec.h; y += 1) {
+		int dy = dRec.y + y;
+		float32 sy = sRec.y + y;
+		for (int x = 0; x < dRec.w; x += 1) {
+			int dx = dRec.x + x;
+			float32 sx = sRec.x + x;
+			float32 tx = (xx * sx + xy * sy + xt) / src.width();
+			float32 ty = (yx * sx + yy * sy + yt) / src.height();
+			surf.set(dx, dy, argb(src.tex(tx, ty)));
+		}
+	}
+}
+// emulated implementation
+void blend(Image surf, int32 x0, int32 y0, const Image src, const Rect roi&, int32 alpha, bool dstAlpha, vec4f blend(vec4f base, vec4f with)) {
+	int width = surf.width();
+	int height = surf.height();
+
+	assert(!dstAlpha, "not implemented");
+	assert(roi == null, "not implemented");
+	assert(blend == null, "not implemented");
+
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			inline lerp(int32 l, int32 r) = int32(l + alpha * (r - l) / 256);
+			argb col = argb(src.get(x,y));
+			int r = rch(col);
+			int g = gch(col);
+			int b = bch(col);
+
+			col = argb(surf.get(x,y));
+			r = lerp(rch(col), r);
+			g = lerp(gch(col), g);
+			b = lerp(bch(col), b);
+
+			surf.set(x + x0, y + y0, argb(r, g, b));
+		}
+	}
+}
 // micro ui, TODO: add comments
 
 struct Style {
@@ -538,19 +1079,18 @@ struct Button: View {
 	bool onClick(Button this) {
 		View.onClick(this);   // call super
 		trace("onClick", this);
-		// FIXME: enable lookup
 		return this.enabled;
 	}// */
 }
 
 struct Switch: View {
 	const char text[*];
-	/* TODO: 
-	const char values[*][] = {
+	/* TODO: allow selecting one out of multiple choices
+	const char choices[*][] = {
 		"off",
 		"on"
 	};
-	int value = 0;*/
+	int selected = 0;*/
 
 	const char on[*] = "on";
 	const char off[*] = "off";
@@ -590,7 +1130,7 @@ struct Histogram: View {
 }
 
 struct ColorPicker: View {
-	const float lum = 1f;
+	const float32 lum = 1f;
 	argb value = argb(0);
 	int x = 0;
 	int y = 0;
@@ -626,8 +1166,8 @@ int val(Slider slider&) {
 	return slider.value;
 }
 
-double valFlt(Slider slider&) {
-	return slider.val() / double(slider.divisor);
+float64 valFlt(Slider slider&) {
+	return slider.val() / float64(slider.divisor);
 }
 
 inline selected(const Layout layout&) = layout.selectedIndex < 0 ? null : pointer(layout.views[layout.selectedIndex]);
@@ -816,8 +1356,8 @@ bool onEvent(View this, const MouseEvent event&) {
 		}
 
 		const Rect rect& = event.clientRect;
-		float px = Math.clamp(float(event.x - rect.x), 0f, rect.w - 1f) / rect.w;
-		float py = Math.clamp(float(event.y - rect.y), 0f, rect.h - 1f) / rect.h;
+		float32 px = Math.clamp(float32(event.x - rect.x), 0f, rect.w - 1f) / rect.w;
+		float32 py = Math.clamp(float32(event.y - rect.y), 0f, rect.h - 1f) / rect.h;
 		item.onUpdate(hsv2rgb(px, 1 - py, item.lum));
 		item.x = event.x - rect.x;
 		item.y = event.y - rect.y;
@@ -1146,14 +1686,14 @@ static void draw(Layout layout&) {
 		if (ColorPicker item = view.as(ColorPicker)) {
 			for (int y = 0; y < rect.h; y += 1) {
 				for (int x = 0; x < rect.w; x += 1) {
-					float px = float(x) / rect.w;
-					float py = float(y) / rect.h;
+					float32 px = float32(x) / rect.w;
+					float32 py = float32(y) / rect.h;
 					argb color = hsv2rgb(px, 1 - py, item.lum);
 					layout.offs.set(x + rect.x, y + rect.y, color);
 				}
 			}
-			int x = rect.x + Math.clamp(float(item.x), 0f, rect.w - 1f);
-			int y = rect.y + Math.clamp(float(item.y), 0f, rect.h - 1f);
+			int x = rect.x + Math.clamp(float32(item.x), 0f, rect.w - 1f);
+			int y = rect.y + Math.clamp(float32(item.y), 0f, rect.h - 1f);
 			layout.offs.drawOval(x - 4, y - 4, x + 4, y + 4, layout.style.valueColor);
 			layout.offs.drawOval(x - 2, y - 2, x + 2, y + 2, layout.style.valueColor);
 			layout.offs.drawOval(x - 1, y - 1, x + 1, y + 1, layout.style.valueColor);
@@ -1466,518 +2006,6 @@ Layout Layout(Image offs, int x, int y, Image font, View items...) {
 }
 
 inline draw(Layout layout&) = uiEvent(layout, Gui.WINDOW_DRAW, 0, 0, 0);
-/// an 32 bit argb color
-struct argb: 0 {
-	/// value of color
-	uint32 v;
-	struct: 1 {
-		/// blue component
-		uint8 b;
-
-		/// green component
-		uint8 g;
-
-		/// red component
-		uint8 r;
-
-		/// alpha component
-		uint8 a;
-	}
-	/*enum {
-		Black             : 0x00000000;
-		White             : 0x00ffffff;
-		Aquamarine        : 0x007fffd4;
-		Azure             : 0x00007fff;
-		Blue              : 0x000000ff;
-		BlueViolet        : 0x008a2be2;
-		Brown             : 0x00a52a2a;
-		CadetBlue         : 0x005f9ea0;
-		Coral             : 0x00ff7f50;
-		CornflowerBlue    : 0x006495ed;
-		Cyan              : 0x0000ffff;
-		DarkGray          : 0x00a9a9a9;
-		DarkGrey          : 0x00a9a9a9;
-		DarkGreen         : 0x00006400;
-		DarkOliveGreen    : 0x00556b2f;
-		DarkOrchid        : 0x009932cc;
-		DarkSlateBlue     : 0x00483d8b;
-		DarkSlateGray     : 0x002f4f4f;
-		DarkSlateGrey     : 0x002f4f4f;
-		DarkTurquoise     : 0x0000ced1;
-		DarkWood          : 0x000d0301;
-		DeepPink          : 0x00ff1493;
-		DimGray           : 0x00696969;
-		DimGrey           : 0x00696969;
-		FireBrick         : 0x00b22222;
-		ForestGreen       : 0x00228b22;
-		Gold              : 0x00ffd700;
-		Goldenrod         : 0x00daa520;
-		Gray              : 0x00808080;
-		Grey              : 0x00808080;
-		Green             : 0x00008000;
-		GreenYellow       : 0x00adff2f;
-		IndianRed         : 0x00cd5c5c;
-		Khaki             : 0x00f0e68c;
-		LightBlue         : 0x00add8e6;
-		LightGray         : 0x00d3d3d3;
-		LightGrey         : 0x00d3d3d3;
-		LightSteelBlue    : 0x00b0c4de;
-		LightWood         : 0x00993d1a;
-		Lime              : 0x0000ff00;
-		LimeGreen         : 0x0032cd32;
-		Magenta           : 0x00ff00ff;
-		Maroon            : 0x00800000;
-		MedianWood        : 0x004d1f09;
-		MediumAquamarine  : 0x0066cdaa;
-		MediumBlue        : 0x000000cd;
-		MediumForestGreen : 0x006b8e23;
-		MediumGoldenrod   : 0x00eaeaad;
-		MediumOrchid      : 0x00ba55d3;
-		MediumSeaGreen    : 0x003cb371;
-		MediumSlateBlue   : 0x007b68ee;
-		MediumSpringGreen : 0x0000fa9a;
-		MediumTurquoise   : 0x0048d1cc;
-		MediumVioletRed   : 0x00c71585;
-		MidnightBlue      : 0x00191970;
-		Navy              : 0x00000080;
-		NavyBlue          : 0x0023238e;
-		Orange            : 0x00ffa500;
-		OrangeRed         : 0x00ff4500;
-		Orchid            : 0x00da70d6;
-		PaleGreen         : 0x0098fb98;
-		Pink              : 0x00ffc0cb;
-		Plum              : 0x00dda0dd;
-		Red               : 0x00ff0000;
-		Salmon            : 0x00fa8072;
-		SeaGreen          : 0x002e8b57;
-		Sienna            : 0x00a0522d;
-		SkyBlue           : 0x0087ceeb;
-		SlateBlue         : 0x006a5acd;
-		SpringGreen       : 0x0000ff7f;
-		SteelBlue         : 0x004682b4;
-		Tan               : 0x00d2b48c;
-		Thistle           : 0x00d8bfd8;
-		Turquoise         : 0x0040e0d0;
-		Violet            : 0x00ee82ee;
-		VioletRed         : 0x00cc3299;
-		Wheat             : 0x00f5deb3;
-		Yellow            : 0x00ffff00;
-		YellowGreen       : 0x009acd32;
-		//Transparent     : 0xff000000;
-	}*/
-}
-
-/// cast unsigned integer to argb value
-inline argb(uint32 argb) = argb(emit(uint32(argb)));
-/// cast argb value to unsigned integer
-inline uint32(argb value) = uint32(emit(struct(value)));
-
-
-/// clamp signed gray or color component to fit in 8 bits (0 ... 255)
-uint32 clamp_s8(int32 c) {
-	if (c < 0) {
-		return 0;
-	}
-	if (c > 255) {
-		return 255;
-	}
-	return c;
-}
-/// clamp unsigned gray or color component to fit in 8 bits (0 ... 255)
-uint32 clamp_u8(uint32 c) {
-	if (c > 255) {
-		return 255;
-	}
-	return c;
-}
-
-// construct a rgb8 gray color from the given value
-inline _gray(uint32 c) = argb((((c << 8) | c) << 8) | c);
-/// construct a rgb8 color from the given gray value, clamp the input
-inline gray(int32 c) = _gray(clamp_s8(c));
-/// construct a rgb8 color from the given gray value, clamp the input
-inline gray(uint32 c) = _gray(clamp_s8(c));
-/// construct a rgb8 color from the given gray value, clamp the input
-inline gray(float32 c) = gray(int32(c * 255));
-/// construct a rgb8 color from the given gray value, clamp the input
-inline gray(float64 c) = gray(int32(c * 255));
-
-
-/// construct an argb color from the given components
-inline _argb(uint32 r, uint32 g, uint32 b) = argb(uint32((((r << 8) | g) << 8) | b));
-/// construct an argb color from the given components
-inline _argb(uint32 a, uint32 r, uint32 g, uint32 b) = argb(uint32((((((a << 8) | r) << 8) | g) << 8) | b));
-
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(int32 r, int32 g, int32 b) = _argb(clamp_s8(r), clamp_s8(g), clamp_s8(b));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(r), clamp_u8(g), clamp_u8(b));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(float32 r, float32 g, float32 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(float64 r, float64 g, float64 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(int32 a, int32 r, int32 g, int32 b) = _argb(clamp_s8(a), clamp_s8(r), clamp_s8(g), clamp_s8(b));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(uint32 a, uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(a), clamp_u8(r), clamp_u8(g), clamp_u8(b));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(float32 a, float32 r, float32 g, float32 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(float64 a, float64 r, float64 g, float64 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
-
-
-/// get the Alpha channel of the color
-inline ach(argb color) = int32((uint32(color) >> 24) & 0xff);
-/// get the Red channel of the color
-inline rch(argb color) = int32((uint32(color) >> 16) & 0xff);
-/// get the Green channel of the color
-inline gch(argb color) = int32((uint32(color) >> 8) & 0xff);
-/// get the Blue channel of the color
-inline bch(argb color) = int32(uint32(color) & 0xff);
-/// get the luminosity of the color (0.299 * color.r + 0.587 * color.g + 0.114 * color.b)
-inline lum(argb color) = int32((19595 * rch(color) + 38470 * gch(color) + 7471 * bch(color)) >> 16);
-
-
-/// linear interpolate a lookup-table with the given colors
-void lerpLut(uint32 lut[], argb colors...) {
-	inline lrp(int32 t, uint32 x, uint32 y) = x + (t * (y - x + 1) >> 16);
-
-	int dt = (colors.length - 1 << 16) / (lut.length - 1);
-	for (int i = 0; i < lut.length; i += 1) {
-		int t = i * dt;
-		argb c1 = colors[t >> 16];
-		argb c2 = colors[(t >> 16) + 1];
-		int32 a = lrp(t & 0xffff, ach(c1), ach(c2));
-		int32 r = lrp(t & 0xffff, rch(c1), rch(c2));
-		int32 g = lrp(t & 0xffff, gch(c1), gch(c2));
-		int32 b = lrp(t & 0xffff, bch(c1), bch(c2));
-		lut[i] = a << 24 | r << 16 | g << 8 | b;
-	}
-}
-
-/// linear interpolate a alpha lookup-table with the given colors
-void alphaLut(uint32 lut[], int hardness, int alpha, bool reflect) {
-	int mid = hardness <= 0 ? -1 : 255;
-	int div = 256 - clamp_u8(hardness < 0 ? -hardness : hardness);
-	for (int i = 0; i < lut.length; i += 1) {
-		int t = i * 255 / (lut.length - 1);
-		lut[i] = clamp_s8((t - mid) * 255 / div + mid);
-		if (alpha < 0) {
-			lut[i] = 255 - (255 - lut[i]) * -alpha / 255;
-		} else {
-			lut[i] = 255 - lut[i] * alpha / 255;
-		}
-	}
-	if (reflect) {
-		int end = lut.length - 1;
-		int mid = lut.length / 2;
-		for (int i = end; i >= mid; i -= 1) {
-			lut[i] = lut[end];
-			end -= 2;
-		}
-		for (int i = 0; i < mid; i += 1) {
-			lut[i] = lut[lut.length - i - 1];
-		}
-	}
-}
-
-static if (typename(vec4f) != null) {
-
-/// convert a floating point vector to rgb
-inline argb(const vec4f vec&) = argb(vec.x, vec.y, vec.z);
-
-/// calculate the luminosity of a color
-inline lum(const vec4f vec&) = 0.299f * vec.x + 0.587f * vec.y + 0.114f * vec.z;
-
-/// convert from hsv color space to rgb color space
-vec4f hsv2rgb(vec4f hsv) {
-	float32 h = hsv.x;
-	float32 s = hsv.y;
-	float32 v = hsv.z;
-
-	if (s == 0) {
-		return vec4f(v);
-	}
-
-	h *= 360 / 60;
-
-	int i = int(h);		// round
-	float32 f = h - i;	// fraction
-
-	float32 u = v;
-	float32 p = v * (1 - s);
-	float32 q = v * (1 - s * f);
-	float32 t = v * (1 - s * (1 - f));
-
-	if (i == 0) {
-		return vec4f(u, t, p);
-	}
-	if (i == 1) {
-		return vec4f(q, u, p);
-	}
-	if (i == 2) {
-		return vec4f(p, u, t);
-	}
-	if (i == 3) {
-		return vec4f(p, q, u);
-	}
-	if (i == 4) {
-		return vec4f(t, p, u);
-	}
-	return vec4f(u, p, q);
-}
-}
-
-/// convert from hsv color space to rgb color space
-argb hsv2rgb(float h, float s, float v) {
-	if (s == 0) {
-		return argb(0, 0, 0);
-	}
-
-	h *= 360 / 60;
-
-	int i = int(h);		// round
-	float32 f = h - i;	// fraction
-
-	float32 u = v;
-	float32 p = v * (1 - s);
-	float32 q = v * (1 - s * f);
-	float32 t = v * (1 - s * (1 - f));
-
-	if (i == 0) {
-		return argb(u, t, p);
-	}
-	if (i == 1) {
-		return argb(q, u, p);
-	}
-	if (i == 2) {
-		return argb(p, u, t);
-	}
-	if (i == 3) {
-		return argb(p, q, u);
-	}
-	if (i == 4) {
-		return argb(t, p, u);
-	}
-	return argb(u, p, q);
-}
-
-/// draw the given lookup table to the image
-void drawLut(Image image, const Rect roi&, const uint32 bars[256], const uint32 lines[256]) {
-	enum {
-		margin: 20;
-		colB: 0x4371c6;
-		colG: 0x72d874;
-		colR: 0xfc6165;
-		colL: 0xdadada;
-	}
-
-	Rect rect = {
-		w: roi != null ? roi.w : 256;
-		h: roi != null ? roi.h : 128;
-		y: roi != null ? roi.y : margin;
-		x: roi != null ? roi.x : image.width() - rect.w - margin;
-	};
-
-	int px = (rect.w - 256) / 2;
-
-	if (bars != null) {
-		for (int x = 0; x < bars.length; x += 1) {
-			int bv = bch(argb(bars[x])) * rect.h / 256;
-			int gv = gch(argb(bars[x])) * rect.h / 256;
-			int rv = rch(argb(bars[x])) * rect.h / 256;
-			int lv = ach(argb(bars[x])) * rect.h / 256;
-			for (int y = 0; y < rect.h; y += 1) {
-				uint32 b = colB * uint32(y < bv);
-				uint32 g = colG * uint32(y < gv);
-				uint32 r = colR * uint32(y < rv);
-				uint32 l = colL * uint32(y < lv);
-				image.set(x + rect.x + px, rect.h - y + rect.y - 1, r | g | b | l);
-			}
-		}
-	}
-	if (lines != null) {
-		int y = rect.y + rect.h - 1;
-		int pb = bch(argb(lines[0])) * rect.h / 256;
-		int pg = gch(argb(lines[0])) * rect.h / 256;
-		int pr = rch(argb(lines[0])) * rect.h / 256;
-		int pl = ach(argb(lines[0])) * rect.h / 256;
-
-		for (int i = 1; i < lines.length; i += 1) {
-			int x = rect.x + i + px;
-			int bv = bch(argb(lines[i])) * rect.h / 256;
-			int gv = gch(argb(lines[i])) * rect.h / 256;
-			int rv = rch(argb(lines[i])) * rect.h / 256;
-			int lv = ach(argb(lines[i])) * rect.h / 256;
-
-			image.drawLine(x, y - pl, x, y - lv, colL);
-			image.drawLine(x, y - pb, x, y - bv, colB);
-			image.drawLine(x, y - pg, x, y - gv, colG);
-			image.drawLine(x, y - pr, x, y - rv, colR);
-
-			pl = lv;
-			pb = bv;
-			pg = gv;
-			pr = rv;
-		}
-	}
-}
-// emulated implementation
-void transform(Image surf, const Rect rect&, Image src, const Rect roi&, int32 interpolate, float32 mat[16]) {
-	assert(roi == null);
-	assert(rect != null);
-
-	Rect dRec = {
-		x: rect != null ? rect.x : 0;
-		y: rect != null ? rect.y : 0;
-		w: rect != null ? rect.w : surf.width();
-		h: rect != null ? rect.h : surf.height();
-	};
-
-	Rect sRec = {
-		x: roi != null ? roi.x : 0;
-		y: roi != null ? roi.y : 0;
-		w: roi != null ? roi.w : src.width();
-		h: roi != null ? roi.h : src.height();
-	};
-
-	float32 xx = mat != null ? mat[0] : float32(sRec.w) / dRec.w;
-	float32 xy = mat != null ? mat[1] : 0;
-	float32 xt = mat != null ? mat[3] : sRec.x;
-	float32 yy = mat != null ? mat[5] : float32(sRec.h) / dRec.h;
-	float32 yx = mat != null ? mat[4] : 0;
-	float32 yt = mat != null ? mat[7] : sRec.y;
-
-	if (!surf.clip(dRec)) {
-		// nothing to set
-		return;
-	}
-
-	if (!src.clip(sRec)) {
-		// nothing to get
-		return;
-	}
-
-	for (int y = 0; y < dRec.h; y += 1) {
-		int dy = dRec.y + y;
-		float32 sy = sRec.y + y;
-		for (int x = 0; x < dRec.w; x += 1) {
-			int dx = dRec.x + x;
-			float32 sx = sRec.x + x;
-			float32 tx = (xx * sx + xy * sy + xt) / src.width();
-			float32 ty = (yx * sx + yy * sy + yt) / src.height();
-			surf.set(dx, dy, argb(src.tex(tx, ty)));
-		}
-	}
-}
-// emulated implementation
-void blend(Image surf, int32 x0, int32 y0, const Image src, const Rect roi&, int32 alpha, bool dstAlpha, vec4f blend(vec4f base, vec4f with)) {
-	int width = surf.width();
-	int height = surf.height();
-
-	assert(!dstAlpha, "not implemented");
-	assert(roi == null, "not implemented");
-	assert(blend == null, "not implemented");
-
-	for (int y = 0; y < height; y += 1) {
-		for (int x = 0; x < width; x += 1) {
-			inline lerp(int32 l, int32 r) = int32(l + alpha * (r - l) / 256);
-			argb col = argb(src.get(x,y));
-			int r = rch(col);
-			int g = gch(col);
-			int b = bch(col);
-
-			col = argb(surf.get(x,y));
-			r = lerp(rch(col), r);
-			g = lerp(gch(col), g);
-			b = lerp(bch(col), b);
-
-			surf.set(x + x0, y + y0, argb(r, g, b));
-		}
-	}
-}
-// emulated implementation
-void blur(Image img, int radius, double sigma) {
-	static double gauss(double x, double sigma) {
-		inline SQRT_2_PI_INV = 0.398942280401432677939946059935;
-		double t = x / sigma;
-		/*switch (dx) {
-			default:
-				break;
-			case -1:
-				return 1;
-			case 0:
-				return SQRT_2_PI_INV * exp(-0.5*t*t) / sigma;
-			case 1:
-				return -x * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma);
-			case 2:
-				return (x * x - sigma * sigma) * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma * sigma * sigma);
-		}*/
-		return SQRT_2_PI_INV * double.exp(-0.5 * t * t) / sigma;
-	}
-
-	uint32 kernel[1024];
-	int size = radius * 2 + 1;
-	assert(size < kernel.length);
-
-	float64 kernelSum = 0;
-	float64 kernelFlt[kernel.length];
-	for (int i = 0; i < size; i += 1) {
-		kernelFlt[i] = gauss(radius - i, sigma);
-		kernelSum += kernelFlt[i];
-	}
-
-	for (int i = 0; i < size; i += 1) {
-		kernel[i] = 65536 * (kernelFlt[i] / kernelSum);
-	}
-
-	int width = img.width();
-	int height = img.height();
-
-	Image tmp = Image(width, height, img.depth());
-
-	// x direction: inout -> temp
-	for (int y = 0; y < height; y += 1) {
-		for (int x = 0; x < width; x += 1) {
-			uint32 r = 0;
-			uint32 g = 0;
-			uint32 b = 0;
-			for (int i = 0; i < size; i += 1) {
-				int _x = x + i - radius;
-				if (_x >= 0 && _x < width) {
-					argb col = argb(img.get(_x, y));
-					uint32 _k = kernel[i];
-					r += _k * rch(col);
-					g += _k * gch(col);
-					b += _k * bch(col);
-				}
-			}
-			tmp.set(x, y, argb(r >> 16, g >> 16, b >> 16));
-		}
-	}
-
-	// y direction: temp -> inout
-	for (int y = 0; y < height; y += 1) {
-		for (int x = 0; x < width; x += 1) {
-			uint32 r = 0;
-			uint32 g = 0;
-			uint32 b = 0;
-			for (int i = 0; i < size; i += 1) {
-				int _y = y + i - radius;
-				if (_y >= 0 && _y < height) {
-					argb col = argb(tmp.get(x, _y));
-					uint32 _k = kernel[i];
-					r += _k * rch(col);
-					g += _k * gch(col);
-					b += _k * bch(col);
-				}
-			}
-			img.set(x, y, argb(r >> 16, g >> 16, b >> 16));
-		}
-	}
-
-	tmp.destroy();
-}
 // debugging related functions
 
 /// report message at `verbose` logging level
@@ -2054,6 +2082,1229 @@ static void assertEq(int expected, int returned, const char message[*]) {
 }
 /// abort execution if the returned value is not equal to the expected value
 inline assertEq(int expected, int returned) = assertEq(expected, returned, null);
+/// A 2d vector (2x float64)
+struct vec2d: 0 {
+	/// Access the components as an array
+	float64 data[2];
+	struct {
+		/// X component of the vector
+		float64 x;
+		/// Y component of the vector
+		float64 y;
+	}
+}
+
+/// Initialize with given x, y components
+vec2d vec2d(float64 x, float64 y) {
+	return {
+		x: x;
+		y: y;
+	};
+}
+
+/// Component wise add the two vectors.
+inline add(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), add.p2d));
+
+/// Component wise subtract the two vectors.
+inline sub(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), sub.p2d));
+
+/// Component wise multiply the two vectors.
+inline mul(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), mul.p2d));
+
+/// Component wise divide the two vectors.
+inline div(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), div.p2d));
+
+/// Component wise select the minimum from the two vectors.
+inline min(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), min.p2d));
+
+/// Component wise select the maximum from the two vectors.
+inline max(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), max.p2d));
+
+/// Compare the two vectors for equality.
+inline ceq(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), ceq.p2d));
+
+/// Dot product of thw two vectors
+inline dot(const vec2d a&, const vec2d b&) = a.x * b.x + a.y * b.y;
+/// A 4d vector (4x float32)
+struct vec4f: 0 {
+	/// Access the components as an array
+	float32 data[4];
+	struct {
+		/// X component of the vector
+		float32 x;
+		/// Y component of the vector
+		float32 y;
+		/// Z component of the vector
+		float32 z;
+		/// W component of the vector
+		float32 w;
+	}
+}
+
+/* TODO: implement inline initializer
+// constructing a vector
+inline vec4f(float32 x, float32 y, float32 z, float32 w) = { x: x, y: y, z: z, w: w };
+inline vec4f(float32 x, float32 y, float32 z) = { x: x, y: y, z: z, w: 0 };
+inline vec4f(const vec4f v&, float32 w) = { x: v.x, y: v.y, z: v.z, w: w };
+inline vec4f(const float32 val&) = { x: val, y: val, z: val, w: val };
+*/
+
+/// Initialize with given x, y, z, w components
+vec4f vec4f(float32 x, float32 y, float32 z, float32 w) {
+	return { x: x, y: y, z: z, w: w };
+}
+
+/// Initialize with  (x: x, y: y, z: z, w: 1)
+inline vec4f(float32 x, float32 y, float32 z) = vec4f(x, y, z, 1f);
+
+/// Initialize with (x: x, y: y, z: 0, w: 1)
+inline vec4f(float32 x, float32 y) = vec4f(x, y, 0f, 1f);
+
+/// Initialize x, y, z components using the components form the given vector, and w with the given value
+inline vec4f(vec4f xyz, float32 w) = vec4f(xyz.x, xyz.y, xyz.z, w);
+
+/// Initialize x, y, z, w components with the given scalar value
+inline vec4f(float32 val) = vec4f(val, val, val, val);
+
+/* TODO: implement operator overloading
+//~ -a => vec4f(-a.x, -a.y, -a.z, -a.w);
+inline -(vec4f rhs) = vec4f(emit(struct(rhs), neg.p4f));
+
+//~ a + b => vec4f(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+inline +(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), add.p4f));
+
+//~ a - b => vec4f(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+inline -(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
+
+//~ a * b => vec4f(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
+inline *(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
+
+//~ a / b => vec4f(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
+inline /(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
+
+inline +(vec4f a, float32 b) = a + vec4f(b);
+inline +(float32 a, vec4f b) = vec4f(a) + b;
+inline -(vec4f a, float32 b) = a - vec4f(b);
+inline -(float32 a, vec4f b) = vec4f(a) - b;
+inline *(vec4f a, float32 b) = a * vec4f(b);
+inline *(float32 a, vec4f b) = vec4f(a) * b;
+inline /(vec4f a, float32 b) = a / vec4f(b);
+inline /(float32 a, vec4f b) = vec4f(a) / b;
+
+inline normalize(vec4f v) = v / len(v);
+*/
+
+/// Returns a negated copy of the vector.
+inline neg(vec4f rhs) = vec4f(emit(struct(rhs), neg.p4f));
+/// Component wise add the two vectors.
+inline add(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), add.p4f));
+/// Component wise subtract the two vectors.
+inline sub(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
+/// Component wise multiply the two vectors.
+inline mul(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
+/// Component wise divide the two vectors.
+inline div(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
+
+/// Component wise minimum of the two vectors.
+inline min(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), min.p4f));
+/// Component wise maximum of the two vectors.
+inline max(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), max.p4f));
+
+/// Dot product of the first 3 elements
+// inline dp3(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z;
+inline dp3(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dp3));
+
+/// Homogeneous dot product
+// inline dph(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z + a.w;
+inline dph(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dph));
+
+/// Dot product
+// inline dp4(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+inline dp4(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dp4));
+
+/// Cross product of the first 3 elements
+inline cross(const vec4f a&, const vec4f b&) = vec4f(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
+
+/// Length of the vector(xyz)
+inline length(vec4f v) = float32.sqrt(dp3(v, v));
+/// Normalize the vector(xyz)
+inline normalize(const vec4f v&) = div(v, vec4f(length(v)));
+
+/// Evaluate as a polynomial in point x
+inline eval(const vec4f v&, float32 x) = float32((((v.w * x + v.z) * x + v.y) * x) + v.x);
+
+/* TODO: leftovers
+inline add(float32 a, vec4f b) = add(vec4f(a), b);
+inline add(vec4f a, float32 b) = add(a, vec4f(b));
+inline sub(float32 a, vec4f b) = sub(vec4f(a), b);
+inline sub(vec4f a, float32 b) = sub(a, vec4f(b));
+inline mul(float32 a, vec4f b) = mul(vec4f(a), b);
+inline mul(vec4f a, float32 b) = mul(a, vec4f(b));
+inline div(float32 a, vec4f b) = div(vec4f(a), b);
+inline div(vec4f a, float32 b) = div(a, vec4f(b));
+
+inline ceq(vec4f x, vec4f y) = emit(ceq.p4f, vec4f(y), vec4f(x));
+inline mad(vec4f a, vec4f b, vec4f c) = emit(vec4f, add.p4f, mul.p4f, vec4f(a), vec4f(b), vec4f(c));	// a * b + c
+
+inline lerp(float32 t, vec4f lhs, vec4f rhs) = vec4f(Math.lerp(t, lhs.x, rhs.x), Math.lerp(t, lhs.y, rhs.y), Math.lerp(t, lhs.z, rhs.z), Math.lerp(t, lhs.w, rhs.w));
+
+inline float32(vec4f &vec) = float32(vec.w);
+inline bool(vec4f vec) = bool(vec.x && vec.y && vec.z && vec.w);
+*//// A 4x4 matrix
+struct mat4f: 0 {
+	/// Access elements as a flatten array: data[4] => m[1][0]
+	float32 data[16];
+
+	/// Access elements as an array: m[1][0]
+	float32 m[4][4];
+
+	/// Access elements as an array of vectors: v[1].x => m[1][0]
+	vec4f v[4];
+
+	struct {
+		///@public
+		vec4f x;
+		///@public
+		vec4f y;
+		///@public
+		vec4f z;
+		///@public
+		vec4f w;
+	}
+	struct {
+		///@public
+		float32 xx;
+		///@public
+		float32 xy;
+		///@public
+		float32 xz;
+		///@public
+		float32 xw;
+
+		///@public
+		float32 yx;
+		///@public
+		float32 yy;
+		///@public
+		float32 yz;
+		///@public
+		float32 yw;
+
+		///@public
+		float32 zx;
+		///@public
+		float32 zy;
+		///@public
+		float32 zz;
+		///@public
+		float32 zw;
+
+		///@public
+		float32 wx;
+		///@public
+		float32 wy;
+		///@public
+		float32 wz;
+		///@public
+		float32 ww;
+	}
+}
+
+/// Initialize all elements with the given values
+mat4f mat4f(float32 xx, float32 xy, float32 xz, float32 xw,
+			float32 yx, float32 yy, float32 yz, float32 yw,
+			float32 zx, float32 zy, float32 zz, float32 zw,
+			float32 wx, float32 wy, float32 wz, float32 ww) {
+	return {
+		xx: xx; xy: xy; xz: xz; xw: xw;
+		yx: yx; yy: yy; yz: yz; yw: yw;
+		zx: zx; zy: zy; zz: zz; zw: zw;
+		wx: wx; wy: wy; wz: wz; ww: ww;
+	};
+}
+
+/// Initialize matrix with row vectors
+mat4f mat4f(const vec4f x&, const vec4f y&, const vec4f z&, const vec4f w&) {
+	return { x: x, y: y, z: z, w: w };
+}
+
+/// Multiply with vector: dot product of the first 3 elements
+inline dp3(const mat4f mat&, const vec4f vec&) = vec4f(dp3(mat.x, vec), dp3(mat.y, vec), dp3(mat.z, vec), 1f);
+/// Multiply with vector: homogeneous dot product
+inline dph(const mat4f mat&, const vec4f vec&) = vec4f(dph(mat.x, vec), dph(mat.y, vec), dph(mat.z, vec), dph(mat.w, vec));
+/// Multiply with vector: dot product
+inline dp4(const mat4f mat&, const vec4f vec&) = vec4f(dp4(mat.x, vec), dp4(mat.y, vec), dp4(mat.z, vec), dp4(mat.w, vec));
+
+/// Transpose the matrix
+mat4f transpose(const mat4f mat) {
+	return {
+		xx: mat.xx; xy: mat.yx; xz: mat.zx; xw: mat.wx;
+		yx: mat.xy; yy: mat.yy; yz: mat.zy; yw: mat.wy;
+		zx: mat.xz; zy: mat.yz; zz: mat.zz; zw: mat.wz;
+		wx: mat.xw; wy: mat.yw; wz: mat.zw; ww: mat.ww;
+	};
+}
+
+/// Multiply two matrices (rows * cols)
+mat4f mul(const mat4f lhs&, const mat4f rhs&) {
+	mat4f transposed = transpose(rhs);
+	return {
+		x: dp4(transposed, lhs.x);
+		y: dp4(transposed, lhs.y);
+		z: dp4(transposed, lhs.z);
+		w: dp4(transposed, lhs.w);
+	};
+}
+
+/**
+ * Build a rotation matrix
+ * adapted from: https://sites.google.com/site/glennmurray/Home/rotation-matrices-and-formulas
+ */
+mat4f rotation(const vec4f center&, const vec4f direction&, float32 angle) {
+	float32 len = direction.length();
+	if (len < 1e-9) {
+		trace("invalid direction of rotation", direction);
+		return {
+			x: vec4f(0, 0, 0, 0);
+			y: vec4f(0, 0, 0, 0);
+			z: vec4f(0, 0, 0, 0);
+			w: vec4f(0, 0, 0, 0);
+		};
+	}
+	float32 x = direction.x / len;
+	float32 y = direction.y / len;
+	float32 z = direction.z / len;
+	float32 cx = center.x;
+	float32 cy = center.y;
+	float32 cz = center.z;
+	float32 xx = x * x;
+	float32 xy = x * y;
+	float32 xz = x * z;
+	float32 yy = y * y;
+	float32 yz = y * z;
+	float32 zz = z * z;
+
+	float32 s = float32.sin(angle);
+	float32 c = float32.cos(angle);
+	float32 k = 1 - c;
+
+	return {
+		xx: xx + (yy + zz) * c;
+		xy: xy * k - z * s;
+		xz: xz * k + y * s;
+		xw: (cx * (yy + zz) - x * (cy * y + cz * z)) * k + (cy * z - cz * y) * s;
+
+		yx: xy * k + z * s;
+		yy: yy + (xx + zz) * c;
+		yz: yz * k - x * s;
+		yw: (cy * (xx + zz) - y * (cx * x + cz * z)) * k + (cz * x - cx * z) * s;
+
+		zx: xz * k - y * s;
+		zy: yz * k + x * s;
+		zz: zz + (xx + yy) * c;
+		zw: (cz * (xx + yy) - z * (cx * x + cy * y)) * k + (cx * y - cy * x) * s;
+
+		w: vec4f(0, 0, 0, 1);
+	};
+}
+
+/// Build a rotation matrix
+inline rotation(const vec4f direction&, float32 angle) = rotation(vec4f(0), direction, angle);
+
+/// Build a translation matrix
+mat4f translation(const vec4f direction&, float32 amount) {
+	return {
+		xx: 1; xy: 0; xz: 0; xw: direction.x * amount;
+		yx: 0; yy: 1; yz: 0; yw: direction.y * amount;
+		zx: 0; zy: 0; zz: 1; zw: direction.z * amount;
+		wx: 0; wy: 0; wz: 0; ww: 1;
+	};
+}
+
+/// Build a scaling matrix
+mat4f scale(const vec4f direction&, float32 amount) {
+	inline rcp(float32 val) = (val < 0 ? -val : val) < 1e-30 ? 0 : 1 / val;
+	return {
+		xx: rcp(direction.x * amount); xy: 0; xz: 0; xw: 0;
+		yx: 0; yy: rcp(direction.y * amount); yz: 0; yw: 0;
+		zx: 0; zy: 0; zz: rcp(direction.z * amount); zw: 0;
+		wx: 0; wy: 0; wz: 0; ww: 1;
+	};
+}
+// TODO: enum Easing: double(double t) { ... }
+static struct Easing {
+	float64 Linear(float64 t) {
+		return t;
+	}
+
+	float64 Quad(float64 t) {
+		return t * t;
+	}
+
+	float64 Cubic(float64 t) {
+		return t * t * t;
+	}
+
+	float64 Quart(float64 t) {
+		return t * t * t * t;
+	}
+
+	float64 Quint(float64 t) {
+		return t * t * t * t * t;
+	}
+
+	float64 Expo(float64 t) {
+		return t == 0 ? 0 : float64.pow(2, 10 * (t - 1));
+	}
+
+	float64 Sine(float64 t) {
+		return -float64.cos(t * Math.pi / 2) + 1;
+	}
+
+	float64 Circle(float64 t) {
+		return -(float64.sqrt(1 - t * t) - 1);
+	}
+
+	float64 Elastic(float64 t) {
+		if (t == 0.0 || t == 1.0) return t;
+		t = t - 1.0;
+		return - float64.pow(2.0, 10.0 * t) * float64.sin((t - 0.3 / 4.0) * (2.0 * Math.pi) / 0.3) ;
+	}
+
+	float64 Back(float64 t) {
+		inline s = 1.70158;
+		return t * t * ((s + 1) * t - s);
+	}
+
+	float64 Bounce(float64 t) {
+		static float64 Helper(float64 t, float64 c, float64 a) {
+			if (t == 1) {
+				return c;
+			}
+			if (t < (4 / 11.)) {
+				return c * (7.5625 * t * t);
+			}
+			if (t < (8 / 11.)) {
+				t -= (6 / 11.);
+				return -a * (1 - (7.5625 * t * t + 0.75)) + c;
+			}
+			if (t < (10 / 11.)) {
+				t -= (9 / 11.0f);
+				return -a * (1 - (7.5625 * t * t + 0.9375)) + c;
+			}
+			t -= (21 / 22.);
+			return -a * (1 - (7.5625 * t * t + 0.984375)) + c;
+		}
+		inline a = 1.70158;
+		return 1 - Helper(1 - t, 1, a);
+	}
+}
+
+float64 easeOut(float64 easeIn(float64 ratio), float64 ratio) {
+	if (easeIn == null) {
+		return ratio;
+	}
+	return 1. - easeIn(1. - ratio);
+}
+
+float64 easeInOut(float64 easeIn(float64 ratio), float64 ratio) {
+	if (easeIn == null) {
+		return ratio;
+	}
+	ratio *= 2;
+	return (ratio < 1) ? .5 * easeIn(ratio) : .5 * easeOut(easeIn, ratio - 1) + .5;
+}
+
+float64 easeOutIn(float64 easeIn(float64 ratio), float64 ratio) {
+	if (easeIn == null) {
+		return ratio;
+	}
+	ratio *= 2;
+	return (ratio < 1) ? .5 * easeOut(easeIn, ratio) : .5 * easeIn(ratio - 1) + .5;
+}
+/// Complex number
+struct Complex {
+
+	/// The real component of a complex number.
+	const float64 re;
+
+	/// The imaginary component of a complex number.
+	const float64 im = 0;
+
+	/* TODO: implement enumerations
+	enum: Complex {
+		zero: { re: 0 };	// 0 + 0i
+		unit: { re: 1 };	// 1 + 0i
+	}*/
+}
+
+/* TODO: implement inline initializer
+// constructing a complex number
+inline Complex(float64 re) = { re: re };
+inline Complex(float64 re, float64 im) = { re: re, im: im };
+*/
+
+///@public
+Complex Complex(float64 re) {
+	return {
+		re: re;
+	};
+}
+
+///@public
+Complex Complex(float64 re, float64 im) {
+	return {
+		re: re;
+		im: im;
+	};
+}
+
+/* TODO: implement operator overloading
+inline -(Complex a) = Complex(-a.re, -a.im);
+
+inline +(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
+inline +(Complex a, float64 b) = Complex(a.re + b, a.im);
+inline +(float64 a, Complex b) = Complex(a + b.re, b.im);
+
+inline -(Complex a, Complex b) = Complex(a.re - b.re, a.im - b.im);
+inline -(Complex a, float64 b) = Complex(a.re - b, a.im);
+inline -(float64 a, Complex b) = Complex(a - b.re, b.im);
+
+inline *(Complex a, Complex b) = Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+inline *(Complex a, float64 b) = Complex(a.re * b, a.im * b);
+inline *(float64 a, Complex b) = Complex(a * b.re, a * b.im);
+
+inline /(Complex a, Complex b) = div(a, b);
+inline /(Complex a, float64 b) = div(a, Complex(b));
+inline /(float64 a, Complex b) = div(Complex(a), b);
+*/
+
+///@public: Complex(-a.re, -a.im);
+inline neg(Complex a) = Complex(emit(struct(a), neg.p2d));
+
+///@public: Complex(a.re + b.re, a.im + b.im);
+inline add(Complex a, Complex b) = Complex(emit(struct(a), struct(b), add.p2d));
+///@public
+inline add(Complex a, float64 b) = Complex(a.re + b, a.im);
+///@public
+inline add(float64 a, Complex b) = Complex(a + b.re, b.im);
+
+///@public: Complex(a.re - b.re, a.im - b.im);
+inline sub(Complex a, Complex b) = Complex(emit(struct(a), struct(b), sub.p2d));
+///@public
+inline sub(Complex a, float64 b) = Complex(a.re - b, a.im);
+///@public
+inline sub(float64 a, Complex b) = Complex(a - b.re, b.im);
+
+///@public: Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+inline mul(Complex a, Complex b) = Complex(emit(
+	struct(a), struct(b), swz.x2, mul.p2d, add.f64,
+	struct(a), struct(b), mul.p2d, swz.x2, sub.f64
+));
+///@public
+inline mul(Complex a, float64 b) = Complex(a.re * b, a.im * b);
+///@public
+inline mul(float64 a, Complex b) = Complex(a * b.re, a * b.im);
+
+///@public
+Complex div(Complex a, Complex b) {
+	// Adapted from Numerical Recipes in C - The Art of Scientific Computing
+	// ISBN 0-521-43108-5
+
+	if (Math.abs(b.re) >= Math.abs(b.im)) {
+		float64 r = b.im / b.re;
+		float64 den = b.re + r * b.im;
+		return {
+			re: (a.re + r * a.im) / den;
+			im: (a.im - r * a.re) / den;
+		};
+	}
+	float64 r = b.re / b.im;
+	float64 den = b.im + r * b.re;
+	return {
+		re: (a.re * r + a.im) / den;
+		im: (a.im * r - a.re) / den;
+	};
+}
+
+///@public
+inline div(Complex a, float64 b) = div(a, Complex(b));
+///@public
+inline div(float64 a, Complex b) = div(Complex(a), b);
+
+///@public
+inline abs(Complex a) = float64.sqrt(a.re * a.re + a.im * a.im);
+///@public
+inline arg(Complex a) = float64.atan2(a.re, a.im);
+
+/// Reciprocal of a complex number (1 / a)
+Complex inv(Complex a) {
+	float64 d = a.re * a.re + a.im * a.im;
+	return {
+		re: +a.re / d;
+		im: -a.im / d;
+	};
+}
+
+///@public
+inline conj(Complex a) = Complex(a.re, -a.im);
+
+///@public
+inline exp(Complex a) = Complex(float64.exp(a.re) * float64.cos(a.im), float64.exp(a.re) * float64.sin(a.im));
+
+///@public
+inline log(Complex a) = Complex(float64.log(abs(a)), arg(a));
+
+///@public
+Complex pow(Complex a, Complex b) {
+	float64 r = abs(a);
+	float64 t = arg(a);
+	float64 u = b.re * t + b.im * float64.log(r);
+	float64 v = float64.pow(r, b.re) * float64.exp(-b.im * t);
+	return {
+		re: v * float64.cos(u);
+		im: v * float64.sin(u);
+	};
+}
+///@public
+inline pow(Complex a, float64 b) = pow(a, Complex(b));
+
+///@public
+inline sin(Complex a) = Complex(float64.sin(a.re) * Math.cosh(a.im), +float64.cos(a.re) * Math.sinh(a.im));
+///@public
+inline cos(Complex a) = Complex(float64.cos(a.re) * Math.cosh(a.im), -float64.sin(a.re) * Math.sinh(a.im));
+
+/* TODO: implement operator overloading
+inline tan(Complex a) = sin(a) / cos(a);
+inline cot(Complex a) = cos(a) / sin(a);
+
+inline sinh(Complex a) = (exp(a) - exp(-a)) / 2;
+inline cosh(Complex a) = (exp(a) + exp(-a)) / 2;
+inline tanh(Complex a) = (exp(2 * a) - 1) / (exp(2 * a) + 1);
+inline coth(Complex a) = (exp(2 * a) + 1) / (exp(2 * a) - 1);
+*/
+
+///@public
+inline tan(Complex a) = div(sin(a), cos(a));
+///@public
+inline cot(Complex a) = div(cos(a), sin(a));
+
+///@public
+inline sinh(Complex a) = div(sub(exp(a), exp(neg(a))), 2);
+///@public
+inline cosh(Complex a) = div(add(exp(a), exp(neg(a))), 2);
+///@public
+inline tanh(Complex a) = div(sub(exp(mul(2, a)), 1), add(exp(mul(2, a)), 1));
+///@public
+inline coth(Complex a) = div(add(exp(mul(2, a)), 1), sub(exp(mul(2, a)), 1));
+
+///@public
+inline sec(Complex a) = inv(cos(a));
+///@public
+inline csc(Complex a) = inv(sin(a));
+///@public
+inline sech(Complex a) = inv(cosh(a));
+///@public
+inline csch(Complex a) = inv(sinh(a));
+
+///@public
+inline toCartesian(Complex x) = Complex(x.re * float64.cos(x.im), x.re * float64.sin(x.im));
+///@public
+inline toPolar(Complex x) = Complex(abs(x), arg(x));
+/// Mathematical utility functions and constants
+static struct Math {
+
+	// constants
+	enum: float64 {
+		pi: 3.14159265358979323846264338327950288419716939937510582097494459;		// A000796
+		e: 2.71828182845904523536028747135266249775724709369995957496696763;		// A001113
+		ln2: 0.693147180559945309417232121458176568075500134360255254120680009;	// A002162
+		log2E: 1. / ln2;
+		ln10: 2.30258509299404568401799145468436420760110148862877297603332790;	// A002392
+		log10E: 1. / ln10;
+		phi: 1.61803398874989484820458683436563811772030917980576286213544862;		// A001622
+		sqrt2: 1.41421356237309504880168872420969807856967187537694807317667974;	// A002193
+		sqrtE: 1.64872127070012814684865078781416357165377610071014801157507931;	// A019774
+		sqrtPi: 1.77245385090551602729816748334114518279754945612238712821380779;	// A002161
+		sqrtPhi: 1.27201964951406896425242246173749149171560804184009624861664038;	// A139339
+		nan: 0 / 0.;
+		inf: 1 / 0.;
+	}
+
+	/// Decompose a value into integer and fractional parts
+	float64 modf(float64 x, float64 intPart&) {
+		if (x < 1) {
+			if (x < 0) {
+				float64 result = -modf(-x, &intPart);
+				intPart = -intPart;
+				return result;
+			}
+			intPart = 0;
+			return x;
+		}
+		float64 result = x % 1;
+		intPart = x - result;
+		return result;
+	}
+
+	// inline isNan(float64 x) = x != x;
+	// inline isNan(float32 x) = x != x;
+
+	// inline isInf(float64 x) = x != 0 && x == 2 * x;
+	// inline isInf(float32 x) = x != 0 && x == 2 * x;
+
+	// inline isFinite(float64 x) = x - x == 0;
+	// inline isFinite(float32 x) = x - x == 0;
+
+	/// Computes the largest integer value not greater than the input
+	float64 floor(float64 x) {
+		float64 result;
+		modf(x, &result);
+		return result;
+	}
+
+	/// Computes the smallest integer not less than the input
+	inline ceil(float64 x) = -floor(-x);
+
+	/// Computes the nearest integer to the input
+	inline round(float64 x) = floor(x + .5);
+
+	// inline floor(float32 x) = float32(floor(float64(x)));
+	// inline ceil(float32 x) = -floor(-x);
+	// inline round(float32 x) = floor(x + .5f);
+
+	/// Returns the signum of the input (`0` if zero, `-1` if negative, `1` if positive)
+	inline sign(float32 x) = int(x > 0) - int(x < 0);
+
+	/// Returns the signum of the input (`0` if zero, `-1` if negative, `1` if positive)
+	inline sign(float64 x) = int(x > 0) - int(x < 0);
+
+	// inline sign(int32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+	// inline sign(int64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+	// inline sign(uint32 x) = x > 0 ? 1 : 0;
+	// inline sign(uint64 x) = x > 0 ? 1 : 0;
+	// inline sign(float32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+	// inline sign(float64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+
+	/// Returns the absolute value of the input
+	float32 abs(float32 x) {
+		if (x < 0) {
+			return -x;
+		}
+		return x;
+	}
+
+	/// Returns the absolute value of the input
+	float64 abs(float64 x) {
+		if (x < 0) {
+			return -x;
+		}
+		return x;
+	}
+
+	/// Returns the positive modulus of the input
+	float32 absMod(float32 val, float32 mod) {
+		if ((val %= mod) < 0) {
+			return val + mod;
+		}
+		return val;
+	}
+
+	/// Returns the positive modulus of the input
+	float64 absMod(float64 val, float64 mod) {
+		if ((val %= mod) < 0) {
+			return val + mod;
+		}
+		return val;
+	}
+
+	// inline abs(int32 x) = x < 0 ? -x : x;
+	// inline abs(int64 x) = x < 0 ? -x : x;
+	// inline abs(uint32 x) = x;
+	// inline abs(float32 x) = x < 0 ? -x : x;
+	// inline abs(float64 x) = x < 0 ? -x : x;
+
+	/// Returns the smaller value from the input values
+	float32 min(float32 a, float32 b) {
+		if (a < b) {
+			return a;
+		}
+		return b;
+	}
+
+	/// Returns the smaller value from the input values
+	float64 min(float64 a, float64 b) {
+		if (a < b) {
+			return a;
+		}
+		return b;
+	}
+
+	// inline min(int32 a, int32 b) = a < b ? a : b;
+	// inline min(int64 a, int64 b) = a < b ? a : b;
+	// inline min(uint32 a, uint32 b) = a < b ? a : b;
+	// inline min(float32 a, float32 b) = a < b ? a : b;
+	// inline min(float64 a, float64 b) = a < b ? a : b;
+
+	/// Returns the greater value from the input values
+	float32 max(float32 a, float32 b) {
+		if (a > b) {
+			return a;
+		}
+		return b;
+	}
+
+	/// Returns the greater value from the input values
+	float64 max(float64 a, float64 b) {
+		if (a > b) {
+			return a;
+		}
+		return b;
+	}
+
+	// inline max(int32 a, int32 b) = a > b ? a : b;
+	// inline max(int64 a, int64 b) = a > b ? a : b;
+	// inline max(uint32 a, uint32 b) = a > b ? a : b;
+	// inline max(float32 a, float32 b) = a > b ? a : b;
+	// inline max(float64 a, float64 b) = a > b ? a : b;
+
+	/// Returns the value of `t` clamped between `a` and `b`
+	float32 clamp(float32 t, float32 a, float32 b) {
+		if (t < a) {
+			return a;
+		}
+		if (t > b) {
+			return b;
+		}
+		return t;
+	}
+
+	/// Returns the value of `t` clamped between `a` and `b`
+	float64 clamp(float64 t, float64 a, float64 b) {
+		if (t < a) {
+			return a;
+		}
+		if (t > b) {
+			return b;
+		}
+		return t;
+	}
+
+	// inline clamp(int32 t, int32 a, int32 b) = min(max(t, a), b);
+	// inline clamp(int32 t, int32 a, int32 b) = t < a ? a : t > b ? b : t;
+	// inline clamp(float32 t, float32 a, float32 b) = t < a ? a : t > b ? b : t;
+	// inline clamp(float64 t, float64 a, float64 b) = t < a ? a : t > b ? b : t;
+
+	/// Returns the linear interpolation between `a` and `b` by `t`
+	inline lerp(float32 t, float32 a, float32 b) = a + t * (b - a);
+
+	/// Returns the linear interpolation between `a` and `b` by `t`
+	inline lerp(float64 t, float64 a, float64 b) = a + t * (b - a);
+
+	inline smooth(float32 t) = t * t * (3 - 2 * t);
+	inline smooth(float64 t) = t * t * (3 - 2 * t);
+
+	/// Returns smooth interpolation between `a` and `b` by `t`
+	inline smooth(float32 t, float32 a, float32 b) = smooth(clamp((t - a) / (b - a), float32(0), float32(1)));
+
+	/// Returns smooth interpolation between `a` and `b` by `t`
+	inline smooth(float64 t, float64 a, float64 b) = smooth(clamp((t - a) / (b - a), float64(0), float64(1)));
+
+	/// Returns the smaller value from the input values
+	float64 min(float64 data...) {
+		if (data.length == 0) {
+			return nan;
+		}
+		float64 result = data[0];
+		for (int i = 1; i < data.length; i += 1) {
+			if (result > data[i]) {
+				result = data[i];
+			}
+		}
+		return result;
+	}
+
+	/// Returns the greater value from the input values
+	float64 max(float64 data...) {
+		if (data.length == 0) {
+			return nan;
+		}
+		float64 result = data[0];
+		for (int i = 1; i < data.length; i += 1) {
+			if (result < data[i]) {
+				result = data[i];
+			}
+		}
+		return result;
+	}
+
+	/// Returns the sum of the input values
+	float64 sum(float64 data...) {
+		float64 result = 0;
+		for (int i = 0; i < data.length; i += 1) {
+			result += data[i];
+		}
+		return result;
+	}
+
+	/// Returns the mean of the input values
+	float64 mean(float64 data...) {
+		return sum(...data) / data.length;
+	}
+
+	/// Return the polynomial evaluated at x using Horner's algorithm
+	inline eval(float64 x, float64 a0) = (a0);
+
+	/// Return the polynomial evaluated at x using Horner's algorithm
+	inline eval(float64 x, float64 a0, float64 a1) = (a0 + x * a1);
+
+	/// Return the polynomial evaluated at x using Horner's algorithm
+	inline eval(float64 x, float64 a0, float64 a1, float64 a2) = (a0 + x * eval(x, a1, a2));
+
+	/// Return the polynomial evaluated at x using Horner's algorithm
+	inline eval(float64 x, float64 a0, float64 a1, float64 a2, float64 a3) = (a0 + x * eval(x, a1, a2, a3));
+
+	/// Return the polynomial evaluated at x using Horner's algorithm
+	float64 eval(float64 x, float64 polynomial...) {
+		float64 result = 0;
+		for (int i = polynomial.length - 1; i >= 0; i -= 1) {
+			result = result * x + polynomial[i];
+		}
+		return result;
+	}
+
+	/// Compare `a` and `b` floating point with `eps` tolerance
+	int cmp(float32 a, float32 b, float32 eps) {
+		if (a < b) {
+			if (eps < (b - a)) {
+				return -1;
+			}
+		}
+		else {
+			if (eps < (a - b)) {
+				return +1;
+			}
+		}
+		return 0;
+	}
+
+	/// Compare `a` and `b` floating point with `eps` tolerance
+	int cmp(float64 a, float64 b, float64 eps) {
+		if (a < b) {
+			if (eps < (b - a)) {
+				return -1;
+			}
+		}
+		else {
+			if (eps < (a - b)) {
+				return +1;
+			}
+		}
+		return 0;
+	}
+
+	// calculate sin or cos
+	float64 sinCos(float64 arg, int quad) {
+		enum: float64 {
+			PIO2: 1.570796326794896619231e0;
+			p0: .1357884097877375669092680e8;
+			p1: -.4942908100902844161158627e7;
+			p2: .4401030535375266501944918e6;
+			p3: -.1384727249982452873054457e5;
+			p4: .1459688406665768722226959e3;
+			q0: .8644558652922534429915149e7;
+			q1: .4081792252343299749395779e6;
+			q2: .9463096101538208180571257e4;
+			q3: .1326534908786136358911494e3;
+		}
+
+		float64 x = arg;
+		if (x < 0) {
+			x = -x;
+			quad += 2;
+		}
+
+		float64 y;
+		x *= 1 / PIO2;	/* underflow? */
+		if (x > 32764) {
+			float64 e;
+			y = modf(x, &e);
+			e += quad;
+
+			float64 f;
+			modf(0.25 * e, &f);
+			quad = e - 4 * f;
+		}
+		else {
+			int k = x;
+			y = x - k;
+			quad += k;
+			quad &= 3;
+		}
+		if (quad & 1) {
+			y = 1-y;
+		}
+		if (quad > 1) {
+			y = -y;
+		}
+
+		float64 ysq = y * y;
+		float64 temp1 = ((((p4 * ysq + p3) * ysq + p2) * ysq + p1) * ysq + p0) * y;
+		float64 temp2 = ((((ysq + q3) * ysq + q2) * ysq + q1) * ysq + q0);
+		return temp1 / temp2;
+	}
+
+	/// Returns the sine of the input
+	inline sin(float64 arg) = sinCos(arg, 0);
+
+	/// Returns the cosine of the input
+	inline cos(float64 arg) = sinCos(abs(arg), 1);
+
+	/// Returns the tangent of the input
+	float64 tan(float64 arg) {
+		enum: float64 {
+			PIO2: 1.570796326794896619231e0;
+			p0: -0.1306820264754825668269611177e+5;
+			p1:  0.1055970901714953193602353981e+4;
+			p2: -0.1550685653483266376941705728e+2;
+			p3:  0.3422554387241003435328470489e-1;
+			p4:  0.3386638642677172096076369e-4;
+			q0: -0.1663895238947119001851464661e+5;
+			q1:  0.4765751362916483698926655581e+4;
+			q2: -0.1555033164031709966900124574e+3;
+		}
+
+		bool complement = false;
+		bool negate = false;
+
+		if (arg < 0) {
+			arg = -arg;
+			negate = true;
+		}
+		arg = 2 * arg / PIO2;   /* overflow? */
+
+		float64 e;
+		float64 x = modf(arg, &e);
+		int i = int(e) % 4;
+
+		if (i == 0) {}
+		else if (i == 1) {
+			x = 1 - x;
+			complement = true;
+		}
+		else if (i == 2) {
+			negate = !negate;
+			complement = true;
+		}
+		else if (i == 3) {
+			x = 1 - x;
+			negate = !negate;
+		}
+
+		float64 xsq = x * x;
+		float64 result = ((((p4 * xsq + p3) * xsq + p2) * xsq + p1) * xsq + p0) * x;
+		result /= ((xsq + q2) * xsq + q1) * xsq + q0;
+
+		if (complement) {
+			if (result == 0) {
+				return nan;
+			}
+			result = 1 / result;
+		}
+		if (negate) {
+			return -result;
+		}
+		return result;
+	}
+
+	/// Returns the hyperbolic sine of the input
+	float64 sinh(float64 x) {
+		// The coefficients are #2029 from Hart & Cheney. (20.36D)
+		enum: float64 {
+			P0: -0.6307673640497716991184787251e+6;
+			P1: -0.8991272022039509355398013511e+5;
+			P2: -0.2894211355989563807284660366e+4;
+			P3: -0.2630563213397497062819489e+2;
+			Q0: -0.6307673640497716991212077277e+6;
+			Q1: 0.1521517378790019070696485176e+5;
+			Q2: -0.173678953558233699533450911e+3;
+		}
+
+		bool negate = false;
+		if (x < 0) {
+			x = -x;
+			negate = true;
+		}
+
+		if (x > 21) {
+			return float64.exp(x) / 2;
+		}
+
+		float64 result;
+		if (x > 0.5) {
+			result = (float64.exp(x) - float64.exp(-x)) / 2;
+		}
+		else {
+			float64 sq = x * x;
+			result = (((P3 * sq + P2) * sq + P1) * sq + P0) * x;
+			result /= ((sq + Q2) * sq + Q1) * sq + Q0;
+		}
+
+		if (negate) {
+			return -result;
+		}
+		return result;
+	}
+
+	/// Returns the hyperbolic cosine of the input
+	float64 cosh(float64 x) {
+		if (x < 0) {
+			x = -x;
+		}
+		if (x > 21) {
+			return float64.exp(x) / 2;
+		}
+		return (float64.exp(x) + float64.exp(-x)) / 2;
+	}
+
+	/** Returns the arc sine of the input
+	 *  Special cases are:
+	 *    Asin(±0) = ±0
+	 *    Asin(x) = NaN if x < -1 or x > 1
+	 */
+	float64 asin(float64 x) {
+		if (x == 0) {
+			// special case
+			return x;
+		}
+
+		bool negate = false;
+		if (x < 0) {
+			negate = true;
+			x = -x;
+		}
+
+		if (x > 1) {
+			// special case
+			return nan;
+		}
+
+		float64 result = float64.sqrt(1 - x * x);
+		if (x > 0.7) {
+			result = pi / 2 - float64.atan2(result, x);
+		}
+		else {
+			result = float64.atan2(x, result);
+		}
+
+		if (negate) {
+			return -result;
+		}
+		return result;
+	}
+
+	/** Returns the arc cosine of the input
+	 *  Special case is:
+	 *    Acos(x) = NaN if x < -1 or x > 1
+	 */
+	inline acos(float64 x) = (pi / 2 - asin(x));
+
+	/* arc cosine of x
+		Absolute error <= 6.7e-5.
+		http://http.developer.nvidia.com/Cg/acos.html
+	float64 acos(float64 x) {
+		float64 negate = 0;
+		if (x < 0) {
+			negate = 1;
+			x = -x;
+		}
+		result = -0.0187293;
+		result = result * x;
+		result = result + 0.0742610;
+		result = result * x;
+		result = result - 0.2121144;
+		result = result * x;
+		result = result + 1.5707288;
+		result = result * sqrt(1. - x);
+		result = result - 2 * negate * result;
+		result = negate * 3.14159265358979 + result;
+	}*/
+
+	/// Converts the input to radians from degrees.
+	inline radians(float64 degrees) = float64(degrees * pi / 180);
+
+	/// Converts the input to degrees from radians.
+	inline degrees(float64 radians) = float64(radians * 180 / pi);
+
+	// inline rand(int min, int max) = System.rand() % (max - min) + min;
+	// inline rand(double min, double max) = (System.rand() / float64(RAND_MAX)) * (max - min) + min;
+}
+
+/* TODO: leftovers
+//~ float64 abs(float64 x);
+//~ float64 sin(float64 x);
+//~ float64 cos(float64 x);
+//~ float64 tan(float64 x);
+//~ float64 log(float64 x);
+//~ float64 exp(float64 x);
+//~ float64 pow(float64 x, float64 y);
+//~ float64 sqrt(float64 x);
+//~ float64 atan2(float64 x, float64 y);
+
+//~ Number.prototype.abs = function(){return Math.abs(this);};
+//~ Number.prototype.sign = function(){return this == 0 ? 0 : (this > 0 ? 1 : -1);};
+//~ Number.prototype.ceil = function(){return Math.ceil(this);};
+//~ Number.prototype.floor = function(){return Math.floor(this);};
+//~ Number.prototype.round = function(){return Math.round(this);};
+//~ Number.prototype.degToRad = function(){return this * Math.PI / 180;};
+//~ Number.prototype.radToDeg = function(){return this * 180 / Math.PI;};
+
+//~ Number.prototype.sin = function(){return Math.sin(this);};
+//~ Number.prototype.sinh = function(){return (Math.exp(this) - Math.exp(-this)) / 2;};
+//~ Number.prototype.asin = function(){return Math.asin(this);};
+Number.prototype.asinh = function(){return Math.log(this + Math.sqrt(this * this + 1));};
+
+Number.prototype.sec = function(){return 1 / Math.cos(this);};
+Number.prototype.sech = function(){return 2 / (Math.exp(this) + Math.exp(-this));};
+Number.prototype.asec = function(){return Math.PI / 2 - Math.asin(1 / this);};
+Number.prototype.asech = function(){return Math.log((1 + Math.sqrt(1 - this * this)) / this);};
+
+//~ Number.prototype.cos = function(){return Math.cos(this);};
+//~ Number.prototype.cosh = function(){return (Math.exp(this) + Math.exp(-this)) / 2;};
+//~ Number.prototype.acos = function(){return Math.acos(this);};
+Number.prototype.acosh = function(){return Math.log(this + Math.sqrt(this * this - 1));};
+
+Number.prototype.cot = function(){return 1 / Math.tan(this);};
+Number.prototype.coth = function(){return (Math.exp(this) + Math.exp(-this)) / (Math.exp(this) - Math.exp(-this));};
+Number.prototype.acot = function(){return Math.PI / 2 - Math.atan(this);};
+Number.prototype.acoth = function(){return Math.log((this + 1) / (this - 1)) / 2;};
+
+Number.prototype.cosec = function(){return 1 / Math.sin(this);};
+Number.prototype.cosech = function(){return 2 / (Math.exp(this) - Math.exp(-this));};
+Number.prototype.acosec = function(){return Math.asin(1 / this);};
+Number.prototype.acosech = function(){
+	return this < 0
+		? Math.log((1 - Math.sqrt(1 + this * this)) / this)
+		: Math.log((1 + Math.sqrt(1 + this * this)) / this);
+};
+
+//~ Number.prototype.tan = function(){return Math.tan(this);};
+Number.prototype.tanh = function(){return (Math.exp(this) - Math.exp(-this)) / (Math.exp(this) + Math.exp(-this));};
+Number.prototype.atan = function(){return Math.atan(this);};
+Number.prototype.atanh = function(){return Math.log((1 + this) / (1 - this)) / 2;};
+
+Number.prototype.ln = function(){return Math.log(this);};
+//~ Number.prototype.log = function(base){return Math.log(this) / Math.log(base);};
+Number.prototype.log2 = function(){return Math.log(this) / Math.LN2;};
+Number.prototype.log10 = function(){return Math.log(this) / Math.LN10;};
+//~ Number.prototype.exp = function(){return Math.exp(this);};
+
+//~ Number.prototype.sqrt = function(){return Math.sqrt(this);};
+//~ Number.prototype.pow = function(exponent){return Math.pow(this,exponent);};
+//- Number.prototype.mod = function(modulus){return this >= 0 ? this % modulus : (this % modulus + Math.abs(modulus)) % modulus;};
+//- Number.prototype.wrap = function(low, high){return low + (this - low).mod(high - low);};
+// */
+
 // string related functions
 
 /// Computes the length of the string
@@ -2427,1164 +3678,3 @@ int format(char output[], string format, int value) {
 	return pos;
 }
 // */
-/// Mathematical utility functions and constants
-static struct Math {
-
-	// constants
-	enum: float64 {
-		pi: 3.14159265358979323846264338327950288419716939937510582097494459;		// A000796
-		e: 2.71828182845904523536028747135266249775724709369995957496696763;		// A001113
-		ln2: 0.693147180559945309417232121458176568075500134360255254120680009;	// A002162
-		log2E: 1. / ln2;
-		ln10: 2.30258509299404568401799145468436420760110148862877297603332790;	// A002392
-		log10E: 1. / ln10;
-		phi: 1.61803398874989484820458683436563811772030917980576286213544862;		// A001622
-		sqrt2: 1.41421356237309504880168872420969807856967187537694807317667974;	// A002193
-		sqrtE: 1.64872127070012814684865078781416357165377610071014801157507931;	// A019774
-		sqrtPi: 1.77245385090551602729816748334114518279754945612238712821380779;	// A002161
-		sqrtPhi: 1.27201964951406896425242246173749149171560804184009624861664038;	// A139339
-		nan: 0 / 0.;
-		inf: 1 / 0.;
-	}
-
-	/// Decompose a value into integer and fractional parts
-	float64 modf(float64 x, float64 intPart&) {
-		if (x < 1) {
-			if (x < 0) {
-				float64 result = -modf(-x, &intPart);
-				intPart = -intPart;
-				return result;
-			}
-			intPart = 0;
-			return x;
-		}
-		float64 result = x % 1;
-		intPart = x - result;
-		return result;
-	}
-
-	// inline isNan(float64 x) = x != x;
-	// inline isNan(float32 x) = x != x;
-
-	// inline isInf(float64 x) = x != 0 && x == 2 * x;
-	// inline isInf(float32 x) = x != 0 && x == 2 * x;
-
-	// inline isFinite(float64 x) = x - x == 0;
-	// inline isFinite(float32 x) = x - x == 0;
-
-	/// Computes the largest integer value not greater than the input
-	float64 floor(float64 x) {
-		float64 result;
-		modf(x, &result);
-		return result;
-	}
-
-	/// Computes the smallest integer not less than the input
-	inline ceil(float64 x) = -floor(-x);
-
-	/// Computes the nearest integer to the input
-	inline round(float64 x) = floor(x + .5);
-
-	// inline floor(float32 x) = float32(floor(float64(x)));
-	// inline ceil(float32 x) = -floor(-x);
-	// inline round(float32 x) = floor(x + .5f);
-
-	/// Returns the signum of the input (`0` if zero, `-1` if negative, `1` if positive)
-	inline sign(float32 x) = int(x > 0) - int(x < 0);
-
-	/// Returns the signum of the input (`0` if zero, `-1` if negative, `1` if positive)
-	inline sign(float64 x) = int(x > 0) - int(x < 0);
-
-	// inline sign(int32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
-	// inline sign(int64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
-	// inline sign(uint32 x) = x > 0 ? 1 : 0;
-	// inline sign(uint64 x) = x > 0 ? 1 : 0;
-	// inline sign(float32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
-	// inline sign(float64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
-
-	/// Returns the absolute value of the input
-	float32 abs(float32 x) {
-		if (x < 0) {
-			return -x;
-		}
-		return x;
-	}
-
-	/// Returns the absolute value of the input
-	float64 abs(float64 x) {
-		if (x < 0) {
-			return -x;
-		}
-		return x;
-	}
-
-	/// Returns the positive modulus of the input
-	float32 absMod(float32 val, float32 mod) {
-		if ((val %= mod) < 0) {
-			return val + mod;
-		}
-		return val;
-	}
-
-	/// Returns the positive modulus of the input
-	float64 absMod(float64 val, float64 mod) {
-		if ((val %= mod) < 0) {
-			return val + mod;
-		}
-		return val;
-	}
-
-	// inline abs(int32 x) = x < 0 ? -x : x;
-	// inline abs(int64 x) = x < 0 ? -x : x;
-	// inline abs(uint32 x) = x;
-	// inline abs(float32 x) = x < 0 ? -x : x;
-	// inline abs(float64 x) = x < 0 ? -x : x;
-
-	/// Returns the smaller value from the input values
-	float32 min(float32 a, float32 b) {
-		if (a < b) {
-			return a;
-		}
-		return b;
-	}
-
-	/// Returns the smaller value from the input values
-	float64 min(float64 a, float64 b) {
-		if (a < b) {
-			return a;
-		}
-		return b;
-	}
-
-	// inline min(int32 a, int32 b) = a < b ? a : b;
-	// inline min(int64 a, int64 b) = a < b ? a : b;
-	// inline min(uint32 a, uint32 b) = a < b ? a : b;
-	// inline min(float32 a, float32 b) = a < b ? a : b;
-	// inline min(float64 a, float64 b) = a < b ? a : b;
-
-	/// Returns the greater value from the input values
-	float32 max(float32 a, float32 b) {
-		if (a > b) {
-			return a;
-		}
-		return b;
-	}
-
-	/// Returns the greater value from the input values
-	float64 max(float64 a, float64 b) {
-		if (a > b) {
-			return a;
-		}
-		return b;
-	}
-
-	// inline max(int32 a, int32 b) = a > b ? a : b;
-	// inline max(int64 a, int64 b) = a > b ? a : b;
-	// inline max(uint32 a, uint32 b) = a > b ? a : b;
-	// inline max(float32 a, float32 b) = a > b ? a : b;
-	// inline max(float64 a, float64 b) = a > b ? a : b;
-
-	/// Returns the value of `t` clamped between `a` and `b`
-	float32 clamp(float32 t, float32 a, float32 b) {
-		if (t < a) {
-			return a;
-		}
-		if (t > b) {
-			return b;
-		}
-		return t;
-	}
-
-	/// Returns the value of `t` clamped between `a` and `b`
-	float64 clamp(float64 t, float64 a, float64 b) {
-		if (t < a) {
-			return a;
-		}
-		if (t > b) {
-			return b;
-		}
-		return t;
-	}
-
-	// inline clamp(int32 t, int32 a, int32 b) = min(max(t, a), b);
-	// inline clamp(int32 t, int32 a, int32 b) = t < a ? a : t > b ? b : t;
-	// inline clamp(float32 t, float32 a, float32 b) = t < a ? a : t > b ? b : t;
-	// inline clamp(float64 t, float64 a, float64 b) = t < a ? a : t > b ? b : t;
-
-	/// Returns the linear interpolation between `a` and `b` by `t`
-	inline lerp(float32 t, float32 a, float32 b) = a + t * (b - a);
-
-	/// Returns the linear interpolation between `a` and `b` by `t`
-	inline lerp(float64 t, float64 a, float64 b) = a + t * (b - a);
-
-	inline smooth(float32 t) = t * t * (3 - 2 * t);
-	inline smooth(float64 t) = t * t * (3 - 2 * t);
-
-	/// Returns smooth interpolation between `a` and `b` by `t`
-	inline smooth(float32 t, float32 a, float32 b) = smooth(clamp((t - a) / (b - a), float32(0), float32(1)));
-
-	/// Returns smooth interpolation between `a` and `b` by `t`
-	inline smooth(float64 t, float64 a, float64 b) = smooth(clamp((t - a) / (b - a), float64(0), float64(1)));
-
-	/// Returns the smaller value from the input values
-	float64 min(float64 data...) {
-		if (data.length == 0) {
-			return nan;
-		}
-		float64 result = data[0];
-		for (int i = 1; i < data.length; i += 1) {
-			if (result > data[i]) {
-				result = data[i];
-			}
-		}
-		return result;
-	}
-
-	/// Returns the greater value from the input values
-	float64 max(float64 data...) {
-		if (data.length == 0) {
-			return nan;
-		}
-		float64 result = data[0];
-		for (int i = 1; i < data.length; i += 1) {
-			if (result < data[i]) {
-				result = data[i];
-			}
-		}
-		return result;
-	}
-
-	/// Returns the sum of the input values
-	float64 sum(float64 data...) {
-		float64 result = 0;
-		for (int i = 0; i < data.length; i += 1) {
-			result += data[i];
-		}
-		return result;
-	}
-
-	/// Returns the mean of the input values
-	float64 mean(float64 data...) {
-		return sum(...data) / data.length;
-	}
-
-	/// Return the polynomial evaluated at x using Horner's algorithm
-	inline eval(float64 x, float64 a0) = (a0);
-
-	/// Return the polynomial evaluated at x using Horner's algorithm
-	inline eval(float64 x, float64 a0, float64 a1) = (a0 + x * a1);
-
-	/// Return the polynomial evaluated at x using Horner's algorithm
-	inline eval(float64 x, float64 a0, float64 a1, float64 a2) = (a0 + x * eval(x, a1, a2));
-
-	/// Return the polynomial evaluated at x using Horner's algorithm
-	inline eval(float64 x, float64 a0, float64 a1, float64 a2, float64 a3) = (a0 + x * eval(x, a1, a2, a3));
-
-	/// Return the polynomial evaluated at x using Horner's algorithm
-	float64 eval(float64 x, float64 polynomial...) {
-		float64 result = 0;
-		for (int i = polynomial.length - 1; i >= 0; i -= 1) {
-			result = result * x + polynomial[i];
-		}
-		return result;
-	}
-
-	/// Compare `a` and `b` floating point with `eps` tolerance
-	int cmp(float32 a, float32 b, float32 eps) {
-		if (a < b) {
-			if (eps < (b - a)) {
-				return -1;
-			}
-		}
-		else {
-			if (eps < (a - b)) {
-				return +1;
-			}
-		}
-		return 0;
-	}
-
-	/// Compare `a` and `b` floating point with `eps` tolerance
-	int cmp(float64 a, float64 b, float64 eps) {
-		if (a < b) {
-			if (eps < (b - a)) {
-				return -1;
-			}
-		}
-		else {
-			if (eps < (a - b)) {
-				return +1;
-			}
-		}
-		return 0;
-	}
-
-	// calculate sin or cos
-	float64 sinCos(float64 arg, int quad) {
-		enum: float64 {
-			PIO2: 1.570796326794896619231e0;
-			p0: .1357884097877375669092680e8;
-			p1: -.4942908100902844161158627e7;
-			p2: .4401030535375266501944918e6;
-			p3: -.1384727249982452873054457e5;
-			p4: .1459688406665768722226959e3;
-			q0: .8644558652922534429915149e7;
-			q1: .4081792252343299749395779e6;
-			q2: .9463096101538208180571257e4;
-			q3: .1326534908786136358911494e3;
-		}
-
-		float64 x = arg;
-		if (x < 0) {
-			x = -x;
-			quad += 2;
-		}
-
-		float64 y;
-		x *= 1 / PIO2;	/* underflow? */
-		if (x > 32764) {
-			float64 e;
-			y = modf(x, &e);
-			e += quad;
-
-			float64 f;
-			modf(0.25 * e, &f);
-			quad = e - 4 * f;
-		}
-		else {
-			int k = x;
-			y = x - k;
-			quad += k;
-			quad &= 3;
-		}
-		if (quad & 1) {
-			y = 1-y;
-		}
-		if (quad > 1) {
-			y = -y;
-		}
-
-		float64 ysq = y * y;
-		float64 temp1 = ((((p4 * ysq + p3) * ysq + p2) * ysq + p1) * ysq + p0) * y;
-		float64 temp2 = ((((ysq + q3) * ysq + q2) * ysq + q1) * ysq + q0);
-		return temp1 / temp2;
-	}
-
-	/// Returns the sine of the input
-	inline sin(float64 arg) = sinCos(arg, 0);
-
-	/// Returns the cosine of the input
-	inline cos(float64 arg) = sinCos(abs(arg), 1);
-
-	/// Returns the tangent of the input
-	float64 tan(float64 arg) {
-		enum: float64 {
-			PIO2: 1.570796326794896619231e0;
-			p0: -0.1306820264754825668269611177e+5;
-			p1:  0.1055970901714953193602353981e+4;
-			p2: -0.1550685653483266376941705728e+2;
-			p3:  0.3422554387241003435328470489e-1;
-			p4:  0.3386638642677172096076369e-4;
-			q0: -0.1663895238947119001851464661e+5;
-			q1:  0.4765751362916483698926655581e+4;
-			q2: -0.1555033164031709966900124574e+3;
-		}
-
-		bool complement = false;
-		bool negate = false;
-
-		if (arg < 0) {
-			arg = -arg;
-			negate = true;
-		}
-		arg = 2 * arg / PIO2;   /* overflow? */
-
-		double e;
-		double x = modf(arg, &e);
-		int i = int(e) % 4;
-
-		if (i == 0) {}
-		else if (i == 1) {
-			x = 1 - x;
-			complement = true;
-		}
-		else if (i == 2) {
-			negate = !negate;
-			complement = true;
-		}
-		else if (i == 3) {
-			x = 1 - x;
-			negate = !negate;
-		}
-
-		double xsq = x * x;
-		float64 result = ((((p4 * xsq + p3) * xsq + p2) * xsq + p1) * xsq + p0) * x;
-		result /= ((xsq + q2) * xsq + q1) * xsq + q0;
-
-		if (complement) {
-			if (result == 0) {
-				return nan;
-			}
-			result = 1 / result;
-		}
-		if (negate) {
-			return -result;
-		}
-		return result;
-	}
-
-	/// Returns the hyperbolic sine of the input
-	float64 sinh(float64 x) {
-		// The coefficients are #2029 from Hart & Cheney. (20.36D)
-		enum: float64 {
-			P0: -0.6307673640497716991184787251e+6;
-			P1: -0.8991272022039509355398013511e+5;
-			P2: -0.2894211355989563807284660366e+4;
-			P3: -0.2630563213397497062819489e+2;
-			Q0: -0.6307673640497716991212077277e+6;
-			Q1: 0.1521517378790019070696485176e+5;
-			Q2: -0.173678953558233699533450911e+3;
-		}
-
-		bool negate = false;
-		if (x < 0) {
-			x = -x;
-			negate = true;
-		}
-
-		if (x > 21) {
-			return float64.exp(x) / 2;
-		}
-
-		float64 result;
-		if (x > 0.5) {
-			result = (float64.exp(x) - float64.exp(-x)) / 2;
-		}
-		else {
-			float64 sq = x * x;
-			result = (((P3 * sq + P2) * sq + P1) * sq + P0) * x;
-			result /= ((sq + Q2) * sq + Q1) * sq + Q0;
-		}
-
-		if (negate) {
-			return -result;
-		}
-		return result;
-	}
-
-	/// Returns the hyperbolic cosine of the input
-	float64 cosh(float64 x) {
-		if (x < 0) {
-			x = -x;
-		}
-		if (x > 21) {
-			return float64.exp(x) / 2;
-		}
-		return (float64.exp(x) + float64.exp(-x)) / 2;
-	}
-
-	/** Returns the arc sine of the input
-	 *  Special cases are:
-	 *    Asin(±0) = ±0
-	 *    Asin(x) = NaN if x < -1 or x > 1
-	 */
-	float64 asin(float64 x) {
-		if (x == 0) {
-			// special case
-			return x;
-		}
-
-		bool negate = false;
-		if (x < 0) {
-			negate = true;
-			x = -x;
-		}
-
-		if (x > 1) {
-			// special case
-			return nan;
-		}
-
-		float64 result = float64.sqrt(1 - x * x);
-		if (x > 0.7) {
-			result = pi / 2 - float64.atan2(result, x);
-		}
-		else {
-			result = float64.atan2(x, result);
-		}
-
-		if (negate) {
-			return -result;
-		}
-		return result;
-	}
-
-	/** Returns the arc cosine of the input
-	 *  Special case is:
-	 *    Acos(x) = NaN if x < -1 or x > 1
-	 */
-	inline acos(float64 x) = (pi / 2 - asin(x));
-
-	/* arc cosine of x
-		Absolute error <= 6.7e-5.
-		http://http.developer.nvidia.com/Cg/acos.html
-	float64 acos(float64 x) {
-		float64 negate = 0;
-		if (x < 0) {
-			negate = 1;
-			x = -x;
-		}
-		result = -0.0187293;
-		result = result * x;
-		result = result + 0.0742610;
-		result = result * x;
-		result = result - 0.2121144;
-		result = result * x;
-		result = result + 1.5707288;
-		result = result * sqrt(1. - x);
-		result = result - 2 * negate * result;
-		result = negate * 3.14159265358979 + result;
-	}*/
-
-	/// Converts the input to radians from degrees.
-	inline radians(float64 degrees) = float64(degrees * pi / 180);
-
-	/// Converts the input to degrees from radians.
-	inline degrees(float64 radians) = float64(radians * 180 / pi);
-
-	// inline rand(int min, int max) = System.rand() % (max - min) + min;
-	// inline rand(double min, double max) = (System.rand() / float64(RAND_MAX)) * (max - min) + min;
-}
-
-/* TODO: leftovers
-//~ float64 abs(float64 x);
-//~ float64 sin(float64 x);
-//~ float64 cos(float64 x);
-//~ float64 tan(float64 x);
-//~ float64 log(float64 x);
-//~ float64 exp(float64 x);
-//~ float64 pow(float64 x, float64 y);
-//~ float64 sqrt(float64 x);
-//~ float64 atan2(float64 x, float64 y);
-
-//~ Number.prototype.abs = function(){return Math.abs(this);};
-//~ Number.prototype.sign = function(){return this == 0 ? 0 : (this > 0 ? 1 : -1);};
-//~ Number.prototype.ceil = function(){return Math.ceil(this);};
-//~ Number.prototype.floor = function(){return Math.floor(this);};
-//~ Number.prototype.round = function(){return Math.round(this);};
-//~ Number.prototype.degToRad = function(){return this * Math.PI / 180;};
-//~ Number.prototype.radToDeg = function(){return this * 180 / Math.PI;};
-
-//~ Number.prototype.sin = function(){return Math.sin(this);};
-//~ Number.prototype.sinh = function(){return (Math.exp(this) - Math.exp(-this)) / 2;};
-//~ Number.prototype.asin = function(){return Math.asin(this);};
-Number.prototype.asinh = function(){return Math.log(this + Math.sqrt(this * this + 1));};
-
-Number.prototype.sec = function(){return 1 / Math.cos(this);};
-Number.prototype.sech = function(){return 2 / (Math.exp(this) + Math.exp(-this));};
-Number.prototype.asec = function(){return Math.PI / 2 - Math.asin(1 / this);};
-Number.prototype.asech = function(){return Math.log((1 + Math.sqrt(1 - this * this)) / this);};
-
-//~ Number.prototype.cos = function(){return Math.cos(this);};
-//~ Number.prototype.cosh = function(){return (Math.exp(this) + Math.exp(-this)) / 2;};
-//~ Number.prototype.acos = function(){return Math.acos(this);};
-Number.prototype.acosh = function(){return Math.log(this + Math.sqrt(this * this - 1));};
-
-Number.prototype.cot = function(){return 1 / Math.tan(this);};
-Number.prototype.coth = function(){return (Math.exp(this) + Math.exp(-this)) / (Math.exp(this) - Math.exp(-this));};
-Number.prototype.acot = function(){return Math.PI / 2 - Math.atan(this);};
-Number.prototype.acoth = function(){return Math.log((this + 1) / (this - 1)) / 2;};
-
-Number.prototype.cosec = function(){return 1 / Math.sin(this);};
-Number.prototype.cosech = function(){return 2 / (Math.exp(this) - Math.exp(-this));};
-Number.prototype.acosec = function(){return Math.asin(1 / this);};
-Number.prototype.acosech = function(){
-	return this < 0
-		? Math.log((1 - Math.sqrt(1 + this * this)) / this)
-		: Math.log((1 + Math.sqrt(1 + this * this)) / this);
-};
-
-//~ Number.prototype.tan = function(){return Math.tan(this);};
-Number.prototype.tanh = function(){return (Math.exp(this) - Math.exp(-this)) / (Math.exp(this) + Math.exp(-this));};
-Number.prototype.atan = function(){return Math.atan(this);};
-Number.prototype.atanh = function(){return Math.log((1 + this) / (1 - this)) / 2;};
-
-Number.prototype.ln = function(){return Math.log(this);};
-//~ Number.prototype.log = function(base){return Math.log(this) / Math.log(base);};
-Number.prototype.log2 = function(){return Math.log(this) / Math.LN2;};
-Number.prototype.log10 = function(){return Math.log(this) / Math.LN10;};
-//~ Number.prototype.exp = function(){return Math.exp(this);};
-
-//~ Number.prototype.sqrt = function(){return Math.sqrt(this);};
-//~ Number.prototype.pow = function(exponent){return Math.pow(this,exponent);};
-//- Number.prototype.mod = function(modulus){return this >= 0 ? this % modulus : (this % modulus + Math.abs(modulus)) % modulus;};
-//- Number.prototype.wrap = function(low, high){return low + (this - low).mod(high - low);};
-// */
-
-/// A 4x4 matrix
-struct mat4f: 0 {
-	/// Access elements as a flatten array: data[4] => m[1][0]
-	float32 data[16];
-
-	/// Access elements as an array: m[1][0]
-	float32 m[4][4];
-
-	/// Access elements as an array of vectors: v[1].x => m[1][0]
-	vec4f v[4];
-
-	struct {
-		///@public
-		vec4f x;
-		///@public
-		vec4f y;
-		///@public
-		vec4f z;
-		///@public
-		vec4f w;
-	}
-	struct {
-		///@public
-		float32 xx;
-		///@public
-		float32 xy;
-		///@public
-		float32 xz;
-		///@public
-		float32 xw;
-
-		///@public
-		float32 yx;
-		///@public
-		float32 yy;
-		///@public
-		float32 yz;
-		///@public
-		float32 yw;
-
-		///@public
-		float32 zx;
-		///@public
-		float32 zy;
-		///@public
-		float32 zz;
-		///@public
-		float32 zw;
-
-		///@public
-		float32 wx;
-		///@public
-		float32 wy;
-		///@public
-		float32 wz;
-		///@public
-		float32 ww;
-	}
-}
-
-/// Initialize all elements with the given values
-mat4f mat4f(float32 xx, float32 xy, float32 xz, float32 xw,
-			float32 yx, float32 yy, float32 yz, float32 yw,
-			float32 zx, float32 zy, float32 zz, float32 zw,
-			float32 wx, float32 wy, float32 wz, float32 ww) {
-	return {
-		x: { x: xx, y: xy, z: xz, w: xw };
-		y: { x: yx, y: yy, z: yz, w: yw };
-		z: { x: zx, y: zy, z: zz, w: zw };
-		w: { x: wx, y: wy, z: wz, w: ww };
-	};
-}
-
-/// Initialize matrix with row vectors
-mat4f mat4f(const vec4f x&, const vec4f y&, const vec4f z&, const vec4f w&) {
-	return { x: x, y: y, z: z, w: w };
-}
-
-/// Multiply with vector: dot product of the first 3 elements
-inline dp3(const mat4f mat&, const vec4f vec&) = vec4f(dp3(mat.x, vec), dp3(mat.y, vec), dp3(mat.z, vec), 1f);
-/// Multiply with vector: homogeneous dot product
-inline dph(const mat4f mat&, const vec4f vec&) = vec4f(dph(mat.x, vec), dph(mat.y, vec), dph(mat.z, vec), dph(mat.w, vec));
-/// Multiply with vector: dot product
-inline dp4(const mat4f mat&, const vec4f vec&) = vec4f(dp4(mat.x, vec), dp4(mat.y, vec), dp4(mat.z, vec), dp4(mat.w, vec));
-
-/// Transpose the matrix
-mat4f transpose(const mat4f mat) {
-	return {
-		xx: mat.xx; xy: mat.yx; xz: mat.zx; xw: mat.wx;
-		yx: mat.xy; yy: mat.yy; yz: mat.zy; yw: mat.wy;
-		zx: mat.xz; zy: mat.yz; zz: mat.zz; zw: mat.wz;
-		wx: mat.xw; wy: mat.yw; wz: mat.zw; ww: mat.ww;
-	};
-}
-
-/// Multiply two matrices (rows * cols)
-mat4f mul(const mat4f lhs&, const mat4f rhs&) {
-	mat4f transposed = transpose(rhs);
-	return {
-		x: dp4(transposed, lhs.x);
-		y: dp4(transposed, lhs.y);
-		z: dp4(transposed, lhs.z);
-		w: dp4(transposed, lhs.w);
-	};
-}
-
-/**
- * Build a rotation matrix
- * adapted from: https://sites.google.com/site/glennmurray/Home/rotation-matrices-and-formulas
- */
-mat4f rotation(const vec4f center&, const vec4f direction&, float angle) {
-	float len = direction.length();
-	if (len < 1e-9) {
-		trace("invalid direction of rotation", direction);
-		return {
-			x: vec4f(0, 0, 0, 0);
-			y: vec4f(0, 0, 0, 0);
-			z: vec4f(0, 0, 0, 0);
-			w: vec4f(0, 0, 0, 0);
-		};
-	}
-	float x = direction.x / len;
-	float y = direction.y / len;
-	float z = direction.z / len;
-	float cx = center.x;
-	float cy = center.y;
-	float cz = center.z;
-	float xx = x * x;
-	float xy = x * y;
-	float xz = x * z;
-	float yy = y * y;
-	float yz = y * z;
-	float zz = z * z;
-
-	float s = float.sin(angle);
-	float c = float.cos(angle);
-	float k = 1 - c;
-
-	return {
-		xx: xx + (yy + zz) * c;
-		xy: xy * k - z * s;
-		xz: xz * k + y * s;
-		xw: (cx * (yy + zz) - x * (cy * y + cz * z)) * k + (cy * z - cz * y) * s;
-
-		yx: xy * k + z * s;
-		yy: yy + (xx + zz) * c;
-		yz: yz * k - x * s;
-		yw: (cy * (xx + zz) - y * (cx * x + cz * z)) * k + (cz * x - cx * z) * s;
-
-		zx: xz * k - y * s;
-		zy: yz * k + x * s;
-		zz: zz + (xx + yy) * c;
-		zw: (cz * (xx + yy) - z * (cx * x + cy * y)) * k + (cx * y - cy * x) * s;
-
-		w: vec4f(0, 0, 0, 1);
-	};
-}
-
-/// Build a rotation matrix
-inline rotation(const vec4f direction&, float angle) = rotation(vec4f(0), direction, angle);
-
-/// Build a translation matrix
-mat4f translation(const vec4f direction&, float amount) {
-	return {
-		x: {x: 1, y: 0, z: 0, w: direction.x * amount};
-		y: {x: 0, y: 1, z: 0, w: direction.y * amount};
-		z: {x: 0, y: 0, z: 1, w: direction.z * amount};
-		w: {x: 0, y: 0, z: 0, w: 1};
-	};
-}
-
-/// Build a scaling matrix
-mat4f scale(const vec4f direction&, float amount) {
-	inline rcp(float val) = (val < 0 ? -val : val) < 1e-30 ? 0 : 1 / val;
-	return {
-		x: {x: rcp(direction.x * amount), y: 0, z: 0, w: 0};
-		y: {x: 0, y: rcp(direction.y * amount), z: 0, w: 0};
-		z: {x: 0, y: 0, z: rcp(direction.z * amount), w: 0};
-		w: {x: 0, y: 0, z: 0, w: 1};
-	};
-}
-/// Complex number
-struct Complex {
-
-	/// The real component of a complex number.
-	const float64 re;
-
-	/// The imaginary component of a complex number.
-	const float64 im = 0;
-
-	/* TODO: implement enumerations
-	enum: Complex {
-		zero: { re: 0 };	// 0 + 0i
-		unit: { re: 1 };	// 1 + 0i
-	}*/
-}
-
-/* TODO: implement inline initializer
-// constructing a complex number
-inline Complex(float64 re) = { re: re };
-inline Complex(float64 re, float64 im) = { re: re, im: im };
-*/
-
-///@public
-Complex Complex(float64 re) {
-	return {
-		re: re;
-	};
-}
-
-///@public
-Complex Complex(float64 re, float64 im) {
-	return {
-		re: re;
-		im: im;
-	};
-}
-
-/* TODO: implement operator overloading
-inline -(Complex a) = Complex(-a.re, -a.im);
-
-inline +(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
-inline +(Complex a, float64 b) = Complex(a.re + b, a.im);
-inline +(float64 a, Complex b) = Complex(a + b.re, b.im);
-
-inline -(Complex a, Complex b) = Complex(a.re - b.re, a.im - b.im);
-inline -(Complex a, float64 b) = Complex(a.re - b, a.im);
-inline -(float64 a, Complex b) = Complex(a - b.re, b.im);
-
-inline *(Complex a, Complex b) = Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
-inline *(Complex a, float64 b) = Complex(a.re * b, a.im * b);
-inline *(float64 a, Complex b) = Complex(a * b.re, a * b.im);
-
-inline /(Complex a, Complex b) = div(a, b);
-inline /(Complex a, float64 b) = div(a, Complex(b));
-inline /(float64 a, Complex b) = div(Complex(a), b);
-*/
-
-///@public: Complex(-a.re, -a.im);
-inline neg(Complex a) = Complex(emit(struct(a), neg.p2d));
-
-///@public: Complex(a.re + b.re, a.im + b.im);
-inline add(Complex a, Complex b) = Complex(emit(struct(a), struct(b), add.p2d));
-///@public
-inline add(Complex a, float64 b) = Complex(a.re + b, a.im);
-///@public
-inline add(float64 a, Complex b) = Complex(a + b.re, b.im);
-
-///@public: Complex(a.re - b.re, a.im - b.im);
-inline sub(Complex a, Complex b) = Complex(emit(struct(a), struct(b), sub.p2d));
-///@public
-inline sub(Complex a, float64 b) = Complex(a.re - b, a.im);
-///@public
-inline sub(float64 a, Complex b) = Complex(a - b.re, b.im);
-
-///@public: Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
-inline mul(Complex a, Complex b) = Complex(emit(
-	struct(a), struct(b), swz.x2, mul.p2d, add.f64,
-	struct(a), struct(b), mul.p2d, swz.x2, sub.f64
-));
-///@public
-inline mul(Complex a, float64 b) = Complex(a.re * b, a.im * b);
-///@public
-inline mul(float64 a, Complex b) = Complex(a * b.re, a * b.im);
-
-///@public
-Complex div(Complex a, Complex b) {
-	// Adapted from Numerical Recipes in C - The Art of Scientific Computing
-	// ISBN 0-521-43108-5
-
-	if (Math.abs(b.re) >= Math.abs(b.im)) {
-		float64 r = b.im / b.re;
-		float64 den = b.re + r * b.im;
-		return {
-			re: (a.re + r * a.im) / den;
-			im: (a.im - r * a.re) / den;
-		};
-	}
-	float64 r = b.re / b.im;
-	float64 den = b.im + r * b.re;
-	return {
-		re: (a.re * r + a.im) / den;
-		im: (a.im * r - a.re) / den;
-	};
-}
-
-///@public
-inline div(Complex a, float64 b) = div(a, Complex(b));
-///@public
-inline div(float64 a, Complex b) = div(Complex(a), b);
-
-///@public
-inline abs(Complex a) = float64.sqrt(a.re * a.re + a.im * a.im);
-///@public
-inline arg(Complex a) = float64.atan2(a.re, a.im);
-
-/// Reciprocal of a complex number (1 / a)
-Complex inv(Complex a) {
-	float64 d = a.re * a.re + a.im * a.im;
-	return {
-		re: +a.re / d;
-		im: -a.im / d;
-	};
-}
-
-///@public
-inline conj(Complex a) = Complex(a.re, -a.im);
-
-///@public
-inline exp(Complex a) = Complex(float64.exp(a.re) * float64.cos(a.im), float64.exp(a.re) * float64.sin(a.im));
-
-///@public
-inline log(Complex a) = Complex(float64.log(abs(a)), arg(a));
-
-///@public
-Complex pow(Complex a, Complex b) {
-	float64 r = abs(a);
-	float64 t = arg(a);
-	float64 u = b.re * t + b.im * float64.log(r);
-	float64 v = float64.pow(r, b.re) * float64.exp(-b.im * t);
-	return {
-		re: v * float64.cos(u);
-		im: v * float64.sin(u);
-	};
-}
-///@public
-inline pow(Complex a, float64 b) = pow(a, Complex(b));
-
-///@public
-inline sin(Complex a) = Complex(float64.sin(a.re) * Math.cosh(a.im), +float64.cos(a.re) * Math.sinh(a.im));
-///@public
-inline cos(Complex a) = Complex(float64.cos(a.re) * Math.cosh(a.im), -float64.sin(a.re) * Math.sinh(a.im));
-
-/* TODO: implement operator overloading
-inline tan(Complex a) = sin(a) / cos(a);
-inline cot(Complex a) = cos(a) / sin(a);
-
-inline sinh(Complex a) = (exp(a) - exp(-a)) / 2;
-inline cosh(Complex a) = (exp(a) + exp(-a)) / 2;
-inline tanh(Complex a) = (exp(2 * a) - 1) / (exp(2 * a) + 1);
-inline coth(Complex a) = (exp(2 * a) + 1) / (exp(2 * a) - 1);
-*/
-
-///@public
-inline tan(Complex a) = div(sin(a), cos(a));
-///@public
-inline cot(Complex a) = div(cos(a), sin(a));
-
-///@public
-inline sinh(Complex a) = div(sub(exp(a), exp(neg(a))), 2);
-///@public
-inline cosh(Complex a) = div(add(exp(a), exp(neg(a))), 2);
-///@public
-inline tanh(Complex a) = div(sub(exp(mul(2, a)), 1), add(exp(mul(2, a)), 1));
-///@public
-inline coth(Complex a) = div(add(exp(mul(2, a)), 1), sub(exp(mul(2, a)), 1));
-
-///@public
-inline sec(Complex a) = inv(cos(a));
-///@public
-inline csc(Complex a) = inv(sin(a));
-///@public
-inline sech(Complex a) = inv(cosh(a));
-///@public
-inline csch(Complex a) = inv(sinh(a));
-
-///@public
-inline toCartesian(Complex x) = Complex(x.re * double.cos(x.im), x.re * double.sin(x.im));
-///@public
-inline toPolar(Complex x) = Complex(abs(x), arg(x));
-/// A 4d vector (4x float32)
-struct vec4f: 0 {
-	/// Access the components as an array
-	float32 data[4];
-	struct {
-		/// X component of the vector
-		float32 x;
-		/// Y component of the vector
-		float32 y;
-		/// Z component of the vector
-		float32 z;
-		/// W component of the vector
-		float32 w;
-	}
-}
-
-/* TODO: implement inline initializer
-// constructing a vector
-inline vec4f(float32 x, float32 y, float32 z, float32 w) = { x: x, y: y, z: z, w: w };
-inline vec4f(float32 x, float32 y, float32 z) = { x: x, y: y, z: z, w: 0 };
-inline vec4f(const vec4f v&, float32 w) = { x: v.x, y: v.y, z: v.z, w: w };
-inline vec4f(const float32 val&) = { x: val, y: val, z: val, w: val };
-*/
-
-/// Initialize with given x, y, z, w components
-vec4f vec4f(float32 x, float32 y, float32 z, float32 w) {
-	return { x: x, y: y, z: z, w: w };
-}
-
-/// Initialize with  (x: x, y: y, z: z, w: 1)
-inline vec4f(float32 x, float32 y, float32 z) = vec4f(x, y, z, 1f);
-
-/// Initialize with (x: x, y: y, z: 0, w: 1)
-inline vec4f(float32 x, float32 y) = vec4f(x, y, 0f, 1f);
-
-/// Initialize x, y, z components using the components form the given vector, and w with the given value
-inline vec4f(vec4f xyz, float32 w) = vec4f(xyz.x, xyz.y, xyz.z, w);
-
-/// Initialize x, y, z, w components with the given scalar value
-inline vec4f(float32 val) = vec4f(val, val, val, val);
-
-/* TODO: implement operator overloading
-//~ -a => vec4f(-a.x, -a.y, -a.z, -a.w);
-inline -(vec4f rhs) = vec4f(emit(struct(rhs), neg.p4f));
-
-//~ a + b => vec4f(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
-inline +(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), add.p4f));
-
-//~ a - b => vec4f(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
-inline -(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
-
-//~ a * b => vec4f(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
-inline *(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
-
-//~ a / b => vec4f(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
-inline /(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
-
-inline +(vec4f a, float32 b) = a + vec4f(b);
-inline +(float32 a, vec4f b) = vec4f(a) + b;
-inline -(vec4f a, float32 b) = a - vec4f(b);
-inline -(float32 a, vec4f b) = vec4f(a) - b;
-inline *(vec4f a, float32 b) = a * vec4f(b);
-inline *(float32 a, vec4f b) = vec4f(a) * b;
-inline /(vec4f a, float32 b) = a / vec4f(b);
-inline /(float32 a, vec4f b) = vec4f(a) / b;
-
-inline normalize(vec4f v) = v / len(v);
-*/
-
-/// Returns a negated copy of the vector.
-inline neg(vec4f rhs) = vec4f(emit(struct(rhs), neg.p4f));
-/// Component wise add the two vectors.
-inline add(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), add.p4f));
-/// Component wise subtract the two vectors.
-inline sub(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
-/// Component wise multiply the two vectors.
-inline mul(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
-/// Component wise divide the two vectors.
-inline div(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
-
-/// Component wise minimum of the two vectors.
-inline min(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), min.p4f));
-/// Component wise maximum of the two vectors.
-inline max(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), max.p4f));
-
-/// Dot product of the first 3 elements
-// inline dp3(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z;
-inline dp3(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dp3));
-
-/// Homogeneous dot product
-// inline dph(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z + a.w;
-inline dph(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dph));
-
-/// Dot product
-// inline dp4(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
-inline dp4(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), p4x.dp4));
-
-/// Cross product of the first 3 elements
-inline cross(const vec4f a&, const vec4f b&) = vec4f(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
-
-/// Length of the vector(xyz)
-inline length(vec4f v) = float32.sqrt(dp3(v, v));
-/// Normalize the vector(xyz)
-inline normalize(const vec4f v&) = div(v, vec4f(length(v)));
-
-/// Evaluate as a polynomial in point x
-inline eval(const vec4f v&, float32 x) = float32((((v.w * x + v.z) * x + v.y) * x) + v.x);
-
-/* TODO: leftovers
-inline add(float32 a, vec4f b) = add(vec4f(a), b);
-inline add(vec4f a, float32 b) = add(a, vec4f(b));
-inline sub(float32 a, vec4f b) = sub(vec4f(a), b);
-inline sub(vec4f a, float32 b) = sub(a, vec4f(b));
-inline mul(float32 a, vec4f b) = mul(vec4f(a), b);
-inline mul(vec4f a, float32 b) = mul(a, vec4f(b));
-inline div(float32 a, vec4f b) = div(vec4f(a), b);
-inline div(vec4f a, float32 b) = div(a, vec4f(b));
-
-inline ceq(vec4f x, vec4f y) = emit(ceq.p4f, vec4f(y), vec4f(x));
-inline mad(vec4f a, vec4f b, vec4f c) = emit(vec4f, add.p4f, mul.p4f, vec4f(a), vec4f(b), vec4f(c));	// a * b + c
-
-inline lerp(float32 t, vec4f lhs, vec4f rhs) = vec4f(Math.lerp(t, lhs.x, rhs.x), Math.lerp(t, lhs.y, rhs.y), Math.lerp(t, lhs.z, rhs.z), Math.lerp(t, lhs.w, rhs.w));
-
-inline float32(vec4f &vec) = float32(vec.w);
-inline bool(vec4f vec) = bool(vec.x && vec.y && vec.z && vec.w);
-*//// A 2d vector (2x float64)
-struct vec2d: 0 {
-	/// Access the components as an array
-	float64 data[2];
-	struct {
-		/// X component of the vector
-		float64 x;
-		/// Y component of the vector
-		float64 y;
-	}
-}
-
-/// Initialize with given x, y components
-vec2d vec2d(float64 x, float64 y) {
-	return {
-		x: x;
-		y: y;
-	};
-}
-
-/// Component wise add the two vectors.
-inline add(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), add.p2d));
-
-/// Component wise subtract the two vectors.
-inline sub(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), sub.p2d));
-
-/// Component wise multiply the two vectors.
-inline mul(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), mul.p2d));
-
-/// Component wise divide the two vectors.
-inline div(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), div.p2d));
-
-/// Component wise select the minimum from the two vectors.
-inline min(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), min.p2d));
-
-/// Component wise select the maximum from the two vectors.
-inline max(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), max.p2d));
-
-/// Compare the two vectors for equality.
-inline ceq(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), ceq.p2d));
-
-/// Dot product of thw two vectors
-inline dot(const vec2d a&, const vec2d b&) = a.x * b.x + a.y * b.y;
-// standard library extension
-
-enum: bool {
-	true: 0 == 0;
-	false: 0 != 0;
-}
-
-inline byte = uint8;
-inline float = float32;
-inline double = float64;
-
-static if (typename(raise) == function) {
-inline "std/debug.ci";
-}
-
-/// Returns the size of the given type
-inline sizeof(typename type) = int(type.size);
-
-inline "std/math.ci";
-inline "std/math/Complex.ci"?;      // -> Complex<float64>
-//inline "std/math/Rational.ci"?;     // -> Rational<int64>
-inline "std/math/Vector4f.ci"?;
-inline "std/math/Matrix4f.ci"?;
-inline "std/math/Vector2d.ci"?;
-//inline "std/math/BigInteger.ci?"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
-//inline "std/math/BigDecimal.ci?"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
-//inline "std/math/Perlin.ci"?;
-
-inline "std/string.ci";

@@ -807,7 +807,7 @@ pointer.alloc(ptr: pointer, size: int32): pointer: function {
 .param size: int32 (size: 4, cast: variable(i32))
 .value: nfc(11)
 }
-pointer.fill(dst: pointer, value: int32, size: int32): pointer: function {
+pointer.fill(dst: pointer, value: uint8, size: int32): pointer: function {
 .kind: static const inline
 .base: `function`
 .size: 0
@@ -815,7 +815,7 @@ pointer.fill(dst: pointer, value: int32, size: int32): pointer: function {
 .owner: pointer
 .param .result: pointer (size: 4, cast: inline)
 .param dst: pointer (size: 4, cast: variable(ref))
-.param value: int32 (size: 4, cast: variable(i32))
+.param value: uint8 (size: 4, cast: variable(u32))
 .param size: int32 (size: 4, cast: variable(i32))
 .value: nfc(12)
 }
@@ -6066,56 +6066,56 @@ mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float
 .doc: 'Initialize all elements with the given values'
 .value: {
 	return .result := {
-			.result.x.x := xx;
-			.result.x.y := xy;
-			.result.x.z := xz;
-			.result.x.w := xw;
-			.result.y.x := yx;
-			.result.y.y := yy;
-			.result.y.z := yz;
-			.result.y.w := yw;
-			.result.z.x := zx;
-			.result.z.y := zy;
-			.result.z.z := zz;
-			.result.z.w := zw;
-			.result.w.x := wx;
-			.result.w.y := wy;
-			.result.w.z := wz;
-			.result.w.w := ww;
+			.result.xx := xx;
+			.result.xy := xy;
+			.result.xz := xz;
+			.result.xw := xw;
+			.result.yx := yx;
+			.result.yy := yy;
+			.result.yz := yz;
+			.result.yw := yw;
+			.result.zx := zx;
+			.result.zy := zy;
+			.result.zz := zz;
+			.result.zw := zw;
+			.result.wx := wx;
+			.result.wy := wy;
+			.result.wz := wz;
+			.result.ww := ww;
 		};
 }
 .instructions: (49 bytes)
 	lib/std/math/Matrix4f.ci:66: (49 bytes): return .result := {...};
 	<mat4f>  : mov.x32 sp(17, 16)
-	lib/std/math/Matrix4f.ci:67: (3 bytes): .result.x.y := xy;
+	lib/std/math/Matrix4f.ci:67: (3 bytes): .result.xy := xy;
 	<mat4f+?>: mov.x32 sp(18, 15)
-	lib/std/math/Matrix4f.ci:67: (3 bytes): .result.x.z := xz;
+	lib/std/math/Matrix4f.ci:67: (3 bytes): .result.xz := xz;
 	<mat4f+?>: mov.x32 sp(19, 14)
-	lib/std/math/Matrix4f.ci:67: (3 bytes): .result.x.w := xw;
+	lib/std/math/Matrix4f.ci:67: (3 bytes): .result.xw := xw;
 	<mat4f+?>: mov.x32 sp(20, 13)
-	lib/std/math/Matrix4f.ci:68: (3 bytes): .result.y.x := yx;
+	lib/std/math/Matrix4f.ci:68: (3 bytes): .result.yx := yx;
 	<mat4f+?>: mov.x32 sp(21, 12)
-	lib/std/math/Matrix4f.ci:68: (3 bytes): .result.y.y := yy;
+	lib/std/math/Matrix4f.ci:68: (3 bytes): .result.yy := yy;
 	<mat4f+?>: mov.x32 sp(22, 11)
-	lib/std/math/Matrix4f.ci:68: (3 bytes): .result.y.z := yz;
+	lib/std/math/Matrix4f.ci:68: (3 bytes): .result.yz := yz;
 	<mat4f+?>: mov.x32 sp(23, 10)
-	lib/std/math/Matrix4f.ci:68: (3 bytes): .result.y.w := yw;
+	lib/std/math/Matrix4f.ci:68: (3 bytes): .result.yw := yw;
 	<mat4f+?>: mov.x32 sp(24, 9)
-	lib/std/math/Matrix4f.ci:69: (3 bytes): .result.z.x := zx;
+	lib/std/math/Matrix4f.ci:69: (3 bytes): .result.zx := zx;
 	<mat4f+?>: mov.x32 sp(25, 8)
-	lib/std/math/Matrix4f.ci:69: (3 bytes): .result.z.y := zy;
+	lib/std/math/Matrix4f.ci:69: (3 bytes): .result.zy := zy;
 	<mat4f+?>: mov.x32 sp(26, 7)
-	lib/std/math/Matrix4f.ci:69: (3 bytes): .result.z.z := zz;
+	lib/std/math/Matrix4f.ci:69: (3 bytes): .result.zz := zz;
 	<mat4f+?>: mov.x32 sp(27, 6)
-	lib/std/math/Matrix4f.ci:69: (3 bytes): .result.z.w := zw;
+	lib/std/math/Matrix4f.ci:69: (3 bytes): .result.zw := zw;
 	<mat4f+?>: mov.x32 sp(28, 5)
-	lib/std/math/Matrix4f.ci:70: (3 bytes): .result.w.x := wx;
+	lib/std/math/Matrix4f.ci:70: (3 bytes): .result.wx := wx;
 	<mat4f+?>: mov.x32 sp(29, 4)
-	lib/std/math/Matrix4f.ci:70: (3 bytes): .result.w.y := wy;
+	lib/std/math/Matrix4f.ci:70: (3 bytes): .result.wy := wy;
 	<mat4f+?>: mov.x32 sp(30, 3)
-	lib/std/math/Matrix4f.ci:70: (3 bytes): .result.w.z := wz;
+	lib/std/math/Matrix4f.ci:70: (3 bytes): .result.wz := wz;
 	<mat4f+?>: mov.x32 sp(31, 2)
-	lib/std/math/Matrix4f.ci:70: (3 bytes): .result.w.w := ww;
+	lib/std/math/Matrix4f.ci:70: (3 bytes): .result.ww := ww;
 	<mat4f+?>: mov.x32 sp(32, 1)
 	<mat4f+?>: ret
 }
@@ -6809,82 +6809,82 @@ translation(direction: vec4f, amount: float32): mat4f: function {
 .doc: 'Build a translation matrix'
 .value: {
 	return .result := {
-			.result.x.x := (1);
-			.result.x.y := (0);
-			.result.x.z := (0);
-			.result.x.w := direction.x * amount;
-			.result.y.x := (0);
-			.result.y.y := (1);
-			.result.y.z := (0);
-			.result.y.w := direction.y * amount;
-			.result.z.x := (0);
-			.result.z.y := (0);
-			.result.z.z := (1);
-			.result.z.w := direction.z * amount;
-			.result.w.x := (0);
-			.result.w.y := (0);
-			.result.w.z := (0);
-			.result.w.w := (1);
+			.result.xx := (1);
+			.result.xy := (0);
+			.result.xz := (0);
+			.result.xw := direction.x * amount;
+			.result.yx := (0);
+			.result.yy := (1);
+			.result.yz := (0);
+			.result.yw := direction.y * amount;
+			.result.zx := (0);
+			.result.zy := (0);
+			.result.zz := (1);
+			.result.zw := direction.z * amount;
+			.result.wx := (0);
+			.result.wy := (0);
+			.result.wz := (0);
+			.result.ww := (1);
 		};
 }
 .instructions: (88 bytes)
 	lib/std/math/Matrix4f.ci:164: (88 bytes): return .result := {...};
 	<translation>  : load.f32 1.000000
 	<translation+?>: set.x32 sp(4)
-	lib/std/math/Matrix4f.ci:165: (3 bytes): .result.x.y := (0);
+	lib/std/math/Matrix4f.ci:165: (3 bytes): .result.xy := (0);
 	<translation+?>: load.z32
 	<translation+?>: set.x32 sp(5)
-	lib/std/math/Matrix4f.ci:165: (3 bytes): .result.x.z := (0);
+	lib/std/math/Matrix4f.ci:165: (3 bytes): .result.xz := (0);
 	<translation+?>: load.z32
 	<translation+?>: set.x32 sp(6)
-	lib/std/math/Matrix4f.ci:165: (8 bytes): .result.x.w := direction.x * amount;
+	lib/std/math/Matrix4f.ci:165: (8 bytes): .result.xw := direction.x * amount;
 	<translation+?>: dup.x32 sp(2)
 	<translation+?>: load.i32
 	<translation+?>: dup.x32 sp(2)
 	<translation+?>: mul.f32
 	<translation+?>: set.x32 sp(7)
-	lib/std/math/Matrix4f.ci:166: (3 bytes): .result.y.x := (0);
+	lib/std/math/Matrix4f.ci:166: (3 bytes): .result.yx := (0);
 	<translation+?>: load.z32
 	<translation+?>: set.x32 sp(8)
-	lib/std/math/Matrix4f.ci:166: (7 bytes): .result.y.y := (1);
+	lib/std/math/Matrix4f.ci:166: (7 bytes): .result.yy := (1);
 	<translation+?>: load.f32 1.000000
 	<translation+?>: set.x32 sp(9)
-	lib/std/math/Matrix4f.ci:166: (3 bytes): .result.y.z := (0);
+	lib/std/math/Matrix4f.ci:166: (3 bytes): .result.yz := (0);
 	<translation+?>: load.z32
 	<translation+?>: set.x32 sp(10)
-	lib/std/math/Matrix4f.ci:166: (12 bytes): .result.y.w := direction.y * amount;
+	lib/std/math/Matrix4f.ci:166: (12 bytes): .result.yw := direction.y * amount;
 	<translation+?>: dup.x32 sp(2)
 	<translation+?>: inc.i32(+4)
 	<translation+?>: load.i32
 	<translation+?>: dup.x32 sp(2)
 	<translation+?>: mul.f32
 	<translation+?>: set.x32 sp(11)
-	lib/std/math/Matrix4f.ci:167: (3 bytes): .result.z.x := (0);
+	lib/std/math/Matrix4f.ci:167: (3 bytes): .result.zx := (0);
 	<translation+?>: load.z32
 	<translation+?>: set.x32 sp(12)
-	lib/std/math/Matrix4f.ci:167: (3 bytes): .result.z.y := (0);
+	lib/std/math/Matrix4f.ci:167: (3 bytes): .result.zy := (0);
 	<translation+?>: load.z32
 	<translation+?>: set.x32 sp(13)
-	lib/std/math/Matrix4f.ci:167: (7 bytes): .result.z.z := (1);
+	lib/std/math/Matrix4f.ci:167: (7 bytes): .result.zz := (1);
 	<translation+?>: load.f32 1.000000
 	<translation+?>: set.x32 sp(14)
-	lib/std/math/Matrix4f.ci:167: (12 bytes): .result.z.w := direction.z * amount;
+	lib/std/math/Matrix4f.ci:167: (12 bytes): .result.zw := direction.z * amount;
 	<translation+?>: dup.x32 sp(2)
 	<translation+?>: inc.i32(+8)
 	<translation+?>: load.i32
 	<translation+?>: dup.x32 sp(2)
 	<translation+?>: mul.f32
 	<translation+?>: set.x32 sp(15)
-	lib/std/math/Matrix4f.ci:168: (3 bytes): .result.w.x := (0);
+	lib/std/math/Matrix4f.ci:168: (3 bytes): .result.wx := (0);
 	<translation+?>: load.z32
 	<translation+?>: set.x32 sp(16)
-	lib/std/math/Matrix4f.ci:168: (3 bytes): .result.w.y := (0);
+	lib/std/math/Matrix4f.ci:168: (3 bytes): .result.wy := (0);
 	<translation+?>: load.z32
 	<translation+?>: set.x32 sp(17)
-	lib/std/math/Matrix4f.ci:168: (3 bytes): .result.w.z := (0);
+	lib/std/math/Matrix4f.ci:168: (3 bytes): .result.wz := (0);
 	<translation+?>: load.z32
 	<translation+?>: set.x32 sp(18)
-	lib/std/math/Matrix4f.ci:168: (7 bytes): .result.w.w := (1);
+	lib/std/math/Matrix4f.ci:168: (7 bytes): .result.ww := (1);
 	<translation+?>: load.f32 1.000000
 	<translation+?>: set.x32 sp(19)
 	<translation+?>: ret
@@ -6902,22 +6902,22 @@ scale(direction: vec4f, amount: float32): mat4f: function {
 .value: {
 	rcp(val: float32): float32 := ((val < (0) ? -val : val)) < 0.000000 ? (0) : (1) / val;
 	return .result := {
-			.result.x.x := rcp(direction.x * amount);
-			.result.x.y := (0);
-			.result.x.z := (0);
-			.result.x.w := (0);
-			.result.y.x := (0);
-			.result.y.y := rcp(direction.y * amount);
-			.result.y.z := (0);
-			.result.y.w := (0);
-			.result.z.x := (0);
-			.result.z.y := (0);
-			.result.z.z := rcp(direction.z * amount);
-			.result.z.w := (0);
-			.result.w.x := (0);
-			.result.w.y := (0);
-			.result.w.z := (0);
-			.result.w.w := (1);
+			.result.xx := rcp(direction.x * amount);
+			.result.xy := (0);
+			.result.xz := (0);
+			.result.xw := (0);
+			.result.yx := (0);
+			.result.yy := rcp(direction.y * amount);
+			.result.yz := (0);
+			.result.yw := (0);
+			.result.zx := (0);
+			.result.zy := (0);
+			.result.zz := rcp(direction.z * amount);
+			.result.zw := (0);
+			.result.wx := (0);
+			.result.wy := (0);
+			.result.wz := (0);
+			.result.ww := (1);
 		};
 }
 .instructions: (217 bytes)
@@ -6945,19 +6945,19 @@ scale(direction: vec4f, amount: float32): mat4f: function {
 	<scale+?>: div.f32
 	<scale+?>: set.x32 sp(1)
 	<scale+?>: set.x32 sp(4)
-	lib/std/math/Matrix4f.ci:176: (3 bytes): .result.x.y := (0);
+	lib/std/math/Matrix4f.ci:176: (3 bytes): .result.xy := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(5)
-	lib/std/math/Matrix4f.ci:176: (3 bytes): .result.x.z := (0);
+	lib/std/math/Matrix4f.ci:176: (3 bytes): .result.xz := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(6)
-	lib/std/math/Matrix4f.ci:176: (3 bytes): .result.x.w := (0);
+	lib/std/math/Matrix4f.ci:176: (3 bytes): .result.xw := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(7)
-	lib/std/math/Matrix4f.ci:177: (3 bytes): .result.y.x := (0);
+	lib/std/math/Matrix4f.ci:177: (3 bytes): .result.yx := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(8)
-	lib/std/math/Matrix4f.ci:177: (59 bytes): .result.y.y := rcp(direction.y * amount);
+	lib/std/math/Matrix4f.ci:177: (59 bytes): .result.yy := rcp(direction.y * amount);
 	<scale+?>: dup.x32 sp(2)
 	<scale+?>: inc.i32(+4)
 	<scale+?>: load.i32
@@ -6982,19 +6982,19 @@ scale(direction: vec4f, amount: float32): mat4f: function {
 	<scale+?>: div.f32
 	<scale+?>: set.x32 sp(1)
 	<scale+?>: set.x32 sp(9)
-	lib/std/math/Matrix4f.ci:177: (3 bytes): .result.y.z := (0);
+	lib/std/math/Matrix4f.ci:177: (3 bytes): .result.yz := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(10)
-	lib/std/math/Matrix4f.ci:177: (3 bytes): .result.y.w := (0);
+	lib/std/math/Matrix4f.ci:177: (3 bytes): .result.yw := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(11)
-	lib/std/math/Matrix4f.ci:178: (3 bytes): .result.z.x := (0);
+	lib/std/math/Matrix4f.ci:178: (3 bytes): .result.zx := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(12)
-	lib/std/math/Matrix4f.ci:178: (3 bytes): .result.z.y := (0);
+	lib/std/math/Matrix4f.ci:178: (3 bytes): .result.zy := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(13)
-	lib/std/math/Matrix4f.ci:178: (59 bytes): .result.z.z := rcp(direction.z * amount);
+	lib/std/math/Matrix4f.ci:178: (59 bytes): .result.zz := rcp(direction.z * amount);
 	<scale+?>: dup.x32 sp(2)
 	<scale+?>: inc.i32(+8)
 	<scale+?>: load.i32
@@ -7019,19 +7019,19 @@ scale(direction: vec4f, amount: float32): mat4f: function {
 	<scale+?>: div.f32
 	<scale+?>: set.x32 sp(1)
 	<scale+?>: set.x32 sp(14)
-	lib/std/math/Matrix4f.ci:178: (3 bytes): .result.z.w := (0);
+	lib/std/math/Matrix4f.ci:178: (3 bytes): .result.zw := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(15)
-	lib/std/math/Matrix4f.ci:179: (3 bytes): .result.w.x := (0);
+	lib/std/math/Matrix4f.ci:179: (3 bytes): .result.wx := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(16)
-	lib/std/math/Matrix4f.ci:179: (3 bytes): .result.w.y := (0);
+	lib/std/math/Matrix4f.ci:179: (3 bytes): .result.wy := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(17)
-	lib/std/math/Matrix4f.ci:179: (3 bytes): .result.w.z := (0);
+	lib/std/math/Matrix4f.ci:179: (3 bytes): .result.wz := (0);
 	<scale+?>: load.z32
 	<scale+?>: set.x32 sp(18)
-	lib/std/math/Matrix4f.ci:179: (7 bytes): .result.w.w := (1);
+	lib/std/math/Matrix4f.ci:179: (7 bytes): .result.ww := (1);
 	<scale+?>: load.f32 1.000000
 	<scale+?>: set.x32 sp(19)
 	<scale+?>: ret
@@ -16378,22 +16378,22 @@ testMathAbsMod_f32_8d: float32 {
 		};
 		static const mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float32, yz: float32, yw: float32, zx: float32, zy: float32, zz: float32, zw: float32, wx: float32, wy: float32, wz: float32, ww: float32): mat4f := {
 			return .result := {
-			.result.x.x := xx;
-			.result.x.y := xy;
-			.result.x.z := xz;
-			.result.x.w := xw;
-			.result.y.x := yx;
-			.result.y.y := yy;
-			.result.y.z := yz;
-			.result.y.w := yw;
-			.result.z.x := zx;
-			.result.z.y := zy;
-			.result.z.z := zz;
-			.result.z.w := zw;
-			.result.w.x := wx;
-			.result.w.y := wy;
-			.result.w.z := wz;
-			.result.w.w := ww;
+			.result.xx := xx;
+			.result.xy := xy;
+			.result.xz := xz;
+			.result.xw := xw;
+			.result.yx := yx;
+			.result.yy := yy;
+			.result.yz := yz;
+			.result.yw := yw;
+			.result.zx := zx;
+			.result.zy := zy;
+			.result.zz := zz;
+			.result.zw := zw;
+			.result.wx := wx;
+			.result.wy := wy;
+			.result.wz := wz;
+			.result.ww := ww;
 		};
 		};
 		static const mat4f(const x: vec4f, const y: vec4f, const z: vec4f, const w: vec4f): mat4f := {
@@ -16481,43 +16481,43 @@ testMathAbsMod_f32_8d: float32 {
 		rotation(const direction: vec4f, angle: float32): mat4f := rotation(vec4f(0), direction, angle);
 		static const translation(const direction: vec4f, amount: float32): mat4f := {
 			return .result := {
-			.result.x.x := (1);
-			.result.x.y := (0);
-			.result.x.z := (0);
-			.result.x.w := direction.x * amount;
-			.result.y.x := (0);
-			.result.y.y := (1);
-			.result.y.z := (0);
-			.result.y.w := direction.y * amount;
-			.result.z.x := (0);
-			.result.z.y := (0);
-			.result.z.z := (1);
-			.result.z.w := direction.z * amount;
-			.result.w.x := (0);
-			.result.w.y := (0);
-			.result.w.z := (0);
-			.result.w.w := (1);
+			.result.xx := (1);
+			.result.xy := (0);
+			.result.xz := (0);
+			.result.xw := direction.x * amount;
+			.result.yx := (0);
+			.result.yy := (1);
+			.result.yz := (0);
+			.result.yw := direction.y * amount;
+			.result.zx := (0);
+			.result.zy := (0);
+			.result.zz := (1);
+			.result.zw := direction.z * amount;
+			.result.wx := (0);
+			.result.wy := (0);
+			.result.wz := (0);
+			.result.ww := (1);
 		};
 		};
 		static const scale(const direction: vec4f, amount: float32): mat4f := {
 			rcp(val: float32): float32 := ((val < (0) ? -val : val)) < 0.000000 ? (0) : (1) / val;
 			return .result := {
-			.result.x.x := rcp(direction.x * amount);
-			.result.x.y := (0);
-			.result.x.z := (0);
-			.result.x.w := (0);
-			.result.y.x := (0);
-			.result.y.y := rcp(direction.y * amount);
-			.result.y.z := (0);
-			.result.y.w := (0);
-			.result.z.x := (0);
-			.result.z.y := (0);
-			.result.z.z := rcp(direction.z * amount);
-			.result.z.w := (0);
-			.result.w.x := (0);
-			.result.w.y := (0);
-			.result.w.z := (0);
-			.result.w.w := (1);
+			.result.xx := rcp(direction.x * amount);
+			.result.xy := (0);
+			.result.xz := (0);
+			.result.xw := (0);
+			.result.yx := (0);
+			.result.yy := rcp(direction.y * amount);
+			.result.yz := (0);
+			.result.yw := (0);
+			.result.zx := (0);
+			.result.zy := (0);
+			.result.zz := rcp(direction.z * amount);
+			.result.zw := (0);
+			.result.wx := (0);
+			.result.wy := (0);
+			.result.wz := (0);
+			.result.ww := (1);
 		};
 		};
 		static const vec2d: struct {
@@ -19144,7 +19144,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: dup.x32 sp(3)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 1024
-	<.main+?>: nfc(12) ;pointer.fill(dst: pointer, value: int32, size: int32): pointer
+	<.main+?>: nfc(12) ;pointer.fill(dst: pointer, value: uint8, size: int32): pointer
 	<.main+?>: inc.sp(-4)
 	test/std/memory.ci:14: (17 bytes): pointer.copy(p1, p3, 160);
 	<.main+?>: dup.x32 sp(3)
@@ -19204,7 +19204,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.sp(+8)
 	<.main+?>: load.z32
 	<.main+?>: load.m32 <?> ;int64+32
-	<.main+?>: nfc(12) ;pointer.fill(dst: pointer, value: int32, size: int32): pointer
+	<.main+?>: nfc(12) ;pointer.fill(dst: pointer, value: uint8, size: int32): pointer
 	<.main+?>: inc.sp(-4)
 	test/std/memory.ci:32: (34 bytes): debug("val1", val1);
 	<.main+?>: load.ref <?> ;"test/std/memory.ci"

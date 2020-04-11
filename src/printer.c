@@ -971,7 +971,7 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 			break;
 
 		case TOKEN_var:
-			if (ast->ref.link != NULL) {
+			if (mode != prName && ast->ref.link != NULL) {
 				if (ast->ref.link->tag == ast) {
 					printSym(out, esc, ast->ref.link, mode & ~prSymQual, -indent);
 				}

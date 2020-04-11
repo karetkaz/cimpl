@@ -64,10 +64,10 @@ mat4f mat4f(float32 xx, float32 xy, float32 xz, float32 xw,
 			float32 zx, float32 zy, float32 zz, float32 zw,
 			float32 wx, float32 wy, float32 wz, float32 ww) {
 	return {
-		x: { x: xx, y: xy, z: xz, w: xw };
-		y: { x: yx, y: yy, z: yz, w: yw };
-		z: { x: zx, y: zy, z: zz, w: zw };
-		w: { x: wx, y: wy, z: wz, w: ww };
+		xx: xx; xy: xy; xz: xz; xw: xw;
+		yx: yx; yy: yy; yz: yz; yw: yw;
+		zx: zx; zy: zy; zz: zz; zw: zw;
+		wx: wx; wy: wy; wz: wz; ww: ww;
 	};
 }
 
@@ -108,8 +108,8 @@ mat4f mul(const mat4f lhs&, const mat4f rhs&) {
  * Build a rotation matrix
  * adapted from: https://sites.google.com/site/glennmurray/Home/rotation-matrices-and-formulas
  */
-mat4f rotation(const vec4f center&, const vec4f direction&, float angle) {
-	float len = direction.length();
+mat4f rotation(const vec4f center&, const vec4f direction&, float32 angle) {
+	float32 len = direction.length();
 	if (len < 1e-9) {
 		trace("invalid direction of rotation", direction);
 		return {
@@ -119,22 +119,22 @@ mat4f rotation(const vec4f center&, const vec4f direction&, float angle) {
 			w: vec4f(0, 0, 0, 0);
 		};
 	}
-	float x = direction.x / len;
-	float y = direction.y / len;
-	float z = direction.z / len;
-	float cx = center.x;
-	float cy = center.y;
-	float cz = center.z;
-	float xx = x * x;
-	float xy = x * y;
-	float xz = x * z;
-	float yy = y * y;
-	float yz = y * z;
-	float zz = z * z;
+	float32 x = direction.x / len;
+	float32 y = direction.y / len;
+	float32 z = direction.z / len;
+	float32 cx = center.x;
+	float32 cy = center.y;
+	float32 cz = center.z;
+	float32 xx = x * x;
+	float32 xy = x * y;
+	float32 xz = x * z;
+	float32 yy = y * y;
+	float32 yz = y * z;
+	float32 zz = z * z;
 
-	float s = float.sin(angle);
-	float c = float.cos(angle);
-	float k = 1 - c;
+	float32 s = float32.sin(angle);
+	float32 c = float32.cos(angle);
+	float32 k = 1 - c;
 
 	return {
 		xx: xx + (yy + zz) * c;
@@ -157,25 +157,25 @@ mat4f rotation(const vec4f center&, const vec4f direction&, float angle) {
 }
 
 /// Build a rotation matrix
-inline rotation(const vec4f direction&, float angle) = rotation(vec4f(0), direction, angle);
+inline rotation(const vec4f direction&, float32 angle) = rotation(vec4f(0), direction, angle);
 
 /// Build a translation matrix
-mat4f translation(const vec4f direction&, float amount) {
+mat4f translation(const vec4f direction&, float32 amount) {
 	return {
-		x: {x: 1, y: 0, z: 0, w: direction.x * amount};
-		y: {x: 0, y: 1, z: 0, w: direction.y * amount};
-		z: {x: 0, y: 0, z: 1, w: direction.z * amount};
-		w: {x: 0, y: 0, z: 0, w: 1};
+		xx: 1; xy: 0; xz: 0; xw: direction.x * amount;
+		yx: 0; yy: 1; yz: 0; yw: direction.y * amount;
+		zx: 0; zy: 0; zz: 1; zw: direction.z * amount;
+		wx: 0; wy: 0; wz: 0; ww: 1;
 	};
 }
 
 /// Build a scaling matrix
-mat4f scale(const vec4f direction&, float amount) {
-	inline rcp(float val) = (val < 0 ? -val : val) < 1e-30 ? 0 : 1 / val;
+mat4f scale(const vec4f direction&, float32 amount) {
+	inline rcp(float32 val) = (val < 0 ? -val : val) < 1e-30 ? 0 : 1 / val;
 	return {
-		x: {x: rcp(direction.x * amount), y: 0, z: 0, w: 0};
-		y: {x: 0, y: rcp(direction.y * amount), z: 0, w: 0};
-		z: {x: 0, y: 0, z: rcp(direction.z * amount), w: 0};
-		w: {x: 0, y: 0, z: 0, w: 1};
+		xx: rcp(direction.x * amount); xy: 0; xz: 0; xw: 0;
+		yx: 0; yy: rcp(direction.y * amount); yz: 0; yw: 0;
+		zx: 0; zy: 0; zz: rcp(direction.z * amount); zw: 0;
+		wx: 0; wy: 0; wz: 0; ww: 1;
 	};
 }

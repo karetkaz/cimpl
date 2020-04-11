@@ -1,0 +1,91 @@
+// TODO: enum Easing: double(double t) { ... }
+static struct Easing {
+	float64 Linear(float64 t) {
+		return t;
+	}
+
+	float64 Quad(float64 t) {
+		return t * t;
+	}
+
+	float64 Cubic(float64 t) {
+		return t * t * t;
+	}
+
+	float64 Quart(float64 t) {
+		return t * t * t * t;
+	}
+
+	float64 Quint(float64 t) {
+		return t * t * t * t * t;
+	}
+
+	float64 Expo(float64 t) {
+		return t == 0 ? 0 : float64.pow(2, 10 * (t - 1));
+	}
+
+	float64 Sine(float64 t) {
+		return -float64.cos(t * Math.pi / 2) + 1;
+	}
+
+	float64 Circle(float64 t) {
+		return -(float64.sqrt(1 - t * t) - 1);
+	}
+
+	float64 Elastic(float64 t) {
+		if (t == 0.0 || t == 1.0) return t;
+		t = t - 1.0;
+		return - float64.pow(2.0, 10.0 * t) * float64.sin((t - 0.3 / 4.0) * (2.0 * Math.pi) / 0.3) ;
+	}
+
+	float64 Back(float64 t) {
+		inline s = 1.70158;
+		return t * t * ((s + 1) * t - s);
+	}
+
+	float64 Bounce(float64 t) {
+		static float64 Helper(float64 t, float64 c, float64 a) {
+			if (t == 1) {
+				return c;
+			}
+			if (t < (4 / 11.)) {
+				return c * (7.5625 * t * t);
+			}
+			if (t < (8 / 11.)) {
+				t -= (6 / 11.);
+				return -a * (1 - (7.5625 * t * t + 0.75)) + c;
+			}
+			if (t < (10 / 11.)) {
+				t -= (9 / 11.0f);
+				return -a * (1 - (7.5625 * t * t + 0.9375)) + c;
+			}
+			t -= (21 / 22.);
+			return -a * (1 - (7.5625 * t * t + 0.984375)) + c;
+		}
+		inline a = 1.70158;
+		return 1 - Helper(1 - t, 1, a);
+	}
+}
+
+float64 easeOut(float64 easeIn(float64 ratio), float64 ratio) {
+	if (easeIn == null) {
+		return ratio;
+	}
+	return 1. - easeIn(1. - ratio);
+}
+
+float64 easeInOut(float64 easeIn(float64 ratio), float64 ratio) {
+	if (easeIn == null) {
+		return ratio;
+	}
+	ratio *= 2;
+	return (ratio < 1) ? .5 * easeIn(ratio) : .5 * easeOut(easeIn, ratio - 1) + .5;
+}
+
+float64 easeOutIn(float64 easeIn(float64 ratio), float64 ratio) {
+	if (easeIn == null) {
+		return ratio;
+	}
+	ratio *= 2;
+	return (ratio < 1) ? .5 * easeOut(easeIn, ratio) : .5 * easeIn(ratio - 1) + .5;
+}

@@ -623,7 +623,7 @@ static void install_emit(ccContext cc, ccInstall mode) {
  * @param onHalt the function to be invoked when execution stops.
  * @returns 0 on success
  */
-static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
+static int install_base(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)) {
 	int error = 0;
 	ccContext cc = rt->cc;
 	symn field;
@@ -635,8 +635,10 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 	if (cc->type_rec != NULL && cc->type_var != NULL) {
 		enter(cc, NULL, cc->type_var);
 
-		error = error || !(field = ccAddCall(cc, variantHelpers, variant_is));
-		error = error || !(field = ccAddCall(cc, variantHelpers, variant_as));
+		if ((mode & installLibs) != 0) {
+			error = error || !(field = ccAddCall(cc, variantHelpers, variant_is));
+			error = error || !(field = ccAddCall(cc, variantHelpers, variant_as));
+		}
 
 		dieif(cc->type_var->fields != NULL, ERR_INTERNAL_ERROR);
 		cc->type_var->fields = leave(cc, KIND_def, 0, 0, NULL, cc->type_var->fields);
@@ -659,27 +661,29 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 			error = 1;
 		}
 
-		error = error || !(field = ccAddCall(cc, typenameGetField, type_get_base));
-		error = error || !(field = ccAddCall(cc, typenameGetField, type_get_file));
-		if (field != NULL && field->params != NULL) {// hack: change return type from pointer to string
-			field->params->type = cc->type_str;
-		}
-		error = error || !(field = ccAddCall(cc, typenameGetField, type_get_line));
-		error = error || !(field = ccAddCall(cc, typenameGetField, type_get_name));
-		if (field != NULL && field->params != NULL) {// hack: change return type from pointer to string
-			field->params->type = cc->type_str;
-		}
+		if ((mode & installLibs) != 0) {
+			error = error || !(field = ccAddCall(cc, typenameGetField, type_get_base));
+			error = error || !(field = ccAddCall(cc, typenameGetField, type_get_file));
+			if (field != NULL && field->params != NULL) {// hack: change return type from pointer to string
+				field->params->type = cc->type_str;
+			}
+			error = error || !(field = ccAddCall(cc, typenameGetField, type_get_line));
+			error = error || !(field = ccAddCall(cc, typenameGetField, type_get_name));
+			if (field != NULL && field->params != NULL) {// hack: change return type from pointer to string
+				field->params->type = cc->type_str;
+			}
 
-		/* TODO: more 4 reflection
-		error = error || !ccAddCall(rt, typenameReflect, "variant lookup(variant &obj, int options, string name, variant args...)");
-		error = error || !ccAddCall(rt, typenameReflect, "variant invoke(variant &obj, int options, string name, variant args...)");
-		// setValue and getValue can be done with lookup and invoke
-		error = error || !ccAddCall(rt, typenameReflect, "variant setValue(typename field, variant value)");
-		error = error || !ccAddCall(rt, typenameReflect, "variant getValue(typename field)");
+			/* TODO: more 4 reflection
+			error = error || !ccAddCall(rt, typenameReflect, "variant lookup(variant &obj, int options, string name, variant args...)");
+			error = error || !ccAddCall(rt, typenameReflect, "variant invoke(variant &obj, int options, string name, variant args...)");
+			// setValue and getValue can be done with lookup and invoke
+			error = error || !ccAddCall(rt, typenameReflect, "variant setValue(typename field, variant value)");
+			error = error || !ccAddCall(rt, typenameReflect, "variant getValue(typename field)");
 
-		error = error || !ccAddCall(rt, typenameReflect, "bool canAssign(typename type, variant value, bool strict)");
-		error = error || !ccAddCall(rt, typenameReflect, "bool instanceOf(typename type, variant obj)");
-		//~ */
+			error = error || !ccAddCall(rt, typenameReflect, "bool canAssign(typename type, variant value, bool strict)");
+			error = error || !ccAddCall(rt, typenameReflect, "bool instanceOf(typename type, variant obj)");
+			//~ */
+		}
 
 		dieif(cc->type_rec->fields != NULL, ERR_INTERNAL_ERROR);
 		cc->type_rec->fields = leave(cc, KIND_def, 0, 0, NULL, cc->type_rec->fields);
@@ -694,8 +698,10 @@ static int install_base(rtContext rt, vmError onHalt(nfcContext)) {
 			error = 1;
 		}
 
-		error = error || !(cc->libc_new = ccAddCall(cc, objectHelpers, object_create));
-		error = error || !ccAddCall(cc, objectHelpers, object_cast);
+		if ((mode & installLibs) != 0) {
+			error = error || !(cc->libc_new = ccAddCall(cc, objectHelpers, object_create));
+			error = error || !ccAddCall(cc, objectHelpers, object_cast);
+		}
 
 		dieif(cc->type_obj->fields != NULL, ERR_INTERNAL_ERROR);
 		cc->type_obj->fields = leave(cc, KIND_def, 0, 0, NULL, cc->type_obj->fields);
@@ -1081,7 +1087,7 @@ ccContext ccInit(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)) {
 
 	install_type(cc, mode);
 	install_emit(cc, mode);
-	install_base(rt, onHalt);
+	install_base(rt, mode, onHalt);
 
 	cc->root = newNode(cc, STMT_beg);
 	cc->root->type = cc->type_vid;

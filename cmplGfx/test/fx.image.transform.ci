@@ -19,10 +19,10 @@ inline "/lib/gfx/image/transform.ci";
 }
 
 /// compute the the transformation matrix to center/crop/fit an image to a new size.
-mat4f fitMatrix(const Image src, int newWidth, int newHeight, bool fitWidth, bool fitHeight, double maxScale, double maxAspect) {
-	double scale = 1;
-	double widthScale = newWidth / double(src.width());
-	double heightScale = newHeight / double(src.height());
+mat4f fitMatrix(const Image src, int newWidth, int newHeight, bool fitWidth, bool fitHeight, float64 maxScale, float64 maxAspect) {
+	float64 scale = 1;
+	float64 widthScale = newWidth / float64(src.width());
+	float64 heightScale = newHeight / float64(src.height());
 
 	if (fitWidth && fitHeight) {
 		scale = Math.min(widthScale, heightScale);
@@ -41,19 +41,19 @@ mat4f fitMatrix(const Image src, int newWidth, int newHeight, bool fitWidth, boo
 		if (maxAspect > 1) {
 			maxAspect = 1 / maxAspect;
 		}
-		double ratio = src.width() / double(src.height());
+		float64 ratio = src.width() / float64(src.height());
 		if (ratio > 1) {
 			ratio = 1 / ratio;
 		}
 		// debug("new aspect", ratio);
 		if (ratio > maxAspect) {
-			scale *= double.sqrt(maxAspect / ratio);
+			scale *= float64.sqrt(maxAspect / ratio);
 		}
 	}
 
 	// calculate translation
-	double dx = (newWidth - src.width() * scale) / 2;
-	double dy = (newHeight - src.height() * scale) / 2;
+	float64 dx = (newWidth - src.width() * scale) / 2;
+	float64 dy = (newHeight - src.height() * scale) / 2;
 
 	return {
 		x: {x: 1 / scale, y: 0, z: 0, w: -dx / scale};

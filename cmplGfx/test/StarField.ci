@@ -1,9 +1,9 @@
 // star field
 struct Star {
-	static double speed = 1;
-	double xpos;
-	double ypos;
-	double zpos;
+	static float64 speed = 1;
+	float64 xpos;
+	float64 ypos;
+	float64 zpos;
 	uint32 color;
 }
 
@@ -16,16 +16,16 @@ int centery = resolutiony / 2;
 
 void initStar(Star star&) {
 	//~ randomly init stars, generate them around the center of the screen
-	star.xpos = System.rand() / double(RAND_MAX) * 2 * resolutionx - resolutionx;
-	star.ypos = System.rand() / double(RAND_MAX) * 2 * resolutiony - resolutiony;
+	star.xpos = System.rand() / float64(RAND_MAX) * 2 * resolutionx - resolutionx;
+	star.ypos = System.rand() / float64(RAND_MAX) * 2 * resolutiony - resolutiony;
 	star.zpos = 300;
 	star.color = uint32(argb(System.rand() & 0xff, System.rand() & 0xff, System.rand() & 0xff));
 }
 
 void drawStars(Image offScreen) {
 
-	double tempx;
-	double tempy;
+	float64 tempx;
+	float64 tempy;
 
 	//~ clear the screen
 	offScreen.fill(0);

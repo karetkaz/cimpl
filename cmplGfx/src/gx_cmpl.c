@@ -532,7 +532,7 @@ static vmError surf_transformSurf(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_image_blurSurf = "void blur(Image image, int32 radius, double sigma)";
+static const char *proto_image_blurSurf = "void blur(Image image, int32 radius, float64 sigma)";
 static vmError surf_blurSurf(nfcContext ctx) {
 	GxImage surf = nextValue(ctx).ref;
 	int radius = nextValue(ctx).i32;
@@ -1172,11 +1172,11 @@ static vmError camera_mgr(nfcContext ctx) {
 
 static const char *proto_lights_enabled = "bool enabled(int32 light)";
 static const char *proto_lights_enable = "void enable(int32 light, bool on)";
-static const char *proto_lights_position = "void position(int32 light, float x, float y, float z)";
-static const char *proto_lights_ambient = "void ambient(int32 light, float r, float g, float b)";
-static const char *proto_lights_diffuse = "void diffuse(int32 light, float r, float g, float b)";
-static const char *proto_lights_specular = "void specular(int32 light, float r, float g, float b)";
-static const char *proto_lights_attenuation = "void attenuation(int32 light, float constant, float linear, float quadratic)";
+static const char *proto_lights_position = "void position(int32 light, float32 x, float32 y, float32 z)";
+static const char *proto_lights_ambient = "void ambient(int32 light, float32 r, float32 g, float32 b)";
+static const char *proto_lights_diffuse = "void diffuse(int32 light, float32 r, float32 g, float32 b)";
+static const char *proto_lights_specular = "void specular(int32 light, float32 r, float32 g, float32 b)";
+static const char *proto_lights_attenuation = "void attenuation(int32 light, float32 constant, float32 linear, float32 quadratic)";
 static vmError lights_manager(nfcContext ctx) {
 	size_t light = nextValue(ctx).i32;
 
@@ -1238,10 +1238,10 @@ static vmError lights_manager(nfcContext ctx) {
 	return illegalState;
 }
 
-static const char *proto_material_ambient = "void ambient(Mesh mesh, float r, float g, float b)";
-static const char *proto_material_diffuse = "void diffuse(Mesh mesh, float r, float g, float b)";
-static const char *proto_material_specular = "void specular(Mesh mesh, float r, float g, float b)";
-static const char *proto_material_shine = "void shine(Mesh mesh, float value)";
+static const char *proto_material_ambient = "void ambient(Mesh mesh, float32 r, float32 g, float32 b)";
+static const char *proto_material_diffuse = "void diffuse(Mesh mesh, float32 r, float32 g, float32 b)";
+static const char *proto_material_specular = "void specular(Mesh mesh, float32 r, float32 g, float32 b)";
+static const char *proto_material_shine = "void shine(Mesh mesh, float32 value)";
 static const char *proto_material_texture = "void texture(Mesh mesh, Image texture)";
 static vmError mesh_material(nfcContext ctx) {
 	GxMesh mesh = nextValue(ctx).ref;

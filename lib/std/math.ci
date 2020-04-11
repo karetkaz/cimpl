@@ -370,8 +370,8 @@ static struct Math {
 		}
 		arg = 2 * arg / PIO2;   /* overflow? */
 
-		double e;
-		double x = modf(arg, &e);
+		float64 e;
+		float64 x = modf(arg, &e);
 		int i = int(e) % 4;
 
 		if (i == 0) {}
@@ -388,7 +388,7 @@ static struct Math {
 			negate = !negate;
 		}
 
-		double xsq = x * x;
+		float64 xsq = x * x;
 		float64 result = ((((p4 * xsq + p3) * xsq + p2) * xsq + p1) * xsq + p0) * x;
 		result /= ((xsq + q2) * xsq + q1) * xsq + q0;
 

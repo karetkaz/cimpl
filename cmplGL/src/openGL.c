@@ -405,8 +405,8 @@ int cmplInit(rtContext _rt) {
 
 		// Matrix operations
 		{glFun_MatrixMode,             "void matrixMode(int mode)"},
-		{glFun_LoadMatrix,             "void loadMatrix(double x[16])"},
-		{glFun_MultMatrix,             "void multMatrix(double x[16])"},
+		{glFun_LoadMatrix,             "void loadMatrix(float64 x[16])"},
+		{glFun_MultMatrix,             "void multMatrix(float64 x[16])"},
 		{glFun_LoadIdentity,           "void loadIdentity()"},
 		{glFun_PushMatrix,             "void pushMatrix()"},
 		{glFun_PopMatrix,              "void popMatrix()"},

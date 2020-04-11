@@ -348,8 +348,8 @@ int ccLibStd(ccContext cc) {
 		{f64atan2,  "float64 atan2(float64 x, float64 y)"},
 	},
 	misc[] = {       // IO/MEM/EXIT
-		{sysExit,   "void exit(int code)"},
-		{sysSRand,  "void srand(int seed)"},
+		{sysExit,   "void exit(int32 code)"},
+		{sysSRand,  "void srand(int32 seed)"},
 		{sysRand,   "int32 rand()"},
 
 		{sysTime,   "int32 time()"},
@@ -385,7 +385,7 @@ int ccLibStd(ccContext cc) {
 	}
 
 	if (!err && cc->type_var != NULL) {		// debug, trace, assert, fatal, ...
-		cc->libc_dbg = ccAddCall(cc, sysRaise, "void raise(const char file[*], int line, int level, int trace, const char message[*], const variant inspect)");
+		cc->libc_dbg = ccAddCall(cc, sysRaise, "void raise(const char file[*], int32 line, int32 level, int32 trace, const char message[*], const variant inspect)");
 		if (cc->libc_dbg == NULL) {
 			err = 2;
 		}
@@ -402,7 +402,7 @@ int ccLibStd(ccContext cc) {
 	}
 
 	if (!err && cc->type_ptr != NULL) {		// tryExecute
-		cc->libc_try = ccAddCall(cc, sysTryExec, "int tryExec(pointer args, void action(pointer args))");
+		cc->libc_try = ccAddCall(cc, sysTryExec, "int32 tryExec(pointer args, void action(pointer args))");
 		if (cc->libc_try == NULL) {
 			err = 2;
 		}
@@ -414,7 +414,7 @@ int ccLibStd(ccContext cc) {
 		if (cc->libc_mem == NULL) {
 			err = 3;
 		}
-		if (!ccAddCall(cc, sysMemSet, "pointer fill(pointer dst, int value, int32 size)")) {
+		if (!ccAddCall(cc, sysMemSet, "pointer fill(pointer dst, uint8 value, int32 size)")) {
 			err = 3;
 		}
 		if (!ccAddCall(cc, sysMemCpy, "pointer copy(pointer dst, pointer src, int32 size)")) {

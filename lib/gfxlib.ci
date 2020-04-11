@@ -25,7 +25,7 @@ Image Image(const char fileName[*], int depth) {
 inline Image(const char fileName[*]) = Image(fileName, 32);
 
 /// Create an image by opening an image file with custom width and height
-Image Image(const char fileName[*], int width, int height, int depth, int align, double maxScale) {
+Image Image(const char fileName[*], int width, int height, int depth, int align, float64 maxScale) {
 	enum: int {
 		center: 0;
 		left: 1;
@@ -38,7 +38,7 @@ Image Image(const char fileName[*], int width, int height, int depth, int align,
 		highRes: 0x20;
 	}
 
-	double scale = 1;
+	float64 scale = 1;
 	Image image = Image(fileName, depth);
 	Image result = Image(width, height, depth);
 
@@ -49,8 +49,8 @@ Image Image(const char fileName[*], int width, int height, int depth, int align,
 	bool fitHeight = alignHorizontal == fitHorizontal;
 
 	if (fitWidth && fitHeight) {
-		double widthScale = width / double(image.width());
-		double heightScale = height / double(image.height());
+		float64 widthScale = width / float64(image.width());
+		float64 heightScale = height / float64(image.height());
 		if (align & fill) {
 			scale = Math.max(widthScale, heightScale);
 		} else {
@@ -58,17 +58,17 @@ Image Image(const char fileName[*], int width, int height, int depth, int align,
 		}
 	}
 	else if (fitWidth) {
-		scale = width / double(image.width());
+		scale = width / float64(image.width());
 	}
 	else if (fitHeight) {
-		scale = height / double(image.height());
+		scale = height / float64(image.height());
 	}
 	if (scale > maxScale) {
 		scale = maxScale;
 	}
 
 	// calculate translation
-	double tx = 0;
+	float64 tx = 0;
 	if (fitWidth || alignVertical == center) {
 		tx = (width - image.width() * scale) / 2;
 	}
@@ -76,7 +76,7 @@ Image Image(const char fileName[*], int width, int height, int depth, int align,
 		tx = (width - image.width() * scale);
 	}
 
-	double ty = 0;
+	float64 ty = 0;
 	if (fitHeight || alignHorizontal == center) {
 		ty = (height - image.height() * scale) / 2;
 	}
@@ -121,7 +121,7 @@ Image Image(Image copy) {
 }
 
 /// Create an image by copying another one using a custom aspect ratio
-Image Image(Image copy, double aspect) {
+Image Image(Image copy, float64 aspect) {
 	int width = copy.width();
 	if (aspect > 0) {
 		width = copy.height() * aspect;
@@ -202,8 +202,8 @@ void eval(Image image, const Rect roi&, float32 aspect, float32 time, vec4f eval
 		z: aspect;
 		w: time;
 	};
-	float w = image.width();
-	float h = image.height();
+	float32 w = image.width();
+	float32 h = image.height();
 	for (int y = rect.y; y < rect.y + rect.h; y += 1) {
 		in.y = y / h;
 		for (int x = rect.x; x < rect.x + rect.w; x += 1) {
@@ -265,7 +265,7 @@ void show(Mesh mesh, int w, int h, float32 fovy) {
 	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
 		static int ox = 0;
 		static int oy = 0;
-		static const float speed = 1. / 100;
+		static const float32 speed = 1 / 100f;
 		if (action == Gui.FINGER_MOTION) {
 			action = Gui.MOUSE_MOTION;
 		}

@@ -218,13 +218,11 @@ Module.wgetFiles = function(files) {
 			}
 			Module.printErr('error: ' + error);
 		});
-
-		inProgress -= 1;
-		if (Module.onFileDownloaded != null) {
-			Module.onFileDownloaded(inProgress);
-		}
 	}
 
+	if (Module.onFileDownloaded != null) {
+		Module.onFileDownloaded(files.length, files.length);
+	}
 	for (let file of files) {
 		let path = file.file || file.path;
 		try {
@@ -250,13 +248,20 @@ Module.wgetFiles = function(files) {
 				if (xhr.readyState !== 4) {
 					return;
 				}
+				inProgress -= 1;
 				if (xhr.status < 200 || xhr.status >= 300) {
 					let err = new Error(xhr.status + ' (' + xhr.statusText + ')')
 					Module.print('Download failed: `' + xhr.responseURL + '`: ' + err);
+					if (Module.onFileDownloaded != null) {
+						Module.onFileDownloaded(inProgress, files.length);
+					}
 					return err;
 				}
 				saveFile(path, new Uint8Array(xhr.response));
 				Module.print('Downloaded file: ' + path + ': ' + xhr.responseURL);
+				if (Module.onFileDownloaded != null) {
+					Module.onFileDownloaded(inProgress, files.length);
+				}
 				if (inProgress == 0) {
 					Module.print("Project file(s) download complete.");
 				}
@@ -267,7 +272,7 @@ Module.wgetFiles = function(files) {
 			Module.printErr('Download failed: `' + path + '`: ' + err);
 			inProgress -= 1;
 			if (Module.onFileDownloaded != null) {
-				Module.onFileDownloaded(inProgress);
+				Module.onFileDownloaded(inProgress, files.length);
 			}
 		}
 	}

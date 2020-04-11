@@ -321,7 +321,7 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 	// if variable is instance of object then allocate it
 	if (castOf(varNode->type) == CAST_ref) {
 		if (cc->libc_mem == NULL) {
-			error(cc->rt, varNode->file, varNode->line, "Failed to allocate variable `%t` allocator not found", varNode);
+			error(cc->rt, varNode->file, varNode->line, "Failed to allocate variable `%t` allocator not found or disabled", varNode);
 			return initObj;
 		}
 
