@@ -18,28 +18,27 @@ typedef enum {
 	prAsmOffs = 0x000010,   // print offset of the instruction
 	prRelOffs = 0x000020,   // print relative offsets: <main+80>
 	prAbsOffs = 0x000040,   // print absolute offset: <main@041048>
-	prAttr    = 0x000080,   // print attributes: const, static, member
 
 	prSymQual = 0x000100,   // print qualified symbol names.
-	prSymArgs = 0x000200,   // print functions parameters.
+	prSymAttr = 0x000200,   // print attributes: const, static, member
 	prSymType = 0x000400,   // print variable type, function return type, typename base type.
 	prSymInit = 0x000800,   // print variable initializer, function body, typename fields.
+	prSymArgs = 0x001000,   // print functions parameters.
 
-	prAstCast = 0x001000,   // print type cast of each subexpression
-	nlAstBody = 0x002000,   // print compound statements on new line (like in cs)
-	nlAstElIf = 0x004000,   // don't keep `else if` constructs on the same line.
+	prAstType = 0x010000,   // print type cast of each subexpression
+	nlAstBody = 0x020000,   // print compound statements on new line (like in cs)
+	nlAstElIf = 0x040000,   // don't keep `else if` constructs on the same line.
+	prMinified= 0x100000,   // enable minified printing as: `} else {`, `}, {`, `1, 2`
+	prOneLine = 0x200000,   // force on a single line (skip: function body, typename fields, statement blocks, ...)
 
-	prOneLine = 0x008000,   // force on a single line (skip: function body, typename fields, statement blocks, ...)
+	prName = 0,  // print operator or symbol name only: %.t, %.T
+	prShort = prOneLine | prSymQual | prSymArgs ,	// %t, %T
+	prDetail = prSymAttr | prSymQual | prSymArgs | prSymType | prSymInit,		// %±t, %±T
 
-	prName = 0,		// print operator or symbol name only.
-
-	prGlobal = prSymQual | prSymType,
-	prMember = prName,
-	prArgs = prName,  // used to print stack trace
-
-	prShort = prSymQual | prSymArgs | prOneLine ,	// %t, %T
-	prFull = prAttr | prSymQual | prSymArgs | prSymType | prSymInit,		// %±t, %±T
-	prDbg = prAttr | prAstCast | prSymQual | prSymArgs | prSymType | prSymInit | prRelOffs | 9 | prOneLine
+	prGlobal = prMinified | prSymQual | prSymType,  // mode to print values of global variable
+	prMember = prMinified,  // mode to print values of record members
+	prArgs = prMinified,  // mode to print values of arguments in stack trace
+	prDbg = prSymAttr | prAstType | prSymQual | prSymArgs | prSymType | prSymInit | prRelOffs | 9 | prOneLine
 } dmpMode;
 
 /**

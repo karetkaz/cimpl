@@ -310,16 +310,13 @@ void show(Mesh mesh, int w, int h, float32 fovy) {
 			return 0;
 		}
 		else if (action == Gui.MOUSE_MOTION) {
-			float32 dir[3];
+			float32 dir[3] = {0, 0, 0};
 			int dx = ex - ox;
 			int dy = ey - oy;
 
 			if (button == 1) {
 				// orbit
-				float32 orig[3];
-				orig[0] = 0;
-				orig[1] = 0;
-				orig[2] = 0;
+				float32 orig[3] = {0, 0, 0};
 
 				camera.readUp(&dir);
 				camera.rotate(dir, orig, dx * speed);
@@ -351,7 +348,7 @@ void show(Mesh mesh, int w, int h, float32 fovy) {
 
 		int rendered = closure.offs.drawMesh(closure.mesh, closure.mode);
 
-		char text[256];
+		char text[256] = {};
 		int pos = text.append(0, "Vertices: ");
 		pos = text.append(pos, closure.mesh.vertices);
 		pos = text.append(pos, ", Triangles: ");

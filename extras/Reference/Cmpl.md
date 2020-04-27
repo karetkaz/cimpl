@@ -45,7 +45,6 @@ Syntax is similar to c/c++ influenced by:
 	* accessing a non document commented variable, function field or method will raise a high level warning that can be treated as an error.
 	* deprecation and any other annotations should be specified in the documentation comment.
 
-
 # Lexical structure
 
 ## Comments
@@ -172,7 +171,6 @@ string html = "\
 * ||, &&, ?:
 * =, +=, -=, *=, /=, %=, &=, |=, ^=, <<=, >>=, >>>=
 * ,
-
 
 # Expressions
 Expressions are responsible for computing values.
@@ -351,7 +349,6 @@ First `a()` is evaluated, and if its value is:
 | = /= %= += -= &= ^= &#124;= <<= >>= | Assignment operators | ||
 | 1: Collection ||| Associates left to right |
 |  ,  | Comma operator         | i = 10, j = 0||
-
 
 # Declarations
 Declarations adds new types, functions or variables to the program.
@@ -938,7 +935,6 @@ float64 im = a["im"];     // => inline [](Complex c, string idx)
 float64 re2 = a(0);       // => inline ()(Complex c, int idx)
 ```
 
-
 # Statements
 Statements are the basic blocks of a program.
 
@@ -1147,7 +1143,6 @@ Only some of the expressions can be used to form a statement:
 - invocation: `foo();`
 
 Expression statements such as `a * 4;` are considered invalid.
-
 
 # Type system
 Every declared type is also a static variable referencing its metadata,

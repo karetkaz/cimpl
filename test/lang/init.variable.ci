@@ -1,0 +1,46 @@
+/** Uninitialized variables will be initialized with default type initializer: 0
+*/
+int variable;
+
+/** Constant variables must be explicitly initialized
+*/
+const int constant = 42;
+
+struct ComplexVal {
+	const float64 re;
+	const float64 im = 0;
+}
+struct ComplexObj: object {
+	const float64 re;
+	const float64 im = 0;
+}
+
+/** Value types must be explicitly initialized
+ * the initializer will be extended with implicit field initializers
+{re: 8} => {
+	valInitImplicit.re := 8;
+	valInitImplicit.im := 0;
+}*/
+ComplexVal valInitImplicit = {re: 8};
+
+/** Reference types must be explicitly initialized
+ * the initializer will be extended with instance creation
+{re: 8} => {
+	objInitImplicit := Object.create(ComplexObj);
+	objInitImplicit.re := 8;
+	objInitImplicit.im := 0;
+}*/
+ComplexObj objInitImplicit = {re: 8};
+
+/** variable type can be base type of the explicit initializer type
+ComplexObj {re: 8} => {
+	objInitExplicit := Object.create(ComplexObj);
+	objInitExplicit.re := 8;
+	objInitExplicit.im := 0;
+}*/
+object objInitExplicit = ComplexObj {re: 8};
+
+/* value type references can not be initialized with object initializer
+	purpose of it is to reference an existing variable.
+*/
+//ComplexVal localRec& = {re: 8};

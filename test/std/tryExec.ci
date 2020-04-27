@@ -12,7 +12,8 @@ void noError(pointer ptr) {
 }
 
 void stackOverflow(pointer ptr) {
-	byte data[8 << 10];		// speed up the overflow allocating 8 kb memory in each call
+	// speed up the overflow allocating 8 kb memory in each call
+	byte data[8 << 10] = {};
 	stackOverflow(ptr);
 }
 

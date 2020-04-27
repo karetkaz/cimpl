@@ -1,0 +1,133 @@
+// test array initializations
+static if (typename(integer) == null) {
+inline integer = int32;
+}
+
+// uninitialized arrays will raise compilation error
+//integer arrArrayNoInit[7];  // compilation error: uninitialized variable
+//integer arrArrayNoInit[*];  // compilation error: uninitialized variable
+//integer arrSliceNoInit[];  // compilation error: uninitialized variable
+
+integer arrFixedInit[7] = {42, 43, 44, 45, 46, 47, 48};
+//integer arrArrayInitLiteral[*] = {1, 2, 3, 4};  // compilation error: no location to store array elements
+//integer arrSliceInitLiteral[] = {1, 2, 3, 4};  // compilation error: no location to store array elements
+//integer arrFixedInitLess[7] = {42, 43};  // TODO: raise warning or error
+//integer arrFixedInitMore[7] = {0, 0, 0, 0, 0, 0, 0, 0};  // compilation error: too many values
+
+//integer arrFixedInitNull[7] = null;  // compilation error; TODO: use custom message
+integer arrArrayInitNull[*] = null;
+integer arrSliceInitNull[] = null;
+
+//integer arrFixedInitFixed[7] = arrFixedInit;  // FIXME: compile time length check; copy elements
+integer arrArrayInitFixed[*] = arrFixedInit;
+integer arrSliceInitFixed[] = arrFixedInit;
+
+//integer arrFixedInitSlice[7] = arrSliceInitFixed;  // TODO: runtime length check; copy elements
+integer arrArrayInitSlice[*]  = arrSliceInitFixed;
+integer arrSliceInitSlice[] = arrSliceInitFixed;
+
+//integer arrFixedInitPtr[7] = arrArrayInitFixed;  // compilation error; TODO: custom message: missing length
+integer arrArrayInitPtr[*] = arrArrayInitFixed;
+//integer arrSliceInitPtr[] = arrArrayInitFixed;  // compilation error: can not emit length of array
+
+// initialize character arrays with string literals
+char strFixed[7] = {'s', 't', 'r', 'i', 'n', 'g', 0};// = "string";  // FIXME: copy elements + compile time length check;
+debug("string as variant", strFixed);
+
+char strArray[*] = "string";
+debug("string as variant", strArray);
+
+char strSlice[] = "string";
+debug("string as variant", strSlice);
+
+//char err_arrFixedInitString[2] = "string";  // compilation error: TODO: custom message: data does not fit
+//int err_arrArrayInitString[32] = "string";  // compilation error: TODO: custom message: invalid assignment
+//int err_arrArrayInitString[*] = "string";  // FIXME: this should not compile: invalid assignment
+//int err_arrSliceInitString[] = "string";  // FIXME: this should not compile: invalid assignment
+
+assert(arrSliceInitNull.length == 0);
+assert(arrFixedInit[0] == 42);
+
+int lenSlice(const integer values[]) { return values.length; }
+integer nthFixed(int idx, const integer values[7]) { return values[idx]; }
+integer nthArray(int idx, const integer values[*]) { return values[idx]; }
+integer nthSlice(int idx, const integer values[]) { return values[idx]; }
+
+assertEq(7, arrFixedInit.length);
+assertEq(arrFixedInit.length, arrSliceInitFixed.length);
+assertEq(arrFixedInit.length, arrSliceInitSlice.length);
+
+assertEq(0, lenSlice(null));
+assertEq(0, lenSlice(arrSliceInitNull));
+assertEq(arrFixedInit.length, lenSlice(arrFixedInit));
+assertEq(arrFixedInit.length, lenSlice(arrSliceInitFixed));
+assertEq(arrFixedInit.length, lenSlice(arrSliceInitSlice));
+
+for (int i = 0; i < arrFixedInit.length; i += 1) {
+	integer expected = 42 + i;
+	assert(expected == arrFixedInit[i]);
+	assert(expected == arrArrayInitFixed[i]);
+	assert(expected == arrSliceInitFixed[i]);
+
+	assert(expected == nthFixed(i, arrFixedInit));
+	assert(expected == nthFixed(i, arrArrayInitFixed));
+	assert(expected == nthFixed(i, arrSliceInitFixed));
+
+	assert(expected == nthArray(i, arrFixedInit));
+	assert(expected == nthArray(i, arrArrayInitFixed));
+	assert(expected == nthArray(i, arrSliceInitFixed));
+
+	assert(expected == nthSlice(i, arrFixedInit));
+	//assert(expected == nthSlice(i, arrArrayInitFixed));	// compilation error: can not emit length of array
+	assert(expected == nthSlice(i, arrSliceInitFixed));
+
+	assert(expected == arrSliceInitSlice[i]);
+}
+
+/** TODO: Initialize all elements of an array with a default value
+int a[100] = {*: 4};
+=> {
+	static for (int i = 0; i < a.length; ++i) {
+		a[i] = 4;
+	}
+}*/
+
+/** TODO: Initialize the first elements with the given values and the rest with a default value
+int a[100] = {1, 2, 3, *: 64};
+=> {
+	a[0] = 1;
+	a[1] = 2;
+	a[2] = 3;
+	static for (int i = 3; i < a.length; ++i) {
+		a[i] = 64;
+	}
+}*/
+
+/** TODO: Initialize all elements of an array with a default value, then override some of them
+char xmlEscape[*][255] = {
+	*: null;
+	'"': "&quot;";
+	'\'': "&apos;";
+	'<': "&lt;";
+	'>': "&gt;";
+	'&': "&amp;";
+};
+=> {
+	for (int i = 0; i < xmlEscape.length; ++i) {
+		xmlEscape[i] = null;
+	}
+	xmlEscape['"'] = "&quot;";
+	xmlEscape['\''] = "&apos;";
+	xmlEscape['<'] = "&lt;";
+	xmlEscape['>'] = "&gt;";
+	xmlEscape['&'] = "&amp;";
+}*/
+
+/** TODO: Initialize all elements of an array with a generator value
+int a[100] = {*: mul(*, 2)};
+=> {
+	static for (int i = 0; i < a.length; ++i) {
+		a[i] = mul(i, 2);
+	}
+}*/
+

@@ -4,7 +4,7 @@ A very "simple" C like language.
 
 ## Reference
 
-[Language](extras/Reference/Language.md)
+[Language](extras/Reference/Cmpl.md)
 
 [Grammar](extras/Reference/Cmpl.g4)
 

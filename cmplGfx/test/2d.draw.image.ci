@@ -9,7 +9,7 @@ Image offs = Image(1440, 900, 32);
 Image back = Image("asset/image/forest.png", 32);
 Image draw = Image("asset/image/david.png", 32);
 
-uint32 lut[256];
+uint32 lut[256] = {};
 for (int idx = 0; idx < 256; idx += 1) {
 	int rgb = clamp_s8(idx - 10);
 	lut[idx] = uint32(_argb(idx, rgb, rgb, rgb));
@@ -35,9 +35,9 @@ int onEvent(int action, int button, int x, int y) {
 				millis = 0;
 			}
 		}
-		if (button == 'S') {
+		if (button == 's') {
 			trace("dumping screen");
-			offs.saveBmp("out/dump.bmp", 0);
+			offs.saveBmp("temp/dump.bmp", 0);
 		}
 	}
 	if (action == Gui.FINGER_MOTION) {
@@ -84,7 +84,6 @@ int onEvent(int action, int button, int x, int y) {
 }
 onEvent(Gui.MOUSE_PRESS, 0, 0, 0);
 offs.show(onEvent);
-offs.saveBmp("out/dump.bmp", 0);
 offs.destroy();
 back.destroy();
 draw.destroy();

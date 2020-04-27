@@ -271,7 +271,7 @@ typedef enum {
 } ccKind;
 
 struct symNode {
-	char *name;        // symbol name
+	const char *name;  // symbol name
 	char *unit;        // declared in unit
 	char *file;        // declared in file
 	int32_t line;      // declared on line
@@ -359,6 +359,8 @@ static inline size_t refSize(symn sym) {
 	}
 }
 
+int isObjectType(symn sym);
+
 /**
  * Native function invocation context.
  */
@@ -397,7 +399,7 @@ static inline void *vmPointer(rtContext rt, size_t offset) {
  * @return The internal offset.
  * @note Aborts if ptr is not null and outside the vm memory.
  */
-static inline size_t vmOffset(rtContext rt, void *ptr) {
+static inline size_t vmOffset(rtContext rt, const void *ptr) {
 	if (ptr == NULL) {
 		return 0;
 	}

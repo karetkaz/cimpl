@@ -286,7 +286,7 @@ static ccKind genDeclaration(ccContext cc, symn variable, ccKind get) {
 			error(rt, variable->file, variable->line, ERR_UNIMPLEMENTED_FUNCTION, variable);
 		}
 		else {
-			raiseLevel level = cc->errUninitialized ? raiseWarn : raiseError;
+			raiseLevel level = cc->errUninitialized ? raiseError : raiseWarn;
 			warn(rt, level, variable->file, variable->line, ERR_UNINITIALIZED_VARIABLE, variable);
 		}
 	}
@@ -990,7 +990,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 				warn(rt, raise_warn_var8, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
 			}
 			else {
-				raiseLevel level = cc->errUninitialized ? raiseWarn : raiseError;
+				raiseLevel level = cc->errUninitialized ? raiseError : raiseWarn;
 				warn(rt, level, ast->file, ast->line, ERR_UNINITIALIZED_VARIABLE, prm);
 			}
 			if (!emitInt(rt, opc_spc, prm->size)) {
@@ -1954,7 +1954,11 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			if (!emitInt(rt, ast->opc.code, ast->opc.args)) {
 				return CAST_any;
 			}
-			got = refCast(ast->type);
+			if (ast->opc.code == opc_nfc) {
+				// in case of native call the result is what was requested: emit(float32(3), float32.sin)
+				// float32.sin is not a reference, the native call is invoked and a value returned
+				got = get;
+			}
 			break;
 
 		case TOKEN_val:

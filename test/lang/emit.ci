@@ -6,12 +6,18 @@ int64 emitldz64 = emit(load.z64);
 int32 emitA = 42;
 int32 emitB = 96;
 
+/// Emit the calculation of `emitA + emitB`
 int32 emitAddI32 = emit(int32(emitA), int32(emitB), add.i32);
-int32 emitDivI32 = emit(int32(10), int32(5), div.i32);
-// removed: float32 emitNfcF32 = emit(float32(3.14/2), float32.sin);
 
-// emit a floating point number and interpret it as an integer
+/// Emit the calculation of `10 / 5`
+int32 emitDivI32 = emit(int32(10), int32(5), div.i32);
+
+/// Emit the calculation of `float32.sin(3.14f / 2)`
+float32 emitNfcF32 = emit(float32(3.14), float32(2), div.f32, float32.sin);
+
+/// interpret a 32 bit floating point number as an 32 bit integer
 inline floatAsInt32(float32 value) = int32(emit(float32(value)));
+/// interpret a 64 bit floating point number as an 64 bit integer
 inline floatAsInt64(float64 value) = int64(emit(float64(value)));
 
 int32 emitFloatAsInt1 = floatAsInt32(500);
@@ -23,6 +29,5 @@ int64 emitFloatAsInt4 = floatAsInt64(500);
 char emitSlice[] = emit(int(3), pointer("string"));
 
 // these should not compile
-//int64 i64Zero = emit(load.z32);	// error: invalid assignment/initialization: size of variable is different from the value's
-//int32 i32Zero = emit(load.z64);	// error: invalid assignment/initialization: size of variable is different from the value's
-
+//int64 i64Zero = emit(load.z32);  // TODO: change error message: invalid assignment/initialization: size of variable is different from the value's
+//int32 i32Zero = emit(load.z64);  // TODO: change error message: invalid assignment/initialization: size of variable is different from the value's

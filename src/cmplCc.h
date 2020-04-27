@@ -22,9 +22,9 @@ typedef enum {
 } ccToken;
 
 struct tokenRec {
-	int const	type;
-	int const	argc;
-	char *const	name;
+	const char *name;
+	const int type;
+	const int args;
 };
 extern const struct tokenRec token_tbl[256];
 

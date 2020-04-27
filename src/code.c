@@ -2249,6 +2249,7 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val
 		}
 		else {
 			size_t length = 0;
+			int minified = mode & prMinified;
 			if (lenField && isStatic(lenField)) {
 				// fixed size array
 				length = typ->size / typ->type->size;
@@ -2262,36 +2263,37 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val
 			}
 
 			int values = 0;
-			int multiArray = isArrayType(typ->type);
-			printFmt(out, esc, "[%d] {", length);
-			if (multiArray) {
-				printFmt(out, esc, "\n");
+			if (isArrayType(typ->type)) {
+				minified = 0;
 			}
+			printFmt(out, esc, "[%d] {", length);
 			size_t step = refSize(typ->type);
 			for (size_t idx = 0; idx < length; idx += 1) {
-				if (idx > 0) {
-					if (multiArray) {
-						printFmt(out, esc, ",\n");
-					} else {
-						printFmt(out, esc, ", ");
+				if (minified == 0) {
+					if (idx > 0) {
+						printFmt(out, esc, ",");
 					}
+					printFmt(out, esc, "\n");
+				}
+				else if (idx > 0) {
+					printFmt(out, esc, ", ");
 				}
 				if (idx >= maxLogItems) {
-					printFmt(out, esc, "%I...", multiArray ? indent + 1 : 0);
+					printFmt(out, esc, "%I...", minified == 0 ? indent + 1 : 0);
 					break;
 				}
 				vmValue *element = (vmValue *) (data + idx * step);
 				if (castOf(typ->type) == CAST_ref) {
 					element = vmPointer(ctx, (size_t) element->ref);
 				}
-				if (multiArray) {
+				if (minified == 0) {
 					printVal(out, esc, ctx, typ->type, element, mode & ~(prSymQual | prSymType), indent + 1);
 				} else {
 					printVal(out, esc, ctx, typ->type, element, mode & ~(prSymQual | prSymType), -indent);
 				}
 				values += 1;
 			}
-			if (values > 0 && multiArray) {
+			if (values > 0 && minified == 0) {
 				printFmt(out, esc, "\n%I", indent);
 			}
 			printFmt(out, esc, "}");
@@ -2300,6 +2302,9 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val
 	else {
 		// typename, function, pointer, etc (without format option)
 		int fields = 0;
+		if (isObjectType(typ)) {
+			typ = vmPointer(ctx, ((vmValue *) data)->ref);
+		}
 		if (typ->fields != NULL && (mode & prOneLine) == 0) {
 			for (symn sym = typ->fields; sym; sym = sym->next) {
 				if (isStatic(sym)) {

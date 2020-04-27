@@ -24,6 +24,8 @@ const char *const type_fmt_typename = "<%T>";
 const char type_fmt_string_chr = '\"';
 const char type_fmt_character_chr = '\'';
 
+const char *const typeProtoObj = "object";
+
 /// Private dummy on exit native function.
 static vmError haltDummy(nfcContext args) {
 	(void)args;
@@ -83,10 +85,12 @@ static vmError variantHelpers(nfcContext ctx) {
 	return nativeCallError;
 }
 
-static inline int isObjectType(symn sym) {
-	symn obj = sym;
+int isObjectType(symn sym) {
 	while (sym != NULL) {
-		if (sym == sym->type/*cc->type_rec*/) {
+		if (sym->name == typeProtoObj) {
+			return 1;
+		}
+		if (sym == sym->type) {
 			// base type must be valid, we reached typename
 			break;
 		}
@@ -94,14 +98,9 @@ static inline int isObjectType(symn sym) {
 			// must be a type and cast to reference
 			break;
 		}
-		obj = sym;
 		sym = sym->type;
 	}
-	/* fixme: detect if obj is object
-	if (obj == cc->type_obj) {
-		return 1;
-	}*/
-	return sym != NULL && sym != obj && sym == sym->type;
+	return 0;
 }
 
 static const char *const object_create = "pointer create(typename type)";
@@ -331,7 +330,8 @@ static void install_type(ccContext cc, ccInstall mode) {
 	}
 	symn type_fun = install(cc, "function", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * vm_ref_size, type_rec, NULL);
 	if (mode & install_obj) {
-		type_obj = install(cc,  "object", ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * vm_ref_size, type_rec, NULL);
+		type_obj = install(cc,  typeProtoObj, ATTR_stat | ATTR_cnst | KIND_typ | CAST_ref, 1 * vm_ref_size, type_rec, NULL);
+		type_obj->name = typeProtoObj;
 	}
 
 	type_vid->fmt = NULL;

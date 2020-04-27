@@ -1,5 +1,4 @@
-// test initializations
-
+/// test and documentation of member initializations
 struct RecordMemberTest {
 
 	struct Inner {
@@ -40,8 +39,8 @@ struct RecordMemberTest {
 	// global constants must be initialized when declared, because they can not be changed.
 	static const int globalConstant = 2;
 
-	// raise warning because there is no `default type initializer`, might be filled with garbage.
-	static Inner globalRec;
+	// must be initialized because there is no `default type initializer`.
+	static Inner globalRec = {constant: 4};
 
 	// global variable initialized with initializer.
 	static Inner globalRecInit = {member: 4, constant: 5};

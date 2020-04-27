@@ -69,7 +69,7 @@ static void printArray(FILE *out, const char **esc, symn sym, dmpMode mode) {
 }
 
 /// format an integer number
-static char *formatNum(char *dst, int max, int prc, int radix, uint64_t num) {
+static char *formatNum(char *dst, int max, int prc, char sgn, int radix, uint64_t num) {
 	char *ptr = dst + max;
 	int p = 0, plc = ',';
 	*--ptr = 0;
@@ -80,6 +80,9 @@ static char *formatNum(char *dst, int max, int prc, int radix, uint64_t num) {
 		}
 		*--ptr = "0123456789abcdef"[num % radix];
 	} while (num /= radix);
+	if (sgn != 0) {
+		*--ptr = sgn;
+	}
 	return ptr;
 }
 
@@ -96,7 +99,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 			int noPrc = 1;   // format string has no precision
 
 			const char *fmt = msg - 1;
-			char *str = NULL;
+			const char *str = NULL;
 
 			if (*msg == '?') {
 				nil = *msg++;
@@ -160,7 +163,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 							// fall through
 						case '+':
 							if (noPrc) {
-								prc = prFull;
+								prc = prDetail;
 							}
 							break;
 					}
@@ -190,7 +193,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 							// fall through
 						case '+':
 							if (noPrc) {
-								prc = prFull;
+								prc = prDetail;
 							}
 							break;
 					}
@@ -413,7 +416,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 						str = "";
 						break;
 					}
-					str = formatNum(buff, sizeof(buff), prc, 2, num);
+					str = formatNum(buff, sizeof(buff), prc, 0, 2, num);
 					break;
 				}
 
@@ -424,7 +427,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 						str = "";
 						break;
 					}
-					str = formatNum(buff, sizeof(buff), prc, 2, num);
+					str = formatNum(buff, sizeof(buff), prc, 0, 2, num);
 					break;
 				}
 
@@ -435,7 +438,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 						str = "";
 						break;
 					}
-					str = formatNum(buff, sizeof(buff), prc, 8, num);
+					str = formatNum(buff, sizeof(buff), prc, 0, 8, num);
 					break;
 				}
 
@@ -446,7 +449,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 						str = "";
 						break;
 					}
-					str = formatNum(buff, sizeof(buff), prc, 8, num);
+					str = formatNum(buff, sizeof(buff), prc, 0, 8, num);
 					break;
 				}
 
@@ -457,7 +460,7 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 						str = "";
 						break;
 					}
-					str = formatNum(buff, sizeof(buff), prc, 16, num);
+					str = formatNum(buff, sizeof(buff), prc, 0, 16, num);
 					break;
 				}
 
@@ -468,13 +471,12 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 						str = "";
 						break;
 					}
-					str = formatNum(buff, sizeof(buff), prc, 16, num);
+					str = formatNum(buff, sizeof(buff), prc, 0, 16, num);
 					break;
 				}
 
 				case 'u':		// uint32
 				case 'd': {		// dec32
-					int neg = 0;
 					uint32_t num = va_arg(ap, uint32_t);
 
 					if (num == 0 && nil) {
@@ -485,22 +487,15 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 
 					if (chr == 'd' && (int32_t)num < 0) {
 						num = (uint32_t) 0 -num;
-						neg = -1;
+						sgn = '-';
 					}
 
-					str = formatNum(buff, sizeof(buff), prc, 10, num);
-					if (neg) {
-						*--str = '-';
-					}
-					else if (sgn == '+') {
-						*--str = '+';
-					}
+					str = formatNum(buff, sizeof(buff), prc, sgn, 10, num);
 					break;
 				}
 
 				case 'U':		// uint64
 				case 'D': {		// dec64
-					int neg = 0;
 					uint64_t num = va_arg(ap, uint64_t);
 
 					if (num == 0 && nil) {
@@ -511,15 +506,9 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 
 					if (chr == 'D' && (int64_t)num < 0) {
 						num = (uint64_t) 0 -num;
-						neg = -1;
+						sgn = '-';
 					}
-					str = formatNum(buff, sizeof(buff), prc, 10, num);
-					if (neg) {
-						*--str = '-';
-					}
-					else if (sgn == '+') {
-						*--str = '+';
-					}
+					str = formatNum(buff, sizeof(buff), prc, sgn, 10, num);
 					break;
 				}
 
@@ -596,9 +585,10 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 
 void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 	static const int exprLevel = 0;
+	const int oneLine = mode & prOneLine;
 	const int nlBody = mode & nlAstBody;
 	const int nlElIf = mode & nlAstElIf;
-	const int oneLine = mode & prOneLine;
+	int nlElse = !(mode & prMinified);
 
 	if (ast == NULL) {
 		printStr(out, esc, NULL);
@@ -707,34 +697,59 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 
 			// if then part
 			if (ast->stmt.stmt != NULL) {
-				kind = ast->stmt.stmt->kind;
-				if (kind == STMT_beg && !nlBody) {
+				astn stmt = ast->stmt.stmt;
+				kind = stmt->kind;
+				if (nlBody == 0 && kind == STMT_beg) {
+					// keep on the same line: `if (...) {`
 					printStr(out, esc, " ");
-					printAst(out, esc, ast->stmt.stmt, mode, -indent);
+					printAst(out, esc, stmt, mode, -indent);
 				}
 				else {
 					printStr(out, esc, "\n");
-					printAst(out, esc, ast->stmt.stmt, mode, indent + (kind != STMT_beg));
+					printAst(out, esc, stmt, mode, indent + (kind != STMT_beg));
+					// force else on a new line
+					nlElse = 1;
 				}
 			}
 			else {
 				printStr(out, esc, " ;");
+				nlElse = 1;
 			}
 
 			// if else part
 			if (ast->stmt.step != NULL) {
-				kind = ast->stmt.step->kind;
-				if ((kind == STMT_if || kind == STMT_sif) && !nlElIf) {
-					printFmt(out, esc, "\n%Ielse ", indent);
-					printAst(out, esc, ast->stmt.step, mode, -indent);
+				astn stmt = ast->stmt.step;
+				kind = stmt->kind;
+
+				// else block must contain a single if statement to be an `else if`
+				if (nlElIf == 0 && kind == STMT_beg && stmt->stmt.stmt != NULL) {
+					ccToken kind2 = stmt->stmt.stmt->kind;
+					if (kind2 == STMT_if || kind2 == STMT_sif) {
+						if (stmt->stmt.stmt->next == NULL) {
+							stmt = stmt->stmt.stmt;
+							kind = stmt->kind;
+						}
+					}
 				}
-				else if (kind == STMT_beg && !nlBody) {
+
+				if (nlElse == 0 && nlBody == 0 && kind == STMT_beg) {
+					// keep on the same line: `} else {`
+					printFmt(out, esc, " else ");
+					printAst(out, esc, stmt, mode, -indent);
+				}
+				else if (nlBody == 0 && kind == STMT_beg) {
+					// keep on the same line: `else {`
 					printFmt(out, esc, "\n%Ielse ", indent);
-					printAst(out, esc, ast->stmt.step, mode, -indent);
+					printAst(out, esc, stmt, mode, -indent);
+				}
+				else if (kind == STMT_if || kind == STMT_sif) {
+					// keep `else if` always on a new line
+					printFmt(out, esc, "\n%Ielse ", indent);
+					printAst(out, esc, stmt, mode, -indent);
 				}
 				else {
 					printFmt(out, esc, "\n%Ielse\n", indent);
-					printAst(out, esc, ast->stmt.step, mode, indent + (kind != STMT_beg));
+					printAst(out, esc, stmt, mode, indent + (kind != STMT_beg));
 				}
 			}
 			break;
@@ -769,14 +784,15 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 			}
 
 			if (ast->stmt.stmt != NULL) {
-				kind = ast->stmt.stmt->kind;
-				if (kind == STMT_beg && !nlBody) {
+				astn stmt = ast->stmt.stmt;
+				kind = stmt->kind;
+				if (nlBody == 0 && kind == STMT_beg) {
 					printStr(out, esc, " ");
-					printAst(out, esc, ast->stmt.stmt, mode, -indent);
+					printAst(out, esc, stmt, mode, -indent);
 				}
 				else {
 					printStr(out, esc, "\n");
-					printAst(out, esc, ast->stmt.stmt, mode, indent + (kind != STMT_beg));
+					printAst(out, esc, stmt, mode, indent + (kind != STMT_beg));
 				}
 			}
 			else {
@@ -882,7 +898,7 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 			int precedence = token_tbl[kind].type & 0x0f;
 			int putParen = indent > precedence;
 
-			if ((mode & prAstCast) && ast->type) {
+			if ((mode & prAstType) && ast->type) {
 				printSym(out, esc, ast->type, prSymQual, 0);
 				putParen = 1;
 			}
@@ -993,14 +1009,13 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 
 void printSym(FILE *out, const char **esc, symn sym, dmpMode mode, int indent) {
 	int oneLine = mode & prOneLine;
-	int pr_attr = mode & prAttr;
-
+	int pr_attr = mode & prSymAttr;
 	int pr_qual = mode & prSymQual;
 	int pr_args = mode & prSymArgs;
-	int pr_result = 0;
 	int pr_type = mode & prSymType;
 	int pr_init = mode & prSymInit;
 	int pr_body = !oneLine && pr_init;
+	int pr_result = 0;
 
 	if (sym == NULL) {
 		printStr(out, esc, NULL);
@@ -1059,20 +1074,17 @@ void printSym(FILE *out, const char **esc, symn sym, dmpMode mode, int indent) {
 		case KIND_var: {
 			symn type = sym->type;
 			if (pr_args && sym->params != NULL) {
-				symn arg = sym->params;
-				int first = 1;
+				symn args = sym->params;
 				if (!pr_result) {
-					type = arg->type;
-					arg = arg->next;
+					// skip result parameter
+					type = args->type;
+					args = args->next;
 					pr_type = 1;
 				}
 				printChr(out, '(');
-				for ( ; arg; arg = arg->next) {
-					if (!first) {
+				for (symn arg = args; arg; arg = arg->next) {
+					if (arg != args) {
 						printStr(out, esc, ", ");
-					}
-					else {
-						first = 0;
 					}
 					printSym(out, esc, arg, (mode | prSymType) & ~prSymQual, 0);
 				}

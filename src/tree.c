@@ -39,13 +39,18 @@ astn dupNode(ccContext cc, astn node) {
 	return result;
 }
 
-void recycle(ccContext cc, astn ast) {
+void recycle(ccContext cc, astn node) {
 	dieif(cc->rt->vm.nfc, "Compiler state closed");
-	if (ast == NULL) {
+	if (node == NULL) {
 		return;
 	}
-	ast->next = cc->tokPool;
-	cc->tokPool = ast;
+	node->next = cc->tokPool;
+	cc->tokPool = node;
+}
+
+static void recycleTree(ccContext cc, astn ast) {
+	// TODO recycle recursively
+	recycle(cc, ast);
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ make a constant valued node
@@ -168,8 +173,6 @@ float64_t fltValue(astn ast) {
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ utility functions
 
 ccKind eval(ccContext cc, astn res, astn ast) {
-	ccKind cast;
-	symn type = NULL;
 	struct astNode lhs, rhs;
 
 	if (ast == NULL || ast->type == NULL) {
@@ -182,7 +185,24 @@ ccKind eval(ccContext cc, astn res, astn ast) {
 		res = &rhs;
 	}
 
-	type = ast->type;
+	if (res == ast) {
+		// result may be null(not needed)
+		ccKind result = eval(cc, &rhs, ast);
+		if (result != CAST_any) {
+			if (token_tbl[res->kind].args) {
+				recycleTree(cc, res->op.test);
+				recycleTree(cc, res->op.lhso);
+				recycleTree(cc, res->op.rhso);
+			}
+			res->kind = rhs.kind;
+			res->type = rhs.type;
+			res->stmt = rhs.stmt;
+		}
+		return result;
+	}
+
+	symn type = ast->type;
+	ccKind cast = CAST_any;
 	switch (castOf(type)) {
 		default:
 			fatal(ERR_INTERNAL_ERROR);

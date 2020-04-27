@@ -10,7 +10,7 @@
  * drag the mouse up or down in the window to adjust control value
  */
 Image back = Image("asset/image/forest.png", 32);
-Image font = Image.openFnt("asset/font/modern-1.fnt");
+Image font = Image.openFnt("asset/font/Modern-1.fnt");
 Image offs = Image(back.width(), back.height(), back.depth());
 
 void brightnessContrastGamma(uint32 lut[256], float brightness, float contrast, float gamma, float highlights, float shadows, float whites, float blacks) {
@@ -120,9 +120,9 @@ void calcAutoEqualize(uint32 lut[256], Image image, bool luminosity) {
 		int maxR = 0;
 		int maxG = 0;
 		int maxB = 0;
-		int histoR[256];
-		int histoG[256];
-		int histoB[256];
+		int histoR[256] = {};
+		int histoG[256] = {};
+		int histoB[256] = {};
 		for (int i = 0; i < 256; i += 1) {
 			maxR += histoR[i] = rch(argb(lut[i]));
 			maxG += histoG[i] = gch(argb(lut[i]));

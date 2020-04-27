@@ -75,7 +75,7 @@ struct astNode {
 			int		prec;			// precedence level
 		} op;
 		struct {					// KIND_var: identifier
-			char	*name;			// name of identifier
+			const char *name;			// name of identifier
 			unsigned hash;			// hash code for 'name'
 			symn	link;			// symbol to variable
 			astn	used;			// next usage of variable
@@ -104,7 +104,7 @@ astn newNode(ccContext cc, ccToken kind);
 astn dupNode(ccContext cc, astn node);
 
 /// Recycle node, so it may be reused.
-void recycle(ccContext cc, astn ast);
+void recycle(ccContext cc, astn node);
 
 /// Allocate a constant integer node.
 astn intNode(ccContext cc, int64_t value);

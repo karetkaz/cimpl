@@ -11,7 +11,7 @@
  */
 
 Image back = Image("asset/image/forest.png", 32);
-Image font = Image.openFnt("asset/font/modern-1.fnt");
+Image font = Image.openFnt("asset/font/Modern-1.fnt");
 Image offs = Image(back.width(), back.height(), back.depth());
 
 static const mat4f IDENTITY = mat4f(
@@ -557,7 +557,7 @@ int onEvent(int action, int button, int x, int y) {
 		if (ui.isSelected(btnLinear, btnReflect, btnRadial, btnSquare)) {
 			int hardness = sldHardness.val();
 			int alpha = sldAlpha.val();
-			uint32 colors[512];
+			uint32 colors[512] = {};
 
 			if (chkMask.checked) {
 				offs.fill(0xff0000);

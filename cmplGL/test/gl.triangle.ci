@@ -10,7 +10,7 @@ struct vertex:1 {
 
 inline vertex(float32 x, float32 y, int32 c) = vertex(emit(int32(c), float32(y), float32(x)));
 
-vertex vertices[3];
+vertex vertices[3] = {};
 
 vertices[0] = vertex( 0, +1, 0xff0000);
 vertices[1] = vertex(-1, -1, 0x00ff00);
@@ -37,7 +37,7 @@ void keyboard(int key) {
 		glut.fullScreen();
 	}
 	if (key == ' ') {
-		char buff[65536];
+		char buff[65536] = {};
 		char text[*] = buff;
 		// gl.Vendor
 		gl.getString(gl.Vendor, buff);

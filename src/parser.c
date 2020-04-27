@@ -12,7 +12,7 @@
 static const char *unknown_tag = "<?>";
 
 const struct tokenRec token_tbl[256] = {
-	#define TOKEN_DEF(Name, Type, Args, Text) {Type, Args, Text},
+	#define TOKEN_DEF(Name, Type, Args, Text) {Text, Type, Args},
 	#include "defs.inl"
 };
 
@@ -280,20 +280,43 @@ static astn expand2Statement(ccContext cc, astn node, int block) {
 
 static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn list) {
 	astn keys = NULL;
+	ssize_t length = 0;
 
 	// translate initialization to assignment
+	if (initObj->stmt.stmt != NULL && initObj->stmt.stmt->kind == INIT_set) {
+		length = -1;
+	}
+
 	for (astn init = initObj->stmt.stmt; init != NULL; init = init->next) {
-		if (init->kind != INIT_set) {
-			error(cc->rt, init->file, init->line, ERR_INITIALIZER_EXPECTED, init);
-			continue;
+		astn key = NULL;
+		astn value = init;
+		if (length < 0 && init->kind == INIT_set) {
+			key = init->op.lhso;
+			value = init->op.rhso;
+			// key: value => variable.key = value;
+			init->op.lhso = opNode(cc, OPER_dot, varNode, key);
+			if (!typeCheck(cc, NULL, init->op.lhso, 0)) {
+				// HACK: type of variable may differ from the initializer type:
+				// object view = Button{ ... };
+				typeCheck(cc, initObj->type, key, 0);
+			}
+			init->op.lhso->file = key->file;
+			init->op.lhso->line = key->line;
+		} else {
+			key = intNode(cc, length);
+			key->file = value->file;
+			key->line = value->line;
+
+			key = opNode(cc, OPER_idx, varNode, key);
+			key->file = value->file;
+			key->line = value->line;
+
+			init = opNode(cc, INIT_set, key, value);
+			init->file = value->file;
+			init->line = value->line;
+			init->next = value->next;
+			length += 1;
 		}
-		// key: value => variable.key = value;
-		astn key = init->op.lhso;
-		astn value = init->op.rhso;
-		symn field = NULL;
-		init->op.lhso = opNode(cc, OPER_dot, varNode, key);
-		init->op.lhso->file = key->file;
-		init->op.lhso->line = key->line;
 
 		if (value->kind == STMT_beg) {
 			// lookup key
@@ -305,6 +328,7 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 			addTail(list, expand2Statement(cc, init, 0));
 
 			// type check assignment
+			symn field = NULL;
 			if (typeCheck(cc, NULL, init, 1) != NULL) {
 				field = linkOf(key, 1);
 			}
@@ -316,6 +340,17 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 
 		key->next = keys;
 		keys = key;
+	}
+
+	if (isArrayType(varNode->type)) {
+		symn len = varNode->type->fields;
+		if (len == NULL || len == cc->length_ref) {
+			error(cc->rt, varNode->file, varNode->line, ERR_INVALID_INITIALIZER, varNode);
+			return NULL;
+		}
+		if (length > intValue(len->init)) {
+			error(cc->rt, varNode->file, varNode->line, ERR_INVALID_ARRAY_VALUES, len->init);
+		}
 	}
 
 	// if variable is instance of object then allocate it
@@ -423,14 +458,13 @@ static astn expandInitializer(ccContext cc, symn variable, astn initializer) {
 		return initializer;
 	}
 	astn varNode = lnkNode(cc, variable);
-	varNode->type = initializer->type;
 	varNode->file = variable->file;
 	varNode->line = variable->line;
 	return expandInitializerObj(cc, varNode, initializer, initializer);
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Parser
 static astn statement_list(ccContext cc);
-static astn statement(ccContext cc, char *doc);
+static astn statement(ccContext cc, const char *doc);
 static astn declaration(ccContext cc, ccKind attr, astn *args);
 
 /** Parse qualifiers.
@@ -508,7 +542,7 @@ static astn expression(ccContext cc, int comma) {
 		switch (ast->kind) {
 			default:
 				// operator
-				if (token_tbl[ast->kind].argc > 0) {
+				if (token_tbl[ast->kind].args > 0) {
 					if (unary) {
 						error(cc->rt, ast->file, ast->line, ERR_SYNTAX_ERR_BEFORE, ast);
 						*postfix++ = NULL;
@@ -722,7 +756,6 @@ static astn expression(ccContext cc, int comma) {
 
 	// build the abstract syntax tree from the postfix form
 	for (ptr = buff; ptr < postfix; ++ptr) {
-		int args;
 		ast = *ptr;
 
 		if (ast == NULL) {
@@ -730,7 +763,7 @@ static astn expression(ccContext cc, int comma) {
 			continue;
 		}
 
-		args = token_tbl[ast->kind].argc;
+		int args = token_tbl[ast->kind].args;
 		switch (args) {
 			default:
 				fatal(ERR_INTERNAL_ERROR);
@@ -883,7 +916,7 @@ static astn parameters(ccContext cc, symn returns, astn function) {
 	// while there are tokens to read
 	while (peekTok(cc, TOKEN_any) != NULL) {
 		ccKind attr = qualifier(cc);
-		astn arg = declaration(cc, attr, NULL);
+		astn arg = declaration(cc, 0, NULL);
 
 		if (arg == NULL) {
 			// probably parse error
@@ -1052,14 +1085,13 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		else {
 			// fixed-size array: int a[42]
 			// associative array: TODO: int a[string]
-			struct astNode value;
 			int64_t length = -1;
 			astn len = expression(cc, 0);
 			if (len != NULL) {
 				len->type = typeCheck(cc, NULL, len, 1);
 			}
-			if (eval(cc, &value, len)) {
-				length = intValue(&value);
+			if (eval(cc, len, len)) {
+				length = intValue(len);
 			}
 			if (length <= 0) {
 				error(cc->rt, len->file, len->line, ERR_INVALID_ARRAY_LENGTH, len);
@@ -1088,9 +1120,17 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 		astn init = initializer(cc);
 		if (init && init->kind == STMT_beg) {
 			init = expandInitializer(cc, def, init);
-			init->type = type;
+			if (init != NULL) {
+				init->type = type;
+			}
 		}
 		def->init = init;
+	}
+	else if ((attr & ATTR_cnst) != 0) {
+		// constant variables must be initialized
+		if (cc->owner == NULL || cc->owner->nest == cc->nest) {
+			error(cc->rt, tag->file, tag->line, ERR_UNINITIALIZED_CONSTANT, def);
+		}
 	}
 
 	return tag;
@@ -1477,7 +1517,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 			}
 			if (isTypeExpr(test)) {
 				backTok(cc, test);
-				astn def = declaration(cc, attr, NULL);
+				astn def = declaration(cc, 0, NULL);
 				if (def != NULL && def->ref.link->init != NULL) {
 					def->type = typeCheck(cc, NULL, def, 1);
 					ast->stmt.init = def;
@@ -1527,7 +1567,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
  * @param attr the qualifier of the statement (ie. parallel for)
  * @return the parsed syntax tree.
  */
-static astn statement_for(ccContext cc, ccKind attr) {
+static astn statement_for(ccContext cc) {
 	astn ast = nextTok(cc, STMT_for, 1);
 	if (ast == NULL) {
 		traceAst(ast);
@@ -1542,7 +1582,7 @@ static astn statement_for(ccContext cc, ccKind attr) {
 		init->type = typeCheck(cc, NULL, init, 1);
 		if (isTypeExpr(init)) {
 			backTok(cc, init);
-			init = declaration(cc, attr, NULL);
+			init = declaration(cc, 0, NULL);
 			if (init != NULL && init->ref.link->init != NULL) {
 				astn ast = init->ref.link->init;
 				ast->type = typeCheck(cc, NULL, ast, 1);
@@ -1591,7 +1631,7 @@ static astn statement_for(ccContext cc, ccKind attr) {
 static astn statement_list(ccContext cc) {
 	astn ast, head = NULL, tail = NULL;
 
-	char *doc = NULL;
+	const char *doc = NULL;
 	while ((ast = cc->tokNext) != NULL) {
 		switch (ast->kind) {
 			default:
@@ -1635,7 +1675,7 @@ static astn statement_list(ccContext cc) {
  * @param attr the qualifier of the statement/declaration
  * @return parsed syntax tree.
  */
-static astn statement(ccContext cc, char *doc) {
+static astn statement(ccContext cc, const char *doc) {
 	char *file = cc->file;
 	int line = cc->line;
 	int validStart = 1;
@@ -1713,7 +1753,7 @@ static astn statement(ccContext cc, char *doc) {
 				if (attr & ATTR_stat) {
 					error(cc->rt, ifElse->file, ifElse->line, WARN_USE_BLOCK_STATEMENT, ifElse);
 				}
-				else {
+				else if (ifElse->kind != STMT_if) {
 					warn(cc->rt, raise_warn_par8, ifElse->file, ifElse->line, WARN_USE_BLOCK_STATEMENT, ifElse);
 				}
 			}
@@ -1724,7 +1764,7 @@ static astn statement(ccContext cc, char *doc) {
 		}
 	}
 	else if (peekTok(cc, STMT_for) != NULL) {   // for (...)
-		ast = statement_for(cc, attr);
+		ast = statement_for(cc);
 		if (ast != NULL) {
 			ast->type = cc->type_vid;
 			if (attr & ATTR_stat) {

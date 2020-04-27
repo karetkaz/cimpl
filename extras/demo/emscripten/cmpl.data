@@ -339,16 +339,13 @@ void show(Mesh mesh, int w, int h, float32 fovy) {
 			return 0;
 		}
 		else if (action == Gui.MOUSE_MOTION) {
-			float32 dir[3];
+			float32 dir[3] = {0, 0, 0};
 			int dx = ex - ox;
 			int dy = ey - oy;
 
 			if (button == 1) {
 				// orbit
-				float32 orig[3];
-				orig[0] = 0;
-				orig[1] = 0;
-				orig[2] = 0;
+				float32 orig[3] = {0, 0, 0};
 
 				camera.readUp(&dir);
 				camera.rotate(dir, orig, dx * speed);
@@ -380,7 +377,7 @@ void show(Mesh mesh, int w, int h, float32 fovy) {
 
 		int rendered = closure.offs.drawMesh(closure.mesh, closure.mode);
 
-		char text[256];
+		char text[256] = {};
 		int pos = text.append(0, "Vertices: ");
 		pos = text.append(pos, closure.mesh.vertices);
 		pos = text.append(pos, ", Triangles: ");
@@ -1520,7 +1517,7 @@ bool uiEvent(Layout layout&, int action, int button, int x, int y) {
 		int32 x;        // old x coord
 		int32 y;        // old y coord
 	}
-	static Mouse mouse;
+	static Mouse mouse = {};
 	static bool isShift;
 	static bool isCtrl;
 	static bool isAlt;
@@ -3453,7 +3450,7 @@ int append(char output[], int pos, char sign, uint64 value, const FormatFlags fo
 	static const char radixDigits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 
 	int len = 0;
-	char digits[80];
+	char digits[80] = {};
 
 	if (format.showSign) {
 		if (sign == 0) {

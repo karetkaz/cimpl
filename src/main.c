@@ -205,7 +205,7 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 
 	printFmt(out, esc, "%I<%s token=\"%k\"", indent, text, ast->kind);
 
-	if ((mode & (prSymType | prAstCast)) != 0) {
+	if ((mode & (prSymType | prAstType)) != 0) {
 		printFmt(out, esc, " type=\"%T\"", ast->type);
 		if (ast->type != NULL) {
 			printFmt(out, esc, " kind=\"%K\"", ast->type->kind);
@@ -272,7 +272,7 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 		case OPER_fnc:        // '()'
 			printFmt(out, esc, " value=\"%?t\">\n", ast);
 			for (astn list = chainArgs(ast->op.rhso); list != NULL; list = list->next) {
-				dumpAstXML(out, esc, list, mode, indent + 1, "push");
+				dumpAstXML(out, esc, list, mode & ~prSymInit, indent + 1, "push");
 			}
 			dumpAstXML(out, esc, ast->op.lhso, mode & ~prSymInit, indent + 1, "call");
 			printFmt(out, esc, "%I</%s>\n", indent, text);
@@ -325,11 +325,13 @@ static void dumpAstXML(FILE *out, const char **esc, astn ast, dmpMode mode, int 
 		//#}
 		//#{ VALUES
 		case TOKEN_var:
-			printFmt(out, esc, " value=\"%?t\">\n", ast);
-			if (ast->ref.link == NULL) {
+			if (ast->ref.link == NULL || (mode & prSymInit) == 0) {
+				printFmt(out, esc, " value=\"%?t\"/>\n", ast);
 				break;
 			}
-			if (ast->ref.link->init && (mode & prSymInit) != 0) {
+
+			printFmt(out, esc, " value=\"%?t\">\n", ast);
+			if (ast->ref.link->init) {
 				dumpAstXML(out, esc, ast->ref.link->init, mode, indent + 1, "init");
 			}
 			if (isTypename(ast->ref.link)) {
@@ -785,7 +787,7 @@ static void textDumpDbg(FILE *out, const char **esc, userContext ctx, dbgn dbg, 
 	printFmt(out, esc, ")");
 
 	if (dbg->stmt != NULL && ctx->rt->cc != NULL) {
-		printFmt(out, esc, ": %.*t", ctx->dmpMode | prFull | prOneLine, dbg->stmt);
+		printFmt(out, esc, ": %.*t", prDetail | prOneLine, dbg->stmt);
 	}
 	printFmt(out, esc, "\n");
 }
@@ -977,7 +979,6 @@ static void textPostProfile(userContext usr) {
 		}
 	}
 }
-
 
 static void dumpApiHtml(userContext ctx, symn sym) {
 	const char *CLASS_SYM = "sym";
@@ -1738,6 +1739,7 @@ int main(int argc, char *argv[]) {
 		int foldInstruction;
 		int genStaticGlobals;
 		int errPrivateAccess;
+		int errUninitialized;
 		int warnLevel;	// compile log level
 		int raiseLevel;	// runtime log level
 
@@ -1748,6 +1750,7 @@ int main(int argc, char *argv[]) {
 		.foldInstruction = 1,
 		.genStaticGlobals = 1,
 		.errPrivateAccess = 1,
+		.errUninitialized = 1,
 		.warnLevel = 5,
 		.raiseLevel = 15,
 
@@ -2229,7 +2232,7 @@ int main(int argc, char *argv[]) {
 				return -1;
 			}
 			extra.dmpAst = 1;
-			extra.dmpMode |= prFull;
+			extra.dmpMode |= prDetail;
 			while (*arg2 == '/') {
 				switch (arg2[1]) {
 					default:
@@ -2260,7 +2263,7 @@ int main(int argc, char *argv[]) {
 						break;
 
 					case 't':
-						extra.dmpMode |= prAstCast;
+						extra.dmpMode |= prAstType;
 						arg2 += 2;
 						break;
 
@@ -2370,7 +2373,11 @@ int main(int argc, char *argv[]) {
 					install = (install & ~installLibs) | on * installLibs;
 					arg2 += 4;
 				}
-				else if (strBegins(arg2 + 1, "private")) {
+				else if (strBegins(arg2 + 1, "init")) {
+					settings.errUninitialized = !on;
+					arg2 += 8;
+				}
+				else if (strBegins(arg2 + 1, "public")) {
 					settings.errPrivateAccess = !on;
 					arg2 += 8;
 				}
@@ -2452,6 +2459,7 @@ int main(int argc, char *argv[]) {
 	cc->genDocumentation = extra.dmpDoc;
 	cc->genStaticGlobals = settings.genStaticGlobals != 0;
 	cc->errPrivateAccess = settings.errPrivateAccess != 0;
+	cc->errUninitialized = settings.errUninitialized != 0;
 	cc->home = ccUniqueStr(cc, cmpl_home, -1, -1);
 
 	if (install & installLibs) {

@@ -501,8 +501,18 @@ GxImage loadFnt(GxImage dst, const char *src) {
 		return NULL;
 	}
 
-	char tmp[4096];
-	size_t fsize = fread(tmp, 1, sizeof(tmp), fin);
+	char buff[32768], *data = buff;
+	size_t fsize = fread(data, 1, sizeof(buff), fin);
+	if (strncmp(buff, "\vGSCharset>>", 12) == 0) {
+		data += fsize & 255;  // skip the header
+		for (size_t i = fsize & 255; i < fsize; ++i) {
+			int b = buff[i];
+			b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+			b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+			b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+			buff[i] = b;
+		}
+	}
 	fclose(fin);
 
 	uint16_t width = 8;
@@ -524,14 +534,14 @@ GxImage loadFnt(GxImage dst, const char *src) {
 		lut->data[i].basePtr = chrPtr;
 		unsigned char *ptr = chrPtr;
 		for (int y = 0; y < height; ++y) {
-			ptr[0] = (tmp[i * height + y] & 0X80) ? 255 : 0;
-			ptr[1] = (tmp[i * height + y] & 0X40) ? 255 : 0;
-			ptr[2] = (tmp[i * height + y] & 0X20) ? 255 : 0;
-			ptr[3] = (tmp[i * height + y] & 0X10) ? 255 : 0;
-			ptr[4] = (tmp[i * height + y] & 0X08) ? 255 : 0;
-			ptr[5] = (tmp[i * height + y] & 0X04) ? 255 : 0;
-			ptr[6] = (tmp[i * height + y] & 0X02) ? 255 : 0;
-			ptr[7] = (tmp[i * height + y] & 0X01) ? 255 : 0;
+			ptr[0] = (data[i * height + y] & 0X80) ? 255 : 0;
+			ptr[1] = (data[i * height + y] & 0X40) ? 255 : 0;
+			ptr[2] = (data[i * height + y] & 0X20) ? 255 : 0;
+			ptr[3] = (data[i * height + y] & 0X10) ? 255 : 0;
+			ptr[4] = (data[i * height + y] & 0X08) ? 255 : 0;
+			ptr[5] = (data[i * height + y] & 0X04) ? 255 : 0;
+			ptr[6] = (data[i * height + y] & 0X02) ? 255 : 0;
+			ptr[7] = (data[i * height + y] & 0X01) ? 255 : 0;
 			ptr += dst->scanLen;
 		}
 		chrPtr += width;
