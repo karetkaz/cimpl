@@ -190,13 +190,13 @@ int onEvent(int action, int button, int x, int y) {
 	}
 	if (ui.uiEvent(action, button, x, y)) {
 		// clamp input values
-		int amountValue = -sldSharpness.val();
-		int radiusValue = sldBlur.val();
+		int amountValue = -sldSharpness.value;
+		int radiusValue = sldBlur.value;
 
 		uint64 start = System.millis();
 		if (autoUpdate.checked) {
-			int hardness = sldHardness.val();
-			int alpha = sldAlpha.val();
+			int hardness = sldHardness.value;
+			int alpha = sldAlpha.value;
 			uint32 colors[512] = {};
 
 			if (oldRadius != radiusValue) {

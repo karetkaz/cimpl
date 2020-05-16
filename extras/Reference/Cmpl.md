@@ -350,6 +350,215 @@ First `a()` is evaluated, and if its value is:
 | 1: Collection ||| Associates left to right |
 |  ,  | Comma operator         | i = 10, j = 0||
 
+# Statements
+Statements are the basic blocks of a program.
+
+**[Syntax](Cmpl.g4)**
+```antlrv4
+statement
+    : ';'                                                                                               # EmptyStatement
+    | 'inline' Literal ';'                                                                            # IncludeStatement
+    | qualifiers? '{' statementList '}'                                                              # CompoundStatement
+    | qualifiers? 'if' '(' for_init ')' statement ('else' statement)?                                      # IfStatement
+    | qualifiers? 'for' '(' for_init? ';' expression? ';' expression? ')' statement                       # ForStatement
+    | 'for' '(' variable ':' expression ')' statement                                                 # ForEachStatement
+    | 'return' initializer? ';'                                                                        # ReturnStatement
+    | 'break' ';'                                                                                       # BreakStatement
+    | 'continue' ';'                                                                                 # ContinueStatement
+    | expression ';'                                                                               # ExpressionStatement
+    | declaration                                                                                 # DeclarationStatement
+    ;
+```
+
+## Block statement
+Block statement groups zero ore more statement as a single statement.
+
+### Parallel block statement
+Parallel block statements can be used to execute a block of statements parallel.
+
+## Selection statement
+The selection statement can be used to execute a section of code, only if a condition is met.
+
+### If statement
+Main purpose of the if statement is to handle exceptional cases in the control flow.
+
+#### Static if statement
+The static if construct can be used as a compile time check.
+
+**Example**
+```
+// if double is not defined, define it as float64
+static if (typename(double) == null) {
+inline double = float64;
+}
+```
+
+- if the condition evaluates to true:
+  - the declarations contained by the block will be exposed to the outer scope.
+  - the statements inside the scope will be generated.
+
+- if the condition evaluates to false:
+  - the declarations contained by the block will be exposed to the inner scope only.
+  - the statements inside the scope will be type-checked.
+  - the statement will not generate code.
+
+### Switch statement
+[TODO: implementation]
+
+## Repetition statement
+The repetition statement can be used to execute a section of code in a loop, while a condition is met.
+
+### For statement
+The for statement is like in c and c like languages.
+
+#### Static for statement
+[TODO: implementation]
+
+The static construct of the statement expands inline the statement of the loop.
+
+**Example**
+```
+static for (int i = 0; i < 5; i += 1) {
+	print(i);
+}
+```
+
+generates exactly the same code like:
+
+```
+print(0);
+print(1);
+print(2);
+print(3);
+print(4);
+```
+
+#### Parallel for statement
+[TODO: implementation]
+
+The parallel version of the for statement executes the statements of the loop on a worker,
+than waits each of them to finish (in case we have fever workers than jobs or a single worker,
+the job will be executed on the main worker).
+
+**Example**: parallel for statement
+```
+parallel for (int i = 0; i < 5; i += 1) {
+	print(i);
+}
+print(99);
+```
+
+**Example**: for statement with a parallel block statement
+```
+for (int i = 0; i < 5; i += 1) parallel {
+	print(i);
+}
+print(99);
+```
+
+These two examples may result different output. In the first example the last statement:
+`print(99);` will be executed last, while in the second example it is possible that
+this is not the last executed statement.
+
+### For-each statement
+The for-each statement enumerates the elements of an iterable.
+
+To use the foreach like form of the for statement, two functions are required to be defined:
+* `iterator`: this function prepares the iterator from a type.
+	* the argument for this function is the object you want to iterate.
+	* it should return an iterable type(this will be the first argument of the next function).
+* `next`: this function advances to the next iterable element, it may be defined also in the iterator.
+	* the first argument is the object returned by the iterator function. This has to be passed by reference.
+	* the second argument is optional, in case we want to iterate with a value, and not the iterator object. This argument must be passed by reference or as inout.
+	* it must return a boolean value: true if there was a next element, false otherwise.
+
+**Example**
+```
+struct Range {
+	const int min;
+	const int max;
+}
+inline Range(int min, int max) = { min: min, max: max };
+
+struct RangeIterator {
+	int current;
+	const int end;
+
+	// RangeIterator is iterable
+	bool next(RangeIterator &this) {
+		if (this.current < this.end) {
+			this.current += 1;
+			return true;
+		}
+		return false;
+	}
+}
+
+// make the iterator for the Range type (make Range iterable)
+inline iterator(Range r) = RangeIterator {
+	current: r.min;
+	end: r.max;
+};
+
+// now we can iterate over any range using the iterator
+for (RangeIterator it : Range(10, 20)) {
+	println(it.current);
+}
+
+// make RangeIterator iterable using an int
+bool next(RangeIterator &it, int &&value) {
+	if (RangeIterator.next(it)) {
+		value = it.current;
+		return true;
+	}
+	return false;
+}
+
+// now we can iterate over any range also with an int value
+for (int i : Range(10, 20)) {
+	println(i);
+}
+
+```
+
+### While statement
+[TODO: implementation]
+
+### Do-while statement
+[TODO: implementation]
+
+## Control statements
+
+### Break statement
+The break statement terminates the execution of the innermost enclosing loop.
+
+[TODO: example]
+
+### Continue statement
+The continue statement terminates the current and begins the next iteration of the innermost enclosing loop.
+
+[TODO: example]
+
+### Return statement
+The return statement terminates the execution of the current function.
+
+[TODO: example]
+- If an expression is given, before returning the expression is assigned to the result parameter of the function.
+- It is allowed to return an expression of type void (invocation of a function returning void),
+even if the function specifies a void return type. The expression will be evaluated, but nothing will be returned.
+
+## Declaration statement
+Declaration statement declares a typename, function, variable or an alias.
+
+## Expression statement
+Expression statements is an expression terminated with ';'
+
+Only some of the expressions can be used to form a statement:
+- assignment: `a = 2;`
+- invocation: `foo();`
+
+Expression statements such as `a * 4;` are considered invalid.
+
 # Declarations
 Declarations adds new types, functions or variables to the program.
 
@@ -935,215 +1144,6 @@ float64 im = a["im"];     // => inline [](Complex c, string idx)
 float64 re2 = a(0);       // => inline ()(Complex c, int idx)
 ```
 
-# Statements
-Statements are the basic blocks of a program.
-
-**[Syntax](Cmpl.g4)**
-```antlrv4
-statement
-    : ';'                                                                                               # EmptyStatement
-    | 'inline' Literal ';'                                                                            # IncludeStatement
-    | qualifiers? '{' statementList '}'                                                              # CompoundStatement
-    | qualifiers? 'if' '(' for_init ')' statement ('else' statement)?                                      # IfStatement
-    | qualifiers? 'for' '(' for_init? ';' expression? ';' expression? ')' statement                       # ForStatement
-    | 'for' '(' variable ':' expression ')' statement                                                 # ForEachStatement
-    | 'return' initializer? ';'                                                                        # ReturnStatement
-    | 'break' ';'                                                                                       # BreakStatement
-    | 'continue' ';'                                                                                 # ContinueStatement
-    | expression ';'                                                                               # ExpressionStatement
-    | declaration                                                                                 # DeclarationStatement
-    ;
-```
-
-## Block statement
-Block statement groups zero ore more statement as a single statement.
-
-### Parallel block statement
-Parallel block statements can be used to execute a block of statements parallel.
-
-## Selection statement
-The selection statement can be used to execute a section of code, only if a condition is met.
-
-### If statement
-Main purpose of the if statement is to handle exceptional cases in the control flow.
-
-#### Static if statement
-The static if construct can be used as a compile time check.
-
-**Example**
-```
-// if double is not defined, define it as float64
-static if (typename(double) == null) {
-inline double = float64;
-}
-```
-
-- if the condition evaluates to true:
-  - the declarations contained by the block will be exposed to the outer scope.
-  - the statements inside the scope will be generated.
-
-- if the condition evaluates to false:
-  - the declarations contained by the block will be exposed to the inner scope only.
-  - the statements inside the scope will be type-checked.
-  - the statement will not generate code.
-
-### Switch statement
-[TODO: implementation]
-
-## Repetition statement
-The repetition statement can be used to execute a section of code in a loop, while a condition is met.
-
-### For statement
-The for statement is like in c and c like languages.
-
-#### Static for statement
-[TODO: implementation]
-
-The static construct of the statement expands inline the statement of the loop.
-
-**Example**
-```
-static for (int i = 0; i < 5; i += 1) {
-	print(i);
-}
-```
-
-generates exactly the same code like:
-
-```
-print(0);
-print(1);
-print(2);
-print(3);
-print(4);
-```
-
-#### Parallel for statement
-[TODO: implementation]
-
-The parallel version of the for statement executes the statements of the loop on a worker,
-than waits each of them to finish (in case we have fever workers than jobs or a single worker,
-the job will be executed on the main worker).
-
-**Example**: parallel for statement
-```
-parallel for (int i = 0; i < 5; i += 1) {
-	print(i);
-}
-print(99);
-```
-
-**Example**: for statement with a parallel block statement
-```
-for (int i = 0; i < 5; i += 1) parallel {
-	print(i);
-}
-print(99);
-```
-
-These two examples may result different output. In the first example the last statement:
-`print(99);` will be executed last, while in the second example it is possible that
-this is not the last executed statement.
-
-### For-each statement
-The for-each statement enumerates the elements of an iterable.
-
-To use the foreach like form of the for statement, two functions are required to be defined:
-* `iterator`: this function prepares the iterator from a type.
-	* the argument for this function is the object you want to iterate.
-	* it should return an iterable type(this will be the first argument of the next function).
-* `next`: this function advances to the next iterable element, it may be defined also in the iterator.
-	* the first argument is the object returned by the iterator function. This has to be passed by reference.
-	* the second argument is optional, in case we want to iterate with a value, and not the iterator object. This argument must be passed by reference or as inout.
-	* it must return a boolean value: true if there was a next element, false otherwise.
-
-**Example**
-```
-struct Range {
-	const int min;
-	const int max;
-}
-inline Range(int min, int max) = { min: min, max: max };
-
-struct RangeIterator {
-	int current;
-	const int end;
-
-	// RangeIterator is iterable
-	bool next(RangeIterator &this) {
-		if (this.current < this.end) {
-			this.current += 1;
-			return true;
-		}
-		return false;
-	}
-}
-
-// make the iterator for the Range type (make Range iterable)
-inline iterator(Range r) = RangeIterator {
-	current: r.min;
-	end: r.max;
-};
-
-// now we can iterate over any range using the iterator
-for (RangeIterator it : Range(10, 20)) {
-	println(it.current);
-}
-
-// make RangeIterator iterable using an int
-bool next(RangeIterator &it, int &&value) {
-	if (RangeIterator.next(it)) {
-		value = it.current;
-		return true;
-	}
-	return false;
-}
-
-// now we can iterate over any range also with an int value
-for (int i : Range(10, 20)) {
-	println(i);
-}
-
-```
-
-### While statement
-[TODO: implementation]
-
-### Do-while statement
-[TODO: implementation]
-
-## Control statements
-
-### Break statement
-The break statement terminates the execution of the innermost enclosing loop.
-
-[TODO: example]
-
-### Continue statement
-The continue statement terminates the current and begins the next iteration of the innermost enclosing loop.
-
-[TODO: example]
-
-### Return statement
-The return statement terminates the execution of the current function.
-
-[TODO: example]
-- If an expression is given, before returning the expression is assigned to the result parameter of the function.
-- It is allowed to return an expression of type void (invocation of a function returning void),
-even if the function specifies a void return type. The expression will be evaluated, but nothing will be returned.
-
-## Declaration statement
-Declaration statement declares a typename, function, variable or a constant.
-
-## Expression statement
-Expression statements is an expression terminated with ';'
-
-Only some of the expressions can be used to form a statement:
-- assignment: `a = 2;`
-- invocation: `foo();`
-
-Expression statements such as `a * 4;` are considered invalid.
-
 # Type system
 Every declared type is also a static variable referencing its metadata,
 the internal representation of the symbol used by the compiler which is exposed to the run-time.
@@ -1262,20 +1262,14 @@ and destroyed when there are no more references pointing to it.
 ## Builtin aliases
 Builtin type aliases:
 - `int`: alias for `int32` or `int64` depending on the word size of the vm
-- `byte`: alias for `uint8`
-- `float`: alias for `float32`
-- `double`: alias for `float64`
 
 Builtin constants:
 - `null`: pointer value, representing missing data.
-- `true`: boolean value, may be defined as: `inline true = 0 == 0;`.
-- `false`: boolean value, may be defined as: `inline false = 0 != 0;`.
 
 ## Builtin functions
 [TODO: documentation]
 
 ### The `emit` intrinsic function.
-
 Emit is a low level builtin intrinsic for low level operations like emitting virtual machine instructions.
 
 - arguments can be values and opcodes.
@@ -1328,7 +1322,54 @@ char a[] = emit(int(3), "string");
 
 Creates a slice from the string with length 3.
 
-### Reflection helpers 
+### The `raise` builtin function.
+The function can be used to log a message with or without the current stacktrace and even to abort the execution.
+
+`void raise(int level, int trace, string message, variant inspect);`
+
+Arguments:
+- `level`: level to be used:
+	- `raise.abort`
+	- `raise.error`
+	- `raise.warn`
+	- `raise.info`
+	- `raise.debug`
+	- `raise.verbose`
+
+- `trace`: prints the last n stack trace, available only in debug mode.
+- `message`: the message to be printed.
+- `inspect`: a variant to be inspected, useful in assertions.
+
+In case the raise function is invoked with `abort` the message is logged, and the execution of the application is aborted.
+Using other levels the the execution continues, and the message is logged only if the corresponding level is enabled.
+In addition, the function logs the file name and line number where the function was invoked.
+
+### The `tryExec` builtin function.
+There is no `try` `catch` statement built into the language to handle exceptions.
+The `tryExec` function can be used to recover the execution if it was aborted by an error.
+
+`int tryExec(pointer args, void action(pointer args));`
+
+the function executes the given action, returning 0 if it was executed with success.
+
+possible return values are defined by the implementation enumeration:
+
+```
+enum {
+	noError,
+	illegalState,
+	stackOverflow,
+	divisionByZero,
+	illegalMemoryAccess,
+	illegalInstruction,
+	nativeCallError
+}
+```
+[TODO] the function should return errors instead of codes
+[TODO] expose the enumeration of errors to the compiler
+[TODO] raise should abort with user defined errors
+
+### Reflection helpers
 [TODO: documentation]
 
 - `typename.size`
@@ -1337,6 +1378,32 @@ Creates a slice from the string with length 3.
 - `typename.file(type: typename): .cstr`
 - `typename.line(type: typename): int32`
 - `typename.name(type: typename): .cstr`
+
+### Memory management
+[TODO: documentation]
+
+- `pointer.alloc(ptr: pointer, size: int32): pointer`
+- `pointer.fill(dst: pointer, value: int32, size: int32): pointer`
+- `pointer.copy(dst: pointer, src: pointer, size: int32): pointer`
+- `pointer.move(dst: pointer, src: pointer, size: int32): pointer`
+
+### Type management
+[TODO: documentation]
+
+- `variant.as(var: variant, type: typename): pointer`
+- `object.create(type: typename): pointer`
+- `object.as(obj: object, type: typename): pointer`
+
+### System functions
+[TODO: documentation]
+
+- `System.exit(code: int32): void`
+- `System.srand(seed: int32): void`
+- `System.rand(): int32`
+- `System.time(): int32`
+- `System.clock(): int32`
+- `System.millis(): int64`
+- `System.sleep(millis: int64): void`
 
 ### Math functions
 [TODO: documentation]
@@ -1362,78 +1429,3 @@ Creates a slice from the string with length 3.
 - `float64.sqrt(x: float64): float64`
 - `float64.atan2(x: float64, y: float64): float64`
 
-### Memory management
-[TODO: documentation]
-
-- `pointer.alloc(ptr: pointer, size: int32): pointer`
-- `pointer.fill(dst: pointer, value: int32, size: int32): pointer`
-- `pointer.copy(dst: pointer, src: pointer, size: int32): pointer`
-
-### System functions
-[TODO: documentation]
-
-- `System.exit(code: int32): void`
-- `System.srand(seed: int32): void`
-- `System.rand(): int32`
-- `System.time(): int32`
-- `System.clock(): int32`
-- `System.millis(): int64`
-- `System.sleep(millis: int64): void`
-
-### Error handling
-
-There is no try catch to handle exceptions, but the `raise` function can be used to abort the execution of the code.
-
-#### The `raise` builtin function.
-
-`void raise(int level, int trace, string message, variant inspect);`
-
-The `raise` function can be used to abort the execution, to log a message with or without the current stacktrace.
-
-Arguments:
-- `level`: level to be used:
-	- `raise.abort`
-	- `raise.error`
-	- `raise.warn`
-	- `raise.info`
-	- `raise.debug`
-	- `raise.verbose`
-
-- `trace`: prints the last n stack trace, available only in debug mode.
-- `message`: the message to be printed.
-- `inspect`: a variant to be inspected, useful in assertions.
-
-In case the raise function is invoked with `abort` the message is logged, and the execution of the application is aborted.
-Using other levels the the execution continues, and the message is logged only if the corresponding level is enabled.
-In addition, the function logs the file name and line number where the function was invoked.
-
-
-#### The `tryExec` builtin function.
-
-`int tryExec(pointer args, void action(pointer args));`
-
-the function executes the given action, returning 0 if it was executed with success.
-
-possible return values are defined by the implementation enumeration:
-
-```
-enum {
-	noError,
-	illegalState,
-	stackOverflow,
-	divisionByZero,
-	illegalMemoryAccess,
-	illegalInstruction,
-	nativeCallError
-}
-```
-[TODO] expose the enumeration to the compiler.
-
-## Value types
-[TODO: documentation]
-
-## Reference types
-[TODO: documentation]
-
-## Type promotions
-[TODO: documentation]

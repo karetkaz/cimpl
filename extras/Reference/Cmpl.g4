@@ -34,12 +34,13 @@ declaration
     | qualifiers? functionImpl                                                                     # FunctionDeclaration
     ;
 
+argumentList: '&'?expression (',' '&'?expression)*;
 expressionList: expression (',' expression)*;
 expression
     : Literal                                                                                        # LiteralExpression
     | Identifier                                                                                  # IdentifierExpression
-    | '(' expressionList? ')'                                                                  # ParenthesizedExpression
-    | expression '(' expressionList? ')'                                                        # FunctionCallExpression
+    | '(' argumentList? ')'                                                                    # ParenthesizedExpression
+    | expression '(' argumentList? ')'                                                          # FunctionCallExpression
     | '[' expressionList? ']'                                                                  # ParenthesizedExpression
     | expression '[' expressionList? ']'                                                         # ArrayAccessExpression
     | expression '[' expression '..' expression ']'                                               # ArraySliceExpression

@@ -2663,6 +2663,7 @@ void printAsm(FILE *out, const char **esc, rtContext ctx, void *ptr, dmpMode mod
 						list lst;
 						for (lst = ctx->cc->stringTable[i]; lst; lst = lst->next) {
 							char *data = (char *) lst->data;
+							dieif(data == NULL, ERR_INTERNAL_ERROR);
 							if (str >= data && str < data + strlen(data)) {
 								printFmt(out, esc, " ;%c", type_fmt_string_chr);
 								printFmt(out, esc ? esc : escapeStr(), "%s", str);

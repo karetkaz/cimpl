@@ -53,10 +53,7 @@ struct NotEquals {
 	const variant returned;
 
 	/// Extra argument to identify what happened
-	const variant argument = null;
-
-	/// Extra message to identify what happened
-	const char message[*] = null;
+	const variant extras[] = null;
 }
 
 /// abort execution if the returned value is not equal to the expected value
@@ -65,10 +62,11 @@ static void assertEq(int expected, int returned, const char message[*]) {
 	if (returned == expected) {
 		return;
 	}
+	variant extras[1] = { message };
 	NotEquals details = {
 		expected: expected;
 		returned: returned;
-		message: message;
+		extras: extras;
 	};
 	raise(raise.abort, raise.defTrace, "assertion failed", details);
 }

@@ -128,13 +128,6 @@ struct rtContextRec {
 	FILE *logFile;          // log file
 
 	/**
-	 * Main initializer function.
-	 *
-	 * This function initializes global variables.
-	 */
-	symn main;
-
-	/**
 	 * Compiler context.
 	 *
 	 * @note After code generation it is set to null.
@@ -151,6 +144,13 @@ struct rtContextRec {
 	 *  * break point lists
 	 */
 	dbgContext dbg;
+
+	/**
+	 * User context.
+	 *
+	 * contains custom context set by librariy
+	 */
+	userContext usr;
 
 	// virtual machine state
 	struct {
@@ -226,6 +226,13 @@ struct rtContextRec {
 		/// Read the argument, transforming offsets to pointers
 		rtValue (*const nfcReadArg)(nfcContext ctx, size_t argOffs);
 	} api;
+
+	/**
+	 * Main initializer function.
+	 *
+	 * This function initializes global variables.
+	 */
+	symn main;
 
 	// memory management for the compiler and code generator
 	unsigned char *_beg;        // permanent memory (increments)

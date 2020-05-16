@@ -363,7 +363,7 @@ int onEvent(int action, int button, int x, int y) {
 		View selected = ui.selected(View);
 		if (selected != null) {
 			vec4f fn(vec4f base, vec4f blend) = selected.data;
-			offs.blend(0, 0, reverse ? blend : base, null, btnAlpha.val(), false, fn);
+			offs.blend(0, 0, reverse ? blend : base, null, btnAlpha.value, false, fn);
 		}
 		time.value = System.millis() - start;
 		ui.draw();

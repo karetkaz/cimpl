@@ -179,14 +179,14 @@ int onEvent(int action, int button, int x, int y) {
 		};
 		vec4f center = vec4f(in.width() / 2, in.height() / 2, 0, 0);
 		mat4f mat = translation(center, 1)
-			.mul(scale(vec4f(scaleX.val(), scaleY.val(), 0, 1), 1f / 100))
-			.mul(skewMatrix(Math.radians(skewX.val()), Math.radians(skewY.val())))
+			.mul(scale(vec4f(scaleX.value, scaleY.value, 0, 1), 1f / 100))
+			.mul(skewMatrix(Math.radians(skewX.value), Math.radians(skewY.value)))
 			.mul(rotation(vec4f(0, 1, 0, 0), Math.radians(int(flipX.checked) * 180)))
 			.mul(rotation(vec4f(1, 0, 0, 0), Math.radians(int(flipY.checked) * 180)))
-			.mul(rotation(vec4f(0, 0, -1, 0), Math.radians(rotate.val())))
-			.mul(translation(vec4f(translateX.val(), translateY.val(), 0, 0), 1))
+			.mul(rotation(vec4f(0, 0, -1, 0), Math.radians(rotate.value)))
+			.mul(translation(vec4f(translateX.value, translateY.value, 0, 0), 1))
 			.mul(translation(center, -1))
-			.mul(fitMatrix(in, to.w, to.h, fitWidth.checked, fitHeight.checked, 1, maxRatio.val() / 100.));
+			.mul(fitMatrix(in, to.w, to.h, fitWidth.checked, fitHeight.checked, 1, maxRatio.value / 100.));
 		debug("transform", mat.m);
 		offs.transform(to, in, null, quality.checked ? 1 : 0, mat.data);
 		if (drawRect.checked) {

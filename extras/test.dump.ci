@@ -1,13 +1,11 @@
 
 ---------- Compile: `lib/stdlib.ci`
-lib/stdlib.ci:13: debug: inline file: `lib/std/debug.ci`
-lib/std/debug.ci:48: warn: padding `NotEquals` with 4 bytes: (28 -> 32)
-lib/std/debug.ci:69: warn: adding implicit cast variant(expected: int32)
-lib/std/debug.ci:70: warn: adding implicit cast variant(returned: int32)
-lib/std/debug.ci:71: warn: adding implicit cast char[*](message: char[*])
-lib/std/debug.ci:68: debug: using default field initializer: NotEquals.argument := null
-lib/std/debug.ci:56: warn: adding implicit cast variant(null: pointer)
-lib/stdlib.ci:19: debug: inline file: `lib/std/math.ci`
+lib/stdlib.ci:40: debug: inline file: `lib/std/debug.ci`
+lib/std/debug.ci:65: warn: adding implicit cast variant(message: char[*])
+lib/std/debug.ci:67: warn: adding implicit cast variant(expected: int32)
+lib/std/debug.ci:68: warn: adding implicit cast variant(returned: int32)
+lib/std/debug.ci:69: warn: adding implicit cast variant[](extras: variant[1])
+lib/stdlib.ci:43: debug: inline file: `lib/std/math.ci`
 lib/std/math.ci:17: warn: adding implicit cast float64(0: int32)
 lib/std/math.ci:18: warn: adding implicit cast float64(1: int32)
 lib/std/math.ci:23: warn: adding implicit cast float64(1: int32)
@@ -31,7 +29,7 @@ lib/std/math.ci:206: warn: adding implicit cast int32(data.length: uint32)
 lib/std/math.ci:216: warn: adding implicit cast uint32(0: int32)
 lib/std/math.ci:220: warn: adding implicit cast int32(data.length: uint32)
 lib/std/math.ci:231: warn: adding implicit cast int32(data.length: uint32)
-lib/std/math.ci:239: warn: adding implicit cast float64(data.length: uint32)
+lib/std/math.ci:239: warn: adding implicit cast float64(signed(data.length): int32)
 lib/std/math.ci:257: warn: adding implicit cast uint32(1: int32)
 lib/std/math.ci:309: warn: adding implicit cast float64(0: int32)
 lib/std/math.ci:315: warn: adding implicit cast float64(1: int32)
@@ -63,11 +61,11 @@ lib/std/math.ci:481: warn: adding implicit cast float64(2: int32)
 lib/std/math.ci:497: warn: adding implicit cast float64(2: int32)
 lib/std/math.ci:521: warn: adding implicit cast float64(180: int32)
 lib/std/math.ci:524: warn: adding implicit cast float64(180: int32)
-lib/stdlib.ci:20: debug: inline file: `lib/std/math/Complex.ci`
+lib/stdlib.ci:46: debug: inline file: `lib/std/math/Complex.ci`
 lib/std/math/Complex.ci:24: debug: using default field initializer: Complex.im := 0
 lib/std/math/Complex.ci:8: warn: adding implicit cast float64(0: int32)
-lib/stdlib.ci:22: debug: inline file: `lib/std/math/Vector4f.ci`
-lib/stdlib.ci:23: debug: inline file: `lib/std/math/Matrix4f.ci`
+lib/stdlib.ci:47: debug: inline file: `lib/std/math/Vector4f.ci`
+lib/stdlib.ci:48: debug: inline file: `lib/std/math/Matrix4f.ci`
 lib/std/math/Matrix4f.ci:113: warn: adding implicit cast float64(len: float32)
 lib/std/math/Matrix4f.ci:137: warn: adding implicit cast float32(1: int32)
 lib/std/math/Matrix4f.ci:165: warn: adding implicit cast float32(1: int32)
@@ -100,8 +98,8 @@ lib/std/math/Matrix4f.ci:179: warn: adding implicit cast float32(0: int32)
 lib/std/math/Matrix4f.ci:179: warn: adding implicit cast float32(0: int32)
 lib/std/math/Matrix4f.ci:179: warn: adding implicit cast float32(0: int32)
 lib/std/math/Matrix4f.ci:179: warn: adding implicit cast float32(1: int32)
-lib/stdlib.ci:24: debug: inline file: `lib/std/math/Vector2d.ci`
-lib/stdlib.ci:29: debug: inline file: `lib/std/string.ci`
+lib/stdlib.ci:49: debug: inline file: `lib/std/math/Vector2d.ci`
+lib/stdlib.ci:54: debug: inline file: `lib/std/string.ci`
 lib/std/string.ci:5: warn: adding implicit cast pointer(str: char[*])
 lib/std/string.ci:37: warn: adding implicit cast int32(with[i]: char)
 lib/std/string.ci:65: warn: adding implicit cast int32(str[i]: char)
@@ -149,7 +147,6 @@ test/test.ci:9: debug: inline file: `test/lang/emit.ci`
 test/test.ci:10: debug: inline file: `test/lang/inlineMacros.ci`
 test/lang/inlineMacros.ci:6: warn: adding implicit cast bool(a: int32)
 test/test.ci:11: debug: inline file: `test/lang/overload.inline.ci`
-test/lang/overload.inline.ci:12: warn: using overload `overload(a: float32): int32` of 2 declared symbols
 test/lang/overload.inline.ci:25: warn: adding implicit cast float64(32: int32)
 test/lang/overload.inline.ci:26: warn: adding implicit cast float64(32: int32)
 test/test.ci:14: debug: inline file: `test/std/number.ci`
@@ -202,7 +199,6 @@ test/lang/init.array.ci:34: warn: adding implicit cast char(0: int32)
 test/lang/init.array.ci:48: warn: adding implicit cast uint32(0: int32)
 test/lang/init.array.ci:49: warn: adding implicit cast int64(42: int32)
 test/test.ci:33: debug: inline file: `test/lang/recUnion.ci`
-test/test.ci:33: warn: comment does not belong to a declaration
 test/lang/recUnion.ci:2: warn: padding `rgbF32` with 4 bytes: (12 -> 16)
 test/lang/recUnion.ci:26: warn: adding implicit cast uint8(0: int32)
 test/lang/recUnion.ci:26: warn: adding implicit cast uint8(0: int32)
@@ -267,30 +263,18 @@ test/std/test.math.ci:61: warn: adding implicit cast float64(2: int32)
 
 ---------- Generate: byte-code
 lib/std/math.ci:48: warn: using default type initializer: Math.floor.result := 0
-lib/std/math.ci:239: warn: using signed cast for unsigned value: `data.length`
 lib/std/math.ci:314: warn: using default type initializer: Math.sinCos.y := 0
 lib/std/math.ci:317: warn: using default type initializer: e := 0
 lib/std/math.ci:321: warn: using default type initializer: f := 0
 lib/std/math.ci:373: warn: using default type initializer: Math.tan.e := 0
 lib/std/math.ci:430: warn: using default type initializer: Math.sinh.result := 0
 lib/std/math/Matrix4f.ci:98: warn: uninitialized variable `.result`
-lib/std/math/Matrix4f.ci:84: warn: uninitialized variable `.result`
-lib/std/math/Matrix4f.ci:84: warn: uninitialized variable `.result`
-lib/std/math/Matrix4f.ci:84: warn: uninitialized variable `.result`
-lib/std/math/Matrix4f.ci:84: warn: uninitialized variable `.result`
-lib/std/math/Matrix4f.ci:116: warn: uninitialized variable `.result`
-lib/std/math/Matrix4f.ci:117: warn: uninitialized variable `.result`
-lib/std/math/Matrix4f.ci:118: warn: uninitialized variable `.result`
-lib/std/math/Matrix4f.ci:119: warn: uninitialized variable `.result`
-lib/std/math/Matrix4f.ci:155: warn: uninitialized variable `.result`
 lib/std/debug.ci:41: warn: no code will be generated for statement: 0
 lib/std/debug.ci:41: warn: no code will be generated for statement: 0
 lib/std/debug.ci:45: warn: no code will be generated for statement: 0
 lib/std/debug.ci:45: warn: no code will be generated for statement: 0
 lib/std/debug.ci:45: warn: no code will be generated for statement: 0
 lib/std/debug.ci:45: warn: no code will be generated for statement: 0
-lib/std/string.ci:250: warn: using signed cast for unsigned value: `value`
-lib/std/string.ci:254: warn: using signed cast for unsigned value: `fract`
 test/lang/init.member.ci:34: warn: using default type initializer: RecordMemberTest.global := 0
 test/lang/init.variable.ci:3: warn: using default type initializer: variable := 0
 test/lang/init.method.ci:78: warn: accessing static member using instance variable `RecordMethodTest.staticMethod(this: RecordMethodTest, x: int32): void`/ RecordMethodTest
@@ -355,7 +339,7 @@ typename.base(type: typename): typename: function {
 .owner: typename
 .param .result: typename (size: 4, cast: inline)
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(3)
+.value: nfc(2)
 }
 typename.file(type: typename): .cstr: function {
 .kind: static const inline
@@ -365,7 +349,7 @@ typename.file(type: typename): .cstr: function {
 .owner: typename
 .param .result: .cstr (size: 4, cast: inline)
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(4)
+.value: nfc(3)
 }
 typename.line(type: typename): int32: function {
 .kind: static const inline
@@ -375,7 +359,7 @@ typename.line(type: typename): int32: function {
 .owner: typename
 .param .result: int32 (size: 4, cast: inline)
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(5)
+.value: nfc(4)
 }
 typename.name(type: typename): .cstr: function {
 .kind: static const inline
@@ -385,7 +369,7 @@ typename.name(type: typename): .cstr: function {
 .owner: typename
 .param .result: .cstr (size: 4, cast: inline)
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(6)
+.value: nfc(5)
 }
 void: typename {
 .kind: static const typename(void)
@@ -483,7 +467,7 @@ uint32.zxt(value: int32, offs: int32, count: int32): int32: function {
 .param value: int32 (size: 4, cast: variable(i32))
 .param offs: int32 (size: 4, cast: variable(i32))
 .param count: int32 (size: 4, cast: variable(i32))
-.value: nfc(22)
+.value: nfc(21)
 }
 uint32.sxt(value: int32, offs: int32, count: int32): int32: function {
 .kind: static const inline
@@ -495,7 +479,7 @@ uint32.sxt(value: int32, offs: int32, count: int32): int32: function {
 .param value: int32 (size: 4, cast: variable(i32))
 .param offs: int32 (size: 4, cast: variable(i32))
 .param count: int32 (size: 4, cast: variable(i32))
-.value: nfc(23)
+.value: nfc(22)
 }
 uint32.pop(value: int32): int32: function {
 .kind: static const inline
@@ -505,7 +489,7 @@ uint32.pop(value: int32): int32: function {
 .owner: uint32
 .param .result: int32 (size: 4, cast: inline)
 .param value: int32 (size: 4, cast: variable(i32))
-.value: nfc(24)
+.value: nfc(23)
 }
 uint32.swap(value: int32): int32: function {
 .kind: static const inline
@@ -515,7 +499,7 @@ uint32.swap(value: int32): int32: function {
 .owner: uint32
 .param .result: int32 (size: 4, cast: inline)
 .param value: int32 (size: 4, cast: variable(i32))
-.value: nfc(25)
+.value: nfc(24)
 }
 uint32.bsr(value: int32): int32: function {
 .kind: static const inline
@@ -525,7 +509,7 @@ uint32.bsr(value: int32): int32: function {
 .owner: uint32
 .param .result: int32 (size: 4, cast: inline)
 .param value: int32 (size: 4, cast: variable(i32))
-.value: nfc(26)
+.value: nfc(25)
 }
 uint32.bsf(value: int32): int32: function {
 .kind: static const inline
@@ -535,7 +519,7 @@ uint32.bsf(value: int32): int32: function {
 .owner: uint32
 .param .result: int32 (size: 4, cast: inline)
 .param value: int32 (size: 4, cast: variable(i32))
-.value: nfc(27)
+.value: nfc(26)
 }
 uint32.hib(value: int32): int32: function {
 .kind: static const inline
@@ -545,7 +529,7 @@ uint32.hib(value: int32): int32: function {
 .owner: uint32
 .param .result: int32 (size: 4, cast: inline)
 .param value: int32 (size: 4, cast: variable(i32))
-.value: nfc(28)
+.value: nfc(27)
 }
 uint32.lob(value: int32): int32: function {
 .kind: static const inline
@@ -555,7 +539,7 @@ uint32.lob(value: int32): int32: function {
 .owner: uint32
 .param .result: int32 (size: 4, cast: inline)
 .param value: int32 (size: 4, cast: variable(i32))
-.value: nfc(29)
+.value: nfc(28)
 }
 uint64: typename {
 .kind: static const typename(u64)
@@ -577,7 +561,7 @@ uint64.zxt(value: int64, offs: int32, count: int32): int64: function {
 .param value: int64 (size: 8, cast: variable(i64))
 .param offs: int32 (size: 4, cast: variable(i32))
 .param count: int32 (size: 4, cast: variable(i32))
-.value: nfc(30)
+.value: nfc(29)
 }
 uint64.sxt(value: int64, offs: int32, count: int32): int64: function {
 .kind: static const inline
@@ -589,7 +573,7 @@ uint64.sxt(value: int64, offs: int32, count: int32): int64: function {
 .param value: int64 (size: 8, cast: variable(i64))
 .param offs: int32 (size: 4, cast: variable(i32))
 .param count: int32 (size: 4, cast: variable(i32))
-.value: nfc(31)
+.value: nfc(30)
 }
 float32: typename {
 .kind: static const typename(f32)
@@ -615,7 +599,7 @@ float32.sin(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
-.value: nfc(32)
+.value: nfc(31)
 }
 float32.cos(x: float32): float32: function {
 .kind: static const inline
@@ -625,7 +609,7 @@ float32.cos(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
-.value: nfc(33)
+.value: nfc(32)
 }
 float32.tan(x: float32): float32: function {
 .kind: static const inline
@@ -635,7 +619,7 @@ float32.tan(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
-.value: nfc(34)
+.value: nfc(33)
 }
 float32.log(x: float32): float32: function {
 .kind: static const inline
@@ -645,7 +629,7 @@ float32.log(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
-.value: nfc(35)
+.value: nfc(34)
 }
 float32.exp(x: float32): float32: function {
 .kind: static const inline
@@ -655,7 +639,7 @@ float32.exp(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
-.value: nfc(36)
+.value: nfc(35)
 }
 float32.pow(x: float32, y: float32): float32: function {
 .kind: static const inline
@@ -666,7 +650,7 @@ float32.pow(x: float32, y: float32): float32: function {
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
 .param y: float32 (size: 4, cast: variable(f32))
-.value: nfc(37)
+.value: nfc(36)
 }
 float32.sqrt(x: float32): float32: function {
 .kind: static const inline
@@ -676,7 +660,7 @@ float32.sqrt(x: float32): float32: function {
 .owner: float32
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
-.value: nfc(38)
+.value: nfc(37)
 }
 float32.atan2(x: float32, y: float32): float32: function {
 .kind: static const inline
@@ -687,7 +671,7 @@ float32.atan2(x: float32, y: float32): float32: function {
 .param .result: float32 (size: 4, cast: inline)
 .param x: float32 (size: 4, cast: variable(f32))
 .param y: float32 (size: 4, cast: variable(f32))
-.value: nfc(39)
+.value: nfc(38)
 }
 float64: typename {
 .kind: static const typename(f64)
@@ -713,7 +697,7 @@ float64.sin(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
-.value: nfc(40)
+.value: nfc(39)
 }
 float64.cos(x: float64): float64: function {
 .kind: static const inline
@@ -723,7 +707,7 @@ float64.cos(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
-.value: nfc(41)
+.value: nfc(40)
 }
 float64.tan(x: float64): float64: function {
 .kind: static const inline
@@ -733,7 +717,7 @@ float64.tan(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
-.value: nfc(42)
+.value: nfc(41)
 }
 float64.log(x: float64): float64: function {
 .kind: static const inline
@@ -743,7 +727,7 @@ float64.log(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
-.value: nfc(43)
+.value: nfc(42)
 }
 float64.exp(x: float64): float64: function {
 .kind: static const inline
@@ -753,7 +737,7 @@ float64.exp(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
-.value: nfc(44)
+.value: nfc(43)
 }
 float64.pow(x: float64, y: float64): float64: function {
 .kind: static const inline
@@ -764,7 +748,7 @@ float64.pow(x: float64, y: float64): float64: function {
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
 .param y: float64 (size: 8, cast: variable(f64))
-.value: nfc(45)
+.value: nfc(44)
 }
 float64.sqrt(x: float64): float64: function {
 .kind: static const inline
@@ -774,7 +758,7 @@ float64.sqrt(x: float64): float64: function {
 .owner: float64
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
-.value: nfc(46)
+.value: nfc(45)
 }
 float64.atan2(x: float64, y: float64): float64: function {
 .kind: static const inline
@@ -785,7 +769,7 @@ float64.atan2(x: float64, y: float64): float64: function {
 .param .result: float64 (size: 8, cast: inline)
 .param x: float64 (size: 8, cast: variable(f64))
 .param y: float64 (size: 8, cast: variable(f64))
-.value: nfc(47)
+.value: nfc(46)
 }
 pointer: typename {
 .kind: static const typename(ref)
@@ -806,7 +790,7 @@ pointer.alloc(ptr: pointer, size: int32): pointer: function {
 .param .result: pointer (size: 4, cast: inline)
 .param ptr: pointer (size: 4, cast: variable(ref))
 .param size: int32 (size: 4, cast: variable(i32))
-.value: nfc(11)
+.value: nfc(10)
 }
 pointer.fill(dst: pointer, value: uint8, size: int32): pointer: function {
 .kind: static const inline
@@ -818,7 +802,7 @@ pointer.fill(dst: pointer, value: uint8, size: int32): pointer: function {
 .param dst: pointer (size: 4, cast: variable(ref))
 .param value: uint8 (size: 4, cast: variable(u32))
 .param size: int32 (size: 4, cast: variable(i32))
-.value: nfc(12)
+.value: nfc(11)
 }
 pointer.copy(dst: pointer, src: pointer, size: int32): pointer: function {
 .kind: static const inline
@@ -830,7 +814,7 @@ pointer.copy(dst: pointer, src: pointer, size: int32): pointer: function {
 .param dst: pointer (size: 4, cast: variable(ref))
 .param src: pointer (size: 4, cast: variable(ref))
 .param size: int32 (size: 4, cast: variable(i32))
-.value: nfc(13)
+.value: nfc(12)
 }
 pointer.move(dst: pointer, src: pointer, size: int32): pointer: function {
 .kind: static const inline
@@ -842,26 +826,14 @@ pointer.move(dst: pointer, src: pointer, size: int32): pointer: function {
 .param dst: pointer (size: 4, cast: variable(ref))
 .param src: pointer (size: 4, cast: variable(ref))
 .param size: int32 (size: 4, cast: variable(i32))
-.value: nfc(14)
+.value: nfc(13)
 }
 variant: typename {
 .kind: static const typename(var)
 .base: `typename`
 .size: 8
 .name: 'variant'
-.field is: function (size: 0, cast: static const inline)
 .field as: function (size: 0, cast: static const inline)
-}
-variant.is(var: variant, type: typename): bool: function {
-.kind: static const inline
-.base: `function`
-.size: 0
-.name: 'is'
-.owner: variant
-.param .result: bool (size: 4, cast: inline)
-.param var: variant (size: 8, cast: variable(var))
-.param type: typename (size: 4, cast: variable(ref))
-.value: nfc(1)
 }
 variant.as(var: variant, type: typename): pointer: function {
 .kind: static const inline
@@ -872,7 +844,7 @@ variant.as(var: variant, type: typename): pointer: function {
 .param .result: pointer (size: 4, cast: inline)
 .param var: variant (size: 8, cast: variable(var))
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(2)
+.value: nfc(1)
 }
 function: typename {
 .kind: static const typename(ref)
@@ -904,18 +876,18 @@ object.create(type: typename): pointer: function {
 .owner: object
 .param .result: pointer (size: 4, cast: inline)
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(7)
+.value: nfc(6)
 }
-object.as(obj: object, type: typename): pointer: function {
+object.as(this: object, type: typename): pointer: function {
 .kind: static const inline
 .base: `function`
 .size: 0
 .name: 'as'
 .owner: object
 .param .result: pointer (size: 4, cast: inline)
-.param obj: object (size: 4, cast: variable(ref))
+.param this: object (size: 4, cast: variable(ref))
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(8)
+.value: nfc(7)
 }
 null: pointer {
 .kind: static const inline
@@ -2072,7 +2044,7 @@ raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], 
 .param message: char[*] (size: 4, cast: const variable(ref))
 .param inspect: variant (size: 8, cast: const variable(var))
 .doc: 'Report messages or raise errors.'
-.value: nfc(9)
+.value: nfc(8)
 }
 raise.abort: int64 {
 .kind: static const i64
@@ -2146,7 +2118,7 @@ tryExec(args: pointer, action(args: pointer): void): int32: function {
 .param .result: int32 (size: 4, cast: inline)
 .param args: pointer (size: 4, cast: variable(ref))
 .param action: function (size: 4, cast: variable(ref))
-.value: nfc(10)
+.value: nfc(9)
 }
 System: typename {
 .kind: static const typename(void)
@@ -2169,7 +2141,7 @@ System.exit(code: int32): void: function {
 .owner: System
 .param .result: void (size: 0, cast: inline)
 .param code: int32 (size: 4, cast: variable(i32))
-.value: nfc(15)
+.value: nfc(14)
 }
 System.srand(seed: int32): void: function {
 .kind: static const inline
@@ -2179,7 +2151,7 @@ System.srand(seed: int32): void: function {
 .owner: System
 .param .result: void (size: 0, cast: inline)
 .param seed: int32 (size: 4, cast: variable(i32))
-.value: nfc(16)
+.value: nfc(15)
 }
 System.rand(): int32: function {
 .kind: static const inline
@@ -2188,7 +2160,7 @@ System.rand(): int32: function {
 .name: 'rand'
 .owner: System
 .param .result: int32 (size: 4, cast: inline)
-.value: nfc(17)
+.value: nfc(16)
 }
 System.time(): int32: function {
 .kind: static const inline
@@ -2197,7 +2169,7 @@ System.time(): int32: function {
 .name: 'time'
 .owner: System
 .param .result: int32 (size: 4, cast: inline)
-.value: nfc(18)
+.value: nfc(17)
 }
 System.clock(): int32: function {
 .kind: static const inline
@@ -2206,7 +2178,7 @@ System.clock(): int32: function {
 .name: 'clock'
 .owner: System
 .param .result: int32 (size: 4, cast: inline)
-.value: nfc(19)
+.value: nfc(18)
 }
 System.millis(): int64: function {
 .kind: static const inline
@@ -2215,7 +2187,7 @@ System.millis(): int64: function {
 .name: 'millis'
 .owner: System
 .param .result: int64 (size: 8, cast: inline)
-.value: nfc(20)
+.value: nfc(19)
 }
 System.sleep(millis: int64): void: function {
 .kind: static const inline
@@ -2225,7 +2197,7 @@ System.sleep(millis: int64): void: function {
 .owner: System
 .param .result: void (size: 0, cast: inline)
 .param millis: int64 (size: 8, cast: variable(i64))
-.value: nfc(21)
+.value: nfc(20)
 }
 true: bool {
 .kind: static const val
@@ -2268,6 +2240,105 @@ double: typename {
 .name: 'double'
 .file: 'lib/stdlib.ci:10'
 .value: float64
+}
+signed(value: uint8): int8: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'signed'
+.file: 'lib/stdlib.ci:13'
+.param .result: int8 (size: 1, cast: i32)
+.param value: uint8 (size: 4, cast: u32)
+.doc: 'convert unsigned to signed integer'
+.value: int8(value)
+}
+signed(value: uint16): int16: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'signed'
+.file: 'lib/stdlib.ci:16'
+.param .result: int16 (size: 2, cast: i32)
+.param value: uint16 (size: 4, cast: u32)
+.doc: 'convert unsigned to signed integer'
+.value: int16(value)
+}
+signed(value: uint32): int32: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'signed'
+.file: 'lib/stdlib.ci:19'
+.param .result: int32 (size: 4, cast: i32)
+.param value: uint32 (size: 4, cast: u32)
+.doc: 'convert unsigned to signed integer'
+.value: int32(value)
+}
+signed(value: uint64): int64: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'signed'
+.file: 'lib/stdlib.ci:22'
+.param .result: int64 (size: 8, cast: i64)
+.param value: uint64 (size: 8, cast: u64)
+.doc: 'convert unsigned to signed integer'
+.value: int64(value)
+}
+unsigned(value: int8): uint8: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'unsigned'
+.file: 'lib/stdlib.ci:25'
+.param .result: uint8 (size: 1, cast: u32)
+.param value: int8 (size: 4, cast: i32)
+.doc: 'convert signed to unsigned integer'
+.value: uint8(value)
+}
+unsigned(value: int16): uint16: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'unsigned'
+.file: 'lib/stdlib.ci:28'
+.param .result: uint16 (size: 2, cast: u32)
+.param value: int16 (size: 4, cast: i32)
+.doc: 'convert signed to unsigned integer'
+.value: uint16(value)
+}
+unsigned(value: int32): uint32: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'unsigned'
+.file: 'lib/stdlib.ci:31'
+.param .result: uint32 (size: 4, cast: u32)
+.param value: int32 (size: 4, cast: i32)
+.doc: 'convert signed to unsigned integer'
+.value: uint32(value)
+}
+unsigned(value: int64): uint64: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'unsigned'
+.file: 'lib/stdlib.ci:34'
+.param .result: uint64 (size: 8, cast: u64)
+.param value: int64 (size: 8, cast: i64)
+.doc: 'convert signed to unsigned integer'
+.value: uint64(value)
+}
+sizeof(type: typename): int32: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'sizeof'
+.file: 'lib/stdlib.ci:37'
+.param .result: int32 (size: 4, cast: i32)
+.param type: typename (size: 4, cast: ref)
+.doc: 'Returns the size of the given type'
+.value: int32(type.size)
 }
 verbose(message: char[*], inspect: variant): void: function {
 .kind: inline
@@ -2479,13 +2550,12 @@ assert(condition: bool): void: function {
 NotEquals: typename {
 .kind: static const typename(val)
 .base: `typename`
-.size: 32
+.size: 24
 .name: 'NotEquals'
 .file: 'lib/std/debug.ci:48'
 .field expected: variant (size: 8, cast: const variable(var))
 .field returned: variant (size: 8, cast: const variable(var))
-.field argument: variant (size: 8, cast: const variable(var))
-.field message: char[*] (size: 4, cast: const variable(ref))
+.field extras: variant[] (size: 8, cast: const variable(arr))
 .doc: '@public'
 }
 NotEquals.expected: variant {
@@ -2506,32 +2576,22 @@ NotEquals.returned: variant {
 .owner: NotEquals
 .doc: 'Value of the actual result'
 }
-NotEquals.argument: variant {
-.kind: const variable(var)
-.base: `variant`
+NotEquals.extras: variant[] {
+.kind: const variable(arr)
+.base: `variant[]`
 .size: 8
-.name: 'argument'
+.name: 'extras'
 .file: 'lib/std/debug.ci:56'
 .owner: NotEquals
 .doc: 'Extra argument to identify what happened'
 .value: null
 }
-NotEquals.message: char[*] {
-.kind: const variable(ref)
-.base: `char[*]`
-.size: 4
-.name: 'message'
-.file: 'lib/std/debug.ci:59'
-.owner: NotEquals
-.doc: 'Extra message to identify what happened'
-.value: null
-}
 assertEq(expected: int32, returned: int32, message: char[*]): void: function {
 .kind: static const function
 .base: `function`
-.size: 94
+.size: 103
 .name: 'assertEq'
-.file: 'lib/std/debug.ci:64'
+.file: 'lib/std/debug.ci:61'
 .param .result: void (size: 0, cast: variable(void))
 .param expected: int32 (size: 4, cast: variable(i32))
 .param returned: int32 (size: 4, cast: variable(i32))
@@ -2541,47 +2601,53 @@ assertEq(expected: int32, returned: int32, message: char[*]): void: function {
 	if (returned == expected) {
 		return;
 	}
+	extras: variant[1] := {
+		extras[0] := (message);
+	};
 	details: NotEquals := {
 		details.expected := (expected);
 		details.returned := (returned);
-		details.message := (message);
-		details.argument := (null);
+		details.extras := (extras);
 	};
 	raise(raise.abort, raise.defTrace, "assertion failed", details);
 }
-.instructions: (94 bytes)
-	lib/std/debug.ci:65: (10 bytes): if (returned == expected)
+.instructions: (103 bytes)
+	lib/std/debug.ci:62: (10 bytes): if (returned == expected)
 	<assertEq>  : dup.x32 sp(2)
 	<assertEq+?>: dup.x32 sp(4)
 	<assertEq+?>: ceq.i32
 	<assertEq+?>: jz +5
-	lib/std/debug.ci:66: (1 byte): return;
+	lib/std/debug.ci:63: (1 byte): return;
 	<assertEq+?>: ret
-	lib/std/debug.ci:68: (41 bytes): details: NotEquals := {...}
-	<assertEq+?>: inc.sp(+32)
-	lib/std/debug.ci:69: (11 bytes): details.expected := (expected);
+	lib/std/debug.ci:65: (13 bytes): extras: variant[1] := {...}
+	<assertEq+?>: inc.sp(+8)
+	lib/std/debug.ci:65: (9 bytes): extras[0] := (message);
+	<assertEq+?>: load.ref <?>
+	<assertEq+?>: dup.x32 sp(4)
+	<assertEq+?>: set.x64 sp(2)
+	lib/std/debug.ci:66: (37 bytes): details: NotEquals := {...}
+	<assertEq+?>: inc.sp(+24)
+	lib/std/debug.ci:67: (11 bytes): details.expected := (expected);
 	<assertEq+?>: load.ref <?> ;int32
 	<assertEq+?>: load.sp(+48)
 	<assertEq+?>: set.x64 sp(2)
-	lib/std/debug.ci:70: (11 bytes): details.returned := (returned);
+	lib/std/debug.ci:68: (11 bytes): details.returned := (returned);
 	<assertEq+?>: load.ref <?> ;int32
 	<assertEq+?>: load.sp(+44)
 	<assertEq+?>: set.x64 sp(4)
-	lib/std/debug.ci:71: (3 bytes): details.message := (message);
-	<assertEq+?>: mov.x32 sp(6, 9)
-	:: (12 bytes): details.argument := (null)
-	<assertEq+?>: load.ref <?> ;pointer
-	<assertEq+?>: load.ref <?> ;null
+	lib/std/debug.ci:69: (11 bytes): details.extras := (extras);
+	<assertEq+?>: load.c32 1
+	<assertEq+?>: load.sp(+28)
 	<assertEq+?>: set.x64 sp(6)
-	lib/std/debug.ci:73: (38 bytes): raise(raise.abort, raise.defTrace, "assertion failed", details);
+	lib/std/debug.ci:71: (38 bytes): raise(raise.abort, raise.defTrace, "assertion failed", details);
 	<assertEq+?>: load.ref <?> ;"lib/std/debug.ci"
-	<assertEq+?>: load.c32 73
+	<assertEq+?>: load.c32 71
 	<assertEq+?>: load.c32 -2
 	<assertEq+?>: load.c32 128
 	<assertEq+?>: load.ref <?> ;"assertion failed"
 	<assertEq+?>: load.ref <?> ;NotEquals
 	<assertEq+?>: load.sp(+24)
-	<assertEq+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<assertEq+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<assertEq+?>: inc.sp(-32)
 	<assertEq+?>: ret
 }
@@ -2590,23 +2656,12 @@ assertEq(expected: int32, returned: int32): void: function {
 .base: `function`
 .size: 0
 .name: 'assertEq'
-.file: 'lib/std/debug.ci:76'
+.file: 'lib/std/debug.ci:74'
 .param .result: void (size: 0, cast: void)
 .param expected: int32 (size: 4, cast: i32)
 .param returned: int32 (size: 4, cast: i32)
 .doc: 'abort execution if the returned value is not equal to the expected value'
 .value: assertEq(expected, returned, null)
-}
-sizeof(type: typename): int32: function {
-.kind: inline
-.base: `function`
-.size: 0
-.name: 'sizeof'
-.file: 'lib/stdlib.ci:17'
-.param .result: int32 (size: 4, cast: i32)
-.param type: typename (size: 4, cast: ref)
-.doc: 'Returns the size of the given type'
-.value: int32(type.size)
 }
 Math: typename {
 .kind: static const typename(void)
@@ -3555,10 +3610,10 @@ Math.mean(data: float64[]): float64: function {
 .param data: float64[] (size: 8, cast: parallel variable(arr))
 .doc: 'Returns the mean of the input values'
 .value: {
-	return .result := sum(...data) / (data.length);
+	return .result := sum(...data) / (signed(data.length));
 }
 .instructions: (20 bytes)
-	lib/std/math.ci:239: (20 bytes): return .result := sum(...data) / (data.length);
+	lib/std/math.ci:239: (20 bytes): return .result := sum(...data) / (signed(data.length));
 	<mean>  : load.z64
 	<mean+?>: dup.x64 sp(3)
 	<mean+?>: load.ref <?> ;Math.sum(data: float64[]): float64
@@ -4266,7 +4321,7 @@ Math.sinh(x: float64): float64: function {
 	<sinh+?>: jz +27
 	lib/std/math.ci:427: (23 bytes): return .result := float64.exp(x) / (2);
 	<sinh+?>: dup.x64 sp(2)
-	<sinh+?>: nfc(44) ;float64.exp(x: float64): float64
+	<sinh+?>: nfc(43) ;float64.exp(x: float64): float64
 	<sinh+?>: load.f64 2.000000
 	<sinh+?>: div.f64
 	<sinh+?>: set.x64 sp(6)
@@ -4281,10 +4336,10 @@ Math.sinh(x: float64): float64: function {
 	<sinh+?>: jz +34
 	lib/std/math.ci:432: (26 bytes): result := (float64.exp(x) - float64.exp(-x)) / (2);
 	<sinh+?>: dup.x64 sp(4)
-	<sinh+?>: nfc(44) ;float64.exp(x: float64): float64
+	<sinh+?>: nfc(43) ;float64.exp(x: float64): float64
 	<sinh+?>: dup.x64 sp(6)
 	<sinh+?>: neg.f64
-	<sinh+?>: nfc(44) ;float64.exp(x: float64): float64
+	<sinh+?>: nfc(43) ;float64.exp(x: float64): float64
 	<sinh+?>: sub.f64
 	<sinh+?>: load.f64 2.000000
 	<sinh+?>: div.f64
@@ -4378,17 +4433,17 @@ Math.cosh(x: float64): float64: function {
 	<cosh+?>: jz +23
 	lib/std/math.ci:452: (19 bytes): return .result := float64.exp(x) / (2);
 	<cosh+?>: dup.x64 sp(1)
-	<cosh+?>: nfc(44) ;float64.exp(x: float64): float64
+	<cosh+?>: nfc(43) ;float64.exp(x: float64): float64
 	<cosh+?>: load.f64 2.000000
 	<cosh+?>: div.f64
 	<cosh+?>: set.x64 sp(5)
 	<cosh+?>: ret
 	lib/std/math.ci:454: (27 bytes): return .result := (float64.exp(x) + float64.exp(-x)) / (2);
 	<cosh+?>: dup.x64 sp(1)
-	<cosh+?>: nfc(44) ;float64.exp(x: float64): float64
+	<cosh+?>: nfc(43) ;float64.exp(x: float64): float64
 	<cosh+?>: dup.x64 sp(3)
 	<cosh+?>: neg.f64
-	<cosh+?>: nfc(44) ;float64.exp(x: float64): float64
+	<cosh+?>: nfc(43) ;float64.exp(x: float64): float64
 	<cosh+?>: add.f64
 	<cosh+?>: load.f64 2.000000
 	<cosh+?>: div.f64
@@ -4472,7 +4527,7 @@ Math.asin(x: float64): float64: function {
 	<asin+?>: dup.x64 sp(6)
 	<asin+?>: mul.f64
 	<asin+?>: sub.f64
-	<asin+?>: nfc(46) ;float64.sqrt(x: float64): float64
+	<asin+?>: nfc(45) ;float64.sqrt(x: float64): float64
 	lib/std/math.ci:480: (60 bytes): if (x > 0.700000)
 	<asin+?>: dup.x64 sp(4)
 	<asin+?>: load.f64 0.700000
@@ -4484,14 +4539,14 @@ Math.asin(x: float64): float64: function {
 	<asin+?>: div.f64
 	<asin+?>: dup.x64 sp(2)
 	<asin+?>: dup.x64 sp(8)
-	<asin+?>: nfc(47) ;float64.atan2(x: float64, y: float64): float64
+	<asin+?>: nfc(46) ;float64.atan2(x: float64, y: float64): float64
 	<asin+?>: sub.f64
 	<asin+?>: set.x64 sp(2)
 	<asin+?>: jmp +14
 	lib/std/math.ci:484: (10 bytes): result := float64.atan2(x, result);
 	<asin+?>: dup.x64 sp(4)
 	<asin+?>: dup.x64 sp(2)
-	<asin+?>: nfc(47) ;float64.atan2(x: float64, y: float64): float64
+	<asin+?>: nfc(46) ;float64.atan2(x: float64, y: float64): float64
 	<asin+?>: set.x64 sp(2)
 	lib/std/math.ci:487: (19 bytes): if (negate)
 	<asin+?>: load.sp(+8)
@@ -4990,14 +5045,14 @@ pow(a: Complex, b: Complex): Complex: function {
 	<pow+?>: dup.x64 sp(6)
 	<pow+?>: mul.f64
 	<pow+?>: add.f64
-	<pow+?>: nfc(46) ;float64.sqrt(x: float64): float64
+	<pow+?>: nfc(45) ;float64.sqrt(x: float64): float64
 	<pow+?>: set.x64 sp(4)
 	<pow+?>: inc.sp(-8)
 	lib/std/math/Complex.ci:137: (16 bytes): t: float64 := arg(a)
 	<pow+?>: dup.x128 sp(7)
 	<pow+?>: dup.x64 sp(0)
 	<pow+?>: dup.x64 sp(4)
-	<pow+?>: nfc(47) ;float64.atan2(x: float64, y: float64): float64
+	<pow+?>: nfc(46) ;float64.atan2(x: float64, y: float64): float64
 	<pow+?>: set.x64 sp(4)
 	<pow+?>: inc.sp(-8)
 	lib/std/math/Complex.ci:138: (15 bytes): u: float64 := b.re * t + b.im * float64.log(r)
@@ -5006,29 +5061,29 @@ pow(a: Complex, b: Complex): Complex: function {
 	<pow+?>: mul.f64
 	<pow+?>: dup.x64 sp(9)
 	<pow+?>: dup.x64 sp(6)
-	<pow+?>: nfc(43) ;float64.log(x: float64): float64
+	<pow+?>: nfc(42) ;float64.log(x: float64): float64
 	<pow+?>: mul.f64
 	<pow+?>: add.f64
 	lib/std/math/Complex.ci:139: (19 bytes): v: float64 := float64.pow(r, b.re) * float64.exp(-b.im * t)
 	<pow+?>: dup.x64 sp(4)
 	<pow+?>: dup.x64 sp(9)
-	<pow+?>: nfc(45) ;float64.pow(x: float64, y: float64): float64
+	<pow+?>: nfc(44) ;float64.pow(x: float64, y: float64): float64
 	<pow+?>: dup.x64 sp(11)
 	<pow+?>: neg.f64
 	<pow+?>: dup.x64 sp(6)
 	<pow+?>: mul.f64
-	<pow+?>: nfc(44) ;float64.exp(x: float64): float64
+	<pow+?>: nfc(43) ;float64.exp(x: float64): float64
 	<pow+?>: mul.f64
 	lib/std/math/Complex.ci:140: (27 bytes): return .result := {...};
 	<pow+?>: dup.x64 sp(0)
 	<pow+?>: dup.x64 sp(4)
-	<pow+?>: nfc(41) ;float64.cos(x: float64): float64
+	<pow+?>: nfc(40) ;float64.cos(x: float64): float64
 	<pow+?>: mul.f64
 	<pow+?>: set.x64 sp(19)
 	lib/std/math/Complex.ci:142: (11 bytes): .result.im := v * float64.sin(u);
 	<pow+?>: dup.x64 sp(0)
 	<pow+?>: dup.x64 sp(4)
-	<pow+?>: nfc(40) ;float64.sin(x: float64): float64
+	<pow+?>: nfc(39) ;float64.sin(x: float64): float64
 	<pow+?>: mul.f64
 	<pow+?>: set.x64 sp(21)
 	<pow+?>: inc.sp(-32)
@@ -5228,7 +5283,7 @@ vec4f.<?>: vec4f.<?> {
 .base: `vec4f.<?>`
 .size: 16
 .name: '<?>'
-.file: 'lib/std/math/Vector4f.ci:126'
+.file: 'lib/std/math/Vector4f.ci:130'
 .owner: vec4f
 .field x: float32 (size: 4, cast: variable(f32))
 .field y: float32 (size: 4, cast: variable(f32))
@@ -5312,42 +5367,25 @@ vec4f.w: float32 {
 .value: w: float32
 }
 vec4f(x: float32, y: float32, z: float32, w: float32): vec4f: function {
-.kind: static const function
+.kind: inline
 .base: `function`
-.size: 13
+.size: 0
 .name: 'vec4f'
 .file: 'lib/std/math/Vector4f.ci:26'
-.param .result: vec4f (size: 16, cast: variable(val))
-.param x: float32 (size: 4, cast: variable(f32))
-.param y: float32 (size: 4, cast: variable(f32))
-.param z: float32 (size: 4, cast: variable(f32))
-.param w: float32 (size: 4, cast: variable(f32))
+.param .result: vec4f (size: 16, cast: val)
+.param x: float32 (size: 4, cast: f32)
+.param y: float32 (size: 4, cast: f32)
+.param z: float32 (size: 4, cast: f32)
+.param w: float32 (size: 4, cast: f32)
 .doc: 'Initialize with given x, y, z, w components'
-.value: {
-	return .result := {
-			.result.x := x;
-			.result.y := y;
-			.result.z := z;
-			.result.w := w;
-		};
-}
-.instructions: (13 bytes)
-	lib/std/math/Vector4f.ci:27: (13 bytes): return .result := {...};
-	<vec4f>  : mov.x32 sp(5, 4)
-	lib/std/math/Vector4f.ci:27: (3 bytes): .result.y := y;
-	<vec4f+?>: mov.x32 sp(6, 3)
-	lib/std/math/Vector4f.ci:27: (3 bytes): .result.z := z;
-	<vec4f+?>: mov.x32 sp(7, 2)
-	lib/std/math/Vector4f.ci:27: (3 bytes): .result.w := w;
-	<vec4f+?>: mov.x32 sp(8, 1)
-	<vec4f+?>: ret
+.value: vec4f(emit(struct(w), struct(z), struct(y), struct(x)))
 }
 vec4f(x: float32, y: float32, z: float32): vec4f: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'vec4f'
-.file: 'lib/std/math/Vector4f.ci:31'
+.file: 'lib/std/math/Vector4f.ci:29'
 .param .result: vec4f (size: 16, cast: val)
 .param x: float32 (size: 4, cast: f32)
 .param y: float32 (size: 4, cast: f32)
@@ -5360,7 +5398,7 @@ vec4f(x: float32, y: float32): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'vec4f'
-.file: 'lib/std/math/Vector4f.ci:34'
+.file: 'lib/std/math/Vector4f.ci:32'
 .param .result: vec4f (size: 16, cast: val)
 .param x: float32 (size: 4, cast: f32)
 .param y: float32 (size: 4, cast: f32)
@@ -5372,7 +5410,7 @@ vec4f(xyz: vec4f, w: float32): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'vec4f'
-.file: 'lib/std/math/Vector4f.ci:37'
+.file: 'lib/std/math/Vector4f.ci:35'
 .param .result: vec4f (size: 16, cast: val)
 .param xyz: vec4f (size: 16, cast: variable(val))
 .param w: float32 (size: 4, cast: f32)
@@ -5384,7 +5422,7 @@ vec4f(val: float32): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'vec4f'
-.file: 'lib/std/math/Vector4f.ci:40'
+.file: 'lib/std/math/Vector4f.ci:38'
 .param .result: vec4f (size: 16, cast: val)
 .param val: float32 (size: 4, cast: variable(f32))
 .doc: 'Initialize x, y, z, w components with the given scalar value'
@@ -5395,7 +5433,7 @@ neg(rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'neg'
-.file: 'lib/std/math/Vector4f.ci:71'
+.file: 'lib/std/math/Vector4f.ci:69'
 .param .result: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
 .doc: 'Returns a negated copy of the vector.'
@@ -5406,7 +5444,7 @@ add(lhs: vec4f, rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'add'
-.file: 'lib/std/math/Vector4f.ci:73'
+.file: 'lib/std/math/Vector4f.ci:71'
 .param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -5418,7 +5456,7 @@ sub(lhs: vec4f, rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'sub'
-.file: 'lib/std/math/Vector4f.ci:75'
+.file: 'lib/std/math/Vector4f.ci:73'
 .param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -5430,7 +5468,7 @@ mul(lhs: vec4f, rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'mul'
-.file: 'lib/std/math/Vector4f.ci:77'
+.file: 'lib/std/math/Vector4f.ci:75'
 .param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -5442,43 +5480,69 @@ div(lhs: vec4f, rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'div'
-.file: 'lib/std/math/Vector4f.ci:79'
+.file: 'lib/std/math/Vector4f.ci:77'
 .param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
 .doc: 'Component wise divide the two vectors.'
 .value: vec4f(emit(struct(lhs), struct(rhs), div.p4f))
 }
-min(lhs: vec4f, rhs: vec4f): float32: function {
+min(lhs: vec4f, rhs: vec4f): vec4f: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'min'
-.file: 'lib/std/math/Vector4f.ci:82'
-.param .result: float32 (size: 4, cast: f32)
+.file: 'lib/std/math/Vector4f.ci:80'
+.param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
 .doc: 'Component wise minimum of the two vectors.'
-.value: float32(emit(struct(lhs), struct(rhs), min.p4f))
+.value: vec4f(emit(struct(lhs), struct(rhs), min.p4f))
 }
-max(lhs: vec4f, rhs: vec4f): float32: function {
+max(lhs: vec4f, rhs: vec4f): vec4f: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'max'
-.file: 'lib/std/math/Vector4f.ci:84'
-.param .result: float32 (size: 4, cast: f32)
+.file: 'lib/std/math/Vector4f.ci:82'
+.param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
 .doc: 'Component wise maximum of the two vectors.'
-.value: float32(emit(struct(lhs), struct(rhs), max.p4f))
+.value: vec4f(emit(struct(lhs), struct(rhs), max.p4f))
+}
+clamp(vec: vec4f, min: vec4f, max: vec4f): vec4f: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'clamp'
+.file: 'lib/std/math/Vector4f.ci:85'
+.param .result: vec4f (size: 16, cast: val)
+.param vec: vec4f (size: 16, cast: val)
+.param min: vec4f (size: 16, cast: val)
+.param max: vec4f (size: 16, cast: val)
+.doc: 'Clamp the vector component wise to the range [min ... max]'
+.value: min(max(vec, min), max)
+}
+clamp(vec: vec4f, min: float32, max: float32): vec4f: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'clamp'
+.file: 'lib/std/math/Vector4f.ci:88'
+.param .result: vec4f (size: 16, cast: val)
+.param vec: vec4f (size: 16, cast: val)
+.param min: float32 (size: 4, cast: f32)
+.param max: float32 (size: 4, cast: f32)
+.doc: 'Clamp each component of the vector to the range [min ... max]'
+.value: clamp(vec, vec4f(min), vec4f(max))
 }
 dp3(lhs: vec4f, rhs: vec4f): float32: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'dp3'
-.file: 'lib/std/math/Vector4f.ci:88'
+.file: 'lib/std/math/Vector4f.ci:92'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -5490,7 +5554,7 @@ dph(lhs: vec4f, rhs: vec4f): float32: function {
 .base: `function`
 .size: 0
 .name: 'dph'
-.file: 'lib/std/math/Vector4f.ci:92'
+.file: 'lib/std/math/Vector4f.ci:96'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -5502,7 +5566,7 @@ dp4(lhs: vec4f, rhs: vec4f): float32: function {
 .base: `function`
 .size: 0
 .name: 'dp4'
-.file: 'lib/std/math/Vector4f.ci:96'
+.file: 'lib/std/math/Vector4f.ci:100'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -5514,7 +5578,7 @@ cross(a: vec4f, b: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'cross'
-.file: 'lib/std/math/Vector4f.ci:99'
+.file: 'lib/std/math/Vector4f.ci:103'
 .param .result: vec4f (size: 16, cast: val)
 .param a: vec4f (size: 4, cast: const variable(ref))
 .param b: vec4f (size: 4, cast: const variable(ref))
@@ -5526,7 +5590,7 @@ length(v: vec4f): float32: function {
 .base: `function`
 .size: 0
 .name: 'length'
-.file: 'lib/std/math/Vector4f.ci:102'
+.file: 'lib/std/math/Vector4f.ci:106'
 .param .result: float32 (size: 4, cast: f32)
 .param v: vec4f (size: 16, cast: variable(val))
 .doc: 'Length of the vector(xyz)'
@@ -5537,7 +5601,7 @@ normalize(v: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'normalize'
-.file: 'lib/std/math/Vector4f.ci:104'
+.file: 'lib/std/math/Vector4f.ci:108'
 .param .result: vec4f (size: 16, cast: val)
 .param v: vec4f (size: 4, cast: const variable(ref))
 .doc: 'Normalize the vector(xyz)'
@@ -5548,7 +5612,7 @@ eval(v: vec4f, x: float32): float32: function {
 .base: `function`
 .size: 0
 .name: 'eval'
-.file: 'lib/std/math/Vector4f.ci:107'
+.file: 'lib/std/math/Vector4f.ci:111'
 .param .result: float32 (size: 4, cast: f32)
 .param v: vec4f (size: 4, cast: const variable(ref))
 .param x: float32 (size: 4, cast: variable(f32))
@@ -6252,7 +6316,7 @@ transpose(mat: mat4f): mat4f: function {
 mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 .kind: static const function
 .base: `function`
-.size: 301
+.size: 245
 .name: 'mul'
 .file: 'lib/std/math/Matrix4f.ci:97'
 .param .result: mat4f (size: 64, cast: variable(val))
@@ -6268,7 +6332,7 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 			.result.w := dp4(transposed, lhs.w);
 		};
 }
-.instructions: (301 bytes)
+.instructions: (245 bytes)
 	lib/std/math/Matrix4f.ci:98: (28 bytes): transposed: mat4f := transpose(rhs)
 	<mul>  : inc.sp(+64)
 	<mul+?>: dup.x32 sp(17)
@@ -6278,135 +6342,119 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 	<mul+?>: load.ref <?> ;transpose(mat: mat4f): mat4f
 	<mul+?>: call
 	<mul+?>: inc.sp(-64)
-	lib/std/math/Matrix4f.ci:99: (273 bytes): return .result := {...};
+	lib/std/math/Matrix4f.ci:99: (217 bytes): return .result := {...};
 	<mul+?>: load.sp(+0)
 	<mul+?>: dup.x32 sp(19)
-	<mul+?>: inc.sp(+16)
-	<mul+?>: dup.x32 sp(5)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(8)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(6)
-	<mul+?>: inc.i32(+16)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(9)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(7)
-	<mul+?>: inc.i32(+32)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(10)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(8)
+	<mul+?>: dup.x32 sp(1)
 	<mul+?>: inc.i32(+48)
 	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(11)
+	<mul+?>: dup.x32 sp(4)
 	<mul+?>: load.i128
 	<mul+?>: dp4.v4f
-	<mul+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
-	<mul+?>: call
-	<mul+?>: inc.sp(-16)
+	<mul+?>: dup.x32 sp(2)
+	<mul+?>: inc.i32(+32)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(5)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(3)
+	<mul+?>: inc.i32(+16)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(6)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(4)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(7)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
 	<mul+?>: set.x128 sp(2)
 	<mul+?>: set.x128 sp(23)
-	lib/std/math/Matrix4f.ci:101: (68 bytes): .result.y := dp4(transposed, lhs.y);
+	lib/std/math/Matrix4f.ci:101: (54 bytes): .result.y := dp4(transposed, lhs.y);
 	<mul+?>: load.sp(+0)
 	<mul+?>: dup.x32 sp(19)
 	<mul+?>: inc.i32(+16)
-	<mul+?>: inc.sp(+16)
-	<mul+?>: dup.x32 sp(5)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(8)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(6)
-	<mul+?>: inc.i32(+16)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(9)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(7)
-	<mul+?>: inc.i32(+32)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(10)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(8)
+	<mul+?>: dup.x32 sp(1)
 	<mul+?>: inc.i32(+48)
 	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(11)
+	<mul+?>: dup.x32 sp(4)
 	<mul+?>: load.i128
 	<mul+?>: dp4.v4f
-	<mul+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
-	<mul+?>: call
-	<mul+?>: inc.sp(-16)
+	<mul+?>: dup.x32 sp(2)
+	<mul+?>: inc.i32(+32)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(5)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(3)
+	<mul+?>: inc.i32(+16)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(6)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(4)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(7)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
 	<mul+?>: set.x128 sp(2)
 	<mul+?>: set.x128 sp(27)
-	lib/std/math/Matrix4f.ci:102: (68 bytes): .result.z := dp4(transposed, lhs.z);
+	lib/std/math/Matrix4f.ci:102: (54 bytes): .result.z := dp4(transposed, lhs.z);
 	<mul+?>: load.sp(+0)
 	<mul+?>: dup.x32 sp(19)
 	<mul+?>: inc.i32(+32)
-	<mul+?>: inc.sp(+16)
-	<mul+?>: dup.x32 sp(5)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(8)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(6)
-	<mul+?>: inc.i32(+16)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(9)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(7)
-	<mul+?>: inc.i32(+32)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(10)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(8)
+	<mul+?>: dup.x32 sp(1)
 	<mul+?>: inc.i32(+48)
 	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(11)
+	<mul+?>: dup.x32 sp(4)
 	<mul+?>: load.i128
 	<mul+?>: dp4.v4f
-	<mul+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
-	<mul+?>: call
-	<mul+?>: inc.sp(-16)
+	<mul+?>: dup.x32 sp(2)
+	<mul+?>: inc.i32(+32)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(5)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(3)
+	<mul+?>: inc.i32(+16)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(6)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(4)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(7)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
 	<mul+?>: set.x128 sp(2)
 	<mul+?>: set.x128 sp(31)
-	lib/std/math/Matrix4f.ci:103: (68 bytes): .result.w := dp4(transposed, lhs.w);
+	lib/std/math/Matrix4f.ci:103: (54 bytes): .result.w := dp4(transposed, lhs.w);
 	<mul+?>: load.sp(+0)
 	<mul+?>: dup.x32 sp(19)
 	<mul+?>: inc.i32(+48)
-	<mul+?>: inc.sp(+16)
-	<mul+?>: dup.x32 sp(5)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(8)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(6)
-	<mul+?>: inc.i32(+16)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(9)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(7)
-	<mul+?>: inc.i32(+32)
-	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(10)
-	<mul+?>: load.i128
-	<mul+?>: dp4.v4f
-	<mul+?>: dup.x32 sp(8)
+	<mul+?>: dup.x32 sp(1)
 	<mul+?>: inc.i32(+48)
 	<mul+?>: load.i128
-	<mul+?>: dup.x32 sp(11)
+	<mul+?>: dup.x32 sp(4)
 	<mul+?>: load.i128
 	<mul+?>: dp4.v4f
-	<mul+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
-	<mul+?>: call
-	<mul+?>: inc.sp(-16)
+	<mul+?>: dup.x32 sp(2)
+	<mul+?>: inc.i32(+32)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(5)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(3)
+	<mul+?>: inc.i32(+16)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(6)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
+	<mul+?>: dup.x32 sp(4)
+	<mul+?>: load.i128
+	<mul+?>: dup.x32 sp(7)
+	<mul+?>: load.i128
+	<mul+?>: dp4.v4f
 	<mul+?>: set.x128 sp(2)
 	<mul+?>: set.x128 sp(35)
 	<mul+?>: inc.sp(-64)
@@ -6415,7 +6463,7 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 rotation(center: vec4f, direction: vec4f, angle: float32): mat4f: function {
 .kind: static const function
 .base: `function`
-.size: 524
+.size: 454
 .name: 'rotation'
 .file: 'lib/std/math/Matrix4f.ci:111'
 .param .result: mat4f (size: 64, cast: variable(val))
@@ -6466,22 +6514,22 @@ adapted from: https://sites.google.com/site/glennmurray/Home/rotation-matrices-a
 			.result.w := vec4f(0, 0, 0, 1);
 		};
 }
-.instructions: (524 bytes)
+.instructions: (454 bytes)
 	lib/std/math/Matrix4f.ci:112: (18 bytes): len: float32 := length(direction)
 	<rotation>  : dup.x32 sp(2)
 	<rotation+?>: load.i128
 	<rotation+?>: dup.x128 sp(0)
 	<rotation+?>: dup.x128 sp(4)
 	<rotation+?>: dp3.v4f
-	<rotation+?>: nfc(38) ;float32.sqrt(x: float32): float32
+	<rotation+?>: nfc(37) ;float32.sqrt(x: float32): float32
 	<rotation+?>: set.x32 sp(4)
 	<rotation+?>: inc.sp(-12)
-	lib/std/math/Matrix4f.ci:113: (138 bytes): if ((len) < 0.000000)
+	lib/std/math/Matrix4f.ci:113: (82 bytes): if ((len) < 0.000000)
 	<rotation+?>: dup.x32 sp(0)
 	<rotation+?>: f32.2f64
 	<rotation+?>: load.f64 0.000000
 	<rotation+?>: clt.f64
-	<rotation+?>: jz +125
+	<rotation+?>: jz +69
 	lib/std/math/Matrix4f.ci:114: (36 bytes): trace("invalid direction of rotation", direction);
 	<rotation+?>: load.ref <?> ;"lib/std/math/Matrix4f.ci"
 	<rotation+?>: load.c32 114
@@ -6490,46 +6538,30 @@ adapted from: https://sites.google.com/site/glennmurray/Home/rotation-matrices-a
 	<rotation+?>: load.ref <?> ;"invalid direction of rotation"
 	<rotation+?>: load.ref <?> ;vec4f
 	<rotation+?>: dup.x32 sp(9)
-	<rotation+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	lib/std/math/Matrix4f.ci:115: (85 bytes): return .result := {...};
-	<rotation+?>: inc.sp(+16)
+	<rotation+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	lib/std/math/Matrix4f.ci:115: (29 bytes): return .result := {...};
 	<rotation+?>: load.z32
 	<rotation+?>: load.z32
 	<rotation+?>: load.z32
 	<rotation+?>: load.z32
-	<rotation+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
-	<rotation+?>: call
-	<rotation+?>: inc.sp(-16)
 	<rotation+?>: set.x128 sp(9)
-	lib/std/math/Matrix4f.ci:117: (20 bytes): .result.y := vec4f(0, 0, 0, 0);
-	<rotation+?>: inc.sp(+16)
+	lib/std/math/Matrix4f.ci:117: (6 bytes): .result.y := vec4f(0, 0, 0, 0);
 	<rotation+?>: load.z32
 	<rotation+?>: load.z32
 	<rotation+?>: load.z32
 	<rotation+?>: load.z32
-	<rotation+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
-	<rotation+?>: call
-	<rotation+?>: inc.sp(-16)
 	<rotation+?>: set.x128 sp(13)
-	lib/std/math/Matrix4f.ci:118: (20 bytes): .result.z := vec4f(0, 0, 0, 0);
-	<rotation+?>: inc.sp(+16)
+	lib/std/math/Matrix4f.ci:118: (6 bytes): .result.z := vec4f(0, 0, 0, 0);
 	<rotation+?>: load.z32
 	<rotation+?>: load.z32
 	<rotation+?>: load.z32
 	<rotation+?>: load.z32
-	<rotation+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
-	<rotation+?>: call
-	<rotation+?>: inc.sp(-16)
 	<rotation+?>: set.x128 sp(17)
-	lib/std/math/Matrix4f.ci:119: (20 bytes): .result.w := vec4f(0, 0, 0, 0);
-	<rotation+?>: inc.sp(+16)
+	lib/std/math/Matrix4f.ci:119: (6 bytes): .result.w := vec4f(0, 0, 0, 0);
 	<rotation+?>: load.z32
 	<rotation+?>: load.z32
 	<rotation+?>: load.z32
 	<rotation+?>: load.z32
-	<rotation+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
-	<rotation+?>: call
-	<rotation+?>: inc.sp(-16)
 	<rotation+?>: set.x128 sp(21)
 	<rotation+?>: inc.sp(-4)
 	<rotation+?>: ret
@@ -6587,15 +6619,15 @@ adapted from: https://sites.google.com/site/glennmurray/Home/rotation-matrices-a
 	<rotation+?>: mul.f32
 	lib/std/math/Matrix4f.ci:135: (6 bytes): s: float32 := float32.sin(angle)
 	<rotation+?>: dup.x32 sp(14)
-	<rotation+?>: nfc(32) ;float32.sin(x: float32): float32
+	<rotation+?>: nfc(31) ;float32.sin(x: float32): float32
 	lib/std/math/Matrix4f.ci:136: (6 bytes): c: float32 := float32.cos(angle)
 	<rotation+?>: dup.x32 sp(15)
-	<rotation+?>: nfc(33) ;float32.cos(x: float32): float32
+	<rotation+?>: nfc(32) ;float32.cos(x: float32): float32
 	lib/std/math/Matrix4f.ci:137: (8 bytes): k: float32 := (1) - c
 	<rotation+?>: load.f32 1.000000
 	<rotation+?>: dup.x32 sp(1)
 	<rotation+?>: sub.f32
-	lib/std/math/Matrix4f.ci:139: (275 bytes): return .result := {...};
+	lib/std/math/Matrix4f.ci:139: (261 bytes): return .result := {...};
 	<rotation+?>: dup.x32 sp(8)
 	<rotation+?>: dup.x32 sp(6)
 	<rotation+?>: dup.x32 sp(5)
@@ -6763,15 +6795,11 @@ adapted from: https://sites.google.com/site/glennmurray/Home/rotation-matrices-a
 	<rotation+?>: mul.f32
 	<rotation+?>: add.f32
 	<rotation+?>: set.x32 sp(32)
-	lib/std/math/Matrix4f.ci:155: (24 bytes): .result.w := vec4f(0, 0, 0, 1);
-	<rotation+?>: inc.sp(+16)
-	<rotation+?>: load.z32
-	<rotation+?>: load.z32
-	<rotation+?>: load.z32
+	lib/std/math/Matrix4f.ci:155: (10 bytes): .result.w := vec4f(0, 0, 0, 1);
 	<rotation+?>: load.f32 1.000000
-	<rotation+?>: load.ref <?> ;vec4f(x: float32, y: float32, z: float32, w: float32): vec4f
-	<rotation+?>: call
-	<rotation+?>: inc.sp(-16)
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
+	<rotation+?>: load.z32
 	<rotation+?>: set.x128 sp(36)
 	<rotation+?>: inc.sp(-64)
 	<rotation+?>: ret
@@ -7933,7 +7961,7 @@ append(output: char[], pos: int32, sign: char, value: uint64, format: FormatFlag
 	<append+?>: load.ref <?> ;"radix is too small"
 	<append+?>: load.ref <?> ;int32
 	<append+?>: load.sp(+24)
-	<append+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<append+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	lib/std/string.ci:162: (53 bytes): assert(radix < (radixDigits.length), "radix is too big", radix);
 	<append+?>: dup.x32 sp(0)
 	<append+?>: load.m32 <?> ;append.radixDigits+4
@@ -7947,7 +7975,7 @@ append(output: char[], pos: int32, sign: char, value: uint64, format: FormatFlag
 	<append+?>: load.ref <?> ;"radix is too big"
 	<append+?>: load.ref <?> ;int32
 	<append+?>: load.sp(+24)
-	<append+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<append+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	lib/std/string.ci:165: (49 bytes): for ( ; value > (0); value := value / (radix))
 	<append+?>: jmp +41
 	lib/std/string.ci:166: (29 bytes): digits[len := len + 1] := radixDigits[value % (radix)];
@@ -8047,7 +8075,7 @@ append(output: char[], pos: int32, sign: char, value: uint64, format: FormatFlag
 	<append+?>: load.ref <?> ;"assertion failed!"
 	<append+?>: load.ref <?> ;pointer
 	<append+?>: load.ref <?> ;null
-	<append+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<append+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	lib/std/string.ci:186: (11 bytes): output[pos] := padChr;
 	<append+?>: load.sp(+0)
 	<append+?>: load.i8
@@ -8081,7 +8109,7 @@ append(output: char[], pos: int32, sign: char, value: uint64, format: FormatFlag
 	<append+?>: load.ref <?> ;"assertion failed!"
 	<append+?>: load.ref <?> ;pointer
 	<append+?>: load.ref <?> ;null
-	<append+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<append+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	lib/std/string.ci:191: (11 bytes): output[pos] := sign;
 	<append+?>: load.sp(+112)
 	<append+?>: load.i8
@@ -8108,7 +8136,7 @@ append(output: char[], pos: int32, sign: char, value: uint64, format: FormatFlag
 	<append+?>: load.ref <?> ;"assertion failed!"
 	<append+?>: load.ref <?> ;pointer
 	<append+?>: load.ref <?> ;null
-	<append+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<append+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	lib/std/string.ci:198: (11 bytes): output[pos] := padChr;
 	<append+?>: load.sp(+0)
 	<append+?>: load.i8
@@ -8145,7 +8173,7 @@ append(output: char[], pos: int32, sign: char, value: uint64, format: FormatFlag
 	<append+?>: load.ref <?> ;"assertion failed!"
 	<append+?>: load.ref <?> ;pointer
 	<append+?>: load.ref <?> ;null
-	<append+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<append+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	lib/std/string.ci:205: (17 bytes): output[pos] := digits[len - i];
 	<append+?>: load.sp(+16)
 	<append+?>: dup.x32 sp(25)
@@ -8328,10 +8356,10 @@ append(output: char[], pos: int32, value: float64, format: FormatFlags): int32: 
 	};
 	sign: char := value < (0) ? ('-') : 0;
 	fract: float64 := Math.modf(Math.abs(value), &value);
-	pos := append(output, pos, sign, uint64(value), formatInt);
+	pos := append(output, pos, sign, uint64(int64(value)), formatInt);
 	pos := append(output, pos, ".");
 	fract := fract * float64.pow(10, format.precision);
-	pos := append(output, pos, 0, uint64(fract), formatDec);
+	pos := append(output, pos, 0, uint64(int64(fract)), formatDec);
 	return .result := pos;
 }
 .instructions: (227 bytes)
@@ -8396,7 +8424,7 @@ append(output: char[], pos: int32, value: float64, format: FormatFlags): int32: 
 	<append+?>: load.ref <?> ;Math.modf(x: float64, intPart: float64): float64
 	<append+?>: call
 	<append+?>: inc.sp(-12)
-	lib/std/string.ci:250: (29 bytes): pos := append(output, pos, sign, uint64(value), formatInt);
+	lib/std/string.ci:250: (29 bytes): pos := append(output, pos, sign, uint64(int64(value)), formatInt);
 	<append+?>: load.z32
 	<append+?>: dup.x64 sp(17)
 	<append+?>: dup.x32 sp(18)
@@ -8424,9 +8452,9 @@ append(output: char[], pos: int32, value: float64, format: FormatFlags): int32: 
 	<append+?>: inc.i32(+4)
 	<append+?>: load.i32
 	<append+?>: i32.2f64
-	<append+?>: nfc(45) ;float64.pow(x: float64, y: float64): float64
+	<append+?>: nfc(44) ;float64.pow(x: float64, y: float64): float64
 	<append+?>: mul.f64
-	lib/std/string.ci:254: (25 bytes): pos := append(output, pos, 0, uint64(fract), formatDec);
+	lib/std/string.ci:254: (25 bytes): pos := append(output, pos, 0, uint64(int64(fract)), formatDec);
 	<append+?>: load.z32
 	<append+?>: dup.x64 sp(17)
 	<append+?>: dup.x32 sp(18)
@@ -9929,7 +9957,7 @@ abortExecution(args: pointer): void: function {
 	<abortExecution+?>: load.ref <?> ;"fatal error"
 	<abortExecution+?>: load.ref <?> ;abortExecution.NotEquals
 	<abortExecution+?>: load.sp(+24)
-	<abortExecution+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<abortExecution+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<abortExecution+?>: inc.sp(-16)
 	<abortExecution+?>: ret
 }
@@ -10769,18 +10797,18 @@ object.create(type: typename): pointer: function {
 .owner: object
 .param .result: pointer (size: 4, cast: inline)
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(7)
+.value: nfc(6)
 }
-object.as(obj: object, type: typename): pointer: function {
+object.as(this: object, type: typename): pointer: function {
 .kind: static const inline
 .base: `function`
 .size: 0
 .name: 'as'
 .owner: object
 .param .result: pointer (size: 4, cast: inline)
-.param obj: object (size: 4, cast: variable(ref))
+.param this: object (size: 4, cast: variable(ref))
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(8)
+.value: nfc(7)
 }
 valInitImplicit: ComplexVal {
 .kind: variable(val)
@@ -11191,18 +11219,18 @@ object.create(type: typename): pointer: function {
 .owner: object
 .param .result: pointer (size: 4, cast: inline)
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(7)
+.value: nfc(6)
 }
-object.as(obj: object, type: typename): pointer: function {
+object.as(this: object, type: typename): pointer: function {
 .kind: static const inline
 .base: `function`
 .size: 0
 .name: 'as'
 .owner: object
 .param .result: pointer (size: 4, cast: inline)
-.param obj: object (size: 4, cast: variable(ref))
+.param this: object (size: 4, cast: variable(ref))
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(8)
+.value: nfc(7)
 }
 RecordSizeofExt: RecordSizeof {
 .kind: static const typename(ref)
@@ -11249,18 +11277,18 @@ object.create(type: typename): pointer: function {
 .owner: object
 .param .result: pointer (size: 4, cast: inline)
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(7)
+.value: nfc(6)
 }
-object.as(obj: object, type: typename): pointer: function {
+object.as(this: object, type: typename): pointer: function {
 .kind: static const inline
 .base: `function`
 .size: 0
 .name: 'as'
 .owner: object
 .param .result: pointer (size: 4, cast: inline)
-.param obj: object (size: 4, cast: variable(ref))
+.param this: object (size: 4, cast: variable(ref))
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(8)
+.value: nfc(7)
 }
 typeofRecord: typename {
 .kind: variable(ref)
@@ -11621,7 +11649,7 @@ RecordMethodTest.staticMethod(this: RecordMethodTest, x: int32): void: function 
 	<staticMethod+?>: load.ref <?> ;"staticMethod"
 	<staticMethod+?>: load.ref <?> ;int32
 	<staticMethod+?>: load.sp(+40)
-	<staticMethod+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<staticMethod+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<staticMethod+?>: ret
 }
 RecordMethodTest.forwardMethod(this: RecordMethodTest, x: int32): void: function {
@@ -11709,7 +11737,7 @@ the compiler will generate a static function and an instance member initialized 
 	<virtualMethod+?>: load.ref <?> ;"virtualMethod"
 	<virtualMethod+?>: load.ref <?> ;int32
 	<virtualMethod+?>: load.sp(+40)
-	<virtualMethod+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<virtualMethod+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<virtualMethod+?>: ret
 }
 RecordMethodTest.forwardMethod(this: RecordMethodTest, x: int32): void: function {
@@ -11735,7 +11763,7 @@ RecordMethodTest.forwardMethod(this: RecordMethodTest, x: int32): void: function
 	<forwardMethod+?>: load.ref <?> ;"forwardMethod"
 	<forwardMethod+?>: load.ref <?> ;int32
 	<forwardMethod+?>: load.sp(+40)
-	<forwardMethod+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<forwardMethod+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<forwardMethod+?>: ret
 }
 globalFunction(this: RecordMethodTest, x: int32): void: function {
@@ -11759,7 +11787,7 @@ globalFunction(this: RecordMethodTest, x: int32): void: function {
 	<globalFunction+?>: load.ref <?> ;"globalFunction"
 	<globalFunction+?>: load.ref <?> ;int32
 	<globalFunction+?>: load.sp(+28)
-	<globalFunction+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<globalFunction+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<globalFunction+?>: ret
 }
 recordMethodTest: RecordMethodTest {
@@ -11800,7 +11828,7 @@ staticMethod(this: RecordMethodTest, x: int32): void: function {
 	<staticMethod+?>: load.ref <?> ;"extension.staticMethod"
 	<staticMethod+?>: load.ref <?> ;pointer
 	<staticMethod+?>: load.ref <?> ;null
-	<staticMethod+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<staticMethod+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.method.ci:86: (30 bytes): if ((this) != null)
 	<staticMethod+?>: load.sp(+8)
 	<staticMethod+?>: load.ref <?> ;null
@@ -11839,7 +11867,7 @@ virtualMethod(this: RecordMethodTest, x: int32): void: function {
 	<virtualMethod+?>: load.ref <?> ;"extension.virtualMethod"
 	<virtualMethod+?>: load.ref <?> ;pointer
 	<virtualMethod+?>: load.ref <?> ;null
-	<virtualMethod+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<virtualMethod+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.method.ci:92: (27 bytes): if ((this) != null)
 	<virtualMethod+?>: load.sp(+8)
 	<virtualMethod+?>: load.ref <?> ;null
@@ -12164,18 +12192,18 @@ object.create(type: typename): pointer: function {
 .owner: object
 .param .result: pointer (size: 4, cast: inline)
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(7)
+.value: nfc(6)
 }
-object.as(obj: object, type: typename): pointer: function {
+object.as(this: object, type: typename): pointer: function {
 .kind: static const inline
 .base: `function`
 .size: 0
 .name: 'as'
 .owner: object
 .param .result: pointer (size: 4, cast: inline)
-.param obj: object (size: 4, cast: variable(ref))
+.param this: object (size: 4, cast: variable(ref))
 .param type: typename (size: 4, cast: variable(ref))
-.value: nfc(8)
+.value: nfc(7)
 }
 black: rgbU8 {
 .kind: variable(val)
@@ -15247,28 +15275,36 @@ testMathAbsMod_f32_8d: float32 {
 .field byte: typename (size: 0, cast: inline)
 .field float: typename (size: 0, cast: inline)
 .field double: typename (size: 0, cast: inline)
-.field verbose: function (size: 0, cast: inline)
-.field verbose: function (size: 0, cast: inline)
-.field debug: function (size: 0, cast: inline)
-.field debug: function (size: 0, cast: inline)
-.field trace: function (size: 0, cast: inline)
-.field trace: function (size: 0, cast: inline)
-.field info: function (size: 0, cast: inline)
-.field info: function (size: 0, cast: inline)
-.field warn: function (size: 0, cast: inline)
-.field warn: function (size: 0, cast: inline)
-.field error: function (size: 0, cast: inline)
-.field error: function (size: 0, cast: inline)
-.field abort: function (size: 0, cast: inline)
-.field abort: function (size: 0, cast: inline)
-.field abort: function (size: 0, cast: inline)
-.field assert: function (size: 0, cast: inline)
-.field assert: function (size: 0, cast: inline)
-.field assert: function (size: 0, cast: inline)
-.field NotEquals: typename (size: 32, cast: static const typename(val))
-.field assertEq: function (size: 94, cast: static const function)
-.field assertEq: function (size: 0, cast: inline)
+.field signed: function (size: 0, cast: inline)
+.field signed: function (size: 0, cast: inline)
+.field signed: function (size: 0, cast: inline)
+.field signed: function (size: 0, cast: inline)
+.field unsigned: function (size: 0, cast: inline)
+.field unsigned: function (size: 0, cast: inline)
+.field unsigned: function (size: 0, cast: inline)
+.field unsigned: function (size: 0, cast: inline)
 .field sizeof: function (size: 0, cast: inline)
+.field verbose: function (size: 0, cast: inline)
+.field verbose: function (size: 0, cast: inline)
+.field debug: function (size: 0, cast: inline)
+.field debug: function (size: 0, cast: inline)
+.field trace: function (size: 0, cast: inline)
+.field trace: function (size: 0, cast: inline)
+.field info: function (size: 0, cast: inline)
+.field info: function (size: 0, cast: inline)
+.field warn: function (size: 0, cast: inline)
+.field warn: function (size: 0, cast: inline)
+.field error: function (size: 0, cast: inline)
+.field error: function (size: 0, cast: inline)
+.field abort: function (size: 0, cast: inline)
+.field abort: function (size: 0, cast: inline)
+.field abort: function (size: 0, cast: inline)
+.field assert: function (size: 0, cast: inline)
+.field assert: function (size: 0, cast: inline)
+.field assert: function (size: 0, cast: inline)
+.field NotEquals: typename (size: 24, cast: static const typename(val))
+.field assertEq: function (size: 103, cast: static const function)
+.field assertEq: function (size: 0, cast: inline)
 .field Math: typename (size: 0, cast: static const typename(void))
 .field Complex: typename (size: 16, cast: static const typename(val))
 .field Complex: function (size: 7, cast: static const function)
@@ -15309,7 +15345,7 @@ testMathAbsMod_f32_8d: float32 {
 .field toCartesian: function (size: 0, cast: inline)
 .field toPolar: function (size: 0, cast: inline)
 .field vec4f: typename (size: 16, cast: static const typename(val))
-.field vec4f: function (size: 13, cast: static const function)
+.field vec4f: function (size: 0, cast: inline)
 .field vec4f: function (size: 0, cast: inline)
 .field vec4f: function (size: 0, cast: inline)
 .field vec4f: function (size: 0, cast: inline)
@@ -15321,6 +15357,8 @@ testMathAbsMod_f32_8d: float32 {
 .field div: function (size: 0, cast: inline)
 .field min: function (size: 0, cast: inline)
 .field max: function (size: 0, cast: inline)
+.field clamp: function (size: 0, cast: inline)
+.field clamp: function (size: 0, cast: inline)
 .field dp3: function (size: 0, cast: inline)
 .field dph: function (size: 0, cast: inline)
 .field dp4: function (size: 0, cast: inline)
@@ -15335,8 +15373,8 @@ testMathAbsMod_f32_8d: float32 {
 .field dph: function (size: 0, cast: inline)
 .field dp4: function (size: 0, cast: inline)
 .field transpose: function (size: 49, cast: static const function)
-.field mul: function (size: 301, cast: static const function)
-.field rotation: function (size: 524, cast: static const function)
+.field mul: function (size: 245, cast: static const function)
+.field rotation: function (size: 454, cast: static const function)
 .field rotation: function (size: 0, cast: inline)
 .field translation: function (size: 88, cast: static const function)
 .field scale: function (size: 217, cast: static const function)
@@ -16049,6 +16087,15 @@ testMathAbsMod_f32_8d: float32 {
 		byte: typename := uint8;
 		float: typename := float32;
 		double: typename := float64;
+		signed(value: uint8): int8 := int8(value);
+		signed(value: uint16): int16 := int16(value);
+		signed(value: uint32): int32 := int32(value);
+		signed(value: uint64): int64 := int64(value);
+		unsigned(value: int8): uint8 := uint8(value);
+		unsigned(value: int16): uint16 := uint16(value);
+		unsigned(value: int32): uint32 := uint32(value);
+		unsigned(value: int64): uint64 := uint64(value);
+		sizeof(type: typename): int32 := int32(type.size);
 		static if (typename(raise) == function) {
 			verbose(const message: char[*], const inspect: variant): void := raise(raise.verbose, raise.noTrace, message, inspect);
 			verbose(const message: char[*]): void := raise(raise.verbose, raise.noTrace, message, null);
@@ -16071,24 +16118,24 @@ testMathAbsMod_f32_8d: float32 {
 			static const NotEquals: struct {
 				const expected: variant;
 				const returned: variant;
-				const argument: variant := null;
-				const message: char[*] := null;
+				const extras: variant[] := null;
 			};
 			static const assertEq(expected: int32, returned: int32, const message: char[*]): void := {
 				if (returned == expected) {
 					return;
 				}
+				extras: variant[1] := {
+					extras[0] := (message);
+				};
 				details: NotEquals := {
 					details.expected := (expected);
 					details.returned := (returned);
-					details.message := (message);
-					details.argument := (null);
+					details.extras := (extras);
 				};
 				raise(raise.abort, raise.defTrace, "assertion failed", details);
 			};
 			assertEq(expected: int32, returned: int32): void := assertEq(expected, returned, null);
 		}
-		sizeof(type: typename): int32 := int32(type.size);
 		static const Math: struct {
 			static const pi: float64 := 3.141593;
 			static const e: float64 := 2.718282;
@@ -16230,7 +16277,7 @@ testMathAbsMod_f32_8d: float32 {
 				return .result := result;
 			};
 			static const mean(data: float64[]): float64 := {
-				return .result := sum(...data) / (data.length);
+				return .result := sum(...data) / (signed(data.length));
 			};
 			static eval(x: float64, a0: float64): float64 := (a0);
 			static eval(x: float64, a0: float64, a1: float64): float64 := (a0 + x * a1);
@@ -16487,14 +16534,7 @@ testMathAbsMod_f32_8d: float32 {
 			z: float32 := z: float32;
 			w: float32 := w: float32;
 		};
-		static const vec4f(x: float32, y: float32, z: float32, w: float32): vec4f := {
-			return .result := {
-			.result.x := x;
-			.result.y := y;
-			.result.z := z;
-			.result.w := w;
-		};
-		};
+		vec4f(x: float32, y: float32, z: float32, w: float32): vec4f := vec4f(emit(struct(w), struct(z), struct(y), struct(x)));
 		vec4f(x: float32, y: float32, z: float32): vec4f := vec4f(x, y, z, 1.000000);
 		vec4f(x: float32, y: float32): vec4f := vec4f(x, y, 0.000000, 1.000000);
 		vec4f(xyz: vec4f, w: float32): vec4f := vec4f(xyz.x, xyz.y, xyz.z, w);
@@ -16504,8 +16544,10 @@ testMathAbsMod_f32_8d: float32 {
 		sub(lhs: vec4f, rhs: vec4f): vec4f := vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
 		mul(lhs: vec4f, rhs: vec4f): vec4f := vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
 		div(lhs: vec4f, rhs: vec4f): vec4f := vec4f(emit(struct(lhs), struct(rhs), div.p4f));
-		min(lhs: vec4f, rhs: vec4f): float32 := float32(emit(struct(lhs), struct(rhs), min.p4f));
-		max(lhs: vec4f, rhs: vec4f): float32 := float32(emit(struct(lhs), struct(rhs), max.p4f));
+		min(lhs: vec4f, rhs: vec4f): vec4f := vec4f(emit(struct(lhs), struct(rhs), min.p4f));
+		max(lhs: vec4f, rhs: vec4f): vec4f := vec4f(emit(struct(lhs), struct(rhs), max.p4f));
+		clamp(vec: vec4f, min: vec4f, max: vec4f): vec4f := min(max(vec, min), max);
+		clamp(vec: vec4f, min: float32, max: float32): vec4f := clamp(vec, vec4f(min), vec4f(max));
 		dp3(lhs: vec4f, rhs: vec4f): float32 := float32(emit(struct(lhs), struct(rhs), p4x.dp3));
 		dph(lhs: vec4f, rhs: vec4f): float32 := float32(emit(struct(lhs), struct(rhs), p4x.dph));
 		dp4(lhs: vec4f, rhs: vec4f): float32 := float32(emit(struct(lhs), struct(rhs), p4x.dp4));
@@ -16880,10 +16922,10 @@ testMathAbsMod_f32_8d: float32 {
 			};
 			sign: char := value < (0) ? ('-') : 0;
 			fract: float64 := Math.modf(Math.abs(value), &value);
-			pos := append(output, pos, sign, uint64(value), formatInt);
+			pos := append(output, pos, sign, uint64(int64(value)), formatInt);
 			pos := append(output, pos, ".");
 			fract := fract * float64.pow(10, format.precision);
-			pos := append(output, pos, 0, uint64(fract), formatDec);
+			pos := append(output, pos, 0, uint64(int64(fract)), formatDec);
 			return .result := pos;
 		};
 		append(output: char[], pos: int32, value: float32, const format: FormatFlags): int32 := append(output, pos, float64(value), format);
@@ -17197,8 +17239,8 @@ testMathAbsMod_f32_8d: float32 {
 			const re: float64;
 			const im: float64 := 0;
 			const .type: typename;
-			static const create(type: typename): pointer := nfc(7);
-			static const as(obj: object, type: typename): pointer := nfc(8);
+			static const create(type: typename): pointer := nfc(6);
+			static const as(this: object, type: typename): pointer := nfc(7);
 		};
 		valInitImplicit: ComplexVal := {
 			valInitImplicit.re := (8);
@@ -17256,15 +17298,15 @@ testMathAbsMod_f32_8d: float32 {
 		static const RecordSizeof: struct {
 			x: int64 := 0;
 			const .type: typename;
-			static const create(type: typename): pointer := nfc(7);
-			static const as(obj: object, type: typename): pointer := nfc(8);
+			static const create(type: typename): pointer := nfc(6);
+			static const as(this: object, type: typename): pointer := nfc(7);
 		};
 		static const RecordSizeofExt: struct {
 			y: int32 := 0;
 			x: int64 := 0;
 			const .type: typename;
-			static const create(type: typename): pointer := nfc(7);
-			static const as(obj: object, type: typename): pointer := nfc(8);
+			static const create(type: typename): pointer := nfc(6);
+			static const as(this: object, type: typename): pointer := nfc(7);
 		};
 		typeofRecord: typename := RecordSizeofExt;
 		nameOfRecord: char[*] := typename.name(typeofRecord);
@@ -17450,8 +17492,8 @@ testMathAbsMod_f32_8d: float32 {
 		static const Color: struct {
 			value: rgbF32;
 			const .type: typename;
-			static const create(type: typename): pointer := nfc(7);
-			static const as(obj: object, type: typename): pointer := nfc(8);
+			static const create(type: typename): pointer := nfc(6);
+			static const as(this: object, type: typename): pointer := nfc(7);
 		};
 		black: rgbU8 := {
 			black.r := (0);
@@ -18015,7 +18057,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.f32 3.140000
 	<.main+?>: load.f32 2.000000
 	<.main+?>: div.f32
-	<.main+?>: nfc(32) ;float32.sin(x: float32): float32
+	<.main+?>: nfc(31) ;float32.sin(x: float32): float32
 	test/lang/emit.ci:23: (5 bytes): emitFloatAsInt1: int32 := floatAsInt32(500)
 	<.main+?>: load.f32 500.000000
 	test/lang/emit.ci:24: (6 bytes): emitFloatAsInt2: int64 := floatAsInt32(500)
@@ -18826,231 +18868,231 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: dup.x32 sp(1)
 	<.main+?>: load.c32 11
 	<.main+?>: load.c32 5
-	<.main+?>: nfc(22) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
+	<.main+?>: nfc(21) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
 	test/std/number.ci:22: (16 bytes): zxtG6: int32 := uint32.zxt(r5g6b5, 5, 6)
 	<.main+?>: dup.x32 sp(2)
 	<.main+?>: load.c32 5
 	<.main+?>: load.c32 6
-	<.main+?>: nfc(22) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
+	<.main+?>: nfc(21) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
 	test/std/number.ci:23: (12 bytes): zxtB5: int32 := uint32.zxt(r5g6b5, 0, 5)
 	<.main+?>: dup.x32 sp(3)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 5
-	<.main+?>: nfc(22) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
+	<.main+?>: nfc(21) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
 	test/std/number.ci:25: (16 bytes): sxtR5: int32 := uint32.sxt(r5g6b5, 11, 5)
 	<.main+?>: dup.x32 sp(4)
 	<.main+?>: load.c32 11
 	<.main+?>: load.c32 5
-	<.main+?>: nfc(23) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
+	<.main+?>: nfc(22) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
 	test/std/number.ci:26: (16 bytes): sxtG6: int32 := uint32.sxt(r5g6b5, 5, 6)
 	<.main+?>: dup.x32 sp(5)
 	<.main+?>: load.c32 5
 	<.main+?>: load.c32 6
-	<.main+?>: nfc(23) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
+	<.main+?>: nfc(22) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
 	test/std/number.ci:27: (12 bytes): sxtB5: int32 := uint32.sxt(r5g6b5, 0, 5)
 	<.main+?>: dup.x32 sp(6)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 5
-	<.main+?>: nfc(23) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
+	<.main+?>: nfc(22) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
 	test/std/number.ci:29: (16 bytes): zxtR8: int32 := uint32.zxt(r8g8b8, 16, 8)
 	<.main+?>: dup.x32 sp(6)
 	<.main+?>: load.c32 16
 	<.main+?>: load.c32 8
-	<.main+?>: nfc(22) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
+	<.main+?>: nfc(21) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
 	test/std/number.ci:30: (16 bytes): zxtG8: int32 := uint32.zxt(r8g8b8, 8, 8)
 	<.main+?>: dup.x32 sp(7)
 	<.main+?>: load.c32 8
 	<.main+?>: load.c32 8
-	<.main+?>: nfc(22) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
+	<.main+?>: nfc(21) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
 	test/std/number.ci:31: (12 bytes): zxtB8: int32 := uint32.zxt(r8g8b8, 0, 8)
 	<.main+?>: dup.x32 sp(8)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 8
-	<.main+?>: nfc(22) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
+	<.main+?>: nfc(21) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
 	test/std/number.ci:33: (16 bytes): sxtR8: int32 := uint32.sxt(r8g8b8, 16, 8)
 	<.main+?>: dup.x32 sp(9)
 	<.main+?>: load.c32 16
 	<.main+?>: load.c32 8
-	<.main+?>: nfc(23) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
+	<.main+?>: nfc(22) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
 	test/std/number.ci:34: (16 bytes): sxtG8: int32 := uint32.sxt(r8g8b8, 8, 8)
 	<.main+?>: dup.x32 sp(10)
 	<.main+?>: load.c32 8
 	<.main+?>: load.c32 8
-	<.main+?>: nfc(23) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
+	<.main+?>: nfc(22) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
 	test/std/number.ci:35: (12 bytes): sxtB8: int32 := uint32.sxt(r8g8b8, 0, 8)
 	<.main+?>: dup.x32 sp(11)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 8
-	<.main+?>: nfc(23) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
+	<.main+?>: nfc(22) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
 	test/std/number.ci:37: (16 bytes): testSin_f64: float64 := float64.sin(pi64 / (2))
 	<.main+?>: dup.x64 sp(21)
 	<.main+?>: load.f64 2.000000
 	<.main+?>: div.f64
-	<.main+?>: nfc(40) ;float64.sin(x: float64): float64
+	<.main+?>: nfc(39) ;float64.sin(x: float64): float64
 	test/std/number.ci:38: (16 bytes): testCos_f64: float64 := float64.cos(pi64 / (2))
 	<.main+?>: dup.x64 sp(23)
 	<.main+?>: load.f64 2.000000
 	<.main+?>: div.f64
-	<.main+?>: nfc(41) ;float64.cos(x: float64): float64
+	<.main+?>: nfc(40) ;float64.cos(x: float64): float64
 	test/std/number.ci:39: (16 bytes): testTan_f64: float64 := float64.tan(pi64 / (4))
 	<.main+?>: dup.x64 sp(25)
 	<.main+?>: load.f64 4.000000
 	<.main+?>: div.f64
-	<.main+?>: nfc(42) ;float64.tan(x: float64): float64
+	<.main+?>: nfc(41) ;float64.tan(x: float64): float64
 	test/std/number.ci:40: (12 bytes): testLog_f64: float64 := float64.log(e64 * e64 * e64)
 	<.main+?>: dup.x64 sp(25)
 	<.main+?>: dup.x64 sp(27)
 	<.main+?>: mul.f64
 	<.main+?>: dup.x64 sp(27)
 	<.main+?>: mul.f64
-	<.main+?>: nfc(43) ;float64.log(x: float64): float64
+	<.main+?>: nfc(42) ;float64.log(x: float64): float64
 	test/std/number.ci:41: (13 bytes): testExp_f64: float64 := float64.exp(1.000000)
 	<.main+?>: load.f64 1.000000
-	<.main+?>: nfc(44) ;float64.exp(x: float64): float64
+	<.main+?>: nfc(43) ;float64.exp(x: float64): float64
 	test/std/number.ci:42: (18 bytes): testPow_f64: float64 := float64.pow(pi64 * pi64, 0.500000)
 	<.main+?>: dup.x64 sp(31)
 	<.main+?>: dup.x64 sp(33)
 	<.main+?>: mul.f64
 	<.main+?>: load.f64 0.500000
-	<.main+?>: nfc(45) ;float64.pow(x: float64, y: float64): float64
+	<.main+?>: nfc(44) ;float64.pow(x: float64, y: float64): float64
 	test/std/number.ci:43: (9 bytes): testSqrt_f64: float64 := float64.sqrt(pi64 * pi64)
 	<.main+?>: dup.x64 sp(33)
 	<.main+?>: dup.x64 sp(35)
 	<.main+?>: mul.f64
-	<.main+?>: nfc(46) ;float64.sqrt(x: float64): float64
+	<.main+?>: nfc(45) ;float64.sqrt(x: float64): float64
 	test/std/number.ci:44: (15 bytes): testAtan_f64: float64 := float64.atan2(pi64, 1.000000)
 	<.main+?>: dup.x64 sp(35)
 	<.main+?>: load.f64 1.000000
-	<.main+?>: nfc(47) ;float64.atan2(x: float64, y: float64): float64
+	<.main+?>: nfc(46) ;float64.atan2(x: float64, y: float64): float64
 	test/std/number.ci:46: (12 bytes): testSin_f32: float32 := float32.sin(pi32 / (2))
 	<.main+?>: dup.x32 sp(34)
 	<.main+?>: load.f32 2.000000
 	<.main+?>: div.f32
-	<.main+?>: nfc(32) ;float32.sin(x: float32): float32
+	<.main+?>: nfc(31) ;float32.sin(x: float32): float32
 	test/std/number.ci:47: (12 bytes): testCos_f32: float32 := float32.cos(pi32 / (2))
 	<.main+?>: dup.x32 sp(35)
 	<.main+?>: load.f32 2.000000
 	<.main+?>: div.f32
-	<.main+?>: nfc(33) ;float32.cos(x: float32): float32
+	<.main+?>: nfc(32) ;float32.cos(x: float32): float32
 	test/std/number.ci:48: (12 bytes): testTan_f32: float32 := float32.tan(pi32 / (4))
 	<.main+?>: dup.x32 sp(36)
 	<.main+?>: load.f32 4.000000
 	<.main+?>: div.f32
-	<.main+?>: nfc(34) ;float32.tan(x: float32): float32
+	<.main+?>: nfc(33) ;float32.tan(x: float32): float32
 	test/std/number.ci:49: (12 bytes): testLog_f32: float32 := float32.log(e32 * e32 * e32)
 	<.main+?>: dup.x32 sp(36)
 	<.main+?>: dup.x32 sp(37)
 	<.main+?>: mul.f32
 	<.main+?>: dup.x32 sp(37)
 	<.main+?>: mul.f32
-	<.main+?>: nfc(35) ;float32.log(x: float32): float32
+	<.main+?>: nfc(34) ;float32.log(x: float32): float32
 	test/std/number.ci:50: (9 bytes): testExp_f32: float32 := float32.exp(1.000000)
 	<.main+?>: load.f32 1.000000
-	<.main+?>: nfc(36) ;float32.exp(x: float32): float32
+	<.main+?>: nfc(35) ;float32.exp(x: float32): float32
 	test/std/number.ci:51: (14 bytes): testPow_f32: float32 := float32.pow(pi32 * pi32, 0.500000)
 	<.main+?>: dup.x32 sp(39)
 	<.main+?>: dup.x32 sp(40)
 	<.main+?>: mul.f32
 	<.main+?>: load.f32 0.500000
-	<.main+?>: nfc(37) ;float32.pow(x: float32, y: float32): float32
+	<.main+?>: nfc(36) ;float32.pow(x: float32, y: float32): float32
 	test/std/number.ci:52: (9 bytes): testSqrt_f32: float32 := float32.sqrt(pi32 * pi32)
 	<.main+?>: dup.x32 sp(40)
 	<.main+?>: dup.x32 sp(41)
 	<.main+?>: mul.f32
-	<.main+?>: nfc(38) ;float32.sqrt(x: float32): float32
+	<.main+?>: nfc(37) ;float32.sqrt(x: float32): float32
 	test/std/number.ci:53: (11 bytes): testAtan_f32: float32 := float32.atan2(pi32, 1.000000)
 	<.main+?>: dup.x32 sp(41)
 	<.main+?>: load.f32 1.000000
-	<.main+?>: nfc(39) ;float32.atan2(x: float32, y: float32): float32
+	<.main+?>: nfc(38) ;float32.atan2(x: float32, y: float32): float32
 	test/std/number.ci:55: (6 bytes): testPopulation_u32: int32 := uint32.pop(r5g6b5)
 	<.main+?>: dup.x32 sp(37)
-	<.main+?>: nfc(24) ;uint32.pop(value: int32): int32
+	<.main+?>: nfc(23) ;uint32.pop(value: int32): int32
 	test/std/number.ci:56: (6 bytes): testSwapBits_u32: uint32 := uint32.swap(r5g6b5)
 	<.main+?>: dup.x32 sp(38)
-	<.main+?>: nfc(25) ;uint32.swap(value: int32): int32
+	<.main+?>: nfc(24) ;uint32.swap(value: int32): int32
 	test/std/number.ci:57: (6 bytes): testBitScanReverse_u32: int32 := uint32.bsr(r5g6b5)
 	<.main+?>: dup.x32 sp(39)
-	<.main+?>: nfc(26) ;uint32.bsr(value: int32): int32
+	<.main+?>: nfc(25) ;uint32.bsr(value: int32): int32
 	test/std/number.ci:58: (6 bytes): testBitScanForward_u32: int32 := uint32.bsf(r5g6b5)
 	<.main+?>: dup.x32 sp(40)
-	<.main+?>: nfc(27) ;uint32.bsf(value: int32): int32
+	<.main+?>: nfc(26) ;uint32.bsf(value: int32): int32
 	test/std/number.ci:59: (6 bytes): testHighBit_u32: int32 := uint32.hib(r5g6b5)
 	<.main+?>: dup.x32 sp(41)
-	<.main+?>: nfc(28) ;uint32.hib(value: int32): int32
+	<.main+?>: nfc(27) ;uint32.hib(value: int32): int32
 	test/std/number.ci:60: (6 bytes): testLowBit_u32: int32 := uint32.lob(r5g6b5)
 	<.main+?>: dup.x32 sp(42)
-	<.main+?>: nfc(29) ;uint32.lob(value: int32): int32
+	<.main+?>: nfc(28) ;uint32.lob(value: int32): int32
 	test/std/number.ci:62: (12 bytes): testZeroExtend_u32: int32 := uint32.zxt(r5g6b5, 0, 5)
 	<.main+?>: dup.x32 sp(43)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 5
-	<.main+?>: nfc(22) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
+	<.main+?>: nfc(21) ;uint32.zxt(value: int32, offs: int32, count: int32): int32
 	test/std/number.ci:63: (12 bytes): testSignExtend_u32: int32 := uint32.sxt(r5g6b5, 0, 5)
 	<.main+?>: dup.x32 sp(44)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 5
-	<.main+?>: nfc(23) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
+	<.main+?>: nfc(22) ;uint32.sxt(value: int32, offs: int32, count: int32): int32
 	test/std/number.ci:65: (14 bytes): testZeroExtend_u64: int32 := uint64.zxt(r5g6b5, 0, 5)
 	<.main+?>: dup.x32 sp(45)
 	<.main+?>: i32.2i64
 	<.main+?>: load.z32
 	<.main+?>: load.c32 5
-	<.main+?>: nfc(30) ;uint64.zxt(value: int64, offs: int32, count: int32): int64
+	<.main+?>: nfc(29) ;uint64.zxt(value: int64, offs: int32, count: int32): int64
 	<.main+?>: i64.2i32
 	test/std/number.ci:66: (14 bytes): testSignExtend_u64: int32 := uint64.sxt(r5g6b5, 0, 5)
 	<.main+?>: dup.x32 sp(46)
 	<.main+?>: i32.2i64
 	<.main+?>: load.z32
 	<.main+?>: load.c32 5
-	<.main+?>: nfc(31) ;uint64.sxt(value: int64, offs: int32, count: int32): int64
+	<.main+?>: nfc(30) ;uint64.sxt(value: int64, offs: int32, count: int32): int64
 	<.main+?>: i64.2i32
 	test/std/memory.ci:7: (14 bytes): p1: pointer := malloc(1024)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.c32 1024
-	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	<.main+?>: nfc(10) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	test/std/memory.ci:8: (14 bytes): p2: pointer := malloc(80)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.c32 80
-	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	<.main+?>: nfc(10) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	test/std/memory.ci:9: (14 bytes): p3: pointer := malloc(160)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.c32 160
-	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	<.main+?>: nfc(10) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	test/std/memory.ci:10: (14 bytes): p4: pointer := malloc(820)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.c32 820
-	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	<.main+?>: nfc(10) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	test/std/memory.ci:13: (16 bytes): pointer.fill(p1, 0, 1024);
 	<.main+?>: dup.x32 sp(3)
 	<.main+?>: load.z32
 	<.main+?>: load.c32 1024
-	<.main+?>: nfc(12) ;pointer.fill(dst: pointer, value: uint8, size: int32): pointer
+	<.main+?>: nfc(11) ;pointer.fill(dst: pointer, value: uint8, size: int32): pointer
 	<.main+?>: inc.sp(-4)
 	test/std/memory.ci:14: (17 bytes): pointer.copy(p1, p3, 160);
 	<.main+?>: dup.x32 sp(3)
 	<.main+?>: dup.x32 sp(2)
 	<.main+?>: load.c32 160
-	<.main+?>: nfc(13) ;pointer.copy(dst: pointer, src: pointer, size: int32): pointer
+	<.main+?>: nfc(12) ;pointer.copy(dst: pointer, src: pointer, size: int32): pointer
 	<.main+?>: inc.sp(-4)
 	test/std/memory.ci:17: (11 bytes): free(p1);
 	<.main+?>: dup.x32 sp(3)
 	<.main+?>: load.z32
-	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	<.main+?>: nfc(10) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	<.main+?>: inc.sp(-4)
 	test/std/memory.ci:18: (11 bytes): free(p2);
 	<.main+?>: dup.x32 sp(2)
 	<.main+?>: load.z32
-	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	<.main+?>: nfc(10) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	<.main+?>: inc.sp(-4)
 	test/std/memory.ci:19: (11 bytes): free(p3);
 	<.main+?>: dup.x32 sp(1)
 	<.main+?>: load.z32
-	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	<.main+?>: nfc(10) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	<.main+?>: inc.sp(-4)
 	test/std/memory.ci:20: (11 bytes): free(p4);
 	<.main+?>: dup.x32 sp(0)
 	<.main+?>: load.z32
-	<.main+?>: nfc(11) ;pointer.alloc(ptr: pointer, size: int32): pointer
+	<.main+?>: nfc(10) ;pointer.alloc(ptr: pointer, size: int32): pointer
 	<.main+?>: inc.sp(-4)
 	test/std/memory.ci:23: (9 bytes): val1: int64 := 42
 	<.main+?>: load.c64 42
@@ -19064,7 +19106,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"val1"
 	<.main+?>: load.ref <?> ;int64
 	<.main+?>: load.sp(+32)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/std/memory.ci:27: (34 bytes): debug("val2", val2);
 	<.main+?>: load.ref <?> ;"test/std/memory.ci"
 	<.main+?>: load.c32 27
@@ -19073,18 +19115,18 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"val2"
 	<.main+?>: load.ref <?> ;int64
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/std/memory.ci:29: (20 bytes): pointer.move(pointer(val2), pointer(val1), sizeof(int64));
 	<.main+?>: load.sp(+0)
 	<.main+?>: load.sp(+12)
 	<.main+?>: load.m32 <?> ;int64+32
-	<.main+?>: nfc(14) ;pointer.move(dst: pointer, src: pointer, size: int32): pointer
+	<.main+?>: nfc(13) ;pointer.move(dst: pointer, src: pointer, size: int32): pointer
 	<.main+?>: inc.sp(-4)
 	test/std/memory.ci:30: (17 bytes): pointer.fill(pointer(val1), 0, sizeof(int64));
 	<.main+?>: load.sp(+8)
 	<.main+?>: load.z32
 	<.main+?>: load.m32 <?> ;int64+32
-	<.main+?>: nfc(12) ;pointer.fill(dst: pointer, value: uint8, size: int32): pointer
+	<.main+?>: nfc(11) ;pointer.fill(dst: pointer, value: uint8, size: int32): pointer
 	<.main+?>: inc.sp(-4)
 	test/std/memory.ci:32: (34 bytes): debug("val1", val1);
 	<.main+?>: load.ref <?> ;"test/std/memory.ci"
@@ -19094,7 +19136,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"val1"
 	<.main+?>: load.ref <?> ;int64
 	<.main+?>: load.sp(+32)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/std/memory.ci:33: (34 bytes): debug("val2", val2);
 	<.main+?>: load.ref <?> ;"test/std/memory.ci"
 	<.main+?>: load.c32 33
@@ -19103,35 +19145,35 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"val2"
 	<.main+?>: load.ref <?> ;int64
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/std/tryExec.ci:47: (14 bytes): tryExecErr0: int32 := tryExec(null, noError)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;noError(ptr: pointer): void
-	<.main+?>: nfc(10) ;tryExec(args: pointer, action(args: pointer): void): int32
+	<.main+?>: nfc(9) ;tryExec(args: pointer, action(args: pointer): void): int32
 	test/std/tryExec.ci:48: (14 bytes): tryExecErr1: int32 := tryExec(null, null)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(10) ;tryExec(args: pointer, action(args: pointer): void): int32
+	<.main+?>: nfc(9) ;tryExec(args: pointer, action(args: pointer): void): int32
 	test/std/tryExec.ci:49: (14 bytes): tryExecErr2: int32 := tryExec(null, stackOverflow)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;stackOverflow(ptr: pointer): void
-	<.main+?>: nfc(10) ;tryExec(args: pointer, action(args: pointer): void): int32
+	<.main+?>: nfc(9) ;tryExec(args: pointer, action(args: pointer): void): int32
 	test/std/tryExec.ci:50: (14 bytes): tryExecErr3: int32 := tryExec(null, divisionByZero)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;divisionByZero(args: pointer): void
-	<.main+?>: nfc(10) ;tryExec(args: pointer, action(args: pointer): void): int32
+	<.main+?>: nfc(9) ;tryExec(args: pointer, action(args: pointer): void): int32
 	test/std/tryExec.ci:51: (14 bytes): tryExecErr4: int32 := tryExec(null, invalidInstruction)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;invalidInstruction(args: pointer): void
-	<.main+?>: nfc(10) ;tryExec(args: pointer, action(args: pointer): void): int32
+	<.main+?>: nfc(9) ;tryExec(args: pointer, action(args: pointer): void): int32
 	test/std/tryExec.ci:52: (14 bytes): tryExecErr5: int32 := tryExec(null, invalidMemoryAccess)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;invalidMemoryAccess(args: pointer): void
-	<.main+?>: nfc(10) ;tryExec(args: pointer, action(args: pointer): void): int32
+	<.main+?>: nfc(9) ;tryExec(args: pointer, action(args: pointer): void): int32
 	test/std/tryExec.ci:53: (14 bytes): tryExecErr6: int32 := tryExec(null, abortExecution)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;abortExecution(args: pointer): void
-	<.main+?>: nfc(10) ;tryExec(args: pointer, action(args: pointer): void): int32
+	<.main+?>: nfc(9) ;tryExec(args: pointer, action(args: pointer): void): int32
 	test/lang/init.reference.ci:8: (5 bytes): valueRef: int64 := value
 	<.main+?>: load.ref <?> ;value
 	test/lang/init.reference.ci:9: (5 bytes): valuePtr: pointer := value
@@ -19334,7 +19376,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: inc.sp(+4)
 	test/lang/init.variable.ci:33: (11 bytes): objInitImplicit := create(ComplexObj)
 	<.main+?>: load.ref <?> ;ComplexObj
-	<.main+?>: nfc(7) ;object.create(type: typename): pointer
+	<.main+?>: nfc(6) ;object.create(type: typename): pointer
 	<.main+?>: set.x32 sp(1)
 	test/lang/init.variable.ci:33: (16 bytes): objInitImplicit.re := (8);
 	<.main+?>: load.f64 8.000000
@@ -19350,7 +19392,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: inc.sp(+4)
 	test/lang/init.variable.ci:41: (11 bytes): objInitExplicit := create(ComplexObj)
 	<.main+?>: load.ref <?> ;ComplexObj
-	<.main+?>: nfc(7) ;object.create(type: typename): pointer
+	<.main+?>: nfc(6) ;object.create(type: typename): pointer
 	<.main+?>: set.x32 sp(1)
 	test/lang/init.variable.ci:41: (16 bytes): objInitExplicit.re := (8);
 	<.main+?>: load.f64 8.000000
@@ -19437,7 +19479,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;RecordSizeofExt
 	test/lang/reflect.ci:31: (6 bytes): nameOfRecord: char[*] := typename.name(typeofRecord)
 	<.main+?>: dup.x32 sp(0)
-	<.main+?>: nfc(6) ;typename.name(type: typename): .cstr
+	<.main+?>: nfc(5) ;typename.name(type: typename): .cstr
 	test/lang/reflect.ci:32: (7 bytes): offsetOfRecord: int32 := typeofRecord.offset
 	<.main+?>: dup.x32 sp(1)
 	<.main+?>: inc.i32(+40)
@@ -19448,16 +19490,16 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.i32
 	test/lang/reflect.ci:34: (6 bytes): fileOfRecord: char[*] := typename.file(typeofRecord)
 	<.main+?>: dup.x32 sp(3)
-	<.main+?>: nfc(4) ;typename.file(type: typename): .cstr
+	<.main+?>: nfc(3) ;typename.file(type: typename): .cstr
 	test/lang/reflect.ci:35: (6 bytes): lineOfRecord: int32 := typename.line(typeofRecord)
 	<.main+?>: dup.x32 sp(4)
-	<.main+?>: nfc(5) ;typename.line(type: typename): int32
+	<.main+?>: nfc(4) ;typename.line(type: typename): int32
 	test/lang/reflect.ci:37: (6 bytes): typeofBase: typename := typename.base(typeofRecord)
 	<.main+?>: dup.x32 sp(5)
-	<.main+?>: nfc(3) ;typename.base(type: typename): typename
+	<.main+?>: nfc(2) ;typename.base(type: typename): typename
 	test/lang/reflect.ci:38: (6 bytes): nameOfBase: char[*] := typename.name(typeofBase)
 	<.main+?>: dup.x32 sp(0)
-	<.main+?>: nfc(6) ;typename.name(type: typename): .cstr
+	<.main+?>: nfc(5) ;typename.name(type: typename): .cstr
 	test/lang/reflect.ci:39: (7 bytes): offsetOfBase: int32 := typeofBase.offset
 	<.main+?>: dup.x32 sp(1)
 	<.main+?>: inc.i32(+40)
@@ -19468,13 +19510,13 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.i32
 	test/lang/reflect.ci:41: (6 bytes): fileOfBase: char[*] := typename.file(typeofBase)
 	<.main+?>: dup.x32 sp(3)
-	<.main+?>: nfc(4) ;typename.file(type: typename): .cstr
+	<.main+?>: nfc(3) ;typename.file(type: typename): .cstr
 	test/lang/reflect.ci:42: (6 bytes): lineOfBase: int32 := typename.line(typeofBase)
 	<.main+?>: dup.x32 sp(4)
-	<.main+?>: nfc(5) ;typename.line(type: typename): int32
+	<.main+?>: nfc(4) ;typename.line(type: typename): int32
 	test/lang/reflect.ci:44: (6 bytes): typeofBase1: typename := typename.base(typeofBase)
 	<.main+?>: dup.x32 sp(5)
-	<.main+?>: nfc(3) ;typename.base(type: typename): typename
+	<.main+?>: nfc(2) ;typename.base(type: typename): typename
 	test/lang/reflect.ci:45: (7 bytes): offsetOfBase1: int32 := typeofBase1.offset
 	<.main+?>: dup.x32 sp(0)
 	<.main+?>: inc.i32(+40)
@@ -19485,7 +19527,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.i32
 	test/lang/reflect.ci:48: (6 bytes): typeofBase2: typename := typename.base(typeofBase1)
 	<.main+?>: dup.x32 sp(2)
-	<.main+?>: nfc(3) ;typename.base(type: typename): typename
+	<.main+?>: nfc(2) ;typename.base(type: typename): typename
 	test/lang/reflect.ci:49: (7 bytes): offsetOfBase2: int32 := typeofBase2.offset
 	<.main+?>: dup.x32 sp(0)
 	<.main+?>: inc.i32(+40)
@@ -19655,7 +19697,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"string as variant"
 	<.main+?>: load.ref <?>
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:37: (5 bytes): strArray: char[*] := "string"
 	<.main+?>: load.ref <?> ;"string"
 	test/lang/init.array.ci:38: (32 bytes): debug("string as variant", strArray);
@@ -19666,7 +19708,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"string as variant"
 	<.main+?>: load.ref <?>
 	<.main+?>: dup.x32 sp(6)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:40: (10 bytes): strSlice: char[] := "string"
 	<.main+?>: load.c32 6
 	<.main+?>: load.ref <?> ;"string"
@@ -19678,7 +19720,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"string as variant"
 	<.main+?>: load.ref <?>
 	<.main+?>: dup.x32 sp(6)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:48: (51 bytes): assert(arrSliceInitNull.length == (0));
 	<.main+?>: dup.x32 sp(13)
 	<.main+?>: load.z32
@@ -19692,7 +19734,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"assertion failed!"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:49: (59 bytes): assert(arrFixedInit[0] == (42));
 	<.main+?>: dup.x64 sp(15)
 	<.main+?>: load.c64 42
@@ -19706,7 +19748,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"assertion failed!"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:56: (25 bytes): assertEq(7, arrFixedInit.length);
 	<.main+?>: load.c32 7
 	<.main+?>: load.c32 7
@@ -19808,7 +19850,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"assertion failed!"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:69: (59 bytes): assert(expected == arrArrayInitFixed[i]);
 	<.main+?>: dup.x64 sp(0)
 	<.main+?>: dup.x32 sp(16)
@@ -19825,7 +19867,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"assertion failed!"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:70: (59 bytes): assert(expected == arrSliceInitFixed[i]);
 	<.main+?>: dup.x64 sp(0)
 	<.main+?>: dup.x32 sp(14)
@@ -19842,7 +19884,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"assertion failed!"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:72: (67 bytes): assert(expected == nthFixed(i, arrFixedInit));
 	<.main+?>: dup.x64 sp(0)
 	<.main+?>: load.z64
@@ -19861,7 +19903,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"assertion failed!"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:73: (65 bytes): assert(expected == nthFixed(i, arrArrayInitFixed));
 	<.main+?>: dup.x64 sp(0)
 	<.main+?>: load.z64
@@ -19880,7 +19922,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"assertion failed!"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:74: (65 bytes): assert(expected == nthFixed(i, arrSliceInitFixed));
 	<.main+?>: dup.x64 sp(0)
 	<.main+?>: load.z64
@@ -19899,7 +19941,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"assertion failed!"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:76: (67 bytes): assert(expected == nthArray(i, arrFixedInit));
 	<.main+?>: dup.x64 sp(0)
 	<.main+?>: load.z64
@@ -19918,7 +19960,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"assertion failed!"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:77: (65 bytes): assert(expected == nthArray(i, arrArrayInitFixed));
 	<.main+?>: dup.x64 sp(0)
 	<.main+?>: load.z64
@@ -19937,7 +19979,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"assertion failed!"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:78: (65 bytes): assert(expected == nthArray(i, arrSliceInitFixed));
 	<.main+?>: dup.x64 sp(0)
 	<.main+?>: load.z64
@@ -19956,7 +19998,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"assertion failed!"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:80: (72 bytes): assert(expected == nthSlice(i, arrFixedInit));
 	<.main+?>: dup.x64 sp(0)
 	<.main+?>: load.z64
@@ -19976,7 +20018,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"assertion failed!"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:82: (65 bytes): assert(expected == nthSlice(i, arrSliceInitFixed));
 	<.main+?>: dup.x64 sp(0)
 	<.main+?>: load.z64
@@ -19995,7 +20037,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"assertion failed!"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/init.array.ci:84: (59 bytes): assert(expected == arrSliceInitSlice[i]);
 	<.main+?>: dup.x64 sp(0)
 	<.main+?>: dup.x32 sp(11)
@@ -20012,7 +20054,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"assertion failed!"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<.main+?>: inc.sp(-8)
 	test/lang/init.array.ci:66: (4 bytes): i := i + 1
 	<.main+?>: inc.i32(+1)
@@ -21208,7 +21250,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"0 == 0"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/stmt.if.ci:12: (39 bytes): raise(raise.debug, 3, "0 == 0", null);
 	<.main+?>: load.ref <?> ;"test/lang/stmt.if.ci"
 	<.main+?>: load.c32 12
@@ -21217,7 +21259,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"0 == 0"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/stmt.if.ci:22: (39 bytes): raise(raise.debug, 6, "0 == 0", null);
 	<.main+?>: load.ref <?> ;"test/lang/stmt.if.ci"
 	<.main+?>: load.c32 22
@@ -21226,7 +21268,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"0 == 0"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/stmt.if.ci:26: (1 byte): t: int32 := 0
 	<.main+?>: load.z32
 	test/lang/stmt.if.ci:28: (46 bytes): if (t == 0)
@@ -21242,7 +21284,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"t == 0"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/stmt.if.ci:32: (46 bytes): if (t != 0)
 	<.main+?>: dup.x32 sp(0)
 	<.main+?>: load.z32
@@ -21256,7 +21298,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"t != 0"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/stmt.if.ci:36: (88 bytes): if (t == 0)
 	<.main+?>: dup.x32 sp(0)
 	<.main+?>: load.z32
@@ -21270,7 +21312,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"t == 0"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<.main+?>: jmp +42
 	test/lang/stmt.if.ci:40: (38 bytes): raise(raise.debug, 10, "t != 0", t);
 	<.main+?>: load.ref <?> ;"test/lang/stmt.if.ci"
@@ -21280,7 +21322,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"t != 0"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/stmt.if.ci:43: (88 bytes): if (t != 0)
 	<.main+?>: dup.x32 sp(0)
 	<.main+?>: load.z32
@@ -21294,7 +21336,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"t != 0"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<.main+?>: jmp +42
 	test/lang/stmt.if.ci:47: (38 bytes): raise(raise.debug, 12, "t == 0", t);
 	<.main+?>: load.ref <?> ;"test/lang/stmt.if.ci"
@@ -21304,7 +21346,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"t == 0"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/stmt.if.ci:50: (358 bytes): if (t == 0)
 	<.main+?>: dup.x32 sp(0)
 	<.main+?>: load.z32
@@ -21318,7 +21360,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"t == 0"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<.main+?>: jmp +312
 	test/lang/stmt.if.ci:53: (308 bytes): if (t == 1)
 	<.main+?>: dup.x32 sp(0)
@@ -21333,7 +21375,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"t == 1"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<.main+?>: jmp +258
 	test/lang/stmt.if.ci:56: (254 bytes): if (t == 2)
 	<.main+?>: dup.x32 sp(0)
@@ -21348,7 +21390,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"t == 2"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<.main+?>: jmp +204
 	test/lang/stmt.if.ci:59: (200 bytes): if (t == 3)
 	<.main+?>: dup.x32 sp(0)
@@ -21363,7 +21405,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"t == 3"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<.main+?>: jmp +150
 	test/lang/stmt.if.ci:62: (146 bytes): if (t == 4)
 	<.main+?>: dup.x32 sp(0)
@@ -21378,7 +21420,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"t == 4"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<.main+?>: jmp +96
 	test/lang/stmt.if.ci:65: (92 bytes): if (t == 5)
 	<.main+?>: dup.x32 sp(0)
@@ -21393,7 +21435,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"t == 5"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<.main+?>: jmp +42
 	test/lang/stmt.if.ci:69: (38 bytes): raise(raise.debug, 10, "t not in (0, 1, 2, 3, 4, 5)", t);
 	<.main+?>: load.ref <?> ;"test/lang/stmt.if.ci"
@@ -21403,7 +21445,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"t not in (0, 1, 2, 3, 4, 5)"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/stmt.for.ci:3: (47 bytes): for ( ; ; )
 	<.main+?>: jmp +43
 	test/lang/stmt.for.ci:4: (35 bytes): debug("for ( ; ; )");
@@ -21414,7 +21456,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"for ( ; ; )"
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/stmt.for.ci:5: (4 bytes): break;
 	<.main+?>: jmp +8
 	:: (4 bytes)
@@ -21430,7 +21472,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"for (int i = 0; i < 2; i += 1)"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/stmt.for.ci:8: (4 bytes): i := i + 1
 	<.main+?>: inc.i32(+1)
 	test/lang/stmt.for.ci:8: (12 bytes): i < 2
@@ -21453,7 +21495,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"for (forIdx = 0; forIdx < 2; forIdx += 1)"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/stmt.for.ci:13: (4 bytes): forIdx := forIdx + 1
 	<.main+?>: inc.i32(+1)
 	test/lang/stmt.for.ci:13: (12 bytes): forIdx < 2
@@ -21479,7 +21521,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"for with continue"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/stmt.for.ci:17: (4 bytes): i := i + 1
 	<.main+?>: inc.i32(+1)
 	test/lang/stmt.for.ci:17: (12 bytes): i < 7
@@ -21506,7 +21548,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"for with break"
 	<.main+?>: load.ref <?> ;int32
 	<.main+?>: load.sp(+24)
-	<.main+?>: nfc(9) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
+	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	test/lang/stmt.for.ci:24: (4 bytes): i := i + 1
 	<.main+?>: inc.i32(+1)
 	test/lang/stmt.for.ci:24: (12 bytes): i < 7
@@ -22341,7 +22383,7 @@ emit.swz: typename(<emit.swz>)
 emit: typename(<emit>)
 System: typename(<System>)
 lib/std/debug.ci:48: NotEquals: typename(<NotEquals>)
-lib/std/debug.ci:64: assertEq: function(<assertEq>)
+lib/std/debug.ci:61: assertEq: function(<assertEq>)
 lib/std/math.ci:22: Math.modf: function(<Math.modf>)
 lib/std/math.ci:47: Math.floor: function(<Math.floor>)
 lib/std/math.ci:77: Math.abs: function(<Math.abs>)
@@ -22374,7 +22416,6 @@ lib/std/math/Complex.ci:86: div: function(<div>)
 lib/std/math/Complex.ci:117: inv: function(<inv>)
 lib/std/math/Complex.ci:135: pow: function(<pow>)
 lib/std/math/Vector4f.ci:2: vec4f: typename(<vec4f>)
-lib/std/math/Vector4f.ci:26: vec4f: function(<vec4f>)
 lib/std/math/Matrix4f.ci:2: mat4f: typename(<mat4f>)
 lib/std/math/Matrix4f.ci:62: mat4f: function(<mat4f>)
 lib/std/math/Matrix4f.ci:75: mat4f: function(<mat4f>)
@@ -22669,13 +22710,13 @@ test/lang/reflect.ci:22: RecordSizeof: typename(<RecordSizeof>)
 test/lang/reflect.ci:26: RecordSizeofExt: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:30: typeofRecord: typename(<RecordSizeofExt>)
 test/lang/reflect.ci:31: nameOfRecord: char[*]("RecordSizeofExt")
-test/lang/reflect.ci:32: offsetOfRecord: int32(275648)
+test/lang/reflect.ci:32: offsetOfRecord: int32(280624)
 test/lang/reflect.ci:33: sizeOfRecord: int32(16)
 test/lang/reflect.ci:34: fileOfRecord: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:35: lineOfRecord: int32(26)
 test/lang/reflect.ci:37: typeofBase: typename(<RecordSizeof>)
 test/lang/reflect.ci:38: nameOfBase: char[*]("RecordSizeof")
-test/lang/reflect.ci:39: offsetOfBase: int32(275344)
+test/lang/reflect.ci:39: offsetOfBase: int32(280320)
 test/lang/reflect.ci:40: sizeOfBase: int32(12)
 test/lang/reflect.ci:41: fileOfBase: char[*]("test/lang/reflect.ci")
 test/lang/reflect.ci:42: lineOfBase: int32(22)
@@ -23111,19 +23152,19 @@ test/std/test.math.ci:95: testMathAbsMod_f32_8c: float32(8.000000)
 test/std/test.math.ci:96: testMathAbsMod_f32_8d: float32(8.000000)
 
 ---------- Memory usage:
-memory[all] @000000; size: 4194024(4.0 Mb)
-memory[used] @000000; size: 377784(368.9 Kb)
-memory[heap] @05c3b8; size: 2767686(2.6 Mb)
-memory[stack] @1fff44; size: 1048506(1023.9 Kb)
+memory[all] @000000; size: 4194016(4.0 Mb)
+memory[used] @000000; size: 381664(372.7 Kb)
+memory[heap] @05d2e0; size: 2763800(2.6 Mb)
+memory[stack] @1fff40; size: 1048504(1023.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 360856(352.4 Kb)
-memory[code] @000000; size: 16582(16.2 Kb)
+memory[meta] @000000; size: 364872(356.3 Kb)
+memory[code] @000000; size: 16452(16.1 Kb)
 memory[data] @000000; size: 80(80.0 bytes)
 
 ---------- heap memory:
-memory[used] @05c3c8; size: 32(32.0 bytes)
-memory[used] @05c3f8; size: 32(32.0 bytes)
-memory[free] @05c428; size: 2767552(2.6 Mb)
+memory[used] @05d2f0; size: 32(32.0 bytes)
+memory[used] @05d320; size: 32(32.0 bytes)
+memory[free] @05d350; size: 2763664(2.6 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

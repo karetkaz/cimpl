@@ -665,9 +665,9 @@ static void dumpApiJSON(userContext ctx, symn sym) {
 static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, size_t callee) {
 	if (callee != 0) {
 		clock_t ticks = clock();
-		userContext cc = ctx->extra;
-		FILE *out = cc->out;
-		const char **esc = cc->esc;
+		userContext usr = ctx->rt->usr;
+		FILE *out = usr->out;
+		const char **esc = usr->esc;
 		if ((ssize_t)callee < 0) {
 			printFmt(out, esc, "% I%d,%d,%d%s\n", ss, ticks, ctx->usedMem, -1, ss > 0 ? "," : "");
 		} else {
@@ -687,10 +687,10 @@ static void jsonPostProfile(dbgContext ctx) {
 	static char *const JSON_KEY_HITS = "hits";
 	static char *const JSON_KEY_FAILS = "fails";
 
-	userContext cc = ctx->extra;
-	FILE *out = cc->out;
-	const int indent = cc->indent;
-	const char **esc = cc->esc;
+	userContext usr = ctx->rt->usr;
+	FILE *out = usr->out;
+	const int indent = usr->indent;
+	const char **esc = usr->esc;
 
 	size_t covFunc = 0, nFunc = ctx->functions.cnt;
 	size_t covStmt = 0, nStmt = ctx->statements.cnt;
@@ -757,10 +757,10 @@ static void jsonPostProfile(dbgContext ctx) {
 	printFmt(out, esc, JSON_OBJ_END, indent);
 }
 static void jsonPreProfile(dbgContext ctx) {
-	userContext cc = ctx->extra;
-	FILE *out = cc->out;
-	const int indent = cc->indent;
-	const char **esc = cc->esc;
+	userContext usr = ctx->rt->usr;
+	FILE *out = usr->out;
+	const int indent = usr->indent;
+	const char **esc = usr->esc;
 
 	// TODO: use JSON_*_START and JSON_*_END
 	printFmt(out, esc, "%I, \"%s\": {\n", indent, JSON_KEY_PROFILE);
@@ -797,9 +797,10 @@ static void textDumpAsm(FILE *out, const char **esc, size_t offs, userContext ct
 	printFmt(out, esc, "\n");
 }
 static void textDumpMem(dbgContext dbg, void *ptr, size_t size, char *kind) {
-	userContext ctx = dbg->extra;
-	const char **esc = ctx->esc;
-	FILE *out = ctx->out;
+	rtContext rt = dbg->rt;
+	userContext usr = rt->usr;
+	const char **esc = usr->esc;
+	FILE *out = usr->out;
 
 	char *unit = "bytes";
 	double value = (double)size;
@@ -817,7 +818,7 @@ static void textDumpMem(dbgContext dbg, void *ptr, size_t size, char *kind) {
 		value /= 1 << 10;
 	}
 
-	printFmt(out, esc, "memory[%s] @%06x; size: %d(%?.1F %s)\n", kind, vmOffset(ctx->rt, ptr), size, value, unit);
+	printFmt(out, esc, "memory[%s] @%06x; size: %d(%?.1F %s)\n", kind, vmOffset(rt, ptr), size, value, unit);
 }
 
 void printFields(FILE *out, const char **esc, symn sym, userContext ctx) {
@@ -868,11 +869,16 @@ void printFields(FILE *out, const char **esc, symn sym, userContext ctx) {
 }
 
 static void textPostProfile(userContext usr) {
-	static const double CLOCKS_PER_MILLI = CLOCKS_PER_SEC / 1000.;
+	static const double CLOCKS_PER_MILLIS = CLOCKS_PER_SEC / 1000.;
 	const char **esc = usr->esc;
 	FILE *out = usr->out;
 	rtContext rt = usr->rt;
 	const char *prefix = usr->compileSteps ? usr->compileSteps : "\n---------- ";
+
+	if (usr != rt->usr) {
+		fatal(ERR_INTERNAL_ERROR);
+		return;
+	}
 
 	if (usr->dmpGlobals) {
 		printFmt(out, esc, "%?sGlobals:\n", prefix);
@@ -884,7 +890,6 @@ static void textPostProfile(userContext usr) {
 		dbgContext dbg = rt->dbg;
 		if (dbg == NULL) {
 			memset(&tmp, 0, sizeof(tmp));
-			tmp.extra = usr;
 			tmp.rt = rt;
 			dbg = &tmp;
 		}
@@ -911,15 +916,6 @@ static void textPostProfile(userContext usr) {
 		return;
 	}
 
-	if (dbg->extra == NULL) {
-		return;
-	}
-
-	if (dbg->extra != usr) {
-		logif("warn", ERR_INTERNAL_ERROR);
-		dbg->extra = usr;
-	}
-
 	if (usr->profFunctions) {
 		size_t cov = 0, cnt = dbg->functions.cnt;
 		dbgn ptrFunc = (dbgn) dbg->functions.ptr;
@@ -941,7 +937,7 @@ static void textPostProfile(userContext usr) {
 			}
 			printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): exec(%D%?-D), time(%.3F%?+.3F ms): %?T\n",
 				ptr->file, ptr->line, ptr->start, ptr->end, ptr->hits, ptr->exec - ptr->hits,
-				ptr->total / CLOCKS_PER_MILLI, (ptr->self - ptr->total) / CLOCKS_PER_MILLI,
+				ptr->total / CLOCKS_PER_MILLIS, (ptr->self - ptr->total) / CLOCKS_PER_MILLIS,
 				sym
 			);
 		}
@@ -973,7 +969,7 @@ static void textPostProfile(userContext usr) {
 			}
 			printFmt(out, esc, "%?s:%?u:[.%06x, .%06x) exec(%D%?-D), time(%.3F%?+.3F ms): <%?.T+%d>\n",
 				ptr->file, ptr->line, ptr->start, ptr->end, ptr->hits, ptr->exec - ptr->hits,
-				ptr->total / CLOCKS_PER_MILLI, (ptr->self - ptr->total) / CLOCKS_PER_MILLI,
+				ptr->total / CLOCKS_PER_MILLIS, (ptr->self - ptr->total) / CLOCKS_PER_MILLIS,
 				sym, symOffs
 			);
 		}
@@ -1301,8 +1297,8 @@ static void dumpApiSciTE(userContext ctx, symn sym) {
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ console debugger and profiler
 static dbgn conProfile(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, size_t callee) {
-	userContext usr = ctx->extra;
 	rtContext rt = ctx->rt;
+	userContext usr = rt->usr;
 
 	const char **esc = usr->esc;
 	FILE *out = usr->out;
@@ -1384,8 +1380,8 @@ static dbgn conProfile(dbgContext ctx, vmError error, size_t ss, void *stack, si
 }
 
 static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, size_t callee) {
-	userContext usr = ctx->extra;
 	rtContext rt = ctx->rt;
+	userContext usr = rt->usr;
 
 	// print executing instruction.
 	if (error == noError && (usr->traceOpcodes || usr->traceMethods)) {
@@ -2415,11 +2411,15 @@ int main(int argc, char *argv[]) {
 	}
 
 	extra.rt = rt;
+	rt->usr = &extra;
+
 	// override log level
 	rt->logLevel = settings.warnLevel;
+
 	// override constant folding
 	rt->foldCasts = settings.foldConstants != 0;
 	rt->foldConst = settings.foldConstants != 0;
+
 	// override instruction folding
 	rt->foldInstr = settings.foldInstruction != 0;
 	rt->foldMemory = settings.foldInstruction != 0;
@@ -2623,8 +2623,6 @@ int main(int argc, char *argv[]) {
 	if (rt->errors == 0 && run_code != compile) {
 		rt->logLevel = settings.raiseLevel;
 		if (rt->dbg != NULL) {
-			rt->dbg->extra = &extra;
-
 			// set debugger or profiler
 			if (run_code == debug) {
 				rt->dbg->debug = &conDebug;

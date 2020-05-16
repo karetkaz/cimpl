@@ -326,6 +326,9 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 			}
 
 			if (sym == cc->libc_dbg) {
+				dieif(parameter == NULL, ERR_INTERNAL_ERROR);
+				dieif(parameter->next == NULL, ERR_INTERNAL_ERROR);
+				dieif(parameter->next->next == NULL, ERR_INTERNAL_ERROR);
 				// debug has 2 hidden params: file and line.
 				parameter = parameter->next->next;
 			}
@@ -990,25 +993,25 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	symn valName = linkOf(val, 1);
 	ccKind varCast = castOf(var);
 
+	dieif(varType == NULL, ERR_INTERNAL_ERROR);
+	
 	// assign null or pass by reference
 	if (valName == cc->null_ref) {
-		if (varType != NULL) {
-			switch (castOf(varType)) {
-				default:
-					break;
+		switch (castOf(varType)) {
+			default:
+				break;
 
-				case CAST_ref:
-					// assign null to a reference type
-					return CAST_ref;
+			case CAST_ref:
+				// assign null to a reference type
+				return CAST_ref;
 
-				case CAST_arr:
-					// assign null to array
-					return CAST_arr;
+			case CAST_arr:
+				// assign null to array
+				return CAST_arr;
 
-				case CAST_var:
-					// assign null to variant
-					return CAST_var;
-			}
+			case CAST_var:
+				// assign null to variant
+				return CAST_var;
 		}
 		switch (varCast) {
 			default:
@@ -1020,6 +1023,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 				return varCast;
 		}
 	}
+
 	// assigning a typename or pass by reference
 	if (valName != NULL && var->type == cc->type_rec) {
 		switch (valName->kind & MASK_kind) {
@@ -1031,6 +1035,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 				return CAST_ref;
 		}
 	}
+
 	// assigning a variable to a pointer or variant
 	if (valName != NULL && (varType == cc->type_ptr || varType == cc->type_var)) {
 		return refCast(varType);

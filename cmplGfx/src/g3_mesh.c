@@ -276,7 +276,7 @@ int readObj(GxMesh msh, const char *file) {
 	FILE *fin;
 
 	char *ws = " \t";
-	char buff[65536];
+	char buff[65536], *ptr;
 	int posi = 0, texi = 0;
 	int nrmi = 0, line = 0;
 	struct Buffer nrmb;
@@ -291,8 +291,6 @@ int readObj(GxMesh msh, const char *file) {
 	initBuff(&texb, 64, 2 * sizeof(float));
 
 	for ( ; ; ) {
-		char *ptr = buff;
-
 		line++;
 		if (!fgets(buff, sizeof(buff), fin)) {
 			break;

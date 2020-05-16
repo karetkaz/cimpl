@@ -29,6 +29,7 @@ function executeAction(action) {
 	}
 	return actionError();
 }
+
 function completeAction(action, hint) {
 	setStyle(document.body, 'tool-bar');
 	edtFileName.focus();
@@ -38,25 +39,13 @@ function completeAction(action, hint) {
 	}
 	if (action.constructor === KeyboardEvent) {
 		if (!edtFileName.value.endsWith(action.key)) {
-			if (edtFileName.selectableItems != null) {
+			if (commands.onNextPrev != null) {
 				switch (action.keyCode) {
 					case 38: // up
-						edtFileName.selectedItem -= 1;
-						if (edtFileName.selectedItem < 0) {
-							edtFileName.selectedItem = 0;
-						}
-						edtFileName.value = edtFileName.selectableItems[edtFileName.selectedItem];
-						edtFileName.selectionStart = edtFileName.selectionEnd = edtFileName.value.length;
-						return false;
+						return commands.onNextPrev(-1);
 
 					case 40: // down
-						edtFileName.selectedItem += 1;
-						if (edtFileName.selectedItem >= edtFileName.selectableItems.length) {
-							edtFileName.selectedItem = edtFileName.selectableItems.length - 1;
-						}
-						edtFileName.value = edtFileName.selectableItems[edtFileName.selectedItem];
-						edtFileName.selectionStart = edtFileName.selectionEnd = edtFileName.value.length;
-						return false;
+						return commands.onNextPrev(+1);
 				}
 			}
 			// maybe backspace was pressed
@@ -64,7 +53,6 @@ function completeAction(action, hint) {
 		}
 		action = edtFileName.value;
 	}
-	setStyle(document.body, '-right-bar');
 	if (hint == null) {
 		switch (action) {
 			default:
@@ -79,12 +67,13 @@ function completeAction(action, hint) {
 				hint = '100';
 				break;
 
-			case '?':
-				hint = editor.getSelection() || 'enter a text to search';
+			case '!theme:':
+				hint = document.body.classList.contains('dark') ? 'light' : 'dark';
 				break;
 
-			case '?*':
-				hint = editor.getSelection() || 'enter a text to search and select occurrences';
+			case '?':
+				hint = editor.getSelection() || 'enter a text to search';
+				setActions();
 				break;
 
 			case '#':
@@ -92,25 +81,7 @@ function completeAction(action, hint) {
 				break;
 
 			case '!':
-				let items = [];
-				let commands = '';
-				for (let cmd in customCommands) {
-					commands += '<li onclick="completeAction(\'!'+cmd+'\');">' + cmd + '</li>';
-					items.push('!' + cmd);
-				}
-				//*
-				for (let cmd in CodeMirror.commands) {
-					commands += '<li onclick="executeAction(\''+cmd+'\');">' + cmd + '</li>'
-					items.push('!' + cmd);
-				}
-				// */
-				//edtFileName.selectableItems = items;
-				if (isNaN(edtFileName.selectedItem)) {
-					edtFileName.selectedItem = 0;
-				}
-				document.getElementById('right-sidebar').innerHTML = commands;
-				setStyle(document.body, 'right-bar');
-				hint = items[edtFileName.selectedItem].substr(1);
+				hint = '|enter a command or Shift+Enter';
 				break;
 		}
 	}
@@ -120,15 +91,59 @@ function completeAction(action, hint) {
 	edtFileName.selectionEnd = edtFileName.value.length;
 }
 
+function setActions(actions, nextPrev) {
+	//let commands = document.getElementById('commands');
+	commands.innerHTML = null;
+	if (actions == null) {
+		setStyle(document.body, '-right-bar');
+		spnCounter.innerText = null;
+		commands.onNextPrev = undefined;
+		return;
+	}
+
+	if (nextPrev === undefined) {
+		let item = -1;
+		let items = Object.keys(actions);
+		nextPrev = function(direction) {
+			if (document.activeElement != edtFileName) {
+				return actionError();
+			}
+			item += direction;
+			let error = false;
+			if (item >= items.length) {
+				item = items.length - 1;
+				error = true;
+			}
+			if (item < 0) {
+				item = 0;
+				error = true;
+			}
+			spnCounter.innerText = '' + (item + 1) + ' / ' + items.length;
+			completeAction(items[item]);
+			if (error) {
+				actionError();
+			}
+			return false;
+		}
+	}
+
+	commands.onNextPrev = nextPrev;
+
+	for (let action in actions) {
+		let row = document.createElement("li");
+		row.innerText = action;
+		row.onclick = actions[action];
+		commands.appendChild(row);
+	}
+}
+
 edtFileName.onfocus = function() {
 	edtFileName.selectionStart = 0;
 	edtFileName.selectionEnd = edtFileName.value.length;
 }
 edtFileName.onblur = function() {
-	//setStyle(document.body, '-right-bar');
 	edtFileName.value = params.file || '';
-	edtFileName.selectableItems = null;
-	//edtFileName.selectedItem = -1;
+	spnCounter.innerText = null;
 	editor.focus();
 }
 var customCommands = {
@@ -154,20 +169,6 @@ var customCommands = {
 		params.update({ content: null, file: null });
 		return true;
 	},
-	'+': function(value, action) {
-		if (value !== '') {
-			return false;
-		}
-		editor.execCommand('unfoldAll');
-		return true;
-	},
-	'-': function(value, action) {
-		if (value !== '') {
-			return false;
-		}
-		editor.execCommand('foldAll');
-		return true;
-	},
 }
 
 edtFileName.onkeydown = function(event) {
@@ -175,10 +176,33 @@ edtFileName.onkeydown = function(event) {
 		return true;
 	}
 
+	if (event.shiftKey && document.activeElement === edtFileName) {
+		setStyle(document.body, 'right-bar');
+	}
+
 	let action = edtFileName.value;
 	// `!commands` => execute command
 	if (action.startsWith('!')) {
-		return executeAction(action.substr(1));
+		let command = action.substr(1);
+		let filter = new RegExp(command, "i");
+		if (event.shiftKey) {
+			let actions = {};
+			for (let cmd in customCommands) {
+				if (cmd.search(filter) === -1) {
+					continue;
+				}
+				actions['!' + cmd] = function() { completeAction('!' + cmd); }
+			}
+			for (let cmd in CodeMirror.commands) {
+				if (cmd.search(filter) === -1) {
+					continue;
+				}
+				actions['!' + cmd] = function() { executeAction(cmd); }
+			}
+			setActions(actions);
+			return false;
+		}
+		return executeAction(command);
 	}
 
 	// `#arguments` => execute script
@@ -199,35 +223,62 @@ edtFileName.onkeydown = function(event) {
 		params.update({line});
 	}
 
-	// ?* => find and select occurrences
-	else if (action.startsWith('?*')) {
-		let text = action.substr(2);
-		let cursor = editor.getSearchCursor(text, 0);
-		let selections = [];
-		while (cursor.findNext()) {
-			selections.push({
-				anchor: cursor.from(),
-				head: cursor.to()
-			});
-		}
-		if (selections.length < 1) {
-			edtFileName.cursor = null;
-			return actionError();
-		}
-		editor.setCursor(selections[0].head);
-		editor.setSelections(selections);
-	}
-
 	// ? => find text
 	else if (action.startsWith('?')) {
 		let text = action.substr(1);
 		let cursor = editor.getSearchCursor(text, 0);
-		if (!cursor.findNext()) {
-			edtFileName.cursor = null;
+		let selection = 0;
+		let selections = [];
+		let results = {
+			SelectAll: function() {
+				setStyle(document.body, '-right-bar');
+				editor.setCursor(selections[0].head);
+				editor.setSelections(selections);
+				editor.focus();
+			}
+		};
+		while (cursor.findNext()) {
+			let from = cursor.from();
+			let to = cursor.to();
+			selections.push({
+				anchor: from,
+				head: to
+			});
+			let line = 'line ' + (+cursor.pos.from.line + 1);
+			if (results[line] === undefined) {
+				results[line] = function() {
+					editor.setSelection(from, to);
+				}
+			}
+		}
+		if (selections.length === 0) {
+			setActions();
 			return actionError();
 		}
-		editor.setSelection(cursor.from(), cursor.to());
-		edtFileName.cursor = cursor;
+		editor.setCursor(selections[0].head);
+		if (event.altKey) {
+			editor.setSelections(selections);
+			editor.focus();
+			return false;
+		}
+		setActions(results, function(direction) {
+			selection += direction;
+			if (selection >= selections.length) {
+				selection = selections.length - 1;
+				return actionError();
+			}
+			if (selection < 0) {
+				selection = 0;
+				return actionError();
+			}
+			let pos = selections[selection];
+			editor.setSelection(pos.anchor, pos.head);
+			if (document.activeElement === edtFileName) {
+				edtFileName.value = action;
+				spnCounter.innerText = '' + (selection + 1) + ' / ' + selections.length;
+			}
+		});
+		return false;
 	}
 
 	// '[{...' => project
@@ -237,6 +288,12 @@ edtFileName.onkeydown = function(event) {
 			file: params.file,
 			line: params.line
 		});
+	}
+	else if (action === '-') {
+		editor.execCommand('foldAll');
+	}
+	else if (action === '+') {
+		editor.execCommand('unfoldAll');
 	}
 
 	/* close file
@@ -289,18 +346,14 @@ CodeMirror.commands.find = function(cm) {
 	completeAction('?');
 }
 CodeMirror.commands.findNext = function(cm) {
-	let cursor = edtFileName.cursor;
-	if (cursor && cursor.findNext()) {
-		editor.setSelection(cursor.from(), cursor.to());
-	} else {
-		actionError();
+	if (commands.onNextPrev == null) {
+		return actionError();
 	}
+	commands.onNextPrev(+1);
 }
 CodeMirror.commands.findPrev = function(cm) {
-	let cursor = edtFileName.cursor;
-	if (cursor && cursor.findPrevious()) {
-		editor.setSelection(cursor.from(), cursor.to());
-	} else {
-		actionError();
+	if (commands.onNextPrev == null) {
+		return actionError();
 	}
+	commands.onNextPrev(-1);
 }

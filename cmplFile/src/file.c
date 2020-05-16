@@ -13,9 +13,9 @@ static inline rtValue nextArg(nfcContext ctx) {
 	return ctx->rt->api.nfcReadArg(ctx, ctx->rt->api.nfcNextArg(ctx));
 }
 
-static const char *const proto_file_open = "File open(char path[*])";
-static const char *const proto_file_create = "File create(char path[*])";
-static const char *const proto_file_append = "File append(char path[*])";
+static const char *const proto_file_open = "File open(const char path[*])";
+static const char *const proto_file_create = "File create(const char path[*])";
+static const char *const proto_file_append = "File append(const char path[*])";
 static vmError FILE_open(nfcContext ctx) {
 	char *name = nextArg(ctx).ref;
 	const char *mode = NULL;
@@ -80,7 +80,7 @@ static vmError FILE_putc(nfcContext ctx) {
 	return noError;
 }
 
-static const char *const proto_file_write_buff = "int write(File file, uint8 buff[])";
+static const char *const proto_file_write_buff = "int write(File file, const uint8 buff[])";
 static vmError FILE_write(nfcContext ctx) {
 	FILE *file = (FILE *) nextArg(ctx).ref;
 	rtValue buff = nextArg(ctx);

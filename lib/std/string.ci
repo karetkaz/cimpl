@@ -247,11 +247,11 @@ int append(char output[], int pos, float64 value, const FormatFlags format&) {
 
 	char sign = value < 0 ? '-' : 0;
 	float64 fract = Math.modf(Math.abs(value), &value);
-	pos = output.append(pos, sign, uint64(value), formatInt);
+	pos = output.append(pos, sign, uint64(int64(value)), formatInt);
 
 	pos = output.append(pos, ".");
 	fract *= float64.pow(10, format.precision);
-	pos = output.append(pos, 0, uint64(fract), formatDec);
+	pos = output.append(pos, 0, uint64(int64(fract)), formatDec);
 	return pos;
 }
 

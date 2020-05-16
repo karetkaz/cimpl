@@ -215,83 +215,14 @@ void alphaLut(uint32 lut[], int hardness, int alpha, bool reflect) {
 
 static if (typename(vec4f) != null) {
 
-/// convert a floating point vector to rgb
+/// convert an argb color to a floating point vector
+inline vec4f(argb rgb) = vec4f(rch(rgb) / 255f, gch(rgb) / 255f, bch(rgb) / 255f, ach(rgb) / 255f);
+
+/// convert a floating point vector to an argb color
 inline argb(const vec4f vec&) = argb(vec.x, vec.y, vec.z);
 
 /// calculate the luminosity of a color
 inline lum(const vec4f vec&) = 0.299f * vec.x + 0.587f * vec.y + 0.114f * vec.z;
-
-/// convert from hsv color space to rgb color space
-vec4f hsv2rgb(vec4f hsv) {
-	float32 h = hsv.x;
-	float32 s = hsv.y;
-	float32 v = hsv.z;
-
-	if (s == 0) {
-		return vec4f(v);
-	}
-
-	h *= 360 / 60;
-
-	int i = int(h);		// round
-	float32 f = h - i;	// fraction
-
-	float32 u = v;
-	float32 p = v * (1 - s);
-	float32 q = v * (1 - s * f);
-	float32 t = v * (1 - s * (1 - f));
-
-	if (i == 0) {
-		return vec4f(u, t, p);
-	}
-	if (i == 1) {
-		return vec4f(q, u, p);
-	}
-	if (i == 2) {
-		return vec4f(p, u, t);
-	}
-	if (i == 3) {
-		return vec4f(p, q, u);
-	}
-	if (i == 4) {
-		return vec4f(t, p, u);
-	}
-	return vec4f(u, p, q);
-}
-}
-
-/// convert from hsv color space to rgb color space
-argb hsv2rgb(float32 h, float32 s, float32 v) {
-	if (s == 0) {
-		return argb(0, 0, 0);
-	}
-
-	h *= 360 / 60;
-
-	int i = int(h);		// round
-	float32 f = h - i;	// fraction
-
-	float32 u = v;
-	float32 p = v * (1 - s);
-	float32 q = v * (1 - s * f);
-	float32 t = v * (1 - s * (1 - f));
-
-	if (i == 0) {
-		return argb(u, t, p);
-	}
-	if (i == 1) {
-		return argb(q, u, p);
-	}
-	if (i == 2) {
-		return argb(p, u, t);
-	}
-	if (i == 3) {
-		return argb(p, q, u);
-	}
-	if (i == 4) {
-		return argb(t, p, u);
-	}
-	return argb(u, p, q);
 }
 
 /// draw the given lookup table to the image
@@ -354,3 +285,6 @@ void drawLut(Image image, const Rect roi&, const uint32 bars[256], const uint32 
 		}
 	}
 }
+
+inline "color.hsv.ci";
+inline "color.hsl.ci";

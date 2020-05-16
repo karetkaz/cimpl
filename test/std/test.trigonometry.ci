@@ -1,31 +1,31 @@
 // test the trigonometry functions from Math
 
-void assertEq(char func[*], float64 x, float64 returned, float64 expected) {
+void assertEq(const char func[*], float64 x, float64 returned, float64 expected) {
 	inline epsilon = 1e-15;
 	if (Math.cmp(returned, expected, epsilon) == 0) {
 		return;
 	}
 
+	variant extra[2] = {func,x};
 	NotEquals details = {
 		expected: expected;
 		returned: returned;
-		argument: x;
-		message: func;
+		extras: extra;
 	};
 	raise(raise.abort, raise.defTrace, "assertion failed", details);
 }
 
-void assertEq(char func[*], float32 x, float32 returned, float32 expected) {
+void assertEq(const char func[*], float32 x, float32 returned, float32 expected) {
 	inline epsilon = 1e-6f;
 	if (Math.cmp(returned, expected, epsilon) == 0) {
 		return;
 	}
 
+	variant extra[2] = {func,x};
 	NotEquals details = {
 		expected: expected;
 		returned: returned;
-		argument: x;
-		message: func;
+		extras: extra;
 	};
 	raise(raise.abort, raise.defTrace, "assertion failed", details);
 }

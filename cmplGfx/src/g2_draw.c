@@ -138,12 +138,10 @@ void drawLine(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 	int dx = ((x2 - x1) << 16) / (y2 == y1 ? 1 : y2 - y1);
 	if ((dx >> 16) == (dx >> 31)) {
 		if (y1 > y2) {
-			int x = x1;
-			x1 = x2;
-			x2 = x;
 			int y = y1;
 			y1 = y2;
 			y2 = y;
+			x1 = x2;
 		}
 		int x = (x1 << 16) + 0x8000;
 		if (y1 < 0) {
@@ -164,9 +162,7 @@ void drawLine(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 			int x = x1;
 			x1 = x2;
 			x2 = x;
-			int y = y1;
 			y1 = y2;
-			y2 = y;
 		}
 		int y = (y1 << 16) + 0x8000;
 		if (x1 < 0) {

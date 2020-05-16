@@ -13,7 +13,7 @@ Image back = Image("asset/image/forest.png", 32);
 Image font = Image.openFnt("asset/font/Modern-1.fnt");
 Image offs = Image(back.width(), back.height(), back.depth());
 
-void levels(uint32 lut[256], int input, int output) {
+void levels(uint32 lut[256], int brightness, int output, int input) {
 	argb lut2[*] = lut;
 
 	int mid1 = input > 0 ? 0 : 255;
@@ -25,7 +25,7 @@ void levels(uint32 lut[256], int input, int output) {
 		// TODO: val = (output * (val - mid)) / input + mid;
 		val = (output * (val - mid2)) / 256 + mid2;
 		val = (val - mid1) * 255 / input + mid1;
-		int rgb = clamp_s8(val);
+		int rgb = clamp_s8(val + brightness);
 		lut2[idx].r = rgb;
 		lut2[idx].g = rgb;
 		lut2[idx].b = rgb;
@@ -44,12 +44,17 @@ int onEvent(int action, int button, int x, int y) {
 	inline "/lib/gfx/micro.ui.ci";
 
 	static Slider sldInput = {
-		text: "input";
+		text: "Input";
 		minimum: -255;
 		maximum: 255;
 	};
 	static Slider sldOutput = {
-		text: "output";
+		text: "Output";
+		minimum: -256;
+		maximum: 256;
+	};
+	static Slider sldBrightness = {
+		text: "Brightness";
 		minimum: -256;
 		maximum: 256;
 	};
@@ -72,8 +77,9 @@ int onEvent(int action, int button, int x, int y) {
 	static Layout ui = Layout(offs, -30, 30, font,
 		histogram,
 		curves,
-		sldInput,
+		sldBrightness,
 		sldOutput,
+		sldInput,
 		time
 	);
 
@@ -89,9 +95,16 @@ int onEvent(int action, int button, int x, int y) {
 
 	if (ui.uiEvent(action, button, x, y)) {
 		uint64 start = System.millis();
-		if (ui.isActive(sldInput, sldOutput)) {
-			levels(curves.data, sldInput.val(), sldOutput.val());
+		if (ui.isActive(sldBrightness)) {
+			levels(curves.data, sldBrightness.value, 0, 0);
 		}
+		else if (ui.isActive(sldOutput)) {
+			levels(curves.data, 0, sldOutput.value, 0);
+		}
+		else if (ui.isActive(sldInput)) {
+			levels(curves.data, 0, 0, sldInput.value);
+		}
+
 		offs.resize(null, back, null, 1);
 		offs.colorMap(null, curves.data);
 		offs.calcHist(null, 0x00ffffff, histogram.data);

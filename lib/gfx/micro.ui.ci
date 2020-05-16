@@ -83,10 +83,19 @@ struct Slider: View {
 	int value = 0;
 	const int minimum = 0;
 	const int maximum = -1u >> 1;
-	const int divisor = 1;
+	const int divisor = 0;
 	const int resetValue = 0;
 
 	bool onUpdate(Slider this, int value) {
+		if (value > this.maximum) {
+			value = this.maximum;
+		}
+		if (value < this.minimum) {
+			value = this.minimum;
+		}
+		if (this.value == value) {
+			return false;
+		}
 		this.value = value;
 		return true;
 	}
@@ -124,24 +133,19 @@ struct Layout: object {
 	bool measure = true;
 	int selectedIndex = -1;
 	int activeIndex = -1;
+	bool colorPick = false;
 	View views[64] = null;
 	Rect rects[64] = null;
 	int items = 0;
 	int group = 0;
 }
 
-int val(Slider slider&) {
-	if (slider.value < slider.minimum) {
-		slider.value = slider.minimum;
-	}
-	if (slider.value > slider.maximum) {
-		slider.value = slider.maximum;
-	}
-	return slider.value;
-}
-
 float64 valFlt(Slider slider&) {
-	return slider.val() / float64(slider.divisor);
+	float64 value = slider.value;
+	if (slider.divisor != 0) {
+		return value / slider.divisor;
+	}
+	return value / (slider.maximum - slider.minimum);
 }
 
 inline selected(const Layout layout&) = layout.selectedIndex < 0 ? null : pointer(layout.views[layout.selectedIndex]);
@@ -207,6 +211,7 @@ void onInit(View this, Layout layout&, int idx) {
 		return;
 	}
 	if (Slider item = this.as(Slider)) {
+		Slider.onUpdate(item, item.value);// clamp initial value
 		int resetValue& = pointer(item.resetValue);
 		resetValue = item.value;
 		return;
@@ -332,7 +337,7 @@ bool onEvent(View this, const MouseEvent event&) {
 		const Rect rect& = event.clientRect;
 		float32 px = Math.clamp(float32(event.x - rect.x), 0f, rect.w - 1f) / rect.w;
 		float32 py = Math.clamp(float32(event.y - rect.y), 0f, rect.h - 1f) / rect.h;
-		item.onUpdate(hsv2rgb(px, 1 - py, item.lum));
+		item.onUpdate(argb(hsv2rgb(vec4f(px, 1 - py, item.lum))));
 		item.x = event.x - rect.x;
 		item.y = event.y - rect.y;
 		return true;
@@ -464,26 +469,6 @@ void onMeasure(View this, Rect rect&, const Style style&) {
 		return;
 	}
 	abort("invalid view", this);
-}
-bool onDraw(View this, const Rect rect&, const Style style&) {
-	/* FIXME: dispatch click event using inheritance and override
-	if (ColorPicker item = this.as(ColorPicker)) {
-		return;
-	}
-	if (Histogram item = this.as(Histogram)) {
-		return;
-	}
-	if (Slider item = this.as(Slider)) {
-		return;
-	}
-	if (Switch item = this.as(Switch)) {
-		return;
-	}
-	if (Button item = this.as(Button)) {
-		return;
-	}
-	abort("invalid view", this);
-	*/
 }
 
 bool uiEvent(Layout layout&, int action, int button, int x, int y) {
@@ -662,7 +647,7 @@ static void draw(Layout layout&) {
 				for (int x = 0; x < rect.w; x += 1) {
 					float32 px = float32(x) / rect.w;
 					float32 py = float32(y) / rect.h;
-					argb color = hsv2rgb(px, 1 - py, item.lum);
+					argb color = argb(hsv2rgb(vec4f(px, 1 - py, item.lum)));
 					layout.offs.set(x + rect.x, y + rect.y, color);
 				}
 			}
@@ -681,10 +666,10 @@ static void draw(Layout layout&) {
 		}
 		else if (Slider item = view.as(Slider)) {
 			text = item.text;
-			if (item.divisor != 1) {
+			if (item.divisor != 0) {
 				pos = value.append(pos, item.valFlt(), flagsFlt);
 			} else {
-				pos = value.append(pos, item.val(), flagsInt);
+				pos = value.append(pos, item.value, flagsInt);
 			}
 		}
 		else if (Switch item = view.as(Switch)) {
@@ -725,6 +710,7 @@ static void draw(Layout layout&) {
 		}
 	}
 }
+	layout.colorPick = false;
 
 	if (action == Gui.WINDOW_INIT) {
 		layout.selectedIndex = -1;
@@ -765,7 +751,7 @@ static void draw(Layout layout&) {
 	}
 
 	if (action == Gui.MOUSE_PRESS) {
-		mouse.click(button, x, y);
+		click(&mouse, button, x, y);
 		if (button != 1) {
 			return false;
 		}
@@ -779,6 +765,7 @@ static void draw(Layout layout&) {
 		if (activeIndex < 0) {
 			// allow update of selected control
 			activeIndex = layout.selectedIndex;
+			layout.colorPick = true;
 			if (activeIndex < 0) {
 				return result;
 			}
@@ -805,7 +792,7 @@ static void draw(Layout layout&) {
 	if (action == Gui.MOUSE_MOTION) {
 		int ox = mouse.x;
 		int oy = mouse.y;
-		mouse.click(-1, x, y);
+		click(&mouse, -1, x, y);
 		if (button != 1) {
 			return false;
 		}
@@ -816,8 +803,9 @@ static void draw(Layout layout&) {
 		if (activeIndex < 0) {
 			// allow update of selected control
 			activeIndex = layout.selectedIndex;
+			layout.colorPick = true;
 			if (activeIndex < 0) {
-				return;
+				return true;
 			}
 		}
 		if (View view = layout.views[activeIndex]) {
@@ -843,7 +831,7 @@ static void draw(Layout layout&) {
 	}
 	if (action == Gui.MOUSE_RELEASE) {
 		int btn = mouse.btn;
-		mouse.click(0, x, y);
+		click(&mouse, 0, x, y);
 		if (button != 1) {
 			return false;
 		}
@@ -860,6 +848,7 @@ static void draw(Layout layout&) {
 		}
 		if (activeIndex < 0) {
 			// might be a disabled view
+			layout.colorPick = true;
 			return result;
 		}
 		// select / focus the view

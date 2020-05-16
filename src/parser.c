@@ -1086,15 +1086,19 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 			// fixed-size array: int a[42]
 			// associative array: TODO: int a[string]
 			int64_t length = -1;
+			char *file = cc->file;
+			int line = cc->line;
 			astn len = expression(cc, 0);
 			if (len != NULL) {
 				len->type = typeCheck(cc, NULL, len, 1);
+				line = len->line;
+				file = len->file;
 			}
 			if (eval(cc, len, len)) {
 				length = intValue(len);
 			}
 			if (length <= 0) {
-				error(cc->rt, len->file, len->line, ERR_INVALID_ARRAY_LENGTH, len);
+				error(cc->rt, file, line, ERR_INVALID_ARRAY_LENGTH, len);
 			}
 			addLength(cc, arr, len);
 			arr->size = length * type->size;
@@ -1875,7 +1879,9 @@ static astn statement(ccContext cc, const char *doc) {
 			}
 		}
 		skipTok(cc, STMT_end, 1);
-		ast->type = type;
+		if (ast != NULL) {
+			ast->type = type;
+		}
 	}
 
 	if (ast != NULL) {

@@ -1,0 +1,337 @@
+/// convert a 64 bit value between Little endian and Big endian
+uint64 swapBytes(uint64 x) {
+	x = (x & 0x00000000ffffffff) << 32 | (x & 0xffffffff00000000) >> 32;
+	x = (x & 0x0000ffff0000ffff) << 16 | (x & 0xffff0000ffff0000) >> 16;
+	x = (x & 0x00ff00ff00ff00ff) << 8  | (x & 0xff00ff00ff00ff00) >> 8;
+	return x;
+}
+
+/// convert a 32 bit value between Little endian and Big endian
+uint32 swapBytes(uint32 x) {
+	x = (x & 0x0000ffff) << 16 | (x & 0xffff0000) >> 16;
+	x = (x & 0x00ff00ff) << 8  | (x & 0xff00ff00) >> 8;
+	return x;
+}
+
+/// convert a 16 bit value between Little endian and Big endian
+uint16 swapBytes(uint16 x) {
+	return (x & 0x00ff) << 8 | (x & 0xff00) >> 8;
+}
+
+
+/// find the index of the most significant(highest) bit
+int scanMsb(uint64 x) {
+	if (x == 0) {
+		return -1;
+	}
+
+	int result = 0;
+	if (x & 0xffffffff00000000) {
+		result += 32;
+		x >>= 32;
+	}
+	if (x & 0xffff0000) {
+		result += 16;
+		x >>= 16;
+	}
+	if (x & 0xff00) {
+		result += 8;
+		x >>= 8;
+	}
+	if (x & 0xf0) {
+		result += 4;
+		x >>= 4;
+	}
+	if (x & 0xc) {
+		result += 2;
+		x >>= 2;
+	}
+	if (x & 0x2) {
+		result += 1;
+	}
+	return result;
+}
+
+/// find the index of the most significant(highest) bit
+int scanMsb(uint32 x) {
+	if (x == 0) {
+		return -1;
+	}
+
+	int result = 0;
+	if (x & 0xffff0000) {
+		result += 16;
+		x >>= 16;
+	}
+	if (x & 0xff00) {
+		result += 8;
+		x >>= 8;
+	}
+	if (x & 0xf0) {
+		result += 4;
+		x >>= 4;
+	}
+	if (x & 0xc) {
+		result += 2;
+		x >>= 2;
+	}
+	if (x & 0x2) {
+		result += 1;
+	}
+	return result;
+}
+
+/// find the index of the most significant(highest) bit
+int scanMsb(uint16 x) {
+	if (x == 0) {
+		return -1;
+	}
+
+	int result = 0;
+	if (x & 0xff00) {
+		result += 8;
+		x >>= 8;
+	}
+	if (x & 0xf0) {
+		result += 4;
+		x >>= 4;
+	}
+	if (x & 0xc) {
+		result += 2;
+		x >>= 2;
+	}
+	if (x & 0x2) {
+		result += 1;
+	}
+	return result;
+}
+
+/// find the index of the most significant(highest) bit
+int scanMsb(uint8 x) {
+	if (x == 0) {
+		return -1;
+	}
+
+	int result = 0;
+	if (x & 0xf0) {
+		result += 4;
+		x >>= 4;
+	}
+	if (x & 0xc) {
+		result += 2;
+		x >>= 2;
+	}
+	if (x & 0x2) {
+		result += 1;
+	}
+	return result;
+}
+
+/// find the index of the least significant(lowest) bit
+int scanLsb(uint64 x) {
+	if (x == 0) {
+		return -1;
+	}
+
+	int result = 0;
+	if ((x & 0xffffffff) == 0) {
+		result += 32;
+		x >>= 32;
+	}
+	if ((x & 0xffff) == 0) {
+		result += 16;
+		x >>= 16;
+	}
+	if ((x & 0xff) == 0) {
+		result += 8;
+		x >>= 8;
+	}
+	if ((x & 0xf) == 0) {
+		result += 4;
+		x >>= 4;
+	}
+	if ((x & 0x3) == 0) {
+		result += 2;
+		x >>= 2;
+	}
+	if ((x & 0x1) == 0) {
+		result += 1;
+	}
+	return result;
+}
+
+/// find the index of the least significant(lowest) bit
+int scanLsb(uint32 x) {
+	if (x == 0) {
+		return -1;
+	}
+
+	int result = 0;
+	if ((x & 0xffff) == 0) {
+		result += 16;
+		x >>= 16;
+	}
+	if ((x & 0xff) == 0) {
+		result += 8;
+		x >>= 8;
+	}
+	if ((x & 0xf) == 0) {
+		result += 4;
+		x >>= 4;
+	}
+	if ((x & 0x3) == 0) {
+		result += 2;
+		x >>= 2;
+	}
+	if ((x & 0x1) == 0) {
+		result += 1;
+	}
+	return result;
+}
+
+/// find the index of the least significant(lowest) bit
+int scanLsb(uint16 x) {
+	if (x == 0) {
+		return -1;
+	}
+
+	int result = 0;
+	if ((x & 0xff) == 0) {
+		result += 8;
+		x >>= 8;
+	}
+	if ((x & 0xf) == 0) {
+		result += 4;
+		x >>= 4;
+	}
+	if ((x & 0x3) == 0) {
+		result += 2;
+		x >>= 2;
+	}
+	if ((x & 0x1) == 0) {
+		result += 1;
+	}
+	return result;
+}
+
+/// find the index of the least significant(lowest) bit
+int scanLsb(uint8 x) {
+	if (x == 0) {
+		return -1;
+	}
+
+	int result = 0;
+	if ((x & 0xf) == 0) {
+		result += 4;
+		x >>= 4;
+	}
+	if ((x & 0x3) == 0) {
+		result += 2;
+		x >>= 2;
+	}
+	if ((x & 0x1) == 0) {
+		result += 1;
+	}
+	return result;
+}
+
+// TODO: uint16 keepMsb(uint16 x)
+// TODO: uint8 keepMsb(uint8 x)
+/// keep the highest bit set
+uint64 keepMsb(uint64 x) {
+	x |= x >> 1;
+	x |= x >> 2;
+	x |= x >> 4;
+	x |= x >> 8;
+	x |= x >> 16;
+	x |= x >> 32;
+	return x - (x >> 1);
+}
+/// keep the highest bit set
+uint32 keepMsb(uint32 x) {
+	x |= x >> 1;
+	x |= x >> 2;
+	x |= x >> 4;
+	x |= x >> 8;
+	x |= x >> 16;
+	return x - (x >> 1);
+}
+
+/// keep the lowest bit set
+inline keepLsb(uint64 x) = uint64(x & -x);
+/// keep the lowest bit set
+inline keepLsb(uint32 x) = uint32(x & -x);
+/// keep the lowest bit set
+inline keepLsb(uint16 x) = uint16(x & -x);
+/// keep the lowest bit set
+inline keepLsb(uint8 x) = uint8(x & -x);
+
+// TODO: int countBits(uint64 x)
+// TODO: int countBits(uint16 x)
+// TODO: int countBits(uint8 x)
+/// count bits set to one
+int countBits(uint64 x) {
+	x -= (x >> 1) & 0x5555555555555555;
+	x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
+	x = (x + (x >> 4)) & 0x0f0f0f0f0f0f0f0f;
+	x += x >> 8;
+	x += x >> 16;
+	x += x >> 32;
+	return x & 0x3f;
+}
+int countBits(uint32 x) {
+	x -= (x >> 1) & 0x55555555;
+	x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
+	x = (x + (x >> 4)) & 0x0f0f0f0f;
+	x += x >> 8;
+	x += x >> 16;
+	return x & 0x3f;
+}
+// reverse all the bits
+uint64 swapBits(uint64 x) {
+	x = ((x >> 1) & 0x5555555555555555) | ((x & 0x5555555555555555) << 1);
+	x = ((x >> 2) & 0x3333333333333333) | ((x & 0x3333333333333333) << 2);
+	x = ((x >> 4) & 0x0f0f0f0f0f0f0f0f) | ((x & 0x0f0f0f0f0f0f0f0f) << 4);
+	x = ((x >> 8) & 0x00ff00ff00ff00ff) | ((x & 0x00ff00ff00ff00ff) << 8);
+	x = ((x >> 16) & 0x0000ffff0000ffff) | ((x & 0x0000ffff0000ffff) << 16);
+	return (x >> 32) | (x << 32);
+}
+
+// reverse all the bits
+uint32 swapBits(uint32 x) {
+	x = ((x >> 1) & 0x55555555) | ((x & 0x55555555) << 1);
+	x = ((x >> 2) & 0x33333333) | ((x & 0x33333333) << 2);
+	x = ((x >> 4) & 0x0f0f0f0f) | ((x & 0x0f0f0f0f) << 4);
+	x = ((x >> 8) & 0x00ff00ff) | ((x & 0x00ff00ff) << 8);
+	return (x >> 16) | (x << 16);
+}
+
+// reverse all the bits
+uint16 swapBits(uint16 x) {
+	x = ((x >> 1) & 0x5555) | ((x & 0x5555) << 1);
+	x = ((x >> 2) & 0x3333) | ((x & 0x3333) << 2);
+	x = ((x >> 4) & 0x0f0f) | ((x & 0x0f0f) << 4);
+	return (x >> 8) | (x << 8);
+}
+
+// reverse all the bits
+uint8 swapBits(uint8 x) {
+	x = ((x >> 1) & 0x55) | ((x & 0x55) << 1);
+	x = ((x >> 2) & 0x33) | ((x & 0x33) << 2);
+	return (x >> 4) | (x << 4);
+}
+
+inline swapBytes(int64 x) = int64(swapBytes(uint64(x)));
+inline swapBytes(int32 x) = int32(swapBytes(uint32(x)));
+inline swapBytes(int16 x) = int16(swapBytes(uint16(x)));
+
+/* TODO: leftovers
+define Lo32(int64 a) = int32(a);					// Lo32 part
+define Hi32(int64 a) = Lo32(int64.Shr(a, 32));		// Hi32 part
+define Lo16(int32 a) = int32(a & 0xffff);			// Lo16 part
+define Hi16(int32 a) = Lo16(a >> 16);				// Hi16 part
+define Lo8(int32 a) = int32(a & 0xff);				// Lo16 part
+define Hi8(int32 a) = Lo8(a >> 8);					// Hi16 part
+define sxt64(int32 a) = int64(int32(a));			// sign extend
+define zxt64(int32 a) = int64(uint32(a));			// zero extend
+*/

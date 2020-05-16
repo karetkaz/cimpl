@@ -90,7 +90,7 @@ int onEvent(int action, int button, int x, int y) {
 	}
 	if (redraw) {
 		uint64 start = System.millis();
-		brightnessContrastGamma(curves.data, brightness.val(), contrast.val());
+		brightnessContrastGamma(curves.data, brightness.value, contrast.value);
 		offs.resize(null, back, null, 1);
 		offs.colorMap(null, curves.data);
 		offs.calcHist(null, 0x00ffffff, histogram.data);

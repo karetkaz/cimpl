@@ -130,7 +130,6 @@ struct ccContextRec {
 /// Debugger context
 struct dbgContextRec {
 	rtContext rt;
-	userContext extra;		// extra data for debugger and-or profiler
 	dbgn (*debug)(dbgContext ctx, vmError, size_t ss, void *sp, size_t caller, size_t callee);
 
 	struct arrBuffer functions;

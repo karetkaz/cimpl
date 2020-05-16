@@ -35,14 +35,15 @@
 
 <div id="bottom-sidebar" class="sidebar">
 	<div id="output-toolbar" class="toolbar">
-		<select class="output left" id="selOutput" onchange="void(0);" onclick="event.stopPropagation()">
+		<select class="output left" id="selOutput" onchange="selectOutputTab(this);" onclick="event.stopPropagation()">
 			<option value="Output-0">Output</option>
+<!--			<option value="Output-0">Pin Output</option>-->
+			<option onchange="editOutput();">Edit Output</option>
+			<option onchange="terminal.clear();">Clear Output</option>
 			<!-- <option value="Search-0">Search</option> -->
 		</select>
 		<span class="no-output left" onclick="setStyle(body, 'output');">Output</span>
 		<!-- <span class="no-output left" onclick="setStyle(body, 'output');">Search</span> -->
-		<span class="output left icon bold" onclick="editOutput();" title="Open output in editor">💾</span>
-		<span class="output left icon bold" title="Clear output" onclick="terminal.clear();">❌</span>
 		<!-- <span class="right icon" title="Full screen output" onclick="setStyle(body, '-editor', 'output');">⬒</span> -->
 		<span class="output right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
 		<span class="output right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
@@ -50,8 +51,8 @@
 	</div>
 	<pre id="output"></pre>
 </div>
-<div id="left-overlay" class="overlay" onclick="setStyle(body, '-left-bar');"></div>
 <div id="left-sidebar" class="sidebar">
+	<div class="overlay" onclick="setStyle(body, '-left-bar');"></div>
 	<div class="collapsed submenu">
 	<li onclick="setStyle(parentElement, '!collapsed');">File
 		<button class="right" onclick="event.stopPropagation(); saveInput();" title="Save">💾</button>
@@ -173,7 +174,7 @@
 	<!--<button class="right" onclick="event.stopPropagation(); uploadFiles();">📤</button>-->
 	</li>
 	<ul id="workspaceList">
-		<li onClick="params.update({file: 'testGfx.ci', content: null, project: 'W3sKCSJ1cmwiOiAiY21wbEdmeC90ZXN0LzJkLmRyYXcuYmV6aWVyLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC8yZC5kcmF3LmltYWdlLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC8yZC5JbWFnZURpZmYuY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0LzJkLkwtU3lzdGVtLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC8zZC5kcmF3Lm1lc2guY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0LzNkLmhlaWdodC5tYXAuY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0LzNkLnBhcmFtZXRyaWMuY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L2Z4LmNvbG9yLmJsZW5kLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5jb2xvci5sb29rdXAtZWFzZS5jaSIKfSwgewoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvZnguY29sb3IubG9va3VwLWxldmVscy5jaSIKfSwgewoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvZnguY29sb3IubG9va3VwLWxpZ2h0LmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5jb2xvci5sb29rdXAtbWFudWFsLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5jb2xvci5sb29rdXAuY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L2Z4LmNvbG9yLm1hdHJpeC5jaSIKfSwgewoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvZnguY29sb3IucGlja2VyLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5pbWFnZS5ibHVyLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5pbWFnZS50cmFuc2Zvcm0uY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L3BkLmJsb2IuY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L3BkLmNvbXBsZXhQbGFuZS5jaSIKfSwgewoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvcGQueWlueWFuZy5jaSIKfSwgewoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvU3RhckZpZWxkLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC90ZXN0R2Z4LmNpIgp9LCB7CgkicGF0aCI6ICJhc3NldC9mb250L21vZGVybi0xLmZudCIsCgkidXJsIjogImNtcGxHZngvdGVzdC9hc3NldC9mb250L21vZGVybi0xLmZudCIKfSwgewoJInBhdGgiOiAiYXNzZXQvaW1hZ2UvZGF2aWQucG5nIiwKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L2Fzc2V0L2ltYWdlL2RhdmlkLnBuZyIKfSwgewoJInBhdGgiOiAiYXNzZXQvaW1hZ2UvZm9yZXN0LnBuZyIsCgkidXJsIjogImNtcGxHZngvdGVzdC9hc3NldC9pbWFnZS9mb3Jlc3QucG5nIgp9LCB7CgkicGF0aCI6ICJhc3NldC9pbWFnZS90ZXh0dXJlLnBuZyIsCgkidXJsIjogImNtcGxHZngvdGVzdC9hc3NldC9pbWFnZS90ZXh0dXJlLnBuZyIKfSwgewoJInBhdGgiOiAiYXNzZXQvaW1hZ2UvdGV4dHVyZV9uYXR1cmVfMDEucG5nIiwKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L2Fzc2V0L2ltYWdlL3RleHR1cmVfbmF0dXJlXzAxLnBuZyIKfSwgewoJInBhdGgiOiAiYXNzZXQvaW1hZ2UvaGVpZ2h0bWFwLnBuZyIsCgkidXJsIjogImNtcGxHZngvdGVzdC9hc3NldC9pbWFnZS9oZWlnaHRtYXAucG5nIgp9LCB7CgkicGF0aCI6ICJhc3NldC9tZXNoL3RlYXBvdC5vYmoiLAoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvYXNzZXQvbWVzaC90ZWFwb3Qub2JqIgp9XQ'});">all tests</li>
+		<li onClick="params.update({file: 'testGfx.ci', content: null, project: 'W3sKCSJ1cmwiOiAiY21wbEdmeC90ZXN0LzJkLmRyYXcuYmV6aWVyLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC8yZC5kcmF3LmltYWdlLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC8yZC5JbWFnZURpZmYuY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0LzJkLkwtU3lzdGVtLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC8zZC5kcmF3Lm1lc2guY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0LzNkLmhlaWdodC5tYXAuY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0LzNkLnBhcmFtZXRyaWMuY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L2Z4LmNvbG9yLmJsZW5kLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5jb2xvci5sb29rdXAtZWFzZS5jaSIKfSwgewoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvZnguY29sb3IubG9va3VwLWxldmVscy5jaSIKfSwgewoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvZnguY29sb3IubG9va3VwLWxpZ2h0LmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5jb2xvci5sb29rdXAtaHNsLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5jb2xvci5sb29rdXAtbWFudWFsLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5jb2xvci5sb29rdXAuY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L2Z4LmNvbG9yLm1hdHJpeC5jaSIKfSwgewoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvZnguY29sb3IucGlja2VyLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5pbWFnZS5ibHVyLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5pbWFnZS50cmFuc2Zvcm0uY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L3BkLmJsb2IuY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L3BkLmNvbXBsZXhQbGFuZS5jaSIKfSwgewoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvcGQueWlueWFuZy5jaSIKfSwgewoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvU3RhckZpZWxkLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC90ZXN0R2Z4LmNpIgp9LCB7CgkicGF0aCI6ICJhc3NldC9mb250L01vZGVybi0xLmZudCIsCgkidXJsIjogImNtcGxHZngvdGVzdC9hc3NldC9mb250L01vZGVybi0xLmZudCIKfSwgewoJInBhdGgiOiAiYXNzZXQvaW1hZ2UvZGF2aWQucG5nIiwKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L2Fzc2V0L2ltYWdlL2RhdmlkLnBuZyIKfSwgewoJInBhdGgiOiAiYXNzZXQvaW1hZ2UvZm9yZXN0LnBuZyIsCgkidXJsIjogImNtcGxHZngvdGVzdC9hc3NldC9pbWFnZS9mb3Jlc3QucG5nIgp9LCB7CgkicGF0aCI6ICJhc3NldC9pbWFnZS90ZXh0dXJlLnBuZyIsCgkidXJsIjogImNtcGxHZngvdGVzdC9hc3NldC9pbWFnZS90ZXh0dXJlLnBuZyIKfSwgewoJInBhdGgiOiAiYXNzZXQvaW1hZ2UvdGV4dHVyZV9uYXR1cmVfMDEucG5nIiwKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L2Fzc2V0L2ltYWdlL3RleHR1cmVfbmF0dXJlXzAxLnBuZyIKfSwgewoJInBhdGgiOiAiYXNzZXQvaW1hZ2UvaGVpZ2h0bWFwLnBuZyIsCgkidXJsIjogImNtcGxHZngvdGVzdC9hc3NldC9pbWFnZS9oZWlnaHRtYXAucG5nIgp9LCB7CgkicGF0aCI6ICJhc3NldC9tZXNoL3RlYXBvdC5vYmoiLAoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvYXNzZXQvbWVzaC90ZWFwb3Qub2JqIgp9XQ'});">all tests</li>
 	</ul>
 	<ul id="fileList"></ul>
 	<ul>
@@ -181,11 +182,14 @@
 		<li onclick="params.update({folder: '**'});" title="Show files including the /lib/ folder">Show all</li>
 	</ul></div>
 </div>
-<div id="right-overlay" class="overlay" onclick="setStyle(body, '-right-bar');"></div>
 <div id="right-sidebar" class="sidebar">
+	<div class="overlay" onclick="setStyle(body, '-right-bar');"></div>
+	<div class="submenu"><ul id="commands" class="">
+	<li id="pin-left" onclick="setStyle(body, '!left-pin');">Pin left sidebar</li>
 	<li id="show-left" onclick="setStyle(body, '!left-bar');">Show left sidebar</li>
 	<li id="pin-right" onclick="setStyle(body, '!right-pin');">Pin right sidebar</li>
 	<li id="show-right" onclick="setStyle(body, '!right-bar');">Show right sidebar</li>
+	</ul></div>
 </div>
 <div id="editor-panel">
 	<textarea id="input"></textarea>
@@ -211,6 +215,7 @@
 	<span class="canvas-gone right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
 	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
 	<span class="output-only right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
+	<span class="right" id="spnCounter"></span>
 
 	<!-- filename -->
 	<span class="filename" title="Execute action (Shift + Enter)

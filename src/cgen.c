@@ -892,6 +892,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 			continue;
 		}
 
+		dieif(arg == NULL, ERR_INTERNAL_ERROR);
 		switch (arg->kind) {
 
 			default:

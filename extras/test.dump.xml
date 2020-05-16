@@ -9,28 +9,28 @@
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="float32">
 				<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sin(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(32)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(31)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="cos(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(33)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(32)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="tan(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(34)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(33)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="log(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(35)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(34)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="exp(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(36)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(35)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="pow(x: float32, y: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(37)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(36)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sqrt(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(38)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(37)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="atan2(x: float32, y: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(39)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(38)" />
 				</field>
 			</init>
 		</stmt>
@@ -38,29 +38,86 @@
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="float64">
 				<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sin(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(40)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(39)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="cos(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(41)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(40)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="tan(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(42)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(41)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="log(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(43)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(42)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="exp(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(44)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(43)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="pow(x: float64, y: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(45)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(44)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sqrt(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(46)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(45)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="atan2(x: float64, y: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(47)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(46)" />
 				</field>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="signed(value: uint8): int8">
+			<init token="()" type="int8" kind="static const typename(i32)" value="int8(value)">
+				<push token=".variable" type="uint8" kind="static const typename(u32)" value="value"/>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="int8"/>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="signed(value: uint16): int16">
+			<init token="()" type="int16" kind="static const typename(i32)" value="int16(value)">
+				<push token=".variable" type="uint16" kind="static const typename(u32)" value="value"/>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="int16"/>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="signed(value: uint32): int32">
+			<init token="()" type="int32" kind="static const typename(i32)" value="int32(value)">
+				<push token=".variable" type="uint32" kind="static const typename(u32)" value="value"/>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="int32"/>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="signed(value: uint64): int64">
+			<init token="()" type="int64" kind="static const typename(i64)" value="int64(value)">
+				<push token=".variable" type="uint64" kind="static const typename(u64)" value="value"/>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="int64"/>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="unsigned(value: int8): uint8">
+			<init token="()" type="uint8" kind="static const typename(u32)" value="uint8(value)">
+				<push token=".variable" type="int8" kind="static const typename(i32)" value="value"/>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="uint8"/>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="unsigned(value: int16): uint16">
+			<init token="()" type="uint16" kind="static const typename(u32)" value="uint16(value)">
+				<push token=".variable" type="int16" kind="static const typename(i32)" value="value"/>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="uint16"/>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="unsigned(value: int32): uint32">
+			<init token="()" type="uint32" kind="static const typename(u32)" value="uint32(value)">
+				<push token=".variable" type="int32" kind="static const typename(i32)" value="value"/>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="uint32"/>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="unsigned(value: int64): uint64">
+			<init token="()" type="uint64" kind="static const typename(u64)" value="uint64(value)">
+				<push token=".variable" type="int64" kind="static const typename(i64)" value="value"/>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="uint64"/>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="sizeof(type: typename): int32">
+			<init token="()" type="int32" kind="static const typename(i32)" value="int32(type.size)">
+				<push token="." type="int32" kind="static const typename(i32)" value="type.size">
+					<left token=".variable" type="typename" kind="static const typename(ref)" value="type"/>
+					<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
+				</push>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="int32"/>
 			</init>
 		</stmt>
 		<stmt token="static if" type="void" kind="static const typename(void)" stmt="static if (typename(raise) == function)">
@@ -71,7 +128,7 @@
 				</left>
 				<right token=".variable" type="typename" kind="static const typename(ref)" value="function"/>
 			</test>
-			<then token="{}" type="void" kind="static const typename(void)" file="lib/stdlib.ci:12">
+			<then token="{}" type="void" kind="static const typename(void)" file="lib/stdlib.ci:39">
 				<stmt token=".variable" type="typename" kind="static const typename(ref)" value="verbose(message: char[*], inspect: variant): void">
 					<init token="()" type="void" kind="static const typename(void)" value="raise(raise.verbose, raise.noTrace, message, inspect)">
 						<push token="." type="int64" kind="static const typename(i64)" value="raise.verbose">
@@ -351,27 +408,37 @@
 					</field>
 					<field token=".variable" type="variant" kind="static const typename(var)" value="returned">
 					</field>
-					<field token=".variable" type="variant" kind="static const typename(var)" value="argument">
-						<init token=".variable" type="pointer" kind="static const typename(ref)" value="null">
-							<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}" />
-						</init>
-					</field>
-					<field token=".variable" type="char[*]" kind="static typename(arr)" value="message">
+					<field token=".variable" type="variant[]" kind="static typename(arr)" value="extras">
 						<init token=".variable" type="pointer" kind="static const typename(ref)" value="null">
 							<init token=".literal" type="pointer" kind="static const typename(ref)" value="{pointer @0}" />
 						</init>
 					</field>
 				</stmt>
 				<stmt token=".variable" type="function" kind="static const typename(ref)" value="assertEq(expected: int32, returned: int32, message: char[*]): void">
-					<init token="{}" type="void" kind="static const typename(void)" file="lib/std/debug.ci:64">
+					<init token="{}" type="void" kind="static const typename(void)" file="lib/std/debug.ci:61">
 						<stmt token="if" type="void" kind="static const typename(void)" stmt="if (returned == expected)">
 							<test token="==" type="bool" kind="static const typename(bool)" value="returned == expected">
 								<left token=".variable" type="int32" kind="static const typename(i32)" value="returned"/>
 								<right token=".variable" type="int32" kind="static const typename(i32)" value="expected"/>
 							</test>
-							<then token="{}" type="void" kind="static const typename(void)" file="lib/std/debug.ci:65">
+							<then token="{}" type="void" kind="static const typename(void)" file="lib/std/debug.ci:62">
 								<stmt token="return" type="void" kind="static const typename(void)" stmt="return;" />
 							</then>
+						</stmt>
+						<stmt token=".variable" type="variant[1]" kind="static typename(arr)" value="extras">
+							<init token="{}" type="variant[1]" kind="static typename(arr)">
+								<stmt token=";" type="void" kind="static const typename(void)" stmt="extras[0] := (message);">
+									<expr token=":=" type="void" kind="static const typename(void)" value="extras[0] := (message)">
+										<left token="[]" type="variant" kind="static const typename(var)" value="extras[0]">
+											<left token=".variable" type="variant[1]" kind="static typename(arr)" value="extras"/>
+											<right token=".literal" type="int64" kind="static const typename(i64)" value="0" />
+										</left>
+										<right token="()" type="variant" kind="static const typename(var)" value="(message)">
+											<push token=".variable" type="char[*]" kind="static typename(arr)" value="message"/>
+										</right>
+									</expr>
+								</stmt>
+							</init>
 						</stmt>
 						<stmt token=".variable" type="NotEquals" kind="static const typename(val)" value="details">
 							<init token="{}" type="NotEquals" kind="static const typename(val)">
@@ -397,25 +464,16 @@
 										</right>
 									</expr>
 								</stmt>
-								<stmt token=";" type="void" kind="static const typename(void)" stmt="details.message := (message);">
-									<expr token=":=" type="void" kind="static const typename(void)" value="details.message := (message)">
-										<left token="." type="char[*]" kind="static typename(arr)" value="details.message">
+								<stmt token=";" type="void" kind="static const typename(void)" stmt="details.extras := (extras);">
+									<expr token=":=" type="void" kind="static const typename(void)" value="details.extras := (extras)">
+										<left token="." type="variant[]" kind="static typename(arr)" value="details.extras">
 											<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details"/>
-											<right token=".variable" type="char[*]" kind="static typename(arr)" value="message"/>
+											<right token=".variable" type="variant[]" kind="static typename(arr)" value="extras"/>
 										</left>
-										<right token="()" type="char[*]" kind="static typename(arr)" value="(message)">
-											<push token=".variable" type="char[*]" kind="static typename(arr)" value="message"/>
+										<right token="()" type="variant[]" kind="static typename(arr)" value="(extras)">
+											<push token=".variable" type="variant[1]" kind="static typename(arr)" value="extras"/>
 										</right>
 									</expr>
-								</stmt>
-								<stmt token=":=" type="void" kind="static const typename(void)" value="details.argument := (null)">
-									<left token="." type="variant" kind="static const typename(var)" value="details.argument">
-										<left token=".variable" type="NotEquals" kind="static const typename(val)" value="details"/>
-										<right token=".variable" type="variant" kind="static const typename(var)" value="argument"/>
-									</left>
-									<right token="()" type="variant" kind="static const typename(var)" value="(null)">
-										<push token=".variable" type="pointer" kind="static const typename(ref)" value="null"/>
-									</right>
 								</stmt>
 							</init>
 						</stmt>
@@ -445,15 +503,6 @@
 					</init>
 				</stmt>
 			</then>
-		</stmt>
-		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="sizeof(type: typename): int32">
-			<init token="()" type="int32" kind="static const typename(i32)" value="int32(type.size)">
-				<push token="." type="int32" kind="static const typename(i32)" value="type.size">
-					<left token=".variable" type="typename" kind="static const typename(ref)" value="type"/>
-					<right token=".variable" type="int32" kind="static const typename(i32)" value="size"/>
-				</push>
-				<call token=".variable" type="typename" kind="static const typename(ref)" value="int32"/>
-			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="Math">
 			<field token=".variable" type="float64" kind="static const typename(f64)" value="pi">
@@ -1305,20 +1354,23 @@
 			</field>
 			<field token=".variable" type="function" kind="static const typename(ref)" value="mean(data: float64[]): float64">
 				<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math.ci:238">
-					<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := sum(...data) / (data.length);">
-						<expr token=":=" type="float64" kind="static const typename(f64)" value=".result := sum(...data) / (data.length)">
+					<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := sum(...data) / (signed(data.length));">
+						<expr token=":=" type="float64" kind="static const typename(f64)" value=".result := sum(...data) / (signed(data.length))">
 							<left token=".variable" type="float64" kind="static const typename(f64)" value=".result"/>
-							<right token="/" type="float64" kind="static const typename(f64)" value="sum(...data) / (data.length)">
+							<right token="/" type="float64" kind="static const typename(f64)" value="sum(...data) / (signed(data.length))">
 								<left token="()" type="float64" kind="static const typename(f64)" value="sum(...data)">
 									<push token="..." type="float64[]" kind="static typename(arr)" value="...data">
 										<right token=".variable" type="float64[]" kind="static typename(arr)" value="data"/>
 									</push>
 									<call token=".variable" type="function" kind="static const typename(ref)" value="sum"/>
 								</left>
-								<right token="()" type="float64" kind="static const typename(f64)" value="(data.length)">
-									<push token="." type="uint32" kind="static const typename(u32)" value="data.length">
-										<left token=".variable" type="float64[]" kind="static typename(arr)" value="data"/>
-										<right token=".variable" type="uint32" kind="static const typename(u32)" value="length"/>
+								<right token="()" type="float64" kind="static const typename(f64)" value="(signed(data.length))">
+									<push token="()" type="int32" kind="static const typename(i32)" value="signed(data.length)">
+										<push token="." type="uint32" kind="static const typename(u32)" value="data.length">
+											<left token=".variable" type="float64[]" kind="static typename(arr)" value="data"/>
+											<right token=".variable" type="uint32" kind="static const typename(u32)" value="length"/>
+										</push>
+										<call token=".variable" type="function" kind="static const typename(ref)" value="signed"/>
 									</push>
 								</right>
 							</right>
@@ -3729,51 +3781,28 @@
 			<field token=".variable" type="typename" kind="static const typename(ref)" value="&lt;?&gt;">
 			</field>
 		</stmt>
-		<stmt token=".variable" type="function" kind="static const typename(ref)" value="vec4f(x: float32, y: float32, z: float32, w: float32): vec4f">
-			<init token="{}" type="void" kind="static const typename(void)" file="lib/std/math/Vector4f.ci:26">
-				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := {...};">
-					<expr token=":=" type="void" kind="static const typename(void)" value=".result := {...}">
-						<left token=".variable" type="vec4f" kind="static const typename(val)" value=".result"/>
-						<right token="{}" type="void" kind="static const typename(void)">
-							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.x := x;">
-								<expr token=":=" type="void" kind="static const typename(void)" value=".result.x := x">
-									<left token="." type="float32" kind="static const typename(f32)" value=".result.x">
-										<left token=".variable" type="vec4f" kind="static const typename(val)" value=".result"/>
-										<right token=".variable" type="float32" kind="static const typename(f32)" value="x"/>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="x"/>
-								</expr>
-							</stmt>
-							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.y := y;">
-								<expr token=":=" type="void" kind="static const typename(void)" value=".result.y := y">
-									<left token="." type="float32" kind="static const typename(f32)" value=".result.y">
-										<left token=".variable" type="vec4f" kind="static const typename(val)" value=".result"/>
-										<right token=".variable" type="float32" kind="static const typename(f32)" value="y"/>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="y"/>
-								</expr>
-							</stmt>
-							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.z := z;">
-								<expr token=":=" type="void" kind="static const typename(void)" value=".result.z := z">
-									<left token="." type="float32" kind="static const typename(f32)" value=".result.z">
-										<left token=".variable" type="vec4f" kind="static const typename(val)" value=".result"/>
-										<right token=".variable" type="float32" kind="static const typename(f32)" value="z"/>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="z"/>
-								</expr>
-							</stmt>
-							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.w := w;">
-								<expr token=":=" type="void" kind="static const typename(void)" value=".result.w := w">
-									<left token="." type="float32" kind="static const typename(f32)" value=".result.w">
-										<left token=".variable" type="vec4f" kind="static const typename(val)" value=".result"/>
-										<right token=".variable" type="float32" kind="static const typename(f32)" value="w"/>
-									</left>
-									<right token=".variable" type="float32" kind="static const typename(f32)" value="w"/>
-								</expr>
-							</stmt>
-						</right>
-					</expr>
-				</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="vec4f(x: float32, y: float32, z: float32, w: float32): vec4f">
+			<init token="()" type="vec4f" kind="static const typename(val)" value="vec4f(emit(struct(w), struct(z), struct(y), struct(x)))">
+				<push token="()" type="emit" kind="static const typename(void)" value="emit(struct(w), struct(z), struct(y), struct(x))">
+					<push token="()" type="float32" kind="static const typename(f32)" value="struct(w)">
+						<push token=".variable" type="float32" kind="static const typename(f32)" value="w"/>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="()" type="float32" kind="static const typename(f32)" value="struct(z)">
+						<push token=".variable" type="float32" kind="static const typename(f32)" value="z"/>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="()" type="float32" kind="static const typename(f32)" value="struct(y)">
+						<push token=".variable" type="float32" kind="static const typename(f32)" value="y"/>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<push token="()" type="float32" kind="static const typename(f32)" value="struct(x)">
+						<push token=".variable" type="float32" kind="static const typename(f32)" value="x"/>
+						<call token="struct" type="(null)" value="struct" />
+					</push>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="emit"/>
+				</push>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="vec4f"/>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="vec4f(x: float32, y: float32, z: float32): vec4f">
@@ -3917,8 +3946,8 @@
 				<call token=".variable" type="typename" kind="static const typename(ref)" value="vec4f"/>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="min(lhs: vec4f, rhs: vec4f): float32">
-			<init token="()" type="float32" kind="static const typename(f32)" value="float32(emit(struct(lhs), struct(rhs), min.p4f))">
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="min(lhs: vec4f, rhs: vec4f): vec4f">
+			<init token="()" type="vec4f" kind="static const typename(val)" value="vec4f(emit(struct(lhs), struct(rhs), min.p4f))">
 				<push token="()" type="emit" kind="static const typename(void)" value="emit(struct(lhs), struct(rhs), min.p4f)">
 					<push token="()" type="vec4f" kind="static const typename(val)" value="struct(lhs)">
 						<push token=".variable" type="vec4f" kind="static const typename(val)" value="lhs"/>
@@ -3934,11 +3963,11 @@
 					</push>
 					<call token=".variable" type="function" kind="static const typename(ref)" value="emit"/>
 				</push>
-				<call token=".variable" type="typename" kind="static const typename(ref)" value="float32"/>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="vec4f"/>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="max(lhs: vec4f, rhs: vec4f): float32">
-			<init token="()" type="float32" kind="static const typename(f32)" value="float32(emit(struct(lhs), struct(rhs), max.p4f))">
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="max(lhs: vec4f, rhs: vec4f): vec4f">
+			<init token="()" type="vec4f" kind="static const typename(val)" value="vec4f(emit(struct(lhs), struct(rhs), max.p4f))">
 				<push token="()" type="emit" kind="static const typename(void)" value="emit(struct(lhs), struct(rhs), max.p4f)">
 					<push token="()" type="vec4f" kind="static const typename(val)" value="struct(lhs)">
 						<push token=".variable" type="vec4f" kind="static const typename(val)" value="lhs"/>
@@ -3954,7 +3983,32 @@
 					</push>
 					<call token=".variable" type="function" kind="static const typename(ref)" value="emit"/>
 				</push>
-				<call token=".variable" type="typename" kind="static const typename(ref)" value="float32"/>
+				<call token=".variable" type="typename" kind="static const typename(ref)" value="vec4f"/>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="clamp(vec: vec4f, min: vec4f, max: vec4f): vec4f">
+			<init token="()" type="vec4f" kind="static const typename(val)" value="min(max(vec, min), max)">
+				<push token="()" type="vec4f" kind="static const typename(val)" value="max(vec, min)">
+					<push token=".variable" type="vec4f" kind="static const typename(val)" value="vec"/>
+					<push token=".variable" type="vec4f" kind="static const typename(val)" value="min"/>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="max"/>
+				</push>
+				<push token=".variable" type="vec4f" kind="static const typename(val)" value="max"/>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="min"/>
+			</init>
+		</stmt>
+		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="clamp(vec: vec4f, min: float32, max: float32): vec4f">
+			<init token="()" type="vec4f" kind="static const typename(val)" value="clamp(vec, vec4f(min), vec4f(max))">
+				<push token=".variable" type="vec4f" kind="static const typename(val)" value="vec"/>
+				<push token="()" type="vec4f" kind="static const typename(val)" value="vec4f(min)">
+					<push token=".variable" type="float32" kind="static const typename(f32)" value="min"/>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="vec4f"/>
+				</push>
+				<push token="()" type="vec4f" kind="static const typename(val)" value="vec4f(max)">
+					<push token=".variable" type="float32" kind="static const typename(f32)" value="max"/>
+					<call token=".variable" type="function" kind="static const typename(ref)" value="vec4f"/>
+				</push>
+				<call token=".variable" type="function" kind="static const typename(ref)" value="clamp"/>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="dp3(lhs: vec4f, rhs: vec4f): float32">
@@ -7306,15 +7360,18 @@
 						</call>
 					</init>
 				</stmt>
-				<stmt token=";" type="void" kind="static const typename(void)" stmt="pos := append(output, pos, sign, uint64(value), formatInt);">
-					<expr token=":=" type="int32" kind="static const typename(i32)" value="pos := append(output, pos, sign, uint64(value), formatInt)">
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="pos := append(output, pos, sign, uint64(int64(value)), formatInt);">
+					<expr token=":=" type="int32" kind="static const typename(i32)" value="pos := append(output, pos, sign, uint64(int64(value)), formatInt)">
 						<left token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
-						<right token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, sign, uint64(value), formatInt)">
+						<right token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, sign, uint64(int64(value)), formatInt)">
 							<push token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
 							<push token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
 							<push token=".variable" type="char" kind="static const typename(i32)" value="sign"/>
-							<push token="()" type="uint64" kind="static const typename(u64)" value="uint64(value)">
-								<push token=".variable" type="float64" kind="static const typename(f64)" value="value"/>
+							<push token="()" type="uint64" kind="static const typename(u64)" value="uint64(int64(value))">
+								<push token="()" type="int64" kind="static const typename(i64)" value="int64(value)">
+									<push token=".variable" type="float64" kind="static const typename(f64)" value="value"/>
+									<call token=".variable" type="typename" kind="static const typename(ref)" value="int64"/>
+								</push>
 								<call token=".variable" type="typename" kind="static const typename(ref)" value="uint64"/>
 							</push>
 							<push token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatInt"/>
@@ -7352,15 +7409,18 @@
 						</right>
 					</expr>
 				</stmt>
-				<stmt token=";" type="void" kind="static const typename(void)" stmt="pos := append(output, pos, 0, uint64(fract), formatDec);">
-					<expr token=":=" type="int32" kind="static const typename(i32)" value="pos := append(output, pos, 0, uint64(fract), formatDec)">
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="pos := append(output, pos, 0, uint64(int64(fract)), formatDec);">
+					<expr token=":=" type="int32" kind="static const typename(i32)" value="pos := append(output, pos, 0, uint64(int64(fract)), formatDec)">
 						<left token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
-						<right token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, 0, uint64(fract), formatDec)">
+						<right token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, 0, uint64(int64(fract)), formatDec)">
 							<push token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
 							<push token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
 							<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-							<push token="()" type="uint64" kind="static const typename(u64)" value="uint64(fract)">
-								<push token=".variable" type="float64" kind="static const typename(f64)" value="fract"/>
+							<push token="()" type="uint64" kind="static const typename(u64)" value="uint64(int64(fract))">
+								<push token="()" type="int64" kind="static const typename(i64)" value="int64(fract)">
+									<push token=".variable" type="float64" kind="static const typename(f64)" value="fract"/>
+									<call token=".variable" type="typename" kind="static const typename(ref)" value="int64"/>
+								</push>
 								<call token=".variable" type="typename" kind="static const typename(ref)" value="uint64"/>
 							</push>
 							<push token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatDec"/>
@@ -8305,7 +8365,7 @@
 		</stmt>
 		<stmt token=".variable" type="float32" kind="static const typename(f32)" value="overload4">
 			<init token="()" type="int32" kind="static const typename(i32)" value="overload(0.000000)">
-				<push token=".literal" type="float64" kind="static const typename(f64)" value="0.000000" />
+				<push token=".literal" type="float32" kind="static const typename(f32)" value="0.000000" />
 				<call token=".variable" type="function" kind="static const typename(ref)" value="overload"/>
 			</init>
 		</stmt>
@@ -9449,28 +9509,28 @@
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="uint32">
 				<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 				<field token=".variable" type="function" kind="static const typename(ref)" value="zxt(value: int32, offs: int32, count: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(22)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(21)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sxt(value: int32, offs: int32, count: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(23)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(22)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="pop(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(24)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(23)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="swap(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(25)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(24)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="bsr(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(26)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(25)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="bsf(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(27)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(26)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="hib(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(28)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(27)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="lob(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(29)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(28)" />
 				</field>
 			</init>
 		</stmt>
@@ -9478,10 +9538,10 @@
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="uint64">
 				<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 				<field token=".variable" type="function" kind="static const typename(ref)" value="zxt(value: int64, offs: int32, count: int32): int64">
-					<init token="emit" type="int64" kind="static const typename(i64)" value="nfc(30)" />
+					<init token="emit" type="int64" kind="static const typename(i64)" value="nfc(29)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sxt(value: int64, offs: int32, count: int32): int64">
-					<init token="emit" type="int64" kind="static const typename(i64)" value="nfc(31)" />
+					<init token="emit" type="int64" kind="static const typename(i64)" value="nfc(30)" />
 				</field>
 			</init>
 		</stmt>
@@ -9489,28 +9549,28 @@
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="float32">
 				<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sin(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(32)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(31)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="cos(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(33)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(32)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="tan(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(34)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(33)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="log(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(35)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(34)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="exp(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(36)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(35)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="pow(x: float32, y: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(37)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(36)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sqrt(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(38)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(37)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="atan2(x: float32, y: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(39)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(38)" />
 				</field>
 			</init>
 		</stmt>
@@ -9518,44 +9578,44 @@
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="float64">
 				<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sin(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(40)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(39)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="cos(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(41)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(40)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="tan(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(42)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(41)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="log(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(43)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(42)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="exp(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(44)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(43)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="pow(x: float64, y: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(45)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(44)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sqrt(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(46)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(45)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="atan2(x: float64, y: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(47)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(46)" />
 				</field>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="pointer" kind="static const typename(ref)" value="ptrTypename">
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="typename">
 				<field token=".variable" type="function" kind="static const typename(ref)" value="base(type: typename): typename">
-					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(3)" />
+					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(2)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="file(type: typename): .cstr">
-					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(4)" />
+					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(3)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="line(type: typename): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(5)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(4)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="name(type: typename): .cstr">
-					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(6)" />
+					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(5)" />
 				</field>
 			</init>
 		</stmt>
@@ -9566,36 +9626,33 @@
 		<stmt token=".variable" type="pointer" kind="static const typename(ref)" value="ptrPointer">
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="pointer">
 				<field token=".variable" type="function" kind="static const typename(ref)" value="alloc(ptr: pointer, size: int32): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(11)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(10)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="fill(dst: pointer, value: uint8, size: int32): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(12)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(11)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="copy(dst: pointer, src: pointer, size: int32): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(13)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(12)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="move(dst: pointer, src: pointer, size: int32): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(14)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(13)" />
 				</field>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="pointer" kind="static const typename(ref)" value="ptrVariant">
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="variant">
-				<field token=".variable" type="function" kind="static const typename(ref)" value="is(var: variant, type: typename): bool">
-					<init token="emit" type="bool" kind="static const typename(bool)" value="nfc(1)" />
-				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="as(var: variant, type: typename): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(2)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(1)" />
 				</field>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="pointer" kind="static const typename(ref)" value="ptrObject">
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="object">
 				<field token=".variable" type="function" kind="static const typename(ref)" value="create(type: typename): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(6)" />
 				</field>
-				<field token=".variable" type="function" kind="static const typename(ref)" value="as(obj: object, type: typename): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(8)" />
+				<field token=".variable" type="function" kind="static const typename(ref)" value="as(this: object, type: typename): pointer">
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
 				</field>
 			</init>
 		</stmt>
@@ -9647,28 +9704,28 @@
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="uint32">
 				<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 				<field token=".variable" type="function" kind="static const typename(ref)" value="zxt(value: int32, offs: int32, count: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(22)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(21)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sxt(value: int32, offs: int32, count: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(23)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(22)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="pop(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(24)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(23)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="swap(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(25)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(24)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="bsr(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(26)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(25)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="bsf(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(27)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(26)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="hib(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(28)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(27)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="lob(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(29)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(28)" />
 				</field>
 			</init>
 		</stmt>
@@ -9676,10 +9733,10 @@
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="uint64">
 				<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 				<field token=".variable" type="function" kind="static const typename(ref)" value="zxt(value: int64, offs: int32, count: int32): int64">
-					<init token="emit" type="int64" kind="static const typename(i64)" value="nfc(30)" />
+					<init token="emit" type="int64" kind="static const typename(i64)" value="nfc(29)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sxt(value: int64, offs: int32, count: int32): int64">
-					<init token="emit" type="int64" kind="static const typename(i64)" value="nfc(31)" />
+					<init token="emit" type="int64" kind="static const typename(i64)" value="nfc(30)" />
 				</field>
 			</init>
 		</stmt>
@@ -9687,28 +9744,28 @@
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="float32">
 				<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sin(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(32)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(31)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="cos(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(33)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(32)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="tan(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(34)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(33)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="log(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(35)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(34)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="exp(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(36)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(35)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="pow(x: float32, y: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(37)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(36)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sqrt(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(38)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(37)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="atan2(x: float32, y: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(39)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(38)" />
 				</field>
 			</init>
 		</stmt>
@@ -9716,44 +9773,44 @@
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="float64">
 				<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sin(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(40)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(39)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="cos(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(41)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(40)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="tan(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(42)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(41)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="log(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(43)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(42)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="exp(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(44)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(43)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="pow(x: float64, y: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(45)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(44)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sqrt(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(46)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(45)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="atan2(x: float64, y: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(47)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(46)" />
 				</field>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="variant" kind="static const typename(var)" value="varTypename">
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="typename">
 				<field token=".variable" type="function" kind="static const typename(ref)" value="base(type: typename): typename">
-					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(3)" />
+					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(2)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="file(type: typename): .cstr">
-					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(4)" />
+					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(3)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="line(type: typename): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(5)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(4)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="name(type: typename): .cstr">
-					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(6)" />
+					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(5)" />
 				</field>
 			</init>
 		</stmt>
@@ -9764,36 +9821,33 @@
 		<stmt token=".variable" type="variant" kind="static const typename(var)" value="varPointer">
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="pointer">
 				<field token=".variable" type="function" kind="static const typename(ref)" value="alloc(ptr: pointer, size: int32): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(11)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(10)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="fill(dst: pointer, value: uint8, size: int32): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(12)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(11)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="copy(dst: pointer, src: pointer, size: int32): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(13)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(12)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="move(dst: pointer, src: pointer, size: int32): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(14)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(13)" />
 				</field>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="variant" kind="static const typename(var)" value="varVariant">
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="variant">
-				<field token=".variable" type="function" kind="static const typename(ref)" value="is(var: variant, type: typename): bool">
-					<init token="emit" type="bool" kind="static const typename(bool)" value="nfc(1)" />
-				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="as(var: variant, type: typename): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(2)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(1)" />
 				</field>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="variant" kind="static const typename(var)" value="varObject">
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="object">
 				<field token=".variable" type="function" kind="static const typename(ref)" value="create(type: typename): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(6)" />
 				</field>
-				<field token=".variable" type="function" kind="static const typename(ref)" value="as(obj: object, type: typename): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(8)" />
+				<field token=".variable" type="function" kind="static const typename(ref)" value="as(this: object, type: typename): pointer">
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
 				</field>
 			</init>
 		</stmt>
@@ -9845,28 +9899,28 @@
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="uint32">
 				<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 				<field token=".variable" type="function" kind="static const typename(ref)" value="zxt(value: int32, offs: int32, count: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(22)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(21)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sxt(value: int32, offs: int32, count: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(23)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(22)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="pop(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(24)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(23)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="swap(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(25)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(24)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="bsr(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(26)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(25)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="bsf(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(27)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(26)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="hib(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(28)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(27)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="lob(value: int32): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(29)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(28)" />
 				</field>
 			</init>
 		</stmt>
@@ -9874,10 +9928,10 @@
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="uint64">
 				<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 				<field token=".variable" type="function" kind="static const typename(ref)" value="zxt(value: int64, offs: int32, count: int32): int64">
-					<init token="emit" type="int64" kind="static const typename(i64)" value="nfc(30)" />
+					<init token="emit" type="int64" kind="static const typename(i64)" value="nfc(29)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sxt(value: int64, offs: int32, count: int32): int64">
-					<init token="emit" type="int64" kind="static const typename(i64)" value="nfc(31)" />
+					<init token="emit" type="int64" kind="static const typename(i64)" value="nfc(30)" />
 				</field>
 			</init>
 		</stmt>
@@ -9885,28 +9939,28 @@
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="float32">
 				<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sin(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(32)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(31)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="cos(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(33)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(32)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="tan(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(34)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(33)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="log(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(35)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(34)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="exp(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(36)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(35)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="pow(x: float32, y: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(37)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(36)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sqrt(x: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(38)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(37)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="atan2(x: float32, y: float32): float32">
-					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(39)" />
+					<init token="emit" type="float32" kind="static const typename(f32)" value="nfc(38)" />
 				</field>
 			</init>
 		</stmt>
@@ -9914,44 +9968,44 @@
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="float64">
 				<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sin(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(40)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(39)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="cos(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(41)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(40)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="tan(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(42)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(41)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="log(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(43)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(42)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="exp(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(44)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(43)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="pow(x: float64, y: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(45)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(44)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="sqrt(x: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(46)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(45)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="atan2(x: float64, y: float64): float64">
-					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(47)" />
+					<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(46)" />
 				</field>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="typTypename">
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="typename">
 				<field token=".variable" type="function" kind="static const typename(ref)" value="base(type: typename): typename">
-					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(3)" />
+					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(2)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="file(type: typename): .cstr">
-					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(4)" />
+					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(3)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="line(type: typename): int32">
-					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(5)" />
+					<init token="emit" type="int32" kind="static const typename(i32)" value="nfc(4)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="name(type: typename): .cstr">
-					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(6)" />
+					<init token="emit" type="typename" kind="static const typename(ref)" value="nfc(5)" />
 				</field>
 			</init>
 		</stmt>
@@ -9962,36 +10016,33 @@
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="typPointer">
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="pointer">
 				<field token=".variable" type="function" kind="static const typename(ref)" value="alloc(ptr: pointer, size: int32): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(11)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(10)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="fill(dst: pointer, value: uint8, size: int32): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(12)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(11)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="copy(dst: pointer, src: pointer, size: int32): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(13)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(12)" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="move(dst: pointer, src: pointer, size: int32): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(14)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(13)" />
 				</field>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="typVariant">
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="variant">
-				<field token=".variable" type="function" kind="static const typename(ref)" value="is(var: variant, type: typename): bool">
-					<init token="emit" type="bool" kind="static const typename(bool)" value="nfc(1)" />
-				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="as(var: variant, type: typename): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(2)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(1)" />
 				</field>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="typObject">
 			<init token=".variable" type="typename" kind="static const typename(ref)" value="object">
 				<field token=".variable" type="function" kind="static const typename(ref)" value="create(type: typename): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(6)" />
 				</field>
-				<field token=".variable" type="function" kind="static const typename(ref)" value="as(obj: object, type: typename): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(8)" />
+				<field token=".variable" type="function" kind="static const typename(ref)" value="as(this: object, type: typename): pointer">
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
 				</field>
 			</init>
 		</stmt>
@@ -10024,28 +10075,28 @@
 				<init token=".variable" type="typename" kind="static const typename(ref)" value="float64">
 					<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 					<field token=".variable" type="function" kind="static const typename(ref)" value="sin(x: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(40)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(39)" />
 					</field>
 					<field token=".variable" type="function" kind="static const typename(ref)" value="cos(x: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(41)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(40)" />
 					</field>
 					<field token=".variable" type="function" kind="static const typename(ref)" value="tan(x: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(42)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(41)" />
 					</field>
 					<field token=".variable" type="function" kind="static const typename(ref)" value="log(x: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(43)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(42)" />
 					</field>
 					<field token=".variable" type="function" kind="static const typename(ref)" value="exp(x: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(44)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(43)" />
 					</field>
 					<field token=".variable" type="function" kind="static const typename(ref)" value="pow(x: float64, y: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(45)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(44)" />
 					</field>
 					<field token=".variable" type="function" kind="static const typename(ref)" value="sqrt(x: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(46)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(45)" />
 					</field>
 					<field token=".variable" type="function" kind="static const typename(ref)" value="atan2(x: float64, y: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(47)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(46)" />
 					</field>
 				</init>
 			</init>
@@ -10055,28 +10106,28 @@
 				<init token=".variable" type="typename" kind="static const typename(ref)" value="float64">
 					<init token=".literal" type="int64" kind="static const typename(i64)" value="0" />
 					<field token=".variable" type="function" kind="static const typename(ref)" value="sin(x: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(40)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(39)" />
 					</field>
 					<field token=".variable" type="function" kind="static const typename(ref)" value="cos(x: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(41)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(40)" />
 					</field>
 					<field token=".variable" type="function" kind="static const typename(ref)" value="tan(x: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(42)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(41)" />
 					</field>
 					<field token=".variable" type="function" kind="static const typename(ref)" value="log(x: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(43)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(42)" />
 					</field>
 					<field token=".variable" type="function" kind="static const typename(ref)" value="exp(x: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(44)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(43)" />
 					</field>
 					<field token=".variable" type="function" kind="static const typename(ref)" value="pow(x: float64, y: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(45)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(44)" />
 					</field>
 					<field token=".variable" type="function" kind="static const typename(ref)" value="sqrt(x: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(46)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(45)" />
 					</field>
 					<field token=".variable" type="function" kind="static const typename(ref)" value="atan2(x: float64, y: float64): float64">
-						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(47)" />
+						<init token="emit" type="float64" kind="static const typename(f64)" value="nfc(46)" />
 					</field>
 				</init>
 			</init>
@@ -10100,10 +10151,10 @@
 				<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 			</field>
 			<field token=".variable" type="function" kind="static const typename(ref)" value="create(type: typename): pointer">
-				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
+				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(6)" />
 			</field>
-			<field token=".variable" type="function" kind="static const typename(ref)" value="as(obj: object, type: typename): pointer">
-				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(8)" />
+			<field token=".variable" type="function" kind="static const typename(ref)" value="as(this: object, type: typename): pointer">
+				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
 			</field>
 		</stmt>
 		<stmt token=".variable" type="ComplexVal" kind="static const typename(val)" value="valInitImplicit">
@@ -10452,10 +10503,10 @@
 				<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 			</field>
 			<field token=".variable" type="function" kind="static const typename(ref)" value="create(type: typename): pointer">
-				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
+				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(6)" />
 			</field>
-			<field token=".variable" type="function" kind="static const typename(ref)" value="as(obj: object, type: typename): pointer">
-				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(8)" />
+			<field token=".variable" type="function" kind="static const typename(ref)" value="as(this: object, type: typename): pointer">
+				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
 			</field>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="RecordSizeofExt">
@@ -10466,10 +10517,10 @@
 				<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 			</field>
 			<field token=".variable" type="function" kind="static const typename(ref)" value="create(type: typename): pointer">
-				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
+				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(6)" />
 			</field>
-			<field token=".variable" type="function" kind="static const typename(ref)" value="as(obj: object, type: typename): pointer">
-				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(8)" />
+			<field token=".variable" type="function" kind="static const typename(ref)" value="as(this: object, type: typename): pointer">
+				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
 			</field>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="typeofRecord">
@@ -10481,10 +10532,10 @@
 					<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 				</field>
 				<field token=".variable" type="function" kind="static const typename(ref)" value="create(type: typename): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(6)" />
 				</field>
-				<field token=".variable" type="function" kind="static const typename(ref)" value="as(obj: object, type: typename): pointer">
-					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(8)" />
+				<field token=".variable" type="function" kind="static const typename(ref)" value="as(this: object, type: typename): pointer">
+					<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
 				</field>
 			</init>
 		</stmt>
@@ -12045,10 +12096,10 @@
 			<field token=".variable" type="rgbF32" kind="static const typename(val)" value="value">
 			</field>
 			<field token=".variable" type="function" kind="static const typename(ref)" value="create(type: typename): pointer">
-				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
+				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(6)" />
 			</field>
-			<field token=".variable" type="function" kind="static const typename(ref)" value="as(obj: object, type: typename): pointer">
-				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(8)" />
+			<field token=".variable" type="function" kind="static const typename(ref)" value="as(this: object, type: typename): pointer">
+				<init token="emit" type="pointer" kind="static const typename(ref)" value="nfc(7)" />
 			</field>
 		</stmt>
 		<stmt token=".variable" type="rgbU8" kind="static const typename(val)" value="black">

@@ -160,22 +160,22 @@ OPCODE_DEF(opc_move, 0x1e, 4, 2, 0, "copy.mem")     // copy(sp(1), sp(0), ip.rel
 OPCODE_DEF(opc_lref, 0x1f, 5, 0, 1, "load.ref")     // ----- temp instruction replaceable with load.c32 or load.c64
 
 //~ mem (indirect memory access) ===============================================
-OPCODE_DEF(opc_ldi1, 0x20, 1, 1, 1, "load.i8")      // copy(sp, sp(0), 1);
-OPCODE_DEF(opc_ldi2, 0x21, 1, 1, 1, "load.i16")     // copy(sp, sp(0), 2);
-OPCODE_DEF(opc_ldi4, 0x22, 1, 1, 1, "load.i32")     // copy(sp, sp(0), 4);
-OPCODE_DEF(opc_ldi8, 0x23, 1, 1, 2, "load.i64")     // copy(sp, sp(0), 8);
-OPCODE_DEF(opc_ldiq, 0x24, 1, 1, 4, "load.i128")    // copy(sp, sp(0), 16);
-OPCODE_DEF(opc_sti1, 0x25, 1, 2, 0, "store.i8")     // copy(sp(1), sp(0), 1); pop2;
-OPCODE_DEF(opc_sti2, 0x26, 1, 2, 0, "store.i16")    // copy(sp(1), sp(0), 2); pop2;
-OPCODE_DEF(opc_sti4, 0x27, 1, 2, 0, "store.i32")    // copy(sp(1), sp(0), 4); pop2;
-OPCODE_DEF(opc_sti8, 0x28, 1, 3, 0, "store.i64")    // copy(sp(1), sp(0), 8); pop3;
-OPCODE_DEF(opc_stiq, 0x29, 1, 5, 0, "store.i128")   // copy(sp(1), sp(0), 16); pop5;
-OPCODE_DEF(opc_ld32, 0x2a, 4, 0, 1, "load.m32")     // copy(sp, ip.rel, 4);
-OPCODE_DEF(opc_ld64, 0x2b, 4, 0, 2, "load.m64")     // copy(sp, ip.rel, 8);
-OPCODE_DEF(opc_ld128,0x2c, 4, 0, 4, "load.m128")    // copy(sp, ip.rel, 16);
-OPCODE_DEF(opc_st64, 0x2d, 4, 2, 0, "store.m64")    // copy(ip.rel, sp(0), 8); pop2;
-OPCODE_DEF(opc_st32, 0x2e, 4, 1, 0, "store.m32")    // copy(ip.rel, sp(0), 4); pop1;
-OPCODE_DEF(opc_st128,0x2f, 4, 4, 0, "store.m128")   // copy(ip.rel, sp(0), 16); pop2;
+OPCODE_DEF(opc_ld32, 0x20, 4, 0, 1, "load.m32")     // copy(sp, ip.rel, 4);
+OPCODE_DEF(opc_ld64, 0x21, 4, 0, 2, "load.m64")     // copy(sp, ip.rel, 8);
+OPCODE_DEF(opc_ld128,0x22, 4, 0, 4, "load.m128")    // copy(sp, ip.rel, 16);
+OPCODE_DEF(opc_st64, 0x23, 4, 2, 0, "store.m64")    // copy(ip.rel, sp(0), 8); pop2;
+OPCODE_DEF(opc_st32, 0x24, 4, 1, 0, "store.m32")    // copy(ip.rel, sp(0), 4); pop1;
+OPCODE_DEF(opc_st128,0x25, 4, 4, 0, "store.m128")   // copy(ip.rel, sp(0), 16); pop2;
+OPCODE_DEF(opc_ldi1, 0x26, 1, 1, 1, "load.i8")      // copy(sp, sp(0), 1);
+OPCODE_DEF(opc_ldi2, 0x27, 1, 1, 1, "load.i16")     // copy(sp, sp(0), 2);
+OPCODE_DEF(opc_ldi4, 0x28, 1, 1, 1, "load.i32")     // copy(sp, sp(0), 4);
+OPCODE_DEF(opc_ldi8, 0x29, 1, 1, 2, "load.i64")     // copy(sp, sp(0), 8);
+OPCODE_DEF(opc_ldiq, 0x2a, 1, 1, 4, "load.i128")    // copy(sp, sp(0), 16);
+OPCODE_DEF(opc_sti1, 0x2b, 1, 2, 0, "store.i8")     // copy(sp(1), sp(0), 1); pop2;
+OPCODE_DEF(opc_sti2, 0x2c, 1, 2, 0, "store.i16")    // copy(sp(1), sp(0), 2); pop2;
+OPCODE_DEF(opc_sti4, 0x2d, 1, 2, 0, "store.i32")    // copy(sp(1), sp(0), 4); pop2;
+OPCODE_DEF(opc_sti8, 0x2e, 1, 3, 0, "store.i64")    // copy(sp(1), sp(0), 8); pop3;
+OPCODE_DEF(opc_stiq, 0x2f, 1, 5, 0, "store.i128")   // copy(sp(1), sp(0), 16); pop5;
 
 //~ u32 ========================================================================
 OPCODE_DEF(b32_cmt,  0x30, 1, 1, 1, "cmt.b32")      // sp(0).u32 = ~sp(0).u32;
@@ -385,26 +385,26 @@ OPCODE_DEF(p4d___f,  0xaf, 0, 0, 0, NULL)           //
 	num: i32/i64/f32/f64
 	vec: v4f/v2d/...
 
-	code        num         bit         vec
+	code        bit         num         vec
 
-	0x?0        neg         cmt         neg
-	0x?1        add         and         add
-	0x?2        sub         or          sub
-	0x?3        mul         umul        mul
-	0x?4        div         udiv        div
-	0x?5        rem         umod        rem
-	0x?6        <inc>       xor         crs
+	0x?0        cmt         neg         neg
+	0x?1        and         add         add
+	0x?2        or          sub         sub
+	0x?3        umul        mul         mul
+	0x?4        udiv        div         div
+	0x?5        umod        rem         rem
+	0x?6        xor         ?inc        ?crs
 
-	0x?7        ceq         <cne>       ceq
-	0x?8        clt         ult         min
-	0x?9        cgt         ugt         max
-	0x?a        2i32        shl         dp3/<?>
-	0x?b        2f32        shr         dph/<?>
-	0x?c        2i64        sar         dp4/<?>
-	0x?d        2f64        <?>         crs/<?>
+	0x?7        ?cne        ceq         ceq
+	0x?8        ult         clt         min
+	0x?9        ugt         cgt         max
+	0x?a        shl         2i32        dp3/<?>
+	0x?b        shr         2f32        dph/<?>
+	0x?c        sar         2i64        dp4/<?>
+	0x?d        <?>         2f64        crs/<?>
 
 	0x?e        <?>         <?>         <?>
-	0x?f        <?>         ext         <?>
+	0x?f        ext         <?>         <?>
 
 	bit.ext32(byte arg): mask, shl, shr, sar with constant.
 //~ */

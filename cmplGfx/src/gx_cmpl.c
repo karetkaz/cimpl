@@ -347,10 +347,10 @@ static int blendDstAlphaCallback(argb* dst, argb *src, bltContext ctx, size_t cn
 			return -1;
 		}
 		register argb val = vecrgb(args);
-		int alpha = ctxAlpha * dst->a / 255;
-		dst->r = sat_s8(dst->r + alpha * (val.r - dst->r) / 255);
-		dst->g = sat_s8(dst->g + alpha * (val.g - dst->g) / 255);
-		dst->b = sat_s8(dst->b + alpha * (val.b - dst->b) / 255);
+		int alpha = ctxAlpha * val.a / 255;
+		dst->r = sat_s8(val.r + alpha * (src->r - val.r) / 255);
+		dst->g = sat_s8(val.g + alpha * (src->g - val.g) / 255);
+		dst->b = sat_s8(val.b + alpha * (src->b - val.b) / 255);
 	}
 	return 0;
 }
@@ -1405,6 +1405,7 @@ int cmplInit(rtContext rt) {
 
 	// surfaces are allocated outside the vm, and are handler types
 	symn symImage = rt->api.ccAddType(cc, "Image", sizeof(GxImage), 0);
+	symImage->fmt = "%a";
 
 	// meshes are allocated inside the vm, and are reference types
 	symn symMesh = rt->api.ccAddType(cc, "Mesh", sizeof(struct GxMesh), 1);

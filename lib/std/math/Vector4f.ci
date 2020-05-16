@@ -23,9 +23,7 @@ inline vec4f(const float32 val&) = { x: val, y: val, z: val, w: val };
 */
 
 /// Initialize with given x, y, z, w components
-vec4f vec4f(float32 x, float32 y, float32 z, float32 w) {
-	return { x: x, y: y, z: z, w: w };
-}
+inline vec4f(float32 x, float32 y, float32 z, float32 w) = vec4f(emit(struct(w), struct(z), struct(y), struct(x)));
 
 /// Initialize with  (x: x, y: y, z: z, w: 1)
 inline vec4f(float32 x, float32 y, float32 z) = vec4f(x, y, z, 1f);
@@ -79,9 +77,15 @@ inline mul(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f)
 inline div(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
 
 /// Component wise minimum of the two vectors.
-inline min(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), min.p4f));
+inline min(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), min.p4f));
 /// Component wise maximum of the two vectors.
-inline max(vec4f lhs, vec4f rhs) = float32(emit(struct(lhs), struct(rhs), max.p4f));
+inline max(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), max.p4f));
+
+/// Clamp the vector component wise to the range [min ... max]
+inline clamp(vec4f vec, vec4f min, vec4f max) = min(max(vec, min), max);
+
+/// Clamp each component of the vector to the range [min ... max]
+inline clamp(vec4f vec, float32 min, float32 max) = clamp(vec, vec4f(min), vec4f(max));
 
 /// Dot product of the first 3 elements
 // inline dp3(const vec4f a&, const vec4f b&) = a.x * b.x + a.y * b.y + a.z * b.z;

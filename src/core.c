@@ -64,16 +64,11 @@ static vmError typenameGetField(nfcContext ctx) {
 	return nativeCallError;
 }
 
-static const char *const variant_is = "bool is(variant var, typename type)";
 static const char *const variant_as = "pointer as(variant var, typename type)";
 static vmError variantHelpers(nfcContext ctx) {
 	size_t symOffs = argref(ctx, 0);
 	vmValue *varOffs = argget(ctx, vm_ref_size, NULL, 2 * vm_ref_size);
 
-	if (ctx->proto == variant_is) {
-		reti32(ctx, varOffs->type == symOffs);
-		return noError;
-	}
 	if (ctx->proto == variant_as) {
 		if (varOffs->type == symOffs) {
 			retref(ctx, varOffs->ref);
@@ -104,7 +99,7 @@ int isObjectType(symn sym) {
 }
 
 static const char *const object_create = "pointer create(typename type)";
-static const char *const object_cast = "pointer as(object obj, typename type)";
+static const char *const object_cast = "pointer as(object this, typename type)";
 static vmError objectHelpers(nfcContext ctx) {
 	rtContext rt = ctx->rt;
 	if (ctx->proto == object_create) {
@@ -380,6 +375,7 @@ static void install_type(ccContext cc, ccInstall mode) {
 		cc->null_ref->init->type = type_ptr;
 	}
 
+	// cache the `length` of slices
 	enter(cc, NULL, NULL);
 	cc->length_ref = install(cc, "length", ATTR_cnst | KIND_var, cc->type_idx->size, cc->type_idx, NULL);
 	leave(cc, KIND_typ, 0, 0, NULL, NULL);
@@ -636,7 +632,6 @@ static int install_base(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)
 		enter(cc, NULL, cc->type_var);
 
 		if ((mode & installLibs) != 0) {
-			error = error || !(field = ccAddCall(cc, variantHelpers, variant_is));
 			error = error || !(field = ccAddCall(cc, variantHelpers, variant_as));
 		}
 

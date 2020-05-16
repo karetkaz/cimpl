@@ -381,6 +381,14 @@ function setContent(content, file, line, column) {
 	return contentSet;
 }
 
+function selectOutputTab(select) {
+	let item = select.options[select.selectedIndex];
+	if (item.onchange != null) {
+		select.selectedIndex = 0;
+		item.onchange();
+	}
+}
+
 function editProject() {
 	if (params.project != null) {
 		let files = [];

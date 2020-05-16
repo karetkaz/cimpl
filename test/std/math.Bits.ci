@@ -1,0 +1,91 @@
+// test functions implemented in file: `Bits.ci`
+inline "/lib/std/math/Bits.ci";
+
+inline byte(uint64 value, int i) = uint8((value >> 8 * i) & 255);
+
+static void assertEq(int64 expected, int64 returned, const char func[*], variant extras...) {
+	if (returned == expected) {
+		return;
+	}
+	struct NotEquals {
+		const variant returned;
+		const variant expected;
+		const char function[*];
+		const variant extras[];
+	}
+	NotEquals details = {
+		returned: returned;
+		expected: expected;
+		function: func;
+		extras: extras;
+	};
+	raise(raise.abort, raise.defTrace, "assertion failed", details);
+}
+
+for (int i = 0; i < 65536; i += 1) {
+	byte bytes[8] = {};
+	uint64 x& = bytes;
+	x = i * 250;
+
+	// test swap bytes
+	for (int j = 0; j < bytes.length; j += 1) {
+		// FIXME: array element access does not zero extend
+		// assertEq(bytes[j], byte(swapBytes(x), 7 - j));
+
+		assertEq(byte(x, j), byte(swapBytes(x), 7 - j), "swapBytes", i, j);
+		if (j < 4) {
+			assertEq(byte(x, j), byte(swapBytes(uint32(x)), 3 - j), "swapBytes", i, j);
+			if (j < 2) {
+				assertEq(byte(x, j), byte(swapBytes(uint16(x)), 1 - j), "swapBytes", i, j);
+			}
+		}
+	}
+
+	if (i < 64) {
+		x = 1U << i;
+		assertEq(i, scanLsb(x), "scanLsb", i);
+		assertEq(i, scanLsb(x), "scanLsb", i);
+		assertEq(x, keepMsb(x), "keepMsb", i);
+		assertEq(x, keepLsb(x), "keepLsb", i);
+		assertEq(1, countBits(x), "countBits", i, x);
+		assertEq(2, countBits(x | swapBits(x)), "countBits", i, x);
+		assertEq(2, countBits(x | swapBytes(x)), "countBits", i);
+
+		// test 32 bit functions
+		if (i < 32) {
+			assertEq(i, scanMsb(uint32(x)), "scanMsb", i);
+			assertEq(i, scanLsb(uint32(x)), "scanLsb", i);
+			assertEq(x, keepMsb(uint32(x)), "keepMsb", i);
+			assertEq(x, keepMsb(uint32(x | i)), "keepMsb", i);
+			assertEq(x, keepLsb(uint32(x)), "keepLsb", i);
+			assertEq(1, countBits(uint32(x)), "countBits", i, x);
+			if (i < 16) {
+				assertEq(i, scanMsb(uint16(x)), "scanMsb", i);
+				assertEq(i, scanLsb(uint16(x)), "scanLsb", i);
+				assertEq(x, keepLsb(uint16(x)), "keepLsb", i);
+				if (i < 8) {
+					assertEq(i, scanMsb(uint8(x)), "scanMsb", i);
+					assertEq(i, scanLsb(uint8(x)), "scanLsb", i);
+					assertEq(x, keepLsb(uint8(x)), "keepLsb", i);
+				}
+			}
+			for (int j = 0; j < 32 - i; j += 1) {
+				x = ((1U << i) - 1) << j;
+				assertEq(i, countBits(uint32(x)), "countBits", i, j, x);
+				if (i + j < 16) {
+					assertEq(2 * i, countBits(uint32(x | swapBits(uint32(x)))), "countBits", i, j, x);
+					assertEq(2 * i, countBits(uint32(x | swapBytes(uint32(x)))), "countBits", i, j, x);
+				}
+			}
+		}
+
+		for (int j = 0; j < 64 - i; j += 1) {
+			x = ((1U << i) - 1) << j;
+			assertEq(i, countBits(x), "countBits", i, j, x);
+			if (i + j < 32) {
+				assertEq(2 * i, countBits(x | swapBits(x)), "countBits", i, j, x);
+				assertEq(2 * i, countBits(x | swapBytes(x)), "countBits", i, j, x);
+			}
+		}
+	}
+}

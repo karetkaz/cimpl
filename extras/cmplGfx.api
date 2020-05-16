@@ -50,12 +50,11 @@ pointer.fill(dst: pointer, value: uint8, size: int32): pointer
 pointer.copy(dst: pointer, src: pointer, size: int32): pointer
 pointer.move(dst: pointer, src: pointer, size: int32): pointer
 variant
-variant.is(var: variant, type: typename): bool
 variant.as(var: variant, type: typename): pointer
 function
 object
 object.create(type: typename): pointer
-object.as(obj: object, type: typename): pointer
+object.as(this: object, type: typename): pointer
 null
 int
 emit
@@ -208,6 +207,15 @@ false
 byte
 float
 double
+signed(value: uint8): int8
+signed(value: uint16): int16
+signed(value: uint32): int32
+signed(value: uint64): int64
+unsigned(value: int8): uint8
+unsigned(value: int16): uint16
+unsigned(value: int32): uint32
+unsigned(value: int64): uint64
+sizeof(type: typename): int32
 verbose(message: char[*], inspect: variant): void
 verbose(message: char[*]): void
 debug(message: char[*], inspect: variant): void
@@ -229,11 +237,9 @@ assert(condition: bool): void
 NotEquals
 NotEquals.expected
 NotEquals.returned
-NotEquals.argument
-NotEquals.message
+NotEquals.extras
 assertEq(expected: int32, returned: int32, message: char[*]): void
 assertEq(expected: int32, returned: int32): void
-sizeof(type: typename): int32
 Math
 Math.pi
 Math.e
@@ -352,8 +358,10 @@ add(lhs: vec4f, rhs: vec4f): vec4f
 sub(lhs: vec4f, rhs: vec4f): vec4f
 mul(lhs: vec4f, rhs: vec4f): vec4f
 div(lhs: vec4f, rhs: vec4f): vec4f
-min(lhs: vec4f, rhs: vec4f): float32
-max(lhs: vec4f, rhs: vec4f): float32
+min(lhs: vec4f, rhs: vec4f): vec4f
+max(lhs: vec4f, rhs: vec4f): vec4f
+clamp(vec: vec4f, min: vec4f, max: vec4f): vec4f
+clamp(vec: vec4f, min: float32, max: float32): vec4f
 dp3(lhs: vec4f, rhs: vec4f): float32
 dph(lhs: vec4f, rhs: vec4f): float32
 dp4(lhs: vec4f, rhs: vec4f): float32
@@ -618,11 +626,13 @@ bch(color: argb): int32
 lum(color: argb): int32
 lerpLut(lut: uint32[], colors: argb[]): void
 alphaLut(lut: uint32[], hardness: int32, alpha: int32, reflect: bool): void
+vec4f(rgb: argb): vec4f
 argb(vec: vec4f): argb
 lum(vec: vec4f): float32
-hsv2rgb(hsv: vec4f): vec4f
-hsv2rgb(h: float32, s: float32, v: float32): argb
 drawLut(image: Image, roi: Rect, bars: uint32[256], lines: uint32[256]): void
+hsv2rgb(hsv: vec4f): vec4f
+rgb2hsl(rgb: vec4f): vec4f
+hsl2rgb(hsl: vec4f): vec4f
 Image(width: int32, height: int32, depth: int32): Image
 Image(fileName: char[*], depth: int32): Image
 Image(fileName: char[*]): Image
