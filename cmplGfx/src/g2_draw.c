@@ -260,12 +260,16 @@ void clipText(GxRect rect, GxImage font, const char *text) {
 	if ((font->flags & ImageType) != ImageFnt) {
 		return;
 	}
-	if (!font->basePtr) {
+	if (font->basePtr == NULL) {
 		return;
 	}
 
 	rect->w = 0;
 	rect->h = font->height;
+	if (text == NULL) {
+		return;
+	}
+
 	while ((chr = *text++) != 0) {
 		switch (chr) {
 			default:
@@ -307,6 +311,9 @@ void drawText(GxImage image, int x, int y, GxImage font, const char *text, uint3
 		return;
 	}
 	if (!font->basePtr) {
+		return;
+	}
+	if (text == NULL) {
 		return;
 	}
 

@@ -209,7 +209,7 @@ Image blend = Image(base);
 float32 xAsp = float32(offs.width()) / image.width();
 float32 yAsp = float32(offs.height()) / image.height();
 mat4f m = scale(vec4f(1, 1, 0, 1), Math.max(xAsp, yAsp));
-blend.transform(null, image, null, 1, m.data);
+blend.transform(null, image, null, 1, &m.data);
 
 int onEvent(int action, int button, int x, int y);
 offs.show(onEvent);

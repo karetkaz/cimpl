@@ -104,12 +104,12 @@ void brightnessContrastGamma(uint32 lut[256], float brightness, float contrast, 
 }
 
 void calcAutoEqualize(uint32 lut[256], Image image, bool luminosity) {
-	// calculate histogram, luminosity and rgb
-	image.calcHist(null, 0xffffffff, &lut);
 	if (luminosity) {
+		// calculate luminosity histogram
+		image.calcLumHist(null, &lut);
 		uint32 sum = 0;
 		for (int i = 0; i < lut.length; i += 1) {
-			sum += lut[i] >> 24;
+			sum += lut[i];
 			lut[i] = sum;
 		}
 		for (uint32 i = 0; i < lut.length; i += 1) {
@@ -117,6 +117,8 @@ void calcAutoEqualize(uint32 lut[256], Image image, bool luminosity) {
 			lut[i] = uint32(_argb(l, i, i, i));
 		}
 	} else {
+		// calculate rgb histogram
+		image.calcRgbHist(null, &lut);
 		int maxR = 0;
 		int maxG = 0;
 		int maxB = 0;
@@ -155,11 +157,9 @@ int onEvent(int action, int button, int x, int y) {
 	inline "/lib/gfx/micro.ui.ci";
 
 	static Histogram histogram = {
-		image: offs;
 		enabled: false;
 	};
 	static Histogram curves = {
-		image: offs;
 		lines: true;
 		enabled: false;
 	};
@@ -242,10 +242,11 @@ int onEvent(int action, int button, int x, int y) {
 		}
 	}
 	if (redraw) {
+		uint32 data[] = curves.data;
 		uint64 start = System.millis();
 		offs.resize(null, back, null, 1);
 		if (ui.isActive(brightness, contrast, gamma, highlights, shadows, whites, blacks)) {
-			brightnessContrastGamma(curves.data,
+			brightnessContrastGamma(&data,
 				brightness.valFlt(),
 				contrast.valFlt(),
 				gamma.valFlt(),
@@ -256,11 +257,11 @@ int onEvent(int action, int button, int x, int y) {
 			);
 		}
 		else if (ui.isSelected(auto)) {
-			calcAutoEqualize(curves.data, offs, auto.checked);
+			calcAutoEqualize(&data, offs, auto.checked);
 		}
 
-		offs.colorMap(null, curves.data);
-		offs.calcHist(null, 0x00ffffff, histogram.data);
+		offs.colorMap(null, data);
+		histogram.update(offs);
 		time.value = System.millis() - start;
 		ui.draw();
 	}

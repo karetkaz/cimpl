@@ -1,15 +1,11 @@
-// emulated implementation
+/// emulated implementation of transform function
 void transform(Image surf, const Rect rect&, Image src, const Rect roi&, int32 interpolate, float32 mat[16]) {
-	assert(roi == null);
-	assert(rect != null);
-
 	Rect dRec = {
 		x: rect != null ? rect.x : 0;
 		y: rect != null ? rect.y : 0;
 		w: rect != null ? rect.w : surf.width();
 		h: rect != null ? rect.h : surf.height();
 	};
-
 	Rect sRec = {
 		x: roi != null ? roi.x : 0;
 		y: roi != null ? roi.y : 0;
@@ -24,12 +20,12 @@ void transform(Image surf, const Rect rect&, Image src, const Rect roi&, int32 i
 	float32 yx = mat != null ? mat[4] : 0;
 	float32 yt = mat != null ? mat[7] : sRec.y;
 
-	if (!surf.clip(dRec)) {
+	if (!surf.clip(&dRec)) {
 		// nothing to set
 		return;
 	}
 
-	if (!src.clip(sRec)) {
+	if (!src.clip(&sRec)) {
 		// nothing to get
 		return;
 	}

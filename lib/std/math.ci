@@ -590,5 +590,28 @@ Number.prototype.log10 = function(){return Math.log(this) / Math.LN10;};
 //~ Number.prototype.pow = function(exponent){return Math.pow(this,exponent);};
 //- Number.prototype.mod = function(modulus){return this >= 0 ? this % modulus : (this % modulus + Math.abs(modulus)) % modulus;};
 //- Number.prototype.wrap = function(low, high){return low + (this - low).mod(high - low);};
-// */
 
+	/// Returns the smaller value from the input values
+	int32 min(int32 values...) {
+		assert(values.length > 0);
+		int32 result = values[0];
+		for (int i = 1; i < values.length; i += 1) {
+			if (result > values[i]) {
+				result = values[i];
+			}
+		}
+		return result;
+	}
+
+	/// Returns the greater value from the input values
+	int32 max(int32 values...) {
+		assert(values.length > 0);
+		int32 result = values[0];
+		for (int i = 1; i < values.length; i += 1) {
+			if (result < values[i]) {
+				result = values[i];
+			}
+		}
+		return result;
+	}
+// */

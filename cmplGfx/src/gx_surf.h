@@ -91,6 +91,7 @@ extern "C" {
 #endif
 
 GxImage createImage(GxImage recycle, int width, int height, int depth, ImageFlags flags);
+GxImage sliceImage(GxImage recycle, GxImage parent, GxRect roi);
 void destroyImage(GxImage image);
 
 // Get current clip region

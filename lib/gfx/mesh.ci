@@ -1,0 +1,10 @@
+/// Create a mesh by opening a file
+Mesh Mesh(const char fileName[*]) {
+	if (fileName.endsWith(".obj", ignCaseCmp)) {
+		return Mesh.openObj(fileName);
+	}
+	if (fileName.endsWith(".3ds", ignCaseCmp)) {
+		return Mesh.open3ds(fileName);
+	}
+	abort("unknown file extension", fileName);
+}

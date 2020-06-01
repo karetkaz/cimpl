@@ -1,0 +1,231 @@
+/// Create an image with the given with, height and depth
+inline Image(int width, int height, int depth) = Image.create(width, height, depth);
+
+/// Create an image by copying another one
+Image Image(Image copy) {
+	Image result = Image.create(copy.width(), copy.height(), copy.depth());
+	result.copy(0, 0, copy, null);
+	return result;
+}
+
+/// Create an image by copying another one using a custom aspect ratio
+Image Image(Image copy, float64 aspect) {
+	int width = copy.width();
+	if (aspect > 0) {
+		width = copy.height() * aspect;
+	}
+	Image result = Image.create(width, copy.height(), copy.depth());
+	result.transform(null, copy, null, 1, null);
+	return result;
+}
+
+/// Create an image by opening an image file
+Image Image(const char fileName[*], int depth) {
+	if (fileName.endsWith(".jpeg", ignCaseCmp)) {
+		return Image.openJpg(fileName, depth);
+	}
+	if (fileName.endsWith(".jpg", ignCaseCmp)) {
+		return Image.openJpg(fileName, depth);
+	}
+	if (fileName.endsWith(".png", ignCaseCmp)) {
+		return Image.openPng(fileName, depth);
+	}
+	if (fileName.endsWith(".bmp", ignCaseCmp)) {
+		return Image.openBmp(fileName, depth);
+	}
+	abort("unknown file extension", fileName);
+}
+
+/// Create an image by opening an image file
+inline Image(const char fileName[*]) = Image(fileName, 32);
+
+/// Create an image by opening an image file with custom width and height
+Image Image(const char fileName[*], int width, int height, int depth, int align, float64 maxScale) {
+	enum: int {
+		center: 0;
+		left: 1;
+		right: 2;
+		top: 4;
+		bottom: 8;
+		fitVertical: left + right;
+		fitHorizontal: top + bottom;
+		fill: 0x10;
+		highRes: 0x20;
+	}
+
+	float64 scale = 1;
+	Image image = Image(fileName, depth);
+	Image result = Image(width, height, depth);
+
+	int alignVertical = align & fitVertical;
+	int alignHorizontal = align & fitHorizontal;
+
+	bool fitWidth = alignVertical == fitVertical;
+	bool fitHeight = alignHorizontal == fitHorizontal;
+
+	if (fitWidth && fitHeight) {
+		float64 widthScale = width / float64(image.width());
+		float64 heightScale = height / float64(image.height());
+		if (align & fill) {
+			scale = Math.max(widthScale, heightScale);
+		} else {
+			scale = Math.min(widthScale, heightScale);
+		}
+	}
+	else if (fitWidth) {
+		scale = width / float64(image.width());
+	}
+	else if (fitHeight) {
+		scale = height / float64(image.height());
+	}
+	if (scale > maxScale) {
+		scale = maxScale;
+	}
+
+	// calculate translation
+	float64 tx = 0;
+	if (fitWidth || alignVertical == center) {
+		tx = (width - image.width() * scale) / 2;
+	}
+	else if (alignVertical == right) {
+		tx = (width - image.width() * scale);
+	}
+
+	float64 ty = 0;
+	if (fitHeight || alignHorizontal == center) {
+		ty = (height - image.height() * scale) / 2;
+	}
+	else if (alignHorizontal == bottom) {
+		ty = (height - image.height() * scale);
+	}
+
+	mat4f mat = {
+		x: {x: 1 / scale, y: 0, z: 0, w: -tx / scale};
+		y: {x: 0, y: 1 / scale, z: 0, w: -ty / scale};
+		z: {x: 0, y: 0, z: 1 / scale, w: 0};
+		w: {x: 0, y: 0, z: 0, w: 1};
+	};
+
+	result.transform(null, image, null, align & highRes ? 1 : 0, mat.data);
+	image.destroy();
+	return result;
+}
+
+/// Create an image by opening an image file with custom width and height
+inline Image(const char fileName[*], int width, int height, int depth, int align) = Image(fileName, width, height, depth, align, Math.inf);
+
+/// Create an image by opening an image file with custom width and height
+inline Image(const char fileName[*], int width, int height, int depth) = Image(fileName, width, height, depth, -1, Math.inf);
+
+/// Set the the color of a pixel at the given position
+inline set(Image image, int32 x, int32 y, argb color) = Image.set(image, x, y, uint32(color));
+
+///@public
+inline resize(Image image, const Rect rect&, const Image src, const Rect roi&, int interpolate) = Image.transform(image, rect, src, roi, interpolate, null);
+
+///@public
+inline slice(Image image, const Rect rect&) = Image.slice(Image(0, 0, image.depth()), image, rect);
+
+///@public
+bool clip(Image src, Rect roi&) {
+
+	roi.w += roi.x;
+	roi.h += roi.y;
+
+	if (roi.x < 0) {
+		roi.x = 0;
+	}
+
+	if (roi.y < 0) {
+		roi.y = 0;
+	}
+
+	int width = src.width();
+	if (roi.w > width) {
+		roi.w = width;
+	}
+
+	int height = src.height();
+	if (roi.h > height) {
+		roi.h = height;
+	}
+
+	roi.w -= roi.x;
+	roi.h -= roi.y;
+
+	if (roi.w <= 0) {
+		return false;
+	}
+	if (roi.h <= 0) {
+		return false;
+	}
+	return true;
+}
+
+/// Fill the entire image with the given color
+inline fill(Image image, uint32 color) = image.fillRect(0, 0, 65536, 65536, color);
+/// Fill the given region of the image with the given color
+inline fill(Image image, const Rect roi&, uint32 color) = image.fillRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
+/// Fill the given region and padding of the image with the given color
+inline fill(Image image, const Rect roi&, int pad, uint32 color) = image.fillRect(roi.x - pad, roi.y - pad, roi.x + roi.w + pad, roi.y + roi.h + pad, color);
+
+///@public
+inline drawRect(Image image, const Rect roi&, uint32 color) = image.drawRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
+
+/// Fill the surface by evaluating the given function for each pixel
+void eval(Image image, const Rect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
+	Rect rect = {
+		x: roi != null ? roi.x : 0;
+		y: roi != null ? roi.y : 0;
+		w: roi != null ? roi.w : image.width();
+		h: roi != null ? roi.h : image.height();
+	};
+
+	if (!image.clip(&rect)) {
+		return;
+	}
+
+	vec4f in = {
+		x: 0;
+		y: 0;
+		z: aspect;
+		w: time;
+	};
+	float32 w = image.width();
+	float32 h = image.height();
+	for (int y = rect.y; y < rect.y + rect.h; y += 1) {
+		in.y = y / h;
+		for (int x = rect.x; x < rect.x + rect.w; x += 1) {
+			in.x = x / w;
+			image.set(x, y, argb(eval(in)));
+		}
+	}
+}
+
+///@public
+void tile(Image image, int x, int y, Image src, Rect roi&) {
+	Rect rect = {
+		x: roi != null ? roi.x : 0;
+		y: roi != null ? roi.y : 0;
+		w: roi != null ? roi.w : src.width();
+		h: roi != null ? roi.h : src.height();
+	};
+
+	if (!src.clip(&rect)) {
+		return;
+	}
+
+	if (x < 0) {
+		x = -(-x % rect.w);
+	}
+	if (y < 0) {
+		y = -(-y % rect.h);
+	}
+	int width = image.width();
+	int height = image.height();
+	for (int j = y; j < height; j += rect.h) {
+		for (int i = x; i < width; i += rect.w) {
+			image.copy(i, j, src, rect);
+		}
+	}
+}

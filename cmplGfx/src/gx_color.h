@@ -90,6 +90,47 @@ static inline int32_t lum(uint32_t color) {
 	return (19595 * rch(color) + 38470 * gch(color) + 7471 * bch(color)) >> 16;
 }
 
+static inline int32_t hue(uint32_t color) {
+	// adapted from: https://gist.github.com/mity/6034000
+	int r = rch(color);
+	int g = gch(color);
+	int b = bch(color);
+	int min = r;
+	int max = r;
+
+	if (min > g) {
+		min = g;
+	}
+	if (min > b) {
+		min = b;
+	}
+	if (max < g) {
+		max = g;
+	}
+	if (max < b) {
+		max = b;
+	}
+
+	if (max == min) {
+		return 0;
+	}
+
+	int hue = 0;
+	if (max == r) {
+		hue = ((g - b) * 60) / (max - min);
+	}
+	else if (max == g) {
+		hue = ((b - r) * 60) / (max - min) + 120;
+	}
+	else if (max == b) {
+		hue = ((r - g) * 60) / (max - min) + 240;
+	}
+	if (hue < 0) {
+		hue += 360;
+	}
+	return hue;
+}
+
 static inline uint8_t sat_s8(int32_t val) {
 	if (val > 255) {
 		val = 255;

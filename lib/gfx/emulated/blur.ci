@@ -1,4 +1,4 @@
-// emulated implementation
+/// emulated implementation of blur function
 void blur(Image img, int radius, double sigma) {
 	static double gauss(double x, double sigma) {
 		inline SQRT_2_PI_INV = 0.398942280401432677939946059935;
@@ -18,12 +18,12 @@ void blur(Image img, int radius, double sigma) {
 		return SQRT_2_PI_INV * double.exp(-0.5 * t * t) / sigma;
 	}
 
-	uint32 kernel[1024];
+	int32 kernel[1024] = {};
 	int size = radius * 2 + 1;
 	assert(size < kernel.length);
 
 	float64 kernelSum = 0;
-	float64 kernelFlt[kernel.length];
+	float64 kernelFlt[kernel.length] = {};
 	for (int i = 0; i < size; i += 1) {
 		kernelFlt[i] = gauss(radius - i, sigma);
 		kernelSum += kernelFlt[i];
@@ -41,14 +41,14 @@ void blur(Image img, int radius, double sigma) {
 	// x direction: inout -> temp
 	for (int y = 0; y < height; y += 1) {
 		for (int x = 0; x < width; x += 1) {
-			uint32 r = 0;
-			uint32 g = 0;
-			uint32 b = 0;
+			int32 r = 0;
+			int32 g = 0;
+			int32 b = 0;
 			for (int i = 0; i < size; i += 1) {
 				int _x = x + i - radius;
 				if (_x >= 0 && _x < width) {
 					argb col = argb(img.get(_x, y));
-					uint32 _k = kernel[i];
+					int32 _k = kernel[i];
 					r += _k * rch(col);
 					g += _k * gch(col);
 					b += _k * bch(col);
@@ -61,14 +61,14 @@ void blur(Image img, int radius, double sigma) {
 	// y direction: temp -> inout
 	for (int y = 0; y < height; y += 1) {
 		for (int x = 0; x < width; x += 1) {
-			uint32 r = 0;
-			uint32 g = 0;
-			uint32 b = 0;
+			int32 r = 0;
+			int32 g = 0;
+			int32 b = 0;
 			for (int i = 0; i < size; i += 1) {
 				int _y = y + i - radius;
 				if (_y >= 0 && _y < height) {
 					argb col = argb(tmp.get(x, _y));
-					uint32 _k = kernel[i];
+					int32 _k = kernel[i];
 					r += _k * rch(col);
 					g += _k * gch(col);
 					b += _k * bch(col);

@@ -60,11 +60,9 @@ int onEvent(int action, int button, int x, int y) {
 	};
 
 	static Histogram histogram = {
-		image: offs;
 		enabled: false;
 	};
 	static Histogram curves = {
-		image: offs;
 		lines: true;
 		enabled: false;
 		selectable: false;
@@ -94,20 +92,21 @@ int onEvent(int action, int button, int x, int y) {
 	}
 
 	if (ui.uiEvent(action, button, x, y)) {
+		uint32 data[] = curves.data;
 		uint64 start = System.millis();
 		if (ui.isActive(sldBrightness)) {
-			levels(curves.data, sldBrightness.value, 0, 0);
+			levels(&data, sldBrightness.value, 0, 0);
 		}
 		else if (ui.isActive(sldOutput)) {
-			levels(curves.data, 0, sldOutput.value, 0);
+			levels(&data, 0, sldOutput.value, 0);
 		}
 		else if (ui.isActive(sldInput)) {
-			levels(curves.data, 0, 0, sldInput.value);
+			levels(&data, 0, 0, sldInput.value);
 		}
 
 		offs.resize(null, back, null, 1);
-		offs.colorMap(null, curves.data);
-		offs.calcHist(null, 0x00ffffff, histogram.data);
+		offs.colorMap(null, data);
+		histogram.update(offs);
 
 		time.value = System.millis() - start;
 		ui.draw();

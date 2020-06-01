@@ -226,7 +226,6 @@ int onEvent(int action, int button, int x, int y) {
 	static bool onPresetsClick(Switch view);
 	static bool onResetClick(Button view);
 	static Histogram histogram = {
-		image: offs;
 		enabled: false;
 	};
 	static Switch grpPresets = {
@@ -584,7 +583,7 @@ int onEvent(int action, int button, int x, int y) {
 			}
 		}
 
-		offs.calcHist(null, 0x00ffffff, &histogram.data);
+		histogram.update(offs);
 		time.value = System.millis() - start;
 		ui.draw();
 	}

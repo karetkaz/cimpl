@@ -101,11 +101,9 @@ int onEvent(int action, int button, int x, int y) {
 		selectable: false;
 	};
 	static Histogram histogram = {
-		image: offs;
 		enabled: false;
 	};
 	static Histogram curves = {
-		image: offs;
 		lines: true;
 		selectable: false;
 	};
@@ -134,11 +132,12 @@ int onEvent(int action, int button, int x, int y) {
 
 	bool redraw = uiEvent(ui, action, button, x, y);
 	if (redraw) {
+		uint32 data[] = curves.data;
 		uint64 start = System.millis();
 		offs.resize(null, back, null, 1);
-		buildLut(curves.data, midTones.valFlt(), highlights.valFlt(), shadows.valFlt(), whites.valFlt(), blacks.valFlt(), chkRgb.checked);
-		offs.colorMap(null, curves.data);
-		offs.calcHist(null, 0x00ffffff, histogram.data);
+		buildLut(&data, midTones.valFlt(), highlights.valFlt(), shadows.valFlt(), whites.valFlt(), blacks.valFlt(), chkRgb.checked);
+		offs.colorMap(null, data);
+		histogram.update(offs);
 		time.value = System.millis() - start;
 		ui.draw();
 	}

@@ -14,10 +14,6 @@ Image font = Image.openFnt("asset/font/Modern-1.fnt");
 Image in = Image("asset/image/forest.png", 32);
 Image offs = Image("asset/image/texture_nature_01.png", in.width(), in.height(), 32);
 
-static if (typename(Image.transform) == null) {
-inline "/lib/gfx/image/transform.ci";
-}
-
 /// compute the the transformation matrix to center/crop/fit an image to a new size.
 mat4f fitMatrix(const Image src, int newWidth, int newHeight, bool fitWidth, bool fitHeight, float64 maxScale, float64 maxAspect) {
 	float64 scale = 1;

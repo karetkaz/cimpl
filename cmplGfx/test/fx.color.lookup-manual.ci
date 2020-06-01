@@ -27,11 +27,9 @@ int onEvent(int action, int button, int x, int y) {
 	static void onCurveUpdate(Histogram this, int idx, int value);
 
 	static Histogram histogram = {
-		image: offs;
 		enabled: false;
 	};
 	static Histogram curves = {
-		image: offs;
 		height: 256;
 		lines: true;
 		enabled: true;
@@ -102,7 +100,7 @@ static void onCurveUpdate(Histogram this, int idx, int value) {
 }
 static void onResetClick(Button this) {
 	for (int i = 0; i < 256; i += 1) {
-		curves.data[i] = uint32(argb(i, i, i, i));
+		curves.data[i] = argb(i, i, i, i);
 	}
 }
 
@@ -112,10 +110,11 @@ static void onResetClick(Button this) {
 		}
 	}
 	if (ui.uiEvent(action, button, x, y)) {
+		uint32 data[] = curves.data;
 		uint64 start = System.millis();
 		offs.resize(null, back, null, 1);
-		offs.colorMap(null, curves.data);
-		offs.calcHist(null, 0x00ffffff, histogram.data);
+		offs.colorMap(null, data);
+		histogram.update(offs);
 		time.value = System.millis() - start;
 		ui.draw();
 	}

@@ -817,6 +817,10 @@ static astn initializer(ccContext cc) {
 		// initializer is an expression
 		return ast;
 	}
+	if (ast != NULL && !isTypeExpr(ast)) {
+		// avoid value initializers: Rect x = roi {};
+		error(cc->rt, ast->file, ast->line, ERR_INVALID_BASE_TYPE, ast);
+	}
 
 	ccToken sep = STMT_end;
 	astn head = NULL, tail = NULL;

@@ -11,11 +11,8 @@ GxImage createImage(GxImage recycle, int width, int height, int depth, ImageFlag
 			return NULL;
 		}
 		flags |= freeImage;
-		recycle->basePtr = NULL;
-		recycle->flags = flags;
 	}
-
-	if (recycle->flags & freeData) {
+	else if (recycle->flags & freeData) {
 		free(recycle->basePtr);
 	}
 
@@ -96,6 +93,39 @@ GxImage createImage(GxImage recycle, int width, int height, int depth, ImageFlag
 		}
 	}
 
+	return recycle;
+}
+
+GxImage sliceImage(GxImage recycle, GxImage parent, const GxRect roi) {
+	ImageFlags flags = parent->flags & ~(freeImage|freeData);
+	if (recycle == NULL) {
+		recycle = (GxImage) malloc(sizeof(struct GxImage));
+		if (recycle == NULL) {
+			return NULL;
+		}
+		flags |= freeImage;
+	}
+	else if (recycle->flags & freeData) {
+		free(recycle->basePtr);
+	}
+
+	recycle->x0 = recycle->y0 = 0;
+	recycle->width = parent->width;
+	recycle->height = parent->height;
+	recycle->depth = parent->depth;
+	recycle->flags = flags;
+	recycle->pixeLen = parent->pixeLen;
+	recycle->scanLen = parent->scanLen;
+	recycle->clipPtr = parent->clipPtr;
+	recycle->basePtr = parent->basePtr;
+	recycle->tempPtr = parent->tempPtr;
+
+	if (roi != NULL) {
+		struct GxRect rect = *roi;
+		recycle->basePtr = clipRect(parent, &rect);
+		recycle->width = rect.width;
+		recycle->height = rect.height;
+	}
 	return recycle;
 }
 

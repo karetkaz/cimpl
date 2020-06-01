@@ -15,14 +15,6 @@ Image surf = Image("asset/image/forest.png", 32);
 Image offs = Image(surf);
 Image blur = Image(surf);
 
-static if (typename(Image.blur) == null) {
-inline "/lib/gfx/image/blur.ci";
-}
-
-static if (typename(Image.blend) == null) {
-inline "/lib/gfx/image/blend.ci";
-}
-
 //inline blur(Image surf, int radius) = surf.blur(radius, 0.3 * (radius - 1) + 0.8);
 inline blur(Image surf, float64 sigma) = surf.blur(Math.max(1., (sigma - 0.8) / 0.3 + 1), sigma);
 
@@ -40,7 +32,6 @@ int onEvent(int action, int button, int x, int y) {
 	static bool onMouseEvent(Button view, const MouseEvent event&);
 	static bool onResetClick(Button view);
 	static Histogram histogram = {
-		image: offs;
 		enabled: false;
 	};
 	static Switch autoUpdate = {
@@ -253,7 +244,7 @@ int onEvent(int action, int button, int x, int y) {
 			}
 		}
 
-		offs.calcHist(null, 0x00ffffff, &histogram.data);
+		histogram.update(offs);
 		time.value = System.millis() - start;
 
 		if (chkRect.checked) {

@@ -1,0 +1,139 @@
+// Color picker demo.
+
+Image back = Image("asset/image/forest.png", 32);
+Image font = Image.openFnt("asset/font/Modern-1.fnt");
+Image offs = Image(back.width(), back.height(), back.depth());
+
+
+int onEvent(int action, int button, int x, int y);
+offs.show(onEvent);
+offs.destroy();
+back.destroy();
+font.destroy();
+
+int onEvent(int action, int button, int x, int y) {
+	inline "/lib/gfx/micro.ui.ci";
+
+	static Histogram histogram = {
+		enabled: false;
+	};
+
+	static bool onColorUpdate(ColorPicker view, argb value);
+
+	static Button btnLum = {
+		text: "luminosity";
+	};
+	static Button btnHue = {
+		text: "colors";
+	};
+	static Button btnRgb = {
+		text: "rgb";
+	};
+	static Switch chkRed = {
+		text: "red";
+		checked: true;
+		group: 1;
+		selectable: false;
+	};
+	static Switch chkGreen = {
+		text: "green";
+		checked: true;
+		group: 1;
+		selectable: false;
+	};
+	static Switch chkBlue = {
+		text: "blue";
+		checked: true;
+		group: 1;
+		selectable: false;
+	};
+	static Slider time = {
+		text: "time";
+		enabled: false;
+	};
+	static Button separator = {
+		text: null;
+		height: 1;
+		enabled: false;
+	};
+
+	static Layout ui = Layout(offs, -30, 30, font,
+		histogram, separator,
+		btnLum, btnHue, btnRgb,
+		chkRed, chkGreen, chkBlue,
+		separator, time
+	);
+
+	static bool onColorUpdate(ColorPicker view, argb value) {
+		view.value = value;
+		ui.style.backgroundColor = uint32(value);
+	}
+
+	if (action == Gui.KEY_PRESS) {
+		if (button == 27) {
+			return -1;
+		}
+	}
+
+	if (ui.uiEvent(action, button, x, y)) {
+		uint64 start = System.millis();
+		uint32 hist[histogram.data.length] = {};
+
+		offs.resize(null, back, null, 1);
+		if (ui.isSelected(btnHue)) {
+			offs.calcHueHist(null, &hist);
+			uint32 max = 1;  // avoid division by zero
+			for (int i = 0; i < hist.length; i += 1) {
+				if (max < hist[i]) {
+					max = hist[i];
+				}
+			}
+			for (int i = 0; i < hist.length; i += 1) {
+				float hue = float32(i) / hist.length;
+				argb rgb = argb(hsl2rgb(vec4f(hue, 1f, .5f)));
+				rgb.a = clamp_s8(hist[i] * 255 / max);
+				histogram.data[i] = rgb;
+			}
+			histogram.color = true;
+			ui.setGroup(2);
+		}
+		if (ui.isSelected(btnLum)) {
+			offs.calcLumHist(null, &hist);
+			uint32 max = 1;  // avoid division by zero
+			for (int i = 0; i < hist.length; i += 1) {
+				if (max < hist[i]) {
+					max = hist[i];
+				}
+			}
+			for (int i = 0; i < hist.length; i += 1) {
+				argb rgb = argb(0xdadada);
+				rgb.a = clamp_s8(hist[i] * 255 / max);
+				histogram.data[i] = rgb;
+			}
+			histogram.color = true;
+			ui.setGroup(2);
+		}
+		if (ui.isSelected(btnRgb)) {
+			offs.calcRgbHist(null, &hist);
+			for (int i = 0; i < hist.length; i += 1) {
+				argb data = argb(hist[i]);
+				if (!chkRed.checked) {
+					data.r = 0;
+				}
+				if (!chkGreen.checked) {
+					data.g = 0;
+				}
+				if (!chkBlue.checked) {
+					data.b = 0;
+				}
+				histogram.data[i] = data;
+			}
+			histogram.color = false;
+			ui.setGroup(1);
+		}
+
+		time.value = System.millis() - start;
+		ui.draw();
+	}
+	return 0;
+}

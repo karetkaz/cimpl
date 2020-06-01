@@ -1,0 +1,44 @@
+/// emulated implementation of blend function
+void blend(Image surf, int32 x0, int32 y0, const Image src, const Rect roi&, int32 alpha, bool dstAlpha, vec4f blend(vec4f base, vec4f with)) {
+	int width = surf.width();
+	int height = surf.height();
+
+	assert(!dstAlpha, "not implemented");
+	assert(roi == null, "not implemented");
+
+	inline lrp(int32 l, int32 r) = int32(l + alpha * (r - l) / 255);
+	if (blend == null) {
+		for (int y = 0; y < height; y += 1) {
+			for (int x = 0; x < width; x += 1) {
+				argb col = argb(surf.get(x,y));
+				int r = rch(col);
+				int g = gch(col);
+				int b = bch(col);
+
+				col = argb(src.get(x,y));
+				r = lrp(r, rch(col));
+				g = lrp(g, gch(col));
+				b = lrp(b, bch(col));
+
+				surf.set(x + x0, y + y0, argb(r, g, b));
+			}
+		}
+		return;
+	}
+
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			argb col = argb(surf.get(x,y));
+			int r = rch(col);
+			int g = gch(col);
+			int b = bch(col);
+
+			col = argb(blend(vec4f(col), vec4f(argb(src.get(x,y)))));
+			r = lrp(r, rch(col));
+			g = lrp(g, gch(col));
+			b = lrp(b, bch(col));
+
+			surf.set(x + x0, y + y0, argb(r, g, b));
+		}
+	}
+}

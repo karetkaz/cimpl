@@ -61,11 +61,9 @@ int onEvent(int action, int button, int x, int y) {
 		maximum: 256;
 	};
 	static Histogram histogram = {
-		image: offs;
 		enabled: false;
 	};
 	static Histogram curves = {
-		image: offs;
 		lines: true;
 		enabled: false;
 	};
@@ -89,11 +87,12 @@ int onEvent(int action, int button, int x, int y) {
 		}
 	}
 	if (redraw) {
+		uint32 data[] = curves.data;
 		uint64 start = System.millis();
-		brightnessContrastGamma(curves.data, brightness.value, contrast.value);
+		brightnessContrastGamma(data, brightness.value, contrast.value);
 		offs.resize(null, back, null, 1);
-		offs.colorMap(null, curves.data);
-		offs.calcHist(null, 0x00ffffff, histogram.data);
+		offs.colorMap(null, data);
+		histogram.update(offs);
 
 		time.value = System.millis() - start;
 		ui.draw();

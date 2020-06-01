@@ -3,6 +3,9 @@
 struct Style {
 	const Image font;
 
+	const FormatFlags flagsInt;
+	const FormatFlags flagsFlt;
+
 	int backgroundColor = 0x1a1a1a;
 	int focusedColor = 0x3b4754;
 	int valueColor = 0x6897bb;
@@ -10,6 +13,76 @@ struct Style {
 
 	int border = 3;
 	int padding = 8;
+
+	enum: int32 {
+		left: 1;
+		right: 2;
+
+		top: 4;
+		bottom: 8;
+
+		center: 0;
+
+		fitVertical: left + right;
+		fitHorizontal: top + bottom;
+	}
+
+	/// Align one rect containing text relative to its container
+	static void align(const Style this&, Rect rect, Rect valueRect&, const char value[*], int align) {
+		rect.x += this.padding;
+		rect.y += this.padding;
+		rect.w -= 2 * this.padding;
+		rect.h -= 2 * this.padding;
+		this.font.clipText(&valueRect, value);
+
+		if (valueRect.w > rect.w) {
+			valueRect.w = rect.w;
+		}
+
+		int vertical = align & fitVertical;
+		if (vertical == center) {
+			valueRect.x = rect.x + (rect.w - valueRect.w) / 2;
+		}
+		else if (vertical == right) {
+			valueRect.x = rect.x + (rect.w - valueRect.w);
+		}
+		else if (vertical == left) {
+			valueRect.x = rect.x;
+		}
+		else { // fit
+			valueRect.x = rect.x;
+			valueRect.w = rect.w;
+		}
+
+		int horizontal = align & fitHorizontal;
+		if (horizontal == center) {
+			valueRect.y = rect.y + (rect.h - valueRect.h) / 2;
+		}
+		else if (horizontal == bottom) {
+			valueRect.y = rect.y + (rect.h - valueRect.h);
+		}
+		else if (horizontal == top) {
+			valueRect.y = rect.y;
+		}
+		else { // fit
+			valueRect.y = rect.y;
+			valueRect.h = rect.h;
+		}
+	}
+
+	//- private debug function
+	static void align(const Style this&, Rect rect, Rect valueRect&, const char value[*], int align, Image offs) {
+		enum: uint32 {
+			// chromium inspector colors
+			margin: 0xf9cc9d; //dark: 0xae8152;
+			border: 0xffeebc; //dark: 0xe3c381;
+			padding: 0xc3d799; //dark: 0xb6c373;
+			content: 0x8cb7c5; //dark: 0x87b1bc;
+		}
+		align(&this, rect, &valueRect, value, align);
+		offs.fill(valueRect, this.padding, padding);
+		offs.fill(valueRect, content);
+	}// */
 }
 struct KeyEvent {
 	const bool release;
@@ -55,6 +128,11 @@ struct Button: View {
 		trace("onClick", this);
 		return this.enabled;
 	}// */
+
+	void onDraw(Button this, Image offs, Rect rect, const Style style&) {
+		Style.align(style, rect, &rect, this.text, Style.left);
+		offs.drawText(rect, style.font, this.text, style.textColor);
+	}
 }
 
 struct Switch: View {
@@ -75,6 +153,17 @@ struct Switch: View {
 	bool onUpdate(Switch this, bool checked) {
 		this.checked = checked;
 		return true;
+	}
+
+	void onDraw(Switch this, Image offs, Rect rect, const Style style&) {
+		Rect valueRoi = rect;
+		char value[*] = this.checked ? this.on : this.off;
+
+		Style.align(style, valueRoi, &valueRoi, value, Style.right);
+		rect.w -= valueRoi.w + style.padding;
+		Style.align(style, rect, &rect, this.text, Style.left);
+		offs.drawText(valueRoi, style.font, value, style.valueColor);
+		offs.drawText(rect, style.font, this.text, style.textColor);
 	}
 }
 
@@ -99,16 +188,104 @@ struct Slider: View {
 		this.value = value;
 		return true;
 	}
+
+	void onDraw(Slider this, Image offs, Rect rect, const Style style&) {
+		Rect valueRoi = rect;
+		char value[64] = {0};
+		if (this.divisor != 0) {
+			float32 valueF64 = float64(this.value) / this.divisor;
+			value.append(0, valueF64, style.flagsFlt);
+		} else {
+			value.append(0, this.value, style.flagsInt);
+		}
+
+		Style.align(style, valueRoi, &valueRoi, value, Style.right);
+		rect.w -= valueRoi.w + style.padding;
+		Style.align(style, rect, &rect, this.text, Style.left);
+		offs.drawText(valueRoi, style.font, value, style.valueColor);
+		offs.drawText(rect, style.font, this.text, style.textColor);
+	}
 }
 
 struct Histogram: View {
-	const Image image;
 	const bool lines = false;
-	uint32 data[256] = null;   // FIXME: this should be not possible
+	// histogram data is in alpha channel, display it with color rgb
+	bool color = false;
+	argb data[256] = null;   // FIXME: this should be not possible
+
+	void update(Histogram this, Image image) {
+		uint32 data[*] = this.data;
+		image.calcRgbHist(null, &data);
+		this.color = false;
+	}
 
 	bool onUpdate(Histogram this, int idx, int value) {
-		this.data[idx] = uint32(argb(idx, value, value, value));
+		this.data[idx] = argb(idx, value, value, value);
 		return true;
+	}
+
+	void onDraw(Histogram this, Image offs, const Rect rect, const Style style&) {
+		enum {
+			colB: 0x4371c6;
+			colG: 0x72d874;
+			colR: 0xfc6165;
+			colL: 0xdadada;
+		}
+		int px = (rect.w - 256) / 2;
+		if (this.lines) {
+			int y = rect.y + rect.h - 1;
+			int pb = bch(this.data[0]) * rect.h / 256;
+			int pg = gch(this.data[0]) * rect.h / 256;
+			int pr = rch(this.data[0]) * rect.h / 256;
+			int pl = ach(this.data[0]) * rect.h / 256;
+
+			for (int i = 1; i < this.data.length; i += 1) {
+				int x = rect.x + i + px;
+				argb data = this.data[i];
+				int bv = bch(data) * rect.h / 256;
+				int gv = gch(data) * rect.h / 256;
+				int rv = rch(data) * rect.h / 256;
+				int lv = ach(data) * rect.h / 256;
+
+				if (this.color) {
+					offs.drawLine(x, y - pl, x, y - lv, uint32(data));
+				} else {
+					offs.drawLine(x, y - pb, x, y - bv, colB);
+					offs.drawLine(x, y - pg, x, y - gv, colG);
+					offs.drawLine(x, y - pr, x, y - rv, colR);
+					offs.drawLine(x, y - pl, x, y - lv, colL);
+				}
+
+				pl = lv;
+				pb = bv;
+				pg = gv;
+				pr = rv;
+			}
+		} else {
+			uint32 bars[] = this.data;
+			for (int i = 0; i < bars.length; i += 1) {
+				argb data = this.data[i];
+				if (this.color) {
+					int x = rect.x + i + px;
+					int y1 = rect.y + rect.h;
+					int y0 = y1 - ach(data) * rect.h / 256;
+					offs.fillRect(x, y0 - 1, x + 1, y1, uint32(data));
+				} else {
+					int x = rect.x + px + i;
+					int bv = bch(data) * rect.h / 256;
+					int gv = gch(data) * rect.h / 256;
+					int rv = rch(data) * rect.h / 256;
+					int lv = rch(data) * rect.h / 256;
+					for (int y = 0; y < rect.h; y += 1) {
+						uint32 b = colB * uint32(y < bv);
+						uint32 g = colG * uint32(y < gv);
+						uint32 r = colR * uint32(y < rv);
+						uint32 l = colL * uint32(y < lv);
+						offs.set(x, rect.h - y + rect.y - 1, r | g | b | l);
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -121,6 +298,22 @@ struct ColorPicker: View {
 	bool onUpdate(ColorPicker this, argb value) {
 		this.value = value;
 		return true;
+	}
+
+	void onDraw(ColorPicker this, Image offs, const Rect rect, const Style style&) {
+		for (int y = 0; y < rect.h; y += 1) {
+			for (int x = 0; x < rect.w; x += 1) {
+				float32 px = float32(x) / rect.w;
+				float32 py = float32(y) / rect.h;
+				argb color = argb(hsv2rgb(vec4f(px, 1 - py, this.lum)));
+				offs.set(x + rect.x, y + rect.y, color);
+			}
+		}
+		int x = rect.x + Math.clamp(float32(this.x), 0f, rect.w - 1f);
+		int y = rect.y + Math.clamp(float32(this.y), 0f, rect.h - 1f);
+		offs.drawOval(x - 4, y - 4, x + 4, y + 4, style.valueColor);
+		offs.drawOval(x - 2, y - 2, x + 2, y + 2, style.valueColor);
+		offs.drawOval(x - 1, y - 1, x + 1, y + 1, style.valueColor);
 	}
 }
 
@@ -174,7 +367,6 @@ bool isActive(const Layout layout&, View views...) {
 		}
 	}
 	return false;
-
 }
 
 bool setSelected(Layout layout&, View view) {
@@ -206,7 +398,7 @@ void onInit(View this, Layout layout&, int idx) {
 	}
 	if (Histogram item = this.as(Histogram)) {
 		for (int i = 0; i < 256; i += 1) {
-			item.data[i] = uint32(argb(i, i, i, i));
+			item.data[i] = argb(i, i, i, i);
 		}
 		return;
 	}
@@ -267,7 +459,6 @@ bool onReset(View this) {
 }
 bool onEvent(View this, const KeyEvent event&) {
 	// FIXME: dispatch click event using inheritance and override
-
 	if (!event.release) {
 		return false;
 	}
@@ -320,12 +511,11 @@ bool onEvent(View this, const KeyEvent event&) {
 	return false;
 }
 bool onEvent(View this, const MouseEvent event&) {
-	// FIXME: dispatch click event using inheritance and override
-
 	if (this.onMouseEvent != null) {
 		return this.onMouseEvent(event);
 	}
 
+	// FIXME: dispatch click event using inheritance and override
 	if (ColorPicker item = this.as(ColorPicker)) {
 		if (event.release) {
 			return item.onClick();
@@ -461,67 +651,87 @@ void onMeasure(View this, Rect rect&, const Style style&) {
 		}
 		else if (item.text == null) {
 			// TODO: remove hack: empty button used for separator
-			rect.h = item.height * style.padding;
+			rect.h = item.height + style.padding;
 		}
 		else {
 			rect.h = item.height;
 		}
 		return;
 	}
+	if (typename(item) == View) {
+		rect.h = this.height;
+		return;
+	}
 	abort("invalid view", this);
+}
+bool onDraw(View view, Image offs, const Rect rect&, const Style style&) {
+	// FIXME: dispatch click event using inheritance and override
+	if (ColorPicker item = view.as(ColorPicker)) {
+		return item.onDraw(item, offs, rect, style);
+	}
+	if (Histogram item = view.as(Histogram)) {
+		return item.onDraw(item, offs, rect, style);
+	}
+	if (Slider item = view.as(Slider)) {
+		return item.onDraw(item, offs, rect, style);
+	}
+	if (Switch item = view.as(Switch)) {
+		return item.onDraw(item, offs, rect, style);
+	}
+	if (Button item = view.as(Button)) {
+		return item.onDraw(item, offs, rect, style);
+	}
+	abort("invalid view", view);
 }
 
 bool uiEvent(Layout layout&, int action, int button, int x, int y) {
-	struct Mouse {
-		int32 clicks;   // click count
-		int64 time;     // old clock
-		int32 btn;      // old button
-		int32 x;        // old x coord
-		int32 y;        // old y coord
-	}
-	static Mouse mouse = {};
-	static bool isShift;
-	static bool isCtrl;
-	static bool isAlt;
+struct Mouse {
+	int32 clicks;   // click count
+	int64 time;     // old clock
+	int32 btn;      // old button
+	int32 x;        // old x coord
+	int32 y;        // old y coord
 
-static int click(Mouse old&, int btn, int x, int y) {
-	if ((btn != 0 && btn != old.btn) || x != old.x || y != old.y) {
-		// reset values
-		old.clicks = 1;
-		old.time = System.millis();
+	static int click(Mouse old&, int btn, int x, int y) {
+		if ((btn != 0 && btn != old.btn) || x != old.x || y != old.y) {
+			// reset values
+			old.clicks = 1;
+			old.time = System.millis();
+			old.btn = btn;
+			old.x = x;
+			old.y = y;
+			return 0;
+		}
+		if (btn == 0) {
+			// release button
+			// old.time = keep value?;
+			// old.btn = keep value?;
+			// old.cnt = keep value?;
+			return old.clicks;
+		}
+	
+		int64 now = System.millis();
+		if ((now - old.time) / 1000. > .5) {
+			// reset counter
+			old.clicks = 0;
+		}
+		old.time = now;
 		old.btn = btn;
-		old.x = x;
-		old.y = y;
-		return 0;
-	}
-	if (btn == 0) {
-		// release button
-		// old.time = keep value?;
-		// old.btn = keep value?;
-		// old.cnt = keep value?;
+		old.clicks += 1;
 		return old.clicks;
 	}
+}
 
-	int64 now = System.millis();
-	if ((now - old.time) / 1000. > .5) {
-		// reset counter
-		old.clicks = 0;
-	}
-	old.time = now;
-	old.btn = btn;
-	old.clicks += 1;
-	return old.clicks;
-}
 static int click(Layout layout&, int x, int y) {
-static bool test(const Rect rect&, int x, int y) {
-	if (x < rect.x || x >= rect.x + rect.w) {
-		return false;
+	static bool test(const Rect rect&, int x, int y) {
+		if (x < rect.x || x >= rect.x + rect.w) {
+			return false;
+		}
+		if (y < rect.y || y >= rect.y + rect.h) {
+			return false;
+		}
+		return true;
 	}
-	if (y < rect.y || y >= rect.y + rect.h) {
-		return false;
-	}
-	return true;
-}
 
 	if (!layout.visible) {
 		return -1;
@@ -542,7 +752,6 @@ static bool test(const Rect rect&, int x, int y) {
 	}
 	return -1;
 }
-
 static bool select(Layout layout&, int index) {
 	assert(index >= 0, "invalid selection");
 	assert(index < layout.items, "invalid selection");
@@ -591,7 +800,6 @@ static View active(const Layout layout&) {
 	}
 	return layout.views[idx];
 }
-
 static void measure(Layout layout&) {
 	int bottom = layout.rect.y;
 	for (int i = 0; i < layout.items; i += 1) {
@@ -611,17 +819,17 @@ static void measure(Layout layout&) {
 				}
 			}
 		}
-		bottom += rect.h;
+		if (rect.h > 0) {
+			bottom += rect.h;
+		}
 	}
 	layout.rect.h = bottom - layout.rect.y;
 }
 static void draw(Layout layout&) {
-	static const FormatFlags flagsInt = { padLen: 4 };
-	static const FormatFlags flagsFlt = { padLen: 4, precision: 2 };
-
 	if (!layout.visible) {
 		return;
 	}
+
 	// draw background
 	if (layout.style.backgroundColor != -1) {
 		int b = layout.style.border;
@@ -630,88 +838,38 @@ static void draw(Layout layout&) {
 	}
 
 	// draw items
+	Image offs = layout.offs.slice(null);
 	for (int i = 0; i < layout.items; i += 1) {
 		View view = layout.views[i];
-		Rect rect& = layout.rects[i];
+		const Rect rect& = layout.rects[i];
 
 		if (i == layout.selectedIndex) {
 			layout.offs.fillRect(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, layout.style.focusedColor);
 		}
 
-		int pos = 0;
-		char text[*] = null;
-		char value[256] = {};
-		value[0] = 0;
-		if (ColorPicker item = view.as(ColorPicker)) {
-			for (int y = 0; y < rect.h; y += 1) {
-				for (int x = 0; x < rect.w; x += 1) {
-					float32 px = float32(x) / rect.w;
-					float32 py = float32(y) / rect.h;
-					argb color = argb(hsv2rgb(vec4f(px, 1 - py, item.lum)));
-					layout.offs.set(x + rect.x, y + rect.y, color);
-				}
-			}
-			int x = rect.x + Math.clamp(float32(item.x), 0f, rect.w - 1f);
-			int y = rect.y + Math.clamp(float32(item.y), 0f, rect.h - 1f);
-			layout.offs.drawOval(x - 4, y - 4, x + 4, y + 4, layout.style.valueColor);
-			layout.offs.drawOval(x - 2, y - 2, x + 2, y + 2, layout.style.valueColor);
-			layout.offs.drawOval(x - 1, y - 1, x + 1, y + 1, layout.style.valueColor);
+		if (rect.w > 0 && rect.h > 0) {
+			offs.slice(layout.offs, rect);
+			Rect rect = {
+				x: 0; y: 0;
+				w: offs.width();
+				h: offs.height();
+			};
+			view.onDraw(offs, rect, layout.style);
 		}
-		else if (Histogram item = view.as(Histogram)) {
-			if (item.lines) {
-				layout.offs.drawLut(rect, null, item.data);
-			} else {
-				layout.offs.drawLut(rect, item.data, null);
-			}
-		}
-		else if (Slider item = view.as(Slider)) {
-			text = item.text;
-			if (item.divisor != 0) {
-				pos = value.append(pos, item.valFlt(), flagsFlt);
-			} else {
-				pos = value.append(pos, item.value, flagsInt);
-			}
-		}
-		else if (Switch item = view.as(Switch)) {
-			text = item.text;
-			if (item.checked) {
-				pos = value.append(pos, item.on);
-			} else {
-				pos = value.append(pos, item.off);
-			}
-		}
-		else if (Button item = view.as(Button)) {
-			text = item.text;
-		}
-		else {
-			abort("item is not a known ui element", view);
-		}
-		int p = layout.style.padding;
-		Rect valueRect = rect;
-		layout.style.font.clipText(&valueRect, value);
-		if (valueRect.w > layout.rect.w - 2 * p) {
-			valueRect.w = layout.rect.w - 2 * p;
-		}
-		if (text != null) {
-			Rect textRect = rect;
-			textRect.x += p;
-			textRect.y += p;
-			textRect.w -= valueRect.w + 3 * p;
-			layout.offs.drawText(textRect, layout.style.font, text, layout.style.textColor);
-		}
-
-		valueRect.h = rect.h;
-		valueRect.x += rect.w - valueRect.w - p;
-		valueRect.y += p;
-		layout.offs.drawText(valueRect, layout.style.font, value, layout.style.valueColor);
 
 		if (i == layout.activeIndex) {
 			layout.offs.drawRect(rect.x, rect.y, rect.x + rect.w - 1, rect.y + rect.h - 1, layout.style.valueColor);
 		}
 	}
+	offs.destroy();
 }
-	layout.colorPick = false;
 
+	static Mouse mouse = {};
+	static bool isShift;
+	static bool isCtrl;
+	static bool isAlt;
+
+	layout.colorPick = false;
 	if (action == Gui.WINDOW_INIT) {
 		layout.selectedIndex = -1;
 		layout.measure = true;
@@ -751,7 +909,7 @@ static void draw(Layout layout&) {
 	}
 
 	if (action == Gui.MOUSE_PRESS) {
-		click(&mouse, button, x, y);
+		Mouse.click(&mouse, button, x, y);
 		if (button != 1) {
 			return false;
 		}
@@ -792,7 +950,7 @@ static void draw(Layout layout&) {
 	if (action == Gui.MOUSE_MOTION) {
 		int ox = mouse.x;
 		int oy = mouse.y;
-		click(&mouse, -1, x, y);
+		Mouse.click(&mouse, -1, x, y);
 		if (button != 1) {
 			return false;
 		}
@@ -831,7 +989,7 @@ static void draw(Layout layout&) {
 	}
 	if (action == Gui.MOUSE_RELEASE) {
 		int btn = mouse.btn;
-		click(&mouse, 0, x, y);
+		Mouse.click(&mouse, 0, x, y);
 		if (button != 1) {
 			return false;
 		}
@@ -944,6 +1102,8 @@ Layout Layout(Image offs, int x, int y, Image font, View items...) {
 		};
 		style: {
 			font: font;
+			flagsInt: { padLen: 4 };
+			flagsFlt: { padLen: 4, precision: 2 };
 		};
 	};
 

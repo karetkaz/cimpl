@@ -482,6 +482,7 @@ Image
 Image.create(width: int32, height: int32, depth: int32): Image
 Image.create3d(width: int32, height: int32): Image
 Image.recycle(recycle: Image, width: int32, height: int32, depth: int32, flags: int32): Image
+Image.slice(image: Image, recycle: Image, rect: Rect): Image
 Image.destroy(image: Image): void
 Image.openBmp(path: char[*], depth: int32): Image
 Image.openPng(path: char[*], depth: int32): Image
@@ -510,7 +511,9 @@ Image.transform(image: Image, rect: Rect, src: Image, roi: Rect, interpolate: in
 Image.blur(image: Image, radius: int32, sigma: float64): void
 Image.colorMap(image: Image, roi: Rect, lut: uint32[256]): void
 Image.colorMat(image: Image, roi: Rect, mat: float32[16]): void
-Image.calcHist(image: Image, roi: Rect, rgb: uint32, lut: uint32[256]): void
+Image.calcHueHist(image: Image, roi: Rect, lut: uint32[256]): void
+Image.calcLumHist(image: Image, roi: Rect, lut: uint32[256]): void
+Image.calcRgbHist(image: Image, roi: Rect, lut: uint32[256]): void
 Image.drawMesh(image: Image, mesh: Mesh, mode: int32): int32
 Mesh
 Mesh.create(size: int32): Mesh
@@ -624,26 +627,26 @@ rch(color: argb): int32
 gch(color: argb): int32
 bch(color: argb): int32
 lum(color: argb): int32
+hue(rgb: argb): uint32
 lerpLut(lut: uint32[], colors: argb[]): void
 alphaLut(lut: uint32[], hardness: int32, alpha: int32, reflect: bool): void
 vec4f(rgb: argb): vec4f
 argb(vec: vec4f): argb
 lum(vec: vec4f): float32
-drawLut(image: Image, roi: Rect, bars: uint32[256], lines: uint32[256]): void
 hsv2rgb(hsv: vec4f): vec4f
 rgb2hsl(rgb: vec4f): vec4f
 hsl2rgb(hsl: vec4f): vec4f
 Image(width: int32, height: int32, depth: int32): Image
+Image(copy: Image): Image
+Image(copy: Image, aspect: float64): Image
 Image(fileName: char[*], depth: int32): Image
 Image(fileName: char[*]): Image
 Image(fileName: char[*], width: int32, height: int32, depth: int32, align: int32, maxScale: float64): Image
 Image(fileName: char[*], width: int32, height: int32, depth: int32, align: int32): Image
 Image(fileName: char[*], width: int32, height: int32, depth: int32): Image
-Mesh(fileName: char[*]): Mesh
-Image(copy: Image): Image
-Image(copy: Image, aspect: float64): Image
 set(image: Image, x: int32, y: int32, color: argb): void
 resize(image: Image, rect: Rect, src: Image, roi: Rect, interpolate: int32): void
+slice(image: Image, rect: Rect): Image
 clip(src: Image, roi: Rect): bool
 fill(image: Image, color: uint32): void
 fill(image: Image, roi: Rect, color: uint32): void
@@ -651,8 +654,9 @@ fill(image: Image, roi: Rect, pad: int32, color: uint32): void
 drawRect(image: Image, roi: Rect, color: uint32): void
 eval(image: Image, roi: Rect, aspect: float32, time: float32, eval(in: vec4f): vec4f): void
 tile(image: Image, x: int32, y: int32, src: Image, roi: Rect): void
-show(mesh: Mesh, w: int32, h: int32, fovy: float32): void
+Mesh(fileName: char[*]): Mesh
 show(surf: Image): void
 show(image: Image, onEvent(action: int32, button: int32, ex: int32, ey: int32): int32): void
 showDiff(image1: Image, image2: Image): void
 show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): vec4f): void
+show(mesh: Mesh, w: int32, h: int32, fovy: float32): void

@@ -166,9 +166,51 @@ inline rch(argb color) = int32((uint32(color) >> 16) & 0xff);
 inline gch(argb color) = int32((uint32(color) >> 8) & 0xff);
 /// get the Blue channel of the color
 inline bch(argb color) = int32(uint32(color) & 0xff);
+
 /// get the luminosity of the color (0.299 * color.r + 0.587 * color.g + 0.114 * color.b)
 inline lum(argb color) = int32((19595 * rch(color) + 38470 * gch(color) + 7471 * bch(color)) >> 16);
 
+/// get the hue of the color
+uint32 hue(argb rgb) {
+	// adapted from: https://gist.github.com/mity/6034000
+	int r = rch(rgb);
+	int g = gch(rgb);
+	int b = bch(rgb);
+	int min = r;
+	int max = r;
+
+	if (min > g) {
+		min = g;
+	}
+	if (min > b) {
+		min = b;
+	}
+	if (max < g) {
+		max = g;
+	}
+	if (max < b) {
+		max = b;
+	}
+
+	if (max == min) {
+		return 0;
+	}
+
+	int hue = 0;
+	if (max == r) {
+		hue = ((g - b) * 60) / (max - min);
+	}
+	else if (max == g) {
+		hue = ((b - r) * 60) / (max - min) + 120;
+	}
+	else if (max == b) {
+		hue = ((r - g) * 60) / (max - min) + 240;
+	}
+	if (hue < 0) {
+		hue += 360;
+	}
+	return hue;
+}
 
 /// linear interpolate a lookup-table with the given colors
 void lerpLut(uint32 lut[], argb colors...) {
@@ -223,67 +265,6 @@ inline argb(const vec4f vec&) = argb(vec.x, vec.y, vec.z);
 
 /// calculate the luminosity of a color
 inline lum(const vec4f vec&) = 0.299f * vec.x + 0.587f * vec.y + 0.114f * vec.z;
-}
-
-/// draw the given lookup table to the image
-void drawLut(Image image, const Rect roi&, const uint32 bars[256], const uint32 lines[256]) {
-	enum {
-		margin: 20;
-		colB: 0x4371c6;
-		colG: 0x72d874;
-		colR: 0xfc6165;
-		colL: 0xdadada;
-	}
-
-	Rect rect = {
-		w: roi != null ? roi.w : 256;
-		h: roi != null ? roi.h : 128;
-		y: roi != null ? roi.y : margin;
-		x: roi != null ? roi.x : image.width() - rect.w - margin;
-	};
-
-	int px = (rect.w - 256) / 2;
-
-	if (bars != null) {
-		for (int x = 0; x < bars.length; x += 1) {
-			int bv = bch(argb(bars[x])) * rect.h / 256;
-			int gv = gch(argb(bars[x])) * rect.h / 256;
-			int rv = rch(argb(bars[x])) * rect.h / 256;
-			int lv = ach(argb(bars[x])) * rect.h / 256;
-			for (int y = 0; y < rect.h; y += 1) {
-				uint32 b = colB * uint32(y < bv);
-				uint32 g = colG * uint32(y < gv);
-				uint32 r = colR * uint32(y < rv);
-				uint32 l = colL * uint32(y < lv);
-				image.set(x + rect.x + px, rect.h - y + rect.y - 1, r | g | b | l);
-			}
-		}
-	}
-	if (lines != null) {
-		int y = rect.y + rect.h - 1;
-		int pb = bch(argb(lines[0])) * rect.h / 256;
-		int pg = gch(argb(lines[0])) * rect.h / 256;
-		int pr = rch(argb(lines[0])) * rect.h / 256;
-		int pl = ach(argb(lines[0])) * rect.h / 256;
-
-		for (int i = 1; i < lines.length; i += 1) {
-			int x = rect.x + i + px;
-			int bv = bch(argb(lines[i])) * rect.h / 256;
-			int gv = gch(argb(lines[i])) * rect.h / 256;
-			int rv = rch(argb(lines[i])) * rect.h / 256;
-			int lv = ach(argb(lines[i])) * rect.h / 256;
-
-			image.drawLine(x, y - pl, x, y - lv, colL);
-			image.drawLine(x, y - pb, x, y - bv, colB);
-			image.drawLine(x, y - pg, x, y - gv, colG);
-			image.drawLine(x, y - pr, x, y - rv, colR);
-
-			pl = lv;
-			pb = bv;
-			pg = gv;
-			pr = rv;
-		}
-	}
 }
 
 inline "color.hsv.ci";

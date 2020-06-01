@@ -1,4 +1,5 @@
 #include <cmpl.h>
+#include <internal.h>
 
 #include "g3_math.h"
 #include "gx_color.h"
@@ -40,16 +41,9 @@ static inline GxMesh meshMemMgr(rtContext ctx, GxMesh recycle, int size) {
 static const char *proto_image_create2d = "Image create(int32 width, int32 height, int32 depth)";
 static const char *proto_image_create3d = "Image create3d(int32 width, int32 height)";
 static const char *proto_image_recycle = "Image recycle(Image recycle, int32 width, int32 height, int32 depth, int32 flags)";
+static const char *proto_image_slice = "Image slice(Image image, Image recycle, const Rect rect&)";
 static vmError surf_recycle(nfcContext ctx) {
 	GxImage result = NULL;
-	if (ctx->proto == proto_image_recycle) {
-		GxImage recycle = nextValue(ctx).ref;
-		int width = nextValue(ctx).i32;
-		int height = nextValue(ctx).i32;
-		int depth = nextValue(ctx).i32;
-		int flags = nextValue(ctx).i32;
-		result = createImage(recycle, width, height, depth, flags);
-	}
 	if (ctx->proto == proto_image_create2d) {
 		int width = nextValue(ctx).i32;
 		int height = nextValue(ctx).i32;
@@ -61,6 +55,21 @@ static vmError surf_recycle(nfcContext ctx) {
 		int height = nextValue(ctx).i32;
 		result = createImage(NULL, width, height, 32, Image3d);
 	}
+	if (ctx->proto == proto_image_recycle) {
+		GxImage recycle = nextValue(ctx).ref;
+		int width = nextValue(ctx).i32;
+		int height = nextValue(ctx).i32;
+		int depth = nextValue(ctx).i32;
+		int flags = nextValue(ctx).i32;
+		result = createImage(recycle, width, height, depth, flags);
+	}
+	if (ctx->proto == proto_image_slice) {
+		GxImage recycle = nextValue(ctx).ref;
+		GxImage parent = nextValue(ctx).ref;
+		GxRect region = nextValue(ctx).ref;
+		result = sliceImage(recycle, parent, region);
+	}
+
 	if (result == NULL) {
 		return nativeCallError;
 	}
@@ -544,11 +553,12 @@ static vmError surf_blurSurf(nfcContext ctx) {
 	return noError;
 }
 
-static const char *proto_image_calcHist = "void calcHist(Image image, const Rect roi&, uint32 rgb, uint32 lut[256])";
+static const char *proto_image_calcHueHist = "void calcHueHist(Image image, const Rect roi&, uint32 lut[256])";
+static const char *proto_image_calcLumHist = "void calcLumHist(Image image, const Rect roi&, uint32 lut[256])";
+static const char *proto_image_calcRgbHist = "void calcRgbHist(Image image, const Rect roi&, uint32 lut[256])";
 static vmError surf_calcHist(nfcContext ctx) {
 	GxImage surf = nextValue(ctx).ref;
 	GxRect roi = nextValue(ctx).ref;
-	uint32_t rgb = nextValue(ctx).u32;
 	rtValue lut = nextValue(ctx);
 
 	if (surf->depth != 32) {
@@ -573,22 +583,50 @@ static vmError surf_calcHist(nfcContext ctx) {
 		return noError;
 	}
 
+	if (ctx->proto == proto_image_calcHueHist) {
+		uint32_t *data = lut.ref;
+		for (int i = 0; i < 256; ++i) {
+			data[i] = 0;
+		}
+		for (int y = 0; y < rect.h; y += 1) {
+			uint32_t *cBuff = (uint32_t *) dptr;
+			for (int x = 0; x < rect.w; x += 1) {
+				data[hue(*cBuff) * 255 / 360] += 1;
+				cBuff += 1;
+			}
+			dptr += surf->scanLen;
+		}
+		return noError;
+	}
+	if (ctx->proto == proto_image_calcLumHist) {
+		uint32_t *data = lut.ref;
+		for (int i = 0; i < 256; ++i) {
+			data[i] = 0;
+		}
+		for (int y = 0; y < rect.h; y += 1) {
+			uint32_t *cBuff = (uint32_t *) dptr;
+			for (int x = 0; x < rect.w; x += 1) {
+				data[lum(*cBuff)] += 1;
+				cBuff += 1;
+			}
+			dptr += surf->scanLen;
+		}
+		return noError;
+	}
+
 	// init
 	uint32_t histB[256];
 	uint32_t histG[256];
 	uint32_t histR[256];
-	uint32_t histL[256];
 	for (int i = 0; i < 256; i += 1) {
 		histB[i] = 0;
 		histG[i] = 0;
 		histR[i] = 0;
-		histL[i] = 0;
 	}
 
 	for (int y = 0; y < rect.h; y += 1) {
 		uint32_t *cBuff = (uint32_t *) dptr;
 		for (int x = 0; x < rect.w; x += 1) {
-			histL[lum(*cBuff)] += 1;
 			histB[bch(*cBuff)] += 1;
 			histG[gch(*cBuff)] += 1;
 			histR[rch(*cBuff)] += 1;
@@ -598,15 +636,7 @@ static vmError surf_calcHist(nfcContext ctx) {
 	}
 
 	uint32_t max = 1;
-	uint32_t useB = bch(rgb);
-	uint32_t useG = gch(rgb);
-	uint32_t useR = rch(rgb);
-	uint32_t useL = ach(rgb);
 	for (size_t i = 0; i < 256; i += 1) {
-		histB[i] = histB[i] * useB / 255;
-		histG[i] = histG[i] * useG / 255;
-		histR[i] = histR[i] * useR / 255;
-		histL[i] = histL[i] * useL / 255;
 		if (max < histB[i]) {
 			max = histB[i];
 		}
@@ -616,9 +646,6 @@ static vmError surf_calcHist(nfcContext ctx) {
 		if (max < histR[i]) {
 			max = histR[i];
 		}
-		if (max < histL[i]) {
-			max = histL[i];
-		}
 	}
 
 	argb *data = lut.ref;
@@ -626,7 +653,6 @@ static vmError surf_calcHist(nfcContext ctx) {
 		data[x].b = sat_u8(histB[x] * 255 / max);
 		data[x].g = sat_u8(histG[x] * 255 / max);
 		data[x].r = sat_u8(histR[x] * 255 / max);
-		data[x].a = sat_u8(histL[x] * 255 / max);
 	}
 
 	return noError;
@@ -1316,6 +1342,7 @@ int cmplInit(rtContext rt) {
 		{surf_recycle,  proto_image_create2d},
 		{surf_recycle,  proto_image_create3d},
 		{surf_recycle,  proto_image_recycle},
+		{surf_recycle,  proto_image_slice},
 		{surf_destroy,  proto_image_destroy},
 		{surf_open,     proto_image_openBmp},
 		{surf_open,     proto_image_openPng},
@@ -1345,7 +1372,9 @@ int cmplInit(rtContext rt) {
 		{surf_blurSurf, proto_image_blurSurf},
 		{surf_cLutSurf, proto_image_cLutSurf},
 		{surf_cMatSurf, proto_image_cMatSurf},
-		{surf_calcHist, proto_image_calcHist},
+		{surf_calcHist, proto_image_calcHueHist},
+		{surf_calcHist, proto_image_calcLumHist},
+		{surf_calcHist, proto_image_calcRgbHist},
 		{surf_drawMesh, proto_image_drawMesh},
 	},
 	nfcWindow[] = {
