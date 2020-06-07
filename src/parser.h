@@ -26,12 +26,12 @@ symn lookup(ccContext cc, symn sym, astn ast, astn args, ccKind filter, int rais
 /**
  * Check if a value can be assigned to a symbol.
  *
- * @param rhs variable to be assigned to.
- * @param val value to be assigned.
+ * @param variable variable to be assigned to.
+ * @param value value to be assigned.
  * @param strict Strict mode: casts are not enabled.
  * @return cast of the assignment if it can be done.
  */
-ccKind canAssign(ccContext cc, symn rhs, astn val, int strict);
+ccKind canAssign(ccContext cc, symn variable, astn value, int strict);
 
 /**
  * Type Check an expression.

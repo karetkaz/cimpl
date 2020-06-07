@@ -1104,7 +1104,7 @@ static vmError window_show(nfcContext ctx) {
 			return error;
 		}
 	}
-	args.window = createWindow(offScreen);
+	args.window = createWindow(offScreen, rt->main->unit);
 
 #ifdef __EMSCRIPTEN__
 	emscripten_set_main_loop_arg((void*)mainLoopCallback, &args, 0, 1);
@@ -1122,7 +1122,7 @@ static vmError window_title(nfcContext ctx) {
 	char *title = nextValue(ctx).ref;
 	mainLoopArgs args = (mainLoopArgs) ctx->extra;
 	if (args != NULL && args->window != NULL) {
-		setWindowText(args->window, title);
+		setWindowTitle(args->window, title);
 	}
 	return noError;
 }

@@ -1,28 +1,28 @@
 @echo off
 
 :: test build and run on windows platform.
+REM SET MINGW_HOME=C:\Workspace\MinGw-5.3.0
 SET WATCOM=C:\Workspace\ow_daily\rel2
-SET MINGW=C:\Workspace\MinGw-5.3.0
 
-pushd "%~dp0\.."
-SET CMPL_HOME=%CD%
-popd
+REM pushd "%~dp0\.."
+REM SET CMPL_HOME=%CD%
+REM popd
 echo cmpl home is: %CMPL_HOME%
 
-SET BIN=%CMPL_HOME%\bin\win.gcc
+SET BIN=%CMPL_HOME%\bin
 SET BINW=%CMPL_HOME%\bin\win.wcc
 
-IF EXIST "%MINGW%" (
-	SET PATH=%MINGW%\bin;%PATH%
+IF EXIST "%MINGW_HOME%" (
+	SET "PATH=%MINGW_HOME%\bin;%PATH%"
 	IF NOT EXIST "%BIN%" mkdir "%BIN%"
 	mingw32-make -C "%CMPL_HOME%" BINDIR="%BIN%" clean
-	mingw32-make -C "%CMPL_HOME%" -j 12 BINDIR="%BIN%" cmpl.exe libFile.dll libGfx.dll libOpenGL.dll
+	mingw32-make -C "%CMPL_HOME%" -j 12 BINDIR="%BIN%" cmpl.exe libFile.dll libGfx.dll
 )
 
 IF EXIST "%WATCOM%" (
-	SET INCLUDE=%WATCOM%\h\nt;%WATCOM%\h
-	SET LIB=%WATCOM%\lib386
-	SET PATH=%WATCOM%\binnt;%PATH%
+	SET "INCLUDE=%WATCOM%\h\nt;%WATCOM%\h"
+	SET "LIB=%WATCOM%\lib386"
+	SET "PATH=%WATCOM%\binnt;%PATH%"
 
 	IF NOT EXIST "%BINW%\obj.cc" mkdir "%BINW%\obj.cc"
 	pushd "%BINW%\obj.cc"
@@ -54,7 +54,7 @@ SET DUMP_FILE=%BIN%.dump.ci
 FOR %%f IN (%TEST_FILES%) DO (
 	pushd "%%~dpf"
 	echo **** running test: %%f
-	%BIN%\cmpl -X-stdin+steps -run/g -log/a/d "%DUMP_FILE%" "%BIN%\libFile.dll" "%BIN%\libOpenGL.dll" "%BIN%\libGfx.dll" "%CMPL_HOME%\lib\gfxlib.ci" "%%f"
+	%BIN%\cmpl -X-stdin+steps -run/g -log/a/d "%DUMP_FILE%" "%BIN%\libFile.dll" "%BIN%\libGfx.dll" "%CMPL_HOME%\lib\gfxlib.ci" "%%f"
 	IF ERRORLEVEL 1 echo ******** failed: %%f
 	popd
 )

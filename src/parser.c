@@ -139,10 +139,6 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 		memset(&arg, 0, sizeof(arg));
 		arg.kind = TOKEN_var;
 		for (ptr = def->next; ptr; ptr = ptr->next) {
-			symn arg1 = ptr->params;
-			symn arg2 = params;
-			int casts = 0;
-
 			if (ptr->name == NULL) {
 				continue;
 			}
@@ -156,25 +152,8 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 				continue;
 			}
 
-			while (arg1 && arg2) {
-				if (arg1->type != arg2->type) {
-					casts += 1;
-					arg.ref.link = arg1;
-					arg.type = arg1->type;
-					if (!canAssign(cc, arg2, &arg, 1)) {
-						arg.ref.link = arg2;
-						arg.type = arg2->type;
-						if (!canAssign(cc, arg1, &arg, 1)) {
-							break;
-						}
-					}
-				}
-				arg1 = arg1->next;
-				arg2 = arg2->next;
-			}
-
-			if (arg1 == NULL && arg2 == NULL) {
-				if (ptr->params && ptr->init == NULL && casts == 0) {
+			if (canAssign(cc, ptr, tag, 1)) {
+				if (ptr->params != NULL && ptr->init == NULL) {
 					debug("Overwriting forward function: %T", ptr);
 					ptr->init = lnkNode(cc, def);
 					ptr = NULL;
@@ -331,6 +310,9 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 			symn field = NULL;
 			if (typeCheck(cc, NULL, init, 1) != NULL) {
 				field = linkOf(key, 1);
+			}
+			if (field != NULL && !canAssign(cc, field, value, 0)) {
+				error(cc->rt, value->file, value->line, ERR_INVALID_INITIALIZER, init);
 			}
 			if (field != NULL && isStatic(field)) {
 				error(cc->rt, init->file, init->line, ERR_INVALID_STATIC_FIELD_INIT, init);
@@ -1126,10 +1108,15 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 	def = declare(cc, (attr & MASK_attr) | KIND_var | cast, tag, type, params);
 	if (skipTok(cc, ASGN_set, 0)) {
 		astn init = initializer(cc);
-		if (init && init->kind == STMT_beg) {
+		if (init != NULL && init->kind == STMT_beg) {
 			init = expandInitializer(cc, def, init);
 			if (init != NULL) {
 				init->type = type;
+			}
+		}
+		else if (init != NULL && init->type != cc->emit_opc) {
+			if (!canAssign(cc, def, init, 0)) {
+				error(cc->rt, tag->file, tag->line, ERR_INVALID_INITIALIZER, init);
 			}
 		}
 		def->init = init;

@@ -23,8 +23,8 @@ font.destroy();
 int onEvent(int action, int button, int x, int y) {
 	inline "/lib/gfx/micro.ui.ci";
 
-	static void onResetClick(Button this);
-	static void onCurveUpdate(Histogram this, int idx, int value);
+	static bool onResetClick(Button this);
+	static bool onCurveUpdate(Histogram this, int idx, int value);
 
 	static Histogram histogram = {
 		enabled: false;
@@ -44,25 +44,30 @@ int onEvent(int action, int button, int x, int y) {
 	};
 
 	static Button btnLuminosity = {
+		onReset: onResetClick;
 		text: "luminosity";
 	};
 	static Button btnRgb = {
+		onReset: onResetClick;
 		text: "rgb";
 	};
 	static Button btnRed = {
+		onReset: onResetClick;
 		text: "red";
 	};
 	static Button btnGreen = {
+		onReset: onResetClick;
 		text: "green";
 	};
 	static Button btnBlue = {
+		onReset: onResetClick;
 		text: "blue";
 	};
 
 	static Button btnReset = {
+		onClick: onResetClick;
 		text: "reset";
 		selectable: false;
-		onClick: onResetClick;
 	};
 
 	static Slider time = {
@@ -76,32 +81,55 @@ int onEvent(int action, int button, int x, int y) {
 		btnReset, separator, time
 	);
 
-static void onCurveUpdate(Histogram this, int idx, int value) {
+static bool onCurveUpdate(Histogram this, int idx, int value) {
 	argb data& = this.data[idx];
 	if (ui.isSelected(btnLuminosity)) {
 		data.a = clamp_s8(value);
-		return;
+		return true;
 	}
 	if (ui.isSelected(btnRed)) {
 		data.r = clamp_s8(value);
-		return;
+		return true;
 	}
 	if (ui.isSelected(btnGreen)) {
 		data.g = clamp_s8(value);
-		return;
+		return true;
 	}
 	if (ui.isSelected(btnBlue)) {
 		data.b = clamp_s8(value);
-		return;
+		return true;
 	}
 	if (ui.isSelected(btnRgb)) {
 		data.r = data.g = data.b = clamp_s8(value);
+		return true;
 	}
+	return false;
 }
-static void onResetClick(Button this) {
+static bool onResetClick(Button this) {
 	for (int i = 0; i < 256; i += 1) {
-		curves.data[i] = argb(i, i, i, i);
+		argb data& = curves.data[i];
+		if (this == btnLuminosity) {
+			data.a = i;
+		}
+		else if (this == btnRgb) {
+			data.r = i;
+			data.g = i;
+			data.b = i;
+		}
+		else if (this == btnRed) {
+			data.r = i;
+		}
+		else if (this == btnGreen) {
+			data.g = i;
+		}
+		else if (this == btnBlue) {
+			data.b = i;
+		}
+		else {
+			curves.data[i] = argb(i, i, i, i);
+		}
 	}
+	return true;
 }
 
 	if (action == Gui.KEY_PRESS) {
@@ -110,10 +138,9 @@ static void onResetClick(Button this) {
 		}
 	}
 	if (ui.uiEvent(action, button, x, y)) {
-		uint32 data[] = curves.data;
 		uint64 start = System.millis();
 		offs.resize(null, back, null, 1);
-		offs.colorMap(null, data);
+		offs.colorMap(null, curves.data);
 		histogram.update(offs);
 		time.value = System.millis() - start;
 		ui.draw();

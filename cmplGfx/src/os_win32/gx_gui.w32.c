@@ -18,7 +18,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-GxWindow createWindow(GxImage image) {
+GxWindow createWindow(GxImage image, const char *title) {
 	if (image == NULL) {
 		return NULL;
 	}
@@ -46,7 +46,7 @@ GxWindow createWindow(GxImage image) {
 
 	result->hwnd = CreateWindow(
 		class_name,			// Name of the window class (registered above)
-		"Window",			// Name of the window, appears in the window title bar
+		title,				// Name of the window, appears in the window title bar
 		WS_MINIMIZEBOX | WS_SYSMENU,	// Window style
 		CW_USEDEFAULT,			// X coordinate of the window on-screen
 		CW_USEDEFAULT,			// Y coordinate of the window on-screen
@@ -171,6 +171,9 @@ int getWindowEvent(GxWindow window, int *button, int *x, int *y) {
 			return MOUSE_RELEASE;
 
 		case WM_MOUSEMOVE:
+			if (btnstate == 0) {
+				break;
+			}
 			*button = btnstate;
 			*x = LOWORD(msg.lParam);
 			*y = HIWORD(msg.lParam);
@@ -201,6 +204,6 @@ void destroyWindow(GxWindow window) {
 	free(window);
 }
 
-void setWindowText(GxWindow window, char *caption) {
-	SetWindowTextA(window->hwnd, caption);
+void setWindowTitle(GxWindow window, const char *title) {
+	SetWindowTextA(window->hwnd, title);
 }

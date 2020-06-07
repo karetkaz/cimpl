@@ -21,11 +21,11 @@
 
 typedef struct GxWindow *GxWindow;
 
-extern GxWindow createWindow(GxImage image);
+extern GxWindow createWindow(GxImage image, const char *title);
 
 extern int getWindowEvent(GxWindow window, int *button, int *x, int *y);
 
-extern void setWindowText(GxWindow window, char *caption);
+extern void setWindowTitle(GxWindow window, const char *title);
 
 extern void flushWindow(GxWindow window);
 

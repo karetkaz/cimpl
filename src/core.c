@@ -659,12 +659,14 @@ static int install_base(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)
 		if ((mode & installLibs) != 0) {
 			error = error || !(field = ccAddCall(cc, typenameGetField, type_get_base));
 			error = error || !(field = ccAddCall(cc, typenameGetField, type_get_file));
-			if (field != NULL && field->params != NULL) {// hack: change return type from pointer to string
+			if (field != NULL && field->params != NULL) {
+				// hack: change return type from pointer to string
 				field->params->type = cc->type_str;
 			}
 			error = error || !(field = ccAddCall(cc, typenameGetField, type_get_line));
 			error = error || !(field = ccAddCall(cc, typenameGetField, type_get_name));
-			if (field != NULL && field->params != NULL) {// hack: change return type from pointer to string
+			if (field != NULL && field->params != NULL) {
+				// hack: change return type from pointer to string
 				field->params->type = cc->type_str;
 			}
 

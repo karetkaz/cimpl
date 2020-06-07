@@ -701,6 +701,9 @@ inline Image(const char fileName[*], int width, int height, int depth) = Image(f
 /// Set the the color of a pixel at the given position
 inline set(Image image, int32 x, int32 y, argb color) = Image.set(image, x, y, uint32(color));
 
+/// apply the 2d lookup table to the image
+inline colorMap(Image image, const Rect roi&, const argb lut[256]) = Image.colorMap(image, roi, pointer(lut));
+
 ///@public
 inline resize(Image image, const Rect rect&, const Image src, const Rect roi&, int interpolate) = Image.transform(image, rect, src, roi, interpolate, null);
 
@@ -963,9 +966,8 @@ struct View: object {
 	const variant data = null;
 
 	bool onMouseEvent(View this, const MouseEvent event&) = null;
-	bool onClick(View this) {
-		return true;
-	}
+	bool onClick(View this) = null;
+	bool onReset(View this) = null;
 }
 
 struct Button: View {
@@ -1063,7 +1065,7 @@ struct Histogram: View {
 	argb data[256] = null;   // FIXME: this should be not possible
 
 	void update(Histogram this, Image image) {
-		uint32 data[*] = this.data;
+		uint32 data[*] = pointer(this.data);
 		image.calcRgbHist(null, &data);
 		this.color = false;
 	}
@@ -1111,8 +1113,7 @@ struct Histogram: View {
 				pr = rv;
 			}
 		} else {
-			uint32 bars[] = this.data;
-			for (int i = 0; i < bars.length; i += 1) {
+			for (int i = 0; i < this.data.length; i += 1) {
 				argb data = this.data[i];
 				if (this.color) {
 					int x = rect.x + i + px;
@@ -1135,34 +1136,6 @@ struct Histogram: View {
 				}
 			}
 		}
-	}
-}
-
-struct ColorPicker: View {
-	const float32 lum = 1f;
-	argb value = argb(0);
-	int x = 0;
-	int y = 0;
-
-	bool onUpdate(ColorPicker this, argb value) {
-		this.value = value;
-		return true;
-	}
-
-	void onDraw(ColorPicker this, Image offs, const Rect rect, const Style style&) {
-		for (int y = 0; y < rect.h; y += 1) {
-			for (int x = 0; x < rect.w; x += 1) {
-				float32 px = float32(x) / rect.w;
-				float32 py = float32(y) / rect.h;
-				argb color = argb(hsv2rgb(vec4f(px, 1 - py, this.lum)));
-				offs.set(x + rect.x, y + rect.y, color);
-			}
-		}
-		int x = rect.x + Math.clamp(float32(this.x), 0f, rect.w - 1f);
-		int y = rect.y + Math.clamp(float32(this.y), 0f, rect.h - 1f);
-		offs.drawOval(x - 4, y - 4, x + 4, y + 4, style.valueColor);
-		offs.drawOval(x - 2, y - 2, x + 2, y + 2, style.valueColor);
-		offs.drawOval(x - 1, y - 1, x + 1, y + 1, style.valueColor);
 	}
 }
 
@@ -1242,9 +1215,6 @@ bool setGroup(Layout layout&, int group) {
 
 void onInit(View this, Layout layout&, int idx) {
 	// FIXME: dispatch click event using inheritance and override
-	if (ColorPicker item = this.as(ColorPicker)) {
-		return;
-	}
 	if (Histogram item = this.as(Histogram)) {
 		for (int i = 0; i < 256; i += 1) {
 			item.data[i] = argb(i, i, i, i);
@@ -1268,16 +1238,16 @@ void onInit(View this, Layout layout&, int idx) {
 	abort("invalid view", this);
 }
 bool onClick(View this) {
-	if (this.onClick == null) {
-		return false;
+	if (this.onClick != null) {
+		return this.onClick(this);
 	}
-	return this.onClick(this);
+	return true;
 }
 bool onReset(View this) {
-	// FIXME: dispatch click event using inheritance and override
-	if (ColorPicker item = this.as(ColorPicker)) {
-		return false;
+	if (this.onReset != null) {
+		return this.onReset(this);
 	}
+	// FIXME: dispatch click event using inheritance and override
 	if (Histogram item = this.as(Histogram)) {
 		if (item.onUpdate == null) {
 			return false;
@@ -1309,9 +1279,6 @@ bool onReset(View this) {
 bool onEvent(View this, const KeyEvent event&) {
 	// FIXME: dispatch click event using inheritance and override
 	if (!event.release) {
-		return false;
-	}
-	if (ColorPicker item = this.as(ColorPicker)) {
 		return false;
 	}
 	if (Histogram item = this.as(Histogram)) {
@@ -1365,22 +1332,6 @@ bool onEvent(View this, const MouseEvent event&) {
 	}
 
 	// FIXME: dispatch click event using inheritance and override
-	if (ColorPicker item = this.as(ColorPicker)) {
-		if (event.release) {
-			return item.onClick();
-		}
-		if (item.onUpdate == null) {
-			return false;
-		}
-
-		const Rect rect& = event.clientRect;
-		float32 px = Math.clamp(float32(event.x - rect.x), 0f, rect.w - 1f) / rect.w;
-		float32 py = Math.clamp(float32(event.y - rect.y), 0f, rect.h - 1f) / rect.h;
-		item.onUpdate(argb(hsv2rgb(vec4f(px, 1 - py, item.lum))));
-		item.x = event.x - rect.x;
-		item.y = event.y - rect.y;
-		return true;
-	}
 	if (Histogram item = this.as(Histogram)) {
 		if (event.release) {
 			if (event.repeat > 1) {
@@ -1452,6 +1403,10 @@ bool onEvent(View this, const MouseEvent event&) {
 	}
 	if (Button item = this.as(Button)) {
 		if (event.release) {
+			if (event.repeat > 1) {
+				// double click to reset
+				return item.onReset();
+			}
 			return item.onClick();
 		}
 		return false;
@@ -1462,14 +1417,6 @@ bool onEvent(View this, const MouseEvent event&) {
 
 void onMeasure(View this, Rect rect&, const Style style&) {
 	// FIXME: dispatch click event using inheritance and override
-	if (ColorPicker item = this.as(ColorPicker)) {
-		if (item.height == 0) {
-			rect.h = 128;
-		} else {
-			rect.h = item.height;
-		}
-		return;
-	}
 	if (Histogram item = this.as(Histogram)) {
 		if (item.height == 0) {
 			rect.h = 128;
@@ -1515,9 +1462,6 @@ void onMeasure(View this, Rect rect&, const Style style&) {
 }
 bool onDraw(View view, Image offs, const Rect rect&, const Style style&) {
 	// FIXME: dispatch click event using inheritance and override
-	if (ColorPicker item = view.as(ColorPicker)) {
-		return item.onDraw(item, offs, rect, style);
-	}
 	if (Histogram item = view.as(Histogram)) {
 		return item.onDraw(item, offs, rect, style);
 	}

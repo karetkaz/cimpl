@@ -12,7 +12,7 @@ struct GxWindow {
 	SDL_Surface *screen;
 };
 
-GxWindow createWindow(GxImage offs) {
+GxWindow createWindow(GxImage offs, const char *title) {
 	if (offs == NULL) {
 		return NULL;
 	}
@@ -23,9 +23,10 @@ GxWindow createWindow(GxImage offs) {
 	}
 
 	SDL_Init(SDL_INIT_VIDEO);
-	result->window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, offs->width, offs->height, 0);
 	result->image = SDL_CreateRGBSurfaceFrom(offs->basePtr, offs->width, offs->height, offs->depth, offs->scanLen, rch(255), gch(255), bch(255), 0);
+	result->window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, offs->width, offs->height, SDL_WINDOW_HIDDEN);
 	result->screen = SDL_GetWindowSurface(result->window);
+	SDL_ShowWindow(result->window);
 	return result;
 }
 
@@ -197,7 +198,7 @@ int getWindowEvent(GxWindow window, int *button, int *x, int *y) {
 	return 0;
 }
 
-void setWindowText(GxWindow window, char *caption) {
+void setWindowTitle(GxWindow window, const char *caption) {
 	SDL_SetWindowTitle(window->window, caption);
 }
 

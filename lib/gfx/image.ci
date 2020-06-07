@@ -120,6 +120,9 @@ inline Image(const char fileName[*], int width, int height, int depth) = Image(f
 /// Set the the color of a pixel at the given position
 inline set(Image image, int32 x, int32 y, argb color) = Image.set(image, x, y, uint32(color));
 
+/// apply the 2d lookup table to the image
+inline colorMap(Image image, const Rect roi&, const argb lut[256]) = Image.colorMap(image, roi, pointer(lut));
+
 ///@public
 inline resize(Image image, const Rect rect&, const Image src, const Rect roi&, int interpolate) = Image.transform(image, rect, src, roi, interpolate, null);
 

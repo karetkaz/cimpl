@@ -18,7 +18,9 @@ ifneq "$(OS)" "Windows_NT"
 	MKDIRF=--parents
 	CFLAGS+=-fPIC
 else
-	CFLAGS+=-D MOC_PNG -D MOC_JPEG
+	CFLAGS+=-D USE_PNG -I cmplGfx/libs/libjpeg
+	CFLAGS+=-D USE_JPEG -I cmplGfx/libs/libpng
+	CFLAGS+=-L cmplGfx/libs
 endif
 
 SRC_CC=\
@@ -53,8 +55,12 @@ SRC_CC_EXE=$(SRC_CC) src/main.c
 cmpl: $(addprefix $(CC_OUT)/, $(notdir $(filter %.o, $(SRC_CC_EXE:%.c=%.o))))
 	gcc -o $(BINDIR)/cmpl $^ -lm -ldl
 
-SRC_GX_X11=$(SRC_GX) $(GX_SRC)/os_linux/gx_gui.sdl.c $(GX_SRC)/os_linux/time.unx.c
-libGfx.so: $(addprefix $(GX_OUT)/, $(notdir $(filter %.o, $(SRC_GX_X11:%.c=%.o))))
+SRC_GX_X11=$(SRC_GX) $(GX_SRC)/os_linux/gx_gui.x11.c $(GX_SRC)/os_linux/time.unx.c
+libGfx11.so: $(addprefix $(GX_OUT)/, $(notdir $(filter %.o, $(SRC_GX_X11:%.c=%.o))))
+	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libGfx.so $^ -lm -ldl -lpng -ljpeg -lX11
+
+SRC_GX_SDL=$(SRC_GX) $(GX_SRC)/os_linux/gx_gui.sdl.c $(GX_SRC)/os_linux/time.unx.c
+libGfx.so: $(addprefix $(GX_OUT)/, $(notdir $(filter %.o, $(SRC_GX_SDL:%.c=%.o))))
 	gcc -fPIC -shared $(CFLAGS) -I src -o $(BINDIR)/libGfx.so $^ -lm -ldl -lpng -ljpeg -lSDL2
 
 libFile.so: cmplFile/src/file.c
@@ -70,7 +76,7 @@ cmpl.exe: $(addprefix $(CC_OUT)/, $(notdir $(filter %.o, $(SRC_CC_EXE:%.c=%.o)))
 
 SRC_GX_W32=$(SRC_GX) $(GX_SRC)/os_win32/gx_gui.w32.c  $(GX_SRC)/os_win32/time.w32.c
 libGfx.dll: $(addprefix $(GX_OUT)/, $(notdir $(filter %.o, $(SRC_GX_W32:%.c=%.o))))
-	gcc -shared $(CFLAGS) -I src -o $(BINDIR)/libGfx.dll $^ -lm -lgdi32
+	gcc -shared $(CFLAGS) -I src -o $(BINDIR)/libGfx.dll $^ -lm -lpng -ljpeg -lgdi32
 
 libFile.dll: cmplFile/src/file.c
 	gcc -shared $(CFLAGS) -I src -o $(BINDIR)/libFile.dll $^

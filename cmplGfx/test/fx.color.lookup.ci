@@ -13,7 +13,7 @@ Image back = Image("asset/image/forest.png", 32);
 Image font = Image.openFnt("asset/font/Modern-1.fnt");
 Image offs = Image(back.width(), back.height(), back.depth());
 
-void brightnessContrastGamma(uint32 lut[256], float brightness, float contrast, float gamma, float highlights, float shadows, float whites, float blacks) {
+void brightnessContrastGamma(argb lut[256], float brightness, float contrast, float gamma, float highlights, float shadows, float whites, float blacks) {
 	// adapted from: https://gitlab.bestminr.com/bestminr/FrontShaders/blob/master/shaders/whites_blacks.glsl
 	float WhitesBlacks(float base, float whites, float blacks) {
 		enum: float {
@@ -77,7 +77,6 @@ void brightnessContrastGamma(uint32 lut[256], float brightness, float contrast, 
 		return color + h + s;
 	}
 
-	argb lut2[*] = lut;
 	for (int idx = 0; idx < lut.length; idx += 1) {
 		float val = idx / 256f;
 
@@ -96,53 +95,45 @@ void brightnessContrastGamma(uint32 lut[256], float brightness, float contrast, 
 		val = brightness + val;
 
 		int rgb = clamp_s8(256 * val);
-		lut2[idx].r = rgb;
-		lut2[idx].g = rgb;
-		lut2[idx].b = rgb;
-		lut2[idx].a = lum;
+		lut[idx].r = rgb;
+		lut[idx].g = rgb;
+		lut[idx].b = rgb;
+		lut[idx].a = lum;
 	}
 }
 
-void calcAutoEqualize(uint32 lut[256], Image image, bool luminosity) {
+void calcAutoEqualize(argb lut[256], Image image, bool luminosity) {
+	uint32 hist[256] = {};
 	if (luminosity) {
-		// calculate luminosity histogram
-		image.calcLumHist(null, &lut);
+		image.calcLumHist(null, &hist);
 		uint32 sum = 0;
-		for (int i = 0; i < lut.length; i += 1) {
-			sum += lut[i];
-			lut[i] = sum;
+		for (uint32 i = 0; i < lut.length; i += 1) {
+			hist[i] = sum += hist[i];
 		}
 		for (uint32 i = 0; i < lut.length; i += 1) {
-			uint32 l = clamp_u8(lut[i] * 255 / sum);
-			lut[i] = uint32(_argb(l, i, i, i));
+			uint32 l = clamp_u8(hist[i] * 255 / sum);
+			lut[i] = _argb(l, i, i, i);
 		}
 	} else {
-		// calculate rgb histogram
-		image.calcRgbHist(null, &lut);
-		int maxR = 0;
-		int maxG = 0;
-		int maxB = 0;
-		int histoR[256] = {};
-		int histoG[256] = {};
-		int histoB[256] = {};
-		for (int i = 0; i < 256; i += 1) {
-			maxR += histoR[i] = rch(argb(lut[i]));
-			maxG += histoG[i] = gch(argb(lut[i]));
-			maxB += histoB[i] = bch(argb(lut[i]));
+		uint32 sumR = 0;
+		uint32 sumG = 0;
+		uint32 sumB = 0;
+		uint32 histR[256] = {};
+		uint32 histG[256] = {};
+		uint32 histB[256] = {};
+		image.calcRgbHist(null, &hist);
+		for (uint32 i = 0; i < 256; i += 1) {
+			histR[i] = sumR += rch(argb(hist[i]));
+			histG[i] = sumG += gch(argb(hist[i]));
+			histB[i] = sumB += bch(argb(hist[i]));
 		}
-		int sumR = 0;
-		int sumG = 0;
-		int sumB = 0;
-		int maxRgb = (maxR + maxG + maxB) / 3;
-		for (int i = 0; i < 256; i += 1) {
-			sumR += histoR[i];
-			sumG += histoG[i];
-			sumB += histoB[i];
-			lut[i] = uint32(_argb(i,
-				clamp_u8(sumR * 255 / maxRgb),
-				clamp_u8(sumG * 255 / maxRgb),
-				clamp_u8(sumB * 255 / maxRgb)
-			));
+		uint32 sumRgb = (sumR + sumG + sumB) / 3;
+		for (uint32 i = 0; i < 256; i += 1) {
+			lut[i] = _argb(i,
+				clamp_u8(histR[i] * 255 / sumRgb),
+				clamp_u8(histG[i] * 255 / sumRgb),
+				clamp_u8(histB[i] * 255 / sumRgb)
+			);
 		}
 	}
 }
@@ -242,11 +233,10 @@ int onEvent(int action, int button, int x, int y) {
 		}
 	}
 	if (redraw) {
-		uint32 data[] = curves.data;
 		uint64 start = System.millis();
 		offs.resize(null, back, null, 1);
 		if (ui.isActive(brightness, contrast, gamma, highlights, shadows, whites, blacks)) {
-			brightnessContrastGamma(&data,
+			brightnessContrastGamma(&curves.data,
 				brightness.valFlt(),
 				contrast.valFlt(),
 				gamma.valFlt(),
@@ -257,10 +247,10 @@ int onEvent(int action, int button, int x, int y) {
 			);
 		}
 		else if (ui.isSelected(auto)) {
-			calcAutoEqualize(&data, offs, auto.checked);
+			calcAutoEqualize(&curves.data, offs, auto.checked);
 		}
 
-		offs.colorMap(null, data);
+		offs.colorMap(null, curves.data);
 		histogram.update(offs);
 		time.value = System.millis() - start;
 		ui.draw();

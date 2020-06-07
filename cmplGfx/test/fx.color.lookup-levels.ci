@@ -13,9 +13,7 @@ Image back = Image("asset/image/forest.png", 32);
 Image font = Image.openFnt("asset/font/Modern-1.fnt");
 Image offs = Image(back.width(), back.height(), back.depth());
 
-void levels(uint32 lut[256], int brightness, int output, int input) {
-	argb lut2[*] = lut;
-
+void levels(argb lut[256], int brightness, int output, int input) {
 	int mid1 = input > 0 ? 0 : 255;
 	int mid2 = output < 0 ? 0 : 255;
 	input = 256 + (input < 0 ? input : -input);
@@ -26,13 +24,12 @@ void levels(uint32 lut[256], int brightness, int output, int input) {
 		val = (output * (val - mid2)) / 256 + mid2;
 		val = (val - mid1) * 255 / input + mid1;
 		int rgb = clamp_s8(val + brightness);
-		lut2[idx].r = rgb;
-		lut2[idx].g = rgb;
-		lut2[idx].b = rgb;
-		lut2[idx].a = idx;
+		lut[idx].r = rgb;
+		lut[idx].g = rgb;
+		lut[idx].b = rgb;
+		lut[idx].a = idx;
 	}
 }
-
 
 int onEvent(int action, int button, int x, int y);
 offs.show(onEvent);
@@ -92,20 +89,19 @@ int onEvent(int action, int button, int x, int y) {
 	}
 
 	if (ui.uiEvent(action, button, x, y)) {
-		uint32 data[] = curves.data;
 		uint64 start = System.millis();
 		if (ui.isActive(sldBrightness)) {
-			levels(&data, sldBrightness.value, 0, 0);
+			levels(&curves.data, sldBrightness.value, 0, 0);
 		}
 		else if (ui.isActive(sldOutput)) {
-			levels(&data, 0, sldOutput.value, 0);
+			levels(&curves.data, 0, sldOutput.value, 0);
 		}
 		else if (ui.isActive(sldInput)) {
-			levels(&data, 0, 0, sldInput.value);
+			levels(&curves.data, 0, 0, sldInput.value);
 		}
 
 		offs.resize(null, back, null, 1);
-		offs.colorMap(null, data);
+		offs.colorMap(null, curves.data);
 		histogram.update(offs);
 
 		time.value = System.millis() - start;

@@ -36,7 +36,7 @@ void drawStars(Image offScreen) {
 		stars[i].zpos -= Star.speed;
 
 		if (stars[i].zpos <= 0) {
-			initStar(stars[i]);
+			initStar(&stars[i]);
 		}
 
 		//~ compute 3D positions
@@ -45,7 +45,7 @@ void drawStars(Image offScreen) {
 
 		//~ check if a star leaves the screen
 		if (tempx < 0 || tempx >= resolutionx || tempy < 0 || tempy >= resolutiony) {
-			initStar(stars[i]);
+			initStar(&stars[i]);
 			continue;
 		}
 
@@ -81,7 +81,7 @@ int onEvent(pointer closure, int action, int btn, int x, int y) {
 	return 20;
 }
 for (int i = 0; i < stars.length; i += 1) {
-	initStar(stars[i]);
+	initStar(&stars[i]);
 }
 
 Gui.showWindow(image, null, onEvent);

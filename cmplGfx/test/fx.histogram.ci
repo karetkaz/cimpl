@@ -1,4 +1,4 @@
-// Color picker demo.
+// Histogram demo.
 
 Image back = Image("asset/image/forest.png", 32);
 Image font = Image.openFnt("asset/font/Modern-1.fnt");
@@ -17,8 +17,6 @@ int onEvent(int action, int button, int x, int y) {
 	static Histogram histogram = {
 		enabled: false;
 	};
-
-	static bool onColorUpdate(ColorPicker view, argb value);
 
 	static Button btnLum = {
 		text: "luminosity";
@@ -63,11 +61,6 @@ int onEvent(int action, int button, int x, int y) {
 		chkRed, chkGreen, chkBlue,
 		separator, time
 	);
-
-	static bool onColorUpdate(ColorPicker view, argb value) {
-		view.value = value;
-		ui.style.backgroundColor = uint32(value);
-	}
 
 	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {

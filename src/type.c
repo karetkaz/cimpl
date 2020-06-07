@@ -269,7 +269,6 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 }
 
 symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int raise) {
-	symn byName = NULL;
 	symn best = NULL;
 	int found = 0;
 
@@ -309,8 +308,8 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 		symn parameter = sym->params;
 		if (parameter != NULL && arguments == NULL) {
 			// keep the first match.
-			if (byName == NULL) {
-				byName = sym;
+			if (best == NULL) {
+				best = sym;
 			}
 			found += 1;
 			continue;
@@ -398,24 +397,34 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 		debug("%?s:%?u: %t(%t) is probably %T", ref->file, ref->line, ref, arguments, sym);
 	}
 
-	if (sym == NULL && best) {
-		if (found > 1) {
-			warn(cc->rt, raise_warn_typ3, ref->file, ref->line, WARN_USING_BEST_OVERLOAD, best, found);
-		}
-		sym = best;
+	if (sym != NULL) {
+		// perfect match found without casts
+		return aliasOf(sym);
 	}
 
-	if (sym == NULL && byName) {
-		if (found == 1 || cc->inStaticIfFalse) {
-			debug("as ref `%T`(%?t)", byName, arguments);
-			sym = byName;
-		}
-		else if (raise) {
-			error(cc->rt, ref->file, ref->line, ERR_MULTIPLE_OVERLOADS, found, byName);
-		}
+	if (best != NULL && found == 1) {
+		// found one single compatible match, use it.
+		return aliasOf(best);
 	}
 
-	return aliasOf(sym);
+	if (best == NULL) {
+		// not found
+		if (raise) {
+			error(cc->rt, ref->file, ref->line, ERR_UNDEFINED_DECLARATION, ref);
+		}
+		return NULL;
+	}
+
+	if (arguments == NULL) {
+		// found multiple variables or functions with the same name
+		if (raise) {
+			error(cc->rt, ref->file, ref->line, ERR_MULTIPLE_OVERLOADS, found, best);
+		}
+		return NULL;
+	}
+
+	warn(cc->rt, raise_warn_typ3, ref->file, ref->line, WARN_USING_BEST_OVERLOAD, best, found);
+	return aliasOf(best);
 }
 
 /// change the type of a tree node (replace or implicit cast).
@@ -465,11 +474,11 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 
 		if (sym == NULL) {
 			ccKind kind = isTypename(loc) ? ATTR_stat : 0;
-			sym = lookup(cc, loc->fields, ref, args, kind, raise);
+			sym = lookup(cc, loc->fields, ref, args, kind, 0);
 			if (sym == NULL) {
 				// hack: allow lookup of: vertices[i].x = 2;
 				// int this case the location is a type, and x is a member
-				sym = lookup(cc, loc->fields, ref, args, 0, 0);
+				sym = lookup(cc, loc->fields, ref, args, 0, raise);
 			}
 		}
 	}
@@ -983,20 +992,25 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 	return NULL;
 }
 
-ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
-	if (var == NULL || val == NULL || val->type == NULL) {
-		dieif(!var, ERR_INTERNAL_ERROR);
-		dieif(!val, ERR_INTERNAL_ERROR);
+ccKind canAssign(ccContext cc, symn variable, astn value, int strict) {
+	if (variable == NULL || value == NULL || value->type == NULL) {
+		dieif(!variable, ERR_INTERNAL_ERROR);
+		dieif(!value, ERR_INTERNAL_ERROR);
 		return CAST_any;
 	}
-	symn varType = isTypename(var) ? var : var->type;
-	symn valName = linkOf(val, 1);
-	ccKind varCast = castOf(var);
+	symn varType = isTypename(variable) ? variable : variable->type;
+	symn valueRef = linkOf(value, 1);
+	ccKind varCast = castOf(variable);
 
 	dieif(varType == NULL, ERR_INTERNAL_ERROR);
-	
+
+	if (varCast == CAST_ref && (value->type == cc->type_ptr || value->type == cc->type_var)) {
+		// FIXME: pointers and variants can be assigned to any reference
+		return varCast;
+	}
+
 	// assign null or pass by reference
-	if (valName == cc->null_ref) {
+	if (valueRef == cc->null_ref) {
 		switch (castOf(varType)) {
 			default:
 				break;
@@ -1025,8 +1039,8 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	}
 
 	// assigning a typename or pass by reference
-	if (valName != NULL && var->type == cc->type_rec) {
-		switch (valName->kind & MASK_kind) {
+	if (valueRef != NULL && variable->type == cc->type_rec) {
+		switch (valueRef->kind & MASK_kind) {
 			default:
 				break;
 
@@ -1037,42 +1051,52 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	}
 
 	// assigning a variable to a pointer or variant
-	if (valName != NULL && (varType == cc->type_ptr || varType == cc->type_var)) {
+	if (valueRef != NULL && (varType == cc->type_ptr || varType == cc->type_var)) {
 		return refCast(varType);
 	}
 
-	if (varType != var) {
+	if (varType != variable) {
 		// assigning a function
-		if (var->params != NULL) {
-			symn fun = linkOf(val, 1);
-			symn arg1 = var->params;
-			symn arg2 = NULL;
+		if (variable->type == cc->type_fun) {
+			if (valueRef == NULL || valueRef->type != cc->type_fun) {
+				// function can be assigned to function 
+				return CAST_any;
+			}
+
+			symn arg1 = variable->params;
+			symn arg2 = valueRef->params;
 			struct astNode temp;
 
 			temp.kind = TOKEN_var;
 			temp.type = varType;
-			temp.ref.link = var;
+			temp.ref.link = variable;
 
-			if (fun && canAssign(cc, fun->type, &temp, 1)) {
-				arg2 = fun->params;
-				while (arg1 && arg2) {
+			while (arg1 && arg2) {
 
-					temp.type = arg2->type;
-					temp.ref.link = arg2;
+				temp.type = arg2->type;
+				temp.ref.link = arg2;
 
-					if (!canAssign(cc, arg1, &temp, 1)) {
-						trace("%T ~ %T", arg1, arg2);
-						break;
-					}
-
-					arg1 = arg1->next;
-					arg2 = arg2->next;
+				if (strict && castOf(arg1) != castOf(arg2)) {
+					// can not assign function: `int add(int a, int b)`
+					// to function: `int add(int a&, int b&) { ... }`
+					break;
 				}
+
+				if (castOf(arg1) == CAST_ref && isConst(arg1) && !isConst(arg2)) {
+					// can not assign function: `int add(int a&, int b)`
+					// to function: `int add(const int a&, int b) { ... }`
+					break;
+				}
+
+				if (!canAssign(cc, arg1, &temp, 1)) {
+					trace("%T ~ %T", arg1, arg2);
+					break;
+				}
+
+				arg1 = arg1->next;
+				arg2 = arg2->next;
 			}
-			else {
-				trace("%T ~ %T", varType, fun);
-				return CAST_any;
-			}
+
 			if (arg1 || arg2) {
 				trace("%T ~ %T", arg1, arg2);
 				return CAST_any;
@@ -1086,7 +1110,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	}
 
 	// assigning a value to an object or base type
-	for (symn sym = val->type; sym != NULL; sym = sym->type) {
+	for (symn sym = value->type; sym != NULL; sym = sym->type) {
 		if (sym == varType) {
 			return varCast;
 		}
@@ -1108,16 +1132,16 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	}
 
 	/* FIXME: assign enum.
-	if (valName && valName->cast == ENUM_kwd) {
-		if (varType == valName->type->type) {
-			return valName->type->type->cast;
+	if (valueRef && valueRef->cast == ENUM_kwd) {
+		if (varType == valueRef->type->type) {
+			return valueRef->type->type->cast;
 		}
 	}
 	else if (varType->cast == ENUM_kwd) {
 		symn t;
 		for (t = varType->fields; t != NULL; t = t->next) {
-			if (t == valName) {
-				return valName->cast;
+			if (t == valueRef) {
+				return valueRef->cast;
 			}
 		}
 	}*/
@@ -1125,7 +1149,7 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 	// Assign array
 	if (castOf(varType) == CAST_arr) {
 		struct astNode temp;
-		symn vty = val->type;
+		symn vty = value->type;
 
 		memset(&temp, 0, sizeof(temp));
 		temp.kind = TOKEN_var;
@@ -1139,23 +1163,23 @@ ccKind canAssign(ccContext cc, symn var, astn val, int strict) {
 			if (varType->init == NULL) {
 				return CAST_arr;
 			}
-			if (varType->size == val->type->size) {
+			if (varType->size == value->type->size) {
 				// TODO: return <?>
 				return KIND_var;
 			}
 		}
 
 		if (!strict) {
-			return canAssign(cc, var->type, val, strict);
+			return canAssign(cc, variable->type, value, strict);
 		}
 	}
 
-	if (!strict && (varType = promote(varType, val->type))) {
-		// TODO: return <?> val->cast ?
+	if (!strict && (varType = promote(varType, value->type))) {
+		// TODO: return <?> value->cast ?
 		return refCast(varType);
 	}
 
-	debug("%?s:%?u: %T := %T(%t)", val->file, val->line, var, val->type, val);
+	debug("%?s:%?u: %T := %T(%t)", value->file, value->line, variable, value->type, value);
 	return CAST_any;
 }
 

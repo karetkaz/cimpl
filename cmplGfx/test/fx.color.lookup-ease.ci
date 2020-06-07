@@ -14,10 +14,9 @@ Image back = Image("asset/image/forest.png", 32);
 Image font = Image.openFnt("asset/font/Modern-1.fnt");
 Image offs = Image(back.width(), back.height(), back.depth());
 
-void brightnessContrastGamma(uint32 lut[256], int brightness, int contrast) {
+void brightnessContrastGamma(argb lut[256], int brightness, int contrast) {
 	inline "/lib/std/math/Easing.ci";
 	float64 cVal = (256 + contrast) / 256.;
-	argb lut2[*] = lut;
 
 	float64 easing(float64 ratio) = Easing.Circle;
 	for (int idx = 0; idx < lut.length; idx += 1) {
@@ -34,10 +33,10 @@ void brightnessContrastGamma(uint32 lut[256], int brightness, int contrast) {
 		}
 
 		int rgb = clamp_s8(256 * value);
-		lut2[idx].r = rgb;
-		lut2[idx].g = rgb;
-		lut2[idx].b = rgb;
-		lut2[idx].a = idx;
+		lut[idx].r = rgb;
+		lut[idx].g = rgb;
+		lut[idx].b = rgb;
+		lut[idx].a = idx;
 	}
 }
 
@@ -87,11 +86,10 @@ int onEvent(int action, int button, int x, int y) {
 		}
 	}
 	if (redraw) {
-		uint32 data[] = curves.data;
 		uint64 start = System.millis();
-		brightnessContrastGamma(data, brightness.value, contrast.value);
+		brightnessContrastGamma(&curves.data, brightness.value, contrast.value);
 		offs.resize(null, back, null, 1);
-		offs.colorMap(null, data);
+		offs.colorMap(null, curves.data);
 		histogram.update(offs);
 
 		time.value = System.millis() - start;
