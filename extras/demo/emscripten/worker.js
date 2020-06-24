@@ -27,6 +27,9 @@ var Module = {
 		FS.chdir(Module.workspace);
 		Module.initialized = true;
 		postMessage({initialized: true});
+	},
+	onFileDownloaded: function(progress, total) {
+		postMessage({progress, total});
 	}
 };
 

@@ -3,7 +3,7 @@ function Terminal(output, interpret) {
 	if (output == null) {
 		return {
 			scroll: function(){},
-			print: console.log,
+			append: console.log,
 			clear: console.clear,
 			text: function () {
 				return '';
@@ -28,9 +28,13 @@ function Terminal(output, interpret) {
 			return;
 		}
 
-		for (let text of buffer) {
+		for (let line of buffer) {
+			if (line instanceof HTMLElement) {
+				output.appendChild(line);
+				continue;
+			}
 			let row = document.createElement("p");
-			row.innerHTML = text;
+			row.innerHTML = line;
 			output.appendChild(row);
 		}
 
@@ -53,18 +57,22 @@ function Terminal(output, interpret) {
 				output.scrollTop = 0;
 			}
 		},
-		print: function(text) {
-			let escaped = text.replace(/[<>&\r\n]/g, function (match) {
-				switch (match) {
-					default: return match;
-					case '<': return "&lt;";
-					case '>': return "&gt;";
-					case '&': return "&amp;";
-					case '\r': return "<br>";
-					case '\n': return "<br>";
-				}
-			});
-			buffer.push(interpret(escaped, text));
+		append: function(line) {
+			if (line instanceof HTMLElement) {
+				buffer.push(line);
+			} else {
+				let escaped = line.replace(/[<>&\r\n]/g, function (match) {
+					switch (match) {
+						default: return match;
+						case '<': return "&lt;";
+						case '>': return "&gt;";
+						case '&': return "&amp;";
+						case '\r': return "<br>";
+						case '\n': return "<br>";
+					}
+				});
+				buffer.push(interpret(escaped, line));
+			}
 			if (nextFlush === 0) {
 				nextFlush = setInterval(flush, 1000 / 20);	// @20 fps
 			}

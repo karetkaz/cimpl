@@ -124,6 +124,9 @@ case opc_spc:  NEXT(4, 0, 0) {
 		NEXT(0, sm, 0);
 #ifdef EXEC
 		STOP(error_ovf, ovf(pu));
+#ifdef DEBUGGING
+		memset(pu->sp, 0, ip->rel);
+#endif
 #endif
 	}
 	else {

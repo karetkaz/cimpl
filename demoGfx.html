@@ -43,8 +43,7 @@
 			<!-- <option value="Search-0">Search</option> -->
 		</select>
 		<span class="no-output left" onclick="setStyle(body, 'output');">Output</span>
-		<!-- <span class="no-output left" onclick="setStyle(body, 'output');">Search</span> -->
-		<!-- <span class="right icon" title="Full screen output" onclick="setStyle(body, '-editor', 'output');">⬒</span> -->
+		<span class="right icon" title="Toggle show editor" onclick="setStyle(body, '-editor', '-left-bar', 'output');">⬒</span>
 		<span class="output right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
 		<span class="output right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
 		<p/>
@@ -390,11 +389,11 @@ var Module = {
 		'extras/demo/emscripten/libGfx.wasm'
 	],
 	print: function(message) {
-		terminal.print(message);
+		terminal.append(message);
 	},
 	printErr: function(message) {
 		console.error(message);
-		terminal.print(message);
+		terminal.append(message);
 	},
 	canvas: document.getElementById('canvas'),
 	onRuntimeInitialized: function () {
@@ -402,19 +401,12 @@ var Module = {
 		FS.mkdirTree(Module.workspace);
 		FS.chdir(Module.workspace);
 		Module.initialized = true;
-		spnStatus.innerText = null;
-		params.update('workspace', 'project', 'content', 'folder', 'file');
+		process({initialized: true});
 	},
-	onFileDownloaded: function(inProgress, total) {
-		if (inProgress > 0) {
-			spnStatus.innerText = "Downloading files: " + inProgress + " / " + total;
-			return;
-		}
-		spnStatus.innerText = null;
-		params.update('file', 'folder', 'content');
-
+	onFileDownloaded: function(progress, total) {
+		process({progress, total});
 	},
-	postMessage(data) {
+	postMessage: function(data) {
 		try {
 			Module.openProjectFile(data, process);
 		} catch (err) {

@@ -551,6 +551,7 @@ GxImage loadFnt(GxImage dst, const char *src) {
 
 #ifndef USE_JPEG
 GxImage loadJpg(GxImage dst, const char *src, int depth) {
+	gx_debug("no jpg support to open: %s", src);
 #ifdef MOC_JPEG
 	dst = createImage(dst, 512, 512, depth, Image2d);
 	for (int y = 0; y < dst->height; ++y) {
@@ -574,6 +575,7 @@ GxImage loadJpg(GxImage dst, const char *src, int depth) {
 GxImage loadJpg(GxImage dst, const char *src, int depth) {
 
 	if (depth != 32) {
+		gx_debug("Invalid depth: %d", depth);
 		return NULL;
 	}
 
@@ -595,6 +597,7 @@ GxImage loadJpg(GxImage dst, const char *src, int depth) {
 	bltProc blt = NULL;
 	switch (cinfo.jpeg_color_space) {
 		default:
+			gx_debug("Invalid jpeg_color_space: %d", cinfo.jpeg_color_space);
 			fclose(fin);
 			return NULL;
 
@@ -612,6 +615,7 @@ GxImage loadJpg(GxImage dst, const char *src, int depth) {
 
 	dst = createImage(dst, cinfo.output_width, cinfo.output_height, depth, 0);
 	if (dst == NULL) {
+		gx_debug("failed to create image");
 		fclose(fin);
 		return NULL;
 	}
@@ -639,6 +643,7 @@ GxImage loadJpg(GxImage dst, const char *src, int depth) {
 
 #ifndef USE_PNG
 GxImage loadPng(GxImage dst, const char *src, int depth) {
+	gx_debug("no png support to open: %s", src);
 #ifdef MOC_PNG
 	dst = createImage(dst, 512, 512, depth, Image2d);
 	for (int y = 0; y < dst->height; ++y) {

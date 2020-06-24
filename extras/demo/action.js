@@ -147,7 +147,7 @@ edtFileName.onblur = function() {
 	editor.focus();
 }
 var customCommands = {
-	'theme:': function(value, action) {
+	'!theme:': function(value, action) {
 		if (value === 'dark') {
 			setStyle(document.body, 'dark');
 			return true;
@@ -158,7 +158,7 @@ var customCommands = {
 		}
 		return actionError();
 	},
-	'zoom:': function(value, action) {
+	'!zoom:': function(value, action) {
 		document.body.style.fontSize = (+value / 100) + 'em';
 		editor.refresh();
 	},
@@ -167,6 +167,13 @@ var customCommands = {
 			return false;
 		}
 		params.update({ content: null, file: null });
+		return true;
+	},
+	'download': function(value, action) {
+		openProjectFile({
+			file: params.file,
+			link: true
+		});
 		return true;
 	},
 }
@@ -191,7 +198,11 @@ edtFileName.onkeydown = function(event) {
 				if (cmd.search(filter) === -1) {
 					continue;
 				}
-				actions['!' + cmd] = function() { completeAction('!' + cmd); }
+				if (cmd.startsWith('!')) {
+					actions[cmd] = function() { completeAction(cmd); }
+				} else {
+					actions['!' + cmd] = function() { executeAction(cmd); }
+				}
 			}
 			for (let cmd in CodeMirror.commands) {
 				if (cmd.search(filter) === -1) {

@@ -181,6 +181,11 @@ Module.openProjectFile = function(data, callBack) {
 				result.content = Module.readFile(path);
 				result.file = data.file;
 				result.line = data.line;
+				if (data.link === true) {
+					let data = FS.readFile(path, {encoding: 'binary'});
+					const blob = new Blob([data], {type: 'application/octet-stream'});
+					result.link = URL.createObjectURL(blob);
+				}
 			}
 		} catch (err) {
 			result.error = 'File ' + operation + ' failed[' + data.file + ']: ' + err;
@@ -236,29 +241,29 @@ Module.wgetFiles = function(files) {
 			if (path == null) {
 				path = file.url.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3");
 			}
-			let xhr = new XMLHttpRequest();
 			let url = file.url;
 			if (Module.relativeUrl != null) {
 				url = Module.relativeUrl(url);
 			}
-			xhr.open('GET', url, isAsync);
-			xhr.responseType = "arraybuffer";
-			xhr.overrideMimeType("application/octet-stream");
-			xhr.onreadystatechange = function () {
-				if (xhr.readyState !== 4) {
+			let request = new XMLHttpRequest();
+			request.open('GET', url, isAsync);
+			request.responseType = "arraybuffer";
+			request.overrideMimeType("application/octet-stream");
+			request.onreadystatechange = function () {
+				if (request.readyState !== 4) {
 					return;
 				}
 				inProgress -= 1;
-				if (xhr.status < 200 || xhr.status >= 300) {
-					let err = new Error(xhr.status + ' (' + xhr.statusText + ')')
-					Module.print('Download failed: `' + xhr.responseURL + '`: ' + err);
+				if (request.status < 200 || request.status >= 300) {
+					let err = new Error(request.status + ' (' + request.statusText + ')')
+					Module.print('Download failed: `' + request.responseURL + '`: ' + err);
 					if (Module.onFileDownloaded != null) {
 						Module.onFileDownloaded(inProgress, files.length);
 					}
 					return err;
 				}
-				saveFile(path, new Uint8Array(xhr.response));
-				Module.print('Downloaded file: ' + path + ': ' + xhr.responseURL);
+				saveFile(path, new Uint8Array(request.response));
+				Module.print('Downloaded file: ' + path + ': ' + request.responseURL);
 				if (Module.onFileDownloaded != null) {
 					Module.onFileDownloaded(inProgress, files.length);
 				}
@@ -266,7 +271,7 @@ Module.wgetFiles = function(files) {
 					Module.print("Project file(s) download complete.");
 				}
 			}
-			xhr.send(null);
+			request.send();
 		}
 		catch (err) {
 			Module.printErr('Download failed: `' + path + '`: ' + err);

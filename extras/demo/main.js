@@ -208,7 +208,7 @@ let params = JsArgs('#', function (params, changes) {
 			return;
 		}
 		if (indexedDB.databases == null) {
-			terminal.print('Failed to list workspaces, indexedDB.databases not available');
+			terminal.append('Failed to list workspaces, indexedDB.databases not available');
 			return;
 		}
 		workspaceName.innerText = 's';
@@ -429,10 +429,10 @@ function editOutput() {
 function shareInput() {
 	setStyle(document.body, 'output');
 	let content = editor.getValue();
-	terminal.print('decoded uri: ' + decodeURIComponent(window.location));
-	terminal.print('current file: ' + window.location.origin + window.location.pathname + '#content=' + btoa(content));
+	terminal.append('decoded uri: ' + decodeURIComponent(window.location));
+	terminal.append('current file: ' + window.location.origin + window.location.pathname + '#content=' + btoa(content));
 	if (content.startsWith('[{')) {
-		terminal.print('project file: ' + window.location.origin + window.location.pathname + '#project=' + btoa(content));
+		terminal.append('project file: ' + window.location.origin + window.location.pathname + '#project=' + btoa(content));
 	}
 }
 
@@ -510,11 +510,19 @@ function process(data) {
 		return;
 	}
 	if (data.error !== undefined) {
-		terminal.print(data.error);
+		terminal.append(data.error);
 		actionError();
 	}
 	if (data.print !== undefined) {
-		terminal.print(data.print);
+		terminal.append(data.print);
+	}
+	if (data.link !== undefined) {
+		const link = document.createElement("a");
+		link.innerText = data.file || "Download file";
+		link.download = data.file || "file.bin";
+		link.href = data.link;
+		terminal.append(link);
+		link.click();
 	}
 	if (data.list !== undefined) {
 		fileList.innerHTML = '';
@@ -546,6 +554,15 @@ function process(data) {
 		}
 	}
 	if (data.initialized) {
+		spnStatus.innerText = null;
 		params.update('workspace', 'project', 'content', 'folder', 'file');
+	}
+	if (data.progress !== undefined) {
+		if (data.progress > 0) {
+			spnStatus.innerText = "Downloading files: " + data.progress + " / " + data.total;
+			return;
+		}
+		spnStatus.innerText = null;
+		params.update('file', 'folder', 'content');
 	}
 }

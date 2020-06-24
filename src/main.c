@@ -1498,6 +1498,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 		printFmt(con, esc, ">dbg[%?c] %.A: ", cmd, vmPointer(rt, caller));
 		if (usr->in == NULL || fgets(buff, sizeof(buff), usr->in) == NULL) {
 			printFmt(con, esc, "can not read from standard input, aborting\n");
+			traceCalls(ctx, con, 1, rt->traceLevel, 0);
 			return ctx->abort;
 		}
 		if ((arg = strchr(buff, '\n'))) {
