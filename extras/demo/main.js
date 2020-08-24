@@ -1,62 +1,62 @@
+function hasStyle(element, ...styles) {
+	for (let style of styles) {
+		if (element.classList.contains(style)) {
+			return true;
+		}
+	}
+	return false;
+}
 function setStyle(element, ...styles) {
 	if (element && element.constructor === String) {
 		// allow to reference the splitter using id.
 		element = document.getElementById(element);
 	}
 
-	let cycleIndex = 0;
-	let cycleItems = [];
-	let changedItems = [];
+	let prevChanged = false;
 	for (let style of styles) {
+		// conditional allpy
+		if (style.startsWith('?')) {
+			if (!prevChanged) {
+				continue;
+			}
+			style = style.substring(1);
+		}
 
+		prevChanged = false;
 		// remove style
 		if (style.startsWith('-')) {
-			element.classList.remove(style.substring(1));
-			changedItems.push(style.substring(1));
+			style = style.substring(1);
+			if (element.classList.contains(style)) {
+				element.classList.remove(style);
+				prevChanged = true;
+			}
 			continue;
 		}
 
 		// toggle style
-		if (style.startsWith('!')) {
+		if (style.startsWith('~')) {
 			style = style.substring(1);
 			if (element.classList.contains(style)) {
 				element.classList.remove(style);
-				changedItems.push(style);
-				continue;
+			} else {
+				element.classList.add(style);
 			}
-		}
-
-		// cycle style
-		if (style.startsWith('^')) {
-			style = style.substring(1);
-			cycleItems.push(style);
-			if (element.classList.contains(style)) {
-				element.classList.remove(style);
-				changedItems.push(style);
-				cycleIndex = cycleItems.length;
-			}
+			prevChanged = true;
 			continue;
 		}
 
 		if (element.classList.contains(style)) {
-			// style alredy set
+			// style already set
 			continue;
 		}
 		element.classList.add(style);
-		changedItems.push(style);
+		prevChanged = true;
 	}
-	if (cycleItems.length > 0) {
-		let style = cycleItems[cycleIndex % cycleItems.length];
-		if (style !== '') {
-			element.classList.add(style);
-			changedItems.push(style);
-		}
-	}
+
 	if (element === document.body) {
-		if (changedItems.includes('editor') || changedItems.includes('output')) {
-			editor.refresh();
-		}
+		editor.refresh();
 	}
+	return prevChanged;
 }
 
 var props = props || {};
@@ -139,8 +139,97 @@ let params = JsArgs('#', function (params, changes) {
 	// no changes => page loaded
 	if (changes === undefined) {
 		// setup theme, only after loading
+		let theme = undefined;
+		let mode = undefined;
 		if (params.theme != null) {
-			setStyle(document.body, '-dark', '-light', params.theme || 'dark');
+			switch (params.theme) {
+				case 'light':
+				case 'dark':
+					theme = params.theme;
+					// mode = undefined;
+					break;
+
+				case "embedded-light":
+					theme = 'light';
+					mode = 'embedded';
+					break;
+
+				case "embedded-dark":
+					theme = 'dark';
+					mode = 'embedded';
+					break;
+
+				case "embedded":
+				case 'normal':
+				case 'mobile':
+				case 'dbg':
+					// theme = undefined;
+					mode = params.theme;
+					break;
+			}
+		}
+
+		// theme is not defined, try to guess it
+		if (theme === undefined) {
+			if (document.body.classList.contains('dark')) {
+				theme = 'dark';
+			}
+			else if (document.body.classList.contains('light')) {
+				theme = 'light';
+			}
+			else if (window.matchMedia) {
+				// theme not overridden by page, lookup system theme
+				if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+					theme = 'dark';
+				}
+				else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+					theme = 'light';
+				}
+			}
+		}
+
+		// mode is not defined, try to guess it
+		if (mode === undefined) {
+			if ('ontouchstart' in document.documentElement) {
+				mode = 'mobile';
+			} else {
+				mode = 'normal';
+			}
+		}
+
+		setStyle(document.body, '-dark', '-light', theme || 'dark');
+
+		// custom layout, only after loading
+		switch (mode) {
+			case 'normal':
+				if (params.workspace != null || params.project != null) {
+					setStyle(document.body, 'output');
+				} else {
+					setStyle(document.body, '-output');
+				}
+				editor.setSize('100%', '100%');
+				break;
+
+			case 'mobile':
+				// for mobile show the left menu, in case there is no content loaded
+				if (params.content != null || params.file != null) {
+					setStyle(document.body, '-left-pin', '-left-bar', '-output');
+				} else {
+					setStyle(document.body, '-left-pin', 'left-bar', '-output');
+				}
+				document.body.style.fontSize = '1.2em';
+				editor.setSize('100%', '100%');
+				break;
+
+			case 'embedded':
+				setStyle(document.body, 'autoheight', '-left-bar', '-output');
+				editor.setOption("viewportMargin", Infinity);
+				break;
+
+			case 'dbg':
+				setStyle(document.body, 'output', 'left-pin', 'left-bar', 'right-pin', 'right-bar', 'bottom-pin', 'bottom-bar');
+				editor.setSize('100%', '100%');
+				break;
 		}
 
 		if (params.project != null) {
@@ -153,52 +242,6 @@ let params = JsArgs('#', function (params, changes) {
 		// setup editor content, only after loading
 		if (params.content != null) {
 			setContent(content(params.content), params.file, params.line);
-		}
-
-		// custom layout, only after loading
-		switch (params.show || 'auto') {
-			default:
-			case 'auto':
-				if (!('ontouchstart' in document.documentElement)) {
-					if (params.workspace != null || params.project != null) {
-						setStyle(document.body, 'editor', 'output', 'left-pin', 'left-bar');
-					} else {
-						setStyle(document.body, 'editor', 'left-pin', 'left-bar');
-					}
-					editor.setSize('100%', '100%');
-					break;
-				}
-				// fall trough: using mobile
-
-			case 'mobile':
-				if (params.content == null && params.file == null) {
-					setStyle(document.body, 'editor', 'left-bar');
-				} else {
-					setStyle(document.body, 'editor');
-				}
-				document.body.style.fontSize = '1.2em';
-				editor.setSize('100%', '100%');
-				break;
-
-			case "embedded":
-				setStyle(document.body, 'autoheight', 'editor');
-				editor.setOption("viewportMargin", Infinity);
-				break;
-
-			case 'editor':
-				setStyle(document.body, 'editor');
-				editor.setSize('100%', '100%');
-				break;
-
-			case 'normal':
-				setStyle(document.body, 'editor', 'left-pin', 'left-bar');
-				editor.setSize('100%', '100%');
-				break;
-
-			case 'full':
-				setStyle(document.body, 'editor', 'output', 'left-pin', 'left-bar', 'bottom-bar');
-				editor.setSize('100%', '100%');
-				break;
 		}
 		editor.focus();
 
@@ -213,6 +256,7 @@ let params = JsArgs('#', function (params, changes) {
 		}
 		workspaceName.innerText = 's';
 		indexedDB.databases().then(function(dbs) {
+			let workspaces = '';
 			let prefix = '/cmpl/';
 			for (db of dbs) {
 				let name = db.name;
@@ -221,11 +265,22 @@ let params = JsArgs('#', function (params, changes) {
 				}
 				name = name.substr(prefix.length);
 				let url = window.location.origin + window.location.pathname + '#workspace=' + name;
-				workspaceList.innerHTML += '<li onclick="params.update({workspace: \'' + name + '\'});">' + 'Workspace: ' + name +
+				workspaces += '<li onclick="params.update({workspace: \'' + name + '\'});">' + 'saved: ' + name +
 					'<button class="right" onclick="event.stopPropagation(); rmWorkspace(\'' + name + '\')" title="Remove workspace">-</button>' +
 					'</li>'
 			}
+			workspaceList.innerHTML = workspaces + workspaceList.innerHTML;
 		});
+		return;
+	}
+
+	if (changes.theme !== undefined) {
+		setStyle(document.body, '-dark', '-light', params.theme);
+	}
+
+	if (changes.worker !== undefined) {
+		// page needs to be reloaded to apply different javascript
+		params.update(true);
 		return;
 	}
 
@@ -269,7 +324,9 @@ let params = JsArgs('#', function (params, changes) {
 	}
 
 	if (changes.folder !== undefined) {
-		listFiles(params.folder || '.');
+		openProjectFile({
+			folder: params.folder || '.'
+		})
 	}
 
 	if (changes.file !== undefined) {
@@ -313,6 +370,9 @@ function rmWorkspace(workspace) {
 	req.onblocked = console.log;
 }
 
+editor.on("change", function() {
+	setStyle(document.body, 'edited');
+});
 editor.on("gutterClick", function(cm, n) {
 	let info = cm.lineInfo(n);
 	if (info.gutterMarkers == null) {
@@ -330,9 +390,7 @@ window.onkeydown = function() {
 	// escape to editor
 	if (event.key == 'Escape') {
 		if (editor.hasFocus()) {
-			setStyle(document.body, '!output', 'editor');
-		} else {
-			setStyle(document.body, 'editor');
+			setStyle(document.body, '!output');
 		}
 		if (!document.body.classList.contains('canvas')) {
 			editor.setSelection(editor.getCursor());
@@ -360,9 +418,9 @@ window.onkeydown = function() {
 function setContent(content, file, line, column) {
 	let contentSet = false;
 	if (content != null && content != editor.getValue()) {
-		setStyle(document.body, 'editor');
 		editor.setValue(content);
 		editor.clearHistory();
+		setStyle(document.body, '-edited');
 		contentSet = true;
 	}
 	if (file != null) {
@@ -372,7 +430,6 @@ function setContent(content, file, line, column) {
 		}
 	}
 	if (line != null) {
-		setStyle(document.body, 'editor');
 		var middleHeight = editor.getScrollerElement().offsetHeight / 2;
 		var t = editor.charCoords({line, ch: 0}, "local").top;
 		editor.scrollTo(null, t - middleHeight - 5);
@@ -387,6 +444,49 @@ function selectOutputTab(select) {
 		select.selectedIndex = 0;
 		item.onchange();
 	}
+}
+
+function hideOverlay() {
+	if (!document.body.classList.contains('left-pin')) {
+		document.body.classList.remove('left-bar');
+	}
+	if (!document.body.classList.contains('right-pin')) {
+		document.body.classList.remove('right-bar');
+	}
+	if (!document.body.classList.contains('bottom-pin')) {
+		document.body.classList.remove('bottom-bar');
+	}
+}
+
+function saveInput(saveAs) {
+	let file = params.file;
+	if (file == null || saveAs === true) {
+		file = prompt('Save file as:', file || 'untitled.ci');
+		if (file == null) {
+			return null;
+		}
+	}
+	let content = editor.getValue();
+	openProjectFile({ content, file });
+	setStyle(document.body, '-edited');
+	if (params.content !== undefined) {
+		let oldValue = params.content;
+		let encB64 = true;
+		try {
+			oldValue = atob(oldValue);
+		} catch (err) {
+			encB64 = false;
+			console.debug(err);
+		}
+		if (oldValue !== content) {
+			params.update({ content: encB64 ? btoa(content) : content });
+		} else {
+			params.update({ file });
+		}
+	} else {
+		params.update({ file });
+	}
+	return file;
 }
 
 function editProject() {

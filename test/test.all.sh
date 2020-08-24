@@ -57,6 +57,13 @@ $CMPL_BIN/cmpl -X-stdin-steps -profile/t/P/G/M -api/A/m/d/p -asm/g/n/s -ast/t -d
 $CMPL_BIN/cmpl --test-vm
 # $CMPL_BIN/cmpl>temp/Execution.md --dump-vm
 
+rm extras/Reference/Cmpl.md
+FILES="extras/Reference/temp/cmpl.*.md"
+printf '%s\n' $FILES | sort -n | while read file
+do
+  cat>>extras/Reference/Cmpl.md "$file"
+done
+
 TEST_FILES="$CMPL_HOME/test/*.ci"
 TEST_FILES="$TEST_FILES $CMPL_HOME/test/lang/*.ci"
 TEST_FILES="$TEST_FILES $CMPL_HOME/test/std/*.ci"

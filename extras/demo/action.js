@@ -38,17 +38,38 @@ function completeAction(action, hint) {
 		return;
 	}
 	if (action.constructor === KeyboardEvent) {
-		if (!edtFileName.value.endsWith(action.key)) {
-			if (commands.onNextPrev != null) {
-				switch (action.keyCode) {
-					case 38: // up
-						return commands.onNextPrev(-1);
-
-					case 40: // down
-						return commands.onNextPrev(+1);
+		// todo: find a better way to detect if user typed or selected
+		if (edtFileName.value.endsWith(action.key) || action.key === 'Backspace' || action.key === 'Delete') {
+			if (edtFileName.value.startsWith('!')) {
+				let command = edtFileName.value.substr(1);
+				let filter = new RegExp(command, "i");
+				let actions = {};
+				for (let cmd in customCommands) {
+					if (cmd.search(filter) === -1) {
+						continue;
+					}
+					if (cmd.endsWith(':')) {
+						actions['!' + cmd] = function() { completeAction('!' + cmd); }
+					} else {
+						actions['!' + cmd] = function() { executeAction(cmd); }
+					}
 				}
+				for (let cmd in CodeMirror.commands) {
+					if (cmd.search(filter) === -1) {
+						continue;
+					}
+					actions['!' + cmd] = function() { executeAction(cmd); }
+				}
+				if (command === '') {
+					setStyle(document.body, 'right-bar');
+				}
+				setActions(actions);
 			}
-			// maybe backspace was pressed
+			if (action.key === 'Backspace' || action.key === 'Delete') {
+				// do not show the hint if user deletes text
+				return;
+			}
+		} else {
 			return;
 		}
 		action = edtFileName.value;
@@ -147,7 +168,7 @@ edtFileName.onblur = function() {
 	editor.focus();
 }
 var customCommands = {
-	'!theme:': function(value, action) {
+	'theme:': function(value, action) {
 		if (value === 'dark') {
 			setStyle(document.body, 'dark');
 			return true;
@@ -158,7 +179,7 @@ var customCommands = {
 		}
 		return actionError();
 	},
-	'!zoom:': function(value, action) {
+	'zoom:': function(value, action) {
 		document.body.style.fontSize = (+value / 100) + 'em';
 		editor.refresh();
 	},
@@ -180,6 +201,15 @@ var customCommands = {
 
 edtFileName.onkeydown = function(event) {
 	if (event.key !== 'Enter') {
+		if (commands.onNextPrev != null) {
+			switch (event.keyCode) {
+				case 38: // up
+					return commands.onNextPrev(-1);
+
+				case 40: // down
+					return commands.onNextPrev(+1);
+			}
+		}
 		return true;
 	}
 
@@ -191,28 +221,6 @@ edtFileName.onkeydown = function(event) {
 	// `!commands` => execute command
 	if (action.startsWith('!')) {
 		let command = action.substr(1);
-		let filter = new RegExp(command, "i");
-		if (event.shiftKey) {
-			let actions = {};
-			for (let cmd in customCommands) {
-				if (cmd.search(filter) === -1) {
-					continue;
-				}
-				if (cmd.startsWith('!')) {
-					actions[cmd] = function() { completeAction(cmd); }
-				} else {
-					actions['!' + cmd] = function() { executeAction(cmd); }
-				}
-			}
-			for (let cmd in CodeMirror.commands) {
-				if (cmd.search(filter) === -1) {
-					continue;
-				}
-				actions['!' + cmd] = function() { executeAction(cmd); }
-			}
-			setActions(actions);
-			return false;
-		}
 		return executeAction(command);
 	}
 

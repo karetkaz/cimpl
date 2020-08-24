@@ -31,10 +31,23 @@
 	<link rel="stylesheet" href="extras/demo/style.css">
 
 </head>
-<body class="dark tool-bar">
+<body class="tool-bar left-bar left-pin bottom-bar bottom-pin">
 
+<div id="overlay" class="overlay" onclick="hideOverlay();"
+	 ontouchstart="setStyle(canvas, 'hidden');"
+	 ontouchend="setStyle(canvas, '-hidden');">
+	<canvas id="canvas" width="0" onclick="event.stopPropagation();"
+			ontouchstart="event.stopPropagation();"
+			ontouchend="event.stopPropagation();"
+	></canvas>
+	<div id="canvasMove" class="hidden overlay" onclick="classList.add('hidden');"
+		 ontouchstart="event.stopPropagation();"
+		 ontouchend="event.stopPropagation();"
+	></div>
+</div>
 <div id="bottom-sidebar" class="sidebar">
 	<div id="output-toolbar" class="toolbar">
+		<span class="no-output left" onclick="setStyle(body, 'output');">Output</span>
 		<select class="output left" id="selOutput" onchange="selectOutputTab(this);" onclick="event.stopPropagation()">
 			<option value="Output-0">Output</option>
 <!--			<option value="Output-0">Pin Output</option>-->
@@ -42,18 +55,28 @@
 			<option onchange="terminal.clear();">Clear Output</option>
 			<!-- <option value="Search-0">Search</option> -->
 		</select>
-		<span class="no-output left" onclick="setStyle(body, 'output');">Output</span>
-		<span class="right icon" title="Toggle show editor" onclick="setStyle(body, '-editor', '-left-bar', 'output');">⬒</span>
 		<span class="output right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
 		<span class="output right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
 		<p/>
 	</div>
 	<pre id="output"></pre>
 </div>
+<div id="right-sidebar" class="sidebar">
+	<div class="submenu"><ul id="commands" class="">
+		<li id="pin-left" onclick="setStyle(body, '~left-pin');">Pin left sidebar</li>
+		<li id="show-left" onclick="setStyle(body, '~left-bar');">Show left sidebar</li>
+		<li id="pin-right" onclick="setStyle(body, '~right-pin');">Pin right sidebar</li>
+		<li id="show-right" onclick="setStyle(body, '~right-bar');">Show right sidebar</li>
+		<li id="pin-bottom" onclick="setStyle(body, '~bottom-pin');">Pin bottom sidebar</li>
+		<li id="show-bottom" onclick="setStyle(body, '~bottom-bar');">Show bottom sidebar</li>
+		<li id="show-toolbar" onclick="setStyle(body, '~tool-bar');">Show tool bar</li>
+		<li id="show-canvas" onclick="setStyle(body, '~canvas');">Show canvas</li>
+		<li id="show-output" onclick="setStyle(body, '~output');">Show output</li>
+	</ul></div>
+</div>
 <div id="left-sidebar" class="sidebar">
-	<div class="overlay" onclick="setStyle(body, '-left-bar');"></div>
 	<div class="collapsed submenu">
-	<li onclick="setStyle(parentElement, '!collapsed');">File
+	<li onclick="setStyle(parentElement, '~collapsed');">File
 		<button class="right" onclick="event.stopPropagation(); saveInput();" title="Save">💾</button>
 	</li>
 	<ul id="projectOptions" class="hidden">
@@ -63,11 +86,11 @@
 	</ul>
 	<ul>
 		<li onclick="shareInput();"><span class="right"></span>🔗 Share link</li>
-		<li onclick="saveInput();"><span class="right">Ctrl + s</span>💾 Save</li>
 		<li onclick="saveInput(true);"><span class="right"></span>💾 Save as</li>
+		<li onclick="saveInput();"><span class="right">Ctrl + s</span>💾 Save</li>
 		<li onclick="params.update({file: null});"><span class="right"></span>❌ Close</li>
 		<div class="submenu collapsed">
-			<li onclick="setStyle(parentElement, '!collapsed');">Edit
+			<li onclick="setStyle(parentElement, '~collapsed');">Edit
 				<button class="right" onclick="event.stopPropagation(); editor.execCommand('redo');" title="Redo">↷</button>
 				<button class="right" onclick="event.stopPropagation(); editor.execCommand('undo');" title="Undo">↶</button>
 			</li>
@@ -93,7 +116,7 @@
 				<li onclick="editor.execCommand('toggleCommentIndented');"><span class="right">Ctrl + /</span>Toggle comment</li>
 				<hr>
 				<div class="collapsed submenu">
-					<li onclick="setStyle(parentElement, '!collapsed')">Line</li><ul>
+					<li onclick="setStyle(parentElement, '~collapsed')">Line</li><ul>
 					<li onclick="editor.execCommand('swapLineUp');"><span class="right">Ctrl+Shift + Up</span>Move</li>
 					<li onclick="editor.execCommand('swapLineDown');"><span class="right">Ctrl+Shift + Down</span>Move</li>
 					<!-- TODO
@@ -104,7 +127,7 @@
 					-->
 				</ul></div>
 				<div class="collapsed submenu">
-					<li onclick="setStyle(parentElement, '!collapsed')">Case</li><ul>
+					<li onclick="setStyle(parentElement, '~collapsed')">Case</li><ul>
 					<li onclick="editor.execCommand('toggleCase');"><span class="right">Ctrl + u</span>Toggle case</li>
 					<li onclick="editor.execCommand('upperCase');"><span class="right"></span>Upper case</li>
 					<li onclick="editor.execCommand('lowerCase');"><span class="right"></span>Lower case</li>
@@ -113,7 +136,7 @@
 				</ul></div>
 			</ul></div>
 		<div class="submenu collapsed">
-			<li onclick="setStyle(parentElement, '!collapsed')">Find
+			<li onclick="setStyle(parentElement, '~collapsed')">Find
 				<!-- <button class="right" onclick="event.stopPropagation(); editor.execCommand('findNext');" title="Find Next">↪</button> -->
 				<!-- <button class="right" onclick="event.stopPropagation(); editor.execCommand('findPrev');" title="Find Prev">↩</button> -->
 				<button class="right" onclick="event.stopPropagation(); editor.execCommand('find');" title="Find">🔍</button>
@@ -128,31 +151,29 @@
 			<li onclick="editor.execCommand('selectToBrace');"><span class="right">Ctrl+Shift + b</span>Select to brace</li>
 		</ul></div>
 		<div class="submenu collapsed">
-			<li onclick="setStyle(parentElement, '!collapsed')">View
+			<li onclick="setStyle(parentElement, '~collapsed')">View
 				<button class="right" onclick="event.stopPropagation(); editor.execCommand('unfoldAll');" title="Unfold all">⊞</button>
 				<button class="right" onclick="event.stopPropagation(); editor.execCommand('foldAll');" title="Fold all">⊟</button>
 			</li><ul>
 			<div class="collapsed submenu">
-				<li onclick="setStyle(parentElement, '!collapsed')">Fold</li><ul>
+				<li onclick="setStyle(parentElement, '~collapsed')">Fold</li><ul>
 				<li onclick="editor.execCommand('fold');"><span class="right">Ctrl + -</span>Fold</li>
 				<li onclick="editor.execCommand('unfold');"><span class="right">Ctrl + +</span>Unfold</li>
 				<li onclick="editor.execCommand('foldAll');"><span class="right">Ctrl+Shift + -</span>Fold All</li>
 				<li onclick="editor.execCommand('unfoldAll');"><span class="right">Ctrl+Shift + +</span>Unfold All</li>
 			</ul></div>
 			<li onclick="completeAction('!zoom:', '100');">Zoom</li>
-			<li id="wrap-output" onclick="setStyle(body, '!wrap-output');">Wrap output</li>
-			<li id="dark-theme" onclick="setStyle(body, '!dark');">Dark theme</li>
-			<li id="pin-left" onclick="setStyle(body, '!left-pin');">Pin sidebar</li>
-			<li id="show-editor" onclick="setStyle(body, '!editor');">Show editor</li>
-			<li id="show-output" onclick="setStyle(body, '!output');">Show output</li>
-			<li id="show-bottombar" onclick="setStyle(body, '!bottom-bar');">Pin output</li>
-			<!-- <li id="show-toolbar" onclick="setStyle(body, '!tool-bar');">Show toolbar</li> -->
+			<li id="wrap-output" onclick="setStyle(body, '~wrap-output');">Wrap output</li>
+			<li id="dark-theme" onclick="setStyle(body, '~dark');">Dark theme</li>
+			<li onclick="params.update({theme: hasStyle(body, 'dark') ? 'dark' : 'light'});">Save theme</li>
+			<li id="pin-left" onclick="setStyle(body, '~left-pin');">Pin sidebar</li>
+			<li id="show-output" onclick="setStyle(body, '~output');">Show output</li>
 		</ul></div>
 		<!--<div class=""><li onclick="alert('TODO')">Help</li></div>-->
 	</ul>
 	<hr></div>
 <div class="collapsed submenu">
-	<li onclick="setStyle(parentElement, '!collapsed');">Execute
+	<li onclick="setStyle(parentElement, '~collapsed');">Execute
 	<button class="right" onclick="execute(); event.stopPropagation();" title="Compiler usage help">?</button>
 	<button class="right" onclick="execute('-api/A/m', {addLibs: true}); event.stopPropagation();" title="Compiler api">ƒ</button>
 	</li>
@@ -164,16 +185,18 @@
 		<li onclick="execute('-api -doc -use');">Symbols</li>
 		<li onclick="execute('-asm/n/s/m');">Instructions</li>
 		<li onclick="execute('-profile/t/p/G/M -api/A/m/d/p -asm/a/n/s -ast -doc -use');">Profile & full dump</li>
+		<!-- li onclick="params.update({worker: ''});">Use Workers (works only without canvas)</li -->
 	</ul></li>
 	<hr></div>
 <div class="submenu">
-	<li onclick="setStyle(parentElement, '!collapsed');">Workspace<span class="" id="workspaceName"></span>
+	<li onclick="setStyle(parentElement, '~collapsed');">Workspace<span class="" id="workspaceName"></span>
 	<button class="right" onclick="event.stopPropagation(); setStyle(parentElement.parentElement, '-collapsed'); params.update('folder');" title="Refresh file list">⟳</button>
 	<!--<button class="right" onclick="event.stopPropagation(); downloadFiles();">📥</button>-->
 	<!--<button class="right" onclick="event.stopPropagation(); uploadFiles();">📤</button>-->
 	</li>
 	<ul id="workspaceList">
-		<li onClick="params.update({file: 'test.ci', content: null, project: 'W3sKCSJ1cmwiOiAiL0NtcGwvdGVzdC90ZXN0LmNpIgp9LCB7CgkicGF0aCI6ICJsYW5nL2VtaXQuY2kiLAoJInVybCI6ICIvQ21wbC90ZXN0L2xhbmcvZW1pdC5jaSIKfSwgewoJInBhdGgiOiAibGFuZy9mdW5jdGlvbi5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3QvbGFuZy9mdW5jdGlvbi5jaSIKfSwgewoJInBhdGgiOiAibGFuZy9pbml0LmFycmF5LmNpIiwKCSJ1cmwiOiAiL0NtcGwvdGVzdC9sYW5nL2luaXQuYXJyYXkuY2kiCn0sIHsKCSJwYXRoIjogImxhbmcvaW5pdC5tZW1iZXIuY2kiLAoJInVybCI6ICIvQ21wbC90ZXN0L2xhbmcvaW5pdC5tZW1iZXIuY2kiCn0sIHsKCSJwYXRoIjogImxhbmcvaW5pdC5tZXRob2QuY2kiLAoJInVybCI6ICIvQ21wbC90ZXN0L2xhbmcvaW5pdC5tZXRob2QuY2kiCn0sIHsKCSJwYXRoIjogImxhbmcvaW5pdC5yZWZlcmVuY2UuY2kiLAoJInVybCI6ICIvQ21wbC90ZXN0L2xhbmcvaW5pdC5yZWZlcmVuY2UuY2kiCn0sIHsKCSJwYXRoIjogImxhbmcvaW5pdC52YXJpYWJsZS5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3QvbGFuZy9pbml0LnZhcmlhYmxlLmNpIgp9LCB7CgkicGF0aCI6ICJsYW5nL2lubGluZU1hY3Jvcy5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3QvbGFuZy9pbmxpbmVNYWNyb3MuY2kiCn0sIHsKCSJwYXRoIjogImxhbmcvb3ZlcmxvYWQuaW5saW5lLmNpIiwKCSJ1cmwiOiAiL0NtcGwvdGVzdC9sYW5nL292ZXJsb2FkLmlubGluZS5jaSIKfSwgewoJInBhdGgiOiAibGFuZy9yZWNQYWNraW5nLmNpIiwKCSJ1cmwiOiAiL0NtcGwvdGVzdC9sYW5nL3JlY1BhY2tpbmcuY2kiCn0sIHsKCSJwYXRoIjogImxhbmcvcmVjVW5pb24uY2kiLAoJInVybCI6ICIvQ21wbC90ZXN0L2xhbmcvcmVjVW5pb24uY2kiCn0sIHsKCSJwYXRoIjogImxhbmcvcmVmbGVjdC5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3QvbGFuZy9yZWZsZWN0LmNpIgp9LCB7CgkicGF0aCI6ICJsYW5nL3N0bXQuZm9yLmNpIiwKCSJ1cmwiOiAiL0NtcGwvdGVzdC9sYW5nL3N0bXQuZm9yLmNpIgp9LCB7CgkicGF0aCI6ICJsYW5nL3N0bXQuaWYuY2kiLAoJInVybCI6ICIvQ21wbC90ZXN0L2xhbmcvc3RtdC5pZi5jaSIKfSwgewoJInBhdGgiOiAibGFuZy91c2VPcGVyYXRvci5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3QvbGFuZy91c2VPcGVyYXRvci5jaSIKfSwgewoJInBhdGgiOiAic3RkL21hdGguQml0cy5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3Qvc3RkL21hdGguQml0cy5jaSIKfSwgewoJInBhdGgiOiAic3RkL21hdGguQ29tcGxleC5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3Qvc3RkL21hdGguQ29tcGxleC5jaSIKfSwgewoJInBhdGgiOiAic3RkL21lbW9yeS5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3Qvc3RkL21lbW9yeS5jaSIKfSwgewoJInBhdGgiOiAic3RkL251bWJlci5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3Qvc3RkL251bWJlci5jaSIKfSwgewoJInBhdGgiOiAic3RkL3Rlc3QubWF0aC5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3Qvc3RkL3Rlc3QubWF0aC5jaSIKfSwgewoJInBhdGgiOiAic3RkL3Rlc3QudHJpZ29ub21ldHJ5LmNpIiwKCSJ1cmwiOiAiL0NtcGwvdGVzdC9zdGQvdGVzdC50cmlnb25vbWV0cnkuY2kiCn0sIHsKCSJwYXRoIjogInN0ZC90cnlFeGVjLmNpIiwKCSJ1cmwiOiAiL0NtcGwvdGVzdC9zdGQvdHJ5RXhlYy5jaSIKfV0K'});">all tests</li>
+		<li onClick="params.update({file: 'testGfx.ci', content: null, project: 'W3sKCSJ1cmwiOiAiY21wbEdmeC90ZXN0LzJkLmRyYXcuYmV6aWVyLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC8yZC5kcmF3LmltYWdlLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC8yZC5JbWFnZURpZmYuY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0LzJkLkwtU3lzdGVtLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC8zZC5kcmF3Lm1lc2guY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0LzNkLmhlaWdodC5tYXAuY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0LzNkLnBhcmFtZXRyaWMuY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L2Z4LmNvbG9yLmJsZW5kLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5jb2xvci5sb29rdXAtZWFzZS5jaSIKfSwgewoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvZnguY29sb3IubG9va3VwLWxldmVscy5jaSIKfSwgewoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvZnguY29sb3IubG9va3VwLWxpZ2h0LmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5jb2xvci5sb29rdXAtaHNsLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5jb2xvci5sb29rdXAtbWFudWFsLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5jb2xvci5sb29rdXAuY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L2Z4LmNvbG9yLm1hdHJpeC5jaSIKfSwgewoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvZnguaGlzdG9ncmFtLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5pbWFnZS5ibHVyLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC9meC5pbWFnZS50cmFuc2Zvcm0uY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L3BkLmJsb2IuY2kiCn0sIHsKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L3BkLmNvbXBsZXhQbGFuZS5jaSIKfSwgewoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvcGQueWlueWFuZy5jaSIKfSwgewoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvU3RhckZpZWxkLmNpIgp9LCB7CgkidXJsIjogImNtcGxHZngvdGVzdC90ZXN0R2Z4LmNpIgp9LCB7CgkicGF0aCI6ICJhc3NldC9mb250L01vZGVybi0xLmZudCIsCgkidXJsIjogImNtcGxHZngvdGVzdC9hc3NldC9mb250L01vZGVybi0xLmZudCIKfSwgewoJInBhdGgiOiAiYXNzZXQvaW1hZ2UvZGF2aWQucG5nIiwKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L2Fzc2V0L2ltYWdlL2RhdmlkLnBuZyIKfSwgewoJInBhdGgiOiAiYXNzZXQvaW1hZ2UvZm9yZXN0LnBuZyIsCgkidXJsIjogImNtcGxHZngvdGVzdC9hc3NldC9pbWFnZS9mb3Jlc3QucG5nIgp9LCB7CgkicGF0aCI6ICJhc3NldC9pbWFnZS90ZXh0dXJlLnBuZyIsCgkidXJsIjogImNtcGxHZngvdGVzdC9hc3NldC9pbWFnZS90ZXh0dXJlLnBuZyIKfSwgewoJInBhdGgiOiAiYXNzZXQvaW1hZ2UvdGV4dHVyZV9uYXR1cmVfMDEucG5nIiwKCSJ1cmwiOiAiY21wbEdmeC90ZXN0L2Fzc2V0L2ltYWdlL3RleHR1cmVfbmF0dXJlXzAxLnBuZyIKfSwgewoJInBhdGgiOiAiYXNzZXQvaW1hZ2UvaGVpZ2h0bWFwLnBuZyIsCgkidXJsIjogImNtcGxHZngvdGVzdC9hc3NldC9pbWFnZS9oZWlnaHRtYXAucG5nIgp9LCB7CgkicGF0aCI6ICJhc3NldC9tZXNoL3RlYXBvdC5vYmoiLAoJInVybCI6ICJjbXBsR2Z4L3Rlc3QvYXNzZXQvbWVzaC90ZWFwb3Qub2JqIgp9XQ'});">tests: gfx.all</li>
+		<li onClick="params.update({file: 'test.ci', content: null, project: 'W3sKCSJ1cmwiOiAiL0NtcGwvdGVzdC90ZXN0LmNpIgp9LCB7CgkicGF0aCI6ICJsYW5nL2VtaXQuY2kiLAoJInVybCI6ICIvQ21wbC90ZXN0L2xhbmcvZW1pdC5jaSIKfSwgewoJInBhdGgiOiAibGFuZy9mdW5jdGlvbi5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3QvbGFuZy9mdW5jdGlvbi5jaSIKfSwgewoJInBhdGgiOiAibGFuZy9pbml0LmFycmF5LmNpIiwKCSJ1cmwiOiAiL0NtcGwvdGVzdC9sYW5nL2luaXQuYXJyYXkuY2kiCn0sIHsKCSJwYXRoIjogImxhbmcvaW5pdC5tZW1iZXIuY2kiLAoJInVybCI6ICIvQ21wbC90ZXN0L2xhbmcvaW5pdC5tZW1iZXIuY2kiCn0sIHsKCSJwYXRoIjogImxhbmcvaW5pdC5tZXRob2QuY2kiLAoJInVybCI6ICIvQ21wbC90ZXN0L2xhbmcvaW5pdC5tZXRob2QuY2kiCn0sIHsKCSJwYXRoIjogImxhbmcvaW5pdC5yZWZlcmVuY2UuY2kiLAoJInVybCI6ICIvQ21wbC90ZXN0L2xhbmcvaW5pdC5yZWZlcmVuY2UuY2kiCn0sIHsKCSJwYXRoIjogImxhbmcvaW5pdC52YXJpYWJsZS5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3QvbGFuZy9pbml0LnZhcmlhYmxlLmNpIgp9LCB7CgkicGF0aCI6ICJsYW5nL2lubGluZU1hY3Jvcy5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3QvbGFuZy9pbmxpbmVNYWNyb3MuY2kiCn0sIHsKCSJwYXRoIjogImxhbmcvb3ZlcmxvYWQuaW5saW5lLmNpIiwKCSJ1cmwiOiAiL0NtcGwvdGVzdC9sYW5nL292ZXJsb2FkLmlubGluZS5jaSIKfSwgewoJInBhdGgiOiAibGFuZy9yZWNQYWNraW5nLmNpIiwKCSJ1cmwiOiAiL0NtcGwvdGVzdC9sYW5nL3JlY1BhY2tpbmcuY2kiCn0sIHsKCSJwYXRoIjogImxhbmcvcmVjVW5pb24uY2kiLAoJInVybCI6ICIvQ21wbC90ZXN0L2xhbmcvcmVjVW5pb24uY2kiCn0sIHsKCSJwYXRoIjogImxhbmcvcmVmbGVjdC5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3QvbGFuZy9yZWZsZWN0LmNpIgp9LCB7CgkicGF0aCI6ICJsYW5nL3N0bXQuZm9yLmNpIiwKCSJ1cmwiOiAiL0NtcGwvdGVzdC9sYW5nL3N0bXQuZm9yLmNpIgp9LCB7CgkicGF0aCI6ICJsYW5nL3N0bXQuaWYuY2kiLAoJInVybCI6ICIvQ21wbC90ZXN0L2xhbmcvc3RtdC5pZi5jaSIKfSwgewoJInBhdGgiOiAibGFuZy91c2VPcGVyYXRvci5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3QvbGFuZy91c2VPcGVyYXRvci5jaSIKfSwgewoJInBhdGgiOiAic3RkL21hdGguQml0cy5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3Qvc3RkL21hdGguQml0cy5jaSIKfSwgewoJInBhdGgiOiAic3RkL21hdGguQ29tcGxleC5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3Qvc3RkL21hdGguQ29tcGxleC5jaSIKfSwgewoJInBhdGgiOiAic3RkL21lbW9yeS5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3Qvc3RkL21lbW9yeS5jaSIKfSwgewoJInBhdGgiOiAic3RkL251bWJlci5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3Qvc3RkL251bWJlci5jaSIKfSwgewoJInBhdGgiOiAic3RkL3Rlc3QubWF0aC5jaSIsCgkidXJsIjogIi9DbXBsL3Rlc3Qvc3RkL3Rlc3QubWF0aC5jaSIKfSwgewoJInBhdGgiOiAic3RkL3Rlc3QudHJpZ29ub21ldHJ5LmNpIiwKCSJ1cmwiOiAiL0NtcGwvdGVzdC9zdGQvdGVzdC50cmlnb25vbWV0cnkuY2kiCn0sIHsKCSJwYXRoIjogInN0ZC90cnlFeGVjLmNpIiwKCSJ1cmwiOiAiL0NtcGwvdGVzdC9zdGQvdHJ5RXhlYy5jaSIKfV0K'});">tests: lang.all</li>
 	</ul>
 	<ul id="fileList"></ul>
 	<ul>
@@ -181,27 +204,16 @@
 		<li onclick="params.update({folder: '**'});" title="Show files including the /lib/ folder">Show all</li>
 	</ul></div>
 </div>
-<div id="right-sidebar" class="sidebar">
-	<div class="overlay" onclick="setStyle(body, '-right-bar');"></div>
-	<div class="submenu"><ul id="commands" class="">
-	<li id="pin-left" onclick="setStyle(body, '!left-pin');">Pin left sidebar</li>
-	<li id="show-left" onclick="setStyle(body, '!left-bar');">Show left sidebar</li>
-	<li id="pin-right" onclick="setStyle(body, '!right-pin');">Pin right sidebar</li>
-	<li id="show-right" onclick="setStyle(body, '!right-bar');">Show right sidebar</li>
-	</ul></div>
-</div>
-<div id="editor-panel">
-	<textarea id="input"></textarea>
-</div>
 <div id="main-toolbar" class="toolbar">
-	<span class="left icon" title="Toggle show menu" onclick="setStyle(body, '!left-bar', 'editor');">☰</span>
+	<span class="left icon" title="Toggle show menu" onclick="onMenuClick()">☰</span>
 	<span class="left icon" title="Execute script (Ctrl + Enter)" onclick="onExecClick();">►</span>
+	<span class="edited left icon" title="Save script (Ctrl + s)" onclick="saveInput();">💾</span>
 
+	<!--span class="right icon" title="Toggle show menu" onclick="setStyle(body, '~right-bar', '-no-editor');">⋮</span-->
 	<span class="canvas right icon" title="Stop execution" onclick="showCanvas(false);">❌</span>
-	<span class="canvas right icon" title="Toggle show editor" onclick="setStyle(body, '!editor', 'output');">⬒</span>
-	<span class="canvas-gone right icon" title="Toggle show output" onclick="setStyle(body, '!output', 'editor');">⬓</span>
-	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '!dark');">◑</span>
-	<span class="output-only right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
+	<span class="no-canvas right icon" title="Toggle show output" onclick="setStyle(body, 'bottom-bar', '?-output', '~output');">⬓</span>
+	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '~dark');">◑</span>
+	<span class="canvas output right icon bold" title="Scroll to end" onclick="setStyle(body, 'bottom-bar'); terminal.scroll(true);">⏬</span>
 	<span class="right" id="spnCounter"></span>
 
 	<!-- filename -->
@@ -211,105 +223,205 @@
 	':line' Go to line (Ctrl + g)
 	'-' Fold all lines (Ctrl + Shift + -)
 	'+' Unfold all lines (Ctrl + Shift + +)">
-		<span id="spnStatus" onclick="setStyle(body, 'editor', '!output');">Initializing runtime</span>
+		<span id="spnStatus" onclick="setStyle(body, '-no-editor', '~output');">Initializing runtime</span>
 		<input id="edtFileName" placeholder="#execute; ?search; :goto; -fold; +unfold"></input>
 	</span>
 </div>
+<div id="editor-panel">
+	<textarea id="input"></textarea>
+</div>
 
+<script type="text/javascript" src="extras/demo/main.js"></script>
+<script type="text/javascript" src="extras/demo/action.js"></script>
 <script type="text/javascript">
+
+var props = props || {};
 function onExecClick() {
+	// if already executing (canvas is shown), zoom or pan
+	if (document.body.classList.contains('canvas')) {
+		// todo: use style on body to do this: setStyle('canvas-pan');
+		if (canvasMove.classList.contains('hidden')) {
+			canvasMove.classList.remove('hidden');
+			centerCanvas(1);
+		} else {
+			canvasMove.classList.add('hidden');
+			centerCanvas(Math.min(window.innerWidth / canvas.width, window.innerHeight / canvas.height));
+		}
+		return;
+	}
 	execute(params.exec || '-run/g');
 }
 
-var props = props || {};
-props.libraries = [
-	'libFile.wasm'
-];
-function openProjectFile(projectOrFile) {
-	worker.postMessage(projectOrFile);
-}
-function listFiles(dir) {
-	worker.postMessage({folder: dir});
+function onMenuClick() {
+	// if already executing (canvas is shown), do not hide show the menu
+	if (document.body.classList.contains('canvas')) {
+		// todo: show hide output over the canvas: setStyle('output-top');
+		return;
+	}
+	setStyle(document.body, '~left-bar');
 }
 
-function saveInput(saveAs) {
-	let file = params.file;
-	if (file == null || saveAs === true) {
-		file = prompt('Save file as:', file || 'untitled.ci');
-		if (file == null) {
-			return null;
-		}
-	}
-	let content = editor.getValue();
-	worker.postMessage({ content, file });
-	if (params.content !== undefined) {
-		let oldValue = params.content;
-		let encB64 = true;
-		try {
-			oldValue = atob(oldValue);
-		} catch (err) {
-			encB64 = false;
-			console.debug(err);
-		}
-		if (oldValue !== content) {
-			params.update({ content: encB64 ? btoa(content) : content });
+function centerCanvas(zoom) {
+	if (zoom === undefined) {
+		if (canvas.style.zoom !== '') {
+			zoom = +canvas.style.zoom;
 		} else {
-			params.update({ file });
+			zoom = 1;
 		}
-	} else {
-		params.update({ file });
 	}
-	return file;
+	if (zoom === null || (zoom > 0 && zoom < 1)) {
+		canvas.style.zoom = zoom;
+		canvas.style.top = null;
+		canvas.style.left = null;
+		canvas.style.transform = null;
+		canvas.parentElement.style.overflow = null;
+		return;
+	}
+
+	canvas.style.top = 0;
+	canvas.style.left = 0;
+	canvas.style.transform = 'none';
+	canvas.style.zoom = null;
+	canvas.parentElement.style.overflow = 'auto';
+	let dx = canvas.clientWidth - canvas.parentElement.clientWidth;
+	if (dx > 0) {
+		canvas.parentElement.scrollLeft = dx / 2;
+		canvas.style.left = 0;
+	} else {
+		canvas.parentElement.scrollLeft = 0;
+		canvas.style.left = -dx / 2;
+	}
+	let dy = canvas.clientHeight - canvas.parentElement.clientHeight;
+	if (dy > 0) {
+		canvas.parentElement.scrollTop = dy / 2;
+		canvas.style.top = 0;
+	} else {
+		canvas.parentElement.scrollTop = 0;
+		canvas.style.top = -dy / 2;
+	}
+	canvasMove.style.width = Math.max(canvas.width, canvas.parentElement.clientWidth);
+	canvasMove.style.height = Math.max(canvas.height, canvas.parentElement.clientHeight);
 }
-function execInput(args) {
-	setStyle(document.body, 'output');
-	worker.postMessage({
-		execute: args || []
+function showCanvas(visible) {
+	if (!visible) {
+		editor.setOption("readOnly", false);
+		setStyle(document.body, '-canvas');
+		Module._SDL_SendQuit();
+		return;
+	}
+
+	editor.setOption("readOnly", 'nocursor');
+	setStyle(document.body, 'canvas');
+
+	if (Browser.mainLoop.oldPause === undefined) {
+		Browser.mainLoop.oldPause = Browser.mainLoop.pause;
+		Browser.mainLoop.pause = function() {
+			editor.setOption("readOnly", false);
+			setStyle(document.body, '-canvas');
+			Browser.mainLoop.oldPause();
+			canvas.width = 0;
+		}
+	}
+}
+
+// worker or canvas based execution
+if (params.worker !== undefined) {
+	props.libraries = [
+		'libFile.wasm'
+	];
+
+	var worker = new Worker('extras/demo/emscripten/worker.js');
+	worker.onmessage = function (event) {
+		//console.log('worker: ', event.data);
+		process(event.data);
+	};
+
+	var openProjectFile = function(projectOrFile) {
+		worker.postMessage(projectOrFile);
+	}
+	var execInput = function(args) {
+		setStyle(document.body, 'output');
+		worker.postMessage({
+			execute: args || []
+		});
+	}
+} else {
+	props.libraries = [
+		'extras/demo/emscripten/libFile.wasm',
+		'extras/demo/emscripten/libGfx.wasm',
+		'/lib/gfxlib.ci'
+	];
+
+	var Module = {
+		initialized: false,
+		locateFile: function (path) {
+			return 'extras/demo/emscripten/' + path;
+		},
+		dynamicLibraries: [
+			'extras/demo/emscripten/libFile.wasm',
+			'extras/demo/emscripten/libGfx.wasm'
+		],
+		print: function (message) {
+			terminal.append(message);
+		},
+		printErr: function (message) {
+			console.error(message);
+			terminal.append(message);
+		},
+		canvas: document.getElementById('canvas'),
+		onRuntimeInitialized: function () {
+			ENV.CMPL_HOME = '/';
+			FS.mkdirTree(Module.workspace);
+			FS.chdir(Module.workspace);
+			Module.initialized = true;
+			process({initialized: true});
+		},
+		onFileDownloaded: function (progress, total) {
+			process({progress, total});
+		},
+	};
+
+	var canvasShown = new MutationObserver(function () {
+		if (canvas.width === 0) {
+			return;
+		}
+		if (canvasShown.width === canvas.width) {
+			return;
+		}
+		showCanvas(true);
+		canvasShown.width = canvas.width;
 	});
+	canvasShown.observe(canvas, {attributes: true});
+
+	var openProjectFile = function(projectOrFile) {
+		try {
+			Module.openProjectFile(projectOrFile, process);
+		} catch (err) {
+			Module.printErr('operation failed: ' + err);
+		}
+	}
+	var execInput = function(args) {
+		// show overlay while compiling and initializing
+
+		centerCanvas(null);
+		canvasShown.width = 0;
+		canvasMove.classList.add('hidden');
+		setStyle(document.body, 'canvas', 'output');
+
+		setTimeout(function() {
+			try {
+				callMain(args || []);
+			} finally {
+				if (canvas.width === 0) {
+					setStyle(document.body, '-canvas');
+				}
+			}
+		});
+	}
+
+	document.write('<script type="text/javascript" src="extras/demo/emscripten/module.js"><\/script>');
+	document.write('<script type="text/javascript" src="extras/demo/emscripten/cmpl.js"><\/script>');
 }
-
-/* communication with worker/args
-send => {
-	list - download these files to the workspace directory [{path|file, url|content}]
-	file - open or save the content of the file
-	line - jump to / position in file
-	url - download and save content
-	content - save content
-	workspace - switch workspace
-	execute - arguments for the compiler
-}
-
-receive => {
-	list - list of files in the workspace
-	data - content of the requested file
-	line - jump to / position in file
-	print - print the message to the output
-	error - print the error to the output
-	exitcode - response to execute
-	initialized
-}
-
-args => {
-	project - download the content of the given file list
-	content - overwrite the content of the editor
-	file - name of file to be opened
-	line - line position to jump to
-	theme - override default: &theme=light|dark
-	show - override default: &show=editor|output
-
-	exec - override default: &exec=-profile/G/H/P/T
-	dump - dump output to file: &dump=dump.txt|dump.json
-	log - log output to file: &log=dump.txt
-	mem - if 2MB memory is not enough: &mem=128M
-	X
-}*/
-let worker = new Worker('extras/demo/emscripten/worker.js');
-worker.onmessage = function(event) {
-	//console.log('worker: ', event.data);
-	process(event.data);
-};
 </script>
-<script type="text/javascript" src="extras/demo/main.js"></script>
-<script type="text/javascript" src="extras/demo/action.js"></script>
 </body>
 </html>

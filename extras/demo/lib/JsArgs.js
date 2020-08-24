@@ -61,6 +61,9 @@ function JsArgs(paramSeparator, onHashChange) {
 				let value = values[i].substr(pos + 1);
 				args[decodeURIComponent(key)] = decodeURIComponent(value);
 			}
+			else {
+				args[decodeURIComponent(values[i])] = '';
+			}
 		}
 		return args;
 	}
@@ -85,7 +88,10 @@ function JsArgs(paramSeparator, onHashChange) {
 			if (values !== '') {
 				values += valueSeparator;
 			}
-			values += encodeURIComponent(key) + '=' + encodeURIComponent(value);
+			values += encodeURIComponent(key);
+			if (value !== '') {
+				values += '=' + encodeURIComponent(value);
+			}
 		}
 
 		window.location.href = paramSeparator + values;
