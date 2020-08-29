@@ -1,0 +1,54 @@
+// standard library extension
+
+enum: bool {
+	true: 0 == 0;
+	false: 0 != 0;
+}
+
+inline byte = uint8;
+inline float = float32;
+inline double = float64;
+
+/// convert unsigned to signed integer
+inline signed(uint8 value) = int8(value);
+
+/// convert unsigned to signed integer
+inline signed(uint16 value) = int16(value);
+
+/// convert unsigned to signed integer
+inline signed(uint32 value) = int32(value);
+
+/// convert unsigned to signed integer
+inline signed(uint64 value) = int64(value);
+
+/// convert signed to unsigned integer
+inline unsigned(int8 value) = uint8(value);
+
+/// convert signed to unsigned integer
+inline unsigned(int16 value) = uint16(value);
+
+/// convert signed to unsigned integer
+inline unsigned(int32 value) = uint32(value);
+
+/// convert signed to unsigned integer
+inline unsigned(int64 value) = uint64(value);
+
+/// Returns the size of the given type
+inline sizeof(typename type) = int(type.size);
+
+static if (typename(raise) == function) {
+inline "lib/debug.ci";
+}
+
+inline "lib/math.ci";
+//inline "lib/math/Decimal.ci"?;      // -> Decimal TODO: implement http://dec64.com/
+//inline "lib/math/Rational.ci"?;     // -> Rational<int64>
+inline "lib/math/Complex.ci"?;      // -> Complex<float64>
+inline "lib/math/Vector4f.ci"?;
+inline "lib/math/Matrix4f.ci"?;
+inline "lib/math/Vector2d.ci"?;
+//inline "lib/math/BigInteger.ci?"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
+//inline "lib/math/BigDecimal.ci?"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
+//inline "lib/math/Perlin.ci"?;
+
+inline "lib/string.ci";

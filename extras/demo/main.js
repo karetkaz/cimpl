@@ -14,7 +14,7 @@ function setStyle(element, ...styles) {
 
 	let prevChanged = false;
 	for (let style of styles) {
-		// conditional allpy
+		// conditional apply
 		if (style.startsWith('?')) {
 			if (!prevChanged) {
 				continue;
@@ -65,19 +65,19 @@ const pathMather = /(?=[\w\/])((?:\w+:\/\/)(?:[^:@\n\r"'`]+(?:\:\w+)?@)?(?:[^:/?
 const pathFinder = new RegExp(pathMather, 'g');
 
 let editor = CodeMirror.fromTextArea(input, {
-	mode: "text/x-cmpl",
+	mode: 'text/x-cmpl',
 	lineNumbers: true,
 	tabSize: 4,
 	indentUnit: 4,
 	indentWithTabs: true,
-	keyMap: "extraKeys",
+	keyMap: 'extraKeys',
 
 	styleActiveLine: true,
 	matchBrackets: true,
 	showTrailingSpace: true,
 
 	foldGutter: true,
-	gutters: ["CodeMirror-linenumbers", "breakpoints", "CodeMirror-foldgutter"],
+	gutters: ['CodeMirror-linenumbers', 'breakpoints', 'CodeMirror-foldgutter'],
 	highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: true}
 });
 let terminal = Terminal(output, function(escaped, text) {
@@ -149,17 +149,17 @@ let params = JsArgs('#', function (params, changes) {
 					// mode = undefined;
 					break;
 
-				case "embedded-light":
+				case 'embedded-light':
 					theme = 'light';
 					mode = 'embedded';
 					break;
 
-				case "embedded-dark":
+				case 'embedded-dark':
 					theme = 'dark';
 					mode = 'embedded';
 					break;
 
-				case "embedded":
+				case 'embedded':
 				case 'normal':
 				case 'mobile':
 				case 'dbg':
@@ -208,6 +208,7 @@ let params = JsArgs('#', function (params, changes) {
 					setStyle(document.body, '-output');
 				}
 				editor.setSize('100%', '100%');
+				editor.focus();
 				break;
 
 			case 'mobile':
@@ -219,16 +220,18 @@ let params = JsArgs('#', function (params, changes) {
 				}
 				document.body.style.fontSize = '1.2em';
 				editor.setSize('100%', '100%');
+				editor.focus();
 				break;
 
 			case 'embedded':
 				setStyle(document.body, 'autoheight', '-left-bar', '-output');
-				editor.setOption("viewportMargin", Infinity);
+				editor.setOption('viewportMargin', Infinity);
 				break;
 
 			case 'dbg':
 				setStyle(document.body, 'output', 'left-pin', 'left-bar', 'right-pin', 'right-bar', 'bottom-pin', 'bottom-bar');
 				editor.setSize('100%', '100%');
+				editor.focus();
 				break;
 		}
 
@@ -243,34 +246,40 @@ let params = JsArgs('#', function (params, changes) {
 		if (params.content != null) {
 			setContent(content(params.content), params.file, params.line);
 		}
-		editor.focus();
 
-		if (params.workspace != null || params.project != null) {
+		if (params.workspace != null || params.project != null || params.file != null) {
 			// do not show workspaces if a project or workspace is loaded
-			workspaceList.innerHTML = '';
+			fileList.innerHTML = '';
 			return;
 		}
-		if (indexedDB.databases == null) {
-			terminal.append('Failed to list workspaces, indexedDB.databases not available');
-			return;
-		}
-		workspaceName.innerText = 's';
-		indexedDB.databases().then(function(dbs) {
-			let workspaces = '';
-			let prefix = '/cmpl/';
-			for (db of dbs) {
-				let name = db.name;
-				if (!name.startsWith(prefix)) {
-					continue;
+
+		// add scripts saved in indexed database
+		if (indexedDB.databases != null) {
+			workspaceName.innerText = 's';
+			indexedDB.databases().then(function(dbs) {
+				let workspaces = '';
+				let prefix = '/cmpl/';
+				for (db of dbs) {
+					let name = db.name;
+					if (!name.startsWith(prefix)) {
+						continue;
+					}
+					name = name.substr(prefix.length);
+					let url = window.location.origin + window.location.pathname + '#workspace=' + name;
+					workspaces += '<li class="project" onclick="params.update({workspace: \'' + name + '\'});">' + name +
+						'<button class="right" onclick="event.stopPropagation(); rmWorkspace(\'' + name + '\')" title="Remove workspace">-</button>' +
+						'</li>'
 				}
-				name = name.substr(prefix.length);
-				let url = window.location.origin + window.location.pathname + '#workspace=' + name;
-				workspaces += '<li onclick="params.update({workspace: \'' + name + '\'});">' + 'saved: ' + name +
-					'<button class="right" onclick="event.stopPropagation(); rmWorkspace(\'' + name + '\')" title="Remove workspace">-</button>' +
-					'</li>'
-			}
-			workspaceList.innerHTML = workspaces + workspaceList.innerHTML;
-		});
+				fileList.innerHTML += workspaces;
+			});
+		} else {
+			terminal.append('Failed to list workspaces, indexedDB.databases not available');
+		}
+
+		// add script containing demos and tests
+		var newScript = document.createElement('script');
+		newScript.src = 'extras/demo/tests.js';
+		document.head.appendChild(newScript);
 		return;
 	}
 
@@ -352,7 +361,7 @@ let params = JsArgs('#', function (params, changes) {
 });
 
 function rmWorkspace(workspace) {
-	if (!confirm("Remove workspace: " + workspace)) {
+	if (!confirm('Remove workspace: ' + workspace)) {
 		return;
 	}
 	if (!workspace.startsWith('/cmpl/')) {
@@ -370,27 +379,28 @@ function rmWorkspace(workspace) {
 	req.onblocked = console.log;
 }
 
-editor.on("change", function() {
+editor.on('change', function() {
 	setStyle(document.body, 'edited');
 });
-editor.on("gutterClick", function(cm, n) {
+editor.on('gutterClick', function(cm, n) {
 	let info = cm.lineInfo(n);
 	if (info.gutterMarkers == null) {
-		let marker = document.createElement("div");
-		marker.classList.add("breakpoint");
-		marker.innerHTML = "●";
+		let marker = document.createElement('div');
+		marker.classList.add('breakpoint');
+		marker.innerHTML = '●';
 		marker.value = n + 1;
-		cm.setGutterMarker(n, "breakpoints", marker);
+		cm.setGutterMarker(n, 'breakpoints', marker);
 	} else {
-		cm.setGutterMarker(n, "breakpoints", null);
+		cm.setGutterMarker(n, 'breakpoints', null);
 	}
 });
 
 window.onkeydown = function() {
 	// escape to editor
 	if (event.key == 'Escape') {
+		setStyle(document.body, '-right-bar');
 		if (editor.hasFocus()) {
-			setStyle(document.body, '!output');
+			setStyle(document.body, '~output');
 		}
 		if (!document.body.classList.contains('canvas')) {
 			editor.setSelection(editor.getCursor());
@@ -398,19 +408,14 @@ window.onkeydown = function() {
 		}
 		return false;
 	}
-	// Ctrl + Enter => Execute script
+	// Ctrl + Enter => Focus command: [search, jump, fold, run, ...]
 	if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key === 'Enter') {
-		execute((params.exec || '-run/g'));
-		return false;
-	}
-	// Shift + Enter => Focus command: [search, jump, fold, run, ...]
-	if (!event.ctrlKey && !event.altKey && event.shiftKey && event.key === 'Enter') {
 		completeAction();
 		return false;
 	}
 	// Ctrl + Shift + Enter => Execute script
 	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === 'Enter') {
-		completeAction('#');
+		execute((params.exec || '-run/g'));
 		return false;
 	}
 }
@@ -426,12 +431,12 @@ function setContent(content, file, line, column) {
 	if (file != null) {
 		edtFileName.value = file;
 		for (let li of fileList.children) {
-			setStyle(li, li.innerText === file ? "active" : "-active");
+			setStyle(li, li.innerText === file ? 'active' : '-active');
 		}
 	}
 	if (line != null) {
 		var middleHeight = editor.getScrollerElement().offsetHeight / 2;
-		var t = editor.charCoords({line, ch: 0}, "local").top;
+		var t = editor.charCoords({line, ch: 0}, 'local').top;
 		editor.scrollTo(null, t - middleHeight - 5);
 		editor.setCursor((line || 1) - 1, column);
 	}
@@ -512,7 +517,7 @@ function editProject() {
 		content = '';
 		for (let file of files) {
 			if (content !== '') {
-				content += ", ";
+				content += ', ';
 			}
 			content += JSON.stringify(file, null, '\t');
 		}
@@ -530,7 +535,11 @@ function shareInput() {
 	setStyle(document.body, 'output');
 	let content = editor.getValue();
 	terminal.append('decoded uri: ' + decodeURIComponent(window.location));
-	terminal.append('current file: ' + window.location.origin + window.location.pathname + '#content=' + btoa(content));
+	let hash = 'content=' + btoa(editor.getValue());
+	if (params.file !== null) {
+		hash = 'file=' + params.file + '&' + hash;
+	}
+	terminal.append('current file: ' + window.location.origin + window.location.pathname + '#' + hash);
 	if (content.startsWith('[{')) {
 		terminal.append('project file: ' + window.location.origin + window.location.pathname + '#project=' + btoa(content));
 	}
@@ -617,25 +626,42 @@ function process(data) {
 		terminal.append(data.print);
 	}
 	if (data.link !== undefined) {
-		const link = document.createElement("a");
-		link.innerText = data.file || "Download file";
-		link.download = data.file || "file.bin";
+		const link = document.createElement('a');
+		link.innerText = data.file || 'Download file';
+		link.download = data.file || 'file.bin';
 		link.href = data.link;
-		terminal.append(link);
+		const line = document.createElement('p');
+		line.textContent = 'Download link: '
+		line.appendChild(link);
+		terminal.append(line);
 		link.click();
+		return;
 	}
 	if (data.list !== undefined) {
 		fileList.innerHTML = '';
 		for (let file of data.list) {
+			const li = document.createElement('li');
+			li.innerText = file;
 			if (file.endsWith('/')) {
-				fileList.innerHTML += '<li onclick="params.update({folder: this.innerText});">' + file + '</li>';
+				li.classList.add('folder');
+				li.onclick = function() {
+					// update params to preserve history navigation
+					params.update({folder: file});
+				};
+			} else {
+				li.classList.add('file');
+				li.onclick = function() {
+					// update params to preserve history navigation
+					params.update({file, line: null});
+				};
+				li.ondblclick = function() {
+					openProjectFile({ file, link: true });
+				};
 			}
-			else if (file === params.file) {
-				fileList.innerHTML += '<li class="active" onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
+			if (file === params.file) {
+				li.classList.add('active');
 			}
-			else {
-				fileList.innerHTML += '<li onclick="params.update({file: this.innerText, line: null});">' + file + '</li>';
-			}
+			fileList.appendChild(li);
 		}
 	}
 
@@ -659,7 +685,7 @@ function process(data) {
 	}
 	if (data.progress !== undefined) {
 		if (data.progress > 0) {
-			spnStatus.innerText = "Downloading files: " + data.progress + " / " + data.total;
+			spnStatus.innerText = 'Downloading files: ' + data.progress + ' / ' + data.total;
 			return;
 		}
 		spnStatus.innerText = null;

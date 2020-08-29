@@ -1,0 +1,76 @@
+inline displaySize = 400;
+inline gridSize = 10;
+int colors[5] = {
+//	0x000000;
+	0x0000ff;
+	0x00ff00;
+	0x00ffff;
+	0xff0000;
+//	0xff00ff;
+//	0xffff00;
+	0xffffff;
+};
+
+int grid[gridSize * gridSize] = {};
+bool flood(int i, int j, int o, int c) {
+	if (i < 0 || i >= gridSize) {
+		return false;
+	}
+	if (j < 0 || j >= gridSize) {
+		return false;
+	}
+	int g& = grid[i + j * gridSize];
+	if (o != g || o == c) {
+		return false;
+	}
+	g = c;
+	flood(i - 1, j, o, c);
+	flood(i, j - 1, o, c);
+	flood(i + 1, j, o, c);
+	flood(i, j + 1, o, c);
+	return true;
+}
+
+Image image = Image(displaySize, displaySize, 32);
+int onEvent(int action, int button, int x, int y) {
+	static int moves = 0;
+	if (action == Gui.KEY_PRESS) {
+		if (button == 27) {
+			return -1;
+		}
+	}
+
+	if (action == Gui.WINDOW_CLOSE) {
+		info("moves used", moves);
+	}
+
+	if (action == Gui.MOUSE_RELEASE) {
+		int i = x * gridSize / displaySize;
+		int j = y * gridSize / displaySize;
+		int c = grid[i + j * gridSize];
+		if (flood(0, 0, grid[0], c)) {
+			moves += 1;
+		}
+	}
+
+	// show the grid
+	for (int j = 0; j < gridSize; j += 1) {
+		for (int i = 0; i < gridSize; i += 1) {
+			int x = i * displaySize / gridSize;
+			int y = j * displaySize / gridSize;
+			int s = displaySize / gridSize - 1;
+			int c = grid[i + j * gridSize];
+			image.fillRect(x, y, x + s, y + s, colors[c]);
+		}
+	}
+
+	return 0;
+}
+
+System.srand(System.time());
+for (int j = 0; j < grid.length; j += 1) {
+	grid[j] = System.rand() % colors.length;
+}
+image.fill(0x000000);
+image.show(onEvent);
+image.destroy();

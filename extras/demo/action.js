@@ -42,7 +42,7 @@ function completeAction(action, hint) {
 		if (edtFileName.value.endsWith(action.key) || action.key === 'Backspace' || action.key === 'Delete') {
 			if (edtFileName.value.startsWith('!')) {
 				let command = edtFileName.value.substr(1);
-				let filter = new RegExp(command, "i");
+				let filter = new RegExp(command, 'i');
 				let actions = {};
 				for (let cmd in customCommands) {
 					if (cmd.search(filter) === -1) {
@@ -102,7 +102,7 @@ function completeAction(action, hint) {
 				break;
 
 			case '!':
-				hint = '|enter a command or Shift+Enter';
+				hint = 'enter command to execute';
 				break;
 		}
 	}
@@ -151,7 +151,7 @@ function setActions(actions, nextPrev) {
 	commands.onNextPrev = nextPrev;
 
 	for (let action in actions) {
-		let row = document.createElement("li");
+		let row = document.createElement('li');
 		row.innerText = action;
 		row.onclick = actions[action];
 		commands.appendChild(row);
@@ -331,7 +331,7 @@ edtFileName.onkeydown = function(event) {
 		let file = match[2];
 		let line = match[3];
 		if (match[1] != null) {
-			file = file.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3");
+			file = file.replace(/^(.*[/])?(.*)(\..*)$/, '$2$3');
 			openProjectFile({ file, project: [{
 					file, url: match[1] + match[2]
 				}]});
@@ -356,7 +356,7 @@ CodeMirror.commands.jumpToLine = function(cm) {
 	let line = editor.getCursor().line || 0;
 	completeAction(':', line + 1);
 	var middleHeight = editor.getScrollerElement().offsetHeight / 2;
-	var t = editor.charCoords({line, ch: 0}, "local").top;
+	var t = editor.charCoords({line, ch: 0}, 'local').top;
 	editor.scrollTo(null, t - middleHeight - 5);
 	editor.setCursor(line);
 }

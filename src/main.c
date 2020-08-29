@@ -12,7 +12,7 @@
 #include <time.h>
 
 // default values
-static const char *STDLIB = "lib/stdlib.ci";   // standard library
+static const char *STDLIB = "cmplStd/stdlib.ci";   // standard library
 static const char *CMPL_HOME = "CMPL_HOME";    // Home environment path variable name
 
 static inline int strEquals(const char *str, const char *with) {

@@ -1,0 +1,46 @@
+/**
+ * Add two numbers without using arithmetic operators
+ * https://www.geeksforgeeks.org/add-two-numbers-without-using-arithmetic-operators/
+ */
+int add(int x, int y) {
+	// Iterate till there is no carry
+	for (;y != 0;) {
+		// carry now contains common set bits of x and y
+		int carry = x & y;
+
+		// Sum of bits of x and y where at least one of the bits is not set
+		x = x ^ y;
+
+		// Carry is shifted by one so that adding it to x gives the required sum
+		y = carry << 1;
+	}
+	return x;
+}
+
+/**
+ * Subtract two numbers without using arithmetic operators
+ * https://www.geeksforgeeks.org/subtract-two-numbers-without-using-arithmetic-operators/
+ */
+int sub(int x, int y) {
+	// Iterate till there is no carry
+	for (;y != 0;) {
+		// borrow contains common set bits of y and unset bits of x
+		int borrow = (~x) & y;
+
+		// Subtraction of bits of x and y where at least one of the bits is not set
+		x = x ^ y;
+
+		// Borrow is shifted by one so that subtracting it from x gives the required sum
+		y = borrow << 1;
+	}
+	return x;
+}
+
+int a = 15537;
+int b = 37551;
+
+int add0 = a + b;
+int add1 = add(a, b);
+
+int sub0 = a - b;
+int sub1 = sub(a, b);

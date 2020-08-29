@@ -15,7 +15,7 @@ Image font = Image.openFnt("asset/font/Modern-1.fnt");
 Image offs = Image(back.width(), back.height(), back.depth());
 
 void brightnessContrastGamma(argb lut[256], int brightness, int contrast) {
-	inline "/lib/std/math/Easing.ci";
+	inline "/cmplStd/lib/math/Easing.ci";
 	float64 cVal = (256 + contrast) / 256.;
 
 	float64 easing(float64 ratio) = Easing.Circle;
@@ -47,7 +47,7 @@ back.destroy();
 font.destroy();
 
 int onEvent(int action, int button, int x, int y) {
-	inline "/lib/gfx/micro.ui.ci";
+	inline "/cmplGfx/lib/micro.ui.ci";
 
 	static Slider brightness = {
 		text: "brightness";

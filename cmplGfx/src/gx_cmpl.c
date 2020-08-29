@@ -653,6 +653,7 @@ static vmError surf_calcHist(nfcContext ctx) {
 		data[x].b = sat_u8(histB[x] * 255 / max);
 		data[x].g = sat_u8(histG[x] * 255 / max);
 		data[x].r = sat_u8(histR[x] * 255 / max);
+		data[x].a = 0;
 	}
 
 	return noError;

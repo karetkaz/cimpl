@@ -1,2268 +1,3 @@
-// standard library extension
-
-enum: bool {
-	true: 0 == 0;
-	false: 0 != 0;
-}
-
-inline byte = uint8;
-inline float = float32;
-inline double = float64;
-
-/// convert unsigned to signed integer
-inline signed(uint8 value) = int8(value);
-
-/// convert unsigned to signed integer
-inline signed(uint16 value) = int16(value);
-
-/// convert unsigned to signed integer
-inline signed(uint32 value) = int32(value);
-
-/// convert unsigned to signed integer
-inline signed(uint64 value) = int64(value);
-
-/// convert signed to unsigned integer
-inline unsigned(int8 value) = uint8(value);
-
-/// convert signed to unsigned integer
-inline unsigned(int16 value) = uint16(value);
-
-/// convert signed to unsigned integer
-inline unsigned(int32 value) = uint32(value);
-
-/// convert signed to unsigned integer
-inline unsigned(int64 value) = uint64(value);
-
-/// Returns the size of the given type
-inline sizeof(typename type) = int(type.size);
-
-static if (typename(raise) == function) {
-inline "std/debug.ci";
-}
-
-inline "std/math.ci";
-//inline "std/math/Decimal.ci"?;      // -> Decimal TODO: implement http://dec64.com/
-//inline "std/math/Rational.ci"?;     // -> Rational<int64>
-inline "std/math/Complex.ci"?;      // -> Complex<float64>
-inline "std/math/Vector4f.ci"?;
-inline "std/math/Matrix4f.ci"?;
-inline "std/math/Vector2d.ci"?;
-//inline "std/math/BigInteger.ci?"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
-//inline "std/math/BigDecimal.ci?"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
-//inline "std/math/Perlin.ci"?;
-
-inline "std/string.ci";
-/// emulated implementation of transform function
-void transform(Image surf, const Rect rect&, Image src, const Rect roi&, int32 interpolate, float32 mat[16]) {
-	Rect dRec = {
-		x: rect != null ? rect.x : 0;
-		y: rect != null ? rect.y : 0;
-		w: rect != null ? rect.w : surf.width();
-		h: rect != null ? rect.h : surf.height();
-	};
-	Rect sRec = {
-		x: roi != null ? roi.x : 0;
-		y: roi != null ? roi.y : 0;
-		w: roi != null ? roi.w : src.width();
-		h: roi != null ? roi.h : src.height();
-	};
-
-	float32 xx = mat != null ? mat[0] : float32(sRec.w) / dRec.w;
-	float32 xy = mat != null ? mat[1] : 0;
-	float32 xt = mat != null ? mat[3] : sRec.x;
-	float32 yy = mat != null ? mat[5] : float32(sRec.h) / dRec.h;
-	float32 yx = mat != null ? mat[4] : 0;
-	float32 yt = mat != null ? mat[7] : sRec.y;
-
-	if (!surf.clip(&dRec)) {
-		// nothing to set
-		return;
-	}
-
-	if (!src.clip(&sRec)) {
-		// nothing to get
-		return;
-	}
-
-	for (int y = 0; y < dRec.h; y += 1) {
-		int dy = dRec.y + y;
-		float32 sy = sRec.y + y;
-		for (int x = 0; x < dRec.w; x += 1) {
-			int dx = dRec.x + x;
-			float32 sx = sRec.x + x;
-			float32 tx = (xx * sx + xy * sy + xt) / src.width();
-			float32 ty = (yx * sx + yy * sy + yt) / src.height();
-			surf.set(dx, dy, argb(src.tex(tx, ty)));
-		}
-	}
-}
-/// emulated implementation of blur function
-void blur(Image img, int radius, double sigma) {
-	static double gauss(double x, double sigma) {
-		inline SQRT_2_PI_INV = 0.398942280401432677939946059935;
-		double t = x / sigma;
-		/*switch (dx) {
-			default:
-				break;
-			case -1:
-				return 1;
-			case 0:
-				return SQRT_2_PI_INV * exp(-0.5*t*t) / sigma;
-			case 1:
-				return -x * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma);
-			case 2:
-				return (x * x - sigma * sigma) * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma * sigma * sigma);
-		}*/
-		return SQRT_2_PI_INV * double.exp(-0.5 * t * t) / sigma;
-	}
-
-	int32 kernel[1024] = {};
-	int size = radius * 2 + 1;
-	assert(size < kernel.length);
-
-	float64 kernelSum = 0;
-	float64 kernelFlt[kernel.length] = {};
-	for (int i = 0; i < size; i += 1) {
-		kernelFlt[i] = gauss(radius - i, sigma);
-		kernelSum += kernelFlt[i];
-	}
-
-	for (int i = 0; i < size; i += 1) {
-		kernel[i] = 65536 * (kernelFlt[i] / kernelSum);
-	}
-
-	int width = img.width();
-	int height = img.height();
-
-	Image tmp = Image(width, height, img.depth());
-
-	// x direction: inout -> temp
-	for (int y = 0; y < height; y += 1) {
-		for (int x = 0; x < width; x += 1) {
-			int32 r = 0;
-			int32 g = 0;
-			int32 b = 0;
-			for (int i = 0; i < size; i += 1) {
-				int _x = x + i - radius;
-				if (_x >= 0 && _x < width) {
-					argb col = argb(img.get(_x, y));
-					int32 _k = kernel[i];
-					r += _k * rch(col);
-					g += _k * gch(col);
-					b += _k * bch(col);
-				}
-			}
-			tmp.set(x, y, argb(r >> 16, g >> 16, b >> 16));
-		}
-	}
-
-	// y direction: temp -> inout
-	for (int y = 0; y < height; y += 1) {
-		for (int x = 0; x < width; x += 1) {
-			int32 r = 0;
-			int32 g = 0;
-			int32 b = 0;
-			for (int i = 0; i < size; i += 1) {
-				int _y = y + i - radius;
-				if (_y >= 0 && _y < height) {
-					argb col = argb(tmp.get(x, _y));
-					int32 _k = kernel[i];
-					r += _k * rch(col);
-					g += _k * gch(col);
-					b += _k * bch(col);
-				}
-			}
-			img.set(x, y, argb(r >> 16, g >> 16, b >> 16));
-		}
-	}
-
-	tmp.destroy();
-}
-/// emulated implementation of blend function
-void blend(Image surf, int32 x0, int32 y0, const Image src, const Rect roi&, int32 alpha, bool dstAlpha, vec4f blend(vec4f base, vec4f with)) {
-	int width = surf.width();
-	int height = surf.height();
-
-	assert(!dstAlpha, "not implemented");
-	assert(roi == null, "not implemented");
-
-	inline lrp(int32 l, int32 r) = int32(l + alpha * (r - l) / 255);
-	if (blend == null) {
-		for (int y = 0; y < height; y += 1) {
-			for (int x = 0; x < width; x += 1) {
-				argb col = argb(surf.get(x,y));
-				int r = rch(col);
-				int g = gch(col);
-				int b = bch(col);
-
-				col = argb(src.get(x,y));
-				r = lrp(r, rch(col));
-				g = lrp(g, gch(col));
-				b = lrp(b, bch(col));
-
-				surf.set(x + x0, y + y0, argb(r, g, b));
-			}
-		}
-		return;
-	}
-
-	for (int y = 0; y < height; y += 1) {
-		for (int x = 0; x < width; x += 1) {
-			argb col = argb(surf.get(x,y));
-			int r = rch(col);
-			int g = gch(col);
-			int b = bch(col);
-
-			col = argb(blend(vec4f(col), vec4f(argb(src.get(x,y)))));
-			r = lrp(r, rch(col));
-			g = lrp(g, gch(col));
-			b = lrp(b, bch(col));
-
-			surf.set(x + x0, y + y0, argb(r, g, b));
-		}
-	}
-}
-/// Create an image with the given with, height and depth
-inline Image(int width, int height, int depth) = Image.create(width, height, depth);
-
-/// Create an image by copying another one
-Image Image(Image copy) {
-	Image result = Image.create(copy.width(), copy.height(), copy.depth());
-	result.copy(0, 0, copy, null);
-	return result;
-}
-
-/// Create an image by copying another one using a custom aspect ratio
-Image Image(Image copy, float64 aspect) {
-	int width = copy.width();
-	if (aspect > 0) {
-		width = copy.height() * aspect;
-	}
-	Image result = Image.create(width, copy.height(), copy.depth());
-	result.transform(null, copy, null, 1, null);
-	return result;
-}
-
-/// Create an image by opening an image file
-Image Image(const char fileName[*], int depth) {
-	if (fileName.endsWith(".jpeg", ignCaseCmp)) {
-		return Image.openJpg(fileName, depth);
-	}
-	if (fileName.endsWith(".jpg", ignCaseCmp)) {
-		return Image.openJpg(fileName, depth);
-	}
-	if (fileName.endsWith(".png", ignCaseCmp)) {
-		return Image.openPng(fileName, depth);
-	}
-	if (fileName.endsWith(".bmp", ignCaseCmp)) {
-		return Image.openBmp(fileName, depth);
-	}
-	abort("unknown file extension", fileName);
-}
-
-/// Create an image by opening an image file
-inline Image(const char fileName[*]) = Image(fileName, 32);
-
-/// Create an image by opening an image file with custom width and height
-Image Image(const char fileName[*], int width, int height, int depth, int align, float64 maxScale) {
-	enum: int {
-		center: 0;
-		left: 1;
-		right: 2;
-		top: 4;
-		bottom: 8;
-		fitVertical: left + right;
-		fitHorizontal: top + bottom;
-		fill: 0x10;
-		highRes: 0x20;
-	}
-
-	float64 scale = 1;
-	Image image = Image(fileName, depth);
-	Image result = Image(width, height, depth);
-
-	int alignVertical = align & fitVertical;
-	int alignHorizontal = align & fitHorizontal;
-
-	bool fitWidth = alignVertical == fitVertical;
-	bool fitHeight = alignHorizontal == fitHorizontal;
-
-	if (fitWidth && fitHeight) {
-		float64 widthScale = width / float64(image.width());
-		float64 heightScale = height / float64(image.height());
-		if (align & fill) {
-			scale = Math.max(widthScale, heightScale);
-		} else {
-			scale = Math.min(widthScale, heightScale);
-		}
-	}
-	else if (fitWidth) {
-		scale = width / float64(image.width());
-	}
-	else if (fitHeight) {
-		scale = height / float64(image.height());
-	}
-	if (scale > maxScale) {
-		scale = maxScale;
-	}
-
-	// calculate translation
-	float64 tx = 0;
-	if (fitWidth || alignVertical == center) {
-		tx = (width - image.width() * scale) / 2;
-	}
-	else if (alignVertical == right) {
-		tx = (width - image.width() * scale);
-	}
-
-	float64 ty = 0;
-	if (fitHeight || alignHorizontal == center) {
-		ty = (height - image.height() * scale) / 2;
-	}
-	else if (alignHorizontal == bottom) {
-		ty = (height - image.height() * scale);
-	}
-
-	mat4f mat = {
-		x: {x: 1 / scale, y: 0, z: 0, w: -tx / scale};
-		y: {x: 0, y: 1 / scale, z: 0, w: -ty / scale};
-		z: {x: 0, y: 0, z: 1 / scale, w: 0};
-		w: {x: 0, y: 0, z: 0, w: 1};
-	};
-
-	result.transform(null, image, null, align & highRes ? 1 : 0, mat.data);
-	image.destroy();
-	return result;
-}
-
-/// Create an image by opening an image file with custom width and height
-inline Image(const char fileName[*], int width, int height, int depth, int align) = Image(fileName, width, height, depth, align, Math.inf);
-
-/// Create an image by opening an image file with custom width and height
-inline Image(const char fileName[*], int width, int height, int depth) = Image(fileName, width, height, depth, -1, Math.inf);
-
-/// Set the the color of a pixel at the given position
-inline set(Image image, int32 x, int32 y, argb color) = Image.set(image, x, y, uint32(color));
-
-/// apply the 2d lookup table to the image
-inline colorMap(Image image, const Rect roi&, const argb lut[256]) = Image.colorMap(image, roi, pointer(lut));
-
-///@public
-inline resize(Image image, const Rect rect&, const Image src, const Rect roi&, int interpolate) = Image.transform(image, rect, src, roi, interpolate, null);
-
-///@public
-inline slice(Image image, const Rect rect&) = Image.slice(Image(0, 0, image.depth()), image, rect);
-
-///@public
-bool clip(Image src, Rect roi&) {
-
-	roi.w += roi.x;
-	roi.h += roi.y;
-
-	if (roi.x < 0) {
-		roi.x = 0;
-	}
-
-	if (roi.y < 0) {
-		roi.y = 0;
-	}
-
-	int width = src.width();
-	if (roi.w > width) {
-		roi.w = width;
-	}
-
-	int height = src.height();
-	if (roi.h > height) {
-		roi.h = height;
-	}
-
-	roi.w -= roi.x;
-	roi.h -= roi.y;
-
-	if (roi.w <= 0) {
-		return false;
-	}
-	if (roi.h <= 0) {
-		return false;
-	}
-	return true;
-}
-
-/// Fill the entire image with the given color
-inline fill(Image image, uint32 color) = image.fillRect(0, 0, 65536, 65536, color);
-/// Fill the given region of the image with the given color
-inline fill(Image image, const Rect roi&, uint32 color) = image.fillRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
-/// Fill the given region and padding of the image with the given color
-inline fill(Image image, const Rect roi&, int pad, uint32 color) = image.fillRect(roi.x - pad, roi.y - pad, roi.x + roi.w + pad, roi.y + roi.h + pad, color);
-
-///@public
-inline drawRect(Image image, const Rect roi&, uint32 color) = image.drawRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
-
-/// Fill the surface by evaluating the given function for each pixel
-void eval(Image image, const Rect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
-	Rect rect = {
-		x: roi != null ? roi.x : 0;
-		y: roi != null ? roi.y : 0;
-		w: roi != null ? roi.w : image.width();
-		h: roi != null ? roi.h : image.height();
-	};
-
-	if (!image.clip(&rect)) {
-		return;
-	}
-
-	vec4f in = {
-		x: 0;
-		y: 0;
-		z: aspect;
-		w: time;
-	};
-	float32 w = image.width();
-	float32 h = image.height();
-	for (int y = rect.y; y < rect.y + rect.h; y += 1) {
-		in.y = y / h;
-		for (int x = rect.x; x < rect.x + rect.w; x += 1) {
-			in.x = x / w;
-			image.set(x, y, argb(eval(in)));
-		}
-	}
-}
-
-///@public
-void tile(Image image, int x, int y, Image src, Rect roi&) {
-	Rect rect = {
-		x: roi != null ? roi.x : 0;
-		y: roi != null ? roi.y : 0;
-		w: roi != null ? roi.w : src.width();
-		h: roi != null ? roi.h : src.height();
-	};
-
-	if (!src.clip(&rect)) {
-		return;
-	}
-
-	if (x < 0) {
-		x = -(-x % rect.w);
-	}
-	if (y < 0) {
-		y = -(-y % rect.h);
-	}
-	int width = image.width();
-	int height = image.height();
-	for (int j = y; j < height; j += rect.h) {
-		for (int i = x; i < width; i += rect.w) {
-			image.copy(i, j, src, rect);
-		}
-	}
-}
-/// Create a mesh by opening a file
-Mesh Mesh(const char fileName[*]) {
-	if (fileName.endsWith(".obj", ignCaseCmp)) {
-		return Mesh.openObj(fileName);
-	}
-	if (fileName.endsWith(".3ds", ignCaseCmp)) {
-		return Mesh.open3ds(fileName);
-	}
-	abort("unknown file extension", fileName);
-}
-// micro ui, TODO: add comments
-
-struct Style {
-	const Image font;
-
-	const FormatFlags flagsInt;
-	const FormatFlags flagsFlt;
-
-	int backgroundColor = 0x1a1a1a;
-	int focusedColor = 0x3b4754;
-	int valueColor = 0x6897bb;
-	int textColor = 0xdadada;
-
-	int border = 3;
-	int padding = 8;
-
-	enum: int32 {
-		left: 1;
-		right: 2;
-
-		top: 4;
-		bottom: 8;
-
-		center: 0;
-
-		fitVertical: left + right;
-		fitHorizontal: top + bottom;
-	}
-
-	/// Align one rect containing text relative to its container
-	static void align(const Style this&, Rect rect, Rect valueRect&, const char value[*], int align) {
-		rect.x += this.padding;
-		rect.y += this.padding;
-		rect.w -= 2 * this.padding;
-		rect.h -= 2 * this.padding;
-		this.font.clipText(&valueRect, value);
-
-		if (valueRect.w > rect.w) {
-			valueRect.w = rect.w;
-		}
-
-		int vertical = align & fitVertical;
-		if (vertical == center) {
-			valueRect.x = rect.x + (rect.w - valueRect.w) / 2;
-		}
-		else if (vertical == right) {
-			valueRect.x = rect.x + (rect.w - valueRect.w);
-		}
-		else if (vertical == left) {
-			valueRect.x = rect.x;
-		}
-		else { // fit
-			valueRect.x = rect.x;
-			valueRect.w = rect.w;
-		}
-
-		int horizontal = align & fitHorizontal;
-		if (horizontal == center) {
-			valueRect.y = rect.y + (rect.h - valueRect.h) / 2;
-		}
-		else if (horizontal == bottom) {
-			valueRect.y = rect.y + (rect.h - valueRect.h);
-		}
-		else if (horizontal == top) {
-			valueRect.y = rect.y;
-		}
-		else { // fit
-			valueRect.y = rect.y;
-			valueRect.h = rect.h;
-		}
-	}
-
-	//- private debug function
-	static void align(const Style this&, Rect rect, Rect valueRect&, const char value[*], int align, Image offs) {
-		enum: uint32 {
-			// chromium inspector colors
-			margin: 0xf9cc9d; //dark: 0xae8152;
-			border: 0xffeebc; //dark: 0xe3c381;
-			padding: 0xc3d799; //dark: 0xb6c373;
-			content: 0x8cb7c5; //dark: 0x87b1bc;
-		}
-		align(&this, rect, &valueRect, value, align);
-		offs.fill(valueRect, this.padding, padding);
-		offs.fill(valueRect, content);
-	}// */
-}
-struct KeyEvent {
-	const bool release;
-	const bool isShift;
-	const bool isCtrl;
-	const bool isAlt;
-	const int repeat;
-	const int key;
-}
-struct MouseEvent {
-	const Rect clientRect&;
-	const bool release;
-	const bool isShift;
-	const bool isCtrl;
-	const bool isAlt;
-	const int repeat;
-	const int button;
-	const int dx = 0;
-	const int dy = 0;
-	const int x;
-	const int y;
-}
-
-struct View: object {
-	const int height = 0;
-	const int group = 0;
-	bool enabled = true;
-	bool selectable = true;
-	const variant data = null;
-
-	bool onMouseEvent(View this, const MouseEvent event&) = null;
-	bool onClick(View this) = null;
-	bool onReset(View this) = null;
-}
-
-struct Button: View {
-	const char text[*];
-	/* FIXME: do the override, use this method as default initializer
-	// TODO: override or overload: bool onClick(Button this) { ... }
-	bool onClick(Button this) {
-		View.onClick(this);   // call super
-		trace("onClick", this);
-		return this.enabled;
-	}// */
-
-	void onDraw(Button this, Image offs, Rect rect, const Style style&) {
-		Style.align(style, rect, &rect, this.text, Style.left);
-		offs.drawText(rect, style.font, this.text, style.textColor);
-	}
-}
-
-struct Switch: View {
-	const char text[*];
-	/* TODO: allow selecting one out of multiple choices
-	const char choices[*][] = {
-		"off",
-		"on"
-	};
-	int selected = 0;*/
-
-	const char on[*] = "on";
-	const char off[*] = "off";
-
-	bool checked = false;
-	const bool resetValue = false;
-
-	bool onUpdate(Switch this, bool checked) {
-		this.checked = checked;
-		return true;
-	}
-
-	void onDraw(Switch this, Image offs, Rect rect, const Style style&) {
-		Rect valueRoi = rect;
-		char value[*] = this.checked ? this.on : this.off;
-
-		Style.align(style, valueRoi, &valueRoi, value, Style.right);
-		rect.w -= valueRoi.w + style.padding;
-		Style.align(style, rect, &rect, this.text, Style.left);
-		offs.drawText(valueRoi, style.font, value, style.valueColor);
-		offs.drawText(rect, style.font, this.text, style.textColor);
-	}
-}
-
-struct Slider: View {
-	const char text[*];
-	int value = 0;
-	const int minimum = 0;
-	const int maximum = -1u >> 1;
-	const int divisor = 0;
-	const int resetValue = 0;
-
-	bool onUpdate(Slider this, int value) {
-		if (value > this.maximum) {
-			value = this.maximum;
-		}
-		if (value < this.minimum) {
-			value = this.minimum;
-		}
-		if (this.value == value) {
-			return false;
-		}
-		this.value = value;
-		return true;
-	}
-
-	void onDraw(Slider this, Image offs, Rect rect, const Style style&) {
-		Rect valueRoi = rect;
-		char value[64] = {0};
-		if (this.divisor != 0) {
-			float32 valueF64 = float64(this.value) / this.divisor;
-			value.append(0, valueF64, style.flagsFlt);
-		} else {
-			value.append(0, this.value, style.flagsInt);
-		}
-
-		Style.align(style, valueRoi, &valueRoi, value, Style.right);
-		rect.w -= valueRoi.w + style.padding;
-		Style.align(style, rect, &rect, this.text, Style.left);
-		offs.drawText(valueRoi, style.font, value, style.valueColor);
-		offs.drawText(rect, style.font, this.text, style.textColor);
-	}
-}
-
-struct Histogram: View {
-	const bool lines = false;
-	// histogram data is in alpha channel, display it with color rgb
-	bool color = false;
-	argb data[256] = null;   // FIXME: this should be not possible
-
-	void update(Histogram this, Image image) {
-		uint32 data[*] = pointer(this.data);
-		image.calcRgbHist(null, &data);
-		this.color = false;
-	}
-
-	bool onUpdate(Histogram this, int idx, int value) {
-		this.data[idx] = argb(idx, value, value, value);
-		return true;
-	}
-
-	void onDraw(Histogram this, Image offs, const Rect rect, const Style style&) {
-		enum {
-			colB: 0x4371c6;
-			colG: 0x72d874;
-			colR: 0xfc6165;
-			colL: 0xdadada;
-		}
-		int px = (rect.w - 256) / 2;
-		if (this.lines) {
-			int y = rect.y + rect.h - 1;
-			int pb = bch(this.data[0]) * rect.h / 256;
-			int pg = gch(this.data[0]) * rect.h / 256;
-			int pr = rch(this.data[0]) * rect.h / 256;
-			int pl = ach(this.data[0]) * rect.h / 256;
-
-			for (int i = 1; i < this.data.length; i += 1) {
-				int x = rect.x + i + px;
-				argb data = this.data[i];
-				int bv = bch(data) * rect.h / 256;
-				int gv = gch(data) * rect.h / 256;
-				int rv = rch(data) * rect.h / 256;
-				int lv = ach(data) * rect.h / 256;
-
-				if (this.color) {
-					offs.drawLine(x, y - pl, x, y - lv, uint32(data));
-				} else {
-					offs.drawLine(x, y - pb, x, y - bv, colB);
-					offs.drawLine(x, y - pg, x, y - gv, colG);
-					offs.drawLine(x, y - pr, x, y - rv, colR);
-					offs.drawLine(x, y - pl, x, y - lv, colL);
-				}
-
-				pl = lv;
-				pb = bv;
-				pg = gv;
-				pr = rv;
-			}
-		} else {
-			for (int i = 0; i < this.data.length; i += 1) {
-				argb data = this.data[i];
-				if (this.color) {
-					int x = rect.x + i + px;
-					int y1 = rect.y + rect.h;
-					int y0 = y1 - ach(data) * rect.h / 256;
-					offs.fillRect(x, y0 - 1, x + 1, y1, uint32(data));
-				} else {
-					int x = rect.x + px + i;
-					int bv = bch(data) * rect.h / 256;
-					int gv = gch(data) * rect.h / 256;
-					int rv = rch(data) * rect.h / 256;
-					int lv = rch(data) * rect.h / 256;
-					for (int y = 0; y < rect.h; y += 1) {
-						uint32 b = colB * uint32(y < bv);
-						uint32 g = colG * uint32(y < gv);
-						uint32 r = colR * uint32(y < rv);
-						uint32 l = colL * uint32(y < lv);
-						offs.set(x, rect.h - y + rect.y - 1, r | g | b | l);
-					}
-				}
-			}
-		}
-	}
-}
-
-struct Layout: object {
-	Style style;
-	Image offs;
-	Rect rect;
-
-	bool visible = true;
-	bool measure = true;
-	int selectedIndex = -1;
-	int activeIndex = -1;
-	bool colorPick = false;
-	View views[64] = null;
-	Rect rects[64] = null;
-	int items = 0;
-	int group = 0;
-}
-
-float64 valFlt(Slider slider&) {
-	float64 value = slider.value;
-	if (slider.divisor != 0) {
-		return value / slider.divisor;
-	}
-	return value / (slider.maximum - slider.minimum);
-}
-
-inline selected(const Layout layout&) = layout.selectedIndex < 0 ? null : pointer(layout.views[layout.selectedIndex]);
-inline selected(const Layout layout&, typename type) = layout.selectedIndex < 0 ? null : layout.views[layout.selectedIndex].as(type);
-
-inline activeIndex(const Layout layout&) = layout.activeIndex != -1 ? layout.activeIndex : layout.selectedIndex;
-
-bool isSelected(const Layout layout&, View items...) {
-	View selected = layout.selected();
-	for (int i = 0; i < items.length; i += 1) {
-		if (items[i] == selected) {
-			return true;
-		}
-	}
-	return false;
-}
-bool isActive(const Layout layout&, View views...) {
-	int activeIndex = layout.activeIndex != -1 ? layout.activeIndex : layout.selectedIndex;
-	if (activeIndex < 0) {
-		return false;
-	}
-	View view = layout.views[activeIndex];
-	for (int i = 0; i < views.length; i += 1) {
-		if (views[i] == view) {
-			return true;
-		}
-	}
-	return false;
-}
-
-bool setSelected(Layout layout&, View view) {
-	if (view == null) {
-		layout.selectedIndex = -1;
-		return true;
-	}
-	for (int i = 0; i < layout.items; i += 1) {
-		if (layout.views[i] == view) {
-			layout.selectedIndex = i;
-			return true;
-		}
-	}
-	return false;
-}
-bool setGroup(Layout layout&, int group) {
-	if (layout.group != group) {
-		layout.group = group;
-		layout.measure = true;
-		return true;
-	}
-	return false;
-}
-
-void onInit(View this, Layout layout&, int idx) {
-	// FIXME: dispatch click event using inheritance and override
-	if (Histogram item = this.as(Histogram)) {
-		for (int i = 0; i < 256; i += 1) {
-			item.data[i] = argb(i, i, i, i);
-		}
-		return;
-	}
-	if (Slider item = this.as(Slider)) {
-		Slider.onUpdate(item, item.value);// clamp initial value
-		int resetValue& = pointer(item.resetValue);
-		resetValue = item.value;
-		return;
-	}
-	if (Switch item = this.as(Switch)) {
-		bool resetValue& = pointer(item.resetValue);
-		resetValue = item.checked;
-		return;
-	}
-	if (Button item = this.as(Button)) {
-		return;
-	}
-	abort("invalid view", this);
-}
-bool onClick(View this) {
-	if (this.onClick != null) {
-		return this.onClick(this);
-	}
-	return true;
-}
-bool onReset(View this) {
-	if (this.onReset != null) {
-		return this.onReset(this);
-	}
-	// FIXME: dispatch click event using inheritance and override
-	if (Histogram item = this.as(Histogram)) {
-		if (item.onUpdate == null) {
-			return false;
-		}
-		bool result = false;
-		for (int i = 0; i < 256; i += 1) {
-			result |= item.onUpdate(i, i);
-		}
-		return result;
-	}
-	if (Slider item = this.as(Slider)) {
-		if (item.onUpdate == null) {
-			return false;
-		}
-		return item.onUpdate(item.resetValue);
-	}
-	if (Switch item = this.as(Switch)) {
-		if (item.onUpdate == null) {
-			return false;
-		}
-		return item.onUpdate(item.resetValue);
-	}
-	if (Button item = this.as(Button)) {
-		return false;
-	}
-	abort("invalid view", this);
-	return false;
-}
-bool onEvent(View this, const KeyEvent event&) {
-	// FIXME: dispatch click event using inheritance and override
-	if (!event.release) {
-		return false;
-	}
-	if (Histogram item = this.as(Histogram)) {
-		if (event.key == ' ' || event.key == 8) {
-			return item.onReset();
-		}
-		return false;
-	}
-	if (Slider item = this.as(Slider)) {
-		if (event.key == '+' || event.key == '=') {
-			if (item.onUpdate == null) {
-				return false;
-			}
-			return item.onUpdate(item.value + (event.isShift ? 1 : 10));
-		}
-		if (event.key == '-' || event.key == '_') {
-			if (item.onUpdate == null) {
-				return false;
-			}
-			return item.onUpdate(item.value - (event.isShift ? 1 : 10));
-		}
-		if (event.key == ' ' || event.key == 8) {
-			return item.onReset();
-		}
-		return false;
-	}
-	if (Switch item = this.as(Switch)) {
-		if (event.key == ' ') {
-			if (item.onUpdate != null) {
-				item.onUpdate(!item.checked);
-			}
-			return item.onClick();
-		}
-		if (event.key == 8) {
-			return item.onReset();
-		}
-		return false;
-	}
-	if (Button item = this.as(Button)) {
-		if (event.key == ' ') {
-			return item.onClick();
-		}
-		return false;
-	}
-	abort("invalid view", this);
-	return false;
-}
-bool onEvent(View this, const MouseEvent event&) {
-	if (this.onMouseEvent != null) {
-		return this.onMouseEvent(event);
-	}
-
-	// FIXME: dispatch click event using inheritance and override
-	if (Histogram item = this.as(Histogram)) {
-		if (event.release) {
-			if (event.repeat > 1) {
-				// double click to reset
-				return item.onReset();
-			}
-			return item.onClick();
-		}
-		if (item.onUpdate == null) {
-			return false;
-		}
-
-		const Rect rect& = event.clientRect;
-		int x0 = event.x - rect.x;
-		int x1 = x0 + event.dx;
-		int y0 = event.y - rect.y;
-		int y1 = y0 + event.dy;
-
-		if (x0 > x1) {
-			int x = x0;
-			x0 = x1;
-			x1 = x;
-			int y = y0;
-			y0 = y1;
-			y1 = y;
-		}
-		int y = y0 << 16;
-		int dy = y1 - y0;
-		if (x1 != x0) {
-			dy = (dy << 16) / (x1 - x0);
-		}
-		if (x0 < 0) {
-			y -= x0 * dy;
-			x0 = 0;
-		}
-		if (x1 > 256) {
-			x1 = 256;
-		}
-		int h = rect.h;
-		for (int x = x0; x < x1; x += 1) {
-			int val = 255 * (h - (y >> 16)) / h;
-			item.onUpdate(x, val);
-			y += dy;
-		}
-		return true;
-	}
-	if (Slider item = this.as(Slider)) {
-		if (event.release) {
-			if (event.repeat > 1) {
-				// double click to reset
-				return item.onReset();
-			}
-			return item.onClick();
-		}
-		if (item.onUpdate == null) {
-			return false;
-		}
-
-		return item.onUpdate(item.value + event.dy);
-	}
-	if (Switch item = this.as(Switch)) {
-		if (event.release) {
-			if (item.onUpdate != null) {
-				item.onUpdate(!item.checked);
-			}
-			return item.onClick();
-		}
-		return false;
-	}
-	if (Button item = this.as(Button)) {
-		if (event.release) {
-			if (event.repeat > 1) {
-				// double click to reset
-				return item.onReset();
-			}
-			return item.onClick();
-		}
-		return false;
-	}
-	abort("invalid view", this);
-	return false;
-}
-
-void onMeasure(View this, Rect rect&, const Style style&) {
-	// FIXME: dispatch click event using inheritance and override
-	if (Histogram item = this.as(Histogram)) {
-		if (item.height == 0) {
-			rect.h = 128;
-		} else {
-			rect.h = item.height;
-		}
-		return;
-	}
-	if (Slider item = this.as(Slider)) {
-		if (item.height == 0) {
-			rect.h = style.font.height() + 2 * style.padding;
-		} else {
-			rect.h = item.height;
-		}
-		return;
-	}
-	if (Switch item = this.as(Switch)) {
-		if (item.height == 0) {
-			rect.h = style.font.height() + 2 * style.padding;
-		} else {
-			rect.h = item.height;
-		}
-		return;
-	}
-	if (Button item = this.as(Button)) {
-		if (item.height == 0) {
-			rect.h = style.font.height() + 2 * style.padding;
-		}
-		else if (item.text == null) {
-			// TODO: remove hack: empty button used for separator
-			rect.h = item.height + style.padding;
-		}
-		else {
-			rect.h = item.height;
-		}
-		return;
-	}
-	if (typename(item) == View) {
-		rect.h = this.height;
-		return;
-	}
-	abort("invalid view", this);
-}
-bool onDraw(View view, Image offs, const Rect rect&, const Style style&) {
-	// FIXME: dispatch click event using inheritance and override
-	if (Histogram item = view.as(Histogram)) {
-		return item.onDraw(item, offs, rect, style);
-	}
-	if (Slider item = view.as(Slider)) {
-		return item.onDraw(item, offs, rect, style);
-	}
-	if (Switch item = view.as(Switch)) {
-		return item.onDraw(item, offs, rect, style);
-	}
-	if (Button item = view.as(Button)) {
-		return item.onDraw(item, offs, rect, style);
-	}
-	abort("invalid view", view);
-}
-
-bool uiEvent(Layout layout&, int action, int button, int x, int y) {
-struct Mouse {
-	int32 clicks;   // click count
-	int64 time;     // old clock
-	int32 btn;      // old button
-	int32 x;        // old x coord
-	int32 y;        // old y coord
-
-	static int click(Mouse old&, int btn, int x, int y) {
-		if ((btn != 0 && btn != old.btn) || x != old.x || y != old.y) {
-			// reset values
-			old.clicks = 1;
-			old.time = System.millis();
-			old.btn = btn;
-			old.x = x;
-			old.y = y;
-			return 0;
-		}
-		if (btn == 0) {
-			// release button
-			// old.time = keep value?;
-			// old.btn = keep value?;
-			// old.cnt = keep value?;
-			return old.clicks;
-		}
-	
-		int64 now = System.millis();
-		if ((now - old.time) / 1000. > .5) {
-			// reset counter
-			old.clicks = 0;
-		}
-		old.time = now;
-		old.btn = btn;
-		old.clicks += 1;
-		return old.clicks;
-	}
-}
-
-static int click(Layout layout&, int x, int y) {
-	static bool test(const Rect rect&, int x, int y) {
-		if (x < rect.x || x >= rect.x + rect.w) {
-			return false;
-		}
-		if (y < rect.y || y >= rect.y + rect.h) {
-			return false;
-		}
-		return true;
-	}
-
-	if (!layout.visible) {
-		return -1;
-	}
-	if (!layout.rect.test(x, y)) {
-		return -1;
-	}
-	for (int i = 0; i < layout.items; i += 1) {
-		if (!layout.rects[i].test(x, y)) {
-			continue;
-		}
-
-		View view = layout.views[i];
-		if (!view.enabled) {
-			return -1;
-		}
-		return i;
-	}
-	return -1;
-}
-static bool select(Layout layout&, int index) {
-	assert(index >= 0, "invalid selection");
-	assert(index < layout.items, "invalid selection");
-
-	View view = layout.views[index];
-	if (!view.enabled) {
-		return false;
-	}
-	if (!view.selectable) {
-		return false;
-	}
-	if (layout.group != view.group) {
-		if (layout.group != 0) {
-			if (view.group != 0) {
-				return false;
-			}
-		}
-	}
-	layout.selectedIndex = index;
-	return true;
-}
-static bool select(Layout layout&, bool prev) {
-	layout.activeIndex = -1;
-	int selectedIndex = layout.selectedIndex;
-	for (int i = 1; i < layout.items; i += 1) {
-		int index = selectedIndex + (prev ? -i : i);
-		if (index >= layout.items) {
-			index -= layout.items;
-		}
-		else if (index < 0) {
-			index += layout.items;
-		}
-		if (layout.select(index)) {
-			return true;
-		}
-	}
-	return false;
-}
-static View active(const Layout layout&) {
-	int idx = layout.activeIndex;
-	if (idx < 0) {
-		idx = layout.selectedIndex;
-	}
-	if (idx < 0) {
-		return null;
-	}
-	return layout.views[idx];
-}
-static void measure(Layout layout&) {
-	int bottom = layout.rect.y;
-	for (int i = 0; i < layout.items; i += 1) {
-		Rect rect& = layout.rects[i];
-		View view = layout.views[i];
-
-		rect.x = layout.rect.x;
-		rect.y = bottom;
-		rect.w = layout.rect.w;
-		rect.h = view.height;
-
-		view.onMeasure(&rect, layout.style);
-		if (layout.group != view.group) {
-			if (layout.group != 0) {
-				if (view.group != 0) {
-					rect.h = 0;
-				}
-			}
-		}
-		if (rect.h > 0) {
-			bottom += rect.h;
-		}
-	}
-	layout.rect.h = bottom - layout.rect.y;
-}
-static void draw(Layout layout&) {
-	if (!layout.visible) {
-		return;
-	}
-
-	// draw background
-	if (layout.style.backgroundColor != -1) {
-		int b = layout.style.border;
-		const Rect r& = layout.rect;
-		layout.offs.fillRect(r.x - b, r.y - b, r.x + r.w + b, r.y + r.h + b, layout.style.backgroundColor);
-	}
-
-	// draw items
-	Image offs = layout.offs.slice(null);
-	for (int i = 0; i < layout.items; i += 1) {
-		View view = layout.views[i];
-		const Rect rect& = layout.rects[i];
-
-		if (i == layout.selectedIndex) {
-			layout.offs.fillRect(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, layout.style.focusedColor);
-		}
-
-		if (rect.w > 0 && rect.h > 0) {
-			offs.slice(layout.offs, rect);
-			Rect rect = {
-				x: 0; y: 0;
-				w: offs.width();
-				h: offs.height();
-			};
-			view.onDraw(offs, rect, layout.style);
-		}
-
-		if (i == layout.activeIndex) {
-			layout.offs.drawRect(rect.x, rect.y, rect.x + rect.w - 1, rect.y + rect.h - 1, layout.style.valueColor);
-		}
-	}
-	offs.destroy();
-}
-
-	static Mouse mouse = {};
-	static bool isShift;
-	static bool isCtrl;
-	static bool isAlt;
-
-	layout.colorPick = false;
-	if (action == Gui.WINDOW_INIT) {
-		layout.selectedIndex = -1;
-		layout.measure = true;
-		layout.select(false);
-		return true;
-	}
-	if (action == Gui.WINDOW_DRAW) {
-		if (layout.measure) {
-			layout.measure = false;
-			measure(layout);
-		}
-		layout.draw();
-		return true;
-	}
-	if (action == Gui.WINDOW_ENTER) {
-		// do not process event
-		return false;
-	}
-	if (action == Gui.WINDOW_LEAVE) {
-		// do not process event
-		return false;
-	}
-
-	if (action == Gui.FINGER_PRESS) {
-		// finger press results also a mouse event
-		// skip the finger event
-		return false;
-	}
-	if (action == Gui.FINGER_MOTION) {
-		// translate to mouse event
-		action = Gui.MOUSE_MOTION;
-	}
-	if (action == Gui.FINGER_RELEASE) {
-		// finger release results also a mouse event
-		// skip the finger event
-		return false;
-	}
-
-	if (action == Gui.MOUSE_PRESS) {
-		Mouse.click(&mouse, button, x, y);
-		if (button != 1) {
-			return false;
-		}
-		bool result = false;
-		int activeIndex = layout.click(x, y);
-		if (layout.activeIndex != activeIndex) {
-			// active index changed, most probably from -1
-			layout.activeIndex = activeIndex;
-			result = true;
-		}
-		if (activeIndex < 0) {
-			// allow update of selected control
-			activeIndex = layout.selectedIndex;
-			layout.colorPick = true;
-			if (activeIndex < 0) {
-				return result;
-			}
-		}
-		if (View view = layout.views[activeIndex]) {
-			Rect rect& = layout.rects[activeIndex];
-			MouseEvent event = {
-				clientRect: rect;
-				release: false;
-				isShift: isShift;
-				isCtrl: isCtrl;
-				isAlt: isAlt;
-				repeat: mouse.clicks;
-				button: button;
-				x: x;
-				y: y;
-			};
-			if (view.onEvent(event)) {
-				return true;
-			}
-		}
-		return result;
-	}
-	if (action == Gui.MOUSE_MOTION) {
-		int ox = mouse.x;
-		int oy = mouse.y;
-		Mouse.click(&mouse, -1, x, y);
-		if (button != 1) {
-			return false;
-		}
-		if (ox == x && oy == y) {
-			return false;
-		}
-		int activeIndex = layout.activeIndex;
-		if (activeIndex < 0) {
-			// allow update of selected control
-			activeIndex = layout.selectedIndex;
-			layout.colorPick = true;
-			if (activeIndex < 0) {
-				return true;
-			}
-		}
-		if (View view = layout.views[activeIndex]) {
-			Rect rect& = layout.rects[activeIndex];
-			MouseEvent event = {
-				clientRect: rect;
-				release: false;
-				isShift: isShift;
-				isCtrl: isCtrl;
-				isAlt: isAlt;
-				repeat: mouse.clicks;
-				button: button;
-				dx: ox - x;
-				dy: oy - y;
-				x: x;
-				y: y;
-			};
-			if (view.onEvent(event)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	if (action == Gui.MOUSE_RELEASE) {
-		int btn = mouse.btn;
-		Mouse.click(&mouse, 0, x, y);
-		if (button != 1) {
-			return false;
-		}
-
-		bool result = false;
-		int activeIndex = layout.activeIndex;
-		if (activeIndex >= 0) {
-			layout.activeIndex = -1;
-			result = true;
-		}
-		if (activeIndex != layout.click(x, y)) {
-			// release on a different view
-			return result;
-		}
-		if (activeIndex < 0) {
-			// might be a disabled view
-			layout.colorPick = true;
-			return result;
-		}
-		// select / focus the view
-		if (layout.select(activeIndex)) {
-			result = true;
-		}
-		if (View view = layout.views[activeIndex]) {
-			Rect rect& = layout.rects[activeIndex];
-			MouseEvent event = {
-				clientRect: rect;
-				release: true;
-				isShift: isShift;
-				isCtrl: isCtrl;
-				isAlt: isAlt;
-				repeat: mouse.clicks;
-				button: button;
-				x: x;
-				y: y;
-			};
-			if (view.onEvent(event)) {
-				result = true;
-			}
-		}
-		return result;
-	}
-
-	if (action == Gui.KEY_PRESS) {
-		isShift = (y & Gui.KEY_MASK_SHIFT) != 0;
-		isCtrl = (y & Gui.KEY_MASK_CTRL) != 0;
-		isAlt = (y & Gui.KEY_MASK_ALT) != 0;
-		if (View view = layout.active()) {
-			KeyEvent event = {
-				release: false;
-				isShift: isShift;
-				isCtrl: isCtrl;
-				isAlt: isAlt;
-				repeat: 0;
-				key: button;
-			};
-			if (view.onEvent(event)) {
-				return true;
-			}
-		}
-		if (button == '\t' || button == '\r') {
-			// Tab, Enter: select prev or next control.
-			return layout.select(isShift);
-		}
-		if (button == '[' || button == ']') {
-			// hide, show controls
-			layout.visible = !layout.visible;
-			return true;
-		}
-		if (button == 8 && isShift) {
-			for (int i = 0; i < layout.items; i += 1) {
-				layout.views[i].onReset();
-			}
-			return true;
-		}
-		return false;
-	}
-	if (action == Gui.KEY_RELEASE) {
-		isShift = (y & Gui.KEY_MASK_SHIFT) != 0;
-		isCtrl = (y & Gui.KEY_MASK_CTRL) != 0;
-		isAlt = (y & Gui.KEY_MASK_ALT) != 0;
-		if (View view = layout.active()) {
-			KeyEvent event = {
-				release: true;
-				isShift: isShift;
-				isCtrl: isCtrl;
-				isAlt: isAlt;
-				repeat: 0;
-				key: button;
-			};
-			if (view.onEvent(event)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	debug("event not processed", action);
-	return false;
-}
-
-Layout Layout(Image offs, int x, int y, Image font, View items...) {
-	Layout layout = {
-		offs: offs;
-		rect: {
-			x: x;
-			y: y;
-			w: 256;
-			h: 0;
-		};
-		style: {
-			font: font;
-			flagsInt: { padLen: 4 };
-			flagsFlt: { padLen: 4, precision: 2 };
-		};
-	};
-
-	for (int i = 0; i < layout.views.length; i += 1) {
-		layout.views[i] = null;
-	}
-
-	for (int i = 0; i < items.length; i += 1) {
-		assert(i < layout.views.length);
-		layout.views[i] = items[i];
-		items[i].onInit(&layout, i);
-	}
-	layout.items = items.length;
-
-	if (y < 0) {
-		layout.uiEvent(Gui.WINDOW_INIT, 0, 0, 0);
-		layout.rect.y = offs.height() - layout.rect.h + y;
-	}
-	if (x < 0) {
-		layout.rect.x = offs.width() - layout.rect.w + x;
-	}
-	return layout;
-}
-
-inline draw(Layout layout&) = uiEvent(layout, Gui.WINDOW_DRAW, 0, 0, 0);
-/// convert from hsv color space to rgb color space
-vec4f hsv2rgb(vec4f hsv) {
-	float32 h = hsv.x;
-	float32 s = hsv.y;
-	float32 v = hsv.z;
-
-	if (s == 0) {
-		return vec4f(v);
-	}
-
-	h *= 360 / 60;
-
-	int i = int(h);		// round
-	float32 f = h - i;	// fraction
-
-	float32 u = v;
-	float32 p = v * (1 - s);
-	float32 q = v * (1 - s * f);
-	float32 t = v * (1 - s * (1 - f));
-
-	if (i == 0) {
-		return vec4f(u, t, p);
-	}
-	if (i == 1) {
-		return vec4f(q, u, p);
-	}
-	if (i == 2) {
-		return vec4f(p, u, t);
-	}
-	if (i == 3) {
-		return vec4f(p, q, u);
-	}
-	if (i == 4) {
-		return vec4f(t, p, u);
-	}
-	return vec4f(u, p, q);
-}
-/// an 32 bit argb color
-struct argb: 0 {
-	/// value of color
-	uint32 v;
-	struct: 1 {
-		/// blue component
-		uint8 b;
-
-		/// green component
-		uint8 g;
-
-		/// red component
-		uint8 r;
-
-		/// alpha component
-		uint8 a;
-	}
-	/*enum {
-		Black             : 0x00000000;
-		White             : 0x00ffffff;
-		Aquamarine        : 0x007fffd4;
-		Azure             : 0x00007fff;
-		Blue              : 0x000000ff;
-		BlueViolet        : 0x008a2be2;
-		Brown             : 0x00a52a2a;
-		CadetBlue         : 0x005f9ea0;
-		Coral             : 0x00ff7f50;
-		CornflowerBlue    : 0x006495ed;
-		Cyan              : 0x0000ffff;
-		DarkGray          : 0x00a9a9a9;
-		DarkGrey          : 0x00a9a9a9;
-		DarkGreen         : 0x00006400;
-		DarkOliveGreen    : 0x00556b2f;
-		DarkOrchid        : 0x009932cc;
-		DarkSlateBlue     : 0x00483d8b;
-		DarkSlateGray     : 0x002f4f4f;
-		DarkSlateGrey     : 0x002f4f4f;
-		DarkTurquoise     : 0x0000ced1;
-		DarkWood          : 0x000d0301;
-		DeepPink          : 0x00ff1493;
-		DimGray           : 0x00696969;
-		DimGrey           : 0x00696969;
-		FireBrick         : 0x00b22222;
-		ForestGreen       : 0x00228b22;
-		Gold              : 0x00ffd700;
-		Goldenrod         : 0x00daa520;
-		Gray              : 0x00808080;
-		Grey              : 0x00808080;
-		Green             : 0x00008000;
-		GreenYellow       : 0x00adff2f;
-		IndianRed         : 0x00cd5c5c;
-		Khaki             : 0x00f0e68c;
-		LightBlue         : 0x00add8e6;
-		LightGray         : 0x00d3d3d3;
-		LightGrey         : 0x00d3d3d3;
-		LightSteelBlue    : 0x00b0c4de;
-		LightWood         : 0x00993d1a;
-		Lime              : 0x0000ff00;
-		LimeGreen         : 0x0032cd32;
-		Magenta           : 0x00ff00ff;
-		Maroon            : 0x00800000;
-		MedianWood        : 0x004d1f09;
-		MediumAquamarine  : 0x0066cdaa;
-		MediumBlue        : 0x000000cd;
-		MediumForestGreen : 0x006b8e23;
-		MediumGoldenrod   : 0x00eaeaad;
-		MediumOrchid      : 0x00ba55d3;
-		MediumSeaGreen    : 0x003cb371;
-		MediumSlateBlue   : 0x007b68ee;
-		MediumSpringGreen : 0x0000fa9a;
-		MediumTurquoise   : 0x0048d1cc;
-		MediumVioletRed   : 0x00c71585;
-		MidnightBlue      : 0x00191970;
-		Navy              : 0x00000080;
-		NavyBlue          : 0x0023238e;
-		Orange            : 0x00ffa500;
-		OrangeRed         : 0x00ff4500;
-		Orchid            : 0x00da70d6;
-		PaleGreen         : 0x0098fb98;
-		Pink              : 0x00ffc0cb;
-		Plum              : 0x00dda0dd;
-		Red               : 0x00ff0000;
-		Salmon            : 0x00fa8072;
-		SeaGreen          : 0x002e8b57;
-		Sienna            : 0x00a0522d;
-		SkyBlue           : 0x0087ceeb;
-		SlateBlue         : 0x006a5acd;
-		SpringGreen       : 0x0000ff7f;
-		SteelBlue         : 0x004682b4;
-		Tan               : 0x00d2b48c;
-		Thistle           : 0x00d8bfd8;
-		Turquoise         : 0x0040e0d0;
-		Violet            : 0x00ee82ee;
-		VioletRed         : 0x00cc3299;
-		Wheat             : 0x00f5deb3;
-		Yellow            : 0x00ffff00;
-		YellowGreen       : 0x009acd32;
-		//Transparent     : 0xff000000;
-	}*/
-}
-
-/// cast unsigned integer to argb value
-inline argb(uint32 argb) = argb(emit(uint32(argb)));
-/// cast argb value to unsigned integer
-inline uint32(argb value) = uint32(emit(struct(value)));
-
-
-/// clamp signed gray or color component to fit in 8 bits (0 ... 255)
-uint32 clamp_s8(int32 c) {
-	if (c < 0) {
-		return 0;
-	}
-	if (c > 255) {
-		return 255;
-	}
-	return c;
-}
-/// clamp unsigned gray or color component to fit in 8 bits (0 ... 255)
-uint32 clamp_u8(uint32 c) {
-	if (c > 255) {
-		return 255;
-	}
-	return c;
-}
-
-// construct a rgb8 gray color from the given value
-inline _gray(uint32 c) = argb((((c << 8) | c) << 8) | c);
-/// construct a rgb8 color from the given gray value, clamp the input
-inline gray(int32 c) = _gray(clamp_s8(c));
-/// construct a rgb8 color from the given gray value, clamp the input
-inline gray(uint32 c) = _gray(clamp_s8(c));
-/// construct a rgb8 color from the given gray value, clamp the input
-inline gray(float32 c) = gray(int32(c * 255));
-/// construct a rgb8 color from the given gray value, clamp the input
-inline gray(float64 c) = gray(int32(c * 255));
-
-
-/// construct an argb color from the given components
-inline _argb(uint32 r, uint32 g, uint32 b) = argb(uint32((((r << 8) | g) << 8) | b));
-/// construct an argb color from the given components
-inline _argb(uint32 a, uint32 r, uint32 g, uint32 b) = argb(uint32((((((a << 8) | r) << 8) | g) << 8) | b));
-
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(int32 r, int32 g, int32 b) = _argb(clamp_s8(r), clamp_s8(g), clamp_s8(b));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(r), clamp_u8(g), clamp_u8(b));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(float32 r, float32 g, float32 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(float64 r, float64 g, float64 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(int32 a, int32 r, int32 g, int32 b) = _argb(clamp_s8(a), clamp_s8(r), clamp_s8(g), clamp_s8(b));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(uint32 a, uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(a), clamp_u8(r), clamp_u8(g), clamp_u8(b));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(float32 a, float32 r, float32 g, float32 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
-/// construct a rgb8 color from the given components, clamp the input
-inline argb(float64 a, float64 r, float64 g, float64 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
-
-
-/// get the Alpha channel of the color
-inline ach(argb color) = int32((uint32(color) >> 24) & 0xff);
-/// get the Red channel of the color
-inline rch(argb color) = int32((uint32(color) >> 16) & 0xff);
-/// get the Green channel of the color
-inline gch(argb color) = int32((uint32(color) >> 8) & 0xff);
-/// get the Blue channel of the color
-inline bch(argb color) = int32(uint32(color) & 0xff);
-
-/// get the luminosity of the color (0.299 * color.r + 0.587 * color.g + 0.114 * color.b)
-inline lum(argb color) = int32((19595 * rch(color) + 38470 * gch(color) + 7471 * bch(color)) >> 16);
-
-/// get the hue of the color
-uint32 hue(argb rgb) {
-	// adapted from: https://gist.github.com/mity/6034000
-	int r = rch(rgb);
-	int g = gch(rgb);
-	int b = bch(rgb);
-	int min = r;
-	int max = r;
-
-	if (min > g) {
-		min = g;
-	}
-	if (min > b) {
-		min = b;
-	}
-	if (max < g) {
-		max = g;
-	}
-	if (max < b) {
-		max = b;
-	}
-
-	if (max == min) {
-		return 0;
-	}
-
-	int hue = 0;
-	if (max == r) {
-		hue = ((g - b) * 60) / (max - min);
-	}
-	else if (max == g) {
-		hue = ((b - r) * 60) / (max - min) + 120;
-	}
-	else if (max == b) {
-		hue = ((r - g) * 60) / (max - min) + 240;
-	}
-	if (hue < 0) {
-		hue += 360;
-	}
-	return hue;
-}
-
-/// linear interpolate a lookup-table with the given colors
-void lerpLut(uint32 lut[], argb colors...) {
-	inline lrp(int32 t, uint32 x, uint32 y) = x + (t * (y - x + 1) >> 16);
-
-	int dt = (colors.length - 1 << 16) / (lut.length - 1);
-	for (int i = 0; i < lut.length; i += 1) {
-		int t = i * dt;
-		argb c1 = colors[t >> 16];
-		argb c2 = colors[(t >> 16) + 1];
-		int32 a = lrp(t & 0xffff, ach(c1), ach(c2));
-		int32 r = lrp(t & 0xffff, rch(c1), rch(c2));
-		int32 g = lrp(t & 0xffff, gch(c1), gch(c2));
-		int32 b = lrp(t & 0xffff, bch(c1), bch(c2));
-		lut[i] = a << 24 | r << 16 | g << 8 | b;
-	}
-}
-
-/// linear interpolate a alpha lookup-table with the given colors
-void alphaLut(uint32 lut[], int hardness, int alpha, bool reflect) {
-	int mid = hardness <= 0 ? -1 : 255;
-	int div = 256 - clamp_u8(hardness < 0 ? -hardness : hardness);
-	for (int i = 0; i < lut.length; i += 1) {
-		int t = i * 255 / (lut.length - 1);
-		lut[i] = clamp_s8((t - mid) * 255 / div + mid);
-		if (alpha < 0) {
-			lut[i] = 255 - (255 - lut[i]) * -alpha / 255;
-		} else {
-			lut[i] = 255 - lut[i] * alpha / 255;
-		}
-	}
-	if (reflect) {
-		int end = lut.length - 1;
-		int mid = lut.length / 2;
-		for (int i = end; i >= mid; i -= 1) {
-			lut[i] = lut[end];
-			end -= 2;
-		}
-		for (int i = 0; i < mid; i += 1) {
-			lut[i] = lut[lut.length - i - 1];
-		}
-	}
-}
-
-static if (typename(vec4f) != null) {
-
-/// convert an argb color to a floating point vector
-inline vec4f(argb rgb) = vec4f(rch(rgb) / 255f, gch(rgb) / 255f, bch(rgb) / 255f, ach(rgb) / 255f);
-
-/// convert a floating point vector to an argb color
-inline argb(const vec4f vec&) = argb(vec.x, vec.y, vec.z);
-
-/// calculate the luminosity of a color
-inline lum(const vec4f vec&) = 0.299f * vec.x + 0.587f * vec.y + 0.114f * vec.z;
-}
-
-inline "color.hsv.ci";
-inline "color.hsl.ci";
-// adapted from: https://gitlab.bestminr.com/bestminr/FrontShaders/-/blob/master/shaders/hsl.glsl
-/// Convert color from Rgb color space to Hsl color space
-vec4f rgb2hsl(vec4f rgb) {
-	inline min(float32 x, float32 y) = x < y ? x : y;
-	inline max(float32 x, float32 y) = x > y ? x : y;
-	inline clamp(float32 value, float32 min, float32 max) = min(max(value, min), max);
-	float fmin = min(min(rgb.x, rgb.y), rgb.z);    //Min. value of RGB
-	float fmax = max(max(rgb.x, rgb.y), rgb.z);    //Max. value of RGB
-	float delta = fmax - fmin;             //Delta RGB value
-
-	// Luminance
-	float lum = (fmax + fmin) / 2;
-
-	if (delta == 0) {
-		//This is a gray, no chroma...
-		return {
-			x: 0;   // Hue
-			y: 0;   // Saturation
-			z: lum; // Luminance
-		};
-	}
-
-	// Chromatic data...
-	float sat;
-	if (lum < 0.5f) {
-		sat = delta / (fmax + fmin);
-	} else {
-		sat = delta / (2 - fmax - fmin);
-	}
-
-	float deltaR = (((fmax - rgb.x) / 6) + (delta / 2)) / delta;
-	float deltaG = (((fmax - rgb.y) / 6) + (delta / 2)) / delta;
-	float deltaB = (((fmax - rgb.z) / 6) + (delta / 2)) / delta;
-
-	float hue;
-	if (rgb.x == fmax) {
-		hue = deltaB - deltaG;
-	}
-	else if (rgb.y == fmax) {
-		hue = (1 / 3f) + deltaR - deltaB;
-	}
-	else if (rgb.z == fmax) {
-		hue = (2 / 3f) + deltaG - deltaR;
-	}
-
-	if (hue < 0) {
-		hue += 1;
-	}
-	else if (hue > 1) {
-		hue -= 1;
-	}
-
-	return {
-		x: clamp(hue, 0, 1); // Hue
-		y: clamp(sat, 0, 1); // Saturation
-		z: clamp(lum, 0, 1); // Luminance
-	};
-}
-
-/// Convert color from Hsl color space to Rgb color space
-vec4f hsl2rgb(vec4f hsl) {
-float hue2rgb(float f1, float f2, float hue) {
-	if (hue < 0) {
-		hue += 1;
-	}
-	else if (hue > 1) {
-		hue -= 1;
-	}
-	float res;
-	if ((6 * hue) < 1) {
-		res = f1 + (f2 - f1) * 6 * hue;
-	}
-	else if ((2 * hue) < 1) {
-		res = f2;
-	}
-	else if ((3 * hue) < 2) {
-		res = f1 + (f2 - f1) * ((2 / 3f) - hue) * 6;
-	}
-	else {
-		res = f1;
-	}
-	return res;
-}
-
-	if (hsl.y == 0) {
-		return vec4f(hsl.z); // Luminance
-	}
-
-	float f2;
-	if (hsl.z < .5f) {
-		f2 = hsl.z * (1 + hsl.y);
-	}
-	else {
-		f2 = (hsl.z + hsl.y) - (hsl.y * hsl.z);
-	}
-
-	float f1 = 2 * hsl.z - f2;
-	return {
-		x: hue2rgb(f1, f2, hsl.x + (1 / 3f));
-		y: hue2rgb(f1, f2, hsl.x);
-		z: hue2rgb(f1, f2, hsl.x - (1 / 3f));
-	};
-}
-
-/* TODO: integer based hsl and hsv calculation
-/// hue saturation lightness color model
-struct hsl {
-	/// hue: 0 ... 359
-	uint16 hue;
-	/// sat: 0 ... 255
-	uint8 sat;
-	/// lum: 0 ... 255
-	uint8 lum;
-}
-
-///@public
-hsl hsl(argb rgb) {
-	// adapted from: https://gist.github.com/mity/6034000
-	int r = rch(rgb);
-	int g = gch(rgb);
-	int b = bch(rgb);
-
-	int min = r;
-	if (min > g) min = g;
-	if (min > b) min = b;
-
-	int max = r;
-	if (max < g) max = g;
-	if (max < b) max = b;
-
-	int lum = lum(rgb);
-	if (max == min) {
-		return {
-			hue: 0;
-			sat: 0;
-			lum: lum;
-		};
-	}
-
-	int hue = 0;
-	int sat = max - min;
-	//int lum = (min + max) / 2;
-	if (max == r) {
-		hue = ((g - b) * 60) / sat;
-	}
-	else if (max == g) {
-		hue = ((b - r) * 60) / sat + 120;
-	}
-	else /+if(max == b)+/ {
-		hue = ((r - g) * 60) / sat + 240;
-	}
-	if (hue < 0) {
-		hue += 360;
-	}
-	return {
-		hue: hue;
-		sat: sat;
-		lum: lum;
-	};
-}
-*/
-// graphics library extension
-inline "gfx/color.ci";
-inline "gfx/image.ci";
-inline "gfx/mesh.ci";
-
-static if (typename(Image.blur) == null) {
-inline "/lib/gfx/emulated/blur.ci";
-}
-
-static if (typename(Image.blend) == null) {
-inline "/lib/gfx/emulated/blend.ci";
-}
-
-static if (typename(Image.transform) == null) {
-inline "/lib/gfx/emulated/transform.ci";
-}
-
-/// Show the surface in a window
-inline show(Image surf) = Gui.showWindow(surf, null, null);
-
-/// Show the surface in a window
-void show(Image image, int onEvent(int action, int button, int ex, int ey)) {
-	if (onEvent == null) {
-		return Gui.showWindow(image, null, null);
-	}
-	static int delegate(int onEvent(int action, int button, int ex, int ey), int action, int button, int ex, int ey) {
-		return onEvent(action, button, ex, ey);
-	}
-	Gui.showWindow(image, onEvent, delegate);
-}
-
-/// Show the surfaces in a window clicking on the window toggles the shown surface
-void showDiff(Image image1, Image image2) {
-	struct Closure {
-		Image offs;
-		Image image1;
-		Image image2;
-	}
-
-	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
-		if (action == Gui.KEY_PRESS) {
-			if (button == 27) {
-				return -1;
-			}
-		}
-		if (action == Gui.MOUSE_PRESS) {
-			closure.offs.copy(0, 0, closure.image2, null);
-			return 0;
-		}
-		if (action == Gui.MOUSE_RELEASE) {
-			closure.offs.copy(0, 0, closure.image1, null);
-			return 0;
-		}
-		return 0;
-	}
-
-	Closure closure = {
-		offs: Image(image1);
-		image1: image1;
-		image2: image2;
-	};
-	Gui.showWindow(closure.offs, closure, onEvent);
-}
-
-/// Show or animate the the procedural image generated by the `eval` function
-void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) {
-	static const int64 start = System.millis();
-	struct Closure {
-		bool lerp = true;
-		const Image offs;
-		const Image thumb;
-		const float32 aspect;
-		const vec4f eval(vec4f in);
-	}
-
-	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
-		if (action == Gui.WINDOW_CLOSE) {
-			trace("closing ...");
-			return 0;
-		}
-		if (action == Gui.KEY_PRESS) {
-			if (button == 27) {
-				return -1;
-			}
-		}
-		if (action == Gui.KEY_RELEASE) {
-			if (button == ' ') {
-				float32 time = (System.millis() - start) / 1000f;
-				closure.offs.eval(null, closure.aspect, time, closure.eval);
-				return 0;
-			}
-			if (button == '\t') {
-				closure.lerp = !closure.lerp;
-			}
-			if (button == 'S') {
-				trace("dumping screen");
-				closure.offs.saveBmp("out/offs.bmp", 0);
-				closure.thumb.saveBmp("out/thumb.bmp", 0);
-			}
-		}
-
-		float32 time = (System.millis() - start) / 1000f;
-		closure.thumb.eval(null, closure.aspect, time, closure.eval);
-		closure.offs.resize(null, closure.thumb, null, closure.lerp ? 1 : 0);
-
-		// do not block for any input
-		return 1;
-	}
-
-	if (animationResolution == 0) {
-		float32 aspect = width / float32(height);
-		Image image = Image(width, height, 32);
-		image.eval(null, aspect, 0f, eval);
-		image.show(null);
-		image.destroy();
-		return;
-	}
-
-	Closure closure = {
-		offs: Image(width, height, 32);
-		thumb: Image(animationResolution, animationResolution, 32);
-		aspect: width / float32(height);
-		eval: eval;
-	};
-	Gui.showWindow(closure.offs, closure, onEvent);
-	closure.thumb.destroy();
-	closure.offs.destroy();
-}
-
-/// Show the mesh in a window
-void show(Mesh mesh, int w, int h, float32 fovy) {
-
-	struct Closure {
-		int mode;
-		Image offs;
-		Mesh mesh;
-	}
-
-	int next(int32 x, int mask) {
-		int next = x & mask;
-
-		// add lowest bit of mask
-		next += mask & -mask;
-
-		// avoid overflow
-		next &= mask;
-
-		return next | (x & ~mask);
-	}
-
-	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
-		static int ox = 0;
-		static int oy = 0;
-		static const float32 speed = 1 / 100f;
-		if (action == Gui.FINGER_MOTION) {
-			action = Gui.MOUSE_MOTION;
-		}
-		if (action == Gui.KEY_PRESS) {
-			if (button == 27) {
-				return -1;
-			}
-			else if (button == 'l') {
-				closure.mode ^= Mesh.useLights;
-			}
-			else if (button == '0') {
-				lights.enable(0, !lights.enabled(0));
-			}
-			else if (button == '1') {
-				lights.enable(1, !lights.enabled(1));
-			}
-			else if (button == '2') {
-				lights.enable(2, !lights.enabled(2));
-			}
-			else if (button == '3') {
-				lights.enable(3, !lights.enabled(3));
-			}
-			else if (button == 't') {
-				closure.mode ^= Mesh.useTexture;
-			}
-			else if (button == '/') {
-				closure.mode = next(closure.mode, Mesh.cullBack | Mesh.cullFront);
-			}
-			else if (button == '\t') {
-				closure.mode = next(closure.mode, Mesh.drawMode);
-			}
-			else if (button == '\r') {
-				vec4f eye = {x: 0, y: 0, z: 2, w: 1};
-				vec4f at = {x: 0, y: 0, z: 0, w: 1};
-				vec4f up = {x: 0, y: 1, z: 0, w: 1};
-				camera.lookAt(eye.data, at.data, up.data);
-			}
-		}
-		else if (action == Gui.MOUSE_PRESS) {
-			ox = ex;
-			oy = ey;
-			return 0;
-		}
-		else if (action == Gui.MOUSE_MOTION) {
-			float32 dir[3] = {0, 0, 0};
-			int dx = ex - ox;
-			int dy = ey - oy;
-
-			if (button == 1) {
-				// orbit
-				float32 orig[3] = {0, 0, 0};
-
-				camera.readUp(&dir);
-				camera.rotate(dir, orig, dx * speed);
-				camera.readRight(&dir);
-				camera.rotate(dir, orig, dy * speed);
-			}
-			else if (button == 2) {
-				// rotate
-				camera.readUp(&dir);
-				camera.rotate(dir, null, -dx * speed);
-				camera.readRight(&dir);
-				camera.rotate(dir, null, -dy * speed);
-			}
-			else if (button == 3) {
-				// move
-				camera.readForward(&dir);
-				camera.move(dir, dy * speed);
-			}
-			else if (button == 4) {
-				// pan
-				camera.readRight(&dir);
-				camera.move(dir, -dx * speed);
-				camera.readUp(&dir);
-				camera.move(dir, dy * speed);
-			}
-			ox = ex;
-			oy = ey;
-		}
-
-		int rendered = closure.offs.drawMesh(closure.mesh, closure.mode);
-
-		char text[256] = {};
-		int pos = text.append(0, "Vertices: ");
-		pos = text.append(pos, closure.mesh.vertices);
-		pos = text.append(pos, ", Triangles: ");
-		pos = text.append(pos, closure.mesh.triangles);
-		pos = text.append(pos, "/");
-		pos = text.append(pos, rendered);
-		Gui.setTitle(text);
-		return 0;
-	}
-
-	Closure closure = {
-		mode: Mesh.clearDepth | Mesh.clearColor | Mesh.useLights | Mesh.cullBack | Mesh.drawFill;
-		offs: Image.create3d(w, h);
-		mesh: mesh;
-	};
-	camera.projection(fovy, w / float32(h), 1, 100);
-	Gui.showWindow(closure.offs, closure, onEvent);
-	closure.offs.destroy();
-}
 /// Mathematical utility functions and constants
 static struct Math {
 
@@ -4501,3 +2236,4040 @@ inline ceq(vec2d a, vec2d b) = vec2d(emit(struct(a), struct(b), ceq.p2d));
 
 /// Dot product of thw two vectors
 inline dot(const vec2d a&, const vec2d b&) = a.x * b.x + a.y * b.y;
+// standard library extension
+
+enum: bool {
+	true: 0 == 0;
+	false: 0 != 0;
+}
+
+inline byte = uint8;
+inline float = float32;
+inline double = float64;
+
+/// convert unsigned to signed integer
+inline signed(uint8 value) = int8(value);
+
+/// convert unsigned to signed integer
+inline signed(uint16 value) = int16(value);
+
+/// convert unsigned to signed integer
+inline signed(uint32 value) = int32(value);
+
+/// convert unsigned to signed integer
+inline signed(uint64 value) = int64(value);
+
+/// convert signed to unsigned integer
+inline unsigned(int8 value) = uint8(value);
+
+/// convert signed to unsigned integer
+inline unsigned(int16 value) = uint16(value);
+
+/// convert signed to unsigned integer
+inline unsigned(int32 value) = uint32(value);
+
+/// convert signed to unsigned integer
+inline unsigned(int64 value) = uint64(value);
+
+/// Returns the size of the given type
+inline sizeof(typename type) = int(type.size);
+
+static if (typename(raise) == function) {
+inline "lib/debug.ci";
+}
+
+inline "lib/math.ci";
+//inline "lib/math/Decimal.ci"?;      // -> Decimal TODO: implement http://dec64.com/
+//inline "lib/math/Rational.ci"?;     // -> Rational<int64>
+inline "lib/math/Complex.ci"?;      // -> Complex<float64>
+inline "lib/math/Vector4f.ci"?;
+inline "lib/math/Matrix4f.ci"?;
+inline "lib/math/Vector2d.ci"?;
+//inline "lib/math/BigInteger.ci?"   // TODO: inline Rational -> BigInteger.Rational<BigInteger>
+//inline "lib/math/BigDecimal.ci?"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
+//inline "lib/math/Perlin.ci"?;
+
+inline "lib/string.ci";
+// test unary and binary operators for builtin types.
+
+inline a = 96.3;
+inline b = 42.14;
+int32 shift = 2;
+
+bool boolA = true;
+bool boolB = !false;
+//bool boolPls = +boolB;  // TODO: raise the error before code generation at type check
+//bool boolNeg = -boolB;  // TODO: raise the error before code generation at type check
+//bool boolCmt = ~boolB;  // TODO: raise the error before code generation at type check
+//bool boolAdd = boolA + boolB;  // TODO: raise the error before code generation at type check
+//bool boolSub = boolA - boolB;  // TODO: raise the error before code generation at type check
+//bool boolMul = boolA * boolB;  // TODO: raise the error before code generation at type check
+//bool boolDiv = boolA / boolB;  // TODO: raise the error before code generation at type check
+//bool boolMod = boolA % boolB;  // TODO: raise the error before code generation at type check
+bool boolAnd = boolA & boolB;
+bool boolIor = boolA | boolB;
+bool boolXor = boolA ^ boolB;
+//bool boolShl = boolA << shift;
+//bool boolShr = boolA >> shift;
+bool boolNot = !boolB;
+bool boolCeq = boolA == boolB;
+bool boolCne = boolA != boolB;
+bool boolClt = boolA <  boolB;
+bool boolCle = boolA <= boolB;
+bool boolCgt = boolA >  boolB;
+bool boolCge = boolA >= boolB;
+
+char chrA = 'a';
+char chrB = 'b';
+char chrPls = +chrB;
+char chrNeg = -chrB;
+char chrCmt = ~chrB;
+char chrAdd = chrA + chrB;  // TODO: raise a warning ?
+char chrSub = chrA - chrB;
+char chrMul = chrA * chrB;
+char chrDiv = chrA / chrB;
+char chrMod = chrA % chrB;
+char chrAnd = chrA & chrB;
+char chrIor = chrA | chrB;
+char chrXor = chrA ^ chrB;
+char chrShl = chrA << shift;
+char chrShr = chrA >> shift;
+bool chrNot = !chrB;
+bool chrCeq = chrA == chrB;
+bool chrCne = chrA != chrB;
+bool chrClt = chrA <  chrB;
+bool chrCle = chrA <= chrB;
+bool chrCgt = chrA >  chrB;
+bool chrCge = chrA >= chrB;
+
+int8 i8A = a;
+int8 i8B = b;
+int8 i8Pls = +i8B;
+int8 i8Neg = -i8B;
+int8 i8Cmt = ~i8B;
+int8 i8Add = i8A + i8B;
+int8 i8Sub = i8A - i8B;
+int8 i8Mul = i8A * i8B;
+int8 i8Div = i8A / i8B;
+int8 i8Mod = i8A % i8B;
+int8 i8And = i8A & i8B;
+int8 i8Ior = i8A | i8B;
+int8 i8Xor = i8A ^ i8B;
+int8 i8Shl = i8A << shift;
+int8 i8Shr = i8A >> shift;
+bool i8Not = !i8B;
+bool i8Ceq = i8A == i8B;
+bool i8Cne = i8A != i8B;
+bool i8Clt = i8A <  i8B;
+bool i8Cle = i8A <= i8B;
+bool i8Cgt = i8A >  i8B;
+bool i8Cge = i8A >= i8B;
+
+uint8 u8A = a;
+uint8 u8B = b;
+uint8 u8Pls = +u8B;
+uint8 u8Neg = -u8B;
+uint8 u8Cmt = ~u8B;
+uint8 u8Add = u8A + u8B;
+uint8 u8Sub = u8A - u8B;
+uint8 u8Mul = u8A * u8B;
+uint8 u8Div = u8A / u8B;
+uint8 u8Mod = u8A % u8B;
+uint8 u8And = u8A & u8B;
+uint8 u8Ior = u8A | u8B;
+uint8 u8Xor = u8A ^ u8B;
+uint8 u8Shl = u8A << shift;
+uint8 u8Shr = u8A >> shift;
+bool u8Not = !u8B;
+bool u8Ceq = u8A == u8B;
+bool u8Cne = u8A != u8B;
+bool u8Clt = u8A <  u8B;
+bool u8Cle = u8A <= u8B;
+bool u8Cgt = u8A >  u8B;
+bool u8Cge = u8A >= u8B;
+
+int16 i16A = a;
+int16 i16B = b;
+int16 i16Pls = +i16B;
+int16 i16Neg = -i16B;
+int16 i16Cmt = ~i16B;
+int16 i16Add = i16A + i16B;
+int16 i16Sub = i16A - i16B;
+int16 i16Mul = i16A * i16B;
+int16 i16Div = i16A / i16B;
+int16 i16Mod = i16A % i16B;
+int16 i16And = i16A & i16B;
+int16 i16Ior = i16A | i16B;
+int16 i16Xor = i16A ^ i16B;
+int16 i16Shl = i16A << shift;
+int16 i16Shr = i16A >> shift;
+bool i16Not = !i16B;
+bool i16Ceq = i16A == i16B;
+bool i16Cne = i16A != i16B;
+bool i16Clt = i16A <  i16B;
+bool i16Cle = i16A <= i16B;
+bool i16Cgt = i16A >  i16B;
+bool i16Cge = i16A >= i16B;
+
+uint16 u16A = a;
+uint16 u16B = b;
+uint16 u16Pls = +u16B;
+uint16 u16Neg = -u16B;
+uint16 u16Cmt = ~u16B;
+uint16 u16Add = u16A + u16B;
+uint16 u16Sub = u16A - u16B;
+uint16 u16Mul = u16A * u16B;
+uint16 u16Div = u16A / u16B;
+uint16 u16Mod = u16A % u16B;
+uint16 u16And = u16A & u16B;
+uint16 u16Ior = u16A | u16B;
+uint16 u16Xor = u16A ^ u16B;
+uint16 u16Shl = u16A << shift;
+uint16 u16Shr = u16A >> shift;
+bool u16Not = !u16B;
+bool u16Ceq = u16A == u16B;
+bool u16Cne = u16A != u16B;
+bool u16Clt = u16A <  u16B;
+bool u16Cle = u16A <= u16B;
+bool u16Cgt = u16A >  u16B;
+bool u16Cge = u16A >= u16B;
+
+int32 i32A = a;
+int32 i32B = b;
+int32 i32Pls = +i32B;
+int32 i32Neg = -i32B;
+int32 i32Cmt = ~i32B;
+int32 i32Add = i32A + i32B;
+int32 i32Sub = i32A - i32B;
+int32 i32Mul = i32A * i32B;
+int32 i32Div = i32A / i32B;
+int32 i32Mod = i32A % i32B;
+int32 i32And = i32A & i32B;
+int32 i32Ior = i32A | i32B;
+int32 i32Xor = i32A ^ i32B;
+int32 i32Shl = i32A << shift;
+int32 i32Shr = i32A >> shift;
+bool i32Not = !i32B;
+bool i32Ceq = i32A == i32B;
+bool i32Cne = i32A != i32B;
+bool i32Clt = i32A <  i32B;
+bool i32Cle = i32A <= i32B;
+bool i32Cgt = i32A >  i32B;
+bool i32Cge = i32A >= i32B;
+
+uint32 u32A = a;
+uint32 u32B = b;
+uint32 u32Pls = +u32B;
+uint32 u32Neg = -u32B;
+uint32 u32Cmt = ~u32B;
+uint32 u32Add = u32A + u32B;
+uint32 u32Sub = u32A - u32B;
+uint32 u32Mul = u32A * u32B;
+uint32 u32Div = u32A / u32B;
+uint32 u32Mod = u32A % u32B;
+uint32 u32And = u32A & u32B;
+uint32 u32Ior = u32A | u32B;
+uint32 u32Xor = u32A ^ u32B;
+uint32 u32Shl = u32A << shift;
+uint32 u32Shr = u32A >> shift;
+bool u32Not = !u32B;
+bool u32Ceq = u32A == u32B;
+bool u32Cne = u32A != u32B;
+bool u32Clt = u32A <  u32B;
+bool u32Cle = u32A <= u32B;
+bool u32Cgt = u32A >  u32B;
+bool u32Cge = u32A >= u32B;
+
+int64 i64A = a;
+int64 i64B = b;
+int64 i64Pls = +i64B;
+int64 i64Neg = -i64B;
+int64 i64Cmt = ~i64B;
+int64 i64Add = i64A + i64B;
+int64 i64Sub = i64A - i64B;
+int64 i64Mul = i64A * i64B;
+int64 i64Div = i64A / i64B;
+int64 i64Mod = i64A % i64B;
+int64 i64And = i64A & i64B;
+int64 i64Ior = i64A | i64B;
+int64 i64Xor = i64A ^ i64B;
+int64 i64Shl = i64A << shift;
+int64 i64Shr = i64A >> shift;
+bool i64Not = !i64B;
+bool i64Ceq = i64A == i64B;
+bool i64Cne = i64A != i64B;
+bool i64Clt = i64A <  i64B;
+bool i64Cle = i64A <= i64B;
+bool i64Cgt = i64A >  i64B;
+bool i64Cge = i64A >= i64B;
+
+uint64 u64A = a;
+uint64 u64B = b;
+uint64 u64Pls = +u64B;
+uint64 u64Neg = -u64B;
+uint64 u64Cmt = ~u64B;
+uint64 u64Add = u64A + u64B;
+uint64 u64Sub = u64A - u64B;
+uint64 u64Mul = u64A * u64B;
+uint64 u64Div = u64A / u64B;
+uint64 u64Mod = u64A % u64B;
+uint64 u64And = u64A & u64B;
+uint64 u64Ior = u64A | u64B;
+uint64 u64Xor = u64A ^ u64B;
+uint64 u64Shl = u64A << shift;
+uint64 u64Shr = u64A >> shift;
+bool u64Not = !u64B;
+bool u64Ceq = u64A == u64B;
+bool u64Cne = u64A != u64B;
+bool u64Clt = u64A <  u64B;
+bool u64Cle = u64A <= u64B;
+bool u64Cgt = u64A >  u64B;
+bool u64Cge = u64A >= u64B;
+
+float32 f32A = a;
+float32 f32B = b;
+float32 f32Pls = +f32B;
+float32 f32Neg = -f32B;
+//float32 f32Cmt = ~f32B;  // TODO: raise the error before code generation at type check
+float32 f32Add = f32A + f32B;
+float32 f32Sub = f32A - f32B;
+float32 f32Mul = f32A * f32B;
+float32 f32Div = f32A / f32B;
+float32 f32Mod = f32A % f32B;
+//float32 f32And = f32A & f32B;  // TODO: raise error just once
+//float32 f32Ior = f32A | f32B;
+//float32 f32Xor = f32A ^ f32B;
+//float32 f32Shl = f32A << shift;
+//float32 f32Shr = f32A >> shift;
+bool f32Not = !f32B;
+bool f32Ceq = f32A == f32B;
+bool f32Cne = f32A != f32B;
+bool f32Clt = f32A <  f32B;
+bool f32Cle = f32A <= f32B;
+bool f32Cgt = f32A >  f32B;
+bool f32Cge = f32A >= f32B;
+
+float64 f64A = a;
+float64 f64B = b;
+float64 f64Pls = +f64B;
+float64 f64Neg = -f64B;
+//float64 f64Cmt = ~f64B;  // TODO: raise error before code generation at type check
+float64 f64Add = f64A + f64B;
+float64 f64Sub = f64A - f64B;
+float64 f64Mul = f64A * f64B;
+float64 f64Div = f64A / f64B;
+float64 f64Mod = f64A % f64B;
+//float64 f64And = f64A & f64B;
+//float64 f64Ior = f64A | f64B;
+//float64 f64Xor = f64A ^ f64B;
+//float64 f64Shl = f64A << shift;
+//float64 f64Shr = f64A >> shift;
+bool f64Not = !f64B;
+bool f64Ceq = f64A == f64B;
+bool f64Cne = f64A != f64B;
+bool f64Clt = f64A <  f64B;
+bool f64Cle = f64A <= f64B;
+bool f64Cgt = f64A >  f64B;
+bool f64Cge = f64A >= f64B;
+
+pointer ptrA = null;
+pointer ptrB = pointer(shift);
+//pointer ptrPls = +ptrB;  // TODO: raise error before code generation at type check
+//pointer ptrNeg = -ptrB;  // TODO: raise error before code generation at type check
+//pointer ptrCmt = ~ptrB;  // TODO: raise error before code generation at type check
+//pointer ptrAdd = ptrA + ptrB;  // TODO: raise error before code generation at type check
+//pointer ptrSub = ptrA - ptrB;  // TODO: raise error before code generation at type check
+//pointer ptrMul = ptrA * ptrB;  // TODO: raise error before code generation at type check
+//pointer ptrDiv = ptrA / ptrB;  // TODO: raise error before code generation at type check
+//pointer ptrMod = ptrA % ptrB;  // TODO: raise error before code generation at type check
+//pointer ptrAnd = ptrA & ptrB;
+//pointer ptrIor = ptrA | ptrB;
+//pointer ptrXor = ptrA ^ ptrB;
+//pointer ptrShl = ptrA << shift;
+//pointer ptrShr = ptrA >> shift;
+//bool ptrNot = !ptrB;  // TODO: raise error before code generation at type check
+bool ptrCeq = ptrA == ptrB;
+bool ptrCne = ptrA != ptrB;
+//bool ptrClt = ptrA <  ptrB;  // TODO: raise error before code generation at type check
+//bool ptrCle = ptrA <= ptrB;  // TODO: raise error before code generation at type check
+//bool ptrCgt = ptrA >  ptrB;  // TODO: raise error before code generation at type check
+//bool ptrCge = ptrA >= ptrB;  // TODO: raise error before code generation at type check
+
+/* TODO:
+mix builtin types:
+	char + uint64
+	...
+compare:
+	object +null
+	pointer +null
+	variant +null
+	typename +null
+	function +null
+
+arrays, slices, ...
+*/
+/// test and documentation of member initializations
+struct RecordMemberTest {
+
+	struct Inner {
+		int member;
+		const int constant;
+	}
+
+	// if initializer is omitted, initialize with `default type initializer`.
+	int member;
+
+	// constant fields must be initialized on instance creation, because they can not be changed.
+	const int constant;
+
+	// if initializer is omitted, initialize with `default field initializer`
+	int memberInit = 2;
+
+	// if initializer is omitted, initialize with `default field initializer`
+	const int constantInit = 3;
+
+	// field must be initialized because there is no `default type initializer`.
+	Inner memberRec;
+
+	// all members of constant fields must be initialized on instance creation, because they can not be changed.
+	const Inner constantRec;
+
+	// if initializer is omitted, initialize with `default field initializer`.
+	// FIXME: Inner memberRecInit = {member: 4, constant: 5};
+
+	// if initializer is omitted, initialize with `default field initializer`.
+	// FIXME: const Inner constantRecInit = {member: 6, constant: 7};
+
+	// global variable initialized with `default type initializer`
+	static int global;
+
+	// global variable initialized with initializer.
+	static int globalInit = 1;
+
+	// global constants must be initialized when declared, because they can not be changed.
+	static const int globalConstant = 2;
+
+	// must be initialized because there is no `default type initializer`.
+	static Inner globalRec = {constant: 4};
+
+	// global variable initialized with initializer.
+	static Inner globalRecInit = {member: 4, constant: 5};
+
+	// global constants must be initialized when declared, because they can not be changed.
+	static const Inner globalConstantRec = {member: 6, constant: 7};
+}
+
+RecordMemberTest recordMemberTest = {
+	member: 10;
+	constant: 11;
+	memberInit: 12;
+	constantInit: 13;
+
+	memberRec: {
+		member: 14;
+		constant: 15;
+	};
+	// constant member mut be initialized with all fields set
+	constantRec: {
+		member: 16;
+		constant: 17;
+	};
+
+	/* static fields can not be initialized
+	global: 29;
+	globalInit: 39;
+	globalConstant: 49;
+	// */
+};
+
+/* assign new values after initialization
+recordMemberTest.member = 74;
+recordMemberTest.memberInit = 75;
+// accessing static members using instance variable
+recordMemberTest.global = 76;
+recordMemberTest.globalInit = 79;
+/* constant variables can not be assigned
+recordMemberTest.constant = 79;
+recordMemberTest.constantInit = 80;
+recordMemberTest.globalConstant = 81;
+// */
+// test inline arguments
+
+inline zero(int a, int b) = 0;	// params not used at all
+inline last(int a, int b) = b;	// only one param used
+inline sum(int a, int b) = a + b;	// both param used once
+inline any(int a, int b) = a ? a : b;	// one param used 2x, the other once
+inline min(int a, int b) = a < b ? a : b;	// both param used 2x
+inline max(int a, int b) = a > b ? a : b;	// both param used 2x
+
+int i3 = 3;
+int i6 = 6;
+int i2 = 2;
+int i8 = 8;
+
+int zeroVal = zero(3, 6);
+int zeroVar = zero(i3, i6);
+int zeroXpr = zero(i3 + 1, i6 + 1);
+
+int lastVal = last(3, 6);
+int lastVar = last(i3, i6);
+int lastXpr = last(i3 + 1, i6 + 1) - 1;
+
+int sum2Val = sum(3, 6);
+int sum2Var = sum(i3, i6);
+int sum2Xpr = sum(i3 + 1, i6 + 1) - 2;
+
+int any2Val = any(3, 6);
+int any2Var = any(i3, i6);
+int any2Xpr = any(i3 + 1, i6 + 1) - 1;
+
+int min2Val = min(3, 6);
+int min2Var = min(i3, i6);
+int min2Xpr = min(i3 + 1, i6 + 1) - 1;
+
+int max2Val = max(3, 6);
+int max2Var = max(i3, i6);
+int max2Xpr = max(i3 + 1, i6 + 1) - 1;
+
+inline sumLr(int a, int b, int c, int d) = sum(a, sum(b, sum(c, d)));
+inline sumRl(int a, int b, int c, int d) = sum(sum(sum(a, b), c), d);
+int sumRlVal = sumLr(3, 6, 2, 8);
+int sumLrVal = sumRl(3, 6, 2, 8);
+int sumRlVar = sumLr(i3, i6, i2, i8);
+int sumLrVar = sumRl(i3, i6, i2, i8);
+int sumRlXpr = sumLr(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 4;
+int sumLrXpr = sumRl(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 4;
+
+inline anyLr(int a, int b, int c, int d) = any(a, any(b, any(c, d)));
+inline anyRl(int a, int b, int c, int d) = any(any(any(a, b), c), d);
+int anyRlVal = anyLr(3, 6, 2, 8);
+int anyLrVal = anyRl(3, 6, 2, 8);
+int anyRlVar = anyLr(i3, i6, i2, i8);
+int anyLrVar = anyRl(i3, i6, i2, i8);
+int anyRlXpr = anyLr(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 1;
+int anyLrXpr = anyRl(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 1;
+
+inline minLr(int a, int b, int c, int d) = min(a, min(b, min(c, d)));
+inline minRl(int a, int b, int c, int d) = min(min(min(a, b), c), d);
+int minRlVal = minLr(3, 6, 2, 8);
+int minLrVal = minRl(3, 6, 2, 8);
+int minRlVar = minLr(i3, i6, i2, i8);
+int minLrVar = minRl(i3, i6, i2, i8);
+int minRlXpr = minLr(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 1;
+int minLrXpr = minRl(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 1;
+
+inline maxLr(int a, int b, int c, int d) = max(a, max(b, max(c, d)));
+inline maxRl(int a, int b, int c, int d) = max(max(max(a, b), c), d);
+int maxRlVal = maxLr(3, 6, 2, 8);
+int maxLrVal = maxRl(3, 6, 2, 8);
+int maxRlVar = maxLr(i3, i6, i2, i8);
+int maxLrVar = maxRl(i3, i6, i2, i8);
+int maxRlXpr = maxLr(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 1;
+int maxLrXpr = maxRl(i3 + 1, i6 + 1, i2 + 1, i8 + 1) - 1;
+
+// to force the pre-calculation of inline arguments, just declare them as const references.
+// inline max(const int a&, const int b&) = a > b ? a : b;
+
+// TODO: force arguments to be inline, to be evaluated each time they are used?
+// inline min(inline int a, inline int b) = a < b ? a : b;
+/**
+ * static, virtual and abstract methods
+ */
+struct RecordMethodTest {
+
+	/**
+	 * static method is like a `global function` hidden in a record
+	 * @see lang/function.ci
+	 */
+	static void staticMethod(RecordMethodTest this, int x) {
+		trace("staticMethod", x);
+	}
+
+	/**
+	 * static forward method is like a `forward function reference` hidden in a record
+	 * @see lang/function.ci
+	 */
+	static void forwardMethod(RecordMethodTest this, int x);
+
+	/**
+	 * abstract methods must be overridden when inheriting or instantiating
+	 * the compiler sees it as a `constant function reference` without `default type initializer`
+	 * @see lang/member.ci
+	 */
+	void abstractMethod(RecordMethodTest this, int x);
+
+	/**
+	 * virtual method (use to delegate)
+	 * the compiler sees it as a `constant function reference` with `default field initializer`
+	 * @see lang/member.ci
+	 */
+	void delegateMethod(RecordMethodTest this, int x) = forwardMethod;
+
+	/**
+	 * virtual methods can be overridden when inheriting or instantiating
+	 * the compiler will generate a static function and an instance member initialized with the static method
+	 *   * static void virtualMethod(...) { ... }
+	 *   * void virtualMethod(...) = [static] virtualMethod;
+	 */
+	void virtualMethod(RecordMethodTest this, int x) {
+		trace("virtualMethod", x);
+	}
+
+	/**
+	 * static forward method implementation
+	 */
+	static void forwardMethod(RecordMethodTest this, int x) {
+		trace("forwardMethod", x);
+	}
+
+//	void abstractMethod(RecordMethodTest this, int x) {}        // FIXME: make abstract method virtual?
+//	void delegateMethod(RecordMethodTest this, int x) {}        // Error: redefinition of method
+//	void virtualMethod(RecordMethodTest this, int x) {}         // Error: redefinition of method
+//	void staticMethod(RecordMethodTest this, int x) {}          // Error: redefinition of method
+}
+
+void globalFunction(RecordMethodTest this, int x) {
+	trace("globalFunction", x);
+}
+
+/** create an instance of the type */
+RecordMethodTest recordMethodTest = {
+	// abstract method must be overridden
+	abstractMethod: globalFunction;                             // ok: global function
+//	abstractMethod: RecordMethodTest.staticMethod;              // ok: static method
+//	abstractMethod: RecordMethodTest.virtualMethod;             // ok: using the generated static method
+//	abstractMethod: RecordMethodTest.delegateMethod;            // Error: delegate method is an instance member
+
+	// virtual method can be overridden
+//	virtualMethod: globalFunction;                              // Override virtual method
+//	delegateMethod: globalFunction;                             // Override delegate method
+};
+
+
+/*
+ * extension function is not yet defined, lookup the best match defined in the type.
+ */
+recordMethodTest.staticMethod(1);                               // => RecordMethodTest.staticMethod(recordMethodTest, 1);
+recordMethodTest.virtualMethod(1);                              // => recordMethodTest.virtualMethod(recordMethodTest, 1);
+
+/**
+ * extension function is defined, it has the highest priority.
+ */
+void staticMethod(RecordMethodTest this, int x) {
+	debug("extension.staticMethod");
+	if (this != null) {
+		RecordMethodTest.staticMethod(this, x);
+	}
+}
+void virtualMethod(RecordMethodTest this, int x) {
+	debug("extension.virtualMethod");
+	if (this != null) {
+		this.virtualMethod(this, x);
+	}
+}
+
+recordMethodTest.staticMethod(2);                               // => staticMethod(recordMethodTest, 1);
+recordMethodTest.virtualMethod(2);                              // => virtualMethod(recordMethodTest, 1);
+
+// invoke the original methods, by explicitly passing all the arguments
+RecordMethodTest.staticMethod(recordMethodTest, 3);             // invoke the static method implemented in the type
+RecordMethodTest.virtualMethod(recordMethodTest, 3);            // invoke the static method of the type
+recordMethodTest.virtualMethod(recordMethodTest, 3);            // invoke the virtual method of the instance
+// test array initializations
+static if (typename(integer) == null) {
+inline integer = int32;
+}
+
+// uninitialized arrays will raise compilation error
+//integer arrArrayNoInit[7];  // compilation error: uninitialized variable
+//integer arrArrayNoInit[*];  // compilation error: uninitialized variable
+//integer arrSliceNoInit[];  // compilation error: uninitialized variable
+
+integer arrFixedInit[7] = {42, 43, 44, 45, 46, 47, 48};
+//integer arrArrayInitLiteral[*] = {1, 2, 3, 4};  // compilation error: no location to store array elements
+//integer arrSliceInitLiteral[] = {1, 2, 3, 4};  // compilation error: no location to store array elements
+//integer arrFixedInitLess[7] = {42, 43};  // TODO: raise warning or error
+//integer arrFixedInitMore[7] = {0, 0, 0, 0, 0, 0, 0, 0};  // compilation error: too many values
+
+//integer arrFixedInitNull[7] = null;  // compilation error; TODO: use custom message
+integer arrArrayInitNull[*] = null;
+integer arrSliceInitNull[] = null;
+
+//integer arrFixedInitFixed[7] = arrFixedInit;  // FIXME: compile time length check; copy elements
+integer arrArrayInitFixed[*] = arrFixedInit;
+integer arrSliceInitFixed[] = arrFixedInit;
+
+//integer arrFixedInitSlice[7] = arrSliceInitFixed;  // TODO: runtime length check; copy elements
+integer arrArrayInitSlice[*]  = arrSliceInitFixed;
+integer arrSliceInitSlice[] = arrSliceInitFixed;
+
+//integer arrFixedInitPtr[7] = arrArrayInitFixed;  // compilation error; TODO: custom message: missing length
+integer arrArrayInitPtr[*] = arrArrayInitFixed;
+//integer arrSliceInitPtr[] = arrArrayInitFixed;  // compilation error: can not emit length of array
+
+// initialize character arrays with string literals
+char strFixed[7] = {'s', 't', 'r', 'i', 'n', 'g', 0};// = "string";  // FIXME: copy elements + compile time length check;
+debug("string as variant", strFixed);
+
+char strArray[*] = "string";
+debug("string as variant", strArray);
+
+char strSlice[] = "string";
+debug("string as variant", strSlice);
+
+//char err_arrFixedInitString[2] = "string";  // compilation error: TODO: custom message: data does not fit
+//int err_arrArrayInitString[32] = "string";  // compilation error: TODO: custom message: invalid assignment
+//int err_arrArrayInitString[*] = "string";  // FIXME: this should not compile: invalid assignment
+//int err_arrSliceInitString[] = "string";  // FIXME: this should not compile: invalid assignment
+
+assert(arrSliceInitNull.length == 0);
+assert(arrFixedInit[0] == 42);
+
+int lenSlice(const integer values[]) { return values.length; }
+integer nthFixed(int idx, const integer values[7]) { return values[idx]; }
+integer nthArray(int idx, const integer values[*]) { return values[idx]; }
+integer nthSlice(int idx, const integer values[]) { return values[idx]; }
+
+assertEq(7, arrFixedInit.length);
+assertEq(arrFixedInit.length, arrSliceInitFixed.length);
+assertEq(arrFixedInit.length, arrSliceInitSlice.length);
+
+assertEq(0, lenSlice(null));
+assertEq(0, lenSlice(arrSliceInitNull));
+assertEq(arrFixedInit.length, lenSlice(arrFixedInit));
+assertEq(arrFixedInit.length, lenSlice(arrSliceInitFixed));
+assertEq(arrFixedInit.length, lenSlice(arrSliceInitSlice));
+
+for (int i = 0; i < arrFixedInit.length; i += 1) {
+	integer expected = 42 + i;
+	assert(expected == arrFixedInit[i]);
+	assert(expected == arrArrayInitFixed[i]);
+	assert(expected == arrSliceInitFixed[i]);
+
+	assert(expected == nthFixed(i, arrFixedInit));
+	assert(expected == nthFixed(i, arrArrayInitFixed));
+	assert(expected == nthFixed(i, arrSliceInitFixed));
+
+	assert(expected == nthArray(i, arrFixedInit));
+	assert(expected == nthArray(i, arrArrayInitFixed));
+	assert(expected == nthArray(i, arrSliceInitFixed));
+
+	assert(expected == nthSlice(i, arrFixedInit));
+	//assert(expected == nthSlice(i, arrArrayInitFixed));	// compilation error: can not emit length of array
+	assert(expected == nthSlice(i, arrSliceInitFixed));
+
+	assert(expected == arrSliceInitSlice[i]);
+}
+
+/* TODO: Initialize all elements of an array with a default value
+int a[100] = {*: 4};
+=> {
+	static for (int i = 0; i < a.length; ++i) {
+		a[i] = 4;
+	}
+}*/
+
+/* TODO: Initialize the first elements with the given values and the rest with a default value
+int a[100] = {1, 2, 3, *: 64};
+=> {
+	a[0] = 1;
+	a[1] = 2;
+	a[2] = 3;
+	static for (int i = 3; i < a.length; ++i) {
+		a[i] = 64;
+	}
+}*/
+
+/* TODO: Initialize all elements of an array with a default value, then override some of them
+char xmlEscape[*][255] = {
+	*: null;
+	'"': "&quot;";
+	'\'': "&apos;";
+	'<': "&lt;";
+	'>': "&gt;";
+	'&': "&amp;";
+};
+=> {
+	for (int i = 0; i < xmlEscape.length; ++i) {
+		xmlEscape[i] = null;
+	}
+	xmlEscape['"'] = "&quot;";
+	xmlEscape['\''] = "&apos;";
+	xmlEscape['<'] = "&lt;";
+	xmlEscape['>'] = "&gt;";
+	xmlEscape['&'] = "&amp;";
+}*/
+
+/* TODO: Initialize all elements of an array with a generator value
+int a[100] = {*: mul(*, 2)};
+=> {
+	static for (int i = 0; i < a.length; ++i) {
+		a[i] = mul(i, 2);
+	}
+}*/
+
+// test basic reflection
+
+int sizeofVoid = sizeof(void);
+int sizeofBool = sizeof(bool);
+int sizeofChar = sizeof(char);
+int sizeofInt8 = sizeof(int8);
+int sizeofInt16 = sizeof(int16);
+int sizeofInt32 = sizeof(int32);
+int sizeofInt64 = sizeof(int64);
+int sizeofUint8 = sizeof(uint8);
+int sizeofUint16 = sizeof(uint16);
+int sizeofUint32 = sizeof(uint32);
+int sizeofUint64 = sizeof(uint64);
+int sizeofFloat32 = sizeof(float32);
+int sizeofFloat64 = sizeof(float64);
+int sizeofPointer = sizeof(pointer);
+int sizeofVariant = sizeof(variant);
+int sizeofTypename = sizeof(typename);
+int sizeofFunction = sizeof(function);
+int sizeofObject = sizeof(object);
+
+struct RecordSizeof: object {
+	int64 x = 0;
+}
+
+struct RecordSizeofExt: RecordSizeof {
+	int32 y = 0;
+}
+
+typename typeofRecord = RecordSizeofExt;
+char nameOfRecord[*] = typename.name(typeofRecord);
+int offsetOfRecord = typeofRecord.offset;
+int sizeOfRecord = sizeof(typeofRecord);
+char fileOfRecord[*] = typename.file(typeofRecord);
+int lineOfRecord = typename.line(typeofRecord);
+
+typename typeofBase = typename.base(typeofRecord);
+char nameOfBase[*] = typename.name(typeofBase);
+int offsetOfBase = typeofBase.offset;
+int sizeOfBase = sizeof(typeofBase);
+char fileOfBase[*] = typename.file(typeofBase);
+int lineOfBase = typename.line(typeofBase);
+
+typename typeofBase1 = typename.base(typeofBase);
+int offsetOfBase1 = typeofBase1.offset;
+int sizeOfBase1 = typeofBase1.size;
+
+typename typeofBase2 = typename.base(typeofBase1);
+int offsetOfBase2 = typeofBase2.offset;
+int sizeOfBase2 = typeofBase2.size;
+// TEST: overload
+
+inline overload = 1;
+inline overload() = 2;
+inline overload(int32 a) = 3;
+inline overload(float32 a) = 4;
+inline overload(int a, int b) = 5;
+
+float32 overload1 = overload;
+float32 overload2 = overload();
+float32 overload3 = overload(0);
+float32 overload4 = overload(0f);
+float32 overload5 = overload(0, 0);
+
+struct Celsius { float64 degrees; }
+struct Fahrenheit { float64 degrees; }
+
+// initialization
+//TODO: inline Celsius(float64 value) = { degrees: value };
+//TODO: inline Fahrenheit(float64 value) = { degrees: value };
+inline Celsius(float64 value) = Celsius(emit(float64(value)));
+inline Fahrenheit(float64 value) = Fahrenheit(emit(float64(value)));
+
+// type conversions
+inline Celsius(Fahrenheit value) = Celsius((value.degrees - 32) / 1.8);
+inline Fahrenheit(Celsius value) = Fahrenheit(value.degrees * 1.8 + 32);
+
+Celsius boilC = Celsius(100.);                 // => inline Celsius(float64 value)
+Fahrenheit boilF = Fahrenheit(boilC);          // => inline Fahrenheit(Celsius value)
+// test if statements are correctly generated and executed
+
+for ( ; ; ) {
+	debug("for ( ; ; )");
+	break;
+}
+
+for (int i = 0; i < 2; i += 1) {
+	debug("for (int i = 0; i < 2; i += 1)", i);
+}
+
+int forIdx;
+for (forIdx = 0; forIdx < 2; forIdx += 1) {
+	debug("for (forIdx = 0; forIdx < 2; forIdx += 1)", forIdx);
+}
+
+for (int i = 0; i < 7; i += 1) {
+	if (i < 2) {
+		continue;
+	}
+	debug("for with continue", i);
+}
+
+for (int i = 0; i < 7; i += 1) {
+	if (i > 2) {
+		break;
+	}
+	debug("for with break", i);
+}
+
+/* TODO: Unimplemented feature
+for (int i : 3 ... 40) {
+	debug("i", i);
+}*/
+
+/* TODO: Unimplemented feature
+int array[20];
+for (int i: array) {
+	debug("i", i);
+}*/
+// test if statements are correctly generated and executed
+
+static if (0 == 0) {
+	raise(raise.debug, 1, "0 == 0", null);
+}
+
+static if (0 != 0) {
+	raise(raise.debug, 2, "0 != 0", null);
+}
+
+static if (0 == 0) {
+	raise(raise.debug, 3, "0 == 0", null);
+}
+else {
+	raise(raise.debug, 4, "0 != 0", null);
+}
+
+static if (0 != 0) {
+	raise(raise.debug, 5, "0 != 0", null);
+}
+else {
+	raise(raise.debug, 6, "0 == 0", null);
+}
+
+{
+	int t = 0;
+
+	if (t == 0) {
+		raise(raise.debug, 7, "t == 0", t);
+	}
+
+	if (t != 0) {
+		raise(raise.debug, 8, "t != 0", t);
+	}
+
+	if (t == 0) {
+		raise(raise.debug, 9, "t == 0", t);
+	}
+	else {
+		raise(raise.debug, 10, "t != 0", t);
+	}
+
+	if (t != 0) {
+		raise(raise.debug, 11, "t != 0", t);
+	}
+	else {
+		raise(raise.debug, 12, "t == 0", t);
+	}
+
+	if (t == 0) {
+		raise(raise.debug, 9, "t == 0", t);
+	}
+	else if (t == 1) {	// Fixme: printAsm: incorrect output
+		raise(raise.debug, 10, "t == 1", t);
+	}
+	else if (t == 2) {
+		raise(raise.debug, 10, "t == 2", t);
+	}
+	else if (t == 3) {
+		raise(raise.debug, 10, "t == 3", t);
+	}
+	else if (t == 4) {
+		raise(raise.debug, 10, "t == 4", t);
+	}
+	else if (t == 5) {
+		raise(raise.debug, 10, "t == 5", t);
+	}
+	else {
+		raise(raise.debug, 10, "t not in (0, 1, 2, 3, 4, 5)", t);
+	}
+}
+
+static if (typename(integer) == null) {
+error("integer is not declared");
+}
+
+static if (typename(integer) != typename) {
+error("integer is not a type");
+}
+// test if functions are correctly generated and executed
+
+/// function with empty implementation
+void empty() {}
+
+/// function with implementation
+int funAdd(int x, int y) {
+	return x + y;
+}
+
+/// function invocation
+int funAddResult = funAdd(2, 7);
+
+/// initialized function reference
+int funAddRef(int x, int y) = funAdd;
+
+/// function reference invocation
+int funAddRefResult = funAddRef(2, 8);
+
+/// forward function reference (must be implemented somewhere)
+int funMul(int x, int y);
+
+/// forward function invocation
+int funMulResult = funMul(2, 6);
+
+/// initialized function reference (copy address)
+int funMulRef(int x, int y) = funMul;
+
+/// function reference invocation
+int funMulRefResult = funMulRef(2, 7);
+
+/// forward function implementation
+int funMul(int x, int y) {
+	return x * y;
+}
+
+/// recursive function implementation
+uint32 fib(uint32 n) {
+	if (n <= 1) {
+		return n;
+	}
+	return fib(n-1) + fib(n-2);
+}
+
+/// recursive function invocation
+uint32 fibonacci_13 = fib(13);
+// align 0 => union
+struct record_pack0: 0 {
+	uint8 _0;
+	uint64 a;
+	uint8 _1;
+	uint32 b;
+	uint8 _2;
+	uint16 c;
+}
+
+// align 1 => no padding
+struct record_pack1: 1 {
+	uint8 _0;
+	uint64 a;
+	uint8 _1;
+	uint32 b;
+	uint8 _2;
+	uint16 c;
+}
+
+// align 2 => padding is max 2
+struct record_pack2: 2 {
+	uint8 _0;
+	uint64 a;
+	uint8 _1;
+	uint32 b;
+	uint8 _2;
+	uint16 c;
+}
+
+// align 4 => padding is max 4
+struct record_pack4: 4 {
+	uint8 _0;
+	uint64 a;
+	uint8 _1;
+	uint32 b;
+	uint8 _2;
+	uint16 c;
+}
+
+// align 8 => padding is max 8
+struct record_pack8: 8 {
+	uint8 _0;
+	uint64 a;
+	uint8 _1;
+	uint32 b;
+	uint8 _2;
+	uint16 c;
+}
+
+// no alignment => padding is set by the compiler
+struct record_packDef {
+	uint8 _0;
+	uint64 a;
+	uint8 _1;
+	uint32 b;
+	uint8 _2;
+	uint16 c;
+}
+// value type
+struct rgbF32 {
+	float32 r;  // red
+	float32 g;  // green
+	float32 b;  // blue
+}
+
+// packed type (size = 3)
+struct rgbU8: 1 {
+	uint8 b;  // blue
+	uint8 g;  // green
+	uint8 r;  // red
+}
+
+// union type
+struct color: 0 {
+	uint32 col;
+	rgbU8 rgb;
+}
+
+// TODO: reference counted type
+struct Color: object {
+	rgbF32 value;
+}
+
+rgbU8 black = {r: 0, g: 0, b: 0};
+rgbU8 green = {r: 0, g: 255, b: 0};
+rgbU8 white = {r: 255, g: 255, b: 255};
+
+color cyan = {col: 0x00ffff};
+color blue = {rgb: {r: 0, g: 0, b: 255}};
+// Assign value variable to reference, pointer, variant and typename.
+
+static if (typename(integer) == null) {
+inline integer = int32;
+}
+
+static integer value = 42;
+integer valueRef& = value;
+pointer valuePtr = value;
+variant valueVar = value;
+
+integer fromRef = valueRef;
+integer fromPtr& = valuePtr;
+integer fromVar& = valueVar;	// FixMe: unBox(with runtime type-check) variant to reference conversions
+
+integer nullRef& = null;
+pointer nullPtr = null;
+variant nullVar = null;
+typename nullTyp = null;
+function nullFun = null;
+object nullObj = null;
+
+pointer typePtr = integer;
+variant typeVar = integer;
+typename typeTyp = integer;
+
+integer local = value;
+integer copyVal = local;
+integer copyRef& = valueRef;
+pointer copyPtr = valuePtr;
+variant copyVar = valueVar;
+typename copyTyp = typeTyp;
+
+// Assign type names to pointer
+pointer ptrVoid = void;
+pointer ptrBool = bool;
+pointer ptrChar = char;
+pointer ptrInt8 = int8;
+pointer ptrInt16 = int16;
+pointer ptrInt32 = int32;
+pointer ptrInt64 = int64;
+pointer ptrUint8 = uint8;
+pointer ptrUint16 = uint16;
+pointer ptrUint32 = uint32;
+pointer ptrUint64 = uint64;
+pointer ptrFloat32 = float32;
+pointer ptrFloat64 = float64;
+pointer ptrTypename = typename;
+pointer ptrFunction = function;
+pointer ptrPointer = pointer;
+pointer ptrVariant = variant;
+pointer ptrObject = object;
+
+// Assign type names to variant
+variant varVoid = void;
+variant varBool = bool;
+variant varChar = char;
+variant varInt8 = int8;
+variant varInt16 = int16;
+variant varInt32 = int32;
+variant varInt64 = int64;
+variant varUint8 = uint8;
+variant varUint16 = uint16;
+variant varUint32 = uint32;
+variant varUint64 = uint64;
+variant varFloat32 = float32;
+variant varFloat64 = float64;
+variant varTypename = typename;
+variant varFunction = function;
+variant varPointer = pointer;
+variant varVariant = variant;
+variant varObject = object;
+
+// Assign type names to typename
+typename typVoid = void;
+typename typBool = bool;
+typename typChar = char;
+typename typInt8 = int8;
+typename typInt16 = int16;
+typename typInt32 = int32;
+typename typInt64 = int64;
+typename typUint8 = uint8;
+typename typUint16 = uint16;
+typename typUint32 = uint32;
+typename typUint64 = uint64;
+typename typFloat32 = float32;
+typename typFloat64 = float64;
+typename typTypename = typename;
+typename typFunction = function;
+typename typPointer = pointer;
+typename typVariant = variant;
+typename typObject = object;
+
+// get the type of value
+pointer valueOfPtr = pointer(value);
+variant valueOfVar = variant(value);
+typename valueOfTyp = typename(value);
+
+typename typeOfValue = typename(value);
+// typename assignValue = value;  // FIXME: this should be not possible
+// typename assignVariant = valueVar;  // FIXME: this should extract the type?
+// typename typeOfVar = typename(valueVar);// FIXME: extract type from variant: integer, not variant
+
+// Assign pointer to variant: add pointer as type and copy the reference
+variant copyPtrFloat64 = ptrFloat64;
+
+// Assign variant to pointer: discards typename and copy reference
+pointer copyVarFloat64 = varFloat64;
+// test the emit intrinsic of the language
+
+int32 emitldz32 = emit(load.z32);
+int64 emitldz64 = emit(load.z64);
+
+int32 emitA = 42;
+int32 emitB = 96;
+
+/// Emit the calculation of `emitA + emitB`
+int32 emitAddI32 = emit(int32(emitA), int32(emitB), add.i32);
+
+/// Emit the calculation of `10 / 5`
+int32 emitDivI32 = emit(int32(10), int32(5), div.i32);
+
+/// Emit the calculation of `float32.sin(3.14f / 2)`
+float32 emitNfcF32 = emit(float32(3.14), float32(2), div.f32, float32.sin);
+
+/// interpret a 32 bit floating point number as an 32 bit integer
+inline floatAsInt32(float32 value) = int32(emit(float32(value)));
+/// interpret a 64 bit floating point number as an 64 bit integer
+inline floatAsInt64(float64 value) = int64(emit(float64(value)));
+
+int32 emitFloatAsInt1 = floatAsInt32(500);
+int64 emitFloatAsInt2 = floatAsInt32(500);
+int32 emitFloatAsInt3 = floatAsInt64(500);
+int64 emitFloatAsInt4 = floatAsInt64(500);
+
+// create a slice with runtime length set to 3, from the given character sequence
+char emitSlice[] = emit(int(3), pointer("string"));
+
+// these should not compile
+//int64 i64Zero = emit(load.z32);  // TODO: change error message: invalid assignment/initialization: size of variable is different from the value's
+//int32 i32Zero = emit(load.z64);  // TODO: change error message: invalid assignment/initialization: size of variable is different from the value's
+/** Uninitialized variables will be initialized with default type initializer: 0
+*/
+int variable;
+
+/** Constant variables must be explicitly initialized
+*/
+const int constant = 42;
+
+struct ComplexVal {
+	const float64 re;
+	const float64 im = 0;
+}
+struct ComplexObj: object {
+	const float64 re;
+	const float64 im = 0;
+}
+
+/** Value types must be explicitly initialized
+ * the initializer will be extended with implicit field initializers
+{re: 8} => {
+	valInitImplicit.re := 8;
+	valInitImplicit.im := 0;
+}*/
+ComplexVal valInitImplicit = {re: 8};
+
+/** Reference types must be explicitly initialized
+ * the initializer will be extended with instance creation
+{re: 8} => {
+	objInitImplicit := Object.create(ComplexObj);
+	objInitImplicit.re := 8;
+	objInitImplicit.im := 0;
+}*/
+ComplexObj objInitImplicit = {re: 8};
+
+/** variable type can be base type of the explicit initializer type
+ComplexObj {re: 8} => {
+	objInitExplicit := Object.create(ComplexObj);
+	objInitExplicit.re := 8;
+	objInitExplicit.im := 0;
+}*/
+object objInitExplicit = ComplexObj {re: 8};
+
+/* value type references can not be initialized with object initializer
+	purpose of it is to reference an existing variable.
+*/
+//ComplexVal localRec& = {re: 8};
+/// fixed size array, initialized with literal
+//int array[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+/// dynamic size array, initialized with literal
+int slice[] = {0, 1};
+
+/// fixed size array, initialized with null
+//int arrayInitNull[10] = null;
+//int arrayInitCopy[10] = array;
+
+//int sliceInitNull[] = null;
+//int sliceInitArray[] = array;
+//int sliceInitSlice[] = slice;
+//slice = array;
+
+//int ptr[*] = null;
+//ptr = array;
+// inline "todo/.ci";
+// inline all the test files
+
+// integer should be defined as one of: int8, int16, int32, int64, uint8, uint16, uint32, uint64, char
+inline integer = int64;
+
+
+// Aliasing
+inline "lang/emit.ci"?;
+inline "lang/inlineMacros.ci"?;
+inline "lang/overload.inline.ci"?;
+
+// native calls
+inline "std/number.ci"?;
+inline "std/memory.ci"?;
+inline "std/tryExec.ci"?;
+
+
+// Variables
+inline "lang/init.reference.ci"?;
+inline "lang/init.variable.ci"?;
+
+// Functions
+inline "lang/function.ci"?;
+inline "lang/reflect.ci"?;
+//inline "lang/todo.funIterator.ci";
+
+// Records & Arrays
+inline "lang/init.member.ci"?;
+inline "lang/init.method.ci"?;
+inline "lang/init.array.ci"?;
+
+inline "lang/recUnion.ci"?;
+inline "lang/recPacking.ci"?;
+
+// Enumerations
+//inline "todo/enum.ci";
+
+
+// Operators
+inline "lang/useOperator.ci"?;
+
+
+// statements
+inline "lang/stmt.if.ci"?;
+inline "lang/stmt.for.ci"?;
+
+// implemented functions
+inline "std/test.math.ci"?;
+
+// */
+/**
+ * Add two numbers without using arithmetic operators
+ * https://www.geeksforgeeks.org/add-two-numbers-without-using-arithmetic-operators/
+ */
+int add(int x, int y) {
+	// Iterate till there is no carry
+	for (;y != 0;) {
+		// carry now contains common set bits of x and y
+		int carry = x & y;
+
+		// Sum of bits of x and y where at least one of the bits is not set
+		x = x ^ y;
+
+		// Carry is shifted by one so that adding it to x gives the required sum
+		y = carry << 1;
+	}
+	return x;
+}
+
+/**
+ * Subtract two numbers without using arithmetic operators
+ * https://www.geeksforgeeks.org/subtract-two-numbers-without-using-arithmetic-operators/
+ */
+int sub(int x, int y) {
+	// Iterate till there is no carry
+	for (;y != 0;) {
+		// borrow contains common set bits of y and unset bits of x
+		int borrow = (~x) & y;
+
+		// Subtraction of bits of x and y where at least one of the bits is not set
+		x = x ^ y;
+
+		// Borrow is shifted by one so that subtracting it from x gives the required sum
+		y = borrow << 1;
+	}
+	return x;
+}
+
+int a = 15537;
+int b = 37551;
+
+int add0 = a + b;
+int add1 = add(a, b);
+
+int sub0 = a - b;
+int sub1 = sub(a, b);
+// test the trigonometry functions from Math
+
+void assertEq(const char func[*], float64 x, float64 returned, float64 expected) {
+	inline epsilon = 1e-15;
+	if (Math.cmp(returned, expected, epsilon) == 0) {
+		return;
+	}
+
+	variant extra[2] = {func,x};
+	NotEquals details = {
+		expected: expected;
+		returned: returned;
+		extras: extra;
+	};
+	raise(raise.abort, raise.defTrace, "assertion failed", details);
+}
+
+void assertEq(const char func[*], float32 x, float32 returned, float32 expected) {
+	inline epsilon = 1e-6f;
+	if (Math.cmp(returned, expected, epsilon) == 0) {
+		return;
+	}
+
+	variant extra[2] = {func,x};
+	NotEquals details = {
+		expected: expected;
+		returned: returned;
+		extras: extra;
+	};
+	raise(raise.abort, raise.defTrace, "assertion failed", details);
+}
+
+for (float64 t = 0; t < Math.pi; t += 1. / 10000) {
+	assertEq("Sin", t, Math.sin(t), float64.sin(t));
+	assertEq("Cos", t, Math.cos(t), float64.cos(t));
+	assertEq("Sin", float32(t), float32(Math.sin(t)), float32.sin(t));
+	assertEq("Cos", float32(t), float32(Math.cos(t)), float32.cos(t));
+}
+
+// TODO: improve accuracy remove padding of 0.4
+for (float64 t = -Math.pi / 2 + .4; t < Math.pi / 2 - .4; t += 1. / 10000) {
+	assertEq("Tan", t, Math.tan(t), float64.tan(t));
+	assertEq("Tan", float32(t), float32(Math.tan(t)), float32.tan(t));
+}
+// test complex numbers
+
+inline Neg(Complex a) = Complex(-a.re, -a.im);
+inline Add(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
+inline Sub(Complex a, Complex b) = Complex(a.re - b.re, a.im - b.im);
+inline Mul(Complex a, Complex b) = Complex(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re);
+
+Complex valA = {re: 9, im: 2};
+Complex valB = {re: 2, im: 3};
+
+Complex Neg = Neg(valA);
+Complex neg = neg(valA);
+
+Complex Add = Add(valA, valB);
+Complex add = add(valA, valB);
+
+Complex Sub = Sub(valA, valB);
+Complex sub = sub(valA, valB);
+
+Complex Mul = Mul(valA, valB);
+Complex mul = mul(valA, valB);
+// test functions implemented in file: `Bits.ci`
+inline "/cmplStd/lib/math/Bits.ci";
+
+inline byte(uint64 value, int i) = uint8((value >> 8 * i) & 255);
+
+static void assertEq(int64 expected, int64 returned, const char func[*], variant extras...) {
+	if (returned == expected) {
+		return;
+	}
+	struct NotEquals {
+		const variant returned;
+		const variant expected;
+		const char function[*];
+		const variant extras[];
+	}
+	NotEquals details = {
+		returned: returned;
+		expected: expected;
+		function: func;
+		extras: extras;
+	};
+	raise(raise.abort, raise.defTrace, "assertion failed", details);
+}
+
+for (int i = 0; i < 65536; i += 1) {
+	byte bytes[8] = {};
+	uint64 x& = pointer(bytes);
+	x = i * 250;
+
+	// test swap bytes
+	for (int j = 0; j < bytes.length; j += 1) {
+		// FIXME: array element access does not zero extend
+		// assertEq(bytes[j], byte(swapBytes(x), 7 - j));
+
+		assertEq(byte(x, j), byte(swapBytes(x), 7 - j), "swapBytes", i, j);
+		if (j < 4) {
+			assertEq(byte(x, j), byte(swapBytes(uint32(x)), 3 - j), "swapBytes", i, j);
+			if (j < 2) {
+				assertEq(byte(x, j), byte(swapBytes(uint16(x)), 1 - j), "swapBytes", i, j);
+			}
+		}
+	}
+
+	if (i < 64) {
+		x = 1U << i;
+		assertEq(i, scanLsb(x), "scanLsb", i);
+		assertEq(i, scanLsb(x), "scanLsb", i);
+		assertEq(x, keepMsb(x), "keepMsb", i);
+		assertEq(x, keepLsb(x), "keepLsb", i);
+		assertEq(1, countBits(x), "countBits", i, x);
+		assertEq(2, countBits(x | swapBits(x)), "countBits", i, x);
+		assertEq(2, countBits(x | swapBytes(x)), "countBits", i);
+
+		// test 32 bit functions
+		if (i < 32) {
+			assertEq(i, scanMsb(uint32(x)), "scanMsb", i);
+			assertEq(i, scanLsb(uint32(x)), "scanLsb", i);
+			assertEq(x, keepMsb(uint32(x)), "keepMsb", i);
+			assertEq(x, keepMsb(uint32(x | i)), "keepMsb", i);
+			assertEq(x, keepLsb(uint32(x)), "keepLsb", i);
+			assertEq(1, countBits(uint32(x)), "countBits", i, x);
+			if (i < 16) {
+				assertEq(i, scanMsb(uint16(x)), "scanMsb", i);
+				assertEq(i, scanLsb(uint16(x)), "scanLsb", i);
+				assertEq(x, keepLsb(uint16(x)), "keepLsb", i);
+				if (i < 8) {
+					assertEq(i, scanMsb(uint8(x)), "scanMsb", i);
+					assertEq(i, scanLsb(uint8(x)), "scanLsb", i);
+					assertEq(x, keepLsb(uint8(x)), "keepLsb", i);
+				}
+			}
+			for (int j = 0; j < 32 - i; j += 1) {
+				x = ((1U << i) - 1) << j;
+				assertEq(i, countBits(uint32(x)), "countBits", i, j, x);
+				if (i + j < 16) {
+					assertEq(2 * i, countBits(uint32(x | swapBits(uint32(x)))), "countBits", i, j, x);
+					assertEq(2 * i, countBits(uint32(x | swapBytes(uint32(x)))), "countBits", i, j, x);
+				}
+			}
+		}
+
+		for (int j = 0; j < 64 - i; j += 1) {
+			x = ((1U << i) - 1) << j;
+			assertEq(i, countBits(x), "countBits", i, j, x);
+			if (i + j < 32) {
+				assertEq(2 * i, countBits(x | swapBits(x)), "countBits", i, j, x);
+				assertEq(2 * i, countBits(x | swapBytes(x)), "countBits", i, j, x);
+			}
+		}
+	}
+}
+// run with `-debug/P` switch to trace caught errors
+/* known errors:
+	Invalid state
+	Invalid memory access
+	Invalid instruction
+	Stack Overflow
+	Division by Zero
+	External call aborted execution
+*/
+
+void noError(pointer ptr) {
+}
+
+void stackOverflow(pointer ptr) {
+	// speed up the overflow allocating 8 kb memory in each call
+	byte data[8 << 10] = {};
+	stackOverflow(ptr);
+}
+
+void divisionByZero(pointer args) {
+	int value = 3 / 0;
+}
+
+void abortExecution(pointer args) {
+	struct NotEquals {
+		char message[*];
+		int expected;
+		int returned;
+	}
+	NotEquals details = {
+		message: "assertion failed";
+		expected: 97;
+		returned: 77;
+	};
+	abort("fatal error", details);
+}
+
+void invalidMemoryAccess(pointer args) {
+	int32 i32Ref& = null;
+	int i32Val = i32Ref;
+}
+
+void invalidInstruction(pointer args) {
+	emit(load.z32, ret);
+}
+
+int tryExecErr0 = tryExec(null, noError);
+int tryExecErr1 = tryExec(null, null);
+int tryExecErr2 = tryExec(null, stackOverflow);
+int tryExecErr3 = tryExec(null, divisionByZero);
+int tryExecErr4 = tryExec(null, invalidInstruction);
+int tryExecErr5 = tryExec(null, invalidMemoryAccess);
+int tryExecErr6 = tryExec(null, abortExecution);
+// test the functions from Math
+
+float64 testMathFloor_1 = Math.floor(3.2);
+float64 testMathFloor_2 = Math.floor(3.5);
+float64 testMathFloor_3 = Math.floor(3.6);
+float64 testMathFloor_4 = Math.floor(-3.2);
+float64 testMathFloor_5 = Math.floor(-3.5);
+float64 testMathFloor_6 = Math.floor(-3.6);
+
+float64 testMathSign_1F = Math.sign(0.2F);
+float64 testMathSign_2F = Math.sign(0.0F);
+float64 testMathSign_3F = Math.sign(-.9F);
+float64 testMathSign_1f = Math.sign(0.2f);
+float64 testMathSign_2f = Math.sign(0.0f);
+float64 testMathSign_3f = Math.sign(-.9f);
+
+float64 testMathAbs_1F = Math.abs(0.2F);
+float64 testMathAbs_2F = Math.abs(0.0F);
+float64 testMathAbs_3F = Math.abs(-.9F);
+float64 testMathAbs_1f = Math.abs(0.2f);
+float64 testMathAbs_2f = Math.abs(0.0f);
+float64 testMathAbs_3f = Math.abs(-.9f);
+
+float64 testMathMin_1f = Math.min(1f, 2f);
+float64 testMathMax_2f = Math.max(1f, 2f);
+float64 testMathMin_1F = Math.min(1F, 2F);
+float64 testMathMax_2F = Math.max(1F, 2F);
+
+float64 testMathClamp_1f = Math.clamp(10f, 0f, 1f);
+float64 testMathClamp_1F = Math.clamp(10F, 0F, 1F);
+
+float64 testMathLerp_1f = Math.lerp(.5f, 0f, 2f);
+float64 testMathLerp_1F = Math.lerp(.5F, 0F, 2F);
+
+float64 testMathSmooth_1f = Math.smooth(1f, 0f, 1f);
+float64 testMathSmooth_1F = Math.smooth(1F, 0F, 1F);
+
+float64 testMathMin_nan = Math.min();
+float64 testMathMin_1 = Math.min(6, 2, 5, 8, 2, 1, 9, 2, 6);
+float64 testMathMax_nan = Math.max();
+float64 testMathMax_9 = Math.max(6, 2, 5, 8, 2, 1, 9, 2, 6);
+
+float64 testMathSum_0 = Math.sum();
+float64 testMathSum_1 = Math.sum(1);
+float64 testMathSum_3 = Math.sum(1, 2);
+float64 testMathSum_55 = Math.sum(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+float64 testMathEval_x = 10;
+float64 testMathEval_0 = Math.eval(testMathEval_x);
+float64 testMathEval_1 = Math.eval(testMathEval_x, 1.);
+float64 testMathEval_2 = Math.eval(testMathEval_x, 1., 1.);
+float64 testMathEval_3 = Math.eval(testMathEval_x, 1., 1., 1.);
+float64 testMathEval_4 = Math.eval(testMathEval_x, 1., 1., 1., 1.);
+float64 testMathEval_5 = Math.eval(testMathEval_x, 1., 1., 1., 1., 1.);
+float64 testMathEval_6 = Math.eval(testMathEval_x, 1., 1., 1., 1., 1., 1.);
+
+float64 testMathSin_f64 = Math.sin(Math.pi / 2);
+float64 testMathCos_f64 = Math.cos(Math.pi / 2);
+float64 testMathTan_f64 = Math.tan(Math.pi / 4);
+float64 testMathSinh_f64 = Math.sinh(Math.pi / 2);
+float64 testMathCosh_f64 = Math.cosh(Math.pi / 2);
+//float64 testMathTanh_f64 = Math.tanh(Math.pi / 4);
+float64 testMathAsin_f64 = Math.asin(.2);
+float64 testMathAcos_f64 = Math.acos(.2);
+//float64 testMathAtan_f64 = Math.atan(.3);
+
+bool testMathCmp_f32 = Math.cmp(1.0e-5f, 1.2e-5f, 1e-5f) == 0;
+bool testMathCmp_f64 = Math.cmp(1.0e-5F, 1.2e-5F, 1e-5F) == 0;
+
+float64 testMathAbsMod_f64_0a = Math.absMod(10F, 10F);
+float64 testMathAbsMod_f64_0b = Math.absMod(0F, 10F);
+float64 testMathAbsMod_f64_0c = Math.absMod(-10F, 10F);
+
+float64 testMathAbsMod_f64_9a = Math.absMod(19F, 10F);
+float64 testMathAbsMod_f64_9b = Math.absMod(9F, 10F);
+float64 testMathAbsMod_f64_9c = Math.absMod(-1F, 10F);
+float64 testMathAbsMod_f64_9d = Math.absMod(-11F, 10F);
+
+float64 testMathAbsMod_f64_8a = Math.absMod(18F, 10F);
+float64 testMathAbsMod_f64_8b = Math.absMod(8F, 10F);
+float64 testMathAbsMod_f64_8c = Math.absMod(-2F, 10F);
+float64 testMathAbsMod_f64_8d = Math.absMod(-12F, 10F);
+
+float32 testMathAbsMod_f32_0a = Math.absMod(10f, 10f);
+float32 testMathAbsMod_f32_0b = Math.absMod(0f, 10f);
+float32 testMathAbsMod_f32_0c = Math.absMod(-10f, 10f);
+
+float32 testMathAbsMod_f32_9a = Math.absMod(19f, 10f);
+float32 testMathAbsMod_f32_9b = Math.absMod(9f, 10f);
+float32 testMathAbsMod_f32_9c = Math.absMod(-1f, 10f);
+float32 testMathAbsMod_f32_9d = Math.absMod(-11f, 10f);
+
+float32 testMathAbsMod_f32_8a = Math.absMod(18f, 10f);
+float32 testMathAbsMod_f32_8b = Math.absMod(8f, 10f);
+float32 testMathAbsMod_f32_8c = Math.absMod(-2f, 10f);
+float32 testMathAbsMod_f32_8d = Math.absMod(-12f, 10f);
+
+//float64 testMathLog_f64 = Math.log(Math.e * Math.e * Math.e);
+//float64 testMathExp_f64 = Math.exp(1F);
+//float64 testMathPow_f64 = Math.pow(Math.pi * Math.pi, .5F);
+//float64 testMathSqrt_f64 = Math.sqrt(Math.pi * Math.pi);
+//float64 testMathAtan_f64 = Math.atan2(Math.pi, 1F);
+
+// TODO: add tests also these functions
+//lib/std/math.Complex.ci:20:[.03dda0, .03dda7): exec(0), time(0 / 0.000 ms): Complex(re: float64): Complex
+//lib/std/math.Complex.ci:25:[.03dda8, .03ddaf): exec(0), time(0 / 0.000 ms): Complex(re: float64, im: float64): Complex
+//lib/std/math.Complex.ci:66:[.03ddb0, .03de2b): exec(0), time(0 / 0.000 ms): div(a: Complex, b: Complex): Complex
+//lib/std/math.Complex.ci:93:[.03de30, .03de4f): exec(0), time(0 / 0.000 ms): inv(a: Complex): Complex
+//lib/std/math.Complex.ci:107:[.03de50, .03deb4): exec(0), time(0 / 0.000 ms): pow(a: Complex, b: Complex): Complex
+// test builtin native functions
+
+float64 pi64 = 3.14159265358979323846264338327950288419716939937510582097494459;
+float64 e64 = 2.71828182845904523536028747135266249775724709369995957496696763;
+
+float32 pi32 = pi64;
+float32 e32 = e64;
+
+/// pack 8 bit color components (0 .. 255) to R8G8B8 color format
+inline rgb888(int r, int g, int b) = r << 16 & 0xff0000 | g << 8 & 0x00ff00 | b & 0x0000ff;
+/// pack 8 bit color components (0 .. 255) to R5G6B5 color format
+inline rgb565(int r, int g, int b) = r << 8 & 0xf800 | g << 3 & 0x07e0 | b >> 3 & 0x001f;
+
+int r_comp = 14 << 3;
+int g_comp = 63 << 2;
+int b_comp = 31 << 3;
+
+int32 r5g6b5 = rgb565(r_comp, g_comp, b_comp);
+int32 r8g8b8 = rgb888(r_comp, g_comp, b_comp);
+
+int32 zxtR5 = uint32.zxt(r5g6b5, 11, 5);
+int32 zxtG6 = uint32.zxt(r5g6b5, 5, 6);
+int32 zxtB5 = uint32.zxt(r5g6b5, 0, 5);
+
+int32 sxtR5 = uint32.sxt(r5g6b5, 11, 5);
+int32 sxtG6 = uint32.sxt(r5g6b5, 5, 6);
+int32 sxtB5 = uint32.sxt(r5g6b5, 0, 5);
+
+int32 zxtR8 = uint32.zxt(r8g8b8, 16, 8);
+int32 zxtG8 = uint32.zxt(r8g8b8, 8, 8);
+int32 zxtB8 = uint32.zxt(r8g8b8, 0, 8);
+
+int32 sxtR8 = uint32.sxt(r8g8b8, 16, 8);
+int32 sxtG8 = uint32.sxt(r8g8b8, 8, 8);
+int32 sxtB8 = uint32.sxt(r8g8b8, 0, 8);
+
+float64 testSin_f64 = float64.sin(pi64 / 2);
+float64 testCos_f64 = float64.cos(pi64 / 2);
+float64 testTan_f64 = float64.tan(pi64 / 4);
+float64 testLog_f64 = float64.log(e64 * e64 * e64);
+float64 testExp_f64 = float64.exp(1F);
+float64 testPow_f64 = float64.pow(pi64 * pi64, .5F);
+float64 testSqrt_f64 = float64.sqrt(pi64 * pi64);
+float64 testAtan_f64 = float64.atan2(pi64, 1F);
+
+float32 testSin_f32 = float32.sin(pi32 / 2);
+float32 testCos_f32 = float32.cos(pi32 / 2);
+float32 testTan_f32 = float32.tan(pi32 / 4);
+float32 testLog_f32 = float32.log(e32 * e32 * e32);
+float32 testExp_f32 = float32.exp(1f);
+float32 testPow_f32 = float32.pow(pi32 * pi32, .5f);
+float32 testSqrt_f32 = float32.sqrt(pi32 * pi32);
+float32 testAtan_f32 = float32.atan2(pi32, 1f);
+
+int32 testPopulation_u32 = uint32.pop(r5g6b5);
+uint32 testSwapBits_u32 = uint32.swap(r5g6b5);
+int32 testBitScanReverse_u32 = uint32.bsr(r5g6b5);
+int32 testBitScanForward_u32 = uint32.bsf(r5g6b5);
+int32 testHighBit_u32 = uint32.hib(r5g6b5);
+int32 testLowBit_u32 = uint32.lob(r5g6b5);
+
+int32 testZeroExtend_u32 = uint32.zxt(r5g6b5, 0, 5);
+int32 testSignExtend_u32 = uint32.sxt(r5g6b5, 0, 5);
+
+int32 testZeroExtend_u64 = uint64.zxt(r5g6b5, 0, 5);
+int32 testSignExtend_u64 = uint64.sxt(r5g6b5, 0, 5);
+// test memory related functions
+
+inline realloc(pointer data, int size) = pointer.alloc(data, size);
+inline malloc(int size) = pointer.alloc(null, size);
+inline free(pointer data) = pointer.alloc(data, 0);
+
+pointer p1 = malloc(1024);
+pointer p2 = malloc(80);
+pointer p3 = malloc(160);
+pointer p4 = malloc(820);
+
+// clear and copy memory
+pointer.fill(p1, 0, 1024);
+pointer.copy(p1, p3, 160);
+
+// free memory
+free(p1);
+free(p2);
+free(p3);
+free(p4);
+
+// copy and clear memory
+int64 val1 = 42;
+int64 val2 = 96;
+
+debug("val1", val1);
+debug("val2", val2);
+
+pointer.move(pointer(val2), pointer(val1), sizeof(int64));
+pointer.fill(pointer(val1), 0, sizeof(int64));
+
+debug("val1", val1);
+debug("val2", val2);
+/// emulated implementation of transform function
+void transform(Image surf, const Rect rect&, Image src, const Rect roi&, int32 interpolate, float32 mat[16]) {
+	Rect dRec = {
+		x: rect != null ? rect.x : 0;
+		y: rect != null ? rect.y : 0;
+		w: rect != null ? rect.w : surf.width();
+		h: rect != null ? rect.h : surf.height();
+	};
+	Rect sRec = {
+		x: roi != null ? roi.x : 0;
+		y: roi != null ? roi.y : 0;
+		w: roi != null ? roi.w : src.width();
+		h: roi != null ? roi.h : src.height();
+	};
+
+	float32 xx = mat != null ? mat[0] : float32(sRec.w) / dRec.w;
+	float32 xy = mat != null ? mat[1] : 0;
+	float32 xt = mat != null ? mat[3] : sRec.x;
+	float32 yy = mat != null ? mat[5] : float32(sRec.h) / dRec.h;
+	float32 yx = mat != null ? mat[4] : 0;
+	float32 yt = mat != null ? mat[7] : sRec.y;
+
+	if (!surf.clip(&dRec)) {
+		// nothing to set
+		return;
+	}
+
+	if (!src.clip(&sRec)) {
+		// nothing to get
+		return;
+	}
+
+	for (int y = 0; y < dRec.h; y += 1) {
+		int dy = dRec.y + y;
+		float32 sy = sRec.y + y;
+		for (int x = 0; x < dRec.w; x += 1) {
+			int dx = dRec.x + x;
+			float32 sx = sRec.x + x;
+			float32 tx = (xx * sx + xy * sy + xt) / src.width();
+			float32 ty = (yx * sx + yy * sy + yt) / src.height();
+			surf.set(dx, dy, argb(src.tex(tx, ty)));
+		}
+	}
+}
+/// emulated implementation of blur function
+void blur(Image img, int radius, double sigma) {
+	static double gauss(double x, double sigma) {
+		inline SQRT_2_PI_INV = 0.398942280401432677939946059935;
+		double t = x / sigma;
+		/*switch (dx) {
+			default:
+				break;
+			case -1:
+				return 1;
+			case 0:
+				return SQRT_2_PI_INV * exp(-0.5*t*t) / sigma;
+			case 1:
+				return -x * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma);
+			case 2:
+				return (x * x - sigma * sigma) * SQRT_2_PI_INV * exp(-0.5*t*t) / (sigma * sigma * sigma * sigma * sigma);
+		}*/
+		return SQRT_2_PI_INV * double.exp(-0.5 * t * t) / sigma;
+	}
+
+	int32 kernel[1024] = {};
+	int size = radius * 2 + 1;
+	assert(size < kernel.length);
+
+	float64 kernelSum = 0;
+	float64 kernelFlt[kernel.length] = {};
+	for (int i = 0; i < size; i += 1) {
+		kernelFlt[i] = gauss(radius - i, sigma);
+		kernelSum += kernelFlt[i];
+	}
+
+	for (int i = 0; i < size; i += 1) {
+		kernel[i] = 65536 * (kernelFlt[i] / kernelSum);
+	}
+
+	int width = img.width();
+	int height = img.height();
+
+	Image tmp = Image(width, height, img.depth());
+
+	// x direction: inout -> temp
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			int32 r = 0;
+			int32 g = 0;
+			int32 b = 0;
+			for (int i = 0; i < size; i += 1) {
+				int _x = x + i - radius;
+				if (_x >= 0 && _x < width) {
+					argb col = argb(img.get(_x, y));
+					int32 _k = kernel[i];
+					r += _k * rch(col);
+					g += _k * gch(col);
+					b += _k * bch(col);
+				}
+			}
+			tmp.set(x, y, argb(r >> 16, g >> 16, b >> 16));
+		}
+	}
+
+	// y direction: temp -> inout
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			int32 r = 0;
+			int32 g = 0;
+			int32 b = 0;
+			for (int i = 0; i < size; i += 1) {
+				int _y = y + i - radius;
+				if (_y >= 0 && _y < height) {
+					argb col = argb(tmp.get(x, _y));
+					int32 _k = kernel[i];
+					r += _k * rch(col);
+					g += _k * gch(col);
+					b += _k * bch(col);
+				}
+			}
+			img.set(x, y, argb(r >> 16, g >> 16, b >> 16));
+		}
+	}
+
+	tmp.destroy();
+}
+/// emulated implementation of blend function
+void blend(Image surf, int32 x0, int32 y0, const Image src, const Rect roi&, int32 alpha, bool dstAlpha, vec4f blend(vec4f base, vec4f with)) {
+	int width = surf.width();
+	int height = surf.height();
+
+	assert(!dstAlpha, "not implemented");
+	assert(roi == null, "not implemented");
+
+	inline lrp(int32 l, int32 r) = int32(l + alpha * (r - l) / 255);
+	if (blend == null) {
+		for (int y = 0; y < height; y += 1) {
+			for (int x = 0; x < width; x += 1) {
+				argb col = argb(surf.get(x,y));
+				int r = rch(col);
+				int g = gch(col);
+				int b = bch(col);
+
+				col = argb(src.get(x,y));
+				r = lrp(r, rch(col));
+				g = lrp(g, gch(col));
+				b = lrp(b, bch(col));
+
+				surf.set(x + x0, y + y0, argb(r, g, b));
+			}
+		}
+		return;
+	}
+
+	for (int y = 0; y < height; y += 1) {
+		for (int x = 0; x < width; x += 1) {
+			argb col = argb(surf.get(x,y));
+			int r = rch(col);
+			int g = gch(col);
+			int b = bch(col);
+
+			col = argb(blend(vec4f(col), vec4f(argb(src.get(x,y)))));
+			r = lrp(r, rch(col));
+			g = lrp(g, gch(col));
+			b = lrp(b, bch(col));
+
+			surf.set(x + x0, y + y0, argb(r, g, b));
+		}
+	}
+}
+/// Create an image with the given with, height and depth
+inline Image(int width, int height, int depth) = Image.create(width, height, depth);
+
+/// Create an image by copying another one
+Image Image(Image copy) {
+	Image result = Image.create(copy.width(), copy.height(), copy.depth());
+	result.copy(0, 0, copy, null);
+	return result;
+}
+
+/// Create an image by copying another one using a custom aspect ratio
+Image Image(Image copy, float64 aspect) {
+	int width = copy.width();
+	if (aspect > 0) {
+		width = copy.height() * aspect;
+	}
+	Image result = Image.create(width, copy.height(), copy.depth());
+	result.transform(null, copy, null, 1, null);
+	return result;
+}
+
+/// Create an image by opening an image file
+Image Image(const char fileName[*], int depth) {
+	if (fileName.endsWith(".jpeg", ignCaseCmp)) {
+		return Image.openJpg(fileName, depth);
+	}
+	if (fileName.endsWith(".jpg", ignCaseCmp)) {
+		return Image.openJpg(fileName, depth);
+	}
+	if (fileName.endsWith(".png", ignCaseCmp)) {
+		return Image.openPng(fileName, depth);
+	}
+	if (fileName.endsWith(".bmp", ignCaseCmp)) {
+		return Image.openBmp(fileName, depth);
+	}
+	abort("unknown file extension", fileName);
+}
+
+/// Create an image by opening an image file
+inline Image(const char fileName[*]) = Image(fileName, 32);
+
+/// Create an image by opening an image file with custom width and height
+Image Image(const char fileName[*], int width, int height, int depth, int align, float64 maxScale) {
+	enum: int {
+		center: 0;
+		left: 1;
+		right: 2;
+		top: 4;
+		bottom: 8;
+		fitVertical: left + right;
+		fitHorizontal: top + bottom;
+		fill: 0x10;
+		highRes: 0x20;
+	}
+
+	float64 scale = 1;
+	Image image = Image(fileName, depth);
+	Image result = Image(width, height, depth);
+
+	int alignVertical = align & fitVertical;
+	int alignHorizontal = align & fitHorizontal;
+
+	bool fitWidth = alignVertical == fitVertical;
+	bool fitHeight = alignHorizontal == fitHorizontal;
+
+	if (fitWidth && fitHeight) {
+		float64 widthScale = width / float64(image.width());
+		float64 heightScale = height / float64(image.height());
+		if (align & fill) {
+			scale = Math.max(widthScale, heightScale);
+		} else {
+			scale = Math.min(widthScale, heightScale);
+		}
+	}
+	else if (fitWidth) {
+		scale = width / float64(image.width());
+	}
+	else if (fitHeight) {
+		scale = height / float64(image.height());
+	}
+	if (scale > maxScale) {
+		scale = maxScale;
+	}
+
+	// calculate translation
+	float64 tx = 0;
+	if (fitWidth || alignVertical == center) {
+		tx = (width - image.width() * scale) / 2;
+	}
+	else if (alignVertical == right) {
+		tx = (width - image.width() * scale);
+	}
+
+	float64 ty = 0;
+	if (fitHeight || alignHorizontal == center) {
+		ty = (height - image.height() * scale) / 2;
+	}
+	else if (alignHorizontal == bottom) {
+		ty = (height - image.height() * scale);
+	}
+
+	mat4f mat = {
+		x: {x: 1 / scale, y: 0, z: 0, w: -tx / scale};
+		y: {x: 0, y: 1 / scale, z: 0, w: -ty / scale};
+		z: {x: 0, y: 0, z: 1 / scale, w: 0};
+		w: {x: 0, y: 0, z: 0, w: 1};
+	};
+
+	result.transform(null, image, null, align & highRes ? 1 : 0, mat.data);
+	image.destroy();
+	return result;
+}
+
+/// Create an image by opening an image file with custom width and height
+inline Image(const char fileName[*], int width, int height, int depth, int align) = Image(fileName, width, height, depth, align, Math.inf);
+
+/// Create an image by opening an image file with custom width and height
+inline Image(const char fileName[*], int width, int height, int depth) = Image(fileName, width, height, depth, -1, Math.inf);
+
+/// Set the the color of a pixel at the given position
+inline set(Image image, int32 x, int32 y, argb color) = Image.set(image, x, y, uint32(color));
+
+/// apply the 2d lookup table to the image
+inline colorMap(Image image, const Rect roi&, const argb lut[256]) = Image.colorMap(image, roi, pointer(lut));
+
+///@public
+inline resize(Image image, const Rect rect&, const Image src, const Rect roi&, int interpolate) = Image.transform(image, rect, src, roi, interpolate, null);
+
+///@public
+inline slice(Image image, const Rect rect&) = Image.slice(Image(0, 0, image.depth()), image, rect);
+
+///@public
+bool clip(Image src, Rect roi&) {
+
+	roi.w += roi.x;
+	roi.h += roi.y;
+
+	if (roi.x < 0) {
+		roi.x = 0;
+	}
+
+	if (roi.y < 0) {
+		roi.y = 0;
+	}
+
+	int width = src.width();
+	if (roi.w > width) {
+		roi.w = width;
+	}
+
+	int height = src.height();
+	if (roi.h > height) {
+		roi.h = height;
+	}
+
+	roi.w -= roi.x;
+	roi.h -= roi.y;
+
+	if (roi.w <= 0) {
+		return false;
+	}
+	if (roi.h <= 0) {
+		return false;
+	}
+	return true;
+}
+
+/// Fill the entire image with the given color
+inline fill(Image image, uint32 color) = image.fillRect(0, 0, 65536, 65536, color);
+/// Fill the given region of the image with the given color
+inline fill(Image image, const Rect roi&, uint32 color) = image.fillRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
+/// Fill the given region and padding of the image with the given color
+inline fill(Image image, const Rect roi&, int pad, uint32 color) = image.fillRect(roi.x - pad, roi.y - pad, roi.x + roi.w + pad, roi.y + roi.h + pad, color);
+
+///@public
+inline drawRect(Image image, const Rect roi&, uint32 color) = image.drawRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
+
+/// Fill the surface by evaluating the given function for each pixel
+void eval(Image image, const Rect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
+	Rect rect = {
+		x: roi != null ? roi.x : 0;
+		y: roi != null ? roi.y : 0;
+		w: roi != null ? roi.w : image.width();
+		h: roi != null ? roi.h : image.height();
+	};
+
+	if (!image.clip(&rect)) {
+		return;
+	}
+
+	vec4f in = {
+		x: 0;
+		y: 0;
+		z: aspect;
+		w: time;
+	};
+	float32 w = image.width();
+	float32 h = image.height();
+	for (int y = rect.y; y < rect.y + rect.h; y += 1) {
+		in.y = y / h;
+		for (int x = rect.x; x < rect.x + rect.w; x += 1) {
+			in.x = x / w;
+			image.set(x, y, argb(eval(in)));
+		}
+	}
+}
+
+///@public
+void tile(Image image, int x, int y, Image src, Rect roi&) {
+	Rect rect = {
+		x: roi != null ? roi.x : 0;
+		y: roi != null ? roi.y : 0;
+		w: roi != null ? roi.w : src.width();
+		h: roi != null ? roi.h : src.height();
+	};
+
+	if (!src.clip(&rect)) {
+		return;
+	}
+
+	if (x < 0) {
+		x = -(-x % rect.w);
+	}
+	if (y < 0) {
+		y = -(-y % rect.h);
+	}
+	int width = image.width();
+	int height = image.height();
+	for (int j = y; j < height; j += rect.h) {
+		for (int i = x; i < width; i += rect.w) {
+			image.copy(i, j, src, rect);
+		}
+	}
+}
+/// Create a mesh by opening a file
+Mesh Mesh(const char fileName[*]) {
+	if (fileName.endsWith(".obj", ignCaseCmp)) {
+		return Mesh.openObj(fileName);
+	}
+	if (fileName.endsWith(".3ds", ignCaseCmp)) {
+		return Mesh.open3ds(fileName);
+	}
+	abort("unknown file extension", fileName);
+}
+// micro ui, TODO: add comments
+
+struct Style {
+	const Image font;
+
+	const FormatFlags flagsInt;
+	const FormatFlags flagsFlt;
+
+	int backgroundColor = 0x1a1a1a;
+	int focusedColor = 0x3b4754;
+	int valueColor = 0x6897bb;
+	int textColor = 0xdadada;
+
+	int border = 3;
+	int padding = 8;
+
+	enum: int32 {
+		left: 1;
+		right: 2;
+
+		top: 4;
+		bottom: 8;
+
+		center: 0;
+
+		fitVertical: left + right;
+		fitHorizontal: top + bottom;
+	}
+
+	/// Align one rect containing text relative to its container
+	static void align(const Style this&, Rect rect, Rect valueRect&, const char value[*], int align) {
+		rect.x += this.padding;
+		rect.y += this.padding;
+		rect.w -= 2 * this.padding;
+		rect.h -= 2 * this.padding;
+		this.font.clipText(&valueRect, value);
+
+		if (valueRect.w > rect.w) {
+			valueRect.w = rect.w;
+		}
+
+		int vertical = align & fitVertical;
+		if (vertical == center) {
+			valueRect.x = rect.x + (rect.w - valueRect.w) / 2;
+		}
+		else if (vertical == right) {
+			valueRect.x = rect.x + (rect.w - valueRect.w);
+		}
+		else if (vertical == left) {
+			valueRect.x = rect.x;
+		}
+		else { // fit
+			valueRect.x = rect.x;
+			valueRect.w = rect.w;
+		}
+
+		int horizontal = align & fitHorizontal;
+		if (horizontal == center) {
+			valueRect.y = rect.y + (rect.h - valueRect.h) / 2;
+		}
+		else if (horizontal == bottom) {
+			valueRect.y = rect.y + (rect.h - valueRect.h);
+		}
+		else if (horizontal == top) {
+			valueRect.y = rect.y;
+		}
+		else { // fit
+			valueRect.y = rect.y;
+			valueRect.h = rect.h;
+		}
+	}
+
+	//- private debug function
+	static void align(const Style this&, Rect rect, Rect valueRect&, const char value[*], int align, Image offs) {
+		enum: uint32 {
+			// chromium inspector colors
+			margin: 0xf9cc9d; //dark: 0xae8152;
+			border: 0xffeebc; //dark: 0xe3c381;
+			padding: 0xc3d799; //dark: 0xb6c373;
+			content: 0x8cb7c5; //dark: 0x87b1bc;
+		}
+		align(&this, rect, &valueRect, value, align);
+		offs.fill(valueRect, this.padding, padding);
+		offs.fill(valueRect, content);
+	}// */
+}
+struct KeyEvent {
+	const bool release;
+	const bool isShift;
+	const bool isCtrl;
+	const bool isAlt;
+	const int repeat;
+	const int key;
+}
+struct MouseEvent {
+	const Rect clientRect&;
+	const bool release;
+	const bool isShift;
+	const bool isCtrl;
+	const bool isAlt;
+	const int repeat;
+	const int button;
+	const int dx = 0;
+	const int dy = 0;
+	const int x;
+	const int y;
+}
+
+struct View: object {
+	const int height = 0;
+	const int group = 0;
+	bool enabled = true;
+	bool selectable = true;
+	const variant data = null;
+
+	bool onMouseEvent(View this, const MouseEvent event&) = null;
+	bool onClick(View this) = null;
+	bool onReset(View this) = null;
+}
+
+struct Button: View {
+	const char text[*];
+	/* FIXME: do the override, use this method as default initializer
+	// TODO: override or overload: bool onClick(Button this) { ... }
+	bool onClick(Button this) {
+		View.onClick(this);   // call super
+		trace("onClick", this);
+		return this.enabled;
+	}// */
+
+	void onDraw(Button this, Image offs, Rect rect, const Style style&) {
+		Style.align(style, rect, &rect, this.text, Style.left);
+		offs.drawText(rect, style.font, this.text, style.textColor);
+	}
+}
+
+struct Switch: View {
+	const char text[*];
+	/* TODO: allow selecting one out of multiple choices
+	const char choices[*][] = {
+		"off",
+		"on"
+	};
+	int selected = 0;*/
+
+	const char on[*] = "on";
+	const char off[*] = "off";
+
+	bool checked = false;
+	const bool resetValue = false;
+
+	bool onUpdate(Switch this, bool checked) {
+		this.checked = checked;
+		return true;
+	}
+
+	void onDraw(Switch this, Image offs, Rect rect, const Style style&) {
+		Rect valueRoi = rect;
+		char value[*] = this.checked ? this.on : this.off;
+
+		Style.align(style, valueRoi, &valueRoi, value, Style.right);
+		rect.w -= valueRoi.w + style.padding;
+		Style.align(style, rect, &rect, this.text, Style.left);
+		offs.drawText(valueRoi, style.font, value, style.valueColor);
+		offs.drawText(rect, style.font, this.text, style.textColor);
+	}
+}
+
+struct Slider: View {
+	const char text[*];
+	int value = 0;
+	const int minimum = 0;
+	const int maximum = -1u >> 1;
+	const int divisor = 0;
+	const int resetValue = 0;
+
+	bool onUpdate(Slider this, int value) {
+		if (value > this.maximum) {
+			value = this.maximum;
+		}
+		if (value < this.minimum) {
+			value = this.minimum;
+		}
+		if (this.value == value) {
+			return false;
+		}
+		this.value = value;
+		return true;
+	}
+
+	void onDraw(Slider this, Image offs, Rect rect, const Style style&) {
+		Rect valueRoi = rect;
+		char value[64] = {0};
+		if (this.divisor != 0) {
+			float32 valueF64 = float64(this.value) / this.divisor;
+			value.append(0, valueF64, style.flagsFlt);
+		} else {
+			value.append(0, this.value, style.flagsInt);
+		}
+
+		Style.align(style, valueRoi, &valueRoi, value, Style.right);
+		rect.w -= valueRoi.w + style.padding;
+		Style.align(style, rect, &rect, this.text, Style.left);
+		offs.drawText(valueRoi, style.font, value, style.valueColor);
+		offs.drawText(rect, style.font, this.text, style.textColor);
+	}
+}
+
+struct Histogram: View {
+	const bool lines = false;
+	// histogram data is in alpha channel, display it with color rgb
+	bool color = false;
+	argb data[256] = null;   // FIXME: this should be not possible
+
+	void update(Histogram this, Image image) {
+		uint32 data[*] = pointer(this.data);
+		image.calcRgbHist(null, &data);
+		this.color = false;
+	}
+
+	bool onUpdate(Histogram this, int idx, int value) {
+		this.data[idx] = argb(idx, value, value, value);
+		return true;
+	}
+
+	void onDraw(Histogram this, Image offs, const Rect rect, const Style style&) {
+		enum {
+			colB: 0x4371c6;
+			colG: 0x72d874;
+			colR: 0xfc6165;
+			colL: 0xdadada;
+		}
+		int px = (rect.w - 256) / 2;
+		if (this.lines) {
+			int y = rect.y + rect.h - 1;
+			int pb = bch(this.data[0]) * rect.h / 256;
+			int pg = gch(this.data[0]) * rect.h / 256;
+			int pr = rch(this.data[0]) * rect.h / 256;
+			int pl = ach(this.data[0]) * rect.h / 256;
+
+			for (int i = 1; i < this.data.length; i += 1) {
+				int x = rect.x + i + px;
+				argb data = this.data[i];
+				int bv = bch(data) * rect.h / 256;
+				int gv = gch(data) * rect.h / 256;
+				int rv = rch(data) * rect.h / 256;
+				int lv = ach(data) * rect.h / 256;
+
+				if (this.color) {
+					offs.drawLine(x, y - pl, x, y - lv, uint32(data));
+				} else {
+					offs.drawLine(x, y - pb, x, y - bv, colB);
+					offs.drawLine(x, y - pg, x, y - gv, colG);
+					offs.drawLine(x, y - pr, x, y - rv, colR);
+					offs.drawLine(x, y - pl, x, y - lv, colL);
+				}
+
+				pb = bv;
+				pg = gv;
+				pr = rv;
+				pl = lv;
+			}
+		} else {
+			for (int i = 0; i < this.data.length; i += 1) {
+				argb data = this.data[i];
+				if (this.color) {
+					int x = rect.x + i + px;
+					int y1 = rect.y + rect.h;
+					int y0 = y1 - ach(data) * rect.h / 256;
+					offs.fillRect(x, y0 - 1, x + 1, y1, uint32(data));
+				} else {
+					int x = rect.x + px + i;
+					int bv = bch(data) * rect.h / 256;
+					int gv = gch(data) * rect.h / 256;
+					int rv = rch(data) * rect.h / 256;
+					int lv = ach(data) * rect.h / 256;
+					for (int y = 0; y < rect.h; y += 1) {
+						uint32 b = colB * uint32(y < bv);
+						uint32 g = colG * uint32(y < gv);
+						uint32 r = colR * uint32(y < rv);
+						uint32 l = colL * uint32(y < lv);
+						offs.set(x, rect.h - y + rect.y - 1, r | g | b | l);
+					}
+				}
+			}
+		}
+	}
+}
+
+struct Layout: object {
+	Style style;
+	Image offs;
+	Rect rect;
+
+	bool visible = true;
+	bool measure = true;
+	int selectedIndex = -1;
+	int activeIndex = -1;
+	bool colorPick = false;
+	View views[64] = null;
+	Rect rects[64] = null;
+	int items = 0;
+	int group = 0;
+}
+
+float64 valFlt(Slider slider&) {
+	float64 value = slider.value;
+	if (slider.divisor != 0) {
+		return value / slider.divisor;
+	}
+	return value / (slider.maximum - slider.minimum);
+}
+
+inline selected(const Layout layout&) = layout.selectedIndex < 0 ? null : pointer(layout.views[layout.selectedIndex]);
+inline selected(const Layout layout&, typename type) = layout.selectedIndex < 0 ? null : layout.views[layout.selectedIndex].as(type);
+
+inline activeIndex(const Layout layout&) = layout.activeIndex != -1 ? layout.activeIndex : layout.selectedIndex;
+
+bool isSelected(const Layout layout&, View items...) {
+	View selected = layout.selected();
+	for (int i = 0; i < items.length; i += 1) {
+		if (items[i] == selected) {
+			return true;
+		}
+	}
+	return false;
+}
+bool isActive(const Layout layout&, View views...) {
+	int activeIndex = layout.activeIndex != -1 ? layout.activeIndex : layout.selectedIndex;
+	if (activeIndex < 0) {
+		return false;
+	}
+	View view = layout.views[activeIndex];
+	for (int i = 0; i < views.length; i += 1) {
+		if (views[i] == view) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool setSelected(Layout layout&, View view) {
+	if (view == null) {
+		layout.selectedIndex = -1;
+		return true;
+	}
+	for (int i = 0; i < layout.items; i += 1) {
+		if (layout.views[i] == view) {
+			layout.selectedIndex = i;
+			return true;
+		}
+	}
+	return false;
+}
+bool setGroup(Layout layout&, int group) {
+	if (layout.group != group) {
+		layout.group = group;
+		layout.measure = true;
+		return true;
+	}
+	return false;
+}
+
+void onInit(View this, Layout layout&, int idx) {
+	// FIXME: dispatch click event using inheritance and override
+	if (Histogram item = this.as(Histogram)) {
+		for (int i = 0; i < 256; i += 1) {
+			item.data[i] = argb(i, i, i, i);
+		}
+		return;
+	}
+	if (Slider item = this.as(Slider)) {
+		Slider.onUpdate(item, item.value);// clamp initial value
+		int resetValue& = pointer(item.resetValue);
+		resetValue = item.value;
+		return;
+	}
+	if (Switch item = this.as(Switch)) {
+		bool resetValue& = pointer(item.resetValue);
+		resetValue = item.checked;
+		return;
+	}
+	if (Button item = this.as(Button)) {
+		return;
+	}
+	abort("invalid view", this);
+}
+bool onClick(View this) {
+	if (this.onClick != null) {
+		return this.onClick(this);
+	}
+	return true;
+}
+bool onReset(View this) {
+	if (this.onReset != null) {
+		return this.onReset(this);
+	}
+	// FIXME: dispatch click event using inheritance and override
+	if (Histogram item = this.as(Histogram)) {
+		if (item.onUpdate == null) {
+			return false;
+		}
+		bool result = false;
+		for (int i = 0; i < 256; i += 1) {
+			result |= item.onUpdate(i, i);
+		}
+		return result;
+	}
+	if (Slider item = this.as(Slider)) {
+		if (item.onUpdate == null) {
+			return false;
+		}
+		return item.onUpdate(item.resetValue);
+	}
+	if (Switch item = this.as(Switch)) {
+		if (item.onUpdate == null) {
+			return false;
+		}
+		return item.onUpdate(item.resetValue);
+	}
+	if (Button item = this.as(Button)) {
+		return false;
+	}
+	abort("invalid view", this);
+	return false;
+}
+bool onEvent(View this, const KeyEvent event&) {
+	// FIXME: dispatch click event using inheritance and override
+	if (!event.release) {
+		return false;
+	}
+	if (Histogram item = this.as(Histogram)) {
+		if (event.key == ' ' || event.key == 8) {
+			return item.onReset();
+		}
+		return false;
+	}
+	if (Slider item = this.as(Slider)) {
+		if (event.key == '+' || event.key == '=') {
+			if (item.onUpdate == null) {
+				return false;
+			}
+			return item.onUpdate(item.value + (event.isShift ? 1 : 10));
+		}
+		if (event.key == '-' || event.key == '_') {
+			if (item.onUpdate == null) {
+				return false;
+			}
+			return item.onUpdate(item.value - (event.isShift ? 1 : 10));
+		}
+		if (event.key == ' ' || event.key == 8) {
+			return item.onReset();
+		}
+		return false;
+	}
+	if (Switch item = this.as(Switch)) {
+		if (event.key == ' ') {
+			if (item.onUpdate != null) {
+				item.onUpdate(!item.checked);
+			}
+			return item.onClick();
+		}
+		if (event.key == 8) {
+			return item.onReset();
+		}
+		return false;
+	}
+	if (Button item = this.as(Button)) {
+		if (event.key == ' ') {
+			return item.onClick();
+		}
+		return false;
+	}
+	abort("invalid view", this);
+	return false;
+}
+bool onEvent(View this, const MouseEvent event&) {
+	if (this.onMouseEvent != null) {
+		return this.onMouseEvent(event);
+	}
+
+	// FIXME: dispatch click event using inheritance and override
+	if (Histogram item = this.as(Histogram)) {
+		if (event.release) {
+			if (event.repeat > 1) {
+				// double click to reset
+				return item.onReset();
+			}
+			return item.onClick();
+		}
+		if (item.onUpdate == null) {
+			return false;
+		}
+
+		const Rect rect& = event.clientRect;
+		int x0 = event.x - rect.x;
+		int x1 = x0 + event.dx;
+		int y0 = event.y - rect.y;
+		int y1 = y0 + event.dy;
+
+		if (x0 > x1) {
+			int x = x0;
+			x0 = x1;
+			x1 = x;
+			int y = y0;
+			y0 = y1;
+			y1 = y;
+		}
+		int y = y0 << 16;
+		int dy = y1 - y0;
+		if (x1 != x0) {
+			dy = (dy << 16) / (x1 - x0);
+		}
+		if (x0 < 0) {
+			y -= x0 * dy;
+			x0 = 0;
+		}
+		if (x1 > 256) {
+			x1 = 256;
+		}
+		int h = rect.h;
+		for (int x = x0; x < x1; x += 1) {
+			int val = 255 * (h - (y >> 16)) / h;
+			item.onUpdate(x, val);
+			y += dy;
+		}
+		return true;
+	}
+	if (Slider item = this.as(Slider)) {
+		if (event.release) {
+			if (event.repeat > 1) {
+				// double click to reset
+				return item.onReset();
+			}
+			return item.onClick();
+		}
+		if (item.onUpdate == null) {
+			return false;
+		}
+
+		return item.onUpdate(item.value + event.dy);
+	}
+	if (Switch item = this.as(Switch)) {
+		if (event.release) {
+			if (item.onUpdate != null) {
+				item.onUpdate(!item.checked);
+			}
+			return item.onClick();
+		}
+		return false;
+	}
+	if (Button item = this.as(Button)) {
+		if (event.release) {
+			if (event.repeat > 1) {
+				// double click to reset
+				return item.onReset();
+			}
+			return item.onClick();
+		}
+		return false;
+	}
+	abort("invalid view", this);
+	return false;
+}
+
+void onMeasure(View this, Rect rect&, const Style style&) {
+	// FIXME: dispatch click event using inheritance and override
+	if (Histogram item = this.as(Histogram)) {
+		if (item.height == 0) {
+			rect.h = 128;
+		} else {
+			rect.h = item.height;
+		}
+		return;
+	}
+	if (Slider item = this.as(Slider)) {
+		if (item.height == 0) {
+			rect.h = style.font.height() + 2 * style.padding;
+		} else {
+			rect.h = item.height;
+		}
+		return;
+	}
+	if (Switch item = this.as(Switch)) {
+		if (item.height == 0) {
+			rect.h = style.font.height() + 2 * style.padding;
+		} else {
+			rect.h = item.height;
+		}
+		return;
+	}
+	if (Button item = this.as(Button)) {
+		if (item.height == 0) {
+			rect.h = style.font.height() + 2 * style.padding;
+		}
+		else if (item.text == null) {
+			// TODO: remove hack: empty button used for separator
+			rect.h = item.height + style.padding;
+		}
+		else {
+			rect.h = item.height;
+		}
+		return;
+	}
+	if (typename(item) == View) {
+		rect.h = this.height;
+		return;
+	}
+	abort("invalid view", this);
+}
+bool onDraw(View view, Image offs, const Rect rect&, const Style style&) {
+	// FIXME: dispatch click event using inheritance and override
+	if (Histogram item = view.as(Histogram)) {
+		return item.onDraw(item, offs, rect, style);
+	}
+	if (Slider item = view.as(Slider)) {
+		return item.onDraw(item, offs, rect, style);
+	}
+	if (Switch item = view.as(Switch)) {
+		return item.onDraw(item, offs, rect, style);
+	}
+	if (Button item = view.as(Button)) {
+		return item.onDraw(item, offs, rect, style);
+	}
+	abort("invalid view", view);
+}
+
+bool uiEvent(Layout layout&, int action, int button, int x, int y) {
+struct Mouse {
+	int32 clicks;   // click count
+	int64 time;     // old clock
+	int32 btn;      // old button
+	int32 x;        // old x coord
+	int32 y;        // old y coord
+
+	static int click(Mouse old&, int btn, int x, int y) {
+		if ((btn != 0 && btn != old.btn) || x != old.x || y != old.y) {
+			// reset values
+			old.clicks = 1;
+			old.time = System.millis();
+			old.btn = btn;
+			old.x = x;
+			old.y = y;
+			return 0;
+		}
+		if (btn == 0) {
+			// release button
+			// old.time = keep value?;
+			// old.btn = keep value?;
+			// old.cnt = keep value?;
+			return old.clicks;
+		}
+	
+		int64 now = System.millis();
+		if ((now - old.time) / 1000. > .5) {
+			// reset counter
+			old.clicks = 0;
+		}
+		old.time = now;
+		old.btn = btn;
+		old.clicks += 1;
+		return old.clicks;
+	}
+}
+
+static int click(Layout layout&, int x, int y) {
+	static bool test(const Rect rect&, int x, int y) {
+		if (x < rect.x || x >= rect.x + rect.w) {
+			return false;
+		}
+		if (y < rect.y || y >= rect.y + rect.h) {
+			return false;
+		}
+		return true;
+	}
+
+	if (!layout.visible) {
+		return -1;
+	}
+	if (!layout.rect.test(x, y)) {
+		return -1;
+	}
+	for (int i = 0; i < layout.items; i += 1) {
+		if (!layout.rects[i].test(x, y)) {
+			continue;
+		}
+
+		View view = layout.views[i];
+		if (!view.enabled) {
+			return -1;
+		}
+		return i;
+	}
+	return -1;
+}
+static bool select(Layout layout&, int index) {
+	assert(index >= 0, "invalid selection");
+	assert(index < layout.items, "invalid selection");
+
+	View view = layout.views[index];
+	if (!view.enabled) {
+		return false;
+	}
+	if (!view.selectable) {
+		return false;
+	}
+	if (layout.group != view.group) {
+		if (layout.group != 0) {
+			if (view.group != 0) {
+				return false;
+			}
+		}
+	}
+	layout.selectedIndex = index;
+	return true;
+}
+static bool select(Layout layout&, bool prev) {
+	layout.activeIndex = -1;
+	int selectedIndex = layout.selectedIndex;
+	for (int i = 1; i < layout.items; i += 1) {
+		int index = selectedIndex + (prev ? -i : i);
+		if (index >= layout.items) {
+			index -= layout.items;
+		}
+		else if (index < 0) {
+			index += layout.items;
+		}
+		if (layout.select(index)) {
+			return true;
+		}
+	}
+	return false;
+}
+static View active(const Layout layout&) {
+	int idx = layout.activeIndex;
+	if (idx < 0) {
+		idx = layout.selectedIndex;
+	}
+	if (idx < 0) {
+		return null;
+	}
+	return layout.views[idx];
+}
+static void measure(Layout layout&) {
+	int bottom = layout.rect.y;
+	for (int i = 0; i < layout.items; i += 1) {
+		Rect rect& = layout.rects[i];
+		View view = layout.views[i];
+
+		rect.x = layout.rect.x;
+		rect.y = bottom;
+		rect.w = layout.rect.w;
+		rect.h = view.height;
+
+		view.onMeasure(&rect, layout.style);
+		if (layout.group != view.group) {
+			if (layout.group != 0) {
+				if (view.group != 0) {
+					rect.h = 0;
+				}
+			}
+		}
+		if (rect.h > 0) {
+			bottom += rect.h;
+		}
+	}
+	layout.rect.h = bottom - layout.rect.y;
+}
+static void draw(Layout layout&) {
+	if (!layout.visible) {
+		return;
+	}
+
+	// draw background
+	if (layout.style.backgroundColor != -1) {
+		int b = layout.style.border;
+		const Rect r& = layout.rect;
+		layout.offs.fillRect(r.x - b, r.y - b, r.x + r.w + b, r.y + r.h + b, layout.style.backgroundColor);
+	}
+
+	// draw items
+	Image offs = layout.offs.slice(null);
+	for (int i = 0; i < layout.items; i += 1) {
+		View view = layout.views[i];
+		const Rect rect& = layout.rects[i];
+
+		if (i == layout.selectedIndex) {
+			layout.offs.fillRect(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, layout.style.focusedColor);
+		}
+
+		if (rect.w > 0 && rect.h > 0) {
+			offs.slice(layout.offs, rect);
+			Rect rect = {
+				x: 0; y: 0;
+				w: offs.width();
+				h: offs.height();
+			};
+			view.onDraw(offs, rect, layout.style);
+		}
+
+		if (i == layout.activeIndex) {
+			layout.offs.drawRect(rect.x, rect.y, rect.x + rect.w - 1, rect.y + rect.h - 1, layout.style.valueColor);
+		}
+	}
+	offs.destroy();
+}
+
+	static Mouse mouse = {};
+	static bool isShift;
+	static bool isCtrl;
+	static bool isAlt;
+
+	layout.colorPick = false;
+	if (action == Gui.WINDOW_INIT) {
+		layout.selectedIndex = -1;
+		layout.measure = true;
+		layout.select(false);
+		return true;
+	}
+	if (action == Gui.WINDOW_DRAW) {
+		if (layout.measure) {
+			layout.measure = false;
+			measure(layout);
+		}
+		layout.draw();
+		return true;
+	}
+	if (action == Gui.WINDOW_ENTER) {
+		// do not process event
+		return false;
+	}
+	if (action == Gui.WINDOW_LEAVE) {
+		// do not process event
+		return false;
+	}
+
+	if (action == Gui.FINGER_PRESS) {
+		// finger press results also a mouse event
+		// skip the finger event
+		return false;
+	}
+	if (action == Gui.FINGER_MOTION) {
+		// translate to mouse event
+		action = Gui.MOUSE_MOTION;
+	}
+	if (action == Gui.FINGER_RELEASE) {
+		// finger release results also a mouse event
+		// skip the finger event
+		return false;
+	}
+
+	if (action == Gui.MOUSE_PRESS) {
+		Mouse.click(&mouse, button, x, y);
+		if (button != 1) {
+			return false;
+		}
+		bool result = false;
+		int activeIndex = layout.click(x, y);
+		if (layout.activeIndex != activeIndex) {
+			// active index changed, most probably from -1
+			layout.activeIndex = activeIndex;
+			result = true;
+		}
+		if (activeIndex < 0) {
+			// allow update of selected control
+			activeIndex = layout.selectedIndex;
+			layout.colorPick = true;
+			if (activeIndex < 0) {
+				return result;
+			}
+		}
+		if (View view = layout.views[activeIndex]) {
+			Rect rect& = layout.rects[activeIndex];
+			MouseEvent event = {
+				clientRect: rect;
+				release: false;
+				isShift: isShift;
+				isCtrl: isCtrl;
+				isAlt: isAlt;
+				repeat: mouse.clicks;
+				button: button;
+				x: x;
+				y: y;
+			};
+			if (view.onEvent(event)) {
+				return true;
+			}
+		}
+		return result;
+	}
+	if (action == Gui.MOUSE_MOTION) {
+		int ox = mouse.x;
+		int oy = mouse.y;
+		Mouse.click(&mouse, -1, x, y);
+		if (button != 1) {
+			return false;
+		}
+		if (ox == x && oy == y) {
+			return false;
+		}
+		int activeIndex = layout.activeIndex;
+		if (activeIndex < 0) {
+			// allow update of selected control
+			activeIndex = layout.selectedIndex;
+			layout.colorPick = true;
+			if (activeIndex < 0) {
+				return true;
+			}
+		}
+		if (View view = layout.views[activeIndex]) {
+			Rect rect& = layout.rects[activeIndex];
+			MouseEvent event = {
+				clientRect: rect;
+				release: false;
+				isShift: isShift;
+				isCtrl: isCtrl;
+				isAlt: isAlt;
+				repeat: mouse.clicks;
+				button: button;
+				dx: ox - x;
+				dy: oy - y;
+				x: x;
+				y: y;
+			};
+			if (view.onEvent(event)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	if (action == Gui.MOUSE_RELEASE) {
+		int btn = mouse.btn;
+		Mouse.click(&mouse, 0, x, y);
+		if (button != 1) {
+			return false;
+		}
+
+		bool result = false;
+		int activeIndex = layout.activeIndex;
+		if (activeIndex >= 0) {
+			layout.activeIndex = -1;
+			result = true;
+		}
+		if (activeIndex != layout.click(x, y)) {
+			// release on a different view
+			return result;
+		}
+		if (activeIndex < 0) {
+			// might be a disabled view
+			layout.colorPick = true;
+			return result;
+		}
+		// select / focus the view
+		if (layout.select(activeIndex)) {
+			result = true;
+		}
+		if (View view = layout.views[activeIndex]) {
+			Rect rect& = layout.rects[activeIndex];
+			MouseEvent event = {
+				clientRect: rect;
+				release: true;
+				isShift: isShift;
+				isCtrl: isCtrl;
+				isAlt: isAlt;
+				repeat: mouse.clicks;
+				button: button;
+				x: x;
+				y: y;
+			};
+			if (view.onEvent(event)) {
+				result = true;
+			}
+		}
+		return result;
+	}
+
+	if (action == Gui.KEY_PRESS) {
+		isShift = (y & Gui.KEY_MASK_SHIFT) != 0;
+		isCtrl = (y & Gui.KEY_MASK_CTRL) != 0;
+		isAlt = (y & Gui.KEY_MASK_ALT) != 0;
+		if (View view = layout.active()) {
+			KeyEvent event = {
+				release: false;
+				isShift: isShift;
+				isCtrl: isCtrl;
+				isAlt: isAlt;
+				repeat: 0;
+				key: button;
+			};
+			if (view.onEvent(event)) {
+				return true;
+			}
+		}
+		if (button == '\t' || button == '\r') {
+			// Tab, Enter: select prev or next control.
+			return layout.select(isShift);
+		}
+		if (button == '[' || button == ']') {
+			// hide, show controls
+			layout.visible = !layout.visible;
+			return true;
+		}
+		if (button == 8 && isShift) {
+			for (int i = 0; i < layout.items; i += 1) {
+				layout.views[i].onReset();
+			}
+			return true;
+		}
+		return false;
+	}
+	if (action == Gui.KEY_RELEASE) {
+		isShift = (y & Gui.KEY_MASK_SHIFT) != 0;
+		isCtrl = (y & Gui.KEY_MASK_CTRL) != 0;
+		isAlt = (y & Gui.KEY_MASK_ALT) != 0;
+		if (View view = layout.active()) {
+			KeyEvent event = {
+				release: true;
+				isShift: isShift;
+				isCtrl: isCtrl;
+				isAlt: isAlt;
+				repeat: 0;
+				key: button;
+			};
+			if (view.onEvent(event)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	debug("event not processed", action);
+	return false;
+}
+
+Layout Layout(Image offs, int x, int y, Image font, View items...) {
+	Layout layout = {
+		offs: offs;
+		rect: {
+			x: x;
+			y: y;
+			w: 256;
+			h: 0;
+		};
+		style: {
+			font: font;
+			flagsInt: { padLen: 4 };
+			flagsFlt: { padLen: 4, precision: 2 };
+		};
+	};
+
+	for (int i = 0; i < layout.views.length; i += 1) {
+		layout.views[i] = null;
+	}
+
+	for (int i = 0; i < items.length; i += 1) {
+		assert(i < layout.views.length);
+		layout.views[i] = items[i];
+		items[i].onInit(&layout, i);
+	}
+	layout.items = items.length;
+
+	if (y < 0) {
+		layout.uiEvent(Gui.WINDOW_INIT, 0, 0, 0);
+		layout.rect.y = offs.height() - layout.rect.h + y;
+	}
+	if (x < 0) {
+		layout.rect.x = offs.width() - layout.rect.w + x;
+	}
+	return layout;
+}
+
+inline draw(Layout layout&) = uiEvent(layout, Gui.WINDOW_DRAW, 0, 0, 0);
+/// convert from hsv color space to rgb color space
+vec4f hsv2rgb(vec4f hsv) {
+	float32 h = hsv.x;
+	float32 s = hsv.y;
+	float32 v = hsv.z;
+
+	if (s == 0) {
+		return vec4f(v);
+	}
+
+	h *= 360 / 60;
+
+	int i = int(h);		// round
+	float32 f = h - i;	// fraction
+
+	float32 u = v;
+	float32 p = v * (1 - s);
+	float32 q = v * (1 - s * f);
+	float32 t = v * (1 - s * (1 - f));
+
+	if (i == 0) {
+		return vec4f(u, t, p);
+	}
+	if (i == 1) {
+		return vec4f(q, u, p);
+	}
+	if (i == 2) {
+		return vec4f(p, u, t);
+	}
+	if (i == 3) {
+		return vec4f(p, q, u);
+	}
+	if (i == 4) {
+		return vec4f(t, p, u);
+	}
+	return vec4f(u, p, q);
+}
+/// an 32 bit argb color
+struct argb: 0 {
+	/// value of color
+	uint32 v;
+	struct: 1 {
+		/// blue component
+		uint8 b;
+
+		/// green component
+		uint8 g;
+
+		/// red component
+		uint8 r;
+
+		/// alpha component
+		uint8 a;
+	}
+	/*enum {
+		Black             : 0x00000000;
+		White             : 0x00ffffff;
+		Aquamarine        : 0x007fffd4;
+		Azure             : 0x00007fff;
+		Blue              : 0x000000ff;
+		BlueViolet        : 0x008a2be2;
+		Brown             : 0x00a52a2a;
+		CadetBlue         : 0x005f9ea0;
+		Coral             : 0x00ff7f50;
+		CornflowerBlue    : 0x006495ed;
+		Cyan              : 0x0000ffff;
+		DarkGray          : 0x00a9a9a9;
+		DarkGrey          : 0x00a9a9a9;
+		DarkGreen         : 0x00006400;
+		DarkOliveGreen    : 0x00556b2f;
+		DarkOrchid        : 0x009932cc;
+		DarkSlateBlue     : 0x00483d8b;
+		DarkSlateGray     : 0x002f4f4f;
+		DarkSlateGrey     : 0x002f4f4f;
+		DarkTurquoise     : 0x0000ced1;
+		DarkWood          : 0x000d0301;
+		DeepPink          : 0x00ff1493;
+		DimGray           : 0x00696969;
+		DimGrey           : 0x00696969;
+		FireBrick         : 0x00b22222;
+		ForestGreen       : 0x00228b22;
+		Gold              : 0x00ffd700;
+		Goldenrod         : 0x00daa520;
+		Gray              : 0x00808080;
+		Grey              : 0x00808080;
+		Green             : 0x00008000;
+		GreenYellow       : 0x00adff2f;
+		IndianRed         : 0x00cd5c5c;
+		Khaki             : 0x00f0e68c;
+		LightBlue         : 0x00add8e6;
+		LightGray         : 0x00d3d3d3;
+		LightGrey         : 0x00d3d3d3;
+		LightSteelBlue    : 0x00b0c4de;
+		LightWood         : 0x00993d1a;
+		Lime              : 0x0000ff00;
+		LimeGreen         : 0x0032cd32;
+		Magenta           : 0x00ff00ff;
+		Maroon            : 0x00800000;
+		MedianWood        : 0x004d1f09;
+		MediumAquamarine  : 0x0066cdaa;
+		MediumBlue        : 0x000000cd;
+		MediumForestGreen : 0x006b8e23;
+		MediumGoldenrod   : 0x00eaeaad;
+		MediumOrchid      : 0x00ba55d3;
+		MediumSeaGreen    : 0x003cb371;
+		MediumSlateBlue   : 0x007b68ee;
+		MediumSpringGreen : 0x0000fa9a;
+		MediumTurquoise   : 0x0048d1cc;
+		MediumVioletRed   : 0x00c71585;
+		MidnightBlue      : 0x00191970;
+		Navy              : 0x00000080;
+		NavyBlue          : 0x0023238e;
+		Orange            : 0x00ffa500;
+		OrangeRed         : 0x00ff4500;
+		Orchid            : 0x00da70d6;
+		PaleGreen         : 0x0098fb98;
+		Pink              : 0x00ffc0cb;
+		Plum              : 0x00dda0dd;
+		Red               : 0x00ff0000;
+		Salmon            : 0x00fa8072;
+		SeaGreen          : 0x002e8b57;
+		Sienna            : 0x00a0522d;
+		SkyBlue           : 0x0087ceeb;
+		SlateBlue         : 0x006a5acd;
+		SpringGreen       : 0x0000ff7f;
+		SteelBlue         : 0x004682b4;
+		Tan               : 0x00d2b48c;
+		Thistle           : 0x00d8bfd8;
+		Turquoise         : 0x0040e0d0;
+		Violet            : 0x00ee82ee;
+		VioletRed         : 0x00cc3299;
+		Wheat             : 0x00f5deb3;
+		Yellow            : 0x00ffff00;
+		YellowGreen       : 0x009acd32;
+		//Transparent     : 0xff000000;
+	}*/
+}
+
+/// cast unsigned integer to argb value
+inline argb(uint32 argb) = argb(emit(uint32(argb)));
+/// cast argb value to unsigned integer
+inline uint32(argb value) = uint32(emit(struct(value)));
+
+
+/// clamp signed gray or color component to fit in 8 bits (0 ... 255)
+uint32 clamp_s8(int32 c) {
+	if (c < 0) {
+		return 0;
+	}
+	if (c > 255) {
+		return 255;
+	}
+	return c;
+}
+/// clamp unsigned gray or color component to fit in 8 bits (0 ... 255)
+uint32 clamp_u8(uint32 c) {
+	if (c > 255) {
+		return 255;
+	}
+	return c;
+}
+
+// construct a rgb8 gray color from the given value
+inline _gray(uint32 c) = argb((((c << 8) | c) << 8) | c);
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(int32 c) = _gray(clamp_s8(c));
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(uint32 c) = _gray(clamp_s8(c));
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(float32 c) = gray(int32(c * 255));
+/// construct a rgb8 color from the given gray value, clamp the input
+inline gray(float64 c) = gray(int32(c * 255));
+
+
+/// construct an argb color from the given components
+inline _argb(uint32 r, uint32 g, uint32 b) = argb(uint32((((r << 8) | g) << 8) | b));
+/// construct an argb color from the given components
+inline _argb(uint32 a, uint32 r, uint32 g, uint32 b) = argb(uint32((((((a << 8) | r) << 8) | g) << 8) | b));
+
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(int32 r, int32 g, int32 b) = _argb(clamp_s8(r), clamp_s8(g), clamp_s8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(r), clamp_u8(g), clamp_u8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float32 r, float32 g, float32 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float64 r, float64 g, float64 b) = argb(int32(r * 255), int32(g * 255), int32(b * 255));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(int32 a, int32 r, int32 g, int32 b) = _argb(clamp_s8(a), clamp_s8(r), clamp_s8(g), clamp_s8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(uint32 a, uint32 r, uint32 g, uint32 b) = _argb(clamp_u8(a), clamp_u8(r), clamp_u8(g), clamp_u8(b));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float32 a, float32 r, float32 g, float32 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
+/// construct a rgb8 color from the given components, clamp the input
+inline argb(float64 a, float64 r, float64 g, float64 b) = argb(int32(a * 255), int32(r * 255), int32(g * 255), int32(b * 255));
+
+
+/// get the Alpha channel of the color
+inline ach(argb color) = int32((uint32(color) >> 24) & 0xff);
+/// get the Red channel of the color
+inline rch(argb color) = int32((uint32(color) >> 16) & 0xff);
+/// get the Green channel of the color
+inline gch(argb color) = int32((uint32(color) >> 8) & 0xff);
+/// get the Blue channel of the color
+inline bch(argb color) = int32(uint32(color) & 0xff);
+
+/// get the luminosity of the color (0.299 * color.r + 0.587 * color.g + 0.114 * color.b)
+inline lum(argb color) = int32((19595 * rch(color) + 38470 * gch(color) + 7471 * bch(color)) >> 16);
+
+/// get the hue of the color
+uint32 hue(argb rgb) {
+	// adapted from: https://gist.github.com/mity/6034000
+	int r = rch(rgb);
+	int g = gch(rgb);
+	int b = bch(rgb);
+	int min = r;
+	int max = r;
+
+	if (min > g) {
+		min = g;
+	}
+	if (min > b) {
+		min = b;
+	}
+	if (max < g) {
+		max = g;
+	}
+	if (max < b) {
+		max = b;
+	}
+
+	if (max == min) {
+		return 0;
+	}
+
+	int hue = 0;
+	if (max == r) {
+		hue = ((g - b) * 60) / (max - min);
+	}
+	else if (max == g) {
+		hue = ((b - r) * 60) / (max - min) + 120;
+	}
+	else if (max == b) {
+		hue = ((r - g) * 60) / (max - min) + 240;
+	}
+	if (hue < 0) {
+		hue += 360;
+	}
+	return hue;
+}
+
+/// linear interpolate a lookup-table with the given colors
+void lerpLut(uint32 lut[], argb colors...) {
+	inline lrp(int32 t, uint32 x, uint32 y) = x + (t * (y - x + 1) >> 16);
+
+	int dt = (colors.length - 1 << 16) / (lut.length - 1);
+	for (int i = 0; i < lut.length; i += 1) {
+		int t = i * dt;
+		argb c1 = colors[t >> 16];
+		argb c2 = colors[(t >> 16) + 1];
+		int32 a = lrp(t & 0xffff, ach(c1), ach(c2));
+		int32 r = lrp(t & 0xffff, rch(c1), rch(c2));
+		int32 g = lrp(t & 0xffff, gch(c1), gch(c2));
+		int32 b = lrp(t & 0xffff, bch(c1), bch(c2));
+		lut[i] = a << 24 | r << 16 | g << 8 | b;
+	}
+}
+
+/// linear interpolate a alpha lookup-table with the given colors
+void alphaLut(uint32 lut[], int hardness, int alpha, bool reflect) {
+	int mid = hardness <= 0 ? -1 : 255;
+	int div = 256 - clamp_u8(hardness < 0 ? -hardness : hardness);
+	for (int i = 0; i < lut.length; i += 1) {
+		int t = i * 255 / (lut.length - 1);
+		lut[i] = clamp_s8((t - mid) * 255 / div + mid);
+		if (alpha < 0) {
+			lut[i] = 255 - (255 - lut[i]) * -alpha / 255;
+		} else {
+			lut[i] = 255 - lut[i] * alpha / 255;
+		}
+	}
+	if (reflect) {
+		int end = lut.length - 1;
+		int mid = lut.length / 2;
+		for (int i = end; i >= mid; i -= 1) {
+			lut[i] = lut[end];
+			end -= 2;
+		}
+		for (int i = 0; i < mid; i += 1) {
+			lut[i] = lut[lut.length - i - 1];
+		}
+	}
+}
+
+static if (typename(vec4f) != null) {
+
+/// convert an argb color to a floating point vector
+inline vec4f(argb rgb) = vec4f(rch(rgb) / 255f, gch(rgb) / 255f, bch(rgb) / 255f, ach(rgb) / 255f);
+
+/// convert a floating point vector to an argb color
+inline argb(const vec4f vec&) = argb(vec.x, vec.y, vec.z);
+
+/// calculate the luminosity of a color
+inline lum(const vec4f vec&) = 0.299f * vec.x + 0.587f * vec.y + 0.114f * vec.z;
+}
+
+inline "color.hsv.ci";
+inline "color.hsl.ci";
+// adapted from: https://gitlab.bestminr.com/bestminr/FrontShaders/-/blob/master/shaders/hsl.glsl
+/// Convert color from Rgb color space to Hsl color space
+vec4f rgb2hsl(vec4f rgb) {
+	inline min(float32 x, float32 y) = x < y ? x : y;
+	inline max(float32 x, float32 y) = x > y ? x : y;
+	inline clamp(float32 value, float32 min, float32 max) = min(max(value, min), max);
+	float fmin = min(min(rgb.x, rgb.y), rgb.z);    //Min. value of RGB
+	float fmax = max(max(rgb.x, rgb.y), rgb.z);    //Max. value of RGB
+	float delta = fmax - fmin;             //Delta RGB value
+
+	// Luminance
+	float lum = (fmax + fmin) / 2;
+
+	if (delta == 0) {
+		//This is a gray, no chroma...
+		return {
+			x: 0;   // Hue
+			y: 0;   // Saturation
+			z: lum; // Luminance
+		};
+	}
+
+	// Chromatic data...
+	float sat;
+	if (lum < 0.5f) {
+		sat = delta / (fmax + fmin);
+	} else {
+		sat = delta / (2 - fmax - fmin);
+	}
+
+	float deltaR = (((fmax - rgb.x) / 6) + (delta / 2)) / delta;
+	float deltaG = (((fmax - rgb.y) / 6) + (delta / 2)) / delta;
+	float deltaB = (((fmax - rgb.z) / 6) + (delta / 2)) / delta;
+
+	float hue;
+	if (rgb.x == fmax) {
+		hue = deltaB - deltaG;
+	}
+	else if (rgb.y == fmax) {
+		hue = (1 / 3f) + deltaR - deltaB;
+	}
+	else if (rgb.z == fmax) {
+		hue = (2 / 3f) + deltaG - deltaR;
+	}
+
+	if (hue < 0) {
+		hue += 1;
+	}
+	else if (hue > 1) {
+		hue -= 1;
+	}
+
+	return {
+		x: clamp(hue, 0, 1); // Hue
+		y: clamp(sat, 0, 1); // Saturation
+		z: clamp(lum, 0, 1); // Luminance
+	};
+}
+
+/// Convert color from Hsl color space to Rgb color space
+vec4f hsl2rgb(vec4f hsl) {
+float hue2rgb(float f1, float f2, float hue) {
+	if (hue < 0) {
+		hue += 1;
+	}
+	else if (hue > 1) {
+		hue -= 1;
+	}
+	float res;
+	if ((6 * hue) < 1) {
+		res = f1 + (f2 - f1) * 6 * hue;
+	}
+	else if ((2 * hue) < 1) {
+		res = f2;
+	}
+	else if ((3 * hue) < 2) {
+		res = f1 + (f2 - f1) * ((2 / 3f) - hue) * 6;
+	}
+	else {
+		res = f1;
+	}
+	return res;
+}
+
+	if (hsl.y == 0) {
+		return vec4f(hsl.z); // Luminance
+	}
+
+	float f2;
+	if (hsl.z < .5f) {
+		f2 = hsl.z * (1 + hsl.y);
+	}
+	else {
+		f2 = (hsl.z + hsl.y) - (hsl.y * hsl.z);
+	}
+
+	float f1 = 2 * hsl.z - f2;
+	return {
+		x: hue2rgb(f1, f2, hsl.x + (1 / 3f));
+		y: hue2rgb(f1, f2, hsl.x);
+		z: hue2rgb(f1, f2, hsl.x - (1 / 3f));
+	};
+}
+
+/* TODO: integer based hsl and hsv calculation
+/// hue saturation lightness color model
+struct hsl {
+	/// hue: 0 ... 359
+	uint16 hue;
+	/// sat: 0 ... 255
+	uint8 sat;
+	/// lum: 0 ... 255
+	uint8 lum;
+}
+
+///@public
+hsl hsl(argb rgb) {
+	// adapted from: https://gist.github.com/mity/6034000
+	int r = rch(rgb);
+	int g = gch(rgb);
+	int b = bch(rgb);
+
+	int min = r;
+	if (min > g) min = g;
+	if (min > b) min = b;
+
+	int max = r;
+	if (max < g) max = g;
+	if (max < b) max = b;
+
+	int lum = lum(rgb);
+	if (max == min) {
+		return {
+			hue: 0;
+			sat: 0;
+			lum: lum;
+		};
+	}
+
+	int hue = 0;
+	int sat = max - min;
+	//int lum = (min + max) / 2;
+	if (max == r) {
+		hue = ((g - b) * 60) / sat;
+	}
+	else if (max == g) {
+		hue = ((b - r) * 60) / sat + 120;
+	}
+	else /+if(max == b)+/ {
+		hue = ((r - g) * 60) / sat + 240;
+	}
+	if (hue < 0) {
+		hue += 360;
+	}
+	return {
+		hue: hue;
+		sat: sat;
+		lum: lum;
+	};
+}
+*/
+// graphics library extension
+inline "lib/color.ci";
+inline "lib/image.ci";
+inline "lib/mesh.ci";
+
+static if (typename(Image.blur) == null) {
+raise(raise.debug, raise.noTrace, "emulated/blur.ci", null);
+inline "lib/emulated/blur.ci";
+}
+
+static if (typename(Image.blend) == null) {
+raise(raise.debug, raise.noTrace, "emulated/blend.ci", null);
+inline "lib/emulated/blend.ci";
+}
+
+static if (typename(Image.transform) == null) {
+raise(raise.debug, raise.noTrace, "emulated/transform.ci", null);
+inline "lib/emulated/transform.ci";
+}
+
+/// Show the surface in a window
+inline show(Image surf) = Gui.showWindow(surf, null, null);
+
+/// Show the surface in a window
+void show(Image image, int onEvent(int action, int button, int ex, int ey)) {
+	if (onEvent == null) {
+		return Gui.showWindow(image, null, null);
+	}
+	static int delegate(int onEvent(int action, int button, int ex, int ey), int action, int button, int ex, int ey) {
+		return onEvent(action, button, ex, ey);
+	}
+	Gui.showWindow(image, onEvent, delegate);
+}
+
+/// Show the surfaces in a window clicking on the window toggles the shown surface
+void showDiff(Image image1, Image image2) {
+	struct Closure {
+		Image offs;
+		Image image1;
+		Image image2;
+	}
+
+	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
+		if (action == Gui.KEY_PRESS) {
+			if (button == 27) {
+				return -1;
+			}
+		}
+		if (action == Gui.MOUSE_PRESS) {
+			closure.offs.copy(0, 0, closure.image2, null);
+			return 0;
+		}
+		if (action == Gui.MOUSE_RELEASE) {
+			closure.offs.copy(0, 0, closure.image1, null);
+			return 0;
+		}
+		return 0;
+	}
+
+	Closure closure = {
+		offs: Image(image1);
+		image1: image1;
+		image2: image2;
+	};
+	Gui.showWindow(closure.offs, closure, onEvent);
+}
+
+/// Show or animate the the procedural image generated by the `eval` function
+void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) {
+	static const int64 start = System.millis();
+	struct Closure {
+		bool lerp = true;
+		const Image offs;
+		const Image thumb;
+		const float32 aspect;
+		const vec4f eval(vec4f in);
+	}
+
+	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
+		if (action == Gui.WINDOW_CLOSE) {
+			trace("closing ...");
+			return 0;
+		}
+		if (action == Gui.KEY_PRESS) {
+			if (button == 27) {
+				return -1;
+			}
+		}
+		if (action == Gui.KEY_RELEASE) {
+			if (button == ' ') {
+				float32 time = (System.millis() - start) / 1000f;
+				closure.offs.eval(null, closure.aspect, time, closure.eval);
+				return 0;
+			}
+			if (button == '\t') {
+				closure.lerp = !closure.lerp;
+			}
+			if (button == 'S') {
+				trace("dumping screen");
+				closure.offs.saveBmp("out/offs.bmp", 0);
+				closure.thumb.saveBmp("out/thumb.bmp", 0);
+			}
+		}
+
+		float32 time = (System.millis() - start) / 1000f;
+		closure.thumb.eval(null, closure.aspect, time, closure.eval);
+		closure.offs.resize(null, closure.thumb, null, closure.lerp ? 1 : 0);
+
+		// do not block for any input
+		return 1;
+	}
+
+	if (animationResolution == 0) {
+		float32 aspect = width / float32(height);
+		Image image = Image(width, height, 32);
+		image.eval(null, aspect, 0f, eval);
+		image.show(null);
+		image.destroy();
+		return;
+	}
+
+	Closure closure = {
+		offs: Image(width, height, 32);
+		thumb: Image(animationResolution, animationResolution, 32);
+		aspect: width / float32(height);
+		eval: eval;
+	};
+	Gui.showWindow(closure.offs, closure, onEvent);
+	closure.thumb.destroy();
+	closure.offs.destroy();
+}
+
+/// Show the mesh in a window
+void show(Mesh mesh, int w, int h, float32 fovy) {
+
+	struct Closure {
+		int mode;
+		Image offs;
+		Mesh mesh;
+	}
+
+	int next(int32 x, int mask) {
+		int next = x & mask;
+
+		// add lowest bit of mask
+		next += mask & -mask;
+
+		// avoid overflow
+		next &= mask;
+
+		return next | (x & ~mask);
+	}
+
+	static int onEvent(Closure closure&, int action, int button, int ex, int ey) {
+		static int ox = 0;
+		static int oy = 0;
+		static const float32 speed = 1 / 100f;
+		if (action == Gui.FINGER_MOTION) {
+			action = Gui.MOUSE_MOTION;
+		}
+		if (action == Gui.KEY_PRESS) {
+			if (button == 27) {
+				return -1;
+			}
+			else if (button == 'l') {
+				closure.mode ^= Mesh.useLights;
+			}
+			else if (button == '0') {
+				lights.enable(0, !lights.enabled(0));
+			}
+			else if (button == '1') {
+				lights.enable(1, !lights.enabled(1));
+			}
+			else if (button == '2') {
+				lights.enable(2, !lights.enabled(2));
+			}
+			else if (button == '3') {
+				lights.enable(3, !lights.enabled(3));
+			}
+			else if (button == 't') {
+				closure.mode ^= Mesh.useTexture;
+			}
+			else if (button == '/') {
+				closure.mode = next(closure.mode, Mesh.cullBack | Mesh.cullFront);
+			}
+			else if (button == '\t') {
+				closure.mode = next(closure.mode, Mesh.drawMode);
+			}
+			else if (button == '\r') {
+				vec4f eye = {x: 0, y: 0, z: 2, w: 1};
+				vec4f at = {x: 0, y: 0, z: 0, w: 1};
+				vec4f up = {x: 0, y: 1, z: 0, w: 1};
+				camera.lookAt(eye.data, at.data, up.data);
+			}
+		}
+		else if (action == Gui.MOUSE_PRESS) {
+			ox = ex;
+			oy = ey;
+			return 0;
+		}
+		else if (action == Gui.MOUSE_MOTION) {
+			float32 dir[3] = {0, 0, 0};
+			int dx = ex - ox;
+			int dy = ey - oy;
+
+			if (button == 1) {
+				// orbit
+				float32 orig[3] = {0, 0, 0};
+
+				camera.readUp(&dir);
+				camera.rotate(dir, orig, dx * speed);
+				camera.readRight(&dir);
+				camera.rotate(dir, orig, dy * speed);
+			}
+			else if (button == 2) {
+				// rotate
+				camera.readUp(&dir);
+				camera.rotate(dir, null, -dx * speed);
+				camera.readRight(&dir);
+				camera.rotate(dir, null, -dy * speed);
+			}
+			else if (button == 3) {
+				// move
+				camera.readForward(&dir);
+				camera.move(dir, dy * speed);
+			}
+			else if (button == 4) {
+				// pan
+				camera.readRight(&dir);
+				camera.move(dir, -dx * speed);
+				camera.readUp(&dir);
+				camera.move(dir, dy * speed);
+			}
+			ox = ex;
+			oy = ey;
+		}
+
+		int rendered = closure.offs.drawMesh(closure.mesh, closure.mode);
+
+		char text[256] = {};
+		int pos = text.append(0, "Vertices: ");
+		pos = text.append(pos, closure.mesh.vertices);
+		pos = text.append(pos, ", Triangles: ");
+		pos = text.append(pos, closure.mesh.triangles);
+		pos = text.append(pos, "/");
+		pos = text.append(pos, rendered);
+		Gui.setTitle(text);
+		return 0;
+	}
+
+	Closure closure = {
+		mode: Mesh.clearDepth | Mesh.clearColor | Mesh.useLights | Mesh.cullBack | Mesh.drawFill;
+		offs: Image.create3d(w, h);
+		mesh: mesh;
+	};
+	camera.projection(fovy, w / float32(h), 1, 100);
+	Gui.showWindow(closure.offs, closure, onEvent);
+	closure.offs.destroy();
+}
