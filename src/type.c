@@ -274,11 +274,6 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 
 	dieif(!ref || ref->kind != TOKEN_var, ERR_INTERNAL_ERROR);
 
-	ccKind filterStat = filter & ATTR_stat;
-	ccKind filterCnst = filter & ATTR_cnst;
-	ccKind filterKind = filter & MASK_kind;
-	ccKind filterCast = filter & MASK_cast;
-
 	astn chainedArgs = chainArgs(arguments);
 	if (arguments == cc->void_tag) {
 		chainedArgs = NULL;
@@ -291,16 +286,7 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 			continue;
 		}
 
-		if (filterStat && (sym->kind & ATTR_stat) != filterStat) {
-			continue;
-		}
-		if (filterCnst && (sym->kind & ATTR_cnst) != filterCnst) {
-			continue;
-		}
-		if (filterKind && (sym->kind & MASK_kind) != filterKind) {
-			continue;
-		}
-		if (filterCast && (sym->kind & MASK_cast) != filterCast) {
+		if (isFiltered(sym, filter)) {
 			continue;
 		}
 
@@ -418,7 +404,7 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 	if (arguments == NULL) {
 		// found multiple variables or functions with the same name
 		if (raise) {
-			error(cc->rt, ref->file, ref->line, ERR_MULTIPLE_OVERLOADS, found, best);
+			error(cc->rt, ref->file, ref->line, ERR_MULTIPLE_OVERLOADS, found, ref);
 		}
 		return NULL;
 	}
@@ -479,13 +465,14 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 				// hack: allow lookup of: vertices[i].x = 2;
 				// int this case the location is a type, and x is a member
 				sym = lookup(cc, loc->fields, ref, args, 0, raise);
+				raise = 0;
 			}
 		}
 	}
 	else {
 		// first lookup in the current scope
-		sym = cc->symbolStack[ref->ref.hash];
-		sym = lookup(cc, sym, ref, args, 0, 0);
+		loc = cc->symbolStack[ref->ref.hash];
+		sym = lookup(cc, loc, ref, args, 0, 0);
 
 		// lookup parameters, fields, etc.
 		for (loc = cc->owner; loc != NULL; loc = loc->owner) {
@@ -504,7 +491,11 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 
 	if (sym == NULL) {
 		if (raise) {
-			error(cc->rt, ref->file, ref->line, ERR_UNDEFINED_DECLARATION, ref);
+			if (loc == NULL) {
+				loc = cc->symbolStack[ref->ref.hash];
+			}
+			// lookup again to raise the error
+			lookup(cc, loc, ref, args, 0, raise);
 		}
 		return NULL;
 	}
@@ -1067,6 +1058,7 @@ ccKind canAssign(ccContext cc, symn variable, astn value, int strict) {
 			symn arg2 = valueRef->params;
 			struct astNode temp;
 
+			memset(&temp, 0, sizeof(temp));
 			temp.kind = TOKEN_var;
 			temp.type = varType;
 			temp.ref.link = variable;

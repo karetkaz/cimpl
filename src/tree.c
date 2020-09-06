@@ -93,11 +93,12 @@ astn lnkNode(ccContext cc, symn ref) {
 	return result;
 }
 
-astn opNode(ccContext cc, ccToken kind, astn lhs, astn rhs) {
+astn opNode(ccContext cc, symn type, ccToken kind, astn lhs, astn rhs) {
 	astn result = newNode(cc, kind);
 	if (result != NULL) {
 		result->op.lhso = lhs;
 		result->op.rhso = rhs;
+		result->type = type;
 	}
 	return result;
 }

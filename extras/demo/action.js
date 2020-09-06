@@ -228,7 +228,7 @@ edtFileName.onkeydown = function(event) {
 	else if (action.startsWith('#')) {
 		let command = action.substr(1);
 		//params.update({exec: command});
-		execute(command, true);
+		execute(command, false);
 	}
 
 	// `:<number>` => goto line
@@ -248,14 +248,6 @@ edtFileName.onkeydown = function(event) {
 		let cursor = editor.getSearchCursor(text, 0);
 		let selection = 0;
 		let selections = [];
-		let results = {
-			SelectAll: function() {
-				setStyle(document.body, '-right-bar');
-				editor.setCursor(selections[0].head);
-				editor.setSelections(selections);
-				editor.focus();
-			}
-		};
 		while (cursor.findNext()) {
 			let from = cursor.from();
 			let to = cursor.to();
@@ -263,12 +255,6 @@ edtFileName.onkeydown = function(event) {
 				anchor: from,
 				head: to
 			});
-			let line = 'line ' + (+cursor.pos.from.line + 1);
-			if (results[line] === undefined) {
-				results[line] = function() {
-					editor.setSelection(from, to);
-				}
-			}
 		}
 		if (selections.length === 0) {
 			setActions();
@@ -280,7 +266,14 @@ edtFileName.onkeydown = function(event) {
 			editor.focus();
 			return false;
 		}
-		setActions(results, function(direction) {
+		setActions({}, function(direction) {
+			if (direction === 'all') {
+				editor.setCursor(selections[0].head);
+				editor.setSelections(selections);
+				editor.focus();
+				setActions();
+				return;
+			}
 			selection += direction;
 			if (selection >= selections.length) {
 				selection = selections.length - 1;
@@ -375,4 +368,10 @@ CodeMirror.commands.findPrev = function(cm) {
 		return actionError();
 	}
 	commands.onNextPrev(-1);
+}
+CodeMirror.commands.selectFound = function(cm) {
+	if (commands.onNextPrev == null) {
+		return actionError();
+	}
+	commands.onNextPrev('all');
 }

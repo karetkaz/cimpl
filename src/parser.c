@@ -17,6 +17,16 @@ const struct tokenRec token_tbl[256] = {
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Utils
+static inline void addHead(astn list, astn node) {
+	dieif(list == NULL, ERR_INTERNAL_ERROR);
+	dieif(list->kind != STMT_beg, ERR_INTERNAL_ERROR);
+
+	node->next = list->lst.head;
+	list->lst.head = node;
+	if (list->lst.tail == NULL) {
+		list->lst.tail = node;
+	}
+}
 static inline void addTail(astn list, astn node) {
 	dieif(list == NULL, ERR_INTERNAL_ERROR);
 	dieif(list->kind != STMT_beg, ERR_INTERNAL_ERROR);
@@ -123,7 +133,6 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 	def = install(cc, tag->ref.name, kind, size, type, NULL);
 
 	if (def != NULL) {
-		struct astNode arg;
 		tag->ref.link = def;
 		tag->type = type;
 
@@ -136,8 +145,6 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 
 		addUsage(def, tag);
 
-		memset(&arg, 0, sizeof(arg));
-		arg.kind = TOKEN_var;
 		for (ptr = def->next; ptr; ptr = ptr->next) {
 			if (ptr->name == NULL) {
 				continue;
@@ -273,7 +280,7 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 			key = init->op.lhso;
 			value = init->op.rhso;
 			// key: value => variable.key = value;
-			init->op.lhso = opNode(cc, OPER_dot, varNode, key);
+			init->op.lhso = opNode(cc, NULL, OPER_dot, varNode, key);
 			if (!typeCheck(cc, NULL, init->op.lhso, 0)) {
 				// HACK: type of variable may differ from the initializer type:
 				// object view = Button{ ... };
@@ -286,11 +293,11 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 			key->file = value->file;
 			key->line = value->line;
 
-			key = opNode(cc, OPER_idx, varNode, key);
+			key = opNode(cc, NULL, OPER_idx, varNode, key);
 			key->file = value->file;
 			key->line = value->line;
 
-			init = opNode(cc, INIT_set, key, value);
+			init = opNode(cc, NULL, INIT_set, key, value);
 			init->file = value->file;
 			init->line = value->line;
 			init->next = value->next;
@@ -327,10 +334,46 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 	if (isArrayType(varNode->type)) {
 		symn len = varNode->type->fields;
 		if (len == NULL || len == cc->length_ref) {
-			error(cc->rt, varNode->file, varNode->line, ERR_INVALID_INITIALIZER, varNode);
-			return NULL;
+			symn ref = linkOf(varNode, 0);
+			if (varNode->kind != TOKEN_var || (isMember(ref) && !isStatic(ref))) {
+				// non static members can not expand their size, raise error, that this is not possible yet
+				error(cc->rt, varNode->file, varNode->line, ERR_INVALID_INITIALIZER, varNode);
+				return NULL;
+			}
+
+			// if slice or pointer is initialized with a literal,
+			// create a fixed size array from the literal,
+			// then assign it to the slice or pointer
+			size_t initSize = length * refSize(varNode->type->type);
+			symn arr = newDef(cc, ATTR_stat | KIND_typ | CAST_arr);
+			symn var = newDef(cc, KIND_var | CAST_val);
+
+			addLength(cc, arr, intNode(cc, length));
+			var->file = arr->file = varNode->file;
+			var->line = arr->line = varNode->line;
+			var->name = "init";
+
+			arr->type = varNode->type->type;
+			var->owner = ref;
+			var->type = arr;
+
+			var->size = arr->size = initSize;
+			var->offs = ref->size;
+			ref->size += initSize;
+
+			// slice = slice.array
+			astn arrArr = opNode(cc, var->type, OPER_dot, lnkNode(cc, ref), lnkNode(cc, var));
+			astn setLen = opNode(cc, cc->type_vid, INIT_set, lnkNode(cc, ref), arrArr);
+			arrArr->op.lhso->type = cc->emit_opc;	// FIXME: force ignore indirection of slice
+			setLen->file = ref->file;
+			setLen->line = ref->line;
+			addHead(list, setLen);
+
+			// for performance initialize the fixed size array
+			// slice[0] = 42 => slice.array[0] = 1
+			*varNode = *arrArr;
 		}
-		if (length > intValue(len->init)) {
+		else if (length > intValue(len->init)) {
 			error(cc->rt, varNode->file, varNode->line, ERR_INVALID_ARRAY_VALUES, len->init);
 		}
 	}
@@ -342,19 +385,18 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 			return initObj;
 		}
 
-		astn init = newNode(cc, INIT_set);
-		init->type = cc->type_vid;
+		astn new = lnkNode(cc, cc->libc_new);
+		astn arg = lnkNode(cc, initObj->type);
+		astn call = opNode(cc, initObj->type, OPER_fnc, new, arg);
+		call->file = arg->file = new->file = initObj->file;
+		call->line = arg->line = new->line = initObj->line;
+
+		astn init = opNode(cc, cc->type_vid, INIT_set, varNode, call);
 		init->file = varNode->file;
 		init->line = varNode->line;
-		init->op.lhso = varNode;
-		init->op.rhso = newNode(cc, OPER_fnc);
-		init->op.rhso->type = initObj->type;
-		init->op.rhso->op.lhso = lnkNode(cc, cc->libc_new);
-		init->op.rhso->op.rhso = lnkNode(cc, initObj->type);
 
 		// make allocation the first statement
-		init->next = list->lst.head;
-		list->lst.head = init;
+		addHead(list, expand2Statement(cc, init, 0));
 	}
 
 	// add default initializer of uninitialized fields
@@ -393,6 +435,10 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 			// no need to initialize hidden internal fields
 			continue;
 		}
+		if (field == cc->length_ref) {
+			// no need to initialize length field of a slice
+			continue;
+		}
 
 		astn defInit = field->init;
 		if (defInit == NULL && !isConst(field) && !isConstVar(varNode)) {
@@ -411,11 +457,9 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 			warn(cc->rt, raiseDebug, varNode->file, varNode->line, WARN_USING_DEF_TYPE_INITIALIZER, field, defInit);
 		}
 
-		astn init = newNode(cc, INIT_set);
-		init->op.lhso = opNode(cc, OPER_dot, varNode, lnkNode(cc, field));
-		init->op.rhso = defInit;
-
-		addTail(list, init);
+		astn fld = opNode(cc, NULL, OPER_dot, varNode, lnkNode(cc, field));
+		astn init = opNode(cc, NULL, INIT_set, fld, defInit);
+		addTail(list, expand2Statement(cc, init, 0));
 
 		typeCheck(cc, NULL, init, 1);
 		init->type = cc->type_vid;
@@ -425,7 +469,7 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 
 /** Expand literal initializer to initializer statement
  * complex c = {re: 5, im: 6}; => { c.re = 5; c.im = 6; };
- * TODO: int ar[3] = {1, 2, 3}; => { ar[0] = 1; ar[1] = 2; ar[2] = 3; };
+ * int ar[3] = {1, 2, 3}; => { ar[0] = 1; ar[1] = 2; ar[2] = 3; };
  * TODO: int ar[string] = {a: 3, "b": 1}; => { ar["a"] = 3; ar["b"] = 1; };
  */
 static astn expandInitializer(ccContext cc, symn variable, astn initializer) {
@@ -485,10 +529,7 @@ static ccKind qualifier(ccContext cc) {
 			// parallel
 			case PARAL_kwd:
 				skipTok(cc, PARAL_kwd, 1);
-				if (result & ATTR_paral) {
-					error(cc->rt, ast->file, ast->line, ERR_UNEXPECTED_QUAL, ast);
-				}
-				result |= ATTR_paral;
+				error(cc->rt, ast->file, ast->line, ERR_UNEXPECTED_QUAL, ast);
 				break;
 		}
 	}
@@ -513,7 +554,7 @@ static astn expression(ccContext cc, int comma) {
 
 	// parse expression using Shunting-yard algorithm
 	while ((ast = nextTok(cc, TOKEN_any, 0))) {
-		int l2r, prec = level << 4;
+		int l2r, precedence = level << 4;
 
 		// statement tokens are not allowed in expressions !!!!
 		if (ast->kind >= STMT_beg && ast->kind <= STMT_end) {
@@ -544,9 +585,9 @@ static astn expression(ccContext cc, int comma) {
 				break;
 
 			tok_operator:
-				prec |= token_tbl[ast->kind].type & 0x0f;
+				precedence |= token_tbl[ast->kind].type & 0x0f;
 				l2r = token_tbl[ast->kind].type & 0x10;
-				ast->op.prec = prec;
+				ast->op.prec = precedence;
 				while (stack < base) {
 					// associates left to right
 					if (l2r && (*stack)->op.prec <= ast->op.prec) {
@@ -1517,7 +1558,7 @@ static astn statement_if(ccContext cc, ccKind attr) {
 					def->type = typeCheck(cc, NULL, def, 1);
 					ast->stmt.init = def;
 					if (castOf(def->ref.link) == CAST_ref) {
-						test = opNode(cc, OPER_cne, lnkNode(cc, def->ref.link), tagNode(cc, "null"));
+						test = opNode(cc, NULL, OPER_cne, lnkNode(cc, def->ref.link), tagNode(cc, "null"));
 						test->type = typeCheck(cc, NULL, test, 1);
 					} else {
 						test = lnkNode(cc, def->ref.link);
@@ -1716,11 +1757,6 @@ static astn statement(ccContext cc, const char *doc) {
 		skipTok(cc, RIGHT_crl, 1);
 		ast->type = cc->type_vid;
 
-		if (attr & ATTR_paral) {
-			ast->kind = STMT_pbeg;
-			attr &= ~ATTR_paral;
-		}
-
 		if (ast->stmt.stmt == NULL) {
 			// remove nodes such: {{;{;};{}{}}}
 			recycle(cc, ast);
@@ -1766,10 +1802,6 @@ static astn statement(ccContext cc, const char *doc) {
 				ast->kind = STMT_sfor;
 				attr &= ~ATTR_stat;
 			}
-			else if (attr & ATTR_paral) {
-				ast->kind = STMT_pfor;
-				attr &= ~ATTR_paral;
-			}
 		}
 	}
 	else if ((ast = nextTok(cc, STMT_brk, 0))) {   // break;
@@ -1783,16 +1815,15 @@ static astn statement(ccContext cc, const char *doc) {
 	else if ((ast = nextTok(cc, STMT_ret, 0))) {   // return expression;
 		symn function = cc->owner;
 		if (!skipTok(cc, STMT_end, 0)) {
-			astn res = initializer(cc);
+			astn result = initializer(cc);
 
-			if (res && function && isFunction(function)) {
+			if (result && function && isFunction(function)) {
 				dieif(strcmp(function->params->name, ".result") != 0, ERR_INTERNAL_ERROR);
-				if (res->kind == STMT_beg) {
-					res = expandInitializer(cc, function->params, res);
-					res->type = cc->type_vid;
+				if (result->kind == STMT_beg) {
+					result = expandInitializer(cc, function->params, result);
+					result->type = cc->type_vid;
 				}
-				ast->jmp.value = opNode(cc, ASGN_set, lnkNode(cc, function->params), res);
-				ast->jmp.value->type = res->type;
+				ast->jmp.value = opNode(cc, result->type, ASGN_set, lnkNode(cc, function->params), result);
 			}
 			else {
 				// returning from a non function, or returning a statement?
@@ -1942,13 +1973,6 @@ astn ccAddUnit(ccContext cc, int init(ccContext), char *file, int line, char *te
 }
 
 symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto) {
-	rtContext rt = cc->rt;
-	size_t nfcPos = 0;
-	libc nfc = NULL;
-	list lst = NULL;
-
-	symn sym = NULL;
-	astn init, args = NULL;
 
 	//~ from: int64 zxt(int64 val, int offs, int bits)
 	//~ make: inline zxt(int64 val, int offs, int bits) = nfc(42);
@@ -1956,14 +1980,17 @@ symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 		fatal(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
+
 	int nest = cc->nest;
 	if (ccOpen(cc, NULL, 0, (char*)proto) != 0) {
 		trace(ERR_INTERNAL_ERROR);
 		return NULL;
 	}
 
-	init = declaration(cc, KIND_def, &args);
+	astn args = NULL;
+	astn init = declaration(cc, KIND_def, &args);
 
+	rtContext rt = cc->rt;
 	if (ccClose(cc) != 0) {
 		error(rt, NULL, 0, ERR_INVALID_DECLARATION, proto);
 		return NULL;
@@ -1972,7 +1999,8 @@ symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 		error(rt, NULL, 0, ERR_INVALID_DECLARATION, proto);
 		return NULL;
 	}
-	if ((sym = init->ref.link) == NULL) {
+	symn sym = init->ref.link;
+	if (sym == NULL) {
 		error(rt, NULL, 0, ERR_INVALID_DECLARATION, proto);
 		return NULL;
 	}
@@ -1983,10 +2011,10 @@ symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 
 	// allocate nodes
 	rt->_end -= sizeof(struct list);
-	lst = (list) rt->_end;
+	list lst = (list) rt->_end;
 
 	rt->_beg = padPointer(rt->_beg, vm_mem_align);
-	nfc = (libc) rt->_beg;
+	libc nfc = (libc) rt->_beg;
 	rt->_beg += sizeof(struct libc);
 
 	if(rt->_beg >= rt->_end) {
@@ -1994,6 +2022,7 @@ symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto) {
 		return NULL;
 	}
 
+	size_t nfcPos = 0;
 	if (cc->native != NULL) {
 		libc last = (libc) cc->native->data;
 		nfcPos = last->offs + 1;

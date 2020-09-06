@@ -329,7 +329,7 @@ static inline astn argNode(ccContext cc, astn lhs, astn rhs) {
 	if (lhs == NULL) {
 		return rhs;
 	}
-	return opNode(cc, OPER_com, lhs, rhs);
+	return opNode(cc, cc->type_vid, OPER_com, lhs, rhs);
 }
 
 /**
@@ -432,7 +432,7 @@ void print_log(rtContext rt, raiseLevel level, const char *file, int line, rtVal
 #define ERR_INVALID_TYPE "can not type check expression: `%t`"
 #define ERR_INVALID_CAST "can not use cast to construct instance: `%t`"
 #define ERR_INVALID_OPERATOR "invalid operator %.t(%T, %T)"
-#define ERR_MULTIPLE_OVERLOADS "there are %d overloads for `%T`"
+#define ERR_MULTIPLE_OVERLOADS "there are %d overloads for `%t`"
 #define ERR_UNIMPLEMENTED_FUNCTION "unimplemented function `%T`"
 #define ERR_UNINITIALIZED_CONSTANT "uninitialized constant `%T`"
 #define ERR_UNINITIALIZED_VARIABLE "uninitialized variable `%T`"
@@ -489,12 +489,14 @@ void print_log(rtContext rt, raiseLevel level, const char *file, int line, rtVal
 #define dieif(__EXP, __FMT, ...) do { if (__EXP) { prerr(#__EXP, __FMT, ##__VA_ARGS__); abort(); } } while(0)
 
 // compilation errors
-#define error(__ENV, __FILE, __LINE, __FMT, ...) do { printLog(__ENV, raiseError, __FILE, __LINE, NULL, __FMT, ##__VA_ARGS__); logif("error", __FMT, ##__VA_ARGS__); } while(0)
-#define warn(__ENV, __LEVEL, __FILE, __LINE, __FMT, ...) do { printLog(__ENV, __LEVEL, __FILE, __LINE, NULL, __FMT, ##__VA_ARGS__); logif(!"%?s:%?u: warn[%d]", __FMT, __FILE, __LINE, __LEVEL, ##__VA_ARGS__); } while(0)
+#define warn(__ENV, __LEVEL, __FILE, __LINE, __FMT, ...) do { printLog(__ENV, __LEVEL, __FILE, __LINE, NULL, __FMT, ##__VA_ARGS__); } while(0)
 #define info(__ENV, __FILE, __LINE, __FMT, ...) do { printLog(__ENV, raisePrint, __FILE, __LINE, NULL, __FMT, ##__VA_ARGS__); } while(0)
 
-#ifdef DEBUGGING	// enable compiler debugging
-
+#ifndef DEBUGGING
+#define error(__ENV, __FILE, __LINE, __FMT, ...) do { printLog(__ENV, raiseError, __FILE, __LINE, NULL, __FMT, ##__VA_ARGS__); } while(0)
+#else
+// show also the line where the error is raised
+#define error(__ENV, __FILE, __LINE, __FMT, ...) do { printLog(__ENV, raiseError, __FILE__, __LINE__, NULL, "%?s:%?u: "__FMT, __FILE, __LINE, ##__VA_ARGS__); } while(0)
 #define logif(__EXP, __FMT, ...) do { if (__EXP) { prerr(#__EXP, __FMT, ##__VA_ARGS__); } } while(0)
 
 #if DEBUGGING >= 1	// enable trace

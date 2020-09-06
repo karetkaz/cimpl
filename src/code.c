@@ -1731,7 +1731,7 @@ static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t
 	vmInstruction ip = vmPointer(rt, caller);
 
 	// file:line
-	dbgn dbg = mapDbgStatement(rt, caller);
+	dbgn dbg = mapDbgStatement(rt, caller, NULL);
 	char *file = NULL;
 	int line = 0;
 	if (dbg != NULL) {
@@ -2036,6 +2036,9 @@ vmError execute(rtContext rt, int argc, char *argv[], void *extra) {
 
 
 int isChecked(dbgContext ctx) {
+	if (ctx->tryExec == NULL) {
+		return 0;
+	}
 	rtContext rt = ctx->rt;
 	vmProcessor pu = rt->vm.cell;
 	trcptr trcBase = (trcptr)pu->bp;
@@ -2429,7 +2432,7 @@ void traceCalls(dbgContext dbg, FILE *out, int indent, size_t maxCalls, size_t s
 	dmpMode mode = prArgs;
 	for (i = skipCalls; i < maxCalls; ++i) {
 		trcptr trace = &trcBase[maxTrace - i - 1];
-		dbgn trInfo = mapDbgStatement(rt, trace->caller);
+		dbgn trInfo = mapDbgStatement(rt, trace->caller, NULL);
 		symn fun = rtLookup(rt, trace->callee, 0);
 		stkptr sp = trace->sp;
 		char *file = NULL;

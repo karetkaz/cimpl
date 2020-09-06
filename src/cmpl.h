@@ -148,7 +148,7 @@ struct rtContextRec {
 	/**
 	 * User context.
 	 *
-	 * contains custom context set by librariy
+	 * contains custom context set by library
 	 */
 	userContext usr;
 
@@ -269,7 +269,7 @@ typedef enum {
 
 	ATTR_stat  = 0x0040,		// static attribute
 	ATTR_cnst  = 0x0080,		// constant attribute
-	ATTR_paral = 0x0100,		// parallel
+	ATTR_paral = 0x0100,		// inline argument
 	ATTR_varg  = 0x0100,		// variable argument
 
 	MASK_cast  = 0x000f,
@@ -336,6 +336,13 @@ static inline int byReference(symn sym) {
 static inline int isInvokable(symn sym) {
 	return sym->params != NULL;
 }
+static inline int isMember(symn sym) {
+	if (sym->owner == NULL) {
+		// global variable
+		return 0;
+	}
+	return isTypename(sym->owner);
+}
 static inline ccKind castOf(symn sym) {
 	return sym->kind & MASK_cast;
 }
@@ -366,6 +373,37 @@ static inline size_t refSize(symn sym) {
 	}
 }
 
+/**
+ * check if the given filter excludes the given symbol or not
+ * isFiltered(staticVariable, KIND_var | ATTR_stat) == 0
+ * isFiltered(localVariable, KIND_var | ATTR_stat) != 0
+ * @param sym the symbol to be checked
+ * @param filter the filter to be applied
+ * @return 0 if is not excluded
+ */
+static inline int isFiltered(symn sym, ccKind filter) {
+	ccKind filterStat = filter & ATTR_stat;
+	if (filterStat != 0 && (sym->kind & ATTR_stat) != filterStat) {
+		return 1;
+	}
+	ccKind filterCnst = filter & ATTR_cnst;
+	if (filterCnst != 0 && (sym->kind & ATTR_cnst) != filterCnst) {
+		return 1;
+	}
+	ccKind filterKind = filter & MASK_kind;
+	if (filterKind != 0 && (sym->kind & MASK_kind) != filterKind) {
+		return 1;
+	}
+	ccKind filterCast = filter & MASK_cast;
+	if (filterCast != 0 && (sym->kind & MASK_cast) != filterCast) {
+		return 1;
+	}
+	return 0;
+}
+
+/**
+ * Check if the given symbol is extending the object type
+ */
 int isObjectType(symn sym);
 
 /**

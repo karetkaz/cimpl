@@ -774,16 +774,26 @@ static void jsonPreProfile(dbgContext ctx) {
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ text output
-static void textDumpOfs(FILE *out, const char **esc, userContext ctx, size_t start, size_t end) {
+static void textDumpOfs(FILE *out, const char **esc, userContext ctx, symn sym, size_t start, size_t end) {
 	size_t size = end - start;
 	printFmt(out, esc, "%d byte%?c", size, size > 1 ? 's' : 0);
-	if (!ctx->hideOffsets) {
-		printFmt(out, esc, ": %a - %a", start, end);
+	if (ctx->hideOffsets) {
+		return;
 	}
+	dmpMode mode = ctx->dmpMode & (prRelOffs|prAbsOffs);
+	printFmt(out, esc, ": ");
+	printOfs(out, esc, ctx->rt, sym, start, mode);
+	printFmt(out, esc, " - ");
+	printOfs(out, esc, ctx->rt, sym, end, mode);
 }
-static void textDumpDbg(FILE *out, const char **esc, userContext ctx, dbgn dbg, int indent) {
+static void textDumpDbg(FILE *out, const char **esc, userContext ctx, symn sym, dbgn dbg, int indent) {
+	dbgn outerStmt = mapDbgStatement(ctx->rt, dbg->start, dbg);
+	if (outerStmt && outerStmt->start == dbg->start) {
+		textDumpDbg(out, esc, ctx, sym, outerStmt, indent);
+	}
+
 	printFmt(out, esc, "%I%?s:%?u: (", indent, dbg->file, dbg->line);
-	textDumpOfs(out, esc, ctx, dbg->start, dbg->end);
+	textDumpOfs(out, esc, ctx, sym, dbg->start, dbg->end);
 	printFmt(out, esc, ")");
 
 	if (dbg->stmt != NULL && ctx->rt->cc != NULL) {
@@ -1078,13 +1088,13 @@ static void dumpApiHtml(userContext ctx, symn sym) {
 				break;
 			}
 
-			dbgn dbg = mapDbgStatement(ctx->rt, pc);
+			dbgn dbg = mapDbgStatement(ctx->rt, pc, NULL);
 			if (ctx->dmpAsmStmt && dbg && dbg->start == pc) {
 				if (preOpened) {
 					printFmt(out, esc, "</pre>");
 				}
 				printFmt(out, esc, "<pre class=\"%s\">", CLASS_POS);
-				textDumpDbg(out, esc, ctx, dbg, indent);
+				textDumpDbg(out, esc, ctx, sym, dbg, indent);
 				printFmt(out, esc, "</pre>");
 				preOpened = 0;
 			}
@@ -1225,7 +1235,7 @@ static void dumpApiText(userContext ctx, symn sym) {
 			dumpExtraData = 1;
 		}
 		printFmt(out, esc, "%I.instructions: (", indent);
-		textDumpOfs(out, esc, ctx, sym->offs, sym->offs + sym->size);
+		textDumpOfs(out, esc, ctx, sym, sym->offs, sym->offs + sym->size);
 		printFmt(out, esc, ")\n");
 
 		for (size_t pc = sym->offs, n = pc; pc < end; pc = n) {
@@ -1233,9 +1243,9 @@ static void dumpApiText(userContext ctx, symn sym) {
 				// invalid instruction
 				break;
 			}
-			dbgn dbg = mapDbgStatement(ctx->rt, pc);
+			dbgn dbg = mapDbgStatement(ctx->rt, pc, NULL);
 			if (ctx->dmpAsmStmt && dbg && dbg->start == pc) {
-				textDumpDbg(out, esc, ctx, dbg, indent + 1);
+				textDumpDbg(out, esc, ctx, sym, dbg, indent + 1);
 			}
 			textDumpAsm(out, esc, pc, ctx, indent + 1);
 		}
@@ -1311,7 +1321,7 @@ static dbgn conProfile(dbgContext ctx, vmError error, size_t ss, void *stack, si
 	}
 
 	if (usr->traceOpcodes || usr->profStatements) {
-		dbg = mapDbgStatement(rt, caller);
+		dbg = mapDbgStatement(rt, caller, NULL);
 	}
 
 	// print executing method.
@@ -1333,11 +1343,7 @@ static dbgn conProfile(dbgContext ctx, vmError error, size_t ss, void *stack, si
 
 	// print executing instruction.
 	if (usr->traceOpcodes) {
-		if (usr->dmpAsmStmt && dbg && dbg->start == caller) {
-			textDumpDbg(out, esc, usr, dbg, 0);
-		}
-
-		if (usr->traceLocals) {
+		if (usr->traceLocals && caller != rt->main->offs) {
 			size_t i = 0;
 			printFmt(out, esc, "    stack: %7d: [", ss);
 			if (ss > maxLogItems) {
@@ -1369,6 +1375,9 @@ static dbgn conProfile(dbgContext ctx, vmError error, size_t ss, void *stack, si
 			printFmt(out, esc, "\n");
 		}
 
+		if (usr->dmpAsmStmt && dbg && dbg->start == caller) {
+			textDumpDbg(out, esc, usr, NULL, dbg, 0);
+		}
 		if (usr->traceTime) {
 			double now = clock() * 1000. / CLOCKS_PER_SEC;
 			printFmt(out, esc, "[% 3.2F]: ", now);
@@ -1400,7 +1409,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 		return NULL;
 	}
 
-	dbgn dbg = mapDbgStatement(rt, caller);
+	dbgn dbg = mapDbgStatement(rt, caller, NULL);
 	brkMode breakMode = brkSkip;
 	char *breakCause = NULL;
 
@@ -2487,7 +2496,9 @@ int main(int argc, char *argv[]) {
 				}
 				else {
 					if (extra.compileSteps != NULL && ccFile != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sCompile: `%?s`", extra.compileSteps, ccFile);}
-					if (!ccAddUnit(cc, NULL, ccFile, 1, NULL)) {
+					int errors = rt->errors;
+					if (!ccAddUnit(cc, NULL, ccFile, 1, NULL) && errors == rt->errors) {
+						// show the error in case it was not raised, but returned
 						error(rt, ccFile, 1, "error compiling source `%s`", ccFile);
 					}
 				}

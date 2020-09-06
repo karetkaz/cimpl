@@ -2671,14 +2671,16 @@
 									<right token=".variable" type="float64" kind="static const typename(f64)" value="re"/>
 								</expr>
 							</stmt>
-							<stmt token=":=" type="void" kind="static const typename(void)" value=".result.im := (0)">
-								<left token="." type="float64" kind="static const typename(f64)" value=".result.im">
-									<left token=".variable" type="Complex" kind="static const typename(val)" value=".result"/>
-									<right token=".variable" type="float64" kind="static const typename(f64)" value="im"/>
-								</left>
-								<right token="()" type="float64" kind="static const typename(f64)" value="(0)">
-									<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-								</right>
+							<stmt token=";" type="void" kind="static const typename(void)" stmt=".result.im := (0);">
+								<expr token=":=" type="void" kind="static const typename(void)" value=".result.im := (0)">
+									<left token="." type="float64" kind="static const typename(f64)" value=".result.im">
+										<left token=".variable" type="Complex" kind="static const typename(val)" value=".result"/>
+										<right token=".variable" type="float64" kind="static const typename(f64)" value="im"/>
+									</left>
+									<right token="()" type="float64" kind="static const typename(f64)" value="(0)">
+										<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+									</right>
+								</expr>
 							</stmt>
 						</right>
 					</expr>
@@ -7452,35 +7454,43 @@
 			<init token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/string.ci:262">
 				<stmt token=".variable" type="FormatFlags" kind="static const typename(val)" value="format">
 					<init token="{}" type="FormatFlags" kind="static const typename(val)">
-						<stmt token=":=" type="void" kind="static const typename(void)" value="format.showSign := false">
-							<left token="." type="bool" kind="static const typename(bool)" value="format.showSign">
-								<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
-								<right token=".variable" type="bool" kind="static const typename(bool)" value="showSign"/>
-							</left>
-							<right token=".variable" type="bool" kind="static const typename(bool)" value="false"/>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="format.showSign := false;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="format.showSign := false">
+								<left token="." type="bool" kind="static const typename(bool)" value="format.showSign">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+									<right token=".variable" type="bool" kind="static const typename(bool)" value="showSign"/>
+								</left>
+								<right token=".variable" type="bool" kind="static const typename(bool)" value="false"/>
+							</expr>
 						</stmt>
-						<stmt token=":=" type="void" kind="static const typename(void)" value="format.precision := 0">
-							<left token="." type="int32" kind="static const typename(i32)" value="format.precision">
-								<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
-								<right token=".variable" type="int32" kind="static const typename(i32)" value="precision"/>
-							</left>
-							<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="format.precision := 0;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="format.precision := 0">
+								<left token="." type="int32" kind="static const typename(i32)" value="format.precision">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="precision"/>
+								</left>
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</expr>
 						</stmt>
-						<stmt token=":=" type="void" kind="static const typename(void)" value="format.padChr := (0)">
-							<left token="." type="char" kind="static const typename(i32)" value="format.padChr">
-								<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
-								<right token=".variable" type="char" kind="static const typename(i32)" value="padChr"/>
-							</left>
-							<right token="()" type="char" kind="static const typename(i32)" value="(0)">
-								<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-							</right>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="format.padChr := (0);">
+							<expr token=":=" type="void" kind="static const typename(void)" value="format.padChr := (0)">
+								<left token="." type="char" kind="static const typename(i32)" value="format.padChr">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+									<right token=".variable" type="char" kind="static const typename(i32)" value="padChr"/>
+								</left>
+								<right token="()" type="char" kind="static const typename(i32)" value="(0)">
+									<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+								</right>
+							</expr>
 						</stmt>
-						<stmt token=":=" type="void" kind="static const typename(void)" value="format.padLen := 0">
-							<left token="." type="int32" kind="static const typename(i32)" value="format.padLen">
-								<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
-								<right token=".variable" type="int32" kind="static const typename(i32)" value="padLen"/>
-							</left>
-							<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="format.padLen := 0;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="format.padLen := 0">
+								<left token="." type="int32" kind="static const typename(i32)" value="format.padLen">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="padLen"/>
+								</left>
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</expr>
 						</stmt>
 					</init>
 				</stmt>
@@ -10170,25 +10180,29 @@
 						</right>
 					</expr>
 				</stmt>
-				<stmt token=":=" type="void" kind="static const typename(void)" value="valInitImplicit.im := (0)">
-					<left token="." type="float64" kind="static const typename(f64)" value="valInitImplicit.im">
-						<left token=".variable" type="ComplexVal" kind="static const typename(val)" value="valInitImplicit"/>
-						<right token=".variable" type="float64" kind="static const typename(f64)" value="im"/>
-					</left>
-					<right token="()" type="float64" kind="static const typename(f64)" value="(0)">
-						<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-					</right>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="valInitImplicit.im := (0);">
+					<expr token=":=" type="void" kind="static const typename(void)" value="valInitImplicit.im := (0)">
+						<left token="." type="float64" kind="static const typename(f64)" value="valInitImplicit.im">
+							<left token=".variable" type="ComplexVal" kind="static const typename(val)" value="valInitImplicit"/>
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im"/>
+						</left>
+						<right token="()" type="float64" kind="static const typename(f64)" value="(0)">
+							<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+						</right>
+					</expr>
 				</stmt>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="ComplexObj" kind="static const typename(ref)" value="objInitImplicit">
 			<init token="{}" type="ComplexObj" kind="static const typename(ref)">
-				<stmt token=":=" type="void" kind="static const typename(void)" value="objInitImplicit := create(ComplexObj)">
-					<left token=".variable" type="ComplexObj" kind="static const typename(ref)" value="objInitImplicit"/>
-					<right token="()" type="ComplexObj" kind="static const typename(ref)" value="create(ComplexObj)">
-						<push token=".variable" type="ComplexObj" kind="static const typename(ref)" value="ComplexObj"/>
-						<call token=".variable" type="function" kind="static const typename(ref)" value="create"/>
-					</right>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="objInitImplicit := create(ComplexObj);">
+					<expr token=":=" type="void" kind="static const typename(void)" value="objInitImplicit := create(ComplexObj)">
+						<left token=".variable" type="ComplexObj" kind="static const typename(ref)" value="objInitImplicit"/>
+						<right token="()" type="ComplexObj" kind="static const typename(ref)" value="create(ComplexObj)">
+							<push token=".variable" type="ComplexObj" kind="static const typename(ref)" value="ComplexObj"/>
+							<call token=".variable" type="function" kind="static const typename(ref)" value="create"/>
+						</right>
+					</expr>
 				</stmt>
 				<stmt token=";" type="void" kind="static const typename(void)" stmt="objInitImplicit.re := (8);">
 					<expr token=":=" type="void" kind="static const typename(void)" value="objInitImplicit.re := (8)">
@@ -10201,25 +10215,29 @@
 						</right>
 					</expr>
 				</stmt>
-				<stmt token=":=" type="void" kind="static const typename(void)" value="objInitImplicit.im := (0)">
-					<left token="." type="float64" kind="static const typename(f64)" value="objInitImplicit.im">
-						<left token=".variable" type="ComplexObj" kind="static const typename(ref)" value="objInitImplicit"/>
-						<right token=".variable" type="float64" kind="static const typename(f64)" value="im"/>
-					</left>
-					<right token="()" type="float64" kind="static const typename(f64)" value="(0)">
-						<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-					</right>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="objInitImplicit.im := (0);">
+					<expr token=":=" type="void" kind="static const typename(void)" value="objInitImplicit.im := (0)">
+						<left token="." type="float64" kind="static const typename(f64)" value="objInitImplicit.im">
+							<left token=".variable" type="ComplexObj" kind="static const typename(ref)" value="objInitImplicit"/>
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im"/>
+						</left>
+						<right token="()" type="float64" kind="static const typename(f64)" value="(0)">
+							<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+						</right>
+					</expr>
 				</stmt>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="object" kind="static const typename(ref)" value="objInitExplicit">
 			<init token="{}" type="object" kind="static const typename(ref)">
-				<stmt token=":=" type="void" kind="static const typename(void)" value="objInitExplicit := create(ComplexObj)">
-					<left token=".variable" type="object" kind="static const typename(ref)" value="objInitExplicit"/>
-					<right token="()" type="ComplexObj" kind="static const typename(ref)" value="create(ComplexObj)">
-						<push token=".variable" type="ComplexObj" kind="static const typename(ref)" value="ComplexObj"/>
-						<call token=".variable" type="function" kind="static const typename(ref)" value="create"/>
-					</right>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="objInitExplicit := create(ComplexObj);">
+					<expr token=":=" type="void" kind="static const typename(void)" value="objInitExplicit := create(ComplexObj)">
+						<left token=".variable" type="object" kind="static const typename(ref)" value="objInitExplicit"/>
+						<right token="()" type="ComplexObj" kind="static const typename(ref)" value="create(ComplexObj)">
+							<push token=".variable" type="ComplexObj" kind="static const typename(ref)" value="ComplexObj"/>
+							<call token=".variable" type="function" kind="static const typename(ref)" value="create"/>
+						</right>
+					</expr>
 				</stmt>
 				<stmt token=";" type="void" kind="static const typename(void)" stmt="objInitExplicit.re := (8);">
 					<expr token=":=" type="void" kind="static const typename(void)" value="objInitExplicit.re := (8)">
@@ -10708,14 +10726,16 @@
 							<right token=".literal" type="int32" kind="static const typename(i32)" value="4" />
 						</expr>
 					</stmt>
-					<stmt token=":=" type="void" kind="static const typename(void)" value="globalRec.member := (0)">
-						<left token="." type="int32" kind="static const typename(i32)" value="globalRec.member">
-							<left token=".variable" type="RecordMemberTest.Inner" kind="static const typename(val)" value="globalRec"/>
-							<right token=".variable" type="int32" kind="static const typename(i32)" value="member"/>
-						</left>
-						<right token="()" type="int32" kind="static const typename(i32)" value="(0)">
-							<push token=".literal" type="int64" kind="static const typename(i64)" value="0" />
-						</right>
+					<stmt token=";" type="void" kind="static const typename(void)" stmt="globalRec.member := (0);">
+						<expr token=":=" type="void" kind="static const typename(void)" value="globalRec.member := (0)">
+							<left token="." type="int32" kind="static const typename(i32)" value="globalRec.member">
+								<left token=".variable" type="RecordMemberTest.Inner" kind="static const typename(val)" value="globalRec"/>
+								<right token=".variable" type="int32" kind="static const typename(i32)" value="member"/>
+							</left>
+							<right token="()" type="int32" kind="static const typename(i32)" value="(0)">
+								<push token=".literal" type="int64" kind="static const typename(i64)" value="0" />
+							</right>
+						</expr>
 					</stmt>
 				</init>
 			</field>
@@ -10950,19 +10970,23 @@
 						<right token=".variable" type="function" kind="static const typename(ref)" value="globalFunction"/>
 					</expr>
 				</stmt>
-				<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.delegateMethod := forwardMethod">
-					<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.delegateMethod">
-						<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest"/>
-						<right token=".variable" type="function" kind="static const typename(ref)" value="delegateMethod"/>
-					</left>
-					<right token=".variable" type="function" kind="static const typename(ref)" value="forwardMethod"/>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.delegateMethod := forwardMethod;">
+					<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.delegateMethod := forwardMethod">
+						<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.delegateMethod">
+							<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest"/>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="delegateMethod"/>
+						</left>
+						<right token=".variable" type="function" kind="static const typename(ref)" value="forwardMethod"/>
+					</expr>
 				</stmt>
-				<stmt token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.virtualMethod := virtualMethod">
-					<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.virtualMethod">
-						<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest"/>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="recordMethodTest.virtualMethod := virtualMethod;">
+					<expr token=":=" type="void" kind="static const typename(void)" value="recordMethodTest.virtualMethod := virtualMethod">
+						<left token="." type="function" kind="static const typename(ref)" value="recordMethodTest.virtualMethod">
+							<left token=".variable" type="RecordMethodTest" kind="static const typename(val)" value="recordMethodTest"/>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod"/>
+						</left>
 						<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod"/>
-					</left>
-					<right token=".variable" type="function" kind="static const typename(ref)" value="virtualMethod"/>
+					</expr>
 				</stmt>
 			</init>
 		</stmt>

@@ -434,7 +434,7 @@ static ccKind genVariable(ccContext cc, symn variable, ccKind get, astn ast) {
 	symn type = variable->type;
 	ccKind got = castOf(variable);
 
-	dbgCgen("%?s:%?u: %T / (%K->%K)", ast->file, ast->line, variable, variable->kind, get);
+	dbgCgen("%?s:%?u: `%T`: %K -> %K", ast->file, ast->line, variable, variable->kind, get);
 	if (variable == cc->null_ref) {
 		switch (get) {
 			default:
@@ -623,22 +623,32 @@ static ccKind genCast(ccContext cc, astn ast, ccKind get) {
 				error(rt, ast->file, ast->line, ERR_EMIT_STATEMENT, ast);
 			}
 
+			if (args->kind == TOKEN_opc) {
+				// instruction: add.i32
+				continue;
+			}
+
+			if (args->kind == OPER_fnc && args->op.lhso != NULL) {
+				if (args->op.lhso->kind == RECORD_kwd) {
+					// value cast: struct(value)
+					continue;
+				}
+				symn lnk = linkOf(args->op.lhso, 1);
+				if (lnk != NULL && lnk == args->type) {
+					// type cast: float32(value)
+					continue;
+				}
+			}
+
 			symn lnk = linkOf(args, 1);
 			if (lnk && lnk->init && lnk->init->kind == TOKEN_opc) {
 				// instruction: add.i32
 				continue;
 			}
 
-			if (args->kind == OPER_fnc && args->op.lhso) {
-				if (args->op.lhso->kind == RECORD_kwd) {
-					// value cast: struct(value)
-					continue;
-				}
-				lnk = linkOf(args->op.lhso, 1);
-				if (lnk && lnk == args->type) {
-					// type cast: float32(value)
-					continue;
-				}
+			if (ast->file == NULL && ast->line == 0) {
+				// generated emit, do not warn
+				continue;
 			}
 			warn(rt, raiseWarn, ast->file, ast->line, WARN_PASS_ARG_NO_CAST, args, args->type);
 		}
@@ -706,7 +716,9 @@ static ccKind genCall(ccContext cc, astn ast) {
 		return CAST_any;
 	}
 
-	struct astNode extraArguments[3];
+	struct astNode extraFile;
+	struct astNode extraLine;
+	struct astNode extraResult;
 	size_t offsets[maxTokenCount];
 	astn values[maxTokenCount];
 	symn vaElemType = NULL;
@@ -719,8 +731,6 @@ static ccKind genCall(ccContext cc, astn ast) {
 		symn prm = function->params;
 		int argc = 0;
 
-		memset(extraArguments, 0, sizeof(extraArguments));
-
 		if (function == cc->libc_dbg) {
 			char *file = ast->file;
 			int line = ast->line;
@@ -732,27 +742,31 @@ static ccKind genCall(ccContext cc, astn ast) {
 				dbgCgen("%?s:%?u: Using the location of the last expression statement", file, line);
 			}
 
+			memset(&extraFile, 0, sizeof(extraFile));
+			memset(&extraLine, 0, sizeof(extraLine));
+
 			// add 2 extra computed argument to the raise function(file and line)
-			extraArguments[1].kind = TOKEN_val;
-			extraArguments[2].kind = TOKEN_val;
-			extraArguments[1].type = function->params->next->type;
-			extraArguments[2].type = function->params->next->next->type;
-			extraArguments[1].ref.name = file;
-			extraArguments[2].cInt = line;
+			extraFile.kind = TOKEN_val;
+			extraLine.kind = TOKEN_val;
+			extraFile.type = function->params->next->type;
+			extraLine.type = function->params->next->next->type;
+			extraFile.ref.name = file;
+			extraLine.cInt = line;
 
 			// chain the new arguments
-			extraArguments[1].next = &extraArguments[2];
-			extraArguments[2].next = arg;
-			arg = &extraArguments[1];
+			extraFile.next = &extraLine;
+			extraLine.next = arg;
+			arg = &extraFile;
 		}
 
+		memset(&extraResult, 0, sizeof(extraResult));
 		if (function->params->init != NULL) {
-			*extraArguments = *function->params->init;
+			extraResult = *function->params->init;
 		}
 
-		extraArguments->type = function->params->type;
-		extraArguments->next = arg;
-		arg = extraArguments;
+		extraResult.type = function->params->type;
+		extraResult.next = arg;
+		arg = &extraResult;
 
 		while (prm != NULL) {
 			if (argc >= maxTokenCount) {
@@ -976,11 +990,11 @@ static ccKind genCall(ccContext cc, astn ast) {
 		}
 
 		astn arg = prm->init;
-		if ((prm->kind & ATTR_varg) != 0 && arg && arg->kind == PNCT_dot3) {
+		if (arg && arg->kind == PNCT_dot3 && (prm->kind & ATTR_varg) != 0) {
 			// drop `...`
 			arg = arg->op.rhso;
 		}
-		if (castOf(prm) == CAST_ref && arg && arg->kind == OPER_adr) {
+		if (arg && arg->kind == OPER_adr && castOf(prm) == CAST_ref) {
 			// drop `&`
 			arg = arg->op.rhso;
 		}
@@ -1005,6 +1019,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 		offs += padOffset(prm->size, vm_stk_align);
 
 		// generate the argument value
+		dbgCgen("%?s:%?u: %K: `%T` -> %K", ast->file, ast->line, prm->kind, prm, refCast(prm));
 		size_t argOffs = stkOffset(rt, prm->size);
 		if (!genAst(cc, arg, refCast(prm))) {
 			traceAst(ast);
@@ -1587,7 +1602,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 		get = got;
 	}
 
-	dbgCgen("%?s:%?u: %T(%K): %t", ast->file, ast->line, ast->type, get, ast);
+	dbgCgen("%?s:%?u: `%t`: %T -> %K", ast->file, ast->line, ast, ast->type, get);
 	// generate instructions
 	switch (ast->kind) {
 		default:
@@ -1596,7 +1611,7 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 
 		//#{ STATEMENTS
 		case STMT_beg:
-			// statement block or function body
+			// statement block or function body or initializer
 			for (astn ptr = ast->stmt.stmt; ptr != NULL; ptr = ptr->next) {
 				int errors = rt->errors;
 				int nested = ptr->kind == STMT_beg;
@@ -2036,6 +2051,10 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 				get = got;
 			}
 			else {
+				if (ast->type == cc->emit_opc) {
+					// TODO: find a better solution
+					get = KIND_var;
+				}
 				if (!(got = genVariable(cc, var, get, ast))) {
 					traceAst(ast);
 					return CAST_any;
@@ -2063,10 +2082,10 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 	// generate cast
 	if (get != got) {
 		if ((get == CAST_u32 || get == CAST_u64) && (got == CAST_f32 || got == CAST_f64)) {
-			warn(rt, raise_warn_typ4, ast->file, ast->line, WARN_USING_SIGNED_CAST, ast);
+			warn(rt, raise_warn_typ4, cc->file, cc->line, WARN_USING_SIGNED_CAST, ast);
 		}
 		if ((get == CAST_f32 || get == CAST_f64) && (got == CAST_u32 || got == CAST_u64)) {
-			warn(rt, raise_warn_typ4, ast->file, ast->line, WARN_USING_SIGNED_CAST, ast);
+			warn(rt, raise_warn_typ4, cc->file, cc->line, WARN_USING_SIGNED_CAST, ast);
 		}
 
 		vmOpcode cast = opc_last;

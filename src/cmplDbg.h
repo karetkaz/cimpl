@@ -85,7 +85,7 @@ char* vmErrorMessage(vmError error);
 dbgn mapDbgFunction(rtContext ctx, size_t offset);
 dbgn addDbgFunction(rtContext ctx, symn fun);
 
-dbgn mapDbgStatement(rtContext ctx, size_t position);
+dbgn mapDbgStatement(rtContext ctx, size_t position, dbgn prev);
 dbgn getDbgStatement(rtContext ctx, char *file, int line);
 dbgn addDbgStatement(rtContext ctx, size_t start, size_t end, astn tag);
 

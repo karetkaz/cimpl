@@ -292,14 +292,14 @@ cmplStd/lib/debug.ci:45: warn: no code will be generated for statement: 0
 cmplStd/lib/debug.ci:45: warn: no code will be generated for statement: 0
 cmplStd/lib/debug.ci:45: warn: no code will be generated for statement: 0
 cmplStd/lib/debug.ci:45: warn: no code will be generated for statement: 0
-cmplStd/test/lang/useOperator.ci:3: warn: using signed cast for unsigned value: `96.300000`
-cmplStd/test/lang/useOperator.ci:4: warn: using signed cast for unsigned value: `42.140000`
-cmplStd/test/lang/useOperator.ci:3: warn: using signed cast for unsigned value: `96.300000`
-cmplStd/test/lang/useOperator.ci:4: warn: using signed cast for unsigned value: `42.140000`
-cmplStd/test/lang/useOperator.ci:3: warn: using signed cast for unsigned value: `96.300000`
-cmplStd/test/lang/useOperator.ci:4: warn: using signed cast for unsigned value: `42.140000`
-cmplStd/test/lang/useOperator.ci:3: warn: using signed cast for unsigned value: `96.300000`
-cmplStd/test/lang/useOperator.ci:4: warn: using signed cast for unsigned value: `42.140000`
+cmplStd/test/lang/useOperator.ci:76: warn: using signed cast for unsigned value: `96.300000`
+cmplStd/test/lang/useOperator.ci:77: warn: using signed cast for unsigned value: `42.140000`
+cmplStd/test/lang/useOperator.ci:122: warn: using signed cast for unsigned value: `96.300000`
+cmplStd/test/lang/useOperator.ci:123: warn: using signed cast for unsigned value: `42.140000`
+cmplStd/test/lang/useOperator.ci:168: warn: using signed cast for unsigned value: `96.300000`
+cmplStd/test/lang/useOperator.ci:169: warn: using signed cast for unsigned value: `42.140000`
+cmplStd/test/lang/useOperator.ci:214: warn: using signed cast for unsigned value: `96.300000`
+cmplStd/test/lang/useOperator.ci:215: warn: using signed cast for unsigned value: `42.140000`
 cmplStd/test/lang/stmt.for.ci:12: warn: using default type initializer: forIdx := 0
 
 ---------- Symbols:
@@ -3436,7 +3436,7 @@ Math.min(data: float64[]): float64: function {
 .file: 'cmplStd/lib/math.ci:201'
 .owner: Math
 .param .result: float64 (size: 8, cast: variable(f64))
-.param data: float64[] (size: 8, cast: parallel variable(arr))
+.param data: float64[] (size: 8, cast: variable(arr))
 .doc: 'Returns the smaller value from the input values'
 .value: {
 	if (data.length == (0)) {
@@ -3500,7 +3500,7 @@ Math.max(data: float64[]): float64: function {
 .file: 'cmplStd/lib/math.ci:215'
 .owner: Math
 .param .result: float64 (size: 8, cast: variable(f64))
-.param data: float64[] (size: 8, cast: parallel variable(arr))
+.param data: float64[] (size: 8, cast: variable(arr))
 .doc: 'Returns the greater value from the input values'
 .value: {
 	if (data.length == (0)) {
@@ -3564,7 +3564,7 @@ Math.sum(data: float64[]): float64: function {
 .file: 'cmplStd/lib/math.ci:229'
 .owner: Math
 .param .result: float64 (size: 8, cast: variable(f64))
-.param data: float64[] (size: 8, cast: parallel variable(arr))
+.param data: float64[] (size: 8, cast: variable(arr))
 .doc: 'Returns the sum of the input values'
 .value: {
 	result: float64 := 0;
@@ -3607,7 +3607,7 @@ Math.mean(data: float64[]): float64: function {
 .file: 'cmplStd/lib/math.ci:238'
 .owner: Math
 .param .result: float64 (size: 8, cast: variable(f64))
-.param data: float64[] (size: 8, cast: parallel variable(arr))
+.param data: float64[] (size: 8, cast: variable(arr))
 .doc: 'Returns the mean of the input values'
 .value: {
 	return .result := sum(...data) / (signed(data.length));
@@ -3692,7 +3692,7 @@ Math.eval(x: float64, polynomial: float64[]): float64: function {
 .owner: Math
 .param .result: float64 (size: 8, cast: variable(f64))
 .param x: float64 (size: 8, cast: variable(f64))
-.param polynomial: float64[] (size: 8, cast: parallel variable(arr))
+.param polynomial: float64[] (size: 8, cast: variable(arr))
 .doc: 'Return the polynomial evaluated at x using Horner's algorithm'
 .value: {
 	result: float64 := 0;
@@ -4647,8 +4647,9 @@ Complex(re: float64): Complex: function {
 }
 .instructions: (7 bytes)
 	cmplStd/lib/math/Complex.ci:25: (7 bytes): return .result := {...};
+	cmplStd/lib/math/Complex.ci:26: (3 bytes): .result.re := re;
 	<Complex>  : mov.x64 sp(3, 1)
-	:: (3 bytes): .result.im := (0)
+	:: (3 bytes): .result.im := (0);
 	<Complex+?>: load.z64
 	<Complex+?>: set.x64 sp(7)
 	<Complex+?>: ret
@@ -4671,6 +4672,7 @@ Complex(re: float64, im: float64): Complex: function {
 }
 .instructions: (7 bytes)
 	cmplStd/lib/math/Complex.ci:32: (7 bytes): return .result := {...};
+	cmplStd/lib/math/Complex.ci:33: (3 bytes): .result.re := re;
 	<Complex>  : mov.x64 sp(5, 3)
 	cmplStd/lib/math/Complex.ci:34: (3 bytes): .result.im := im;
 	<Complex+?>: mov.x64 sp(7, 1)
@@ -4846,6 +4848,7 @@ div(a: Complex, b: Complex): Complex: function {
 	<div+?>: mul.f64
 	<div+?>: add.f64
 	cmplStd/lib/math/Complex.ci:93: (31 bytes): return .result := {...};
+	cmplStd/lib/math/Complex.ci:94: (13 bytes): .result.re := (a.re + r * a.im) / den;
 	<div+?>: dup.x64 sp(9)
 	<div+?>: dup.x64 sp(4)
 	<div+?>: dup.x64 sp(15)
@@ -4877,6 +4880,7 @@ div(a: Complex, b: Complex): Complex: function {
 	<div+?>: mul.f64
 	<div+?>: add.f64
 	cmplStd/lib/math/Complex.ci:100: (31 bytes): return .result := {...};
+	cmplStd/lib/math/Complex.ci:101: (13 bytes): .result.re := (a.re * r + a.im) / den;
 	<div+?>: dup.x64 sp(9)
 	<div+?>: dup.x64 sp(4)
 	<div+?>: mul.f64
@@ -4969,6 +4973,7 @@ inv(a: Complex): Complex: function {
 	<inv+?>: mul.f64
 	<inv+?>: add.f64
 	cmplStd/lib/math/Complex.ci:119: (20 bytes): return .result := {...};
+	cmplStd/lib/math/Complex.ci:120: (7 bytes): .result.re := +a.re / d;
 	<inv+?>: dup.x64 sp(3)
 	<inv+?>: dup.x64 sp(2)
 	<inv+?>: div.f64
@@ -5075,6 +5080,7 @@ pow(a: Complex, b: Complex): Complex: function {
 	<pow+?>: nfc(43) ;float64.exp(x: float64): float64
 	<pow+?>: mul.f64
 	cmplStd/lib/math/Complex.ci:140: (27 bytes): return .result := {...};
+	cmplStd/lib/math/Complex.ci:141: (11 bytes): .result.re := v * float64.cos(u);
 	<pow+?>: dup.x64 sp(0)
 	<pow+?>: dup.x64 sp(4)
 	<pow+?>: nfc(40) ;float64.cos(x: float64): float64
@@ -6141,6 +6147,7 @@ mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float
 }
 .instructions: (49 bytes)
 	cmplStd/lib/math/Matrix4f.ci:66: (49 bytes): return .result := {...};
+	cmplStd/lib/math/Matrix4f.ci:67: (3 bytes): .result.xx := xx;
 	<mat4f>  : mov.x32 sp(17, 16)
 	cmplStd/lib/math/Matrix4f.ci:67: (3 bytes): .result.xy := xy;
 	<mat4f+?>: mov.x32 sp(18, 15)
@@ -6196,6 +6203,7 @@ mat4f(x: vec4f, y: vec4f, z: vec4f, w: vec4f): mat4f: function {
 }
 .instructions: (21 bytes)
 	cmplStd/lib/math/Matrix4f.ci:76: (21 bytes): return .result := {...};
+	cmplStd/lib/math/Matrix4f.ci:76: (5 bytes): .result.x := x;
 	<mat4f>  : dup.x32 sp(4)
 	<mat4f+?>: load.i128
 	<mat4f+?>: set.x128 sp(9)
@@ -6280,6 +6288,7 @@ transpose(mat: mat4f): mat4f: function {
 }
 .instructions: (49 bytes)
 	cmplStd/lib/math/Matrix4f.ci:88: (49 bytes): return .result := {...};
+	cmplStd/lib/math/Matrix4f.ci:89: (3 bytes): .result.xx := mat.xx;
 	<transpose>  : mov.x32 sp(17, 1)
 	cmplStd/lib/math/Matrix4f.ci:89: (3 bytes): .result.xy := mat.yx;
 	<transpose+?>: mov.x32 sp(18, 5)
@@ -6343,6 +6352,7 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 	<mul+?>: call
 	<mul+?>: inc.sp(-64)
 	cmplStd/lib/math/Matrix4f.ci:99: (217 bytes): return .result := {...};
+	cmplStd/lib/math/Matrix4f.ci:100: (50 bytes): .result.x := dp4(transposed, lhs.x);
 	<mul+?>: load.sp(+0)
 	<mul+?>: dup.x32 sp(19)
 	<mul+?>: dup.x32 sp(1)
@@ -6540,6 +6550,7 @@ adapted from: https://sites.google.com/site/glennmurray/Home/rotation-matrices-a
 	<rotation+?>: dup.x32 sp(9)
 	<rotation+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	cmplStd/lib/math/Matrix4f.ci:115: (29 bytes): return .result := {...};
+	cmplStd/lib/math/Matrix4f.ci:116: (6 bytes): .result.x := vec4f(0, 0, 0, 0);
 	<rotation+?>: load.z32
 	<rotation+?>: load.z32
 	<rotation+?>: load.z32
@@ -6628,6 +6639,7 @@ adapted from: https://sites.google.com/site/glennmurray/Home/rotation-matrices-a
 	<rotation+?>: dup.x32 sp(1)
 	<rotation+?>: sub.f32
 	cmplStd/lib/math/Matrix4f.ci:139: (261 bytes): return .result := {...};
+	cmplStd/lib/math/Matrix4f.ci:140: (13 bytes): .result.xx := xx + (yy + zz) * c;
 	<rotation+?>: dup.x32 sp(8)
 	<rotation+?>: dup.x32 sp(6)
 	<rotation+?>: dup.x32 sp(5)
@@ -6848,6 +6860,7 @@ translation(direction: vec4f, amount: float32): mat4f: function {
 }
 .instructions: (88 bytes)
 	cmplStd/lib/math/Matrix4f.ci:164: (88 bytes): return .result := {...};
+	cmplStd/lib/math/Matrix4f.ci:165: (7 bytes): .result.xx := (1);
 	<translation>  : load.f32 1.000000
 	<translation+?>: set.x32 sp(4)
 	cmplStd/lib/math/Matrix4f.ci:165: (3 bytes): .result.xy := (0);
@@ -6941,6 +6954,7 @@ scale(direction: vec4f, amount: float32): mat4f: function {
 }
 .instructions: (217 bytes)
 	cmplStd/lib/math/Matrix4f.ci:175: (217 bytes): return .result := {...};
+	cmplStd/lib/math/Matrix4f.ci:176: (55 bytes): .result.xx := rcp(direction.x * amount);
 	<scale>  : dup.x32 sp(2)
 	<scale+?>: load.i32
 	<scale+?>: dup.x32 sp(2)
@@ -7142,6 +7156,7 @@ vec2d(x: float64, y: float64): vec2d: function {
 }
 .instructions: (7 bytes)
 	cmplStd/lib/math/Vector2d.ci:15: (7 bytes): return .result := {...};
+	cmplStd/lib/math/Vector2d.ci:16: (3 bytes): .result.x := x;
 	<vec2d>  : mov.x64 sp(5, 3)
 	cmplStd/lib/math/Vector2d.ci:17: (3 bytes): .result.y := y;
 	<vec2d+?>: mov.x64 sp(7, 1)
@@ -17991,17 +18006,18 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;"0123456789abcdefghijklmnopqrstuvwxyz"
 	<.main+?>: store.m64 <?> ;append.radixDigits
 	cmplStd/lib/string.ci:263: (24 bytes): static const format: FormatFlags := {...}
+	:: (7 bytes): format.showSign := false;
 	<.main+?>: load.z32
 	<.main+?>: load.ref <?> ;append.format
 	<.main+?>: store.i8
-	:: (5 bytes): format.precision := 0
+	:: (5 bytes): format.precision := 0;
 	<.main+?>: load.z32
 	<.main+?>: store.m32 <?> ;append.format+4
-	:: (7 bytes): format.padChr := (0)
+	:: (7 bytes): format.padChr := (0);
 	<.main+?>: load.z32
 	<.main+?>: load.ref <?> ;append.format+8
 	<.main+?>: store.i8
-	:: (5 bytes): format.padLen := 0
+	:: (5 bytes): format.padLen := 0;
 	<.main+?>: load.z32
 	<.main+?>: store.m32 <?> ;append.format+12
 	cmplStd/test/lang/init.reference.ci:7: (13 bytes): static value: int64 := 42
@@ -18017,18 +18033,21 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.c32 2
 	<.main+?>: store.m32 <?> ;RecordMemberTest.globalConstant
 	cmplStd/test/lang/init.member.ci:43: (14 bytes): static globalRec: Inner := {...}
+	cmplStd/test/lang/init.member.ci:43: (9 bytes): globalRec.constant := 4;
 	<.main+?>: load.c32 4
 	<.main+?>: store.m32 <?> ;RecordMemberTest.globalRec+4
-	:: (5 bytes): globalRec.member := (0)
+	:: (5 bytes): globalRec.member := (0);
 	<.main+?>: load.z32
 	<.main+?>: store.m32 <?> ;RecordMemberTest.globalRec
 	cmplStd/test/lang/init.member.ci:46: (18 bytes): static globalRecInit: Inner := {...}
+	cmplStd/test/lang/init.member.ci:46: (9 bytes): globalRecInit.member := 4;
 	<.main+?>: load.c32 4
 	<.main+?>: store.m32 <?> ;RecordMemberTest.globalRecInit
 	cmplStd/test/lang/init.member.ci:46: (9 bytes): globalRecInit.constant := 5;
 	<.main+?>: load.c32 5
 	<.main+?>: store.m32 <?> ;RecordMemberTest.globalRecInit+4
 	cmplStd/test/lang/init.member.ci:49: (18 bytes): static const globalConstantRec: Inner := {...}
+	cmplStd/test/lang/init.member.ci:49: (9 bytes): globalConstantRec.member := 6;
 	<.main+?>: load.c32 6
 	<.main+?>: store.m32 <?> ;RecordMemberTest.globalConstantRec
 	cmplStd/test/lang/init.member.ci:49: (9 bytes): globalConstantRec.constant := 7;
@@ -19369,12 +19388,12 @@ testMathAbsMod_f32_8d: float32 {
 	cmplStd/test/lang/init.variable.ci:24: (11 bytes): valInitImplicit.re := (8);
 	<.main+?>: load.f64 8.000000
 	<.main+?>: set.x64 sp(2)
-	:: (3 bytes): valInitImplicit.im := (0)
+	:: (3 bytes): valInitImplicit.im := (0);
 	<.main+?>: load.z64
 	<.main+?>: set.x64 sp(4)
 	cmplStd/test/lang/init.variable.ci:33: (39 bytes): objInitImplicit: ComplexObj := {...}
 	<.main+?>: inc.sp(+4)
-	cmplStd/test/lang/init.variable.ci:33: (11 bytes): objInitImplicit := create(ComplexObj)
+	cmplStd/test/lang/init.variable.ci:33: (11 bytes): objInitImplicit := create(ComplexObj);
 	<.main+?>: load.ref <?> ;ComplexObj
 	<.main+?>: nfc(6) ;object.create(type: typename): pointer
 	<.main+?>: set.x32 sp(1)
@@ -19383,14 +19402,14 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: dup.x32 sp(2)
 	<.main+?>: inc.i32(+4)
 	<.main+?>: store.i64
-	:: (8 bytes): objInitImplicit.im := (0)
+	:: (8 bytes): objInitImplicit.im := (0);
 	<.main+?>: load.z64
 	<.main+?>: dup.x32 sp(2)
 	<.main+?>: inc.i32(+12)
 	<.main+?>: store.i64
 	cmplStd/test/lang/init.variable.ci:41: (31 bytes): objInitExplicit: object := {...}
 	<.main+?>: inc.sp(+4)
-	cmplStd/test/lang/init.variable.ci:41: (11 bytes): objInitExplicit := create(ComplexObj)
+	cmplStd/test/lang/init.variable.ci:41: (11 bytes): objInitExplicit := create(ComplexObj);
 	<.main+?>: load.ref <?> ;ComplexObj
 	<.main+?>: nfc(6) ;object.create(type: typename): pointer
 	<.main+?>: set.x32 sp(1)
@@ -19567,10 +19586,10 @@ testMathAbsMod_f32_8d: float32 {
 	cmplStd/test/lang/init.method.ci:64: (7 bytes): recordMethodTest.abstractMethod := globalFunction;
 	<.main+?>: load.ref <?> ;globalFunction(this: RecordMethodTest, x: int32): void
 	<.main+?>: set.x32 sp(1)
-	:: (6 bytes): recordMethodTest.delegateMethod := forwardMethod
+	:: (6 bytes): recordMethodTest.delegateMethod := forwardMethod;
 	<.main+?>: load.m32 <?> ;RecordMethodTest.forwardMethod(this: RecordMethodTest, x: int32): void
 	<.main+?>: set.x32 sp(2)
-	:: (7 bytes): recordMethodTest.virtualMethod := virtualMethod
+	:: (7 bytes): recordMethodTest.virtualMethod := virtualMethod;
 	<.main+?>: load.ref <?> ;RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void
 	<.main+?>: set.x32 sp(3)
 	cmplStd/test/lang/init.method.ci:78: (19 bytes): recordMethodTest.staticMethod(recordMethodTest, 1);

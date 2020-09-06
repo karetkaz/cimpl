@@ -1414,7 +1414,7 @@ dbgn getDbgStatement(rtContext rt, char *file, int line) {
 	}
 	return NULL;
 }
-dbgn mapDbgStatement(rtContext rt, size_t position) {
+dbgn mapDbgStatement(rtContext rt, size_t position, dbgn prev) {
 	if (rt->dbg != NULL) {
 		// TODO: use binary search to speed up mapping
 		dbgn result = (dbgn)rt->dbg->statements.ptr;
@@ -1422,7 +1422,9 @@ dbgn mapDbgStatement(rtContext rt, size_t position) {
 		for (size_t i = 0; i < n; ++i) {
 			if (position >= result->start) {
 				if (position < result->end) {
-					return result;
+					if (prev < result) {
+						return result;
+					}
 				}
 			}
 			result++;
@@ -1451,9 +1453,7 @@ dbgn addDbgStatement(rtContext rt, size_t start, size_t end, astn tag) {
 			}
 		}
 
-		if (result == NULL || start != result->start) {
-			result = insBuff(&rt->dbg->statements, i, NULL);
-		}
+		result = insBuff(&rt->dbg->statements, i, NULL);
 
 		if (result != NULL) {
 			memset(result, 0, rt->dbg->statements.esz);

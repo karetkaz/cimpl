@@ -246,40 +246,6 @@ let params = JsArgs('#', function (params, changes) {
 		if (params.content != null) {
 			setContent(content(params.content), params.file, params.line);
 		}
-
-		if (params.workspace != null || params.project != null || params.file != null) {
-			// do not show workspaces if a project or workspace is loaded
-			fileList.innerHTML = '';
-			return;
-		}
-
-		// add scripts saved in indexed database
-		if (indexedDB.databases != null) {
-			workspaceName.innerText = 's';
-			indexedDB.databases().then(function(dbs) {
-				let workspaces = '';
-				let prefix = '/cmpl/';
-				for (db of dbs) {
-					let name = db.name;
-					if (!name.startsWith(prefix)) {
-						continue;
-					}
-					name = name.substr(prefix.length);
-					let url = window.location.origin + window.location.pathname + '#workspace=' + name;
-					workspaces += '<li class="project" onclick="params.update({workspace: \'' + name + '\'});">' + name +
-						'<button class="right" onclick="event.stopPropagation(); rmWorkspace(\'' + name + '\')" title="Remove workspace">-</button>' +
-						'</li>'
-				}
-				fileList.innerHTML += workspaces;
-			});
-		} else {
-			terminal.append('Failed to list workspaces, indexedDB.databases not available');
-		}
-
-		// add script containing demos and tests
-		var newScript = document.createElement('script');
-		newScript.src = 'extras/demo/tests.js';
-		document.head.appendChild(newScript);
 		return;
 	}
 
@@ -334,7 +300,7 @@ let params = JsArgs('#', function (params, changes) {
 
 	if (changes.folder !== undefined) {
 		openProjectFile({
-			folder: params.folder || '.'
+			folder: params.folder || '~/'
 		})
 	}
 
@@ -415,7 +381,7 @@ window.onkeydown = function() {
 	}
 	// Ctrl + Shift + Enter => Execute script
 	if (event.ctrlKey && !event.altKey && event.shiftKey && event.key === 'Enter') {
-		execute((params.exec || '-run/g'));
+		onExecClick();
 		return false;
 	}
 }
@@ -545,73 +511,79 @@ function shareInput() {
 	}
 }
 
-function execute(cmd, exactArgs) {
-	let args = undefined;
-	if (typeof(exactArgs) !== 'object') {
-		exactArgs = {
-			addFile: !exactArgs,
-			addLibs: !exactArgs,
-			addPrms: !exactArgs
+function execute(cmd, args) {
+	let execArgs = undefined;
+	if (typeof(args) !== 'object') {
+		args = {
+			file: args !== false,
+			libs: args !== false,
+			prms: args !== false,
+			dump: false
 		}
 	}
 
 	if (cmd != null) {
-		let file = undefined;
-		if (exactArgs.addFile) {
-			file = saveInput();
-			if (file == null) {
-				return;
-			}
-		}
 
-		args = [];
+		execArgs = [];
 		for (let arg of cmd.split(' ')) {
 			if (arg === '') {
 				continue;
 			}
-			args.push(arg);
+			execArgs.push(arg);
 		}
 
-		if (exactArgs.addPrms) {
+		if (args.prms !== false) {
 			// do not use standard input, print times
-			args.push('-X' + (params.X || '-stdin+steps'));
+			execArgs.push('-X' + (params.X || '-stdin+steps'));
 
 			// allocate 2Mb of memory by default,
-			args.push('-mem' + (params.mem || '2M'));
-
-			if (params.dump != null) {
-				if (params.dump.endsWith('.json')) {
-					args.push('-dump.json');
-				} else {
-					args.push('-dump');
-				}
-				args.push(params.dump);
-			}
+			execArgs.push('-mem' + (params.mem || '2M'));
 
 			if (params.log != null) {
-				args.push('-log');
-				args.push(params.log);
+				execArgs.push('-log');
+				execArgs.push(params.log);
 			}
 		}
 
-		if (exactArgs.addLibs) {
+		if (args.dump !== false && args.dump != null) {
+			if (args.dump.constructor !== String) {
+				throw 'dump must be a string';
+			}
+			if (args.dump.endsWith('.json')) {
+				execArgs.push('-dump.json');
+			} else {
+				execArgs.push('-dump');
+			}
+			execArgs.push(args.dump);
+		}
+
+		if (args.libs !== false) {
+			if (args.libs === true || args.libs == null) {
+				args.libs = props.libraries;
+			}
 			// todo: used libraries should be defined in the project file
-			for (let lib of props.libraries) {
-				args.push(lib);
+			for (let lib of args.libs) {
+				execArgs.push(lib);
 			}
 		}
 
-		if (file !== undefined) {
-			args.push(file);
+		if (args.file !== false) {
+			args.file = saveInput();
+			if (args.file == null) {
+				return;
+			}
+
+			execArgs.push(args.file);
 			for (let ln of document.getElementsByClassName('breakpoint')) {
-				args.push('-b/P/' + ln.value);
+				execArgs.push('-b/P/' + ln.value);
 			}
 		}
-		terminal.command = args.join(' ');
+
+		terminal.command = execArgs.join(' ');
 	}
 
 	terminal.clear();
-	execInput(args || ['--help']);
+	execInput(execArgs || ['--help'], args);
 }
 
 function process(data) {

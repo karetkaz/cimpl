@@ -33,18 +33,9 @@ Module.listFiles = function(folders, recursive) {
 			folders = folders.substr(0, folders.length - 1);
 		}
 
-		if (folders === '.') {
+		if (folders === '~') {
 			// list all files from workspace directory
 			folders = [Module.workspace];
-		}
-		else if (folders === '*') {
-			// list all files from workspace and lib directory
-			folders = [Module.workspace, '/lib'];
-		}
-		else if (folders === '**') {
-			// list all files from workspace and lib directory
-			folders = [Module.workspace, '/lib'];
-			recursive = true;
 		}
 		else {
 			folders = [folders];

@@ -205,7 +205,6 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 					ccKind arg = va_arg(ap, ccKind);
 					char *_stat = "";
 					char *_const = "";
-					char *_paral = "";
 					char *_kind = "";
 					char *_cast = "ERR";
 
@@ -306,14 +305,11 @@ static void print_fmt(FILE *out, const char **esc, const char *msg, va_list ap) 
 					if (arg & ATTR_cnst) {
 						_const = "const ";
 					}
-					if (arg & ATTR_paral) {
-						_const = "parallel ";
-					}
 					if (_cast != NULL) {
-						snprintf(buff, sizeof(buff), "%s%s%s%s(%s)", _stat, _const, _paral, _kind, _cast);
+						snprintf(buff, sizeof(buff), "%s%s%s(%s)", _stat, _const, _kind, _cast);
 					}
 					else {
-						snprintf(buff, sizeof(buff), "%s%s%s%s", _stat, _const, _paral, _kind);
+						snprintf(buff, sizeof(buff), "%s%s%s", _stat, _const, _kind);
 					}
 					str = buff;
 					break;
@@ -624,7 +620,6 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 			}
 			break;
 
-		case STMT_pbeg:
 		case STMT_beg:
 			if (mode == prName) {
 				printStr(out, esc, token_tbl[kind].name);
@@ -680,8 +675,8 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 			printFmt(out, esc, "\n%I%s", indent, "}");
 			break;
 
-		case STMT_sif:
 		case STMT_if:
+		case STMT_sif:
 			printStr(out, esc, token_tbl[kind].name);
 			if (mode == prName) {
 				break;
@@ -754,9 +749,8 @@ void printAst(FILE *out, const char **esc, astn ast, dmpMode mode, int indent) {
 			}
 			break;
 
-		case STMT_pfor:
-		case STMT_sfor:
 		case STMT_for:
+		case STMT_sfor:
 			printStr(out, esc, token_tbl[kind].name);
 			if (mode == prName) {
 				break;

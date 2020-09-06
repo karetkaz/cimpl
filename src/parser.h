@@ -119,7 +119,7 @@ astn strNode(ccContext cc, char *value);
 astn lnkNode(ccContext cc, symn ref);
 
 /// Allocate an operator tree node.
-astn opNode(ccContext cc, ccToken kind, astn lhs, astn rhs);
+astn opNode(ccContext cc, symn type, ccToken kind, astn lhs, astn rhs);
 
 // return constant values of nodes
 int bolValue(astn ast);
