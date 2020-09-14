@@ -1,3 +1,0 @@
-## While statement
-[TODO: implementation]
-

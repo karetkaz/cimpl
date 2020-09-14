@@ -127,6 +127,8 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 		const Image offs;
 		const Image thumb;
 		const float32 aspect;
+		int32 fpsCount = 0;	// frames drawn
+		float32 fpsTime = 0;	// frame per sec shot time
 		const vec4f eval(vec4f in);
 	}
 
@@ -142,8 +144,12 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 		}
 		if (action == Gui.KEY_RELEASE) {
 			if (button == ' ') {
-				float32 time = (System.millis() - start) / 1000f;
+				char text[256] = {};
+				int64 now = System.millis();
+				float32 time = (now - start) / 1000f;
 				closure.offs.eval(null, closure.aspect, time, closure.eval);
+				text.append(text.append(0, "Millis: "), System.millis() - now);
+				Gui.setTitle(text);
 				return 0;
 			}
 			if (button == '\t') {
@@ -159,6 +165,14 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 		float32 time = (System.millis() - start) / 1000f;
 		closure.thumb.eval(null, closure.aspect, time, closure.eval);
 		closure.offs.resize(null, closure.thumb, null, closure.lerp ? 1 : 0);
+		if (time > closure.fpsTime) {
+			char text[256] = {};
+			text.append(text.append(0, "Fps: "), closure.fpsCount);
+			Gui.setTitle(text);
+			closure.fpsTime = time + 1;
+			closure.fpsCount = 0;
+		}
+		closure.fpsCount += 1;
 
 		// do not block for any input
 		return 1;
@@ -2159,6 +2173,26 @@ inline mul(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f)
 /// Component wise divide the two vectors.
 inline div(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
 
+/// Component wise add vector and scalar.
+inline add(float32 a, vec4f b) = add(vec4f(a), b);
+/// Component wise add vector and scalar.
+inline add(vec4f a, float32 b) = add(a, vec4f(b));
+
+/// Component wise subtract vector and scalar.
+inline sub(float32 a, vec4f b) = sub(vec4f(a), b);
+/// Component wise subtract vector and scalar.
+inline sub(vec4f a, float32 b) = sub(a, vec4f(b));
+
+/// Component wise multiply vector and scalar.
+inline mul(float32 a, vec4f b) = mul(vec4f(a), b);
+/// Component wise multiply vector and scalar.
+inline mul(vec4f a, float32 b) = mul(a, vec4f(b));
+
+/// Component wise divide vector and scalar.
+inline div(float32 a, vec4f b) = div(vec4f(a), b);
+/// Component wise divide vector and scalar.
+inline div(vec4f a, float32 b) = div(a, vec4f(b));
+
 /// Component wise minimum of the two vectors.
 inline min(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), min.p4f));
 /// Component wise maximum of the two vectors.
@@ -2194,15 +2228,6 @@ inline normalize(const vec4f v&) = div(v, vec4f(length(v)));
 inline eval(const vec4f v&, float32 x) = float32((((v.w * x + v.z) * x + v.y) * x) + v.x);
 
 /* TODO: leftovers
-inline add(float32 a, vec4f b) = add(vec4f(a), b);
-inline add(vec4f a, float32 b) = add(a, vec4f(b));
-inline sub(float32 a, vec4f b) = sub(vec4f(a), b);
-inline sub(vec4f a, float32 b) = sub(a, vec4f(b));
-inline mul(float32 a, vec4f b) = mul(vec4f(a), b);
-inline mul(vec4f a, float32 b) = mul(a, vec4f(b));
-inline div(float32 a, vec4f b) = div(vec4f(a), b);
-inline div(vec4f a, float32 b) = div(a, vec4f(b));
-
 inline ceq(vec4f x, vec4f y) = emit(ceq.p4f, vec4f(y), vec4f(x));
 inline mad(vec4f a, vec4f b, vec4f c) = emit(vec4f, add.p4f, mul.p4f, vec4f(a), vec4f(b), vec4f(c));	// a * b + c
 
@@ -2909,14 +2934,18 @@ void eval(Image image, const Rect roi&, float32 aspect, float32 time, vec4f eval
 		return;
 	}
 
+	float32 w = image.width();
+	float32 h = image.height();
+	if (aspect == 0) {
+		aspect = w / h;
+	}
+	h *= aspect;
 	vec4f in = {
 		x: 0;
 		y: 0;
 		z: aspect;
 		w: time;
 	};
-	float32 w = image.width();
-	float32 h = image.height();
 	for (int y = rect.y; y < rect.y + rect.h; y += 1) {
 		in.y = y / h;
 		for (int x = rect.x; x < rect.x + rect.w; x += 1) {

@@ -1,5 +1,4 @@
 #include <cmpl.h>
-#include <internal.h>
 
 #include "g3_math.h"
 #include "gx_color.h"
@@ -1310,7 +1309,7 @@ static vmError mesh_material(nfcContext ctx) {
 	return illegalState;
 }
 
-symn typSigned(rtContext rt, int size) {
+static symn typSigned(rtContext rt, int size) {
 	switch (size) {
 		default:
 			break;
@@ -1549,6 +1548,10 @@ int cmplInit(rtContext rt) {
 			}
 		}
 		rt->api.ccEnd(cc, gui);
+	}
+
+	if (!rt->api.ccAddUnit(cc, NULL, NULL, 0, "inline \"/cmplGfx/gfxlib.ci\"?;")) {
+		return 1;
 	}
 
 	if (1) {

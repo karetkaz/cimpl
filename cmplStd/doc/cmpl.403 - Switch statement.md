@@ -1,3 +1,0 @@
-## Switch statement
-[TODO: implementation]
-

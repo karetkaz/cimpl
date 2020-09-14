@@ -42,6 +42,7 @@ let projects = {
 			'asset/mesh/teapot.obj',
 			'demo/StarField.ci',
 			'demo/FloodIt.ci',
+			'demo/RayTracer.ci',
 			'2d.ImageDiff.ci',
 			'2d.L-System.ci',
 			'2d.draw.bezier.ci',

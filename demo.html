@@ -49,8 +49,8 @@
 	<div id="output-toolbar" class="toolbar">
 		<span class="no-output left" onclick="setStyle(body, 'output');">Output</span>
 		<select class="output left" id="selOutput" onchange="selectOutputTab(this);" onclick="event.stopPropagation()">
-			<option value="Output-0">Output</option>
-<!--			<option value="Output-0">Pin Output</option>-->
+			<option onchange="terminal.clear();">Output</option>
+			<option onchange="pinOutput(this);">Pin Output</option>
 			<option onchange="editOutput();">Edit Output</option>
 			<option onchange="terminal.clear();">Clear Output</option>
 			<!-- <option value="Search-0">Search</option> -->
@@ -151,21 +151,25 @@
 			<hr>
 			<!-- TODO
 			<div class="collapsed submenu">
-				<li onclick="setStyle(parentElement, '~collapsed')">Line</li><ul>
-				<li onclick="editor.execCommand('?duppLines');">Dupplicate Lines</li>
-				<li onclick="editor.execCommand('?joinLines');">Join Lines</li>
-				<li onclick="editor.execCommand('?sortLines');">Sort Lines</li>
-				<li onclick="editor.execCommand('?reverseLines');">Reverse Lines</li>
-			</ul></div>
+				<li onclick="setStyle(parentElement, '~collapsed')">Line</li>
+				<ul>
+					<li onclick="editor.execCommand('?duppLines');">Dupplicate Lines</li>
+					<li onclick="editor.execCommand('?joinLines');">Join Lines</li>
+					<li onclick="editor.execCommand('?sortLines');">Sort Lines</li>
+					<li onclick="editor.execCommand('?reverseLines');">Reverse Lines</li>
+				</ul>
+			</div>
 			-->
 			<div class="collapsed submenu">
-				<li onclick="setStyle(parentElement, '~collapsed')">Case</li><ul>
-				<li onclick="editor.execCommand('toggleCase');"><span class="right">Ctrl + u</span>Toggle case</li>
-				<li onclick="editor.execCommand('upperCase');"><span class="right"></span>Upper case</li>
-				<li onclick="editor.execCommand('lowerCase');"><span class="right"></span>Lower case</li>
-				<li onclick="editor.execCommand('camelCase');"><span class="right"></span>CamelCase</li>
-				<li onclick="editor.execCommand('snakeCase');"><span class="right"></span>Snake_case</li>
-			</ul></div>
+				<li onclick="setStyle(parentElement, '~collapsed')">Case</li>
+				<ul>
+					<li onclick="editor.execCommand('toggleCase');"><span class="right">Ctrl + u</span>Toggle case</li>
+					<li onclick="editor.execCommand('upperCase');"><span class="right"></span>Upper case</li>
+					<li onclick="editor.execCommand('lowerCase');"><span class="right"></span>Lower case</li>
+					<li onclick="editor.execCommand('camelCase');"><span class="right"></span>CamelCase</li>
+					<li onclick="editor.execCommand('snakeCase');"><span class="right"></span>Snake_case</li>
+				</ul>
+			</div>
 		</ul>
 		<hr>
 	</div>
@@ -194,19 +198,20 @@
 			<button class="right" onclick="event.stopPropagation(); editor.execCommand('foldAll');" title="Fold all">⊟</button>
 		</li>
 		<ul>
-			<div class="collapsed submenu">
-				<li onclick="setStyle(parentElement, '~collapsed')">Fold</li><ul>
-				<li onclick="editor.execCommand('fold');"><span class="right">Ctrl + -</span>Fold</li>
-				<li onclick="editor.execCommand('unfold');"><span class="right">Ctrl + +</span>Unfold</li>
-				<li onclick="editor.execCommand('foldAll');"><span class="right">Ctrl+Shift + -</span>Fold All</li>
-				<li onclick="editor.execCommand('unfoldAll');"><span class="right">Ctrl+Shift + +</span>Unfold All</li>
-			</ul></div>
-			<li onclick="completeAction('!zoom:', '100');">Zoom</li>
-			<li id="wrap-output" onclick="setStyle(body, '~wrap-output');">Wrap output</li>
-			<li id="dark-theme" onclick="setStyle(body, '~dark');">Dark theme</li>
-			<li onclick="params.update({theme: hasStyle(body, 'dark') ? 'dark' : 'light'});">Save theme</li>
+			<li onclick="completeAction('!zoom:');">Zoom</li>
+			<li onclick="completeAction('!theme:');">Theme</li>
 			<li id="pin-left" onclick="setStyle(body, '~left-pin');">Pin sidebar</li>
 			<li id="show-output" onclick="setStyle(body, '~output');">Show output</li>
+			<li id="wrap-output" onclick="setStyle(body, '~wrap-output');">Wrap output</li>
+			<div class="collapsed submenu">
+				<li onclick="setStyle(parentElement, '~collapsed')">Fold</li>
+				<ul>
+					<li onclick="editor.execCommand('fold');"><span class="right">Ctrl + -</span>Fold</li>
+					<li onclick="editor.execCommand('unfold');"><span class="right">Ctrl + +</span>Unfold</li>
+					<li onclick="editor.execCommand('foldAll');"><span class="right">Ctrl+Shift + -</span>Fold All</li>
+					<li onclick="editor.execCommand('unfoldAll');"><span class="right">Ctrl+Shift + +</span>Unfold All</li>
+				</ul>
+			</div>
 		</ul>
 		<hr>
 	</div>
@@ -268,6 +273,27 @@ function onMenuClick() {
 	setStyle(document.body, '~left-bar');
 }
 
+function showCanvas(show) {
+	if (!show) {
+		editor.setOption("readOnly", false);
+		setStyle(document.body, '-canvas');
+		Module._SDL_SendQuit();
+		return;
+	}
+
+	editor.setOption("readOnly", 'nocursor');
+	setStyle(document.body, 'canvas');
+
+	if (Browser.mainLoop.oldPause === undefined) {
+		Browser.mainLoop.oldPause = Browser.mainLoop.pause;
+		Browser.mainLoop.pause = function() {
+			editor.setOption("readOnly", false);
+			setStyle(document.body, '-canvas');
+			Browser.mainLoop.oldPause();
+			canvas.width = 0;
+		}
+	}
+}
 function centerCanvas(zoom) {
 	if (zoom === undefined) {
 		if (canvas.style.zoom !== '') {
@@ -309,27 +335,6 @@ function centerCanvas(zoom) {
 	canvasMove.style.width = Math.max(canvas.width, canvas.parentElement.clientWidth);
 	canvasMove.style.height = Math.max(canvas.height, canvas.parentElement.clientHeight);
 }
-function showCanvas(visible) {
-	if (!visible) {
-		editor.setOption("readOnly", false);
-		setStyle(document.body, '-canvas');
-		Module._SDL_SendQuit();
-		return;
-	}
-
-	editor.setOption("readOnly", 'nocursor');
-	setStyle(document.body, 'canvas');
-
-	if (Browser.mainLoop.oldPause === undefined) {
-		Browser.mainLoop.oldPause = Browser.mainLoop.pause;
-		Browser.mainLoop.pause = function() {
-			editor.setOption("readOnly", false);
-			setStyle(document.body, '-canvas');
-			Browser.mainLoop.oldPause();
-			canvas.width = 0;
-		}
-	}
-}
 
 // worker or canvas based execution
 if (params.worker !== undefined) {
@@ -355,8 +360,7 @@ if (params.worker !== undefined) {
 } else {
 	props.libraries = [
 		'extras/demo/emscripten/libFile.wasm',
-		'extras/demo/emscripten/libGfx.wasm',
-		'/cmplGfx/gfxlib.ci'
+		'extras/demo/emscripten/libGfx.wasm'
 	];
 
 	var Module = {
@@ -396,6 +400,14 @@ if (params.worker !== undefined) {
 			return;
 		}
 		showCanvas(true);
+		if (props.mobile) {
+			let ratioWidth = window.innerWidth / canvas.width;
+			let ratioHeight = window.innerHeight / canvas.height;
+			centerCanvas(Math.min(ratioWidth, ratioHeight));
+		} else {
+			// reset previous zoom and position
+			centerCanvas(null);
+		}
 		canvasShown.width = canvas.width;
 	});
 	canvasShown.observe(canvas, {attributes: true});
@@ -409,8 +421,6 @@ if (params.worker !== undefined) {
 	}
 	var execInput = function(args, extra) {
 		// show overlay while compiling and initializing
-
-		centerCanvas(null);
 		canvasShown.width = 0;
 		canvasMove.classList.add('hidden');
 		setStyle(document.body, 'canvas', 'output');

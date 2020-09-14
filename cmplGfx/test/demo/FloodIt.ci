@@ -52,9 +52,15 @@ int onEvent(int action, int button, int x, int y) {
 	if (action == Gui.WINDOW_CLOSE) {
 		info("moves used", moves);
 	}
-	if (action == Gui.MOUSE_RELEASE) {
+	if (action == Gui.MOUSE_RELEASE || action == Gui.FINGER_MOTION) {
 		int i = x * gridSize / displaySize;
 		int j = y * gridSize / displaySize;
+		if (i < 0 || i  >= gridSize) {
+			return;
+		}
+		if (j < 0 || j  >= gridSize) {
+			return;
+		}
 		int c = grid[i + j * gridSize];
 		if (flood(0, 0, grid[0], c)) {
 			moves += 1;

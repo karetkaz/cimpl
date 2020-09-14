@@ -200,6 +200,7 @@ let params = JsArgs('#', function (params, changes) {
 		setStyle(document.body, '-dark', '-light', theme || 'dark');
 
 		// custom layout, only after loading
+		props.mobile = mode === 'mobile';
 		switch (mode) {
 			case 'normal':
 				if (params.workspace != null || params.project != null) {
@@ -409,14 +410,6 @@ function setContent(content, file, line, column) {
 	return contentSet;
 }
 
-function selectOutputTab(select) {
-	let item = select.options[select.selectedIndex];
-	if (item.onchange != null) {
-		select.selectedIndex = 0;
-		item.onchange();
-	}
-}
-
 function hideOverlay() {
 	if (!document.body.classList.contains('left-pin')) {
 		document.body.classList.remove('left-bar');
@@ -492,9 +485,34 @@ function editProject() {
 	}
 }
 
+function selectOutputTab(select) {
+	let item = select.options[select.selectedIndex];
+	if (item.onchange != null) {
+		if (item.keepSelected !== true) {
+			select.selectedIndex = 0;
+		}
+		item.onchange();
+	}
+}
+
+function pinOutput(pinOption) {
+	let newOption = document.createElement('option');
+	newOption.value = terminal.innerHtml();
+	pinOption.value = +(+pinOption.value || 0) + 1;
+	newOption.innerText = 'Output-' + pinOption.value;
+	newOption.keepSelected = true;
+	newOption.onchange = function () {
+		terminal.innerHtml(newOption.value);
+	}
+	pinOption.parentNode.insertBefore(newOption, pinOption);
+}
+
 function editOutput() {
 	params.update({ file: null, content: null });
 	setContent(terminal.text());
+	if (props.mobile) {
+		setStyle(document.body, '-output');
+	}
 }
 
 function shareInput() {
@@ -583,6 +601,7 @@ function execute(cmd, args) {
 	}
 
 	terminal.clear();
+	selOutput.selectedIndex = 0;
 	execInput(execArgs || ['--help'], args);
 }
 

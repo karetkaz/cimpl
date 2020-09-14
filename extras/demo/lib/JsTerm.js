@@ -90,6 +90,12 @@ function Terminal(output, interpret) {
 				result += '\n';
 			}
 			return result;
+		},
+		innerHtml: function(set) {
+			if (set === undefined) {
+				return output.innerHTML;
+			}
+			output.innerHTML = set;
 		}
 	};
 }

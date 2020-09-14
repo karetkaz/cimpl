@@ -1,7 +1,9 @@
 # Declarations
-Declarations adds new types, functions or variables to the program.
+
+Declarations adds new variables, functions or types to the program.
 
 **[Syntax](Cmpl.g4)**
+
 ```antlrv4
 declaration
     : qualifiers? 'enum' identifier? (':' typename)? '{' propertyList '}'                              # EnumDeclaration

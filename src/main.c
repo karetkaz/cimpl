@@ -12,7 +12,7 @@
 #include <time.h>
 
 // default values
-static const char *STDLIB = "cmplStd/stdlib.ci";   // standard library
+static const char *STDLIB = "/cmplStd/stdlib.ci";   // standard library
 static const char *CMPL_HOME = "CMPL_HOME";    // Home environment path variable name
 
 static inline int strEquals(const char *str, const char *with) {
@@ -1575,25 +1575,25 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 
 static void dumpVmOpc(const char *error, const struct opcodeRec *info) {
 	FILE *out = stdout;
-	printFmt(out, NULL, "\n## Instruction `%s`\n", info->name);
-	printFmt(out, NULL, "Perform [TODO]\n");
-	printFmt(out, NULL, "\n### Description\n");
-	printFmt(out, NULL, "Instruction code: `0x%02x`  \n", info->code);
-	printFmt(out, NULL, "Instruction length: %d byte%?c  \n", info->size, info->size == 1 ? 0 : 's');
-	printFmt(out, NULL, "\n### Stack change\n");
+	printFmt(out, NULL, "\n### Instruction `%s`\n", info->name);
+	printFmt(out, NULL, "\nPerform [TODO]\n");
+	printFmt(out, NULL, "\n**Description**\n");
+	printFmt(out, NULL, "\nInstruction code: `0x%02x`\n", info->code);
+	printFmt(out, NULL, "\nInstruction length: %d byte%?c\n", info->size, info->size == 1 ? 0 : 's');
+	printFmt(out, NULL, "\n**Stack change**\n");
 
-	printFmt(out, NULL, "Requires %d operand%?c: […", info->stack_in, info->stack_in == 1 ? 0 : 's');
+	printFmt(out, NULL, "\nRequires %d operand%?c: […", info->stack_in, info->stack_in == 1 ? 0 : 's');
 	for (unsigned i = 0; i < info->stack_in; ++i) {
 		printFmt(out, NULL, ", %c", 'a' + i);
 	}
-	printFmt(out, NULL, "  \nReturns %d value%?c: […", info->stack_out, info->stack_in == 1 ? 0 : 's');
+	printFmt(out, NULL, "\n\nReturns %d value%?c: […", info->stack_out, info->stack_in == 1 ? 0 : 's');
 	for (unsigned i = 0; i < info->stack_out; ++i) {
 		printFmt(out, NULL, ", %c", 'a' + i);
 	}
-	printFmt(out, NULL, ", [TODO]  \n");
+	printFmt(out, NULL, ", [TODO]\n");
 
 	if (error != NULL) {
-		printFmt(out, NULL, "\n### Note\n%s\n", error);
+		printFmt(out, NULL, "\n**Note**\n\n%s\n", error);
 	}
 }
 

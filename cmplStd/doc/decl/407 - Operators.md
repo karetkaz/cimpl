@@ -1,15 +1,18 @@
 ## Operator overloading
+
 Operators can be overloaded using the `inline` keyword.
 
 ### Type construction/conversion operator
 
 **Example**
+
 ```
 inline complex(float64 re) = { re: re };
 complex a = complex(9);
 ```
 
 **Example**
+
 ```
 struct Celsius { double degrees; }
 struct Fahrenheit { double degrees; }
@@ -29,6 +32,7 @@ Fahrenheit boilF = Fahrenheit(boilC);          // => inline Fahrenheit(Celsius v
 ### Unary and binary operators
 
 **Example**
+
 ```
 inline -(Complex a) = Complex(-a.re, -a.im);
 inline +(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
@@ -41,6 +45,7 @@ Complex c = a + a;                      //  6 + 0 * i
 ### Property/Extension operators
 
 **Example**
+
 ```
 Complex a = Complex(3);                 // 3 + 0 * i
 Complex b = Complex(5, 1);              // 5 + 1 * i

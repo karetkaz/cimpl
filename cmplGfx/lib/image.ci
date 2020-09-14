@@ -188,14 +188,18 @@ void eval(Image image, const Rect roi&, float32 aspect, float32 time, vec4f eval
 		return;
 	}
 
+	float32 w = image.width();
+	float32 h = image.height();
+	if (aspect == 0) {
+		aspect = w / h;
+	}
+	h *= aspect;
 	vec4f in = {
 		x: 0;
 		y: 0;
 		z: aspect;
 		w: time;
 	};
-	float32 w = image.width();
-	float32 h = image.height();
 	for (int y = rect.y; y < rect.y + rect.h; y += 1) {
 		in.y = y / h;
 		for (int x = rect.x; x < rect.x + rect.w; x += 1) {

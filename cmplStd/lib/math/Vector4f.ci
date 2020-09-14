@@ -76,6 +76,26 @@ inline mul(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), mul.p4f)
 /// Component wise divide the two vectors.
 inline div(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), div.p4f));
 
+/// Component wise add vector and scalar.
+inline add(float32 a, vec4f b) = add(vec4f(a), b);
+/// Component wise add vector and scalar.
+inline add(vec4f a, float32 b) = add(a, vec4f(b));
+
+/// Component wise subtract vector and scalar.
+inline sub(float32 a, vec4f b) = sub(vec4f(a), b);
+/// Component wise subtract vector and scalar.
+inline sub(vec4f a, float32 b) = sub(a, vec4f(b));
+
+/// Component wise multiply vector and scalar.
+inline mul(float32 a, vec4f b) = mul(vec4f(a), b);
+/// Component wise multiply vector and scalar.
+inline mul(vec4f a, float32 b) = mul(a, vec4f(b));
+
+/// Component wise divide vector and scalar.
+inline div(float32 a, vec4f b) = div(vec4f(a), b);
+/// Component wise divide vector and scalar.
+inline div(vec4f a, float32 b) = div(a, vec4f(b));
+
 /// Component wise minimum of the two vectors.
 inline min(vec4f lhs, vec4f rhs) = vec4f(emit(struct(lhs), struct(rhs), min.p4f));
 /// Component wise maximum of the two vectors.
@@ -111,15 +131,6 @@ inline normalize(const vec4f v&) = div(v, vec4f(length(v)));
 inline eval(const vec4f v&, float32 x) = float32((((v.w * x + v.z) * x + v.y) * x) + v.x);
 
 /* TODO: leftovers
-inline add(float32 a, vec4f b) = add(vec4f(a), b);
-inline add(vec4f a, float32 b) = add(a, vec4f(b));
-inline sub(float32 a, vec4f b) = sub(vec4f(a), b);
-inline sub(vec4f a, float32 b) = sub(a, vec4f(b));
-inline mul(float32 a, vec4f b) = mul(vec4f(a), b);
-inline mul(vec4f a, float32 b) = mul(a, vec4f(b));
-inline div(float32 a, vec4f b) = div(vec4f(a), b);
-inline div(vec4f a, float32 b) = div(a, vec4f(b));
-
 inline ceq(vec4f x, vec4f y) = emit(ceq.p4f, vec4f(y), vec4f(x));
 inline mad(vec4f a, vec4f b, vec4f c) = emit(vec4f, add.p4f, mul.p4f, vec4f(a), vec4f(b), vec4f(c));	// a * b + c
 

@@ -5289,7 +5289,7 @@ vec4f.<?>: vec4f.<?> {
 .base: `vec4f.<?>`
 .size: 16
 .name: '<?>'
-.file: 'cmplStd/lib/math/Vector4f.ci:130'
+.file: 'cmplStd/lib/math/Vector4f.ci:141'
 .owner: vec4f
 .field x: float32 (size: 4, cast: variable(f32))
 .field y: float32 (size: 4, cast: variable(f32))
@@ -5493,12 +5493,108 @@ div(lhs: vec4f, rhs: vec4f): vec4f: function {
 .doc: 'Component wise divide the two vectors.'
 .value: vec4f(emit(struct(lhs), struct(rhs), div.p4f))
 }
+add(a: float32, b: vec4f): vec4f: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'add'
+.file: 'cmplStd/lib/math/Vector4f.ci:80'
+.param .result: vec4f (size: 16, cast: val)
+.param a: float32 (size: 4, cast: f32)
+.param b: vec4f (size: 16, cast: val)
+.doc: 'Component wise add vector and scalar.'
+.value: add(vec4f(a), b)
+}
+add(a: vec4f, b: float32): vec4f: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'add'
+.file: 'cmplStd/lib/math/Vector4f.ci:82'
+.param .result: vec4f (size: 16, cast: val)
+.param a: vec4f (size: 16, cast: val)
+.param b: float32 (size: 4, cast: f32)
+.doc: 'Component wise add vector and scalar.'
+.value: add(a, vec4f(b))
+}
+sub(a: float32, b: vec4f): vec4f: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'sub'
+.file: 'cmplStd/lib/math/Vector4f.ci:85'
+.param .result: vec4f (size: 16, cast: val)
+.param a: float32 (size: 4, cast: f32)
+.param b: vec4f (size: 16, cast: val)
+.doc: 'Component wise subtract vector and scalar.'
+.value: sub(vec4f(a), b)
+}
+sub(a: vec4f, b: float32): vec4f: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'sub'
+.file: 'cmplStd/lib/math/Vector4f.ci:87'
+.param .result: vec4f (size: 16, cast: val)
+.param a: vec4f (size: 16, cast: val)
+.param b: float32 (size: 4, cast: f32)
+.doc: 'Component wise subtract vector and scalar.'
+.value: sub(a, vec4f(b))
+}
+mul(a: float32, b: vec4f): vec4f: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'mul'
+.file: 'cmplStd/lib/math/Vector4f.ci:90'
+.param .result: vec4f (size: 16, cast: val)
+.param a: float32 (size: 4, cast: f32)
+.param b: vec4f (size: 16, cast: val)
+.doc: 'Component wise multiply vector and scalar.'
+.value: mul(vec4f(a), b)
+}
+mul(a: vec4f, b: float32): vec4f: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'mul'
+.file: 'cmplStd/lib/math/Vector4f.ci:92'
+.param .result: vec4f (size: 16, cast: val)
+.param a: vec4f (size: 16, cast: val)
+.param b: float32 (size: 4, cast: f32)
+.doc: 'Component wise multiply vector and scalar.'
+.value: mul(a, vec4f(b))
+}
+div(a: float32, b: vec4f): vec4f: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'div'
+.file: 'cmplStd/lib/math/Vector4f.ci:95'
+.param .result: vec4f (size: 16, cast: val)
+.param a: float32 (size: 4, cast: f32)
+.param b: vec4f (size: 16, cast: val)
+.doc: 'Component wise divide vector and scalar.'
+.value: div(vec4f(a), b)
+}
+div(a: vec4f, b: float32): vec4f: function {
+.kind: inline
+.base: `function`
+.size: 0
+.name: 'div'
+.file: 'cmplStd/lib/math/Vector4f.ci:97'
+.param .result: vec4f (size: 16, cast: val)
+.param a: vec4f (size: 16, cast: val)
+.param b: float32 (size: 4, cast: f32)
+.doc: 'Component wise divide vector and scalar.'
+.value: div(a, vec4f(b))
+}
 min(lhs: vec4f, rhs: vec4f): vec4f: function {
 .kind: inline
 .base: `function`
 .size: 0
 .name: 'min'
-.file: 'cmplStd/lib/math/Vector4f.ci:80'
+.file: 'cmplStd/lib/math/Vector4f.ci:100'
 .param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -5510,7 +5606,7 @@ max(lhs: vec4f, rhs: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'max'
-.file: 'cmplStd/lib/math/Vector4f.ci:82'
+.file: 'cmplStd/lib/math/Vector4f.ci:102'
 .param .result: vec4f (size: 16, cast: val)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -5522,7 +5618,7 @@ clamp(vec: vec4f, min: vec4f, max: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'clamp'
-.file: 'cmplStd/lib/math/Vector4f.ci:85'
+.file: 'cmplStd/lib/math/Vector4f.ci:105'
 .param .result: vec4f (size: 16, cast: val)
 .param vec: vec4f (size: 16, cast: val)
 .param min: vec4f (size: 16, cast: val)
@@ -5535,7 +5631,7 @@ clamp(vec: vec4f, min: float32, max: float32): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'clamp'
-.file: 'cmplStd/lib/math/Vector4f.ci:88'
+.file: 'cmplStd/lib/math/Vector4f.ci:108'
 .param .result: vec4f (size: 16, cast: val)
 .param vec: vec4f (size: 16, cast: val)
 .param min: float32 (size: 4, cast: f32)
@@ -5548,7 +5644,7 @@ dp3(lhs: vec4f, rhs: vec4f): float32: function {
 .base: `function`
 .size: 0
 .name: 'dp3'
-.file: 'cmplStd/lib/math/Vector4f.ci:92'
+.file: 'cmplStd/lib/math/Vector4f.ci:112'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -5560,7 +5656,7 @@ dph(lhs: vec4f, rhs: vec4f): float32: function {
 .base: `function`
 .size: 0
 .name: 'dph'
-.file: 'cmplStd/lib/math/Vector4f.ci:96'
+.file: 'cmplStd/lib/math/Vector4f.ci:116'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -5572,7 +5668,7 @@ dp4(lhs: vec4f, rhs: vec4f): float32: function {
 .base: `function`
 .size: 0
 .name: 'dp4'
-.file: 'cmplStd/lib/math/Vector4f.ci:100'
+.file: 'cmplStd/lib/math/Vector4f.ci:120'
 .param .result: float32 (size: 4, cast: f32)
 .param lhs: vec4f (size: 16, cast: val)
 .param rhs: vec4f (size: 16, cast: val)
@@ -5584,7 +5680,7 @@ cross(a: vec4f, b: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'cross'
-.file: 'cmplStd/lib/math/Vector4f.ci:103'
+.file: 'cmplStd/lib/math/Vector4f.ci:123'
 .param .result: vec4f (size: 16, cast: val)
 .param a: vec4f (size: 4, cast: const variable(ref))
 .param b: vec4f (size: 4, cast: const variable(ref))
@@ -5596,7 +5692,7 @@ length(v: vec4f): float32: function {
 .base: `function`
 .size: 0
 .name: 'length'
-.file: 'cmplStd/lib/math/Vector4f.ci:106'
+.file: 'cmplStd/lib/math/Vector4f.ci:126'
 .param .result: float32 (size: 4, cast: f32)
 .param v: vec4f (size: 16, cast: variable(val))
 .doc: 'Length of the vector(xyz)'
@@ -5607,7 +5703,7 @@ normalize(v: vec4f): vec4f: function {
 .base: `function`
 .size: 0
 .name: 'normalize'
-.file: 'cmplStd/lib/math/Vector4f.ci:108'
+.file: 'cmplStd/lib/math/Vector4f.ci:128'
 .param .result: vec4f (size: 16, cast: val)
 .param v: vec4f (size: 4, cast: const variable(ref))
 .doc: 'Normalize the vector(xyz)'
@@ -5618,7 +5714,7 @@ eval(v: vec4f, x: float32): float32: function {
 .base: `function`
 .size: 0
 .name: 'eval'
-.file: 'cmplStd/lib/math/Vector4f.ci:111'
+.file: 'cmplStd/lib/math/Vector4f.ci:131'
 .param .result: float32 (size: 4, cast: f32)
 .param v: vec4f (size: 4, cast: const variable(ref))
 .param x: float32 (size: 4, cast: variable(f32))
@@ -15370,6 +15466,14 @@ testMathAbsMod_f32_8d: float32 {
 .field sub: function (size: 0, cast: inline)
 .field mul: function (size: 0, cast: inline)
 .field div: function (size: 0, cast: inline)
+.field add: function (size: 0, cast: inline)
+.field add: function (size: 0, cast: inline)
+.field sub: function (size: 0, cast: inline)
+.field sub: function (size: 0, cast: inline)
+.field mul: function (size: 0, cast: inline)
+.field mul: function (size: 0, cast: inline)
+.field div: function (size: 0, cast: inline)
+.field div: function (size: 0, cast: inline)
 .field min: function (size: 0, cast: inline)
 .field max: function (size: 0, cast: inline)
 .field clamp: function (size: 0, cast: inline)
@@ -16559,6 +16663,14 @@ testMathAbsMod_f32_8d: float32 {
 		sub(lhs: vec4f, rhs: vec4f): vec4f := vec4f(emit(struct(lhs), struct(rhs), sub.p4f));
 		mul(lhs: vec4f, rhs: vec4f): vec4f := vec4f(emit(struct(lhs), struct(rhs), mul.p4f));
 		div(lhs: vec4f, rhs: vec4f): vec4f := vec4f(emit(struct(lhs), struct(rhs), div.p4f));
+		add(a: float32, b: vec4f): vec4f := add(vec4f(a), b);
+		add(a: vec4f, b: float32): vec4f := add(a, vec4f(b));
+		sub(a: float32, b: vec4f): vec4f := sub(vec4f(a), b);
+		sub(a: vec4f, b: float32): vec4f := sub(a, vec4f(b));
+		mul(a: float32, b: vec4f): vec4f := mul(vec4f(a), b);
+		mul(a: vec4f, b: float32): vec4f := mul(a, vec4f(b));
+		div(a: float32, b: vec4f): vec4f := div(vec4f(a), b);
+		div(a: vec4f, b: float32): vec4f := div(a, vec4f(b));
 		min(lhs: vec4f, rhs: vec4f): vec4f := vec4f(emit(struct(lhs), struct(rhs), min.p4f));
 		max(lhs: vec4f, rhs: vec4f): vec4f := vec4f(emit(struct(lhs), struct(rhs), max.p4f));
 		clamp(vec: vec4f, min: vec4f, max: vec4f): vec4f := min(max(vec, min), max);
@@ -22729,13 +22841,13 @@ cmplStd/test/lang/reflect.ci:22: RecordSizeof: typename(<RecordSizeof>)
 cmplStd/test/lang/reflect.ci:26: RecordSizeofExt: typename(<RecordSizeofExt>)
 cmplStd/test/lang/reflect.ci:30: typeofRecord: typename(<RecordSizeofExt>)
 cmplStd/test/lang/reflect.ci:31: nameOfRecord: char[*]("RecordSizeofExt")
-cmplStd/test/lang/reflect.ci:32: offsetOfRecord: int32(280752)
+cmplStd/test/lang/reflect.ci:32: offsetOfRecord: int32(285776)
 cmplStd/test/lang/reflect.ci:33: sizeOfRecord: int32(16)
 cmplStd/test/lang/reflect.ci:34: fileOfRecord: char[*]("cmplStd/test/lang/reflect.ci")
 cmplStd/test/lang/reflect.ci:35: lineOfRecord: int32(26)
 cmplStd/test/lang/reflect.ci:37: typeofBase: typename(<RecordSizeof>)
 cmplStd/test/lang/reflect.ci:38: nameOfBase: char[*]("RecordSizeof")
-cmplStd/test/lang/reflect.ci:39: offsetOfBase: int32(280448)
+cmplStd/test/lang/reflect.ci:39: offsetOfBase: int32(285472)
 cmplStd/test/lang/reflect.ci:40: sizeOfBase: int32(12)
 cmplStd/test/lang/reflect.ci:41: fileOfBase: char[*]("cmplStd/test/lang/reflect.ci")
 cmplStd/test/lang/reflect.ci:42: lineOfBase: int32(22)
@@ -23172,18 +23284,18 @@ cmplStd/test/std/test.math.ci:96: testMathAbsMod_f32_8d: float32(8.000000)
 
 ---------- Memory usage:
 memory[all] @000000; size: 4194016(4.0 Mb)
-memory[used] @000000; size: 381864(372.9 Kb)
-memory[heap] @05d3a8; size: 2763600(2.6 Mb)
+memory[used] @000000; size: 386888(377.8 Kb)
+memory[heap] @05e748; size: 2758576(2.6 Mb)
 memory[stack] @1fff40; size: 1048504(1023.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 365072(356.5 Kb)
+memory[meta] @000000; size: 370096(361.4 Kb)
 memory[code] @000000; size: 16452(16.1 Kb)
 memory[data] @000000; size: 80(80.0 bytes)
 
 ---------- heap memory:
-memory[used] @05d3c0; size: 32(32.0 bytes)
-memory[used] @05d3f0; size: 32(32.0 bytes)
-memory[free] @05d420; size: 2763456(2.6 Mb)
+memory[used] @05e760; size: 32(32.0 bytes)
+memory[used] @05e790; size: 32(32.0 bytes)
+memory[free] @05e7c0; size: 2758432(2.6 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

@@ -73,6 +73,8 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 		const Image offs;
 		const Image thumb;
 		const float32 aspect;
+		int32 fpsCount = 0;	// frames drawn
+		float32 fpsTime = 0;	// frame per sec shot time
 		const vec4f eval(vec4f in);
 	}
 
@@ -88,8 +90,12 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 		}
 		if (action == Gui.KEY_RELEASE) {
 			if (button == ' ') {
-				float32 time = (System.millis() - start) / 1000f;
+				char text[256] = {};
+				int64 now = System.millis();
+				float32 time = (now - start) / 1000f;
 				closure.offs.eval(null, closure.aspect, time, closure.eval);
+				text.append(text.append(0, "Millis: "), System.millis() - now);
+				Gui.setTitle(text);
 				return 0;
 			}
 			if (button == '\t') {
@@ -105,6 +111,14 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 		float32 time = (System.millis() - start) / 1000f;
 		closure.thumb.eval(null, closure.aspect, time, closure.eval);
 		closure.offs.resize(null, closure.thumb, null, closure.lerp ? 1 : 0);
+		if (time > closure.fpsTime) {
+			char text[256] = {};
+			text.append(text.append(0, "Fps: "), closure.fpsCount);
+			Gui.setTitle(text);
+			closure.fpsTime = time + 1;
+			closure.fpsCount = 0;
+		}
+		closure.fpsCount += 1;
 
 		// do not block for any input
 		return 1;

@@ -1,12 +1,15 @@
 ## Records
+
 [Records](https://en.wikipedia.org/wiki/Record_(computer_science)) are user specified compound types.
 
 Records may contain only instance or static members and methods:
 
 ### Members
+
 [TODO: documentation]
 
 ### Static members
+
 ```
 struct Math {
 	static const float64 pi = 3.14159265358979323846264338327950288419716939937510582097494459;
@@ -24,15 +27,21 @@ float64 minimum = Math.min(a, b);
 
 if a member/method inside the record is declared `static`, it will become a global variable/function, and
 it will be accessible only through the declaring type:
+
 - `pi` is a `static` member, and can be accessed as `Math.pi`.
+
 - `min` is a `static` method, and can be accessed as `Math.min`.
+
 - if a `static` method and is initialized, it will become a [function reference](#function-references)
+
 - if a `static` method is not implemented, it will become a [forward declared function](#forward-declared-functions)
 
 ### Constant members
+
 [TODO: documentation]
 
 **[Example](../../lib/std/math/Complex.ci)**
+
 ```
 struct complex {
 	const float64 re;           // real part
@@ -49,13 +58,17 @@ a.re = 6;                       // error: re is constant and can not be assigned
 
 if a member inside the record is declared as `const`, the compiler will require its initialization
 and reject further assignments:
+
 - `re` must be initialized each time a complex variable is instantiated (has no default field initializer).
+
 - if `im` is not explicitly initialized, it will be initialized with the default field initializer.
 
 ### Methods
+
 [TODO: fix documentation]
 
 **[Example](../../lib/todo/todo.Stream.ci)**
+
 ```
 struct TextReader: Closeable {
 	const ByteReader reader;
@@ -88,22 +101,33 @@ struct TextReader: Closeable {
 ```
 
 if a method inside the record is not implemented or initialized, it will behave as an **abstract** method.
+
 - the method must be overridden in a record that extends this record.
+
 - the method will be looked up at runtime, not at compile time.
 
 if a method inside the record is initialized, it will behave as a **virtual** method.
+
 - the method can be overridden in a record that extends this record.
+
 - the method will be looked up at runtime, not at compile time.
+
 - should be used only to delegate the implementation.
+
 - it will declare only the member function.
 
 if a method inside the record is implemented, it will behave as a **virtual** method.
+
 - the record will declare both the member and the static function with the same name.
+
 - the method can be overridden in a record that extends this record.
+
 - the method will be looked up at runtime, not at compile time.
 
 In the example:
+
 - `reader` is declared as `const`, so it must be initialized on instance creation, and can not be changed by assignment.
+
 	- the compiler will reject assignments as `instance.reader = null;`
 
 - `int decode(char chars[], ByteReader reader)` is **abstract**, it must be overridden in the inheritance chain.
@@ -119,23 +143,28 @@ In the example:
 - `void close(Utf8Reader this)` overrides the abstract method from the base class `Closeable`.
 
 ### Static methods
+
 [TODO: fix documentation]
 
 ### Static records
+
 Records which are declared `static` will have all members static (sort of a namespaces).
 These types of records will have no size, and can not be instantiated.
 The best example of its usage is `static struct Math {...}` 
 
 ### Constant records
+
 [TODO: implementation]
 
 Records which are declared `const` will have all its members as constants (immutable record).
 
 ### Packed records
+
 A record can be packed with a small integer of a power of 2. [0, 1, 2, 4, 8, 16, 32],
 this means that the compiler will not generate gaps between the members to achieve best performance.
 
 **Example**
+
 ```
 struct union32: 0 {
 	int32 i32;
@@ -144,26 +173,31 @@ struct union32: 0 {
 
 union32 fi32 = { i32: 3 };
 ```
+
 - When a struct is packed with 0, it becomes a c like union,
 meaning every member of it will start at the same memory location.
 
 **Example**
-```
+
+```cmpl
 struct instruction: 1 {
 	uint8 opc;	// operation
 	int32 arg;	// argument
 }
 ```
+
 - When a record is packed with 1, the compiler will not generate any gap between the members,
 this may result in very expensive memory access to the members.
 
 ### Extended records
+
 Extended records are usually allocated on the heap, and are automatically released,
 when there are no more references pointing to the object.
 The compiler however should allocate on the heap only variables that escape their scope.
 The base type of every extended type is the builtin type `object`.
 
 **Example**
+
 ```
 struct Complex: object {
 	const double re;
@@ -174,6 +208,8 @@ Complex c1 = { re: 8 };
 ```
 
 The variable `c1`:
+
 - might be allocated on heap.
+
 - is initialized with: `re: 8` and `im: 0`;
 

@@ -1,8 +1,9 @@
 ## Arrays
+
 The array type is a collection of zero or more elements of the same type.
 
-### Arrays (Fixed-size arrays)
-[TODO: documentation]
+### Fixed-size arrays
+The fixed size array will allocate the space required for all the elements
 
 **Example**
 ```
@@ -12,7 +13,7 @@ int a[2] = {42, 97};
 - Are passed to functions by reference.
 - Type of elements and length is known by the compiler.
 
-### Slices (Dynamic-size arrays)
+### Dynamic-size arrays
 Slices are a pair of a pointer to the first element and an integer containing the length of the slice.
 
 **Example**
@@ -24,7 +25,7 @@ int a[] = {42, 97, 13};
 - Type of elements is known by the compiler.
 - The length is known at runtime.
 
-### Pointers (Unknown-size arrays)
+### Unknown-size arrays
 Pointers are arrays without length. This type is helpful to pass data to native functions.
 Use `pointer` for the special `void *` type from c, when the type of elements is unknown.
 
@@ -37,7 +38,7 @@ int a[*];
 - Type of elements is known by the compiler.
 - The length may be known by the developer.
 
-### Maps (Associative arrays)
+### Associative arrays
 [TODO: implementation]
 
 **Example**

@@ -1,86 +1,135 @@
 # Introduction
-Designed to be simple and minimalist.  
+
+Designed to be simple and minimalist.
+
 Syntax is similar to c/c++ influenced by:
+
 * [C/C++](https://en.wikipedia.org/wiki/C_programming_language)
+
 * [JavaScript](https://en.wikipedia.org/wiki/JavaScript)
+
 * [D programming language](https://en.wikipedia.org/wiki/D_programming_language)
+
 * [C# programming language](https://en.wikipedia.org/wiki/C_Sharp_programming_language)
+
 * [Lua programming language](https://en.wikipedia.org/wiki/Lua_programming_language)
 
 ## Features
+
 * Types are themselves variables of type `typename`.
+
 	* Can be parameters of functions `int sizeof(typename type) { return type.size; }`.
+
 	* Reflection is part of the language (some of the internal compiler functions exposed).
 
 * Arrays are more than just typed pointers.
-	* [Fixed-size arrays](#arrays-fixed-size-arrays): `int fixed[30];` (length known by the compiler)
-	* [Dynamic-size arrays](#slices-dynamic-size-arrays): `int dynamic[] = fixed;` (length known at run-time)
-	* [Unknown-size arrays](#pointers-unknown-size-arrays): `int memcmp(byte a[*], byte b[*], int size);` (length known by developer)
-	* [Associative arrays](#maps-associative-arrays): `double constants[string] = {"pi": 3.1415, ...};`
+
+	* [Fixed-size arrays](#fixed-size-arrays): `int fixed[30];` (length known by the compiler)
+
+	* [Dynamic-size arrays](#dynamic-size-arrays): `int dynamic[] = fixed;` (length known at run-time)
+
+	* [Unknown-size arrays](#unknown-size-arrays): `int memcmp(byte a[*], byte b[*], int size);` (length known by developer)
+
+	* [Associative arrays](#associative-arrays): `double constants[string] = {"pi": 3.1415, ...};`
 
 * Enumerations are enumerations:
+
 	* Enumeration values are named constants of a given base-type (number, object, function, ...).
+
 	* Enumeration values used in expressions are treated as values of the base-type.
+
 	* Enumeration type variables can be assigned only with values from the enumeration.
+
 	* Enumeration type can be iterated and indexed with ordinal or name.
 
 * Expressions can be aliased with the `inline` keyword.
+
 	* aliasing a type: `inline double = float64;`
+
 	* aliasing a constant: `inline pi = 3.14159265359;`
+
 	* aliasing an expression: `inline min(int a, int b) = a < b ? a : b;`
 
 * Conditional compile-time code generation and declarations with `static if` statement.
+
 	* `static if (int == int32) { /* 32 bit platform code */ }`
 
 * Functions
+
 	* Extend any class with custom methods using [Uniform Function Call Syntax](https://en.wikipedia.org/wiki/Uniform_Function_Call_Syntax)
+
 	* If a function name is a type name, it is treated as a constructor, and should return an instance of that type.
 
 * `new` and `this` are not part of the language.
+
 	* Create and initialize objects like in JavaScript `complex a = {re: 42, im: 2};`
+
 	* `this` is not needed using [Uniform Function Call Syntax](https://en.wikipedia.org/wiki/Uniform_Function_Call_Syntax).
 
 * `public`, `private` access level modifiers are not part of the language.
+
 	* everything is accessible inside one file with no restriction.
+
 	* accessing a non document commented variable, function field or method will raise a high level warning that can be treated as an error.
+
 	* deprecation and any other annotations should be specified in the documentation comment.
 
 # Lexical structure
 
 ## Comments
+
 * line comments: `// ...`
+
 * block comments: `/* ... */`
+
 * nested comments: `/+ ... +/`
 
 ## Identifiers
+
 Identifiers are named references of types, variables and functions.
 
 **[Syntax](Cmpl.g4)**
-```
+
+```antlrv4
 Identifier: Letter (Letter | Number)*;
 ```
 
 ## Keywords
+
 Keywords are reserved words, which can not be used as identifiers.
 
 * break
+
 * const
+
 * continue
+
 * else
+
 * emit
+
 * enum
+
 * for
+
 * if
+
 * inline
+
 * parallel
+
 * return
+
 * static
+
 * struct
 
 ## Literals
+
 [Literals](https://en.wikipedia.org/wiki/Literal_(computer_programming)) are compile time constant values.
 
 **[Syntax](Cmpl.g4)**
+
 ```antlrv4
 Literal
     : '0'[bB][0-1]+
@@ -96,55 +145,86 @@ Literal
 ```
 
 ### Integer and floating-point literals
+
 Integers can be represented in decimal, binary, octal, or hexadecimal format,
 while floating point literals can be specified only in decimal format.
 
 #### Decimal prefix
+
 The following prefixes may be used to specify the radix of an integer:
+
 * binary: `0b` or `0B`
+
 * octal: `0` or `0o` or `0O`
+
 * hexadecimal: `0x` or `0X`
 
 #### Decimal suffix
+
 The following suffixes are available to override the type of a decimal value:
+
 * `d`: results a int32 constant, ex: `inline i32Value = 3d;`
+
 * `D`: results a int64 constant, ex: `inline i64Value = 3D;`
+
 * `u`: results a uint32 constant, ex: `inline u32Value = 3u;`
+
 * `U`: results a uint64 constant, ex: `inline u64Value = 3U;`
+
 * `f`: results a float32 constant, ex: `inline f32Value = 3f;`
+
 * `F`: results a float64 constant, ex: `inline f64Value = 3F;`
 
 ### Character and string literals
+
 [TODO: documentation]
 
 #### Escape sequences
+
 Escape sequences are used to define certain special characters within string literals.
 
 The following escape sequences are available:
+
 * `\'`: single quote
+
 * `\"`: double quote
+
 * `\?`: question mark
+
 * `\\`: backslash
+
 * `\a`: audible bell
+
 * `\b`: backspace
+
 * `\f`: form feed - new page
+
 * `\n`: line feed - new line
+
 * `\r`: carriage return
+
 * `\t`: horizontal tab
+
 * `\v`: vertical tab
+
 * `\nnn`: arbitrary octal value, maximum of 3 characters.
+
 * `\xnn`: arbitrary hexadecimal value, always 2 characters.
+
 * `\<new line>`: wraps on next line.
 
 - Octal escape sequences have a limit of three octal digits,
 but terminate at the first character that is not a valid octal digit if encountered sooner.
+
 - Hexadecimal escape sequences parses always the next two characters.
 
 #### Multi line Strings
+
 A string literal is multi line if it starts with a backslash followed by a newline.
 
 **Example**
-```
+
+```cmpl
 string html = "\
 <html>
   <head/>
@@ -160,22 +240,33 @@ string html = "\
 ```
 
 ## Operators
+
 [TODO: documentation]
 
 * !, ~, -, +, &
+
 * (), [], .
-* +, -, *, /, %
+
+* +, -, \*, /, %
+
 * &, |, ^, <<, >>
+
 * ==, !=
+
 * <, <=, >, >=
+
 * ||, &&, ?:
+
 * =, +=, -=, *=, /=, %=, &=, |=, ^=, <<=, >>=, >>>=
+
 * ,
 
 # Expressions
+
 Expressions are responsible for computing values.
 
 **[Syntax](Cmpl.g4)**
+
 ```antlrv4
 expression
     : Literal                                                                                        # LiteralExpression
@@ -198,79 +289,104 @@ expression
     ;
 ```
 
-### Primary expression
+## Primary expression
 [TODO: documentation]
 
 ## Unary expressions
+
 Unary expressions are composed from an unary operator and one operand.
+
 - `!`: logical not. Results true or false.
+
 - `~`: complement. Valid for integer types.
+
 - `-`: unary minus. Change the sign of a number.
+
 - `+`: unary plus. ???
 
 **[Syntax](Cmpl.g4)**
+
 ```
 unary: ('&' | '+' | '-' | '~' | '!');
 ```
 
 ## Binary expressions
+
 Binary expressions are composed from a binary operator and two operands.
 
 ### Arithmetic expression
+
 Are used to return new values computed from the two operands.
+
 - `+, -` Additive operators
+
 - `*, /, %` Multiplicative operators
 
 **[Syntax](Cmpl.g4)**
+
 ```
 arithmetic: ('*' | '/' | '%' | '+' | '-');
 ```
 
 ### Bitwise expression
+
 May be used on integer types only.
+
 - `&, |, ^` Bitwise operators
+
 - `<<, >>` Bit shift operators
 
 **[Syntax](Cmpl.g4)**
+
 ```
 bitwise: ('&' | '|' | '^' | '<<' | '>>');
 ```
 
 ### Relational expressions
+
 Are used to compare two operands, if one is les or greater than the other.
 The result is a boolean value(true or false).
 
 **[Syntax](Cmpl.g4)**
+
 ```
 relational: ('<' | '<=' | '>' | '>=');
 ```
 
 ### Equality expressions
+
 Are used to check if the left and right operands are equal or not.
 The result is a boolean value(true or false).
 
 **[Syntax](Cmpl.g4)**
+
 ```
 equality: ('==' | '!=');
 ```
 
 ### Assignment expressions
+
 This operator assigns the value on the right to the operand on the lef side.
 
 **Example**
+
 ```
 a = 5;
 a += 3 + b;
 ```
+
 Composed operators are expanded, this means that `a += 3 + b` is converted to `a = a + (3 + b)`.
 
 ### Logical expressions
+
 [TODO: implementation]
 
 - `||`: logical or operator returns true if **any** of its operands is true.
+
 - `&&`: logical and operator returns true if **all** of its operands are true.
 
 **Example**
+
 ```
 bool variable = a() || b() || c() || d();
 ```
@@ -280,6 +396,7 @@ The evaluation stops when the first expression is evaluated to true.
 
 
 **Example**
+
 ```
 bool variable = a() && b() && c() && d();
 ```
@@ -288,18 +405,25 @@ The value of `variable` will be true if all of the functions(a, b, c, d) are eva
 The evaluation stops when the first expression is evaluated to false.
 
 ## Ternary expression
+
 The `?:` (conditional) operator is the only ternary operator with 3 operands:
+
 - test operand: based on its value the second or the third operand is returned.
+
 - true operand: evaluated and returned only if the first operand evaluates to true.
+
 - false operand: evaluated and returned only if the first operand evaluates to false.
 
 **Example**
+
 ```
 int variable = a() ? b() : c();
 ```
 
 First `a()` is evaluated, and if its value is:
+
 - true: `b()` is evaluated and returned
+
 - false: `c()` is evaluated and returned
 
 ## Operator precedence table
@@ -403,7 +527,6 @@ inline double = float64;
   - byte code generation will be skipped.
 
 ## Switch statement
-[TODO: implementation]
 
 ## For statement
 The for statement is a repetition statement, that can be used to execute a section of code in a loop, while a condition is met.
@@ -521,10 +644,8 @@ These two examples may result different output. In the first example the last st
 this is not the last executed statement.
 
 ## While statement
-[TODO: implementation]
 
 ## Do-while statement
-[TODO: implementation]
 
 ## Break statement
 The break statement terminates the execution of the innermost enclosing loop.
@@ -557,9 +678,11 @@ Only some of the expressions can be used to form a statement:
 Expression statements such as `a * 4;` are considered invalid.
 
 # Declarations
-Declarations adds new types, functions or variables to the program.
+
+Declarations adds new variables, functions or types to the program.
 
 **[Syntax](Cmpl.g4)**
+
 ```antlrv4
 declaration
     : qualifiers? 'enum' identifier? (':' typename)? '{' propertyList '}'                              # EnumDeclaration
@@ -578,17 +701,22 @@ declaration
 ```
 
 ## Variables
-A [Variable](https://en.wikipedia.org/wiki/Variable_(computer_science)) is a symbolic name associated with a value, this value may be changed at runtime.
+
+A [Variable](https://en.wikipedia.org/wiki/Variable_(computer_science)) is
+a symbolic name associated with a value, this value may be changed at runtime.
 
 ### Constant variables
+
 Variables marked with the `const` attribute may be assigned only at initialization.
 
 ### Static variables
+
 Variables marked with the `static` attribute will point to the same global memory.
 Initialization of all static variables are executed when the main function is executed.
 
 **Example**: call count
-```
+
+```cmpl
 int countCalls() {
 	// global count variable
 	static int count = 0;
@@ -598,6 +726,7 @@ int countCalls() {
 ```
 
 **Example**: instance count
+
 ```
 struct instance {
 	// global count variable
@@ -614,9 +743,11 @@ inline instance() = {
 ```
 
 ### Initialization
+
 [TODO]
 
 **Example**: initializer function
+
 ```
 // call the initializer function
 Complex x = Complex(1, 2);
@@ -624,6 +755,7 @@ Complex x = Complex(1, 2);
 ```
 
 **Example**: literal initialization
+
 ```
 // literal initialization
 Complex x = {re: 1, im: 2};
@@ -633,6 +765,7 @@ Model x = Sphere {x:0, y:0, z:0, radius: 20};
 ```
 
 **Example**: array initialization
+
 ```
 // initialize all elements with the value 4
 int a[100] = {*: 4};
@@ -653,17 +786,20 @@ string xmlEscape[255] = {
 ```
 
 #### Default type initializer
+
 Some of the builtin types have default type initializer (int, float, ...),
 and some must be initialized when a new instance is created (pointer, variant, typename, function).
 All enumerated types should have no default initializer, so they must be explicitly initialized.
 
 **Example**
+
 ```
 int a;       // ok, a is initialized with default type initializer.
 typename b;  // error: variable `b` must be initialized.
 ```
 
 #### Default field initializer
+
 All constant fields of a record must be initialized when creating an instance.
 
 **Example**
@@ -674,33 +810,63 @@ Complex x = {re: 2};           // ok, `im` initialized with default field initia
 Complex x = {re: 2; im: -1;};  // ok, all fields are initialized.
 ```
 
-## Aliasing
-Aliasing is an analogue to c preprocessor define, except it is not preprocessed as text.
-When using an alias the referenced expression or typename is expanded inline.
-Arguments of inline expressions may be cached, and evaluated only once.
+## Arrays
 
-**Example**: type aliasing
-```
-inline double = float64;
-inline float = float32;
-inline byte = uint8;
-```
+The array type is a collection of zero or more elements of the same type.
 
-**Example**: constant
+### Fixed-size arrays
+The fixed size array will allocate the space required for all the elements
+
+**Example**
 ```
-inline pi = 3.14159265359;
-inline true = 0 == 0;
-inline false = 0 != 0;
+int a[2] = {42, 97};
 ```
 
-**Example**: macro
+- Are passed to functions by reference.
+- Type of elements and length is known by the compiler.
+
+### Dynamic-size arrays
+Slices are a pair of a pointer to the first element and an integer containing the length of the slice.
+
+**Example**
 ```
-inline min(int a, int b) = a < b ? a : b;
-inline max(float32 a, float32 b) = a > b ? a : b;
+int a[] = {42, 97, 13};
 ```
-- the right hand side can also use local variables if static is not used
-- static should force the right side not to use local variables
-- const should force the right side to be constant
+
+- Are initialized, assigned and passed to functions by reference followed by the length.
+- Type of elements is known by the compiler.
+- The length is known at runtime.
+
+### Unknown-size arrays
+Pointers are arrays without length. This type is helpful to pass data to native functions.
+Use `pointer` for the special `void *` type from c, when the type of elements is unknown.
+
+**Example**
+```
+int a[*];
+```
+
+- Are initialized, assigned and passed to functions by reference.
+- Type of elements is known by the compiler.
+- The length may be known by the developer.
+
+### Associative arrays
+[TODO: implementation]
+
+**Example**
+
+```
+double constants[string] = {
+	pi: Math.pi;
+	"e": Math.e;
+};
+
+assert(constants["pi"] == Math.pi);
+assert(constants["e"] == Math.e);
+assert(constants.e == Math.e);
+```
+
+Collection types(Array, Stack, Queue, Set, Bag, Map, …) are part of the run-time library.
 
 ## Functions
 [TODO: documentation]
@@ -763,242 +929,6 @@ void sort(int values[], int compare(int a, int b)) {
 
 If a function name is a type name, by convention it is considered to be a constructor for that type,
 so it should return an instance of the type represented by its name.
-
-## Arrays
-The array type is a collection of zero or more elements of the same type.
-
-### Arrays (Fixed-size arrays)
-[TODO: documentation]
-
-**Example**
-```
-int a[2] = {42, 97};
-```
-
-- Are passed to functions by reference.
-- Type of elements and length is known by the compiler.
-
-### Slices (Dynamic-size arrays)
-Slices are a pair of a pointer to the first element and an integer containing the length of the slice.
-
-**Example**
-```
-int a[] = {42, 97, 13};
-```
-
-- Are initialized, assigned and passed to functions by reference followed by the length.
-- Type of elements is known by the compiler.
-- The length is known at runtime.
-
-### Pointers (Unknown-size arrays)
-Pointers are arrays without length. This type is helpful to pass data to native functions.
-Use `pointer` for the special `void *` type from c, when the type of elements is unknown.
-
-**Example**
-```
-int a[*];
-```
-
-- Are initialized, assigned and passed to functions by reference.
-- Type of elements is known by the compiler.
-- The length may be known by the developer.
-
-### Maps (Associative arrays)
-[TODO: implementation]
-
-**Example**
-
-```
-double constants[string] = {
-	pi: Math.pi;
-	"e": Math.e;
-};
-
-assert(constants["pi"] == Math.pi);
-assert(constants["e"] == Math.e);
-assert(constants.e == Math.e);
-```
-
-Collection types(Array, Stack, Queue, Set, Bag, Map, …) are part of the run-time library.
-
-## Records
-[Records](https://en.wikipedia.org/wiki/Record_(computer_science)) are user specified compound types.
-
-Records may contain only instance or static members and methods:
-
-### Members
-[TODO: documentation]
-
-### Static members
-```
-struct Math {
-	static const float64 pi = 3.14159265358979323846264338327950288419716939937510582097494459;
-	...
-	static float64 min(float64 a, float64 b) {
-		return a < b ? a : b;
-	}
-	...
-}
-
-float64 two_pi = 2 * Math.pi;
-
-float64 minimum = Math.min(a, b);
-```
-
-if a member/method inside the record is declared `static`, it will become a global variable/function, and
-it will be accessible only through the declaring type:
-- `pi` is a `static` member, and can be accessed as `Math.pi`.
-- `min` is a `static` method, and can be accessed as `Math.min`.
-- if a `static` method and is initialized, it will become a [function reference](#function-references)
-- if a `static` method is not implemented, it will become a [forward declared function](#forward-declared-functions)
-
-### Constant members
-[TODO: documentation]
-
-**[Example](../../lib/std/math/Complex.ci)**
-```
-struct complex {
-	const float64 re;           // real part
-	const float64 im = 0;       // imaginary part
-	...
-}
-
-complex a = {re: 2, im: -1};    // ok: all const members are initialized: re = 2 and im = -1
-complex b = {re: 2};            // ok: all const members are initialized: re = 2 and im = 0
-complex c = {im: 1};            // error: re must be initialized
-complex d;                      // error: re must be initialized
-a.re = 6;                       // error: re is constant and can not be assigned, only initialized.
-```
-
-if a member inside the record is declared as `const`, the compiler will require its initialization
-and reject further assignments:
-- `re` must be initialized each time a complex variable is instantiated (has no default field initializer).
-- if `im` is not explicitly initialized, it will be initialized with the default field initializer.
-
-### Methods
-[TODO: fix documentation]
-
-**[Example](../../lib/todo/todo.Stream.ci)**
-```
-struct TextReader: Closeable {
-	const ByteReader reader;
-
-	// abstract method
-	int decode(char chars[], ByteReader reader);
-
-	// virtual method
-	int read(TextReader this, char chars[]) {
-		return this.decode(chars, this.reader);
-	}
-
-	// static method
-	static int read(TextReader this) {
-		char chars[1];
-		result = this.read(chars);
-		if (result > 0) {
-			result = chars[0];
-		}
-		return result;
-	}
-
-	// overrided method
-	void close(TextReader this) {
-		this.reader.close();
-	}
-
-	// ...
-}
-```
-
-if a method inside the record is not implemented or initialized, it will behave as an **abstract** method.
-- the method must be overridden in a record that extends this record.
-- the method will be looked up at runtime, not at compile time.
-
-if a method inside the record is initialized, it will behave as a **virtual** method.
-- the method can be overridden in a record that extends this record.
-- the method will be looked up at runtime, not at compile time.
-- should be used only to delegate the implementation.
-- it will declare only the member function.
-
-if a method inside the record is implemented, it will behave as a **virtual** method.
-- the record will declare both the member and the static function with the same name.
-- the method can be overridden in a record that extends this record.
-- the method will be looked up at runtime, not at compile time.
-
-In the example:
-- `reader` is declared as `const`, so it must be initialized on instance creation, and can not be changed by assignment.
-	- the compiler will reject assignments as `instance.reader = null;`
-
-- `int decode(char chars[], ByteReader reader)` is **abstract**, it must be overridden in the inheritance chain.
-
-- `int read(TextReader this, char chars[])` is **virtual**, it can be overridden in the inheritance chain.
-	- invoked as `TextReader.read(instance)` ensures that the original method is invoked.
-	- invoked as `instance.read()` might call an _extension_ method.
-
-- `int read(TextReader this)` is **static** method, it will be looked up at compile time.
-	- invoked as `TextReader.read(instance, buff)` ensures that the original method is invoked.
-	- invoked as `instance.read(buff)` might call an _extension_ or an _overridden_ method.
-
-- `void close(Utf8Reader this)` overrides the abstract method from the base class `Closeable`.
-
-### Static methods
-[TODO: fix documentation]
-
-### Static records
-Records which are declared `static` will have all members static (sort of a namespaces).
-These types of records will have no size, and can not be instantiated.
-The best example of its usage is `static struct Math {...}` 
-
-### Constant records
-[TODO: implementation]
-
-Records which are declared `const` will have all its members as constants (immutable record).
-
-### Packed records
-A record can be packed with a small integer of a power of 2. [0, 1, 2, 4, 8, 16, 32],
-this means that the compiler will not generate gaps between the members to achieve best performance.
-
-**Example**
-```
-struct union32: 0 {
-	int32 i32;
-	float32 f32;
-}
-
-union32 fi32 = { i32: 3 };
-```
-- When a struct is packed with 0, it becomes a c like union,
-meaning every member of it will start at the same memory location.
-
-**Example**
-```
-struct instruction: 1 {
-	uint8 opc;	// operation
-	int32 arg;	// argument
-}
-```
-- When a record is packed with 1, the compiler will not generate any gap between the members,
-this may result in very expensive memory access to the members.
-
-### Extended records
-Extended records are usually allocated on the heap, and are automatically released,
-when there are no more references pointing to the object.
-The compiler however should allocate on the heap only variables that escape their scope.
-The base type of every extended type is the builtin type `object`.
-
-**Example**
-```
-struct Complex: object {
-	const double re;
-	const double im = 0;
-}
-
-Complex c1 = { re: 8 };
-```
-
-The variable `c1`:
-- might be allocated on heap.
-- is initialized with: `re: 8` and `im: 0`;
 
 ## Enumerations
 An enumeration declares a list of named constants all of a given type.
@@ -1079,18 +1009,271 @@ for (coord elem: coord) {
 }
 ```
 
+## Records
+
+[Records](https://en.wikipedia.org/wiki/Record_(computer_science)) are user specified compound types.
+
+Records may contain only instance or static members and methods:
+
+### Members
+
+[TODO: documentation]
+
+### Static members
+
+```
+struct Math {
+	static const float64 pi = 3.14159265358979323846264338327950288419716939937510582097494459;
+	...
+	static float64 min(float64 a, float64 b) {
+		return a < b ? a : b;
+	}
+	...
+}
+
+float64 two_pi = 2 * Math.pi;
+
+float64 minimum = Math.min(a, b);
+```
+
+if a member/method inside the record is declared `static`, it will become a global variable/function, and
+it will be accessible only through the declaring type:
+
+- `pi` is a `static` member, and can be accessed as `Math.pi`.
+
+- `min` is a `static` method, and can be accessed as `Math.min`.
+
+- if a `static` method and is initialized, it will become a [function reference](#function-references)
+
+- if a `static` method is not implemented, it will become a [forward declared function](#forward-declared-functions)
+
+### Constant members
+
+[TODO: documentation]
+
+**[Example](../../lib/std/math/Complex.ci)**
+
+```
+struct complex {
+	const float64 re;           // real part
+	const float64 im = 0;       // imaginary part
+	...
+}
+
+complex a = {re: 2, im: -1};    // ok: all const members are initialized: re = 2 and im = -1
+complex b = {re: 2};            // ok: all const members are initialized: re = 2 and im = 0
+complex c = {im: 1};            // error: re must be initialized
+complex d;                      // error: re must be initialized
+a.re = 6;                       // error: re is constant and can not be assigned, only initialized.
+```
+
+if a member inside the record is declared as `const`, the compiler will require its initialization
+and reject further assignments:
+
+- `re` must be initialized each time a complex variable is instantiated (has no default field initializer).
+
+- if `im` is not explicitly initialized, it will be initialized with the default field initializer.
+
+### Methods
+
+[TODO: fix documentation]
+
+**[Example](../../lib/todo/todo.Stream.ci)**
+
+```
+struct TextReader: Closeable {
+	const ByteReader reader;
+
+	// abstract method
+	int decode(char chars[], ByteReader reader);
+
+	// virtual method
+	int read(TextReader this, char chars[]) {
+		return this.decode(chars, this.reader);
+	}
+
+	// static method
+	static int read(TextReader this) {
+		char chars[1];
+		result = this.read(chars);
+		if (result > 0) {
+			result = chars[0];
+		}
+		return result;
+	}
+
+	// overrided method
+	void close(TextReader this) {
+		this.reader.close();
+	}
+
+	// ...
+}
+```
+
+if a method inside the record is not implemented or initialized, it will behave as an **abstract** method.
+
+- the method must be overridden in a record that extends this record.
+
+- the method will be looked up at runtime, not at compile time.
+
+if a method inside the record is initialized, it will behave as a **virtual** method.
+
+- the method can be overridden in a record that extends this record.
+
+- the method will be looked up at runtime, not at compile time.
+
+- should be used only to delegate the implementation.
+
+- it will declare only the member function.
+
+if a method inside the record is implemented, it will behave as a **virtual** method.
+
+- the record will declare both the member and the static function with the same name.
+
+- the method can be overridden in a record that extends this record.
+
+- the method will be looked up at runtime, not at compile time.
+
+In the example:
+
+- `reader` is declared as `const`, so it must be initialized on instance creation, and can not be changed by assignment.
+
+	- the compiler will reject assignments as `instance.reader = null;`
+
+- `int decode(char chars[], ByteReader reader)` is **abstract**, it must be overridden in the inheritance chain.
+
+- `int read(TextReader this, char chars[])` is **virtual**, it can be overridden in the inheritance chain.
+	- invoked as `TextReader.read(instance)` ensures that the original method is invoked.
+	- invoked as `instance.read()` might call an _extension_ method.
+
+- `int read(TextReader this)` is **static** method, it will be looked up at compile time.
+	- invoked as `TextReader.read(instance, buff)` ensures that the original method is invoked.
+	- invoked as `instance.read(buff)` might call an _extension_ or an _overridden_ method.
+
+- `void close(Utf8Reader this)` overrides the abstract method from the base class `Closeable`.
+
+### Static methods
+
+[TODO: fix documentation]
+
+### Static records
+
+Records which are declared `static` will have all members static (sort of a namespaces).
+These types of records will have no size, and can not be instantiated.
+The best example of its usage is `static struct Math {...}` 
+
+### Constant records
+
+[TODO: implementation]
+
+Records which are declared `const` will have all its members as constants (immutable record).
+
+### Packed records
+
+A record can be packed with a small integer of a power of 2. [0, 1, 2, 4, 8, 16, 32],
+this means that the compiler will not generate gaps between the members to achieve best performance.
+
+**Example**
+
+```
+struct union32: 0 {
+	int32 i32;
+	float32 f32;
+}
+
+union32 fi32 = { i32: 3 };
+```
+
+- When a struct is packed with 0, it becomes a c like union,
+meaning every member of it will start at the same memory location.
+
+**Example**
+
+```cmpl
+struct instruction: 1 {
+	uint8 opc;	// operation
+	int32 arg;	// argument
+}
+```
+
+- When a record is packed with 1, the compiler will not generate any gap between the members,
+this may result in very expensive memory access to the members.
+
+### Extended records
+
+Extended records are usually allocated on the heap, and are automatically released,
+when there are no more references pointing to the object.
+The compiler however should allocate on the heap only variables that escape their scope.
+The base type of every extended type is the builtin type `object`.
+
+**Example**
+
+```
+struct Complex: object {
+	const double re;
+	const double im = 0;
+}
+
+Complex c1 = { re: 8 };
+```
+
+The variable `c1`:
+
+- might be allocated on heap.
+
+- is initialized with: `re: 8` and `im: 0`;
+
+## Aliasing
+
+Aliasing is an analogue to c preprocessor define, except it is not preprocessed as text.
+When using an alias the referenced expression or typename is expanded inline.
+Arguments of inline expressions may be cached, and evaluated only once.
+
+**Example**: type aliasing
+
+```
+inline double = float64;
+inline float = float32;
+inline byte = uint8;
+```
+
+**Example**: constant
+
+```
+inline pi = 3.14159265359;
+inline true = 0 == 0;
+inline false = 0 != 0;
+```
+
+**Example**: macro
+
+```
+inline min(int a, int b) = a < b ? a : b;
+inline max(float32 a, float32 b) = a > b ? a : b;
+```
+
+- the right hand side can also use local variables if static is not used
+
+- static should force the right side not to use local variables
+
+- const should force the right side to be constant
+
 ## Operator overloading
+
 Operators can be overloaded using the `inline` keyword.
 
 ### Type construction/conversion operator
 
 **Example**
+
 ```
 inline complex(float64 re) = { re: re };
 complex a = complex(9);
 ```
 
 **Example**
+
 ```
 struct Celsius { double degrees; }
 struct Fahrenheit { double degrees; }
@@ -1110,6 +1293,7 @@ Fahrenheit boilF = Fahrenheit(boilC);          // => inline Fahrenheit(Celsius v
 ### Unary and binary operators
 
 **Example**
+
 ```
 inline -(Complex a) = Complex(-a.re, -a.im);
 inline +(Complex a, Complex b) = Complex(a.re + b.re, a.im + b.im);
@@ -1122,6 +1306,7 @@ Complex c = a + a;                      //  6 + 0 * i
 ### Property/Extension operators
 
 **Example**
+
 ```
 Complex a = Complex(3);                 // 3 + 0 * i
 Complex b = Complex(5, 1);              // 5 + 1 * i
