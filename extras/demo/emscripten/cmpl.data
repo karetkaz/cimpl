@@ -56,6 +56,7 @@ inline "lib/string.ci";
 inline "lib/color.ci";
 inline "lib/image.ci";
 inline "lib/mesh.ci";
+inline "lib/camera.ci";
 
 static if (typename(Image.blur) == null) {
 raise(raise.debug, raise.noTrace, "emulated/blur.ci", null);
@@ -202,9 +203,19 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 void show(Mesh mesh, int w, int h, float32 fovy) {
 
 	struct Closure {
+		int32 fpsCount = 0;	// frames drawn
+		int32 fpsShow = 0;	// frames drawn
+		int64 fpsTime = 0;	// frame per sec shot time
 		int mode;
 		Image offs;
+		mat4f proj;
+		Camera cam;
 		Mesh mesh;
+
+		static void updateCamera(const Closure this&) {
+			Camera camera& = this.cam;
+			camera(this.proj.data, camera.position.data, camera.forward.data, camera.right.data, camera.up.data);
+		}
 	}
 
 	int next(int32 x, int mask) {
@@ -258,7 +269,8 @@ void show(Mesh mesh, int w, int h, float32 fovy) {
 				vec4f eye = {x: 0, y: 0, z: 2, w: 1};
 				vec4f at = {x: 0, y: 0, z: 0, w: 1};
 				vec4f up = {x: 0, y: 1, z: 0, w: 1};
-				camera.lookAt(eye.data, at.data, up.data);
+				closure.cam = Camera.lookAt(eye, at, up);
+				closure.updateCamera();
 			}
 		}
 		else if (action == Gui.MOUSE_PRESS) {
@@ -267,37 +279,32 @@ void show(Mesh mesh, int w, int h, float32 fovy) {
 			return 0;
 		}
 		else if (action == Gui.MOUSE_MOTION) {
-			float32 dir[3] = {0, 0, 0};
+			Camera camera& = closure.cam;
 			int dx = ex - ox;
 			int dy = ey - oy;
 
 			if (button == 1) {
-				// orbit
-				float32 orig[3] = {0, 0, 0};
-
-				camera.readUp(&dir);
-				camera.rotate(dir, orig, dx * speed);
-				camera.readRight(&dir);
-				camera.rotate(dir, orig, dy * speed);
+				// orbit around the origin: (x: 0, y: 0, z: 0)
+				camera.rotate(vec4f(0), camera.up, dx * speed);
+				camera.rotate(vec4f(0), camera.right, dy * speed);
+				closure.updateCamera();
 			}
 			else if (button == 2) {
 				// rotate
-				camera.readUp(&dir);
-				camera.rotate(dir, null, -dx * speed);
-				camera.readRight(&dir);
-				camera.rotate(dir, null, -dy * speed);
+				camera.rotate(camera.up, -dx * speed);
+				camera.rotate(camera.right, -dy * speed);
+				closure.updateCamera();
 			}
 			else if (button == 3) {
-				// move
-				camera.readForward(&dir);
-				camera.move(dir, dy * speed);
+				// move the camera back and forward
+				camera.move(camera.forward, dy * speed);
+				closure.updateCamera();
 			}
 			else if (button == 4) {
-				// pan
-				camera.readRight(&dir);
-				camera.move(dir, -dx * speed);
-				camera.readUp(&dir);
-				camera.move(dir, dy * speed);
+				// pan the camera
+				camera.move(camera.right, -dx * speed);
+				camera.move(camera.up, dy * speed);
+				closure.updateCamera();
 			}
 			ox = ex;
 			oy = ey;
@@ -312,16 +319,28 @@ void show(Mesh mesh, int w, int h, float32 fovy) {
 		pos = text.append(pos, closure.mesh.triangles);
 		pos = text.append(pos, "/");
 		pos = text.append(pos, rendered);
+		pos = text.append(pos, ", Fps: ");
+		pos = text.append(pos, closure.fpsShow);
 		Gui.setTitle(text);
+
+		int64 time = System.millis();
+		if (time > closure.fpsTime) {
+			closure.fpsTime = time + 1000;
+			closure.fpsShow = closure.fpsCount;
+			closure.fpsCount = 0;
+		}
+		closure.fpsCount += 1;
 		return 0;
 	}
 
 	Closure closure = {
 		mode: Mesh.clearDepth | Mesh.clearColor | Mesh.useLights | Mesh.cullBack | Mesh.drawFill;
 		offs: Image.create3d(w, h);
+		proj: Camera.projection(fovy, w / float32(h), 1, 100);
+		cam: Camera.lookAt(vec4f(0,0,2), vec4f(0), vec4f(0,1,0));
 		mesh: mesh;
 	};
-	camera.projection(fovy, w / float32(h), 1, 100);
+	closure.updateCamera();
 	Gui.showWindow(closure.offs, closure, onEvent);
 	closure.offs.destroy();
 }
@@ -2943,7 +2962,7 @@ void eval(Image image, const Rect roi&, float32 aspect, float32 time, vec4f eval
 	vec4f in = {
 		x: 0;
 		y: 0;
-		z: aspect;
+		z: 0;
 		w: time;
 	};
 	for (int y = rect.y; y < rect.y + rect.h; y += 1) {
@@ -2980,6 +2999,145 @@ void tile(Image image, int x, int y, Image src, Rect roi&) {
 		for (int i = x; i < width; i += rect.w) {
 			image.copy(i, j, src, rect);
 		}
+	}
+}
+struct Camera {
+	vec4f position = vec4f(0, 0, 0, 1);
+	vec4f forward = vec4f(0, 0, 0, 1);
+	vec4f right = vec4f(0, 0, 0, 1);
+	vec4f up = vec4f(0, 1, 0, 1);
+
+	/// create an orthographic or perspective projection matrix
+	static mat4f projection(float32 fov, float32 asp, float32 n, float32 f) {
+		float32 bot = 1;
+		float32 nf = n - f;
+
+		if (fov == 0) {
+			// orthographic
+			return {
+				x: vec4f(1 / asp, 0,       0,      0);
+				y: vec4f(0,       1 / bot, 0,      0);
+				z: vec4f(0,       0,       2 / nf, -(f+n) / nf);
+				w: vec4f(0,       0,       0,      1);
+			};
+		}
+
+		// perspective
+		bot = float32.tan(Math.radians(fov));
+		asp *= bot;
+
+		return {
+			x: vec4f(n / asp, 0,       0,          0);
+			y: vec4f(0,       n / bot, 0,          0);
+			z: vec4f(0,       0,       (n+f) / nf, -2 * n * f / nf);
+			w: vec4f(0,       0,       1,          0);
+		};
+	}
+
+	// create a rotation matrix
+	static mat4f rotation(vec4f dir, float ang) {
+		float sin_t = float64.sin(ang);
+		float cos_t = float64.cos(ang);
+		float one_c = 1. - cos_t;
+		vec4f tmp = mul(dir, sin_t);
+
+		float xx = dir.x * dir.x;
+		float yy = dir.y * dir.y;
+		float zz = dir.z * dir.z;
+		float xy = dir.x * dir.y;
+		float xz = dir.x * dir.z;
+		float yz = dir.y * dir.z;
+
+		return {
+			xx: one_c * xx + cos_t;
+			xy: one_c * xy - tmp.z;
+			xz: one_c * xz + tmp.y;
+			xw: 0;
+
+			yx: one_c * xy + tmp.z;
+			yy: one_c * yy + cos_t;
+			yz: one_c * yz - tmp.x;
+			yw: 0;
+
+			z: {
+				x: one_c * xz - tmp.y;
+				y: one_c * yz + tmp.x;
+				z: one_c * zz + cos_t;
+				w: 0;
+			};
+
+			w: vec4f(0., 0., 0., 1.);
+		};
+	}
+
+	// create a translation matrix
+	static mat4f translation(vec4f dir, float cnt) {
+		vec4f tmp = mul(dir, vec4f(cnt));
+		return {
+			x: vec4f(1, 0, 0, tmp.x);
+			y: vec4f(0, 1, 0, tmp.y);
+			z: vec4f(0, 0, 1, tmp.z);
+			w: vec4f(0, 0, 0, tmp.w);
+		};
+	}
+
+	/// Create a camera at the given `position` looking at the given `target`
+	static Camera lookAt(vec4f position, vec4f target, vec4f up) {
+		vec4f forward = normalize(sub(target, position));
+		vec4f right = normalize(cross(up, forward));
+		return {
+			position: position;
+			forward: forward;
+			right: right;
+			up: cross(forward, right);
+		};
+	}
+
+	/// get the matrix of the camera, which can be multiplied with the projection matrix
+	static mat4f matrix(const Camera camera&) {
+		return {
+			x: camera.forward;
+			y: camera.right;
+			z: camera.up;
+			w: vec4f(0, 0, 0, 1);
+		};
+	}
+
+	/// get the matrix of the camera multiplied with the projection matrix
+	static mat4f matrix(const mat4f projection&, const Camera camera&) {
+		return projection.mul(camera.matrix());
+	}
+
+	/// Move the camera in the given `direction` with the given `amount`
+	static void move(Camera camera&, vec4f direction, float32 amount) {
+		camera.position = add(camera.position, mul(direction, amount));
+	}
+
+	/// Rotate the camera in the given `direction` with the given `amount`
+	static void rotate(Camera camera&, vec4f direction, float32 amount) {
+		if (amount == 0) {
+			return;
+		}
+
+		// rotate the camera
+		mat4f matrix = rotation(direction, amount);
+		camera.forward = normalize(dp3(matrix, camera.forward));
+		camera.right = normalize(dp3(matrix, camera.right));
+		camera.up = cross(camera.forward, camera.right);
+	}
+
+	/// Rotate the camera around the `orbit` in the given `direction` with the given `amount`
+	static void rotate(Camera camera&, vec4f orbit, vec4f direction, float32 amount) {
+		if (amount == 0) {
+			return;
+		}
+
+		rotate(&camera, direction, amount);
+		// orbit the camera around the given position
+		// it is usually the camera position, or the target position
+		float dist = length(sub(orbit, camera.position));
+		mat4f matrix = translation(camera.forward, -dist);
+		camera.position = dph(matrix, orbit);
 	}
 }
 /// Create a mesh by opening a file
@@ -3531,7 +3689,10 @@ bool onEvent(View this, const MouseEvent event&) {
 		if (item.onUpdate == null) {
 			return false;
 		}
-
+		if (event.dy == 0) {
+			// do not update to the same value
+			return false;
+		}
 		return item.onUpdate(item.value + event.dy);
 	}
 	if (Switch item = this.as(Switch)) {

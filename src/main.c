@@ -1769,7 +1769,7 @@ int main(int argc, char *argv[]) {
 	if (cmpl_home != NULL) {
 		strncpy(stdLib, cmpl_home, sizeof(stdLib) - 1);
 		size_t len = strlen(stdLib);
-		if (len > 0 && stdLib[len - 1] != '/') {
+		if (len > 0 && stdLib[len - 1] != '/' && STDLIB[0] != '/') {
 			stdLib[len] = '/';
 			len += 1;
 		}

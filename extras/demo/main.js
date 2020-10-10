@@ -504,7 +504,8 @@ function pinOutput(pinOption) {
 	newOption.onchange = function () {
 		terminal.innerHtml(newOption.value);
 	}
-	pinOption.parentNode.insertBefore(newOption, pinOption);
+	selOutput.insertBefore(newOption, pinOption);
+	selOutput.selectedIndex = Array.prototype.indexOf.call(selOutput.children, newOption);
 }
 
 function editOutput() {

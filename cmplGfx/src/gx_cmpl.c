@@ -1127,72 +1127,21 @@ static vmError window_title(nfcContext ctx) {
 	return noError;
 }
 
+static const char *proto_camera_set = "void camera(const float32 proj[16], const float32 position[4], const float32 forward[4], const float32 right[4], const float32 up[4])";
+static vmError camera_set(nfcContext ctx) {
 
-static const char *proto_camera_lookAt = "void lookAt(const float32 eye[3], const float32 at[3], const float32 up[3])";
-//static const char *proto_camera_ortho = "void orthographic(float32 left, float32 right, float32 bottom, float32 top, float32 near, float32 far)";
-//static const char *proto_camera_perspective = "void perspective(float32 left, float32 right, float32 bottom, float32 top, float32 near, float32 far)";
-static const char *proto_camera_projection = "void projection(float32 fovy, float32 aspect, float32 near, float32 far)";
-static const char *proto_camera_move = "void move(const float32 direction[3], float32 amount)";
-static const char *proto_camera_rotate = "void rotate(const float32 direction[3], const float32 orbit[3], float32 angle)";
-static const char *proto_camera_readUp = "void readUp(float32 result[3])";
-static const char *proto_camera_readRight = "void readRight(float32 result[3])";
-static const char *proto_camera_readForward = "void readForward(float32 result[3])";
-static vmError camera_mgr(nfcContext ctx) {
-	struct vector temArgs[3];
-	if (ctx->proto == proto_camera_readUp) {
-		float32_t *result = nextValue(ctx).ref;
-		result[0] = cam->dirU.x;
-		result[1] = cam->dirU.y;
-		result[2] = cam->dirU.z;
-		return noError;
-	}
-	if (ctx->proto == proto_camera_readRight) {
-		float32_t *result = nextValue(ctx).ref;
-		result[0] = cam->dirR.x;
-		result[1] = cam->dirR.y;
-		result[2] = cam->dirR.z;
-		return noError;
-	}
-	if (ctx->proto == proto_camera_readForward) {
-		float32_t *result = nextValue(ctx).ref;
-		result[0] = cam->dirF.x;
-		result[1] = cam->dirF.y;
-		result[2] = cam->dirF.z;
-		return noError;
-	}
+	matrix proj = nextValue(ctx).ref;
+	vector position = nextValue(ctx).ref;
+	vector forward = nextValue(ctx).ref;
+	vector right = nextValue(ctx).ref;
+	vector up = nextValue(ctx).ref;
 
-	if (ctx->proto == proto_camera_rotate) {
-		vector dir = a2Vec(temArgs + 0, nextValue(ctx).ref);
-		vector orbit = a2Vec(temArgs + 1, nextValue(ctx).ref);
-		float32_t angle = nextValue(ctx).f32;
-		camrot(cam, dir, orbit, angle);
-		return noError;
-	}
-	if (ctx->proto == proto_camera_move) {
-		vector dir = a2Vec(temArgs + 0, nextValue(ctx).ref);
-		float32_t amount = nextValue(ctx).f32;
-		cammov(cam, dir, amount);
-		return noError;
-	}
-
-	if (ctx->proto == proto_camera_lookAt) {
-		vector eye = a2Vec(temArgs + 0, nextValue(ctx).ref);
-		vector at = a2Vec(temArgs + 1, nextValue(ctx).ref);
-		vector up = a2Vec(temArgs + 2, nextValue(ctx).ref);
-		camset(cam, eye, at, up);
-		return noError;
-	}
-
-	if (ctx->proto == proto_camera_projection) {
-		float32_t fovy = nextValue(ctx).f32;
-		float32_t aspect = nextValue(ctx).f32;
-		float32_t near = nextValue(ctx).f32;
-		float32_t far = nextValue(ctx).f32;
-		projv_mat(&cam->proj, fovy, aspect, near, far);
-		return noError;
-	}
-
-	return illegalState;
+	memcpy(&cam->proj, proj, sizeof(struct matrix));
+	memcpy(&cam->pos, position, sizeof(struct vector));
+	memcpy(&cam->dirF, forward, sizeof(struct vector));
+	memcpy(&cam->dirR, right, sizeof(struct vector));
+	memcpy(&cam->dirU, up, sizeof(struct vector));
+	return noError;
 }
 
 
@@ -1381,17 +1330,6 @@ int cmplInit(rtContext rt) {
 		{window_show, proto_window_show},
 		{window_title, proto_window_title},
 	},
-	nfcCamera[] = {
-		{camera_mgr, proto_camera_projection},
-		{camera_mgr, proto_camera_lookAt},
-
-		{camera_mgr, proto_camera_readUp},
-		{camera_mgr, proto_camera_readRight},
-		{camera_mgr, proto_camera_readForward},
-
-		{camera_mgr, proto_camera_rotate},
-		{camera_mgr, proto_camera_move},
-	},
 	nfcMesh[] = {
 		{mesh_recycle, proto_mesh_create},
 		{mesh_recycle, proto_mesh_recycle},
@@ -1499,14 +1437,8 @@ int cmplInit(rtContext rt) {
 		rt->api.ccEnd(cc, gradient);
 	}
 
-	symn symCam = rt->api.ccBegin(cc, "camera");
-	if (symCam != NULL) {
-		for (size_t i = 0; i < sizeof(nfcCamera) / sizeof(*nfcCamera); i += 1) {
-			if (!rt->api.ccAddCall(cc, nfcCamera[i].func, nfcCamera[i].proto)) {
-				return 1;
-			}
-		}
-		rt->api.ccEnd(cc, symCam);
+	if (!rt->api.ccAddCall(cc, camera_set, proto_camera_set)) {
+		return 1;
 	}
 
 	symn symLights = rt->api.ccBegin(cc, "lights");

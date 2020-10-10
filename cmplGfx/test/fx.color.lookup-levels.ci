@@ -13,22 +13,28 @@ Image back = Image("asset/image/forest.png", 32);
 Image font = Image.openFnt("asset/font/Modern-1.fnt");
 Image offs = Image(back.width(), back.height(), back.depth());
 
-void levels(argb lut[256], int brightness, int output, int input) {
-	int mid1 = input > 0 ? 0 : 255;
-	int mid2 = output < 0 ? 0 : 255;
-	input = 256 + (input < 0 ? input : -input);
-	output = 256 - (output < 0 ? -output : output);
+void levels(argb lut[256], int brightness, int x0, int x1, int y0, int y1) {
+	if (x1 == x0) {
+		x1 = x0 + 1;
+	}
 	for (int idx = 0; idx < lut.length; idx += 1) {
-		int val = idx;
-		// TODO: val = (output * (val - mid)) / input + mid;
-		val = (output * (val - mid2)) / 256 + mid2;
-		val = (val - mid1) * 255 / input + mid1;
+		int val = y0 + (idx - x0) * (y1 - y0) / (x1 - x0);
+		val = Math.max(val, Math.min(y0, y1));
+		val = Math.min(val, Math.max(y0, y1));
 		int rgb = clamp_s8(val + brightness);
 		lut[idx].r = rgb;
 		lut[idx].g = rgb;
 		lut[idx].b = rgb;
 		lut[idx].a = idx;
 	}
+}
+
+void levels(argb lut[256], int brightness, int output, int input) {
+	int x0 = input > 0 ? 0 : -input;
+	int x1 = input < 0 ? 256 : 256 - input;
+	int y0 = output < 0 ? 0 : output;
+	int y1 = output > 0 ? 256 : 256 + output;
+	return levels(&lut, brightness, x0, x1, y0, y1);
 }
 
 int onEvent(int action, int button, int x, int y);
@@ -40,48 +46,114 @@ font.destroy();
 int onEvent(int action, int button, int x, int y) {
 	inline "/cmplGfx/lib/micro.ui.ci";
 
-	static Slider sldInput = {
-		text: "Input";
-		minimum: -255;
-		maximum: 255;
+	static bool updateInputOutput(Slider slider, int value);
+
+	static Histogram histogram = {
+		enabled: false;
 	};
-	static Slider sldOutput = {
-		text: "Output";
-		minimum: -256;
-		maximum: 256;
+
+	static Histogram lookup = {
+		lines: true;
+		enabled: false;
+		selectable: false;
 	};
+
+	static Slider time = {
+		text: "time";
+		enabled: false;
+	};
+
+	static Switch chkAdvanced = {
+		text: "Advanced";
+	};
+
 	static Slider sldBrightness = {
 		text: "Brightness";
 		minimum: -256;
 		maximum: 256;
 	};
 
-	static Histogram histogram = {
-		enabled: false;
+	static Slider sldInput = {
+		text: "Input";
+		minimum: -256;
+		maximum: 256;
+		onUpdate: updateInputOutput;
 	};
-	static Histogram curves = {
-		lines: true;
-		enabled: false;
-		selectable: false;
+	static Slider sldInputMin = {
+		group: 1;
+		text: " Input.min";
+		maximum: 256;
+		value: 0;
+		onUpdate: updateInputOutput;
 	};
-	static Slider time = {
-		text: "time";
-		enabled: false;
+	static Slider sldInputMax = {
+		group: 1;
+		text: " Input.max";
+		maximum: 256;
+		value: 256;
+		onUpdate: updateInputOutput;
+	};
+
+	static Slider sldOutput = {
+		text: "Output";
+		minimum: -256;
+		maximum: 256;
+		onUpdate: updateInputOutput;
+	};
+	static Slider sldOutputMin = {
+		group: 1;
+		text: " Output.min";
+		maximum: 256;
+		value: 0;
+		onUpdate: updateInputOutput;
+	};
+	static Slider sldOutputMax = {
+		group: 1;
+		text: " Output.max";
+		maximum: 256;
+		value: 256;
+		onUpdate: updateInputOutput;
 	};
 
 	static Layout ui = Layout(offs, -30, 30, font,
 		histogram,
-		curves,
+		lookup,
 		sldBrightness,
 		sldOutput,
+		sldOutputMin,
+		sldOutputMax,
 		sldInput,
+		sldInputMin,
+		sldInputMax,
+		chkAdvanced,
 		time
 	);
 
-	if (action == Gui.WINDOW_INIT) {
-		ui.setSelected(sldInput);
+	static bool updateInputOutput(Slider slider, int value) {
+		if (slider == sldInput) {
+			Slider.onUpdate(sldInput, value);
+			Slider.onUpdate(sldInputMin, value > 0 ? 0 : -value);
+			Slider.onUpdate(sldInputMax, value < 0 ? 256 : 256 - value);
+			return true;
+		}
+		if (slider == sldOutput) {
+			Slider.onUpdate(sldOutput, value);
+			Slider.onUpdate(sldOutputMin, value < 0 ? 0 : value);
+			Slider.onUpdate(sldOutputMax, value > 0 ? 256 : 256 + value);
+			return true;
+		}
+		if (slider == sldInputMin || slider == sldInputMax) {
+			Slider.onUpdate(sldInput, 0);
+		}
+		if (slider == sldOutputMin || slider == sldOutputMax) {
+			Slider.onUpdate(sldOutput, 0);
+		}
+		return Slider.onUpdate(slider, value);
 	}
 
+	if (action == Gui.WINDOW_INIT) {
+		ui.setGroup(2);
+	}
 	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
@@ -90,18 +162,10 @@ int onEvent(int action, int button, int x, int y) {
 
 	if (ui.uiEvent(action, button, x, y)) {
 		uint64 start = System.millis();
-		if (ui.isActive(sldBrightness)) {
-			levels(&curves.data, sldBrightness.value, 0, 0);
-		}
-		else if (ui.isActive(sldOutput)) {
-			levels(&curves.data, 0, sldOutput.value, 0);
-		}
-		else if (ui.isActive(sldInput)) {
-			levels(&curves.data, 0, 0, sldInput.value);
-		}
-
+		ui.setGroup(chkAdvanced.checked ? 0 : 2);
+		levels(&lookup.data, sldBrightness.value, sldInputMin.value, sldInputMax.value, sldOutputMin.value, sldOutputMax.value);
 		offs.resize(null, back, null, 1);
-		offs.colorMap(null, curves.data);
+		offs.colorMap(null, lookup.data);
 		histogram.update(offs);
 
 		time.value = System.millis() - start;

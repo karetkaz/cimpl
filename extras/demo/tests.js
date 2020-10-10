@@ -52,11 +52,11 @@ let projects = {
 			'3d.parametric.ci',
 			'fx.color.blend.ci',
 			'fx.color.lookup-ease.ci',
-			'fx.color.lookup-hsl.ci',
 			'fx.color.lookup-levels.ci',
 			'fx.color.lookup-manual.ci',
 			'fx.color.lookup.ci',
 			'fx.color.matrix.ci',
+			'fx.color.select-hsl.ci',
 			'fx.histogram.ci',
 			'fx.image.blur.ci',
 			'fx.image.transform.ci',
@@ -65,11 +65,6 @@ let projects = {
 			'pd.yinyang.ci',
 			'testGfx.ci',
 		]
-	},
-	'bitwise arithmetic' : {
-		base: 'cmplStd/test/demo/',
-		main: 'BitwiseArithmetic.ci',
-		files: ['BitwiseArithmetic.ci']
 	},
 	'initialization' : {
 		base: 'cmplStd/test/lang/',
@@ -90,24 +85,15 @@ let projects = {
 			'asset/image/texture.png',
 			'asset/image/texture_nature_01.png',
 			'fx.color.blend.ci',
-			'fx.color.lookup-hsl.ci',
+			'fx.color.lookup-levels.ci',
 			'fx.color.lookup-manual.ci',
 			'fx.color.lookup.ci',
 			'fx.color.matrix.ci',
+			'fx.color.select-hsl.ci',
 			'fx.histogram.ci',
 			'fx.image.blur.ci',
 			'fx.image.transform.ci',
 		]
-	},
-	'yin-yang' : {
-		base: 'cmplGfx/test/',
-		main: 'cmplGfx/test/pd.yinyang.ci',
-		files: ['cmplGfx/test/pd.yinyang.ci']
-	},
-	'flood-it' : {
-		base: 'cmplGfx/test/demo',
-		main: 'FloodIt.ci',
-		files: ['FloodIt.ci']
 	},
 };
 

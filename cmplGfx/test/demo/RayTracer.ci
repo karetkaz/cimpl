@@ -1,215 +1,195 @@
 // simple raytracer adapted from Pixel Bender: raytracer.pbk
-struct Material {
-	// http://www.barradeau.com/nicoptere/dump/materials.html
+struct Light {
+	const vec4f position;
 	const vec4f ambient;
 	const vec4f diffuse;
 	const vec4f specular;
-	const float32 shininess = 50;
-	const float32 reflection;
-//	const float32 refraction = 0;
+	// by default use constant light attenuation
+	const vec4f attenuation = vec4f(1, 0, 0, 0);
 }
 
-Material Material(float32 ambient, float32 diffuse, float32 specular, float32 reflection, float32 refraction) {
-	return {
-		ambient: vec4f(ambient);
-		diffuse: vec4f(diffuse);
-		specular: vec4f(specular);
-		reflection: reflection;
-//		refraction: refraction;
-	};
-}
-
-struct Shape: object {
-	const Material material;
+struct Sphere {
 	const vec4f position;   // x, y, z, radius
-	const vec4f color;	// todo: -> ambient
-	vec4f texture(Shape this, vec4f normal) = null;      // r, g, b
+	const vec4f color;      // r, g, b, TODO: alpha
+	const vec4f ambient;
+	const vec4f diffuse;
+	const vec4f specular;
+	const float shininess = 50;
+	const float reflection = 0;
+	const float checkBoard = 0;
 }
 
-Shape ShinyObject(vec4f position, Material material, vec4f color) {
-	return {
-		position: position;
-		material: material;
-		color: color;
+Light lights[] = {
+	Light {
+		position: vec4f(0, 2, -4);
+		ambient: vec4f(.1);
+		diffuse: vec4f(1);
+		specular: vec4f(1);
 	};
-}
-
-Shape CheckerObject(vec4f position, Material material, vec4f color) {
-	static vec4f checkboard(Shape this, vec4f n) {
-		inline step = 2 * this.position.w;
-		float u = step * (1 + float.atan2(n.y, n.z) / (2 * Math.pi));
-		float v = step * (1 - Math.acos(n.x) / Math.pi);
-
-		if ((Math.floor(u) + Math.floor(v)) % 2 == 0) {
-			return mul(this.color, .5f);
-		}
-		return this.color;
-	}
-	return {
-		position: position;
-		material: material;
-		texture: checkboard;
-		color: color;
-	};
-}
-
-Shape things[20] = {
-	ShinyObject(
-		vec4f(0.0, 2.0, -10.0, 2),
-		Material(.05, .1, 1., 1., .1),
-		vec4f(.8)
-	),
-	CheckerObject(
-		vec4f(0.0, -1003, -8, 1000),
-		Material(.10, .8, .5, .5, 0),
-		vec4f(.6)
-	)
 };
 
-// let's make a bunch of fakely random spheres
+Sphere things[20] = {
+	Sphere { // fake the floor with a huge sphere
+		position: vec4f(0.0, -1003, -8, 1000);
+		color: vec4f(.6, .6, .6);
+		checkBoard: 2000;
+		ambient: vec4f(.1);
+		diffuse: vec4f(.8);
+		specular: vec4f(.5);
+		reflection: .5;
+	};
+	Sphere { // put a shiny sphere in the middle
+		position: vec4f(0, 2, -10, 2);
+		color: vec4f(.8, .8, .8);
+		ambient: vec4f(.05);
+		diffuse: vec4f(.1);
+		specular: vec4f(1);
+		reflection: 1;
+	};
+};
+
+// make a bunch of random spheres
 for (int i = 2; i < things.length; i += 1) {
-	inline sin(float32 x) = float32.sin(x);
-	inline cos(float32 x) = float32.cos(x);
-	inline pow(float32 x, float32 y) = float32.pow(x, y);
-
 	float fi = i * 11;
-	vec4f position = {
-		x: sin(fi / 5) * 6;
-		y: sin(fi / 4.1f) * 2.5f;
-		z: -18 - sin(fi / 3.1f + 1.2f) * 10;
-		w: pow(sin(fi/1.34+65.3)*0.5+0.5, 3.0)*1.0 + 0.2;
+	Sphere sphere = {
+		position: {
+			x: float.sin(fi / 5) * 6;
+			y: float.sin(fi / 4.1f) * 2.5f;
+			z: -18 - float.sin(fi / 3.1f + 1.2f) * 10;
+			w: float.pow(float.sin(fi / 1.34 + 65.3) * .5 + .5, 3) + .2;
+		};
+		color: {
+			x: float.cos(fi / 2.1 + 1.3) * .5 + .5;
+			y: float.cos(fi / 0.1 + 1.3) * .5 + .5;
+			z: float.cos(fi / 5.1 + 6.3) * .5 + .5;
+		};
+		ambient: vec4f(.1);
+		diffuse: vec4f(.7);
+		specular: vec4f(1);
+		reflection: float.pow(float.sin(fi / 2.1 + 1.243) * .5 + .5, 5);
 	};
-	vec4f color = {
-		x: cos(fi/2.1+1.3)*0.5+0.5;
-		y: cos(fi/0.1+1.3)*0.5+0.5;
-		z: cos(fi/5.1+6.3)*0.5+0.5;
-	};
-	Material material = {
-		ambient: vec4f(0.1f);
-		diffuse: vec4f(0.7f);
-		specular: vec4f(1.0f);
-		reflection: pow(sin(fi/2.1 + 1.243)*0.5 + 0.5, 5.0);
-	};
-
-	things[i] = ShinyObject(position, material, color);
+	things[i] = sphere;
 }
 
-// fires a ray from `pos`, toward `dir`, returns first intersection
-bool shootRay(const vec4f pos&, const vec4f dir&, vec4f hitPoint&, int hitIndex&) {
-	float minDistance = Math.inf;
-	// cycle through all spheres and find the smallest t>0 that we hit
+/// returns the distance of the closest intersection
+float intersect(const vec4f pos, const vec4f dir, int hitIndex&) {
+	float result = Math.inf;
 	for (int i = 0; i < things.length; i += 1) {
-		vec4f spherePos = things[i].position;
-		float sphereRadius = things[i].position.w;
+		const Sphere thing& = things[i];
+		vec4f dst = sub(pos, thing.position);
+		float R = thing.position.w;
+		float B = dp3(dst, dir);
+		float C = dp3(dst, dst) - R * R;
+		float D = (B * B) - C;
 
-		vec4f sphereToOrigin = sub(pos, spherePos);
-		float B = dp3(sphereToOrigin, dir);
-		float C = dp3(sphereToOrigin, sphereToOrigin) - sphereRadius * sphereRadius;
-
-		float disc = B * B - C;
-		if (disc > 0) {
-			float distance = -B - float32.sqrt(disc);
-			if(distance > 0 && distance < minDistance) {
-				minDistance = distance;
+		if (D > 0) {
+			float d = -B - float32.sqrt(D);
+			if(d > 0 && d < result) {
 				hitIndex = i;
+				result = d;
 			}
 		}
 	}
 
-	hitPoint = add(pos, mul(dir, minDistance));
-	hitPoint.w = minDistance;
-	return minDistance != Math.inf;
+	return result;
 }
 
-inline reflect(vec4f i, vec4f n) = sub(i, mul(n, 2 * dp3(n, i)));
+/// returns how much light is reflected by the object
+vec4f shade(const Sphere thing&, vec4f pos, vec4f dir, vec4f rayDir) {
+	inline mad(vec4f a, float b, vec4f c, vec4f d) = add(a, mul(b, mul(c, d)));
 
-static vec4f refract(vec4f i, vec4f n, float eta ) {
-	float cosi = dp3(neg(i), n);
-	float cost2 = 1.0f - eta * eta * (1.0f - cosi * cosi);
-	vec4f t = mul(eta, add(i, mul(eta * cosi - float.sqrt(Math.abs(cost2)), n)));
-	if (cost2 > 0) {
-		return t;
+	vec4f result = thing.ambient;
+	for (int i = 0; i < lights.length; i += 1) {
+		const Light light& = lights[i];
+		vec4f dst = sub(light.position, pos);
+		vec4f l = normalize(dst);
+		float d = length(dst);
+		int hitIdx;
+
+		// exclude light if the ray intersects an object closer than the light
+		if (intersect(pos, l, &hitIdx) > d) {
+
+			float attn = 1 / light.attenuation.eval(d);
+			float diffuse = dp3(dir, l);
+
+			if (diffuse > 0) {
+				vec4f r = sub(l, mul(2 * diffuse, dir));
+				float specular = dp3(r, rayDir);
+
+				if (specular > 0) {
+					specular = float.pow(specular, thing.shininess);
+					result = result.mad(attn * specular, thing.specular, light.specular);
+				}
+
+				result = result.mad(attn * diffuse, thing.diffuse, light.diffuse);
+			}
+
+			result = result.mad(attn, thing.ambient, light.ambient);
+		}
 	}
-	return vec4f(0);
+	return result;
 }
 
-vec4f rayTrace(vec4f xy) {
-	inline MAX_RAY_SHOTS = 5;
+/// returns reflection vector
+inline reflect(vec4f v, vec4f n) = sub(v, mul(2 * dp3(v, n), n));
 
-	// TODO: add multiple lights
-	static const vec4f lightPos = vec4f(0.0, 2.0, -4.0);
+// returns the color of the ray-traced scene
+vec4f raytrace(vec4f xy) {
+	inline MAX_RAY_SHOTS = 100;
 
-	// TODO: add a camera
 	// calculate direction vector for this pixel
-	vec4f dir = normalize(vec4f(2 * xy.x - 1, -2 * xy.y + 1, -2));
-	vec4f pos = vec4f(0);
-
-	vec4f hitPoint = {};
-	vec4f temp = {};
-	int hitIndex;
+	vec4f rayDir = normalize(vec4f(2 * xy.x - 1, -2 * xy.y + 1, -2));
+	vec4f rayPos = vec4f(0);
+	int hitIdx;
 
 	vec4f result = vec4f(0);
 	vec4f colorScale = vec4f(1);
+
 	for (int depth = 0; depth < MAX_RAY_SHOTS; depth += 1) {
-		if (!shootRay(pos, dir, &hitPoint, &hitIndex)) {
+		float distance = intersect(rayPos, rayDir, &hitIdx);
+		if (distance >= Math.inf) {
+			// no intersection
 			return result;
 		}
 
-		Shape thing& = things[hitIndex];
-		vec4f n = normalize(sub(hitPoint, thing.position));
+		Sphere thing& = things[hitIdx];
+		vec4f hitPos = add(rayPos, mul(rayDir, distance));
+		vec4f hitDir = normalize(sub(hitPos, thing.position));
 
-		// iterate trough all the light
-		vec4f L = sub(lightPos, hitPoint);
-		vec4f l = normalize(L);
-
-		float attn = 1; // TODO: get attenuation from material
-		// SHADOW TEST
-		// fire a ray from our hit position towards the light
-		if (shootRay(hitPoint, l, &temp, &hitIndex)) {
-			// if we didn't hit anything, we can see the light
-			if (temp.w < length(L)) {
-				// if we hit something before the light, we are in shadow
-				attn = 0;
-			}
-		}
-
-		Material material& = thing.material;
-		vec4f light = material.ambient;
+		// material color
 		vec4f color = thing.color;
-		if (thing.texture != null) {
-			color = thing.texture(n);
-		}
-
-		float diffuse = dp3(n, l);
-		if (diffuse > 0) {
-			vec4f r = sub(l, mul(2 * diffuse, n));
-			float specular = dp3(r, dir);
-			if (specular > 0) {
-				specular = attn * float.pow(specular, material.shininess);
-				light = add(light, mul(material.specular, specular));
+		if (thing.checkBoard != 0) {
+			bool zx = thing.checkBoard < 0;
+			// fake check board texture with spherical uv mapping
+			float u = thing.checkBoard * (1 + float.atan2(zx ? hitDir.x : hitDir.y, hitDir.z) / Math.pi);
+			float v = thing.checkBoard * (1 - Math.acos(zx ? hitDir.y : hitDir.x) / Math.pi);
+			if ((Math.floor(u) + Math.floor(v)) % 2 == 0) {
+				color = mul(color, .5f);
 			}
-			diffuse = diffuse * attn;
-			light = add(light, mul(material.diffuse, attn * diffuse));
 		}
-		result = add(result, mul(mul(colorScale, light), color));
 
-		// reflection
-		// TODO: refraction and reflection are exclusive by iteration
-		if (material.reflection > 0) {
-			// blend according to reflectivity
-			colorScale = mul(colorScale, mul(material.reflection, color));
+		// blend light with material color
+		vec4f light = thing.shade(hitPos, hitDir, rayDir);
+		result = result.add(mul(colorScale, mul(color, light)));
 
-			// update next ray position an direction
-			dir = normalize(reflect(dir, n));
-			pos = hitPoint;
+		if (thing.reflection <= 0) {
+			// no reflection, stop ray tracing
+			return result;
 		}
+
+		// blend according to reflectivity
+		colorScale = mul(colorScale, mul(thing.reflection, color));
+
+		// update next ray position an direction
+		rayDir = normalize(reflect(rayDir, hitDir));
+		rayPos = hitPos;
 	}
 	return result;
 }
 
 Image image = Image(512, 512, 32);
 int64 time = System.millis();
-image.eval(null, 0, 0, rayTrace);
+image.eval(null, 0, 0, raytrace);
 time = System.millis() - time;
 debug("raytrace millis", time);
 image.show();

@@ -662,14 +662,7 @@ gradient.Conical
 gradient.MaskLinear
 gradient.MaskRadial
 gradient.MaskSquare
-camera
-camera.projection(fovy: float32, aspect: float32, near: float32, far: float32): void
-camera.lookAt(eye: float32[3], at: float32[3], up: float32[3]): void
-camera.readUp(result: float32[3]): void
-camera.readRight(result: float32[3]): void
-camera.readForward(result: float32[3]): void
-camera.rotate(direction: float32[3], orbit: float32[3], angle: float32): void
-camera.move(direction: float32[3], amount: float32): void
+camera(proj: float32[16], position: float32[4], forward: float32[4], right: float32[4], up: float32[4]): void
 lights
 lights.enabled(light: int32): bool
 lights.enable(light: int32, on: bool): void
@@ -762,6 +755,20 @@ drawRect(image: Image, roi: Rect, color: uint32): void
 eval(image: Image, roi: Rect, aspect: float32, time: float32, eval(in: vec4f): vec4f): void
 tile(image: Image, x: int32, y: int32, src: Image, roi: Rect): void
 Mesh(fileName: char[*]): Mesh
+Camera
+Camera.position
+Camera.forward
+Camera.right
+Camera.up
+Camera.projection(fov: float32, asp: float32, n: float32, f: float32): mat4f
+Camera.rotation(dir: vec4f, ang: float32): mat4f
+Camera.translation(dir: vec4f, cnt: float32): mat4f
+Camera.lookAt(position: vec4f, target: vec4f, up: vec4f): Camera
+Camera.matrix(camera: Camera): mat4f
+Camera.matrix(projection: mat4f, camera: Camera): mat4f
+Camera.move(camera: Camera, direction: vec4f, amount: float32): void
+Camera.rotate(camera: Camera, direction: vec4f, amount: float32): void
+Camera.rotate(camera: Camera, orbit: vec4f, direction: vec4f, amount: float32): void
 show(surf: Image): void
 show(image: Image, onEvent(action: int32, button: int32, ex: int32, ey: int32): int32): void
 showDiff(image1: Image, image2: Image): void

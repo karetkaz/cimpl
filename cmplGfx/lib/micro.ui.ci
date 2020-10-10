@@ -537,7 +537,10 @@ bool onEvent(View this, const MouseEvent event&) {
 		if (item.onUpdate == null) {
 			return false;
 		}
-
+		if (event.dy == 0) {
+			// do not update to the same value
+			return false;
+		}
 		return item.onUpdate(item.value + event.dy);
 	}
 	if (Switch item = this.as(Switch)) {

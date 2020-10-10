@@ -409,7 +409,7 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 			unionInitSize = 0;
 			break;
 		}
-		dieif(unionInitSize < field->size, ERR_INTERNAL_ERROR);
+		dieif(unionInitSize != 0 && unionInitSize < field->size, ERR_INTERNAL_ERROR);
 	}
 	for (symn field = varNode->type->fields; field; field = field->next) {
 		if (isStatic(field)) {
@@ -874,7 +874,7 @@ static astn initializer(ccContext cc) {
 			if (ast != NULL) {
 				backTok(cc, ast);
 			}
-			ast = expression(cc, 1);
+			ast = initializer(cc);
 		}
 
 		if (ast == NULL) {

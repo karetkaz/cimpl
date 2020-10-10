@@ -2,6 +2,7 @@
 inline "lib/color.ci";
 inline "lib/image.ci";
 inline "lib/mesh.ci";
+inline "lib/camera.ci";
 
 static if (typename(Image.blur) == null) {
 raise(raise.debug, raise.noTrace, "emulated/blur.ci", null);
@@ -148,9 +149,19 @@ void show(int width, int height, int animationResolution, vec4f eval(vec4f in)) 
 void show(Mesh mesh, int w, int h, float32 fovy) {
 
 	struct Closure {
+		int32 fpsCount = 0;	// frames drawn
+		int32 fpsShow = 0;	// frames drawn
+		int64 fpsTime = 0;	// frame per sec shot time
 		int mode;
 		Image offs;
+		mat4f proj;
+		Camera cam;
 		Mesh mesh;
+
+		static void updateCamera(const Closure this&) {
+			Camera camera& = this.cam;
+			camera(this.proj.data, camera.position.data, camera.forward.data, camera.right.data, camera.up.data);
+		}
 	}
 
 	int next(int32 x, int mask) {
@@ -204,7 +215,8 @@ void show(Mesh mesh, int w, int h, float32 fovy) {
 				vec4f eye = {x: 0, y: 0, z: 2, w: 1};
 				vec4f at = {x: 0, y: 0, z: 0, w: 1};
 				vec4f up = {x: 0, y: 1, z: 0, w: 1};
-				camera.lookAt(eye.data, at.data, up.data);
+				closure.cam = Camera.lookAt(eye, at, up);
+				closure.updateCamera();
 			}
 		}
 		else if (action == Gui.MOUSE_PRESS) {
@@ -213,37 +225,32 @@ void show(Mesh mesh, int w, int h, float32 fovy) {
 			return 0;
 		}
 		else if (action == Gui.MOUSE_MOTION) {
-			float32 dir[3] = {0, 0, 0};
+			Camera camera& = closure.cam;
 			int dx = ex - ox;
 			int dy = ey - oy;
 
 			if (button == 1) {
-				// orbit
-				float32 orig[3] = {0, 0, 0};
-
-				camera.readUp(&dir);
-				camera.rotate(dir, orig, dx * speed);
-				camera.readRight(&dir);
-				camera.rotate(dir, orig, dy * speed);
+				// orbit around the origin: (x: 0, y: 0, z: 0)
+				camera.rotate(vec4f(0), camera.up, dx * speed);
+				camera.rotate(vec4f(0), camera.right, dy * speed);
+				closure.updateCamera();
 			}
 			else if (button == 2) {
 				// rotate
-				camera.readUp(&dir);
-				camera.rotate(dir, null, -dx * speed);
-				camera.readRight(&dir);
-				camera.rotate(dir, null, -dy * speed);
+				camera.rotate(camera.up, -dx * speed);
+				camera.rotate(camera.right, -dy * speed);
+				closure.updateCamera();
 			}
 			else if (button == 3) {
-				// move
-				camera.readForward(&dir);
-				camera.move(dir, dy * speed);
+				// move the camera back and forward
+				camera.move(camera.forward, dy * speed);
+				closure.updateCamera();
 			}
 			else if (button == 4) {
-				// pan
-				camera.readRight(&dir);
-				camera.move(dir, -dx * speed);
-				camera.readUp(&dir);
-				camera.move(dir, dy * speed);
+				// pan the camera
+				camera.move(camera.right, -dx * speed);
+				camera.move(camera.up, dy * speed);
+				closure.updateCamera();
 			}
 			ox = ex;
 			oy = ey;
@@ -258,16 +265,28 @@ void show(Mesh mesh, int w, int h, float32 fovy) {
 		pos = text.append(pos, closure.mesh.triangles);
 		pos = text.append(pos, "/");
 		pos = text.append(pos, rendered);
+		pos = text.append(pos, ", Fps: ");
+		pos = text.append(pos, closure.fpsShow);
 		Gui.setTitle(text);
+
+		int64 time = System.millis();
+		if (time > closure.fpsTime) {
+			closure.fpsTime = time + 1000;
+			closure.fpsShow = closure.fpsCount;
+			closure.fpsCount = 0;
+		}
+		closure.fpsCount += 1;
 		return 0;
 	}
 
 	Closure closure = {
 		mode: Mesh.clearDepth | Mesh.clearColor | Mesh.useLights | Mesh.cullBack | Mesh.drawFill;
 		offs: Image.create3d(w, h);
+		proj: Camera.projection(fovy, w / float32(h), 1, 100);
+		cam: Camera.lookAt(vec4f(0,0,2), vec4f(0), vec4f(0,1,0));
 		mesh: mesh;
 	};
-	camera.projection(fovy, w / float32(h), 1, 100);
+	closure.updateCamera();
 	Gui.showWindow(closure.offs, closure, onEvent);
 	closure.offs.destroy();
 }

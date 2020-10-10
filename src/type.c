@@ -293,6 +293,10 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 		// lookup function by name (without arguments)
 		symn parameter = sym->params;
 		if (parameter != NULL && arguments == NULL) {
+			if (best && best->owner && sym->owner && best->owner != sym->owner) {
+				// declared in base class
+				continue;
+			}
 			// keep the first match.
 			if (best == NULL) {
 				best = sym;
