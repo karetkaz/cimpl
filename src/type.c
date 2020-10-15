@@ -441,7 +441,7 @@ static astn convert(ccContext cc, astn ast, symn type) {
 	return value;
 }
 
-static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise) {
+static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, ccKind filter, int raise) {
 	dieif(cc->rt->vm.nfc, "Compiler state closed");
 	if (ref == NULL || ref->kind != TOKEN_var) {
 		traceAst(ref);
@@ -463,14 +463,7 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, int raise)
 		}
 
 		if (sym == NULL) {
-			ccKind kind = isTypename(loc) ? ATTR_stat : 0;
-			sym = lookup(cc, loc->fields, ref, args, kind, 0);
-			if (sym == NULL) {
-				// hack: allow lookup of: vertices[i].x = 2;
-				// int this case the location is a type, and x is a member
-				sym = lookup(cc, loc->fields, ref, args, 0, raise);
-				raise = 0;
-			}
+			sym = lookup(cc, loc->fields, ref, args, filter, raise);
 		}
 	}
 	else {
@@ -669,7 +662,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 					}
 
 					// 1. search for the matching method: a.add(b)
-					type = typeCheckRef(cc, loc, ref->op.rhso, args, 0);
+					type = typeCheckRef(cc, loc, ref->op.rhso, args, KIND_var, 0);
 					if (type != NULL) {
 						ref->type = type;
 						debug("exact function: %t", ast);
@@ -693,7 +686,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 					ref = ref->op.rhso;
 
 					// 2. search for extension method: add(a, b)
-					type = typeCheckRef(cc, NULL, ref, args, 0);
+					type = typeCheckRef(cc, NULL, ref, args, 0, 0);
 					if (type != NULL) {
 						ast->op.lhso = ref;
 						ast->op.rhso = args;
@@ -703,7 +696,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 
 					// 3. search for virtual method: a.add(a, b)
 					// 4. search for static method: T.add(a, b)
-					type = typeCheckRef(cc, loc, ref, args, raise);
+					type = typeCheckRef(cc, loc, ref, args, 0, raise);
 					if (type != NULL) {
 						ast->op.rhso = args;
 						ast->op.lhso->type = type;
@@ -715,7 +708,11 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				}
 			}
 
-			type = typeCheckRef(cc, loc, ref, args, raise);
+			if (loc != NULL && isTypename(loc)) {
+				type = typeCheckRef(cc, loc, ref, args, ATTR_stat, raise);
+			} else {
+				type = typeCheckRef(cc, loc, ref, args, 0, raise);
+			}
 			if (type == NULL) {
 				traceAst(ast);
 				return NULL;
@@ -736,7 +733,14 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			if (loc == NULL) {
 				loc = lType;
 			}
-			rType = typeCheck(cc, loc, ast->op.rhso, raise);
+			if (isTypeExpr(ast->op.lhso)) {
+				rType = typeCheckRef(cc, loc, ast->op.rhso, NULL, ATTR_stat, raise);
+			} else {
+				rType = typeCheckRef(cc, loc, ast->op.rhso, NULL, KIND_var, 0);
+				if (rType == NULL) {
+					rType = typeCheckRef(cc, loc, ast->op.rhso, NULL, 0, raise);
+				}
+			}
 
 			if (!lType || !rType || !loc) {
 				traceAst(ast);
@@ -974,7 +978,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 
 		// variable
 		case TOKEN_var:
-			type = typeCheckRef(cc, loc, ast, NULL, raise);
+			type = typeCheckRef(cc, loc, ast, NULL, 0, raise);
 			if (type == NULL) {
 				traceAst(ast);
 				return NULL;

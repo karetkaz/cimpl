@@ -158,7 +158,6 @@ cmplStd/test/std/number.ci:47: warn: adding implicit cast float32(2: int32)
 cmplStd/test/std/number.ci:48: warn: adding implicit cast float32(4: int32)
 cmplStd/test/test.ci:15: debug: inline file: `cmplStd/test/std/memory.ci`
 cmplStd/test/test.ci:16: debug: inline file: `cmplStd/test/std/tryExec.ci`
-cmplStd/test/std/tryExec.ci:25: warn: variable `abortExecution.NotEquals` hides previous declaration
 cmplStd/test/std/tryExec.ci:25: warn: padding `abortExecution.NotEquals` with 4 bytes: (12 -> 16)
 cmplStd/test/std/tryExec.ci:31: warn: adding implicit cast char[*]("assertion failed": .cstr)
 cmplStd/test/test.ci:20: debug: inline file: `cmplStd/test/lang/init.reference.ci`
@@ -171,7 +170,10 @@ cmplStd/test/lang/init.variable.ci:33: warn: adding implicit cast float64(8: int
 cmplStd/test/lang/init.variable.ci:33: debug: using default field initializer: ComplexObj.im := 0
 cmplStd/test/lang/init.variable.ci:15: warn: adding implicit cast float64(0: int32)
 cmplStd/test/lang/init.variable.ci:41: warn: adding implicit cast float64(8: int32)
+cmplStd/test/lang/init.variable.ci:41: debug: using default field initializer: ComplexObj.im := 0
+cmplStd/test/lang/init.variable.ci:15: warn: adding implicit cast float64(0: int32)
 cmplStd/test/test.ci:24: debug: inline file: `cmplStd/test/lang/function.ci`
+cmplStd/test/lang/function.ci:33: Overwriting forward function: funMul(x: int32, y: int32): int32
 cmplStd/test/lang/function.ci:39: warn: adding implicit cast uint32(1: int32)
 cmplStd/test/lang/function.ci:42: warn: adding implicit cast uint32(1: int32)
 cmplStd/test/lang/function.ci:42: warn: adding implicit cast uint32(2: int32)
@@ -181,6 +183,7 @@ cmplStd/test/lang/init.member.ci:81: warn: ignoring nested comment
 cmplStd/test/lang/init.member.ci:43: debug: using default type initializer: RecordMemberTest.Inner.member := 0
 warn: adding implicit cast int32(0: int64)
 cmplStd/test/test.ci:30: debug: inline file: `cmplStd/test/lang/init.method.ci`
+cmplStd/test/lang/init.method.ci:47: Overwriting forward function: RecordMethodTest.forwardMethod(this: RecordMethodTest, x: int32): void
 cmplStd/test/lang/init.method.ci:4: warn: padding `RecordMethodTest` with 4 bytes: (12 -> 16)
 cmplStd/test/lang/init.method.ci:62: debug: using default field initializer: RecordMethodTest.delegateMethod(this: RecordMethodTest, x: int32): void := forwardMethod
 cmplStd/test/lang/init.method.ci:62: debug: using default field initializer: RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void := virtualMethod
@@ -198,6 +201,13 @@ cmplStd/test/lang/init.array.ci:11: warn: adding implicit cast int64(48: int32)
 cmplStd/test/lang/init.array.ci:34: warn: adding implicit cast char(0: int32)
 cmplStd/test/lang/init.array.ci:48: warn: adding implicit cast uint32(0: int32)
 cmplStd/test/lang/init.array.ci:49: warn: adding implicit cast int64(42: int32)
+cmplStd/test/lang/init.array.ci:56: warn: adding implicit cast int32(length: uint32)
+cmplStd/test/lang/init.array.ci:57: warn: adding implicit cast int32(length: uint32)
+cmplStd/test/lang/init.array.ci:58: warn: adding implicit cast int32(length: uint32)
+cmplStd/test/lang/init.array.ci:62: warn: adding implicit cast int32(length: uint32)
+cmplStd/test/lang/init.array.ci:63: warn: adding implicit cast int32(length: uint32)
+cmplStd/test/lang/init.array.ci:64: warn: adding implicit cast int32(length: uint32)
+cmplStd/test/lang/init.array.ci:66: warn: adding implicit cast int32(length: uint32)
 cmplStd/test/test.ci:33: debug: inline file: `cmplStd/test/lang/recUnion.ci`
 cmplStd/test/lang/recUnion.ci:2: warn: padding `rgbF32` with 4 bytes: (12 -> 16)
 cmplStd/test/lang/recUnion.ci:26: warn: adding implicit cast uint8(0: int32)
@@ -10972,6 +10982,7 @@ objInitExplicit.im := 0;
 .value: {
 	objInitExplicit := create(ComplexObj);
 	objInitExplicit.re := (8);
+	objInitExplicit.im := (0);
 }
 }
 empty(): void: function {
@@ -15350,7 +15361,7 @@ testMathAbsMod_f32_8d: float32 {
 .main: function {
 .kind: static function
 .base: `function`
-.size: 10924
+.size: 10932
 .name: '.main'
 .print: '.main'
 .field typename: typename (size: 152, cast: static const typename(ref))
@@ -16200,7 +16211,7 @@ testMathAbsMod_f32_8d: float32 {
 .field testMathAbsMod_f32_8b: float32 (size: 4, cast: variable(f32))
 .field testMathAbsMod_f32_8c: float32 (size: 4, cast: variable(f32))
 .field testMathAbsMod_f32_8d: float32 (size: 4, cast: variable(f32))
-.field .main: function (size: 10924, cast: static function)
+.field .main: function (size: 10932, cast: static function)
 .value: {
 	{
 		byte: typename := uint8;
@@ -17381,6 +17392,7 @@ testMathAbsMod_f32_8d: float32 {
 		objInitExplicit: object := {
 			objInitExplicit := create(ComplexObj);
 			objInitExplicit.re := (8);
+			objInitExplicit.im := (0);
 		};
 		static const empty(): void := {
 		};
@@ -17579,15 +17591,15 @@ testMathAbsMod_f32_8d: float32 {
 		static const nthSlice(idx: int32, const values: int64[]): int64 := {
 			return .result := values[idx];
 		};
-		assertEq(7, arrFixedInit.length);
-		assertEq(arrFixedInit.length, arrSliceInitFixed.length);
-		assertEq(arrFixedInit.length, arrSliceInitSlice.length);
+		assertEq(7, arrFixedInit.(length));
+		assertEq(arrFixedInit.(length), arrSliceInitFixed.length);
+		assertEq(arrFixedInit.(length), arrSliceInitSlice.length);
 		assertEq(0, lenSlice(null));
 		assertEq(0, lenSlice(arrSliceInitNull));
-		assertEq(arrFixedInit.length, lenSlice(arrFixedInit));
-		assertEq(arrFixedInit.length, lenSlice(arrSliceInitFixed));
-		assertEq(arrFixedInit.length, lenSlice(arrSliceInitSlice));
-		for (i: int32 := 0; i < arrFixedInit.length; i := i + 1) {
+		assertEq(arrFixedInit.(length), lenSlice(arrFixedInit));
+		assertEq(arrFixedInit.(length), lenSlice(arrSliceInitFixed));
+		assertEq(arrFixedInit.(length), lenSlice(arrSliceInitSlice));
+		for (i: int32 := 0; i < arrFixedInit.(length); i := i + 1) {
 			expected: int64 := 42 + i;
 			assert(expected == arrFixedInit[i]);
 			assert(expected == arrArrayInitFixed[i]);
@@ -18108,7 +18120,7 @@ testMathAbsMod_f32_8d: float32 {
 		testMathAbsMod_f32_8d: float32 := Math.absMod(-12.000000, 10.000000);
 	}
 }
-.instructions: (10924 bytes)
+.instructions: (10932 bytes)
 	cmplStd/lib/string.ci:145: (14 bytes): static const whiteSpace: char[] := " \t\n\r"
 	<.main>  : load.c32 4
 	<.main+?>: load.ref <?> ;" \t\n\r"
@@ -19519,7 +19531,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: dup.x32 sp(2)
 	<.main+?>: inc.i32(+12)
 	<.main+?>: store.i64
-	cmplStd/test/lang/init.variable.ci:41: (31 bytes): objInitExplicit: object := {...}
+	cmplStd/test/lang/init.variable.ci:41: (39 bytes): objInitExplicit: object := {...}
 	<.main+?>: inc.sp(+4)
 	cmplStd/test/lang/init.variable.ci:41: (11 bytes): objInitExplicit := create(ComplexObj);
 	<.main+?>: load.ref <?> ;ComplexObj
@@ -19529,6 +19541,11 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.f64 8.000000
 	<.main+?>: dup.x32 sp(2)
 	<.main+?>: inc.i32(+4)
+	<.main+?>: store.i64
+	:: (8 bytes): objInitExplicit.im := (0);
+	<.main+?>: load.z64
+	<.main+?>: dup.x32 sp(2)
+	<.main+?>: inc.i32(+12)
 	<.main+?>: store.i64
 	cmplStd/test/lang/function.ci:12: (21 bytes): funAddResult: int32 := funAdd(2, 7)
 	<.main+?>: load.z32
@@ -19880,21 +19897,21 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;pointer
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
-	cmplStd/test/lang/init.array.ci:56: (25 bytes): assertEq(7, arrFixedInit.length);
+	cmplStd/test/lang/init.array.ci:56: (25 bytes): assertEq(7, arrFixedInit.(length));
 	<.main+?>: load.c32 7
 	<.main+?>: load.c32 7
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;assertEq(expected: int32, returned: int32, message: char[*]): void
 	<.main+?>: call
 	<.main+?>: inc.sp(-12)
-	cmplStd/test/lang/init.array.ci:57: (22 bytes): assertEq(arrFixedInit.length, arrSliceInitFixed.length);
+	cmplStd/test/lang/init.array.ci:57: (22 bytes): assertEq(arrFixedInit.(length), arrSliceInitFixed.length);
 	<.main+?>: load.c32 7
 	<.main+?>: dup.x32 sp(11)
 	<.main+?>: load.ref <?> ;null
 	<.main+?>: load.ref <?> ;assertEq(expected: int32, returned: int32, message: char[*]): void
 	<.main+?>: call
 	<.main+?>: inc.sp(-12)
-	cmplStd/test/lang/init.array.ci:58: (22 bytes): assertEq(arrFixedInit.length, arrSliceInitSlice.length);
+	cmplStd/test/lang/init.array.ci:58: (22 bytes): assertEq(arrFixedInit.(length), arrSliceInitSlice.length);
 	<.main+?>: load.c32 7
 	<.main+?>: dup.x32 sp(8)
 	<.main+?>: load.ref <?> ;null
@@ -19923,7 +19940,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;assertEq(expected: int32, returned: int32, message: char[*]): void
 	<.main+?>: call
 	<.main+?>: inc.sp(-12)
-	cmplStd/test/lang/init.array.ci:62: (40 bytes): assertEq(arrFixedInit.length, lenSlice(arrFixedInit));
+	cmplStd/test/lang/init.array.ci:62: (40 bytes): assertEq(arrFixedInit.(length), lenSlice(arrFixedInit));
 	<.main+?>: load.c32 7
 	<.main+?>: load.z32
 	<.main+?>: load.c32 7
@@ -19935,7 +19952,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;assertEq(expected: int32, returned: int32, message: char[*]): void
 	<.main+?>: call
 	<.main+?>: inc.sp(-12)
-	cmplStd/test/lang/init.array.ci:63: (33 bytes): assertEq(arrFixedInit.length, lenSlice(arrSliceInitFixed));
+	cmplStd/test/lang/init.array.ci:63: (33 bytes): assertEq(arrFixedInit.(length), lenSlice(arrSliceInitFixed));
 	<.main+?>: load.c32 7
 	<.main+?>: load.z32
 	<.main+?>: dup.x64 sp(11)
@@ -19946,7 +19963,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;assertEq(expected: int32, returned: int32, message: char[*]): void
 	<.main+?>: call
 	<.main+?>: inc.sp(-12)
-	cmplStd/test/lang/init.array.ci:64: (33 bytes): assertEq(arrFixedInit.length, lenSlice(arrSliceInitSlice));
+	cmplStd/test/lang/init.array.ci:64: (33 bytes): assertEq(arrFixedInit.(length), lenSlice(arrSliceInitSlice));
 	<.main+?>: load.c32 7
 	<.main+?>: load.z32
 	<.main+?>: dup.x64 sp(8)
@@ -19957,7 +19974,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: load.ref <?> ;assertEq(expected: int32, returned: int32, message: char[*]): void
 	<.main+?>: call
 	<.main+?>: inc.sp(-12)
-	cmplStd/test/lang/init.array.ci:66: (807 bytes): for (i: int32 := 0; i < arrFixedInit.length; i := i + 1)
+	cmplStd/test/lang/init.array.ci:66: (807 bytes): for (i: int32 := 0; i < arrFixedInit.(length); i := i + 1)
 	<.main+?>: load.z32
 	<.main+?>: jmp +790
 	cmplStd/test/lang/init.array.ci:67: (9 bytes): expected: int64 := 42 + i
@@ -20189,7 +20206,7 @@ testMathAbsMod_f32_8d: float32 {
 	<.main+?>: inc.sp(-8)
 	cmplStd/test/lang/init.array.ci:66: (4 bytes): i := i + 1
 	<.main+?>: inc.i32(+1)
-	cmplStd/test/lang/init.array.ci:66: (12 bytes): i < arrFixedInit.length
+	cmplStd/test/lang/init.array.ci:66: (12 bytes): i < arrFixedInit.(length)
 	<.main+?>: dup.x32 sp(0)
 	<.main+?>: load.c32 7
 	<.main+?>: clt.i32
@@ -23284,13 +23301,13 @@ cmplStd/test/std/test.math.ci:96: testMathAbsMod_f32_8d: float32(8.000000)
 
 ---------- Memory usage:
 memory[all] @000000; size: 4194016(4.0 Mb)
-memory[used] @000000; size: 386888(377.8 Kb)
-memory[heap] @05e748; size: 2758576(2.6 Mb)
+memory[used] @000000; size: 386896(377.8 Kb)
+memory[heap] @05e750; size: 2758568(2.6 Mb)
 memory[stack] @1fff40; size: 1048504(1023.9 Kb)
 
 ---------- used memory:
 memory[meta] @000000; size: 370096(361.4 Kb)
-memory[code] @000000; size: 16452(16.1 Kb)
+memory[code] @000000; size: 16460(16.1 Kb)
 memory[data] @000000; size: 80(80.0 bytes)
 
 ---------- heap memory:

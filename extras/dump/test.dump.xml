@@ -10330,6 +10330,17 @@
 						</right>
 					</expr>
 				</stmt>
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="objInitExplicit.im := (0);">
+					<expr token=":=" type="void" kind="static const typename(void)" value="objInitExplicit.im := (0)">
+						<left token="." type="float64" kind="static const typename(f64)" value="objInitExplicit.im">
+							<left token=".variable" type="object" kind="static const typename(ref)" value="objInitExplicit"/>
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="im"/>
+						</left>
+						<right token="()" type="float64" kind="static const typename(f64)" value="(0)">
+							<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+						</right>
+					</expr>
+				</stmt>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="empty(): void">
@@ -11900,21 +11911,25 @@
 				</stmt>
 			</init>
 		</stmt>
-		<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(7, arrFixedInit.length);">
-			<expr token="()" type="void" kind="static const typename(void)" value="assertEq(7, arrFixedInit.length)">
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(7, arrFixedInit.(length));">
+			<expr token="()" type="void" kind="static const typename(void)" value="assertEq(7, arrFixedInit.(length))">
 				<push token=".literal" type="int32" kind="static const typename(i32)" value="7" />
-				<push token="." type="int32" kind="static const typename(i32)" value="arrFixedInit.length">
+				<push token="." type="int32" kind="static const typename(i32)" value="arrFixedInit.(length)">
 					<left token=".variable" type="int64[7]" kind="static typename(arr)" value="arrFixedInit"/>
-					<right token=".variable" type="int32" kind="static const typename(i32)" value="length"/>
+					<right token="()" type="int32" kind="static const typename(i32)" value="(length)">
+						<push token=".variable" type="uint32" kind="static const typename(u32)" value="length"/>
+					</right>
 				</push>
 				<call token=".variable" type="function" kind="static const typename(ref)" value="assertEq"/>
 			</expr>
 		</stmt>
-		<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(arrFixedInit.length, arrSliceInitFixed.length);">
-			<expr token="()" type="void" kind="static const typename(void)" value="assertEq(arrFixedInit.length, arrSliceInitFixed.length)">
-				<push token="." type="int32" kind="static const typename(i32)" value="arrFixedInit.length">
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(arrFixedInit.(length), arrSliceInitFixed.length);">
+			<expr token="()" type="void" kind="static const typename(void)" value="assertEq(arrFixedInit.(length), arrSliceInitFixed.length)">
+				<push token="." type="int32" kind="static const typename(i32)" value="arrFixedInit.(length)">
 					<left token=".variable" type="int64[7]" kind="static typename(arr)" value="arrFixedInit"/>
-					<right token=".variable" type="int32" kind="static const typename(i32)" value="length"/>
+					<right token="()" type="int32" kind="static const typename(i32)" value="(length)">
+						<push token=".variable" type="uint32" kind="static const typename(u32)" value="length"/>
+					</right>
 				</push>
 				<push token="." type="uint32" kind="static const typename(u32)" value="arrSliceInitFixed.length">
 					<left token=".variable" type="int64[]" kind="static typename(arr)" value="arrSliceInitFixed"/>
@@ -11923,11 +11938,13 @@
 				<call token=".variable" type="function" kind="static const typename(ref)" value="assertEq"/>
 			</expr>
 		</stmt>
-		<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(arrFixedInit.length, arrSliceInitSlice.length);">
-			<expr token="()" type="void" kind="static const typename(void)" value="assertEq(arrFixedInit.length, arrSliceInitSlice.length)">
-				<push token="." type="int32" kind="static const typename(i32)" value="arrFixedInit.length">
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(arrFixedInit.(length), arrSliceInitSlice.length);">
+			<expr token="()" type="void" kind="static const typename(void)" value="assertEq(arrFixedInit.(length), arrSliceInitSlice.length)">
+				<push token="." type="int32" kind="static const typename(i32)" value="arrFixedInit.(length)">
 					<left token=".variable" type="int64[7]" kind="static typename(arr)" value="arrFixedInit"/>
-					<right token=".variable" type="int32" kind="static const typename(i32)" value="length"/>
+					<right token="()" type="int32" kind="static const typename(i32)" value="(length)">
+						<push token=".variable" type="uint32" kind="static const typename(u32)" value="length"/>
+					</right>
 				</push>
 				<push token="." type="uint32" kind="static const typename(u32)" value="arrSliceInitSlice.length">
 					<left token=".variable" type="int64[]" kind="static typename(arr)" value="arrSliceInitSlice"/>
@@ -11956,11 +11973,13 @@
 				<call token=".variable" type="function" kind="static const typename(ref)" value="assertEq"/>
 			</expr>
 		</stmt>
-		<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(arrFixedInit.length, lenSlice(arrFixedInit));">
-			<expr token="()" type="void" kind="static const typename(void)" value="assertEq(arrFixedInit.length, lenSlice(arrFixedInit))">
-				<push token="." type="int32" kind="static const typename(i32)" value="arrFixedInit.length">
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(arrFixedInit.(length), lenSlice(arrFixedInit));">
+			<expr token="()" type="void" kind="static const typename(void)" value="assertEq(arrFixedInit.(length), lenSlice(arrFixedInit))">
+				<push token="." type="int32" kind="static const typename(i32)" value="arrFixedInit.(length)">
 					<left token=".variable" type="int64[7]" kind="static typename(arr)" value="arrFixedInit"/>
-					<right token=".variable" type="int32" kind="static const typename(i32)" value="length"/>
+					<right token="()" type="int32" kind="static const typename(i32)" value="(length)">
+						<push token=".variable" type="uint32" kind="static const typename(u32)" value="length"/>
+					</right>
 				</push>
 				<push token="()" type="int32" kind="static const typename(i32)" value="lenSlice(arrFixedInit)">
 					<push token=".variable" type="int64[7]" kind="static typename(arr)" value="arrFixedInit"/>
@@ -11969,11 +11988,13 @@
 				<call token=".variable" type="function" kind="static const typename(ref)" value="assertEq"/>
 			</expr>
 		</stmt>
-		<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(arrFixedInit.length, lenSlice(arrSliceInitFixed));">
-			<expr token="()" type="void" kind="static const typename(void)" value="assertEq(arrFixedInit.length, lenSlice(arrSliceInitFixed))">
-				<push token="." type="int32" kind="static const typename(i32)" value="arrFixedInit.length">
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(arrFixedInit.(length), lenSlice(arrSliceInitFixed));">
+			<expr token="()" type="void" kind="static const typename(void)" value="assertEq(arrFixedInit.(length), lenSlice(arrSliceInitFixed))">
+				<push token="." type="int32" kind="static const typename(i32)" value="arrFixedInit.(length)">
 					<left token=".variable" type="int64[7]" kind="static typename(arr)" value="arrFixedInit"/>
-					<right token=".variable" type="int32" kind="static const typename(i32)" value="length"/>
+					<right token="()" type="int32" kind="static const typename(i32)" value="(length)">
+						<push token=".variable" type="uint32" kind="static const typename(u32)" value="length"/>
+					</right>
 				</push>
 				<push token="()" type="int32" kind="static const typename(i32)" value="lenSlice(arrSliceInitFixed)">
 					<push token=".variable" type="int64[]" kind="static typename(arr)" value="arrSliceInitFixed"/>
@@ -11982,11 +12003,13 @@
 				<call token=".variable" type="function" kind="static const typename(ref)" value="assertEq"/>
 			</expr>
 		</stmt>
-		<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(arrFixedInit.length, lenSlice(arrSliceInitSlice));">
-			<expr token="()" type="void" kind="static const typename(void)" value="assertEq(arrFixedInit.length, lenSlice(arrSliceInitSlice))">
-				<push token="." type="int32" kind="static const typename(i32)" value="arrFixedInit.length">
+		<stmt token=";" type="void" kind="static const typename(void)" stmt="assertEq(arrFixedInit.(length), lenSlice(arrSliceInitSlice));">
+			<expr token="()" type="void" kind="static const typename(void)" value="assertEq(arrFixedInit.(length), lenSlice(arrSliceInitSlice))">
+				<push token="." type="int32" kind="static const typename(i32)" value="arrFixedInit.(length)">
 					<left token=".variable" type="int64[7]" kind="static typename(arr)" value="arrFixedInit"/>
-					<right token=".variable" type="int32" kind="static const typename(i32)" value="length"/>
+					<right token="()" type="int32" kind="static const typename(i32)" value="(length)">
+						<push token=".variable" type="uint32" kind="static const typename(u32)" value="length"/>
+					</right>
 				</push>
 				<push token="()" type="int32" kind="static const typename(i32)" value="lenSlice(arrSliceInitSlice)">
 					<push token=".variable" type="int64[]" kind="static typename(arr)" value="arrSliceInitSlice"/>
@@ -11995,15 +12018,17 @@
 				<call token=".variable" type="function" kind="static const typename(ref)" value="assertEq"/>
 			</expr>
 		</stmt>
-		<stmt token="for" type="void" kind="static const typename(void)" stmt="for (i; i &lt; arrFixedInit.length; i := i + 1)">
+		<stmt token="for" type="void" kind="static const typename(void)" stmt="for (i; i &lt; arrFixedInit.(length); i := i + 1)">
 			<init token=".variable" type="int32" kind="static const typename(i32)" value="i">
 				<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 			</init>
-			<test token="&lt;" type="bool" kind="static const typename(bool)" value="i &lt; arrFixedInit.length">
+			<test token="&lt;" type="bool" kind="static const typename(bool)" value="i &lt; arrFixedInit.(length)">
 				<left token=".variable" type="int32" kind="static const typename(i32)" value="i"/>
-				<right token="." type="int32" kind="static const typename(i32)" value="arrFixedInit.length">
+				<right token="." type="int32" kind="static const typename(i32)" value="arrFixedInit.(length)">
 					<left token=".variable" type="int64[7]" kind="static typename(arr)" value="arrFixedInit"/>
-					<right token=".variable" type="int32" kind="static const typename(i32)" value="length"/>
+					<right token="()" type="int32" kind="static const typename(i32)" value="(length)">
+						<push token=".variable" type="uint32" kind="static const typename(u32)" value="length"/>
+					</right>
 				</right>
 			</test>
 			<step token=":=" type="int32" kind="static const typename(i32)" value="i := i + 1">

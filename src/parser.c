@@ -159,14 +159,34 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 				continue;
 			}
 
-			if (canAssign(cc, ptr, tag, 1)) {
-				if (ptr->params != NULL && ptr->init == NULL) {
-					debug("Overwriting forward function: %T", ptr);
-					ptr->init = lnkNode(cc, def);
-					ptr = NULL;
-				}
-				break;
+			if (def->nest != ptr->nest) {
+				// can not override forward method inside a different block
+				continue;
 			}
+			if (ptr->owner != def->owner) {
+				// can not override forward method in an inherited
+				continue;
+			}
+			if (!isStatic(def) && !isStatic(ptr)) {
+				// allow override only static functions
+				continue;
+			}
+
+			if (!isFunction(def) && !isFunction(ptr)) {
+				// allow override only static functions
+				continue;
+			}
+
+			if (!canAssign(cc, ptr, tag, 1)) {
+				continue;
+			}
+
+			if (ptr->params != NULL && ptr->init == NULL) {
+				info(cc->rt, def->file, def->line, "Overwriting forward function: %T", ptr);
+				ptr->init = lnkNode(cc, def);
+				ptr = NULL;
+			}
+			break;
 		}
 
 		if (ptr != NULL) {
@@ -268,6 +288,11 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 	astn keys = NULL;
 	ssize_t length = 0;
 
+	symn type = varNode->type;
+	if (initObj->type != NULL) {
+		type = initObj->type;
+	}
+
 	// translate initialization to assignment
 	if (initObj->stmt.stmt != NULL && initObj->stmt.stmt->kind == INIT_set) {
 		length = -1;
@@ -284,7 +309,7 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 			if (!typeCheck(cc, NULL, init->op.lhso, 0)) {
 				// HACK: type of variable may differ from the initializer type:
 				// object view = Button{ ... };
-				typeCheck(cc, initObj->type, key, 0);
+				typeCheck(cc, type, key, 0);
 			}
 			init->op.lhso->file = key->file;
 			init->op.lhso->line = key->line;
@@ -331,8 +356,8 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 		keys = key;
 	}
 
-	if (isArrayType(varNode->type)) {
-		symn len = varNode->type->fields;
+	if (isArrayType(type)) {
+		symn len = type->fields;
 		if (len == NULL || len == cc->length_ref) {
 			symn ref = linkOf(varNode, 0);
 			if (varNode->kind != TOKEN_var || (isMember(ref) && !isStatic(ref))) {
@@ -344,7 +369,7 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 			// if slice or pointer is initialized with a literal,
 			// create a fixed size array from the literal,
 			// then assign it to the slice or pointer
-			size_t initSize = length * refSize(varNode->type->type);
+			size_t initSize = length * refSize(type->type);
 			symn arr = newDef(cc, ATTR_stat | KIND_typ | CAST_arr);
 			symn var = newDef(cc, KIND_var | CAST_val);
 
@@ -353,7 +378,7 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 			var->line = arr->line = varNode->line;
 			var->name = "init";
 
-			arr->type = varNode->type->type;
+			arr->type = type->type;
 			var->owner = ref;
 			var->type = arr;
 
@@ -379,15 +404,15 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 	}
 
 	// if variable is instance of object then allocate it
-	if (castOf(varNode->type) == CAST_ref) {
-		if (cc->libc_mem == NULL) {
+	if (isObjectType(type)) {
+		if (cc->libc_new == NULL) {
 			error(cc->rt, varNode->file, varNode->line, "Failed to allocate variable `%t` allocator not found or disabled", varNode);
 			return initObj;
 		}
 
 		astn new = lnkNode(cc, cc->libc_new);
-		astn arg = lnkNode(cc, initObj->type);
-		astn call = opNode(cc, initObj->type, OPER_fnc, new, arg);
+		astn arg = lnkNode(cc, type);
+		astn call = opNode(cc, type, OPER_fnc, new, arg);
 		call->file = arg->file = new->file = initObj->file;
 		call->line = arg->line = new->line = initObj->line;
 
@@ -400,8 +425,8 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 	}
 
 	// add default initializer of uninitialized fields
-	size_t unionInitSize = varNode->type->size;
-	for (symn field = varNode->type->fields; field; field = field->next) {
+	size_t unionInitSize = type->size;
+	for (symn field = type->fields; field; field = field->next) {
 		if (isStatic(field)) {
 			continue;
 		}
@@ -411,7 +436,7 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 		}
 		dieif(unionInitSize != 0 && unionInitSize < field->size, ERR_INTERNAL_ERROR);
 	}
-	for (symn field = varNode->type->fields; field; field = field->next) {
+	for (symn field = type->fields; field; field = field->next) {
 		if (isStatic(field)) {
 			continue;
 		}
