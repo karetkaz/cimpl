@@ -1,3 +1,59 @@
+var customCommands = {
+	'theme:': function(value, action) {
+		if (value === 'dark') {
+			setStyle(document.body, 'dark');
+			return true;
+		}
+		if (value === 'light') {
+			setStyle(document.body, '-dark');
+			return true;
+		}
+		return actionError();
+	},
+	'zoom:': function(value, action) {
+		document.body.style.fontSize = (+value / 100) + 'em';
+		editor.refresh();
+	},
+
+	save: CodeMirror.commands.save,
+	close: function(value, action) {
+		if (value !== '') {
+			return false;
+		}
+		params.update({ content: null, file: null });
+		return true;
+	},
+	download: function(value, action) {
+		openProjectFile({
+			file: params.file,
+			link: true
+		});
+		return true;
+	},
+
+	'!selectAll': CodeMirror.commands.selectAll,
+	'!selectLine': function () {
+		let line = editor.getCursor().line || 0;
+		editor.setSelection(
+			CodeMirror.Pos(line, 0),
+			CodeMirror.Pos(line + 1, 0)
+		);
+	},
+	'!selectWord': function () {
+		var sel = editor.findWordAt(editor.getCursor());
+		editor.setSelection(sel.anchor, sel.head);
+	},
+	'!selectToBrace': CodeMirror.commands.selectToBrace,
+
+	'!goLineStartSmart': CodeMirror.commands.goLineStartSmart,
+	'!goLineStart': CodeMirror.commands.goLineStart,
+	'!goLineEnd': CodeMirror.commands.goLineEnd,
+	'!goDocStart': CodeMirror.commands.goDocStart,
+	'!goDocEnd': CodeMirror.commands.goDocEnd,
+
+	'!insertTab': CodeMirror.commands.insertTab,
+};
+
 function actionError() {
 	edtFileName.classList.add('error');
 	setTimeout(function() {
@@ -9,13 +65,17 @@ function actionError() {
 function executeAction(action) {
 	setStyle(document.body, '-right-bar');
 	for (let command in customCommands) {
-		if (action.startsWith(command)) {
+		let cmd = command;
+		if (cmd.startsWith('!')) {
+			cmd = cmd.substr(1);
+		}
+		if (action.startsWith(cmd)) {
 			if (CodeMirror.commands.hasOwnProperty(action)) {
 				CodeMirror.commands[action](editor);
 				edtFileName.blur();
 				return false;
 			}
-			let value = action.substr(command.length);
+			let value = action.substr(cmd.length);
 			let result = customCommands[command](value, action);
 			if (result === false) {
 				continue;
@@ -47,6 +107,9 @@ function completeAction(action, hint) {
 				let filter = new RegExp(command, 'i');
 				let actions = {};
 				for (let cmd in customCommands) {
+					if (cmd.startsWith('!')) {
+						cmd = cmd.substr(1);
+					}
 					if (cmd.search(filter) === -1) {
 						continue;
 					}
@@ -75,6 +138,7 @@ function completeAction(action, hint) {
 
 			case ':':
 				hint = editor.getCursor().line + 1 || 'go to line number';
+				setActions();
 				break;
 
 			case '!zoom:':
@@ -92,6 +156,7 @@ function completeAction(action, hint) {
 
 			case '#':
 				hint = terminal.command || '';
+				setActions();
 				break;
 
 			case '!':
@@ -163,6 +228,29 @@ function setActions(actions, nextPrev) {
 	nextPrev(0);
 }
 
+edtFileName.onclick = function() {
+	if (!props.mobile) {
+		return;
+	}
+	let actions = {};
+	for (let cmd in customCommands) {
+		if (!cmd.startsWith('!')) {
+			// hidden command
+			continue;
+			// cmd = '!' + cmd;
+		}
+		if (cmd.endsWith(':')) {
+			actions[cmd] = function () {
+				completeAction(cmd);
+			}
+		} else {
+			actions[cmd] = function () {
+				executeAction(cmd.substr(1));
+			}
+		}
+	}
+	setActions(actions);
+}
 edtFileName.onfocus = function() {
 	edtFileName.selectionStart = 0;
 	edtFileName.selectionEnd = edtFileName.value.length;
@@ -171,113 +259,6 @@ edtFileName.onblur = function() {
 	edtFileName.value = params.file || '';
 	spnCounter.innerText = null;
 	editor.focus();
-}
-var customCommands = {
-	'theme:': function(value, action) {
-		if (value === 'dark') {
-			setStyle(document.body, 'dark');
-			return true;
-		}
-		if (value === 'light') {
-			setStyle(document.body, '-dark');
-			return true;
-		}
-		return actionError();
-	},
-	'zoom:': function(value, action) {
-		document.body.style.fontSize = (+value / 100) + 'em';
-		editor.refresh();
-	},
-	'close': function(value, action) {
-		if (value !== '') {
-			return false;
-		}
-		params.update({ content: null, file: null });
-		return true;
-	},
-	'download': function(value, action) {
-		openProjectFile({
-			file: params.file,
-			link: true
-		});
-		return true;
-	},
-	save: CodeMirror.commands.save,
-	selectAll: CodeMirror.commands.selectAll,
-	// singleSelection: CodeMirror.commands.singleSelection,
-	// killLine: CodeMirror.commands.killLine,
-	deleteLine: CodeMirror.commands.deleteLine,
-	// delLineLeft: CodeMirror.commands.delLineLeft,
-	// delWrappedLineLeft: CodeMirror.commands.delWrappedLineLeft,
-	// delWrappedLineRight: CodeMirror.commands.delWrappedLineRight,
-	undo: CodeMirror.commands.undo,
-	redo: CodeMirror.commands.redo,
-	// undoSelection: CodeMirror.commands.undoSelection,
-	// redoSelection: CodeMirror.commands.redoSelection,
-	goDocStart: CodeMirror.commands.goDocStart,
-	goDocEnd: CodeMirror.commands.goDocEnd,
-	goLineStart: CodeMirror.commands.goLineStart,
-	goLineStartSmart: CodeMirror.commands.goLineStartSmart,
-	goLineEnd: CodeMirror.commands.goLineEnd,
-	// goLineRight: CodeMirror.commands.goLineRight,
-	// goLineLeft: CodeMirror.commands.goLineLeft,
-	// goLineLeftSmart: CodeMirror.commands.goLineLeftSmart,
-	// goLineUp: CodeMirror.commands.goLineUp,
-	// goLineDown: CodeMirror.commands.goLineDown,
-	// goPageUp: CodeMirror.commands.goPageUp,
-	// goPageDown: CodeMirror.commands.goPageDown,
-	// goCharLeft: CodeMirror.commands.goCharLeft,
-	// goCharRight: CodeMirror.commands.goCharRight,
-	// goColumnLeft: CodeMirror.commands.goColumnLeft,
-	// goColumnRight: CodeMirror.commands.goColumnRight,
-	goWordLeft: CodeMirror.commands.goWordLeft,
-	goWordRight: CodeMirror.commands.goWordRight,
-	// goGroupRight: CodeMirror.commands.goGroupRight,
-	// goGroupLeft: CodeMirror.commands.goGroupLeft,
-	// delCharBefore: CodeMirror.commands.delCharBefore,
-	// delCharAfter: CodeMirror.commands.delCharAfter,
-	// delWordBefore: CodeMirror.commands.delWordBefore,
-	// delWordAfter: CodeMirror.commands.delWordAfter,
-	// delGroupBefore: CodeMirror.commands.delGroupBefore,
-	// delGroupAfter: CodeMirror.commands.delGroupAfter,
-	indentAuto: CodeMirror.commands.indentAuto,
-	indentMore: CodeMirror.commands.indentMore,
-	indentLess: CodeMirror.commands.indentLess,
-	insertTab: CodeMirror.commands.insertTab,
-	// insertSoftTab: CodeMirror.commands.insertSoftTab,
-	// defaultTab: CodeMirror.commands.defaultTab,
-	// transposeChars: CodeMirror.commands.transposeChars,
-	// newlineAndIndent: CodeMirror.commands.newlineAndIndent,
-	// openLine: CodeMirror.commands.openLine,
-	toggleOverwrite: CodeMirror.commands.toggleOverwrite,
-	toggleComment: CodeMirror.commands.toggleComment,
-	toggleCommentIndented: CodeMirror.commands.toggleCommentIndented,
-
-	fold: CodeMirror.commands.fold,
-	unfold: CodeMirror.commands.unfold,
-	foldAll: CodeMirror.commands.foldAll,
-	unfoldAll: CodeMirror.commands.unfoldAll,
-	toggleFold: CodeMirror.commands.toggleFold,
-
-	jumpToBrace: CodeMirror.commands.jumpToBrace,
-	selectToBrace: CodeMirror.commands.selectToBrace,
-
-	upperCase: CodeMirror.commands.upperCase,
-	lowerCase: CodeMirror.commands.lowerCase,
-	toggleCase: CodeMirror.commands.toggleCase,
-	camelCase: CodeMirror.commands.camelCase,
-	snakeCase: CodeMirror.commands.snakeCase,
-
-	scrollLineUp: CodeMirror.commands.scrollLineUp,
-	scrollLineDown: CodeMirror.commands.scrollLineDown,
-	swapLineUp: CodeMirror.commands.swapLineUp,
-	swapLineDown: CodeMirror.commands.swapLineDown,
-	// save: CodeMirror.commands.save,
-	// jumpToLine: CodeMirror.commands.jumpToLine,
-	// find: CodeMirror.commands.find,
-	// findNext: CodeMirror.commands.findNext,
-	// findPrev: CodeMirror.commands.findPrev,
-	// selectFound: CodeMirror.commands.selectFound
 }
 
 edtFileName.onkeydown = function(event) {
@@ -424,7 +405,7 @@ edtFileName.onkeyup = completeAction;
 CodeMirror.commands.save = function(cm) {
 	saveInput();
 }
-CodeMirror.commands.jumpToLine = function(cm) {
+CodeMirror.commands.goToLine = function(cm) {
 	let line = editor.getCursor().line || 0;
 	completeAction(':', line + 1);
 	var middleHeight = editor.getScrollerElement().offsetHeight / 2;
@@ -453,4 +434,14 @@ CodeMirror.commands.selectFound = function(cm) {
 		return actionError();
 	}
 	commands.onNextPrev('all');
+}
+
+for (let command in CodeMirror.commands) {
+	if (command.startsWith('!')) {
+		command = command.substr(1);
+	}
+	if (customCommands.hasOwnProperty(command)) {
+		continue;
+	}
+	customCommands[command] = CodeMirror.commands[command];
 }

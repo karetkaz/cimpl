@@ -61,24 +61,10 @@
 	</div>
 	<pre id="output"></pre>
 </div>
-<div id="right-sidebar" class="sidebar">
-	<div class="submenu"><ul id="commands" class="">
-		<li id="pin-left" onclick="setStyle(body, '~left-pin');">Pin left sidebar</li>
-		<li id="show-left" onclick="setStyle(body, '~left-bar');">Show left sidebar</li>
-		<li id="pin-right" onclick="setStyle(body, '~right-pin');">Pin right sidebar</li>
-		<li id="show-right" onclick="setStyle(body, '~right-bar');">Show right sidebar</li>
-		<li id="pin-bottom" onclick="setStyle(body, '~bottom-pin');">Pin bottom sidebar</li>
-		<li id="show-bottom" onclick="setStyle(body, '~bottom-bar');">Show bottom sidebar</li>
-		<li id="show-toolbar" onclick="setStyle(body, '~tool-bar');">Show tool bar</li>
-		<li id="show-canvas" onclick="setStyle(body, '~canvas');">Show canvas</li>
-		<li id="show-output" onclick="setStyle(body, '~output');">Show output</li>
-	</ul></div>
-</div>
 <div id="left-sidebar" class="sidebar">
 	<div class="submenu">
 		<li onclick="setStyle(parentElement, '~collapsed');">Workspace<span class="" id="workspaceName"></span>
-			<button class="right" onclick="event.stopPropagation(); setStyle(parentElement.parentElement, '-collapsed'); params.update('folder');" title="Refresh file list">⟳</button>
-			<button class="right" onclick="event.stopPropagation(); setStyle(parentElement.parentElement, '-collapsed'); params.update({folder: '~/'});" title="Workspace root">~</button>
+			<button class="right" onclick="event.stopPropagation(); setStyle(parentElement.parentElement, '-collapsed'); params.update({folder: null}); params.update('folder');" title="Refresh workspace">⟳</button>
 			<!--<button class="right" onclick="event.stopPropagation(); downloadFiles();">📥</button>-->
 			<!--<button class="right" onclick="event.stopPropagation(); uploadFiles();">📤</button>-->
 		</li>
@@ -117,6 +103,7 @@
 			<li onclick="saveInput(true);"><span class="right"></span>💾 Save as</li>
 			<li onclick="saveInput();"><span class="right">Ctrl + s</span>💾 Save</li>
 			<li onclick="params.update({file: null});"><span class="right"></span>❌ Close</li>
+			<li onclick="params.update('file');"><span class="right"></span>Revert</li>
 			<!--<div class=""><li onclick="alert('TODO')">Help</li></div>-->
 		</ul>
 		<hr>
@@ -124,10 +111,9 @@
 	<div class="collapsed submenu">
 		<li onclick="setStyle(parentElement, '~collapsed');">Edit
 			<!--button class="right" onclick="event.stopPropagation(); editor.execCommand('redo');" title="Redo">↷</button-->
-			<button class="right" onclick="event.stopPropagation(); editor.execCommand('undo');" title="Undo">↶</button>
+			<button class="right" onclick="event.stopPropagation(); editor.execCommand('undo');" title="Undo">⤺</button>
 		</li>
 		<ul>
-			<li onclick="params.update('file');"><span class="right"></span>Revert</li>
 			<li onclick="editor.execCommand('undo');"><span class="right">Ctrl + z</span>Undo</li>
 			<li onclick="editor.execCommand('redo');"><span class="right">Ctrl+Shift + z</span>Redo</li>
 			<hr>
@@ -135,31 +121,31 @@
 			<li>Cut (Ctrl + x)</li>
 			<li>Copy (Ctrl + c)</li>
 			<li>Paste (Ctrl + v)</li>
-			-->
 			<hr>
-			<!-- TODO
-			<li onclick="editor.execCommand('?');"><span class="right">Ctrl + b</span>Beautify</li>
-			<li onclick="editor.execCommand('?');"><span class="right">Ctrl+Shift + /</span>Block comment</li>
-			<li onclick="editor.execCommand('deleteLine');"><span class="right">Delete</span>Delete</li>
-			<li onclick="editor.execCommand('dupplicate');"><span class="right">Ctrl + d</span>Duplicate</li>
 			-->
 			<li onclick="editor.execCommand('indentMore');"><span class="right">Tab</span>Indent</li>
 			<li onclick="editor.execCommand('indentLess');"><span class="right">Shift + Tab</span>Unindent</li>
 			<li onclick="editor.execCommand('toggleCommentIndented');"><span class="right">Ctrl + /</span>Toggle comment</li>
-			<li onclick="editor.execCommand('swapLineUp');"><span class="right">Ctrl+Shift + Up</span>Move Up</li>
-			<li onclick="editor.execCommand('swapLineDown');"><span class="right">Ctrl+Shift + Down</span>Move Down</li>
-			<hr>
 			<!-- TODO
+			<li onclick="editor.execCommand('?');"><span class="right">Ctrl + b</span>Beautify</li>
+			<li onclick="editor.execCommand('?');"><span class="right">Ctrl+Shift + /</span>Block comment</li>
+			-->
+
+			<hr>
 			<div class="collapsed submenu">
 				<li onclick="setStyle(parentElement, '~collapsed')">Line</li>
 				<ul>
-					<li onclick="editor.execCommand('?duppLines');">Dupplicate Lines</li>
-					<li onclick="editor.execCommand('?joinLines');">Join Lines</li>
-					<li onclick="editor.execCommand('?sortLines');">Sort Lines</li>
-					<li onclick="editor.execCommand('?reverseLines');">Reverse Lines</li>
+					<li onclick="editor.execCommand('deleteLine');"><span class="right">Shift + Delete</span>Delete</li>
+					<li onclick="editor.execCommand('duplicate');"><span class="right">Ctrl + d</span>Duplicate</li>
+					<li onclick="editor.execCommand('joinLines');">Join Lines</li>
+					<li onclick="editor.execCommand('sortLines');">Sort Lines</li>
+					<!--li onclick="editor.execCommand('?reverseLines');">Reverse Lines</li-->
+					<hr>
+					<li onclick="editor.execCommand('swapLineUp');"><span class="right">Ctrl+Shift + Up</span>Move Up</li>
+					<li onclick="editor.execCommand('swapLineDown');"><span class="right">Ctrl+Shift + Down</span>Move Down</li>
 				</ul>
+				<hr>
 			</div>
-			-->
 			<div class="collapsed submenu">
 				<li onclick="setStyle(parentElement, '~collapsed')">Case</li>
 				<ul>
@@ -168,6 +154,7 @@
 					<li onclick="editor.execCommand('lowerCase');"><span class="right"></span>Lower case</li>
 					<li onclick="editor.execCommand('camelCase');"><span class="right"></span>CamelCase</li>
 					<li onclick="editor.execCommand('snakeCase');"><span class="right"></span>Snake_case</li>
+					<!--li onclick="editor.execCommand('titleCase');"><span class="right"></span>Title Case</li-->
 				</ul>
 			</div>
 		</ul>
@@ -180,15 +167,14 @@
 			<button class="right" onclick="event.stopPropagation(); editor.execCommand('find');" title="Find">🔍</button>
 		</li>
 		<ul>
-			<li onclick="editor.execCommand('find');"><span class="right">Ctrl + f</span>Find...</li>
+			<li onclick="editor.execCommand('find');"><span class="right">Ctrl + F</span>Find...</li>
+			<li onclick="editor.execCommand('goToLine');"><span class="right">Ctrl + G</span>Goto...</li>
 			<li onclick="editor.execCommand('findNext');"><span class="right">F3</span>Find Next</li>
 			<li onclick="editor.execCommand('findPrev');"><span class="right">Shift + F3</span>Find Previous</li>
-			<li onclick="editor.execCommand('selectFound');"><span class="right"></span>Select All</li>
+			<li onclick="editor.execCommand('selectFound');"><span class="right"></span>Select All Occurrences</li>
 			<hr>
-			<li onclick="editor.execCommand('jumpToLine');"><span class="right">Ctrl + g</span>Jump to line</li>
-			<hr>
-			<li onclick="editor.execCommand('jumpToBrace');"><span class="right">Ctrl + b</span>Jump to brace</li>
-			<li onclick="editor.execCommand('selectToBrace');"><span class="right">Ctrl+Shift + b</span>Select to brace</li>
+			<li onclick="editor.execCommand('goToBrace');"><span class="right">Ctrl + B</span>Jump to brace</li>
+			<li onclick="editor.execCommand('selectToBrace');"><span class="right">Ctrl+Shift + B</span>Select to brace</li>
 		</ul>
 		<hr>
 	</div>
@@ -215,6 +201,19 @@
 		<hr>
 	</div>
 </div>
+<div id="right-sidebar" class="sidebar">
+	<div class="submenu"><ul id="commands" class="">
+		<li id="pin-left" onclick="setStyle(body, '~left-pin');">Pin left sidebar</li>
+		<li id="show-left" onclick="setStyle(body, '~left-bar');">Show left sidebar</li>
+		<li id="pin-right" onclick="setStyle(body, '~right-pin');">Pin right sidebar</li>
+		<li id="show-right" onclick="setStyle(body, '~right-bar');">Show right sidebar</li>
+		<li id="pin-bottom" onclick="setStyle(body, '~bottom-pin');">Pin bottom sidebar</li>
+		<li id="show-bottom" onclick="setStyle(body, '~bottom-bar');">Show bottom sidebar</li>
+		<li id="show-toolbar" onclick="setStyle(body, '~tool-bar');">Show tool bar</li>
+		<li id="show-canvas" onclick="setStyle(body, '~canvas');">Show canvas</li>
+		<li id="show-output" onclick="setStyle(body, '~output');">Show output</li>
+	</ul></div>
+</div>
 <div id="main-toolbar" class="toolbar">
 	<span class="left icon" title="Toggle show menu" onclick="onMenuClick()">☰</span>
 	<span class="left icon" title="Execute script (Ctrl+Shift + Enter)" onclick="onExecClick();">►</span>
@@ -224,7 +223,7 @@
 	<span class="canvas right icon" title="Stop execution" onclick="showCanvas(false);">❌</span>
 	<span class="no-canvas right icon" title="Toggle show output" onclick="setStyle(body, 'bottom-bar', '?-output', '~output');">⬓</span>
 	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '~dark');">◑</span>
-	<span class="canvas output right icon bold" title="Scroll to end" onclick="setStyle(body, 'bottom-bar'); terminal.scroll(true);">⏬</span>
+	<!--span class="canvas output right icon bold" title="Scroll to end" onclick="setStyle(body, 'bottom-bar'); terminal.scroll(true);">⏬</span-->
 	<span class="right" id="spnCounter"></span>
 
 	<!-- filename -->

@@ -233,7 +233,7 @@ int onEvent(int action, int button, int x, int y) {
 			return -1;
 		}
 	}
-	if (uiEvent(ui, action, button, x, y) || ui.colorPick) {
+	if (ui.onEvent(action, button, x, y) || ui.colorPick) {
 		uint64 start = System.millis();
 		offs.copy(0, 0, back, null);
 		if (ui.colorPick) {

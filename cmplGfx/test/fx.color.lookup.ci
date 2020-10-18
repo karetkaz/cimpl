@@ -226,16 +226,15 @@ int onEvent(int action, int button, int x, int y) {
 		separator, time
 	);
 
-	bool redraw = uiEvent(ui, action, button, x, y);
 	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
 		}
 	}
-	if (redraw) {
+	if (ui.onEvent(action, button, x, y)) {
 		uint64 start = System.millis();
 		offs.resize(null, back, null, 1);
-		if (ui.isActive(brightness, contrast, gamma, highlights, shadows, whites, blacks)) {
+		if (ui.isSelected(brightness, contrast, gamma, highlights, shadows, whites, blacks)) {
 			brightnessContrastGamma(&curves.data,
 				brightness.valFlt(),
 				contrast.valFlt(),

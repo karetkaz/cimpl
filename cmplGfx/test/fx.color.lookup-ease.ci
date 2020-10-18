@@ -79,13 +79,12 @@ int onEvent(int action, int button, int x, int y) {
 		time
 	);
 
-	bool redraw = uiEvent(ui, action, button, x, y);
 	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
 		}
 	}
-	if (redraw) {
+	if (ui.onEvent(action, button, x, y)) {
 		uint64 start = System.millis();
 		brightnessContrastGamma(&curves.data, brightness.value, contrast.value);
 		offs.resize(null, back, null, 1);

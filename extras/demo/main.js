@@ -336,7 +336,6 @@ function rmWorkspace(workspace) {
 	}
 	var req = indexedDB.deleteDatabase(workspace);
 	req.onsuccess = function(event) {
-		console.log(arguments);
 		if (event.oldVersion === 0) {
 			return;
 		}

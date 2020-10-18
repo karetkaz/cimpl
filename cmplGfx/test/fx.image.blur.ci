@@ -34,11 +34,6 @@ int onEvent(int action, int button, int x, int y) {
 	static Histogram histogram = {
 		enabled: false;
 	};
-	static Switch autoUpdate = {
-		text: "preview";
-		checked: true;
-		selectable: false;
-	};
 
 	static Slider sldBlur = {
 		text: "Blur";
@@ -50,9 +45,9 @@ int onEvent(int action, int button, int x, int y) {
 	static Slider sldSharpness = {
 		text: "Sharp";
 		value: 512;
-		minimum: 0;
-		maximum: 512;
-		divisor: 512;
+		minimum: 256;
+		maximum: 1024;
+		divisor: 256;
 	};
 
 	static Button btnLinear = {
@@ -131,8 +126,8 @@ int onEvent(int action, int button, int x, int y) {
 		histogram, separator,
 		sldBlur, sldSharpness,
 		btnLinear, btnReflect, btnRadial, btnSquare,
-		separator1, sldHardness, sldAlpha, chkMoveScale, chkMask, chkRect, btnReset,
-		separator, autoUpdate, time);
+		separator1, sldAlpha, sldHardness, chkMoveScale, chkMask, chkRect, btnReset,
+		separator, time);
 
 	static int oldRadius = 0;
 	static Rect rect = {
@@ -179,77 +174,55 @@ int onEvent(int action, int button, int x, int y) {
 			return -1;
 		}
 	}
-	if (ui.uiEvent(action, button, x, y)) {
-		// clamp input values
-		int amountValue = -sldSharpness.value;
-		int radiusValue = sldBlur.value;
-
+	if (ui.onEvent(action, button, x, y)) {
 		uint64 start = System.millis();
-		if (autoUpdate.checked) {
-			int hardness = sldHardness.value;
-			int alpha = sldAlpha.value;
-			uint32 colors[512] = {};
-
-			if (oldRadius != radiusValue) {
-				oldRadius = radiusValue;
+		if (!ui.isActive(sldBlur)) {
+			if (oldRadius != sldBlur.value) {
+				oldRadius = sldBlur.value;
 				blur.copy(0, 0, surf, null);
 				blur.blur(sldBlur.valFlt());
 			}
-			if (ui.isSelected(sldBlur)) {
-				offs.copy(0, 0, blur, null);
+		}
+
+		// apply blur from cached image
+		offs.copy(0, 0, blur, null);
+
+		if (ui.isSelected(btnLinear, btnReflect, btnRadial, btnSquare)) {
+			uint32 colors[512] = {};
+
+			if (chkMask.checked) {
+				offs.fill(0xff0000);
 			}
-			else if (ui.isSelected(sldSharpness)) {
-				offs.copy(0, 0, surf, null);
-				offs.blend(0, 0, blur, null, amountValue, false, null);
-			}
-			else if (ui.isSelected(btnReflect)) {
-				if (chkMask.checked) {
-					offs.fill(0xff0000);
-				} else {
-					offs.copy(0, 0, blur, null);
-				}
-				alphaLut(colors, hardness, alpha, true);
+			if (ui.isSelected(btnReflect)) {
+				alphaLut(colors, sldHardness.value, sldAlpha.value, true);
 				offs.gradient(&rect, gradient.MaskLinear, false, ...colors);
-				offs.blend(0, 0, surf, null, 256, true, null);
 			}
 			else if (ui.isSelected(btnLinear)) {
-				if (chkMask.checked) {
-					offs.fill(0xff0000);
-				} else {
-					offs.copy(0, 0, blur, null);
-				}
-				alphaLut(colors, hardness, alpha, false);
+				alphaLut(colors, sldHardness.value, sldAlpha.value, false);
 				offs.gradient(&rect, gradient.MaskLinear, false, ...colors);
-				offs.blend(0, 0, surf, null, 256, true, null);
 			}
 			else if (ui.isSelected(btnRadial)) {
-				if (chkMask.checked) {
-					offs.fill(0xff0000);
-				} else {
-					offs.copy(0, 0, blur, null);
-				}
-				alphaLut(colors, hardness, alpha, false);
+				alphaLut(colors, sldHardness.value, sldAlpha.value, false);
 				offs.gradient(&rect, gradient.MaskRadial, false, ...colors);
-				offs.blend(0, 0, surf, null, 256, true, null);
 			}
 			else if (ui.isSelected(btnSquare)) {
-				if (chkMask.checked) {
-					offs.fill(0xff0000);
-				} else {
-					offs.copy(0, 0, blur, null);
-				}
-				alphaLut(colors, hardness, alpha, false);
+				alphaLut(colors, sldHardness.value, sldAlpha.value, false);
 				offs.gradient(&rect, gradient.MaskSquare, false, ...colors);
-				offs.blend(0, 0, surf, null, 256, true, null);
 			}
+
+			offs.blend(0, 0, surf, null, 256, true, null);
+			if (chkRect.checked) {
+				offs.drawRect(rect, 0x00ff00);
+			}
+		}
+		else if (ui.isSelected(sldBlur)) {
+		}
+		else if (ui.isSelected(sldSharpness)) {
+			offs.blend(0, 0, surf, null, sldSharpness.value, false, null);
 		}
 
 		histogram.update(offs);
 		time.value = System.millis() - start;
-
-		if (chkRect.checked) {
-			offs.drawRect(rect, 0xff00ff);
-		}
 
 		if (ui.isSelected(btnReflect, btnLinear, btnRadial, btnSquare)) {
 			ui.setGroup(1);

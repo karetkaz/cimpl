@@ -415,6 +415,11 @@ int onEvent(int action, int button, int x, int y) {
 		text: "Show mask";
 		selectable: false;
 	};
+	static Switch chkRect = {
+		text: "Show rect";
+		group: 3;
+		selectable: false;
+	};
 
 	static Button separator = {
 		text: null;
@@ -448,7 +453,7 @@ int onEvent(int action, int button, int x, int y) {
 
 		// group 3 - Mask
 		btnLinear, btnReflect, btnRadial, btnSquare,
-		separator3, sldHardness, sldAlpha, chkMoveScale, chkMask, btnReset,
+		separator3, sldAlpha, sldHardness, chkMoveScale, chkMask, chkRect, btnReset,
 
 		separator, time
 	);
@@ -528,13 +533,13 @@ int onEvent(int action, int button, int x, int y) {
 		ui.setGroup(1);
 		draw = true;
 	}
-	if (ui.uiEvent(action, button, x, y) || draw) {
+	if (ui.onEvent(action, button, x, y) || draw) {
 		uint64 start = System.millis();
 
 		grpPresets.checked = ui.group == 2;
 		grpMask.checked = ui.group == 3;
 
-		if (ui.isActive(brightness, saturation, contrast, temp, tint, hue)) {
+		if (ui.isSelected(brightness, saturation, contrast, temp, tint, hue)) {
 			float b = brightness.valFlt();
 			float s = saturation.valFlt();
 			float c = contrast.valFlt();
@@ -543,43 +548,44 @@ int onEvent(int action, int button, int x, int y) {
 			float ti = tint.valFlt();
 			mat = colorMatrix(b, s, c, te, ti, h);
 		}
-		else if (Button btn = ui.selected(Button)) {
+		else if (Button btn = ui.getSelected(Button)) {
 			if (mat4f preset& = btn.data.as(mat4f)) {
 				// the data is a matrix, so use it
 				mat = preset;
 			}
 		}
 
-		offs.resize(null, back, null, 1);
+		// apply color matrix
+		offs.copy(0, 0, back, null);
 		offs.colorMat(null, mat.data);
 
+		// apply only for mask
 		if (ui.isSelected(btnLinear, btnReflect, btnRadial, btnSquare)) {
-			int hardness = sldHardness.value;
-			int alpha = sldAlpha.value;
 			uint32 colors[512] = {};
 
 			if (chkMask.checked) {
 				offs.fill(0xff0000);
 			}
 			if (ui.isSelected(btnReflect)) {
-				alphaLut(colors, hardness, alpha, true);
+				alphaLut(colors, sldHardness.value, sldAlpha.value, true);
 				offs.gradient(&rect, gradient.MaskLinear, false, ...colors);
-				offs.blend(0, 0, back, null, 256, true, null);
 			}
 			else if (ui.isSelected(btnLinear)) {
-				alphaLut(colors, hardness, alpha, false);
+				alphaLut(colors, sldHardness.value, sldAlpha.value, false);
 				offs.gradient(&rect, gradient.MaskLinear, false, ...colors);
-				offs.blend(0, 0, back, null, 256, true, null);
 			}
 			else if (ui.isSelected(btnRadial)) {
-				alphaLut(colors, hardness, alpha, false);
+				alphaLut(colors, sldHardness.value, sldAlpha.value, false);
 				offs.gradient(&rect, gradient.MaskRadial, false, ...colors);
-				offs.blend(0, 0, back, null, 256, true, null);
 			}
 			else if (ui.isSelected(btnSquare)) {
-				alphaLut(colors, hardness, alpha, false);
+				alphaLut(colors, sldHardness.value, sldAlpha.value, false);
 				offs.gradient(&rect, gradient.MaskSquare, false, ...colors);
-				offs.blend(0, 0, back, null, 256, true, null);
+			}
+
+			offs.blend(0, 0, back, null, 256, true, null);
+			if (chkRect.checked) {
+				offs.drawRect(rect, 0x00ff00);
 			}
 		}
 

@@ -1,3 +1,4 @@
+// adapted from https://codemirror.net/keymap/sublime.js
 CodeMirror.normalizeKeyMap(CodeMirror.keyMap.extraKeys = {
 	"Ctrl--": "fold",	// todo: fold current block
 	"Ctrl-=": "unfold",
@@ -6,11 +7,11 @@ CodeMirror.normalizeKeyMap(CodeMirror.keyMap.extraKeys = {
 
 	"Ctrl-U": "toggleCase",
 	"Shift-Ctrl-U": "toggleCase",
-	//"Shift-Ctrl-J": "joinLines",
-	//"Shift-Ctrl-S": "sortLines",
-	//"Ctrl-Enter": "splitLine",
+	// "Shift-Ctrl-J": "joinLines",
+	// "Shift-Ctrl-S": "sortLines",
+	"Ctrl-D": "duplicate",
 
-	"Ctrl-B": "jumpToBrace",
+	"Ctrl-B": "goToBrace",
 	"Shift-Ctrl-B": "selectToBrace",
 
 	"Shift-Tab": "indentLess",
@@ -39,7 +40,7 @@ CodeMirror.normalizeKeyMap(CodeMirror.keyMap.extraKeys = {
 	"Ctrl-]": "indentMore",
 
 	"Ctrl-S": "save",
-	"Ctrl-G": "line",
+	"Ctrl-G": "goToLine",
 	"Ctrl-F": "find",
 	"F3": "findNext",
 	"Shift-F3": "findPrev",
@@ -70,14 +71,13 @@ function modifySelection(cm, /*wordOrLine,*/ mod) {
 	});
 }
 
-CodeMirror.commands.jumpToBrace = function (cm) {
+CodeMirror.commands.goToBrace = function (cm) {
 	let cursor = cm.getCursor();
 	let result = cm.findMatchingBracket(cursor);
 	if (result && result.match) {
 		if (result.from.ch === cursor.ch) {
 			result.to.ch += 1;
 		}
-		console.log(result);
 		cm.setCursor(result.to);
 	}
 }
@@ -244,4 +244,86 @@ CodeMirror.commands.swapLineDown = function (cm) {
 		}
 		cm.scrollIntoView();
 	});
+};
+
+CodeMirror.commands.duplicate = function(cm) {
+	const Pos = CodeMirror.Pos;
+	cm.operation(function() {
+		var rangeCount = cm.listSelections().length;
+		for (var i = 0; i < rangeCount; i++) {
+			var range = cm.listSelections()[i];
+			if (range.empty())
+				cm.replaceRange(cm.getLine(range.head.line) + "\n", Pos(range.head.line, 0));
+			else
+				cm.replaceRange(cm.getRange(range.from(), range.to()), range.from());
+		}
+		cm.scrollIntoView();
+	});
+};
+CodeMirror.commands.joinLines = function(cm) {
+	const Pos = CodeMirror.Pos;
+	var ranges = cm.listSelections(), joined = [];
+	for (var i = 0; i < ranges.length; i++) {
+		var range = ranges[i], from = range.from();
+		var start = from.line, end = range.to().line;
+		while (i < ranges.length - 1 && ranges[i + 1].from().line == end)
+			end = ranges[++i].to().line;
+		joined.push({start: start, end: end, anchor: !range.empty() && from});
+	}
+	cm.operation(function() {
+		var offset = 0, ranges = [];
+		for (var i = 0; i < joined.length; i++) {
+			var obj = joined[i];
+			var anchor = obj.anchor && Pos(obj.anchor.line - offset, obj.anchor.ch), head;
+			for (var line = obj.start; line <= obj.end; line++) {
+				var actual = line - offset;
+				if (line == obj.end) head = Pos(actual, cm.getLine(actual).length + 1);
+				if (actual < cm.lastLine()) {
+					cm.replaceRange(" ", Pos(actual), Pos(actual + 1, /^\s*/.exec(cm.getLine(actual + 1))[0].length));
+					++offset;
+				}
+			}
+			ranges.push({anchor: anchor || head, head: head});
+		}
+		cm.setSelections(ranges, 0);
+	});
+};
+CodeMirror.commands.sortLines = function(cm, ignoreCase) {
+	const Pos = CodeMirror.Pos;
+	if (cm.isReadOnly()) return CodeMirror.Pass
+	var ranges = cm.listSelections(), toSort = [], selected;
+	for (var i = 0; i < ranges.length; i++) {
+		var range = ranges[i];
+		if (range.empty()) continue;
+		var from = range.from().line, to = range.to().line;
+		while (i < ranges.length - 1 && ranges[i + 1].from().line == to)
+			to = ranges[++i].to().line;
+		if (!ranges[i].to().ch) to--;
+		toSort.push(from, to);
+	}
+	if (toSort.length) selected = true;
+	else toSort.push(cm.firstLine(), cm.lastLine());
+
+	cm.operation(function() {
+		var ranges = [];
+		for (var i = 0; i < toSort.length; i += 2) {
+			var from = toSort[i], to = toSort[i + 1];
+			var start = Pos(from, 0), end = Pos(to);
+			var lines = cm.getRange(start, end, false);
+			if (ignoreCase === true)
+				lines.sort();
+			else
+				lines.sort(function(a, b) {
+					var au = a.toUpperCase(), bu = b.toUpperCase();
+					if (au != bu) { a = au; b = bu; }
+					return a < b ? -1 : a == b ? 0 : 1;
+				});
+			cm.replaceRange(lines, start, end);
+			if (selected) ranges.push({anchor: start, head: Pos(to + 1, 0)});
+		}
+		if (selected) cm.setSelections(ranges, 0);
+	});
+}
+CodeMirror.commands.sortLinesIgnoreCase = function(cm) {
+	CodeMirror.commands.sortLines(cm, true);
 };

@@ -160,13 +160,12 @@ int onEvent(int action, int button, int x, int y) {
 		imgRatio
 	);
 
-	bool redraw = uiEvent(ui, action, button, x, y);
 	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
 		}
 	}
-	if (redraw) {
+	if (ui.onEvent(action, button, x, y)) {
 		Rect to = {
 			w: offs.width() - 100;
 			h: offs.height() - 100;

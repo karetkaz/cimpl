@@ -15169,7 +15169,7 @@ drawRect(image: Image, roi: Rect, color: uint32): void: function {
 .param roi: Rect (size: 4, cast: const variable(ref))
 .param color: uint32 (size: 4, cast: u32)
 .doc: '@public'
-.value: image.drawRect(image, roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color)
+.value: image.drawRect(image, roi.x, roi.y, roi.x + roi.w - 1, roi.y + roi.h - 1, color)
 .usages:
 }
 eval(image: Image, roi: Rect, aspect: float32, time: float32, eval(in: vec4f): vec4f): void: function {
@@ -18704,7 +18704,7 @@ show(mesh: Mesh, w: int32, h: int32, fovy: float32): void: function {
 		fill(image: Image, color: uint32): void := image.fillRect(image, 0, 0, 65536, 65536, color);
 		fill(image: Image, const roi: Rect, color: uint32): void := image.fillRect(image, roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
 		fill(image: Image, const roi: Rect, pad: int32, color: uint32): void := image.fillRect(image, roi.x - pad, roi.y - pad, roi.x + roi.w + pad, roi.y + roi.h + pad, color);
-		drawRect(image: Image, const roi: Rect, color: uint32): void := image.drawRect(image, roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
+		drawRect(image: Image, const roi: Rect, color: uint32): void := image.drawRect(image, roi.x, roi.y, roi.x + roi.w - 1, roi.y + roi.h - 1, color);
 		static const eval(image: Image, const roi: Rect, aspect: float32, time: float32, eval(in: vec4f): vec4f): void := {
 			rect: Rect := {
 				rect.x := (roi) != null ? roi.x : 0;

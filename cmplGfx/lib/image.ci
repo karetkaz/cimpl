@@ -173,7 +173,7 @@ inline fill(Image image, const Rect roi&, uint32 color) = image.fillRect(roi.x, 
 inline fill(Image image, const Rect roi&, int pad, uint32 color) = image.fillRect(roi.x - pad, roi.y - pad, roi.x + roi.w + pad, roi.y + roi.h + pad, color);
 
 ///@public
-inline drawRect(Image image, const Rect roi&, uint32 color) = image.drawRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
+inline drawRect(Image image, const Rect roi&, uint32 color) = image.drawRect(roi.x, roi.y, roi.x + roi.w - 1, roi.y + roi.h - 1, color);
 
 /// Fill the surface by evaluating the given function for each pixel
 void eval(Image image, const Rect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
