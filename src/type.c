@@ -104,26 +104,14 @@ symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *out
 		sym->kind |= mode & MASK_attr;
 		sym->owner = owner;
 
-		// create a virtual and static method
-		if (!isStatic(sym) && isFunction(sym)) {
-			dieif(sym->init == NULL, ERR_INTERNAL_ERROR);
-			dieif(sym->init->kind != STMT_beg, ERR_INTERNAL_ERROR);
-			if (owner && isTypename(owner)) {
-				symn impl = newDef(cc, 0);
-				memcpy(impl, sym, sizeof(struct symNode));
-
-				impl->kind = ATTR_cnst | KIND_var | CAST_ref;
-				impl->init = lnkNode(cc, sym);
-
-				sym->kind |= ATTR_stat;
-				sym->scope = impl;
-			}
-		}
-
 		// add to the list of scope symbols
 		sym->next = result;
 		result = sym;
 
+		if (isTypename(sym) && !isStatic(sym)) {
+			// types must be marked as static
+			fatal(ERR_INTERNAL_ERROR);
+		}
 		// add to the list of global symbols
 		if (isStatic(sym)) {
 			if (!cc->inStaticIfFalse && sym->global == NULL) {
@@ -204,11 +192,6 @@ symn install(ccContext cc, const char *name, ccKind kind, size_t size, symn type
 	if (init && init->type == NULL) {
 		fatal(ERR_INTERNAL_ERROR);
 		return NULL;
-	}
-
-	if (isType) {
-		logif((kind & (ATTR_stat | ATTR_cnst)) == 0, "symbol `%s` should be declared as static and constant", name);
-		kind = ATTR_stat | ATTR_cnst | kind;
 	}
 
 	if (size == 0 && (kind & MASK_kind) == KIND_var) {
@@ -330,7 +313,7 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 					hasCast += 1;
 				}
 
-				if ((parameter->kind & ATTR_varg) != 0 && argument->kind != PNCT_dot3) {
+				if ((parameter->kind & ARGS_varg) != 0 && argument->kind != PNCT_dot3) {
 					dieif(castOf(parameter->type) != CAST_arr, ERR_INTERNAL_ERROR);
 					dieif(parameter->next != NULL, ERR_INTERNAL_ERROR);
 					argument = argument->next;
@@ -346,7 +329,7 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 			}
 			else if (parameter != NULL) {
 				// more parameter than arguments
-				if ((parameter->kind & ATTR_varg) == 0) {
+				if ((parameter->kind & ARGS_varg) == 0) {
 					continue;
 				}
 			}
@@ -513,7 +496,7 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, ccKind fil
 		type = sym->init->type;
 	}
 
-	if (/*raise && */sym != NULL && args != NULL && isInvokable(sym)) {
+	if (sym != NULL && args != NULL && isInvokable(sym)) {
 		astn arg = chainArgs(args);
 		if (args == cc->void_tag) {
 			arg = NULL;
@@ -523,20 +506,25 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, ccKind fil
 			prm = prm->next;            // skip hidden param: file
 			prm = prm->next;            // skip hidden param: line
 		}
+		astn thisArg = NULL;
+		if ((filter & ARGS_this) != 0) {
+			// do not warn if this parameter is not passed by reference
+			thisArg = arg;
+		}
 		while (arg != NULL && prm != NULL) {
 			// reference arguments must be given as: `&var`
-			if (arg->kind != OPER_adr && byReference(prm) && !byReference(prm->type) && !isConst(prm)) {
+			if (arg != thisArg && arg->kind != OPER_adr && byReference(prm) && !byReference(prm->type) && !isConst(prm)) {
 				warn(cc->rt, raise_warn_typ3, arg->file, arg->line, WARN_PASS_ARG_BY_REF, arg, sym);
 			}
 
-			if ((prm->kind & ATTR_varg) == ATTR_varg) {
+			if ((prm->kind & ARGS_varg) == ARGS_varg) {
 				arg = arg->next;
 				continue;
 			}
 			arg = arg->next;
 			prm = prm->next;
 		}
-		if (prm && (prm->kind & ATTR_varg) == ATTR_varg) {
+		if (prm && (prm->kind & ARGS_varg) == ARGS_varg) {
 			prm = prm->next;
 		}
 		dieif(arg || prm, ERR_INTERNAL_ERROR": %t(%t)[%t => %T]", ref, args, arg, prm);
@@ -670,11 +658,6 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 					}
 
 					astn argThis = ref->op.lhso;
-					/* TODO: if (!byReference(argThis->type)) {
-						// FIXME: do this after successful lookup: a.add(b) is converted to: add(&a, b)
-						argThis = opNode(cc, OPER_adr, NULL, ref->op.lhso);
-						argThis->type = argThis->op.rhso->type;
-					}*/
 					// convert instance to parameter and try to lookup again
 					if (args == cc->void_tag) {
 						args = argThis;
@@ -686,7 +669,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 					ref = ref->op.rhso;
 
 					// 2. search for extension method: add(a, b)
-					type = typeCheckRef(cc, NULL, ref, args, 0, 0);
+					type = typeCheckRef(cc, NULL, ref, args, ARGS_this, 0);
 					if (type != NULL) {
 						ast->op.lhso = ref;
 						ast->op.rhso = args;
@@ -696,7 +679,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 
 					// 3. search for virtual method: a.add(a, b)
 					// 4. search for static method: T.add(a, b)
-					type = typeCheckRef(cc, loc, ref, args, 0, raise);
+					type = typeCheckRef(cc, loc, ref, args, ARGS_this, raise);
 					if (type != NULL) {
 						ast->op.rhso = args;
 						ast->op.lhso->type = type;

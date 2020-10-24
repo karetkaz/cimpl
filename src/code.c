@@ -2321,17 +2321,25 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val
 				}
 
 				if (fields > 0) {
+					if (sym->offs == typ->fields->offs) {
+						// show only first union field
+						continue;
+					}
 					printFmt(out, esc, ",");
 				}
-				else {
+				else if (typ != typ->type) {
 					printFmt(out, esc, "{");
 				}
 
-				printFmt(out, esc, "\n");
-				printVal(out, esc, ctx, sym, (void *) (data + sym->offs), (mode | prMember) & ~prSymQual, indent + 1);
+				if (typ != typ->type && sym == sym->type) {
+					printVal(out, esc, ctx, sym, (void *) (data + sym->offs), (mode | prMember) & ~prSymQual, -indent);
+				} else {
+					printFmt(out, esc, "\n");
+					printVal(out, esc, ctx, sym, (void *) (data + sym->offs), (mode | prMember) & ~prSymQual, indent + 1);
+				}
 				fields += 1;
 			}
-			if (fields > 0) {
+			if (fields > 0 && typ != typ->type) {
 				printFmt(out, esc, "\n%I}", indent);
 			}
 		}

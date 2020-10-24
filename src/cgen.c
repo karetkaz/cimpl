@@ -780,7 +780,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 			argc += 1;
 
 			// advance
-			if ((prm->kind & ATTR_varg) != 0 && (arg == NULL || arg->kind != PNCT_dot3)) {
+			if ((prm->kind & ARGS_varg) != 0 && (arg == NULL || arg->kind != PNCT_dot3)) {
 				vaElemType = prm->type->type;
 				vaList = arg;
 				arg = NULL;
@@ -864,7 +864,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 		astn arg = prm->init;
 		ccKind typCast = refCast(prm->type);
 
-		if ((prm->kind & ATTR_varg) != 0 && (arg == NULL || arg->kind != PNCT_dot3)) {
+		if ((prm->kind & ARGS_varg) != 0 && (arg == NULL || arg->kind != PNCT_dot3)) {
 			size_t vaOffset = stkOffset(rt, 0);
 			if (!emitOffs(rt, vaLength)) {
 				return CAST_any;
@@ -990,7 +990,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 		}
 
 		astn arg = prm->init;
-		if (arg && arg->kind == PNCT_dot3 && (prm->kind & ATTR_varg) != 0) {
+		if (arg && arg->kind == PNCT_dot3 && (prm->kind & ARGS_varg) != 0) {
 			// drop `...`
 			arg = arg->op.rhso;
 		}

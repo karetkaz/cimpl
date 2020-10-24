@@ -1,5 +1,6 @@
 
 ---------- Compile: `cmplStd/stdlib.ci`
+warn: variable `args` hides previous declaration
 cmplStd/stdlib.ci:40: debug: inline file: `cmplStd/lib/debug.ci`
 cmplStd/lib/debug.ci:65: warn: adding implicit cast variant(message: char[*])
 cmplStd/lib/debug.ci:67: warn: adding implicit cast variant(expected: int32)
@@ -158,6 +159,8 @@ cmplStd/test/std/number.ci:47: warn: adding implicit cast float32(2: int32)
 cmplStd/test/std/number.ci:48: warn: adding implicit cast float32(4: int32)
 cmplStd/test/test.ci:15: debug: inline file: `cmplStd/test/std/memory.ci`
 cmplStd/test/test.ci:16: debug: inline file: `cmplStd/test/std/tryExec.ci`
+cmplStd/test/std/tryExec.ci:25: warn: variable `abortExecution.NotEquals` hides previous declaration
+cmplStd/lib/debug.ci:48: warn: previously defined as `NotEquals`
 cmplStd/test/std/tryExec.ci:25: warn: padding `abortExecution.NotEquals` with 4 bytes: (12 -> 16)
 cmplStd/test/std/tryExec.ci:31: warn: adding implicit cast char[*]("assertion failed": .cstr)
 cmplStd/test/test.ci:20: debug: inline file: `cmplStd/test/lang/init.reference.ci`
@@ -173,7 +176,7 @@ cmplStd/test/lang/init.variable.ci:41: warn: adding implicit cast float64(8: int
 cmplStd/test/lang/init.variable.ci:41: debug: using default field initializer: ComplexObj.im := 0
 cmplStd/test/lang/init.variable.ci:15: warn: adding implicit cast float64(0: int32)
 cmplStd/test/test.ci:24: debug: inline file: `cmplStd/test/lang/function.ci`
-cmplStd/test/lang/function.ci:33: Overwriting forward function: funMul(x: int32, y: int32): int32
+cmplStd/test/lang/function.ci:33: warn: Overwriting forward function: funMul(x: int32, y: int32): int32
 cmplStd/test/lang/function.ci:39: warn: adding implicit cast uint32(1: int32)
 cmplStd/test/lang/function.ci:42: warn: adding implicit cast uint32(1: int32)
 cmplStd/test/lang/function.ci:42: warn: adding implicit cast uint32(2: int32)
@@ -183,7 +186,8 @@ cmplStd/test/lang/init.member.ci:81: warn: ignoring nested comment
 cmplStd/test/lang/init.member.ci:43: debug: using default type initializer: RecordMemberTest.Inner.member := 0
 warn: adding implicit cast int32(0: int64)
 cmplStd/test/test.ci:30: debug: inline file: `cmplStd/test/lang/init.method.ci`
-cmplStd/test/lang/init.method.ci:47: Overwriting forward function: RecordMethodTest.forwardMethod(this: RecordMethodTest, x: int32): void
+cmplStd/test/lang/init.method.ci:40: warn: Creating virtual method for: RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void
+cmplStd/test/lang/init.method.ci:47: warn: Overwriting forward function: RecordMethodTest.forwardMethod(this: RecordMethodTest, x: int32): void
 cmplStd/test/lang/init.method.ci:4: warn: padding `RecordMethodTest` with 4 bytes: (12 -> 16)
 cmplStd/test/lang/init.method.ci:62: debug: using default field initializer: RecordMethodTest.delegateMethod(this: RecordMethodTest, x: int32): void := forwardMethod
 cmplStd/test/lang/init.method.ci:62: debug: using default field initializer: RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void := virtualMethod
@@ -316,7 +320,7 @@ cmplStd/test/lang/stmt.for.ci:12: warn: using default type initializer: forIdx :
 typename: typename {
 .kind: static const typename(ref)
 .base: `typename`
-.size: 152
+.size: 160
 .name: 'typename'
 .print: '<%T>'
 .field size: int32 (size: 4, cast: const variable)
@@ -2212,7 +2216,7 @@ System.sleep(millis: int64): void: function {
 true: bool {
 .kind: static const val
 .base: `bool`
-.size: 1
+.size: 0
 .name: 'true'
 .file: 'cmplStd/stdlib.ci:4'
 .doc: 'true'
@@ -2221,7 +2225,7 @@ true: bool {
 false: bool {
 .kind: static const val
 .base: `bool`
-.size: 1
+.size: 0
 .name: 'false'
 .file: 'cmplStd/stdlib.ci:5'
 .doc: 'false'
@@ -2597,7 +2601,7 @@ NotEquals.extras: variant[] {
 .value: null
 }
 assertEq(expected: int32, returned: int32, message: char[*]): void: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 103
 .name: 'assertEq'
@@ -2679,59 +2683,59 @@ Math: typename {
 .size: 0
 .name: 'Math'
 .file: 'cmplStd/lib/math.ci:2'
-.field pi: float64 (size: 8, cast: static const val)
-.field e: float64 (size: 8, cast: static const val)
-.field ln2: float64 (size: 8, cast: static const val)
-.field log2E: float64 (size: 8, cast: static const val)
-.field ln10: float64 (size: 8, cast: static const val)
-.field log10E: float64 (size: 8, cast: static const val)
-.field phi: float64 (size: 8, cast: static const val)
-.field sqrt2: float64 (size: 8, cast: static const val)
-.field sqrtE: float64 (size: 8, cast: static const val)
-.field sqrtPi: float64 (size: 8, cast: static const val)
-.field sqrtPhi: float64 (size: 8, cast: static const val)
-.field nan: float64 (size: 8, cast: static const val)
-.field inf: float64 (size: 8, cast: static const val)
-.field modf: function (size: 86, cast: static const function)
-.field floor: function (size: 24, cast: static const function)
+.field pi: float64 (size: 0, cast: static const val)
+.field e: float64 (size: 0, cast: static const val)
+.field ln2: float64 (size: 0, cast: static const val)
+.field log2E: float64 (size: 0, cast: static const val)
+.field ln10: float64 (size: 0, cast: static const val)
+.field log10E: float64 (size: 0, cast: static const val)
+.field phi: float64 (size: 0, cast: static const val)
+.field sqrt2: float64 (size: 0, cast: static const val)
+.field sqrtE: float64 (size: 0, cast: static const val)
+.field sqrtPi: float64 (size: 0, cast: static const val)
+.field sqrtPhi: float64 (size: 0, cast: static const val)
+.field nan: float64 (size: 0, cast: static const val)
+.field inf: float64 (size: 0, cast: static const val)
+.field modf: function (size: 86, cast: static function)
+.field floor: function (size: 24, cast: static function)
 .field ceil: function (size: 0, cast: static inline)
 .field round: function (size: 0, cast: static inline)
 .field sign: function (size: 0, cast: static inline)
 .field sign: function (size: 0, cast: static inline)
-.field abs: function (size: 18, cast: static const function)
-.field abs: function (size: 18, cast: static const function)
-.field absMod: function (size: 27, cast: static const function)
-.field absMod: function (size: 27, cast: static const function)
-.field min: function (size: 17, cast: static const function)
-.field min: function (size: 17, cast: static const function)
-.field max: function (size: 17, cast: static const function)
-.field max: function (size: 17, cast: static const function)
-.field clamp: function (size: 30, cast: static const function)
-.field clamp: function (size: 30, cast: static const function)
+.field abs: function (size: 18, cast: static function)
+.field abs: function (size: 18, cast: static function)
+.field absMod: function (size: 27, cast: static function)
+.field absMod: function (size: 27, cast: static function)
+.field min: function (size: 17, cast: static function)
+.field min: function (size: 17, cast: static function)
+.field max: function (size: 17, cast: static function)
+.field max: function (size: 17, cast: static function)
+.field clamp: function (size: 30, cast: static function)
+.field clamp: function (size: 30, cast: static function)
 .field lerp: function (size: 0, cast: static inline)
 .field lerp: function (size: 0, cast: static inline)
 .field smooth: function (size: 0, cast: static inline)
 .field smooth: function (size: 0, cast: static inline)
 .field smooth: function (size: 0, cast: static inline)
 .field smooth: function (size: 0, cast: static inline)
-.field min: function (size: 79, cast: static const function)
-.field max: function (size: 79, cast: static const function)
-.field sum: function (size: 40, cast: static const function)
-.field mean: function (size: 20, cast: static const function)
+.field min: function (size: 79, cast: static function)
+.field max: function (size: 79, cast: static function)
+.field sum: function (size: 40, cast: static function)
+.field mean: function (size: 20, cast: static function)
 .field eval: function (size: 0, cast: static inline)
 .field eval: function (size: 0, cast: static inline)
 .field eval: function (size: 0, cast: static inline)
 .field eval: function (size: 0, cast: static inline)
-.field eval: function (size: 47, cast: static const function)
-.field cmp: function (size: 57, cast: static const function)
-.field cmp: function (size: 57, cast: static const function)
-.field sinCos: function (size: 335, cast: static const function)
+.field eval: function (size: 47, cast: static function)
+.field cmp: function (size: 57, cast: static function)
+.field cmp: function (size: 57, cast: static function)
+.field sinCos: function (size: 335, cast: static function)
 .field sin: function (size: 0, cast: static inline)
 .field cos: function (size: 0, cast: static inline)
-.field tan: function (size: 378, cast: static const function)
-.field sinh: function (size: 241, cast: static const function)
-.field cosh: function (size: 75, cast: static const function)
-.field asin: function (size: 173, cast: static const function)
+.field tan: function (size: 378, cast: static function)
+.field sinh: function (size: 241, cast: static function)
+.field cosh: function (size: 75, cast: static function)
+.field asin: function (size: 173, cast: static function)
 .field acos: function (size: 0, cast: static inline)
 .field radians: function (size: 0, cast: static inline)
 .field degrees: function (size: 0, cast: static inline)
@@ -2740,7 +2744,7 @@ Math: typename {
 Math.pi: float64 {
 .kind: static const val
 .base: `float64`
-.size: 8
+.size: 0
 .name: 'pi'
 .file: 'cmplStd/lib/math.ci:6'
 .owner: Math
@@ -2750,7 +2754,7 @@ Math.pi: float64 {
 Math.e: float64 {
 .kind: static const val
 .base: `float64`
-.size: 8
+.size: 0
 .name: 'e'
 .file: 'cmplStd/lib/math.ci:7'
 .owner: Math
@@ -2760,7 +2764,7 @@ Math.e: float64 {
 Math.ln2: float64 {
 .kind: static const val
 .base: `float64`
-.size: 8
+.size: 0
 .name: 'ln2'
 .file: 'cmplStd/lib/math.ci:8'
 .owner: Math
@@ -2770,7 +2774,7 @@ Math.ln2: float64 {
 Math.log2E: float64 {
 .kind: static const val
 .base: `float64`
-.size: 8
+.size: 0
 .name: 'log2E'
 .file: 'cmplStd/lib/math.ci:9'
 .owner: Math
@@ -2780,7 +2784,7 @@ Math.log2E: float64 {
 Math.ln10: float64 {
 .kind: static const val
 .base: `float64`
-.size: 8
+.size: 0
 .name: 'ln10'
 .file: 'cmplStd/lib/math.ci:10'
 .owner: Math
@@ -2790,7 +2794,7 @@ Math.ln10: float64 {
 Math.log10E: float64 {
 .kind: static const val
 .base: `float64`
-.size: 8
+.size: 0
 .name: 'log10E'
 .file: 'cmplStd/lib/math.ci:11'
 .owner: Math
@@ -2800,7 +2804,7 @@ Math.log10E: float64 {
 Math.phi: float64 {
 .kind: static const val
 .base: `float64`
-.size: 8
+.size: 0
 .name: 'phi'
 .file: 'cmplStd/lib/math.ci:12'
 .owner: Math
@@ -2810,7 +2814,7 @@ Math.phi: float64 {
 Math.sqrt2: float64 {
 .kind: static const val
 .base: `float64`
-.size: 8
+.size: 0
 .name: 'sqrt2'
 .file: 'cmplStd/lib/math.ci:13'
 .owner: Math
@@ -2820,7 +2824,7 @@ Math.sqrt2: float64 {
 Math.sqrtE: float64 {
 .kind: static const val
 .base: `float64`
-.size: 8
+.size: 0
 .name: 'sqrtE'
 .file: 'cmplStd/lib/math.ci:14'
 .owner: Math
@@ -2830,7 +2834,7 @@ Math.sqrtE: float64 {
 Math.sqrtPi: float64 {
 .kind: static const val
 .base: `float64`
-.size: 8
+.size: 0
 .name: 'sqrtPi'
 .file: 'cmplStd/lib/math.ci:15'
 .owner: Math
@@ -2840,7 +2844,7 @@ Math.sqrtPi: float64 {
 Math.sqrtPhi: float64 {
 .kind: static const val
 .base: `float64`
-.size: 8
+.size: 0
 .name: 'sqrtPhi'
 .file: 'cmplStd/lib/math.ci:16'
 .owner: Math
@@ -2850,7 +2854,7 @@ Math.sqrtPhi: float64 {
 Math.nan: float64 {
 .kind: static const val
 .base: `float64`
-.size: 8
+.size: 0
 .name: 'nan'
 .file: 'cmplStd/lib/math.ci:17'
 .owner: Math
@@ -2860,7 +2864,7 @@ Math.nan: float64 {
 Math.inf: float64 {
 .kind: static const val
 .base: `float64`
-.size: 8
+.size: 0
 .name: 'inf'
 .file: 'cmplStd/lib/math.ci:18'
 .owner: Math
@@ -2868,7 +2872,7 @@ Math.inf: float64 {
 .value: inf
 }
 Math.modf(x: float64, intPart: float64): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 86
 .name: 'modf'
@@ -2944,7 +2948,7 @@ Math.modf(x: float64, intPart: float64): float64: function {
 	<modf+?>: ret
 }
 Math.floor(x: float64): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 24
 .name: 'floor'
@@ -3021,7 +3025,7 @@ Math.sign(x: float64): int32: function {
 .value: int32(x > (0)) - int32(x < (0))
 }
 Math.abs(x: float32): float32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 18
 .name: 'abs'
@@ -3052,7 +3056,7 @@ Math.abs(x: float32): float32: function {
 	<abs+?>: ret
 }
 Math.abs(x: float64): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 18
 .name: 'abs'
@@ -3083,7 +3087,7 @@ Math.abs(x: float64): float64: function {
 	<abs+?>: ret
 }
 Math.absMod(val: float32, mod: float32): float32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 27
 .name: 'absMod'
@@ -3120,7 +3124,7 @@ Math.absMod(val: float32, mod: float32): float32: function {
 	<absMod+?>: ret
 }
 Math.absMod(val: float64, mod: float64): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 27
 .name: 'absMod'
@@ -3157,7 +3161,7 @@ Math.absMod(val: float64, mod: float64): float64: function {
 	<absMod+?>: ret
 }
 Math.min(a: float32, b: float32): float32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 17
 .name: 'min'
@@ -3187,7 +3191,7 @@ Math.min(a: float32, b: float32): float32: function {
 	<min+?>: ret
 }
 Math.min(a: float64, b: float64): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 17
 .name: 'min'
@@ -3217,7 +3221,7 @@ Math.min(a: float64, b: float64): float64: function {
 	<min+?>: ret
 }
 Math.max(a: float32, b: float32): float32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 17
 .name: 'max'
@@ -3247,7 +3251,7 @@ Math.max(a: float32, b: float32): float32: function {
 	<max+?>: ret
 }
 Math.max(a: float64, b: float64): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 17
 .name: 'max'
@@ -3277,7 +3281,7 @@ Math.max(a: float64, b: float64): float64: function {
 	<max+?>: ret
 }
 Math.clamp(t: float32, a: float32, b: float32): float32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 30
 .name: 'clamp'
@@ -3319,7 +3323,7 @@ Math.clamp(t: float32, a: float32, b: float32): float32: function {
 	<clamp+?>: ret
 }
 Math.clamp(t: float64, a: float64, b: float64): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 30
 .name: 'clamp'
@@ -3439,7 +3443,7 @@ Math.smooth(t: float64, a: float64, b: float64): float64: function {
 .value: smooth(clamp((t - a) / (b - a), float64(0), float64(1)))
 }
 Math.min(data: float64[]): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 79
 .name: 'min'
@@ -3503,7 +3507,7 @@ Math.min(data: float64[]): float64: function {
 	<min+?>: ret
 }
 Math.max(data: float64[]): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 79
 .name: 'max'
@@ -3567,7 +3571,7 @@ Math.max(data: float64[]): float64: function {
 	<max+?>: ret
 }
 Math.sum(data: float64[]): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 40
 .name: 'sum'
@@ -3610,7 +3614,7 @@ Math.sum(data: float64[]): float64: function {
 	<sum+?>: ret
 }
 Math.mean(data: float64[]): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 20
 .name: 'mean'
@@ -3694,7 +3698,7 @@ Math.eval(x: float64, a0: float64, a1: float64, a2: float64, a3: float64): float
 .value: (a0 + x * eval(x, a1, a2, a3))
 }
 Math.eval(x: float64, polynomial: float64[]): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 47
 .name: 'eval'
@@ -3741,7 +3745,7 @@ Math.eval(x: float64, polynomial: float64[]): float64: function {
 	<eval+?>: ret
 }
 Math.cmp(a: float32, b: float32, eps: float32): int32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 57
 .name: 'cmp'
@@ -3798,7 +3802,7 @@ Math.cmp(a: float32, b: float32, eps: float32): int32: function {
 	<cmp+?>: ret
 }
 Math.cmp(a: float64, b: float64, eps: float64): int32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 57
 .name: 'cmp'
@@ -3855,7 +3859,7 @@ Math.cmp(a: float64, b: float64, eps: float64): int32: function {
 	<cmp+?>: ret
 }
 Math.sinCos(arg: float64, quad: int32): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 335
 .name: 'sinCos'
@@ -4067,7 +4071,7 @@ Math.cos(arg: float64): float64: function {
 .value: sinCos(abs(arg), 1)
 }
 Math.tan(arg: float64): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 378
 .name: 'tan'
@@ -4276,7 +4280,7 @@ Math.tan(arg: float64): float64: function {
 	<tan+?>: ret
 }
 Math.sinh(x: float64): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 241
 .name: 'sinh'
@@ -4408,7 +4412,7 @@ Math.sinh(x: float64): float64: function {
 	<sinh+?>: ret
 }
 Math.cosh(x: float64): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 75
 .name: 'cosh'
@@ -4461,7 +4465,7 @@ Math.cosh(x: float64): float64: function {
 	<cosh+?>: ret
 }
 Math.asin(x: float64): float64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 173
 .name: 'asin'
@@ -4641,7 +4645,7 @@ Complex.im: float64 {
 .value: 0
 }
 Complex(re: float64): Complex: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 7
 .name: 'Complex'
@@ -4665,7 +4669,7 @@ Complex(re: float64): Complex: function {
 	<Complex+?>: ret
 }
 Complex(re: float64, im: float64): Complex: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 7
 .name: 'Complex'
@@ -4808,7 +4812,7 @@ mul(a: float64, b: Complex): Complex: function {
 .value: Complex(a * b.re, a * b.im)
 }
 div(a: Complex, b: Complex): Complex: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 123
 .name: 'div'
@@ -4958,7 +4962,7 @@ arg(a: Complex): float64: function {
 .value: float64.atan2(a.re, a.im)
 }
 inv(a: Complex): Complex: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 31
 .name: 'inv'
@@ -5031,7 +5035,7 @@ log(a: Complex): Complex: function {
 .value: Complex(float64.log(abs(a)), arg(a))
 }
 pow(a: Complex, b: Complex): Complex: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 100
 .name: 'pow'
@@ -5277,22 +5281,13 @@ vec4f: typename {
 .size: 16
 .name: 'vec4f'
 .file: 'cmplStd/lib/math/Vector4f.ci:2'
-.field data: float32[4] (size: 16, cast: variable(val))
 .field <?>: vec4f.<?> (size: 16, cast: variable(val))
 .field x: float32 (size: 0, cast: inline)
 .field y: float32 (size: 0, cast: inline)
 .field z: float32 (size: 0, cast: inline)
 .field w: float32 (size: 0, cast: inline)
+.field data: float32[4] (size: 16, cast: variable(val))
 .doc: 'A 4d vector (4x float32)'
-}
-vec4f.data: float32[4] {
-.kind: variable(val)
-.base: `float32[4]`
-.size: 16
-.name: 'data'
-.file: 'cmplStd/lib/math/Vector4f.ci:4'
-.owner: vec4f
-.doc: 'Access the components as an array'
 }
 vec4f.<?>: vec4f.<?> {
 .kind: variable(val)
@@ -5311,7 +5306,7 @@ vec4f.<?>.x: float32 {
 .base: `float32`
 .size: 4
 .name: 'x'
-.file: 'cmplStd/lib/math/Vector4f.ci:7'
+.file: 'cmplStd/lib/math/Vector4f.ci:5'
 .owner: vec4f.<?>
 .doc: 'X component of the vector'
 }
@@ -5320,7 +5315,7 @@ vec4f.<?>.y: float32 {
 .base: `float32`
 .size: 4
 .name: 'y'
-.file: 'cmplStd/lib/math/Vector4f.ci:9'
+.file: 'cmplStd/lib/math/Vector4f.ci:7'
 .owner: vec4f.<?>
 .doc: 'Y component of the vector'
 }
@@ -5329,7 +5324,7 @@ vec4f.<?>.z: float32 {
 .base: `float32`
 .size: 4
 .name: 'z'
-.file: 'cmplStd/lib/math/Vector4f.ci:11'
+.file: 'cmplStd/lib/math/Vector4f.ci:9'
 .owner: vec4f.<?>
 .doc: 'Z component of the vector'
 }
@@ -5338,7 +5333,7 @@ vec4f.<?>.w: float32 {
 .base: `float32`
 .size: 4
 .name: 'w'
-.file: 'cmplStd/lib/math/Vector4f.ci:13'
+.file: 'cmplStd/lib/math/Vector4f.ci:11'
 .owner: vec4f.<?>
 .doc: 'W component of the vector'
 }
@@ -5347,7 +5342,7 @@ vec4f.x: float32 {
 .base: `float32`
 .size: 0
 .name: 'x'
-.file: 'cmplStd/lib/math/Vector4f.ci:7'
+.file: 'cmplStd/lib/math/Vector4f.ci:5'
 .owner: vec4f
 .doc: 'X component of the vector'
 .value: x: float32
@@ -5357,7 +5352,7 @@ vec4f.y: float32 {
 .base: `float32`
 .size: 0
 .name: 'y'
-.file: 'cmplStd/lib/math/Vector4f.ci:9'
+.file: 'cmplStd/lib/math/Vector4f.ci:7'
 .owner: vec4f
 .doc: 'Y component of the vector'
 .value: y: float32
@@ -5367,7 +5362,7 @@ vec4f.z: float32 {
 .base: `float32`
 .size: 0
 .name: 'z'
-.file: 'cmplStd/lib/math/Vector4f.ci:11'
+.file: 'cmplStd/lib/math/Vector4f.ci:9'
 .owner: vec4f
 .doc: 'Z component of the vector'
 .value: z: float32
@@ -5377,10 +5372,19 @@ vec4f.w: float32 {
 .base: `float32`
 .size: 0
 .name: 'w'
-.file: 'cmplStd/lib/math/Vector4f.ci:13'
+.file: 'cmplStd/lib/math/Vector4f.ci:11'
 .owner: vec4f
 .doc: 'W component of the vector'
 .value: w: float32
+}
+vec4f.data: float32[4] {
+.kind: variable(val)
+.base: `float32[4]`
+.size: 16
+.name: 'data'
+.file: 'cmplStd/lib/math/Vector4f.ci:14'
+.owner: vec4f
+.doc: 'Access the components as an array'
 }
 vec4f(x: float32, y: float32, z: float32, w: float32): vec4f: function {
 .kind: inline
@@ -5737,8 +5741,8 @@ mat4f: typename {
 .size: 64
 .name: 'mat4f'
 .file: 'cmplStd/lib/math/Matrix4f.ci:2'
-.field data: float32[16] (size: 64, cast: variable(val))
 .field m: float32[4][4] (size: 64, cast: variable(val))
+.field data: float32[16] (size: 64, cast: variable(val))
 .field v: vec4f[4] (size: 64, cast: variable(val))
 .field <?>: mat4f.<?> (size: 64, cast: variable(val))
 .field x: vec4f (size: 0, cast: inline)
@@ -5764,23 +5768,23 @@ mat4f: typename {
 .field ww: float32 (size: 0, cast: inline)
 .doc: 'A 4x4 matrix'
 }
-mat4f.data: float32[16] {
-.kind: variable(val)
-.base: `float32[16]`
-.size: 64
-.name: 'data'
-.file: 'cmplStd/lib/math/Matrix4f.ci:4'
-.owner: mat4f
-.doc: 'Access elements as a flatten array: data[4] => m[1][0]'
-}
 mat4f.m: float32[4][4] {
 .kind: variable(val)
 .base: `float32[4][4]`
 .size: 64
 .name: 'm'
-.file: 'cmplStd/lib/math/Matrix4f.ci:7'
+.file: 'cmplStd/lib/math/Matrix4f.ci:4'
 .owner: mat4f
 .doc: 'Access elements as an array: m[1][0]'
+}
+mat4f.data: float32[16] {
+.kind: variable(val)
+.base: `float32[16]`
+.size: 64
+.name: 'data'
+.file: 'cmplStd/lib/math/Matrix4f.ci:7'
+.owner: mat4f
+.doc: 'Access elements as a flatten array: data[4] => m[1][0]'
 }
 mat4f.v: vec4f[4] {
 .kind: variable(val)
@@ -6208,7 +6212,7 @@ mat4f.ww: float32 {
 .value: ww: float32
 }
 mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float32, yz: float32, yw: float32, zx: float32, zy: float32, zz: float32, zw: float32, wx: float32, wy: float32, wz: float32, ww: float32): mat4f: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 49
 .name: 'mat4f'
@@ -6288,7 +6292,7 @@ mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float
 	<mat4f+?>: ret
 }
 mat4f(x: vec4f, y: vec4f, z: vec4f, w: vec4f): mat4f: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 21
 .name: 'mat4f'
@@ -6364,7 +6368,7 @@ dp4(mat: mat4f, vec: vec4f): vec4f: function {
 .value: vec4f(dp4(mat.x, vec), dp4(mat.y, vec), dp4(mat.z, vec), dp4(mat.w, vec))
 }
 transpose(mat: mat4f): mat4f: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 49
 .name: 'transpose'
@@ -6429,7 +6433,7 @@ transpose(mat: mat4f): mat4f: function {
 	<transpose+?>: ret
 }
 mul(lhs: mat4f, rhs: mat4f): mat4f: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 245
 .name: 'mul'
@@ -6577,7 +6581,7 @@ mul(lhs: mat4f, rhs: mat4f): mat4f: function {
 	<mul+?>: ret
 }
 rotation(center: vec4f, direction: vec4f, angle: float32): mat4f: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 454
 .name: 'rotation'
@@ -6935,7 +6939,7 @@ rotation(direction: vec4f, angle: float32): mat4f: function {
 .value: rotation(vec4f(0), direction, angle)
 }
 translation(direction: vec4f, amount: float32): mat4f: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 88
 .name: 'translation'
@@ -7028,7 +7032,7 @@ translation(direction: vec4f, amount: float32): mat4f: function {
 	<translation+?>: ret
 }
 scale(direction: vec4f, amount: float32): mat4f: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 217
 .name: 'scale'
@@ -7181,20 +7185,11 @@ vec2d: typename {
 .size: 16
 .name: 'vec2d'
 .file: 'cmplStd/lib/math/Vector2d.ci:2'
-.field data: float64[2] (size: 16, cast: variable(val))
 .field <?>: vec2d.<?> (size: 16, cast: variable(val))
 .field x: float64 (size: 0, cast: inline)
 .field y: float64 (size: 0, cast: inline)
+.field data: float64[2] (size: 16, cast: variable(val))
 .doc: 'A 2d vector (2x float64)'
-}
-vec2d.data: float64[2] {
-.kind: variable(val)
-.base: `float64[2]`
-.size: 16
-.name: 'data'
-.file: 'cmplStd/lib/math/Vector2d.ci:4'
-.owner: vec2d
-.doc: 'Access the components as an array'
 }
 vec2d.<?>: vec2d.<?> {
 .kind: variable(val)
@@ -7211,7 +7206,7 @@ vec2d.<?>.x: float64 {
 .base: `float64`
 .size: 8
 .name: 'x'
-.file: 'cmplStd/lib/math/Vector2d.ci:7'
+.file: 'cmplStd/lib/math/Vector2d.ci:5'
 .owner: vec2d.<?>
 .doc: 'X component of the vector'
 }
@@ -7220,7 +7215,7 @@ vec2d.<?>.y: float64 {
 .base: `float64`
 .size: 8
 .name: 'y'
-.file: 'cmplStd/lib/math/Vector2d.ci:9'
+.file: 'cmplStd/lib/math/Vector2d.ci:7'
 .owner: vec2d.<?>
 .doc: 'Y component of the vector'
 }
@@ -7229,7 +7224,7 @@ vec2d.x: float64 {
 .base: `float64`
 .size: 0
 .name: 'x'
-.file: 'cmplStd/lib/math/Vector2d.ci:7'
+.file: 'cmplStd/lib/math/Vector2d.ci:5'
 .owner: vec2d
 .doc: 'X component of the vector'
 .value: x: float64
@@ -7239,13 +7234,22 @@ vec2d.y: float64 {
 .base: `float64`
 .size: 0
 .name: 'y'
-.file: 'cmplStd/lib/math/Vector2d.ci:9'
+.file: 'cmplStd/lib/math/Vector2d.ci:7'
 .owner: vec2d
 .doc: 'Y component of the vector'
 .value: y: float64
 }
+vec2d.data: float64[2] {
+.kind: variable(val)
+.base: `float64[2]`
+.size: 16
+.name: 'data'
+.file: 'cmplStd/lib/math/Vector2d.ci:10'
+.owner: vec2d
+.doc: 'Access the components as an array'
+}
 vec2d(x: float64, y: float64): vec2d: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 7
 .name: 'vec2d'
@@ -7365,7 +7369,7 @@ dot(a: vec2d, b: vec2d): float64: function {
 .value: a.x * b.x + a.y * b.y
 }
 length(str: char[*]): int32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 38
 .name: 'length'
@@ -7408,7 +7412,7 @@ length(str: char[*]): int32: function {
 	<length+?>: ret
 }
 indexOf(str: char[*], chr: char): int32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 50
 .name: 'indexOf'
@@ -7456,7 +7460,7 @@ indexOf(str: char[*], chr: char): int32: function {
 	<indexOf+?>: ret
 }
 lastIndexOf(str: char[*], chr: char): int32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 50
 .name: 'lastIndexOf'
@@ -7505,7 +7509,7 @@ lastIndexOf(str: char[*], chr: char): int32: function {
 	<lastIndexOf+?>: ret
 }
 startsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 73
 .name: 'startsWith'
@@ -7567,7 +7571,7 @@ startsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool
 	<startsWith+?>: ret
 }
 endsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 126
 .name: 'endsWith'
@@ -7659,7 +7663,7 @@ endsWith(str: char[*], with: char[*], cmp(chr: char, with: char): int32): bool: 
 	<endsWith+?>: ret
 }
 compare(str: char[*], with: char[*], cmp(chr: char, with: char): int32): int32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 63
 .name: 'compare'
@@ -7722,7 +7726,7 @@ compare(str: char[*], with: char[*], cmp(chr: char, with: char): int32): int32: 
 	<compare+?>: ret
 }
 ignCaseCmp(chr: char, with: char): int32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 36
 .name: 'ignCaseCmp'
@@ -7732,7 +7736,7 @@ ignCaseCmp(chr: char, with: char): int32: function {
 .param with: char (size: 4, cast: variable(i32))
 .doc: 'ignore case character comparator'
 .value: {
-	static const ignCase(chr: char): char := {
+	static ignCase(chr: char): char := {
 		if (chr < 'A') {
 			return .result := chr;
 		}
@@ -7762,7 +7766,7 @@ ignCaseCmp(chr: char, with: char): int32: function {
 	<ignCaseCmp+?>: ret
 }
 caseCmp(chr: char, with: char): int32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 14
 .name: 'caseCmp'
@@ -7893,7 +7897,7 @@ FormatFlags.padLen: int32 {
 .value: 0
 }
 append(output: char[], pos: int32, value: char[*]): int32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 84
 .name: 'append'
@@ -7970,7 +7974,7 @@ append(output: char[], pos: int32, value: char[*]): int32: function {
 	<append+?>: ret
 }
 append(output: char[], pos: int32, sign: char, value: uint64, format: FormatFlags): int32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 707
 .name: 'append'
@@ -8451,7 +8455,7 @@ append(output: char[], pos: int32, value: int8, format: FormatFlags): int32: fun
 .value: append(output, pos, (value) < 0 ? ('-') : 0, uint64((value) < 0 ? -value : value), format)
 }
 append(output: char[], pos: int32, value: float64, format: FormatFlags): int32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 227
 .name: 'append'
@@ -8607,7 +8611,7 @@ append(output: char[], pos: int32, value: float32, format: FormatFlags): int32: 
 .value: append(output, pos, float64(value), format)
 }
 append(output: char[], pos: int32, value: int32): int32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 63
 .name: 'append'
@@ -9981,7 +9985,7 @@ val2: int64 {
 .value: 96
 }
 noError(ptr: pointer): void: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 1
 .name: 'noError'
@@ -9994,7 +9998,7 @@ noError(ptr: pointer): void: function {
 	<noError>  : ret
 }
 stackOverflow(ptr: pointer): void: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 24
 .name: 'stackOverflow'
@@ -10019,7 +10023,7 @@ stackOverflow(ptr: pointer): void: function {
 	<stackOverflow+?>: ret
 }
 divisionByZero(args: pointer): void: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 12
 .name: 'divisionByZero'
@@ -10038,7 +10042,7 @@ divisionByZero(args: pointer): void: function {
 	<divisionByZero+?>: ret
 }
 abortExecution(args: pointer): void: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 68
 .name: 'abortExecution'
@@ -10083,7 +10087,7 @@ abortExecution(args: pointer): void: function {
 	<abortExecution+?>: ret
 }
 invalidMemoryAccess(args: pointer): void: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 13
 .name: 'invalidMemoryAccess'
@@ -10104,7 +10108,7 @@ invalidMemoryAccess(args: pointer): void: function {
 	<invalidMemoryAccess+?>: ret
 }
 invalidInstruction(args: pointer): void: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 2
 .name: 'invalidInstruction'
@@ -10986,7 +10990,7 @@ objInitExplicit.im := 0;
 }
 }
 empty(): void: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 1
 .name: 'empty'
@@ -10999,7 +11003,7 @@ empty(): void: function {
 	<empty>  : ret
 }
 funAdd(x: int32, y: int32): int32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 8
 .name: 'funAdd'
@@ -11092,7 +11096,7 @@ funMulRefResult: int32 {
 .value: funMulRef(2, 7)
 }
 funMul(x: int32, y: int32): int32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 8
 .name: 'funMul'
@@ -11113,7 +11117,7 @@ funMul(x: int32, y: int32): int32: function {
 	<funMul+?>: ret
 }
 fib(n: uint32): uint32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 54
 .name: 'fib'
@@ -11738,17 +11742,17 @@ RecordMethodTest: typename {
 .size: 16
 .name: 'RecordMethodTest'
 .file: 'cmplStd/test/lang/init.method.ci:4'
-.field staticMethod: function (size: 39, cast: static const function)
+.field staticMethod: function (size: 39, cast: static function)
 .field forwardMethod: function (size: 4, cast: static variable(ref))
 .field abstractMethod: function (size: 4, cast: variable(ref))
 .field delegateMethod: function (size: 4, cast: variable(ref))
+.field virtualMethod: function (size: 39, cast: static function)
 .field virtualMethod: function (size: 4, cast: const variable(ref))
-.field virtualMethod: function (size: 39, cast: static const function)
-.field forwardMethod: function (size: 39, cast: static const function)
+.field forwardMethod: function (size: 39, cast: static function)
 .doc: 'static, virtual and abstract methods'
 }
 RecordMethodTest.staticMethod(this: RecordMethodTest, x: int32): void: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 39
 .name: 'staticMethod'
@@ -11818,23 +11822,7 @@ the compiler sees it as a `constant function reference` with `default field init
 .value: forwardMethod
 }
 RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void: function {
-.kind: const variable(ref)
-.base: `function`
-.size: 4
-.name: 'virtualMethod'
-.file: 'cmplStd/test/lang/init.method.ci:40'
-.owner: RecordMethodTest
-.param .result: void (size: 0, cast: variable(void))
-.param this: RecordMethodTest (size: 16, cast: variable(val))
-.param x: int32 (size: 4, cast: variable(i32))
-.doc: 'virtual methods can be overridden when inheriting or instantiating
-the compiler will generate a static function and an instance member initialized with the static method
-  * static void virtualMethod(...) { ... }
-  * void virtualMethod(...) = [static] virtualMethod;'
-.value: virtualMethod
-}
-RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 39
 .name: 'virtualMethod'
@@ -11843,10 +11831,6 @@ RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void: function
 .param .result: void (size: 0, cast: variable(void))
 .param this: RecordMethodTest (size: 16, cast: variable(val))
 .param x: int32 (size: 4, cast: variable(i32))
-.doc: 'virtual methods can be overridden when inheriting or instantiating
-the compiler will generate a static function and an instance member initialized with the static method
-  * static void virtualMethod(...) { ... }
-  * void virtualMethod(...) = [static] virtualMethod;'
 .value: {
 	trace("virtualMethod", x);
 }
@@ -11862,8 +11846,24 @@ the compiler will generate a static function and an instance member initialized 
 	<virtualMethod+?>: nfc(8) ;raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void
 	<virtualMethod+?>: ret
 }
+RecordMethodTest.virtualMethod(this: RecordMethodTest, x: int32): void: function {
+.kind: const variable(ref)
+.base: `function`
+.size: 4
+.name: 'virtualMethod'
+.file: 'cmplStd/test/lang/init.method.ci:40'
+.owner: RecordMethodTest
+.param .result: void (size: 0, cast: variable(void))
+.param this: RecordMethodTest (size: 16, cast: variable(val))
+.param x: int32 (size: 4, cast: variable(i32))
+.doc: 'virtual methods can be overridden when inheriting or instantiating
+the compiler will generate a static function and an instance member initialized with the static method
+  * static void virtualMethod(...) { ... }
+  * void virtualMethod(...) = [static] virtualMethod;'
+.value: virtualMethod
+}
 RecordMethodTest.forwardMethod(this: RecordMethodTest, x: int32): void: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 39
 .name: 'forwardMethod'
@@ -11889,7 +11889,7 @@ RecordMethodTest.forwardMethod(this: RecordMethodTest, x: int32): void: function
 	<forwardMethod+?>: ret
 }
 globalFunction(this: RecordMethodTest, x: int32): void: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 39
 .name: 'globalFunction'
@@ -11926,7 +11926,7 @@ recordMethodTest: RecordMethodTest {
 }
 }
 staticMethod(this: RecordMethodTest, x: int32): void: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 66
 .name: 'staticMethod'
@@ -11966,7 +11966,7 @@ staticMethod(this: RecordMethodTest, x: int32): void: function {
 	<staticMethod+?>: ret
 }
 virtualMethod(this: RecordMethodTest, x: int32): void: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 63
 .name: 'virtualMethod'
@@ -12109,7 +12109,7 @@ strSlice: char[] {
 .value: "string"
 }
 lenSlice(values: int64[]): int32: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 4
 .name: 'lenSlice'
@@ -12125,7 +12125,7 @@ lenSlice(values: int64[]): int32: function {
 	<lenSlice+?>: ret
 }
 nthFixed(idx: int32, values: int64[7]): int64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 12
 .name: 'nthFixed'
@@ -12146,7 +12146,7 @@ nthFixed(idx: int32, values: int64[7]): int64: function {
 	<nthFixed+?>: ret
 }
 nthArray(idx: int32, values: int64[*]): int64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 12
 .name: 'nthArray'
@@ -12167,7 +12167,7 @@ nthArray(idx: int32, values: int64[*]): int64: function {
 	<nthArray+?>: ret
 }
 nthSlice(idx: int32, values: int64[]): int64: function {
-.kind: static const function
+.kind: static function
 .base: `function`
 .size: 12
 .name: 'nthSlice'
@@ -15364,7 +15364,7 @@ testMathAbsMod_f32_8d: float32 {
 .size: 10932
 .name: '.main'
 .print: '.main'
-.field typename: typename (size: 152, cast: static const typename(ref))
+.field typename: typename (size: 160, cast: static const typename(ref))
 .field void: typename (size: 0, cast: static const typename(void))
 .field bool: typename (size: 1, cast: static const typename(bool))
 .field char: typename (size: 1, cast: static const typename(i32))
@@ -15392,8 +15392,8 @@ testMathAbsMod_f32_8d: float32 {
 .field raise: function (size: 0, cast: static const inline)
 .field tryExec: function (size: 0, cast: static const inline)
 .field System: typename (size: 0, cast: static const typename(void))
-.field true: bool (size: 1, cast: static const val)
-.field false: bool (size: 1, cast: static const val)
+.field true: bool (size: 0, cast: static const val)
+.field false: bool (size: 0, cast: static const val)
 .field byte: typename (size: 0, cast: inline)
 .field float: typename (size: 0, cast: inline)
 .field double: typename (size: 0, cast: inline)
@@ -15425,12 +15425,12 @@ testMathAbsMod_f32_8d: float32 {
 .field assert: function (size: 0, cast: inline)
 .field assert: function (size: 0, cast: inline)
 .field NotEquals: typename (size: 24, cast: static const typename(val))
-.field assertEq: function (size: 103, cast: static const function)
+.field assertEq: function (size: 103, cast: static function)
 .field assertEq: function (size: 0, cast: inline)
 .field Math: typename (size: 0, cast: static const typename(void))
 .field Complex: typename (size: 16, cast: static const typename(val))
-.field Complex: function (size: 7, cast: static const function)
-.field Complex: function (size: 7, cast: static const function)
+.field Complex: function (size: 7, cast: static function)
+.field Complex: function (size: 7, cast: static function)
 .field neg: function (size: 0, cast: inline)
 .field add: function (size: 0, cast: inline)
 .field add: function (size: 0, cast: inline)
@@ -15441,16 +15441,16 @@ testMathAbsMod_f32_8d: float32 {
 .field mul: function (size: 0, cast: inline)
 .field mul: function (size: 0, cast: inline)
 .field mul: function (size: 0, cast: inline)
-.field div: function (size: 123, cast: static const function)
+.field div: function (size: 123, cast: static function)
 .field div: function (size: 0, cast: inline)
 .field div: function (size: 0, cast: inline)
 .field abs: function (size: 0, cast: inline)
 .field arg: function (size: 0, cast: inline)
-.field inv: function (size: 31, cast: static const function)
+.field inv: function (size: 31, cast: static function)
 .field conj: function (size: 0, cast: inline)
 .field exp: function (size: 0, cast: inline)
 .field log: function (size: 0, cast: inline)
-.field pow: function (size: 100, cast: static const function)
+.field pow: function (size: 100, cast: static function)
 .field pow: function (size: 0, cast: inline)
 .field sin: function (size: 0, cast: inline)
 .field cos: function (size: 0, cast: inline)
@@ -15497,19 +15497,19 @@ testMathAbsMod_f32_8d: float32 {
 .field normalize: function (size: 0, cast: inline)
 .field eval: function (size: 0, cast: inline)
 .field mat4f: typename (size: 64, cast: static const typename(val))
-.field mat4f: function (size: 49, cast: static const function)
-.field mat4f: function (size: 21, cast: static const function)
+.field mat4f: function (size: 49, cast: static function)
+.field mat4f: function (size: 21, cast: static function)
 .field dp3: function (size: 0, cast: inline)
 .field dph: function (size: 0, cast: inline)
 .field dp4: function (size: 0, cast: inline)
-.field transpose: function (size: 49, cast: static const function)
-.field mul: function (size: 245, cast: static const function)
-.field rotation: function (size: 454, cast: static const function)
+.field transpose: function (size: 49, cast: static function)
+.field mul: function (size: 245, cast: static function)
+.field rotation: function (size: 454, cast: static function)
 .field rotation: function (size: 0, cast: inline)
-.field translation: function (size: 88, cast: static const function)
-.field scale: function (size: 217, cast: static const function)
+.field translation: function (size: 88, cast: static function)
+.field scale: function (size: 217, cast: static function)
 .field vec2d: typename (size: 16, cast: static const typename(val))
-.field vec2d: function (size: 7, cast: static const function)
+.field vec2d: function (size: 7, cast: static function)
 .field add: function (size: 0, cast: inline)
 .field sub: function (size: 0, cast: inline)
 .field mul: function (size: 0, cast: inline)
@@ -15518,22 +15518,22 @@ testMathAbsMod_f32_8d: float32 {
 .field max: function (size: 0, cast: inline)
 .field ceq: function (size: 0, cast: inline)
 .field dot: function (size: 0, cast: inline)
-.field length: function (size: 38, cast: static const function)
-.field indexOf: function (size: 50, cast: static const function)
-.field lastIndexOf: function (size: 50, cast: static const function)
-.field startsWith: function (size: 73, cast: static const function)
-.field endsWith: function (size: 126, cast: static const function)
-.field compare: function (size: 63, cast: static const function)
-.field ignCaseCmp: function (size: 36, cast: static const function)
-.field caseCmp: function (size: 14, cast: static const function)
+.field length: function (size: 38, cast: static function)
+.field indexOf: function (size: 50, cast: static function)
+.field lastIndexOf: function (size: 50, cast: static function)
+.field startsWith: function (size: 73, cast: static function)
+.field endsWith: function (size: 126, cast: static function)
+.field compare: function (size: 63, cast: static function)
+.field ignCaseCmp: function (size: 36, cast: static function)
+.field caseCmp: function (size: 14, cast: static function)
 .field startsWith: function (size: 0, cast: inline)
 .field endsWith: function (size: 0, cast: inline)
 .field compare: function (size: 0, cast: inline)
 .field equals: function (size: 0, cast: inline)
 .field contains: function (size: 0, cast: inline)
 .field FormatFlags: typename (size: 16, cast: static const typename(val))
-.field append: function (size: 84, cast: static const function)
-.field append: function (size: 707, cast: static const function)
+.field append: function (size: 84, cast: static function)
+.field append: function (size: 707, cast: static function)
 .field append: function (size: 0, cast: inline)
 .field append: function (size: 0, cast: inline)
 .field append: function (size: 0, cast: inline)
@@ -15542,9 +15542,9 @@ testMathAbsMod_f32_8d: float32 {
 .field append: function (size: 0, cast: inline)
 .field append: function (size: 0, cast: inline)
 .field append: function (size: 0, cast: inline)
-.field append: function (size: 227, cast: static const function)
+.field append: function (size: 227, cast: static function)
 .field append: function (size: 0, cast: inline)
-.field append: function (size: 63, cast: static const function)
+.field append: function (size: 63, cast: static function)
 .field integer: typename (size: 0, cast: inline)
 .field emitldz32: int32 (size: 4, cast: variable(i32))
 .field emitldz64: int64 (size: 8, cast: variable(i64))
@@ -15696,12 +15696,12 @@ testMathAbsMod_f32_8d: float32 {
 .field p4: pointer (size: 4, cast: variable(ref))
 .field val1: int64 (size: 8, cast: variable(i64))
 .field val2: int64 (size: 8, cast: variable(i64))
-.field noError: function (size: 1, cast: static const function)
-.field stackOverflow: function (size: 24, cast: static const function)
-.field divisionByZero: function (size: 12, cast: static const function)
-.field abortExecution: function (size: 68, cast: static const function)
-.field invalidMemoryAccess: function (size: 13, cast: static const function)
-.field invalidInstruction: function (size: 2, cast: static const function)
+.field noError: function (size: 1, cast: static function)
+.field stackOverflow: function (size: 24, cast: static function)
+.field divisionByZero: function (size: 12, cast: static function)
+.field abortExecution: function (size: 68, cast: static function)
+.field invalidMemoryAccess: function (size: 13, cast: static function)
+.field invalidInstruction: function (size: 2, cast: static function)
 .field tryExecErr0: int32 (size: 4, cast: variable(i32))
 .field tryExecErr1: int32 (size: 4, cast: variable(i32))
 .field tryExecErr2: int32 (size: 4, cast: variable(i32))
@@ -15798,8 +15798,8 @@ testMathAbsMod_f32_8d: float32 {
 .field valInitImplicit: ComplexVal (size: 16, cast: variable(val))
 .field objInitImplicit: ComplexObj (size: 4, cast: variable(ref))
 .field objInitExplicit: object (size: 4, cast: variable(ref))
-.field empty: function (size: 1, cast: static const function)
-.field funAdd: function (size: 8, cast: static const function)
+.field empty: function (size: 1, cast: static function)
+.field funAdd: function (size: 8, cast: static function)
 .field funAddResult: int32 (size: 4, cast: variable(i32))
 .field funAddRef: function (size: 4, cast: variable(ref))
 .field funAddRefResult: int32 (size: 4, cast: variable(i32))
@@ -15807,8 +15807,8 @@ testMathAbsMod_f32_8d: float32 {
 .field funMulResult: int32 (size: 4, cast: variable(i32))
 .field funMulRef: function (size: 4, cast: variable(ref))
 .field funMulRefResult: int32 (size: 4, cast: variable(i32))
-.field funMul: function (size: 8, cast: static const function)
-.field fib: function (size: 54, cast: static const function)
+.field funMul: function (size: 8, cast: static function)
+.field fib: function (size: 54, cast: static function)
 .field fibonacci_13: uint32 (size: 4, cast: variable(u32))
 .field sizeofVoid: int32 (size: 4, cast: variable(i32))
 .field sizeofBool: int32 (size: 4, cast: variable(i32))
@@ -15851,10 +15851,10 @@ testMathAbsMod_f32_8d: float32 {
 .field RecordMemberTest: typename (size: 32, cast: static const typename(val))
 .field recordMemberTest: RecordMemberTest (size: 32, cast: variable(val))
 .field RecordMethodTest: typename (size: 16, cast: static const typename(val))
-.field globalFunction: function (size: 39, cast: static const function)
+.field globalFunction: function (size: 39, cast: static function)
 .field recordMethodTest: RecordMethodTest (size: 16, cast: variable(val))
-.field staticMethod: function (size: 66, cast: static const function)
-.field virtualMethod: function (size: 63, cast: static const function)
+.field staticMethod: function (size: 66, cast: static function)
+.field virtualMethod: function (size: 63, cast: static function)
 .field arrFixedInit: int64[7] (size: 56, cast: variable(val))
 .field arrArrayInitNull: int64[*] (size: 4, cast: variable(ref))
 .field arrSliceInitNull: int64[] (size: 8, cast: variable(arr))
@@ -15866,10 +15866,10 @@ testMathAbsMod_f32_8d: float32 {
 .field strFixed: char[7] (size: 7, cast: variable(val))
 .field strArray: char[*] (size: 4, cast: variable(ref))
 .field strSlice: char[] (size: 8, cast: variable(arr))
-.field lenSlice: function (size: 4, cast: static const function)
-.field nthFixed: function (size: 12, cast: static const function)
-.field nthArray: function (size: 12, cast: static const function)
-.field nthSlice: function (size: 12, cast: static const function)
+.field lenSlice: function (size: 4, cast: static function)
+.field nthFixed: function (size: 12, cast: static function)
+.field nthArray: function (size: 12, cast: static function)
+.field nthSlice: function (size: 12, cast: static function)
 .field rgbF32: typename (size: 16, cast: static const typename(val))
 .field rgbU8: typename (size: 3, cast: static const typename(val))
 .field color: typename (size: 4, cast: static const typename(val))
@@ -16250,7 +16250,7 @@ testMathAbsMod_f32_8d: float32 {
 				const returned: variant;
 				const extras: variant[] := null;
 			};
-			static const assertEq(expected: int32, returned: int32, const message: char[*]): void := {
+			static assertEq(expected: int32, returned: int32, const message: char[*]): void := {
 				if (returned == expected) {
 					return;
 				}
@@ -16280,7 +16280,7 @@ testMathAbsMod_f32_8d: float32 {
 			static const sqrtPhi: float64 := 1.272020;
 			static const nan: float64 := -nan;
 			static const inf: float64 := inf;
-			static const modf(x: float64, intPart: float64): float64 := {
+			static modf(x: float64, intPart: float64): float64 := {
 				if (x < (1)) {
 					if (x < (0)) {
 						result: float64 := -modf(-x, &intPart);
@@ -16294,7 +16294,7 @@ testMathAbsMod_f32_8d: float32 {
 				intPart := x - result;
 				return .result := result;
 			};
-			static const floor(x: float64): float64 := {
+			static floor(x: float64): float64 := {
 				result: float64;
 				modf(x, &result);
 				return .result := result;
@@ -16303,55 +16303,55 @@ testMathAbsMod_f32_8d: float32 {
 			static round(x: float64): float64 := floor(x + 0.500000);
 			static sign(x: float32): int32 := int32(x > (0)) - int32(x < (0));
 			static sign(x: float64): int32 := int32(x > (0)) - int32(x < (0));
-			static const abs(x: float32): float32 := {
+			static abs(x: float32): float32 := {
 				if (x < (0)) {
 					return .result := -x;
 				}
 				return .result := x;
 			};
-			static const abs(x: float64): float64 := {
+			static abs(x: float64): float64 := {
 				if (x < (0)) {
 					return .result := -x;
 				}
 				return .result := x;
 			};
-			static const absMod(val: float32, mod: float32): float32 := {
+			static absMod(val: float32, mod: float32): float32 := {
 				if ((val := val % mod) < (0)) {
 					return .result := val + mod;
 				}
 				return .result := val;
 			};
-			static const absMod(val: float64, mod: float64): float64 := {
+			static absMod(val: float64, mod: float64): float64 := {
 				if ((val := val % mod) < (0)) {
 					return .result := val + mod;
 				}
 				return .result := val;
 			};
-			static const min(a: float32, b: float32): float32 := {
+			static min(a: float32, b: float32): float32 := {
 				if (a < b) {
 					return .result := a;
 				}
 				return .result := b;
 			};
-			static const min(a: float64, b: float64): float64 := {
+			static min(a: float64, b: float64): float64 := {
 				if (a < b) {
 					return .result := a;
 				}
 				return .result := b;
 			};
-			static const max(a: float32, b: float32): float32 := {
+			static max(a: float32, b: float32): float32 := {
 				if (a > b) {
 					return .result := a;
 				}
 				return .result := b;
 			};
-			static const max(a: float64, b: float64): float64 := {
+			static max(a: float64, b: float64): float64 := {
 				if (a > b) {
 					return .result := a;
 				}
 				return .result := b;
 			};
-			static const clamp(t: float32, a: float32, b: float32): float32 := {
+			static clamp(t: float32, a: float32, b: float32): float32 := {
 				if (t < a) {
 					return .result := a;
 				}
@@ -16360,7 +16360,7 @@ testMathAbsMod_f32_8d: float32 {
 				}
 				return .result := t;
 			};
-			static const clamp(t: float64, a: float64, b: float64): float64 := {
+			static clamp(t: float64, a: float64, b: float64): float64 := {
 				if (t < a) {
 					return .result := a;
 				}
@@ -16375,7 +16375,7 @@ testMathAbsMod_f32_8d: float32 {
 			static smooth(t: float64): float64 := t * t * ((3) - (2) * t);
 			static smooth(t: float32, a: float32, b: float32): float32 := smooth(clamp((t - a) / (b - a), float32(0), float32(1)));
 			static smooth(t: float64, a: float64, b: float64): float64 := smooth(clamp((t - a) / (b - a), float64(0), float64(1)));
-			static const min(data: float64[]): float64 := {
+			static min(data: float64[]): float64 := {
 				if (data.length == (0)) {
 					return .result := nan;
 				}
@@ -16387,7 +16387,7 @@ testMathAbsMod_f32_8d: float32 {
 				}
 				return .result := result;
 			};
-			static const max(data: float64[]): float64 := {
+			static max(data: float64[]): float64 := {
 				if (data.length == (0)) {
 					return .result := nan;
 				}
@@ -16399,28 +16399,28 @@ testMathAbsMod_f32_8d: float32 {
 				}
 				return .result := result;
 			};
-			static const sum(data: float64[]): float64 := {
+			static sum(data: float64[]): float64 := {
 				result: float64 := 0;
 				for (i: int32 := 0; i < (data.length); i := i + 1) {
 					result := result + data[i];
 				}
 				return .result := result;
 			};
-			static const mean(data: float64[]): float64 := {
+			static mean(data: float64[]): float64 := {
 				return .result := sum(...data) / (signed(data.length));
 			};
 			static eval(x: float64, a0: float64): float64 := (a0);
 			static eval(x: float64, a0: float64, a1: float64): float64 := (a0 + x * a1);
 			static eval(x: float64, a0: float64, a1: float64, a2: float64): float64 := (a0 + x * eval(x, a1, a2));
 			static eval(x: float64, a0: float64, a1: float64, a2: float64, a3: float64): float64 := (a0 + x * eval(x, a1, a2, a3));
-			static const eval(x: float64, polynomial: float64[]): float64 := {
+			static eval(x: float64, polynomial: float64[]): float64 := {
 				result: float64 := 0;
 				for (i: int32 := polynomial.length - (1); i >= 0; i := i - 1) {
 					result := result * x + polynomial[i];
 				}
 				return .result := result;
 			};
-			static const cmp(a: float32, b: float32, eps: float32): int32 := {
+			static cmp(a: float32, b: float32, eps: float32): int32 := {
 				if (a < b) {
 					if (eps < (b - a)) {
 						return .result := -1;
@@ -16431,7 +16431,7 @@ testMathAbsMod_f32_8d: float32 {
 				}
 				return .result := 0;
 			};
-			static const cmp(a: float64, b: float64, eps: float64): int32 := {
+			static cmp(a: float64, b: float64, eps: float64): int32 := {
 				if (a < b) {
 					if (eps < (b - a)) {
 						return .result := -1;
@@ -16442,7 +16442,7 @@ testMathAbsMod_f32_8d: float32 {
 				}
 				return .result := 0;
 			};
-			static const sinCos(arg: float64, quad: int32): float64 := {
+			static sinCos(arg: float64, quad: int32): float64 := {
 				x: float64 := arg;
 				if (x < (0)) {
 					x := -x;
@@ -16477,7 +16477,7 @@ testMathAbsMod_f32_8d: float32 {
 			};
 			static sin(arg: float64): float64 := sinCos(arg, 0);
 			static cos(arg: float64): float64 := sinCos(abs(arg), 1);
-			static const tan(arg: float64): float64 := {
+			static tan(arg: float64): float64 := {
 				complement: bool := false;
 				negate: bool := false;
 				if (arg < (0)) {
@@ -16515,7 +16515,7 @@ testMathAbsMod_f32_8d: float32 {
 				}
 				return .result := result;
 			};
-			static const sinh(x: float64): float64 := {
+			static sinh(x: float64): float64 := {
 				negate: bool := false;
 				if (x < (0)) {
 					x := -x;
@@ -16538,7 +16538,7 @@ testMathAbsMod_f32_8d: float32 {
 				}
 				return .result := result;
 			};
-			static const cosh(x: float64): float64 := {
+			static cosh(x: float64): float64 := {
 				if (x < (0)) {
 					x := -x;
 				}
@@ -16547,7 +16547,7 @@ testMathAbsMod_f32_8d: float32 {
 				}
 				return .result := (float64.exp(x) + float64.exp(-x)) / (2);
 			};
-			static const asin(x: float64): float64 := {
+			static asin(x: float64): float64 := {
 				if (x == (0)) {
 					return .result := x;
 				}
@@ -16579,13 +16579,13 @@ testMathAbsMod_f32_8d: float32 {
 			const re: float64;
 			const im: float64 := 0;
 		};
-		static const Complex(re: float64): Complex := {
+		static Complex(re: float64): Complex := {
 			return .result := {
 			.result.re := re;
 			.result.im := (0);
 		};
 		};
-		static const Complex(re: float64, im: float64): Complex := {
+		static Complex(re: float64, im: float64): Complex := {
 			return .result := {
 			.result.re := re;
 			.result.im := im;
@@ -16601,7 +16601,7 @@ testMathAbsMod_f32_8d: float32 {
 		mul(a: Complex, b: Complex): Complex := Complex(emit(struct(a), struct(b), swz.x2, mul.p2d, add.f64, struct(a), struct(b), mul.p2d, swz.x2, sub.f64));
 		mul(a: Complex, b: float64): Complex := Complex(a.re * b, a.im * b);
 		mul(a: float64, b: Complex): Complex := Complex(a * b.re, a * b.im);
-		static const div(a: Complex, b: Complex): Complex := {
+		static div(a: Complex, b: Complex): Complex := {
 			if (Math.abs(b.re) >= Math.abs(b.im)) {
 				r: float64 := b.im / b.re;
 				den: float64 := b.re + r * b.im;
@@ -16621,7 +16621,7 @@ testMathAbsMod_f32_8d: float32 {
 		div(a: float64, b: Complex): Complex := div(Complex(a), b);
 		abs(a: Complex): float64 := float64.sqrt(a.re * a.re + a.im * a.im);
 		arg(a: Complex): float64 := float64.atan2(a.re, a.im);
-		static const inv(a: Complex): Complex := {
+		static inv(a: Complex): Complex := {
 			d: float64 := a.re * a.re + a.im * a.im;
 			return .result := {
 			.result.re := +a.re / d;
@@ -16631,7 +16631,7 @@ testMathAbsMod_f32_8d: float32 {
 		conj(a: Complex): Complex := Complex(a.re, -a.im);
 		exp(a: Complex): Complex := Complex(float64.exp(a.re) * float64.cos(a.im), float64.exp(a.re) * float64.sin(a.im));
 		log(a: Complex): Complex := Complex(float64.log(abs(a)), arg(a));
-		static const pow(a: Complex, b: Complex): Complex := {
+		static pow(a: Complex, b: Complex): Complex := {
 			r: float64 := abs(a);
 			t: float64 := arg(a);
 			u: float64 := b.re * t + b.im * float64.log(r);
@@ -16657,12 +16657,12 @@ testMathAbsMod_f32_8d: float32 {
 		toCartesian(x: Complex): Complex := Complex(x.re * float64.cos(x.im), x.re * float64.sin(x.im));
 		toPolar(x: Complex): Complex := Complex(abs(x), arg(x));
 		static const vec4f: struct {
-			data: float32[4];
 			<?>: <?>;
 			x: float32 := x: float32;
 			y: float32 := y: float32;
 			z: float32 := z: float32;
 			w: float32 := w: float32;
+			data: float32[4];
 		};
 		vec4f(x: float32, y: float32, z: float32, w: float32): vec4f := vec4f(emit(struct(w), struct(z), struct(y), struct(x)));
 		vec4f(x: float32, y: float32, z: float32): vec4f := vec4f(x, y, z, 1.000000);
@@ -16694,8 +16694,8 @@ testMathAbsMod_f32_8d: float32 {
 		normalize(const v: vec4f): vec4f := div(v, vec4f(length(v)));
 		eval(const v: vec4f, x: float32): float32 := float32((((v.w * x + v.z) * x + v.y) * x) + v.x);
 		static const mat4f: struct {
-			data: float32[16];
 			m: float32[4][4];
+			data: float32[16];
 			v: vec4f[4];
 			<?>: <?>;
 			x: vec4f := x: vec4f;
@@ -16720,7 +16720,7 @@ testMathAbsMod_f32_8d: float32 {
 			wz: float32 := wz: float32;
 			ww: float32 := ww: float32;
 		};
-		static const mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float32, yz: float32, yw: float32, zx: float32, zy: float32, zz: float32, zw: float32, wx: float32, wy: float32, wz: float32, ww: float32): mat4f := {
+		static mat4f(xx: float32, xy: float32, xz: float32, xw: float32, yx: float32, yy: float32, yz: float32, yw: float32, zx: float32, zy: float32, zz: float32, zw: float32, wx: float32, wy: float32, wz: float32, ww: float32): mat4f := {
 			return .result := {
 			.result.xx := xx;
 			.result.xy := xy;
@@ -16740,7 +16740,7 @@ testMathAbsMod_f32_8d: float32 {
 			.result.ww := ww;
 		};
 		};
-		static const mat4f(const x: vec4f, const y: vec4f, const z: vec4f, const w: vec4f): mat4f := {
+		static mat4f(const x: vec4f, const y: vec4f, const z: vec4f, const w: vec4f): mat4f := {
 			return .result := {
 			.result.x := x;
 			.result.y := y;
@@ -16751,7 +16751,7 @@ testMathAbsMod_f32_8d: float32 {
 		dp3(const mat: mat4f, const vec: vec4f): vec4f := vec4f(dp3(mat.x, vec), dp3(mat.y, vec), dp3(mat.z, vec), 1.000000);
 		dph(const mat: mat4f, const vec: vec4f): vec4f := vec4f(dph(mat.x, vec), dph(mat.y, vec), dph(mat.z, vec), dph(mat.w, vec));
 		dp4(const mat: mat4f, const vec: vec4f): vec4f := vec4f(dp4(mat.x, vec), dp4(mat.y, vec), dp4(mat.z, vec), dp4(mat.w, vec));
-		static const transpose(const mat: mat4f): mat4f := {
+		static transpose(const mat: mat4f): mat4f := {
 			return .result := {
 			.result.xx := mat.xx;
 			.result.xy := mat.yx;
@@ -16771,7 +16771,7 @@ testMathAbsMod_f32_8d: float32 {
 			.result.ww := mat.ww;
 		};
 		};
-		static const mul(const lhs: mat4f, const rhs: mat4f): mat4f := {
+		static mul(const lhs: mat4f, const rhs: mat4f): mat4f := {
 			transposed: mat4f := transpose(rhs);
 			return .result := {
 			.result.x := dp4(transposed, lhs.x);
@@ -16780,7 +16780,7 @@ testMathAbsMod_f32_8d: float32 {
 			.result.w := dp4(transposed, lhs.w);
 		};
 		};
-		static const rotation(const center: vec4f, const direction: vec4f, angle: float32): mat4f := {
+		static rotation(const center: vec4f, const direction: vec4f, angle: float32): mat4f := {
 			len: float32 := length(direction);
 			if ((len) < 0.000000) {
 				trace("invalid direction of rotation", direction);
@@ -16823,7 +16823,7 @@ testMathAbsMod_f32_8d: float32 {
 		};
 		};
 		rotation(const direction: vec4f, angle: float32): mat4f := rotation(vec4f(0), direction, angle);
-		static const translation(const direction: vec4f, amount: float32): mat4f := {
+		static translation(const direction: vec4f, amount: float32): mat4f := {
 			return .result := {
 			.result.xx := (1);
 			.result.xy := (0);
@@ -16843,7 +16843,7 @@ testMathAbsMod_f32_8d: float32 {
 			.result.ww := (1);
 		};
 		};
-		static const scale(const direction: vec4f, amount: float32): mat4f := {
+		static scale(const direction: vec4f, amount: float32): mat4f := {
 			rcp(val: float32): float32 := ((val < (0) ? -val : val)) < 0.000000 ? (0) : (1) / val;
 			return .result := {
 			.result.xx := rcp(direction.x * amount);
@@ -16865,12 +16865,12 @@ testMathAbsMod_f32_8d: float32 {
 		};
 		};
 		static const vec2d: struct {
-			data: float64[2];
 			<?>: <?>;
 			x: float64 := x: float64;
 			y: float64 := y: float64;
+			data: float64[2];
 		};
-		static const vec2d(x: float64, y: float64): vec2d := {
+		static vec2d(x: float64, y: float64): vec2d := {
 			return .result := {
 			.result.x := x;
 			.result.y := y;
@@ -16884,7 +16884,7 @@ testMathAbsMod_f32_8d: float32 {
 		max(a: vec2d, b: vec2d): vec2d := vec2d(emit(struct(a), struct(b), max.p2d));
 		ceq(a: vec2d, b: vec2d): vec2d := vec2d(emit(struct(a), struct(b), ceq.p2d));
 		dot(const a: vec2d, const b: vec2d): float64 := a.x * b.x + a.y * b.y;
-		static const length(const str: char[*]): int32 := {
+		static length(const str: char[*]): int32 := {
 			if ((str) == null) {
 				return .result := 0;
 			}
@@ -16892,7 +16892,7 @@ testMathAbsMod_f32_8d: float32 {
 			for ( ; str[result]; result := result + 1) ;
 			return .result := result;
 		};
-		static const indexOf(const str: char[*], chr: char): int32 := {
+		static indexOf(const str: char[*], chr: char): int32 := {
 			for (i: int32 := 0; str[i]; i := i + 1) {
 				if (str[i] == chr) {
 					return .result := i;
@@ -16900,7 +16900,7 @@ testMathAbsMod_f32_8d: float32 {
 			}
 			return .result := -1;
 		};
-		static const lastIndexOf(const str: char[*], chr: char): int32 := {
+		static lastIndexOf(const str: char[*], chr: char): int32 := {
 			result: int32 := -1;
 			for (i: int32 := 0; str[i]; i := i + 1) {
 				if (str[i] == chr) {
@@ -16909,7 +16909,7 @@ testMathAbsMod_f32_8d: float32 {
 			}
 			return .result := result;
 		};
-		static const startsWith(const str: char[*], const with: char[*], cmp(chr: char, with: char): int32): bool := {
+		static startsWith(const str: char[*], const with: char[*], cmp(chr: char, with: char): int32): bool := {
 			for (i: int32 := 0; (with[i]) != 0; i := i + 1) {
 				if (cmp(str[i], with[i]) != 0) {
 					return .result := false;
@@ -16917,7 +16917,7 @@ testMathAbsMod_f32_8d: float32 {
 			}
 			return .result := true;
 		};
-		static const endsWith(const str: char[*], const with: char[*], cmp(chr: char, with: char): int32): bool := {
+		static endsWith(const str: char[*], const with: char[*], cmp(chr: char, with: char): int32): bool := {
 			withLen: int32 := length(with);
 			strLen: int32 := length(str);
 			if (strLen < withLen) {
@@ -16930,7 +16930,7 @@ testMathAbsMod_f32_8d: float32 {
 			}
 			return .result := true;
 		};
-		static const compare(const str: char[*], const with: char[*], cmp(chr: char, with: char): int32): int32 := {
+		static compare(const str: char[*], const with: char[*], cmp(chr: char, with: char): int32): int32 := {
 			result: int32 := 0;
 			for (i: int32 := 0; result == 0; i := i + 1) {
 				result := cmp(str[i], with[i]);
@@ -16940,8 +16940,8 @@ testMathAbsMod_f32_8d: float32 {
 			}
 			return .result := result;
 		};
-		static const ignCaseCmp(chr: char, with: char): int32 := {
-			static const ignCase(chr: char): char := {
+		static ignCaseCmp(chr: char, with: char): int32 := {
+			static ignCase(chr: char): char := {
 				if (chr < 'A') {
 					return .result := chr;
 				}
@@ -16952,7 +16952,7 @@ testMathAbsMod_f32_8d: float32 {
 			};
 			return .result := ignCase(chr) - ignCase(with);
 		};
-		static const caseCmp(chr: char, with: char): int32 := {
+		static caseCmp(chr: char, with: char): int32 := {
 			return .result := chr - with;
 		};
 		startsWith(const str: char[*], const with: char[*]): bool := startsWith(str, with, caseCmp);
@@ -16966,7 +16966,7 @@ testMathAbsMod_f32_8d: float32 {
 			const padChr: char := 0;
 			const padLen: int32 := 0;
 		};
-		static const append(output: char[], pos: int32, const value: char[*]): int32 := {
+		static append(output: char[], pos: int32, const value: char[*]): int32 := {
 			for (i: int32 := 0; value[i]; i := i + 1) {
 				if (pos >= (output.length)) {
 					break;
@@ -16980,7 +16980,7 @@ testMathAbsMod_f32_8d: float32 {
 			output[pos] := (0);
 			return .result := pos;
 		};
-		static const append(output: char[], pos: int32, sign: char, value: uint64, const format: FormatFlags): int32 := {
+		static append(output: char[], pos: int32, sign: char, value: uint64, const format: FormatFlags): int32 := {
 			static const whiteSpace: char[] := " \t\n\r";
 			static const radixDigits: char[] := "0123456789abcdefghijklmnopqrstuvwxyz";
 			len: int32 := 0;
@@ -17045,7 +17045,7 @@ testMathAbsMod_f32_8d: float32 {
 		append(output: char[], pos: int32, value: int32, const format: FormatFlags): int32 := append(output, pos, value < 0 ? ('-') : 0, uint64(value < 0 ? -value : value), format);
 		append(output: char[], pos: int32, value: int16, const format: FormatFlags): int32 := append(output, pos, (value) < 0 ? ('-') : 0, uint64((value) < 0 ? -value : value), format);
 		append(output: char[], pos: int32, value: int8, const format: FormatFlags): int32 := append(output, pos, (value) < 0 ? ('-') : 0, uint64((value) < 0 ? -value : value), format);
-		static const append(output: char[], pos: int32, value: float64, const format: FormatFlags): int32 := {
+		static append(output: char[], pos: int32, value: float64, const format: FormatFlags): int32 := {
 			formatInt: FormatFlags := {
 				formatInt.showSign := format.showSign;
 				formatInt.precision := 0;
@@ -17067,7 +17067,7 @@ testMathAbsMod_f32_8d: float32 {
 			return .result := pos;
 		};
 		append(output: char[], pos: int32, value: float32, const format: FormatFlags): int32 := append(output, pos, float64(value), format);
-		static const append(output: char[], pos: int32, value: int32): int32 := {
+		static append(output: char[], pos: int32, value: int32): int32 := {
 			static const format: FormatFlags := {
 				format.showSign := false;
 				format.precision := 0;
@@ -17245,17 +17245,17 @@ testMathAbsMod_f32_8d: float32 {
 		pointer.fill(pointer(val1), 0, sizeof(int64));
 		debug("val1", val1);
 		debug("val2", val2);
-		static const noError(ptr: pointer): void := {
+		static noError(ptr: pointer): void := {
 		};
-		static const stackOverflow(ptr: pointer): void := {
+		static stackOverflow(ptr: pointer): void := {
 			data: uint8[8192] := {
 			};
 			stackOverflow(ptr);
 		};
-		static const divisionByZero(args: pointer): void := {
+		static divisionByZero(args: pointer): void := {
 			value: int32 := 3 / 0;
 		};
-		static const abortExecution(args: pointer): void := {
+		static abortExecution(args: pointer): void := {
 			static const NotEquals: struct {
 				message: char[*];
 				expected: int32;
@@ -17268,11 +17268,11 @@ testMathAbsMod_f32_8d: float32 {
 			};
 			abort("fatal error", details);
 		};
-		static const invalidMemoryAccess(args: pointer): void := {
+		static invalidMemoryAccess(args: pointer): void := {
 			i32Ref: int32 := null;
 			i32Val: int32 := i32Ref;
 		};
-		static const invalidInstruction(args: pointer): void := {
+		static invalidInstruction(args: pointer): void := {
 			emit(load.z32, ret);
 		};
 		tryExecErr0: int32 := tryExec(null, noError);
@@ -17394,9 +17394,9 @@ testMathAbsMod_f32_8d: float32 {
 			objInitExplicit.re := (8);
 			objInitExplicit.im := (0);
 		};
-		static const empty(): void := {
+		static empty(): void := {
 		};
-		static const funAdd(x: int32, y: int32): int32 := {
+		static funAdd(x: int32, y: int32): int32 := {
 			return .result := x + y;
 		};
 		funAddResult: int32 := funAdd(2, 7);
@@ -17406,10 +17406,10 @@ testMathAbsMod_f32_8d: float32 {
 		funMulResult: int32 := funMul(2, 6);
 		funMulRef(x: int32, y: int32): int32 := funMul;
 		funMulRefResult: int32 := funMulRef(2, 7);
-		static const funMul(x: int32, y: int32): int32 := {
+		static funMul(x: int32, y: int32): int32 := {
 			return .result := x * y;
 		};
-		static const fib(n: uint32): uint32 := {
+		static fib(n: uint32): uint32 := {
 			if (n <= (1)) {
 				return .result := n;
 			}
@@ -17503,21 +17503,21 @@ testMathAbsMod_f32_8d: float32 {
 			recordMemberTest.constantRec.constant := 17;
 		};
 		static const RecordMethodTest: struct {
-			static const staticMethod(this: RecordMethodTest, x: int32): void := {
+			static staticMethod(this: RecordMethodTest, x: int32): void := {
 				trace("staticMethod", x);
 			};
 			static forwardMethod(this: RecordMethodTest, x: int32): void := forwardMethod;
 			abstractMethod(this: RecordMethodTest, x: int32): void;
 			delegateMethod(this: RecordMethodTest, x: int32): void := forwardMethod;
-			const virtualMethod(this: RecordMethodTest, x: int32): void := virtualMethod;
-			static const virtualMethod(this: RecordMethodTest, x: int32): void := {
+			static virtualMethod(this: RecordMethodTest, x: int32): void := {
 				trace("virtualMethod", x);
 			};
-			static const forwardMethod(this: RecordMethodTest, x: int32): void := {
+			const virtualMethod(this: RecordMethodTest, x: int32): void := virtualMethod;
+			static forwardMethod(this: RecordMethodTest, x: int32): void := {
 				trace("forwardMethod", x);
 			};
 		};
-		static const globalFunction(this: RecordMethodTest, x: int32): void := {
+		static globalFunction(this: RecordMethodTest, x: int32): void := {
 			trace("globalFunction", x);
 		};
 		recordMethodTest: RecordMethodTest := {
@@ -17527,13 +17527,13 @@ testMathAbsMod_f32_8d: float32 {
 		};
 		recordMethodTest.staticMethod(recordMethodTest, 1);
 		recordMethodTest.virtualMethod(recordMethodTest, 1);
-		static const staticMethod(this: RecordMethodTest, x: int32): void := {
+		static staticMethod(this: RecordMethodTest, x: int32): void := {
 			debug("extension.staticMethod");
 			if ((this) != null) {
 				RecordMethodTest.staticMethod(this, x);
 			}
 		};
-		static const virtualMethod(this: RecordMethodTest, x: int32): void := {
+		static virtualMethod(this: RecordMethodTest, x: int32): void := {
 			debug("extension.virtualMethod");
 			if ((this) != null) {
 				this.virtualMethod(this, x);
@@ -17579,16 +17579,16 @@ testMathAbsMod_f32_8d: float32 {
 		debug("string as variant", strSlice);
 		assert(arrSliceInitNull.length == (0));
 		assert(arrFixedInit[0] == (42));
-		static const lenSlice(const values: int64[]): int32 := {
+		static lenSlice(const values: int64[]): int32 := {
 			return .result := values.length;
 		};
-		static const nthFixed(idx: int32, const values: int64[7]): int64 := {
+		static nthFixed(idx: int32, const values: int64[7]): int64 := {
 			return .result := values[idx];
 		};
-		static const nthArray(idx: int32, const values: int64[*]): int64 := {
+		static nthArray(idx: int32, const values: int64[*]): int64 := {
 			return .result := values[idx];
 		};
-		static const nthSlice(idx: int32, const values: int64[]): int64 := {
+		static nthSlice(idx: int32, const values: int64[]): int64 := {
 			return .result := values[idx];
 		};
 		assertEq(7, arrFixedInit.(length));
@@ -22851,29 +22851,29 @@ cmplStd/test/lang/reflect.ci:14: sizeofFloat32: int32(4)
 cmplStd/test/lang/reflect.ci:15: sizeofFloat64: int32(8)
 cmplStd/test/lang/reflect.ci:16: sizeofPointer: int32(4)
 cmplStd/test/lang/reflect.ci:17: sizeofVariant: int32(8)
-cmplStd/test/lang/reflect.ci:18: sizeofTypename: int32(152)
+cmplStd/test/lang/reflect.ci:18: sizeofTypename: int32(160)
 cmplStd/test/lang/reflect.ci:19: sizeofFunction: int32(4)
 cmplStd/test/lang/reflect.ci:20: sizeofObject: int32(4)
 cmplStd/test/lang/reflect.ci:22: RecordSizeof: typename(<RecordSizeof>)
 cmplStd/test/lang/reflect.ci:26: RecordSizeofExt: typename(<RecordSizeofExt>)
 cmplStd/test/lang/reflect.ci:30: typeofRecord: typename(<RecordSizeofExt>)
 cmplStd/test/lang/reflect.ci:31: nameOfRecord: char[*]("RecordSizeofExt")
-cmplStd/test/lang/reflect.ci:32: offsetOfRecord: int32(285776)
+cmplStd/test/lang/reflect.ci:32: offsetOfRecord: int32(300016)
 cmplStd/test/lang/reflect.ci:33: sizeOfRecord: int32(16)
 cmplStd/test/lang/reflect.ci:34: fileOfRecord: char[*]("cmplStd/test/lang/reflect.ci")
 cmplStd/test/lang/reflect.ci:35: lineOfRecord: int32(26)
 cmplStd/test/lang/reflect.ci:37: typeofBase: typename(<RecordSizeof>)
 cmplStd/test/lang/reflect.ci:38: nameOfBase: char[*]("RecordSizeof")
-cmplStd/test/lang/reflect.ci:39: offsetOfBase: int32(285472)
+cmplStd/test/lang/reflect.ci:39: offsetOfBase: int32(299696)
 cmplStd/test/lang/reflect.ci:40: sizeOfBase: int32(12)
 cmplStd/test/lang/reflect.ci:41: fileOfBase: char[*]("cmplStd/test/lang/reflect.ci")
 cmplStd/test/lang/reflect.ci:42: lineOfBase: int32(22)
 cmplStd/test/lang/reflect.ci:44: typeofBase1: typename(<object>)
-cmplStd/test/lang/reflect.ci:45: offsetOfBase1: int32(2744)
+cmplStd/test/lang/reflect.ci:45: offsetOfBase1: int32(2880)
 cmplStd/test/lang/reflect.ci:46: sizeOfBase1: int32(4)
 cmplStd/test/lang/reflect.ci:48: typeofBase2: typename(<typename>)
 cmplStd/test/lang/reflect.ci:49: offsetOfBase2: int32(8)
-cmplStd/test/lang/reflect.ci:50: sizeOfBase2: int32(152)
+cmplStd/test/lang/reflect.ci:50: sizeOfBase2: int32(160)
 cmplStd/test/lang/init.member.ci:4: RecordMemberTest.Inner: typename(<RecordMemberTest.Inner>)
 cmplStd/test/lang/init.member.ci:34: RecordMemberTest.global: int32(0)
 cmplStd/test/lang/init.member.ci:37: RecordMemberTest.globalInit: int32(1)
@@ -22953,20 +22953,10 @@ cmplStd/test/lang/recUnion.ci:28: white: rgbU8({
 	r: uint8(255)
 })
 cmplStd/test/lang/recUnion.ci:30: cyan: color({
-	col: uint32(65535),
-	rgb: rgbU8({
-		b: uint8(255),
-		g: uint8(255),
-		r: uint8(0)
-	})
+	col: uint32(65535)
 })
 cmplStd/test/lang/recUnion.ci:31: blue: color({
-	col: uint32(255),
-	rgb: rgbU8({
-		b: uint8(255),
-		g: uint8(0),
-		r: uint8(0)
-	})
+	col: uint32(255)
 })
 cmplStd/test/lang/recPacking.ci:2: record_pack0: typename(<record_pack0>)
 cmplStd/test/lang/recPacking.ci:12: record_pack1: typename(<record_pack1>)
@@ -23301,18 +23291,18 @@ cmplStd/test/std/test.math.ci:96: testMathAbsMod_f32_8d: float32(8.000000)
 
 ---------- Memory usage:
 memory[all] @000000; size: 4194016(4.0 Mb)
-memory[used] @000000; size: 386896(377.8 Kb)
-memory[heap] @05e750; size: 2758568(2.6 Mb)
+memory[used] @000000; size: 405272(395.8 Kb)
+memory[heap] @062f18; size: 2740192(2.6 Mb)
 memory[stack] @1fff40; size: 1048504(1023.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 370096(361.4 Kb)
+memory[meta] @000000; size: 388472(379.4 Kb)
 memory[code] @000000; size: 16460(16.1 Kb)
 memory[data] @000000; size: 80(80.0 bytes)
 
 ---------- heap memory:
-memory[used] @05e760; size: 32(32.0 bytes)
-memory[used] @05e790; size: 32(32.0 bytes)
-memory[free] @05e7c0; size: 2758432(2.6 Mb)
+memory[used] @062f30; size: 32(32.0 bytes)
+memory[used] @062f60; size: 32(32.0 bytes)
+memory[free] @062f90; size: 2740048(2.6 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

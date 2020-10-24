@@ -270,7 +270,8 @@ typedef enum {
 	ATTR_stat  = 0x0040,		// static attribute
 	ATTR_cnst  = 0x0080,		// constant attribute
 	ATTR_paral = 0x0100,		// inline argument
-	ATTR_varg  = 0x0100,		// variable argument
+	ARGS_varg  = 0x0100,		// variable argument
+	ARGS_this  = 0x1000,		// first argument is this (used at lookup)
 
 	MASK_cast  = 0x000f,
 	MASK_kind  = 0x0030,
@@ -291,6 +292,7 @@ struct symNode {
 	symn owner;         // the type that declares the current symbol (DeclaringType)
 	symn fields;        // all fields: static + non static
 	symn params;        // function parameters, return value is the first parameter.
+	symn override;      // function overridest this other function
 
 	ccKind kind;        // KIND_def / KIND_typ / KIND_fun / KIND_var + ATTR_xxx + CAST_xxx
 

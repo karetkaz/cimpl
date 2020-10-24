@@ -115,22 +115,28 @@ static int ccInline(ccContext cc, astn tag) {
  * @return The symbol.
  */
 static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params) {
-	symn def, ptr;
-	size_t size = type->size;
-
 	if (tag == NULL || tag->kind != TOKEN_var) {
 		fatal(ERR_INTERNAL_ERROR": identifier expected, not: %t", tag);
 		return NULL;
 	}
 
-	if ((kind & MASK_cast) == CAST_ref) {
-		size = vm_ref_size;
+	size_t size = type->size;
+	switch (kind & MASK_kind) {
+		case KIND_def:
+		case KIND_typ:
+			// declaring a new type or alias, start with size 0
+			// struct Complex { ...
+			size = 0;
+			break;
+
+		case KIND_var:
+		case KIND_fun:
+			if ((kind & MASK_cast) == CAST_ref) {
+				size = vm_ref_size;
+			}
+			break;
 	}
-	else if (type == cc->type_rec) {
-		// struct Complex { ...
-		size = 0;
-	}
-	def = install(cc, tag->ref.name, kind, size, type, NULL);
+	symn def = install(cc, tag->ref.name, kind, size, type, NULL);
 
 	if (def != NULL) {
 		tag->ref.link = def;
@@ -145,7 +151,7 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 
 		addUsage(def, tag);
 
-		for (ptr = def->next; ptr; ptr = ptr->next) {
+		for (symn ptr = def->next; ptr; ptr = ptr->next) {
 			if (ptr->name == NULL) {
 				continue;
 			}
@@ -155,25 +161,12 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 				continue;
 			}
 
+			if (def->tag == ptr->tag && def->params == ptr->params) {
+				// same definition, static virtual method
+				continue;
+			}
+
 			if (strcmp(def->name, ptr->name) != 0) {
-				continue;
-			}
-
-			if (def->nest != ptr->nest) {
-				// can not override forward method inside a different block
-				continue;
-			}
-			if (ptr->owner != def->owner) {
-				// can not override forward method in an inherited
-				continue;
-			}
-			if (!isStatic(def) && !isStatic(ptr)) {
-				// allow override only static functions
-				continue;
-			}
-
-			if (!isFunction(def) && !isFunction(ptr)) {
-				// allow override only static functions
 				continue;
 			}
 
@@ -181,22 +174,35 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 				continue;
 			}
 
-			if (ptr->params != NULL && ptr->init == NULL) {
-				info(cc->rt, def->file, def->line, "Overwriting forward function: %T", ptr);
-				ptr->init = lnkNode(cc, def);
-				ptr = NULL;
+			// test if override is possible
+			if (ptr->owner != NULL && def->owner != NULL && isObjectType(def->owner)) {
+				if (isFunction(def) && !isStatic(def) && isVariable(ptr) && isInvokable(ptr)) {
+					warn(cc->rt, raise_warn_typ9, def->file, def->line, "Overriding virtual function: %T", ptr);
+					def->override = ptr;
+					break;
+				}
 			}
-			break;
-		}
 
-		if (ptr != NULL) {
-			if (ptr->owner != def->owner) {
-				warn(cc->rt, raise_warn_typ9, def->file, def->line, WARN_DECLARATION_REDEFINED, def);
+			// test if overwrite is possible (forward function implementation)
+			if (ptr->init == NULL && ptr->owner == def->owner && def->nest == ptr->nest) {
+				if (isFunction(def) && isVariable(ptr) && isInvokable(ptr)) {
+					warn(cc->rt, raise_warn_typ9, def->file, def->line, "Overwriting forward function: %T", ptr);
+					ptr->init = lnkNode(cc, def);
+					break;
+				}
 			}
-			else if (ptr->nest >= def->nest && strcmp(def->name, unknown_tag) != 0) {
+
+			if (ptr->owner == def->owner && ptr->nest >= def->nest && strcmp(def->name, unknown_tag) != 0) {
 				error(cc->rt, def->file, def->line, ERR_DECLARATION_REDEFINED, def);
 				if (ptr->file && ptr->line) {
 					info(cc->rt, ptr->file, ptr->line, "previously defined as `%T`", ptr);
+				}
+				break;
+			}
+			else {
+				warn(cc->rt, raise_warn_typ9, def->file, def->line, WARN_DECLARATION_REDEFINED, def);
+				if (ptr->file && ptr->line) {
+					warn(cc->rt, raise_warn_typ9, ptr->file, ptr->line, "previously defined as `%T`", ptr);
 				}
 			}
 		}
@@ -466,6 +472,19 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 		}
 
 		astn defInit = field->init;
+		for (symn ovr = type->fields; ovr != NULL; ovr = ovr->next) {
+			if (field->tag == ovr->tag) {
+				continue;
+			}
+			if (field != ovr->override) {
+				continue;
+			}
+			if (ovr->init != NULL) {
+				defInit = lnkNode(cc, ovr);
+				break;
+			}
+		}
+
 		if (defInit == NULL && !isConst(field) && !isConstVar(varNode)) {
 			// only assignable members can be initialized with default type initializer.
 			defInit = field->type->init;
@@ -1018,7 +1037,7 @@ static astn parameters(ccContext cc, symn returns, astn function) {
 
 				parameter->kind &= ~MASK_cast;
 				parameter->kind |= CAST_arr;
-				parameter->kind |= ATTR_varg;
+				parameter->kind |= ARGS_varg;
 			}
 			break;
 		}
@@ -1082,10 +1101,12 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 
 		// parse function body
 		if (peekTok(cc, STMT_beg)) {
-			def = declare(cc, ATTR_stat | ATTR_cnst | KIND_fun | cast, tag, type, params);
-			if ((attr & ATTR_stat) == 0 && cc->owner && isTypename(cc->owner)) {
-				// mark as a virtual method
-				def->kind &= ~ATTR_stat;
+			int isMember = (attr & ATTR_stat) == 0;
+			def = declare(cc, KIND_fun | attr | cast, tag, type, params);
+			if (isMember && def->override == NULL && cc->owner && isTypename(cc->owner) && !isStatic(cc->owner)) {
+				warn(cc->rt, raise_warn_typ9, def->file, def->line, "Creating virtual method for: %T", def);
+				symn method = declare(cc, ATTR_cnst | KIND_var | CAST_ref, tag, type, params);
+				method->init = lnkNode(cc, def);
 			}
 
 			// enable parameter lookup
@@ -1100,7 +1121,8 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 			backTok(cc, newNode(cc, STMT_end));
 			leave(cc, KIND_def, -1, 0, NULL, NULL);
 
-			// disable parameter lookup
+			// mark as static and disable parameter lookup
+			def->kind |= ATTR_stat;
 			def->fields = NULL;
 			return tag;
 		}
@@ -1420,11 +1442,12 @@ static astn declare_record(ccContext cc, ccKind attr) {
 	}
 	symn type = base == NULL ? cc->type_rec : base;
 	symn fields = base == NULL ? NULL : base->fields;
-	type = declare(cc, ATTR_stat | ATTR_cnst | KIND_typ | cast, tag, type, NULL);
+	type = declare(cc, KIND_typ | attr | cast, tag, type, NULL);
 	type->fields = fields; // allow lookup of fields from base type
 	enter(cc, tag, type);
 	statement_list(cc);
-	type->fields = leave(cc, attr | KIND_typ, pack, baseSize, &type->size, fields);
+	type->fields = leave(cc, KIND_typ | attr, pack, baseSize, &type->size, fields);
+	type->kind |= ATTR_stat | ATTR_cnst;
 	if (expose) {
 		// HACK: convert the type into a variable of it's own type ...?
 		type->kind = KIND_var | CAST_val;
