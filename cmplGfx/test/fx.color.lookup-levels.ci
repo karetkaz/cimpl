@@ -47,6 +47,7 @@ int onEvent(int action, int button, int x, int y) {
 	inline "/cmplGfx/lib/micro.ui.ci";
 
 	static bool updateInputOutput(Slider slider, int value);
+	static bool resetInputOutput(Slider slider);
 
 	static Histogram histogram = {
 		enabled: false;
@@ -78,6 +79,7 @@ int onEvent(int action, int button, int x, int y) {
 		minimum: -256;
 		maximum: 256;
 		onUpdate: updateInputOutput;
+		onReset: resetInputOutput;
 	};
 	static Slider sldInputMin = {
 		group: 1;
@@ -85,6 +87,7 @@ int onEvent(int action, int button, int x, int y) {
 		maximum: 256;
 		value: 0;
 		onUpdate: updateInputOutput;
+		onReset: resetInputOutput;
 	};
 	static Slider sldInputMax = {
 		group: 1;
@@ -92,6 +95,7 @@ int onEvent(int action, int button, int x, int y) {
 		maximum: 256;
 		value: 256;
 		onUpdate: updateInputOutput;
+		onReset: resetInputOutput;
 	};
 
 	static Slider sldOutput = {
@@ -99,6 +103,7 @@ int onEvent(int action, int button, int x, int y) {
 		minimum: -256;
 		maximum: 256;
 		onUpdate: updateInputOutput;
+		onReset: resetInputOutput;
 	};
 	static Slider sldOutputMin = {
 		group: 1;
@@ -106,6 +111,7 @@ int onEvent(int action, int button, int x, int y) {
 		maximum: 256;
 		value: 0;
 		onUpdate: updateInputOutput;
+		onReset: resetInputOutput;
 	};
 	static Slider sldOutputMax = {
 		group: 1;
@@ -113,6 +119,7 @@ int onEvent(int action, int button, int x, int y) {
 		maximum: 256;
 		value: 256;
 		onUpdate: updateInputOutput;
+		onReset: resetInputOutput;
 	};
 
 	static Layout ui = Layout(offs, -30, 30, font,
@@ -149,6 +156,17 @@ int onEvent(int action, int button, int x, int y) {
 			Slider.onUpdate(sldOutput, 0);
 		}
 		return Slider.onUpdate(slider, value);
+	}
+	static bool resetInputOutput(Slider slider) {
+		if (slider == sldInput) {
+			Slider.onReset(sldInputMin);
+			Slider.onReset(sldInputMax);
+		}
+		if (slider == sldOutput) {
+			Slider.onReset(sldOutputMin);
+			Slider.onReset(sldOutputMax);
+		}
+		return Slider.onReset(slider);
 	}
 
 	if (action == Gui.WINDOW_INIT) {

@@ -60,34 +60,18 @@ static struct Math {
 	// inline ceil(float32 x) = -floor(-x);
 	// inline round(float32 x) = floor(x + .5f);
 
+	inline sign(int32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+	inline sign(int64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+	inline sign(uint32 x) = x > 0 ? 1 : 0;
+	inline sign(uint64 x) = x > 0 ? 1 : 0;
+	// inline sign(float32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+	// inline sign(float64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+
 	/// Returns the signum of the input (`0` if zero, `-1` if negative, `1` if positive)
 	inline sign(float32 x) = int(x > 0) - int(x < 0);
 
 	/// Returns the signum of the input (`0` if zero, `-1` if negative, `1` if positive)
 	inline sign(float64 x) = int(x > 0) - int(x < 0);
-
-	// inline sign(int32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
-	// inline sign(int64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
-	// inline sign(uint32 x) = x > 0 ? 1 : 0;
-	// inline sign(uint64 x) = x > 0 ? 1 : 0;
-	// inline sign(float32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
-	// inline sign(float64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
-
-	/// Returns the absolute value of the input
-	float32 abs(float32 x) {
-		if (x < 0) {
-			return -x;
-		}
-		return x;
-	}
-
-	/// Returns the absolute value of the input
-	float64 abs(float64 x) {
-		if (x < 0) {
-			return -x;
-		}
-		return x;
-	}
 
 	/// Returns the positive modulus of the input
 	float32 absMod(float32 val, float32 mod) {
@@ -105,55 +89,59 @@ static struct Math {
 		return val;
 	}
 
-	// inline abs(int32 x) = x < 0 ? -x : x;
-	// inline abs(int64 x) = x < 0 ? -x : x;
-	// inline abs(uint32 x) = x;
-	// inline abs(float32 x) = x < 0 ? -x : x;
-	// inline abs(float64 x) = x < 0 ? -x : x;
+	/// Returns the absolute value of the input
+	inline abs(int32 x) = x < 0 ? -x : x;
+
+	/// Returns the absolute value of the input
+	inline abs(int64 x) = x < 0 ? -x : x;
+
+	/// Returns the absolute value of the input
+	inline abs(uint32 x) = x;
+
+	/// Returns the absolute value of the input
+	inline abs(uint64 x) = x;
+
+	/// Returns the absolute value of the input
+	inline abs(float32 x) = x < 0 ? -x : x;
+
+	/// Returns the absolute value of the input
+	inline abs(float64 x) = x < 0 ? -x : x;
 
 	/// Returns the smaller value from the input values
-	float32 min(float32 a, float32 b) {
-		if (a < b) {
-			return a;
-		}
-		return b;
-	}
+	inline min(int32 a, int32 b) = a < b ? a : b;
 
 	/// Returns the smaller value from the input values
-	float64 min(float64 a, float64 b) {
-		if (a < b) {
-			return a;
-		}
-		return b;
-	}
+	inline min(int64 a, int64 b) = a < b ? a : b;
 
-	// inline min(int32 a, int32 b) = a < b ? a : b;
-	// inline min(int64 a, int64 b) = a < b ? a : b;
-	// inline min(uint32 a, uint32 b) = a < b ? a : b;
-	// inline min(float32 a, float32 b) = a < b ? a : b;
-	// inline min(float64 a, float64 b) = a < b ? a : b;
+	/// Returns the smaller value from the input values
+	inline min(uint32 a, uint32 b) = a < b ? a : b;
 
-	/// Returns the greater value from the input values
-	float32 max(float32 a, float32 b) {
-		if (a > b) {
-			return a;
-		}
-		return b;
-	}
+	/// Returns the smaller value from the input values
+	inline min(uint64 a, uint64 b) = a < b ? a : b;
+
+	/// Returns the smaller value from the input values
+	inline min(float32 a, float32 b) = a < b ? a : b;
+
+	/// Returns the smaller value from the input values
+	inline min(float64 a, float64 b) = a < b ? a : b;
 
 	/// Returns the greater value from the input values
-	float64 max(float64 a, float64 b) {
-		if (a > b) {
-			return a;
-		}
-		return b;
-	}
+	inline max(int32 a, int32 b) = a > b ? a : b;
 
-	// inline max(int32 a, int32 b) = a > b ? a : b;
-	// inline max(int64 a, int64 b) = a > b ? a : b;
-	// inline max(uint32 a, uint32 b) = a > b ? a : b;
-	// inline max(float32 a, float32 b) = a > b ? a : b;
-	// inline max(float64 a, float64 b) = a > b ? a : b;
+	/// Returns the greater value from the input values
+	inline max(int64 a, int64 b) = a > b ? a : b;
+
+	/// Returns the greater value from the input values
+	inline max(uint32 a, uint32 b) = a > b ? a : b;
+
+	/// Returns the greater value from the input values
+	inline max(uint64 a, uint64 b) = a > b ? a : b;
+
+	/// Returns the greater value from the input values
+	inline max(float32 a, float32 b) = a > b ? a : b;
+
+	/// Returns the greater value from the input values
+	inline max(float64 a, float64 b) = a > b ? a : b;
 
 	/// Returns the value of `t` clamped between `a` and `b`
 	float32 clamp(float32 t, float32 a, float32 b) {

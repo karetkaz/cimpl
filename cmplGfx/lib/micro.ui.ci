@@ -69,20 +69,6 @@ struct Style {
 			valueRect.h = rect.h;
 		}
 	}
-
-	//- private debug function
-	static void align(const Style this&, Rect rect, Rect valueRect&, const char value[*], int align, Image offs) {
-		enum: uint32 {
-			// chromium inspector colors
-			margin: 0xf9cc9d; //dark: 0xae8152;
-			border: 0xffeebc; //dark: 0xe3c381;
-			padding: 0xc3d799; //dark: 0xb6c373;
-			content: 0x8cb7c5; //dark: 0x87b1bc;
-		}
-		align(&this, rect, &valueRect, value, align);
-		offs.fill(valueRect, this.padding, padding);
-		offs.fill(valueRect, content);
-	}// */
 }
 struct KeyEvent {
 	const bool release;
@@ -113,22 +99,61 @@ struct View: object {
 	bool selectable = true;
 	const variant data = null;
 
-	bool onMouseEvent(View this, const MouseEvent event&) = null;
 	bool onClick(View this) {
 		return true;
 	}
-	bool onReset(View this) = null;
+
+	bool onReset(View this) {
+		return false;
+	}
+
+	void onCreate(View this) {
+	}
+
+	bool onKeyEvent(View this, const KeyEvent event&) {
+		if (event.release) {
+			return false;
+		}
+		if (event.key == 8 && !event.isShift) {
+			return this.onReset(this);
+		}
+		if (event.key == ' ') {
+			return this.onClick(this);
+		}
+		return false;
+	}
+
+	bool onMouseEvent(View this, const MouseEvent event&) {
+		if (!event.release) {
+			return false;
+		}
+		if (event.repeat > 1) {
+			// double click to reset
+			return this.onReset(this);
+		}
+		return this.onClick(this);
+	}
+
+	void onMeasure(View this, Rect rect&, const Style style&);
+
+	void onDraw(View this, Image offs, Rect rect, const Style style&);
 }
 
 struct Button: View {
 	const char text[*];
-	/* FIXME: do the override, use this method as default initializer
-	// TODO: override or overload: bool onClick(Button this) { ... }
-	bool onClick(Button this) {
-		View.onClick(this);   // call super
-		trace("onClick", this);
-		return this.enabled;
-	}// */
+
+	void onMeasure(Button this, Rect rect&, const Style style&) {
+		if (this.height == 0) {
+			rect.h = style.font.height() + 2 * style.padding;
+		}
+		else if (this.text == null) {
+			// TODO: remove hack: empty button used for separator
+			rect.h = this.height + style.padding;
+		}
+		else {
+			rect.h = this.height;
+		}
+	}
 
 	void onDraw(Button this, Image offs, Rect rect, const Style style&) {
 		Style.align(style, rect, &rect, this.text, Style.left);
@@ -137,23 +162,53 @@ struct Button: View {
 }
 
 struct Switch: View {
-	const char text[*];
-	/* TODO: allow selecting one out of multiple choices
-	const char choices[*][] = {
-		"off",
-		"on"
-	};
-	int selected = 0;*/
-
 	const char on[*] = "on";
 	const char off[*] = "off";
+	const char text[*];
 
 	bool checked = false;
 	const bool resetValue = false;
 
 	bool onUpdate(Switch this, bool checked) {
+		if (this.checked == checked) {
+			return false;
+		}
 		this.checked = checked;
 		return true;
+	}
+
+	bool onClick(Switch this) {
+		return Switch.onUpdate(this, !this.checked);
+	}
+
+	bool onReset(Switch this) {
+		return Switch.onUpdate(this, this.resetValue);
+	}
+
+	void onCreate(Switch this) {
+		bool resetValue& = pointer(this.resetValue);
+		resetValue = this.checked;
+	}
+
+	bool onKeyEvent(Switch this, const KeyEvent event&) {
+		if (event.release) {
+			return View.onKeyEvent(this, event);
+		}
+		if (event.key == '+' || event.key == '=') {
+			return this.onUpdate(this, true);
+		}
+		if (event.key == '-' || event.key == '_') {
+			return this.onUpdate(this, false);
+		}
+		return View.onKeyEvent(this, event);
+	}
+
+	void onMeasure(Switch this, Rect rect&, const Style style&) {
+		if (this.height == 0) {
+			rect.h = style.font.height() + 2 * style.padding;
+		} else {
+			rect.h = this.height;
+		}
 	}
 
 	void onDraw(Switch this, Image offs, Rect rect, const Style style&) {
@@ -176,6 +231,14 @@ struct Slider: View {
 	const int divisor = 0;
 	const int resetValue = 0;
 
+	static float64 valFlt(Slider slider&) {
+		float64 value = slider.value;
+		if (slider.divisor != 0) {
+			return value / slider.divisor;
+		}
+		return value / (slider.maximum - slider.minimum);
+	}
+
 	bool onUpdate(Slider this, int value) {
 		if (value > this.maximum) {
 			value = this.maximum;
@@ -188,6 +251,47 @@ struct Slider: View {
 		}
 		this.value = value;
 		return true;
+	}
+
+	bool onReset(Slider this) {
+		return Slider.onUpdate(this, this.resetValue);
+	}
+
+	void onCreate(Slider this) {
+		Slider.onUpdate(this, this.value);// clamp initial value
+		int resetValue& = pointer(this.resetValue);
+		resetValue = this.value;
+	}
+
+	bool onKeyEvent(Slider this, const KeyEvent event&) {
+		if (event.release) {
+			return View.onKeyEvent(this, event);
+		}
+		if (event.key == ' ') {
+			return this.onReset();
+		}
+		if (event.key == '+' || event.key == '=') {
+			return this.onUpdate(this, this.value + (event.isShift ? 1 : 10));
+		}
+		if (event.key == '-' || event.key == '_') {
+			return this.onUpdate(this, this.value - (event.isShift ? 1 : 10));
+		}
+		return View.onKeyEvent(this, event);
+	}
+
+	bool onMouseEvent(Slider this, const MouseEvent event&) {
+		if (event.dy != 0 && !event.release) {
+			return this.onUpdate(this, this.value + event.dy);
+		}
+		return View.onMouseEvent(this, event);
+	}
+
+	void onMeasure(Slider this, Rect rect&, const Style style&) {
+		if (this.height == 0) {
+			rect.h = style.font.height() + 2 * style.padding;
+		} else {
+			rect.h = this.height;
+		}
 	}
 
 	void onDraw(Slider this, Image offs, Rect rect, const Style style&) {
@@ -206,14 +310,6 @@ struct Slider: View {
 		offs.drawText(valueRoi, style.font, value, style.valueColor);
 		offs.drawText(rect, style.font, this.text, style.textColor);
 	}
-
-	static float64 valFlt(Slider slider&) {
-		float64 value = slider.value;
-		if (slider.divisor != 0) {
-			return value / slider.divisor;
-		}
-		return value / (slider.maximum - slider.minimum);
-	}
 }
 
 struct Histogram: View {
@@ -222,7 +318,7 @@ struct Histogram: View {
 	bool color = false;
 	argb data[256] = null;   // FIXME: this should be not possible
 
-	void update(Histogram this, Image image) {
+	static void update(Histogram this, Image image) {
 		uint32 data[*] = pointer(this.data);
 		image.calcRgbHist(null, &data);
 		this.color = false;
@@ -231,6 +327,67 @@ struct Histogram: View {
 	bool onUpdate(Histogram this, int idx, int value) {
 		this.data[idx] = argb(idx, value, value, value);
 		return true;
+	}
+
+	bool onReset(Histogram this) {
+		bool result = false;
+		for (int i = 0; i < 256; i += 1) {
+			result |= Histogram.onUpdate(this, i, i);
+		}
+		return result;
+	}
+
+	void onCreate(Histogram this) {
+		Histogram.onReset(this);
+	}
+
+	bool onMouseEvent(Histogram this, const MouseEvent event&) {
+		if (event.release) {
+			return View.onMouseEvent(this, event);
+		}
+
+		const Rect rect& = event.clientRect;
+		int x0 = event.x - rect.x;
+		int x1 = x0 + event.dx;
+		int y0 = event.y - rect.y;
+		int y1 = y0 + event.dy;
+
+		if (x0 > x1) {
+			int x = x0;
+			x0 = x1;
+			x1 = x;
+			int y = y0;
+			y0 = y1;
+			y1 = y;
+		}
+		int y = y0 << 16;
+		int dy = y1 - y0;
+		if (x1 != x0) {
+			dy = (dy << 16) / (x1 - x0);
+		}
+		if (x0 < 0) {
+			y -= x0 * dy;
+			x0 = 0;
+		}
+		if (x1 > 256) {
+			x1 = 256;
+		}
+		int h = rect.h;
+		for (int x = x0; x < x1; x += 1) {
+			int val = 255 * (h - (y >> 16)) / h;
+			this.onUpdate(this, x, val);
+			y += dy;
+		}
+		return true;
+	}
+
+	void onMeasure(Histogram this, Rect rect&, const Style style&) {
+		if (this.height == 0) {
+			rect.h = 128;
+		} else {
+			rect.h = this.height;
+		}
+		return;
 	}
 
 	void onDraw(Histogram this, Image offs, const Rect rect, const Style style&) {
@@ -297,266 +454,6 @@ struct Histogram: View {
 	}
 }
 
-void onInit(View this) {
-	// FIXME: dispatch using inheritance and override
-	if (Histogram item = this.as(Histogram)) {
-		for (int i = 0; i < 256; i += 1) {
-			item.data[i] = argb(i, i, i, i);
-		}
-		return;
-	}
-	if (Slider item = this.as(Slider)) {
-		Slider.onUpdate(item, item.value);// clamp initial value
-		int resetValue& = pointer(item.resetValue);
-		resetValue = item.value;
-		return;
-	}
-	if (Switch item = this.as(Switch)) {
-		bool resetValue& = pointer(item.resetValue);
-		resetValue = item.checked;
-		return;
-	}
-	if (Button item = this.as(Button)) {
-		return;
-	}
-	abort("invalid view", this);
-}
-bool onReset(View this) {
-	if (this.onReset != null) {
-		return this.onReset(this);
-	}
-	// FIXME: dispatch using inheritance and override
-	if (Histogram item = this.as(Histogram)) {
-		if (item.onUpdate == null) {
-			return false;
-		}
-		bool result = false;
-		for (int i = 0; i < 256; i += 1) {
-			result |= item.onUpdate(i, i);
-		}
-		return result;
-	}
-	if (Slider item = this.as(Slider)) {
-		if (item.onUpdate == null) {
-			return false;
-		}
-		return item.onUpdate(item.resetValue);
-	}
-	if (Switch item = this.as(Switch)) {
-		if (item.onUpdate == null) {
-			return false;
-		}
-		return item.onUpdate(item.resetValue);
-	}
-	if (Button item = this.as(Button)) {
-		return false;
-	}
-	abort("invalid view", this);
-	return false;
-}
-bool onEvent(View this, const KeyEvent event&) {
-	// FIXME: dispatch using inheritance and override
-	if (!event.release) {
-		return false;
-	}
-	if (Histogram item = this.as(Histogram)) {
-		if (event.key == ' ' || event.key == 8) {
-			return item.onReset();
-		}
-		return false;
-	}
-	if (Slider item = this.as(Slider)) {
-		if (event.key == '+' || event.key == '=') {
-			if (item.onUpdate == null) {
-				return false;
-			}
-			return item.onUpdate(item.value + (event.isShift ? 1 : 10));
-		}
-		if (event.key == '-' || event.key == '_') {
-			if (item.onUpdate == null) {
-				return false;
-			}
-			return item.onUpdate(item.value - (event.isShift ? 1 : 10));
-		}
-		if (event.key == ' ' || event.key == 8) {
-			return item.onReset();
-		}
-		return false;
-	}
-	if (Switch item = this.as(Switch)) {
-		if (event.key == ' ') {
-			if (item.onUpdate != null) {
-				item.onUpdate(!item.checked);
-			}
-			return item.onClick();
-		}
-		if (event.key == 8) {
-			return item.onReset();
-		}
-		return false;
-	}
-	if (Button item = this.as(Button)) {
-		if (event.key == ' ') {
-			return item.onClick();
-		}
-		return false;
-	}
-	abort("invalid view", this);
-	return false;
-}
-bool onEvent(View this, const MouseEvent event&) {
-	if (this.onMouseEvent != null) {
-		return this.onMouseEvent(event);
-	}
-
-	// FIXME: dispatch using inheritance and override
-	if (Histogram item = this.as(Histogram)) {
-		if (event.release) {
-			if (event.repeat > 1) {
-				// double click to reset
-				return item.onReset();
-			}
-			return item.onClick();
-		}
-		if (item.onUpdate == null) {
-			return false;
-		}
-
-		const Rect rect& = event.clientRect;
-		int x0 = event.x - rect.x;
-		int x1 = x0 + event.dx;
-		int y0 = event.y - rect.y;
-		int y1 = y0 + event.dy;
-
-		if (x0 > x1) {
-			int x = x0;
-			x0 = x1;
-			x1 = x;
-			int y = y0;
-			y0 = y1;
-			y1 = y;
-		}
-		int y = y0 << 16;
-		int dy = y1 - y0;
-		if (x1 != x0) {
-			dy = (dy << 16) / (x1 - x0);
-		}
-		if (x0 < 0) {
-			y -= x0 * dy;
-			x0 = 0;
-		}
-		if (x1 > 256) {
-			x1 = 256;
-		}
-		int h = rect.h;
-		for (int x = x0; x < x1; x += 1) {
-			int val = 255 * (h - (y >> 16)) / h;
-			item.onUpdate(x, val);
-			y += dy;
-		}
-		return true;
-	}
-	if (Slider item = this.as(Slider)) {
-		if (event.release) {
-			if (event.repeat > 1) {
-				// double click to reset
-				return item.onReset();
-			}
-			return item.onClick();
-		}
-		if (item.onUpdate == null) {
-			return false;
-		}
-		if (event.dy == 0) {
-			// do not update to the same value
-			return false;
-		}
-		return item.onUpdate(item.value + event.dy);
-	}
-	if (Switch item = this.as(Switch)) {
-		if (event.release) {
-			if (item.onUpdate != null) {
-				item.onUpdate(!item.checked);
-			}
-			return item.onClick();
-		}
-		return false;
-	}
-	if (Button item = this.as(Button)) {
-		if (event.release) {
-			if (event.repeat > 1) {
-				// double click to reset
-				return item.onReset();
-			}
-			return item.onClick();
-		}
-		return false;
-	}
-	abort("invalid view", this);
-	return false;
-}
-void onMeasure(View this, Rect rect&, const Style style&) {
-	// FIXME: dispatch using inheritance and override
-	if (Histogram item = this.as(Histogram)) {
-		if (item.height == 0) {
-			rect.h = 128;
-		} else {
-			rect.h = item.height;
-		}
-		return;
-	}
-	if (Slider item = this.as(Slider)) {
-		if (item.height == 0) {
-			rect.h = style.font.height() + 2 * style.padding;
-		} else {
-			rect.h = item.height;
-		}
-		return;
-	}
-	if (Switch item = this.as(Switch)) {
-		if (item.height == 0) {
-			rect.h = style.font.height() + 2 * style.padding;
-		} else {
-			rect.h = item.height;
-		}
-		return;
-	}
-	if (Button item = this.as(Button)) {
-		if (item.height == 0) {
-			rect.h = style.font.height() + 2 * style.padding;
-		}
-		else if (item.text == null) {
-			// TODO: remove hack: empty button used for separator
-			rect.h = item.height + style.padding;
-		}
-		else {
-			rect.h = item.height;
-		}
-		return;
-	}
-	if (typename(item) == View) {
-		rect.h = this.height;
-		return;
-	}
-	abort("invalid view", this);
-}
-bool onDraw(View view, Image offs, const Rect rect&, const Style style&) {
-	// FIXME: dispatch using inheritance and override
-	if (Histogram item = view.as(Histogram)) {
-		return item.onDraw(item, offs, rect, style);
-	}
-	if (Slider item = view.as(Slider)) {
-		return item.onDraw(item, offs, rect, style);
-	}
-	if (Switch item = view.as(Switch)) {
-		return item.onDraw(item, offs, rect, style);
-	}
-	if (Button item = view.as(Button)) {
-		return item.onDraw(item, offs, rect, style);
-	}
-	abort("invalid view", view);
-}
-
 struct Layout: object {
 	Style style;
 	Image offs;
@@ -620,184 +517,184 @@ struct Layout: object {
 	}
 
 	static bool onEvent(Layout layout&, int action, int button, int x, int y) {
-	struct Mouse {
-		int32 clicks;   // click count
-		int64 time;     // old clock
-		int32 btn;      // old button
-		int32 x;        // old x coord
-		int32 y;        // old y coord
+		struct Mouse {
+			int32 clicks;   // click count
+			int64 time;     // old clock
+			int32 btn;      // old button
+			int32 x;        // old x coord
+			int32 y;        // old y coord
 
-		static int click(Mouse old&, int btn, int x, int y) {
-			if ((btn != 0 && btn != old.btn) || x != old.x || y != old.y) {
-				// reset values
-				old.clicks = 1;
-				old.time = System.millis();
+			static int click(Mouse old&, int btn, int x, int y) {
+				if ((btn != 0 && btn != old.btn) || x != old.x || y != old.y) {
+					// reset values
+					old.clicks = 1;
+					old.time = System.millis();
+					old.btn = btn;
+					old.x = x;
+					old.y = y;
+					return 0;
+				}
+				if (btn == 0) {
+					// release button
+					// old.time = keep value?;
+					// old.btn = keep value?;
+					// old.cnt = keep value?;
+					return old.clicks;
+				}
+
+				int64 now = System.millis();
+				if ((now - old.time) / 1000. > .5) {
+					// reset counter
+					old.clicks = 0;
+				}
+				old.time = now;
 				old.btn = btn;
-				old.x = x;
-				old.y = y;
-				return 0;
-			}
-			if (btn == 0) {
-				// release button
-				// old.time = keep value?;
-				// old.btn = keep value?;
-				// old.cnt = keep value?;
+				old.clicks += 1;
 				return old.clicks;
 			}
-
-			int64 now = System.millis();
-			if ((now - old.time) / 1000. > .5) {
-				// reset counter
-				old.clicks = 0;
-			}
-			old.time = now;
-			old.btn = btn;
-			old.clicks += 1;
-			return old.clicks;
-		}
-	}
-
-	static int click(Layout layout&, int x, int y) {
-		static bool test(const Rect rect&, int x, int y) {
-			if (x < rect.x || x >= rect.x + rect.w) {
-				return false;
-			}
-			if (y < rect.y || y >= rect.y + rect.h) {
-				return false;
-			}
-			return true;
 		}
 
-		if (!layout.visible) {
-			return -1;
-		}
-		if (!layout.rect.test(x, y)) {
-			return -1;
-		}
-		for (int i = 0; i < layout.items; i += 1) {
-			if (!layout.rects[i].test(x, y)) {
-				continue;
-			}
-
-			View view = layout.views[i];
-			if (!view.enabled) {
-				return -1;
-			}
-			return i;
-		}
-		return -1;
-	}
-	static bool select(Layout layout&, int index) {
-		assert(index >= 0, "invalid selection");
-		assert(index < layout.items, "invalid selection");
-
-		View view = layout.views[index];
-		if (!view.enabled) {
-			return false;
-		}
-		if (!view.selectable) {
-			return false;
-		}
-		if (layout.group != view.group) {
-			if (layout.group != 0) {
-				if (view.group != 0) {
+		static int click(Layout layout&, int x, int y) {
+			static bool test(const Rect rect&, int x, int y) {
+				if (x < rect.x || x >= rect.x + rect.w) {
 					return false;
 				}
-			}
-		}
-		layout.selectedIndex = index;
-		return true;
-	}
-	static bool select(Layout layout&, bool prev) {
-		layout.activeIndex = -1;
-		int selectedIndex = layout.selectedIndex;
-		for (int i = 1; i < layout.items; i += 1) {
-			int index = selectedIndex + (prev ? -i : i);
-			if (index >= layout.items) {
-				index -= layout.items;
-			}
-			else if (index < 0) {
-				index += layout.items;
-			}
-			if (layout.select(index)) {
+				if (y < rect.y || y >= rect.y + rect.h) {
+					return false;
+				}
 				return true;
 			}
-		}
-		return false;
-	}
-	static View active(const Layout layout&) {
-		int idx = layout.activeIndex;
-		if (idx < 0) {
-			idx = layout.selectedIndex;
-		}
-		if (idx < 0) {
-			return null;
-		}
-		return layout.views[idx];
-	}
-	static void measure(Layout layout&) {
-		int bottom = layout.rect.y;
-		for (int i = 0; i < layout.items; i += 1) {
-			Rect rect& = layout.rects[i];
-			View view = layout.views[i];
 
-			rect.x = layout.rect.x;
-			rect.y = bottom;
-			rect.w = layout.rect.w;
-			rect.h = view.height;
+			if (!layout.visible) {
+				return -1;
+			}
+			if (!layout.rect.test(x, y)) {
+				return -1;
+			}
+			for (int i = 0; i < layout.items; i += 1) {
+				if (!layout.rects[i].test(x, y)) {
+					continue;
+				}
 
-			view.onMeasure(&rect, layout.style);
+				View view = layout.views[i];
+				if (!view.enabled) {
+					return -1;
+				}
+				return i;
+			}
+			return -1;
+		}
+		static bool select(Layout layout&, int index) {
+			assert(index >= 0, "invalid selection");
+			assert(index < layout.items, "invalid selection");
+
+			View view = layout.views[index];
+			if (!view.enabled) {
+				return false;
+			}
+			if (!view.selectable) {
+				return false;
+			}
 			if (layout.group != view.group) {
 				if (layout.group != 0) {
 					if (view.group != 0) {
-						rect.h = 0;
+						return false;
 					}
 				}
 			}
-			if (rect.h > 0) {
-				bottom += rect.h;
-			}
+			layout.selectedIndex = index;
+			return true;
 		}
-		layout.rect.h = bottom - layout.rect.y;
-	}
-	static void draw(Layout layout&) {
-		if (!layout.visible) {
-			return;
+		static bool select(Layout layout&, bool prev) {
+			layout.activeIndex = -1;
+			int selectedIndex = layout.selectedIndex;
+			for (int i = 1; i < layout.items; i += 1) {
+				int index = selectedIndex + (prev ? -i : i);
+				if (index >= layout.items) {
+					index -= layout.items;
+				}
+				else if (index < 0) {
+					index += layout.items;
+				}
+				if (layout.select(index)) {
+					return true;
+				}
+			}
+			return false;
 		}
-
-		// draw background
-		if (layout.style.backgroundColor != -1) {
-			int b = layout.style.border;
-			const Rect r& = layout.rect;
-			layout.offs.fillRect(r.x - b, r.y - b, r.x + r.w + b, r.y + r.h + b, layout.style.backgroundColor);
+		static View active(const Layout layout&) {
+			int idx = layout.activeIndex;
+			if (idx < 0) {
+				idx = layout.selectedIndex;
+			}
+			if (idx < 0) {
+				return null;
+			}
+			return layout.views[idx];
 		}
+		static void measure(Layout layout&) {
+			int bottom = layout.rect.y;
+			for (int i = 0; i < layout.items; i += 1) {
+				Rect rect& = layout.rects[i];
+				View view = layout.views[i];
 
-		// draw items
-		Image offs = layout.offs.slice(null);
-		for (int i = 0; i < layout.items; i += 1) {
-			View view = layout.views[i];
-			const Rect rect& = layout.rects[i];
+				rect.x = layout.rect.x;
+				rect.y = bottom;
+				rect.w = layout.rect.w;
+				rect.h = view.height;
 
-			if (i == layout.selectedIndex) {
-				layout.offs.fillRect(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, layout.style.focusedColor);
+				view.onMeasure(&rect, layout.style);
+				if (layout.group != view.group) {
+					if (layout.group != 0) {
+						if (view.group != 0) {
+							rect.h = 0;
+						}
+					}
+				}
+				if (rect.h > 0) {
+					bottom += rect.h;
+				}
+			}
+			layout.rect.h = bottom - layout.rect.y;
+		}
+		static void draw(Layout layout&) {
+			if (!layout.visible) {
+				return;
 			}
 
-			if (rect.w > 0 && rect.h > 0) {
-				offs.slice(layout.offs, rect);
-				Rect rect = {
-					x: 0; y: 0;
-					w: offs.width();
-					h: offs.height();
-				};
-				view.onDraw(offs, rect, layout.style);
+			// draw background
+			if (layout.style.backgroundColor != -1) {
+				int b = layout.style.border;
+				const Rect r& = layout.rect;
+				layout.offs.fillRect(r.x - b, r.y - b, r.x + r.w + b, r.y + r.h + b, layout.style.backgroundColor);
 			}
 
-			if (i == layout.activeIndex) {
-				layout.offs.drawRect(rect.x, rect.y, rect.x + rect.w - 1, rect.y + rect.h - 1, layout.style.valueColor);
+			// draw items
+			Image offs = layout.offs.slice(null);
+			for (int i = 0; i < layout.items; i += 1) {
+				View view = layout.views[i];
+				const Rect rect& = layout.rects[i];
+
+				if (i == layout.selectedIndex) {
+					layout.offs.fillRect(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, layout.style.focusedColor);
+				}
+
+				if (rect.w > 0 && rect.h > 0) {
+					offs.slice(layout.offs, rect);
+					Rect rect = {
+						x: 0; y: 0;
+						w: offs.width();
+						h: offs.height();
+					};
+					view.onDraw(offs, rect, layout.style);
+				}
+
+				if (i == layout.activeIndex) {
+					layout.offs.drawRect(rect.x, rect.y, rect.x + rect.w - 1, rect.y + rect.h - 1, layout.style.valueColor);
+				}
 			}
+			offs.destroy();
 		}
-		offs.destroy();
-	}
 
 		static Mouse mouse = {};
 		static bool isShift;
@@ -876,7 +773,7 @@ struct Layout: object {
 					x: x;
 					y: y;
 				};
-				if (view.onEvent(event)) {
+				if (view.onMouseEvent(event)) {
 					return true;
 				}
 			}
@@ -916,7 +813,7 @@ struct Layout: object {
 					x: x;
 					y: y;
 				};
-				if (view.onEvent(event)) {
+				if (view.onMouseEvent(event)) {
 					return true;
 				}
 			}
@@ -961,7 +858,7 @@ struct Layout: object {
 					x: x;
 					y: y;
 				};
-				if (view.onEvent(event)) {
+				if (view.onMouseEvent(event)) {
 					result = true;
 				}
 			}
@@ -972,6 +869,26 @@ struct Layout: object {
 			isShift = (y & Gui.KEY_MASK_SHIFT) != 0;
 			isCtrl = (y & Gui.KEY_MASK_CTRL) != 0;
 			isAlt = (y & Gui.KEY_MASK_ALT) != 0;
+
+			if (button == '\t' || button == '\r') {
+				// Tab, Enter: select prev or next control.
+				return layout.select(isShift);
+			}
+			if (button == ' ' && isShift) {
+				// hide, show controls
+				layout.visible = !layout.visible;
+				return true;
+			}
+			if (button == 8 && isShift) {
+				bool result = false;
+				for (int i = 0; i < layout.items; i += 1) {
+					View view = layout.views[i];
+					if (view.onReset()) {
+						result = true;
+					}
+				}
+				return result;
+			}
 			if (View view = layout.active()) {
 				KeyEvent event = {
 					release: false;
@@ -981,24 +898,9 @@ struct Layout: object {
 					repeat: 0;
 					key: button;
 				};
-				if (view.onEvent(event)) {
+				if (view.onKeyEvent(event)) {
 					return true;
 				}
-			}
-			if (button == '\t' || button == '\r') {
-				// Tab, Enter: select prev or next control.
-				return layout.select(isShift);
-			}
-			if (button == '[' || button == ']') {
-				// hide, show controls
-				layout.visible = !layout.visible;
-				return true;
-			}
-			if (button == 8 && isShift) {
-				for (int i = 0; i < layout.items; i += 1) {
-					layout.views[i].onReset();
-				}
-				return true;
 			}
 			return false;
 		}
@@ -1015,7 +917,7 @@ struct Layout: object {
 					repeat: 0;
 					key: button;
 				};
-				if (view.onEvent(event)) {
+				if (view.onKeyEvent(event)) {
 					return true;
 				}
 			}
@@ -1054,7 +956,7 @@ Layout Layout(Image offs, int x, int y, Image font, View items...) {
 	for (int i = 0; i < items.length; i += 1) {
 		assert(i < layout.views.length);
 		layout.views[i] = items[i];
-		items[i].onInit();
+		items[i].onCreate(items[i]);
 	}
 	layout.items = items.length;
 
