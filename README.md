@@ -16,7 +16,7 @@ A very "simple" C like language.
 
 * [Flood It](demo.html#file=FloodIt.ci&project=cmplGfx/test/demo/FloodIt.ci)
 
-* [Ray Tracer](demo.html#file=RayTracer.ci&project=cmplGfx/test/demo/RayTracer.ci)
+* [Ray Tracer](demo.html#file=RayTracer0.ci&project=cmplGfx/test/demo/RayTracer0.ci)
 
 * [Yin Yang](demo.html#file=pd.yinyang.ci&project=cmplGfx/test/pd.yinyang.ci)
 
