@@ -38,6 +38,7 @@ static const char *const type_get_file = "typename file(typename type)";
 static const char *const type_get_line = "int32 line(typename type)";
 static const char *const type_get_name = "typename name(typename type)";
 static const char *const type_get_base = "typename base(typename type)";
+static const char *const type_ref_size = "int32 size(typename type)";
 static vmError typenameGetField(nfcContext ctx) {
 	size_t symOffs = argref(ctx, 0);
 	symn sym = rtLookup(ctx->rt, symOffs, 0);
@@ -59,6 +60,10 @@ static vmError typenameGetField(nfcContext ctx) {
 	}
 	if (ctx->proto == type_get_base) {
 		retref(ctx, vmOffset(ctx->rt, sym->type));
+		return noError;
+	}
+	if (ctx->proto == type_ref_size) {
+		reti32(ctx, refSize(sym));
 		return noError;
 	}
 	return nativeCallError;
@@ -99,6 +104,7 @@ int isObjectType(symn sym) {
 }
 
 static const char *const object_create = "pointer create(typename type)";
+static const char *const object_destroy = "void destroy(object this)";
 static const char *const object_cast = "pointer as(object this, typename type)";
 static vmError objectHelpers(nfcContext ctx) {
 	rtContext rt = ctx->rt;
@@ -117,6 +123,12 @@ static vmError objectHelpers(nfcContext ctx) {
 		// persist type of object
 		*(vmOffs*)obj = vmOffset(rt, sym);
 		retref(ctx, vmOffset(rt, obj));
+		return noError;
+	}
+
+	if (ctx->proto == object_destroy) {
+		void *obj = vmPointer(rt, argref(ctx, 0));
+		rtAlloc(rt, obj, 0, NULL);
 		return noError;
 	}
 
@@ -669,6 +681,7 @@ static int install_base(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)
 				// hack: change return type from pointer to string
 				field->params->type = cc->type_str;
 			}
+			error = error || !(field = ccAddCall(cc, typenameGetField, type_ref_size));
 
 			/* TODO: more 4 reflection
 			error = error || !ccAddCall(rt, typenameReflect, "variant lookup(variant &obj, int options, string name, variant args...)");
@@ -697,6 +710,7 @@ static int install_base(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)
 
 		if ((mode & installLibs) != 0) {
 			error = error || !(cc->libc_new = ccAddCall(cc, objectHelpers, object_create));
+			error = error || !ccAddCall(cc, objectHelpers, object_destroy);
 			error = error || !ccAddCall(cc, objectHelpers, object_cast);
 		}
 
@@ -998,7 +1012,7 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(dbgContext, void *,
 			chunk = NULL;
 		}
 	}
-		// allocate.
+	// allocate.
 	else if (size > 0) {
 		memChunk prev = chunk = rt->vm.heap;
 

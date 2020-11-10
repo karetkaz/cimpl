@@ -7,119 +7,15 @@
  * use 'space' to press a button, toggle switch or reset slider value
  * use '[' or ']' to show and hide the controls
  *
- * drag the mouse up or down in the window to adjust control value
+ * drag the mouse left or right in the window to adjust selected slider value
  */
 
-Image back = Image("asset/image/forest.png", 32);
-Image font = Image.openFnt("asset/font/Modern-1.fnt");
+Image back = Image("asset/image/forest.jpg");
 Image offs = Image(back.width(), back.height(), back.depth());
-
-static const mat4f IDENTITY = mat4f(
-	1, 0, 0, 0,
-	0, 1, 0, 0,
-	0, 0, 1, 0,
-	0, 0, 0, 1
-);
-
-static const mat4f INVERT = mat4f(
-	-1, 0, 0, 1,
-	0, -1, 0, 1,
-	0, 0, -1, 1,
-	0, 0,  0, 1
-);
-
-static const mat4f GREY_SCALE = mat4f(
-	0.299, 0.587, 0.114, 0,
-	0.299, 0.587, 0.114, 0,
-	0.299, 0.587, 0.114, 0,
-	0, 0, 0, 1
-);
-
-static const mat4f BLACK_AND_WHITE = mat4f(
-	1.5, 1.5, 1.5, -1,
-	1.5, 1.5, 1.5, -1,
-	1.5, 1.5, 1.5, -1,
-	0, 0, 0, 1
-);
-
-static const mat4f SEPIA_COLOR = mat4f(
-	0.393, 0.769, 0.189, 0,
-	0.349, 0.686, 0.168, 0,
-	0.272, 0.534, 0.131, 0,
-	0, 0, 0, 1
-);
-
-static const mat4f TECHNICOLOR = mat4f(
-// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
-	1.9125277891456083, -0.8545344976951645, -0.09155508482755585, 11.793603434377337 / 255,
-	-0.3087833385928097, 1.7658908555458428, -0.10601743074722245, -70.35205161461398 / 255,
-	-0.231103377548616, -0.7501899197440212, 1.847597816108189, 30.950940869491138 / 255,
-	0, 0, 0, 1
-);
-
-static const mat4f POLAROID = mat4f(
-// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
-	1.438, -0.062, -0.062, 0,
-	-0.122, 1.378, -0.122, 0,
-	-0.016, -0.016, 1.483, 0,
-	0, 0, 0, 1
-);
-
-static const mat4f KODACHROME = mat4f(
-// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
-	1.1285582396593525, -0.3967382283601348, -0.03992559172921793, 63.72958762196502 / 255,
-	-0.16404339962244616, 1.0835251566291304, -0.05498805115633132, 24.732407896706203 / 255,
-	-0.16786010706155763, -0.5603416277695248, 1.6014850761964943, 35.62982807460946 / 255,
-	0, 0, 0, 1
-);
-
-static const mat4f BROWNI = mat4f(
-// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
-	0.5997023498159715, 0.34553243048391263, -0.2708298674538042, 47.43192855600873 / 255,
-	-0.037703249837783157, 0.8609577587992641, 0.15059552388459913, -36.96841498319127 / 255,
-	0.24113635128153335, -0.07441037908422492, 0.44972182064877153, -7.562075277591283 / 255,
-	0, 0, 0, 1
-);
-
-static const mat4f VINTAGE = mat4f(
-// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
-	0.6279345635605994, 0.3202183420819367, -0.03965408211312453, 9.651285835294123 / 255,
-	0.02578397704808868, 0.6441188644374771, 0.03259127616149294, 7.462829176470591 / 255,
-	0.0466055556782719, -0.0851232987247891, 0.5241648018700465, 5.159190588235296 / 255,
-	0, 0, 0, 1
-);
-
-static const mat4f NIGHT_VISION = mat4f(
-// https://github.com/skratchdot/color-matrix/blob/master/lib/filters.js
-	0.1, 0.4, 0, 0,
-	0.3, 1, 0.3, 0,
-	0, 0.4, 0.1, 0,
-	0, 0, 0, 1
-);
-
-static const mat4f WARM = mat4f(
-// https://github.com/skratchdot/color-matrix/blob/master/lib/filters.js
-	1.06, 0, 0, 0,
-	0, 1.01, 0, 0,
-	0, 0, 0.93, 0,
-	0, 0, 0, 1
-);
-
-static const mat4f COOL = mat4f(
-// https://github.com/skratchdot/color-matrix/blob/master/lib/filters.js
-	0.99, 0, 0, 0,
-	0, 0.93, 0, 0,
-	0, 0, 1.08, 0,
-	0, 0, 0, 1
-);
-
-static const mat4f LSD = mat4f(
-// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
-	2, -0.4, 0.5, 0,
-	-0.5, 2, -0.4, 0,
-	-0.4, -0.5, 3, 0,
-	0, 0, 0, 1
-);
+int onEvent(int action, int button, int x, int y);
+offs.show(onEvent);
+offs.destroy();
+back.destroy();
 
 mat4f colorMatrix(float brightness, float saturation, float contrast, float temp, float tint, float hue) {
 	static mat4f brightnessMat(float val) {
@@ -213,385 +109,290 @@ mat4f colorMatrix(float brightness, float saturation, float contrast, float temp
 		.mul(hueMat(hue));
 }
 
-int onEvent(int action, int button, int x, int y);
-offs.show(onEvent);
-offs.destroy();
-back.destroy();
-font.destroy();
+inline "/cmplGfx/lib/micro.ui.ci";
+bool onPresetsClick(Switch view);
+Histogram histogram = {
+	enabled: false;
+};
+
+char groups[*][] = {
+	">";
+	"<<<";
+};
+Switch selGroups = {
+	text: "Presets";
+	states: groups;
+	selectable: false;
+	onClick: onPresetsClick;
+};
+
+// controls
+Slider brightness = {
+	visible: 1;
+	text: "brightness";
+	minimum: -200;
+	maximum: 200;
+	divisor: 200;
+};
+Slider saturation = {
+	visible: 1;
+	text: "saturation";
+	value: 200;
+	maximum: 1000;
+	divisor: 200;
+};
+Slider contrast = {
+	visible: 1;
+	text: "contrast";
+	value: 200;
+	minimum: -200;
+	maximum: 1000;
+	divisor: 200;
+};
+Slider temp = {
+	visible: 1;
+	text: "temperature";
+	minimum: -200;
+	maximum: 200;
+	divisor: 400;
+};
+Slider tint = {
+	visible: 1;
+	text: "tint";
+	minimum: -200;
+	maximum: 200;
+	divisor: 400;
+};
+Slider hue = {
+	visible: 1;
+	text: "hue";
+	minimum: 0;
+	maximum: 720;
+	divisor: 2;
+};
+
+// presets
+struct PresetButton: Button {
+	// custom button for presets, containing the preset matrix
+	const mat4f data;
+}
+PresetButton original = {
+	visible: 2;
+	text: "original";
+	data: mat4f(
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1
+	);
+};
+PresetButton invert = {
+	visible: 2;
+	text: "invert";
+	data: mat4f(
+		-1, 0, 0, 1,
+		0, -1, 0, 1,
+		0, 0, -1, 1,
+		0, 0,  0, 1
+	);
+};
+PresetButton grayScale = {
+	visible: 2;
+	text: "gray scale";
+	data: mat4f(
+		0.299, 0.587, 0.114, 0,
+		0.299, 0.587, 0.114, 0,
+		0.299, 0.587, 0.114, 0,
+		0, 0, 0, 1
+	);
+};
+PresetButton blackAndWhite = {
+	visible: 2;
+	text: "black & white";
+	data: mat4f(
+		1.5, 1.5, 1.5, -1,
+		1.5, 1.5, 1.5, -1,
+		1.5, 1.5, 1.5, -1,
+		0, 0, 0, 1
+	);
+};
+PresetButton sepiaColor = {
+	visible: 2;
+	text: "sepia color";
+	data: mat4f(
+		0.393, 0.769, 0.189, 0,
+		0.349, 0.686, 0.168, 0,
+		0.272, 0.534, 0.131, 0,
+		0, 0, 0, 1
+	);
+};
+PresetButton technicolor = {
+	visible: 2;
+	text: "technicolor";
+	data: mat4f(// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
+		1.9125277891456083, -0.8545344976951645, -0.09155508482755585, 11.793603434377337 / 255,
+		-0.3087833385928097, 1.7658908555458428, -0.10601743074722245, -70.35205161461398 / 255,
+		-0.231103377548616, -0.7501899197440212, 1.847597816108189, 30.950940869491138 / 255,
+		0, 0, 0, 1
+	);
+};
+PresetButton polaroid = {
+	visible: 2;
+	text: "polaroid";
+	data: mat4f(// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
+		1.438, -0.062, -0.062, 0,
+		-0.122, 1.378, -0.122, 0,
+		-0.016, -0.016, 1.483, 0,
+		0, 0, 0, 1
+	);
+};
+PresetButton kodachrome = {
+	visible: 2;
+	text: "kodachrome";
+	data: mat4f(// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
+		1.1285582396593525, -0.3967382283601348, -0.03992559172921793, 63.72958762196502 / 255,
+		-0.16404339962244616, 1.0835251566291304, -0.05498805115633132, 24.732407896706203 / 255,
+		-0.16786010706155763, -0.5603416277695248, 1.6014850761964943, 35.62982807460946 / 255,
+		0, 0, 0, 1
+	);
+};
+PresetButton browni = {
+	visible: 2;
+	text: "browni";
+	data: mat4f(// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
+		0.5997023498159715, 0.34553243048391263, -0.2708298674538042, 47.43192855600873 / 255,
+		-0.037703249837783157, 0.8609577587992641, 0.15059552388459913, -36.96841498319127 / 255,
+		0.24113635128153335, -0.07441037908422492, 0.44972182064877153, -7.562075277591283 / 255,
+		0, 0, 0, 1
+	);
+};
+PresetButton vintage = {
+	visible: 2;
+	text: "vintage";
+	data: mat4f(// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
+		0.6279345635605994, 0.3202183420819367, -0.03965408211312453, 9.651285835294123 / 255,
+		0.02578397704808868, 0.6441188644374771, 0.03259127616149294, 7.462829176470591 / 255,
+		0.0466055556782719, -0.0851232987247891, 0.5241648018700465, 5.159190588235296 / 255,
+		0, 0, 0, 1
+	);
+};
+PresetButton nightVision = {
+	visible: 2;
+	text: "night vision";
+	data: mat4f(// https://github.com/skratchdot/color-matrix/blob/master/lib/filters.js
+		0.1, 0.4, 0, 0,
+		0.3, 1, 0.3, 0,
+		0, 0.4, 0.1, 0,
+		0, 0, 0, 1
+	);
+};
+PresetButton warm = {
+	visible: 2;
+	text: "warm";
+	data: mat4f(// https://github.com/skratchdot/color-matrix/blob/master/lib/filters.js
+		1.06, 0, 0, 0,
+		0, 1.01, 0, 0,
+		0, 0, 0.93, 0,
+		0, 0, 0, 1
+	);
+};
+PresetButton cool = {
+	visible: 2;
+	text: "cool";
+	data: mat4f(// https://github.com/skratchdot/color-matrix/blob/master/lib/filters.js
+		0.99, 0, 0, 0,
+		0, 0.93, 0, 0,
+		0, 0, 1.08, 0,
+		0, 0, 0, 1
+	);
+};
+PresetButton lsd = {
+	visible: 2;
+	text: "lsd";
+	data: mat4f(// https://github.com/pixijs/pixi.js/blob/dev/packages/filters/filter-color-matrix/src/ColorMatrixFilter.ts
+		2, -0.4, 0.5, 0,
+		-0.5, 2, -0.4, 0,
+		-0.4, -0.5, 3, 0,
+		0, 0, 0, 1
+	);
+};
+
+Button separator = {
+	text: null;
+	width: 5;
+	height: 5;
+	enabled: false;
+};
+Slider time = {
+	text: "time";
+	enabled: false;
+	onDrawSlider: null;
+};
+
+Widget ui = Widget(offs, -10,
+	histogram, separator, selGroups, separator,
+	// group 1 - Controls
+	brightness, saturation, contrast, temp, tint, hue,
+	// group 2 - Presets
+	original, invert, grayScale, blackAndWhite, sepiaColor, technicolor, polaroid,
+	kodachrome, browni, vintage, nightVision, warm, cool, lsd,
+
+	separator, time
+);
+
+Rect rect = {
+	x: 0;
+	y: 0;
+	w: offs.width();
+	h: offs.height();
+};
+mat4f mat = {
+	xx: 1; xy: 0; xz: 0; xw:0;
+	yx: 0; yy: 1; yz: 0; yw:0;
+	zx: 0; zy: 0; zz: 1; zw:0;
+	wx: 0; wy: 0; wz: 0; ww:1;
+};
 
 int onEvent(int action, int button, int x, int y) {
-	inline "/cmplGfx/lib/micro.ui.ci";
-
-	static bool onMouseEvent(Button view, const MouseEvent event&);
-	static bool onPresetsClick(Switch view);
-	static bool onResetClick(Button view);
-	static Histogram histogram = {
-		enabled: false;
-	};
-	static Switch grpPresets = {
-		text: "Presets";
-		off: ">";
-		on: "<<<";
-		selectable: false;
-		onClick: onPresetsClick;	// TODO: implement override
-	};
-	static Switch grpMask = {
-		text: "Mask";
-		off: ">";
-		on: "<<<";
-		selectable: false;
-		onClick: onPresetsClick;	// TODO: implement override
-	};
-
-	// controls
-	static Slider brightness = {
-		group: 1;
-		text: "brightness";
-		minimum: -200;
-		maximum: 200;
-		divisor: 200;
-	};
-	static Slider saturation = {
-		group: 1;
-		text: "saturation";
-		value: 200;
-		maximum: 1000;
-		divisor: 200;
-	};
-	static Slider contrast = {
-		group: 1;
-		text: "contrast";
-		value: 200;
-		minimum: -200;
-		maximum: 1000;
-		divisor: 200;
-	};
-	static Slider temp = {
-		group: 1;
-		text: "temperature";
-		minimum: -200;
-		maximum: 200;
-		divisor: 400;
-	};
-	static Slider tint = {
-		group: 1;
-		text: "tint";
-		minimum: -200;
-		maximum: 200;
-		divisor: 400;
-	};
-	static Slider hue = {
-		group: 1;
-		text: "hue";
-		minimum: 0;
-		maximum: 720;
-		divisor: 2;
-	};
-
-	// presets
-	static Button original = {
-		group: 2;
-		text: "original";
-		data: IDENTITY;
-	};
-	static Button invert = {
-		group: 2;
-		text: "invert";
-		data: INVERT;
-	};
-	static Button grayScale = {
-		group: 2;
-		text: "gray scale";
-		data: GREY_SCALE;
-	};
-	static Button blackAndWhite = {
-		group: 2;
-		text: "black & white";
-		data: BLACK_AND_WHITE;
-	};
-	static Button sepiaColor = {
-		group: 2;
-		text: "sepia color";
-		data: SEPIA_COLOR;
-	};
-	static Button technicolor = {
-		group: 2;
-		text: "technicolor";
-		data: TECHNICOLOR;
-	};
-	static Button polaroid = {
-		group: 2;
-		text: "polaroid";
-		data: POLAROID;
-	};
-	static Button kodachrome = {
-		group: 2;
-		text: "kodachrome";
-		data: KODACHROME;
-	};
-	static Button browni = {
-		group: 2;
-		text: "browni";
-		data: BROWNI;
-	};
-	static Button vintage = {
-		group: 2;
-		text: "vintage";
-		data: VINTAGE;
-	};
-	static Button nightVision = {
-		group: 2;
-		text: "night vision";
-		data: NIGHT_VISION;
-	};
-	static Button warm = {
-		group: 2;
-		text: "warm";
-		data: WARM;
-	};
-	static Button cool = {
-		group: 2;
-		text: "cool";
-		data: COOL;
-	};
-	static Button lsd = {
-		group: 2;
-		text: "lsd";
-		data: LSD;
-	};
-
-	// mask
-	static Button btnReflect = {
-		group: 3;
-		text: "Reflect";
-		onMouseEvent: onMouseEvent;
-	};
-	static Button btnLinear = {
-		group: 3;
-		text: "Linear";
-		onMouseEvent: onMouseEvent;
-	};
-	static Button btnRadial = {
-		group: 3;
-		text: "Radial";
-		onMouseEvent: onMouseEvent;
-	};
-	static Button btnSquare = {
-		group: 3;
-		text: "Square";
-		onMouseEvent: onMouseEvent;
-	};
-	static Slider sldHardness = {
-		group: 3;
-		text: "Hardness";
-		minimum: -255;
-		maximum: 255;
-		value: 128;
-		selectable: false;
-	};
-	static Slider sldAlpha = {
-		group: 3;
-		text: "Alpha";
-		minimum: -255;
-		maximum: 255;
-		value: 256;
-		selectable: false;
-	};
-	static Switch chkMoveScale = {
-		group: 3;
-		text: "Drag mode";
-		off: "move";
-		on: "scale";
-		selectable: false;
-	};
-	static Button btnReset = {
-		group: 3;
-		text: "Reset rect";
-		selectable: false;
-		onClick: onResetClick;
-	};
-	static Switch chkMask = {
-		group: 3;
-		text: "Show mask";
-		selectable: false;
-	};
-	static Switch chkRect = {
-		text: "Show rect";
-		group: 3;
-		selectable: false;
-	};
-
-	static Button separator = {
-		text: null;
-		height: 1;
-		enabled: false;
-	};
-	static Button separator1 = {
-		group: 1;
-		text: null;
-		height: 1;
-		enabled: false;
-	};
-	static Button separator3 = {
-		group: 3;
-		text: null;
-		height: 1;
-		enabled: false;
-	};
-	static Slider time = {
-		text: "time";
-		enabled: false;
-	};
-
-	static Layout ui = Layout(offs, -30, 30, font,
-		histogram, separator, grpPresets, grpMask, separator,
-		// group 1 - Controls
-		brightness, saturation, contrast, temp, tint, hue,
-		// group 2 - Presets
-		original, invert, grayScale, blackAndWhite, sepiaColor, technicolor, polaroid,
-		kodachrome, browni, vintage, nightVision, warm, cool, lsd,
-
-		// group 3 - Mask
-		btnLinear, btnReflect, btnRadial, btnSquare,
-		separator3, sldAlpha, sldHardness, chkMoveScale, chkMask, chkRect, btnReset,
-
-		separator, time
-	);
-
-	static mat4f mat = {
-		xx: 1; xy: 0; xz: 0; xw:0;
-		yx: 0; yy: 1; yz: 0; yw:0;
-		zx: 0; zy: 0; zz: 1; zw:0;
-		wx: 0; wy: 0; wz: 0; ww:1;
-	};
-	static Rect rect = {
-		x: 0;
-		y: 0;
-		w: offs.width();
-		h: offs.height();
-	};
-	static bool onResetClick(Button view) {
-		rect.x = 0;
-		rect.y = 0;
-		rect.w = offs.width();
-		rect.h = offs.height();
-		return true;
+	if (action == Gui.KEY_RELEASE && button == 27) {
+		// exit when releasing escape key
+		return -1;
 	}
-	static bool onMouseEvent(Button view, const MouseEvent event&) {
-		if (ui.activeIndex != -1) {
-			// clicked on a ui element
-			return false;
-		}
-		if (event.release) {
-			// mouse button released
-			return false;
-		}
-		if (event.isAlt) {
-			rect.w -= event.dx;
-			rect.h -= event.dy;
-			return true;
-		}
-		if (chkMoveScale.checked == event.isShift) {
-			rect.x -= event.dx;
-			rect.y -= event.dy;
-			return true;
-		}
-		rect.x += event.dx;
-		rect.y += event.dy;
-		rect.w -= 2 * event.dx;
-		rect.h -= 2 * event.dy;
-		return true;
-	}
-	static bool onPresetsClick(Switch view) {
-		int group = ui.group;
-		if (view == grpPresets) {
-			// toggle group 2 <> 1
-			group = group != 2 ? 2 : 1;
-		}
-		if (view == grpMask) {
-			// toggle group 3 <> 1
-			group = group != 3 ? 3 : 1;
-		}
-		return ui.setGroup(group);
+	if (!ui.onEvent(action, button, x, y)) {
+		// event not processed, wait for the next one
+		return 0;
 	}
 
-	bool draw = false;
-	if (action == Gui.KEY_PRESS) {
-		if (button == 27) {
-			return -1;
-		}
-		if (button == 'm' || button == 'M') {
-			chkMask.checked = !chkMask.checked;
-			if (!ui.isSelected(btnLinear, btnReflect, btnRadial, btnSquare)) {
-				ui.setSelected(btnLinear);
-			}
-			ui.setGroup(3);
-			draw = true;
-		}
-	}
 	if (action == Gui.WINDOW_INIT) {
-		ui.setGroup(1);
-		draw = true;
+		ui.setGroup(1 << selGroups.selected, true);
 	}
-	if (ui.onEvent(action, button, x, y) || draw) {
-		uint64 start = System.millis();
 
-		grpPresets.checked = ui.group == 2;
-		grpMask.checked = ui.group == 3;
-
-		if (ui.isSelected(brightness, saturation, contrast, temp, tint, hue)) {
-			float b = brightness.valFlt();
-			float s = saturation.valFlt();
-			float c = contrast.valFlt();
-			float h = Math.radians(hue.valFlt());
-			float te = temp.valFlt();
-			float ti = tint.valFlt();
-			mat = colorMatrix(b, s, c, te, ti, h);
-		}
-		else if (Button btn = ui.getSelected(Button)) {
-			if (mat4f preset& = btn.data.as(mat4f)) {
-				// the data is a matrix, so use it
-				mat = preset;
-			}
-		}
-
-		// apply color matrix
-		offs.copy(0, 0, back, null);
-		offs.colorMat(null, mat.data);
-
-		// apply only for mask
-		if (ui.isSelected(btnLinear, btnReflect, btnRadial, btnSquare)) {
-			uint32 colors[512] = {};
-
-			if (chkMask.checked) {
-				offs.fill(0xff0000);
-			}
-			if (ui.isSelected(btnReflect)) {
-				alphaLut(colors, sldHardness.value, sldAlpha.value, true);
-				offs.gradient(&rect, gradient.MaskLinear, false, ...colors);
-			}
-			else if (ui.isSelected(btnLinear)) {
-				alphaLut(colors, sldHardness.value, sldAlpha.value, false);
-				offs.gradient(&rect, gradient.MaskLinear, false, ...colors);
-			}
-			else if (ui.isSelected(btnRadial)) {
-				alphaLut(colors, sldHardness.value, sldAlpha.value, false);
-				offs.gradient(&rect, gradient.MaskRadial, false, ...colors);
-			}
-			else if (ui.isSelected(btnSquare)) {
-				alphaLut(colors, sldHardness.value, sldAlpha.value, false);
-				offs.gradient(&rect, gradient.MaskSquare, false, ...colors);
-			}
-
-			offs.blend(0, 0, back, null, 256, true, null);
-			if (chkRect.checked) {
-				offs.drawRect(rect, 0x00ff00);
-			}
-		}
-
-		histogram.update(offs);
-		time.value = System.millis() - start;
-		ui.draw();
+	uint64 start = System.millis();
+	if (ui.isSelected(brightness, saturation, contrast, temp, tint, hue)) {
+		float b = brightness.valFlt();
+		float s = saturation.valFlt();
+		float c = contrast.valFlt();
+		float h = Math.radians(hue.valFlt());
+		float te = temp.valFlt();
+		float ti = tint.valFlt();
+		mat = colorMatrix(b, s, c, te, ti, h);
 	}
-	return 0;
+	else if (PresetButton btn = ui.getSelected().as(PresetButton)) {
+		mat = btn.data;
+	}
+
+	// apply color matrix
+	offs.copy(0, 0, back, null);
+	offs.colorMat(null, mat.data);
+
+	histogram.update(offs);
+	time.value = System.millis() - start;
+	return ui.draw();
+}
+bool onPresetsClick(Switch view) {
+	if (!Switch.onClick(view)) {
+		return !false;
+	}
+	ui.setGroup(1 << view.selected, true);
+	return true;
 }

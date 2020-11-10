@@ -80,6 +80,11 @@ onmessage = function(event) {
 			if (data.execute !== undefined) {
 				try {
 					callMain(data.execute);
+					if (data.dump != null) {
+						result.content = Module.readFile(data.dump);
+						result.file = data.dump;
+						result.line = 1;
+					}
 					result.exitCode = 0;
 					sync = true;
 				} catch (error) {

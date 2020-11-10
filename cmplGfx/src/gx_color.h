@@ -72,7 +72,8 @@ typedef enum {			// color block transfer
 	cblt_cpy_ior = 19,
 	cblt_cpy_xor = 20,
 
-	cblt_set_mix = 25,
+	cblt_set_col = 25,
+	cblt_set_mix = 26,
 	//cblt_set_and = 26,
 	//cblt_set_ior = 27,
 	//cblt_set_xor = 28,

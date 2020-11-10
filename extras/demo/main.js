@@ -136,6 +136,9 @@ let params = JsArgs('#', function (params, changes) {
 	}
 	document.title = props.title + ' [' + title + ']';
 
+	setStyle(libFile, params.libFile != null ? 'checked' : '-checked');
+	setStyle(libGfx, params.libGfx != null ? 'checked' : '-checked');
+
 	// no changes => page loaded
 	if (changes === undefined) {
 		// setup theme, only after loading
@@ -254,8 +257,7 @@ let params = JsArgs('#', function (params, changes) {
 		setStyle(document.body, '-dark', '-light', params.theme);
 	}
 
-	if (changes.worker !== undefined) {
-		// page needs to be reloaded to apply different javascript
+	if (changes.libGfx !== undefined) {
 		params.update(true);
 		return;
 	}
@@ -551,8 +553,8 @@ function execute(cmd, args) {
 		}
 
 		if (args.prms !== false) {
-			// do not use standard input, print times
-			execArgs.push('-X' + (params.X || '-stdin+steps'));
+			// do not use standard input
+			execArgs.push('-X' + (params.X || '-stdin'));
 
 			// allocate 2Mb of memory by default,
 			execArgs.push('-mem' + (params.mem || '2M'));
@@ -576,12 +578,11 @@ function execute(cmd, args) {
 		}
 
 		if (args.libs !== false) {
-			if (args.libs === true || args.libs == null) {
-				args.libs = props.libraries;
+			if (params.libFile != null) {
+				execArgs.push(props.locateFile('libFile.wasm'));
 			}
-			// todo: used libraries should be defined in the project file
-			for (let lib of args.libs) {
-				execArgs.push(lib);
+			if (params.libGfx != null) {
+				execArgs.push(props.locateFile('libGfx.wasm'));
 			}
 		}
 

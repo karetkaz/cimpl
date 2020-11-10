@@ -7,365 +7,358 @@
  * use 'space' to press a button, toggle switch or reset slider value
  * use '[' or ']' to show and hide the controls
  *
- * drag the mouse up or down in the window to adjust control value
+ * drag the mouse left or right in the window to adjust selected slider value
  */
 
-inline linear_dodge(float32 base, float32 blend) = Math.min(base + blend, 1f);
-inline linear_burn(float32 base, float32 blend) = Math.max(base + blend - 1, 0f);
-inline color_dodge(float32 base, float32 blend) = (blend == 1 ? blend : Math.min(base / (1 - blend), 1f));
-inline color_burn(float32 base, float32 blend) = (blend == 0 ? blend : Math.max((1 - ((1 - base) / blend)), 0f));
-
-vec4f addition(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = base + blend;
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f subtract(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = base - blend;
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f multiply(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = base * blend;
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f divide(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = base / blend;
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f difference(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = base > blend ? base - blend : blend - base;
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f exclusion(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = .5f - 2 * (base - .5f) * (blend - .5f);
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f lighten(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = base > blend ? base : blend;
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f darken(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = base < blend ? base : blend;
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f linearDodge(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = linear_dodge(base, blend);
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f linearBurn(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = linear_burn(base, blend);
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f colorDodge(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = color_dodge(base, blend);
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f colorBurn(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = color_burn(base, blend);
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f screen(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = 1 - (1 - base) * (1 - blend);
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f overlay(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = base < .5f
-		? (2 * base * blend)
-		: (1 - 2 * (1 - base) * (1 - blend));
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f softLight(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = blend < .5f
-		? (2 * base * blend + base * base * (1 - 2 * blend))
-		: (float32.sqrt(base) * (2 * blend - 1) + 2 * base * (1 - blend));
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f hardLight(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = blend <= .5f
-		? (base * (2 * blend))
-		: (1 - (1 - base) * (1 - 2 * (blend - .5f)));
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f linearLight(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = blend < .5f
-		? linear_burn(base, (2 * blend))
-		: linear_dodge(base, (2 * (blend - .5f)));
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f vividLight(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = blend < .5f
-		? color_burn(base, (2 * blend))
-		: color_dodge(base, (2 * (blend - .5f)));
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-vec4f pinLight(vec4f base, vec4f blend) {
-	inline op(float32 base, float32 blend) = blend < .5f
-		? Math.min(base, 2 * blend)
-		: Math.max(base, 2 *(blend - .5f));
-	return {
-		x: op(base.x, blend.x);
-		y: op(base.y, blend.y);
-		z: op(base.z, blend.z);
-		w: op(base.w, blend.w);
-	};
-}
-
-Image base = Image("asset/image/forest.png", 32);
+Image base = Image("asset/image/forest.jpg", 32);
 Image image = Image("asset/image/texture_nature_01.png", 32);
-Image font = Image.openFnt("asset/font/Modern-1.fnt");
 Image offs = Image(base);
-Image blend = Image(base);
-
-// TODO: add translation to crop matrix
-float32 xAsp = float32(offs.width()) / image.width();
-float32 yAsp = float32(offs.height()) / image.height();
-mat4f m = scale(vec4f(1, 1, 0, 1), Math.max(xAsp, yAsp));
-blend.transform(null, image, null, 1, &m.data);
-
+Image blend = Image(image, offs.width(), offs.height(), -1, 1.);
 int onEvent(int action, int button, int x, int y);
 offs.show(onEvent);
-font.destroy();
 offs.destroy();
 base.destroy();
 blend.destroy();
 image.destroy();
 
+inline "/cmplGfx/lib/micro.ui.ci";
+struct BlendButton: Button {
+	inline linear_dodge(float32 base, float32 blend) = Math.min(base + blend, 1f);
+	inline linear_burn(float32 base, float32 blend) = Math.max(base + blend - 1, 0f);
+	inline color_dodge(float32 base, float32 blend) = (blend == 1 ? blend : Math.min(base / (1 - blend), 1f));
+	inline color_burn(float32 base, float32 blend) = (blend == 0 ? blend : Math.max((1 - ((1 - base) / blend)), 0f));
+
+	vec4f blend(vec4f base, vec4f blend);
+}
+
+Switch chkReverse = {
+	text: "reverse";
+	selectable: false;
+	width: 192;
+};
+Slider btnAlpha = {
+	text: "alpha";
+	value: 192;
+	maximum: 256;
+	divisor: 256;
+};
+
+BlendButton btnAddition = {
+	static vec4f addition(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = base + blend;
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "addition";
+	blend: addition;
+};
+BlendButton btnSubtract = {
+	static vec4f subtract(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = base - blend;
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "subtract";
+	blend: subtract;
+};
+BlendButton btnMultiply = {
+	static vec4f multiply(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = base * blend;
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "multiply";
+	blend: multiply;
+};
+BlendButton btnDivide = {
+	static vec4f divide(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = base / blend;
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "divide";
+	blend: divide;
+};
+BlendButton btnDifference = {
+	static vec4f difference(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = base > blend ? base - blend : blend - base;
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "difference";
+	blend: difference;
+};
+BlendButton btnExclusion = {
+	static vec4f exclusion(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = .5f - 2 * (base - .5f) * (blend - .5f);
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "exclusion";
+	blend: exclusion;
+};
+
+BlendButton btnLighten = {
+	static vec4f lighten(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = base > blend ? base : blend;
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "lighten";
+	blend: lighten;
+};
+BlendButton btnDarken = {
+	static vec4f darken(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = base < blend ? base : blend;
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "darken";
+	blend: darken;
+};
+BlendButton btnLinearDodge = {
+	static vec4f linearDodge(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = BlendButton.linear_dodge(base, blend);
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "linearDodge";
+	blend: linearDodge;
+};
+BlendButton btnLinearBurn = {
+	static vec4f linearBurn(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = BlendButton.linear_burn(base, blend);
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "linearBurn";
+	blend: linearBurn;
+};
+BlendButton btnColorDodge = {
+	static vec4f colorDodge(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = BlendButton.color_dodge(base, blend);
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "colorDodge";
+	blend: colorDodge;
+};
+BlendButton btnColorBurn = {
+	static vec4f colorBurn(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = BlendButton.color_burn(base, blend);
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "colorBurn";
+	blend: colorBurn;
+};
+
+BlendButton btnScreen = {
+	static vec4f screen(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = 1 - (1 - base) * (1 - blend);
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "screen";
+	blend: screen;
+};
+BlendButton btnOverlay = {
+	static vec4f overlay(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = base < .5f
+			? (2 * base * blend)
+			: (1 - 2 * (1 - base) * (1 - blend));
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "overlay";
+	blend: overlay;
+};
+BlendButton btnSoftLight = {
+	static vec4f softLight(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = blend < .5f
+			? (2 * base * blend + base * base * (1 - 2 * blend))
+			: (float32.sqrt(base) * (2 * blend - 1) + 2 * base * (1 - blend));
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "softLight";
+	blend: softLight;
+};
+BlendButton btnHardLight = {
+	static vec4f hardLight(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = blend <= .5f
+			? (base * (2 * blend))
+			: (1 - (1 - base) * (1 - 2 * (blend - .5f)));
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "hardLight";
+	blend: hardLight;
+};
+BlendButton btnLinearLight = {
+	static vec4f linearLight(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = blend < .5f
+			? BlendButton.linear_burn(base, (2 * blend))
+			: BlendButton.linear_dodge(base, (2 * (blend - .5f)));
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "linearLight";
+	blend: linearLight;
+};
+BlendButton btnVividLight = {
+	static vec4f vividLight(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = blend < .5f
+			? BlendButton.color_burn(base, (2 * blend))
+			: BlendButton.color_dodge(base, (2 * (blend - .5f)));
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "vividLight";
+	blend: vividLight;
+};
+BlendButton btnPinLight = {
+	static vec4f pinLight(vec4f base, vec4f blend) {
+		inline op(float32 base, float32 blend) = blend < .5f
+			? Math.min(base, 2 * blend)
+			: Math.max(base, 2 *(blend - .5f));
+		return {
+			x: op(base.x, blend.x);
+			y: op(base.y, blend.y);
+			z: op(base.z, blend.z);
+			w: op(base.w, blend.w);
+		};
+	}
+	text: "pinLight";
+	blend: pinLight;
+};
+
+Slider time = {
+	text: "time";
+	enabled: false;
+};
+Widget ui = Widget(offs, -30,
+	chkReverse,
+	btnAlpha,
+	btnAddition,
+	btnSubtract,
+	btnMultiply,
+	btnDivide,
+	btnDifference,
+	btnExclusion,
+	btnLighten,
+	btnDarken,
+	btnLinearDodge,
+	btnLinearBurn,
+	btnColorDodge,
+	btnColorBurn,
+	btnScreen,
+	btnOverlay,
+	btnSoftLight,
+	btnHardLight,
+	btnLinearLight,
+	btnVividLight,
+	btnPinLight,
+	time
+);
+
 int onEvent(int action, int button, int x, int y) {
-	inline "/cmplGfx/lib/micro.ui.ci";
-
-	static Switch chkOrder = {
-		text: "order";
-		on: "a => b";
-		off: "b => a";
-		checked: true;
-		selectable: false;
-	};
-	static Slider btnAlpha = {
-		text: "alpha";
-		value: 192;
-		maximum: 256;
-		divisor: 256;
-	};
-
-	static Button btnAddition = {
-		text: "addition";
-		data: addition;
-	};
-	static Button btnSubtract = {
-		text: "subtract";
-		data: subtract;
-	};
-	static Button btnMultiply = {
-		text: "multiply";
-		data: multiply;
-	};
-	static Button btnDivide = {
-		text: "divide";
-		data: divide;
-	};
-	static Button btnDifference = {
-		text: "difference";
-		data: difference;
-	};
-	static Button btnExclusion = {
-		text: "exclusion";
-		data: exclusion;
-	};
-
-	static Button btnLighten = {
-		text: "lighten";
-		data: lighten;
-	};
-	static Button btnDarken = {
-		text: "darken";
-		data: darken;
-	};
-	static Button btnLinearDodge = {
-		text: "linearDodge";
-		data: linearDodge;
-	};
-	static Button btnLinearBurn = {
-		text: "linearBurn";
-		data: linearBurn;
-	};
-	static Button btnColorDodge = {
-		text: "colorDodge";
-		data: colorDodge;
-	};
-	static Button btnColorBurn = {
-		text: "colorBurn";
-		data: colorBurn;
-	};
-
-	static Button btnScreen = {
-		text: "screen";
-		data: screen;
-	};
-	static Button btnOverlay = {
-		text: "overlay";
-		data: overlay;
-	};
-	static Button btnSoftLight = {
-		text: "softLight";
-		data: softLight;
-	};
-	static Button btnHardLight = {
-		text: "hardLight";
-		data: hardLight;
-	};
-	static Button btnLinearLight = {
-		text: "linearLight";
-		data: linearLight;
-	};
-	static Button btnVividLight = {
-		text: "vividLight";
-		data: vividLight;
-	};
-	static Button btnPinLight = {
-		text: "pinLight";
-		data: pinLight;
-	};
-
-	static Slider time = {
-		text: "time";
-		enabled: false;
-	};
-
-	static Layout ui = Layout(offs, -30, 30, font,
-		chkOrder,
-		btnAlpha,
-		btnAddition,
-		btnSubtract,
-		btnMultiply,
-		btnDivide,
-		btnDifference,
-		btnExclusion,
-		btnLighten,
-		btnDarken,
-		btnLinearDodge,
-		btnLinearBurn,
-		btnColorDodge,
-		btnColorBurn,
-		btnScreen,
-		btnOverlay,
-		btnSoftLight,
-		btnHardLight,
-		btnLinearLight,
-		btnVividLight,
-		btnPinLight,
-		time);
-
-	if (action == Gui.KEY_PRESS) {
-		if (button == 27) {
-			return -1;
-		}
+	if (action == Gui.KEY_RELEASE && button == 27) {
+		// exit when releasing escape key
+		return -1;
 	}
+	if (!ui.onEvent(action, button, x, y)) {
+		// event not processed, wait for the next one
+		return 0;
+	}
+
+	if (ui.pressedIndex != -1) {
+		// redraw only ui, in case there is an active control
+		time.value = 0;
+		return ui.draw();
+	}
+
 	uint64 start = System.millis();
-	if (ui.onEvent(action, button, x, y)) {
-		if (ui.activeIndex != -1) {
-			// redraw only ui, in case there is an active control
-			time.value = System.millis() - start;
-			ui.draw();
-			return 0;
-		}
-
-		bool reverse = chkOrder.checked;
-		offs.copy(0, 0, reverse ? base : blend, null);
-		if (View selected = ui.getSelected(View)) {
-			vec4f fn(vec4f base, vec4f blend) = selected.data;
-			offs.blend(0, 0, reverse ? blend : base, null, btnAlpha.value, false, fn);
-		}
-		time.value = System.millis() - start;
-		ui.draw();
+	bool reverse = chkReverse.selected != 0;
+	offs.copy(0, 0, reverse ? base : blend, null);
+	if (BlendButton selected = ui.getSelected().as(BlendButton)) {
+		offs.blend(0, 0, reverse ? blend : base, null, btnAlpha.value, false, selected.blend);
 	}
-	return 0;
+	else if (ui.isSelected(btnAlpha)) {
+		offs.blend(0, 0, reverse ? blend : base, null, btnAlpha.value, false, null);
+	}
+	time.value = System.millis() - start;
+	return ui.draw();
 }

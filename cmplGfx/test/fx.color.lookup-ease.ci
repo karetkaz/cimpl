@@ -7,14 +7,17 @@
  * use 'space' to press a button, toggle switch or reset slider value
  * use '[' or ']' to show and hide the controls
  *
- * drag the mouse up or down in the window to adjust control value
+ * drag the mouse left or right in the window to adjust selected slider value
  */
 
-Image back = Image("asset/image/forest.png", 32);
-Image font = Image.openFnt("asset/font/Modern-1.fnt");
+Image back = Image("asset/image/forest.jpg", 32);
 Image offs = Image(back.width(), back.height(), back.depth());
+int onEvent(int action, int button, int x, int y);
+offs.show(onEvent);
+offs.destroy();
+back.destroy();
 
-void brightnessContrastGamma(argb lut[256], int brightness, int contrast) {
+void brightnessContrast(argb lut[256], int brightness, int contrast) {
 	inline "/cmplStd/lib/math/Easing.ci";
 	float64 cVal = (256 + contrast) / 256.;
 
@@ -40,59 +43,54 @@ void brightnessContrastGamma(argb lut[256], int brightness, int contrast) {
 	}
 }
 
-int onEvent(int action, int button, int x, int y);
-offs.show(onEvent);
-offs.destroy();
-back.destroy();
-font.destroy();
+inline "/cmplGfx/lib/micro.ui.ci";
+Slider brightness = {
+	text: "brightness";
+	minimum: -256;
+	maximum: 256;
+};
+Slider contrast = {
+	text: "contrast";
+	minimum: -256;
+	maximum: 256;
+};
+Histogram histogram = {
+	enabled: false;
+};
+Histogram curves = {
+	lines: true;
+	enabled: false;
+};
+Slider time = {
+	text: "time";
+	enabled: false;
+	onDrawSlider: null;
+};
+
+Widget ui = Widget(offs, -30,
+	histogram,
+	curves,
+	brightness,
+	contrast,
+	time
+);
 
 int onEvent(int action, int button, int x, int y) {
-	inline "/cmplGfx/lib/micro.ui.ci";
-
-	static Slider brightness = {
-		text: "brightness";
-		minimum: -256;
-		maximum: 256;
-	};
-	static Slider contrast = {
-		text: "contrast";
-		minimum: -256;
-		maximum: 256;
-	};
-	static Histogram histogram = {
-		enabled: false;
-	};
-	static Histogram curves = {
-		lines: true;
-		enabled: false;
-	};
-	static Slider time = {
-		text: "time";
-		enabled: false;
-	};
-
-	static Layout ui = Layout(offs, -30, 30, font,
-		histogram,
-		curves,
-		brightness,
-		contrast,
-		time
-	);
-
-	if (action == Gui.KEY_PRESS) {
-		if (button == 27) {
-			return -1;
-		}
+	if (action == Gui.KEY_RELEASE && button == 27) {
+		// exit when releasing escape key
+		return -1;
 	}
-	if (ui.onEvent(action, button, x, y)) {
-		uint64 start = System.millis();
-		brightnessContrastGamma(&curves.data, brightness.value, contrast.value);
-		offs.resize(null, back, null, 1);
-		offs.colorMap(null, curves.data);
-		histogram.update(offs);
-
-		time.value = System.millis() - start;
-		ui.draw();
+	if (!ui.onEvent(action, button, x, y)) {
+		// event not processed, wait for the next one
+		return 0;
 	}
-	return 0;
+
+	uint64 start = System.millis();
+	brightnessContrast(&curves.data, brightness.value, contrast.value);
+	offs.resize(null, back, null, 1);
+	offs.colorMap(null, curves.data);
+	histogram.update(offs);
+
+	time.value = System.millis() - start;
+	return ui.draw();
 }

@@ -899,6 +899,12 @@ static astn initializer(ccContext cc) {
 			case RIGHT_crl:	// '}'
 				ast = NULL;
 				break;
+
+			case STATIC_kwd:
+				// allow static declarations in initializer
+				declaration(cc, qualifier(cc), NULL);
+				skipTok(cc, STMT_end, 1);
+				continue;
 		}
 		if (ast == NULL) {
 			break;

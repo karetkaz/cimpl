@@ -7,12 +7,15 @@
  * use 'space' to press a button, toggle switch or reset slider value
  * use '[' or ']' to show and hide the controls
  *
- * drag the mouse up or down in the window to adjust control value
+ * drag the mouse left or right in the window to adjust selected slider value
  */
 
-Image font = Image.openFnt("asset/font/Modern-1.fnt");
-Image in = Image("asset/image/forest.png", 32);
-Image offs = Image("asset/image/texture_nature_01.png", in.width(), in.height(), 32);
+Image back = Image("asset/image/forest.jpg", 32);
+Image offs = Image("asset/image/texture_nature_01.png", back.width(), back.height(), 32);
+int onEvent(int action, int button, int x, int y);
+offs.show(onEvent);
+offs.destroy();
+back.destroy();
 
 /// compute the the transformation matrix to center/crop/fit an image to a new size.
 mat4f fitMatrix(const Image src, int newWidth, int newHeight, bool fitWidth, bool fitHeight, float64 maxScale, float64 maxAspect) {
@@ -58,7 +61,6 @@ mat4f fitMatrix(const Image src, int newWidth, int newHeight, bool fitWidth, boo
 		w: {x: 0, y: 0, z: 0, w: 1};
 	};
 }
-
 mat4f skewMatrix(float sx, float sy) {
 	return {
 		x: {x: 1, y: float.tan(sx), z: 0, w: 0};
@@ -68,134 +70,130 @@ mat4f skewMatrix(float sx, float sy) {
 	};
 }
 
+inline "/cmplGfx/lib/micro.ui.ci";
+
+Switch quality = {
+	text: "linear filtering";
+	selected: 1;
+	selectable: false;
+};
+Switch flipX = {
+	text: "flip x";
+};
+Switch flipY = {
+	text: "flip y";
+};
+Slider rotate = {
+	text: "rotate";
+	maximum: 360;
+};
+Slider skewX = {
+	text: "skew x";
+	minimum: -45;
+	maximum: +45;
+};
+Slider skewY = {
+	text: "skew y";
+	minimum: -45;
+	maximum: +45;
+};
+Slider scaleX = {
+	text: "scale x";
+	value: 100;
+	minimum: 10;
+	maximum: 500;
+	divisor: 100;
+};
+Slider scaleY = {
+	text: "scale y";
+	value: 100;
+	minimum: 10;
+	maximum: 500;
+	divisor: 100;
+};
+Slider translateX = {
+	text: "translate x";
+	minimum: -offs.width();
+	maximum: +offs.width();
+};
+Slider translateY = {
+	text: "translate y";
+	minimum: -offs.height();
+	maximum: +offs.height();
+};
+
+Slider maxRatio = {
+	text: "max ratio";
+	value: back.width() * 100 / back.height();
+	minimum: 100;
+	maximum: 400;
+	divisor: 100;
+};
+Switch fitWidth = {
+	text: "fit width";
+};
+Switch fitHeight = {
+	text: "fit height";
+};
+Switch drawRect = {
+	text: "draw rect";
+	selected: 1;
+	selectable: false;
+};
+Slider imgRatio = {
+	text: "ratio";
+	enabled: false;
+	divisor: 100;
+	value: back.width() * imgRatio.divisor / back.height();
+};
+
+Widget ui = Widget(offs, 30,
+	quality,
+	fitWidth,
+	fitHeight,
+	maxRatio,
+	scaleX, scaleY,
+	skewX, skewY,
+	flipX, flipY,
+	rotate,
+	translateX, translateY,
+	drawRect,
+	imgRatio
+);
+
 int onEvent(int action, int button, int x, int y) {
-	inline "/cmplGfx/lib/micro.ui.ci";
-
-	static Switch quality = {
-		text: "linear filtering";
-		checked: true;
-		selectable: false;
-	};
-	static Switch flipX = {
-		text: "flip x";
-	};
-	static Switch flipY = {
-		text: "flip y";
-	};
-	static Slider rotate = {
-		text: "rotate";
-		maximum: 360;
-	};
-	static Slider skewX = {
-		text: "skew x";
-		minimum: -45;
-		maximum: +45;
-	};
-	static Slider skewY = {
-		text: "skew y";
-		minimum: -45;
-		maximum: +45;
-	};
-	static Slider scaleX = {
-		text: "scale x";
-		value: 100;
-		minimum: 10;
-		maximum: 500;
-		divisor: 100;
-	};
-	static Slider scaleY = {
-		text: "scale y";
-		value: 100;
-		minimum: 10;
-		maximum: 500;
-		divisor: 100;
-	};
-	static Slider translateX = {
-		text: "translate x";
-		minimum: -offs.width();
-		maximum: +offs.width();
-	};
-	static Slider translateY = {
-		text: "translate y";
-		minimum: -offs.height();
-		maximum: +offs.height();
-	};
-
-	static Slider maxRatio = {
-		text: "max ratio";
-		value: in.width() * 100 / in.height();
-		minimum: 100;
-		maximum: 400;
-		divisor: 100;
-	};
-	static Switch fitWidth = {
-		text: "fit width";
-	};
-	static Switch fitHeight = {
-		text: "fit height";
-	};
-	static Switch drawRect = {
-		text: "draw rect";
-		checked: true;
-		selectable: false;
-	};
-	static Slider imgRatio = {
-		text: "ratio";
-		enabled: false;
-		divisor: 100;
-		value: in.width() * imgRatio.divisor / in.height();
-	};
-
-	static Layout ui = Layout(offs, 30, 30, font,
-		quality,
-		fitWidth,
-		fitHeight,
-		maxRatio,
-		scaleX, scaleY,
-		skewX, skewY,
-		flipX, flipY,
-		rotate,
-		translateX, translateY,
-		drawRect,
-		imgRatio
-	);
-
-	if (action == Gui.KEY_PRESS) {
-		if (button == 27) {
-			return -1;
-		}
+	if (action == Gui.KEY_RELEASE && button == 27) {
+		// exit when releasing escape key
+		return -1;
 	}
-	if (ui.onEvent(action, button, x, y)) {
-		Rect to = {
-			w: offs.width() - 100;
-			h: offs.height() - 100;
-			x: (offs.width() - to.w) / 2;
-			y: (offs.height() - to.h) / 2;
-		};
-		vec4f center = vec4f(in.width() / 2, in.height() / 2, 0, 0);
-		mat4f mat = translation(center, 1)
-			.mul(scale(vec4f(scaleX.value, scaleY.value, 0, 1), 1f / 100))
-			.mul(skewMatrix(Math.radians(skewX.value), Math.radians(skewY.value)))
-			.mul(rotation(vec4f(0, 1, 0, 0), Math.radians(int(flipX.checked) * 180)))
-			.mul(rotation(vec4f(1, 0, 0, 0), Math.radians(int(flipY.checked) * 180)))
-			.mul(rotation(vec4f(0, 0, -1, 0), Math.radians(rotate.value)))
-			.mul(translation(vec4f(translateX.value, translateY.value, 0, 0), 1))
-			.mul(translation(center, -1))
-			.mul(fitMatrix(in, to.w, to.h, fitWidth.checked, fitHeight.checked, 1, maxRatio.value / 100.));
-		debug("transform", mat.m);
-		offs.transform(to, in, null, quality.checked ? 1 : 0, mat.data);
-		if (drawRect.checked) {
-			// draw interior
-			to.w -= 1;
-			to.h -= 1;
-			offs.drawRect(to, 0);
-		}
-		ui.draw();
+	if (!ui.onEvent(action, button, x, y)) {
+		// event not processed, wait for the next one
+		return 0;
 	}
-	return 0;
+
+	Rect to = {
+		w: offs.width() - 100;
+		h: offs.height() - 100;
+		x: (offs.width() - to.w) / 2;
+		y: (offs.height() - to.h) / 2;
+	};
+	vec4f center = vec4f(back.width() / 2, back.height() / 2, 0, 0);
+	mat4f mat = translation(center, 1)
+		.mul(scale(vec4f(scaleX.value, scaleY.value, 0, 1), 1f / 100))
+		.mul(skewMatrix(Math.radians(skewX.value), Math.radians(skewY.value)))
+		.mul(rotation(vec4f(0, 1, 0, 0), Math.radians(int(flipX.checked()) * 180)))
+		.mul(rotation(vec4f(1, 0, 0, 0), Math.radians(int(flipY.checked()) * 180)))
+		.mul(rotation(vec4f(0, 0, -1, 0), Math.radians(rotate.value)))
+		.mul(translation(vec4f(translateX.value, translateY.value, 0, 0), 1))
+		.mul(translation(center, -1))
+		.mul(fitMatrix(back, to.w, to.h, fitWidth.checked(), fitHeight.checked(), 1, maxRatio.value / 100.));
+	debug("transform", mat.m);
+	offs.transform(to, back, null, quality.checked() ? 1 : 0, mat.data);
+	if (drawRect.checked()) {
+		// draw interior
+		to.w -= 1;
+		to.h -= 1;
+		offs.drawRect(to, 0);
+	}
+	return ui.draw();
 }
-
-offs.show(onEvent);
-font.destroy();
-offs.destroy();
-in.destroy();

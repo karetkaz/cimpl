@@ -167,13 +167,11 @@ struct userContextRec {
 	int dmpParams:1;        // dump parameters and fields
 	int dmpAsmStmt:1;       // print source code position/statements
 
-	int dmpGlobals:1;       // dump global variable values
-	int dmpGlobalFun:1;     // dump global functions
-	int dmpGlobalTyp:1;     // dump global types
+	// dump global variable, [function, [typename]] values
+	unsigned dmpGlobals:2;
 
-	// dump memory allocation free and used chunks
-	int dmpMemoryUse:1;
-	int dmpHeapUsage:1;
+	// dump memory allocation [used, [free] heap memory chunks] information
+	unsigned dmpMemoryUse:2;
 
 	int traceMethods:1;     // dump function call and return
 	int traceOpcodes:1;     // dump executing instruction
@@ -841,14 +839,14 @@ void printFields(FILE *out, const char **esc, symn sym, userContext ctx) {
 		if (isTypename(var)) {
 			dieif(!isStatic(var), ERR_INTERNAL_ERROR);
 			printFields(out, esc, var, ctx);
-			if (!(ctx->dmpGlobalTyp)) {
+			if (ctx->dmpGlobals < 3) {
 				continue;
 			}
 		}
 		if (isFunction(var)) {
 			dieif(!isStatic(var), ERR_INTERNAL_ERROR);
 			printFields(out, esc, var, ctx);
-			if (!(ctx->dmpGlobalFun)) {
+			if (ctx->dmpGlobals < 2) {
 				continue;
 			}
 		}
@@ -890,12 +888,73 @@ static void textPostProfile(userContext usr) {
 		return;
 	}
 
+	if (rt->dbg != NULL) {
+		dbgContext dbg = rt->dbg;
+		if (usr->profFunctions) {
+			size_t cov = 0, cnt = dbg->functions.cnt;
+			dbgn ptrFunc = (dbgn) dbg->functions.ptr;
+			for (size_t i = 0; i < cnt; ++i, ptrFunc++) {
+				cov += ptrFunc->hits > 0;
+			}
+
+			printFmt(out, esc, "%?sProfile functions: %d/%d, coverage: %.2f%%\n", prefix, cov, cnt, cov * 100. / (cnt
+					? cnt
+					: 1
+				)
+			);
+			for (size_t i = 0; i < cnt; ++i) {
+				dbgn ptr = (dbgn) dbg->functions.ptr + i;
+				if (ptr->hits == 0 && !usr->profNotExecuted) {
+					continue;
+				}
+				symn sym = ptr->func;
+				if (sym == NULL) {
+					sym = rtLookup(rt, ptr->start, 0);
+				}
+				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): exec(%D%?-D), time(%.3F%?+.3F ms): %?T\n", ptr->file
+					, ptr->line, ptr->start, ptr->end, ptr->hits, ptr->exec - ptr->hits, ptr->total / CLOCKS_PER_MILLIS
+					, (ptr->self - ptr->total) / CLOCKS_PER_MILLIS, sym
+				);
+			}
+		}
+		if (usr->profStatements) {
+			size_t cov = 0, cnt = dbg->statements.cnt;
+			dbgn ptrStmt = (dbgn) dbg->statements.ptr;
+			for (size_t i = 0; i < cnt; ++i, ptrStmt++) {
+				cov += ptrStmt->hits > 0;
+			}
+			printFmt(out, esc, "%?sProfile statements: %d/%d, coverage: %.2f%%\n", prefix, cov, cnt, cov * 100. / (cnt
+					? cnt
+					: 1
+				)
+			);
+			for (size_t i = 0; i < cnt; ++i) {
+				dbgn ptr = (dbgn) dbg->statements.ptr + i;
+				size_t symOffs = 0;
+				symn sym = ptr->func;
+				if (ptr->hits == 0 && !usr->profNotExecuted) {
+					continue;
+				}
+				if (sym == NULL) {
+					sym = rtLookup(rt, ptr->start, 0);
+				}
+				if (sym != NULL) {
+					symOffs = ptr->start - sym->offs;
+				}
+				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x) exec(%D%?-D), time(%.3F%?+.3F ms): <%?.T+%d>\n", ptr->file
+					, ptr->line, ptr->start, ptr->end, ptr->hits, ptr->exec - ptr->hits, ptr->total / CLOCKS_PER_MILLIS
+					, (ptr->self - ptr->total) / CLOCKS_PER_MILLIS, sym, symOffs
+				);
+			}
+		}
+	}
+
 	if (usr->dmpGlobals) {
 		printFmt(out, esc, "%?sGlobals:\n", prefix);
 		printFields(out, esc, rt->main, usr);
 	}
 
-	if (usr->dmpMemoryUse) {
+	if (usr->dmpMemoryUse > 0) {
 		struct dbgContextRec tmp;
 		dbgContext dbg = rt->dbg;
 		if (dbg == NULL) {
@@ -913,215 +972,15 @@ static void textPostProfile(userContext usr) {
 		textDumpMem(dbg, rt->_mem, rt->vm.ro, "meta");
 		textDumpMem(dbg, rt->_mem, rt->vm.cs, "code");
 		textDumpMem(dbg, rt->_mem, rt->vm.ds, "data");
-	}
 
-	if (usr->dmpHeapUsage) {
-		// show allocated and free memory chunks.
-		printFmt(out, esc, "%?sheap memory:\n", prefix);
-		rtAlloc(rt, NULL, 0, textDumpMem);
-	}
-
-	dbgContext dbg = rt->dbg;
-	if (dbg == NULL) {
-		return;
-	}
-
-	if (usr->profFunctions) {
-		size_t cov = 0, cnt = dbg->functions.cnt;
-		dbgn ptrFunc = (dbgn) dbg->functions.ptr;
-		for (size_t i = 0; i < cnt; ++i, ptrFunc++) {
-			cov += ptrFunc->hits > 0;
-		}
-
-		printFmt(out, esc, "%?sProfile functions: %d/%d, coverage: %.2f%%\n",
-			prefix, cov, cnt, cov * 100. / (cnt ? cnt : 1)
-		);
-		for (size_t i = 0; i < cnt; ++i) {
-			dbgn ptr = (dbgn) dbg->functions.ptr + i;
-			if (ptr->hits == 0 && !usr->profNotExecuted) {
-				continue;
-			}
-			symn sym = ptr->func;
-			if (sym == NULL) {
-				sym = rtLookup(rt, ptr->start, 0);
-			}
-			printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): exec(%D%?-D), time(%.3F%?+.3F ms): %?T\n",
-				ptr->file, ptr->line, ptr->start, ptr->end, ptr->hits, ptr->exec - ptr->hits,
-				ptr->total / CLOCKS_PER_MILLIS, (ptr->self - ptr->total) / CLOCKS_PER_MILLIS,
-				sym
-			);
-		}
-	}
-
-	if (usr->profStatements) {
-		size_t cov = 0, cnt = dbg->statements.cnt;
-		dbgn ptrStmt = (dbgn) dbg->statements.ptr;
-		for (size_t i = 0; i < cnt; ++i, ptrStmt++) {
-			cov += ptrStmt->hits > 0;
-		}
-		printFmt(out, esc, "%?sProfile statements: %d/%d, coverage: %.2f%%\n", prefix, cov, cnt, cov * 100. / (cnt
-				? cnt
-				: 1
-			)
-		);
-		for (size_t i = 0; i < cnt; ++i) {
-			dbgn ptr = (dbgn) dbg->statements.ptr + i;
-			size_t symOffs = 0;
-			symn sym = ptr->func;
-			if (ptr->hits == 0 && !usr->profNotExecuted) {
-				continue;
-			}
-			if (sym == NULL) {
-				sym = rtLookup(rt, ptr->start, 0);
-			}
-			if (sym != NULL) {
-				symOffs = ptr->start - sym->offs;
-			}
-			printFmt(out, esc, "%?s:%?u:[.%06x, .%06x) exec(%D%?-D), time(%.3F%?+.3F ms): <%?.T+%d>\n",
-				ptr->file, ptr->line, ptr->start, ptr->end, ptr->hits, ptr->exec - ptr->hits,
-				ptr->total / CLOCKS_PER_MILLIS, (ptr->self - ptr->total) / CLOCKS_PER_MILLIS,
-				sym, symOffs
-			);
+		if (usr->dmpMemoryUse > 1) {
+			// show allocated and free memory chunks.
+			printFmt(out, esc, "%?sheap memory:\n", prefix);
+			rtAlloc(rt, NULL, 0, textDumpMem);
 		}
 	}
 }
 
-static void dumpApiHtml(userContext ctx, symn sym) {
-	const char *CLASS_SYM = "sym";
-	const char *CLASS_DOC = "doc";
-	const char *CLASS_AST = "ast";
-	const char *CLASS_ASM = "asm";
-	const char *CLASS_POS = "pos";
-
-	FILE *out = ctx->out;
-	int indent = ctx->indent;
-	//const char **esc = ctx->esc;
-	// TODO: set this from outside
-	// lazy initialization of escape characters
-	static const char **esc = NULL;
-	if (esc == NULL) {
-		static const char *esc_html[256];
-		memset(esc_html, 0, sizeof(esc_html));
-		esc_html['&'] = "&amp;";
-		esc_html['<'] = "&lt;";
-		esc_html['>'] = "&gt;";
-		esc = esc_html;
-	}
-
-	// symbols are always accessible
-	int dmpApi = ctx->dmpApi;
-	// dump documentation if requested
-	int dmpDoc = ctx->dmpDoc && sym->doc;
-	// instructions are available only for functions
-	int dmpAsm = ctx->dmpAsm && isFunction(sym);
-	// syntax tree is unavailable at runtime(compiler context is destroyed)
-	int dmpAst = ctx->dmpAst && sym->init && ctx->rt->cc;
-
-	// first symbol
-	if (sym == ctx->rt->main->fields) {
-		printFmt(out, NULL, "<html>"
-							"\n<head>"
-							"\n<style>"
-							"\nli {"
-							"  list-style: none;"
-							"}"
-							"\nli.sym {"
-							"  color: #0046b0;"
-							"  padding: .3em 0 1em 1em;"
-							"}"
-							"\npre {"
-							"  margin: 0 0 0 1em;"
-							"  padding: 0 0 0 1em;"
-							"  border-top: solid 1px transparent;"
-							"  border-left: solid 6px transparent;"
-							"}"
-							"\npre.doc {"
-							"  color: gray;"
-							"  margin: .5em 0 .5em 1em;"
-							"}"
-							"\npre.asm, pre.pos {"
-							"  color: black;"
-							"  border-top: solid 1px #dbdbdb;"
-							"  border-left: solid 6px #93e078;"
-							"}"
-							"\npre.asm {"
-							"  color: gray;"
-							"  border-left: solid 6px #7883e0;"
-							"}"
-							"\npre.ast {"
-							"  display: none;"
-							"}"
-							"\n</style>"
-							"\n</head>"
-							"\n<body>"
-							"\n<ul>"
-		);
-	}
-
-	if (!canDump(ctx, sym)) {
-		dmpApi = dmpDoc = dmpAsm = dmpAst = 0;
-	}
-
-	if (dmpApi || dmpDoc || dmpAst || dmpAsm) {
-		printFmt(out, esc, "\n<li class=\"%s\">%T", CLASS_SYM, sym);
-	}
-	// export documentation
-	if (dmpDoc) {
-		printFmt(out, esc, "\n<pre class=\"%s\">%s</pre>", CLASS_DOC, sym->doc);
-	}
-
-	// export valid syntax tree if we still have compiler context
-	if (dmpAst) {
-		printFmt(out, esc, "\n<pre class=\"%s\">", CLASS_AST);
-		printAst(out, esc, sym->init, ctx->dmpMode, -indent);
-		printFmt(out, esc, "</pre>");
-	}
-
-	// export assembly
-	if (dmpAsm) {
-		int preOpened = 0;
-		size_t end = sym->offs + sym->size;
-		for (size_t pc = sym->offs, n = pc; pc < end; pc = n) {
-			unsigned char *ip = nextOpc(ctx->rt, &n, NULL);
-			if (ip == NULL) {
-				// invalid instruction
-				break;
-			}
-
-			dbgn dbg = mapDbgStatement(ctx->rt, pc, NULL);
-			if (ctx->dmpAsmStmt && dbg && dbg->start == pc) {
-				if (preOpened) {
-					printFmt(out, esc, "</pre>");
-				}
-				printFmt(out, esc, "<pre class=\"%s\">", CLASS_POS);
-				textDumpDbg(out, esc, ctx, sym, dbg, indent);
-				printFmt(out, esc, "</pre>");
-				preOpened = 0;
-			}
-			if (!preOpened) {
-				printFmt(out, esc, "<pre class=\"%s\">", CLASS_ASM);
-			}
-			textDumpAsm(out, esc, pc, ctx, indent);
-			preOpened = 1;
-		}
-		if (preOpened) {
-			printFmt(out, esc, "</pre>");
-		}
-	}
-
-	if (dmpApi || dmpDoc || dmpAst || dmpAsm) {
-		printFmt(out, esc, "</li>");
-	}
-
-	// last symbol
-	if (sym == ctx->rt->main) {
-		printFmt(out, NULL,
-			"\n</ul>"
-			"\n</body>"
-			"\n</html>"
-		);
-	}
-}
 static void dumpApiText(userContext ctx, symn sym) {
 	int dumpExtraData = 0;
 	const char **esc = ctx->esc;
@@ -1301,6 +1160,9 @@ static void dumpApiSciTE(userContext ctx, symn sym) {
 	}
 	else {
 		printSym(out, NULL, sym, prSymQual|prSymArgs, 0);
+	}
+	if (sym->doc != NULL && *sym->doc && sym->doc != sym->name) {
+		printFmt(out, escapeJSON(), " # %s", sym->doc);
 	}
 	printFmt(out, esc, "\n");
 }
@@ -1640,7 +1502,6 @@ static int usage() {
 		"\n  -dump[?] <file>       set output for: dump(symbols, assembly, abstract syntax tree, coverage, call tree)"
 		"\n    .scite              dump api for SciTE text editor"
 		"\n    .json               dump api and profile data in javascript object notation format"
-		"\n    .html               dump api in html format"
 		"\n"
 		"\n  -api[*]               dump symbols"
 		"\n    /a /A               include all library symbols(/A includes builtins)"
@@ -1769,7 +1630,13 @@ int main(int argc, char *argv[]) {
 	if (cmpl_home != NULL) {
 		strncpy(stdLib, cmpl_home, sizeof(stdLib) - 1);
 		size_t len = strlen(stdLib);
+		while (len > 0 && stdLib[len - 1] == '/' && STDLIB[0] == '/') {
+			// remove multiple separators
+			stdLib[len - 1] = 0;
+			len -= 1;
+		}
 		if (len > 0 && stdLib[len - 1] != '/' && STDLIB[0] != '/') {
+			// add path separator
 			stdLib[len] = '/';
 			len += 1;
 		}
@@ -1821,19 +1688,20 @@ int main(int argc, char *argv[]) {
 						break;
 
 					case 'G':
-						extra.dmpGlobalTyp = 1;
-						extra.dmpGlobalFun = 1;
-						// fall through
+						extra.dmpGlobals = 3;
+						arg2 += 2;
+						break;
 					case 'g':
 						extra.dmpGlobals = 1;
 						arg2 += 2;
 						break;
 
 					case 'M':
-						extra.dmpMemoryUse = 1;
-						// fall through
+						extra.dmpMemoryUse = 3;
+						arg2 += 2;
+						break;
 					case 'm':
-						extra.dmpHeapUsage = 1;
+						extra.dmpMemoryUse = 1;
 						arg2 += 2;
 						break;
 				}
@@ -1857,19 +1725,20 @@ int main(int argc, char *argv[]) {
 						break;
 
 					case 'G':
-						extra.dmpGlobalTyp = 1;
-						extra.dmpGlobalFun = 1;
-						// fall through
+						extra.dmpGlobals = 3;
+						arg2 += 2;
+						break;
 					case 'g':
 						extra.dmpGlobals = 1;
 						arg2 += 2;
 						break;
 
 					case 'M':
-						extra.dmpMemoryUse = 1;
-						// fall through
+						extra.dmpMemoryUse = 3;
+						arg2 += 2;
+						break;
 					case 'm':
-						extra.dmpHeapUsage = 1;
+						extra.dmpMemoryUse = 1;
 						arg2 += 2;
 						break;
 
@@ -1919,19 +1788,20 @@ int main(int argc, char *argv[]) {
 						break;
 
 					case 'G':
-						extra.dmpGlobalTyp = 1;
-						extra.dmpGlobalFun = 1;
-						// fall through
+						extra.dmpGlobals = 3;
+						arg2 += 2;
+						break;
 					case 'g':
 						extra.dmpGlobals = 1;
 						arg2 += 2;
 						break;
 
 					case 'M':
-						extra.dmpMemoryUse = 1;
-						// fall through
+						extra.dmpMemoryUse = 3;
+						arg2 += 2;
+						break;
 					case 'm':
-						extra.dmpHeapUsage = 1;
+						extra.dmpMemoryUse = 1;
 						arg2 += 2;
 						break;
 
@@ -2062,9 +1932,6 @@ int main(int argc, char *argv[]) {
 				}
 				pathAstDumpXml = argv[i];
 				continue;
-			}
-			else if (strEquals(arg, "-dump.html")) {
-				dumpFun = dumpApiHtml;
 			}
 			else if (strEquals(arg, "-dump.json")) {
 				dumpFun = dumpApiJSON;
@@ -2409,6 +2276,10 @@ int main(int argc, char *argv[]) {
 		else break;
 	}
 
+	if (dumpFun == dumpApiSciTE && !extra.dmpDoc) {
+		// record documentation for api
+		extra.dmpDoc = 1;
+	}
 	if (extra.hideOffsets) {
 		extra.dmpMode &= ~(prAsmCode|prRelOffs|prAbsOffs);
 	}
@@ -2588,7 +2459,7 @@ int main(int argc, char *argv[]) {
 	// generate code only if there are no compilation errors
 	if (rt->errors == 0) {
 		if (extra.compileSteps != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sGenerate: byte-code", extra.compileSteps);}
-		if (ccGenCode(cc, run_code != run) != 0) {
+		if (ccGenCode(cc, run_code != run || extra.dmpAsmStmt) != 0) {
 			trace("error generating code");
 		}
 		// set breakpoints

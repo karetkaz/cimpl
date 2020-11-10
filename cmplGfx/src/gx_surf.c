@@ -37,24 +37,24 @@ GxImage createImage(GxImage recycle, int width, int height, int depth, ImageFlag
 			return NULL;
 
 		case 32:
-			recycle->pixeLen = 4;
+			recycle->pixelLen = 4;
 			break;
 
 		case 24:
-			recycle->pixeLen = 3;
+			recycle->pixelLen = 3;
 			break;
 
 		case 16:
 		case 15:
-			recycle->pixeLen = 2;
+			recycle->pixelLen = 2;
 			break;
 
 		case 8:
-			recycle->pixeLen = 1;
+			recycle->pixelLen = 1;
 			break;
 	}
 
-	recycle->scanLen = ((unsigned) width * recycle->pixeLen + 3) & ~3;
+	recycle->scanLen = ((unsigned) width * recycle->pixelLen + 3) & ~3;
 	if (width > 0 && height > 0 && depth > 0) {
 		size_t size = recycle->scanLen * (size_t) height;
 		size_t offs = 0;
@@ -114,7 +114,7 @@ GxImage sliceImage(GxImage recycle, GxImage parent, const GxRect roi) {
 	recycle->height = parent->height;
 	recycle->depth = parent->depth;
 	recycle->flags = flags;
-	recycle->pixeLen = parent->pixeLen;
+	recycle->pixelLen = parent->pixelLen;
 	recycle->scanLen = parent->scanLen;
 	recycle->clipPtr = parent->clipPtr;
 	recycle->basePtr = parent->basePtr;
@@ -123,8 +123,8 @@ GxImage sliceImage(GxImage recycle, GxImage parent, const GxRect roi) {
 	if (roi != NULL) {
 		struct GxRect rect = *roi;
 		recycle->basePtr = clipRect(parent, &rect);
-		recycle->width = rect.width;
-		recycle->height = rect.height;
+		recycle->width = rect.width < 0 ? 0 : rect.width;
+		recycle->height = rect.height < 0 ? 0 : rect.height;
 	}
 	return recycle;
 }
@@ -174,16 +174,16 @@ void* clipRect(GxImage image, GxRect roi) {
 }
 
 int blitImage(GxImage image, int x, int y, GxImage src, GxRect roi, void *extra, bltProc blt) {
+	if (blt == NULL) {
+		// error: operation is invalid or not implemented
+		return -1;
+	}
+
 	struct GxRect clip;
 	clip.x = roi ? roi->x : 0;
 	clip.y = roi ? roi->y : 0;
 	clip.w = roi ? roi->w : src->width;
 	clip.h = roi ? roi->h : src->height;
-
-	if (blt == NULL) {
-		// error: operation is invalid or not implemented
-		return -1;
-	}
 
 	if (x < 0) {
 		clip.x -= x;

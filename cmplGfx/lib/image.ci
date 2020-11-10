@@ -8,39 +8,8 @@ Image Image(Image copy) {
 	return result;
 }
 
-/// Create an image by copying another one using a custom aspect ratio
-Image Image(Image copy, float64 aspect) {
-	int width = copy.width();
-	if (aspect > 0) {
-		width = copy.height() * aspect;
-	}
-	Image result = Image.create(width, copy.height(), copy.depth());
-	result.transform(null, copy, null, 1, null);
-	return result;
-}
-
-/// Create an image by opening an image file
-Image Image(const char fileName[*], int depth) {
-	if (fileName.endsWith(".jpeg", ignCaseCmp)) {
-		return Image.openJpg(fileName, depth);
-	}
-	if (fileName.endsWith(".jpg", ignCaseCmp)) {
-		return Image.openJpg(fileName, depth);
-	}
-	if (fileName.endsWith(".png", ignCaseCmp)) {
-		return Image.openPng(fileName, depth);
-	}
-	if (fileName.endsWith(".bmp", ignCaseCmp)) {
-		return Image.openBmp(fileName, depth);
-	}
-	abort("unknown file extension", fileName);
-}
-
-/// Create an image by opening an image file
-inline Image(const char fileName[*]) = Image(fileName, 32);
-
-/// Create an image by opening an image file with custom width and height
-Image Image(const char fileName[*], int width, int height, int depth, int align, float64 maxScale) {
+/// Create an image by copying another one using a custom width and height
+Image Image(Image image, int width, int height, int align, float64 maxScale) {
 	enum: int {
 		center: 0;
 		left: 1;
@@ -54,8 +23,7 @@ Image Image(const char fileName[*], int width, int height, int depth, int align,
 	}
 
 	float64 scale = 1;
-	Image image = Image(fileName, depth);
-	Image result = Image(width, height, depth);
+	Image result = Image(width, height, image.depth());
 
 	int alignVertical = align & fitVertical;
 	int alignHorizontal = align & fitHorizontal;
@@ -107,6 +75,25 @@ Image Image(const char fileName[*], int width, int height, int depth, int align,
 	};
 
 	result.transform(null, image, null, align & highRes ? 1 : 0, mat.data);
+	image.destroy();
+	return result;
+}
+
+/// Create an image by opening an image file
+Image Image(const char fileName[*], int depth) {
+	if (fileName.endsWith(".bmp", ignCaseCmp)) {
+		return Image.openBmp(fileName, depth);
+	}
+	return Image.openImg(fileName, depth);
+}
+
+/// Create an image by opening an image file
+inline Image(const char fileName[*]) = Image(fileName, 32);
+
+/// Create an image by opening an image file with custom width and height
+Image Image(const char fileName[*], int width, int height, int depth, int align, float64 maxScale) {
+	Image image = Image(fileName, depth);
+	Image result = Image(image, width, height, align, maxScale);
 	image.destroy();
 	return result;
 }
@@ -173,7 +160,9 @@ inline fill(Image image, const Rect roi&, uint32 color) = image.fillRect(roi.x, 
 inline fill(Image image, const Rect roi&, int pad, uint32 color) = image.fillRect(roi.x - pad, roi.y - pad, roi.x + roi.w + pad, roi.y + roi.h + pad, color);
 
 ///@public
-inline drawRect(Image image, const Rect roi&, uint32 color) = image.drawRect(roi.x, roi.y, roi.x + roi.w - 1, roi.y + roi.h - 1, color);
+inline drawRect(Image image, const Rect roi&, uint32 color) = image.drawRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
+///@public
+inline fillRect(Image image, const Rect roi&, uint32 color) = image.fillRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
 
 /// Fill the surface by evaluating the given function for each pixel
 void eval(Image image, const Rect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
@@ -210,7 +199,7 @@ void eval(Image image, const Rect roi&, float32 aspect, float32 time, vec4f eval
 }
 
 ///@public
-void tile(Image image, int x, int y, Image src, Rect roi&) {
+void tile(Image image, int x, int y, Image src, const Rect roi&) {
 	Rect rect = {
 		x: roi != null ? roi.x : 0;
 		y: roi != null ? roi.y : 0;

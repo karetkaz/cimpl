@@ -1,39 +1,91 @@
 #include "gx_surf.h"
 
 void drawRect(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
-	fillRect(image, x1, y1, x2, y1 + 1, color);
-	fillRect(image, x1, y2, x2 + 1, y2 + 1, color);
-	fillRect(image, x1, y1, x1 + 1, y2, color);
-	fillRect(image, x2, y1, x2 + 1, y2, color);
-}
-void fillRect(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
-	GxClip roi = getClip(image);
 	if (x1 > x2) {
 		int t = x1;
 		x1 = x2;
 		x2 = t;
-	}
-	if (x1 < roi->xmin) {
-		x1 = roi->xmin;
-	}
-	if (x2 > roi->xmax) {
-		x2 = roi->xmax;
 	}
 	if (y1 > y2) {
 		int t = y1;
 		y1 = y2;
 		y2 = t;
 	}
-	if (y1 < roi->ymin) {
-		y1 = roi->ymin;
+	struct GxRect clip = {
+		.x = x1,
+		.y = y1,
+		.w = x2 - x1,
+		.h = y2 - y1,
+	};
+	bltProc blt = getBltProc(cblt_set_col, image->depth);
+	char *dptr = (char*) clipRect(image, &clip);
+	if (dptr == NULL || blt == NULL) {
+		return;
 	}
-	if (y2 > roi->ymax) {
-		y2 = roi->ymax;
+
+	int top = y1 >= clip.y;
+	int left = x1 >= clip.x;
+	int right = x2 <= clip.x + clip.w;
+	int bottom = y2 <= clip.y + clip.h;
+
+	if (top) {
+		blt(dptr, NULL, (void*) (size_t) color, clip.w);
+		dptr += image->scanLen;
 	}
-	for (int y = y1; y < y2; y++) {
-		for (int x = x1; x < x2; x++) {
-			setPixel(image, x, y, color);
+	if (left && right) {
+		size_t r = (clip.w - 1) * image->pixelLen;
+		for (int y = top; y < clip.h - bottom; y++) {
+			blt(dptr, NULL, (void*) (size_t) color, 1);
+			blt(dptr + r, NULL, (void*) (size_t) color, 1);
+			dptr += image->scanLen;
 		}
+	}
+	else if (left) {
+		for (int y = top; y < clip.h - bottom; y++) {
+			blt(dptr, NULL, (void*) (size_t) color, 1);
+			dptr += image->scanLen;
+		}
+	}
+	else if (right) {
+		size_t r = (clip.w - 1) * image->pixelLen;
+		for (int y = top; y < clip.h - bottom; y++) {
+			blt(dptr + r, NULL, (void*) (size_t) color, 1);
+			dptr += image->scanLen;
+		}
+	}
+	else {
+		dptr += (clip.h - top - bottom) * image->scanLen;
+	}
+	if (bottom) {
+		blt(dptr, NULL, (void*) (size_t) color, clip.w);
+	}
+}
+void fillRect(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
+	if (x1 > x2) {
+		int t = x1;
+		x1 = x2;
+		x2 = t;
+	}
+	if (y1 > y2) {
+		int t = y1;
+		y1 = y2;
+		y2 = t;
+	}
+	struct GxRect clip = {
+		.x = x1,
+		.y = y1,
+		.w = x2 - x1,
+		.h = y2 - y1,
+	};
+	bltProc blt = getBltProc(cblt_set_col, image->depth);
+	char *dptr = (char*) clipRect(image, &clip);
+	if (dptr == NULL || blt == NULL) {
+		return;
+	}
+
+	while (clip.h-- > 0) {
+		blt(dptr, NULL, (void*) (size_t) color, clip.w);
+		dptr += image->scanLen;
 	}
 }
 
@@ -102,7 +154,7 @@ void fillOval(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 	int dy = y2 - y1;
 
 	x2 = x1 += dx >> 1;
-	x1 +=dx & 1;
+	x1 += dx & 1;
 
 	dx += dx & 1;
 	dy += dy & 1;
@@ -221,36 +273,6 @@ void drawBez3(GxImage image, int x1, int y1, int x2, int y2, int x3, int y3, int
 	drawLine(image, x1, y1, x4, y4, color);
 }
 
-void drawChar(GxImage image, int x, int y, GxImage font, int chr, uint32_t color) {
-
-	if ((font->flags & ImageType) != ImageFnt) {
-		return;
-	}
-
-	struct GxRect clip;
-	struct GxFace *face = &font->LLUTPtr->data[chr & 255];
-
-	clip.x = x + face->pad_x;
-	clip.y = y + face->pad_y;
-	clip.w = face->width;
-	clip.h = font->height;
-	if (clip.w <= 0 || clip.h <= 0) {
-		return;
-	}
-
-	char *sptr = (char*)face->basePtr;
-	char *dptr = (char*) clipRect(image, &clip);
-	bltProc blt = getBltProc(cblt_set_mix, image->depth);
-	if (dptr == NULL || sptr == NULL || blt == NULL) {
-		return;
-	}
-
-	while (clip.h-- > 0) {
-		blt(dptr, sptr, (void*)(size_t)color, clip.w);
-		dptr += image->scanLen;
-		sptr += font->scanLen;
-	}
-}
 void clipText(GxRect rect, GxImage font, const char *text) {
 	char chr;
 	int x = 0;
@@ -291,11 +313,11 @@ void clipText(GxRect rect, GxImage font, const char *text) {
 				x = x0;
 				break;
 
-			/* todo calculate correct position based on the current width
-			case '\t':
-				width += 8 * face->width;
-				break;
-			// */
+				/* todo calculate correct position based on the current width
+				case '\t':
+					width += 8 * face->width;
+					break;
+				// */
 		}
 
 		if (rect->w < x) {
@@ -303,6 +325,36 @@ void clipText(GxRect rect, GxImage font, const char *text) {
 		}
 	}
 	rect->h += y;
+}
+void drawChar(GxImage image, int x, int y, GxImage font, int chr, uint32_t color) {
+
+	if ((font->flags & ImageType) != ImageFnt) {
+		return;
+	}
+
+	struct GxFace *face = &font->LLUTPtr->data[chr & 255];
+	struct GxRect clip;
+
+	clip.x = x + face->pad_x;
+	clip.y = y + face->pad_y;
+	clip.w = face->width;
+	clip.h = font->height;
+	if (clip.w <= 0 || clip.h <= 0) {
+		return;
+	}
+
+	char *sptr = (char*)face->basePtr;
+	char *dptr = (char*) clipRect(image, &clip);
+	bltProc blt = getBltProc(cblt_set_mix, image->depth);
+	if (dptr == NULL || sptr == NULL || blt == NULL) {
+		return;
+	}
+
+	while (clip.h-- > 0) {
+		blt(dptr, sptr, (void*)(size_t)color, clip.w);
+		dptr += image->scanLen;
+		sptr += font->scanLen;
+	}
 }
 void drawText(GxImage image, int x, int y, GxImage font, const char *text, uint32_t color) {
 	int chr, x0 = x;

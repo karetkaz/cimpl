@@ -78,7 +78,7 @@ ELSE()
 	add_library(Gfx SHARED ${GX_SOURCE_FILES} cmplGfx/src/os_linux/gx_gui.sdl.c cmplGfx/src/os_linux/time.unx.c)
 	target_link_libraries(Gfx m dl png jpeg SDL2)
 ENDIF()
-target_include_directories(Gfx PUBLIC ./src/)
+target_include_directories(Gfx PUBLIC ./src/ ./libs/stb)
 
 # a simple "how to use" demo code.
 add_executable(cmplVmEmit ${CC_SOURCE_FILES} src/test/vmMulf32.c)

@@ -131,8 +131,6 @@ If JSON output format is used, the generated file can be opened with the Inspect
 
 	- `.json`             dump api and profile data in javascript object notation format
 
-	- `.html`             dump api in html format
-
 - `-api[*]`               dump symbols
 
 	- `/a /A`             include all library symbols(/A includes builtins)

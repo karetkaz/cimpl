@@ -110,6 +110,30 @@ static int colcpy_32mix(char* dst, char *src, void *lut, size_t cnt) {
 	return 0;
 }
 
+static int colset_32set(char* dst, char *src, void *lut, size_t cnt) {
+	uint32_t val = (uint32_t) (size_t) lut;
+	for (; cnt > 0; cnt -= 1, dst += 4) {
+		*(uint32_t *) dst = val;
+	}
+	(void) src;
+	return 0;
+}
+static int colset_16set(char* dst, char *src, void *lut, size_t cnt) {
+	uint32_t val = (uint32_t) (size_t) lut;
+	for (; cnt > 0; cnt -= 1, dst += 2) {
+		*(uint16_t *) dst = val;
+	}
+	(void) src;
+	return 0;
+}
+static int colset_08set(char* dst, char *src, void *lut, size_t cnt) {
+	uint32_t val = (uint32_t) (size_t) lut;
+	for (; cnt > 0; cnt -= 1, dst += 1) {
+		*(uint8_t *) dst = val;
+	}
+	(void) src;
+	return 0;
+}
 static int colset_32mix(char* dst, char *src, void *lut, size_t cnt) {
 	argb val = cast_rgb((uint32_t) (size_t) lut);
 	for (; cnt > 0; cnt -= 1, dst += 4, src += 1) {
@@ -127,6 +151,16 @@ static int colcpy_24_32(char* dst, char *src, void *lut, size_t cnt) {
 	return 0;
 	(void)lut;
 }
+static int colcpy_24cpy(char* dst, char *src, void *lut, size_t cnt) {
+	memcpy(dst, src, 3 * cnt);
+	return 0;
+	(void)lut;
+}
+static int colcpy_16cpy(char* dst, char *src, void *lut, size_t cnt) {
+	memcpy(dst, src, 2 * cnt);
+	return 0;
+	(void)lut;
+}
 static int colcpy_08cpy(char *dst, char *src, void *lut, size_t cnt) {
 	memcpy(dst, src, cnt);
 	return 0;
@@ -137,6 +171,8 @@ bltProc getBltProc(BltType type, int srcDepth) {
 	switch (type) {
 		case cblt_conv_32:
 			switch (srcDepth) {
+				case -cblt_conv_32: return (bltProc) colcpy_32_abgr;
+				case -cblt_conv_24: return (bltProc) colcpy_32_bgr;
 				case cblt_conv_32: return (bltProc) colcpy_32cpy;
 				case cblt_conv_24: return (bltProc) colcpy_32_24;
 				case cblt_conv_16: return (bltProc) colcpy_32_16;
@@ -147,8 +183,10 @@ bltProc getBltProc(BltType type, int srcDepth) {
 
 		case cblt_conv_24:
 			switch (srcDepth) {
+//				case cblt_conv_rgba: return (bltProc) colcpy_24_abgr;
+//				case cblt_conv_rgb: return (bltProc) colcpy_24_bgr;
 				case cblt_conv_32: return (bltProc) colcpy_24_32;
-//				case cblt_conv_24: return (bltProc) colcpy_24cpy;
+				case cblt_conv_24: return (bltProc) colcpy_24cpy;
 //				case cblt_conv_16: return (bltProc) colcpy_24_16;
 //				case cblt_conv_15: return (bltProc) colcpy_24_15;
 //				case cblt_conv_08: return (bltProc) colcpy_24_08;
@@ -156,24 +194,30 @@ bltProc getBltProc(BltType type, int srcDepth) {
 			break;
 		case cblt_conv_16:
 			switch (srcDepth) {
+//				case cblt_conv_rgba: return (bltProc) colcpy_16_abgr;
+//				case cblt_conv_rgb: return (bltProc) colcpy_16_bgr;
 //				case cblt_conv_32: return (bltProc) colcpy_16_32;
 //				case cblt_conv_24: return (bltProc) colcpy_16_24;
-//				case cblt_conv_16: return (bltProc) colcpy_16cpy;
+				case cblt_conv_16: return (bltProc) colcpy_16cpy;
 //				case cblt_conv_15: return (bltProc) colcpy_16_15;
 //				case cblt_conv_08: return (bltProc) colcpy_16_08;
 			}
 			break;
 		case cblt_conv_15:
 			switch (srcDepth) {
+//				case cblt_conv_rgba: return (bltProc) colcpy_15_abgr;
+//				case cblt_conv_rgb: return (bltProc) colcpy_15_bgr;
 //				case cblt_conv_32: return (bltProc) colcpy_15_32;
 //				case cblt_conv_24: return (bltProc) colcpy_15_24;
 //				case cblt_conv_16: return (bltProc) colcpy_15_16;
-//				case cblt_conv_15: return (bltProc) colcpy_15cpy;
+				case cblt_conv_15: return (bltProc) colcpy_16cpy;
 //				case cblt_conv_08: return (bltProc) colcpy_15_08;
 			}
 			break;
 		case cblt_conv_08:
 			switch (srcDepth) {
+//				case cblt_conv_rgba: return (bltProc) colcpy_08_abgr;
+//				case cblt_conv_rgb: return (bltProc) colcpy_08_bgr;
 //				case cblt_conv_32: return (bltProc) colcpy_08_32;
 //				case cblt_conv_24: return (bltProc) colcpy_08_24;
 //				case cblt_conv_16: return (bltProc) colcpy_08_16;
@@ -229,6 +273,16 @@ bltProc getBltProc(BltType type, int srcDepth) {
 //				case cblt_conv_16: return (bltProc) colset_16mix;
 //				case cblt_conv_15: return (bltProc) colset_15mix;
 //				case cblt_conv_08: return (bltProc) colset_08mix;
+			}
+			break;
+
+		case cblt_set_col:
+			switch (srcDepth) {
+				case cblt_conv_32: return (bltProc) colset_32set;
+//				case cblt_conv_24: return (bltProc) colset_24mix;
+				case cblt_conv_16: return (bltProc) colset_16set;
+				case cblt_conv_15: return (bltProc) colset_16set;
+				case cblt_conv_08: return (bltProc) colset_08set;
 			}
 			break;
 	}

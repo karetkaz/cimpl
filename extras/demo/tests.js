@@ -1,6 +1,7 @@
 let projects = {
 	'cmplStd/tests' : {
 		base: 'cmplStd/test/',
+		libs: ['libFile'],
 		main: 'cmplStd/test/test.ci',
 		files: [
 			'lang/emit.ci',
@@ -31,11 +32,12 @@ let projects = {
 	},
 	'cmplGfx/tests' : {
 		base: 'cmplGfx/test/',
+		libs: ['libGfx', 'libFile'],
 		main: 'cmplGfx/test/testGfx.ci',
 		files: [
 			'asset/font/Modern-1.fnt',
 			'asset/image/david.png',
-			'asset/image/forest.png',
+			'asset/image/forest.jpg',
 			'asset/image/garden.png',
 			'asset/image/heightmap.png',
 			'asset/image/texture.png',
@@ -81,9 +83,10 @@ let projects = {
 	},
 	'image edit' : {
 		base: 'cmplGfx/test/',
+		libs: ['libGfx', 'libFile'],
 		files: [
 			'asset/font/Modern-1.fnt',
-			'asset/image/forest.png',
+			'asset/image/forest.jpg',
 			'asset/image/texture.png',
 			'asset/image/texture_nature_01.png',
 			'fx.color.blend.ci',
@@ -131,6 +134,14 @@ let projects = {
 
 function toProject(proj) {
 	let project = {};
+
+	// set libraries to be used
+	if (proj.libs != null) {
+		let libs = [];
+		for (let lib of proj.libs) {
+			project[lib] = '';
+		}
+	}
 
 	// set files to be downloaded
 	if (proj.files != null) {

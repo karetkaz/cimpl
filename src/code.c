@@ -1722,7 +1722,7 @@ static vmError vmTrace(rtContext rt, void *sp, size_t caller, size_t callee) {
 
 /// Private dummy debug function.
 static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t caller, size_t callee) {
-	if (err != noError) {
+	if (err == noError) {
 		return NULL;
 	}
 
@@ -1730,11 +1730,11 @@ static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t
 	char *errMsg = vmErrorMessage(err);
 	vmInstruction ip = vmPointer(rt, caller);
 
-	// file:line
-	dbgn dbg = mapDbgStatement(rt, caller, NULL);
+	// source code position
 	char *file = NULL;
 	int line = 0;
-	if (dbg != NULL) {
+	dbgn dbg = mapDbgStatement(rt, caller, NULL);
+	if (dbg != NULL && dbg->file != NULL && dbg->line > 0) {
 		file = dbg->file;
 		line = dbg->line;
 	}
@@ -1789,7 +1789,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 	}
 
 	// run in debug or profile mode
-	if (rt->dbg != NULL) {
+	if (rt->dbg != NULL && rt->dbg->debug != NULL) {
 		const trcptr oldTP = pu->tp;
 		const stkptr spMin = (stkptr)(pu->bp);
 		const stkptr spMax = (stkptr)(pu->bp + pu->ss);
@@ -1797,10 +1797,6 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 		const vmInstruction ipMax = (vmInstruction)(rt->_mem + rt->vm.px + px_size);
 
 		dbgn (*debugger)(dbgContext, vmError, size_t, void*, size_t, size_t) = rt->dbg->debug;
-
-		if (debugger == NULL) {
-			debugger = dbgDummy;
-		}
 		// invoked function(from external code) will return with a ret instruction, removing trace info
 		execError = vmTrace(rt, pu->sp, 0, fun->offs);
 		if (execError != noError) {
@@ -2437,7 +2433,6 @@ void traceCalls(dbgContext dbg, FILE *out, int indent, size_t maxCalls, size_t s
 		maxCalls = maxTrace;
 	}
 
-	dmpMode mode = prArgs;
 	for (i = skipCalls; i < maxCalls; ++i) {
 		trcptr trace = &trcBase[maxTrace - i - 1];
 		dbgn trInfo = mapDbgStatement(rt, trace->caller, NULL);
@@ -2454,9 +2449,8 @@ void traceCalls(dbgContext dbg, FILE *out, int indent, size_t maxCalls, size_t s
 		}
 		if (hasOutput > 0) {
 			printFmt(out, NULL, "\n");
-			mode |= prOneLine;
 		}
-		traceArgs(rt, out, fun, file, line, sp, indent, mode);
+		traceArgs(rt, out, fun, file, line, sp, indent, prArgs | prOneLine);
 		hasOutput += 1;
 	}
 	if (i < maxTrace) {
@@ -2630,19 +2624,19 @@ void printAsm(FILE *out, const char **esc, rtContext ctx, void *ptr, dmpMode mod
 					return;
 
 				case b32_bit_and:
-					printFmt(out, esc, "%s 0x%03x", "and", (1 << (ip->idx & 0x3f)) - 1);
+					printFmt(out, esc, "%s 0x%02x", "and", (1 << (ip->idx & 0x3f)) - 1);
 					break;
 
 				case b32_bit_shl:
-					printFmt(out, esc, "%s 0x%03x", "shl", ip->idx & 0x3f);
+					printFmt(out, esc, "%s 0x%02x", "shl", ip->idx & 0x3f);
 					break;
 
 				case b32_bit_shr:
-					printFmt(out, esc, "%s 0x%03x", "shr", ip->idx & 0x3f);
+					printFmt(out, esc, "%s 0x%02x", "shr", ip->idx & 0x3f);
 					break;
 
 				case b32_bit_sar:
-					printFmt(out, esc, "%s 0x%03x", "sar", ip->idx & 0x3f);
+					printFmt(out, esc, "%s 0x%02x", "sar", ip->idx & 0x3f);
 					break;
 			}
 			break;

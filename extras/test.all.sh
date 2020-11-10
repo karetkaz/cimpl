@@ -10,7 +10,6 @@ CMPL_BIN=$CMPL_HOME/$BIN
 BINW=$CMPL_HOME/bin/lnx.wcc
 
 make clean BINDIR="$BIN"
-#make -j 12 cmpl libFile.so libGfx.so libOpenGL.so BINDIR="$BIN"
 make -j 12 cmpl libFile.so libGfx.so libOpenGL.so cmpl.js libFile.wasm libGfx.wasm BINDIR="$BIN"
 
 # build and run test on 32 bit platform
@@ -49,7 +48,7 @@ fi
 # create reference
 $CMPL_BIN/cmpl>'cmplStd/doc/todo/Instructions.md' --dump-vm
 rm extras/Cmpl.md
-DOC_FILES="$CMPL_HOME/cmplStd/doc/*.md"                  # Introduction
+DOC_FILES="$CMPL_HOME/cmplStd/doc/lang/*.md"             # Introduction
 DOC_FILES="$DOC_FILES $CMPL_HOME/cmplStd/doc/expr/*.md"  # Expressions
 DOC_FILES="$DOC_FILES $CMPL_HOME/cmplStd/doc/stmt/*.md"  # Statements
 DOC_FILES="$DOC_FILES $CMPL_HOME/cmplStd/doc/decl/*.md"  # Declarations

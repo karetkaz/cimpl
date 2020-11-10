@@ -69,6 +69,16 @@
 			<!--<button class="right" onclick="event.stopPropagation(); uploadFiles();">📤</button>-->
 		</li>
 		<ul id="fileList"></ul>
+		<ul>
+			<div class="collapsed submenu">
+				<li onclick="setStyle(parentElement, '~collapsed')">Dependencies</li>
+				<ul>
+					<li id="libFile" onclick="params.update({libFile: params.libFile == null ? '' : null});">libFile</li>
+					<li id="libGfx" onclick="params.update({libGfx: params.libGfx == null ? '' : null});">libGfx (reloads page)</li>
+					<hr>
+				</ul>
+			</div>
+		</ul>
 		<hr>
 	</div>
 	<div class="collapsed submenu">
@@ -85,7 +95,6 @@
 			<li onclick="execute('-profile/t/p/G/M -api/A/m/d/p -asm/a/n/s -ast -doc -use', {dump: '/dump.ci'});">Profile & full dump</li>
 			<hr>
 			<li onclick="execute();">Command Line Reference</li>
-			<!-- li onclick="params.update({worker: ''});">Use Workers (works only without canvas)</li -->
 		</ul>
 		<hr>
 	</div>
@@ -333,12 +342,11 @@ function centerCanvas(zoom) {
 	canvasMove.style.height = Math.max(canvas.height, canvas.parentElement.clientHeight);
 }
 
-// worker or canvas based execution
-if (params.worker !== undefined) {
-	props.libraries = [
-		'libFile.wasm'
-	];
-
+// libGfx for canvas based execution
+if (params.libGfx === undefined) {
+	props.locateFile = function (path) {
+		return path;
+	}
 	var worker = new Worker('extras/demo/emscripten/worker.js');
 	worker.onmessage = function (event) {
 		//console.log('worker: ', event.data);
@@ -348,24 +356,24 @@ if (params.worker !== undefined) {
 	var openProjectFile = function(projectOrFile) {
 		worker.postMessage(projectOrFile);
 	}
-	var execInput = function(args) {
+	var execInput = function(args, extra) {
 		setStyle(document.body, 'output');
+		let dump = undefined;
+		if (extra != null && extra.dump != null) {
+			dump = extra.dump;
+		}
 		worker.postMessage({
-			execute: args || []
+			dump, execute: args || []
 		});
 	}
 }
 else {
-	props.libraries = [
-		'extras/demo/emscripten/libFile.wasm',
-		'extras/demo/emscripten/libGfx.wasm'
-	];
-
+	props.locateFile = function (path) {
+		return 'extras/demo/emscripten/' + path;
+	}
 	var Module = {
 		initialized: false,
-		locateFile: function (path) {
-			return 'extras/demo/emscripten/' + path;
-		},
+		locateFile: props.locateFile,
 		dynamicLibraries: [
 			'extras/demo/emscripten/libFile.wasm',
 			'extras/demo/emscripten/libGfx.wasm'

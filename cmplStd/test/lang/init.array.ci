@@ -4,84 +4,130 @@ inline integer = int32;
 }
 
 // uninitialized arrays will raise compilation error
-//integer arrArrayNoInit[7];  // compilation error: uninitialized variable
-//integer arrArrayNoInit[*];  // compilation error: uninitialized variable
-//integer arrSliceNoInit[];  // compilation error: uninitialized variable
+//integer arrayNoInit[7];  // OK: compilation error: uninitialized variable
+//integer sliceNoInit[];   // OK: compilation error: uninitialized variable
+//integer carrNoInit[*];   // OK: compilation error: uninitialized variable
 
-integer arrFixedInit[7] = {42, 43, 44, 45, 46, 47, 48};
-//integer arrArrayInitLiteral[*] = {1, 2, 3, 4};  // compilation error: no location to store array elements
-//integer arrSliceInitLiteral[] = {1, 2, 3, 4};  // compilation error: no location to store array elements
-//integer arrFixedInitLess[7] = {42, 43};  // TODO: raise warning or error
-//integer arrFixedInitMore[7] = {0, 0, 0, 0, 0, 0, 0, 0};  // compilation error: too many values
+//
+// initialize arrays with literal
+//
 
-//integer arrFixedInitNull[7] = null;  // compilation error; TODO: use custom message
-integer arrArrayInitNull[*] = null;
-integer arrSliceInitNull[] = null;
+/** fixed size array initialized with literal will set each element of the array with the given values.
+ * arrayInit: int32[7] := {
+ * 	arrayInit[0] := 42;
+ * 	arrayInit[1] := 43;
+ * 	...
+ * };
+ */
+integer arrayInit[7] = {42, 43, 44, 45, 46, 47, 48};
+integer arrayInitLess[9] = {42, 43, 44, 45, 46, 47, 48};    // TODO: raise a warning: partial array initialization
+//integer arrayInitMore[3] = {42, 43, 44, 45, 46, 47, 48};    // OK: compilation error: too many values
 
-//integer arrFixedInitFixed[7] = arrFixedInit;  // FIXME: compile time length check; copy elements
-integer arrArrayInitFixed[*] = arrFixedInit;
-integer arrSliceInitFixed[] = arrFixedInit;
+/** dynamic size array initialized with literal will create also a fixed size array,
+ * initialize all the values of the fixed size array, and assign it to the slice.
+ * sliceInit: int32[] := {
+ * 	sliceInit := sliceInit.init;
+ * 	sliceInit.init[0] := 1;
+ * 	sliceInit.init[1] := 2;
+ * 	...
+ * };
+ */
+integer sliceInit[] = {1, 2, 3, 4};
 
-//integer arrFixedInitSlice[7] = arrSliceInitFixed;  // TODO: runtime length check; copy elements
-integer arrArrayInitSlice[*]  = arrSliceInitFixed;
-integer arrSliceInitSlice[] = arrSliceInitFixed;
+/** unknown size array initialized with literal will create also a fixed size array,
+ * initialize all the values of the fixed size array, and assign it to the pointer.
+ * carrInit: int32[*] := {
+ * 	carrInit := carrInit.init;
+ * 	carrInit.init[0] := 1;
+ * 	carrInit.init[1] := 2;
+ * };
+ */
+integer carrInit[*] = {1, 2, 3, 4};
 
-//integer arrFixedInitPtr[7] = arrArrayInitFixed;  // compilation error; TODO: custom message: missing length
-integer arrArrayInitPtr[*] = arrArrayInitFixed;
-//integer arrSliceInitPtr[] = arrArrayInitFixed;  // compilation error: can not emit length of array
+//
+// initialize arrays with null literal
+//
+
+//integer arrayInitNull[7] = null;  // OK: compilation error; TODO: use custom message
+integer sliceInitNull[] = null;
+integer carrInitNull[*] = null;
+
+//
+// initialize arrays with fixed size array
+//
+
+//integer arrayInitFixed[7] = arrayInit;  // FIXME: compile time length check; copy elements
+integer sliceInitFixed[] = arrayInit;
+integer carrInitFixed[*] = arrayInit;
+
+//
+// initialize arrays with slice
+//
+
+//integer arrayInitSlice[7] = sliceInit;  // OK: TODO: runtime length check; copy elements
+integer sliceInitSlice[] = sliceInit;
+integer carrInitSlice[*] = sliceInit;
+
+//
+// initialize arrays with pointer
+//
+
+//integer arrayInitPtr[7] = carrInit;  // OK: compilation error; TODO: custom message: missing length
+//integer sliceInitPtr[] = carrInit;  // OK: compilation error: can not emit length of array
+integer carrInitPtr[*] = carrInit;
 
 // initialize character arrays with string literals
 char strFixed[7] = {'s', 't', 'r', 'i', 'n', 'g', 0};// = "string";  // FIXME: copy elements + compile time length check;
+//char strFixedInitMore[2] = "string";  // compilation error: TODO: custom message: data does not fit
+//char strFixedInitLess[9] = "string";  // TODO: same as arrayInitLess
 debug("string as variant", strFixed);
-
-char strArray[*] = "string";
-debug("string as variant", strArray);
 
 char strSlice[] = "string";
 debug("string as variant", strSlice);
 
-//char err_arrFixedInitString[2] = "string";  // compilation error: TODO: custom message: data does not fit
-//int err_arrArrayInitString[32] = "string";  // compilation error: TODO: custom message: invalid assignment
-//int err_arrArrayInitString[*] = "string";  // FIXME: this should not compile: invalid assignment
-//int err_arrSliceInitString[] = "string";  // FIXME: this should not compile: invalid assignment
+char strArray[*] = "string";
+debug("string as variant", strArray);
 
-assert(arrSliceInitNull.length == 0);
-assert(arrFixedInit[0] == 42);
+
+//int err_arrayInitString[32] = "string";  // compilation error: TODO: custom message: invalid assignment
+//int err_sliceInitString[] = "string";  // FIXME: this should not compile: invalid assignment
+//int err_carrInitString[*] = "string";  // ok: compilation error: invalid initialization
+
+assert(sliceInitNull.length == 0);
+assert(arrayInit[0] == 42);
 
 int lenSlice(const integer values[]) { return values.length; }
 integer nthFixed(int idx, const integer values[7]) { return values[idx]; }
 integer nthArray(int idx, const integer values[*]) { return values[idx]; }
 integer nthSlice(int idx, const integer values[]) { return values[idx]; }
 
-assertEq(7, arrFixedInit.length);
-assertEq(arrFixedInit.length, arrSliceInitFixed.length);
-assertEq(arrFixedInit.length, arrSliceInitSlice.length);
+assertEq(7, arrayInit.length);
+assertEq(arrayInit.length, sliceInitFixed.length);
+assertEq(sliceInit.length, sliceInitSlice.length);
 
 assertEq(0, lenSlice(null));
-assertEq(0, lenSlice(arrSliceInitNull));
-assertEq(arrFixedInit.length, lenSlice(arrFixedInit));
-assertEq(arrFixedInit.length, lenSlice(arrSliceInitFixed));
-assertEq(arrFixedInit.length, lenSlice(arrSliceInitSlice));
+assertEq(0, lenSlice(sliceInitNull));
+assertEq(arrayInit.length, lenSlice(arrayInit));
+assertEq(arrayInit.length, lenSlice(sliceInitFixed));
+assertEq(sliceInit.length, lenSlice(sliceInitSlice));
 
-for (int i = 0; i < arrFixedInit.length; i += 1) {
+for (int i = 0; i < arrayInit.length; i += 1) {
 	integer expected = 42 + i;
-	assert(expected == arrFixedInit[i]);
-	assert(expected == arrArrayInitFixed[i]);
-	assert(expected == arrSliceInitFixed[i]);
+	assert(expected == arrayInit[i]);
+	assert(expected == carrInitFixed[i]);
+	assert(expected == sliceInitFixed[i]);
 
-	assert(expected == nthFixed(i, arrFixedInit));
-	assert(expected == nthFixed(i, arrArrayInitFixed));
-	assert(expected == nthFixed(i, arrSliceInitFixed));
+	assert(expected == nthFixed(i, arrayInit));
+	assert(expected == nthFixed(i, carrInitFixed));
+	assert(expected == nthFixed(i, sliceInitFixed));
 
-	assert(expected == nthArray(i, arrFixedInit));
-	assert(expected == nthArray(i, arrArrayInitFixed));
-	assert(expected == nthArray(i, arrSliceInitFixed));
+	assert(expected == nthArray(i, arrayInit));
+	assert(expected == nthArray(i, carrInitFixed));
+	assert(expected == nthArray(i, sliceInitFixed));
 
-	assert(expected == nthSlice(i, arrFixedInit));
-	//assert(expected == nthSlice(i, arrArrayInitFixed));	// compilation error: can not emit length of array
-	assert(expected == nthSlice(i, arrSliceInitFixed));
-
-	assert(expected == arrSliceInitSlice[i]);
+	assert(expected == nthSlice(i, arrayInit));
+	//assert(expected == nthSlice(i, carrInitFixed));	// compilation error: can not emit length of array
+	assert(expected == nthSlice(i, sliceInitFixed));
 }
 
 /* TODO: Initialize all elements of an array with a default value

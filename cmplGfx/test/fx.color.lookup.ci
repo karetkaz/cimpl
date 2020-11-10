@@ -7,11 +7,16 @@
  * use 'space' to press a button, toggle switch or reset slider value
  * use '[' or ']' to show and hide the controls
  *
- * drag the mouse up or down in the window to adjust control value
+ * drag the mouse left or right in the window to adjust selected slider value
  */
-Image back = Image("asset/image/forest.png", 32);
-Image font = Image.openFnt("asset/font/Modern-1.fnt");
+
+Image back = Image("asset/image/forest.jpg", 32);
 Image offs = Image(back.width(), back.height(), back.depth());
+int onEvent(int action, int button, int x, int y);
+offs.show(onEvent);
+offs.destroy();
+back.destroy();
+
 
 void brightnessContrastGamma(argb lut[256], float brightness, float contrast, float gamma, float highlights, float shadows, float whites, float blacks) {
 	// adapted from: https://gitlab.bestminr.com/bestminr/FrontShaders/blob/master/shaders/whites_blacks.glsl
@@ -101,20 +106,10 @@ void brightnessContrastGamma(argb lut[256], float brightness, float contrast, fl
 		lut[idx].a = lum;
 	}
 }
-
 void calcAutoEqualize(argb lut[256], Image image, bool luminosity) {
 	uint32 hist[256] = {};
-	if (luminosity) {
-		image.calcLumHist(null, &hist);
-		uint32 sum = 0;
-		for (uint32 i = 0; i < lut.length; i += 1) {
-			hist[i] = sum += hist[i];
-		}
-		for (uint32 i = 0; i < lut.length; i += 1) {
-			uint32 l = clamp_u8(hist[i] * 255 / sum);
-			lut[i] = _argb(l, i, i, i);
-		}
-	} else {
+	if (!luminosity) {
+		// todo: remove rgb stretch
 		uint32 sumR = 0;
 		uint32 sumG = 0;
 		uint32 sumB = 0;
@@ -135,124 +130,132 @@ void calcAutoEqualize(argb lut[256], Image image, bool luminosity) {
 				clamp_u8(histB[i] * 255 / sumRgb)
 			);
 		}
+		return;
+	}
+
+	image.calcLumHist(null, &hist);
+	uint32 sum = 0;
+	for (uint32 i = 0; i < lut.length; i += 1) {
+		hist[i] = sum += hist[i];
+	}
+	for (uint32 i = 0; i < lut.length; i += 1) {
+		uint32 l = clamp_u8(hist[i] * 255 / sum);
+		lut[i] = _argb(l, i, i, i);
 	}
 }
 
-int onEvent(int action, int button, int x, int y);
-offs.show(onEvent);
-offs.destroy();
-back.destroy();
-font.destroy();
+inline "/cmplGfx/lib/micro.ui.ci";
+Histogram histogram = {
+	enabled: false;
+};
+Histogram curves = {
+	lines: true;
+	enabled: false;
+};
+
+Slider brightness = {
+	text: "brightness";
+	minimum: -256;
+	maximum: +256;
+	divisor: 256;
+};
+Slider contrast = {
+	text: "contrast";
+	value: 256;
+	minimum: -256;
+	maximum: +512;
+	divisor: 256;
+};
+Slider gamma = {
+	text: "gamma";
+	value: 100;
+	minimum: 1;
+	maximum: 1000;
+	divisor: 100;
+};
+Slider highlights = {
+	text: "highlights";
+	minimum: -256;
+	maximum: +256;
+	divisor: 256;
+};
+Slider shadows = {
+	text: "shadows";
+	minimum: -256;
+	maximum: +256;
+	divisor: 256;
+};
+Slider whites = {
+	text: "whites";
+	minimum: -256;
+	maximum: +256;
+	divisor: 256;
+};
+Slider blacks = {
+	text: "blacks";
+	minimum: -256;
+	maximum: +256;
+	divisor: 256;
+};
+
+char options[*][] = {
+	"luminosity";
+	"rgb stretch";
+};
+Switch auto = {
+	text: "auto";
+	states: options;
+	selectable: true;
+};
+
+Button separator = {
+	text: null;
+	height: 1;
+	enabled: false;
+};
+Slider time = {
+	text: "time";
+	enabled: false;
+	onDrawSlider: null;
+};
+
+Widget ui = Widget(offs, -30,
+	histogram, curves, separator,
+	brightness, contrast, gamma,
+	highlights, shadows, whites, blacks,
+	separator, auto,
+	separator, time
+);
 
 int onEvent(int action, int button, int x, int y) {
-	inline "/cmplGfx/lib/micro.ui.ci";
-
-	static Histogram histogram = {
-		enabled: false;
-	};
-	static Histogram curves = {
-		lines: true;
-		enabled: false;
-	};
-
-	static Slider brightness = {
-		text: "brightness";
-		minimum: -256;
-		maximum: +256;
-		divisor: 256;
-	};
-	static Slider contrast = {
-		text: "contrast";
-		value: 256;
-		minimum: -256;
-		maximum: +512;
-		divisor: 256;
-	};
-	static Slider gamma = {
-		text: "gamma";
-		value: 100;
-		minimum: 1;
-		maximum: 1000;
-		divisor: 100;
-	};
-	static Slider highlights = {
-		text: "highlights";
-		minimum: -256;
-		maximum: +256;
-		divisor: 256;
-	};
-	static Slider shadows = {
-		text: "shadows";
-		minimum: -256;
-		maximum: +256;
-		divisor: 256;
-	};
-	static Slider whites = {
-		text: "whites";
-		minimum: -256;
-		maximum: +256;
-		divisor: 256;
-	};
-	static Slider blacks = {
-		text: "blacks";
-		minimum: -256;
-		maximum: +256;
-		divisor: 256;
-	};
-
-	static Switch auto = {
-		on: "luminosity";
-		off: "rgb stretch";
-		text: "auto";
-		checked: true;
-		selectable: true;
-	};
-
-	static Button separator = {
-		text: null;
-		height: 1;
-		enabled: false;
-	};
-	static Slider time = {
-		text: "time";
-		enabled: false;
-	};
-
-	static Layout ui = Layout(offs, -30, 30, font,
-		histogram, curves, separator,
-		brightness, contrast, gamma,
-		highlights, shadows, whites, blacks,
-		separator, auto,
-		separator, time
-	);
-
-	if (action == Gui.KEY_PRESS) {
-		if (button == 27) {
-			return -1;
-		}
+	if (action == Gui.KEY_RELEASE && button == 27) {
+		// exit when releasing escape key
+		return -1;
 	}
-	if (ui.onEvent(action, button, x, y)) {
-		uint64 start = System.millis();
-		offs.resize(null, back, null, 1);
-		if (ui.isSelected(brightness, contrast, gamma, highlights, shadows, whites, blacks)) {
-			brightnessContrastGamma(&curves.data,
-				brightness.valFlt(),
-				contrast.valFlt(),
-				gamma.valFlt(),
-				highlights.valFlt(),
-				shadows.valFlt(),
-				whites.valFlt(),
-				blacks.valFlt()
-			);
-		}
-		else if (ui.isSelected(auto)) {
-			calcAutoEqualize(&curves.data, offs, auto.checked);
-		}
-
-		offs.colorMap(null, curves.data);
-		histogram.update(offs);
-		time.value = System.millis() - start;
-		ui.draw();
+	if (!ui.onEvent(action, button, x, y)) {
+		// event not processed, wait for the next one
+		return 0;
 	}
-	return 0;
+
+	uint64 start = System.millis();
+	offs.resize(null, back, null, 1);
+	if (ui.isSelected(brightness, contrast, gamma, highlights, shadows, whites, blacks)) {
+		brightnessContrastGamma(&curves.data,
+			brightness.valFlt(),
+			contrast.valFlt(),
+			gamma.valFlt(),
+			highlights.valFlt(),
+			shadows.valFlt(),
+			whites.valFlt(),
+			blacks.valFlt()
+		);
+	}
+	else if (ui.isSelected(auto)) {
+		calcAutoEqualize(&curves.data, offs, auto.selected == 0);
+	}
+
+	offs.colorMap(null, curves.data);
+	histogram.update(offs);
+	time.value = System.millis() - start;
+	return ui.draw();
 }

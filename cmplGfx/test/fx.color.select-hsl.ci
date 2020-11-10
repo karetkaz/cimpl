@@ -7,249 +7,229 @@
  * use 'space' to press a button, toggle switch or reset slider value
  * use '[' or ']' to show and hide the controls
  *
- * drag the mouse up or down in the window to adjust control value
+ * drag the mouse left or right in the window to adjust selected slider value
  */
-Image back = Image("asset/image/forest.png", 32);
-Image font = Image.openFnt("asset/font/Modern-1.fnt");
-Image offs = Image(back);
 
-// use the hsl colors
-static if (false) {
-Image hsl = Image(360, 256, 32);
-for (int y = 0; y < hsl.height(); y += 1) {
-	for (int x = 0; x < hsl.width(); x += 1) {
-		float32 hue = x / float32(hsl.width());
-		float32 lum = y / float32(hsl.height());
-		hsl.set(x, y, argb(hsl2rgb(vec4f(hue, 1f, lum))));
-	}
-}
-back.transform(null, hsl, null, 1, null);
-//offs.copy(0, 0, hsl, null);
-
-offs.copy(0, 0, back, null);
-hsl.saveBmp("hsl.bmp", 0);
-}
-
+Image back = Image("asset/image/forest.jpg", 32);
+Image offs = Image(back.width(), back.height(), back.depth());
 int onEvent(int action, int button, int x, int y);
 offs.show(onEvent);
 offs.destroy();
 back.destroy();
-font.destroy();
 
-int onEvent(int action, int button, int x, int y) {
-	inline "/cmplGfx/lib/micro.ui.ci";
+inline "/cmplGfx/lib/micro.ui.ci";
+void drawColorSlider(Slider this, Image offs, Rect rect, const Style style&);
+void updateSlider(Slider min, Slider max, int value);
+bool syncMinMax(Slider this, int value);
 
-	static void drawColorSlider(Slider this, Image offs, Rect rect, const Style style&);
-	static bool syncMinMax(Slider this, int value);
+Histogram histogram = {
+	enabled: false;
+	color: true;
+};
 
-	static Histogram histogram = {
-		enabled: false;
-		color: true;
-	};
+Slider sldHueMin = {
+	onDrawSlider: drawColorSlider;
+	onUpdate: syncMinMax;
+	text: "Hue.min";
+	selectable: false;
+	maximum: 359;
+};
+Slider sldHueMax = {
+	onDrawSlider: drawColorSlider;
+	onUpdate: syncMinMax;
+	text: "Hue.max";
+	selectable: false;
+	maximum: 359;
+};
 
-	static Slider sldHueMin = {
-		onDraw: drawColorSlider;
-		onUpdate: syncMinMax;
-		text: "Hue.min";
-		selectable: false;
-		maximum: 359;
-	};
-	static Slider sldHueMax = {
-		onDraw: drawColorSlider;
-		onUpdate: syncMinMax;
-		text: "Hue.max";
-		selectable: false;
-		maximum: 359;
-	};
+Slider sldLumMin = {
+	onDrawSlider: drawColorSlider;
+	onUpdate: syncMinMax;
+	text: "Luminance.min";
+	selectable: false;
+	maximum: 255;
+};
+Slider sldLumMax = {
+	onDrawSlider: drawColorSlider;
+	onUpdate: syncMinMax;
+	text: "Luminance.max";
+	selectable: false;
+	maximum: 255;
+	value: 255;
+};
 
-	static Slider sldLumMin = {
-		onDraw: drawColorSlider;
-		onUpdate: syncMinMax;
-		text: "Luminance.min";
-		selectable: false;
-		maximum: 255;
-	};
-	static Slider sldLumMax = {
-		onDraw: drawColorSlider;
-		onUpdate: syncMinMax;
-		text: "Luminance.max";
-		selectable: false;
-		maximum: 255;
-		value: 255;
-	};
+Slider sldVal = {
+	text: "Amount";
+	selectable: false;
+	maximum: 255;
+	divisor: 255;
+	value: 26;
+};
 
-	static Slider sldVal = {
-		text: "Amount";
-		selectable: false;
-		maximum: 255;
-		divisor: 255;
-		value: 26;
-	};
+Button separator = {
+	text: null;
+	height: 1;
+	enabled: false;
+};
+Slider time = {
+	text: "time";
+	enabled: false;
+	onDrawSlider: null;
+};
 
-	static Switch chkShow = {
-		text: "auto Render";
-	};
-	static Button separator = {
-		text: null;
-		height: 1;
-		enabled: false;
-	};
-	static Slider time = {
-		text: "time";
-		enabled: false;
-	};
+// blending method exevuted for each pixel in the image
+vec4f blendHsl(vec4f base, vec4f blend) {
+	float val = sldVal.value / 255f;
 
-	static Layout ui = Layout(offs, -30, 30, font,
-		histogram, separator,
-		sldHueMin, sldHueMax,
-		sldLumMin, sldLumMax,
-		sldVal, chkShow,
-		separator, time
-	);
-
-	static void drawColorSlider(Slider this, Image offs, Rect rect, const Style style&) {
-		Style style2 = style;
-		const int padding = style.padding / 2;
-		const int y = rect.y + rect.h - padding;
-		if (this == sldHueMin || this == sldHueMax) {
-			float32 min = this == sldHueMax ? 0f : sldHueMin.valFlt();
-			float32 max = this == sldHueMin ? 1f : sldHueMax.valFlt();
-			for (int x = 0; x < rect.w; x += 1) {
-				float32 val = float32(x) / rect.w;
-				argb color = argb(hsl2rgb(vec4f(val, 1f, .5f)));
-				if (val > min && val < max) {
-					offs.fillRect(rect.x + x, y - padding, rect.x + x + 1, y, uint32(color));
-				} else {
-					offs.fillRect(rect.x + x, y - 1, rect.x + x + 1, y, uint32(color));
-				}
-			}
-			return Slider.onDraw(this, offs, rect, style2);
-		}
-		if (this == sldLumMin || this == sldLumMax) {
-			float32 min = this == sldLumMax ? 0f : sldLumMin.valFlt();
-			float32 max = this == sldLumMin ? 1f : sldLumMax.valFlt();
-			for (int x = 0; x < rect.w; x += 1) {
-				float32 val = float32(x) / rect.w;
-				argb color = argb(vec4f(val, val, val));
-				if (val > min && val < max) {
-					offs.fillRect(rect.x + x, y - padding, rect.x + x + 1, y, uint32(color));
-				} else {
-					offs.fillRect(rect.x + x, y - 1, rect.x + x + 1, y, uint32(color));
-				}
-			}
-			return Slider.onDraw(this, offs, rect, style2);
-		}
-		Slider.onDraw(this, offs, rect, style2);
+	float lum = lum(blend);
+	float min = sldLumMin.value / 255f;
+	float max = sldLumMax.value / 255f;
+	if (lum < min) {
+		lum = Math.smooth(min - lum, 0f, val);
 	}
-	static void updateSlider(Slider min, Slider max, int value) {
-		int gap = max.value - min.value;
-		if (gap < 0) {
-			return;
-		}
-		if (value < min.value) {
-			min.onUpdate(value);
-			max.onUpdate(value + gap);
-		}
-		if (value > max.value) {
-			max.onUpdate(value);
-			min.onUpdate(value - gap);
-		}
+	else if (lum > max) {
+		lum = Math.smooth(lum - max, 0f, val);
 	}
-	static bool syncMinMax(Slider this, int value) {
-		bool result = Slider.onUpdate(this, value);
-		if (this == sldHueMin || this == sldHueMax) {
-			if (sldHueMin.value > sldHueMax.value) {
-				sldHueMin.value = this.value;
-				sldHueMax.value = this.value;
-				return true;
-			}
-		}
-		if (this == sldLumMin || this == sldLumMax) {
-			if (sldLumMin.value > sldLumMax.value) {
-				sldLumMin.value = this.value;
-				sldLumMax.value = this.value;
-				return true;
-			}
-		}
-		return result;
+	else {
+		lum = 0;
 	}
 
-	static vec4f blendHsl(vec4f base, vec4f blend) {
-		float val = sldVal.value / 255f;
-
-		float lum = lum(blend);
-		float min = sldLumMin.value / 255f;
-		float max = sldLumMax.value / 255f;
-		if (lum < min) {
-			lum = Math.smooth(min - lum, 0f, val);
+	float hue = 1;
+	min = Math.min(Math.min(blend.x, blend.y), blend.z);
+	max = Math.max(Math.max(blend.x, blend.y), blend.z);
+	if (max != min) {
+		float delta = max - min;
+		if (max == blend.x) {
+			hue = ((blend.y - blend.z) / delta) / 6;
 		}
-		else if (lum > max) {
-			lum = Math.smooth(lum - max, 0f, val);
+		else if (max == blend.y) {
+			hue = (2 + (blend.z - blend.x) / delta) / 6;
+		}
+		else {// if (max == blend.z)
+			hue = (4 + (blend.x - blend.y)  / delta) / 6;
+		}
+		if (hue < 0) {
+			hue += 1;
+		}
+		min = sldHueMin.value / 359f;
+		max = sldHueMax.value / 359f;
+		if (hue < min) {
+			hue = Math.smooth(min - hue, 0f, val);
+		}
+		else if (hue > max) {
+			hue = Math.smooth(hue - max, 0f, val);
 		}
 		else {
-			lum = 0;
-		}
-
-		float hue = 1;
-		min = Math.min(Math.min(blend.x, blend.y), blend.z);
-		max = Math.max(Math.max(blend.x, blend.y), blend.z);
-		if (max != min) {
-			float delta = max - min;
-			if (max == blend.x) {
-				hue = ((blend.y - blend.z) / delta) / 6;
-			}
-			else if (max == blend.y) {
-				hue = (2 + (blend.z - blend.x) / delta) / 6;
-			}
-			else {// if (max == blend.z)
-				hue = (4 + (blend.x - blend.y)  / delta) / 6;
-			}
-			if (hue < 0) {
-				hue += 1;
-			}
-			min = sldHueMin.value / 359f;
-			max = sldHueMax.value / 359f;
-			if (hue < min) {
-				hue = Math.smooth(min - hue, 0f, val);
-			}
-			else if (hue > max) {
-				hue = Math.smooth(hue - max, 0f, val);
-			}
-			else {
-				hue = 0;
-			}
-		}
-
-		return {
-			x: 1;
-			y: 0;
-			z: 0;
-			w: 1 - (1 - hue) * (1 - lum);
-		};
-	}
-
-	if (action == Gui.KEY_PRESS) {
-		if (button == 27) {
-			return -1;
+			hue = 0;
 		}
 	}
-	if (ui.onEvent(action, button, x, y) || ui.colorPick) {
-		uint64 start = System.millis();
-		offs.copy(0, 0, back, null);
-		if (ui.colorPick) {
-			vec4f col = rgb2hsl(vec4f(argb(offs.get(x, y))));
-			updateSlider(sldHueMin, sldHueMax, col.x * 359);
-			updateSlider(sldLumMin, sldLumMax, col.z * 255);
-		}
 
-		// blending is slow, so blend only when mouse button is released
-		if (chkShow.checked || action == Gui.MOUSE_RELEASE) {
-			offs.blend(0, 0, back, null, 256, true, blendHsl);
-		}
+	// return red mask with computed alpha component
+	return {
+		x: 1;
+		y: 0;
+		z: 0;
+		w: 1 - (1 - hue) * (1 - lum);
+	};
+}
 
-		histogram.update(offs);
-		time.value = System.millis() - start;
-		ui.draw();
+Widget ui = Widget(offs, -30,
+	histogram, separator,
+	sldHueMin, sldHueMax,
+	sldLumMin, sldLumMax,
+	sldVal,
+	separator, time
+);
+
+int onEvent(int action, int button, int x, int y) {
+	if (action == Gui.KEY_RELEASE && button == 27) {
+		// exit when releasing escape key
+		return -1;
 	}
-	return 0;
+	if (!ui.onEvent(action, button, x, y)) {
+		// event not processed, wait for the next one
+		return 0;
+	}
+
+	uint64 start = System.millis();
+	offs.copy(0, 0, back, null);
+	if (ui.pressedIndex < 0 && action != Gui.MOUSE_RELEASE) {
+		vec4f col = rgb2hsl(vec4f(argb(offs.get(x, y))));
+		updateSlider(sldHueMin, sldHueMax, col.x * 359);
+		updateSlider(sldLumMin, sldLumMax, col.z * 255);
+	}
+
+	// blending is slow, so blend only when mouse button is released
+	if (action == Gui.MOUSE_RELEASE) {
+		offs.blend(0, 0, back, null, 256, true, blendHsl);
+	}
+
+	histogram.update(offs);
+	time.value = System.millis() - start;
+	return ui.draw();
+}
+
+void drawColorSlider(Slider this, Image offs, Rect rect, const Style style&) {
+	const int padding = style.padding / 2;
+	const int y = rect.y + rect.h - padding;
+	if (this == sldHueMin || this == sldHueMax) {
+		float32 min = this == sldHueMax ? 0f : sldHueMin.valFlt();
+		float32 max = this == sldHueMin ? 1f : sldHueMax.valFlt();
+		for (int x = 0; x < rect.w; x += 1) {
+			float32 val = float32(x) / rect.w;
+			argb color = argb(hsl2rgb(vec4f(val, 1f, .5f)));
+			if (val > min && val < max) {
+				offs.fillRect(rect.x + x, y - padding, rect.x + x + 1, y, uint32(color));
+			} else {
+				offs.fillRect(rect.x + x, y - 1, rect.x + x + 1, y, uint32(color));
+			}
+		}
+		return;
+	}
+	if (this == sldLumMin || this == sldLumMax) {
+		float32 min = this == sldLumMax ? 0f : sldLumMin.valFlt();
+		float32 max = this == sldLumMin ? 1f : sldLumMax.valFlt();
+		for (int x = 0; x < rect.w; x += 1) {
+			float32 val = float32(x) / rect.w;
+			argb color = argb(vec4f(val, val, val));
+			if (val > min && val < max) {
+				offs.fillRect(rect.x + x, y - padding, rect.x + x + 1, y, uint32(color));
+			} else {
+				offs.fillRect(rect.x + x, y - 1, rect.x + x + 1, y, uint32(color));
+			}
+		}
+		return;
+	}
+}
+void updateSlider(Slider min, Slider max, int value) {
+	int gap = max.value - min.value;
+	if (gap < 0) {
+		return;
+	}
+	if (value < min.value) {
+		min.onUpdate(value);
+		max.onUpdate(value + gap);
+	}
+	if (value > max.value) {
+		max.onUpdate(value);
+		min.onUpdate(value - gap);
+	}
+}
+bool syncMinMax(Slider this, int value) {
+	bool result = Slider.onUpdate(this, value);
+	if (this == sldHueMin || this == sldHueMax) {
+		if (sldHueMin.value > sldHueMax.value) {
+			sldHueMin.value = this.value;
+			sldHueMax.value = this.value;
+			return true;
+		}
+	}
+	if (this == sldLumMin || this == sldLumMax) {
+		if (sldLumMin.value > sldLumMax.value) {
+			sldLumMin.value = this.value;
+			sldLumMax.value = this.value;
+			return true;
+		}
+	}
+	return result;
 }

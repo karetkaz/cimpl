@@ -1,23 +1,26 @@
 var customCommands = {
-	'theme:': function(value, action) {
-		if (value === 'dark') {
-			setStyle(document.body, 'dark');
-			return true;
+	'theme:': function(value) {
+		if (value === undefined || value === '') {
+			completeAction('!theme:');
+			return false;
 		}
-		if (value === 'light') {
-			setStyle(document.body, '-dark');
+		if (value === 'dark' || value === 'light') {
+			params.update({theme: value});
 			return true;
 		}
 		return actionError();
 	},
-	'zoom:': function(value, action) {
+	'zoom:': function(value) {
+		if (value === undefined || value === '') {
+			completeAction('!zoom:');
+			return false;
+		}
 		document.body.style.fontSize = (+value / 100) + 'em';
 		editor.refresh();
 	},
 
-	save: CodeMirror.commands.save,
-	close: function(value, action) {
-		if (value !== '') {
+	close: function(value) {
+    	if (value !== undefined && value !== '') {
 			return false;
 		}
 		params.update({ content: null, file: null });
@@ -31,27 +34,17 @@ var customCommands = {
 		return true;
 	},
 
-	'!selectAll': CodeMirror.commands.selectAll,
-	'!selectLine': function () {
+	selectLine: function () {
 		let line = editor.getCursor().line || 0;
 		editor.setSelection(
 			CodeMirror.Pos(line, 0),
 			CodeMirror.Pos(line + 1, 0)
 		);
 	},
-	'!selectWord': function () {
+	selectWord: function () {
 		var sel = editor.findWordAt(editor.getCursor());
 		editor.setSelection(sel.anchor, sel.head);
 	},
-	'!selectToBrace': CodeMirror.commands.selectToBrace,
-
-	'!goLineStartSmart': CodeMirror.commands.goLineStartSmart,
-	'!goLineStart': CodeMirror.commands.goLineStart,
-	'!goLineEnd': CodeMirror.commands.goLineEnd,
-	'!goDocStart': CodeMirror.commands.goDocStart,
-	'!goDocEnd': CodeMirror.commands.goDocEnd,
-
-	'!insertTab': CodeMirror.commands.insertTab,
 };
 
 function actionError() {
@@ -62,33 +55,6 @@ function actionError() {
 	return false;
 }
 
-function executeAction(action) {
-	setStyle(document.body, '-right-bar');
-	for (let command in customCommands) {
-		let cmd = command;
-		if (cmd.startsWith('!')) {
-			cmd = cmd.substr(1);
-		}
-		if (action.startsWith(cmd)) {
-			if (CodeMirror.commands.hasOwnProperty(action)) {
-				CodeMirror.commands[action](editor);
-				edtFileName.blur();
-				return false;
-			}
-			let value = action.substr(cmd.length);
-			let result = customCommands[command](value, action);
-			if (result === false) {
-				continue;
-			}
-			if (result === true) {
-				edtFileName.blur();
-			}
-			return false;
-		}
-	}
-	return actionError();
-}
-
 function completeAction(action, hint) {
 	setStyle(document.body, 'tool-bar');
 	edtFileName.focus();
@@ -96,50 +62,33 @@ function completeAction(action, hint) {
 	if (action == null) {
 		return;
 	}
-	if (action.constructor === KeyboardEvent) {
-		if (edtFileName.value === '' || action.key === 'Backspace' || action.key === 'Delete') {
-			setStyle(document.body, '-right-bar');
-		}
-		// todo: find a better way to detect if user typed or selected
-		if (edtFileName.value.endsWith(action.key) || action.key === 'Backspace' || action.key === 'Delete') {
-			if (edtFileName.value.startsWith('!')) {
-				let command = edtFileName.value.substr(1);
+
+    if (hint === true || hint === false) {
+    	if (action.startsWith('!')) {
+    		try {
+				let command = action.substr(1);
 				let filter = new RegExp(command, 'i');
 				let actions = {};
 				for (let cmd in customCommands) {
-					if (cmd.startsWith('!')) {
-						cmd = cmd.substr(1);
-					}
 					if (cmd.search(filter) === -1) {
 						continue;
 					}
-					if (cmd.endsWith(':')) {
-						actions['!' + cmd] = function() { completeAction('!' + cmd); }
-					} else {
-						actions['!' + cmd] = function() { executeAction(cmd); }
-					}
+					actions['!' + cmd] = customCommands[cmd];
 				}
 				setActions(actions);
-			}
-			if (action.key === 'Backspace' || action.key === 'Delete') {
-				// do not show the hint if user deletes text
-				return;
-			}
+    		} catch(error) {
+    			actionError();
+    		}
 		} else {
-			return;
+			setActions();
 		}
-		action = edtFileName.value;
-	}
-	if (hint == null) {
+		hint = hint ? undefined : '';
+    }
+
+	if (hint === undefined) {
 		switch (action) {
 			default:
-				hint = '';
-				break;
-
-			case ':':
-				hint = editor.getCursor().line + 1 || 'go to line number';
-				setActions();
-				break;
+				return;
 
 			case '!zoom:':
 				hint = '100';
@@ -149,18 +98,20 @@ function completeAction(action, hint) {
 				hint = document.body.classList.contains('dark') ? 'light' : 'dark';
 				break;
 
+			case '!':
+				hint = 'execute command';
+				break;
+
 			case '?':
 				hint = editor.getSelection() || 'search text';
-				setActions();
+				break;
+
+			case ':':
+				hint = editor.getCursor().line + 1 || 'go to line number';
 				break;
 
 			case '#':
 				hint = terminal.command || '';
-				setActions();
-				break;
-
-			case '!':
-				hint = 'execute command';
 				break;
 		}
 	}
@@ -203,7 +154,7 @@ function setActions(actions, nextPrev) {
 			}
 			spnCounter.innerText = '' + (item + 1) + ' / ' + items.length;
 			if (direction !== 0) {
-				completeAction(items[item]);
+				completeAction(items[item], '');
 				if (error) {
 					actionError();
 				}
@@ -217,7 +168,14 @@ function setActions(actions, nextPrev) {
 	for (let action in actions) {
 		let row = document.createElement('li');
 		row.innerText = action;
-		row.onclick = actions[action];
+		row.onclick = function() {
+			let result = actions[action]();
+			if (result === false) {
+				return false;
+			}
+			setStyle(document.body, '-right-bar');
+			edtFileName.blur();
+		}
 		commands.appendChild(row);
 	}
 	if (commands.childElementCount > 0) {
@@ -232,24 +190,30 @@ edtFileName.onclick = function() {
 	if (!props.mobile) {
 		return;
 	}
-	let actions = {};
-	for (let cmd in customCommands) {
-		if (!cmd.startsWith('!')) {
-			// hidden command
-			continue;
-			// cmd = '!' + cmd;
+	let actions = {
+		Command: function() {
+			completeAction('!', true);
+			return false;
+		},
+		Search: function() {
+			completeAction('?', true);
+			return false;
+		},
+		Goto: function() {
+			completeAction(':', true);
+			return false;
+		},
+		'Select All': customCommands.selectAll,
+		'Select Line': customCommands.selectLine,
+		'Select Word': customCommands.selectWord,
+		'Insert Tab': function() {
+			editor.execCommand('insertTab');
+			return false;
 		}
-		if (cmd.endsWith(':')) {
-			actions[cmd] = function () {
-				completeAction(cmd);
-			}
-		} else {
-			actions[cmd] = function () {
-				executeAction(cmd.substr(1));
-			}
-		}
-	}
-	setActions(actions);
+	};
+	setActions(actions, function() {
+		return false;
+	});
 }
 edtFileName.onfocus = function() {
 	edtFileName.selectionStart = 0;
@@ -276,10 +240,26 @@ edtFileName.onkeydown = function(event) {
 	}
 
 	let action = edtFileName.value;
-	// `!commands` => execute command
+	// `!command` => execute command
 	if (action.startsWith('!')) {
-		let command = action.substr(1);
-		return executeAction(command);
+		action = action.substr(1);
+		for (let cmd in customCommands) {
+			if (action.startsWith(cmd)) {
+				if (action !== cmd && !cmd.endsWith(':')) {
+					// not an executable command
+					continue;
+				}
+				let value = action.substr(cmd.length);
+				let result = customCommands[cmd](value);
+				if (result === false) {
+					continue;
+				}
+				setStyle(document.body, '-right-bar');
+				edtFileName.blur();
+				return false;
+			}
+		}
+		return actionError();
 	}
 
 	// `#arguments` => execute script
@@ -400,7 +380,9 @@ edtFileName.onkeydown = function(event) {
 	edtFileName.blur();
 	return false;
 }
-edtFileName.onkeyup = completeAction;
+edtFileName.oninput = function(event) {
+	completeAction(edtFileName.value, event.inputType === 'insertText');
+};
 
 CodeMirror.commands.save = function(cm) {
 	saveInput();
@@ -437,11 +419,11 @@ CodeMirror.commands.selectFound = function(cm) {
 }
 
 for (let command in CodeMirror.commands) {
-	if (command.startsWith('!')) {
-		command = command.substr(1);
-	}
 	if (customCommands.hasOwnProperty(command)) {
+		// command is overwritten
 		continue;
 	}
-	customCommands[command] = CodeMirror.commands[command];
+	customCommands[command] = function() {
+		return editor.execCommand(command);
+	}
 }

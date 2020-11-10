@@ -549,28 +549,7 @@ GxImage loadFnt(GxImage dst, const char *src) {
 	return dst;
 }
 
-#ifndef USE_JPEG
-GxImage loadJpg(GxImage dst, const char *src, int depth) {
-	gx_debug("no jpg support to open: %s", src);
-#ifdef MOC_JPEG
-	dst = createImage(dst, 512, 512, depth, Image2d);
-	for (int y = 0; y < dst->height; ++y) {
-		for (int x = 0; x < dst->width; ++x) {
-			int r = x ^ y;
-			int g = x & y;
-			int b = x | y;
-			setPixel(dst, x, y, make_rgb(0, r, g, b).val);
-		}
-	}
-	return dst;
-#endif
-	(void) dst;
-	(void) src;
-	(void) depth;
-	return NULL;
-}
-#else
-
+#ifdef USE_JPEG
 #include <jpeglib.h>
 GxImage loadJpg(GxImage dst, const char *src, int depth) {
 
@@ -639,30 +618,17 @@ GxImage loadJpg(GxImage dst, const char *src, int depth) {
 	fclose(fin);
 	return dst;
 }
-#endif
-
-#ifndef USE_PNG
-GxImage loadPng(GxImage dst, const char *src, int depth) {
-	gx_debug("no png support to open: %s", src);
-#ifdef MOC_PNG
-	dst = createImage(dst, 512, 512, depth, Image2d);
-	for (int y = 0; y < dst->height; ++y) {
-		for (int x = 0; x < dst->width; ++x) {
-			int r = x ^ y;
-			int g = x & y;
-			int b = x | y;
-			setPixel(dst, x, y, make_rgb(0, r, g, b).val);
-		}
-	}
-	return dst;
-#endif
+#else
+GxImage loadJpg(GxImage dst, const char *src, int depth) {
+	gx_debug("no jpg support to open: %s", src);
 	(void) dst;
 	(void) src;
 	(void) depth;
 	return NULL;
 }
-#else
+#endif
 
+#ifdef USE_PNG
 #include <png.h>
 GxImage loadPng(GxImage dst, const char *src, int depth) {
 
@@ -787,4 +753,169 @@ GxImage loadPng(GxImage dst, const char *src, int depth) {
 	fclose(fin);
 	return result;
 }
+#else
+GxImage loadPng(GxImage dst, const char *src, int depth) {
+	gx_debug("no png support to open: %s", src);
+	(void) dst;
+	(void) src;
+	(void) depth;
+	return NULL;
+}
 #endif
+
+#pragma GCC diagnostic push
+#ifndef __EMSCRIPTEN__
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#endif
+#pragma GCC diagnostic ignored "-Wsign-compare"
+
+// https://github.com/nothings/stb/blob/master/stb_image.h
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
+// https://github.com/nothings/stb/blob/master/stb_truetype.h
+#define STB_TRUETYPE_IMPLEMENTATION
+#include "stb_truetype.h"
+
+#pragma GCC diagnostic pop
+
+GxImage loadImg(GxImage dst, const char *src, int depth) {
+	int width = 0;
+	int height = 0;
+	int channels = 0;
+	bltProc blt = NULL;
+	stbi_uc *pixels = stbi_load(src, &width, &height, &channels, STBI_rgb);
+	switch (channels) {
+		case STBI_grey:
+			blt = getBltProc(depth, cblt_conv_08);
+			break;
+
+		case STBI_rgb:
+			blt = getBltProc(depth, -cblt_conv_24);
+			break;
+
+		case STBI_rgb_alpha:
+			blt = getBltProc(depth, -cblt_conv_32);
+			break;
+	}
+
+	if (pixels == NULL || blt == NULL) {
+		destroyImage(dst);
+		return NULL;
+	}
+
+	dst = createImage(dst, width, height, depth, Image2d);
+	if (dst == NULL) {
+		stbi_image_free(pixels);
+		return NULL;
+	}
+
+	for (int y = 0; y < dst->height; ++y) {
+		int srcSize = width * channels;
+		int srcOffs = y * srcSize;
+		int dstOffs = y * dst->scanLen;
+		blt(dst->basePtr + dstOffs, pixels + srcOffs, NULL, width);
+	}
+	stbi_image_free(pixels);
+	return dst;
+}
+
+GxImage loadTtf(GxImage dst, const char *src, int height, int firstChar, int lastChars) {
+	const int numChars = lastChars - firstChar;
+	if (numChars > 256) {
+		// TODO: remove restriction from `struct GxFLut`
+		destroyImage(dst);
+		return NULL;
+	}
+	FILE* fontFile = fopen(src, "rb");
+	if (fontFile == NULL) {
+		destroyImage(dst);
+		return NULL;
+	}
+
+	fseek(fontFile, 0, SEEK_END);
+	long fileSize = ftell(fontFile);
+	unsigned char *fontBuffer = malloc(fileSize);
+	fseek(fontFile, 0, SEEK_SET);
+	long readSize = fread(fontBuffer, fileSize, 1, fontFile);
+	fclose(fontFile);
+	if (readSize != 1) {
+		destroyImage(dst);
+		return NULL;
+	}
+
+	stbtt_fontinfo font;
+	if (!stbtt_InitFont(&font, fontBuffer, 0)) {
+		destroyImage(dst);
+		free(fontBuffer);
+		return NULL;
+	}
+
+	stbtt_bakedchar cdata[numChars];
+	unsigned char temp_bitmap[512 * 512];
+
+	// FIXME: no guarantee this fits!
+	stbtt_BakeFontBitmap(fontBuffer, 0, height, temp_bitmap, 512, 512, firstChar, numChars, cdata);
+
+	int width = 0;
+	int maxHeight = 0;
+	for (int i = 0; i < numChars; ++i) {
+		stbtt_bakedchar *inf = &cdata[i];
+		width += inf->xadvance;
+
+		int yPos = 0;
+		if (inf->yoff < 0) {
+			yPos += height + inf->yoff;
+		}
+		int h = yPos + inf->y1 - inf->y0;
+		if (maxHeight < h) {
+			maxHeight = h;
+		}
+	}
+	if (maxHeight < height) {
+		maxHeight = height;
+	}
+
+	dst = createImage(dst, width, maxHeight, 8, ImageFnt);
+	fillRect(dst, 0, 0, width, maxHeight, 0);
+
+	bltProc blt = getBltProc(cblt_conv_08, 8);
+	if (dst == NULL) {
+		destroyImage(dst);
+		free(fontBuffer);
+		return NULL;
+	}
+
+	int x = 0;
+	GxFLut lut = dst->LLUTPtr;
+	lut->count = numChars;
+	for (int i = 0; i < numChars; ++i) {
+		stbtt_bakedchar *inf = &cdata[i];
+		int yLen = inf->y1 - inf->y0;
+		int xLen = inf->x1 - inf->x0;
+		int yPos = 0;
+		if (inf->yoff < 0) {
+			yPos += height + inf->yoff;
+		}
+		for (int y = 0; y < yLen; ++y) {
+			if (y + yPos >= dst->height) {
+				break;
+			}
+			int dstOffs = x * dst->pixelLen + (y + yPos) * dst->scanLen;
+			int srcOffs = (inf->x0) + (y + inf->y0) * 512;
+			blt(dst->basePtr + dstOffs, temp_bitmap + srcOffs, NULL, xLen);
+		}
+
+		lut->data[i + firstChar].basePtr = dst->basePtr + x * dst->pixelLen;
+		lut->data[i + firstChar].width = inf->xadvance;
+		lut->data[i + firstChar].pad_x = 0;
+		lut->data[i + firstChar].pad_y = 0;
+		x += cdata[i].xadvance;
+	}
+	for (int i = 0; i < firstChar; i++) {
+		lut->data[i] = lut->data[firstChar];
+	}
+
+	free(fontBuffer);
+	return dst;
+}

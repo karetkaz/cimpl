@@ -30,14 +30,14 @@ struct RecordSizeofExt: RecordSizeof {
 typename typeofRecord = RecordSizeofExt;
 char nameOfRecord[*] = typename.name(typeofRecord);
 int offsetOfRecord = typeofRecord.offset;
-int sizeOfRecord = sizeof(typeofRecord);
+int sizeOfRecord = typeofRecord.size;
 char fileOfRecord[*] = typename.file(typeofRecord);
 int lineOfRecord = typename.line(typeofRecord);
 
 typename typeofBase = typename.base(typeofRecord);
 char nameOfBase[*] = typename.name(typeofBase);
 int offsetOfBase = typeofBase.offset;
-int sizeOfBase = sizeof(typeofBase);
+int sizeOfBase = typeofBase.size;
 char fileOfBase[*] = typename.file(typeofBase);
 int lineOfBase = typename.line(typeofBase);
 

@@ -1,16 +1,22 @@
-// CLion.Arguments: -X-stdin+steps -std$PROJECT_DIR$/cmplStd/stdlib.ci -run $PROJECT_DIR$/bin/libGfx.so $PROJECT_DIR$/cmplGfx/gfxlib.ci testGfx.ci
+// CLion.Arguments: -X-stdin+steps -std$PROJECT_DIR$/cmplStd/stdlib.ci -run $PROJECT_DIR$/bin/libGfx.so testGfx.ci
 // CLion.Directory: $PROJECT_DIR$/cmplGfx/test
 
+//inline "todo/UiCalendar.ci";
+//inline "todo/AnalogClock.ci";
+//inline "todo/ImageEditor.ci";
 //inline "fx.image.transform.ci";
-//inline "fx.color.picker.ci";
+//inline "fx.color.lookup.ci";
+//inline "fx.color.lookup-ease.ci";
+//inline "fx.color.lookup-manual.ci";
 //inline "fx.color.matrix.ci";
+//inline "fx.color.select-hsl.ci";
 //inline "fx.color.blend.ci";
 //inline "fx.image.blur.ci";
 //inline "fx.histogram.ci";
 //inline "pd.blob.ci";
-//inline "demo/FloodIt.ci";
 
 //* test the generated events
+static Image image = Image(512, 512, 32);
 static int onEvent(pointer closure, int action, int button, int x, int y) {
 	struct Event {
 		char actionName[*];
@@ -28,11 +34,10 @@ static int onEvent(pointer closure, int action, int button, int x, int y) {
 		x: x;
 		y: y;
 	};
-	int result = 0;
 	if (action == Gui.KEY_PRESS) {
 		event.actionName = "KEY_PRESS";
 		if (button == 27) {
-			result = -1;
+			return -1;
 		}
 	}
 	else if (action == Gui.KEY_RELEASE) {
@@ -72,10 +77,68 @@ static int onEvent(pointer closure, int action, int button, int x, int y) {
 		event.actionName = "WINDOW_LEAVE";
 	}
 
+	static if (true) {
+		inline "/cmplGfx/lib/micro.ui.ci";
+		static char actionText[32] = {0};
+		static Button btnAction = {
+			enabled: false;
+			text: actionText;
+			width: 192;
+		};
+		static Slider sldAction = {
+			onDrawSlider: null;
+			enabled: false;
+			text: "action";
+		};
+		static Slider sldButton = {
+			onDrawSlider: null;
+			enabled: false;
+			text: "button";
+		};
+		static Slider sldX = {
+			onDrawSlider: null;
+			enabled: false;
+			text: "x";
+		};
+		static Slider sldY = {
+			onDrawSlider: null;
+			enabled: false;
+			text: "y";
+		};
+		static Slider sldKeyRepeat = {
+			onDrawSlider: null;
+			enabled: false;
+			text: "keyRepeat";
+		};
+		static Slider sldClicks = {
+			onDrawSlider: null;
+			enabled: false;
+			text: "clicks";
+		};
+		static Widget ui = Widget(image, -10,
+			btnAction,
+			sldAction,
+			sldButton,
+			sldX,
+			sldY,
+			sldKeyRepeat,
+			sldClicks
+		);
+
+		ui.onEvent(ui, action, button, x, y);
+		actionText.append(0, event.actionName);
+		sldAction.value = action;
+		sldButton.value = button;
+		sldX.value = x;
+		sldY.value = y;
+		sldKeyRepeat.value = ui.repeat;
+		sldClicks.value = ui.clicks;
+		ui.draw();
+	}
+
 	debug("event", event);
-	return result;
+	return 20000;	// 20 sec timeout
 }
-Image image = Image(256, 256, 32);
 Gui.showWindow(image, null, onEvent);
 image.destroy();
 // */

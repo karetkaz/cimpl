@@ -72,7 +72,7 @@ typedef struct GxImage {
 
 	uint16_t flags;
 	uint8_t depth;
-	uint8_t pixeLen;
+	uint8_t pixelLen;
 	uint32_t scanLen;
 
 	char *basePtr;
@@ -105,7 +105,7 @@ static inline void* getPAddr(GxImage image, int x, int y) {
 	if ((unsigned) x >= image->width || (unsigned) y >= image->height) {
 		return NULL;
 	}
-	return image->basePtr + ((size_t) y * image->scanLen) + ((size_t) x * image->pixeLen);
+	return image->basePtr + ((size_t) y * image->scanLen) + ((size_t) x * image->pixelLen);
 }
 
 // Get Pixel Color
@@ -243,10 +243,12 @@ int blitImage(GxImage image, int x, int y, GxImage src, GxRect roi, void *extra,
 int resizeImage(GxImage image, GxRect rect, GxImage src, GxRect roi, int interpolation);
 
 // image read write
+GxImage loadImg(GxImage dst, const char *src, int depth);
+GxImage loadTtf(GxImage dst, const char *src, int height, int firstChar, int lastChars);
 GxImage loadBmp(GxImage dst, const char *src, int depth);
-GxImage loadFnt(GxImage dst, const char *src);
 GxImage loadJpg(GxImage dst, const char *src, int depth);
 GxImage loadPng(GxImage dst, const char *src, int depth);
+GxImage loadFnt(GxImage dst, const char *src);
 int saveBmp(const char *dst, GxImage src, int flags);
 
 

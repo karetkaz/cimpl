@@ -108,6 +108,13 @@ symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *out
 		sym->next = result;
 		result = sym;
 
+		if (isInline(sym) && isInvokable(sym) && !isStatic(sym)) {
+			if ((mode & MASK_kind) == KIND_typ) {
+				// inline declarations are static
+				sym->kind |= ATTR_stat;
+			}
+		}
+
 		if (isTypename(sym) && !isStatic(sym)) {
 			// types must be marked as static
 			fatal(ERR_INTERNAL_ERROR);

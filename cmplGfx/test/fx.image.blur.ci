@@ -7,229 +7,226 @@
  * use 'space' to press a button, toggle switch or reset slider value
  * use '[' or ']' to show and hide the controls
  *
- * drag the mouse up or down in the window to adjust control value
+ * drag the mouse to move the rectangle of the mask, use shift to resize it
+ * drag the mouse left or right in the window to adjust selected slider value
  */
 
-Image font = Image.openFnt("asset/font/Modern-1.fnt");
-Image surf = Image("asset/image/forest.png", 32);
+Image surf = Image("asset/image/forest.jpg", 32);
 Image offs = Image(surf);
 Image blur = Image(surf);
+int onEvent(int action, int button, int x, int y);
+offs.show(onEvent);
+blur.destroy();
+offs.destroy();
+surf.destroy();
+
+inline "/cmplGfx/lib/micro.ui.ci";
+
+bool onMouseEvent(Button view, const Rect rect&, const MouseEvent event&);
+bool onResetClick(Button view);
+Histogram histogram = {
+	enabled: false;
+};
+
+Slider sldBlur = {
+	text: "Blur";
+	value: 2000;
+	minimum: 30;
+	maximum: 2000;
+	divisor: 100;
+};
+Slider sldSharpness = {
+	text: "Sharp";
+	value: 512;
+	minimum: 256;
+	maximum: 1024;
+	divisor: 256;
+};
+
+Button btnLinear = {
+	text: "Linear";
+	onMouseEvent: onMouseEvent;
+};
+Button btnReflect = {
+	text: "Reflect";
+	onMouseEvent: onMouseEvent;
+};
+Button btnRadial = {
+	text: "Radial";
+	onMouseEvent: onMouseEvent;
+};
+Button btnSquare = {
+	text: "Square";
+	onMouseEvent: onMouseEvent;
+};
+
+Slider sldHardness = {
+	text: "Hardness";
+	minimum: -255;
+	maximum: 255;
+	visible: 1;
+	selectable: false;
+};
+Slider sldAlpha = {
+	text: "Alpha";
+	minimum: -255;
+	maximum: 255;
+	value: 255;
+	visible: 1;
+	selectable: false;
+};
+Switch chkMoveScale = {
+	text: "Drag mode";
+	visible: 1;
+	selectable: false;
+};
+Switch chkRect = {
+	text: "Show rect";
+	visible: 1;
+	selectable: false;
+};
+Switch chkMask = {
+	text: "Show mask";
+	visible: 1;
+	selectable: false;
+};
+Button btnReset = {
+	text: "Reset rect";
+	visible: 1;
+	selectable: false;
+	onClick: onResetClick;
+};
+
+Slider time = {
+	text: "time";
+	enabled: false;
+};
+Button separator = {
+	text: null;
+	height: 3;
+	enabled: false;
+};
+Button separator1 = {
+	text: null;
+	height: 3;
+	visible: 1;
+	enabled: false;
+};
+
+Widget ui = Widget(offs, -30,
+	histogram, separator,
+	sldBlur, sldSharpness,
+	btnLinear, btnReflect, btnRadial, btnSquare,
+	separator1, sldAlpha, sldHardness, chkMoveScale, chkMask, chkRect, btnReset,
+	separator, time
+);
 
 //inline blur(Image surf, int radius) = surf.blur(radius, 0.3 * (radius - 1) + 0.8);
 inline blur(Image surf, float64 sigma) = surf.blur(Math.max(1., (sigma - 0.8) / 0.3 + 1), sigma);
 
-int onEvent(int action, int button, int x, int y);
-offs.show(onEvent);
-
-blur.destroy();
-offs.destroy();
-surf.destroy();
-font.destroy();
+Rect rect = {
+	w: offs.width();
+	h: offs.height();
+};
+int oldRadius = 0;
 
 int onEvent(int action, int button, int x, int y) {
-	inline "/cmplGfx/lib/micro.ui.ci";
+	if (action == Gui.KEY_RELEASE && button == 27) {
+		// exit when releasing escape key
+		return -1;
+	}
+	if (!ui.onEvent(action, button, x, y)) {
+		// event not processed, wait for the next one
+		return 0;
+	}
 
-	static bool onMouseEvent(Button view, const MouseEvent event&);
-	static bool onResetClick(Button view);
-	static Histogram histogram = {
-		enabled: false;
-	};
-
-	static Slider sldBlur = {
-		text: "Blur";
-		value: 2000;
-		minimum: 30;
-		maximum: 2000;
-		divisor: 100;
-	};
-	static Slider sldSharpness = {
-		text: "Sharp";
-		value: 512;
-		minimum: 256;
-		maximum: 1024;
-		divisor: 256;
-	};
-
-	static Button btnLinear = {
-		text: "Linear";
-		onMouseEvent: onMouseEvent;
-	};
-	static Button btnReflect = {
-		text: "Reflect";
-		onMouseEvent: onMouseEvent;
-	};
-	static Button btnRadial = {
-		text: "Radial";
-		onMouseEvent: onMouseEvent;
-	};
-	static Button btnSquare = {
-		text: "Square";
-		onMouseEvent: onMouseEvent;
-	};
-
-	static Slider sldHardness = {
-		text: "Hardness";
-		minimum: -255;
-		maximum: 255;
-		group: 1;
-		selectable: false;
-	};
-	static Slider sldAlpha = {
-		text: "Alpha";
-		minimum: -255;
-		maximum: 255;
-		value: 255;
-		group: 1;
-		selectable: false;
-	};
-	static Switch chkMoveScale = {
-		text: "Drag mode";
-		off: "move";
-		on: "scale";
-		group: 1;
-		selectable: false;
-	};
-	static Switch chkRect = {
-		text: "Show rect";
-		group: 1;
-		selectable: false;
-	};
-	static Switch chkMask = {
-		text: "Show mask";
-		group: 1;
-		selectable: false;
-	};
-	static Button btnReset = {
-		text: "Reset rect";
-		group: 1;
-		selectable: false;
-		onClick: onResetClick;
-	};
-
-	static Slider time = {
-		text: "time";
-		enabled: false;
-	};
-	static Button separator = {
-		text: null;
-		height: 3;
-		enabled: false;
-	};
-	static Button separator1 = {
-		text: null;
-		height: 3;
-		group: 1;
-		enabled: false;
-	};
-
-	static Layout ui = Layout(offs, -30, 30, font,
-		histogram, separator,
-		sldBlur, sldSharpness,
-		btnLinear, btnReflect, btnRadial, btnSquare,
-		separator1, sldAlpha, sldHardness, chkMoveScale, chkMask, chkRect, btnReset,
-		separator, time);
-
-	static int oldRadius = 0;
-	static Rect rect = {
-		x: 0;
-		y: 0;
-		w: offs.width();
-		h: offs.height();
-	};
-	static bool onMouseEvent(Button view, const MouseEvent event&) {
-		if (ui.activeIndex != -1) {
-			// clicked on a ui element
-			return false;
+	uint64 start = System.millis();
+	if (!ui.isPressed(sldBlur)) {
+		if (oldRadius != sldBlur.value) {
+			oldRadius = sldBlur.value;
+			blur.copy(0, 0, surf, null);
+			blur.blur(sldBlur.valFlt());
 		}
-		if (event.release) {
-			// mouse button released
-			return false;
+	}
+
+	// apply blur from cached image
+	offs.copy(0, 0, blur, null);
+
+	if (ui.isSelected(btnLinear, btnReflect, btnRadial, btnSquare)) {
+		uint32 colors[512] = {};
+
+		if (chkMask.checked()) {
+			offs.fill(0xff0000);
 		}
-		if (event.isAlt) {
-			rect.w -= event.dx;
-			rect.h -= event.dy;
-			return true;
+		if (ui.isSelected(btnReflect)) {
+			alphaLut(colors, sldHardness.value, sldAlpha.value, true);
+			offs.gradient(&rect, gradient.MaskLinear, false, ...colors);
 		}
-		if (chkMoveScale.checked == event.isShift) {
-			rect.x -= event.dx;
-			rect.y -= event.dy;
-			return true;
+		else if (ui.isSelected(btnLinear)) {
+			alphaLut(colors, sldHardness.value, sldAlpha.value, false);
+			offs.gradient(&rect, gradient.MaskLinear, false, ...colors);
 		}
+		else if (ui.isSelected(btnRadial)) {
+			alphaLut(colors, sldHardness.value, sldAlpha.value, false);
+			offs.gradient(&rect, gradient.MaskRadial, false, ...colors);
+		}
+		else if (ui.isSelected(btnSquare)) {
+			alphaLut(colors, sldHardness.value, sldAlpha.value, false);
+			offs.gradient(&rect, gradient.MaskSquare, false, ...colors);
+		}
+
+		offs.blend(0, 0, surf, null, 256, true, null);
+		if (chkRect.checked()) {
+			offs.drawRect(rect, 0x00ff00);
+		}
+	}
+	else if (ui.isSelected(sldBlur)) {
+	}
+	else if (ui.isSelected(sldSharpness)) {
+		offs.blend(0, 0, surf, null, sldSharpness.value, false, null);
+	}
+
+	histogram.update(offs);
+	time.value = System.millis() - start;
+
+	if (ui.isSelected(btnReflect, btnLinear, btnRadial, btnSquare)) {
+		ui.setGroup(1);
+	} else {
+		ui.setGroup(2);
+	}
+	return ui.draw();
+}
+bool onMouseEvent(Button view, const Rect r&, const MouseEvent event&) {
+	bool result = Button.onMouseEvent(view, r, event);
+	if (ui.isPressed(view)) {
+		return result;
+	}
+
+	// resize
+	if (event.isAlt || chkMoveScale.selected == 2) {
+		rect.w += event.dx;
+		rect.h += event.dy;
+		return true;
+	}
+	// move
+	if (event.isShift == bool(chkMoveScale.selected)) {
 		rect.x += event.dx;
 		rect.y += event.dy;
-		rect.w -= 2 * event.dx;
-		rect.h -= 2 * event.dy;
-		return true;
-	}
-	static bool onResetClick(Button view) {
-		rect.x = 0;
-		rect.y = 0;
-		rect.w = offs.width();
-		rect.h = offs.height();
 		return true;
 	}
 
-	if (action == Gui.KEY_PRESS) {
-		if (button == 27) {
-			return -1;
-		}
-	}
-	if (ui.onEvent(action, button, x, y)) {
-		uint64 start = System.millis();
-		if (!ui.isActive(sldBlur)) {
-			if (oldRadius != sldBlur.value) {
-				oldRadius = sldBlur.value;
-				blur.copy(0, 0, surf, null);
-				blur.blur(sldBlur.valFlt());
-			}
-		}
-
-		// apply blur from cached image
-		offs.copy(0, 0, blur, null);
-
-		if (ui.isSelected(btnLinear, btnReflect, btnRadial, btnSquare)) {
-			uint32 colors[512] = {};
-
-			if (chkMask.checked) {
-				offs.fill(0xff0000);
-			}
-			if (ui.isSelected(btnReflect)) {
-				alphaLut(colors, sldHardness.value, sldAlpha.value, true);
-				offs.gradient(&rect, gradient.MaskLinear, false, ...colors);
-			}
-			else if (ui.isSelected(btnLinear)) {
-				alphaLut(colors, sldHardness.value, sldAlpha.value, false);
-				offs.gradient(&rect, gradient.MaskLinear, false, ...colors);
-			}
-			else if (ui.isSelected(btnRadial)) {
-				alphaLut(colors, sldHardness.value, sldAlpha.value, false);
-				offs.gradient(&rect, gradient.MaskRadial, false, ...colors);
-			}
-			else if (ui.isSelected(btnSquare)) {
-				alphaLut(colors, sldHardness.value, sldAlpha.value, false);
-				offs.gradient(&rect, gradient.MaskSquare, false, ...colors);
-			}
-
-			offs.blend(0, 0, surf, null, 256, true, null);
-			if (chkRect.checked) {
-				offs.drawRect(rect, 0x00ff00);
-			}
-		}
-		else if (ui.isSelected(sldBlur)) {
-		}
-		else if (ui.isSelected(sldSharpness)) {
-			offs.blend(0, 0, surf, null, sldSharpness.value, false, null);
-		}
-
-		histogram.update(offs);
-		time.value = System.millis() - start;
-
-		if (ui.isSelected(btnReflect, btnLinear, btnRadial, btnSquare)) {
-			ui.setGroup(1);
-		} else {
-			ui.setGroup(2);
-		}
-		ui.draw();
-	}
-	return 0;
+	// resize while the center of the rect is pinned
+	rect.x -= event.dx;
+	rect.y -= event.dy;
+	rect.w += 2 * event.dx;
+	rect.h += 2 * event.dy;
+	return true;
 }
+bool onResetClick(Button view) {
+	rect.x = 0;
+	rect.y = 0;
+	rect.w = offs.width();
+	rect.h = offs.height();
+	return true;
+}
+

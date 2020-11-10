@@ -1,4 +1,4 @@
-/* Manual color lookup editing (TODO: add and move curve control points)
+/* Manual color lookup editing
  *
  * use 'tab' / 'shift' + 'tab' to select next control
  * use 'enter' / 'shift' + 'enter' to select next control
@@ -7,81 +7,113 @@
  * use 'space' to press a button, toggle switch or reset slider value
  * use '[' or ']' to show and hide the controls
  *
- * drag the mouse up or down in the window to adjust control value
+ * drag the mouse left or right in the window to adjust selected slider value
+ * TODO: add and move curve control points
  */
 
-Image back = Image("asset/image/forest.png", 32);
-Image font = Image.openFnt("asset/font/Modern-1.fnt");
+Image back = Image("asset/image/forest.jpg", 32);
 Image offs = Image(back.width(), back.height(), back.depth());
-
 int onEvent(int action, int button, int x, int y);
 offs.show(onEvent);
 offs.destroy();
 back.destroy();
-font.destroy();
+
+inline "/cmplGfx/lib/micro.ui.ci";
+bool onResetClick(Button this);
+bool onCurveUpdate(Histogram this, int idx, int value);
+
+Histogram histogram = {
+	enabled: false;
+};
+Histogram curves = {
+	height: 256;
+	lines: true;
+	enabled: true;
+	selectable: false;
+	onUpdate: onCurveUpdate;
+};
+
+Button separator = {
+	text: null;
+	height: 1;
+	enabled: false;
+};
+
+Button btnLuminosity = {
+	onReset: onResetClick;
+	text: "luminosity";
+};
+Button btnRgb = {
+	onReset: onResetClick;
+	text: "rgb";
+};
+Button btnRed = {
+	onReset: onResetClick;
+	text: "red";
+};
+Button btnGreen = {
+	onReset: onResetClick;
+	text: "green";
+};
+Button btnBlue = {
+	onReset: onResetClick;
+	text: "blue";
+};
+
+Button btnReset = {
+	onClick: onResetClick;
+	text: "reset";
+	selectable: false;
+};
+
+Slider time = {
+	text: "time";
+	enabled: false;
+};
+
+Widget ui = Widget(offs, -30,
+	histogram, curves, separator,
+	btnLuminosity, btnRgb, btnRed, btnGreen, btnBlue,
+	btnReset, separator, time
+);
 
 int onEvent(int action, int button, int x, int y) {
-	inline "/cmplGfx/lib/micro.ui.ci";
+	if (action == Gui.KEY_RELEASE && button == 27) {
+		// exit when releasing escape key
+		return -1;
+	}
+	if (action == Gui.KEY_RELEASE && button == ' ') {
+		const FormatFlags fmt = {
+			precision: 16;
+			padChr: '0';
+			padLen: 8;
+		};
+		char str[32] = {0};
+		File.out.write("\nint32_t lookup[256] = {\n");
+		for (int i = 0; i < curves.data.length; i += 1) {
+			uint32 col = uint32(curves.data[i]);
+			if (i > 0) {
+				File.out.write(",\n");
+			}
+			int len = str.append(str.append(0, "\t0x"), col, fmt);
+			File.write(File.out, str, len);
+		}
+		File.out.write("\n};\n");
+	}
+	if (!ui.onEvent(action, button, x, y)) {
+		// event not processed, wait for the next one
+		return 0;
+	}
 
-	static bool onResetClick(Button this);
-	static bool onCurveUpdate(Histogram this, int idx, int value);
+	uint64 start = System.millis();
+	offs.resize(null, back, null, 1);
+	offs.colorMap(null, curves.data);
+	histogram.update(offs);
+	time.value = System.millis() - start;
+	return ui.draw();
+}
 
-	static Histogram histogram = {
-		enabled: false;
-	};
-	static Histogram curves = {
-		height: 256;
-		lines: true;
-		enabled: true;
-		selectable: false;
-		onUpdate: onCurveUpdate;
-	};
-
-	static Button separator = {
-		text: null;
-		height: 1;
-		enabled: false;
-	};
-
-	static Button btnLuminosity = {
-		onReset: onResetClick;
-		text: "luminosity";
-	};
-	static Button btnRgb = {
-		onReset: onResetClick;
-		text: "rgb";
-	};
-	static Button btnRed = {
-		onReset: onResetClick;
-		text: "red";
-	};
-	static Button btnGreen = {
-		onReset: onResetClick;
-		text: "green";
-	};
-	static Button btnBlue = {
-		onReset: onResetClick;
-		text: "blue";
-	};
-
-	static Button btnReset = {
-		onClick: onResetClick;
-		text: "reset";
-		selectable: false;
-	};
-
-	static Slider time = {
-		text: "time";
-		enabled: false;
-	};
-
-	static Layout ui = Layout(offs, -30, 30, font,
-		histogram, curves, separator,
-		btnLuminosity, btnRgb, btnRed, btnGreen, btnBlue,
-		btnReset, separator, time
-	);
-
-static bool onCurveUpdate(Histogram this, int idx, int value) {
+bool onCurveUpdate(Histogram this, int idx, int value) {
 	argb data& = this.data[idx];
 	if (ui.isSelected(btnLuminosity)) {
 		data.a = clamp_s8(value);
@@ -105,7 +137,7 @@ static bool onCurveUpdate(Histogram this, int idx, int value) {
 	}
 	return false;
 }
-static bool onResetClick(Button this) {
+bool onResetClick(Button this) {
 	for (int i = 0; i < 256; i += 1) {
 		argb data& = curves.data[i];
 		if (this == btnLuminosity) {
@@ -130,20 +162,4 @@ static bool onResetClick(Button this) {
 		}
 	}
 	return true;
-}
-
-	if (action == Gui.KEY_PRESS) {
-		if (button == 27) {
-			return -1;
-		}
-	}
-	if (ui.onEvent(action, button, x, y)) {
-		uint64 start = System.millis();
-		offs.resize(null, back, null, 1);
-		offs.colorMap(null, curves.data);
-		histogram.update(offs);
-		time.value = System.millis() - start;
-		ui.draw();
-	}
-	return 0;
 }

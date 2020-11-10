@@ -14,9 +14,11 @@ EM_SIDE_MODULE=-s SIDE_MODULE=1 -s "EXPORTED_FUNCTIONS=['_cmplInit']"
 EM_MAIN_MODULE=-s MAIN_MODULE=1 -lidbfs.js
 #EM_MAIN_MODULE+=-s "EXPORTED_FUNCTIONS=['_rtInit','_ccInit','_ccAddUnit','_ccGenCode','_execute']"
 
+CFLAGS+=-I libs/stb
+EMFLAGS+=-I libs/stb
+
 ifneq "$(OS)" "Windows_NT"
 	CFLAGS+=-D USE_PNG -D USE_JPEG
-	EMFLAGS+=-D USE_PNG
 	MKDIRF=--parents
 	CFLAGS+=-fPIC
 else
@@ -89,13 +91,13 @@ libOpenGL.dll: cmplGL/src/openGL.c
 
 # for Browser platform
 cmpl.js: $(SRC_CC_EXE) cmplStd/stdlib.ci
-	emcc $(EMFLAGS) -o extras/demo/emscripten/cmpl.js $(EM_MAIN_MODULE) -s USE_SDL=2 -s USE_LIBPNG=1 $(filter %.c, $^) $(EM_EMBED)
+	emcc $(EMFLAGS) -o extras/demo/emscripten/cmpl.js $(EM_MAIN_MODULE) -s USE_SDL=2 $(filter %.c, $^) $(EM_EMBED)
 
 libFile.wasm: cmplFile/src/file.c
 	emcc $(EMFLAGS) -o extras/demo/emscripten/libFile.wasm -I src $(EM_SIDE_MODULE) $(filter %.c, $^)
 
 libGfx.wasm: $(SRC_GX) $(GX_SRC)/os_linux/gx_gui.sdl.c $(GX_SRC)/os_linux/time.unx.c
-	emcc $(EMFLAGS) -o extras/demo/emscripten/libGfx.wasm -I src $(EM_SIDE_MODULE) -s USE_SDL=2 -s USE_LIBPNG=1 $(filter %.c, $^)
+	emcc $(EMFLAGS) -o extras/demo/emscripten/libGfx.wasm -I src $(EM_SIDE_MODULE) -s USE_SDL=2 $(filter %.c, $^)
 
 cmpl.dbg.js: $(SRC_CC_EXE) cmplStd/stdlib.ci
 	emcc -g3 -O0 -s WASM=0 $(filter %.c, $^) -o extras/demo/emscripten/cmpl.dbg.js

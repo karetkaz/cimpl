@@ -73,20 +73,29 @@ static vmError FILE_gets(nfcContext ctx) {
 }
 
 static const char *const proto_file_write_byte = "int write(File file, uint8 byte)";
-static vmError FILE_putc(nfcContext ctx) {
-	FILE *file = (FILE *) nextArg(ctx).ref;
-	int data = nextArg(ctx).i32;
-	reti32(ctx, putc(data, file));
-	return noError;
-}
-
 static const char *const proto_file_write_buff = "int write(File file, const uint8 buff[])";
+static const char *const proto_file_write_buffSize = "int write(File file, const uint8 buff[], int32 size)";
 static vmError FILE_write(nfcContext ctx) {
 	FILE *file = (FILE *) nextArg(ctx).ref;
-	rtValue buff = nextArg(ctx);
-	int len = fwrite(buff.ref, buff.length, 1, file);
-	reti32(ctx, len);
-	return noError;
+	if (ctx->proto == proto_file_write_byte) {
+		int data = nextArg(ctx).i32;
+		reti32(ctx, putc(data, file));
+		return noError;
+	}
+	if (ctx->proto == proto_file_write_buff) {
+		rtValue buff = nextArg(ctx);
+		size_t len = fwrite(buff.ref, buff.length, 1, file);
+		reti32(ctx, len);
+		return noError;
+	}
+	if (ctx->proto == proto_file_write_buffSize) {
+		rtValue buff = nextArg(ctx);
+		size_t size = nextArg(ctx).i32;
+		size_t len = fwrite(buff.ref, size, 1, file);
+		reti32(ctx, len);
+		return noError;
+	}
+	return nativeCallError;
 }
 
 static const char *const proto_file_flush = "void flush(File file)";
@@ -151,8 +160,9 @@ int cmplInit(rtContext rt) {
 		err = err || !rt->api.ccAddCall(cc, FILE_read, proto_file_read_buff);
 		err = err || !rt->api.ccAddCall(cc, FILE_gets, proto_file_read_line);
 
-		err = err || !rt->api.ccAddCall(cc, FILE_putc, proto_file_write_byte);
+		err = err || !rt->api.ccAddCall(cc, FILE_write, proto_file_write_byte);
 		err = err || !rt->api.ccAddCall(cc, FILE_write, proto_file_write_buff);
+		err = err || !rt->api.ccAddCall(cc, FILE_write, proto_file_write_buffSize);
 
 		err = err || !rt->api.ccAddCall(cc, FILE_flush, proto_file_flush);
 		err = err || !rt->api.ccAddCall(cc, FILE_close, proto_file_close);

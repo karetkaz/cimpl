@@ -7,11 +7,15 @@
  * use 'space' to press a button, toggle switch or reset slider value
  * use '[' or ']' to show and hide the controls
  *
- * drag the mouse up or down in the window to adjust control value
+ * drag the mouse left or right in the window to adjust selected slider value
  */
-Image back = Image("asset/image/forest.png", 32);
-Image font = Image.openFnt("asset/font/Modern-1.fnt");
+
+Image back = Image("asset/image/forest.jpg", 32);
 Image offs = Image(back.width(), back.height(), back.depth());
+int onEvent(int action, int button, int x, int y);
+offs.show(onEvent);
+offs.destroy();
+back.destroy();
 
 void levels(argb lut[256], int brightness, int x0, int x1, int y0, int y1) {
 	if (x1 == x0) {
@@ -28,166 +32,158 @@ void levels(argb lut[256], int brightness, int x0, int x1, int y0, int y1) {
 		lut[idx].a = idx;
 	}
 }
-
 void levels(argb lut[256], int brightness, int output, int input) {
 	int x0 = input > 0 ? 0 : -input;
-	int x1 = input < 0 ? 256 : 256 - input;
+	int x1 = input < 0 ? 255 : 255 - input;
 	int y0 = output < 0 ? 0 : output;
-	int y1 = output > 0 ? 256 : 256 + output;
+	int y1 = output > 0 ? 255 : 255 + output;
 	return levels(&lut, brightness, x0, x1, y0, y1);
 }
 
-int onEvent(int action, int button, int x, int y);
-offs.show(onEvent);
-offs.destroy();
-back.destroy();
-font.destroy();
+inline "/cmplGfx/lib/micro.ui.ci";
+bool updateInputOutput(Slider slider, int value);
+bool resetInputOutput(Slider slider);
+
+Histogram histogram = {
+	enabled: false;
+};
+Histogram lookup = {
+	lines: true;
+	enabled: false;
+	selectable: false;
+};
+
+Slider time = {
+	text: "time";
+	enabled: false;
+};
+
+Switch chkAdvanced = {
+	text: "Advanced";
+};
+
+Slider sldBrightness = {
+	text: "Brightness";
+	minimum: -256;
+	maximum: 256;
+};
+
+Slider sldInput = {
+	text: "Input";
+	minimum: -255;
+	maximum: 255;
+	onUpdate: updateInputOutput;
+	onReset: resetInputOutput;
+};
+Slider sldInputMin = {
+	visible: 1;
+	text: " Input.min";
+	maximum: sldInput.maximum;
+	value: 0;
+	onUpdate: updateInputOutput;
+	onReset: resetInputOutput;
+};
+Slider sldInputMax = {
+	visible: 1;
+	text: " Input.max";
+	maximum: sldInput.maximum;
+	value: sldInput.maximum;
+	onUpdate: updateInputOutput;
+	onReset: resetInputOutput;
+};
+
+Slider sldOutput = {
+	text: "Output";
+	minimum: -255;
+	maximum: 255;
+	onUpdate: updateInputOutput;
+	onReset: resetInputOutput;
+};
+Slider sldOutputMin = {
+	visible: 1;
+	text: " Output.min";
+	maximum: sldOutput.maximum;
+	value: 0;
+	onUpdate: updateInputOutput;
+	onReset: resetInputOutput;
+};
+Slider sldOutputMax = {
+	visible: 1;
+	text: " Output.max";
+	maximum: sldOutput.maximum;
+	value: sldOutput.maximum;
+	onUpdate: updateInputOutput;
+	onReset: resetInputOutput;
+};
+
+Widget ui = Widget(offs, -30,
+	histogram,
+	lookup,
+	sldBrightness,
+	sldOutput,
+	sldOutputMin,
+	sldOutputMax,
+	sldInput,
+	sldInputMin,
+	sldInputMax,
+	chkAdvanced,
+	time
+);
 
 int onEvent(int action, int button, int x, int y) {
-	inline "/cmplGfx/lib/micro.ui.ci";
-
-	static bool updateInputOutput(Slider slider, int value);
-	static bool resetInputOutput(Slider slider);
-
-	static Histogram histogram = {
-		enabled: false;
-	};
-
-	static Histogram lookup = {
-		lines: true;
-		enabled: false;
-		selectable: false;
-	};
-
-	static Slider time = {
-		text: "time";
-		enabled: false;
-	};
-
-	static Switch chkAdvanced = {
-		text: "Advanced";
-	};
-
-	static Slider sldBrightness = {
-		text: "Brightness";
-		minimum: -256;
-		maximum: 256;
-	};
-
-	static Slider sldInput = {
-		text: "Input";
-		minimum: -256;
-		maximum: 256;
-		onUpdate: updateInputOutput;
-		onReset: resetInputOutput;
-	};
-	static Slider sldInputMin = {
-		group: 1;
-		text: " Input.min";
-		maximum: 256;
-		value: 0;
-		onUpdate: updateInputOutput;
-		onReset: resetInputOutput;
-	};
-	static Slider sldInputMax = {
-		group: 1;
-		text: " Input.max";
-		maximum: 256;
-		value: 256;
-		onUpdate: updateInputOutput;
-		onReset: resetInputOutput;
-	};
-
-	static Slider sldOutput = {
-		text: "Output";
-		minimum: -256;
-		maximum: 256;
-		onUpdate: updateInputOutput;
-		onReset: resetInputOutput;
-	};
-	static Slider sldOutputMin = {
-		group: 1;
-		text: " Output.min";
-		maximum: 256;
-		value: 0;
-		onUpdate: updateInputOutput;
-		onReset: resetInputOutput;
-	};
-	static Slider sldOutputMax = {
-		group: 1;
-		text: " Output.max";
-		maximum: 256;
-		value: 256;
-		onUpdate: updateInputOutput;
-		onReset: resetInputOutput;
-	};
-
-	static Layout ui = Layout(offs, -30, 30, font,
-		histogram,
-		lookup,
-		sldBrightness,
-		sldOutput,
-		sldOutputMin,
-		sldOutputMax,
-		sldInput,
-		sldInputMin,
-		sldInputMax,
-		chkAdvanced,
-		time
-	);
-
-	static bool updateInputOutput(Slider slider, int value) {
-		if (slider == sldInput) {
-			Slider.onUpdate(sldInput, value);
-			Slider.onUpdate(sldInputMin, value > 0 ? 0 : -value);
-			Slider.onUpdate(sldInputMax, value < 0 ? 256 : 256 - value);
-			return true;
-		}
-		if (slider == sldOutput) {
-			Slider.onUpdate(sldOutput, value);
-			Slider.onUpdate(sldOutputMin, value < 0 ? 0 : value);
-			Slider.onUpdate(sldOutputMax, value > 0 ? 256 : 256 + value);
-			return true;
-		}
-		if (slider == sldInputMin || slider == sldInputMax) {
-			Slider.onUpdate(sldInput, 0);
-		}
-		if (slider == sldOutputMin || slider == sldOutputMax) {
-			Slider.onUpdate(sldOutput, 0);
-		}
-		return Slider.onUpdate(slider, value);
+	if (action == Gui.KEY_RELEASE && button == 27) {
+		// exit when releasing escape key
+		return -1;
 	}
-	static bool resetInputOutput(Slider slider) {
-		if (slider == sldInput) {
-			Slider.onReset(sldInputMin);
-			Slider.onReset(sldInputMax);
-		}
-		if (slider == sldOutput) {
-			Slider.onReset(sldOutputMin);
-			Slider.onReset(sldOutputMax);
-		}
-		return Slider.onReset(slider);
+	if (!ui.onEvent(action, button, x, y)) {
+		// event not processed, wait for the next one
+		return 0;
 	}
-
 	if (action == Gui.WINDOW_INIT) {
 		ui.setGroup(2);
 	}
-	if (action == Gui.KEY_PRESS) {
-		if (button == 27) {
-			return -1;
-		}
-	}
 
-	if (ui.onEvent(action, button, x, y)) {
-		uint64 start = System.millis();
-		ui.setGroup(chkAdvanced.checked ? 0 : 2);
-		levels(&lookup.data, sldBrightness.value, sldInputMin.value, sldInputMax.value, sldOutputMin.value, sldOutputMax.value);
-		offs.resize(null, back, null, 1);
-		offs.colorMap(null, lookup.data);
-		histogram.update(offs);
+	uint64 start = System.millis();
+	ui.setGroup(~(1 << chkAdvanced.selected));
+	levels(&lookup.data, sldBrightness.value, sldInputMin.value, sldInputMax.value, sldOutputMin.value, sldOutputMax.value);
+	offs.resize(null, back, null, 1);
+	offs.colorMap(null, lookup.data);
+	histogram.update(offs);
 
-		time.value = System.millis() - start;
-		ui.draw();
-	}
-	return 0;
+	time.value = System.millis() - start;
+	return ui.draw();
 }
+
+bool updateInputOutput(Slider slider, int value) {
+	if (slider == sldInput) {
+		Slider.onUpdate(sldInput, value);
+		Slider.onUpdate(sldInputMin, value > 0 ? 0 : -value);
+		Slider.onUpdate(sldInputMax, value < 0 ? sldInput.maximum : sldInput.maximum - value);
+		return true;
+	}
+	if (slider == sldOutput) {
+		Slider.onUpdate(sldOutput, value);
+		Slider.onUpdate(sldOutputMin, value < 0 ? 0 : value);
+		Slider.onUpdate(sldOutputMax, value > 0 ? sldOutput.maximum : sldOutput.maximum + value);
+		return true;
+	}
+	if (slider == sldInputMin || slider == sldInputMax) {
+		Slider.onUpdate(sldInput, 0);
+	}
+	if (slider == sldOutputMin || slider == sldOutputMax) {
+		Slider.onUpdate(sldOutput, 0);
+	}
+	return Slider.onUpdate(slider, value);
+}
+bool resetInputOutput(Slider slider) {
+	if (slider == sldInput) {
+		Slider.onReset(sldInputMin);
+		Slider.onReset(sldInputMax);
+	}
+	if (slider == sldOutput) {
+		Slider.onReset(sldOutputMin);
+		Slider.onReset(sldOutputMax);
+	}
+	return Slider.onReset(slider);
+}
+
