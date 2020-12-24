@@ -58,25 +58,23 @@ typedef union {				// ARGB color structure
 } argb;
 
 typedef enum {			// color block transfer
-	cblt_conv_32 = 32,
-	cblt_conv_24 = 24,
-	cblt_conv_16 = 16,
-	cblt_conv_15 = 15,
-	cblt_conv_08 = 8,
-	//cblt_conv_04 = 4,
-	//cblt_conv_02 = 2,
-	//cblt_conv_01 = 1,
+	blt_cvt_32 = 32,
+	blt_cvt_24 = 24,
+	blt_cvt_16 = 16,
+	blt_cvt_15 = 15,
+	blt_cvt_08 = 8,
+	//blt_cvt_04 = 4,
+	//blt_cvt_02 = 2,
+	//blt_cvt_01 = 1,
 
-	cblt_cpy_mix = 17,
-	cblt_cpy_and = 18,
-	cblt_cpy_ior = 19,
-	cblt_cpy_xor = 20,
+	// 24 - 32 custom conversions methods
+	blt_cvt_bgra = 31,
+	blt_cvt_bgr = 30,
+	// to add: hsv, yuv, 16bit gray, 16bit rgb, r10g10b10
 
-	cblt_set_col = 25,
-	cblt_set_mix = 26,
-	//cblt_set_and = 26,
-	//cblt_set_ior = 27,
-	//cblt_set_xor = 28,
+	blt_cpy_mix = 20,
+	blt_set_mix = 19,
+	blt_set_col = 18,
 } BltType;
 
 typedef int (*bltProc)(void* dst, void *src, void *lut, size_t cnt);
@@ -85,11 +83,6 @@ static inline int32_t bch(uint32_t color) { return color >>  0 & 0xff; }
 static inline int32_t gch(uint32_t color) { return color >>  8 & 0xff; }
 static inline int32_t rch(uint32_t color) { return color >> 16 & 0xff; }
 static inline int32_t ach(uint32_t color) { return color >> 24 & 0xff; }
-
-static inline int32_t lum(uint32_t color) {
-	// based on formula: 0.299 * color.r + 0.587 * color.g + 0.114 * color.b;
-	return (19595 * rch(color) + 38470 * gch(color) + 7471 * bch(color)) >> 16;
-}
 
 static inline int32_t hue(uint32_t color) {
 	// adapted from: https://gist.github.com/mity/6034000
@@ -131,6 +124,10 @@ static inline int32_t hue(uint32_t color) {
 	}
 	return hue;
 }
+static inline int32_t lum(uint32_t color) {
+	// based on formula: 0.299 * color.r + 0.587 * color.g + 0.114 * color.b;
+	return (19595 * rch(color) + 38470 * gch(color) + 7471 * bch(color)) >> 16;
+}
 
 static inline uint8_t sat_s8(int32_t val) {
 	if (val > 255) {
@@ -163,6 +160,12 @@ static inline argb sat_urgb(unsigned a, unsigned r, unsigned g, unsigned b) {
 }
 
 
+static inline uint8_t mix_s8(int c1, int c2, int alpha) {
+	return c1 + (alpha * (c2 - c1 + 1) >> 8);
+}
+static inline uint8_t mix_u8(int c1, int c2, int alpha) {
+	return c1 + (alpha * (c2 - c1 + 1) >> 8);
+}
 static inline argb mix_rgb(argb c1, argb c2, int alpha) {
 	//~ uint32_t r = (c1 & 0xff0000) + (alpha * ((c2 & 0xff0000) - (c1 & 0xff0000)) >> 8);
 	//~ uint32_t g = (c1 & 0xff00) + (alpha * ((c2 & 0xff00) - (c1 & 0xff00)) >> 8);
@@ -177,15 +180,7 @@ static inline argb mix_rgb(argb c1, argb c2, int alpha) {
 
 	return cast_rgb((rb & 0xff00ff) | (g & 0x00ff00));
 }
-static inline uint8_t mix_u8(uint32_t c1, uint32_t c2, int alpha) {
-	uint32_t c = c1 & 0xff;
-	c += alpha * ((c2 & 0xff) - c) >> 8;
-	return (uint8_t) (c & 0xff);
-}
 
-bltProc getBltProc(BltType type, int srcDepth);
-
-int colcpy_32_abgr(char* dst, char *src, void *lut, size_t cnt);
-int colcpy_32_bgr(char* dst, char *src, void *lut, size_t cnt);
+bltProc getBltProc(BltType type, int depth);
 
 #endif

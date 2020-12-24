@@ -8,13 +8,11 @@ struct vertex:1 {
 	int32 c;
 }
 
-inline vertex(float32 x, float32 y, int32 c) = vertex(emit(int32(c), float32(y), float32(x)));
-
-vertex vertices[3] = {};
-
-vertices[0] = vertex( 0, +1, 0xff0000);
-vertices[1] = vertex(-1, -1, 0x00ff00);
-vertices[2] = vertex(+1, -1, 0x0000ff);
+vertex vertices[] = {
+	{ x:  0, y: +1, c: 0xff0000 };  // red vertex
+	{ x: -1, y: -1, c: 0x00ff00 };  // green vertex
+	{ x: +1, y: -1, c: 0x0000ff };  // blue vertex
+};
 
 void mouse(int btn, int x, int y) {
 	// trace("mouse");
@@ -29,7 +27,7 @@ void mouse(int btn, int x, int y) {
 }
 
 void keyboard(int key) {
-	trace("keyboard", key);
+	// trace("keyboard", key);
 	if (key == 27) {
 		glut.exit();
 	}
@@ -69,7 +67,6 @@ void display() {
 	//trace("display");
 
 	gl.clear(gl.ColorBuffer);
-
 	gl.begin(gl.Triangles);
 	for (int i = 0; i < vertices.length; i += 1) {
 		vertex vtx& = vertices[i];

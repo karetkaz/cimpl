@@ -364,7 +364,7 @@ static vmError surf_copySurf(nfcContext ctx) {
 	GxImage src = nextValue(ctx).ref;
 	GxRect roi = nextValue(ctx).ref;
 
-	if (blitImage(surf, x, y, src, roi, NULL, getBltProc(surf->depth, src->depth)) < 0) {
+	if (blitImage(surf, x, y, src, roi, NULL, getBltProc(src->depth, surf->depth)) < 0) {
 		return nativeCallError;
 	}
 	return noError;

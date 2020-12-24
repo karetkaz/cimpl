@@ -258,7 +258,7 @@ int blurImage(GxImage image, int radius, double sigma);
 int drawGradient(GxImage dst, GxRect roi, GradientFlags type, int length, uint32_t *colors);
 
 static inline int copyImage(GxImage image, int x, int y, GxImage src, GxRect roi) {
-	return blitImage(image, x, y, src, roi, NULL, getBltProc(image->depth, src->depth));
+	return blitImage(image, x, y, src, roi, NULL, getBltProc(src->depth, image->depth));
 }
 
 static inline int blendImage(GxImage image, int x, int y, GxImage src, GxRect roi, int alpha) {
@@ -266,7 +266,7 @@ static inline int blendImage(GxImage image, int x, int y, GxImage src, GxRect ro
 		// source and destination must have same depth
 		return -2;
 	}
-	return blitImage(image, x, y, src, roi, (void *) (ssize_t) alpha, getBltProc(cblt_cpy_mix, src->depth));
+	return blitImage(image, x, y, src, roi, &alpha, getBltProc(blt_cpy_mix, image->depth));
 }
 
 #if __cplusplus

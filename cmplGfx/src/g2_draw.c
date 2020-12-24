@@ -17,7 +17,7 @@ void drawRect(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 		.w = x2 - x1,
 		.h = y2 - y1,
 	};
-	bltProc blt = getBltProc(cblt_set_col, image->depth);
+	bltProc blt = getBltProc(blt_set_col, image->depth);
 	char *dptr = (char*) clipRect(image, &clip);
 	if (dptr == NULL || blt == NULL) {
 		return;
@@ -29,27 +29,27 @@ void drawRect(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 	int bottom = y2 <= clip.y + clip.h;
 
 	if (top) {
-		blt(dptr, NULL, (void*) (size_t) color, clip.w);
+		blt(dptr, NULL, &color, clip.w);
 		dptr += image->scanLen;
 	}
 	if (left && right) {
 		size_t r = (clip.w - 1) * image->pixelLen;
 		for (int y = top; y < clip.h - bottom; y++) {
-			blt(dptr, NULL, (void*) (size_t) color, 1);
-			blt(dptr + r, NULL, (void*) (size_t) color, 1);
+			blt(dptr, NULL, &color, 1);
+			blt(dptr + r, NULL, &color, 1);
 			dptr += image->scanLen;
 		}
 	}
 	else if (left) {
 		for (int y = top; y < clip.h - bottom; y++) {
-			blt(dptr, NULL, (void*) (size_t) color, 1);
+			blt(dptr, NULL, &color, 1);
 			dptr += image->scanLen;
 		}
 	}
 	else if (right) {
 		size_t r = (clip.w - 1) * image->pixelLen;
 		for (int y = top; y < clip.h - bottom; y++) {
-			blt(dptr + r, NULL, (void*) (size_t) color, 1);
+			blt(dptr + r, NULL, &color, 1);
 			dptr += image->scanLen;
 		}
 	}
@@ -57,7 +57,7 @@ void drawRect(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 		dptr += (clip.h - top - bottom) * image->scanLen;
 	}
 	if (bottom) {
-		blt(dptr, NULL, (void*) (size_t) color, clip.w);
+		blt(dptr, NULL, &color, clip.w);
 	}
 }
 void fillRect(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
@@ -77,14 +77,14 @@ void fillRect(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 		.w = x2 - x1,
 		.h = y2 - y1,
 	};
-	bltProc blt = getBltProc(cblt_set_col, image->depth);
+	bltProc blt = getBltProc(blt_set_col, image->depth);
 	char *dptr = (char*) clipRect(image, &clip);
 	if (dptr == NULL || blt == NULL) {
 		return;
 	}
 
 	while (clip.h-- > 0) {
-		blt(dptr, NULL, (void*) (size_t) color, clip.w);
+		blt(dptr, NULL, &color, clip.w);
 		dptr += image->scanLen;
 	}
 }
@@ -345,13 +345,13 @@ void drawChar(GxImage image, int x, int y, GxImage font, int chr, uint32_t color
 
 	char *sptr = (char*)face->basePtr;
 	char *dptr = (char*) clipRect(image, &clip);
-	bltProc blt = getBltProc(cblt_set_mix, image->depth);
+	bltProc blt = getBltProc(blt_set_mix, image->depth);
 	if (dptr == NULL || sptr == NULL || blt == NULL) {
 		return;
 	}
 
 	while (clip.h-- > 0) {
-		blt(dptr, sptr, (void*)(size_t)color, clip.w);
+		blt(dptr, sptr, &color, clip.w);
 		dptr += image->scanLen;
 		sptr += font->scanLen;
 	}

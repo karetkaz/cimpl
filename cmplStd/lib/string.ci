@@ -89,6 +89,9 @@ int caseCmp(char chr, char with) {
 	return chr - with;
 }
 
+/// convert lower part (4 bits) of the input value to the corresponding lower case hexadecimal character
+inline toHex(int value) = int("0123456789abcdef"[value & 0xf]);
+
 /// Check if a string begins with a specified string, using case-sensitive comparison
 inline startsWith(const char str[*], const char with[*]) = startsWith(str, with, caseCmp);
 /// Check if a string ends in a specified string, using case-sensitive comparison

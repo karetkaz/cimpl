@@ -347,9 +347,11 @@ function rmWorkspace(workspace) {
 	req.onblocked = console.log;
 }
 
-editor.on('change', function() {
+/* usually content changed, show save icon */
+editor.on('change', function(cm, change) {
 	setStyle(document.body, 'edited');
 });
+/* add / remove breakpoint */
 editor.on('gutterClick', function(cm, n) {
 	let info = cm.lineInfo(n);
 	if (info.gutterMarkers == null) {
@@ -361,6 +363,17 @@ editor.on('gutterClick', function(cm, n) {
 	} else {
 		cm.setGutterMarker(n, 'breakpoints', null);
 	}
+});
+/* notify main window iframing the editor to resize it's height */
+editor.on('viewportChange', function(cm, from, to) {
+	let body = document.body;
+	let html = document.documentElement;
+	let height = Math.max(body.scrollHeight
+		, body.offsetHeight, html.clientHeight
+		, html.scrollHeight, html.offsetHeight
+	);
+	//console.log('viewportChange: ' + height, from, to);
+	window.parent.postMessage({frameHeight: height}, '*');
 });
 
 window.onkeydown = function() {
@@ -683,4 +696,57 @@ function process(data) {
 		spnStatus.innerText = null;
 		params.update('file', 'folder', 'content');
 	}
+}
+
+function dragStart(e) {
+	e.preventDefault();
+	props.dragging = e;
+}
+function dragStop() {
+	if (props.dragging == null) {
+		return;
+	}
+	props.dragging = null;
+	editor.refresh();
+}
+function dragMove(event) {
+	let evDown = props.dragging;
+	if (evDown == null) {
+		return;
+	}
+
+	if (evDown.target.id == 'output-pan-sidebar') {
+		if (!hasStyle(document.body, 'output')) {
+			return;
+		}
+		let y = event.pageY - evDown.offsetY;
+		if (y != y && event.touches !== undefined) {
+			y = event.touches[0].pageY;
+		}
+		document.documentElement.style.setProperty('--bottom-bar-size', (window.innerHeight - y) + "px");
+		return;
+	}
+	if (evDown.target.id == 'left-pan-sidebar') {
+		let x = event.pageX;
+		if (event.pageX === undefined) {
+			x = event.touches[0].pageX;
+		}
+		var percentage = (x + 5) / window.innerWidth * 100;
+		if (percentage < 10 || percentage > 90) {
+			return;
+		}
+		document.documentElement.style.setProperty('--left-bar-size', percentage + "%");
+		return;
+	}
+	console.log(event);
+}
+if (window.addEventListener) {
+	document.getElementById("output-pan-sidebar").addEventListener("mousedown", dragStart);
+	document.getElementById("output-pan-sidebar").addEventListener("touchstart", dragStart);
+	document.getElementById("left-pan-sidebar").addEventListener("mousedown", dragStart);
+	document.getElementById("left-pan-sidebar").addEventListener("touchstart", dragStart);
+	window.addEventListener("mousemove", dragMove);
+	window.addEventListener("touchmove", dragMove);
+	window.addEventListener("mouseup", dragStop);
+	window.addEventListener("touchend", dragStop);
 }

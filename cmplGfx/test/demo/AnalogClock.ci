@@ -1,0 +1,173 @@
+// analog clock using antialias lines
+
+void drawAALine(Image img, int x1, int y1, int x2, int y2, uint32 color) {
+	inline mix(int t, int a, int b) = a + (t * (b - a + 1) >> 8);
+	inline mix(int t, argb a, argb b) = argb(mix(t, rch(a), rch(b)), mix(t, gch(a), gch(b)), mix(t, bch(a), bch(b)));
+	inline mix(Image img, int x0, int y0, int alpha, uint32 color) = img.set(x0, y0, mix(alpha, argb(uint32(img.get(x0, y0))), argb(color)));
+
+	if (x1 == x2 || y1 == y2) {
+		img.drawLine(x1, y1, x2, y2, color);
+		return;
+	}
+
+	int dx = x2 - x1;
+	int dy = y2 - y1;
+
+	int g2 = (dx << 16) / dy;
+	if ((g2 >> 16) == (g2 >> 31)) {
+		dx = (dx << 16) / dy;
+		if (y1 > y2) {
+			int y = y1;
+			y1 = y2;
+			y2 = y;
+			x1 = x2;
+		}
+		int x = (x1 << 16);
+		if (y1 < 0) {
+			x -= dx * y1;
+			y1 = 0;
+		}
+		if (y2 > img.height()) {
+			y2 = img.height();
+		}
+
+		for (int y = y1; y <= y2; y += 1) {
+			int alpha = (~x >> 8) & 255;
+			img.mix(x >> 16, y, alpha, color);
+			img.mix((x >> 16) + 1, y, 255 - alpha, color);
+			x += dx;
+		}
+		return;
+	}
+
+	dy = (dy << 16) / dx;
+	if (x1 > x2) {
+		int x = x1;
+		x1 = x2;
+		x2 = x;
+		y1 = y2;
+	}
+	int y = (y1 << 16);
+	if (x1 < 0) {
+		y -= dy * x1;
+		x1 = 0;
+	}
+	if (x2 > img.width()) {
+		x2 = img.width();
+	}
+
+	for (int x = x1; x <= x2; x += 1) {
+		uint32 alpha = (~y >> 8) & 255;
+		img.mix(x, y >> 16, alpha, color);
+		img.mix(x, (y >> 16) + 1, 255 - alpha, color);
+		y += dy;
+	}
+}
+
+void fillAAOval(Image img, int x1, int y1, int x2, int y2, int thick, uint32 color) {
+	return Image.fillOval(img, x1, y1, x2, y2, color);
+}
+void drawAAOval(Image img, int x1, int y1, int x2, int y2, int thick, uint32 color) {
+	// TODO: implement anti-aliased ellipse drawing
+	return Image.fillOval(img, x1, y1, x2, y2, color);
+	if (thick < 0) {
+		img.fillOval(x1, y1, x2, y2, color);
+	} else {
+		img.drawOval(x1, y1, x2, y2, color);
+	}
+}
+
+inline hourText = 0xadadad;
+inline hourHand = 0xff0000;
+inline minuteHand = 0x00ff00;
+inline secondHand = 0xffffff;
+Image offs = Image(320, 320, 32);
+
+int onEvent(int action, int button, int ex, int ey) {
+	static bool aaDraw = true;
+	if (action == Gui.KEY_RELEASE) {
+		if (button == ' ') {
+			aaDraw = !aaDraw;
+		}
+		if (button == 27) {
+			// exit with escape button
+			return -1;
+		}
+	}
+
+	// clear surface
+	offs.fill(0x00000000);
+
+	Image font = Gui.font;
+	int x1 = offs.width() / 2;
+	int y1 = offs.height() / 2;
+	int r = Math.min(x1, y1) - 2;
+	offs.fillAAOval(x1 - r, y1 - r, x1 + r, y1 + r, -1, 0x4a4a4a);
+
+	if (hourText != 0) {
+		for (int i = 1; i <= 12; i += 1) {
+			double size = r - font.height() * 3 / 4;
+			double angle = Math.radians(i % 12 * (360 / 12) - 90);
+			int x2 = x1 + int(Math.cos(angle) * size);
+			int y2 = y1 + int(Math.sin(angle) * size);
+			char text[8] = {0};
+			text.append(0, i);
+			offs.drawText(x2 - 4, y2 - 8, font, text, hourText);
+		}
+	}
+
+	char txtClock[*] = "Utc Clock";
+	Rect roiClock = {};
+	font.clipText(&roiClock, txtClock);
+	roiClock.x = x1 - roiClock.w / 2;
+	roiClock.y = y1 + y1 / 3;
+	offs.fill(roiClock, 4, 0x101010);
+	offs.drawText(roiClock, font, txtClock, 0xadadad);
+
+	inline secondsInMillis = 1000;
+	inline minutesInMillis = 60 * secondsInMillis;
+	inline hoursInMillis = 60 * minutesInMillis;
+
+	float64 time = System.millis();
+	if (hourHand != 0) {
+		double size = r * 2 / 4.;
+		double angle = Math.radians(((time / hoursInMillis) % 12) * (360 / 12) - 90);
+		int x2 = x1 + int(Math.cos(angle) * size);
+		int y2 = y1 + int(Math.sin(angle) * size);
+		if (aaDraw) {
+			offs.drawAALine(x1, y1, x2, y2, hourHand);
+		} else {
+			offs.drawLine(x1, y1, x2, y2, hourHand);
+		}
+	}
+
+	if (minuteHand != 0) {
+		double size = r * 3 / 4.;
+		double angle = Math.radians(((time / minutesInMillis) % 60) * 6 - 90);
+		int x2 = x1 + int(Math.cos(angle) * size);
+		int y2 = y1 + int(Math.sin(angle) * size);
+		if (aaDraw) {
+			offs.drawAALine(x1, y1, x2, y2, minuteHand);
+		} else {
+			offs.drawLine(x1, y1, x2, y2, minuteHand);
+		}
+	}
+
+	if (secondHand != 0) {
+		double size = r * 4 / 4. - 6;
+		double angle = Math.radians(((time / secondsInMillis) % 60) * 6 - 90);
+		int x2 = x1 + int(Math.cos(angle) * size);
+		int y2 = y1 + int(Math.sin(angle) * size);
+		if (aaDraw) {
+			offs.drawAALine(x1, y1, x2, y2, secondHand);
+		} else {
+			offs.drawLine(x1, y1, x2, y2, secondHand);
+		}
+	}
+
+	// sleep for a while
+	return 25;
+}
+
+offs.show(onEvent);
+offs.destroy();

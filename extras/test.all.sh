@@ -77,9 +77,13 @@ TEST_FILES="$CMPL_HOME/cmplStd/test/test.ci"
 TEST_FILES="$TEST_FILES $CMPL_HOME/cmplStd/test/demo/*.ci"
 TEST_FILES="$TEST_FILES $CMPL_HOME/cmplStd/test/lang/*.ci"
 TEST_FILES="$TEST_FILES $CMPL_HOME/cmplStd/test/std/*.ci"
+
 TEST_FILES="$TEST_FILES $CMPL_HOME/cmplFile/test/*.ci"
-TEST_FILES="$TEST_FILES $CMPL_HOME/cmplGfx/test/demo/*.ci"
+
 TEST_FILES="$TEST_FILES $CMPL_HOME/cmplGfx/test/*.ci"
+TEST_FILES="$TEST_FILES $CMPL_HOME/cmplGfx/test/demo/*.ci"
+TEST_FILES="$TEST_FILES $CMPL_HOME/cmplGfx/todo/*.ci"
+
 TEST_FILES="$TEST_FILES $CMPL_HOME/cmplGL/test/*.ci"
 
 DUMP_FILE=$CMPL_BIN.dump.ci

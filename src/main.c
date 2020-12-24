@@ -711,10 +711,10 @@ static void jsonPostProfile(dbgContext ctx) {
 			printFmt(out, esc, JSON_OBJ_NEXT, indent + 1);
 		}
 		jsonDumpSym(out, esc, sym, NULL, indent + 2);
-		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_TIME, dbg->self);
-		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_TOTAL, dbg->total);
 		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_HITS, dbg->hits);
-		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_FAILS, dbg->exec - dbg->hits);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_TIME, dbg->time);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_TOTAL, dbg->total);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_FAILS, dbg->fails);
 	}
 	printFmt(out, esc, JSON_OBJ_ARR_END, indent + 1);
 
@@ -736,12 +736,11 @@ static void jsonPostProfile(dbgContext ctx) {
 		if (covStmt > 1) {
 			printFmt(out, esc, JSON_OBJ_NEXT, indent + 1);
 		}
-		printFmt(out, esc, "%I\"%s\": \"%?T+%d\"\n", indent + 2, "", sym, symOffs);
+		printFmt(out, esc, "%I\"%s\": \"%?.T+%d\"\n", indent + 2, "", sym, symOffs);
 		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_OFFS, dbg->start);
-		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_TIME, dbg->self);
-		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_TOTAL, dbg->total);
 		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_HITS, dbg->hits);
-		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_FAILS, dbg->exec - dbg->hits);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_TOTAL, dbg->total);
+		printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_FAILS, dbg->fails);
 		if (dbg->file != NULL && dbg->line > 0) {
 			printFmt(out, esc, "%I, \"%s\": \"%s\"\n", indent + 2, JSON_KEY_FILE, dbg->file);
 			printFmt(out, esc, "%I, \"%s\": %d\n", indent + 2, JSON_KEY_LINE, dbg->line);
@@ -891,16 +890,16 @@ static void textPostProfile(userContext usr) {
 	if (rt->dbg != NULL) {
 		dbgContext dbg = rt->dbg;
 		if (usr->profFunctions) {
-			size_t cov = 0, cnt = dbg->functions.cnt;
+			size_t cov = 0, err = 0;
+			size_t cnt = dbg->functions.cnt;
 			dbgn ptrFunc = (dbgn) dbg->functions.ptr;
 			for (size_t i = 0; i < cnt; ++i, ptrFunc++) {
 				cov += ptrFunc->hits > 0;
+				err += ptrFunc->fails > 0;
 			}
 
-			printFmt(out, esc, "%?sProfile functions: %d/%d, coverage: %.2f%%\n", prefix, cov, cnt, cov * 100. / (cnt
-					? cnt
-					: 1
-				)
+			printFmt(out, esc, "%?sProfile functions: %d/%d, coverage: %.2f%%, failures: %d\n",
+				prefix, cov, cnt, cov * 100. / (cnt ? cnt : 1), err
 			);
 			for (size_t i = 0; i < cnt; ++i) {
 				dbgn ptr = (dbgn) dbg->functions.ptr + i;
@@ -911,39 +910,38 @@ static void textPostProfile(userContext usr) {
 				if (sym == NULL) {
 					sym = rtLookup(rt, ptr->start, 0);
 				}
-				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): exec(%D%?-D), time(%.3F%?+.3F ms): %?T\n", ptr->file
-					, ptr->line, ptr->start, ptr->end, ptr->hits, ptr->exec - ptr->hits, ptr->total / CLOCKS_PER_MILLIS
-					, (ptr->self - ptr->total) / CLOCKS_PER_MILLIS, sym
+				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x): hits(%D%?+D), time(%.3F%?+.3F ms): %?T\n",
+					ptr->file, ptr->line, ptr->start, ptr->end, ptr->hits, -ptr->fails,
+					ptr->total / CLOCKS_PER_MILLIS, (ptr->time - ptr->total) / CLOCKS_PER_MILLIS, sym
 				);
 			}
 		}
 		if (usr->profStatements) {
-			size_t cov = 0, cnt = dbg->statements.cnt;
+			size_t cov = 0, err = 0;
+			size_t cnt = dbg->statements.cnt;
 			dbgn ptrStmt = (dbgn) dbg->statements.ptr;
 			for (size_t i = 0; i < cnt; ++i, ptrStmt++) {
 				cov += ptrStmt->hits > 0;
+				err += ptrStmt->fails > 0;
 			}
-			printFmt(out, esc, "%?sProfile statements: %d/%d, coverage: %.2f%%\n", prefix, cov, cnt, cov * 100. / (cnt
-					? cnt
-					: 1
-				)
+			printFmt(out, esc, "%?sProfile statements: %d/%d, coverage: %.2f%%, failures: %d\n",
+				prefix, cov, cnt, cov * 100. / (cnt ? cnt : 1), err
 			);
 			for (size_t i = 0; i < cnt; ++i) {
 				dbgn ptr = (dbgn) dbg->statements.ptr + i;
-				size_t symOffs = 0;
-				symn sym = ptr->func;
 				if (ptr->hits == 0 && !usr->profNotExecuted) {
 					continue;
 				}
+				symn sym = ptr->func;
 				if (sym == NULL) {
 					sym = rtLookup(rt, ptr->start, 0);
 				}
+				size_t symOffs = 0;
 				if (sym != NULL) {
 					symOffs = ptr->start - sym->offs;
 				}
-				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x) exec(%D%?-D), time(%.3F%?+.3F ms): <%?.T+%d>\n", ptr->file
-					, ptr->line, ptr->start, ptr->end, ptr->hits, ptr->exec - ptr->hits, ptr->total / CLOCKS_PER_MILLIS
-					, (ptr->self - ptr->total) / CLOCKS_PER_MILLIS, sym, symOffs
+				printFmt(out, esc, "%?s:%?u:[.%06x, .%06x) hits(%D), instructions(%D%?+D): <%?.T+%d>\n",
+					ptr->file, ptr->line, ptr->start, ptr->end, ptr->hits, ptr->total, -ptr->fails, sym, symOffs
 				);
 			}
 		}

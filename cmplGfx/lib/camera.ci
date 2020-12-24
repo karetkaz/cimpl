@@ -56,12 +56,10 @@ struct Camera {
 			yz: one_c * yz - tmp.x;
 			yw: 0;
 
-			z: {
-				x: one_c * xz - tmp.y;
-				y: one_c * yz + tmp.x;
-				z: one_c * zz + cos_t;
-				w: 0;
-			};
+			zx: one_c * xz - tmp.y;
+			zy: one_c * yz + tmp.x;
+			zz: one_c * zz + cos_t;
+			zw: 0;
 
 			w: vec4f(0., 0., 0., 1.);
 		};

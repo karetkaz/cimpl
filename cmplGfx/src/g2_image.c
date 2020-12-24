@@ -341,7 +341,7 @@ GxImage loadBmp(GxImage dst, const char *src, int depth) {
 		return NULL;
 	}
 
-	bltProc blt = getBltProc(depth, infoHeader.depth < 8 ? 8 : infoHeader.depth);
+	bltProc blt = getBltProc(infoHeader.depth < 8 ? 8 : infoHeader.depth, depth);
 	if (blt == NULL) {
 		gx_debug("Invalid color conversion");
 		fclose(fin);
@@ -451,7 +451,7 @@ int saveBmp(const char *dst, GxImage src, int flags) {
 			break;
 	}
 
-	bltProc blt = getBltProc(infoHeader.depth < 8 ? 8 : infoHeader.depth, src->depth);
+	bltProc blt = getBltProc(src->depth, infoHeader.depth < 8 ? 8 : infoHeader.depth);
 	if (blt == NULL) {
 		gx_debug("Invalid color conversion");
 		return 3;
@@ -552,12 +552,6 @@ GxImage loadFnt(GxImage dst, const char *src) {
 #ifdef USE_JPEG
 #include <jpeglib.h>
 GxImage loadJpg(GxImage dst, const char *src, int depth) {
-
-	if (depth != 32) {
-		gx_debug("Invalid depth: %d", depth);
-		return NULL;
-	}
-
 	FILE *fin = fopen(src, "rb");
 	if (fin == NULL) {
 		gx_debug("file open error: %s", src);
@@ -581,15 +575,21 @@ GxImage loadJpg(GxImage dst, const char *src, int depth) {
 			return NULL;
 
 		case JCS_GRAYSCALE:    /* monochrome */
-			blt = getBltProc(cblt_conv_08, depth);
+			blt = getBltProc(blt_cvt_08, depth);
 			break;
 
 		case JCS_RGB:         /* red/green/blue */
 		case JCS_YCbCr:       /* Y/Cb/Cr (also known as YUV) */
 		case JCS_CMYK:        /* C/M/Y/K */
 		case JCS_YCCK:        /* Y/Cb/Cr/K */
-			blt = (bltProc) colcpy_32_bgr;
+			blt = getBltProc(blt_cvt_bgr, depth);
 			break;
+	}
+
+	if (blt == NULL) {
+		gx_debug("failed to find converter to depth: %d", depth);
+		fclose(fin);
+		return NULL;
 	}
 
 	dst = createImage(dst, cinfo.output_width, cinfo.output_height, depth, 0);
@@ -631,14 +631,8 @@ GxImage loadJpg(GxImage dst, const char *src, int depth) {
 #ifdef USE_PNG
 #include <png.h>
 GxImage loadPng(GxImage dst, const char *src, int depth) {
-
 	// 8 is the maximum size that can be checked
 	unsigned char header[8];
-
-	if (depth != 32) {
-		gx_debug("Invalid depth: %d", depth);
-		return NULL;
-	}
 
 	/* open file and test for it being a png */
 	FILE *fin = fopen(src, "rb");
@@ -648,7 +642,6 @@ GxImage loadPng(GxImage dst, const char *src, int depth) {
 	}
 
 	size_t y = fread(header, 1, 8, fin);
-
 	if (y != 8 || png_sig_cmp(header, 0, 8)) {
 		gx_debug("Invalid header signature");
 		fclose(fin);
@@ -679,67 +672,84 @@ GxImage loadPng(GxImage dst, const char *src, int depth) {
 
 	png_init_io(png_ptr, fin);
 	png_set_sig_bytes(png_ptr, 8);
-
 	png_read_info(png_ptr, info_ptr);
 
-	int pngwidth = png_get_image_width(png_ptr, info_ptr);
-	int pngheight = png_get_image_height(png_ptr, info_ptr);
+	bltProc blt = NULL;
 	int bit_depth = png_get_bit_depth(png_ptr, info_ptr);
-	int pngdepth = bit_depth * png_get_channels(png_ptr, info_ptr);
-	int color_type = png_get_color_type(png_ptr, info_ptr);
+	switch (png_get_color_type(png_ptr, info_ptr)) {
+		case PNG_COLOR_TYPE_GRAY:
+			if (bit_depth == 16) {
+				png_set_strip_16(png_ptr);
+			}
+			png_set_expand_gray_1_2_4_to_8(png_ptr);
+			png_read_update_info(png_ptr, info_ptr);
+			blt = getBltProc(blt_cvt_08, depth);
+			break;
 
-	GxImage result = createImage(dst, pngwidth, pngheight, depth, 0);
-	if (result == NULL) {
-		gx_debug("out of memory");
+		case PNG_COLOR_TYPE_GRAY_ALPHA:
+			if (bit_depth == 16) {
+				png_set_strip_16(png_ptr);
+			}
+			png_set_gray_to_rgb(png_ptr);
+			png_read_update_info(png_ptr, info_ptr);
+			blt = getBltProc(blt_cvt_bgra, depth);
+			break;
+
+		case PNG_COLOR_TYPE_PALETTE:
+			if (bit_depth == 16) {
+				png_set_strip_16(png_ptr);
+			}
+			png_set_palette_to_rgb(png_ptr);
+			png_read_update_info(png_ptr, info_ptr);
+			if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+				blt = getBltProc(blt_cvt_bgra, depth);
+			} else {
+				blt = getBltProc(blt_cvt_bgr, depth);
+			}
+			break;
+
+		case PNG_COLOR_TYPE_RGB:
+			if (bit_depth == 16) {
+				png_set_strip_16(png_ptr);
+				png_read_update_info(png_ptr, info_ptr);
+			}
+			blt = getBltProc(blt_cvt_bgr, depth);
+			break;
+
+		case PNG_COLOR_TYPE_RGB_ALPHA:
+			if (bit_depth == 16) {
+				png_set_strip_16(png_ptr);
+				png_read_update_info(png_ptr, info_ptr);
+			}
+			blt = getBltProc(blt_cvt_bgra, depth);
+			break;
+	}
+
+	bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+	int channels = png_get_channels(png_ptr, info_ptr);
+	if (blt == NULL || bit_depth != 8) {
+		gx_debug("invalid decoding depth(from: %d * %d, to: %d)", bit_depth, channels, depth);
+		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 		fclose(fin);
 		return NULL;
 	}
 
-	bltProc blt = NULL;
-	switch (pngdepth) {
-		default:
-			gx_debug("Invalid color conversion");
-			fclose(fin);
-			return NULL;
-
-		case 32:
-			blt = (bltProc) colcpy_32_abgr;
-			break;
-
-		case 24:
-			blt = (bltProc) colcpy_32_bgr;
-			break;
-
-		case 8:
-		case 4:
-		case 2:
-		case 1:
-			// png_set_expand converts gray and paletted colors
-			blt = (bltProc) colcpy_32_bgr;
-			break;
+	int png_width = png_get_image_width(png_ptr, info_ptr);
+	int png_height = png_get_image_height(png_ptr, info_ptr);
+	GxImage result = createImage(dst, png_width, png_height, depth, 0);
+	if (result == NULL) {
+		gx_debug("out of memory");
+		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+		fclose(fin);
+		return NULL;
 	}
-
-	int number_of_passes = png_set_interlace_handling(png_ptr);
-	if (color_type == PNG_COLOR_TYPE_PALETTE) {
-		png_set_expand(png_ptr);
-	}
-	if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) {
-		png_set_expand(png_ptr);
-	}
-	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
-		png_set_expand(png_ptr);
-	}
-	if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
-		png_set_gray_to_rgb(png_ptr);
-	}
-
-	png_read_update_info(png_ptr, info_ptr);
 
 	/* read file */
+	int number_of_passes = png_set_interlace_handling(png_ptr);
 	while (number_of_passes > 0) {
-		unsigned char *ptr = (void*)result->basePtr;
+		unsigned char *ptr = (void *) result->basePtr;
 		for (y = 0; y < result->height; y += 1) {
-			unsigned char tmpbuff[65535*4]; // FIXME: bitmap temp buffer
+			unsigned char tmpbuff[65535 * 4]; // FIXME: bitmap temp buffer
 			png_read_row(png_ptr, tmpbuff, NULL);
 			blt(ptr, tmpbuff, NULL, result->width);
 			ptr += result->scanLen;
@@ -787,20 +797,19 @@ GxImage loadImg(GxImage dst, const char *src, int depth) {
 	stbi_uc *pixels = stbi_load(src, &width, &height, &channels, STBI_rgb);
 	switch (channels) {
 		case STBI_grey:
-			blt = getBltProc(depth, cblt_conv_08);
+			blt = getBltProc(blt_cvt_08, depth);
 			break;
 
 		case STBI_rgb:
-			blt = getBltProc(depth, -cblt_conv_24);
+			blt = getBltProc(blt_cvt_bgr, depth);
 			break;
 
 		case STBI_rgb_alpha:
-			blt = getBltProc(depth, -cblt_conv_32);
+			blt = getBltProc(blt_cvt_bgra, depth);
 			break;
 	}
 
 	if (pixels == NULL || blt == NULL) {
-		destroyImage(dst);
 		return NULL;
 	}
 
@@ -824,12 +833,10 @@ GxImage loadTtf(GxImage dst, const char *src, int height, int firstChar, int las
 	const int numChars = lastChars - firstChar;
 	if (numChars > 256) {
 		// TODO: remove restriction from `struct GxFLut`
-		destroyImage(dst);
 		return NULL;
 	}
 	FILE* fontFile = fopen(src, "rb");
 	if (fontFile == NULL) {
-		destroyImage(dst);
 		return NULL;
 	}
 
@@ -840,13 +847,11 @@ GxImage loadTtf(GxImage dst, const char *src, int height, int firstChar, int las
 	long readSize = fread(fontBuffer, fileSize, 1, fontFile);
 	fclose(fontFile);
 	if (readSize != 1) {
-		destroyImage(dst);
 		return NULL;
 	}
 
 	stbtt_fontinfo font;
 	if (!stbtt_InitFont(&font, fontBuffer, 0)) {
-		destroyImage(dst);
 		free(fontBuffer);
 		return NULL;
 	}
@@ -876,12 +881,9 @@ GxImage loadTtf(GxImage dst, const char *src, int height, int firstChar, int las
 		maxHeight = height;
 	}
 
+	bltProc blt = getBltProc(blt_cvt_08, 8);
 	dst = createImage(dst, width, maxHeight, 8, ImageFnt);
-	fillRect(dst, 0, 0, width, maxHeight, 0);
-
-	bltProc blt = getBltProc(cblt_conv_08, 8);
 	if (dst == NULL) {
-		destroyImage(dst);
 		free(fontBuffer);
 		return NULL;
 	}

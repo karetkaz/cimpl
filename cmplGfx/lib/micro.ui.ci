@@ -24,6 +24,8 @@ struct Style {
 		top: 4;
 		bottom: 8;
 		horizontal: top + bottom;
+
+		fill: vertical + horizontal;
 	}
 
 	enum: int32 {
@@ -142,6 +144,7 @@ struct View: object {
 
 	bool enabled = true;
 	bool selectable = true;
+
 	variant data = null;
 
 	bool onClick(View this) {
@@ -237,6 +240,7 @@ struct Switch: View {
 		"off",
 		"on"
 	};
+
 	const char text[*];
 	const char states[*][] = onOff;
 
@@ -317,11 +321,12 @@ struct Switch: View {
 
 struct Slider: View {
 	const char text[*];
+
 	int value = 0;
 	const int minimum = 0;
 	const int maximum = -1u >> 1;
 	const int divisor = 0;
-	const int resetValue = 0;
+	const int resetValue = 0; // TODO: resetValue = value;
 
 	static float64 valFlt(Slider this) {
 		float64 value = this.value;
@@ -441,8 +446,6 @@ struct Slider: View {
 }
 
 struct Layout: View {
-//	const int rows;
-//	const int columns;
 	const int gravity;
 	const int itemCount;
 	View items[*] = null;
@@ -781,73 +784,7 @@ struct Layout: View {
 		}
 	}
 
-	void onLayout(Layout this, Rect rect&, int xGap, int yGap) {
-		bool isRow = (this.gravity & Style.horizontal) != 0;
-		if (rect.h < 0) {
-			yGap = 0;
-		}
-		if (rect.w < 0) {
-			isRow = true;
-			xGap = 0;
-		}
-		int gravity = this.gravity;
-		if (isRow) {
-			if ((gravity & Style.vertical) == 0) {
-				gravity |= Style.left;
-			}
-		} else {
-			if ((gravity & Style.horizontal) == 0) {
-				gravity |= Style.top;
-			}
-		}
-
-		if (this.itemCount > 1) {
-			xGap /= this.itemCount - 1;
-			yGap /= this.itemCount - 1;
-		}
-
-		Rect r = rect;
-		int width = 0;
-		int height = 0;
-		r.w = Math.abs(r.w);
-		r.h = Math.abs(r.h);
-		for (int i = 0; i < this.itemCount; i += 1) {
-			View view& = this.items[i];
-			Rect viewRect& = this.rects[i];
-
-			int xGap2 = viewRect.w < 0 ? r.w + viewRect.w : 0;
-			int yGap2 = viewRect.h < 0 ? r.h + viewRect.h : 0;
-
-			Style.align(r, &viewRect, gravity);
-			if (Layout layout = view.as(Layout)) {
-				layout.onLayout(layout, &viewRect, xGap2, yGap2);
-			}
-
-			if (isRow) {
-				r.x += viewRect.w;
-				r.w -= viewRect.w;
-				width += viewRect.w;
-				if (height < viewRect.h) {
-					height = viewRect.h;
-				}
-			} else {
-				r.y += viewRect.h;
-				r.h -= viewRect.h;
-				height += viewRect.h;
-				if (width < viewRect.w) {
-					width = viewRect.w;
-				}
-			}
-			r.x += xGap;
-			r.y += yGap;
-		}
-		if (rect.w < width) {
-			rect.w = width;
-		}
-		if (rect.h < height) {
-			rect.h = height;
-		}
-	}
+	void onLayout(Layout this, Rect rect&);
 
 	void onDraw(Layout this, Image offs, Rect rect, const Style style&) {
 		// draw items
@@ -868,9 +805,91 @@ struct Layout: View {
 		}
 	}
 
-	static Layout Linear(int gravity, View items...) {
+	static void rowLayout(Layout this, Rect rect&) {
+		int gravity = Style.horizontal + Style.left;
+		int gap = 0;
+		int width = 0;
+		int height = 0;
+		Rect r = rect;
+		r.w = Math.abs(r.w);
+		r.h = Math.abs(r.h);
+		for (int i = 0; i < this.itemCount; i += 1) {
+			Rect viewRect& = this.rects[i];
+			width += Math.abs(viewRect.w);
+		}
+		if (rect.w > width) {
+			gap = r.w - width;
+			if (this.itemCount > 1) {
+				gap /= this.itemCount - 1;
+			}
+		}
+		for (int i = 0; i < this.itemCount; i += 1) {
+			View view& = this.items[i];
+			Rect viewRect& = this.rects[i];
+			Style.align(r, &viewRect, gravity);
+			if (Layout layout = view.as(Layout)) {
+				layout.onLayout(layout, &viewRect);
+			}
+			if (viewRect.w > 0 && viewRect.h > 0) {
+				r.x += gap + viewRect.w;
+			}
+			if (height < viewRect.h) {
+				height = viewRect.h;
+			}
+		}
+		if (rect.w < width) {
+			rect.w = width;
+		}
+		if (rect.h < height) {
+			rect.h = height;
+		}
+	}
+	static void columnLayout(Layout this, Rect rect&) {
+		int gravity = Style.vertical + Style.top;
+		int gap = 0;
+		int width = 0;
+		int height = 0;
+		Rect r = rect;
+		r.w = Math.abs(r.w);
+		r.h = Math.abs(r.h);
+		for (int i = 0; i < this.itemCount; i += 1) {
+			Rect viewRect& = this.rects[i];
+			if (rect.w != 0 && rect.h != 0) {
+				height += Math.abs(viewRect.h);
+			}
+		}
+		if (rect.h > height) {
+			gap = r.h - height;
+			if (this.itemCount > 1) {
+				gap /= this.itemCount - 1;
+			}
+		}
+		for (int i = 0; i < this.itemCount; i += 1) {
+			View view& = this.items[i];
+			Rect viewRect& = this.rects[i];
+			Style.align(r, &viewRect, gravity);
+			if (Layout layout = view.as(Layout)) {
+				layout.onLayout(layout, &viewRect);
+			}
+			if (viewRect.w > 0 && viewRect.h > 0) {
+				r.y += gap + viewRect.h;
+			}
+			if (width < viewRect.w) {
+				width = viewRect.w;
+			}
+		}
+		if (rect.w < width) {
+			rect.w = width;
+		}
+		if (rect.h < height) {
+			rect.h = height;
+		}
+	}
+
+	static Layout Row(View items...) {
 		Layout layout = {
-			gravity: gravity;
+			onLayout: rowLayout;
+			gravity: Style.horizontal;
 			itemCount: items.length;
 			items: pointer.alloc(null, items.length * sizeof(View));
 			rects: pointer.alloc(null, items.length * sizeof(Rect));
@@ -880,12 +899,18 @@ struct Layout: View {
 		}
 		return layout;
 	}
-
-	static Layout Row(View items...) {
-		return Linear(Style.horizontal, ...items);
-	}
 	static Layout Column(View items...) {
-		return Linear(Style.vertical, ...items);
+		Layout layout = {
+			onLayout: columnLayout;
+			gravity: Style.vertical;
+			itemCount: items.length;
+			items: pointer.alloc(null, items.length * sizeof(View));
+			rects: pointer.alloc(null, items.length * sizeof(Rect));
+		};
+		for (int i = 0; i < items.length; i += 1) {
+			layout.items[i] = items[i];
+		}
+		return layout;
 	}
 }
 
@@ -944,21 +969,21 @@ struct Widget: Layout {
 		hideViews(this, this);
 	}
 
-	void onLayout(Widget this, Rect parent&) {
-		Rect rect& = this.rect;
+	void onLayout(Widget this, Rect rect&) {
 		if (rect.x < 0) {
 			rect.x = this.offs.width() - rect.w + rect.x;
 		}
 		if (rect.y < 0) {
 			rect.y = this.offs.height() - rect.h + rect.y;
 		}
-		Layout.onLayout(this, &parent, 0, 0);
+		Layout.columnLayout(this, &rect);
 	}
 
 	void onDraw(Widget this, Image offs, Rect rect, const Style style&) {
 //		offs = offs.slice(rect); // todo: clip drawings
 		// draw background
 		if (style.backgroundColor != -1) {
+//			offs.fill(style.backgroundColor); // todo: clip drawings
 			int top = rect.y - style.border;
 			int left = rect.x - style.border;
 			int right = rect.x + rect.w + style.border;

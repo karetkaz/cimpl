@@ -22,9 +22,9 @@ select {
 }
 
 :root {
-	--left-bar-size: 15em;
-	--right-bar-size: 15em;
-	--bottom-bar-size: 50vh;
+	--left-bar-size: 16em;
+	--right-bar-size: 16em;
+	--bottom-bar-size: 40vh;
 	--main-toolbar-size: 2em;
 	--output-toolbar-size: 1.5em;
 }
@@ -152,11 +152,11 @@ select {
 	top: 0;
 	left: 0;
 	right: 0;
-	height: 2em;
-	line-height: 2em;
+	height: var(--main-toolbar-size);
+	line-height: var(--main-toolbar-size);
 }
 #main-toolbar > .icon {
-	min-width: 2em;
+	min-width: var(--main-toolbar-size);
 }
 #main-toolbar input {
 	border: 0;
@@ -164,12 +164,16 @@ select {
 	height: inherit;
 	padding: 0 .5em;
 }
+
 #output-toolbar {
-	height: 1.5em;
-	line-height: 1.5em;
+	height: var(--output-toolbar-size);
+	line-height: var(--output-toolbar-size);
 }
 #output-toolbar > .icon {
-	min-width: 1.5em;
+	min-width: var(--output-toolbar-size);
+}
+body.output #output-toolbar {
+	cursor: row-resize;
 }
 
 #fileList > .file:before {
@@ -264,6 +268,12 @@ body.right-bar.right-pin { padding-right: var(--right-bar-size); }
 	height: calc(var(--bottom-bar-size));
 	padding: 0;
 }
+body.output #bottom-sidebar {
+	min-height: calc(var(--output-toolbar-size) + 1em);
+}
+body.output.tool-bar #bottom-sidebar {
+	max-height: calc(min(100% - var(--main-toolbar-size)));
+}
 body:not(.bottom-bar) #bottom-sidebar { display: none; }
 body:not(.bottom-pin).bottom-bar #bottom-sidebar { z-index: 20; }
 body.bottom-bar.left-pin.left-bar #bottom-sidebar { left: var(--left-bar-size); }
@@ -353,3 +363,14 @@ body .sidebar li.checked:before { content: '✓'; }
 body.autoheight #editor-panel { height: unset; }
 body.autoheight .CodeMirror { height: unset; }
 body.autoheight .CodeMirror-scroll { height: auto; }
+
+#left-pan-sidebar {
+	float: right;
+	width: 5px;
+	top: 0;
+	right: 2;
+	bottom: 0;
+	position: absolute;
+	cursor: col-resize;
+	background: transparent;
+}

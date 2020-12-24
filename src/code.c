@@ -25,7 +25,6 @@ typedef struct trcptr {
 	size_t caller;      // Instruction pointer of caller
 	size_t callee;      // Instruction pointer of callee
 	clock_t func;       // time when the function was invoked
-	clock_t stmt;       // time when the statement execution started
 	stkptr sp;          // Stack pointer
 } *trcptr;
 
@@ -1672,26 +1671,16 @@ static vmError vmTrace(rtContext rt, void *sp, size_t caller, size_t callee) {
 		clock_t ticks = now - tp->func;
 		dbgn calleeFunc = mapDbgFunction(rt, tp->callee);
 		dbgn callerFunc = mapDbgFunction(rt, tp->caller);
-		//dbgn callerStmt = mapDbgStatement(rt, tp->caller);
 		if (calleeFunc != NULL) {
-			calleeFunc->exec += callee == (size_t) -1;
+			calleeFunc->fails += callee != (size_t) -1;
 			if (!recursive) {
 				calleeFunc->total += ticks;
 			}
-			calleeFunc->self += ticks;
+			calleeFunc->time += ticks;
 		}
 		if (callerFunc != NULL) {
-			callerFunc->self -= ticks;
+			callerFunc->time -= ticks;
 		}
-		/* TODO: update caller statement times
-		if (callerStmt != NULL) {
-			if (!recursive) {
-				callerStmt->self -= ticks;
-			}
-			else {
-				callerStmt->total -= ticks;
-			}
-		}*/
 		if (debugger != NULL) {
 			debugger(rt->dbg, noError, pu->tp - (trcptr)pu->bp, NULL, caller, callee);
 		}
@@ -1805,11 +1794,9 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 		}
 
 		for ( ; ; ) {
-			register const vmInstruction ip = (vmInstruction)pu->ip;
-			register const stkptr sp = pu->sp;
-
-			const trcptr tp = pu->tp - 1;
+			const vmInstruction ip = (vmInstruction)pu->ip;
 			const size_t pc = vmOffset(rt, ip);
+			const stkptr sp = pu->sp;
 
 			if (ip >= ipMax || ip < ipMin) {
 				debugger(rt->dbg, illegalState, st - sp, sp, pc, 0);
@@ -1830,12 +1817,15 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 			if (dbg != NULL) {
 				if (pc == dbg->start) {
 					dbg->hits += 1;
-					tp->stmt = clock();
 				}
+				dbg->total += 1;
 			}
 			switch (ip->opc) {
 				dbg_stop_vm:	// halt virtual machine
 					if (execError != noError) {
+						if (dbg != NULL) {
+							dbg->fails += 1;
+						}
 						debugger(rt->dbg, execError, st - sp, sp, pc, 0);
 						while (pu->tp != oldTP) {
 							vmTrace(rt, NULL, 0, (size_t) -2);
@@ -1876,17 +1866,6 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 				#define EXEC
 				#define TRACE(__IP) do { if ((execError = vmTrace(rt, sp, pc, __IP)) != noError) goto dbg_stop_vm; } while(0)
 				#include "code.inl"
-			}
-			if (dbg != NULL) {
-				const trcptr tp2 = pu->tp - 1;
-				if (pc != tp2->caller) {
-					size_t pc2 = vmOffset(rt, pu->ip);
-					if (pc2 < dbg->start || pc2 >= dbg->end) {
-						clock_t now = clock();
-						dbg->exec += 1;
-						dbg->total += now - tp->stmt;
-					}
-				}
 			}
 		}
 		return execError;

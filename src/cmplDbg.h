@@ -57,8 +57,10 @@ struct dbgNode {
 	brkMode bp;
 
 	// profile data
-	int64_t total, self;  // time spent executing function / statement
-	int64_t hits, exec;  // hit count and successful executions
+	int64_t hits;   // function or statement hit count
+	int64_t fails;  // failed function calls / instructions
+	int64_t total;  // total execution: function time / instruction count
+	int64_t time;   // time spent executing function (self time)
 };
 
 /**

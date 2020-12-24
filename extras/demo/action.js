@@ -1,5 +1,5 @@
 var customCommands = {
-	'theme:': function(value) {
+	'theme:': function (value) {
 		if (value === undefined || value === '') {
 			completeAction('!theme:');
 			return false;
@@ -10,7 +10,7 @@ var customCommands = {
 		}
 		return actionError();
 	},
-	'zoom:': function(value) {
+	'zoom:': function (value) {
 		if (value === undefined || value === '') {
 			completeAction('!zoom:');
 			return false;
@@ -19,14 +19,14 @@ var customCommands = {
 		editor.refresh();
 	},
 
-	close: function(value) {
-    	if (value !== undefined && value !== '') {
+	close: function (value) {
+		if (value !== undefined && value !== '') {
 			return false;
 		}
-		params.update({ content: null, file: null });
+		params.update({content: null, file: null});
 		return true;
 	},
-	download: function(value, action) {
+	download: function (value, action) {
 		openProjectFile({
 			file: params.file,
 			link: true
@@ -49,7 +49,7 @@ var customCommands = {
 
 function actionError() {
 	edtFileName.classList.add('error');
-	setTimeout(function() {
+	setTimeout(function () {
 		edtFileName.classList.remove('error');
 	}, 250);
 	return false;
@@ -63,9 +63,9 @@ function completeAction(action, hint) {
 		return;
 	}
 
-    if (hint === true || hint === false) {
-    	if (action.startsWith('!')) {
-    		try {
+	if (hint === true || hint === false) {
+		if (action.startsWith('!')) {
+			try {
 				let command = action.substr(1);
 				let filter = new RegExp(command, 'i');
 				let actions = {};
@@ -76,14 +76,14 @@ function completeAction(action, hint) {
 					actions['!' + cmd] = customCommands[cmd];
 				}
 				setActions(actions);
-    		} catch(error) {
-    			actionError();
-    		}
+			} catch (error) {
+				actionError();
+			}
 		} else {
 			setActions();
 		}
 		hint = hint ? undefined : '';
-    }
+	}
 
 	if (hint === undefined) {
 		switch (action) {
@@ -134,7 +134,7 @@ function setActions(actions, nextPrev) {
 	if (nextPrev === undefined) {
 		let item = -1;
 		let items = Object.keys(actions);
-		nextPrev = function(direction) {
+		nextPrev = function (direction) {
 			if (direction == null || direction.constructor != Number) {
 				return setActions();
 			}
@@ -168,7 +168,7 @@ function setActions(actions, nextPrev) {
 	for (let action in actions) {
 		let row = document.createElement('li');
 		row.innerText = action;
-		row.onclick = function() {
+		row.onclick = function () {
 			let result = actions[action]();
 			if (result === false) {
 				return false;
@@ -186,46 +186,53 @@ function setActions(actions, nextPrev) {
 	nextPrev(0);
 }
 
-edtFileName.onclick = function() {
+edtFileName.onclick = function () {
 	if (!props.mobile) {
 		return;
 	}
 	let actions = {
-		Command: function() {
+		Command: function () {
 			completeAction('!', true);
 			return false;
 		},
-		Search: function() {
+		Search: function () {
 			completeAction('?', true);
 			return false;
 		},
-		Goto: function() {
+		Goto: function () {
 			completeAction(':', true);
 			return false;
 		},
 		'Select All': customCommands.selectAll,
 		'Select Line': customCommands.selectLine,
 		'Select Word': customCommands.selectWord,
-		'Insert Tab': function() {
+		'Insert Tab': function () {
 			editor.execCommand('insertTab');
 			return false;
-		}
+		},
+		Undo: function () {
+			editor.execCommand('undo');
+			return false;
+		},
+		Cancel: function () {
+			return true;
+		},
 	};
-	setActions(actions, function() {
+	setActions(actions, function () {
 		return false;
 	});
 }
-edtFileName.onfocus = function() {
+edtFileName.onfocus = function () {
 	edtFileName.selectionStart = 0;
 	edtFileName.selectionEnd = edtFileName.value.length;
 }
-edtFileName.onblur = function() {
+edtFileName.onblur = function () {
 	edtFileName.value = params.file || '';
 	spnCounter.innerText = null;
 	editor.focus();
 }
 
-edtFileName.onkeydown = function(event) {
+edtFileName.onkeydown = function (event) {
 	if (event.key !== 'Enter') {
 		if (commands.onNextPrev != null) {
 			switch (event.keyCode) {
@@ -304,7 +311,7 @@ edtFileName.onkeydown = function(event) {
 			editor.focus();
 			return false;
 		}
-		setActions({}, function(direction) {
+		setActions({}, function (direction) {
 			if (direction === 'all') {
 				editor.setCursor(selections[0].head);
 				editor.setSelections(selections);
@@ -366,8 +373,8 @@ edtFileName.onkeydown = function(event) {
 		if (match[1] != null) {
 			file = file.replace(/^(.*[/])?(.*)(\..*)$/, '$2$3');
 			openProjectFile({ file, project: [{
-					file, url: match[1] + match[2]
-				}]});
+				file, url: match[1] + match[2]
+			}]});
 		}
 		else if (file.endsWith('/') || file.endsWith('*')) {
 			params.update({ folder: match.input });
@@ -380,14 +387,14 @@ edtFileName.onkeydown = function(event) {
 	edtFileName.blur();
 	return false;
 }
-edtFileName.oninput = function(event) {
+edtFileName.oninput = function (event) {
 	completeAction(edtFileName.value, event.inputType === 'insertText');
 };
 
-CodeMirror.commands.save = function(cm) {
+CodeMirror.commands.save = function (cm) {
 	saveInput();
 }
-CodeMirror.commands.goToLine = function(cm) {
+CodeMirror.commands.goToLine = function (cm) {
 	let line = editor.getCursor().line || 0;
 	completeAction(':', line + 1);
 	var middleHeight = editor.getScrollerElement().offsetHeight / 2;
@@ -396,22 +403,22 @@ CodeMirror.commands.goToLine = function(cm) {
 	editor.setCursor(line);
 }
 
-CodeMirror.commands.find = function(cm) {
+CodeMirror.commands.find = function (cm) {
 	completeAction('?');
 }
-CodeMirror.commands.findNext = function(cm) {
+CodeMirror.commands.findNext = function (cm) {
 	if (commands.onNextPrev == null) {
 		return actionError();
 	}
 	commands.onNextPrev(+1);
 }
-CodeMirror.commands.findPrev = function(cm) {
+CodeMirror.commands.findPrev = function (cm) {
 	if (commands.onNextPrev == null) {
 		return actionError();
 	}
 	commands.onNextPrev(-1);
 }
-CodeMirror.commands.selectFound = function(cm) {
+CodeMirror.commands.selectFound = function (cm) {
 	if (commands.onNextPrev == null) {
 		return actionError();
 	}
@@ -423,7 +430,7 @@ for (let command in CodeMirror.commands) {
 		// command is overwritten
 		continue;
 	}
-	customCommands[command] = function() {
+	customCommands[command] = function () {
 		return editor.execCommand(command);
 	}
 }
