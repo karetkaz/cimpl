@@ -4,7 +4,7 @@
  */
 Image offs = Image(1440, 900, 32);
 
-int idx = 0;
+int idx = -1;
 int x[4] = {100, 400, 700, 400};
 int y[4] = {100, 100, 400, 400};
 
@@ -15,9 +15,6 @@ int onEvent(int action, int button, int ex, int ey) {
 	if (action == Gui.FINGER_MOTION) {
 		action = Gui.MOUSE_MOTION;
 	}
-	if (action == Gui.FINGER_PRESS) {
-		action = Gui.MOUSE_PRESS;
-	}
 	if (action == Gui.KEY_PRESS) {
 		if (button == 27) {
 			return -1;
@@ -26,11 +23,14 @@ int onEvent(int action, int button, int ex, int ey) {
 			idx = button - '0';
 		}
 	}
-	if (action == Gui.MOUSE_PRESS) {
-		idx = 0;
+	if (action == Gui.MOUSE_RELEASE || action == Gui.FINGER_RELEASE) {
+		idx = -1;
+	}
+	if (action == Gui.MOUSE_PRESS || action == Gui.FINGER_PRESS) {
+		idx = -1;
 		inline dst(int dx, int dy) = float.sqrt(dx * dx + dy * dy);
 		inline dst(int i, int cx, int cy) = dst(x[i] - cx, y[i] - cy);
-		for (int i = 1; i < x.length; i += 1) {
+		for (int i = 0; i < x.length; i += 1) {
 			int len = dst(i, ex, ey);
 			if (len < 25 && len < dst(idx, ex, ey)) {
 				idx = i;
@@ -39,7 +39,7 @@ int onEvent(int action, int button, int ex, int ey) {
 		ox = ex;
 		oy = ey;
 	}
-	if (action == Gui.MOUSE_MOTION) {
+	if (action == Gui.MOUSE_MOTION || action == Gui.FINGER_MOTION) {
 		if (idx >= 0 && idx < x.length) {
 			x[idx] += ex - ox;
 			y[idx] += ey - oy;

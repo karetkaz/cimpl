@@ -1,10 +1,9 @@
 // CLion.Arguments: -X-stdin+steps -std$PROJECT_DIR$/cmplStd/stdlib.ci -run $PROJECT_DIR$/bin/libGfx.so testGfx.ci
 // CLion.Directory: $PROJECT_DIR$/cmplGfx/test
 
-//inline "todo/DatePicker.ci";
-//inline "todo/ColorPicker.ci";
-//inline "todo/AnalogClock.ci";
-//inline "todo/ImageEditor.ci";
+//inline "../todo/DatePicker.ci";
+//inline "../todo/ColorPicker.ci";
+//inline "../todo/ImageEditor.ci";
 //inline "fx.image.transform.ci";
 //inline "fx.color.lookup.ci";
 //inline "fx.color.lookup-ease.ci";
@@ -79,6 +78,7 @@ static int onEvent(pointer closure, int action, int button, int x, int y) {
 		event.actionName = "WINDOW_LEAVE";
 	}
 
+	debug("event", event);
 	static if (true) {
 		inline "/cmplGfx/lib/micro.ui.ci";
 		static char actionText[32] = {0};
@@ -135,10 +135,9 @@ static int onEvent(pointer closure, int action, int button, int x, int y) {
 		sldY.value = y;
 		sldKeyRepeat.value = ui.repeat;
 		sldClicks.value = ui.clicks;
-		ui.draw();
+		return ui.draw();
 	}
 
-	debug("event", event);
 	return 20000;	// 20 sec timeout
 }
 Gui.showWindow(image, null, onEvent);

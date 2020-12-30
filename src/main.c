@@ -372,6 +372,62 @@ static inline int canDump(userContext ctx, symn sym) {
 	return !isMain && !isBuiltin && !isExternal;
 }
 
+static inline dbgn profile(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, ssize_t callee) {
+	dbgn dbg = mapDbgStatement(ctx->rt, caller, NULL);
+	if (error != noError) {
+		if (dbg != NULL) {
+			dbg->fails += 1;
+		}
+		return dbg;
+	}
+
+	// call or return
+	if (callee != 0) {
+		/* TODO: measure execution time here
+		clock_t now = clock();
+		if (callee < 0) {
+			dbgn calleeFunc = mapDbgFunction(ctx->rt, -callee);
+			if (calleeFunc != NULL) {
+				clock_t ticks = now - tp->func;
+				if (callee == -1) {
+					calleeFunc->fails += 1;
+				}
+				if (calleeFunc->hits > calleeFunc->returns) {
+					// we are inside a recursive function
+					calleeFunc->total += ticks;
+				}
+				calleeFunc->time += ticks;
+				calleeFunc->returns -= 1;
+			}
+
+			dbgn callerFunc = mapDbgFunction(ctx->rt, caller);
+			if (callerFunc != NULL) {
+				clock_t ticks = now - tp->func;
+				callerFunc->time -= ticks;
+			}
+			return dbg;
+		}
+
+		dbgn calleeFunc = mapDbgFunction(ctx->rt, callee);
+		if (calleeFunc != NULL) {
+			calleeFunc->hits += 1;
+			calleeFunc->time = now;
+		}// */
+		return dbg;
+	}
+
+	// statement
+	if (dbg != NULL) {
+		if (caller == dbg->start) {
+			dbg->hits += 1;
+		}
+		dbg->total += 1;
+	}
+	return dbg;
+	(void) stack;
+	(void) ss;
+}
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ json output
 static char *const JSON_KEY_VERSION = "version";
 static char *const JSON_KEY_SYMBOLS = "symbols";
@@ -660,8 +716,8 @@ static void dumpApiJSON(userContext ctx, symn sym) {
 	}
 }
 
-static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, size_t callee) {
-	if (callee != 0) {
+static vmError jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, size_t callee) {
+	if (error == noError && callee != 0) {
 		clock_t ticks = clock();
 		userContext usr = ctx->rt->usr;
 		FILE *out = usr->out;
@@ -673,9 +729,8 @@ static dbgn jsonProfile(dbgContext ctx, vmError error, size_t ss, void *stack, s
 		}
 	}
 	(void)caller;
-	(void)error;
 	(void)stack;
-	return NULL;
+	return error;
 }
 static void jsonPostProfile(dbgContext ctx) {
 	static char *const JSON_KEY_FUNC = "functions";
@@ -1166,22 +1221,17 @@ static void dumpApiSciTE(userContext ctx, symn sym) {
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ console debugger and profiler
-static dbgn conProfile(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, size_t callee) {
+static vmError conProfile(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, size_t callee) {
 	rtContext rt = ctx->rt;
 	userContext usr = rt->usr;
 
 	const char **esc = usr->esc;
 	FILE *out = usr->out;
 
-	dbgn dbg = NULL;
-
+	dbgn dbg = profile(ctx, error, ss, stack, caller, callee);
 	if (error != noError) {
 		// abort the execution
-		return ctx->abort;
-	}
-
-	if (usr->traceOpcodes || usr->profStatements) {
-		dbg = mapDbgStatement(rt, caller, NULL);
+		return error;
 	}
 
 	// print executing method.
@@ -1198,7 +1248,7 @@ static dbgn conProfile(dbgContext ctx, vmError error, size_t ss, void *stack, si
 				printFmt(out, esc, "% I < return\n", ss);
 			}
 		}
-		return dbg;
+		return noError;
 	}
 
 	// print executing instruction.
@@ -1244,18 +1294,13 @@ static dbgn conProfile(dbgContext ctx, vmError error, size_t ss, void *stack, si
 		}
 		textDumpAsm(out, esc, caller, usr, 0);
 	}
-
-	return dbg;
+	return noError;
 }
 
-static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, size_t callee) {
+static vmError conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size_t caller, size_t callee) {
 	rtContext rt = ctx->rt;
 	userContext usr = rt->usr;
-
-	// print executing instruction.
-	if (error == noError && (usr->traceOpcodes || usr->traceMethods)) {
-		conProfile(ctx, error, ss, stack, caller, callee);
-	}
+	dbgn dbg = profile(ctx, error, ss, stack, caller, callee);
 
 	if (callee != 0) {
 		// TODO: enter will break after executing call?
@@ -1266,10 +1311,9 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 		else if (usr->dbgCommand == dbgStepOut && (ssize_t) callee < 0) {
 			usr->dbgNextBreak = (size_t) -1;
 		}
-		return NULL;
+		return noError;
 	}
 
-	dbgn dbg = mapDbgStatement(rt, caller, NULL);
 	brkMode breakMode = brkSkip;
 	char *breakCause = NULL;
 
@@ -1368,7 +1412,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 		if (usr->in == NULL || fgets(buff, sizeof(buff), usr->in) == NULL) {
 			printFmt(con, esc, "can not read from standard input, aborting\n");
 			traceCalls(ctx, con, 1, rt->traceLevel, 0);
-			return ctx->abort;
+			return illegalState;
 		}
 		if ((arg = strchr(buff, '\n'))) {
 			*arg = 0;		// remove new line char
@@ -1387,21 +1431,21 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 				break;
 
 			case dbgAbort:
-				return ctx->abort;
+				return illegalState;
 
 			case dbgResume:
 			case dbgStepInto:
 			case dbgStepOut:
 				usr->dbgNextBreak = 0;
-				return dbg;
+				return noError;
 
 			case dbgStepNext:
 				usr->dbgNextBreak = (size_t)-1;
-				return dbg;
+				return noError;
 
 			case dbgStepLine:
 				usr->dbgNextBreak = dbg ? dbg->end : 0;
-				return dbg;
+				return noError;
 
 			case dbgPrintStackTrace:
 				traceCalls(ctx, con, 1, rt->traceLevel, 0);
@@ -1430,7 +1474,7 @@ static dbgn conDebug(dbgContext ctx, vmError error, size_t ss, void *stack, size
 				break;
 		}
 	}
-	return NULL;
+	return noError;
 }
 
 static void dumpVmOpc(const char *error, const struct opcodeRec *info) {
@@ -2563,9 +2607,6 @@ int main(int argc, char *argv[]) {
 	if (extra.out && extra.closeOut) {
 		fclose(extra.out);
 	}
-
-	// close libraries
-	closeLibs(rt);
 
 	return rtClose(rt) != 0;
 }

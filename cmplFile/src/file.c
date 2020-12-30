@@ -52,7 +52,8 @@ static const char *const proto_file_read_buff = "int read(File file, uint8 buff[
 static vmError FILE_read(nfcContext ctx) {
 	FILE *file = (FILE *) nextArg(ctx).ref;
 	rtValue buff = nextArg(ctx);
-	reti32(ctx, fread(buff.ref, buff.length, 1, file));
+	size_t n = fread(buff.ref, 1, buff.length, file);
+	reti32(ctx, n);
 	return noError;
 }
 
@@ -84,14 +85,14 @@ static vmError FILE_write(nfcContext ctx) {
 	}
 	if (ctx->proto == proto_file_write_buff) {
 		rtValue buff = nextArg(ctx);
-		size_t len = fwrite(buff.ref, buff.length, 1, file);
+		size_t len = fwrite(buff.ref, 1, buff.length, file);
 		reti32(ctx, len);
 		return noError;
 	}
 	if (ctx->proto == proto_file_write_buffSize) {
 		rtValue buff = nextArg(ctx);
 		size_t size = nextArg(ctx).i32;
-		size_t len = fwrite(buff.ref, size, 1, file);
+		size_t len = fwrite(buff.ref, 1, size, file);
 		reti32(ctx, len);
 		return noError;
 	}
@@ -102,6 +103,14 @@ static const char *const proto_file_flush = "void flush(File file)";
 static vmError FILE_flush(nfcContext ctx) {
 	FILE *file = (FILE *) arghnd(ctx, 0);
 	fflush(file);
+	return noError;
+}
+
+static const char *const proto_file_tell = "int tell(File file)";
+static vmError FILE_tell(nfcContext ctx) {
+	FILE *file = (FILE *) arghnd(ctx, 0);
+	size_t pos = ftell(file);
+	reti32(ctx, pos);
 	return noError;
 }
 
@@ -166,6 +175,7 @@ int cmplInit(rtContext rt) {
 
 		err = err || !rt->api.ccAddCall(cc, FILE_flush, proto_file_flush);
 		err = err || !rt->api.ccAddCall(cc, FILE_close, proto_file_close);
+		err = err || !rt->api.ccAddCall(cc, FILE_tell, proto_file_tell);
 
 		err = err || !rt->api.ccAddCall(cc, FILE_stream, proto_file_get_stdIn);
 		err = err || !rt->api.ccAddCall(cc, FILE_stream, proto_file_get_stdOut);

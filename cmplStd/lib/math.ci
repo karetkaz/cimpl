@@ -60,12 +60,17 @@ static struct Math {
 	// inline ceil(float32 x) = -floor(-x);
 	// inline round(float32 x) = floor(x + .5f);
 
-	inline sign(int32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
-	inline sign(int64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
-	inline sign(uint32 x) = x > 0 ? 1 : 0;
-	inline sign(uint64 x) = x > 0 ? 1 : 0;
-	// inline sign(float32 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
-	// inline sign(float64 x) = x != 0 ? x < 0 ? -1 : 1 : 0;
+	/// Returns the signum of the input (`0` if zero, `-1` if negative, `1` if positive)
+	inline sign(int32 x) = int(x > 0) - int(x < 0);
+
+	/// Returns the signum of the input (`0` if zero, `-1` if negative, `1` if positive)
+	inline sign(int64 x) = int(x > 0) - int(x < 0);
+
+	/// Returns the signum of the input (`0` if zero, `1` if positive)
+	inline sign(uint32 x) = int(x > 0);
+
+	/// Returns the signum of the input (`0` if zero, `1` if positive)
+	inline sign(uint64 x) = int(x > 0);
 
 	/// Returns the signum of the input (`0` if zero, `-1` if negative, `1` if positive)
 	inline sign(float32 x) = int(x > 0) - int(x < 0);
@@ -180,10 +185,10 @@ static struct Math {
 	inline smooth(float64 t) = t * t * (3 - 2 * t);
 
 	/// Returns smooth interpolation between `a` and `b` by `t`
-	inline smooth(float32 t, float32 a, float32 b) = smooth(clamp((t - a) / (b - a), float32(0), float32(1)));
+	inline smooth(float32 t, float32 a, float32 b) = smooth(clamp((t - a) / (b - a), 0f, 1f));
 
 	/// Returns smooth interpolation between `a` and `b` by `t`
-	inline smooth(float64 t, float64 a, float64 b) = smooth(clamp((t - a) / (b - a), float64(0), float64(1)));
+	inline smooth(float64 t, float64 a, float64 b) = smooth(clamp((t - a) / (b - a), 0F, 1F));
 
 	/// Returns the smaller value from the input values
 	float64 min(float64 data...) {
@@ -526,6 +531,7 @@ static struct Math {
 //~ float64 sqrt(float64 x);
 //~ float64 atan2(float64 x, float64 y);
 
+add these as inline expressions: https://gist.github.com/Witiko/6462162
 //~ Number.prototype.abs = function(){return Math.abs(this);};
 //~ Number.prototype.sign = function(){return this == 0 ? 0 : (this > 0 ? 1 : -1);};
 //~ Number.prototype.ceil = function(){return Math.ceil(this);};
@@ -578,28 +584,4 @@ Number.prototype.log10 = function(){return Math.log(this) / Math.LN10;};
 //~ Number.prototype.pow = function(exponent){return Math.pow(this,exponent);};
 //- Number.prototype.mod = function(modulus){return this >= 0 ? this % modulus : (this % modulus + Math.abs(modulus)) % modulus;};
 //- Number.prototype.wrap = function(low, high){return low + (this - low).mod(high - low);};
-
-	/// Returns the smaller value from the input values
-	int32 min(int32 values...) {
-		assert(values.length > 0);
-		int32 result = values[0];
-		for (int i = 1; i < values.length; i += 1) {
-			if (result > values[i]) {
-				result = values[i];
-			}
-		}
-		return result;
-	}
-
-	/// Returns the greater value from the input values
-	int32 max(int32 values...) {
-		assert(values.length > 0);
-		int32 result = values[0];
-		for (int i = 1; i < values.length; i += 1) {
-			if (result < values[i]) {
-				result = values[i];
-			}
-		}
-		return result;
-	}
 // */

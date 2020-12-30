@@ -10,6 +10,7 @@ struct Style {
 	const FormatFlags fmtFlt;
 
 	int backgroundColor = 0x1a1a1a;
+	int hoveredColor = 0x2a2a2a;
 	int focusedColor = 0x3b4754;
 	int valueColor = 0x6897bb;
 	int textColor = 0xdadada;
@@ -29,7 +30,7 @@ struct Style {
 	}
 
 	enum: int32 {
-		//hovered: 1;
+		hovered: 1;
 		pressed: 2;
 		focused: 4;
 	}
@@ -49,61 +50,61 @@ struct Style {
 	}
 
 	/// Align one rect containing text relative to its container
-	static void align(Rect rect, Rect valueRect&, int align) {
+	static void align(Rect parent, Rect rect&, int align) {
 		inline abs(int x) = x < 0 ? -x : x;
-		if (abs(valueRect.w) > rect.w) {
-			valueRect.w = rect.w;
+		if (abs(rect.w) > parent.w) {
+			rect.w = parent.w;
 		}
-		if (abs(valueRect.h) > rect.h) {
-			valueRect.h = rect.h;
+		if (abs(rect.h) > parent.h) {
+			rect.h = parent.h;
 		}
 
 		int vertical = align & Style.vertical;
 		if (vertical == center) {
-			valueRect.x = rect.x + (rect.w - abs(valueRect.w)) / 2;
+			rect.x = parent.x + (parent.w - abs(rect.w)) / 2;
 		}
 		else if (vertical == right) {
-			valueRect.x = rect.x + (rect.w - abs(valueRect.w));
+			rect.x = parent.x + (parent.w - abs(rect.w));
 		}
 		else if (vertical == left) {
-			valueRect.x = rect.x;
+			rect.x = parent.x;
 		}
 		else { // fit
-			valueRect.x = rect.x;
-			valueRect.w = rect.w;
+			rect.x = parent.x;
+			rect.w = parent.w;
 		}
 
 		int horizontal = align & Style.horizontal;
 		if (horizontal == center) {
-			valueRect.y = rect.y + (rect.h - abs(valueRect.h)) / 2;
+			rect.y = parent.y + (parent.h - abs(rect.h)) / 2;
 		}
 		else if (horizontal == bottom) {
-			valueRect.y = rect.y + (rect.h - abs(valueRect.h));
+			rect.y = parent.y + (parent.h - abs(rect.h));
 		}
 		else if (horizontal == top) {
-			valueRect.y = rect.y;
+			rect.y = parent.y;
 		}
 		else { // fit
-			valueRect.y = rect.y;
-			valueRect.h = rect.h;
+			rect.y = parent.y;
+			rect.h = parent.h;
 		}
 	}
 
-	static void align(const Style this&, Rect rect, Rect valueRect&, const char value[*], int padding, int align) {
-		rect.x += padding;
-		rect.y += padding;
-		rect.w -= 2 * padding;
-		rect.h -= 2 * padding;
-		this.font.clipText(&valueRect, value);
-		align(rect, &valueRect, align);
+	static void align(const Style this&, Rect parent, Rect rect&, const char value[*], int padding, int align) {
+		parent.x += padding;
+		parent.y += padding;
+		parent.w -= 2 * padding;
+		parent.h -= 2 * padding;
+		this.font.clipText(&rect, value);
+		align(parent, &rect, align);
 	}
 
-	static void align(const Style this&, Rect rect, Rect valueRect&, const char value[*], int align) {
-		return align(this, rect, &valueRect, value, this.padding, align);
+	static void align(const Style this&, Rect parent, Rect rect&, const char value[*], int align) {
+		return align(this, parent, &rect, value, this.padding, align);
 	}
 
-	static void align(const Style this&, Rect rect, Rect valueRect&, const char value[*]) {
-		return align(this, rect, &valueRect, value, this.padding, this.align);
+	static void align(const Style this&, Rect parent, Rect rect&, const char value[*]) {
+		return align(this, parent, &rect, value, this.padding, this.align);
 	}
 }
 struct KeyEvent {
@@ -135,16 +136,44 @@ struct MouseEvent {
 		}
 		return true;
 	}
+
+	bool isMotion(const MouseEvent event&) {
+		return event.dx || event.dy;
+	}
+
+	bool isPress(const MouseEvent event&) {
+		return !(event.release || event.dx || event.dy);
+	}
+
+	bool isLongPress(const MouseEvent event&) {
+		return event.release && event.clicks < 0;
+	}
+
+	bool isPress(const MouseEvent event&, int button) {
+		if (event.release || event.dx || event.dy) {
+			return false;
+		}
+		return event.button == button;
+	}
 }
 
 struct View: object {
+	/// fixed or minimum width of the view
 	const int width = -1;
+
+	/// fixed or minimum height of the view
 	const int height = -1;
+
+	/// visibility flags (the view will be visible if Widget.visibleGroup matches at least one common bit set)
 	const int visible = -1;
 
-	bool enabled = true;
-	bool selectable = true;
+	/// the view accepts any user input(event) or not
+	const bool enabled = true;
 
+	/// the view can be active(focused) or not
+	const bool focusable = true;
+
+	/// user attached data
 	variant data = null;
 
 	bool onClick(View this) {
@@ -163,6 +192,7 @@ struct View: object {
 
 	bool onKeyEvent(View this, const KeyEvent event&) {
 		if (!this.enabled) {
+			// disabled view does not consume events
 			return false;
 		}
 		if (event.release) {
@@ -178,16 +208,31 @@ struct View: object {
 	}
 
 	bool onMouseEvent(View this, const Rect rect&, const MouseEvent event&) {
+		/* press, release or motion
+		if (event.dx || event.dy) {
+			return onMotion(event);
+		}
+		if (event.release) {
+			return onRelease(event);
+		}
+		return onPress(event);*/
 		if (!this.enabled) {
+			// disabled view does not consume events
 			return false;
 		}
 		if (!event.release) {
-			// allow to be focused
-			return true;
+			// press or motion events are not consumed
+			return false;
+		}
+
+		if (event.clicks < 0) {
+			// long press, not released
+			return this.onReset(this);
 		}
 		if (event.clicks > 1) {
-			// double click to reset
+			// multi click to reset
 			if (this.onReset(this)) {
+				// do not click with press and hold
 				return true;
 			}
 		}
@@ -195,6 +240,7 @@ struct View: object {
 	}
 
 	void onMeasure(View this, Rect rect&, const Style style&) {
+		// TODO: implement minimum size constraints
 		if (this.width >= 0) {
 			rect.w = this.width;
 		}
@@ -219,6 +265,493 @@ struct View: object {
 		offs.drawText(valueRoi, style.font, value, style.valueColor);
 		offs.drawText(rect, style.font, text, style.textColor);
 	}
+}
+
+struct Layout: View {
+	/* TODO: vertical and horizontal scroll offset
+	int xOffset;
+	int yOffset;
+	*/
+
+	/** Vertical, horizontal or other orientation of the layout
+	 * zero represents a stack(Qt) or frame(Android) layout (all child elements are placed on top of each other)
+	 * negative value represents a column layout, specifying the number of columns to be used
+	 * positive value represents a row layout, specifying the number of rows to be used
+	 */
+	const int orientation;
+
+	/// Alignment of each child in the layout
+	const int alignment;
+
+	const int itemCount;
+	View items[*] = null;
+	Rect rects[*] = null;
+
+	int hoveredIndex = -1;
+	int pressedIndex = -1;
+	int focusedIndex = -1;
+
+	static bool clearState(Layout this, int mode) {
+		bool result = false;
+		if (mode & Style.hovered && this.hoveredIndex >= 0) {
+			View view = this.items[this.hoveredIndex];
+			if (Layout layout = view.as(Layout)) {
+				clearState(layout, mode);
+			}
+			this.hoveredIndex = -1;
+			result = true;
+		}
+		if (mode & Style.pressed && this.pressedIndex >= 0) {
+			View view = this.items[this.pressedIndex];
+			if (Layout layout = view.as(Layout)) {
+				clearState(layout, mode);
+			}
+			this.pressedIndex = -1;
+			result = true;
+		}
+		if (mode & Style.focused && this.focusedIndex >= 0) {
+			View view = this.items[this.focusedIndex];
+			if (Layout layout = view.as(Layout)) {
+				clearState(layout, mode);
+			}
+			this.focusedIndex = -1;
+			result = true;
+		}
+		return result;
+	}
+	static int findView(Layout this, int x, int y) {
+		for (int i = 0; i < this.itemCount; i += 1) {
+			Rect rect& = this.rects[i];
+			if (y >= rect.y && y < rect.y + rect.h) {
+				if (x >= rect.x && x < rect.x + rect.w) {
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+
+	bool onClick(Layout this) {
+		error("onClick", this);
+		return false;
+	}
+
+	bool onReset(Layout this) {
+		bool result = false;
+		for (int i = 0; i < this.itemCount; i += 1) {
+			View view = this.items[i];
+			if (view.onReset(view)) {
+				result = true;
+			}
+		}
+		return result;
+	}
+
+	void onCreate(Layout this) {
+		for (int i = 0; i < this.itemCount; i += 1) {
+			View view = this.items[i];
+			view.onCreate(view);
+		}
+	}
+
+	void onDestroy(Layout this) {
+		// destroy views and free up allocations
+		for (int i = 0; i < this.itemCount; i += 1) {
+			View view = this.items[i];
+			view.onDestroy(view);
+			view.destroy();
+		}
+		pointer.alloc(this.items, 0);
+		pointer.alloc(this.rects, 0);
+	}
+
+	bool onKeyEvent(Layout this, const KeyEvent event&) {
+		int idx = this.focusedIndex;
+		if (idx < 0) {
+			return false;
+		}
+
+		View view = this.items[idx];
+		return view.onKeyEvent(view, event);
+	}
+
+	bool onMouseEvent(Layout this, const Rect rect&, const MouseEvent event&) {
+		bool result = false;
+		int active = this.pressedIndex;
+		if (!(event.dx || event.dy || event.release) || !event.button) {
+			active = findView(this, event.x, event.y);
+		}
+
+		if (active < 0) {
+			// not an active view
+			int states = Style.hovered;
+			if (event.release) {
+				states |= Style.pressed;
+			}
+			return this.clearState(states);
+		}
+
+		View view = this.items[active];
+		if (!view.enabled) {
+			// not an enabled view
+			int states = Style.hovered;
+			if (event.release) {
+				states |= Style.pressed;
+			}
+			return this.clearState(states);
+		}
+
+		if (this.pressedIndex != active && event.isPress(1)) {
+			// pressed a different view, update pressed view
+			this.clearState(Style.pressed);
+			this.pressedIndex = active;
+			result = true;
+		}
+
+		bool outside = !event.test(this.rects[active]);
+		if (this.hoveredIndex != active || outside) {
+			// update current view as hovered
+			if (this.clearState(Style.hovered)) {
+				result = true;
+			}
+			if (!outside) {
+				this.hoveredIndex = active;
+				result = true;
+			}
+		}
+
+		if (event.release && outside) {
+			// return if released outside the pressed view
+			return this.clearState(Style.pressed|Style.hovered);
+		}
+
+		if (view.onMouseEvent(view, this.rects[active], event)) {
+			// event not processed by the view
+			result = true;
+		}
+
+		if (!event.release) {
+			return result;
+		}
+
+		bool focusable = view.focusable;
+		if (outside) {
+			focusable = false;
+		}
+		else if (event.clicks < 0) {
+			// do not focus on long press
+			this.clearState(Style.hovered);
+			focusable = false;
+		}
+		else if (this.focusedIndex == active) {
+			// already in focus, do not focus
+			focusable = false;
+		}
+		else if (Layout layout = view.as(Layout)) {
+			if (layout.focusedIndex == -1) {
+				// child is a layout, with no focused item
+				focusable = false;
+			}
+		}
+
+		if (focusable) {
+			this.clearState(Style.focused);
+			this.focusedIndex = active;
+			result = true;
+		}
+		if (this.clearState(Style.pressed)) {
+			return true;
+		}
+		return result;
+	}
+
+	void onMeasure(Layout this, Rect rect&, const Style style&) {
+		int maxWidth = 0;
+		int sumWidth = 0;
+		int maxHeight = 0;
+		int sumHeight = 0;
+		for (int i = 0; i < this.itemCount; i += 1) {
+			View view = this.items[i];
+			Rect viewRect& = this.rects[i];
+			viewRect.w = rect.w;
+			viewRect.h = rect.h;
+
+			view.onMeasure(view, &viewRect, style);
+			int width = Math.abs(viewRect.w);
+			int height = Math.abs(viewRect.h);
+			if (maxWidth < width) {
+				maxWidth = width;
+			}
+			if (maxHeight < height) {
+				maxHeight = height;
+			}
+			sumWidth += width;
+			sumHeight += height;
+		}
+
+		View.onMeasure(this, &rect, style);
+		if (rect.h < 0) {
+			if (this.orientation < 0) {
+				rect.h = -sumHeight;
+			} else {
+				rect.h = maxHeight;
+			}
+		}
+		if (rect.w < 0) {
+			if (this.orientation > 0) {
+				rect.w = -sumWidth;
+			} else {
+				rect.w = maxWidth;
+			}
+		}
+		if (rect.h < 0 && rect.w < 0) {
+			rect.w = maxWidth;
+			rect.h = maxHeight;
+		}
+	}
+
+	void onLayout(Layout this, Rect rect&);
+	static void frameLayout(Layout this, Rect rect&) {
+		Rect r = rect;
+		r.w = Math.abs(r.w);
+		r.h = Math.abs(r.h);
+		int align = this.alignment;
+		for (int i = 0; i < this.itemCount; i += 1) {
+			View view& = this.items[i];
+			Rect viewRect& = this.rects[i];
+			Style.align(r, &viewRect, align);
+			if (Layout layout = view.as(Layout)) {
+				layout.onLayout(layout, &viewRect);
+			}
+			if (rect.w < viewRect.w) {
+				rect.w = viewRect.w;
+			}
+			if (rect.h < viewRect.h) {
+				rect.h = viewRect.h;
+			}
+		}
+	}
+	static void verticalLayout(Layout this, Rect rect&) {
+		int gravity = Style.horizontal + Style.left;
+		int align = this.alignment & Style.vertical;
+		int gap = 0;
+		int width = 0;
+		int height = 0;
+		Rect r = rect;
+		r.w = Math.abs(r.w);
+		r.h = Math.abs(r.h);
+		for (int i = 0; i < this.itemCount; i += 1) {
+			Rect viewRect& = this.rects[i];
+			width += Math.abs(viewRect.w);
+		}
+		if (rect.w > width) {
+			gap = r.w - width;
+			if (align != Style.right) {
+				if (align == Style.vertical) {
+					gap /= this.itemCount;
+				}
+				else if (this.itemCount > 1) {
+					gap /= this.itemCount - 1;
+				}
+			}
+		}
+		for (int i = 0; i < this.itemCount; i += 1) {
+			View view& = this.items[i];
+			Rect viewRect& = this.rects[i];
+			Style.align(r, &viewRect, gravity);
+			if (Layout layout = view.as(Layout)) {
+				layout.onLayout(layout, &viewRect);
+			}
+			if (viewRect.w > 0 && viewRect.h > 0) {
+				if (align == Style.vertical) {
+					r.x += gap + viewRect.w;
+					viewRect.w += gap;
+					if (Layout layout = view.as(Layout)) {
+						layout.onLayout(layout, &viewRect);
+					}
+				}
+				else if (align == Style.center) {
+					r.x += gap + viewRect.w;
+				}
+				else if (align == Style.right) {
+					r.x += viewRect.w;
+					viewRect.x += gap;
+					if (Layout layout = view.as(Layout)) {
+						layout.onLayout(layout, &viewRect);
+					}
+				}
+				else if (align == Style.left) {
+					r.x += viewRect.w;
+				}
+			}
+		}
+		if (rect.w < width) {
+			rect.w = width;
+		}
+		if (rect.h < height) {
+			rect.h = height;
+		}
+	}
+	static void horizontalLayout(Layout this, Rect rect&) {
+		int gravity = Style.vertical + Style.top;
+		int align = this.alignment & Style.horizontal;
+		int gap = 0;
+		int width = 0;
+		int height = 0;
+		Rect r = rect;
+		r.w = Math.abs(r.w);
+		r.h = Math.abs(r.h);
+		for (int i = 0; i < this.itemCount; i += 1) {
+			Rect viewRect& = this.rects[i];
+			height += Math.abs(viewRect.h);
+		}
+		if (rect.h > height) {
+			gap = r.h - height;
+			if (align != Style.bottom) {
+				if (align == Style.horizontal) {
+					gap /= this.itemCount;
+				}
+				else if (this.itemCount > 1) {
+					gap /= this.itemCount - 1;
+				}
+			}
+		}
+		for (int i = 0; i < this.itemCount; i += 1) {
+			View view& = this.items[i];
+			Rect viewRect& = this.rects[i];
+			Style.align(r, &viewRect, gravity);
+			if (Layout layout = view.as(Layout)) {
+				layout.onLayout(layout, &viewRect);
+			}
+			if (viewRect.w > 0 && viewRect.h > 0) {
+				if (align == Style.horizontal) {
+					r.y += gap + viewRect.h;
+					viewRect.h += gap;
+					if (Layout layout = view.as(Layout)) {
+						layout.onLayout(layout, &viewRect);
+					}
+				}
+				else if (align == Style.center) {
+					r.y += gap + viewRect.h;
+				}
+				else if (align == Style.bottom) {
+					r.y += viewRect.h;
+					viewRect.y += gap;
+					if (Layout layout = view.as(Layout)) {
+						layout.onLayout(layout, &viewRect);
+					}
+				}
+				else if (align == Style.top) {
+					r.y += viewRect.h;
+				}
+			}
+		}
+		if (rect.w < width) {
+			rect.w = width;
+		}
+		if (rect.h < height) {
+			rect.h = height;
+		}
+	}
+
+	void onLayout(Layout this, Rect rect&) {
+		if (this.orientation == 0) {
+			return frameLayout(this, &rect);
+		}
+		if (this.orientation == 1) {
+			return verticalLayout(this, &rect);
+		}
+		if (this.orientation == -1) {
+			return horizontalLayout(this, &rect);
+		}
+
+		return abort("not implemented");
+		/* TODO: this case is a grid like layout:
+		 * Multi Column Layout with 3 columns
+			/--- col0 ---+----col1----+----col2----\
+			|   item00   |   item01   |   item02   |
+			|   item03   |   item04   |            |
+			.    ...     |    ...     |    ...     .
+			\------------+------------+------------/
+		 * Multi Row Layout with 2 rows
+			/--- col0 ---+----col1----+----col2----+--- ... ----\
+			|   item00   |   item02   |   item04   |    ...     |
+			|   item01   |   item03   |    ...     |    ...     |
+			\------------+------------+------------+--- ... ----/
+		*/
+	}
+
+	static void onDraw(View this, Image offs, Rect rect, const Style style&, int state) {
+		// TODO: dispatch state to all child views
+		if (Layout layout = this.as(Layout)) {
+			state = 0;
+		}
+		if (state & Style.focused) {
+			offs.fillRect(rect, style.focusedColor);
+		}
+		else if (state & Style.hovered) {
+			offs.fillRect(rect, style.hoveredColor);
+		}
+		this.onDraw(this, offs, rect, style);
+		if (state & Style.pressed) {
+			offs.drawRect(rect, style.valueColor);
+		}
+	}
+	void onDraw(Layout this, Image offs, Rect rect, const Style style&) {
+		// draw items
+		for (int i = 0; i < this.itemCount; i += 1) {
+			View view = this.items[i];
+			const Rect viewRect& = this.rects[i];
+
+			if (viewRect.w > 0 && viewRect.h > 0) {
+				int state = 0;
+				if (i == this.hoveredIndex) {
+					state |= Style.hovered;
+				}
+				if (i == this.pressedIndex) {
+					state |= Style.pressed;
+				}
+				if (i == this.focusedIndex) {
+					state |= Style.focused;
+				}
+				Layout.onDraw(view, offs, viewRect, style, state);
+			}
+		}
+	}
+
+	static Layout Row(int rows, int align, View items...) {
+		Layout layout = {
+			orientation: rows;
+			alignment: align;
+			itemCount: items.length;
+			items: pointer.alloc(null, items.length * sizeof(View));
+			rects: pointer.alloc(null, items.length * sizeof(Rect));
+		};
+		for (int i = 0; i < items.length; i += 1) {
+			layout.items[i] = items[i];
+		}
+		return layout;
+	}
+	static Layout Column(int cols, int align, View items...) {
+		Layout layout = {
+			orientation: -cols;
+			alignment: align;
+			itemCount: items.length;
+			items: pointer.alloc(null, items.length * sizeof(View));
+			rects: pointer.alloc(null, items.length * sizeof(Rect));
+		};
+		for (int i = 0; i < items.length; i += 1) {
+			layout.items[i] = items[i];
+		}
+		return layout;
+	}
+	static Layout Row(View items...) {
+		return Row(1, Style.horizontal, ...items);
+	}
+	static Layout Column(View items...) {
+		return Column(1, Style.vertical, ...items);
+	}
+	// FIXME: inline Row(View items...) = Row(1, Style.horizontal, ...items);
 }
 
 struct Button: View {
@@ -276,7 +809,8 @@ struct Switch: View {
 	}
 
 	void onCreate(Switch this) {
-		Switch.onUpdate(this, this.selected);// clamp initial value
+		// clamp initial value
+		Switch.onUpdate(this, this.selected);
 		int resetValue& = pointer(this.resetValue);
 		resetValue = this.selected;
 	}
@@ -328,12 +862,12 @@ struct Slider: View {
 	const int divisor = 0;
 	const int resetValue = 0; // TODO: resetValue = value;
 
-	static float64 valFlt(Slider this) {
-		float64 value = this.value;
+	static float64 valueF64(Slider this) {
+		double value = this.value;
 		if (this.divisor != 0) {
 			return value / this.divisor;
 		}
-		return value / (this.maximum - this.minimum);
+		return value;
 	}
 
 	bool onUpdate(Slider this, int value) {
@@ -377,9 +911,11 @@ struct Slider: View {
 	}
 
 	bool onMouseEvent(Slider this, const Rect rect&, const MouseEvent event&) {
-		if (event.release && event.clicks > 1) {
-			Slider.onUpdate(this, this.resetValue);
-			return true;
+		if (event.button == 0) {
+			return false;
+		}
+		if (event.release && (event.clicks < 0 || event.clicks > 1)) {
+			return this.onReset(this);
 		}
 
 		if (event.clicks < 1) {
@@ -390,8 +926,7 @@ struct Slider: View {
 					value = value < 0 ? -1 : 1;
 				}
 			}
-			this.onUpdate(this, this.value + value);
-			return true;
+			return this.onUpdate(this, this.value + value);
 		}
 		if (event.release) {
 			if (event.y < rect.y + rect.h - rect.h / 3) {
@@ -400,9 +935,7 @@ struct Slider: View {
 			}
 			float value = event.x - rect.x;
 			value *= float(this.maximum - this.minimum) / rect.w;
-
-			this.onUpdate(this, this.minimum + value);
-			return true;
+			return this.onUpdate(this, this.minimum + value);
 		}
 		return View.onMouseEvent(this, rect, event);
 	}
@@ -410,7 +943,7 @@ struct Slider: View {
 	void onMeasure(Slider this, Rect rect&, const Style style&) {
 		char value[64] = {0};
 		if (this.divisor != 0) {
-			value.append(0, this.valFlt(), style.fmtFlt);
+			value.append(0, this.valueF64(), style.fmtFlt);
 		} else {
 			value.append(0, this.value, style.fmtInt);
 		}
@@ -434,7 +967,7 @@ struct Slider: View {
 	void onDraw(Slider this, Image offs, Rect rect, const Style style&) {
 		char value[64] = {0};
 		if (this.divisor != 0) {
-			value.append(0, this.valFlt(), style.fmtFlt);
+			value.append(0, this.valueF64(), style.fmtFlt);
 		} else {
 			value.append(0, this.value, style.fmtInt);
 		}
@@ -445,138 +978,97 @@ struct Slider: View {
 	}
 }
 
-struct Layout: View {
-	const int gravity;
-	const int itemCount;
-	View items[*] = null;
-	Rect rects[*] = null;
+struct Widget: Layout {
+	int visibleGroup = -1;
+	bool measure = true;
+	bool hidden = false;
+	Style style;
+	Image offs;
+	Rect rect;
 
-//	int hoveredIndex = -1;
-	int pressedIndex = -1;
-	int focusedIndex = -1;
+	// Mouse state
+	int clicks;
+	int64 time;
+	int64 timeout;
+	int32 button;
+	int32 mouseX;
+	int32 mouseY;
 
-	static bool setSelected(Layout this, int index, bool select) {
-		static void clearSelected(Layout this) {
-			if (this.focusedIndex < 0) {
-				return;
-			}
-			View view = this.items[this.focusedIndex];
-			if (Layout layout = view.as(Layout)) {
-				clearSelected(layout);
-			}
-			this.focusedIndex = -1;
+	// Keyboard state
+	bool isShift = false;
+	bool isCtrl = false;
+	bool isAlt = false;
+	int key = 0;
+	int repeat = 0;
+
+	static bool focusNext(View view, bool prev) {
+		if (view == null) {
+			// probably a separator
+			return false;
 		}
-		static void clearActive(Layout this) {
-			if (this.pressedIndex < 0) {
-				return;
-			}
-			View view = this.items[this.pressedIndex];
-			if (Layout layout = view.as(Layout)) {
-				clearActive(layout);
-			}
-			this.pressedIndex = -1;
+		if (!view.enabled) {
+			// can not focus a disabled view
+			return false;
+		}
+		if (!view.focusable) {
+			// can not focus a non focusable view
+			return false;
 		}
 
-		if (index < 0) {
-			if (select) {
-				clearSelected(this);
-			}
-			clearActive(this);
+		Layout this = view.as(Layout);
+		if (this == null) {
+			// view is not a layout, and is focusable
 			return true;
 		}
 
-		assert(index < this.itemCount, "invalid index");
-		View view = this.items[index];
-		Rect viewRect = this.rects[index];
-
-		if (!view.enabled) {
-			// cannot focus or select a disabled view
-			this.clearActive();
-			return false;
-		}
-
-		if (viewRect.w == 0 || viewRect.h == 0) {
-			// cannot focus or select an invisible view
-			this.clearActive();
-			return false;
-		}
-
-		if (select && !view.selectable) {
-			// can not select a non selectable view
-			this.clearActive();
-			return false;
-		}
-
-		if (select) {
-			if (this.focusedIndex != index) {
-				this.clearSelected();
-				this.focusedIndex = index;
-			}
-		} else {
-			if (this.pressedIndex != index) {
-				this.clearActive();
-				this.pressedIndex = index;
-			}
-		}
-		return true;
-	}
-	static bool setSelected(Layout this, bool prev) {
-		int focusedIndex = this.focusedIndex;
-		if (this.focusedIndex >= 0) {
-			// select the next child of the currently selected view
-			View selected = this.items[focusedIndex];
-			if (Layout layout = selected.as(Layout)) {
-				if (layout.setSelected(layout, prev)) {
-					return true;
-				}
-			}
-		}
-
-		this.focusedIndex = -1;
+		int n = this.focusedIndex;
 		if (prev) {
-			if (focusedIndex < 0) {
-				focusedIndex = this.itemCount;
+			if (n < 0) {
+				n = this.itemCount - 1;
 			}
-			for (int i = focusedIndex - 1; i >= 0; i -= 1) {
-				if (setSelected(this, i, true)) {
-					break;
+			for (int i = n; i >= 0; i -= 1) {
+				View view = this.items[i];
+				Rect rect = this.rects[i];
+				if (rect.w && rect.h && focusNext(view, prev)) {
+					if (view.as(Layout) != null || i != this.focusedIndex) {
+						this.focusedIndex = i;
+						return true;
+					}
 				}
 			}
 		} else {
-			for (int i = focusedIndex + 1; i < this.itemCount; i += 1) {
-				if (setSelected(this, i, true)) {
-					break;
+			if (n < 0) {
+				n = 0;
+			}
+			for (int i = n; i < this.itemCount; i += 1) {
+				View view = this.items[i];
+				Rect rect = this.rects[i];
+				if (rect.w && rect.h && focusNext(view, prev)) {
+					if (view.as(Layout) != null || i > this.focusedIndex) {
+						this.focusedIndex = i;
+						return true;
+					}
 				}
 			}
 		}
 
-		if (this.focusedIndex < 0) {
-			return false;
-		}
-
-		View selected = this.items[this.focusedIndex];
-		if (Layout layout = selected.as(Layout)) {
-			// select the first child of the newly selected layout
-			layout.setSelected(layout, prev);
-		}
-
-		return true;
+		this.clearState(Style.focused);
+		return false;
 	}
-	static View getSelected(const Layout this) {
+	static View getFocused(const Layout this) {
 		if (this.focusedIndex < 0) {
 			return null;
 		}
 		View selected = this.items[this.focusedIndex];
 		if (Layout layout = selected.as(Layout)) {
-			View view = layout.getSelected();
+			View view = getFocused(layout);
 			if (view != null) {
 				return view;
 			}
 		}
 		return selected;
 	}
-
-	static bool isSelected(const Layout this, View items...) {
+	static bool isFocused(const Layout this, View items...) {
 		if (this.focusedIndex < 0) {
 			// nothing is focused.
 			return false;
@@ -590,7 +1082,7 @@ struct Layout: View {
 		}
 
 		if (Layout layout = view.as(Layout)) {
-			return isSelected(layout, ...items);
+			return isFocused(layout, ...items);
 		}
 		return false;
 	}
@@ -613,337 +1105,14 @@ struct Layout: View {
 		return false;
 	}
 
-	static void onDraw(View this, Image offs, Rect rect, const Style style&, int state) {
-		// TODO: dispatch state to all child views
-		if (Layout layout = this.as(Layout)) {
-			state = 0;
-		}
-		if (state & Style.focused) {
-			offs.fillRect(rect, style.focusedColor);
-		}
-		this.onDraw(this, offs, rect, style);
-		if (state & Style.pressed) {
-			offs.drawRect(rect, style.valueColor);
-		}
-	}
-
-	bool onClick(Layout this) {
-		error("onClick", this);
-		return false;
-		/* TODO: perform click on focused view
-		View view = this.getSelected();
-		if (view == null) {
-			return false;
-		}
-		return view.onClick(view);
-		*/
-	}
-
-	bool onReset(Layout this) {
-		bool result = false;
-		for (int i = 0; i < this.itemCount; i += 1) {
-			View view = this.items[i];
-			if (view.onReset(view)) {
-				result = true;
-			}
-		}
-		return result;
-	}
-
-	void onCreate(Layout this) {
-		for (int i = 0; i < this.itemCount; i += 1) {
-			View view = this.items[i];
-			view.onCreate(view);
-		}
-	}
-
-	void onDestroy(Layout this) {
-		// destroy views and free up allocations
-		for (int i = 0; i < this.itemCount; i += 1) {
-			View view = this.items[i];
-			view.onDestroy(view);
-			view.destroy();
-		}
-		pointer.alloc(this.items, 0);
-		pointer.alloc(this.rects, 0);
-	}
-
-	bool onKeyEvent(Layout this, const KeyEvent event&) {
-		int idx = this.pressedIndex;
-		if (idx < 0) {
-			idx = this.focusedIndex;
-		}
-		if (idx < 0) {
-			return false;
-		}
-
-		View view = this.items[idx];
-		return view.onKeyEvent(view, event);
-	}
-
-	bool onMouseEvent(Layout this, const Rect rect&, const MouseEvent event&) {
-		if (event.dx || event.dy || event.release) {
-			int active = this.pressedIndex;
-			if (active < 0) {
-				// fallback to selected control
-				active = this.focusedIndex;
-			}
-			if (active < 0) {
-				// no active control
-				return false;
-			}
-
-			Rect viewRect& = this.rects[active];
-			if (event.release && !event.test(viewRect)) {
-				// released outside active control
-				return false;
-			}
-
-			View view = this.items[active];
-			return view.onMouseEvent(view, viewRect, event);
-		}
-
-		for (int i = 0; i < this.itemCount; i += 1) {
-			if (!event.test(this.rects[i])) {
-				continue;
-			}
-
-			if (event.release && this.pressedIndex != i) {
-				// released over a non pressed view
-				return false;
-			}
-
-			View view = this.items[i];
-			if (!view.onMouseEvent(view, this.rects[i], event)) {
-				return false;
-			}
-
-			if (event.release) {
-				// on release check if active is on event position
-				return this.pressedIndex == i;
-			}
-
-			// press: update pressed
-			if (this.pressedIndex != i) {
-				this.setSelected(i, false);
-			}
-			return true;
-		}
-
-		return false;
-	}
-
-	void onMeasure(Layout this, Rect rect&, const Style style&) {
-		int maxWidth = 0;
-		int sumWidth = 0;
-		int maxHeight = 0;
-		int sumHeight = 0;
-		for (int i = 0; i < this.itemCount; i += 1) {
-			View view = this.items[i];
-			Rect viewRect& = this.rects[i];
-			viewRect.x = viewRect.y = 0;
-			viewRect.w = rect.w;
-			viewRect.h = rect.h;
-			view.onMeasure(view, &viewRect, style);
-			int height = Math.abs(viewRect.h);
-			sumHeight += height;
-			if (maxHeight < height) {
-				maxHeight = height;
-			}
-			int width = Math.abs(viewRect.w);
-			sumWidth += width;
-			if (maxWidth < width) {
-				maxWidth = width;
-			}
-		}
-
-		View.onMeasure(this, &rect, style);
-		if (rect.h < 0) {
-			if ((this.gravity & Style.horizontal) != 0) {
-				rect.h = maxHeight;
-			} else {
-				rect.h = -sumHeight;
-			}
-		}
-		if (rect.w < 0) {
-			if ((this.gravity & Style.vertical) == 0) {
-				rect.w = -sumWidth;
-			} else {
-				rect.w = maxWidth;
-			}
-		}
-		if (rect.h < 0 && rect.w < 0) {
-			// make sure the layout is horizontal or vertical
-			if (maxWidth > maxHeight) {
-				rect.w = maxWidth;
-				rect.h = -sumHeight;
-			} else {
-				rect.w = -sumWidth;
-				rect.h = maxHeight;
-			}
-		}
-	}
-
-	void onLayout(Layout this, Rect rect&);
-
-	void onDraw(Layout this, Image offs, Rect rect, const Style style&) {
-		// draw items
-		for (int i = 0; i < this.itemCount; i += 1) {
-			View view = this.items[i];
-			const Rect viewRect& = this.rects[i];
-
-			if (viewRect.w > 0 && viewRect.h > 0) {
-				int state = 0;
-				if (i == this.pressedIndex) {
-					state |= Style.pressed;
-				}
-				if (i == this.focusedIndex) {
-					state |= Style.focused;
-				}
-				Layout.onDraw(view, offs, viewRect, style, state);
-			}
-		}
-	}
-
-	static void rowLayout(Layout this, Rect rect&) {
-		int gravity = Style.horizontal + Style.left;
-		int gap = 0;
-		int width = 0;
-		int height = 0;
-		Rect r = rect;
-		r.w = Math.abs(r.w);
-		r.h = Math.abs(r.h);
-		for (int i = 0; i < this.itemCount; i += 1) {
-			Rect viewRect& = this.rects[i];
-			width += Math.abs(viewRect.w);
-		}
-		if (rect.w > width) {
-			gap = r.w - width;
-			if (this.itemCount > 1) {
-				gap /= this.itemCount - 1;
-			}
-		}
-		for (int i = 0; i < this.itemCount; i += 1) {
-			View view& = this.items[i];
-			Rect viewRect& = this.rects[i];
-			Style.align(r, &viewRect, gravity);
-			if (Layout layout = view.as(Layout)) {
-				layout.onLayout(layout, &viewRect);
-			}
-			if (viewRect.w > 0 && viewRect.h > 0) {
-				r.x += gap + viewRect.w;
-			}
-			if (height < viewRect.h) {
-				height = viewRect.h;
-			}
-		}
-		if (rect.w < width) {
-			rect.w = width;
-		}
-		if (rect.h < height) {
-			rect.h = height;
-		}
-	}
-	static void columnLayout(Layout this, Rect rect&) {
-		int gravity = Style.vertical + Style.top;
-		int gap = 0;
-		int width = 0;
-		int height = 0;
-		Rect r = rect;
-		r.w = Math.abs(r.w);
-		r.h = Math.abs(r.h);
-		for (int i = 0; i < this.itemCount; i += 1) {
-			Rect viewRect& = this.rects[i];
-			if (rect.w != 0 && rect.h != 0) {
-				height += Math.abs(viewRect.h);
-			}
-		}
-		if (rect.h > height) {
-			gap = r.h - height;
-			if (this.itemCount > 1) {
-				gap /= this.itemCount - 1;
-			}
-		}
-		for (int i = 0; i < this.itemCount; i += 1) {
-			View view& = this.items[i];
-			Rect viewRect& = this.rects[i];
-			Style.align(r, &viewRect, gravity);
-			if (Layout layout = view.as(Layout)) {
-				layout.onLayout(layout, &viewRect);
-			}
-			if (viewRect.w > 0 && viewRect.h > 0) {
-				r.y += gap + viewRect.h;
-			}
-			if (width < viewRect.w) {
-				width = viewRect.w;
-			}
-		}
-		if (rect.w < width) {
-			rect.w = width;
-		}
-		if (rect.h < height) {
-			rect.h = height;
-		}
-	}
-
-	static Layout Row(View items...) {
-		Layout layout = {
-			onLayout: rowLayout;
-			gravity: Style.horizontal;
-			itemCount: items.length;
-			items: pointer.alloc(null, items.length * sizeof(View));
-			rects: pointer.alloc(null, items.length * sizeof(Rect));
-		};
-		for (int i = 0; i < items.length; i += 1) {
-			layout.items[i] = items[i];
-		}
-		return layout;
-	}
-	static Layout Column(View items...) {
-		Layout layout = {
-			onLayout: columnLayout;
-			gravity: Style.vertical;
-			itemCount: items.length;
-			items: pointer.alloc(null, items.length * sizeof(View));
-			rects: pointer.alloc(null, items.length * sizeof(Rect));
-		};
-		for (int i = 0; i < items.length; i += 1) {
-			layout.items[i] = items[i];
-		}
-		return layout;
-	}
-}
-
-struct Widget: Layout {
-	int visibleGroup = -1;
-	bool measure = true;
-	bool hidden = false;
-	Style style;
-	Image offs;
-	Rect rect;
-
-	// Mouse state
-	int clicks;
-	int64 time;
-	int32 button;
-	int32 mouseX;
-	int32 mouseY;
-
-	// Keyboard state
-	bool isShift = false;
-	bool isCtrl = false;
-	bool isAlt = false;
-	int key = 0;
-	int repeat = 0;
-
 	static bool setGroup(Widget this, int group, bool selectFirst) {
 		if (this.visibleGroup != group) {
 			this.visibleGroup = group;
 			if (selectFirst) {
 				// measure then focus first visible view
 				this.onMeasure(this, &this.rect, this.style);
-				this.setSelected(-1, true);
-				this.setSelected(false);
+				this.clearState(Style.focused);
+				this.focusNext(false);
 			}
 			this.measure = true;
 			return true;
@@ -976,7 +1145,7 @@ struct Widget: Layout {
 		if (rect.y < 0) {
 			rect.y = this.offs.height() - rect.h + rect.y;
 		}
-		Layout.columnLayout(this, &rect);
+		Layout.onLayout(this, &rect);
 	}
 
 	void onDraw(Widget this, Image offs, Rect rect, const Style style&) {
@@ -994,36 +1163,29 @@ struct Widget: Layout {
 //		offs.destroy(); // todo: clip drawings
 	}
 
+	// TODO: remove: this override allows to forward the drag event to the focused view
 	bool onMouseEvent(Widget this, const Rect rect&, const MouseEvent event&) {
-		static bool focusPressed(Layout this) {
-			int index = this.pressedIndex;
-			if (index < 0) {
-				return false;
-			}
-
-			View view = this.items[index];
-			if (Layout layout = view.as(Layout)) {
-				if (!layout.focusPressed()) {
-					return false;
-				}
-			}
-
-			this.setSelected(index, true);
+		if (Layout.onMouseEvent(this, rect, event)) {
 			return true;
 		}
 
-		if (!Layout.onMouseEvent(this, rect, event)) {
-			this.setSelected(-1, false);
-			return true;
+		if (!(event.button && (event.dx || event.dy))) {
+			// event is not a drag event
+			return false;
 		}
 
-		if (event.release) {
-			// clear selection / focused item
-			this.focusPressed();
-			this.setSelected(-1, false);
+		if (this.pressedIndex != -1) {
+			// there is a pressed view, and is different than the focused one
+			return false;
 		}
 
-		return true;
+		View view = getFocused(this);
+		if (view == null) {
+			// there is no focused view
+			return false;
+		}
+		// forward the event to the view
+		return view.onMouseEvent(view, rect, event);
 	}
 
 	static bool onEvent(Widget this, int action, int button, int x, int y) {
@@ -1031,8 +1193,8 @@ struct Widget: Layout {
 			this.onCreate(this);
 			// measure then focus first visible view
 			this.onMeasure(this, &this.rect, this.style);
-			this.setSelected(-1, true);
-			this.setSelected(false);
+			this.clearState(Style.focused);
+			this.focusNext(false);
 			return true;
 		}
 		if (action == Gui.WINDOW_CLOSE) {
@@ -1087,7 +1249,12 @@ struct Widget: Layout {
 			if ((now - this.time) / 1000. > .5) {
 				this.clicks = 0;
 			}
-			this.time = System.millis();
+			this.time = now;
+			if (button == 1) {
+				this.timeout = now + 1000;
+			} else {
+				this.timeout = 0;
+			}
 			this.button = button;
 			this.mouseX = x;
 			this.mouseY = y;
@@ -1113,12 +1280,13 @@ struct Widget: Layout {
 			int oldX = this.mouseX;
 			int oldY = this.mouseY;
 			this.time = System.millis();
+			this.timeout = 0;
 			this.button = button;
 			this.mouseX = x;
 			this.mouseY = y;
 			this.clicks = 0;
 
-			if (button != 1) {
+			if (button != 0 && button != 1) {
 				return false;
 			}
 			MouseEvent event = {
@@ -1140,6 +1308,7 @@ struct Widget: Layout {
 			if ((now - this.time) / 1000. > .5) {
 				this.clicks = 0;
 			}
+			this.timeout = 0;
 			if (button != 1) {
 				return false;
 			}
@@ -1170,8 +1339,8 @@ struct Widget: Layout {
 
 			if (button == '\t' || button == '\r') {
 				// Tab, Enter: select prev or next control.
-				if (!this.setSelected(this.isShift)) {
-					return this.setSelected(this.isShift);
+				if (!this.focusNext(this.isShift)) {
+					return this.focusNext(this.isShift);
 				}
 				return true;
 			}
@@ -1226,11 +1395,33 @@ struct Widget: Layout {
 			return this.onKeyEvent(this, event);
 		}
 
+		if (action == Gui.EVENT_TIMEOUT) {
+			if (this.timeout > 0) {
+				// long press
+				MouseEvent event = {
+					release: true;
+					isShift: this.isShift;
+					isCtrl: this.isCtrl;
+					isAlt: this.isAlt;
+					clicks: -1;
+					button: this.button;
+					x: this.mouseX;
+					y: this.mouseY;
+				};
+				return this.onMouseEvent(this, this.rect, event);
+			}
+		}
+
 		debug("event not processed", action);
 		return false;
 	}
 
 	static int draw(Widget this) {
+		if (this.timeout > 0) {
+			int64 timeout = this.timeout - System.millis();
+			this.onEvent(Gui.WINDOW_DRAW, 0, 0, 0);
+			return Math.max(int64(0), timeout);
+		}
 		this.onEvent(Gui.WINDOW_DRAW, 0, 0, 0);
 		return 0;
 	}
@@ -1246,7 +1437,8 @@ Widget Widget(Image offs, int pos, const Style style&, View items...) {
 			h: -1;
 		};
 		style: style;
-		gravity: Style.vertical;
+		orientation: -1;
+		alignment: Style.fill;
 		itemCount: items.length;
 		items: pointer.alloc(null, items.length * sizeof(View));
 		rects: pointer.alloc(null, items.length * sizeof(Rect));
@@ -1299,11 +1491,12 @@ struct Histogram: View {
 	}
 
 	bool onMouseEvent(Histogram this, const Rect rect&, const MouseEvent event&) {
-		if (event.release) {
+		if (event.release || !event.button) {
 			return View.onMouseEvent(this, rect, event);
 		}
 
-		int x0 = event.x - rect.x;
+		int px = Math.max(0, rect.w - 256) / 2;
+		int x0 = event.x - rect.x - px;
 		int x1 = x0 - event.dx;
 		int y0 = event.y - rect.y;
 		int y1 = y0 - event.dy;
@@ -1371,12 +1564,12 @@ struct Histogram: View {
 				int lv = ach(data) * rect.h / 256;
 
 				if (this.color) {
-					offs.drawLine(x, y - pl, x, y - lv, uint32(data));
+					offs.drawLine(x - 1, y - pl, x, y - lv, uint32(data));
 				} else {
-					offs.drawLine(x, y - pb, x, y - bv, colB);
-					offs.drawLine(x, y - pg, x, y - gv, colG);
-					offs.drawLine(x, y - pr, x, y - rv, colR);
-					offs.drawLine(x, y - pl, x, y - lv, colL);
+					offs.drawLine(x - 1, y - pb, x, y - bv, colB);
+					offs.drawLine(x - 1, y - pg, x, y - gv, colG);
+					offs.drawLine(x - 1, y - pr, x, y - rv, colR);
+					offs.drawLine(x - 1, y - pl, x, y - lv, colL);
 				}
 
 				pb = bv;

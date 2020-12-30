@@ -1638,81 +1638,92 @@ static inline int ovf(vmProcessor pu) {
  * @param callee the called function address, -1 on leave.
  * @param extra TO BE REMOVED
  */
-static vmError vmTrace(rtContext rt, void *sp, size_t caller, size_t callee) {
-	dbgn (*debugger)(dbgContext, vmError, size_t, void*, size_t, size_t) = rt->dbg->debug;
+static vmError vmTrace(rtContext rt, void *sp, size_t caller, ssize_t callee) {
+	vmError (*debugger)(dbgContext, vmError, size_t, void*, size_t, size_t) = rt->dbg->debug;
 	clock_t now = clock();
 	vmProcessor pu = rt->vm.cell;
 	if (rt->dbg == NULL) {
 		return noError;
 	}
+
 	// trace statement
 	if (callee == 0) {
 		fatal(ERR_INTERNAL_ERROR);
+		return illegalState;
 	}
-	else if ((ssize_t)callee < 0) {
-		// trace leave
-		trcptr tp = pu->tp;
-		int recursive = 0;
 
-		if (tp - (trcptr)pu->bp < 1) {
+	// trace return from function
+	if (callee < 0) {
+		if (pu->tp - (trcptr)pu->bp < 1) {
 			trace("stack underflow(tp: %d, sp: %d)", tp - (trcptr)pu->bp, pu->sp - (stkptr)pu->bp);
 			return illegalState;
 		}
-
 		pu->tp -= 1;
-		for (tp = (trcptr)pu->bp; tp < pu->tp; tp++) {
-			if (tp->callee == pu->tp->callee) {
-				recursive = 1;
-				break;
-			}
-		}
 
-		tp = pu->tp;
-		clock_t ticks = now - tp->func;
-		dbgn calleeFunc = mapDbgFunction(rt, tp->callee);
-		dbgn callerFunc = mapDbgFunction(rt, tp->caller);
-		if (calleeFunc != NULL) {
-			calleeFunc->fails += callee != (size_t) -1;
-			if (!recursive) {
-				calleeFunc->total += ticks;
-			}
-			calleeFunc->time += ticks;
-		}
-		if (callerFunc != NULL) {
-			callerFunc->time -= ticks;
-		}
 		if (debugger != NULL) {
-			debugger(rt->dbg, noError, pu->tp - (trcptr)pu->bp, NULL, caller, callee);
+			const trcptr tp = pu->tp;
+			const trcptr bp = (trcptr) pu->bp;
+
+			//* TODO: measure times in debugger function
+			clock_t ticks = now - tp->func;
+			dbgn calleeFunc = mapDbgFunction(rt, tp->callee);
+			if (calleeFunc != NULL) {
+				int recursive = 0;
+				for (trcptr p = bp; p < tp; p++) {
+					if (p->callee == tp->callee) {
+						recursive = 1;
+						break;
+					}
+				}
+				if (callee != -1) {
+					calleeFunc->fails += 1;
+				}
+				if (!recursive) {
+					calleeFunc->total += ticks;
+				}
+				calleeFunc->time += ticks;
+			}
+
+			dbgn callerFunc = mapDbgFunction(rt, tp->caller);
+			if (callerFunc != NULL) {
+				callerFunc->time -= ticks;
+			}
+			// */
+			debugger(rt->dbg, noError, tp - bp, NULL, caller, callee);
 		}
+		return noError;
 	}
-	else {
-		// trace enter
-		trcptr tp = pu->tp;
-		if ((trcptr)pu->sp - tp < 1) {
-			trace("stack overflow(tp: %d, sp: %d)", tp - (trcptr)pu->bp, pu->sp - (stkptr)pu->bp);
-			return stackOverflow;
-		}
-		tp->caller = caller;
-		tp->callee = callee;
-		tp->func = now;
-		tp->sp = sp;
+
+	// trace call function
+	if ((trcptr)pu->sp - pu->tp < 1) {
+		trace("stack overflow(tp: %d, sp: %d)", tp - (trcptr)pu->bp, pu->sp - (stkptr)pu->bp);
+		return stackOverflow;
+	}
+
+	const trcptr tp = pu->tp;
+	pu->tp += 1;
+
+	tp->caller = caller;
+	tp->callee = callee;
+	tp->func = now;
+	tp->sp = sp;
+
+	if (debugger != NULL) {
+		//* TODO: measure times in debugger function
 		dbgn calleeFunc = mapDbgFunction(rt, tp->callee);
 		if (calleeFunc != NULL) {
 			calleeFunc->hits += 1;
 		}
-
-		if (debugger != NULL) {
-			debugger(rt->dbg, noError, pu->tp - (trcptr)pu->bp, NULL, caller, callee);
-		}
-		pu->tp += 1;
+		// */
+		debugger(rt->dbg, noError, tp - (trcptr)pu->bp, NULL, caller, callee);
 	}
 	return noError;
 }
 
 /// Private dummy debug function.
-static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t caller, size_t callee) {
+static vmError dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t caller, size_t callee) {
 	if (err == noError) {
-		return NULL;
+		return noError;
 	}
 
 	rtContext rt = ctx->rt;
@@ -1747,7 +1758,7 @@ static dbgn dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, size_t
 	if (rt->dbg != NULL && rt->traceLevel > 0) {
 		traceCalls(rt->dbg, rt->logFile, 1, rt->traceLevel, 0);
 	}
-	return ctx->abort;
+	return err;
 	(void) callee;
 	(void) stack;
 	(void) ss;
@@ -1785,7 +1796,7 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 		const vmInstruction ipMin = (vmInstruction)(rt->_mem + rt->vm.ro);
 		const vmInstruction ipMax = (vmInstruction)(rt->_mem + rt->vm.px + px_size);
 
-		dbgn (*debugger)(dbgContext, vmError, size_t, void*, size_t, size_t) = rt->dbg->debug;
+		vmError (*debugger)(dbgContext, vmError, size_t, void*, size_t, size_t) = rt->dbg->debug;
 		// invoked function(from external code) will return with a ret instruction, removing trace info
 		execError = vmTrace(rt, pu->sp, 0, fun->offs);
 		if (execError != noError) {
@@ -1809,23 +1820,14 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 				return illegalState;
 			}
 
-			dbgn dbg = debugger(rt->dbg, noError, st - sp, sp, pc, 0);
-			if (dbg == rt->dbg->abort) {
+			vmError error = debugger(rt->dbg, noError, st - sp, sp, pc, 0);
+			if (error != noError) {
 				// abort execution from debugger
-				return nativeCallError;
-			}
-			if (dbg != NULL) {
-				if (pc == dbg->start) {
-					dbg->hits += 1;
-				}
-				dbg->total += 1;
+				return error;
 			}
 			switch (ip->opc) {
 				dbg_stop_vm:	// halt virtual machine
 					if (execError != noError) {
-						if (dbg != NULL) {
-							dbg->fails += 1;
-						}
 						debugger(rt->dbg, execError, st - sp, sp, pc, 0);
 						while (pu->tp != oldTP) {
 							vmTrace(rt, NULL, 0, (size_t) -2);

@@ -65,7 +65,7 @@ Slider sldHardness = {
 	minimum: -255;
 	maximum: 255;
 	visible: 1;
-	selectable: false;
+	focusable: false;
 };
 Slider sldAlpha = {
 	text: "Alpha";
@@ -73,33 +73,34 @@ Slider sldAlpha = {
 	maximum: 255;
 	value: 255;
 	visible: 1;
-	selectable: false;
+	focusable: false;
 };
 Switch chkMoveScale = {
 	text: "Drag mode";
 	visible: 1;
-	selectable: false;
+	focusable: false;
 };
 Switch chkRect = {
 	text: "Show rect";
 	visible: 1;
-	selectable: false;
+	focusable: false;
 };
 Switch chkMask = {
 	text: "Show mask";
 	visible: 1;
-	selectable: false;
+	focusable: false;
 };
 Button btnReset = {
 	text: "Reset rect";
 	visible: 1;
-	selectable: false;
+	focusable: false;
 	onClick: onResetClick;
 };
 
 Slider time = {
 	text: "time";
 	enabled: false;
+	onDrawSlider: null;
 };
 Button separator = {
 	text: null;
@@ -145,32 +146,32 @@ int onEvent(int action, int button, int x, int y) {
 		if (oldRadius != sldBlur.value) {
 			oldRadius = sldBlur.value;
 			blur.copy(0, 0, surf, null);
-			blur.blur(sldBlur.valFlt());
+			blur.blur(sldBlur.valueF64());
 		}
 	}
 
 	// apply blur from cached image
 	offs.copy(0, 0, blur, null);
 
-	if (ui.isSelected(btnLinear, btnReflect, btnRadial, btnSquare)) {
+	if (ui.isFocused(btnLinear, btnReflect, btnRadial, btnSquare)) {
 		uint32 colors[512] = {};
 
 		if (chkMask.checked()) {
 			offs.fill(0xff0000);
 		}
-		if (ui.isSelected(btnReflect)) {
+		if (ui.isFocused(btnReflect)) {
 			alphaLut(colors, sldHardness.value, sldAlpha.value, true);
 			offs.gradient(&rect, gradient.MaskLinear, false, ...colors);
 		}
-		else if (ui.isSelected(btnLinear)) {
+		else if (ui.isFocused(btnLinear)) {
 			alphaLut(colors, sldHardness.value, sldAlpha.value, false);
 			offs.gradient(&rect, gradient.MaskLinear, false, ...colors);
 		}
-		else if (ui.isSelected(btnRadial)) {
+		else if (ui.isFocused(btnRadial)) {
 			alphaLut(colors, sldHardness.value, sldAlpha.value, false);
 			offs.gradient(&rect, gradient.MaskRadial, false, ...colors);
 		}
-		else if (ui.isSelected(btnSquare)) {
+		else if (ui.isFocused(btnSquare)) {
 			alphaLut(colors, sldHardness.value, sldAlpha.value, false);
 			offs.gradient(&rect, gradient.MaskSquare, false, ...colors);
 		}
@@ -180,16 +181,16 @@ int onEvent(int action, int button, int x, int y) {
 			offs.drawRect(rect, 0x00ff00);
 		}
 	}
-	else if (ui.isSelected(sldBlur)) {
+	else if (ui.isFocused(sldBlur)) {
 	}
-	else if (ui.isSelected(sldSharpness)) {
+	else if (ui.isFocused(sldSharpness)) {
 		offs.blend(0, 0, surf, null, sldSharpness.value, false, null);
 	}
 
 	histogram.update(offs);
 	time.value = System.millis() - start;
 
-	if (ui.isSelected(btnReflect, btnLinear, btnRadial, btnSquare)) {
+	if (ui.isFocused(btnReflect, btnLinear, btnRadial, btnSquare)) {
 		ui.setGroup(1);
 	} else {
 		ui.setGroup(2);
@@ -199,6 +200,9 @@ int onEvent(int action, int button, int x, int y) {
 bool onMouseEvent(Button view, const Rect r&, const MouseEvent event&) {
 	bool result = Button.onMouseEvent(view, r, event);
 	if (ui.isPressed(view)) {
+		return result;
+	}
+	if (!event.button) {
 		return result;
 	}
 

@@ -31,14 +31,14 @@ Slider sldHueMin = {
 	onDrawSlider: drawColorSlider;
 	onUpdate: syncMinMax;
 	text: "Hue.min";
-	selectable: false;
+	focusable: false;
 	maximum: 359;
 };
 Slider sldHueMax = {
 	onDrawSlider: drawColorSlider;
 	onUpdate: syncMinMax;
 	text: "Hue.max";
-	selectable: false;
+	focusable: false;
 	maximum: 359;
 };
 
@@ -46,21 +46,21 @@ Slider sldLumMin = {
 	onDrawSlider: drawColorSlider;
 	onUpdate: syncMinMax;
 	text: "Luminance.min";
-	selectable: false;
+	focusable: false;
 	maximum: 255;
 };
 Slider sldLumMax = {
 	onDrawSlider: drawColorSlider;
 	onUpdate: syncMinMax;
 	text: "Luminance.max";
-	selectable: false;
+	focusable: false;
 	maximum: 255;
 	value: 255;
 };
 
 Slider sldVal = {
 	text: "Amount";
-	selectable: false;
+	focusable: false;
 	maximum: 255;
 	divisor: 255;
 	value: 26;
@@ -147,20 +147,36 @@ int onEvent(int action, int button, int x, int y) {
 		return -1;
 	}
 	if (!ui.onEvent(action, button, x, y)) {
-		// event not processed, wait for the next one
-		return 0;
+		if (ui.pressedIndex != -1) {
+			// redraw only ui, in case there is an active control
+			return ui.draw();
+		}
+		if (action != Gui.MOUSE_MOTION && action != Gui.FINGER_MOTION && action != Gui.MOUSE_RELEASE) {
+			// event not processed, wait for the next one
+			trace("button", button);
+			return 0;
+		}
+		if (button == 0 && (action == Gui.MOUSE_MOTION || action == Gui.FINGER_MOTION)) {
+			return 0;
+		}
+		// read the color under the cursor and update sliders
+		vec4f col = rgb2hsl(vec4f(argb(back.get(x, y))));
+		updateSlider(sldHueMin, sldHueMax, col.x * 359);
+		updateSlider(sldLumMin, sldLumMax, col.z * 255);
+		if (action == Gui.MOUSE_MOTION) {
+			return ui.draw();
+		}
+	}
+
+	if (button == 0 && (action == Gui.MOUSE_MOTION || action == Gui.FINGER_MOTION)) {
+		return ui.draw();
 	}
 
 	uint64 start = System.millis();
 	offs.copy(0, 0, back, null);
-	if (ui.pressedIndex < 0 && action != Gui.MOUSE_RELEASE) {
-		vec4f col = rgb2hsl(vec4f(argb(offs.get(x, y))));
-		updateSlider(sldHueMin, sldHueMax, col.x * 359);
-		updateSlider(sldLumMin, sldLumMax, col.z * 255);
-	}
 
 	// blending is slow, so blend only when mouse button is released
-	if (action == Gui.MOUSE_RELEASE) {
+	if (button == 1 && (action == Gui.MOUSE_RELEASE || action == Gui.FINGER_RELEASE)) {
 		offs.blend(0, 0, back, null, 256, true, blendHsl);
 	}
 
@@ -170,11 +186,12 @@ int onEvent(int action, int button, int x, int y) {
 }
 
 void drawColorSlider(Slider this, Image offs, Rect rect, const Style style&) {
+	inline normalized(Slider slider) = float32(this.value - this.minimum) / (this.maximum - this.minimum);
 	const int padding = style.padding / 2;
 	const int y = rect.y + rect.h - padding;
 	if (this == sldHueMin || this == sldHueMax) {
-		float32 min = this == sldHueMax ? 0f : sldHueMin.valFlt();
-		float32 max = this == sldHueMin ? 1f : sldHueMax.valFlt();
+		float32 min = this == sldHueMax ? 0f : sldHueMin.normalized();
+		float32 max = this == sldHueMin ? 1f : sldHueMax.normalized();
 		for (int x = 0; x < rect.w; x += 1) {
 			float32 val = float32(x) / rect.w;
 			argb color = argb(hsl2rgb(vec4f(val, 1f, .5f)));
@@ -187,8 +204,8 @@ void drawColorSlider(Slider this, Image offs, Rect rect, const Style style&) {
 		return;
 	}
 	if (this == sldLumMin || this == sldLumMax) {
-		float32 min = this == sldLumMax ? 0f : sldLumMin.valFlt();
-		float32 max = this == sldLumMin ? 1f : sldLumMax.valFlt();
+		float32 min = this == sldLumMax ? 0f : sldLumMin.normalized();
+		float32 max = this == sldLumMin ? 1f : sldLumMax.normalized();
 		for (int x = 0; x < rect.w; x += 1) {
 			float32 val = float32(x) / rect.w;
 			argb color = argb(vec4f(val, val, val));

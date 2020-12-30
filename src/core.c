@@ -781,6 +781,9 @@ rtContext rtInit(void *mem, size_t size) {
 }
 
 int rtClose(rtContext rt) {
+	// close libraries
+	closeLibs(rt);
+
 	// close log file
 	logFile(rt, NULL, 0);
 
@@ -790,10 +793,12 @@ int rtClose(rtContext rt) {
 		freeBuff(&rt->dbg->functions);
 		freeBuff(&rt->dbg->statements);
 	}
+
 	// release memory
 	if (rt->freeMem) {
 		free(rt);
 	}
+
 	return errors;
 }
 
@@ -809,7 +814,6 @@ size_t vmInit(rtContext rt, int debug, vmError onHalt(nfcContext)) {
 		memset(rt->dbg, 0, sizeof(struct dbgContextRec));
 
 		rt->dbg->rt = rt;
-		rt->dbg->abort = (dbgn)-1;
 		rt->dbg->tryExec = cc->libc_try;
 		initBuff(&rt->dbg->functions, 128, sizeof(struct dbgNode));
 		initBuff(&rt->dbg->statements, 128, sizeof(struct dbgNode));

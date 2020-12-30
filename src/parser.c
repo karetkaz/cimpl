@@ -463,7 +463,7 @@ static astn expandInitializerObj(ccContext cc, astn varNode, astn initObj, astn 
 		}
 
 		if (field->name != NULL && *field->name == '.') {
-			// no need to initialize hidden internal fields
+			// no need to initialize hidden internal fields (.result, .type)
 			continue;
 		}
 		if (field == cc->length_ref) {

@@ -28,8 +28,7 @@ Histogram histogram = {
 Histogram curves = {
 	height: 256;
 	lines: true;
-	enabled: true;
-	selectable: false;
+	focusable: false;
 	onUpdate: onCurveUpdate;
 };
 
@@ -63,12 +62,13 @@ Button btnBlue = {
 Button btnReset = {
 	onClick: onResetClick;
 	text: "reset";
-	selectable: false;
+	focusable: false;
 };
 
 Slider time = {
 	text: "time";
 	enabled: false;
+	onDrawSlider: null;
 };
 
 Widget ui = Widget(offs, -30,
@@ -115,23 +115,23 @@ int onEvent(int action, int button, int x, int y) {
 
 bool onCurveUpdate(Histogram this, int idx, int value) {
 	argb data& = this.data[idx];
-	if (ui.isSelected(btnLuminosity)) {
+	if (ui.isFocused(btnLuminosity)) {
 		data.a = clamp_s8(value);
 		return true;
 	}
-	if (ui.isSelected(btnRed)) {
+	if (ui.isFocused(btnRed)) {
 		data.r = clamp_s8(value);
 		return true;
 	}
-	if (ui.isSelected(btnGreen)) {
+	if (ui.isFocused(btnGreen)) {
 		data.g = clamp_s8(value);
 		return true;
 	}
-	if (ui.isSelected(btnBlue)) {
+	if (ui.isFocused(btnBlue)) {
 		data.b = clamp_s8(value);
 		return true;
 	}
-	if (ui.isSelected(btnRgb)) {
+	if (ui.isFocused(btnRgb)) {
 		data.r = data.g = data.b = clamp_s8(value);
 		return true;
 	}

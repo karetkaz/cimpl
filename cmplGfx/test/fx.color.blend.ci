@@ -33,7 +33,7 @@ struct BlendButton: Button {
 
 Switch chkReverse = {
 	text: "reverse";
-	selectable: false;
+	focusable: false;
 	width: 192;
 };
 Slider btnAlpha = {
@@ -308,6 +308,7 @@ BlendButton btnPinLight = {
 Slider time = {
 	text: "time";
 	enabled: false;
+	onDrawSlider: null;
 };
 Widget ui = Widget(offs, -30,
 	chkReverse,
@@ -344,19 +345,22 @@ int onEvent(int action, int button, int x, int y) {
 		return 0;
 	}
 
+	if (button == 0 && (action == Gui.MOUSE_MOTION || action == Gui.FINGER_MOTION)) {
+		return ui.draw();
+	}
+
 	if (ui.pressedIndex != -1) {
 		// redraw only ui, in case there is an active control
-		time.value = 0;
 		return ui.draw();
 	}
 
 	uint64 start = System.millis();
 	bool reverse = chkReverse.selected != 0;
 	offs.copy(0, 0, reverse ? base : blend, null);
-	if (BlendButton selected = ui.getSelected().as(BlendButton)) {
+	if (BlendButton selected = ui.getFocused().as(BlendButton)) {
 		offs.blend(0, 0, reverse ? blend : base, null, btnAlpha.value, false, selected.blend);
 	}
-	else if (ui.isSelected(btnAlpha)) {
+	else if (ui.isFocused(btnAlpha)) {
 		offs.blend(0, 0, reverse ? blend : base, null, btnAlpha.value, false, null);
 	}
 	time.value = System.millis() - start;

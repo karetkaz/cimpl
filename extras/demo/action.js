@@ -190,6 +190,10 @@ edtFileName.onclick = function () {
 	if (!props.mobile) {
 		return;
 	}
+	if (hasStyle(document.body, 'canvas')) {
+		// do not show actions while app is running
+		return;
+	}
 	let actions = {
 		Command: function () {
 			completeAction('!', true);

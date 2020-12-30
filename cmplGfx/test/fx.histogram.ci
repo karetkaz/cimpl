@@ -26,19 +26,19 @@ Switch chkRed = {
 	text: "red";
 	visible: 1;
 	selected: 1;
-	selectable: false;
+	focusable: false;
 };
 Switch chkGreen = {
 	text: "green";
 	visible: 1;
 	selected: 1;
-	selectable: false;
+	focusable: false;
 };
 Switch chkBlue = {
 	text: "blue";
 	visible: 1;
 	selected: 1;
-	selectable: false;
+	focusable: false;
 };
 Slider time = {
 	text: "time";
@@ -72,7 +72,7 @@ int onEvent(int action, int button, int x, int y) {
 	uint32 hist[histogram.data.length] = {};
 
 	offs.resize(null, back, null, 1);
-	if (ui.isSelected(btnHue)) {
+	if (ui.isFocused(btnHue)) {
 		offs.calcHueHist(null, &hist);
 		uint32 max = 1;  // avoid division by zero
 		for (int i = 0; i < hist.length; i += 1) {
@@ -89,7 +89,7 @@ int onEvent(int action, int button, int x, int y) {
 		histogram.color = true;
 		ui.setGroup(~1);
 	}
-	if (ui.isSelected(btnLum)) {
+	if (ui.isFocused(btnLum)) {
 		offs.calcLumHist(null, &hist);
 		uint32 max = 1;  // avoid division by zero
 		for (int i = 0; i < hist.length; i += 1) {
@@ -105,7 +105,7 @@ int onEvent(int action, int button, int x, int y) {
 		histogram.color = true;
 		ui.setGroup(~1);
 	}
-	if (ui.isSelected(btnRgb)) {
+	if (ui.isFocused(btnRgb)) {
 		offs.calcRgbHist(null, &hist);
 		for (int i = 0; i < hist.length; i += 1) {
 			argb data = argb(hist[i]);

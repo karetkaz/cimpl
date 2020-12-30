@@ -83,6 +83,7 @@ TEST_FILES="$TEST_FILES $CMPL_HOME/cmplFile/test/*.ci"
 TEST_FILES="$TEST_FILES $CMPL_HOME/cmplGfx/test/*.ci"
 TEST_FILES="$TEST_FILES $CMPL_HOME/cmplGfx/test/demo/*.ci"
 TEST_FILES="$TEST_FILES $CMPL_HOME/cmplGfx/todo/*.ci"
+TEST_FILES="$TEST_FILES $CMPL_HOME/cmplGfx/todo/demo/*.ci"
 
 TEST_FILES="$TEST_FILES $CMPL_HOME/cmplGL/test/*.ci"
 

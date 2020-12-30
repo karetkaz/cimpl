@@ -205,7 +205,7 @@ char options[*][] = {
 Switch auto = {
 	text: "auto";
 	states: options;
-	selectable: true;
+	focusable: true;
 };
 
 Button separator = {
@@ -239,18 +239,18 @@ int onEvent(int action, int button, int x, int y) {
 
 	uint64 start = System.millis();
 	offs.resize(null, back, null, 1);
-	if (ui.isSelected(brightness, contrast, gamma, highlights, shadows, whites, blacks)) {
+	if (ui.isFocused(brightness, contrast, gamma, highlights, shadows, whites, blacks)) {
 		brightnessContrastGamma(&curves.data,
-			brightness.valFlt(),
-			contrast.valFlt(),
-			gamma.valFlt(),
-			highlights.valFlt(),
-			shadows.valFlt(),
-			whites.valFlt(),
-			blacks.valFlt()
+			brightness.valueF64(),
+			contrast.valueF64(),
+			gamma.valueF64(),
+			highlights.valueF64(),
+			shadows.valueF64(),
+			whites.valueF64(),
+			blacks.valueF64()
 		);
 	}
-	else if (ui.isSelected(auto)) {
+	else if (ui.isFocused(auto)) {
 		calcAutoEqualize(&curves.data, offs, auto.selected == 0);
 	}
 

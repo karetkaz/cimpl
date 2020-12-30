@@ -260,10 +260,10 @@ Math.modf(x: float64, intPart: float64): float64 # Decompose a value into intege
 Math.floor(x: float64): float64 # Computes the largest integer value not greater than the input
 Math.ceil(x: float64): float64 # Computes the smallest integer not less than the input
 Math.round(x: float64): float64 # Computes the nearest integer to the input
-Math.sign(x: int32): int32
-Math.sign(x: int64): int32
-Math.sign(x: uint32): int32
-Math.sign(x: uint64): int32
+Math.sign(x: int32): int32 # Returns the signum of the input (`0` if zero, `-1` if negative, `1` if positive)
+Math.sign(x: int64): int32 # Returns the signum of the input (`0` if zero, `-1` if negative, `1` if positive)
+Math.sign(x: uint32): int32 # Returns the signum of the input (`0` if zero, `1` if positive)
+Math.sign(x: uint64): int32 # Returns the signum of the input (`0` if zero, `1` if positive)
 Math.sign(x: float32): int32 # Returns the signum of the input (`0` if zero, `-1` if negative, `1` if positive)
 Math.sign(x: float64): int32 # Returns the signum of the input (`0` if zero, `-1` if negative, `1` if positive)
 Math.absMod(val: float32, mod: float32): float32 # Returns the positive modulus of the input
@@ -513,6 +513,7 @@ File.write(file: File, buff: uint8[]): int32
 File.write(file: File, buff: uint8[], size: int32): int32
 File.flush(file: File): void
 File.close(file: File): void
+File.tell(file: File): int32
 File.in
 File.out
 File.err

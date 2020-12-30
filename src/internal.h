@@ -130,12 +130,11 @@ struct ccContextRec {
 /// Debugger context
 struct dbgContextRec {
 	rtContext rt;
-	dbgn (*debug)(dbgContext ctx, vmError, size_t ss, void *sp, size_t caller, size_t callee);
+	vmError (*debug)(dbgContext ctx, vmError, size_t ss, void *sp, size_t caller, size_t callee);
 
 	struct arrBuffer functions;
 	struct arrBuffer statements;
 	size_t freeMem, usedMem;
-	dbgn abort;
 	symn tryExec;	// the symbol of tryExec function
 };
 

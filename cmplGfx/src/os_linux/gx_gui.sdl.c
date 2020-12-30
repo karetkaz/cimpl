@@ -31,7 +31,7 @@ GxWindow createWindow(GxImage offs, const char *title) {
 }
 
 int getWindowEvent(GxWindow window, int *button, int *x, int *y) {
-	static int btnstate = 0;
+//	static int btnstate = 0;
 	SDL_Event event;
 
 	event.type = 0;
@@ -111,37 +111,15 @@ int getWindowEvent(GxWindow window, int *button, int *x, int *y) {
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
-			switch (event.button.button) {
-				case 1:
-					btnstate |= 1;
-					break;
-				case 2:
-					btnstate |= 4;
-					break;
-				case 3:
-					btnstate |= 2;
-					break;
-			}
-			*button = btnstate;
+			*button = event.button.button;
 			*x = event.button.x;
 			*y = event.button.y;
 			return MOUSE_PRESS;
 
 		case SDL_MOUSEBUTTONUP:
-			*button = btnstate;
+			*button = event.button.button;
 			*x = event.button.x;
 			*y = event.button.y;
-			switch (event.button.button) {
-				case 1:
-					btnstate &= ~1;
-					break;
-				case 2:
-					btnstate &= ~4;
-					break;
-				case 3:
-					btnstate &= ~2;
-					break;
-			}
 			return MOUSE_RELEASE;
 
 		case SDL_FINGERDOWN:
@@ -163,10 +141,7 @@ int getWindowEvent(GxWindow window, int *button, int *x, int *y) {
 			return FINGER_MOTION;
 
 		case SDL_MOUSEMOTION:
-			if (btnstate == 0) {
-				break;
-			}
-			*button = btnstate;
+			*button = event.button.button;
 			*x = event.motion.x;
 			*y = event.motion.y;
 			return MOUSE_MOTION;
