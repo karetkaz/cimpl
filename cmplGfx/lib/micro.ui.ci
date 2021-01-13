@@ -35,36 +35,30 @@ struct Style {
 		focused: 4;
 	}
 
-	static void measure(const Style this&, Rect valueRect&, const char text[*], int extraChars) {
-		Rect measured = {w: 0, h: 0};
-		this.font.clipText(&measured, text);
-		if (valueRect.w < 0 || (this.align & Style.vertical) == Style.vertical) {
-			if (text != null && measured.w != 0) {
-				measured.w += extraChars * measured.w / length(text);
-			}
-			valueRect.w = measured.w + 2 * this.padding;
+	static void measure(const Style this&, Rect rect&, const char text[*], int extraChars) {
+		this.font.clipText(&rect, text);
+		if (text != null && rect.w != 0) {
+			rect.w += extraChars * rect.w / length(text);
 		}
-		if (valueRect.h < 0 || (this.align & Style.horizontal) == Style.horizontal) {
-			valueRect.h = measured.h + 2 * this.padding;
-		}
+		rect.w += 2 * this.padding;
+		rect.h += 2 * this.padding;
 	}
 
 	/// Align one rect containing text relative to its container
 	static void align(Rect parent, Rect rect&, int align) {
-		inline abs(int x) = x < 0 ? -x : x;
-		if (abs(rect.w) > parent.w) {
+		if (rect.w > parent.w) {
 			rect.w = parent.w;
 		}
-		if (abs(rect.h) > parent.h) {
+		if (rect.h > parent.h) {
 			rect.h = parent.h;
 		}
 
 		int vertical = align & Style.vertical;
 		if (vertical == center) {
-			rect.x = parent.x + (parent.w - abs(rect.w)) / 2;
+			rect.x = parent.x + (parent.w - rect.w) / 2;
 		}
 		else if (vertical == right) {
-			rect.x = parent.x + (parent.w - abs(rect.w));
+			rect.x = parent.x + (parent.w - rect.w);
 		}
 		else if (vertical == left) {
 			rect.x = parent.x;
@@ -76,10 +70,10 @@ struct Style {
 
 		int horizontal = align & Style.horizontal;
 		if (horizontal == center) {
-			rect.y = parent.y + (parent.h - abs(rect.h)) / 2;
+			rect.y = parent.y + (parent.h - rect.h) / 2;
 		}
 		else if (horizontal == bottom) {
-			rect.y = parent.y + (parent.h - abs(rect.h));
+			rect.y = parent.y + (parent.h - rect.h);
 		}
 		else if (horizontal == top) {
 			rect.y = parent.y;
@@ -159,10 +153,10 @@ struct MouseEvent {
 
 struct View: object {
 	/// fixed or minimum width of the view
-	const int width = -1;
+	const int width = -5;
 
 	/// fixed or minimum height of the view
-	const int height = -1;
+	const int height = -5;
 
 	/// visibility flags (the view will be visible if Widget.visibleGroup matches at least one common bit set)
 	const int visible = -1;
@@ -240,17 +234,34 @@ struct View: object {
 	}
 
 	void onMeasure(View this, Rect rect&, const Style style&) {
-		// TODO: implement minimum size constraints
 		if (this.width >= 0) {
 			rect.w = this.width;
+		}
+		else if (Math.abs(rect.w) < -this.width) {
+			rect.w = -this.width;
 		}
 		if (this.height >= 0) {
 			rect.h = this.height;
 		}
+		else if (Math.abs(rect.h) < -this.height) {
+			rect.h = -this.height;
+		}
 	}
 
 	void onDraw(View this, Image offs, Rect rect, const Style style&);
-
+	static void onDraw(View this, Image offs, Rect rect, const Style style&, int state) {
+		// TODO: dispatch state to all child views
+		if (state & Style.focused) {
+			offs.fillRect(rect, style.focusedColor);
+		}
+		else if (state & Style.hovered) {
+			offs.fillRect(rect, style.hoveredColor);
+		}
+		this.onDraw(this, offs, rect, style);
+		if (state & Style.pressed) {
+			offs.drawRect(rect, style.valueColor);
+		}
+	}
 	static void onDraw(View this, Image offs, Rect rect, const Style style&, const char text[*], const char value[*]) {
 		if (text == null) {
 			style.align(rect, &rect, value, Style.center);
@@ -473,8 +484,7 @@ struct Layout: View {
 		for (int i = 0; i < this.itemCount; i += 1) {
 			View view = this.items[i];
 			Rect viewRect& = this.rects[i];
-			viewRect.w = rect.w;
-			viewRect.h = rect.h;
+			viewRect.w = viewRect.h = 0;
 
 			view.onMeasure(view, &viewRect, style);
 			int width = Math.abs(viewRect.w);
@@ -489,25 +499,19 @@ struct Layout: View {
 			sumHeight += height;
 		}
 
-		View.onMeasure(this, &rect, style);
-		if (rect.h < 0) {
-			if (this.orientation < 0) {
-				rect.h = -sumHeight;
-			} else {
-				rect.h = maxHeight;
-			}
-		}
-		if (rect.w < 0) {
-			if (this.orientation > 0) {
-				rect.w = -sumWidth;
-			} else {
-				rect.w = maxWidth;
-			}
-		}
-		if (rect.h < 0 && rect.w < 0) {
+		if (this.orientation > 0) {
+			// using negative sum because hidden views are included
+			rect.w = -sumWidth;
+		} else {
 			rect.w = maxWidth;
+		}
+		if (this.orientation < 0) {
+			// using negative sum because hidden views are included
+			rect.h = -sumHeight;
+		} else {
 			rect.h = maxHeight;
 		}
+		View.onMeasure(this, &rect, style);
 	}
 
 	void onLayout(Layout this, Rect rect&);
@@ -681,22 +685,6 @@ struct Layout: View {
 		*/
 	}
 
-	static void onDraw(View this, Image offs, Rect rect, const Style style&, int state) {
-		// TODO: dispatch state to all child views
-		if (Layout layout = this.as(Layout)) {
-			state = 0;
-		}
-		if (state & Style.focused) {
-			offs.fillRect(rect, style.focusedColor);
-		}
-		else if (state & Style.hovered) {
-			offs.fillRect(rect, style.hoveredColor);
-		}
-		this.onDraw(this, offs, rect, style);
-		if (state & Style.pressed) {
-			offs.drawRect(rect, style.valueColor);
-		}
-	}
 	void onDraw(Layout this, Image offs, Rect rect, const Style style&) {
 		// draw items
 		for (int i = 0; i < this.itemCount; i += 1) {
@@ -705,36 +693,25 @@ struct Layout: View {
 
 			if (viewRect.w > 0 && viewRect.h > 0) {
 				int state = 0;
-				if (i == this.hoveredIndex) {
-					state |= Style.hovered;
+				if (view.as(Layout) == null) {
+					if (i == this.hoveredIndex) {
+						state |= Style.hovered;
+					}
+					if (i == this.pressedIndex) {
+						state |= Style.pressed;
+					}
+					if (i == this.focusedIndex) {
+						state |= Style.focused;
+					}
 				}
-				if (i == this.pressedIndex) {
-					state |= Style.pressed;
-				}
-				if (i == this.focusedIndex) {
-					state |= Style.focused;
-				}
-				Layout.onDraw(view, offs, viewRect, style, state);
+				View.onDraw(view, offs, viewRect, style, state);
 			}
 		}
 	}
 
-	static Layout Row(int rows, int align, View items...) {
+	static Layout Custom(int rowsCols, int align, View items...) {
 		Layout layout = {
-			orientation: rows;
-			alignment: align;
-			itemCount: items.length;
-			items: pointer.alloc(null, items.length * sizeof(View));
-			rects: pointer.alloc(null, items.length * sizeof(Rect));
-		};
-		for (int i = 0; i < items.length; i += 1) {
-			layout.items[i] = items[i];
-		}
-		return layout;
-	}
-	static Layout Column(int cols, int align, View items...) {
-		Layout layout = {
-			orientation: -cols;
+			orientation: rowsCols;
 			alignment: align;
 			itemCount: items.length;
 			items: pointer.alloc(null, items.length * sizeof(View));
@@ -746,10 +723,10 @@ struct Layout: View {
 		return layout;
 	}
 	static Layout Row(View items...) {
-		return Row(1, Style.horizontal, ...items);
+		return Custom(1, Style.horizontal, ...items);
 	}
 	static Layout Column(View items...) {
-		return Column(1, Style.vertical, ...items);
+		return Custom(-1, Style.vertical, ...items);
 	}
 	// FIXME: inline Row(View items...) = Row(1, Style.horizontal, ...items);
 }
@@ -1209,7 +1186,7 @@ struct Widget: Layout {
 			}
 			Rect rect& = this.rect;
 			if (this.measure) {
-				rect.w = rect.h = -1;
+				rect.w = rect.h = 0;
 				this.onMeasure(this, &rect, this.style);
 				this.onLayout(this, &rect);
 				this.measure = false;
