@@ -151,7 +151,7 @@ argb argbxor(argb lhs, argb rhs) {
 
 argb argbadd(argb lhs, argb rhs) {
 	argb res;
-	register int tmp;
+	int tmp;
 	res.b = (tmp = lhs.b + rhs.b) > 255 ? 255 : tmp;
 	res.g = (tmp = lhs.g + rhs.g) > 255 ? 255 : tmp;
 	res.r = (tmp = lhs.r + rhs.r) > 255 ? 255 : tmp;
@@ -161,7 +161,7 @@ argb argbadd(argb lhs, argb rhs) {
 
 argb argbsub(argb lhs, argb rhs) {
 	argb res;
-	register int tmp;
+	int tmp;
 	res.b = (tmp = lhs.b - rhs.b) < 0 ? 0 : tmp;
 	res.g = (tmp = lhs.g - rhs.g) < 0 ? 0 : tmp;
 	res.r = (tmp = lhs.r - rhs.r) < 0 ? 0 : tmp;
@@ -171,7 +171,7 @@ argb argbsub(argb lhs, argb rhs) {
 
 argb argbmul(argb lhs, argb rhs) {
 	argb res;
-	register int tmp;
+	int tmp;
 	res.b = ((tmp = lhs.b * rhs.b) + (tmp >> 8) + 1) >> 8;
 	res.g = ((tmp = lhs.g * rhs.g) + (tmp >> 8) + 1) >> 8;
 	res.r = ((tmp = lhs.r * rhs.r) + (tmp >> 8) + 1) >> 8;
@@ -217,7 +217,7 @@ argb argbmax(argb lhs, argb rhs) {
 
 argb argbmix(argb lhs, argb rhs, unsigned char cnt) {
 	argb res;
-	register int tmp;
+	int tmp;
 	res.b = rhs.b + (((tmp = (lhs.b - rhs.b) * cnt) + (tmp >> 8) + 1) >> 8);
 	res.g = rhs.g + (((tmp = (lhs.g - rhs.g) * cnt) + (tmp >> 8) + 1) >> 8);
 	res.r = rhs.r + (((tmp = (lhs.r - rhs.r) * cnt) + (tmp >> 8) + 1) >> 8);

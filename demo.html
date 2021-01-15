@@ -48,6 +48,7 @@
 <div id="bottom-sidebar" class="sidebar">
 	<div id="output-toolbar" class="toolbar">
 		<span class="no-output left" onclick="setStyle(body, 'output');">Output</span>
+		<span id="editPosition" class="right" onclick="completeAction(':');"></span>
 		<select class="output left" id="selOutput" onchange="selectOutputTab(this);" onclick="event.stopPropagation()">
 			<option onchange="terminal.clear();">Output</option>
 			<option onchange="pinOutput(this);">Pin Output</option>
@@ -55,8 +56,8 @@
 			<option onchange="terminal.clear();">Clear Output</option>
 			<!-- <option value="Search-0">Search</option> -->
 		</select>
-		<span class="output right icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
-		<span class="output right icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
+		<span class="output left icon bold" title="Scroll to top" onclick="terminal.scroll(false);">⏫</span>
+		<span class="output left icon bold" title="Scroll to end" onclick="terminal.scroll(true);">⏬</span>
 		<p id="output-pan-sidebar"/>
 	</div>
 	<pre id="output"></pre>

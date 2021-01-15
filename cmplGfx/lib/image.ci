@@ -154,15 +154,6 @@ bool clip(Image src, Rect roi&) {
 
 /// Fill the entire image with the given color
 inline fill(Image image, uint32 color) = image.fillRect(0, 0, 65536, 65536, color);
-/// Fill the given region of the image with the given color
-inline fill(Image image, const Rect roi&, uint32 color) = image.fillRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
-/// Fill the given region and padding of the image with the given color
-inline fill(Image image, const Rect roi&, int pad, uint32 color) = image.fillRect(roi.x - pad, roi.y - pad, roi.x + roi.w + pad, roi.y + roi.h + pad, color);
-
-///@public
-inline drawRect(Image image, const Rect roi&, uint32 color) = image.drawRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
-///@public
-inline fillRect(Image image, const Rect roi&, uint32 color) = image.fillRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
 
 /// Fill the surface by evaluating the given function for each pixel
 void eval(Image image, const Rect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
@@ -225,3 +216,81 @@ void tile(Image image, int x, int y, Image src, const Rect roi&) {
 		}
 	}
 }
+
+/// Fill the given rectangle rounding the corners using the given radius
+void fillRect(Image image, int x1, int y1, int x2, int y2, int rx, int ry, uint32 color) {
+	if (x1 > x2) {
+		int t = x1;
+		x1 = x2;
+		x2 = t;
+	}
+	if (y1 > y2) {
+		int t = y1;
+		y1 = y2;
+		y2 = t;
+	}
+
+	inline clamp(int value, int min, int max) = value < min ? min : value > max ? max : value;
+	rx = clamp(rx, 1, (x2 - x1) / 2);
+	ry = clamp(ry, 1, (y2 - y1) / 2);
+
+	int sx = rx * rx;
+	int sy = ry * ry;
+
+	int r = sx * ry / 2;
+	int rdy = r * 2;
+	int rdx = 0;
+
+	int rx1 = x1 + rx;
+	int rx2 = x2 - rx;
+
+	for (;y1 < y2;) {
+		image.fillRect(rx1, y1, rx2, y1, color);
+		image.fillRect(rx1, y2, rx2, y2, color);
+		if (r >= 0) {
+			rx1 -= 1;
+			rx2 += 1;
+			r -= rdx += sy;
+		}
+		if (r < 0) {
+			y1 += 1;
+			y2 -= 1;
+			r += rdy -= sx;
+		}
+	}
+	image.fillRect(x1, y1, x2, y2, color);
+}
+
+/// Fill the given rectangle rounding the corners using the given radius
+inline fillRect(Image image, int x1, int y1, int x2, int y2, int r, uint32 color) = fillRect(image, x1, y1, x2, y2, r, r, color);
+
+/// Fill the given rectangle rounding the corners using the given radius
+void fillRect(Image image, const Rect roi&, int rx, int ry, uint32 color) {
+	if (roi.w <= 0 || roi.h <= 0) {
+		// empty rectangle
+		return;
+	}
+	image.fillRect(roi.x, roi.y, roi.x + roi.w - 1, roi.y + roi.h - 1, rx, ry, color);
+}
+
+/// Fill the given rectangle rounding the corners using the given radius
+inline fillRect(Image image, const Rect roi&, int r, uint32 color) = fillRect(image, roi, r, r, color);
+
+/// Fill the entire image with the given color
+void drawRect(Image image, const Rect roi&, uint32 color) {
+	if (roi.w <= 0 || roi.h <= 0) {
+		// empty rectangle
+		return;
+	}
+	image.drawRect(roi.x, roi.y, roi.x + roi.w - 1, roi.y + roi.h - 1, color);
+}
+
+/// Fill the entire image with the given color
+void fillRect(Image image, const Rect roi&, uint32 color) {
+	if (roi.w <= 0 || roi.h <= 0) {
+		// empty rectangle
+		return;
+	}
+	image.fillRect(roi.x, roi.y, roi.x + roi.w - 1, roi.y + roi.h - 1, color);
+}
+

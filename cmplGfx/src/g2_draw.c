@@ -14,12 +14,26 @@ void drawRect(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 	struct GxRect clip = {
 		.x = x1,
 		.y = y1,
-		.w = x2 - x1,
-		.h = y2 - y1,
+		.w = x2 - x1 + 1,
+		.h = y2 - y1 + 1,
 	};
 	bltProc blt = getBltProc(blt_set_col, image->depth);
 	char *dptr = (char*) clipRect(image, &clip);
 	if (dptr == NULL || blt == NULL) {
+		return;
+	}
+
+	if (y2 == y1) {
+		// special case: horizontal line
+		blt(dptr, NULL, &color, clip.w);
+		return;
+	}
+	if (x2 == x1) {
+		// special case: vertical line
+		for (int y = 0; y < clip.h; y++) {
+			blt(dptr, NULL, &color, 1);
+			dptr += image->scanLen;
+		}
 		return;
 	}
 
@@ -74,8 +88,8 @@ void fillRect(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 	struct GxRect clip = {
 		.x = x1,
 		.y = y1,
-		.w = x2 - x1,
-		.h = y2 - y1,
+		.w = x2 - x1 + 1,
+		.h = y2 - y1 + 1,
 	};
 	bltProc blt = getBltProc(blt_set_col, image->depth);
 	char *dptr = (char*) clipRect(image, &clip);
@@ -118,8 +132,8 @@ void drawOval(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 
 	while (y1 < y2) {
 		setPixel(image, x1, y1, color);
-		setPixel(image, x1, y2, color);
 		setPixel(image, x2, y1, color);
+		setPixel(image, x1, y2, color);
 		setPixel(image, x2, y2, color);
 
 		if (r >= 0) {
@@ -135,8 +149,8 @@ void drawOval(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 		}
 	}
 	setPixel(image, x1, y1, color);
-	setPixel(image, x1, y2, color);
 	setPixel(image, x2, y1, color);
+	setPixel(image, x1, y2, color);
 	setPixel(image, x2, y2, color);
 }
 void fillOval(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
@@ -167,8 +181,8 @@ void fillOval(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 	dy = r << 1;
 
 	while (y1 < y2) {
-		fillRect(image, x1, y1, x1 + 1, y2, color);
-		fillRect(image, x2, y1, x2 + 1, y2, color);
+		fillRect(image, x1, y1, x2, y1, color);
+		fillRect(image, x1, y2, x2, y2, color);
 
 		if (r >= 0) {
 			x1 -= 1;
@@ -182,8 +196,7 @@ void fillOval(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {
 			r += dy -= sx;
 		}
 	}
-	fillRect(image, x1, y1, x1 + 1, y2, color);
-	fillRect(image, x2, y1, x2 + 1, y2, color);
+	fillRect(image, x1, y1, x2, y2, color);
 }
 
 void drawLine(GxImage image, int x1, int y1, int x2, int y2, uint32_t color) {

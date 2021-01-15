@@ -57,6 +57,7 @@ object
 object.create(type: typename): pointer
 object.destroy(this: object): void
 object.as(this: object, type: typename): pointer
+object.type(this: object): typename
 null
 int
 emit
@@ -773,12 +774,14 @@ resize(image: Image, rect: Rect, src: Image, roi: Rect, interpolate: int32): voi
 slice(image: Image, rect: Rect): Image # @public
 clip(src: Image, roi: Rect): bool # @public
 fill(image: Image, color: uint32): void # Fill the entire image with the given color
-fill(image: Image, roi: Rect, color: uint32): void # Fill the given region of the image with the given color
-fill(image: Image, roi: Rect, pad: int32, color: uint32): void # Fill the given region and padding of the image with the given color
-drawRect(image: Image, roi: Rect, color: uint32): void # @public
-fillRect(image: Image, roi: Rect, color: uint32): void # @public
 eval(image: Image, roi: Rect, aspect: float32, time: float32, eval(in: vec4f): vec4f): void # Fill the surface by evaluating the given function for each pixel
 tile(image: Image, x: int32, y: int32, src: Image, roi: Rect): void # @public
+fillRect(image: Image, x1: int32, y1: int32, x2: int32, y2: int32, rx: int32, ry: int32, color: uint32): void # Fill the given rectangle rounding the corners using the given radius
+fillRect(image: Image, x1: int32, y1: int32, x2: int32, y2: int32, r: int32, color: uint32): void # Fill the given rectangle rounding the corners using the given radius
+fillRect(image: Image, roi: Rect, rx: int32, ry: int32, color: uint32): void # Fill the given rectangle rounding the corners using the given radius
+fillRect(image: Image, roi: Rect, r: int32, color: uint32): void # Fill the given rectangle rounding the corners using the given radius
+drawRect(image: Image, roi: Rect, color: uint32): void # Fill the entire image with the given color
+fillRect(image: Image, roi: Rect, color: uint32): void # Fill the entire image with the given color
 Mesh(fileName: char[*]): Mesh # Create a mesh by opening a file
 Camera
 Camera.position
@@ -794,6 +797,9 @@ Camera.matrix(projection: mat4f, camera: Camera): mat4f # get the matrix of the 
 Camera.move(camera: Camera, direction: vec4f, amount: float32): void # Move the camera in the given `direction` with the given `amount`
 Camera.rotate(camera: Camera, direction: vec4f, amount: float32): void # Rotate the camera in the given `direction` with the given `amount`
 Camera.rotate(camera: Camera, orbit: vec4f, direction: vec4f, amount: float32): void # Rotate the camera around the `orbit` in the given `direction` with the given `amount`
+adjust(roi: Rect, x: int32, y: int32, w: int32, h: int32): void # adjust the rectangle position and size
+adjust(roi: Rect, w: int32, h: int32): void # adjust the rectangle position and size
+adjust(roi: Rect, s: int32): void # adjust the rectangle position and size
 show(surf: Image): void # Show the surface in a window
 show(image: Image, onEvent(action: int32, button: int32, ex: int32, ey: int32): int32): void # Show the surface in a window
 showDiff(image1: Image, image2: Image): void # Show the surfaces in a window clicking on the window toggles the shown surface

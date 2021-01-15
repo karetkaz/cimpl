@@ -347,11 +347,54 @@ function rmWorkspace(workspace) {
 	req.onblocked = console.log;
 }
 
-/* usually content changed, show save icon */
+// usually content changed, show save icon
 editor.on('change', function(cm, change) {
 	setStyle(document.body, 'edited');
 });
-/* add / remove breakpoint */
+// show position and selection in document
+editor.on('cursorActivity', function(editor) {
+	let pos = editor.getCursor();
+	let sel = editor.listSelections();
+	if (sel.length !== 1) {
+		// multiple selections
+		editPosition.innerText = (pos.line+1) + ':' + (pos.ch + 1) +
+			' [' + (sel.length) + ' selections]';
+		return;
+	}
+	if (sel[0].anchor !== sel[0].head) {
+		// single selection show selected [lines:characters]
+		let head = sel[0].head;
+		let anchor = sel[0].anchor;
+		if (head.line === anchor.line) {
+			if (head.ch < anchor.ch) {
+				let tmp = head;
+				head = anchor;
+				anchor = tmp;
+			}
+		}
+		else if (head.line < anchor.line) {
+			let tmp = head;
+			head = anchor;
+			anchor = tmp;
+		}
+		let lines = head.line - anchor.line + 1;
+		let chars = editor.getRange(anchor, head).length;
+		editPosition.innerText = (pos.line+1) + ':' + (pos.ch + 1) +
+			' [' + (lines) + ':' + (chars) + ']';
+		return;
+	}
+
+	// no selection show document [lines:characters]
+	let lines = 0;
+	let chars = 0;
+	editor.doc.iter(function(line) {
+		chars += line.text.length;
+		lines += 1;
+	});
+	editPosition.innerText = (pos.line+1) + ':' + (pos.ch + 1) +
+		' [' + (lines) + ':' + (chars) + ']';
+});
+// add / remove breakpoint
 editor.on('gutterClick', function(cm, n) {
 	let info = cm.lineInfo(n);
 	if (info.gutterMarkers == null) {
@@ -364,7 +407,7 @@ editor.on('gutterClick', function(cm, n) {
 		cm.setGutterMarker(n, 'breakpoints', null);
 	}
 });
-/* notify main window iframing the editor to resize it's height */
+// notify main window iframing the editor to resize it's height
 editor.on('viewportChange', function(cm, from, to) {
 	let body = document.body;
 	let html = document.documentElement;

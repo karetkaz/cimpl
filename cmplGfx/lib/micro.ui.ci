@@ -20,12 +20,17 @@ struct Style {
 
 		left: 1;
 		right: 2;
-		vertical: left + right;
 
 		top: 4;
 		bottom: 8;
-		horizontal: top + bottom;
 
+		topLeft: top + left;
+		topRight: top + right;
+		bottomLeft: bottom + left;
+		bottomRight: bottom + right;
+
+		vertical: left + right;
+		horizontal: top + bottom;
 		fill: vertical + horizontal;
 	}
 
@@ -37,8 +42,9 @@ struct Style {
 
 	static void measure(const Style this&, Rect rect&, const char text[*], int extraChars) {
 		this.font.clipText(&rect, text);
-		if (text != null && rect.w != 0) {
+		if (text != null && rect.w != 0 && extraChars > 0) {
 			rect.w += extraChars * rect.w / length(text);
+			rect.w += this.padding;
 		}
 		rect.w += 2 * this.padding;
 		rect.h += 2 * this.padding;
@@ -46,13 +52,6 @@ struct Style {
 
 	/// Align one rect containing text relative to its container
 	static void align(Rect parent, Rect rect&, int align) {
-		if (rect.w > parent.w) {
-			rect.w = parent.w;
-		}
-		if (rect.h > parent.h) {
-			rect.h = parent.h;
-		}
-
 		int vertical = align & Style.vertical;
 		if (vertical == center) {
 			rect.x = parent.x + (parent.w - rect.w) / 2;
@@ -100,6 +99,9 @@ struct Style {
 	static void align(const Style this&, Rect parent, Rect rect&, const char value[*]) {
 		return align(this, parent, &rect, value, this.padding, this.align);
 	}
+
+	inline vertical(int align) = (align & vertical) == vertical;
+	inline horizontal(int align) = (align & horizontal) == horizontal;
 }
 struct KeyEvent {
 	const bool release;
@@ -233,24 +235,25 @@ struct View: object {
 		return this.onClick(this);
 	}
 
-	void onMeasure(View this, Rect rect&, const Style style&) {
-		if (this.width >= 0) {
-			rect.w = this.width;
+	bool onMeasure(View this, Rect rect&, const Style style&, int visible) {
+		if ((this.visible & visible) == 0) {
+			// view is hidden
+			rect.w = rect.h = 0;
+			return false;
 		}
-		else if (Math.abs(rect.w) < -this.width) {
-			rect.w = -this.width;
+		int width = Math.abs(this.width);
+		if (rect.w < width || this.width > 0) {
+			rect.w = width;
 		}
-		if (this.height >= 0) {
-			rect.h = this.height;
+		int height = Math.abs(this.height);
+		if (rect.h < height || this.height > 0) {
+			rect.h = height;
 		}
-		else if (Math.abs(rect.h) < -this.height) {
-			rect.h = -this.height;
-		}
+		return true;
 	}
 
 	void onDraw(View this, Image offs, Rect rect, const Style style&);
 	static void onDraw(View this, Image offs, Rect rect, const Style style&, int state) {
-		// TODO: dispatch state to all child views
 		if (state & Style.focused) {
 			offs.fillRect(rect, style.focusedColor);
 		}
@@ -279,20 +282,15 @@ struct View: object {
 }
 
 struct Layout: View {
-	/* TODO: vertical and horizontal scroll offset
-	int xOffset;
-	int yOffset;
-	*/
-
 	/** Vertical, horizontal or other orientation of the layout
 	 * zero represents a stack(Qt) or frame(Android) layout (all child elements are placed on top of each other)
 	 * negative value represents a column layout, specifying the number of columns to be used
 	 * positive value represents a row layout, specifying the number of rows to be used
 	 */
-	const int orientation;
+	const int orientation = 1;
 
 	/// Alignment of each child in the layout
-	const int alignment;
+	const int alignment = Style.fill;
 
 	const int itemCount;
 	View items[*] = null;
@@ -476,222 +474,236 @@ struct Layout: View {
 		return result;
 	}
 
-	void onMeasure(Layout this, Rect rect&, const Style style&) {
+	bool onMeasure(Layout this, Rect measured&, const Style style&, int visible) {
+		int dir = this.orientation;
+		int N = Math.abs(dir);
+		int n = 0;
 		int maxWidth = 0;
 		int sumWidth = 0;
 		int maxHeight = 0;
 		int sumHeight = 0;
+		int rows = dir < 0 ? N : 1;
+		int cols = dir > 0 ? N : 1;
 		for (int i = 0; i < this.itemCount; i += 1) {
 			View view = this.items[i];
-			Rect viewRect& = this.rects[i];
-			viewRect.w = viewRect.h = 0;
-
-			view.onMeasure(view, &viewRect, style);
-			int width = Math.abs(viewRect.w);
-			int height = Math.abs(viewRect.h);
-			if (maxWidth < width) {
-				maxWidth = width;
+			Rect rect& = this.rects[i];
+			if (view.onMeasure(view, &rect, style, visible)) {
+				int width = rect.w;
+				int height = rect.h;
+				if (n >= N) {
+					cols += int(dir < 0);
+					rows += int(dir > 0);
+					n = 0;
+				}
+				sumWidth += width;
+				if (maxWidth < width) {
+					maxWidth = width;
+				}
+				sumHeight += height;
+				if (maxHeight < height) {
+					maxHeight = height;
+				}
+				n += 1;
 			}
-			if (maxHeight < height) {
-				maxHeight = height;
-			}
-			sumWidth += width;
-			sumHeight += height;
 		}
-
-		if (this.orientation > 0) {
-			// using negative sum because hidden views are included
-			rect.w = -sumWidth;
-		} else {
-			rect.w = maxWidth;
+		if (rows == 1 && cols == 1) {
+			sumWidth = maxWidth;
+			sumHeight = maxHeight;
 		}
-		if (this.orientation < 0) {
-			// using negative sum because hidden views are included
-			rect.h = -sumHeight;
-		} else {
-			rect.h = maxHeight;
+		if (rows > 1) {
+			// multi row layout, using uniform width
+			sumWidth = maxWidth * cols;
 		}
-		View.onMeasure(this, &rect, style);
+		if (cols > 1) {
+			// multi column layout, using uniform height
+			sumHeight = maxHeight * rows;
+		}
+		measured.w = sumWidth;
+		measured.h = sumHeight;
+		return View.onMeasure(this, &measured, style, visible);
 	}
 
 	void onLayout(Layout this, Rect rect&);
-	static void frameLayout(Layout this, Rect rect&) {
-		Rect r = rect;
-		r.w = Math.abs(r.w);
-		r.h = Math.abs(r.h);
-		int align = this.alignment;
+	static void verticalLayout(Layout this, Rect measured&, int cols) {
+		int maxHeight(Layout this, int start, int count) {
+			int result = 0;
+			for (int i = start; i < this.itemCount; i += 1) {
+				Rect rect& = this.rects[i];
+				if (rect.w && rect.h) {
+					if (count <= 0) {
+						return result;
+					}
+					if (result < rect.h) {
+						result = rect.h;
+					}
+					count -= 1;
+				}
+			}
+			return result;
+		}
+		int rowSpacing = measured.w / cols;
+		int colSpacing = maxHeight(this, 0, this.itemCount);
+
+		Rect r = {
+			x: measured.x;
+			y: measured.y;
+			w: this.width > 0 ? this.width : measured.w;
+			h: this.height > 0 ? this.height : measured.h;
+		};
+		Style.align(r, &measured, this.alignment);
+
+		int n = cols;
+		r.y -= colSpacing;
 		for (int i = 0; i < this.itemCount; i += 1) {
-			View view& = this.items[i];
-			Rect viewRect& = this.rects[i];
-			Style.align(r, &viewRect, align);
-			if (Layout layout = view.as(Layout)) {
-				layout.onLayout(layout, &viewRect);
-			}
-			if (rect.w < viewRect.w) {
-				rect.w = viewRect.w;
-			}
-			if (rect.h < viewRect.h) {
-				rect.h = viewRect.h;
+			Rect rect& = this.rects[i];
+			if (rect.w && rect.h) {
+				if (n >= cols) {
+					r.x = measured.x;
+					r.y += colSpacing;
+					if (cols == 1) {
+						// single row, allow non uniform heights
+						colSpacing = rect.h;
+					} else {
+						// using non uniform heights
+						//colSpacing = maxHeight(this, i, cols);
+					}
+					n = 0;
+				}
+
+				r.w = rowSpacing;
+				r.h = colSpacing;
+				View view = this.items[i];
+				int align = this.alignment;
+				if (view.width > 0 && Style.vertical(align)) {
+					// fixed width, center instead of stretch
+					align &= ~Style.vertical;
+				}
+				if (view.height > 0 && Style.horizontal(align)) {
+					// fixed height, center instead of stretch
+					align &= ~Style.horizontal;
+				}
+
+				Style.align(r, &rect, align);
+				if (Layout layout = view.as(Layout)) {
+					layout.onLayout(layout, &rect);
+				}
+
+				r.x += rowSpacing;
+				n += 1;
 			}
 		}
 	}
-	static void verticalLayout(Layout this, Rect rect&) {
-		int gravity = Style.horizontal + Style.left;
-		int align = this.alignment & Style.vertical;
-		int gap = 0;
-		int width = 0;
-		int height = 0;
-		Rect r = rect;
-		r.w = Math.abs(r.w);
-		r.h = Math.abs(r.h);
-		for (int i = 0; i < this.itemCount; i += 1) {
-			Rect viewRect& = this.rects[i];
-			width += Math.abs(viewRect.w);
-		}
-		if (rect.w > width) {
-			gap = r.w - width;
-			if (align != Style.right) {
-				if (align == Style.vertical) {
-					gap /= this.itemCount;
-				}
-				else if (this.itemCount > 1) {
-					gap /= this.itemCount - 1;
-				}
-			}
-		}
-		for (int i = 0; i < this.itemCount; i += 1) {
-			View view& = this.items[i];
-			Rect viewRect& = this.rects[i];
-			Style.align(r, &viewRect, gravity);
-			if (Layout layout = view.as(Layout)) {
-				layout.onLayout(layout, &viewRect);
-			}
-			if (viewRect.w > 0 && viewRect.h > 0) {
-				if (align == Style.vertical) {
-					r.x += gap + viewRect.w;
-					viewRect.w += gap;
-					if (Layout layout = view.as(Layout)) {
-						layout.onLayout(layout, &viewRect);
+	static void horizontalLayout(Layout this, Rect measured&, int rows) {
+		int maxWidth(Layout this, int start, int count) {
+			int result = 0;
+			for (int i = start; i < this.itemCount; i += 1) {
+				Rect rect& = this.rects[i];
+				if (rect.w && rect.h) {
+					if (count <= 0) {
+						return result;
 					}
-				}
-				else if (align == Style.center) {
-					r.x += gap + viewRect.w;
-				}
-				else if (align == Style.right) {
-					r.x += viewRect.w;
-					viewRect.x += gap;
-					if (Layout layout = view.as(Layout)) {
-						layout.onLayout(layout, &viewRect);
+					if (result < rect.w) {
+						result = rect.w;
 					}
-				}
-				else if (align == Style.left) {
-					r.x += viewRect.w;
+					count -= 1;
 				}
 			}
+			return result;
 		}
-		if (rect.w < width) {
-			rect.w = width;
-		}
-		if (rect.h < height) {
-			rect.h = height;
+		int rowSpacing = maxWidth(this, 0, this.itemCount);
+		int colSpacing = measured.h / rows;
+
+		Rect r = {
+			x: measured.x;
+			y: measured.y;
+			w: this.width > 0 ? this.width : measured.w;
+			h: this.height > 0 ? this.height : measured.h;
+		};
+		Style.align(r, &measured, this.alignment);
+		int n = rows;
+		r.x -= rowSpacing;
+		for (int i = 0; i < this.itemCount; i += 1) {
+			Rect rect& = this.rects[i];
+			if (rect.w && rect.h) {
+				if (n >= rows) {
+					r.y = measured.y;
+					r.x += rowSpacing;
+					if (rows == 1) {
+						// single column, allow non uniform widths
+						rowSpacing = rect.w;
+					} else {
+						// using non uniform widths
+						//rowSpacing = maxWidth(this, i, rows);
+					}
+					n = 0;
+				}
+
+				r.w = rowSpacing;
+				r.h = colSpacing;
+				View view = this.items[i];
+				int align = this.alignment;
+				if (view.width > 0 && Style.vertical(align)) {
+					// fixed width, center instead of stretch
+					align &= ~Style.vertical;
+				}
+				if (view.height > 0 && Style.horizontal(align)) {
+					// fixed height, center instead of stretch
+					align &= ~Style.horizontal;
+				}
+
+				Style.align(r, &rect, align);
+				if (Layout layout = view.as(Layout)) {
+					layout.onLayout(layout, &rect);
+				}
+
+				r.y += colSpacing;
+				n += 1;
+			}
 		}
 	}
-	static void horizontalLayout(Layout this, Rect rect&) {
-		int gravity = Style.vertical + Style.top;
-		int align = this.alignment & Style.horizontal;
-		int gap = 0;
-		int width = 0;
-		int height = 0;
-		Rect r = rect;
-		r.w = Math.abs(r.w);
-		r.h = Math.abs(r.h);
+	void onLayout(Layout this, Rect measured&) {
+		if (this.orientation > 0) {
+			/* Multi column vertical layout, ex 3 cols:
+			/--- col0 ---+--- col1 ---+--- col2 ---\
+			|   item00   |   item01   |   item02   | row0
+			|   item03   |   item04   |            | row1
+			.    ...     |    ...     |    ...     . rowN
+			\------------+------------+-----------*/
+			return verticalLayout(this, &measured, this.orientation);
+		}
+		if (this.orientation < 0) {
+			/* multi row horizontal layout, ex 2 rows:
+			/--- col0 ---+--- col1 ---+--- col2 ---+--- colN ---\
+			|   item00   |   item02   |   item04   |    ...     | row0
+			|   item01   |   item03   |    ...     |    ...     | row1
+			\------------+------------+------------+--- ... ---*/
+			return horizontalLayout(this, &measured, -this.orientation);
+		}
+
+		Rect r = {
+			x: measured.x;
+			y: measured.y;
+			w: this.width > 0 ? this.width : measured.w;
+			h: this.height > 0 ? this.height : measured.h;
+		};
+		Style.align(r, &measured, this.alignment);
 		for (int i = 0; i < this.itemCount; i += 1) {
-			Rect viewRect& = this.rects[i];
-			height += Math.abs(viewRect.h);
-		}
-		if (rect.h > height) {
-			gap = r.h - height;
-			if (align != Style.bottom) {
-				if (align == Style.horizontal) {
-					gap /= this.itemCount;
-				}
-				else if (this.itemCount > 1) {
-					gap /= this.itemCount - 1;
+			Rect rect& = this.rects[i];
+			if (rect.w && rect.h) {
+				View view& = this.items[i];
+				Style.align(measured, &rect, this.alignment);
+				if (Layout layout = view.as(Layout)) {
+					layout.onLayout(layout, &rect);
 				}
 			}
-		}
-		for (int i = 0; i < this.itemCount; i += 1) {
-			View view& = this.items[i];
-			Rect viewRect& = this.rects[i];
-			Style.align(r, &viewRect, gravity);
-			if (Layout layout = view.as(Layout)) {
-				layout.onLayout(layout, &viewRect);
-			}
-			if (viewRect.w > 0 && viewRect.h > 0) {
-				if (align == Style.horizontal) {
-					r.y += gap + viewRect.h;
-					viewRect.h += gap;
-					if (Layout layout = view.as(Layout)) {
-						layout.onLayout(layout, &viewRect);
-					}
-				}
-				else if (align == Style.center) {
-					r.y += gap + viewRect.h;
-				}
-				else if (align == Style.bottom) {
-					r.y += viewRect.h;
-					viewRect.y += gap;
-					if (Layout layout = view.as(Layout)) {
-						layout.onLayout(layout, &viewRect);
-					}
-				}
-				else if (align == Style.top) {
-					r.y += viewRect.h;
-				}
-			}
-		}
-		if (rect.w < width) {
-			rect.w = width;
-		}
-		if (rect.h < height) {
-			rect.h = height;
 		}
 	}
 
-	void onLayout(Layout this, Rect rect&) {
-		if (this.orientation == 0) {
-			return frameLayout(this, &rect);
-		}
-		if (this.orientation == 1) {
-			return verticalLayout(this, &rect);
-		}
-		if (this.orientation == -1) {
-			return horizontalLayout(this, &rect);
-		}
-
-		return abort("not implemented");
-		/* TODO: this case is a grid like layout:
-		 * Multi Column Layout with 3 columns
-			/--- col0 ---+----col1----+----col2----\
-			|   item00   |   item01   |   item02   |
-			|   item03   |   item04   |            |
-			.    ...     |    ...     |    ...     .
-			\------------+------------+------------/
-		 * Multi Row Layout with 2 rows
-			/--- col0 ---+----col1----+----col2----+--- ... ----\
-			|   item00   |   item02   |   item04   |    ...     |
-			|   item01   |   item03   |    ...     |    ...     |
-			\------------+------------+------------+--- ... ----/
-		*/
-	}
-
-	void onDraw(Layout this, Image offs, Rect rect, const Style style&) {
-		// draw items
+	void onDraw(Layout this, Image offs, Rect parent, const Style style&) {
 		for (int i = 0; i < this.itemCount; i += 1) {
-			View view = this.items[i];
-			const Rect viewRect& = this.rects[i];
-
-			if (viewRect.w > 0 && viewRect.h > 0) {
+			const Rect rect& = this.rects[i];
+			if (rect.w > 0 && rect.h > 0) {
+				const View view = this.items[i];
 				int state = 0;
 				if (view.as(Layout) == null) {
 					if (i == this.hoveredIndex) {
@@ -703,10 +715,12 @@ struct Layout: View {
 					if (i == this.focusedIndex) {
 						state |= Style.focused;
 					}
+//					offs.drawRect(rect, 0x00ff00);
 				}
-				View.onDraw(view, offs, viewRect, style, state);
+				view.onDraw(view, offs, rect, style, state);
 			}
 		}
+//		offs.drawRect(parent, 0xff0000);
 	}
 
 	static Layout Custom(int rowsCols, int align, View items...) {
@@ -723,20 +737,21 @@ struct Layout: View {
 		return layout;
 	}
 	static Layout Row(View items...) {
-		return Custom(1, Style.horizontal, ...items);
+		return Custom(-1, Style.fill, ...items);
 	}
 	static Layout Column(View items...) {
-		return Custom(-1, Style.vertical, ...items);
+		return Custom(1, Style.fill, ...items);
 	}
-	// FIXME: inline Row(View items...) = Row(1, Style.horizontal, ...items);
+	// FIXME: inline Row(View items...) = Custom(-1, Style.fill, items);
+	// FIXME: inline Column(View items...) = Custom(1, Style.fill, items);
 }
 
 struct Button: View {
 	const char text[*];
 
-	void onMeasure(Button this, Rect rect&, const Style style&) {
+	bool onMeasure(Button this, Rect rect&, const Style style&, int visible) {
 		style.measure(&rect, this.text, 0);
-		View.onMeasure(this, &rect, style);
+		return View.onMeasure(this, &rect, style, visible);
 	}
 
 	void onDraw(Button this, Image offs, Rect rect, const Style style&) {
@@ -813,16 +828,16 @@ struct Switch: View {
 		return View.onKeyEvent(this, event);
 	}
 
-	void onMeasure(Switch this, Rect rect&, const Style style&) {
+	bool onMeasure(Switch this, Rect rect&, const Style style&, int visible) {
 		int len = length(this.states[0]);
 		for (int i = 0; i < this.states.length; i += 1) {
-			int max = length(this.states[0]);
+			int max = length(this.states[i]);
 			if (len < max) {
 				len = max;
 			}
 		}
 		style.measure(&rect, this.text, len);
-		View.onMeasure(this, &rect, style);
+		return View.onMeasure(this, &rect, style, visible);
 	}
 
 	void onDraw(Switch this, Image offs, Rect rect, const Style style&) {
@@ -917,7 +932,7 @@ struct Slider: View {
 		return View.onMouseEvent(this, rect, event);
 	}
 
-	void onMeasure(Slider this, Rect rect&, const Style style&) {
+	bool onMeasure(Slider this, Rect rect&, const Style style&, int visible) {
 		char value[64] = {0};
 		if (this.divisor != 0) {
 			value.append(0, this.valueF64(), style.fmtFlt);
@@ -925,7 +940,7 @@ struct Slider: View {
 			value.append(0, this.value, style.fmtInt);
 		}
 		style.measure(&rect, this.text, length(value));
-		View.onMeasure(this, &rect, style);
+		return View.onMeasure(this, &rect, style, visible);
 	}
 
 	void onDrawSlider(Slider this, Image offs, Rect rect, const Style style&) {
@@ -959,6 +974,8 @@ struct Widget: Layout {
 	int visibleGroup = -1;
 	bool measure = true;
 	bool hidden = false;
+	int scrollX = 0;
+	int scrollY = 0;
 	Style style;
 	Image offs;
 	Rect rect;
@@ -1087,7 +1104,7 @@ struct Widget: Layout {
 			this.visibleGroup = group;
 			if (selectFirst) {
 				// measure then focus first visible view
-				this.onMeasure(this, &this.rect, this.style);
+				this.onMeasure(this, &this.rect, this.style, group);
 				this.clearState(Style.focused);
 				this.focusNext(false);
 			}
@@ -1098,33 +1115,6 @@ struct Widget: Layout {
 	}
 	inline setGroup(Widget this, int group) = setGroup(this, group, false);
 
-	void onMeasure(Widget this, Rect rect&, const Style style&) {
-		static void hideViews(Widget widget, Layout layout) {
-			for (int i = 0; i < layout.itemCount; i += 1) {
-				View view = layout.items[i];
-				if (Layout child = view.as(Layout)) {
-					hideViews(widget, child);
-				}
-				if ((widget.visibleGroup & view.visible) == 0) {
-					layout.rects[i].w = 0;
-					layout.rects[i].h = 0;
-				}
-			}
-		}
-		Layout.onMeasure(this, &rect, style);
-		hideViews(this, this);
-	}
-
-	void onLayout(Widget this, Rect rect&) {
-		if (rect.x < 0) {
-			rect.x = this.offs.width() - rect.w + rect.x;
-		}
-		if (rect.y < 0) {
-			rect.y = this.offs.height() - rect.h + rect.y;
-		}
-		Layout.onLayout(this, &rect);
-	}
-
 	void onDraw(Widget this, Image offs, Rect rect, const Style style&) {
 //		offs = offs.slice(rect); // todo: clip drawings
 		// draw background
@@ -1134,7 +1124,7 @@ struct Widget: Layout {
 			int left = rect.x - style.border;
 			int right = rect.x + rect.w + style.border;
 			int bottom = rect.y + rect.h + style.border;
-			offs.fillRect(left, top, right, bottom, style.backgroundColor);
+			offs.fillRect(left, top, right, bottom, style.border * 2, style.backgroundColor);
 		}
 		Layout.onDraw(this, offs, rect, style);
 //		offs.destroy(); // todo: clip drawings
@@ -1169,7 +1159,7 @@ struct Widget: Layout {
 		if (action == Gui.WINDOW_INIT) {
 			this.onCreate(this);
 			// measure then focus first visible view
-			this.onMeasure(this, &this.rect, this.style);
+			this.onMeasure(this, &this.rect, this.style, this.visibleGroup);
 			this.clearState(Style.focused);
 			this.focusNext(false);
 			return true;
@@ -1187,7 +1177,9 @@ struct Widget: Layout {
 			Rect rect& = this.rect;
 			if (this.measure) {
 				rect.w = rect.h = 0;
-				this.onMeasure(this, &rect, this.style);
+				this.onMeasure(this, &rect, this.style, this.visibleGroup);
+				rect.x = this.scrollX;
+				rect.y = this.scrollY;
 				this.onLayout(this, &rect);
 				this.measure = false;
 			}
@@ -1323,21 +1315,15 @@ struct Widget: Layout {
 			}
 			if (button == '[' || button == ']') {
 				// hide, show controls
-				Rect r& = this.rect;
-				if (button == '[' && r.x == r.y) {
+				if (button == '[') {
 					this.hidden = !this.hidden;
 					return true;
 				}
-				if (button == ']' && r.x != r.y) {
+				if (button == ']') {
 					this.hidden = !this.hidden;
 					return true;
 				}
 
-				if (this.rect.x == this.rect.y) {
-					r.x = -r.y;
-				} else {
-					r.x = r.y;
-				}
 				this.hidden = false;
 				this.measure = true;
 				return true;
@@ -1407,15 +1393,10 @@ struct Widget: Layout {
 Widget Widget(Image offs, int pos, const Style style&, View items...) {
 	Widget layout = {
 		offs: offs;
-		rect: {
-			x: pos;
-			y: pos;
-			w: -1;
-			h: -1;
-		};
+		rect: {};
+		scrollX: pos;
+		scrollY: pos;
 		style: style;
-		orientation: -1;
-		alignment: Style.fill;
 		itemCount: items.length;
 		items: pointer.alloc(null, items.length * sizeof(View));
 		rects: pointer.alloc(null, items.length * sizeof(Rect));
@@ -1425,7 +1406,10 @@ Widget Widget(Image offs, int pos, const Style style&, View items...) {
 	}
 
 	if (pos < 0) {
-		layout.rect.y = -pos;
+		layout.onMeasure(layout, &layout.rect, layout.style, layout.visibleGroup);
+		layout.scrollX = offs.width() - layout.rect.w + pos;
+		layout.scrollY = -pos;
+		layout.measure = true;
 	}
 	return layout;
 }
@@ -1507,14 +1491,14 @@ struct Histogram: View {
 		return true;
 	}
 
-	void onMeasure(Histogram this, Rect rect&, const Style style&) {
+	bool onMeasure(Histogram this, Rect rect&, const Style style&, int visible) {
 		if (this.width < 0) {
 			rect.w = 256;
 		}
 		if (this.height < 0) {
 			rect.h = 128;
 		}
-		return View.onMeasure(this, &rect, style);
+		return View.onMeasure(this, &rect, style, visible);
 	}
 
 	void onDraw(Histogram this, Image offs, const Rect rect, const Style style&) {

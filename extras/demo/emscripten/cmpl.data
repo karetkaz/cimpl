@@ -58,6 +58,20 @@ inline "lib/image.ci";
 inline "lib/mesh.ci";
 inline "lib/camera.ci";
 
+/// adjust the rectangle position and size
+void adjust(Rect roi&, int x, int y, int w, int h) {
+	roi.x += x;
+	roi.y += y;
+	roi.w += w;
+	roi.h += h;
+}
+
+/// adjust the rectangle position and size
+inline adjust(Rect roi&, int w, int h) = roi.adjust(-w, -h, 2 * w, 2 * h);
+
+/// adjust the rectangle position and size
+inline adjust(Rect roi&, int s) = roi.adjust(-s, -s, 2 * s, 2 * s);
+
 static if (typename(Image.blur) == null) {
 raise(raise.debug, raise.noTrace, "emulated/blur.ci", null);
 inline "lib/emulated/blur.ci";
@@ -1202,6 +1216,163 @@ inline append(char output[], int pos, float32 value, const FormatFlags format&) 
 int append(char output[], int pos, int value) {
 	static const FormatFlags format = {};
 	return append(output, pos, value, format);
+}
+struct Date {
+	int year;
+	int month;			// 1 ... 12 	[Jan, Feb, Mar, ...]
+	int dayOfMonth;		// 1 ... 31
+	int dayOfWeek;		// 1 ... 7		[Mon, Tue, ...]
+	int dayOfYear;		// 1 ... 366
+	//~ bool leapYear;
+
+	enum: int64 {
+		// Number of milliseconds per time unit
+		MillisPerSecond: 1000;
+		MillisPerMinute: MillisPerSecond * 60;
+		MillisPerHour: MillisPerMinute * 60;
+		MillisPerDay: MillisPerHour * 24;
+		MillisPerWeek: MillisPerDay * 7;
+
+		MillisPerYear: MillisPerDay * 365;
+		MillisPerLeapYear: MillisPerDay * 366;
+	}
+	enum: int { // DaysPer...
+		// Number of days in a non-leap year
+		DaysPerYear: 365;
+
+		// Number of days in a leap year
+		DaysPerLeapYear: 366;
+
+		// Number of days in 4 years
+		DaysPer4Years: DaysPerYear * 4 + 1;
+		// Number of days in 100 years
+		DaysPer100Years: DaysPer4Years * 25 - 1;
+		// Number of days in 400 years
+		DaysPer400Years: DaysPer100Years * 4 + 1;
+
+		HoursPerDay: 24;
+		MinutesPerDay: 60 * HoursPerDay;
+		SecondsPerDay: 60 * MinutesPerDay;
+
+		DaysTil1970: 719162;
+	}
+
+	static const int DaysToMonth365[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+	static const int DaysToMonth366[13] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366};
+
+	static bool isLeapYear(int year) {
+		if (year % 4 != 0) {
+			return false;
+		}
+		if (year % 100 != 0) {
+			return true;
+		}
+		if (year % 400 != 0) {
+			return false;
+		}
+		return true;
+	}
+
+	static int64 millis(int year, int month, int day) {
+		if (year <= 0 || year > 9999) {
+			// year is invalid
+			return -1;
+		}
+		if (month <= 0 || month > 12) {
+			// month is invalid
+			return -1;
+		}
+
+		int daysInYear = 0;
+		int daysInMonth = 0;
+		if (isLeapYear(year)) {
+			daysInYear = DaysToMonth366[month - 1];
+			daysInMonth = DaysToMonth366[month] - daysInMonth;
+		} else {
+			daysInYear = DaysToMonth365[month - 1];
+			daysInMonth = DaysToMonth365[month] - daysInMonth;
+		}
+
+		if (day <= 0 || day > daysInMonth) {
+			// day is invalid
+			return -1;
+		}
+
+		int y = year - 1;
+		int64 d = y * 365 + y / 4 - y / 100 + y / 400 + daysInYear + day - 1;
+		return (d - DaysTil1970) * MillisPerDay;
+	}
+
+	static Date parts(int64 now) {
+		int n = DaysTil1970 + now / MillisPerDay;
+
+		// n = number of days since 1/1/0001
+		int dayOfWeek = n % 7 + 1;
+
+		// y400 = number of whole 400-year periods since 1/1/0001
+		int y400 = n / DaysPer400Years;
+		// n = day number within 400-year period
+		n -= y400 * DaysPer400Years;
+
+		// y100 = number of whole 100-year periods within 400-year period
+		int y100 = n / DaysPer100Years;
+
+		// Last 100-year period has an extra day, so decrement result if 4
+		if (y100 == 4) {
+			y100 = 3;
+		}
+		// n = day number within 100-year period
+		n -= y100 * DaysPer100Years;
+
+		// y4 = number of whole 4-year periods within 100-year period
+		int y4 = n / DaysPer4Years;
+		// n = day number within 4-year period
+		n -= y4 * DaysPer4Years;
+
+		// y1 = number of whole years within 4-year period
+		int y1 = n / DaysPerYear;
+		// Last year has an extra day, so decrement result if 4
+		if (y1 == 4) {
+			y1 = 3;
+		}
+
+		// If year was requested, compute and return it
+		int year = y400 * 400 + y100 * 100 + y4 * 4 + y1 + 1;
+
+		// n = day number within year
+		n -= y1 * DaysPerYear;
+		int dayOfYear = n + 1;
+
+		// All months have less than 32 days, so n >> 5 is a good conservative
+		// estimate for the month
+		int m = n >> 5 + 1;
+
+		if (isLeapYear(year)) {
+			// m = 1-based month number
+			for (;n >= DaysToMonth366[m];) {
+				m += 1;
+			}
+			return {
+				year: year;
+				month: m;
+				dayOfYear: dayOfYear;
+				dayOfMonth: n - DaysToMonth366[m - 1] + 1;
+				dayOfWeek: dayOfWeek;
+			};
+		}
+		// m = 1-based month number
+		for (;n >= DaysToMonth365[m];) {
+			m += 1;
+		}
+
+		return {
+			year: year;
+			month: m;
+			dayOfYear: dayOfYear;
+			dayOfMonth: n - DaysToMonth365[m - 1] + 1;
+			dayOfWeek: dayOfWeek;
+		};
+	}
 }
 // InputOutput
 
@@ -3449,15 +3620,6 @@ bool clip(Image src, Rect roi&) {
 
 /// Fill the entire image with the given color
 inline fill(Image image, uint32 color) = image.fillRect(0, 0, 65536, 65536, color);
-/// Fill the given region of the image with the given color
-inline fill(Image image, const Rect roi&, uint32 color) = image.fillRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
-/// Fill the given region and padding of the image with the given color
-inline fill(Image image, const Rect roi&, int pad, uint32 color) = image.fillRect(roi.x - pad, roi.y - pad, roi.x + roi.w + pad, roi.y + roi.h + pad, color);
-
-///@public
-inline drawRect(Image image, const Rect roi&, uint32 color) = image.drawRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
-///@public
-inline fillRect(Image image, const Rect roi&, uint32 color) = image.fillRect(roi.x, roi.y, roi.x + roi.w, roi.y + roi.h, color);
 
 /// Fill the surface by evaluating the given function for each pixel
 void eval(Image image, const Rect roi&, float32 aspect, float32 time, vec4f eval(vec4f in)) {
@@ -3520,6 +3682,84 @@ void tile(Image image, int x, int y, Image src, const Rect roi&) {
 		}
 	}
 }
+
+/// Fill the given rectangle rounding the corners using the given radius
+void fillRect(Image image, int x1, int y1, int x2, int y2, int rx, int ry, uint32 color) {
+	if (x1 > x2) {
+		int t = x1;
+		x1 = x2;
+		x2 = t;
+	}
+	if (y1 > y2) {
+		int t = y1;
+		y1 = y2;
+		y2 = t;
+	}
+
+	inline clamp(int value, int min, int max) = value < min ? min : value > max ? max : value;
+	rx = clamp(rx, 1, (x2 - x1) / 2);
+	ry = clamp(ry, 1, (y2 - y1) / 2);
+
+	int sx = rx * rx;
+	int sy = ry * ry;
+
+	int r = sx * ry / 2;
+	int rdy = r * 2;
+	int rdx = 0;
+
+	int rx1 = x1 + rx;
+	int rx2 = x2 - rx;
+
+	for (;y1 < y2;) {
+		image.fillRect(rx1, y1, rx2, y1, color);
+		image.fillRect(rx1, y2, rx2, y2, color);
+		if (r >= 0) {
+			rx1 -= 1;
+			rx2 += 1;
+			r -= rdx += sy;
+		}
+		if (r < 0) {
+			y1 += 1;
+			y2 -= 1;
+			r += rdy -= sx;
+		}
+	}
+	image.fillRect(x1, y1, x2, y2, color);
+}
+
+/// Fill the given rectangle rounding the corners using the given radius
+inline fillRect(Image image, int x1, int y1, int x2, int y2, int r, uint32 color) = fillRect(image, x1, y1, x2, y2, r, r, color);
+
+/// Fill the given rectangle rounding the corners using the given radius
+void fillRect(Image image, const Rect roi&, int rx, int ry, uint32 color) {
+	if (roi.w <= 0 || roi.h <= 0) {
+		// empty rectangle
+		return;
+	}
+	image.fillRect(roi.x, roi.y, roi.x + roi.w - 1, roi.y + roi.h - 1, rx, ry, color);
+}
+
+/// Fill the given rectangle rounding the corners using the given radius
+inline fillRect(Image image, const Rect roi&, int r, uint32 color) = fillRect(image, roi, r, r, color);
+
+/// Fill the entire image with the given color
+void drawRect(Image image, const Rect roi&, uint32 color) {
+	if (roi.w <= 0 || roi.h <= 0) {
+		// empty rectangle
+		return;
+	}
+	image.drawRect(roi.x, roi.y, roi.x + roi.w - 1, roi.y + roi.h - 1, color);
+}
+
+/// Fill the entire image with the given color
+void fillRect(Image image, const Rect roi&, uint32 color) {
+	if (roi.w <= 0 || roi.h <= 0) {
+		// empty rectangle
+		return;
+	}
+	image.fillRect(roi.x, roi.y, roi.x + roi.w - 1, roi.y + roi.h - 1, color);
+}
+
 struct Camera {
 	vec4f position = vec4f(0, 0, 0, 1);
 	vec4f forward = vec4f(0, 0, 0, 1);
@@ -3689,12 +3929,17 @@ struct Style {
 
 		left: 1;
 		right: 2;
-		vertical: left + right;
 
 		top: 4;
 		bottom: 8;
-		horizontal: top + bottom;
 
+		topLeft: top + left;
+		topRight: top + right;
+		bottomLeft: bottom + left;
+		bottomRight: bottom + right;
+
+		vertical: left + right;
+		horizontal: top + bottom;
 		fill: vertical + horizontal;
 	}
 
@@ -3706,8 +3951,9 @@ struct Style {
 
 	static void measure(const Style this&, Rect rect&, const char text[*], int extraChars) {
 		this.font.clipText(&rect, text);
-		if (text != null && rect.w != 0) {
+		if (text != null && rect.w != 0 && extraChars > 0) {
 			rect.w += extraChars * rect.w / length(text);
+			rect.w += this.padding;
 		}
 		rect.w += 2 * this.padding;
 		rect.h += 2 * this.padding;
@@ -3715,13 +3961,6 @@ struct Style {
 
 	/// Align one rect containing text relative to its container
 	static void align(Rect parent, Rect rect&, int align) {
-		if (rect.w > parent.w) {
-			rect.w = parent.w;
-		}
-		if (rect.h > parent.h) {
-			rect.h = parent.h;
-		}
-
 		int vertical = align & Style.vertical;
 		if (vertical == center) {
 			rect.x = parent.x + (parent.w - rect.w) / 2;
@@ -3769,6 +4008,9 @@ struct Style {
 	static void align(const Style this&, Rect parent, Rect rect&, const char value[*]) {
 		return align(this, parent, &rect, value, this.padding, this.align);
 	}
+
+	inline vertical(int align) = (align & vertical) == vertical;
+	inline horizontal(int align) = (align & horizontal) == horizontal;
 }
 struct KeyEvent {
 	const bool release;
@@ -3902,24 +4144,25 @@ struct View: object {
 		return this.onClick(this);
 	}
 
-	void onMeasure(View this, Rect rect&, const Style style&) {
-		if (this.width >= 0) {
-			rect.w = this.width;
+	bool onMeasure(View this, Rect rect&, const Style style&, int visible) {
+		if ((this.visible & visible) == 0) {
+			// view is hidden
+			rect.w = rect.h = 0;
+			return false;
 		}
-		else if (Math.abs(rect.w) < -this.width) {
-			rect.w = -this.width;
+		int width = Math.abs(this.width);
+		if (rect.w < width || this.width > 0) {
+			rect.w = width;
 		}
-		if (this.height >= 0) {
-			rect.h = this.height;
+		int height = Math.abs(this.height);
+		if (rect.h < height || this.height > 0) {
+			rect.h = height;
 		}
-		else if (Math.abs(rect.h) < -this.height) {
-			rect.h = -this.height;
-		}
+		return true;
 	}
 
 	void onDraw(View this, Image offs, Rect rect, const Style style&);
 	static void onDraw(View this, Image offs, Rect rect, const Style style&, int state) {
-		// TODO: dispatch state to all child views
 		if (state & Style.focused) {
 			offs.fillRect(rect, style.focusedColor);
 		}
@@ -3948,20 +4191,15 @@ struct View: object {
 }
 
 struct Layout: View {
-	/* TODO: vertical and horizontal scroll offset
-	int xOffset;
-	int yOffset;
-	*/
-
 	/** Vertical, horizontal or other orientation of the layout
 	 * zero represents a stack(Qt) or frame(Android) layout (all child elements are placed on top of each other)
 	 * negative value represents a column layout, specifying the number of columns to be used
 	 * positive value represents a row layout, specifying the number of rows to be used
 	 */
-	const int orientation;
+	const int orientation = 1;
 
 	/// Alignment of each child in the layout
-	const int alignment;
+	const int alignment = Style.fill;
 
 	const int itemCount;
 	View items[*] = null;
@@ -4145,222 +4383,236 @@ struct Layout: View {
 		return result;
 	}
 
-	void onMeasure(Layout this, Rect rect&, const Style style&) {
+	bool onMeasure(Layout this, Rect measured&, const Style style&, int visible) {
+		int dir = this.orientation;
+		int N = Math.abs(dir);
+		int n = 0;
 		int maxWidth = 0;
 		int sumWidth = 0;
 		int maxHeight = 0;
 		int sumHeight = 0;
+		int rows = dir < 0 ? N : 1;
+		int cols = dir > 0 ? N : 1;
 		for (int i = 0; i < this.itemCount; i += 1) {
 			View view = this.items[i];
-			Rect viewRect& = this.rects[i];
-			viewRect.w = viewRect.h = 0;
-
-			view.onMeasure(view, &viewRect, style);
-			int width = Math.abs(viewRect.w);
-			int height = Math.abs(viewRect.h);
-			if (maxWidth < width) {
-				maxWidth = width;
+			Rect rect& = this.rects[i];
+			if (view.onMeasure(view, &rect, style, visible)) {
+				int width = rect.w;
+				int height = rect.h;
+				if (n >= N) {
+					cols += int(dir < 0);
+					rows += int(dir > 0);
+					n = 0;
+				}
+				sumWidth += width;
+				if (maxWidth < width) {
+					maxWidth = width;
+				}
+				sumHeight += height;
+				if (maxHeight < height) {
+					maxHeight = height;
+				}
+				n += 1;
 			}
-			if (maxHeight < height) {
-				maxHeight = height;
-			}
-			sumWidth += width;
-			sumHeight += height;
 		}
-
-		if (this.orientation > 0) {
-			// using negative sum because hidden views are included
-			rect.w = -sumWidth;
-		} else {
-			rect.w = maxWidth;
+		if (rows == 1 && cols == 1) {
+			sumWidth = maxWidth;
+			sumHeight = maxHeight;
 		}
-		if (this.orientation < 0) {
-			// using negative sum because hidden views are included
-			rect.h = -sumHeight;
-		} else {
-			rect.h = maxHeight;
+		if (rows > 1) {
+			// multi row layout, using uniform width
+			sumWidth = maxWidth * cols;
 		}
-		View.onMeasure(this, &rect, style);
+		if (cols > 1) {
+			// multi column layout, using uniform height
+			sumHeight = maxHeight * rows;
+		}
+		measured.w = sumWidth;
+		measured.h = sumHeight;
+		return View.onMeasure(this, &measured, style, visible);
 	}
 
 	void onLayout(Layout this, Rect rect&);
-	static void frameLayout(Layout this, Rect rect&) {
-		Rect r = rect;
-		r.w = Math.abs(r.w);
-		r.h = Math.abs(r.h);
-		int align = this.alignment;
+	static void verticalLayout(Layout this, Rect measured&, int cols) {
+		int maxHeight(Layout this, int start, int count) {
+			int result = 0;
+			for (int i = start; i < this.itemCount; i += 1) {
+				Rect rect& = this.rects[i];
+				if (rect.w && rect.h) {
+					if (count <= 0) {
+						return result;
+					}
+					if (result < rect.h) {
+						result = rect.h;
+					}
+					count -= 1;
+				}
+			}
+			return result;
+		}
+		int rowSpacing = measured.w / cols;
+		int colSpacing = maxHeight(this, 0, this.itemCount);
+
+		Rect r = {
+			x: measured.x;
+			y: measured.y;
+			w: this.width > 0 ? this.width : measured.w;
+			h: this.height > 0 ? this.height : measured.h;
+		};
+		Style.align(r, &measured, this.alignment);
+
+		int n = cols;
+		r.y -= colSpacing;
 		for (int i = 0; i < this.itemCount; i += 1) {
-			View view& = this.items[i];
-			Rect viewRect& = this.rects[i];
-			Style.align(r, &viewRect, align);
-			if (Layout layout = view.as(Layout)) {
-				layout.onLayout(layout, &viewRect);
-			}
-			if (rect.w < viewRect.w) {
-				rect.w = viewRect.w;
-			}
-			if (rect.h < viewRect.h) {
-				rect.h = viewRect.h;
+			Rect rect& = this.rects[i];
+			if (rect.w && rect.h) {
+				if (n >= cols) {
+					r.x = measured.x;
+					r.y += colSpacing;
+					if (cols == 1) {
+						// single row, allow non uniform heights
+						colSpacing = rect.h;
+					} else {
+						// using non uniform heights
+						//colSpacing = maxHeight(this, i, cols);
+					}
+					n = 0;
+				}
+
+				r.w = rowSpacing;
+				r.h = colSpacing;
+				View view = this.items[i];
+				int align = this.alignment;
+				if (view.width > 0 && Style.vertical(align)) {
+					// fixed width, center instead of stretch
+					align &= ~Style.vertical;
+				}
+				if (view.height > 0 && Style.horizontal(align)) {
+					// fixed height, center instead of stretch
+					align &= ~Style.horizontal;
+				}
+
+				Style.align(r, &rect, align);
+				if (Layout layout = view.as(Layout)) {
+					layout.onLayout(layout, &rect);
+				}
+
+				r.x += rowSpacing;
+				n += 1;
 			}
 		}
 	}
-	static void verticalLayout(Layout this, Rect rect&) {
-		int gravity = Style.horizontal + Style.left;
-		int align = this.alignment & Style.vertical;
-		int gap = 0;
-		int width = 0;
-		int height = 0;
-		Rect r = rect;
-		r.w = Math.abs(r.w);
-		r.h = Math.abs(r.h);
-		for (int i = 0; i < this.itemCount; i += 1) {
-			Rect viewRect& = this.rects[i];
-			width += Math.abs(viewRect.w);
-		}
-		if (rect.w > width) {
-			gap = r.w - width;
-			if (align != Style.right) {
-				if (align == Style.vertical) {
-					gap /= this.itemCount;
-				}
-				else if (this.itemCount > 1) {
-					gap /= this.itemCount - 1;
-				}
-			}
-		}
-		for (int i = 0; i < this.itemCount; i += 1) {
-			View view& = this.items[i];
-			Rect viewRect& = this.rects[i];
-			Style.align(r, &viewRect, gravity);
-			if (Layout layout = view.as(Layout)) {
-				layout.onLayout(layout, &viewRect);
-			}
-			if (viewRect.w > 0 && viewRect.h > 0) {
-				if (align == Style.vertical) {
-					r.x += gap + viewRect.w;
-					viewRect.w += gap;
-					if (Layout layout = view.as(Layout)) {
-						layout.onLayout(layout, &viewRect);
+	static void horizontalLayout(Layout this, Rect measured&, int rows) {
+		int maxWidth(Layout this, int start, int count) {
+			int result = 0;
+			for (int i = start; i < this.itemCount; i += 1) {
+				Rect rect& = this.rects[i];
+				if (rect.w && rect.h) {
+					if (count <= 0) {
+						return result;
 					}
-				}
-				else if (align == Style.center) {
-					r.x += gap + viewRect.w;
-				}
-				else if (align == Style.right) {
-					r.x += viewRect.w;
-					viewRect.x += gap;
-					if (Layout layout = view.as(Layout)) {
-						layout.onLayout(layout, &viewRect);
+					if (result < rect.w) {
+						result = rect.w;
 					}
-				}
-				else if (align == Style.left) {
-					r.x += viewRect.w;
+					count -= 1;
 				}
 			}
+			return result;
 		}
-		if (rect.w < width) {
-			rect.w = width;
-		}
-		if (rect.h < height) {
-			rect.h = height;
+		int rowSpacing = maxWidth(this, 0, this.itemCount);
+		int colSpacing = measured.h / rows;
+
+		Rect r = {
+			x: measured.x;
+			y: measured.y;
+			w: this.width > 0 ? this.width : measured.w;
+			h: this.height > 0 ? this.height : measured.h;
+		};
+		Style.align(r, &measured, this.alignment);
+		int n = rows;
+		r.x -= rowSpacing;
+		for (int i = 0; i < this.itemCount; i += 1) {
+			Rect rect& = this.rects[i];
+			if (rect.w && rect.h) {
+				if (n >= rows) {
+					r.y = measured.y;
+					r.x += rowSpacing;
+					if (rows == 1) {
+						// single column, allow non uniform widths
+						rowSpacing = rect.w;
+					} else {
+						// using non uniform widths
+						//rowSpacing = maxWidth(this, i, rows);
+					}
+					n = 0;
+				}
+
+				r.w = rowSpacing;
+				r.h = colSpacing;
+				View view = this.items[i];
+				int align = this.alignment;
+				if (view.width > 0 && Style.vertical(align)) {
+					// fixed width, center instead of stretch
+					align &= ~Style.vertical;
+				}
+				if (view.height > 0 && Style.horizontal(align)) {
+					// fixed height, center instead of stretch
+					align &= ~Style.horizontal;
+				}
+
+				Style.align(r, &rect, align);
+				if (Layout layout = view.as(Layout)) {
+					layout.onLayout(layout, &rect);
+				}
+
+				r.y += colSpacing;
+				n += 1;
+			}
 		}
 	}
-	static void horizontalLayout(Layout this, Rect rect&) {
-		int gravity = Style.vertical + Style.top;
-		int align = this.alignment & Style.horizontal;
-		int gap = 0;
-		int width = 0;
-		int height = 0;
-		Rect r = rect;
-		r.w = Math.abs(r.w);
-		r.h = Math.abs(r.h);
+	void onLayout(Layout this, Rect measured&) {
+		if (this.orientation > 0) {
+			/* Multi column vertical layout, ex 3 cols:
+			/--- col0 ---+--- col1 ---+--- col2 ---\
+			|   item00   |   item01   |   item02   | row0
+			|   item03   |   item04   |            | row1
+			.    ...     |    ...     |    ...     . rowN
+			\------------+------------+-----------*/
+			return verticalLayout(this, &measured, this.orientation);
+		}
+		if (this.orientation < 0) {
+			/* multi row horizontal layout, ex 2 rows:
+			/--- col0 ---+--- col1 ---+--- col2 ---+--- colN ---\
+			|   item00   |   item02   |   item04   |    ...     | row0
+			|   item01   |   item03   |    ...     |    ...     | row1
+			\------------+------------+------------+--- ... ---*/
+			return horizontalLayout(this, &measured, -this.orientation);
+		}
+
+		Rect r = {
+			x: measured.x;
+			y: measured.y;
+			w: this.width > 0 ? this.width : measured.w;
+			h: this.height > 0 ? this.height : measured.h;
+		};
+		Style.align(r, &measured, this.alignment);
 		for (int i = 0; i < this.itemCount; i += 1) {
-			Rect viewRect& = this.rects[i];
-			height += Math.abs(viewRect.h);
-		}
-		if (rect.h > height) {
-			gap = r.h - height;
-			if (align != Style.bottom) {
-				if (align == Style.horizontal) {
-					gap /= this.itemCount;
-				}
-				else if (this.itemCount > 1) {
-					gap /= this.itemCount - 1;
+			Rect rect& = this.rects[i];
+			if (rect.w && rect.h) {
+				View view& = this.items[i];
+				Style.align(measured, &rect, this.alignment);
+				if (Layout layout = view.as(Layout)) {
+					layout.onLayout(layout, &rect);
 				}
 			}
-		}
-		for (int i = 0; i < this.itemCount; i += 1) {
-			View view& = this.items[i];
-			Rect viewRect& = this.rects[i];
-			Style.align(r, &viewRect, gravity);
-			if (Layout layout = view.as(Layout)) {
-				layout.onLayout(layout, &viewRect);
-			}
-			if (viewRect.w > 0 && viewRect.h > 0) {
-				if (align == Style.horizontal) {
-					r.y += gap + viewRect.h;
-					viewRect.h += gap;
-					if (Layout layout = view.as(Layout)) {
-						layout.onLayout(layout, &viewRect);
-					}
-				}
-				else if (align == Style.center) {
-					r.y += gap + viewRect.h;
-				}
-				else if (align == Style.bottom) {
-					r.y += viewRect.h;
-					viewRect.y += gap;
-					if (Layout layout = view.as(Layout)) {
-						layout.onLayout(layout, &viewRect);
-					}
-				}
-				else if (align == Style.top) {
-					r.y += viewRect.h;
-				}
-			}
-		}
-		if (rect.w < width) {
-			rect.w = width;
-		}
-		if (rect.h < height) {
-			rect.h = height;
 		}
 	}
 
-	void onLayout(Layout this, Rect rect&) {
-		if (this.orientation == 0) {
-			return frameLayout(this, &rect);
-		}
-		if (this.orientation == 1) {
-			return verticalLayout(this, &rect);
-		}
-		if (this.orientation == -1) {
-			return horizontalLayout(this, &rect);
-		}
-
-		return abort("not implemented");
-		/* TODO: this case is a grid like layout:
-		 * Multi Column Layout with 3 columns
-			/--- col0 ---+----col1----+----col2----\
-			|   item00   |   item01   |   item02   |
-			|   item03   |   item04   |            |
-			.    ...     |    ...     |    ...     .
-			\------------+------------+------------/
-		 * Multi Row Layout with 2 rows
-			/--- col0 ---+----col1----+----col2----+--- ... ----\
-			|   item00   |   item02   |   item04   |    ...     |
-			|   item01   |   item03   |    ...     |    ...     |
-			\------------+------------+------------+--- ... ----/
-		*/
-	}
-
-	void onDraw(Layout this, Image offs, Rect rect, const Style style&) {
-		// draw items
+	void onDraw(Layout this, Image offs, Rect parent, const Style style&) {
 		for (int i = 0; i < this.itemCount; i += 1) {
-			View view = this.items[i];
-			const Rect viewRect& = this.rects[i];
-
-			if (viewRect.w > 0 && viewRect.h > 0) {
+			const Rect rect& = this.rects[i];
+			if (rect.w > 0 && rect.h > 0) {
+				const View view = this.items[i];
 				int state = 0;
 				if (view.as(Layout) == null) {
 					if (i == this.hoveredIndex) {
@@ -4372,10 +4624,12 @@ struct Layout: View {
 					if (i == this.focusedIndex) {
 						state |= Style.focused;
 					}
+//					offs.drawRect(rect, 0x00ff00);
 				}
-				View.onDraw(view, offs, viewRect, style, state);
+				view.onDraw(view, offs, rect, style, state);
 			}
 		}
+//		offs.drawRect(parent, 0xff0000);
 	}
 
 	static Layout Custom(int rowsCols, int align, View items...) {
@@ -4392,20 +4646,21 @@ struct Layout: View {
 		return layout;
 	}
 	static Layout Row(View items...) {
-		return Custom(1, Style.horizontal, ...items);
+		return Custom(-1, Style.fill, ...items);
 	}
 	static Layout Column(View items...) {
-		return Custom(-1, Style.vertical, ...items);
+		return Custom(1, Style.fill, ...items);
 	}
-	// FIXME: inline Row(View items...) = Row(1, Style.horizontal, ...items);
+	// FIXME: inline Row(View items...) = Custom(-1, Style.fill, items);
+	// FIXME: inline Column(View items...) = Custom(1, Style.fill, items);
 }
 
 struct Button: View {
 	const char text[*];
 
-	void onMeasure(Button this, Rect rect&, const Style style&) {
+	bool onMeasure(Button this, Rect rect&, const Style style&, int visible) {
 		style.measure(&rect, this.text, 0);
-		View.onMeasure(this, &rect, style);
+		return View.onMeasure(this, &rect, style, visible);
 	}
 
 	void onDraw(Button this, Image offs, Rect rect, const Style style&) {
@@ -4482,16 +4737,16 @@ struct Switch: View {
 		return View.onKeyEvent(this, event);
 	}
 
-	void onMeasure(Switch this, Rect rect&, const Style style&) {
+	bool onMeasure(Switch this, Rect rect&, const Style style&, int visible) {
 		int len = length(this.states[0]);
 		for (int i = 0; i < this.states.length; i += 1) {
-			int max = length(this.states[0]);
+			int max = length(this.states[i]);
 			if (len < max) {
 				len = max;
 			}
 		}
 		style.measure(&rect, this.text, len);
-		View.onMeasure(this, &rect, style);
+		return View.onMeasure(this, &rect, style, visible);
 	}
 
 	void onDraw(Switch this, Image offs, Rect rect, const Style style&) {
@@ -4586,7 +4841,7 @@ struct Slider: View {
 		return View.onMouseEvent(this, rect, event);
 	}
 
-	void onMeasure(Slider this, Rect rect&, const Style style&) {
+	bool onMeasure(Slider this, Rect rect&, const Style style&, int visible) {
 		char value[64] = {0};
 		if (this.divisor != 0) {
 			value.append(0, this.valueF64(), style.fmtFlt);
@@ -4594,7 +4849,7 @@ struct Slider: View {
 			value.append(0, this.value, style.fmtInt);
 		}
 		style.measure(&rect, this.text, length(value));
-		View.onMeasure(this, &rect, style);
+		return View.onMeasure(this, &rect, style, visible);
 	}
 
 	void onDrawSlider(Slider this, Image offs, Rect rect, const Style style&) {
@@ -4628,6 +4883,8 @@ struct Widget: Layout {
 	int visibleGroup = -1;
 	bool measure = true;
 	bool hidden = false;
+	int scrollX = 0;
+	int scrollY = 0;
 	Style style;
 	Image offs;
 	Rect rect;
@@ -4756,7 +5013,7 @@ struct Widget: Layout {
 			this.visibleGroup = group;
 			if (selectFirst) {
 				// measure then focus first visible view
-				this.onMeasure(this, &this.rect, this.style);
+				this.onMeasure(this, &this.rect, this.style, group);
 				this.clearState(Style.focused);
 				this.focusNext(false);
 			}
@@ -4767,33 +5024,6 @@ struct Widget: Layout {
 	}
 	inline setGroup(Widget this, int group) = setGroup(this, group, false);
 
-	void onMeasure(Widget this, Rect rect&, const Style style&) {
-		static void hideViews(Widget widget, Layout layout) {
-			for (int i = 0; i < layout.itemCount; i += 1) {
-				View view = layout.items[i];
-				if (Layout child = view.as(Layout)) {
-					hideViews(widget, child);
-				}
-				if ((widget.visibleGroup & view.visible) == 0) {
-					layout.rects[i].w = 0;
-					layout.rects[i].h = 0;
-				}
-			}
-		}
-		Layout.onMeasure(this, &rect, style);
-		hideViews(this, this);
-	}
-
-	void onLayout(Widget this, Rect rect&) {
-		if (rect.x < 0) {
-			rect.x = this.offs.width() - rect.w + rect.x;
-		}
-		if (rect.y < 0) {
-			rect.y = this.offs.height() - rect.h + rect.y;
-		}
-		Layout.onLayout(this, &rect);
-	}
-
 	void onDraw(Widget this, Image offs, Rect rect, const Style style&) {
 //		offs = offs.slice(rect); // todo: clip drawings
 		// draw background
@@ -4803,7 +5033,7 @@ struct Widget: Layout {
 			int left = rect.x - style.border;
 			int right = rect.x + rect.w + style.border;
 			int bottom = rect.y + rect.h + style.border;
-			offs.fillRect(left, top, right, bottom, style.backgroundColor);
+			offs.fillRect(left, top, right, bottom, style.border * 2, style.backgroundColor);
 		}
 		Layout.onDraw(this, offs, rect, style);
 //		offs.destroy(); // todo: clip drawings
@@ -4838,7 +5068,7 @@ struct Widget: Layout {
 		if (action == Gui.WINDOW_INIT) {
 			this.onCreate(this);
 			// measure then focus first visible view
-			this.onMeasure(this, &this.rect, this.style);
+			this.onMeasure(this, &this.rect, this.style, this.visibleGroup);
 			this.clearState(Style.focused);
 			this.focusNext(false);
 			return true;
@@ -4856,7 +5086,9 @@ struct Widget: Layout {
 			Rect rect& = this.rect;
 			if (this.measure) {
 				rect.w = rect.h = 0;
-				this.onMeasure(this, &rect, this.style);
+				this.onMeasure(this, &rect, this.style, this.visibleGroup);
+				rect.x = this.scrollX;
+				rect.y = this.scrollY;
 				this.onLayout(this, &rect);
 				this.measure = false;
 			}
@@ -4992,21 +5224,15 @@ struct Widget: Layout {
 			}
 			if (button == '[' || button == ']') {
 				// hide, show controls
-				Rect r& = this.rect;
-				if (button == '[' && r.x == r.y) {
+				if (button == '[') {
 					this.hidden = !this.hidden;
 					return true;
 				}
-				if (button == ']' && r.x != r.y) {
+				if (button == ']') {
 					this.hidden = !this.hidden;
 					return true;
 				}
 
-				if (this.rect.x == this.rect.y) {
-					r.x = -r.y;
-				} else {
-					r.x = r.y;
-				}
 				this.hidden = false;
 				this.measure = true;
 				return true;
@@ -5076,15 +5302,10 @@ struct Widget: Layout {
 Widget Widget(Image offs, int pos, const Style style&, View items...) {
 	Widget layout = {
 		offs: offs;
-		rect: {
-			x: pos;
-			y: pos;
-			w: -1;
-			h: -1;
-		};
+		rect: {};
+		scrollX: pos;
+		scrollY: pos;
 		style: style;
-		orientation: -1;
-		alignment: Style.fill;
 		itemCount: items.length;
 		items: pointer.alloc(null, items.length * sizeof(View));
 		rects: pointer.alloc(null, items.length * sizeof(Rect));
@@ -5094,7 +5315,10 @@ Widget Widget(Image offs, int pos, const Style style&, View items...) {
 	}
 
 	if (pos < 0) {
-		layout.rect.y = -pos;
+		layout.onMeasure(layout, &layout.rect, layout.style, layout.visibleGroup);
+		layout.scrollX = offs.width() - layout.rect.w + pos;
+		layout.scrollY = -pos;
+		layout.measure = true;
 	}
 	return layout;
 }
@@ -5176,14 +5400,14 @@ struct Histogram: View {
 		return true;
 	}
 
-	void onMeasure(Histogram this, Rect rect&, const Style style&) {
+	bool onMeasure(Histogram this, Rect rect&, const Style style&, int visible) {
 		if (this.width < 0) {
 			rect.w = 256;
 		}
 		if (this.height < 0) {
 			rect.h = 128;
 		}
-		return View.onMeasure(this, &rect, style);
+		return View.onMeasure(this, &rect, style, visible);
 	}
 
 	void onDraw(Histogram this, Image offs, const Rect rect, const Style style&) {

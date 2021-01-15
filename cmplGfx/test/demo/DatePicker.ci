@@ -1,0 +1,270 @@
+// DatePicker
+
+inline "/cmplStd/lib/time.ci";
+inline "/cmplGfx/lib/micro.ui.ci";
+bool onClick(Button this);
+
+struct IntButton: View {
+	char text[16] = null;
+	int value;
+
+	static bool increment(IntButton this, int value) {
+		this.text.append(0, this.value += value);
+		return value != 0;
+	}
+
+	static bool update(IntButton this, int value) {
+		if (this.value == value) {
+			return false;
+		}
+		this.value = value;
+		this.text.append(0, value);
+		return true;
+	}
+
+	void onCreate(IntButton this) {
+		View.onCreate(this);
+		increment(this, 0);
+	}
+
+	bool onMeasure(IntButton this, Rect rect&, const Style style&, int visible) {
+		style.measure(&rect, this.text, 0);
+		return View.onMeasure(this, &rect, style, visible);
+	}
+
+	void onDraw(IntButton this, Image offs, Rect rect, const Style style&) {
+		style.align(rect, &rect, this.text);
+		offs.drawText(rect, style.font, this.text, style.textColor);
+	}
+}
+struct DayButton: IntButton {
+	bool drawCircleBg = false;
+	int64 timestamp = 0;
+
+	void onDraw(DayButton this, Image offs, Rect rect, const Style style&) {
+		if (this.drawCircleBg) {
+			offs.fillRect(rect, rect.w / 3, style.focusedColor);
+		}
+		IntButton.onDraw(this, offs, rect, style);
+	}
+}
+
+IntButton btnYear = {
+	enabled: false;
+	value: 2020;
+};
+Button btnYearDec = {
+	onClick: onClick;
+	focusable: false;
+	text: "<";
+};
+Button btnYearInc = {
+	onClick: onClick;
+	focusable: false;
+	text: ">";
+};
+
+IntButton btnMonth = {
+	enabled: false;
+	value: 12;
+};
+Button btnMonthDec = {
+	onClick: onClick;
+	focusable: false;
+	text: "<";
+};
+Button btnMonthInc = {
+	onClick: onClick;
+	focusable: false;
+	text: ">";
+};
+
+IntButton btnDay = {
+	enabled: false;
+	value: 21;
+};
+Button btnDayDec = {
+	onClick: onClick;
+	focusable: false;
+	text: "<";
+};
+Button btnDayInc = {
+	onClick: onClick;
+	focusable: false;
+	text: ">";
+};
+
+Button btnToday = {
+	onClick: onClick;
+	focusable: false;
+	text: "Today";
+};
+
+View btnDays[] = {
+//	Button {text: "Week", enabled: false};
+	Button {text: "Mon", enabled: false};
+	Button {text: "Tue", enabled: false};
+	Button {text: "Wed", enabled: false};
+	Button {text: "Thu", enabled: false};
+	Button {text: "Fri", enabled: false};
+	Button {text: "Sat", enabled: false};
+	Button {text: "Sun", enabled: false};
+
+//	IntButton {enabled: false};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+
+//	IntButton {enabled: false};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+
+//	IntButton {enabled: false};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+
+//	IntButton {enabled: false};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+
+//	IntButton {enabled: false};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+};
+
+bool resetCounter(IntButton this) {
+	this.value = -1;
+	return true;
+}
+
+IntButton counter = {focusable: false, width: 200, height: 100, onClick: resetCounter};
+
+Image offs = Image(512, 512, 32);
+
+Style style = {
+	font: Gui.font;
+	padding: 10;
+	align: Style.center;
+	fmtInt: { padLen: 4 };
+	fmtFlt: { padLen: 4, precision: 2 };
+};
+Widget ui = Widget(offs, 50, style
+	, Layout.Custom(-1, Style.fill
+		, Layout.Row(btnYearDec, btnYear, btnYearInc)
+		, Layout.Row(btnMonthDec, btnMonth, btnMonthInc)
+		, Layout.Row(btnDayDec, btnDay, btnDayInc)
+		, btnToday
+	)
+	, Layout.Custom(7, Style.fill, ...btnDays)
+	, counter
+);
+
+int64 now = System.millis();
+bool onClick(Button this) {
+	if (DayButton day = this.as(DayButton)) {
+		now = day.timestamp;
+	}
+	else if (this == btnYearInc) {
+		Date parts = Date.parts(now);
+		now = Date.millis(parts.year + 1, parts.month, parts.dayOfMonth);
+	}
+	else if (this == btnYearDec) {
+		Date parts = Date.parts(now);
+		now = Date.millis(parts.year - 1, parts.month, parts.dayOfMonth);
+	}
+	else if (this == btnMonthInc) {
+		Date parts = Date.parts(now);
+		if (parts.month < 12) {
+			parts.month += 1;
+		} else {
+			parts.year += 1;
+			parts.month = 1;
+		}
+		now = Date.millis(parts.year, parts.month, parts.dayOfMonth);
+	}
+	else if (this == btnMonthDec) {
+		Date parts = Date.parts(now);
+		if (parts.month > 1) {
+			parts.month -= 1;
+		} else {
+			parts.year -= 1;
+			parts.month = 12;
+		}
+		now = Date.millis(parts.year, parts.month, parts.dayOfMonth);
+	}
+	else if (this == btnDayInc) {
+		now += Date.MillisPerDay;
+	}
+	else if (this == btnDayDec) {
+		now -= Date.MillisPerDay;
+	}
+	else if (this == btnToday) {
+		now = System.millis();
+	}
+
+	// update year, month and day buttons
+	Date parts = Date.parts(now);
+	btnYear.update(parts.year);
+	btnMonth.update(parts.month);
+	btnDay.update(parts.dayOfMonth);
+
+	// calculate first day of month
+	int64 today = Date.millis(parts.year, parts.month, parts.dayOfMonth);
+	int64 start = Date.millis(parts.year, parts.month, 1);
+	parts = Date.parts(start);
+
+	// calculate first monday
+	start -= (parts.dayOfWeek - 1) * Date.MillisPerDay;
+
+	// fill the days in the "grid", skip header with week names
+	for (int i = 7; i < btnDays.length; i += 1) {
+		if (DayButton day = btnDays[i].as(DayButton)) {
+			day.drawCircleBg = today == start;
+			day.timestamp = start;
+			parts = Date.parts(start);
+			day.update(parts.dayOfMonth);
+		}
+		start += Date.MillisPerDay;
+	}
+
+	return true;
+}
+onClick(btnToday);
+
+int onEvent(pointer closure, int action, int button, int x, int y) {
+	if (action == Gui.KEY_RELEASE && button == 27) {
+		// exit when releasing escape key
+		return -1;
+	}
+	if (!ui.onEvent(ui, action, button, x, y)) {
+		return 0;
+	}
+	offs.fill(0);
+	counter.increment(1);
+	return ui.draw();
+}
+Gui.showWindow(offs, null, onEvent);

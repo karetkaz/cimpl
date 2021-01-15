@@ -64,17 +64,49 @@ void drawAALine(Image img, int x1, int y1, int x2, int y2, uint32 color) {
 	}
 }
 
-void fillAAOval(Image img, int x1, int y1, int x2, int y2, int thick, uint32 color) {
-	return Image.fillOval(img, x1, y1, x2, y2, color);
-}
-void drawAAOval(Image img, int x1, int y1, int x2, int y2, int thick, uint32 color) {
-	// TODO: implement anti-aliased ellipse drawing
-	return Image.fillOval(img, x1, y1, x2, y2, color);
-	if (thick < 0) {
-		img.fillOval(x1, y1, x2, y2, color);
-	} else {
-		img.drawOval(x1, y1, x2, y2, color);
+void fillAAOval(Image image, int x1, int y1, int x2, int y2, uint32 color) {
+	return Image.fillOval(image, x1, y1, x2, y2, color);
+	// TODO: alpha mix color with background
+	if (x1 > x2) {
+		int t = x1;
+		x1 = x2;
+		x2 = t;
 	}
+	if (y1 > y2) {
+		int t = y1;
+		y1 = y2;
+		y2 = t;
+	}
+	int dx = x2 - x1;
+	int dy = y2 - y1;
+
+	x2 = x1 += dx / 2;
+	x1 += dx & 1;
+	dx += dx & 1;
+	dy += dy & 1;
+
+	int sx = dx * dx;
+	int sy = dy * dy;
+
+	int r = sx * dy / 4;
+	int rdy = r * 2;
+	int rdx = 0;
+
+	for (;y1 < y2;) {
+		image.fillRect(x1, y1, x2, y1, color);
+		image.fillRect(x1, y2, x2, y2, color);
+		if (r >= 0) {
+			x1 -= 1;
+			x2 += 1;
+			r -= rdx += sy;
+		}
+		if (r < 0) {
+			y1 += 1;
+			y2 -= 1;
+			r += rdy -= sx;
+		}
+	}
+	image.fillRect(x1, y2, x2, y2+1, color);
 }
 
 inline hourText = 0xadadad;
@@ -102,7 +134,7 @@ int onEvent(int action, int button, int ex, int ey) {
 	int x1 = offs.width() / 2;
 	int y1 = offs.height() / 2;
 	int r = Math.min(x1, y1) - 2;
-	offs.fillAAOval(x1 - r, y1 - r, x1 + r, y1 + r, -1, 0x4a4a4a);
+	offs.fillAAOval(x1 - r, y1 - r, x1 + r, y1 + r, 0x4a4a4a);
 
 	if (hourText != 0) {
 		for (int i = 1; i <= 12; i += 1) {
@@ -118,10 +150,14 @@ int onEvent(int action, int button, int ex, int ey) {
 
 	char txtClock[*] = "Utc Clock";
 	Rect roiClock = {};
+	inline padding = 5;
+	inline radius = 5;
 	font.clipText(&roiClock, txtClock);
 	roiClock.x = x1 - roiClock.w / 2;
 	roiClock.y = y1 + y1 / 3;
-	offs.fill(roiClock, 4, 0x101010);
+	roiClock.adjust(padding);
+	offs.fillRect(roiClock, radius, 0x101010);
+	roiClock.adjust(-padding);
 	offs.drawText(roiClock, font, txtClock, 0xadadad);
 
 	inline secondsInMillis = 1000;

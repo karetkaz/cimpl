@@ -219,9 +219,9 @@ static inline void *padPointer(void *offs, size_t align) {
 
 /// Utility function to swap memory
 static inline void memSwap(void *_a, void *_b, size_t size) {
-	register char *a = _a;
-	register char *b = _b;
-	register char *end = a + size;
+	char *a = _a;
+	char *b = _b;
+	char *end = a + size;
 	while (a < end) {
 		char c = *a;
 		*a = *b;

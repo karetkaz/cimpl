@@ -106,6 +106,7 @@ int isObjectType(symn sym) {
 static const char *const object_create = "pointer create(typename type)";
 static const char *const object_destroy = "void destroy(object this)";
 static const char *const object_cast = "pointer as(object this, typename type)";
+static const char *const object_type = "typename type(object this)";
 static vmError objectHelpers(nfcContext ctx) {
 	rtContext rt = ctx->rt;
 	if (ctx->proto == object_create) {
@@ -159,6 +160,19 @@ static vmError objectHelpers(nfcContext ctx) {
 		retref(ctx, vmOffset(rt, obj));
 		return noError;
 	}
+
+	if (ctx->proto == object_type) {
+		void *obj = vmPointer(rt, argref(ctx, 0));
+		if (obj == NULL) {
+			retref(ctx, 0);	// TODO: this should return object
+			// invalid type to cast as
+			return noError;
+		}
+		symn type = vmPointer(rt, *(vmOffs*)obj);
+		retref(ctx, vmOffset(rt, type));
+		return noError;
+	}
+
 	return nativeCallError;
 }
 
@@ -712,6 +726,7 @@ static int install_base(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)
 			error = error || !(cc->libc_new = ccAddCall(cc, objectHelpers, object_create));
 			error = error || !ccAddCall(cc, objectHelpers, object_destroy);
 			error = error || !ccAddCall(cc, objectHelpers, object_cast);
+			error = error || !ccAddCall(cc, objectHelpers, object_type);
 		}
 
 		dieif(cc->type_obj->fields != NULL, ERR_INTERNAL_ERROR);

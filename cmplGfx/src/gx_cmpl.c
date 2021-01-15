@@ -385,7 +385,7 @@ static int blendDstAlphaCallback(argb* dst, argb *src, bltContext ctx, size_t cn
 		if (rt->api.invoke(rt, ctx->callback, args, args, NULL) != noError) {
 			return -1;
 		}
-		register argb val = vecrgb(args);
+		argb val = vecrgb(args);
 		int alpha = ctxAlpha * val.a / 255;
 		dst->r = sat_s8(val.r + alpha * (src->r - val.r) / 255);
 		dst->g = sat_s8(val.g + alpha * (src->g - val.g) / 255);
@@ -403,7 +403,7 @@ static int blendAlphaCallback(argb* dst, argb *src, bltContext ctx, size_t cnt) 
 		if (rt->api.invoke(rt, ctx->callback, args, args, NULL) != noError) {
 			return -1;
 		}
-		register argb val = vecrgb(args);
+		argb val = vecrgb(args);
 		dst->r = sat_s8(dst->r + alpha * (val.r - dst->r) / 255);
 		dst->g = sat_s8(dst->g + alpha * (val.g - dst->g) / 255);
 		dst->b = sat_s8(dst->b + alpha * (val.b - dst->b) / 255);

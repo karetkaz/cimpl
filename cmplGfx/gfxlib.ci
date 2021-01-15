@@ -4,6 +4,20 @@ inline "lib/image.ci";
 inline "lib/mesh.ci";
 inline "lib/camera.ci";
 
+/// adjust the rectangle position and size
+void adjust(Rect roi&, int x, int y, int w, int h) {
+	roi.x += x;
+	roi.y += y;
+	roi.w += w;
+	roi.h += h;
+}
+
+/// adjust the rectangle position and size
+inline adjust(Rect roi&, int w, int h) = roi.adjust(-w, -h, 2 * w, 2 * h);
+
+/// adjust the rectangle position and size
+inline adjust(Rect roi&, int s) = roi.adjust(-s, -s, 2 * s, 2 * s);
+
 static if (typename(Image.blur) == null) {
 raise(raise.debug, raise.noTrace, "emulated/blur.ci", null);
 inline "lib/emulated/blur.ci";

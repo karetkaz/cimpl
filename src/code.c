@@ -1875,8 +1875,8 @@ static vmError exec(rtContext rt, vmProcessor pu, symn fun, const void *extra) {
 
 	// code for maximum execution speed
 	for ( ; ; ) {
-		register const vmInstruction ip = (vmInstruction)pu->ip;
-		register const stkptr sp = pu->sp;
+		const vmInstruction ip = (vmInstruction)pu->ip;
+		const stkptr sp = pu->sp;
 		switch (ip->opc) {
 			stop_vm:	// halt virtual machine
 				if (execError != noError && fun == rt->main) {

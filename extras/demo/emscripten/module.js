@@ -233,8 +233,10 @@ Module.wgetFiles = function(files) {
 				path = file.url.replace(/^(.*[/])?(.*)(\..*)$/, "$2$3");
 			}
 			let url = file.url;
-			if (Module.relativeUrl != null) {
-				url = Module.relativeUrl(url);
+			if (!(url.startsWith('http://') || url.startsWith('https://'))) {
+				if (Module.relativeUrl != null) {
+					url = Module.relativeUrl(url);
+				}
 			}
 			let request = new XMLHttpRequest();
 			request.open('GET', url, isAsync);

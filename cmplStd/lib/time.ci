@@ -1,0 +1,157 @@
+struct Date {
+	int year;
+	int month;			// 1 ... 12 	[Jan, Feb, Mar, ...]
+	int dayOfMonth;		// 1 ... 31
+	int dayOfWeek;		// 1 ... 7		[Mon, Tue, ...]
+	int dayOfYear;		// 1 ... 366
+	//~ bool leapYear;
+
+	enum: int64 {
+		// Number of milliseconds per time unit
+		MillisPerSecond: 1000;
+		MillisPerMinute: MillisPerSecond * 60;
+		MillisPerHour: MillisPerMinute * 60;
+		MillisPerDay: MillisPerHour * 24;
+		MillisPerWeek: MillisPerDay * 7;
+
+		MillisPerYear: MillisPerDay * 365;
+		MillisPerLeapYear: MillisPerDay * 366;
+	}
+	enum: int { // DaysPer...
+		// Number of days in a non-leap year
+		DaysPerYear: 365;
+
+		// Number of days in a leap year
+		DaysPerLeapYear: 366;
+
+		// Number of days in 4 years
+		DaysPer4Years: DaysPerYear * 4 + 1;
+		// Number of days in 100 years
+		DaysPer100Years: DaysPer4Years * 25 - 1;
+		// Number of days in 400 years
+		DaysPer400Years: DaysPer100Years * 4 + 1;
+
+		HoursPerDay: 24;
+		MinutesPerDay: 60 * HoursPerDay;
+		SecondsPerDay: 60 * MinutesPerDay;
+
+		DaysTil1970: 719162;
+	}
+
+	static const int DaysToMonth365[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+	static const int DaysToMonth366[13] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366};
+
+	static bool isLeapYear(int year) {
+		if (year % 4 != 0) {
+			return false;
+		}
+		if (year % 100 != 0) {
+			return true;
+		}
+		if (year % 400 != 0) {
+			return false;
+		}
+		return true;
+	}
+
+	static int64 millis(int year, int month, int day) {
+		if (year <= 0 || year > 9999) {
+			// year is invalid
+			return -1;
+		}
+		if (month <= 0 || month > 12) {
+			// month is invalid
+			return -1;
+		}
+
+		int daysInYear = 0;
+		int daysInMonth = 0;
+		if (isLeapYear(year)) {
+			daysInYear = DaysToMonth366[month - 1];
+			daysInMonth = DaysToMonth366[month] - daysInMonth;
+		} else {
+			daysInYear = DaysToMonth365[month - 1];
+			daysInMonth = DaysToMonth365[month] - daysInMonth;
+		}
+
+		if (day <= 0 || day > daysInMonth) {
+			// day is invalid
+			return -1;
+		}
+
+		int y = year - 1;
+		int64 d = y * 365 + y / 4 - y / 100 + y / 400 + daysInYear + day - 1;
+		return (d - DaysTil1970) * MillisPerDay;
+	}
+
+	static Date parts(int64 now) {
+		int n = DaysTil1970 + now / MillisPerDay;
+
+		// n = number of days since 1/1/0001
+		int dayOfWeek = n % 7 + 1;
+
+		// y400 = number of whole 400-year periods since 1/1/0001
+		int y400 = n / DaysPer400Years;
+		// n = day number within 400-year period
+		n -= y400 * DaysPer400Years;
+
+		// y100 = number of whole 100-year periods within 400-year period
+		int y100 = n / DaysPer100Years;
+
+		// Last 100-year period has an extra day, so decrement result if 4
+		if (y100 == 4) {
+			y100 = 3;
+		}
+		// n = day number within 100-year period
+		n -= y100 * DaysPer100Years;
+
+		// y4 = number of whole 4-year periods within 100-year period
+		int y4 = n / DaysPer4Years;
+		// n = day number within 4-year period
+		n -= y4 * DaysPer4Years;
+
+		// y1 = number of whole years within 4-year period
+		int y1 = n / DaysPerYear;
+		// Last year has an extra day, so decrement result if 4
+		if (y1 == 4) {
+			y1 = 3;
+		}
+
+		// If year was requested, compute and return it
+		int year = y400 * 400 + y100 * 100 + y4 * 4 + y1 + 1;
+
+		// n = day number within year
+		n -= y1 * DaysPerYear;
+		int dayOfYear = n + 1;
+
+		// All months have less than 32 days, so n >> 5 is a good conservative
+		// estimate for the month
+		int m = n >> 5 + 1;
+
+		if (isLeapYear(year)) {
+			// m = 1-based month number
+			for (;n >= DaysToMonth366[m];) {
+				m += 1;
+			}
+			return {
+				year: year;
+				month: m;
+				dayOfYear: dayOfYear;
+				dayOfMonth: n - DaysToMonth366[m - 1] + 1;
+				dayOfWeek: dayOfWeek;
+			};
+		}
+		// m = 1-based month number
+		for (;n >= DaysToMonth365[m];) {
+			m += 1;
+		}
+
+		return {
+			year: year;
+			month: m;
+			dayOfYear: dayOfYear;
+			dayOfMonth: n - DaysToMonth365[m - 1] + 1;
+			dayOfWeek: dayOfWeek;
+		};
+	}
+}

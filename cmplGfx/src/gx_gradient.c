@@ -152,7 +152,7 @@ int drawGradient(GxImage dst, GxRect roi, GradientFlags type, int length, uint32
 
 	if (type & flag_alpha) {
 		for (g.y = clip->t; g.y < clip->b; ++g.y) {
-			register argb *d = (argb *) dptr;
+			argb *d = (argb *) dptr;
 			for (g.x = clip->l; g.x < clip->r; ++g.x) {
 				int idx = length * g.gf(&g);
 				if (idx >= length) {
@@ -170,7 +170,7 @@ int drawGradient(GxImage dst, GxRect roi, GradientFlags type, int length, uint32
 	}
 
 	for (g.y = clip->t; g.y < clip->b; ++g.y) {
-		register argb *d = (argb *) dptr;
+		argb *d = (argb *) dptr;
 		for (g.x = clip->l; g.x < clip->r; ++g.x) {
 			int idx = length * g.gf(&g);
 			if (idx >= length) {

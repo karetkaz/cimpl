@@ -4,7 +4,7 @@ A very "simple" C like language.
 
 ## Reference
 
-[Language](http://karetkaz.github.io/Cmpl/extras/Cmpl.md)
+[Language](extras/Cmpl.md)
 
 [Grammar](extras/Cmpl.g4)
 

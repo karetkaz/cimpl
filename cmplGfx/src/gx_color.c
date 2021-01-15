@@ -24,7 +24,7 @@ static int colset32(argb *dst, void *src, argb *lut, size_t cnt) {
 static int colcpy32_bgra(byte *dst, byte *src, void *lut, size_t cnt) {
 	// AAAAAAAA`BBBBBBBB`GGGGGGGG`RRRRRRRR => AAAAAAAA`RRRRRRRR`GGGGGGGG`BBBBBBBB
 	for (; cnt > 0; cnt -= 1, dst += 4, src += 4) {
-		register int32_t val = *(int32_t *) src;
+		int32_t val = *(int32_t *) src;
 		val = (val & 0xff000000)
 			| ((val & 0x00ff0000) >> 16)
 			| (val & 0x0000ff00)
@@ -37,7 +37,7 @@ static int colcpy32_bgra(byte *dst, byte *src, void *lut, size_t cnt) {
 static int colcpy32_bgr(byte *dst, byte *src, void *lut, size_t cnt) {
 	// BBBBBBBB`GGGGGGGG`RRRRRRRR => 00000000`RRRRRRRR`GGGGGGGG`BBBBBBBB
 	for (; cnt > 0; cnt -= 1, dst += 4, src += 3) {
-		register int32_t val = *(int32_t *) src;
+		int32_t val = *(int32_t *) src;
 		val = ((val & 0xff0000) >> 16)
 			| (val & 0x00ff00)
 			| ((val & 0x0000ff) << 16);
@@ -49,7 +49,7 @@ static int colcpy32_bgr(byte *dst, byte *src, void *lut, size_t cnt) {
 static int colcpy32_24(argb *dst, byte *src, void *lut, size_t cnt) {
 	// RRRRRRRR`GGGGGGGG`BBBBBBBB => 00000000`RRRRRRRR`GGGGGGGG`BBBBBBBB
 	for (size_t i = 0; i < cnt; ++i, ++dst, src += 3) {
-		register int32_t val = *(int32_t *) src;
+		int32_t val = *(int32_t *) src;
 		dst->val = val & 0x00ffffff;
 	}
 	(void) lut;
@@ -58,7 +58,7 @@ static int colcpy32_24(argb *dst, byte *src, void *lut, size_t cnt) {
 static int colcpy32_16(argb *dst, word *src, void *lut, size_t cnt) {
 	// RRRRRGGG`GGGBBBBB => 00000000`RRRRR000`GGGGGG00`BBBBB000
 	for (size_t i = 0; i < cnt; ++i, ++dst, ++src) {
-		register int32_t val = *src;
+		int32_t val = *src;
 		dst->val = ((val & 0xf800) << 8)
 			| ((val & 0x07e0) << 5)
 			| ((val & 0x001f) << 3);
@@ -69,7 +69,7 @@ static int colcpy32_16(argb *dst, word *src, void *lut, size_t cnt) {
 static int colcpy32_15(argb *dst, word *src, void *lut, size_t cnt) {
 	// XRRRRRGG`GGGBBBBB => 00000000`RRRRR000`GGGGG000`BBBBB000
 	for (size_t i = 0; i < cnt; ++i, ++dst, ++src) {
-		register int32_t val = *src;
+		int32_t val = *src;
 		dst->val = ((val & 0x7c00) << 9)
 			| ((val & 0x03e0) << 6)
 			| ((val & 0x001f) << 3);
