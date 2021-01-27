@@ -185,8 +185,6 @@ emit.max.p2d
 emit.swz
 emit.swz.x2
 halt(): void
-CLOCKS_PER_SEC
-RAND_MAX
 raise(file: char[*], line: int32, level: int32, trace: int32, message: char[*], inspect: variant): void # Report messages or raise errors.
 raise.abort
 raise.error
@@ -200,11 +198,13 @@ tryExec(args: pointer, action(args: pointer): void): int32
 System
 System.exit(code: int32): void
 System.srand(seed: int32): void
-System.rand(): int32
 System.time(): int32
-System.clock(): int32
 System.millis(): int64
 System.sleep(millis: int64): void
+System.rand(): int32
+System.rand.max
+System.clock(): int32
+System.clock.perSec
 true
 false
 byte
@@ -287,6 +287,10 @@ Math.max(a: uint32, b: uint32): uint32 # Returns the greater value from the inpu
 Math.max(a: uint64, b: uint64): uint64 # Returns the greater value from the input values
 Math.max(a: float32, b: float32): float32 # Returns the greater value from the input values
 Math.max(a: float64, b: float64): float64 # Returns the greater value from the input values
+Math.clamp(t: int32, a: int32, b: int32): int32 # Returns the value of `t` clamped between `a` and `b`
+Math.clamp(t: int64, a: int64, b: int64): int64 # Returns the value of `t` clamped between `a` and `b`
+Math.clamp(t: uint32, a: uint32, b: uint32): uint32 # Returns the value of `t` clamped between `a` and `b`
+Math.clamp(t: uint64, a: uint64, b: uint64): uint64 # Returns the value of `t` clamped between `a` and `b`
 Math.clamp(t: float32, a: float32, b: float32): float32 # Returns the value of `t` clamped between `a` and `b`
 Math.clamp(t: float64, a: float64, b: float64): float64 # Returns the value of `t` clamped between `a` and `b`
 Math.lerp(t: float32, a: float32, b: float32): float32 # Returns the linear interpolation between `a` and `b` by `t`
@@ -511,7 +515,6 @@ File.read(file: File, buff: uint8[]): int32
 File.readLine(file: File, buff: uint8[]): int32
 File.write(file: File, byte: uint8): int32
 File.write(file: File, buff: uint8[]): int32
-File.write(file: File, buff: uint8[], size: int32): int32
 File.flush(file: File): void
 File.close(file: File): void
 File.tell(file: File): int32

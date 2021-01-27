@@ -149,6 +149,18 @@ static struct Math {
 	inline max(float64 a, float64 b) = a > b ? a : b;
 
 	/// Returns the value of `t` clamped between `a` and `b`
+	inline clamp(int32 t, int32 a, int32 b) = t < a ? a : t > b ? b : t;
+
+	/// Returns the value of `t` clamped between `a` and `b`
+	inline clamp(int64 t, int64 a, int64 b) = t < a ? a : t > b ? b : t;
+
+	/// Returns the value of `t` clamped between `a` and `b`
+	inline clamp(uint32 t, uint32 a, uint32 b) = t < a ? a : t > b ? b : t;
+
+	/// Returns the value of `t` clamped between `a` and `b`
+	inline clamp(uint64 t, uint64 a, uint64 b) = t < a ? a : t > b ? b : t;
+
+	/// Returns the value of `t` clamped between `a` and `b`
 	float32 clamp(float32 t, float32 a, float32 b) {
 		if (t < a) {
 			return a;
@@ -517,7 +529,7 @@ static struct Math {
 	inline degrees(float64 radians) = float64(radians * 180 / pi);
 
 	// inline rand(int min, int max) = System.rand() % (max - min) + min;
-	// inline rand(double min, double max) = (System.rand() / float64(RAND_MAX)) * (max - min) + min;
+	// inline rand(float64 min, float64 max) = (System.rand() / float64(System.rand.max)) * (max - min) + min;
 }
 
 /* TODO: leftovers

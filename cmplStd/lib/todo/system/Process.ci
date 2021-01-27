@@ -1,19 +1,18 @@
 struct Process {
+	const int pid;   // process id
+	const int ppid;  // parent process id
+	const string cmd[];
+	const string env[string];
 
-	int pid;   // process id
-	int ppid;  // parent process id
-	int priority;
+	static const Process current = {
+		pid: System.pid();
+		ppid: System.parentPid();
+		cmd: System.args();
+		env: System.env();
+	};
 
-	string cwd;
-	string cmd[];
-	string env[string];
-
-	Stream stdin;
-	Stream stdout;
-	Stream stderr;
-
-	static const Process current();
-
+	int priority();
+	string cwd();
 	bool started();
 	bool exited();
 	int exitCode(bool block);

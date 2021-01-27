@@ -690,6 +690,10 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 					if (type != NULL) {
 						ast->op.rhso = args;
 						ast->op.lhso->type = type;
+						if (isStatic(linkOf(ref, 0))) {
+							// replace variable with typename for case 4.
+							ast->op.lhso->op.lhso = lnkNode(cc, loc->type);
+						}
 						return ast->type = type;
 					}
 
@@ -753,8 +757,18 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				traceAst(ast);
 				return NULL;
 			}
+
+			if (ast->op.rhso && ast->op.rhso->kind == PNCT_dot3) {
+				if (!isArrayType(lType)) {
+					traceAst(ast);
+					return NULL;
+				}
+				type = lType;
+			} else {
+				type = lType->type;
+			}
+
 			// base type of array;
-			type = lType->type;
 			ast->type = type;
 			return type;
 

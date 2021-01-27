@@ -7,17 +7,17 @@
 struct Sequence(struct Value): Object {
 
 	struct Iterator: Object {
-		bool next(Iterator &this);
-		Value current(Iterator &this);
+		bool next(Iterator this&);
+		Value current(const Iterator this&);
 
 		/** Allow iteration over all the values like:
 		 * for (Value value : values) { ... }
 		 */
-		static bool next(Iterator &this, Value &&current) {
+		static bool next(Iterator this&, Value value&&) {
 			if (!this.next()) {
 				return false;
 			}
-			current = this.current();
+			value = this.current();
 			return true;
 		}
 	}
@@ -105,6 +105,28 @@ struct Map(struct Key, struct Value): Sequence(Pair(Key, Value)) {
 /// Implements a mutable sorted map.
 struct TreeMap(struct Key, struct Value): Map(Key, Value) {
 
+	TreeMap make(int compare(Key a, Key b), int capacity);
+
+	TreeMap make(bool less(Key a, Key b), bool equal(Key a, Key b), int capacity) {
+		int compare(Key a, Key b) {
+			if (equal(a, b)) {
+				return 0;
+			}
+			return less(a, b) ? -1 : 1;
+		}
+		return make(compare, capacity);
+	}
+
+	static if (Key is Comparable) {
+		TreeMap make(int capacity) {
+			// allow static and dynamic compare dispatching
+			int compare(Key a, Key b) {
+				return a.compare(b);
+			}
+			return make(compare, capacity);
+		}
+	}
+
 	bool put(TreeMap this, const Key &key, const Value &value);
 
 	bool remove(TreeMap this, const Key &key);
@@ -112,6 +134,8 @@ struct TreeMap(struct Key, struct Value): Map(Key, Value) {
 
 /// Implements a mutable unsorted map.
 struct HashMap(struct Key, struct Value): Map(Key, Value) {
+
+	HashMap make(int hash(Key a), bool equal(Key a, Key b));
 
 	bool put(HashMap this, const Key &key, const Value &value);
 
@@ -121,7 +145,7 @@ struct HashMap(struct Key, struct Value): Map(Key, Value) {
 /// Represents an immutable collection of distinct keys.
 struct Set(struct Key): Sequence(Key) {
 
-	bool has(const Map this, const Key &key);
+	bool has(const Set this, const Key &key);
 }
 
 /// Implements a mutable sorted set.
@@ -142,8 +166,6 @@ struct HashSet(struct Key): Set(Key) {
 
 /// Represents an immutable collection of distinct keys.
 struct Bag(struct Key): Sequence(Key) {
-
-	bool has(const Map this, const Key &key);
 
 	uint get(const Map this, const Key &key);
 }

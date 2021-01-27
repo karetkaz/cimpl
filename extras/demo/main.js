@@ -700,7 +700,7 @@ function process(data) {
 				li.classList.add('file');
 				li.onclick = function() {
 					// update params to preserve history navigation
-					params.update({file, line: null});
+					params.update({file, line: null, content: null});
 				};
 				li.ondblclick = function() {
 					openProjectFile({ file, link: true });

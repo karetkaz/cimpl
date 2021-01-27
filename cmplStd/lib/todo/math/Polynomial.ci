@@ -1,6 +1,9 @@
 // Implementation of a Polynomial
 
-struct Polynomial(typename scalar): TextWriter.Writeable {
+inline "/cmplStd/lib/system/Stream.ci";
+
+struct Polynomial/*(typename scalar): TextWriter.Writeable*/: object {
+	inline scalar = float64;
 	scalar elements[*];
 	const int capacity;
 
@@ -9,115 +12,110 @@ struct Polynomial(typename scalar): TextWriter.Writeable {
 		c_unit: 1;
 	}
 
+	/* TODO: implement enums
 	enum: Polynomial {
 		zero: {
 			elements: { c_zero };
 			capacity: 1;
 		}
-	}
+	} */
 
 	// construct a new instance
-	Polynomial Polynomial(int capacity) {
-		scalar elements[*] = malloc(capacity * sizeof(scalar));
+	static Polynomial make(int capacity) {
+		scalar elements[*] = pointer.alloc(null, capacity * sizeof(scalar));
 		for (int i = 0; i < capacity; i += 1) {
 			elements[i] = c_zero;
 		}
 		return {
 			elements: elements;
 			capacity: capacity;
-		}
+		};
 	}
 
 	// clone an existing instance
-	Polynomial Polynomial(Polynomial instance) {
-		scalar elements[*] = malloc(instance.capacity * sizeof(scalar));
+	static Polynomial copy(const Polynomial instance&) {
+		scalar elements[*] = pointer.alloc(null, instance.capacity * sizeof(scalar));
 		for (int i = 0; i < instance.capacity; i += 1) {
 			elements[i] = instance.elements[i];
 		}
 		return {
 			elements: elements;
 			capacity: capacity;
-		}
+		};
 	}
 
-	// destroy the instance
-	void void(Polynomial value) {
-		free(value.elements);
-		value.elements = null;
-	}
-
-	int degree(Polynomial &this) {
-		for (int i = this.capacity - 1; i > 0; i--) {
-			if (this.coefficients[i] != c_zero) {
+	static int degree(Polynomial this&) {
+		for (int i = this.capacity - 1; i > 0; i -= 1) {
+			if (this.elements[i] != c_zero) {
 				return i;
 			}
 		}
 		return 0;
 	}
 
-	scalar evaluate(Polynomial &this, scalar x) const {
+	static scalar evaluate(const Polynomial this&, scalar x) {
 		int deg = this.degree();
-		scalar result = this.coefficients[deg];
-		for (int i = deg - 1; i >= 0; i--) {
-			result = result * x + this.coefficients[i];
+		scalar result = this.elements[deg];
+		for (int i = deg - 1; i >= 0; i -= 1) {
+			result = result * x + this.elements[i];
 		}
 		return result;
 	}
 
-	scalar get(const Polynomial &this, int index) {
+	static scalar get(const Polynomial this&, int index) {
 		assert(index >= 0, "negative index");
 		if (index >= this.capacity) {
 			return c_zero;
 		}
-		return this.coefficients[index];
+		return this.elements[index];
 	}
 
-	void set(Polynomial &this, int index, scalar value) {
+	static void set(Polynomial this&, int index, scalar value) {
 		assert(index >= 0, "negative index");
 		assert(index < this.capacity, "invalid index");
-		this.coefficients[index] = value;
-		return this;
+		this.elements[index] = value;
 	}
 
-	Polynomial neg(const Polynomial &a) {
-		Polynomial result = Polynomial(a.degree());
-		for (int i = 0; i < result.capacity; i++) {
-			result.coefficients[i] = -a.get(i);
+
+	static Polynomial neg(const Polynomial a&) {
+		Polynomial result = make(a.degree());
+		for (int i = 0; i < result.capacity; i += 1) {
+			result.elements[i] = -a.get(i);
 		}
 		return result;
 	}
 
-	Polynomial add(const Polynomial &a, const Polynomial &b) {
-		Polynomial result = Polynomial(max(a.degree(), b.degree()));
-		for (int i = 0; i < result.capacity; i++) {
-			result.coefficients[i] = a.get(i) + b.get(i);
+	static Polynomial add(const Polynomial a&, const Polynomial b&) {
+		Polynomial result = make(Math.max(a.degree(), b.degree()));
+		for (int i = 0; i < result.capacity; i += 1) {
+			result.elements[i] = a.get(i) + b.get(i);
 		}
 		return result;
 	}
 
-	Polynomial sub(const Polynomial &a, const Polynomial &b) {
-		Polynomial result = Polynomial(max(a.degree(), b.degree()));
-		for (int i = 0; i < result.capacity; i++) {
-			result.coefficients[i] = a.get(i) - b.get(i);
+	static Polynomial sub(const Polynomial a&, const Polynomial b&) {
+		Polynomial result = make(Math.max(a.degree(), b.degree()));
+		for (int i = 0; i < result.capacity; i += 1) {
+			result.elements[i] = a.get(i) - b.get(i);
 		}
 		return result;
 	}
 
-	Polynomial mul(const Polynomial &a, const Polynomial &b) {
+	static Polynomial mul(const Polynomial a&, const Polynomial b&) {
 		int aDeg = a.degree();
 		int bDeg = b.degree();
-		Polynomial result = Polynomial(aDeg + bDeg);
-		for (int i = 0; i <= aDeg; i++) {
-			for (int j = 0; j <= bDeg; j++) {
-				result.coefficients[i + j] += a.get(i) * b.get(i);
+		Polynomial result = make(aDeg + bDeg);
+		for (int i = 0; i <= aDeg; i += 1) {
+			for (int j = 0; j <= bDeg; j += 1) {
+				result.elements[i + j] += a.get(i) * b.get(i);
 			}
 		}
 		return result;
 	}
 
-	void write(const Polynomial &this, TextWriter writer) {
+	static void write(const Polynomial this&, TextWriter writer) {
 		bool first = true;
-		for (int i = this.degree(); i >= 0; i--) {
+		for (int i = this.degree(); i >= 0; i -= 1) {
 			scalar value = this.elements[i];
 			if (value == c_zero && !(first && i == 0)) {
 				continue;
@@ -127,26 +125,27 @@ struct Polynomial(typename scalar): TextWriter.Writeable {
 				value = -value;
 				if (!first) {
 					// binary operator
-					out.write(" - ");
+					writer.write(" - ");
 				}
 				else {
 					// unary operator
-					out.write("-");
+					writer.write("-");
 				}
 			}
 			else if (!first) {
 				// binary operator
-				out.write(" + ");
+				writer.write(" + ");
 			}
 
 			if (value != c_unit || i == 0) {
-				out.write(value);
+				writer.write(value);
 			}
 
 			if (i > 0) {
-				out.write("x");
+				writer.write("x");
 				if (i > 1) {
-					out.write("^").write(i);
+					writer.write("^");
+					writer.write(i);
 				}
 			}
 			first = false;
@@ -154,6 +153,20 @@ struct Polynomial(typename scalar): TextWriter.Writeable {
 	}
 }
 
+inline Polynomial(int capacity) = Polynomial.make(capacity);
+
+inline Polynomial(const Polynomial instance&) = Polynomial.copy(instance);
+
+// destroy the instance
+void void(Polynomial value&) {
+	pointer.alloc(value.elements, 0);
+	value.elements = null;
+}
+
+Polynomial p = Polynomial.make(10);
+// p.set(0, 0);
+// p.set(0, 1);
+/* TODO: implement operator overloading
 inline [](Polynomial &this, int index) = Polynomial.get(this, index);
 inline ()(Polynomial &this, scalar x) = Polynomial.evaluate(this, x);
 
@@ -161,3 +174,4 @@ inline -(const Polynomial &a) = Polynomial.neg(a);
 inline +(const Polynomial &a, const Polynomial &b) = Polynomial.add(a, b);
 inline -(const Polynomial &a, const Polynomial &b) = Polynomial.sub(a, b);
 inline *(const Polynomial &a, const Polynomial &b) = Polynomial.mul(a, b);
+// */

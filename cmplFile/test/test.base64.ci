@@ -1,0 +1,27 @@
+inline "/cmplStd/lib/text/encoding/base64.ci";
+
+char original[*] = "../../cmplGfx/test/asset/image/david.png";
+char encoded[*] = "out/base64.enc.txt";
+char decoded[*] = "out/base64.dec.png";
+
+inline useBuffer = true;
+Base64Encoder encoder = {
+	writer: FileWriter(encoded, useBuffer, false);
+	wrap: 100;
+};
+
+Base64Decoder decoder = {
+	writer: FileWriter(decoded, useBuffer, false);
+};
+
+if (ByteReader reader = FileReader(original)) {
+	encoder.write(reader);
+	reader.close();
+}
+encoder.close();
+
+if (ByteReader reader = FileReader(encoded)) {
+	decoder.write(reader);
+	reader.close();
+}
+decoder.close();

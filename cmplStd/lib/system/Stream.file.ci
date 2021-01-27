@@ -1,0 +1,136 @@
+struct FileReader: ByteReader {
+	const File file;
+
+	int read(FileReader this, uint8 bytes[]) {
+		return File.read(this.file, bytes);
+	}
+
+	void close(FileReader this) {
+		File.close(this.file);
+	}
+}
+
+struct FileWriter: ByteWriter {
+	const File file;
+
+	void write(FileWriter this, byte bytes[]) {
+		int wrote = File.write(this.file, bytes);
+		assert(wrote == bytes.length);
+	}
+
+	void flush(FileWriter this) {
+		File.flush(this.file);
+	}
+
+	void close(FileWriter this) {
+		File.close(this.file);
+	}
+}
+struct BufferedFileWriter: FileWriter {
+	byte buffer[1024] = null;
+	int bufferSize = 0;
+
+	static void flushBuffer(BufferedFileWriter this) {
+		int wrote = File.write(this.file, this.buffer[... this.bufferSize]);
+		assert(wrote == this.bufferSize);
+		this.bufferSize = 0;
+	}
+
+	void write(BufferedFileWriter this, byte bytes[]) {
+		if (this.bufferSize + bytes.length > this.buffer.length) {
+			if (this.bufferSize > 0) {
+				this.flushBuffer();
+			}
+			if (bytes.length > this.buffer.length / 2) {
+				// writing more than buffer half size, make the write
+				FileWriter.write(this, bytes);
+				return;
+			}
+		}
+		// accumulate into buffer
+		byte buffer[*] = this.buffer;
+		int bufferSize = this.bufferSize;
+		for (int i = 0; i < bytes.length; i += 1) {
+			buffer[bufferSize + i] = bytes[i];
+		}
+		this.bufferSize += bytes.length;
+	}
+
+	void flush(BufferedFileWriter this) {
+		this.flushBuffer();
+		FileWriter.flush(this);
+	}
+
+	void close(BufferedFileWriter this) {
+		this.flushBuffer();
+		FileWriter.close(this);
+	}
+}
+
+FileWriter StdOutWriter() {
+	return FileWriter {
+		file: File.out;
+		close: Closeable.skipClose;
+	};
+}
+
+FileReader FileReader(const char path[*]) {
+	return FileReader {
+		file: File.open(path);
+	};
+}
+
+FileWriter FileWriter(const char path[*], bool buffered, bool append) {
+	if (buffered && append) {
+		return BufferedFileWriter {
+			file: File.append(path);
+		};
+	}
+	if (buffered) {
+		return BufferedFileWriter {
+			file: File.create(path);
+		};
+	}
+	if (append) {
+		return FileWriter {
+			file: File.append(path);
+		};
+	}
+	return FileWriter {
+		file: File.create(path);
+	};
+}
+
+/* TODO: uncomment
+struct Path {
+	bool exists();
+	bool isFile();
+	bool isDirectory();
+	bool isHidden();
+	bool isAbsolute();
+
+	Path parent();
+	// permissions: canRead,write,execute,...
+}
+
+inline FileReader(Path path) = {
+	file: File.open(path);
+};
+inline FileWriter(Path path, bool append) = {
+	file: append ? File.append(path) : File.create(path);
+};
+
+inline AsciiReader(Path path) = {
+	reader: FileReader(path);
+};
+inline AsciiWriter(Path path, bool append) = {
+	writer: FileWriter(path, append);
+};
+
+inline Utf8Reader(Path path) = {
+	reader: FileReader(path);
+};
+inline Utf8Writer(Path path, bool append) = {
+	writer: FileWriter(path, append);
+};
+*/

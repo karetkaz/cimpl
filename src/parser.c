@@ -1144,27 +1144,29 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 	// parse array dimensions
 	int arrDepth = 0;
 	while (skipTok(cc, LEFT_sqr, 0)) {		// int a[...][][]...
-		symn arr = newDef(cc, KIND_typ);
 
 		arrDepth += 1;
 		if (cast != CAST_any && arrDepth == 1) {	// error: int a&[100]
 			error(cc->rt, tag->file, tag->line, ERR_INVALID_TYPE, tag);
 		}
 
+		symn arr = newDef(cc, KIND_typ);
 		if (peekTok(cc, RIGHT_sqr) != NULL) {
-			// dynamic-size array: int a[]
+			// dynamic-size array: `int a[]`
 			addLength(cc, arr, NULL);
 			arr->size = 2 * vm_ref_size;
 			cast = CAST_arr;
 		}
 		else if (skipTok(cc, OPER_mul, 0)) {
-			// unknown-size array: int a[*]
+			// unknown-size array: `int a[*]`
 			arr->size = vm_ref_size;
 			cast = CAST_ref;
 		}
 		else {
-			// fixed-size array: int a[42]
-			// associative array: TODO: int a[string]
+			// TODO: dynamic allocated array: `int a[n]`
+			// TODO: associative array: `int a[string]`
+			// TODO: sparse array: `int a[int]`
+			// fixed-size array: `int a[42]`
 			int64_t length = -1;
 			char *file = cc->file;
 			int line = cc->line;
@@ -1173,9 +1175,9 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 				len->type = typeCheck(cc, NULL, len, 1);
 				line = len->line;
 				file = len->file;
-			}
-			if (eval(cc, len, len)) {
-				length = intValue(len);
+				if (eval(cc, len, len)) {
+					length = intValue(len);
+				}
 			}
 			if (length <= 0) {
 				error(cc->rt, file, line, ERR_INVALID_ARRAY_LENGTH, len);

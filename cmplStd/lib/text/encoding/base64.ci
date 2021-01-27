@@ -1,0 +1,122 @@
+static if (typename(ByteWriter) == null) {
+inline "/cmplStd/lib/system/Stream.ci";
+}
+
+// Base64 encoder
+struct Base64Encoder: ByteWriter {
+	static byte lookup[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	const ByteWriter writer;
+
+	const int wrap = 80;
+	int size = 0;
+
+	// todo: this should be a bigger buffer
+	int bitsEncoded = 0;
+	int charEncoded = 0;
+
+	static void flushBuffer(Base64Encoder this) {
+		if (this.bitsEncoded == 4) {
+			ByteWriter writer = this.writer;
+			inline charEncoded = this.charEncoded;
+			writer.write(lookup[(charEncoded << 2) & 0x3f]);
+			writer.write(byte('='));
+			this.bitsEncoded = 0;
+		}
+		else if (this.bitsEncoded == 2) {
+			ByteWriter writer = this.writer;
+			inline charEncoded = this.charEncoded;
+			writer.write(lookup[(charEncoded << 4) & 0x3f]);
+			writer.write(byte('='));
+			writer.write(byte('='));
+			this.bitsEncoded = 0;
+		}
+	}
+
+	void write(Base64Encoder this, byte data[]) {
+		ByteWriter writer = this.writer;
+		inline bitsEncoded = this.bitsEncoded;
+		inline charEncoded = this.charEncoded;
+		inline charWritten = this.size;
+		for (int i = 0; i < data.length; i += 1) {
+			bitsEncoded += 2;
+			charEncoded <<= 8;
+			charEncoded |= data[i] & 0xff;
+			writer.write(lookup[(charEncoded >> bitsEncoded) & 0x3f]);
+			if (this.wrap > 0 && ((charWritten += 1) % this.wrap == 0)) {
+				writer.write(byte('\n'));
+			}
+
+			if (bitsEncoded >= 6) {
+				bitsEncoded -= 6;
+				writer.write(lookup[(charEncoded >> bitsEncoded) & 0x3f]);
+				if (this.wrap > 0 && ((charWritten += 1) % this.wrap == 0)) {
+					writer.write(byte('\n'));
+				}
+			}
+		}
+	}
+
+	void flush(Base64Encoder this) {
+		this.flushBuffer();
+		this.writer.flush();
+	}
+
+	void close(Base64Encoder this) {
+		this.flushBuffer();
+		this.writer.safeClose();
+		assert(this.bitsEncoded == 0, "unprocessed bits remaining.", this.bitsEncoded);
+	}
+}
+
+// Base64 decoder
+struct Base64Decoder: ByteWriter {
+	static int lookup[256] = {};
+	const ByteWriter writer;
+	int bitsDecoded = 0;
+	int charDecoded = 0;
+
+	void write(Base64Decoder this, byte data[]) {
+		static bool initialized = false;
+		if (!initialized) {
+			for (int i = 0; i < lookup.length; i += 1) {
+				lookup[i] = -1;
+			}
+			for (int i = 0; i < Base64Encoder.lookup.length; i += 1) {
+				lookup[Base64Encoder.lookup[i]] = i;
+			}
+			initialized = true;
+		}
+
+		ByteWriter writer = this.writer;
+		inline bitsDecoded = this.bitsDecoded;
+		inline charDecoded = this.charDecoded;
+		for (int i = 0; i < data.length; i += 1) {
+			byte chr = data[i];
+			bool skipChar = chr == '\n';
+			if (chr == '\r') {
+				skipChar = true;
+			}
+			else if (chr == '=') {
+				skipChar = true;
+				bitsDecoded -= 2;
+			}
+			if (!skipChar) {
+				bitsDecoded += 6;
+				charDecoded <<= 6;
+				charDecoded |= lookup[chr] & 0x3f;
+				if (bitsDecoded >= 8) {
+					bitsDecoded -= 8;
+					writer.write(byte(charDecoded >> bitsDecoded));
+				}
+			}
+		}
+	}
+
+	void flush(Base64Decoder this) {
+		this.writer.flush(this.writer);
+	}
+	void close(Base64Decoder this) {
+		this.writer.safeClose();
+		assert(this.bitsDecoded == 0, "unprocessed bits remaining.", this.bitsDecoded);
+	}
+}

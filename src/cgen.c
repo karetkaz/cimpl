@@ -593,6 +593,27 @@ static ccKind genIndex(ccContext cc, astn ast, ccKind get) {
 
 	return genIndirection(cc, ast->type, get, 1);
 }
+/// Generate byte-code for OPER_idx `a[...n]`.
+static ccKind genSlice(ccContext cc, astn ast) {
+	if (ast->op.rhso == NULL || ast->op.rhso->kind != PNCT_dot3) {
+		return CAST_any;
+	}
+
+	if (ast->op.rhso->op.lhso != NULL) {
+		// not supported yet: `a[1 ... n]`.
+		return CAST_any;
+	}
+
+	if (!genAst(cc, ast->op.rhso->op.rhso, refCast(cc->type_idx))) {
+		return CAST_any;
+	}
+
+	if (!genAst(cc, ast->op.lhso, CAST_ref)) {
+		return CAST_any;
+	}
+
+	return CAST_arr;
+}
 
 /// Generate byte-code for OPER_fnc `a(b)`.
 static ccKind genCast(ccContext cc, astn ast, ccKind get) {
@@ -1751,6 +1772,14 @@ static ccKind genAst(ccContext cc, astn ast, ccKind get) {
 			break;
 
 		case OPER_idx:      // '[]'
+			if (ast->op.rhso && ast->op.rhso->kind == PNCT_dot3) {
+				// make a slice: a[ ... 3]
+				if (!(got = genSlice(cc, ast))) {
+					traceAst(ast);
+					return CAST_any;
+				}
+				break;
+			}
 			if (!(got = genIndex(cc, ast, get))) {
 				traceAst(ast);
 				return CAST_any;

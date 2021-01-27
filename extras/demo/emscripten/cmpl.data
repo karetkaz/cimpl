@@ -51,7 +51,7 @@ inline "lib/math/Vector2d.ci"?;
 //inline "lib/math/BigDecimal.ci?"   // TODO: inline Complex -> BigDecimal.Complex<BigDecimal>
 //inline "lib/math/Perlin.ci"?;
 
-inline "lib/string.ci";
+inline "lib/text/string.ci";
 // graphics library extension
 inline "lib/color.ci";
 inline "lib/image.ci";
@@ -509,6 +509,18 @@ static struct Math {
 	inline max(float64 a, float64 b) = a > b ? a : b;
 
 	/// Returns the value of `t` clamped between `a` and `b`
+	inline clamp(int32 t, int32 a, int32 b) = t < a ? a : t > b ? b : t;
+
+	/// Returns the value of `t` clamped between `a` and `b`
+	inline clamp(int64 t, int64 a, int64 b) = t < a ? a : t > b ? b : t;
+
+	/// Returns the value of `t` clamped between `a` and `b`
+	inline clamp(uint32 t, uint32 a, uint32 b) = t < a ? a : t > b ? b : t;
+
+	/// Returns the value of `t` clamped between `a` and `b`
+	inline clamp(uint64 t, uint64 a, uint64 b) = t < a ? a : t > b ? b : t;
+
+	/// Returns the value of `t` clamped between `a` and `b`
 	float32 clamp(float32 t, float32 a, float32 b) {
 		if (t < a) {
 			return a;
@@ -877,7 +889,7 @@ static struct Math {
 	inline degrees(float64 radians) = float64(radians * 180 / pi);
 
 	// inline rand(int min, int max) = System.rand() % (max - min) + min;
-	// inline rand(double min, double max) = (System.rand() / float64(RAND_MAX)) * (max - min) + min;
+	// inline rand(float64 min, float64 max) = (System.rand() / float64(System.rand.max)) * (max - min) + min;
 }
 
 /* TODO: leftovers
@@ -945,6 +957,680 @@ Number.prototype.log10 = function(){return Math.log(this) / Math.LN10;};
 //- Number.prototype.mod = function(modulus){return this >= 0 ? this % modulus : (this % modulus + Math.abs(modulus)) % modulus;};
 //- Number.prototype.wrap = function(low, high){return low + (this - low).mod(high - low);};
 // */
+struct Date {
+	int32 year;
+	uint8 month;			// 1 ... 12 	[Jan, Feb, Mar, ...]
+	uint8 dayOfMonth;		// 1 ... 31
+	uint8 dayOfWeek;		// 1 ... 7		[Mon, Tue, ...]
+	uint8 weekOfYear;		// 1 ... 54
+	uint16 dayOfYear;		// 1 ... 366
+	bool leapYear;
+
+	enum: int64 {
+		// Number of milliseconds per time unit
+		MillisPerSecond: 1000;
+		MillisPerMinute: MillisPerSecond * 60;
+		MillisPerHour: MillisPerMinute * 60;
+		MillisPerDay: MillisPerHour * 24;
+		MillisPerWeek: MillisPerDay * 7;
+
+		MillisPerYear: MillisPerDay * 365;
+		MillisPerLeapYear: MillisPerDay * 366;
+	}
+	enum: int { // DaysPer...
+		// Number of days in a non-leap year
+		DaysPerYear: 365;
+
+		// Number of days in a leap year
+		DaysPerLeapYear: 366;
+
+		// Number of days in 4 years
+		DaysPer4Years: DaysPerYear * 4 + 1;
+		// Number of days in 100 years
+		DaysPer100Years: DaysPer4Years * 25 - 1;
+		// Number of days in 400 years
+		DaysPer400Years: DaysPer100Years * 4 + 1;
+
+		HoursPerDay: 24;
+		MinutesPerDay: 60 * HoursPerDay;
+		SecondsPerDay: 60 * MinutesPerDay;
+
+		DaysTil1970: 719162;
+	}
+
+	static const int DaysToMonth365[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+	static const int DaysToMonth366[13] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366};
+
+	static bool isLeapYear(int year) {
+		if (year % 4 != 0) {
+			return false;
+		}
+		if (year % 100 != 0) {
+			return true;
+		}
+		if (year % 400 != 0) {
+			return false;
+		}
+		return true;
+	}
+
+	static int64 millis(int year, int month, int day) {
+		if (year < 0 || year > 9999) {
+			// year is invalid
+			return -1;
+		}
+		if (month < 1 || month > 12) {
+			trace("invalid month", month);
+			month = Math.clamp(month, 1 , 12);
+		}
+
+		int daysInYear = 0;
+		int daysInMonth = 0;
+		if (isLeapYear(year)) {
+			daysInYear = DaysToMonth366[month - 1];
+			daysInMonth = DaysToMonth366[month] - daysInYear;
+		} else {
+			daysInYear = DaysToMonth365[month - 1];
+			daysInMonth = DaysToMonth365[month] - daysInYear;
+		}
+
+		if (day < 1 || day > daysInMonth) {
+			trace("invalid day", day);
+			day = Math.clamp(day, 1, daysInMonth);
+		}
+
+		int y = year - 1;
+		int64 d = y * 365 + y / 4 - y / 100 + y / 400 + daysInYear + day - 1;
+		return (d - DaysTil1970) * MillisPerDay;
+	}
+
+	static Date parts(int64 now) {
+		int n = DaysTil1970 + now / MillisPerDay;
+
+		// n = number of days since 1/1/0001
+		int dayOfWeek = n % 7 + 1;
+
+		// y400 = number of whole 400-year periods since 1/1/0001
+		int y400 = n / DaysPer400Years;
+		// n = day number within 400-year period
+		n -= y400 * DaysPer400Years;
+
+		// y100 = number of whole 100-year periods within 400-year period
+		int y100 = n / DaysPer100Years;
+
+		// Last 100-year period has an extra day, so decrement result if 4
+		if (y100 == 4) {
+			y100 = 3;
+		}
+		// n = day number within 100-year period
+		n -= y100 * DaysPer100Years;
+
+		// y4 = number of whole 4-year periods within 100-year period
+		int y4 = n / DaysPer4Years;
+		// n = day number within 4-year period
+		n -= y4 * DaysPer4Years;
+
+		// y1 = number of whole years within 4-year period
+		int y1 = n / DaysPerYear;
+		// Last year has an extra day, so decrement result if 4
+		if (y1 == 4) {
+			y1 = 3;
+		}
+
+		// If year was requested, compute and return it
+		int year = y400 * 400 + y100 * 100 + y4 * 4 + y1 + 1;
+
+		// n = day number within year
+		n -= y1 * DaysPerYear;
+
+		// All months have less than 32 days, so n >> 5 is a good conservative
+		// estimate for the month
+		int m = n >> 5 + 1;
+
+		int DaysToMonth[*] = DaysToMonth365;
+		if (isLeapYear(year)) {
+			DaysToMonth = DaysToMonth366;
+		}
+
+		// m = 1-based month number
+		for (;n >= DaysToMonth[m];) {
+			m += 1;
+		}
+
+		return {
+			year: year;
+			month: m;
+			dayOfYear: n  + 1;
+			dayOfMonth: n - DaysToMonth[m - 1] + 1;
+			dayOfWeek: dayOfWeek;
+			weekOfYear: (n + 7 - dayOfWeek) / 7 + 1;
+			leapYear: DaysToMonth == DaysToMonth366;
+		};
+	}
+}
+
+// adapted from https://github.com/dotnet/runtime/blob/master/src/libraries/System.Private.CoreLib/src/System/Globalization/GregorianCalendar.csstruct FileReader: ByteReader {
+	const File file;
+
+	int read(FileReader this, uint8 bytes[]) {
+		return File.read(this.file, bytes);
+	}
+
+	void close(FileReader this) {
+		File.close(this.file);
+	}
+}
+
+struct FileWriter: ByteWriter {
+	const File file;
+
+	void write(FileWriter this, byte bytes[]) {
+		int wrote = File.write(this.file, bytes);
+		assert(wrote == bytes.length);
+	}
+
+	void flush(FileWriter this) {
+		File.flush(this.file);
+	}
+
+	void close(FileWriter this) {
+		File.close(this.file);
+	}
+}
+struct BufferedFileWriter: FileWriter {
+	byte buffer[1024] = null;
+	int bufferSize = 0;
+
+	static void flushBuffer(BufferedFileWriter this) {
+		int wrote = File.write(this.file, this.buffer[... this.bufferSize]);
+		assert(wrote == this.bufferSize);
+		this.bufferSize = 0;
+	}
+
+	void write(BufferedFileWriter this, byte bytes[]) {
+		if (this.bufferSize + bytes.length > this.buffer.length) {
+			if (this.bufferSize > 0) {
+				this.flushBuffer();
+			}
+			if (bytes.length > this.buffer.length / 2) {
+				// writing more than buffer half size, make the write
+				FileWriter.write(this, bytes);
+				return;
+			}
+		}
+		// accumulate into buffer
+		byte buffer[*] = this.buffer;
+		int bufferSize = this.bufferSize;
+		for (int i = 0; i < bytes.length; i += 1) {
+			buffer[bufferSize + i] = bytes[i];
+		}
+		this.bufferSize += bytes.length;
+	}
+
+	void flush(BufferedFileWriter this) {
+		this.flushBuffer();
+		FileWriter.flush(this);
+	}
+
+	void close(BufferedFileWriter this) {
+		this.flushBuffer();
+		FileWriter.close(this);
+	}
+}
+
+FileWriter StdOutWriter() {
+	return FileWriter {
+		file: File.out;
+		close: Closeable.skipClose;
+	};
+}
+
+FileReader FileReader(const char path[*]) {
+	return FileReader {
+		file: File.open(path);
+	};
+}
+
+FileWriter FileWriter(const char path[*], bool buffered, bool append) {
+	if (buffered && append) {
+		return BufferedFileWriter {
+			file: File.append(path);
+		};
+	}
+	if (buffered) {
+		return BufferedFileWriter {
+			file: File.create(path);
+		};
+	}
+	if (append) {
+		return FileWriter {
+			file: File.append(path);
+		};
+	}
+	return FileWriter {
+		file: File.create(path);
+	};
+}
+
+/* TODO: uncomment
+struct Path {
+	bool exists();
+	bool isFile();
+	bool isDirectory();
+	bool isHidden();
+	bool isAbsolute();
+
+	Path parent();
+	// permissions: canRead,write,execute,...
+}
+
+inline FileReader(Path path) = {
+	file: File.open(path);
+};
+inline FileWriter(Path path, bool append) = {
+	file: append ? File.append(path) : File.create(path);
+};
+
+inline AsciiReader(Path path) = {
+	reader: FileReader(path);
+};
+inline AsciiWriter(Path path, bool append) = {
+	writer: FileWriter(path, append);
+};
+
+inline Utf8Reader(Path path) = {
+	reader: FileReader(path);
+};
+inline Utf8Writer(Path path, bool append) = {
+	writer: FileWriter(path, append);
+};
+*/
+// InputOutput
+
+struct Closeable: object {
+	// abstract method
+	void close(Closeable this);
+
+	static void skipClose(Closeable closeable) {
+	}
+
+	static void safeClose(Closeable closeable) {
+		if (closeable.close != null) {
+			closeable.close(closeable);
+		}
+	}
+}
+
+// destroy a closeable invoking the abstract close method
+inline close(Closeable instance) = Closeable.safeClose(instance);
+inline void(Closeable instance) = Closeable.safeClose(instance);
+
+// ByteReader ~= java:InputStream
+struct ByteReader: Closeable {
+
+	// abstract method
+	int read(ByteReader this, byte bytes[]);
+
+	static int read(ByteReader this) {
+		byte bytes[1] = {};
+		int result = this.read(bytes);
+		if (result > 0) {
+			return bytes[0];
+		}
+		return result;
+	}
+
+	/* TODO: subclasses
+		CopyReader
+		FileReader
+		PipedReader
+		SocketReader
+		MemoryReader
+	*/
+}
+
+// ByteWriter ~= java:OutputStream
+struct ByteWriter: Closeable {
+	// abstract method
+	void write(ByteWriter this, byte bytes[]);
+
+	// abstract method
+	void flush(ByteWriter this);
+
+	static void write(ByteWriter this, byte bytes[], int count) {
+		assert(count <= bytes.length);
+		return this.write(this, bytes[... count]);
+	}
+
+	/*TODO:static*/ void write(ByteWriter this, byte oneByte) {
+		byte bytes[1] = { oneByte };
+		return this.write(this, bytes);
+	}
+
+	/* TODO: uncomment
+	static void write(ByteWriter this, void write(ByteWriter writer)) {
+		return write(this);
+	}
+
+	struct Writeable: object {
+		// abstract method
+		void write(Writeable this, ByteWriter writer);
+	}
+
+	static void write(ByteWriter this, Writeable value) {
+		return this.write(this, value.write);
+	}// */
+
+	static int write(ByteWriter this, ByteReader reader) {
+		byte buffer[1024] = {};
+		int result = 0;
+		for ( ; ; ) {
+			int read = reader.read(buffer);
+			if (read <= 0) {
+				// TODO: break;
+				return result;
+			}
+			this.write(buffer, read);
+			result += read;
+		}
+		return result;
+	}
+
+	/* TODO: subclasses
+		FileWriter
+		PipedWriter
+		SocketWriter
+		MemoryWriter
+	*/
+}
+
+// TextReader := Decoder & Parser(java:Reader + Scanner?Parser?)
+struct TextReader: Closeable {
+	inline unicode = uint32;
+
+	const ByteReader reader;
+
+	// abstract method
+	int read(TextReader this, unicode chars[]);
+
+	/*TODO:static*/ unicode read(TextReader this) {
+		unicode chars[1] = {};
+		int result = this.read(chars);
+		if (result > 0) {
+			return chars[0];
+		}
+		return result;
+	}
+
+	void close(TextReader this) {
+		this.reader.close();
+	}
+
+	// TODO: string readNext(TextReader this, regex matcher) { /*...*/ }
+	// TODO: string readWord(TextReader this) { return this.readNext(/\w+/); }
+	// TODO: string readLine(TextReader this) { return this.readNext(/.*$/); }
+	// TODO: string readAll(TextReader this) { return this.readMatch(/.*/); }
+	// TODO: double readNumber(TextReader this, Locale locale) { /*...*/ }
+
+	/* TODO: subclasses
+		Latin1
+		Ascii
+		Utf7
+		Utf8
+	*/
+}
+
+// TextWriter := Encoder & Printer (java:Writer + PrintStream)
+struct TextWriter: Closeable {
+	struct Writeable: object {
+		// abstract method
+		void write(Writeable this, TextWriter writer);
+	}
+
+	inline unicode = uint32;
+
+	const ByteWriter writer;
+
+	// abstract method
+	void write(TextWriter this, unicode chars[]);
+
+	static void write(TextWriter this, unicode chars[], int count) {
+		assert(count <= chars.length);
+		return this.write(chars[... count]);
+	}
+
+	static void write(TextWriter this, unicode oneChar) {
+		unicode chars[1] = { oneChar };
+		return this.write(chars);
+	}
+
+	/*static void write(TextWriter this, void write(TextWriter writer)) {
+		return write(this);
+	}
+
+	static void write(TextWriter this, Writeable value) {
+		return write(this, value.write);
+	}*/
+
+	/**
+	 * Convert from one encoding to another.
+	 * @returns converted character count.
+	 *
+	 * example: convert utf-8 encoded file to ascii
+	 * TextWriter output = AsciiWriter("out.txt");
+	 * TextReader input = Utf8Reader("in.txt");
+	 * output.write(input);
+	 */
+	static int write(TextWriter this, TextReader reader) {
+		unicode buffer[1024] = {};
+		int result = 0;
+		for ( ; ; ) {
+			int read = reader.read(buffer);
+			if (read <= 0) {
+				return result;
+			}
+			this.write(buffer, read);
+			result += read;
+		}
+		return result;
+	}
+
+	void flush(TextWriter this) {
+		this.writer.flush(this.writer);
+	}
+
+	void close(TextWriter this) {
+		this.writer.safeClose();
+	}
+
+	// TODO: void write(TextWriter this, Locale locale, bool value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, char value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, int32 value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, int64 value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, uint32 value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, uint64 value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, float32 value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, float64 value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, string value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, object value) { /*...*/ }
+	// TODO: void write(TextWriter this, Locale locale, variant value) { /*...*/ }
+
+	/* TODO: subclasses
+		Latin1
+		Ascii
+		Utf7
+		Utf8
+	*/
+}
+
+// copy byte-stream
+struct CopyReader: ByteReader {
+	const ByteReader source;
+	const ByteWriter clone;
+
+	int read(CopyReader this, byte bytes[]) {
+		int result = this.source.read(bytes);
+		if (result > 0) {
+			this.clone.write(bytes, result);
+		}
+		return result;
+	}
+
+	void close(CopyReader this) {
+		this.source.close();
+		this.clone.close();
+	}
+}
+
+// File streams
+static if (typename(File) != null) {
+inline "Stream.file.ci";
+}
+
+// TODO: untested
+struct ByteBuffer {
+	int position = 0;
+	int capacity = 32;
+	int length = 0;
+	byte buffer[*] = pointer.alloc(null, capacity);
+
+	int read(ByteBuffer this, byte bytes[]) {
+		if (this.position >= this.length) {
+			return -1;
+		}
+		for (int i = 0; i < bytes.length; i += 1) {
+			if (this.position >= this.length) {
+				return i;
+			}
+			bytes[i] = this.buffer[this.position];
+			this.position += 1;
+		}
+		return bytes.length;
+	}
+
+	int read(ByteBuffer this) {
+		if (this.position >= this.length) {
+			return -1;
+		}
+		int result = this.buffer[this.position];
+		this.position += 1;
+		return result;
+	}
+
+	void write(ByteBuffer this, byte bytes[]) {
+		int size = this.position + bytes.length;
+		if (size >= this.capacity) {
+			// try to double the current size
+			this.capacity *= 2;
+			if (size > 2 * this.capacity) {
+				// double the calculated size
+				this.capacity = size * 2;
+			}
+
+			// copy old bytes
+			byte new[*] = pointer.alloc(null, this.capacity);
+			for (int i = 0; i < this.position; i += 1) {
+				new[i] = this.buffer[i];
+			}
+			pointer.alloc(this.buffer, 0);
+			this.buffer = new;
+		}
+
+		// copy new bytes
+		for (int i = 0; i < bytes.length; i += 1) {
+			this.buffer[this.position] = bytes[i];
+			this.position += 1;
+		}
+	}
+
+	void flush(ByteBuffer this) {
+		// do nothing
+	}
+
+	void close(ByteBuffer this) {
+		// release memory
+		pointer.alloc(this.buffer, 0);
+
+		this.buffer = null;
+		this.position = 0;
+		this.capacity = 0;
+		this.length = 0;
+	}
+}
+// debugging related functions
+
+/// report message at `verbose` logging level
+inline verbose(const char message[*], const variant inspect) = raise(raise.verbose, raise.noTrace, message, inspect);
+/// report message at `verbose` logging level
+inline verbose(const char message[*]) = raise(raise.verbose, raise.noTrace, message, null);
+
+/// report message at `debug` logging level
+inline debug(const char message[*], const variant inspect) = raise(raise.debug, raise.noTrace, message, inspect);
+/// report message at `debug` logging level
+inline debug(const char message[*]) = raise(raise.debug, raise.noTrace, message, null);
+
+/// report message with stacktrace at `debug` logging level
+inline trace(const char message[*], const variant inspect) = raise(raise.debug, raise.defTrace, message, inspect);
+/// report message with stacktrace at `debug` logging level
+inline trace(const char message[*]) = raise(raise.debug, raise.defTrace, message, null);
+
+/// report message at `info` logging level
+inline info(const char message[*], const variant inspect) = raise(raise.info, raise.noTrace, message, inspect);
+/// report message at `info` logging level
+inline info(const char message[*]) = raise(raise.info, raise.noTrace, message, null);
+
+/// report message at `warn` logging level
+inline warn(const char message[*], const variant inspect) = raise(raise.warn, raise.noTrace, message, inspect);
+/// report message at `warn` logging level
+inline warn(const char message[*]) = raise(raise.warn, raise.noTrace, message, null);
+
+/// report message with stacktrace at `error` logging level
+inline error(const char message[*], const variant inspect) = raise(raise.error, raise.defTrace, message, inspect);
+/// report message with stacktrace at `error` logging level
+inline error(const char message[*]) = raise(raise.error, raise.defTrace, message, null);
+
+/// report message with stacktrace at `abort` logging level and abort execution
+inline abort(const char message[*], const variant inspect) = raise(raise.abort, raise.defTrace, message, inspect);
+/// report message with stacktrace at `abort` logging level and abort execution
+inline abort(const char message[*]) = raise(raise.abort, raise.defTrace, message, null);
+/// report message with stacktrace at `abort` logging level and abort execution
+inline abort() = raise(raise.abort, raise.defTrace, "execution aborted!", null);
+
+/// report message and abort the execution if the assertion condition fails (is false)
+inline assert(bool condition, const char message[*], const variant inspect) = void(condition ? void(0) : abort(message, inspect));
+/// report message and abort the execution if the assertion condition fails (is false)
+inline assert(bool condition, const char message[*]) = void(condition ? void(0) : abort(message));
+/// report message and abort the execution if the assertion condition fails (is false)
+inline assert(bool condition) = void(condition ? void(0) : abort("assertion failed!"));
+
+///@public
+struct NotEquals {
+	/// Value of the expected result
+	const variant expected;
+
+	/// Value of the actual result
+	const variant returned;
+
+	/// Extra argument to identify what happened
+	const variant extras[] = null;
+}
+
+/// abort execution if the returned value is not equal to the expected value
+// TODO: make inline
+static void assertEq(int expected, int returned, const char message[*]) {
+	if (returned == expected) {
+		return;
+	}
+	variant extras[1] = { message };
+	NotEquals details = {
+		expected: expected;
+		returned: returned;
+		extras: extras;
+	};
+	raise(raise.abort, raise.defTrace, "assertion failed", details);
+}
+/// abort execution if the returned value is not equal to the expected value
+inline assertEq(int expected, int returned) = assertEq(expected, returned, null);
 // string related functions
 
 /// Computes the length of the string
@@ -1217,401 +1903,11 @@ int append(char output[], int pos, int value) {
 	static const FormatFlags format = {};
 	return append(output, pos, value, format);
 }
-struct Date {
-	int year;
-	int month;			// 1 ... 12 	[Jan, Feb, Mar, ...]
-	int dayOfMonth;		// 1 ... 31
-	int dayOfWeek;		// 1 ... 7		[Mon, Tue, ...]
-	int dayOfYear;		// 1 ... 366
-	//~ bool leapYear;
-
-	enum: int64 {
-		// Number of milliseconds per time unit
-		MillisPerSecond: 1000;
-		MillisPerMinute: MillisPerSecond * 60;
-		MillisPerHour: MillisPerMinute * 60;
-		MillisPerDay: MillisPerHour * 24;
-		MillisPerWeek: MillisPerDay * 7;
-
-		MillisPerYear: MillisPerDay * 365;
-		MillisPerLeapYear: MillisPerDay * 366;
-	}
-	enum: int { // DaysPer...
-		// Number of days in a non-leap year
-		DaysPerYear: 365;
-
-		// Number of days in a leap year
-		DaysPerLeapYear: 366;
-
-		// Number of days in 4 years
-		DaysPer4Years: DaysPerYear * 4 + 1;
-		// Number of days in 100 years
-		DaysPer100Years: DaysPer4Years * 25 - 1;
-		// Number of days in 400 years
-		DaysPer400Years: DaysPer100Years * 4 + 1;
-
-		HoursPerDay: 24;
-		MinutesPerDay: 60 * HoursPerDay;
-		SecondsPerDay: 60 * MinutesPerDay;
-
-		DaysTil1970: 719162;
-	}
-
-	static const int DaysToMonth365[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
-	static const int DaysToMonth366[13] = {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366};
-
-	static bool isLeapYear(int year) {
-		if (year % 4 != 0) {
-			return false;
-		}
-		if (year % 100 != 0) {
-			return true;
-		}
-		if (year % 400 != 0) {
-			return false;
-		}
-		return true;
-	}
-
-	static int64 millis(int year, int month, int day) {
-		if (year <= 0 || year > 9999) {
-			// year is invalid
-			return -1;
-		}
-		if (month <= 0 || month > 12) {
-			// month is invalid
-			return -1;
-		}
-
-		int daysInYear = 0;
-		int daysInMonth = 0;
-		if (isLeapYear(year)) {
-			daysInYear = DaysToMonth366[month - 1];
-			daysInMonth = DaysToMonth366[month] - daysInMonth;
-		} else {
-			daysInYear = DaysToMonth365[month - 1];
-			daysInMonth = DaysToMonth365[month] - daysInMonth;
-		}
-
-		if (day <= 0 || day > daysInMonth) {
-			// day is invalid
-			return -1;
-		}
-
-		int y = year - 1;
-		int64 d = y * 365 + y / 4 - y / 100 + y / 400 + daysInYear + day - 1;
-		return (d - DaysTil1970) * MillisPerDay;
-	}
-
-	static Date parts(int64 now) {
-		int n = DaysTil1970 + now / MillisPerDay;
-
-		// n = number of days since 1/1/0001
-		int dayOfWeek = n % 7 + 1;
-
-		// y400 = number of whole 400-year periods since 1/1/0001
-		int y400 = n / DaysPer400Years;
-		// n = day number within 400-year period
-		n -= y400 * DaysPer400Years;
-
-		// y100 = number of whole 100-year periods within 400-year period
-		int y100 = n / DaysPer100Years;
-
-		// Last 100-year period has an extra day, so decrement result if 4
-		if (y100 == 4) {
-			y100 = 3;
-		}
-		// n = day number within 100-year period
-		n -= y100 * DaysPer100Years;
-
-		// y4 = number of whole 4-year periods within 100-year period
-		int y4 = n / DaysPer4Years;
-		// n = day number within 4-year period
-		n -= y4 * DaysPer4Years;
-
-		// y1 = number of whole years within 4-year period
-		int y1 = n / DaysPerYear;
-		// Last year has an extra day, so decrement result if 4
-		if (y1 == 4) {
-			y1 = 3;
-		}
-
-		// If year was requested, compute and return it
-		int year = y400 * 400 + y100 * 100 + y4 * 4 + y1 + 1;
-
-		// n = day number within year
-		n -= y1 * DaysPerYear;
-		int dayOfYear = n + 1;
-
-		// All months have less than 32 days, so n >> 5 is a good conservative
-		// estimate for the month
-		int m = n >> 5 + 1;
-
-		if (isLeapYear(year)) {
-			// m = 1-based month number
-			for (;n >= DaysToMonth366[m];) {
-				m += 1;
-			}
-			return {
-				year: year;
-				month: m;
-				dayOfYear: dayOfYear;
-				dayOfMonth: n - DaysToMonth366[m - 1] + 1;
-				dayOfWeek: dayOfWeek;
-			};
-		}
-		// m = 1-based month number
-		for (;n >= DaysToMonth365[m];) {
-			m += 1;
-		}
-
-		return {
-			year: year;
-			month: m;
-			dayOfYear: dayOfYear;
-			dayOfMonth: n - DaysToMonth365[m - 1] + 1;
-			dayOfWeek: dayOfWeek;
-		};
-	}
-}
-// InputOutput
-
-inline character = uint32;
-
-struct Closeable: object {
-	// abstract method
-	void close(Closeable this);
-
-	static void skipClose(Closeable closeable) {
-	}
-
-	static void safeClose(Closeable closeable) {
-		if (closeable.close != null) {
-			closeable.close(closeable);
-		}
-	}
+static if (typename(ByteWriter) == null) {
+inline "/cmplStd/lib/system/Stream.ci";
 }
 
-// destroy a closeable invoking the abstract close method
-inline close(Closeable instance) = Closeable.safeClose(instance);
-inline void(Closeable instance) = Closeable.safeClose(instance);
-
-// ByteReader ~= java:InputStream
-struct ByteReader: Closeable {
-
-	// abstract method
-	int read(ByteReader this, byte bytes[]);
-
-	static int read(ByteReader this) {
-		byte bytes[1] = {};
-		int result = this.read(bytes);
-		if (result > 0) {
-			return bytes[0];
-		}
-		return result;
-	}
-
-	/* TODO: subclasses
-		CopyReader
-		FileReader
-		PipedReader
-		SocketReader
-		MemoryReader
-	*/
-}
-
-// ByteWriter ~= java:OutputStream
-struct ByteWriter: Closeable {
-	// abstract method
-	void write(ByteWriter this, byte bytes[]);
-
-	// abstract method
-	void flush(ByteWriter this);
-
-	static void write(ByteWriter this, byte bytes[], int count) {
-		assert(count <= bytes.length);
-		byte slice[] = emit(int(count), pointer(bytes));
-		return this.write(this, slice);
-	}
-
-	/*TODO:static*/ void write(ByteWriter this, byte oneByte) {
-		byte bytes[1] = { oneByte };
-		return this.write(this, bytes);
-	}
-
-	/* TODO: uncomment
-	static void write(ByteWriter this, void write(ByteWriter writer)) {
-		return write(this);
-	}
-
-	struct Writeable: object {
-		// abstract method
-		void write(Writeable this, ByteWriter writer);
-	}
-
-	static void write(ByteWriter this, Writeable value) {
-		return this.write(this, value.write);
-	}// */
-
-	static int write(ByteWriter this, ByteReader reader) {
-		byte buffer[1024] = {};
-		int result = 0;
-		for ( ; ; ) {
-			int read = reader.read(buffer);
-			if (read <= 0) {
-				// TODO: break;
-				return result;
-			}
-			this.write(buffer, read);
-			result += read;
-		}
-		return result;
-	}
-
-	/* TODO: subclasses
-		FileWriter
-		PipedWriter
-		SocketWriter
-		MemoryWriter
-	*/
-}
-
-// TextReader := Decoder & Parser(java:Reader + Scanner?Parser?)
-struct TextReader: Closeable {
-	const ByteReader reader;
-
-	// abstract method
-	int read(TextReader this, character chars[]);
-
-	/*TODO:static*/ character read(TextReader this) {
-		character chars[1] = {};
-		int result = this.read(chars);
-		if (result > 0) {
-			return chars[0];
-		}
-		return result;
-	}
-
-	void close(TextReader this) {
-		this.reader.close();
-	}
-
-	// TODO: string readNext(TextReader this, regex matcher) { /*...*/ }
-	// TODO: string readWord(TextReader this) { return this.readNext(/\w+/); }
-	// TODO: string readLine(TextReader this) { return this.readNext(/.*$/); }
-	// TODO: string readAll(TextReader this) { return this.readMatch(/.*/); }
-	// TODO: double readNumber(TextReader this, Locale locale) { /*...*/ }
-
-	/* TODO: subclasses
-		Latin1
-		Ascii
-		Utf7
-		Utf8
-	*/
-}
-
-// TextWriter := Encoder & Printer (java:Writer + PrintStream)
-struct TextWriter: Closeable {
-	struct Writeable: object {
-		// abstract method
-		void write(Writeable this, TextWriter writer);
-	}
-
-	const ByteWriter writer;
-
-	// abstract method
-	void write(TextWriter this, character chars[]);
-
-	static void write(TextWriter this, character chars[], int count) {
-		assert(count <= chars.length);
-		character slice[] = emit(int(count), pointer(chars));
-		return this.write(slice);
-	}
-
-	static void write(TextWriter this, character oneChar) {
-		character chars[1] = { oneChar };
-		return this.write(chars);
-	}
-
-	/*static void write(TextWriter this, void write(TextWriter writer)) {
-		return write(this);
-	}
-
-	static void write(TextWriter this, Writeable value) {
-		return write(this, value.write);
-	}*/
-
-	/**
-	 * Convert from one encoding to another.
-	 * @returns converted character count.
-	 *
-	 * example: convert utf-8 encoded file to ascii
-	 * TextWriter output = AsciiWriter("out.txt");
-	 * TextReader input = Utf8Reader("in.txt");
-	 * output.write(input);
-	 */
-	static int write(TextWriter this, TextReader reader) {
-		character buffer[1024] = {};
-		int result = 0;
-		for ( ; ; ) {
-			int read = reader.read(buffer);
-			if (read <= 0) {
-				return result;
-			}
-			this.write(buffer, read);
-			result += read;
-		}
-		return result;
-	}
-
-	void flush(TextWriter this) {
-		this.writer.flush(this.writer);
-	}
-
-	void close(TextWriter this) {
-		this.writer.safeClose();
-	}
-
-	// TODO: void write(TextWriter this, Locale locale, bool value) { /*...*/ }
-	// TODO: void write(TextWriter this, Locale locale, char value) { /*...*/ }
-	// TODO: void write(TextWriter this, Locale locale, int32 value) { /*...*/ }
-	// TODO: void write(TextWriter this, Locale locale, int64 value) { /*...*/ }
-	// TODO: void write(TextWriter this, Locale locale, uint32 value) { /*...*/ }
-	// TODO: void write(TextWriter this, Locale locale, uint64 value) { /*...*/ }
-	// TODO: void write(TextWriter this, Locale locale, float32 value) { /*...*/ }
-	// TODO: void write(TextWriter this, Locale locale, float64 value) { /*...*/ }
-	// TODO: void write(TextWriter this, Locale locale, string value) { /*...*/ }
-	// TODO: void write(TextWriter this, Locale locale, object value) { /*...*/ }
-	// TODO: void write(TextWriter this, Locale locale, variant value) { /*...*/ }
-
-	/* TODO: subclasses
-		Latin1
-		Ascii
-		Utf7
-		Utf8
-	*/
-}
-
-// copy byte-stream
-struct CopyReader: ByteReader {
-	const ByteReader source;
-	const ByteWriter clone;
-
-	int read(CopyReader this, byte bytes[]) {
-		int result = this.source.read(bytes);
-		if (result > 0) {
-			this.clone.write(bytes, result);
-		}
-		return result;
-	}
-
-	void close(CopyReader this) {
-		this.source.close();
-		this.clone.close();
-	}
-}
-
-// Base64
+// Base64 encoder
 struct Base64Encoder: ByteWriter {
 	static byte lookup[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 	const ByteWriter writer;
@@ -1676,6 +1972,8 @@ struct Base64Encoder: ByteWriter {
 		assert(this.bitsEncoded == 0, "unprocessed bits remaining.", this.bitsEncoded);
 	}
 }
+
+// Base64 decoder
 struct Base64Decoder: ByteWriter {
 	static int lookup[256] = {};
 	const ByteWriter writer;
@@ -1727,11 +2025,10 @@ struct Base64Decoder: ByteWriter {
 		assert(this.bitsDecoded == 0, "unprocessed bits remaining.", this.bitsDecoded);
 	}
 }
-
-// Ascii TODO: untested
+// Ascii reader TODO: untested
 struct AsciiReader: TextReader {
 	// convert bytes to chars
-	int read(AsciiReader this, character chars[]) {
+	int read(AsciiReader this, unicode chars[]) {
 		ByteReader reader = this.reader;
 		for (int i = 0; i < chars.length; i += 1) {
 			int value = reader.read();
@@ -1744,20 +2041,21 @@ struct AsciiReader: TextReader {
 		return chars.length;
 	}
 }
+
+// Ascii Writer TODO: untested
 struct AsciiWriter: TextWriter {
 	// convert characters to bytes(can cause data loss)
-	void write(TextWriter this, character chars[]) {
+	void write(TextWriter this, unicode chars[]) {
 		ByteWriter writer = this.writer;
 		for (int i = 0; i < chars.length; i += 1) {
 			writer.write(byte(chars[i]));
 		}
 	}
 }
-
-// Utf-8 TODO: untested
+// Utf-8 reader TODO: untested
 struct Utf8Reader: TextReader {
-	// convert utf-8 bytes to characters
-	int read(Utf8Reader this, character chars[]) {
+	// convert utf-8 bytes to unicodes
+	int read(Utf8Reader this, unicode chars[]) {
 		ByteReader reader = this.reader;
 		for (int i = 0; i < chars.length; i += 1) {
 			int value = reader.read();
@@ -1789,13 +2087,15 @@ struct Utf8Reader: TextReader {
 		return chars.length;
 	}
 }
+
+// Utf-8 writer TODO: untested
 struct Utf8Writer: TextWriter {
 	// convert characters to utf-8 bytes
-	void write(TextWriter this, character chars[]) {
+	void write(TextWriter this, unicode chars[]) {
 		ByteWriter writer = this.writer;
 		byte bytes[4] = {};
 		for (int i = 0; i < chars.length; i += 1) {
-			character chr = chars[i];
+			unicode chr = chars[i];
 
 			if (chr < 0x80) {
 				bytes[0] = chr;
@@ -1822,293 +2122,6 @@ struct Utf8Writer: TextWriter {
 		}
 	}
 }
-
-// File streams
-static if (typename(File) != null) {
-struct FileReader: ByteReader {
-	const File file;
-
-	int read(FileReader this, uint8 bytes[]) {
-		return File.read(this.file, bytes);
-	}
-
-	void close(FileReader this) {
-		File.close(this.file);
-	}
-}
-
-struct FileWriter: ByteWriter {
-	const File file;
-
-	void write(FileWriter this, byte bytes[]) {
-		int wrote = File.write(this.file, bytes);
-		assert(wrote == bytes.length);
-	}
-
-	void flush(FileWriter this) {
-		File.flush(this.file);
-	}
-
-	void close(FileWriter this) {
-		File.close(this.file);
-	}
-}
-struct BufferedFileWriter: FileWriter {
-	byte buffer[1024] = null;
-	int bufferSize = 0;
-
-	static void flushBuffer(BufferedFileWriter this) {
-		// TODO: use base class to write buffered content
-		// FileWriter.write(this, this.buffer, this.bufferSize);
-		int wrote = File.write(this.file, this.buffer, this.bufferSize);
-		assert(wrote == this.bufferSize);
-		this.bufferSize = 0;
-	}
-
-	void write(BufferedFileWriter this, byte bytes[]) {
-		if (this.bufferSize + bytes.length > this.buffer.length) {
-			if (this.bufferSize > 0) {
-				this.flushBuffer();
-			}
-			if (bytes.length > this.buffer.length / 2) {
-				// writing more than buffer half size, make the write
-				FileWriter.write(this, bytes);
-				return;
-			}
-		}
-		// accumulate into buffer
-		byte buffer[*] = this.buffer;
-		int bufferSize = this.bufferSize;
-		for (int i = 0; i < bytes.length; i += 1) {
-			buffer[bufferSize + i] = bytes[i];
-		}
-		this.bufferSize += bytes.length;
-	}
-
-	void flush(BufferedFileWriter this) {
-		this.flushBuffer();
-		FileWriter.flush(this);
-	}
-
-	void close(BufferedFileWriter this) {
-		this.flushBuffer();
-		FileWriter.close(this);
-	}
-}
-
-FileWriter StdOutWriter() {
-	return FileWriter {
-		file: File.out;
-		close: Closeable.skipClose;
-	};
-}
-
-FileReader FileReader(const char path[*]) {
-	return FileReader {
-		file: File.open(path);
-	};
-}
-
-FileWriter FileWriter(const char path[*], bool buffered, bool append) {
-	if (buffered && append) {
-		return BufferedFileWriter {
-			file: File.append(path);
-		};
-	}
-	if (buffered) {
-		return BufferedFileWriter {
-			file: File.create(path);
-		};
-	}
-	if (append) {
-		return FileWriter {
-			file: File.append(path);
-		};
-	}
-	return FileWriter {
-		file: File.create(path);
-	};
-}
-
-/* TODO: uncomment
-struct Path {
-	bool exists();
-	bool isFile();
-	bool isDirectory();
-	bool isHidden();
-	bool isAbsolute();
-
-	Path parent();
-	// permissions: canRead,write,execute,...
-}
-
-inline FileReader(Path path) = {
-	file: File.open(path);
-};
-inline FileWriter(Path path, bool append) = {
-	file: append ? File.append(path) : File.create(path);
-};
-
-inline AsciiReader(Path path) = {
-	reader: FileReader(path);
-};
-inline AsciiWriter(Path path, bool append) = {
-	writer: FileWriter(path, append);
-};
-
-inline Utf8Reader(Path path) = {
-	reader: FileReader(path);
-};
-inline Utf8Writer(Path path, bool append) = {
-	writer: FileWriter(path, append);
-};
-*/
-}
-
-// TODO: untested
-struct ByteBuffer {
-	int position = 0;
-	int capacity = 32;
-	int length = 0;
-	byte buffer[*] = pointer.alloc(null, capacity);
-
-	int read(ByteBuffer this, byte bytes[]) {
-		if (this.position >= this.length) {
-			return -1;
-		}
-		for (int i = 0; i < bytes.length; i += 1) {
-			if (this.position >= this.length) {
-				return i;
-			}
-			bytes[i] = this.buffer[this.position];
-			this.position += 1;
-		}
-		return bytes.length;
-	}
-
-	int read(ByteBuffer this) {
-		if (this.position >= this.length) {
-			return -1;
-		}
-		int result = this.buffer[this.position];
-		this.position += 1;
-		return result;
-	}
-
-	void write(ByteBuffer this, byte bytes[]) {
-		int size = this.position + bytes.length;
-		if (size >= this.capacity) {
-			// try to double the current size
-			this.capacity *= 2;
-			if (size > 2 * this.capacity) {
-				// double the calculated size
-				this.capacity = size * 2;
-			}
-
-			// copy old bytes
-			byte new[*] = pointer.alloc(null, this.capacity);
-			for (int i = 0; i < this.position; i += 1) {
-				new[i] = this.buffer[i];
-			}
-			pointer.alloc(this.buffer, 0);
-			this.buffer = new;
-		}
-
-		// copy new bytes
-		for (int i = 0; i < bytes.length; i += 1) {
-			this.buffer[this.position] = bytes[i];
-			this.position += 1;
-		}
-	}
-
-	void flush(ByteBuffer this) {
-		// do nothing
-	}
-
-	void close(ByteBuffer this) {
-		// release memory
-		pointer.alloc(this.buffer, 0);
-
-		this.buffer = null;
-		this.position = 0;
-		this.capacity = 0;
-		this.length = 0;
-	}
-}
-// debugging related functions
-
-/// report message at `verbose` logging level
-inline verbose(const char message[*], const variant inspect) = raise(raise.verbose, raise.noTrace, message, inspect);
-/// report message at `verbose` logging level
-inline verbose(const char message[*]) = raise(raise.verbose, raise.noTrace, message, null);
-
-/// report message at `debug` logging level
-inline debug(const char message[*], const variant inspect) = raise(raise.debug, raise.noTrace, message, inspect);
-/// report message at `debug` logging level
-inline debug(const char message[*]) = raise(raise.debug, raise.noTrace, message, null);
-
-/// report message with stacktrace at `debug` logging level
-inline trace(const char message[*], const variant inspect) = raise(raise.debug, raise.defTrace, message, inspect);
-/// report message with stacktrace at `debug` logging level
-inline trace(const char message[*]) = raise(raise.debug, raise.defTrace, message, null);
-
-/// report message at `info` logging level
-inline info(const char message[*], const variant inspect) = raise(raise.info, raise.noTrace, message, inspect);
-/// report message at `info` logging level
-inline info(const char message[*]) = raise(raise.info, raise.noTrace, message, null);
-
-/// report message at `warn` logging level
-inline warn(const char message[*], const variant inspect) = raise(raise.warn, raise.noTrace, message, inspect);
-/// report message at `warn` logging level
-inline warn(const char message[*]) = raise(raise.warn, raise.noTrace, message, null);
-
-/// report message with stacktrace at `error` logging level
-inline error(const char message[*], const variant inspect) = raise(raise.error, raise.defTrace, message, inspect);
-/// report message with stacktrace at `error` logging level
-inline error(const char message[*]) = raise(raise.error, raise.defTrace, message, null);
-
-/// report message with stacktrace at `abort` logging level and abort execution
-inline abort(const char message[*], const variant inspect) = raise(raise.abort, raise.defTrace, message, inspect);
-/// report message with stacktrace at `abort` logging level and abort execution
-inline abort(const char message[*]) = raise(raise.abort, raise.defTrace, message, null);
-/// report message with stacktrace at `abort` logging level and abort execution
-inline abort() = raise(raise.abort, raise.defTrace, "execution aborted!", null);
-
-/// report message and abort the execution if the assertion condition fails (is false)
-inline assert(bool condition, const char message[*], const variant inspect) = void(condition ? void(0) : abort(message, inspect));
-/// report message and abort the execution if the assertion condition fails (is false)
-inline assert(bool condition, const char message[*]) = void(condition ? void(0) : abort(message));
-/// report message and abort the execution if the assertion condition fails (is false)
-inline assert(bool condition) = void(condition ? void(0) : abort("assertion failed!"));
-
-///@public
-struct NotEquals {
-	/// Value of the expected result
-	const variant expected;
-
-	/// Value of the actual result
-	const variant returned;
-
-	/// Extra argument to identify what happened
-	const variant extras[] = null;
-}
-
-/// abort execution if the returned value is not equal to the expected value
-// TODO: make inline
-static void assertEq(int expected, int returned, const char message[*]) {
-	if (returned == expected) {
-		return;
-	}
-	variant extras[1] = { message };
-	NotEquals details = {
-		expected: expected;
-		returned: returned;
-		extras: extras;
-	};
-	raise(raise.abort, raise.defTrace, "assertion failed", details);
-}
-/// abort execution if the returned value is not equal to the expected value
-inline assertEq(int expected, int returned) = assertEq(expected, returned, null);
 /// A 4x4 matrix
 struct mat4f: 0 {
 	/// Access elements as an array: m[1][0]
@@ -3911,7 +3924,6 @@ Mesh Mesh(const char fileName[*]) {
 
 struct Style {
 	const int align;
-	const int border = 3;
 	const int padding = 8;
 
 	const Image font = Gui.font;
@@ -3949,12 +3961,8 @@ struct Style {
 		focused: 4;
 	}
 
-	static void measure(const Style this&, Rect rect&, const char text[*], int extraChars) {
+	static void measure(const Style this&, Rect rect&, const char text[*]) {
 		this.font.clipText(&rect, text);
-		if (text != null && rect.w != 0 && extraChars > 0) {
-			rect.w += extraChars * rect.w / length(text);
-			rect.w += this.padding;
-		}
 		rect.w += 2 * this.padding;
 		rect.h += 2 * this.padding;
 	}
@@ -4073,7 +4081,7 @@ struct View: object {
 	const int visible = -1;
 
 	/// the view accepts any user input(event) or not
-	const bool enabled = true;
+	bool enabled = true;
 
 	/// the view can be active(focused) or not
 	const bool focusable = true;
@@ -4184,7 +4192,7 @@ struct View: object {
 		Rect valueRoi = rect;
 		style.align(valueRoi, &valueRoi, value, Style.right);
 		rect.w -= valueRoi.w + style.padding;
-		style.align(style, rect, &rect, text);
+		style.align(rect, &rect, text);
 		offs.drawText(valueRoi, style.font, value, style.valueColor);
 		offs.drawText(rect, style.font, text, style.textColor);
 	}
@@ -4201,7 +4209,7 @@ struct Layout: View {
 	/// Alignment of each child in the layout
 	const int alignment = Style.fill;
 
-	const int itemCount;
+	int itemCount = 0;
 	View items[*] = null;
 	Rect rects[*] = null;
 
@@ -4247,6 +4255,15 @@ struct Layout: View {
 			}
 		}
 		return -1;
+	}
+
+	static void setItems(Layout this, View items...) {
+		this.itemCount = items.length;
+		this.items = pointer.alloc(null, items.length * sizeof(View));
+		this.rects = pointer.alloc(null, items.length * sizeof(Rect));
+		for (int i = 0; i < items.length; i += 1) {
+			this.items[i] = items[i];
+		}
 	}
 
 	bool onClick(Layout this) {
@@ -4434,24 +4451,38 @@ struct Layout: View {
 
 	void onLayout(Layout this, Rect rect&);
 	static void verticalLayout(Layout this, Rect measured&, int cols) {
-		int maxHeight(Layout this, int start, int count) {
-			int result = 0;
-			for (int i = start; i < this.itemCount; i += 1) {
+		int rowSpacing = measured.w / cols;
+		int colSpacing = 0;
+		int grow = 0;
+
+		if (true) {
+			int maxSize = 0;
+			int sumSize = 0;
+			int rows = 0;
+			int n = cols;
+			for (int i = 0; i < this.itemCount; i += 1) {
 				Rect rect& = this.rects[i];
 				if (rect.w && rect.h) {
-					if (count <= 0) {
-						return result;
+					if (n >= cols) {
+						sumSize += maxSize;
+						maxSize = 0;
+						rows += 1;
+						n = 0;
 					}
-					if (result < rect.h) {
-						result = rect.h;
+					if (maxSize < rect.h) {
+						maxSize = rect.h;
 					}
-					count -= 1;
+					if (colSpacing < maxSize) {
+						colSpacing = maxSize;
+					}
+					n += 1;
 				}
 			}
-			return result;
+			sumSize += maxSize;
+			if (rows > 0 && measured.h > sumSize) {
+				grow = (measured.h - sumSize) / rows;
+			}
 		}
-		int rowSpacing = measured.w / cols;
-		int colSpacing = maxHeight(this, 0, this.itemCount);
 
 		Rect r = {
 			x: measured.x;
@@ -4462,17 +4493,17 @@ struct Layout: View {
 		Style.align(r, &measured, this.alignment);
 
 		int n = cols;
-		r.y -= colSpacing;
+		r.y -= colSpacing + grow;
 		for (int i = 0; i < this.itemCount; i += 1) {
 			Rect rect& = this.rects[i];
 			if (rect.w && rect.h) {
 				if (n >= cols) {
 					r.x = measured.x;
-					r.y += colSpacing;
+					r.y += colSpacing + grow;
 					if (cols == 1) {
 						// single row, allow non uniform heights
 						colSpacing = rect.h;
-					} else {
+					//} else {
 						// using non uniform heights
 						//colSpacing = maxHeight(this, i, cols);
 					}
@@ -4480,7 +4511,7 @@ struct Layout: View {
 				}
 
 				r.w = rowSpacing;
-				r.h = colSpacing;
+				r.h = colSpacing + grow;
 				View view = this.items[i];
 				int align = this.alignment;
 				if (view.width > 0 && Style.vertical(align)) {
@@ -4503,24 +4534,38 @@ struct Layout: View {
 		}
 	}
 	static void horizontalLayout(Layout this, Rect measured&, int rows) {
-		int maxWidth(Layout this, int start, int count) {
-			int result = 0;
-			for (int i = start; i < this.itemCount; i += 1) {
+		int colSpacing = measured.h / rows;
+		int rowSpacing = 0;
+		int grow = 0;
+
+		if (true) {
+			int maxSize = 0;
+			int sumSize = 0;
+			int cols = 0;
+			int n = rows;
+			for (int i = 0; i < this.itemCount; i += 1) {
 				Rect rect& = this.rects[i];
 				if (rect.w && rect.h) {
-					if (count <= 0) {
-						return result;
+					if (n >= rows) {
+						sumSize += maxSize;
+						maxSize = 0;
+						cols += 1;
+						n = 0;
 					}
-					if (result < rect.w) {
-						result = rect.w;
+					if (maxSize < rect.w) {
+						maxSize = rect.w;
 					}
-					count -= 1;
+					if (rowSpacing < rect.w) {
+						rowSpacing = rect.w;
+					}
+					n += 1;
 				}
 			}
-			return result;
+			sumSize += maxSize;
+			if (cols > 0 && measured.w > sumSize) {
+				grow = (measured.w - sumSize) / cols;
+			}
 		}
-		int rowSpacing = maxWidth(this, 0, this.itemCount);
-		int colSpacing = measured.h / rows;
 
 		Rect r = {
 			x: measured.x;
@@ -4529,25 +4574,26 @@ struct Layout: View {
 			h: this.height > 0 ? this.height : measured.h;
 		};
 		Style.align(r, &measured, this.alignment);
+
 		int n = rows;
-		r.x -= rowSpacing;
+		r.x -= rowSpacing + grow;
 		for (int i = 0; i < this.itemCount; i += 1) {
 			Rect rect& = this.rects[i];
 			if (rect.w && rect.h) {
 				if (n >= rows) {
 					r.y = measured.y;
-					r.x += rowSpacing;
+					r.x += rowSpacing + grow;
 					if (rows == 1) {
 						// single column, allow non uniform widths
 						rowSpacing = rect.w;
-					} else {
+					//} else {
 						// using non uniform widths
 						//rowSpacing = maxWidth(this, i, rows);
 					}
 					n = 0;
 				}
 
-				r.w = rowSpacing;
+				r.w = rowSpacing + grow;
 				r.h = colSpacing;
 				View view = this.items[i];
 				int align = this.alignment;
@@ -4587,7 +4633,7 @@ struct Layout: View {
 			|   item01   |   item03   |    ...     |    ...     | row1
 			\------------+------------+------------+--- ... ---*/
 			return horizontalLayout(this, &measured, -this.orientation);
-		}
+	}
 
 		Rect r = {
 			x: measured.x;
@@ -4626,7 +4672,7 @@ struct Layout: View {
 					}
 //					offs.drawRect(rect, 0x00ff00);
 				}
-				view.onDraw(view, offs, rect, style, state);
+				view.onDraw(offs, rect, style, state);
 			}
 		}
 //		offs.drawRect(parent, 0xff0000);
@@ -4636,13 +4682,8 @@ struct Layout: View {
 		Layout layout = {
 			orientation: rowsCols;
 			alignment: align;
-			itemCount: items.length;
-			items: pointer.alloc(null, items.length * sizeof(View));
-			rects: pointer.alloc(null, items.length * sizeof(Rect));
 		};
-		for (int i = 0; i < items.length; i += 1) {
-			layout.items[i] = items[i];
-		}
+		layout.setItems(...items);
 		return layout;
 	}
 	static Layout Row(View items...) {
@@ -4659,7 +4700,7 @@ struct Button: View {
 	const char text[*];
 
 	bool onMeasure(Button this, Rect rect&, const Style style&, int visible) {
-		style.measure(&rect, this.text, 0);
+		style.measure(&rect, this.text);
 		return View.onMeasure(this, &rect, style, visible);
 	}
 
@@ -4738,14 +4779,16 @@ struct Switch: View {
 	}
 
 	bool onMeasure(Switch this, Rect rect&, const Style style&, int visible) {
-		int len = length(this.states[0]);
+		int maxWidth = 0;
 		for (int i = 0; i < this.states.length; i += 1) {
-			int max = length(this.states[i]);
-			if (len < max) {
-				len = max;
+			Rect measured = {};
+			style.measure(&measured, this.states[i]);
+			if (maxWidth < measured.w) {
+				maxWidth = measured.w;
 			}
 		}
-		style.measure(&rect, this.text, len);
+		style.measure(&rect, this.text);
+		rect.w += maxWidth;
 		return View.onMeasure(this, &rect, style, visible);
 	}
 
@@ -4820,22 +4863,29 @@ struct Slider: View {
 		}
 
 		if (event.clicks < 1) {
-			float value = event.dx;
+			float64 value = event.dx;
 			if (!event.isShift && value != 0) {
-				value *= float(this.maximum - this.minimum) / rect.w;
+				value *= float64(this.maximum - this.minimum) / rect.w;
 				if (value > -1 && value < 1) {
 					value = value < 0 ? -1 : 1;
 				}
 			}
-			return this.onUpdate(this, this.value + value);
+			value += this.value;
+			if (value > this.maximum) {
+				value = this.maximum;
+			}
+			if (value < this.minimum) {
+				value = this.minimum;
+			}
+			return this.onUpdate(this, value);
 		}
 		if (event.release) {
 			if (event.y < rect.y + rect.h - rect.h / 3) {
 				// clicking the upper part to focus control
 				return true;
 			}
-			float value = event.x - rect.x;
-			value *= float(this.maximum - this.minimum) / rect.w;
+			float64 value = event.x - rect.x;
+			value *= float64(this.maximum - this.minimum) / rect.w;
 			return this.onUpdate(this, this.minimum + value);
 		}
 		return View.onMouseEvent(this, rect, event);
@@ -4848,7 +4898,10 @@ struct Slider: View {
 		} else {
 			value.append(0, this.value, style.fmtInt);
 		}
-		style.measure(&rect, this.text, length(value));
+		Rect valueRect = {};
+		style.measure(&valueRect, value);
+		style.measure(&rect, this.text);
+		rect.w += valueRect.w;
 		return View.onMeasure(this, &rect, style, visible);
 	}
 
@@ -4856,13 +4909,17 @@ struct Slider: View {
 		if (this.maximum == this.minimum) {
 			return;
 		}
-		const int y0 = rect.y + rect.h - 1;
-		const int y1 = y0 - style.padding / 4;
+		const int y1 = rect.y + rect.h;
+		const int y0 = y1 - style.padding / 4;
 		const int x0 = rect.x;
 		const int x1 = rect.x + rect.w;
-		const int x = x0 + (this.value - this.minimum) * rect.w / (this.maximum - this.minimum);
-		offs.fillRect(x, y0, x1, y1, style.focusedColor);
-		offs.fillRect(x0, y0, x, y1, style.valueColor);
+		const int x = x0 + int64(this.value - this.minimum) * rect.w / (this.maximum - this.minimum);
+		if (x > x0) {
+			offs.fillRect(x0, y0, x - 1, y1 - 1, style.valueColor);
+		}
+		if (x < x1) {
+			offs.fillRect(x, y0, x1 - 1, y1 - 1, style.focusedColor);
+		}
 	}
 
 	void onDraw(Slider this, Image offs, Rect rect, const Style style&) {
@@ -4880,14 +4937,19 @@ struct Slider: View {
 }
 
 struct Widget: Layout {
-	int visibleGroup = -1;
-	bool measure = true;
-	bool hidden = false;
-	int scrollX = 0;
-	int scrollY = 0;
 	Style style;
 	Image offs;
 	Rect rect;
+
+	bool measure = true;
+	bool hidden = false;
+	int visibleGroup = -1;
+	int scrollX = 0;
+	int scrollY = 0;
+	int padding = 3;
+	int align = Style.topRight;
+	int margin = 10;
+	int radius = 5;
 
 	// Mouse state
 	int clicks;
@@ -4971,6 +5033,31 @@ struct Widget: Layout {
 		}
 		return selected;
 	}
+	static bool setFocused(Layout this, View focus) {
+		if (focus == null) {
+			this.clearState(Style.focused);
+			return false;
+		}
+		for (int i = 0; i < this.itemCount; i += 1) {
+			View view = this.items[i];
+			Rect rect = this.rects[i];
+			if (rect.w && rect.h) {
+				if (view == focus && this.focusedIndex != i) {
+					this.clearState(Style.focused);
+					this.focusedIndex = i;
+					return true;
+				}
+				if (Layout layout = view.as(Layout)) {
+					if (layout.setFocused(focus) && this.focusedIndex != i) {
+						this.clearState(Style.focused);
+						this.focusedIndex = i;
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
 	static bool isFocused(const Layout this, View items...) {
 		if (this.focusedIndex < 0) {
 			// nothing is focused.
@@ -5024,19 +5111,38 @@ struct Widget: Layout {
 	}
 	inline setGroup(Widget this, int group) = setGroup(this, group, false);
 
+	void onLayout(Widget this, Rect measured&) {
+		Rect r = {
+			x: this.margin;
+			y: this.margin;
+			w: this.offs.width() - 2 * this.margin;
+			h: this.offs.height() - 2 * this.margin;
+		};
+
+		if (Style.vertical(this.align)) {
+			measured.w = r.w - 2 * this.padding;
+		}
+		if (Style.horizontal(this.align)) {
+			measured.h = r.h - 2 * this.padding;
+		}
+
+		measured.x = this.padding;
+		measured.y = this.padding;
+		Layout.onLayout(this, &measured);
+		measured.w += 2 * this.padding;
+		measured.h += 2 * this.padding;
+
+		Style.align(r, &measured, this.align);
+	}
+
 	void onDraw(Widget this, Image offs, Rect rect, const Style style&) {
-//		offs = offs.slice(rect); // todo: clip drawings
-		// draw background
+		offs = offs.slice(rect);
 		if (style.backgroundColor != -1) {
-//			offs.fill(style.backgroundColor); // todo: clip drawings
-			int top = rect.y - style.border;
-			int left = rect.x - style.border;
-			int right = rect.x + rect.w + style.border;
-			int bottom = rect.y + rect.h + style.border;
-			offs.fillRect(left, top, right, bottom, style.border * 2, style.backgroundColor);
+			Rect r = { w: offs.width(), h: offs.height() };
+			offs.fillRect(r, this.radius, style.backgroundColor);
 		}
 		Layout.onDraw(this, offs, rect, style);
-//		offs.destroy(); // todo: clip drawings
+		offs.destroy();
 	}
 
 	// TODO: remove: this override allows to forward the drag event to the focused view
@@ -5066,6 +5172,7 @@ struct Widget: Layout {
 
 	static bool onEvent(Widget this, int action, int button, int x, int y) {
 		if (action == Gui.WINDOW_INIT) {
+			action = Gui.WINDOW_DRAW;
 			this.onCreate(this);
 			// measure then focus first visible view
 			this.onMeasure(this, &this.rect, this.style, this.visibleGroup);
@@ -5087,8 +5194,6 @@ struct Widget: Layout {
 			if (this.measure) {
 				rect.w = rect.h = 0;
 				this.onMeasure(this, &rect, this.style, this.visibleGroup);
-				rect.x = this.scrollX;
-				rect.y = this.scrollY;
 				this.onLayout(this, &rect);
 				this.measure = false;
 			}
@@ -5149,8 +5254,8 @@ struct Widget: Layout {
 				isAlt: this.isAlt;
 				clicks: this.clicks;
 				button: button;
-				x: x;
-				y: y;
+				x: x - this.rect.x;
+				y: y - this.rect.y;
 			};
 			return this.onMouseEvent(this, this.rect, event);
 		}
@@ -5176,8 +5281,8 @@ struct Widget: Layout {
 				button: button;
 				dx: x - oldX;
 				dy: y - oldY;
-				x: x;
-				y: y;
+				x: x - this.rect.x;
+				y: y - this.rect.y;
 			};
 			return this.onMouseEvent(this, this.rect, event);
 		}
@@ -5198,8 +5303,8 @@ struct Widget: Layout {
 				isAlt: this.isAlt;
 				clicks: this.clicks;
 				button: button;
-				x: x;
-				y: y;
+				x: x - this.rect.x;
+				y: y - this.rect.y;
 			};
 			return this.onMouseEvent(this, this.rect, event);
 		}
@@ -5277,8 +5382,8 @@ struct Widget: Layout {
 					isAlt: this.isAlt;
 					clicks: -1;
 					button: this.button;
-					x: this.mouseX;
-					y: this.mouseY;
+					x: this.mouseX - this.rect.x;
+					y: this.mouseY - this.rect.y;
 				};
 				return this.onMouseEvent(this, this.rect, event);
 			}
@@ -5297,38 +5402,36 @@ struct Widget: Layout {
 		this.onEvent(Gui.WINDOW_DRAW, 0, 0, 0);
 		return 0;
 	}
+
+	static Widget margin(Widget this, int align, int margin, int radius) {
+		this.align = align;
+		this.margin = margin;
+		this.radius = radius;
+		return this;
+	}
+	static Widget padding(Widget this, int padding) {
+		this.padding = padding;
+		return this;
+	}
 }
 
-Widget Widget(Image offs, int pos, const Style style&, View items...) {
+Widget Widget(Image offs, const Style style&, View items...) {
 	Widget layout = {
-		offs: offs;
 		rect: {};
-		scrollX: pos;
-		scrollY: pos;
+		offs: offs;
 		style: style;
-		itemCount: items.length;
-		items: pointer.alloc(null, items.length * sizeof(View));
-		rects: pointer.alloc(null, items.length * sizeof(Rect));
 	};
-	for (int i = 0; i < items.length; i += 1) {
-		layout.items[i] = items[i];
-	}
 
-	if (pos < 0) {
-		layout.onMeasure(layout, &layout.rect, layout.style, layout.visibleGroup);
-		layout.scrollX = offs.width() - layout.rect.w + pos;
-		layout.scrollY = -pos;
-		layout.measure = true;
-	}
+	layout.setItems(...items);
 	return layout;
 }
-Widget Widget(Image offs, int pos, View items...) {
+Widget Widget(Image offs, View items...) {
 	Style style = {
 		align: Style.left;
 		fmtInt: { padLen: 4 };
 		fmtFlt: { padLen: 4, precision: 2 };
 	};
-	return Widget(offs, pos, style, ...items);
+	return Widget(offs, style, ...items);
 }
 
 struct Histogram: View {
@@ -5447,26 +5550,30 @@ struct Histogram: View {
 				pr = rv;
 				pl = lv;
 			}
-		} else {
+		}
+		else if (this.color) {
+			for (int i = 0; i < this.data.length; i += 1) {
+				argb data = this.data[i];
+				int x = rect.x + i + px;
+				int y1 = rect.y + rect.h;
+				int y0 = y1 - ach(data) * rect.h / 256;
+				offs.fillRect(x, y0, x, y1, uint32(data));
+			}
+		}
+		else {
 			for (int i = 0; i < this.data.length; i += 1) {
 				int x = rect.x + i + px;
 				argb data = this.data[i];
-				if (this.color) {
-					int y1 = rect.y + rect.h;
-					int y0 = y1 - ach(data) * rect.h / 256;
-					offs.fillRect(x, y0 - 1, x + 1, y1, uint32(data));
-				} else {
-					int bv = bch(data) * rect.h / 256;
-					int gv = gch(data) * rect.h / 256;
-					int rv = rch(data) * rect.h / 256;
-					int lv = ach(data) * rect.h / 256;
-					for (int y = 0; y < rect.h; y += 1) {
-						uint32 b = colB * uint32(y < bv);
-						uint32 g = colG * uint32(y < gv);
-						uint32 r = colR * uint32(y < rv);
-						uint32 l = colL * uint32(y < lv);
-						offs.set(x, rect.h - y + rect.y - 1, r | g | b | l);
-					}
+				int bv = bch(data) * rect.h / 256;
+				int gv = gch(data) * rect.h / 256;
+				int rv = rch(data) * rect.h / 256;
+				int lv = ach(data) * rect.h / 256;
+				for (int y = 0; y < rect.h; y += 1) {
+					uint32 b = colB * uint32(y < bv);
+					uint32 g = colG * uint32(y < gv);
+					uint32 r = colR * uint32(y < rv);
+					uint32 l = colL * uint32(y < lv);
+					offs.set(x, rect.h - y + rect.y - 1, r | g | b | l);
 				}
 			}
 		}

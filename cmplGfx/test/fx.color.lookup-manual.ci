@@ -71,7 +71,7 @@ Slider time = {
 	onDrawSlider: null;
 };
 
-Widget ui = Widget(offs, -30,
+Widget ui = Widget(offs,
 	histogram, curves, separator,
 	btnLuminosity, btnRgb, btnRed, btnGreen, btnBlue,
 	btnReset, separator, time
@@ -96,7 +96,7 @@ int onEvent(int action, int button, int x, int y) {
 				File.out.write(",\n");
 			}
 			int len = str.append(str.append(0, "\t0x"), col, fmt);
-			File.write(File.out, str, len);
+			File.write(File.out, str[... len]);
 		}
 		File.out.write("\n};\n");
 	}

@@ -40,12 +40,12 @@ msdod not support
 #include "os_win32/time.c"
 #include "os_win32/path.c"
 #include "os_win32/plugin.c"
+ */
 
 #elif defined(__APPLE__) && defined(__MACH__)
 #include "os_linux/time.c"
 #include "os_linux/path.c"
 #define __NO_PLUGINS
-*/
 #endif
 
 #ifdef __NO_PLUGINS

@@ -350,10 +350,8 @@ int ccLibStd(ccContext cc) {
 	misc[] = {       // IO/MEM/EXIT
 		{sysExit,   "void exit(int32 code)"},
 		{sysSRand,  "void srand(int32 seed)"},
-		{sysRand,   "int32 rand()"},
 
 		{sysTime,   "int32 time()"},
-		{sysClock,  "int32 clock()"},
 		{sysMillis, "int64 millis()"},
 		{sysMSleep, "void sleep(int64 millis)"},
 	};
@@ -361,10 +359,6 @@ int ccLibStd(ccContext cc) {
 		int64_t value;
 		char *name;
 	}
-	constants[] = {
-			{CLOCKS_PER_SEC, "CLOCKS_PER_SEC"},
-			{RAND_MAX, "RAND_MAX"},
-	},
 	logLevels[] = {
 		{raiseFatal, "abort"},
 		{raiseError, "error"},
@@ -376,13 +370,6 @@ int ccLibStd(ccContext cc) {
 		{0, "noTrace"},
 		{128, "defTrace"},
 	};
-
-	for (i = 0; i < lengthOf(constants); i += 1) {
-		if (!ccDefInt(cc, constants[i].name, constants[i].value)) {
-			err = 1;
-			break;
-		}
-	}
 
 	if (!err && cc->type_var != NULL) {		// debug, trace, assert, fatal, ...
 		cc->libc_dbg = ccAddCall(cc, sysRaise, "void raise(const char file[*], int32 line, int32 level, int32 trace, const char message[*], const variant inspect)");
@@ -434,6 +421,29 @@ int ccLibStd(ccContext cc) {
 				break;
 			}
 		}
+
+		symn rand = ccAddCall(cc, sysRand, "int32 rand()");
+		if (!err && ccExtend(cc, rand) != NULL) {
+			if (!ccDefInt(cc, "max", RAND_MAX)) {
+				err = 1;
+			}
+			ccEnd(cc, rand);
+		}
+		else {
+			err = 2;
+		}
+
+		symn clock = ccAddCall(cc, sysClock, "int32 clock()");
+		if (!err && ccExtend(cc, clock) != NULL) {
+			if (!ccDefInt(cc, "perSec", CLOCKS_PER_SEC)) {
+				err = 1;
+			}
+			ccEnd(cc, clock);
+		}
+		else {
+			err = 2;
+		}
+
 		//~ install(cc, "Arguments", CAST_arr, 0, 0);	// string Args[];
 		//~ install(cc, "Environment", KIND_def, 0, 0);	// string Env[string];
 		ccEnd(cc, nsp);

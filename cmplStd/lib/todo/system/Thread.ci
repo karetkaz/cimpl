@@ -1,8 +1,12 @@
 struct Thread {
-	int tid;   // thread id
-	int priority;
+	const int tid;   // thread id
 
-	static const Thread current();
+	static const Thread main = {
+		tid: System.tid();
+	};
+
+	static Thread current();
+	int priority();
 
 	static Thread start(string name, Runnable runnable);
 	static void join(Thread, timeout);

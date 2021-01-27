@@ -28,7 +28,7 @@ struct IntButton: View {
 	}
 
 	bool onMeasure(IntButton this, Rect rect&, const Style style&, int visible) {
-		style.measure(&rect, this.text, 0);
+		style.measure(&rect, this.text);
 		return View.onMeasure(this, &rect, style, visible);
 	}
 
@@ -38,16 +38,9 @@ struct IntButton: View {
 	}
 }
 struct DayButton: IntButton {
-	bool drawCircleBg = false;
 	int64 timestamp = 0;
-
-	void onDraw(DayButton this, Image offs, Rect rect, const Style style&) {
-		if (this.drawCircleBg) {
-			offs.fillRect(rect, rect.w / 3, style.focusedColor);
-		}
-		IntButton.onDraw(this, offs, rect, style);
-	}
 }
+struct WeekButton: IntButton {}
 
 IntButton btnYear = {
 	enabled: false;
@@ -101,7 +94,7 @@ Button btnToday = {
 };
 
 View btnDays[] = {
-//	Button {text: "Week", enabled: false};
+	Button {text: "Week", enabled: false};
 	Button {text: "Mon", enabled: false};
 	Button {text: "Tue", enabled: false};
 	Button {text: "Wed", enabled: false};
@@ -110,7 +103,7 @@ View btnDays[] = {
 	Button {text: "Sat", enabled: false};
 	Button {text: "Sun", enabled: false};
 
-//	IntButton {enabled: false};
+	WeekButton {enabled: false};
 	DayButton {focusable: false; onClick: onClick;};
 	DayButton {focusable: false; onClick: onClick;};
 	DayButton {focusable: false; onClick: onClick;};
@@ -119,7 +112,7 @@ View btnDays[] = {
 	DayButton {focusable: false; onClick: onClick;};
 	DayButton {focusable: false; onClick: onClick;};
 
-//	IntButton {enabled: false};
+	WeekButton {enabled: false};
 	DayButton {focusable: false; onClick: onClick;};
 	DayButton {focusable: false; onClick: onClick;};
 	DayButton {focusable: false; onClick: onClick;};
@@ -128,7 +121,7 @@ View btnDays[] = {
 	DayButton {focusable: false; onClick: onClick;};
 	DayButton {focusable: false; onClick: onClick;};
 
-//	IntButton {enabled: false};
+	WeekButton {enabled: false};
 	DayButton {focusable: false; onClick: onClick;};
 	DayButton {focusable: false; onClick: onClick;};
 	DayButton {focusable: false; onClick: onClick;};
@@ -137,7 +130,7 @@ View btnDays[] = {
 	DayButton {focusable: false; onClick: onClick;};
 	DayButton {focusable: false; onClick: onClick;};
 
-//	IntButton {enabled: false};
+	WeekButton {enabled: false};
 	DayButton {focusable: false; onClick: onClick;};
 	DayButton {focusable: false; onClick: onClick;};
 	DayButton {focusable: false; onClick: onClick;};
@@ -146,7 +139,16 @@ View btnDays[] = {
 	DayButton {focusable: false; onClick: onClick;};
 	DayButton {focusable: false; onClick: onClick;};
 
-//	IntButton {enabled: false};
+	WeekButton {enabled: false};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+	DayButton {focusable: false; onClick: onClick;};
+
+	WeekButton {enabled: false};
 	DayButton {focusable: false; onClick: onClick;};
 	DayButton {focusable: false; onClick: onClick;};
 	DayButton {focusable: false; onClick: onClick;};
@@ -161,7 +163,7 @@ bool resetCounter(IntButton this) {
 	return true;
 }
 
-IntButton counter = {focusable: false, width: 200, height: 100, onClick: resetCounter};
+IntButton counter = {focusable: false, width: -200, height: -100, onClick: resetCounter};
 
 Image offs = Image(512, 512, 32);
 
@@ -172,16 +174,16 @@ Style style = {
 	fmtInt: { padLen: 4 };
 	fmtFlt: { padLen: 4, precision: 2 };
 };
-Widget ui = Widget(offs, 50, style
+Widget ui = Widget(offs, style
 	, Layout.Custom(-1, Style.fill
 		, Layout.Row(btnYearDec, btnYear, btnYearInc)
 		, Layout.Row(btnMonthDec, btnMonth, btnMonthInc)
 		, Layout.Row(btnDayDec, btnDay, btnDayInc)
 		, btnToday
 	)
-	, Layout.Custom(7, Style.fill, ...btnDays)
+	, Layout.Custom(8, Style.fill, ...btnDays)
 	, counter
-);
+).margin(Style.fill, 0, 0).padding(10);
 
 int64 now = System.millis();
 bool onClick(Button this) {
@@ -240,20 +242,36 @@ bool onClick(Button this) {
 	// calculate first monday
 	start -= (parts.dayOfWeek - 1) * Date.MillisPerDay;
 
+	WeekButton week = null;
 	// fill the days in the "grid", skip header with week names
-	for (int i = 7; i < btnDays.length; i += 1) {
-		if (DayButton day = btnDays[i].as(DayButton)) {
-			day.drawCircleBg = today == start;
-			day.timestamp = start;
-			parts = Date.parts(start);
-			day.update(parts.dayOfMonth);
+	for (int i = 8; i < btnDays.length; i += 1) {
+		parts = Date.parts(start);
+		if (WeekButton button = btnDays[i].as(WeekButton)) {
+			button.update(parts.weekOfYear);
+			week = button;
 		}
-		start += Date.MillisPerDay;
+		if (DayButton button = btnDays[i].as(DayButton)) {
+			if (today == start) {
+				ui.setFocused(button);
+			}
+			if (btnMonth.value == parts.month) {
+				button.timestamp = start;
+				button.enabled = true;
+			} else {
+				button.timestamp = now;
+				button.enabled = false;
+			}
+			button.update(parts.dayOfMonth);
+			start += Date.MillisPerDay;
+
+			if (week != null && week.value > parts.weekOfYear) {
+				week.update(parts.weekOfYear);
+			}
+		}
 	}
 
 	return true;
 }
-onClick(btnToday);
 
 int onEvent(pointer closure, int action, int button, int x, int y) {
 	if (action == Gui.KEY_RELEASE && button == 27) {
@@ -262,6 +280,9 @@ int onEvent(pointer closure, int action, int button, int x, int y) {
 	}
 	if (!ui.onEvent(ui, action, button, x, y)) {
 		return 0;
+	}
+	if (action == Gui.WINDOW_INIT) {
+		onClick(btnToday);
 	}
 	offs.fill(0);
 	counter.increment(1);

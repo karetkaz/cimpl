@@ -1,7 +1,5 @@
 // InputOutput
 
-inline character = uint32;
-
 struct Closeable: object {
 	// abstract method
 	void close(Closeable this);
@@ -54,8 +52,7 @@ struct ByteWriter: Closeable {
 
 	static void write(ByteWriter this, byte bytes[], int count) {
 		assert(count <= bytes.length);
-		byte slice[] = emit(int(count), pointer(bytes));
-		return this.write(this, slice);
+		return this.write(this, bytes[... count]);
 	}
 
 	/*TODO:static*/ void write(ByteWriter this, byte oneByte) {
@@ -102,13 +99,15 @@ struct ByteWriter: Closeable {
 
 // TextReader := Decoder & Parser(java:Reader + Scanner?Parser?)
 struct TextReader: Closeable {
+	inline unicode = uint32;
+
 	const ByteReader reader;
 
 	// abstract method
-	int read(TextReader this, character chars[]);
+	int read(TextReader this, unicode chars[]);
 
-	/*TODO:static*/ character read(TextReader this) {
-		character chars[1] = {};
+	/*TODO:static*/ unicode read(TextReader this) {
+		unicode chars[1] = {};
 		int result = this.read(chars);
 		if (result > 0) {
 			return chars[0];
@@ -141,19 +140,20 @@ struct TextWriter: Closeable {
 		void write(Writeable this, TextWriter writer);
 	}
 
+	inline unicode = uint32;
+
 	const ByteWriter writer;
 
 	// abstract method
-	void write(TextWriter this, character chars[]);
+	void write(TextWriter this, unicode chars[]);
 
-	static void write(TextWriter this, character chars[], int count) {
+	static void write(TextWriter this, unicode chars[], int count) {
 		assert(count <= chars.length);
-		character slice[] = emit(int(count), pointer(chars));
-		return this.write(slice);
+		return this.write(chars[... count]);
 	}
 
-	static void write(TextWriter this, character oneChar) {
-		character chars[1] = { oneChar };
+	static void write(TextWriter this, unicode oneChar) {
+		unicode chars[1] = { oneChar };
 		return this.write(chars);
 	}
 
@@ -175,7 +175,7 @@ struct TextWriter: Closeable {
 	 * output.write(input);
 	 */
 	static int write(TextWriter this, TextReader reader) {
-		character buffer[1024] = {};
+		unicode buffer[1024] = {};
 		int result = 0;
 		for ( ; ; ) {
 			int read = reader.read(buffer);
@@ -235,358 +235,9 @@ struct CopyReader: ByteReader {
 	}
 }
 
-// Base64
-struct Base64Encoder: ByteWriter {
-	static byte lookup[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-	const ByteWriter writer;
-
-	const int wrap = 80;
-	int size = 0;
-
-	// todo: this should be a bigger buffer
-	int bitsEncoded = 0;
-	int charEncoded = 0;
-
-	static void flushBuffer(Base64Encoder this) {
-		if (this.bitsEncoded == 4) {
-			ByteWriter writer = this.writer;
-			inline charEncoded = this.charEncoded;
-			writer.write(lookup[(charEncoded << 2) & 0x3f]);
-			writer.write(byte('='));
-			this.bitsEncoded = 0;
-		}
-		else if (this.bitsEncoded == 2) {
-			ByteWriter writer = this.writer;
-			inline charEncoded = this.charEncoded;
-			writer.write(lookup[(charEncoded << 4) & 0x3f]);
-			writer.write(byte('='));
-			writer.write(byte('='));
-			this.bitsEncoded = 0;
-		}
-	}
-
-	void write(Base64Encoder this, byte data[]) {
-		ByteWriter writer = this.writer;
-		inline bitsEncoded = this.bitsEncoded;
-		inline charEncoded = this.charEncoded;
-		inline charWritten = this.size;
-		for (int i = 0; i < data.length; i += 1) {
-			bitsEncoded += 2;
-			charEncoded <<= 8;
-			charEncoded |= data[i] & 0xff;
-			writer.write(lookup[(charEncoded >> bitsEncoded) & 0x3f]);
-			if (this.wrap > 0 && ((charWritten += 1) % this.wrap == 0)) {
-				writer.write(byte('\n'));
-			}
-
-			if (bitsEncoded >= 6) {
-				bitsEncoded -= 6;
-				writer.write(lookup[(charEncoded >> bitsEncoded) & 0x3f]);
-				if (this.wrap > 0 && ((charWritten += 1) % this.wrap == 0)) {
-					writer.write(byte('\n'));
-				}
-			}
-		}
-	}
-
-	void flush(Base64Encoder this) {
-		this.flushBuffer();
-		this.writer.flush();
-	}
-
-	void close(Base64Encoder this) {
-		this.flushBuffer();
-		this.writer.safeClose();
-		assert(this.bitsEncoded == 0, "unprocessed bits remaining.", this.bitsEncoded);
-	}
-}
-struct Base64Decoder: ByteWriter {
-	static int lookup[256] = {};
-	const ByteWriter writer;
-	int bitsDecoded = 0;
-	int charDecoded = 0;
-
-	void write(Base64Decoder this, byte data[]) {
-		static bool initialized = false;
-		if (!initialized) {
-			for (int i = 0; i < lookup.length; i += 1) {
-				lookup[i] = -1;
-			}
-			for (int i = 0; i < Base64Encoder.lookup.length; i += 1) {
-				lookup[Base64Encoder.lookup[i]] = i;
-			}
-			initialized = true;
-		}
-
-		ByteWriter writer = this.writer;
-		inline bitsDecoded = this.bitsDecoded;
-		inline charDecoded = this.charDecoded;
-		for (int i = 0; i < data.length; i += 1) {
-			byte chr = data[i];
-			bool skipChar = chr == '\n';
-			if (chr == '\r') {
-				skipChar = true;
-			}
-			else if (chr == '=') {
-				skipChar = true;
-				bitsDecoded -= 2;
-			}
-			if (!skipChar) {
-				bitsDecoded += 6;
-				charDecoded <<= 6;
-				charDecoded |= lookup[chr] & 0x3f;
-				if (bitsDecoded >= 8) {
-					bitsDecoded -= 8;
-					writer.write(byte(charDecoded >> bitsDecoded));
-				}
-			}
-		}
-	}
-
-	void flush(Base64Decoder this) {
-		this.writer.flush(this.writer);
-	}
-	void close(Base64Decoder this) {
-		this.writer.safeClose();
-		assert(this.bitsDecoded == 0, "unprocessed bits remaining.", this.bitsDecoded);
-	}
-}
-
-// Ascii TODO: untested
-struct AsciiReader: TextReader {
-	// convert bytes to chars
-	int read(AsciiReader this, character chars[]) {
-		ByteReader reader = this.reader;
-		for (int i = 0; i < chars.length; i += 1) {
-			int value = reader.read();
-			if (value < 0) {
-				// end of stream
-				return i;
-			}
-			chars[i] = value;
-		}
-		return chars.length;
-	}
-}
-struct AsciiWriter: TextWriter {
-	// convert characters to bytes(can cause data loss)
-	void write(TextWriter this, character chars[]) {
-		ByteWriter writer = this.writer;
-		for (int i = 0; i < chars.length; i += 1) {
-			writer.write(byte(chars[i]));
-		}
-	}
-}
-
-// Utf-8 TODO: untested
-struct Utf8Reader: TextReader {
-	// convert utf-8 bytes to characters
-	int read(Utf8Reader this, character chars[]) {
-		ByteReader reader = this.reader;
-		for (int i = 0; i < chars.length; i += 1) {
-			int value = reader.read();
-			if (value < 0) {
-				// end of stream
-				return i;
-			}
-
-			if ((value & 0x80) == 0) {
-				// value = value;
-			}
-			else if ((value & 0xe0) == 0xc0) {
-				int val1 = reader.read() & 0x3f;
-				value = (value & 31) << 6 | val1;
-			}
-			else if ((value & 0xf0) == 0xe0) {
-				int val1 = reader.read() & 0x3f;
-				int val2 = reader.read() & 0x3f;
-				value = (value & 15) << 12 | val1 << 6| val2;
-			}
-			else if ((value & 0xf8) == 0xf0) {
-				int val1 = reader.read() & 0x3f;
-				int val2 = reader.read() & 0x3f;
-				int val3 = reader.read() & 0x3f;
-				value = (value & 7) << 18 | val1 << 12 | val2 << 6 | val3;
-			}
-			chars[i] = value;
-		}
-		return chars.length;
-	}
-}
-struct Utf8Writer: TextWriter {
-	// convert characters to utf-8 bytes
-	void write(TextWriter this, character chars[]) {
-		ByteWriter writer = this.writer;
-		byte bytes[4] = {};
-		for (int i = 0; i < chars.length; i += 1) {
-			character chr = chars[i];
-
-			if (chr < 0x80) {
-				bytes[0] = chr;
-				writer.write(bytes, 1);
-			}
-			else if (chr < 0x800) {
-				bytes[0] = (chr & 0x7c0) >> 6 | 0xc0;
-				bytes[1] = chr & 0x3f | 0x80;
-				writer.write(bytes, 2);
-			}
-			else if (chr < 0xe000) {
-				bytes[0] = (chr & 0xf000) >> 12 | 0xe0;
-				bytes[1] = (chr & 0xfc) >> 6 | 0x80;
-				bytes[2] = chr & 0x3f | 0x80;
-				writer.write(bytes, 3);
-			}
-			else {
-				bytes[0] = (chr & 0x1c0000) >> 18 | 0xf0;
-				bytes[1] = (chr & 0x3f0) >> 12 | 0x80;
-				bytes[2] = (chr & 0xfc) >> 6 | 0x80;
-				bytes[3] = chr & 0x3f | 0x80;
-				writer.write(bytes, 4);
-			}
-		}
-	}
-}
-
 // File streams
 static if (typename(File) != null) {
-struct FileReader: ByteReader {
-	const File file;
-
-	int read(FileReader this, uint8 bytes[]) {
-		return File.read(this.file, bytes);
-	}
-
-	void close(FileReader this) {
-		File.close(this.file);
-	}
-}
-
-struct FileWriter: ByteWriter {
-	const File file;
-
-	void write(FileWriter this, byte bytes[]) {
-		int wrote = File.write(this.file, bytes);
-		assert(wrote == bytes.length);
-	}
-
-	void flush(FileWriter this) {
-		File.flush(this.file);
-	}
-
-	void close(FileWriter this) {
-		File.close(this.file);
-	}
-}
-struct BufferedFileWriter: FileWriter {
-	byte buffer[1024] = null;
-	int bufferSize = 0;
-
-	static void flushBuffer(BufferedFileWriter this) {
-		// TODO: use base class to write buffered content
-		// FileWriter.write(this, this.buffer, this.bufferSize);
-		int wrote = File.write(this.file, this.buffer, this.bufferSize);
-		assert(wrote == this.bufferSize);
-		this.bufferSize = 0;
-	}
-
-	void write(BufferedFileWriter this, byte bytes[]) {
-		if (this.bufferSize + bytes.length > this.buffer.length) {
-			if (this.bufferSize > 0) {
-				this.flushBuffer();
-			}
-			if (bytes.length > this.buffer.length / 2) {
-				// writing more than buffer half size, make the write
-				FileWriter.write(this, bytes);
-				return;
-			}
-		}
-		// accumulate into buffer
-		byte buffer[*] = this.buffer;
-		int bufferSize = this.bufferSize;
-		for (int i = 0; i < bytes.length; i += 1) {
-			buffer[bufferSize + i] = bytes[i];
-		}
-		this.bufferSize += bytes.length;
-	}
-
-	void flush(BufferedFileWriter this) {
-		this.flushBuffer();
-		FileWriter.flush(this);
-	}
-
-	void close(BufferedFileWriter this) {
-		this.flushBuffer();
-		FileWriter.close(this);
-	}
-}
-
-FileWriter StdOutWriter() {
-	return FileWriter {
-		file: File.out;
-		close: Closeable.skipClose;
-	};
-}
-
-FileReader FileReader(const char path[*]) {
-	return FileReader {
-		file: File.open(path);
-	};
-}
-
-FileWriter FileWriter(const char path[*], bool buffered, bool append) {
-	if (buffered && append) {
-		return BufferedFileWriter {
-			file: File.append(path);
-		};
-	}
-	if (buffered) {
-		return BufferedFileWriter {
-			file: File.create(path);
-		};
-	}
-	if (append) {
-		return FileWriter {
-			file: File.append(path);
-		};
-	}
-	return FileWriter {
-		file: File.create(path);
-	};
-}
-
-/* TODO: uncomment
-struct Path {
-	bool exists();
-	bool isFile();
-	bool isDirectory();
-	bool isHidden();
-	bool isAbsolute();
-
-	Path parent();
-	// permissions: canRead,write,execute,...
-}
-
-inline FileReader(Path path) = {
-	file: File.open(path);
-};
-inline FileWriter(Path path, bool append) = {
-	file: append ? File.append(path) : File.create(path);
-};
-
-inline AsciiReader(Path path) = {
-	reader: FileReader(path);
-};
-inline AsciiWriter(Path path, bool append) = {
-	writer: FileWriter(path, append);
-};
-
-inline Utf8Reader(Path path) = {
-	reader: FileReader(path);
-};
-inline Utf8Writer(Path path, bool append) = {
-	writer: FileWriter(path, append);
-};
-*/
+inline "Stream.file.ci";
 }
 
 // TODO: untested

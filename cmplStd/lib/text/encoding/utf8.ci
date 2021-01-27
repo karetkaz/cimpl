@@ -1,0 +1,70 @@
+// Utf-8 reader TODO: untested
+struct Utf8Reader: TextReader {
+	// convert utf-8 bytes to unicodes
+	int read(Utf8Reader this, unicode chars[]) {
+		ByteReader reader = this.reader;
+		for (int i = 0; i < chars.length; i += 1) {
+			int value = reader.read();
+			if (value < 0) {
+				// end of stream
+				return i;
+			}
+
+			if ((value & 0x80) == 0) {
+				// value = value;
+			}
+			else if ((value & 0xe0) == 0xc0) {
+				int val1 = reader.read() & 0x3f;
+				value = (value & 31) << 6 | val1;
+			}
+			else if ((value & 0xf0) == 0xe0) {
+				int val1 = reader.read() & 0x3f;
+				int val2 = reader.read() & 0x3f;
+				value = (value & 15) << 12 | val1 << 6| val2;
+			}
+			else if ((value & 0xf8) == 0xf0) {
+				int val1 = reader.read() & 0x3f;
+				int val2 = reader.read() & 0x3f;
+				int val3 = reader.read() & 0x3f;
+				value = (value & 7) << 18 | val1 << 12 | val2 << 6 | val3;
+			}
+			chars[i] = value;
+		}
+		return chars.length;
+	}
+}
+
+// Utf-8 writer TODO: untested
+struct Utf8Writer: TextWriter {
+	// convert characters to utf-8 bytes
+	void write(TextWriter this, unicode chars[]) {
+		ByteWriter writer = this.writer;
+		byte bytes[4] = {};
+		for (int i = 0; i < chars.length; i += 1) {
+			unicode chr = chars[i];
+
+			if (chr < 0x80) {
+				bytes[0] = chr;
+				writer.write(bytes, 1);
+			}
+			else if (chr < 0x800) {
+				bytes[0] = (chr & 0x7c0) >> 6 | 0xc0;
+				bytes[1] = chr & 0x3f | 0x80;
+				writer.write(bytes, 2);
+			}
+			else if (chr < 0xe000) {
+				bytes[0] = (chr & 0xf000) >> 12 | 0xe0;
+				bytes[1] = (chr & 0xfc) >> 6 | 0x80;
+				bytes[2] = chr & 0x3f | 0x80;
+				writer.write(bytes, 3);
+			}
+			else {
+				bytes[0] = (chr & 0x1c0000) >> 18 | 0xf0;
+				bytes[1] = (chr & 0x3f0) >> 12 | 0x80;
+				bytes[2] = (chr & 0xfc) >> 6 | 0x80;
+				bytes[3] = chr & 0x3f | 0x80;
+				writer.write(bytes, 4);
+			}
+		}
+	}
+}
