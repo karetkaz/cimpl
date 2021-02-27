@@ -432,7 +432,7 @@ int cmplInit(rtContext _rt) {
 
 		{glutFun_PostRedisplay,        "void postRedisplay()"},
 		{glutFun_Reshape,              "void reshape(int width, int height)"},
-		{glutFun_MainLoop,             "void mainLoop(int width, int height, char title[*])"},
+		{glutFun_MainLoop,             "void mainLoop(int width, int height, const char title[*])"},
 		{glutFun_ExitLoop,             "void exit()"},
 		{glutFun_InitDisplayMode,      "void initDisplayMode(int mode)"},
 		{glutFun_SwapBuffers,          "void swapBuffers()"},

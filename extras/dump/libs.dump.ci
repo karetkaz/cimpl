@@ -177,6 +177,8 @@ char: typename {
 	cmplGfx/lib/image.ci:94: referenced as `char`
 	cmplGfx/lib/image.ci:91: referenced as `char`
 	cmplGfx/lib/image.ci:83: referenced as `char`
+	cmplStd/lib/text/string.ci:281: referenced as `char`
+	cmplStd/lib/text/string.ci:275: referenced as `char`
 	cmplStd/lib/text/string.ci:269: referenced as `char`
 	cmplStd/lib/text/string.ci:266: referenced as `char`
 	cmplStd/lib/text/string.ci:255: referenced as `char`
@@ -454,6 +456,7 @@ int32: typename {
 	cmplGfx/lib/color.ci:133: referenced as `int32`
 	cmplGfx/lib/color.ci:129: referenced as `int32`
 	cmplGfx/lib/color.ci:109: referenced as `int32`
+	cmplStd/lib/text/string.ci:280: referenced as `int`
 	cmplStd/lib/text/string.ci:269: referenced as `int`
 	cmplStd/lib/text/string.ci:269: referenced as `int`
 	cmplStd/lib/text/string.ci:269: referenced as `int`
@@ -1153,6 +1156,9 @@ float64: typename {
 	cmplGfx/lib/color.ci:150: referenced as `float64`
 	cmplGfx/lib/color.ci:150: referenced as `float64`
 	cmplGfx/lib/color.ci:135: referenced as `float64`
+	cmplStd/lib/text/string.ci:277: referenced as `float64`
+	cmplStd/lib/text/string.ci:276: referenced as `float64`
+	cmplStd/lib/text/string.ci:275: referenced as `float64`
 	cmplStd/lib/text/string.ci:266: referenced as `float64`
 	cmplStd/lib/text/string.ci:260: referenced as `float64`
 	cmplStd/lib/text/string.ci:256: referenced as `float64`
@@ -3820,6 +3826,8 @@ Math: typename {
 	cmplGfx/lib/image.ci:102: referenced as `Math`
 	cmplGfx/lib/image.ci:40: referenced as `Math`
 	cmplGfx/lib/image.ci:38: referenced as `Math`
+	cmplStd/lib/text/string.ci:295: referenced as `Math`
+	cmplStd/lib/text/string.ci:289: referenced as `Math`
 	cmplStd/lib/text/string.ci:256: referenced as `Math`
 	cmplStd/lib/text/string.ci:256: referenced as `Math`
 	cmplStd/lib/math/Complex.ci:151: referenced as `Math`
@@ -3966,6 +3974,8 @@ Math.nan: float64 {
 .doc: 'nan'
 .value: -nan
 .usages:
+	cmplStd/lib/text/string.ci:295: referenced as `nan`
+	cmplStd/lib/text/string.ci:289: referenced as `nan`
 	cmplStd/lib/math.ci:481: referenced as `nan`
 	cmplStd/lib/math.ci:402: referenced as `nan`
 	cmplStd/lib/math.ci:222: referenced as `nan`
@@ -11024,6 +11034,150 @@ append(output: char[], pos: int32, value: int32): int32: function {
 	cmplGfx/gfxlib.ci:277: referenced as `append`
 	cmplGfx/gfxlib.ci:131: referenced as `append`
 	cmplGfx/gfxlib.ci:112: referenced as `append`
+}
+float64(value: char[]): float64: function {
+.kind: static function
+.base: `function`
+.size: 239
+.name: 'float64'
+.file: 'cmplStd/lib/text/string.ci:275'
+.param .result: float64 (size: 8, cast: variable(f64))
+.param value: char[] (size: 8, cast: const variable(arr))
+.doc: 'Convert a string to a 64 bit floating point value'
+.value: {
+	result: float64 := 0;
+	decimal: float64 := 0;
+	for (i: int32 := 0; i < (value.length) && (value[i]) != 0; i := i + 1) {
+		chr: char := value[i];
+		if (chr >= '0' && chr <= '9') {
+			result := result * (10) + ((chr - '0'));
+			decimal := decimal * (10);
+		}
+		else if (chr == '.') {
+			if (decimal != (0)) {
+				return .result := Math.nan;
+			}
+			decimal := (1);
+		}
+		else {
+			return .result := Math.nan;
+		}
+	}
+	if (decimal == (0)) {
+		if (value.length > (0)) {
+			return .result := result;
+		}
+	}
+	return .result := result / decimal;
+}
+.instructions: (239 bytes)
+	cmplStd/lib/text/string.ci:276: (1 byte): result: float64 := 0
+	<float64>  : load.z128
+	cmplStd/lib/text/string.ci:280: (202 bytes): for (i: int32 := 0; i < (value.length) && (value[i]) != 0; i := i + 1)
+	<float64+?>: load.z32
+	<float64+?>: jmp +169
+	cmplStd/lib/text/string.ci:281: (6 bytes): chr: char := value[i]
+	<float64+?>: dup.x32 sp(6)
+	<float64+?>: dup.x32 sp(1)
+	<float64+?>: add.i32
+	<float64+?>: load.i8
+	cmplStd/lib/text/string.ci:282: (151 bytes): if (chr >= '0' && chr <= '9')
+	<float64+?>: load.sp(+0)
+	<float64+?>: load.i8
+	<float64+?>: load.c32 48
+	<float64+?>: clt.i32
+	<float64+?>: not.b32
+	<float64+?>: dup.x32 sp(0)
+	<float64+?>: jz +20
+	<float64+?>: inc.sp(-4)
+	<float64+?>: load.sp(+0)
+	<float64+?>: load.i8
+	<float64+?>: load.c32 57
+	<float64+?>: cgt.i32
+	<float64+?>: not.b32
+	<float64+?>: jz +47
+	cmplStd/lib/text/string.ci:283: (25 bytes): result := result * (10) + ((chr - '0'));
+	<float64+?>: dup.x64 sp(4)
+	<float64+?>: load.f64 10.000000
+	<float64+?>: mul.f64
+	<float64+?>: load.sp(+8)
+	<float64+?>: load.i8
+	<float64+?>: inc.i32(-48)
+	<float64+?>: i32.2f64
+	<float64+?>: add.f64
+	<float64+?>: set.x64 sp(6)
+	cmplStd/lib/text/string.ci:284: (14 bytes): decimal := decimal * (10);
+	<float64+?>: dup.x64 sp(2)
+	<float64+?>: load.f64 10.000000
+	<float64+?>: mul.f64
+	<float64+?>: set.x64 sp(4)
+	<float64+?>: jmp +74
+	cmplStd/lib/text/string.ci:286: (70 bytes): if (chr == '.')
+	<float64+?>: load.sp(+0)
+	<float64+?>: load.i8
+	<float64+?>: load.c32 46
+	<float64+?>: ceq.i32
+	<float64+?>: jz +43
+	cmplStd/lib/text/string.ci:287: (24 bytes): if (decimal != (0))
+	<float64+?>: dup.x64 sp(2)
+	<float64+?>: load.z64
+	<float64+?>: ceq.f64
+	<float64+?>: jnz +20
+	cmplStd/lib/text/string.ci:289: (16 bytes): return .result := Math.nan;
+	<float64+?>: load.f64 -nan
+	<float64+?>: set.x64 sp(11)
+	<float64+?>: inc.sp(-24)
+	<float64+?>: ret
+	cmplStd/lib/text/string.ci:291: (11 bytes): decimal := (1);
+	<float64+?>: load.f64 1.000000
+	<float64+?>: set.x64 sp(4)
+	<float64+?>: jmp +20
+	cmplStd/lib/text/string.ci:295: (16 bytes): return .result := Math.nan;
+	<float64+?>: load.f64 -nan
+	<float64+?>: set.x64 sp(11)
+	<float64+?>: inc.sp(-24)
+	<float64+?>: ret
+	<float64+?>: inc.sp(-4)
+	cmplStd/lib/text/string.ci:280: (4 bytes): i := i + 1
+	<float64+?>: inc.i32(+1)
+	cmplStd/lib/text/string.ci:280: (28 bytes): i < (value.length) && (value[i]) != 0
+	<float64+?>: dup.x32 sp(0)
+	<float64+?>: dup.x32 sp(8)
+	<float64+?>: clt.i32
+	<float64+?>: dup.x32 sp(0)
+	<float64+?>: jz +17
+	<float64+?>: inc.sp(-4)
+	<float64+?>: dup.x32 sp(6)
+	<float64+?>: dup.x32 sp(1)
+	<float64+?>: add.i32
+	<float64+?>: load.i8
+	<float64+?>: load.z32
+	<float64+?>: ceq.i32
+	<float64+?>: not.b32
+	<float64+?>: jnz -189
+	<float64+?>: inc.sp(-4)
+	cmplStd/lib/text/string.ci:299: (24 bytes): if (decimal == (0))
+	<float64+?>: dup.x64 sp(0)
+	<float64+?>: load.z64
+	<float64+?>: ceq.f64
+	<float64+?>: jz +20
+	cmplStd/lib/text/string.ci:300: (16 bytes): if (value.length > (0))
+	<float64+?>: dup.x32 sp(6)
+	<float64+?>: load.z32
+	<float64+?>: cgt.u32
+	<float64+?>: jz +12
+	cmplStd/lib/text/string.ci:301: (8 bytes): return .result := result;
+	<float64+?>: mov.x64 sp(7, 2)
+	<float64+?>: inc.sp(-16)
+	<float64+?>: ret
+	cmplStd/lib/text/string.ci:304: (12 bytes): return .result := result / decimal;
+	<float64+?>: dup.x64 sp(2)
+	<float64+?>: dup.x64 sp(2)
+	<float64+?>: div.f64
+	<float64+?>: set.x64 sp(9)
+	<float64+?>: inc.sp(-16)
+	<float64+?>: ret
+.usages:
 }
 File: typename {
 .kind: static const typename(val)
@@ -18194,6 +18348,7 @@ show(mesh: Mesh, w: int32, h: int32, fovy: float32): void: function {
 .field append: function (size: 236, cast: static function)
 .field append: function (size: 0, cast: inline)
 .field append: function (size: 63, cast: static function)
+.field float64: function (size: 239, cast: static function)
 .field File: typename (size: 8, cast: static const typename(val))
 .field Rect: typename (size: 16, cast: static const typename(val))
 .field Image: typename (size: 8, cast: static const typename(val))
@@ -19123,6 +19278,32 @@ show(mesh: Mesh, w: int32, h: int32, fovy: float32): void: function {
 				format.padLen := 0;
 			};
 			return .result := append(output, pos, value, format);
+		};
+		static float64(const value: char[]): float64 := {
+			result: float64 := 0;
+			decimal: float64 := 0;
+			for (i: int32 := 0; i < (value.length) && (value[i]) != 0; i := i + 1) {
+				chr: char := value[i];
+				if (chr >= '0' && chr <= '9') {
+					result := result * (10) + ((chr - '0'));
+					decimal := decimal * (10);
+				}
+				else if (chr == '.') {
+					if (decimal != (0)) {
+						return .result := Math.nan;
+					}
+					decimal := (1);
+				}
+				else {
+					return .result := Math.nan;
+				}
+			}
+			if (decimal == (0)) {
+				if (value.length > (0)) {
+					return .result := result;
+				}
+			}
+			return .result := result / decimal;
 		};
 	}
 	{
@@ -20133,6 +20314,7 @@ cmplStd/lib/text/string.ci:134: append: function(<append>)
 cmplStd/lib/text/string.ci:151: append: function(<append>)
 cmplStd/lib/text/string.ci:241: append: function(<append>)
 cmplStd/lib/text/string.ci:269: append: function(<append>)
+cmplStd/lib/text/string.ci:275: float64: function(<float64>)
 File: typename(<File>)
 Rect: typename(<Rect>)
 Image: typename(<Image>)
@@ -20178,16 +20360,16 @@ cmplGfx/gfxlib.ci:163: show: function(<show>)
 
 ---------- Memory usage:
 memory[all] @000000; size: 4194016(4.0 Mb)
-memory[used] @000000; size: 445491(435.0 Kb)
-memory[heap] @06cc33; size: 2699973(2.6 Mb)
+memory[used] @000000; size: 447067(436.6 Kb)
+memory[heap] @06d25b; size: 2698397(2.6 Mb)
 memory[stack] @1fff40; size: 1048504(1023.9 Kb)
 
 ---------- used memory:
-memory[meta] @000000; size: 431872(421.8 Kb)
-memory[code] @000000; size: 13284(13.0 Kb)
+memory[meta] @000000; size: 433208(423.1 Kb)
+memory[code] @000000; size: 13523(13.2 Kb)
 memory[data] @000000; size: 52(52.0 bytes)
 
 ---------- heap memory:
-memory[free] @06cc50; size: 2699920(2.6 Mb)
+memory[free] @06d270; size: 2698352(2.6 Mb)
 
 ---------- Exitcode: 0, time: 0.000 ms

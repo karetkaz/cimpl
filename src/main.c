@@ -2400,7 +2400,7 @@ int main(int argc, char *argv[]) {
 		if (i == argc || *arg != '-') {
 			if (ccFile != NULL) {
 				char *ext = strrchr(ccFile, '.');
-				if (ext && (strEquals(ext, ".so") || strEquals(ext, ".dll") || strEquals(ext, ".wasm"))) {
+				if (ext && (strEquals(ext, ".so") || strEquals(ext, ".dll") || strEquals(ext, ".wasm") || strEquals(ext, ".dylib"))) {
 					if (extra.compileSteps != NULL && ccFile != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sLibrary: `%?s`", extra.compileSteps, ccFile);}
 					int resultCode = importLib(rt, ccFile);
 					if (resultCode != 0) {

@@ -1,4 +1,4 @@
-# Cmpl
+# [Cmpl](https://github.com/karetkaz/Cmpl)
 
 A very "simple" C like language.
 
@@ -6,7 +6,7 @@ A very "simple" C like language.
 
 [Language](extras/Cmpl.md)
 
-[Grammar](extras/Cmpl.g4)
+[Grammar](https://github.com/karetkaz/Cmpl/blob/master/extras/Cmpl.g4)
 
 ## Demos and Tools
 

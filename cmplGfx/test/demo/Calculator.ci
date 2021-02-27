@@ -1,0 +1,127 @@
+// Simple Calculator with no precedence
+// double click result to clear it
+
+Image offs = Image(300, 400, 32);
+int onEvent(int action, int button, int x, int y);
+offs.show(onEvent);
+offs.destroy();
+
+inline "/cmplGfx/lib/micro.ui.ci";
+char result[256] = {'0', 0};
+char operation = 0;
+float64 value = 0;
+bool clear = true;
+
+struct CalcResult: Button {
+	bool onReset(CalcResult this) {
+		result.append(0, "0");
+		operation = 0;
+		value = 0;
+		clear = true;
+		return true;
+	}
+
+	void onDraw(CalcResult this, Image offs, Rect rect, const Style style&) {
+		offs.fillRect(rect, style.hoveredColor);
+		Rect textRect = {};
+		rect.adjust(-style.padding);
+		style.font.clipText(&textRect, this.text);
+		Style.align(rect, &textRect, Style.right);
+		offs.drawText(textRect, style.font, this.text, style.textColor);
+	}
+}
+
+struct CalcButton: Button {
+	char op = 0;
+
+	bool onClick(CalcButton this) {
+		if (this.op == 0) {
+			int len = length(result);
+			if (clear) {
+				clear = false;
+				len = 0;
+			}
+			result.append(len, this.text);
+			return true;
+		}
+
+		if (clear) {
+			// keep the last clicked operator
+			operation = this.op;
+			return true;
+		}
+
+		if (operation == '=' || operation == 0) {
+			value = float64(result);
+			operation = 0;
+		}
+		else if (operation == '+') {
+			value += float64(result);
+			operation = 0;
+		}
+		else if (operation == '-') {
+			value -= float64(result);
+			operation = 0;
+		}
+		else if (operation == '*') {
+			value *= float64(result);
+			operation = 0;
+		}
+		else if (operation == '/') {
+			value /= float64(result);
+			operation = 0;
+		}
+
+		// check for errors (not a number)
+		if (value == value) {
+			const FormatFlags format = { precision: 10 };
+			result.append(0, value, format);
+		} else {
+			result.append(0, "Error");
+		}
+
+		// make sure all operators were handled
+		assert(operation == 0);
+		operation = this.op;
+		clear = true;
+		return true;
+	}
+}
+
+CalcResult btnResult = {
+	text: result;
+	focusable: false;
+};
+CalcButton enter = {
+	text: "=";
+	op: '=';
+};
+CalcButton buttons[] = {
+	{text: "7"}, {text: "8"}, {text: "9"}, {text: "/", op: '/'},
+	{text: "4"}, {text: "5"}, {text: "6"}, {text: "*", op: '*'},
+	{text: "1"}, {text: "2"}, {text: "3"}, {text: "-", op: '-'},
+	{text: "0"}, {text: "."}, enter, {text: "+", op: '+'}
+};
+
+Style style = {
+	align: Style.center;
+	fmtInt: { padLen: 4 };
+	fmtFlt: { padLen: 4, precision: 2 };
+};
+Widget ui = Widget(offs, style, btnResult
+	, Layout.Custom(4, Style.fill, ...buttons)
+).margin(Style.fill, 0, 0).padding(0);
+
+int onEvent(int action, int button, int x, int y) {
+	if (action == Gui.KEY_RELEASE && button == 27) {
+		// exit when releasing escape key
+		return -1;
+	}
+	if (!ui.onEvent(action, button, x, y)) {
+		return 0;
+	}
+	if (action == Gui.WINDOW_INIT) {
+		ui.setFocused(enter);
+	}
+	return ui.draw();
+}

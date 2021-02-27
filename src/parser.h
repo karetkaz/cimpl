@@ -42,6 +42,9 @@ ccKind canAssign(ccContext cc, symn variable, astn value, int strict);
  */
 symn typeCheck(ccContext cc, symn loc, astn ast, int raise);
 
+/// change the type of a tree node (replace or add implicit cast).
+astn castTo(ccContext cc, astn ast, symn type);
+
 /**
  * @brief Add usage of the symbol.
  * @param sym Symbol typename or variable.

@@ -43,6 +43,7 @@ let projects = {
 			'asset/image/texture_nature_01.png',
 			'asset/mesh/teapot.obj',
 			'demo/AnalogClock.ci',
+			'demo/Calculator.ci',
 			'demo/DatePicker.ci',
 			'demo/FloodIt.ci',
 			'demo/RayTracer0.ci',

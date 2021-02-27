@@ -1553,7 +1553,7 @@ static astn declare_enum(ccContext cc) {
 		if (!canAssign(cc, member, value, 0)) {
 			error(cc->rt, id->file, id->line, ERR_INVALID_VALUE_ASSIGN, member, value);
 		}
-		member->init = value;
+		member->init = castTo(cc, value, type == NULL ? base : type);
 		// enumeration values are documented public symbols
 		member->doc = member->name;
 

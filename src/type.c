@@ -407,8 +407,7 @@ symn lookup(ccContext cc, symn sym, astn ref, astn arguments, ccKind filter, int
 	return aliasOf(best);
 }
 
-/// change the type of a tree node (replace or implicit cast).
-static astn convert(ccContext cc, astn ast, symn type) {
+astn castTo(ccContext cc, astn ast, symn type) {
 	dieif(cc->rt->vm.nfc, "Compiler state closed");
 	if (type == NULL) {
 		return ast;
@@ -585,7 +584,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			if (ref == NULL) {
 				// int a = (3 + 6);
 				rType = typeCheck(cc, loc, args, raise);
-				ast->op.rhso = convert(cc, args, rType);
+				ast->op.rhso = castTo(cc, args, rType);
 				ast->type = rType;
 				return rType;
 			}
@@ -740,8 +739,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				traceAst(ast);
 				return NULL;
 			}
-			ast->op.lhso = convert(cc, ast->op.lhso, lType);
-			ast->op.rhso = convert(cc, ast->op.rhso, rType);
+			ast->op.lhso = castTo(cc, ast->op.lhso, lType);
+			ast->op.rhso = castTo(cc, ast->op.rhso, rType);
 			ast->type = rType;
 			return rType;
 
@@ -786,7 +785,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			if ((type = promote(NULL, rType)) == NULL) {
 				error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
 			}
-			ast->op.rhso = convert(cc, ast->op.rhso, type);
+			ast->op.rhso = castTo(cc, ast->op.rhso, type);
 			ast->type = type;
 			return type;
 
@@ -798,7 +797,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				return NULL;
 			}
 			type = cc->type_bol;
-			ast->op.rhso = convert(cc, ast->op.rhso, type);
+			ast->op.rhso = castTo(cc, ast->op.rhso, type);
 			ast->type = type;
 			return type;
 
@@ -817,8 +816,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			if ((type = promote(lType, rType)) == NULL) {
 				error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
 			}
-			ast->op.lhso = convert(cc, ast->op.lhso, type);
-			ast->op.rhso = convert(cc, ast->op.rhso, type);
+			ast->op.lhso = castTo(cc, ast->op.lhso, type);
+			ast->op.rhso = castTo(cc, ast->op.rhso, type);
 			ast->type = type;
 			return type;
 
@@ -834,8 +833,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			if ((type = promote(lType, rType)) == NULL) {
 				error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
 			}
-			ast->op.lhso = convert(cc, ast->op.lhso, type);
-			ast->op.rhso = convert(cc, ast->op.rhso, cc->type_i32);
+			ast->op.lhso = castTo(cc, ast->op.lhso, type);
+			ast->op.rhso = castTo(cc, ast->op.rhso, cc->type_i32);
 
 			if (type != NULL) {
 				switch (refCast(type)) {
@@ -867,8 +866,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			if ((type = promote(lType, rType)) == NULL) {
 				error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
 			}
-			ast->op.lhso = convert(cc, ast->op.lhso, type);
-			ast->op.rhso = convert(cc, ast->op.rhso, type);
+			ast->op.lhso = castTo(cc, ast->op.lhso, type);
+			ast->op.rhso = castTo(cc, ast->op.rhso, type);
 
 			if (type != NULL) {
 				switch (refCast(type)) {
@@ -905,8 +904,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			if ((type = promote(lType, rType)) == NULL) {
 				error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
 			}
-			ast->op.lhso = convert(cc, ast->op.lhso, type);
-			ast->op.rhso = convert(cc, ast->op.rhso, type);
+			ast->op.lhso = castTo(cc, ast->op.lhso, type);
+			ast->op.rhso = castTo(cc, ast->op.rhso, type);
 			type = cc->type_bol;
 			ast->type = type;
 			return type;
@@ -921,8 +920,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				return NULL;
 			}
 			type = cc->type_bol;
-			ast->op.lhso = convert(cc, ast->op.lhso, type);
-			ast->op.rhso = convert(cc, ast->op.rhso, type);
+			ast->op.lhso = castTo(cc, ast->op.lhso, type);
+			ast->op.rhso = castTo(cc, ast->op.rhso, type);
 			ast->type = type;
 			return type;
 
@@ -938,9 +937,9 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 			if ((type = promote(lType, rType)) == NULL) {
 				error(cc->rt, ast->file, ast->line, ERR_INVALID_TYPE, ast);
 			}
-			ast->op.test = convert(cc, ast->op.test, cc->type_bol);
-			ast->op.lhso = convert(cc, ast->op.lhso, type);
-			ast->op.rhso = convert(cc, ast->op.rhso, type);
+			ast->op.test = castTo(cc, ast->op.test, cc->type_bol);
+			ast->op.lhso = castTo(cc, ast->op.lhso, type);
+			ast->op.rhso = castTo(cc, ast->op.rhso, type);
 			ast->type = type;
 			return type;
 
@@ -952,8 +951,8 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				traceAst(ast);
 				return NULL;
 			}
-			ast->op.lhso = convert(cc, ast->op.lhso, lType);
-			ast->op.rhso = convert(cc, ast->op.rhso, rType);
+			ast->op.lhso = castTo(cc, ast->op.lhso, lType);
+			ast->op.rhso = castTo(cc, ast->op.rhso, rType);
 			type = cc->type_vid;
 			ast->type = type;
 			return type;
@@ -976,7 +975,7 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 				error(cc->rt, ast->file, ast->line, ERR_INVALID_VALUE_ASSIGN, lType, ast);
 				return NULL;
 			}
-			ast->op.rhso = convert(cc, ast->op.rhso, lType);
+			ast->op.rhso = castTo(cc, ast->op.rhso, lType);
 			ast->type = lType;
 			return lType;
 

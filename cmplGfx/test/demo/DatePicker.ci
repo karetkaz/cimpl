@@ -273,12 +273,12 @@ bool onClick(Button this) {
 	return true;
 }
 
-int onEvent(pointer closure, int action, int button, int x, int y) {
+int onEvent(int action, int button, int x, int y) {
 	if (action == Gui.KEY_RELEASE && button == 27) {
 		// exit when releasing escape key
 		return -1;
 	}
-	if (!ui.onEvent(ui, action, button, x, y)) {
+	if (!ui.onEvent(action, button, x, y)) {
 		return 0;
 	}
 	if (action == Gui.WINDOW_INIT) {
@@ -288,4 +288,4 @@ int onEvent(pointer closure, int action, int button, int x, int y) {
 	counter.increment(1);
 	return ui.draw();
 }
-Gui.showWindow(offs, null, onEvent);
+offs.show(onEvent);

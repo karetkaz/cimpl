@@ -18,7 +18,7 @@
 
 //* test the generated events
 static Image image = Image(512, 512, 32);
-static int onEvent(pointer closure, int action, int button, int x, int y) {
+static int onEvent(int action, int button, int x, int y) {
 	struct Event {
 		char actionName[*];
 		int action;
@@ -127,7 +127,7 @@ static int onEvent(pointer closure, int action, int button, int x, int y) {
 			sldClicks
 		);
 
-		ui.onEvent(ui, action, button, x, y);
+		ui.onEvent(action, button, x, y);
 		actionText.append(0, event.actionName);
 		sldAction.value = action;
 		sldButton.value = button;
@@ -140,6 +140,6 @@ static int onEvent(pointer closure, int action, int button, int x, int y) {
 
 	return 20000;	// 20 sec timeout
 }
-Gui.showWindow(image, null, onEvent);
+image.show(onEvent);
 image.destroy();
 // */

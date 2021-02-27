@@ -3,7 +3,7 @@
 vec4f domain(Complex z, float64 mod) {
 	vec4f result = {
 		x: Math.absMod(arg(z) / (Math.pi * 2) + Math.pi / 4, mod);
-		y: 4 * Math.absMod(abs(z), 1) * (1 - Math.absMod(abs(z), 1));
+		y: 4 * Math.absMod(abs(z), 1.) * (1 - Math.absMod(abs(z), 1.));
 		z: 1;//- absMod(Math.abs(z.im), 1);
 	};
 	return hsv2rgb(result);
