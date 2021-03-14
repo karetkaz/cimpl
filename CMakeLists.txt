@@ -1,13 +1,7 @@
 cmake_minimum_required(VERSION 3.3)
 project(Cmpl)
 
-IF (WIN32)
-	set(ARCH "32")
-ELSE()
-	set(ARCH "64")
-ENDIF()
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m${ARCH} -std=gnu99 -D USE_PNG -D USE_JPEG")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -D USE_PNG -D USE_JPEG")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/bin>)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/bin>)
 
@@ -55,32 +49,37 @@ set(GX_SOURCE_FILES
 )
 
 add_executable(cmpl ${CC_SOURCE_FILES} src/main.c)
-IF (WIN32)
+if (WIN32)
 	target_link_libraries(cmpl m)
-ELSE()
+else ()
 	target_link_libraries(cmpl m dl)
-ENDIF()
-
+endif ()
 
 add_library(File SHARED cmplFile/src/file.c)
 target_include_directories(File PUBLIC ./src/)
 
-add_library(OpenGL SHARED cmplGL/src/openGL.c)
-target_include_directories(OpenGL PUBLIC ./src/)
-target_link_libraries(OpenGL GL GLU glut)
-
-IF (WIN32)
+if (WIN32)
 	add_library(Gfx SHARED ${GX_SOURCE_FILES} cmplGfx/src/os_win32/gx_gui.w32.c cmplGfx/src/os_win32/time.w32.c)
 	target_link_libraries(Gfx m gdi32)
-ELSE()
+	target_link_libraries(cmpl m)
+else ()
+	if (APPLE)
+		include_directories(/usr/local/include)
+		link_directories(/usr/local/lib)
+	else ()
+		add_library(OpenGL SHARED cmplGL/src/openGL.c)
+		target_include_directories(OpenGL PUBLIC ./src/)
+		target_link_libraries(OpenGL GL GLU glut)
+	endif ()
 #	add_library(Gfx SHARED ${GX_SOURCE_FILES} cmplGfx/src/os_linux/gx_gui.x11.c cmplGfx/src/os_linux/time.unx.c)
 #	target_link_libraries(Gfx m dl png jpeg X11)
 	add_library(Gfx SHARED ${GX_SOURCE_FILES} cmplGfx/src/os_linux/gx_gui.sdl.c cmplGfx/src/os_linux/time.unx.c)
 	target_link_libraries(Gfx m dl png jpeg SDL2)
-ENDIF()
+	target_link_libraries(cmpl m dl)
+endif ()
 target_include_directories(Gfx PUBLIC ./src/ ./libs/stb)
 
-# a simple "how to use" demo code.
+# a simple "how to use vm" demo code.
 add_executable(cmplVmEmit ${CC_SOURCE_FILES} src/test/vmMulf32.c)
 target_include_directories(cmplVmEmit PUBLIC ./src/)
 target_link_libraries(cmplVmEmit m dl)

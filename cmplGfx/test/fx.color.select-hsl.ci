@@ -153,7 +153,6 @@ int onEvent(int action, int button, int x, int y) {
 		}
 		if (action != Gui.MOUSE_MOTION && action != Gui.FINGER_MOTION && action != Gui.MOUSE_RELEASE) {
 			// event not processed, wait for the next one
-			trace("button", button);
 			return 0;
 		}
 		if (button == 0 && (action == Gui.MOUSE_MOTION || action == Gui.FINGER_MOTION)) {
@@ -187,33 +186,39 @@ int onEvent(int action, int button, int x, int y) {
 
 void drawColorSlider(Slider this, Image offs, Rect rect, const Style style&) {
 	inline normalized(Slider slider) = float32(this.value - this.minimum) / (this.maximum - this.minimum);
-	const int padding = style.padding / 2;
-	const int y = rect.y + rect.h - padding;
+	const int padding = style.padding / 3;
+	const int y = rect.y + rect.h - 1;
 	if (this == sldHueMin || this == sldHueMax) {
-		float32 min = this == sldHueMax ? 0f : sldHueMin.normalized();
-		float32 max = this == sldHueMin ? 1f : sldHueMax.normalized();
-		for (int x = 0; x < rect.w; x += 1) {
-			float32 val = float32(x) / rect.w;
+		const int y1 = rect.y + rect.h;
+		const int y0 = y1 - style.padding / 4;
+		const int x1 = rect.x + rect.w;
+		const int x0 = rect.x + int64(this.value - this.minimum) * rect.w / (this.maximum - this.minimum);
+		for (int x = rect.x; x < x0; x += 1) {
+			float32 val = float32(x - rect.x) / rect.w;
 			argb color = argb(hsl2rgb(vec4f(val, 1f, .5f)));
-			if (val > min && val < max) {
-				offs.fillRect(rect.x + x, y - padding, rect.x + x + 1, y, uint32(color));
-			} else {
-				offs.fillRect(rect.x + x, y - 1, rect.x + x + 1, y, uint32(color));
-			}
+			offs.fillRect(x, y - padding, x, y, color.v);
+		}
+		for (int x = x0; x < x1; x += 1) {
+			float32 val = float32(x - rect.x) / rect.w;
+			argb color = argb(hsl2rgb(vec4f(val, 1f, .5f)));
+			offs.fillRect(x, y, x, y, color.v);
 		}
 		return;
 	}
 	if (this == sldLumMin || this == sldLumMax) {
-		float32 min = this == sldLumMax ? 0f : sldLumMin.normalized();
-		float32 max = this == sldLumMin ? 1f : sldLumMax.normalized();
-		for (int x = 0; x < rect.w; x += 1) {
-			float32 val = float32(x) / rect.w;
+		const int y1 = rect.y + rect.h;
+		const int y0 = y1 - style.padding / 4;
+		const int x1 = rect.x + rect.w;
+		const int x0 = rect.x + int64(this.value - this.minimum) * rect.w / (this.maximum - this.minimum);
+		for (int x = rect.x; x < x0; x += 1) {
+			float32 val = float32(x - rect.x) / rect.w;
 			argb color = argb(vec4f(val, val, val));
-			if (val > min && val < max) {
-				offs.fillRect(rect.x + x, y - padding, rect.x + x + 1, y, uint32(color));
-			} else {
-				offs.fillRect(rect.x + x, y - 1, rect.x + x + 1, y, uint32(color));
-			}
+			offs.fillRect(x, y - padding, x, y, color.v);
+		}
+		for (int x = x0; x < x1; x += 1) {
+			float32 val = float32(x - rect.x) / rect.w;
+			argb color = argb(vec4f(val, val, val));
+			offs.fillRect(x, y, x, y, color.v);
 		}
 		return;
 	}

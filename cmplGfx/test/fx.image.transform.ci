@@ -72,8 +72,14 @@ mat4f skewMatrix(float sx, float sy) {
 
 inline "/cmplGfx/lib/micro.ui.ci";
 
+char filtering[*][] = {
+	"nearest",
+	"linear",
+	// TODO: Hermite, Gaussian, Bell, BSpline, Mitchel, Lanczos, Hanning
+};
 Switch quality = {
-	text: "linear filtering";
+	text: "filtering";
+	states: filtering;
 	selected: 1;
 	focusable: false;
 };
@@ -122,42 +128,28 @@ Slider translateY = {
 	maximum: +offs.height();
 };
 
-Slider maxRatio = {
-	text: "max ratio";
-	value: back.width() * 100 / back.height();
-	minimum: 100;
-	maximum: 400;
-	divisor: 100;
-};
 Switch fitWidth = {
 	text: "fit width";
 };
 Switch fitHeight = {
 	text: "fit height";
 };
-Switch drawRect = {
-	text: "draw rect";
-	selected: 1;
-	focusable: false;
-};
 Slider imgRatio = {
 	text: "ratio";
 	enabled: false;
 	divisor: 100;
+	onDrawSlider: null;
 	value: back.width() * imgRatio.divisor / back.height();
 };
 
 Widget ui = Widget(offs,
 	quality,
-	fitWidth,
-	fitHeight,
-	maxRatio,
+	fitWidth, fitHeight,
 	scaleX, scaleY,
 	skewX, skewY,
 	flipX, flipY,
 	rotate,
 	translateX, translateY,
-	drawRect,
 	imgRatio
 );
 
@@ -186,14 +178,8 @@ int onEvent(int action, int button, int x, int y) {
 		.mul(rotation(vec4f(0, 0, -1, 0), Math.radians(rotate.value)))
 		.mul(translation(vec4f(translateX.value, translateY.value, 0, 0), 1))
 		.mul(translation(center, -1))
-		.mul(fitMatrix(back, to.w, to.h, fitWidth.checked(), fitHeight.checked(), 1, maxRatio.value / 100.));
+		.mul(fitMatrix(back, to.w, to.h, fitWidth.checked(), fitHeight.checked(), 1, 0));
 	debug("transform", mat.m);
 	offs.transform(to, back, null, quality.checked() ? 1 : 0, mat.data);
-	if (drawRect.checked()) {
-		// draw interior
-		to.w -= 1;
-		to.h -= 1;
-		offs.drawRect(to, 0);
-	}
 	return ui.draw();
 }

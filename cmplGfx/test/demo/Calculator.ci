@@ -7,6 +7,10 @@ offs.show(onEvent);
 offs.destroy();
 
 inline "/cmplGfx/lib/micro.ui.ci";
+const FormatFlags format = {
+	precision: 10;
+};
+
 char result[256] = {'0', 0};
 char operation = 0;
 float64 value = 0;
@@ -74,7 +78,6 @@ struct CalcButton: Button {
 
 		// check for errors (not a number)
 		if (value == value) {
-			const FormatFlags format = { precision: 10 };
 			result.append(0, value, format);
 		} else {
 			result.append(0, "Error");

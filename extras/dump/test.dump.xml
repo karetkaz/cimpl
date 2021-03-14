@@ -6725,10 +6725,8 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="FormatFlags">
-			<field token=".variable" type="bool" kind="static const typename(bool)" value="showSign">
-				<init token=".variable" type="bool" kind="static const typename(bool)" value="false">
-					<init token=".literal" type="bool" kind="static const typename(bool)" value="0" />
-				</init>
+			<field token=".variable" type="char" kind="static const typename(i32)" value="sign">
+				<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 			</field>
 			<field token=".variable" type="int32" kind="static const typename(i32)" value="precision">
 				<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
@@ -6843,7 +6841,7 @@
 				</stmt>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="function" kind="static const typename(ref)" value="append(output: char[], pos: int32, sign: char, value: uint64, format: FormatFlags): int32">
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="append(output: char[], pos: int32, value: uint64, format: FormatFlags): int32">
 			<init token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:151">
 				<stmt token=".variable" type="char[]" kind="static typename(arr)" value="whiteSpace">
 					<init token=".literal" type=".cstr" kind="static const typename(arr)" value="&quot; 	
@@ -6859,30 +6857,6 @@
 					<init token="{}" type="char[80]" kind="static typename(arr)">
 					</init>
 				</stmt>
-				<stmt token="if" type="void" kind="static const typename(void)" stmt="if (format.showSign)">
-					<test token="." type="bool" kind="static const typename(bool)" value="format.showSign">
-						<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
-						<right token=".variable" type="bool" kind="static const typename(bool)" value="showSign"/>
-					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:158">
-						<stmt token="if" type="void" kind="static const typename(void)" stmt="if ((sign) == 0)">
-							<test token="==" type="bool" kind="static const typename(bool)" value="(sign) == 0">
-								<left token="()" type="int32" kind="static const typename(i32)" value="(sign)">
-									<push token=".variable" type="char" kind="static const typename(i32)" value="sign"/>
-								</left>
-								<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-							</test>
-							<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:159">
-								<stmt token=";" type="void" kind="static const typename(void)" stmt="sign := &apos;+&apos;;">
-									<expr token=":=" type="char" kind="static const typename(i32)" value="sign := &apos;+&apos;">
-										<left token=".variable" type="char" kind="static const typename(i32)" value="sign"/>
-										<right token=".literal" type="char" kind="static const typename(i32)" value="&apos;+&apos;" />
-									</expr>
-								</stmt>
-							</then>
-						</stmt>
-					</then>
-				</stmt>
 				<stmt token=".variable" type="int32" kind="static const typename(i32)" value="radix">
 					<init token="." type="int32" kind="static const typename(i32)" value="format.precision">
 						<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
@@ -6894,7 +6868,7 @@
 						<left token=".variable" type="int32" kind="static const typename(i32)" value="radix"/>
 						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:165">
+					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:159">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="radix := 10;">
 							<expr token=":=" type="int32" kind="static const typename(i32)" value="radix := 10">
 								<left token=".variable" type="int32" kind="static const typename(i32)" value="radix"/>
@@ -6946,7 +6920,7 @@
 							</right>
 						</right>
 					</step>
-					<stmt token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:172">
+					<stmt token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:166">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="digits[len := len + 1] := radixDigits[value % (radix)];">
 							<expr token=":=" type="char" kind="static const typename(i32)" value="digits[len := len + 1] := radixDigits[value % (radix)]">
 								<left token="[]" type="char" kind="static const typename(i32)" value="digits[len := len + 1]">
@@ -6977,7 +6951,7 @@
 						<left token=".variable" type="int32" kind="static const typename(i32)" value="len"/>
 						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:175">
+					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:169">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="digits[len := len + 1] := &apos;0&apos;;">
 							<expr token=":=" type="char" kind="static const typename(i32)" value="digits[len := len + 1] := &apos;0&apos;">
 								<left token="[]" type="char" kind="static const typename(i32)" value="digits[len := len + 1]">
@@ -7015,7 +6989,7 @@
 						<left token=".variable" type="char" kind="static const typename(i32)" value="padChr"/>
 						<right token=".literal" type="char" kind="static const typename(i32)" value="&apos;&apos;" />
 					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:182">
+					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:176">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="padChr := &apos; &apos;;">
 							<expr token=":=" type="char" kind="static const typename(i32)" value="padChr := &apos; &apos;">
 								<left token=".variable" type="char" kind="static const typename(i32)" value="padChr"/>
@@ -7024,14 +6998,17 @@
 						</stmt>
 					</then>
 				</stmt>
-				<stmt token="if" type="void" kind="static const typename(void)" stmt="if ((sign) != 0)">
-					<test token="!=" type="bool" kind="static const typename(bool)" value="(sign) != 0">
-						<left token="()" type="int32" kind="static const typename(i32)" value="(sign)">
-							<push token=".variable" type="char" kind="static const typename(i32)" value="sign"/>
+				<stmt token="if" type="void" kind="static const typename(void)" stmt="if ((format.sign) != 0)">
+					<test token="!=" type="bool" kind="static const typename(bool)" value="(format.sign) != 0">
+						<left token="()" type="int32" kind="static const typename(i32)" value="(format.sign)">
+							<push token="." type="char" kind="static const typename(i32)" value="format.sign">
+								<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+								<right token=".variable" type="char" kind="static const typename(i32)" value="sign"/>
+							</push>
 						</left>
 						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:187">
+					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:181">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="maxLen := maxLen - 1;">
 							<expr token=":=" type="int32" kind="static const typename(i32)" value="maxLen := maxLen - 1">
 								<left token=".variable" type="int32" kind="static const typename(i32)" value="maxLen"/>
@@ -7047,7 +7024,7 @@
 								<push token=".variable" type="char" kind="static const typename(i32)" value="padChr"/>
 								<call token=".variable" type="function" kind="static const typename(ref)" value="contains"/>
 							</test>
-							<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:189">
+							<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:183">
 								<stmt token="for" type="void" kind="static const typename(void)" stmt="for ( ; maxLen &gt; 0; maxLen := maxLen - 1)">
 									<test token="&gt;" type="bool" kind="static const typename(bool)" value="maxLen &gt; 0">
 										<left token=".variable" type="int32" kind="static const typename(i32)" value="maxLen"/>
@@ -7060,7 +7037,7 @@
 											<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
 										</right>
 									</step>
-									<stmt token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:191">
+									<stmt token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:185">
 										<stmt token=";" type="void" kind="static const typename(void)" stmt="assert(pos &lt; (output.length));">
 											<expr token="()" type="void" kind="static const typename(void)" value="assert(pos &lt; (output.length))">
 												<push token="&lt;" type="bool" kind="static const typename(bool)" value="pos &lt; (output.length)">
@@ -7111,13 +7088,16 @@
 								<call token=".variable" type="function" kind="static const typename(ref)" value="assert"/>
 							</expr>
 						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="output[pos] := sign;">
-							<expr token=":=" type="char" kind="static const typename(i32)" value="output[pos] := sign">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="output[pos] := format.sign;">
+							<expr token=":=" type="char" kind="static const typename(i32)" value="output[pos] := format.sign">
 								<left token="[]" type="char" kind="static const typename(i32)" value="output[pos]">
 									<left token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
 									<right token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
 								</left>
-								<right token=".variable" type="char" kind="static const typename(i32)" value="sign"/>
+								<right token="." type="char" kind="static const typename(i32)" value="format.sign">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+									<right token=".variable" type="char" kind="static const typename(i32)" value="sign"/>
+								</right>
 							</expr>
 						</stmt>
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="pos := pos + 1;">
@@ -7143,7 +7123,7 @@
 							<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
 						</right>
 					</step>
-					<stmt token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:203">
+					<stmt token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:197">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="assert(pos &lt; (output.length));">
 							<expr token="()" type="void" kind="static const typename(void)" value="assert(pos &lt; (output.length))">
 								<push token="&lt;" type="bool" kind="static const typename(bool)" value="pos &lt; (output.length)">
@@ -7193,7 +7173,7 @@
 							<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
 						</right>
 					</step>
-					<stmt token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:210">
+					<stmt token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:204">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="assert(i &lt; (output.length));">
 							<expr token="()" type="void" kind="static const typename(void)" value="assert(i &lt; (output.length))">
 								<push token="&lt;" type="bool" kind="static const typename(bool)" value="i &lt; (output.length)">
@@ -7244,7 +7224,7 @@
 							</push>
 						</right>
 					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:216">
+					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:210">
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="pos := (output.length - (1));">
 							<expr token=":=" type="int32" kind="static const typename(i32)" value="pos := (output.length - (1))">
 								<left token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
@@ -7282,24 +7262,10 @@
 				</stmt>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="append(output: char[], pos: int32, value: uint64, format: FormatFlags): int32">
-			<init token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, 0, uint64(value), format)">
-				<push token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
-				<push token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
-				<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-				<push token="()" type="uint64" kind="static const typename(u64)" value="uint64(value)">
-					<push token=".variable" type="uint64" kind="static const typename(u64)" value="value"/>
-					<call token=".variable" type="typename" kind="static const typename(ref)" value="uint64"/>
-				</push>
-				<push token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
-				<call token=".variable" type="function" kind="static const typename(ref)" value="append"/>
-			</init>
-		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="append(output: char[], pos: int32, value: uint32, format: FormatFlags): int32">
-			<init token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, 0, uint64(value), format)">
+			<init token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, uint64(value), format)">
 				<push token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
 				<push token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
-				<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 				<push token="()" type="uint64" kind="static const typename(u64)" value="uint64(value)">
 					<push token=".variable" type="uint32" kind="static const typename(u32)" value="value"/>
 					<call token=".variable" type="typename" kind="static const typename(ref)" value="uint64"/>
@@ -7309,10 +7275,9 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="append(output: char[], pos: int32, value: uint16, format: FormatFlags): int32">
-			<init token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, 0, uint64(value), format)">
+			<init token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, uint64(value), format)">
 				<push token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
 				<push token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
-				<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 				<push token="()" type="uint64" kind="static const typename(u64)" value="uint64(value)">
 					<push token=".variable" type="uint16" kind="static const typename(u32)" value="value"/>
 					<call token=".variable" type="typename" kind="static const typename(ref)" value="uint64"/>
@@ -7322,10 +7287,9 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="append(output: char[], pos: int32, value: uint8, format: FormatFlags): int32">
-			<init token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, 0, uint64(value), format)">
+			<init token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, uint64(value), format)">
 				<push token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
 				<push token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
-				<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 				<push token="()" type="uint64" kind="static const typename(u64)" value="uint64(value)">
 					<push token=".variable" type="uint8" kind="static const typename(u32)" value="value"/>
 					<call token=".variable" type="typename" kind="static const typename(ref)" value="uint64"/>
@@ -7334,165 +7298,216 @@
 				<call token=".variable" type="function" kind="static const typename(ref)" value="append"/>
 			</init>
 		</stmt>
-		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="append(output: char[], pos: int32, value: int64, format: FormatFlags): int32">
-			<init token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, value &lt; (0) ? (&apos;-&apos;) : 0, uint64(value &lt; (0) ? -value : value), format)">
-				<push token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
-				<push token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
-				<push token="?:" type="int32" kind="static const typename(i32)" value="value &lt; (0) ? (&apos;-&apos;) : 0">
+		<stmt token=".variable" type="function" kind="static const typename(ref)" value="append(output: char[], pos: int32, value: int64, format: FormatFlags): int32">
+			<init token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:224">
+				<stmt token=".variable" type="FormatFlags" kind="static const typename(val)" value="signedFormat">
+					<init token="{}" type="FormatFlags" kind="static const typename(val)">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="signedFormat.sign := value &lt; (0) ? &apos;-&apos; : format.sign;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="signedFormat.sign := value &lt; (0) ? &apos;-&apos; : format.sign">
+								<left token="." type="char" kind="static const typename(i32)" value="signedFormat.sign">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="signedFormat"/>
+									<right token=".variable" type="char" kind="static const typename(i32)" value="sign"/>
+								</left>
+								<right token="?:" type="char" kind="static const typename(i32)" value="value &lt; (0) ? &apos;-&apos; : format.sign">
+									<test token="&lt;" type="bool" kind="static const typename(bool)" value="value &lt; (0)">
+										<left token=".variable" type="int64" kind="static const typename(i64)" value="value"/>
+										<right token="()" type="int64" kind="static const typename(i64)" value="(0)">
+											<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+										</right>
+									</test>
+									<left token=".literal" type="char" kind="static const typename(i32)" value="&apos;-&apos;" />
+									<right token="." type="char" kind="static const typename(i32)" value="format.sign">
+										<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+										<right token=".variable" type="char" kind="static const typename(i32)" value="sign"/>
+									</right>
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="signedFormat.precision := format.precision;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="signedFormat.precision := format.precision">
+								<left token="." type="int32" kind="static const typename(i32)" value="signedFormat.precision">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="signedFormat"/>
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="precision"/>
+								</left>
+								<right token="." type="int32" kind="static const typename(i32)" value="format.precision">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="precision"/>
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="signedFormat.padLen := format.padLen;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="signedFormat.padLen := format.padLen">
+								<left token="." type="int32" kind="static const typename(i32)" value="signedFormat.padLen">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="signedFormat"/>
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="padLen"/>
+								</left>
+								<right token="." type="int32" kind="static const typename(i32)" value="format.padLen">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="padLen"/>
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="signedFormat.padChr := format.padChr;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="signedFormat.padChr := format.padChr">
+								<left token="." type="char" kind="static const typename(i32)" value="signedFormat.padChr">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="signedFormat"/>
+									<right token=".variable" type="char" kind="static const typename(i32)" value="padChr"/>
+								</left>
+								<right token="." type="char" kind="static const typename(i32)" value="format.padChr">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+									<right token=".variable" type="char" kind="static const typename(i32)" value="padChr"/>
+								</right>
+							</expr>
+						</stmt>
+					</init>
+				</stmt>
+				<stmt token="if" type="void" kind="static const typename(void)" stmt="if (value &lt; (0))">
 					<test token="&lt;" type="bool" kind="static const typename(bool)" value="value &lt; (0)">
 						<left token=".variable" type="int64" kind="static const typename(i64)" value="value"/>
 						<right token="()" type="int64" kind="static const typename(i64)" value="(0)">
 							<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 						</right>
 					</test>
-					<left token="()" type="int32" kind="static const typename(i32)" value="(&apos;-&apos;)">
-						<push token=".literal" type="char" kind="static const typename(i32)" value="&apos;-&apos;" />
-					</left>
-					<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-				</push>
-				<push token="()" type="uint64" kind="static const typename(u64)" value="uint64(value &lt; (0) ? -value : value)">
-					<push token="?:" type="int64" kind="static const typename(i64)" value="value &lt; (0) ? -value : value">
-						<test token="&lt;" type="bool" kind="static const typename(bool)" value="value &lt; (0)">
-							<left token=".variable" type="int64" kind="static const typename(i64)" value="value"/>
-							<right token="()" type="int64" kind="static const typename(i64)" value="(0)">
-								<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-							</right>
-						</test>
-						<left token="-" type="int64" kind="static const typename(i64)" value="-value">
-							<right token=".variable" type="int64" kind="static const typename(i64)" value="value"/>
-						</left>
-						<right token=".variable" type="int64" kind="static const typename(i64)" value="value"/>
-					</push>
-					<call token=".variable" type="typename" kind="static const typename(ref)" value="uint64"/>
-				</push>
-				<push token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
-				<call token=".variable" type="function" kind="static const typename(ref)" value="append"/>
+					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:231">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="value := -value;">
+							<expr token=":=" type="int64" kind="static const typename(i64)" value="value := -value">
+								<left token=".variable" type="int64" kind="static const typename(i64)" value="value"/>
+								<right token="-" type="int64" kind="static const typename(i64)" value="-value">
+									<right token=".variable" type="int64" kind="static const typename(i64)" value="value"/>
+								</right>
+							</expr>
+						</stmt>
+					</then>
+				</stmt>
+				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := append(output, pos, uint64(value), signedFormat);">
+					<expr token=":=" type="int32" kind="static const typename(i32)" value=".result := append(output, pos, uint64(value), signedFormat)">
+						<left token=".variable" type="int32" kind="static const typename(i32)" value=".result"/>
+						<right token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, uint64(value), signedFormat)">
+							<push token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
+							<push token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
+							<push token="()" type="uint64" kind="static const typename(u64)" value="uint64(value)">
+								<push token=".variable" type="int64" kind="static const typename(i64)" value="value"/>
+								<call token=".variable" type="typename" kind="static const typename(ref)" value="uint64"/>
+							</push>
+							<push token=".variable" type="FormatFlags" kind="static const typename(val)" value="signedFormat"/>
+							<call token=".variable" type="function" kind="static const typename(ref)" value="append"/>
+						</right>
+					</expr>
+				</stmt>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="append(output: char[], pos: int32, value: int32, format: FormatFlags): int32">
-			<init token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, value &lt; 0 ? (&apos;-&apos;) : 0, uint64(value &lt; 0 ? -value : value), format)">
+			<init token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, int64(value), format)">
 				<push token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
 				<push token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
-				<push token="?:" type="int32" kind="static const typename(i32)" value="value &lt; 0 ? (&apos;-&apos;) : 0">
-					<test token="&lt;" type="bool" kind="static const typename(bool)" value="value &lt; 0">
-						<left token=".variable" type="int32" kind="static const typename(i32)" value="value"/>
-						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-					</test>
-					<left token="()" type="int32" kind="static const typename(i32)" value="(&apos;-&apos;)">
-						<push token=".literal" type="char" kind="static const typename(i32)" value="&apos;-&apos;" />
-					</left>
-					<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-				</push>
-				<push token="()" type="uint64" kind="static const typename(u64)" value="uint64(value &lt; 0 ? -value : value)">
-					<push token="?:" type="int32" kind="static const typename(i32)" value="value &lt; 0 ? -value : value">
-						<test token="&lt;" type="bool" kind="static const typename(bool)" value="value &lt; 0">
-							<left token=".variable" type="int32" kind="static const typename(i32)" value="value"/>
-							<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-						</test>
-						<left token="-" type="int32" kind="static const typename(i32)" value="-value">
-							<right token=".variable" type="int32" kind="static const typename(i32)" value="value"/>
-						</left>
-						<right token=".variable" type="int32" kind="static const typename(i32)" value="value"/>
-					</push>
-					<call token=".variable" type="typename" kind="static const typename(ref)" value="uint64"/>
+				<push token="()" type="int64" kind="static const typename(i64)" value="int64(value)">
+					<push token=".variable" type="int32" kind="static const typename(i32)" value="value"/>
+					<call token=".variable" type="typename" kind="static const typename(ref)" value="int64"/>
 				</push>
 				<push token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
 				<call token=".variable" type="function" kind="static const typename(ref)" value="append"/>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="append(output: char[], pos: int32, value: int16, format: FormatFlags): int32">
-			<init token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, (value) &lt; 0 ? (&apos;-&apos;) : 0, uint64((value) &lt; 0 ? -value : value), format)">
+			<init token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, int64(value), format)">
 				<push token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
 				<push token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
-				<push token="?:" type="int32" kind="static const typename(i32)" value="(value) &lt; 0 ? (&apos;-&apos;) : 0">
-					<test token="&lt;" type="bool" kind="static const typename(bool)" value="(value) &lt; 0">
-						<left token="()" type="int32" kind="static const typename(i32)" value="(value)">
-							<push token=".variable" type="int16" kind="static const typename(i32)" value="value"/>
-						</left>
-						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-					</test>
-					<left token="()" type="int32" kind="static const typename(i32)" value="(&apos;-&apos;)">
-						<push token=".literal" type="char" kind="static const typename(i32)" value="&apos;-&apos;" />
-					</left>
-					<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-				</push>
-				<push token="()" type="uint64" kind="static const typename(u64)" value="uint64((value) &lt; 0 ? -value : value)">
-					<push token="?:" type="int16" kind="static const typename(i32)" value="(value) &lt; 0 ? -value : value">
-						<test token="&lt;" type="bool" kind="static const typename(bool)" value="(value) &lt; 0">
-							<left token="()" type="int32" kind="static const typename(i32)" value="(value)">
-								<push token=".variable" type="int16" kind="static const typename(i32)" value="value"/>
-							</left>
-							<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-						</test>
-						<left token="-" type="int16" kind="static const typename(i32)" value="-value">
-							<right token=".variable" type="int16" kind="static const typename(i32)" value="value"/>
-						</left>
-						<right token=".variable" type="int16" kind="static const typename(i32)" value="value"/>
-					</push>
-					<call token=".variable" type="typename" kind="static const typename(ref)" value="uint64"/>
+				<push token="()" type="int64" kind="static const typename(i64)" value="int64(value)">
+					<push token=".variable" type="int16" kind="static const typename(i32)" value="value"/>
+					<call token=".variable" type="typename" kind="static const typename(ref)" value="int64"/>
 				</push>
 				<push token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
 				<call token=".variable" type="function" kind="static const typename(ref)" value="append"/>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="typename" kind="static const typename(ref)" value="append(output: char[], pos: int32, value: int8, format: FormatFlags): int32">
-			<init token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, (value) &lt; 0 ? (&apos;-&apos;) : 0, uint64((value) &lt; 0 ? -value : value), format)">
+			<init token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, int64(value), format)">
 				<push token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
 				<push token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
-				<push token="?:" type="int32" kind="static const typename(i32)" value="(value) &lt; 0 ? (&apos;-&apos;) : 0">
-					<test token="&lt;" type="bool" kind="static const typename(bool)" value="(value) &lt; 0">
-						<left token="()" type="int32" kind="static const typename(i32)" value="(value)">
-							<push token=".variable" type="int8" kind="static const typename(i32)" value="value"/>
-						</left>
-						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-					</test>
-					<left token="()" type="int32" kind="static const typename(i32)" value="(&apos;-&apos;)">
-						<push token=".literal" type="char" kind="static const typename(i32)" value="&apos;-&apos;" />
-					</left>
-					<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-				</push>
-				<push token="()" type="uint64" kind="static const typename(u64)" value="uint64((value) &lt; 0 ? -value : value)">
-					<push token="?:" type="int8" kind="static const typename(i32)" value="(value) &lt; 0 ? -value : value">
-						<test token="&lt;" type="bool" kind="static const typename(bool)" value="(value) &lt; 0">
-							<left token="()" type="int32" kind="static const typename(i32)" value="(value)">
-								<push token=".variable" type="int8" kind="static const typename(i32)" value="value"/>
-							</left>
-							<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-						</test>
-						<left token="-" type="int8" kind="static const typename(i32)" value="-value">
-							<right token=".variable" type="int8" kind="static const typename(i32)" value="value"/>
-						</left>
-						<right token=".variable" type="int8" kind="static const typename(i32)" value="value"/>
-					</push>
-					<call token=".variable" type="typename" kind="static const typename(ref)" value="uint64"/>
+				<push token="()" type="int64" kind="static const typename(i64)" value="int64(value)">
+					<push token=".variable" type="int8" kind="static const typename(i32)" value="value"/>
+					<call token=".variable" type="typename" kind="static const typename(ref)" value="int64"/>
 				</push>
 				<push token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
 				<call token=".variable" type="function" kind="static const typename(ref)" value="append"/>
 			</init>
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="append(output: char[], pos: int32, value: float64, format: FormatFlags): int32">
-			<init token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:241">
-				<stmt token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatInt">
+			<init token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:244">
+				<stmt token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatDec">
 					<init token="{}" type="FormatFlags" kind="static const typename(val)">
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatInt.showSign := format.showSign;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="formatInt.showSign := format.showSign">
-								<left token="." type="bool" kind="static const typename(bool)" value="formatInt.showSign">
-									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatInt"/>
-									<right token=".variable" type="bool" kind="static const typename(bool)" value="showSign"/>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatDec.sign := (0);">
+							<expr token=":=" type="void" kind="static const typename(void)" value="formatDec.sign := (0)">
+								<left token="." type="char" kind="static const typename(i32)" value="formatDec.sign">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatDec"/>
+									<right token=".variable" type="char" kind="static const typename(i32)" value="sign"/>
 								</left>
-								<right token="." type="bool" kind="static const typename(bool)" value="format.showSign">
-									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
-									<right token=".variable" type="bool" kind="static const typename(bool)" value="showSign"/>
+								<right token="()" type="char" kind="static const typename(i32)" value="(0)">
+									<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 								</right>
 							</expr>
 						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatInt.precision := 0;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="formatInt.precision := 0">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatDec.precision := 0;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="formatDec.precision := 0">
+								<left token="." type="int32" kind="static const typename(i32)" value="formatDec.precision">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatDec"/>
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="precision"/>
+								</left>
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatDec.padChr := (0);">
+							<expr token=":=" type="void" kind="static const typename(void)" value="formatDec.padChr := (0)">
+								<left token="." type="char" kind="static const typename(i32)" value="formatDec.padChr">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatDec"/>
+									<right token=".variable" type="char" kind="static const typename(i32)" value="padChr"/>
+								</left>
+								<right token="()" type="char" kind="static const typename(i32)" value="(0)">
+									<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatDec.padLen := 0;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="formatDec.padLen := 0">
+								<left token="." type="int32" kind="static const typename(i32)" value="formatDec.padLen">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatDec"/>
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="padLen"/>
+								</left>
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</expr>
+						</stmt>
+					</init>
+				</stmt>
+				<stmt token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatInt">
+					<init token="{}" type="FormatFlags" kind="static const typename(val)">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatInt.sign := value &lt; (0) ? &apos;-&apos; : format.sign;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="formatInt.sign := value &lt; (0) ? &apos;-&apos; : format.sign">
+								<left token="." type="char" kind="static const typename(i32)" value="formatInt.sign">
+									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatInt"/>
+									<right token=".variable" type="char" kind="static const typename(i32)" value="sign"/>
+								</left>
+								<right token="?:" type="char" kind="static const typename(i32)" value="value &lt; (0) ? &apos;-&apos; : format.sign">
+									<test token="&lt;" type="bool" kind="static const typename(bool)" value="value &lt; (0)">
+										<left token=".variable" type="float64" kind="static const typename(f64)" value="value"/>
+										<right token="()" type="float64" kind="static const typename(f64)" value="(0)">
+											<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+										</right>
+									</test>
+									<left token=".literal" type="char" kind="static const typename(i32)" value="&apos;-&apos;" />
+									<right token="." type="char" kind="static const typename(i32)" value="format.sign">
+										<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+										<right token=".variable" type="char" kind="static const typename(i32)" value="sign"/>
+									</right>
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatInt.precision := 10;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="formatInt.precision := 10">
 								<left token="." type="int32" kind="static const typename(i32)" value="formatInt.precision">
 									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatInt"/>
 									<right token=".variable" type="int32" kind="static const typename(i32)" value="precision"/>
 								</left>
-								<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+								<right token=".literal" type="int32" kind="static const typename(i32)" value="10" />
 							</expr>
 						</stmt>
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatInt.padChr := format.padChr;">
@@ -7507,84 +7522,57 @@
 								</right>
 							</expr>
 						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatInt.padLen := format.padLen - format.precision;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="formatInt.padLen := format.padLen - format.precision">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatInt.padLen := format.padLen - format.precision - 1;">
+							<expr token=":=" type="void" kind="static const typename(void)" value="formatInt.padLen := format.padLen - format.precision - 1">
 								<left token="." type="int32" kind="static const typename(i32)" value="formatInt.padLen">
 									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatInt"/>
 									<right token=".variable" type="int32" kind="static const typename(i32)" value="padLen"/>
 								</left>
-								<right token="-" type="int32" kind="static const typename(i32)" value="format.padLen - format.precision">
-									<left token="." type="int32" kind="static const typename(i32)" value="format.padLen">
-										<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
-										<right token=".variable" type="int32" kind="static const typename(i32)" value="padLen"/>
+								<right token="-" type="int32" kind="static const typename(i32)" value="format.padLen - format.precision - 1">
+									<left token="-" type="int32" kind="static const typename(i32)" value="format.padLen - format.precision">
+										<left token="." type="int32" kind="static const typename(i32)" value="format.padLen">
+											<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+											<right token=".variable" type="int32" kind="static const typename(i32)" value="padLen"/>
+										</left>
+										<right token="." type="int32" kind="static const typename(i32)" value="format.precision">
+											<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+											<right token=".variable" type="int32" kind="static const typename(i32)" value="precision"/>
+										</right>
 									</left>
-									<right token="." type="int32" kind="static const typename(i32)" value="format.precision">
-										<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
-										<right token=".variable" type="int32" kind="static const typename(i32)" value="precision"/>
-									</right>
+									<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
 								</right>
 							</expr>
 						</stmt>
 					</init>
 				</stmt>
-				<stmt token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatDec">
-					<init token="{}" type="FormatFlags" kind="static const typename(val)">
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatDec.showSign := false;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="formatDec.showSign := false">
-								<left token="." type="bool" kind="static const typename(bool)" value="formatDec.showSign">
-									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatDec"/>
-									<right token=".variable" type="bool" kind="static const typename(bool)" value="showSign"/>
+				<stmt token=".variable" type="int32" kind="static const typename(i32)" value="end">
+					<init token="()" type="int32" kind="static const typename(i32)" value="Math.min(int32(output.length - (1)), pos + format.padLen)">
+						<push token="()" type="int32" kind="static const typename(i32)" value="int32(output.length - (1))">
+							<push token="-" type="uint32" kind="static const typename(u32)" value="output.length - (1)">
+								<left token="." type="uint32" kind="static const typename(u32)" value="output.length">
+									<left token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
+									<right token=".variable" type="uint32" kind="static const typename(u32)" value="length"/>
 								</left>
-								<right token=".variable" type="bool" kind="static const typename(bool)" value="false"/>
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatDec.precision := 0;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="formatDec.precision := 0">
-								<left token="." type="int32" kind="static const typename(i32)" value="formatDec.precision">
-									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatDec"/>
-									<right token=".variable" type="int32" kind="static const typename(i32)" value="precision"/>
-								</left>
-								<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatDec.padChr := &apos;0&apos;;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="formatDec.padChr := &apos;0&apos;">
-								<left token="." type="char" kind="static const typename(i32)" value="formatDec.padChr">
-									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatDec"/>
-									<right token=".variable" type="char" kind="static const typename(i32)" value="padChr"/>
-								</left>
-								<right token=".literal" type="char" kind="static const typename(i32)" value="&apos;0&apos;" />
-							</expr>
-						</stmt>
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="formatDec.padLen := format.precision;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="formatDec.padLen := format.precision">
-								<left token="." type="int32" kind="static const typename(i32)" value="formatDec.padLen">
-									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatDec"/>
-									<right token=".variable" type="int32" kind="static const typename(i32)" value="padLen"/>
-								</left>
-								<right token="." type="int32" kind="static const typename(i32)" value="format.precision">
-									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
-									<right token=".variable" type="int32" kind="static const typename(i32)" value="precision"/>
+								<right token="()" type="uint32" kind="static const typename(u32)" value="(1)">
+									<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
 								</right>
-							</expr>
-						</stmt>
-					</init>
-				</stmt>
-				<stmt token=".variable" type="char" kind="static const typename(i32)" value="sign">
-					<init token="?:" type="int32" kind="static const typename(i32)" value="value &lt; (0) ? (&apos;-&apos;) : 0">
-						<test token="&lt;" type="bool" kind="static const typename(bool)" value="value &lt; (0)">
-							<left token=".variable" type="float64" kind="static const typename(f64)" value="value"/>
-							<right token="()" type="float64" kind="static const typename(f64)" value="(0)">
-								<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+							</push>
+							<call token=".variable" type="typename" kind="static const typename(ref)" value="int32"/>
+						</push>
+						<push token="+" type="int32" kind="static const typename(i32)" value="pos + format.padLen">
+							<left token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
+							<right token="." type="int32" kind="static const typename(i32)" value="format.padLen">
+								<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+								<right token=".variable" type="int32" kind="static const typename(i32)" value="padLen"/>
 							</right>
-						</test>
-						<left token="()" type="int32" kind="static const typename(i32)" value="(&apos;-&apos;)">
-							<push token=".literal" type="char" kind="static const typename(i32)" value="&apos;-&apos;" />
-						</left>
-						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+						</push>
+						<call token="." type="function" kind="static const typename(ref)" value="Math.min">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="Math"/>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="min"/>
+						</call>
 					</init>
 				</stmt>
-				<stmt token=".variable" type="float64" kind="static const typename(f64)" value="fract">
+				<stmt token=".variable" type="float64" kind="static const typename(f64)" value="fraction">
 					<init token="()" type="float64" kind="static const typename(f64)" value="Math.modf(Math.abs(value), &amp;value)">
 						<push token="()" type="float64" kind="static const typename(f64)" value="Math.abs(value)">
 							<push token=".variable" type="float64" kind="static const typename(f64)" value="value"/>
@@ -7602,13 +7590,12 @@
 						</call>
 					</init>
 				</stmt>
-				<stmt token=";" type="void" kind="static const typename(void)" stmt="pos := append(output, pos, sign, uint64(int64(value)), formatInt);">
-					<expr token=":=" type="int32" kind="static const typename(i32)" value="pos := append(output, pos, sign, uint64(int64(value)), formatInt)">
+				<stmt token=";" type="void" kind="static const typename(void)" stmt="pos := append(output, pos, uint64(int64(value)), formatInt);">
+					<expr token=":=" type="int32" kind="static const typename(i32)" value="pos := append(output, pos, uint64(int64(value)), formatInt)">
 						<left token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
-						<right token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, sign, uint64(int64(value)), formatInt)">
+						<right token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, uint64(int64(value)), formatInt)">
 							<push token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
 							<push token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
-							<push token=".variable" type="char" kind="static const typename(i32)" value="sign"/>
 							<push token="()" type="uint64" kind="static const typename(u64)" value="uint64(int64(value))">
 								<push token="()" type="int64" kind="static const typename(i64)" value="int64(value)">
 									<push token=".variable" type="float64" kind="static const typename(f64)" value="value"/>
@@ -7621,6 +7608,29 @@
 						</right>
 					</expr>
 				</stmt>
+				<stmt token=".variable" type="float64" kind="static const typename(f64)" value="eps">
+					<init token=".literal" type="float64" kind="static const typename(f64)" value="0.000010" />
+				</stmt>
+				<stmt token="if" type="void" kind="static const typename(void)" stmt="if (fraction &lt; eps &amp;&amp; pos &gt;= end)">
+					<test token="&amp;&amp;" type="bool" kind="static const typename(bool)" value="fraction &lt; eps &amp;&amp; pos &gt;= end">
+						<left token="&lt;" type="bool" kind="static const typename(bool)" value="fraction &lt; eps">
+							<left token=".variable" type="float64" kind="static const typename(f64)" value="fraction"/>
+							<right token=".variable" type="float64" kind="static const typename(f64)" value="eps"/>
+						</left>
+						<right token="&gt;=" type="bool" kind="static const typename(bool)" value="pos &gt;= end">
+							<left token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
+							<right token=".variable" type="int32" kind="static const typename(i32)" value="end"/>
+						</right>
+					</test>
+					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:259">
+						<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := pos;">
+							<expr token=":=" type="int32" kind="static const typename(i32)" value=".result := pos">
+								<left token=".variable" type="int32" kind="static const typename(i32)" value=".result"/>
+								<right token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
+							</expr>
+						</stmt>
+					</then>
+				</stmt>
 				<stmt token=";" type="void" kind="static const typename(void)" stmt="pos := append(output, pos, &quot;.&quot;);">
 					<expr token=":=" type="int32" kind="static const typename(i32)" value="pos := append(output, pos, &quot;.&quot;)">
 						<left token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
@@ -7632,43 +7642,119 @@
 						</right>
 					</expr>
 				</stmt>
-				<stmt token=";" type="void" kind="static const typename(void)" stmt="fract := fract * float64.pow(10, format.precision);">
-					<expr token=":=" type="float64" kind="static const typename(f64)" value="fract := fract * float64.pow(10, format.precision)">
-						<left token=".variable" type="float64" kind="static const typename(f64)" value="fract"/>
-						<right token="*" type="float64" kind="static const typename(f64)" value="fract * float64.pow(10, format.precision)">
-							<left token=".variable" type="float64" kind="static const typename(f64)" value="fract"/>
-							<right token="()" type="float64" kind="static const typename(f64)" value="float64.pow(10, format.precision)">
-								<push token=".literal" type="int32" kind="static const typename(i32)" value="10" />
-								<push token="." type="int32" kind="static const typename(i32)" value="format.precision">
-									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
-									<right token=".variable" type="int32" kind="static const typename(i32)" value="precision"/>
-								</push>
-								<call token="." type="function" kind="static const typename(ref)" value="float64.pow">
-									<left token=".variable" type="typename" kind="static const typename(ref)" value="float64"/>
-									<right token=".variable" type="function" kind="static const typename(ref)" value="pow"/>
-								</call>
-							</right>
-						</right>
-					</expr>
-				</stmt>
-				<stmt token=";" type="void" kind="static const typename(void)" stmt="pos := append(output, pos, 0, uint64(int64(fract)), formatDec);">
-					<expr token=":=" type="int32" kind="static const typename(i32)" value="pos := append(output, pos, 0, uint64(int64(fract)), formatDec)">
-						<left token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
-						<right token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, 0, uint64(int64(fract)), formatDec)">
-							<push token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
-							<push token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
-							<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
-							<push token="()" type="uint64" kind="static const typename(u64)" value="uint64(int64(fract))">
-								<push token="()" type="int64" kind="static const typename(i64)" value="int64(fract)">
-									<push token=".variable" type="float64" kind="static const typename(f64)" value="fract"/>
-									<call token=".variable" type="typename" kind="static const typename(ref)" value="int64"/>
-								</push>
-								<call token=".variable" type="typename" kind="static const typename(ref)" value="uint64"/>
+				<stmt token=".variable" type="int32" kind="static const typename(i32)" value="max">
+					<init token="()" type="int32" kind="static const typename(i32)" value="Math.min(int32(output.length - (1)), pos + format.precision)">
+						<push token="()" type="int32" kind="static const typename(i32)" value="int32(output.length - (1))">
+							<push token="-" type="uint32" kind="static const typename(u32)" value="output.length - (1)">
+								<left token="." type="uint32" kind="static const typename(u32)" value="output.length">
+									<left token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
+									<right token=".variable" type="uint32" kind="static const typename(u32)" value="length"/>
+								</left>
+								<right token="()" type="uint32" kind="static const typename(u32)" value="(1)">
+									<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+								</right>
 							</push>
-							<push token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatDec"/>
-							<call token=".variable" type="function" kind="static const typename(ref)" value="append"/>
+							<call token=".variable" type="typename" kind="static const typename(ref)" value="int32"/>
+						</push>
+						<push token="+" type="int32" kind="static const typename(i32)" value="pos + format.precision">
+							<left token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
+							<right token="." type="int32" kind="static const typename(i32)" value="format.precision">
+								<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+								<right token=".variable" type="int32" kind="static const typename(i32)" value="precision"/>
+							</right>
+						</push>
+						<call token="." type="function" kind="static const typename(ref)" value="Math.min">
+							<left token=".variable" type="typename" kind="static const typename(ref)" value="Math"/>
+							<right token=".variable" type="function" kind="static const typename(ref)" value="min"/>
+						</call>
+					</init>
+				</stmt>
+				<stmt token="if" type="void" kind="static const typename(void)" stmt="if (format.precision == 0)">
+					<test token="==" type="bool" kind="static const typename(bool)" value="format.precision == 0">
+						<left token="." type="int32" kind="static const typename(i32)" value="format.precision">
+							<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
+							<right token=".variable" type="int32" kind="static const typename(i32)" value="precision"/>
+						</left>
+						<right token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+					</test>
+					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:267">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="max := (output.length - (1));">
+							<expr token=":=" type="int32" kind="static const typename(i32)" value="max := (output.length - (1))">
+								<left token=".variable" type="int32" kind="static const typename(i32)" value="max"/>
+								<right token="()" type="int32" kind="static const typename(i32)" value="(output.length - (1))">
+									<push token="-" type="uint32" kind="static const typename(u32)" value="output.length - (1)">
+										<left token="." type="uint32" kind="static const typename(u32)" value="output.length">
+											<left token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
+											<right token=".variable" type="uint32" kind="static const typename(u32)" value="length"/>
+										</left>
+										<right token="()" type="uint32" kind="static const typename(u32)" value="(1)">
+											<push token=".literal" type="int32" kind="static const typename(i32)" value="1" />
+										</right>
+									</push>
+								</right>
+							</expr>
+						</stmt>
+					</then>
+				</stmt>
+				<stmt token="for" type="void" kind="static const typename(void)" stmt="for ( ; (fraction &gt; eps &amp;&amp; pos &lt; max) || pos &lt; end; )">
+					<test token="||" type="bool" kind="static const typename(bool)" value="(fraction &gt; eps &amp;&amp; pos &lt; max) || pos &lt; end">
+						<left token="()" type="bool" kind="static const typename(bool)" value="(fraction &gt; eps &amp;&amp; pos &lt; max)">
+							<push token="&amp;&amp;" type="bool" kind="static const typename(bool)" value="fraction &gt; eps &amp;&amp; pos &lt; max">
+								<left token="&gt;" type="bool" kind="static const typename(bool)" value="fraction &gt; eps">
+									<left token=".variable" type="float64" kind="static const typename(f64)" value="fraction"/>
+									<right token=".variable" type="float64" kind="static const typename(f64)" value="eps"/>
+								</left>
+								<right token="&lt;" type="bool" kind="static const typename(bool)" value="pos &lt; max">
+									<left token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
+									<right token=".variable" type="int32" kind="static const typename(i32)" value="max"/>
+								</right>
+							</push>
+						</left>
+						<right token="&lt;" type="bool" kind="static const typename(bool)" value="pos &lt; end">
+							<left token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
+							<right token=".variable" type="int32" kind="static const typename(i32)" value="end"/>
 						</right>
-					</expr>
+					</test>
+					<stmt token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:271">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="fraction := Math.modf(fraction * (10), &amp;value);">
+							<expr token=":=" type="float64" kind="static const typename(f64)" value="fraction := Math.modf(fraction * (10), &amp;value)">
+								<left token=".variable" type="float64" kind="static const typename(f64)" value="fraction"/>
+								<right token="()" type="float64" kind="static const typename(f64)" value="Math.modf(fraction * (10), &amp;value)">
+									<push token="*" type="float64" kind="static const typename(f64)" value="fraction * (10)">
+										<left token=".variable" type="float64" kind="static const typename(f64)" value="fraction"/>
+										<right token="()" type="float64" kind="static const typename(f64)" value="(10)">
+											<push token=".literal" type="int32" kind="static const typename(i32)" value="10" />
+										</right>
+									</push>
+									<push token="&amp;" type="float64" kind="static const typename(f64)" value="&amp;value">
+										<right token=".variable" type="float64" kind="static const typename(f64)" value="value"/>
+									</push>
+									<call token="." type="function" kind="static const typename(ref)" value="Math.modf">
+										<left token=".variable" type="typename" kind="static const typename(ref)" value="Math"/>
+										<right token=".variable" type="function" kind="static const typename(ref)" value="modf"/>
+									</call>
+								</right>
+							</expr>
+						</stmt>
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="pos := append(output, pos, uint64(int64(value)), formatDec);">
+							<expr token=":=" type="int32" kind="static const typename(i32)" value="pos := append(output, pos, uint64(int64(value)), formatDec)">
+								<left token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
+								<right token="()" type="int32" kind="static const typename(i32)" value="append(output, pos, uint64(int64(value)), formatDec)">
+									<push token=".variable" type="char[]" kind="static typename(arr)" value="output"/>
+									<push token=".variable" type="int32" kind="static const typename(i32)" value="pos"/>
+									<push token="()" type="uint64" kind="static const typename(u64)" value="uint64(int64(value))">
+										<push token="()" type="int64" kind="static const typename(i64)" value="int64(value)">
+											<push token=".variable" type="float64" kind="static const typename(f64)" value="value"/>
+											<call token=".variable" type="typename" kind="static const typename(ref)" value="int64"/>
+										</push>
+										<call token=".variable" type="typename" kind="static const typename(ref)" value="uint64"/>
+									</push>
+									<push token=".variable" type="FormatFlags" kind="static const typename(val)" value="formatDec"/>
+									<call token=".variable" type="function" kind="static const typename(ref)" value="append"/>
+								</right>
+							</expr>
+						</stmt>
+					</stmt>
 				</stmt>
 				<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := pos;">
 					<expr token=":=" type="int32" kind="static const typename(i32)" value=".result := pos">
@@ -7691,16 +7777,18 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="append(output: char[], pos: int32, value: int32): int32">
-			<init token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:269">
+			<init token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:281">
 				<stmt token=".variable" type="FormatFlags" kind="static const typename(val)" value="format">
 					<init token="{}" type="FormatFlags" kind="static const typename(val)">
-						<stmt token=";" type="void" kind="static const typename(void)" stmt="format.showSign := false;">
-							<expr token=":=" type="void" kind="static const typename(void)" value="format.showSign := false">
-								<left token="." type="bool" kind="static const typename(bool)" value="format.showSign">
+						<stmt token=";" type="void" kind="static const typename(void)" stmt="format.sign := (0);">
+							<expr token=":=" type="void" kind="static const typename(void)" value="format.sign := (0)">
+								<left token="." type="char" kind="static const typename(i32)" value="format.sign">
 									<left token=".variable" type="FormatFlags" kind="static const typename(val)" value="format"/>
-									<right token=".variable" type="bool" kind="static const typename(bool)" value="showSign"/>
+									<right token=".variable" type="char" kind="static const typename(i32)" value="sign"/>
 								</left>
-								<right token=".variable" type="bool" kind="static const typename(bool)" value="false"/>
+								<right token="()" type="char" kind="static const typename(i32)" value="(0)">
+									<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
+								</right>
 							</expr>
 						</stmt>
 						<stmt token=";" type="void" kind="static const typename(void)" stmt="format.precision := 0;">
@@ -7749,7 +7837,7 @@
 			</init>
 		</stmt>
 		<stmt token=".variable" type="function" kind="static const typename(ref)" value="float64(value: char[]): float64">
-			<init token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:275">
+			<init token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:287">
 				<stmt token=".variable" type="float64" kind="static const typename(f64)" value="result">
 					<init token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 				</stmt>
@@ -7787,7 +7875,7 @@
 							<right token=".literal" type="int32" kind="static const typename(i32)" value="1" />
 						</right>
 					</step>
-					<stmt token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:280">
+					<stmt token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:292">
 						<stmt token=".variable" type="char" kind="static const typename(i32)" value="chr">
 							<init token="[]" type="char" kind="static const typename(i32)" value="value[i]">
 								<left token=".variable" type="char[]" kind="static typename(arr)" value="value"/>
@@ -7805,7 +7893,7 @@
 									<right token=".literal" type="char" kind="static const typename(i32)" value="&apos;9&apos;" />
 								</right>
 							</test>
-							<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:282">
+							<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:294">
 								<stmt token=";" type="void" kind="static const typename(void)" stmt="result := result * (10) + ((chr - &apos;0&apos;));">
 									<expr token=":=" type="float64" kind="static const typename(f64)" value="result := result * (10) + ((chr - &apos;0&apos;))">
 										<left token=".variable" type="float64" kind="static const typename(f64)" value="result"/>
@@ -7839,13 +7927,13 @@
 									</expr>
 								</stmt>
 							</then>
-							<else token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:286">
+							<else token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:298">
 								<stmt token="if" type="void" kind="static const typename(void)" stmt="if (chr == &apos;.&apos;)">
 									<test token="==" type="bool" kind="static const typename(bool)" value="chr == &apos;.&apos;">
 										<left token=".variable" type="char" kind="static const typename(i32)" value="chr"/>
 										<right token=".literal" type="char" kind="static const typename(i32)" value="&apos;.&apos;" />
 									</test>
-									<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:286">
+									<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:298">
 										<stmt token="if" type="void" kind="static const typename(void)" stmt="if (decimal != (0))">
 											<test token="!=" type="bool" kind="static const typename(bool)" value="decimal != (0)">
 												<left token=".variable" type="float64" kind="static const typename(f64)" value="decimal"/>
@@ -7853,7 +7941,7 @@
 													<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 												</right>
 											</test>
-											<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:287">
+											<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:299">
 												<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := Math.nan;">
 													<expr token=":=" type="float64" kind="static const typename(f64)" value=".result := Math.nan">
 														<left token=".variable" type="float64" kind="static const typename(f64)" value=".result"/>
@@ -7874,7 +7962,7 @@
 											</expr>
 										</stmt>
 									</then>
-									<else token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:293">
+									<else token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:305">
 										<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := Math.nan;">
 											<expr token=":=" type="float64" kind="static const typename(f64)" value=".result := Math.nan">
 												<left token=".variable" type="float64" kind="static const typename(f64)" value=".result"/>
@@ -7897,7 +7985,7 @@
 							<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 						</right>
 					</test>
-					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:299">
+					<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:311">
 						<stmt token="if" type="void" kind="static const typename(void)" stmt="if (value.length &gt; (0))">
 							<test token="&gt;" type="bool" kind="static const typename(bool)" value="value.length &gt; (0)">
 								<left token="." type="uint32" kind="static const typename(u32)" value="value.length">
@@ -7908,7 +7996,7 @@
 									<push token=".literal" type="int32" kind="static const typename(i32)" value="0" />
 								</right>
 							</test>
-							<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:300">
+							<then token="{}" type="void" kind="static const typename(void)" file="cmplStd/lib/text/string.ci:312">
 								<stmt token="return" type="void" kind="static const typename(void)" stmt="return .result := result;">
 									<expr token=":=" type="float64" kind="static const typename(f64)" value=".result := result">
 										<left token=".variable" type="float64" kind="static const typename(f64)" value=".result"/>

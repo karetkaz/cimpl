@@ -1751,7 +1751,7 @@ inline >(const char lhs[*], const char rhs[*]) = compare(lhs, rhs, caseCmp) > 0;
 /// Flags to convert numbers to string
 struct FormatFlags {
 	/// forced show sign
-	const bool showSign = false;
+	const char sign = 0;
 
 	/// precision or radix
 	const int precision = 0;
@@ -1781,18 +1781,12 @@ int append(char output[], int pos, const char value[*]) {
 }
 
 // Append a number to the output at the given position
-int append(char output[], int pos, char sign, uint64 value, const FormatFlags format&) {
+int append(char output[], int pos, uint64 value, const FormatFlags format&) {
 	static const char whiteSpace[] = " \t\n\r";
 	static const char radixDigits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 
 	int len = 0;
 	char digits[80] = {};
-
-	if (format.showSign) {
-		if (sign == 0) {
-			sign = '+';
-		}
-	}
 
 	int radix = format.precision;
 	if (radix == 0) {
@@ -1817,10 +1811,10 @@ int append(char output[], int pos, char sign, uint64 value, const FormatFlags fo
 	}
 
 	// print sign value
-	if (sign != 0) {
+	if (format.sign != 0) {
 		maxLen -= 1;
 		if (whiteSpace.contains(padChr)) {
-			// if padding character is whitespace padd before sign
+			// if padding character is whitespace pad before sign
 			for ( ; maxLen > 0; maxLen -= 1) {
 				assert(pos < output.length);
 				output[pos] = padChr;
@@ -1828,7 +1822,7 @@ int append(char output[], int pos, char sign, uint64 value, const FormatFlags fo
 			}
 		}
 		assert(pos < output.length);
-		output[pos] = sign;
+		output[pos] = format.sign;
 		pos += 1;
 	}
 
@@ -1852,49 +1846,67 @@ int append(char output[], int pos, char sign, uint64 value, const FormatFlags fo
 	output[pos] = 0;
 	return pos;
 }
+/// Append a number to the output at the given position
+inline append(char output[], int pos, uint32 value, const FormatFlags format&) = append(output, pos, uint64(value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, uint16 value, const FormatFlags format&) = append(output, pos, uint64(value), format);
+/// Append a number to the output at the given position
+inline append(char output[], int pos, uint8 value, const FormatFlags format&) = append(output, pos, uint64(value), format);
 
 /// Append a number to the output at the given position
-inline append(char output[], int pos, uint64 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+int append(char output[], int pos, int64 value, const FormatFlags format&) {
+	FormatFlags signedFormat = {
+		sign: value < 0 ? '-' : format.sign;
+		precision: format.precision;
+		padLen: format.padLen;
+		padChr: format.padChr;
+	};
+	if (value < 0) {
+		value = -value;
+	}
+	return append(output, pos, uint64(value), signedFormat);
+}
 /// Append a number to the output at the given position
-inline append(char output[], int pos, uint32 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+inline append(char output[], int pos, int32 value, const FormatFlags format&) = append(output, pos, int64(value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, uint16 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
+inline append(char output[], int pos, int16 value, const FormatFlags format&) = append(output, pos, int64(value), format);
 /// Append a number to the output at the given position
-inline append(char output[], int pos, uint8 value, const FormatFlags format&) = append(output, pos, 0, uint64(value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, int64 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, int32 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, int16 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, int8 value, const FormatFlags format&) = append(output, pos, value < 0 ? '-' : 0, uint64(value < 0 ? -value : value), format);
+inline append(char output[], int pos, int8 value, const FormatFlags format&) = append(output, pos, int64(value), format);
 
 /// Append a number to the output at the given position
 int append(char output[], int pos, float64 value, const FormatFlags format&) {
+	static const FormatFlags formatDec = {};
 	FormatFlags formatInt = {
-		showSign: format.showSign;
-		precision : 0;
+		sign: value < 0 ? '-' : format.sign;
+		precision : 10;
 		padChr: format.padChr;
-		padLen: format.padLen - format.precision;
-	};
-	FormatFlags formatDec = {
-		showSign: false;
-		precision : 0;
-		padChr: '0';
-		padLen: format.precision;
+		padLen: format.padLen - format.precision - 1;
 	};
 
-	char sign = value < 0 ? '-' : 0;
-	float64 fract = Math.modf(Math.abs(value), &value);
-	pos = output.append(pos, sign, uint64(int64(value)), formatInt);
+	int end = Math.min(int(output.length - 1), pos + format.padLen);
 
+	float64 fraction = Math.modf(Math.abs(value), &value);
+	pos = output.append(pos, uint64(int64(value)), formatInt);
+
+	static const float64 eps = 1e-5;
+	if (fraction < eps && pos >= end) {
+		return pos;
+	}
+
+	// add fractional part
 	pos = output.append(pos, ".");
-	fract *= float64.pow(10, format.precision);
-	pos = output.append(pos, 0, uint64(int64(fract)), formatDec);
+	int max = Math.min(int(output.length - 1), pos + format.precision);
+
+	if (format.precision == 0) {
+		// no precision: use max needed space
+		max = output.length - 1;
+	}
+	for (; (fraction > eps && pos < max) || pos < end;) {
+		fraction = Math.modf(fraction * 10, &value);
+		pos = output.append(pos, uint64(int64(value)), formatDec);
+	}
 	return pos;
 }
-
 /// Append a number to the output at the given position
 inline append(char output[], int pos, float32 value, const FormatFlags format&) = append(output, pos, float64(value), format);
 
@@ -5462,7 +5474,7 @@ Widget Widget(Image offs, View items...) {
 	Style style = {
 		align: Style.left;
 		fmtInt: { padLen: 4 };
-		fmtFlt: { padLen: 4, precision: 2 };
+		fmtFlt: { padLen: 5, precision: 2 };
 	};
 	return Widget(offs, style, ...items);
 }
