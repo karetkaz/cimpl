@@ -1278,16 +1278,25 @@ complex a = complex(9);
 struct Celsius { double degrees; }
 struct Fahrenheit { double degrees; }
 
-// initialization
+// explicit initialization
 inline Celsius(float64 value) = { degrees: value };
 inline Fahrenheit(float64 value) = { degrees: value };
 
-// type conversions
+// explicit conversion
 inline Celsius(Fahrenheit value) = Celsius((value.degrees - 32) / 1.8);
 inline Fahrenheit(Celsius value) = Fahrenheit(value.degrees * 1.8 + 32);
 
+// implicit conversion
+inline (float64 value) = Celsius(value);
+inline (float64 value) = Fahrenheit(value);
+inline (Fahrenheit value) = Celsius(value);
+inline (Celsius value) = Fahrenheit(value);
+
 Celsius boilC = Celsius(100.);                 // => inline Celsius(float64 value)
 Fahrenheit boilF = Fahrenheit(boilC);          // => inline Fahrenheit(Celsius value)
+
+Celsius boilImplicitC = 100.;                  // => inline (float64 value) = Celsius(value)
+Fahrenheit boilImplicitF = boilC;              // => inline (Celsius value) = Fahrenheit(value)
 ```
 
 ### Unary and binary operators

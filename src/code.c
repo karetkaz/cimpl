@@ -77,12 +77,7 @@ typedef struct vmInstruction {
 #pragma pack(pop)
 
 static inline vmInstruction lastIp(rtContext rt) {
-	vmInstruction result = vmPointer(rt, rt->vm.pc);
-	if (result == NULL) {
-		result = (vmInstruction) rt->_beg;
-		result->opc = opc_nop;
-	}
-	return result;
+	return vmPointer(rt, rt->vm.pc);
 }
 
 void *rollbackPc(rtContext rt) {

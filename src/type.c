@@ -512,15 +512,12 @@ static symn typeCheckRef(ccContext cc, symn loc, astn ref, astn args, ccKind fil
 			prm = prm->next;            // skip hidden param: file
 			prm = prm->next;            // skip hidden param: line
 		}
-		astn thisArg = NULL;
-		if ((filter & ARGS_this) != 0) {
-			// do not warn if this parameter is not passed by reference
-			thisArg = arg;
-		}
 		while (arg != NULL && prm != NULL) {
 			// reference arguments must be given as: `&var`
-			if (arg != thisArg && arg->kind != OPER_adr && byReference(prm) && !byReference(prm->type) && !isConst(prm)) {
-				warn(cc->rt, raise_warn_typ3, arg->file, arg->line, WARN_PASS_ARG_BY_REF, arg, sym);
+			if (arg->kind != OPER_adr && byReference(prm) && !byReference(prm->type) && !isConst(prm)) {
+				if (!(filter == ARGS_this && args->kind == OPER_com && arg == args->op.lhso)) {
+					warn(cc->rt, raise_warn_typ3, arg->file, arg->line, WARN_PASS_ARG_BY_REF, arg, sym);
+				}
 			}
 
 			if ((prm->kind & ARGS_varg) == ARGS_varg) {
@@ -670,7 +667,6 @@ symn typeCheck(ccContext cc, symn loc, astn ast, int raise) {
 					}
 					else {
 						args = argNode(cc, argThis, args);
-						args->type = cc->type_vid;
 					}
 					ref = ref->op.rhso;
 
