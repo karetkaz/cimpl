@@ -109,7 +109,6 @@ static vmError glFun_Normal(nfcContext ctx) {
 	float x = argf32(ctx, nextArg(ctx));
 	float y = argf32(ctx, nextArg(ctx));
 	float z = argf32(ctx, nextArg(ctx));
-	//~ float w = argf32(ctx, nextArg(ctx));	// we have this value on the stack, but we don't need it.
 	glNormal3f(x, y, z);
 	return noError;
 }
@@ -528,8 +527,8 @@ int cmplInit(rtContext _rt) {
 
 		/* TODO: add some inline code
 		if (!rt->api.ccDef???(rt, 0, __FILE__, __LINE__ + 1,
-			"inline Vertex(float32 x, float32 y, float32 z) = Vertex(x, y, z, 1.);\n"
-			"inline Color(float32 r, float32 g, float32 b) = Color(r, g, b, 1.);\n"
+			"inline vertex(float32 x, float32 y, float32 z) = vertex(x, y, z, 1.);\n"
+			"inline color(float32 r, float32 g, float32 b) = color(r, g, b, 1.);\n"
 		)) {
 			return -1;
 		}*/

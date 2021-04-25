@@ -19,8 +19,14 @@ EMFLAGS+=-I libs/stb
 
 ifneq "$(OS)" "Windows_NT"
 	CFLAGS+=-D USE_PNG -D USE_JPEG
-	MKDIRF=--parents
 	CFLAGS+=-fPIC
+	UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+		MKDIRF=--parents
+    endif
+    ifeq ($(UNAME_S),Darwin)
+    endif
+
 else
 	CFLAGS+=-D USE_PNG -I libs/libjpeg
 	CFLAGS+=-D USE_JPEG -I libs/libpng

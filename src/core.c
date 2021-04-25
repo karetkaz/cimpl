@@ -1040,7 +1040,7 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(dbgContext, void *,
 
 			// check if block is free.
 			if (chunk->prev == NULL && next != NULL) {
-				size_t chunkSize = (char*)next - (char*)chunk - allocSize;
+				size_t chunkSize = (char*)next - (char*)chunk;
 				if (allocSize < chunkSize) {
 					ssize_t diff = chunkSize - allocSize;
 					if (diff > minAllocationSize) {

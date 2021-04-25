@@ -38,11 +38,19 @@ Switch chkReverse = {
 };
 Slider btnAlpha = {
 	text: "alpha";
+	focusable: false;
 	value: 192;
 	maximum: 256;
 	divisor: 256;
 };
 
+BlendButton btnNormal = {
+	static vec4f normal(vec4f base, vec4f blend) {
+		return base;
+	}
+	text: "normal";
+	blend: null;
+};
 BlendButton btnAddition = {
 	static vec4f addition(vec4f base, vec4f blend) {
 		inline op(float32 base, float32 blend) = base + blend;
@@ -313,6 +321,7 @@ Slider time = {
 Widget ui = Widget(offs,
 	chkReverse,
 	btnAlpha,
+	btnNormal,
 	btnAddition,
 	btnSubtract,
 	btnMultiply,
@@ -359,9 +368,6 @@ int onEvent(int action, int button, int x, int y) {
 	offs.copy(0, 0, reverse ? base : blend, null);
 	if (BlendButton selected = ui.getFocused().as(BlendButton)) {
 		offs.blend(0, 0, reverse ? blend : base, null, btnAlpha.value, false, selected.blend);
-	}
-	else if (ui.isFocused(btnAlpha)) {
-		offs.blend(0, 0, reverse ? blend : base, null, btnAlpha.value, false, null);
 	}
 	time.value = System.millis() - start;
 	return ui.draw();

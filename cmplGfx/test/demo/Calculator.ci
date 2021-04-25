@@ -37,10 +37,25 @@ CalcResult btnResult = {
 };
 
 Button buttons[] = {
-	{text: "7", onClick: onVal}, {text: "8", onClick: onVal}, {text: "9", onClick: onVal}, {text: "/", onClick: onOp},
-	{text: "4", onClick: onVal}, {text: "5", onClick: onVal}, {text: "6", onClick: onVal}, {text: "*", onClick: onOp},
-	{text: "1", onClick: onVal}, {text: "2", onClick: onVal}, {text: "3", onClick: onVal}, {text: "-", onClick: onOp},
-	{text: "0", onClick: onVal}, {text: ".", onClick: onVal}, {text: "=", onClick: onOp}, {text: "+", onClick: onOp}
+	{text: "7", onClick: onVal},
+	{text: "8", onClick: onVal},
+	{text: "9", onClick: onVal},
+	{text: "/", onClick: onOp},
+
+	{text: "4", onClick: onVal},
+	{text: "5", onClick: onVal},
+	{text: "6", onClick: onVal},
+	{text: "*", onClick: onOp},
+
+	{text: "1", onClick: onVal},
+	{text: "2", onClick: onVal},
+	{text: "3", onClick: onVal},
+	{text: "-", onClick: onOp},
+
+	{text: "0", onClick: onVal},
+	{text: ".", onClick: onVal},
+	{text: "=", onClick: onOp},
+	{text: "+", onClick: onOp}
 };
 
 Style style = {
@@ -48,9 +63,11 @@ Style style = {
 	fmtInt: { padLen: 4 };
 	fmtFlt: { padLen: 4, precision: 2 };
 };
-Widget ui = Widget(offs, style, btnResult
-	, Layout.Custom(4, Style.fill, ...buttons)
-).margin(Style.fill, 0, 0).padding(0);
+Widget ui = Widget(offs, style)
+	.addItem(btnResult)
+	.addItem(Layout.Custom(4, Style.fill, ...buttons))
+	.margin(Style.fill, 0, 0)
+	.padding(0);
 
 int onEvent(int action, int button, int x, int y) {
 	if (action == Gui.KEY_RELEASE && button == 27) {
@@ -111,10 +128,17 @@ bool onOp(Button this) {
 	}
 
 	// check for errors (not a number)
-	if (value == value) {
-		result.append(0, value, format);
-	} else {
+	if (value != value) {
 		result.append(0, "Error");
+	}
+	else if (value < 0 && value == 2 * value) {
+		result.append(0, "-Inf");
+	}
+	else if (value > 0 && value == 2 * value) {
+		result.append(0, "Inf");
+	}
+	else {
+		result.append(0, value, format);
 	}
 
 	// make sure all operators were handled
