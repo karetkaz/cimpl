@@ -1,11 +1,6 @@
 // Simple Calculator with no precedence
 // double click result to clear it
 
-Image offs = Image(300, 400, 32);
-int onEvent(int action, int button, int x, int y);
-offs.show(onEvent);
-offs.destroy();
-
 inline "/cmplGfx/lib/micro.ui.ci";
 const FormatFlags format = {
 	precision: 10;
@@ -58,30 +53,13 @@ Button buttons[] = {
 	{text: "+", onClick: onOp}
 };
 
-Style style = {
-	align: Style.center;
-	fmtInt: { padLen: 4 };
-	fmtFlt: { padLen: 4, precision: 2 };
-};
-Widget ui = Widget(offs, style)
-	.addItem(btnResult)
-	.addItem(Layout.Custom(4, Style.fill, ...buttons))
-	.margin(Style.fill, 0, 0)
-	.padding(0);
+// disable focusing first element, using Layout.onCreate
+Widget ui = Widget(300, 400, Style.center, Layout.onCreate)
+	.addItems(btnResult)
+	.addItems(Layout.Custom(4, Style.fill, ...buttons));
 
-int onEvent(int action, int button, int x, int y) {
-	if (action == Gui.KEY_RELEASE && button == 27) {
-		// exit when releasing escape key
-		return -1;
-	}
-	if (!ui.onEvent(action, button, x, y)) {
-		return 0;
-	}
-	if (action == Gui.WINDOW_INIT) {
-		ui.setFocused(null);
-	}
-	return ui.draw();
-}
+Gui.showWindow(ui);
+
 bool onClear(Button this) {
 	result.append(0, "0");
 	operation = 0;

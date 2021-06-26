@@ -522,88 +522,6 @@ File.in
 File.out
 File.err
 File.log
-gl
-gl.Vendor
-gl.Renderer
-gl.Version
-gl.Extensions
-gl.DepthTest
-gl.LineSmooth
-gl.CullFace
-gl.Front
-gl.Back
-gl.FrontAndBack
-gl.Flat
-gl.Smooth
-gl.ColorBuffer
-gl.DepthBuffer
-gl.AccumBuffer
-gl.StencilBuffer
-gl.Modelview
-gl.Projection
-gl.Texture
-gl.Color
-gl.Points
-gl.Lines
-gl.LineStrip
-gl.LineLoop
-gl.Triangles
-gl.TriangleStrip
-gl.TriangleFan
-gl.Quads
-gl.QuadStrip
-gl.Polygon
-gl.getString(value: int32, buffer: char[]): int32
-gl.viewport(x: int32, y: int32, width: int32, height: int32): void
-gl.enable(mode: int32): void
-gl.disable(mode: int32): void
-gl.shadeModel(mode: int32): void
-gl.cullFace(mode: int32): void
-gl.clear(Buffer: int32): void
-gl.begin(Primitive: int32): void
-gl.end(): void
-gl.flush(): void
-gl.vertex(x: float32, y: float32, z: float32, w: float32): void
-gl.normal(x: float32, y: float32, z: float32): void
-gl.color(r: float32, g: float32, b: float32, a: float32): void
-gl.matrixMode(mode: int32): void
-gl.loadMatrix(x: float64[16]): void
-gl.multMatrix(x: float64[16]): void
-gl.loadIdentity(): void
-gl.pushMatrix(): void
-gl.popMatrix(): void
-gl.rotate(angle: float64, x: float64, y: float64, z: float64): void
-gl.scale(angle: float64, x: float64, y: float64, z: float64): void
-gl.translate(angle: float64, x: float64, y: float64, z: float64): void
-gl.frustum(left: float64, right: float64, bottom: float64, top: float64, near: float64, far: float64): void
-gl.ortho(left: float64, right: float64, bottom: float64, top: float64, near: float64, far: float64): void
-glu
-glu.lookAt(eyeX: float64, eyeY: float64, eyeZ: float64, centerX: float64, centerY: float64, centerZ: float64, upX: float64, upY: float64, upZ: float64): void
-glut
-glut.Rgb
-glut.Rgba
-glut.Index
-glut.Single
-glut.Double
-glut.Accum
-glut.Alpha
-glut.Depth
-glut.Stencil
-glut.Multisample
-glut.Stereo
-glut.Luminance
-glut.onDisplay(callback(): void): void
-glut.onReshape(callback(x: int32, y: int32): void): void
-glut.onMouse(callback(btn: int32, x: int32, y: int32): void): void
-glut.onMotion(callback(btn: int32, x: int32, y: int32): void): void
-glut.onKeyboard(callback(btn: int32): void): void
-glut.postRedisplay(): void
-glut.reshape(width: int32, height: int32): void
-glut.mainLoop(width: int32, height: int32, title: char[*]): void
-glut.exit(): void
-glut.initDisplayMode(mode: int32): void
-glut.swapBuffers(): void
-glut.fullScreen(): void
 Rect
 Rect.x
 Rect.y
@@ -622,6 +540,7 @@ Image.openImg(path: char[*], depth: int32): Image
 Image.openTtf(path: char[*], height: int32): Image
 Image.openFnt(path: char[*]): Image
 Image.saveBmp(image: Image, path: char[*], flags: int32): void
+Image.null
 Image.width(image: Image): int32
 Image.height(image: Image): int32
 Image.depth(image: Image): int32
@@ -701,6 +620,7 @@ lights.attenuation(light: int32, constant: float32, linear: float32, quadratic: 
 Gui
 Gui.KEY_PRESS
 Gui.KEY_RELEASE
+Gui.MOUSE_WHEEL
 Gui.MOUSE_PRESS
 Gui.MOUSE_MOTION
 Gui.MOUSE_RELEASE
@@ -709,7 +629,6 @@ Gui.FINGER_MOTION
 Gui.FINGER_RELEASE
 Gui.EVENT_TIMEOUT
 Gui.WINDOW_INIT
-Gui.WINDOW_DRAW
 Gui.WINDOW_CLOSE
 Gui.WINDOW_ENTER
 Gui.WINDOW_LEAVE
@@ -755,7 +674,10 @@ gch(color: argb): int32 # get the Green channel of the color
 bch(color: argb): int32 # get the Blue channel of the color
 lum(color: argb): int32 # get the luminosity of the color (0.299 * color.r + 0.587 * color.g + 0.114 * color.b)
 hue(rgb: argb): uint32 # get the hue of the color
-lerpLut(lut: uint32[], colors: argb[]): void # linear interpolate a lookup-table with the given colors
+mix_s8(t: int32, a: uint32, b: uint32): uint32
+mix_s16(t: int32, a: uint32, b: uint32): uint32
+mix_s8(t: int32, a: argb, b: argb): argb
+lerpLut(lut: argb[], colors: argb[]): void # linear interpolate a lookup-table with the given colors
 alphaLut(lut: uint32[], hardness: int32, alpha: int32, reflect: bool): void # linear interpolate a alpha lookup-table with the given colors
 vec4f(rgb: argb): vec4f # convert an argb color to a floating point vector
 argb(vec: vec4f): argb # convert a floating point vector to an argb color
@@ -792,19 +714,38 @@ Camera.forward
 Camera.right
 Camera.up
 Camera.projection(fov: float32, asp: float32, n: float32, f: float32): mat4f # create an orthographic or perspective projection matrix
-Camera.rotation(dir: vec4f, ang: float32): mat4f
-Camera.translation(dir: vec4f, cnt: float32): mat4f
 Camera.lookAt(position: vec4f, target: vec4f, up: vec4f): Camera # Create a camera at the given `position` looking at the given `target`
 Camera.matrix(camera: Camera): mat4f # get the matrix of the camera, which can be multiplied with the projection matrix
 Camera.matrix(projection: mat4f, camera: Camera): mat4f # get the matrix of the camera multiplied with the projection matrix
 Camera.move(camera: Camera, direction: vec4f, amount: float32): void # Move the camera in the given `direction` with the given `amount`
-Camera.rotate(camera: Camera, direction: vec4f, amount: float32): void # Rotate the camera in the given `direction` with the given `amount`
-Camera.rotate(camera: Camera, orbit: vec4f, direction: vec4f, amount: float32): void # Rotate the camera around the `orbit` in the given `direction` with the given `amount`
+Camera.rotate(camera: Camera, orbit: vec4f, direction: vec4f, amount: float32): void # Rotate the camera around `orbit` in the given `direction` with the given `amount`
 adjust(roi: Rect, x: int32, y: int32, w: int32, h: int32): void # adjust the rectangle position and size
 adjust(roi: Rect, w: int32, h: int32): void # adjust the rectangle position and size
 adjust(roi: Rect, s: int32): void # adjust the rectangle position and size
-show(surf: Image): void # Show the surface in a window
-show(image: Image, onEvent(action: int32, button: int32, ex: int32, ey: int32): int32): void # Show the surface in a window
-showDiff(image1: Image, image2: Image): void # Show the surfaces in a window clicking on the window toggles the shown surface
-show(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): vec4f): void # Show or animate the the procedural image generated by the `eval` function
-show(mesh: Mesh, w: int32, h: int32, fovy: float32): void # Show the mesh in a window
+Gui
+Gui.showWindow(surf: Image): void # Show the surface in a window
+Gui.showWindow(image: Image, onEvent(action: int32, button: int32, ex: int32, ey: int32): int32): void # Show the surface in a window
+Gui.showWindow(image1: Image, image2: Image): void # Show the surfaces in a window clicking on the window toggles the shown surface
+Gui.showWindow(width: int32, height: int32, animationResolution: int32, eval(in: vec4f): vec4f): void # Show or animate the the procedural image generated by the `eval` function
+Gui.showWindow(width: int32, height: int32, eval(in: vec4f): vec4f): void
+Gui.showWindow(w: int32, h: int32, fovy: float32, mesh: Mesh): void # Show the mesh in a window
+Gui.KEY_PRESS
+Gui.KEY_RELEASE
+Gui.MOUSE_WHEEL
+Gui.MOUSE_PRESS
+Gui.MOUSE_MOTION
+Gui.MOUSE_RELEASE
+Gui.FINGER_PRESS
+Gui.FINGER_MOTION
+Gui.FINGER_RELEASE
+Gui.EVENT_TIMEOUT
+Gui.WINDOW_INIT
+Gui.WINDOW_CLOSE
+Gui.WINDOW_ENTER
+Gui.WINDOW_LEAVE
+Gui.KEY_MASK_SHIFT
+Gui.KEY_MASK_CTRL
+Gui.KEY_MASK_ALT
+Gui.showWindow(surf: Image, closure: pointer, onEvent(closure: pointer, action: int32, button: int32, x: int32, y: int32): int32): void
+Gui.setTitle(title: char[*]): void
+Gui.font

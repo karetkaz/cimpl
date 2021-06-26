@@ -1,0 +1,158 @@
+// Simple Calculator with no precedence
+// double click result to clear it
+
+inline "/cmplGfx/lib/micro.ui.ci";
+Style display = {
+	font: Image.openTtf("asset/font/NokiaPureText.ttf", 48);
+	align: Style.right;
+	fmtInt: {};
+	fmtFlt: { precision: 10; };
+};
+Style global = {
+	font: Image.openTtf("asset/font/NokiaPureText.ttf", 24);
+	align: Style.center;
+	fmtInt: {};
+	fmtFlt: {};
+};
+
+char result[256] = {'0', 0};
+char operation = 0;
+float64 value = 0;
+bool clear = true;
+
+bool onClear(Button this);
+bool onVal(Button this);
+bool onNeg(Button this);
+bool onOp(Button this);
+bool onFn(Button this);
+
+Button btnResult = {
+	text: result;
+	enabled: false;
+	style: pointer(display);
+};
+
+Button buttons[] = {
+	{text: "\xb1", onClick: onNeg}, // ±
+	{text: "sqrt", onClick: onFn},  // todo: √
+	{text: "", enabled: false},  // todo: %
+	{text: "C", onClick: onClear},
+
+	{text: "7", onClick: onVal},
+	{text: "8", onClick: onVal},
+	{text: "9", onClick: onVal},
+	{text: "\xf7", onClick: onOp}, // '/' | '÷'
+
+	{text: "4", onClick: onVal},
+	{text: "5", onClick: onVal},
+	{text: "6", onClick: onVal},
+	{text: "\xd7", onClick: onOp}, // '*' | '×'
+
+	{text: "1", onClick: onVal},
+	{text: "2", onClick: onVal},
+	{text: "3", onClick: onVal},
+	{text: "-", onClick: onOp},
+
+	{text: "0", onClick: onVal},
+	{text: ".", onClick: onVal},
+	{text: "=", onClick: onOp},
+	{text: "+", onClick: onOp}
+};
+
+// disable focusing first element, using Layout.onCreate
+Widget ui = Widget(300, 400, 0, Layout.onCreate)
+	.style(global)
+	.padding(0)
+	.addItems(btnResult)
+	.addItems(Layout.Custom(4, Style.fill, ...buttons));
+
+display.setColor(gray(120), gray(200));
+global.setColor(gray(200), gray(20));
+Gui.showWindow(ui);
+
+bool onClear(Button this) {
+	result.append(0, "0");
+	operation = 0;
+	value = 0;
+	clear = true;
+	return true;
+}
+bool onVal(Button this) {
+	int len = length(result);
+	if (clear) {
+		clear = false;
+		len = 0;
+	}
+	result.append(len, this.text);
+	return true;
+}
+void setValue() {
+	// check for errors (not a number)
+	if (value != value) {
+		result.append(0, "Error");
+	}
+	else if (value < 0 && value == 2 * value) {
+		result.append(0, "-Inf");
+	}
+	else if (value > 0 && value == 2 * value) {
+		result.append(0, "Inf");
+	}
+	else {
+		result.append(0, value, display.fmtFlt);
+	}
+}
+bool onNeg(Button this) {
+	value = -float64(result);
+	setValue();
+	operation = 0;
+	return true;
+}
+bool onOp(Button this) {
+	assert(this.text.length() == 1);
+	if (clear) {
+		// keep the last clicked operator
+		operation = this.text[0];
+		return true;
+	}
+
+	if (operation == '=' || operation == 0) {
+		value = float64(result);
+		operation = 0;
+	}
+	else if (operation == '+') {
+		value += float64(result);
+		operation = 0;
+	}
+	else if (operation == '-') {
+		value -= float64(result);
+		operation = 0;
+	}
+	else if (operation == '*' || operation == '\xd7') {
+		value *= float64(result);
+		operation = 0;
+	}
+	else if (operation == '/' || operation == '\xf7') {
+		value /= float64(result);
+		operation = 0;
+	}
+	setValue();
+
+	// make sure all operators were handled
+	assert(operation == 0);
+	operation = this.text[0];
+	clear = true;
+	return true;
+}
+bool onFn(Button this) {
+	int len = length(result);
+	if (equals(this.text, "sqrt")) {
+		value = float64.sqrt(float64(result));
+	}
+	else {
+		value = Math.nan;
+	}
+	setValue();
+	operation = 0;
+	clear = true;
+	return true;
+}

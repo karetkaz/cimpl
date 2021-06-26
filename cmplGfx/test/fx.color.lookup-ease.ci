@@ -13,7 +13,7 @@
 Image back = Image("asset/image/forest.jpg", 32);
 Image offs = Image(back.width(), back.height(), back.depth());
 int onEvent(int action, int button, int x, int y);
-offs.show(onEvent);
+Gui.showWindow(offs, onEvent);
 offs.destroy();
 back.destroy();
 
@@ -67,12 +67,13 @@ Slider time = {
 	onDrawSlider: null;
 };
 
-Widget ui = Widget(offs,
+Widget ui = Widget().addItems(
 	histogram,
 	curves,
+	Layout.divider,
 	brightness,
 	contrast,
-	time
+	Layout.divider, time
 );
 
 int onEvent(int action, int button, int x, int y) {
@@ -92,5 +93,5 @@ int onEvent(int action, int button, int x, int y) {
 	histogram.update(offs);
 
 	time.value = System.millis() - start;
-	return ui.draw();
+	return ui.draw(offs);
 }

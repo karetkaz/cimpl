@@ -86,9 +86,9 @@ struct ccContextRec {
 
 	// Parser
 	symn symbolStack[hashTableSize];// symbol stack (hash)
-	char *home;                     // home folder
-	char *unit;                     // unit file name
-	char *file;                     // current file name
+	const char *home;               // home folder
+	const char *unit;               // unit file name
+	const char *file;               // current file name
 	int line;                       // current line number
 
 	// Type cache

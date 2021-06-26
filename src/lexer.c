@@ -1196,7 +1196,7 @@ astn nextTok(ccContext cc, ccToken match, int raise) {
 		return token;
 	}
 	if (raise) {
-		char *file = cc->file;
+		const char *file = cc->file;
 		int line = cc->line;
 		token = cc->tokNext;
 		if (token && token->file && token->line) {
@@ -1226,7 +1226,7 @@ astn backTok(ccContext cc, astn token) {
 	return token;
 }
 
-int ccOpen(ccContext cc, char *file, int line, char *text) {
+int ccOpen(ccContext cc, const char *file, int line, char *text) {
 	struct lexContext input;
 	if (text == NULL && file != NULL) {
 		if ((input._fin = open(file, O_RDONLY)) <= 0) {

@@ -56,7 +56,7 @@ void drawStars(Image offScreen) {
 }
 
 Image image = Image(resolutionx, resolutiony, 32);
-int onEvent(pointer closure, int action, int btn, int x, int y) {
+int onEvent(int action, int btn, int x, int y) {
 
 	if (action == Gui.KEY_PRESS) {
 		if (btn == 27) {
@@ -84,5 +84,5 @@ for (int i = 0; i < stars.length; i += 1) {
 	initStar(&stars[i]);
 }
 
-Gui.showWindow(image, null, onEvent);
+Gui.showWindow(image, onEvent);
 image.destroy();

@@ -47,8 +47,8 @@
 </div>
 <div id="bottom-sidebar" class="sidebar">
 	<div id="output-toolbar" class="toolbar">
-		<span class="no-output left" onclick="setStyle(body, 'output');">Output</span>
-		<span id="editPosition" class="right" onclick="completeAction(':');"></span>
+		<span class="no-output left text" onclick="setStyle(body, 'output');">Output</span>
+		<span class="right text" id="editPosition" onclick="completeAction(':');"></span>
 		<select class="output left" id="selOutput" onchange="selectOutputTab(this);" onclick="event.stopPropagation()">
 			<option onchange="terminal.clear();">Output</option>
 			<option onchange="pinOutput(this);">Pin Output</option>
@@ -226,13 +226,16 @@
 	</ul></div>
 </div>
 <div id="main-toolbar" class="toolbar">
-	<span class="left icon" title="Toggle show menu" onclick="onMenuClick()">☰</span>
+	<span class="canvas left icon" title="Stop execution" onclick="showCanvas(false);">❌</span>
+	<span class="no-canvas left icon" title="Toggle show menu"
+		  onclick="setStyle(document.body, '~left-bar');"
+		  ondblclick="setStyle(body, '~left-pin', 'left-bar');"
+	>☰</span>
 	<span class="left icon" title="Execute script (Ctrl+Shift + Enter)" onclick="onExecClick();">►</span>
 	<span class="edited left icon" title="Save script (Ctrl + s)" onclick="saveInput();">💾</span>
 
 	<!--span class="right icon" title="Toggle show menu" onclick="setStyle(body, '~right-bar', '-no-editor');">⋮</span-->
-	<span class="canvas right icon" title="Stop execution" onclick="showCanvas(false);">❌</span>
-	<span class="no-canvas right icon" title="Toggle show output" onclick="setStyle(body, 'bottom-bar', '?-output', '~output');">⬓</span>
+	<span class="right icon" title="Toggle show output" onclick="setStyle(body, 'bottom-bar', '?-output', '~output');">⬓</span>
 	<span class="right icon" title="Toggle dark theme" onclick="setStyle(body, '~dark');">◑</span>
 	<!--span class="canvas output right icon bold" title="Scroll to end" onclick="setStyle(body, 'bottom-bar'); terminal.scroll(true);">⏬</span-->
 	<span class="right" id="spnCounter"></span>
@@ -244,7 +247,7 @@
 	':line' Go to line (Ctrl + g)
 	'#args' Execute script">
 		<span id="spnStatus" onclick="setStyle(body, '-no-editor', '~output');">Initializing runtime</span>
-		<input id="edtFileName" placeholder="!command; ?search; :goto; #exec"></input>
+		<input id="edtFileName" placeholder="!command; ?search; :goto; #exec"/>
 	</span>
 </div>
 <div id="editor-panel">
@@ -270,15 +273,6 @@ function onExecClick() {
 		return;
 	}
 	execute(params.exec || '-run/g');
-}
-
-function onMenuClick() {
-	// if already executing (canvas is shown), do not hide show the menu
-	if (document.body.classList.contains('canvas')) {
-		// todo: show hide output over the canvas: setStyle('output-top');
-		return;
-	}
-	setStyle(document.body, '~left-bar');
 }
 
 function showCanvas(show) {

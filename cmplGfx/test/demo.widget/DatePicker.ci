@@ -22,14 +22,15 @@ struct IntButton: View {
 		return true;
 	}
 
-	void onCreate(IntButton this) {
-		View.onCreate(this);
+	void onCreate(IntButton this, View parent) {
+		View.onCreate(this, parent);
 		increment(this, 0);
 	}
 
-	bool onMeasure(IntButton this, Rect rect&, const Style style&, int visible) {
+	bool onMeasure(IntButton this, Rect rect&, int visible) {
+		Style style& = this.style;
 		style.measure(&rect, this.text);
-		return View.onMeasure(this, &rect, style, visible);
+		return View.onMeasure(this, &rect, visible);
 	}
 
 	void onDraw(IntButton this, Image offs, Rect rect, const Style style&) {
@@ -163,27 +164,24 @@ bool resetCounter(IntButton this) {
 	return true;
 }
 
-IntButton counter = {focusable: false, width: -200, height: -100, onClick: resetCounter};
+View counter = drawCounter(false);
 
-Image offs = Image(512, 512, 32);
+void init(Widget ui, View parent) {
+	Widget.onCreate(ui, parent);
+	onClick(btnToday);
+}
 
-Style style = {
-	font: Gui.font;
-	padding: 10;
-	align: Style.center;
-	fmtInt: { padLen: 4 };
-	fmtFlt: { padLen: 4, precision: 2 };
-};
-Widget ui = Widget(offs, style
-	, Layout.Custom(-1, Style.fill
-		, Layout.Row(btnYearDec, btnYear, btnYearInc)
-		, Layout.Row(btnMonthDec, btnMonth, btnMonthInc)
-		, Layout.Row(btnDayDec, btnDay, btnDayInc)
-		, btnToday
-	)
-	, Layout.Custom(8, Style.fill, ...btnDays)
-	, counter
-).margin(Style.fill, 0, 0).padding(0);
+Widget ui = Widget(512, 400, Style.center, init)
+	.addItems(Style.fill,
+		Layout.Custom(-1, Style.fill
+			, Layout.Row(btnYearDec, btnYear, btnYearInc)
+			, Layout.Row(btnMonthDec, btnMonth, btnMonthInc)
+			, Layout.Row(btnDayDec, btnDay, btnDayInc)
+			, btnToday
+		)
+		, Layout.Custom(8, Style.fill, ...btnDays)
+		, counter
+	);
 
 int64 now = System.millis();
 bool onClick(Button this) {
@@ -273,19 +271,4 @@ bool onClick(Button this) {
 	return true;
 }
 
-int onEvent(int action, int button, int x, int y) {
-	if (action == Gui.KEY_RELEASE && button == 27) {
-		// exit when releasing escape key
-		return -1;
-	}
-	if (!ui.onEvent(action, button, x, y)) {
-		return 0;
-	}
-	if (action == Gui.WINDOW_INIT) {
-		onClick(btnToday);
-	}
-	offs.fill(0);
-	counter.increment(1);
-	return ui.draw();
-}
-offs.show(onEvent);
+Gui.showWindow(ui);

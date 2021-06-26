@@ -157,7 +157,7 @@ symn leave(ccContext cc, ccKind mode, size_t align, size_t baseSize, size_t *out
 			}
 			size_t padded = padOffset(size, align);
 			if (align && size != padded) {
-				char *file = owner ? owner->file : NULL;
+				const char *file = owner ? owner->file : NULL;
 				int line = owner ? owner->line : 0;
 				warn(cc->rt, raise_warn_pad6, file, line, WARN_PADDING_ALIGNMENT, owner, padded - size, size, padded);
 				size = padded;

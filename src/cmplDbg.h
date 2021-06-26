@@ -47,7 +47,7 @@ struct dbgNode {
 	symn decl;
 
 	// position in source file
-	char *file;
+	const char *file;
 	int line;
 
 	// position in byte code

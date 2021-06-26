@@ -146,6 +146,12 @@ int getWindowEvent(GxWindow window, int *button, int *x, int *y) {
 			*y = event.motion.y;
 			return MOUSE_MOTION;
 
+		case SDL_MOUSEWHEEL:
+			*button = event.wheel.direction;
+			*x = event.wheel.x;
+			*y = event.wheel.y;
+			return MOUSE_WHEEL;
+
 		case SDL_KEYDOWN:
 		case SDL_KEYUP:
 			*button = event.key.keysym.sym;

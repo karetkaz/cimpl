@@ -14,7 +14,7 @@
 Image back = Image("asset/image/forest.jpg", 32);
 Image offs = Image(back.width(), back.height(), back.depth());
 int onEvent(int action, int button, int x, int y);
-offs.show(onEvent);
+Gui.showWindow(offs, onEvent);
 offs.destroy();
 back.destroy();
 
@@ -30,12 +30,6 @@ Histogram curves = {
 	lines: true;
 	focusable: false;
 	onUpdate: onCurveUpdate;
-};
-
-Button separator = {
-	text: null;
-	height: 1;
-	enabled: false;
 };
 
 Button btnLuminosity = {
@@ -71,10 +65,10 @@ Slider time = {
 	onDrawSlider: null;
 };
 
-Widget ui = Widget(offs,
-	histogram, curves, separator,
+Widget ui = Widget().addItems(
+	histogram, curves, Layout.divider,
 	btnLuminosity, btnRgb, btnRed, btnGreen, btnBlue,
-	btnReset, separator, time
+	btnReset, Layout.divider, time
 );
 
 int onEvent(int action, int button, int x, int y) {
@@ -82,23 +76,25 @@ int onEvent(int action, int button, int x, int y) {
 		// exit when releasing escape key
 		return -1;
 	}
-	if (action == Gui.KEY_RELEASE && button == ' ') {
-		const FormatFlags fmt = {
-			precision: 16;
-			padChr: '0';
-			padLen: 8;
-		};
-		char str[32] = {0};
-		File.out.write("\nint32_t lookup[256] = {\n");
-		for (int i = 0; i < curves.data.length; i += 1) {
-			uint32 col = uint32(curves.data[i]);
-			if (i > 0) {
-				File.out.write(",\n");
+	static if (typename(File) != null) {
+		if (action == Gui.KEY_RELEASE && button == ' ') {
+			const FormatFlags fmt = {
+				precision: 16;
+				padChr: '0';
+				padLen: 8;
+			};
+			char str[32] = {0};
+			File.out.write("\nint32_t lookup[256] = {\n");
+			for (int i = 0; i < curves.data.length; i += 1) {
+				uint32 col = uint32(curves.data[i]);
+				if (i > 0) {
+					File.out.write(",\n");
+				}
+				int len = str.append(str.append(0, "\t0x"), col, fmt);
+				File.write(File.out, str[... len]);
 			}
-			int len = str.append(str.append(0, "\t0x"), col, fmt);
-			File.write(File.out, str[... len]);
+			File.out.write("\n};\n");
 		}
-		File.out.write("\n};\n");
 	}
 	if (!ui.onEvent(action, button, x, y)) {
 		// event not processed, wait for the next one
@@ -110,7 +106,7 @@ int onEvent(int action, int button, int x, int y) {
 	offs.colorMap(null, curves.data);
 	histogram.update(offs);
 	time.value = System.millis() - start;
-	return ui.draw();
+	return ui.draw(offs);
 }
 
 bool onCurveUpdate(Histogram this, int idx, int value) {

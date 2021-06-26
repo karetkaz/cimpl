@@ -66,7 +66,7 @@ ccContext ccInit(rtContext rt, ccInstall mode, vmError onHalt(nfcContext));
  * @param text if not null, this will be compiled instead of the file.
  * @return error code, 0 on success.
  */
-int ccOpen(ccContext cc, char *file, int line, char *text);
+int ccOpen(ccContext cc, const char *file, int line, char *text);
 
 /**
  * Close stream, ensuring it ends correctly.
@@ -182,7 +182,7 @@ symn ccAddCall(ccContext cc, vmError call(nfcContext), const char *proto);
  * @param text If not null, this will be compiled instead of the file.
  * @return Root node of the compilation unit.
  */
-astn ccAddUnit(ccContext cc, int init(ccContext), char *file, int line, char *text);
+astn ccAddUnit(ccContext cc, int init(ccContext), const char *file, int line, char *text);
 
 /**
  * Generate bytecode from the compiled syntax tree.

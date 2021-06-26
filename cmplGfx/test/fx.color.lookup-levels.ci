@@ -13,7 +13,7 @@
 Image back = Image("asset/image/forest.jpg", 32);
 Image offs = Image(back.width(), back.height(), back.depth());
 int onEvent(int action, int button, int x, int y);
-offs.show(onEvent);
+Gui.showWindow(offs, onEvent);
 offs.destroy();
 back.destroy();
 
@@ -117,9 +117,10 @@ Slider sldOutputMax = {
 	onReset: resetInputOutput;
 };
 
-Widget ui = Widget(offs,
+Widget ui = Widget().addItems(
 	histogram,
 	lookup,
+	Layout.divider,
 	sldBrightness,
 	sldOutput,
 	sldOutputMin,
@@ -128,7 +129,7 @@ Widget ui = Widget(offs,
 	sldInputMin,
 	sldInputMax,
 	chkAdvanced,
-	time
+	Layout.divider, time
 );
 
 int onEvent(int action, int button, int x, int y) {
@@ -152,7 +153,7 @@ int onEvent(int action, int button, int x, int y) {
 	histogram.update(offs);
 
 	time.value = System.millis() - start;
-	return ui.draw();
+	return ui.draw(offs);
 }
 
 bool updateInputOutput(Slider slider, int value) {

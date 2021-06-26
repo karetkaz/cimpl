@@ -1,0 +1,82 @@
+// layout test: alignment and padding
+
+inline "/cmplGfx/lib/micro.ui.ci";
+bool onClick(Button this);
+
+Button pad_0 = {
+	text: "padding(0)";
+	onClick: onClick;
+};
+
+Button pad_50 = {
+	text: "padding(50)";
+	onClick: onClick;
+};
+
+Button pad_100 = {
+	text: "padding(100)";
+	onClick: onClick;
+};
+
+Button pad_10_50 = {
+	text: "padding(10, 50)";
+	onClick: onClick;
+};
+
+Button pad_50_10 = {
+	text: "padding(50, 10)";
+	onClick: onClick;
+};
+
+Button pad_10_50_100_0 = {
+	text: "padding(10, 50, 100, 0)";
+	onClick: onClick;
+};
+
+Widget ui = Widget(800, 460)
+//	.addItem(Layout.Column(
+	.padding(0)
+	.addItems(Style.fill,
+		pad_0,
+		pad_50,
+		pad_100,
+		pad_10_50,
+		pad_50_10,
+		pad_10_50_100_0
+	//)
+	);
+
+bool onClick(Button this) {
+	if (this == pad_0) {
+		ui.padding(0);
+		return true;
+	}
+	if (this == pad_50) {
+		ui.padding(50);
+		return true;
+	}
+	if (this == pad_100) {
+		ui.padding(100);
+		return true;
+	}
+
+	if (this == pad_10_50) {
+		ui.padding(10, 50);
+		return true;
+	}
+
+	if (this == pad_50_10) {
+		ui.padding(50, 10);
+		return true;
+	}
+
+	if (this == pad_10_50_100_0) {
+		ui.padding(10, 50, 100, 0);
+		return true;
+	}
+
+	abort("unhandled");
+	return false;
+}
+
+Gui.showWindow(ui);

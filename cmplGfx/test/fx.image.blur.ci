@@ -15,7 +15,7 @@ Image surf = Image("asset/image/forest.jpg", 32);
 Image offs = Image(surf);
 Image blur = Image(surf);
 int onEvent(int action, int button, int x, int y);
-offs.show(onEvent);
+Gui.showWindow(offs, onEvent);
 blur.destroy();
 offs.destroy();
 surf.destroy();
@@ -102,24 +102,13 @@ Slider time = {
 	enabled: false;
 	onDrawSlider: null;
 };
-Button separator = {
-	text: null;
-	height: 3;
-	enabled: false;
-};
-Button separator1 = {
-	text: null;
-	height: 3;
-	visible: 1;
-	enabled: false;
-};
 
-Widget ui = Widget(offs,
-	histogram, separator,
+Widget ui = Widget().addItems(
+	histogram, Layout.divider,
 	sldBlur, sldSharpness,
 	btnLinear, btnReflect, btnRadial, btnSquare,
-	separator1, sldAlpha, sldHardness, chkMoveScale, chkMask, chkRect, btnReset,
-	separator, time
+	Layout.divider, sldAlpha, sldHardness, chkMoveScale, chkMask, chkRect, btnReset,
+	Layout.divider, time
 );
 
 //inline blur(Image surf, int radius) = surf.blur(radius, 0.3 * (radius - 1) + 0.8);
@@ -195,7 +184,7 @@ int onEvent(int action, int button, int x, int y) {
 	} else {
 		ui.setGroup(2);
 	}
-	return ui.draw();
+	return ui.draw(offs);
 }
 bool onMouseEvent(Button view, const Rect r&, const MouseEvent event&) {
 	bool result = Button.onMouseEvent(view, r, event);

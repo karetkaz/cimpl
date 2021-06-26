@@ -212,20 +212,22 @@ uint32 hue(argb rgb) {
 	return hue;
 }
 
-/// linear interpolate a lookup-table with the given colors
-void lerpLut(uint32 lut[], argb colors...) {
-	inline lrp(int32 t, uint32 x, uint32 y) = x + (t * (y - x + 1) >> 16);
+inline mix_s8(int32 t, uint32 a, uint32 b) = a + (t * (b - a + 1) >> 8);
+inline mix_s16(int32 t, uint32 a, uint32 b) = a + (t * (b - a + 1) >> 16);
+inline mix_s8(int32 t, argb a, argb b) = argb(mix_s8(t, rch(a), rch(b)), mix_s8(t, gch(a), gch(b)), mix_s8(t, bch(a), bch(b)));
 
+/// linear interpolate a lookup-table with the given colors
+void lerpLut(argb lut[], argb colors...) {
 	int dt = (colors.length - 1 << 16) / (lut.length - 1);
 	for (int i = 0; i < lut.length; i += 1) {
 		int t = i * dt;
 		argb c1 = colors[t >> 16];
 		argb c2 = colors[(t >> 16) + 1];
-		int32 a = lrp(t & 0xffff, ach(c1), ach(c2));
-		int32 r = lrp(t & 0xffff, rch(c1), rch(c2));
-		int32 g = lrp(t & 0xffff, gch(c1), gch(c2));
-		int32 b = lrp(t & 0xffff, bch(c1), bch(c2));
-		lut[i] = a << 24 | r << 16 | g << 8 | b;
+		int32 a = mix_s16(t & 0xffff, ach(c1), ach(c2));
+		int32 r = mix_s16(t & 0xffff, rch(c1), rch(c2));
+		int32 g = mix_s16(t & 0xffff, gch(c1), gch(c2));
+		int32 b = mix_s16(t & 0xffff, bch(c1), bch(c2));
+		lut[i].v = a << 24 | r << 16 | g << 8 | b;
 	}
 }
 

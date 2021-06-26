@@ -1,10 +1,12 @@
-// CLion.Arguments: -X-stdin+steps -std$PROJECT_DIR$/cmplStd/stdlib.ci -run $PROJECT_DIR$/bin/libGfx.so testGfx.ci
-// CLion.Directory: $PROJECT_DIR$/cmplGfx/test
+// CLion.Arguments: -run $CMakeCurrentBuildDir$/libFile.? $CMakeCurrentBuildDir$/libGfx.? $FilePath$
+// CLion.Directory: $FileDir$
+// CLion.Environment: CMPL_HOME=$PROJECT_DIR$
 
 //inline "../todo/ImageEditor.ci";
-//inline "../todo/ColorPicker.ci";
-//inline "demo/DatePicker.ci";
-//inline "demo/Calculator.ci";
+//inline "demo.widget/DatePicker.ci";
+//inline "demo.widget/Calculator0.ci";
+//inline "demo.widget/layout.Align.ci";
+//inline "demo.widget/layout.padding.ci";
 //inline "fx.image.transform.ci";
 //inline "fx.color.lookup.ci";
 //inline "fx.color.lookup-ease.ci";
@@ -44,6 +46,9 @@ static int onEvent(int action, int button, int x, int y) {
 	}
 	else if (action == Gui.KEY_RELEASE) {
 		event.actionName = "KEY_RELEASE";
+	}
+	else if (action == Gui.MOUSE_WHEEL) {
+		event.actionName = "MOUSE_WHEEL";
 	}
 	else if (action == Gui.MOUSE_PRESS) {
 		event.actionName = "MOUSE_PRESS";
@@ -118,7 +123,7 @@ static int onEvent(int action, int button, int x, int y) {
 			enabled: false;
 			text: "clicks";
 		};
-		static Widget ui = Widget(image,
+		static Widget ui = Widget().addItems(
 			btnAction,
 			sldAction,
 			sldButton,
@@ -136,11 +141,11 @@ static int onEvent(int action, int button, int x, int y) {
 		sldY.value = y;
 		sldKeyRepeat.value = ui.repeat;
 		sldClicks.value = ui.clicks;
-		return ui.draw();
+		return ui.draw(image);
 	}
 
 	return 20000;	// 20 sec timeout
 }
-image.show(onEvent);
+Gui.showWindow(image, onEvent);
 image.destroy();
 // */

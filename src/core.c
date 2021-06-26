@@ -1091,20 +1091,18 @@ void *rtAlloc(rtContext rt, void *ptr, size_t size, void dbg(dbgContext, void *,
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Compiler
 
 ccContext ccInit(rtContext rt, ccInstall mode, vmError onHalt(nfcContext)) {
-	ccContext cc;
 
 	dieif(rt->cc != NULL, ERR_INTERNAL_ERROR);
 	dieif(rt->_beg != rt->_mem + 1, ERR_INTERNAL_ERROR);
 	dieif(rt->_end != rt->_mem + rt->_size, ERR_INTERNAL_ERROR);
 
-	cc = (ccContext)(rt->_end - sizeof(struct ccContextRec));
 	rt->_end -= sizeof(struct ccContextRec);
-
 	if (rt->_end < rt->_beg) {
 		fatal(ERR_MEMORY_OVERRUN);
 		return NULL;
 	}
 
+	ccContext cc = (ccContext) rt->_end;
 	memset(cc, 0, sizeof(struct ccContextRec));
 
 	cc->rt = rt;

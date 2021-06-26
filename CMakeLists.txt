@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.3)
 project(Cmpl)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -D USE_PNG -D USE_JPEG")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/bin>)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/bin>)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99")
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/bin>)
+#set(CMAKE_LIBRARY_OUTPUT_DIRECTORY  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/bin>)
 
 set(CC_HEADER_FILES
 	src/cmpl.h
@@ -49,17 +49,13 @@ set(GX_SOURCE_FILES
 )
 
 add_executable(cmpl ${CC_SOURCE_FILES} src/main.c)
-if (WIN32)
-	target_link_libraries(cmpl m)
-else ()
-	target_link_libraries(cmpl m dl)
-endif ()
 
 add_library(File SHARED cmplFile/src/file.c)
 target_include_directories(File PUBLIC ./src/)
 
 if (WIN32)
 	add_library(Gfx SHARED ${GX_SOURCE_FILES} cmplGfx/src/os_win32/gx_gui.w32.c cmplGfx/src/os_win32/time.w32.c)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D NO_LIBPNG -D NO_LIBJPEG")
 	target_link_libraries(Gfx m gdi32)
 	target_link_libraries(cmpl m)
 else ()
@@ -80,6 +76,6 @@ endif ()
 target_include_directories(Gfx PUBLIC ./src/ ./libs/stb)
 
 # a simple "how to use vm" demo code.
-add_executable(cmplVmEmit ${CC_SOURCE_FILES} src/test/vmMulf32.c)
-target_include_directories(cmplVmEmit PUBLIC ./src/)
-target_link_libraries(cmplVmEmit m dl)
+#add_executable(cmplVmEmit ${CC_SOURCE_FILES} src/test/vmMulf32.c)
+#target_include_directories(cmplVmEmit PUBLIC ./src/)
+#target_link_libraries(cmplVmEmit m dl)

@@ -26,15 +26,15 @@ Instruction length: 4 bytes
 
 **Stack change**
 
-Requires 0 operands: […
+Requires M operands: […
 
-Returns 0 values: […, [TODO]
+Returns N values: […
 
-N and M are equivalent with the function's argument and return value.
+N and M are equivalent with the function's argument size and return value size.
 
 ### Instruction `call`
 
-Perform subroutine call.
+Perform function call.
 
 **Description**
 
@@ -44,13 +44,17 @@ Instruction length: 1 byte
 
 **Stack change**
 
-Requires 1 operand: […, a
+Requires 1 operand: […, FP
 
-Returns 1 value: […, a, [TODO]
+Returns 1 value: […, IP
+
+* FP = pop();   pop function pointer
+* push(IP);     push current instruction pointer (return address)
+* IP = FP;      jump to execute the function
 
 ### Instruction `ret`
 
-Perform [TODO]
+Perform the return from a function call
 
 **Description**
 
@@ -60,9 +64,11 @@ Instruction length: 1 byte
 
 **Stack change**
 
-Requires 1 operand: […, a
+Requires 1 operand: […, IP
 
-Returns 0 value: […, [TODO]
+Returns 0 value: […
+
+* IP = pop();     set instruction pointer to the previously saved one
 
 ### Instruction `jmp`
 

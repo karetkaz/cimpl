@@ -1726,7 +1726,7 @@ static vmError dbgDummy(dbgContext ctx, vmError err, size_t ss, void *stack, siz
 	vmInstruction ip = vmPointer(rt, caller);
 
 	// source code position
-	char *file = NULL;
+	const char *file = NULL;
 	int line = 0;
 	dbgn dbg = mapDbgStatement(rt, caller, NULL);
 	if (dbg != NULL && dbg->file != NULL && dbg->line > 0) {
@@ -2327,7 +2327,7 @@ void printVal(FILE *out, const char **esc, rtContext ctx, symn var, vmValue *val
 	}
 }
 
-static void traceArgs(rtContext rt, FILE *out, symn fun, char *file, int line, void *sp, int indent, dmpMode mode) {
+static void traceArgs(rtContext rt, FILE *out, symn fun, const char *file, int line, void *sp, int indent, dmpMode mode) {
 	symn sym;
 	int printFileLine = 0;
 
@@ -2414,7 +2414,7 @@ void traceCalls(dbgContext dbg, FILE *out, int indent, size_t maxCalls, size_t s
 		dbgn trInfo = mapDbgStatement(rt, trace->caller, NULL);
 		symn fun = rtLookup(rt, trace->callee, 0);
 		stkptr sp = trace->sp;
-		char *file = NULL;
+		const char *file = NULL;
 		int line = 0;
 
 		dieif(fun == NULL, ERR_INTERNAL_ERROR);

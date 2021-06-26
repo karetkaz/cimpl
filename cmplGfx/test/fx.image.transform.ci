@@ -13,7 +13,7 @@
 Image back = Image("asset/image/forest.jpg", 32);
 Image offs = Image("asset/image/texture_nature_01.png", back.width(), back.height(), 32);
 int onEvent(int action, int button, int x, int y);
-offs.show(onEvent);
+Gui.showWindow(offs, onEvent);
 offs.destroy();
 back.destroy();
 
@@ -142,7 +142,7 @@ Slider imgRatio = {
 	value: back.width() * imgRatio.divisor / back.height();
 };
 
-Widget ui = Widget(offs,
+Widget ui = Widget().addItems(
 	quality,
 	fitWidth, fitHeight,
 	scaleX, scaleY,
@@ -181,5 +181,5 @@ int onEvent(int action, int button, int x, int y) {
 		.mul(fitMatrix(back, to.w, to.h, fitWidth.checked(), fitHeight.checked(), 1, 0));
 	debug("transform", mat.m);
 	offs.transform(to, back, null, quality.checked() ? 1 : 0, mat.data);
-	return ui.draw();
+	return ui.draw(offs);
 }

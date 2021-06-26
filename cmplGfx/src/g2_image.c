@@ -549,7 +549,7 @@ GxImage loadFnt(GxImage dst, const char *src) {
 	return dst;
 }
 
-#ifdef USE_JPEG
+#ifndef NO_LIBJPEG
 #include <jpeglib.h>
 GxImage loadJpg(GxImage dst, const char *src, int depth) {
 	FILE *fin = fopen(src, "rb");
@@ -628,7 +628,7 @@ GxImage loadJpg(GxImage dst, const char *src, int depth) {
 }
 #endif
 
-#ifdef USE_PNG
+#ifndef NO_LIBPNG
 #include <png.h>
 GxImage loadPng(GxImage dst, const char *src, int depth) {
 	// 8 is the maximum size that can be checked
@@ -819,10 +819,9 @@ GxImage loadImg(GxImage dst, const char *src, int depth) {
 		return NULL;
 	}
 
-	for (int y = 0; y < dst->height; ++y) {
-		int srcSize = width * channels;
-		int srcOffs = y * srcSize;
-		int dstOffs = y * dst->scanLen;
+	for (ssize_t y = 0; y < height; ++y) {
+		size_t dstOffs = y * dst->scanLen;
+		size_t srcOffs = y * width * channels;
 		blt(dst->basePtr + dstOffs, pixels + srcOffs, NULL, width);
 	}
 	stbi_image_free(pixels);
@@ -891,6 +890,7 @@ GxImage loadTtf(GxImage dst, const char *src, int height, int firstChar, int las
 	int x = 0;
 	GxFLut lut = dst->LLUTPtr;
 	lut->count = numChars;
+	fillRect(dst, 0, 0, (1 << 16) - 1, (1 << 16) - 1, 0);
 	for (int i = 0; i < numChars; ++i) {
 		stbtt_bakedchar *inf = &cdata[i];
 		int yLen = inf->y1 - inf->y0;

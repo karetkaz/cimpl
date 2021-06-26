@@ -157,7 +157,37 @@ mat4f rotation(const vec4f center&, const vec4f direction&, float32 angle) {
 }
 
 /// Build a rotation matrix
-inline rotation(const vec4f direction&, float32 angle) = rotation(vec4f(0), direction, angle);
+mat4f rotation(const vec4f direction&, float angle) {
+	float32 xx = direction.x * direction.x;
+	float32 yy = direction.y * direction.y;
+	float32 zz = direction.z * direction.z;
+	float32 xy = direction.x * direction.y;
+	float32 xz = direction.x * direction.z;
+	float32 yz = direction.y * direction.z;
+	float32 s = float32.sin(angle);
+	float32 c = float32.cos(angle);
+	float32 k = 1 - c;
+	vec4f tmp = mul(direction, s);
+
+	return {
+		xx: k * xx + c;
+		xy: k * xy - tmp.z;
+		xz: k * xz + tmp.y;
+		xw: 0;
+
+		yx: k * xy + tmp.z;
+		yy: k * yy + c;
+		yz: k * yz - tmp.x;
+		yw: 0;
+
+		zx: k * xz - tmp.y;
+		zy: k * yz + tmp.x;
+		zz: k * zz + c;
+		zw: 0;
+
+		w: vec4f(0, 0, 0, 1);
+	};
+}
 
 /// Build a translation matrix
 mat4f translation(const vec4f direction&, float32 amount) {

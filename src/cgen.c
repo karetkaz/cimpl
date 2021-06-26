@@ -753,7 +753,7 @@ static ccKind genCall(ccContext cc, astn ast) {
 		int argc = 0;
 
 		if (function == cc->libc_dbg) {
-			char *file = ast->file;
+			const char *file = ast->file;
 			int line = ast->line;
 
 			// use the location of the expression statement, not the expansion

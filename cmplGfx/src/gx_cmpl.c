@@ -96,9 +96,14 @@ static vmError surf_recycle(nfcContext ctx) {
 }
 
 static const char *const proto_image_defFont = "Image font";
-static vmError gui_defFont(nfcContext ctx) {
+static const char *const proto_image_null = "Image null";
+static vmError surf_const(nfcContext ctx) {
 	if (ctx->proto == proto_image_defFont) {
 		rethnd(ctx, fnt);
+		return noError;
+	}
+	if (ctx->proto == proto_image_null) {
+		rethnd(ctx, NULL);
 		return noError;
 	}
 	return nativeCallError;
@@ -120,7 +125,7 @@ static vmError surf_open(nfcContext ctx) {
 	}
 	else if (ctx->proto == proto_image_openTtf) {
 		int height = nextValue(ctx).i32;
-		result = loadTtf(NULL, path, height, 31, 127);
+		result = loadTtf(NULL, path, height, 31, 256);
 	}
 	else if (ctx->proto == proto_image_openBmp) {
 		int depth = nextValue(ctx).i32;
@@ -1626,6 +1631,7 @@ int cmplInit(rtContext rt) {
 		{surf_open,     proto_image_openTtf},
 		{surf_open,     proto_image_openFnt},
 		{surf_save,     proto_image_saveBmp},
+		{surf_const,    proto_image_null},
 
 		{surf_width,    proto_image_width},
 		{surf_height,   proto_image_height},
@@ -1655,8 +1661,9 @@ int cmplInit(rtContext rt) {
 		{surf_drawMesh, proto_image_drawMesh},
 	},
 	nfcWindow[] = {
-		{window_show, proto_window_show},
+		{window_show,  proto_window_show},
 		{window_title, proto_window_title},
+		{surf_const,   proto_image_defFont},
 	},
 	nfcMesh[] = {
 		{mesh_recycle, proto_mesh_create},
@@ -1784,6 +1791,7 @@ int cmplInit(rtContext rt) {
 	if (gui != NULL) {
 		rt->api.ccDefInt(cc, "KEY_PRESS", KEY_PRESS);
 		rt->api.ccDefInt(cc, "KEY_RELEASE", KEY_RELEASE);
+		rt->api.ccDefInt(cc, "MOUSE_WHEEL", MOUSE_WHEEL);
 		rt->api.ccDefInt(cc, "MOUSE_PRESS", MOUSE_PRESS);
 		rt->api.ccDefInt(cc, "MOUSE_MOTION", MOUSE_MOTION);
 		rt->api.ccDefInt(cc, "MOUSE_RELEASE", MOUSE_RELEASE);
@@ -1793,7 +1801,6 @@ int cmplInit(rtContext rt) {
 		rt->api.ccDefInt(cc, "EVENT_TIMEOUT", EVENT_TIMEOUT);
 
 		rt->api.ccDefInt(cc, "WINDOW_INIT", WINDOW_INIT);
-		rt->api.ccDefInt(cc, "WINDOW_DRAW", WINDOW_DRAW);
 		rt->api.ccDefInt(cc, "WINDOW_CLOSE", WINDOW_CLOSE);
 		rt->api.ccDefInt(cc, "WINDOW_ENTER", WINDOW_ENTER);
 		rt->api.ccDefInt(cc, "WINDOW_LEAVE", WINDOW_LEAVE);
@@ -1806,9 +1813,6 @@ int cmplInit(rtContext rt) {
 			if (!rt->api.ccAddCall(cc, nfcWindow[i].func, nfcWindow[i].proto)) {
 				return 1;
 			}
-		}
-		if (!rt->api.ccAddCall(cc, gui_defFont, proto_image_defFont)) {
-			return 1;
 		}
 
 		rt->api.ccEnd(cc, gui);

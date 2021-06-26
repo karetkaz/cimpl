@@ -1,112 +1,6 @@
 // analog clock using antialias lines
-
-void drawAALine(Image img, int x1, int y1, int x2, int y2, uint32 color) {
-	inline mix(int t, int a, int b) = a + (t * (b - a + 1) >> 8);
-	inline mix(int t, argb a, argb b) = argb(mix(t, rch(a), rch(b)), mix(t, gch(a), gch(b)), mix(t, bch(a), bch(b)));
-	inline mix(Image img, int x0, int y0, int alpha, uint32 color) = img.set(x0, y0, mix(alpha, argb(uint32(img.get(x0, y0))), argb(color)));
-
-	if (x1 == x2 || y1 == y2) {
-		img.drawLine(x1, y1, x2, y2, color);
-		return;
-	}
-
-	int dx = x2 - x1;
-	int dy = y2 - y1;
-
-	int g2 = (dx << 16) / dy;
-	if ((g2 >> 16) == (g2 >> 31)) {
-		dx = (dx << 16) / dy;
-		if (y1 > y2) {
-			int y = y1;
-			y1 = y2;
-			y2 = y;
-			x1 = x2;
-		}
-		int x = (x1 << 16);
-		if (y1 < 0) {
-			x -= dx * y1;
-			y1 = 0;
-		}
-		if (y2 > img.height()) {
-			y2 = img.height();
-		}
-
-		for (int y = y1; y <= y2; y += 1) {
-			int alpha = (~x >> 8) & 255;
-			img.mix(x >> 16, y, alpha, color);
-			img.mix((x >> 16) + 1, y, 255 - alpha, color);
-			x += dx;
-		}
-		return;
-	}
-
-	dy = (dy << 16) / dx;
-	if (x1 > x2) {
-		int x = x1;
-		x1 = x2;
-		x2 = x;
-		y1 = y2;
-	}
-	int y = (y1 << 16);
-	if (x1 < 0) {
-		y -= dy * x1;
-		x1 = 0;
-	}
-	if (x2 > img.width()) {
-		x2 = img.width();
-	}
-
-	for (int x = x1; x <= x2; x += 1) {
-		uint32 alpha = (~y >> 8) & 255;
-		img.mix(x, y >> 16, alpha, color);
-		img.mix(x, (y >> 16) + 1, 255 - alpha, color);
-		y += dy;
-	}
-}
-
-void fillAAOval(Image image, int x1, int y1, int x2, int y2, uint32 color) {
-	return Image.fillOval(image, x1, y1, x2, y2, color);
-	// TODO: alpha mix color with background
-	if (x1 > x2) {
-		int t = x1;
-		x1 = x2;
-		x2 = t;
-	}
-	if (y1 > y2) {
-		int t = y1;
-		y1 = y2;
-		y2 = t;
-	}
-	int dx = x2 - x1;
-	int dy = y2 - y1;
-
-	x2 = x1 += dx / 2;
-	x1 += dx & 1;
-	dx += dx & 1;
-	dy += dy & 1;
-
-	int sx = dx * dx;
-	int sy = dy * dy;
-
-	int r = sx * dy / 4;
-	int rdy = r * 2;
-	int rdx = 0;
-
-	for (;y1 < y2;) {
-		image.fillRect(x1, y1, x2, y1, color);
-		image.fillRect(x1, y2, x2, y2, color);
-		if (r >= 0) {
-			x1 -= 1;
-			x2 += 1;
-			r -= rdx += sy;
-		}
-		if (r < 0) {
-			y1 += 1;
-			y2 -= 1;
-			r += rdy -= sx;
-		}
-	}
-	image.fillRect(x1, y2, x2, y2+1, color);
+static if (typename(Image.drawAALine) == null) {
+inline "/cmplGfx/lib/emulated/aaDraw.ci";
 }
 
 inline hourText = 0xadadad;
@@ -205,5 +99,5 @@ int onEvent(int action, int button, int ex, int ey) {
 	return 25;
 }
 
-offs.show(onEvent);
+Gui.showWindow(offs, onEvent);
 offs.destroy();

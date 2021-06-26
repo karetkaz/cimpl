@@ -1,36 +1,49 @@
 // micro ui, TODO: add comments
 
+inline debugRect(Image img, const Rect rect&, uint32 rgb) = void(0); //img.drawRect(rect, rgb);
+
 struct Style {
-	const int align;
+	static const argb dark = argb(0x1a1a1a);
+	static const argb light = argb(0xdadada);
+	static const argb accent = argb(51, 123, 246);
+
+	int align;
 	const int padding = 8;
 
 	const Image font = Gui.font;
 	const FormatFlags fmtInt;
 	const FormatFlags fmtFlt;
 
-	int backgroundColor = 0x1a1a1a;
-	int hoveredColor = 0x2a2a2a;
-	int focusedColor = 0x3b4754;
-	int valueColor = 0x6897bb;
-	int textColor = 0xdadada;
+	uint32 backgroundColor = 0x1a1a1a;
+	// int highlightColor = TODO;
+	// int disabledColor = TODO;
+	uint32 hoveredColor = 0x2a2a2a;
+	uint32 focusedColor = 0x3b4754;
+	uint32 valueColor = 0x6897bb;
+	uint32 textColor = 0xdadada;
 
 	enum: int32 {
 		center: 0;
 
-		left: 1;
-		right: 2;
-
-		top: 4;
+		top: 1;
+		left: 2;
+		right: 4;
 		bottom: 8;
 
-		topLeft: top + left;
-		topRight: top + right;
-		bottomLeft: bottom + left;
-		bottomRight: bottom + right;
+		topLeft: top | left;
+		topRight: top | right;
+		bottomLeft: bottom | left;
+		bottomRight: bottom | right;
 
-		vertical: left + right;
-		horizontal: top + bottom;
-		fill: vertical + horizontal;
+		vertical: left | right;
+		verticalTop: vertical | top;
+		verticalBottom: vertical | bottom;
+
+		horizontal: top | bottom;
+		horizontalLeft: horizontal | left;
+		horizontalRight: horizontal | right;
+
+		fill: top | left | right | bottom;
 	}
 
 	enum: int32 {
@@ -95,6 +108,14 @@ struct Style {
 		return align(this, parent, &rect, value, this.padding, this.align);
 	}
 
+	static void setColor(Style style&, argb background, argb accent) {
+		style.backgroundColor = uint32(background);
+		style.hoveredColor = uint32(mix_s8(16, background, accent));
+		style.focusedColor = uint32(mix_s8(64, background, accent));
+		style.valueColor = uint32(accent);
+		style.textColor = uint32(gray(lum(background) > 128 ? 0 : 150));
+	}
+
 	inline vertical(int align) = (align & vertical) == vertical;
 	inline horizontal(int align) = (align & horizontal) == horizontal;
 }
@@ -148,6 +169,10 @@ struct MouseEvent {
 	}
 }
 
+/** View is the base class of all user interface elements.
+ * it has width and height, forming a rectangular shape on screen.
+ * by it's own a view has no position, it must be positioned in a layout.
+ */
 struct View: object {
 	/// fixed or minimum width of the view
 	const int width = -5;
@@ -156,13 +181,19 @@ struct View: object {
 	const int height = -5;
 
 	/// visibility flags (the view will be visible if Widget.visibleGroup matches at least one common bit set)
-	const int visible = -1;
+	const int visible = -1;	// fixme: remove
 
 	/// the view accepts any user input(event) or not
 	bool enabled = true;
 
 	/// the view can be active(focused) or not
 	const bool focusable = true;
+
+	// parent view (FIXME: using pointer to disable recursive printing)
+	pointer parent = null;
+
+	// style (FIXME: using pointer to enable updating the reference)
+	pointer style = null;
 
 	/// user attached data
 	variant data = null;
@@ -175,7 +206,11 @@ struct View: object {
 		return false;
 	}
 
-	void onCreate(View this) {
+	void onCreate(View this, View parent) {
+		this.parent = parent;
+		if (this.style == null) {
+			this.style = parent.style;
+		}
 	}
 
 	void onDestroy(View this) {
@@ -230,7 +265,7 @@ struct View: object {
 		return this.onClick(this);
 	}
 
-	bool onMeasure(View this, Rect rect&, const Style style&, int visible) {
+	bool onMeasure(View this, Rect rect&, int visible) {
 		if ((this.visible & visible) == 0) {
 			// view is hidden
 			rect.w = rect.h = 0;
@@ -247,8 +282,15 @@ struct View: object {
 		return true;
 	}
 
-	void onDraw(View this, Image offs, Rect rect, const Style style&);
-	static void onDraw(View this, Image offs, Rect rect, const Style style&, int state) {
+	void onDraw(View this, Image offs, Rect rect, const Style style&) {
+	}
+	static void onDraw(View this, Image offs, Rect rect, int state) {
+		Style style& = this.style;
+		View parent = this.parent;
+
+		if (parent.style != this.style) {
+			offs.fillRect(rect, style.backgroundColor);
+		}
 		if (state & Style.focused) {
 			offs.fillRect(rect, style.focusedColor);
 		}
@@ -276,12 +318,21 @@ struct View: object {
 	}
 }
 
+/** Layout is a view containing other views positioned by it.
+ * the Layout class does not clip its children.
+ * the size of the Layout class should contain all the views.
+ */
 struct Layout: View {
 	struct Item {
 		Rect rect;
 		View view;
 		int align;
 	}
+
+	static View divider = {
+		enabled: false;
+		focusable: false;
+	};
 
 	int itemCount = 0;
 	int itemCapacity = 0;
@@ -290,6 +341,17 @@ struct Layout: View {
 	int hoveredIndex = -1;
 	int pressedIndex = -1;
 	int focusedIndex = -1;
+
+	// us positive value for fixed size, negative values for expandable minimum size
+//	int colSpacing = 0;
+//	int rowSpacing = 0;
+
+	bool measure = true;
+
+	int paddingTop = 0;
+	int paddingLeft = 0;
+	int paddingRight = 0;
+	int paddingBottom = 0;
 
 	/** Vertical, horizontal or other orientation of the layout
 	 * zero represents a stack(Qt) or frame(Android) layout (all child elements are placed on top of each other)
@@ -344,40 +406,48 @@ struct Layout: View {
 		return -1;
 	}
 
-	static void setItems(Layout this, int align, View views...) {
-		this.itemCount = views.length;
-		this.itemCapacity = views.length;
-		this.items = pointer.alloc(null, views.length * sizeof(Item));
-
-		for (int i = 0; i < views.length; i += 1) {
-			Item item& = this.items[i];
-			item.view = views[i];
-			item.align = align;
+	static Layout capacity(Layout this, int capacity) {
+		assert(capacity >= this.itemCount);
+		if (capacity == this.itemCapacity) {
+			// no need to change
+			return;
 		}
-	}
 
-	static Layout addItem(Layout this, int align, View view) {
-		if (this.itemCount >= this.itemCapacity) {
-			if (this.itemCapacity > 0) {
-				this.itemCapacity *= 2;
-			} else {
-				this.itemCapacity = 1;
-			}
-
-			Item items[*] = this.items;
-			this.items = pointer.alloc(null, this.itemCapacity * sizeof(Item));
-			pointer.copy(this.items, items, this.itemCount * sizeof(Item));
-			pointer.alloc(items, 0);
-		}
-		Item item& = this.items[this.itemCount];
-		this.itemCount += 1;
-		item.view = view;
-		item.align = align;
+		Item items[*] = this.items;
+		this.itemCapacity = capacity;
+		this.items = pointer.alloc(null, this.itemCapacity * sizeof(Item));
+		pointer.copy(this.items, items, this.itemCount * sizeof(Item));
+		pointer.alloc(items, 0);
 		return this;
 	}
 
-	static Layout addItem(Layout this, View view) {
-		return addItem(this, Style.fill, view);
+	static Layout addItems(Layout this, int align, View views...) {
+		int itemCount = this.itemCount + views.length;
+		if (itemCount >= this.itemCapacity) {
+			// double the capacity
+			int capacity = 2 * this.itemCapacity;
+			if (capacity < itemCount) {
+				capacity = itemCount;
+			}
+			this.capacity(capacity);
+		}
+
+		for (int i = 0; i < views.length; i += 1) {
+			Item item& = this.items[this.itemCount + i];
+			item.view = views[i];
+			item.align = align;
+		}
+		this.itemCount = itemCount;
+		return this;
+	}
+
+	static Layout padding(Layout this, int top, int left, int right, int bottom) {
+		this.measure = true;
+		this.paddingTop = top;
+		this.paddingLeft = left;
+		this.paddingRight = right;
+		this.paddingBottom = bottom;
+		return this;
 	}
 
 	bool onClick(Layout this) {
@@ -396,10 +466,11 @@ struct Layout: View {
 		return result;
 	}
 
-	void onCreate(Layout this) {
+	void onCreate(Layout this, View parent) {
+		View.onCreate(this, parent);
 		for (int i = 0; i < this.itemCount; i += 1) {
 			View view = this.items[i].view;
-			view.onCreate(view);
+			view.onCreate(view, this);
 		}
 	}
 
@@ -514,7 +585,7 @@ struct Layout: View {
 		return result;
 	}
 
-	bool onMeasure(Layout this, Rect measured&, const Style style&, int visible) {
+	bool onMeasure(Layout this, Rect measured&, int visible) {
 		int dir = this.orientation;
 		int N = Math.abs(dir);
 		int n = 0;
@@ -528,7 +599,8 @@ struct Layout: View {
 			Item item& = this.items[i];
 			Rect rect& = item.rect;
 			View view = item.view;
-			if (view.onMeasure(view, &rect, style, visible)) {
+			rect.w = rect.h = 0;
+			if (view.onMeasure(view, &rect, visible)) {
 				int width = rect.w;
 				int height = rect.h;
 				if (n >= N) {
@@ -559,9 +631,9 @@ struct Layout: View {
 			// multi column layout, using uniform height
 			sumHeight = maxHeight * rows;
 		}
-		measured.w = sumWidth;
-		measured.h = sumHeight;
-		return View.onMeasure(this, &measured, style, visible);
+		measured.w = sumWidth + this.paddingLeft + this.paddingRight;
+		measured.h = sumHeight + this.paddingTop + this.paddingBottom;
+		return View.onMeasure(this, &measured, visible);
 	}
 
 	// TODO: make layout part of the measure step: to calculate the correct width and height,
@@ -734,6 +806,8 @@ struct Layout: View {
 		}
 	}
 	void onLayout(Layout this, Rect measured&) {
+		inline padd(Rect rect&, int t, int l, int r, int b) = adjust(&rect, -l, -t, l + r, t + b);
+		measured.padd(-this.paddingTop, -this.paddingLeft, -this.paddingRight, -this.paddingBottom);
 		if (this.orientation > 0) {
 			/* Multi column vertical layout, ex 3 cols:
 			/--- col0 ---+--- col1 ---+--- col2 ---\
@@ -741,7 +815,10 @@ struct Layout: View {
 			|   item03   |   item04   |            | row1
 			.    ...     |    ...     |    ...     . rowN
 			\------------+------------+-----------*/
-			return verticalLayout(this, &measured, this.orientation);
+			verticalLayout(this, &measured, this.orientation);
+			measured.padd(this.paddingTop, this.paddingLeft, this.paddingRight, this.paddingBottom);
+			return;
+			//return verticalLayout(this, &measured, this.orientation);
 		}
 		if (this.orientation < 0) {
 			/* multi row horizontal layout, ex 2 rows:
@@ -749,7 +826,10 @@ struct Layout: View {
 			|   item00   |   item02   |   item04   |    ...     | row0
 			|   item01   |   item03   |    ...     |    ...     | row1
 			\------------+------------+------------+--- ... ---*/
-			return horizontalLayout(this, &measured, -this.orientation);
+			horizontalLayout(this, &measured, -this.orientation);
+			measured.padd(this.paddingTop, this.paddingLeft, this.paddingRight, this.paddingBottom);
+			return;
+			//return horizontalLayout(this, &measured, -this.orientation);
 		}
 
 		Rect r = {
@@ -770,6 +850,7 @@ struct Layout: View {
 				}
 			}
 		}
+		measured.padd(this.paddingTop, this.paddingLeft, this.paddingRight, this.paddingBottom);
 	}
 
 	void onDraw(Layout this, Image offs, Rect parent, const Style style&) {
@@ -789,19 +870,21 @@ struct Layout: View {
 					if (i == this.focusedIndex) {
 						state |= Style.focused;
 					}
-//					offs.drawRect(rect, 0x00ff00);
+					offs.debugRect(rect, 0x00ff00);
 				}
-				view.onDraw(offs, rect, style, state);
+				view.onDraw(offs, rect, state);
 			}
 		}
-//		offs.drawRect(parent, 0xff0000);
+		offs.debugRect(parent, 0xff0000);
 	}
 
 	static Layout Custom(int rowsCols, int align, View items...) {
 		Layout layout = {
 			orientation: rowsCols;
 		};
-		layout.setItems(align, ...items);
+		if (items.length > 0) {
+			layout.addItems(align, ...items);
+		}
 		return layout;
 	}
 	static Layout Row(View items...) {
@@ -810,24 +893,28 @@ struct Layout: View {
 	static Layout Column(View items...) {
 		return Custom(1, Style.fill, ...items);
 	}
+	static Layout Frame(View items...) {
+		return Custom(0, Style.fill, ...items);
+	}
 	// FIXME: inline Row(View items...) = Custom(-1, Style.fill, items);
 	// FIXME: inline Column(View items...) = Custom(1, Style.fill, items);
 }
 
+/** Widget is a special kind of layout, which can clip the content of its elements.
+ * a widget may clip its children and apply scrolling to them, even show a scrollbar.
+ */
 struct Widget: Layout {
-	Style style;
-	Image offs;
 	Rect rect;
+	Style widgetStyle;
 
-	bool measure = true;
-	bool hidden = false;
 	int visibleGroup = -1;
 	int scrollX = 0;
 	int scrollY = 0;
-	int padding = 3;
-	int align = Style.topRight;
-	int margin = 10;
-	int radius = 5;
+
+	// fixme: these are needed to draw the widget on an image, move them to a different class
+	// the default method should be to draw it on the entire image
+	int position = Style.fill;
+	int radius = 0;
 
 	// Mouse state
 	int clicks;
@@ -981,7 +1068,7 @@ struct Widget: Layout {
 			this.visibleGroup = group;
 			if (selectFirst) {
 				// measure then focus first visible view
-				this.onMeasure(this, &this.rect, this.style, group);
+				this.onMeasure(this, &this.rect, group);
 				this.clearState(Style.focused);
 				this.focusNext(false);
 			}
@@ -992,38 +1079,71 @@ struct Widget: Layout {
 	}
 	inline setGroup(Widget this, int group) = setGroup(this, group, false);
 
-	static Widget addItem(Widget this, int align, View view) {
-		Layout.addItem(this, align, view);
+	static Widget addItems(Widget this, int align, View views...) {
+		Layout.addItems(this, align, ...views);
 		return this;
 	}
 
-	static Widget addItem(Widget this, View view) {
-		Layout.addItem(this, view);
+	static Widget addItems(Widget this, View views...) {
+		Layout.addItems(this, Style.fill, ...views);
 		return this;
 	}
 
-	void onLayout(Widget this, Rect measured&) {
-		Rect r = {
-			x: this.margin;
-			y: this.margin;
-			w: this.offs.width() - 2 * this.margin;
-			h: this.offs.height() - 2 * this.margin;
+	static Widget style(Widget this, const Style style&) {
+		this.style = style;
+		return this;
+	}
+
+	static Widget theme(Widget this, argb background, argb accent) {
+		Style style& = this.style;
+		style.setColor(background, accent);
+		return this;
+	}
+
+	static Widget theme(Widget this, argb background) {
+		return this.theme(background, Style.accent);
+	}
+
+	static Widget padding(Widget this, int padding) {
+		Layout.padding(this, padding, padding, padding, padding);
+		return this;
+	}
+	static Layout padding(Widget this, int vertical, int horizontal) {
+		Layout.padding(this, vertical, horizontal, horizontal, vertical);
+		return this;
+	}
+	static Layout padding(Layout this, int top, int left, int right, int bottom) {
+		Layout.padding(this, top, left, right, bottom);
+		return this;
+	}
+
+	void onCreate(Widget this, View parent) {
+		Layout.onCreate(this, parent);
+		this.measure = true;
+
+		// measure then focus first visible view
+		this.onMeasure(this, &this.rect, this.visibleGroup);
+		this.clearState(Style.focused);
+		this.focusNext(false);
+	}
+
+	bool onMeasure(Widget this, Rect measured&, int visible) {
+		int margin = this.position >> 8;
+		int align = this.position & 255;
+		Rect rect = {
+			x: margin;
+			y: margin;
+			w: measured.w - 2 * margin;
+			h: measured.h - 2 * margin;
 		};
 
-		if (Style.vertical(this.align)) {
-			measured.w = r.w - 2 * this.padding;
-		}
-		if (Style.horizontal(this.align)) {
-			measured.h = r.h - 2 * this.padding;
-		}
+		Layout.onMeasure(this, &measured, visible);
+		this.measure = false;
 
-		measured.x = this.padding;
-		measured.y = this.padding;
-		Layout.onLayout(this, &measured);
-		measured.w += 2 * this.padding;
-		measured.h += 2 * this.padding;
-
-		Style.align(r, &measured, this.align);
+		measured.x = measured.y = 0;
+		this.onLayout(this, &measured);
+		Style.align(rect, &measured, align);
+		return true;
 	}
 
 	void onDraw(Widget this, Image offs, Rect rect, const Style style&) {
@@ -1063,12 +1183,8 @@ struct Widget: Layout {
 
 	static bool onEvent(Widget this, int action, int button, int x, int y) {
 		if (action == Gui.WINDOW_INIT) {
-			action = Gui.WINDOW_DRAW;
-			this.onCreate(this);
-			// measure then focus first visible view
-			this.onMeasure(this, &this.rect, this.style, this.visibleGroup);
-			this.clearState(Style.focused);
-			this.focusNext(false);
+			this.onCreate(this, this);
+			this.measure = true;
 			return true;
 		}
 		if (action == Gui.WINDOW_CLOSE) {
@@ -1077,27 +1193,12 @@ struct Widget: Layout {
 			this.destroy();
 			return false;
 		}
-		if (action == Gui.WINDOW_DRAW) {
-			if (this.hidden) {
-				return;
-			}
-			Rect rect& = this.rect;
-			if (this.measure) {
-				rect.w = rect.h = 0;
-				this.onMeasure(this, &rect, this.style, this.visibleGroup);
-				this.onLayout(this, &rect);
-				this.measure = false;
-			}
-			this.onDraw(this, this.offs, rect, this.style);
-			return true;
-		}
 		if (action == Gui.WINDOW_ENTER) {
 			// do not process event
 			return false;
 		}
 		if (action == Gui.WINDOW_LEAVE) {
-			// do not process event
-			return false;
+			return this.clearState(Style.hovered);
 		}
 
 		if (action == Gui.FINGER_PRESS) {
@@ -1213,6 +1314,7 @@ struct Widget: Layout {
 
 			if (button == '\t' || button == '\r') {
 				// Tab, Enter: select prev or next control.
+				this.clearState(Style.hovered);
 				if (!this.focusNext(this.isShift)) {
 					return this.focusNext(this.isShift);
 				}
@@ -1221,15 +1323,25 @@ struct Widget: Layout {
 			if (button == '[' || button == ']') {
 				// hide, show controls
 				if (button == '[') {
-					this.hidden = !this.hidden;
-					return true;
+					if ((this.position & 255) != Style.topLeft) {
+						this.position &= ~255;
+						this.position |= Style.topLeft;
+					} else {
+						this.enabled = !this.enabled;
+						return true;
+					}
 				}
 				if (button == ']') {
-					this.hidden = !this.hidden;
-					return true;
+					if ((this.position & 255) != Style.topRight) {
+						this.position &= ~255;
+						this.position |= Style.topRight;
+					} else {
+						this.enabled = !this.enabled;
+						return true;
+					}
 				}
 
-				this.hidden = false;
+				this.enabled = true;
 				this.measure = true;
 				return true;
 			}
@@ -1284,58 +1396,79 @@ struct Widget: Layout {
 		return false;
 	}
 
-	static int draw(Widget this) {
-		if (this.timeout > 0) {
-			int64 timeout = this.timeout - System.millis();
-			this.onEvent(Gui.WINDOW_DRAW, 0, 0, 0);
-			return Math.max(int64(0), timeout);
+	static int draw(Widget this, Image offs) {
+		if (!this.enabled) {
+			// widget is disabled, do not show it
+			return 0;
 		}
-		this.onEvent(Gui.WINDOW_DRAW, 0, 0, 0);
-		return 0;
-	}
-
-	static Widget margin(Widget this, int align, int margin, int radius) {
-		this.align = align;
-		this.margin = margin;
-		this.radius = radius;
-		return this;
-	}
-	static Widget padding(Widget this, int padding) {
-		this.padding = padding;
-		return this;
+		int64 timeout = 0;
+		if (this.timeout > 0) {
+			timeout = this.timeout - System.millis();
+			if (timeout < 0) {
+				timeout = 0;
+			}
+		}
+		Rect rect& = this.rect;
+		if (this.measure) {
+			rect.w = offs.width();
+			rect.h = offs.height();
+			this.onMeasure(this, &rect, this.visibleGroup);
+			this.measure = false;
+		}
+		this.onDraw(offs, rect, 0);
+		return timeout;
 	}
 }
 
-Widget Widget(Image offs, const Style style&, View items...) {
-	Widget layout = {
+Widget Widget() {
+	Widget widget = {
 		rect: {};
-		offs: offs;
-		style: style;
+		radius: 5;
+		position: 10 << 8 | Style.topRight;
+		paddingTop: 3;
+		paddingLeft: 3;
+		paddingRight: 3;
+		paddingBottom: 3;
+		widgetStyle: {
+			align: Style.left;
+			fmtInt: { padLen: 4 };
+			fmtFlt: { padLen: 5, precision: 2 };
+		};
 	};
-
-	layout.setItems(Style.fill, ...items);
-	return layout;
+	widget.style = widget.widgetStyle;
+	return widget;
 }
-Widget Widget(Image offs, View items...) {
-	Style style = {
-		align: Style.left;
-		fmtInt: { padLen: 4 };
-		fmtFlt: { padLen: 5, precision: 2 };
+Widget Widget(int width, int height, int align, void onCreate(Layout this, View parent)) {
+	Widget widget = {
+		rect: {};
+		width: width;
+		height: height;
+		onCreate: onCreate;
+		widgetStyle: {
+			align: align;
+			fmtInt: { padLen: 4 };
+			fmtFlt: { padLen: 5, precision: 2 };
+		};
 	};
-	return Widget(offs, style, ...items);
+	widget.style = widget.widgetStyle;
+	return widget;
+}
+Widget Widget(int width, int height) {
+	return Widget(width, height, Style.left, Widget.onCreate);
 }
 
 struct Button: View {
 	const char text[*];
 
-	bool onMeasure(Button this, Rect rect&, const Style style&, int visible) {
+	bool onMeasure(Button this, Rect rect&, int visible) {
+		Style style& = this.style;
 		style.measure(&rect, this.text);
-		return View.onMeasure(this, &rect, style, visible);
+		return View.onMeasure(this, &rect, visible);
 	}
 
 	void onDraw(Button this, Image offs, Rect rect, const Style style&) {
 		style.align(rect, &rect, this.text);
-		offs.drawText(rect, style.font, this.text, style.textColor);
+		offs.drawText(rect, style.font, this.text, style.valueColor);
 	}
 }
 
@@ -1379,7 +1512,8 @@ struct Switch: View {
 		return this.onUpdate(this, value);
 	}
 
-	void onCreate(Switch this) {
+	void onCreate(Switch this, View parent) {
+		View.onCreate(this, parent);
 		// clamp initial value
 		Switch.onUpdate(this, this.selected);
 		int resetValue& = pointer(this.resetValue);
@@ -1407,8 +1541,9 @@ struct Switch: View {
 		return View.onKeyEvent(this, event);
 	}
 
-	bool onMeasure(Switch this, Rect rect&, const Style style&, int visible) {
+	bool onMeasure(Switch this, Rect rect&, int visible) {
 		int maxWidth = 0;
+		Style style& = this.style;
 		for (int i = 0; i < this.states.length; i += 1) {
 			Rect measured = {};
 			style.measure(&measured, this.states[i]);
@@ -1418,7 +1553,7 @@ struct Switch: View {
 		}
 		style.measure(&rect, this.text);
 		rect.w += maxWidth;
-		return View.onMeasure(this, &rect, style, visible);
+		return View.onMeasure(this, &rect, visible);
 	}
 
 	void onDraw(Switch this, Image offs, Rect rect, const Style style&) {
@@ -1461,7 +1596,8 @@ struct Slider: View {
 		return Slider.onUpdate(this, this.resetValue);
 	}
 
-	void onCreate(Slider this) {
+	void onCreate(Slider this, View parent) {
+		View.onCreate(this, parent);
 		Slider.onUpdate(this, this.value);// clamp initial value
 		int resetValue& = pointer(this.resetValue);
 		resetValue = this.value;
@@ -1520,8 +1656,9 @@ struct Slider: View {
 		return View.onMouseEvent(this, rect, event);
 	}
 
-	bool onMeasure(Slider this, Rect rect&, const Style style&, int visible) {
+	bool onMeasure(Slider this, Rect rect&, int visible) {
 		char value[64] = {0};
+		Style style& = this.style;
 		if (this.divisor != 0) {
 			value.append(0, this.valueF64(), style.fmtFlt);
 		} else {
@@ -1531,7 +1668,7 @@ struct Slider: View {
 		style.measure(&valueRect, value);
 		style.measure(&rect, this.text);
 		rect.w += valueRect.w;
-		return View.onMeasure(this, &rect, style, visible);
+		return View.onMeasure(this, &rect, visible);
 	}
 
 	void onDrawSlider(Slider this, Image offs, Rect rect, const Style style&) {
@@ -1590,7 +1727,8 @@ struct Histogram: View {
 		return result;
 	}
 
-	void onCreate(Histogram this) {
+	void onCreate(Histogram this, View parent) {
+		View.onCreate(this, parent);
 		Histogram.onReset(this);
 	}
 
@@ -1634,14 +1772,14 @@ struct Histogram: View {
 		return true;
 	}
 
-	bool onMeasure(Histogram this, Rect rect&, const Style style&, int visible) {
+	bool onMeasure(Histogram this, Rect rect&, int visible) {
 		if (this.width < 0) {
 			rect.w = 256;
 		}
 		if (this.height < 0) {
 			rect.h = 128;
 		}
-		return View.onMeasure(this, &rect, style, visible);
+		return View.onMeasure(this, &rect, visible);
 	}
 
 	void onDraw(Histogram this, Image offs, const Rect rect, const Style style&) {
@@ -1710,3 +1848,115 @@ struct Histogram: View {
 		}
 	}
 }
+
+/// debug view to count draws
+View drawCounter(bool focusable) {
+	struct Result: View {
+		char text[64] = null;
+		int draws = 0;
+		int measures = 0;
+
+		static bool update(Result this, int draws, int measures) {
+			if (this.draws == draws && this.measures == measures) {
+				return false;
+			}
+			this.draws = draws;
+			this.measures  = measures;
+			int pos = 0;
+			if (measures > 0) {
+				pos = this.text.append(pos, "measures: ");
+				pos = this.text.append(pos, measures);
+				pos = this.text.append(pos, ", ");
+			}
+			pos = this.text.append(pos, "draws: ");
+			pos = this.text.append(pos, draws);
+			return true;
+		}
+
+		void onCreate(Result this, View parent) {
+			View.onCreate(this, parent);
+			update(this, 0, 0);
+		}
+
+		bool onMeasure(Result this, Rect rect&, int visible) {
+			Style style& = this.style;
+			this.update(this.draws, this.measures + 1);
+			style.measure(&rect, this.text);
+			return View.onMeasure(this, &rect, visible);
+		}
+
+		void onDraw(Result this, Image offs, Rect rect, const Style style&) {
+			this.update(this.draws + 1, this.measures);
+			style.align(rect, &rect, this.text);
+			offs.drawText(rect, style.font, this.text, style.textColor);
+		}
+
+		bool onClick(Result this) {
+			return this.update(0, 0);
+		}
+	}
+	return Result {
+		focusable: focusable;
+	};
+}
+
+static struct Gui {
+	static void showWindow(Image offscreen, Widget this) {
+		struct Data {
+			Image offscreen;
+			Widget widget;
+		}
+		int onWidgetEvent(Data data&, int action, int button, int x, int y) {
+			if (action == Gui.KEY_RELEASE && button == 27) {
+				// exit when releasing escape key
+				return -1;
+			}
+			if (!data.widget.onEvent(action, button, x, y)) {
+				return 0;
+			}
+			return data.widget.draw(data.offscreen);
+		}
+
+		Data data = {
+			offscreen: offscreen;
+			widget: this;
+		};
+		Gui.showWindow(offscreen, data, onWidgetEvent);
+	}
+
+	static void showWindow(Widget this) {
+		Image offscreen = Image(this.width, this.height, 32);
+		showWindow(offscreen, this);
+		offscreen.destroy();
+	}
+}
+
+/* original design
+struct View: object {...}	// garbage collected
+struct Text: View {...}
+struct Label: View {...}
+struct Image: View {...}
+struct Check: View {...}	// Switch?
+struct Input: View {...}	// single line, multi line
+struct Select: View {...}	// ComboBox
+struct Slider: View {...}
+struct Button: View {...}
+
+struct Panel ~= Layout
+struct List: View {...}
+struct Grid: View {...}
+struct Page: View {...}
+struct Window: View {...}
+
+Window window = {
+	width: 100;
+	height: 100;
+	items: {
+		Button {
+			label: "button1";
+			onClick: print("x");
+		};
+	};
+};
+window.show();
+*/

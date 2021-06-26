@@ -31,51 +31,6 @@ struct Camera {
 		};
 	}
 
-	// create a rotation matrix
-	static mat4f rotation(vec4f dir, float ang) {
-		float sin_t = float64.sin(ang);
-		float cos_t = float64.cos(ang);
-		float one_c = 1. - cos_t;
-		vec4f tmp = mul(dir, sin_t);
-
-		float xx = dir.x * dir.x;
-		float yy = dir.y * dir.y;
-		float zz = dir.z * dir.z;
-		float xy = dir.x * dir.y;
-		float xz = dir.x * dir.z;
-		float yz = dir.y * dir.z;
-
-		return {
-			xx: one_c * xx + cos_t;
-			xy: one_c * xy - tmp.z;
-			xz: one_c * xz + tmp.y;
-			xw: 0;
-
-			yx: one_c * xy + tmp.z;
-			yy: one_c * yy + cos_t;
-			yz: one_c * yz - tmp.x;
-			yw: 0;
-
-			zx: one_c * xz - tmp.y;
-			zy: one_c * yz + tmp.x;
-			zz: one_c * zz + cos_t;
-			zw: 0;
-
-			w: vec4f(0., 0., 0., 1.);
-		};
-	}
-
-	// create a translation matrix
-	static mat4f translation(vec4f dir, float cnt) {
-		vec4f tmp = mul(dir, vec4f(cnt));
-		return {
-			x: vec4f(1, 0, 0, tmp.x);
-			y: vec4f(0, 1, 0, tmp.y);
-			z: vec4f(0, 0, 1, tmp.z);
-			w: vec4f(0, 0, 0, tmp.w);
-		};
-	}
-
 	/// Create a camera at the given `position` looking at the given `target`
 	static Camera lookAt(vec4f position, vec4f target, vec4f up) {
 		vec4f forward = normalize(sub(target, position));
@@ -108,30 +63,17 @@ struct Camera {
 		camera.position = add(camera.position, mul(direction, amount));
 	}
 
-	/// Rotate the camera in the given `direction` with the given `amount`
-	static void rotate(Camera camera&, vec4f direction, float32 amount) {
-		if (amount == 0) {
-			return;
-		}
-
-		// rotate the camera
-		mat4f matrix = rotation(direction, amount);
-		camera.forward = normalize(dp3(matrix, camera.forward));
-		camera.right = normalize(dp3(matrix, camera.right));
-		camera.up = cross(camera.forward, camera.right);
-	}
-
-	/// Rotate the camera around the `orbit` in the given `direction` with the given `amount`
+	/// Rotate the camera around `orbit` in the given `direction` with the given `amount`
 	static void rotate(Camera camera&, vec4f orbit, vec4f direction, float32 amount) {
 		if (amount == 0) {
 			return;
 		}
 
-		rotate(&camera, direction, amount);
-		// orbit the camera around the given position
-		// it is usually the camera position, or the target position
-		float dist = length(sub(orbit, camera.position));
-		mat4f matrix = translation(camera.forward, -dist);
-		camera.position = dph(matrix, orbit);
+		// rotate the camera
+		mat4f matrix = rotation(orbit, direction, amount);
+		camera.forward = normalize(dp3(matrix, camera.forward));
+		camera.right = normalize(dp3(matrix, camera.right));
+		camera.up = cross(camera.forward, camera.right);
+		camera.position = dph(matrix, camera.position);
 	}
 }

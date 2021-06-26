@@ -177,16 +177,22 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 			// test if override is possible
 			if (ptr->owner != NULL && def->owner != NULL && isObjectType(def->owner)) {
 				if (isFunction(def) && !isStatic(def) && isVariable(ptr) && isInvokable(ptr)) {
-					warn(cc->rt, raise_warn_typ9, def->file, def->line, "Overriding virtual function: %T", ptr);
+					warn(cc->rt, raise_warn_redef, def->file, def->line, "Overriding virtual function: %T", ptr);
 					def->override = ptr;
 					break;
 				}
 			}
 
+			if (kind == (ATTR_stat|KIND_typ|CAST_vid)) {
+				warn(cc->rt, raise_warn_redef, def->file, def->line, "Extending static namespace: %T", ptr);
+				def->fields = ptr->fields;
+				break;
+			}
+
 			// test if overwrite is possible (forward function implementation)
 			if (ptr->init == NULL && ptr->owner == def->owner && def->nest == ptr->nest) {
 				if (isFunction(def) && isVariable(ptr) && isInvokable(ptr)) {
-					warn(cc->rt, raise_warn_typ9, def->file, def->line, "Overwriting forward function: %T", ptr);
+					warn(cc->rt, raise_warn_redef, def->file, def->line, "Overwriting forward function: %T", ptr);
 					ptr->init = lnkNode(cc, def);
 					break;
 				}
@@ -200,9 +206,9 @@ static symn declare(ccContext cc, ccKind kind, astn tag, symn type, symn params)
 				break;
 			}
 			else {
-				warn(cc->rt, raise_warn_typ9, def->file, def->line, WARN_DECLARATION_REDEFINED, def);
+				warn(cc->rt, raise_warn_redef, def->file, def->line, WARN_DECLARATION_REDEFINED, def);
 				if (ptr->file && ptr->line) {
-					warn(cc->rt, raise_warn_typ9, ptr->file, ptr->line, "previously defined as `%T`", ptr);
+					warn(cc->rt, raise_warn_redef, ptr->file, ptr->line, "previously defined as `%T`", ptr);
 				}
 			}
 		}
@@ -803,7 +809,7 @@ static astn expression(ccContext cc, int comma) {
 					break;
 			}
 		}
-		char *file = cc->file;
+		const char *file = cc->file;
 		int line = cc->line;
 		if (ast == NULL) {
 			ast = peekTok(cc, TOKEN_any);
@@ -1110,7 +1116,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 			int isMember = (attr & ATTR_stat) == 0;
 			def = declare(cc, KIND_fun | attr | cast, tag, type, params);
 			if (isMember && def->override == NULL && cc->owner && isTypename(cc->owner) && !isStatic(cc->owner)) {
-				warn(cc->rt, raise_warn_typ9, def->file, def->line, "Creating virtual method for: %T", def);
+				warn(cc->rt, raise_warn_redef, def->file, def->line, "Creating virtual method for: %T", def);
 				symn method = declare(cc, ATTR_cnst | KIND_var | CAST_ref, tag, type, params);
 				method->init = lnkNode(cc, def);
 			}
@@ -1168,7 +1174,7 @@ static astn declaration(ccContext cc, ccKind attr, astn *args) {
 			// TODO: sparse array: `int a[int]`
 			// fixed-size array: `int a[42]`
 			int64_t length = -1;
-			char *file = cc->file;
+			const char *file = cc->file;
 			int line = cc->line;
 			astn len = expression(cc, 0);
 			if (len != NULL) {
@@ -1448,10 +1454,17 @@ static astn declare_record(ccContext cc, ccKind attr) {
 		// make not instantiable
 		cast = CAST_vid;
 	}
+
 	symn type = base == NULL ? cc->type_rec : base;
-	symn fields = base == NULL ? NULL : base->fields;
 	type = declare(cc, KIND_typ | attr | cast, tag, type, NULL);
-	type->fields = fields; // allow lookup of fields from base type
+
+	symn fields = NULL;
+	if (attr == ATTR_stat && type->fields != NULL) {
+		fields = type->fields;
+	} else {
+		fields = base == NULL ? NULL : base->fields;
+		type->fields = fields; // allow lookup of fields from base type
+	}
 	enter(cc, tag, type);
 	statement_list(cc);
 	type->fields = leave(cc, KIND_typ | attr, pack, baseSize, &type->size, fields);
@@ -1768,7 +1781,7 @@ static astn statement_list(ccContext cc) {
  * @return parsed syntax tree.
  */
 static astn statement(ccContext cc, const char *doc) {
-	char *file = cc->file;
+	const char *file = cc->file;
 	int line = cc->line;
 	int validStart = 1;
 	astn check = NULL;
@@ -1992,7 +2005,7 @@ static astn statement(ccContext cc, const char *doc) {
 	return ast;
 }
 
-astn ccAddUnit(ccContext cc, int init(ccContext), char *file, int line, char *text) {
+astn ccAddUnit(ccContext cc, int init(ccContext), const char *file, int line, char *text) {
 	cc->unit = file;
 	if (init != NULL && init(cc) != 0) {
 		error(cc->rt, NULL, 0, ERR_OPENING_FILE, file);

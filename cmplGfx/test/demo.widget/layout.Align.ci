@@ -1,0 +1,50 @@
+// layout test: alignment and padding
+
+inline "/cmplGfx/lib/micro.ui.ci";
+
+struct Rectangle: View {
+	argb background = argb(0xff00ff);
+	void onDraw(Rectangle this, Image offs, Rect rect, const Style style&) {
+		offs.fillRect(rect, this.background.v);
+	}
+}
+Rectangle Rectangle(int rgb) {
+	inline size = 20;
+	return {
+		background: argb(rgb);
+		width: size;
+		height: size;
+		enabled: false;
+	};
+}
+
+Widget ui = Widget(300, 400)
+	.addItems(Layout.Custom(0, Style.fill)
+		.addItems(Style.fill, Rectangle(0xffa1a1))
+
+		.addItems(Style.topLeft, Rectangle(0xff0000))
+		.addItems(Style.top, Rectangle(0xffff00))
+		.addItems(Style.topRight, Rectangle(0x00ff00))
+
+		.addItems(Style.left, Rectangle(0xff007f))
+		.addItems(Style.center, Rectangle(0xffff7f))
+		.addItems(Style.right, Rectangle(0xffff7f))
+
+		.addItems(Style.bottomLeft, Rectangle(0xff00ff))
+		.addItems(Style.bottom, Rectangle(0xffffff))
+		.addItems(Style.bottomRight, Rectangle(0x00ffff))
+	)
+	.addItems(Layout.Custom(0, Style.fill)
+		.addItems(Style.fill, Rectangle(0xa1ffa1))
+		.addItems(Style.right | Style.left | Style.top, Rectangle(0xff0000))
+		.addItems(Style.right | Style.left | Style.center, Rectangle(0x00ff00))
+		.addItems(Style.right | Style.left | Style.bottom, Rectangle(0x0000ff))
+	)
+	.addItems(Layout.Custom(0, Style.fill)
+		.addItems(Style.fill, Rectangle(0xa1a1ff))
+		.addItems(Style.top | Style.bottom | Style.left, Rectangle(0xff0000))
+		.addItems(Style.top | Style.bottom | Style.center, Rectangle(0x00ff00))
+		.addItems(Style.top | Style.bottom | Style.right, Rectangle(0x0000ff))
+	);
+
+Gui.showWindow(ui);

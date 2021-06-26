@@ -13,7 +13,7 @@
 Image back = Image("asset/image/forest.jpg", 32);
 Image offs = Image(back.width(), back.height(), back.depth());
 int onEvent(int action, int button, int x, int y);
-offs.show(onEvent);
+Gui.showWindow(offs, onEvent);
 offs.destroy();
 back.destroy();
 
@@ -66,11 +66,6 @@ Slider sldVal = {
 	value: 26;
 };
 
-Button separator = {
-	text: null;
-	height: 1;
-	enabled: false;
-};
 Slider time = {
 	text: "time";
 	enabled: false;
@@ -133,12 +128,13 @@ vec4f blendHsl(vec4f base, vec4f blend) {
 	};
 }
 
-Widget ui = Widget(offs,
-	histogram, separator,
+Widget ui = Widget().addItems(
+	histogram,
+	Layout.divider,
 	sldHueMin, sldHueMax,
 	sldLumMin, sldLumMax,
 	sldVal,
-	separator, time
+	Layout.divider, time
 );
 
 int onEvent(int action, int button, int x, int y) {
@@ -149,7 +145,7 @@ int onEvent(int action, int button, int x, int y) {
 	if (!ui.onEvent(action, button, x, y)) {
 		if (ui.pressedIndex != -1) {
 			// redraw only ui, in case there is an active control
-			return ui.draw();
+			return ui.draw(offs);
 		}
 		if (action != Gui.MOUSE_MOTION && action != Gui.FINGER_MOTION && action != Gui.MOUSE_RELEASE) {
 			// event not processed, wait for the next one
@@ -163,12 +159,12 @@ int onEvent(int action, int button, int x, int y) {
 		updateSlider(sldHueMin, sldHueMax, col.x * 359);
 		updateSlider(sldLumMin, sldLumMax, col.z * 255);
 		if (action == Gui.MOUSE_MOTION) {
-			return ui.draw();
+			return ui.draw(offs);
 		}
 	}
 
 	if (button == 0 && (action == Gui.MOUSE_MOTION || action == Gui.FINGER_MOTION)) {
-		return ui.draw();
+		return ui.draw(offs);
 	}
 
 	uint64 start = System.millis();
@@ -181,7 +177,7 @@ int onEvent(int action, int button, int x, int y) {
 
 	histogram.update(offs);
 	time.value = System.millis() - start;
-	return ui.draw();
+	return ui.draw(offs);
 }
 
 void drawColorSlider(Slider this, Image offs, Rect rect, const Style style&) {
@@ -189,8 +185,6 @@ void drawColorSlider(Slider this, Image offs, Rect rect, const Style style&) {
 	const int padding = style.padding / 3;
 	const int y = rect.y + rect.h - 1;
 	if (this == sldHueMin || this == sldHueMax) {
-		const int y1 = rect.y + rect.h;
-		const int y0 = y1 - style.padding / 4;
 		const int x1 = rect.x + rect.w;
 		const int x0 = rect.x + int64(this.value - this.minimum) * rect.w / (this.maximum - this.minimum);
 		for (int x = rect.x; x < x0; x += 1) {
@@ -206,8 +200,6 @@ void drawColorSlider(Slider this, Image offs, Rect rect, const Style style&) {
 		return;
 	}
 	if (this == sldLumMin || this == sldLumMax) {
-		const int y1 = rect.y + rect.h;
-		const int y0 = y1 - style.padding / 4;
 		const int x1 = rect.x + rect.w;
 		const int x0 = rect.x + int64(this.value - this.minimum) * rect.w / (this.maximum - this.minimum);
 		for (int x = rect.x; x < x0; x += 1) {

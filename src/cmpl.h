@@ -66,8 +66,8 @@ typedef enum {
 	raise_warn_typ2 = 2,    // WARN_STATIC_FIELD_ACCESS
 	raise_warn_typ3 = 3,    // WARN_USING_BEST_OVERLOAD / PASS_ARG_BY_REFERENCE
 	raise_warn_typ4 = 4,    // WARN_USING_SIGNED_CAST
-	raise_warn_typ6 = 6,    // WARN_ADDING_IMPLICIT_CAST
-	raise_warn_typ9 = 9,    // WARN_DECLARATION_REDEFINED
+	raise_warn_typ6 = 6,    // WARN_ADDING_IMPLICIT_CAST / WARN_USING_DEF_TYPE_INITIALIZER
+	raise_warn_redef = 6,   // WARN_DECLARATION_REDEFINED
 	raiseInfo = 13,
 	raiseDebug = 14,
 	raiseVerbose = 15,
@@ -280,8 +280,8 @@ typedef enum {
 
 struct symNode {
 	const char *name;  // symbol name
-	char *unit;        // declared in unit
-	char *file;        // declared in file
+	const char *unit;  // declared in unit
+	const char *file;  // declared in file
 	int32_t line;      // declared on line
 	int32_t nest;      // declared on scope level
 	size_t size;       // variable or function size

@@ -15,7 +15,7 @@ Image image = Image("asset/image/texture_nature_01.png", 32);
 Image offs = Image(base);
 Image blend = Image(image, offs.width(), offs.height(), -1, 1.);
 int onEvent(int action, int button, int x, int y);
-offs.show(onEvent);
+Gui.showWindow(offs, onEvent);
 offs.destroy();
 base.destroy();
 blend.destroy();
@@ -318,7 +318,7 @@ Slider time = {
 	enabled: false;
 	onDrawSlider: null;
 };
-Widget ui = Widget(offs,
+Widget ui = Widget().addItems(
 	chkReverse,
 	btnAlpha,
 	btnNormal,
@@ -355,12 +355,12 @@ int onEvent(int action, int button, int x, int y) {
 	}
 
 	if (button == 0 && (action == Gui.MOUSE_MOTION || action == Gui.FINGER_MOTION)) {
-		return ui.draw();
+		return ui.draw(offs);
 	}
 
 	if (ui.pressedIndex != -1) {
 		// redraw only ui, in case there is an active control
-		return ui.draw();
+		return ui.draw(offs);
 	}
 
 	uint64 start = System.millis();
@@ -370,5 +370,5 @@ int onEvent(int action, int button, int x, int y) {
 		offs.blend(0, 0, reverse ? blend : base, null, btnAlpha.value, false, selected.blend);
 	}
 	time.value = System.millis() - start;
-	return ui.draw();
+	return ui.draw(offs);
 }

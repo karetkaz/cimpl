@@ -59,7 +59,7 @@ struct astNode {
 	ccToken		kind;				// token kind: operator, statement, ...
 	symn		type;				// token type: return
 	astn		next;				// next token / next argument / next statement
-	char		*file;				// file name of the token belongs to
+	const char	*file;				// file name of the token belongs to
 	int32_t		line;				// line position of token
 	union {							// token value
 		//char *cStr;				// constant string value (use: ref.name)

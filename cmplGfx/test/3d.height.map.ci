@@ -3,33 +3,6 @@ Image heightMap = Image("asset/image/heightmap.png", 32);
 Image texture = Image("asset/image/texture.png", 32);
 Mesh model = Mesh.create(0);
 
-void eval(Mesh mesh, int sGrid, int tGrid, float32 depth, Image depthMap);
-
-model.eval(256, 256, .3, heightMap);
-debug("model", model);
-lights.enable(0, true);
-lights.position(0, 2., -2., 2.);
-lights.ambient(0, .4, .4, .4);
-lights.diffuse(0, .8, .8, .8);
-lights.specular(0, 1., 1., 1.);
-lights.attenuation(0, 1., 0., 0.);
-
-// material Dash
-model.texture(texture);
-model.ambient(0.588235, 0.588235, 0.588235);
-model.diffuse(0.588235, 0.588235, 0.588235);
-model.specular(0.898039, 0.898039, 0.898039);
-model.shine(64);
-
-vec4f center = { x: 0, y: 0, z: 0, w: 1 };
-vec4f resize = { x: 1, y: 1, z: 1, w: 1 };
-model.normalize(0, &center.data, &resize.data);
-
-model.show(1440, 900, 15);
-
-texture.destroy();
-model.destroy();
-
 void eval(Mesh mesh, int sGrid, int tGrid, float32 depth, Image depthMap) {
 
 	float64 sDivision = sGrid;
@@ -60,3 +33,27 @@ void eval(Mesh mesh, int sGrid, int tGrid, float32 depth, Image depthMap) {
 		}
 	}
 }
+
+model.eval(256, 256, .3, heightMap);
+debug("model", model);
+lights.enable(0, true);
+lights.position(0, 2., -2., 2.);
+lights.ambient(0, .4, .4, .4);
+lights.diffuse(0, .8, .8, .8);
+lights.specular(0, 1., 1., 1.);
+lights.attenuation(0, 1., 0., 0.);
+
+// material Dash
+model.texture(texture);
+model.ambient(0.588235, 0.588235, 0.588235);
+model.diffuse(0.588235, 0.588235, 0.588235);
+model.specular(0.898039, 0.898039, 0.898039);
+model.shine(64);
+
+vec4f center = { x: 0, y: 0, z: 0, w: 1 };
+vec4f resize = { x: 1, y: 1, z: 1, w: 1 };
+model.normalize(0, &center.data, &resize.data);
+
+Gui.showWindow(1440, 900, 15, model);
+texture.destroy();
+model.destroy();

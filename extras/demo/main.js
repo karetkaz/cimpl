@@ -248,7 +248,9 @@ let params = JsArgs('#', function (params, changes) {
 
 		// setup editor content, only after loading
 		if (params.content != null) {
-			setContent(content(params.content), params.file, params.line);
+			setContent(content(params.content || ''), params.file, params.line);
+		} else {
+			showPosition();
 		}
 		return;
 	}
@@ -352,48 +354,7 @@ editor.on('change', function(cm, change) {
 	setStyle(document.body, 'edited');
 });
 // show position and selection in document
-editor.on('cursorActivity', function(editor) {
-	let pos = editor.getCursor();
-	let sel = editor.listSelections();
-	if (sel.length !== 1) {
-		// multiple selections
-		editPosition.innerText = (pos.line+1) + ':' + (pos.ch + 1) +
-			' [' + (sel.length) + ' selections]';
-		return;
-	}
-	if (sel[0].anchor !== sel[0].head) {
-		// single selection show selected [lines:characters]
-		let head = sel[0].head;
-		let anchor = sel[0].anchor;
-		if (head.line === anchor.line) {
-			if (head.ch < anchor.ch) {
-				let tmp = head;
-				head = anchor;
-				anchor = tmp;
-			}
-		}
-		else if (head.line < anchor.line) {
-			let tmp = head;
-			head = anchor;
-			anchor = tmp;
-		}
-		let lines = head.line - anchor.line + 1;
-		let chars = editor.getRange(anchor, head).length;
-		editPosition.innerText = (pos.line+1) + ':' + (pos.ch + 1) +
-			' [' + (lines) + ':' + (chars) + ']';
-		return;
-	}
-
-	// no selection show document [lines:characters]
-	let lines = 0;
-	let chars = 0;
-	editor.doc.iter(function(line) {
-		chars += line.text.length;
-		lines += 1;
-	});
-	editPosition.innerText = (pos.line+1) + ':' + (pos.ch + 1) +
-		' [' + (lines) + ':' + (chars) + ']';
-});
+editor.on('cursorActivity', showPosition);
 // add / remove breakpoint
 editor.on('gutterClick', function(cm, n) {
 	let info = cm.lineInfo(n);
@@ -415,7 +376,6 @@ editor.on('viewportChange', function(cm, from, to) {
 		, body.offsetHeight, html.clientHeight
 		, html.scrollHeight, html.offsetHeight
 	);
-	//console.log('viewportChange: ' + height, from, to);
 	window.parent.postMessage({frameHeight: height}, '*');
 });
 
@@ -465,6 +425,49 @@ function setContent(content, file, line, column) {
 		editor.setCursor((line || 1) - 1, column);
 	}
 	return contentSet;
+}
+
+function showPosition() {
+	let pos = editor.getCursor();
+	let sel = editor.listSelections();
+	if (sel.length !== 1) {
+		// multiple selections
+		editPosition.innerText = (pos.line+1) + ':' + (pos.ch + 1) +
+			' [' + (sel.length) + ' selections]';
+		return;
+	}
+	if (sel[0].anchor !== sel[0].head) {
+		// single selection show selected [lines:characters]
+		let head = sel[0].head;
+		let anchor = sel[0].anchor;
+		if (head.line === anchor.line) {
+			if (head.ch < anchor.ch) {
+				let tmp = head;
+				head = anchor;
+				anchor = tmp;
+			}
+		}
+		else if (head.line < anchor.line) {
+			let tmp = head;
+			head = anchor;
+			anchor = tmp;
+		}
+		let lines = head.line - anchor.line + 1;
+		let chars = editor.getRange(anchor, head).length;
+		editPosition.innerText = (pos.line+1) + ':' + (pos.ch + 1) +
+			' [' + (lines) + ':' + (chars) + ']';
+		return;
+	}
+
+	// no selection show document [lines:characters]
+	let lines = 0;
+	let chars = 0;
+	editor.doc.iter(function(line) {
+		chars += line.text.length;
+		lines += 1;
+	});
+	editPosition.innerText = (pos.line+1) + ':' + (pos.ch + 1) +
+		' [' + (lines) + ':' + (chars) + ']';
 }
 
 function hideOverlay() {
@@ -758,18 +761,18 @@ function dragMove(event) {
 		return;
 	}
 
-	if (evDown.target.id == 'output-pan-sidebar') {
+	if (evDown.target.id === 'output-pan-sidebar') {
 		if (!hasStyle(document.body, 'output')) {
 			return;
 		}
 		let y = event.pageY - evDown.offsetY;
-		if (y != y && event.touches !== undefined) {
+		if (y !== y && event.touches !== undefined) {
 			y = event.touches[0].pageY;
 		}
 		document.documentElement.style.setProperty('--bottom-bar-size', (window.innerHeight - y) + "px");
 		return;
 	}
-	if (evDown.target.id == 'left-pan-sidebar') {
+	if (evDown.target.id === 'left-pan-sidebar') {
 		let x = event.pageX;
 		if (event.pageX === undefined) {
 			x = event.touches[0].pageX;

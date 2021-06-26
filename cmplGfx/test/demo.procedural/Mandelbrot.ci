@@ -1,0 +1,25 @@
+// procedural draw demo ~ Mandelbrot
+
+float64 size = 1.5;
+float64 xMin = -.5;
+float64 yMin = 0;
+argb colors[24] = {};
+
+vec4f mandel(vec4f in) {
+	Complex c = {
+		re: xMin + Math.lerp(float64(in.x), -size, size);
+		im: yMin + Math.lerp(float64(in.y), -size, size);
+	};
+
+	Complex z = Complex(0, 0);
+	for (int i = 0; i < colors.length; i += 1) {
+		z = z.mul(z).add(c);
+		if (z.re * z.re + z.im * z.im >= 4) {
+			return vec4f(colors[i]);
+		}
+	}
+	return vec4f(1, 1, 1);
+}
+
+lerpLut(colors, argb(0x000020), argb(0xffffff));
+Gui.showWindow(512, 512, mandel);

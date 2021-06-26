@@ -1667,25 +1667,8 @@ int main(int argc, char *argv[]) {
 		.memory = 4 << 20
 	};
 
-	char stdLib[65536];
-	char *cmpl_home = getenv(CMPL_HOME);
-	if (cmpl_home != NULL) {
-		strncpy(stdLib, cmpl_home, sizeof(stdLib) - 1);
-		size_t len = strlen(stdLib);
-		while (len > 0 && stdLib[len - 1] == '/' && STDLIB[0] == '/') {
-			// remove multiple separators
-			stdLib[len - 1] = 0;
-			len -= 1;
-		}
-		if (len > 0 && stdLib[len - 1] != '/' && STDLIB[0] != '/') {
-			// add path separator
-			stdLib[len] = '/';
-			len += 1;
-		}
-		strncat(stdLib, STDLIB, sizeof(stdLib) - len);
-	} else {
-		strncpy(stdLib, STDLIB, sizeof(stdLib));
-	}
+	const char *stdlib = STDLIB;
+	const char *cmpl_home = getenv(CMPL_HOME);
 
 	ccInstall install = install_def;
 	char *ccFile = NULL;			// compiled filename
@@ -1875,11 +1858,11 @@ int main(int argc, char *argv[]) {
 		// override stdlib file
 		else if (strncmp(arg, "-std", 4) == 0) {
 			if (arg[4] != 0) {
-				strncpy(stdLib, arg + 4, sizeof(stdLib) - 1);
+			    stdlib = arg + 4;
 			}
 			else {
 				// disable standard library
-				stdLib[0] = 0;
+				stdlib = NULL;
 			}
 		}
 		// override heap size
@@ -2387,8 +2370,14 @@ int main(int argc, char *argv[]) {
 
 	if (install & installLibs) {
 		// install standard library.
-		if (extra.compileSteps != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sCompile: `%?s`", extra.compileSteps, stdLib);}
-		if (!ccAddUnit(cc, ccLibStd, *stdLib ? stdLib : NULL, 1, NULL)) {
+		if (extra.compileSteps != NULL) {printLog(extra.rt, raisePrint, NULL, 0, NULL, "%sCompile: `%?s`", extra.compileSteps, stdlib);}
+		char buffer[1024];
+		if (stdlib != NULL) {
+		    snprintf(buffer, sizeof(buffer), "inline \"%s\";", stdlib);
+		} else {
+		    buffer[0] = 0;
+		}
+		if (!ccAddUnit(cc, ccLibStd, stdlib, 0, buffer)) {
 			error(rt, NULL, 0, "error registering standard library");
 			return -1;
 		}

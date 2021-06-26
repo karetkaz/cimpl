@@ -2,7 +2,81 @@
 Image texture = Image("asset/image/texture.png", 32);
 Mesh model = Mesh.create(0);
 
-void eval(Mesh mesh, int sGrid, int tGrid, float64 epsilon, vec4f pos(float64 s, float64 t));
+void eval(Mesh mesh, int sGrid, int tGrid, float64 epsilon, vec4f pos(float64 s, float64 t)) {
+	bool sClosed = false;
+	bool tClosed = false;
+
+	if (sGrid < 0) {
+		sGrid = -sGrid;
+		sClosed = true;
+	}
+	if (tGrid < 0) {
+		tGrid = -tGrid;
+		tClosed = true;
+	}
+
+	float64 sDivision = sGrid - int(!sClosed);
+	float64 tDivision = tGrid - int(!tClosed);
+
+	mesh.recycle(sGrid * tGrid);
+	for (int i = 0; i < tGrid; i += 1) {
+		float64 t = i / tDivision;
+		for (int j = 0; j < sGrid; j += 1) {
+			float64 s = j / sDivision;
+
+			vec4f pos = pos(s, t);
+			vec4f posDs = pos(s + epsilon, t);
+			vec4f posDt = pos(s, t + epsilon);
+
+			posDs.x = (pos.x - posDs.x) / epsilon;
+			posDs.y = (pos.y - posDs.y) / epsilon;
+			posDs.z = (pos.z - posDs.z) / epsilon;
+			posDt.x = (pos.x - posDt.x) / epsilon;
+			posDt.y = (pos.y - posDt.y) / epsilon;
+			posDt.z = (pos.z - posDt.z) / epsilon;
+			vec4f nrm = normalize(cross(posDs, posDt));
+
+			int idx = mesh.addVertex(pos.x, pos.y, pos.z);
+			mesh.setNormal(idx, nrm.x, nrm.y, nrm.z);
+			mesh.setTexture(idx, s, t);
+		}
+	}
+
+	for (int j = 0; j < tGrid - 1; j += 1) {
+		int l1 = j * sGrid;
+		int l2 = l1 + sGrid;
+		for (int i = 0; i < sGrid - 1; i += 1) {
+			int v1 = l1 + i;		// v1 -- v2
+			int v2 = v1 + 1;		//  | \  |
+			int v4 = l2 + i;		//  |  \ |
+			int v3 = v4 + 1;		// v4 -- v3
+			mesh.addFace(v1, v2, v3, v4);
+		}
+	}
+	if (tClosed) {
+		int l2 = 0;
+		int l1 = sGrid * (tGrid - 1);
+		for (int i = 0; i < sGrid - 1; i += 1) {
+			int v1 = l1 + i;		// v1 -- v2
+			int v2 = v1 + 1;		//  | \  |
+			int v4 = l2 + i;		//  |  \ |
+			int v3 = v4 + 1;		// v4 -- v3
+			mesh.addFace(v1, v2, v3, v4);
+		}
+	}
+	if (sClosed) {
+		int i = sGrid - 1;
+		for (int j = 0; j < tGrid - 1; j += 1) {
+			int l1 = j * sGrid;
+			int l2 = l1 + sGrid;
+			int v1 = l1 + i;		// v1 -- v2
+			int v2 = l1 + 0;		//  | \  |
+			int v4 = l2 + i;		//  |  \ |
+			int v3 = l2 + 0;		// v4 -- v3
+			mesh.addFace(v1, v2, v3, v4);
+		}
+	}
+}
 
 vec4f ellipse(float64 s, float64 t) {
 	enum: float64 {
@@ -106,84 +180,6 @@ vec4f center = { x: 0, y: 0, z: 0, w: 1 };
 vec4f resize = { x: 1, y: 1, z: 1, w: 1 };
 model.normalize(0, &center.data, &resize.data);
 
-model.show(1440, 900, 15);
-
+Gui.showWindow(1440, 900, 15, model);
 texture.destroy();
 model.destroy();
-
-void eval(Mesh mesh, int sGrid, int tGrid, float64 epsilon, vec4f pos(float64 s, float64 t)) {
-	bool sClosed = false;
-	bool tClosed = false;
-
-	if (sGrid < 0) {
-		sGrid = -sGrid;
-		sClosed = true;
-	}
-	if (tGrid < 0) {
-		tGrid = -tGrid;
-		tClosed = true;
-	}
-
-	float64 sDivision = sGrid - int(!sClosed);
-	float64 tDivision = tGrid - int(!tClosed);
-
-	mesh.recycle(sGrid * tGrid);
-	for (int i = 0; i < tGrid; i += 1) {
-		float64 t = i / tDivision;
-		for (int j = 0; j < sGrid; j += 1) {
-			float64 s = j / sDivision;
-
-			vec4f pos = pos(s, t);
-			vec4f posDs = pos(s + epsilon, t);
-			vec4f posDt = pos(s, t + epsilon);
-
-			posDs.x = (pos.x - posDs.x) / epsilon;
-			posDs.y = (pos.y - posDs.y) / epsilon;
-			posDs.z = (pos.z - posDs.z) / epsilon;
-			posDt.x = (pos.x - posDt.x) / epsilon;
-			posDt.y = (pos.y - posDt.y) / epsilon;
-			posDt.z = (pos.z - posDt.z) / epsilon;
-			vec4f nrm = normalize(cross(posDs, posDt));
-
-			int idx = mesh.addVertex(pos.x, pos.y, pos.z);
-			mesh.setNormal(idx, nrm.x, nrm.y, nrm.z);
-			mesh.setTexture(idx, s, t);
-		}
-	}
-
-	for (int j = 0; j < tGrid - 1; j += 1) {
-		int l1 = j * sGrid;
-		int l2 = l1 + sGrid;
-		for (int i = 0; i < sGrid - 1; i += 1) {
-			int v1 = l1 + i;		// v1 -- v2
-			int v2 = v1 + 1;		//  | \  |
-			int v4 = l2 + i;		//  |  \ |
-			int v3 = v4 + 1;		// v4 -- v3
-			mesh.addFace(v1, v2, v3, v4);
-		}
-	}
-	if (tClosed) {
-		int l2 = 0;
-		int l1 = sGrid * (tGrid - 1);
-		for (int i = 0; i < sGrid - 1; i += 1) {
-			int v1 = l1 + i;		// v1 -- v2
-			int v2 = v1 + 1;		//  | \  |
-			int v4 = l2 + i;		//  |  \ |
-			int v3 = v4 + 1;		// v4 -- v3
-			mesh.addFace(v1, v2, v3, v4);
-		}
-	}
-	if (sClosed) {
-		int i = sGrid - 1;
-		for (int j = 0; j < tGrid - 1; j += 1) {
-			int l1 = j * sGrid;
-			int l2 = l1 + sGrid;
-			int v1 = l1 + i;		// v1 -- v2
-			int v2 = l1 + 0;		//  | \  |
-			int v4 = l2 + i;		//  |  \ |
-			int v3 = l2 + 0;		// v4 -- v3
-			mesh.addFace(v1, v2, v3, v4);
-		}
-	}
-}
-

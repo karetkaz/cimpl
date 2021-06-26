@@ -13,7 +13,7 @@
 Image back = Image("asset/image/forest.jpg");
 Image offs = Image(back.width(), back.height(), back.depth());
 int onEvent(int action, int button, int x, int y);
-offs.show(onEvent);
+Gui.showWindow(offs, onEvent);
 offs.destroy();
 back.destroy();
 
@@ -317,27 +317,21 @@ PresetButton lsd = {
 	);
 };
 
-Button separator = {
-	text: null;
-	width: 5;
-	height: 5;
-	enabled: false;
-};
 Slider time = {
 	text: "time";
 	enabled: false;
 	onDrawSlider: null;
 };
 
-Widget ui = Widget(offs,
-	histogram, separator, selGroups, separator,
+Widget ui = Widget().addItems(
+	histogram, Layout.divider, selGroups, Layout.divider,
 	// group 1 - Controls
 	brightness, saturation, contrast, temp, tint, hue,
 	// group 2 - Presets
 	original, invert, grayScale, blackAndWhite, sepiaColor, technicolor, polaroid,
 	kodachrome, browni, vintage, nightVision, warm, cool, lsd,
 
-	separator, time
+	Layout.divider, time
 );
 
 Rect rect = {
@@ -387,7 +381,7 @@ int onEvent(int action, int button, int x, int y) {
 
 	histogram.update(offs);
 	time.value = System.millis() - start;
-	return ui.draw();
+	return ui.draw(offs);
 }
 bool onPresetsClick(Switch view) {
 	if (!Switch.onClick(view)) {
