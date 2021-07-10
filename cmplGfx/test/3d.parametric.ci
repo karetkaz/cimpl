@@ -100,9 +100,6 @@ vec4f ellipse(float64 s, float64 t) {
 }
 vec4f cylinder(float64 s, float64 t) {
 	enum: float64 {
-		X: 1;
-		Y: 1;
-		Z: 1;
 		sMin: 0;
 		sMax: 1;
 		tMin: 0;
@@ -138,8 +135,6 @@ vec4f peak(float64 s, float64 t) {
 }
 vec4f shell(float64 s, float64 t) {
 	enum: float64 {
-		sdiv: 128;
-		tdiv: 32;
 		N: 5;
 		H: 3;
 		tMin: -Math.pi;
@@ -151,11 +146,11 @@ vec4f shell(float64 s, float64 t) {
 	s = Math.lerp(s, sMin, sMax);
 	t = Math.lerp(t, tMin, tMax);
 
-	float64 W = s / (2 * Math.pi);
+	float64 w = s / (2 * Math.pi);
 	return {
-		x: W * float64.cos(N * s) * (1 + float64.cos(t));
-		y: W * float64.sin(N * s) * (1 + float64.cos(t));
-		z: W * float64.sin(t) + H * (W * W);
+		x: w * float64.cos(N * s) * (1 + float64.cos(t));
+		y: w * float64.sin(N * s) * (1 + float64.cos(t));
+		z: w * float64.sin(t) + H * (w * w);
 	};
 }
 

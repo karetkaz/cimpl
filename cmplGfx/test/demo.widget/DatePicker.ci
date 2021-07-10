@@ -38,10 +38,23 @@ struct IntButton: View {
 		offs.drawText(rect, style.font, this.text, style.textColor);
 	}
 }
+
 struct DayButton: IntButton {
 	int64 timestamp = 0;
+
+	void onDraw(IntButton this, Image offs, Rect rect, const Style style&) {
+		style.align(rect, &rect, this.text);
+		int32 color = this.enabled ? style.textColor : style.focusedColor;
+		offs.drawText(rect, style.font, this.text, color);
+	}
 }
-struct WeekButton: IntButton {}
+
+struct WeekButton: IntButton {
+	void onDraw(IntButton this, Image offs, Rect rect, const Style style&) {
+		style.align(rect, &rect, this.text);
+		offs.drawText(rect, style.font, this.text, style.valueColor);
+	}
+}
 
 IntButton btnYear = {
 	enabled: false;
@@ -164,7 +177,9 @@ bool resetCounter(IntButton this) {
 	return true;
 }
 
-View counter = drawCounter(false);
+DebugView debug = {
+	focusable: false;
+};
 
 void init(Widget ui, View parent) {
 	Widget.onCreate(ui, parent);
@@ -180,7 +195,7 @@ Widget ui = Widget(512, 400, Style.center, init)
 			, btnToday
 		)
 		, Layout.Custom(8, Style.fill, ...btnDays)
-		, counter
+		, debug
 	);
 
 int64 now = System.millis();

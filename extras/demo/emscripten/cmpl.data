@@ -3124,7 +3124,7 @@ struct FormatFlags {
 	/// forced show sign
 	const char sign = 0;
 
-	/// precision or radix
+	/// precision length
 	const int precision = 0;
 
 	/// padding character
@@ -3154,18 +3154,14 @@ int append(char output[], int pos, const char value[*]) {
 	return pos;
 }
 
-// Append a number to the output at the given position
-int append(char output[], int pos, uint64 value, const FormatFlags format&) {
+/// Append a number to the output at the given position
+int append(char output[], int pos, int radix, uint64 value, const FormatFlags format&) {
 	static const char whiteSpace[] = " \t\n\r";
 	static const char radixDigits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 
 	int len = 0;
 	char digits[80] = {};
 
-	int radix = format.precision;
-	if (radix == 0) {
-		radix = 10;
-	}
 	assert(radix > 1, "radix is too small", radix);
 	assert(radix < radixDigits.length, "radix is too big", radix);
 
@@ -3220,15 +3216,21 @@ int append(char output[], int pos, uint64 value, const FormatFlags format&) {
 	output[pos] = 0;
 	return pos;
 }
-/// Append a number to the output at the given position
-inline append(char output[], int pos, uint32 value, const FormatFlags format&) = append(output, pos, uint64(value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, uint16 value, const FormatFlags format&) = append(output, pos, uint64(value), format);
-/// Append a number to the output at the given position
-inline append(char output[], int pos, uint8 value, const FormatFlags format&) = append(output, pos, uint64(value), format);
 
 /// Append a number to the output at the given position
-int append(char output[], int pos, int64 value, const FormatFlags format&) {
+inline append(char output[], int pos, uint64 value, const FormatFlags format&) = append(output, pos, 10, uint64(value), format);
+
+/// Append a number to the output at the given position
+inline append(char output[], int pos, uint32 value, const FormatFlags format&) = append(output, pos, 10, uint64(value), format);
+
+/// Append a number to the output at the given position
+inline append(char output[], int pos, uint16 value, const FormatFlags format&) = append(output, pos, 10, uint64(value), format);
+
+/// Append a number to the output at the given position
+inline append(char output[], int pos, uint8 value, const FormatFlags format&) = append(output, pos, 10, uint64(value), format);
+
+/// Append a number to the output at the given position
+int append(char output[], int pos, int radix, int64 value, const FormatFlags format&) {
 	FormatFlags signedFormat = {
 		sign: value < 0 ? '-' : format.sign;
 		precision: format.precision;
@@ -3238,17 +3240,24 @@ int append(char output[], int pos, int64 value, const FormatFlags format&) {
 	if (value < 0) {
 		value = -value;
 	}
-	return append(output, pos, uint64(value), signedFormat);
+	return append(output, pos, radix, uint64(value), signedFormat);
 }
+
 /// Append a number to the output at the given position
-inline append(char output[], int pos, int32 value, const FormatFlags format&) = append(output, pos, int64(value), format);
+inline append(char output[], int pos, int64 value, const FormatFlags format&) = append(output, pos, 10, int64(value), format);
+
 /// Append a number to the output at the given position
-inline append(char output[], int pos, int16 value, const FormatFlags format&) = append(output, pos, int64(value), format);
+inline append(char output[], int pos, int32 value, const FormatFlags format&) = append(output, pos, 10, int64(value), format);
+
 /// Append a number to the output at the given position
-inline append(char output[], int pos, int8 value, const FormatFlags format&) = append(output, pos, int64(value), format);
+inline append(char output[], int pos, int16 value, const FormatFlags format&) = append(output, pos, 10, int64(value), format);
+
+/// Append a number to the output at the given position
+inline append(char output[], int pos, int8 value, const FormatFlags format&) = append(output, pos, 10, int64(value), format);
 
 /// Append a number to the output at the given position
 int append(char output[], int pos, float64 value, const FormatFlags format&) {
+	// TODO: fix precision
 	static const FormatFlags formatDec = {};
 	FormatFlags formatInt = {
 		sign: value < 0 ? '-' : format.sign;
@@ -3281,6 +3290,7 @@ int append(char output[], int pos, float64 value, const FormatFlags format&) {
 	}
 	return pos;
 }
+
 /// Append a number to the output at the given position
 inline append(char output[], int pos, float32 value, const FormatFlags format&) = append(output, pos, float64(value), format);
 
@@ -4019,8 +4029,7 @@ struct Style {
 	const int padding = 8;
 
 	const Image font = Gui.font;
-	const FormatFlags fmtInt;
-	const FormatFlags fmtFlt;
+	const FormatFlags format;
 
 	uint32 backgroundColor = 0x1a1a1a;
 	// int highlightColor = TODO;
@@ -4921,7 +4930,8 @@ struct Widget: Layout {
 
 	// fixme: these are needed to draw the widget on an image, move them to a different class
 	// the default method should be to draw it on the entire image
-	int position = Style.fill;
+	int align = Style.fill;
+	int margin = 0;
 	int radius = 0;
 
 	// Mouse state
@@ -5136,8 +5146,8 @@ struct Widget: Layout {
 	}
 
 	bool onMeasure(Widget this, Rect measured&, int visible) {
-		int margin = this.position >> 8;
-		int align = this.position & 255;
+		int margin = this.margin;
+		int align = this.align;
 		Rect rect = {
 			x: margin;
 			y: margin;
@@ -5331,18 +5341,16 @@ struct Widget: Layout {
 			if (button == '[' || button == ']') {
 				// hide, show controls
 				if (button == '[') {
-					if ((this.position & 255) != Style.topLeft) {
-						this.position &= ~255;
-						this.position |= Style.topLeft;
+					if (this.align != Style.topLeft) {
+						this.align = Style.topLeft;
 					} else {
 						this.enabled = !this.enabled;
 						return true;
 					}
 				}
 				if (button == ']') {
-					if ((this.position & 255) != Style.topRight) {
-						this.position &= ~255;
-						this.position |= Style.topRight;
+					if (this.align != Style.topRight) {
+						this.align = Style.topRight;
 					} else {
 						this.enabled = !this.enabled;
 						return true;
@@ -5432,15 +5440,15 @@ Widget Widget() {
 	Widget widget = {
 		rect: {};
 		radius: 5;
-		position: 10 << 8 | Style.topRight;
+		margin: 10;
+		align: Style.topRight;
 		paddingTop: 3;
 		paddingLeft: 3;
 		paddingRight: 3;
 		paddingBottom: 3;
 		widgetStyle: {
 			align: Style.left;
-			fmtInt: { padLen: 4 };
-			fmtFlt: { padLen: 5, precision: 2 };
+			format: { padLen: 5, precision: 2 };
 		};
 	};
 	widget.style = widget.widgetStyle;
@@ -5454,8 +5462,7 @@ Widget Widget(int width, int height, int align, void onCreate(Layout this, View 
 		onCreate: onCreate;
 		widgetStyle: {
 			align: align;
-			fmtInt: { padLen: 4 };
-			fmtFlt: { padLen: 5, precision: 2 };
+			format: { padLen: 5, precision: 2 };
 		};
 	};
 	widget.style = widget.widgetStyle;
@@ -5668,9 +5675,9 @@ struct Slider: View {
 		char value[64] = {0};
 		Style style& = this.style;
 		if (this.divisor != 0) {
-			value.append(0, this.valueF64(), style.fmtFlt);
+			value.append(0, this.valueF64(), style.format);
 		} else {
-			value.append(0, this.value, style.fmtInt);
+			value.append(0, this.value, style.format);
 		}
 		Rect valueRect = {};
 		style.measure(&valueRect, value);
@@ -5699,9 +5706,9 @@ struct Slider: View {
 	void onDraw(Slider this, Image offs, Rect rect, const Style style&) {
 		char value[64] = {0};
 		if (this.divisor != 0) {
-			value.append(0, this.valueF64(), style.fmtFlt);
+			value.append(0, this.valueF64(), style.format);
 		} else {
-			value.append(0, this.value, style.fmtInt);
+			value.append(0, this.value, style.format);
 		}
 		if (this.onDrawSlider != null) {
 			this.onDrawSlider(this, offs, rect, style);
@@ -5858,54 +5865,112 @@ struct Histogram: View {
 }
 
 /// debug view to count draws
-View drawCounter(bool focusable) {
-	struct Result: View {
-		char text[64] = null;
-		int draws = 0;
-		int measures = 0;
+struct DebugView: View {
+	char text[64] = null;
 
-		static bool update(Result this, int draws, int measures) {
-			if (this.draws == draws && this.measures == measures) {
-				return false;
+	int64 started = 0;
+	int64 maxDuration = 0;
+	int64 durations[64] = null;
+
+	int64 measures = 0;
+	int64 draws = 0;
+
+	static void startTimer(DebugView this) {
+		this.started = System.millis();
+		this.maxDuration = 0;
+		for (int i = this.durations.length - 1; i >= 1; i -= 1) {
+			int64 duration = this.durations[i - 1];
+			this.durations[i] = duration;
+			if (this.maxDuration < duration) {
+				this.maxDuration = duration;
 			}
-			this.draws = draws;
-			this.measures  = measures;
-			int pos = 0;
-			if (measures > 0) {
-				pos = this.text.append(pos, "measures: ");
-				pos = this.text.append(pos, measures);
-				pos = this.text.append(pos, ", ");
-			}
+		}
+		this.durations[0] = this.maxDuration;
+	}
+
+	static void update(DebugView this) {
+		int pos = 0;
+		if (this.measures > 0) {
+			pos = this.text.append(pos, pos > 0 ? ", " : "");
+			pos = this.text.append(pos, "measures: ");
+			pos = this.text.append(pos, this.measures);
+		}
+
+		if (this.draws > 0) {
+			pos = this.text.append(pos, pos > 0 ? ", " : "");
 			pos = this.text.append(pos, "draws: ");
-			pos = this.text.append(pos, draws);
-			return true;
+			pos = this.text.append(pos, this.draws);
 		}
 
-		void onCreate(Result this, View parent) {
-			View.onCreate(this, parent);
-			update(this, 0, 0);
-		}
-
-		bool onMeasure(Result this, Rect rect&, int visible) {
-			Style style& = this.style;
-			this.update(this.draws, this.measures + 1);
-			style.measure(&rect, this.text);
-			return View.onMeasure(this, &rect, visible);
-		}
-
-		void onDraw(Result this, Image offs, Rect rect, const Style style&) {
-			this.update(this.draws + 1, this.measures);
-			style.align(rect, &rect, this.text);
-			offs.drawText(rect, style.font, this.text, style.textColor);
-		}
-
-		bool onClick(Result this) {
-			return this.update(0, 0);
+		if (this.durations[0] > 0 || pos == 0) {
+			pos = this.text.append(pos, pos > 0 ? ", " : "");
+			pos = this.text.append(pos, "time: ");
+			pos = this.text.append(pos, this.durations[0]);
 		}
 	}
-	return Result {
-		focusable: focusable;
-	};
+
+	bool onClick(DebugView this) {
+		return this.onReset(this);
+	}
+
+	bool onReset(DebugView this) {
+		if (this.measures > 0) {
+			this.measures = 0;
+		}
+		if (this.draws > 0) {
+			this.draws = 0;
+		}
+		for (int i = 0; i < this.durations.length; i += 1) {
+			this.durations[i] = 0;
+		}
+		this.maxDuration = 0;
+		this.started = 0;
+		return true;
+	}
+
+	void onCreate(DebugView this, View parent) {
+		View.onCreate(this, parent);
+		onReset(this);
+	}
+
+	bool onMeasure(DebugView this, Rect rect&, int visible) {
+		if (this.measures >= 0) {
+			this.measures += 1;
+		}
+		this.update();
+		Style style& = this.style;
+		style.measure(&rect, this.text);
+		return View.onMeasure(this, &rect, visible);
+	}
+
+	void onDraw(DebugView this, Image offs, Rect rect, const Style style&) {
+		if (this.started > 0) {
+			int64 duration = System.millis() - this.started;
+			this.durations[0] = duration;
+			if (this.maxDuration < duration) {
+				this.maxDuration = duration;
+			}
+			this.started = 0;
+		}
+
+		if (this.maxDuration > 0) {
+			int y0 = rect.y + rect.h;
+			float64 ys = rect.h / float64(this.maxDuration);
+			float64 xs = rect.w / float64(this.durations.length);
+			for (int i = 0; i < this.durations.length; i += 1) {
+				int y1 = y0 - ys * this.durations[i];
+				int x1 = rect.x + xs * (this.durations.length - i);
+				offs.fillRect(x1 - xs, y0, x1, y1, style.focusedColor);
+			}
+		}
+
+		if (this.draws >= 0) {
+			this.draws += 1;
+		}
+		this.update();
+		style.align(rect, &rect, this.text);
+		offs.drawText(rect, style.font, this.text, style.textColor);
+	}
 }
 
 static struct Gui {

@@ -317,10 +317,10 @@ PresetButton lsd = {
 	);
 };
 
-Slider time = {
-	text: "time";
-	enabled: false;
-	onDrawSlider: null;
+DebugView debug = {
+	focusable: false;
+	measures: -1;
+	draws: -1;
 };
 
 Widget ui = Widget().addItems(
@@ -331,7 +331,7 @@ Widget ui = Widget().addItems(
 	original, invert, grayScale, blackAndWhite, sepiaColor, technicolor, polaroid,
 	kodachrome, browni, vintage, nightVision, warm, cool, lsd,
 
-	Layout.divider, time
+	Layout.divider, debug
 );
 
 Rect rect = {
@@ -361,7 +361,7 @@ int onEvent(int action, int button, int x, int y) {
 		ui.setGroup(1 << selGroups.selected, true);
 	}
 
-	uint64 start = System.millis();
+	debug.startTimer();
 	if (ui.isFocused(brightness, saturation, contrast, temp, tint, hue)) {
 		float b = brightness.valueF64();
 		float s = saturation.valueF64();
@@ -378,9 +378,7 @@ int onEvent(int action, int button, int x, int y) {
 	// apply color matrix
 	offs.copy(0, 0, back, null);
 	offs.colorMat(null, mat.data);
-
 	histogram.update(offs);
-	time.value = System.millis() - start;
 	return ui.draw(offs);
 }
 bool onPresetsClick(Switch view) {

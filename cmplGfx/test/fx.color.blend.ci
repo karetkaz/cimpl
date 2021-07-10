@@ -313,10 +313,10 @@ BlendButton btnPinLight = {
 	blend: pinLight;
 };
 
-Slider time = {
-	text: "time";
-	enabled: false;
-	onDrawSlider: null;
+DebugView debug = {
+	focusable: false;
+	measures: -1;
+	draws: -1;
 };
 Widget ui = Widget().addItems(
 	chkReverse,
@@ -341,7 +341,7 @@ Widget ui = Widget().addItems(
 	btnLinearLight,
 	btnVividLight,
 	btnPinLight,
-	time
+	debug
 );
 
 int onEvent(int action, int button, int x, int y) {
@@ -363,12 +363,11 @@ int onEvent(int action, int button, int x, int y) {
 		return ui.draw(offs);
 	}
 
-	uint64 start = System.millis();
+	debug.startTimer();
 	bool reverse = chkReverse.selected != 0;
 	offs.copy(0, 0, reverse ? base : blend, null);
 	if (BlendButton selected = ui.getFocused().as(BlendButton)) {
 		offs.blend(0, 0, reverse ? blend : base, null, btnAlpha.value, false, selected.blend);
 	}
-	time.value = System.millis() - start;
 	return ui.draw(offs);
 }

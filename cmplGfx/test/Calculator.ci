@@ -5,14 +5,12 @@ inline "/cmplGfx/lib/micro.ui.ci";
 Style display = {
 	font: Image.openTtf("asset/font/NokiaPureText.ttf", 48);
 	align: Style.right;
-	fmtInt: {};
-	fmtFlt: { precision: 10; };
+	format: { precision: 10; };
 };
 Style global = {
 	font: Image.openTtf("asset/font/NokiaPureText.ttf", 24);
 	align: Style.center;
-	fmtInt: {};
-	fmtFlt: {};
+	format: {};
 };
 
 char result[256] = {'0', 0};
@@ -62,7 +60,6 @@ Button buttons[] = {
 // disable focusing first element, using Layout.onCreate
 Widget ui = Widget(300, 400, 0, Layout.onCreate)
 	.style(global)
-	.padding(0)
 	.addItems(btnResult)
 	.addItems(Layout.Custom(4, Style.fill, ...buttons));
 
@@ -98,7 +95,7 @@ void setValue() {
 		result.append(0, "Inf");
 	}
 	else {
-		result.append(0, value, display.fmtFlt);
+		result.append(0, value, display.format);
 	}
 }
 bool onNeg(Button this) {

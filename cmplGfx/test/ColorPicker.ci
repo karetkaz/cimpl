@@ -8,96 +8,106 @@ offs.destroy();
 back.destroy();
 
 
+inline "/cmplGfx/lib/micro.ui.ci";
+static bool printStyle(Button button) {
+	Style style& = button.style;
+	debug("style", style);
+}
+
+struct ColorPicker: View {
+	float hue = 0;
+	float val = 0;
+	bool dark = true;
+
+	static argb get(ColorPicker this, float x, float y) {
+		if (this.dark) {
+			return argb(hsv2rgb(vec4f(x, y, 1)));
+		}
+		return argb(hsv2rgb(vec4f(x, y, y)));
+	}
+
+	static argb value(ColorPicker this) {
+		return this.get(this.hue, 1 - this.val);
+	}
+
+	bool onMouseEvent(ColorPicker this, const Rect rect&, const MouseEvent event&) {
+		if (event.release || !event.button) {
+			return View.onMouseEvent(this, rect, event);
+		}
+
+		this.hue = Math.clamp(float32(event.x - rect.x), 0f, rect.w - 1f) / rect.w;
+		this.val = Math.clamp(float32(event.y - rect.y), 0f, rect.h - 1f) / rect.h;
+		return true;
+	}
+
+	bool onMeasure(Histogram this, Rect rect&, int visible) {
+		if (this.height == 0) {
+			rect.h = 128;
+		} else {
+			rect.h = this.height;
+		}
+		return View.onMeasure(this, &rect, visible);
+	}
+
+	void onDraw(ColorPicker this, Image offs, const Rect rect, const Style style&) {
+		for (int y = 0; y < rect.h; y += 1) {
+			float32 py = float32(y) / rect.h;
+			for (int x = 0; x < rect.w; x += 1) {
+				float32 px = float32(x) / rect.w;
+				argb color = this.get(px, 1 - py);
+				offs.set(x + rect.x, y + rect.y, color);
+			}
+		}
+		int x = rect.x + Math.clamp(float32(this.hue * rect.w), 0f, rect.w - 1f);
+		int y = rect.y + Math.clamp(float32(this.val * rect.h), 0f, rect.h - 1f);
+		offs.drawOval(x - 4, y - 4, x + 4, y + 4, 0x000000);
+		offs.drawOval(x - 2, y - 2, x + 2, y + 2, 0xffffff);
+		offs.drawOval(x - 1, y - 1, x + 1, y + 1, 0x000000);
+	}
+}
+
+ColorPicker colorPicker = {
+	width: 360;
+	height: 256/2;
+	focusable: false;
+};
+
+char themes[*][] = {
+	"Light",
+	"Dark"
+};
+Switch theme = {
+	text: "Theme";
+	states: themes;
+	selected: 1;
+};
+
+Button btn = {
+	text: "Dump theme";
+	onClick: printStyle;
+};
+
+Slider slider = {
+	text: "Slider";
+	value: 1 << 30;
+};
+
+DebugView debug = {
+	focusable: false;
+	measures: -1;
+	draws: -1;
+};
+
+Widget ui = Widget().addItems(
+	colorPicker,
+	Layout.divider,
+	theme,
+	btn, slider,
+	Layout.divider,
+	debug
+);
+
 int onEvent(int action, int button, int x, int y) {
-	inline "/cmplGfx/lib/micro.ui.ci";
-
-	static char themes[*][] = {
-		"Light", "Dark"
-	};
-	static Switch theme = {
-		text: "Theme";
-		states: themes;
-		selected: 1;
-	};
-
-	struct ColorPicker: View {
-		float hue = 0;
-		float val = 0;
-
-		static argb get(ColorPicker this, float x, float y) {
-			if (theme.selected != 0) {
-				return argb(hsv2rgb(vec4f(x, y, 1)));
-			}
-			return argb(hsv2rgb(vec4f(x, y, y)));
-		}
-
-		static argb value(ColorPicker this) {
-			return this.get(this.hue, 1 - this.val);
-		}
-
-		bool onMouseEvent(ColorPicker this, const Rect rect&, const MouseEvent event&) {
-			if (event.release || !event.button) {
-				return View.onMouseEvent(this, rect, event);
-			}
-
-			this.hue = Math.clamp(float32(event.x - rect.x), 0f, rect.w - 1f) / rect.w;
-			this.val = Math.clamp(float32(event.y - rect.y), 0f, rect.h - 1f) / rect.h;
-			return true;
-		}
-
-		bool onMeasure(Histogram this, Rect rect&, int visible) {
-			if (this.height == 0) {
-				rect.h = 128;
-			} else {
-				rect.h = this.height;
-			}
-			return View.onMeasure(this, &rect, visible);
-		}
-
-		void onDraw(ColorPicker this, Image offs, const Rect rect, const Style style&) {
-			for (int y = 0; y < rect.h; y += 1) {
-				float32 py = float32(y) / rect.h;
-				for (int x = 0; x < rect.w; x += 1) {
-					float32 px = float32(x) / rect.w;
-					argb color = this.get(px, 1 - py);
-					offs.set(x + rect.x, y + rect.y, color);
-				}
-			}
-			int x = rect.x + Math.clamp(float32(this.hue * rect.w), 0f, rect.w - 1f);
-			int y = rect.y + Math.clamp(float32(this.val * rect.h), 0f, rect.h - 1f);
-			offs.drawOval(x - 4, y - 4, x + 4, y + 4, 0x000000);
-			offs.drawOval(x - 2, y - 2, x + 2, y + 2, 0xffffff);
-			offs.drawOval(x - 1, y - 1, x + 1, y + 1, 0x000000);
-		}
-	}
-
-	static bool printStyle(Button button) {
-		Style style& = button.style;
-		debug("style", style);
-	}
-	static ColorPicker colorPicker = {
-		width: 360;
-		height: 256/2;
-		focusable: false;
-	};
-
-	static Button btn = {text: "Dump theme", onClick: printStyle};
-	static Slider slider = {text: "Slider", value: 1 << 30};
-
-	static Slider time = {
-		text: "time";
-		enabled: false;
-		onDrawSlider: null;
-	};
-
-	static Widget ui = Widget().addItems(
-		colorPicker,
-		Layout.divider,
-		theme,
-		btn, slider,
-		time
-	);
-
 	if (action == Gui.KEY_RELEASE && button == 27) {
 		// exit when releasing escape key
 		return -1;
@@ -107,16 +117,16 @@ int onEvent(int action, int button, int x, int y) {
 		return 0;
 	}
 
-	uint64 start = System.millis();
+	debug.startTimer();
 	offs.resize(null, back, null, 1);
 
-	static if (true) {
-		Style style& = ui.style;
-		bool dark = theme.selected != 0;
-		argb backgroundColor = dark ? Style.dark : Style.light;
-		style.setColor(backgroundColor, colorPicker.value());
+	 if (theme.selected != 0) {
+		colorPicker.dark = true;
+		ui.theme(Style.dark, colorPicker.value());
+	} else {
+		colorPicker.dark = false;
+		ui.theme(Style.light, colorPicker.value());
 	}
 
-	time.value = System.millis() - start;
 	return ui.draw(offs);
 }

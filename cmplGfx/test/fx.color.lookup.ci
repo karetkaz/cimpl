@@ -208,10 +208,10 @@ Switch auto = {
 	focusable: true;
 };
 
-Slider time = {
-	text: "time";
-	enabled: false;
-	onDrawSlider: null;
+DebugView debug = {
+	focusable: false;
+	measures: -1;
+	draws: -1;
 };
 
 Widget ui = Widget().addItems(
@@ -219,7 +219,7 @@ Widget ui = Widget().addItems(
 	brightness, contrast, gamma,
 	highlights, shadows, whites, blacks,
 	Layout.divider, auto,
-	Layout.divider, time
+	Layout.divider, debug
 );
 
 int onEvent(int action, int button, int x, int y) {
@@ -232,7 +232,7 @@ int onEvent(int action, int button, int x, int y) {
 		return 0;
 	}
 
-	uint64 start = System.millis();
+	debug.startTimer();
 	offs.resize(null, back, null, 1);
 	if (ui.isFocused(brightness, contrast, gamma, highlights, shadows, whites, blacks)) {
 		brightnessContrastGamma(&curves.data,
@@ -251,6 +251,5 @@ int onEvent(int action, int button, int x, int y) {
 
 	offs.colorMap(null, curves.data);
 	histogram.update(offs);
-	time.value = System.millis() - start;
 	return ui.draw(offs);
 }

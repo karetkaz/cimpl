@@ -66,10 +66,10 @@ Slider sldVal = {
 	value: 26;
 };
 
-Slider time = {
-	text: "time";
-	enabled: false;
-	onDrawSlider: null;
+DebugView debug = {
+	focusable: false;
+	measures: -1;
+	draws: -1;
 };
 
 // blending method exevuted for each pixel in the image
@@ -134,7 +134,8 @@ Widget ui = Widget().addItems(
 	sldHueMin, sldHueMax,
 	sldLumMin, sldLumMax,
 	sldVal,
-	Layout.divider, time
+	Layout.divider,
+	debug
 );
 
 int onEvent(int action, int button, int x, int y) {
@@ -167,16 +168,15 @@ int onEvent(int action, int button, int x, int y) {
 		return ui.draw(offs);
 	}
 
-	uint64 start = System.millis();
 	offs.copy(0, 0, back, null);
 
 	// blending is slow, so blend only when mouse button is released
 	if (button == 1 && (action == Gui.MOUSE_RELEASE || action == Gui.FINGER_RELEASE)) {
+		debug.startTimer();
 		offs.blend(0, 0, back, null, 256, true, blendHsl);
 	}
 
 	histogram.update(offs);
-	time.value = System.millis() - start;
 	return ui.draw(offs);
 }
 
